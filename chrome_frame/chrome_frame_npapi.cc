@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,25 +55,16 @@ const NPUTF8* ChromeFrameNPAPI::plugin_property_identifier_names_[] = {
   "onprivatemessage",
   "usechromenetwork",
   "onclose",
-  "sessionid",
 };
 
 const NPUTF8* ChromeFrameNPAPI::plugin_method_identifier_names_[] = {
   "postMessage",
   "postPrivateMessage",
-  "installExtension",
-  "loadExtension",
-  "enableExtensionAutomation",
-  "getEnabledExtensions"
 };
 
 ChromeFrameNPAPI::PluginMethod ChromeFrameNPAPI::plugin_methods_[] = {
   &ChromeFrameNPAPI::postMessage,
   &ChromeFrameNPAPI::postPrivateMessage,
-  &ChromeFrameNPAPI::installExtension,
-  &ChromeFrameNPAPI::loadExtension,
-  &ChromeFrameNPAPI::enableExtensionAutomation,
-  &ChromeFrameNPAPI::getEnabledExtensions,
 };
 
 NPIdentifier
@@ -112,10 +103,6 @@ static const char kPluginChromeExtraArguments[] = "chrome_extra_arguments";
 // If privileged mode is enabled, the string value of this argument will
 // be used as the profile name for our chrome.exe instance.
 static const char kPluginChromeProfileName[] = "chrome_profile_name";
-// If privileged mode is enabled, this argument will be taken as a
-// comma-separated list of API function calls to automate.
-static const char kPluginChromeFunctionsAutomatedAttribute[] =
-    "chrome_functions_automated";
 // If chrome network stack is to be used
 static const char kPluginUseChromeNetwork[] = "usechromenetwork";
 
@@ -215,13 +202,6 @@ bool ChromeFrameNPAPI::Initialize(NPMIMEType mime_type, NPP instance,
       chrome_extra_arguments_arg = argv[i];
     } else if (LowerCaseEqualsASCII(argn[i], kPluginChromeProfileName)) {
       chrome_profile_name_arg = argv[i];
-    } else if (LowerCaseEqualsASCII(argn[i],
-                                    kPluginChromeFunctionsAutomatedAttribute)) {
-      functions_enabled_.clear();
-      // base::SplitString writes one empty entry for blank strings, so we need
-      // this to allow specifying zero automation of API functions.
-      if (argv[i][0] != '\0')
-        base::SplitString(argv[i], ',', &functions_enabled_);
     } else if (LowerCaseEqualsASCII(argn[i], kPluginUseChromeNetwork)) {
       chrome_network_arg_set = true;
       chrome_network_arg = atoi(argv[i]) ? true : false;
@@ -666,14 +646,6 @@ bool ChromeFrameNPAPI::GetProperty(NPIdentifier name,
         plugin_property_identifiers_[PLUGIN_PROPERTY_USECHROMENETWORK]) {
     BOOLEAN_TO_NPVARIANT(automation_client_->use_chrome_network(), *variant);
     return true;
-  } else if (name == plugin_property_identifiers_[PLUGIN_PROPERTY_SESSIONID]) {
-    if (!is_privileged()) {
-      DLOG(WARNING) << "Attempt to read sessionid property while not "
-                       "privileged";
-    } else {
-      INT32_TO_NPVARIANT(automation_client_->GetSessionId(), *variant);
-      return true;
-    }
   }
 
   return false;
@@ -1238,184 +1210,6 @@ bool ChromeFrameNPAPI::postPrivateMessage(NPObject* npobject,
   return true;
 }
 
-bool ChromeFrameNPAPI::installExtension(NPObject* npobject,
-                                        const NPVariant* args,
-                                        uint32_t arg_count,
-                                        NPVariant* result) {
-  if (arg_count > 2 || !NPVARIANT_IS_STRING(args[0]) ||
-      (arg_count == 2 && !NPVARIANT_IS_OBJECT(args[1]))) {
-    NOTREACHED();
-    return false;
-  }
-
-  if (!is_privileged()) {
-    DLOG(WARNING) << "installExtension invoked in non-privileged mode";
-    return false;
-  }
-
-  if (!automation_client_.get()) {
-    DLOG(WARNING) << "installExtension invoked with no automaton client";
-    NOTREACHED();
-    return false;
-  }
-
-  const NPString& crx_path_str = args[0].value.stringValue;
-  std::string crx_path_a(crx_path_str.UTF8Characters, crx_path_str.UTF8Length);
-  FilePath::StringType crx_path_u(UTF8ToWide(crx_path_a));
-  FilePath crx_path(crx_path_u);
-  NPObject* retained_function = npapi::RetainObject(args[1].value.objectValue);
-
-  automation_client_->InstallExtension(crx_path, retained_function);
-  // The response to this command will be returned in the OnExtensionInstalled
-  // delegate callback function.
-
-  return true;
-}
-
-void ChromeFrameNPAPI::OnExtensionInstalled(
-    const FilePath& path,
-    void* user_data,
-    AutomationMsg_ExtensionResponseValues res) {
-  ScopedNpVariant result;
-  NPVariant param;
-  INT32_TO_NPVARIANT(res, param);
-  NPObject* func = reinterpret_cast<NPObject*>(user_data);
-
-  InvokeDefault(func, param, &result);
-  npapi::ReleaseObject(func);
-}
-
-bool ChromeFrameNPAPI::loadExtension(NPObject* npobject,
-                                     const NPVariant* args,
-                                     uint32_t arg_count,
-                                     NPVariant* result) {
-  if (arg_count > 2 || !NPVARIANT_IS_STRING(args[0]) ||
-      (arg_count == 2 && !NPVARIANT_IS_OBJECT(args[1]))) {
-    NOTREACHED();
-    return false;
-  }
-
-  if (!is_privileged()) {
-    DLOG(WARNING) << "loadExtension invoked in non-privileged mode";
-    return false;
-  }
-
-  if (!automation_client_.get()) {
-    DLOG(WARNING) << "loadExtension invoked with no automaton client";
-    NOTREACHED();
-    return false;
-  }
-
-  const NPString& path_str = args[0].value.stringValue;
-  std::string path_a(path_str.UTF8Characters, path_str.UTF8Length);
-  FilePath::StringType path_u(UTF8ToWide(path_a));
-  FilePath path(path_u);
-  NPObject* retained_function = npapi::RetainObject(args[1].value.objectValue);
-
-  automation_client_->LoadExpandedExtension(path, retained_function);
-  // The response to this command will be returned in the OnExtensionInstalled
-  // delegate callback function.
-
-  return true;
-}
-
-bool ChromeFrameNPAPI::enableExtensionAutomation(NPObject* npobject,
-                                                 const NPVariant* args,
-                                                 uint32_t arg_count,
-                                                 NPVariant* result) {
-  if (arg_count > 1 || (arg_count == 1 && !NPVARIANT_IS_STRING(args[0]))) {
-    NOTREACHED();
-    return false;
-  }
-
-  if (!is_privileged()) {
-    DLOG(WARNING) <<
-        "enableExtensionAutomation invoked in non-privileged mode";
-    return false;
-  }
-
-  if (!automation_client_.get()) {
-    DLOG(WARNING) <<
-        "enableExtensionAutomation invoked with no automaton client";
-    NOTREACHED();
-    return false;
-  }
-
-  if (!automation_client_->tab()) {
-    DLOG(WARNING) << "enableExtensionAutomation invoked with no hosted tab";
-    NOTREACHED();
-    return false;
-  }
-
-  // Empty by default e.g. if no arguments passed.
-  std::vector<std::string> functions;
-
-  if (arg_count == 1) {
-    const NPString& functions_str = args[0].value.stringValue;
-    std::string functions_a(functions_str.UTF8Characters,
-                            functions_str.UTF8Length);
-
-    // base::SplitString writes one empty entry for blank strings, so we need
-    // this to allow specifying zero automation of API functions.
-    if (functions_a[0] != '\0')
-      base::SplitString(functions_a, ',', &functions);
-  }
-
-  automation_client_->tab()->SetEnableExtensionAutomation(functions);
-  // This function returns no result.
-
-  return true;
-}
-
-bool ChromeFrameNPAPI::getEnabledExtensions(NPObject* npobject,
-                                            const NPVariant* args,
-                                            uint32_t arg_count,
-                                            NPVariant* result) {
-  if (arg_count > 1 || !NPVARIANT_IS_OBJECT(args[0])) {
-    NOTREACHED();
-    return false;
-  }
-
-  if (!is_privileged()) {
-    DLOG(WARNING) << "getEnabledExtensions invoked in non-privileged mode";
-    return false;
-  }
-
-  if (!automation_client_.get()) {
-    DLOG(WARNING) << "getEnabledExtensions invoked with no automaton client";
-    NOTREACHED();
-    return false;
-  }
-
-  NPObject* retained_function = npapi::RetainObject(args[0].value.objectValue);
-
-  automation_client_->GetEnabledExtensions(retained_function);
-  // The response to this command will be returned in the
-  // OnGetEnabledExtensionsCompleted delegate callback function.
-
-  return true;
-}
-
-void ChromeFrameNPAPI::OnGetEnabledExtensionsComplete(
-    void* user_data,
-    const std::vector<FilePath>& extension_directories) {
-  std::vector<std::wstring> extension_paths;
-  for (size_t i = 0; i < extension_directories.size(); ++i) {
-    extension_paths.push_back(extension_directories[i].value());
-  }
-  std::wstring tab_delimited = JoinString(extension_paths, L'\t');
-
-  std::string res = WideToUTF8(tab_delimited);
-
-  ScopedNpVariant result;
-  NPVariant param;
-  STRINGN_TO_NPVARIANT(res.c_str(), res.length(), param);
-
-  NPObject* func = reinterpret_cast<NPObject*>(user_data);
-  InvokeDefault(func, param, &result);
-  npapi::ReleaseObject(func);
-}
-
 void ChromeFrameNPAPI::FireEvent(const std::string& event_type,
                                  const std::string& data) {
   NPVariant arg;
@@ -1520,4 +1314,3 @@ void ChromeFrameNPAPI::URLRedirectNotify(const char* url, int status,
   url_fetcher_.UrlRedirectNotify(url, status, notify_data);
   npapi::URLRedirectResponse(instance_, notify_data, false);
 }
-

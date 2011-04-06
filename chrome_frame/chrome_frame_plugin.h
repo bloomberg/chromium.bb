@@ -104,10 +104,6 @@ END_MSG_MAP()
     return document_url_;
   }
   virtual void OnAutomationServerReady() {
-    // Issue the extension automation request if we're privileged to
-    // allow this control to handle extension requests from Chrome.
-    if (is_privileged() && IsValid())
-      automation_client_->SetEnableExtensionAutomation(functions_enabled_);
   }
 
   virtual bool IsValid() const {
@@ -267,12 +263,6 @@ END_MSG_MAP()
   // and notifying the host browser that we're doing so.
   // When the flag is not set, we transfer the focus to chrome.
   bool ignore_setfocus_;
-
-  // List of functions to enable for automation, or a single entry "*" to
-  // enable all functions for automation.  Ignored unless is_privileged_ is
-  // true.  Defaults to the empty list, meaning automation will not be
-  // turned on.
-  std::vector<std::string> functions_enabled_;
 };
 
 #endif  // CHROME_FRAME_CHROME_FRAME_PLUGIN_H_

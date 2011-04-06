@@ -363,15 +363,6 @@ DOMElementProxyRef TabProxy::GetDOMDocument() {
   return GetObjectProxy<DOMElementProxy>(element_handle);
 }
 
-bool TabProxy::SetEnableExtensionAutomation(
-    const std::vector<std::string>& functions_enabled) {
-  if (!is_valid())
-    return false;
-
-  return sender_->Send(new AutomationMsg_SetEnableExtensionAutomation(
-      handle_, functions_enabled));
-}
-
 bool TabProxy::GetConstrainedWindowCount(int* count) const {
   if (!is_valid())
     return false;

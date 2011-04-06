@@ -255,11 +255,6 @@ void AutomationProxy::EnsureExtensionTestResult() {
   ASSERT_TRUE(result) << "Extension test message: " << message;
 }
 
-bool AutomationProxy::GetEnabledExtensions(
-    std::vector<FilePath>* extension_directories) {
-  return Send(new AutomationMsg_GetEnabledExtensions(extension_directories));
-}
-
 bool AutomationProxy::GetBrowserWindowCount(int* num_windows) {
   if (!num_windows) {
     NOTREACHED();

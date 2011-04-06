@@ -96,7 +96,6 @@ class MockAutomationProxy : public ChromeFrameAutomationProxy {
   MOCK_METHOD1(ReleaseTabProxy, void(AutomationHandle handle));
   MOCK_METHOD0(server_version, std::string(void));
   MOCK_METHOD1(SendProxyConfig, void(const std::string&));
-  MOCK_METHOD1(SetEnableExtensionAutomation, void(bool enable));
 
   ~MockAutomationProxy() {}
 };

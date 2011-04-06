@@ -120,15 +120,6 @@ class ChromeFrameAutomationProxyImpl::CFMsgDispatcher
       case AutomationMsg_NavigateInExternalTab::ID:
         InvokeCallback<BeginNavigateContext>(msg, context);
         break;
-      case AutomationMsg_InstallExtension::ID:
-        InvokeCallback<InstallExtensionContext>(msg, context);
-        break;
-      case AutomationMsg_LoadExpandedExtension::ID:
-        InvokeCallback<InstallExtensionContext>(msg, context);
-        break;
-      case AutomationMsg_GetEnabledExtensions::ID:
-        InvokeCallback<GetEnabledExtensionsContext>(msg, context);
-        break;
       case AutomationMsg_RunUnloadHandlers::ID:
         InvokeCallback<UnloadContext>(msg, context);
         break;
@@ -849,69 +840,6 @@ void ChromeFrameAutomationClient::FindInPage(const std::wstring& search_string,
   automation_server_->SendAsAsync(msg, NULL, this);
 }
 
-void ChromeFrameAutomationClient::InstallExtension(
-    const FilePath& crx_path,
-    void* user_data) {
-  if (automation_server_ == NULL) {
-    InstallExtensionComplete(crx_path,
-                             user_data,
-                             AUTOMATION_MSG_EXTENSION_INSTALL_FAILED);
-    return;
-  }
-
-  InstallExtensionContext* ctx = new InstallExtensionContext(
-      this, crx_path, user_data);
-
-  IPC::SyncMessage* msg = new AutomationMsg_InstallExtension(crx_path, NULL);
-
-  // The context will delete itself after it is called.
-  automation_server_->SendAsAsync(msg, ctx, this);
-}
-
-void ChromeFrameAutomationClient::InstallExtensionComplete(
-    const FilePath& crx_path,
-    void* user_data,
-    AutomationMsg_ExtensionResponseValues res) {
-  DCHECK_EQ(base::PlatformThread::CurrentId(), ui_thread_id_);
-
-  if (chrome_frame_delegate_) {
-    chrome_frame_delegate_->OnExtensionInstalled(crx_path, user_data, res);
-  }
-}
-
-void ChromeFrameAutomationClient::GetEnabledExtensions(void* user_data) {
-    if (automation_server_ == NULL) {
-      GetEnabledExtensionsComplete(user_data, &std::vector<FilePath>());
-      return;
-    }
-
-    GetEnabledExtensionsContext* ctx = new GetEnabledExtensionsContext(
-        this, user_data);
-
-    IPC::SyncMessage* msg = new AutomationMsg_GetEnabledExtensions(
-        ctx->extension_directories());
-
-    // The context will delete itself after it is called.
-    automation_server_->SendAsAsync(msg, ctx, this);
-}
-
-void ChromeFrameAutomationClient::GetEnabledExtensionsComplete(
-    void* user_data,
-    std::vector<FilePath>* extension_directories) {
-  DCHECK_EQ(base::PlatformThread::CurrentId(), ui_thread_id_);
-
-  if (chrome_frame_delegate_) {
-    chrome_frame_delegate_->OnGetEnabledExtensionsComplete(
-        user_data, *extension_directories);
-  }
-
-  delete extension_directories;
-}
-
-int ChromeFrameAutomationClient::GetSessionId() const {
-  return session_id_;
-}
-
 void ChromeFrameAutomationClient::OnChromeFrameHostMoved() {
   // Use a local var to avoid the small possibility of getting the tab_
   // member be cleared while we try to use it.
@@ -921,25 +849,6 @@ void ChromeFrameAutomationClient::OnChromeFrameHostMoved() {
   // so we still need to test for NULL.
   if (tab)
     tab->OnHostMoved();
-}
-
-void ChromeFrameAutomationClient::LoadExpandedExtension(
-    const FilePath& path,
-    void* user_data) {
-  if (automation_server_ == NULL) {
-    InstallExtensionComplete(path,
-                             user_data,
-                             AUTOMATION_MSG_EXTENSION_INSTALL_FAILED);
-    return;
-  }
-
-  InstallExtensionContext* ctx = new InstallExtensionContext(
-      this, path, user_data);
-
-  IPC::SyncMessage* msg = new AutomationMsg_LoadExpandedExtension(path, NULL);
-
-  // The context will delete itself after it is called.
-  automation_server_->SendAsAsync(msg, ctx, this);
 }
 
 void ChromeFrameAutomationClient::CreateExternalTab() {
@@ -998,19 +907,6 @@ AutomationLaunchResult ChromeFrameAutomationClient::CreateExternalTabComplete(
     session_id_ = session_id;
   }
   return launch_result;
-}
-
-void ChromeFrameAutomationClient::SetEnableExtensionAutomation(
-    const std::vector<std::string>& functions_enabled) {
-  if (!is_initialized())
-    return;
-
-  // We are doing initialization, so there is no need to reset extension
-  // automation, only to set it.  Also, we want to avoid resetting extension
-  // automation that some other automation client has set up.  Therefore only
-  // send the message if we are going to enable automation of some functions.
-  if (!functions_enabled.empty())
-    tab_->SetEnableExtensionAutomation(functions_enabled);
 }
 
 // Invoked in launch background thread.

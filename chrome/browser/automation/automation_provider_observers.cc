@@ -492,10 +492,6 @@ void ExtensionInstallNotificationObserver::SendResponse(
       AutomationMsg_InstallExtension::WriteReplyParams(reply_message_.get(),
                                                        response);
       break;
-    case AutomationMsg_LoadExpandedExtension::ID:
-      AutomationMsg_LoadExpandedExtension::WriteReplyParams(
-          reply_message_.get(), response);
-      break;
     default:
       NOTREACHED();
       break;

@@ -117,26 +117,6 @@ class ATL_NO_VTABLE ProxyDIChromeFrameEvents
                          arraysize(args));
   }
 
-  void Fire_onextensionready(BSTR path, long response) {  // NOLINT
-    // Arguments in reverse order to the function declaration, because
-    // that's what DISPPARAMS requires.
-    VARIANT args[2] = { { VT_I4, }, { VT_BSTR, } };
-    args[0].lVal = response;
-    args[1].bstrVal = path;
-
-    FireMethodWithParams(CF_EVENT_DISPID_ONEXTENSIONREADY,
-                         args,
-                         arraysize(args));
-  }
-
-  void Fire_ongetenabledextensionscomplete(SAFEARRAY* extension_dirs) {
-    VARIANT args[1] = { { VT_ARRAY | VT_BSTR } };
-    args[0].parray = extension_dirs;
-
-    FireMethodWithParams(CF_EVENT_DISPID_ONGETENABLEDEXTENSIONSCOMPLETE,
-                         args, arraysize(args));
-  }
-
   void Fire_onchannelerror() {  // NOLINT
     FireMethodWithParams(CF_EVENT_DISPID_ONCHANNELERROR, NULL, 0);
   }
@@ -174,7 +154,6 @@ class ATL_NO_VTABLE ChromeFrameActivexBase :  // NOLINT
   public com_util::IProvideClassInfo2Impl<class_id,
                                           DIID_DIChromeFrameEvents>,
   public com_util::IDispatchImpl<IChromeFrame>,
-  public IChromeFrameInternal,
   public IConnectionPointContainerImpl<T>,
   public ProxyDIChromeFrameEvents<T>,
   public IPropertyNotifySinkCP<T>,
@@ -208,7 +187,6 @@ DECLARE_NOT_AGGREGATABLE(T)
 BEGIN_COM_MAP(ChromeFrameActivexBase)
   COM_INTERFACE_ENTRY(IChromeFrame)
   COM_INTERFACE_ENTRY(IDispatch)
-  COM_INTERFACE_ENTRY(IChromeFrameInternal)
   COM_INTERFACE_ENTRY(IViewObjectEx)
   COM_INTERFACE_ENTRY(IViewObject2)
   COM_INTERFACE_ENTRY(IViewObject)
@@ -826,68 +804,18 @@ END_MSG_MAP()
   }
 
   STDMETHOD(installExtension)(BSTR crx_path) {
-    DCHECK(automation_client_.get());
-
-    if (NULL == crx_path) {
-      NOTREACHED();
-      return E_INVALIDARG;
-    }
-
-    if (!is_privileged()) {
-      DLOG(ERROR) << "Attempt to installExtension in non-privileged mode";
-      return E_ACCESSDENIED;
-    }
-
-    FilePath::StringType crx_path_str(crx_path);
-    FilePath crx_file_path(crx_path_str);
-
-    automation_client_->InstallExtension(crx_file_path, NULL);
-    return S_OK;
+    NOTREACHED();  // Deprecated.
+    return E_NOTIMPL;
   }
 
   STDMETHOD(loadExtension)(BSTR path) {
-    DCHECK(automation_client_.get());
-
-    if (NULL == path) {
-      NOTREACHED();
-      return E_INVALIDARG;
-    }
-
-    if (!is_privileged()) {
-      DLOG(ERROR) << "Attempt to loadExtension in non-privileged mode";
-      return E_ACCESSDENIED;
-    }
-
-    FilePath::StringType path_str(path);
-    FilePath file_path(path_str);
-
-    automation_client_->LoadExpandedExtension(file_path, NULL);
-    return S_OK;
+    NOTREACHED();  // Deprecated.
+    return E_NOTIMPL;
   }
 
   STDMETHOD(getEnabledExtensions)() {
-    DCHECK(automation_client_.get());
-
-    if (!is_privileged()) {
-      DLOG(ERROR) << "Attempt to getEnabledExtensions in non-privileged mode";
-      return E_ACCESSDENIED;
-    }
-
-    automation_client_->GetEnabledExtensions(NULL);
-    return S_OK;
-  }
-
-  STDMETHOD(getSessionId)(int* session_id) {
-    DCHECK(automation_client_.get());
-    DCHECK(session_id);
-
-    if (!is_privileged()) {
-      DLOG(ERROR) << "Attempt to getSessionId in non-privileged mode";
-      return E_ACCESSDENIED;
-    }
-
-    *session_id = automation_client_->GetSessionId();
-    return (*session_id) == -1 ? S_FALSE : S_OK;
+    NOTREACHED();  // Deprecated.
+    return E_NOTIMPL;
   }
 
   STDMETHOD(registerBhoIfNeeded)() {

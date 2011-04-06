@@ -34,7 +34,6 @@
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/automation/automation_tab_tracker.h"
 #include "chrome/browser/automation/automation_window_tracker.h"
-#include "chrome/browser/automation/extension_port_container.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/blocked_content_container.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -132,10 +131,6 @@ AutomationProvider::AutomationProvider(Profile* profile)
 }
 
 AutomationProvider::~AutomationProvider() {
-  STLDeleteContainerPairSecondPointers(port_containers_.begin(),
-                                       port_containers_.end());
-  port_containers_.clear();
-
   if (channel_.get())
     channel_->Close();
 
@@ -220,36 +215,6 @@ void AutomationProvider::AddLoginHandler(NavigationController* tab,
 void AutomationProvider::RemoveLoginHandler(NavigationController* tab) {
   DCHECK(login_handler_map_[tab]);
   login_handler_map_.erase(tab);
-}
-
-void AutomationProvider::AddPortContainer(ExtensionPortContainer* port) {
-  int port_id = port->port_id();
-  DCHECK_NE(-1, port_id);
-  DCHECK(port_containers_.find(port_id) == port_containers_.end());
-
-  port_containers_[port_id] = port;
-}
-
-void AutomationProvider::RemovePortContainer(ExtensionPortContainer* port) {
-  int port_id = port->port_id();
-  DCHECK_NE(-1, port_id);
-
-  PortContainerMap::iterator it = port_containers_.find(port_id);
-  DCHECK(it != port_containers_.end());
-
-  if (it != port_containers_.end()) {
-    delete it->second;
-    port_containers_.erase(it);
-  }
-}
-
-ExtensionPortContainer* AutomationProvider::GetPortContainer(
-    int port_id) const {
-  PortContainerMap::const_iterator it = port_containers_.find(port_id);
-  if (it == port_containers_.end())
-    return NULL;
-
-  return it->second;
 }
 
 int AutomationProvider::GetIndexForNavigationController(
@@ -359,10 +324,6 @@ bool AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_SetPageFontSize, OnSetPageFontSize)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_InstallExtension,
                                     InstallExtension)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_LoadExpandedExtension,
-                                    LoadExpandedExtension)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetEnabledExtensions,
-                        GetEnabledExtensions)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForExtensionTestResult,
                                     WaitForExtensionTestResult)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
@@ -399,8 +360,6 @@ bool AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_NavigateExternalTabAtIndex,
                         NavigateExternalTabAtIndex)
     IPC_MESSAGE_HANDLER(AutomationMsg_ConnectExternalTab, ConnectExternalTab)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SetEnableExtensionAutomation,
-                        SetEnableExtensionAutomation)
     IPC_MESSAGE_HANDLER(AutomationMsg_HandleMessageFromExternalHost,
                         OnMessageFromExternalHost)
     IPC_MESSAGE_HANDLER(AutomationMsg_BrowserMove, OnBrowserMoved)
@@ -818,44 +777,6 @@ void AutomationProvider::InstallExtension(const FilePath& crx_path,
     AutomationMsg_InstallExtension::WriteReplyParams(
         reply_message, AUTOMATION_MSG_EXTENSION_INSTALL_FAILED);
     Send(reply_message);
-  }
-}
-
-void AutomationProvider::LoadExpandedExtension(
-    const FilePath& extension_dir,
-    IPC::Message* reply_message) {
-  if (profile_->GetExtensionService()) {
-    // The observer will delete itself when done.
-    new ExtensionInstallNotificationObserver(
-        this,
-        AutomationMsg_LoadExpandedExtension::ID,
-        reply_message);
-
-    profile_->GetExtensionService()->LoadExtension(extension_dir);
-  } else {
-    AutomationMsg_LoadExpandedExtension::WriteReplyParams(
-        reply_message, AUTOMATION_MSG_EXTENSION_INSTALL_FAILED);
-    Send(reply_message);
-  }
-}
-
-void AutomationProvider::GetEnabledExtensions(
-    std::vector<FilePath>* result) {
-  ExtensionService* service = profile_->GetExtensionService();
-  DCHECK(service);
-  if (service->extensions_enabled()) {
-    const ExtensionList* extensions = service->extensions();
-    DCHECK(extensions);
-    for (size_t i = 0; i < extensions->size(); ++i) {
-      const Extension* extension = (*extensions)[i];
-      DCHECK(extension);
-      // AutomationProvider only exposes non app internal/loaded extensions.
-      if (!extension->is_app() &&
-          (extension->location() == Extension::INTERNAL ||
-           extension->location() == Extension::LOAD)) {
-        result->push_back(extension->path());
-      }
-    }
   }
 }
 

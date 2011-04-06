@@ -135,13 +135,6 @@ class ExtensionFunctionDispatcher {
   std::string extension_id_;
 
   scoped_refptr<Peer> peer_;
-
-  // AutomationExtensionFunction requires access to the RenderViewHost
-  // associated with us.  We make it a friend rather than exposing the
-  // RenderViewHost as a public method as we wouldn't want everyone to
-  // start assuming a 1:1 relationship between us and RenderViewHost,
-  // whereas AutomationExtensionFunction is by necessity "tight" with us.
-  friend class AutomationExtensionFunction;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_DISPATCHER_H_

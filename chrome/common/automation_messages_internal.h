@@ -887,19 +887,19 @@ IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_FindNormalBrowserWindow,
 IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_NormalBrowserWindowCount,
                             int)
 
-// Used to put the browser into "extension automation mode" for a given
-// set of Chrome Extensions API functions for the current profile, or turn
-// off automation mode.  The specified tab is used as the conduit for all
-// automated API functions.  It must be an external tab (as in
-// AutomationMsg_CreateExternalTab).
-IPC_MESSAGE_CONTROL2(AutomationMsg_SetEnableExtensionAutomation,
-                     // Tab handle.
+// DEPRECATED MESSAGE - But we must leave this comment and message so as
+// not to perturb line numbers (see comment at top of file re __LINE__).
+// TODO(phajdan.jr): Remove when the reference build is updated (this and
+// all others marked "DEPRECATED MESSAGE").
+// (intentionally blank line)
+IPC_MESSAGE_CONTROL2(AutomationMsg_DeprecatedMessageOne,
+                     // (intentionally blank line)
                      int,
-                     // Empty to disable automation, non-empty to enable
-                     // automation of the specified API functions, single
-                     // entry of "*" to enable automation of all API
-                     // functions.
-                     std::vector<std::string>)
+                     // (intentionally blank line)
+                     // (intentionally blank line)
+                     // (intentionally blank line)
+                     // (intentionally blank line)
+                     int)
 
 // This message tells the browser to start using the new proxy configuration
 // represented by the given JSON string. The parameters used in the JSON
@@ -1133,20 +1133,20 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_InstallExtension,
                             FilePath /* full path to crx file */,
                             AutomationMsg_ExtensionResponseValues)
 
-// Silently load the extension in the given directory.  This expects an
-// extension expanded into the directory, not a crx file.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_LoadExpandedExtension,
-                            FilePath /* root directory of extension */,
-                            AutomationMsg_ExtensionResponseValues)
+// DEPRECATED MESSAGE - But we must leave this comment and message so as
+// not to perturb line numbers (see comment at top of file re __LINE__).
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DeprecatedMessageTwo,
+                            int,
+                            int)
 
-// Retrieves a list of the root directories of all enabled extensions
-// that have been installed into Chrome by dropping a .crx file onto
-// Chrome or an equivalent action (including loaded extensions).
-// Other types of extensions are not included on the list (e.g. "component",
-// "app" or "external" extensions) since since CEEE does not yet support them
-// (and it actually only support a single extension in its profile for now).
-IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_GetEnabledExtensions,
-                            std::vector<FilePath>)
+// DEPRECATED MESSAGE - But we must leave this comment and message so as
+// not to perturb line numbers (see comment at top of file re __LINE__).
+// (intentionally blank line)
+// (intentionally blank line)
+// (intentionally blank line)
+// (intentionally blank line)
+IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_DeprecatedMessageThree,
+                            int)
 
 // This message requests the type of the window with the given handle. The
 // return value contains the type (Browser::Type), or -1 if the request

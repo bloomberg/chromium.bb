@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,6 @@ class ChromeFrameNPAPI
     PLUGIN_PROPERTY_ONPRIVATEMESSAGE,
     PLUGIN_PROPERTY_USECHROMENETWORK,
     PLUGIN_PROPERTY_ONCLOSE,
-    PLUGIN_PROPERTY_SESSIONID,
     PLUGIN_PROPERTY_COUNT  // must be last
   } PluginPropertyId;
 
@@ -147,11 +146,6 @@ END_MSG_MAP()
   virtual void OnAutomationServerReady();
   virtual void OnAutomationServerLaunchFailed(
       AutomationLaunchResult reason, const std::string& server_version);
-  virtual void OnExtensionInstalled(const FilePath& path,
-      void* user_data, AutomationMsg_ExtensionResponseValues response);
-  virtual void OnGetEnabledExtensionsComplete(
-      void* user_data,
-      const std::vector<FilePath>& extension_directories);
   virtual void OnCloseTab();
 
  private:
@@ -197,22 +191,6 @@ END_MSG_MAP()
   // This method is only available when the control is in privileged mode.
   bool postPrivateMessage(NPObject* npobject, const NPVariant* args,
                           uint32_t arg_count, NPVariant* result);
-
-  // This method is only available when the control is in privileged mode.
-  bool installExtension(NPObject* npobject, const NPVariant* args,
-                        uint32_t arg_count, NPVariant* result);
-
-  // This method is only available when the control is in privileged mode.
-  bool loadExtension(NPObject* npobject, const NPVariant* args,
-                     uint32_t arg_count, NPVariant* result);
-
-  // This method is only available when the control is in privileged mode.
-  bool enableExtensionAutomation(NPObject* npobject, const NPVariant* args,
-                                 uint32_t arg_count, NPVariant* result);
-
-  // This method is only available when the control is in privileged mode.
-  bool getEnabledExtensions(NPObject* npobject, const NPVariant* args,
-                            uint32_t arg_count, NPVariant* result);
 
   // Pointers to method implementations.
   static PluginMethod plugin_methods_[];

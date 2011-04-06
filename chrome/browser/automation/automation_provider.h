@@ -123,14 +123,6 @@ class AutomationProvider
   void AddLoginHandler(NavigationController* tab, LoginHandler* handler);
   void RemoveLoginHandler(NavigationController* tab);
 
-  // Add an extension port container.
-  // Takes ownership of the container.
-  void AddPortContainer(ExtensionPortContainer* port);
-  // Remove and delete the port container.
-  void RemovePortContainer(ExtensionPortContainer* port);
-  // Get the port container for the given port id.
-  ExtensionPortContainer* GetPortContainer(int port_id) const;
-
   // IPC implementations
   virtual bool Send(IPC::Message* msg);
   virtual void OnChannelConnected(int pid);
@@ -257,11 +249,6 @@ class AutomationProvider
   void InstallExtension(const FilePath& crx_path,
                         IPC::Message* reply_message);
 
-  void LoadExpandedExtension(const FilePath& extension_dir,
-                             IPC::Message* reply_message);
-
-  void GetEnabledExtensions(std::vector<FilePath>* result);
-
   void WaitForExtensionTestResult(IPC::Message* reply_message);
 
   void InstallExtensionAndGetHandle(const FilePath& crx_path,
@@ -300,11 +287,6 @@ class AutomationProvider
   void OverrideEncoding(int tab_handle,
                         const std::string& encoding_name,
                         bool* success);
-
-  // Enables extension automation (for e.g. UITests).
-  void SetEnableExtensionAutomation(
-      int tab_handle,
-      const std::vector<std::string>& functions_enabled);
 
   // Selects all contents on the page.
   void SelectAll(int tab_handle);
@@ -376,12 +358,6 @@ class AutomationProvider
                                  const std::string& origin,
                                  const std::string& target);
 
-  // Determine if the message from the external host represents a browser
-  // event, and if so dispatch it.
-  bool InterceptBrowserEventMessageFromExternalHost(const std::string& message,
-                                                    const std::string& origin,
-                                                    const std::string& target);
-
   void OnBrowserMoved(int handle);
 
   void OnRunUnloadHandlers(int handle, IPC::Message* reply_message);
@@ -391,15 +367,12 @@ class AutomationProvider
   ExternalTabContainer* GetExternalTabForHandle(int handle);
 #endif  // defined(OS_WIN)
 
-  typedef std::map<int, ExtensionPortContainer*> PortContainerMap;
-
   scoped_ptr<IPC::ChannelProxy> channel_;
   scoped_ptr<NotificationObserver> new_tab_ui_load_observer_;
   scoped_ptr<NotificationObserver> find_in_page_observer_;
   scoped_ptr<ExtensionTestResultNotificationObserver>
       extension_test_result_observer_;
   scoped_ptr<AutomationExtensionTracker> extension_tracker_;
-  PortContainerMap port_containers_;
 
   // True iff connected to an AutomationProxy.
   bool is_connected_;

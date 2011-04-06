@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,11 +97,6 @@ END_MSG_MAP()
   virtual void OnLoadFailed(int error_code, const std::string& url);
   virtual void OnAutomationServerLaunchFailed(
       AutomationLaunchResult reason, const std::string& server_version);
-  virtual void OnExtensionInstalled(const FilePath& path,
-      void* user_data, AutomationMsg_ExtensionResponseValues response);
-  virtual void OnGetEnabledExtensionsComplete(
-      void* user_data,
-      const std::vector<FilePath>& extension_directories);
   virtual void OnChannelError();
 
   // Separated to static function for unit testing this logic more easily.

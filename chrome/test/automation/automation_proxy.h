@@ -206,10 +206,6 @@ class AutomationProxy : public IPC::Channel::Listener,
   // Asserts that the next extension test result is true.
   void EnsureExtensionTestResult();
 
-  // Gets a list of all enabled extensions' base directories.
-  // Returns true on success.
-  bool GetEnabledExtensions(std::vector<FilePath>* extension_directories);
-
   // Resets to the default theme. Returns true on success.
   bool ResetToDefaultTheme();
 

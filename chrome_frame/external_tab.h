@@ -45,8 +45,6 @@ class UIDelegate {
   virtual void OnNavigationStateChanged(
       int flags, const NavigationInfo& nav_info) = 0;
   virtual void OnUpdateTargetUrl(const std::wstring& new_target_url) = 0;
-  virtual void OnExtensionInstalled(const FilePath& path, void* user_data,
-      AutomationMsg_ExtensionResponseValues response) = 0;
   virtual void OnLoad(const GURL& url) = 0;
   virtual void OnMoveWindow(const gfx::Rect& pos) = 0;
 
@@ -114,12 +112,6 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
       const std::string& origin, const std::string& target);
   virtual void ChromeFrameHostMoved();
 
-  virtual void SetEnableExtensionAutomation(
-      const std::vector<std::string>& functions_enabled);
-  virtual void InstallExtension(const FilePath& crx_path, void* user_data);
-  virtual void LoadExpandedExtension(const FilePath& path, void* user_data);
-  virtual void GetEnabledExtensions(void* user_data);
-
   // Attaches an existing external tab to this automation client instance.
   virtual void ConnectToExternalTab(uint64 external_tab_cookie);
   virtual void BlockExternalTab(uint64 cookie);
@@ -147,12 +139,6 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
       HWND tab_window, int tab_handle, int session_id);
   virtual void Completed_Navigate(bool success,
       enum AutomationMsg_NavigationResponseValues res);
-  virtual void Completed_InstallExtension(bool success,
-      enum AutomationMsg_ExtensionResponseValues res, SyncMessageContext* ctx);
-  virtual void Completed_LoadExpandedExtension(bool success,
-      enum AutomationMsg_ExtensionResponseValues res, SyncMessageContext* ctx);
-  virtual void Completed_GetEnabledExtensions(bool success,
-      const std::vector<FilePath>* extensions);
 
   // Network requests from Chrome.
   virtual void OnNetwork_Start(

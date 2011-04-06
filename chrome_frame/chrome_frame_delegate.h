@@ -44,13 +44,6 @@ class ChromeFrameDelegate {
   virtual void OnAutomationServerReady() = 0;
   virtual void OnAutomationServerLaunchFailed(
       AutomationLaunchResult reason, const std::string& server_version) = 0;
-  virtual void OnExtensionInstalled(
-      const FilePath& path,
-      void* user_data,
-      AutomationMsg_ExtensionResponseValues response) = 0;
-  virtual void OnGetEnabledExtensionsComplete(
-      void* user_data,
-      const std::vector<FilePath>& extension_directories) = 0;
   virtual bool OnMessageReceived(const IPC::Message& msg) = 0;
   virtual void OnChannelError() = 0;
 
@@ -84,13 +77,6 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
   virtual void OnAutomationServerReady() {}
   virtual void OnAutomationServerLaunchFailed(
       AutomationLaunchResult reason, const std::string& server_version) {}
-  virtual void OnExtensionInstalled(
-      const FilePath& path,
-      void* user_data,
-      AutomationMsg_ExtensionResponseValues response) {}
-  virtual void OnGetEnabledExtensionsComplete(
-      void* user_data,
-      const std::vector<FilePath>& extension_directories) {}
   virtual void OnLoadFailed(int error_code, const std::string& url) {}
   virtual bool OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelError() {}

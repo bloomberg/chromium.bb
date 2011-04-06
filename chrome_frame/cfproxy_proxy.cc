@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,28 +125,6 @@ void CFProxy::SendIpcMessageOnIoThread(IPC::Message* m) {
 
 //////////////////////////////////////////////////////////////////////////
 // Sync messages.
-void CFProxy::InstallExtension(ChromeProxyDelegate* delegate,
-                               const FilePath& crx_path,
-                               SyncMessageContext* ctx) {
-  IPC::SyncMessage* m = new AutomationMsg_InstallExtension(crx_path, NULL);
-  sync_dispatcher_.QueueSyncMessage(m, delegate, ctx);
-  SendIpcMessage(m);
-}
-
-void CFProxy::LoadExtension(ChromeProxyDelegate* delegate,
-                            const FilePath& path, SyncMessageContext* ctx) {
-  IPC::SyncMessage* m = new AutomationMsg_LoadExpandedExtension(path, 0);
-  sync_dispatcher_.QueueSyncMessage(m, delegate, ctx);
-  SendIpcMessage(m);
-}
-
-void CFProxy::GetEnabledExtensions(ChromeProxyDelegate* delegate,
-                                   SyncMessageContext* ctx) {
-  IPC::SyncMessage* m = new AutomationMsg_GetEnabledExtensions(NULL);
-  sync_dispatcher_.QueueSyncMessage(m, delegate, ctx);
-  SendIpcMessage(m);
-}
-
 void CFProxy::Tab_Find(int tab, const string16& search_string,
                        FindInPageDirection forward, FindInPageCase match_case,
                        bool find_next) {

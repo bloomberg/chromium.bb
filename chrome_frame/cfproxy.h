@@ -78,14 +78,6 @@ class ChromeProxy {
  public:
   // General
   virtual void RemoveBrowsingData(int remove_mask) = 0;    // async
-  virtual void InstallExtension(ChromeProxyDelegate* delegate,
-                                const FilePath& crx_path,
-                                SyncMessageContext* ctx) = 0;
-  virtual void LoadExtension(ChromeProxyDelegate* delegate,
-                             const FilePath& path,
-                             SyncMessageContext* ctx) = 0;
-  virtual void GetEnabledExtensions(ChromeProxyDelegate* delegate,
-                                    SyncMessageContext* ctx) = 0;
   virtual void SetProxyConfig(const std::string& json_encoded_settings) = 0;
 
   // Tab management.
@@ -124,8 +116,6 @@ class ChromeProxy {
   // Misc.
   virtual void Tab_OnHostMoved(int tab) = 0;
   virtual void Tab_RunUnloadHandlers(int tab) = 0;
-  virtual void Tab_SetEnableExtensionAutomation(int tab,
-      const std::vector<std::string>& functions_enabled) = 0;
   virtual void Tab_Navigate(int tab, const GURL& url, const GURL& referrer) = 0;
   virtual void Tab_OverrideEncoding(int tab, const char* encoding) = 0;
 
@@ -163,12 +153,6 @@ class ChromeProxyDelegate : public IPC::Channel::Listener {
       HWND tab_window, int tab_handle, int session_id) = 0;
   virtual void Completed_Navigate(bool success,
       enum AutomationMsg_NavigationResponseValues res) = 0;
-  virtual void Completed_InstallExtension(bool success,
-      AutomationMsg_ExtensionResponseValues res, SyncMessageContext* ctx) = 0;
-  virtual void Completed_LoadExpandedExtension(bool success,
-      AutomationMsg_ExtensionResponseValues res, SyncMessageContext* ctx) = 0;
-  virtual void Completed_GetEnabledExtensions(bool success,
-      const std::vector<FilePath>* extensions) = 0;
 
  protected:
   ~ChromeProxyDelegate() {}

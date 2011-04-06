@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,8 +79,6 @@ class MockAutomationClient: public ChromeFrameAutomationClient {
  public:
   MOCK_METHOD2(Initialize, bool(ChromeFrameDelegate*,
                                 ChromeFrameLaunchParams*));
-  MOCK_METHOD1(SetEnableExtensionAutomation,
-               void(const std::vector<std::string>&));  // NOLINT
 };
 
 class MockProxyService: public NpProxyService {
@@ -315,10 +313,6 @@ TEST_F(TestNPAPIPrivilegedApi, PrivilegedAllowsArgsAndProfile) {
                      L"",    // No specific language override.
                      L"-bar=far");  // Extra arguments expected
 
-  // With privileged mode we expect automation to be enabled.
-  EXPECT_CALL(*mock_automation, SetEnableExtensionAutomation(_))
-      .Times(1);
-
   char* argn[] = {
     "privileged_mode",
     "chrome_extra_arguments",
@@ -405,11 +399,6 @@ class TestNPAPIPrivilegedProperty: public TestNPAPIPrivilegedApi {
         .WillRepeatedly(Return(kMockNPObject));
     EXPECT_CALL(mock_funcs, ReleaseObject(kMockNPObject))
         .WillRepeatedly(Return());
-
-    // And we should expect SetEnableExtensionAutomation to be called
-    // for privileged tests.
-    EXPECT_CALL(*mock_automation, SetEnableExtensionAutomation(_))
-       .WillRepeatedly(Return());
 
     // Initializes identifiers.
     EXPECT_CALL(mock_funcs, GetStringIdentifiers(_, _, _))
@@ -571,4 +560,3 @@ TEST_F(TestNPAPIPrivilegedProperty,
 }
 
 // TODO(siggi): test invoking postPrivateMessage.
-

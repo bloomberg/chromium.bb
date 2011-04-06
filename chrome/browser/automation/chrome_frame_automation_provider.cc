@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,10 +43,6 @@ bool ChromeFrameAutomationProvider::IsValidMessage(uint32 type) {
     case AutomationMsg_NavigateInExternalTab::ID:
     case AutomationMsg_NavigateExternalTabAtIndex::ID:
     case AutomationMsg_Find::ID:
-    case AutomationMsg_InstallExtension::ID:
-    case AutomationMsg_LoadExpandedExtension::ID:
-    case AutomationMsg_GetEnabledExtensions::ID:
-    case AutomationMsg_SetEnableExtensionAutomation::ID:
     case AutomationMsg_SetInitialFocus::ID:
     case AutomationMsg_SetPageFontSize::ID:
     case AutomationMsg_SetProxyConfig::ID:
@@ -77,4 +73,3 @@ bool ChromeFrameAutomationProvider::IsValidMessage(uint32 type) {
 
   return is_valid_message;
 }
-

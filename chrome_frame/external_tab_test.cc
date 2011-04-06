@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,8 +36,6 @@ struct MockUIDelegate : public UIDelegate {
   MOCK_METHOD2(OnNavigationStateChanged, void(int flags,
       const NavigationInfo& nav_info));
   MOCK_METHOD1(OnUpdateTargetUrl, void(const std::wstring& new_target_url));
-  MOCK_METHOD3(OnExtensionInstalled, void(const FilePath& path, void* user_data,
-      AutomationMsg_ExtensionResponseValues response));
   MOCK_METHOD1(OnLoad, void(const GURL& url));
   MOCK_METHOD1(OnMoveWindow, void(const gfx::Rect& pos));
   MOCK_METHOD3(OnMessageFromChromeFrame, void(const std::string& message,
@@ -53,12 +51,6 @@ struct MockUIDelegate : public UIDelegate {
 
 struct MockProxy : public ChromeProxy {
   MOCK_METHOD1(RemoveBrowsingData, void(int remove_mask));
-  MOCK_METHOD3(InstallExtension, void(ChromeProxyDelegate* delegate,
-      const FilePath& crx_path, SyncMessageContext* ctx));
-  MOCK_METHOD3(LoadExtension, void(ChromeProxyDelegate* delegate,
-      const FilePath& path, SyncMessageContext* ctx));
-  MOCK_METHOD2(GetEnabledExtensions, void(ChromeProxyDelegate* delegate,
-      SyncMessageContext* ctx));
   MOCK_METHOD1(SetProxyConfig, void(const std::string& json_encoded_settings));
 
   MOCK_METHOD2(CreateTab, void(ChromeProxyDelegate* delegate,
@@ -92,8 +84,6 @@ struct MockProxy : public ChromeProxy {
   // Misc.
   MOCK_METHOD1(Tab_OnHostMoved, void(int tab));
   MOCK_METHOD1(Tab_RunUnloadHandlers, void(int tab));
-  MOCK_METHOD2(Tab_SetEnableExtensionAutomation, void(int tab,
-      const std::vector<std::string>& functions_enabled));
   MOCK_METHOD3(Tab_Navigate, void(int tab, const GURL& url,
       const GURL& referrer));
   MOCK_METHOD2(Tab_OverrideEncoding, void(int tab, const char* encoding));

@@ -343,33 +343,10 @@ class ChromeFrameAutomationClient
                                       const std::string& target);
   bool SetProxySettings(const std::string& json_encoded_proxy_settings);
 
-  virtual void SetEnableExtensionAutomation(
-      const std::vector<std::string>& functions_enabled);
-
   void FindInPage(const std::wstring& search_string,
                   FindInPageDirection forward,
                   FindInPageCase match_case,
                   bool find_next);
-
-  virtual void InstallExtension(const FilePath& crx_path, void* user_data);
-
-  virtual void LoadExpandedExtension(const FilePath& path, void* user_data);
-
-  // Starts a request to get the list of enabled extensions' base directories.
-  // Response comes back as ChromeFrameDelegate::OnEnabledExtensions().
-  virtual void GetEnabledExtensions(void* user_data);
-
-  virtual void InstallExtensionComplete(
-      const FilePath& path,
-      void* user_data,
-      AutomationMsg_ExtensionResponseValues res);
-
-  virtual void GetEnabledExtensionsComplete(
-      void* user_data,
-      std::vector<FilePath>* extension_directories);
-
-  // Returns the session ID used to identify a Tab in Chrome.
-  virtual int GetSessionId() const;
 
   virtual void OnChromeFrameHostMoved();
 

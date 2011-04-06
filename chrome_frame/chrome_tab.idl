@@ -67,15 +67,15 @@ interface IChromeFrame : IDispatch {
   HRESULT useChromeNetwork([in] VARIANT_BOOL newVal);
 
   [id(12), hidden]
-  // This method is available only when the control is in privileged mode.
+  // Deprecated. Returns E_NOTIMPL.
   HRESULT installExtension([in] BSTR crx_path);
 
   [id(13), hidden]
-  // This method is available only when the control is in privileged mode.
+  // Deprecated. Returns E_NOTIMPL.
   HRESULT loadExtension([in] BSTR extension_path);
 
   [id(14), hidden]
-  // This method is available only when the control is in privileged mode.
+  // Deprecated. Returns E_NOTIMPL.
   HRESULT getEnabledExtensions();
 
   [id(15)]
@@ -85,20 +85,7 @@ interface IChromeFrame : IDispatch {
 
 [
   object,
-  uuid(851bedec-4b2c-4959-abc0-a53403117257),
-  local,  // This interface should never be marshaled.
-  hidden,
-]
-// Internal implementation interface. Not intended as an API. May change
-// frequently, don't treat this as frozen.
-interface IChromeFrameInternal : IUnknown {
-  // This method is available only when the control is in privileged mode.
-  HRESULT getSessionId([out, retval] int* session_id);
-};
-
-[
-  object,
-  uuid(B1B52A4D-B22E-489f-8CCD-1CF9166FA90E),
+  uuid(E98FDFD9-312B-444a-A640-8E88F3CC08B8),
   oleautomation,
   nonextensible,
   hidden,
@@ -111,10 +98,6 @@ interface IChromeFramePrivileged : IUnknown {
   HRESULT GetWantsPrivileged([out] boolean *wants_privileged);
   // The profile name we want to use.
   HRESULT GetChromeProfileName([out] BSTR *profile_name);
-  // The comma-separated list of extension API functions you wish to automate.
-  // Return S_FALSE to leave the default, which is to not automate any 
-  // functions.
-  HRESULT GetExtensionApisToAutomate([out] BSTR *extension_apis);
   // Called when an automation version mismatch occurs. Returns S_OK if
   // a dialog should be showed to the user by this CF instance, S_FALSE if
   // not.
@@ -131,8 +114,6 @@ typedef enum {
   CF_EVENT_DISPID_ONLOADERROR,
   CF_EVENT_DISPID_ONMESSAGE,
   CF_EVENT_DISPID_ONPRIVATEMESSAGE,
-  CF_EVENT_DISPID_ONEXTENSIONREADY,
-  CF_EVENT_DISPID_ONGETENABLEDEXTENSIONSCOMPLETE,
   CF_EVENT_DISPID_ONCHANNELERROR,
   CF_EVENT_DISPID_ONCLOSE,
   CF_EVENT_DISPID_ONREADYSTATECHANGED = DISPID_READYSTATECHANGE,
@@ -167,17 +148,6 @@ library ChromeTabLib {
     [id(CF_EVENT_DISPID_ONPRIVATEMESSAGE)]
     // This event is only fired when the control is in privileged mode.
     void onprivatemessage([in] IDispatch* event, [in] BSTR target);
-
-    [id(CF_EVENT_DISPID_ONEXTENSIONREADY)]
-    // This event is only fired when the control is in privileged mode.
-    // response is one of AutomationMsg_ExtensionResponseValues.
-    void onextensionready([in] BSTR path, [in] long response);
-
-    [id(CF_EVENT_DISPID_ONGETENABLEDEXTENSIONSCOMPLETE)]
-    // This event is only fired when the control is in privileged mode.
-    // extension_paths is an array of BSTRs of the base directories of
-    // enabled extensions.
-    void ongetenabledextensionscomplete([in] SAFEARRAY(BSTR) extension_paths);
 
     [id(CF_EVENT_DISPID_ONCHANNELERROR)]
     // This event is fired when there is an error in communication channel with

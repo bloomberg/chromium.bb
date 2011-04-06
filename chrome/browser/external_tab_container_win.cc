@@ -13,7 +13,6 @@
 #include "base/win/win_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
-#include "chrome/browser/automation/automation_extension_function.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/debugger/devtools_manager.h"
@@ -95,7 +94,6 @@ ExternalTabContainer::ExternalTabContainer(
       load_requests_via_automation_(false),
       handle_top_level_requests_(false),
       external_method_factory_(this),
-      enabled_extension_automation_(false),
       pending_(false),
       infobars_enabled_(true),
       focus_manager_(NULL),
@@ -211,10 +209,6 @@ bool ExternalTabContainer::Init(Profile* profile,
 }
 
 void ExternalTabContainer::Uninitialize() {
-  if (enabled_extension_automation_) {
-    AutomationExtensionFunction::Disable();
-  }
-
   registrar_.RemoveAll();
   if (tab_contents_.get()) {
     UnregisterRenderViewHost(tab_contents_->render_view_host());
@@ -920,23 +914,6 @@ scoped_refptr<ExternalTabContainer> ExternalTabContainer::RemovePendingTab(
   NOTREACHED() << "Failed to find ExternalTabContainer for cookie: "
                << cookie;
   return NULL;
-}
-
-void ExternalTabContainer::SetEnableExtensionAutomation(
-    const std::vector<std::string>& functions_enabled) {
-  if (!functions_enabled.empty()) {
-    if (!tab_contents_.get()) {
-      NOTREACHED() << "Being invoked via tab so should have TabContents";
-      return;
-    }
-
-    AutomationExtensionFunction::Enable(tab_contents_->tab_contents(),
-                                        functions_enabled);
-    enabled_extension_automation_ = true;
-  } else {
-    AutomationExtensionFunction::Disable();
-    enabled_extension_automation_ = false;
-  }
 }
 
 void ExternalTabContainer::InfoBarContainerHeightChanged(bool is_animating) {

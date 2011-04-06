@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,8 +90,6 @@ class Interface2IPCMessage : public ChromeProxy {
 
   // Misc.
   virtual void Tab_OnHostMoved(int tab);
-  virtual void Tab_SetEnableExtensionAutomation(int tab,
-      const std::vector<std::string>& functions_enabled);
  protected:
   ~Interface2IPCMessage() {}
  private:
@@ -145,12 +143,6 @@ class CFProxy : public Interface2IPCMessage,
 
   //////////////////////////////////////////////////////////////////////////
   // Sync messages.
-  virtual void InstallExtension(ChromeProxyDelegate* delegate,
-      const FilePath& crx_path, SyncMessageContext* ctx);
-  virtual void LoadExtension(ChromeProxyDelegate* delegate,
-                             const FilePath& path, SyncMessageContext* ctx);
-  virtual void GetEnabledExtensions(ChromeProxyDelegate* delegate,
-                                    SyncMessageContext* ctx);
   virtual void Tab_Find(int tab, const string16& search_string,
       FindInPageDirection forward, FindInPageCase match_case, bool find_next);
   virtual void Tab_OverrideEncoding(int tab, const char* encoding);

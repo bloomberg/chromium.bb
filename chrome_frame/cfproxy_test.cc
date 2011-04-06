@@ -41,12 +41,6 @@ struct MockChromeProxyDelegate : public ChromeProxyDelegate {
       HWND tab_window, int tab_handle, int session_id));
   MOCK_METHOD2(Completed_Navigate, void(bool success,
       enum AutomationMsg_NavigationResponseValues res));
-  MOCK_METHOD3(Completed_InstallExtension, void(bool success,
-      enum AutomationMsg_ExtensionResponseValues res, SyncMessageContext* ctx));
-  MOCK_METHOD3(Completed_LoadExpandedExtension, void(bool success,
-      enum AutomationMsg_ExtensionResponseValues res, SyncMessageContext* ctx));
-  MOCK_METHOD2(Completed_GetEnabledExtensions, void(bool success,
-      const std::vector<FilePath>* v));
 
   // Network requests from Chrome.
   MOCK_METHOD2(Network_Start, void(int request_id,
@@ -343,28 +337,20 @@ TEST(SyncMsgSender, Deserialize) {
   const int kTabHandle = 6;
   const int kSessionId = 8;
 
-  // Create some sync messages and their replies.
-  AutomationMsg_InstallExtension m1(FilePath(L"c:\\awesome.x"), 0);
-  AutomationMsg_CreateExternalTab m2(ExternalTabSettings(), 0, 0, 0, 0);
-  scoped_ptr<IPC::Message> r1(CreateReply(&m1,
-      AUTOMATION_MSG_EXTENSION_INSTALL_SUCCEEDED));
-  scoped_ptr<IPC::Message> r2(CreateReply(&m2, (HWND)1, (HWND)2, kTabHandle,
-                                          kSessionId));
+  // Create a sync message and its reply.
+  AutomationMsg_CreateExternalTab m(ExternalTabSettings(), 0, 0, 0, 0);
+  scoped_ptr<IPC::Message> r(CreateReply(&m, (HWND)1, (HWND)2, kTabHandle,
+                                         kSessionId));
 
-  queue.QueueSyncMessage(&m1, &d1, NULL);
-  queue.QueueSyncMessage(&m2, &d1, NULL);
+  queue.QueueSyncMessage(&m, &d1, NULL);
 
   testing::InSequence s;
-  EXPECT_CALL(d1, Completed_InstallExtension(true,
-      AUTOMATION_MSG_EXTENSION_INSTALL_SUCCEEDED, NULL));
   EXPECT_CALL(d1, Completed_CreateTab(true, (HWND)1, (HWND)2, kTabHandle,
                                       kSessionId));
 
   // Execute replies in a worker thread.
   ipc.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(&queue,
-      &SyncMsgSender::OnReplyReceived, r1.get()));
-  ipc.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(&queue,
-      &SyncMsgSender::OnReplyReceived, r2.get()));
+      &SyncMsgSender::OnReplyReceived, r.get()));
   ipc.Stop();
 
   // Expect that tab 6 has been associated with the delegate.
