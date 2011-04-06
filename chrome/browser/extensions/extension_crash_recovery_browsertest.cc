@@ -119,6 +119,131 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
   std::string second_extension_id_;
 };
 
+#ifdef OS_WIN
+// http://crbug.com/78598
+#define Basic DISABLED_Basic
+#define CloseAndReload DISABLED_CloseAndReload
+#define ReloadIndependentlyChangeTabs DISABLED_ReloadIndependentlyChangeTabs
+#define ReloadIndependentlyNavigatePage DISABLED_ReloadIndependentlyNavigatePage
+#define ReloadIndependentlyTwoInfoBars DISABLED_ReloadIndependentlyTwoInfoBars
+#define ReloadIndependentlyTwoInfoBarsSameBrowser DISABLED_ReloadIndependentlyTwoInfoBarsSameBrowser
+#define TwoExtensionsCrashFirst DISABLED_TwoExtensionsCrashFirst
+#define TwoExtensionsCrashSecond DISABLED_TwoExtensionsCrashSecond
+#define TwoExtensionsCrashBothAtOnce DISABLED_TwoExtensionsCrashBothAtOnce
+#define TwoExtensionsIgnoreFirst DISABLED_TwoExtensionsIgnoreFirst
+#define TwoExtensionsReloadIndependently DISABLED_TwoExtensionsReloadIndependently
+#define CrashAndUninstall DISABLED_CrashAndUninstall
+#endif  // OS_WIN
+
+
+// Make sure that when we don't do anything about the crashed extensions
+// and close the browser, it doesn't crash. The browser is closed implicitly
+// at the end of each browser test.
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
+                       TwoExtensionsShutdownWhileCrashed) {
+  const size_t size_before = GetExtensionService()->extensions()->size();
+  LoadTestExtension();
+  CrashExtension(size_before);
+  ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
+  LoadSecondExtension();
+  CrashExtension(size_before);
+  ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsIgnoreFirst) {
+  const size_t size_before = GetExtensionService()->extensions()->size();
+  LoadTestExtension();
+  LoadSecondExtension();
+  CrashExtension(size_before);
+  ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
+  CrashExtension(size_before);
+  ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
+
+  CancelNotification(0);
+  // Cancelling the balloon at 0 will close the balloon, and the balloon in
+  // index 1 will move into index 0.
+  AcceptNotification(0);
+
+  SCOPED_TRACE("balloons done");
+  ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
+  CheckExtensionConsistency(size_before);
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
+                       TwoExtensionsReloadIndependently) {
+  const size_t size_before = GetExtensionService()->extensions()->size();
+  LoadTestExtension();
+  LoadSecondExtension();
+  CrashExtension(size_before);
+  ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
+  CrashExtension(size_before);
+  ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
+
+  {
+    SCOPED_TRACE("first: reload");
+    TabContents* current_tab = browser()->GetSelectedTabContents();
+    ASSERT_TRUE(current_tab);
+    // At the beginning we should have one infobar displayed for each extension.
+    ASSERT_EQ(2U, CountBalloons());
+    ReloadExtension(first_extension_id_);
+    // One of the infobars should hide after the extension is reloaded.
+    ASSERT_EQ(1U, CountBalloons());
+    CheckExtensionConsistency(size_before);
+  }
+
+  {
+    SCOPED_TRACE("second: balloon");
+    AcceptNotification(0);
+    CheckExtensionConsistency(size_before);
+    CheckExtensionConsistency(size_before + 1);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CrashAndUninstall) {
+  const size_t size_before = GetExtensionService()->extensions()->size();
+  const size_t crash_size_before =
+      GetExtensionService()->terminated_extensions()->size();
+  LoadTestExtension();
+  LoadSecondExtension();
+  CrashExtension(size_before);
+  ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(crash_size_before + 1,
+            GetExtensionService()->terminated_extensions()->size());
+
+  ASSERT_EQ(1U, CountBalloons());
+  UninstallExtension(first_extension_id_);
+  MessageLoop::current()->RunAllPending();
+
+  SCOPED_TRACE("after uninstalling");
+  ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(crash_size_before,
+            GetExtensionService()->terminated_extensions()->size());
+  ASSERT_EQ(0U, CountBalloons());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CrashAndUnloadAll) {
+  const size_t size_before = GetExtensionService()->extensions()->size();
+  const size_t crash_size_before =
+      GetExtensionService()->terminated_extensions()->size();
+  LoadTestExtension();
+  LoadSecondExtension();
+  CrashExtension(size_before);
+  ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(crash_size_before + 1,
+            GetExtensionService()->terminated_extensions()->size());
+
+  GetExtensionService()->UnloadAllExtensions();
+  ASSERT_EQ(crash_size_before,
+            GetExtensionService()->terminated_extensions()->size());
+}
+
+
+
+
+
+
+
+
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, Basic) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   const size_t crash_size_before =
