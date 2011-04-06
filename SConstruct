@@ -1367,8 +1367,9 @@ def CommandSelLdrTestNacl(env, name, command,
                  '--library-path', '${NACL_SDK_LIB}'] + command
     # Enable file access.
     sel_ldr_flags += ['-a']
-    # TODO(mseaborn): Remove the need for the -s (stub out) option.
-    sel_ldr_flags += ['-s']
+    # TODO(mseaborn): Remove the need for the -s (stub out) option for x86-64.
+    if env.Bit('build_x86_64'):
+      sel_ldr_flags += ['-s']
 
   command = [sel_ldr] + sel_ldr_flags + ['--'] + command
 
