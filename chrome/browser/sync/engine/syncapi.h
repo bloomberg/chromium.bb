@@ -257,6 +257,10 @@ class BaseNode {
   // Transfers ownership of the DictionaryValue to the caller.
   DictionaryValue* ToValue() const;
 
+  // Does a case in-sensitive search for a given string, which must be
+  // lower case.
+  bool ContainsString(const std::string& lowercase_query) const;
+
  protected:
   BaseNode();
   virtual ~BaseNode();
