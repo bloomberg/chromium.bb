@@ -5,6 +5,7 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
@@ -12,13 +13,7 @@
 
 
 void NaClAbort(void) {
-#ifdef COVERAGE
-  /* Give coverage runs a chance to flush coverage data */
-  exit((-SIGABRT) & 0xFF);
-#else
-  /* Return an 8 bit value for SIGABRT */
-  TerminateProcess(GetCurrentProcess(),(-SIGABRT) & 0xFF);
-#endif
+  NaClExit(-SIGABRT);
 }
 
 void NaClExit(int err_code) {
@@ -26,7 +21,15 @@ void NaClExit(int err_code) {
   /* Give coverage runs a chance to flush coverage data */
   exit(err_code);
 #else
-  TerminateProcess(GetCurrentProcess(), err_code);
+  /* If the process is scheduled for termination, wait for it.*/
+  if (TerminateProcess(GetCurrentProcess(), err_code)) {
+    printf("Terminate passed, but returned.\n");
+    while(1);
+  }
+  printf("Terminate failed with %d.\n", GetLastError());
+
+  /* Otherwise use the standard C process exit to bybass destructors. */
+  ExitProcess(err_code);
 #endif
 }
 
