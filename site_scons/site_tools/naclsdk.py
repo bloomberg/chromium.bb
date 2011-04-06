@@ -156,7 +156,7 @@ def _SetEnvForX86Sdk(env, sdk_path):
     as_mode_flag = ''
     ld_mode_flag = ''
   else:
-    libsuffix = 'lib/%s' % env['TARGET_SUBARCH']
+    libsuffix = 'lib%s' % env['TARGET_SUBARCH']
     cc_mode_flag = ' -m%s' % env['TARGET_SUBARCH']
     as_mode_flag = ' --%s' % env['TARGET_SUBARCH']
     if env['TARGET_SUBARCH'] == '64':
