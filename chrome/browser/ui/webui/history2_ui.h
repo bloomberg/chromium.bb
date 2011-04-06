@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "content/browser/cancelable_request.h"
 #include "content/browser/webui/web_ui.h"
-#include "content/common/notification_registrar.h"
 
 class GURL;
 
@@ -39,8 +38,7 @@ class HistoryUIHTMLSource2 : public ChromeURLDataManager::DataSource {
 };
 
 // The handler for Javascript messages related to the "history" view.
-class BrowsingHistoryHandler2 : public WebUIMessageHandler,
-                                public NotificationObserver {
+class BrowsingHistoryHandler2 : public WebUIMessageHandler {
  public:
   BrowsingHistoryHandler2();
   virtual ~BrowsingHistoryHandler2();
@@ -61,11 +59,6 @@ class BrowsingHistoryHandler2 : public WebUIMessageHandler,
   // Handle for "clearBrowsingData" message.
   void HandleClearBrowsingData(const ListValue* args);
 
-  // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
  private:
   // Callback from the history system when the history list is available.
   void QueryComplete(HistoryService::Handle request_handle,
@@ -81,8 +74,6 @@ class BrowsingHistoryHandler2 : public WebUIMessageHandler,
 
   // Figure out the query options for a month-wide query.
   history::QueryOptions CreateMonthQueryOptions(int month);
-
-  NotificationRegistrar registrar_;
 
   // Current search text.
   string16 search_text_;

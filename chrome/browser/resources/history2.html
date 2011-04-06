@@ -1059,6 +1059,7 @@ function deleteComplete() {
     deleteNextInQueue();
   } else {
     deleteQueue = [];
+    historyView.reload();
   }
 }
 
@@ -1071,15 +1072,6 @@ function deleteFailed() {
   // The deletion failed - try again later.
   deleteInFlight = false;
   setTimeout(deleteNextInQueue, 500);
-}
-
-/**
- * We're called when something is deleted (either by us or by someone
- * else).
- */
-function historyDeleted() {
-  window.console.log('History deleted');
-  historyView.reload();
 }
 </script>
 <link rel="stylesheet" href="webui2.css">
