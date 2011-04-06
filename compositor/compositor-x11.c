@@ -553,6 +553,10 @@ x11_compositor_create(struct wl_display *display, int width, int height)
 	memset(c, 0, sizeof *c);
 
 	c->dpy = XOpenDisplay(NULL);
+
+	if (c->dpy == NULL)
+		return NULL;
+
 	c->conn = XGetXCBConnection(c->dpy);
 
 	if (xcb_connection_has_error(c->conn))
