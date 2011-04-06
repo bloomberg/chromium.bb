@@ -231,7 +231,7 @@ class P2PTransportImplTest : public testing::Test {
   MockP2PEventHandler event_handler2_;
 };
 
-TEST_F(P2PTransportImplTest, Create) {
+TEST_F(P2PTransportImplTest, DISABLED_Create) {
   ASSERT_TRUE(transport1_->Init(
       kTransportName1, kTestConfig, &event_handler1_));
   ASSERT_TRUE(transport2_->Init(
@@ -247,7 +247,7 @@ ACTION_P(AddRemoteCandidate, transport) {
   EXPECT_TRUE(transport->AddRemoteCandidate(arg0));
 }
 
-TEST_F(P2PTransportImplTest, Connect) {
+TEST_F(P2PTransportImplTest, DISABLED_Connect) {
   ASSERT_TRUE(transport1_->Init(
       kTransportName1, kTestConfig, &event_handler1_));
   ASSERT_TRUE(transport2_->Init(
@@ -261,7 +261,7 @@ TEST_F(P2PTransportImplTest, Connect) {
   message_loop_.RunAllPending();
 }
 
-TEST_F(P2PTransportImplTest, SendData) {
+TEST_F(P2PTransportImplTest, DISABLED_SendData) {
   ASSERT_TRUE(transport1_->Init(
       kTransportName1, kTestConfig, &event_handler1_));
   ASSERT_TRUE(transport2_->Init(
