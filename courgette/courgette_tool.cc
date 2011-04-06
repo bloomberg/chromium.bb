@@ -108,7 +108,8 @@ void Disassemble(const std::wstring& input_file,
   courgette::DeleteEncodedProgram(encoded);
 
   courgette::SinkStream sink;
-  sinks.CopyTo(&sink);
+  if (!sinks.CopyTo(&sink))
+    Problem("Can't combine serialized encoded program streams.");
 
   WriteSinkToFile(&sink, output_file);
 }
@@ -157,7 +158,8 @@ void DisassembleAndAdjust(const std::wstring& program_file,
   courgette::DeleteEncodedProgram(encoded);
 
   courgette::SinkStream sink;
-  sinks.CopyTo(&sink);
+  if (!sinks.CopyTo(&sink))
+    Problem("Can't combine serialized encoded program streams.");
 
   WriteSinkToFile(&sink, output_file);
 }
