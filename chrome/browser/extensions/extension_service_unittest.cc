@@ -345,7 +345,7 @@ class ExtensionTestingProfile : public TestingProfile {
           NewRunnableMethod(
               appcache_service_.get(),
               &ChromeAppCacheService::InitializeOnIOThread,
-              GetPath(), IsOffTheRecord(),
+              IsOffTheRecord() ? FilePath() : GetPath(),
               make_scoped_refptr(GetHostContentSettingsMap()),
               make_scoped_refptr(GetExtensionSpecialStoragePolicy()),
               false));

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,9 @@ class WebIDBTransaction;
 class IndexedDBDispatcherHost : public BrowserMessageFilter {
  public:
   // Only call the constructor from the UI thread.
-  IndexedDBDispatcherHost(int process_id, Profile* profile);
+  IndexedDBDispatcherHost(
+      int process_id, WebKitContext* webkit_context,
+      HostContentSettingsMap* host_content_settings_map);
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing();

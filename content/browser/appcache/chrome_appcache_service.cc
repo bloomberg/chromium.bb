@@ -6,7 +6,6 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "chrome/common/chrome_constants.h"
 #include "content/common/notification_service.h"
 #include "net/base/net_errors.h"
 #include "webkit/appcache/appcache_thread.h"
@@ -34,7 +33,7 @@ ChromeAppCacheService::ChromeAppCacheService()
 }
 
 void ChromeAppCacheService::InitializeOnIOThread(
-    const FilePath& profile_path, bool is_incognito,
+    const FilePath& cache_path,
     scoped_refptr<HostContentSettingsMap> content_settings_map,
     scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
     bool clear_local_state_on_exit) {
@@ -45,12 +44,11 @@ void ChromeAppCacheService::InitializeOnIOThread(
     appcache::AppCacheThread::Init(BrowserThread::DB, BrowserThread::IO);
   }
 
+  cache_path_ = cache_path;
   host_contents_settings_map_ = content_settings_map;
   registrar_.Add(
       this, NotificationType::PURGE_MEMORY, NotificationService::AllSources());
   SetClearLocalStateOnExit(clear_local_state_on_exit);
-  if (!is_incognito)
-    cache_path_ = profile_path.Append(chrome::kAppCacheDirname);
 
   // Init our base class.
   Initialize(cache_path_,

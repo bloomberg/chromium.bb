@@ -47,7 +47,7 @@ TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(appcache_service.get(),
                         &ChromeAppCacheService::InitializeOnIOThread,
-                        temp_dir_.path(), false,
+                        appcache_path,
                         scoped_refptr<HostContentSettingsMap>(NULL),
                         scoped_refptr<quota::SpecialStoragePolicy>(NULL),
                         false));
@@ -78,7 +78,7 @@ TEST_F(ChromeAppCacheServiceTest, RemoveOnDestruction) {
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(appcache_service.get(),
                         &ChromeAppCacheService::InitializeOnIOThread,
-                        temp_dir_.path(), false,
+                        appcache_path,
                         scoped_refptr<HostContentSettingsMap>(NULL),
                         scoped_refptr<quota::SpecialStoragePolicy>(NULL),
                         true));

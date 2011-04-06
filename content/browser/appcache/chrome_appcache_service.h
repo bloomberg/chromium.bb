@@ -35,7 +35,7 @@ class ChromeAppCacheService
   ChromeAppCacheService();
 
   void InitializeOnIOThread(
-      const FilePath& profile_path, bool is_incognito,
+      const FilePath& cache_path,  // may be empty to use in-memory structures
       scoped_refptr<HostContentSettingsMap> content_settings_map,
       scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
       bool clear_local_state_on_exit);
