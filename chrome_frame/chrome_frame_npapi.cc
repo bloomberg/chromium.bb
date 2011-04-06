@@ -865,7 +865,7 @@ void ChromeFrameNPAPI::OnAutomationServerLaunchFailed(
   // CF instance per Firefox window, so OK to show the warning there without
   // any further logic.
   if (reason == AUTOMATION_VERSION_MISMATCH) {
-    THREAD_SAFE_UMA_HISTOGRAM_COUNTS("ChromeFrame.VersionMismatchDisplayed", 1);
+    UMA_HISTOGRAM_COUNTS("ChromeFrame.VersionMismatchDisplayed", 1);
     DisplayVersionMismatchWarning(m_hWnd, server_version);
   }
 }

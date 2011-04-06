@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,6 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/win/scoped_comptr.h"
 #include "googleurl/src/gurl.h"
@@ -195,8 +194,8 @@ enum RendererType {
 bool IsChrome(RendererType renderer_type);
 
 // Convenience macro for logging a sample for the launch type metric.
-#define THREAD_SAFE_UMA_LAUNCH_TYPE_COUNT(sample) \
-  THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.LaunchType", sample, \
+#define UMA_LAUNCH_TYPE_COUNT(sample) \
+  UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.LaunchType", sample, \
   RENDERER_TYPE_CHROME_MIN, RENDERER_TYPE_CHROME_MAX, \
   RENDERER_TYPE_CHROME_MAX + 1 - RENDERER_TYPE_CHROME_MIN)
 
@@ -425,28 +424,6 @@ bool IsTopLevelWindow(HWND window);
 
 // Seeks a stream back to position 0.
 HRESULT RewindStream(IStream* stream);
-
-extern base::Lock g_ChromeFrameHistogramLock;
-
-// Thread safe versions of the UMA histogram macros we use for ChromeFrame.
-// These should be used for histograms in ChromeFrame. If other histogram
-// macros from base/metrics/histogram.h are needed then thread safe versions of
-// those should be defined and used.
-#define THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, \
-                                                bucket_count) { \
-  base::AutoLock lock(g_ChromeFrameHistogramLock); \
-  UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, bucket_count); \
-}
-
-#define THREAD_SAFE_UMA_HISTOGRAM_TIMES(name, sample) { \
-  base::AutoLock lock(g_ChromeFrameHistogramLock); \
-  UMA_HISTOGRAM_TIMES(name, sample); \
-}
-
-#define THREAD_SAFE_UMA_HISTOGRAM_COUNTS(name, sample) { \
-  base::AutoLock lock(g_ChromeFrameHistogramLock); \
-  UMA_HISTOGRAM_COUNTS(name, sample); \
-}
 
 // Fired when we want to notify IE about privacy changes.
 #define WM_FIRE_PRIVACY_CHANGE_NOTIFICATION (WM_APP + 1)

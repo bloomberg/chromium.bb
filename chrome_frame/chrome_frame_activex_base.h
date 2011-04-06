@@ -252,11 +252,11 @@ END_MSG_MAP()
     // Used to perform one time tasks.
     if (g_first_launch_by_process_) {
       g_first_launch_by_process_ = false;
-      THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.IEVersion",
-                                              GetIEVersion(),
-                                              IE_INVALID,
-                                              IE_9,
-                                              IE_9 + 1);
+      UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.IEVersion",
+                                  GetIEVersion(),
+                                  IE_INVALID,
+                                  IE_9,
+                                  IE_9 + 1);
     }
 
     return S_OK;

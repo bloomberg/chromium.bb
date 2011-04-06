@@ -303,8 +303,7 @@ void ChromeFrameActivex::OnAutomationServerLaunchFailed(
 
   if (reason == AUTOMATION_VERSION_MISMATCH &&
       ShouldShowVersionMismatchDialog(is_privileged(), m_spClientSite)) {
-    THREAD_SAFE_UMA_HISTOGRAM_COUNTS(
-        "ChromeFrame.VersionMismatchDisplayed", 1);
+    UMA_HISTOGRAM_COUNTS("ChromeFrame.VersionMismatchDisplayed", 1);
     DisplayVersionMismatchWarning(m_hWnd, server_version);
   }
 }
@@ -490,7 +489,7 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
     }
 
     // Log a metric that Chrome Frame is being used in Widget mode
-    THREAD_SAFE_UMA_LAUNCH_TYPE_COUNT(RENDERER_TYPE_CHROME_WIDGET);
+    UMA_LAUNCH_TYPE_COUNT(RENDERER_TYPE_CHROME_WIDGET);
   }
 
   return hr;

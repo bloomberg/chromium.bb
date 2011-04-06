@@ -42,11 +42,6 @@ int kDefaultSendUMADataInterval = 20000;  // in milliseconds.
 
 static const wchar_t kUmaSendIntervalValue[] = L"UmaSendInterval";
 
-// This lock ensures that histograms created by ChromeFrame are thread safe.
-// The histograms created in ChromeFrame can be initialized on multiple
-// threads.
-base::Lock g_ChromeFrameHistogramLock;
-
 class ChromeFrameAutomationProxyImpl::TabProxyNotificationMessageFilter
     : public IPC::ChannelProxy::MessageFilter {
  public:
@@ -191,8 +186,7 @@ struct LaunchTimeStats {
 
   void Dump() {
     base::TimeDelta launch_time = base::Time::Now() - launch_time_begin_;
-    THREAD_SAFE_UMA_HISTOGRAM_TIMES("ChromeFrame.AutomationServerLaunchTime",
-                                    launch_time);
+    UMA_HISTOGRAM_TIMES("ChromeFrame.AutomationServerLaunchTime", launch_time);
     const int64 launch_milliseconds = launch_time.InMilliseconds();
     if (launch_milliseconds > kAutomationServerReasonableLaunchDelay) {
       LOG(WARNING) << "Automation server launch took longer than expected: " <<
@@ -346,18 +340,18 @@ void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
         base::TimeTicks::Now() - automation_server_launch_start_time_;
 
     if (launch_result_ == AUTOMATION_SUCCESS) {
-      THREAD_SAFE_UMA_HISTOGRAM_TIMES(
+      UMA_HISTOGRAM_TIMES(
           "ChromeFrame.AutomationServerLaunchSuccessTime", delta);
     } else {
-      THREAD_SAFE_UMA_HISTOGRAM_TIMES(
+      UMA_HISTOGRAM_TIMES(
           "ChromeFrame.AutomationServerLaunchFailedTime", delta);
     }
 
-    THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.LaunchResult",
-                                            launch_result_,
-                                            AUTOMATION_SUCCESS,
-                                            AUTOMATION_CREATE_TAB_FAILED,
-                                            AUTOMATION_CREATE_TAB_FAILED + 1);
+    UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.LaunchResult",
+                                launch_result_,
+                                AUTOMATION_SUCCESS,
+                                AUTOMATION_CREATE_TAB_FAILED,
+                                AUTOMATION_CREATE_TAB_FAILED + 1);
   }
 
   TRACE_EVENT_END("chromeframe.createproxy", this, "");
@@ -873,12 +867,11 @@ void ChromeFrameAutomationClient::CreateExternalTab() {
       !chrome_launch_params_->widget_mode(),
       chrome_launch_params_->route_all_top_level_navigations());
 
-  THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS(
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
       "ChromeFrame.HostNetworking", !use_chrome_network_, 0, 1, 2);
 
-  THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "ChromeFrame.HandleTopLevelRequests", handle_top_level_requests_, 0, 1,
-      2);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.HandleTopLevelRequests",
+                              handle_top_level_requests_, 0, 1, 2);
 
   IPC::SyncMessage* message =
       new AutomationMsg_CreateExternalTab(settings, NULL, NULL, 0, 0);

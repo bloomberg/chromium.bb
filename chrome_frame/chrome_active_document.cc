@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -314,7 +314,7 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
   // When the code for the browser service patch and for the moniker patch is
   // removed, this conditional can also go away.)
   if (RENDERER_TYPE_UNDETERMINED != renderer_type) {
-    THREAD_SAFE_UMA_LAUNCH_TYPE_COUNT(renderer_type);
+    UMA_LAUNCH_TYPE_COUNT(renderer_type);
   }
 
   return S_OK;
