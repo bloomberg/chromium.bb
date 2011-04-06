@@ -1,4 +1,7 @@
-#autofill-edit-address-overlay,
+#autofill-edit-address-overlay {
+  width: 510px;
+}
+
 #autofill-edit-credit-card-overlay {
   width: 500px;
 }
@@ -9,7 +12,6 @@ div.table {
 
 div.cell {
   display: table-cell;
-  max-width: 151px;
 }
 
 div.row {
@@ -20,11 +22,46 @@ div.input {
   padding: 2px;
 }
 
-input.autofill-form {
-  width: 90%;
-  max-width: 151px;
+/* Pad |city|, |state|, and |postal-code| to line up nicely with |phone-list|
+ * |fax-list| and |email-list|. */
+#city, #state, #postal-code {
+  margin: 0;
+  -webkit-margin-start: 2px;
+  -webkit-margin-end: 4px;
 }
 
 #country {
   max-width: 450px;
+}
+
+#autofill-edit-address-overlay list {
+  /* Min height is a multiple of the list item height (32) */
+  min-height: 32px;
+  width: 156px;
+}
+
+#autofill-edit-address-overlay list div.static-text {
+  -webkit-box-flex: 1;
+  -webkit-border-radius: 2px;
+  -webkit-padding-start: 4px;
+  -webkit-padding-end: 4px;
+  border: 1px solid darkGray;
+  width: 141px;
+}
+
+#autofill-edit-address-overlay list#full-name-list {
+  width: 216px;
+}
+
+#autofill-edit-address-overlay list#full-name-list div.static-text {
+  width: 201px;
+}
+
+#autofill-edit-address-overlay list#full-name-list input {
+  width: 211px;
+}
+
+/* Adjust the close button placement. */
+#autofill-edit-address-overlay list .raw-button {
+  padding: 1px 10px;
 }

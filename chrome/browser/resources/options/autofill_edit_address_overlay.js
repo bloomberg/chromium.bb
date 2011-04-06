@@ -4,6 +4,7 @@
 
 cr.define('options', function() {
   const OptionsPage = options.OptionsPage;
+  const ArrayDataModel = cr.ui.ArrayDataModel;
 
   // The GUID of the loaded address.
   var guid;
@@ -30,6 +31,8 @@ cr.define('options', function() {
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
+      this.createMultiValueLists_();
+
       var self = this;
       $('autofill-edit-address-cancel-button').onclick = function(event) {
         self.dismissOverlay_();
@@ -43,6 +46,51 @@ cr.define('options', function() {
       self.populateCountryList_();
       self.clearInputFields_();
       self.connectInputEvents_();
+    },
+
+    /**
+     * Creates, decorates and initializes the multi-value lists for full name,
+     * phone, fax, and email.
+     * @private
+     */
+    createMultiValueLists_: function() {
+      var list = $('full-name-list');
+      options.autofillOptions.AutofillValuesList.decorate(list);
+      list.autoExpands = true;
+
+      list = $('phone-list');
+      options.autofillOptions.AutofillValuesList.decorate(list);
+      list.autoExpands = true;
+
+      list = $('fax-list');
+      options.autofillOptions.AutofillValuesList.decorate(list);
+      list.autoExpands = true;
+
+      list = $('email-list');
+      options.autofillOptions.AutofillValuesList.decorate(list);
+      list.autoExpands = true;
+    },
+
+    /**
+     * Updates the data model for the list named |listName| with the values from
+     * |entries|.
+     * @param {String} listName The id of the list.
+     * @param {Array} entries The list of items to be added to the list.
+     */
+    setMultiValueList_: function(listName, entries) {
+      // Add data entries, filtering null or empty strings.
+      var list = $(listName);
+      list.dataModel = new ArrayDataModel(
+          entries.filter(function(i) {return i}));
+
+      // Add special entry for adding new values.
+      list.dataModel.splice(list.dataModel.length, 0, null);
+
+      var self = this;
+      list.dataModel.addEventListener(
+        'splice', function(event) { self.inputFieldChanged_(); });
+      list.dataModel.addEventListener(
+        'change', function(event) { self.inputFieldChanged_(); });
     },
 
     /**
@@ -64,7 +112,8 @@ cr.define('options', function() {
     saveAddress_: function() {
       var address = new Array();
       address[0] = this.guid;
-      address[1] = $('full-name').value;
+      var list = $('full-name-list');
+      address[1] = list.dataModel.slice(0, list.dataModel.length - 1);
       address[2] = $('company-name').value;
       address[3] = $('addr-line-1').value;
       address[4] = $('addr-line-2').value;
@@ -72,9 +121,12 @@ cr.define('options', function() {
       address[6] = $('state').value;
       address[7] = $('postal-code').value;
       address[8] = $('country').value;
-      address[9] = $('phone').value;
-      address[10] = $('fax').value;
-      address[11] = $('email').value;
+      list = $('phone-list');
+      address[9] = list.dataModel.slice(0, list.dataModel.length - 1);
+      list = $('fax-list');
+      address[10] = list.dataModel.slice(0, list.dataModel.length - 1);
+      list = $('email-list');
+      address[11] = list.dataModel.slice(0, list.dataModel.length - 1);
 
       chrome.send('setAddress', address);
     },
@@ -87,10 +139,9 @@ cr.define('options', function() {
      */
     connectInputEvents_: function() {
       var self = this;
-      $('full-name').oninput = $('company-name').oninput =
-      $('addr-line-1').oninput = $('addr-line-2').oninput = $('city').oninput =
-      $('state').oninput = $('postal-code').oninput = $('phone').oninput =
-      $('fax').oninput = $('email').oninput = function(event) {
+      $('company-name').oninput = $('addr-line-1').oninput =
+      $('addr-line-2').oninput = $('city').oninput = $('state').oninput =
+      $('postal-code').oninput = function(event) {
         self.inputFieldChanged_();
       }
 
@@ -105,12 +156,15 @@ cr.define('options', function() {
      * @private
      */
     inputFieldChanged_: function() {
+      // Length of lists are tested for <= 1 due to the "add" placeholder item
+      // in the list.
       var disabled =
-          !$('full-name').value && !$('company-name').value &&
+          $('full-name-list').items.length <= 1 &&
+          !$('company-name').value &&
           !$('addr-line-1').value && !$('addr-line-2').value &&
           !$('city').value && !$('state').value && !$('postal-code').value &&
-          !$('country').value && !$('phone').value && !$('fax').value &&
-          !$('email').value;
+          !$('country').value && $('phone-list').items.length <= 1 &&
+          $('fax-list').items.length <= 1 && $('email-list').items.length <= 1;
       $('autofill-edit-address-apply-button').disabled = disabled;
     },
 
@@ -186,7 +240,7 @@ cr.define('options', function() {
      * @private
      */
     clearInputFields_: function() {
-      $('full-name').value = '';
+      this.setMultiValueList_('full-name-list', []);
       $('company-name').value = '';
       $('addr-line-1').value = '';
       $('addr-line-2').value = '';
@@ -194,9 +248,9 @@ cr.define('options', function() {
       $('state').value = '';
       $('postal-code').value = '';
       $('country').value = '';
-      $('phone').value = '';
-      $('fax').value = '';
-      $('email').value = '';
+      this.setMultiValueList_('phone-list', []);
+      this.setMultiValueList_('fax-list', []);
+      this.setMultiValueList_('email-list', []);
 
       this.countryChanged_();
     },
@@ -217,7 +271,7 @@ cr.define('options', function() {
      * @private
      */
     setInputFields_: function(address) {
-      $('full-name').value = address['fullName'];
+      this.setMultiValueList_('full-name-list', address['fullName']);
       $('company-name').value = address['companyName'];
       $('addr-line-1').value = address['addrLine1'];
       $('addr-line-2').value = address['addrLine2'];
@@ -225,9 +279,9 @@ cr.define('options', function() {
       $('state').value = address['state'];
       $('postal-code').value = address['postalCode'];
       $('country').value = address['country'];
-      $('phone').value = address['phone'];
-      $('fax').value = address['fax'];
-      $('email').value = address['email'];
+      this.setMultiValueList_('phone-list', address['phone']);
+      this.setMultiValueList_('fax-list', address['fax']);
+      this.setMultiValueList_('email-list', address['email']);
 
       this.countryChanged_();
     },

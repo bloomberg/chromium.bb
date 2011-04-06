@@ -4,7 +4,8 @@
     <div class="input">
       <label>
         <div><span i18n-content="fullNameLabel"></span></div>
-        <input type="text" class="autofill-form" id="full-name">
+        <list id="full-name-list"
+            i18n-values="placeholder:addNewNamePlaceholder"></list>
       </label>
     </div>
     <div class="input">
@@ -60,30 +61,35 @@
     <div class="table">
       <div class="row">
         <div class="input cell">
-          <label for="phone">
+          <label for="phone-list">
             <span i18n-content="phoneLabel"></span>
           </label>
         </div>
         <div class="input cell">
-          <label for="fax">
+          <label for="fax-list">
             <span i18n-content="faxLabel"></span>
+          </label>
+        </div>
+        <div class="input cell">
+          <label for="email-list">
+            <span i18n-content="emailLabel"></span>
           </label>
         </div>
       </div>
       <div class="row">
         <div class="input cell">
-          <input type="text" class="autofill-form" id="phone">
+          <list id="phone-list"
+              i18n-values="placeholder:addNewPhonePlaceholder"></list>
         </div>
         <div class="input cell">
-          <input type="text" class="autofill-form" id="fax">
+          <list id="fax-list"
+              i18n-values="placeholder:addNewFaxPlaceholder"></list>
+        </div>
+        <div class="input cell">
+          <list id="email-list"
+              i18n-values="placeholder:addNewEmailPlaceholder"></list>
         </div>
       </div>
-    </div>
-    <div class="input">
-      <label>
-        <div><span i18n-content="emailLabel"></span></div>
-        <input type="text" class="autofill-form" id="email">
-      </label>
     </div>
   </div>
   <div class="action-area button-strip">

@@ -68,6 +68,31 @@ DictionaryValue* GetCountryData() {
   return country_data;
 }
 
+// Get the multi-valued element for |type| and return it in |ListValue| form.
+void GetValueList(const AutofillProfile& profile,
+                  AutofillFieldType type,
+                  scoped_ptr<ListValue>* list) {
+  std::vector<string16> values;
+  profile.GetMultiInfo(type, &values);
+  list->reset(new ListValue);
+  for (size_t i = 0; i < values.size(); ++i) {
+    (*list)->Set(i, Value::CreateStringValue(values[i]));
+  }
+}
+
+// Set the multi-valued element for |type| from input |list| values.
+void SetValueList(const ListValue* list,
+                  AutofillFieldType type,
+                  AutofillProfile* profile) {
+  std::vector<string16> values(list->GetSize());
+  for (size_t i = 0; i < list->GetSize(); ++i) {
+    string16 value;
+    if (list->GetString(i, &value))
+      values[i] = value;
+  }
+  profile->SetMultiInfo(type, values);
+}
+
 }  // namespace
 
 AutofillOptionsHandler::AutofillOptionsHandler()
@@ -168,6 +193,14 @@ void AutofillOptionsHandler::SetAddressOverlayStrings(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_FAX));
   localized_strings->SetString("emailLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_EMAIL));
+  localized_strings->SetString("addNewNamePlaceholder",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_NEW_NAME));
+  localized_strings->SetString("addNewPhonePlaceholder",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_NEW_PHONE));
+  localized_strings->SetString("addNewFaxPlaceholder",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_NEW_FAX));
+  localized_strings->SetString("addNewEmailPlaceholder",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_NEW_EMAIL));
 
   std::string app_locale = AutofillCountry::ApplicationLocale();
   std::string default_country_code =
@@ -266,7 +299,9 @@ void AutofillOptionsHandler::LoadAddressEditor(const ListValue* args) {
 
   DictionaryValue address;
   address.SetString("guid", profile->guid());
-  address.SetString("fullName", profile->GetInfo(NAME_FULL));
+  scoped_ptr<ListValue> list;
+  GetValueList(*profile, NAME_FULL, &list);
+  address.Set("fullName", list.release());
   address.SetString("companyName", profile->GetInfo(COMPANY_NAME));
   address.SetString("addrLine1", profile->GetInfo(ADDRESS_HOME_LINE1));
   address.SetString("addrLine2", profile->GetInfo(ADDRESS_HOME_LINE2));
@@ -274,9 +309,12 @@ void AutofillOptionsHandler::LoadAddressEditor(const ListValue* args) {
   address.SetString("state", profile->GetInfo(ADDRESS_HOME_STATE));
   address.SetString("postalCode", profile->GetInfo(ADDRESS_HOME_ZIP));
   address.SetString("country", profile->CountryCode());
-  address.SetString("phone", profile->GetInfo(PHONE_HOME_WHOLE_NUMBER));
-  address.SetString("fax", profile->GetInfo(PHONE_FAX_WHOLE_NUMBER));
-  address.SetString("email", profile->GetInfo(EMAIL_ADDRESS));
+  GetValueList(*profile, PHONE_HOME_WHOLE_NUMBER, &list);
+  address.Set("phone", list.release());
+  GetValueList(*profile, PHONE_FAX_WHOLE_NUMBER, &list);
+  address.Set("fax", list.release());
+  GetValueList(*profile, EMAIL_ADDRESS, &list);
+  address.Set("email", list.release());
 
   web_ui_->CallJavascriptFunction("AutofillOptions.editAddress", address);
 }
@@ -330,8 +368,9 @@ void AutofillOptionsHandler::SetAddress(const ListValue* args) {
 
   std::string country_code;
   string16 value;
-  if (args->GetString(1, &value))
-    profile.SetInfo(NAME_FULL, value);
+  ListValue* list_value;
+  if (args->GetList(1, &list_value))
+    SetValueList(list_value, NAME_FULL, &profile);
   if (args->GetString(2, &value))
     profile.SetInfo(COMPANY_NAME, value);
   if (args->GetString(3, &value))
@@ -346,12 +385,12 @@ void AutofillOptionsHandler::SetAddress(const ListValue* args) {
     profile.SetInfo(ADDRESS_HOME_ZIP, value);
   if (args->GetString(8, &country_code))
     profile.SetCountryCode(country_code);
-  if (args->GetString(9, &value))
-    profile.SetInfo(PHONE_HOME_WHOLE_NUMBER, value);
-  if (args->GetString(10, &value))
-    profile.SetInfo(PHONE_FAX_WHOLE_NUMBER, value);
-  if (args->GetString(11, &value))
-    profile.SetInfo(EMAIL_ADDRESS, value);
+  if (args->GetList(9, &list_value))
+    SetValueList(list_value, PHONE_HOME_WHOLE_NUMBER, &profile);
+  if (args->GetList(10, &list_value))
+    SetValueList(list_value, PHONE_FAX_WHOLE_NUMBER, &profile);
+  if (args->GetList(11, &list_value))
+    SetValueList(list_value, EMAIL_ADDRESS, &profile);
 
   if (!guid::IsValidGUID(profile.guid())) {
     profile.set_guid(guid::GenerateGUID());

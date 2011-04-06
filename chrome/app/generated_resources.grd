@@ -7196,6 +7196,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_DIALOG_FAX" desc="The label of the Fax entry.">
         Fax
       </message>
+      <message name="IDS_AUTOFILL_DIALOG_ADD_NEW_NAME" desc="The placeholder text of the name field.">
+        Add new name
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_ADD_NEW_PHONE" desc="The placeholder text of the phone field.">
+        Add new phone
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_ADD_NEW_FAX" desc="The placeholder text of the fax field.">
+        Add new fax
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_ADD_NEW_EMAIL" desc="The placeholder text of the email field.">
+        Add new email
+      </message>
       <message name="IDS_AUTOFILL_DIALOG_NAME_ON_CARD" desc="The label of the Name on card entry.">
         Name on card
       </message>
