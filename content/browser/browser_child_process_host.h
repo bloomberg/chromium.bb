@@ -56,11 +56,13 @@ class BrowserChildProcessHost : public ChildProcessHost,
   };
 
  protected:
-  // A convenient constructor for those classes that want to use the default
-  // net::URLRequestContext.
+  // DEPRECATED constructor. Do not use anymore. We are trying to eliminate
+  // using the default URLRequestContext.
   BrowserChildProcessHost(
       ChildProcessInfo::ProcessType type,
       ResourceDispatcherHost* resource_dispatcher_host);
+
+  explicit BrowserChildProcessHost(ChildProcessInfo::ProcessType type);
 
   // Derived classes call this to launch the child process asynchronously.
   void Launch(
