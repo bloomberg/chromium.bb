@@ -42,6 +42,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageEventDispatcher.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
+#include "ui/gfx/gl/gl_bindings_skia_in_process.h"
+#include "webkit/glue/gl_bindings_skia_cmd_buffer.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
@@ -528,9 +530,11 @@ RendererWebKitClientImpl::createGraphicsContext3D() {
   // layout tests (though not through this code) as well as for
   // debugging and bringing up new ports.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL)) {
+    gfx::BindSkiaToInProcessGL();
     return new webkit::gpu::WebGraphicsContext3DInProcessImpl();
   } else {
 #if defined(ENABLE_GPU)
+    webkit_glue::BindSkiaToCommandBufferGL();
     return new WebGraphicsContext3DCommandBufferImpl();
 #else
     return NULL;

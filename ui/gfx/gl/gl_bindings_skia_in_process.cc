@@ -3,26 +3,20 @@
 // found in the LICENSE file.
 
 
-#include "ui/gfx/gl/gl_bindings_skia.h"
+#include "ui/gfx/gl/gl_bindings_skia_in_process.h"
 
 #include "base/logging.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
-
-// Skia is built against the headers in gpu\GLES.  These functions
-// are exported without any call-type modifiers.
-#define GR_GL_FUNCTION_TYPE
 
 #include "third_party/skia/gpu/include/GrGLInterface.h"
 
 namespace {
 
 extern "C" {
-
 // The following stub functions are required because the glXXX routines exported
 // via gl_bindings.h use call-type GL_BINDING_CALL, which on Windows is stdcall.
-// Skia has been built against the GLES headers, so the interfaces in
-// GrGLInterface are __cdecl.
+// Skia has been built such that its GrGLInterface GL pointers are __cdecl.
 
 GLvoid StubGLActiveTexture(GLenum texture) {
   glActiveTexture(texture);
@@ -69,12 +63,12 @@ GLvoid StubGLBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1,
                        mask, filter);
 }
 
-GLvoid StubGLBufferData(GLenum target, GLsizei size, const void* data,
+GLvoid StubGLBufferData(GLenum target, GLsizeiptr size, const void* data,
                         GLenum usage) {
   glBufferData(target, size, data, usage);
 }
 
-GLvoid StubGLBufferSubData(GLenum target, GLint offset, GLsizei size,
+GLvoid StubGLBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size,
                            const void* data) {
   glBufferSubData(target, offset, size, data);
 }
@@ -373,13 +367,11 @@ GLvoid StubGLVertexAttribPointer(GLuint indx, GLint size, GLenum type,
 GLvoid StubGLViewport(GLint x, GLint y, GLsizei width, GLsizei height) {
   glViewport(x, y, width, height);
 }
-
 }  // extern "C"
 
 // Populate |gl_interface| with pointers to the GL implementation used by
 // Chrome.
 void InitializeGrGLInterface(GrGLInterface* gl_interface) {
-
   // Propagate the type of GL bindings exported back to skia.
   switch (gfx::GetGLImplementation()) {
     case gfx::kGLImplementationNone:
@@ -498,7 +490,7 @@ void InitializeGrGLInterface(GrGLInterface* gl_interface) {
 
 namespace gfx {
 
-void BindSkiaToHostGL() {
+void BindSkiaToInProcessGL() {
   static GrGLInterface host_gl_interface;
   static bool host_StubGL_initialized = false;
   if (!host_StubGL_initialized) {
@@ -509,3 +501,4 @@ void BindSkiaToHostGL() {
 }
 
 }  // namespace gfx
+

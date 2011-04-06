@@ -57,8 +57,8 @@
      'sources': [
         'gl_bindings.gypi',
         'gl_bindings.h',
-        'gl_bindings_skia.cc',
-        'gl_bindings_skia.h',
+        'gl_bindings_skia_in_process.cc',
+        'gl_bindings_skia_in_process.h',
         'gl_context.cc',
         'gl_context.h',
         'gl_context_linux.cc',

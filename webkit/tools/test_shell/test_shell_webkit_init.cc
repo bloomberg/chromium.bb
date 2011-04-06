@@ -13,6 +13,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptController.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
+#include "ui/gfx/gl/gl_bindings_skia_in_process.h"
 #include "v8/include/v8.h"
 #include "webkit/tools/test_shell/test_shell.h"
 
@@ -289,5 +290,6 @@ TestShellWebKitInit::sharedWorkerRepository() {
 }
 
 WebKit::WebGraphicsContext3D* TestShellWebKitInit::createGraphicsContext3D() {
+  gfx::BindSkiaToInProcessGL();
   return new webkit::gpu::WebGraphicsContext3DInProcessImpl();
 }

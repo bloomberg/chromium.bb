@@ -31,7 +31,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
-#include "ui/gfx/gl/gl_bindings_skia.h"
+#include "ui/gfx/gl/gl_bindings_skia_in_process.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/database/vfs_backend.h"
 #include "webkit/extensions/v8/gc_extension.h"
@@ -352,6 +352,6 @@ WebKit::WebSharedWorkerRepository* TestWebKitClient::sharedWorkerRepository() {
 }
 
 WebKit::WebGraphicsContext3D* TestWebKitClient::createGraphicsContext3D() {
-  gfx::BindSkiaToHostGL();
+  gfx::BindSkiaToInProcessGL();
   return new webkit::gpu::WebGraphicsContext3DInProcessImpl();
 }
