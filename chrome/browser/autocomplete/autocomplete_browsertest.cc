@@ -115,7 +115,10 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
     EXPECT_TRUE(location_bar->location_entry()->GetText().empty());
     EXPECT_TRUE(location_bar->location_entry()->IsSelectAll());
     const AutocompleteResult& result = autocomplete_controller->result();
-    ASSERT_EQ(1U, result.size()) << AutocompleteResultAsString(result);
+    // We get two matches because we have a provider for extension apps and the
+    // Chrome Web Store is a built-in Extension app. For this test, we only care
+    // about the other match existing.
+    ASSERT_GE(result.size(), 1U) << AutocompleteResultAsString(result);
     AutocompleteMatch match = result.match_at(0);
     EXPECT_EQ(AutocompleteMatch::SEARCH_WHAT_YOU_TYPED, match.type);
     EXPECT_FALSE(match.deletable);

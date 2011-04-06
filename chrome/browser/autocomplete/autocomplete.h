@@ -43,10 +43,12 @@
 // UNKNOWN input type:
 // --------------------------------------------------------------------|-----
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
+// Extension App (exact match)                                         | 1425
 // HistoryURL (exact or inline autocomplete match)                     | 1400
 // Search Primary Provider (past query in history within 2 days)       | 1399**
 // Search Primary Provider (what you typed)                            | 1300
 // HistoryURL (what you typed)                                         | 1200
+// Extension App (inexact match)                                       | 1175*~
 // Keyword (substituting, exact match)                                 | 1100
 // Search Primary Provider (past query in history older than 2 days)   | 1050--
 // HistoryContents (any match in title of starred page)                | 1000++
@@ -66,9 +68,11 @@
 // REQUESTED_URL input type:
 // --------------------------------------------------------------------|-----
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
+// Extension App (exact match)                                         | 1425
 // HistoryURL (exact or inline autocomplete match)                     | 1400
 // Search Primary Provider (past query in history within 2 days)       | 1399**
 // HistoryURL (what you typed)                                         | 1200
+// Extension App (inexact match)                                       | 1175*~
 // Search Primary Provider (what you typed)                            | 1150
 // Keyword (substituting, exact match)                                 | 1100
 // Search Primary Provider (past query in history older than 2 days)   | 1050--
@@ -89,8 +93,10 @@
 // URL input type:
 // --------------------------------------------------------------------|-----
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
+// Extension App (exact match)                                         | 1425
 // HistoryURL (exact or inline autocomplete match)                     | 1400
 // HistoryURL (what you typed)                                         | 1200
+// Extension App (inexact match)                                       | 1175*~
 // Keyword (substituting, exact match)                                 | 1100
 // HistoryURL (inexact match)                                          |  900++
 // Search Primary Provider (what you typed)                            |  850
@@ -108,9 +114,11 @@
 // --------------------------------------------------------------------|-----
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
 // Keyword (substituting, exact match)                                 | 1450
+// Extension App (exact match)                                         | 1425
 // HistoryURL (exact or inline autocomplete match)                     | 1400
 // Search Primary Provider (past query in history within 2 days)       | 1399**
 // Search Primary Provider (what you typed)                            | 1300
+// Extension App (inexact match)                                       | 1175*~
 // Search Primary Provider (past query in history older than 2 days)   | 1050--
 // HistoryContents (any match in title of starred page)                | 1000++
 // HistoryURL (inexact match)                                          |  900++
@@ -127,8 +135,10 @@
 //
 // FORCED_QUERY input type:
 // --------------------------------------------------------------------|-----
+// Extension App (exact match on title only, not url)                  | 1425
 // Search Primary Provider (past query in history within 2 days)       | 1399**
 // Search Primary Provider (what you typed)                            | 1300
+// Extension App (inexact match on title only, not url)                | 1175*~
 // Search Primary Provider (past query in history older than 2 days)   | 1050--
 // HistoryContents (any match in title of starred page)                | 1000++
 // Search Primary Provider (navigational suggestion)                   |  800++
@@ -149,8 +159,11 @@
 // ++: a series of matches with relevance from n up to (n + max_matches).
 // --: relevance score falls off over time (discounted 50 points @ 15 minutes,
 //     450 points @ two weeks)
-// --: relevance score falls off over two days (discounted 99 points after two
+// **: relevance score falls off over two days (discounted 99 points after two
 //     days).
+// *~: Partial matches get a score on a sliding scale from about 575-1125 based
+//     on how many times the URL for the Extension App has been typed and how
+//     many of the letters match.
 
 class AutocompleteController;
 class AutocompleteControllerDelegate;
