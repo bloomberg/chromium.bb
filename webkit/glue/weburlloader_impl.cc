@@ -194,22 +194,24 @@ void PopulateURLResponse(
   response->setConnectionReused(info.connection_reused);
   response->setDownloadFilePath(FilePathToWebString(info.download_file_path));
 
-  WebURLLoadTiming timing;
-  timing.initialize();
   const ResourceLoadTimingInfo& timing_info = info.load_timing;
-  timing.setRequestTime(timing_info.base_time.ToDoubleT());
-  timing.setProxyStart(timing_info.proxy_start);
-  timing.setProxyEnd(timing_info.proxy_end);
-  timing.setDNSStart(timing_info.dns_start);
-  timing.setDNSEnd(timing_info.dns_end);
-  timing.setConnectStart(timing_info.connect_start);
-  timing.setConnectEnd(timing_info.connect_end);
-  timing.setSSLStart(timing_info.ssl_start);
-  timing.setSSLEnd(timing_info.ssl_end);
-  timing.setSendStart(timing_info.send_start);
-  timing.setSendEnd(timing_info.send_end);
-  timing.setReceiveHeadersEnd(timing_info.receive_headers_end);
-  response->setLoadTiming(timing);
+  if (!timing_info.base_time.is_null()) {
+    WebURLLoadTiming timing;
+    timing.initialize();
+    timing.setRequestTime(timing_info.base_time.ToDoubleT());
+    timing.setProxyStart(timing_info.proxy_start);
+    timing.setProxyEnd(timing_info.proxy_end);
+    timing.setDNSStart(timing_info.dns_start);
+    timing.setDNSEnd(timing_info.dns_end);
+    timing.setConnectStart(timing_info.connect_start);
+    timing.setConnectEnd(timing_info.connect_end);
+    timing.setSSLStart(timing_info.ssl_start);
+    timing.setSSLEnd(timing_info.ssl_end);
+    timing.setSendStart(timing_info.send_start);
+    timing.setSendEnd(timing_info.send_end);
+    timing.setReceiveHeadersEnd(timing_info.receive_headers_end);
+    response->setLoadTiming(timing);
+  }
 
   if (info.devtools_info.get()) {
     WebHTTPLoadInfo load_info;
