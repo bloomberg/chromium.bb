@@ -40,6 +40,7 @@
         '../third_party/skia/gpu/src/GrRectanizer_fifo.cpp',
         '../third_party/skia/gpu/src/GrResource.cpp',
         '../third_party/skia/gpu/src/GrStencil.cpp',
+        '../third_party/skia/gpu/src/GrTexture.cpp',
         '../third_party/skia/gpu/src/GrTextureCache.cpp',
         '../third_party/skia/gpu/src/GrTextContext.cpp',
         '../third_party/skia/gpu/src/GrTextStrike.cpp',
