@@ -398,32 +398,44 @@ void PrerenderManager::RecordPerceivedPageLoadTime(
     return;
   if (!prerender_manager->is_enabled())
     return;
-  UMA_HISTOGRAM_MEDIUM_TIMES(
+  UMA_HISTOGRAM_CUSTOM_TIMES(
       base::FieldTrial::MakeName("Prerender.PerceivedPLT", "Prefetch"),
-      perceived_page_load_time);
+      perceived_page_load_time,
+      base::TimeDelta::FromMilliseconds(10),
+      base::TimeDelta::FromSeconds(60),
+      100);
   if (within_window) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
+    UMA_HISTOGRAM_CUSTOM_TIMES(
         base::FieldTrial::MakeName("Prerender.PerceivedPLTWindowed",
                                    "Prefetch"),
-        perceived_page_load_time);
+        perceived_page_load_time,
+        base::TimeDelta::FromMilliseconds(10),
+        base::TimeDelta::FromSeconds(60),
+        100);
   }
   switch (mode_) {
     case PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP:
       if (prerender_manager &&
           prerender_manager->WouldTabContentsBePrerendered(tab_contents)) {
-        UMA_HISTOGRAM_MEDIUM_TIMES(
+        UMA_HISTOGRAM_CUSTOM_TIMES(
             base::FieldTrial::MakeName("Prerender.PerceivedPLTMatched",
                                        "Prefetch"),
-            perceived_page_load_time);
+            perceived_page_load_time,
+            base::TimeDelta::FromMilliseconds(10),
+            base::TimeDelta::FromSeconds(60),
+            100);
       }
       break;
     case PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP:
       if (prerender_manager &&
           prerender_manager->IsTabContentsPrerendered(tab_contents)) {
-        UMA_HISTOGRAM_MEDIUM_TIMES(
+        UMA_HISTOGRAM_CUSTOM_TIMES(
             base::FieldTrial::MakeName("Prerender.PerceivedPLTMatched",
                                        "Prefetch"),
-            perceived_page_load_time);
+            perceived_page_load_time,
+            base::TimeDelta::FromMilliseconds(10),
+            base::TimeDelta::FromSeconds(60),
+            100);
       }
       break;
     default:
