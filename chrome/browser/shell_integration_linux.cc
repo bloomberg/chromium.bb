@@ -29,6 +29,7 @@
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/browser_thread.h"
@@ -360,8 +361,11 @@ FilePath ShellIntegration::GetDesktopShortcutFilename(const GURL& url) {
 
 // static
 std::string ShellIntegration::GetDesktopFileContents(
-    const std::string& template_contents, const GURL& url,
-    const std::string& extension_id, const string16& title,
+    const std::string& template_contents,
+    const std::string& app_name,
+    const GURL& url,
+    const std::string& extension_id,
+    const string16& title,
     const std::string& icon_name) {
   // See http://standards.freedesktop.org/desktop-entry-spec/latest/
   // Although not required by the spec, Nautilus on Ubuntu Karmic creates its
@@ -410,6 +414,9 @@ std::string ShellIntegration::GetDesktopFileContents(
     } else if (tokenizer.token().substr(0, 9) == "MimeType=") {
       // Skip MimeType lines, they are only relevant for a web browser
       // shortcut, not a web application shortcut.
+    } else if (tokenizer.token().substr(0, 15) == "StartupWMClass=") {
+      // Skip StartupWMClass; it will certainly be wrong since we emit a
+      // different one based on the app name below.
     } else if (tokenizer.token().substr(0, 5) == "Icon=" &&
                !icon_name.empty()) {
       output_buffer += StringPrintf("Icon=%s\n", icon_name.c_str());
@@ -417,6 +424,12 @@ std::string ShellIntegration::GetDesktopFileContents(
       output_buffer += tokenizer.token() + "\n";
     }
   }
+
+  std::string wmclass = web_app::GetWMClassFromAppName(app_name);
+  if (!wmclass.empty()) {
+    output_buffer += StringPrintf("StartupWMClass=%s\n", wmclass.c_str());
+  }
+
   return output_buffer;
 }
 
@@ -433,9 +446,15 @@ void ShellIntegration::CreateDesktopShortcut(
 
   std::string icon_name = CreateShortcutIcon(shortcut_info, shortcut_filename);
 
+  std::string app_name =
+      web_app::GenerateApplicationNameFromInfo(shortcut_info);
   std::string contents = GetDesktopFileContents(
-      shortcut_template, shortcut_info.url, shortcut_info.extension_id,
-      shortcut_info.title, icon_name);
+      shortcut_template,
+      app_name,
+      shortcut_info.url,
+      shortcut_info.extension_id,
+      shortcut_info.title,
+      icon_name);
 
   if (shortcut_info.create_on_desktop)
     CreateShortcutOnDesktop(shortcut_filename, contents);

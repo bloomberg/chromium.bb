@@ -96,8 +96,11 @@ class ShellIntegration {
   // and |title|. The |template_contents| should be contents of .desktop file
   // used to launch Chrome.
   static std::string GetDesktopFileContents(
-      const std::string& template_contents, const GURL& url,
-      const std::string& extension_id, const string16& title,
+      const std::string& template_contents,
+      const std::string& app_name,
+      const GURL& url,
+      const std::string& extension_id,
+      const string16& title,
       const std::string& icon_name);
 
   static void CreateDesktopShortcut(const ShortcutInfo& shortcut_info,

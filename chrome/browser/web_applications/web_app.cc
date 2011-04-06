@@ -10,8 +10,10 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/i18n/file_util_icu.h"
 #include "base/md5.h"
 #include "base/path_service.h"
+#include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
@@ -339,14 +341,8 @@ bool CreateShortcutTask::CreateShortcut() {
     shortcut_info_.description.resize(MAX_PATH - 1);
 
   // Generates app id from web app url and profile path.
-  std::string app_name;
-  if (!shortcut_info_.extension_id.empty()) {
-    app_name = web_app::GenerateApplicationNameFromExtensionId(
-        shortcut_info_.extension_id);
-  } else {
-    app_name = web_app::GenerateApplicationNameFromURL(
-        shortcut_info_.url);
-  }
+  std::string app_name =
+      web_app::GenerateApplicationNameFromInfo(shortcut_info_);
   std::wstring app_id = ShellIntegration::GetAppId(
       UTF8ToWide(app_name), profile_path_);
 
@@ -454,6 +450,17 @@ FilePath GetWebAppDataDirectory(const FilePath& root_dir,
 
 }  // namespace internals
 
+std::string GenerateApplicationNameFromInfo(
+    const ShellIntegration::ShortcutInfo& shortcut_info) {
+  if (!shortcut_info.extension_id.empty()) {
+    return web_app::GenerateApplicationNameFromExtensionId(
+        shortcut_info.extension_id);
+  } else {
+    return web_app::GenerateApplicationNameFromURL(
+        shortcut_info.url);
+  }
+}
+
 std::string GenerateApplicationNameFromURL(const GURL& url) {
   std::string t;
   t.append(url.host());
@@ -511,6 +518,14 @@ void GetIconsInfo(const WebApplicationInfo& app_info,
   }
 
   std::sort(icons->begin(), icons->end(), &IconPrecedes);
+}
+#endif
+
+#if defined(TOOLKIT_GTK)
+std::string GetWMClassFromAppName(std::string app_name) {
+  file_util::ReplaceIllegalCharactersInPath(&app_name, '_');
+  TrimString(app_name, "_", &app_name);
+  return app_name;
 }
 #endif
 

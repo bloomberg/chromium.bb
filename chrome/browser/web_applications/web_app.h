@@ -18,6 +18,10 @@ class Profile;
 
 namespace web_app {
 
+// Compute a deterministic name based on data in the shortcut_info.
+std::string GenerateApplicationNameFromInfo(
+    const ShellIntegration::ShortcutInfo& shortcut_info);
+
 // Compute a deterministic name based on the URL. We use this pseudo name
 // as a key to store window location per application URLs in Browser and
 // as app id for BrowserWindow, shortcut and jump list.
@@ -52,6 +56,13 @@ FilePath GetDataDir(const FilePath& profile_path);
 typedef std::vector<WebApplicationInfo::IconInfo> IconInfoList;
 void GetIconsInfo(const WebApplicationInfo& app_info,
                   IconInfoList* icons);
+#endif
+
+#if defined(TOOLKIT_GTK)
+// GTK+ windows that correspond to web apps need to have a deterministic (and
+// different) WMClass than normal chrome windows so the window manager groups
+// them as a separate application.
+std::string GetWMClassFromAppName(std::string app_name);
 #endif
 
 namespace internals {

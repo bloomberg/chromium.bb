@@ -13,6 +13,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "content/browser/browser_thread.h"
@@ -196,6 +197,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "Icon=chrome-http__gmail.com\n"
       "Type=Application\n"
       "Categories=Application;Network;WebBrowser;\n"
+      "StartupWMClass=gmail.com\n"
     },
 
     // Make sure we don't insert duplicate shebangs.
@@ -210,6 +212,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "#!/usr/bin/env xdg-open\n"
       "Name=GMail\n"
       "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
+      "StartupWMClass=gmail.com\n"
     },
 
     // Make sure i18n-ed comments are removed.
@@ -224,6 +227,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "#!/usr/bin/env xdg-open\n"
       "Name=GMail\n"
       "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
+      "StartupWMClass=gmail.com\n"
     },
 
     // Make sure that empty icons are replaced by the chrome icon.
@@ -240,6 +244,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "Name=GMail\n"
       "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
       "Icon=/opt/google/chrome/product_logo_48.png\n"
+      "StartupWMClass=gmail.com\n"
     },
 
     // Now we're starting to be more evil...
@@ -254,6 +259,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "Name=http://evil.com/evil%20--join-the-b0tnet\n"
       "Exec=/opt/google/chrome/google-chrome "
       "--app=http://evil.com/evil%20--join-the-b0tnet\n"
+      "StartupWMClass=evil.com__evil%20--join-the-b0tnet\n"
     },
     { "http://evil.com/evil; rm -rf /; \"; rm -rf $HOME >ownz0red",
       "Innocent Title",
@@ -270,6 +276,8 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       // the \ is escaped as \\ as all strings in a Desktop file should
       // be; finally, \\ becomes \\\\ when represented in a C++ string!
       "-rf%20\\\\$HOME%20%3Eownz0red\"\n"
+      "StartupWMClass=evil.com__evil;%20rm%20-rf%20_;%20%22;%20"
+      "rm%20-rf%20$HOME%20%3Eownz0red\n"
     },
     { "http://evil.com/evil | cat `echo ownz0red` >/dev/null",
       "Innocent Title",
@@ -283,17 +291,21 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "Exec=/opt/google/chrome/google-chrome "
       "--app=http://evil.com/evil%20%7C%20cat%20%60echo%20ownz0red"
       "%60%20%3E/dev/null\n"
+      "StartupWMClass=evil.com__evil%20%7C%20cat%20%60echo%20ownz0red"
+      "%60%20%3E_dev_null\n"
     },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); i++) {
     SCOPED_TRACE(i);
-    EXPECT_EQ(test_cases[i].expected_output,
-              ShellIntegration::GetDesktopFileContents(
-                  test_cases[i].template_contents,
-                  GURL(test_cases[i].url),
-                  "",
-                  ASCIIToUTF16(test_cases[i].title),
-                  test_cases[i].icon_name));
+    EXPECT_EQ(
+        test_cases[i].expected_output,
+        ShellIntegration::GetDesktopFileContents(
+            test_cases[i].template_contents,
+            web_app::GenerateApplicationNameFromURL(GURL(test_cases[i].url)),
+            GURL(test_cases[i].url),
+            "",
+            ASCIIToUTF16(test_cases[i].title),
+            test_cases[i].icon_name));
   }
 }
 #elif defined(OS_WIN)
