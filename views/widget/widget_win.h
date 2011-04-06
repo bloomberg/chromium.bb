@@ -266,7 +266,6 @@ class WidgetWin : public ui::WindowImpl,
     // Mouse events.
     MESSAGE_HANDLER_EX(WM_MOUSEACTIVATE, OnMouseActivate)
     MESSAGE_HANDLER_EX(WM_MOUSELEAVE, OnMouseRange)
-    MESSAGE_HANDLER_EX(WM_MOUSEWHEEL, OnMouseWheel)
     MESSAGE_HANDLER_EX(WM_NCMOUSELEAVE, OnMouseRange)
 
     // Key events.
@@ -369,7 +368,6 @@ class WidgetWin : public ui::WindowImpl,
   virtual void OnKillFocus(HWND focused_window);
   virtual LRESULT OnMouseActivate(UINT message, WPARAM w_param, LPARAM l_param);
   virtual LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param);
-  virtual LRESULT OnMouseWheel(UINT message, WPARAM w_param, LPARAM l_param);
   virtual void OnMove(const CPoint& point);
   virtual void OnMoving(UINT param, LPRECT new_bounds);
   virtual LRESULT OnNCActivate(BOOL active);

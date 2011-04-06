@@ -827,9 +827,6 @@ LRESULT WidgetWin::OnMouseActivate(UINT message,
 }
 
 LRESULT WidgetWin::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
-  if (message == WM_MOUSEWHEEL)
-    return 0;
-
   MSG msg = { hwnd(), message, w_param, l_param, 0,
               { GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param) } };
   MouseEvent event(msg);
@@ -847,24 +844,14 @@ LRESULT WidgetWin::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
     // Reset our tracking flags so future mouse movement over this WidgetWin
     // results in a new tracking session. Fall through for OnMouseEvent.
     active_mouse_tracking_flags_ = 0;
+  } else if (event.type() == ui::ET_MOUSEWHEEL) {
+    // Reroute the mouse wheel to the window under the pointer if applicable.
+    return (views::RerouteMouseWheel(hwnd(), w_param, l_param) ||
+            delegate_->OnMouseEvent(MouseWheelEvent(msg))) ? 0 : 1;
   }
 
   SetMsgHandled(delegate_->OnMouseEvent(event));
   return 0;
-}
-
-LRESULT WidgetWin::OnMouseWheel(UINT message, WPARAM w_param, LPARAM l_param) {
-  tooltip_manager_->OnMouse(message, w_param, l_param);
-  // Reroute the mouse-wheel to the window under the mouse pointer if
-  // applicable.
-  if (message == WM_MOUSEWHEEL &&
-      views::RerouteMouseWheel(hwnd(), w_param, l_param)) {
-    return 0;
-  }
-
-  MSG msg = { hwnd(), message, w_param, l_param, 0,
-              { GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param) } };
-  return delegate_->OnMouseEvent(MouseWheelEvent(msg)) ? 0 : 1;
 }
 
 void WidgetWin::OnMove(const CPoint& point) {
