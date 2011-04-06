@@ -146,6 +146,7 @@ class ChannelProxy : public Message::Sender {
 #if defined(OS_POSIX)
   // Calls through to the underlying channel's methods.
   int GetClientFileDescriptor() const;
+  bool GetClientEuid(uid_t* client_euid) const;
 #endif  // defined(OS_POSIX)
 
  protected:

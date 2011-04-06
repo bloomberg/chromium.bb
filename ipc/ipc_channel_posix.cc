@@ -193,19 +193,6 @@ bool CreateServerUnixDomainSocket(const std::string& pipe_name,
     return false;
   }
 
-  // Explicitly set file system permissions on socket, mainly as a precaution
-  // for Chrome OS.
-  // Do not rely on these file permissions to provide security - the file is
-  // created during the above bind() call so there is still a window for
-  // malicious abuse because the file exists between bind() and chmod(). Also,
-  // the file permissions may not be enforced for unix sockets on all platforms.
-  if (chmod(pipe_name.c_str(), 0600)) {
-    PLOG(ERROR) << "chmod " << pipe_name;
-    if (HANDLE_EINTR(close(fd)) < 0)
-      PLOG(ERROR) << "close " << pipe_name;
-    return false;
-  }
-
   // Start listening on the socket.
   const int listen_queue_length = 1;
   if (listen(fd, listen_queue_length) != 0) {
@@ -938,6 +925,33 @@ bool Channel::ChannelImpl::HasAcceptedConnection() const {
   return AcceptsConnections() && pipe_ != -1;
 }
 
+bool Channel::ChannelImpl::GetClientEuid(uid_t* client_euid) const {
+  DCHECK(HasAcceptedConnection());
+#if defined(OS_MACOSX)
+  uid_t peer_euid;
+  gid_t peer_gid;
+  if (getpeereid(pipe_, &peer_euid, &peer_gid) != 0) {
+    PLOG(ERROR) << "getpeereid " << pipe_;
+    return false;
+  }
+  *client_euid = peer_euid;
+  return true;
+#else
+  struct ucred cred;
+  socklen_t cred_len = sizeof(cred);
+  if (getsockopt(pipe_, SOL_SOCKET, SO_PEERCRED, &cred, &cred_len) != 0) {
+    PLOG(ERROR) << "getsockopt " << pipe_;
+    return false;
+  }
+  if (cred_len < sizeof(cred)) {
+    NOTREACHED() << "Truncated ucred from SO_PEERCRED?";
+    return false;
+  }
+  *client_euid = cred.uid;
+  return true;
+#endif
+}
+
 void Channel::ChannelImpl::ResetToAcceptingConnectionState() {
   // Unregister libevent for the unix domain socket and close it.
   read_watcher_.StopWatchingFileDescriptor();
@@ -996,6 +1010,21 @@ void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
       return;
     }
     pipe_ = new_pipe;
+
+    if ((mode_ & MODE_OPEN_ACCESS_FLAG) == 0) {
+      // Verify that the IPC channel peer is running as the same user.
+      uid_t client_euid;
+      if (!GetClientEuid(&client_euid)) {
+        LOG(ERROR) << "Unable to query client euid";
+        ResetToAcceptingConnectionState();
+        return;
+      }
+      if (client_euid != geteuid()) {
+        LOG(WARNING) << "Client euid is not authorised";
+        ResetToAcceptingConnectionState();
+        return;
+      }
+    }
 
     if (!AcceptConnection()) {
       NOTREACHED() << "AcceptConnection should not fail on server";
@@ -1159,6 +1188,10 @@ bool Channel::AcceptsConnections() const {
 
 bool Channel::HasAcceptedConnection() const {
   return channel_impl_->HasAcceptedConnection();
+}
+
+bool Channel::GetClientEuid(uid_t* client_euid) const {
+  return channel_impl_->GetClientEuid(client_euid);
 }
 
 void Channel::ResetToAcceptingConnectionState() {
