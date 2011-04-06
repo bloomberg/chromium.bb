@@ -81,6 +81,12 @@ class WizardController : public chromeos::ScreenObserver,
   // Marks device registered. i.e. second part of OOBE is completed.
   static void MarkDeviceRegistered();
 
+  // Returns initial locale from local settings.
+  static std::string GetInitialLocale();
+
+  // Sets initial locale in local settings.
+  static void SetInitialLocale(const std::string& locale);
+
   // Shows the first screen defined by |first_screen_name| or by default
   // if the parameter is empty. |screen_bounds| are used to calculate position
   // of the wizard screen.

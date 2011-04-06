@@ -41,6 +41,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/accelerator.h"
 #include "views/view.h"
 #include "views/widget/widget_gtk.h"
@@ -49,6 +50,9 @@ namespace {
 
 // A boolean pref of the EULA accepted flag.
 const char kEulaAccepted[] = "EulaAccepted";
+
+// A string pref with initial locale set in VPD or manifest.
+const char kInitialLocale[] = "intl.initial_locale";
 
 // A boolean pref of the OOBE complete flag (first OOBE part before login).
 const char kOobeComplete[] = "OobeComplete";
@@ -192,6 +196,14 @@ void SaveBoolPreferenceForced(const char* pref_name, bool value) {
 void SaveIntegerPreferenceForced(const char* pref_name, int value) {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetInteger(pref_name, value);
+  prefs->SavePersistentPrefs();
+}
+
+// Saves string "Local State" preference and forces its persistence to disk.
+void SaveStringPreferenceForced(const char* pref_name,
+                                const std::string& value) {
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetString(pref_name, value);
   prefs->SavePersistentPrefs();
 }
 
@@ -451,6 +463,7 @@ void WizardController::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterBooleanPref(kOobeComplete, false);
   local_state->RegisterIntegerPref(kDeviceRegistered, -1);
   local_state->RegisterBooleanPref(kEulaAccepted, false);
+  local_state->RegisterStringPref(kInitialLocale, "en-US");
   // Check if the pref is already registered in case
   // Preferences::RegisterUserPrefs runs before this code in the future.
   if (local_state->FindPreference(prefs::kAccessibilityEnabled) == NULL) {
@@ -778,6 +791,23 @@ void WizardController::MarkDeviceRegistered() {
       BrowserThread::FILE,
       FROM_HERE,
       NewRunnableFunction(&CreateOobeCompleteFlagFile));
+}
+
+// static
+std::string WizardController::GetInitialLocale() {
+  std::string locale =
+      g_browser_process->local_state()->GetString(kInitialLocale);
+  if (!l10n_util::IsValidLocaleSyntax(locale))
+    locale = "en-US";
+  return locale;
+}
+
+// static
+void WizardController::SetInitialLocale(const std::string& locale) {
+  if (l10n_util::IsValidLocaleSyntax(locale))
+    SaveStringPreferenceForced(kInitialLocale, locale);
+  else
+    NOTREACHED();
 }
 
 // static

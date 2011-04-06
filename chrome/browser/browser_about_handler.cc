@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/json/json_writer.h"
 #include "base/memory/singleton.h"
@@ -66,6 +67,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/syslogs_library.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "content/browser/zygote_host_linux.h"
 #elif defined(OS_LINUX)
@@ -132,6 +134,7 @@ const char kSandboxPath[] = "sandbox";
 #if defined(OS_CHROMEOS)
 const char kNetworkPath[] = "network";
 const char kOSCreditsPath[] = "os-credits";
+const char kEULAPathFormat[] = "/usr/share/chromeos-assets/eula/%s/eula.html";
 #endif
 
 // Add path here to be included in about:about
@@ -259,6 +262,65 @@ class ChromeOSAboutVersionHandler {
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOSAboutVersionHandler);
 };
+
+class ChromeOSTermsHandler
+    : public base::RefCountedThreadSafe<ChromeOSTermsHandler> {
+ public:
+  static void Start(AboutSource* source, int request_id) {
+    scoped_refptr<ChromeOSTermsHandler> handler(
+        new ChromeOSTermsHandler(source, request_id));
+    handler->StartOnUIThread();
+  }
+
+ private:
+  ChromeOSTermsHandler(AboutSource* source, int request_id)
+    : source_(source),
+      request_id_(request_id),
+      locale_(WizardController::GetInitialLocale()) {
+  }
+
+  void StartOnUIThread() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        NewRunnableMethod(this, &ChromeOSTermsHandler::LoadFileOnFileThread));
+  }
+
+  void LoadFileOnFileThread() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    std::string path = StringPrintf(kEULAPathFormat, locale_.c_str());
+    if (!file_util::ReadFileToString(FilePath(path), &contents_)) {
+      // No EULA for given language - try en-US as default.
+      path = StringPrintf(kEULAPathFormat, "en-US");
+      if (!file_util::ReadFileToString(FilePath(path), &contents_)) {
+        // Last resort use EULA from resources.
+        contents_ = ResourceBundle::GetSharedInstance().GetRawDataResource(
+            IDR_TERMS_HTML).as_string();
+      }
+    }
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &ChromeOSTermsHandler::ResponseOnUIThread));
+  }
+
+  void ResponseOnUIThread() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    source_->FinishDataRequest(contents_, request_id_);
+  }
+
+  // Where the results are fed to.
+  scoped_refptr<AboutSource> source_;
+
+  // ID identifying the request.
+  int request_id_;
+
+  std::string locale_;
+
+  std::string contents_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeOSTermsHandler);
+};
+
 #endif
 
 // Individual about handlers ---------------------------------------------------
@@ -796,8 +858,13 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
     response = AboutNetwork(info);
 #endif
   } else if (path == kTermsPath) {
+#if defined(OS_CHROMEOS)
+    ChromeOSTermsHandler::Start(this, request_id);
+    return;
+#else
     response = ResourceBundle::GetSharedInstance().GetRawDataResource(
         IDR_TERMS_HTML).as_string();
+#endif
 #if defined(OS_LINUX)
   } else if (path == kLinuxProxyConfigPath) {
     response = AboutLinuxProxyConfig();

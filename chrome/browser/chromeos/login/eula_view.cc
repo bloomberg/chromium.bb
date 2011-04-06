@@ -319,10 +319,10 @@ static void SetUpGridLayout(views::GridLayout* layout) {
 // Convenience function. Returns URL of the OEM EULA page that should be
 // displayed using current locale and manifest. Returns empty URL otherwise.
 static GURL GetOemEulaPagePath() {
-  const StartupCustomizationDocument *customization =
+  const StartupCustomizationDocument* customization =
       WizardController::default_controller()->GetCustomization();
   if (customization) {
-    std::string locale = g_browser_process->GetApplicationLocale();
+    std::string locale = customization->initial_locale();
     std::string eula_page = customization->GetEULAPage(locale);
     if (!eula_page.empty())
       return GURL(eula_page);

@@ -232,6 +232,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
       VLOG(1) << "Initial locale: " << locale
               << "keyboard layout " << layout;
       if (!locale.empty()) {
+        WizardController::SetInitialLocale(locale);
         // Determine keyboard layout from OEM customization (if provided) or
         // initial locale and save it in preferences.
         DetermineAndSaveHardwareKeyboard(locale, layout);
