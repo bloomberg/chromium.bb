@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,18 +60,20 @@ void SearchBox::OnChange(const string16& value,
 void SearchBox::OnSubmit(const string16& value, bool verbatim) {
   value_ = value;
   verbatim_ = verbatim;
-  if (!render_view()->webview() || !render_view()->webview()->mainFrame())
-    return;
-  extensions_v8::SearchBoxExtension::DispatchSubmit(
-      render_view()->webview()->mainFrame());
+  if (render_view()->webview() && render_view()->webview()->mainFrame()) {
+    extensions_v8::SearchBoxExtension::DispatchSubmit(
+        render_view()->webview()->mainFrame());
+  }
+  Reset();
 }
 
 void SearchBox::OnCancel() {
   verbatim_ = false;
-  if (!render_view()->webview() || !render_view()->webview()->mainFrame())
-    return;
-  extensions_v8::SearchBoxExtension::DispatchCancel(
-      render_view()->webview()->mainFrame());
+  if (render_view()->webview() && render_view()->webview()->mainFrame()) {
+    extensions_v8::SearchBoxExtension::DispatchCancel(
+        render_view()->webview()->mainFrame());
+  }
+  Reset();
 }
 
 void SearchBox::OnResize(const gfx::Rect& bounds) {
@@ -94,4 +96,11 @@ void SearchBox::OnDetermineIfPageSupportsInstant(const string16& value,
       render_view()->webview()->mainFrame());
   render_view()->Send(new ViewHostMsg_InstantSupportDetermined(
       render_view()->routing_id(), render_view()->page_id(), result));
+}
+
+void SearchBox::Reset() {
+  verbatim_ = false;
+  value_ = string16();
+  selection_start_ = selection_end_ = 0;
+  rect_ = gfx::Rect();
 }

@@ -114,7 +114,7 @@ class InstantTest : public InProcessBrowserTest {
     // When the page loads, the initial searchBox values are set and only a
     // resize will have been sent.
     ASSERT_EQ("true 0 0 0 1 d false d false 1 1",
-              GetSearchStateAsString(preview_));
+              GetSearchStateAsString(preview_, false));
   }
 
   void SetLocationBarText(const std::string& text) {
@@ -188,7 +188,11 @@ class InstantTest : public InProcessBrowserTest {
   // window.chrome.searchBox.selectionStart
   // window.chrome.searchBox.selectionEnd
   // If determining any of the values fails, the value is 'fail'.
-  std::string GetSearchStateAsString(TabContents* tab_contents) {
+  //
+  // If |use_last| is true, then the last searchBox values are used instead of
+  // the current. Set |use_last| to true when testing OnSubmit/OnCancel.
+  std::string GetSearchStateAsString(TabContents* tab_contents,
+                                     bool use_last) {
     bool sv = false;
     int onsubmitcalls = 0;
     int oncancelcalls = 0;
@@ -215,17 +219,35 @@ class InstantTest : public InProcessBrowserTest {
             &before_load_value) ||
         !GetBoolFromJavascript(
             tab_contents, "window.beforeLoadSearchBox.verbatim",
-            &before_load_verbatim) ||
-        !GetStringFromJavascript(tab_contents, "window.chrome.searchBox.value",
-                                 &value) ||
-        !GetBoolFromJavascript(tab_contents, "window.chrome.searchBox.verbatim",
-                               &verbatim) ||
-        !GetIntFromJavascript(tab_contents,
-                              "window.chrome.searchBox.selectionStart",
-                              &selection_start) ||
-        !GetIntFromJavascript(tab_contents,
-                              "window.chrome.searchBox.selectionEnd",
-                              &selection_end)) {
+            &before_load_verbatim)) {
+      return "fail";
+    }
+
+    if (use_last &&
+        (!GetStringFromJavascript(tab_contents, "window.lastSearchBox.value",
+                                  &value) ||
+         !GetBoolFromJavascript(tab_contents, "window.lastSearchBox.verbatim",
+                                &verbatim) ||
+         !GetIntFromJavascript(tab_contents,
+                               "window.lastSearchBox.selectionStart",
+                               &selection_start) ||
+         !GetIntFromJavascript(tab_contents,
+                               "window.lastSearchBox.selectionEnd",
+                               &selection_end))) {
+      return "fail";
+    }
+
+    if (!use_last &&
+        (!GetStringFromJavascript(tab_contents, "window.searchBox.value",
+                                  &value) ||
+         !GetBoolFromJavascript(tab_contents, "window.searchBox.verbatim",
+                                &verbatim) ||
+         !GetIntFromJavascript(tab_contents,
+                               "window.searchBox.selectionStart",
+                               &selection_start) ||
+         !GetIntFromJavascript(tab_contents,
+                               "window.searchBox.selectionEnd",
+                               &selection_end))) {
       return "fail";
     }
 
@@ -311,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
 
   // Check that the value is reflected and onchange is called.
   EXPECT_EQ("true 0 0 1 2 d false def false 3 3",
-            GetSearchStateAsString(preview_));
+            GetSearchStateAsString(preview_, true));
 }
 
 IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsArrayOfStrings) {
@@ -652,7 +674,11 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
 
   // Check that the value is reflected and onsubmit is called.
   EXPECT_EQ("true 1 0 1 2 d false defghi true 3 3",
-            GetSearchStateAsString(preview_));
+            GetSearchStateAsString(preview_, true));
+
+  // Make sure the searchbox values were reset.
+  EXPECT_EQ("true 1 0 1 2 d false  false 0 0",
+            GetSearchStateAsString(preview_, false));
 }
 
 // Verify that the oncancel event is dispatched upon losing focus.
@@ -677,7 +703,11 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
 
   // Check that the value is reflected and oncancel is called.
   EXPECT_EQ("true 0 1 1 2 d false def false 3 3",
-            GetSearchStateAsString(preview_));
+            GetSearchStateAsString(preview_, true));
+
+  // Make sure the searchbox values were reset.
+  EXPECT_EQ("true 0 1 1 2 d false  false 0 0",
+            GetSearchStateAsString(preview_, false));
 }
 
 // Make sure about:crash is shown.
@@ -784,4 +814,36 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_DownloadOnEnter) {
     EXPECT_EQ(url.spec(),
               contents->controller().pending_entry()->url().spec());
   }
+}
+
+// Makes sure window.chrome.searchbox doesn't persist when a new page is loaded.
+IN_PROC_BROWSER_TEST_F(InstantTest, DontPersistSearchbox) {
+  ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
+  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
+
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
+  ASSERT_NO_FATAL_FAILURE(SetupPreview());
+
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText("def"));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN));
+
+  // Check that the preview contents have been committed.
+  ASSERT_FALSE(browser()->instant()->GetPreviewContents());
+  ASSERT_FALSE(browser()->instant()->is_active());
+
+  TabContents* contents = browser()->GetSelectedTabContents();
+  ASSERT_TRUE(contents);
+
+  // Navigate to a new URL. This should reset the searchbox values.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL(test_server()->GetURL("files/instant/empty.html")));
+  bool result;
+  ASSERT_TRUE(GetBoolFromJavascript(
+                  browser()->GetSelectedTabContents(),
+                  "window.chrome.searchBox.value.length == 0",
+                  &result));
+  EXPECT_TRUE(result);
 }
