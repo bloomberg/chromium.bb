@@ -201,9 +201,7 @@ GpuBlacklist::StringInfo::Op GpuBlacklist::StringInfo::StringToOp(
 GpuBlacklist::GpuBlacklistEntry*
 GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     DictionaryValue* value, bool top_level) {
-  if (value == NULL)
-    return NULL;
-
+  DCHECK(value);
   scoped_ptr<GpuBlacklistEntry> entry(new GpuBlacklistEntry());
 
   if (top_level) {
@@ -555,8 +553,10 @@ GpuFeatureFlags GpuBlacklist::GpuBlacklistEntry::GetGpuFeatureFlags() const {
   return *feature_flags_;
 }
 
-GpuBlacklist::GpuBlacklist()
+GpuBlacklist::GpuBlacklist(const std::string& browser_version_string)
     : max_entry_id_(0) {
+  browser_version_.reset(Version::GetVersionFromString(browser_version_string));
+  DCHECK(browser_version_.get() != NULL);
 }
 
 GpuBlacklist::~GpuBlacklist() {
@@ -590,11 +590,25 @@ bool GpuBlacklist::LoadGpuBlacklist(const DictionaryValue& parsed_json,
     return false;
 
   uint32 max_entry_id = 0;
+  size_t entry_count_expectation = list->GetSize();
   for (size_t i = 0; i < list->GetSize(); ++i) {
     DictionaryValue* list_item = NULL;
     bool valid = list->GetDictionary(i, &list_item);
     if (!valid)
       break;
+    if (list_item == NULL)
+      break;
+    // Check browser version compatibility: if the entry is not for the
+    // current browser version, don't process it.
+    BrowserVersionSupport browser_version_support =
+        IsEntrySupportedByCurrentBrowserVersion(list_item);
+    if (browser_version_support == kMalformed)
+      break;
+    if (browser_version_support == kUnsupported) {
+      entry_count_expectation--;
+      continue;
+    }
+    DCHECK(browser_version_support == kSupported);
     GpuBlacklistEntry* entry =
         GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(list_item, true);
     if (entry == NULL)
@@ -604,7 +618,7 @@ bool GpuBlacklist::LoadGpuBlacklist(const DictionaryValue& parsed_json,
     entries.push_back(entry);
   }
 
-  if (entries.size() < list->GetSize()) {
+  if (entries.size() != entry_count_expectation) {
     for (size_t i = 0; i < entries.size(); ++i)
       delete entries[i];
     return false;
@@ -759,3 +773,28 @@ void GpuBlacklist::Clear() {
   blacklist_.clear();
   active_entries_.clear();
 }
+
+GpuBlacklist::BrowserVersionSupport
+GpuBlacklist::IsEntrySupportedByCurrentBrowserVersion(
+    DictionaryValue* value) {
+  DCHECK(value);
+  DictionaryValue* browser_version_value = NULL;
+  if (value->GetDictionary("browser_version", &browser_version_value)) {
+    std::string version_op = "any";
+    std::string version_string;
+    std::string version_string2;
+    browser_version_value->GetString("op", &version_op);
+    browser_version_value->GetString("number", &version_string);
+    browser_version_value->GetString("number2", &version_string2);
+    scoped_ptr<VersionInfo> browser_version_info;
+    browser_version_info.reset(
+      new VersionInfo(version_op, version_string, version_string2));
+    if (!browser_version_info->IsValid())
+      return kMalformed;
+    if (browser_version_info->Contains(*browser_version_))
+      return kSupported;
+    return kUnsupported;
+  }
+  return kSupported;
+}
+

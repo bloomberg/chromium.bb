@@ -29,7 +29,7 @@ class GpuBlacklist {
     kOsUnknown
   };
 
-  GpuBlacklist();
+  explicit GpuBlacklist(const std::string& browser_version_string);
   ~GpuBlacklist();
 
   // Loads blacklist information from a json file.
@@ -245,13 +245,27 @@ class GpuBlacklist {
     std::vector<GpuBlacklistEntry*> exceptions_;
   };
 
+  enum BrowserVersionSupport {
+    kSupported,
+    kUnsupported,
+    kMalformed
+  };
+
   // Gets the current OS type.
   static OsType GetOsType();
 
   void Clear();
 
+  // Check if the entry is supported by the current version of browser.
+  // By default, if there is no browser version information in the entry,
+  // return kSupported;
+  BrowserVersionSupport IsEntrySupportedByCurrentBrowserVersion(
+      DictionaryValue* value);
+
   scoped_ptr<Version> version_;
   std::vector<GpuBlacklistEntry*> blacklist_;
+
+  scoped_ptr<Version> browser_version_;
 
   // This records all the blacklist entries that are appliable to the current
   // user machine.  It is updated everytime DetermineGpuFeatureFlags() is

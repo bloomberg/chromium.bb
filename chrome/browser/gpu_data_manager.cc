@@ -13,6 +13,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/gpu_blacklist.h"
 #include "content/gpu/gpu_info_collector.h"
@@ -197,7 +198,10 @@ bool GpuDataManager::LoadGpuBlacklist() {
   static const base::StringPiece gpu_blacklist_json(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_GPU_BLACKLIST));
-  gpu_blacklist_.reset(new GpuBlacklist());
+  chrome::VersionInfo version_info;
+  std::string chrome_version_string =
+      version_info.is_valid() ? version_info.Version() : "0";
+  gpu_blacklist_.reset(new GpuBlacklist(chrome_version_string));
   if (gpu_blacklist_->LoadGpuBlacklist(gpu_blacklist_json.as_string(), true)) {
     uint16 version_major, version_minor;
     bool succeed = gpu_blacklist_->GetVersion(&version_major,
@@ -229,7 +233,10 @@ bool GpuDataManager::UpdateGpuBlacklist() {
           cached_version_minor <= current_version_minor)))
       return false;
   }
-  GpuBlacklist* updated_list = new GpuBlacklist();
+  chrome::VersionInfo version_info;
+  std::string chrome_version_string =
+      version_info.is_valid() ? version_info.Version() : "0";
+  GpuBlacklist* updated_list = new GpuBlacklist(chrome_version_string);
   if (!updated_list->LoadGpuBlacklist(*gpu_blacklist_cache_, true)) {
     delete updated_list;
     return false;
