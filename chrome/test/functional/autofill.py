@@ -258,10 +258,11 @@ class AutofillTest(pyauto.PyUITest):
         js_return_addrline1_field, 0, 0)
     self.assertNotEqual(
         readonly_field_value, profile['EMAIL_ADDRESS'],
-        'Autofill filled in value for a read-only field.')
+        'Autofill filled in value "%s" for a read-only field.'
+        % readonly_field_value)
     self.assertEqual(
         addrline1_field_value, profile['ADDRESS_HOME_LINE1'],
-        'Unexpected value in the Address field.')
+        'Unexpected value "%s" in the Address field.' % addrline1_field_value)
 
   def FormFillLatencyAfterSubmit(self):
     """Test latency time on form submit with lots of stored Autofill profiles.
