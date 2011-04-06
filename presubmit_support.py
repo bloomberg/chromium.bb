@@ -24,7 +24,6 @@ import os  # Somewhat exposed through the API.
 import pickle  # Exposed through the API.
 import random
 import re  # Exposed through the API.
-import subprocess  # Exposed through the API.
 import sys  # Parts exposed through API.
 import tempfile  # Exposed through the API.
 import time
@@ -50,6 +49,7 @@ import gclient_utils
 import owners
 import presubmit_canned_checks
 import scm
+import subprocess2 as subprocess  # Exposed through the API.
 
 
 # Ask for feedback only once in program lifetime.
