@@ -81,7 +81,7 @@ void PendingExtensionManager::AddFromExternalUpdateUrl(
   const bool kEnableOnInstall = true;
   const bool kEnableIncognitoOnInstall = false;
 
-  if (service_.IsExternalExtensionUninstalled(id))
+  if (service_.const_extension_prefs().IsExternalExtensionUninstalled(id))
     return;
 
   if (service_.GetExtensionById(id, true)) {

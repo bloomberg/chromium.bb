@@ -143,11 +143,12 @@ bool AreExtensionSpecificsNonUserPropertiesEqual(
 }
 
 void GetExtensionSpecifics(const Extension& extension,
-                           ExtensionServiceInterface* extension_service,
+                           ExtensionPrefs* extension_prefs,
                            sync_pb::ExtensionSpecifics* specifics) {
   const std::string& id = extension.id();
-  bool enabled = extension_service->IsExtensionEnabled(id);
-  bool incognito_enabled = extension_service->IsIncognitoEnabled(id);
+  bool enabled =
+      extension_prefs->GetExtensionState(id) == Extension::ENABLED;
+  bool incognito_enabled = extension_prefs->IsIncognitoEnabled(id);
   GetExtensionSpecificsHelper(extension, enabled, incognito_enabled,
                               specifics);
 }
@@ -194,12 +195,18 @@ void SetExtensionProperties(
                  << "has a different update URL than the extension: "
                  << update_url.spec() << " vs. " << extension->update_url();
   }
-  if (specifics.enabled()) {
-    extensions_service->EnableExtension(id);
-  } else {
+  ExtensionPrefs* extension_prefs = extensions_service->extension_prefs();
+  bool enabled = extension_prefs->GetExtensionState(id) == Extension::ENABLED;
+  if (enabled && !specifics.enabled()) {
     extensions_service->DisableExtension(id);
+  } else if (!enabled && specifics.enabled()) {
+    extensions_service->EnableExtension(id);
   }
-  extensions_service->SetIsIncognitoEnabled(id, specifics.incognito_enabled());
+  bool incognito_enabled = extension_prefs->IsIncognitoEnabled(id);
+  if (incognito_enabled != specifics.incognito_enabled()) {
+    extensions_service->SetIsIncognitoEnabled(
+        extension, specifics.incognito_enabled());
+  }
   if (specifics.name() != extension->name()) {
     LOG(WARNING) << "specifics for extension " << id
                  << "has a different name than the extension: "

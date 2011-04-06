@@ -439,7 +439,7 @@ bool IncognitoExtensionProcessManager::IsIncognitoEnabled(
     const Extension* extension) {
   ExtensionService* service =
       browsing_instance_->profile()->GetExtensionService();
-  return service && service->IsIncognitoEnabled(extension->id());
+  return service && service->IsIncognitoEnabled(extension);
 }
 
 void IncognitoExtensionProcessManager::Observe(

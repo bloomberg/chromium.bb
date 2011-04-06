@@ -190,9 +190,8 @@ void KeywordProvider::Start(const AutocompleteInput& input,
       ExtensionService* service = profile_->GetExtensionService();
       const Extension* extension = service->GetExtensionById(
           template_url->GetExtensionId(), false);
-      bool enabled =
-          extension && (!profile_->IsOffTheRecord() ||
-                        service->IsIncognitoEnabled(extension->id()));
+      bool enabled = extension && (!profile_->IsOffTheRecord() ||
+                                   service->IsIncognitoEnabled(extension));
       if (!enabled) {
         i = keyword_matches.erase(i);
         continue;

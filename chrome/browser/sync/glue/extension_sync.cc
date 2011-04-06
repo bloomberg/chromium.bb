@@ -90,7 +90,7 @@ void ReadClientDataFromExtensionList(
     const Extension& extension = **it;
     if (is_valid_and_syncable(extension)) {
       sync_pb::ExtensionSpecifics client_specifics;
-      GetExtensionSpecifics(extension, extensions_service,
+      GetExtensionSpecifics(extension, extensions_service->extension_prefs(),
                             &client_specifics);
       DcheckIsExtensionSpecificsValid(client_specifics);
       const ExtensionData& extension_data =
@@ -277,7 +277,7 @@ void TryUpdateClient(
     SetExtensionProperties(specifics, extensions_service, extension);
     {
       sync_pb::ExtensionSpecifics extension_specifics;
-      GetExtensionSpecifics(*extension, extensions_service,
+      GetExtensionSpecifics(*extension, extensions_service->extension_prefs(),
                             &extension_specifics);
       DCHECK(AreExtensionSpecificsUserPropertiesEqual(
           specifics, extension_specifics))
@@ -300,6 +300,22 @@ void TryUpdateClient(
         specifics.incognito_enabled());
   }
   DCHECK(!extension_data->NeedsUpdate(ExtensionData::SERVER));
+}
+
+// Kick off a run of the extension updater.
+//
+// TODO(akalin): Combine this with the similar function in
+// theme_util.cc.
+void NudgeExtensionUpdater(ExtensionServiceInterface* extensions_service) {
+  ExtensionUpdater* extension_updater = extensions_service->updater();
+  // Auto-updates should now be on always (see the construction of the
+  // ExtensionService in ProfileImpl::InitExtensions()).
+  if (extension_updater) {
+    extension_updater->CheckNow();
+  } else {
+    LOG(DFATAL) << "Extension updater unexpectedly NULL; "
+                << "auto-updates may be turned off";
+  }
 }
 
 }  // namespace
@@ -342,7 +358,7 @@ bool FlushExtensionData(const ExtensionSyncTraits& traits,
   }
 
   if (should_nudge_extension_updater) {
-    extensions_service->CheckForUpdates();
+    NudgeExtensionUpdater(extensions_service);
   }
 
   return true;
@@ -364,7 +380,7 @@ bool UpdateServerData(const ExtensionSyncTraits& traits,
   ExtensionServiceInterface* extensions_service =
       GetExtensionServiceFromProfileSyncService(sync_service);
   sync_pb::ExtensionSpecifics client_data;
-  GetExtensionSpecifics(extension, extensions_service,
+  GetExtensionSpecifics(extension, extensions_service->extension_prefs(),
                         &client_data);
   DcheckIsExtensionSpecificsValid(client_data);
   ExtensionData extension_data =
@@ -433,7 +449,7 @@ void UpdateClient(const ExtensionSyncTraits& traits,
       return;
     }
     sync_pb::ExtensionSpecifics client_data;
-    GetExtensionSpecifics(*extension, extensions_service,
+    GetExtensionSpecifics(*extension, extensions_service->extension_prefs(),
                           &client_data);
     DcheckIsExtensionSpecificsValid(client_data);
     extension_data =
@@ -445,7 +461,7 @@ void UpdateClient(const ExtensionSyncTraits& traits,
     TryUpdateClient(traits.is_valid_and_syncable,
                     extensions_service, &extension_data);
     if (extension_data.NeedsUpdate(ExtensionData::CLIENT)) {
-      extensions_service->CheckForUpdates();
+      NudgeExtensionUpdater(extensions_service);
     }
   }
   DCHECK(!extension_data.NeedsUpdate(ExtensionData::SERVER));

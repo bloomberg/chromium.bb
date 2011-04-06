@@ -81,7 +81,7 @@ bool AreExtensionSpecificsNonUserPropertiesEqual(
 // must be a syncable extension.  |specifics| will be valid after this
 // function is called.
 void GetExtensionSpecifics(const Extension& extension,
-                           ExtensionServiceInterface* extension_service,
+                           ExtensionPrefs* extension_prefs,
                            sync_pb::ExtensionSpecifics* specifics);
 
 // Exposed only for testing.  Pre- and post-conditions are the same as

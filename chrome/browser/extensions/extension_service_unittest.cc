@@ -2023,14 +2023,14 @@ TEST_F(ExtensionServiceTest, UpdateExtensionPreservesState) {
   // Disable it and allow it to run in incognito. These settings should carry
   // over to the updated version.
   service_->DisableExtension(good->id());
-  service_->SetIsIncognitoEnabled(good->id(), true);
+  service_->SetIsIncognitoEnabled(good, true);
 
   path = extensions_path.AppendASCII("good2.crx");
   UpdateExtension(good_crx, path, INSTALLED);
   ASSERT_EQ(1u, service_->disabled_extensions()->size());
   const Extension* good2 = service_->disabled_extensions()->at(0);
   ASSERT_EQ("1.0.0.1", good2->version()->GetString());
-  EXPECT_TRUE(service_->IsIncognitoEnabled(good2->id()));
+  EXPECT_TRUE(service_->IsIncognitoEnabled(good2));
 }
 
 // Tests that updating preserves extension location.
@@ -2167,7 +2167,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtension) {
   EXPECT_EQ(kGoodInitialState,
             service_->extension_prefs()->GetExtensionState(extension->id()));
   EXPECT_EQ(kGoodInitialIncognitoEnabled,
-            service_->IsIncognitoEnabled(extension->id()));
+            service_->IsIncognitoEnabled(extension));
 }
 
 namespace {
@@ -2199,7 +2199,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingTheme) {
 
   EXPECT_EQ(Extension::ENABLED,
             service_->extension_prefs()->GetExtensionState(extension->id()));
-  EXPECT_FALSE(service_->IsIncognitoEnabled(extension->id()));
+  EXPECT_FALSE(service_->IsIncognitoEnabled(extension));
 }
 
 // Test updating a pending CRX as if the source is an external extension
@@ -2225,7 +2225,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExternalCrx) {
 
   EXPECT_EQ(Extension::ENABLED,
             service_->extension_prefs()->GetExtensionState(extension->id()));
-  EXPECT_FALSE(service_->IsIncognitoEnabled(extension->id()));
+  EXPECT_FALSE(service_->IsIncognitoEnabled(extension));
 }
 
 // Test updating a pending CRX as if the source is an external extension

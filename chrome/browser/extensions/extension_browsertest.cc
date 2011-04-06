@@ -88,7 +88,7 @@ bool ExtensionBrowserTest::LoadExtensionImpl(const FilePath& path,
   // are set up with the defaults.
   service->extension_prefs()->OnExtensionInstalled(
       extension, Extension::ENABLED, false);
-  service->SetIsIncognitoEnabled(extension->id(), incognito_enabled);
+  service->SetIsIncognitoEnabled(extension, incognito_enabled);
   service->SetAllowFileAccess(extension, fileaccess_enabled);
 
   return WaitForExtensionHostsToLoad();

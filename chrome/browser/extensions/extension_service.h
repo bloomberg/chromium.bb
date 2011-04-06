@@ -63,9 +63,6 @@ class ExtensionServiceInterface {
   virtual void UninstallExtension(const std::string& extension_id,
                                   bool external_uninstall) = 0;
 
-  virtual bool IsExtensionEnabled(const std::string& extension_id) const = 0;
-  virtual bool IsExternalExtensionUninstalled(
-      const std::string& extension_id) const = 0;
   virtual void EnableExtension(const std::string& extension_id) = 0;
   virtual void DisableExtension(const std::string& extension_id) = 0;
 
@@ -74,11 +71,17 @@ class ExtensionServiceInterface {
   virtual void CheckAdminBlacklist() = 0;
   virtual bool HasInstalledExtensions() = 0;
 
-  virtual bool IsIncognitoEnabled(const std::string& extension_id) const = 0;
-  virtual void SetIsIncognitoEnabled(const std::string& extension_id,
+  virtual void SetIsIncognitoEnabled(const Extension* extension,
                                      bool enabled) = 0;
 
-  virtual void CheckForUpdates() = 0;
+  // TODO(skerner): Change to const ExtensionPrefs& extension_prefs() const,
+  // ExtensionPrefs* mutable_extension_prefs().
+  virtual ExtensionPrefs* extension_prefs() = 0;
+  virtual const ExtensionPrefs& const_extension_prefs() const = 0;
+
+  virtual ExtensionUpdater* updater() = 0;
+
+  virtual Profile* profile() = 0;
 };
 
 // Manages installed and running Chromium extensions.
@@ -165,9 +168,8 @@ class ExtensionService
   DefaultApps* default_apps() { return &default_apps_; }
 
   // Whether this extension can run in an incognito window.
-  virtual bool IsIncognitoEnabled(const std::string& extension_id) const;
-  virtual void SetIsIncognitoEnabled(const std::string& extension_id,
-                                     bool enabled);
+  bool IsIncognitoEnabled(const Extension* extension);
+  virtual void SetIsIncognitoEnabled(const Extension* extension, bool enabled);
 
   // Returns true if the given extension can see events and data from another
   // sub-profile (incognito to original profile, or vice versa).
@@ -230,10 +232,6 @@ class ExtensionService
   // to ExtensionPrefs some other way.
   virtual void UninstallExtension(const std::string& extension_id,
                                   bool external_uninstall);
-
-  virtual bool IsExtensionEnabled(const std::string& extension_id) const;
-  virtual bool IsExternalExtensionUninstalled(
-      const std::string& extension_id) const;
 
   // Enable or disable an extension. No action if the extension is already
   // enabled/disabled.
@@ -337,8 +335,6 @@ class ExtensionService
   // set of extensions.
   virtual void CheckAdminBlacklist();
 
-  virtual void CheckForUpdates();
-
   void set_extensions_enabled(bool enabled) { extensions_enabled_ = enabled; }
   bool extensions_enabled() { return extensions_enabled_; }
 
@@ -350,22 +346,21 @@ class ExtensionService
     return show_extensions_prompts_;
   }
 
-  Profile* profile();
+  virtual Profile* profile();
 
   // Profile calls this when it is being destroyed so that we know not to call
   // it.
   void DestroyingProfile();
 
-  // TODO(skerner): Change to const ExtensionPrefs& extension_prefs() const,
-  // ExtensionPrefs* mutable_extension_prefs().
-  ExtensionPrefs* extension_prefs();
+  virtual ExtensionPrefs* extension_prefs();
+  virtual const ExtensionPrefs& const_extension_prefs() const;
 
   // Whether the extension service is ready.
   // TODO(skerner): Get rid of this method.  crbug.com/63756
   bool is_ready() { return ready_; }
 
   // Note that this may return NULL if autoupdate is not turned on.
-  ExtensionUpdater* updater();
+  virtual ExtensionUpdater* updater();
 
   ExtensionToolbarModel* toolbar_model() { return &toolbar_model_; }
 

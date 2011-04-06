@@ -25,11 +25,9 @@
 #include "googleurl/src/gurl.h"
 
 class Extension;
-class ExtensionPrefs;
 class ExtensionUpdaterTest;
 class ExtensionUpdaterFileHandler;
 class PrefService;
-class Profile;
 
 // To save on server resources we can request updates for multiple extensions
 // in one manifest check. This class helps us keep track of the id's for a
@@ -104,8 +102,7 @@ class ManifestFetchData {
 // extensions and pending extensions.
 class ManifestFetchesBuilder {
  public:
-  ManifestFetchesBuilder(ExtensionServiceInterface* service,
-                         ExtensionPrefs* prefs);
+  explicit ManifestFetchesBuilder(ExtensionServiceInterface* service);
   ~ManifestFetchesBuilder();
 
   void AddExtension(const Extension& extension);
@@ -141,8 +138,7 @@ class ManifestFetchesBuilder {
                         Extension::Type extension_type,
                         GURL update_url,
                         const std::string& update_url_data);
-  ExtensionServiceInterface* const service_;
-  ExtensionPrefs* const prefs_;
+  ExtensionServiceInterface* service_;
 
   // List of data on fetches we're going to do. We limit the number of
   // extensions grouped together in one batch to avoid running into the limits
@@ -171,9 +167,7 @@ class ExtensionUpdater
   // extensions and installing updated ones. The |frequency_seconds| parameter
   // controls how often update checks are scheduled.
   ExtensionUpdater(ExtensionServiceInterface* service,
-                   ExtensionPrefs* extension_prefs,
                    PrefService* prefs,
-                   Profile* profile,
                    int frequency_seconds);
 
   // Starts the updater running.  Should be called at most once.
@@ -328,9 +322,7 @@ class ExtensionUpdater
   base::OneShotTimer<ExtensionUpdater> timer_;
   int frequency_seconds_;
 
-  ExtensionPrefs* extension_prefs_;
   PrefService* prefs_;
-  Profile* profile_;
 
   scoped_refptr<ExtensionUpdaterFileHandler> file_handler_;
   bool blacklist_checks_enabled_;
