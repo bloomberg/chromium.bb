@@ -474,8 +474,10 @@ void WidgetGtk::ActiveWindowChanged(GdkWindow* active_window) {
          gtk_window_get_transient_for(GTK_WINDOW(widget)) == GTK_WINDOW(
              widget_));
   }
-  if (was_active != IsActive())
+  if (was_active != IsActive()) {
     IsActiveChanged();
+    GetRootView()->SchedulePaint();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
