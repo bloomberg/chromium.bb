@@ -24,10 +24,6 @@ class JingleThreadWrapper
     : public MessageLoop::DestructionObserver,
       public talk_base::Thread {
  public:
-  // Create JingleThreadWrapper for the current thread if it hasn't
-  // been created yet.
-  static void EnsureForCurrentThread();
-
   JingleThreadWrapper(MessageLoop* message_loop);
 
   // MessageLoop::DestructionObserver implementation.

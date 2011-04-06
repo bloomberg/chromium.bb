@@ -22,9 +22,9 @@ class IpcNetworkManager : public talk_base::NetworkManager {
 
  protected:
   // Fills the supplied list with all usable networks.
-  virtual bool EnumNetworks(
-      bool include_ignored,
-      std::vector<talk_base::Network*>* networks) OVERRIDE;
+  virtual bool EnumNetworks(bool include_ignored,
+                            std::vector<talk_base::Network*>* networks)
+      OVERRIDE;
 
   P2PSocketDispatcher* socket_dispatcher_;
 };

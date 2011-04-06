@@ -6,25 +6,6 @@
 
 namespace jingle_glue {
 
-// static
-void JingleThreadWrapper::EnsureForCurrentThread() {
-  talk_base::Thread* current_thread = talk_base::Thread::Current();
-  // If JingleThreadWrapper already exists for the current thread then
-  // it is returned by talk_base::Thread::Current().
-  // talk_base::Thread::Current() may also return non-null value for
-  // the main thread because talk_base::ThreadManager creates
-  // talk_base::Thread object for it. IsOwned() allows to distinguish
-  // talk_base::Thread object created by talk_base::ThreadManager from
-  // other talk_base::Thread objects. Because talk_base::Thread
-  // objects should never created by chromium code, we can assume that
-  // if talk_base::Thread::Current() returns non-null value and it
-  // isn't the object created by talk_base::ThreadManager then
-  // JingleThreadWrapper already exists for the current thread.
-  if (current_thread == NULL || !current_thread->IsOwned()) {
-    new JingleThreadWrapper(MessageLoop::current());
-  }
-}
-
 JingleThreadWrapper::JingleThreadWrapper(MessageLoop* message_loop)
     : message_loop_(message_loop) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
@@ -114,8 +95,10 @@ void JingleThreadWrapper::RunTask(int task_id) {
     }
   }
 
-  if (have_message)
+  if (have_message) {
     message.phandler->OnMessage(&message);
+    delete message.pdata;
+  }
 }
 
 // All methods below are marked as not reached. See comments in the

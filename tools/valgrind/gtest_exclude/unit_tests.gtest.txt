@@ -8,10 +8,3 @@ RenderViewTest.ImeComposition
 PredictorTest.MassiveConcurrentLookupTest
 # Pure virtual method called: see http://crbug.com/50950
 ConnectionTesterTest.RunAllTests
-
-# Following two tests fail under valgrind because libjingle has hardcoded
-# timeouts for P2P connections, and it makes these tests fail under valgrind.
-# TODO(sergeyu): Remove hardcoded timeouts from libjingle.
-P2PTransportImplTest.Create
-P2PTransportImplTest.Connect
-P2PTransportImplTest.SendData
