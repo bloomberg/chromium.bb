@@ -63,6 +63,8 @@
         'renderer/p2p/ipc_network_manager.h',
         'renderer/p2p/ipc_socket_factory.cc',
         'renderer/p2p/ipc_socket_factory.h',
+        'renderer/p2p/p2p_transport_impl.cc',
+        'renderer/p2p/p2p_transport_impl.h',
         'renderer/p2p/socket_client.cc',
         'renderer/p2p/socket_client.h',
         'renderer/p2p/socket_dispatcher.cc',

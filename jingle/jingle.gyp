@@ -128,6 +128,8 @@
       'target_name': 'jingle_glue_test_util',
       'type': '<(library)',
       'sources': [
+        'glue/fake_network_manager.cc',
+        'glue/fake_network_manager.h',
         'glue/fake_socket_factory.cc',
         'glue/fake_socket_factory.h',
       ],
