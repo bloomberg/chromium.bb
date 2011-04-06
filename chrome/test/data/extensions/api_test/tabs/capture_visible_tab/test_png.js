@@ -37,8 +37,7 @@ chrome.test.getConfig(function(config) {
                                           {'format': 'png'},
                                           pass(function(imgDataUrl) {
               // The URL should be a data URL with has a PNG mime type.
-              assertEq('string', typeof(imgDataUrl));
-              assertEq('data:image/png;base64,', imgDataUrl.substr(0,22));
+              assertIsStringWithPrefix('data:image/png;base64,', imgDataUrl);
               whiteImageUrl = imgDataUrl;
 
               testPixelsAreExpectedColor(whiteImageUrl,
@@ -62,8 +61,8 @@ chrome.test.getConfig(function(config) {
                                           {'format': 'png'},
                                           pass(function(imgDataUrl) {
               // The URL should be a data URL with has a PNG mime type.
-              assertEq('string', typeof(imgDataUrl));
-              assertEq('data:image/png;base64,', imgDataUrl.substr(0,22));
+              assertIsStringWithPrefix('data:image/png;base64,', imgDataUrl);
+
               textImageUrl = imgDataUrl;
               assertTrue(whiteImageUrl != textImageUrl);
 
@@ -115,8 +114,7 @@ chrome.test.getConfig(function(config) {
                                           {'format': 'png'},
                                           pass(function(imgDataUrl) {
               // The URL should be a data URL with has a PNG mime type.
-              assertEq('string', typeof(imgDataUrl));
-              assertEq('data:image/png;base64,', imgDataUrl.substr(0,22));
+              assertIsStringWithPrefix('data:image/png;base64,', imgDataUrl);
               testPixelsAreExpectedColor(imgDataUrl,
                                          kWindowRect,
                                          '255,255,255,255');  // White.
@@ -124,9 +122,7 @@ chrome.test.getConfig(function(config) {
           }));
         }));
       }));
-    },
-
+    }
 
   ]);
 });
-

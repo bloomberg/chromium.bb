@@ -116,3 +116,8 @@ function countPixelsWithColors(imgUrl, windowRect, expectedColors, callback) {
 function pageUrl(base) {
   return chrome.extension.getURL('common/' + base + '.html');
 }
+
+function assertIsStringWithPrefix(prefix, str) {
+  assertEq('string', typeof(str));
+  assertEq(prefix, str.substr(0, prefix.length));
+}

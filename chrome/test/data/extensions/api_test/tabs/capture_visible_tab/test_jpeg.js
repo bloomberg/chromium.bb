@@ -36,8 +36,7 @@ chrome.test.getConfig(function(config) {
             assertEq('complete', tab.status);  // waitForAllTabs ensures this.
             chrome.tabs.captureVisibleTab(winId, pass(function(imgDataUrl) {
               // The URL should be a data URL with has a JPEG mime type.
-              assertEq('string', typeof(imgDataUrl));
-              assertEq('data:image/jpg;base64,', imgDataUrl.substr(0,22));
+              assertIsStringWithPrefix('data:image/jpeg;base64,', imgDataUrl);
               whiteImageUrl = imgDataUrl;
 
               testPixelsAreExpectedColor(whiteImageUrl,
@@ -59,8 +58,7 @@ chrome.test.getConfig(function(config) {
             assertEq('complete', tab.status);  // waitForAllTabs ensures this.
             chrome.tabs.captureVisibleTab(winId, pass(function(imgDataUrl) {
               // The URL should be a data URL with has a JPEG mime type.
-              assertEq('string', typeof(imgDataUrl));
-              assertEq('data:image/jpg;base64,', imgDataUrl.substr(0,22));
+              assertIsStringWithPrefix('data:image/jpeg;base64,', imgDataUrl);
               blackImageUrl = imgDataUrl;
 
               // Check that previous capture was done.
@@ -98,8 +96,7 @@ chrome.test.getConfig(function(config) {
             assertEq('complete', tab.status);  // waitForAllTabs ensures this.
             chrome.tabs.captureVisibleTab(winId, pass(function(imgDataUrl) {
               // The URL should be a data URL with has a JPEG mime type.
-              assertEq('string', typeof(imgDataUrl));
-              assertEq('data:image/jpg;base64,', imgDataUrl.substr(0,22));
+              assertIsStringWithPrefix('data:image/jpeg;base64,', imgDataUrl);
               testPixelsAreExpectedColor(imgDataUrl,
                                          kWindowRect,
                                          '255,255,255,255');  // White.
@@ -111,4 +108,3 @@ chrome.test.getConfig(function(config) {
 
   ]);
 });
-
