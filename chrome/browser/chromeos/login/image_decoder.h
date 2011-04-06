@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,6 @@
 #include <vector>
 
 #include "chrome/browser/utility_process_host.h"
-
-class ResourceDispatcherHost;
 
 namespace chromeos {
 
@@ -49,8 +47,7 @@ class ImageDecoder : public UtilityProcessHost::Client {
   virtual void OnDecodeImageFailed();
 
   // Launches sandboxed process that will decode the image.
-  void DecodeImageInSandbox(ResourceDispatcherHost* rdh,
-                            const std::vector<unsigned char>& image_data);
+  void DecodeImageInSandbox(const std::vector<unsigned char>& image_data);
 
   Delegate* delegate_;
   std::vector<unsigned char> image_data_;
@@ -62,4 +59,3 @@ class ImageDecoder : public UtilityProcessHost::Client {
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_IMAGE_DECODER_H_
-

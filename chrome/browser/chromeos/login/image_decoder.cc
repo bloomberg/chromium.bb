@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,6 @@ void ImageDecoder::Start() {
      BrowserThread::IO, FROM_HERE,
      NewRunnableMethod(
          this, &ImageDecoder::DecodeImageInSandbox,
-         g_browser_process->resource_dispatcher_host(),
          image_data_));
 }
 
@@ -42,15 +41,12 @@ void ImageDecoder::OnDecodeImageFailed() {
 }
 
 void ImageDecoder::DecodeImageInSandbox(
-    ResourceDispatcherHost* rdh,
     const std::vector<unsigned char>& image_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   UtilityProcessHost* utility_process_host =
-      new UtilityProcessHost(rdh,
-                             this,
+      new UtilityProcessHost(this,
                              target_thread_id_);
   utility_process_host->StartImageDecoding(image_data);
 }
 
 }  // namespace chromeos
-
