@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "base/build_config.h"
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
 #include "base/environment.h"
@@ -425,10 +426,12 @@ std::string ShellIntegration::GetDesktopFileContents(
     }
   }
 
+#if defined(TOOLKIT_GTK)
   std::string wmclass = web_app::GetWMClassFromAppName(app_name);
   if (!wmclass.empty()) {
     output_buffer += StringPrintf("StartupWMClass=%s\n", wmclass.c_str());
   }
+#endif
 
   return output_buffer;
 }
