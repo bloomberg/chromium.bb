@@ -2680,11 +2680,12 @@ class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
     """Start a local file server hosting data files over http://"""
     global _HTTP_SERVER
     assert not _HTTP_SERVER, 'HTTP Server already started'
+    http_data_dir = _OPTIONS.http_data_dir
     http_server = pyautolib.TestServer(pyautolib.TestServer.TYPE_HTTP,
-        pyautolib.FilePath(os.path.join('chrome', 'test', 'data')))
+        pyautolib.FilePath(http_data_dir))
     assert http_server.Start(), 'Could not start http server'
     _HTTP_SERVER = http_server
-    logging.debug('Started http server..')
+    logging.debug('Started http server at "%s".' % http_data_dir)
 
   def _StopHTTPServer(self):
     """Stop the local http server."""
@@ -2692,7 +2693,7 @@ class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
     assert _HTTP_SERVER, 'HTTP Server not yet started'
     assert _HTTP_SERVER.Stop(), 'Could not stop http server'
     _HTTP_SERVER = None
-    logging.debug('Stopped http server..')
+    logging.debug('Stopped http server.')
 
 
 class _GTestTextTestResult(unittest._TextTestResult):
@@ -2800,6 +2801,10 @@ class Main(object):
     parser.add_option(
         '', '--no-http-server', action='store_true', default=False,
         help='Do not start an http server to serve files in data dir.')
+    parser.add_option(
+        '', '--http-data-dir', type='string',
+        default=os.path.join('chrome', 'test', 'data'),
+        help='Relative path from which http server should serve files.')
     parser.add_option(
         '', '--channel-id', type='string', default='',
         help='Name of channel id, if using named interface.')
