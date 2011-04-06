@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 
-#include "base/build_config.h"
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
 #include "base/environment.h"
@@ -30,6 +29,7 @@
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
