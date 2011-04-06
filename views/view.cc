@@ -1362,13 +1362,24 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
   if (canvas_.get())
     canvas_.reset(gfx::Canvas::CreateCanvas(width(), height(), false));
 
-  if (parent_) {
-    parent_->SchedulePaintInRect(previous_bounds);
-    parent_->SchedulePaintInRect(bounds_);
-  } else {
-    // Previous bounds has no meaning to an orphan. This should only happen
-    // when the View is a RootView.
-    SchedulePaintInRect(gfx::Rect(0, 0, bounds_.width(), bounds_.height()));
+  if (IsVisible()) {
+    if (parent_) {
+      // Paint the old bounds.
+      if (base::i18n::IsRTL()) {
+        gfx::Rect paint_rect = previous_bounds;
+        paint_rect.set_x(parent()->GetMirroredXForRect(paint_rect));
+        parent_->SchedulePaintInRect(paint_rect);
+      } else {
+        parent_->SchedulePaintInRect(previous_bounds);
+      }
+
+      // Then the new.
+      parent_->SchedulePaintInRect(GetMirroredBounds());
+    } else {
+      // Previous bounds has no meaning to an orphan. This should only happen
+      // when the View is a RootView.
+      SchedulePaintInRect(gfx::Rect(0, 0, bounds_.width(), bounds_.height()));
+    }
   }
 
   OnBoundsChanged(previous_bounds);
