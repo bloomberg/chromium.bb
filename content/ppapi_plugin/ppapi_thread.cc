@@ -121,7 +121,8 @@ bool PpapiThread::SetupRendererChannel(base::ProcessHandle host_process_handle,
   handle->name = plugin_handle.name;
 #if defined(OS_POSIX)
   // On POSIX, pass the renderer-side FD.
-  handle->socket = base::FileDescriptor(dispatcher->GetRendererFD(), false);
+  handle->socket = base::FileDescriptor(::dup(dispatcher->GetRendererFD()),
+                                        true);
 #endif
 
   return true;
