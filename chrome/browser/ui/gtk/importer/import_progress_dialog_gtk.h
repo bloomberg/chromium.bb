@@ -22,12 +22,12 @@ typedef struct _GtkWindow GtkWindow;
 
 class ImportProgressDialogGtk : public importer::ImporterProgressObserver {
  public:
-  // Displays the import progress dialog box and starts the import.
+  // Displays the import progress dialog box and starts the import process.
   static void StartImport(GtkWindow* parent,
                           uint16 items,
                           ImporterHost* importer_host,
                           ImporterObserver* importer_observer,
-                          const importer::ProfileInfo& browser_profile,
+                          const importer::SourceProfile& source_profile,
                           Profile* profile,
                           bool first_run);
 

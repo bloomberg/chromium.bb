@@ -16,7 +16,7 @@
 
 ExternalProcessImporterClient::ExternalProcessImporterClient(
     ExternalProcessImporterHost* importer_host,
-    const importer::ProfileInfo& profile_info,
+    const importer::SourceProfile& source_profile,
     uint16 items,
     InProcessImporterBridge* bridge,
     bool import_to_bookmark_bar)
@@ -26,7 +26,7 @@ ExternalProcessImporterClient::ExternalProcessImporterClient(
       total_favicons_count_(0),
       process_importer_host_(importer_host),
       profile_import_process_host_(NULL),
-      profile_info_(profile_info),
+      source_profile_(source_profile),
       items_(items),
       import_to_bookmark_bar_(import_to_bookmark_bar),
       bridge_(bridge),
@@ -79,7 +79,7 @@ void ExternalProcessImporterClient::StartImportProcessOnIOThread(
   profile_import_process_host_ =
       new ProfileImportProcessHost(this, thread_id);
   profile_import_process_host_->StartProfileImportProcess(
-      profile_info_, items_, import_to_bookmark_bar_);
+      source_profile_, items_, import_to_bookmark_bar_);
 }
 
 void ExternalProcessImporterClient::CancelImportProcessOnIOThread() {

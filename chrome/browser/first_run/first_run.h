@@ -13,11 +13,11 @@
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/importer/importer_observer.h"
 #include "content/common/result_codes.h"
-#include "googleurl/src/gurl.h"
 #include "ui/gfx/native_widget_types.h"
 
 class CommandLine;
 class FilePath;
+class GURL;
 class Profile;
 class ProcessSingleton;
 class ImporterHost;

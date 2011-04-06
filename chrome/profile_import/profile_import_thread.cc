@@ -52,12 +52,12 @@ bool ProfileImportThread::OnControlMessageReceived(const IPC::Message& msg) {
 }
 
 void ProfileImportThread::OnImportStart(
-    const importer::ProfileInfo& profile_info,
-    int items,
+    const importer::SourceProfile& source_profile,
+    uint16 items,
     const DictionaryValue& localized_strings,
     bool import_to_bookmark_bar) {
   bridge_ = new ExternalProcessImporterBridge(this, localized_strings);
-  importer_ = importer::CreateImporterByType(profile_info.importer_type);
+  importer_ = importer::CreateImporterByType(source_profile.importer_type);
   if (!importer_) {
     Send(new ProfileImportProcessHostMsg_Import_Finished(false,
         "Importer could not be created."));
@@ -76,13 +76,11 @@ void ProfileImportThread::OnImportStart(
     Cleanup();
   }
   import_thread_->message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(
-          importer_.get(),
-          &Importer::StartImport,
-          profile_info,
-          items,
-          bridge_));
+      FROM_HERE, NewRunnableMethod(importer_.get(),
+                                   &Importer::StartImport,
+                                   source_profile,
+                                   items,
+                                   bridge_));
 }
 
 void ProfileImportThread::OnImportCancel() {

@@ -23,7 +23,7 @@ void ExternalProcessImporterHost::Cancel() {
 }
 
 void ExternalProcessImporterHost::StartImportSettings(
-    const importer::ProfileInfo& profile_info,
+    const importer::SourceProfile& source_profile,
     Profile* target_profile,
     uint16 items,
     ProfileWriter* writer,
@@ -31,13 +31,13 @@ void ExternalProcessImporterHost::StartImportSettings(
   DCHECK(!profile_);
   profile_ = target_profile;
   writer_ = writer;
-  profile_info_ = &profile_info;
+  source_profile_ = &source_profile;
   items_ = items;
 
   ImporterHost::AddRef();  // Balanced in ImporterHost::NotifyImportEnded.
 
   import_to_bookmark_bar_ = ShouldImportToBookmarkBar(first_run);
-  CheckForFirefoxLock(profile_info, items, first_run);
+  CheckForFirefoxLock(source_profile, items, first_run);
   CheckForLoadedModels(items);
 
   InvokeTaskIfDone();
@@ -48,15 +48,15 @@ void ExternalProcessImporterHost::InvokeTaskIfDone() {
       !is_source_readable_ || cancelled_)
     return;
 
-  // The in-process half of the bridge which catches data from the IPC pipe
-  // and feeds it to the ProfileWriter.  The external process half of the
-  // bridge lives in the external process -- see ProfileImportThread.
-  // The ExternalProcessImporterClient created in the next line owns this
-  // bridge, and will delete it.
+  // This is the in-process half of the bridge, which catches data from the IPC
+  // pipe and feeds it to the ProfileWriter. The external process half of the
+  // bridge lives in the external process (see ProfileImportThread).
+  // The ExternalProcessImporterClient created in the next line owns the bridge,
+  // and will delete it.
   InProcessImporterBridge* bridge =
       new InProcessImporterBridge(writer_.get(), this);
-  client_ = new ExternalProcessImporterClient(this, *profile_info_, items_,
-                                              bridge, import_to_bookmark_bar_);
+  client_ = new ExternalProcessImporterClient(
+      this, *source_profile_, items_, bridge, import_to_bookmark_bar_);
   import_process_launched_ = true;
   client_->Start();
 }

@@ -27,6 +27,7 @@
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
+#include "googleurl/src/gurl.h"
 
 #if defined(OS_WIN)
 // TODO(port): move more code in back from the first_run_win.cc module.
@@ -285,7 +286,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
     scoped_refptr<ImporterList> importer_list(new ImporterList);
     importer_list->DetectSourceProfilesHack();
     if (!FirstRun::ImportSettings(NULL,
-          importer_list->GetSourceProfileInfoAt(0).importer_type,
+          importer_list->GetSourceProfileAt(0).importer_type,
           out_prefs->do_import_items,
           FilePath::FromWStringHack(UTF8ToWide(import_bookmarks_path)),
           true, NULL)) {
@@ -425,22 +426,20 @@ int FirstRun::ImportFromFile(Profile* profile, const CommandLine& cmdline) {
     return false;
   }
   scoped_refptr<ImporterHost> importer_host(new ImporterHost);
-  FirstRunImportObserver importer_observer;
-
   importer_host->set_headless();
 
-  importer::ProfileInfo profile_info;
-  profile_info.importer_type = importer::BOOKMARKS_HTML;
-  profile_info.source_path = file_path;
+  importer::SourceProfile source_profile;
+  source_profile.importer_type = importer::BOOKMARKS_HTML;
+  source_profile.source_path = file_path;
 
-  importer::ShowImportProgressDialog(
-      NULL,
-      importer::FAVORITES,
-      importer_host,
-      &importer_observer,
-      profile_info,
-      profile,
-      true);
+  FirstRunImportObserver importer_observer;
+  importer::ShowImportProgressDialog(NULL,
+                                     importer::FAVORITES,
+                                     importer_host,
+                                     &importer_observer,
+                                     source_profile,
+                                     profile,
+                                     true);
 
   importer_observer.RunLoop();
   return importer_observer.import_result();
@@ -675,8 +674,8 @@ bool FirstRun::ImportSettings(Profile* profile,
                               scoped_refptr<ImporterHost> importer_host,
                               scoped_refptr<ImporterList> importer_list,
                               int items_to_import) {
-  const importer::ProfileInfo& source_profile =
-      importer_list->GetSourceProfileInfoAt(0);
+  const importer::SourceProfile& source_profile =
+      importer_list->GetSourceProfileAt(0);
 
   // Ensure that importers aren't requested to import items that they do not
   // support.

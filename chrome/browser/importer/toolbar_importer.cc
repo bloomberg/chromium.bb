@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/importer/importer_bridge.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/libxml_utils.h"
 #include "content/browser/browser_thread.h"
@@ -57,9 +58,10 @@ Toolbar5Importer::~Toolbar5Importer() {
   DCHECK(!data_fetcher_);
 }
 
-void Toolbar5Importer::StartImport(const importer::ProfileInfo& profile_info,
-                                   uint16 items,
-                                   ImporterBridge* bridge) {
+void Toolbar5Importer::StartImport(
+    const importer::SourceProfile& source_profile,
+    uint16 items,
+    ImporterBridge* bridge) {
   DCHECK(bridge);
 
   bridge_ = bridge;

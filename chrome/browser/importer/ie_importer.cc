@@ -82,11 +82,11 @@ const GUID IEImporter::kUnittestGUID = {
 IEImporter::IEImporter() {
 }
 
-void IEImporter::StartImport(const importer::ProfileInfo& profile_info,
+void IEImporter::StartImport(const importer::SourceProfile& source_profile,
                              uint16 items,
                              ImporterBridge* bridge) {
   bridge_ = bridge;
-  source_path_ = profile_info.source_path;
+  source_path_ = source_profile.source_path;
 
   bridge_->NotifyStarted();
 

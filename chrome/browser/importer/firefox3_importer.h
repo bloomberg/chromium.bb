@@ -14,9 +14,13 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer.h"
-#include "chrome/browser/importer/importer_data_types.h"
+
+class GURL;
+
+namespace history {
+struct ImportedFaviconUsage;
+}
 
 namespace sql {
 class Connection;
@@ -30,7 +34,7 @@ class Firefox3Importer : public Importer {
   Firefox3Importer();
 
   // Importer:
-  virtual void StartImport(const importer::ProfileInfo& profile_info,
+  virtual void StartImport(const importer::SourceProfile& source_profile,
                            uint16 items,
                            ImporterBridge* bridge) OVERRIDE;
 

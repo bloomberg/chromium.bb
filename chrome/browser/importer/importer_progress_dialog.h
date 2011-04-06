@@ -14,7 +14,7 @@ class Profile;
 
 namespace importer {
 
-struct ProfileInfo;
+struct SourceProfile;
 
 // Shows an UI for importing and begins importing the specified |items| from
 // |source_profile| to |target_profile|. |importer_observer| is notified when
@@ -25,7 +25,7 @@ void ShowImportProgressDialog(gfx::NativeWindow parent_window,
                               uint16 items,
                               ImporterHost* importer_host,
                               ImporterObserver* importer_observer,
-                              const ProfileInfo& source_profile,
+                              const SourceProfile& source_profile,
                               Profile* target_profile,
                               bool first_run);
 

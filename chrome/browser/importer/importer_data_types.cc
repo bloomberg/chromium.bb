@@ -6,12 +6,12 @@
 
 namespace importer {
 
-ProfileInfo::ProfileInfo()
+SourceProfile::SourceProfile()
     : importer_type(NONE_IMPORTER),
       services_supported(0) {
 }
 
-ProfileInfo::~ProfileInfo() {
+SourceProfile::~SourceProfile() {
 }
 
 }  // namespace importer

@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/profile_writer.h"
 #include "content/browser/browser_child_process_host.h"
@@ -39,10 +38,10 @@ class ProfileImportProcessHost : public BrowserChildProcessHost {
                            BrowserThread::ID thread_id);
   virtual ~ProfileImportProcessHost();
 
-  // |profile_info|, |items|, and |import_to_bookmark_bar| are all needed by
+  // |source_profile|, |items|, and |import_to_bookmark_bar| are all needed by
   // the external importer process.
-  bool StartProfileImportProcess(const importer::ProfileInfo& profile_info,
-                                 int items,
+  bool StartProfileImportProcess(const importer::SourceProfile& source_profile,
+                                 uint16 items,
                                  bool import_to_bookmark_bar);
 
   // Cancel the external import process.

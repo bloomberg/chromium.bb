@@ -152,14 +152,14 @@ TestingAutomationProvider::~TestingAutomationProvider() {
 void TestingAutomationProvider::SourceProfilesLoaded() {
   DCHECK_NE(static_cast<ImporterList*>(NULL), importer_list_.get());
 
-  // Get the correct ProfileInfo based on the browser the user provided.
-  importer::ProfileInfo profile_info;
+  // Get the correct profile based on the browser the user provided.
+  importer::SourceProfile source_profile;
   int num_browsers = importer_list_->GetAvailableProfileCount();
   int i = 0;
   for ( ; i < num_browsers; i++) {
     string16 name = importer_list_->GetSourceProfileNameAt(i);
     if (name == import_settings_data_.browser_name) {
-      profile_info = importer_list_->GetSourceProfileInfoAt(i);
+      source_profile = importer_list_->GetSourceProfileAt(i);
       break;
     }
   }
@@ -175,11 +175,11 @@ void TestingAutomationProvider::SourceProfilesLoaded() {
       new AutomationProviderImportSettingsObserver(
           this, import_settings_data_.reply_message));
 
-  Profile* profile = import_settings_data_.browser->profile();
-  importer_host->StartImportSettings(profile_info,
-                                     profile,
+  Profile* target_profile = import_settings_data_.browser->profile();
+  importer_host->StartImportSettings(source_profile,
+                                     target_profile,
                                      import_settings_data_.import_items,
-                                     new ProfileWriter(profile),
+                                     new ProfileWriter(target_profile),
                                      import_settings_data_.first_run);
 }
 

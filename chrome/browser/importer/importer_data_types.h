@@ -13,8 +13,7 @@
 #include "base/string16.h"
 #include "chrome/browser/importer/importer_type.h"
 
-// Types needed for importing data from other browsers and the Google
-// Toolbar.
+// Types needed for importing data from other browsers and the Google Toolbar.
 namespace importer {
 
 // An enumeration of the type of data that can be imported.
@@ -30,9 +29,9 @@ enum ImportItem {
 };
 
 // Information about a profile needed by an importer to do import work.
-struct ProfileInfo {
-  ProfileInfo();
-  ~ProfileInfo();
+struct SourceProfile {
+  SourceProfile();
+  ~SourceProfile();
 
   string16 description;
   ImporterType importer_type;

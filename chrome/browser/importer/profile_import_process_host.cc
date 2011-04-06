@@ -28,7 +28,8 @@ ProfileImportProcessHost::~ProfileImportProcessHost() {
 }
 
 bool ProfileImportProcessHost::StartProfileImportProcess(
-    const importer::ProfileInfo& profile_info, int items,
+    const importer::SourceProfile& source_profile,
+    uint16 items,
     bool import_to_bookmark_bar) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!StartProcess())
@@ -54,7 +55,7 @@ bool ProfileImportProcessHost::StartProfileImportProcess(
       l10n_util::GetStringUTF8(IDS_IMPORT_FROM_SAFARI));
 
   Send(new ProfileImportProcessMsg_StartImport(
-      profile_info, items, localized_strings, import_to_bookmark_bar));
+      source_profile, items, localized_strings, import_to_bookmark_bar));
   return true;
 }
 

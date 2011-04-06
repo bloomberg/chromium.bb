@@ -14,7 +14,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "chrome/browser/importer/importer.h"
-#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/profile_writer.h"
 
 class GURL;
@@ -26,7 +25,7 @@ class Firefox2Importer : public Importer {
   Firefox2Importer();
 
   // Importer:
-  virtual void StartImport(const importer::ProfileInfo& profile_info,
+  virtual void StartImport(const importer::SourceProfile& source_profile,
                            uint16 items,
                            ImporterBridge* bridge) OVERRIDE;
 

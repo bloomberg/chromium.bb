@@ -74,8 +74,8 @@ class ProfileImportThread : public ChildThread {
   // main process (especially cancel requests) while the worker thread handles
   // the actual import.
   void OnImportStart(
-      const importer::ProfileInfo& profile_info,
-      int items,
+      const importer::SourceProfile& source_profile,
+      uint16 items,
       const DictionaryValue& localized_strings,
       bool import_to_bookmark_bar);
 

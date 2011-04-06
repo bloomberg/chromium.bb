@@ -26,17 +26,13 @@ class URLRow;
 struct ImportedFaviconUsage;
 }
 
-namespace importer {
-struct ProfileInfo;
-}
-
 // This class is the client for the ProfileImportProcessHost.  It collects
 // notifications from this process host and feeds data back to the importer
 // host, who actually does the writing.
 class ExternalProcessImporterClient : public ProfileImportProcessClient {
  public:
   ExternalProcessImporterClient(ExternalProcessImporterHost* importer_host,
-                                const importer::ProfileInfo& profile_info,
+                                const importer::SourceProfile& source_profile,
                                 uint16 items,
                                 InProcessImporterBridge* bridge,
                                 bool import_to_bookmark_bar);
@@ -148,7 +144,7 @@ class ExternalProcessImporterClient : public ProfileImportProcessClient {
   ProfileImportProcessHost* profile_import_process_host_;
 
   // Data to be passed from the importer host to the external importer.
-  const importer::ProfileInfo& profile_info_;
+  const importer::SourceProfile& source_profile_;
   uint16 items_;
   bool import_to_bookmark_bar_;
 

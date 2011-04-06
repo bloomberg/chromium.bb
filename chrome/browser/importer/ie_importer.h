@@ -21,7 +21,7 @@ class IEImporter : public Importer {
   IEImporter();
 
   // Importer:
-  virtual void StartImport(const importer::ProfileInfo& browser_info,
+  virtual void StartImport(const importer::SourceProfile& source_profile,
                            uint16 items,
                            ImporterBridge* bridge) OVERRIDE;
 

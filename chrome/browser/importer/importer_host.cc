@@ -96,7 +96,7 @@ void ImporterHost::NotifyImportEnded() {
 }
 
 void ImporterHost::StartImportSettings(
-    const importer::ProfileInfo& profile_info,
+    const importer::SourceProfile& source_profile,
     Profile* target_profile,
     uint16 items,
     ProfileWriter* writer,
@@ -109,7 +109,7 @@ void ImporterHost::StartImportSettings(
   // it doesn't block the UI. When the import is complete, observer will be
   // notified.
   writer_ = writer;
-  importer_ = importer::CreateImporterByType(profile_info.importer_type);
+  importer_ = importer::CreateImporterByType(source_profile.importer_type);
   // If we fail to create the Importer, exit, as we cannot do anything.
   if (!importer_) {
     NotifyImportEnded();
@@ -117,20 +117,20 @@ void ImporterHost::StartImportSettings(
   }
 
   importer_->AddRef();
-
   importer_->set_import_to_bookmark_bar(ShouldImportToBookmarkBar(first_run));
   importer_->set_bookmark_bar_disabled(first_run);
+
   scoped_refptr<InProcessImporterBridge> bridge(
       new InProcessImporterBridge(writer_.get(), this));
   task_ = NewRunnableMethod(
-      importer_, &Importer::StartImport, profile_info, items, bridge);
+      importer_, &Importer::StartImport, source_profile, items, bridge);
 
-  CheckForFirefoxLock(profile_info, items, first_run);
+  CheckForFirefoxLock(source_profile, items, first_run);
 
 #if defined(OS_WIN)
   // For google toolbar import, we need the user to log in and store their GAIA
   // credentials.
-  if (profile_info.importer_type == importer::GOOGLE_TOOLBAR5) {
+  if (source_profile.importer_type == importer::GOOGLE_TOOLBAR5) {
     if (!toolbar_importer_utils::IsGoogleGAIACookieInstalled()) {
       ui::MessageBox(
           NULL,
@@ -181,11 +181,13 @@ bool ImporterHost::ShouldImportToBookmarkBar(bool first_run) {
 }
 
 void ImporterHost::CheckForFirefoxLock(
-    const importer::ProfileInfo& profile_info, uint16 items, bool first_run) {
-  if (profile_info.importer_type == importer::FIREFOX2 ||
-      profile_info.importer_type == importer::FIREFOX3) {
+    const importer::SourceProfile& source_profile,
+    uint16 items,
+    bool first_run) {
+  if (source_profile.importer_type == importer::FIREFOX2 ||
+      source_profile.importer_type == importer::FIREFOX3) {
     DCHECK(!firefox_lock_.get());
-    firefox_lock_.reset(new FirefoxProfileLock(profile_info.source_path));
+    firefox_lock_.reset(new FirefoxProfileLock(source_profile.source_path));
     if (!firefox_lock_->HasAcquired()) {
       // If fail to acquire the lock, we set the source unreadable and
       // show a warning dialog, unless running without UI.

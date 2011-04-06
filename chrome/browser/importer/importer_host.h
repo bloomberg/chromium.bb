@@ -65,16 +65,17 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
 
   // Starts the process of importing the settings and data depending on what the
   // user selected.
-  // |profile_info| - browser profile to import.
+  // |source_profile| - importer profile to import.
   // |target_profile| - profile to import into.
   // |items| - specifies which data to import (bitmask of importer::ImportItem).
   // |writer| - called to actually write data back to the profile.
   // |first_run| - true if this method is being called during first run.
-  virtual void StartImportSettings(const importer::ProfileInfo& profile_info,
-                                   Profile* target_profile,
-                                   uint16 items,
-                                   ProfileWriter* writer,
-                                   bool first_run);
+  virtual void StartImportSettings(
+      const importer::SourceProfile& source_profile,
+      Profile* target_profile,
+      uint16 items,
+      ProfileWriter* writer,
+      bool first_run);
 
   // Cancels the import process.
   virtual void Cancel();
@@ -88,10 +89,10 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   // Make sure that Firefox isn't running, if import browser is Firefox. Show
   // to the user a dialog that notifies that is necessary to close Firefox
   // prior to continue.
-  // |profile_info| - browser profile to import.
+  // |source_profile| - importer profile to import.
   // |items| - specifies which data to import (bitmask of importer::ImportItem).
   // |first_run| - true if this method is being called during first run.
-  void CheckForFirefoxLock(const importer::ProfileInfo& profile_info,
+  void CheckForFirefoxLock(const importer::SourceProfile& source_profile,
                            uint16 items,
                            bool first_run);
 

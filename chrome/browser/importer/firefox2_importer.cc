@@ -47,15 +47,16 @@ Firefox2Importer::Firefox2Importer() : parsing_bookmarks_html_file_(false) {}
 
 Firefox2Importer::~Firefox2Importer() {}
 
-void Firefox2Importer::StartImport(const importer::ProfileInfo& profile_info,
-                                   uint16 items,
-                                   ImporterBridge* bridge) {
+void Firefox2Importer::StartImport(
+    const importer::SourceProfile& source_profile,
+    uint16 items,
+    ImporterBridge* bridge) {
   bridge_ = bridge;
-  source_path_ = profile_info.source_path;
-  app_path_ = profile_info.app_path;
+  source_path_ = source_profile.source_path;
+  app_path_ = source_profile.app_path;
 
   parsing_bookmarks_html_file_ =
-      (profile_info.importer_type == importer::BOOKMARKS_HTML);
+      (source_profile.importer_type == importer::BOOKMARKS_HTML);
 
   // The order here is important!
   bridge_->NotifyStarted();

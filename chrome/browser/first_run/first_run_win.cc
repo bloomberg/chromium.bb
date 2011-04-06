@@ -498,9 +498,11 @@ bool FirstRun::ImportSettings(Profile* profile,
                               int items_to_import) {
   return ImportSettings(
       profile,
-      importer_list->GetSourceProfileInfoAt(0).importer_type,
+      importer_list->GetSourceProfileAt(0).importer_type,
       items_to_import,
-      FilePath(), false, NULL);
+      FilePath(),
+      false,
+      NULL);
 }
 
 int FirstRun::ImportFromBrowser(Profile* profile,
@@ -535,7 +537,7 @@ int FirstRun::ImportFromBrowser(Profile* profile,
       static_cast<uint16>(items_to_import),
       importer_host,
       &importer_observer,
-      importer_list->GetSourceProfileInfoForImporterType(importer_type),
+      importer_list->GetSourceProfileForImporterType(importer_type),
       profile,
       true);
   importer_observer.RunLoop();

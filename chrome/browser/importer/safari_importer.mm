@@ -49,7 +49,7 @@ SafariImporter::~SafariImporter() {
 
 // static
 bool SafariImporter::CanImport(const FilePath& library_dir,
-                               uint16 *services_supported) {
+                               uint16* services_supported) {
   DCHECK(services_supported);
   *services_supported = importer::NONE;
 
@@ -68,26 +68,27 @@ bool SafariImporter::CanImport(const FilePath& library_dir,
   return *services_supported != importer::NONE;
 }
 
-void SafariImporter::StartImport(const importer::ProfileInfo& profile_info,
-                                 uint16 services_supported,
+void SafariImporter::StartImport(const importer::SourceProfile& source_profile,
+                                 uint16 items,
                                  ImporterBridge* bridge) {
   bridge_ = bridge;
   // The order here is important!
   bridge_->NotifyStarted();
+
   // In keeping with import on other platforms (and for other browsers), we
   // don't import the home page (since it may lead to a useless homepage); see
   // crbug.com/25603.
-  if ((services_supported & importer::HISTORY) && !cancelled()) {
+  if ((items & importer::HISTORY) && !cancelled()) {
     bridge_->NotifyItemStarted(importer::HISTORY);
     ImportHistory();
     bridge_->NotifyItemEnded(importer::HISTORY);
   }
-  if ((services_supported & importer::FAVORITES) && !cancelled()) {
+  if ((items & importer::FAVORITES) && !cancelled()) {
     bridge_->NotifyItemStarted(importer::FAVORITES);
     ImportBookmarks();
     bridge_->NotifyItemEnded(importer::FAVORITES);
   }
-  if ((services_supported & importer::PASSWORDS) && !cancelled()) {
+  if ((items & importer::PASSWORDS) && !cancelled()) {
     bridge_->NotifyItemStarted(importer::PASSWORDS);
     ImportPasswords();
     bridge_->NotifyItemEnded(importer::PASSWORDS);

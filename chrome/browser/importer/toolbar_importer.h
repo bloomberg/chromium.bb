@@ -17,7 +17,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "chrome/browser/importer/importer.h"
-#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/profile_writer.h"
 #include "chrome/common/net/url_fetcher.h"
 
@@ -27,9 +26,9 @@ class XmlReader;
 // Toolbar5Importer is a class which exposes the functionality needed to
 // communicate with the Google Toolbar v5 front-end, negotiate the download of
 // Toolbar bookmarks, parse them, and install them on the client.
-// Toolbar5Importer should not have StartImport called more than once.  Futher
-// if StartImport is called, then the class must not be destroyed until it
-// has either completed or Toolbar5Importer->Cancel() has been called.
+// Toolbar5Importer should not have StartImport called more than once. Futher
+// if StartImport is called, then the class must not be destroyed until it has
+// either completed or Toolbar5Importer->Cancel() has been called.
 class Toolbar5Importer : public URLFetcher::Delegate, public Importer {
  public:
   Toolbar5Importer();
@@ -39,7 +38,7 @@ class Toolbar5Importer : public URLFetcher::Delegate, public Importer {
   // This method is called to begin the import process. |items| should only
   // either be NONE or FAVORITES, since as of right now these are the only
   // items this importer supports.
-  virtual void StartImport(const importer::ProfileInfo& profile_info,
+  virtual void StartImport(const importer::SourceProfile& source_profile,
                            uint16 items,
                            ImporterBridge* bridge) OVERRIDE;
 
@@ -154,11 +153,10 @@ class Toolbar5Importer : public URLFetcher::Delegate, public Importer {
   void AddBookmarksToChrome(
       const std::vector<ProfileWriter::BookmarkEntry>& bookmarks);
 
-  // Internal state is stored in state_.
   InternalStateEnum state_;
 
-  // Bitmask of Importer::ImportItem is stored in items_to_import_.
-  uint16  items_to_import_;
+  // Bitmask of Importer::ImportItem.
+  uint16 items_to_import_;
 
   // The fetchers need to be available to cancel the network call on user cancel
   // hence they are stored as member variables.

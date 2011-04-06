@@ -183,7 +183,7 @@ void ShowImportProgressDialog(gfx::NativeWindow parent_window,
                               uint16 items,
                               ImporterHost* importer_host,
                               ImporterObserver* importer_observer,
-                              const ProfileInfo& source_profile,
+                              const SourceProfile& source_profile,
                               Profile* target_profile,
                               bool first_run) {
   DCHECK(items != 0);

@@ -14,11 +14,8 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer.h"
-#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/profile_writer.h"
-#include "googleurl/src/gurl.h"
 
 #if __OBJC__
 @class NSDictionary;
@@ -27,6 +24,13 @@
 class NSDictionary;
 class NSString;
 #endif
+
+class GURL;
+
+namespace history {
+class URLRow;
+struct ImportedFaviconUsage;
+}
 
 namespace sql {
 class Connection;
@@ -40,7 +44,7 @@ class SafariImporter : public Importer {
   explicit SafariImporter(const FilePath& library_dir);
 
   // Importer:
-  virtual void StartImport(const importer::ProfileInfo& profile_info,
+  virtual void StartImport(const importer::SourceProfile& source_profile,
                            uint16 items,
                            ImporterBridge* bridge) OVERRIDE;
 
@@ -48,8 +52,8 @@ class SafariImporter : public Importer {
  // are supported?
  // in: library_dir - ~/Library or a standin for testing purposes.
  // out: services_supported - the service supported for import.
- // returns true if we can import the Safari profile.
- static bool CanImport(const FilePath& library_dir, uint16 *services_supported);
+ // Returns true if we can import the Safari profile.
+ static bool CanImport(const FilePath& library_dir, uint16* services_supported);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SafariImporterTest, BookmarkImport);

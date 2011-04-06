@@ -27,6 +27,8 @@
 #include "grit/generated_resources.h"
 #include "webkit/glue/password_form.h"
 
+namespace {
+
 // Original definition is in http://mxr.mozilla.org/firefox/source/toolkit/
 //  components/places/public/nsINavBookmarksService.idl
 enum BookmarkItemType {
@@ -35,6 +37,8 @@ enum BookmarkItemType {
   TYPE_SEPARATOR = 3,
   TYPE_DYNAMIC_CONTAINER = 4
 };
+
+}  // namespace
 
 struct Firefox3Importer::BookmarkItem {
   int parent;
@@ -58,15 +62,16 @@ Firefox3Importer::Firefox3Importer() {
 Firefox3Importer::~Firefox3Importer() {
 }
 
-void Firefox3Importer::StartImport(const importer::ProfileInfo& profile_info,
-                                   uint16 items,
-                                   ImporterBridge* bridge) {
+void Firefox3Importer::StartImport(
+    const importer::SourceProfile& source_profile,
+    uint16 items,
+    ImporterBridge* bridge) {
 #if defined(OS_LINUX)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 #endif
   bridge_ = bridge;
-  source_path_ = profile_info.source_path;
-  app_path_ = profile_info.app_path;
+  source_path_ = source_profile.source_path;
+  app_path_ = source_profile.app_path;
 
   // The order here is important!
   bridge_->NotifyStarted();

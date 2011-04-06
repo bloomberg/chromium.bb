@@ -23,10 +23,10 @@
 
 namespace IPC {
 
-// Traits for importer::ProfileInfo struct to pack/unpack.
+// Traits for importer::SourceProfile struct to pack/unpack.
 template <>
-struct ParamTraits<importer::ProfileInfo> {
-  typedef importer::ProfileInfo param_type;
+struct ParamTraits<importer::SourceProfile> {
+  typedef importer::SourceProfile param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.description);
     WriteParam(m, static_cast<int>(p.importer_type));
@@ -67,7 +67,7 @@ struct ParamTraits<importer::ProfileInfo> {
     LogParam(static_cast<int>(p.services_supported), l);
     l->append(")");
   }
-};  // ParamTraits<importer::ProfileInfo>
+};  // ParamTraits<importer::SourceProfile>
 
 // Traits for history::URLRow to pack/unpack.
 template <>
@@ -373,10 +373,10 @@ struct ParamTraits<TemplateURL> {
 // ProfileImportProcess messages
 // These are messages sent from the browser to the profile import process.
 IPC_MESSAGE_CONTROL4(ProfileImportProcessMsg_StartImport,
-                     importer::ProfileInfo /* ProfileInfo struct */,
-                     int                   /* bitmask of items to import */,
-                     DictionaryValue       /* localized strings */,
-                     bool                  /* import to bookmark bar */)
+                     importer::SourceProfile,
+                     int                     /* Bitmask of items to import. */,
+                     DictionaryValue         /* Localized strings. */,
+                     bool                    /* Import to bookmark bar. */)
 
 IPC_MESSAGE_CONTROL0(ProfileImportProcessMsg_CancelImport)
 

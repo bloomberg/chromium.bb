@@ -37,7 +37,7 @@ void ImportProgressDialogGtk::StartImport(
     uint16 items,
     ImporterHost* importer_host,
     ImporterObserver* importer_observer,
-    const importer::ProfileInfo& browser_profile,
+    const importer::SourceProfile& source_profile,
     Profile* profile,
     bool first_run) {
   ImportProgressDialogGtk* dialog = new ImportProgressDialogGtk(
@@ -45,8 +45,8 @@ void ImportProgressDialogGtk::StartImport(
       items,
       importer_host,
       importer_observer,
-      browser_profile.description,
-      browser_profile.importer_type == importer::BOOKMARKS_HTML);
+      source_profile.description,
+      source_profile.importer_type == importer::BOOKMARKS_HTML);
 
   // In headless mode it means that we don't show the progress window, but it
   // still need it to exist. No user interaction will be required.
@@ -54,7 +54,7 @@ void ImportProgressDialogGtk::StartImport(
     dialog->ShowDialog();
 
   importer_host->StartImportSettings(
-      browser_profile, profile, items, new ProfileWriter(profile), first_run);
+      source_profile, profile, items, new ProfileWriter(profile), first_run);
 }
 
 ImportProgressDialogGtk::ImportProgressDialogGtk(
@@ -221,12 +221,12 @@ void ShowImportProgressDialog(GtkWindow* parent,
                               uint16 items,
                               ImporterHost* importer_host,
                               ImporterObserver* importer_observer,
-                              const ProfileInfo& browser_profile,
+                              const SourceProfile& source_profile,
                               Profile* profile,
                               bool first_run) {
   DCHECK_NE(0, items);
   ImportProgressDialogGtk::StartImport(
-      parent, items, importer_host, importer_observer, browser_profile, profile,
+      parent, items, importer_host, importer_observer, source_profile, profile,
       first_run);
 }
 

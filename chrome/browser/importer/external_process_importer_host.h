@@ -15,7 +15,7 @@ class Profile;
 class ProfileWriter;
 
 namespace importer {
-struct ProfileInfo;
+struct SourceProfile;
 }
 
 // This class manages the import process. It creates the in-process half of the
@@ -29,11 +29,12 @@ class ExternalProcessImporterHost : public ImporterHost {
 
  private:
   // ImporterHost:
-  virtual void StartImportSettings(const importer::ProfileInfo& profile_info,
-                                   Profile* target_profile,
-                                   uint16 items,
-                                   ProfileWriter* writer,
-                                   bool first_run) OVERRIDE;
+  virtual void StartImportSettings(
+      const importer::SourceProfile& source_profile,
+      Profile* target_profile,
+      uint16 items,
+      ProfileWriter* writer,
+      bool first_run) OVERRIDE;
   virtual void InvokeTaskIfDone() OVERRIDE;
   virtual void Loaded(BookmarkModel* model) OVERRIDE;
 
@@ -41,9 +42,9 @@ class ExternalProcessImporterHost : public ImporterHost {
   ExternalProcessImporterClient* client_;
 
   // Information about a profile needed for importing.
-  const importer::ProfileInfo* profile_info_;
+  const importer::SourceProfile* source_profile_;
 
-  // Mask of items to be imported (see importer::ImportItem).
+  // Bitmask of items to be imported (see importer::ImportItem enum).
   uint16 items_;
 
   // Whether to import bookmarks to the bookmark bar.

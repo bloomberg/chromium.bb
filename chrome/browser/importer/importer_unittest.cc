@@ -102,17 +102,17 @@ class ImporterTest : public testing::Test {
     }
 
     MessageLoop* loop = MessageLoop::current();
-    importer::ProfileInfo profile_info;
-    profile_info.importer_type = importer::FIREFOX3;
-    profile_info.app_path = app_path_;
-    profile_info.source_path = profile_path_;
+    importer::SourceProfile source_profile;
+    source_profile.importer_type = importer::FIREFOX3;
+    source_profile.app_path = app_path_;
+    source_profile.source_path = profile_path_;
     scoped_refptr<ImporterHost> host(new ImporterHost);
     host->SetObserver(observer);
     int items = importer::HISTORY | importer::PASSWORDS | importer::FAVORITES;
     if (import_search_plugins)
       items = items | importer::SEARCH_ENGINES;
     loop->PostTask(FROM_HERE, NewRunnableMethod(host.get(),
-        &ImporterHost::StartImportSettings, profile_info,
+        &ImporterHost::StartImportSettings, source_profile,
         static_cast<Profile*>(NULL), items, make_scoped_refptr(writer), true));
     loop->Run();
   }
@@ -395,13 +395,13 @@ TEST_F(ImporterTest, IEImporter) {
 
   TestObserver* observer = new TestObserver();
   host->SetObserver(observer);
-  importer::ProfileInfo profile_info;
-  profile_info.importer_type = importer::MS_IE;
-  profile_info.source_path = test_path_;
+  importer::SourceProfile source_profile;
+  source_profile.importer_type = importer::MS_IE;
+  source_profile.source_path = test_path_;
 
   loop->PostTask(FROM_HERE, NewRunnableMethod(host.get(),
       &ImporterHost::StartImportSettings,
-      profile_info,
+      source_profile,
       static_cast<Profile*>(NULL),
       importer::HISTORY | importer::PASSWORDS | importer::FAVORITES,
       observer,
@@ -689,15 +689,15 @@ TEST_F(ImporterTest, MAYBE(Firefox2Importer)) {
   scoped_refptr<ImporterHost> host(new ImporterHost);
   FirefoxObserver* observer = new FirefoxObserver();
   host->SetObserver(observer);
-  importer::ProfileInfo profile_info;
-  profile_info.importer_type = importer::FIREFOX2;
-  profile_info.app_path = app_path_;
-  profile_info.source_path = profile_path_;
+  importer::SourceProfile source_profile;
+  source_profile.importer_type = importer::FIREFOX2;
+  source_profile.app_path = app_path_;
+  source_profile.source_path = profile_path_;
 
   loop->PostTask(FROM_HERE, NewRunnableMethod(
       host.get(),
       &ImporterHost::StartImportSettings,
-      profile_info,
+      source_profile,
       static_cast<Profile*>(NULL),
       importer::HISTORY | importer::PASSWORDS |
       importer::FAVORITES | importer::SEARCH_ENGINES,
