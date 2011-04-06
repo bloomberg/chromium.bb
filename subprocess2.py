@@ -51,7 +51,7 @@ def kill_pid(pid):
   """Kills a process by its process id."""
   try:
     # Unable to import 'module'
-    # pylint: disable=F0401
+    # pylint: disable=E1101,F0401
     import signal
     return os.kill(pid, signal.SIGKILL)
   except ImportError:
@@ -105,6 +105,8 @@ def get_english_env(env):
 
   Returns None if it is unnecessary.
   """
+  if sys.platform == 'win32':
+    return None
   env = env or os.environ
 
   # Test if it is necessary at all.

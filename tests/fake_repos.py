@@ -310,8 +310,7 @@ class FakeReposBase(object):
       return True
     try:
       subprocess2.check_call(['svnadmin', 'create', self.svn_repo])
-    except subprocess2.CalledProcessError, e:
-      logging.debug('Failed with : %s' % e)
+    except (OSError, subprocess2.CalledProcessError):
       return False
     write(join(self.svn_repo, 'conf', 'svnserve.conf'),
         '[general]\n'
@@ -352,9 +351,11 @@ class FakeReposBase(object):
     self.set_up()
     if self.gitdaemon:
       return True
-    if sys.platform == 'win32':
-      return False
     assert self.git_pid_file == None
+    try:
+      subprocess2.check_output(['git', '--version'])
+    except (OSError, subprocess2.CalledProcessError):
+      return False
     for repo in ['repo_%d' % r for r in range(1, self.NB_GIT_REPOS + 1)]:
       subprocess2.check_call(['git', 'init', '-q', join(self.git_root, repo)])
       self.git_hashes[repo] = [None]

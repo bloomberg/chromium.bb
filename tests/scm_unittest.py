@@ -261,22 +261,27 @@ class RealSvnTest(fake_repos.FakeReposTestBase):
   # Tests that work with a checkout.
   def setUp(self):
     super(RealSvnTest, self).setUp()
-    self.FAKE_REPOS.set_up_svn()
-    self.svn_root = scm.os.path.join(self.root_dir, 'base')
-    scm.SVN.Capture(
-        ['checkout', self.svn_base + 'trunk/third_party', 'base'],
-        cwd=self.root_dir)
-    self.tree = self.mangle_svn_tree(('trunk/third_party@-1', ''),)
+    self.enabled = self.FAKE_REPOS.set_up_svn()
+    if self.enabled:
+      self.svn_root = scm.os.path.join(self.root_dir, 'base')
+      scm.SVN.Capture(
+          ['checkout', self.svn_base + 'trunk/third_party', 'base'],
+          cwd=self.root_dir)
+      self.tree = self.mangle_svn_tree(('trunk/third_party@-1', ''),)
 
   def _capture(self, cmd, **kwargs):
     kwargs.setdefault('cwd', self.svn_root)
     return scm.SVN.Capture(cmd, **kwargs)
 
   def testCheckout(self):
+    if not self.enabled:
+      return
     # Checkout and verify the tree.
     self.assertTree(self.tree, self.svn_root)
 
   def testRevert(self):
+    if not self.enabled:
+      return
     # Mess around and make sure revert works for all corner cases.
     # - svn add a file
     # - svn add a file and delete it

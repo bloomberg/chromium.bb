@@ -41,12 +41,13 @@ class FixEncodingTest(unittest.TestCase):
   def test_win_console(self):
     if sys.platform != 'win32':
       return
-    # This should fail if redirected. Can be checked with:
-    # python fix_encoding_test.py > a
+    # This should fail if not redirected, e.g. run directly instead of through
+    # the presubmit check. Can be checked with:
+    # python tests\fix_encoding_test.py
     self.assertEquals(
-        sys.stdout.__class__, fix_encoding.WinUnicodeConsoleOutput)
+        sys.stdout.__class__, fix_encoding.WinUnicodeOutput)
     self.assertEquals(
-        sys.stderr.__class__, fix_encoding.WinUnicodeConsoleOutput)
+        sys.stderr.__class__, fix_encoding.WinUnicodeOutput)
     self.assertEquals(sys.stdout.encoding, sys.getdefaultencoding())
     self.assertEquals(sys.stderr.encoding, sys.getdefaultencoding())
 

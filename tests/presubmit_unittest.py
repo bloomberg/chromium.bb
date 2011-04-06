@@ -2006,8 +2006,11 @@ mac|success|blew
     input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
     input_api.subprocess.check_call(
         ['allo'], cwd=self.fake_root_dir)
+    cmd = ['bar.py']
+    if input_api.platform == 'win32':
+      cmd.insert(0, input_api.python_executable)
     input_api.subprocess.check_call(
-        ['bar.py'], cwd=self.fake_root_dir).AndRaise(
+        cmd, cwd=self.fake_root_dir).AndRaise(
             input_api.subprocess.CalledProcessError())
 
     self.mox.ReplayAll()
@@ -2031,7 +2034,8 @@ mac|success|blew
     input_api.os_listdir(path).AndReturn(['.', '..', 'a', 'b', 'c'])
     input_api.os_path.isfile = lambda x: not x.endswith('.')
     input_api.subprocess.check_call(
-        ['random_directory/b'], cwd=self.fake_root_dir)
+        [presubmit.os.path.join('random_directory', 'b')],
+        cwd=self.fake_root_dir)
 
     self.mox.ReplayAll()
     results = presubmit_canned_checks.RunUnitTestsInDirectory(
@@ -2042,7 +2046,8 @@ mac|success|blew
         blacklist=['a'],
         verbose=True)
     self.assertEqual(results, [])
-    self.checkstdout('Running random_directory/b\n')
+    self.checkstdout(
+        'Running %s\n' % presubmit.os.path.join('random_directory', 'b'))
 
 
 if __name__ == '__main__':

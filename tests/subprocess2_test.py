@@ -28,7 +28,7 @@ class Subprocess2Test(unittest.TestCase):
 
   def setUp(self):
     self.exe_path = __file__
-    self.exe = [self.exe_path, '--child']
+    self.exe = [sys.executable, self.exe_path, '--child']
     self.saved = {}
     for module, names in self.TO_SAVE.iteritems():
       self.saved[module] = dict(
@@ -101,14 +101,20 @@ class Subprocess2Test(unittest.TestCase):
     results = self._fake_subprocess_Popen()
     proc = subprocess2.Popen(['foo'], a=True)
     self.assertEquals(-8, proc.returncode)
-    env = os.environ.copy()
-    env['LANG'] = 'en_US.UTF-8'
     expected = {
         'args': ['foo'],
         'a': True,
         'shell': bool(sys.platform=='win32'),
-        'env': env,
     }
+    if sys.platform != 'win32':
+      env = os.environ.copy()
+      is_english = lambda name: env.get(name, 'en').startswith('en')
+      if not is_english('LANG'):
+        env['LANG'] = 'en_US.UTF-8'
+        expected['env'] = env
+      if not is_english('LANGUAGE'):
+        env['LANGUAGE'] = 'en_US.UTF-8'
+        expected['env'] = env
     self.assertEquals(expected, results)
 
   def test_check_output_defaults(self):
@@ -140,12 +146,14 @@ class Subprocess2Test(unittest.TestCase):
     self.assertEquals(None, out)
     out = subprocess2.check_output(
          self.exe + ['--stdout', '--stderr'],
+          universal_newlines=True,
          stderr=subprocess2.VOID)
     self.assertEquals('A\nBB\nCCC\n', out)
 
   def test_check_output_throw(self):
     try:
-      subprocess2.check_output(self.exe + ['--fail', '--stderr'])
+      subprocess2.check_output(
+          self.exe + ['--fail', '--stderr'], universal_newlines=True)
       self.fail()
     except subprocess2.CalledProcessError, e:
       self.assertEquals('a\nbb\nccc\n', e.stdout)

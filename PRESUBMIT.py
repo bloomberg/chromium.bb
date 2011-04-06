@@ -51,6 +51,10 @@ def CommonChecks(input_api, output_api):
 def RunGitClTests(input_api, output_api, verbose):
   """Run all the shells scripts in the directory test.
   """
+  if input_api.platform == 'win32':
+    # Skip for now as long as the test scripts are bash scripts.
+    return []
+
   # First loads a local Rietveld instance.
   import sys
   old_sys_path = sys.path

@@ -74,14 +74,16 @@ def determine_scm(root):
   """
   if os.path.isdir(os.path.join(root, '.svn')):
     return 'svn'
-  elif os.path.isdir(os.path.join(root, '.svn')):
+  elif os.path.isdir(os.path.join(root, '.git')):
     return 'git'
   else:
-    if (0 == subprocess.call(
+    try:
+      subprocess2.check_output(
           ['git', 'rev-parse', '--show-cdup'],
-          stdout=subprocess.PIPE, cwd=root)):
+          stdout=subprocess2.VOID,
+          cwd=root)
       return 'git'
-    else:
+    except (OSError, subprocess2.CalledProcessError):
       return None
 
 

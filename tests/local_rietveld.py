@@ -71,15 +71,15 @@ class LocalRietveld(object):
         subprocess2.check_call(
             ['svn', 'co', '-q', 'http://rietveld.googlecode.com/svn/trunk@681',
              self.rietveld])
-      except subprocess2.CalledProcessError:
-        raise Failure('Failed to checkout rietveld')
+      except (OSError, subprocess2.CalledProcessError), e:
+        raise Failure('Failed to checkout rietveld\n%s' % e)
     else:
       print('Syncing rietveld...')
       try:
         subprocess2.check_call(
             ['svn', 'up', '-q', '-r', '681'], cwd=self.rietveld)
-      except subprocess2.CalledProcessError:
-        raise Failure('Failed to checkout rietveld')
+      except (OSError, subprocess2.CalledProcessError), e:
+        raise Failure('Failed to sync rietveld\n%s' % e)
 
   def start_server(self, verbose=False):
     self.install_prerequisites()
@@ -89,6 +89,7 @@ class LocalRietveld(object):
     else:
       pipe = subprocess2.VOID
     cmd = [
+        sys.executable,
         self.dev_app,
         '--skip_sdk_update_check',
         '.',

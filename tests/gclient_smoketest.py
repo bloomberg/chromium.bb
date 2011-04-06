@@ -127,7 +127,14 @@ class GClientSmokeBase(FakeReposTestBase):
         verb = items[i]
         path = self.root_dir
       self.checkString(results[i][0][0], verb, (i, results[i][0][0], verb))
-      self.checkString(results[i][0][2], path, (i, results[i][0][2], path))
+      if sys.platform == 'win32':
+        # Make path lower case since casing can change randomly.
+        self.checkString(
+            results[i][0][2].lower(),
+            path.lower(),
+            (i, results[i][0][2].lower(), path.lower()))
+      else:
+        self.checkString(results[i][0][2], path, (i, results[i][0][2], path))
     self.assertEquals(len(results), len(items), (stdout, items, len(results)))
     return results
 

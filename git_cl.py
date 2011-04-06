@@ -20,7 +20,7 @@ import urlparse
 import urllib2
 
 try:
-  import readline  # pylint: disable=W0611
+  import readline  # pylint: disable=F0401,W0611
 except ImportError:
   pass
 
