@@ -205,8 +205,11 @@ static int CalculateActivePingDays(const Time& last_active_ping_day,
 }  // namespace
 
 ManifestFetchesBuilder::ManifestFetchesBuilder(
-    ExtensionServiceInterface* service) : service_(service) {
+    ExtensionServiceInterface* service,
+    ExtensionPrefs* prefs)
+    : service_(service), prefs_(prefs) {
   DCHECK(service_);
+  DCHECK(prefs_);
 }
 
 ManifestFetchesBuilder::~ManifestFetchesBuilder() {}
@@ -224,8 +227,7 @@ void ManifestFetchesBuilder::AddExtension(const Extension& extension) {
   // communicate to the the gallery update servers.
   std::string update_url_data;
   if (!extension.UpdatesFromGallery())
-    update_url_data = service_->extension_prefs()->
-        GetUpdateUrlData(extension.id());
+    update_url_data = prefs_->GetUpdateUrlData(extension.id());
 
   AddExtensionData(extension.location(),
                    extension.id(),
@@ -339,11 +341,11 @@ void ManifestFetchesBuilder::AddExtensionData(
       fetches_.find(update_url);
 
   // Find or create a ManifestFetchData to add this extension to.
-  ExtensionPrefs* prefs = service_->extension_prefs();
   ManifestFetchData::PingData ping_data;
-  ping_data.rollcall_days = CalculatePingDays(prefs->LastPingDay(id));
-  ping_data.active_days = CalculateActivePingDays(prefs->LastActivePingDay(id),
-                                                  prefs->GetActiveBit(id));
+  ping_data.rollcall_days = CalculatePingDays(prefs_->LastPingDay(id));
+  ping_data.active_days =
+      CalculateActivePingDays(prefs_->LastActivePingDay(id),
+                              prefs_->GetActiveBit(id));
   while (existing_iter != fetches_.end()) {
     if (existing_iter->second->AddExtension(id, version.GetString(),
                                             ping_data, update_url_data)) {
@@ -423,10 +425,13 @@ ExtensionUpdater::ExtensionFetch::ExtensionFetch(const std::string& i,
 ExtensionUpdater::ExtensionFetch::~ExtensionFetch() {}
 
 ExtensionUpdater::ExtensionUpdater(ExtensionServiceInterface* service,
+                                   ExtensionPrefs* extension_prefs,
                                    PrefService* prefs,
+                                   Profile* profile,
                                    int frequency_seconds)
     : alive_(false), service_(service), frequency_seconds_(frequency_seconds),
-      prefs_(prefs), file_handler_(new ExtensionUpdaterFileHandler()),
+      extension_prefs_(extension_prefs), prefs_(prefs), profile_(profile),
+      file_handler_(new ExtensionUpdaterFileHandler()),
       blacklist_checks_enabled_(true) {
   Init();
 }
@@ -506,7 +511,9 @@ void ExtensionUpdater::Start() {
   // If these are NULL, then that means we've been called after Stop()
   // has been called.
   DCHECK(service_);
+  DCHECK(extension_prefs_);
   DCHECK(prefs_);
+  DCHECK(profile_);
   alive_ = true;
   // Make sure our prefs are registered, then schedule the first check.
   EnsureInt64PrefRegistered(prefs_, kLastExtensionsUpdateCheck);
@@ -518,7 +525,9 @@ void ExtensionUpdater::Start() {
 void ExtensionUpdater::Stop() {
   alive_ = false;
   service_ = NULL;
+  extension_prefs_ = NULL;
   prefs_ = NULL;
+  profile_ = NULL;
   timer_.Stop();
   manifest_fetcher_.reset();
   extension_fetcher_.reset();
@@ -689,18 +698,17 @@ void ExtensionUpdater::HandleManifestResults(
 
     const std::set<std::string>& extension_ids = fetch_data.extension_ids();
     std::set<std::string>::const_iterator i;
-    ExtensionPrefs* prefs = service_->extension_prefs();
     for (i = extension_ids.begin(); i != extension_ids.end(); i++) {
       if (fetch_data.DidPing(*i, ManifestFetchData::ROLLCALL)) {
         if (*i == kBlacklistAppID) {
-          prefs->SetBlacklistLastPingDay(daystart);
+          extension_prefs_->SetBlacklistLastPingDay(daystart);
         } else if (service_->GetExtensionById(*i, true) != NULL) {
-          prefs->SetLastPingDay(*i, daystart);
+          extension_prefs_->SetLastPingDay(*i, daystart);
         }
       }
-      if (prefs->GetActiveBit(*i)) {
-        prefs->SetActiveBit(*i, false);
-        prefs->SetLastActivePingDay(*i, daystart);
+      if (extension_prefs_->GetActiveBit(*i)) {
+        extension_prefs_->SetActiveBit(*i, false);
+        extension_prefs_->SetLastActivePingDay(*i, daystart);
       }
     }
   }
@@ -839,7 +847,7 @@ void ExtensionUpdater::TimerFired() {
 void ExtensionUpdater::CheckNow() {
   DCHECK(alive_);
   NotifyStarted();
-  ManifestFetchesBuilder fetches_builder(service_);
+  ManifestFetchesBuilder fetches_builder(service_, extension_prefs_);
 
   const ExtensionList* extensions = service_->extensions();
   for (ExtensionList::const_iterator iter = extensions->begin();
@@ -875,7 +883,7 @@ void ExtensionUpdater::CheckNow() {
     std::string version = prefs_->GetString(kExtensionBlacklistUpdateVersion);
     ManifestFetchData::PingData ping_data;
     ping_data.rollcall_days =
-        CalculatePingDays(service_->extension_prefs()->BlacklistLastPingDay());
+        CalculatePingDays(extension_prefs_->BlacklistLastPingDay());
     blacklist_fetch->AddExtension(kBlacklistAppID, version, ping_data, "");
     StartUpdateCheck(blacklist_fetch);
   }
@@ -1003,7 +1011,7 @@ void ExtensionUpdater::StartUpdateCheck(ManifestFetchData* fetch_data) {
         URLFetcher::Create(kManifestFetcherId, fetch_data->full_url(),
                            URLFetcher::GET, this));
     manifest_fetcher_->set_request_context(
-        service_->profile()->GetRequestContext());
+        profile_->GetRequestContext());
     manifest_fetcher_->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES |
                                       net::LOAD_DO_NOT_SAVE_COOKIES |
                                       net::LOAD_DISABLE_CACHE);
@@ -1031,7 +1039,7 @@ void ExtensionUpdater::FetchUpdatedExtension(const std::string& id,
     extension_fetcher_.reset(
         URLFetcher::Create(kExtensionFetcherId, url, URLFetcher::GET, this));
     extension_fetcher_->set_request_context(
-        service_->profile()->GetRequestContext());
+        profile_->GetRequestContext());
     extension_fetcher_->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES |
                                        net::LOAD_DO_NOT_SAVE_COOKIES |
                                        net::LOAD_DISABLE_CACHE);
@@ -1043,14 +1051,14 @@ void ExtensionUpdater::FetchUpdatedExtension(const std::string& id,
 void ExtensionUpdater::NotifyStarted() {
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_UPDATING_STARTED,
-      Source<Profile>(service_->profile()),
+      Source<Profile>(profile_),
       NotificationService::NoDetails());
 }
 
 void ExtensionUpdater::NotifyUpdateFound(const std::string& extension_id) {
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_UPDATE_FOUND,
-      Source<Profile>(service_->profile()),
+      Source<Profile>(profile_),
       Details<const std::string>(&extension_id));
 }
 
@@ -1058,7 +1066,7 @@ void ExtensionUpdater::NotifyIfFinished() {
   if (in_progress_ids_.empty()) {
     NotificationService::current()->Notify(
         NotificationType::EXTENSION_UPDATING_FINISHED,
-        Source<Profile>(service_->profile()),
+        Source<Profile>(profile_),
         NotificationService::NoDetails());
     VLOG(1) << "Sending EXTENSION_UPDATING_FINISHED";
   }

@@ -75,8 +75,9 @@ bool ExtensionEventRouter::CanCrossIncognito(Profile* profile,
   // We allow the extension to see events and data from another profile iff it
   // uses "spanning" behavior and it has incognito access. "split" mode
   // extensions only see events for a matching profile.
-  return (profile->GetExtensionService()->IsIncognitoEnabled(extension) &&
-          !extension->incognito_split_mode());
+  return
+      (profile->GetExtensionService()->IsIncognitoEnabled(extension->id()) &&
+       !extension->incognito_split_mode());
 }
 
 ExtensionEventRouter::ExtensionEventRouter(Profile* profile)

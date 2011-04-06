@@ -64,12 +64,6 @@ class MockService : public ExtensionServiceInterface {
     return NULL;
   }
 
-  virtual PendingExtensionManager* pending_extension_manager() {
-    ADD_FAILURE() << "Subclass should override this if it will "
-                  << "be accessed by a test.";
-    return &pending_extension_manager_;
-  }
-
   virtual void UpdateExtension(const std::string& id,
                                const FilePath& path,
                                const GURL& download_url) {
@@ -85,6 +79,17 @@ class MockService : public ExtensionServiceInterface {
   virtual void UninstallExtension(const std::string& extension_id,
                                   bool external_uninstall) {
     FAIL();
+  }
+
+  virtual bool IsExtensionEnabled(const std::string& extension_id) const {
+    ADD_FAILURE();
+    return false;
+  }
+
+  virtual bool IsExternalExtensionUninstalled(
+      const std::string& extension_id) const {
+    ADD_FAILURE();
+    return false;
   }
 
   virtual void EnableExtension(const std::string& extension_id) {
@@ -110,22 +115,29 @@ class MockService : public ExtensionServiceInterface {
     return false;
   }
 
-  virtual void SetIsIncognitoEnabled(const Extension* extension,
+  virtual bool IsIncognitoEnabled(const std::string& id) const {
+    ADD_FAILURE();
+    return false;
+  }
+
+  virtual void SetIsIncognitoEnabled(const std::string& id,
                                      bool enabled) {
     FAIL();
   }
 
-  virtual ExtensionPrefs* extension_prefs() { return prefs_.prefs(); }
-  virtual const ExtensionPrefs& const_extension_prefs() const {
-    return prefs_.const_prefs();
+  virtual void CheckForUpdates() {
+    FAIL();
   }
 
-  virtual ExtensionUpdater* updater() {
-    ADD_FAILURE();
-    return NULL;
+  virtual PendingExtensionManager* pending_extension_manager() {
+    ADD_FAILURE() << "Subclass should override this if it will "
+                  << "be accessed by a test.";
+    return &pending_extension_manager_;
   }
 
-  virtual Profile* profile() { return &profile_; }
+  Profile* profile() { return &profile_; }
+
+  ExtensionPrefs* extension_prefs() { return prefs_.prefs(); }
 
   PrefService* pref_service() { return prefs_.pref_service(); }
 
@@ -375,7 +387,9 @@ class ExtensionUpdaterTest : public testing::Test {
     TestURLFetcherFactory factory;
     URLFetcher::set_factory(&factory);
     scoped_refptr<ExtensionUpdater> updater(
-        new ExtensionUpdater(&service, service.pref_service(), 60*60*24));
+        new ExtensionUpdater(
+            &service, service.extension_prefs(), service.pref_service(),
+            service.profile(), 60*60*24));
     updater->Start();
 
     // Tell the update that it's time to do update checks.
@@ -423,7 +437,9 @@ class ExtensionUpdaterTest : public testing::Test {
     TestURLFetcherFactory factory;
     URLFetcher::set_factory(&factory);
     scoped_refptr<ExtensionUpdater> updater(
-        new ExtensionUpdater(&service, service.pref_service(), 60*60*24));
+        new ExtensionUpdater(
+            &service, service.extension_prefs(), service.pref_service(),
+            service.profile(), 60*60*24));
     updater->Start();
 
     // Tell the updater that it's time to do update checks.
@@ -510,7 +526,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
   static void TestUpdateUrlDataFromGallery(const std::string& gallery_url) {
     MockService service;
-    ManifestFetchesBuilder builder(&service);
+    ManifestFetchesBuilder builder(&service, service.extension_prefs());
     ExtensionList extensions;
     std::string url(gallery_url);
 
@@ -541,8 +557,9 @@ class ExtensionUpdaterTest : public testing::Test {
     service.set_extensions(tmp);
 
     scoped_refptr<ExtensionUpdater> updater(
-        new ExtensionUpdater(&service, service.pref_service(),
-                             kUpdateFrequencySecs));
+        new ExtensionUpdater(
+            &service, service.extension_prefs(), service.pref_service(),
+            service.profile(), kUpdateFrequencySecs));
     updater->Start();
 
     // Check passing an empty list of parse results to DetermineUpdates
@@ -581,8 +598,9 @@ class ExtensionUpdaterTest : public testing::Test {
 
     MessageLoop message_loop;
     scoped_refptr<ExtensionUpdater> updater(
-        new ExtensionUpdater(&service, service.pref_service(),
-                             kUpdateFrequencySecs));
+        new ExtensionUpdater(
+            &service, service.extension_prefs(), service.pref_service(),
+            service.profile(), kUpdateFrequencySecs));
     updater->Start();
 
     ManifestFetchData fetch_data(GURL("http://localhost/foo"));
@@ -618,7 +636,9 @@ class ExtensionUpdaterTest : public testing::Test {
     URLFetcher::set_factory(&factory);
     scoped_ptr<ServiceForDownloadTests> service(new ServiceForDownloadTests);
     scoped_refptr<ExtensionUpdater> updater(
-        new ExtensionUpdater(service.get(), service->pref_service(),
+        new ExtensionUpdater(service.get(), service->extension_prefs(),
+                             service->pref_service(),
+                             service->profile(),
                              kUpdateFrequencySecs));
     updater->Start();
 
@@ -690,7 +710,9 @@ class ExtensionUpdaterTest : public testing::Test {
     URLFetcher::set_factory(&factory);
     scoped_ptr<ServiceForDownloadTests> service(new ServiceForDownloadTests);
     scoped_refptr<ExtensionUpdater> updater(
-        new ExtensionUpdater(service.get(), service->pref_service(),
+        new ExtensionUpdater(service.get(), service->extension_prefs(),
+                             service->pref_service(),
+                             service->profile(),
                              kUpdateFrequencySecs));
     updater->Start();
 
@@ -759,8 +781,9 @@ class ExtensionUpdaterTest : public testing::Test {
     URLFetcher::set_factory(&factory);
     ServiceForBlacklistTests service;
     scoped_refptr<ExtensionUpdater> updater(
-        new ExtensionUpdater(&service, service.pref_service(),
-                             kUpdateFrequencySecs));
+        new ExtensionUpdater(
+            &service, service.extension_prefs(), service.pref_service(),
+            service.profile(), kUpdateFrequencySecs));
     updater->Start();
     GURL test_url("http://localhost/extension.crx");
 
@@ -805,8 +828,9 @@ class ExtensionUpdaterTest : public testing::Test {
     URLFetcher::set_factory(&factory);
     ServiceForDownloadTests service;
     scoped_refptr<ExtensionUpdater> updater(
-        new ExtensionUpdater(&service, service.pref_service(),
-                             kUpdateFrequencySecs));
+        new ExtensionUpdater(
+            &service, service.extension_prefs(), service.pref_service(),
+            service.profile(), kUpdateFrequencySecs));
     updater->Start();
 
     GURL url1("http://localhost/extension1.crx");
@@ -917,8 +941,9 @@ class ExtensionUpdaterTest : public testing::Test {
       prefs->SetActiveBit(id, true);
 
     scoped_refptr<ExtensionUpdater> updater(
-      new ExtensionUpdater(&service, service.pref_service(),
-                           kUpdateFrequencySecs));
+      new ExtensionUpdater(
+          &service, service.extension_prefs(), service.pref_service(),
+          service.profile(), kUpdateFrequencySecs));
     updater->Start();
     updater->set_blacklist_checks_enabled(false);
 
@@ -982,8 +1007,9 @@ class ExtensionUpdaterTest : public testing::Test {
     ServiceForManifestTests service;
     MessageLoop message_loop;
     scoped_refptr<ExtensionUpdater> updater(
-        new ExtensionUpdater(&service, service.pref_service(),
-                             kUpdateFrequencySecs));
+        new ExtensionUpdater(
+            &service, service.extension_prefs(), service.pref_service(),
+            service.profile(), kUpdateFrequencySecs));
     updater->Start();
 
     GURL update_url("http://www.google.com/manifest");
@@ -1106,7 +1132,7 @@ TEST(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   BrowserThread file_thread(BrowserThread::FILE, &message_loop);
 
   MockService service;
-  ManifestFetchesBuilder builder(&service);
+  ManifestFetchesBuilder builder(&service, service.extension_prefs());
 
   // Non-internal non-external extensions should be rejected.
   {
@@ -1158,8 +1184,9 @@ TEST(ExtensionUpdaterTest, TestStartUpdateCheckMemory) {
     TestURLFetcherFactory factory;
     URLFetcher::set_factory(&factory);
     scoped_refptr<ExtensionUpdater> updater(
-        new ExtensionUpdater(&service, service.pref_service(),
-                             kUpdateFrequencySecs));
+        new ExtensionUpdater(
+            &service, service.extension_prefs(), service.pref_service(),
+            service.profile(), kUpdateFrequencySecs));
     updater->Start();
     updater->StartUpdateCheck(new ManifestFetchData(GURL()));
     // This should delete the newly-created ManifestFetchData.
@@ -1177,8 +1204,9 @@ TEST(ExtensionUpdaterTest, TestAfterStopBehavior) {
 
     ServiceForManifestTests service;
     scoped_refptr<ExtensionUpdater> updater(
-        new ExtensionUpdater(&service, service.pref_service(),
-                             kUpdateFrequencySecs));
+        new ExtensionUpdater(
+            &service, service.extension_prefs(), service.pref_service(),
+            service.profile(), kUpdateFrequencySecs));
     updater->Start();
     updater->Stop();
     // All the below functions should do nothing.

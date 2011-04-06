@@ -411,7 +411,8 @@ void ExtensionsDOMHandler::HandleEnableIncognitoMessage(const ListValue* args) {
   //
   // Bug: http://crbug.com/41384
   ignore_notifications_ = true;
-  extensions_service_->SetIsIncognitoEnabled(extension, enable_str == "true");
+  extensions_service_->SetIsIncognitoEnabled(extension_id,
+                                             enable_str == "true");
   ignore_notifications_ = false;
 }
 
@@ -699,7 +700,7 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
   extension_data->SetBoolean("enabled", enabled);
   extension_data->SetBoolean("terminated", terminated);
   extension_data->SetBoolean("enabledIncognito",
-      service ? service->IsIncognitoEnabled(extension) : false);
+      service ? service->IsIncognitoEnabled(extension->id()) : false);
   extension_data->SetBoolean("wantsFileAccess", extension->wants_file_access());
   extension_data->SetBoolean("allowFileAccess",
       service ? service->AllowFileAccess(extension) : false);

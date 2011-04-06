@@ -166,7 +166,8 @@ bool AutocompletePopupModel::GetKeywordForText(const string16& text,
         GetExtensionById(template_url->GetExtensionId(), false);
     if (!extension ||
         (profile_->IsOffTheRecord() &&
-         !profile_->GetExtensionService()->IsIncognitoEnabled(extension)))
+         !profile_->GetExtensionService()->
+             IsIncognitoEnabled(extension->id())))
       return false;
   }
 
