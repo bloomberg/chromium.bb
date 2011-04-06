@@ -229,7 +229,7 @@ void DevToolsNetLogObserver::PopulateResponseInfo(net::URLRequest* request,
 }
 
 // static
-int DevToolsNetLogObserver::GetAndResetTransferSize(
+int DevToolsNetLogObserver::GetAndResetRawDataLength(
     net::URLRequest* request) {
   if (!(request->load_flags() & net::LOAD_REPORT_RAW_HEADERS))
     return -1;

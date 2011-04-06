@@ -61,7 +61,7 @@ class DevToolsNetLogObserver: public ChromeNetLog::ThreadSafeObserver {
   // are active.
   static DevToolsNetLogObserver* GetInstance();
   static void PopulateResponseInfo(net::URLRequest*, ResourceResponse*);
-  static int GetAndResetTransferSize(net::URLRequest* request);
+  static int GetAndResetRawDataLength(net::URLRequest* request);
 
  private:
   static DevToolsNetLogObserver* instance_;
