@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,20 +10,7 @@ cr.define('options', function() {
    * Creates a deletable list item, which has a button that will trigger a call
    * to deleteItemAtIndex(index) in the list.
    */
-  function DeletableItem(value) {
-    var el = cr.doc.createElement('div');
-    DeletableItem.decorate(el);
-    return el;
-  }
-
-  /**
-   * Decorates an element as a deletable list item.
-   * @param {!HTMLElement} el The element to decorate.
-   */
-  DeletableItem.decorate = function(el) {
-    el.__proto__ = DeletableItem.prototype;
-    el.decorate();
-  };
+  var DeletableItem = cr.ui.define('li');
 
   DeletableItem.prototype = {
     __proto__: ListItem.prototype,

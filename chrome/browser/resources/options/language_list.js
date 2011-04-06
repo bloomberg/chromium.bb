@@ -4,10 +4,50 @@
 
 cr.define('options', function() {
   const ArrayDataModel = cr.ui.ArrayDataModel;
-  const LanguageOptions = options.LanguageOptions;
+  const DeletableItem = options.DeletableItem;
+  const DeletableItemList = options.DeletableItemList;
   const List = cr.ui.List;
   const ListItem = cr.ui.ListItem;
   const ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
+
+  /**
+   * Creates a new Language list item.
+   * @param {String} languageCode the languageCode.
+   * @constructor
+   * @extends {DeletableItem.ListItem}
+   */
+  function LanguageListItem(languageCode) {
+    var el = cr.doc.createElement('li');
+    el.__proto__ = LanguageListItem.prototype;
+    el.languageCode_ = languageCode;
+    el.decorate();
+    return el;
+  };
+
+  LanguageListItem.prototype = {
+    __proto__: DeletableItem.prototype,
+
+    /**
+     * The language code of this language.
+     * @type {String}
+     * @private
+     */
+    languageCode_: null,
+
+    /** @inheritDoc */
+    decorate: function() {
+      DeletableItem.prototype.decorate.call(this);
+
+      var languageCode = this.languageCode_;
+      var languageOptions = options.LanguageOptions.getInstance();
+      this.deletable = languageOptions.languageIsDeletable(languageCode);
+      this.languageCode = languageCode;
+      this.contentElement.textContent =
+          LanguageList.getDisplayNameFromLanguageCode(languageCode);
+      this.title =
+          LanguageList.getNativeDisplayNameFromLanguageCode(languageCode);
+    },
+  };
 
   /**
    * Creates a new language list.
@@ -68,7 +108,7 @@ cr.define('options', function() {
   }
 
   LanguageList.prototype = {
-    __proto__: List.prototype,
+    __proto__: DeletableItemList.prototype,
 
     // The list item being dragged.
     draggedItem: null,
@@ -85,7 +125,7 @@ cr.define('options', function() {
 
     /** @inheritDoc */
     decorate: function() {
-      List.prototype.decorate.call(this);
+      DeletableItemList.prototype.decorate.call(this);
       this.selectionModel = new ListSingleSelectionModel;
 
       // HACK(arv): http://crbug.com/40902
@@ -108,16 +148,7 @@ cr.define('options', function() {
     },
 
     createItem: function(languageCode) {
-      var languageDisplayName =
-          LanguageList.getDisplayNameFromLanguageCode(languageCode);
-      var languageNativeDisplayName =
-          LanguageList.getNativeDisplayNameFromLanguageCode(languageCode);
-      return new ListItem({
-        label: languageDisplayName,
-        draggable: true,
-        languageCode: languageCode,
-        title: languageNativeDisplayName  // Show native name as tooltip.
-      });
+      return new LanguageListItem(languageCode);
     },
 
     /*
@@ -164,17 +195,16 @@ cr.define('options', function() {
       return false;
     },
 
-    /*
-     * Removes the currently selected language.
-     */
-    removeSelectedLanguage: function() {
-      if (this.selectionModel.selectedIndex >= 0) {
-        this.dataModel.splice(this.selectionModel.selectedIndex, 1);
+    /** @inheritDoc */
+    deleteItemAtIndex: function(index) {
+      if (index >= 0) {
+        this.dataModel.splice(index, 1);
         // Once the selected item is removed, there will be no selected item.
         // Select the item pointed by the lead index.
-        this.selectionModel.selectedIndex = this.selectionModel.leadIndex;
+        index = this.selectionModel.leadIndex;
         this.savePreference_();
       }
+      return index;
     },
 
     /*
@@ -368,6 +398,7 @@ cr.define('options', function() {
   };
 
   return {
-    LanguageList: LanguageList
+    LanguageList: LanguageList,
+    LanguageListItem: LanguageListItem
   };
 });

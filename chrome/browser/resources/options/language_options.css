@@ -3,7 +3,8 @@
   margin: 10px 0;
 }
 
-.language-options button {
+.language-options-lower-left button,
+.language-options-right button {
   min-width: 70px;
 }
 

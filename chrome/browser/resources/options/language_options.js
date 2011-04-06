@@ -75,9 +75,6 @@ cr.define('options', function() {
           OptionsPage.navigateToPage('addLanguage');
         }
       };
-      // Set up remove button.
-      $('language-options-remove-button').addEventListener('click',
-          this.handleRemoveButtonClick_.bind(this));
 
       if (cr.isChromeOS) {
         // Listen to user clicks on the add language list.
@@ -425,9 +422,8 @@ cr.define('options', function() {
           label.style.display = 'none';
         }
       }
-      if (focusInputMethodId == 'remove') {
-        $('language-options-remove-button').focus();
-      } else if (focusInputMethodId == 'add') {
+
+      if (focusInputMethodId == 'add') {
         $('language-options-add-button').focus();
       }
     },
@@ -538,31 +534,17 @@ cr.define('options', function() {
     },
 
     /**
-     * Handles remove button's click event.
-     * @param {Event} e Click event.
+     * Checks if languageCode is deletable or not.
+     * @param {String} languageCode the languageCode to check for deletability.
      */
-    handleRemoveButtonClick_: function(e) {
-      var languageOptionsList = $('language-options-list');
-      var languageCode = languageOptionsList.getSelectedLanguageCode();
+    languageIsDeletable: function(languageCode) {
       // Don't allow removing the language if it's as UI language.
-      if (languageCode == templateData.currentUiLanguageCode) {
-        this.showNotification_(
-            localStrings.getString('this_language_is_currently_in_use'),
-            localStrings.getString('ok_button'));
-        return;
-      }
-      if (cr.isChromeOS) {
-        // Disable input methods associated with |languageCode|.
-        // Don't allow removing the language if cerntain conditions are met.
-        // See removePreloadEnginesByLanguageCode_() for details.
-        if (!this.removePreloadEnginesByLanguageCode_(languageCode)) {
-          this.showNotification_(
-              localStrings.getString('please_add_another_language'),
-              localStrings.getString('ok_button'));
-          return;
-        }
-      }
-      languageOptionsList.removeSelectedLanguage();
+      if (languageCode == templateData.currentUiLanguageCode)
+        return false;
+      // Don't allow removing the language if cerntain conditions are met.
+      // See removePreloadEnginesByLanguageCode_() for details.
+      return (!cr.isChromeOS ||
+              this.removePreloadEnginesByLanguageCode_(languageCode));
     },
 
     /**
