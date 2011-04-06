@@ -651,7 +651,8 @@ ChromeAppCacheService* ProfileImpl::GetAppCacheService() {
         NewRunnableMethod(
             appcache_service_.get(),
             &ChromeAppCacheService::InitializeOnIOThread,
-            IsOffTheRecord() ? FilePath() : GetPath(),
+            IsOffTheRecord()
+                ? FilePath() : GetPath().Append(chrome::kAppCacheDirname),
             make_scoped_refptr(GetHostContentSettingsMap()),
             make_scoped_refptr(GetExtensionSpecialStoragePolicy()),
             clear_local_state_on_exit_));
