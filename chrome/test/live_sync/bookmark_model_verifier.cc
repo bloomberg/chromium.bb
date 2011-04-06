@@ -64,7 +64,13 @@ class FaviconLoadObserver : public BookmarkModelObserver {
   DISALLOW_COPY_AND_ASSIGN(FaviconLoadObserver);
 };
 
-}
+}  // namespace
+
+BookmarkModelVerifier::BookmarkModelVerifier(BookmarkModel* model)
+    : verifier_model_(model),
+      use_verifier_model_(true) {}
+
+BookmarkModelVerifier::~BookmarkModelVerifier() {}
 
 bool BookmarkModelVerifier::NodesMatch(const BookmarkNode* node_a,
                                        const BookmarkNode* node_b) const {

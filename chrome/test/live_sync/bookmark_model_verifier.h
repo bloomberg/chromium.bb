@@ -23,11 +23,8 @@
 // expected to be a replica of |model|.
 class BookmarkModelVerifier {
  public:
-  explicit BookmarkModelVerifier(BookmarkModel* model)
-      : verifier_model_(model),
-        use_verifier_model_(true) {}
-
-  ~BookmarkModelVerifier() {}
+  explicit BookmarkModelVerifier(BookmarkModel* model);
+  ~BookmarkModelVerifier();
 
   // Checks if the hierarchies in |model_a| and |model_b| are equivalent in
   // terms of the data model and favicon. Returns true if they both match.
