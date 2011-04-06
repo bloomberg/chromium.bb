@@ -27,8 +27,11 @@ class CourgetteWin32X86PatchGenerator : public TransformationPatchGenerator {
   }
 
   Status WriteInitialParameters(SinkStream* parameter_stream) {
-    parameter_stream->WriteSizeVarint32(old_element_->offset_in_ensemble());
-    parameter_stream->WriteSizeVarint32(old_element_->region().length());
+    if (!parameter_stream->WriteSizeVarint32(
+            old_element_->offset_in_ensemble()) ||
+        !parameter_stream->WriteSizeVarint32(old_element_->region().length())) {
+      return C_STREAM_ERROR;
+    }
     return C_OK;
     // TODO(sra): Initialize |patcher_| with these parameters.
   }

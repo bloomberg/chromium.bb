@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -396,6 +396,8 @@ Status ApplyEnsemblePatch(const FilePath::CharType* old_file_name,
   SinkStream new_sink_stream;
   status = ApplyEnsemblePatch(&old_source_stream, &patch_source_stream,
                               &new_sink_stream);
+  if (status != C_OK)
+    return status;
 
   // Write the patched data to |new_file_name|.
   FilePath new_file_path(new_file_name);

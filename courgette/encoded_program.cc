@@ -33,46 +33,46 @@ const int kStreamOriginAddresses = kStreamMisc;
 const int kStreamLimit = 9;
 
 // Constructor is here rather than in the header.  Although the constructor
-// appears to do nothing it is fact quite large because of the implict calls to
+// appears to do nothing it is fact quite large because of the implicit calls to
 // field constructors.  Ditto for the destructor.
 EncodedProgram::EncodedProgram() : image_base_(0) {}
 EncodedProgram::~EncodedProgram() {}
 
 // Serializes a vector of integral values using Varint32 coding.
-template<typename T, typename A>
-CheckBool WriteVector(const std::vector<T, A>& items, SinkStream* buffer) {
+template<typename V>
+CheckBool WriteVector(const V& items, SinkStream* buffer) {
   size_t count = items.size();
   bool ok = buffer->WriteSizeVarint32(count);
   for (size_t i = 0; ok && i < count;  ++i) {
-    COMPILE_ASSERT(sizeof(T) <= sizeof(uint32),  // NOLINT
+    COMPILE_ASSERT(sizeof(items[0]) <= sizeof(uint32),  // NOLINT
                    T_must_fit_in_uint32);
     ok = buffer->WriteSizeVarint32(items[i]);
   }
   return ok;
 }
 
-template<typename T, typename A>
-bool ReadVector(std::vector<T, A>* items, SourceStream* buffer) {
+template<typename V>
+bool ReadVector(V* items, SourceStream* buffer) {
   uint32 count;
   if (!buffer->ReadVarint32(&count))
     return false;
 
   items->clear();
-  items->reserve(count);
-  for (size_t i = 0;  i < count;  ++i) {
+
+  bool ok = items->reserve(count);
+  for (size_t i = 0;  ok && i < count;  ++i) {
     uint32 item;
-    if (!buffer->ReadVarint32(&item))
-      return false;
-    // TODO(tommi): Handle errors.
-    items->push_back(static_cast<T>(item));
+    ok = buffer->ReadVarint32(&item);
+    if (ok)
+      ok = items->push_back(static_cast<typename V::value_type>(item));
   }
 
-  return true;
+  return ok;
 }
 
 // Serializes a vector, using delta coding followed by Varint32 coding.
-template<typename A>
-CheckBool WriteU32Delta(const std::vector<uint32, A>& set, SinkStream* buffer) {
+template<typename V>
+CheckBool WriteU32Delta(const V& set, SinkStream* buffer) {
   size_t count = set.size();
   bool ok = buffer->WriteSizeVarint32(count);
   uint32 prev = 0;
@@ -85,65 +85,61 @@ CheckBool WriteU32Delta(const std::vector<uint32, A>& set, SinkStream* buffer) {
   return ok;
 }
 
-template <typename A>
-static CheckBool ReadU32Delta(std::vector<uint32, A>* set,
-                              SourceStream* buffer) {
+template <typename V>
+static CheckBool ReadU32Delta(V* set, SourceStream* buffer) {
   uint32 count;
 
   if (!buffer->ReadVarint32(&count))
     return false;
 
   set->clear();
-  // TODO(tommi): Handle errors.
-  set->reserve(count);
+  bool ok = set->reserve(count);
   uint32 prev = 0;
 
-  for (size_t i = 0;  i < count;  ++i) {
+  for (size_t i = 0; ok && i < count;  ++i) {
     uint32 delta;
-    if (!buffer->ReadVarint32(&delta))
-      return false;
-    uint32 current = prev + delta;
-    // TODO(tommi): handle errors
-    set->push_back(current);
-    prev = current;
+    ok = buffer->ReadVarint32(&delta);
+    if (ok) {
+      uint32 current = prev + delta;
+      ok = set->push_back(current);
+      prev = current;
+    }
   }
 
-  // TODO(tommi): Handle errors.
-  return true;
+  return ok;
 }
 
 // Write a vector as the byte representation of the contents.
 //
 // (This only really makes sense for a type T that has sizeof(T)==1, otherwise
-// serialized representation is not endian-agnositic.  But it is useful to keep
+// serialized representation is not endian-agnostic.  But it is useful to keep
 // the possibility of a greater size for experiments comparing Varint32 encoding
 // of a vector of larger integrals vs a plain form.)
 //
-template<typename T, typename A>
-CheckBool WriteVectorU8(const std::vector<T, A>& items, SinkStream* buffer) {
+template<typename V>
+CheckBool WriteVectorU8(const V& items, SinkStream* buffer) {
   size_t count = items.size();
   bool ok = buffer->WriteSizeVarint32(count);
   if (count != 0 && ok) {
-    size_t byte_count = count * sizeof(T);
+    size_t byte_count = count * sizeof(typename V::value_type);
     ok = buffer->Write(static_cast<const void*>(&items[0]), byte_count);
   }
   return ok;
 }
 
-template<typename T, typename A>
-bool ReadVectorU8(std::vector<T, A>* items, SourceStream* buffer) {
+template<typename V>
+bool ReadVectorU8(V* items, SourceStream* buffer) {
   uint32 count;
   if (!buffer->ReadVarint32(&count))
     return false;
 
   items->clear();
-  // TODO(tommi): check error
-  items->resize(count);
-  if (count != 0) {
-    size_t byte_count = count * sizeof(T);
+  bool ok = items->resize(count, 0);
+  if (ok && count != 0) {
+    size_t byte_count = count * sizeof(typename V::value_type);
     return buffer->Read(static_cast<void*>(&((*items)[0])), byte_count);
   }
-  return true;
+  return ok;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -161,16 +157,17 @@ static const RVA kUnassignedRVA = static_cast<RVA>(-1);
 CheckBool EncodedProgram::DefineLabelCommon(RvaVector* rvas,
                                             int index,
                                             RVA rva) {
-  if (static_cast<int>(rvas->size()) <= index) {
-    // TODO(tommi): handle error
-    rvas->resize(index + 1, kUnassignedRVA);
+  bool ok = true;
+  if (static_cast<int>(rvas->size()) <= index)
+    ok = rvas->resize(index + 1, kUnassignedRVA);
+
+  if (ok) {
+    DCHECK_EQ((*rvas)[index], kUnassignedRVA)
+        << "DefineLabel double assigned " << index;
+    (*rvas)[index] = rva;
   }
-  if ((*rvas)[index] != kUnassignedRVA) {
-    NOTREACHED() << "DefineLabel double assigned " << index;
-  }
-  (*rvas)[index] = rva;
-  // TODO(tommi): Handle errors
-  return true;
+
+  return ok;
 }
 
 void EncodedProgram::EndLabels() {
@@ -194,15 +191,13 @@ void EncodedProgram::FinishLabelsCommon(RvaVector* rvas) {
 }
 
 CheckBool EncodedProgram::AddOrigin(RVA origin) {
-  //TODO(tommi): Handle errors
-  ops_.push_back(ORIGIN);
-  origins_.push_back(origin);
-  return true;
+  return ops_.push_back(ORIGIN) && origins_.push_back(origin);
 }
 
 CheckBool EncodedProgram::AddCopy(uint32 count, const void* bytes) {
-  //TODO(tommi): Handle errors
   const uint8* source = static_cast<const uint8*>(bytes);
+
+  bool ok = true;
 
   // Fold adjacent COPY instructions into one.  This nearly halves the size of
   // an EncodedProgram with only COPY1 instructions since there are approx plain
@@ -213,49 +208,41 @@ CheckBool EncodedProgram::AddCopy(uint32 count, const void* bytes) {
   if (!ops_.empty()) {
     if (ops_.back() == COPY1) {
       ops_.back() = COPY;
-      copy_counts_.push_back(1);
+      ok = copy_counts_.push_back(1);
     }
-    if (ops_.back() == COPY) {
+    if (ok && ops_.back() == COPY) {
       copy_counts_.back() += count;
-      for (uint32 i = 0;  i < count;  ++i) {
-        copy_bytes_.push_back(source[i]);
+      for (uint32 i = 0; ok && i < count; ++i) {
+        ok = copy_bytes_.push_back(source[i]);
       }
-      return true;
+      return ok;
     }
   }
 
-  if (count == 1) {
-    ops_.push_back(COPY1);
-    copy_bytes_.push_back(source[0]);
-  } else {
-    ops_.push_back(COPY);
-    copy_counts_.push_back(count);
-    for (uint32 i = 0;  i < count;  ++i) {
-      copy_bytes_.push_back(source[i]);
+  if (ok) {
+    if (count == 1) {
+      ok = ops_.push_back(COPY1) && copy_bytes_.push_back(source[0]);
+    } else {
+      ok = ops_.push_back(COPY) && copy_counts_.push_back(count);
+      for (uint32 i = 0; ok && i < count; ++i) {
+        ok = copy_bytes_.push_back(source[i]);
+      }
     }
   }
 
-  return true;
+  return ok;
 }
 
 CheckBool EncodedProgram::AddAbs32(int label_index) {
-  //TODO(tommi): Handle errors
-  ops_.push_back(ABS32);
-  abs32_ix_.push_back(label_index);
-  return true;
+  return ops_.push_back(ABS32) && abs32_ix_.push_back(label_index);
 }
 
 CheckBool EncodedProgram::AddRel32(int label_index) {
-  //TODO(tommi): Handle errors
-  ops_.push_back(REL32);
-  rel32_ix_.push_back(label_index);
-  return true;
+  return ops_.push_back(REL32) && rel32_ix_.push_back(label_index);
 }
 
 CheckBool EncodedProgram::AddMakeRelocs() {
-  //TODO(tommi): Handle errors
-  ops_.push_back(MAKE_BASE_RELOCATION_TABLE);
-  return true;
+  return ops_.push_back(MAKE_BASE_RELOCATION_TABLE);
 }
 
 void EncodedProgram::DebuggingSummary() {
@@ -393,8 +380,8 @@ bool EncodedProgram::ReadFrom(SourceStreamSet* streams) {
 
 // Safe, non-throwing version of std::vector::at().  Returns 'true' for success,
 // 'false' for out-of-bounds index error.
-template<typename T, typename A>
-bool VectorAt(const std::vector<T, A>& v, size_t index, T* output) {
+template<typename V, typename T>
+bool VectorAt(const V& v, size_t index, T* output) {
   if (index >= v.size())
     return false;
   *output = v[index];
@@ -485,8 +472,7 @@ CheckBool EncodedProgram::AssembleTo(SinkStream* final_buffer) {
         if (!VectorAt(abs32_rva_, index, &rva))
           return false;
         uint32 abs32 = static_cast<uint32>(rva + image_base_);
-        abs32_relocs_.push_back(current_rva);
-        if (!output->Write(&abs32, 4))
+        if (!abs32_relocs_.push_back(current_rva) || !output->Write(&abs32, 4))
           return false;
         current_rva += 4;
         break;
@@ -557,7 +543,7 @@ class RelocBlock {
     pod.block_size += 2;
   }
 
-  CheckBool Flush(SinkStream* buffer) {
+  CheckBool Flush(SinkStream* buffer) WARN_UNUSED_RESULT {
     bool ok = true;
     if (pod.block_size != 8) {
       if (pod.block_size % 4 != 0) {  // Pad to make size multiple of 4 bytes.

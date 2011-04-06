@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -182,9 +182,7 @@ bool SourceStream::Skip(size_t byte_count) {
 }
 
 CheckBool SinkStream::Write(const void* data, size_t byte_count) {
-  buffer_.append(static_cast<const char*>(data), byte_count);
-  //TODO(tommi): return error on failure.
-  return true;
+  return buffer_.append(static_cast<const char*>(data), byte_count);
 }
 
 CheckBool SinkStream::WriteVarint32(uint32 value) {
@@ -214,7 +212,7 @@ CheckBool SinkStream::WriteSizeVarint32(size_t value) {
 }
 
 CheckBool SinkStream::Append(SinkStream* other) {
-  bool ret = Write(other->buffer_.c_str(), other->buffer_.size());
+  bool ret = Write(other->buffer_.data(), other->buffer_.size());
   if (ret)
     other->Retire();
   return ret;
@@ -222,7 +220,6 @@ CheckBool SinkStream::Append(SinkStream* other) {
 
 void SinkStream::Retire() {
   buffer_.clear();
-  buffer_.reserve(0);  // Non-binding request to reduce storage.
 }
 
 ////////////////////////////////////////////////////////////////////////////////

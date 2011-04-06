@@ -73,6 +73,7 @@ enum InstallStatus {
   READY_MODE_REQUIRES_CHROME,  // 40. Chrome Frame in ready-mode requires Chrome
   REQUIRES_MULTI_INSTALL,      // 41. --multi-install was missing from the
                                // command line.
+  APPLY_DIFF_PATCH_FAILED,     // 42. Failed to apply a diff patch.
 };
 
 

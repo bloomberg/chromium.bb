@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 
 #include "courgette/image_info.h"
 #include "courgette/memory_allocator.h"
@@ -19,8 +20,7 @@ namespace courgette {
 class EncodedProgram;
 class Instruction;
 
-typedef std::vector<Instruction*, MemoryAllocator<Instruction*> >
-    InstructionVector;
+typedef NoThrowBuffer<Instruction*> InstructionVector;
 
 // A Label is a symbolic reference to an address.  Unlike a conventional
 // assembly language, we always know the address.  The address will later be
@@ -34,7 +34,7 @@ class Label {
   Label() : rva_(0), index_(kNoIndex) {}
   explicit Label(RVA rva) : rva_(rva), index_(kNoIndex) {}
 
-  RVA rva_;    // Address refered to by the label.
+  RVA rva_;    // Address referred to by the label.
   int index_;  // Index of address in address table, kNoIndex until assigned.
 };
 
@@ -69,21 +69,24 @@ class AssemblyProgram {
   // Instructions will be assembled in the order they are emitted.
 
   // Generates an entire base relocation table.
-  void EmitMakeRelocsInstruction();
+  CheckBool EmitMakeRelocsInstruction() WARN_UNUSED_RESULT;
 
   // Following instruction will be assembled at address 'rva'.
-  void EmitOriginInstruction(RVA rva);
+  CheckBool EmitOriginInstruction(RVA rva) WARN_UNUSED_RESULT;
 
   // Generates a single byte of data or machine instruction.
-  void EmitByteInstruction(uint8 byte);
+  CheckBool EmitByteInstruction(uint8 byte) WARN_UNUSED_RESULT;
 
   // Generates 4-byte relative reference to address of 'label'.
-  void EmitRel32(Label* label);
+  CheckBool EmitRel32(Label* label) WARN_UNUSED_RESULT;
 
   // Generates 4-byte absolute reference to address of 'label'.
-  void EmitAbs32(Label* label);
+  CheckBool EmitAbs32(Label* label) WARN_UNUSED_RESULT;
 
+  // Looks up a label or creates a new one.  Might return NULL.
   Label* FindOrMakeAbs32Label(RVA rva);
+
+  // Looks up a label or creates a new one.  Might return NULL.
   Label* FindOrMakeRel32Label(RVA rva);
 
   void DefaultAssignIndexes();
@@ -106,8 +109,9 @@ class AssemblyProgram {
   Label* InstructionRel32Label(const Instruction* instruction) const;
 
  private:
-  void Emit(Instruction* instruction) { instructions_.push_back(instruction); }
+  CheckBool Emit(Instruction* instruction) WARN_UNUSED_RESULT;
 
+  // Looks up a label or creates a new one.  Might return NULL.
   Label* FindLabel(RVA rva, RVAToLabel* labels);
 
   // Helper methods for the public versions.
@@ -117,7 +121,7 @@ class AssemblyProgram {
 
   // Sharing instructions that emit a single byte saves a lot of space.
   Instruction* GetByteInstruction(uint8 byte);
-  Instruction** byte_instruction_cache_;
+  scoped_array<Instruction*> byte_instruction_cache_;
 
   uint64 image_base_;  // Desired or mandated base address of image.
 

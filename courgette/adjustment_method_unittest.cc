@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,12 +34,12 @@ class AdjustmentMethodTest : public testing::Test {
     courgette::Label* labelA = prog->FindOrMakeAbs32Label(0x00410000);
     courgette::Label* labelB = prog->FindOrMakeAbs32Label(0x00410004);
 
-    prog->EmitAbs32(labelA);
-    prog->EmitAbs32(labelA);
-    prog->EmitAbs32(labelB);
-    prog->EmitAbs32(labelA);
-    prog->EmitAbs32(labelA);
-    prog->EmitAbs32(labelB);
+    EXPECT_TRUE(prog->EmitAbs32(labelA));
+    EXPECT_TRUE(prog->EmitAbs32(labelA));
+    EXPECT_TRUE(prog->EmitAbs32(labelB));
+    EXPECT_TRUE(prog->EmitAbs32(labelA));
+    EXPECT_TRUE(prog->EmitAbs32(labelA));
+    EXPECT_TRUE(prog->EmitAbs32(labelB));
 
     if (kind == 0) {
       labelA->index_ = 0;

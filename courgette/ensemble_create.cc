@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -233,11 +233,13 @@ Status GenerateEnsemblePatch(SourceStream* base,
   SinkStream* ensemble_correction             = patch_streams.stream(3);
 
   size_t number_of_transformations = generators.size();
-  tranformation_descriptions->WriteSizeVarint32(number_of_transformations);
+  if (!tranformation_descriptions->WriteSizeVarint32(number_of_transformations))
+    return C_STREAM_ERROR;
 
   for (size_t i = 0;  i < number_of_transformations;  ++i) {
     CourgettePatchFile::TransformationMethodId kind = generators[i]->Kind();
-    tranformation_descriptions->WriteVarint32(kind);
+    if (!tranformation_descriptions->WriteVarint32(kind))
+      return C_STREAM_ERROR;
   }
 
   for (size_t i = 0;  i < number_of_transformations;  ++i) {
@@ -401,17 +403,16 @@ Status GenerateEnsemblePatch(SourceStream* base,
   //
   // Final output stream has a header followed by a StreamSet.
   //
-  final_patch->WriteVarint32(CourgettePatchFile::kMagic);
-  final_patch->WriteVarint32(CourgettePatchFile::kVersion);
-
-  final_patch->WriteVarint32(
-      CalculateCrc(old_region.start(), old_region.length()));
-  final_patch->WriteVarint32(
-      CalculateCrc(new_region.start(), new_region.length()));
-  final_patch->WriteSizeVarint32(final_patch_input_size);
-
-  if (!patch_streams.CopyTo(final_patch))
+  if (!final_patch->WriteVarint32(CourgettePatchFile::kMagic) ||
+      !final_patch->WriteVarint32(CourgettePatchFile::kVersion) ||
+      !final_patch->WriteVarint32(CalculateCrc(old_region.start(),
+                                               old_region.length())) ||
+      !final_patch->WriteVarint32(CalculateCrc(new_region.start(),
+                                               new_region.length())) ||
+      !final_patch->WriteSizeVarint32(final_patch_input_size) ||
+      !patch_streams.CopyTo(final_patch)) {
     return C_STREAM_ERROR;
+  }
 
   VLOG(1) << "done GenerateEnsemblePatch "
           << (base::Time::Now() - start_time).InSecondsF() << "s";

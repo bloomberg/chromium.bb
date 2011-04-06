@@ -510,7 +510,8 @@ installer::InstallStatus InstallProductsHelper(
   FilePath unpack_path(temp_path.path().Append(installer::kInstallSourceDir));
   if (UnPackArchive(archive, installer_state, temp_path.path(), unpack_path,
                     archive_type)) {
-    install_status = installer::UNCOMPRESSION_FAILED;
+    install_status = (*archive_type) == installer::INCREMENTAL_ARCHIVE_TYPE ?
+        installer::APPLY_DIFF_PATCH_FAILED : installer::UNCOMPRESSION_FAILED;
     InstallUtil::WriteInstallerResult(system_install,
         installer_state.state_key(), install_status,
         IDS_INSTALL_UNCOMPRESSION_FAILED_BASE, NULL);

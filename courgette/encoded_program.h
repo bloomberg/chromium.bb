@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,19 +32,21 @@ class EncodedProgram {
   void set_image_base(uint64 base) { image_base_ = base; }
 
   // (2) Address tables and indexes defined first.
-  CheckBool DefineRel32Label(int index, RVA address);
-  CheckBool DefineAbs32Label(int index, RVA address);
+  CheckBool DefineRel32Label(int index, RVA address) WARN_UNUSED_RESULT;
+  CheckBool DefineAbs32Label(int index, RVA address) WARN_UNUSED_RESULT;
   void EndLabels();
 
   // (3) Add instructions in the order needed to generate bytes of file.
-  CheckBool AddOrigin(RVA rva);
-  CheckBool AddCopy(uint32 count, const void* bytes);
-  CheckBool AddRel32(int label_index);
-  CheckBool AddAbs32(int label_index);
-  CheckBool AddMakeRelocs();
+  // NOTE: If any of these methods ever fail, the EncodedProgram instance
+  // has failed and should be discarded.
+  CheckBool AddOrigin(RVA rva) WARN_UNUSED_RESULT;
+  CheckBool AddCopy(uint32 count, const void* bytes) WARN_UNUSED_RESULT;
+  CheckBool AddRel32(int label_index) WARN_UNUSED_RESULT;
+  CheckBool AddAbs32(int label_index) WARN_UNUSED_RESULT;
+  CheckBool AddMakeRelocs() WARN_UNUSED_RESULT;
 
   // (3) Serialize binary assembly language tables to a set of streams.
-  CheckBool WriteTo(SinkStreamSet* streams);
+  CheckBool WriteTo(SinkStreamSet* streams) WARN_UNUSED_RESULT;
 
   // Using an EncodedProgram to generate a byte stream:
   //
@@ -52,7 +54,7 @@ class EncodedProgram {
   bool ReadFrom(SourceStreamSet* streams);
 
   // (5) Assembles the 'binary assembly language' into final file.
-  CheckBool AssembleTo(SinkStream* buffer);
+  CheckBool AssembleTo(SinkStream* buffer) WARN_UNUSED_RESULT;
 
  private:
   // Binary assembly language operations.
@@ -68,14 +70,14 @@ class EncodedProgram {
     OP_LAST
   };
 
-  typedef std::vector<RVA, MemoryAllocator<RVA> > RvaVector;
-  typedef std::vector<uint32, MemoryAllocator<uint32> > UInt32Vector;
-  typedef std::vector<uint8, MemoryAllocator<uint8> > UInt8Vector;
-  typedef std::vector<OP, MemoryAllocator<OP> > OPVector;
+  typedef NoThrowBuffer<RVA> RvaVector;
+  typedef NoThrowBuffer<uint32> UInt32Vector;
+  typedef NoThrowBuffer<uint8> UInt8Vector;
+  typedef NoThrowBuffer<OP> OPVector;
 
   void DebuggingSummary();
-  CheckBool GenerateBaseRelocations(SinkStream *buffer);
-  CheckBool DefineLabelCommon(RvaVector*, int, RVA);
+  CheckBool GenerateBaseRelocations(SinkStream *buffer) WARN_UNUSED_RESULT;
+  CheckBool DefineLabelCommon(RvaVector*, int, RVA) WARN_UNUSED_RESULT;
   void FinishLabelsCommon(RvaVector* addresses);
 
   // Binary assembly language tables.

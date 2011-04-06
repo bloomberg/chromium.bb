@@ -86,8 +86,7 @@ class InstructionWithLabel : public Instruction {
 }  // namespace
 
 AssemblyProgram::AssemblyProgram()
-  : byte_instruction_cache_(NULL),
-    image_base_(0) {
+  : image_base_(0) {
 }
 
 static void DeleteContainedLabels(const RVAToLabel& labels) {
@@ -101,33 +100,32 @@ AssemblyProgram::~AssemblyProgram() {
     if (instruction->op() != DEFBYTE)  // Will be in byte_instruction_cache_.
       delete instruction;
   }
-  if (byte_instruction_cache_) {
+  if (byte_instruction_cache_.get()) {
     for (size_t i = 0;  i < 256;  ++i)
       delete byte_instruction_cache_[i];
-    delete[] byte_instruction_cache_;
   }
   DeleteContainedLabels(rel32_labels_);
   DeleteContainedLabels(abs32_labels_);
 }
 
-void AssemblyProgram::EmitMakeRelocsInstruction() {
-  Emit(new MakeRelocsInstruction());
+CheckBool AssemblyProgram::EmitMakeRelocsInstruction() {
+  return Emit(new(std::nothrow) MakeRelocsInstruction());
 }
 
-void AssemblyProgram::EmitOriginInstruction(RVA rva) {
-  Emit(new OriginInstruction(rva));
+CheckBool AssemblyProgram::EmitOriginInstruction(RVA rva) {
+  return Emit(new(std::nothrow) OriginInstruction(rva));
 }
 
-void AssemblyProgram::EmitByteInstruction(uint8 byte) {
-  Emit(GetByteInstruction(byte));
+CheckBool AssemblyProgram::EmitByteInstruction(uint8 byte) {
+  return Emit(GetByteInstruction(byte));
 }
 
-void AssemblyProgram::EmitRel32(Label* label) {
-  Emit(new InstructionWithLabel(REL32, label));
+CheckBool AssemblyProgram::EmitRel32(Label* label) {
+  return Emit(new(std::nothrow) InstructionWithLabel(REL32, label));
 }
 
-void AssemblyProgram::EmitAbs32(Label* label) {
-  Emit(new InstructionWithLabel(ABS32, label));
+CheckBool AssemblyProgram::EmitAbs32(Label* label) {
+  return Emit(new(std::nothrow) InstructionWithLabel(ABS32, label));
 }
 
 Label* AssemblyProgram::FindOrMakeAbs32Label(RVA rva) {
@@ -167,10 +165,19 @@ Label* AssemblyProgram::InstructionRel32Label(
   return NULL;
 }
 
+CheckBool AssemblyProgram::Emit(Instruction* instruction) {
+  if (!instruction)
+    return false;
+  bool ok = instructions_.push_back(instruction);
+  if (!ok)
+    delete instruction;
+  return ok;
+}
+
 Label* AssemblyProgram::FindLabel(RVA rva, RVAToLabel* labels) {
   Label*& slot = (*labels)[rva];
-  if (slot == 0) {
-    slot = new Label(rva);
+  if (slot == NULL) {
+    slot = new(std::nothrow) Label(rva);
   }
   return slot;
 }
@@ -307,7 +314,10 @@ static CheckBool DefineLabels(const RVAToLabel& labels,
 }
 
 EncodedProgram* AssemblyProgram::Encode() const {
-  scoped_ptr<EncodedProgram> encoded(new EncodedProgram());
+  scoped_ptr<EncodedProgram> encoded(new(std::nothrow) EncodedProgram());
+  if (!encoded.get())
+    return NULL;
+
   encoded->set_image_base(image_base_);
 
   if (!DefineLabels(abs32_labels_, encoded.get(),
@@ -362,10 +372,20 @@ EncodedProgram* AssemblyProgram::Encode() const {
 }
 
 Instruction* AssemblyProgram::GetByteInstruction(uint8 byte) {
-  if (!byte_instruction_cache_) {
-    byte_instruction_cache_ = new Instruction*[256];
+  if (!byte_instruction_cache_.get()) {
+    byte_instruction_cache_.reset(new(std::nothrow) Instruction*[256]);
+    if (!byte_instruction_cache_.get())
+      return NULL;
+
     for (int i = 0; i < 256; ++i) {
-      byte_instruction_cache_[i] = new ByteInstruction(static_cast<uint8>(i));
+      byte_instruction_cache_[i] =
+          new(std::nothrow) ByteInstruction(static_cast<uint8>(i));
+      if (!byte_instruction_cache_[i]) {
+        for (int j = 0; j < i; ++j)
+          delete byte_instruction_cache_[j];
+        byte_instruction_cache_.reset();
+        return NULL;
+      }
     }
   }
 

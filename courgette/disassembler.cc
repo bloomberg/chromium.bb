@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,17 +36,16 @@ class DisassemblerWin32X86 : public Disassembler {
  protected:
   PEInfo& pe_info() { return *pe_info_; }
 
-  void ParseFile(AssemblyProgram* target);
+  CheckBool ParseFile(AssemblyProgram* target) WARN_UNUSED_RESULT;
   bool ParseAbs32Relocs();
   void ParseRel32RelocsFromSections();
   void ParseRel32RelocsFromSection(const Section* section);
 
-  void ParseNonSectionFileRegion(uint32 start_file_offset,
-                                 uint32 end_file_offset,
-                                 AssemblyProgram* program);
-  void ParseFileRegion(const Section* section,
-                       uint32 start_file_offset, uint32 end_file_offset,
-                       AssemblyProgram* program);
+  CheckBool ParseNonSectionFileRegion(uint32 start_file_offset,
+      uint32 end_file_offset, AssemblyProgram* program) WARN_UNUSED_RESULT;
+  CheckBool ParseFileRegion(const Section* section,
+      uint32 start_file_offset, uint32 end_file_offset,
+      AssemblyProgram* program) WARN_UNUSED_RESULT;
 
 #if COURGETTE_HISTOGRAM_TARGETS
   void HistogramTargets(const char* kind, const std::map<RVA, int>& map);
@@ -75,9 +74,11 @@ bool DisassemblerWin32X86::Disassemble(AssemblyProgram* target) {
 
   ParseRel32RelocsFromSections();
 
-  ParseFile(target);
+  if (!ParseFile(target))
+    return false;
 
   target->DefaultAssignIndexes();
+
   return true;
 }
 
@@ -228,10 +229,11 @@ void DisassemblerWin32X86::ParseRel32RelocsFromSection(const Section* section) {
   }
 }
 
-void DisassemblerWin32X86::ParseFile(AssemblyProgram* program) {
+CheckBool DisassemblerWin32X86::ParseFile(AssemblyProgram* program) {
+  bool ok = true;
   // Walk all the bytes in the file, whether or not in a section.
   uint32 file_offset = 0;
-  while (file_offset < pe_info().length()) {
+  while (ok && file_offset < pe_info().length()) {
     const Section* section = pe_info().FindNextSection(file_offset);
     if (section == NULL) {
       // No more sections.  There should not be extra stuff following last
@@ -241,39 +243,47 @@ void DisassemblerWin32X86::ParseFile(AssemblyProgram* program) {
     }
     if (file_offset < section->file_offset_of_raw_data) {
       uint32 section_start_offset = section->file_offset_of_raw_data;
-      ParseNonSectionFileRegion(file_offset, section_start_offset, program);
+      ok = ParseNonSectionFileRegion(file_offset, section_start_offset,
+                                     program);
       file_offset = section_start_offset;
     }
-    uint32 end = file_offset + section->size_of_raw_data;
-    ParseFileRegion(section, file_offset, end, program);
-    file_offset = end;
+    if (ok) {
+      uint32 end = file_offset + section->size_of_raw_data;
+      ok = ParseFileRegion(section, file_offset, end, program);
+      file_offset = end;
+    }
   }
 
 #if COURGETTE_HISTOGRAM_TARGETS
   HistogramTargets("abs32 relocs", abs32_target_rvas_);
   HistogramTargets("rel32 relocs", rel32_target_rvas_);
 #endif
+
+  return ok;
 }
 
-void DisassemblerWin32X86::ParseNonSectionFileRegion(
+CheckBool DisassemblerWin32X86::ParseNonSectionFileRegion(
     uint32 start_file_offset,
     uint32 end_file_offset,
     AssemblyProgram* program) {
   if (incomplete_disassembly_)
-    return;
+    return true;
 
   const uint8* start = pe_info().FileOffsetToPointer(start_file_offset);
   const uint8* end = pe_info().FileOffsetToPointer(end_file_offset);
 
   const uint8* p = start;
 
-  while (p < end) {
-    program->EmitByteInstruction(*p);
+  bool ok = true;
+  while (p < end && ok) {
+    ok = program->EmitByteInstruction(*p);
     ++p;
   }
+
+  return ok;
 }
 
-void DisassemblerWin32X86::ParseFileRegion(
+CheckBool DisassemblerWin32X86::ParseFileRegion(
     const Section* section,
     uint32 start_file_offset, uint32 end_file_offset,
     AssemblyProgram* program) {
@@ -292,18 +302,20 @@ void DisassemblerWin32X86::ParseFileRegion(
   std::vector<RVA>::iterator rel32_pos = rel32_locations_.begin();
   std::vector<RVA>::iterator abs32_pos = abs32_locations_.begin();
 
-  program->EmitOriginInstruction(start_rva);
+  bool ok = program->EmitOriginInstruction(start_rva);
 
   const uint8* p = start_pointer;
 
-  while (p < end_pointer) {
+  while (ok && p < end_pointer) {
     RVA current_rva = static_cast<RVA>(p - adjust_pointer_to_rva);
 
     // The base relocation table is usually in the .relocs section, but it could
     // actually be anywhere.  Make sure we skip it because we will regenerate it
     // during assembly.
     if (current_rva == relocs_start_rva) {
-      program->EmitMakeRelocsInstruction();
+      ok = program->EmitMakeRelocsInstruction();
+      if (!ok)
+        break;
       uint32 relocs_size = pe_info().base_relocation_table().size_;
       if (relocs_size) {
         p += relocs_size;
@@ -319,7 +331,9 @@ void DisassemblerWin32X86::ParseFileRegion(
       RVA target_rva = target_address - pe_info().image_base();
       // TODO(sra): target could be Label+offset.  It is not clear how to guess
       // which it might be.  We assume offset==0.
-      program->EmitAbs32(program->FindOrMakeAbs32Label(target_rva));
+      ok = program->EmitAbs32(program->FindOrMakeAbs32Label(target_rva));
+      if (!ok)
+        break;
       p += 4;
       continue;
     }
@@ -329,7 +343,7 @@ void DisassemblerWin32X86::ParseFileRegion(
 
     if (rel32_pos != rel32_locations_.end() && *rel32_pos == current_rva) {
       RVA target_rva = current_rva + 4 + Read32LittleEndian(p);
-      program->EmitRel32(program->FindOrMakeRel32Label(target_rva));
+      ok = program->EmitRel32(program->FindOrMakeRel32Label(target_rva));
       p += 4;
       continue;
     }
@@ -343,9 +357,11 @@ void DisassemblerWin32X86::ParseFileRegion(
       }
     }
 
-    program->EmitByteInstruction(*p);
+    ok = program->EmitByteInstruction(*p);
     p += 1;
   }
+
+  return ok;
 }
 
 #if COURGETTE_HISTOGRAM_TARGETS

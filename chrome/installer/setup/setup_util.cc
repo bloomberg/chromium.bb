@@ -35,7 +35,16 @@ int ApplyDiffPatch(const FilePath& src,
   if (patch_status == courgette::C_OK)
     return 0;
 
-  VLOG(1) << "Failed to apply patch " << patch.value() << " using courgette.";
+  VLOG(1) << "Failed to apply patch " << patch.value()
+          << " using courgette. err=" << patch_status;
+
+  // If we ran out of memory or disk space, then these are likely the errors
+  // we will see.  If we run into them, return an error and stay on the
+  // 'ENSEMBLE_PATCHING' update stage.
+  if (patch_status == courgette::C_DISASSEMBLY_FAILED ||
+      patch_status == courgette::C_STREAM_ERROR) {
+    return MEM_ERROR;
+  }
 
   if (installer_state != NULL)
     installer_state->UpdateStage(installer::BINARY_PATCHING);

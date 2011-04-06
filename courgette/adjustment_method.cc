@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -597,7 +597,7 @@ class GraphAdjuster : public AdjustmentMethod {
                      bool is_model) {
     const InstructionVector& instructions = program->instructions();
     for (size_t i = 0;  i < instructions.size();  ++i) {
-      Instruction* instruction = instructions.at(i);
+      Instruction* instruction = instructions[i];
       if (Label* label = program->InstructionAbs32Label(instruction))
         ReferenceLabel(abs32, label, is_model);
       if (Label* label = program->InstructionRel32Label(instruction))
@@ -607,7 +607,7 @@ class GraphAdjuster : public AdjustmentMethod {
     // incorporate some costing for entropy (bigger deltas) that will be
     // introduced into the label address table by non-monotonic ordering.  This
     // would have some knock-on effects to parts of the algorithm that work on
-    // single-occurence labels.
+    // single-occurrence labels.
   }
 
   void Solve(const Trace& model, const Trace& problem) {
