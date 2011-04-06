@@ -21,8 +21,19 @@ import urllib2
 
 _DEFAULT_BUILDERS = [
   "Webkit Win",
+  "Webkit Vista",
+  "Webkit Win7",
+  "Webkit Win (dbg)(1)",
+  "Webkit Win (dbg)(2)",
   "Webkit Mac10.5",
+  "Webkit Mac10.6",
+  "Webkit Mac10.5 (dbg)(1)",
+  "Webkit Mac10.5 (dbg)(2)",
+  "Webkit Mac10.6 (dbg)",
   "Webkit Linux",
+  "Webkit Linux 64",
+  "Webkit Linux (dbg)(1)",
+  "Webkit Linux (dbg)(2)",
 ]
 _DEFAULT_MAX_BUILDS = 10
 _TEST_PREFIX = "&tests="
