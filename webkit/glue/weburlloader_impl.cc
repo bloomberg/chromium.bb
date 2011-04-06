@@ -157,6 +157,7 @@ bool GetInfoFromDataURL(const GURL& url,
     info->charset.swap(charset);
     info->security_info.clear();
     info->content_length = -1;
+    info->load_timing.base_time = Time::Now();
 
     return true;
   }
