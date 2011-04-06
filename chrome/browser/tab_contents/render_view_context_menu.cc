@@ -503,6 +503,10 @@ void RenderViewContextMenu::InitMenu() {
     case WebContextMenuData::MediaTypePlugin:
       AppendPluginItems();
       break;
+#ifdef WEBCONTEXT_MEDIATYPEFILE_DEFINED
+    case WebContextMenuData::MediaTypeFile:
+      break;
+#endif
   }
 
   if (params_.is_editable)
