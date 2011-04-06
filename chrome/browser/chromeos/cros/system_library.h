@@ -8,7 +8,6 @@
 
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
-#include "third_party/cros/chromeos_system.h"
 #include "unicode/timezone.h"
 
 namespace chromeos {

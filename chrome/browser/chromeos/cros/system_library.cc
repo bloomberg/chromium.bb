@@ -1,6 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// TODO(satorux): Remove this file. crosbug.com/13351
 
 #include "chrome/browser/chromeos/cros/system_library.h"
 
@@ -8,6 +10,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/system_access.h"
 
 namespace chromeos {
 
@@ -21,7 +24,7 @@ class SystemLibraryImpl : public SystemLibrary {
     // Get Timezone
     std::string id = "America/Los_Angeles";
     if (CrosLibrary::Get()->EnsureLoaded()) {
-      std::string timezone_id = chromeos::GetTimezoneID();
+      std::string timezone_id = chromeos::system_access::GetTimezoneID();
       if (timezone_id.empty()) {
         LOG(ERROR) << "Got an empty string for timezone, default to " << id;
       } else {
@@ -55,7 +58,7 @@ class SystemLibraryImpl : public SystemLibrary {
       std::string id;
       UTF16ToUTF8(unicode.getBuffer(), unicode.length(), &id);
       VLOG(1) << "Setting timezone to " << id;
-      chromeos::SetTimezoneID(id);
+      chromeos::system_access::SetTimezoneID(id);
     }
     icu::TimeZone::setDefault(*timezone);
     FOR_EACH_OBSERVER(Observer, observers_, TimezoneChanged(*timezone));
@@ -73,17 +76,21 @@ class SystemLibraryImpl : public SystemLibrary {
  private:
   void UpdateMachineStatistics() {
     if (CrosLibrary::Get()->EnsureLoaded()) {
-      chromeos::MachineInfo* machine_info = chromeos::GetMachineInfo();
+      chromeos::system_access::MachineInfo* machine_info =
+          chromeos::system_access::GetMachineInfo();
       if (!machine_info) {
-        LOG(ERROR) << "Error calling chromeos::GetMachineInfo().";
+        LOG(ERROR)
+            << "Error calling chromeos::system_access::GetMachineInfo().";
         return;
       }
       // Get Name Value pairs.
       for (int i = 0; i<machine_info->name_value_size; ++i) {
-        const chromeos::MachineInfo::NVPair& nv = machine_info->name_values[i];
+        const chromeos::system_access::MachineInfo::NVPair& nv =
+            machine_info->name_values[i];
         machine_info_[nv.name] = nv.value;
+        VLOG(1) << "name: " << nv.name << ", value: " << nv.value;
       }
-      chromeos::FreeMachineInfo(machine_info);
+      chromeos::system_access::FreeMachineInfo(machine_info);
     }
   }
 

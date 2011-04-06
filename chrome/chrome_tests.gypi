@@ -1280,6 +1280,7 @@
         'browser/chromeos/plugin_selection_policy_unittest.cc',
         'browser/chromeos/proxy_config_service_impl_unittest.cc',
         'browser/chromeos/status/input_method_menu_unittest.cc',
+        'browser/chromeos/system_access_unittest.cc',
         'browser/chromeos/version_loader_unittest.cc',
         'browser/content_setting_bubble_model_unittest.cc',
         'browser/content_setting_image_model_unittest.cc',
