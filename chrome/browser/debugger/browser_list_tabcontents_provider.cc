@@ -4,8 +4,8 @@
 
 #include "chrome/browser/debugger/browser_list_tabcontents_provider.h"
 
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/browser_list.h"
 
 DevToolsHttpProtocolHandler::InspectableTabs
 BrowserListTabContentsProvider::GetInspectableTabs() {

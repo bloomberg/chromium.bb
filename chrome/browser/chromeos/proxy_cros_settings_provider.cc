@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 
 namespace chromeos {

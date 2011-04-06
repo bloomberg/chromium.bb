@@ -4,9 +4,9 @@
 
 #include "chrome/browser/desktop_notification_handler.h"
 
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/desktop_notification_messages.h"

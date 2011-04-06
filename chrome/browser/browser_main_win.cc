@@ -5,8 +5,8 @@
 #include "chrome/browser/browser_main.h"
 #include "chrome/browser/browser_main_win.h"
 
-#include <windows.h>
 #include <shellapi.h>
+#include <windows.h>
 
 #include <algorithm>
 
@@ -20,9 +20,9 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/uninstall_view.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"

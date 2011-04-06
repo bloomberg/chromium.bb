@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/sim_unlock_dialog_delegate.h"
 
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/chromeos/frame/bubble_window.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/html_dialog_view.h"
 #include "chrome/common/url_constants.h"
 

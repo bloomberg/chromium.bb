@@ -4,7 +4,6 @@
 
 #include "chrome/browser/notifications/balloon_host.h"
 
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_message_handler.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/render_messages.h"

@@ -11,8 +11,8 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/timer.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "content/common/notification_registrar.h"
 #include "ui/gfx/rect.h"
 

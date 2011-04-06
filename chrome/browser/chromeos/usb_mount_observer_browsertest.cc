@@ -4,10 +4,10 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/chromeos/cros/mock_mount_library.h"
 #include "chrome/browser/chromeos/usb_mount_observer.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/mediaplayer_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/dom_element_proxy.h"

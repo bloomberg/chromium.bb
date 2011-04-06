@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,11 @@
 
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/debugger/debugger_remote_service.h"
 #include "chrome/browser/debugger/devtools_client_host.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/devtools_messages.h"
 #include "content/browser/tab_contents/tab_contents.h"

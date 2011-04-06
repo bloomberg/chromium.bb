@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/values.h"
-#include "chrome/browser/browser_list.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/render_messages.h"
 #include "content/common/notification_service.h"

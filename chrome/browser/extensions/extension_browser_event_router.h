@@ -10,9 +10,9 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "content/common/notification_registrar.h"
 #if defined(TOOLKIT_VIEWS)
 #include "views/focus/focus_manager.h"

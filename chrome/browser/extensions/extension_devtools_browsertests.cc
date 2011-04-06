@@ -4,7 +4,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/debugger/devtools_client_host.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/extensions/extension_devtools_browsertest.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/url_constants.h"

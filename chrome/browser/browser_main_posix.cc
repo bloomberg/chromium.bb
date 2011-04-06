@@ -15,8 +15,8 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/platform_thread.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
 

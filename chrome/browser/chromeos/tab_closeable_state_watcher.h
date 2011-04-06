@@ -8,9 +8,9 @@
 
 #include <vector>
 
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/tab_closeable_state_watcher.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "content/common/notification_registrar.h"
 
 namespace chromeos {

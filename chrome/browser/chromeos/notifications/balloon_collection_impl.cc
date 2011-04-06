@@ -7,11 +7,11 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/chromeos/notifications/balloon_view.h"
 #include "chrome/browser/chromeos/notifications/notification_panel.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "content/common/notification_service.h"
 #include "ui/gfx/rect.h"
