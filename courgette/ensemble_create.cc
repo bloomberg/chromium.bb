@@ -361,7 +361,8 @@ Status GenerateEnsemblePatch(SourceStream* base,
   //
   SinkStream predicted_ensemble;
 
-  predicted_ensemble.Write(base->Buffer(), base->Remaining());
+  if (!predicted_ensemble.Write(base->Buffer(), base->Remaining()))
+    return C_STREAM_ERROR;
 
   SourceStreamSet corrected_transformed_elements_source_set;
   corrected_transformed_elements_source
