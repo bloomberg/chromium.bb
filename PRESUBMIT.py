@@ -26,6 +26,8 @@ def CommonChecks(input_api, output_api):
   results.extend(input_api.canned_checks.CheckOwners(input_api, output_api))
   black_list = list(input_api.DEFAULT_BLACK_LIST) + [
       r'^cpplint\.py$',
+      r'^python_bin[\/\\].+',
+      r'^svn_bin[\/\\].+',
       r'^tests[\/\\]\w+?[\/\\].+']
   results.extend(input_api.canned_checks.RunPylint(
       input_api,
@@ -42,16 +44,13 @@ def CommonChecks(input_api, output_api):
       'tests',
       whitelist=[r'.*test\.py$'],
       verbose=verbose))
-  results.extend(RunGitClTests(input_api, output_api))
+  results.extend(RunGitClTests(input_api, output_api, verbose=verbose))
   return results
 
 
-def RunGitClTests(input_api, output_api):
+def RunGitClTests(input_api, output_api, verbose):
   """Run all the shells scripts in the directory test.
   """
-  # Not exposed from InputApi.
-  from os import listdir
-
   # First loads a local Rietveld instance.
   import sys
   old_sys_path = sys.path
@@ -62,21 +61,13 @@ def RunGitClTests(input_api, output_api):
   finally:
     sys.path = old_sys_path
 
-  # Set to True for testing.
-  verbose = False
-  if verbose:
-    stdout = None
-    stderr = None
-  else:
-    stdout = input_api.subprocess.PIPE
-    stderr = input_api.subprocess.STDOUT
-  output = []
+  results = []
   try:
     # Start a local rietveld instance to test against.
     server.start_server()
     test_path = input_api.os_path.abspath(
         input_api.os_path.join(input_api.PresubmitLocalPath(), 'tests'))
-    for test in listdir(test_path):
+    for test in input_api.os_listdir(test_path):
       # test-lib.sh is not an actual test so it should not be run. The other
       # tests are tests known to fail.
       DISABLED_TESTS = (
@@ -85,19 +76,20 @@ def RunGitClTests(input_api, output_api):
         continue
 
       print('Running %s' % test)
-      proc = input_api.subprocess.Popen(
-          [input_api.os_path.join(test_path, test)],
-          cwd=test_path,
-          stdout=stdout,
-          stderr=stderr)
-      proc.communicate()
-      if proc.returncode != 0:
-        output.append(output_api.PresubmitError('%s failed' % test))
+      try:
+        if verbose:
+          input_api.subprocess.check_call(
+              [input_api.os_path.join(test_path, test)], cwd=test_path)
+        else:
+          input_api.subprocess.check_output(
+              [input_api.os_path.join(test_path, test)], cwd=test_path)
+      except (OSError, input_api.subprocess.CalledProcessError), e:
+        results.append(output_api.PresubmitError('%s failed\n%s' % (test, e)))
   except local_rietveld.Failure, e:
-    output.append(output_api.PresubmitError('\n'.join(str(i) for i in e.args)))
+    results.append(output_api.PresubmitError('\n'.join(str(i) for i in e.args)))
   finally:
     server.stop_server()
-  return output
+  return results
 
 
 def CheckChangeOnUpload(input_api, output_api):
