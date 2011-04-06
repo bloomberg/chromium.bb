@@ -10,11 +10,18 @@ namespace chromeos {
 
 EnterpriseEnrollmentScreen::EnterpriseEnrollmentScreen(
     WizardScreenDelegate* delegate)
-    : DefaultViewScreen<EnterpriseEnrollmentView>(delegate) {}
+    : ViewScreen<EnterpriseEnrollmentView>(delegate) {}
 
-EnterpriseEnrollmentScreen::~EnterpriseEnrollmentScreen() {
+EnterpriseEnrollmentScreen::~EnterpriseEnrollmentScreen() {}
+
+void EnterpriseEnrollmentScreen::Authenticate(const std::string& user,
+                                              const std::string& password,
+                                              const std::string& captcha,
+                                              const std::string& access_code) {
+  // TODO(mnissler): Implement actual authentication stuff.
+
   if (view())
-    view()->set_controller(NULL);
+    view()->ShowConfirmationScreen();
 }
 
 void EnterpriseEnrollmentScreen::CancelEnrollment() {
@@ -22,9 +29,13 @@ void EnterpriseEnrollmentScreen::CancelEnrollment() {
   observer->OnExit(ScreenObserver::ENTERPRISE_ENROLLMENT_CANCELLED);
 }
 
-void EnterpriseEnrollmentScreen::Show() {
-  DefaultViewScreen<EnterpriseEnrollmentView>::Show();
-  view()->set_controller(this);
+void EnterpriseEnrollmentScreen::CloseConfirmation() {
+  ScreenObserver* observer = delegate()->GetObserver(this);
+  observer->OnExit(ScreenObserver::ENTERPRISE_ENROLLMENT_COMPLETED);
+}
+
+EnterpriseEnrollmentView* EnterpriseEnrollmentScreen::AllocateView() {
+  return new EnterpriseEnrollmentView(this);
 }
 
 }  // namespace chromeos

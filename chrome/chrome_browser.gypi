@@ -3111,6 +3111,8 @@
         'browser/ui/webui/chrome_url_data_manager.h',
         'browser/ui/webui/chrome_web_ui_factory.cc',
         'browser/ui/webui/chrome_web_ui_factory.h',
+        'browser/ui/webui/chromeos/enterprise_enrollment_ui.cc',
+        'browser/ui/webui/chromeos/enterprise_enrollment_ui.h',
         'browser/ui/webui/chromeos/imageburner_ui.cc',
         'browser/ui/webui/chromeos/imageburner_ui.h',
         'browser/ui/webui/chromeos/keyboard_overlay_ui.cc',

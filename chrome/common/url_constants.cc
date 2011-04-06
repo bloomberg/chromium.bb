@@ -113,6 +113,8 @@ const char kChromeUISlideshowURL[] = "chrome://slideshow/";
 const char kChromeUISimUnlockURL[] = "chrome://sim-unlock/";
 const char kChromeUISystemInfoURL[] = "chrome://system/";
 const char kChromeUIUserImageURL[] = "chrome://userimage/";
+const char kChromeUIEnterpriseEnrollmentURL[] =
+    "chrome://enterprise-enrollment/";
 #endif
 
 // Keep this list sorted please.
@@ -165,6 +167,7 @@ const char kChromeUIMenu[] = "menu";
 const char kChromeUIWrenchMenu[] = "wrench-menu";
 const char kChromeUINetworkMenu[] = "network-menu";
 const char kChromeUIUserImageHost[] = "userimage";
+const char kChromeUIEnterpriseEnrollmentHost[] = "enterprise-enrollment";
 #endif
 
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)

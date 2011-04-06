@@ -7,12 +7,13 @@
 #include "chrome/browser/chromeos/login/enterprise_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "views/controls/button/native_button.h"
-#include "views/controls/label.h"
-#include "views/layout/grid_layout.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/webui/chromeos/enterprise_enrollment_ui.h"
+#include "chrome/common/url_constants.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/site_instance.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "views/border.h"
 #include "views/layout/layout_constants.h"
 
 namespace chromeos {
@@ -20,18 +21,64 @@ namespace chromeos {
 namespace {
 
 // Layout constants.
-const int kBorderSize = 10;
-const int kMargin = 20;
+const int kBorderSize = 30;
 
-// Column set identifiers.
-enum kLayoutColumnsets {
-  SINGLE_COLUMN,
-  DIALOG_BUTTONS,
+// Renders the registration page.
+class EnrollmentDomView : public WebPageDomView,
+                          public TabContentsDelegate {
+ public:
+  EnrollmentDomView() {}
+  virtual ~EnrollmentDomView() {}
+
+ protected:
+  // DomView imlementation:
+  virtual TabContents* CreateTabContents(Profile* profile,
+                                         SiteInstance* instance) {
+    TabContents* contents = new WizardWebPageViewTabContents(profile,
+                                                             instance,
+                                                             page_delegate_);
+    contents->set_delegate(this);
+    return contents;
+  }
+
+  // TabContentsDelegate implementation:
+  virtual void OpenURLFromTab(TabContents* source,
+                              const GURL& url, const GURL& referrer,
+                              WindowOpenDisposition disposition,
+                              PageTransition::Type transition) {}
+  virtual void NavigationStateChanged(const TabContents* source,
+                                      unsigned changed_flags) {}
+  virtual void AddNewContents(TabContents* source,
+                              TabContents* new_contents,
+                              WindowOpenDisposition disposition,
+                              const gfx::Rect& initial_pos,
+                              bool user_gesture) {}
+  virtual void ActivateContents(TabContents* contents) {}
+  virtual void DeactivateContents(TabContents* contents) {}
+  virtual void LoadingStateChanged(TabContents* source) {}
+  virtual void CloseContents(TabContents* source) {}
+  virtual bool IsPopup(TabContents* source) { return false; }
+  virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
+  virtual bool ShouldAddNavigationToHistory(
+      const history::HistoryAddPageArgs& add_page_args,
+      NavigationType::Type navigation_type) {
+    return false;
+  }
+  virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
+  virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
+  virtual bool HandleContextMenu(const ContextMenuParams& params) {
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EnrollmentDomView);
 };
 
 }  // namespace
 
-EnterpriseEnrollmentView::EnterpriseEnrollmentView(ScreenObserver* observer) {}
+EnterpriseEnrollmentView::EnterpriseEnrollmentView(
+    EnterpriseEnrollmentController* controller)
+    : controller_(controller) {}
 
 EnterpriseEnrollmentView::~EnterpriseEnrollmentView() {}
 
@@ -41,75 +88,49 @@ void EnterpriseEnrollmentView::Init() {
       CreateWizardPainter(&BorderDefinition::kScreenBorder);
   set_background(views::Background::CreateBackgroundPainter(true, painter));
 
-  // Initialize the layout.
-  views::GridLayout* layout = CreateLayout();
-  SetLayoutManager(layout);
+  // Create the view that hosts the enrollment page.
+  enrollment_page_view_ = new EnrollmentDomView();
+  enrollment_page_view_->set_border(
+      views::Border::CreateEmptyBorder(kBorderSize, kBorderSize,
+                                       kBorderSize, kBorderSize));
 
-  // Create controls.
-  layout->AddPaddingRow(0, kBorderSize + kMargin);
+  AddChildView(enrollment_page_view_);
 
-  layout->StartRow(0, SINGLE_COLUMN);
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::Font label_font = rb.GetFont(ResourceBundle::MediumFont);
-  title_label_ = new views::Label(std::wstring(), label_font);
-  title_label_->SetMultiLine(true);
-  title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  layout->AddView(title_label_);
-
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-  layout->StartRow(1, SINGLE_COLUMN);
-
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-  layout->StartRow(0, DIALOG_BUTTONS);
-  layout->SkipColumns(1);
-  cancel_button_ = new login::WideButton(this, std::wstring());
-  layout->AddView(cancel_button_);
-
-  layout->AddPaddingRow(0, kBorderSize + kMargin);
-
-  UpdateLocalizedStrings();
+  // Load the enrollment page.
+  Profile* profile = ProfileManager::GetDefaultProfile();
+  GURL url(chrome::kChromeUIEnterpriseEnrollmentURL);
+  enrollment_page_view_->Init(
+      profile, SiteInstance::CreateSiteInstanceForURL(profile, url));
+  EnterpriseEnrollmentUI::SetController(enrollment_page_view_->tab_contents(),
+                                        this);
+  enrollment_page_view_->LoadURL(url);
 }
 
-void EnterpriseEnrollmentView::UpdateLocalizedStrings() {
-  title_label_->SetText(UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_TITLE)));
-  cancel_button_->SetLabel(UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_CANCEL)));
+void EnterpriseEnrollmentView::ShowConfirmationScreen() {
+  RenderViewHost* render_view_host =
+      enrollment_page_view_->tab_contents()->render_view_host();
+  render_view_host->ExecuteJavascriptInWebFrame(
+      string16(),
+      UTF8ToUTF16("enterpriseEnrollment.showScreen('confirmation-screen');"));
 }
 
-views::GridLayout* EnterpriseEnrollmentView::CreateLayout() {
-  views::GridLayout* layout = new views::GridLayout(this);
-  const int kPadding = kBorderSize + kMargin;
-
-  views::ColumnSet* single_column = layout->AddColumnSet(SINGLE_COLUMN);
-  single_column->AddPaddingColumn(0, kPadding);
-  single_column->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                           1.0, views::GridLayout::USE_PREF, 0, 0);
-  single_column->AddPaddingColumn(0, kPadding);
-
-  views::ColumnSet* button_column = layout->AddColumnSet(DIALOG_BUTTONS);
-  button_column->AddPaddingColumn(0, kPadding);
-  button_column->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                           1.0, views::GridLayout::USE_PREF, 0, 0);
-  button_column->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
-  button_column->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
-                           views::GridLayout::USE_PREF, 0, 0);
-  button_column->AddPaddingColumn(0, kPadding);
-
-  return layout;
+void EnterpriseEnrollmentView::OnAuthSubmitted(const std::string& user,
+                                               const std::string& password,
+                                               const std::string& captcha,
+                                               const std::string& access_code) {
+  controller_->Authenticate(user, password, captcha, access_code);
 }
 
-void EnterpriseEnrollmentView::OnLocaleChanged() {
-  UpdateLocalizedStrings();
-  Layout();
+void EnterpriseEnrollmentView::OnAuthCancelled() {
+  controller_->CancelEnrollment();
 }
 
-void EnterpriseEnrollmentView::ButtonPressed(views::Button* sender,
-                                             const views::Event& event) {
-  if (sender == cancel_button_) {
-    if (controller_)
-      controller_->CancelEnrollment();
-  }
+void EnterpriseEnrollmentView::OnConfirmationClosed() {
+  controller_->CloseConfirmation();
+}
+
+void EnterpriseEnrollmentView::Layout() {
+  enrollment_page_view_->SetBoundsRect(GetContentsBounds());
 }
 
 }  // namespace chromeos

@@ -16,24 +16,39 @@ namespace chromeos {
 // Controller interface for driving the enterprise enrollment UI.
 class EnterpriseEnrollmentController {
  public:
+  // Runs authentication with the given parameters.
+  virtual void Authenticate(const std::string& user,
+                            const std::string& password,
+                            const std::string& captcha,
+                            const std::string& access_code) = 0;
+
   // Cancels the enrollment operation.
   virtual void CancelEnrollment() = 0;
+
+  // Closes the confirmation window.
+  virtual void CloseConfirmation() = 0;
 };
 
 // The screen implementation that links the enterprise enrollment UI into the
 // OOBE wizard.
 class EnterpriseEnrollmentScreen
-    : public DefaultViewScreen<EnterpriseEnrollmentView>,
+    : public ViewScreen<EnterpriseEnrollmentView>,
       public EnterpriseEnrollmentController {
  public:
   explicit EnterpriseEnrollmentScreen(WizardScreenDelegate* delegate);
   virtual ~EnterpriseEnrollmentScreen();
 
-  // Overriden from ViewScreen:
-  void Show() OVERRIDE;
-
   // EnterpriseEnrollmentController implementation:
-  void CancelEnrollment() OVERRIDE;
+  virtual void Authenticate(const std::string& user,
+                            const std::string& password,
+                            const std::string& captcha,
+                            const std::string& access_code) OVERRIDE;
+  virtual void CancelEnrollment() OVERRIDE;
+  virtual void CloseConfirmation() OVERRIDE;
+
+ protected:
+  // Overriden from ViewScreen:
+  virtual EnterpriseEnrollmentView* AllocateView() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentScreen);

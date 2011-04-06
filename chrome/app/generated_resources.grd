@@ -5441,6 +5441,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
         The <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> connector process has crashed. Restart?
       </message>
 
+      <!-- Enterprise enrollment strings -->
+
       <!-- Print Preview -->
       <message name="IDS_PRINT_PREVIEW_TITLE" desc="Fallback title for print preview page ">
         Print Preview
@@ -11613,6 +11615,37 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_CLOUD_PRINT_TOKEN_EXPIRED_MESSAGE" desc="The message to display when the cloud print token has expired.">
       The credentials used to share your printers to  <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> have expired. Please click here to re-enter your username and password.
     </message>
+
+    <!-- Enterprise enrollment dialog -->
+    <if expr="pp_ifdef('chromeos')">
+      <message name="IDS_ENTERPRISE_ENROLLMENT_LOGIN_HEADER" desc="The title on the enterprise enrollment dialog">
+        Enterprise enrollment
+      </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_LOGIN_EXPLAIN" desc="Description text on the enterprise enrollment dialog">
+        Enroll the device for enterprise management in order to associate it with your Google Apps Domain. This will allow remote management of the device in order to meet the IT policy of your organisation.
+      </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_CLOUD_HEADER" desc="Heading for the cloud management item on the enterprise enrollment dialog">
+        Manage your devices from the cloud
+      </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_CLOUD_EXPLAIN" desc="Description text for the cloud management item on the enterprise enrollment dialog">
+        Use your Google Apps Domain Control Panel to remotely manage the configuration of your organization's <ph name="PRODUCT_NAME">$1<ex>Google Chrome OS</ex></ph> devices.
+      </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_ACCESSCONTROL_HEADER" desc="Heading for the access control item on the enterprise enrollment dialog">
+        Set access control for your devices
+      </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_ACCESSCONTROL_EXPLAIN" desc="Description text for the access control item on the enterprise enrollment dialog">
+        Control which users are allowed to log in to a device and configure whether guest browsing sessions are permitted.
+      </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_CONFIRMATION_HEADER" desc="Heading for the confirmation screen in the enterprise enrollment dialog">
+        Enrollment successful
+      </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_CONFIRMATION_MESSAGE" desc="Message on confirmation screen in the enterprise enrollment dialog">
+        Your device has successfully been enrolled for enterprise management.
+      </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_CONFIRMATION_CLOSE" desc="Label for the close button on the confirmation screen in the enterprise enrollment dialog">
+        Done
+      </message>
+    </if>
 
     <!-- Register Protocol Handler Strings -->
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM" desc="The message to display when asking a user to confirm the registration of a protocol handler.">

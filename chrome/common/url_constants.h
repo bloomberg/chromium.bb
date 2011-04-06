@@ -105,6 +105,7 @@ extern const char kChromeUISlideshowURL[];
 extern const char kChromeUISimUnlockURL[];
 extern const char kChromeUISystemInfoURL[];
 extern const char kChromeUIUserImageURL[];
+extern const char kChromeUIEnterpriseEnrollmentURL[];
 #endif
 
 // chrome components of URLs. Should be kept in sync with the full URLs
@@ -157,6 +158,7 @@ extern const char kChromeUIMenu[];
 extern const char kChromeUIWrenchMenu[];
 extern const char kChromeUINetworkMenu[];
 extern const char kChromeUIUserImageHost[];
+extern const char kChromeUIEnterpriseEnrollmentHost[];
 #endif
 
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)

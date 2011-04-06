@@ -8,7 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "views/controls/button/native_button.h"
+#include "chrome/browser/chromeos/login/web_page_view.h"
+#include "chrome/browser/ui/webui/chromeos/enterprise_enrollment_ui.h"
 #include "views/view.h"
 
 namespace views {
@@ -23,38 +24,33 @@ class ScreenObserver;
 
 // Implements the UI for the enterprise enrollment screen in OOBE.
 class EnterpriseEnrollmentView : public views::View,
-                                 public views::ButtonListener {
+                                 public EnterpriseEnrollmentUI::Controller {
  public:
-  explicit EnterpriseEnrollmentView(ScreenObserver* observer);
+  explicit EnterpriseEnrollmentView(EnterpriseEnrollmentController* controller);
   virtual ~EnterpriseEnrollmentView();
 
   // Initialize view controls and layout.
   void Init();
 
-  // Sets the controller.
-  void set_controller(EnterpriseEnrollmentController* controller) {
-    controller_ = controller;
-  }
+  // Switches to the confirmation screen.
+  void ShowConfirmationScreen();
+
+  // EnterpriseEnrollmentUI::Controller implementation.
+  virtual void OnAuthSubmitted(const std::string& user,
+                               const std::string& password,
+                               const std::string& captcha,
+                               const std::string& access_code) OVERRIDE;
+  virtual void OnAuthCancelled() OVERRIDE;
+  virtual void OnConfirmationClosed() OVERRIDE;
 
  private:
-  // Update strings from the resources. Executed on language change.
-  void UpdateLocalizedStrings();
-
-  // Creates the layout manager and registers it with the view.
-  views::GridLayout* CreateLayout();
-
   // Overriden from views::View:
-  virtual void OnLocaleChanged() OVERRIDE;
-
-  // views::ButtonListener implementation:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event)
-      OVERRIDE;
+  virtual void Layout() OVERRIDE;
 
   EnterpriseEnrollmentController* controller_;
 
   // Controls.
-  views::Label* title_label_;
-  views::NativeButton* cancel_button_;
+  WebPageDomView* enrollment_page_view_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentView);
 };

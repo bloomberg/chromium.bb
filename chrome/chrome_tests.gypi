@@ -1753,6 +1753,7 @@
         'browser/ui/webui/shown_sections_handler_unittest.cc',
         'browser/ui/webui/sync_internals_ui_unittest.cc',
         'browser/ui/webui/theme_source_unittest.cc',
+        'browser/ui/webui/chromeos/enterprise_enrollment_ui_unittest.cc',
         'browser/ui/window_sizer_unittest.cc',
         'browser/ui/window_snapshot/window_snapshot_mac_unittest.mm',
         'browser/user_style_sheet_watcher_unittest.cc',
