@@ -448,11 +448,6 @@ def RunUnitTests(input_api, output_api, unit_tests, verbose=False):
   else:
     message_type = output_api.PresubmitPromptWarning
 
-  if verbose:
-    pipe = None
-  else:
-    pipe = input_api.subprocess.PIPE
-
   results = []
   for unit_test in unit_tests:
     cmd = []
@@ -463,15 +458,13 @@ def RunUnitTests(input_api, output_api, unit_tests, verbose=False):
     if verbose:
       print('Running %s' % unit_test)
     try:
-      proc = input_api.subprocess.Popen(
-          cmd, cwd=input_api.PresubmitLocalPath(), stdout=pipe, stderr=pipe)
-      out = '\n'.join(filter(None, proc.communicate()))
-      if proc.returncode:
-        results.append(message_type(
-          '%s failed with return code %d\n%s' % (
-            unit_test, proc.returncode, out)))
-    except (OSError, input_api.subprocess.CalledProcessError):
-      results.append(message_type('%s failed' % unit_test))
+      if verbose:
+        input_api.subprocess.check_call(cmd, cwd=input_api.PresubmitLocalPath())
+      else:
+        input_api.subprocess.check_output(
+            cmd, cwd=input_api.PresubmitLocalPath())
+    except (OSError, input_api.subprocess.CalledProcessError), e:
+      results.append(message_type('%s failed!\n%s' % (unit_test, e)))
   return results
 
 
@@ -486,7 +479,7 @@ def RunPythonUnitTests(input_api, output_api, unit_tests):
     message_type = output_api.PresubmitError
   else:
     message_type = output_api.PresubmitNotifyResult
-  outputs = []
+  results = []
   for unit_test in unit_tests:
     # Run the unit tests out of process. This is because some unit tests
     # stub out base libraries and don't clean up their mess. It's too easy to
@@ -510,26 +503,12 @@ def RunPythonUnitTests(input_api, output_api, unit_tests):
       if env.get('PYTHONPATH'):
         backpath.append(env.get('PYTHONPATH'))
       env['PYTHONPATH'] = input_api.os_path.pathsep.join((backpath))
-    subproc = input_api.subprocess.Popen(
-        [
-          input_api.python_executable,
-          '-m',
-          '%s' % unit_test
-        ],
-        cwd=cwd,
-        env=env,
-        stdin=input_api.subprocess.PIPE,
-        stdout=input_api.subprocess.PIPE,
-        stderr=input_api.subprocess.PIPE)
-    stdoutdata, stderrdata = subproc.communicate()
-    # Discard the output if returncode == 0
-    if subproc.returncode:
-      outputs.append('Test \'%s\' failed with code %d\n%s\n%s\n' % (
-          unit_test_name, subproc.returncode, stdoutdata, stderrdata))
-  if outputs:
-    return [message_type('%d unit tests failed.' % len(outputs),
-                                long_text='\n'.join(outputs))]
-  return []
+    cmd = [input_api.python_executable, '-m', '%s' % unit_test]
+    try:
+      input_api.subprocess.check_output(cmd, cwd=cwd, env=env)
+    except (OSError, input_api.subprocess.CalledProcessError), e:
+      results.append(message_type('%s failed!\n%s' % (unit_test_name, e)))
+  return results
 
 
 def _FetchAllFiles(input_api, white_list, black_list):
