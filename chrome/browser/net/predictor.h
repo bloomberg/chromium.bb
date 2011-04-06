@@ -24,6 +24,7 @@
 #include <queue>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -51,16 +52,6 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
   // A version number for prefs that are saved. This should be incremented when
   // we change the format so that we discard old data.
   enum { PREDICTOR_REFERRER_VERSION = 2 };
-
-  // Depending on the expected_subresource_use_, we may either make a TCP/IP
-  // preconnection, or merely pre-resolve the hostname via DNS (or even do
-  // nothing).  The following are the threasholds for taking those actions.
-  static const double kPreconnectWorthyExpectedValue;
-  static const double kDNSPreresolutionWorthyExpectedValue;
-  // Values of expected_subresource_use_ that are less than the following
-  // threshold will be discarded when we Trim() the values, such as is done when
-  // the process ends, and some values are persisted.
-  static const double kPersistWorthyExpectedValue;
 
   // |max_concurrent| specifies how many concurrent (parallel) prefetches will
   // be performed. Host lookups will be issued through |host_resolver|.
@@ -112,12 +103,13 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
   // domains.
   void GetHtmlInfo(std::string* output);
 
-  // Discard any referrer for which all the suggested host names are currently
-  // annotated with no user latency reduction.  Also scale down (diminish) the
-  // total benefit of those that did help, so that their reported contribution
-  // wll go done by a factor of 2 each time we trim (moving the referrer closer
-  // to being discarded at a future Trim).
-  void TrimReferrers();
+  // Discards any referrer for which all the suggested host names are currently
+  // annotated with negligible expected-use.  Scales down (diminishes) the
+  // expected-use of those that remain, so that their use will go down by a
+  // factor each time we trim (moving the referrer closer to being discarded in
+  // a future call).
+  // The task is performed synchronously and completes before returing.
+  void TrimReferrersNow();
 
   // Construct a ListValue object that contains all the data in the referrers_
   // so that it can be persisted in a pref.
@@ -152,6 +144,7 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, MassiveConcurrentLookupTest);
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, PriorityQueuePushPopTest);
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, PriorityQueueReorderTest);
+  FRIEND_TEST_ALL_PREFIXES(PredictorTest, ReferrerSerializationTrimTest);
   friend class WaitForResolutionHelper;  // For testing.
 
   class LookupRequest;
@@ -173,7 +166,7 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
     bool IsEmpty() const;
     GURL Pop();
 
-  private:
+   private:
     // The names in the queue that should be serviced (popped) ASAP.
     std::queue<GURL> rush_queue_;
     // The names in the queue that should only be serviced when rush_queue is
@@ -187,6 +180,29 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
   // of loading additional URLs.  The list of additional targets is held
   // in a Referrer instance, which is a value in this map.
   typedef std::map<GURL, Referrer> Referrers;
+
+  // Depending on the expected_subresource_use_, we may either make a TCP/IP
+  // preconnection, or merely pre-resolve the hostname via DNS (or even do
+  // nothing).  The following are the threasholds for taking those actions.
+  static const double kPreconnectWorthyExpectedValue;
+  static const double kDNSPreresolutionWorthyExpectedValue;
+  // Referred hosts with a subresource_use_rate_ that are less than the
+  // following threshold will be discarded when we Trim() the list.
+  static const double kDiscardableExpectedValue;
+  // During trimming operation to discard hosts for which we don't have likely
+  // subresources, we multiply the expected_subresource_use_ value by the
+  // following ratio until that value is less than kDiscardableExpectedValue.
+  // This number should always be less than 1, an more than 0.
+  static const double kReferrerTrimRatio;
+
+  // Interval between periodic trimming of our whole referrer list.
+  // We only do a major trimming about once an hour, and then only when the user
+  // is actively browsing.
+  static const base::TimeDelta kDurationBetweenTrimmings;
+  // Interval between incremental trimmings (to avoid inducing Jank).
+  static const base::TimeDelta kDurationBetweenTrimmingIncrements;
+  // Number of referring URLs processed in an incremental trimming.
+  static const size_t kUrlsTrimmedPerIncrement;
 
   ~Predictor();
 
@@ -244,16 +260,26 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
   // asynchronously, provided we don't exceed concurrent resolution limit.
   void StartSomeQueuedResolutions();
 
+  // Performs trimming similar to TrimReferrersNow(), except it does it as a
+  // series of short tasks by posting continuations again an again until done.
+  void TrimReferrers();
+
+  // Loads urls_being_trimmed_ from keys of current referrers_.
+  void LoadUrlsForTrimming();
+
+  // Posts a task to do additional incremental trimming of referrers_.
+  void PostIncrementalTrimTask();
+
+  // Calls Trim() on some or all of urls_being_trimmed_.
+  // If it does not process all the URLs in that vector, it posts a task to
+  // continue with them shortly (i.e., it yeilds and continues).
+  void IncrementalTrimReferrers(bool trim_all_now);
+
   // work_queue_ holds a list of names we need to look up.
   HostNameQueue work_queue_;
 
   // results_ contains information for existing/prior prefetches.
   Results results_;
-
-  // For each URL that we might navigate to (that we've "learned about")
-  // we have a Referrer list. Each Referrer list has all hostnames we need to
-  // pre-resolve when there is a navigation to the orginial hostname.
-  Referrers referrers_;
 
   std::set<LookupRequest*> pending_lookups_;
 
@@ -292,6 +318,21 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
 
   // The time when the last preconnection was requested to a search service.
   base::TimeTicks last_omnibox_preconnect_;
+
+  // For each URL that we might navigate to (that we've "learned about")
+  // we have a Referrer list. Each Referrer list has all hostnames we might
+  // need to pre-resolve or pre-connect to when there is a navigation to the
+  // orginial hostname.
+  Referrers referrers_;
+
+  // List of URLs in referrers_ currently being trimmed (scaled down to
+  // eventually be aged out of use).
+  std::vector<GURL> urls_being_trimmed_;
+
+  // A time after which we need to do more trimming of referrers.
+  base::TimeTicks next_trim_time_;
+
+  ScopedRunnableMethodFactory<Predictor> trim_task_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Predictor);
 };

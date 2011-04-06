@@ -396,6 +396,16 @@ TEST_F(PredictorTest, ReferrerSerializationSingleReferrerTest) {
   predictor->Shutdown();
 }
 
+// Verify that two floats are within 1% of each other in value.
+#define EXPECT_SIMILAR(a, b) do { \
+    double espilon_ratio = 1.01;  \
+    if ((a) < 0.)  \
+      espilon_ratio = 1 / espilon_ratio;  \
+    EXPECT_LT(a, espilon_ratio * (b));   \
+    EXPECT_GT((a) * espilon_ratio, b);   \
+    } while (0)
+
+
 // Make sure the Trim() functionality works as expected.
 TEST_F(PredictorTest, ReferrerSerializationTrimTest) {
   scoped_refptr<Predictor> predictor(
@@ -406,9 +416,9 @@ TEST_F(PredictorTest, ReferrerSerializationTrimTest) {
   GURL motivation_url("http://www.google.com:110");
 
   GURL icon_subresource_url("http://icons.google.com:111");
-  const double kRateIcon = 16.0 * Predictor::kPersistWorthyExpectedValue;
+  const double kRateIcon = 16.0 * Predictor::kDiscardableExpectedValue;
   GURL img_subresource_url("http://img.google.com:118");
-  const double kRateImg = 8.0 * Predictor::kPersistWorthyExpectedValue;
+  const double kRateImg = 8.0 * Predictor::kDiscardableExpectedValue;
 
   scoped_ptr<ListValue> referral_list(NewEmptySerializationList());
   AddToSerializedList(
@@ -425,47 +435,51 @@ TEST_F(PredictorTest, ReferrerSerializationTrimTest) {
   EXPECT_TRUE(GetDataFromSerialization(
       motivation_url, icon_subresource_url, recovered_referral_list,
       &rate));
-  EXPECT_EQ(rate, kRateIcon);
+  EXPECT_SIMILAR(rate, kRateIcon);
 
   EXPECT_TRUE(GetDataFromSerialization(
       motivation_url, img_subresource_url, recovered_referral_list, &rate));
-  EXPECT_EQ(rate, kRateImg);
+  EXPECT_SIMILAR(rate, kRateImg);
 
-  // Each time we Trim, the user_rate figures should reduce by a factor of two,
-  // until they both are small, an then a trim will delete the whole entry.
-  predictor->TrimReferrers();
+  // Each time we Trim 24 times, the user_rate figures should reduce by a factor
+  // of two,  until they are small, and then a trim will delete the whole entry.
+  for (int i = 0; i < 24; ++i)
+    predictor->TrimReferrersNow();
   predictor->SerializeReferrers(&recovered_referral_list);
   EXPECT_EQ(2U, recovered_referral_list.GetSize());
   EXPECT_TRUE(GetDataFromSerialization(
       motivation_url, icon_subresource_url, recovered_referral_list, &rate));
-  EXPECT_EQ(rate, kRateIcon / 2);
+  EXPECT_SIMILAR(rate, kRateIcon / 2);
 
   EXPECT_TRUE(GetDataFromSerialization(
       motivation_url, img_subresource_url, recovered_referral_list, &rate));
-  EXPECT_EQ(rate, kRateImg / 2);
+  EXPECT_SIMILAR(rate, kRateImg / 2);
 
-  predictor->TrimReferrers();
+  for (int i = 0; i < 24; ++i)
+    predictor->TrimReferrersNow();
   predictor->SerializeReferrers(&recovered_referral_list);
   EXPECT_EQ(2U, recovered_referral_list.GetSize());
   EXPECT_TRUE(GetDataFromSerialization(
       motivation_url, icon_subresource_url, recovered_referral_list, &rate));
-  EXPECT_EQ(rate, kRateIcon / 4);
+  EXPECT_SIMILAR(rate, kRateIcon / 4);
   EXPECT_TRUE(GetDataFromSerialization(
       motivation_url, img_subresource_url, recovered_referral_list, &rate));
-  EXPECT_EQ(rate, kRateImg / 4);
+  EXPECT_SIMILAR(rate, kRateImg / 4);
 
-  predictor->TrimReferrers();
+  for (int i = 0; i < 24; ++i)
+    predictor->TrimReferrersNow();
   predictor->SerializeReferrers(&recovered_referral_list);
   EXPECT_EQ(2U, recovered_referral_list.GetSize());
   EXPECT_TRUE(GetDataFromSerialization(
       motivation_url, icon_subresource_url, recovered_referral_list, &rate));
-  EXPECT_EQ(rate, kRateIcon / 8);
+  EXPECT_SIMILAR(rate, kRateIcon / 8);
 
   // Img is below threshold, and so it gets deleted.
   EXPECT_FALSE(GetDataFromSerialization(
       motivation_url, img_subresource_url, recovered_referral_list, &rate));
 
-  predictor->TrimReferrers();
+  for (int i = 0; i < 24; ++i)
+    predictor->TrimReferrersNow();
   predictor->SerializeReferrers(&recovered_referral_list);
   // Icon is also trimmed away, so entire set gets discarded.
   EXPECT_EQ(1U, recovered_referral_list.GetSize());

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/task.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
@@ -59,9 +60,9 @@ class ReferrerValue {
   int64 preresolution_count() const { return preresolution_count_; }
   void preresolution_increment() { ++preresolution_count_; }
 
-  // Reduce the latency figure by a factor of 2, and return true if it still has
-  // subresources that could potentially be used.
-  bool Trim();
+  // Reduce the subresource_use_rate_ by the supplied factor, and return true
+  // if the result is still greater than the given threshold.
+  bool Trim(double reduce_rate, double threshold);
 
  private:
   const base::Time birth_time_;
@@ -99,7 +100,7 @@ typedef std::map<GURL, ReferrerValue> SubresourceMap;
 // rendering of the outer page.
 class Referrer : public SubresourceMap {
  public:
-  Referrer() : use_count_(1) {}
+  Referrer();
   void IncrementUseCount() { ++use_count_; }
   int64 use_count() const { return use_count_; }
 
@@ -110,16 +111,12 @@ class Referrer : public SubresourceMap {
 
   // Trim the Referrer, by first diminishing (scaling down) the subresource
   // use expectation for each ReferredValue.
-  // Returns true if there are any referring names left.
-  bool Trim();
+  // Returns true if expected use rate is greater than the threshold.
+  bool Trim(double reduce_rate, double threshold);
 
   // Provide methods for persisting, and restoring contents into a Value class.
   Value* Serialize() const;
   void Deserialize(const Value& referrers);
-
-  static void SetUsePreconnectValuations(bool dns) {
-      use_preconnect_valuations_ = dns;
-  }
 
  private:
   // Helper function for pruning list.  Metric for usefulness is "large accrued
@@ -130,13 +127,9 @@ class Referrer : public SubresourceMap {
   // accrue savings as quickly.
   void DeleteLeastUseful();
 
-  // The number of times this referer had its subresources scaned for possible
+  // The number of times this referer had its subresources scanned for possible
   // preconnection or DNS preresolution.
   int64 use_count_;
-
-  // Select between DNS prefetch latency savings, or preconnection valuations
-  // for a metric to decide which referers to save.
-  static bool use_preconnect_valuations_;
 
   // We put these into a std::map<>, so we need copy constructors.
   // DISALLOW_COPY_AND_ASSIGN(Referrer);

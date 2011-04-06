@@ -467,11 +467,9 @@ static void SaveDnsPrefetchStateForNextStartupAndTrimOnIOThread(
   if (g_initial_observer)
     g_initial_observer->GetInitialDnsResolutionList(startup_list);
 
-  // TODO(jar): Trimming should be done more regularly, such as every 48 hours
-  // of physical time, or perhaps after 48 hours of running (excluding time
-  // between sessions possibly).
-  // For now, we'll just trim at shutdown.
-  g_predictor->TrimReferrers();
+  // Do at least one trim at shutdown, in case the user wasn't running long
+  // enough to do any regular trimming of referrers.
+  g_predictor->TrimReferrersNow();
   g_predictor->SerializeReferrers(referral_list);
 
   completion->Signal();
@@ -560,8 +558,7 @@ static UrlList GetPredictedUrlListAtStartup(PrefService* user_prefs,
 
 //------------------------------------------------------------------------------
 // Methods for the helper class that is used to startup and teardown the whole
-// g_predictor system (both DNS pre-resolution and TCP/IP connection
-// prewarming).
+// g_predictor system (both DNS pre-resolution and TCP/IP pre-connection).
 
 PredictorInit::PredictorInit(PrefService* user_prefs,
                              PrefService* local_state,

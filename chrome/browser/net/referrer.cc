@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,9 @@
 
 #include <limits.h>
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/net/predictor.h"
 
@@ -16,9 +18,9 @@ namespace chrome_browser_net {
 // Smoothing parameter for updating subresource_use_rate_.
 
 // We always combine our old expected value, weighted by some factor W (we use
-// kWeightingForOldExpectedValue), with the new expected value Enew.  The new
-// "expected value" is the number of actual connections made due to the current
-// navigations.
+// kWeightingForOldConnectsExpectedValue), with the new expected value Enew.
+// The new "expected value" is the number of actual connections made due to the
+// current navigations.
 // That means that IF we end up needing to connect, we should apply the formula:
 // Eupdated = Eold * W  +  Enew * (1 - W)
 // If we visit the containing url, but don't end up needing a connection, then
@@ -32,20 +34,23 @@ namespace chrome_browser_net {
 
 // We weight the new expected value by a factor which is in the range of 0.0 to
 // 1.0.
-static const double kWeightingForOldExpectedValue = 0.66;
+static const double kWeightingForOldConnectsExpectedValue = 0.66;
 
 // To estimate the expected value of the number of connections that we'll need
-// when a referrer is navigated to, we start with the following rather low
-// initial value.  Each time we do indeed (again) need the subresource, this
-// value will get increased.  Each time we navigate to the refererrer but never
-// end up needing this subresource, the value will decrease.
+// when a referrer is navigated to, we start with the following low initial
+// value.
+// Each time we do indeed (again) need the subresource, this value will get
+// increased.
+// Each time we navigate to the refererrer but never end up needing this
+// subresource, the value will decrease.
 // Very conservative is 0.0, which will mean that we have to wait for a while
-// before doing much speculative acvtivity... but we do persist results, so
-// we'll save the asymptotic (correct?) learned answer in the long run.
-static const double kInitialExpectedValue = 0.0;
+// before doing much speculative acvtivity.  We do persist results, so we'll
+// save the asymptotic (correct?) learned answer in the long run.
+// Some browsers blindly make 2 connections all the time, so we'll use that as
+// a starting point.
+static const double kInitialConnectsExpectedValue = 2.0;
 
-// static
-bool Referrer::use_preconnect_valuations_ = false;
+Referrer::Referrer() : use_count_(1) {}
 
 void Referrer::SuggestHost(const GURL& url) {
   // Limit how large our list can get, in case we make mistakes about what
@@ -98,19 +103,20 @@ void Referrer::DeleteLeastUseful() {
     erase(least_useful_url);
 }
 
-bool Referrer::Trim() {
+bool Referrer::Trim(double reduce_rate, double threshold) {
   std::vector<GURL> discarded_urls;
-  for (SubresourceMap::iterator it = begin(); it != end(); ++it)
-    if (!it->second.Trim())
+  for (SubresourceMap::iterator it = begin(); it != end(); ++it) {
+    if (!it->second.Trim(reduce_rate, threshold))
       discarded_urls.push_back(it->first);
+  }
   for (size_t i = 0; i < discarded_urls.size(); ++i)
     erase(discarded_urls[i]);
   return size() > 0;
 }
 
-bool ReferrerValue::Trim() {
-  subresource_use_rate_ /= 2.0;
-  return subresource_use_rate_ > Predictor::kPersistWorthyExpectedValue;
+bool ReferrerValue::Trim(double reduce_rate, double threshold) {
+  subresource_use_rate_ *= reduce_rate;
+  return subresource_use_rate_ > threshold;
 }
 
 
@@ -158,18 +164,18 @@ ReferrerValue::ReferrerValue()
       navigation_count_(0),
       preconnection_count_(0),
       preresolution_count_(0),
-      subresource_use_rate_(kInitialExpectedValue) {
+      subresource_use_rate_(kInitialConnectsExpectedValue) {
 }
 
 void ReferrerValue::SubresourceIsNeeded() {
-  DCHECK_GE(kWeightingForOldExpectedValue, 0);
-  DCHECK_LE(kWeightingForOldExpectedValue, 1.0);
+  DCHECK_GE(kWeightingForOldConnectsExpectedValue, 0);
+  DCHECK_LE(kWeightingForOldConnectsExpectedValue, 1.0);
   ++navigation_count_;
-  subresource_use_rate_ += 1 - kWeightingForOldExpectedValue;
+  subresource_use_rate_ += 1 - kWeightingForOldConnectsExpectedValue;
 }
 
 void ReferrerValue::ReferrerWasObserved() {
-  subresource_use_rate_ *= kWeightingForOldExpectedValue;
+  subresource_use_rate_ *= kWeightingForOldConnectsExpectedValue;
   // Note: the use rate is temporarilly possibly incorect, as we need to find
   // out if we really end up connecting.  This will happen in a few hundred
   // milliseconds (when content arrives, etc.).

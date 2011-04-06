@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,6 +50,7 @@ class UrlInfo {
     // TODO(jar): Support STATIC_REFERAL_MOTIVATED API and integration.
     STATIC_REFERAL_MOTIVATED,  // External database suggested this resolution.
     LEARNED_REFERAL_MOTIVATED,  // Prior navigation taught us this resolution.
+    SELF_REFERAL_MOTIVATED,  // Guess about need for a second connection.
 
     MAX_MOTIVATED  // Beyond all enums, for use in histogram bounding.
   };

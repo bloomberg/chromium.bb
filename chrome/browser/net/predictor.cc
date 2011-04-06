@@ -32,8 +32,26 @@ const double Predictor::kPreconnectWorthyExpectedValue = 0.8;
 // static
 const double Predictor::kDNSPreresolutionWorthyExpectedValue = 0.1;
 // static
-const double Predictor::kPersistWorthyExpectedValue = 0.05;
+const double Predictor::kDiscardableExpectedValue = 0.05;
+// The goal is of trimming is to to reduce the importance (number of expected
+// subresources needed) by a factor of 2 after about 24 hours of uptime. We will
+// trim roughly once-an-hour of uptime.  The ratio to use in each trim operation
+// is then the 24th root of 0.5.  If a user only surfs for 4 hours a day, then
+// after about 6 days they will have halved all their estimates of subresource
+// connections.  Once this falls below kDiscardableExpectedValue the referrer
+// will be discarded.
+// TODO(jar): Measure size of referrer lists in the field.  Consider an adaptive
+// system that uses a higher trim ratio when the list is large.
+// static
+const double Predictor::kReferrerTrimRatio = 0.97153;
 
+// static
+const TimeDelta Predictor::kDurationBetweenTrimmings = TimeDelta::FromHours(1);
+// static
+const TimeDelta Predictor::kDurationBetweenTrimmingIncrements =
+    TimeDelta::FromSeconds(15);
+// static
+const size_t Predictor::kUrlsTrimmedPerIncrement = 5u;
 
 class Predictor::LookupRequest {
  public:
@@ -41,7 +59,7 @@ class Predictor::LookupRequest {
                 net::HostResolver* host_resolver,
                 const GURL& url)
       : ALLOW_THIS_IN_INITIALIZER_LIST(
-          net_callback_(this, &LookupRequest::OnLookupFinished)),
+            net_callback_(this, &LookupRequest::OnLookupFinished)),
         predictor_(predictor),
         url_(url),
         resolver_(host_resolver) {
@@ -81,7 +99,7 @@ class Predictor::LookupRequest {
 };
 
 Predictor::Predictor(net::HostResolver* host_resolver,
-                     base::TimeDelta max_dns_queue_delay,
+                     TimeDelta max_dns_queue_delay,
                      size_t max_concurrent,
                      bool preconnect_enabled)
     : peak_pending_lookups_(0),
@@ -90,8 +108,9 @@ Predictor::Predictor(net::HostResolver* host_resolver,
       max_dns_queue_delay_(max_dns_queue_delay),
       host_resolver_(host_resolver),
       preconnect_enabled_(preconnect_enabled),
-      consecutive_omnibox_preconnect_count_(0) {
-  Referrer::SetUsePreconnectValuations(preconnect_enabled);
+      consecutive_omnibox_preconnect_count_(0),
+      next_trim_time_(base::TimeTicks::Now() + kDurationBetweenTrimmings),
+      ALLOW_THIS_IN_INITIALIZER_LIST(trim_task_factory_(this)) {
 }
 
 Predictor::~Predictor() {
@@ -135,6 +154,8 @@ void Predictor::LearnFromNavigation(const GURL& referring_url,
   DCHECK(target_url == target_url.GetWithEmptyPath());
   if (referring_url.has_host()) {
     referrers_[referring_url].SuggestHost(target_url);
+    // Possibly do some referrer trimming.
+    TrimReferrers();
   }
 }
 
@@ -237,8 +258,17 @@ void Predictor::PrepareFrameSubresources(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(url.GetWithEmptyPath() == url);
   Referrers::iterator it = referrers_.find(url);
-  if (referrers_.end() == it)
+  if (referrers_.end() == it) {
+    // Only when we don't know anything about this url, make 2 connections
+    // available.  We could do this completely via learning (by prepopulating
+    // the referrer_ list with this expected value), but it would swell the
+    // size of the list with all the "Leaf" nodes in the tree (nodes that don't
+    // load any subresources).  If we learn about this resource, we will instead
+    // provide a more carefully estimated preconnection count.
+    if (preconnect_enabled_)
+      PreconnectOnIOThread(url, UrlInfo::SELF_REFERAL_MOTIVATED, 2);
     return;
+  }
 
   Referrer* referrer = &(it->second);
   referrer->IncrementUseCount();
@@ -567,15 +597,12 @@ void Predictor::DiscardAllResults() {
   }
 }
 
-void Predictor::TrimReferrers() {
+void Predictor::TrimReferrersNow() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  std::vector<GURL> urls;
-  for (Referrers::const_iterator it = referrers_.begin();
-       it != referrers_.end(); ++it)
-    urls.push_back(it->first);
-  for (size_t i = 0; i < urls.size(); ++i)
-    if (!referrers_[urls[i]].Trim())
-      referrers_.erase(urls[i]);
+  // Just finish up work if an incremental trim is in progress.
+  if (urls_being_trimmed_.empty())
+    LoadUrlsForTrimming();
+  IncrementalTrimReferrers(true);  // Do everything now.
 }
 
 void Predictor::SerializeReferrers(ListValue* referral_list) {
@@ -625,6 +652,53 @@ void Predictor::DeserializeReferrers(const ListValue& referral_list) {
   }
 }
 
+void Predictor::TrimReferrers() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!urls_being_trimmed_.empty())
+    return;   // There is incremental trimming in progress already.
+
+  // Check to see if it is time to trim yet.
+  base::TimeTicks now = base::TimeTicks::Now();
+  if (now < next_trim_time_)
+    return;
+  next_trim_time_ = now + kDurationBetweenTrimmings;
+
+  LoadUrlsForTrimming();
+  PostIncrementalTrimTask();
+}
+
+void Predictor::LoadUrlsForTrimming() {
+  DCHECK(urls_being_trimmed_.empty());
+  for (Referrers::const_iterator it = referrers_.begin();
+       it != referrers_.end(); ++it)
+    urls_being_trimmed_.push_back(it->first);
+  UMA_HISTOGRAM_COUNTS("Net.PredictionTrimSize", urls_being_trimmed_.size());
+}
+
+void Predictor::PostIncrementalTrimTask() {
+  if (urls_being_trimmed_.empty())
+    return;
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      trim_task_factory_.NewRunnableMethod(&Predictor::IncrementalTrimReferrers,
+                                           false),
+      kDurationBetweenTrimmingIncrements.InMilliseconds());
+}
+
+void Predictor::IncrementalTrimReferrers(bool trim_all_now) {
+  size_t trim_count = urls_being_trimmed_.size();
+  if (!trim_all_now)
+    trim_count = std::min(trim_count, kUrlsTrimmedPerIncrement);
+  while (trim_count-- != 0) {
+    Referrers::iterator it = referrers_.find(urls_being_trimmed_.back());
+    urls_being_trimmed_.pop_back();
+    if (it == referrers_.end())
+      continue;  // Defensive code: It got trimmed away already.
+    if (!it->second.Trim(kReferrerTrimRatio, kDiscardableExpectedValue))
+      referrers_.erase(it);
+  }
+  PostIncrementalTrimTask();
+}
 
 //------------------------------------------------------------------------------
 
