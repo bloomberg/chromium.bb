@@ -30,6 +30,10 @@
 // Gets the minimum size that the control should be resized to.
 - (NSSize)minControlSize;
 
+// Public for testing.
+- (void)   mouseDown:(NSEvent*)event
+  withShowMenuTarget:(id)target;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_PROFILE_MENU_BUTTON_H_

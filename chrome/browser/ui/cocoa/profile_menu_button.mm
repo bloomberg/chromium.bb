@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
 #import "third_party/GTM/AppKit/GTMFadeTruncatingTextFieldCell.h"
 
 namespace {
@@ -330,7 +331,8 @@ NSColor* GetBlackWithAlpha(CGFloat alpha) {
   return [self convertPoint:menuPos toView:nil];
 }
 
-- (void)mouseDown:(NSEvent*)event {
+- (void)   mouseDown:(NSEvent*)event
+  withShowMenuTarget:(id)target {
   if (![self menu]) {
     [super mouseDown:event];
     return;
@@ -354,11 +356,18 @@ NSColor* GetBlackWithAlpha(CGFloat alpha) {
              eventNumber:[event eventNumber]
               clickCount:[event clickCount]
                 pressure:[event pressure]];
-  [NSMenu popUpContextMenu:[self menu]
-               withEvent:fakeEvent
-               forView:self];
+  DCHECK([target respondsToSelector:
+      @selector(popUpContextMenu:withEvent:forView:)]);
+  [target popUpContextMenu:[self menu]
+                 withEvent:fakeEvent
+                   forView:self];
 
   [self highlight:NO];
+}
+
+- (void)mouseDown:(NSEvent*)event {
+  [self      mouseDown:event
+    withShowMenuTarget:[NSMenu class]];
 }
 
 - (NSSize)desiredControlSize {

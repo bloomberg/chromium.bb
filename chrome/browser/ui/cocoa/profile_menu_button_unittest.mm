@@ -4,12 +4,10 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/mac/cocoa_protocols.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/profile_menu_button.h"
 #import "chrome/browser/ui/cocoa/test_event_utils.h"
 #import "testing/gtest_mac.h"
-#import "third_party/ocmock/OCMock/OCMock.h"
 
 class ProfileMenuButtonTest : public CocoaTest {
  public:
@@ -23,6 +21,32 @@ class ProfileMenuButtonTest : public CocoaTest {
 
   ProfileMenuButton* button_;
 };
+
+// A stub to check that popUpContextMenu:withEvent:forView: is called.
+@interface ProfileShowMenuHandler : NSObject {
+  int showMenuCount_;
+}
+
+@property(assign, nonatomic) int showMenuCount;
+
+- (void)popUpContextMenu:(NSMenu*)menu
+               withEvent:(NSEvent*)event
+                 forView:(NSView*)view;
+
+@end
+
+@implementation ProfileShowMenuHandler
+
+@synthesize showMenuCount = showMenuCount_;
+
+- (void)popUpContextMenu:(NSMenu*)menu
+               withEvent:(NSEvent*)event
+                 forView:(NSView*)view {
+  showMenuCount_++;
+}
+
+@end
+
 
 TEST_F(ProfileMenuButtonTest, ControlSize) {
   scoped_nsobject<ProfileMenuButton> button([[ProfileMenuButton alloc]
@@ -45,41 +69,6 @@ TEST_F(ProfileMenuButtonTest, ControlSize) {
   EXPECT_TRUE(NSEqualSizes(minSize, [button desiredControlSize]));
   EXPECT_TRUE(NSEqualSizes(minSize, [button desiredControlSize]));
 }
-
-// A menu delegate that will count the number open/close calls it recieves.
-// The delegate will also automatically close the menu after it opens.
-@interface ProfileMenuDelegate : NSObject<NSMenuDelegate> {
-  int menuOpenCount_;
-  int menuCloseCount_;
-}
-
-@property(assign, nonatomic) int menuOpenCount;
-@property(assign, nonatomic) int menuCloseCount;
-
-@end
-
-@implementation ProfileMenuDelegate
-
-@synthesize menuOpenCount = menuOpenCount_;
-@synthesize menuCloseCount = menuCloseCount_;
-
-- (void)menuWillOpen:(NSMenu*)menu {
-  ++menuOpenCount_;
-  // Queue a message asking the menu to close.
-  NSArray* modes = [NSArray arrayWithObjects:NSEventTrackingRunLoopMode,
-                                             NSDefaultRunLoopMode,
-                                             nil];
-  [menu performSelector:@selector(cancelTrackingWithoutAnimation)
-             withObject:nil
-             afterDelay:0
-                inModes:modes];
-}
-
-- (void)menuDidClose:(NSMenu*)menu {
-  ++menuCloseCount_;
-}
-
-@end
 
 // Tests display, add/remove.
 TEST_VIEW(ProfileMenuButtonTest, button_);
@@ -114,16 +103,11 @@ TEST_F(ProfileMenuButtonTest, Display) {
   [button_ display];
 }
 
+// Checks that a menu is displayed on mouse down. Also makes sure that
+// nothing leaks or crashes when displaying the button in its pressed state.
 TEST_F(ProfileMenuButtonTest, MenuTest) {
   scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@""]);
   [button_ setMenu:menu];
-
-  // Hook into menu events.
-  scoped_nsobject<ProfileMenuDelegate> delegate(
-      [[ProfileMenuDelegate alloc] init]);
-  [[button_ menu] setDelegate:delegate];
-  EXPECT_EQ([delegate menuOpenCount], 0);
-  EXPECT_EQ([delegate menuCloseCount], 0);
 
   // Trigger a mouse down to show the menu.
   NSPoint point = NSMakePoint(NSMaxX([button_ bounds]) - 1,
@@ -131,9 +115,10 @@ TEST_F(ProfileMenuButtonTest, MenuTest) {
   point = [button_ convertPointToBase:point];
   NSEvent* downEvent =
       test_event_utils::LeftMouseDownAtPointInWindow(point, test_window());
-  [button_ mouseDown:downEvent];
+  scoped_nsobject<ProfileShowMenuHandler> showMenuHandler(
+      [[ProfileShowMenuHandler alloc] init]);
+  [button_   mouseDown:downEvent
+    withShowMenuTarget:showMenuHandler];
 
-  // Verify that the menu was shown.
-  EXPECT_EQ([delegate menuOpenCount], 1);
-  EXPECT_EQ([delegate menuCloseCount], 1);
+  EXPECT_EQ(1, [showMenuHandler showMenuCount]);
 }
