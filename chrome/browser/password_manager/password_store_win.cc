@@ -11,9 +11,33 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/profiles/profile.h"
 
-using std::map;
-using std::vector;
 using webkit_glue::PasswordForm;
+
+namespace {
+// Subclass GetLoginsRequest in order to hold the form information for
+// ForwardLoginsResult call. Note that the form will be empty at first and we
+// populate it in GetLoginsImpl. DCHECK to ensure the form is set before
+// accessing it.
+class FormGetLoginsRequest : public PasswordStore::GetLoginsRequest {
+ public:
+  explicit FormGetLoginsRequest(PasswordStore::GetLoginsCallback* callback)
+      : GetLoginsRequest(callback) {}
+
+  // Accessors for the |form_|.  The request owns a pointer to a copy of the
+  // form so that it can verify with DCHECK that the form has been set before
+  // being accessed.
+  void set_form(const PasswordForm& form) {
+    form_.reset(new PasswordForm(form));
+  }
+  const PasswordForm& form() const {
+    DCHECK(form_.get()) << "form has not been set.";
+    return *form_;
+  }
+
+ private:
+  scoped_ptr<PasswordForm> form_;
+};
+}
 
 PasswordStoreWin::PasswordStoreWin(LoginDatabase* login_database,
                                    Profile* profile,
@@ -22,36 +46,34 @@ PasswordStoreWin::PasswordStoreWin(LoginDatabase* login_database,
 }
 
 PasswordStoreWin::~PasswordStoreWin() {
+  DCHECK(pending_requests_.empty() ||
+         BrowserThread::CurrentlyOn(BrowserThread::DB));
+
   for (PendingRequestMap::const_iterator it = pending_requests_.begin();
        it != pending_requests_.end(); ++it) {
     web_data_service_->CancelRequest(it->first);
   }
 }
 
-int PasswordStoreWin::GetLogins(const webkit_glue::PasswordForm& form,
-                                PasswordStoreConsumer* consumer) {
-  int request_handle = PasswordStoreDefault::GetLogins(form, consumer);
-  pending_request_forms_.insert(PendingRequestFormMap::value_type(
-      request_handle, form));
-  return request_handle;
-}
-
 void PasswordStoreWin::ForwardLoginsResult(GetLoginsRequest* request) {
   if (!request->value.empty()) {
-    pending_request_forms_.erase(request->handle());
     PasswordStore::ForwardLoginsResult(request);
   } else {
-    PendingRequestFormMap::iterator it(pending_request_forms_.find(
-        request->handle()));
-    if (it != pending_request_forms_.end()) {
-      IE7PasswordInfo info;
-      std::wstring url = ASCIIToWide(it->second.origin.spec());
-      info.url_hash = ie7_password::GetUrlHash(url);
-      WebDataService::Handle handle = web_data_service_->GetIE7Login(info,
-                                                                     this);
-      TrackRequest(handle, request);
-    }
+    IE7PasswordInfo info;
+    std::wstring url = ASCIIToWide(
+        static_cast<FormGetLoginsRequest*>(request)->form().origin.spec());
+    info.url_hash = ie7_password::GetUrlHash(url);
+    WebDataService::Handle handle = web_data_service_->GetIE7Login(info,
+                                                                   this);
+    TrackRequest(handle, request);
   }
+}
+
+void PasswordStoreWin::GetLoginsImpl(GetLoginsRequest* request,
+                                     const PasswordForm& form) {
+  static_cast<FormGetLoginsRequest*>(request)->set_form(form);
+
+  PasswordStoreDefault::GetLoginsImpl(request, form);
 }
 
 void PasswordStoreWin::OnWebDataServiceRequestDone(
@@ -60,35 +82,41 @@ void PasswordStoreWin::OnWebDataServiceRequestDone(
     return;  // The WDS returns NULL if it is shutting down.
 
   if (PASSWORD_IE7_RESULT == result->GetType()) {
-    scoped_ptr<GetLoginsRequest> request(TakeRequestWithHandle(handle));
+    scoped_refptr<GetLoginsRequest> request(TakeRequestWithHandle(handle));
 
     // If the request was cancelled, we are done.
     if (!request.get())
       return;
 
     // This is a response from WebDataService::GetIE7Login.
-    PendingRequestFormMap::iterator it(pending_request_forms_.find(
-        request->handle()));
-    DCHECK(pending_request_forms_.end() != it);
-    PasswordForm* ie7_form = GetIE7Result(result, it->second);
+    PasswordForm* ie7_form = GetIE7Result(
+        result, static_cast<FormGetLoginsRequest*>(request.get())->form());
 
     if (ie7_form)
       request->value.push_back(ie7_form);
 
-    pending_request_forms_.erase(it);
-    PasswordStore::ForwardLoginsResult(request.release());
+    PasswordStore::ForwardLoginsResult(request.get());
   } else {
     PasswordStoreDefault::OnWebDataServiceRequestDone(handle, result);
   }
 }
 
+PasswordStore::GetLoginsRequest* PasswordStoreWin::NewGetLoginsRequest(
+    GetLoginsCallback* callback) {
+  return new FormGetLoginsRequest(callback);
+}
+
 void PasswordStoreWin::TrackRequest(WebDataService::Handle handle,
                                     GetLoginsRequest* request) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+
   pending_requests_.insert(PendingRequestMap::value_type(handle, request));
 }
 
-PasswordStoreDefault::GetLoginsRequest*
-    PasswordStoreWin::TakeRequestWithHandle(WebDataService::Handle handle) {
+PasswordStoreDefault::GetLoginsRequest* PasswordStoreWin::TakeRequestWithHandle(
+    WebDataService::Handle handle) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+
   PendingRequestMap::iterator it(pending_requests_.find(handle));
   if (it == pending_requests_.end())
     return NULL;

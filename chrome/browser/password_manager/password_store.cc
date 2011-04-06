@@ -90,6 +90,11 @@ void PasswordStore::RemoveObserver(Observer* observer) {
 
 PasswordStore::~PasswordStore() {}
 
+PasswordStore::GetLoginsRequest* PasswordStore::NewGetLoginsRequest(
+    GetLoginsCallback* callback) {
+  return new GetLoginsRequest(callback);
+}
+
 void PasswordStore::ScheduleTask(Task* task) {
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, task);
 }
@@ -101,7 +106,7 @@ void PasswordStore::ForwardLoginsResult(GetLoginsRequest* request) {
 template<typename BackendFunc>
 CancelableRequestProvider::Handle PasswordStore::Schedule(
     BackendFunc func, PasswordStoreConsumer* consumer) {
-  scoped_refptr<GetLoginsRequest> request(new GetLoginsRequest(
+  scoped_refptr<GetLoginsRequest> request(NewGetLoginsRequest(
       NewCallback(consumer,
                   &PasswordStoreConsumer::OnPasswordStoreRequestDone)));
   AddRequest(request, consumer->cancelable_consumer());
@@ -112,7 +117,7 @@ CancelableRequestProvider::Handle PasswordStore::Schedule(
 template<typename BackendFunc, typename ArgA>
 CancelableRequestProvider::Handle PasswordStore::Schedule(
     BackendFunc func, PasswordStoreConsumer* consumer, const ArgA& a) {
-  scoped_refptr<GetLoginsRequest> request(new GetLoginsRequest(
+  scoped_refptr<GetLoginsRequest> request(NewGetLoginsRequest(
       NewCallback(consumer,
                   &PasswordStoreConsumer::OnPasswordStoreRequestDone)));
   AddRequest(request, consumer->cancelable_consumer());

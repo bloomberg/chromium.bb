@@ -122,6 +122,10 @@ class PasswordStore
 
   virtual ~PasswordStore();
 
+  // Provided to allow subclasses to extend GetLoginsRequest if additional info
+  // is needed between a call and its Impl.
+  virtual GetLoginsRequest* NewGetLoginsRequest(GetLoginsCallback* callback);
+
   // Schedule the given |task| to be run in the PasswordStore's own thread.
   virtual void ScheduleTask(Task* task);
 
