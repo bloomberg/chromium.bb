@@ -6,11 +6,16 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_ENTERPRISE_ENROLLMENT_VIEW_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/web_page_view.h"
 #include "chrome/browser/ui/webui/chromeos/enterprise_enrollment_ui.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "views/view.h"
+
+class DictionaryValue;
 
 namespace views {
 class GridLayout;
@@ -35,6 +40,11 @@ class EnterpriseEnrollmentView : public views::View,
   // Switches to the confirmation screen.
   void ShowConfirmationScreen();
 
+  // Show an authentication error.
+  void ShowAuthError(const GoogleServiceAuthError& error);
+  void ShowAccountError();
+  void ShowFatalAuthError();
+
   // EnterpriseEnrollmentUI::Controller implementation.
   virtual void OnAuthSubmitted(const std::string& user,
                                const std::string& password,
@@ -44,6 +54,12 @@ class EnterpriseEnrollmentView : public views::View,
   virtual void OnConfirmationClosed() OVERRIDE;
 
  private:
+  // Updates the gaia login box.
+  void UpdateGaiaLogin(const DictionaryValue& args);
+
+  // Display the given i18n string as error message.
+  void ShowError(int message_id);
+
   // Overriden from views::View:
   virtual void Layout() OVERRIDE;
 

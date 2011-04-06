@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/enterprise_enrollment_view.h"
 
+#include "base/json/json_writer.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/login/enterprise_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
@@ -13,6 +15,8 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/border.h"
 #include "views/layout/layout_constants.h"
 
@@ -114,6 +118,23 @@ void EnterpriseEnrollmentView::ShowConfirmationScreen() {
       UTF8ToUTF16("enterpriseEnrollment.showScreen('confirmation-screen');"));
 }
 
+void EnterpriseEnrollmentView::ShowAuthError(
+    const GoogleServiceAuthError& error) {
+  DictionaryValue args;
+  args.SetInteger("error", error.state());
+  args.SetBoolean("editable_user", true);
+  args.SetString("captchaUrl", error.captcha().image_url.spec());
+  UpdateGaiaLogin(args);
+}
+
+void EnterpriseEnrollmentView::ShowAccountError() {
+  ShowError(IDS_ENTERPRISE_ENROLLMENT_ACCOUNT_ERROR);
+}
+
+void EnterpriseEnrollmentView::ShowFatalAuthError() {
+  ShowError(IDS_ENTERPRISE_ENROLLMENT_FATAL_AUTH_ERROR);
+}
+
 void EnterpriseEnrollmentView::OnAuthSubmitted(const std::string& user,
                                                const std::string& password,
                                                const std::string& captcha,
@@ -127,6 +148,24 @@ void EnterpriseEnrollmentView::OnAuthCancelled() {
 
 void EnterpriseEnrollmentView::OnConfirmationClosed() {
   controller_->CloseConfirmation();
+}
+
+void EnterpriseEnrollmentView::UpdateGaiaLogin(const DictionaryValue& args) {
+  std::string json;
+  base::JSONWriter::Write(&args, false, &json);
+
+  RenderViewHost* render_view_host =
+      enrollment_page_view_->tab_contents()->render_view_host();
+  render_view_host->ExecuteJavascriptInWebFrame(
+      ASCIIToUTF16("//iframe[@id='gaialogin']"),
+      UTF8ToUTF16("showGaiaLogin(" + json + ");"));
+}
+
+void EnterpriseEnrollmentView::ShowError(int message_id) {
+  DictionaryValue args;
+  args.SetInteger("error", GoogleServiceAuthError::NONE);
+  args.SetString("error_message", l10n_util::GetStringUTF16(message_id));
+  UpdateGaiaLogin(args);
 }
 
 void EnterpriseEnrollmentView::Layout() {
