@@ -122,9 +122,10 @@ void AutocompleteHistoryManager::OnFormSubmitted(const FormData& form) {
     if (!iter->value.empty() &&
         !iter->name.empty() &&
         iter->form_control_type == ASCIIToUTF16("text") &&
-        !CreditCard::IsCreditCardNumber(iter->value) &&
-        !IsSSN(iter->value))
+        !CreditCard::IsValidCreditCardNumber(iter->value) &&
+        !IsSSN(iter->value)) {
       values.push_back(*iter);
+    }
   }
 
   if (!values.empty() && web_data_service_.get())

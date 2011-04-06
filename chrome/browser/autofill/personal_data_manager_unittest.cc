@@ -1477,7 +1477,7 @@ TEST_F(PersonalDataManagerTest, AggregateEmptyCreditCardWithConflict) {
   forms.clear();
   forms.push_back(&form_structure2);
   EXPECT_FALSE(personal_data_->ImportFormData(forms, &imported_credit_card));
-  ASSERT_FALSE(imported_credit_card);
+  EXPECT_FALSE(imported_credit_card);
 
   // Note: no refresh here.
 

@@ -25,7 +25,7 @@
 
 namespace {
 
-const char* kCreditCardObfuscationString = "************";
+const char16 kCreditCardObfuscationSymbol = '*';
 
 const AutofillFieldType kAutofillCreditCardTypes[] = {
   CREDIT_CARD_NAME,
@@ -39,7 +39,7 @@ const int kAutofillCreditCardLength = arraysize(kAutofillCreditCardTypes);
 
 std::string GetCreditCardType(const string16& number) {
   // Don't check for a specific type if this is not a credit card number.
-  if (!CreditCard::IsCreditCardNumber(number))
+  if (!CreditCard::IsValidCreditCardNumber(number))
     return kGenericCard;
 
   // Credit card number specifications taken from:
@@ -121,6 +121,20 @@ std::string GetCreditCardType(const string16& number) {
   return kGenericCard;
 }
 
+bool ConvertDate(const string16& date, int* num) {
+  if (!date.empty()) {
+    bool converted = base::StringToInt(date, num);
+    DCHECK(converted);
+    if (!converted)
+      return false;
+  } else {
+    // Clear the value.
+    *num = 0;
+  }
+
+  return true;
+}
+
 // Return a version of |number| that has any separator characters removed.
 const string16 StripSeparators(const string16& number) {
   const char16 kSeparators[] = {'-', ' ', '\0'};
@@ -132,13 +146,15 @@ const string16 StripSeparators(const string16& number) {
 }  // namespace
 
 CreditCard::CreditCard(const std::string& guid)
-    : expiration_month_(0),
+    : type_(ASCIIToUTF16(kGenericCard)),
+      expiration_month_(0),
       expiration_year_(0),
       guid_(guid) {
 }
 
 CreditCard::CreditCard()
-    : expiration_month_(0),
+    : type_(ASCIIToUTF16(kGenericCard)),
+      expiration_month_(0),
       expiration_year_(0),
       guid_(guid::GenerateGUID()) {
 }
@@ -154,7 +170,7 @@ void CreditCard::GetPossibleFieldTypes(const string16& text,
   if (IsNameOnCard(text))
     possible_types->insert(CREDIT_CARD_NAME);
 
-  if (IsCreditCardNumber(text))
+  if (IsNumber(text))
     possible_types->insert(CREDIT_CARD_NUMBER);
 
   if (IsExpirationMonth(text))
@@ -170,8 +186,11 @@ void CreditCard::GetPossibleFieldTypes(const string16& text,
 void CreditCard::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
   DCHECK(available_types);
 
-  if (!name_on_card().empty())
+  if (!name_on_card_.empty())
     available_types->insert(CREDIT_CARD_NAME);
+
+  if (!number_.empty())
+    available_types->insert(CREDIT_CARD_NUMBER);
 
   if (!ExpirationMonthAsString().empty())
     available_types->insert(CREDIT_CARD_EXP_MONTH);
@@ -181,15 +200,12 @@ void CreditCard::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
 
   if (!Expiration4DigitYearAsString().empty())
     available_types->insert(CREDIT_CARD_EXP_4_DIGIT_YEAR);
-
-  if (!number().empty())
-    available_types->insert(CREDIT_CARD_NUMBER);
 }
 
 string16 CreditCard::GetInfo(AutofillFieldType type) const {
   switch (type) {
     case CREDIT_CARD_NAME:
-      return name_on_card();
+      return name_on_card_;
 
     case CREDIT_CARD_EXP_MONTH:
       return ExpirationMonthAsString();
@@ -236,7 +252,7 @@ string16 CreditCard::GetInfo(AutofillFieldType type) const {
 void CreditCard::SetInfo(AutofillFieldType type, const string16& value) {
   switch (type) {
     case CREDIT_CARD_NAME:
-      set_name_on_card(value);
+      name_on_card_ = value;
       break;
 
     case CREDIT_CARD_EXP_MONTH:
@@ -256,31 +272,40 @@ void CreditCard::SetInfo(AutofillFieldType type, const string16& value) {
       break;
 
     case CREDIT_CARD_NUMBER: {
-      if (StartsWith(value, ASCIIToUTF16(kCreditCardObfuscationString), true)) {
-        // this is an obfuscated string. Do not change the real value.
-        break;
-      }
-      set_number(value);
-      set_type(ASCIIToUTF16(GetCreditCardType(number())));
-      // Update last four digits as well.
-      if (value.length() > 4)
-        set_last_four_digits(value.substr(value.length() - 4));
-      else
-        set_last_four_digits(string16());
-    }  break;
+      // Don't change the real value if the input is an obfuscated string.
+      if (value.size() > 0 && value[0] != kCreditCardObfuscationSymbol)
+        SetNumber(value);
+      break;
+    }
 
     case CREDIT_CARD_VERIFICATION_CODE:
       NOTREACHED();
       break;
 
     default:
-      DLOG(ERROR) << "Attempting to set unknown info-type " << type;
+      NOTREACHED() << "Attempting to set unknown info-type " << type;
       break;
   }
 }
 
 const string16 CreditCard::Label() const {
-  return label_;
+  string16 label;
+  if (number().empty())
+    return name_on_card_;  // No CC number, return name only.
+
+  string16 obfuscated_cc_number = ObfuscatedNumber();
+  if (!expiration_month_ || !expiration_year_)
+    return obfuscated_cc_number;  // No expiration date set.
+
+  // TODO(georgey): Internationalize date.
+  string16 formatted_date(ExpirationMonthAsString());
+  formatted_date.append(ASCIIToUTF16("/"));
+  formatted_date.append(Expiration4DigitYearAsString());
+
+  label = l10n_util::GetStringFUTF16(IDS_CREDIT_CARD_NUMBER_PREVIEW_FORMAT,
+                                     obfuscated_cc_number,
+                                     formatted_date);
+  return label;
 }
 
 void CreditCard::SetInfoForMonthInputType(const string16& value) {
@@ -296,39 +321,22 @@ void CreditCard::SetInfoForMonthInputType(const string16& value) {
     bool converted = false;
     converted = base::StringToInt(year_month[0], &num);
     DCHECK(converted);
-    set_expiration_year(num);
+    SetExpirationYear(num);
     converted = base::StringToInt(year_month[1], &num);
     DCHECK(converted);
-    set_expiration_month(num);
+    SetExpirationMonth(num);
   }
 }
 
 string16 CreditCard::ObfuscatedNumber() const {
-  if (number().empty())
-    return string16();  // No CC number, means empty preview.
-  string16 result(ASCIIToUTF16(kCreditCardObfuscationString));
-  result.append(last_four_digits());
+  // If the number is shorter than four digits, there's no need to obfuscate it.
+  if (number_.size() < 4)
+    return number_;
+
+  string16 result(number_.size() - 4, kCreditCardObfuscationSymbol);
+  result.append(LastFourDigits());
 
   return result;
-}
-
-string16 CreditCard::PreviewSummary() const {
-  string16 preview;
-  if (number().empty())
-    return name_on_card_;  // No CC number, return name only.
-  string16 obfuscated_cc_number = ObfuscatedNumber();
-  if (!expiration_month() || !expiration_year())
-    return obfuscated_cc_number;  // No expiration date set.
-  // TODO(georgey): Internationalize date.
-  string16 formatted_date(ExpirationMonthAsString());
-  formatted_date.append(ASCIIToUTF16("/"));
-  formatted_date.append(Expiration4DigitYearAsString());
-
-  preview = l10n_util::GetStringFUTF16(
-      IDS_CREDIT_CARD_NUMBER_PREVIEW_FORMAT,
-      obfuscated_cc_number,
-      formatted_date);
-  return preview;
 }
 
 string16 CreditCard::LastFourDigits() const {
@@ -347,10 +355,8 @@ void CreditCard::operator=(const CreditCard& credit_card) {
   number_ = credit_card.number_;
   name_on_card_ = credit_card.name_on_card_;
   type_ = credit_card.type_;
-  last_four_digits_ = credit_card.last_four_digits_;
   expiration_month_ = credit_card.expiration_month_;
   expiration_year_ = credit_card.expiration_year_;
-  label_ = credit_card.label_;
   guid_ = credit_card.guid_;
 }
 
@@ -373,7 +379,7 @@ int CreditCard::Compare(const CreditCard& credit_card) const {
 }
 
 bool CreditCard::operator==(const CreditCard& credit_card) const {
-  if (label_ != credit_card.label_ || guid_ != credit_card.guid_)
+  if (guid_ != credit_card.guid_)
     return false;
 
   return Compare(credit_card) == 0;
@@ -384,7 +390,7 @@ bool CreditCard::operator!=(const CreditCard& credit_card) const {
 }
 
 // static
-bool CreditCard::IsCreditCardNumber(const string16& text) {
+bool CreditCard::IsValidCreditCardNumber(const string16& text) {
   string16 number = StripSeparators(text);
 
   // Credit card numbers are at most 19 digits in length [1]. 12 digits seems to
@@ -457,7 +463,7 @@ void CreditCard::SetExpirationMonthFromString(const string16& text) {
   if (!ConvertDate(text, &month))
     return;
 
-  set_expiration_month(month);
+  SetExpirationMonth(month);
 }
 
 void CreditCard::SetExpirationYearFromString(const string16& text) {
@@ -465,27 +471,32 @@ void CreditCard::SetExpirationYearFromString(const string16& text) {
   if (!ConvertDate(text, &year))
     return;
 
-  set_expiration_year(year);
+  SetExpirationYear(year);
 }
 
-void CreditCard::set_number(const string16& number) {
+void CreditCard::SetNumber(const string16& number) {
   number_ = StripSeparators(number);
+  type_ = ASCIIToUTF16(GetCreditCardType(number_));
 }
 
-void CreditCard::set_expiration_month(int expiration_month) {
+void CreditCard::SetExpirationMonth(int expiration_month) {
   if (expiration_month < 0 || expiration_month > 12)
     return;
 
   expiration_month_ = expiration_month;
 }
 
-void CreditCard::set_expiration_year(int expiration_year) {
+void CreditCard::SetExpirationYear(int expiration_year) {
   if (expiration_year != 0 &&
       (expiration_year < 2006 || expiration_year > 10000)) {
     return;
   }
 
   expiration_year_ = expiration_year;
+}
+
+bool CreditCard::IsNumber(const string16& text) const {
+  return StripSeparators(text) == number_;
 }
 
 bool CreditCard::IsNameOnCard(const string16& text) const {
@@ -514,20 +525,6 @@ bool CreditCard::Is4DigitExpirationYear(const string16& text) const {
     return false;
 
   return expiration_year_ == year;
-}
-
-bool CreditCard::ConvertDate(const string16& date, int* num) const {
-  if (!date.empty()) {
-    bool converted = base::StringToInt(date, num);
-    DCHECK(converted);
-    if (!converted)
-      return false;
-  } else {
-    // Clear the value.
-    *num = 0;
-  }
-
-  return true;
 }
 
 // So we can compare CreditCards with EXPECT_EQ().

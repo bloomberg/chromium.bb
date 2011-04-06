@@ -210,7 +210,7 @@ void AutofillOptionsHandler::LoadAutofillData() {
        i != personal_data_->credit_cards().end(); ++i) {
     ListValue* entry = new ListValue();
     entry->Append(new StringValue((*i)->guid()));
-    entry->Append(new StringValue((*i)->PreviewSummary()));
+    entry->Append(new StringValue((*i)->Label()));
     int res = CreditCardTypeToResourceID((*i)->type());
     entry->Append(
         new StringValue(web_ui_util::GetImageDataUrlFromResource(res)));

@@ -27,10 +27,8 @@
 
 namespace {
 
-// The minimum number of fields that must contain user data and have known types
-// before Autofill will attempt to import the data into a profile or a credit
-// card.
-const int kMinProfileImportSize = 3;
+// The minimum number of fields that must contain relevant user data before
+// Autofill will attempt to import the data into a credit card.
 const int kMinCreditCardImportSize = 2;
 
 template<typename T>
@@ -195,9 +193,7 @@ bool PersonalDataManager::ImportFormData(
 
   // Parse the form and construct a profile based on the information that is
   // possible to import.
-  int importable_fields = 0;
   int importable_credit_card_fields = 0;
-
   std::vector<const FormStructure*>::const_iterator iter;
   for (iter = form_structures.begin(); iter != form_structures.end(); ++iter) {
     const FormStructure* form = *iter;
@@ -271,7 +267,6 @@ bool PersonalDataManager::ImportFormData(
         }
 
         imported_profile->SetInfo(field_type, value);
-        ++importable_fields;
 
         // Reject profiles with invalid country information.
         if (field_type == ADDRESS_HOME_COUNTRY &&
@@ -283,22 +278,17 @@ bool PersonalDataManager::ImportFormData(
     }
   }
 
-  // If the user did not enter enough information on the page then don't bother
-  // importing the data.
-  if (importable_fields < kMinProfileImportSize)
+  // Reject the profile if minimum address and validation requirements are not
+  // met.
+  if (imported_profile.get() && !IsValidLearnableProfile(*imported_profile))
     imported_profile.reset();
-  if (importable_credit_card_fields < kMinCreditCardImportSize)
-    local_imported_credit_card.reset();
 
-  // Reject if minimum address and validation requirements are not met.
-  if (imported_profile.get() &&
-      !IsValidLearnableProfile(*imported_profile.get())) {
-    imported_profile.reset();
-  }
-
+  // Reject the credit card if we did not detect enough filled credit card
+  // fields or if the credit card number does not seem to be valid.
   if (local_imported_credit_card.get() &&
-      !CreditCard::IsCreditCardNumber(local_imported_credit_card->GetInfo(
-          CREDIT_CARD_NUMBER))) {
+      (importable_credit_card_fields < kMinCreditCardImportSize ||
+       !CreditCard::IsValidCreditCardNumber(
+           local_imported_credit_card->GetInfo(CREDIT_CARD_NUMBER)))) {
     local_imported_credit_card.reset();
   }
 

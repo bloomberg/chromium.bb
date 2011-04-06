@@ -14,7 +14,7 @@
 TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
   // Case 0: empty credit card.
   CreditCard credit_card0;
-  string16 summary0 = credit_card0.PreviewSummary();
+  string16 summary0 = credit_card0.Label();
   EXPECT_EQ(string16(), summary0);
   string16 obfuscated0 = credit_card0.ObfuscatedNumber();
   EXPECT_EQ(string16(), obfuscated0);
@@ -23,7 +23,7 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
   CreditCard credit_card00;
   autofill_test::SetCreditCardInfo(&credit_card00,
       "John Dillinger", "", "", "");
-  string16 summary00 = credit_card00.PreviewSummary();
+  string16 summary00 = credit_card00.Label();
   EXPECT_EQ(string16(ASCIIToUTF16("John Dillinger")), summary00);
   string16 obfuscated00 = credit_card00.ObfuscatedNumber();
   EXPECT_EQ(string16(), obfuscated00);
@@ -32,7 +32,7 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
   CreditCard credit_card1;
   autofill_test::SetCreditCardInfo(&credit_card1,
       "John Dillinger", "", "01", "2010");
-  string16 summary1 = credit_card1.PreviewSummary();
+  string16 summary1 = credit_card1.Label();
   EXPECT_EQ(string16(ASCIIToUTF16("John Dillinger")), summary1);
   string16 obfuscated1 = credit_card1.ObfuscatedNumber();
   EXPECT_EQ(string16(), obfuscated1);
@@ -40,29 +40,29 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
   // Case 2: No month.
   CreditCard credit_card2;
   autofill_test::SetCreditCardInfo(&credit_card2,
-      "John Dillinger", "123456789012", "", "2010");
-  string16 summary2 = credit_card2.PreviewSummary();
-  EXPECT_EQ(ASCIIToUTF16("************9012"), summary2);
+      "John Dillinger", "5105 1051 0510 5100", "", "2010");
+  string16 summary2 = credit_card2.Label();
+  EXPECT_EQ(ASCIIToUTF16("************5100"), summary2);
   string16 obfuscated2 = credit_card2.ObfuscatedNumber();
-  EXPECT_EQ(ASCIIToUTF16("************9012"), obfuscated2);
+  EXPECT_EQ(ASCIIToUTF16("************5100"), obfuscated2);
 
   // Case 3: No year.
   CreditCard credit_card3;
   autofill_test::SetCreditCardInfo(&credit_card3,
-      "John Dillinger", "123456789012", "01", "");
-  string16 summary3 = credit_card3.PreviewSummary();
-  EXPECT_EQ(ASCIIToUTF16("************9012"), summary3);
+      "John Dillinger", "5105 1051 0510 5100", "01", "");
+  string16 summary3 = credit_card3.Label();
+  EXPECT_EQ(ASCIIToUTF16("************5100"), summary3);
   string16 obfuscated3 = credit_card3.ObfuscatedNumber();
-  EXPECT_EQ(ASCIIToUTF16("************9012"), obfuscated3);
+  EXPECT_EQ(ASCIIToUTF16("************5100"), obfuscated3);
 
   // Case 4: Have everything.
   CreditCard credit_card4;
   autofill_test::SetCreditCardInfo(&credit_card4,
-      "John Dillinger", "123456789012", "01", "2010");
-  string16 summary4 = credit_card4.PreviewSummary();
-  EXPECT_EQ(ASCIIToUTF16("************9012, Exp: 01/2010"), summary4);
+      "John Dillinger", "5105 1051 0510 5100", "01", "2010");
+  string16 summary4 = credit_card4.Label();
+  EXPECT_EQ(ASCIIToUTF16("************5100, Exp: 01/2010"), summary4);
   string16 obfuscated4 = credit_card4.ObfuscatedNumber();
-  EXPECT_EQ(ASCIIToUTF16("************9012"), obfuscated4);
+  EXPECT_EQ(ASCIIToUTF16("************5100"), obfuscated4);
 }
 
 TEST(CreditCardTest, AssignmentOperator) {
@@ -109,11 +109,11 @@ TEST(CreditCardTest, IsValidCreditCardNumber) {
 
   for (size_t i = 0; i < arraysize(valid_numbers); ++i) {
     SCOPED_TRACE(valid_numbers[i]);
-    EXPECT_TRUE(CreditCard::IsCreditCardNumber(valid_numbers[i]));
+    EXPECT_TRUE(CreditCard::IsValidCreditCardNumber(valid_numbers[i]));
   }
   for (size_t i = 0; i < arraysize(invalid_numbers); ++i) {
     SCOPED_TRACE(invalid_numbers[i]);
-    EXPECT_FALSE(CreditCard::IsCreditCardNumber(invalid_numbers[i]));
+    EXPECT_FALSE(CreditCard::IsValidCreditCardNumber(invalid_numbers[i]));
   }
 }
 

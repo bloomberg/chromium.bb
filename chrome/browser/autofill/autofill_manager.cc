@@ -58,7 +58,6 @@ const double kAutofillPositiveUploadRateDefaultValue = 0.01;
 const double kAutofillNegativeUploadRateDefaultValue = 0.01;
 
 const string16::value_type kCreditCardPrefix[] = {'*', 0};
-const string16::value_type kLabelSeparator[] = {';', ' ', '*', 0};
 
 // Removes duplicate suggestions whilst preserving their original order.
 void RemoveDuplicateSuggestions(std::vector<string16>* values,
