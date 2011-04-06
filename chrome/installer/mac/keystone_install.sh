@@ -1,6 +1,6 @@
 #!/bin/bash -p
 
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -227,7 +227,7 @@ ensure_writable_symlink() {
 }
 
 # ensure_writable_symlinks_recursive calls ensure_writable_symlink for every
-# symbolic link in |directory|, recursivley.
+# symbolic link in |directory|, recursively.
 #
 # In some very weird and rare cases, it is possible to wind up with a user
 # installation that contains symbolic links that the user does not have write
@@ -242,7 +242,7 @@ ensure_writable_symlink() {
 # application to /Applications, resulting in the program's user being set to
 # the user's own ID.  If, subsequently, a .pkg package is installed over that,
 # the existing directory ownership will be preserved, but file ownership will
-# be changed to whateer is specified by the package, typically root.  This
+# be changed to whatever is specified by the package, typically root.  This
 # applies to symbolic links as well.  On a subsequent update, rsync will be
 # able to copy the new files into place, because the user still has permission
 # to write to the directories.  If the symbolic link targets are not changing,
@@ -672,7 +672,7 @@ main() {
   # bootstrap installations, which just have an empty .app directory.  Only
   # require it when doing a patch update, and use it to validate that the
   # patch applies to the old installed version.  By definition, skeleton
-  # bootstraps can't be installed with patch udpates.  They require the full
+  # bootstraps can't be installed with patch updates.  They require the full
   # application on the disk image.
   if [[ -n "${is_patch}" ]]; then
     if [[ -z "${old_version_app}" ]]; then
@@ -714,7 +714,7 @@ main() {
   # Make sure that ${installed_versions_dir} exists, so that it can receive
   # the versioned directory.  It may not exist if updating from an older
   # version that did not use the versioned layout on disk.  Later, during the
-  # rsync to copy the applciation directory, the mode bits and timestamp on
+  # rsync to copy the application directory, the mode bits and timestamp on
   # ${installed_versions_dir} will be set to conform to whatever is present in
   # the update.
   #
@@ -1060,7 +1060,7 @@ main() {
   # To determine which directories are in use, both ps and lsof are used.
   # Each approach has limitations.
   #
-  # The ps check looks for processes within the verisoned directory.  Only
+  # The ps check looks for processes within the versioned directory.  Only
   # helper processes, such as renderers, are within the versioned directory.
   # Browser processes are not, so the ps check will not find them, and will
   # assume that a versioned directory is not in use if a browser is open
@@ -1076,7 +1076,7 @@ main() {
   # root, the lsof check can only find processes running as the effective user
   # performing the update.
   #
-  # These limitations are motiviations to additionally preserve the versioned
+  # These limitations are motivations to additionally preserve the versioned
   # directory corresponding to the version that was just replaced.
   note "cleaning up old versioned directories"
 

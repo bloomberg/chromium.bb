@@ -1,6 +1,6 @@
 #!/bin/bash -p
 
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -30,7 +30,7 @@
 # on any Keystone channel, several small files are never distributed as diffs,
 # and only as full (possibly compressed) versions of the new files. These
 # files include the outer application's Info.plist which contains Keystone
-# channel information, and anything created or modified by code-signinig the
+# channel information, and anything created or modified by code-signing the
 # outer application.
 #
 # Application of update disk images produced by this script is
@@ -129,7 +129,7 @@ mount_dmg() {
 #
 # The entire patch contents are placed into a .patch directory to hide them
 # from ordinary view. The disk image will be given a volume name like
-# "Google Chrome 5.0.375.55-5.0.375.70" as an identifying aide, although
+# "Google Chrome 5.0.375.55-5.0.375.70" as an identifying aid, although
 # uniqueness is not important and users will never interact directly with
 # them.
 make_patch_fs() {
@@ -393,7 +393,7 @@ make_patch_dmg() {
 
 # shell_safe_path ensures that |path| is safe to pass to tools as a
 # command-line argument. If the first character in |path| is "-", "./" is
-# prepended to it. The possibily-modified |path| is output.
+# prepended to it. The possibly-modified |path| is output.
 shell_safe_path() {
   local path="${1}"
   if [[ "${path:0:1}" = "-" ]]; then

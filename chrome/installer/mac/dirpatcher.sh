@@ -1,6 +1,6 @@
 #!/bin/bash -p
 
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -283,7 +283,7 @@ patch_dir() {
 
 # shell_safe_path ensures that |path| is safe to pass to tools as a
 # command-line argument. If the first character in |path| is "-", "./" is
-# prepended to it. The possibily-modified |path| is output.
+# prepended to it. The possibly-modified |path| is output.
 shell_safe_path() {
   local path="${1}"
   if [[ "${path:0:1}" = "-" ]]; then
