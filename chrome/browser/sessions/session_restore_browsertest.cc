@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/file_path.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
