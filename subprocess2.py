@@ -143,12 +143,11 @@ def Popen(args, **kwargs):
   env = get_english_env(kwargs.get('env'))
   if env:
     kwargs['env'] = env
-
-  if not kwargs.get('shell') is None:
+  if kwargs.get('shell') is None:
     # *Sigh*:  Windows needs shell=True, or else it won't search %PATH% for the
     # executable, but shell=True makes subprocess on Linux fail when it's called
     # with a list because it only tries to execute the first item in the list.
-    kwargs['shell'] = (sys.platform=='win32')
+    kwargs['shell'] = bool(sys.platform=='win32')
 
   tmp_str = ' '.join(args)
   if kwargs.get('cwd', None):

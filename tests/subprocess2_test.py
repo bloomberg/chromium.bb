@@ -16,33 +16,70 @@ sys.path.insert(0, ROOT_DIR)
 
 import subprocess2
 
+# Method could be a function
+# pylint: disable=R0201
 
 class Subprocess2Test(unittest.TestCase):
   # Can be mocked in a test.
-  TO_SAVE = ['Popen', 'call', 'check_call', 'capture', 'check_output']
+  TO_SAVE = {
+      subprocess2: ['Popen', 'call', 'check_call', 'capture', 'check_output'],
+      subprocess2.subprocess: ['Popen'],
+  }
 
   def setUp(self):
     self.exe_path = __file__
     self.exe = [self.exe_path, '--child']
-    self.saved = dict(
-        (name, getattr(subprocess2, name)) for name in self.TO_SAVE)
+    self.saved = {}
+    for module, names in self.TO_SAVE.iteritems():
+      self.saved[module] = dict(
+          (name, getattr(module, name)) for name in names)
 
   def tearDown(self):
-    for name, value in self.saved.iteritems():
-      setattr(subprocess2, name, value)
+    for module, saved in self.saved.iteritems():
+      for name, value in saved.iteritems():
+        setattr(module, name, value)
 
   @staticmethod
-  def _prep():
+  def _fake_call():
     results = {}
     def fake_call(args, **kwargs):
+      assert not results
       results.update(kwargs)
       results['args'] = args
       return ['stdout', 'stderr'], 0
     subprocess2.call = fake_call
     return results
 
+  @staticmethod
+  def _fake_Popen():
+    results = {}
+    class fake_Popen(object):
+      returncode = -8
+      def __init__(self, args, **kwargs):
+        assert not results
+        results.update(kwargs)
+        results['args'] = args
+      def communicate(self):
+        return None, None
+    subprocess2.Popen = fake_Popen
+    return results
+
+  @staticmethod
+  def _fake_subprocess_Popen():
+    results = {}
+    class fake_Popen(object):
+      returncode = -8
+      def __init__(self, args, **kwargs):
+        assert not results
+        results.update(kwargs)
+        results['args'] = args
+      def communicate(self):
+        return None, None
+    subprocess2.subprocess.Popen = fake_Popen
+    return results
+
   def test_check_call_defaults(self):
-    results = self._prep()
+    results = self._fake_call()
     self.assertEquals(
         ['stdout', 'stderr'], subprocess2.check_call(['foo'], a=True))
     expected = {
@@ -51,8 +88,31 @@ class Subprocess2Test(unittest.TestCase):
     }
     self.assertEquals(expected, results)
 
+  def test_call_defaults(self):
+    results = self._fake_Popen()
+    self.assertEquals(((None, None), -8), subprocess2.call(['foo'], a=True))
+    expected = {
+        'args': ['foo'],
+        'a': True,
+    }
+    self.assertEquals(expected, results)
+
+  def test_Popen_defaults(self):
+    results = self._fake_subprocess_Popen()
+    proc = subprocess2.Popen(['foo'], a=True)
+    self.assertEquals(-8, proc.returncode)
+    env = os.environ.copy()
+    env['LANG'] = 'en_US.UTF-8'
+    expected = {
+        'args': ['foo'],
+        'a': True,
+        'shell': bool(sys.platform=='win32'),
+        'env': env,
+    }
+    self.assertEquals(expected, results)
+
   def test_check_output_defaults(self):
-    results = self._prep()
+    results = self._fake_call()
     # It's discarding 'stderr' because it assumes stderr=subprocess2.STDOUT but
     # fake_call() doesn't 'implement' that.
     self.assertEquals('stdout', subprocess2.check_output(['foo'], a=True))
