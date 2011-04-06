@@ -4,6 +4,7 @@
 
 #include "ppapi/tests/test_graphics_2d.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "ppapi/c/dev/ppb_testing_dev.h"
@@ -293,18 +294,20 @@ std::string TestGraphics2D::TestInitToZero() {
 
 std::string TestGraphics2D::TestDescribe() {
   const int w = 15, h = 17;
-  pp::Graphics2D dc(instance_, pp::Size(w, h), false);
+  const bool always_opaque = ::rand() % 2 ? true : false;
+  pp::Graphics2D dc(instance_, pp::Size(w, h), always_opaque);
   if (dc.is_null())
     return "Failure creating a boring device";
 
   PP_Size size;
   size.width = -1;
   size.height = -1;
-  PP_Bool is_always_opaque = PP_TRUE;
+  PP_Bool is_always_opaque = PP_FALSE;
   if (!graphics_2d_interface_->Describe(dc.pp_resource(), &size,
                                         &is_always_opaque))
     return "Describe failed";
-  if (size.width != w || size.height != h || is_always_opaque != PP_FALSE)
+  if (size.width != w || size.height != h ||
+      is_always_opaque != pp::BoolToPPBool(always_opaque))
     return "Mismatch of data.";
 
   PASS();

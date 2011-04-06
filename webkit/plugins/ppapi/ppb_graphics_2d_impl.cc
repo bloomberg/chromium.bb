@@ -14,6 +14,7 @@
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_graphics_2d.h"
+#include "ppapi/cpp/common.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/blit.h"
 #include "ui/gfx/point.h"
@@ -258,7 +259,7 @@ PP_Bool PPB_Graphics2D_Impl::Describe(PP_Size* size,
                                       PP_Bool* is_always_opaque) {
   size->width = image_data_->width();
   size->height = image_data_->height();
-  *is_always_opaque = PP_FALSE;  // TODO(brettw) implement this.
+  *is_always_opaque = pp::BoolToPPBool(is_always_opaque_);
   return PP_TRUE;
 }
 

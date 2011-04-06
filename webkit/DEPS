@@ -29,5 +29,6 @@ include_rules = [
   "+net/test",
   "+net/url_request",
   "+net/websockets",
+  "+ppapi/cpp",
   "+third_party/npapi/bindings",
 ]
