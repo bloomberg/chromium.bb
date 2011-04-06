@@ -143,6 +143,7 @@
     ],
 
     'linux': [  # linux != chromeos
+      '-autofill.AutofillTest.testAutofillInvalid', # crbug.com/74843
       '-browser.BrowserTest.testWindowResize',  # crbug.com/44963
       '-browser.BrowserTest.testFlashLoadsAfterKill',  # crbug.com/63039
       '-content.ContentTest.testThreeWindows',  # crbug.com/47457
@@ -152,6 +153,9 @@
       # crbug.com/70694
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
+      # crbug.com/64274
+      # crbug.com/70659
+      '-popups.PopupsTest.testPopupBlockerInIncognito',
     ],
 
     # ChromeOS is linux, but note that this section does not include the
