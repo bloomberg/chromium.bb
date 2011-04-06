@@ -233,6 +233,8 @@ void NativeViewEGLContext::Destroy() {
 
 bool NativeViewEGLContext::MakeCurrent() {
   DCHECK(context_);
+  if (context_ == eglGetCurrentContext())
+      return true;
   if (!eglMakeCurrent(g_display,
                       surface_->egl_surface(),
                       surface_->egl_surface(),
@@ -381,6 +383,8 @@ void SecondaryEGLContext::Destroy() {
 
 bool SecondaryEGLContext::MakeCurrent() {
   DCHECK(context_);
+  if (context_ == eglGetCurrentContext())
+      return true;
   if (!eglMakeCurrent(g_display,
                       surface_->egl_surface(),
                       surface_->egl_surface(),
