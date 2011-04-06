@@ -58,6 +58,7 @@ class ExtensionMenuItem {
     IMAGE = 32,
     VIDEO = 64,
     AUDIO = 128,
+    FRAME = 256,
   };
 
   // An item can be only one of these types.

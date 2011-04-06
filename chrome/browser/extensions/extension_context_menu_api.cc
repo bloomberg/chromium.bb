@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,6 +65,8 @@ bool ExtensionContextMenuFunction::ParseContexts(
       tmp_result.Add(ExtensionMenuItem::VIDEO);
     } else if (value == "audio") {
       tmp_result.Add(ExtensionMenuItem::AUDIO);
+    } else if (value == "frame") {
+      tmp_result.Add(ExtensionMenuItem::FRAME);
     } else {
       error_ = ExtensionErrorUtils::FormatErrorMessage(kInvalidValueError, key);
       return false;

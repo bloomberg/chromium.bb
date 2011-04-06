@@ -200,11 +200,13 @@ static bool ExtensionContextMatch(const ContextMenuParams& params,
                                   ExtensionMenuItem::ContextList contexts) {
   bool has_link = !params.link_url.is_empty();
   bool has_selection = !params.selection_text.empty();
+  bool in_frame = !params.frame_url.is_empty();
 
   if (contexts.Contains(ExtensionMenuItem::ALL) ||
       (has_selection && contexts.Contains(ExtensionMenuItem::SELECTION)) ||
       (has_link && contexts.Contains(ExtensionMenuItem::LINK)) ||
-      (params.is_editable && contexts.Contains(ExtensionMenuItem::EDITABLE))) {
+      (params.is_editable && contexts.Contains(ExtensionMenuItem::EDITABLE)) ||
+      (in_frame && contexts.Contains(ExtensionMenuItem::FRAME))) {
     return true;
   }
 
@@ -223,7 +225,8 @@ static bool ExtensionContextMatch(const ContextMenuParams& params,
   }
 
   // PAGE is the least specific context, so we only examine that if none of the
-  // other contexts apply.
+  // other contexts apply (except for FRAME, which is included in PAGE for
+  // backwards compatibility).
   if (!has_link && !has_selection && !params.is_editable &&
       params.media_type == WebContextMenuData::MediaTypeNone &&
       contexts.Contains(ExtensionMenuItem::PAGE))

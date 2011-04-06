@@ -2834,7 +2834,7 @@
                 "items": {"type": "string"},
                 "minItems": 1,
                 "optional": true,
-                "description": "List of contexts this menu item will appear in. Legal values are: 'all', 'page', 'selection', 'link', 'editable', 'image', 'video', and 'audio'. Defaults to ['page']."
+                "description": "List of contexts this menu item will appear in. Legal values are: 'all', 'page', 'frame', 'selection', 'link', 'editable', 'image', 'video', and 'audio'. Defaults to ['page']."
               },
               "onclick": {
                 "type": "function",

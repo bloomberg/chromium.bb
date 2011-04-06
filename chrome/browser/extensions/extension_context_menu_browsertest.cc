@@ -131,12 +131,14 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
 
   TestRenderViewContextMenu* CreateMenu(Browser* browser,
                                         const GURL& page_url,
-                                        const GURL& link_url) {
+                                        const GURL& link_url,
+                                        const GURL& frame_url) {
     TabContents* tab_contents = browser->GetSelectedTabContents();
     WebContextMenuData data;
     ContextMenuParams params(data);
     params.page_url = page_url;
     params.link_url = link_url;
+    params.frame_url = frame_url;
     TestRenderViewContextMenu* menu =
         new TestRenderViewContextMenu(tab_contents, params);
     menu->Init();
@@ -180,9 +182,10 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
   // was found.
   bool MenuHasItemWithLabel(const GURL& page_url,
                             const GURL& link_url,
+                            const GURL& frame_url,
                             const std::string& label) {
     scoped_ptr<TestRenderViewContextMenu> menu(
-        CreateMenu(browser(), page_url, link_url));
+        CreateMenu(browser(), page_url, link_url, frame_url));
     return menu->HasExtensionItemWithLabel(label);
   }
 };
@@ -200,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Simple) {
 
   // Create and build our test context menu.
   scoped_ptr<TestRenderViewContextMenu> menu(
-      CreateMenu(browser(), page_url, GURL()));
+      CreateMenu(browser(), page_url, GURL(), GURL()));
 
   // Look for the extension item in the menu, and execute it.
   int command_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
@@ -225,8 +228,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Patterns) {
   GURL google_url("http://www.google.com");
   ASSERT_TRUE(MenuHasItemWithLabel(google_url,
                                    GURL(),
+                                   GURL(),
                                    std::string("test_item1")));
   ASSERT_TRUE(MenuHasItemWithLabel(google_url,
+                                   GURL(),
                                    GURL(),
                                    std::string("test_item2")));
 
@@ -234,8 +239,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Patterns) {
   GURL test_url("http://www.test.com");
   ASSERT_FALSE(MenuHasItemWithLabel(test_url,
                                     GURL(),
+                                   GURL(),
                                     std::string("test_item1")));
   ASSERT_FALSE(MenuHasItemWithLabel(test_url,
+                                    GURL(),
                                     GURL(),
                                     std::string("test_item2")));
 }
@@ -260,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, LongTitle) {
   // truncated.
   GURL url("http://foo.com/");
   scoped_ptr<TestRenderViewContextMenu> menu(
-      CreateMenu(browser(), url, GURL()));
+      CreateMenu(browser(), url, GURL(), GURL()));
 
   string16 label;
   ASSERT_TRUE(menu->GetItemLabel(item->id(), &label));
@@ -325,7 +332,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Separators) {
 
   GURL url("http://www.google.com/");
   scoped_ptr<TestRenderViewContextMenu> menu(
-      CreateMenu(browser(), url, GURL()));
+      CreateMenu(browser(), url, GURL(), GURL()));
 
   // The top-level item should be an "automagic parent" with the extension's
   // name.
@@ -348,7 +355,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Separators) {
   ui_test_utils::NavigateToURL(browser(),
                                GURL(extension->GetResourceURL("test2.html")));
   listener2.WaitUntilSatisfied();
-  menu.reset(CreateMenu(browser(), url, GURL()));
+  menu.reset(CreateMenu(browser(), url, GURL(), GURL()));
   ASSERT_TRUE(menu->GetMenuModelAndItemIndex(
       IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST, &model, &index));
   EXPECT_EQ(UTF8ToUTF16("parent"), model->GetLabelAt(index));
@@ -368,20 +375,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, TargetURLs) {
   GURL non_google_url("http://www.foo.com");
 
   // No target url - the item should not appear.
-  ASSERT_FALSE(MenuHasItemWithLabel(google_url, GURL(), std::string("item1")));
+  ASSERT_FALSE(MenuHasItemWithLabel(
+      google_url, GURL(), GURL(), std::string("item1")));
 
   // A matching target url - the item should appear.
   ASSERT_TRUE(MenuHasItemWithLabel(google_url,
                                    google_url,
+                                   GURL(),
                                    std::string("item1")));
 
   // A non-matching target url - the item should not appear.
   ASSERT_FALSE(MenuHasItemWithLabel(google_url,
                                     non_google_url,
+                                    GURL(),
                                     std::string("item1")));
 }
 
-// Tests adding a simple context menu item.
+// Tests adding of context menus in incognito mode.
 IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, IncognitoSplit) {
   ExtensionTestMessageListener created("created item regular", false);
   ExtensionTestMessageListener created_incognito("created item incognito",
@@ -408,9 +418,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, IncognitoSplit) {
       Browser::TYPE_NORMAL, false);
   ASSERT_TRUE(browser_incognito);
   scoped_ptr<TestRenderViewContextMenu> menu(
-      CreateMenu(browser(), page_url, GURL()));
+      CreateMenu(browser(), page_url, GURL(), GURL()));
   scoped_ptr<TestRenderViewContextMenu> menu_incognito(
-      CreateMenu(browser_incognito, page_url, GURL()));
+      CreateMenu(browser_incognito, page_url, GURL(), GURL()));
 
   // Look for the extension item in the menu, and execute it.
   int command_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
@@ -426,4 +436,26 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, IncognitoSplit) {
   ASSERT_TRUE(menu_incognito->IsCommandIdEnabled(command_id));
   menu_incognito->ExecuteCommand(command_id);
   ASSERT_TRUE(onclick_incognito.WaitUntilSatisfied());
+}
+
+// Tests that items with a context of frames only appear when the menu is
+// invoked in a frame.
+IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Frames) {
+  ExtensionTestMessageListener listener("created items", false);
+  ASSERT_TRUE(LoadContextMenuExtension("frames"));
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+
+  GURL page_url("http://www.google.com");
+  GURL no_frame_url;
+  GURL frame_url("http://www.google.com");
+
+  ASSERT_TRUE(MenuHasItemWithLabel(
+      page_url, GURL(), no_frame_url, std::string("Page item")));
+  ASSERT_FALSE(MenuHasItemWithLabel(
+      page_url, GURL(), no_frame_url, std::string("Frame item")));
+
+  ASSERT_TRUE(MenuHasItemWithLabel(
+      page_url, GURL(), frame_url, std::string("Page item")));
+  ASSERT_TRUE(MenuHasItemWithLabel(
+      page_url, GURL(), frame_url, std::string("Frame item")));
 }
