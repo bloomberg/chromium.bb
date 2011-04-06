@@ -12,22 +12,18 @@ import chromeos_network  # pyauto_functional must come before chromeos_network
 class ChromeosWifi(chromeos_network.PyNetworkUITest):
   """Tests for ChromeOS wifi."""
 
-  def testNetworkInfo(self):
+  def testNetworkInfoAndScan(self):
     """Get basic info on networks."""
-    result = self.GetNetworkInfo()
+    # NetworkScan will also call GetNetworkInfo and return the results.
+    result = self.NetworkScan()
     self.assertTrue(result)
     logging.debug(result)
-
-  def testNetworkScan(self):
-    """Basic check to ensure that a network scan doesn't throw errors."""
-    self.NetworkScan()
 
   def testGetProxySettings(self):
     """Print some information about proxy settings."""
     result = self.GetProxySettingsOnChromeOS()
     self.assertTrue(result)
     logging.debug(result)
-
 
 if __name__ == '__main__':
   pyauto_functional.Main()

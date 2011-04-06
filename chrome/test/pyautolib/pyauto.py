@@ -2504,11 +2504,15 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
 
     Blocks until scanning is complete.
 
+    Returns:
+      The new list of networks obtained from GetNetworkInfo().
+
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     cmd_dict = { 'command': 'NetworkScan' }
     self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+    return self.GetNetworkInfo()
 
   PROXY_TYPE_DIRECT = 1
   PROXY_TYPE_MANUAL = 2
@@ -2609,10 +2613,15 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
 
     Blocks until connection succeeds or fails.
 
+    Args:
+      service_path: Flimflam path that defines the wifi network.
+      password: Passphrase for connecting to the wifi network.
+      identity: Identity for 802.11x networks.
+      certpath: Certificate path for 802.11x networks.
+
     Returns:
-      A tuple.
-      The first element is True on success and False on failure.
-      The second element is None on success or an error string on failure.
+      An error string if an error occured.
+      None otherwise.
 
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
@@ -2625,13 +2634,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'certpath': certpath,
     }
     result = self._GetResultFromJSONRequest(cmd_dict, windex=-1)
-    if result.has_key('error_code'):
-      return (False, result['error_code'])
-    else:
-      return (True, None)
+    return result.get('error_code')
 
   def DisconnectFromWifiNetwork(self):
-    """Disconnect from a wifi network by its service path.
+    """Disconnect from the connected wifi network.
 
     Blocks until disconnect is complete.
 
