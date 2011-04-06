@@ -369,14 +369,70 @@ function embed_name(embed) {
   }
 }
 
+
+function NaClWaiter() {
+  // Workaround how JS binds 'this'
+  var this_ = this;
+  var embedsToWaitFor = [];
+
+  // Takes an arbitrary number of arguments.
+  this.waitFor = function() {
+    for (var i = 0; i< arguments.length; i++) {
+      embedsToWaitFor.push(arguments[i]);
+    }
+  }
+
+  this.run = function(doneCallback, pingCallback) {
+    this.doneCallback = doneCallback;
+    this.pingCallback = pingCallback;
+
+    // Wait for up to thirty seconds for the nexes to load.
+    // TODO(ncbray) use error handling mechanisms (when they are implemented)
+    // rather than a timeout.
+    this.totalWait = 0;
+    this.maxTotalWait = 30000;
+    this.retryWait = 10;
+    this.waitForPlugins();
+  }
+
+  this.waitForPlugins = function() {
+    var waiting = [];
+    var loaded = [];
+
+    for (var i = 0; i < embedsToWaitFor.length; i++) {
+      if (is_loaded(embedsToWaitFor[i])) {
+        loaded.push(embedsToWaitFor[i]);
+      } else {
+        waiting.push(embedsToWaitFor[i]);
+      }
+    }
+
+    this.totalWait += this.retryWait;
+
+    if (waiting.length == 0) {
+      this.doneCallback(loaded, waiting);
+    } else if (this.totalWait >= this.maxTotalWait) {
+      this.doneCallback(loaded, waiting);
+    } else {
+      setTimeout(function() { this_.waitForPlugins(); }, this.retryWait);
+      // Capped exponential backoff
+      this.retryWait += this.retryWait/2;
+      if(this.retryWait > 100) this.retryWait = 100;
+      // Prevent the server from thinking the test has died.
+      if (this.pingCallback) this.pingCallback();
+    }
+  }
+
+}
+
+
 function Tester() {
   // Workaround how JS binds 'this'
   var this_ = this;
   // The tests being run.
   var tests = [];
-  var embedsToWaitFor = [];
-
   this.rpc = new RPCWrapper();
+  this.waiter = new NaClWaiter();
 
   //
   // BEGIN public interface
@@ -393,63 +449,34 @@ function Tester() {
   this.run = function() {
     this.rpc.startup();
 
-    // Wait for up to ten seconds for the nexes to load.
-    // TODO(ncbray) use error handling mechanisms (when they are implemented)
-    // rather than a timeout.
-    this.retries = 200;
-    this.retryWait = 50;
-    setTimeout(function() { this_.waitForPlugins(); }, 0);
+    this.waiter.run(
+      function(loaded, waiting) {
+        for (var i = 0; i < loaded.length; i++) {
+          this_.rpc.log(embed_name(loaded[i]) + ' loaded');
+        }
+        for (var j = 0; j < waiting.length; j++) {
+          this_.rpc.client_error(embed_name(waiting[j]) +
+                                ' took too long to load with status: ' +
+                                toString(waiting[j].__moduleReady));
+        }
+        this_.startTesting();
+      },
+      function() {
+        this_.rpc.ping();
+      }
+    );
   }
 
   // Takes an arbitrary number of arguments.
   this.waitFor = function() {
     for (var i = 0; i< arguments.length; i++) {
-      embedsToWaitFor.push(arguments[i]);
+      this.waiter.waitFor(arguments[i]);
     }
   }
 
   //
   // END public interface
   //
-
-  // Find all the plugins in the DOM and make sure they've all loaded.
-  this.waitForPlugins = function() {
-    var waiting = [];
-    var loaded = [];
-
-    for (var i = 0; i < embedsToWaitFor.length; i++) {
-      if (is_loaded(embedsToWaitFor[i])) {
-        loaded.push(embedsToWaitFor[i]);
-      } else {
-        waiting.push(embedsToWaitFor[i]);
-      }
-    }
-
-    function doStart() {
-      for (var i = 0; i < loaded.length; i++) {
-        this_.log(embed_name(loaded[i]) + ' loaded');
-      }
-      this_.startTesting();
-    }
-
-    if (waiting.length == 0) {
-      doStart();
-    } else {
-      this.retries -= 1;
-      if (this.retries <= 0) {
-        for (var j = 0; j < waiting.length; j++) {
-          this.rpc.client_error(embed_name(waiting[j]) +
-                                ' took too long to load with status: ' +
-                                toString(waiting[j].__moduleReady));
-        }
-        doStart();
-      } else {
-        setTimeout(function() { this_.waitForPlugins(); }, this.retryWait);
-        // Prevent the server from thinking the test has died.
-        this.rpc.ping();
-      }
-    }
-  }
 
   this.initTest = function() {
     if (this.testIndex < tests.length) {
