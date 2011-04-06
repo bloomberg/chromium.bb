@@ -122,59 +122,32 @@ class MockCookieStore : public CookieStore {
   std::vector<Entry> entries_;
 };
 
-class MockCookiePolicy : public CookiePolicy,
-                         public base::RefCountedThreadSafe<MockCookiePolicy> {
+class MockCookiePolicy : public CookiePolicy {
  public:
-  MockCookiePolicy() : allow_all_cookies_(true), callback_(NULL) {}
+  MockCookiePolicy() : allow_all_cookies_(true) {}
+  virtual ~MockCookiePolicy() {}
 
   void set_allow_all_cookies(bool allow_all_cookies) {
     allow_all_cookies_ = allow_all_cookies;
   }
 
   virtual int CanGetCookies(const GURL& url,
-                            const GURL& first_party_for_cookies,
-                            CompletionCallback* callback) {
-    DCHECK(!callback_);
-    callback_ = callback;
-    MessageLoop::current()->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &MockCookiePolicy::OnCanGetCookies));
-    return ERR_IO_PENDING;
+                            const GURL& first_party_for_cookies) const {
+    if (allow_all_cookies_)
+      return OK;
+    return ERR_ACCESS_DENIED;
   }
 
   virtual int CanSetCookie(const GURL& url,
                            const GURL& first_party_for_cookies,
-                           const std::string& cookie_line,
-                           CompletionCallback* callback) {
-    DCHECK(!callback_);
-    callback_ = callback;
-    MessageLoop::current()->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &MockCookiePolicy::OnCanSetCookie));
-    return ERR_IO_PENDING;
+                           const std::string& cookie_line) const {
+    if (allow_all_cookies_)
+      return OK;
+    return ERR_ACCESS_DENIED;
   }
 
  private:
-  friend class base::RefCountedThreadSafe<MockCookiePolicy>;
-  virtual ~MockCookiePolicy() {}
-
-  void OnCanGetCookies() {
-    CompletionCallback* callback = callback_;
-    callback_ = NULL;
-    if (allow_all_cookies_)
-      callback->Run(OK);
-    else
-      callback->Run(ERR_ACCESS_DENIED);
-  }
-  void OnCanSetCookie() {
-    CompletionCallback* callback = callback_;
-    callback_ = NULL;
-    if (allow_all_cookies_)
-      callback->Run(OK);
-    else
-      callback->Run(ERR_ACCESS_DENIED);
-  }
-
   bool allow_all_cookies_;
-  CompletionCallback* callback_;
 };
 
 class MockURLRequestContext : public URLRequestContext {
@@ -194,13 +167,13 @@ class WebSocketJobTest : public PlatformTest {
  public:
   virtual void SetUp() {
     cookie_store_ = new MockCookieStore;
-    cookie_policy_ = new MockCookiePolicy;
+    cookie_policy_.reset(new MockCookiePolicy);
     context_ = new MockURLRequestContext(
         cookie_store_.get(), cookie_policy_.get());
   }
   virtual void TearDown() {
     cookie_store_ = NULL;
-    cookie_policy_ = NULL;
+    cookie_policy_.reset();
     context_ = NULL;
     websocket_ = NULL;
     socket_ = NULL;
@@ -238,7 +211,7 @@ class WebSocketJobTest : public PlatformTest {
   }
 
   scoped_refptr<MockCookieStore> cookie_store_;
-  scoped_refptr<MockCookiePolicy> cookie_policy_;
+  scoped_ptr<MockCookiePolicy> cookie_policy_;
   scoped_refptr<MockURLRequestContext> context_;
   scoped_refptr<WebSocketJob> websocket_;
   scoped_refptr<MockSocketStream> socket_;

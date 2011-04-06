@@ -128,10 +128,10 @@ void OffTheRecordProfileIOData::LazyInitializeInternal() const {
   ApplyProfileParamsToContext(profile_params, extensions_request_context_);
   profile_params.appcache_service->set_request_context(main_request_context_);
 
-  scoped_refptr<ChromeCookiePolicy> cookie_policy =
-      new ChromeCookiePolicy(profile_params.host_content_settings_map);
-  main_request_context_->set_chrome_cookie_policy(cookie_policy);
-  extensions_request_context_->set_chrome_cookie_policy(cookie_policy);
+  cookie_policy_.reset(
+      new ChromeCookiePolicy(profile_params.host_content_settings_map));
+  main_request_context_->set_cookie_policy(cookie_policy_.get());
+  extensions_request_context_->set_cookie_policy(cookie_policy_.get());
 
   main_request_context_->set_net_log(lazy_params_->io_thread->net_log());
   extensions_request_context_->set_net_log(lazy_params_->io_thread->net_log());

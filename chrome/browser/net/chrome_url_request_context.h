@@ -26,7 +26,6 @@
 #include "webkit/database/database_tracker.h"
 #include "webkit/fileapi/file_system_context.h"
 
-class ChromeCookiePolicy;
 class ChromeURLDataManagerBackend;
 class ChromeURLRequestContextFactory;
 class IOThread;
@@ -99,8 +98,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   ChromeURLDataManagerBackend* GetChromeURLDataManagerBackend();
 
   // Setters to simplify initializing from factory objects.
-  void set_chrome_cookie_policy(ChromeCookiePolicy* cookie_policy);
-
   void set_user_script_dir_path(const FilePath& path) {
     user_script_dir_path_ = path;
   }
@@ -154,7 +151,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   // TODO(willchan): Make these non-refcounted.
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
-  scoped_refptr<ChromeCookiePolicy> chrome_cookie_policy_;
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;

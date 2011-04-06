@@ -123,6 +123,7 @@ class OffTheRecordProfileIOData : public ProfileIOData {
 
   mutable scoped_ptr<net::NetworkDelegate> network_delegate_;
   mutable scoped_ptr<net::DnsCertProvenanceChecker> dns_cert_checker_;
+  mutable scoped_ptr<net::CookiePolicy> cookie_policy_;
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
 
   // One HttpTransactionFactory per isolated app.

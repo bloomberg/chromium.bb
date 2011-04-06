@@ -456,9 +456,7 @@ void RenderMessageFilter::OnSetCookie(const IPC::Message& message,
     int policy = net::OK;
     if (context->cookie_policy()) {
       policy = context->cookie_policy()->CanSetCookie(
-          url, first_party_for_cookies, cookie, callback);
-      if (policy == net::ERR_IO_PENDING)
-        return;
+          url, first_party_for_cookies, cookie);
     }
     callback->Run(policy);
   }
@@ -479,11 +477,7 @@ void RenderMessageFilter::OnGetCookies(const GURL& url,
     int policy = net::OK;
     if (context->cookie_policy()) {
       policy = context->cookie_policy()->CanGetCookies(
-          url, first_party_for_cookies, callback);
-      if (policy == net::ERR_IO_PENDING) {
-        Send(new ViewMsg_SignalCookiePromptEvent());
-        return;
-      }
+          url, first_party_for_cookies);
     }
     callback->Run(policy);
   }
@@ -519,11 +513,7 @@ void RenderMessageFilter::OnGetRawCookies(
   int policy = net::OK;
   if (context->cookie_policy()) {
     policy = context->cookie_policy()->CanGetCookies(
-       url, first_party_for_cookies, callback);
-    if (policy == net::ERR_IO_PENDING) {
-      Send(new ViewMsg_SignalCookiePromptEvent());
-      return;
-    }
+       url, first_party_for_cookies);
   }
   callback->Run(policy);
 }
@@ -547,11 +537,7 @@ void RenderMessageFilter::OnCookiesEnabled(
   // host.
   if (context->cookie_policy()) {
     policy = context->cookie_policy()->CanGetCookies(
-        url, first_party_for_cookies, callback);
-    if (policy == net::ERR_IO_PENDING) {
-      Send(new ViewMsg_SignalCookiePromptEvent());
-      return;  // CanGetCookies will call our callback in this case.
-    }
+        url, first_party_for_cookies);
   }
   callback->Run(policy);
 }

@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 
 namespace net {
+class CookiePolicy;
 class NetworkDelegate;
 class DnsCertProvenanceChecker;
 class HttpTransactionFactory;
@@ -132,6 +133,7 @@ class ProfileImplIOData : public ProfileIOData {
 
   mutable scoped_ptr<net::NetworkDelegate> network_delegate_;
   mutable scoped_ptr<net::DnsCertProvenanceChecker> dns_cert_checker_;
+  mutable scoped_ptr<net::CookiePolicy> cookie_policy_;
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
   mutable scoped_ptr<net::HttpTransactionFactory> media_http_factory_;
 

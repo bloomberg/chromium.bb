@@ -16,60 +16,23 @@
 
 class HostContentSettingsMap;
 
-// Implements CookiePolicy that may delay queries to ask the user to decide.
-//
-// We will only prompt the user before setting a cookie.  We do not prompt the
-// user before getting a cookie.  However, if we are in the process of
-// prompting the user, then any requests to get cookies will be deferred.
-// This is done so that cookie requests remain FIFO.
-//
-class ChromeCookiePolicy
-    : public base::RefCountedThreadSafe<ChromeCookiePolicy>,
-      public net::CookiePolicy {
+// Implements CookiePolicy that uses HostContentSettingsMap and
+// net::StaticCookiePolicy to decide if the cookie should be blocked.
+class ChromeCookiePolicy : public net::CookiePolicy {
  public:
   explicit ChromeCookiePolicy(HostContentSettingsMap* map);
   virtual ~ChromeCookiePolicy();
 
   // CookiePolicy methods:
-  virtual int CanGetCookies(const GURL& url, const GURL& first_party,
-                            net::CompletionCallback* callback);
-  virtual int CanSetCookie(const GURL& url, const GURL& first_party,
-                           const std::string& cookie_line,
-                           net::CompletionCallback* callback);
+  virtual int CanGetCookies(const GURL& url, const GURL& first_party) const;
+  virtual int CanSetCookie(const GURL& url,
+                           const GURL& first_party,
+                           const std::string& cookie_line) const;
 
  private:
-  class Completion {
-   public:
-    static Completion ForSetCookie(net::CompletionCallback* callback) {
-      return Completion(true, callback);
-    }
-
-    static Completion ForGetCookies(net::CompletionCallback* callback) {
-      return Completion(false, callback);
-    }
-
-    bool is_set_cookie_request() const { return is_set_cookie_request_; }
-    net::CompletionCallback* callback() const { return callback_; }
-
-   private:
-    Completion(bool is_set_cookie_request, net::CompletionCallback* callback)
-        : is_set_cookie_request_(is_set_cookie_request),
-          callback_(callback) {
-    }
-
-    bool is_set_cookie_request_;
-    net::CompletionCallback* callback_;
-  };
-  typedef std::vector<Completion> Completions;
-  typedef std::map<std::string, Completions> HostCompletionsMap;
-
   int CheckPolicy(const GURL& url) const;
 
-  // A map from hostname to callbacks awaiting a cookie policy response.
-  // This map is only accessed on the IO thread.
-  HostCompletionsMap host_completions_map_;
-
-  scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
+  const scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 
   // True if blocking third-party cookies also applies to reading them.
   bool strict_third_party_blocking_;

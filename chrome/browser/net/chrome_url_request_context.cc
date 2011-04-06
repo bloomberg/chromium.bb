@@ -8,7 +8,6 @@
 #include "base/message_loop_proxy.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/chrome_cookie_policy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
@@ -376,7 +375,6 @@ void ChromeURLRequestContext::CopyFrom(ChromeURLRequestContext* other) {
   set_user_script_dir_path(other->user_script_dir_path());
   set_appcache_service(other->appcache_service());
   set_database_tracker(other->database_tracker());
-  set_chrome_cookie_policy(other->chrome_cookie_policy_);
   set_host_content_settings_map(other->host_content_settings_map());
   set_host_zoom_map(other->host_zoom_map_);
   set_blob_storage_context(other->blob_storage_context());
@@ -385,12 +383,6 @@ void ChromeURLRequestContext::CopyFrom(ChromeURLRequestContext* other) {
   set_prerender_manager(other->prerender_manager());
   // ChromeURLDataManagerBackend is unique per context.
   set_is_incognito(other->is_incognito());
-}
-
-void ChromeURLRequestContext::set_chrome_cookie_policy(
-    ChromeCookiePolicy* cookie_policy) {
-  chrome_cookie_policy_ = cookie_policy;  // Take a strong reference.
-  set_cookie_policy(cookie_policy);
 }
 
 ChromeURLDataManagerBackend*
