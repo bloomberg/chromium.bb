@@ -2952,7 +2952,6 @@
         'browser/ui/views/js_modal_dialog_views.h',
         'browser/ui/views/keyboard_overlay_delegate.cc',
         'browser/ui/views/keyboard_overlay_delegate.h',
-        'browser/ui/views/list_background.h',
         'browser/ui/views/local_storage_info_view.cc',
         'browser/ui/views/local_storage_info_view.h',
         'browser/ui/views/local_storage_set_item_info_view.cc',
