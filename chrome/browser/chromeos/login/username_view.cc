@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "third_party/skia/include/core/SkComposeShader.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/gtk_util.h"
@@ -188,9 +189,10 @@ void UsernameView::PaintUsername(const gfx::Rect& bounds) {
 void UsernameView::OnLocaleChanged() {
   if (is_guest_) {
     SetText(UTF16ToWide(l10n_util::GetStringUTF16(IDS_GUEST)));
-    text_image_.reset();
-    SchedulePaint();
   }
+  // Repaint because the font may have changed.
+  text_image_.reset();
+  SchedulePaint();
 }
 
 }  // namespace chromeos

@@ -27,6 +27,11 @@ class PlatformFontGtk : public PlatformFont {
   // pango_font_description_free().
   static PangoFontDescription* PangoFontFromGfxFont(const gfx::Font& gfx_font);
 
+  // Resets and reloads the cached system font used by the default constructor.
+  // This function is useful when the system font has changed, for example, when
+  // the locale has changed.
+  static void ReloadDefaultFont();
+
   // Position as an offset from the height of the drawn text, used to draw
   // an underline. This is a negative number, so the underline would be
   // drawn at y + height + underline_position;

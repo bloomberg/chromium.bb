@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -328,6 +328,8 @@ void UserController::OnLocaleChanged() {
     if (name_tooltip_enabled_)
       EnableNameTooltip(name_tooltip_enabled_);
   }
+  label_view_->SetFont(GetLabelFont());
+  unselected_label_view_->SetFont(GetUnselectedLabelFont());
 }
 
 void UserController::OnRemoveUser() {
@@ -488,12 +490,8 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
     label = UsernameView::CreateShapedUsernameView(text, true);
   }
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const gfx::Font& font = (type == WM_IPC_WINDOW_LOGIN_LABEL) ?
-      rb.GetFont(ResourceBundle::MediumBoldFont).DeriveFont(
-          kSelectedUsernameFontDelta) :
-      rb.GetFont(ResourceBundle::BaseFont).DeriveFont(
-          kUnselectedUsernameFontDelta, gfx::Font::BOLD);
+      GetLabelFont() : GetUnselectedLabelFont();
   label->SetFont(font);
   label->SetColor(login::kTextColor);
 
@@ -518,6 +516,19 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
                        label);
   return window;
 }
+
+gfx::Font UserController::GetLabelFont() {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  return rb.GetFont(ResourceBundle::MediumBoldFont).DeriveFont(
+      kSelectedUsernameFontDelta);
+}
+
+gfx::Font UserController::GetUnselectedLabelFont() {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  return rb.GetFont(ResourceBundle::BaseFont).DeriveFont(
+      kUnselectedUsernameFontDelta, gfx::Font::BOLD);
+}
+
 
 std::wstring UserController::GetNameTooltip() const {
   if (is_new_user_)

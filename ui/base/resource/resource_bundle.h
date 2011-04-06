@@ -134,6 +134,10 @@ class ResourceBundle {
   // Returns the font for the specified style.
   const gfx::Font& GetFont(FontStyle style);
 
+  // Resets and reloads the cached fonts.  This is useful when the fonts of the
+  // system have changed, for example, when the locale has changed.
+  void ReloadFonts();
+
 #if defined(OS_WIN)
   // Loads and returns an icon from the app module.
   HICON LoadThemeIcon(int icon_id);

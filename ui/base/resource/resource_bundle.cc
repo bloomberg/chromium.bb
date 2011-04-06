@@ -161,7 +161,10 @@ RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
 }
 
 const gfx::Font& ResourceBundle::GetFont(FontStyle style) {
-  LoadFontsIfNecessary();
+  {
+    base::AutoLock lock_scope(*lock_);
+    LoadFontsIfNecessary();
+  }
   switch (style) {
     case BoldFont:
       return *bold_font_;
@@ -178,6 +181,12 @@ const gfx::Font& ResourceBundle::GetFont(FontStyle style) {
   }
 }
 
+void ResourceBundle::ReloadFonts() {
+  base::AutoLock lock_scope(*lock_);
+  base_font_.reset();
+  LoadFontsIfNecessary();
+}
+
 ResourceBundle::ResourceBundle()
     : lock_(new base::Lock),
       resources_data_(NULL),
@@ -191,7 +200,7 @@ void ResourceBundle::FreeImages() {
 }
 
 void ResourceBundle::LoadFontsIfNecessary() {
-  base::AutoLock lock_scope(*lock_);
+  lock_->AssertAcquired();
   if (!base_font_.get()) {
     base_font_.reset(new gfx::Font());
 

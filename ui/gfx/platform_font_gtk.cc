@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -199,6 +199,12 @@ double PlatformFontGtk::underline_thickness() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFontGtk, PlatformFont implementation:
+
+// static
+void PlatformFontGtk::ReloadDefaultFont() {
+  delete default_font_;
+  default_font_ = NULL;
+}
 
 Font PlatformFontGtk::DeriveFont(int size_delta, int style) const {
   // If the delta is negative, if must not push the size below 1

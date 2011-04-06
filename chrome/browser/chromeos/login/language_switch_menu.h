@@ -51,6 +51,8 @@ class LanguageSwitchMenu : public views::ViewMenuDelegate,
       const std::string& locale);
 
  private:
+  static void LoadFontsForCurrentLocale();
+
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
 

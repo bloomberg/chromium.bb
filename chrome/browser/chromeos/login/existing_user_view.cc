@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/background.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/focus/focus_manager.h"
@@ -85,6 +86,8 @@ void ExistingUserView::RecreateFields() {
     password_field_->SetController(this);
     AddChildView(password_field_);
   }
+  password_field_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
+      ResourceBundle::BaseFont));
   password_field_->set_text_to_display_when_empty(
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_EMPTY_PASSWORD_TEXT));
   Layout();
