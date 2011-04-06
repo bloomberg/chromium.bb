@@ -82,7 +82,6 @@ PluginService* PluginService::GetInstance() {
 
 PluginService::PluginService()
     : main_message_loop_(MessageLoop::current()),
-      resource_dispatcher_host_(NULL),
       ui_locale_(g_browser_process->GetApplicationLocale()) {
   RegisterPepperPlugins();
 

@@ -135,10 +135,6 @@ class PluginService
   // The UI thread's message loop
   MessageLoop* main_message_loop() { return main_message_loop_; }
 
-  ResourceDispatcherHost* resource_dispatcher_host() const {
-    return resource_dispatcher_host_;
-  }
-
  private:
   friend struct DefaultSingletonTraits<PluginService>;
 
@@ -180,9 +176,6 @@ class PluginService
 
   // The main thread's message loop.
   MessageLoop* main_message_loop_;
-
-  // The IO thread's resource dispatcher host.
-  ResourceDispatcherHost* resource_dispatcher_host_;
 
   // The browser's UI locale.
   const std::string ui_locale_;
