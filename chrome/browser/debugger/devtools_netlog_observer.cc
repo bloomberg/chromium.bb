@@ -82,12 +82,22 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
       }
 
       request_to_info_[source.id] = new ResourceInfo();
+
+      if (request_to_raw_data_length_.size() > kMaxNumEntries) {
+        LOG(WARNING) << "The raw data length observer url request count has "
+                        "grown larger than expected, resetting";
+        request_to_raw_data_length_.clear();
+      }
+
+      request_to_raw_data_length_[source.id] = 0;
     }
     return;
   } else if (type == net::NetLog::TYPE_REQUEST_ALIVE) {
     // Cleanup records based on the TYPE_REQUEST_ALIVE entry.
-    if (is_end)
+    if (is_end) {
       request_to_info_.erase(source.id);
+      request_to_raw_data_length_.erase(source.id);
+    }
     return;
   }
 
@@ -126,7 +136,14 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
       if (it == http_stream_job_to_socket_.end())
         return;
       uint32 socket_id = it->second;
-      socket_to_info_[socket_id] = info;
+
+      if (socket_to_request_.size() > kMaxNumEntries) {
+        LOG(WARNING) << "The url request observer socket count has grown "
+                        "larger than expected, resetting";
+        socket_to_request_.clear();
+      }
+
+      socket_to_request_[socket_id] = source.id;
       http_stream_job_to_socket_.erase(http_stream_job_id);
       break;
     }
@@ -168,15 +185,21 @@ void DevToolsNetLogObserver::OnAddSocketEntry(
 
   bool is_end = phase == net::NetLog::PHASE_END;
 
-  SocketToInfoMap::iterator it = socket_to_info_.find(source.id);
-  if (it == socket_to_info_.end())
+  SocketToRequestMap::iterator it = socket_to_request_.find(source.id);
+  if (it == socket_to_request_.end())
     return;
+  uint32 request_id = it->second;
 
   if (type == net::NetLog::TYPE_SOCKET_IN_USE) {
     if (is_end)
-      socket_to_info_.erase(source.id);
+      socket_to_request_.erase(source.id);
     return;
   }
+
+  RequestToRawDataLengthMap::iterator raw_data_length_it =
+      request_to_raw_data_length_.find(request_id);
+  if (raw_data_length_it == request_to_raw_data_length_.end())
+    return;
 
   if (net::NetLog::TYPE_SOCKET_BYTES_RECEIVED == type) {
     int byte_count = 0;
@@ -188,7 +211,7 @@ void DevToolsNetLogObserver::OnAddSocketEntry(
     if (!dValue->GetInteger("byte_count", &byte_count))
       return;
 
-    it->second->bytes_received += byte_count;
+    raw_data_length_it->second += byte_count;
   }
 }
 
@@ -240,13 +263,11 @@ int DevToolsNetLogObserver::GetAndResetRawDataLength(
   if (dev_tools_net_log_observer == NULL)
     return -1;
 
-  ResourceInfo* info =
-      dev_tools_net_log_observer->GetResourceInfo(source_id);
-
-  if (info != NULL) {
-    int bytes_received = info->bytes_received;
-    info->bytes_received = 0;
-    return bytes_received;
-  }
-  return -1;
+  RequestToRawDataLengthMap::iterator it =
+      dev_tools_net_log_observer->request_to_raw_data_length_.find(source_id);
+  if (it == dev_tools_net_log_observer->request_to_raw_data_length_.end())
+    return -1;
+  int raw_data_length = it->second;
+  it->second = 0;
+  return raw_data_length;
 }

@@ -73,11 +73,13 @@ class DevToolsNetLogObserver: public ChromeNetLog::ThreadSafeObserver {
 
   ChromeNetLog* chrome_net_log_;
   typedef base::hash_map<uint32, scoped_refptr<ResourceInfo> > RequestToInfoMap;
+  typedef base::hash_map<uint32, int> RequestToRawDataLengthMap;
   typedef base::hash_map<uint32, uint32> HTTPStreamJobToSocketMap;
-  typedef base::hash_map<uint32, ResourceInfo*> SocketToInfoMap;
+  typedef base::hash_map<uint32, uint32> SocketToRequestMap;
   RequestToInfoMap request_to_info_;
+  RequestToRawDataLengthMap request_to_raw_data_length_;
   HTTPStreamJobToSocketMap http_stream_job_to_socket_;
-  SocketToInfoMap socket_to_info_;
+  SocketToRequestMap socket_to_request_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsNetLogObserver);
 };

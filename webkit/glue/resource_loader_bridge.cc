@@ -28,8 +28,7 @@ ResourceLoadTimingInfo::~ResourceLoadTimingInfo() {
 }
 
 ResourceDevToolsInfo::ResourceDevToolsInfo()
-    : http_status_code(0),
-      bytes_received(0) {
+    : http_status_code(0) {
 }
 
 ResourceDevToolsInfo::~ResourceDevToolsInfo() {}
