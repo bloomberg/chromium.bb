@@ -49,7 +49,8 @@ TEST_F(ThreadWrapperTest, Create) {
   EXPECT_EQ(thread(), static_cast<talk_base::Thread*>(wrapper_));
 }
 
-MATCHER_P3(MatchMessage, handler, message_id, data, "") {
+MATCHER_P3(MatchMessageAndDeleteData, handler, message_id, data, "") {
+  delete arg->pdata;
   return arg->phandler == handler &&
       arg->message_id == message_id &&
       arg->pdata == data;
@@ -69,13 +70,13 @@ TEST_F(ThreadWrapperTest, Post) {
   InSequence in_seq;
 
   EXPECT_CALL(handler1_, OnMessage(
-      MatchMessage(&handler1_, kTestMessage1, data1_)));
+      MatchMessageAndDeleteData(&handler1_, kTestMessage1, data1_)));
   EXPECT_CALL(handler1_, OnMessage(
-      MatchMessage(&handler1_, kTestMessage2, data2_)));
+      MatchMessageAndDeleteData(&handler1_, kTestMessage2, data2_)));
   EXPECT_CALL(handler2_, OnMessage(
-      MatchMessage(&handler2_, kTestMessage1, data3_)));
+      MatchMessageAndDeleteData(&handler2_, kTestMessage1, data3_)));
   EXPECT_CALL(handler2_, OnMessage(
-      MatchMessage(&handler2_, kTestMessage1, data4_)));
+      MatchMessageAndDeleteData(&handler2_, kTestMessage1, data4_)));
 
   message_loop_.RunAllPending();
 }
@@ -96,13 +97,13 @@ TEST_F(ThreadWrapperTest, PostDelayed) {
   InSequence in_seq;
 
   EXPECT_CALL(handler1_, OnMessage(
-      MatchMessage(&handler1_, kTestMessage1, data1_)));
+      MatchMessageAndDeleteData(&handler1_, kTestMessage1, data1_)));
   EXPECT_CALL(handler1_, OnMessage(
-      MatchMessage(&handler1_, kTestMessage2, data2_)));
+      MatchMessageAndDeleteData(&handler1_, kTestMessage2, data2_)));
   EXPECT_CALL(handler2_, OnMessage(
-      MatchMessage(&handler2_, kTestMessage1, data3_)));
+      MatchMessageAndDeleteData(&handler2_, kTestMessage1, data3_)));
   EXPECT_CALL(handler2_, OnMessage(
-      MatchMessage(&handler2_, kTestMessage1, data4_)));
+      MatchMessageAndDeleteData(&handler2_, kTestMessage1, data4_)));
 
   message_loop_.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask(),
                                 kMaxTestDelay);
@@ -121,11 +122,11 @@ TEST_F(ThreadWrapperTest, Clear) {
 
   talk_base::MessageData* null_data = NULL;
   EXPECT_CALL(handler1_, OnMessage(
-      MatchMessage(&handler1_, kTestMessage1, null_data)));
+      MatchMessageAndDeleteData(&handler1_, kTestMessage1, null_data)));
   EXPECT_CALL(handler2_, OnMessage(
-      MatchMessage(&handler2_, kTestMessage1, null_data)));
+      MatchMessageAndDeleteData(&handler2_, kTestMessage1, null_data)));
   EXPECT_CALL(handler2_, OnMessage(
-      MatchMessage(&handler2_, kTestMessage2, null_data)));
+      MatchMessageAndDeleteData(&handler2_, kTestMessage2, null_data)));
 
   message_loop_.RunAllPending();
 }
@@ -144,11 +145,11 @@ TEST_F(ThreadWrapperTest, ClearDelayed) {
 
   talk_base::MessageData* null_data = NULL;
   EXPECT_CALL(handler1_, OnMessage(
-      MatchMessage(&handler1_, kTestMessage1, null_data)));
+      MatchMessageAndDeleteData(&handler1_, kTestMessage1, null_data)));
   EXPECT_CALL(handler2_, OnMessage(
-      MatchMessage(&handler2_, kTestMessage1, null_data)));
+      MatchMessageAndDeleteData(&handler2_, kTestMessage1, null_data)));
   EXPECT_CALL(handler2_, OnMessage(
-      MatchMessage(&handler2_, kTestMessage1, null_data)));
+      MatchMessageAndDeleteData(&handler2_, kTestMessage1, null_data)));
 
   message_loop_.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask(),
                                 kMaxTestDelay);

@@ -7,6 +7,10 @@
 
 #include <string>
 
+namespace net {
+class Socket;
+}  // namespace net
+
 namespace webkit_glue {
 
 // Interface for P2P transport.
@@ -27,23 +31,24 @@ class P2PTransport {
 
     // Called when readable of writable state of the stream changes.
     virtual void OnStateChange(State state) = 0;
-
-    // Called when a message received from the peer. P2PTransport keeps
-    // owneship of |data|.
-    virtual void OnMessageReceived(const char* data, size_t data_size) = 0;
   };
 
   virtual ~P2PTransport() {}
 
-  // Initialize transport using specified configuration.
-  virtual void Init(const std::string& config,
+  // Initialize transport using specified configuration. Returns true
+  // if initialization succeeded.
+  virtual bool Init(const std::string& name,
+                    const std::string& config,
                     EventHandler* event_handler) = 0;
 
-  // Add candidate received from the remote peer.
-  virtual void AddRemoteCandidate(const std::string& address) = 0;
+  // Add candidate received from the remote peer. Returns false if the
+  // provided address is not in a valid format.
+  virtual bool AddRemoteCandidate(const std::string& address) = 0;
 
-  // Send data to the other end. Caller keeps ownership of |data|.
-  virtual void Send(const char* data, int data_size) = 0;
+  // Returns socket interface that can be used to send/receive
+  // data. Returned object is owned by the transport. Pending calls on
+  // the socket are canceled when the transport is destroyed.
+  virtual net::Socket* GetChannel() = 0;
 };
 
 }  // namespace webkit_glue
