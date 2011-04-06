@@ -11,3 +11,6 @@ DirectoryLister*
 HttpNetworkTransactionTest.BypassHostCacheOnRefresh2
 HttpNetworkTransactionTest.GenerateAuthToken
 HttpNetworkTransactionTest.HttpsProxySpdyGetWithProxyAuth
+
+# Hang, or killing the test.  See http://crbug.com/78536
+ProxyResolverV8Test.JavascriptLibrary
