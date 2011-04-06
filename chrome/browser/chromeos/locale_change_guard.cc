@@ -17,8 +17,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
-#include "grit/app_resources.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -146,7 +146,7 @@ void LocaleChangeGuard::Check() {
   note_.reset(new chromeos::SystemNotification(
       profile_,
       new Delegate(this),
-      IDR_DEFAULT_FAVICON,
+      IDR_NOTIFICATION_LOCALE_CHANGE,
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE)));
   note_->Show(
