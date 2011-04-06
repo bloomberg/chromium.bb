@@ -49,6 +49,8 @@
         'gpu/media/fake_gl_video_decode_engine.h',
         'gpu/media/fake_gl_video_device.cc',
         'gpu/media/fake_gl_video_device.h',
+	'gpu/transport_texture.cc',
+	'gpu/transport_texture.h',
       ],
       'include_dirs': [
         '..',

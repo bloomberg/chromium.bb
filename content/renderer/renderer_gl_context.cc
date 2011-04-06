@@ -12,6 +12,8 @@
 #include "content/renderer/gpu_video_service_host.h"
 #include "content/renderer/media/gles2_video_decode_context.h"
 #include "content/renderer/render_widget.h"
+#include "content/renderer/transport_texture_host.h"
+#include "content/renderer/transport_texture_service.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_handle.h"
 
@@ -209,6 +211,12 @@ media::VideoDecodeEngine* RendererGLContext::CreateVideoDecodeEngine() {
 media::VideoDecodeContext* RendererGLContext::CreateVideoDecodeContext(
     MessageLoop* message_loop, bool hardware_decoder) {
   return new Gles2VideoDecodeContext(message_loop, hardware_decoder, this);
+}
+
+scoped_refptr<TransportTextureHost>
+RendererGLContext::CreateTransportTextureHost() {
+  return channel_->transport_texture_service()->CreateTransportTextureHost(
+      this, command_buffer_->route_id());
 }
 
 RendererGLContext::Error RendererGLContext::GetError() {

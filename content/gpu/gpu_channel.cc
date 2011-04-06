@@ -17,6 +17,7 @@
 #include "content/common/gpu_messages.h"
 #include "content/gpu/gpu_render_thread.h"
 #include "content/gpu/gpu_video_service.h"
+#include "content/gpu/transport_texture.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
@@ -132,6 +133,15 @@ void GpuChannel::DestroyCommandBufferByViewId(int32 render_view_id) {
 }
 #endif
 
+TransportTexture* GpuChannel::GetTransportTexture(int32 route_id) {
+  return transport_textures_.Lookup(route_id);
+}
+
+void GpuChannel::DestroyTransportTexture(int32 route_id) {
+  transport_textures_.Remove(route_id);
+  router_.RemoveRoute(route_id);
+}
+
 bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuChannel, msg)
@@ -144,6 +154,8 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
         OnCreateVideoDecoder)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyVideoDecoder,
         OnDestroyVideoDecoder)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateTransportTexture,
+                        OnCreateTransportTexture)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled);
@@ -231,11 +243,28 @@ void GpuChannel::OnCreateVideoDecoder(int32 context_route_id,
 
 void GpuChannel::OnDestroyVideoDecoder(int32 decoder_id) {
 #if defined(ENABLE_GPU)
-  LOG(ERROR) << "GpuChannel::OnDestroyVideoDecoder";
   GpuVideoService* service = GpuVideoService::GetInstance();
   if (service == NULL)
     return;
   service->DestroyVideoDecoder(&router_, decoder_id);
+#endif
+}
+
+void GpuChannel::OnCreateTransportTexture(int32 context_route_id,
+                                          int32 host_id) {
+#if defined(ENABLE_GPU)
+  GpuCommandBufferStub* stub = stubs_.Lookup(context_route_id);
+  int32 route_id = GenerateRouteID();
+
+  scoped_ptr<TransportTexture> transport(
+      new TransportTexture(this, channel_.get(), stub->processor()->decoder(),
+                           host_id, route_id));
+  router_.AddRoute(route_id, transport.get());
+  transport_textures_.AddWithID(transport.release(), route_id);
+
+  IPC::Message* msg = new GpuTransportTextureHostMsg_TransportTextureCreated(
+      host_id, route_id);
+  Send(msg);
 #endif
 }
 

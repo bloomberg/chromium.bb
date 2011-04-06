@@ -20,8 +20,9 @@
 #include "ui/gfx/size.h"
 
 class CommandBufferProxy;
-class GpuVideoServiceHost;
 class GURL;
+class GpuVideoServiceHost;
+class TransportTextureService;
 
 // Encapsulates an IPC channel between the renderer and one plugin process.
 // On the plugin side there's a corresponding GpuChannel.
@@ -87,6 +88,10 @@ class GpuChannelHost : public IPC::Channel::Listener,
     return gpu_video_service_host_.get();
   }
 
+  TransportTextureService* transport_texture_service() {
+    return transport_texture_service_.get();
+  }
+
  private:
   State state_;
 
@@ -106,6 +111,10 @@ class GpuChannelHost : public IPC::Channel::Listener,
   // This is a MessageFilter to intercept IPC messages and distribute them
   // to the corresponding GpuVideoDecoderHost.
   scoped_refptr<GpuVideoServiceHost> gpu_video_service_host_;
+
+  // This is a MessageFilter to intercept IPC messages related to transport
+  // textures. These messages are routed to TransportTextureHost.
+  scoped_refptr<TransportTextureService> transport_texture_service_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelHost);
 };

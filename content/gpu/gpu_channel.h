@@ -24,6 +24,7 @@ class GpuRenderThread;
 class GpuWatchdogThread;
 struct GPUCreateCommandBufferConfig;
 class MessageLoop;
+class TransportTexture;
 
 namespace base {
 class WaitableEvent;
@@ -77,6 +78,13 @@ class GpuChannel : public IPC::Channel::Listener,
   void DestroyCommandBufferByViewId(int32 render_view_id);
 #endif
 
+  // Get the TransportTexture by ID.
+  TransportTexture* GetTransportTexture(int32 route_id);
+
+  // Destroy the TransportTexture by ID. This method is only called by
+  // TransportTexture to delete and detach itself.
+  void DestroyTransportTexture(int32 route_id);
+
  private:
   bool OnControlMessageReceived(const IPC::Message& msg);
 
@@ -91,10 +99,10 @@ class GpuChannel : public IPC::Channel::Listener,
       uint32 parent_texture_id,
       int32* route_id);
   void OnDestroyCommandBuffer(int32 route_id);
-
   void OnCreateVideoDecoder(int32 context_route_id,
                             int32 decoder_host_id);
   void OnDestroyVideoDecoder(int32 decoder_id);
+  void OnCreateTransportTexture(int32 context_route_id, int32 host_id);
 
   // The lifetime of objects of this class is managed by a GpuRenderThread. The
   // GpuRenderThreads destroy all the GpuChannels that they own when they
@@ -119,6 +127,10 @@ class GpuChannel : public IPC::Channel::Listener,
   typedef IDMap<GpuCommandBufferStub, IDMapOwnPointer> StubMap;
   StubMap stubs_;
 #endif  // defined (ENABLE_GPU)
+
+  // A collection of transport textures created.
+  typedef IDMap<TransportTexture, IDMapOwnPointer> TransportTextureMap;
+  TransportTextureMap transport_textures_;
 
   bool log_messages_;  // True if we should log sent and received messages.
   gpu::gles2::DisallowedExtensions disallowed_extensions_;

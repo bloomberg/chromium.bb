@@ -22,6 +22,7 @@ class GpuChannelHost;
 class MessageLoop;
 class CommandBufferProxy;
 class GURL;
+class TransportTextureHost;
 
 namespace gpu {
 namespace gles2 {
@@ -164,6 +165,9 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
   // run on.
   media::VideoDecodeContext* CreateVideoDecodeContext(MessageLoop* message_loop,
                                                       bool hardware_decoder);
+
+  // Create a TransportTextureHost object associated with the context.
+  scoped_refptr<TransportTextureHost> CreateTransportTextureHost();
 
   // TODO(gman): Remove this
   void DisableShaderTranslation();

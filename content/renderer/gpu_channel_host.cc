@@ -9,9 +9,13 @@
 #include "content/common/gpu_messages.h"
 #include "content/renderer/command_buffer_proxy.h"
 #include "content/renderer/gpu_video_service_host.h"
+#include "content/renderer/transport_texture_service.h"
 #include "googleurl/src/gurl.h"
 
-GpuChannelHost::GpuChannelHost() : state_(kUnconnected) {
+GpuChannelHost::GpuChannelHost()
+    : state_(kUnconnected),
+      gpu_video_service_host_(new GpuVideoServiceHost()),
+      transport_texture_service_(new TransportTextureService()) {
 }
 
 GpuChannelHost::~GpuChannelHost() {
@@ -61,8 +65,8 @@ bool GpuChannelHost::OnMessageReceived(const IPC::Message& message) {
 void GpuChannelHost::OnChannelConnected(int32 peer_pid) {
   // When the channel is connected we create a GpuVideoServiceHost and add it
   // as a message filter.
-  gpu_video_service_host_ = new GpuVideoServiceHost();
   channel_->AddFilter(gpu_video_service_host_.get());
+  channel_->AddFilter(transport_texture_service_.get());
 }
 
 void GpuChannelHost::OnChannelError() {
