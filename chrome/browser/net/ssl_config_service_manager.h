@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,8 @@ class SSLConfigServiceManager {
  public:
   // Create an instance of the default SSLConfigServiceManager for the current
   // platform. The lifetime of the PrefService objects must be longer than that
-  // of the manager. On Linux, get SSL preferences from local_state object. If
-  // SSL preferences don't exist in local_state object, then get the data from
+  // of the manager. Get SSL preferences from local_state object. If SSL
+  // preferences don't exist in local_state object, then get the data from
   // user_prefs object and migrate it to local_state object and then delete the
   // data from user_prefs object.
   static SSLConfigServiceManager* CreateDefaultManager(

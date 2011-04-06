@@ -1346,7 +1346,6 @@
         'browser/net/sqlite_persistent_cookie_store.h',
         'browser/net/ssl_config_service_manager.h',
         'browser/net/ssl_config_service_manager_pref.cc',
-        'browser/net/ssl_config_service_manager_system.cc',
         'browser/net/url_fixer_upper.cc',
         'browser/net/url_fixer_upper.h',
         'browser/net/url_info.cc',
@@ -3510,17 +3509,6 @@
             '../build/linux/system.gyp:gtkprint',
             '../build/linux/system.gyp:nss',
             '../build/linux/system.gyp:x11',
-          ],
-        }],
-        # Use system SSL settings on Mac and Windows.  Use preferences
-        # for SSL settings on other platforms.
-        ['OS=="mac" or OS=="win"', {
-          'sources!': [
-            'browser/net/ssl_config_service_manager_pref.cc',
-          ],
-        }, {  # else
-          'sources!': [
-            'browser/net/ssl_config_service_manager_system.cc',
           ],
         }],
         ['OS=="mac"', {

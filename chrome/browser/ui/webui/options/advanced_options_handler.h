@@ -66,20 +66,18 @@ class AdvancedOptionsHandler
   // one item, the font size as a numeric value.
   void HandleDefaultFontSize(const ListValue* args);
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_FREEBSD) || \
-    defined(OS_OPENBSD)
-  // Callback for the "Check SSL Revocation" checkbox.  This is needed so we
-  // can support manual handling on Windows.
+  // Callback for the "Check for server certificate revocation" checkbox. This
+  // is called if the user toggles the "Check for server certificate revocation"
+  // checkbox.
   void HandleCheckRevocationCheckbox(const ListValue* args);
 
-  // Callback for the "Use SSL3" checkbox.  This is needed so we can support
-  // manual handling on Windows.
+  // Callback for the "Use SSL 3.0" checkbox. This is called if the user toggles
+  // the "Use SSL 3.0" checkbox.
   void HandleUseSSL3Checkbox(const ListValue* args);
 
-  // Callback for the "Use TLS1" checkbox.  This is needed so we can support
-  // manual handling on Windows.
+  // Callback for the "Use TLS 1.0" checkbox. This is called if the user toggles
+  // the "Use TLS 1.0" checkbox.
   void HandleUseTLS1Checkbox(const ListValue* args);
-#endif
 
 #if !defined(OS_CHROMEOS)
   // Callback for the "showNetworkProxySettings" message. This will invoke
@@ -150,11 +148,8 @@ class AdvancedOptionsHandler
   // Setup the proxy settings section UI.
   void SetupProxySettingsSection();
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_FREEBSD) || \
-    defined(OS_OPENBSD)
   // Setup the checked state for SSL related checkboxes.
   void SetupSSLConfigSettings();
-#endif
 
   scoped_refptr<SelectFileDialog> select_folder_dialog_;
 
@@ -166,12 +161,10 @@ class AdvancedOptionsHandler
   scoped_ptr<CloudPrintSetupHandler> cloud_print_setup_handler_;
 #endif
 
-#if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_OPENBSD)
   // SSLConfigService prefs.
   BooleanPrefMember rev_checking_enabled_;
   BooleanPrefMember ssl3_enabled_;
   BooleanPrefMember tls1_enabled_;
-#endif
 
 #if defined(ENABLE_REMOTING) && !defined(OS_CHROMEOS)
   remoting::RemotingOptionsHandler remoting_options_handler_;

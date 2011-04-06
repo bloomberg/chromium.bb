@@ -281,14 +281,6 @@ const char kInstantPromo[] = "instant.promo";
 const char kMultipleProfilePrefMigration[] =
     "local_state.multiple_profile_prefs_version";
 
-#if defined(USE_NSS) || defined(USE_OPENSSL)
-// Prefs for SSLConfigServicePref.  Currently, these are only present on
-// and used by NSS/OpenSSL using OSes.
-const char kCertRevocationCheckingEnabled[] = "ssl.rev_checking.enabled";
-const char kSSL3Enabled[] = "ssl.ssl3.enabled";
-const char kTLS1Enabled[] = "ssl.tls1.enabled";
-#endif
-
 #if defined(OS_CHROMEOS)
 // An integer pref to initially mute volume if 1.
 const char kAudioMute[] = "settings.audio.mute";
@@ -698,6 +690,11 @@ const char kDisable3DAPIs[] = "disable_3d_apis";
 
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
+
+// Prefs for SSLConfigServicePref.
+const char kCertRevocationCheckingEnabled[] = "ssl.rev_checking.enabled";
+const char kSSL3Enabled[] = "ssl.ssl3.enabled";
+const char kTLS1Enabled[] = "ssl.tls1.enabled";
 
 // The metrics client GUID and session ID.
 const char kMetricsClientID[] = "user_experience_metrics.client_id";

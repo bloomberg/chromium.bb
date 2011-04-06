@@ -38,11 +38,12 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
     prefs::kDeleteFormData,
     prefs::kDeletePasswords,
     prefs::kDnsPrefetchingEnabled,
-#if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_OPENBSD)
+    // TODO(rtenneti): Remove ssl preferences from user_prefs when we stop
+    // migrating user_prefs to local_state after 6 months (after we delete
+    // migration code).
     prefs::kCertRevocationCheckingEnabled,
     prefs::kSSL3Enabled,
     prefs::kTLS1Enabled,
-#endif
 #if defined(OS_CHROMEOS)
     prefs::kTapToClickEnabled,
     prefs::kTouchpadSensitivity,
@@ -96,11 +97,9 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
   // don't reset it.
   const char* kLocalStatePrefs[] = {
     prefs::kApplicationLocale,
-#if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_OPENBSD)
     prefs::kCertRevocationCheckingEnabled,
     prefs::kSSL3Enabled,
     prefs::kTLS1Enabled,
-#endif
   };
   for (size_t i = 0; i < arraysize(kLocalStatePrefs); ++i)
     local_state->ClearPref(kLocalStatePrefs[i]);
