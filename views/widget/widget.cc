@@ -26,7 +26,7 @@ Widget::CreateParams::CreateParams()
       can_activate(true),
       keep_on_top(false),
       delete_on_destroy(true),
-      mirror_origin_in_rtl(true),
+      mirror_origin_in_rtl(false),
       has_dropshadow(false),
       native_widget(NULL) {
 }
@@ -39,7 +39,7 @@ Widget::CreateParams::CreateParams(Type type)
       can_activate(type != TYPE_POPUP && type != TYPE_MENU),
       keep_on_top(type == TYPE_MENU),
       delete_on_destroy(true),
-      mirror_origin_in_rtl(true),
+      mirror_origin_in_rtl(false),
       has_dropshadow(false),
       native_widget(NULL) {
 }
