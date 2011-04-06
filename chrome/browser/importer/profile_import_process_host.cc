@@ -17,10 +17,9 @@
 #include "ui/base/l10n/l10n_util.h"
 
 ProfileImportProcessHost::ProfileImportProcessHost(
-    ResourceDispatcherHost* resource_dispatcher,
     ProfileImportProcessClient* import_process_client,
     BrowserThread::ID thread_id)
-    : BrowserChildProcessHost(PROFILE_IMPORT_PROCESS, resource_dispatcher),
+    : BrowserChildProcessHost(PROFILE_IMPORT_PROCESS, NULL),
       import_process_client_(import_process_client),
       thread_id_(thread_id) {
 }

@@ -29,16 +29,13 @@ struct PasswordForm;
 // a client object.
 class ProfileImportProcessHost : public BrowserChildProcessHost {
  public:
-  // |resource_dispatcher| is used in the base BrowserChildProcessHost class to
-  // manage IPC requests.
   // |import_process_client| implements callbacks which are triggered by
   // incoming IPC messages.  This client creates an interface between IPC
   // messages received by the ProfileImportProcessHost and the internal
   // importer_bridge.
   // |thread_id| gives the thread where the client lives. The
   // ProfileImportProcessHost spawns tasks on this thread for the client.
-  ProfileImportProcessHost(ResourceDispatcherHost* resource_dispatcher,
-                           ProfileImportProcessClient* import_process_client,
+  ProfileImportProcessHost(ProfileImportProcessClient* import_process_client,
                            BrowserThread::ID thread_id);
   virtual ~ProfileImportProcessHost();
 

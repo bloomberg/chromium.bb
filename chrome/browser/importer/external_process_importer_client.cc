@@ -45,9 +45,10 @@ void ExternalProcessImporterClient::Start() {
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&thread_id));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this,
+      NewRunnableMethod(
+          this,
           &ExternalProcessImporterClient::StartImportProcessOnIOThread,
-          g_browser_process->resource_dispatcher_host(), thread_id));
+          thread_id));
 }
 
 void ExternalProcessImporterClient::Cancel() {
@@ -74,12 +75,11 @@ void ExternalProcessImporterClient::Cleanup() {
 }
 
 void ExternalProcessImporterClient::StartImportProcessOnIOThread(
-    ResourceDispatcherHost* rdh,
     BrowserThread::ID thread_id) {
   profile_import_process_host_ =
-      new ProfileImportProcessHost(rdh, this, thread_id);
-  profile_import_process_host_->StartProfileImportProcess(profile_info_,
-      items_, import_to_bookmark_bar_);
+      new ProfileImportProcessHost(this, thread_id);
+  profile_import_process_host_->StartProfileImportProcess(
+      profile_info_, items_, import_to_bookmark_bar_);
 }
 
 void ExternalProcessImporterClient::CancelImportProcessOnIOThread() {

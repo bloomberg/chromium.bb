@@ -20,7 +20,6 @@
 class ExternalProcessImporterHost;
 class InProcessImporterBridge;
 class ProfileImportProcessHost;
-class ResourceDispatcherHost;
 
 namespace history {
 class URLRow;
@@ -54,8 +53,7 @@ class ExternalProcessImporterClient : public ProfileImportProcessClient {
 
  private:
   // Creates a new ProfileImportProcessHost, which launches the import process.
-  void StartImportProcessOnIOThread(ResourceDispatcherHost* rdh,
-                                    BrowserThread::ID thread_id);
+  void StartImportProcessOnIOThread(BrowserThread::ID thread_id);
 
   // Cancel import process on IO thread.
   void CancelImportProcessOnIOThread();
