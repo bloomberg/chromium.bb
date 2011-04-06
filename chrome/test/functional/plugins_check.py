@@ -5,6 +5,7 @@
 
 import logging
 import os
+import pprint
 import sys
 
 import pyauto_functional  # Must be imported before pyauto
@@ -33,6 +34,8 @@ class PluginsCheck(pyauto.PyUITest):
       plugins_list = self._ReadPluginsList('win_plugins_list.txt')
     elif self.IsMac():
       plugins_list = self._ReadPluginsList('mac_plugins_list.txt')
+    elif self.IsChromeOS():
+      plugins_list = self._ReadPluginsList('chromeos_plugins_list.txt')
     elif self.IsLinux():
       # TODO(rohitbm)
       # Add plugins_check support for Linux
@@ -40,16 +43,31 @@ class PluginsCheck(pyauto.PyUITest):
       return
 
     browser_plugins_list = self.GetPluginsInfo().Plugins()
-    for plugin in plugins_list: 
-      test_plugin = [x['name'] for x in browser_plugins_list \
-          if x['version'] == plugin['version'] and \
-             str(x['enabled']) == plugin['enabled'] and \
-             x['name'] == plugin['name']]
-      plugin_info = '[ NAME : %s, VERSION: %s, ENABLED: %s]' % \
-          (plugin['name'], plugin['version'], plugin['enabled'])
-      logging.debug(plugin_info)
-      self.assertTrue(test_plugin, '%s - Failed to match with plugins'
-          ' available in the browser plugins list' % plugin_info)
+    for plugin in plugins_list:
+      # We will compare the keys available in the plugin list
+      found_plugin = False
+      for browser_plugin in browser_plugins_list:
+        whitelist_keys = plugin.keys()
+        if 'unique_key' in plugin:
+          unique_key = plugin['unique_key']
+          whitelist_keys.remove('unique_key')
+        else:
+          unique_key = 'name'
+        if browser_plugin[unique_key] == plugin[unique_key]:
+          found_plugin = True
+          for key in whitelist_keys:
+            if browser_plugin[key] != plugin[key]:
+              self.assertEqual(browser_plugin[key], plugin[key], 'The following'
+                  ' plugin attributes do not match the whitelist:'
+                  '\n\tplugin:\n%s\n\tlist:\n%s'
+                  % (pprint.pformat(browser_plugin), pprint.pformat(plugin)))
+          break;
+      self.assertTrue(found_plugin, 'The following plugin in the whitelist '
+          'does not match any on the system:\n%s' % pprint.pformat(plugin))
+    if self.IsChromeOS():
+      self.assertEqual(len(plugins_list), len(browser_plugins_list),
+          'The number of plugins on the system do not match the number in the '
+          'whitelist.')
 
 
 if __name__ == '__main__':

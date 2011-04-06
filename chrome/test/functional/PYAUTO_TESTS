@@ -257,7 +257,6 @@
       '-omnibox.OmniboxTest.testGoogleSearch',
       '-omnibox.OmniboxTest.testInlinAutoComplete',
       '-omnibox.OmniboxTest.testSuggest',
-      '-plugins_check',
     ],
   },
 
