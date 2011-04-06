@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -27,6 +28,7 @@ BookmarkContextMenu::BookmarkContextMenu(
               this, profile, page_navigator, parent, selection))),
       parent_window_(parent_window),
       ALLOW_THIS_IN_INITIALIZER_LIST(menu_(new views::MenuItemView(this))),
+      parent_node_(parent),
       observer_(NULL) {
   controller_->BuildMenu();
 }
@@ -62,7 +64,10 @@ bool BookmarkContextMenu::IsCommandEnabled(int command_id) const {
 }
 
 bool BookmarkContextMenu::ShouldCloseAllMenusOnExecute(int id) {
-  return id != IDC_BOOKMARK_BAR_REMOVE;
+  return id != IDC_BOOKMARK_BAR_REMOVE ||
+      (parent_node_ ==
+       controller_->profile()->GetBookmarkModel()->other_node() &&
+       parent_node_->child_count() == 1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

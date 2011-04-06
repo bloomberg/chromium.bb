@@ -67,6 +67,9 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerViewsDelegate,
   // The menu itself.
   scoped_ptr<views::MenuItemView> menu_;
 
+  // The node we're showing the menu for.
+  const BookmarkNode* parent_node_;
+
   BookmarkContextMenuObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkContextMenu);
