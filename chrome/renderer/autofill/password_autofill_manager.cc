@@ -120,8 +120,14 @@ void FindFormElements(WebKit::WebView* view,
 
     for (size_t i = 0; i < forms.size(); ++i) {
       WebKit::WebFormElement fe = forms[i];
-      // Action URL must match.
+
       GURL full_action(f->document().completeURL(fe.action()));
+      if (full_action.is_empty()) {
+        // The default action URL is the form's origin.
+        full_action = full_origin;
+      }
+
+      // Action URL must match.
       if (data.action != full_action.ReplaceComponents(rep))
         continue;
 

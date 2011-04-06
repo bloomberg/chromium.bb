@@ -203,6 +203,40 @@ TEST_F(PasswordAutofillManagerTest, InitialAutocomplete) {
   CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);
 }
 
+// Tests that having a non-empty username precludes the autocomplete.
+TEST_F(PasswordAutofillManagerTest, InitialAutocompleteForEmptyAction) {
+  const char kEmptyActionFormHTML[] =
+      "<FORM name='LoginTestForm'>"
+      "  <INPUT type='text' id='username'/>"
+      "  <INPUT type='password' id='password'/>"
+      "  <INPUT type='submit' value='Login'/>"
+      "</FORM>";
+  LoadHTML(kEmptyActionFormHTML);
+
+  // Retrieve the input elements so the test can access them.
+  WebDocument document = GetMainFrame()->document();
+  WebElement element =
+      document.getElementById(WebString::fromUTF8(kUsernameName));
+  ASSERT_FALSE(element.isNull());
+  username_element_ = element.to<WebKit::WebInputElement>();
+  element = document.getElementById(WebString::fromUTF8(kPasswordName));
+  ASSERT_FALSE(element.isNull());
+  password_element_ = element.to<WebKit::WebInputElement>();
+
+  // Set the expected form origin and action URLs.
+  std::string origin("data:text/html;charset=utf-8,");
+  origin += kEmptyActionFormHTML;
+  fill_data_.basic_data.origin = GURL(origin);
+  fill_data_.basic_data.action = GURL(origin);
+
+  // Simulate the browser sending back the login info, it triggers the
+  // autocomplete.
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // The username and password should have been autocompleted.
+  CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);
+}
+
 // Tests that changing the username does not fill a read-only password field.
 TEST_F(PasswordAutofillManagerTest, NoInitialAutocompleteForReadOnly) {
   password_element_.setAttribute(WebString::fromUTF8("readonly"),
