@@ -1038,6 +1038,20 @@ class NotificationBridge : public NotificationObserver {
     NSRect profileMenuButtonFrame = [profileMenuButton_ frame];
     NSSize minSize = [profileMenuButton_ minControlSize];
 
+    // Make room for the full screen button if necessary.
+    if (!hasUpdatedProfileMenuButtonXOffset_) {
+      hasUpdatedProfileMenuButtonXOffset_ = YES;
+      if ([[profileMenuButton_ window]
+          respondsToSelector:@selector(toggleFullScreen:)]) {
+        NSButton* fullscreenButton = [[profileMenuButton_ window]
+            standardWindowButton:NSWindowFullScreenButton];
+        if (fullscreenButton) {
+          profileMenuButtonFrame.origin.x = NSMinX([fullscreenButton frame]) -
+              NSWidth(profileMenuButtonFrame) - kProfileMenuButtonOffset;
+        }
+      }
+    }
+
     // TODO(sail): Animate this.
     CGFloat availableWidth = NSMaxX(profileMenuButtonFrame) - maxX -
                              kProfileMenuButtonOffset;

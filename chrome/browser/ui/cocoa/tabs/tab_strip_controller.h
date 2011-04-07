@@ -76,6 +76,7 @@ class NotificationBridge;
   scoped_nsobject<NSView> dragBlockingView_;  // avoid bad window server drags
   NewTabButton* newTabButton_;  // weak, obtained from the nib.
   ProfileMenuButton* profileMenuButton_;  // weak, obtained from the nib.
+  BOOL hasUpdatedProfileMenuButtonXOffset_;
 
   // Tracks the newTabButton_ for rollovers.
   scoped_nsobject<CrTrackingArea> newTabTrackingArea_;
