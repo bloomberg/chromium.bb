@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <assert.h>
@@ -105,7 +105,7 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
     return false;
   }
   // Start the SRPC client to communicate with the trusted command channel.
-  // SRPC client takes ownership of command_desc.
+  // SRPC client takes an additional reference to command_desc.
   if (!NaClSrpcClientCtor(command, command_desc->desc())) {
     return false;
   }
@@ -114,17 +114,20 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
   int start_result;
   if (NACL_SRPC_RESULT_OK !=
       NaClSrpcInvokeBySignature(command, "start_module::i", &start_result)) {
+    NaClSrpcDtor(command);
     return false;
   }
 
   // The second connection goes to the service itself.
   scoped_ptr<DescWrapper> untrusted_desc(sock_addr->Connect());
   if (untrusted_desc ==  NULL) {
+    NaClSrpcDtor(command);
     return false;
   }
   // Start the SRPC client to communicate with the untrusted service
-  // SRPC client takes ownership of untrusted_desc.
+  // SRPC client takes an additional reference to untrusted_desc.
   if (!NaClSrpcClientCtor(untrusted, untrusted_desc->desc())) {
+    NaClSrpcDtor(command);
     return false;
   }
 

@@ -156,11 +156,7 @@ static nacl::string ProcessArguments(int argc,
 }
 
 
-int main(int argc, char* argv[]) {
-  // Descriptor transfer requires the following
-  NaClSrpcModuleInit();
-  NaClNrdAllModulesInit();
-
+int raii_main(int argc, char* argv[]) {
   // Get the arguments to sed_ldr and the nexe module
   vector<nacl::string> sel_ldr_argv;
   vector<nacl::string> app_argv;
@@ -248,7 +244,18 @@ int main(int argc, char* argv[]) {
   NaClSrpcDtor(&command_channel);
   NaClSrpcDtor(&channel);
 
+  return success ? 0 : -1;
+}
+
+int main(int argc, char* argv[]) {
+  // Descriptor transfer requires the following
+  NaClSrpcModuleInit();
+  NaClNrdAllModulesInit();
+
+  int exit_status = raii_main(argc, argv);
+
   NaClSrpcModuleFini();
   NaClNrdAllModulesFini();
-  return success ? 0 : -1;
+
+  return exit_status;
 }
