@@ -51,6 +51,10 @@ class HttpBridgeTest : public testing::Test {
     return bridge;
   }
 
+  static void Abort(HttpBridge* bridge) {
+    bridge->Abort();
+  }
+
   static void TestSameHttpNetworkSession(MessageLoop* main_message_loop,
                                          HttpBridgeTest* test) {
     scoped_refptr<HttpBridge> http_bridge(test->BuildBridge());
@@ -97,14 +101,19 @@ class DummyURLFetcher : public TestURLFetcher {
 // back with dummy response info.
 class ShuntedHttpBridge : public HttpBridge {
  public:
+  // If |never_finishes| is true, the simulated request never actually
+  // returns.
   ShuntedHttpBridge(net::URLRequestContextGetter* baseline_context_getter,
-                    HttpBridgeTest* test)
+                    HttpBridgeTest* test, bool never_finishes)
       : HttpBridge(new HttpBridge::RequestContextGetter(
                        baseline_context_getter)),
-                   test_(test) { }
+                   test_(test), never_finishes_(never_finishes) { }
  protected:
   virtual void MakeAsynchronousPost() {
     ASSERT_TRUE(MessageLoop::current() == test_->io_thread_loop());
+    if (never_finishes_)
+      return;
+
     // We don't actually want to make a request for this test, so just callback
     // as if it completed.
     test_->io_thread_loop()->PostTask(FROM_HERE,
@@ -125,6 +134,7 @@ class ShuntedHttpBridge : public HttpBridge {
                        200, cookies, response_content);
   }
   HttpBridgeTest* test_;
+  bool never_finishes_;
 };
 
 TEST_F(HttpBridgeTest, TestUsesSameHttpNetworkSession) {
@@ -142,7 +152,7 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostShunted) {
   scoped_refptr<net::URLRequestContextGetter> ctx_getter(
       new TestURLRequestContextGetter());
   scoped_refptr<HttpBridge> http_bridge(new ShuntedHttpBridge(
-      ctx_getter, this));
+      ctx_getter, this, false));
   http_bridge->SetUserAgent("bob");
   http_bridge->SetURL("http://www.google.com", 9999);
   http_bridge->SetPostPayload("text/plain", 2, " ");
@@ -260,4 +270,41 @@ TEST_F(HttpBridgeTest, TestResponseHeader) {
 
   EXPECT_EQ(http_bridge->GetResponseHeaderValue("Content-type"), "text/html");
   EXPECT_TRUE(http_bridge->GetResponseHeaderValue("invalid-header").empty());
+}
+
+TEST_F(HttpBridgeTest, Abort) {
+  scoped_refptr<net::URLRequestContextGetter> ctx_getter(
+      new TestURLRequestContextGetter());
+  scoped_refptr<ShuntedHttpBridge> http_bridge(new ShuntedHttpBridge(
+      ctx_getter, this, true));
+  http_bridge->SetUserAgent("bob");
+  http_bridge->SetURL("http://www.google.com", 9999);
+  http_bridge->SetPostPayload("text/plain", 2, " ");
+
+  int os_error = 0;
+  int response_code = 0;
+
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableFunction(
+                          &HttpBridgeTest::Abort, http_bridge));
+  bool success = http_bridge->MakeSynchronousPost(&os_error, &response_code);
+  EXPECT_FALSE(success);
+  EXPECT_EQ(net::ERR_ABORTED, os_error);
+}
+
+TEST_F(HttpBridgeTest, AbortLate) {
+  scoped_refptr<net::URLRequestContextGetter> ctx_getter(
+      new TestURLRequestContextGetter());
+  scoped_refptr<ShuntedHttpBridge> http_bridge(new ShuntedHttpBridge(
+      ctx_getter, this, false));
+  http_bridge->SetUserAgent("bob");
+  http_bridge->SetURL("http://www.google.com", 9999);
+  http_bridge->SetPostPayload("text/plain", 2, " ");
+
+  int os_error = 0;
+  int response_code = 0;
+
+  bool success = http_bridge->MakeSynchronousPost(&os_error, &response_code);
+  ASSERT_TRUE(success);
+  http_bridge->Abort();
+  // Ensures no double-free of URLFetcher, etc.
 }

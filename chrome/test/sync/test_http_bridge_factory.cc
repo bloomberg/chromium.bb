@@ -24,6 +24,9 @@ const std::string TestHttpBridge::GetResponseHeaderValue(
   return std::string();
 }
 
+void TestHttpBridge::Abort() {
+}
+
 TestHttpBridgeFactory::TestHttpBridgeFactory() {}
 
 TestHttpBridgeFactory::~TestHttpBridgeFactory() {}

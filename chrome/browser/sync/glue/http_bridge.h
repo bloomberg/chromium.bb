@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/sync/engine/http_post_provider_factory.h"
 #include "chrome/browser/sync/engine/http_post_provider_interface.h"
@@ -39,12 +40,6 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   // A request context used for HTTP requests bridged from the sync backend.
   // A bridged RequestContext has a dedicated in-memory cookie store and does
   // not use a cache. Thus the same type can be used for incognito mode.
-  // TODO(timsteele): We subclass here instead of add a factory method on
-  // ChromeURLRequestContext because:
-  // 1) we want the ability to set_user_agent
-  // 2) avoids ifdefs for now
-  // 3) not sure we want to strictly follow settings for cookie policy,
-  //    accept lang/charset, since changing these could break syncing.
   class RequestContext : public net::URLRequestContext {
    public:
     // |baseline_context| is used to obtain the accept-language,
@@ -110,6 +105,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   virtual void SetPostPayload(const char* content_type, int content_length,
                               const char* content);
   virtual bool MakeSynchronousPost(int* os_error_code, int* response_code);
+  virtual void Abort();
 
   // WARNING: these response content methods are used to extract plain old data
   // and not null terminated strings, so you should make sure you have read
@@ -154,13 +150,6 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   // RequestContext definition for details.
   scoped_refptr<RequestContextGetter> context_getter_for_request_;
 
-  // Our hook into the network layer is a URLFetcher. USED ONLY ON THE IO LOOP,
-  // so we can block created_on_loop_ while the fetch is in progress.
-  // NOTE: This is not a scoped_ptr for a reason. It must be deleted on the same
-  // thread that created it, which isn't the same thread |this| gets deleted on.
-  // We must manually delete url_poster_ on the IO loop.
-  URLFetcher* url_poster_;
-
   // The message loop of the thread we were created on. This is the thread that
   // will block on MakeSynchronousPost while the IO thread fetches data from
   // the network.
@@ -175,19 +164,40 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   std::string content_type_;
   std::string request_content_;
   std::string extra_headers_;
-  scoped_refptr<net::HttpResponseHeaders> response_headers_;
-
-  // Cached response data.
-  bool request_completed_;
-  bool request_succeeded_;
-  int http_response_code_;
-  int os_error_code_;
-  std::string response_content_;
 
   // A waitable event we use to provide blocking semantics to
   // MakeSynchronousPost. We block created_on_loop_ while the IO loop fetches
   // network request.
   base::WaitableEvent http_post_completed_;
+
+  struct URLFetchState {
+    URLFetchState();
+    ~URLFetchState();
+    // Our hook into the network layer is a URLFetcher. USED ONLY ON THE IO
+    // LOOP, so we can block created_on_loop_ while the fetch is in progress.
+    // NOTE: This is not a scoped_ptr for a reason. It must be deleted on the
+    // same thread that created it, which isn't the same thread |this| gets
+    // deleted on. We must manually delete url_poster_ on the IO loop.
+    URLFetcher* url_poster;
+
+    // Used to support 'Abort' functionality.
+    bool aborted;
+
+    // Cached response data.
+    bool request_completed;
+    bool request_succeeded;
+    int http_response_code;
+    int os_error_code;
+    std::string response_content;
+    scoped_refptr<net::HttpResponseHeaders> response_headers;
+  };
+
+  // This lock synchronizes use of state involved in the flow to fetch a URL
+  // using URLFetcher.  Because we can Abort() from any thread, for example,
+  // this flow needs to be synchronized to gracefully clean up URLFetcher and
+  // return appropriate values in os_error_code.
+  mutable base::Lock fetch_state_lock_;
+  URLFetchState fetch_state_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpBridge);
 };
@@ -215,4 +225,3 @@ class HttpBridgeFactory : public sync_api::HttpPostProviderFactory {
 }  //  namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_GLUE_HTTP_BRIDGE_H_
-

@@ -34,6 +34,8 @@ class TestHttpBridge : public sync_api::HttpPostProviderInterface {
 
   virtual const std::string GetResponseHeaderValue(
       const std::string&) const OVERRIDE;
+
+  virtual void Abort();
   // End sync_api::HttpPostProviderInterface implementation.
 };
 

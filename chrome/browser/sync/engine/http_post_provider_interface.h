@@ -55,6 +55,10 @@ class HttpPostProviderInterface {
   // If the header is not present, returns the empty string.
   virtual const std::string GetResponseHeaderValue(
       const std::string& name) const = 0;
+
+  // Abandon any pending POST and unblock caller in MakeSynchronousPost.
+  // This must be safe to call from any thread.
+  virtual void Abort() = 0;
 };
 
 }  // namespace sync_api
