@@ -351,8 +351,7 @@ hg-freshness-check-common() {
     echo "*    ${defstr}_REV"
     echo "*  in tools/llvm/utman.sh to prevent this error message.          *"
     echo "*******************************************************************"
-    # TODO(pdox): Make this a BUILDBOT flag
-    if ${UTMAN_DEBUG}; then
+    if ${UTMAN_BUILDBOT}; then
       "hg-update-stable-${name}"
     else
       FRESHNESS_ERROR=true
@@ -2483,7 +2482,7 @@ newlib-nacl-headers-check() {
     echo "*  tools/llvm/utman.sh newlib-nacl-headers-force                  *"
     echo "*******************************************************************"
     echo ""
-    if ! ${UTMAN_DEBUG} ; then
+    if ! ${UTMAN_BUILDBOT} ; then
       exit -1
     fi
   fi
@@ -2856,28 +2855,32 @@ verify-triple-build() {
 ######################################################################
 ######################################################################
 
-if ${UTMAN_DEBUG}; then
+# TODO(robertm): figure out what to do about concurrency in debug mode.
+# Perhaps it is fine just tweaking that via UTMAN_CONCURRENCY.
+if ${UTMAN_DEBUG} || ${UTMAN_BUILDBOT}; then
   readonly SCONS_ARGS=(MODE=nacl,opt-linux
-                       --verbose
-                       sdl=none
-                       bitcode=1)
-
-  readonly SCONS_ARGS_SEL_LDR=(MODE=opt-linux
-                               bitcode=1
-                               sdl=none
-                               --verbose)
-else
-  readonly SCONS_ARGS=(MODE=nacl,opt-linux
-                       sdl=none
-                       naclsdk_validate=0
-                       sysinfo=0
                        bitcode=1
+                       sdl=none
+                       --verbose
                        -j${UTMAN_CONCURRENCY})
 
   readonly SCONS_ARGS_SEL_LDR=(MODE=opt-linux
                                bitcode=1
                                sdl=none
+                               --verbose
+                               -j${UTMAN_CONCURRENCY})
+else
+  readonly SCONS_ARGS=(MODE=nacl,opt-linux
+                       bitcode=1
+                       naclsdk_validate=0
+                       sdl=none
+                       sysinfo=0
+                       -j${UTMAN_CONCURRENCY})
+
+  readonly SCONS_ARGS_SEL_LDR=(MODE=opt-linux
+                               bitcode=1
                                naclsdk_validate=0
+                               sdl=none
                                sysinfo=0
                                -j${UTMAN_CONCURRENCY})
 fi
@@ -3103,6 +3106,7 @@ test-bot-base() {
 #@ show-config
 show-config() {
   Banner "Config Settings:"
+  echo "UTMAN_BUILDBOT:    ${UTMAN_BUILDBOT}"
   echo "UTMAN_CONCURRENCY: ${UTMAN_CONCURRENCY}"
   echo "UTMAN_DEBUG:       ${UTMAN_DEBUG}"
 
@@ -3145,7 +3149,7 @@ check-for-trusted() {
     echo '*******************************************************************'
 
     # If building on the bots, do not continue since it needs to run ARM tests.
-    if ${UTMAN_DEBUG} ; then
+    if ${UTMAN_BUILDBOT} ; then
       echo "Building on bots --> need ARM trusted toolchain to run tests!"
       exit -1
     elif trusted-tc-confirm ; then
@@ -3166,7 +3170,7 @@ trusted-tc-confirm() {
 }
 
 DebugRun() {
-  if ${UTMAN_DEBUG}; then
+  if ${UTMAN_DEBUG} || ${UTMAN_BUILDBOT}; then
     "$@"
   fi
 }

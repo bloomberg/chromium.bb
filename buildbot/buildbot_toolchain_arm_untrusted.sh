@@ -25,9 +25,12 @@ rm -rf scons-out toolchain compiler hg ../xcodebuild ../sconsbuild ../out \
     src/third_party/nacl_sdk/arm-newlib
 rm -rf ../toolchain ../hg
 
+echo @@@BUILD_STEP show-config@@@
+UTMAN_BUILDBOT=true tools/llvm/utman.sh show-config
+
 echo @@@BUILD_STEP compile_toolchain@@@
-UTMAN_DEBUG=true tools/llvm/utman.sh download-trusted
-UTMAN_DEBUG=true tools/llvm/utman.sh untrusted_sdk arm-untrusted.tgz
+UTMAN_BUILDBOT=true tools/llvm/utman.sh download-trusted
+UTMAN_BUILDBOT=true tools/llvm/utman.sh untrusted_sdk arm-untrusted.tgz
 chmod a+r arm-untrusted.tgz
 
 echo @@@BUILD_STEP untar_toolchain@@@
@@ -53,11 +56,11 @@ GS_BASE=gs://nativeclient-archive2/toolchain
     ${GS_BASE}/latest/naclsdk_linux_arm-untrusted${SUFFIX}.tgz
 
 echo @@@BUILD_STEP test-x86-32@@@
-UTMAN_DEBUG=true tools/llvm/utman.sh test-x86-32 ||
+UTMAN_BUILDBOT=true tools/llvm/utman.sh test-x86-32 ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP test-x86-32-pic@@@
-UTMAN_DEBUG=true tools/llvm/utman.sh test-x86-32-pic ||
+UTMAN_BUILDBOT=true tools/llvm/utman.sh test-x86-32-pic ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 # Don't build arm + 64-bit on 32-bit builder.
@@ -65,19 +68,19 @@ UTMAN_DEBUG=true tools/llvm/utman.sh test-x86-32-pic ||
 # Arm disabled on 32-bit because it runs out of memory.
 if [[ ${BUILDBOT_BUILDERNAME} != lucid32-toolchain_arm-untrusted ]]; then
 echo @@@BUILD_STEP test-arm@@@
-UTMAN_DEBUG=true tools/llvm/utman.sh test-arm ||
+UTMAN_BUILDBOT=true tools/llvm/utman.sh test-arm ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP test-arm-pic@@@
-UTMAN_DEBUG=true tools/llvm/utman.sh test-arm-pic ||
+UTMAN_BUILDBOT=true tools/llvm/utman.sh test-arm-pic ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP test-x86-64@@@
-UTMAN_DEBUG=true tools/llvm/utman.sh test-x86-64 ||
+UTMAN_BUILDBOT=true tools/llvm/utman.sh test-x86-64 ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP test-x86-64-pic@@@
-UTMAN_DEBUG=true tools/llvm/utman.sh test-x86-64-pic ||
+UTMAN_BUILDBOT=true tools/llvm/utman.sh test-x86-64-pic ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 fi
 

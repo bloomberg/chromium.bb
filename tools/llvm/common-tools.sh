@@ -8,6 +8,8 @@ set -o errexit
 
 # Turn on/off debugging mode
 readonly UTMAN_DEBUG=${UTMAN_DEBUG:-false}
+# True if the scripts are running on the build bots.
+readonly UTMAN_BUILDBOT=${UTMAN_BUILDBOT:-false}
 
 readonly TC_LOG="$(pwd)/toolchain/hg-log"
 readonly TC_LOG_ALL="${TC_LOG}/ALL"
@@ -305,8 +307,7 @@ RunWithLog() {
     echo
     echo "PWD: $(pwd)"
     echo
-    # TODO(pdox): Make this a separate BUILDBOT flag (currently, this is it)
-    if ${UTMAN_DEBUG}; then
+    if ${UTMAN_BUILDBOT}; then
       echo "BEGIN LOGFILE Contents."
       cat "${log}"
       echo "END LOGFILE Contents."
