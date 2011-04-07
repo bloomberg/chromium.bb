@@ -193,6 +193,14 @@
                   '|chrome/browser/resources/login.html' \
                   '|chrome/browser/ui/webui/chromeos/login/.*'
     },
+    'filebrowse' : {
+      'filepath': 'file_browser' \
+                  '|file_manager' \
+                  '|filebrowse'
+    },
+    'imageburner' : {
+      'filepath': 'imageburner'
+    },
   },
 
   'WATCHLISTS': {
@@ -261,5 +269,7 @@
     'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org'],
     'chromedriver': ['kkania@chromium.org'],
     'dom_login': ['rharrison@chromium.org'],
+    'imageburner': ['achuith+watch@chromium.org', 'tbarzic+watch@chromium.org'],
+    'filebrowse': ['achuith+watch@chromium.org', 'rginda+watch@chromium.org'],
   },
 }
