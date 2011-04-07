@@ -74,6 +74,14 @@ NACL_PLATFORM_DIR_MAP = {
             '32': ['mac_x86'],
             '64': ['mac_x86'],
         },
+        'arm': {
+            # This entry is not actually correct, but it must be here
+            # for launching scons.
+            # TODO(pdox): Refactor this table so that pnacl is recognized
+            # as an x86 toolchain also, not just an ARM toolchain.
+            '32': ['linux_arm-untrusted'],
+        },
+
     },
 }
 

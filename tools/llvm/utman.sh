@@ -178,8 +178,8 @@ readonly REPO_BINUTILS="binutils.nacl-llvm-branches"
 # the toolchaing shared, reducing its size and allowing the use of
 # plugins. You can still use them by setting the environment variables
 # when running this script:
-# CC=$(readlink -f tools/llvm/mygcc32) \
-# CXX=$(readlink -f tools/llvm/myg++32) \
+# CC=$(GetAbsolutePath tools/llvm/mygcc32) \
+# CXX=$(GetAbsolutePath tools/llvm/myg++32) \
 # tools/llvm/utman.sh untrusted_sdk <file>
 # NOTE: this has not been tried in a while and may no longer work
 CC=${CC:-}
@@ -1130,7 +1130,7 @@ xgcc-patch() {
   fi
 
   # Make sure it is a real ELF file
-  if ! is-ELF "${XGCC}" ; then
+  if is-shell-script "${XGCC}" ; then
     Abort "xgcc-patch" "xgcc already patched"
     return
   fi
@@ -1150,9 +1150,11 @@ xgcc-patch() {
   mv "${XGCC}" "${XGCC_REAL}"
   cat > "${XGCC}" <<EOF
 #!/bin/sh
-XGCC="\$(readlink -m \${0})"
+XGCC_ABSPATH=\$(cd \$(dirname \$0) && pwd)
+XGCC_NAME=\$(basename \$0)
+XGCC_REAL=\${XGCC_ABSPATH}/\${XGCC_NAME}-real
 ${PNACL_GCC} \\
---driver="\${XGCC}-real" \\
+--driver="\${XGCC_REAL}" \\
 --pnacl-bias=${arch} -arch ${arch} ${CPPFLAGS_FOR_SFI_TARGET} "\$@"
 EOF
 
@@ -1175,7 +1177,7 @@ xgcc-unpatch() {
   fi
 
   # Make sure it isn't a real ELF file
-  if is-ELF "${XGCC}" ; then
+  if ! is-shell-script "${XGCC}" ; then
     Abort "xgcc-unpatch" "xgcc already unpatched?"
     return
   fi
@@ -1191,7 +1193,7 @@ xgcc-unpatch-nofail() {
   local XGCC_REAL="${XGCC}-real"
 
   # If the old patch file exists, delete it.
-  if [ -f "${XGCC}" ] && ! is-ELF "${XGCC}"; then
+  if [ -f "${XGCC}" ] && is-shell-script "${XGCC}"; then
     rm "${XGCC}"
   fi
 
@@ -3020,7 +3022,7 @@ test-spec() {
     echo "not enough arguments for test-spec"
     exit 1
   fi;
-  official=$(readlink -f $1)
+  official=$(GetAbsolutePath $1)
   setup=$2
   shift 2
   spushd tests/spec2k
@@ -3071,7 +3073,7 @@ timed-test-spec() {
     exit 1
   fi;
   result_file=$1
-  official=$(readlink -f $2)
+  official=$(GetAbsolutePath $2)
   setup=$3
   shift 3
   spushd tests/spec2k

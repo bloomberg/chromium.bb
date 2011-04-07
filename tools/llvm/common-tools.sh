@@ -1,7 +1,7 @@
 #!/bin/bash
-# Copyright 2011 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 set -o nounset
 set -o errexit
@@ -351,11 +351,11 @@ assert-file() {
 }
 
 Usage() {
-  egrep "^#@" $0 | cut --bytes=3-
+  egrep "^#@" $0 | cut -b 3-
 }
 
 Usage2() {
-  egrep "^#(@|\+)" $0 | cut --bytes=3-
+  egrep "^#(@|\+)" $0 | cut -b 3-
 }
 
 Banner() {
@@ -377,8 +377,19 @@ StepBanner() {
   else
     shift 1
     local padding=$(RepeatStr ' ' $((20-${#module})) )
-    local time_stamp=$(date -d "now - ${TIME_AT_STARTUP}sec" '+%M:%S')
-    echo "[${time_stamp}] ${module}${padding}" "$@"
+    echo "[$(TimeStamp)] ${module}${padding}" "$@"
+  fi
+}
+
+TimeStamp() {
+  if date --version &> /dev/null ; then
+    # GNU 'date'
+    date -d "now - ${TIME_AT_STARTUP}sec" '+%M:%S'
+  else
+    # Other 'date' (assuming BSD for now)
+    local time_now=$(date '+%s')
+    local time_delta=$[ ${time_now} - ${TIME_AT_STARTUP} ]
+    date -j -f "%s" "${time_delta}" "+%M:%S"
   fi
 }
 
@@ -434,8 +445,18 @@ assert-bin() {
 }
 
 is-ELF() {
-  local F=$(file "$1")
+  local F=$(file -b "$1")
   [[ "${F}" =~ "ELF" ]]
+}
+
+is-Mach() {
+  local F=$(file -b "$1")
+  [[ "${F}" =~ "Mach-O" ]]
+}
+
+is-shell-script() {
+  local F=$(file -b "$1")
+  [[ "${F}" =~ "shell" ]]
 }
 
 get_dir_size_in_mb() {
@@ -455,4 +476,22 @@ confirm-yes() {
       return 0
     fi
   done
+}
+
+# On Linux with GNU readlink, "readlink -f" would be a quick way
+# of getting an absolute path, but MacOS has BSD readlink.
+GetAbsolutePath() {
+  local relpath=$1
+  local reldir
+  local relname
+  if [ -d "${relpath}" ]; then
+    reldir="${relpath}"
+    relname=""
+  else
+    reldir="$(dirname "${relpath}")"
+    relname="/$(basename "${relpath}")"
+  fi
+
+  local absdir="$(cd "${reldir}" && pwd)"
+  echo "${absdir}${relname}"
 }
