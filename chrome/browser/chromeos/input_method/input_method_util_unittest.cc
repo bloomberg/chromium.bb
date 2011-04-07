@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,7 +116,7 @@ TEST_F(InputMethodUtilTest, GetLanguageCodeFromInputMethodId) {
 
 TEST_F(InputMethodUtilTest, GetInputMethodDisplayNameFromId) {
   EXPECT_EQ("Pinyin input method", GetInputMethodDisplayNameFromId("pinyin"));
-  EXPECT_EQ("English (United States)",
+  EXPECT_EQ("US keyboard",
             GetInputMethodDisplayNameFromId("xkb:us::eng"));
   EXPECT_EQ("", GetInputMethodDisplayNameFromId("nonexistent"));
 }

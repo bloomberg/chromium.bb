@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,13 +112,13 @@ TEST(InputMethodMenuTest, GetTextForMenuTest) {
   }
   {
     InputMethodDescriptor desc("xkb:jp::jpn", "Japan", "jp", "jpn");
-    EXPECT_EQ(L"Japanese keyboard layout",
+    EXPECT_EQ(L"Japanese keyboard",
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
     InputMethodDescriptor desc("xkb:us:dvorak:eng", "USA - Dvorak",
                                "us(dvorak)", "eng");
-    EXPECT_EQ(L"English (Dvorak)",
+    EXPECT_EQ(L"US Dvorak keyboard",
               InputMethodMenu::GetTextForMenu(desc));
   }
 
@@ -131,32 +131,32 @@ TEST(InputMethodMenuTest, GetTextForMenuTest) {
   }
   {
     InputMethodDescriptor desc("xkb:nl::nld", "Netherlands", "nl", "nld");
-    EXPECT_EQ(L"Dutch - Dutch keyboard layout",
+    EXPECT_EQ(L"Dutch - Dutch keyboard",
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
     InputMethodDescriptor desc("xkb:be::nld", "Belgium", "be", "nld");
-    EXPECT_EQ(L"Dutch - Belgian keyboard layout",
+    EXPECT_EQ(L"Dutch - Belgian keyboard",
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
     InputMethodDescriptor desc("xkb:fr::fra", "France", "fr", "fra");
-    EXPECT_EQ(L"French - French keyboard layout",
+    EXPECT_EQ(L"French - French keyboard",
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
     InputMethodDescriptor desc("xkb:be::fra", "Belgium", "be", "fra");
-    EXPECT_EQ(L"French - Belgian keyboard layout",
+    EXPECT_EQ(L"French - Belgian keyboard",
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
     InputMethodDescriptor desc("xkb:de::ger", "Germany", "de", "ger");
-    EXPECT_EQ(L"German - German keyboard layout",
+    EXPECT_EQ(L"German - German keyboard",
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
     InputMethodDescriptor desc("xkb:be::ger", "Belgium", "be", "ger");
-    EXPECT_EQ(L"German - Belgian keyboard layout",
+    EXPECT_EQ(L"German - Belgian keyboard",
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
