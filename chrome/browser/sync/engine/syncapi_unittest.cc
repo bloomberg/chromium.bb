@@ -654,25 +654,24 @@ class SyncManagerTest : public testing::Test,
     credentials.email = "foo@bar.com";
     credentials.sync_token = "sometoken";
 
-    scoped_ptr<StrictMock<SyncNotifierMock> > sync_notifier_mock(
-        new StrictMock<SyncNotifierMock>());
-    EXPECT_CALL(*sync_notifier_mock, AddObserver(_)).
+    sync_notifier_mock_.reset(new StrictMock<SyncNotifierMock>());
+    EXPECT_CALL(*sync_notifier_mock_, AddObserver(_)).
         WillOnce(Invoke(this, &SyncManagerTest::SyncNotifierAddObserver));
-    EXPECT_CALL(*sync_notifier_mock, SetState(""));
-    EXPECT_CALL(*sync_notifier_mock,
+    EXPECT_CALL(*sync_notifier_mock_, SetState(""));
+    EXPECT_CALL(*sync_notifier_mock_,
                 UpdateCredentials(credentials.email, credentials.sync_token));
-    EXPECT_CALL(*sync_notifier_mock, UpdateEnabledTypes(_)).
+    EXPECT_CALL(*sync_notifier_mock_, UpdateEnabledTypes(_)).
         Times(AtLeast(1)).
         WillRepeatedly(
             Invoke(this, &SyncManagerTest::SyncNotifierUpdateEnabledTypes));
-    EXPECT_CALL(*sync_notifier_mock, RemoveObserver(_)).
+    EXPECT_CALL(*sync_notifier_mock_, RemoveObserver(_)).
         WillOnce(Invoke(this, &SyncManagerTest::SyncNotifierRemoveObserver));
 
     EXPECT_FALSE(sync_notifier_observer_);
 
     sync_manager_.Init(temp_dir_.path(), "bogus", 0, false,
                        new TestHttpPostProviderFactory(), this, "bogus",
-                       credentials, sync_notifier_mock.release(), "",
+                       credentials, sync_notifier_mock_.get(), "",
                        true /* setup_for_test_mode */);
 
     EXPECT_TRUE(sync_notifier_observer_);
@@ -775,6 +774,7 @@ class SyncManagerTest : public testing::Test,
   ScopedTempDir temp_dir_;
   // Sync Id's for the roots of the enabled datatypes.
   std::map<ModelType, int64> type_roots_;
+  scoped_ptr<StrictMock<SyncNotifierMock> > sync_notifier_mock_;
 
  protected:
   SyncManager sync_manager_;

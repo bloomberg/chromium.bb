@@ -449,6 +449,7 @@ void CloudPrintProxyBackend::Core::DoShutdown() {
     index->second->Shutdown();
   }
   // Important to delete the TalkMediator on this thread.
+  talk_mediator_->Logout();
   talk_mediator_.reset();
   notifications_enabled_ = false;
   notifications_enabled_since_ = base::TimeTicks();

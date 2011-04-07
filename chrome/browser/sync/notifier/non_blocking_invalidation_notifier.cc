@@ -12,7 +12,8 @@ namespace sync_notifier {
 NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
     const notifier::NotifierOptions& notifier_options,
     const std::string& client_info)
-    : parent_message_loop_(MessageLoop::current()),
+    : construction_message_loop_(MessageLoop::current()),
+      method_message_loop_(NULL),
       observers_(new ObserverListThreadSafe<SyncNotifierObserver>()),
       worker_thread_("InvalidationNotifier worker thread"),
       worker_thread_vars_(NULL) {
@@ -29,7 +30,7 @@ NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
 }
 
 NonBlockingInvalidationNotifier::~NonBlockingInvalidationNotifier() {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
+  DCHECK_EQ(MessageLoop::current(), construction_message_loop_);
   worker_message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(
@@ -41,18 +42,18 @@ NonBlockingInvalidationNotifier::~NonBlockingInvalidationNotifier() {
 
 void NonBlockingInvalidationNotifier::AddObserver(
     SyncNotifierObserver* observer) {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
+  CheckOrSetValidThread();
   observers_->AddObserver(observer);
 }
 
 void NonBlockingInvalidationNotifier::RemoveObserver(
     SyncNotifierObserver* observer) {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
+  CheckOrSetValidThread();
   observers_->RemoveObserver(observer);
 }
 
 void NonBlockingInvalidationNotifier::SetState(const std::string& state) {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
+  CheckOrSetValidThread();
   worker_message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(
@@ -63,7 +64,7 @@ void NonBlockingInvalidationNotifier::SetState(const std::string& state) {
 
 void NonBlockingInvalidationNotifier::UpdateCredentials(
     const std::string& email, const std::string& token) {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
+  CheckOrSetValidThread();
   worker_message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(
@@ -74,7 +75,7 @@ void NonBlockingInvalidationNotifier::UpdateCredentials(
 
 void NonBlockingInvalidationNotifier::UpdateEnabledTypes(
     const syncable::ModelTypeSet& types) {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
+  CheckOrSetValidThread();
   worker_message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(
@@ -84,7 +85,7 @@ void NonBlockingInvalidationNotifier::UpdateEnabledTypes(
 }
 
 void NonBlockingInvalidationNotifier::SendNotification() {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
+  CheckOrSetValidThread();
   // InvalidationClient doesn't implement SendNotification(), so no
   // need to forward on the call.
 }
@@ -94,9 +95,18 @@ MessageLoop* NonBlockingInvalidationNotifier::worker_message_loop() {
   DCHECK(current_message_loop);
   MessageLoop* worker_message_loop = worker_thread_.message_loop();
   DCHECK(worker_message_loop);
-  DCHECK(current_message_loop == parent_message_loop_ ||
+  DCHECK(current_message_loop == construction_message_loop_ ||
+         current_message_loop == method_message_loop_ ||
          current_message_loop == worker_message_loop);
   return worker_message_loop;
+}
+
+void NonBlockingInvalidationNotifier::CheckOrSetValidThread() {
+  if (method_message_loop_) {
+    DCHECK_EQ(MessageLoop::current(), method_message_loop_);
+  } else {
+    method_message_loop_ = MessageLoop::current();
+  }
 }
 
 void NonBlockingInvalidationNotifier::CreateWorkerThreadVars(

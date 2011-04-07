@@ -22,14 +22,15 @@ namespace notifier {
 MediatorThreadImpl::MediatorThreadImpl(
     const NotifierOptions& notifier_options)
     : observers_(new ObserverListThreadSafe<Observer>()),
-      parent_message_loop_(MessageLoop::current()),
+      construction_message_loop_(MessageLoop::current()),
+      method_message_loop_(NULL),
       notifier_options_(notifier_options),
       worker_thread_("MediatorThread worker thread") {
-  DCHECK(parent_message_loop_);
+  DCHECK(construction_message_loop_);
 }
 
 MediatorThreadImpl::~MediatorThreadImpl() {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
+  DCHECK_EQ(MessageLoop::current(), construction_message_loop_);
   // If the worker thread is still around, we need to call Logout() so
   // that all the variables living it get destroyed properly (i.e., on
   // the worker thread).
@@ -39,15 +40,17 @@ MediatorThreadImpl::~MediatorThreadImpl() {
 }
 
 void MediatorThreadImpl::AddObserver(Observer* observer) {
+  CheckOrSetValidThread();
   observers_->AddObserver(observer);
 }
 
 void MediatorThreadImpl::RemoveObserver(Observer* observer) {
+  CheckOrSetValidThread();
   observers_->RemoveObserver(observer);
 }
 
 void MediatorThreadImpl::Start() {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
+  DCHECK_EQ(MessageLoop::current(), construction_message_loop_);
   // We create the worker thread as an IO thread in preparation for
   // making this use Chrome sockets.
   const base::Thread::Options options(MessageLoop::TYPE_IO, 0);
@@ -57,14 +60,15 @@ void MediatorThreadImpl::Start() {
 }
 
 void MediatorThreadImpl::Login(const buzz::XmppClientSettings& settings) {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
+  CheckOrSetValidThread();
+
   worker_message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &MediatorThreadImpl::DoLogin, settings));
 }
 
 void MediatorThreadImpl::Logout() {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
+  CheckOrSetValidThread();
   worker_message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &MediatorThreadImpl::DoDisconnect));
@@ -76,7 +80,7 @@ void MediatorThreadImpl::Logout() {
 }
 
 void MediatorThreadImpl::ListenForUpdates() {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
+  CheckOrSetValidThread();
   worker_message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this,
@@ -85,7 +89,7 @@ void MediatorThreadImpl::ListenForUpdates() {
 
 void MediatorThreadImpl::SubscribeForUpdates(
     const SubscriptionList& subscriptions) {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
+  CheckOrSetValidThread();
   worker_message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(
@@ -96,7 +100,7 @@ void MediatorThreadImpl::SubscribeForUpdates(
 
 void MediatorThreadImpl::SendNotification(
     const Notification& data) {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
+  CheckOrSetValidThread();
   worker_message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &MediatorThreadImpl::DoSendNotification,
@@ -105,7 +109,7 @@ void MediatorThreadImpl::SendNotification(
 
 void MediatorThreadImpl::UpdateXmppSettings(
     const buzz::XmppClientSettings& settings) {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
+  CheckOrSetValidThread();
   worker_message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this,
@@ -118,7 +122,7 @@ MessageLoop* MediatorThreadImpl::worker_message_loop() {
   DCHECK(current_message_loop);
   MessageLoop* worker_message_loop = worker_thread_.message_loop();
   DCHECK(worker_message_loop);
-  DCHECK(current_message_loop == parent_message_loop_ ||
+  DCHECK(current_message_loop == method_message_loop_ ||
          current_message_loop == worker_message_loop);
   return worker_message_loop;
 }
@@ -227,6 +231,14 @@ void MediatorThreadImpl::OnDisconnect() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
   base_task_.reset();
   observers_->Notify(&Observer::OnConnectionStateChange, false);
+}
+
+void MediatorThreadImpl::CheckOrSetValidThread() {
+  if (method_message_loop_) {
+    DCHECK_EQ(MessageLoop::current(), method_message_loop_);
+  } else {
+    method_message_loop_ = MessageLoop::current();
+  }
 }
 
 }  // namespace notifier

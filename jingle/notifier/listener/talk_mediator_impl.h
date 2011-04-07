@@ -20,6 +20,8 @@
 #include "jingle/notifier/listener/talk_mediator.h"
 #include "talk/xmpp/xmppclientsettings.h"
 
+class MessageLoop;
+
 namespace notifier {
 
 class TalkMediatorImpl
@@ -36,13 +38,18 @@ class TalkMediatorImpl
 
   // TalkMediator implementation.
 
+  // Should be called on the same thread as the constructor.
   virtual void SetDelegate(TalkMediator::Delegate* delegate);
+
+  // All the methods below should be called on the same thread. It may or may
+  // not be same as the thread on which the object was constructed.
 
   // |email| must be a valid email address (e.g., foo@bar.com).
   virtual void SetAuthToken(const std::string& email,
                             const std::string& token,
                             const std::string& token_service);
   virtual bool Login();
+  // Users must call Logout once Login is called.
   virtual bool Logout();
 
   virtual bool SendNotification(const Notification& data);
@@ -74,7 +81,7 @@ class TalkMediatorImpl
     unsigned int subscribed : 1;   // Subscribed to the xmpp receiving channel.
   };
 
-  base::NonThreadSafe non_thread_safe_;
+  void CheckOrSetValidThread();
 
   // Delegate, which we don't own.  May be NULL.
   TalkMediator::Delegate* delegate_;
@@ -91,6 +98,9 @@ class TalkMediatorImpl
   const NotifierOptions notifier_options_;
 
   SubscriptionList subscriptions_;
+
+  MessageLoop* construction_message_loop_;
+  MessageLoop* method_message_loop_;
 
   FRIEND_TEST_ALL_PREFIXES(TalkMediatorImplTest, SetAuthToken);
   FRIEND_TEST_ALL_PREFIXES(TalkMediatorImplTest, SendNotification);

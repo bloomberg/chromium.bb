@@ -1504,7 +1504,7 @@ class SyncManager::SyncInternal
   scoped_ptr<SyncerThreadAdapter> syncer_thread_;
 
   // The SyncNotifier which notifies us when updates need to be downloaded.
-  scoped_ptr<sync_notifier::SyncNotifier> sync_notifier_;
+  sync_notifier::SyncNotifier* sync_notifier_;
 
   // A multi-purpose status watch object that aggregates stats from various
   // sync components.
@@ -1714,7 +1714,7 @@ bool SyncManager::SyncInternal::Init(
   registrar_ = model_safe_worker_registrar;
   setup_for_test_mode_ = setup_for_test_mode;
 
-  sync_notifier_.reset(sync_notifier);
+  sync_notifier_ = sync_notifier;
   sync_notifier_->AddObserver(this);
 
   share_.dir_manager.reset(new DirectoryManager(database_location));
@@ -1837,7 +1837,7 @@ void SyncManager::SyncInternal::MarkAndNotifyInitializationComplete() {
 
 void SyncManager::SyncInternal::SendNotification() {
   DCHECK_EQ(MessageLoop::current(), core_message_loop_);
-  if (!sync_notifier_.get()) {
+  if (!sync_notifier_) {
     VLOG(1) << "Not sending notification: sync_notifier_ is NULL";
     return;
   }
@@ -2204,9 +2204,8 @@ void SyncManager::SyncInternal::Shutdown() {
   // We NULL out sync_notifer_ so that any pending tasks do not
   // trigger further notifications.
   // TODO(akalin): NULL the other member variables defensively, too.
-  if (sync_notifier_.get()) {
+  if (sync_notifier_) {
     sync_notifier_->RemoveObserver(this);
-    sync_notifier_.reset();
   }
 
   // |this| is about to be destroyed, so we have to ensure any messages

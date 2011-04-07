@@ -33,6 +33,10 @@
 class CancelableTask;
 class Profile;
 
+namespace sync_notifier {
+class SyncNotifier;
+}  // namespace sync_notifier
+
 namespace browser_sync {
 
 namespace sessions {
@@ -499,6 +503,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
     // The top-level syncapi entry point.
     scoped_ptr<sync_api::SyncManager> syncapi_;
+
+    scoped_ptr<sync_notifier::SyncNotifier> sync_notifier_;
 
     JsSyncManagerObserver sync_manager_observer_;
 

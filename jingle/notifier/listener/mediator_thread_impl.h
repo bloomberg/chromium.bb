@@ -86,7 +86,8 @@ class MediatorThreadImpl : public MediatorThread, public LoginDelegate,
   MessageLoop* worker_message_loop();
 
   scoped_refptr<ObserverListThreadSafe<Observer> > observers_;
-  MessageLoop* parent_message_loop_;
+  MessageLoop* construction_message_loop_;
+  MessageLoop* method_message_loop_;
   base::WeakPtr<talk_base::Task> base_task_;
 
  private:
@@ -101,6 +102,7 @@ class MediatorThreadImpl : public MediatorThread, public LoginDelegate,
   void DoSendNotification(
       const Notification& data);
   void DoUpdateXmppSettings(const buzz::XmppClientSettings& settings);
+  void CheckOrSetValidThread();
 
   const NotifierOptions notifier_options_;
 

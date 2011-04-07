@@ -851,8 +851,7 @@ class SyncManager {
   // |model_safe_worker| ownership is given to the SyncManager.
   // |user_agent| is a 7-bit ASCII string suitable for use as the User-Agent
   // HTTP header. Used internally when collecting stats to classify clients.
-  // |sync_notifier| will be owned internally and used to listen for
-  // notifications.
+  // |sync_notifier| used to listen for notifications, not owned.
   bool Init(const FilePath& database_location,
             const char* sync_server_and_path,
             int sync_server_port,

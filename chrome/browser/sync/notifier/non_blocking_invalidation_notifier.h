@@ -93,6 +93,7 @@ class NonBlockingInvalidationNotifier : public SyncNotifier {
       const notifier::NotifierOptions& notifier_options,
       const std::string& client_info);
   void DestroyWorkerThreadVars();
+  void CheckOrSetValidThread();
 
   // Equivalents of the public functions that are run on the worker
   // thread.
@@ -101,7 +102,8 @@ class NonBlockingInvalidationNotifier : public SyncNotifier {
                                        const std::string& token);
   void UpdateEnabledTypesOnWorkerThread(const syncable::ModelTypeSet& types);
 
-  MessageLoop* parent_message_loop_;
+  MessageLoop* construction_message_loop_;
+  MessageLoop* method_message_loop_;
 
   scoped_refptr<ObserverListThreadSafe<SyncNotifierObserver> > observers_;
 

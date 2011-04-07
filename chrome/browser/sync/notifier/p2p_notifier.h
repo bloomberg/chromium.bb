@@ -16,6 +16,8 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "jingle/notifier/listener/talk_mediator.h"
 
+class MessageLoop;
+
 namespace notifier {
 struct NotifierOptions;
 }  // namespace
@@ -49,6 +51,7 @@ class P2PNotifier
   // Call OnIncomingNotification() on observers if we have a non-empty
   // set of enabled types.
   void MaybeEmitNotification();
+  void CheckOrSetValidThread();
 
   ObserverList<SyncNotifierObserver> observer_list_;
 
@@ -61,7 +64,9 @@ class P2PNotifier
   bool notifications_enabled_;
 
   syncable::ModelTypeSet enabled_types_;
+  MessageLoop* construction_message_loop_;
+  MessageLoop* method_message_loop_;
 };
 
-}
+}  // namespace sync_notifier
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_P2P_NOTIFIER_H_

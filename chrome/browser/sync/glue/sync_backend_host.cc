@@ -25,6 +25,7 @@
 #include "chrome/browser/sync/glue/password_model_worker.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/js_arg_list.h"
+#include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier_factory.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 // TODO(tim): Remove this! We should have a syncapi pass-thru instead.
@@ -46,6 +47,7 @@ static const FilePath::CharType kSyncDataFolderName[] =
     FILE_PATH_LITERAL("Sync Data");
 
 using browser_sync::DataTypeController;
+using sync_notifier::SyncNotifierFactory;
 typedef TokenService::TokenAvailableDetails TokenAvailableDetails;
 
 typedef GoogleServiceAuthError AuthError;
@@ -709,6 +711,10 @@ SyncBackendHost::Core::Core(SyncBackendHost* backend)
       parent_router_(NULL),
       processing_passphrase_(false),
       deferred_nudge_for_cleanup_requested_(false) {
+  const std::string& client_info = webkit_glue::GetUserAgent(GURL());
+  SyncNotifierFactory sync_notifier_factory(client_info);
+  sync_notifier_.reset(sync_notifier_factory.CreateSyncNotifier(
+      *CommandLine::ForCurrentProcess()));
 }
 
 // Helper to construct a user agent string (ASCII) suitable for use by
@@ -758,8 +764,6 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
 
   syncapi_->AddObserver(this);
   const FilePath& path_str = host_->sync_data_folder_path();
-  const std::string& client_info = webkit_glue::GetUserAgent(GURL());
-  sync_notifier::SyncNotifierFactory sync_notifier_factory(client_info);
   success = syncapi_->Init(
       path_str,
       (options.service_url.host() + options.service_url.path()).c_str(),
@@ -769,8 +773,7 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       host_,  // ModelSafeWorkerRegistrar.
       MakeUserAgentForSyncapi().c_str(),
       options.credentials,
-      sync_notifier_factory.CreateSyncNotifier(
-          *CommandLine::ForCurrentProcess()),
+      sync_notifier_.get(),
       options.restored_key_for_bootstrapping,
       options.setup_for_test_mode);
   DCHECK(success) << "Syncapi initialization failed!";
