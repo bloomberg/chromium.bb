@@ -145,12 +145,14 @@ class RetrievePolicyOp : public SignedSettings {
                        const std::vector<uint8>& payload);
 
  private:
-  static void OnStringComplete(void* delegate, const char* policy);
+  static void OnStringComplete(void* delegate,
+                               const char* policy,
+                               const unsigned int len);
 
   em::PolicyFetchResponse policy_;
   SignedSettings::Delegate<const em::PolicyFetchResponse&>* d_;
 
-  void ProcessPolicy(const char* policy);
+  void ProcessPolicy(const char* out, const unsigned int len);
 };
 
 // static
@@ -513,13 +515,15 @@ void RetrievePolicyOp::OnKeyOpComplete(
 }
 
 // static
-void RetrievePolicyOp::OnStringComplete(void* delegate, const char* out) {
+void RetrievePolicyOp::OnStringComplete(void* delegate,
+                                        const char* out,
+                                        const unsigned int len) {
   RetrievePolicyOp* op = static_cast<RetrievePolicyOp*>(delegate);
-  op->ProcessPolicy(out);
+  op->ProcessPolicy(out, len);
 }
 
-void RetrievePolicyOp::ProcessPolicy(const char* out) {
-  if (!out || !policy_.ParseFromString(out)) {
+void RetrievePolicyOp::ProcessPolicy(const char* out, const unsigned int len) {
+  if (!out || !policy_.ParseFromString(std::string(out, len))) {
     d_->OnSettingsOpCompleted(NOT_FOUND, policy_);
     return;
   }

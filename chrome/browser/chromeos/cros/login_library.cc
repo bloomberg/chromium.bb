@@ -65,7 +65,7 @@ class LoginLibraryImpl : public LoginLibrary {
                           StorePolicyCallback callback,
                           void* delegate) {
     DCHECK(callback) << "must provide a callback to StorePolicy()";
-    chromeos::StorePolicy(policy.c_str(), callback, delegate);
+    chromeos::StorePolicy(policy.c_str(), policy.length(), callback, delegate);
   }
 
   bool StorePropertyAsync(const std::string& name,
@@ -281,7 +281,7 @@ class LoginLibraryStubImpl : public LoginLibrary {
     return true;
   }
   void RequestRetrievePolicy(RetrievePolicyCallback callback, void* delegate) {
-    callback(delegate, "");
+    callback(delegate, "", 0);
   }
   void RequestRetrieveProperty(const std::string& name,
                                RetrievePropertyCallback callback,

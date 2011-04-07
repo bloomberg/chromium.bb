@@ -496,7 +496,8 @@ TEST_F(SignedSettingsTest, RetrievePolicy) {
   MockLoginLibrary* lib = MockLoginLib();
   EXPECT_CALL(*lib, RequestRetrievePolicy(_, s.get()))
       .WillOnce(InvokeArgument<0>(static_cast<void*>(s.get()),
-                                  signed_serialized.c_str()))
+                                  signed_serialized.c_str(),
+                                  signed_serialized.length()))
       .RetiresOnSaturation();
 
   mock_service(s.get(), &m_);
@@ -521,7 +522,8 @@ TEST_F(SignedSettingsTest, RetrieveNoPolicy) {
   MockLoginLibrary* lib = MockLoginLib();
   EXPECT_CALL(*lib, RequestRetrievePolicy(_, s.get()))
       .WillOnce(InvokeArgument<0>(static_cast<void*>(s.get()),
-                                  static_cast<const char*>(NULL)))
+                                  static_cast<const char*>(NULL),
+                                  0))
       .RetiresOnSaturation();
 
   s->Execute();
@@ -541,7 +543,8 @@ TEST_F(SignedSettingsTest, RetrieveUnsignedPolicy) {
   MockLoginLibrary* lib = MockLoginLib();
   EXPECT_CALL(*lib, RequestRetrievePolicy(_, s.get()))
       .WillOnce(InvokeArgument<0>(static_cast<void*>(s.get()),
-                                  serialized.c_str()))
+                                  serialized.c_str(),
+                                  serialized.length()))
       .RetiresOnSaturation();
 
   s->Execute();
@@ -561,7 +564,8 @@ TEST_F(SignedSettingsTest, RetrieveMalsignedPolicy) {
   MockLoginLibrary* lib = MockLoginLib();
   EXPECT_CALL(*lib, RequestRetrievePolicy(_, s.get()))
       .WillOnce(InvokeArgument<0>(static_cast<void*>(s.get()),
-                                  signed_serialized.c_str()))
+                                  signed_serialized.c_str(),
+                                  signed_serialized.length()))
       .RetiresOnSaturation();
 
   mock_service(s.get(), &m_);
