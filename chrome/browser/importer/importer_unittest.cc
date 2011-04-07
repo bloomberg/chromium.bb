@@ -37,7 +37,7 @@
 #include "webkit/glue/password_form.h"
 
 #if defined(OS_WIN)
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/importer/ie_importer.h"
 #include "chrome/browser/password_manager/ie7_password.h"
@@ -272,12 +272,12 @@ class TestObserver : public ProfileWriter,
 };
 
 bool CreateUrlFile(std::wstring file, std::wstring url) {
-  ScopedComPtr<IUniformResourceLocator> locator;
+  base::win::ScopedComPtr<IUniformResourceLocator> locator;
   HRESULT result = locator.CreateInstance(CLSID_InternetShortcut, NULL,
                                           CLSCTX_INPROC_SERVER);
   if (FAILED(result))
     return false;
-  ScopedComPtr<IPersistFile> persist_file;
+  base::win::ScopedComPtr<IPersistFile> persist_file;
   result = persist_file.QueryFrom(locator);
   if (FAILED(result))
     return false;
@@ -291,7 +291,7 @@ bool CreateUrlFile(std::wstring file, std::wstring url) {
 }
 
 void ClearPStoreType(IPStore* pstore, const GUID* type, const GUID* subtype) {
-  ScopedComPtr<IEnumPStoreItems, NULL> item;
+  base::win::ScopedComPtr<IEnumPStoreItems, NULL> item;
   HRESULT result = pstore->EnumItems(0, type, subtype, 0, item.Receive());
   if (result == PST_E_OK) {
     wchar_t* item_name;
@@ -359,7 +359,7 @@ TEST_F(ImporterTest, IEImporter) {
   // Sets up dummy password data.
   HRESULT res;
 #if 0  // This part of the test is disabled. See bug #2466
-  ScopedComPtr<IPStore> pstore;
+  base::win::ScopedComPtr<IPStore> pstore;
   HMODULE pstorec_dll;
   GUID type = IEImporter::kUnittestGUID;
   GUID subtype = IEImporter::kUnittestGUID;
@@ -382,7 +382,7 @@ TEST_F(ImporterTest, IEImporter) {
 #endif
 
   // Sets up a special history link.
-  ScopedComPtr<IUrlHistoryStg2> url_history_stg2;
+  base::win::ScopedComPtr<IUrlHistoryStg2> url_history_stg2;
   res = url_history_stg2.CreateInstance(CLSID_CUrlHistory, NULL,
                                         CLSCTX_INPROC_SERVER);
   ASSERT_TRUE(res == S_OK);

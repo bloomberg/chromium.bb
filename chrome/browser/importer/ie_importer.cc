@@ -19,7 +19,7 @@
 #include "app/win/scoped_com_initializer.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -153,13 +153,13 @@ void IEImporter::ImportHistory() {
                                   chrome::kFileScheme};
   int total_schemes = arraysize(kSchemes);
 
-  ScopedComPtr<IUrlHistoryStg2> url_history_stg2;
+  base::win::ScopedComPtr<IUrlHistoryStg2> url_history_stg2;
   HRESULT result;
   result = url_history_stg2.CreateInstance(CLSID_CUrlHistory, NULL,
                                            CLSCTX_INPROC_SERVER);
   if (FAILED(result))
     return;
-  ScopedComPtr<IEnumSTATURL> enum_url;
+  base::win::ScopedComPtr<IEnumSTATURL> enum_url;
   if (SUCCEEDED(result = url_history_stg2->EnumUrls(enum_url.Receive()))) {
     std::vector<history::URLRow> rows;
     STATURL stat_url;
@@ -225,7 +225,7 @@ void IEImporter::ImportPasswordsIE6() {
     return;
   }
 
-  ScopedComPtr<IPStore, &IID_IPStore> pstore;
+  base::win::ScopedComPtr<IPStore, &IID_IPStore> pstore;
   HRESULT result = PStoreCreateInstance(pstore.Receive(), 0, 0, 0);
   if (result != S_OK) {
     FreeLibrary(pstorec_dll);
@@ -235,7 +235,7 @@ void IEImporter::ImportPasswordsIE6() {
   std::vector<AutoCompleteInfo> ac_list;
 
   // Enumerates AutoComplete items in the protected database.
-  ScopedComPtr<IEnumPStoreItems, &IID_IEnumPStoreItems> item;
+  base::win::ScopedComPtr<IEnumPStoreItems, &IID_IEnumPStoreItems> item;
   result = pstore->EnumItems(0, &AutocompleteGUID,
                              &AutocompleteGUID, 0, item.Receive());
   if (result != PST_E_OK) {
@@ -469,13 +469,13 @@ void IEImporter::ImportHomepage() {
 
 std::wstring IEImporter::ResolveInternetShortcut(const std::wstring& file) {
   app::win::ScopedCoMem<wchar_t> url;
-  ScopedComPtr<IUniformResourceLocator> url_locator;
+  base::win::ScopedComPtr<IUniformResourceLocator> url_locator;
   HRESULT result = url_locator.CreateInstance(CLSID_InternetShortcut, NULL,
                                               CLSCTX_INPROC_SERVER);
   if (FAILED(result))
     return std::wstring();
 
-  ScopedComPtr<IPersistFile> persist_file;
+  base::win::ScopedComPtr<IPersistFile> persist_file;
   result = persist_file.QueryFrom(url_locator);
   if (FAILED(result))
     return std::wstring();
