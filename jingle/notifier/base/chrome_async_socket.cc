@@ -147,9 +147,8 @@ bool ChromeAsyncSocket::Connect(const talk_base::SocketAddress& address) {
 
   net::AddressList address_list = SocketAddressToAddressList(address);
   transport_socket_.reset(
-      client_socket_factory_->CreateTCPClientSocket(address_list,
-                                                    bound_net_log_.net_log(),
-                                                    net::NetLog::Source()));
+      client_socket_factory_->CreateTransportClientSocket(
+          address_list, bound_net_log_.net_log(), net::NetLog::Source()));
   int status = transport_socket_->Connect(&connect_callback_);
   if (status != net::ERR_IO_PENDING) {
     // We defer execution of ProcessConnectDone instead of calling it

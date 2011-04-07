@@ -27,7 +27,7 @@ class XmppClientSocketFactory : public net::ClientSocketFactory {
   virtual ~XmppClientSocketFactory();
 
   // net::ClientSocketFactory implementation.
-  virtual net::ClientSocket* CreateTCPClientSocket(
+  virtual net::ClientSocket* CreateTransportClientSocket(
       const net::AddressList& addresses, net::NetLog* net_log,
       const net::NetLog::Source& source);
   virtual net::SSLClientSocket* CreateSSLClientSocket(

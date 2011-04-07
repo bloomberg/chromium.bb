@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SOCKET_TCP_CLIENT_SOCKET_POOL_H_
-#define NET_SOCKET_TCP_CLIENT_SOCKET_POOL_H_
+#ifndef NET_SOCKET_TRANSPORT_CLIENT_SOCKET_POOL_H_
+#define NET_SOCKET_TRANSPORT_CLIENT_SOCKET_POOL_H_
 #pragma once
 
 #include <string>
@@ -23,18 +23,20 @@ namespace net {
 
 class ClientSocketFactory;
 
-class TCPSocketParams : public base::RefCounted<TCPSocketParams> {
+class TransportSocketParams : public base::RefCounted<TransportSocketParams> {
  public:
-  TCPSocketParams(const HostPortPair& host_port_pair, RequestPriority priority,
-                  const GURL& referrer, bool disable_resolver_cache,
-                  bool ignore_limits);
+  TransportSocketParams(const HostPortPair& host_port_pair,
+                        RequestPriority priority,
+                        const GURL& referrer,
+                        bool disable_resolver_cache,
+                        bool ignore_limits);
 
   const HostResolver::RequestInfo& destination() const { return destination_; }
   bool ignore_limits() const { return ignore_limits_; }
 
  private:
-  friend class base::RefCounted<TCPSocketParams>;
-  ~TCPSocketParams();
+  friend class base::RefCounted<TransportSocketParams>;
+  ~TransportSocketParams();
 
   void Initialize(RequestPriority priority, const GURL& referrer,
                   bool disable_resolver_cache);
@@ -42,21 +44,21 @@ class TCPSocketParams : public base::RefCounted<TCPSocketParams> {
   HostResolver::RequestInfo destination_;
   bool ignore_limits_;
 
-  DISALLOW_COPY_AND_ASSIGN(TCPSocketParams);
+  DISALLOW_COPY_AND_ASSIGN(TransportSocketParams);
 };
 
-// TCPConnectJob handles the host resolution necessary for socket creation
-// and the tcp connect.
-class TCPConnectJob : public ConnectJob {
+// TransportConnectJob handles the host resolution necessary for socket creation
+// and the transport (likely TCP) connect.
+class TransportConnectJob : public ConnectJob {
  public:
-  TCPConnectJob(const std::string& group_name,
-                const scoped_refptr<TCPSocketParams>& params,
+  TransportConnectJob(const std::string& group_name,
+                const scoped_refptr<TransportSocketParams>& params,
                 base::TimeDelta timeout_duration,
                 ClientSocketFactory* client_socket_factory,
                 HostResolver* host_resolver,
                 Delegate* delegate,
                 NetLog* net_log);
-  virtual ~TCPConnectJob();
+  virtual ~TransportConnectJob();
 
   // ConnectJob methods.
   virtual LoadState GetLoadState() const;
@@ -65,8 +67,8 @@ class TCPConnectJob : public ConnectJob {
   enum State {
     STATE_RESOLVE_HOST,
     STATE_RESOLVE_HOST_COMPLETE,
-    STATE_TCP_CONNECT,
-    STATE_TCP_CONNECT_COMPLETE,
+    STATE_TRANSPORT_CONNECT,
+    STATE_TRANSPORT_CONNECT_COMPLETE,
     STATE_NONE,
   };
 
@@ -77,17 +79,17 @@ class TCPConnectJob : public ConnectJob {
 
   int DoResolveHost();
   int DoResolveHostComplete(int result);
-  int DoTCPConnect();
-  int DoTCPConnectComplete(int result);
+  int DoTransportConnect();
+  int DoTransportConnectComplete(int result);
 
   // Begins the host resolution and the TCP connect.  Returns OK on success
   // and ERR_IO_PENDING if it cannot immediately service the request.
   // Otherwise, it returns a net error code.
   virtual int ConnectInternal();
 
-  scoped_refptr<TCPSocketParams> params_;
+  scoped_refptr<TransportSocketParams> params_;
   ClientSocketFactory* const client_socket_factory_;
-  CompletionCallbackImpl<TCPConnectJob> callback_;
+  CompletionCallbackImpl<TransportConnectJob> callback_;
   SingleRequestHostResolver resolver_;
   AddressList addresses_;
   State next_state_;
@@ -98,12 +100,12 @@ class TCPConnectJob : public ConnectJob {
   // The time the connect was started (after DNS finished).
   base::TimeTicks connect_start_time_;
 
-  DISALLOW_COPY_AND_ASSIGN(TCPConnectJob);
+  DISALLOW_COPY_AND_ASSIGN(TransportConnectJob);
 };
 
-class TCPClientSocketPool : public ClientSocketPool {
+class TransportClientSocketPool : public ClientSocketPool {
  public:
-  TCPClientSocketPool(
+  TransportClientSocketPool(
       int max_sockets,
       int max_sockets_per_group,
       ClientSocketPoolHistograms* histograms,
@@ -111,7 +113,7 @@ class TCPClientSocketPool : public ClientSocketPool {
       ClientSocketFactory* client_socket_factory,
       NetLog* net_log);
 
-  virtual ~TCPClientSocketPool();
+  virtual ~TransportClientSocketPool();
 
   // ClientSocketPool methods:
 
@@ -154,19 +156,19 @@ class TCPClientSocketPool : public ClientSocketPool {
   virtual ClientSocketPoolHistograms* histograms() const;
 
  private:
-  typedef ClientSocketPoolBase<TCPSocketParams> PoolBase;
+  typedef ClientSocketPoolBase<TransportSocketParams> PoolBase;
 
-  class TCPConnectJobFactory
+  class TransportConnectJobFactory
       : public PoolBase::ConnectJobFactory {
    public:
-    TCPConnectJobFactory(ClientSocketFactory* client_socket_factory,
+    TransportConnectJobFactory(ClientSocketFactory* client_socket_factory,
                          HostResolver* host_resolver,
                          NetLog* net_log)
         : client_socket_factory_(client_socket_factory),
           host_resolver_(host_resolver),
           net_log_(net_log) {}
 
-    virtual ~TCPConnectJobFactory() {}
+    virtual ~TransportConnectJobFactory() {}
 
     // ClientSocketPoolBase::ConnectJobFactory methods.
 
@@ -182,16 +184,17 @@ class TCPClientSocketPool : public ClientSocketPool {
     HostResolver* const host_resolver_;
     NetLog* net_log_;
 
-    DISALLOW_COPY_AND_ASSIGN(TCPConnectJobFactory);
+    DISALLOW_COPY_AND_ASSIGN(TransportConnectJobFactory);
   };
 
   PoolBase base_;
 
-  DISALLOW_COPY_AND_ASSIGN(TCPClientSocketPool);
+  DISALLOW_COPY_AND_ASSIGN(TransportClientSocketPool);
 };
 
-REGISTER_SOCKET_PARAMS_FOR_POOL(TCPClientSocketPool, TCPSocketParams);
+REGISTER_SOCKET_PARAMS_FOR_POOL(TransportClientSocketPool,
+                                TransportSocketParams);
 
 }  // namespace net
 
-#endif  // NET_SOCKET_TCP_CLIENT_SOCKET_POOL_H_
+#endif  // NET_SOCKET_TRANSPORT_CLIENT_SOCKET_POOL_H_

@@ -19,12 +19,12 @@ XmppClientSocketFactory::XmppClientSocketFactory(
 
 XmppClientSocketFactory::~XmppClientSocketFactory() {}
 
-net::ClientSocket* XmppClientSocketFactory::CreateTCPClientSocket(
+net::ClientSocket* XmppClientSocketFactory::CreateTransportClientSocket(
     const net::AddressList& addresses,
     net::NetLog* net_log,
     const net::NetLog::Source& source) {
   net::ClientSocket* transport_socket =
-      client_socket_factory_->CreateTCPClientSocket(
+      client_socket_factory_->CreateTransportClientSocket(
           addresses, net_log, source);
   return (use_fake_ssl_client_socket_ ?
           new FakeSSLClientSocket(transport_socket) : transport_socket);

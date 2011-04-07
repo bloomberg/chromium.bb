@@ -87,7 +87,7 @@ class FakeSSLClientSocketTest : public testing::Test {
   virtual ~FakeSSLClientSocketTest() {}
 
   net::ClientSocket* MakeClientSocket() {
-    return mock_client_socket_factory_.CreateTCPClientSocket(
+    return mock_client_socket_factory_.CreateTransportClientSocket(
         net::AddressList(), &capturing_net_log_, net::NetLog::Source());
   }
 
