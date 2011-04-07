@@ -17,7 +17,6 @@
 #include "ui/gfx/canvas_direct2d.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/native_theme_win.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/win_util.h"
 
@@ -212,23 +211,6 @@ TEST(CanvasDirect2D, FillRect) {
   gfx::CanvasDirect2D canvas(window.rt());
 
   canvas.FillRectInt(SK_ColorRED, 20, 20, 100, 100);
-}
-
-TEST(CanvasDirect2D, PlatformPainting) {
-  if (!CheckForD2DCompatibility())
-    return;
-  TestWindow window;
-  gfx::CanvasDirect2D canvas(window.rt());
-
-  gfx::NativeDrawingContext dc = canvas.BeginPlatformPaint();
-
-  // Use the system theme engine to draw a native button. This only works on a
-  // GDI device context.
-  RECT r = { 20, 20, 220, 80 };
-  gfx::NativeThemeWin::instance()->PaintButton(
-      dc, BP_PUSHBUTTON, PBS_NORMAL, DFCS_BUTTONPUSH, &r);
-
-  canvas.EndPlatformPaint();
 }
 
 TEST(CanvasDirect2D, ClipRect) {
