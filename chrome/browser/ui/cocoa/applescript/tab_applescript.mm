@@ -12,11 +12,11 @@
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/cocoa/applescript/error_applescript.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 
 @interface TabAppleScript()
@@ -46,7 +46,7 @@
   [super dealloc];
 }
 
-- (id)initWithTabContent:(TabContents*)aTabContent {
+- (id)initWithTabContent:(TabContentsWrapper*)aTabContent {
   if (!aTabContent) {
     [self release];
     return nil;
@@ -65,7 +65,7 @@
   return self;
 }
 
-- (void)setTabContent:(TabContents*)aTabContent {
+- (void)setTabContent:(TabContentsWrapper*)aTabContent {
   DCHECK(aTabContent);
   // It is safe to be weak, if a tab goes away (eg user closing a tab)
   // the applescript runtime calls tabs in AppleScriptWindow and this
@@ -112,10 +112,10 @@
     return;
 
   const GURL& previousURL = entry->virtual_url();
-  tabContents_->OpenURL(url,
-                        previousURL,
-                        CURRENT_TAB,
-                        PageTransition::TYPED);
+  tabContents_->tab_contents()->OpenURL(url,
+                                        previousURL,
+                                        CURRENT_TAB,
+                                        PageTransition::TYPED);
 }
 
 - (NSString*)title {
@@ -132,7 +132,7 @@
 }
 
 - (NSNumber*)loading {
-  BOOL loadingValue = tabContents_->is_loading() ? YES : NO;
+  BOOL loadingValue = tabContents_->tab_contents()->is_loading() ? YES : NO;
   return [NSNumber numberWithBool:loadingValue];
 }
 
@@ -227,7 +227,7 @@
 }
 
 - (void)handlesPrintScriptCommand:(NSScriptCommand*)command {
-  bool initiateStatus = tabContents_->PrintNow();
+  bool initiateStatus = tabContents_->tab_contents()->PrintNow();
   if (initiateStatus == false) {
     AppleScript::SetError(AppleScript::errInitiatePrinting);
   }
@@ -240,7 +240,7 @@
   // Scripter has not specifed the location at which to save, so we prompt for
   // it.
   if (!fileURL) {
-    tabContents_->OnSavePage();
+    tabContents_->tab_contents()->OnSavePage();
     return;
   }
 
@@ -266,15 +266,21 @@
     }
   }
 
-  tabContents_->SavePage(mainFile, directoryPath, savePackageType);
+  tabContents_->tab_contents()->SavePage(mainFile,
+                                         directoryPath,
+                                         savePackageType);
 }
 
 
 - (void)handlesViewSourceScriptCommand:(NSScriptCommand*)command {
   NavigationEntry* entry = tabContents_->controller().GetLastCommittedEntry();
   if (entry) {
-    tabContents_->OpenURL(GURL(chrome::kViewSourceScheme + std::string(":") +
-        entry->url().spec()), GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+    tabContents_->tab_contents()->OpenURL(
+        GURL(chrome::kViewSourceScheme + std::string(":") +
+             entry->url().spec()),
+        GURL(),
+        NEW_FOREGROUND_TAB,
+        PageTransition::LINK);
   }
 }
 

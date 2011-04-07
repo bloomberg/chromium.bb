@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,12 +9,12 @@
 
 #import "chrome/browser/ui/cocoa/applescript/element_applescript.h"
 
-class TabContents;
+class TabContentsWrapper;
 
 // Represents a tab scriptable item in applescript.
 @interface TabAppleScript : ElementAppleScript {
  @private
-  TabContents* tabContents_;  // weak.
+  TabContentsWrapper* tabContents_;  // weak.
   // Contains the temporary URL when a user creates a new folder/item with
   // url specified like
   // |make new tab with properties {url:"http://google.com"}|.
@@ -27,10 +27,10 @@ class TabContents;
 - (id)init;
 
 // Does not create a new tab but uses an existing one.
-- (id)initWithTabContent:(TabContents*)aTabContent;
+- (id)initWithTabContent:(TabContentsWrapper*)aTabContent;
 
 // Assigns a tab, sets its unique ID and also copies temporary values.
-- (void)setTabContent:(TabContents*)aTabContent;
+- (void)setTabContent:(TabContentsWrapper*)aTabContent;
 
 // Return the URL currently visible to the user in the location bar.
 - (NSString*)URL;

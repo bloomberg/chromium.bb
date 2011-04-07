@@ -136,8 +136,10 @@
 }
 
 - (TabAppleScript*)activeTab {
-  TabAppleScript* currentTab = [[[TabAppleScript alloc]
-      initWithTabContent:browser_->GetSelectedTabContents()] autorelease];
+  TabAppleScript* currentTab =
+      [[[TabAppleScript alloc]
+          initWithTabContent:browser_->GetSelectedTabContentsWrapper()]
+              autorelease];
   [currentTab setContainer:self
                   property:AppleScript::kTabsProperty];
   return currentTab;
@@ -155,7 +157,7 @@
 
     scoped_nsobject<TabAppleScript> tab(
         [[TabAppleScript alloc]
-            initWithTabContent:(browser_->GetTabContentsAt(i))]);
+            initWithTabContent:(browser_->GetTabContentsWrapperAt(i))]);
     [tab setContainer:self
              property:AppleScript::kTabsProperty];
     [tabs addObject:tab];
@@ -175,7 +177,7 @@
       browser_->AddSelectedTabWithURL(GURL(chrome::kChromeUINewTabURL),
                                       PageTransition::TYPED);
   contents->tab_contents()->set_new_tab_start_time(newTabStartTime);
-  [aTab setTabContent:contents->tab_contents()];
+  [aTab setTabContent:contents];
 }
 
 - (void)insertInTabs:(TabAppleScript*)aTab atIndex:(int)index {
@@ -195,7 +197,7 @@
   params.target_contents->tab_contents()->set_new_tab_start_time(
       newTabStartTime);
 
-  [aTab setTabContent:params.target_contents->tab_contents()];
+  [aTab setTabContent:params.target_contents];
 }
 
 - (void)removeFromTabsAtIndex:(int)index {
