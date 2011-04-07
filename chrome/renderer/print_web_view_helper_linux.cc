@@ -178,12 +178,12 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
     if (params.pages.empty()) {
       for (int i = 0; i < *page_count; ++i) {
         page_params.page_number = i;
-        PrintPage(page_params, canvas_size, frame, metafile, &canvas);
+        PrintPageInternal(page_params, canvas_size, frame, metafile, &canvas);
       }
     } else {
       for (size_t i = 0; i < params.pages.size(); ++i) {
         page_params.page_number = params.pages[i];
-        PrintPage(page_params, canvas_size, frame, metafile, &canvas);
+        PrintPageInternal(page_params, canvas_size, frame, metafile, &canvas);
       }
     }
   }
@@ -193,11 +193,12 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
   return true;
 }
 
-void PrintWebViewHelper::PrintPage(const PrintMsg_PrintPage_Params& params,
-                                   const gfx::Size& canvas_size,
-                                   WebFrame* frame,
-                                   printing::NativeMetafile* metafile,
-                                   scoped_ptr<skia::VectorCanvas>* canvas) {
+void PrintWebViewHelper::PrintPageInternal(
+    const PrintMsg_PrintPage_Params& params,
+    const gfx::Size& canvas_size,
+    WebFrame* frame,
+    printing::NativeMetafile* metafile,
+    scoped_ptr<skia::VectorCanvas>* canvas) {
   double content_width_in_points;
   double content_height_in_points;
   double margin_top_in_points;

@@ -92,7 +92,7 @@ class PrintWebViewHelper : public RenderViewObserver ,
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual void printPage(WebKit::WebFrame* frame);
+  virtual void PrintPage(WebKit::WebFrame* frame);
 
   // Message handlers ---------------------------------------------------------
 
@@ -149,15 +149,15 @@ class PrintWebViewHelper : public RenderViewObserver ,
 
   // Prints the page listed in |params|.
 #if defined(USE_X11)
-  void PrintPage(const PrintMsg_PrintPage_Params& params,
-                 const gfx::Size& canvas_size,
-                 WebKit::WebFrame* frame,
-                 printing::NativeMetafile* metafile,
-                 scoped_ptr<skia::VectorCanvas>* canvas);
+  void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
+                         const gfx::Size& canvas_size,
+                         WebKit::WebFrame* frame,
+                         printing::NativeMetafile* metafile,
+                         scoped_ptr<skia::VectorCanvas>* canvas);
 #else
-  void PrintPage(const PrintMsg_PrintPage_Params& params,
-                 const gfx::Size& canvas_size,
-                 WebKit::WebFrame* frame);
+  void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
+                         const gfx::Size& canvas_size,
+                         WebKit::WebFrame* frame);
 #endif
 
   // Render the frame for printing.

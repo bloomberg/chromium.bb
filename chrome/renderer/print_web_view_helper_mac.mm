@@ -15,9 +15,10 @@
 
 using WebKit::WebFrame;
 
-void PrintWebViewHelper::PrintPage(const PrintMsg_PrintPage_Params& params,
-                                   const gfx::Size& canvas_size,
-                                   WebFrame* frame) {
+void PrintWebViewHelper::PrintPageInternal(
+    const PrintMsg_PrintPage_Params& params,
+    const gfx::Size& canvas_size,
+    WebFrame* frame) {
   scoped_ptr<printing::NativeMetafile> metafile(
       printing::NativeMetafileFactory::Create());
   if(!metafile.get())

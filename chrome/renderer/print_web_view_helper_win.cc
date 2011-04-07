@@ -66,9 +66,10 @@ int CALLBACK EnhMetaFileProc(HDC dc,
 
 }  // namespace
 
-void PrintWebViewHelper::PrintPage(const PrintMsg_PrintPage_Params& params,
-                                   const gfx::Size& canvas_size,
-                                   WebFrame* frame) {
+void PrintWebViewHelper::PrintPageInternal(
+    const PrintMsg_PrintPage_Params& params,
+    const gfx::Size& canvas_size,
+    WebFrame* frame) {
   // Generate a memory-based metafile. It will use the current screen's DPI.
   // Each metafile contains a single page.
   scoped_ptr<printing::NativeMetafile> metafile(
