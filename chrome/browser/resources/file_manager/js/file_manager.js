@@ -41,9 +41,13 @@ function FileManager(dialogDom, filesystem, params) {
   this.initDom_();
   this.initDialogType_();
 
-  this.changeDirectory('/');
+  // TODO(rginda): Fix this when we've got the root dir sorted out.
+  // http://code.google.com/p/chromium-os/issues/detail?id=13845
+  this.changeDirectory('/tmp');
   this.summarizeSelection_();
   this.updatePreview_();
+
+  this.table.querySelector('.list').focus();
 }
 
 FileManager.prototype = {
@@ -54,11 +58,6 @@ FileManager.prototype = {
 (function() {
 
   // Private variables and helper functions.
-
-  /**
-   * Directory where we can find icons.
-   */
-  const ICON_PATH = 'images/';
 
   /**
    * Unicode codepoint for 'BLACK RIGHT-POINTING SMALL TRIANGLE'.
@@ -85,6 +84,26 @@ FileManager.prototype = {
     // 'drawing': /\.(svg)$/i,
     // 'spreadsheet': /\.(xls|xlsx)$/i,
     // 'presentation': /\.(ppt|pptx)$/i
+  };
+
+  /**
+   * Canned preview images for non-image files.
+   *
+   * When we're built as a component extension we won't be able to access urls
+   * that haven't been explicitly packed into the resource bundle.  It's
+   * simpler to pack them here as data: urls than it is to maintain code that
+   * maps urls into the resource bundle.  Please make sure to check any new
+   * source images, and refer to the file in the comment here.
+   *
+   * Pro Tip: On *nix, the base64 command line tool can be used to base64
+   * encode arbitrary files.
+   */
+  const previewArt = {
+    // ../images/preview-unknown.png
+    'unknown': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGEAAABxCAYAAADF0M04AAAAAXNSR0IArs4c6QAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sDFgMHCist9V8AAAEQSURBVHja7drLCUJBEETRGjEIEcxZNERBzOK5VkFwMZafc0PoM70Y6JH5LdHTBoDfRrgBOJ0vpn3XbrtJkqxsQL/VTID94WjCBQQAZQQAZQQAZQQAZQQAZQQAZQQAZQQAX/BZ02QEW1BGAFBGAFBGAFBGAFBGAFBGAFBGAFBGAFBGAFBGAFBs5E2XEU5eHpt98qIXWnupn/9jFgQIggBBECAIAgRBgCAIEAQBgiAIAgRBgCAIEAQBgiBAEAQIggBBECAIAgRBgCAIEAQBgiBAEAQIggBBECAIAgRBgCAIEAQBgiBAEAQIggBBECAIAgRBgCAIEAQBgiBAEAQIggBBECAIgiBAUJJkJFmMwSb8fVcLi0WbrZFumAAAAABJRU5ErkJggg==',
+
+    // ../images/preview-folder.png
+    'folder': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHUAAABjCAYAAACli086AAAAAXNSR0IArs4c6QAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sDFgMHGa+TtIEAAAVTSURBVHja7Z07bxxlGIWfcYzBkIvjm2JjGwjYOAm2Q8LFEIxASAgakCiQUrCioUCIkgoqRLcFFQUlUPAP+AEkXARKiAk2jiEhiYNt1t7EN3y3l2JnkhT27s7uK94xnCOtvq2mOI9mvjPffHMmwE45pESoShb891RtfcCTH5ySq0768qMBnam6/EqCKgmqJKiSoP7PFACfASlZ4a/+V97ngd6XTG5pvpadyVDm6qDJcaqB78L/Q+99njsia/99DX3zBV99miJ77RezOXUk/N8te3105MQbAMxlr5pB3QQuAbvSqeCgLPbRPXWt5HKbLNwYN0u/P4TjE7LXRw2thwDIjv9qBjUKS8/KXh81d/SZhaUI6rfh+LTs9VFjew8A09fOm0EdDsfDstdHPQNv5sPS1GUzqGvAGFCTTgXtsthHd+9tZnNzncW5jAlUgB/D8XHZ66P6lu4wLI2YQVVY8g5L9x0FYOrqOTOoCkveYantkTzUCleWbocaxa4e2eujvufeAmA2c9EM6jIwAdSmU0GLLPbRXbsb2FhfZWkhawIV4Ew4Hpe9TmHpwMMAXJ+4YAY12t85IHt91NTRG4aln82gng7HZ2SvE9T2EOqYHdToSL2y10ePvvA2ADOZ382gLgDTwJ7F+ekPZbGPamr3sb66xMrirAlUgLMAn7zTdFr2OoWllq58WJocNYOqsOQ+r/aFYWnQDKrC0g4PS1tB/Smas2Wvj46/+C4ANyZ/M4M6C8wAdbLXT3fcuZu1lQVWlxdMoN48W9Op4HnZ66P9BzrLPlu3g6p5dQfPq9tBVQL2hhpuRJsaGzSDejYcj8leHx3sfTl/rzoxagY1C8wDjbLXRw2t3VTX1LK6NMva6qIJVAjXgdOp4IQs9lFd80MAzPx10QyqwtIODUuFoCosuYel8p6tFoKqXRDOqm8Jd0FMXjCDOgksAdqv5KTOY6+yq7qG5YUsG+srJlAh3GGYTgV6G85J+5ofzIelzCUzqNoL7D2vhnuBp2PsBS4GVbv23cNSftd+5so5M6h6vyYBixAA1ydGzKBeA1YBvQnnpK7HXqOqqprFuQybG+smUCF8dzWdCo7KYh/tbbofgNnpy2ZQFZac1dgWvmU+dt4MqsKSs+L2QZQCVc0t7mEpXnNLKVD/ADYAdSw5qfvJ1wmCKv6eGSeX2zSBCmErWjoVqObOKyw1dAAwN33FDGrUX/iU7HW6BN9cWRoyg6qwlJiwdM4M6vfh2C97vW5r8jNf9s9hM6jR5tNO2eujQ/0nAZi/PmYGFWAUCNKpoEsW+2hPfXtJYONA1SXYOyzde7iksBQHqsKSe1gKH8MVWVmKA1W3NUkJS0UemMeBqlp2Z5Vayx4HqmrZE6BSatnjfmxIi/veYamExf24UBWW3MNS8cdwcaHqgbl3WCqhlj0uVNWyO6uUWva4UFXLngAVq2Uv56uM2jbqrGK17OVAVVjyDktFatnLgaqw5B2WitSylwNVtezOKlbLXg5U1bInQIVq2cv9fLVeSPYOSwVq2cuFquoAZxWqDigXqko+vKEWKPkoF6pq2Z1VqJa9XKiqZU+Atqtlr6rgmKpl9w5L29SyVwJVYcl9Xt26lr0SqApLCQ1LlUBVLbuztqtlrwSqatkToK1q2asqPKZq2Z21VS17pVA1ryZwXq0UqhKwN9QtatkrhapadmdtVcteKVTVsjvr9lp2K6hwq5ZdDjspqmW3hKplwoSEJUuop2Srd1iyh3pGtvoqqmW3hBrVsktOimrZLaHCrVp2OeykqJbdUh8DOf2S8bM6tcaANp0vyZDl9XJYdrqrBdj/D94xFInAmNPFAAAAAElFTkSuQmCC',
   };
 
   /**
@@ -125,8 +144,8 @@ FileManager.prototype = {
     if (entry.isDirectory)
       return 'folder';
 
-    for (var name in this.iconTypes) {
-      var value = this.iconTypes[name];
+    for (var name in iconTypes) {
+      var value = iconTypes[name];
 
       if (value instanceof RegExp) {
         if (value.test(entry.name))
@@ -332,6 +351,8 @@ FileManager.prototype = {
         'dblclick', this.onDetailDoubleClick_.bind(this));
     this.table.selectionModel.addEventListener(
         'change', this.onDetailSelectionChanged_.bind(this));
+
+    this.dialogDom_.style.opacity = '1';
   };
 
   /**
@@ -600,9 +621,10 @@ FileManager.prototype = {
     var iconType = getIconType(entry);
     if (iconType != 'image') {
       // Not an image, display a canned clip-art graphic.
-      this.previewImage_.src = ICON_PATH + 'preview-' + iconType + '.png';
+      this.previewImage_.src = previewArt[iconType];
     } else {
       // File is an image, fetch the thumbnail.
+
       var fileManager = this;
 
       batchAsyncCall(entry, 'file', function(file) {
@@ -725,6 +747,9 @@ FileManager.prototype = {
     if (entry.isDirectory)
       return this.changeDirectory(entry.fullPath);
 
+    if (!this.okButton_.disabled)
+      this.onOk_();
+
   };
 
   /**
@@ -738,11 +763,19 @@ FileManager.prototype = {
 
     function onReadSome(entries) {
       if (entries.length == 0)
-      return;
+        return;
 
       // Splice takes the to-be-spliced-in array as individual parameters,
       // rather than as an array, so we need to perform some acrobatics...
       var spliceArgs = [].slice.call(entries);
+
+      // Hide files that start with a dot ('.').
+      // TODO(rginda): User should be able to override this.  Support for other
+      // commonly hidden patterns might be nice too.
+      spliceArgs = spliceArgs.filter(function(e) {
+          return e.name.substr(0, 1) != '.';
+      });
+
       spliceArgs.unshift(0, 0);  // index, deleteCount
       self.table.dataModel.splice.apply(self.table.dataModel, spliceArgs);
 
@@ -787,6 +820,7 @@ FileManager.prototype = {
    */
   FileManager.prototype.onCancel_ = function(event) {
     chrome.fileBrowserPrivate.cancelDialog();
+    window.close();
   };
 
   /**
@@ -807,6 +841,7 @@ FileManager.prototype = {
 
       chrome.fileBrowserPrivate.selectFile(this.currentDirEntry_.fullPath +
                                            '/' + filename, 0);
+      window.close();
       return;
     }
 
@@ -832,6 +867,7 @@ FileManager.prototype = {
     // Multi-file selection has no other restrictions.
     if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILES) {
       chrome.fileBrowserPrivate.selectFiles(ary);
+      window.close();
       return;
     }
 
@@ -848,6 +884,7 @@ FileManager.prototype = {
     }
 
     chrome.fileBrowserPrivate.selectFile(ary[0], 0);
+    window.close();
   };
 
 })();

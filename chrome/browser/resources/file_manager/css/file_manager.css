@@ -8,10 +8,12 @@
 body {
   -webkit-box-flex: 1;
   -webkit-box-orient: vertical;
+  -webkit-transition: opacity 0.07s linear;
   -webkit-user-select: none;
   display: -webkit-box;
   height: 100%;
   margin: 0;
+  opacity: 0;
   padding: 0;
   position: absolute;
   width: 100%;
@@ -154,7 +156,8 @@ body {
 /* The icon in the name column. */
 .detail-icon {
   -webkit-margin-end: 3px;
-  background-image: url(../images/icon-unknown.png);
+  /* ../images/icon-unknown.png */
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sCCxUsLubmldcAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAlklEQVQ4y2P8////fwYKAAsDAwPD4nWnGA6cuMXw9dtPnAqtjJUZ8hIdMMSZGBgYGPafuIlXMwMDA4OirDDDpPkHsBvw7dsvopyLzRAmUv2MbggLsRqXbjiFwoeFBxMDhWDUAGoZwM/HSZImLi42VANUFcSINoSLi41BS0US1QALI0UGXm4OogyQkxJisDBShPMZKc3OAAB3Jftfqk4+AAAAAElFTkSuQmCC);
   background-position: center;
   background-repeat: no-repeat;
   height: 24px;
@@ -163,7 +166,8 @@ body {
 
 /* Icon for image files. */
 .detail-icon[iconType="image"] {
-  background-image: url(../images/icon-image.png);
+    /* ../images/icon-image.png */
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sCCxUtDsSThF4AAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAABQUlEQVQ4y6WTz0vCYBjHP5tDCFmUjS00G5SBWCAhHSKhg0fv/oWdhOjkJehSHkQbnUZJVpRQoIWVkmab6xBMTbGFz/Hl/Xy+74/nERzHcZihJIBC+YaDoxKv7x+eIFWRyWaSpHbWfwS5vMH+7sa/knN5YyCoP7cA2N6MEFvT3E2GWSMw5x+Dz0pVlxEn2W3bwbYdOp3enycRmbGk3wuGWRtLPj69JL0Xw+cTsG1nuiAw5x+5d+W2QfH8mqJRJZ3aomfbSOIUwXCZlScO82VCy0sAnBRMJFFgdWVhsqD22KTx0kZT5ile3GFWai4MENIWAdAjGtX75qjAvHqg3mjT/bSGgKD3R9QjGlZfxPrqTwV6ljUuUBWZt1YXJSh7/j5VkQeCbCZJLm+43eV1FtxGSsTDRHXVc3pUV0nEwwAIs47zNwxadGYSq3VsAAAAAElFTkSuQmCC);
 }
 
 /* The filename text in the preview pane. */
@@ -195,7 +199,8 @@ body {
 
 /* Checkboard background to distinguish images with alpha channels. */
 .preview-img.transparent-background {
-  background-image: url(../images/preview-background.png);
+  /* ../images/preview-background.png */
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAAlwSFlzAAAOTQAADiYBwNzaZQAAAAd0SU1FB9sDExUSAaQ/5TMAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAQ0lEQVRYw+3VsQkAMQwDQOfJRt7r9/FQ3ilDuAiBUy84UKFVVX8M0t2TenxxOQAAAAAAAAB7+ueZaQIAAAAAAIC3AQceAAfi8EmRSgAAAABJRU5ErkJggg==);
 }
 
 /* The selection summary text at the bottom of the preview pane. */

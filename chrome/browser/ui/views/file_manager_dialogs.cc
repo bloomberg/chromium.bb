@@ -118,12 +118,13 @@ class FileManagerDialog
   // windows.close() and you've allowed that.  If the output parameter
   // is set to true, then the dialog is closed.  The default is false.
   virtual void OnCloseContents(TabContents* source, bool* out_close_dialog) {
+    *out_close_dialog = true;
   }
 
   // A callback to allow the delegate to dictate that the window should not
   // have a title bar.  This is useful when presenting branded interfaces.
   virtual bool ShouldShowDialogTitle() const {
-    return true;
+    return false;
   }
 
   // A callback to allow the delegate to inhibit context menu or show
