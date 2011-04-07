@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -294,25 +294,6 @@ void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
                                            kPostedResultSubstring);
   WaitForTestToComplete(TestTimeouts::action_max_timeout_ms());
   ASSERT_EQ(version, UTF8ToWide(server_mock_.posted_result()));
-}
-
-void ChromeFrameTestWithWebServer::SessionIdTest(BrowserKind browser,
-                                                 const wchar_t* page,
-                                                 int privilege_mode,
-                                                 const char* expected_result) {
-  if (browser == FIREFOX &&
-      base::win::GetVersion() == base::win::VERSION_WIN7) {
-    LOG(INFO) << "Not running Firefox tests on Windows 7";
-    return;
-  }
-
-  SetConfigInt(kEnableFirefoxPrivilegeMode, privilege_mode);
-  EXPECT_TRUE(LaunchBrowser(browser, page));
-  server_mock_.set_expected_result(expected_result);
-  server_mock_.ExpectAndHandlePostedResult(CFInvocation(CFInvocation::NONE),
-                                           kPostedResultSubstring);
-  WaitForTestToComplete(TestTimeouts::action_max_timeout_ms());
-  ASSERT_EQ(expected_result, server_mock_.posted_result());
 }
 
 // MockWebServer methods
@@ -836,16 +817,6 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_Version) {
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_Version) {
   VersionTest(FIREFOX, kVersionPage);
-}
-
-const wchar_t kSessionIdPage[] = L"sessionid.html";
-
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_SessionIdPrivilege) {
-  SessionIdTest(FIREFOX, kSessionIdPage, 1, "OK");
-}
-
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_SessionIdNoPrivilege) {
-  SessionIdTest(FIREFOX, kSessionIdPage, 0, "no sessionId");
 }
 
 const wchar_t kEventListenerPage[] = L"event_listener.html";
