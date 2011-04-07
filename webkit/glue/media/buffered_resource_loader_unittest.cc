@@ -159,10 +159,10 @@ class BufferedResourceLoaderTest : public testing::Test {
   void WriteLoader(int position, int size) {
     EXPECT_CALL(*this, NetworkCallback())
         .RetiresOnSaturation();
-    // FIXME(vsevik): rename once renamed in webkit
-    loader_->didReceiveData2(url_loader_,
-                             reinterpret_cast<char*>(data_ + position), size,
-                             size);
+    loader_->didReceiveData(url_loader_,
+                            reinterpret_cast<char*>(data_ + position),
+                            size,
+                            size);
   }
 
   // Helper method to read from |loader_|.

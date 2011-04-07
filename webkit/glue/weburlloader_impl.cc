@@ -607,8 +607,7 @@ void WebURLLoaderImpl::Context::OnReceivedData(const char* data, int len) {
     // client_->didReceiveData and client_->didReceiveResponse.
     multipart_delegate_->OnReceivedData(data, len);
   } else {
-    // FIXME(vsevik): rename once renamed in webkit
-    client_->didReceiveData2(loader_, data, len, -1);
+    client_->didReceiveData(loader_, data, len, -1);
   }
 }
 

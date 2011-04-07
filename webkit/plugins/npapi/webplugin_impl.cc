@@ -110,8 +110,7 @@ class MultiPartResponseClient : public WebURLLoaderClient {
   }
 
   // Receives individual part data from a multipart response.
-  // FIXME(vsevik): rename once renamed in webkit
-  virtual void didReceiveData2(
+  virtual void didReceiveData(
       WebURLLoader*, const char* data, int data_length, int length_received) {
     // TODO(ananta)
     // We should defer further loads on multipart resources on the same lines
@@ -119,12 +118,6 @@ class MultiPartResponseClient : public WebURLLoaderClient {
     resource_client_->DidReceiveData(
         data, data_length, byte_range_lower_bound_);
     byte_range_lower_bound_ += data_length;
-  }
-
-  // FIXME(vsevik): remove once removed in webkit
-  virtual void didReceiveData(
-      WebURLLoader* webURLLoader, const char* data, int data_length) {
-    didReceiveData2(webURLLoader, data, data_length, -1);
   }
 
   virtual void didFinishLoading(WebURLLoader*, double finishTime) {}
@@ -956,18 +949,10 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
   }
 }
 
-// FIXME(vsevik): remove once removed in webkit
 void WebPluginImpl::didReceiveData(WebURLLoader* loader,
                                    const char *buffer,
-                                   int data_length) {
-  didReceiveData2(loader, buffer, data_length, -1);
-}
-
-// FIXME(vsevik): rename once renamed in webkit
-void WebPluginImpl::didReceiveData2(WebURLLoader* loader,
-                                    const char *buffer,
-                                    int data_length,
-                                    int length_received) {
+                                   int data_length,
+                                   int length_received) {
   WebPluginResourceClient* client = GetClientFromLoader(loader);
   if (!client)
     return;

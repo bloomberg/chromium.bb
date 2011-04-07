@@ -131,18 +131,11 @@ class BufferedResourceLoader :
   virtual void didDownloadData(
       WebKit::WebURLLoader* loader,
       int data_length);
-  // FIXME(vsevik): rename once renamed in webkit
-  virtual void didReceiveData2(
+  virtual void didReceiveData(
       WebKit::WebURLLoader* loader,
       const char* data,
       int data_length,
       int length_received);
-
-  // FIXME(vsevik): remove once removed in webkit
-  virtual void didReceiveData(
-      WebKit::WebURLLoader* loader,
-      const char* data,
-      int dataLength);
   virtual void didReceiveCachedMetadata(
       WebKit::WebURLLoader* loader,
       const char* data, int dataLength);

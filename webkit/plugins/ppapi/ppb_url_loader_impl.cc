@@ -420,18 +420,10 @@ void PPB_URLLoader_Impl::didDownloadData(WebURLLoader* loader,
   UpdateStatus();
 }
 
-// FIXME(vsevik): remove once removed in webkit
 void PPB_URLLoader_Impl::didReceiveData(WebURLLoader* loader,
                                         const char* data,
-                                        int data_length) {
-  didReceiveData2(loader, data, data_length, -1);
-}
-
-// FIXME(vsevik): rename didReceiveData2 once renamed in webkit
-void PPB_URLLoader_Impl::didReceiveData2(WebURLLoader* loader,
-                                         const char* data,
-                                         int data_length,
-                                         int length_received) {
+                                        int data_length,
+                                        int length_received) {
   bytes_received_ += data_length;
 
   buffer_.insert(buffer_.end(), data, data + data_length);

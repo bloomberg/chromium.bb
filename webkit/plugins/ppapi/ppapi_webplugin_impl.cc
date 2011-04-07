@@ -152,9 +152,8 @@ void WebPluginImpl::didReceiveResponse(
 }
 
 void WebPluginImpl::didReceiveData(const char* data, int data_length) {
-  // FIXME(vsevik): rename didReceiveData2 once renamed in webkit
   if (document_loader_)
-    document_loader_->didReceiveData2(NULL, data, data_length, data_length);
+    document_loader_->didReceiveData(NULL, data, data_length, data_length);
 }
 
 void WebPluginImpl::didFinishLoading() {
@@ -235,4 +234,3 @@ void WebPluginImpl::printEnd() {
 
 }  // namespace ppapi
 }  // namespace webkit
-

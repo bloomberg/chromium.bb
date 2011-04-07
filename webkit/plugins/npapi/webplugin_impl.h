@@ -204,13 +204,8 @@ class WebPluginImpl : public WebPlugin,
   virtual void didReceiveResponse(WebKit::WebURLLoader* loader,
                                   const WebKit::WebURLResponse& response);
 
-  // FIXME(vsevik): remove once migrated to new webkit
   virtual void didReceiveData(WebKit::WebURLLoader* loader, const char *buffer,
-                              int data_length);
-
-  // FIXME(vsevik): rename once renamed in webkit
-  virtual void didReceiveData2(WebKit::WebURLLoader* loader, const char *buffer,
-                               int data_length, int length_received);
+                              int data_length, int length_received);
   virtual void didFinishLoading(WebKit::WebURLLoader* loader,
                                 double finishTime);
   virtual void didFail(WebKit::WebURLLoader* loader,
