@@ -438,7 +438,8 @@ bool InterceptionManager::PatchClientFunctions(DllInterceptionData* thunks,
 #endif
 
   ServiceResolverThunk* thunk;
-  if (base::win::GetWOW64Status() == base::win::WOW64_ENABLED)
+  if (base::win::OSInfo::GetInstance()->wow64_status() ==
+      base::win::OSInfo::WOW64_ENABLED)
     thunk = new Wow64ResolverThunk(child_->Process(), relaxed_);
   else if (!IsXPSP2OrLater())
     thunk = new Win2kResolverThunk(child_->Process(), relaxed_);

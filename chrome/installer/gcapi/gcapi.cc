@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,9 +8,11 @@
 #include <atlcom.h>
 #include <windows.h>
 #include <sddl.h>
-#include <stdlib.h>
+#define STRSAFE_NO_DEPRECATE
 #include <strsafe.h>
 #include <tlhelp32.h>
+
+#include <cstdlib>
 
 #include "google_update_idl.h"
 
@@ -156,31 +158,31 @@ bool ReadValueFromRegistry(HKEY root_key, const wchar_t *sub_key,
 bool IsChromeInstalled(HKEY root_key) {
   wchar_t version[64];
   size_t size = _countof(version);
-  if (ReadValueFromRegistry(root_key, kChromeRegClientsKey, kChromeRegVersion,
-                            version, &size))
-    return true;
-  return false;
+  return ReadValueFromRegistry(root_key, kChromeRegClientsKey,
+                               kChromeRegVersion, version, &size);
 }
 
-bool IsWinXPSp2OrLater(bool* is_vista_or_later) {
-  OSVERSIONINFOEX osviex = { sizeof(OSVERSIONINFOEX) };
-  int r = ::GetVersionEx((LPOSVERSIONINFO)&osviex);
-  // If this failed we're on Win9X or a pre NT4SP6 OS.
-  if (!r)
-    return false;
+enum WindowsVersion {
+  VERSION_BELOW_XP_SP2,
+  VERSION_XP_SP2_UP_TO_VISTA, // "but not including"
+  VERSION_VISTA_OR_HIGHER,
+};
+WindowsVersion GetWindowsVersion() {
+  OSVERSIONINFOEX version_info = { sizeof version_info };
+  GetVersionEx(reinterpret_cast<OSVERSIONINFO*>(&version_info));
 
-  if (osviex.dwMajorVersion < 5)
-    return false;
+  // Windows Vista is version 6.0.
+  if (version_info.dwMajorVersion >= 6)
+    return VERSION_VISTA_OR_HIGHER;
 
-  if (osviex.dwMajorVersion > 5) {
-    *is_vista_or_later = true;
-    return true;    // way beyond Windows XP;
-  }
+  // Windows XP is version 5.1.  (5.2 is Windows Server 2003/XP Pro x64.)
+  if ((version_info.dwMajorVersion < 5) || (version_info.dwMinorVersion < 1))
+    return VERSION_BELOW_XP_SP2;
 
-  if (osviex.dwMinorVersion >= 1 && osviex.wServicePackMajor >= 2)
-    return true;    // Windows XP SP2 or better.
-
-  return false;     // Windows 2000, WinXP no Service Pack.
+  // For XP itself, we only support SP2 and above.
+  return ((version_info.dwMinorVersion > 1) ||
+          (version_info.wServicePackMajor >= 2)) ?
+      VERSION_XP_SP2_UP_TO_VISTA : VERSION_BELOW_XP_SP2;
 }
 
 // Note this function should not be called on old Windows versions where these
@@ -230,9 +232,8 @@ bool VerifyHKLMAccess(const wchar_t* sub_key) {
 
 bool IsRunningElevated() {
   // This method should be called only for Vista or later.
-  bool is_vista_or_later = false;
-  IsWinXPSp2OrLater(&is_vista_or_later);
-  if (!is_vista_or_later || !VerifyAdminGroup())
+  if ((GetWindowsVersion() < VERSION_VISTA_OR_HIGHER) ||
+      !VerifyAdminGroup())
     return false;
 
   HANDLE process_token;
@@ -287,9 +288,9 @@ DLLEXPORT BOOL __stdcall GoogleChromeCompatibilityCheck(BOOL set_flag,
                                                         DWORD *reasons) {
   DWORD local_reasons = 0;
 
-  bool is_vista_or_later = false;
+  WindowsVersion windows_version = GetWindowsVersion();
   // System requirements?
-  if (!IsWinXPSp2OrLater(&is_vista_or_later))
+  if (windows_version == VERSION_BELOW_XP_SP2)
     local_reasons |= GCCC_ERROR_OSNOTSUPPORTED;
 
   if (IsChromeInstalled(HKEY_LOCAL_MACHINE))
@@ -300,7 +301,8 @@ DLLEXPORT BOOL __stdcall GoogleChromeCompatibilityCheck(BOOL set_flag,
 
   if (!VerifyHKLMAccess(kChromeRegClientsKey)) {
     local_reasons |= GCCC_ERROR_ACCESSDENIED;
-  } else if (is_vista_or_later && !VerifyAdminGroup()) {
+  } else if ((windows_version == VERSION_VISTA_OR_HIGHER) &&
+             !VerifyAdminGroup()) {
     // For Vista or later check for elevation since even for admin user we could
     // be running in non-elevated mode. We require integrity level High.
     local_reasons |= GCCC_ERROR_INTEGRITYLEVEL;

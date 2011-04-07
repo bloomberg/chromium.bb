@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,14 +64,15 @@ std::string BuildOSCpuInfo() {
 
 #if defined(OS_WIN)
   std::string architecture_token;
-  if (base::win::GetWOW64Status() == base::win::WOW64_ENABLED) {
+  base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
+  if (os_info->wow64_status() == base::win::OSInfo::WOW64_ENABLED) {
     architecture_token = "; WOW64";
   } else {
-    base::win::WindowsArchitecture windows_architecture =
-        base::win::GetWindowsArchitecture();
-    if (windows_architecture == base::win::X64_ARCHITECTURE)
+    base::win::OSInfo::WindowsArchitecture windows_architecture =
+        os_info->architecture();
+    if (windows_architecture == base::win::OSInfo::X64_ARCHITECTURE)
       architecture_token = "; Win64; x64";
-    else if (windows_architecture == base::win::IA64_ARCHITECTURE)
+    else if (windows_architecture == base::win::OSInfo::IA64_ARCHITECTURE)
       architecture_token = "; Win64; IA64";
   }
 #endif

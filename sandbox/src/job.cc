@@ -1,8 +1,10 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "sandbox/src/job.h"
+
+#include "base/win/windows_version.h"
 #include "sandbox/src/restricted_token.h"
 
 namespace sandbox {
@@ -49,17 +51,11 @@ DWORD Job::Init(JobLevel security_level, wchar_t *job_name,
       jbur.UIRestrictionsClass |= JOB_OBJECT_UILIMIT_EXITWINDOWS;
     }
     case JOB_UNPROTECTED: {
-      OSVERSIONINFO version_info = {0};
-      version_info.dwOSVersionInfoSize = sizeof(version_info);
-      GetVersionEx(&version_info);
-
       // The JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE flag is not supported on
       // Windows 2000. We need a mechanism on Windows 2000 to ensure
       // that processes in the job are terminated when the job is closed
-      if ((5 == version_info.dwMajorVersion) &&
-          (0 == version_info.dwMinorVersion)) {
+      if (base::win::GetVersion() == base::win::VERSION_PRE_XP)
         break;
-      }
 
       jeli.BasicLimitInformation.LimitFlags |=
           JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
