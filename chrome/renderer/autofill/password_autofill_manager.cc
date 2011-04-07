@@ -147,9 +147,9 @@ bool IsElementEditable(const WebKit::WebInputElement& element) {
   return element.isEnabled() && !element.isReadOnly();
 }
 
-bool FillForm(FormElements* fe, const webkit_glue::FormData& data) {
+void FillForm(FormElements* fe, const webkit_glue::FormData& data) {
   if (!fe->form_element.autoComplete())
-    return false;
+    return;
 
   std::map<string16, string16> data_map;
   for (size_t i = 0; i < data.fields.size(); i++)
@@ -160,7 +160,7 @@ bool FillForm(FormElements* fe, const webkit_glue::FormData& data) {
     WebKit::WebInputElement element = it->second;
     // Don't fill a form that has pre-filled values.
     if (!element.value().isEmpty())
-      return false;
+      return;
   }
 
   for (FormInputElementMap::iterator it = fe->input_elements.begin();
@@ -175,8 +175,6 @@ bool FillForm(FormElements* fe, const webkit_glue::FormData& data) {
     element.setAutofilled(true);
     element.dispatchFormControlChangeEvent();
   }
-
-  return false;
 }
 
 void SetElementAutofilled(WebKit::WebInputElement* element, bool autofilled) {
@@ -421,8 +419,12 @@ void PasswordAutofillManager::OnFillPasswordForm(
     WebKit::WebInputElement password_element =
         form_elements->input_elements[form_data.basic_data.fields[1].name];
 
-    DCHECK(login_to_password_info_.find(username_element) ==
-        login_to_password_info_.end());
+    // We might have already filled this form if there are two <form> elements
+    // with identical markup.
+    if (login_to_password_info_.find(username_element) !=
+        login_to_password_info_.end())
+      continue;
+
     PasswordInfo password_info;
     password_info.fill_data = form_data;
     password_info.password_field = password_element;
