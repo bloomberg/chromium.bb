@@ -199,6 +199,7 @@ class EnterpriseTest(pyauto.PyUITest):
       if re.search('Flash', plugin['name']):
         self.assertRaises(pyauto.JSONInterfaceError,
                           lambda: self.EnablePlugin(plugin['path']))
+        return
 
   def testDisabledPluginsException(self):
     """Verify that plugins given exceptions can be managed by users.
@@ -211,6 +212,39 @@ class EnterpriseTest(pyauto.PyUITest):
     for plugin in self.GetPluginsInfo().Plugins():
       if re.search('Chrome PDF Viewer', plugin['name']):
         self.EnablePlugin(plugin['path'])
+        return
+
+  def testSetDownloadDirectory(self):
+    """Verify that the downloads directory and prompt for download preferences
+    cannot be modified.
+    """
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+    if self.IsWin():
+      self.assertEqual('Downloads',
+        self.GetPrefsInfo().Prefs()['download']['default_directory'],
+        msg='Downloads directory is not set correctly.')
+      # Check for changing the download directory location
+      self.assertRaises(pyauto.JSONInterfaceError,
+          lambda: self.SetPrefs(pyauto.kDownloadDefaultDirectory,
+                                os.getenv('USERPROFILE')))
+      # Check for changing the option 'Ask for each download'
+      self.assertRaises(pyauto.JSONInterfaceError,
+                        lambda: self.SetPrefs(pyauto.kPromptForDownload, True))
+    elif self.IsLinux():
+      # TODO(sunandt)
+      pass
+
+  def testEnabledPlugins(self):
+    """Verify that enabled plugins cannot be disabled."""
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+    for plugin in self.GetPluginsInfo().Plugins():
+      if re.search('Java', plugin['name']):
+        self.assertRaises(pyauto.JSONInterfaceError,
+                          lambda: self.DisablePlugin(plugin['path']))
+        return
+    logging.debug('Java is not present.')
 
   def testIncognitoEnabled(self):
     """Verify that incognito window can be launched."""
