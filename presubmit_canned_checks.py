@@ -411,8 +411,7 @@ def CheckTreeIsOpen(input_api, output_api,
 
 
 def RunUnitTestsInDirectory(
-    input_api, output_api, directory, whitelist=None, blacklist=None,
-    verbose=False):
+    input_api, output_api, directory, whitelist=None, blacklist=None):
   """Lists all files in a directory and runs them. Doesn't recurse.
 
   It's mainly a wrapper for RunUnitTests. USe whitelist and blacklist to filter
@@ -434,10 +433,10 @@ def RunUnitTestsInDirectory(
     if blacklist and check(filename, blacklist):
       continue
     unit_tests.append(input_api.os_path.join(directory, filename))
-  return RunUnitTests(input_api, output_api, unit_tests, verbose)
+  return RunUnitTests(input_api, output_api, unit_tests)
 
 
-def RunUnitTests(input_api, output_api, unit_tests, verbose=False):
+def RunUnitTests(input_api, output_api, unit_tests):
   """Runs all unit tests in a directory.
 
   On Windows, sys.executable is used for unit tests ending with ".py".
@@ -455,10 +454,10 @@ def RunUnitTests(input_api, output_api, unit_tests, verbose=False):
       # Windows needs some help.
       cmd = [input_api.python_executable]
     cmd.append(unit_test)
-    if verbose:
+    if input_api.verbose:
       print('Running %s' % unit_test)
     try:
-      if verbose:
+      if input_api.verbose:
         input_api.subprocess.check_call(cmd, cwd=input_api.PresubmitLocalPath())
       else:
         input_api.subprocess.check_output(
@@ -544,7 +543,6 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None):
 
   The default white_list enforces looking only a *.py files.
   """
-  verbose = False
   white_list = white_list or ['.*\.py$']
   black_list = black_list or input_api.DEFAULT_BLACK_LIST
   if input_api.is_committing:
@@ -590,7 +588,7 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None):
         return e.code
 
     result = None
-    if not verbose:
+    if not input_api.verbose:
       result = run_lint(sorted(files))
     else:
       for filename in sorted(files):

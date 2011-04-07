@@ -56,7 +56,7 @@ def DieWithError(message):
 
 def Popen(cmd, **kwargs):
   """Wrapper for subprocess.Popen() that logs and watch for cygwin issues"""
-  logging.info('Popen: ' + ' '.join(cmd))
+  logging.debug('Popen: ' + ' '.join(cmd))
   try:
     return subprocess.Popen(cmd, **kwargs)
   except OSError, e:
@@ -810,7 +810,8 @@ def ConvertToInteger(inputval):
     return None
 
 
-def RunHook(committing, upstream_branch, rietveld_server, tbr, may_prompt):
+def RunHook(committing, upstream_branch, rietveld_server, tbr, may_prompt,
+    verbose):
   """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
   root = RunCommand(['git', 'rev-parse', '--show-cdup']).strip()
   if not root:
@@ -843,10 +844,15 @@ def RunHook(committing, upstream_branch, rietveld_server, tbr, may_prompt):
     files = [f.LocalPath() for f in change.AffectedFiles()]
     cl.SetWatchers(watchlist.GetWatchersForPaths(files))
 
-  output = presubmit_support.DoPresubmitChecks(change, committing,
-      verbose=False, output_stream=sys.stdout, input_stream=sys.stdin,
-      default_presubmit=None, may_prompt=may_prompt, tbr=tbr,
-      host_url=cl.GetRietveldServer())
+  try:
+    output = presubmit_support.DoPresubmitChecks(change, committing,
+        verbose=verbose, output_stream=sys.stdout, input_stream=sys.stdin,
+        default_presubmit=None, may_prompt=may_prompt, tbr=tbr,
+        host_url=cl.GetRietveldServer())
+  except presubmit_support.PresubmitFailure, e:
+    DieWithError(
+        ('%s\nMaybe your depot_tools is out of date?\n'
+         'If all fails, contact maruel@') % e)
 
   # TODO(dpranke): We should propagate the error out instead of calling exit().
   if not output.should_continue():
@@ -877,7 +883,7 @@ def CMDpresubmit(parser, args):
 
   RunHook(committing=not options.upload, upstream_branch=base_branch,
           rietveld_server=cl.GetRietveldServer(), tbr=False,
-          may_prompt=False)
+          may_prompt=False, verbose=options.verbose)
   return 0
 
 
@@ -921,7 +927,7 @@ def CMDupload(parser, args):
   if not options.bypass_hooks and not options.force:
     hook_results = RunHook(committing=False, upstream_branch=base_branch,
                            rietveld_server=cl.GetRietveldServer(), tbr=False,
-                           may_prompt=True)
+                           may_prompt=True, verbose=options.verbose)
     if not options.reviewers and hook_results.reviewers:
       options.reviewers = hook_results.reviewers
 
@@ -1074,7 +1080,7 @@ def SendUpstream(parser, args, cmd):
   if not options.bypass_hooks and not options.force:
     RunHook(committing=True, upstream_branch=base_branch,
             rietveld_server=cl.GetRietveldServer(), tbr=options.tbr,
-            may_prompt=True)
+            may_prompt=True, verbose=options.verbose)
 
     if cmd == 'dcommit':
       # Check the tree status if the tree status URL is set.
@@ -1407,12 +1413,16 @@ def main(argv):
 
   # Create the option parse and add --verbose support.
   parser = optparse.OptionParser()
-  parser.add_option('-v', '--verbose', action='store_true')
+  parser.add_option(
+      '-v', '--verbose', action='count', default=0,
+      help='Use 2 times for more debugging info')
   old_parser_args = parser.parse_args
   def Parse(args):
     options, args = old_parser_args(args)
-    if options.verbose:
+    if options.verbose >= 2:
       logging.basicConfig(level=logging.DEBUG)
+    elif options.verbose:
+      logging.basicConfig(level=logging.INFO)
     else:
       logging.basicConfig(level=logging.WARNING)
     return options, args

@@ -139,10 +139,10 @@ class PresubmitUnittest(PresubmitTestsBase):
       'AffectedFile', 'Change', 'DoGetTrySlaves', 'DoPresubmitChecks',
       'GetTrySlavesExecuter', 'GitAffectedFile',
       'GitChange', 'InputApi', 'ListRelevantPresubmitFiles', 'Main',
-      'NotImplementedException', 'OutputApi', 'ParseFiles',
+      'OutputApi', 'ParseFiles', 'PresubmitFailure',
       'PresubmitExecuter', 'PresubmitOutput', 'ScanSubDirs',
       'SvnAffectedFile', 'SvnChange', 'cPickle', 'cStringIO',
-      'exceptions', 'fix_encoding', 'fnmatch', 'gclient_utils', 'glob', 'json',
+      'fix_encoding', 'fnmatch', 'gclient_utils', 'glob', 'json',
       'load_files',
       'logging', 'marshal', 'normpath', 'optparse', 'os', 'owners', 'pickle',
       'presubmit_canned_checks', 'random', 're', 'scm', 'subprocess',
@@ -345,7 +345,7 @@ class PresubmitUnittest(PresubmitTestsBase):
 
     change = presubmit.Change('mychange', '\n'.join(description_lines),
                               self.fake_root_dir, files, 0, 0)
-    executer = presubmit.PresubmitExecuter(change, False, False, None)
+    executer = presubmit.PresubmitExecuter(change, False, False, None, False)
     self.failIf(executer.ExecPresubmitScript('', fake_presubmit))
     # No error if no on-upload entry point
     self.failIf(executer.ExecPresubmitScript(
@@ -354,7 +354,7 @@ class PresubmitUnittest(PresubmitTestsBase):
       fake_presubmit
     ))
 
-    executer = presubmit.PresubmitExecuter(change, True, False, None)
+    executer = presubmit.PresubmitExecuter(change, True, False, None, False)
     # No error if no on-commit entry point
     self.failIf(executer.ExecPresubmitScript(
       ('def CheckChangeOnUpload(input_api, output_api):\n'
@@ -380,13 +380,13 @@ class PresubmitUnittest(PresubmitTestsBase):
       fake_presubmit
     ))
 
-    self.assertRaises(presubmit.exceptions.RuntimeError,
+    self.assertRaises(presubmit.PresubmitFailure,
       executer.ExecPresubmitScript,
       'def CheckChangeOnCommit(input_api, output_api):\n'
       '  return "foo"',
       fake_presubmit)
 
-    self.assertRaises(presubmit.exceptions.RuntimeError,
+    self.assertRaises(presubmit.PresubmitFailure,
       executer.ExecPresubmitScript,
       'def CheckChangeOnCommit(input_api, output_api):\n'
       '  return ["foo"]',
@@ -618,26 +618,27 @@ def CheckChangeOnCommit(input_api, output_api):
     self.mox.ReplayAll()
 
     executer = presubmit.GetTrySlavesExecuter()
-    self.assertEqual([], executer.ExecPresubmitScript(''))
-    self.assertEqual([], executer.ExecPresubmitScript('def foo():\n  return\n'))
+    self.assertEqual([], executer.ExecPresubmitScript('', ''))
+    self.assertEqual(
+        [], executer.ExecPresubmitScript('def foo():\n  return\n', ''))
 
     # bad results
     starts_with_space_result = ['  starts_with_space']
     not_list_result1 = "'foo'"
     not_list_result2 = "('a', 'tuple')"
     for result in starts_with_space_result, not_list_result1, not_list_result2:
-      self.assertRaises(presubmit.exceptions.RuntimeError,
+      self.assertRaises(presubmit.PresubmitFailure,
                         executer.ExecPresubmitScript,
-                        self.presubmit_tryslave % result)
+                        self.presubmit_tryslave % result, '')
 
     # good results
     expected_result = ['1', '2', '3']
     empty_result = []
     space_in_name_result = ['foo bar', '1\t2 3']
     for result in expected_result, empty_result, space_in_name_result:
-      self.assertEqual(result,
-                       executer.ExecPresubmitScript(self.presubmit_tryslave %
-                                                    str(result)))
+      self.assertEqual(
+          result,
+          executer.ExecPresubmitScript(self.presubmit_tryslave % result, ''))
 
   def testDoGetTrySlaves(self):
     join = presubmit.os.path.join
@@ -730,12 +731,12 @@ class InputApiUnittest(PresubmitTestsBase):
       'host_url', 'is_committing', 'json', 'marshal', 'os_listdir', 'os_walk',
       'os_path', 'owners_db', 'pickle', 'platform', 'python_executable', 're',
       'subprocess', 'tbr', 'tempfile', 'time', 'traceback', 'unittest',
-      'urllib2', 'version',
+      'urllib2', 'version', 'verbose',
     ]
     # If this test fails, you should add the relevant test.
-    self.compareMembers(presubmit.InputApi(self.fake_change, './.', False,
-                                           False, None),
-                        members)
+    self.compareMembers(
+        presubmit.InputApi(self.fake_change, './.', False, False, None, False),
+        members)
 
   def testDepotToLocalPath(self):
     presubmit.scm.SVN.CaptureInfo('svn://foo/smurf').AndReturn(
@@ -743,29 +744,34 @@ class InputApiUnittest(PresubmitTestsBase):
     presubmit.scm.SVN.CaptureInfo('svn:/foo/notfound/burp').AndReturn({})
     self.mox.ReplayAll()
 
-    path = presubmit.InputApi(self.fake_change, './p', False, False,
-        None).DepotToLocalPath('svn://foo/smurf')
+    path = presubmit.InputApi(
+        self.fake_change, './p', False, False, None, False).DepotToLocalPath(
+            'svn://foo/smurf')
     self.failUnless(path == 'prout')
-    path = presubmit.InputApi(self.fake_change, './p', False, False,
-        None).DepotToLocalPath('svn:/foo/notfound/burp')
+    path = presubmit.InputApi(
+        self.fake_change, './p', False, False, None, False).DepotToLocalPath(
+            'svn:/foo/notfound/burp')
     self.failUnless(path == None)
 
   def testLocalToDepotPath(self):
     presubmit.scm.SVN.CaptureInfo('smurf').AndReturn({'URL': 'svn://foo'})
     presubmit.scm.SVN.CaptureInfo('notfound-food').AndReturn({})
     self.mox.ReplayAll()
-    path = presubmit.InputApi(self.fake_change, './p', False, False,
-        None).LocalToDepotPath('smurf')
+    path = presubmit.InputApi(
+        self.fake_change, './p', False, False, None, False).LocalToDepotPath(
+            'smurf')
     self.assertEqual(path, 'svn://foo')
-    path = presubmit.InputApi(self.fake_change, './p', False, False,
-        None).LocalToDepotPath('notfound-food')
-    self.failUnless(path == None)
+    path = presubmit.InputApi(
+        self.fake_change, './p', False, False, None, False).LocalToDepotPath(
+            'notfound-food')
+    self.assertEquals(path, None)
 
   def testInputApiConstruction(self):
     self.mox.ReplayAll()
-    api = presubmit.InputApi(self.fake_change,
-                             presubmit_path='foo/path/PRESUBMIT.py',
-                             is_committing=False, tbr=False, host_url=None)
+    api = presubmit.InputApi(
+        self.fake_change,
+        presubmit_path='foo/path/PRESUBMIT.py',
+        is_committing=False, tbr=False, host_url=None, verbose=False)
     self.assertEquals(api.PresubmitLocalPath(), 'foo/path')
     self.assertEquals(api.change, self.fake_change)
     self.assertEquals(api.host_url, 'http://codereview.chromium.org')
@@ -821,10 +827,10 @@ class InputApiUnittest(PresubmitTestsBase):
 
     change = presubmit.SvnChange('mychange', '\n'.join(description_lines),
                                  self.fake_root_dir, files, 0, 0)
-    input_api = presubmit.InputApi(change,
-                                   join(self.fake_root_dir, 'foo',
-                                        'PRESUBMIT.py'),
-                                   False, False, None)
+    input_api = presubmit.InputApi(
+        change,
+        join(self.fake_root_dir, 'foo', 'PRESUBMIT.py'),
+        False, False, None, False)
     # Doesn't filter much
     got_files = input_api.AffectedFiles()
     self.assertEquals(len(got_files), 7)
@@ -909,8 +915,9 @@ class InputApiUnittest(PresubmitTestsBase):
         ],
       ),
     ]
-    input_api = presubmit.InputApi(self.fake_change, './PRESUBMIT.py', False,
-        False, None)
+    input_api = presubmit.InputApi(
+        self.fake_change, './PRESUBMIT.py', False,
+        False, None, False)
     self.mox.ReplayAll()
 
     self.assertEqual(len(input_api.DEFAULT_WHITE_LIST), 22)
@@ -938,10 +945,10 @@ class InputApiUnittest(PresubmitTestsBase):
 
     change = presubmit.SvnChange('mychange', '', self.fake_root_dir, files, 0,
                                  0)
-    input_api = presubmit.InputApi(change,
-                                   presubmit.os.path.join(self.fake_root_dir,
-                                                          'PRESUBMIT.py'),
-                                   False, False, None)
+    input_api = presubmit.InputApi(
+        change,
+        presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py'),
+        False, False, None, False)
     got_files = input_api.AffectedSourceFiles(FilterSourceFile)
     self.assertEquals(len(got_files), 2)
     self.assertEquals(got_files[0].LocalPath(), 'eeaee')
@@ -960,8 +967,8 @@ class InputApiUnittest(PresubmitTestsBase):
 
     change = presubmit.SvnChange('mychange', '', self.fake_root_dir, files, 0,
                                  0)
-    input_api = presubmit.InputApi(change, './PRESUBMIT.py', False,
-                                   False, None)
+    input_api = presubmit.InputApi(
+        change, './PRESUBMIT.py', False, False, None, False)
     # Sample usage of overiding the default white and black lists.
     got_files = input_api.AffectedSourceFiles(
         lambda x: input_api.FilterSourceFile(x, white_list, black_list))
@@ -999,9 +1006,9 @@ class InputApiUnittest(PresubmitTestsBase):
     paths_from_change = change.AbsoluteLocalPaths(include_dirs=True)
     self.assertEqual(len(paths_from_change), 3)
     presubmit_path = join(self.fake_root_dir, 'isdir', 'PRESUBMIT.py')
-    api = presubmit.InputApi(change=change,
-                             presubmit_path=presubmit_path,
-                             is_committing=True, tbr=False, host_url=None)
+    api = presubmit.InputApi(
+        change=change, presubmit_path=presubmit_path,
+        is_committing=True, tbr=False, host_url=None, verbose=False)
     paths_from_api = api.AbsoluteLocalPaths(include_dirs=True)
     self.assertEqual(len(paths_from_api), 2)
     for absolute_paths in [paths_from_change, paths_from_api]:
@@ -1018,7 +1025,7 @@ class InputApiUnittest(PresubmitTestsBase):
     api = presubmit.InputApi(
         change,
         presubmit.os.path.join(self.fake_root_dir, 'foo', 'PRESUBMIT.py'), True,
-        False, None)
+        False, None, False)
     api.AffectedTextFiles(include_deletes=False)
 
   def testReadFileStringDenied(self):
@@ -1028,7 +1035,7 @@ class InputApiUnittest(PresubmitTestsBase):
                               0, 0)
     input_api = presubmit.InputApi(
         change, presubmit.os.path.join(self.fake_root_dir, '/p'), False,
-        False, None)
+        False, None, False)
     self.assertRaises(IOError, input_api.ReadFile, 'boo', 'x')
 
   def testReadFileStringAccepted(self):
@@ -1040,7 +1047,7 @@ class InputApiUnittest(PresubmitTestsBase):
                               0, 0)
     input_api = presubmit.InputApi(
         change, presubmit.os.path.join(self.fake_root_dir, '/p'), False,
-        False, None)
+        False, None, False)
     input_api.ReadFile(path, 'x')
 
   def testReadFileAffectedFileDenied(self):
@@ -1051,7 +1058,7 @@ class InputApiUnittest(PresubmitTestsBase):
                               0, 0)
     input_api = presubmit.InputApi(
         change, presubmit.os.path.join(self.fake_root_dir, '/p'), False,
-        False, None)
+        False, None, False)
     self.assertRaises(IOError, input_api.ReadFile, fileobj, 'x')
 
   def testReadFileAffectedFileAccepted(self):
@@ -1064,7 +1071,7 @@ class InputApiUnittest(PresubmitTestsBase):
                               0, 0)
     input_api = presubmit.InputApi(
         change, presubmit.os.path.join(self.fake_root_dir, '/p'), False,
-        False, None)
+        False, None, False)
     input_api.ReadFile(fileobj, 'x')
 
 
@@ -2001,6 +2008,7 @@ mac|success|blew
     change = presubmit.Change(
         'foo1', 'description1', self.fake_root_dir, None, 0, 0)
     input_api = self.MockInputApi(change, False)
+    input_api.verbose = True
     unit_tests = ['allo', 'bar.py']
     input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
     input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
@@ -2017,8 +2025,7 @@ mac|success|blew
     results = presubmit_canned_checks.RunUnitTests(
         input_api,
         presubmit.OutputApi,
-        unit_tests,
-        verbose=True)
+        unit_tests)
     self.assertEqual(1, len(results))
     self.assertEqual(
         presubmit.OutputApi.PresubmitPromptWarning, results[0].__class__)
@@ -2028,6 +2035,7 @@ mac|success|blew
     change = presubmit.Change(
         'foo1', 'description1', self.fake_root_dir, None, 0, 0)
     input_api = self.MockInputApi(change, False)
+    input_api.verbose = True
     input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
     input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
     path = presubmit.os.path.join(self.fake_root_dir, 'random_directory')
@@ -2043,8 +2051,7 @@ mac|success|blew
         presubmit.OutputApi,
         'random_directory',
         whitelist=['^a$', '^b$'],
-        blacklist=['a'],
-        verbose=True)
+        blacklist=['a'])
     self.assertEqual(results, [])
     self.checkstdout(
         'Running %s\n' % presubmit.os.path.join('random_directory', 'b'))

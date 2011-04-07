@@ -37,18 +37,16 @@ def CommonChecks(input_api, output_api):
 
   # TODO(maruel): Make sure at least one file is modified first.
   # TODO(maruel): If only tests are modified, only run them.
-  verbose = False
   results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
       input_api,
       output_api,
       'tests',
-      whitelist=[r'.*test\.py$'],
-      verbose=verbose))
-  results.extend(RunGitClTests(input_api, output_api, verbose=verbose))
+      whitelist=[r'.*test\.py$']))
+  results.extend(RunGitClTests(input_api, output_api))
   return results
 
 
-def RunGitClTests(input_api, output_api, verbose):
+def RunGitClTests(input_api, output_api):
   """Run all the shells scripts in the directory test.
   """
   if input_api.platform == 'win32':
@@ -81,7 +79,7 @@ def RunGitClTests(input_api, output_api, verbose):
 
       print('Running %s' % test)
       try:
-        if verbose:
+        if input_api.verbose:
           input_api.subprocess.check_call(
               [input_api.os_path.join(test_path, test)], cwd=test_path)
         else:

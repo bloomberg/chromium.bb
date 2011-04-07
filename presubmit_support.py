@@ -6,7 +6,7 @@
 """Enables directory-specific presubmit checks to run at upload and/or commit.
 """
 
-__version__ = '1.5'
+__version__ = '1.6'
 
 # TODO(joi) Add caching where appropriate/needed. The API is designed to allow
 # caching (between all different invocations of presubmit scripts for a given
@@ -14,7 +14,6 @@ __version__ = '1.5'
 
 import cPickle  # Exposed through the API.
 import cStringIO  # Exposed through the API.
-import exceptions
 import fnmatch
 import glob
 import logging
@@ -56,11 +55,7 @@ import subprocess2 as subprocess  # Exposed through the API.
 _ASKED_FOR_FEEDBACK = False
 
 
-class NotImplementedException(Exception):
-  """We're leaving placeholders in a bunch of places to remind us of the
-  design of the API, but we have not implemented all of it yet. Implement as
-  the need arises.
-  """
+class PresubmitFailure(Exception):
   pass
 
 
@@ -178,7 +173,7 @@ class OutputApi(object):
     """A warning that should be included in the review request email."""
     def __init__(self, *args, **kwargs):
       super(OutputApi.MailTextResult, self).__init__()
-      raise NotImplementedException()
+      raise NotImplementedError()
 
 
 class InputApi(object):
@@ -222,7 +217,8 @@ class InputApi(object):
 
   # TODO(dpranke): Update callers to pass in tbr, host_url, remove
   # default arguments.
-  def __init__(self, change, presubmit_path, is_committing, tbr, host_url=None):
+  def __init__(self, change, presubmit_path, is_committing, tbr, host_url,
+      verbose):
     """Builds an InputApi object.
 
     Args:
@@ -276,6 +272,7 @@ class InputApi(object):
     # in order to be able to handle wildcard OWNERS files?
     self.owners_db = owners.Database(change.RepositoryRoot(),
         fopen=file, os_path=self.os_path)
+    self.verbose = verbose
 
   def PresubmitLocalPath(self):
     """Returns the local path of the presubmit script currently being run.
@@ -595,7 +592,7 @@ class GitAffectedFile(AffectedFile):
 
   def ServerPath(self):
     if self._server_path is None:
-      raise NotImplementedException()  # TODO(maruel) Implement.
+      raise NotImplementedError('TODO(maruel) Implement.')
     return self._server_path
 
   def IsDirectory(self):
@@ -606,13 +603,12 @@ class GitAffectedFile(AffectedFile):
         # querying subversion, especially on Windows.
         self._is_directory = os.path.isdir(path)
       else:
-        # raise NotImplementedException()  # TODO(maruel) Implement.
         self._is_directory = False
     return self._is_directory
 
   def Property(self, property_name):
     if not property_name in self._properties:
-      raise NotImplementedException()  # TODO(maruel) Implement.
+      raise NotImplementedError('TODO(maruel) Implement.')
     return self._properties[property_name]
 
   def IsTextFile(self):
@@ -623,7 +619,6 @@ class GitAffectedFile(AffectedFile):
       elif self.IsDirectory():
         self._is_text_file = False
       else:
-        # raise NotImplementedException()  # TODO(maruel) Implement.
         self._is_text_file = os.path.isfile(self.AbsoluteLocalPath())
     return self._is_text_file
 
@@ -861,7 +856,7 @@ def ListRelevantPresubmitFiles(files, root):
 
 class GetTrySlavesExecuter(object):
   @staticmethod
-  def ExecPresubmitScript(script_text):
+  def ExecPresubmitScript(script_text, presubmit_path):
     """Executes GetPreferredTrySlaves() from a single presubmit script.
 
     Args:
@@ -871,21 +866,24 @@ class GetTrySlavesExecuter(object):
       A list of try slaves.
     """
     context = {}
-    exec script_text in context
+    try:
+      exec script_text in context
+    except Exception, e:
+      raise PresubmitFailure('"%s" had an exception.\n%s' % (presubmit_path, e))
 
     function_name = 'GetPreferredTrySlaves'
     if function_name in context:
       result = eval(function_name + '()', context)
       if not isinstance(result, types.ListType):
-        raise exceptions.RuntimeError(
+        raise PresubmitFailure(
             'Presubmit functions must return a list, got a %s instead: %s' %
             (type(result), str(result)))
       for item in result:
         if not isinstance(item, basestring):
-          raise exceptions.RuntimeError('All try slaves names must be strings.')
+          raise PresubmitFailure('All try slaves names must be strings.')
         if item != item.strip():
-          raise exceptions.RuntimeError('Try slave names cannot start/end'
-                                        'with whitespace')
+          raise PresubmitFailure(
+              'Try slave names cannot start/end with whitespace')
     else:
       result = []
     return result
@@ -916,14 +914,15 @@ def DoGetTrySlaves(changed_files,
   if default_presubmit:
     if verbose:
       output_stream.write("Running default presubmit script.\n")
-    results += executer.ExecPresubmitScript(default_presubmit)
+    fake_path = os.path.join(repository_root, 'PRESUBMIT.py')
+    results += executer.ExecPresubmitScript(default_presubmit, fake_path)
   for filename in presubmit_files:
     filename = os.path.abspath(filename)
     if verbose:
       output_stream.write("Running %s\n" % filename)
     # Accept CRLF presubmit script.
     presubmit_script = gclient_utils.FileRead(filename, 'rU')
-    results += executer.ExecPresubmitScript(presubmit_script)
+    results += executer.ExecPresubmitScript(presubmit_script, filename)
 
   slaves = list(set(results))
   if slaves and verbose:
@@ -933,7 +932,7 @@ def DoGetTrySlaves(changed_files,
 
 
 class PresubmitExecuter(object):
-  def __init__(self, change, committing, tbr, host_url):
+  def __init__(self, change, committing, tbr, host_url, verbose):
     """
     Args:
       change: The Change object.
@@ -946,6 +945,7 @@ class PresubmitExecuter(object):
     self.committing = committing
     self.tbr = tbr
     self.host_url = host_url
+    self.verbose = verbose
 
   def ExecPresubmitScript(self, script_text, presubmit_path):
     """Executes a single presubmit script.
@@ -965,9 +965,12 @@ class PresubmitExecuter(object):
 
     # Load the presubmit script into context.
     input_api = InputApi(self.change, presubmit_path, self.committing,
-                         self.tbr, self.host_url)
+                         self.tbr, self.host_url, self.verbose)
     context = {}
-    exec script_text in context
+    try:
+      exec script_text in context
+    except Exception, e:
+      raise PresubmitFailure('"%s" had an exception.\n%s' % (presubmit_path, e))
 
     # These function names must change if we make substantial changes to
     # the presubmit API that are not backwards compatible.
@@ -982,11 +985,11 @@ class PresubmitExecuter(object):
       logging.debug('Running %s done.' % function_name)
       if not (isinstance(result, types.TupleType) or
               isinstance(result, types.ListType)):
-        raise exceptions.RuntimeError(
+        raise PresubmitFailure(
           'Presubmit functions must return a tuple or list')
       for item in result:
         if not isinstance(item, OutputApi.PresubmitResult):
-          raise exceptions.RuntimeError(
+          raise PresubmitFailure(
             'All presubmit results must be of types derived from '
             'output_api.PresubmitResult')
     else:
@@ -1047,7 +1050,7 @@ def DoPresubmitChecks(change,
   if not presubmit_files and verbose:
     output.write("Warning, no presubmit.py found.\n")
   results = []
-  executer = PresubmitExecuter(change, committing, tbr, host_url)
+  executer = PresubmitExecuter(change, committing, tbr, host_url, verbose)
   if default_presubmit:
     if verbose:
       output.write("Running default presubmit script.\n")
@@ -1160,8 +1163,8 @@ def Main(argv):
                    help="Use upload instead of commit checks")
   parser.add_option("-r", "--recursive", action="store_true",
                    help="Act recursively")
-  parser.add_option("-v", "--verbose", action="store_true", default=False,
-                   help="Verbose output")
+  parser.add_option("-v", "--verbose", action="count", default=0,
+                   help="Use 2 times for more debug info")
   parser.add_option("--name", default='no name')
   parser.add_option("--description", default='')
   parser.add_option("--issue", type='int', default=0)
@@ -1174,26 +1177,36 @@ def Main(argv):
   parser.add_option("--default_presubmit")
   parser.add_option("--may_prompt", action='store_true', default=False)
   options, args = parser.parse_args(argv)
-  if options.verbose:
+  if options.verbose >= 2:
     logging.basicConfig(level=logging.DEBUG)
+  elif options.verbose:
+    logging.basicConfig(level=logging.INFO)
+  else:
+    logging.basicConfig(level=logging.ERROR)
   change_class, files = load_files(options, args)
   if not change_class:
     parser.error('For unversioned directory, <files> is not optional.')
-  if options.verbose:
-    print "Found %d file(s)." % len(files)
-  results = DoPresubmitChecks(change_class(options.name,
-                                           options.description,
-                                           options.root,
-                                           files,
-                                           options.issue,
-                                           options.patchset),
-                              options.commit,
-                              options.verbose,
-                              sys.stdout,
-                              sys.stdin,
-                              options.default_presubmit,
-                              options.may_prompt)
-  return not results.should_continue()
+  logging.info('Found %d file(s).' % len(files))
+  try:
+    results = DoPresubmitChecks(
+        change_class(options.name,
+                    options.description,
+                    options.root,
+                    files,
+                    options.issue,
+                    options.patchset),
+        options.commit,
+        options.verbose,
+        sys.stdout,
+        sys.stdin,
+        options.default_presubmit,
+        options.may_prompt)
+    return not results.should_continue()
+  except PresubmitFailure, e:
+    print >> sys.stderr, e
+    print >> sys.stderr, 'Maybe your depot_tools is out of date?'
+    print >> sys.stderr, 'If all fails, contact maruel@'
+    return 2
 
 
 if __name__ == '__main__':
