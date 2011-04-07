@@ -94,6 +94,7 @@ extern int RendererMain(const MainFunctionParams&);
 extern int GpuMain(const MainFunctionParams&);
 extern int PluginMain(const MainFunctionParams&);
 extern int PpapiPluginMain(const MainFunctionParams&);
+extern int PpapiBrokerMain(const MainFunctionParams&);
 extern int WorkerMain(const MainFunctionParams&);
 extern int NaClMain(const MainFunctionParams&);
 extern int UtilityMain(const MainFunctionParams&);
@@ -162,6 +163,9 @@ static void AdjustLinuxOOMScore(const std::string& process_type) {
   if (process_type == switches::kPluginProcess ||
       process_type == switches::kPpapiPluginProcess) {
     score = kPluginScore;
+  } else if (process_type == switches::kPpapiBrokerProcess) {
+    // Kill the broker before the plugin.
+    score = kPluginScore + 1;
   } else if (process_type == switches::kUtilityProcess ||
              process_type == switches::kWorkerProcess ||
              process_type == switches::kGpuProcess ||
@@ -451,6 +455,7 @@ int RunNamedProcessTypeMain(const std::string& process_type,
     { switches::kPluginProcess,      PluginMain },
     { switches::kWorkerProcess,      WorkerMain },
     { switches::kPpapiPluginProcess, PpapiPluginMain },
+    { switches::kPpapiBrokerProcess, PpapiBrokerMain },
     { switches::kUtilityProcess,     UtilityMain },
     { switches::kGpuProcess,         GpuMain },
     { switches::kServiceProcess,     ServiceProcessMain },

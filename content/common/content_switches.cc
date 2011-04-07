@@ -162,6 +162,9 @@ const char kPluginProcess[]                 = "plugin";
 // Causes the plugin process to display a dialog on launch.
 const char kPluginStartupDialog[]           = "plugin-startup-dialog";
 
+// Argument to the process type that indicates a PPAPI broker process type.
+const char kPpapiBrokerProcess[]            = "ppapi-broker";
+
 // Use the PPAPI (Pepper) Flash found at the given path.
 const char kPpapiFlashPath[]                = "ppapi-flash-path";
 

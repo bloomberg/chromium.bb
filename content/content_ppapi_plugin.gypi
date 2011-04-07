@@ -14,9 +14,8 @@
       'sources': [
         'ppapi_plugin/plugin_process_dispatcher.cc',
         'ppapi_plugin/plugin_process_dispatcher.h',
+        'ppapi_plugin/ppapi_broker_main.cc',
         'ppapi_plugin/ppapi_plugin_main.cc',
-        'ppapi_plugin/ppapi_process.cc',
-        'ppapi_plugin/ppapi_process.h',
         'ppapi_plugin/ppapi_thread.cc',
         'ppapi_plugin/ppapi_thread.h',
       ],
