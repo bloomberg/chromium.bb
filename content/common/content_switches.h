@@ -29,6 +29,7 @@ extern const char kDisablePlugins[];
 extern const char kDisablePopupBlocking[];
 extern const char kDisableSeccompSandbox[];
 extern const char kDisableWebSockets[];
+extern const char kEnableAcceleratedDrawing[];
 extern const char kEnableBenchmarking[];
 extern const char kEnableGPUPlugin[];
 extern const char kEnableLogging[];

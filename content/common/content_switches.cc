@@ -69,6 +69,12 @@ const char kDisableSeccompSandbox[]         = "disable-seccomp-sandbox";
 // Disable Web Sockets support.
 const char kDisableWebSockets[]             = "disable-web-sockets";
 
+// Enable hardware accelerated page drawing.
+// Please note that this flag is honored only if chromium is compiled with
+// SKIA_GPU flag, which can be enabled by setting use_skia_gpu variable to 1
+// in build/features_override.gypi.
+const char kEnableAcceleratedDrawing[]      = "enable-accelerated-drawing";
+
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 

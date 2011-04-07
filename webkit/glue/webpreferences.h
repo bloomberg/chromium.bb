@@ -79,6 +79,7 @@ struct WebPreferences {
   bool accelerated_layers_enabled;
   bool accelerated_video_enabled;
   bool accelerated_2d_canvas_enabled;
+  bool accelerated_drawing_enabled;
   bool accelerated_plugins_enabled;
   bool memory_info_enabled;
   bool interactive_form_validation_enabled;

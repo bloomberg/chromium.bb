@@ -73,6 +73,7 @@ WebPreferences::WebPreferences()
       accelerated_layers_enabled(false),
       accelerated_video_enabled(false),
       accelerated_2d_canvas_enabled(false),
+      accelerated_drawing_enabled(false),
       accelerated_plugins_enabled(false),
       memory_info_enabled(false),
       interactive_form_validation_enabled(true),
@@ -182,6 +183,9 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   // Enable gpu-accelerated 2d canvas if requested on the command line.
   settings->setAccelerated2dCanvasEnabled(accelerated_2d_canvas_enabled);
+
+  // Enable gpu-accelerated drawing if requested on the command line.
+  settings->setAcceleratedDrawingEnabled(accelerated_drawing_enabled);
 
   // Enabling accelerated layers from the command line enabled accelerated
   // 3D CSS, Video, and Animations.
