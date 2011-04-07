@@ -10,6 +10,7 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_var.h"
 
 // Example usage from plugin code:
 //
