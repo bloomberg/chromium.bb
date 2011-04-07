@@ -8,14 +8,9 @@ WebSocketTest.*
 DirectoryLister*
 
 # Failing, see http://crbug.com/78303
-HttpNetworkTransactionTest.BypassHostCacheOnRefresh2
-HttpNetworkTransactionTest.GenerateAuthToken
-HttpNetworkTransactionTest.HttpsProxySpdyGetWithProxyAuth
-HttpNetworkTransactionTest.BasicAuthProxyNoKeepAlive
-HttpNetworkTransactionTest.HttpsProxySpdyConnectHttps
+HttpNetworkTransactionTest.*
+HttpNetworkLayerTest.*
 
 # Hang, or killing the test.  See http://crbug.com/78536
 ProxyResolverV8Test.*
 
-# CHECK failure. See http://crbug.com/78533
-HttpNetworkLayerTest.GET
