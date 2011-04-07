@@ -211,6 +211,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   static const size_t kNumPermissions;
   static const char* const kHostedAppPermissionNames[];
   static const size_t kNumHostedAppPermissions;
+  static const char* const kComponentPrivatePermissionNames[];
+  static const size_t kNumComponentPrivatePermissions;
 
   // The old name for the unlimited storage permission, which is deprecated but
   // still accepted as meaning the same thing as kUnlimitedStoragePermission.
@@ -641,6 +643,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Returns true if the string is one of the known api permissions (see
   // kPermissions).
   bool IsAPIPermission(const std::string& permission) const;
+
+  // Returns true if this is a component, or we are not attempting to access a
+  // component-private permission.
+  bool IsComponentOnlyPermission(const std::string& permission) const;
 
   // The set of unique API install messages that the extension has.
   // NOTE: This only includes messages related to permissions declared in the

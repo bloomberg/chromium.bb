@@ -312,6 +312,12 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<SetPreferenceFunction>();
   RegisterFunction<ClearPreferenceFunction>();
 
+  // File Dialog.
+  RegisterFunction<SelectFileFunction>();
+  RegisterFunction<SelectFilesFunction>();
+  RegisterFunction<CancelFileDialogFunction>();
+  RegisterFunction<FileDialogStringsFunction>();
+
 #if defined(OS_CHROMEOS)
   // Device Customization.
   RegisterFunction<GetChromeosInfoFunction>();

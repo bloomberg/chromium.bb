@@ -7,14 +7,19 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_file_browser_private_api.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/shell_dialogs.h"
+#include "chrome/browser/ui/views/html_dialog_view.h"
+#include "chrome/browser/ui/views/window.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "third_party/libjingle/source/talk/base/urlencode.h"
+#include "views/window/window.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -38,11 +43,15 @@ class FileManagerDialog
       int file_type_index,
       const FilePath::StringType& default_extension);
 
-  // Thread callback.
-  void CallbackOpen() {
-    browser::ShowHtmlDialog(owner_window_,
-                            ProfileManager::GetDefaultProfile(),
-                            this);
+  void CreateHtmlDialogView(Profile* profile) {
+    HtmlDialogView* html_view = new HtmlDialogView(profile, this);
+    browser::CreateViewsWindow(owner_window_, gfx::Rect(), html_view);
+    html_view->InitDialog();
+    html_view->window()->Show();
+    tab_id_ = html_view->tab_contents()->controller().session_id().id();
+
+    // Register our listener and associate it with our tab.
+    FileDialogFunction::AddListener(tab_id_, listener_);
   }
 
   // BaseShellDialog implementation.
@@ -52,6 +61,8 @@ class FileManagerDialog
   }
 
   virtual void ListenerDestroyed() {
+    listener_ = NULL;
+    FileDialogFunction::RemoveListener(tab_id_);
   }
 
   // SelectFileDialog implementation.
@@ -125,6 +136,7 @@ class FileManagerDialog
   virtual ~FileManagerDialog() {}
 
   Listener* listener_;
+  int32 tab_id_;
 
   // True when opening in browser, otherwise in OOBE/login mode.
   bool browser_mode_;
@@ -158,7 +170,8 @@ std::string FileManagerDialog::s_extension_base_url_ =
     "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/main.html";
 
 FileManagerDialog::FileManagerDialog(Listener* listener)
-    : browser_mode_(true),
+    : tab_id_(0),
+      browser_mode_(true),
       owner_window_(0) {
   listener_ = listener;
 }
@@ -188,7 +201,8 @@ void FileManagerDialog::SelectFile(
   if (browser_mode_) {
     Browser* browser = BrowserList::GetLastActive();
     if (browser) {
-      browser->BrowserShowHtmlDialog(this, owner_window);
+      DCHECK_EQ(browser->type(), Browser::TYPE_NORMAL);
+      CreateHtmlDialogView(browser->profile());
       return;
     }
   }
@@ -196,7 +210,9 @@ void FileManagerDialog::SelectFile(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      NewRunnableMethod(this, &FileManagerDialog::CallbackOpen));
+      NewRunnableMethod(this,
+                        &FileManagerDialog::CreateHtmlDialogView,
+                        ProfileManager::GetDefaultProfile()));
 }
 
 // static

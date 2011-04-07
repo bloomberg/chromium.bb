@@ -259,6 +259,14 @@ const char* const Extension::kHostedAppPermissionNames[] = {
 const size_t Extension::kNumHostedAppPermissions =
     arraysize(Extension::kHostedAppPermissionNames);
 
+const char* const Extension::kComponentPrivatePermissionNames[] = {
+    Extension::kFileBrowserPrivatePermission,
+    Extension::kWebstorePrivatePermission,
+    Extension::kChromeosInfoPrivatePermissions,
+};
+const size_t Extension::kNumComponentPrivatePermissions =
+    arraysize(Extension::kComponentPrivatePermissionNames);
+
 // We purposefully don't put this into kPermissionNames.
 const char Extension::kOldUnlimitedStoragePermission[] = "unlimited_storage";
 
@@ -1228,8 +1236,10 @@ Extension::Extension(const FilePath& path, Location location)
   DCHECK(path.empty() || path.IsAbsolute());
   path_ = MaybeNormalizePath(path);
 }
+
 Extension::~Extension() {
 }
+
 ExtensionResource Extension::GetResource(
     const std::string& relative_path) const {
 #if defined(OS_POSIX)
@@ -1924,18 +1934,10 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
         return false;
       }
 
-      // Only COMPONENT extensions can use the webstorePrivate and
-      // fileBrowserPrivate APIs.
+      // Only COMPONENT extensions can use private APIs.
       // TODO(asargent) - We want a more general purpose mechanism for this,
       // and better error messages. (http://crbug.com/54013)
-      if ((permission_str == kWebstorePrivatePermission ||
-           permission_str == kFileBrowserPrivatePermission) &&
-          location_ != Extension::COMPONENT) {
-        continue;
-      }
-
-      if (permission_str == kChromeosInfoPrivatePermissions &&
-          location_ != Extension::COMPONENT) {
+      if (!IsComponentOnlyPermission(permission_str)) {
         continue;
       }
 
@@ -2424,6 +2426,19 @@ void Extension::InitEffectiveHostPermissions() {
     for (; pattern != content_script->url_patterns().end(); ++pattern)
       effective_host_permissions_.AddPattern(*pattern);
   }
+}
+
+bool Extension::IsComponentOnlyPermission
+    (const std::string& permission) const {
+  if (location() == Extension::COMPONENT)
+    return true;
+
+  // Non-component extensions are not allowed to access private apis.
+  for (size_t i = 0; i < Extension::kNumComponentPrivatePermissions; ++i) {
+    if (permission == Extension::kComponentPrivatePermissionNames[i])
+      return false;
+  }
+  return true;
 }
 
 bool Extension::HasMultipleUISurfaces() const {
