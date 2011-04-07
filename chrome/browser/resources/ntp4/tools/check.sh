@@ -10,7 +10,7 @@
 # See http://code.google.com/closure/compiler/ and
 # http://code.google.com/closure/utilities/ for details on these tools.
 
-SOURCES="event_tracker.js touch_handler.js card_slider.js new_tab.js grabber.js apps_page.js"
+SOURCES="event_tracker.js touch_handler.js card_slider.js new_tab.js grabber.js apps_page.js recently_closed.js"
 
 # First run the closure compiler looking for syntactic issues.
 # Note that we throw away the output from jscompiler since it's use

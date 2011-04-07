@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Touch-based new tab page
+ * @fileoverview New tab page
  * This is the main code for the new tab page used by touch-enabled Chrome
  * browsers.  For now this is still a prototype.
  */
@@ -162,6 +162,9 @@ var ntp = (function() {
       trash.classList.remove('hover');
     });
     trash.addEventListener(Grabber.EventType.DROP, appTrash);
+
+    cr.ui.decorate($('recently-closed-menu-button'), ntp4.RecentMenuButton);
+    chrome.send('getRecentlyClosedTabs');
   }
 
   /**
@@ -674,8 +677,13 @@ var ntp = (function() {
   }
 
   // TODO(estade): remove |hasAttribution|.
+  // TODO(estade): rename newtab.css to new_tab_theme.css
   function themeChanged(hasAttribution) {
     $('themecss').href = 'chrome://theme/css/newtab.css?' + Date.now();
+  }
+
+  function setRecentlyClosedTabs(dataItems) {
+    $('recently-closed-menu-button').dataItems = dataItems;
   }
 
   // Return an object with all the exports
@@ -684,7 +692,8 @@ var ntp = (function() {
     appsPrefChangeCallback: appsPrefChangeCallback,
     getAppsCallback: getAppsCallback,
     initialize: initialize,
-    themeChanged: themeChanged
+    themeChanged: themeChanged,
+    setRecentlyClosedTabs: setRecentlyClosedTabs,
   };
 })();
 
@@ -695,5 +704,6 @@ var assert = ntp.assert;
 var getAppsCallback = ntp.getAppsCallback;
 var appsPrefChangeCallback = ntp.appsPrefChangeCallback;
 var themeChanged = ntp.themeChanged;
+var recentlyClosedTabs = ntp.setRecentlyClosedTabs;
 
 document.addEventListener('DOMContentLoaded', ntp.initialize);

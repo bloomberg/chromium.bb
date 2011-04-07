@@ -12,16 +12,26 @@
 <meta name="viewport"
       content="user-scalable=no, width=device-width, maximum-scale=1.0">
 
+<link rel="stylesheet" href="../shared/css/menu.css">
 <link rel="stylesheet" href="new_tab.css">
+<link rel="stylesheet" href="recently_closed.css">
 <link id="themecss" rel="stylesheet">
 
-<script src="../shared/js/cr.js"></script>
+<script src="../shared/js/event_tracker.js"></script>
 <script src="../shared/js/util.js"></script>
+
+<script src="../shared/js/cr.js"></script>
+<script src="../shared/js/cr/ui.js"></script>
+<script src="../shared/js/cr/ui/menu.js"></script>
+<script src="../shared/js/cr/ui/menu_item.js"></script>
+<script src="../shared/js/cr/ui/position_util.js"></script>
+<script src="../shared/js/cr/ui/menu_button.js"></script>
+
 <script src="apps_page.js"></script>
 <script src="card_slider.js"></script>
-<script src="event_tracker.js"></script>
 <script src="grabber.js"></script>
 <script src="new_tab.js"></script>
+<script src="recently_closed.js"></script>
 <script src="touch_handler.js"></script>
 </head>
 
@@ -44,7 +54,10 @@
         <li class="dot" tabindex="0" role="button"></li>
       </ul>
 
-      <span i18n-content="recentlyclosed"></span>
+      <button id="recently-closed-menu-button">
+        <span i18n-content="recentlyclosed"></span>
+        <img src="../ntp/ntp_disclosure_triangle.png">
+      </button>
       <div id="footer-divider-2" class="footer-divider"></div>
       <!-- TODO(estade): replace this with actual user login. -->
       <span id="user-login">example at gmail.com</span>

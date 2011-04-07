@@ -13,14 +13,18 @@ html {
 
 body {
   background-size: auto 100%;
-  font-family: segoe ui, arial, helvetica, sans-serif;
-  font-size: 14px;
   margin: 0;
   /* Don't highlight links when they're tapped.  Safari has bugs here that
      show up as flicker when dragging in some situations */
   -webkit-tap-highlight-color: transparent;
   /* Don't allow selecting text - can occur when dragging */
   -webkit-user-select: none;
+}
+
+body,
+button span {
+  font-family: segoe ui, arial, helvetica, sans-serif;
+  font-size: 14px;
 }
 
 /* The frame is what the slider fits into
@@ -144,7 +148,7 @@ body {
 }
 
 /* TODO(estade): theme this color. */
-#footer-content > span {
+#footer-content span {
   color: #888;
 }
 
@@ -222,9 +226,4 @@ body {
 
 #footer.rearrange-mode #trash {
   -webkit-transform: translate(0, 0);
-}
-
-/* Ensure template items are never drawn when the page initially loads */
-#app-template {
-  display: none;
 }

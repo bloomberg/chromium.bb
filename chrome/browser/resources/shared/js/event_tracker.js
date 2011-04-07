@@ -3,13 +3,11 @@
 // found in the LICENSE file.
 
 /** @fileoverview EventTracker is a simple class that manages the addition and
- *  removal of DOM event listeners.  In particular, it keeps track of all
+ *  removal of DOM event listeners. In particular, it keeps track of all
  *  listeners that have been added and makes it easy to remove some or all of
- *  them without requiring all the information again.  This is particularly
+ *  them without requiring all the information again. This is particularly
  *  handy when the listener is a generated function such as a lambda or the
- *  result of calling Function.bind.  The goal of this class is to make it
- *  easier to avoid memory leaks caused by DOM<->JS cycles - removing event
- *  listeners breakes the DOM->JS part of the cycle.
+ *  result of calling Function.bind.
  */
 
 // Use an anonymous function to enable strict mode just for this file (which

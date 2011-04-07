@@ -10,7 +10,7 @@
 # See http://code.google.com/closure/compiler/ and
 # http://code.google.com/closure/utilities/ for details on these tools.
 
-SOURCES="eventtracker.js touchhandler.js slider.js newtab.js grabber.js "
+SOURCES="touchhandler.js slider.js newtab.js grabber.js "
 SOURCES+="standalone/standalone_hack.js"
 
 # First run the closure compiler looking for syntactic issues.

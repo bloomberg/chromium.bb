@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,10 @@ cr.define('cr.ui', function() {
       var menu;
       if ((menu = this.getAttribute('menu')))
         this.menu = menu;
+
+      // An event tracker for events we only connect to while the menu is
+      // displayed.
+      this.showingEvents_ = new EventTracker();
     },
 
     /**
@@ -97,33 +101,34 @@ cr.define('cr.ui', function() {
      * Shows the menu.
      */
     showMenu: function() {
+      this.hideMenu();
+
       this.menu.style.display = 'block';
       this.setAttribute('menu-shown', '');
 
       // when the menu is shown we steal all keyboard events.
       var doc = this.ownerDocument;
       var win = doc.defaultView;
-      doc.addEventListener('keydown', this, true);
-      doc.addEventListener('mousedown', this, true);
-      doc.addEventListener('blur', this, true);
-      win.addEventListener('resize', this);
-      this.menu.addEventListener('activate', this);
+      this.showingEvents_.add(doc, 'keydown', this, true);
+      this.showingEvents_.add(doc, 'mousedown', this, true);
+      this.showingEvents_.add(doc, 'blur', this, true);
+      this.showingEvents_.add(win, 'resize', this);
+      this.showingEvents_.add(this.menu, 'activate', this);
       this.positionMenu_();
     },
 
     /**
-     * Hides the menu.
+     * Hides the menu. If your menu can go out of scope, make sure to call this
+     * first.
      */
     hideMenu: function() {
+      if (!this.isMenuShown())
+        return;
+
       this.removeAttribute('menu-shown');
       this.menu.style.display = 'none';
-      var doc = this.ownerDocument;
-      var win = doc.defaultView;
-      doc.removeEventListener('keydown', this, true);
-      doc.removeEventListener('mousedown', this, true);
-      doc.removeEventListener('blur', this, true);
-      win.removeEventListener('resize', this);
-      this.menu.removeEventListener('activate', this);
+
+      this.showingEvents_.removeAll();
       this.menu.selectedIndex = -1;
     },
 
@@ -131,7 +136,7 @@ cr.define('cr.ui', function() {
      * Whether the menu is shown.
      */
     isMenuShown: function() {
-      return window.getComputedStyle(this.menu).display != 'none';
+      return this.hasAttribute('menu-shown');
     },
 
     /**
