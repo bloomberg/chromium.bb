@@ -235,7 +235,6 @@ def _SetEnvForPnacl(env, arch):
     pnacl_sdk_ld_flags += ' -fPIC'
 
   if env.Bit('use_sandboxed_translator'):
-    assert arch in ['x86-32', 'x86-64']
     pnacl_sdk_ld_flags += ' --pnacl-sb'
 
   # TODO(pdox): Remove the dependency on the gcc toolchain here.
