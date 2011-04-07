@@ -271,7 +271,7 @@ void NotificationProvider::DenyPermission(const GURL& origin) {
 
 void NotificationProvider::PersistPermissionChange(
     const GURL& origin, bool is_allowed) {
-  // Don't persist changes when off the record.
+  // Don't persist changes when incognito.
   if (profile_->IsOffTheRecord())
     return;
   PrefService* prefs = profile_->GetPrefs();

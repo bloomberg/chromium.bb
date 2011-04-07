@@ -97,10 +97,10 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
       return;
     }
 
-    // Don't run the phishing classifier if the tab is off-the-record.
+    // Don't run the phishing classifier if the tab is incognito.
     if (tab_contents_->profile()->IsOffTheRecord()) {
       VLOG(1) << "Skipping phishing classification for URL: " << params_.url
-              << " because we're browsing off-the-record.";
+              << " because we're browsing incognito.";
       UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.PreClassificationCheckFail",
                                 NO_CLASSIFY_OFF_THE_RECORD,
                                 NO_CLASSIFY_MAX);

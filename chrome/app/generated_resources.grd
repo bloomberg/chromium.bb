@@ -10884,7 +10884,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN" desc="Status when signing in.">
         Signing in.
       </message>
-      <message name="IDS_CHROMEOS_ACC_LOGIN_SIGNIN_OFFRECORD" desc="Status when signing in off the record.">
+      <message name="IDS_CHROMEOS_ACC_LOGIN_SIGNIN_OFFRECORD" desc="Status when signing in incognito.">
         Signing in guest mode.
       </message>
       <message name="IDS_CHROMEOS_ACC_ACCOUNT_PICTURE" desc="Tooltip for the take account picture button.">

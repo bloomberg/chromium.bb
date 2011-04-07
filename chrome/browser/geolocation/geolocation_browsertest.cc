@@ -195,7 +195,7 @@ void NotifyGeoposition(const Geoposition& geoposition) {
 // 3. Allowing the infobar does not trigger an error, and allow a geoposition to
 // be passed to javascript.
 // 4. Permissions persisted in disk are respected.
-// 5. Off the record profiles don't use saved permissions.
+// 5. Incognito profiles don't use saved permissions.
 class GeolocationBrowserTest : public InProcessBrowserTest {
  public:
   GeolocationBrowserTest()

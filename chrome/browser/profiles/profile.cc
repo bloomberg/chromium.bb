@@ -152,7 +152,7 @@ bool Profile::IsSyncAccessible() {
 ////////////////////////////////////////////////////////////////////////////////
 //
 // OffTheRecordProfileImpl is a profile subclass that wraps an existing profile
-// to make it suitable for the off the record mode.
+// to make it suitable for the incognito mode.
 //
 ////////////////////////////////////////////////////////////////////////////////
 class OffTheRecordProfileImpl : public Profile,
@@ -475,7 +475,7 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual SessionService* GetSessionService() {
-    // Don't save any sessions when off the record.
+    // Don't save any sessions when incognito.
     return NULL;
   }
 

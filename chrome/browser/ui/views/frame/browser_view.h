@@ -148,7 +148,7 @@ class BrowserView : public BrowserBubbleHost,
   // incognito.
   bool IsOffTheRecord() const;
 
-  // Returns true if the non-client view should render the Off-The-Record
+  // Returns true if the non-client view should render the Incognito
   // avatar icon if the window is incognito.
   virtual bool ShouldShowOffTheRecordAvatar() const;
 

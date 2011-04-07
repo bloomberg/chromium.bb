@@ -500,7 +500,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
       SafeBrowsingMsg_StartPhishingDetection::ID);
   ASSERT_FALSE(msg);
 
-  // If the tab is off-the-record there should be no IPC.  Also, we shouldn't
+  // If the tab is incognito there should be no IPC.  Also, we shouldn't
   // even check the csd-whitelist.
   url = GURL("http://host4.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kTrue, NULL, NULL, NULL, NULL);

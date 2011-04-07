@@ -320,7 +320,7 @@ Browser::~Browser() {
 
   if (profile_->IsOffTheRecord() &&
       !BrowserList::IsOffTheRecordSessionActive()) {
-    // An off-the-record profile is no longer needed, this indirectly
+    // An incognito profile is no longer needed, this indirectly
     // frees its cache and cookies.
     profile_->GetOriginalProfile()->DestroyOffTheRecordProfile();
   }
