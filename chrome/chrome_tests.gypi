@@ -1908,6 +1908,7 @@
         '../testing/gtest_mac_unittest.mm',
         '../third_party/cld/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
         '../webkit/fileapi/file_system_dir_url_request_job_unittest.cc',
+        '../webkit/fileapi/file_system_operation_write_unittest.cc',
         '../webkit/fileapi/file_system_url_request_job_unittest.cc',
       ],
       'conditions': [

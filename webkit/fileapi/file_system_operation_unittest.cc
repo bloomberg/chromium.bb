@@ -707,8 +707,6 @@ TEST_F(FileSystemOperationTest, TestRemoveSuccess) {
   EXPECT_FALSE(file_util::DirectoryExists(parent_dir.path()));
 }
 
-// TODO(ericu): Add tests for Write, Cancel.
-
 TEST_F(FileSystemOperationTest, TestTruncate) {
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
