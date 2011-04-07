@@ -21,21 +21,32 @@ cr.define('gpu', function() {
     __proto__: gpu.Tab.prototype,
 
     decorate: function() {
-      tracingController.addEventListener('traceBegun', this.refresh.bind(this));
-      tracingController.addEventListener('traceEnded', this.refresh.bind(this));
-      this.addEventListener('selectedChange', this.onSelectedChange_);
-      this.refresh();
+      tracingController.addEventListener('traceBegun',
+                                         this.setNeedsRefresh_.bind(this));
+      tracingController.addEventListener('traceEnded',
+                                         this.setNeedsRefresh_.bind(this));
+      this.addEventListener('selectedChange', this.onViewSelectedChange_);
+
+      this.setNeedsRefresh_();
     },
 
-    onSelectedChange_: function() {
+    onViewSelectedChange_: function() {
       if (this.selected) {
         if (!tracingController.traceEvents.length) {
           tracingController.beginTracing();
         }
         if (this.needsRefreshOnShow_) {
-          this.needsRefreshOnShow_ = false;
           this.refresh();
         }
+      }
+    },
+
+    setNeedsRefresh_: function() {
+      if (!this.selected) {
+        this.needsRefreshOnShow_ = true;
+        return;
+      } else {
+        this.refresh();
       }
     },
 
@@ -43,22 +54,19 @@ cr.define('gpu', function() {
      * Updates the view based on its currently known data
      */
     refresh: function() {
-      if (this.parentNode.selectedTab != this) {
-        this.needsRefreshOnShow_ = true;
-      }
+      this.needsRefreshOnShow_ = false;
 
       var dataElement = this.querySelector('.raw-events-view-data');
       if (tracingController.isTracingEnabled) {
         var tmp = 'Still tracing. ' +
-          'Uncheck the enable tracing button to see traced data.';
+            'Uncheck the enable tracing button to see traced data.';
         dataElement.textContent = tmp;
       } else if (!tracingController.traceEvents.length) {
         dataElement.textContent =
             'No trace data collected. Collect data first.';
       } else {
         var events = tracingController.traceEvents;
-        var text = JSON.stringify(events);
-        dataElement.textContent = text;
+        dataElement.textContent = JSON.stringify(events);
 
         var selection = window.getSelection();
         selection.removeAllRanges();

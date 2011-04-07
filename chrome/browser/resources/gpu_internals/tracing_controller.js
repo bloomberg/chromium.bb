@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,9 @@ cr.define('gpu', function() {
     this.overlay_.appendChild(stopButton);
 
     this.traceEvents_ = [];
+
+    this.onKeydownBoundToThis_ = this.onKeydown_.bind(this);
+    this.onKeypressBoundToThis_ = this.onKeypress_.bind(this);
   }
 
   TracingController.prototype = {
@@ -63,15 +66,21 @@ cr.define('gpu', function() {
       e.numEvents = this.traceEvents_.length;
       this.dispatchEvent(e);
 
-      var self = this;
-      window.addEventListener('keypress', function f(e) {
-        if (e.keyIdentifier == 'Enter') {
-          window.removeEventListener('keypress', f);
-          self.endTracing();
-        }
-      });
+      window.addEventListener('keypress', this.onKeypressBoundToThis_);
+      window.addEventListener('keydown', this.onKeydownBoundToThis_);
     },
 
+    onKeydown_: function(e) {
+      if (e.keyCode == 27) {
+        this.endTracing();
+      }
+    },
+
+    onKeypress_: function(e) {
+      if (e.keyIdentifier == 'Enter') {
+        this.endTracing();
+      }
+    },
     /**
      * Checks whether tracing is enabled
      */
@@ -100,12 +109,15 @@ cr.define('gpu', function() {
     endTracing: function() {
       if (!this.tracingEnabled_) throw new Error('Tracing not begun.');
 
+      window.removeEventListener('keydown', this.onKeydownBoundToThis_);
+      window.removeEventListener('keypress', this.onKeypressBoundToThis_);
+
       console.log('Finishing trace');
       if (!browserBridge.debugMode) {
         chrome.send('endTracingAsync');
       } else {
         var events = window.getTimelineTestData1 ?
-          getTimelineTestData1() : [];
+            getTimelineTestData1() : [];
         this.onTraceDataCollected(events);
         window.setTimeout(this.onEndTracingComplete.bind(this), 250);
       }

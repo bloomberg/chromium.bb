@@ -109,7 +109,8 @@ cr.define('gpu', function() {
   function TimelineModel(events) {
     this.processes = {};
 
-    this.importEvents(events);
+    if (events)
+      this.importEvents(events);
   }
 
   TimelineModel.prototype = {

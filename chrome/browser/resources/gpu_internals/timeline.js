@@ -178,18 +178,11 @@ cr.define('gpu', function() {
       var threads = model.getAllThreads();
       for (var tI = 0; tI < threads.length; tI++) {
         var thread = threads[tI];
-        for (var srI = 0; srI < thread.subRows.length; ++srI) {
-          var track = document.createElement('div');
-          cr.ui.decorate(track, gpu.TimelineTrack);
-          track.viewport = this.viewport_;
-          if (srI == 0)
-            track.heading = thread.parent.pid + ': ' + thread.tid + ': ';
-          else
-            track.heading = '';
-          track.slices = thread.subRows[srI];
-          track.thread = thread;
-          this.tracks_.appendChild(track);
-        }
+        var track = new TimelineThreadTrack();
+        track.thread = thread;
+        track.viewport = this.viewport_;
+        this.tracks_.appendChild(track);
+
       }
 
       this.needsViewportReset_ = true;
@@ -215,11 +208,11 @@ cr.define('gpu', function() {
     redrawAllTracks_: function() {
       if (this.needsViewportReset_ && this.clientWidth != 0) {
         this.needsViewportReset_ = false;
-        console.log('viewport was reset.');
         /* update viewport */
         var rangeTimestamp = this.model_.maxTimestamp -
             this.model_.minTimestamp;
-        var w = this.tracks_.firstChild.getCanvasWidth();
+        var w = this.firstCanvas.width;
+        console.log('viewport was reset with w=', w);
         var scaleX = w / rangeTimestamp;
         var panX = -this.model_.minTimestamp;
         this.viewport_.setPanAndScale(panX, scaleX);
@@ -302,8 +295,8 @@ cr.define('gpu', function() {
     },
 
     get firstCanvas() {
-      if (this.tracks_.firstChild)
-        return this.tracks_.firstChild.canvas;
+      return this.tracks_.firstChild ?
+          this.tracks_.firstChild.firstCanvas : undefined;
     },
 
     showDragBox_: function() {
@@ -402,7 +395,7 @@ cr.define('gpu', function() {
           var a = Math.max(loY, track.offsetTop);
           var b = Math.min(hiY, track.offsetTop + track.offsetHeight);
           if (a <= b) {
-            track.pickRange(loWX, hiWX, addHit);
+            track.pickRange(loWX, hiWX, loY, hiY, addHit);
           }
         }
         // Activate the new selection.

@@ -38,29 +38,146 @@ cr.define('gpu', function() {
   const pallette = palletteBase.concat(palletteBase.map(brighten)).
       map(colorToString);
 
+  var textWidthMap = { };
+  function quickMeasureText(ctx, text) {
+    var w = textWidthMap[text];
+    if (!w) {
+      w = ctx.measureText(text).width;
+      textWidthMap[text] = w;
+    }
+    return w;
+  }
+
+  /**
+   * Generic base class for timeline tracks
+   */
+  TimelineThreadTrack = cr.ui.define('div');
+  TimelineThreadTrack.prototype = {
+    __proto__: HTMLDivElement.prototype,
+
+    decorate: function() {
+      this.className = 'timeline-thread-track';
+    },
+
+    set thread(thread) {
+      this.thread_ = thread;
+      this.updateChildTracks_();
+    },
+
+    set viewport(v) {
+      this.viewport_ = v;
+      for (var i = 0; i < this.tracks_.length; i++)
+        this.tracks_[i].viewport = v;
+      this.invalidate();
+    },
+
+    invalidate: function() {
+      if (this.parentNode)
+        this.parentNode.invalidate();
+    },
+
+    onResize: function() {
+      for (var i = 0; i < this.tracks_.length; i++)
+        this.tracks_[i].onResize();
+    },
+
+    get firstCanvas() {
+      if (this.tracks_.length)
+        return this.tracks_[0].firstCanvas;
+      return undefined;
+    },
+
+    redraw: function() {
+      for (var i = 0; i < this.tracks_.length; i++)
+        this.tracks_[i].redraw();
+    },
+
+    updateChildTracks_: function() {
+      this.textContent = '';
+      this.tracks_ = [];
+      if (this.thread_) {
+        for (var srI = 0; srI < this.thread_.subRows.length; ++srI) {
+          var track = new TimelineSliceTrack();
+
+          if (srI == 0)
+            track.heading = this.thread_.parent.pid + ': ' +
+                this.thread_.tid + ': ';
+          else
+            track.heading = '';
+          track.slices = this.thread_.subRows[srI];
+          track.viewport = this.viewport_;
+
+          this.tracks_.push(track);
+          this.appendChild(track);
+        }
+      }
+    },
+
+    /**
+     * Picks a slice, if any, at a given location.
+     * @param {number} wX X location to search at, in worldspace.
+     * @param {number} wY Y location to search at, in offset space.
+     *     offset space.
+     * @param {function():*} onHitCallback Callback to call with the slice,
+     *     if one is found.
+     * @return {boolean} true if a slice was found, otherwise false.
+     */
+    pick: function(wX, wY, onHitCallback) {
+      for (var i = 0; i < this.tracks_.length; i++) {
+        var track = this.tracks_[i];
+        if (wY >= track.offsetTop && wY < track.offsetTop + track.offsetHeight)
+          return track.pick(wX, onHitCallback);
+      }
+      return false;
+    },
+
+    /**
+     * Finds slices intersecting the given interval.
+     * @param {number} loWX Lower X bound of the interval to search, in
+     *     worldspace.
+     * @param {number} hiWX Upper X bound of the interval to search, in
+     *     worldspace.
+     * @param {number} loY Lower Y bound of the interval to search, in
+     *     offset space.
+     * @param {number} hiY Upper Y bound of the interval to search, in
+     *     offset space.
+     * @param {function():*} onHitCallback Function to call for each slice
+     *     intersecting the interval.
+     */
+    pickRange: function(loWX, hiWX, loY, hiY, onHitCallback) {
+      for (var i = 0; i < this.tracks_.length; i++) {
+        var a = Math.max(loY, this.tracks_[i].offsetTop);
+        var b = Math.min(hiY, this.tracks_[i].offsetTop +
+                         this.tracks_[i].offsetHeight);
+        if (a <= b)
+          this.tracks_[i].pickRange(loWX, hiWX, loY, hiY, onHitCallback);
+      }
+    }
+  };
+
   /**
    * Creates a new timeline track div element
    * @constructor
    * @extends {HTMLDivElement}
    */
-  TimelineTrack = cr.ui.define('div');
+  TimelineSliceTrack = cr.ui.define('div');
 
-  TimelineTrack.prototype = {
+  TimelineSliceTrack.prototype = {
     __proto__: HTMLDivElement.prototype,
 
     decorate: function() {
-      this.classList.add('timeline-track');
+      this.className = 'timeline-slice-track';
       this.slices_ = null;
 
       this.titleDiv_ = document.createElement('div');
-      this.titleDiv_.className = 'timeline-track-title';
+      this.titleDiv_.className = 'timeline-slice-track-title';
       this.appendChild(this.titleDiv_);
 
       this.canvasContainer_ = document.createElement('div');
-      this.canvasContainer_.className = 'timeline-track-canvas-container';
+      this.canvasContainer_.className = 'timeline-slice-track-canvas-container';
       this.appendChild(this.canvasContainer_);
       this.canvas_ = document.createElement('canvas');
-      this.canvas_.className = 'timeline-track-canvas';
+      this.canvas_.className = 'timeline-slice-track-canvas';
       this.canvasContainer_.appendChild(this.canvas_);
 
       this.ctx_ = this.canvas_.getContext('2d');
@@ -74,13 +191,9 @@ cr.define('gpu', function() {
       this.slices_ = slices;
       this.invalidate();
     },
-    get canvas() {
-      return this.canvas_;
-    },
 
-    onResize: function() {
-      this.canvas_.width = this.canvasContainer_.clientWidth;
-      this.canvas_.height = this.canvasContainer_.clientHeight;
+    set viewport(v) {
+      this.viewport_ = v;
       this.invalidate();
     },
 
@@ -89,13 +202,14 @@ cr.define('gpu', function() {
         this.parentNode.invalidate();
     },
 
-    set viewport(v) {
-      this.viewport_ = v;
-      this.invalidate();
+    get firstCanvas() {
+      return this.canvas_;
     },
 
-    getCanvasWidth: function() {
-      return this.canvas_.width;
+    onResize: function() {
+      this.canvas_.width = this.canvasContainer_.clientWidth;
+      this.canvas_.height = this.canvasContainer_.clientHeight;
+      this.invalidate();
     },
 
     redraw: function() {
@@ -137,16 +251,39 @@ cr.define('gpu', function() {
       }
       tr.flush();
       ctx.restore();
+
+      // labels
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.font = '10px sans-serif';
+      ctx.strokeStyle = 'rgb(0,0,0)';
+      ctx.fillStyle = 'rgb(0,0,0)';
+      var quickDiscardThresshold = pixWidth * 20; // dont render until 20px wide
+      for (var i = 0; i < slices.length; ++i) {
+        var slice = slices[i];
+        if (slice.duration > quickDiscardThresshold) {
+          var labelWidth = quickMeasureText(ctx, slice.title) + 2;
+          var labelWidthWorld = pixWidth * labelWidth;
+          if (labelWidthWorld < slice.duration) {
+            var cX = vp.xWorldToView(slice.start + 0.5 * slice.duration);
+            ctx.fillText(slice.title, cX, 2.5);
+          }
+        }
+      }
     },
 
     /**
      * Picks a slice, if any, at a given location.
-     * @param {number} wX Location to search at, in worldspace.
+     * @param {number} wX X location to search at, in worldspace.
+     * @param {number} wY Y location to search at, in offset space.
+     *     offset space.
      * @param {function():*} onHitCallback Callback to call with the slice,
      *     if one is found.
      * @return {boolean} true if a slice was found, otherwise false.
      */
-    pick: function(wX, onHitCallback) {
+    pick: function(wX, wY, onHitCallback) {
+      if (wY < this.offsetTop || wY >= this.offsetTop + this.offsetHeight)
+        return false;
       var x = gpu.findLowIndexInSortedIntervals(this.slices_,
           function(x) { return x.start; },
           function(x) { return x.duration; },
@@ -160,14 +297,23 @@ cr.define('gpu', function() {
 
     /**
      * Finds slices intersecting the given interval.
-     * @param {number} loWX Lower bound of the interval to search, in
+     * @param {number} loWX Lower X bound of the interval to search, in
      *     worldspace.
-     * @param {number} hiWX Upper bound of the interval to search, in
+     * @param {number} hiWX Upper X bound of the interval to search, in
      *     worldspace.
+     * @param {number} loY Lower Y bound of the interval to search, in
+     *     offset space.
+     * @param {number} hiY Upper Y bound of the interval to search, in
+     *     offset space.
      * @param {function():*} onHitCallback Function to call for each slice
      *     intersecting the interval.
      */
-    pickRange: function(loWX, hiWX, onHitCallback) {
+    pickRange: function(loWX, hiWX, loY, hiY, onHitCallback) {
+      var a = Math.max(loY, this.offsetTop);
+      var b = Math.min(hiY, this.offsetTop + this.offsetHeight);
+      if (a > b)
+        return;
+
       function onPickHit(slice) {
         onHitCallback('slice', this, slice);
       }
@@ -181,6 +327,7 @@ cr.define('gpu', function() {
   };
 
   return {
-    TimelineTrack: TimelineTrack
+    TimelineSliceTrack: TimelineSliceTrack,
+    TimelineThreadTrack: TimelineThreadTrack
   };
 });

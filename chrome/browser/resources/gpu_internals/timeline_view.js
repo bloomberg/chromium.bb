@@ -9,7 +9,7 @@
  */
 cr.define('gpu', function() {
   function tsRound(ts) {
-    return Math.round(ts * 100.0) / 100.0;
+    return Math.round(ts * 1000.0) / 1000.0;
   }
   function getPadding(text, width) {
     width = width || 0;
@@ -45,22 +45,32 @@ cr.define('gpu', function() {
     __proto__: gpu.Tab.prototype,
 
     decorate: function() {
-      tracingController.addEventListener('traceBegun', this.refresh.bind(this));
-      tracingController.addEventListener('traceEnded', this.refresh.bind(this));
+      tracingController.addEventListener('traceBegun',
+                                         this.setNeedsRefresh_.bind(this));
+      tracingController.addEventListener('traceEnded',
+                                         this.setNeedsRefresh_.bind(this));
       this.addEventListener('selectedChange', this.onViewSelectedChange_);
 
-      this.refresh();
+      this.setNeedsRefresh_();
     },
 
     onViewSelectedChange_: function() {
       if (this.selected) {
-        if (tracingController.traceEvents.length == 0) {
+        if (!tracingController.traceEvents.length) {
           tracingController.beginTracing();
         }
         if (this.needsRefreshOnShow_) {
-          this.needsRefreshOnShow_ = false;
           this.refresh();
         }
+      }
+    },
+
+    setNeedsRefresh_: function() {
+      if (!this.selected) {
+        this.needsRefreshOnShow_ = true;
+        return;
+      } else {
+        this.refresh();
       }
     },
 
@@ -68,9 +78,7 @@ cr.define('gpu', function() {
      * Updates the view based on its currently known data
      */
     refresh: function() {
-      if (this.parentNode.selectedTab != this) {
-        this.needsRefreshOnShow_ = true;
-      }
+      this.needsRefreshOnShow_ = false;
 
       console.log('TimelineView.refresh');
       var events = tracingController.traceEvents;
@@ -105,51 +113,78 @@ cr.define('gpu', function() {
       }
 
       var text = '';
-      var tsLo = Math.min.apply(Math, selection.map(
-          function(s) {return s.slice.start;}));
-      var tsHi = Math.max.apply(Math, selection.map(
-          function(s) {return s.slice.end;}));
+      if (selection.length == 1) {
+        var c0Width = 10;
+        var slice = selection[0].slice;
+        text = 'Selected item:\n';
+        text += leftAlign('Title', c0Width) + ': ' + slice.title + '\n';
+        text += leftAlign('Start', c0Width) + ': ' +
+            tsRound(slice.start) + ' ms\n';
+        text += leftAlign('Duration', c0Width) + ': ' +
+            tsRound(slice.duration) + ' ms\n';
 
-      // compute total selection duration
-      var titles = selection.map(function(i) { return i.slice.title; });
+        var n = 0;
+        for (var argName in slice.args) {
+          n += 1;
+        }
+        if (n > 0) {
+          text += leftAlign('Args', c0Width) + ':\n';
+          for (var argName in slice.args) {
+            var argVal = slice.args[argName];
+            text += leftAlign(' ' + argName, c0Width) + ': ' + argVal + '\n';
+          }
+        }
+      } else {
+        var c0Width = 55;
+        var c1Width = 12;
+        var c2Width = 5;
+        text = 'Selection summary:\n';
+        var tsLo = Math.min.apply(Math, selection.map(
+            function(s) {return s.slice.start;}));
+        var tsHi = Math.max.apply(Math, selection.map(
+            function(s) {return s.slice.end;}));
 
-      var slicesByTitle = {};
-      for (var i = 0; i < selection.length; i++) {
-        var slice = selection[i].slice;
-        if (!slicesByTitle[slice.title])
-          slicesByTitle[slice.title] = {
-            slices: []
-          };
-        slicesByTitle[slice.title].slices.push(slice);
-      }
-      var totalDuration = 0;
-      for (var sliceGroupTitle in slicesByTitle) {
-        var sliceGroup = slicesByTitle[sliceGroupTitle];
-        var duration = 0;
-        for (i = 0; i < sliceGroup.slices.length; i++)
-          duration += sliceGroup.slices[i].duration;
-        totalDuration += duration;
+        // compute total selection duration
+        var titles = selection.map(function(i) { return i.slice.title; });
 
-        text += ' ' +
-            leftAlign(sliceGroupTitle, 55) + ': ' +
-            rightAlign(tsRound(duration) + 'ms', 12) + '   ' +
-            rightAlign(String(sliceGroup.slices.length), 5) + ' occurrences' +
+        var slicesByTitle = {};
+        for (var i = 0; i < selection.length; i++) {
+          var slice = selection[i].slice;
+          if (!slicesByTitle[slice.title])
+            slicesByTitle[slice.title] = {
+              slices: []
+            };
+          slicesByTitle[slice.title].slices.push(slice);
+        }
+        var totalDuration = 0;
+        for (var sliceGroupTitle in slicesByTitle) {
+          var sliceGroup = slicesByTitle[sliceGroupTitle];
+          var duration = 0;
+          for (i = 0; i < sliceGroup.slices.length; i++)
+            duration += sliceGroup.slices[i].duration;
+          totalDuration += duration;
+
+          text += ' ' +
+              leftAlign(sliceGroupTitle, c0Width) + ': ' +
+              rightAlign(tsRound(duration) + 'ms', c1Width) + '   ' +
+              rightAlign(String(sliceGroup.slices.length), c2Width) +
+              ' occurrences' + '\n';
+        }
+
+        text += leftAlign('*Totals', c0Width) + ' : ' +
+            rightAlign(tsRound(totalDuration) + 'ms', c1Width) + '   ' +
+            rightAlign(String(selection.length), c2Width) + ' occurrences' +
+            '\n';
+
+        text += '\n';
+
+        text += leftAlign('Selection start', c0Width) + ' : ' +
+            rightAlign(tsRound(tsLo) + 'ms', c1Width) +
+            '\n';
+        text += leftAlign('Selection extent', c0Width) + ' : ' +
+            rightAlign(tsRound(tsHi - tsLo) + 'ms', c1Width) +
             '\n';
       }
-
-      text += leftAlign('*Totals', 55) + ' : ' +
-          rightAlign(tsRound(totalDuration) + 'ms', 12) + '   ' +
-          rightAlign(String(selection.length), 5) + ' occurrences' +
-            '\n';
-
-      text += '\n';
-
-      text += leftAlign('Selection start', 55) + ' : ' +
-          rightAlign(tsRound(tsLo) + 'ms', 12) +
-            '\n';
-      text += leftAlign('Selection extent', 55) + ' : ' +
-          rightAlign(tsRound(tsHi - tsLo) + 'ms', 12) +
-            '\n';
 
       // done
       var outputDiv = $('timeline-selection-summary');
