@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -8,22 +8,11 @@
 
 #include "ppapi/c/pp_stdint.h"
 
-// TODO(alokp): Using PP_Graphics3D prefix is making these enum names rather
-// long. Can we just use PP_GL? It will be a nice short replacement of EGL.
-// In which case we should rename associated classes as - PP_GL, PP_GLContext,
-// PP_GLContext, PP_GLSurface, PP_GLConfig, and PP_OpenGLES2.
-//
-// Another option is to rename Surface3D and Context3D to Graphics3DSurface
-// and Graphics3DContext respectively But this does not make the names
-// any shorter.
-
 enum PP_Graphics3DError_Dev {
   PP_GRAPHICS3DERROR_BAD_ACCESS = 0x3002,
   PP_GRAPHICS3DERROR_BAD_ATTRIBUTE = 0x3004,
   PP_GRAPHICS3DERROR_BAD_CONFIG = 0x3005,
-  PP_GRAPHICS3DERROR_BAD_CONTEXT = 0x3006,
   PP_GRAPHICS3DERROR_BAD_MATCH = 0x3009,
-  PP_GRAPHICS3DERROR_BAD_SURFACE = 0x300D,
   PP_GRAPHICS3DERROR_CONTEXT_LOST = 0x300E
 };
 
