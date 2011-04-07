@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,32 @@
 namespace sandbox {
 
 namespace {
+
+class DepTest : public testing::Test {
+ public:
+  static bool IsTestCaseDisabled() {
+    OSVERSIONINFOEX version_info;
+    version_info.dwOSVersionInfoSize = sizeof version_info;
+    GetVersionEx(reinterpret_cast<OSVERSIONINFO*>(&version_info));
+
+    // Windows 2000 doesn't support DEP at all.
+    if (version_info.dwMajorVersion == 5 && version_info.dwMinorVersion == 0)
+      return true;
+
+    // Windows XP Service Pack 0 and 1 don't support DEP at all.
+    if (version_info.dwMajorVersion == 5 && version_info.dwMinorVersion == 1
+        && version_info.wServicePackMajor < 2)
+      return true;
+
+    // Bug 1212371 Vista SP0 DEP support is half-baked. Nobody seem to have
+    // noticed!
+    if (version_info.dwMajorVersion == 6 &&
+        version_info.wServicePackMajor == 0)
+      return true;
+
+    return false;
+  }
+};
 
 BYTE kReturnCode[] = {
   // ret
@@ -141,7 +167,7 @@ SBOX_TESTS_COMMAND int CheckDepLevel(int argc, wchar_t **argv) {
 }  // namespace
 
 // This test is disabled. See bug 1275842
-TEST(DepTest, DISABLED_TestDepDisable) {
+TEST_F(DepTest, DISABLED_TestDepDisable) {
   TestRunner runner(JOB_UNPROTECTED, USER_INTERACTIVE, USER_INTERACTIVE);
 
   runner.SetTimeout(INFINITE);

@@ -72,8 +72,8 @@ void MemoryDetails::CollectProcessData(
   for (unsigned int index = 0; index < process_data_.size(); index++)
     process_data_[index].processes.clear();
 
-  base::win::OSInfo::WindowsArchitecture windows_architecture =
-      base::win::OSInfo::GetInstance()->architecture();
+  base::win::WindowsArchitecture windows_architecture =
+      base::win::GetWindowsArchitecture();
 
   base::win::ScopedHandle snapshot(
       ::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0));
@@ -93,10 +93,10 @@ void MemoryDetails::CollectProcessData(
     if (!process_handle.Get())
       continue;
     bool is_64bit_process =
-        ((windows_architecture == base::win::OSInfo::X64_ARCHITECTURE) ||
-         (windows_architecture == base::win::OSInfo::IA64_ARCHITECTURE)) &&
-        (base::win::OSInfo::GetWOW64StatusForProcess(process_handle) ==
-            base::win::OSInfo::WOW64_DISABLED);
+        ((windows_architecture == base::win::X64_ARCHITECTURE) ||
+         (windows_architecture == base::win::IA64_ARCHITECTURE)) &&
+        (base::win::GetWOW64StatusForProcess(process_handle) ==
+            base::win::WOW64_DISABLED);
     for (unsigned int index2 = 0; index2 < process_data_.size(); index2++) {
       if (_wcsicmp(process_data_[index2].process_name.c_str(),
                    process_entry.szExeFile) != 0)

@@ -120,8 +120,7 @@ NTSTATUS PatchNtdllWithResolver(const char* function, bool relaxed,
 }
 
 sandbox::ServiceResolverThunk* GetTestResolver(bool relaxed) {
-  if (base::win::OSInfo::GetInstance()->wow64_status() ==
-      base::win::OSInfo::WOW64_ENABLED)
+  if (base::win::GetWOW64Status() == base::win::WOW64_ENABLED)
     return new Wow64ResolverTest(relaxed);
   if (!sandbox::IsXPSP2OrLater())
     return new Win2kResolverTest(relaxed);

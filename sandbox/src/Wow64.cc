@@ -88,8 +88,7 @@ Wow64::~Wow64() {
 // bit version of ntdll is loaded, we'll remove the interception and return to
 // our caller.
 bool Wow64::WaitForNtdll() {
-  if (base::win::OSInfo::GetInstance()->wow64_status() !=
-      base::win::OSInfo::WOW64_ENABLED)
+  if (base::win::GetWOW64Status() != base::win::WOW64_ENABLED)
     return true;
 
   const size_t page_size = 4096;

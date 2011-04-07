@@ -7,9 +7,9 @@
 #include <mfapi.h>
 #include <mferror.h>
 #include <shlwapi.h>
+#include <strsafe.h>
 
 #include <cassert>
-#include <cstdio>
 
 template <class T>
 static void SafeRelease(T** pptr) {

@@ -56,8 +56,7 @@ NaClProcessHost::NaClProcessHost(const std::wstring& url)
       running_on_wow64_(false) {
   set_name(url);
 #if defined(OS_WIN)
-  running_on_wow64_ = (base::win::OSInfo::GetInstance()->wow64_status() ==
-      base::win::OSInfo::WOW64_ENABLED);
+  running_on_wow64_ = (base::win::GetWOW64Status() == base::win::WOW64_ENABLED);
 #endif
 }
 

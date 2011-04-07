@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #include <windows.h>
 
 #include "base/logging.h"
-#include "base/win/windows_version.h"
 #include "sandbox/src/internal_types.h"
 #include "sandbox/src/nt_internals.h"
 
@@ -57,10 +56,33 @@ bool GetModuleHandleHelper(DWORD flags, const wchar_t* module_name,
 }
 
 bool IsXPSP2OrLater() {
-  base::win::Version version = base::win::GetVersion();
-  return (version > base::win::VERSION_XP) ||
-      ((version == base::win::VERSION_XP) &&
-       (base::win::OSInfo::GetInstance()->service_pack().major >= 2));
+  OSVERSIONINFOEX version = {0};
+  version.dwOSVersionInfoSize = sizeof(version);
+  if (!::GetVersionEx(reinterpret_cast<OSVERSIONINFO*>(&version))) {
+    NOTREACHED();
+    return false;
+  }
+
+  // Vista or later
+  if (version.dwMajorVersion > 5)
+    return true;
+
+  // 2k, xp or 2003
+  if (version.dwMajorVersion == 5) {
+    // 2003
+    if (version.dwMinorVersion > 1)
+      return true;
+
+    // 2000
+    if (version.dwMinorVersion == 0)
+      return false;
+
+    // Windows Xp Sp2 or later
+    if (version.wServicePackMajor >= 2)
+      return true;
+  }
+
+  return false;
 }
 
 void InitObjectAttribs(const std::wstring& name, ULONG attributes, HANDLE root,

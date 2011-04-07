@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,7 @@
 #include "media/tools/mfplayer/mfplayer.h"
 
 #include <mfapi.h>
-#define STRSAFE_NO_DEPRECATE
 #include <strsafe.h>
-
 #include <cassert>
 
 namespace mfplayer {

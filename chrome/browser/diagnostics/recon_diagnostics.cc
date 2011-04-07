@@ -47,20 +47,27 @@ class OperatingSystemTest : public DiagnosticTest {
   virtual int GetId() { return 0; }
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) {
+    int version = 0;
+    int major = 0;
+    int minor = 0;
 #if defined(OS_WIN)
-    base::win::Version version = base::win::GetVersion();
-    if ((version < base::win::VERSION_XP) ||
-        ((version == base::win::VERSION_XP) &&
-         (base::win::OSInfo::GetInstance()->service_pack().major < 2))) {
-      RecordFailure(ASCIIToUTF16("Must have Windows XP SP2 or later"));
+    version = base::win::GetVersion();
+    if (version < base::win::VERSION_XP) {
+      RecordFailure(ASCIIToUTF16("Windows 2000 or earlier"));
+      return false;
+    }
+    base::win::GetServicePackLevel(&major, &minor);
+    if ((version == base::win::VERSION_XP) && (major < 2)) {
+      RecordFailure(ASCIIToUTF16("XP Service Pack 1 or earlier"));
       return false;
     }
 #else
     // TODO(port): define the OS criteria for Linux and Mac.
 #endif  // defined(OS_WIN)
-    RecordSuccess(ASCIIToUTF16(StringPrintf("%s %s",
+    RecordSuccess(ASCIIToUTF16(StringPrintf("%s %s (%d [%d:%d])",
         base::SysInfo::OperatingSystemName().c_str(),
-        base::SysInfo::OperatingSystemVersion().c_str())));
+        base::SysInfo::OperatingSystemVersion().c_str(),
+        version, major, minor)));
     return true;
   }
 

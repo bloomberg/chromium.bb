@@ -512,8 +512,7 @@ void AddInstallWorkItems(const InstallationState& original_state,
   // Extra executable for 64 bit systems.
   // NOTE: We check for "not disabled" so that if the API call fails, we play it
   // safe and copy the executable anyway.
-  if (base::win::OSInfo::GetInstance()->wow64_status() !=
-      base::win::OSInfo::WOW64_DISABLED) {
+  if (base::win::GetWOW64Status() != base::win::WOW64_DISABLED) {
     install_list->AddMoveTreeWorkItem(
         src_path.Append(installer::kWowHelperExe).value(),
         target_path.Append(installer::kWowHelperExe).value(),

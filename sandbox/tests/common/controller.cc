@@ -55,10 +55,9 @@ std::wstring MakePathToSysWow64(const wchar_t* name, bool is_obj_man_path) {
 namespace sandbox {
 
 std::wstring MakePathToSys(const wchar_t* name, bool is_obj_man_path) {
-  return (base::win::OSInfo::GetInstance()->wow64_status() ==
-      base::win::OSInfo::WOW64_ENABLED) ?
-      MakePathToSysWow64(name, is_obj_man_path) :
-      MakePathToSys32(name, is_obj_man_path);
+  if (base::win::GetWOW64Status() == base::win::WOW64_ENABLED)
+    return MakePathToSysWow64(name, is_obj_man_path);
+  return MakePathToSys32(name, is_obj_man_path);
 }
 
 BrokerServices* GetBroker() {
@@ -139,8 +138,7 @@ bool TestRunner::AddRuleSys32(TargetPolicy::Semantics semantics,
   if (!AddRule(TargetPolicy::SUBSYS_FILES, semantics, win32_path.c_str()))
     return false;
 
-  if (base::win::OSInfo::GetInstance()->wow64_status() !=
-      base::win::OSInfo::WOW64_ENABLED)
+  if (base::win::GetWOW64Status() != base::win::WOW64_ENABLED)
     return true;
 
   win32_path = MakePathToSysWow64(pattern, false);

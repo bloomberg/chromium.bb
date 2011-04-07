@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ SBOX_TESTS_COMMAND int CheckIntegrityLevel(int argc, wchar_t **argv) {
 }
 
 TEST(IntegrityLevelTest, TestLowILReal) {
-  if (base::win::GetVersion() != base::win::VERSION_VISTA)
+  if (base::win::VERSION_VISTA != base::win::GetVersion())
     return;
 
   TestRunner runner(JOB_LOCKDOWN, USER_INTERACTIVE, USER_INTERACTIVE);
@@ -61,7 +61,7 @@ TEST(IntegrityLevelTest, TestLowILReal) {
 }
 
 TEST(DelayedIntegrityLevelTest, TestLowILDelayed) {
-  if (base::win::GetVersion() != base::win::VERSION_VISTA)
+  if (base::win::VERSION_VISTA != base::win::GetVersion())
     return;
 
   TestRunner runner(JOB_LOCKDOWN, USER_INTERACTIVE, USER_INTERACTIVE);
@@ -77,7 +77,7 @@ TEST(DelayedIntegrityLevelTest, TestLowILDelayed) {
 }
 
 TEST(IntegrityLevelTest, TestNoILChange) {
-  if (base::win::GetVersion() != base::win::VERSION_VISTA)
+  if (base::win::VERSION_VISTA != base::win::GetVersion())
     return;
 
   TestRunner runner(JOB_LOCKDOWN, USER_INTERACTIVE, USER_INTERACTIVE);
