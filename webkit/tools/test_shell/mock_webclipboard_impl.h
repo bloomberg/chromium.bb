@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 //
 // This file mocks out just enough of the WebClipboard API for running the
 // webkit tests. This is so we can run webkit tests without them sharing a
@@ -11,6 +11,7 @@
 #define WEBKIT_TOOLS_TEST_SHELL_MOCK_WEBCLIPBOARD_IMPL_H_
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebClipboard.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebImage.h"
 
 class MockWebClipboardImpl : public WebKit::WebClipboard {
  public:
@@ -20,6 +21,7 @@ class MockWebClipboardImpl : public WebKit::WebClipboard {
   virtual WebKit::WebString readPlainText(WebKit::WebClipboard::Buffer);
   virtual WebKit::WebString readHTML(WebKit::WebClipboard::Buffer,
                                      WebKit::WebURL*);
+  virtual WebKit::WebData readImage(WebKit::WebClipboard::Buffer);
 
   virtual void writePlainText(const WebKit::WebString& plain_text);
   virtual void writeHTML(
@@ -37,6 +39,7 @@ class MockWebClipboardImpl : public WebKit::WebClipboard {
  private:
   WebKit::WebString m_plainText;
   WebKit::WebString m_htmlText;
+  WebKit::WebImage m_image;
   bool m_writeSmartPaste;
 };
 
