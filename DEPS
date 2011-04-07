@@ -60,8 +60,9 @@ deps = {
   "src/third_party/safe_browsing/testing":
     (Var("googlecode_url") % "google-safe-browsing") + "/trunk/testing@106",
 
+  # TODO(akalin): Check out only the C++ files.
   "src/third_party/cacheinvalidation/files":
-    (Var("googlecode_url") % "google-cache-invalidation-api") + "/trunk@78",
+    (Var("googlecode_url") % "google-cache-invalidation-api") + "/trunk@80",
 
   "src/third_party/leveldb":
     (Var("googlecode_url") % "leveldb") + "/trunk@19",
