@@ -24,4 +24,7 @@ const char kSettingPrintToPDF[] = "printToPDF";
 // Printer name.
 const char kSettingPrinterName[] = "printerName";
 
+// Print job duplex setting.
+const char kSettingTwoSided[] = "twoSided";
+
 }  // namespace printing

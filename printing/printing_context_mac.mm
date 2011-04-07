@@ -93,10 +93,12 @@ PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
   std::string printer_name;
   int copies;
   bool collate;
+  bool two_sided;
   if (!job_settings.GetBoolean(kSettingLandscape, &landscape) ||
       !job_settings.GetString(kSettingPrinterName, &printer_name) ||
       !job_settings.GetInteger(kSettingCopies, &copies) ||
-      !job_settings.GetBoolean(kSettingCollate, &collate)) {
+      !job_settings.GetBoolean(kSettingCollate, &collate) ||
+      !job_settings.GetBoolean(kSettingTwoSided, &two_sided)) {
     return OnError();
   }
 
@@ -110,6 +112,9 @@ PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
     return OnError();
 
   if (!SetOrientationIsLandscape(landscape))
+    return OnError();
+
+  if (!SetDuplexModeIsTwoSided(two_sided))
     return OnError();
 
   [print_info_.get() updateFromPMPrintSettings];
@@ -171,6 +176,13 @@ bool PrintingContextMac::SetOrientationIsLandscape(bool landscape) {
 
   [print_info_.get() updateFromPMPageFormat];
   return true;
+}
+
+bool PrintingContextMac::SetDuplexModeIsTwoSided(bool two_sided) {
+  PMDuplexMode duplexSetting = two_sided ? kPMDuplexNoTumble : kPMDuplexNone;
+  PMPrintSettings pmPrintSettings =
+      static_cast<PMPrintSettings>([print_info_.get() PMPrintSettings]);
+  return PMSetDuplex(pmPrintSettings, duplexSetting) == noErr;
 }
 
 void PrintingContextMac::ParsePrintInfo(NSPrintInfo* print_info) {

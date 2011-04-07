@@ -63,6 +63,10 @@ class PrintingContextMac : public PrintingContext {
   // Returns true if the orientation was set.
   bool SetOrientationIsLandscape(bool landscape);
 
+  // Sets duplex mode in PMPrintSettings.
+  // Returns true if duplex mode is set.
+  bool SetDuplexModeIsTwoSided(bool two_sided);
+
   // The native print info object.
   scoped_nsobject<NSPrintInfo> print_info_;
 
