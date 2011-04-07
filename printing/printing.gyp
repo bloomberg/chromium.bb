@@ -51,6 +51,8 @@
         'pdf_metafile_cairo_linux.h',
         'pdf_metafile_cg_mac.cc',
         'pdf_metafile_cg_mac.h',
+        'pdf_metafile_skia.h',
+        'pdf_metafile_skia.cc',
         'printed_document_cairo.cc',
         'printed_document.cc',
         'printed_document.h',
@@ -107,6 +109,9 @@
             '../build/linux/system.gyp:gtkprint',
           ],
         }],
+        ['OS=="mac"',
+          {'sources/': [['exclude', 'pdf_metafile_skia\\.(cc|h)$']]}
+        ],
         ['OS=="win"', {
           'defines': [
             # PRINT_BACKEND_AVAILABLE disables the default dummy implementation
