@@ -843,7 +843,7 @@ FileManager.prototype = {
       if (!this.selection.leadEntry.isDirectory)
         throw new Error('Selected entry is not a folder!');
     } else if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILE) {
-      if (!this.selection.leadEntry.isFile) {
+      if (!this.selection.leadEntry.isFile)
         throw new Error('Selected entry is not a file!');
     }
 
