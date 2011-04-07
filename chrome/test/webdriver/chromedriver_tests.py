@@ -113,13 +113,13 @@ class BasicTest(unittest.TestCase):
   def tearDown(self):
     self._launcher.Kill()
 
-  def testShouldReturn404WhenSentAnUnknownCommandURL(self):
+  def testShouldReturn403WhenSentAnUnknownCommandURL(self):
     request_url = self._launcher.GetURL() + '/foo'
     try:
       SendRequest(request_url, method='GET')
-      self.fail('Should have raised a urllib.HTTPError for returned 404')
+      self.fail('Should have raised a urllib.HTTPError for returned 403')
     except urllib2.HTTPError, expected:
-      self.assertEquals(404, expected.code)
+      self.assertEquals(403, expected.code)
 
   def testShouldReturnHTTP405WhenSendingANonPostToTheSessionURL(self):
     request_url = self._launcher.GetURL() + '/session'
@@ -139,20 +139,46 @@ class BasicTest(unittest.TestCase):
       self.assertEquals(404, expected.code)
 
   def testShouldReturn204ForFaviconRequests(self):
-    # Disabled until new python bindings are pulled in.
-    return
     request_url = self._launcher.GetURL() + '/favicon.ico'
-    response = SendRequest(request_url, method='GET')
-    try:
-      self.assertEquals(204, response.code)
-    finally:
-      response.close()
+    # In python2.5, a 204 status code causes an exception.
+    if sys.version_info[0:2] == (2, 5):
+      try:
+        SendRequest(request_url, method='GET')
+        self.fail('Should have raised a urllib.HTTPError for returned 204')
+      except urllib2.HTTPError, expected:
+        self.assertEquals(204, expected.code)
+    else:
+      response = SendRequest(request_url, method='GET')
+      try:
+        self.assertEquals(204, response.code)
+      finally:
+        response.close()
 
   def testCanStartChromeDriverOnSpecificPort(self):
     launcher = ChromeDriverLauncher(port=9520)
     self.assertEquals(9520, launcher.GetPort())
     driver = WebDriver(launcher.GetURL(), DesiredCapabilities.CHROME)
     driver.quit()
+    launcher.Kill()
+
+
+class WebserverTest(unittest.TestCase):
+  """Tests the built-in ChromeDriver webserver."""
+
+  def testShouldNotServeFilesByDefault(self):
+    launcher = ChromeDriverLauncher()
+    try:
+      SendRequest(launcher.GetURL(), method='GET')
+      self.fail('Should have raised a urllib.HTTPError for returned 403')
+    except urllib2.HTTPError, expected:
+      self.assertEquals(403, expected.code)
+    finally:
+      launcher.Kill()
+
+  def testCanServeFiles(self):
+    launcher = ChromeDriverLauncher(root_path=os.path.dirname(__file__))
+    request_url = launcher.GetURL() + '/' + os.path.basename(__file__)
+    SendRequest(request_url, method='GET')
     launcher.Kill()
 
 
@@ -199,7 +225,7 @@ class CookieTest(unittest.TestCase):
   """Cookie test for the json webdriver protocol"""
 
   def setUp(self):
-    self._launcher = ChromeDriverLauncher()
+    self._launcher = ChromeDriverLauncher(root_path=os.path.dirname(__file__))
     self._driver = WebDriver(self._launcher.GetURL(),
                              DesiredCapabilities.CHROME)
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,15 @@ enum MouseButton {
   kMiddleButton,
   kRightButton,
 };
+
+// The current version of ChromeDriver automation supported by Chrome.
+// This needs to be incremented for each change to ChromeDriver automation that
+// is not backwards compatible. Some examples of this would be:
+// - SendJSONRequest or Hello IPC messages change
+// - The interface for an individual ChromeDriver automation call changes in an
+//   incompatible way
+// TODO(kkania): Investigate a better backwards compatible automation solution.
+extern const int kChromeDriverAutomationVersion;
 
 }  // namespace automation
 

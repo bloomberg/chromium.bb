@@ -472,3 +472,13 @@ bool SendWaitForAllTabsToStopLoadingJSONRequest(
   DictionaryValue reply_dict;
   return SendAutomationJSONRequest(sender, dict, &reply_dict);
 }
+
+bool SendGetChromeDriverAutomationVersion(
+    AutomationMessageSender* sender, int* version) {
+  DictionaryValue dict;
+  dict.SetString("command", "GetChromeDriverAutomationVersion");
+  DictionaryValue reply_dict;
+  if (!SendAutomationJSONRequest(sender, dict, &reply_dict))
+    return false;
+  return reply_dict.GetInteger("version", version);
+}

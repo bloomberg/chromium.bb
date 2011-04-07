@@ -2073,6 +2073,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::SendOSLevelKeyEventToTab;
   handler_map["ActivateTab"] =
       &TestingAutomationProvider::ActivateTabJSON;
+  handler_map["GetChromeDriverAutomationVersion"] =
+      &TestingAutomationProvider::GetChromeDriverAutomationVersion;
 #if defined(OS_CHROMEOS)
   handler_map["GetLoginInfo"] = &TestingAutomationProvider::GetLoginInfo;
   handler_map["LoginAsGuest"] = &TestingAutomationProvider::LoginAsGuest;
@@ -5182,6 +5184,14 @@ void TestingAutomationProvider::ActivateTabJSON(
   browser->SelectTabContentsAt(
       browser->GetIndexOfController(&tab_contents->controller()), true);
   reply.SendSuccess(NULL);
+}
+
+void TestingAutomationProvider::GetChromeDriverAutomationVersion(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  DictionaryValue reply_dict;
+  reply_dict.SetInteger("version", automation::kChromeDriverAutomationVersion);
+  AutomationJSONReply(this, reply_message).SendSuccess(&reply_dict);
 }
 
 void TestingAutomationProvider::WaitForTabCountToBecome(

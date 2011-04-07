@@ -1014,6 +1014,13 @@ class TestingAutomationProvider : public AutomationProvider,
   //   output: none
   void ActivateTabJSON(DictionaryValue* args, IPC::Message* message);
 
+  // Gets the version of ChromeDriver automation supported by this server.
+  // Example:
+  //   input: none
+  //   output: { "version": 1 }
+  void GetChromeDriverAutomationVersion(DictionaryValue* args,
+                                        IPC::Message* message);
+
 #if defined(OS_CHROMEOS)
   void GetLoginInfo(DictionaryValue* args, IPC::Message* reply_message);
 

@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/common/automation_constants.h"
+#include "chrome/test/webdriver/error_codes.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 class AutomationProxy;
@@ -42,7 +43,7 @@ class Automation {
 
   // Creates a browser, using the exe found in |browser_dir|. If |browser_dir|
   // is empty, it will search in all the default locations.
-  void Init(const FilePath& browser_dir, bool* success);
+  void Init(const FilePath& browser_dir, ErrorCode* code);
 
   // Terminates this session and disconnects its automation proxy. After
   // invoking this method, the Automation can safely be deleted.
@@ -115,6 +116,10 @@ class Automation {
 
   // Gets the version of the runing browser.
   void GetBrowserVersion(std::string* version);
+
+  // Gets the ChromeDriver automation version supported by the automation
+  // server.
+  void GetChromeDriverAutomationVersion(int* version, bool* success);
 
   // Waits for all tabs to stop loading.
   void WaitForAllTabsToStopLoading(bool* success);

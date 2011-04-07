@@ -62,8 +62,8 @@ class Session {
   // Starts the session thread and a new browser, using the exe found in
   // |browser_dir|. If |browser_dir| is empty, it will search in all the default
   // locations. Returns true on success. On failure, the session will delete
-  // itself and return false.
-  bool Init(const FilePath& browser_dir);
+  // itself and return an error code.
+  ErrorCode Init(const FilePath& browser_dir);
 
   // Terminates this session and deletes itself.
   void Terminate();
@@ -226,7 +226,7 @@ class Session {
   void RunSessionTaskOnSessionThread(
       Task* task,
       base::WaitableEvent* done_event);
-  void InitOnSessionThread(const FilePath& browser_dir, bool* success);
+  void InitOnSessionThread(const FilePath& browser_dir, ErrorCode* code);
   void TerminateOnSessionThread();
   void SendKeysOnSessionThread(const string16& keys, bool* success);
   ErrorCode SwitchToFrameWithJavaScriptLocatedFrame(

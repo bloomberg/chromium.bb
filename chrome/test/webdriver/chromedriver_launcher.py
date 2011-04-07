@@ -41,9 +41,8 @@ class ChromeDriverLauncher:
         raise RuntimeError('ChromeDriver exe could not be found in its default '
                            'location. Searched in following directories: ' +
                            ', '.join(self.DefaultExeLocations()))
-    if self._root_path is None:
-      self._root_path = '.'
-    self._root_path = os.path.abspath(self._root_path)
+    if self._root_path is not None:
+      self._root_path = os.path.abspath(self._root_path)
     self._process = None
 
     if not os.path.exists(self._exe_path):
@@ -128,7 +127,9 @@ class ChromeDriverLauncher:
     if self._process is not None:
       self.Kill()
 
-    chromedriver_args = [self._exe_path, '--root=%s' % self._root_path]
+    chromedriver_args = [self._exe_path]
+    if self._root_path is not None:
+      chromedriver_args += ['--root=%s' % self._root_path]
     if self._port is not None:
       chromedriver_args += ['--port=%d' % self._port]
     if self._url_base is not None:
@@ -200,6 +201,3 @@ class ChromeDriverLauncher:
 
   def GetPort(self):
     return self._port
-
-  def __del__(self):
-    self.Kill()

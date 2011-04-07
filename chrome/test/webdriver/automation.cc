@@ -120,11 +120,10 @@ Automation::Automation() {}
 
 Automation::~Automation() {}
 
-void Automation::Init(const FilePath& user_browser_dir, bool* success) {
+void Automation::Init(const FilePath& user_browser_dir, ErrorCode* code) {
   FilePath browser_dir = user_browser_dir;
   if (browser_dir.empty() && !GetDefaultChromeExeDir(&browser_dir)) {
-    LOG(ERROR) << "Could not locate Chrome application directory";
-    *success = false;
+    *code = kBrowserCouldNotBeFound;
     return;
   }
 
@@ -149,7 +148,17 @@ void Automation::Init(const FilePath& user_browser_dir, bool* success) {
       true   // show_window
   };
   launcher_->LaunchBrowserAndServer(launch_props, true);
-  *success = launcher_->IsBrowserRunning();
+  if (!launcher_->IsBrowserRunning()) {
+    *code = kBrowserFailedToStart;
+    return;
+  }
+  int version = 0;
+  if (!SendGetChromeDriverAutomationVersion(automation(), &version) ||
+      version > automation::kChromeDriverAutomationVersion) {
+    *code = kIncompatibleBrowserVersion;
+    return;
+  }
+  *code = kSuccess;
 }
 
 void Automation::Terminate() {
@@ -392,6 +401,10 @@ void Automation::CloseTab(int tab_id, bool* success) {
 
 void Automation::GetBrowserVersion(std::string* version) {
   *version = automation()->server_version();
+}
+
+void Automation::GetChromeDriverAutomationVersion(int* version, bool* success) {
+  *success = SendGetChromeDriverAutomationVersion(automation(), version);
 }
 
 void Automation::WaitForAllTabsToStopLoading(bool* success) {

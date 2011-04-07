@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,13 @@ enum ErrorCode {
   kNoSuchWindow = 23,
   kInvalidCookieDomain = 24,
   kUnableToSetCookie = 25,
+
+  // Non-standard error codes.
+  kBrowserCouldNotBeFound = 50,
+  kBrowserFailedToStart,
+  kIncompatibleBrowserVersion,
+
+  // HTTP status codes.
   kSeeOther = 303,
   kBadRequest = 400,
   kSessionNotFound = 404,
@@ -33,4 +40,3 @@ enum ErrorCode {
 }  // namespace webdriver
 
 #endif  // CHROME_TEST_WEBDRIVER_ERROR_CODES_H_
-

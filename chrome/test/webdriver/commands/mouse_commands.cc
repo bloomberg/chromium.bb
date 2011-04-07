@@ -103,7 +103,7 @@ DragCommand::DragCommand(const std::vector<std::string>& path_segments,
 DragCommand::~DragCommand() {}
 
 bool DragCommand::Init(Response* const response) {
-  if (WebDriverCommand::Init(response)) {
+  if (WebElementCommand::Init(response)) {
     if (!GetIntegerParameter("x", &drag_x_) ||
         !GetIntegerParameter("y", &drag_y_)) {
       SET_WEBDRIVER_ERROR(response,

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,9 +97,19 @@ class Dispatcher {
   void AddShutdown(const std::string& pattern,
                    base::WaitableEvent* shutdown_event);
 
+  // Registers a callback for the given pattern that will return a simple
+  // "HTTP/1.1 200 OK" message with "ok" in the body. Used for checking the
+  // status of the server.
+  void AddStatus(const std::string& pattern);
+
   // Registers a callback that will always respond with a
   // "HTTP/1.1 501 Not Implemented" message.
   void SetNotImplemented(const std::string& pattern);
+
+  // Registers a callback that will respond for all other requests with a
+  // "HTTP/1.1 403 Forbidden" message. Should be called only after registering
+  // other callbacks.
+  void ForbidAllOtherRequests();
 
  private:
   struct mg_context* context_;

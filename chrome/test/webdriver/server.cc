@@ -26,6 +26,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/webdriver/dispatch.h"
 #include "chrome/test/webdriver/error_codes.h"
 #include "chrome/test/webdriver/session_manager.h"
@@ -75,8 +76,10 @@ signal_handler(int sig_num) {
 namespace webdriver {
 
 void InitCallbacks(struct mg_context* ctx, Dispatcher* dispatcher,
-                   base::WaitableEvent* shutdown_event) {
+                   base::WaitableEvent* shutdown_event,
+                   bool forbid_other_requests) {
   dispatcher->AddShutdown("/shutdown", shutdown_event);
+  dispatcher->AddStatus("/healthz");
 
   dispatcher->Add<CreateSession>("/session");
 
@@ -140,11 +143,41 @@ void InitCallbacks(struct mg_context* ctx, Dispatcher* dispatcher,
   dispatcher->SetNotImplemented("/session/*/timeouts/async_script");
 
   // Since the /session/* is a wild card that would match the above URIs, this
-  // line MUST be the last registered URI with the server.
+  // line MUST be after all other webdriver command callbacks.
   dispatcher->Add<SessionWithID>("/session/*");
+
+  if (forbid_other_requests)
+    dispatcher->ForbidAllOtherRequests();
 }
 
 }  // namespace webdriver
+
+// Initializes logging for ChromeDriver.
+void InitChromeDriverLogging(const CommandLine& command_line) {
+  bool success = InitLogging(
+      FILE_PATH_LITERAL("chromedriver.log"),
+      logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG,
+      logging::LOCK_LOG_FILE,
+      logging::DELETE_OLD_LOG_FILE,
+      logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+  if (!success) {
+    PLOG(ERROR) << "Unable to initialize logging";
+  }
+  logging::SetLogItems(false,  // enable_process_id
+                       false,  // enable_thread_id
+                       true,   // enable_timestamp
+                       false); // enable_tickcount
+  if (command_line.HasSwitch(switches::kLoggingLevel)) {
+    std::string log_level = command_line.GetSwitchValueASCII(
+        switches::kLoggingLevel);
+    int level = 0;
+    if (base::StringToInt(log_level, &level)) {
+      logging::SetMinLogLevel(level);
+    } else {
+      LOG(WARNING) << "Bad log level: " << log_level;
+    }
+  }
+}
 
 // Configures mongoose according to the given command line flags.
 // Returns true on success.
@@ -186,6 +219,7 @@ int main(int argc, char *argv[]) {
   // built Chrome.
   chrome::RegisterPathProvider();
   TestTimeouts::Initialize();
+  InitChromeDriverLogging(*cmd_line);
 
   // Parse command line flags.
   std::string port = "9515";
@@ -194,8 +228,9 @@ int main(int argc, char *argv[]) {
   std::string url_base;
   if (cmd_line->HasSwitch("port"))
     port = cmd_line->GetSwitchValueASCII("port");
-  // By default, mongoose serves files from the current working directory. The
-  // 'root' flag allows the user to specify a different location to serve from.
+  // The 'root' flag allows the user to specify a location to serve files from.
+  // If it is not given, a callback will be registered to forbid all file
+  // requests.
   if (cmd_line->HasSwitch("root"))
     root = cmd_line->GetSwitchValueASCII("root");
   if (cmd_line->HasSwitch("chrome-dir"))
@@ -233,7 +268,7 @@ int main(int argc, char *argv[]) {
   }
 
   webdriver::Dispatcher dispatcher(ctx, url_base);
-  webdriver::InitCallbacks(ctx, &dispatcher, &shutdown_event);
+  webdriver::InitCallbacks(ctx, &dispatcher, &shutdown_event, root.empty());
 
   // The tests depend on parsing the first line ChromeDriver outputs,
   // so all other logging should happen after this.

@@ -243,4 +243,10 @@ bool SendNativeKeyEventJSONRequest(
 bool SendWaitForAllTabsToStopLoadingJSONRequest(
     AutomationMessageSender* sender) WARN_UNUSED_RESULT;
 
+// Requests the version of ChromeDriver automation supported by the automation
+// server. Returns true on success.
+bool SendGetChromeDriverAutomationVersion(
+    AutomationMessageSender* sender,
+    int* version) WARN_UNUSED_RESULT;
+
 #endif  // CHROME_TEST_AUTOMATION_AUTOMATION_JSON_REQUESTS_H_

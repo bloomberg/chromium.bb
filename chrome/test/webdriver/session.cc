@@ -69,20 +69,22 @@ Session::~Session() {
   SessionManager::GetInstance()->Remove(id_);
 }
 
-bool Session::Init(const FilePath& browser_dir) {
-  bool success = false;
-  if (thread_.Start()) {
-    RunSessionTask(NewRunnableMethod(
-        this,
-        &Session::InitOnSessionThread,
-        browser_dir,
-        &success));
-  } else {
+ErrorCode Session::Init(const FilePath& browser_dir) {
+  if (!thread_.Start()) {
     LOG(ERROR) << "Cannot start session thread";
-  }
-  if (!success)
     delete this;
-  return success;
+    return kUnknownError;
+  }
+
+  ErrorCode code = kUnknownError;
+  RunSessionTask(NewRunnableMethod(
+      this,
+      &Session::InitOnSessionThread,
+      browser_dir,
+      &code));
+  if (code != kSuccess)
+    Terminate();
+  return code;
 }
 
 void Session::Terminate() {
@@ -903,24 +905,27 @@ void Session::RunSessionTaskOnSessionThread(Task* task,
   done_event->Signal();
 }
 
-void Session::InitOnSessionThread(const FilePath& browser_dir, bool* success) {
+void Session::InitOnSessionThread(const FilePath& browser_dir,
+                                  ErrorCode* code) {
   automation_.reset(new Automation());
-  automation_->Init(browser_dir, success);
-  if (!*success)
+  automation_->Init(browser_dir, code);
+  if (*code != kSuccess)
     return;
 
+  bool success = false;
   std::vector<int> tab_ids;
-  automation_->GetTabIds(&tab_ids, success);
-  if (!*success) {
+  automation_->GetTabIds(&tab_ids, &success);
+  if (!success) {
     LOG(ERROR) << "Could not get tab ids";
+    *code = kUnknownError;
     return;
   }
   if (tab_ids.empty()) {
     LOG(ERROR) << "No tab ids after initialization";
-    *success = false;
-  } else {
-    current_target_ = FrameId(tab_ids[0], FramePath());
+    *code = kUnknownError;
+    return;
   }
+  current_target_ = FrameId(tab_ids[0], FramePath());
 }
 
 void Session::TerminateOnSessionThread() {

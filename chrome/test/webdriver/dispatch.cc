@@ -59,6 +59,15 @@ void Shutdown(struct mg_connection* connection,
   shutdown_event->Signal();
 }
 
+void SendStatus(struct mg_connection* connection,
+                const struct mg_request_info* request_info,
+                void* user_data) {
+  std::string response = "HTTP/1.1 200 OK\r\n"
+                         "Content-Length:2\r\n\r\n"
+                         "ok";
+  mg_write(connection, response.data(), response.length());
+}
+
 void SendNoContentResponse(struct mg_connection* connection,
                            const struct mg_request_info* request_info,
                            void* user_data) {
@@ -66,6 +75,12 @@ void SendNoContentResponse(struct mg_connection* connection,
                          "Content-Length:0\r\n"
                          "\r\n";
   mg_write(connection, response.data(), response.length());
+}
+
+void SendForbidden(struct mg_connection* connection,
+                   const struct mg_request_info* request_info,
+                   void* user_data) {
+  mg_printf(connection, "HTTP/1.1 403 Forbidden\r\n\r\n");
 }
 
 void SendNotImplementedError(struct mg_connection* connection,
@@ -268,9 +283,17 @@ void Dispatcher::AddShutdown(const std::string& pattern,
                       shutdown_event);
 }
 
+void Dispatcher::AddStatus(const std::string& pattern) {
+  mg_set_uri_callback(context_, (root_ + pattern).c_str(), &SendStatus, NULL);
+}
+
 void Dispatcher::SetNotImplemented(const std::string& pattern) {
   mg_set_uri_callback(context_, (root_ + pattern).c_str(),
                       &SendNotImplementedError, NULL);
+}
+
+void Dispatcher::ForbidAllOtherRequests() {
+  mg_set_uri_callback(context_, "*", &SendForbidden, NULL);
 }
 
 }  // namespace webdriver
