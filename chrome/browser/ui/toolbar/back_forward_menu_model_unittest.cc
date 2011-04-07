@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,6 +54,10 @@ class FaviconDelegate : public ui::MenuModelDelegate {
 
 class BackFwdMenuModelTest : public RenderViewHostTestHarness {
  public:
+  BackFwdMenuModelTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_) {
+  }
+
   void ValidateModel(BackForwardMenuModel* model, int history_items,
                      int chapter_stops) {
     int h = std::min(BackForwardMenuModel::kMaxHistoryItems, history_items);
@@ -94,6 +98,8 @@ class BackFwdMenuModelTest : public RenderViewHostTestHarness {
     controller().GoForward();
     contents()->CommitPendingNavigation();
   }
+
+  BrowserThread ui_thread_;
 };
 
 TEST_F(BackFwdMenuModelTest, BasicCase) {

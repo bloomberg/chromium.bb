@@ -9,6 +9,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/browser_thread.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
@@ -50,7 +51,9 @@ class SiteInstanceTestBrowserClient : public content::ContentBrowserClient {
 
 class SiteInstanceTest : public testing::Test {
  public:
-  SiteInstanceTest() : old_browser_client_(NULL) {
+  SiteInstanceTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        old_browser_client_(NULL) {
   }
 
   virtual void SetUp() {
@@ -64,6 +67,7 @@ class SiteInstanceTest : public testing::Test {
 
  private:
   MessageLoopForUI message_loop_;
+  BrowserThread ui_thread_;
 
   SiteInstanceTestBrowserClient browser_client_;
   content::ContentBrowserClient* old_browser_client_;

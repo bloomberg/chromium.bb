@@ -156,6 +156,7 @@ bool RenderProcessHost::FastShutdownForPageCount(size_t count) {
 
 // static
 RenderProcessHost::iterator RenderProcessHost::AllHostsIterator() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return iterator(&all_hosts);
 }
 
