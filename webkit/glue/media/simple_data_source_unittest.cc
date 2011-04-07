@@ -86,7 +86,7 @@ class SimpleDataSourceTest : public testing::Test {
     EXPECT_EQ(kDataSize, size);
 
     for (int i = 0; i < kDataSize; ++i) {
-      data_source_->didReceiveData(NULL, data_ + i, 1);
+      data_source_->didReceiveData(NULL, data_ + i, 1, 1);
     }
 
     EXPECT_CALL(host_, SetLoaded(is_loaded));

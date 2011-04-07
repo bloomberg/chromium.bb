@@ -74,7 +74,8 @@ class SimpleDataSource : public WebDataSource,
   virtual void didReceiveData(
       WebKit::WebURLLoader* loader,
       const char* data,
-      int dataLength);
+      int dataLength,
+      int rawDataLength);
   virtual void didReceiveCachedMetadata(
       WebKit::WebURLLoader* loader,
       const char* data, int dataLength);
