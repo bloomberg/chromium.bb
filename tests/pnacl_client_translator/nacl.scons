@@ -1,10 +1,11 @@
 # -*- python -*-
-# Copyright 2011 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 import platform
-import re # For StripArchFromLDCommand hack.
+import re        # For StripArchFromLDCommand hack.
+import os.path   # For getting basenames.
 
 Import('env')
 
@@ -14,7 +15,7 @@ Import('env')
 if (not env.Bit('bitcode')):
   Return()
 
-# We don't have the ports to run on these platforms in the browser yet.
+# We don't have the ports for these platforms to build/run in the browser yet.
 no_ports_broken = env.Bit('target_arm') or \
     env.Bit('host_windows') or \
     env.Bit('host_mac')
@@ -24,43 +25,93 @@ no_ports_broken = env.Bit('target_arm') or \
 
 def TranslatorArchDir():
   if env.Bit('target_x86_32'):
-    return "x8632"
+    return 'x8632'
   elif env.Bit('target_x86_64'):
-    return "x8664"
+    return 'x8664'
   elif env.Bit('target_arm'):
-    return "arm"
+    return 'arm'
   else:
     raise Exception('unknown architecture')
 
-def GetTranslatorBinaries():
-  # Pick the exact arch-specific LLC/LD that you need.
-  # TODO(jvoung): install the native files to a location that will mirror
-  # more closely how a developer will lay out files on a server.
-  # This currently installs only the arch-specific files instead
-  # of every possibility.
-  arch_str = TranslatorArchDir()
+def MappingForStagedFile(f):
+  return (f.replace('$STAGING_DIR/', ''), f)
 
-  # TODO(jvoung): allow this to work on other hosts (besides linux).
-  # We need to build the pnacl frontend and translators for the other
-  # hosts first.
+def LayoutTranslatorBinariesOnServer():
+  ''' Lay out the translator support files in a way that imitates
+      any old webserver hosting pnacl bitcode for all 3 arches.
+      Simple server directory layout for each arch-specific-support file:
+         ./pnacl_support/${arch}/${file}
+
+      Non-arch specific files:
+         ./pnacl_support/pnacl_coordinator.js
+         etc...
+
+      Location of test-page, bitcode, etc.:
+         ./mypage.html
+         ./mybitcode.pexe
+  '''
   # TODO(jvoung): rename the "arm-untrusted" part to "pnacl-untrusted"
   # since that is what it really should be.
+  # TODO(jvoung): simplify how utman installs these files in the first
+  # place so that mapping is pretty much one-to-one (someone could just
+  # copy the files from the toolchain-dir to their webserver).
+  map_files = []
+  replicates = [] # track staging dependencies
   toolchain_dir = '${SCONSTRUCT_DIR}/toolchain/linux_arm-untrusted'
-  toolchain_bin = '%s/tools-sb/%s/srpc/bin/' % (toolchain_dir,
-                                                arch_str)
-  toolchain_ldscript = '%s/tools-sb/%s/script/ld_script' % (toolchain_dir,
-                                                            arch_str)
-  toolchain_lib_dir = '%s/libs-%s/' % (toolchain_dir, arch_str)
-  toolchain_native_libs = [ env.File(toolchain_lib_dir + x)
-                            for x in ['crt1.o',
-                                      'libcrt_platform.a',
-                                      'libgcc.a',
-                                      'libgcc_eh.a']]
-  return toolchain_native_libs + [env.File(toolchain_bin + 'llc'),
-                                  env.File(toolchain_bin + 'ld'),
-                                  env.File(toolchain_ldscript)]
+  # TODO(jvoung): add ARM when we have a sandboxed LD in tools-sb.
+  for arch in ['x8632', 'x8664']:
+    toolchain_bin = '%s/tools-sb/%s/srpc/bin/' % (toolchain_dir,
+                                                  arch)
+    toolchain_binaries = [toolchain_bin + 'llc',
+                          toolchain_bin + 'ld']
+    # We should really be consistent and use directory structure
+    # to separate the arch-specific ld_script instead of embedding
+    # the arch in the basename.
+    toolchain_ldscript = '%s/ldscripts/ld_script_%s_untrusted' % (toolchain_dir,
+                                                                  arch)
+    toolchain_lib_dir = '%s/libs-%s/' % (toolchain_dir, arch)
+    toolchain_native_libs = [ (toolchain_lib_dir + x)
+                              for x in ['crt1.o',
+                                        'libcrt_platform.a',
+                                        'libgcc.a',
+                                        'libgcc_eh.a'] ]
+    toolchain_local_files = toolchain_native_libs + \
+        toolchain_binaries + [toolchain_ldscript]
+    # Replicate to STAGING (files can be copied from there).
+    replicates += env.Replicate('$STAGING_DIR/pnacl_support/%s' % arch,
+                  toolchain_local_files)
+    # Set up file mapping for test runner:
+    map_files += [MappingForStagedFile('$STAGING_DIR/pnacl_support/%s/%s' %
+                                       (arch,
+                                        os.path.basename(f)))
+                  for f in toolchain_local_files]
 
-pnacl_js_lib = env.File('pnacl_coordinator.js')
+  # Do the same for pnacl_coordinator, etc.
+  # TODO(jvoung): we may want to move these to the toolchain directory.
+  other_support_files = ['pnacl_coordinator.js',
+                         'llc_manifest.nmf',
+                         'ld_manifest.nmf']
+  replicates += env.Replicate('$STAGING_DIR/pnacl_support',
+                other_support_files)
+  map_files += [MappingForStagedFile('$STAGING_DIR/pnacl_support/%s' % f)
+                for f in other_support_files]
+  # Stage the nacltest.js too, so that you can run this test by starting up
+  # your own http server, your own browser, and visit the staging directory.
+  replicates += env.Replicate('$STAGING_DIR',
+              '${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js')
+  # Don't need to add nacltest.js to map_files, since the browser tester
+  # always loads up that file.
+  return (map_files, replicates)
+
+
+def LayoutPageAssetsOnServer(bitcode_file, webpage):
+  map_files = []
+  replicates = []
+  replicates += env.Replicate('$STAGING_DIR', bitcode_file)
+  map_files.append(MappingForStagedFile('$STAGING_DIR/%s' % bitcode_file))
+  replicates += env.Replicate('$STAGING_DIR', webpage)
+  map_files.append(MappingForStagedFile('$STAGING_DIR/%s' % webpage))
+  return (map_files, replicates)
 
 #----------------------------------------------------------------------
 # SRPC
@@ -90,15 +141,22 @@ pnacl_srpc_hello_world_pexe = bitcode_env.ComponentProgram('pnacl_srpc_hw.pexe',
                 'imc',
                 'pthread'])
 
-pnacl_srpc_hello_world_assets = GetTranslatorBinaries() + [
+# Page independent support assets.
+(map_files_toolchain, replicates_toolchain) = LayoutTranslatorBinariesOnServer()
+
+# Assets for the page.
+(map_files_page, replicates_page) = LayoutPageAssetsOnServer(
     pnacl_srpc_hello_world_pexe,
-    bitcode_env.File('pnacl_srpc_hw.html'),
-    pnacl_js_lib]
+    'pnacl_srpc_hw.html')
 
 node = bitcode_env.PPAPIBrowserTester(
     'pnacl_srpc_hw.out',
-     url='pnacl_srpc_hw.html',
-     files=pnacl_srpc_hello_world_assets)
+    url='pnacl_srpc_hw.html',
+    files=[], # all of them should be in map_files
+    map_files=map_files_toolchain + map_files_page)
+
+# Make sure the files are actually staged when this test runs.
+env.Depends(node, replicates_toolchain + replicates_page)
 
 bitcode_env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],

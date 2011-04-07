@@ -1,9 +1,9 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
           "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <!--
-  Copyright 2011 Google Inc. All rights reserved.
-  Use of this source code is governed by a BSD-style license that can
-  be found in the LICENSE file.
+  Copyright (c) 2011 The Native Client Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
 -->
 <html>
 <head>
@@ -11,14 +11,15 @@
   <META HTTP-EQUIV="Expires" CONTENT="-1" />
   <title>PNACL Hello World Test</title>
   <script type="text/javascript" src="nacltest.js"></script>
-  <script type="text/javascript" src="pnacl_coordinator.js"></script>
+  <script type="text/javascript" src="pnacl_support/pnacl_coordinator.js">
+  </script>
   <script type="text/javascript">
     //<![CDATA[
 
     function pageDidLoad() {
       var tester = new Tester();
-
       var nexeModule = $('nexe_id');
+
       // Create the utility embed tags (e.g., llc). Wait for them to be ready.
       var pnaclEmbeds = injectUtilityEmbeds();
       tester.waitFor.apply(tester, pnaclEmbeds.getEmbedsToWaitFor());
