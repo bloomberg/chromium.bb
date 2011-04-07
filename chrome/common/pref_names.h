@@ -81,7 +81,6 @@ extern const char kSearchProviderOverrides[];
 extern const char kSearchProviderOverridesVersion[];
 extern const char kPromptForDownload[];
 extern const char kAlternateErrorPagesEnabled[];
-extern const char kDnsPrefetchingEnabled[];
 extern const char kDnsStartupPrefetchList[];  // OBSOLETE
 extern const char kDnsPrefetchingStartupList[];
 extern const char kDnsHostReferralList[];  // OBSOLETE
@@ -93,6 +92,7 @@ extern const char kInstantEnabledOnce[];
 extern const char kInstantEnabledTime[];
 extern const char kInstantPromo[];
 extern const char kMultipleProfilePrefMigration[];
+extern const char kNetworkPredictionEnabled[];
 #if defined(OS_CHROMEOS)
 extern const char kAudioMute[];
 extern const char kAudioVolume[];

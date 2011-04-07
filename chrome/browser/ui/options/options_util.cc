@@ -37,7 +37,7 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
     prefs::kDeleteDownloadHistory,
     prefs::kDeleteFormData,
     prefs::kDeletePasswords,
-    prefs::kDnsPrefetchingEnabled,
+    prefs::kNetworkPredictionEnabled,
     // TODO(rtenneti): Remove ssl preferences from user_prefs when we stop
     // migrating user_prefs to local_state after 6 months (after we delete
     // migration code).

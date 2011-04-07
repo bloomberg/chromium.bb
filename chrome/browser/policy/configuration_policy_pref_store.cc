@@ -168,7 +168,7 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
   { Value::TYPE_BOOLEAN, kPolicySearchSuggestEnabled,
     prefs::kSearchSuggestEnabled },
   { Value::TYPE_BOOLEAN, kPolicyDnsPrefetchingEnabled,
-    prefs::kDnsPrefetchingEnabled },
+    prefs::kNetworkPredictionEnabled },
   { Value::TYPE_BOOLEAN, kPolicyDisableSpdy,
     prefs::kDisableSpdy },
   { Value::TYPE_BOOLEAN, kPolicySafeBrowsingEnabled,

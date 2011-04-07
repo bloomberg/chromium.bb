@@ -40,7 +40,7 @@ class NetPrefObserver : public NotificationObserver {
   // If |pref_name| is NULL, all monitored preferences will be applied.
   void ApplySettings(const std::string* pref_name);
 
-  BooleanPrefMember dns_prefetching_enabled_;
+  BooleanPrefMember network_prediction_enabled_;
   BooleanPrefMember spdy_disabled_;
   BooleanPrefMember http_throttling_enabled_;
   scoped_refptr<prerender::PrerenderManager> prerender_manager_;

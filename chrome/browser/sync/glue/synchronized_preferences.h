@@ -76,7 +76,7 @@ static const char* kSynchronizedPreferences[] = {
   // Options dialog: Under the hood.
   prefs::kAlternateErrorPagesEnabled,
   prefs::kSearchSuggestEnabled,
-  prefs::kDnsPrefetchingEnabled,
+  prefs::kNetworkPredictionEnabled,
   prefs::kSafeBrowsingEnabled,
   prefs::kEnableTranslate,
   // Download directory not synced.

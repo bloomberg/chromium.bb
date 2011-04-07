@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -488,18 +488,20 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
         l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_DNS_CONFIG));
     error_strings->Set("suggestionsDNSConfig", suggest_dns_config);
 
-    DictionaryValue* suggest_dns_prefetch = new DictionaryValue;
-    suggest_dns_prefetch->SetString("msg",
-        l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_DNS_PREFETCH));
-    suggest_dns_prefetch->SetString("settingsTitle",
-        l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
-    suggest_dns_prefetch->SetString("advancedTitle",
-        l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_TAB_LABEL));
-    suggest_dns_prefetch->SetString(
-        "noPrefetchTitle",
+    DictionaryValue* suggest_network_prediction = new DictionaryValue;
+    suggest_network_prediction->SetString("msg",
         l10n_util::GetStringUTF16(
-            IDS_NETWORK_DNS_PREFETCH_ENABLED_DESCRIPTION));
-    error_strings->Set("suggestionsDisableDNSPrefetch", suggest_dns_prefetch);
+            IDS_ERRORPAGES_SUGGESTION_NETWORK_PREDICTION));
+    suggest_network_prediction->SetString("settingsTitle",
+        l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
+    suggest_network_prediction->SetString("advancedTitle",
+        l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_TAB_LABEL));
+    suggest_network_prediction->SetString(
+        "noNetworkPredictionTitle",
+        l10n_util::GetStringUTF16(
+            IDS_NETWORK_PREDICTION_ENABLED_DESCRIPTION));
+    error_strings->Set("suggestionsDisableNetworkPrediction",
+                       suggest_network_prediction);
   }
 
   if (options.suggestions & SUGGEST_FIREWALL_CONFIG) {

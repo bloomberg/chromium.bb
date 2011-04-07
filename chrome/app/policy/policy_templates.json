@@ -218,8 +218,8 @@
       'features': {'dynamic_refresh': 1},
       'example_value': True,
       'id': 7,
-      'caption': '''Enable DNS prefetching''',
-      'desc': '''Enables DNS prefetching in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
+      'caption': '''Enable network prediction.''',
+      'desc': '''Enables network prediction in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
     },

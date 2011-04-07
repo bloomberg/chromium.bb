@@ -32,7 +32,8 @@ NetPrefObserver::NetPrefObserver(PrefService* prefs,
     : prerender_manager_(prerender_manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(prefs);
-  dns_prefetching_enabled_.Init(prefs::kDnsPrefetchingEnabled, prefs, this);
+  network_prediction_enabled_.Init(prefs::kNetworkPredictionEnabled, prefs,
+                                   this);
   spdy_disabled_.Init(prefs::kDisableSpdy, prefs, this);
   http_throttling_enabled_.Init(prefs::kHttpThrottlingEnabled, prefs, this);
 
@@ -55,9 +56,9 @@ void NetPrefObserver::Observe(NotificationType type,
 void NetPrefObserver::ApplySettings(const std::string* pref_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  chrome_browser_net::EnablePredictor(*dns_prefetching_enabled_);
+  chrome_browser_net::EnablePredictor(*network_prediction_enabled_);
   if (prerender_manager_)
-    prerender_manager_->set_enabled(*dns_prefetching_enabled_);
+    prerender_manager_->set_enabled(*network_prediction_enabled_);
   net::HttpStreamFactory::set_spdy_enabled(!*spdy_disabled_);
 
   if (!pref_name || *pref_name == prefs::kHttpThrottlingEnabled) {
@@ -70,6 +71,7 @@ void NetPrefObserver::ApplySettings(const std::string* pref_name) {
 
 // static
 void NetPrefObserver::RegisterPrefs(PrefService* prefs) {
+  prefs->RegisterBooleanPref(prefs::kNetworkPredictionEnabled, true);
   prefs->RegisterBooleanPref(prefs::kDisableSpdy, false);
   prefs->RegisterBooleanPref(prefs::kHttpThrottlingEnabled, false);
 }

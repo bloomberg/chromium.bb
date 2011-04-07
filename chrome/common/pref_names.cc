@@ -230,9 +230,6 @@ const char kPromptForDownload[] = "download.prompt_for_download";
 // A boolean pref set to true if we're using Link Doctor error pages.
 const char kAlternateErrorPagesEnabled[] = "alternate_error_pages.enabled";
 
-// A boolean pref set to true if DNS pre-fetching is being done in browser.
-const char kDnsPrefetchingEnabled[] = "dns_prefetching.enabled";
-
 // OBSOLETE: new pref now stored with user prefs instead of profile, as
 // kDnsPrefetchingStartupList.
 const char kDnsStartupPrefetchList[] = "StartupDNSPrefetchList";
@@ -280,6 +277,13 @@ const char kInstantPromo[] = "instant.promo";
 //    kBrowserWindowPlacement
 const char kMultipleProfilePrefMigration[] =
     "local_state.multiple_profile_prefs_version";
+
+// A boolean pref set to true if prediction of network actions is allowed.
+// Actions include DNS prefetching, TCP and SSL preconnection, and prerendering
+// of web pages.
+// NOTE: The "dns_prefetching.enabled" value is used so that historical user
+// preferences are not lost.
+const char kNetworkPredictionEnabled[] = "dns_prefetching.enabled";
 
 #if defined(OS_CHROMEOS)
 // An integer pref to initially mute volume if 1.

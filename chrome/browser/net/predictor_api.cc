@@ -147,7 +147,6 @@ void DiscardInitialNavigationHistory() {
 void RegisterUserPrefs(PrefService* user_prefs) {
   user_prefs->RegisterListPref(prefs::kDnsPrefetchingStartupList);
   user_prefs->RegisterListPref(prefs::kDnsPrefetchingHostReferralList);
-  user_prefs->RegisterBooleanPref(prefs::kDnsPrefetchingEnabled, true);
 }
 
 // When enabled, we use the following instance to service all requests in the
@@ -401,7 +400,7 @@ static void InitNetworkPredictor(TimeDelta max_dns_queue_delay,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   bool prefetching_enabled =
-      user_prefs->GetBoolean(prefs::kDnsPrefetchingEnabled);
+      user_prefs->GetBoolean(prefs::kNetworkPredictionEnabled);
 
   // Gather the list of hostnames to prefetch on startup.
   UrlList urls =

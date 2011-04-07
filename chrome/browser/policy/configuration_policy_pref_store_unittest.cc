@@ -165,7 +165,7 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(kPolicySearchSuggestEnabled,
                     prefs::kSearchSuggestEnabled),
         TypeAndName(kPolicyDnsPrefetchingEnabled,
-                    prefs::kDnsPrefetchingEnabled),
+                    prefs::kNetworkPredictionEnabled),
         TypeAndName(kPolicyDisableSpdy,
                     prefs::kDisableSpdy),
         TypeAndName(kPolicySafeBrowsingEnabled,

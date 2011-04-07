@@ -364,8 +364,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, Privacy) {
             GetPrefs(1)->GetBoolean(prefs::kAlternateErrorPagesEnabled));
   ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kSearchSuggestEnabled),
             GetPrefs(1)->GetBoolean(prefs::kSearchSuggestEnabled));
-  ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kDnsPrefetchingEnabled),
-            GetPrefs(1)->GetBoolean(prefs::kDnsPrefetchingEnabled));
+  ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kNetworkPredictionEnabled),
+            GetPrefs(1)->GetBoolean(prefs::kNetworkPredictionEnabled));
   ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kSafeBrowsingEnabled),
             GetPrefs(1)->GetBoolean(prefs::kSafeBrowsingEnabled));
 
@@ -373,8 +373,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, Privacy) {
       prefs::kAlternateErrorPagesEnabled);
   bool new_kSearchSuggestEnabled = !GetVerifierPrefs()->GetBoolean(
       prefs::kSearchSuggestEnabled);
-  bool new_kDnsPrefetchingEnabled = !GetVerifierPrefs()->GetBoolean(
-      prefs::kDnsPrefetchingEnabled);
+  bool new_kNetworkPredictionEnabled = !GetVerifierPrefs()->GetBoolean(
+      prefs::kNetworkPredictionEnabled);
   bool new_kSafeBrowsingEnabled = !GetVerifierPrefs()->GetBoolean(
       prefs::kSafeBrowsingEnabled);
 
@@ -386,10 +386,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, Privacy) {
       new_kSearchSuggestEnabled);
   GetPrefs(0)->SetBoolean(prefs::kSearchSuggestEnabled,
       new_kSearchSuggestEnabled);
-  GetVerifierPrefs()->SetBoolean(prefs::kDnsPrefetchingEnabled,
-      new_kDnsPrefetchingEnabled);
-  GetPrefs(0)->SetBoolean(prefs::kDnsPrefetchingEnabled,
-      new_kDnsPrefetchingEnabled);
+  GetVerifierPrefs()->SetBoolean(prefs::kNetworkPredictionEnabled,
+      new_kNetworkPredictionEnabled);
+  GetPrefs(0)->SetBoolean(prefs::kNetworkPredictionEnabled,
+      new_kNetworkPredictionEnabled);
   GetVerifierPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
       new_kSafeBrowsingEnabled);
   GetPrefs(0)->SetBoolean(prefs::kSafeBrowsingEnabled,
@@ -404,10 +404,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, Privacy) {
             GetPrefs(0)->GetBoolean(prefs::kSearchSuggestEnabled));
   ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kSearchSuggestEnabled),
             GetPrefs(1)->GetBoolean(prefs::kSearchSuggestEnabled));
-  ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kDnsPrefetchingEnabled),
-            GetPrefs(0)->GetBoolean(prefs::kDnsPrefetchingEnabled));
-  ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kDnsPrefetchingEnabled),
-            GetPrefs(1)->GetBoolean(prefs::kDnsPrefetchingEnabled));
+  ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kNetworkPredictionEnabled),
+            GetPrefs(0)->GetBoolean(prefs::kNetworkPredictionEnabled));
+  ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kNetworkPredictionEnabled),
+            GetPrefs(1)->GetBoolean(prefs::kNetworkPredictionEnabled));
   ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled),
             GetPrefs(0)->GetBoolean(prefs::kSafeBrowsingEnabled));
   ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled),

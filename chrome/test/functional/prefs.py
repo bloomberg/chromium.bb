@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -114,13 +114,14 @@ class PrefsTest(pyauto.PyUITest):
     self.RestartBrowser(clear_profile=False)
     self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kShowHomeButton))
 
-  def testDnsPrefetchingEnabledPref(self):
+  def testNetworkPredictionEnabledPref(self):
     """Verify DNS prefetching pref."""
     # Assert default
-    self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kDnsPrefetchingEnabled))
-    self.SetPrefs(pyauto.kDnsPrefetchingEnabled, False)
+    self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kNetworkPredictionEnabled))
+    self.SetPrefs(pyauto.kNetworkPredictionEnabled, False)
     self.RestartBrowser(clear_profile=False)
-    self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kDnsPrefetchingEnabled))
+    self.assertFalse(self.GetPrefsInfo().Prefs(
+        pyauto.kNetworkPredictionEnabled))
 
   def testHomepagePrefs(self):
     """Verify homepage prefs."""
@@ -163,7 +164,7 @@ class PrefsTest(pyauto.PyUITest):
   def testUnderTheHoodPref(self):
     """Verify the security preferences for Under the Hood.
     The setting is enabled by default."""
-    pref_list = [pyauto.kDnsPrefetchingEnabled, pyauto.kSafeBrowsingEnabled,
+    pref_list = [pyauto.kNetworkPredictionEnabled, pyauto.kSafeBrowsingEnabled,
                  pyauto.kAlternateErrorPagesEnabled,
                  pyauto.kSearchSuggestEnabled, pyauto.kShowOmniboxSearchHint]
     for pref in pref_list:

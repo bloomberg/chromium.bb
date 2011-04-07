@@ -139,7 +139,7 @@ class EnterpriseTest(pyauto.PyUITest):
         # (preference key, default value, new value)
         (pyauto.kAlternateErrorPagesEnabled, True, False),
         (pyauto.kAutofillEnabled, False, True),
-        (pyauto.kDnsPrefetchingEnabled, True, False),
+        (pyauto.kNetworkPredictionEnabled, True, False),
         (pyauto.kSafeBrowsingEnabled, True, False),
         (pyauto.kSearchSuggestEnabled, True, False),
         ]

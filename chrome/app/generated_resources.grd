@@ -5882,8 +5882,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Check your DNS settings. Contact your network administrator if you're
         not sure what this means.
       </message>
-      <message name="IDS_ERRORPAGES_SUGGESTION_DNS_PREFETCH" desc="When a page fails to load, sometimes we suggest disabling prefetching.">
-        Try disabling DNS prefetching by following these steps:
+      <message name="IDS_ERRORPAGES_SUGGESTION_NETWORK_PREDICTION" desc="When a page fails to load, sometimes we suggest disabling network prediction.">
+        Try disabling network prediction by following these steps:
         Go to
         <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
         Wrench menu &gt;
@@ -5891,7 +5891,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         &gt;
         <ph name="ADVANCED_TITLE">&lt;span jscontent="advancedTitle"&gt;&lt;/span&gt;<ex>Under the Hood</ex></ph>
         <ph name="END_BOLD">&lt;/strong&gt;</ph>
-        and deselect &quot;<ph name="NO_PREFETCH_DESCRIPTION">&lt;span jscontent="noPrefetchTitle"&gt;&lt;/span&gt;<ex>Use DNS pre-fetching to improve page load performance</ex></ph>.&quot;
+        and deselect &quot;<ph name="NO_PREFETCH_DESCRIPTION">&lt;span jscontent="noNetworkPredictionTitle"&gt;&lt;/span&gt;<ex>Predict network actions to improve page load performance</ex></ph>.&quot;
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_FIREWALL_CONFIG" desc="When a web page fails to load, in some cases we suggest reconfiguring the firewall.">
         Try adding
@@ -5900,7 +5900,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         already a permitted program, try deleting it from the list of permitted programs
         and adding it again.
       </message>
-
       <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_CONFIG" desc="When a web page fails to load, in some cases we suggest checking the proxy server configuration.">
         If you use a proxy server, check your proxy settings or check with your network administrator
         to make sure the proxy server is working.
@@ -7369,8 +7368,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <!-- Misc advanced option description strings. -->
-      <message name="IDS_NETWORK_DNS_PREFETCH_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables DNS prefetching.  DNS prefetching involves scanning pages and user text entries, guessing what domain the user may next navigate to, and obtaining the domain's DNS information for that URL in advance. ">
-        Use DNS pre-fetching to improve page load performance
+      <message name="IDS_NETWORK_PREDICTION_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables prediction of network actions.  Actions include DNS prefetching, TCP and SSL preconnection, and prerendering of web pages.">
+        Predict network actions to improve page load performance
       </message>
 
       <!-- Collected cookies window -->
