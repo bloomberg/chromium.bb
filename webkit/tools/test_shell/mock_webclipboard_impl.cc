@@ -24,6 +24,12 @@ using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebVector;
 
+MockWebClipboardImpl::MockWebClipboardImpl() {
+}
+
+MockWebClipboardImpl::~MockWebClipboardImpl() {
+}
+
 bool MockWebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
   switch (format) {
     case FormatPlainText:
