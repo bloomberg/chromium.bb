@@ -111,8 +111,10 @@ cr.define('options', function() {
       content.appendChild(this.dataChild);
       content.appendChild(this.itemsChild);
       this.itemsChild.appendChild(this.infoChild);
-      if (this.origin && this.origin.data)
+      if (this.origin && this.origin.data) {
         this.siteChild.textContent = this.origin.data.title;
+        this.siteChild.setAttribute('title', this.origin.data.title);
+      }
       this.itemList_ = [];
     },
 
