@@ -46,6 +46,9 @@ class SideTabStrip : public BaseTabStrip {
                                    BaseTab* active_tab,
                                    const gfx::Point& location,
                                    bool initial_drag) OVERRIDE;
+  virtual void CalculateBoundsForDraggedTabs(
+      const std::vector<BaseTab*>& tabs,
+      std::vector<gfx::Rect>* bounds) OVERRIDE;
   virtual int GetSizeNeededForTabs(const std::vector<BaseTab*>& tabs) OVERRIDE;
 
  private:

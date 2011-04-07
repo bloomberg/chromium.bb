@@ -472,16 +472,17 @@ void TabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
                                    BaseTab* active_tab,
                                    const gfx::Point& location,
                                    bool initial_drag) {
+  std::vector<gfx::Rect> bounds;
+  CalculateBoundsForDraggedTabs(tabs, &bounds);
+  DCHECK_EQ(tabs.size(), bounds.size());
   int active_tab_model_index = GetModelIndexOfBaseTab(active_tab);
   int active_tab_index = static_cast<int>(
       std::find(tabs.begin(), tabs.end(), active_tab) - tabs.begin());
-  int x = location.x();
   for (size_t i = 0; i < tabs.size(); ++i) {
     BaseTab* tab = tabs[i];
-    gfx::Rect new_bounds = tab->bounds();
-    new_bounds.set_x(x);
+    gfx::Rect new_bounds = bounds[i];
+    new_bounds.Offset(location.x(), location.y());
     new_bounds.set_x(GetMirroredXForRect(new_bounds));
-    new_bounds.set_y(location.y());
     int consecutive_index =
         active_tab_model_index - (active_tab_index - static_cast<int>(i));
     // If this is the initial layout during a drag and the tabs aren't
@@ -494,6 +495,17 @@ void TabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
     } else {
       tab->SetBoundsRect(new_bounds);
     }
+  }
+}
+
+void TabStrip::CalculateBoundsForDraggedTabs(const std::vector<BaseTab*>& tabs,
+                                             std::vector<gfx::Rect>* bounds) {
+  int x = 0;
+  for (size_t i = 0; i < tabs.size(); ++i) {
+    BaseTab* tab = tabs[i];
+    gfx::Rect new_bounds = tab->bounds();
+    new_bounds.set_origin(gfx::Point(x, 0));
+    bounds->push_back(new_bounds);
     x += tab->width() + kTabHOffset;
     if (i > 0 && tab->data().mini != tabs[i - 1]->data().mini)
       x += mini_to_non_mini_gap_;

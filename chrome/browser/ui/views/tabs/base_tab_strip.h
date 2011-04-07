@@ -193,6 +193,12 @@ class BaseTabStrip : public AbstractTabStripView,
                                    const gfx::Point& location,
                                    bool initial_drag) = 0;
 
+  // Calculates the bounds needed for each of the tabs, placing the result in
+  // |bounds|.
+  virtual void CalculateBoundsForDraggedTabs(
+      const std::vector<BaseTab*>& tabs,
+      std::vector<gfx::Rect>* bounds) = 0;
+
   void set_ideal_bounds(int index, const gfx::Rect& bounds) {
     tab_data_[index].ideal_bounds = bounds;
   }

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,31 +10,21 @@
 
 #include "build/build_config.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "views/view.h"
 
-namespace views {
-#if defined(OS_WIN)
-class WidgetWin;
-#elif defined(OS_LINUX)
-class WidgetGtk;
-#endif
-}
-namespace gfx {
-class Point;
-}
 class NativeViewPhotobooth;
-class Tab;
-class TabRenderer;
 
 class DraggedTabView : public views::View {
  public:
   // Creates a new DraggedTabView using |renderers| as the Views. DraggedTabView
-  // takes ownership of the views in |renderers|.
+  // takes ownership of the views in |renderers| and |photobooth|.
   DraggedTabView(const std::vector<views::View*>& renderers,
+                 const std::vector<gfx::Rect>& renderer_bounds,
                  const gfx::Point& mouse_tab_offset,
                  const gfx::Size& contents_size,
-                 const gfx::Size& min_size);
+                 NativeViewPhotobooth* photobooth);
   virtual ~DraggedTabView();
 
   // Moves the DraggedTabView to the appropriate location given the mouse
@@ -45,9 +35,6 @@ class DraggedTabView : public views::View {
   void set_mouse_tab_offset(const gfx::Point& offset) {
     mouse_tab_offset_ = offset;
   }
-
-  // Sets the width of the dragged tab and updates the dragged image.
-  void SetTabWidthAndUpdate(int width, NativeViewPhotobooth* photobooth);
 
   // Notifies the DraggedTabView that it should update itself.
   void Update();
@@ -64,8 +51,8 @@ class DraggedTabView : public views::View {
   // Paint the view, when "Show window contents while dragging" is disabled.
   void PaintFocusRect(gfx::Canvas* canvas);
 
-  // Resizes the container to fit the content for the current attachment mode.
-  void ResizeContainer();
+  // Returns the preferred size of the container.
+  gfx::Size PreferredContainerSize();
 
   // Utility for scaling a size by the current scaling factor.
   int ScaleValue(int value);
@@ -75,6 +62,9 @@ class DraggedTabView : public views::View {
 
   // The renderer that paints the Tab shape.
   std::vector<views::View*> renderers_;
+
+  // Bounds of the renderers.
+  std::vector<gfx::Rect> renderer_bounds_;
 
   // True if "Show window contents while dragging" is enabled.
   bool show_contents_on_drag_;
@@ -90,7 +80,7 @@ class DraggedTabView : public views::View {
 
   // A handle to the DIB containing the current screenshot of the TabContents
   // we are dragging.
-  NativeViewPhotobooth* photobooth_;
+  scoped_ptr<NativeViewPhotobooth> photobooth_;
 
   // Size of the TabContents being dragged.
   gfx::Size contents_size_;

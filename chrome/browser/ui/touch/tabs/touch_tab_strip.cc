@@ -144,6 +144,13 @@ void TouchTabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
   NOTIMPLEMENTED();
 }
 
+void TouchTabStrip::CalculateBoundsForDraggedTabs(
+    const std::vector<BaseTab*>& tabs,
+    std::vector<gfx::Rect>* bounds) {
+  // Not needed as dragging isn't supported.
+  NOTIMPLEMENTED();
+}
+
 int TouchTabStrip::GetSizeNeededForTabs(const std::vector<BaseTab*>& tabs) {
   // Not needed as dragging isn't supported.
   NOTIMPLEMENTED();

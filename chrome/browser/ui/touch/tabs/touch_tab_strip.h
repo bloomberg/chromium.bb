@@ -46,6 +46,9 @@ class TouchTabStrip : public BaseTabStrip {
                                    BaseTab* active_tab,
                                    const gfx::Point& location,
                                    bool initial_drag);
+  virtual void CalculateBoundsForDraggedTabs(
+      const std::vector<BaseTab*>& tabs,
+      std::vector<gfx::Rect>* bounds);
   virtual int GetSizeNeededForTabs(const std::vector<BaseTab*>& tabs);
 
   // Retrieves the Tab at the specified index. Remember, the specified index

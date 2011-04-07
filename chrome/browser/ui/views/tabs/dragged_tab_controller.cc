@@ -875,9 +875,6 @@ void DraggedTabController::Attach(BaseTabStrip* attached_tabstrip,
 
   attached_tabstrip_ = attached_tabstrip;
 
-  // We don't need the photo-booth while we're attached.
-  photobooth_.reset(NULL);
-
   // And we don't need the dragged view.
   view_.reset();
 
@@ -951,7 +948,13 @@ void DraggedTabController::Detach() {
   // operations performed during the drag.
   source_dragged_contents()->tab_contents()->set_capturing_contents(true);
 
-  int attached_tab_width = source_tab_drag_data()->attached_tab->width();
+  // Calculate the drag bounds.
+  std::vector<gfx::Rect> drag_bounds;
+  std::vector<BaseTab*> attached_tabs;
+  for (size_t i = 0; i < drag_data_.size(); ++i)
+    attached_tabs.push_back(drag_data_[i].attached_tab);
+  attached_tabstrip_->CalculateBoundsForDraggedTabs(attached_tabs,
+                                                    &drag_bounds);
 
   TabStripModel* attached_model = GetModel(attached_tabstrip_);
   std::vector<TabRendererData> tab_data;
@@ -976,17 +979,8 @@ void DraggedTabController::Detach() {
   if (attached_model->empty())
     HideFrame();
 
-  // Set up the photo booth to start capturing the contents of the dragged
-  // TabContents.
-  if (!photobooth_.get()) {
-    photobooth_.reset(NativeViewPhotobooth::Create(
-        source_dragged_contents()->tab_contents()->GetNativeView()));
-  }
-
   // Create the dragged view.
-  CreateDraggedView(tab_data);
-
-  view_->SetTabWidthAndUpdate(attached_tab_width, photobooth_.get());
+  CreateDraggedView(tab_data, drag_bounds);
 
   attached_tabstrip_ = NULL;
 }
@@ -1366,12 +1360,20 @@ void DraggedTabController::ResetDelegates() {
 }
 
 void DraggedTabController::CreateDraggedView(
-    const std::vector<TabRendererData>& data) {
+    const std::vector<TabRendererData>& data,
+    const std::vector<gfx::Rect>& renderer_bounds) {
   DCHECK(!view_.get());
   DCHECK_EQ(data.size(), drag_data_.size());
 
-  gfx::Rect tab_bounds;
-  source_dragged_contents()->tab_contents()->GetContainerBounds(&tab_bounds);
+  // Set up the photo booth to start capturing the contents of the dragged
+  // TabContents.
+  NativeViewPhotobooth* photobooth =
+      NativeViewPhotobooth::Create(
+          source_dragged_contents()->tab_contents()->GetNativeView());
+
+  gfx::Rect content_bounds;
+  source_dragged_contents()->tab_contents()->GetContainerBounds(
+      &content_bounds);
 
   std::vector<views::View*> renderers;
   for (size_t i = 0; i < drag_data_.size(); ++i) {
@@ -1379,9 +1381,9 @@ void DraggedTabController::CreateDraggedView(
     renderer->SetData(data[i]);
     renderers.push_back(renderer);
   }
-  // DraggedTabView takes ownership of renderer.
-  view_.reset(new DraggedTabView(renderers, mouse_offset_, tab_bounds.size(),
-                                 Tab::GetMinimumSelectedSize()));
+  // DraggedTabView takes ownership of the renderers.
+  view_.reset(new DraggedTabView(renderers, renderer_bounds, mouse_offset_,
+                                 content_bounds.size(), photobooth));
 }
 
 gfx::Point DraggedTabController::GetCursorScreenPoint() const {
