@@ -830,8 +830,7 @@
         },],
       ],
       'dependencies': [
-        'skia_opts',
-        '../third_party/zlib/zlib.gyp:zlib',
+        'skia_opts'
       ],
       'direct_dependent_settings': {
         'include_dirs': [
