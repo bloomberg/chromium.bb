@@ -42,10 +42,10 @@ class RootTestCase(BaseSCMTestCase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-        'ElementTree', 'GetCasedPath', 'GenFakeDiff', 'GIT', 'SVN',
-        'ValidateEmail',
+        'GetCasedPath', 'GenFakeDiff', 'GIT', 'SVN', 'ValidateEmail',
         'cStringIO', 'determine_scm', 'gclient_utils', 'glob', 'logging', 'os',
         're', 'shutil', 'subprocess', 'subprocess2', 'sys', 'tempfile', 'time',
+        'xml',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm, members)
@@ -104,7 +104,6 @@ class SVNTestCase(BaseSCMTestCase):
     self.mox.StubOutWithMock(scm, 'GetCasedPath')
     scm.os.path.abspath = lambda x: x
     scm.GetCasedPath = lambda x: x
-    # pylint: disable=E1103
     scm.SVN.CaptureInfo(self.root_dir + '/foo/bar').AndReturn({
         'Repository Root': 'svn://svn.chromium.org/chrome',
         'URL': 'svn://svn.chromium.org/chrome/trunk/src',

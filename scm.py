@@ -14,7 +14,7 @@ import subprocess
 import sys
 import tempfile
 import time
-from xml.etree import ElementTree
+import xml.dom.minidom
 
 import gclient_utils
 import subprocess2
@@ -512,35 +512,38 @@ class SVN(object):
     """Returns a dictionary from the svn info output for the given file.
 
     Throws an exception if svn info fails."""
-    result = {}
     output = SVN.Capture(['info', '--xml', cwd])
-    info = ElementTree.XML(output)
-    if info is None:
-      return result
-    entry = info.find('entry')
-
-    # Use .text when the item is not optional.
-    result['Path'] = entry.attrib['path']
-    result['Revision'] = int(entry.attrib['revision'])
-    result['Node Kind'] = entry.attrib['kind']
-    # Differs across versions.
-    if result['Node Kind'] == 'dir':
-      result['Node Kind'] = 'directory'
-    result['URL'] = entry.find('url').text
-    repository = entry.find('repository')
-    result['Repository Root'] = repository.find('root').text
-    result['UUID'] = repository.find('uuid')
-    wc_info = entry.find('wc-info')
-    result['Schedule'] = wc_info.find('schedule').text
-    result['Copied From URL'] = wc_info.find('copy-from-url')
-    result['Copied From Rev'] = wc_info.find('copy-from-rev')
-    for key in result.keys():
-      if isinstance(result[key], unicode):
-        # Unicode results interferes with the higher layers matching up things
-        # in the deps dictionary.
-        result[key] = result[key].encode()
-      # Automatic conversion of optional parameters.
-      result[key] = getattr(result[key], 'text', result[key])
+    dom = gclient_utils.ParseXML(output)
+    result = {}
+    if dom:
+      GetNamedNodeText = gclient_utils.GetNamedNodeText
+      GetNodeNamedAttributeText = gclient_utils.GetNodeNamedAttributeText
+      def C(item, f):
+        if item is not None:
+          return f(item)
+      # /info/entry/
+      #   url
+      #   reposityory/(root|uuid)
+      #   wc-info/(schedule|depth)
+      #   commit/(author|date)
+      # str() the results because they may be returned as Unicode, which
+      # interferes with the higher layers matching up things in the deps
+      # dictionary.
+      result['Repository Root'] = C(GetNamedNodeText(dom, 'root'), str)
+      result['URL'] = C(GetNamedNodeText(dom, 'url'), str)
+      result['UUID'] = C(GetNamedNodeText(dom, 'uuid'), str)
+      result['Revision'] = C(GetNodeNamedAttributeText(dom, 'entry',
+                                                       'revision'),
+                             int)
+      result['Node Kind'] = C(GetNodeNamedAttributeText(dom, 'entry', 'kind'),
+                              str)
+      # Differs across versions.
+      if result['Node Kind'] == 'dir':
+        result['Node Kind'] = 'directory'
+      result['Schedule'] = C(GetNamedNodeText(dom, 'schedule'), str)
+      result['Path'] = C(GetNodeNamedAttributeText(dom, 'entry', 'path'), str)
+      result['Copied From URL'] = C(GetNamedNodeText(dom, 'copy-from-url'), str)
+      result['Copied From Rev'] = C(GetNamedNodeText(dom, 'copy-from-rev'), str)
     return result
 
   @staticmethod
@@ -550,7 +553,9 @@ class SVN(object):
     Returns:
       Int base revision
     """
-    return SVN.CaptureInfo(cwd).get('Revision')
+    info = SVN.Capture(['info', '--xml'], cwd=cwd)
+    dom = xml.dom.minidom.parseString(info)
+    return dom.getElementsByTagName('entry')[0].getAttribute('revision')
 
   @staticmethod
   def CaptureStatus(files):
@@ -585,50 +590,51 @@ class SVN(object):
       'replaced': 'R',
       'unversioned': '?',
     }
-    dom = ElementTree.XML(SVN.Capture(command))
+    dom = gclient_utils.ParseXML(SVN.Capture(command))
     results = []
-    if dom is None:
-      return results
-    # /status/target/entry/(wc-status|commit|author|date)
-    for target in dom.findall('target'):
-      for entry in target.findall('entry'):
-        file_path = entry.attrib['path']
-        wc_status = entry.find('wc-status')
-        # Emulate svn 1.5 status ouput...
-        statuses = [' '] * 7
-        # Col 0
-        xml_item_status = wc_status.attrib['item']
-        if xml_item_status in status_letter:
-          statuses[0] = status_letter[xml_item_status]
-        else:
-          raise gclient_utils.Error(
-              'Unknown item status "%s"; please implement me!' %
-                  xml_item_status)
-        # Col 1
-        xml_props_status = wc_status.attrib['props']
-        if xml_props_status == 'modified':
-          statuses[1] = 'M'
-        elif xml_props_status == 'conflicted':
-          statuses[1] = 'C'
-        elif (not xml_props_status or xml_props_status == 'none' or
-              xml_props_status == 'normal'):
-          pass
-        else:
-          raise gclient_utils.Error(
-              'Unknown props status "%s"; please implement me!' %
-                  xml_props_status)
-        # Col 2
-        if wc_status.attrib.get('wc-locked') == 'true':
-          statuses[2] = 'L'
-        # Col 3
-        if wc_status.attrib.get('copied') == 'true':
-          statuses[3] = '+'
-        # Col 4
-        if wc_status.attrib.get('switched') == 'true':
-          statuses[4] = 'S'
-        # TODO(maruel): Col 5 and 6
-        item = (''.join(statuses), file_path)
-        results.append(item)
+    if dom:
+      # /status/target/entry/(wc-status|commit|author|date)
+      for target in dom.getElementsByTagName('target'):
+        #base_path = target.getAttribute('path')
+        for entry in target.getElementsByTagName('entry'):
+          file_path = entry.getAttribute('path')
+          wc_status = entry.getElementsByTagName('wc-status')
+          assert len(wc_status) == 1
+          # Emulate svn 1.5 status ouput...
+          statuses = [' '] * 7
+          # Col 0
+          xml_item_status = wc_status[0].getAttribute('item')
+          if xml_item_status in status_letter:
+            statuses[0] = status_letter[xml_item_status]
+          else:
+            raise gclient_utils.Error(
+                'Unknown item status "%s"; please implement me!' %
+                    xml_item_status)
+          # Col 1
+          xml_props_status = wc_status[0].getAttribute('props')
+          if xml_props_status == 'modified':
+            statuses[1] = 'M'
+          elif xml_props_status == 'conflicted':
+            statuses[1] = 'C'
+          elif (not xml_props_status or xml_props_status == 'none' or
+                xml_props_status == 'normal'):
+            pass
+          else:
+            raise gclient_utils.Error(
+                'Unknown props status "%s"; please implement me!' %
+                    xml_props_status)
+          # Col 2
+          if wc_status[0].getAttribute('wc-locked') == 'true':
+            statuses[2] = 'L'
+          # Col 3
+          if wc_status[0].getAttribute('copied') == 'true':
+            statuses[3] = '+'
+          # Col 4
+          if wc_status[0].getAttribute('switched') == 'true':
+            statuses[4] = 'S'
+          # TODO(maruel): Col 5 and 6
+          item = (''.join(statuses), file_path)
+          results.append(item)
     return results
 
   @staticmethod

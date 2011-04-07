@@ -28,12 +28,13 @@ class GclientUtilsUnittest(GclientUtilBase):
         'CheckCall', 'CheckCallError', 'CheckCallAndFilter',
         'CheckCallAndFilterAndHeader', 'Error', 'ExecutionQueue', 'FileRead',
         'FileWrite', 'FindFileUpwards', 'FindGclientRoot',
-        'GetGClientRootAndEntries', 'MakeFileAutoFlush',
-        'MakeFileAnnotated', 'PathDifference', 'Popen',
+        'GetGClientRootAndEntries', 'GetNamedNodeText', 'MakeFileAutoFlush',
+        'GetNodeNamedAttributeText', 'MakeFileAnnotated', 'PathDifference',
+        'ParseXML', 'Popen',
         'PrintableObject', 'RemoveDirectory', 'SoftClone', 'SplitUrlRevision',
         'SyntaxErrorToError', 'WorkItem',
         'errno', 'hack_subprocess', 'logging', 'os', 'Queue', 're', 'rmtree',
-        'stat', 'subprocess', 'sys','threading', 'time',
+        'stat', 'subprocess', 'sys','threading', 'time', 'xml',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gclient_utils, members)

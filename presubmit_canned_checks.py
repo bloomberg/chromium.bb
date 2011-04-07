@@ -544,13 +544,8 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None):
 
   The default white_list enforces looking only a *.py files.
   """
-  verbose = False
   white_list = white_list or ['.*\.py$']
   black_list = black_list or input_api.DEFAULT_BLACK_LIST
-  if input_api.is_committing:
-    error_type = output_api.PresubmitError
-  else:
-    error_type = output_api.PresubmitPromptWarning
 
   # Only trigger if there is at least one python file affected.
   src_filter = lambda x: input_api.FilterSourceFile(x, white_list, black_list)
@@ -569,6 +564,10 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None):
     # were listed, try to run pylint.
     try:
       from pylint import lint
+      result = lint.Run(sorted(files))
+    except SystemExit, e:
+      # pylint has the bad habit of calling sys.exit(), trap it here.
+      result = e.code
     except ImportError:
       if input_api.platform == 'win32':
         return [output_api.PresubmitNotifyResult(
@@ -580,30 +579,15 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None):
           'sudo easy_install pylint"\n'
           'or visit http://pypi.python.org/pypi/setuptools.\n'
           'Cannot do static analysis of python files.')]
-
-    def run_lint(files):
-      try:
-        lint.Run(files)
-        assert False
-      except SystemExit, e:
-        # pylint has the bad habit of calling sys.exit(), trap it here.
-        return e.code
-
-    result = None
-    if not verbose:
-      result = run_lint(sorted(files))
-    else:
-      for filename in sorted(files):
-        print('Running pylint on %s' % filename)
-        out = run_lint([filename])
-        if out:
-          result = out
     if result:
+      if input_api.is_committing:
+        error_type = output_api.PresubmitError
+      else:
+        error_type = output_api.PresubmitPromptWarning
       return [error_type('Fix pylint errors first.')]
     return []
   finally:
     warnings.filterwarnings('default', category=DeprecationWarning)
-
 
 # TODO(dpranke): Get the host_url from the input_api instead
 def CheckRietveldTryJobExecution(input_api, output_api, host_url, platforms,
