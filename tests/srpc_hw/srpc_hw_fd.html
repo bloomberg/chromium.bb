@@ -32,6 +32,7 @@ function loadAndTestMethods(tester, server) {
         halt_and_callback(5, wait);
       } else {
         // Validate the results.
+        tester.log(nexe_file_descriptor_object);
         server.__launchExecutableFromFd(nexe_file_descriptor_object);
         assertEqual(42, server.fortytwo());
         assertEqual('hello, world.', server.helloworld());

@@ -30,7 +30,8 @@ env.AddNodeToTestSuite(node,
 node = env.PPAPIBrowserTester(
     'srpc_hw_browser_test.out',
     url='srpc_hw.html',
-    files=[srpc_hw_nexe, env.File('srpc_hw.html')])
+    files=[srpc_hw_nexe, env.File('srpc_hw.html')],
+    args=['--debug'])
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
@@ -40,7 +41,8 @@ env.AddNodeToTestSuite(node,
 node = env.PPAPIBrowserTester(
     'srpc_hw_fd_browser_test.out',
     url='srpc_hw_fd.html',
-    files=[srpc_hw_nexe, env.File('srpc_hw_fd.html')])
+    files=[srpc_hw_nexe, env.File('srpc_hw_fd.html')],
+    args=['--debug'])
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],

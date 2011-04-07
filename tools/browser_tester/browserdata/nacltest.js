@@ -371,7 +371,7 @@ function embed_name(embed) {
 
 
 function NaClWaiter() {
-  // Workaround how JS binds 'this'
+  // Work around how JS binds 'this'
   var this_ = this;
   var embedsToWaitFor = [];
 
@@ -417,9 +417,13 @@ function NaClWaiter() {
       setTimeout(function() { this_.waitForPlugins(); }, this.retryWait);
       // Capped exponential backoff
       this.retryWait += this.retryWait/2;
-      if(this.retryWait > 100) this.retryWait = 100;
+      // Paranoid: does setTimeout like floating point numbers?
+      this.retryWait = Math.round(this.retryWait);
+      if (this.retryWait > 100)
+        this.retryWait = 100;
       // Prevent the server from thinking the test has died.
-      if (this.pingCallback) this.pingCallback();
+      if (this.pingCallback)
+        this.pingCallback();
     }
   }
 
