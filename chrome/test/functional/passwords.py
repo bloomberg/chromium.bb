@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
 import test_utils
@@ -184,6 +186,38 @@ class PasswordTest(pyauto.PyUITest):
     self.GetBrowserWindow(0).GetTab(0).Reload()
     self.assertTrue(self.WaitForInfobarCount(0))
     self.assertFalse(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+
+  def testPasswdInfoNotStoredWhenAutocompleteOff(self):
+    """Verify that password infobar does not appear when autocomplete is off.
+
+    If the password field has autocomplete turned off, then the password infobar
+    should not offer to save the password info.
+    """
+    password_info = {'Email': 'test@google.com',
+                     'Passwd': 'test12345'}
+
+    url = self.GetHttpURLForDataPath(
+        os.path.join('password', 'password_autocomplete_off_test.html'))
+    self.NavigateToURL(url)
+    for key, value in password_info.iteritems():
+      script = ('document.getElementById("%s").value = "%s"; '
+                'window.domAutomationController.send("done");') % (key, value)
+      self.ExecuteJavascript(script, 0, 0)
+    js_code = """
+      document.getElementById("loginform").submit();
+      window.addEventListener("unload", function() {
+        window.domAutomationController.send("done");
+      });
+    """
+    self.ExecuteJavascript(js_code, 0, 0)
+    # Wait until the form is submitted and the page completes loading.
+    self.WaitUntil(
+        lambda: self.GetDOMValue('document.readyState'),
+        expect_retval='complete')
+    password_infobar = (
+        self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+    self.assertFalse(password_infobar,
+                     msg='Save password infobar offered to save password info.')
 
 
 if __name__ == '__main__':
