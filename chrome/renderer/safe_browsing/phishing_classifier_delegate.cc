@@ -144,7 +144,7 @@ void PhishingClassifierDelegate::PageCaptured(const string16& page_text,
     return;
   }
   last_finished_load_id_ = render_view()->page_id();
-  last_finished_load_url_ = StripToplevelUrl();
+  last_finished_load_url_ = GetToplevelUrl();
   classifier_page_text_ = page_text;
   MaybeStartClassification();
 }
@@ -182,8 +182,8 @@ void PhishingClassifierDelegate::ClassificationDone(bool is_phishy,
       phishy_score));
 }
 
-GURL PhishingClassifierDelegate::StripToplevelUrl() {
-  return StripRef(render_view()->webview()->mainFrame()->url());
+GURL PhishingClassifierDelegate::GetToplevelUrl() {
+  return render_view()->webview()->mainFrame()->url();
 }
 
 void PhishingClassifierDelegate::MaybeStartClassification() {
@@ -220,9 +220,10 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
     return;
   }
   // If the page id is unchanged, the toplevel URL should also be unchanged.
-  DCHECK_EQ(StripToplevelUrl(), last_finished_load_url_);
+  GURL stripped_last_load_url(StripRef(last_finished_load_url_));
+  DCHECK_EQ(StripRef(GetToplevelUrl()), stripped_last_load_url);
 
-  if (last_finished_load_url_ == last_url_sent_to_classifier_) {
+  if (stripped_last_load_url == StripRef(last_url_sent_to_classifier_)) {
     // We've already classified this toplevel URL, so this was likely an
     // in-page navigation or a subframe navigation.  The browser should not
     // send a StartPhishingDetection IPC in this case.
@@ -231,9 +232,11 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
     return;
   }
 
-  if (last_url_received_from_browser_ != last_finished_load_url_) {
+  if (last_url_received_from_browser_ != stripped_last_load_url) {
     // The browser has not yet confirmed that this URL should be classified,
-    // so defer classification for now.
+    // so defer classification for now.  Note: the ref does not affect
+    // any of the browser's preclassification checks, so we don't require it
+    // to match.
     VLOG(2) << "Not starting classification, last url from browser is "
             << last_url_received_from_browser_ << ", last finished load is "
             << last_finished_load_url_;

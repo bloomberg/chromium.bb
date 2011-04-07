@@ -73,6 +73,17 @@ TEST_F(PhishingUrlFeatureExtractorTest, ExtractFeatures) {
   ASSERT_TRUE(extractor_.ExtractFeatures(GURL(url), &features));
   EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
 
+  url = "http://witharef.com/#abc";
+  expected_features.Clear();
+  expected_features.AddBooleanFeature(features::kUrlTldToken +
+                                      std::string("com"));
+  expected_features.AddBooleanFeature(features::kUrlDomainToken +
+                                      std::string("witharef"));
+
+  features.Clear();
+  ASSERT_TRUE(extractor_.ExtractFeatures(GURL(url), &features));
+  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+
   url = "http://...www..lotsodots....com./";
   expected_features.Clear();
   expected_features.AddBooleanFeature(features::kUrlTldToken +

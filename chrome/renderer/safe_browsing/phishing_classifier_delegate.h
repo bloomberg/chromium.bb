@@ -70,8 +70,8 @@ class PhishingClassifierDelegate : public RenderViewObserver {
   // Called when classification for the current page finishes.
   void ClassificationDone(bool is_phishy, double phishy_score);
 
-  // Returns the RenderView's toplevel URL, with the ref stripped.
-  GURL StripToplevelUrl();
+  // Returns the RenderView's toplevel URL.
+  GURL GetToplevelUrl();
 
   // Shared code to begin classification if all conditions are met.
   void MaybeStartClassification();
@@ -80,7 +80,8 @@ class PhishingClassifierDelegate : public RenderViewObserver {
   // a scorer is made available via SetPhishingScorer().
   scoped_ptr<PhishingClassifier> classifier_;
 
-  // The last URL that the browser instructed us to classify.
+  // The last URL that the browser instructed us to classify,
+  // with the ref stripped.
   GURL last_url_received_from_browser_;
 
   // The last URL and page id that have finished loading in the RenderView.

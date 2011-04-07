@@ -321,19 +321,19 @@ TEST_F(PhishingClassifierDelegateTest, DetectedPhishingSite) {
   // Start by loading a page to populate the delegate's state.
   responses_["http://host.com/"] = "<html><body>phish</body></html>";
   EXPECT_CALL(*classifier, CancelPendingClassification());
-  LoadURL("http://host.com/");
+  LoadURL("http://host.com/#a");
   Mock::VerifyAndClearExpectations(classifier);
   string16 page_text = ASCIIToUTF16("phish");
   EXPECT_CALL(*classifier, BeginClassification(Pointee(page_text), _)).
       WillOnce(DeleteArg<1>());
-  OnStartPhishingDetection(delegate, GURL("http://host.com/"));
+  OnStartPhishingDetection(delegate, GURL("http://host.com/#a"));
   delegate->PageCaptured(page_text, false);
   Mock::VerifyAndClearExpectations(classifier);
 
   // Now run the callback to simulate the classifier finishing.
   RunClassificationDone(delegate, true, 0.8);
   EXPECT_TRUE(detected_phishing_site_);
-  EXPECT_EQ(GURL("http://host.com/"), detected_url_);
+  EXPECT_EQ(GURL("http://host.com/#a"), detected_url_);
   EXPECT_EQ(0.8, detected_score_);
 
   // The delegate will cancel pending classification on destruction.
