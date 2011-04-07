@@ -43,10 +43,6 @@ test = env.SelUniversalTest(
     stdout_golden=env.File('ppapi_example_audio.stdout'),
     )
 
-# Note: we use the sysv shm feature in sel_universal which is only available
-# on linux.
-is_broken = not env.Bit('host_linux')
 env.AddNodeToTestSuite(test,
                        ['small_tests', 'sel_ldr_tests'],
-                       'run_ppapi_example_audio_test',
-                       is_broken)
+                       'run_ppapi_example_audio_test')

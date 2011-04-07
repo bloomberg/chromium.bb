@@ -7,12 +7,10 @@
 #include <fcntl.h>
 #include <string.h>
 #if (NACL_LINUX)
-// for shmem
+// for shmem cleanup
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include "native_client/src/trusted/desc/linux/nacl_desc_sysv_shm.h"
-// for sync_sockets
-#include <sys/socket.h>
 #endif
 
 #include <map>
@@ -87,14 +85,9 @@ bool HandlerSyncSocketCreate(NaClCommandLoop* ncl,
     NaClLog(LOG_ERROR, "not enough args\n");
     return false;
   }
-#if (NACL_WINDOWS || NACL_OSX)
-  // TODO(robertm): make this work on mac - it might already
-  UNREFERENCED_PARAMETER(ncl);
-  NaClLog(LOG_ERROR, "HandlerSyncSocketCreate NYI for windows/mac\n");
-  return false;
-#else
+
   nacl::Handle handles[2] = {nacl::kInvalidHandle, nacl::kInvalidHandle};
-  if (socketpair(AF_UNIX, SOCK_STREAM, 0, handles) != 0) {
+  if (NaClSocketPair(handles) != 0) {
     return false;
   }
 
@@ -105,7 +98,6 @@ bool HandlerSyncSocketCreate(NaClCommandLoop* ncl,
   nacl::DescWrapper* desc2 = factory.ImportSyncSocketHandle(handles[1]);
   ncl->AddDesc(desc2->desc(), args[2]);
   return true;
-#endif
 }
 
 bool HandlerSyncSocketWrite(NaClCommandLoop* ncl,
