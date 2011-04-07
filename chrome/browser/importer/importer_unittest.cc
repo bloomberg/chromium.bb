@@ -205,7 +205,7 @@ class TestObserver : public ProfileWriter,
     EXPECT_EQ(arraysize(kIEBookmarks), bookmark_count_);
     EXPECT_EQ(1, history_count_);
 #if 0  // This part of the test is disabled. See bug #2466
-    if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    if (base::win::GetVersion() >= base::win::VERSION_VISTA)
       EXPECT_EQ(0, password_count_);
     else
       EXPECT_EQ(1, password_count_);

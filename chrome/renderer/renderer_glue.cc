@@ -43,9 +43,7 @@
 #include "native_client/src/trusted/plugin/nacl_entry_points.h"
 #endif
 
-#if defined(OS_WIN)
-#include <strsafe.h>  // note: per msdn docs, this must *follow* other includes
-#elif defined(OS_LINUX)
+#if defined(OS_LINUX)
 #include "content/renderer/renderer_sandbox_support_linux.h"
 #endif
 

@@ -19,6 +19,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/sys_info.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "base/win/registry.h"
@@ -136,15 +137,13 @@ Version* InstallUtil::GetChromeVersion(BrowserDistribution* dist,
 }
 
 bool InstallUtil::IsOSSupported() {
-  int major, minor;
-  base::win::Version version = base::win::GetVersion();
-  base::win::GetServicePackLevel(&major, &minor);
-
   // We do not support Win2K or older, or XP without service pack 2.
-  VLOG(1) << "Windows Version: " << version
-          << ", Service Pack: " << major << "." << minor;
+  VLOG(1) << base::SysInfo::OperatingSystemName() << ' '
+          << base::SysInfo::OperatingSystemVersion();
+  base::win::Version version = base::win::GetVersion();
   return (version > base::win::VERSION_XP) ||
-      (version == base::win::VERSION_XP && major >= 2);
+      ((version == base::win::VERSION_XP) &&
+       (base::win::OSInfo::GetInstance()->service_pack().major >= 2));
 }
 
 void InstallUtil::WriteInstallerResult(bool system_install,

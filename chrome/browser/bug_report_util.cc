@@ -13,6 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
@@ -135,19 +136,19 @@ void BugReportUtil::PostCleanup::OnURLFetchComplete(
 
     // Process the error for debug output
     if (response_code == kHttpPostFailNoConnection) {
-        error_stream << "No connection to server.";
+      error_stream << "No connection to server.";
     } else if ((response_code > kHttpPostFailClientError) &&
-      (response_code < kHttpPostFailServerError)) {
-        error_stream << "Client error: HTTP response code " << response_code;
+        (response_code < kHttpPostFailServerError)) {
+      error_stream << "Client error: HTTP response code " << response_code;
     } else if (response_code > kHttpPostFailServerError) {
-        error_stream << "Server error: HTTP response code " << response_code;
+      error_stream << "Server error: HTTP response code " << response_code;
     } else {
-        error_stream << "Unknown error: HTTP response code " << response_code;
+      error_stream << "Unknown error: HTTP response code " << response_code;
     }
   }
 
-  LOG(WARNING) << "FEEDBACK: Submission to feedback server (" << url <<
-      ") status: " << error_stream.str() << std::endl;
+  LOG(WARNING) << "FEEDBACK: Submission to feedback server (" << url
+               << ") status: " << error_stream.str();
 
   // Delete the URLFetcher.
   delete source;
@@ -156,21 +157,15 @@ void BugReportUtil::PostCleanup::OnURLFetchComplete(
 }
 
 // static
-void BugReportUtil::SetOSVersion(std::string *os_version) {
+void BugReportUtil::SetOSVersion(std::string* os_version) {
 #if defined(OS_WIN)
-  OSVERSIONINFO osvi;
-  ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
-  osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-
-  if (GetVersionEx(&osvi)) {
-    *os_version = StringPrintf("%d.%d.%d %S",
-      osvi.dwMajorVersion,
-      osvi.dwMinorVersion,
-      osvi.dwBuildNumber,
-      osvi.szCSDVersion);
-  } else {
-    *os_version = "unknown";
-  }
+  base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
+  base::win::OSInfo::VersionNumber version_number = os_info->version_number();
+  *os_version = StringPrintf("%d.%d.%d", version_number.major,
+                             version_number.minor, version_number.build);
+  int service_pack = os_info->service_pack().major;
+  if (service_pack > 0)
+    os_version->append(StringPrintf("Service Pack %d", service_pack));
 #elif defined(OS_MACOSX)
   int32 major;
   int32 minor;

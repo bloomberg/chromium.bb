@@ -326,14 +326,10 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
   // need to escape the string before using it in a URL.
   const std::wstring kVersionParam = L"crversion";
   const std::wstring kOSParam = L"os";
-  std::wstring os_version = L"na";
-  OSVERSIONINFO version_info;
-  version_info.dwOSVersionInfoSize = sizeof(version_info);
-  if (GetVersionEx(&version_info)) {
-    os_version = StringPrintf(L"%d.%d.%d", version_info.dwMajorVersion,
-                                           version_info.dwMinorVersion,
-                                           version_info.dwBuildNumber);
-  }
+  base::win::OSInfo::VersionNumber version_number =
+      base::win::OSInfo::GetInstance()->version_number();
+  std::wstring os_version = StringPrintf(L"%d.%d.%d", version_number.major,
+      version_number.minor, version_number.build);
 
   FilePath iexplore;
   if (!PathService::Get(base::DIR_PROGRAM_FILES, &iexplore))
