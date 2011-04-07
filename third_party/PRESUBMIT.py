@@ -24,16 +24,16 @@ def _CheckThirdPartyReadmesUpdated(input_api, output_api):
     return errors
 
   name_pattern = input_api.re.compile(
-    r'^Name: [a-zA-Z0-9_\-\.]+$',
+    r'^Name: [a-zA-Z0-9_\-\.]+\r?$',
     input_api.re.IGNORECASE | input_api.re.MULTILINE)
   shortname_pattern = input_api.re.compile(
-    r'^Short Name: [a-zA-Z0-9_\-\.]+$',
+    r'^Short Name: [a-zA-Z0-9_\-\.]+\r?$',
     input_api.re.IGNORECASE | input_api.re.MULTILINE)
   version_pattern = input_api.re.compile(
-    r'^Version: [a-zA-Z0-9_\-\.]+$',
+    r'^Version: [a-zA-Z0-9_\-\.]+\r?$',
     input_api.re.IGNORECASE | input_api.re.MULTILINE)
   release_pattern = input_api.re.compile(
-    r'Included In Release: (yes)|(no)$',
+    r'Included In Release: (yes)|(no)\r?$',
     input_api.re.IGNORECASE | input_api.re.MULTILINE)
 
   for file in readmes:
