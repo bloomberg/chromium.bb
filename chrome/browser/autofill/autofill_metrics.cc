@@ -7,6 +7,26 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 
+namespace {
+
+void LogUMAHistogramEnumeration(const std::string& name,
+                                int sample,
+                                int boundary_value) {
+  // We can't use the UMA_HISTOGRAM_ENUMERATION macro here because the histogram
+  // name can vary over the duration of the program.
+  // Note that this leaks memory; that is expected behavior.
+  base::Histogram* counter =
+      base::LinearHistogram::FactoryGet(
+          name,
+          1,
+          boundary_value,
+          boundary_value + 1,
+          base::Histogram::kUmaTargetedHistogramFlag);
+  counter->Add(sample);
+}
+
+}  // namespace
+
 AutofillMetrics::AutofillMetrics() {
 }
 
@@ -35,8 +55,8 @@ void AutofillMetrics::Log(PredictedTypeQualityMetric metric,
   if (!experiment_id.empty())
     histogram_name += "_" + experiment_id;
 
-  UMA_HISTOGRAM_ENUMERATION(histogram_name, metric,
-                            NUM_PREDICTED_TYPE_QUALITY_METRICS);
+  LogUMAHistogramEnumeration(histogram_name, metric,
+                             NUM_PREDICTED_TYPE_QUALITY_METRICS);
 }
 
 void AutofillMetrics::Log(QualityMetric metric,
@@ -47,7 +67,7 @@ void AutofillMetrics::Log(QualityMetric metric,
   if (!experiment_id.empty())
     histogram_name += "_" + experiment_id;
 
-  UMA_HISTOGRAM_ENUMERATION(histogram_name, metric, NUM_QUALITY_METRICS);
+  LogUMAHistogramEnumeration(histogram_name, metric, NUM_QUALITY_METRICS);
 }
 
 void AutofillMetrics::Log(ServerQueryMetric metric) const {
@@ -65,8 +85,8 @@ void AutofillMetrics::Log(ServerTypeQualityMetric metric,
   if (!experiment_id.empty())
     histogram_name += "_" + experiment_id;
 
-  UMA_HISTOGRAM_ENUMERATION(histogram_name, metric,
-                            NUM_SERVER_TYPE_QUALITY_METRICS);
+  LogUMAHistogramEnumeration(histogram_name, metric,
+                             NUM_SERVER_TYPE_QUALITY_METRICS);
 }
 
 void AutofillMetrics::LogStoredProfileCount(size_t num_profiles) const {
@@ -76,4 +96,3 @@ void AutofillMetrics::LogStoredProfileCount(size_t num_profiles) const {
 void AutofillMetrics::LogAddressSuggestionsCount(size_t num_suggestions) const {
   UMA_HISTOGRAM_COUNTS("Autofill.AddressSuggestionsCount", num_suggestions);
 }
-
