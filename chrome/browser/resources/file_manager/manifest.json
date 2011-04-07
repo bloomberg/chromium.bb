@@ -9,6 +9,7 @@
     "16": "images/icon16.png"
   },
   "permissions": [
+    "fileSystem",
     "fileBrowserPrivate",
     "chrome://resources/"
   ]
