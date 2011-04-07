@@ -604,7 +604,7 @@ bool PepperPluginDelegateImpl::OpenFileSystem(
 }
 
 bool PepperPluginDelegateImpl::MakeDirectory(
-    const GURL& path,
+    const FilePath& path,
     bool recursive,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   FileSystemDispatcher* file_system_dispatcher =
@@ -614,7 +614,7 @@ bool PepperPluginDelegateImpl::MakeDirectory(
 }
 
 bool PepperPluginDelegateImpl::Query(
-    const GURL& path,
+    const FilePath& path,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
@@ -622,7 +622,7 @@ bool PepperPluginDelegateImpl::Query(
 }
 
 bool PepperPluginDelegateImpl::Touch(
-    const GURL& path,
+    const FilePath& path,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
@@ -633,7 +633,7 @@ bool PepperPluginDelegateImpl::Touch(
 }
 
 bool PepperPluginDelegateImpl::Delete(
-    const GURL& path,
+    const FilePath& path,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
@@ -642,8 +642,8 @@ bool PepperPluginDelegateImpl::Delete(
 }
 
 bool PepperPluginDelegateImpl::Rename(
-    const GURL& file_path,
-    const GURL& new_file_path,
+    const FilePath& file_path,
+    const FilePath& new_file_path,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
@@ -651,7 +651,7 @@ bool PepperPluginDelegateImpl::Rename(
 }
 
 bool PepperPluginDelegateImpl::ReadDirectory(
-    const GURL& directory_path,
+    const FilePath& directory_path,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();

@@ -45,7 +45,7 @@ class SimpleFileWriter::IOThreadProxy
   virtual ~IOThreadProxy() {
   }
 
-  void Truncate(const GURL& path, int64 offset) {
+  void Truncate(const FilePath& path, int64 offset) {
     if (!io_thread_->BelongsToCurrentThread()) {
       io_thread_->PostTask(FROM_HERE, NewRunnableMethod(
           this, &IOThreadProxy::Truncate, path, offset));
@@ -56,7 +56,7 @@ class SimpleFileWriter::IOThreadProxy
     operation_->Truncate(path, offset);
   }
 
-  void Write(const GURL& path, const GURL& blob_url, int64 offset) {
+  void Write(const FilePath& path, const GURL& blob_url, int64 offset) {
     if (!io_thread_->BelongsToCurrentThread()) {
       io_thread_->PostTask(FROM_HERE, NewRunnableMethod(
           this, &IOThreadProxy::Write, path, blob_url, offset));
@@ -118,7 +118,7 @@ class SimpleFileWriter::IOThreadProxy
 
     virtual void DidOpenFileSystem(
         const std::string& name,
-        const GURL& root) {
+        const FilePath& root_path) {
       NOTREACHED();
     }
 
@@ -181,7 +181,7 @@ class SimpleFileWriter::IOThreadProxy
 
 
 SimpleFileWriter::SimpleFileWriter(
-    const GURL& path,
+    const WebString& path,
     WebFileWriterClient* client,
     FileSystemContext* file_system_context)
   : WebFileWriterBase(path, client),
@@ -191,12 +191,12 @@ SimpleFileWriter::SimpleFileWriter(
 SimpleFileWriter::~SimpleFileWriter() {
 }
 
-void SimpleFileWriter::DoTruncate(const GURL& path, int64 offset) {
+void SimpleFileWriter::DoTruncate(const FilePath& path, int64 offset) {
   io_thread_proxy_->Truncate(path, offset);
 }
 
 void SimpleFileWriter::DoWrite(
-    const GURL& path, const GURL& blob_url, int64 offset) {
+    const FilePath& path, const GURL& blob_url, int64 offset) {
   io_thread_proxy_->Write(path, blob_url, offset);
 }
 
