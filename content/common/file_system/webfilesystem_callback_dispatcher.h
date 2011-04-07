@@ -9,6 +9,8 @@
 #include "base/platform_file.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 
+class GURL;
+
 namespace WebKit {
 class WebFileSystemCallbacks;
 }
@@ -28,7 +30,7 @@ class WebFileSystemCallbackDispatcher
       const std::vector<base::FileUtilProxy::Entry>& entries,
       bool has_more);
   virtual void DidOpenFileSystem(const std::string&,
-                                 const FilePath&);
+                                 const GURL&);
   virtual void DidFail(base::PlatformFileError);
   virtual void DidWrite(int64 bytes, bool complete);
 

@@ -31,16 +31,8 @@ const int kMultiFileWrite_Offset = 3;
 const int kCancelFileWriteBeforeCompletion_Offset = 4;
 const int kCancelFileWriteAfterCompletion_Offset = 5;
 
-std::string mock_path_as_ascii() {
-  return std::string("MockPath");
-}
-
-string16 mock_path_as_string16() {
-  return ASCIIToUTF16(mock_path_as_ascii());
-}
-
-FilePath mock_path_as_file_path() {
-  return FilePath().AppendASCII(mock_path_as_ascii());
+GURL mock_path_as_gurl() {
+  return GURL("MockPath");
 }
 
 }  // namespace
@@ -48,32 +40,32 @@ FilePath mock_path_as_file_path() {
 class TestableFileWriter : public WebFileWriterBase {
  public:
   explicit TestableFileWriter(WebKit::WebFileWriterClient* client)
-      : WebFileWriterBase(mock_path_as_string16(), client) {
+      : WebFileWriterBase(mock_path_as_gurl(), client) {
     reset();
   }
 
   void reset() {
     received_truncate_ = false;
-    received_truncate_path_ = FilePath();
+    received_truncate_path_ = GURL();
     received_truncate_offset_ = kNoOffset;
     received_write_ = false;
-    received_write_path_ = FilePath();
+    received_write_path_ = GURL();
     received_write_offset_ = kNoOffset;
     received_write_blob_url_ = GURL();
     received_cancel_ = false;
   }
 
   bool received_truncate_;
-  FilePath received_truncate_path_;
+  GURL received_truncate_path_;
   int64 received_truncate_offset_;
   bool received_write_;
-  FilePath received_write_path_;
+  GURL received_write_path_;
   GURL received_write_blob_url_;
   int64 received_write_offset_;
   bool received_cancel_;
 
  protected:
-  virtual void DoTruncate(const FilePath& path, int64 offset) {
+  virtual void DoTruncate(const GURL& path, int64 offset) {
     received_truncate_ = true;
     received_truncate_path_ = path;
     received_truncate_offset_ = offset;
@@ -95,7 +87,7 @@ class TestableFileWriter : public WebFileWriterBase {
     }
   }
 
-  virtual void DoWrite(const FilePath& path, const GURL& blob_url,
+  virtual void DoWrite(const GURL& path, const GURL& blob_url,
                        int64 offset) {
     received_write_ = true;
     received_write_path_ = path;
@@ -205,8 +197,8 @@ TEST_F(FileWriterTest, BasicFileWrite) {
 
   // Check that the derived class gets called correctly.
   EXPECT_TRUE(testable_writer_->received_write_);
-  EXPECT_EQ(testable_writer_->received_write_path_.value(),
-            mock_path_as_file_path().value());
+  EXPECT_EQ(testable_writer_->received_write_path_,
+            mock_path_as_gurl());
   EXPECT_EQ(kBasicFileWrite_Offset,
             testable_writer_->received_write_offset_);
   EXPECT_EQ(kBlobUrl, testable_writer_->received_write_blob_url_);
@@ -227,8 +219,8 @@ TEST_F(FileWriterTest, BasicFileTruncate) {
 
   // Check that the derived class gets called correctly.
   EXPECT_TRUE(testable_writer_->received_truncate_);
-  EXPECT_EQ(mock_path_as_file_path().value(),
-            testable_writer_->received_truncate_path_.value());
+  EXPECT_EQ(mock_path_as_gurl(),
+            testable_writer_->received_truncate_path_);
   EXPECT_EQ(kBasicFileTruncate_Offset,
             testable_writer_->received_truncate_offset_);
   EXPECT_FALSE(testable_writer_->received_write_);
@@ -247,8 +239,8 @@ TEST_F(FileWriterTest, ErrorFileWrite) {
 
   // Check that the derived class gets called correctly.
   EXPECT_TRUE(testable_writer_->received_write_);
-  EXPECT_EQ(testable_writer_->received_write_path_.value(),
-            mock_path_as_file_path().value());
+  EXPECT_EQ(testable_writer_->received_write_path_,
+            mock_path_as_gurl());
   EXPECT_EQ(kErrorFileWrite_Offset,
             testable_writer_->received_write_offset_);
   EXPECT_EQ(kBlobUrl, testable_writer_->received_write_blob_url_);
@@ -268,8 +260,8 @@ TEST_F(FileWriterTest, ErrorFileTruncate) {
 
   // Check that the derived class gets called correctly.
   EXPECT_TRUE(testable_writer_->received_truncate_);
-  EXPECT_EQ(mock_path_as_file_path().value(),
-            testable_writer_->received_truncate_path_.value());
+  EXPECT_EQ(mock_path_as_gurl(),
+            testable_writer_->received_truncate_path_);
   EXPECT_EQ(kErrorFileTruncate_Offset,
             testable_writer_->received_truncate_offset_);
   EXPECT_FALSE(testable_writer_->received_write_);
@@ -289,8 +281,8 @@ TEST_F(FileWriterTest, MultiFileWrite) {
 
   // Check that the derived class gets called correctly.
   EXPECT_TRUE(testable_writer_->received_write_);
-  EXPECT_EQ(testable_writer_->received_write_path_.value(),
-            mock_path_as_file_path().value());
+  EXPECT_EQ(testable_writer_->received_write_path_,
+            mock_path_as_gurl());
   EXPECT_EQ(kMultiFileWrite_Offset,
             testable_writer_->received_write_offset_);
   EXPECT_EQ(kBlobUrl, testable_writer_->received_write_blob_url_);
@@ -312,8 +304,8 @@ TEST_F(FileWriterTest, CancelFileWriteBeforeCompletion) {
 
   // Check that the derived class gets called correctly.
   EXPECT_TRUE(testable_writer_->received_write_);
-  EXPECT_EQ(testable_writer_->received_write_path_.value(),
-            mock_path_as_file_path().value());
+  EXPECT_EQ(testable_writer_->received_write_path_,
+            mock_path_as_gurl());
   EXPECT_EQ(kCancelFileWriteBeforeCompletion_Offset,
             testable_writer_->received_write_offset_);
   EXPECT_EQ(kBlobUrl, testable_writer_->received_write_blob_url_);
@@ -336,8 +328,8 @@ TEST_F(FileWriterTest, CancelFileWriteAfterCompletion) {
 
   // Check that the derived class gets called correctly.
   EXPECT_TRUE(testable_writer_->received_write_);
-  EXPECT_EQ(testable_writer_->received_write_path_.value(),
-            mock_path_as_file_path().value());
+  EXPECT_EQ(testable_writer_->received_write_path_,
+            mock_path_as_gurl());
   EXPECT_EQ(kCancelFileWriteAfterCompletion_Offset,
             testable_writer_->received_write_offset_);
   EXPECT_EQ(kBlobUrl, testable_writer_->received_write_blob_url_);
@@ -359,8 +351,8 @@ TEST_F(FileWriterTest, CancelFileTruncate) {
 
   // Check that the derived class gets called correctly.
   EXPECT_TRUE(testable_writer_->received_truncate_);
-  EXPECT_EQ(mock_path_as_file_path().value(),
-            testable_writer_->received_truncate_path_.value());
+  EXPECT_EQ(mock_path_as_gurl(),
+            testable_writer_->received_truncate_path_);
   EXPECT_EQ(kCancelFileTruncate_Offset,
             testable_writer_->received_truncate_offset_);
   EXPECT_TRUE(testable_writer_->received_cancel_);
@@ -379,8 +371,8 @@ TEST_F(FileWriterTest, CancelFailedTruncate) {
 
   // Check that the derived class gets called correctly.
   EXPECT_TRUE(testable_writer_->received_truncate_);
-  EXPECT_EQ(mock_path_as_file_path().value(),
-            testable_writer_->received_truncate_path_.value());
+  EXPECT_EQ(mock_path_as_gurl(),
+            testable_writer_->received_truncate_path_);
   EXPECT_EQ(kCancelFailedTruncate_Offset,
             testable_writer_->received_truncate_offset_);
   EXPECT_TRUE(testable_writer_->received_cancel_);

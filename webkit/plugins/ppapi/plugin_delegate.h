@@ -263,22 +263,22 @@ class PluginDelegate {
       long long size,
       fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
   virtual bool MakeDirectory(
-      const FilePath& path,
+      const GURL& path,
       bool recursive,
       fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
-  virtual bool Query(const FilePath& path,
+  virtual bool Query(const GURL& path,
                      fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
-  virtual bool Touch(const FilePath& path,
+  virtual bool Touch(const GURL& path,
                      const base::Time& last_access_time,
                      const base::Time& last_modified_time,
                      fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
-  virtual bool Delete(const FilePath& path,
+  virtual bool Delete(const GURL& path,
                       fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
-  virtual bool Rename(const FilePath& file_path,
-                      const FilePath& new_file_path,
+  virtual bool Rename(const GURL& file_path,
+                      const GURL& new_file_path,
                       fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
   virtual bool ReadDirectory(
-      const FilePath& directory_path,
+      const GURL& directory_path,
       fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
 
   virtual base::PlatformFileError OpenFile(const PepperFilePath& path,

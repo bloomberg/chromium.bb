@@ -115,21 +115,21 @@ class PepperPluginDelegateImpl
       fileapi::FileSystemType type,
       long long size,
       fileapi::FileSystemCallbackDispatcher* dispatcher);
-  virtual bool MakeDirectory(const FilePath& path,
+  virtual bool MakeDirectory(const GURL& path,
                              bool recursive,
                              fileapi::FileSystemCallbackDispatcher* dispatcher);
-  virtual bool Query(const FilePath& path,
+  virtual bool Query(const GURL& path,
                      fileapi::FileSystemCallbackDispatcher* dispatcher);
-  virtual bool Touch(const FilePath& path,
+  virtual bool Touch(const GURL& path,
                      const base::Time& last_access_time,
                      const base::Time& last_modified_time,
                      fileapi::FileSystemCallbackDispatcher* dispatcher);
-  virtual bool Delete(const FilePath& path,
+  virtual bool Delete(const GURL& path,
                       fileapi::FileSystemCallbackDispatcher* dispatcher);
-  virtual bool Rename(const FilePath& file_path,
-                      const FilePath& new_file_path,
+  virtual bool Rename(const GURL& file_path,
+                      const GURL& new_file_path,
                       fileapi::FileSystemCallbackDispatcher* dispatcher);
-  virtual bool ReadDirectory(const FilePath& directory_path,
+  virtual bool ReadDirectory(const GURL& directory_path,
                              fileapi::FileSystemCallbackDispatcher* dispatcher);
   virtual base::PlatformFileError OpenFile(
       const webkit::ppapi::PepperFilePath& path,

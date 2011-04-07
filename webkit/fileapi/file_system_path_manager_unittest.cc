@@ -228,11 +228,6 @@ class FileSystemPathManagerTest : public testing::Test {
     return root_path_callback_status_;
   }
 
-  bool CheckValidFileSystemPath(FileSystemPathManager* manager,
-                                const FilePath& path) {
-    return manager->CrackFileSystemPath(path, NULL, NULL, NULL);
-  }
-
   FilePath data_path() { return data_dir_.path(); }
   FilePath file_system_path() {
     return data_dir_.path().Append(
@@ -364,89 +359,6 @@ TEST_F(FileSystemPathManagerTest, GetRootPathFileURIWithAllowFlag) {
         kRootPathFileURITestCases[i].expected_path);
     EXPECT_EQ(expected.value(), root_path.DirName().value());
     EXPECT_TRUE(file_util::DirectoryExists(root_path));
-  }
-}
-
-TEST_F(FileSystemPathManagerTest, VirtualPathFromFileSystemPathTest) {
-  scoped_ptr<FileSystemPathManager> manager(NewPathManager(false, false));
-  GURL root_url = GetFileSystemRootURI(
-      GURL("http://foo.com/"), fileapi::kFileSystemTypeTemporary);
-  FilePath root_path = FilePath().AppendASCII(root_url.spec());
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kPathToVirtualPathTestCases); ++i) {
-    SCOPED_TRACE(testing::Message() << "PathToVirtualPath #"
-                 << i << " " << kPathToVirtualPathTestCases[i]);
-    FilePath absolute_path;
-    // TODO(ericu): Clean this up when we've got more sane path-handling.
-    // This hack is necessary because root_path is actually a URL [ending with a
-    // forward slash], and AppendASCII("") on Windows will delete the trailing
-    // slash, making the path invalid as far as CrackFileSystemPath is
-    // concerned.
-    if (strlen(kPathToVirtualPathTestCases[i]))
-      absolute_path = root_path.AppendASCII(
-          kPathToVirtualPathTestCases[i]);
-    else
-      absolute_path = root_path;
-    FilePath virtual_path;
-    EXPECT_TRUE(manager->CrackFileSystemPath(absolute_path, NULL, NULL,
-                                             &virtual_path));
-
-    FilePath test_case_path;
-    test_case_path = test_case_path.AppendASCII(
-        kPathToVirtualPathTestCases[i]);
-    EXPECT_EQ(test_case_path.value(), virtual_path.value());
-  }
-}
-
-TEST_F(FileSystemPathManagerTest, TypeFromFileSystemPathTest) {
-  scoped_ptr<FileSystemPathManager> manager(NewPathManager(false, false));
-
-  fileapi::FileSystemType type;
-
-  GURL root_url = GetFileSystemRootURI(
-      GURL("http://foo.com/"), fileapi::kFileSystemTypeTemporary);
-  FilePath root_path = FilePath().AppendASCII(root_url.spec());
-  FilePath path = root_path.AppendASCII("test");
-  EXPECT_TRUE(manager->CrackFileSystemPath(path, NULL, &type, NULL));
-  EXPECT_EQ(fileapi::kFileSystemTypeTemporary, type);
-
-  root_url = GetFileSystemRootURI(
-      GURL("http://foo.com/"), fileapi::kFileSystemTypePersistent);
-  root_path = FilePath().AppendASCII(root_url.spec());
-  path = root_path.AppendASCII("test");
-  EXPECT_TRUE(manager->CrackFileSystemPath(path, NULL, &type, NULL));
-  EXPECT_EQ(fileapi::kFileSystemTypePersistent, type);
-}
-
-TEST_F(FileSystemPathManagerTest, CheckValidPath) {
-  scoped_ptr<FileSystemPathManager> manager(NewPathManager(false, false));
-  GURL root_url = GetFileSystemRootURI(
-      GURL("http://foo.com/"), fileapi::kFileSystemTypePersistent);
-  FilePath root_path = FilePath().AppendASCII(root_url.spec());
-
-  // The root path must be valid, but upper directories or directories
-  // that are not in our temporary or persistent directory must be
-  // evaluated invalid.
-  EXPECT_TRUE(CheckValidFileSystemPath(manager.get(), root_path));
-  EXPECT_FALSE(CheckValidFileSystemPath(manager.get(), root_path.DirName()));
-  EXPECT_FALSE(CheckValidFileSystemPath(manager.get(),
-                                        root_path.DirName().DirName()));
-  EXPECT_FALSE(CheckValidFileSystemPath(manager.get(),
-                                        root_path.DirName().DirName()
-                                            .AppendASCII("ArbitraryName")
-                                            .AppendASCII("chrome-dummy")));
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kCheckValidPathTestCases); ++i) {
-    SCOPED_TRACE(testing::Message() << "CheckValidPath #" << i << " "
-                 << kCheckValidPathTestCases[i].path);
-    FilePath path(kCheckValidPathTestCases[i].path);
-#ifdef FILE_PATH_USES_WIN_SEPARATORS
-    path = path.NormalizeWindowsPathSeparators();
-#endif
-    if (!path.IsAbsolute())
-      path = root_path.Append(path);
-    EXPECT_EQ(kCheckValidPathTestCases[i].expected_valid,
-              CheckValidFileSystemPath(manager.get(), path));
   }
 }
 
