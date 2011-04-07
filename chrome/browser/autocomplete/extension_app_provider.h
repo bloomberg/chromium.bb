@@ -33,6 +33,10 @@ class ExtensionAppProvider : public AutocompleteProvider,
  public:
   ExtensionAppProvider(ACProviderListener* listener, Profile* profile);
 
+  // Only used for testing.
+  void AddExtensionAppForTesting(const std::string& app_name,
+                                 const std::string url);
+
   // AutocompleteProvider implementation:
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) OVERRIDE;

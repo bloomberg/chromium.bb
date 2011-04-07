@@ -23,6 +23,12 @@ ExtensionAppProvider::ExtensionAppProvider(ACProviderListener* listener,
   RefreshAppList();
 }
 
+void ExtensionAppProvider::AddExtensionAppForTesting(
+    const std::string& app_name,
+    const std::string url) {
+  extension_apps_.push_back(std::make_pair(app_name, url));
+}
+
 void ExtensionAppProvider::Start(const AutocompleteInput& input,
                                  bool minimal_changes) {
   matches_.clear();
