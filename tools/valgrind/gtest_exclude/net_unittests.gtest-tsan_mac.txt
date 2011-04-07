@@ -7,13 +7,5 @@ WebSocketTest.*
 # See http://crbug.com/38926
 DirectoryLister*
 
-# Failing, see http://crbug.com/78303
-HttpNetworkTransactionTest.*
-HttpNetworkLayerTest.*
-
-# Testing if http://crbug.com/78536 depends on this test.
+# Looks like http://crbug.com/78536 depends on this test.
 CookieMonsterTest.GarbageCollectionTriggers
-
-# Hang, or killing the test.  See http://crbug.com/78536
-ProxyResolverV8Test.*
-
