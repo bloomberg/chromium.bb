@@ -214,6 +214,10 @@ env.DualLibrary('sel', ldr_inputs)
 
 env.DualLibrary('env_cleanser', ['env_cleanser.c'])
 
+env.DualLibrary('nacl_error_code',
+                ['nacl_error_code.c',
+                 ])
+
 env.ComponentLibrary('container',
                      ['generic_container/container.c',
                       ])
@@ -263,6 +267,7 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
   SEL_LDR_NODE = sel_ldr_env.ComponentProgram('sel_ldr',
                                           'sel_main.c',
                                           EXTRA_LIBS=['sel',
+                                                      'nacl_error_code',
                                                       'gio_wrapped_desc',
                                                       'nonnacl_srpc',
                                                       'nrd_xfer',

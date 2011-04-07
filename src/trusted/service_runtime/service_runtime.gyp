@@ -189,6 +189,7 @@
       },
       'dependencies': [
         'env_cleanser',
+        'nacl_error_code',
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
@@ -241,6 +242,12 @@
         'fs/obj_proxy.c',
       ],
     }, {
+      'target_name': 'nacl_error_code',
+      'type': 'static_library',
+      'sources': [
+        'nacl_error_code.c',
+      ],
+    }, {
       'target_name': 'env_cleanser',
       'type': 'static_library',
       'sources': [
@@ -273,6 +280,7 @@
           },
           'dependencies': [
             'env_cleanser64',
+            'nacl_error_code64',
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
             '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc64',
             '<(DEPTH)/native_client/src/trusted/debug_stub/debug_stub.gyp:debug_stub64',
@@ -311,6 +319,16 @@
           'sources': [
             'fs/xdr.c',
             'fs/obj_proxy.c',
+          ],
+        },
+        {
+          'target_name': 'nacl_error_code64',
+          'type': 'static_library',
+          'variables': {
+            'win_target': 'x64',
+          },
+          'sources': [
+            'nacl_error_code.c',
           ],
         },
         {
