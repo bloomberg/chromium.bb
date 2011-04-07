@@ -136,7 +136,7 @@ class Subprocess2Test(unittest.TestCase):
         self.exe + ['--sleep', '--stdout'],
         timeout=0.01,
         stdout=subprocess2.PIPE)
-    self.assertEquals(-9, returncode)
+    self.assertEquals(subprocess2.TIMED_OUT, returncode)
     self.assertEquals(['', None], out)
 
   def test_void(self):

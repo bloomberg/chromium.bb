@@ -8,6 +8,7 @@ In theory you shouldn't need anything else in subprocess, or this module failed.
 """
 
 from __future__ import with_statement
+import errno
 import logging
 import os
 import subprocess
@@ -21,7 +22,8 @@ PIPE = subprocess.PIPE
 STDOUT = subprocess.STDOUT
 # Sends stdout or stderr to os.devnull.
 VOID = '/dev/null'
-
+# Error code when a process was killed because it timed out.
+TIMED_OUT = -2001
 
 # Globals.
 # Set to True if you somehow need to disable this hack.
@@ -42,6 +44,10 @@ class CalledProcessError(subprocess.CalledProcessError):
     if self.cwd:
       out += ' in ' + self.cwd
     return '\n'.join(filter(None, (out, self.stdout, self.stderr)))
+
+
+class CygwinRebaseError(CalledProcessError):
+  """Occurs when cygwin's fork() emulation fails due to rebased dll."""
 
 
 ## Utility functions
@@ -156,12 +162,34 @@ def Popen(args, **kwargs):
     tmp_str += ';  cwd=%s' % kwargs['cwd']
   logging.debug(tmp_str)
 
-  # Replaces VOID with handle to /dev/null.
-  if kwargs.get('stdout') in (VOID, os.devnull):
-    kwargs['stdout'] = open(os.devnull, 'w')
-  if kwargs.get('stderr') in (VOID, os.devnull):
-    kwargs['stderr'] = open(os.devnull, 'w')
-  return subprocess.Popen(args, **kwargs)
+  def fix(stream):
+    if kwargs.get(stream) in (VOID, os.devnull):
+      # Replaces VOID with handle to /dev/null.
+      # Create a temporary file to workaround python's deadlock.
+      # http://docs.python.org/library/subprocess.html#subprocess.Popen.wait
+      # When the pipe fills up, it will deadlock this process. Using a real file
+      # works around that issue.
+      kwargs[stream] = open(os.devnull, 'w')
+
+  fix('stdout')
+  fix('stderr')
+
+  try:
+    return subprocess.Popen(args, **kwargs)
+  except OSError, e:
+    if e.errno == errno.EAGAIN and sys.platform == 'cygwin':
+      # Convert fork() emulation failure into a CygwinRebaseError().
+      raise CygwinRebaseError(
+          e.errno,
+          args,
+          kwargs.get('cwd'),
+          None,
+          'Visit '
+          'http://code.google.com/p/chromium/wiki/CygwinDllRemappingFailure to '
+          'learn how to fix this error; you need to rebase your cygwin dlls')
+    # Popen() can throw OSError when cwd or args[0] doesn't exist. Let it go
+    # through
+    raise
 
 
 def call(args, timeout=None, **kwargs):
@@ -169,7 +197,8 @@ def call(args, timeout=None, **kwargs):
 
   Returns ((stdout, stderr), returncode).
 
-  - The process will be kill with error code -9 after |timeout| seconds if set.
+  - The process will be killed after |timeout| seconds and returncode set to
+    TIMED_OUT.
   - Automatically passes stdin content as input so do not specify stdin=PIPE.
   """
   stdin = kwargs.pop('stdin', None)
@@ -183,34 +212,31 @@ def call(args, timeout=None, **kwargs):
     # Normal workflow.
     proc = Popen(args, **kwargs)
     if stdin is not None:
-      out = proc.communicate(stdin)
+      return proc.communicate(stdin), proc.returncode
     else:
-      out = proc.communicate()
-  else:
-    # Create a temporary file to workaround python's deadlock.
-    # http://docs.python.org/library/subprocess.html#subprocess.Popen.wait
-    # When the pipe fills up, it will deadlock this process. Using a real file
-    # works around that issue.
-    with tempfile.TemporaryFile() as buff:
-      start = time.time()
-      kwargs['stdout'] = buff
-      proc = Popen(args, **kwargs)
-      if stdin is not None:
-        proc.stdin.write(stdin)
-      while proc.returncode is None:
-        proc.poll()
-        if timeout and (time.time() - start) > timeout:
-          proc.kill()
-          proc.wait()
-          # It's -9 on linux and 1 on Windows. Standardize to -9.
-          # Do not throw an exception here, the user must use
-          # check_call(timeout=60) and check for e.returncode == -9 instead.
-          # or look at call()[1] == -9.
-          proc.returncode = -9
-        time.sleep(0.001)
-      # Now that the process died, reset the cursor and read the file.
-      buff.seek(0)
-      out = [buff.read(), None]
+      return proc.communicate(), proc.returncode
+
+  # Create a temporary file to workaround python's deadlock.
+  # http://docs.python.org/library/subprocess.html#subprocess.Popen.wait
+  # When the pipe fills up, it will deadlock this process. Using a real file
+  # works around that issue.
+  with tempfile.TemporaryFile() as buff:
+    start = time.time()
+    kwargs['stdout'] = buff
+    proc = Popen(args, **kwargs)
+    if stdin is not None:
+      proc.stdin.write(stdin)
+    while proc.returncode is None:
+      proc.poll()
+      if timeout and (time.time() - start) > timeout:
+        proc.kill()
+        proc.wait()
+        # It's -9 on linux and 1 on Windows. Standardize to TIMED_OUT.
+        proc.returncode = TIMED_OUT
+      time.sleep(0.001)
+    # Now that the process died, reset the cursor and read the file.
+    buff.seek(0)
+    out = [buff.read(), None]
   return out, proc.returncode
 
 
