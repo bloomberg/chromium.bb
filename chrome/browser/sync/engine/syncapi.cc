@@ -552,10 +552,25 @@ void WriteNode::PutNigoriSpecificsAndMarkForSyncing(
 void WriteNode::SetPasswordSpecifics(
     const sync_pb::PasswordSpecificsData& data) {
   DCHECK_EQ(syncable::PASSWORDS, GetModelType());
+
+  Cryptographer* cryptographer = GetTransaction()->GetCryptographer();
+
+  // Idempotency check to prevent unnecessary syncing: if the plaintexts match
+  // and the old ciphertext is encrypted with the most current key, there's
+  // nothing to do here.  Because each encryption is seeded with a different
+  // random value, checking for equivalence post-encryption doesn't suffice.
+  const sync_pb::EncryptedData& old_ciphertext =
+      GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::password).encrypted();
+  scoped_ptr<sync_pb::PasswordSpecificsData> old_plaintext(
+      DecryptPasswordSpecifics(GetEntry()->Get(SPECIFICS), cryptographer));
+  if (old_plaintext.get() &&
+      old_plaintext->SerializeAsString() == data.SerializeAsString() &&
+      cryptographer->CanDecryptUsingDefaultKey(old_ciphertext)) {
+    return;
+  }
+
   sync_pb::PasswordSpecifics new_value;
-  if (!GetTransaction()->GetCryptographer()->Encrypt(
-      data,
-      new_value.mutable_encrypted())) {
+  if (!cryptographer->Encrypt(data, new_value.mutable_encrypted())) {
     NOTREACHED();
   }
   PutPasswordSpecificsAndMarkForSyncing(new_value);

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,6 +34,11 @@ void Cryptographer::Bootstrap(const std::string& restored_bootstrap_token) {
 
 bool Cryptographer::CanDecrypt(const sync_pb::EncryptedData& data) const {
   return nigoris_.end() != nigoris_.find(data.key_name());
+}
+
+bool Cryptographer::CanDecryptUsingDefaultKey(
+    const sync_pb::EncryptedData& data) const {
+  return default_nigori_ && (data.key_name() == default_nigori_->first);
 }
 
 bool Cryptographer::Encrypt(const ::google::protobuf::MessageLite& message,

@@ -776,6 +776,7 @@ void Directory::SetDownloadProgress(
     const sync_pb::DataTypeProgressMarker& new_progress) {
   ScopedKernelLock lock(this);
   kernel_->persisted_info.download_progress[model_type].CopyFrom(new_progress);
+  kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
 }
 
 bool Directory::initial_sync_ended_for_type(ModelType type) const {

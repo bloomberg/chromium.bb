@@ -60,6 +60,10 @@ class Cryptographer {
   // about.
   bool CanDecrypt(const sync_pb::EncryptedData& encrypted) const;
 
+  // Returns whether |encrypted| can be decrypted using the default encryption
+  // key.
+  bool CanDecryptUsingDefaultKey(const sync_pb::EncryptedData& encrypted) const;
+
   // Encrypts |message| into |encrypted|. Returns true unless encryption fails.
   // Note that encryption will fail if |message| isn't valid (eg. a required
   // field isn't set).
@@ -94,7 +98,7 @@ class Cryptographer {
   // false.
   void SetPendingKeys(const sync_pb::EncryptedData& encrypted);
 
-  // Attepmts to decrypt the set of keys that was copied in the previous call to
+  // Attempts to decrypt the set of keys that was copied in the previous call to
   // SetPendingKeys using |params|. Returns true if the pending keys were
   // successfully decrypted and installed.
   bool DecryptPendingKeys(const KeyParams& params);
