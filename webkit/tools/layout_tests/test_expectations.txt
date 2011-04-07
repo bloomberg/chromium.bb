@@ -4,3 +4,7 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
+
+BUGANTONM : fast/events/window-onerror7.html = TEXT
+BUGANTONM : plugins/netscape-plugin-property-access-exception.html = TEXT
+
