@@ -9,7 +9,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_job_manager.h"
+#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/printer_query.h"
+#include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/common/print_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_entry.h"
@@ -24,6 +26,17 @@
 
 using base::TimeDelta;
 
+namespace {
+
+string16 GenerateRenderSourceName(TabContents* tab_contents) {
+  string16 name(tab_contents->GetTitle());
+  if (name.empty())
+    name = l10n_util::GetStringUTF16(IDS_DEFAULT_PRINT_DOCUMENT_TITLE);
+  return name;
+}
+
+}  // namespace
+
 namespace printing {
 
 PrintViewManager::PrintViewManager(TabContents* tab_contents)
@@ -31,7 +44,8 @@ PrintViewManager::PrintViewManager(TabContents* tab_contents)
       number_pages_(0),
       waiting_to_print_(false),
       printing_succeeded_(false),
-      inside_inner_message_loop_(false) {
+      inside_inner_message_loop_(false),
+      is_title_overridden_(false) {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   expecting_first_page_ = true;
 #endif
@@ -59,19 +73,22 @@ void PrintViewManager::RenderViewGone() {
   }
 }
 
+void PrintViewManager::OverrideTitle(TabContents* tab_contents) {
+  is_title_overridden_ = true;
+  overridden_title_ = GenerateRenderSourceName(tab_contents);
+}
+
 string16 PrintViewManager::RenderSourceName() {
-  string16 name(tab_contents()->GetTitle());
-  if (name.empty())
-    name = l10n_util::GetStringUTF16(IDS_DEFAULT_PRINT_DOCUMENT_TITLE);
-  return name;
+  if (is_title_overridden_)
+    return overridden_title_;
+  return GenerateRenderSourceName(tab_contents());
 }
 
 GURL PrintViewManager::RenderSourceUrl() {
   NavigationEntry* entry = tab_contents()->controller().GetActiveEntry();
   if (entry)
     return entry->virtual_url();
-  else
-    return GURL();
+  return GURL();
 }
 
 void PrintViewManager::OnDidGetPrintedPagesCount(int cookie, int number_pages) {

@@ -32,6 +32,10 @@ class PrintViewManager : public NotificationObserver,
   explicit PrintViewManager(TabContents* tab_contents);
   virtual ~PrintViewManager();
 
+  // Override the title for this PrintViewManager's PrintJobs using the title
+  // in |tab_contents|.
+  void OverrideTitle(TabContents* tab_contents);
+
   // PrintedPagesSource implementation.
   virtual string16 RenderSourceName();
   virtual GURL RenderSourceUrl();
@@ -127,6 +131,10 @@ class PrintViewManager : public NotificationObserver,
   // Set to true when OnDidPrintPage() should be expecting the first page.
   bool expecting_first_page_;
 #endif
+
+  // Title override.
+  bool is_title_overridden_;
+  string16 overridden_title_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintViewManager);
 };

@@ -21,7 +21,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_observer.h"
 #include "chrome/browser/printing/print_preview_message_handler.h"
-#include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -63,6 +62,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   password_manager_.reset(
       new PasswordManager(contents, password_manager_delegate_.get()));
   search_engine_tab_helper_.reset(new SearchEngineTabHelper(contents));
+  print_view_manager_.reset(new printing::PrintViewManager(contents));
 
   // Register for notifications about URL starredness changing on any profile.
   registrar_.Add(this, NotificationType::URLS_STARRED,
@@ -75,7 +75,6 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   extension_message_observer_.reset(new ExtensionMessageObserver(contents));
   file_select_observer_.reset(new FileSelectObserver(contents));
   prerender_observer_.reset(new prerender::PrerenderObserver(contents));
-  printing_.reset(new printing::PrintViewManager(contents));
   print_preview_.reset(new printing::PrintPreviewMessageHandler(contents));
 }
 

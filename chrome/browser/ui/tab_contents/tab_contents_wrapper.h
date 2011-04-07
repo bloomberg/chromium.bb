@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/printing/print_view_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/notification_registrar.h"
@@ -21,7 +22,6 @@ class PrerenderObserver;
 
 namespace printing {
 class PrintPreviewMessageHandler;
-class PrintViewManager;
 }
 
 class AutocompleteHistoryManager;
@@ -114,6 +114,10 @@ class TabContentsWrapper : public NotificationObserver,
     return search_engine_tab_helper_.get();
   }
 
+  printing::PrintViewManager* print_view_manager() {
+    return print_view_manager_.get();
+  }
+
   // Overrides -----------------------------------------------------------------
 
   // TabContentsObserver overrides:
@@ -156,12 +160,6 @@ class TabContentsWrapper : public NotificationObserver,
   // Whether the current URL is starred.
   bool is_starred_;
 
-  // Handles print job for this contents.
-  scoped_ptr<printing::PrintViewManager> printing_;
-
-  // Handles Print Preview messages.
-  scoped_ptr<printing::PrintPreviewMessageHandler> print_preview_;
-
   // Tab Helpers ---------------------------------------------------------------
   // (These provide API for callers and have a getter function listed in the
   // "Tab Helpers" section in the member functions area, above.)
@@ -179,6 +177,9 @@ class TabContentsWrapper : public NotificationObserver,
 
   scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
 
+  // Handles print job for this contents.
+  scoped_ptr<printing::PrintViewManager> print_view_manager_;
+
   // Per-tab observers ---------------------------------------------------------
   // (These provide no API for callers; objects that need to exist 1:1 with tabs
   // and silently do their thing live here.)
@@ -187,6 +188,7 @@ class TabContentsWrapper : public NotificationObserver,
   scoped_ptr<ExtensionMessageObserver> extension_message_observer_;
   scoped_ptr<FileSelectObserver> file_select_observer_;
   scoped_ptr<prerender::PrerenderObserver> prerender_observer_;
+  scoped_ptr<printing::PrintPreviewMessageHandler> print_preview_;
 
   // TabContents (MUST BE LAST) ------------------------------------------------
 
