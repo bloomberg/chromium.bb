@@ -509,6 +509,8 @@ ExtensionUninstallObserver::ExtensionUninstallObserver(
       id_(id) {
   registrar_.Add(this, NotificationType::EXTENSION_UNINSTALLED,
                  NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_UNINSTALL_NOT_ALLOWED,
+                 NotificationService::AllSources());
 }
 
 ExtensionUninstallObserver::~ExtensionUninstallObserver() {
@@ -523,13 +525,36 @@ void ExtensionUninstallObserver::Observe(
     return;
   }
 
-  DCHECK(type == NotificationType::EXTENSION_UNINSTALLED);
-  UninstalledExtensionInfo* info =
-      Details<UninstalledExtensionInfo>(details).ptr();
-  if (id_ == info->extension_id) {
-    AutomationJSONReply(automation_, reply_message_.release())
-        .SendSuccess(NULL);
-    delete this;
+  switch (type.value) {
+    case NotificationType::EXTENSION_UNINSTALLED: {
+      UninstalledExtensionInfo* info =
+          Details<UninstalledExtensionInfo>(details).ptr();
+      if (id_ == info->extension_id) {
+        scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+        return_value->SetBoolean("success", true);
+        AutomationJSONReply(automation_, reply_message_.release())
+            .SendSuccess(return_value.get());
+        delete this;
+        return;
+      }
+      break;
+    }
+
+    case NotificationType::EXTENSION_UNINSTALL_NOT_ALLOWED: {
+      const Extension* extension = Details<Extension>(details).ptr();
+      if (id_ == extension->id()) {
+        scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+        return_value->SetBoolean("success", false);
+        AutomationJSONReply(automation_, reply_message_.release())
+            .SendSuccess(return_value.get());
+        delete this;
+        return;
+      }
+      break;
+    }
+
+    default:
+      NOTREACHED();
   }
 }
 

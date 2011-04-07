@@ -258,7 +258,7 @@ void ExtensionService::CheckExternalUninstall(const std::string& id) {
   }
 
   // This is an external extension that we don't have registered.  Uninstall.
-  UninstallExtension(id, true);
+  UninstallExtension(id, true, NULL);
 }
 
 void ExtensionService::ClearProvidersForTesting() {
@@ -362,6 +362,9 @@ bool ExtensionService::IsInstalledApp(const GURL& url) {
 }
 
 // static
+// This function is used to implement the command-line switch
+// --uninstall-extension.  The LOG statements within this function are used to
+// inform the user if the uninstall cannot be done.
 bool ExtensionService::UninstallExtensionHelper(
     ExtensionService* extensions_service,
     const std::string& extension_id) {
@@ -371,19 +374,21 @@ bool ExtensionService::UninstallExtensionHelper(
   if (!extension)
     extension = extensions_service->GetTerminatedExtension(extension_id);
 
-  // We can't call UninstallExtension with an invalid extension ID. We should
-  // not allow an uninstall of a policy-controlled extension.
+  // We can't call UninstallExtension with an invalid extension ID.
   if (!extension) {
     LOG(WARNING) << "Attempted uninstallation of non-existent extension with "
                  << "id: " << extension_id;
     return false;
-  } else if (!Extension::UserMayDisable(extension->location())) {
-    LOG(WARNING) << "Attempted uninstallation of an extension that is non-"
-                 << "usermanagable with id: " << extension_id;
-    return false;
   }
 
-  extensions_service->UninstallExtension(extension_id, false);
+  // The following call to UninstallExtension will not allow an uninstall of a
+  // policy-controlled extension.
+  std::string error;
+  if (!extensions_service->UninstallExtension(extension_id, false, &error)) {
+    LOG(WARNING) << "Cannot uninstall extension with id " << extension_id
+                 << ": " << error;
+    return false;
+  }
 
   return true;
 }
@@ -607,8 +612,9 @@ void ExtensionService::ReloadExtension(const std::string& extension_id) {
   }
 }
 
-void ExtensionService::UninstallExtension(const std::string& extension_id,
-                                          bool external_uninstall) {
+bool ExtensionService::UninstallExtension(const std::string& extension_id,
+                                          bool external_uninstall,
+                                          std::string* error) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const Extension* extension =
@@ -627,8 +633,16 @@ void ExtensionService::UninstallExtension(const std::string& extension_id,
   // Policy change which triggers an uninstall will always set
   // |external_uninstall| to true so this is the only way to uninstall
   // managed extensions.
-  if (!Extension::UserMayDisable(location) && !external_uninstall)
-    return;
+  if (!Extension::UserMayDisable(location) && !external_uninstall) {
+    NotificationService::current()->Notify(
+        NotificationType::EXTENSION_UNINSTALL_NOT_ALLOWED,
+        Source<Profile>(profile_),
+        Details<const Extension>(extension));
+    if (error != NULL) {
+      *error = errors::kCannotUninstallManagedExtension;
+    }
+    return false;
+  }
 
   UninstalledExtensionInfo uninstalled_extension_info(*extension);
 
@@ -667,6 +681,8 @@ void ExtensionService::UninstallExtension(const std::string& extension_id,
       NotificationType::EXTENSION_UNINSTALLED,
       Source<Profile>(profile_),
       Details<UninstalledExtensionInfo>(&uninstalled_extension_info));
+
+  return true;
 }
 
 void ExtensionService::ClearExtensionData(const GURL& extension_url) {

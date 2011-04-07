@@ -152,7 +152,8 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
 
 void ExtensionContextMenuModel::ExtensionDialogAccepted() {
   if (GetExtension())
-    profile_->GetExtensionService()->UninstallExtension(extension_id_, false);
+    profile_->GetExtensionService()->UninstallExtension(extension_id_, false,
+                                                        NULL);
 
   Release();
 }

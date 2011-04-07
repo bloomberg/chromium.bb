@@ -60,8 +60,9 @@ class ExtensionServiceInterface {
   virtual const Extension* GetExtensionById(const std::string& id,
                                             bool include_disabled) const = 0;
 
-  virtual void UninstallExtension(const std::string& extension_id,
-                                  bool external_uninstall) = 0;
+  virtual bool UninstallExtension(const std::string& extension_id,
+                                  bool external_uninstall,
+                                  std::string* error) = 0;
 
   virtual bool IsExtensionEnabled(const std::string& extension_id) const = 0;
   virtual bool IsExternalExtensionUninstalled(
@@ -228,8 +229,9 @@ class ExtensionService
   // callers should never set to true.
   // TODO(aa): Remove |external_uninstall| -- this information should be passed
   // to ExtensionPrefs some other way.
-  virtual void UninstallExtension(const std::string& extension_id,
-                                  bool external_uninstall);
+  virtual bool UninstallExtension(const std::string& extension_id,
+                                  bool external_uninstall,
+                                  std::string* error);
 
   virtual bool IsExtensionEnabled(const std::string& extension_id) const;
   virtual bool IsExternalExtensionUninstalled(

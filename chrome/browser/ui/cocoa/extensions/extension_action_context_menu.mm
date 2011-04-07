@@ -49,7 +49,7 @@ class AsyncUninstaller : public ExtensionUninstallDialog::Delegate {
   // ExtensionUninstallDialog::Delegate:
   virtual void ExtensionDialogAccepted() {
     profile_->GetExtensionService()->
-        UninstallExtension(extension_->id(), false);
+        UninstallExtension(extension_->id(), false, NULL);
   }
   virtual void ExtensionDialogCanceled() {}
 

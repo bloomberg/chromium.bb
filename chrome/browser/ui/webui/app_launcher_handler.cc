@@ -559,7 +559,7 @@ void AppLauncherHandler::ExtensionDialogAccepted() {
     return;
 
   extensions_service_->UninstallExtension(extension_id_prompting_,
-                                          false /* external_uninstall */);
+                                          false /* external_uninstall */, NULL);
 
   extension_id_prompting_ = "";
 }
@@ -617,6 +617,6 @@ void AppLauncherHandler::UninstallDefaultApps() {
   for (ExtensionIdSet::const_iterator iter = app_ids.begin();
        iter != app_ids.end(); ++iter) {
     if (extensions_service_->GetExtensionById(*iter, true))
-      extensions_service_->UninstallExtension(*iter, false);
+      extensions_service_->UninstallExtension(*iter, false, NULL);
   }
 }

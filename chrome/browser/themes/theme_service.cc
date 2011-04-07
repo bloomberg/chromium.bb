@@ -328,7 +328,7 @@ void ThemeService::RemoveUnusedThemes() {
     }
   }
   for (size_t i = 0; i < remove_list.size(); ++i)
-    service->UninstallExtension(remove_list[i], false);
+    service->UninstallExtension(remove_list[i], false, NULL);
 }
 
 void ThemeService::UseDefaultTheme() {

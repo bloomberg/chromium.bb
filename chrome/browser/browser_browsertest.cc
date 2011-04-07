@@ -502,7 +502,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
 
   // Uninstall the extension and make sure TabClosing is sent.
   ExtensionService* service = browser()->profile()->GetExtensionService();
-  service->UninstallExtension(GetExtension()->id(), false);
+  service->UninstallExtension(GetExtension()->id(), false, NULL);
   EXPECT_EQ(1, observer.closing_count());
 
   model->RemoveObserver(&observer);

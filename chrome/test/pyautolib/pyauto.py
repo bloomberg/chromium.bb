@@ -1227,12 +1227,16 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Args:
       id: The string id of the extension. It can be retrieved through the
           GetExtensionsInfo call above.
+
+    Returns:
+      True, if the extension was successfully uninstalled, or
+      False, otherwise.
     """
     cmd_dict = {  # Prepare command for the json interface
       'command': 'UninstallExtensionById',
-      'id': id
+      'id': id,
     }
-    self._GetResultFromJSONRequest(cmd_dict)
+    return self._GetResultFromJSONRequest(cmd_dict)['success']
 
   def SelectTranslateOption(self, option, tab_index=0, window_index=0):
     """Selects one of the options in the drop-down menu for the translate bar.
@@ -2196,6 +2200,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Args:
       app_id: The string ID of the app to uninstall.  It can be retrieved
               through the call to GetNTPApps above.
+
+    Returns:
+      True, if the app was successfully uninstalled, or
+      False, otherwise.
     """
     return self.UninstallExtensionById(app_id)
 

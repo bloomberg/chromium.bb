@@ -242,7 +242,8 @@ bool UninstallFunction::RunImpl() {
     return false;
   }
 
-  service()->UninstallExtension(extension_id, false /* external_uninstall */);
+  service()->UninstallExtension(extension_id, false /* external_uninstall */,
+                                NULL);
   return true;
 }
 

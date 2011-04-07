@@ -457,7 +457,7 @@ void RemoveFromClient(const ExtensionSyncTraits& traits,
   const Extension* extension = extensions_service->GetExtensionById(id, true);
   if (extension) {
     if (traits.is_valid_and_syncable(*extension)) {
-      extensions_service->UninstallExtension(id, false);
+      extensions_service->UninstallExtension(id, false, NULL);
     } else {
       LOG(WARNING) << "Ignoring server data for invalid or "
                    << "non-syncable extension " << extension->id();

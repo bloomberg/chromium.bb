@@ -245,6 +245,7 @@
       '-https.HTTPSTest.testSSLPageBasic',
       '-instant',
       '-notifications',
+      '-ntp.NTPTest.testCannotUninstallWebStore',
       '-ntp.NTPTest.testGetAppsInNewProfile',
       '-ntp.NTPTest.testGetMenuModeInNewProfile',
       '-ntp.NTPTest.testGetThumbnailModeInNewProfile',

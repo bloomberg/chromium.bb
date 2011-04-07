@@ -76,9 +76,11 @@ class MockService : public ExtensionServiceInterface {
     return NULL;
   }
 
-  virtual void UninstallExtension(const std::string& extension_id,
-                                  bool external_uninstall) {
-    FAIL();
+  virtual bool UninstallExtension(const std::string& extension_id,
+                                  bool external_uninstall,
+                                  std::string* error) {
+    ADD_FAILURE();
+    return false;
   }
 
   virtual bool IsExtensionEnabled(const std::string& extension_id) const {

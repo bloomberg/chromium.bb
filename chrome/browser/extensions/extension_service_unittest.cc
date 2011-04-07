@@ -1128,7 +1128,7 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
   ASSERT_TRUE(service_->GetExtensionById(good_crx, false));
 
   // Uninstall it and check that its killbit gets set.
-  service_->UninstallExtension(good_crx, false);
+  service_->UninstallExtension(good_crx, false, NULL);
   loop_.RunAllPending();
   ValidateIntegerPref(good_crx, "location",
                       Extension::EXTERNAL_EXTENSION_UNINSTALLED);
@@ -1789,7 +1789,7 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimtedStorage) {
 
   // Uninstall one of them, unlimited storage should still be granted
   // to the origin.
-  service_->UninstallExtension(id1, false);
+  service_->UninstallExtension(id1, false, NULL);
   loop_.RunAllPending();
   EXPECT_EQ(1u, service_->extensions()->size());
   EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
@@ -1797,7 +1797,7 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimtedStorage) {
 
 
   // Uninstall the other, unlimited storage should be revoked.
-  service_->UninstallExtension(id2, false);
+  service_->UninstallExtension(id2, false, NULL);
   loop_.RunAllPending();
   EXPECT_EQ(0u, service_->extensions()->size());
   EXPECT_FALSE(profile_->GetExtensionSpecialStoragePolicy()->
@@ -1834,11 +1834,11 @@ TEST_F(ExtensionServiceTest, InstallAppsAndCheckStorageProtection) {
   EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
       IsStorageProtected(origin2));
 
-  service_->UninstallExtension(id1, false);
+  service_->UninstallExtension(id1, false, NULL);
   loop_.RunAllPending();
   EXPECT_EQ(1u, service_->extensions()->size());
 
-  service_->UninstallExtension(id2, false);
+  service_->UninstallExtension(id2, false, NULL);
   loop_.RunAllPending();
 
   EXPECT_TRUE(service_->extensions()->empty());
@@ -2702,7 +2702,7 @@ TEST_F(ExtensionServiceTest, UninstallExtension) {
   ValidateIntegerPref(good_crx, "location", Extension::INTERNAL);
 
   // Uninstall it.
-  service_->UninstallExtension(extension_id, false);
+  service_->UninstallExtension(extension_id, false, NULL);
   total_successes_ = 0;
 
   // We should get an unload notification.
@@ -2819,7 +2819,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   EXPECT_TRUE(file_util::PathExists(idb_path));
 
   // Uninstall the extension.
-  service_->UninstallExtension(good_crx, false);
+  service_->UninstallExtension(good_crx, false, NULL);
   loop_.RunAllPending();
 
   // Check that the cookie is gone.
@@ -2873,7 +2873,7 @@ TEST_F(ExtensionServiceTest, LoadExtension) {
   // Test uninstall.
   std::string id = loaded_[0]->id();
   EXPECT_FALSE(unloaded_id_.length());
-  service_->UninstallExtension(id, false);
+  service_->UninstallExtension(id, false, NULL);
   loop_.RunAllPending();
   EXPECT_EQ(id, unloaded_id_);
   ASSERT_EQ(0u, loaded_.size());
@@ -2966,7 +2966,7 @@ void ExtensionServiceTest::TestExternalProvider(
   // Uninstall the extension and reload. Nothing should happen because the
   // preference should prevent us from reinstalling.
   std::string id = loaded_[0]->id();
-  service_->UninstallExtension(id, false);
+  service_->UninstallExtension(id, false, NULL);
   loop_.RunAllPending();
 
   FilePath install_path = extensions_install_dir_.AppendASCII(id);
@@ -3025,7 +3025,7 @@ void ExtensionServiceTest::TestExternalProvider(
 
     // User uninstalls.
     loaded_.clear();
-    service_->UninstallExtension(id, false);
+    service_->UninstallExtension(id, false, NULL);
     loop_.RunAllPending();
     ASSERT_EQ(0u, loaded_.size());
 

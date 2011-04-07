@@ -820,7 +820,7 @@ void AutomationProvider::UninstallExtension(int extension_handle,
   ExtensionService* service = profile_->GetExtensionService();
   if (extension && service) {
     ExtensionUnloadNotificationObserver observer;
-    service->UninstallExtension(extension->id(), false);
+    service->UninstallExtension(extension->id(), false, NULL);
     // The extension unload notification should have been sent synchronously
     // with the uninstall. Just to be safe, check that it was received.
     *success = observer.did_receive_unload_notification();

@@ -141,23 +141,23 @@ TEST_F(BackgroundApplicationListModelTest, LoadExplicitExtensions) {
   ASSERT_EQ(2U, model->size());
   // Remove in FIFO order.
   ASSERT_FALSE(BackgroundApplicationListModel::IsBackgroundApp(*ext1));
-  service->UninstallExtension(ext1->id(), false);
+  service->UninstallExtension(ext1->id(), false, NULL);
   ASSERT_EQ(4U, service->extensions()->size());
   ASSERT_EQ(2U, model->size());
   ASSERT_TRUE(BackgroundApplicationListModel::IsBackgroundApp(*bgapp1));
-  service->UninstallExtension(bgapp1->id(), false);
+  service->UninstallExtension(bgapp1->id(), false, NULL);
   ASSERT_EQ(3U, service->extensions()->size());
   ASSERT_EQ(1U, model->size());
   ASSERT_FALSE(BackgroundApplicationListModel::IsBackgroundApp(*ext2));
-  service->UninstallExtension(ext2->id(), false);
+  service->UninstallExtension(ext2->id(), false, NULL);
   ASSERT_EQ(2U, service->extensions()->size());
   ASSERT_EQ(1U, model->size());
   ASSERT_TRUE(BackgroundApplicationListModel::IsBackgroundApp(*bgapp2));
-  service->UninstallExtension(bgapp2->id(), false);
+  service->UninstallExtension(bgapp2->id(), false, NULL);
   ASSERT_EQ(1U, service->extensions()->size());
   ASSERT_EQ(0U, model->size());
   ASSERT_FALSE(BackgroundApplicationListModel::IsBackgroundApp(*ext3));
-  service->UninstallExtension(ext3->id(), false);
+  service->UninstallExtension(ext3->id(), false, NULL);
   ASSERT_EQ(0U, service->extensions()->size());
   ASSERT_EQ(0U, model->size());
 }
@@ -232,7 +232,7 @@ TEST_F(BackgroundApplicationListModelTest, LoadRandomExtension) {
         extensions.erase(cursor);
         --count;
         ASSERT_EQ(count, extensions.size());
-        service->UninstallExtension(extension->id(), false);
+        service->UninstallExtension(extension->id(), false, NULL);
         ASSERT_EQ(count, service->extensions()->size());
         ASSERT_EQ(expected, model->size());
       }

@@ -3910,7 +3910,7 @@ void TestingAutomationProvider::UninstallExtensionById(
   // Wait for a notification indicating that the extension with the given ID
   // has been uninstalled.  This observer will delete itself.
   new ExtensionUninstallObserver(this, reply_message, id);
-  service->UninstallExtension(id, false);
+  service->UninstallExtension(id, false, NULL);
 }
 
 // Sample json input:

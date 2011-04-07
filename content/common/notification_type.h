@@ -888,6 +888,11 @@ class NotificationType {
     // an UninstalledExtensionInfo struct and the source is a Profile.
     EXTENSION_UNINSTALLED,
 
+    // Sent when an extension uninstall is not allowed because the extension is
+    // not user manageable.  The details are an Extension, and the source is a
+    // Profile.
+    EXTENSION_UNINSTALL_NOT_ALLOWED,
+
     // Sent when an extension is unloaded. This happens when an extension is
     // uninstalled or disabled. The details are an UnloadedExtensionInfo, and
     // the source is a Profile.

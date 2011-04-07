@@ -476,7 +476,7 @@ void ExtensionsDOMHandler::ExtensionDialogAccepted() {
     return;
 
   extensions_service_->UninstallExtension(extension_id_prompting_,
-                                          false /* external_uninstall */);
+                                          false /* external_uninstall */, NULL);
   extension_id_prompting_ = "";
 
   // There will be no EXTENSION_UNLOADED notification for terminated

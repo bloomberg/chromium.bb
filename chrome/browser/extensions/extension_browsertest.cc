@@ -279,7 +279,7 @@ void ExtensionBrowserTest::UnloadExtension(const std::string& extension_id) {
 
 void ExtensionBrowserTest::UninstallExtension(const std::string& extension_id) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
-  service->UninstallExtension(extension_id, false);
+  service->UninstallExtension(extension_id, false, NULL);
 }
 
 void ExtensionBrowserTest::DisableExtension(const std::string& extension_id) {

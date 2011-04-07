@@ -392,9 +392,25 @@ class NTPTest(pyauto.PyUITest):
     self._VerifyAppInfo(app_info, expected_app_info)
 
     # Next, uninstall the app and verify that it is removed from the NTP.
-    self.UninstallApp(installed_app_id)
+    self.assertTrue(self.UninstallApp(installed_app_id),
+                    msg='Call to UninstallApp() returned False.')
     app_info = self.GetNTPApps()
     self._VerifyAppInfo(app_info, self._EXPECTED_DEFAULT_APPS)
+
+  def testCannotUninstallWebStore(self):
+    """Ensures that the WebStore app cannot be uninstalled."""
+    # Verify that the WebStore app is already installed in a fresh profile.
+    app_info = self.GetNTPApps()
+    self._VerifyAppInfo(app_info, self._EXPECTED_DEFAULT_APPS)
+    self.assertTrue(app_info and 'id' in app_info[0],
+                    msg='Cannot identify ID of WebStore app.')
+    webstore_id = app_info[0]['id']
+
+    # Attempt to uninstall the WebStore app and verify that it still exists
+    # in the App info of the NTP even after we try to uninstall it.
+    self.assertFalse(self.UninstallApp(webstore_id),
+                     msg='Call to UninstallApp() returned True.')
+    self._VerifyAppInfo(self.GetNTPApps(), self._EXPECTED_DEFAULT_APPS)
 
   def _VerifyThumbnailOrMenuMode(self, actual_info, expected_info):
     """Verifies that the expected thumbnail/menu info matches the actual info.
