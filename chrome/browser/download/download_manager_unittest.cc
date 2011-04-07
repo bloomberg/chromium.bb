@@ -430,7 +430,7 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   ASSERT_TRUE(download != NULL);
 
   EXPECT_EQ(DownloadItem::IN_PROGRESS, download->state());
-  ItemObserver* observer = new ItemObserver(download);
+  scoped_ptr<ItemObserver> observer(new ItemObserver(download));
 
   download_file->AppendDataToFile(kTestData, kTestDataLen);
 
@@ -497,7 +497,7 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   ASSERT_TRUE(download != NULL);
 
   EXPECT_EQ(DownloadItem::IN_PROGRESS, download->state());
-  ItemObserver* observer = new ItemObserver(download);
+  scoped_ptr<ItemObserver> observer(new ItemObserver(download));
 
   info->path = new_path;
   AttachDownloadItem(info);
