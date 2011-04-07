@@ -56,6 +56,8 @@ void PreconnectOnIOThread(
   net::HttpRequestInfo request_info;
   request_info.url = url;
   request_info.method = "GET";
+  request_info.extra_headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
+                                       context->GetUserAgent(url));
   // It almost doesn't matter whether we use net::LOWEST or net::HIGHEST
   // priority here, as we won't make a request, and will surrender the created
   // socket to the pool as soon as we can.  However, we would like to mark the
