@@ -7,7 +7,6 @@
 #include <limits>
 #include <set>
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "ppapi/c/pp_resource.h"
@@ -44,9 +43,6 @@ template <typename T> static inline bool CheckIdType(T id, PPIdType type) {
 namespace webkit {
 namespace ppapi {
 
-static base::LazyInstance<ResourceTracker> g_resource_tracker(
-    base::LINKER_INITIALIZED);
-
 struct ResourceTracker::InstanceData {
   InstanceData() : instance(0) {}
 
@@ -70,6 +66,7 @@ scoped_refptr<Resource> ResourceTracker::GetResource(PP_Resource res) const {
 }
 
 // static
+ResourceTracker* ResourceTracker::global_tracker_ = NULL;
 ResourceTracker* ResourceTracker::singleton_override_ = NULL;
 
 ResourceTracker::ResourceTracker()
@@ -84,7 +81,9 @@ ResourceTracker::~ResourceTracker() {
 ResourceTracker* ResourceTracker::Get() {
   if (singleton_override_)
     return singleton_override_;
-  return g_resource_tracker.Pointer();
+  if (!global_tracker_)
+    global_tracker_ = new ResourceTracker;
+  return global_tracker_;
 }
 
 PP_Resource ResourceTracker::AddResource(Resource* resource) {

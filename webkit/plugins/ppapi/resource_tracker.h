@@ -17,10 +17,6 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 
-namespace base {
-template <typename T> struct DefaultLazyInstanceTraits;
-}
-
 namespace webkit {
 namespace ppapi {
 
@@ -95,7 +91,6 @@ class ResourceTracker {
   PluginInstance* GetInstance(PP_Instance instance);
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<ResourceTracker>;
   friend class Resource;
   friend class ResourceTrackerTest;
   friend class Var;
@@ -130,6 +125,26 @@ class ResourceTracker {
   // tests since the data will live into the subsequent tests).
   static void SetSingletonOverride(ResourceTracker* tracker);
   static void ClearSingletonOverride();
+
+  // The lazy-initialized global instance of this object. This is created in
+  // ::Get() if there is no singleton_override_ specified.
+  //
+  // It would be nice to use LazyInstance for this since it manages the
+  // creation properly, and also cleans up on shutdown. However, the shutdown
+  // cleanup causes problems in some cases.
+  //
+  // For example, say the browser crashes or is killed. The renderer then
+  // decides to exit. Normally resources are bound to an instance and are
+  // cleaned up when WebKit deletes the instance (when you go to a different
+  // page or close that view). In this case, WebKit doesn't clean up. If the
+  // ResourceTracker was cleaned up by the AtExitManager (which would be the
+  // case with LazyInstance/Singleton) then we'd try to call up to the renderer
+  // layer via the delegate, which may be in a random state of shutdown.
+  //
+  // So effectively our rule is: any resources still around at shutdown are
+  // associated with leaked plugins in WebKit, so it's also OK to leak those
+  // resources from here (avoiding the shutdown race).
+  static ResourceTracker* global_tracker_;
 
   // See SetSingletonOverride above.
   static ResourceTracker* singleton_override_;
