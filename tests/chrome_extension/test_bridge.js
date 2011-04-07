@@ -22,11 +22,9 @@ function runAllNaClTests() {
   if(naclTestModule) {
     naclTestModule.onclick.log('Bridge script injected.');
   }
-
   // Opening the channel will kick off testing.
   port = chrome.extension.connect({name: 'testChannel'});
   port.onMessage.addListener(function(e) {
-    console.log('Content script: ' + e.type);
     var naclTestModule = document.getElementById('test_results_element');
     if(!naclTestModule) return;
     if(e.type == 'processTestResults') {
@@ -36,6 +34,11 @@ function runAllNaClTests() {
       // A generic log message
       naclTestModule.onclick.log(e.message);
     }
+  });
+  // This might happen if the extension isn't listening yet...
+  port.onDisconnect.addListener(function(e) {
+    var naclTestModule = document.getElementById('test_results_element');
+    naclTestModule.onclick.log('The port is disconnected!');
   });
 }
 
