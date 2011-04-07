@@ -186,12 +186,23 @@ function addHostInfo(host) {
     var span = document.createElement('span');
     span.setAttribute('class', 'connect');
     var connect = document.createElement('input');
+
     connect.setAttribute('type', 'button');
     connect.setAttribute('value', 'Connect');
     connect.setAttribute('onclick', "window.open('session?hostname=" +
         encodeURIComponent(host.hostName) + "&hostjid=" +
         encodeURIComponent(host.jabberId) + "');");
     span.appendChild(connect);
+
+    var connectSandboxed = document.createElement('input');
+    connectSandboxed.setAttribute('type', 'button');
+    connectSandboxed.setAttribute('value', 'Connect Sandboxed');
+    connectSandboxed.setAttribute('onclick',
+        "window.open('session?hostname=" + encodeURIComponent(host.hostName) +
+        "&hostjid=" + encodeURIComponent(host.jabberId) +
+        "&connect_method=sandboxed');");
+    span.appendChild(connectSandboxed);
+
     hostEntry.appendChild(span);
     hostIcon.setAttribute('src', 'static_files/online.png');
   } else {

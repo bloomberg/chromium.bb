@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 import logging
 import os
 
@@ -36,7 +40,10 @@ class ChromotingSessionHandler(webapp.RequestHandler):
       'hostname': self.request.get('hostname'),
       'username': users.get_current_user().email(),
       'hostjid': self.request.get('hostjid'),
+      'connect_method': self.request.get('connect_method'),
+      'insecure': self.request.get('insecure'),
       'xmpp_token': auth.GetXmppToken(),
+      'http_xmpp_proxy': auth.GetHttpXmppProxy(),
     }
     path = os.path.join(os.path.dirname(__file__), 'chromoting_session.html')
     self.response.out.write(template.render(path, template_params))

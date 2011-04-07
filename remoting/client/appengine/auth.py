@@ -46,6 +46,7 @@ class OAuthConfig(db.Model):
   """
   consumer_key = db.StringProperty()
   consumer_secret = db.StringProperty()
+  httpxmppproxy = db.StringProperty()
 
 
 def GetChromotingToken(throws=True):
@@ -288,9 +289,20 @@ class SetupOAuthHandler(webapp.RequestHandler):
     # If there is an existing key, only allow updating if you know the old
     # key. This is a simple safeguard against random users hitting this page.
     config = GetOAuthConfig(throws=False)
+    httpxmppproxy = self.request.get('httpxmppproxy')
+    # TODO(ajwong): THIS IS A TOTAL HACK! FIX WITH OWN PAGE.
+    # Currently, this form has one submit button, and 3 pieces of input:
+    # consumer_key, oauth_secret, and the httpxmppproxy address.  The first
+    # two only get committed if the secret + key match.  The third always
+    # get committed via this hack.  Really, it should just be a separate
+    # field/page to set this up.
+    if httpxmppproxy:
+      config.httpxmppproxy = httpxmppproxy
+      config.put()
+    config.consumer_key = self.request.get('consumer_key')
     if config:
       if config.consumer_secret != old_consumer_secret:
-        self.response.out.set_status(400)
+        self.response.set_status(400)
         self.response.out.write('Incorrect old consumer secret')
         return
     else:
@@ -301,6 +313,11 @@ class SetupOAuthHandler(webapp.RequestHandler):
     config.put()
     self.redirect('/')
 
+def GetHttpXmppProxy():
+  config = GetOAuthConfig(throws=True)
+  if not config.httpxmppproxy:
+    raise OAuthInvalidSetup()
+  return config.httpxmppproxy
 
 def main():
   application = webapp.WSGIApplication(

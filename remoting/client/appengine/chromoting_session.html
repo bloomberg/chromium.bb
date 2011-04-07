@@ -11,11 +11,15 @@ found in the LICENSE file.
     <link rel="stylesheet" type="text/css" href="static_files/main.css" />
     <script type="text/javascript">
     <!--
-    // TODO(ajwong): Total Hack. Do this nicer.
-    document.xmpp_auth_token="{{xmpp_token.token_string}}";
+    // TODO(ajwong): Total Hack. We should be able to read the URL parameters
+    // from JS, and also avoid passing in the connection tokens here.
+    document.xmppAuthToken="{{xmpp_token.token_string}}";
+    document.httpXmppProxy="{{http_xmpp_proxy}}";
     document.username="{{username}}";
     document.hostname="{{hostname}}";
     document.hostjid="{{hostjid}}";
+    document.connectMethod="{{connect_method}}";
+    document.insecure="{{insecure}}";
     -->
     </script>
     <script type="text/javascript" src="static_files/base.js"></script>

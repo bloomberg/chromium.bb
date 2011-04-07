@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,78 @@ var MAX_DEBUG_LOG_SIZE = 1000;
 // old messages.  This starts at 1 and is incremented for each new message.
 chromoting.messageId = 1;
 
+// Default to trying to sandboxed connections.
+chromoting.connectMethod = 'sandboxed';
+
+// This executes a poll loop on the server for more Iq packets, and feeds them
+// to the plugin.
+function feedIq() {
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", chromoting.httpXmppProxy + '/readIq?host_jid=' +
+           encodeURIComponent(document.hostjid), true);
+  xhr.withCredentials = true;
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      if (xhr.status == 200 || xhr.status == 204) {
+        addToDebugLog('Receiving Iq: --' + xhr.responseText + '--');
+        chromoting.plugin.onIq(xhr.responseText);
+        window.setTimeout(feedIq, 0);
+      } else {
+        addToDebugLog("HttpXmpp gateway returned code: " + xhr.status);
+      }
+    }
+  }
+  xhr.send(null);
+}
+
+function registerConnection() {
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", chromoting.httpXmppProxy + '/newConnection', true);
+  xhr.withCredentials = true;
+  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      if (xhr.status == 200) {
+        addToDebugLog('Receiving Iq: --' + xhr.responseText + '--');
+        var clientjid = xhr.responseText;
+
+        chromoting.plugin.sendIq = sendIq;
+        chromoting.plugin.connectSandboxed(clientjid, chromoting.hostjid);
+        // TODO(ajwong): This should just be feedIq();
+        window.setTimeout(feedIq, 1000);
+      } else {
+        addToDebugLog('FailedToConnect: --' + xhr.responseText + '--');
+      }
+    }
+  }
+  xhr.send('host_jid=' + encodeURIComponent(chromoting.hostjid) +
+           '&username=' + encodeURIComponent(chromoting.username) +
+           '&password=' + encodeURIComponent(chromoting.xmppAuthToken));
+}
+
+function sendIq(msg) {
+  addToDebugLog('Sending Iq: ' + msg);
+
+  // Extract the top level fields of the Iq packet.
+  // TODO(ajwong): Can the plugin just return these fields broken out.
+  parser = new DOMParser();
+  iqNode = parser.parseFromString(msg,"text/xml").firstChild;
+  id = iqNode.getAttribute("id");
+  type = iqNode.getAttribute("type");
+  to = iqNode.getAttribute("to");
+  serializer = new XMLSerializer();
+  payload_xml = serializer.serializeToString(iqNode.firstChild);
+
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", chromoting.httpXmppProxy + '/sendIq', true);
+  xhr.withCredentials = true;
+  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  xhr.send("to=" + encodeURIComponent(to) +
+           "&payload_xml=" + encodeURIComponent(payload_xml) +
+           "&id=" + id + "&type=" + type +
+           "&host_jid=" + encodeURIComponent(chromoting.hostjid));
+}
+
 function init() {
   // Kick off the connection.
   var plugin = document.getElementById('chromoting');
@@ -18,6 +90,19 @@ function init() {
   chromoting.username = document.username;
   chromoting.hostname = document.hostname;
   chromoting.hostjid = document.hostjid;
+  chromoting.xmppAuthToken = document.xmppAuthToken;
+  chromoting.connectMethod = document.connectMethod;
+
+  // Only allow https connections to the httpXmppProxy unless we're running in
+  // insecure mode.
+  if (document.insecure != "1" &&
+      document.httpXmppProxy.search(/^ *https:\/\//) == -1) {
+    addToDebugLog('Aborting. httpXmppProxy does not specify https protocol: ' +
+                  document.httpXmppProxy);
+    return;
+  }
+
+  chromoting.httpXmppProxy = document.httpXmppProxy;
 
   // Setup the callback that the plugin will call when the connection status
   // has changes and the UI needs to be updated. It needs to be an object with
@@ -32,8 +117,12 @@ function init() {
 
   // TODO(garykac): Clean exit if |connect| isn't a funtion.
   if (typeof plugin.connect === 'function') {
-    plugin.connect(chromoting.username, chromoting.hostjid,
-                   document.xmpp_auth_token);
+    if (chromoting.connectMethod == "sandboxed") {
+      registerConnection();
+    } else {
+      plugin.connect(chromoting.username, chromoting.hostjid,
+                     chromoting.xmppAuthToken);
+    }
   } else {
     console.log('ERROR: chromoting plugin not loaded');
   }
