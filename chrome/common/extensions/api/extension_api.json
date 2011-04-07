@@ -2902,11 +2902,11 @@
             "properties": {
               "type": {
                 "type": "string",
+                "enum": ["normal", "checkbox", "radio", "separator"],
                 "optional": true
               },
               "title": {
                 "type": "string",
-                "enum": ["normal", "checkbox", "radio", "separator"],
                 "optional": true
               },
               "checked": {
