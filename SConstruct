@@ -1205,8 +1205,16 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2, args=[]):
   else:
     chrome_flags += '--enable-nacl'
 
+  # Construct a relative path to the staging directory from where pyauto's HTTP
+  # server should serve files. The relative path is the portion of $STAGING_DIR
+  # that follows $MAIN_DIR, prefixed with 'native_client'.
+  main_dir = env.subst('${MAIN_DIR}')
+  staging_dir = env.subst('${STAGING_DIR}')
+  http_data_dir = 'native_client' + staging_dir.replace(main_dir, '')
+
   command = (GetHeadlessPrefix(env) +
-             [pyauto_python, test, pyautolib_dir, '-v', '--no-http-server',
+             [pyauto_python, test, pyautolib_dir, '-v',
+              '--http-data-dir=%s' % http_data_dir,
               '--chrome-flags="%s"' % chrome_flags])
   command.extend(args)
 
