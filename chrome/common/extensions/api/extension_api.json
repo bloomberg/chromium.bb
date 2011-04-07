@@ -2816,12 +2816,13 @@
             "properties": {
               "type": {
                 "type": "string",
+                "enum": ["normal", "checkbox", "radio", "separator"],
                 "optional": true,
-                "description": "The type of menu item - one of 'normal', 'checkbox', 'radio', or 'separator'. Defaults to 'normal' if not specified."
+                "description": "The type of menu item. Defaults to 'normal' if not specified."
               },
               "title": {
                 "type": "string",
-                "optional": "true",
+                "optional": true,
                 "description": "The text to be displayed in the item; this is <em>required</em> unless <em>type</em> is 'separator'. When the context is 'selection', you can use <code>%s</code> within the string to show the selected text. For example, if this parameter's value is \"Translate '%s' to Pig Latin\" and the user selects the word \"cool\", the context menu item for the selection is \"Translate 'cool' to Pig Latin\"."
               },
               "checked": {
@@ -2831,10 +2832,13 @@
               },
               "contexts": {
                 "type": "array",
-                "items": {"type": "string"},
+                "items": {
+                  "type": "string",
+                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio"]
+                },
                 "minItems": 1,
                 "optional": true,
-                "description": "List of contexts this menu item will appear in. Legal values are: 'all', 'page', 'frame', 'selection', 'link', 'editable', 'image', 'video', and 'audio'. Defaults to ['page']."
+                "description": "List of contexts this menu item will appear in. Defaults to ['page'] if not specified."
               },
               "onclick": {
                 "type": "function",
@@ -2902,7 +2906,8 @@
               },
               "title": {
                 "type": "string",
-                "optional": "true"
+                "enum": ["normal", "checkbox", "radio", "separator"],
+                "optional": true
               },
               "checked": {
                 "type": "boolean",
@@ -2910,7 +2915,10 @@
               },
               "contexts": {
                 "type": "array",
-                "items": {"type": "string"},
+                "items": {
+                  "type": "string",
+                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio"]
+                },
                 "minItems": 1,
                 "optional": true
               },
