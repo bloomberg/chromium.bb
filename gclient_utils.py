@@ -14,8 +14,6 @@ import subprocess
 import sys
 import threading
 import time
-import xml.dom.minidom
-import xml.parsers.expat
 
 
 def hack_subprocess():
@@ -112,29 +110,6 @@ def SplitUrlRevision(url):
     if len(components) == 1:
       components += [None]
   return tuple(components)
-
-
-def ParseXML(output):
-  try:
-    return xml.dom.minidom.parseString(output)
-  except xml.parsers.expat.ExpatError:
-    return None
-
-
-def GetNamedNodeText(node, node_name):
-  child_nodes = node.getElementsByTagName(node_name)
-  if not child_nodes:
-    return None
-  assert len(child_nodes) == 1 and child_nodes[0].childNodes.length == 1
-  return child_nodes[0].firstChild.nodeValue
-
-
-def GetNodeNamedAttributeText(node, node_name, attribute_name):
-  child_nodes = node.getElementsByTagName(node_name)
-  if not child_nodes:
-    return None
-  assert len(child_nodes) == 1
-  return child_nodes[0].getAttribute(attribute_name)
 
 
 def SyntaxErrorToError(filename, e):

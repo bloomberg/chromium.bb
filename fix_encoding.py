@@ -81,6 +81,8 @@ def fix_win_sys_argv(encoding):
   if _SYS_ARGV_PROCESSED:
     return False
 
+  # These types are available on linux but not Mac.
+  # pylint: disable=E0611,F0401
   from ctypes import byref, c_int, POINTER, windll, WINFUNCTYPE
   from ctypes.wintypes import LPCWSTR, LPWSTR
 
@@ -186,6 +188,8 @@ class WinUnicodeConsoleOutput(WinUnicodeOutputBase):
     self._console_handle = console_handle
 
     # Loads the necessary function.
+    # These types are available on linux but not Mac.
+    # pylint: disable=E0611,F0401
     from ctypes import byref, GetLastError, POINTER, windll, WINFUNCTYPE
     from ctypes.wintypes import BOOL, DWORD, HANDLE, LPWSTR
     from ctypes.wintypes import LPVOID  # pylint: disable=E0611
@@ -266,6 +270,8 @@ class WinUnicodeOutput(WinUnicodeOutputBase):
 
 def win_handle_is_a_console(handle):
   """Returns True if a Windows file handle is a handle to a console."""
+  # These types are available on linux but not Mac.
+  # pylint: disable=E0611,F0401
   from ctypes import byref, POINTER, windll, WINFUNCTYPE
   from ctypes.wintypes import BOOL, DWORD, HANDLE
 
@@ -297,6 +303,8 @@ def win_get_unicode_stream(stream, excepted_fileno, output_handle, encoding):
   """
   old_fileno = getattr(stream, 'fileno', lambda: None)()
   if old_fileno == excepted_fileno:
+    # These types are available on linux but not Mac.
+    # pylint: disable=E0611,F0401
     from ctypes import windll, WINFUNCTYPE
     from ctypes.wintypes import DWORD, HANDLE
 

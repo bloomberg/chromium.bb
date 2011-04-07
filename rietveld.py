@@ -34,7 +34,8 @@ import patch
 
 # Hack out upload logging.info()
 upload.logging = logging.getLogger('upload')
-upload.logging.setLevel(logging.WARNING)
+# Mac pylint choke on this line.
+upload.logging.setLevel(logging.WARNING)  # pylint: disable=E1103
 
 
 class Rietveld(object):
