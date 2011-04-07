@@ -202,14 +202,14 @@ class P2PTransportImplTest : public testing::Test {
     socket_manager_ = new jingle_glue::FakeSocketManager();
 
     net::IPAddressNumber ip;
-    ASSERT(net::ParseIPLiteralToNumber(kTestAddress1, &ip));
+    ASSERT_TRUE(net::ParseIPLiteralToNumber(kTestAddress1, &ip));
     network_manager1_.reset(new jingle_glue::FakeNetworkManager(ip));
     socket_factory1_.reset(
         new jingle_glue::FakeSocketFactory(socket_manager_, ip));
     transport1_.reset(new P2PTransportImpl(network_manager1_.get(),
                                            socket_factory1_.get()));
 
-    ASSERT(net::ParseIPLiteralToNumber(kTestAddress2, &ip));
+    ASSERT_TRUE(net::ParseIPLiteralToNumber(kTestAddress2, &ip));
     network_manager2_.reset(new jingle_glue::FakeNetworkManager(ip));
     socket_factory2_.reset(
         new jingle_glue::FakeSocketFactory(socket_manager_, ip));
@@ -231,7 +231,7 @@ class P2PTransportImplTest : public testing::Test {
   MockP2PEventHandler event_handler2_;
 };
 
-TEST_F(P2PTransportImplTest, DISABLED_Create) {
+TEST_F(P2PTransportImplTest, Create) {
   ASSERT_TRUE(transport1_->Init(
       kTransportName1, kTestConfig, &event_handler1_));
   ASSERT_TRUE(transport2_->Init(
@@ -247,7 +247,7 @@ ACTION_P(AddRemoteCandidate, transport) {
   EXPECT_TRUE(transport->AddRemoteCandidate(arg0));
 }
 
-TEST_F(P2PTransportImplTest, DISABLED_Connect) {
+TEST_F(P2PTransportImplTest, Connect) {
   ASSERT_TRUE(transport1_->Init(
       kTransportName1, kTestConfig, &event_handler1_));
   ASSERT_TRUE(transport2_->Init(
@@ -261,7 +261,7 @@ TEST_F(P2PTransportImplTest, DISABLED_Connect) {
   message_loop_.RunAllPending();
 }
 
-TEST_F(P2PTransportImplTest, DISABLED_SendData) {
+TEST_F(P2PTransportImplTest, SendData) {
   ASSERT_TRUE(transport1_->Init(
       kTransportName1, kTestConfig, &event_handler1_));
   ASSERT_TRUE(transport2_->Init(
