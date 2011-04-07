@@ -113,33 +113,6 @@
  */
 //#define SK_USE_RUNTIME_GLOBALS
 
-/*  If zlib is available and you want to support the flate compression
-    algorithm (used in PDF generation), define SK_ZLIB_INCLUDE to be the
-    include path.
- */
-//#define SK_ZLIB_INCLUDE <zlib.h>
-#if defined(USE_SYSTEM_ZLIB)
-#define SK_ZLIB_INCLUDE <zlib.h>
-#else
-#define SK_ZLIB_INCLUDE "third_party/zlib/zlib.h"
-#define MOZ_Z_inflate inflate
-#define MOZ_Z_inflateInit_ inflateInit_
-#define MOZ_Z_inflateEnd inflateEnd
-#define MOZ_Z_deflate deflate
-#define MOZ_Z_deflateInit_ deflateInit_
-#define MOZ_Z_deflateEnd deflateEnd
-#endif
-
-/*  Define this to allow PDF scalars above 32k.  The PDF/A spec doesn't allow
-    them, but modern PDF interpreters should handle them just fine.
- */
-//#define SK_ALLOW_LARGE_PDF_SCALARS
-
-/*  Define this to remove dimension checks on bitmaps. Not all blits will be
-    correct yet, so this is mostly for debugging the implementation.
- */
-//#define SK_ALLOW_OVER_32K_BITMAPS
-
 
 /*  To write debug messages to a console, skia will call SkDebugf(...) following
     printf conventions (e.g. const char* format, ...). If you want to redirect
