@@ -472,9 +472,6 @@ void BaseTab::PaintTitle(gfx::Canvas* canvas, SkColor title_color) {
   // Paint the Title.
   const gfx::Rect& title_bounds = GetTitleBounds();
   string16 title = data().title;
-  bool should_truncate = false;
-  int prefix_length = 0;
-
   if (title.empty()) {
     title = data().loading ?
         l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE) :
@@ -484,26 +481,18 @@ void BaseTab::PaintTitle(gfx::Canvas* canvas, SkColor title_color) {
     // If we'll need to truncate, check if we should also truncate
     // a common prefix, but only if there is enough room for it.
     // We arbitrarily choose to request enough room for 6 average chars.
-    should_truncate =
-        data().common_prefix_length > TitlePrefixMatcher::kMinElidingLength &&
+    if (data().common_prefix_length > TitlePrefixMatcher::kMinElidingLength &&
         font_->GetExpectedTextWidth(6) < title_bounds.width() &&
-        font_->GetStringWidth(title) > title_bounds.width();
-    prefix_length = data().common_prefix_length -
-                    TitlePrefixMatcher::kCommonCharsToShow;
+        font_->GetStringWidth(title) > title_bounds.width()) {
+      title.replace(0,
+                    data().common_prefix_length -
+                        TitlePrefixMatcher::kCommonCharsToShow,
+                    UTF8ToUTF16(ui::kEllipsis));
+    }
   }
-
-#if defined(OS_WIN)
-  canvas->AsCanvasSkia()->DrawFadeTruncatingString(title,
-      should_truncate ? gfx::CanvasSkia::TruncateFadeHeadAndTail :
-                        gfx::CanvasSkia::TruncateFadeTail,
-      prefix_length, *font_, title_color, title_bounds);
-#else
-  if (should_truncate)
-    title.replace(0, prefix_length, UTF8ToUTF16(ui::kEllipsis));
   canvas->DrawStringInt(title, *font_, title_color,
                         title_bounds.x(), title_bounds.y(),
                         title_bounds.width(), title_bounds.height());
-#endif
 }
 
 void BaseTab::AnimationProgressed(const ui::Animation* animation) {
