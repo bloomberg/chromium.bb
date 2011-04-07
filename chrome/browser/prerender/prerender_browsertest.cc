@@ -53,10 +53,12 @@ class TestPrerenderContents : public PrerenderContents {
       PrerenderManager* prerender_manager, Profile* profile, const GURL& url,
       const std::vector<GURL>& alias_urls,
       const GURL& referrer,
+      int number_of_loads,
       FinalStatus expected_final_status)
       : PrerenderContents(prerender_manager, profile, url, alias_urls,
                           referrer),
-        did_finish_loading_(false),
+        number_of_loads_(0),
+        expected_number_of_loads_(number_of_loads),
         expected_final_status_(expected_final_status) {
   }
 
@@ -65,31 +67,31 @@ class TestPrerenderContents : public PrerenderContents {
         " when testing URL " << prerender_url().path();
     // In the event we are destroyed, say if the prerender was canceled, quit
     // the UI message loop.
-    if (!did_finish_loading_)
-      MessageLoopForUI::current()->Quit();
+    MessageLoopForUI::current()->Quit();
   }
 
   virtual void DidStopLoading() {
     PrerenderContents::DidStopLoading();
-    did_finish_loading_ = true;
-    MessageLoopForUI::current()->Quit();
-  }
-
-  bool did_finish_loading() const { return did_finish_loading_; }
-  void set_did_finish_loading(bool did_finish_loading) {
-    did_finish_loading_ = did_finish_loading;
+    ++number_of_loads_;
+    if (expected_final_status_ == FINAL_STATUS_USED &&
+        number_of_loads_ >= expected_number_of_loads_) {
+      MessageLoopForUI::current()->Quit();
+    }
   }
 
  private:
-  bool did_finish_loading_;
+  int number_of_loads_;
+  int expected_number_of_loads_;
   FinalStatus expected_final_status_;
 };
 
 // PrerenderManager that uses TestPrerenderContents.
 class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
  public:
-  explicit WaitForLoadPrerenderContentsFactory(
-      const std::deque<FinalStatus>& expected_final_status_queue) {
+  WaitForLoadPrerenderContentsFactory(
+      int number_of_loads,
+      const std::deque<FinalStatus>& expected_final_status_queue)
+      : number_of_loads_(number_of_loads) {
     expected_final_status_queue_.resize(expected_final_status_queue.size());
     std::copy(expected_final_status_queue.begin(),
               expected_final_status_queue.end(),
@@ -109,10 +111,12 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
     LOG(INFO) << expected_final_status_queue_.size() << " left in the queue.";
     return new TestPrerenderContents(prerender_manager, profile, url,
                                      alias_urls, referrer,
+                                     number_of_loads_,
                                      expected_final_status);
   }
 
  private:
+  int number_of_loads_;
   std::deque<FinalStatus> expected_final_status_queue_;
 };
 
@@ -122,8 +126,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
  public:
   PrerenderBrowserTest()
       : prc_factory_(NULL),
-        use_https_src_server_(false),
-        on_iteration_succeeded_(true) {
+        use_https_src_server_(false) {
     EnableDOMAutomation();
   }
 
@@ -230,7 +233,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     prerender_manager()->rate_limit_enabled_ = false;
     ASSERT_TRUE(prc_factory_ == NULL);
     prc_factory_ =
-        new WaitForLoadPrerenderContentsFactory(expected_final_status_queue);
+        new WaitForLoadPrerenderContentsFactory(total_navigations,
+                                                expected_final_status_queue);
     prerender_manager()->SetPrerenderContentsFactory(prc_factory_);
     FinalStatus expected_final_status = expected_final_status_queue.front();
 
@@ -241,33 +245,15 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     browser()->OpenURL(src_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
 
     TestPrerenderContents* prerender_contents = NULL;
-    int navigations = 0;
-    while (true) {
-      ui_test_utils::RunMessageLoop();
-      ++navigations;
-      EXPECT_TRUE(on_iteration_succeeded_);
+    ui_test_utils::RunMessageLoop();
 
-      prerender_contents =
-          static_cast<TestPrerenderContents*>(
-              prerender_manager()->FindEntry(dest_url_));
-      if (prerender_contents == NULL ||
-          !prerender_contents->did_finish_loading() ||
-          navigations >= total_navigations) {
-        EXPECT_EQ(navigations, total_navigations);
-        break;
-      }
-      prerender_contents->set_did_finish_loading(false);
-      MessageLoopForUI::current()->PostTask(
-          FROM_HERE,
-          NewRunnableMethod(this,
-                            &PrerenderBrowserTest::CallOnIteration,
-                            prerender_contents->render_view_host()));
-    }
+    prerender_contents =
+        static_cast<TestPrerenderContents*>(
+            prerender_manager()->FindEntry(dest_url_));
 
     switch (expected_final_status) {
       case FINAL_STATUS_USED: {
         ASSERT_TRUE(prerender_contents != NULL);
-        ASSERT_TRUE(prerender_contents->did_finish_loading());
 
         // Check if page behaves as expected while in prerendered state.
         bool prerender_test_result = false;
@@ -299,17 +285,9 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     return test_server()->GetURL(dest_path);
   }
 
-  void CallOnIteration(RenderViewHost* rvh) {
-    on_iteration_succeeded_ = ui_test_utils::ExecuteJavaScript(
-        rvh,
-        L"",
-        L"if (typeof(OnIteration) != 'undefined') {OnIteration();}");
-  }
-
   WaitForLoadPrerenderContentsFactory* prc_factory_;
   GURL dest_url_;
   bool use_https_src_server_;
-  bool on_iteration_succeeded_;
 };
 
 // Checks that a page is correctly prerendered in the case of a
@@ -378,13 +356,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadIFrame) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadLocation) {
   std::string redirect_path;
   ASSERT_TRUE(CreateRedirect("../download-test1.lib", &redirect_path));
-  PrerenderTestURL(redirect_path, FINAL_STATUS_DOWNLOAD, 2);
+  PrerenderTestURL(redirect_path, FINAL_STATUS_DOWNLOAD, 1);
 }
 
 // Prerenders a page that contains an automatic download triggered through a
 // <meta http-equiv="refresh"> tag. This should not prerender successfully.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadRefresh) {
-  PrerenderTestURL("prerender_download_refresh.html", FINAL_STATUS_DOWNLOAD, 2);
+  PrerenderTestURL("prerender_download_refresh.html", FINAL_STATUS_DOWNLOAD, 1);
 }
 
 // Checks that the referrer is set when prerendering.
@@ -408,15 +386,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPopup) {
 
 // Test that page-based redirects to https will cancel prerenders.
 // Disabled, http://crbug.com/73580
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderRedirectToHttps) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRedirectToHttps) {
   net::TestServer https_server(net::TestServer::TYPE_HTTPS,
                                FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
   std::string redirect_path;
   ASSERT_TRUE(CreateRedirect(https_url.spec(), &redirect_path));
-  PrerenderTestURL(redirect_path, FINAL_STATUS_HTTPS, 2);
+  PrerenderTestURL(redirect_path, FINAL_STATUS_HTTPS, 1);
 }
 
 // Checks that renderers using excessive memory will be terminated.
