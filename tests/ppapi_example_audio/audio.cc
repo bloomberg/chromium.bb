@@ -1,6 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+
 #include <nacl/nacl_log.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,6 +12,7 @@
 #include <string>
 
 #include "native_client/src/shared/ppapi_proxy/utility.h"
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
@@ -84,16 +87,12 @@ class MyInstance : public pp::Instance {
     obtained_sample_frame_count_ = pp::AudioConfig::RecommendSampleFrameCount(
         kSampleFrequency, kSampleFrameCount);
     // Verify obtained_sample_frame_count isn't out of range.
-    if ((obtained_sample_frame_count_ < PP_AUDIOMINSAMPLEFRAMECOUNT) ||
-        (obtained_sample_frame_count_ > PP_AUDIOMAXSAMPLEFRAMECOUNT)) {
-      LogFailure("obtained_sample_frame_count out of valid range.\n");
-      return false;
-    }
+    CHECK(obtained_sample_frame_count_ >= PP_AUDIOMINSAMPLEFRAMECOUNT);
+    CHECK(obtained_sample_frame_count_ <= PP_AUDIOMAXSAMPLEFRAMECOUNT);
      pp::AudioConfig config =
        pp::AudioConfig(this, kSampleFrequency, obtained_sample_frame_count_);
     audio_ = pp::Audio(this, config, SineWaveCallback, this);
-
-    // Do some sanity checks; verify c & cpp interfaces agree.
+    // Do some sanity checks below; verify c & cpp interfaces agree.
     // Note: This is test code and is not normally needed for an application.
     PPB_GetInterface get_browser_interface =
         pp::Module::Get()->get_browser_interface();
@@ -103,68 +102,29 @@ class MyInstance : public pp::Instance {
     const struct PPB_Audio* audio_interface =
         static_cast<const struct PPB_Audio*>(
         get_browser_interface(PPB_AUDIO_INTERFACE));
-    if (NULL == audio_config_interface) {
-      LogFailure("Failed to obtain PPB_AUDIO_CONFIG_INTERFACE\n");
-      return false;
-    }
-    if (NULL == audio_interface) {
-      LogFailure("Failed to obtain PPB_AUDIO_INTERFACE\n");
-      return false;
-    }
+    CHECK(NULL != audio_config_interface);
+    CHECK(NULL != audio_interface);
     PP_Resource audio_config_resource = config.pp_resource();
     PP_Resource audio_resource = audio_.pp_resource();
     DebugPrintf("example: audio config resource: %d\n", audio_config_resource);
     DebugPrintf("example: audio resource: %d\n", audio_resource);
-    if (!audio_config_interface->IsAudioConfig(audio_config_resource)) {
-      LogFailure("Failed on IsAudioConfig(audio_config_resource\n");
-      return false;
-    }
-    if (!audio_interface->IsAudio(audio_resource)) {
-      LogFailure("Failed on IsAudio(audio_resource\n");
-      return false;
-    }
-    if (audio_config_interface->IsAudioConfig(audio_resource)) {
-      LogFailure("Failed due to success on IsAudioConfig(audio)\n");
-      return false;
-    }
-    if (audio_interface->IsAudio(audio_config_resource)) {
-      LogFailure("Failed due to success on IsAudio(config)\n");
-      return false;
-    }
-    PP_Resource audio_config_resource_via_get_current =
-        audio_interface->GetCurrentConfig(audio_resource);
-    if (audio_config_resource_via_get_current != audio_config_resource) {
-      LogFailure("Failed on comparing audio configure resources!\n");
-      return false;
-    }
-    PP_Resource invalid_audio_config_resource =
-        audio_interface->GetCurrentConfig(audio_config_resource);
-    if (0 != invalid_audio_config_resource) {
-      LogFailure("Failed due to success on GetCurrentConfig(cfg)\n");
-      return false;
-    }
-    if (audio_config_interface->GetSampleRate(audio_config_resource) !=
-        config.sample_rate()) {
-      LogFailure("GetSampleRate(audio_config_resource) !=\n"
-                        "config.sample_rate()\n");
-      return false;
-    }
-    if (audio_config_interface->GetSampleFrameCount(audio_config_resource) !=
-       config.sample_frame_count()) {
-      LogFailure("GetSampleFrameCount(audio_config_resource) !=\n"
-                        "config.sample_frame_count()\n");
-      return false;
-    }
-    if (audio_.config().pp_resource() != audio_config_resource) {
-      LogFailure(
-          "audio_.config().pp_resource() != audio_config_resource\n");
-      return false;
-    }
+    CHECK(PP_TRUE == audio_config_interface->
+        IsAudioConfig(audio_config_resource));
+    CHECK(PP_TRUE == audio_interface->IsAudio(audio_resource));
+    CHECK(PP_FALSE == audio_config_interface->IsAudioConfig(audio_resource));
+    CHECK(PP_FALSE == audio_interface->IsAudio(audio_config_resource));
+    CHECK(audio_interface->GetCurrentConfig(audio_resource) ==
+        audio_config_resource);
+    CHECK(0 == audio_interface->GetCurrentConfig(audio_config_resource));
+    CHECK(audio_config_interface->GetSampleRate(audio_config_resource) ==
+        config.sample_rate());
+    CHECK(audio_config_interface->GetSampleFrameCount(audio_config_resource) ==
+        config.sample_frame_count());
+    CHECK(audio_.config().pp_resource() == audio_config_resource);
+
     // Past sanity checks above, attempt to start playback.
-    if (false == audio_.StartPlayback()) {
-      LogFailure("StartPlayback() failed!\n");
-      return false;
-    }
+    bool audio_start_playback = audio_.StartPlayback();
+    CHECK(true == audio_start_playback);
     // Schedule a callback in 10 seconds to stop audio output
     pp::CompletionCallback cc(StopOutput, this);
     DebugPrintf("example: frequencies are %f %f\n",
@@ -186,12 +146,10 @@ class MyInstance : public pp::Instance {
     // Verify num_bytes and obtained_sample_frame_count match up.
     const int kNumChannelsForStereo = 2;
     const int kSizeOfSample = sizeof(int16_t);
-
     const size_t single_sample = kNumChannelsForStereo * kSizeOfSample;
-    if (instance->obtained_sample_frame_count_ * single_sample != num_bytes) {
-      LogFailure("In SineWaveCallback, num_bytes does not match\n"
-                        "expected buffer size.\n");
-    }
+
+    // CHECK inside callback is only for testing purposes.
+    CHECK(instance->obtained_sample_frame_count_ * single_sample == num_bytes);
 
     // Use per channel audio wave value to avoid clicks on buffer boundries.
     double wave_l = instance->audio_wave_l_;
