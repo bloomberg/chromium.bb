@@ -13,6 +13,7 @@ using WebKit::WebView;
 
 SearchBox::SearchBox(RenderView* render_view)
     : RenderViewObserver(render_view),
+      RenderViewObserverTracker<SearchBox>(render_view),
       verbatim_(false),
       selection_start_(0),
       selection_end_(0) {

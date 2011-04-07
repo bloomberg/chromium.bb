@@ -54,10 +54,7 @@
 #endif
 
 class AudioMessageFilter;
-class BlockedPlugin;
 class DeviceOrientationDispatcher;
-class DevToolsAgent;
-class DevToolsClient;
 class DomAutomationController;
 class ExternalHostBindings;
 class ExternalPopupMenu;
@@ -72,7 +69,6 @@ class PepperDeviceTest;
 class PrintWebViewHelper;
 class RenderViewObserver;
 class RenderViewVisitor;
-class SearchBox;
 class SkBitmap;
 class SpeechInputDispatcher;
 class SpellCheckProvider;
@@ -243,8 +239,6 @@ class RenderView : public RenderWidget,
             (disable_scrollbars_size_limit_.width() <= width ||
              disable_scrollbars_size_limit_.height() <= height));
   }
-
-  SearchBox* searchbox() const { return searchbox_; }
 
   const WebKit::WebNode& context_menu_node() { return context_menu_node_; }
 
@@ -638,7 +632,6 @@ class RenderView : public RenderWidget,
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuRemoveTest, RemoveOnChange);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, NormalCase);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, ShowPopupThenNavigate);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, BlockScriptInitiatedPrinting);
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, ImeComposition);
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, InsertCharacters);
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, JSBlockSentAfterPageLoad);
@@ -646,10 +639,7 @@ class RenderView : public RenderWidget,
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnHandleKeyboardEvent);
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnImeStateChanged);
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnNavStateChanged);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnPrintPages);
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnSetTextDirection);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, PrintLayoutTest);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, PrintWithIframe);
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, UpdateTargetURLWithInvalidURL);
 #if defined(OS_MACOSX)
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, MacTestCmdUp);
@@ -1236,11 +1226,6 @@ class RenderView : public RenderWidget,
 
   // Device orientation dispatcher attached to this view; lazily initialized.
   DeviceOrientationDispatcher* device_orientation_dispatcher_;
-
-  // PrintWebViewHelper handles printing
-  PrintWebViewHelper* print_helper_;
-
-  SearchBox* searchbox_;
 
   // spellcheck provider which is registered as a view observer.
   SpellCheckProvider* spellcheck_provider_;

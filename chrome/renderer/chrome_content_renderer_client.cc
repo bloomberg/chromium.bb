@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/chrome_content_renderer_client.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
@@ -29,8 +31,10 @@
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/localized_error.h"
 #include "chrome/renderer/page_click_tracker.h"
+#include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/safe_browsing/malware_dom_details.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
+#include "chrome/renderer/searchbox.h"
 #include "chrome/renderer/translate_helper.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view.h"
@@ -83,7 +87,7 @@ static bool CrossesExtensionExtents(WebFrame* frame, const GURL& new_url) {
          !old_url_is_hosted_app;
 }
 
-}  // namespcae
+}  // namespace
 
 namespace chrome {
 
@@ -114,6 +118,10 @@ void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
   new safe_browsing::MalwareDOMDetails(render_view);
 
   new ExtensionHelper(render_view);
+
+  new PrintWebViewHelper(render_view);
+
+  new SearchBox(render_view);
 }
 
 SkBitmap* ChromeContentRendererClient::GetSadPluginBitmap() {

@@ -86,6 +86,7 @@
         'renderer/render_view_linux.cc',
         'renderer/render_view_observer.cc',
         'renderer/render_view_observer.h',
+        'renderer/render_view_observer_tracker.h',
         'renderer/render_view_visitor.h',
         'renderer/render_widget.cc',
         'renderer/render_widget.h',

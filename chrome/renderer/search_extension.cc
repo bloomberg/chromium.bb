@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,7 +82,8 @@ v8::Handle<v8::Value> SearchExtensionWrapper::SetSuggestResult(
 
   std::vector<std::string> suggestions;
   suggestions.push_back(std::string(*v8::String::Utf8Value(args[0])));
-  render_view->searchbox()->SetSuggestions(suggestions, INSTANT_COMPLETE_NOW);
+  SearchBox::Get(render_view)->SetSuggestions(suggestions,
+                                              INSTANT_COMPLETE_NOW);
   return v8::Undefined();
 }
 

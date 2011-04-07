@@ -400,7 +400,7 @@ TEST_F(RenderViewTest, OnSetTextDirection) {
 TEST_F(RenderViewTest, OnPrintPages) {
   // Lets simulate a print pages with Hello world.
   LoadHTML("<body><p>Hello World!</p></body>");
-  view_->print_helper_->OnPrintPages();
+  PrintWebViewHelper::Get(view_)->OnPrintPages();
 
   VerifyPageCount(1);
   VerifyPagesPrinted(true);
@@ -432,7 +432,7 @@ TEST_F(RenderViewTest, BlockScriptInitiatedPrinting) {
   VerifyPagesPrinted(false);
 
   // Unblock script initiated printing and verify printing works.
-  view_->print_helper_->ResetScriptedPrintCount();
+  PrintWebViewHelper::Get(view_)->ResetScriptedPrintCount();
   render_thread_.printer()->ResetPrinter();
   LoadHTML(kPrintWithJSHTML);
   VerifyPageCount(1);
@@ -466,7 +466,7 @@ TEST_F(RenderViewTest, PrintWithIframe) {
             view_->webview()->mainFrame());
 
   // Initiate printing.
-  view_->print_helper_->OnPrintPages();
+  PrintWebViewHelper::Get(view_)->OnPrintPages();
 
   // Verify output through MockPrinter.
   const MockPrinter* printer(render_thread_.printer());
@@ -530,7 +530,7 @@ TEST_F(RenderViewTest, PrintLayoutTest) {
   for (size_t i = 0; i < arraysize(kTestPages); ++i) {
     // Load an HTML page and print it.
     LoadHTML(kTestPages[i].page);
-    view_->print_helper_->OnPrintPages();
+    PrintWebViewHelper::Get(view_)->OnPrintPages();
 
     // MockRenderThread::Send() just calls MockRenderThread::OnMsgReceived().
     // So, all IPC messages sent in the above RenderView::OnPrintPages() call

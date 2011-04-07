@@ -45,6 +45,7 @@ class RenderViewObserver : public IPC::Channel::Listener,
                               const WebKit::WebFormElement& form) {}
   virtual void DidCreateDataSource(WebKit::WebFrame* frame,
                                    WebKit::WebDataSource* ds) {}
+  virtual void PrintPage(WebKit::WebFrame* frame) {}
 
   // These match the RenderView methods below.
   virtual void FrameTranslated(WebKit::WebFrame* frame) {}
@@ -53,7 +54,7 @@ class RenderViewObserver : public IPC::Channel::Listener,
                             bool preliminary_capture) {}
 
  protected:
-  RenderViewObserver(RenderView* render_view);
+  explicit RenderViewObserver(RenderView* render_view);
   virtual ~RenderViewObserver();
 
   // IPC::Channel::Listener implementation.

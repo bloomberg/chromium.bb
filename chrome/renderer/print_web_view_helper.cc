@@ -116,6 +116,7 @@ PrepareFrameAndViewForPrint::~PrepareFrameAndViewForPrint() {
 
 PrintWebViewHelper::PrintWebViewHelper(RenderView* render_view)
     : RenderViewObserver(render_view),
+      RenderViewObserverTracker<PrintWebViewHelper>(render_view),
       print_web_view_(NULL),
       script_initiated_preview_frame_(NULL),
       context_menu_preview_node_(NULL),
@@ -126,7 +127,8 @@ PrintWebViewHelper::PrintWebViewHelper(RenderView* render_view)
 
 PrintWebViewHelper::~PrintWebViewHelper() {}
 
-void PrintWebViewHelper::ScriptInitiatedPrint(WebKit::WebFrame* frame) {
+// Prints |frame| which called window.print().
+void PrintWebViewHelper::printPage(WebKit::WebFrame* frame) {
   DCHECK(frame);
 
   if (IsScriptInitiatedPrintTooFrequent(frame))

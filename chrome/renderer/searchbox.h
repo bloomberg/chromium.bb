@@ -6,14 +6,17 @@
 #define CHROME_RENDERER_SEARCHBOX_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "base/string16.h"
 #include "chrome/common/instant_types.h"
 #include "content/renderer/render_view_observer.h"
+#include "content/renderer/render_view_observer_tracker.h"
 #include "ui/gfx/rect.h"
 
-class SearchBox : public RenderViewObserver {
+class SearchBox : public RenderViewObserver,
+                  public RenderViewObserverTracker<SearchBox> {
  public:
   explicit SearchBox(RenderView* render_view);
   ~SearchBox();

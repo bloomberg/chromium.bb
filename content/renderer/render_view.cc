@@ -40,7 +40,6 @@
 #include "chrome/renderer/external_host_bindings.h"
 #include "chrome/renderer/localized_error.h"
 #include "chrome/renderer/page_load_histograms.h"
-#include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/searchbox.h"
@@ -498,8 +497,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       geolocation_dispatcher_(NULL),
       speech_input_dispatcher_(NULL),
       device_orientation_dispatcher_(NULL),
-      print_helper_(NULL),
-      searchbox_(NULL),
       spellcheck_provider_(NULL),
       accessibility_ack_pending_(false),
       p2p_socket_dispatcher_(NULL),
@@ -558,9 +555,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
 
   audio_message_filter_ = new AudioMessageFilter(routing_id_);
   render_thread_->AddFilter(audio_message_filter_);
-
-  print_helper_ = new PrintWebViewHelper(this);
-  searchbox_ = new SearchBox(this);
 
   RenderThread* current_thread = RenderThread::current();
   SpellCheck* spellcheck = current_thread ? current_thread->spellchecker() : 0;
@@ -1939,7 +1933,7 @@ webkit::ppapi::FullscreenContainer*
 RenderView::CreatePepperFullscreenContainer(
     webkit::ppapi::PluginInstance* plugin) {
   GURL active_url;
-  if(webview() && webview()->mainFrame())
+  if (webview() && webview()->mainFrame())
     active_url = GURL(webview()->mainFrame()->url());
   RenderWidgetFullscreenPepper* widget = RenderWidgetFullscreenPepper::Create(
       routing_id_, render_thread_, plugin, active_url);
@@ -1965,7 +1959,7 @@ void RenderView::didAddMessageToConsole(
 }
 
 void RenderView::printPage(WebFrame* frame) {
-  print_helper_->ScriptInitiatedPrint(frame);
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, PrintPage(frame));
 }
 
 WebKit::WebNotificationPresenter* RenderView::notificationPresenter() {
