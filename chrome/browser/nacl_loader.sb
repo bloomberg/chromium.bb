@@ -1,5 +1,5 @@
 ;;
-;; Copyright (c) 2009 The Chromium Authors. All rights reserved.
+;; Copyright (c) 2011 The Chromium Authors. All rights reserved.
 ;; Use of this source code is governed by a BSD-style license that can be
 ;; found in the LICENSE file.
 ;;
@@ -7,7 +7,7 @@
 ; untrusted code within Native Client.
 ;
 
-; *** The contents of chrome/common/common.sb are implicitly included here. ***
+; *** The contents of content/common/common.sb are implicitly included here. ***
 
 ; Allow a Native Client application to use semaphores, specifically
 ; sem_init(), et.al.
