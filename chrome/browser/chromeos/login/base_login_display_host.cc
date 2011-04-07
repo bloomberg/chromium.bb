@@ -223,8 +223,9 @@ void ShowLoginWizard(const std::string& first_screen_name,
     // and has not been set yet. We cannot call
     // chromeos::LanguageSwitchMenu::SwitchLanguage here before
     // EmitLoginPromptReady.
+    PrefService* prefs = g_browser_process->local_state();
     const std::string current_locale =
-        g_browser_process->local_state()->GetString(prefs::kApplicationLocale);
+        prefs->GetString(prefs::kApplicationLocale);
     VLOG(1) << "Current locale: " << current_locale;
     if (current_locale.empty()) {
       locale = startup_manifest->initial_locale();
@@ -232,6 +233,11 @@ void ShowLoginWizard(const std::string& first_screen_name,
       VLOG(1) << "Initial locale: " << locale
               << "keyboard layout " << layout;
       if (!locale.empty()) {
+        // Save initial locale from VPD/customization manifest as current
+        // Chrome locale. Otherwise it will be lost if Chrome restarts.
+        // Don't need to schedule pref save because setting initial local
+        // will enforce preference saving.
+        prefs->SetString(prefs::kApplicationLocale, locale);
         WizardController::SetInitialLocale(locale);
         // Determine keyboard layout from OEM customization (if provided) or
         // initial locale and save it in preferences.
