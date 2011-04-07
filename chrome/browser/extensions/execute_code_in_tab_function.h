@@ -26,7 +26,8 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction,
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   // Message handler.
-  void OnExecuteCodeFinished(int request_id, bool success);
+  void OnExecuteCodeFinished(int request_id, bool success,
+                             const std::string& error);
 
   // Called when contents from the file whose path is specified in JSON
   // arguments has been loaded.

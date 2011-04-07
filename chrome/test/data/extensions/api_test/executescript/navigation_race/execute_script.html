@@ -1,0 +1,8 @@
+<script src="test.js"></script>
+<script>
+function executeCodeInTab(tabId, callback) {
+  chrome.tabs.executeScript(tabId,
+                            {code: "console.log('hi')"},
+                            callback);
+}
+</script>

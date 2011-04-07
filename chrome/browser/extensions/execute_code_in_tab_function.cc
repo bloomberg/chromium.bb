@@ -20,6 +20,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/common/notification_service.h"
 
 namespace keys = extension_tabs_module_constants;
@@ -77,11 +78,10 @@ bool ExecuteCodeInTabFunction::RunImpl() {
     }
   }
 
-  DCHECK(browser);
-  DCHECK(contents);
-
   // NOTE: This can give the wrong answer due to race conditions, but it is OK,
   // we check again in the renderer.
+  CHECK(browser);
+  CHECK(contents);
   if (!GetExtension()->CanExecuteScriptOnPage(
           contents->tab_contents()->GetURL(), NULL, &error_)) {
     return false;
@@ -175,6 +175,7 @@ bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
   params.is_javascript = is_js_code;
   params.code = code_string;
   params.all_frames = all_frames_;
+  params.in_main_world = false;
   contents->render_view_host()->Send(new ExtensionMsg_ExecuteCode(
       contents->render_view_host()->routing_id(), params));
 
@@ -205,7 +206,13 @@ bool ExecuteCodeInTabFunction::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ExecuteCodeInTabFunction::OnExecuteCodeFinished(int request_id,
-                                                     bool success) {
+                                                     bool success,
+                                                     const std::string& error) {
+  if (!error.empty()) {
+    CHECK(!success);
+    error_ = error;
+  }
+
   SendResponse(success);
 
   registrar_.Observe(NULL);

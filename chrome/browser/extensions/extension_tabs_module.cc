@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/backing_store.h"
@@ -782,6 +783,10 @@ bool GetCurrentTabFunction::RunImpl() {
   return true;
 }
 
+UpdateTabFunction::UpdateTabFunction()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(registrar_(this)) {
+}
+
 bool UpdateTabFunction::RunImpl() {
   int tab_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id));
@@ -829,9 +834,24 @@ bool UpdateTabFunction::RunImpl() {
         return false;
       }
 
-      // TODO(aa): How does controller queue URLs? Is there any chance that this
-      // JavaScript URL will end up applying to something other than
-      // controller->GetURL()?
+      ExtensionMsg_ExecuteCode_Params params;
+      params.request_id = request_id();
+      params.extension_id = extension_id();
+      params.is_javascript = true;
+      params.code = url.path();
+      params.all_frames = false;
+      params.in_main_world = true;
+
+      RenderViewHost* render_view_host =
+          contents->tab_contents()->render_view_host();
+      render_view_host->Send(
+          new ExtensionMsg_ExecuteCode(render_view_host->routing_id(),
+                                       params));
+
+      registrar_.Observe(contents->tab_contents());
+      AddRef();  // balanced in Observe()
+
+      return true;
     }
 
     controller.LoadURL(url, GURL(), PageTransition::LINK);
@@ -873,7 +893,43 @@ bool UpdateTabFunction::RunImpl() {
         tab_strip,
         tab_index));
 
+  SendResponse(true);
   return true;
+}
+
+bool UpdateTabFunction::OnMessageReceived(const IPC::Message& message) {
+  if (message.type() != ExtensionHostMsg_ExecuteCodeFinished::ID)
+    return false;
+
+  int message_request_id;
+  void* iter = NULL;
+  if (!message.ReadInt(&iter, &message_request_id)) {
+    NOTREACHED() << "malformed extension message";
+    return true;
+  }
+
+  if (message_request_id != request_id())
+    return false;
+
+  IPC_BEGIN_MESSAGE_MAP(UpdateTabFunction, message)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_ExecuteCodeFinished,
+                        OnExecuteCodeFinished)
+  IPC_END_MESSAGE_MAP()
+  return true;
+}
+
+void UpdateTabFunction::OnExecuteCodeFinished(int request_id,
+                                              bool success,
+                                              const std::string& error) {
+  if (!error.empty()) {
+    CHECK(!success);
+    error_ = error;
+  }
+
+  SendResponse(success);
+
+  registrar_.Observe(NULL);
+  Release();  // balanced in Execute()
 }
 
 bool MoveTabFunction::RunImpl() {

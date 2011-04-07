@@ -5,6 +5,7 @@
 #include "chrome/renderer/extensions/user_script_idle_scheduler.h"
 
 #include "base/message_loop.h"
+#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/renderer/extension_groups.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
@@ -114,7 +115,7 @@ void UserScriptIdleScheduler::OnExecuteCode(
   WebFrame* main_frame = GetMainFrame();
   if (!main_frame) {
     Send(new ExtensionHostMsg_ExecuteCodeFinished(
-        routing_id(), params.request_id, false));
+         routing_id(), params.request_id, false, ""));
     return;
   }
 
@@ -130,6 +131,18 @@ void UserScriptIdleScheduler::OnExecuteCode(
 
 void UserScriptIdleScheduler::ExecuteCodeImpl(
     WebFrame* frame, const ExtensionMsg_ExecuteCode_Params& params) {
+  const Extension* extension =
+      ExtensionDispatcher::Get()->extensions()->GetByID(
+          params.extension_id);
+
+  // Since extension info is sent separately from user script info, they can
+  // be out of sync. We just ignore this situation.
+  if (!extension) {
+    Send(new ExtensionHostMsg_ExecuteCodeFinished(
+        routing_id(), params.request_id, true, ""));
+    return;
+  }
+
   std::vector<WebFrame*> frame_vector;
   frame_vector.push_back(frame);
   if (params.all_frames)
@@ -139,32 +152,47 @@ void UserScriptIdleScheduler::ExecuteCodeImpl(
        frame_it != frame_vector.end(); ++frame_it) {
     WebFrame* frame = *frame_it;
     if (params.is_javascript) {
-      const Extension* extension =
-          ExtensionDispatcher::Get()->extensions()->GetByID(
-              params.extension_id);
+      // We recheck access here in the renderer for extra safety against races
+      // with navigation.
+      //
+      // But different frames can have different URLs, and the extension might
+      // only have access to a subset of them. For the top frame, we can
+      // immediately send an error and stop because the browser process
+      // considers that an error too.
+      //
+      // For child frames, we just skip ones the extension doesn't have access
+      // to and carry on.
+      if (!extension->CanExecuteScriptOnPage(frame->url(), NULL, NULL)) {
+        if (frame->parent()) {
+          continue;
+        } else {
+          Send(new ExtensionHostMsg_ExecuteCodeFinished(
+              routing_id(), params.request_id, false,
+              ExtensionErrorUtils::FormatErrorMessage(
+                  extension_manifest_errors::kCannotAccessPage,
+                  frame->url().spec())));
+          return;
+        }
+      }
 
-    // Since extension info is sent separately from user script info, they can
-    // be out of sync. We just ignore this situation.
-    if (!extension)
-      continue;
-
-      if (!extension->CanExecuteScriptOnPage(frame->url(), NULL, NULL))
-        continue;
-
-      std::vector<WebScriptSource> sources;
-      sources.push_back(
-          WebScriptSource(WebString::fromUTF8(params.code)));
-      UserScriptSlave::InsertInitExtensionCode(&sources, params.extension_id);
-      frame->executeScriptInIsolatedWorld(
-          UserScriptSlave::GetIsolatedWorldId(params.extension_id),
-          &sources.front(), sources.size(), EXTENSION_GROUP_CONTENT_SCRIPTS);
+      WebScriptSource source(WebString::fromUTF8(params.code));
+      if (params.in_main_world) {
+        frame->executeScript(source);
+      } else {
+        std::vector<WebScriptSource> sources;
+        sources.push_back(source);
+        UserScriptSlave::InsertInitExtensionCode(&sources, params.extension_id);
+        frame->executeScriptInIsolatedWorld(
+            UserScriptSlave::GetIsolatedWorldId(params.extension_id),
+            &sources.front(), sources.size(), EXTENSION_GROUP_CONTENT_SCRIPTS);
+      }
     } else {
       frame->insertStyleText(WebString::fromUTF8(params.code), WebString());
     }
   }
 
   Send(new ExtensionHostMsg_ExecuteCodeFinished(
-      routing_id(), params.request_id, true));
+      routing_id(), params.request_id, true, ""));
 }
 
 bool UserScriptIdleScheduler::GetAllChildFrames(

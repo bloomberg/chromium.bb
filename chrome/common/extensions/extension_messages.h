@@ -53,6 +53,10 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExecuteCode_Params)
 
   // Whether to inject into all frames, or only the root frame.
   IPC_STRUCT_MEMBER(bool, all_frames)
+
+  // Whether to execute code in the main world (as opposed to an isolated
+  // world).
+  IPC_STRUCT_MEMBER(bool, in_main_world)
 IPC_STRUCT_END()
 
 IPC_STRUCT_TRAITS_BEGIN(WebApplicationInfo::IconInfo)
@@ -267,10 +271,10 @@ IPC_SYNC_MESSAGE_CONTROL1_1(ExtensionHostMsg_GetMessageBundle,
                             SubstitutionMap /* message bundle */)
 
 // Send from the renderer to the browser to return the script running result.
-IPC_MESSAGE_ROUTED2(ExtensionHostMsg_ExecuteCodeFinished,
-                    int, /* request id */
-                    bool /* whether the script ran successfully */)
-
+IPC_MESSAGE_ROUTED3(ExtensionHostMsg_ExecuteCodeFinished,
+                    int /* request id */,
+                    bool /* whether the script ran successfully */,
+                    std::string /* error message */)
 
 IPC_MESSAGE_ROUTED2(ExtensionHostMsg_DidGetApplicationInfo,
                     int32 /* page_id */,

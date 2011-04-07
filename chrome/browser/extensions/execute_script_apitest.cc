@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,4 +45,14 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest,
   ASSERT_TRUE(StartTestServer());
   const char* extension_name = "executescript/fragment";
   ASSERT_TRUE(RunExtensionTest(extension_name)) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, NavigationRace) {
+  host_resolver()->AddRule("a.com", "127.0.0.1");
+  host_resolver()->AddRule("b.com", "127.0.0.1");
+  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(RunExtensionSubtest("executescript/navigation_race",
+                                  "execute_script.html")) << message_;
+  ASSERT_TRUE(RunExtensionSubtest("executescript/navigation_race",
+                                  "javascript_url.html")) << message_;
 }
