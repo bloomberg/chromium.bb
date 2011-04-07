@@ -45,7 +45,6 @@ found in the LICENSE file.
 <script src="chrome://resources/js/local_strings.js"></script>
 <script src="chrome://resources/js/i18n_template.js"></script>
 
-<script src="js/bmm/tree_iterator.js"></script>
 <script src="js/bmm.js"></script>
 <script src="js/bmm/bookmark_list.js"></script>
 <script src="js/bmm/bookmark_tree.js"></script>
@@ -1072,9 +1071,8 @@ function updateOpenCommands(e, command) {
   var multiple = selectionCount != 1 || isFolder;
 
   function hasBookmarks(node) {
-    var it = new bmm.TreeIterator(node);
-    while (it.moveNext()) {
-      if (!bmm.isFolder(it.current))
+    for (var i = 0; i < node.children.length; i++) {
+      if (!bmm.isFolder(node.children[i]))
         return true;
     }
     return false;
@@ -1449,13 +1447,15 @@ function openBookmarks(kind) {
 
   var urls = [];
 
-  // Adds the node and all the descendants
+  // Adds the node and all its children.
   function addNodes(node) {
-    var it = new bmm.TreeIterator(node);
-    while (it.moveNext()) {
-      var n = it.current;
-      if (!bmm.isFolder(n))
-        urls.push(n.url);
+    if (node.children) {
+      node.children.forEach(function(child) {
+        if (!bmm.isFolder(child))
+          urls.push(child.url);
+      });
+    } else {
+      urls.push(node.url);
     }
   }
 
