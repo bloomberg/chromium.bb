@@ -14,6 +14,7 @@
 #include "views/controls/native/native_view_host.h"
 #include "views/events/event.h"
 
+class ExtensionMessageObserver;
 class Profile;
 class SiteInstance;
 class TabContents;
@@ -57,6 +58,7 @@ class DOMView : public views::NativeViewHost {
 
  private:
   bool initialized_;
+  scoped_ptr<ExtensionMessageObserver> extension_message_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMView);
 };
