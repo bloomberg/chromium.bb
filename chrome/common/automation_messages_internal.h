@@ -1469,3 +1469,21 @@ IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_GetParentBrowserOfTab,
 //   None expected
 IPC_MESSAGE_ROUTED1(AutomationMsg_MoveWindow,
                     gfx::Rect /* window position and dimentions */)
+
+// Renderer -> browser messages.
+
+// Sent when the renderer has scheduled a client redirect to occur.
+IPC_MESSAGE_ROUTED2(AutomationMsg_WillPerformClientRedirect,
+                    int64 /* frame_id */,
+                    double /* # of seconds till redirect will be performed */)
+
+// Sent when the renderer has completed or canceled a client redirect for a
+// particular frame. This message may be sent multiple times for the same
+// redirect.
+IPC_MESSAGE_ROUTED1(AutomationMsg_DidCompleteOrCancelClientRedirect,
+                    int64 /* frame_id */)
+
+
+// YOUR NEW MESSAGE MIGHT NOT BELONG HERE.
+// This is the section for renderer -> browser automation messages. If it is
+// an automation <-> browser message, put it above this section.

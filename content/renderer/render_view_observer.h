@@ -16,6 +16,7 @@ class WebDataSource;
 class WebFrame;
 class WebFormElement;
 class WebMouseEvent;
+class WebURL;
 struct WebURLError;
 }
 
@@ -38,6 +39,12 @@ class RenderViewObserver : public IPC::Channel::Listener,
                                       const WebKit::WebURLError& error) {}
   virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
                                         bool is_new_navigation) {}
+  virtual void WillPerformClientRedirect(
+      WebKit::WebFrame* frame, const WebKit::WebURL& from,
+      const WebKit::WebURL& to, double interval, double fire_time) {}
+  virtual void DidCancelClientRedirect(WebKit::WebFrame* frame) {}
+  virtual void DidCompleteClientRedirect(WebKit::WebFrame* frame,
+                                         const WebKit::WebURL& from) {}
   virtual void DidCreateDocumentElement(WebKit::WebFrame* frame) {}
   virtual void FrameDetached(WebKit::WebFrame* frame) {}
   virtual void FrameWillClose(WebKit::WebFrame* frame) {}

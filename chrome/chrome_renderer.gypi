@@ -49,6 +49,8 @@
         'renderer/autofill/form_manager.h',
         'renderer/autofill/password_autofill_manager.cc',
         'renderer/autofill/password_autofill_manager.h',
+        'renderer/automation/automation_renderer_helper.cc',
+        'renderer/automation/automation_renderer_helper.h',
         'renderer/automation/dom_automation_controller.cc',
         'renderer/automation/dom_automation_controller.h',
         'renderer/automation/dom_automation_v8_extension.cc',

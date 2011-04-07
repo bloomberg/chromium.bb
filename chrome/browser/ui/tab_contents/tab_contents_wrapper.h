@@ -26,6 +26,7 @@ class PrintPreviewMessageHandler;
 
 class AutocompleteHistoryManager;
 class AutofillManager;
+class AutomationTabHelper;
 class DevToolsObserver;
 class Extension;
 class ExtensionMessageObserver;
@@ -100,6 +101,11 @@ class TabContentsWrapper : public NotificationObserver,
 
   AutofillManager* autofill_manager() { return autofill_manager_.get(); }
 
+  // Used only for testing/automation.
+  AutomationTabHelper* automation_tab_helper() {
+    return automation_tab_helper_.get();
+  }
+
   ExtensionTabHelper* extension_tab_helper() {
     return extension_tab_helper_.get();
   }
@@ -166,6 +172,7 @@ class TabContentsWrapper : public NotificationObserver,
 
   scoped_ptr<AutocompleteHistoryManager> autocomplete_history_manager_;
   scoped_ptr<AutofillManager> autofill_manager_;
+  scoped_ptr<AutomationTabHelper> automation_tab_helper_;
   scoped_ptr<ExtensionTabHelper> extension_tab_helper_;
   scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
   scoped_ptr<FindTabHelper> find_tab_helper_;

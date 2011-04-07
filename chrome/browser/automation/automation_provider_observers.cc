@@ -2055,48 +2055,53 @@ AllTabsStoppedLoadingObserver::AllTabsStoppedLoadingObserver(
     IPC::Message* reply_message)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message) {
-  registrar_.Add(this, NotificationType::LOAD_STOP,
-                 NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::TAB_CONTENTS_DISCONNECTED,
-                 NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
-                 NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::TAB_CONTENTS_SWAPPED,
-                 NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::TAB_CLOSED,
-                 NotificationService::AllSources());
-  CheckIfStopped();
+  for (BrowserList::const_iterator iter = BrowserList::begin();
+       iter != BrowserList::end();
+       ++iter) {
+    Browser* browser = *iter;
+    for (int i = 0; i < browser->tab_count(); ++i) {
+      TabContentsWrapper* contents_wrapper =
+          browser->GetTabContentsWrapperAt(i);
+      StartObserving(contents_wrapper->automation_tab_helper());
+      if (contents_wrapper->automation_tab_helper()->has_pending_loads())
+        pending_tabs_.insert(contents_wrapper->tab_contents());
+    }
+  }
+  CheckIfNoMorePendingLoads();
 }
 
-AllTabsStoppedLoadingObserver::~AllTabsStoppedLoadingObserver() {}
-
-void AllTabsStoppedLoadingObserver::Observe(
-    NotificationType type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
-  CheckIfStopped();
+AllTabsStoppedLoadingObserver::~AllTabsStoppedLoadingObserver() {
 }
 
-void AllTabsStoppedLoadingObserver::CheckIfStopped() {
+void AllTabsStoppedLoadingObserver::OnFirstPendingLoad(
+    TabContents* tab_contents) {
+  pending_tabs_.insert(tab_contents);
+}
+
+void AllTabsStoppedLoadingObserver::OnNoMorePendingLoads(
+    TabContents* tab_contents) {
   if (!automation_) {
     delete this;
     return;
   }
-  bool done_loading = true;
-  BrowserList::const_iterator iter = BrowserList::begin();
-  for (; iter != BrowserList::end(); ++iter) {
-    Browser* browser = *iter;
-    for (int i = 0; i < browser->tab_count(); ++i) {
-      TabContents* tab = browser->GetTabContentsAt(i);
-      if (tab->is_loading()) {
-        done_loading = false;
-        break;
-      }
-    }
-    if (!done_loading)
-      break;
+
+  TabSet::iterator iter = pending_tabs_.find(tab_contents);
+  if (iter == pending_tabs_.end()) {
+    LOG(ERROR) << "Received OnNoMorePendingLoads for tab without "
+               << "OnFirstPendingLoad.";
+    return;
   }
-  if (done_loading) {
+  pending_tabs_.erase(iter);
+  CheckIfNoMorePendingLoads();
+}
+
+void AllTabsStoppedLoadingObserver::CheckIfNoMorePendingLoads() {
+  if (!automation_) {
+    delete this;
+    return;
+  }
+
+  if (pending_tabs_.empty()) {
     AutomationJSONReply(automation_,
                         reply_message_.release()).SendSuccess(NULL);
     delete this;

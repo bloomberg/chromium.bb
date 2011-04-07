@@ -4869,6 +4869,7 @@ void TestingAutomationProvider::SetNTPMenuMode(
 void TestingAutomationProvider::WaitForAllTabsToStopLoading(
     DictionaryValue* args,
     IPC::Message* reply_message) {
+  // This class will send the message immediately if no tab is loading.
   new AllTabsStoppedLoadingObserver(this, reply_message);
 }
 

@@ -372,10 +372,14 @@ const char kDnsPrefetchDisable[]            = "dns-prefetch-disable";
 // Use the specified DNS server for raw DNS resolution.
 const char kDnsServer[]                     = "dns-server";
 
-// Specifies if the dom_automation_controller_ needs to be bound in the
+// Specifies if the |DOMAutomationController| needs to be bound in the
 // renderer. This binding happens on per-frame basis and hence can potentially
 // be a performance bottleneck. One should only enable it when automating
 // dom based tests.
+// Also enables sending/receiving renderer automation messages through the
+// |AutomationRenderViewHelper|.
+// TODO(kkania): Rename this to enable-renderer-automation after moving the
+// |DOMAutomationController| to the |AutomationRenderViewHelper|.
 const char kDomAutomationController[]       = "dom-automation";
 
 // Dump any accumualted histograms to the log when browser terminates (requires

@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/automation/automation_provider_json.h"
+#include "chrome/browser/automation/automation_tab_helper.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/browsing_data_remover.h"
 #if defined(OS_CHROMEOS)
@@ -1176,20 +1177,28 @@ class InputEventAckNotificationObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(InputEventAckNotificationObserver);
 };
 
-// Allows the automation provider to wait for all tabs to stop loading.
-class AllTabsStoppedLoadingObserver : public NotificationObserver {
+// Allows the automation provider to wait for all the tabs to finish any
+// pending loads. This only waits for tabs that exist at the observer's
+// creation. Will send a message on construction if no tabs are loading
+// currently.
+class AllTabsStoppedLoadingObserver : public TabEventObserver {
  public:
-  // Registers for notifications and checks to see if all tabs have stopped.
   AllTabsStoppedLoadingObserver(AutomationProvider* automation,
                                 IPC::Message* reply_message);
   virtual ~AllTabsStoppedLoadingObserver();
 
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+  // TabEventObserver implementation.
+  virtual void OnFirstPendingLoad(TabContents* tab_contents);
+  virtual void OnNoMorePendingLoads(TabContents* tab_contents);
 
  private:
-  void CheckIfStopped();
+  typedef std::set<TabContents*> TabSet;
+
+  // Checks if there are no pending loads. If none, it will send an automation
+  // relpy and delete itself.
+  void CheckIfNoMorePendingLoads();
+
+  TabSet pending_tabs_;
   NotificationRegistrar registrar_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;

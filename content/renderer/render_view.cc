@@ -2796,17 +2796,22 @@ void RenderView::willSubmitForm(WebFrame* frame, const WebFormElement& form) {
 void RenderView::willPerformClientRedirect(
     WebFrame* frame, const WebURL& from, const WebURL& to, double interval,
     double fire_time) {
-  // Ignore
+  FOR_EACH_OBSERVER(
+      RenderViewObserver, observers_,
+      WillPerformClientRedirect(frame, from, to, interval, fire_time));
 }
 
 void RenderView::didCancelClientRedirect(WebFrame* frame) {
-  // Ignore
+  FOR_EACH_OBSERVER(
+      RenderViewObserver, observers_, DidCancelClientRedirect(frame));
 }
 
 void RenderView::didCompleteClientRedirect(
     WebFrame* frame, const WebURL& from) {
   if (!frame->parent())
     completed_client_redirect_src_ = from;
+  FOR_EACH_OBSERVER(
+      RenderViewObserver, observers_, DidCompleteClientRedirect(frame, from));
 }
 
 void RenderView::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {

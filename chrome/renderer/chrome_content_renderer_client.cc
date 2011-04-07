@@ -20,6 +20,7 @@
 #include "chrome/renderer/autofill/autofill_agent.h"
 #include "chrome/renderer/autofill/form_manager.h"
 #include "chrome/renderer/autofill/password_autofill_manager.h"
+#include "chrome/renderer/automation/automation_renderer_helper.h"
 #include "chrome/renderer/blocked_plugin.h"
 #include "chrome/renderer/devtools_agent.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
@@ -122,6 +123,12 @@ void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
   new PrintWebViewHelper(render_view);
 
   new SearchBox(render_view);
+
+  // Used only for testing/automation.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDomAutomationController)) {
+    new AutomationRendererHelper(render_view);
+  }
 }
 
 SkBitmap* ChromeContentRendererClient::GetSadPluginBitmap() {
