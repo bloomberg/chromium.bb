@@ -91,8 +91,7 @@ void DownloadManager::Shutdown() {
     it++;
 
     if (download->safety_state() == DownloadItem::DANGEROUS &&
-        (download->state() == DownloadItem::IN_PROGRESS ||
-         download->state() == DownloadItem::COMPLETE)) {
+        (download->IsPartialDownload() || download->IsComplete())) {
       // The user hasn't accepted it, so we need to remove it
       // from the disk.  This may or may not result in it being
       // removed from the DownloadManager queues and deleted
@@ -102,7 +101,7 @@ void DownloadManager::Shutdown() {
       // the download was deleted if-and-only-if it was removed
       // from all queues.
       download->Remove(true);
-    } else if (download->state() == DownloadItem::IN_PROGRESS) {
+    } else if (download->IsPartialDownload()) {
       download->Cancel(false);
       download_history_->UpdateEntry(download);
     }
@@ -165,11 +164,20 @@ void DownloadManager::GetCurrentDownloads(
 
   for (DownloadMap::iterator it = history_downloads_.begin();
        it != history_downloads_.end(); ++it) {
-    if (!it->second->is_temporary() &&
-        (it->second->state() == DownloadItem::IN_PROGRESS ||
-         it->second->safety_state() == DownloadItem::DANGEROUS) &&
-        (dir_path.empty() || it->second->full_path().DirName() == dir_path))
-      result->push_back(it->second);
+    DownloadItem* item =it->second;
+    // Skip temporary items.
+    if (item->is_temporary())
+      continue;
+    // Skip items that have all their data, and are OK to save.
+    if (!item->IsPartialDownload() &&
+        (item->safety_state() != DownloadItem::DANGEROUS))
+      continue;
+    // Skip items that don't match |dir_path|.
+    // If |dir_path| is empty, all remaining items match.
+    if (!dir_path.empty() && (it->second->full_path().DirName() != dir_path))
+      continue;
+
+    result->push_back(item);
   }
 
   // If we have a parent profile, let it add its downloads to the results.
@@ -518,11 +526,23 @@ void DownloadManager::UpdateDownload(int32 download_id, int64 size) {
   DownloadMap::iterator it = active_downloads_.find(download_id);
   if (it != active_downloads_.end()) {
     DownloadItem* download = it->second;
-    if (download->state() == DownloadItem::IN_PROGRESS) {
+    if (download->IsInProgress()) {
       download->Update(size);
       UpdateAppIcon();  // Reflect size updates.
       download_history_->UpdateEntry(download);
     }
+  }
+}
+
+void DownloadManager::OnResponseCompleted(int32 download_id,
+                                          int64 size,
+                                          int os_error,
+                                          const std::string& hash) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (os_error == 0) {
+    OnAllDataSaved(download_id, size, hash);
+  } else {
+    OnDownloadError(download_id, size, os_error);
   }
 }
 
@@ -713,6 +733,42 @@ void DownloadManager::DownloadCancelledInternal(int download_id,
           file_manager_, &DownloadFileManager::CancelDownload, download_id));
 }
 
+void DownloadManager::OnDownloadError(int32 download_id,
+                                      int64 size,
+                                      int os_error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DownloadMap::iterator it = active_downloads_.find(download_id);
+  // A cancel at the right time could remove the download from the
+  // |active_downloads_| map before we get here.
+  if (it == active_downloads_.end())
+    return;
+
+  DownloadItem* download = it->second;
+
+  VLOG(20) << "Error " << os_error << " at offset "
+           << download->received_bytes() << " for download = "
+           << download->DebugString(true);
+
+  // TODO(ahendrickson) - Remove this when we add resuming of interrupted
+  // downloads, as we will keep the download item around in that case.
+  //
+  // Clean up will happen when the history system create callback runs if we
+  // don't have a valid db_handle yet.
+  if (download->db_handle() != DownloadHistory::kUninitializedHandle) {
+    in_progress_.erase(download_id);
+    active_downloads_.erase(download_id);
+    UpdateAppIcon();  // Reflect removal from in_progress_.
+    download_history_->UpdateEntry(download);
+  }
+
+  download->Interrupted(size, os_error);
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          file_manager_, &DownloadFileManager::CancelDownload, download_id));
+}
+
 void DownloadManager::PauseDownload(int32 download_id, bool pause) {
   DownloadMap::iterator it = in_progress_.find(download_id);
   if (it == in_progress_.end())
@@ -775,11 +831,11 @@ int DownloadManager::RemoveDownloadsBetween(const base::Time remove_begin,
   std::vector<DownloadItem*> pending_deletes;
   while (it != history_downloads_.end()) {
     DownloadItem* download = it->second;
-    DownloadItem::DownloadState state = download->state();
     if (download->start_time() >= remove_begin &&
         (remove_end.is_null() || download->start_time() < remove_end) &&
-        (state == DownloadItem::COMPLETE ||
-         state == DownloadItem::CANCELLED)) {
+        (download->IsComplete() ||
+         download->IsCancelled() ||
+         download->IsInterrupted())) {
       // Remove from the map and move to the next in the list.
       history_downloads_.erase(it++);
 
@@ -990,7 +1046,6 @@ void DownloadManager::OnCreateDownloadEntryComplete(
   DCHECK(download->db_handle() == DownloadHistory::kUninitializedHandle);
   download->set_db_handle(db_handle);
 
-  // Insert into our full map.
   DCHECK(!ContainsKey(history_downloads_, download->db_handle()));
   history_downloads_[download->db_handle()] = download;
 
@@ -1001,20 +1056,22 @@ void DownloadManager::OnCreateDownloadEntryComplete(
   // Inform interested objects about the new download.
   NotifyModelChanged();
 
-  // If this download has been cancelled before we've received the DB handle,
-  // post one final message to the history service so that it can be properly
-  // in sync with the DownloadItem's completion status, and also inform any
-  // observers so that they get more than just the start notification.
+  // If the download is still in progress, try to complete it.
   //
-  // Otherwise, try to complete the download
-  if (download->state() != DownloadItem::IN_PROGRESS) {
-    DCHECK_EQ(DownloadItem::CANCELLED, download->state());
+  // Otherwise, download has been cancelled or interrupted before we've
+  // received the DB handle.  We post one final message to the history
+  // service so that it can be properly in sync with the DownloadItem's
+  // completion status, and also inform any observers so that they get
+  // more than just the start notification.
+  if (download->IsInProgress()) {
+    MaybeCompleteDownload(download);
+  } else {
+    DCHECK(download->IsCancelled())
+        << " download = " << download->DebugString(true);
     in_progress_.erase(it);
     active_downloads_.erase(info.download_id);
     download_history_->UpdateEntry(download);
     download->UpdateObservers();
-  } else {
-    MaybeCompleteDownload(download);
   }
 }
 

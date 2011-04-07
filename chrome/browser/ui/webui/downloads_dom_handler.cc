@@ -126,7 +126,7 @@ void DownloadsDOMHandler::ModelChanged() {
       break;
 
     DownloadItem* download = *it;
-    if (download->state() == DownloadItem::IN_PROGRESS) {
+    if (download->IsInProgress()) {
       // We want to know what happens as the download progresses.
       download->AddObserver(this);
     } else if (download->safety_state() == DownloadItem::DANGEROUS) {

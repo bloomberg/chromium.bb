@@ -810,6 +810,8 @@ class AutomationProviderBookmarkModelObserver : BookmarkModelObserver {
 };
 
 // Allows the automation provider to wait for all downloads to finish.
+// If any download is interrupted, it will cancel all the other downloads at
+// the next |OnDownloadUpdated|, and send an error when all are done.
 class AutomationProviderDownloadItemObserver : public DownloadItem::Observer {
  public:
   AutomationProviderDownloadItemObserver(
@@ -823,9 +825,12 @@ class AutomationProviderDownloadItemObserver : public DownloadItem::Observer {
   virtual void OnDownloadOpened(DownloadItem* download);
 
  private:
+  void RemoveAndCleanupOnLastEntry(DownloadItem* download);
+
   base::WeakPtr<AutomationProvider> provider_;
   scoped_ptr<IPC::Message> reply_message_;
   int downloads_;
+  bool interrupted_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProviderDownloadItemObserver);
 };

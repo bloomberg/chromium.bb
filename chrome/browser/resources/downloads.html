@@ -465,6 +465,7 @@ Download.States = {
   COMPLETE : "COMPLETE",
   PAUSED : "PAUSED",
   DANGEROUS : "DANGEROUS",
+  INTERRUPTED : "INTERRUPTED",
 }
 
 /**
@@ -622,6 +623,8 @@ Download.prototype.getStatusText_ = function() {
       var desc = this.dangerType_ == Download.DangerType.DANGEROUS_FILE ?
           'danger_file_desc' : 'danger_url_desc';
       return localStrings.getString(desc);
+    case Download.States.INTERRUPTED:
+      return localStrings.getString('status_interrupted');
     case Download.States.COMPLETE:
       return '';
   }

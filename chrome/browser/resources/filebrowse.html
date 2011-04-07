@@ -576,7 +576,7 @@ function $(o) {
 }
 
 /**
- * Partial funciton application.
+ * Partial function application.
  *
  * Usage:
  * var g = partial(f, arg1, arg2);
@@ -1170,7 +1170,9 @@ function newDownload(results) {
   var x;
   for (x = 0; x < results.length; x++) {
     var element = $(results[x].file_path);
-    if (!element && results[x].state != 'CANCELLED') {
+    if (!element &&
+        results[x].state != 'CANCELLED' &&
+        results[x].state != 'INTERRUPTED') {
       var extracted = getPathAndFilenameForPath(results[x].file_path);
       var dirId = $('list/dir/' + extracted[1]);
       if (dirId) {
@@ -1256,7 +1258,9 @@ function downloadUpdated(result) {
   var element = $(result.file_path);
   var extracted = getPathAndFilenameForPath(result.file_path);
   var dirId = $('list/dir/' + extracted[1]);
-  if (!element && result.state != 'CANCELLED') {
+  if (!element &&
+      result.state != 'CANCELLED' &&
+      result.state != 'INTERRUPTED') {
     if (dirId) {
       element = createNewItem(result.file_name, result.file_path, false);
       if (dirId.firstChild) {
@@ -1268,7 +1272,8 @@ function downloadUpdated(result) {
     }
   }
   if (element) {
-    if (result.state == 'CANCELLED') {
+    if (result.state == 'CANCELLED' ||
+        result.state == 'INTERRUPTED') {
       element.parentNode.removeChild(element);
       return;
     }

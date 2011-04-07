@@ -204,15 +204,20 @@ void DownloadFileManager::UpdateDownload(int id, DownloadBuffer* buffer) {
   }
 }
 
-void DownloadFileManager::OnResponseCompleted(int id, DownloadBuffer* buffer) {
-  VLOG(20) << __FUNCTION__ << "()" << " id = " << id;
+void DownloadFileManager::OnResponseCompleted(
+    int id,
+    DownloadBuffer* buffer,
+    int os_error,
+    const std::string& security_info) {
+  VLOG(20) << __FUNCTION__ << "()" << " id = " << id
+           << " os_error = " << os_error
+           << " security_info = \"" << security_info << "\"";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   delete buffer;
-  DownloadFileMap::iterator it = downloads_.find(id);
-  if (it == downloads_.end())
+  DownloadFile* download = GetDownloadFile(id);
+  if (!download)
     return;
 
-  DownloadFile* download = it->second;
   download->Finish();
 
   DownloadManager* download_manager = download->GetDownloadManager();
@@ -228,8 +233,10 @@ void DownloadFileManager::OnResponseCompleted(int id, DownloadBuffer* buffer) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
-          download_manager, &DownloadManager::OnAllDataSaved,
-          id, download->bytes_so_far(), hash));
+        download_manager, &DownloadManager::OnResponseCompleted,
+        id, download->bytes_so_far(), os_error, hash));
+  // We need to keep the download around until the UI thread has finalized
+  // the name.
 }
 
 // This method will be sent via a user action, or shutdown on the UI thread, and

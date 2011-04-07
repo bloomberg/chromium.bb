@@ -29,6 +29,7 @@
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -78,6 +79,10 @@
 #include "ui/base/dragdrop/drag_source.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #endif
+
+// TODO(phajdan.jr): Find some standard location for this, maintaining
+// the same value on all platforms.
+static const double PI = 3.141592653589793;
 
 namespace download_util {
 
@@ -473,9 +478,44 @@ void PaintDownloadComplete(gfx::Canvas* canvas,
 
   // Start at full opacity, then loop back and forth five times before ending
   // at zero opacity.
-  static const double PI = 3.141592653589793;
   double opacity = sin(animation_progress * PI * kCompleteAnimationCycles +
                    PI/2) / 2 + 0.5;
+
+  canvas->SaveLayerAlpha(static_cast<int>(255.0 * opacity), complete_bounds);
+  canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
+  canvas->DrawBitmapInt(*complete, complete_bounds.x(), complete_bounds.y());
+  canvas->Restore();
+}
+
+void PaintDownloadInterrupted(gfx::Canvas* canvas,
+#if defined(TOOLKIT_VIEWS)
+                              views::View* containing_view,
+#endif
+                              int origin_x,
+                              int origin_y,
+                              double animation_progress,
+                              PaintDownloadProgressSize size) {
+  // Load up our common bitmaps.
+  if (!g_foreground_16) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    g_foreground_16 = rb.GetBitmapNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_16);
+    g_foreground_32 = rb.GetBitmapNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_32);
+  }
+
+  SkBitmap* complete = (size == BIG) ? g_foreground_32 : g_foreground_16;
+
+  gfx::Rect complete_bounds(origin_x, origin_y,
+                            complete->width(), complete->height());
+#if defined(TOOLKIT_VIEWS)
+  // Mirror the positions if necessary.
+  complete_bounds.set_x(containing_view->GetMirroredXForRect(complete_bounds));
+#endif
+
+  // Start at zero opacity, then loop back and forth five times before ending
+  // at full opacity.
+  double opacity = sin(
+      (1.0 - animation_progress) * PI * kCompleteAnimationCycles + PI/2) / 2 +
+          0.5;
 
   canvas->SaveLayerAlpha(static_cast<int>(255.0 * opacity), complete_bounds);
   canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
@@ -580,7 +620,7 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
   file_value->SetString("url", download->url().spec());
   file_value->SetBoolean("otr", download->is_otr());
 
-  if (download->state() == DownloadItem::IN_PROGRESS) {
+  if (download->IsInProgress()) {
     if (download->safety_state() == DownloadItem::DANGEROUS) {
       file_value->SetString("state", "DANGEROUS");
       DCHECK(download->danger_type() == DownloadItem::DANGEROUS_FILE ||
@@ -596,15 +636,25 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
     }
 
     file_value->SetString("progress_status_text",
-       GetProgressStatusText(download));
+        GetProgressStatusText(download));
 
     file_value->SetInteger("percent",
         static_cast<int>(download->PercentComplete()));
     file_value->SetInteger("received",
         static_cast<int>(download->received_bytes()));
-  } else if (download->state() == DownloadItem::CANCELLED) {
+  } else if (download->IsInterrupted()) {
+    file_value->SetString("state", "INTERRUPTED");
+
+    file_value->SetString("progress_status_text",
+        GetProgressStatusText(download));
+
+    file_value->SetInteger("percent",
+        static_cast<int>(download->PercentComplete()));
+    file_value->SetInteger("received",
+        static_cast<int>(download->received_bytes()));
+  } else if (download->IsCancelled()) {
     file_value->SetString("state", "CANCELLED");
-  } else if (download->state() == DownloadItem::COMPLETE) {
+  } else if (download->IsComplete()) {
     if (download->safety_state() == DownloadItem::DANGEROUS) {
       file_value->SetString("state", "DANGEROUS");
     } else {

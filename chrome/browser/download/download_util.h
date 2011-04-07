@@ -146,6 +146,15 @@ void PaintDownloadComplete(gfx::Canvas* canvas,
                            double animation_progress,
                            PaintDownloadProgressSize size);
 
+void PaintDownloadInterrupted(gfx::Canvas* canvas,
+#if defined(TOOLKIT_VIEWS)
+                              views::View* containing_view,
+#endif
+                              int origin_x,
+                              int origin_y,
+                              double animation_progress,
+                              PaintDownloadProgressSize size);
+
 // Drag support ----------------------------------------------------------------
 
 // Helper function for download views to use when acting as a drag source for a

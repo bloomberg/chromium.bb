@@ -100,8 +100,7 @@ class DownloadsObserver : public DownloadManager::Observer,
 
   // DownloadItem::Observer
   virtual void OnDownloadUpdated(DownloadItem* download) {
-    if (download_finished_signal_ == COMPLETE &&
-        download->state() == DownloadItem::COMPLETE)
+    if ((download_finished_signal_ == COMPLETE) && download->IsComplete())
       DownloadInFinalState(download);
   }
 

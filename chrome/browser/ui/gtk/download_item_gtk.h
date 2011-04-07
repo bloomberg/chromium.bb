@@ -12,6 +12,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "ui/base/animation/slide_animation.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
@@ -214,7 +215,7 @@ class DownloadItemGtk : public DownloadItem::Observer,
   base::RepeatingTimer<DownloadItemGtk> progress_timer_;
 
   // Animation for download complete.
-  scoped_ptr<ui::SlideAnimation> complete_animation_;
+  ui::SlideAnimation complete_animation_;
 
   // The file icon for the download. May be null. The small version is used
   // for display in the shelf; the large version is for use as a drag icon.

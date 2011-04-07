@@ -320,21 +320,22 @@ TEST_F(HistoryTest, ClearBrowsingData_Downloads) {
   EXPECT_NE(0, AddDownload(DownloadItem::COMPLETE, now - one_day));
   EXPECT_NE(0, AddDownload(DownloadItem::COMPLETE, now));
   EXPECT_NE(0, AddDownload(DownloadItem::COMPLETE, now + one_day));
-  // Try the other three states.
-  EXPECT_NE(0, AddDownload(DownloadItem::COMPLETE,    month_ago));
+  // Try the other four states.
+  EXPECT_NE(0, AddDownload(DownloadItem::COMPLETE, month_ago));
   EXPECT_NE(0, in_progress = AddDownload(DownloadItem::IN_PROGRESS, month_ago));
-  EXPECT_NE(0, AddDownload(DownloadItem::CANCELLED,   month_ago));
-  EXPECT_NE(0, removing = AddDownload(DownloadItem::REMOVING,    month_ago));
+  EXPECT_NE(0, AddDownload(DownloadItem::CANCELLED, month_ago));
+  EXPECT_NE(0, AddDownload(DownloadItem::INTERRUPTED, month_ago));
+  EXPECT_NE(0, removing = AddDownload(DownloadItem::REMOVING, month_ago));
 
   // Test to see if inserts worked.
   db_->QueryDownloads(&downloads);
-  EXPECT_EQ(8U, downloads.size());
+  EXPECT_EQ(9U, downloads.size());
 
   // Try removing from current timestamp. This should delete the one in the
   // future and one very recent one.
   db_->RemoveDownloadsBetween(now, Time());
   db_->QueryDownloads(&downloads);
-  EXPECT_EQ(6U, downloads.size());
+  EXPECT_EQ(7U, downloads.size());
 
   // Try removing from two months ago. This should not delete items that are
   // 'in progress' or in 'removing' state.

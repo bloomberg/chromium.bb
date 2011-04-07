@@ -35,10 +35,11 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/download/download_status_updater_delegate.h"
 #include "chrome/browser/ui/shell_dialogs.h"
@@ -120,7 +121,8 @@ class DownloadManager
   void UpdateDownload(int32 download_id, int64 size);
   // |hash| is sha256 hash for the downloaded file. It is empty when the hash
   // is not available.
-  void OnAllDataSaved(int32 download_id, int64 size, const std::string& hash);
+  void OnResponseCompleted(int32 download_id, int64 size, int os_error,
+                           const std::string& hash);
 
   // Called from a view when a user clicks a UI button or link.
   void DownloadCancelled(int32 download_id);
@@ -289,6 +291,14 @@ class DownloadManager
   void DownloadCancelledInternal(int download_id,
                                  int render_process_id,
                                  int request_id);
+
+  // All data has been downloaded.
+  // |hash| is sha256 hash for the downloaded file. It is empty when the hash
+  // is not available.
+  void OnAllDataSaved(int32 download_id, int64 size, const std::string& hash);
+
+  // An error occurred in the download.
+  void OnDownloadError(int32 download_id, int64 size, int os_error);
 
   // Updates the app icon about the overall download progress.
   void UpdateAppIcon();

@@ -181,7 +181,7 @@ void DownloadDatabase::RemoveDownloadsBetween(base::Time delete_begin,
   // downloads where an index by time will give us a lot of benefit.
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM downloads WHERE start_time >= ? AND start_time < ? "
-      "AND (State = ? OR State = ?)"));
+      "AND (State = ? OR State = ? OR State = ?)"));
   if (!statement)
     return;
 
@@ -193,6 +193,7 @@ void DownloadDatabase::RemoveDownloadsBetween(base::Time delete_begin,
       end_time ? end_time : std::numeric_limits<int64>::max());
   statement.BindInt(2, DownloadItem::COMPLETE);
   statement.BindInt(3, DownloadItem::CANCELLED);
+  statement.BindInt(4, DownloadItem::INTERRUPTED);
   statement.Run();
 }
 

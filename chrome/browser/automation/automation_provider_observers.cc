@@ -1299,7 +1299,8 @@ AutomationProviderDownloadItemObserver::AutomationProviderDownloadItemObserver(
     int downloads)
     : provider_(provider->AsWeakPtr()),
       reply_message_(reply_message),
-      downloads_(downloads) {
+      downloads_(downloads),
+      interrupted_(false) {
 }
 
 AutomationProviderDownloadItemObserver::
@@ -1307,15 +1308,37 @@ AutomationProviderDownloadItemObserver::
 
 void AutomationProviderDownloadItemObserver::OnDownloadUpdated(
     DownloadItem* download) {
+  interrupted_ |= download->IsInterrupted();
+  // If any download was interrupted, on the next update each outstanding
+  // download is cancelled.
+  if (interrupted_) {
+    // |Cancel()| does nothing if |download| is already interrupted.
+    download->Cancel(true);
+    RemoveAndCleanupOnLastEntry(download);
+  }
 }
 
 void AutomationProviderDownloadItemObserver::OnDownloadFileCompleted(
+      DownloadItem* download) {
+  RemoveAndCleanupOnLastEntry(download);
+}
+
+// We don't want to send multiple messages, as the behavior is undefined.
+// Set |interrupted_| on error, and on the last download completed/
+// interrupted, send either an error or a success message.
+void AutomationProviderDownloadItemObserver::RemoveAndCleanupOnLastEntry(
     DownloadItem* download) {
+  // Forget about the download.
   download->RemoveObserver(this);
   if (--downloads_ == 0) {
     if (provider_) {
-      AutomationJSONReply(provider_,
-                          reply_message_.release()).SendSuccess(NULL);
+      if (interrupted_) {
+        AutomationJSONReply(provider_, reply_message_.release()).SendError(
+            "Download Interrupted");
+      } else {
+        AutomationJSONReply(provider_, reply_message_.release()).SendSuccess(
+            NULL);
+      }
     }
     delete this;
   }

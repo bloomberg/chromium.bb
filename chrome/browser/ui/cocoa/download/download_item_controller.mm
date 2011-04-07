@@ -231,7 +231,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   }
 
   // Set correct popup menu. Also, set draggable download on completion.
-  if (downloadModel->download()->state() == DownloadItem::COMPLETE) {
+  if (downloadModel->download()->IsComplete()) {
     [progressView_ setMenu:completeDownloadMenu_];
     [progressView_ setDownload:downloadModel->download()->full_path()];
   } else {
@@ -348,10 +348,10 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 - (IBAction)discardDownload:(id)sender {
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download",
                            base::Time::Now() - creationTime_);
-  if (bridge_->download_model()->download()->state() ==
-      DownloadItem::IN_PROGRESS)
-    bridge_->download_model()->download()->Cancel(true);
-  bridge_->download_model()->download()->Remove(true);
+  DownloadItem* download = bridge_->download_model()->download();
+  if (download->IsPartialDownload())
+    download->Cancel(true);
+  download->Remove(true);
   // WARNING: we are deleted at this point.  Don't access 'this'.
 }
 

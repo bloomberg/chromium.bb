@@ -61,7 +61,7 @@ const int kMinDownloadItemWidth = download_util::kSmallProgressIconSize;
 // New download item animation speed in milliseconds.
 const int kNewItemAnimationDurationMs = 800;
 
-// How long the 'download complete' animation should last for.
+// How long the 'download complete/interrupted' animation should last for.
 const int kCompleteAnimationDurationMs = 2500;
 
 // Width of the body area of the download item.
@@ -100,7 +100,7 @@ class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
   void Popup(GtkWidget* widget, GdkEventButton* event) {
     // Create the menu if we have not created it yet or we created it for
     // an in-progress download that has since completed.
-    if (download_->state() == DownloadItem::COMPLETE)
+    if (download_->IsComplete())
       menu_.reset(new MenuGtk(this, GetFinishedMenuModel()));
     else
       menu_.reset(new MenuGtk(this, GetInProgressMenuModel()));
@@ -173,6 +173,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
       download_model_(download_model),
       dangerous_prompt_(NULL),
       dangerous_label_(NULL),
+      complete_animation_(this),
       icon_small_(NULL),
       icon_large_(NULL),
       creation_time_(base::Time::Now()) {
@@ -331,6 +332,9 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
   }
 
   new_item_animation_->Show();
+
+  complete_animation_.SetTweenType(ui::Tween::LINEAR);
+  complete_animation_.SetSlideDuration(kCompleteAnimationDurationMs);
 }
 
 DownloadItemGtk::~DownloadItemGtk() {
@@ -383,6 +387,11 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
       StopDownloadProgress();
       gtk_widget_queue_draw(progress_area_.get());
       break;
+    case DownloadItem::INTERRUPTED:
+      StopDownloadProgress();
+
+      complete_animation_.Show();
+      break;
     case DownloadItem::COMPLETE:
       if (download->auto_opened()) {
         parent_shelf_->RemoveDownloadItem(this);  // This will delete us!
@@ -393,10 +402,7 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
       // Set up the widget as a drag source.
       DownloadItemDrag::SetSource(body_.get(), get_download(), icon_large_);
 
-      complete_animation_.reset(new ui::SlideAnimation(this));
-      complete_animation_->SetSlideDuration(kCompleteAnimationDurationMs);
-      complete_animation_->SetTweenType(ui::Tween::LINEAR);
-      complete_animation_->Show();
+      complete_animation_.Show();
       break;
     case DownloadItem::IN_PROGRESS:
       get_download()->is_paused() ?
@@ -423,20 +429,19 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
 }
 
 void DownloadItemGtk::AnimationProgressed(const ui::Animation* animation) {
-  if (animation == complete_animation_.get()) {
+  if (animation == &complete_animation_) {
     gtk_widget_queue_draw(progress_area_.get());
   } else {
+    DCHECK(animation == new_item_animation_.get());
     if (IsDangerous()) {
       int progress = static_cast<int>((dangerous_hbox_full_width_ -
                                        dangerous_hbox_start_width_) *
-                                      new_item_animation_->GetCurrentValue());
+                                      animation->GetCurrentValue());
       int showing_width = dangerous_hbox_start_width_ + progress;
       gtk_widget_set_size_request(dangerous_hbox_.get(), showing_width, -1);
     } else {
-      DCHECK(animation == new_item_animation_.get());
       int showing_width = std::max(kMinDownloadItemWidth,
-          static_cast<int>(kBodyWidth *
-                           new_item_animation_->GetCurrentValue()));
+          static_cast<int>(kBodyWidth * animation->GetCurrentValue()));
       gtk_widget_set_size_request(body_.get(), showing_width, -1);
     }
   }
@@ -848,15 +853,19 @@ gboolean DownloadItemGtk::OnProgressAreaExpose(GtkWidget* widget,
                                                GdkEventExpose* event) {
   // Create a transparent canvas.
   gfx::CanvasSkiaPaint canvas(event, false);
-  if (complete_animation_.get()) {
-    if (complete_animation_->is_animating()) {
+  if (complete_animation_.is_animating()) {
+    if (get_download()->IsInterrupted()) {
+      download_util::PaintDownloadInterrupted(&canvas,
+          widget->allocation.x, widget->allocation.y,
+          complete_animation_.GetCurrentValue(),
+          download_util::SMALL);
+    } else {
       download_util::PaintDownloadComplete(&canvas,
           widget->allocation.x, widget->allocation.y,
-          complete_animation_->GetCurrentValue(),
+          complete_animation_.GetCurrentValue(),
           download_util::SMALL);
     }
-  } else if (get_download()->state() !=
-             DownloadItem::CANCELLED) {
+  } else if (!get_download()->IsCancelled()) {
     download_util::PaintDownloadProgress(&canvas,
         widget->allocation.x, widget->allocation.y,
         progress_angle_,
@@ -891,8 +900,8 @@ gboolean DownloadItemGtk::OnMenuButtonPressEvent(GtkWidget* button,
 void DownloadItemGtk::ShowPopupMenu(GtkWidget* button,
                                     GdkEventButton* event) {
   // Stop any completion animation.
-  if (complete_animation_.get() && complete_animation_->is_animating())
-    complete_animation_->End();
+  if (complete_animation_.is_animating())
+    complete_animation_.End();
 
   if (!menu_.get())
     menu_.reset(new DownloadShelfContextMenuGtk(download_model_.get(), this));
@@ -917,7 +926,7 @@ void DownloadItemGtk::OnDangerousAccept(GtkWidget* button) {
 void DownloadItemGtk::OnDangerousDecline(GtkWidget* button) {
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download",
                            base::Time::Now() - creation_time_);
-  if (get_download()->state() == DownloadItem::IN_PROGRESS)
+  if (get_download()->IsPartialDownload())
     get_download()->Cancel(true);
   get_download()->Remove(true);
 }

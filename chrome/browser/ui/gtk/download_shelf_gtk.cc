@@ -204,8 +204,9 @@ void DownloadShelfGtk::Closed() {
   size_t i = 0;
   while (i < download_items_.size()) {
     DownloadItem* download = download_items_[i]->get_download();
-    bool is_transfer_done = download->state() == DownloadItem::COMPLETE ||
-                            download->state() == DownloadItem::CANCELLED;
+    bool is_transfer_done = download->IsComplete() ||
+                            download->IsCancelled() ||
+                            download->IsInterrupted();
     if (is_transfer_done &&
         download->safety_state() != DownloadItem::DANGEROUS) {
       RemoveDownloadItem(download_items_[i]);

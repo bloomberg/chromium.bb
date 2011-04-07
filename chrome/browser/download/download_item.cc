@@ -81,6 +81,8 @@ const char* DebugDownloadStateString(DownloadItem::DownloadState state) {
       return "CANCELLED";
     case DownloadItem::REMOVING:
       return "REMOVING";
+    case DownloadItem::INTERRUPTED:
+      return "INTERRUPTED";
     default:
       NOTREACHED() << "Unknown download state " << state;
       return "unknown";
@@ -142,9 +144,9 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       is_temporary_(false),
       all_data_saved_(false),
       opened_(false) {
-  if (state_ == IN_PROGRESS)
+  if (IsInProgress())
     state_ = CANCELLED;
-  if (state_ == COMPLETE)
+  if (IsComplete())
     all_data_saved_ = true;
   Init(false /* don't start progress timer */);
 }
@@ -163,6 +165,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       original_mime_type_(info.original_mime_type),
       total_bytes_(info.total_bytes),
       received_bytes_(0),
+      last_os_error_(0),
       start_tick_(base::TimeTicks::Now()),
       state_(IN_PROGRESS),
       start_time_(info.start_time),
@@ -203,6 +206,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       original_mime_type_(std::string()),
       total_bytes_(0),
       received_bytes_(0),
+      last_os_error_(0),
       start_tick_(base::TimeTicks::Now()),
       state_(IN_PROGRESS),
       start_time_(base::Time::Now()),
@@ -264,9 +268,9 @@ void DownloadItem::OpenFilesBasedOnExtension(bool open) {
 }
 
 void DownloadItem::OpenDownload() {
-  if (state() == DownloadItem::IN_PROGRESS) {
+  if (IsPartialDownload()) {
     open_when_complete_ = !open_when_complete_;
-  } else if (state() == DownloadItem::COMPLETE) {
+  } else if (IsComplete()) {
     opened_ = true;
     FOR_EACH_OBSERVER(Observer, observers_, OnDownloadOpened(this));
     if (is_extension_install()) {
@@ -324,7 +328,7 @@ void DownloadItem::StopProgressTimer() {
 // was being cancelled in the UI thread, so we'll accept them unless we're
 // complete.
 void DownloadItem::Update(int64 bytes_so_far) {
-  if (state_ == COMPLETE) {
+  if (!IsInProgress()) {
     NOTREACHED();
     return;
   }
@@ -335,8 +339,9 @@ void DownloadItem::Update(int64 bytes_so_far) {
 // Triggered by a user action.
 void DownloadItem::Cancel(bool update_history) {
   VLOG(20) << __FUNCTION__ << "()" << " download = " << DebugString(true);
-  if (state_ != IN_PROGRESS) {
-    // Small downloads might be complete before this method has a chance to run.
+  if (!IsPartialDownload()) {
+    // Small downloads might be complete before this method has
+    // a chance to run.
     return;
   }
   state_ = CANCELLED;
@@ -393,6 +398,16 @@ void DownloadItem::Finished() {
   }
 }
 
+void DownloadItem::Interrupted(int64 size, int os_error) {
+  if (!IsInProgress())
+    return;
+  state_ = INTERRUPTED;
+  last_os_error_ = os_error;
+  UpdateSize(size);
+  StopProgressTimer();
+  UpdateObservers();
+}
+
 void DownloadItem::Remove(bool delete_on_disk) {
   Cancel(true);
   state_ = REMOVING;
@@ -442,7 +457,7 @@ void DownloadItem::Rename(const FilePath& full_path) {
 }
 
 void DownloadItem::TogglePause() {
-  DCHECK(state_ == IN_PROGRESS);
+  DCHECK(IsInProgress());
   download_manager_->PauseDownload(id_, !is_paused_);
   is_paused_ = !is_paused_;
   UpdateObservers();
@@ -457,7 +472,7 @@ void DownloadItem::OnNameFinalized() {
   // finalized and the file data is downloaded. The ordering of these two
   // actions is indeterministic. Thus, if we are still in downloading the
   // file, delay the notification.
-  if (state() == DownloadItem::COMPLETE) {
+  if (IsComplete()) {
     NotifyObserversDownloadFileCompleted();
     download_manager_->RemoveFromActiveList(id());
   }
@@ -592,6 +607,28 @@ void DownloadItem::Init(bool start_timer) {
   if (start_timer)
     StartProgressTimer();
   VLOG(20) << " " << __FUNCTION__ << "() " << DebugString(true);
+}
+
+// TODO(ahendrickson) -- Move |INTERRUPTED| from |IsCancelled()| to
+// |IsPartialDownload()|, when resuming interrupted downloads is implemented.
+bool DownloadItem::IsPartialDownload() const {
+  return (state_ == IN_PROGRESS);
+}
+
+bool DownloadItem::IsInProgress() const {
+  return (state_ == IN_PROGRESS);
+}
+
+bool DownloadItem::IsCancelled() const {
+  return (state_ == CANCELLED) || (state_ == INTERRUPTED);
+}
+
+bool DownloadItem::IsInterrupted() const {
+  return (state_ == INTERRUPTED);
+}
+
+bool DownloadItem::IsComplete() const {
+  return state() == COMPLETE;
 }
 
 std::string DownloadItem::DebugString(bool verbose) const {

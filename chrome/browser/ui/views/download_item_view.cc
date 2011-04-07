@@ -67,6 +67,9 @@ static const SkColor kFileNameDisabledColor = SkColorSetRGB(171, 192, 212);
 // How long the 'download complete' animation should last for.
 static const int kCompleteAnimationDurationMs = 2500;
 
+// How long the 'download interrupted' animation should last for.
+static const int kInterruptedAnimationDurationMs = 2500;
+
 // How long we keep the item disabled after the user clicked it to open the
 // downloaded item.
 static const int kDisabledOnOpenDuration = 3000;
@@ -86,7 +89,7 @@ class DownloadShelfContextMenuWin : public DownloadShelfContextMenu {
   }
 
   void Run(const gfx::Point& point) {
-    if (download_->state() == DownloadItem::COMPLETE)
+    if (download_->IsComplete())
       menu_.reset(new views::Menu2(GetFinishedMenuModel()));
     else
       menu_.reset(new views::Menu2(GetInProgressMenuModel()));
@@ -383,6 +386,17 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
     case DownloadItem::IN_PROGRESS:
       download_->is_paused() ? StopDownloadProgress() : StartDownloadProgress();
       break;
+    case DownloadItem::INTERRUPTED:
+      StopDownloadProgress();
+      complete_animation_.reset(new ui::SlideAnimation(this));
+      complete_animation_->SetSlideDuration(kInterruptedAnimationDurationMs);
+      complete_animation_->SetTweenType(ui::Tween::LINEAR);
+      complete_animation_->Show();
+      if (status_text.empty())
+        show_status_text_ = false;
+      SchedulePaint();
+      LoadIcon();
+      break;
     case DownloadItem::COMPLETE:
       if (download_->auto_opened()) {
         parent_->RemoveDownloadView(this);  // This will delete us!
@@ -523,7 +537,7 @@ bool DownloadItemView::OnMouseDragged(const views::MouseEvent& event) {
     drag_start_point_ = event.location();
   }
   if (dragging_) {
-    if (download_->state() == DownloadItem::COMPLETE) {
+    if (download_->IsComplete()) {
       IconManager* im = g_browser_process->icon_manager();
       gfx::Image* icon = im->LookupIcon(download_->GetUserVerifiedFilePath(),
                                         IconLoader::SMALL);
@@ -680,7 +694,7 @@ void DownloadItemView::ButtonPressed(
   if (sender == discard_button_) {
     UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download",
                              base::Time::Now() - creation_time_);
-    if (download_->state() == DownloadItem::IN_PROGRESS)
+    if (download_->IsPartialDownload())
       download_->Cancel(true);
     download_->Remove(true);
     // WARNING: we are deleted at this point.  Don't access 'this'.
@@ -905,17 +919,23 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
   // triggered only when we think the status might change.
   if (icon) {
     if (!IsDangerousMode()) {
-      if (download_->state() == DownloadItem::IN_PROGRESS) {
+      if (download_->IsInProgress()) {
         download_util::PaintDownloadProgress(canvas, this, 0, 0,
                                              progress_angle_,
                                              download_->PercentComplete(),
                                              download_util::SMALL);
-      } else if (download_->state() == DownloadItem::COMPLETE &&
+      } else if (download_->IsComplete() &&
                  complete_animation_.get() &&
                  complete_animation_->is_animating()) {
-        download_util::PaintDownloadComplete(canvas, this, 0, 0,
-            complete_animation_->GetCurrentValue(),
-            download_util::SMALL);
+        if (download_->IsInterrupted()) {
+          download_util::PaintDownloadInterrupted(canvas, this, 0, 0,
+              complete_animation_->GetCurrentValue(),
+              download_util::SMALL);
+        } else {
+          download_util::PaintDownloadComplete(canvas, this, 0, 0,
+              complete_animation_->GetCurrentValue(),
+              download_util::SMALL);
+        }
       }
     }
 

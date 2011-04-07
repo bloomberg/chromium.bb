@@ -44,8 +44,7 @@ string16 DownloadItemModel::GetStatusText() {
 
   TimeDelta remaining;
   string16 simple_time;
-  if (download_->state() == DownloadItem::IN_PROGRESS &&
-      download_->is_paused()) {
+  if (download_->IsInProgress() && download_->is_paused()) {
     simple_time = l10n_util::GetStringUTF16(IDS_DOWNLOAD_PROGRESS_PAUSED);
   } else if (download_->TimeRemaining(&remaining)) {
     simple_time = download_->open_when_complete() ?
@@ -85,6 +84,11 @@ string16 DownloadItemModel::GetStatusText() {
       break;
     case DownloadItem::REMOVING:
       break;
+    case DownloadItem::INTERRUPTED:
+      status_text = l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_INTERRUPTED,
+                                               simple_size,
+                                               simple_total);
+      break;
     default:
       NOTREACHED();
   }
@@ -123,6 +127,12 @@ string16 SavePageModel::GetStatusText() {
       status_text = l10n_util::GetStringUTF16(IDS_SAVE_PAGE_STATUS_CANCELED);
       break;
     case DownloadItem::REMOVING:
+      break;
+    case DownloadItem::INTERRUPTED:
+      status_text = l10n_util::GetStringFUTF16(
+          IDS_SAVE_PAGE_STATUS_INTERRUPTED,
+          base::FormatNumber(size),
+          base::FormatNumber(total_size));
       break;
     default:
       NOTREACHED();

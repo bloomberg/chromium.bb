@@ -76,6 +76,8 @@ void DownloadsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_DOWNLOAD_TAB_CANCELED));
   localized_strings.SetString("status_paused",
       l10n_util::GetStringUTF16(IDS_DOWNLOAD_PROGRESS_PAUSED));
+  localized_strings.SetString("status_interrupted",
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_PROGRESS_INTERRUPTED));
 
   // Dangerous file.
   localized_strings.SetString("danger_file_desc",

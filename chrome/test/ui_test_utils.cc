@@ -184,7 +184,7 @@ class DownloadsCompleteObserver : public DownloadManager::Observer,
       // are currently observing. Removing has no effect if we are not currently
       // an observer.
       (*it)->RemoveObserver(this);
-      if ((*it)->state() != DownloadItem::COMPLETE) {
+      if ((*it)->IsInProgress()) {
         (*it)->AddObserver(this);
         still_waiting = true;
       }
@@ -203,9 +203,8 @@ class DownloadsCompleteObserver : public DownloadManager::Observer,
 
   // DownloadItem::Observer
   virtual void OnDownloadUpdated(DownloadItem* download) {
-    if (download->state() == DownloadItem::COMPLETE) {
+    if (download->IsComplete())
       CheckAllDownloadsComplete();
-    }
   }
 
   virtual void OnDownloadFileCompleted(DownloadItem* download) { }

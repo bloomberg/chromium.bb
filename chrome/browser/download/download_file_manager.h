@@ -80,7 +80,15 @@ class DownloadFileManager
   // Handlers for notifications sent from the IO thread and run on the
   // FILE thread.
   void UpdateDownload(int id, DownloadBuffer* buffer);
-  void OnResponseCompleted(int id, DownloadBuffer* buffer);
+  // |os_error| is 0 for normal completions, and non-0 for errors.
+  // |security_info| contains SSL information (cert_id, cert_status,
+  // security_bits, ssl_connection_status), which can be used to
+  // fine-tune the error message.  It is empty if the transaction
+  // was not performed securely.
+  void OnResponseCompleted(int id,
+                           DownloadBuffer* buffer,
+                           int os_error,
+                           const std::string& security_info);
 
   // Handlers for notifications sent from the UI thread and run on the
   // FILE thread.  These are both terminal actions with respect to the
@@ -134,8 +142,8 @@ class DownloadFileManager
   // RenameFinishedDownloadFile on the FILE thread.
   void CancelDownloadOnRename(int id);
 
-  // Called when the DownloadFileManager has finished with the download file.
-  // Will delete the download file if it hasn't been detached.
+  // Erases the download file with the given the download |id| and removes
+  // it from the maps.
   void EraseDownload(int id);
 
   // Unique ID for each DownloadFile.

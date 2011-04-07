@@ -22,57 +22,60 @@
 
 namespace {
 
-// Distance from top border to icon
+// Distance from top border to icon.
 const CGFloat kImagePaddingTop = 7;
 
-// Distance from left border to icon
+// Distance from left border to icon.
 const CGFloat kImagePaddingLeft = 9;
 
-// Width of icon
+// Width of icon.
 const CGFloat kImageWidth = 16;
 
-// Height of icon
+// Height of icon.
 const CGFloat kImageHeight = 16;
 
-// x coordinate of download name string, in view coords
+// x coordinate of download name string, in view coords.
 const CGFloat kTextPosLeft = kImagePaddingLeft +
     kImageWidth + download_util::kSmallProgressIconOffset;
 
-// Distance from end of download name string to dropdown area
+// Distance from end of download name string to dropdown area.
 const CGFloat kTextPaddingRight = 3;
 
 // y coordinate of download name string, in view coords, when status message
-// is visible
+// is visible.
 const CGFloat kPrimaryTextPosTop = 3;
 
 // y coordinate of download name string, in view coords, when status message
-// is not visible
+// is not visible.
 const CGFloat kPrimaryTextOnlyPosTop = 10;
 
-// y coordinate of status message, in view coords
+// y coordinate of status message, in view coords.
 const CGFloat kSecondaryTextPosTop = 18;
 
-// Grey value of status text
+// Grey value of status text.
 const CGFloat kSecondaryTextColor = 0.5;
 
 // Width of dropdown area on the right (includes 1px for the border on each
 // side).
 const CGFloat kDropdownAreaWidth = 14;
 
-// Width of dropdown arrow
+// Width of dropdown arrow.
 const CGFloat kDropdownArrowWidth = 5;
 
-// Height of dropdown arrow
+// Height of dropdown arrow.
 const CGFloat kDropdownArrowHeight = 3;
 
 // Vertical displacement of dropdown area, relative to the "centered" position.
 const CGFloat kDropdownAreaY = -2;
 
-// Duration of the two-lines-to-one-line animation, in seconds
+// Duration of the two-lines-to-one-line animation, in seconds.
 NSTimeInterval kHideStatusDuration = 0.3;
 
-// Duration of the 'download complete' animation, in seconds
+// Duration of the 'download complete' animation, in seconds.
 const int kCompleteAnimationDuration = 2.5;
+
+// Duration of the 'download interrupted' animation, in seconds.
+const int kInterruptedAnimationDuration = 2.5;
 
 }
 
@@ -266,6 +269,21 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
       break;
     case DownloadItem::CANCELLED:
       percentDone_ = -1;
+      break;
+    case DownloadItem::INTERRUPTED:
+      // Small downloads may start in an interrupted state due to asynchronous
+      // notifications. In this case, we'll get a second complete notification
+      // via the observers, so we ignore it and avoid creating a second complete
+      // animation.
+      if (completionAnimation_.get())
+        break;
+      completionAnimation_.reset([[DownloadItemCellAnimation alloc]
+          initWithDownloadItemCell:self
+                          duration:kInterruptedAnimationDuration
+                    animationCurve:NSAnimationLinear]);
+      [completionAnimation_.get() setDelegate:self];
+      [completionAnimation_.get() startAnimation];
+      percentDone_ = -2;
       break;
     case DownloadItem::IN_PROGRESS:
       percentDone_ = downloadModel->download()->is_paused() ?
@@ -580,10 +598,17 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
     canvas.set_composite_alpha(true);
     if (completionAnimation_.get()) {
       if ([completionAnimation_ isAnimating]) {
-        download_util::PaintDownloadComplete(&canvas,
-            x, y,
-            [completionAnimation_ currentValue],
-            download_util::SMALL);
+        if (percentDone_ == -1) {
+          download_util::PaintDownloadComplete(&canvas,
+              x, y,
+              [completionAnimation_ currentValue],
+              download_util::SMALL);
+        } else {
+          download_util::PaintDownloadInterrupted(&canvas,
+              x, y,
+              [completionAnimation_ currentValue],
+              download_util::SMALL);
+        }
       }
     } else if (percentDone_ >= 0) {
       download_util::PaintDownloadProgress(&canvas,

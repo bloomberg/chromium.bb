@@ -394,8 +394,9 @@ void DownloadShelfView::Closed() {
   size_t i = 0;
   while (i < download_views_.size()) {
     DownloadItem* download = download_views_[i]->download();
-    bool is_transfer_done = download->state() == DownloadItem::COMPLETE ||
-                            download->state() == DownloadItem::CANCELLED;
+    bool is_transfer_done = download->IsComplete() ||
+                            download->IsCancelled() ||
+                            download->IsInterrupted();
     if (is_transfer_done &&
         download->safety_state() != DownloadItem::DANGEROUS) {
       RemoveDownloadView(download_views_[i]);

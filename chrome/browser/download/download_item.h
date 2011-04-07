@@ -53,7 +53,10 @@ class DownloadItem {
 
     // This state indicates that the download item is about to be destroyed,
     // and observers seeing this state should release all references.
-    REMOVING
+    REMOVING,
+
+    // This state indicates that the download has been interrupted.
+    INTERRUPTED
   };
 
   enum SafetyState {
@@ -161,6 +164,11 @@ class DownloadItem {
   // is finished.
   void Finished();
 
+  // Download operation had an error.
+  // |size| is the amount of data received so far, and |os_error| is the error
+  // code that the operation received.
+  void Interrupted(int64 size, int os_error);
+
   // The user wants to remove the download from the views and history. If
   // |delete_file| is true, the file is deleted on the disk.
   void Remove(bool delete_file);
@@ -212,6 +220,21 @@ class DownloadItem {
 
   // Returns true if this item matches |query|. |query| must be lower-cased.
   bool MatchesQuery(const string16& query) const;
+
+  // Returns true if the download needs more data.
+  bool IsPartialDownload() const;
+
+  // Returns true if the download is still receiving data.
+  bool IsInProgress() const;
+
+  // Returns true if the download has been cancelled or was interrupted.
+  bool IsCancelled() const;
+
+  // Returns true if the download was interrupted.
+  bool IsInterrupted() const;
+
+  // Returns true if we have all the data and know the final file name.
+  bool IsComplete() const;
 
   // Accessors
   DownloadState state() const { return state_; }
@@ -310,6 +333,9 @@ class DownloadItem {
 
   // Current received bytes
   int64 received_bytes_;
+
+  // Last error.
+  int last_os_error_;
 
   // Start time for calculating remaining time
   base::TimeTicks start_tick_;

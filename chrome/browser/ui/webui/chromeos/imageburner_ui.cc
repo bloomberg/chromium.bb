@@ -233,18 +233,17 @@ void ImageBurnHandler::ProgressUpdated(chromeos::BurnLibrary* object,
 }
 
 void ImageBurnHandler::OnDownloadUpdated(DownloadItem* download) {
-  if (download->state() != DownloadItem::CANCELLED &&
-      download->state() != DownloadItem::COMPLETE) {
+  if (download->IsPartialDownload()) {
     scoped_ptr<DictionaryValue> result_value(
         download_util::CreateDownloadItemValue(download, 0));
     web_ui_->CallJavascriptFunction("downloadUpdated", *result_value);
   }
-  if (download->state() == DownloadItem::CANCELLED)
+  if (download->IsCancelled())
     DownloadCompleted(false);
 }
 
 void ImageBurnHandler::OnDownloadFileCompleted(DownloadItem* download) {
-  DCHECK(download->state() == DownloadItem::COMPLETE);
+  DCHECK(download->IsComplete());
   zip_image_file_path_ = download->full_path();
   DownloadCompleted(true);
 }
@@ -541,14 +540,14 @@ ImageBurnResourceManager* ImageBurnResourceManager::GetInstance() {
 }
 
 void ImageBurnResourceManager::OnDownloadUpdated(DownloadItem* download) {
-  if (download->state() == DownloadItem::CANCELLED) {
+  if (download->IsCancelled()) {
     image_url_.reset();
     ConfigFileFetched(false);
   }
 }
 
 void ImageBurnResourceManager::OnDownloadFileCompleted(DownloadItem* download) {
-  DCHECK(download->state() == DownloadItem::COMPLETE);
+  DCHECK(download->IsComplete());
   std::string image_url;
   if (file_util::ReadFileToString(config_file_path_, &image_url)) {
     image_url_.reset(new GURL(std::string(kImageBaseURL) + image_url));

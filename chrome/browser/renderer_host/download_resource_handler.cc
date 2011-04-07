@@ -95,6 +95,8 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   info->request_id = global_id_.request_id;
   info->content_disposition = content_disposition_;
   info->mime_type = response->response_head.mime_type;
+  // TODO(ahendrickson) -- Get the last modified time and etag, so we can
+  // resume downloading.
 
   std::string content_type_header;
   if (!response->response_head.headers ||
@@ -176,13 +178,19 @@ bool DownloadResourceHandler::OnResponseCompleted(
            << " request_id = " << request_id
            << " status.status() = " << status.status()
            << " status.os_error() = " << status.os_error();
-  // Ownership of |buffer_| is passed to DownloadFileManager.
+  int error_code = (status.status() == net::URLRequestStatus::FAILED) ?
+      status.os_error() : 0;
+  // We transfer ownership to |DownloadFileManager| to delete |buffer_|,
+  // so that any functions queued up on the FILE thread are executed
+  // before deletion.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(download_file_manager_,
                         &DownloadFileManager::OnResponseCompleted,
                         download_id_,
-                        buffer_.release()));
+                        buffer_.release(),
+                        error_code,
+                        security_info));
   read_buffer_ = NULL;
   return true;
 }

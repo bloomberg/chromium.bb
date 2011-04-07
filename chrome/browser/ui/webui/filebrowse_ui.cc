@@ -771,7 +771,7 @@ void FilebrowseHandler::UpdateDownloadList() {
     DownloadItem* download = *it;
     // We want to know what happens as the download progresses and be notified
     // when the user validates the dangerous download.
-    if (download->state() == DownloadItem::IN_PROGRESS ||
+    if (download->IsInProgress() ||
         download->safety_state() == DownloadItem::DANGEROUS) {
       download->AddObserver(this);
       active_download_items_.push_back(download);

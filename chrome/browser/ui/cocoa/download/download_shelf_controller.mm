@@ -383,9 +383,9 @@ const NSSize kHoverCloseButtonDefaultSize = { 16, 16 };
     DownloadItemController* itemController =
         [downloadItemControllers_ objectAtIndex:i];
     DownloadItem* download = [itemController download];
-    bool isTransferDone =
-        download->state() == DownloadItem::COMPLETE ||
-        download->state() == DownloadItem::CANCELLED;
+    bool isTransferDone = download->IsComplete() ||
+                          download->IsCancelled() ||
+                          download->IsInterrupted();
     if (isTransferDone &&
         download->safety_state() != DownloadItem::DANGEROUS) {
       [self remove:itemController];
