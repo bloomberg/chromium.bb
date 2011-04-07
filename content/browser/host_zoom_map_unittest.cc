@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
@@ -62,9 +63,11 @@ TEST_F(HostZoomMapTest, LoadNoPrefs) {
 }
 
 TEST_F(HostZoomMapTest, Load) {
-  DictionaryValue* dict =
-      prefs_->GetMutableDictionary(prefs::kPerHostZoomLevels);
-  dict->SetWithoutPathExpansion(host_, Value::CreateDoubleValue(kZoomLevel));
+  {
+    DictionaryPrefUpdate update(prefs_, prefs::kPerHostZoomLevels);
+    DictionaryValue* dict = update.Get();
+    dict->SetWithoutPathExpansion(host_, Value::CreateDoubleValue(kZoomLevel));
+  }
   scoped_refptr<HostZoomMap> map(new HostZoomMap(&profile_));
   EXPECT_EQ(kZoomLevel, map->GetZoomLevel(url_));
 }

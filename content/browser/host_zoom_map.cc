@@ -127,10 +127,9 @@ void HostZoomMap::SetZoomLevel(const GURL& url, double level) {
 
   updating_preferences_ = true;
   {
-    ScopedUserPrefUpdate update(profile_->GetPrefs(),
+    DictionaryPrefUpdate update(profile_->GetPrefs(),
                                 prefs::kPerHostZoomLevels);
-    DictionaryValue* host_zoom_dictionary =
-        profile_->GetPrefs()->GetMutableDictionary(prefs::kPerHostZoomLevels);
+    DictionaryValue* host_zoom_dictionary = update.Get();
     if (level == default_zoom_level_) {
       host_zoom_dictionary->RemoveWithoutPathExpansion(host, NULL);
     } else {
