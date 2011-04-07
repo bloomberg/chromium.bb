@@ -15,4 +15,6 @@ NotifierOptions::NotifierOptions()
       notification_method(kDefaultNotificationMethod),
       auth_mechanism(GaiaTokenPreXmppAuth::kDefaultAuthMechanism) {}
 
+NotifierOptions::~NotifierOptions() { }
+
 }  // namespace notifier

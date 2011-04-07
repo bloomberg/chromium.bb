@@ -52,6 +52,7 @@ class ProfileSyncServicePreferenceTest
 
   virtual void SetUp() {
     profile_.reset(new TestingProfile());
+    profile_->CreateRequestContext();
     prefs_ = profile_->GetTestingPrefService();
 
     prefs_->RegisterStringPref(not_synced_preference_name_.c_str(),

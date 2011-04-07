@@ -7,7 +7,13 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
+
 class CommandLine;
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 namespace sync_notifier {
 
@@ -23,7 +29,10 @@ class SyncNotifierFactory {
 
   // Creates the appropriate sync notifier. The caller should take ownership
   // of the object returned and delete it when no longer used.
-  SyncNotifier* CreateSyncNotifier(const CommandLine& command_line);
+  SyncNotifier* CreateSyncNotifier(
+      const CommandLine& command_line,
+      const scoped_refptr<net::URLRequestContextGetter>&
+          request_context_getter);
 
  private:
   const std::string client_info_;

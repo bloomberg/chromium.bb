@@ -42,11 +42,14 @@ net::HostPortPair StringToHostPortPair(const std::string& host_port_str,
   return net::HostPortPair(host, port);
 }
 
-SyncNotifier* CreateDefaultSyncNotifier(const CommandLine& command_line,
-                                        const std::string& client_info) {
+SyncNotifier* CreateDefaultSyncNotifier(
+    const CommandLine& command_line,
+    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+    const std::string& client_info) {
   // Contains options specific to how sync clients send and listen to
   // jingle notifications.
   notifier::NotifierOptions notifier_options;
+  notifier_options.request_context_getter = request_context_getter;
 
   // Override the notification server host from the command-line, if provided.
   if (command_line.HasSwitch(switches::kSyncNotificationHost)) {
@@ -99,7 +102,10 @@ SyncNotifierFactory::~SyncNotifierFactory() {
 }
 
 SyncNotifier* SyncNotifierFactory::CreateSyncNotifier(
-    const CommandLine& command_line) {
-  return CreateDefaultSyncNotifier(command_line, client_info_);
+    const CommandLine& command_line,
+    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter) {
+  return CreateDefaultSyncNotifier(command_line,
+                                   request_context_getter,
+                                   client_info_);
 }
 }  // namespace sync_notifier

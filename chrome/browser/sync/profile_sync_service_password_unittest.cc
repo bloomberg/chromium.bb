@@ -143,6 +143,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   }
 
   virtual void SetUp() {
+    profile_.CreateRequestContext();
     password_store_ = new MockPasswordStore();
     db_thread_.Start();
 
@@ -160,6 +161,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     service_.reset();
     notification_service_->TearDown();
     db_thread_.Stop();
+    profile_.ResetRequestContext();
     MessageLoop::current()->RunAllPending();
   }
 

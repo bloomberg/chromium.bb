@@ -5,82 +5,196 @@
 #include "chrome/browser/sync/notifier/non_blocking_invalidation_notifier.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/observer_list_threadsafe.h"
+#include "base/threading/thread.h"
+#include "chrome/browser/sync/notifier/invalidation_notifier.h"
+#include "chrome/browser/sync/notifier/sync_notifier_observer.h"
 
 namespace sync_notifier {
+
+class NonBlockingInvalidationNotifier::Core
+    : public base::RefCountedThreadSafe<NonBlockingInvalidationNotifier::Core>,
+      public SyncNotifierObserver {
+ public:
+  // Called on parent thread.
+  Core();
+
+  // Called on parent thread.
+  void AddObserver(SyncNotifierObserver* observer);
+  void RemoveObserver(SyncNotifierObserver* observer);
+
+  // Helpers called on I/O thread.
+  void Initialize(const notifier::NotifierOptions& notifier_options,
+                  const std::string& client_info);
+  void Teardown();
+  void SetState(const std::string& state);
+  void UpdateCredentials(const std::string& email, const std::string& token);
+  void UpdateEnabledTypes(const syncable::ModelTypeSet& types);
+  void SendNotification();
+
+  // SyncNotifierObserver implementation (all called on I/O thread).
+  virtual void OnIncomingNotification(
+      const syncable::ModelTypePayloadMap& type_payloads);
+  virtual void OnNotificationStateChange(bool notifications_enabled);
+  virtual void StoreState(const std::string& state);
+
+ private:
+  friend class
+      base::RefCountedThreadSafe<NonBlockingInvalidationNotifier::Core>;
+  // Called on parent or I/O thread.
+  ~Core();
+
+  scoped_ptr<InvalidationNotifier> invalidation_notifier_;
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  scoped_refptr<ObserverListThreadSafe<SyncNotifierObserver> > observers_;
+  DISALLOW_COPY_AND_ASSIGN(Core);
+};
+
+NonBlockingInvalidationNotifier::Core::Core()
+    : observers_(new ObserverListThreadSafe<SyncNotifierObserver>()) {
+}
+
+NonBlockingInvalidationNotifier::Core::~Core() {
+}
+
+void NonBlockingInvalidationNotifier::Core::Initialize(
+    const notifier::NotifierOptions& notifier_options,
+    const std::string& client_info) {
+  DCHECK(notifier_options.request_context_getter);
+  DCHECK_EQ(notifier::NOTIFICATION_SERVER,
+            notifier_options.notification_method);
+  io_message_loop_proxy_ = notifier_options.request_context_getter->
+      GetIOMessageLoopProxy();
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  invalidation_notifier_.reset(
+      new InvalidationNotifier(notifier_options, client_info));
+  invalidation_notifier_->AddObserver(this);
+}
+
+
+void NonBlockingInvalidationNotifier::Core::Teardown() {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  invalidation_notifier_->RemoveObserver(this);
+  invalidation_notifier_.reset();
+  io_message_loop_proxy_ = NULL;
+}
+
+void NonBlockingInvalidationNotifier::Core::AddObserver(
+    SyncNotifierObserver* observer) {
+  observers_->AddObserver(observer);
+}
+
+void NonBlockingInvalidationNotifier::Core::RemoveObserver(
+    SyncNotifierObserver* observer) {
+  observers_->RemoveObserver(observer);
+}
+
+void NonBlockingInvalidationNotifier::Core::SetState(
+    const std::string& state) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  invalidation_notifier_->SetState(state);
+}
+
+void NonBlockingInvalidationNotifier::Core::UpdateCredentials(
+    const std::string& email, const std::string& token) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  invalidation_notifier_->UpdateCredentials(email, token);
+}
+
+void NonBlockingInvalidationNotifier::Core::UpdateEnabledTypes(
+    const syncable::ModelTypeSet& types) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  invalidation_notifier_->UpdateEnabledTypes(types);
+}
+
+void NonBlockingInvalidationNotifier::Core::OnIncomingNotification(
+        const syncable::ModelTypePayloadMap& type_payloads) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  observers_->Notify(&SyncNotifierObserver::OnIncomingNotification,
+                     type_payloads);
+}
+
+void NonBlockingInvalidationNotifier::Core::OnNotificationStateChange(
+        bool notifications_enabled) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  observers_->Notify(&SyncNotifierObserver::OnNotificationStateChange,
+                     notifications_enabled);
+}
+
+void NonBlockingInvalidationNotifier::Core::StoreState(
+    const std::string& state) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  observers_->Notify(&SyncNotifierObserver::StoreState, state);
+}
 
 NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
     const notifier::NotifierOptions& notifier_options,
     const std::string& client_info)
-    : construction_message_loop_(MessageLoop::current()),
-      method_message_loop_(NULL),
-      observers_(new ObserverListThreadSafe<SyncNotifierObserver>()),
-      worker_thread_("InvalidationNotifier worker thread"),
-      worker_thread_vars_(NULL) {
-  DCHECK_EQ(notifier::NOTIFICATION_SERVER,
-            notifier_options.notification_method);
-  const base::Thread::Options options(MessageLoop::TYPE_IO, 0);
-  CHECK(worker_thread_.StartWithOptions(options));
-  worker_message_loop()->PostTask(
+        : core_(new Core),
+          construction_message_loop_proxy_(
+              base::MessageLoopProxy::CreateForCurrentThread()),
+          io_message_loop_proxy_(notifier_options.request_context_getter->
+              GetIOMessageLoopProxy()) {
+  io_message_loop_proxy_->PostTask(
       FROM_HERE,
       NewRunnableMethod(
-          this,
-          &NonBlockingInvalidationNotifier::CreateWorkerThreadVars,
+          core_.get(),
+          &NonBlockingInvalidationNotifier::Core::Initialize,
           notifier_options, client_info));
 }
 
 NonBlockingInvalidationNotifier::~NonBlockingInvalidationNotifier() {
-  DCHECK_EQ(MessageLoop::current(), construction_message_loop_);
-  worker_message_loop()->PostTask(
+  DCHECK(construction_message_loop_proxy_->BelongsToCurrentThread());
+  io_message_loop_proxy_->PostTask(
       FROM_HERE,
       NewRunnableMethod(
-          this,
-          &NonBlockingInvalidationNotifier::DestroyWorkerThreadVars));
-  worker_thread_.Stop();
-  CHECK(!worker_thread_vars_);
+          core_.get(),
+          &NonBlockingInvalidationNotifier::Core::Teardown));
 }
 
 void NonBlockingInvalidationNotifier::AddObserver(
     SyncNotifierObserver* observer) {
   CheckOrSetValidThread();
-  observers_->AddObserver(observer);
+  core_->AddObserver(observer);
 }
 
 void NonBlockingInvalidationNotifier::RemoveObserver(
     SyncNotifierObserver* observer) {
   CheckOrSetValidThread();
-  observers_->RemoveObserver(observer);
+  core_->RemoveObserver(observer);
 }
 
 void NonBlockingInvalidationNotifier::SetState(const std::string& state) {
   CheckOrSetValidThread();
-  worker_message_loop()->PostTask(
+  io_message_loop_proxy_->PostTask(
       FROM_HERE,
       NewRunnableMethod(
-          this,
-          &NonBlockingInvalidationNotifier::SetStateOnWorkerThread,
+          core_.get(),
+          &NonBlockingInvalidationNotifier::Core::SetState,
           state));
 }
 
 void NonBlockingInvalidationNotifier::UpdateCredentials(
     const std::string& email, const std::string& token) {
   CheckOrSetValidThread();
-  worker_message_loop()->PostTask(
+  io_message_loop_proxy_->PostTask(
       FROM_HERE,
       NewRunnableMethod(
-          this,
-          &NonBlockingInvalidationNotifier::UpdateCredentialsOnWorkerThread,
+          core_.get(),
+          &NonBlockingInvalidationNotifier::Core::UpdateCredentials,
           email, token));
 }
 
 void NonBlockingInvalidationNotifier::UpdateEnabledTypes(
     const syncable::ModelTypeSet& types) {
   CheckOrSetValidThread();
-  worker_message_loop()->PostTask(
+  io_message_loop_proxy_->PostTask(
       FROM_HERE,
       NewRunnableMethod(
-          this,
-          &NonBlockingInvalidationNotifier::UpdateEnabledTypesOnWorkerThread,
+          core_.get(),
+          &NonBlockingInvalidationNotifier::Core::UpdateEnabledTypes,
           types));
 }
 
@@ -90,98 +204,13 @@ void NonBlockingInvalidationNotifier::SendNotification() {
   // need to forward on the call.
 }
 
-MessageLoop* NonBlockingInvalidationNotifier::worker_message_loop() {
-  MessageLoop* current_message_loop = MessageLoop::current();
-  DCHECK(current_message_loop);
-  MessageLoop* worker_message_loop = worker_thread_.message_loop();
-  DCHECK(worker_message_loop);
-  DCHECK(current_message_loop == construction_message_loop_ ||
-         current_message_loop == method_message_loop_ ||
-         current_message_loop == worker_message_loop);
-  return worker_message_loop;
-}
-
 void NonBlockingInvalidationNotifier::CheckOrSetValidThread() {
-  if (method_message_loop_) {
-    DCHECK_EQ(MessageLoop::current(), method_message_loop_);
+  if (method_message_loop_proxy_) {
+    DCHECK(method_message_loop_proxy_->BelongsToCurrentThread());
   } else {
-    method_message_loop_ = MessageLoop::current();
+    method_message_loop_proxy_ =
+        base::MessageLoopProxy::CreateForCurrentThread();
   }
-}
-
-void NonBlockingInvalidationNotifier::CreateWorkerThreadVars(
-    const notifier::NotifierOptions& notifier_options,
-    const std::string& client_info) {
-  DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  worker_thread_vars_ =
-      new WorkerThreadVars(notifier_options, client_info, observers_);
-}
-
-void NonBlockingInvalidationNotifier::DestroyWorkerThreadVars() {
-  DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  delete worker_thread_vars_;
-  worker_thread_vars_ = NULL;
-}
-
-void NonBlockingInvalidationNotifier::SetStateOnWorkerThread(
-    const std::string& state) {
-  DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  worker_thread_vars_->invalidation_notifier.SetState(state);
-}
-
-void NonBlockingInvalidationNotifier::UpdateCredentialsOnWorkerThread(
-    const std::string& email, const std::string& token) {
-  DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  worker_thread_vars_->invalidation_notifier.UpdateCredentials(email, token);
-}
-
-void NonBlockingInvalidationNotifier::UpdateEnabledTypesOnWorkerThread(
-    const syncable::ModelTypeSet& types) {
-  DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  worker_thread_vars_->invalidation_notifier.UpdateEnabledTypes(types);
-}
-
-NonBlockingInvalidationNotifier::ObserverRouter::ObserverRouter(
-    const scoped_refptr<ObserverListThreadSafe<SyncNotifierObserver> >&
-        observers) : observers_(observers) {}
-
-NonBlockingInvalidationNotifier::ObserverRouter::~ObserverRouter() {}
-
-void NonBlockingInvalidationNotifier::ObserverRouter::
-    OnIncomingNotification(
-        const syncable::ModelTypePayloadMap& type_payloads) {
-  observers_->Notify(&SyncNotifierObserver::OnIncomingNotification,
-                     type_payloads);
-}
-
-void NonBlockingInvalidationNotifier::ObserverRouter::
-    OnNotificationStateChange(
-        bool notifications_enabled) {
-  observers_->Notify(&SyncNotifierObserver::OnNotificationStateChange,
-                     notifications_enabled);
-}
-
-void NonBlockingInvalidationNotifier::ObserverRouter::StoreState(
-    const std::string& state) {
-  observers_->Notify(&SyncNotifierObserver::StoreState, state);
-}
-
-NonBlockingInvalidationNotifier::WorkerThreadVars::WorkerThreadVars(
-    const notifier::NotifierOptions& notifier_options,
-    const std::string& client_info,
-    const scoped_refptr<ObserverListThreadSafe<SyncNotifierObserver> >&
-        observers)
-    : host_resolver_(
-        net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                      NULL, NULL)),
-      invalidation_notifier(notifier_options, host_resolver_.get(),
-                            &cert_verifier_, client_info),
-      observer_router_(observers) {
-  invalidation_notifier.AddObserver(&observer_router_);
-}
-
-NonBlockingInvalidationNotifier::WorkerThreadVars::~WorkerThreadVars() {
-  invalidation_notifier.RemoveObserver(&observer_router_);
 }
 
 }  // namespace sync_notifier

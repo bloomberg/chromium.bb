@@ -56,6 +56,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   }
 
   virtual void SetUp() {
+    profile_.CreateRequestContext();
     service_.reset(new TestProfileSyncService(&factory_, &profile_,
                                               "test", true, NULL));
     service_->AddObserver(&observer_);
@@ -64,6 +65,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 
   virtual void TearDown() {
     service_->RemoveObserver(&observer_);
+    profile_.ResetRequestContext();
   }
 
  protected:

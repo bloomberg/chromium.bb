@@ -25,26 +25,18 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/communicator/login.h"
-#include "net/base/cert_verifier.h"
-
-namespace net {
-class HostResolver;
-class CertVerifier;
-}  // namespace net
 
 namespace sync_notifier {
 
+// This class must live on the IO thread.
 class InvalidationNotifier
     : public SyncNotifier,
       public notifier::LoginDelegate,
       public ChromeInvalidationClient::Listener,
       public StateWriter {
  public:
-  // Does not take ownership of |host_resolver| or |cert_verifier|.
   InvalidationNotifier(
       const notifier::NotifierOptions& notifier_options,
-      net::HostResolver* host_resolver,
-      net::CertVerifier* cert_verifier,
       const std::string& client_info);
 
   virtual ~InvalidationNotifier();
@@ -89,8 +81,6 @@ class InvalidationNotifier
 
   // Used to build parameters for |login_|.
   const notifier::NotifierOptions notifier_options_;
-  net::HostResolver* const host_resolver_;
-  net::CertVerifier* const cert_verifier_;
 
   // Passed to |invalidation_client_|.
   const std::string client_info_;

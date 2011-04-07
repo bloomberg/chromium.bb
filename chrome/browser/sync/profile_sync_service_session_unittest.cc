@@ -66,7 +66,7 @@ class ProfileSyncServiceSessionTest
   virtual void SetUp() {
     // BrowserWithTestWindowTest implementation.
     BrowserWithTestWindowTest::SetUp();
-
+    profile()->CreateRequestContext();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     SessionService* session_service = new SessionService(temp_dir_.path());
     helper_.set_service(session_service);
@@ -93,6 +93,7 @@ class ProfileSyncServiceSessionTest
     helper_.set_service(NULL);
     profile()->set_session_service(NULL);
     sync_service_.reset();
+    profile()->ResetRequestContext();
   }
 
   bool StartSyncService(Task* task, bool will_fail_association) {

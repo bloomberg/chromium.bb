@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/notifier/p2p_notifier.h"
 
+#include "base/message_loop_proxy.h"
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
@@ -25,13 +26,13 @@ P2PNotifier::P2PNotifier(
             notifier_options)),
       logged_in_(false),
       notifications_enabled_(false),
-      construction_message_loop_(MessageLoop::current()),
-      method_message_loop_(NULL) {
+      construction_message_loop_proxy_(
+          base::MessageLoopProxy::CreateForCurrentThread()) {
   talk_mediator_->SetDelegate(this);
 }
 
 P2PNotifier::~P2PNotifier() {
-  DCHECK_EQ(MessageLoop::current(), construction_message_loop_);
+  DCHECK(construction_message_loop_proxy_->BelongsToCurrentThread());
 }
 
 void P2PNotifier::AddObserver(SyncNotifierObserver* observer) {
@@ -143,10 +144,11 @@ void P2PNotifier::MaybeEmitNotification() {
 }
 
 void P2PNotifier::CheckOrSetValidThread() {
-  if (method_message_loop_) {
-    DCHECK_EQ(MessageLoop::current(), method_message_loop_);
+  if (method_message_loop_proxy_) {
+    DCHECK(method_message_loop_proxy_->BelongsToCurrentThread());
   } else {
-    method_message_loop_ = MessageLoop::current();
+    method_message_loop_proxy_ =
+        base::MessageLoopProxy::CreateForCurrentThread();
   }
 }
 

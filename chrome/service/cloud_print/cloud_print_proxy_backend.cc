@@ -20,6 +20,7 @@
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 #include "chrome/service/cloud_print/printer_job_handler.h"
 #include "chrome/service/gaia/service_gaia_authenticator.h"
+#include "chrome/service/net/service_url_request_context.h"
 #include "chrome/service/service_process.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -371,10 +372,12 @@ void CloudPrintProxyBackend::Core::DoInitializeWithToken(
   auth_token_ = cloud_print_token;
 
   if (result.succeeded()) {
-    const notifier::NotifierOptions kNotifierOptions;
+    notifier::NotifierOptions notifier_options;
+    notifier_options.request_context_getter =
+        g_service_process->GetServiceURLRequestContextGetter();
     talk_mediator_.reset(new notifier::TalkMediatorImpl(
-        new notifier::MediatorThreadImpl(kNotifierOptions),
-        kNotifierOptions));
+        new notifier::MediatorThreadImpl(notifier_options),
+        notifier_options));
     notifier::Subscription subscription;
     subscription.channel = kCloudPrintPushNotificationsSource;
     subscription.channel.append("/proxy/");

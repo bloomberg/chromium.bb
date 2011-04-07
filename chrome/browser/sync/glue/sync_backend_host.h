@@ -33,6 +33,10 @@
 class CancelableTask;
 class Profile;
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace sync_notifier {
 class SyncNotifier;
 }  // namespace sync_notifier
@@ -317,6 +321,11 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
       std::string restored_key_for_bootstrapping;
       bool setup_for_test_mode;
     };
+
+    // Called on |frontend_loop_|.
+    void CreateSyncNotifier(const scoped_refptr<net::URLRequestContextGetter>&
+        request_context_getter);
+
 
     // Note:
     //

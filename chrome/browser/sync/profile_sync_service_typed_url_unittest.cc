@@ -130,6 +130,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   }
 
   virtual void SetUp() {
+    profile_.CreateRequestContext();
     history_backend_ = new HistoryBackendMock();
     history_service_ = new HistoryServiceMock();
     EXPECT_CALL((*history_service_.get()), ScheduleDBTask(_, _))
@@ -148,6 +149,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     service_.reset();
     notification_service_->TearDown();
     history_thread_.Stop();
+    profile_.ResetRequestContext();
     MessageLoop::current()->RunAllPending();
   }
 

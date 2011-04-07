@@ -49,6 +49,12 @@ class ProfileSyncServiceTest : public testing::Test {
     // Ensure that the sync objects destruct to avoid memory leaks.
     MessageLoop::current()->RunAllPending();
   }
+  virtual void SetUp() {
+    profile_->CreateRequestContext();
+  }
+  virtual void TearDown() {
+    profile_->ResetRequestContext();
+  }
 
   // TODO(akalin): Refactor the StartSyncService*() functions below.
 

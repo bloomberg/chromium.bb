@@ -25,32 +25,21 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
-#include "base/observer_list_threadsafe.h"
 #include "base/task.h"
-#include "base/threading/thread.h"
 #include "jingle/notifier/base/notifier_options.h"
-#include "jingle/notifier/communicator/login.h"
 #include "jingle/notifier/listener/mediator_thread.h"
-#include "jingle/notifier/listener/push_notifications_listen_task.h"
-#include "jingle/notifier/listener/push_notifications_subscribe_task.h"
 
-class MessageLoop;
+namespace base {
+class MessageLoopProxy;
+}
 
 namespace buzz {
 class XmppClientSettings;
 }  // namespace buzz
 
-namespace net {
-class HostResolver;
-}  // namespace net
-
 namespace notifier {
 
-class MediatorThreadImpl : public MediatorThread, public LoginDelegate,
-                           public PushNotificationsListenTaskDelegate,
-                           public PushNotificationsSubscribeTaskDelegate {
+class MediatorThreadImpl : public MediatorThread {
  public:
   explicit MediatorThreadImpl(const NotifierOptions& notifier_options);
   virtual ~MediatorThreadImpl();
@@ -70,54 +59,21 @@ class MediatorThreadImpl : public MediatorThread, public LoginDelegate,
   virtual void SendNotification(const Notification& data);
   virtual void UpdateXmppSettings(const buzz::XmppClientSettings& settings);
 
-  // Login::Delegate implementation.
-  virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task);
-  virtual void OnDisconnect();
-
-  // PushNotificationsListenTaskDelegate implementation.
-  virtual void OnNotificationReceived(
-      const Notification& notification);
-  // PushNotificationsSubscribeTaskDelegate implementation.
-  virtual void OnSubscribed();
-  virtual void OnSubscriptionError();
-
- protected:
-  // Should only be called after Start().
-  MessageLoop* worker_message_loop();
-
-  scoped_refptr<ObserverListThreadSafe<Observer> > observers_;
-  MessageLoop* construction_message_loop_;
-  MessageLoop* method_message_loop_;
-  base::WeakPtr<talk_base::Task> base_task_;
-
  private:
-  void DoLogin(const buzz::XmppClientSettings& settings);
-  void DoDisconnect();
-
-  // Helpers invoked on worker thread.
-  void ListenForPushNotifications();
-  void SubscribeForPushNotifications(
-      const SubscriptionList& subscriptions);
-
-  void DoSendNotification(
-      const Notification& data);
-  void DoUpdateXmppSettings(const buzz::XmppClientSettings& settings);
   void CheckOrSetValidThread();
-
-  const NotifierOptions notifier_options_;
-
-  base::Thread worker_thread_;
-  scoped_ptr<net::HostResolver> host_resolver_;
-  scoped_ptr<net::CertVerifier> cert_verifier_;
-
-  scoped_ptr<notifier::Login> login_;
-
+  // The logic of Logout without the thread check so it can be called in the
+  // d'tor.
+  void LogoutImpl();
+  // The real guts of MediatorThreadImpl, which allows this class to not be
+  // refcounted.
+  class Core;
+  scoped_refptr<Core> core_;
+  scoped_refptr<base::MessageLoopProxy> construction_message_loop_proxy_;
+  scoped_refptr<base::MessageLoopProxy> method_message_loop_proxy_;
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   DISALLOW_COPY_AND_ASSIGN(MediatorThreadImpl);
 };
 
 }  // namespace notifier
-
-// We manage the lifetime of notifier::MediatorThreadImpl ourselves.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(notifier::MediatorThreadImpl);
 
 #endif  // JINGLE_NOTIFIER_LISTENER_MEDIATOR_THREAD_IMPL_H_

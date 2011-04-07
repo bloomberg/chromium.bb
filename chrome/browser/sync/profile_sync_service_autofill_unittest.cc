@@ -269,6 +269,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     }
   }
   virtual void SetUp() {
+    profile_.CreateRequestContext();
     web_database_.reset(new WebDatabaseFake(&autofill_table_));
     web_data_service_ = new WebDataServiceFake(web_database_.get());
     personal_data_manager_ = new PersonalDataManagerMock();
@@ -285,6 +286,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     service_.reset();
     notification_service_->TearDown();
     db_thread_.Stop();
+    profile_.ResetRequestContext();
     MessageLoop::current()->RunAllPending();
   }
 

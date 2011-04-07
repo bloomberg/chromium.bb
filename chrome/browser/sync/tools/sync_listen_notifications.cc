@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
@@ -16,6 +17,8 @@
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
+#include "chrome/test/test_url_request_context_getter.h"
+#include "content/browser/browser_thread.h"
 
 // This is a simple utility that initializes a sync notifier and
 // listens to any received notifications.
@@ -56,6 +59,12 @@ class NotificationPrinter : public sync_notifier::SyncNotifierObserver {
 
 int main(int argc, char* argv[]) {
   base::AtExitManager exit_manager;
+  scoped_refptr<TestURLRequestContextGetter> request_context_getter(
+      new TestURLRequestContextGetter);
+  BrowserThread io_thread(BrowserThread::IO);
+  base::Thread::Options options;
+  options.message_loop_type = MessageLoop::TYPE_IO;
+  io_thread.StartWithOptions(options);
   CommandLine::Init(argc, argv);
   logging::InitLogging(
       NULL,
@@ -87,7 +96,8 @@ int main(int argc, char* argv[]) {
   const char kClientInfo[] = "sync_listen_notifications";
   sync_notifier::SyncNotifierFactory sync_notifier_factory(kClientInfo);
   scoped_ptr<sync_notifier::SyncNotifier> sync_notifier(
-      sync_notifier_factory.CreateSyncNotifier(command_line));
+      sync_notifier_factory.CreateSyncNotifier(command_line,
+                                               request_context_getter.get()));
   NotificationPrinter notification_printer;
   sync_notifier->AddObserver(&notification_printer);
 
@@ -105,5 +115,6 @@ int main(int argc, char* argv[]) {
   main_loop.Run();
 
   sync_notifier->RemoveObserver(&notification_printer);
+  io_thread.Stop();
   return 0;
 }

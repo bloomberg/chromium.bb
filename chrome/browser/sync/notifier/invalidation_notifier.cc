@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/notifier/invalidation_notifier.h"
 
 #include "base/logging.h"
+#include "base/message_loop_proxy.h"
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
@@ -12,6 +13,7 @@
 #include "jingle/notifier/base/notifier_options_util.h"
 #include "jingle/notifier/communicator/connection_options.h"
 #include "net/base/host_port_pair.h"
+#include "net/url_request/url_request_context.h"
 #include "talk/xmpp/jid.h"
 #include "talk/xmpp/xmppclientsettings.h"
 
@@ -19,16 +21,16 @@ namespace sync_notifier {
 
 InvalidationNotifier::InvalidationNotifier(
     const notifier::NotifierOptions& notifier_options,
-    net::HostResolver* host_resolver,
-    net::CertVerifier* cert_verifier,
     const std::string& client_info)
     : state_(STOPPED),
       notifier_options_(notifier_options),
-      host_resolver_(host_resolver),
-      cert_verifier_(cert_verifier),
       client_info_(client_info) {
   DCHECK_EQ(notifier::NOTIFICATION_SERVER,
             notifier_options.notification_method);
+  DCHECK(notifier_options_.request_context_getter);
+  // TODO(akalin): Replace NonThreadSafe checks with IO thread checks.
+  DCHECK(notifier_options_.request_context_getter->GetIOMessageLoopProxy()->
+      BelongsToCurrentThread());
 }
 
 InvalidationNotifier::~InvalidationNotifier() {
@@ -66,8 +68,10 @@ void InvalidationNotifier::UpdateCredentials(
         new notifier::Login(this,
                             xmpp_client_settings,
                             notifier::ConnectionOptions(),
-                            host_resolver_,
-                            cert_verifier_,
+                            notifier_options_.request_context_getter->
+                                GetURLRequestContext()->host_resolver(),
+                            notifier_options_.request_context_getter->
+                                GetURLRequestContext()->cert_verifier(),
                             notifier::GetServerList(notifier_options_),
                             notifier_options_.try_ssltcp_first,
                             notifier_options_.auth_mechanism));

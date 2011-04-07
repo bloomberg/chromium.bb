@@ -143,6 +143,10 @@ void SyncBackendHost::Initialize(
   // Nigori is populated by default now.
   registrar_.routing_info[syncable::NIGORI] = GROUP_PASSIVE;
 
+  // TODO(akalin): Create SyncNotifier here and pass it in as part of
+  // DoInitializeOptions.
+  core_->CreateSyncNotifier(baseline_context_getter);
+
   InitCore(Core::DoInitializeOptions(
       sync_service_url,
       MakeHttpBridgeFactory(baseline_context_getter),
@@ -639,6 +643,16 @@ void SyncBackendHost::Core::FinishConfigureDataTypesOnFrontendLoop() {
   host_->FinishConfigureDataTypesOnFrontendLoop();
 }
 
+
+void SyncBackendHost::Core::CreateSyncNotifier(
+    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter) {
+  const std::string& client_info = webkit_glue::GetUserAgent(GURL());
+  SyncNotifierFactory sync_notifier_factory(client_info);
+  sync_notifier_.reset(sync_notifier_factory.CreateSyncNotifier(
+      *CommandLine::ForCurrentProcess(),
+      request_context_getter));
+}
+
 SyncBackendHost::Core::DoInitializeOptions::DoInitializeOptions(
     const GURL& service_url,
     sync_api::HttpPostProviderFactory* http_bridge_factory,
@@ -711,10 +725,6 @@ SyncBackendHost::Core::Core(SyncBackendHost* backend)
       parent_router_(NULL),
       processing_passphrase_(false),
       deferred_nudge_for_cleanup_requested_(false) {
-  const std::string& client_info = webkit_glue::GetUserAgent(GURL());
-  SyncNotifierFactory sync_notifier_factory(client_info);
-  sync_notifier_.reset(sync_notifier_factory.CreateSyncNotifier(
-      *CommandLine::ForCurrentProcess()));
 }
 
 // Helper to construct a user agent string (ASCII) suitable for use by

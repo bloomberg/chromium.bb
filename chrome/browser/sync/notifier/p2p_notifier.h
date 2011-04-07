@@ -10,13 +10,17 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "jingle/notifier/listener/talk_mediator.h"
 
-class MessageLoop;
+namespace base {
+class MessageLoopProxy;
+}
+
 
 namespace notifier {
 struct NotifierOptions;
@@ -64,8 +68,8 @@ class P2PNotifier
   bool notifications_enabled_;
 
   syncable::ModelTypeSet enabled_types_;
-  MessageLoop* construction_message_loop_;
-  MessageLoop* method_message_loop_;
+  scoped_refptr<base::MessageLoopProxy> construction_message_loop_proxy_;
+  scoped_refptr<base::MessageLoopProxy> method_message_loop_proxy_;
 };
 
 }  // namespace sync_notifier
