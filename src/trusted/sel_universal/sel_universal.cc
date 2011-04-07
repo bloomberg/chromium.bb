@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 // Second generation sel_universal implemented in C++ and with optional
@@ -206,14 +206,13 @@ int main(int argc, char* argv[]) {
   //
   // Pepper sample commands
   // initialize_pepper pepper
-  // add_pepper_rpcs
+  //   sdl_initialize OR (replay*; replay_activate)
   // install_upcalls service
   // show_variables
   // show_descriptors
   // rpc PPP_InitializeModule i(0) l(0) h(pepper) s("${service}") * i(0) i(0)
 
   loop.AddHandler("initialize_pepper", HandlerPepperInit);
-  loop.AddHandler("add_pepper_rpcs", HandlerAddPepperRpcs);
 
   loop.AddHandler("replay_activate", HandlerReplayActivate);
   loop.AddHandler("replay", HandlerReplay);
@@ -233,8 +232,6 @@ int main(int argc, char* argv[]) {
   loop.AddHandler("sdl_initialize", HandlerSDLInitialize);
   loop.AddHandler("sdl_event_loop", HandlerSDLEventLoop);
 #endif
-// start multimedia event loop
-bool HandlerEventLoop(NaClCommandLoop* ncl, const vector<string>& args);
 
   NaClLog(1, "populating initial vars\n");
   for (map<string, string>::iterator it = initial_vars.begin();

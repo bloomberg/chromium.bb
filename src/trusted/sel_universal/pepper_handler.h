@@ -14,8 +14,8 @@ using std::string;
 using std::vector;
 class NaClCommandLoop;
 
+// Create the reverse rpc channel with a dummy service routine
+// This migth be used some day to implement PPAPI calls off the main thread
 bool HandlerPepperInit(NaClCommandLoop* ncl, const vector<string>& args);
-bool HandlerAddPepperRpcs(NaClCommandLoop* l, const vector<string>& args);
-
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERSAL_PEPPER_HANDLER_H_ */
