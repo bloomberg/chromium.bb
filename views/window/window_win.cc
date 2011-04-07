@@ -511,8 +511,6 @@ LRESULT WindowWin::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
         // Combine |w_param| with common key state message flags.
         w_param |= ((GetKeyState(VK_CONTROL) & 0x80) == 0x80)? MK_CONTROL : 0;
         w_param |= ((GetKeyState(VK_SHIFT) & 0x80) == 0x80)? MK_SHIFT : 0;
-        WidgetWin::OnMouseRange(message, w_param, l_param);
-        return 0;
       }
     }
   } else if (message == WM_NCRBUTTONDOWN &&
