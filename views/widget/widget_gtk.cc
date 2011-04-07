@@ -1222,8 +1222,6 @@ gboolean WidgetGtk::OnFocusIn(GtkWidget* widget, GdkEventFocus* event) {
   if (!got_initial_focus_in_) {
     got_initial_focus_in_ = true;
     SetInitialFocus();
-  } else {
-    GetFocusManager()->RestoreFocusedView();
   }
   return false;
 }
@@ -1239,9 +1237,6 @@ gboolean WidgetGtk::OnFocusOut(GtkWidget* widget, GdkEventFocus* event) {
   // Only top-level Widget should have an InputMethod instance.
   if (input_method_.get())
     input_method_->OnBlur();
-
-  // The top-level window lost focus, store the focused view.
-  GetFocusManager()->StoreFocusedView();
   return false;
 }
 

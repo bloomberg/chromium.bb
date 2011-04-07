@@ -966,6 +966,11 @@ TEST_F(FocusManagerTest, FocusNativeControls) {
   EXPECT_EQ(tab_button, GetFocusManager()->GetFocusedView());
 }
 
+
+// On linux, we don't store/restore focused view because gtk handles
+// this (and pure views will be the same).
+#if defined(OS_WIN)
+
 // Test that when activating/deactivating the top window, the focus is stored/
 // restored properly.
 TEST_F(FocusManagerTest, FocusStoreRestore) {
@@ -1042,6 +1047,7 @@ TEST_F(FocusManagerTest, FocusStoreRestore) {
   EXPECT_TRUE(listener.focus_changes()[1] == ViewPair(null_view, view));
   */
 }
+#endif
 
 TEST_F(FocusManagerTest, ContainsView) {
   View* view = new View();
