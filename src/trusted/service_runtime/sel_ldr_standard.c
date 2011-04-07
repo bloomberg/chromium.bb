@@ -205,7 +205,7 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   /* pick some reasonable default for an un-sandboxed nexe */
   nap->bundle_size = 32;
 #endif
-  nap->entry_pt = NaClElfImageGetEntryPoint(image);
+  nap->initial_entry_pt = NaClElfImageGetEntryPoint(image);
 
   NaClLog(2,
           "NaClApp addr space layout:\n");
@@ -231,13 +231,16 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
           "nap->break_addr         = 0x%016"NACL_PRIxPTR"\n",
           nap->break_addr);
   NaClLog(2,
-          "nap->entry_pt           = 0x%016"NACL_PRIxPTR"\n",
-          nap->entry_pt);
+          "nap->initial_entry_pt   = 0x%016"NACL_PRIxPTR"\n",
+          nap->initial_entry_pt);
+  NaClLog(2,
+          "nap->user_entry_pt      = 0x%016"NACL_PRIxPTR"\n",
+          nap->user_entry_pt);
   NaClLog(2,
           "nap->bundle_size        = 0x%x\n",
           nap->bundle_size);
 
-  if (!NaClAddrIsValidEntryPt(nap, nap->entry_pt)) {
+  if (!NaClAddrIsValidEntryPt(nap, nap->initial_entry_pt)) {
     ret = LOAD_BAD_ENTRY;
     goto done;
   }
@@ -452,8 +455,11 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
           "nap->break_addr         = 0x%016"NACL_PRIxPTR"\n",
           nap->break_addr);
   NaClLog(2,
-          "nap->entry_pt           = 0x%016"NACL_PRIxPTR"\n",
-          nap->entry_pt);
+          "nap->initial_entry_pt   = 0x%016"NACL_PRIxPTR"\n",
+          nap->initial_entry_pt);
+  NaClLog(2,
+          "nap->user_entry_pt      = 0x%016"NACL_PRIxPTR"\n",
+          nap->user_entry_pt);
   NaClLog(2,
           "nap->bundle_size        = 0x%x\n",
           nap->bundle_size);
@@ -481,7 +487,8 @@ NaClErrorCode NaClAppLoadFileDynamically(struct NaClApp *nap,
   if (LOAD_OK != ret) {
     goto done;
   }
-  nap->entry_pt = NaClElfImageGetEntryPoint(image);
+  nap->user_entry_pt = nap->initial_entry_pt;
+  nap->initial_entry_pt = NaClElfImageGetEntryPoint(image);
 
  done:
   NaClElfImageDelete(image);
@@ -513,6 +520,7 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   int                   retval;
   int                   envc;
   size_t                size;
+  int                   auxv_entries;
   size_t                ptr_tbl_size;
   int                   i;
   char                  *p;
@@ -582,29 +590,32 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   /*
    * NaCl modules are ILP32, so the argv, envv pointers, as well as
    * the terminating NULL pointers at the end of the argv/envv tables,
-   * are 32-bit values.  We also have the empty auxv to take into
-   * account, so that's 6 additional 32-bit values on top of the
-   * argv/envv contents.  Note that on nacl64, argc is popped, and
-   * is an 8-byte value!
+   * are 32-bit values.  We also have the auxv to take into account.
+   * Note that on nacl64, argc is popped, and is an 8-byte value!
    *
    * The argv and envv pointer tables came from trusted code and is
    * part of memory.  Thus, by the same argument above, adding in
-   * (argc+envc+4)*sizeof(void *) cannot possibly overflow the size
-   * variable since it is a size_t object.  However, the two more
-   * pointers for auxv and the space for argv could cause an overflow.
-   * The fact that we used stack to get here etc means that
-   * ptr_tb_size could not have overflowed.
+   * "ptr_tbl_size" cannot possibly overflow the "size" variable since
+   * it is a size_t object.  However, the extra pointers for auxv and
+   * the space for argv could cause an overflow.  The fact that we
+   * used stack to get here etc means that ptr_tbl_size could not have
+   * overflowed.
    *
    * NB: the underlying OS would have limited the amount of space used
    * for argv and envv -- on linux, it is ARG_MAX, or 128KB -- and
    * hence the overflow check is for obvious auditability rather than
    * for correctness.
    */
-  ptr_tbl_size = (argc + envc + 6) * sizeof(uint32_t) + sizeof(int);
+  auxv_entries = 1;
+  if (0 != nap->user_entry_pt) {
+    auxv_entries++;
+  }
+  ptr_tbl_size = (argc + envc + 2 + auxv_entries * 2) * sizeof(uint32_t)
+                 + sizeof(nacl_reg_t);
 
   if (SIZE_T_MAX - size < ptr_tbl_size) {
     NaClLog(LOG_WARNING,
-            "NaClCreateMainThread: ptr_tb_size cause size of"
+            "NaClCreateMainThread: ptr_tbl_size cause size of"
             " argv / environment copy to overflow!?!\n");
     retval = 0;
     goto cleanup;
@@ -652,10 +663,15 @@ int NaClCreateMainThread(struct NaClApp     *nap,
     strp += envv_len[i];
   }
   BLAT(uint32_t, 0);
-  /* Push an empty auxv for glibc support */
-  BLAT(uint32_t, 0);
+  /* Push an auxv */
+  if (0 != nap->user_entry_pt) {
+    BLAT(uint32_t, AT_ENTRY);
+    BLAT(uint32_t, nap->user_entry_pt);
+  }
+  BLAT(uint32_t, AT_NULL);
   BLAT(uint32_t, 0);
 #undef BLAT
+  CHECK(p == (char *) stack_ptr + ptr_tbl_size);
 
   /* now actually spawn the thread */
   natp = malloc(sizeof *natp);
@@ -675,7 +691,7 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   /* e_entry is user addr */
   if (!NaClAppThreadAllocSegCtor(natp,
                                  nap,
-                                 nap->entry_pt,
+                                 nap->initial_entry_pt,
                                  NaClSysToUserStackAddr(nap, stack_ptr),
                                  NaClUserToSys(nap, nap->break_addr),
                                  1)) {

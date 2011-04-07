@@ -9,34 +9,22 @@ Import('env')
 # nacl-glibc.
 if env.Bit('nacl_glibc'):
   Return()
+# Although the regular PNaCl frontend is able to link object files
+# generated from assembly code, the sandboxed version cannot.
+if env.Bit('use_sandboxed_translator'):
+  Return()
 
-DATA_REGION_START = '0x10000000'
-BLOB_CODE_START = '0x08000000'
-BLOB_DATA_START = '0x18000000'
-
-user_env = env.Clone()
-user_env.Append(LINKFLAGS='-Wl,--section-start,.rodata=%s' % DATA_REGION_START)
-user_executable = user_env.ComponentProgram(
+env.Append(LINKFLAGS='-Wl,--section-start,.rodata=${IRT_DATA_REGION_START}')
+user_executable = env.ComponentProgram(
     'hello_world_with_segment_gap.nexe',
     '${SCONSTRUCT_DIR}/tests/hello_world/hello_world.c')
 
-blob_env = env.Clone()
-blob_env.Append(LINKFLAGS='-Wl,--section-start,.rodata=%s' % BLOB_DATA_START)
-# The PNaCl linker (gold) does not implement the "-Ttext-segment"
-# option.  However, with the linker for x86, the "-Ttext" option does
-# not affect the executable's base address.
-if blob_env.Bit('bitcode'):
-  blob_env.Append(LINKFLAGS='-Wl,-Ttext=%s' % BLOB_CODE_START)
-else:
-  blob_env.Append(LINKFLAGS='-Wl,-Ttext-segment=%s' % BLOB_CODE_START)
-
-blob_library = blob_env.ComponentProgram('example_blob.nexe', 'example_blob.c')
-
 node = env.CommandSelLdrTestNacl(
     'blob_library_loading_test.out',
-    sel_ldr_flags=['-B', blob_library],
+    sel_ldr_flags=['-B', env.File('${STAGING_DIR}/irt.nexe')],
     command=[user_executable],
-    stdout_golden=env.File('example_blob.stdout'))
+    stdout_golden=env.File('${SCONSTRUCT_DIR}/tests/hello_world'
+                           '/hello_world.stdout'))
 # TODO(kcc): The segment gap confuses the Valgrind debug info reader.
 # See http://code.google.com/p/nativeclient/issues/detail?id=1606
 is_broken = env.IsRunningUnderValgrind()

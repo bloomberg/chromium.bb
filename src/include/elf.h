@@ -190,6 +190,10 @@ typedef Elf32_Shdr Elf_Shdr;
 
 #endif
 
+/* Keys for auxiliary vector (auxv). */
+#define AT_NULL         0   /* Terminating item in auxv array */
+#define AT_ENTRY        9   /* Entry point of the executable */
+
 EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_INCLUDE_ELF_H_ */

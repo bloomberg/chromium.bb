@@ -72,7 +72,8 @@ int NaClAppCtor(struct NaClApp  *nap) {
   nap->data_start = 0;
   nap->data_end = 0;
 
-  nap->entry_pt = 0;
+  nap->initial_entry_pt = 0;
+  nap->user_entry_pt = 0;
 
   if (!DynArrayCtor(&nap->threads, 2)) {
     goto cleanup_none;
@@ -429,7 +430,8 @@ void  NaClAppPrintDetails(struct NaClApp  *nap,
   gprintf(gp, "data_end:          0x%08"NACL_PRIxPTR"\n", nap->data_end);
   gprintf(gp, "break_addr:        0x%08"NACL_PRIxPTR"\n", nap->break_addr);
 
-  gprintf(gp, "ELF entry point:  0x%08x\n", nap->entry_pt);
+  gprintf(gp, "ELF initial entry point:  0x%08x\n", nap->initial_entry_pt);
+  gprintf(gp, "ELF user entry point:  0x%08x\n", nap->user_entry_pt);
   gprintf(gp, "memory map:\n");
   NaClVmmapVisit(&nap->mem_map,
                  NaClMemRegionPrinter,

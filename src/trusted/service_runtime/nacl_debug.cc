@@ -283,7 +283,8 @@ int NaClDebugStart(void) throw() {
 
     /* Add a temp breakpoint. */
     struct NaClApp* app = state->app_;
-    state->target_->AddTemporaryBreakpoint(app->entry_pt + app->mem_start);
+    state->target_->AddTemporaryBreakpoint(app->initial_entry_pt +
+                                           app->mem_start);
 
     NaClLog(LOG_WARNING, "nacl_debug(%d) : Debugging started.\n", __LINE__);
     IThread::SetExceptionCatch(NaClExceptionCatcher, state->target_);

@@ -269,6 +269,10 @@ def SetUpArgumentBits(env):
       'and we do not open a browser window on the user\'s desktop.  '
       'Unfortunately there is no equivalent on Mac OS X.')
 
+  BitFromArgument(env, 'irt', default=False,
+    desc='Use the integrated runtime (IRT) untrusted blob library when '
+      'running tests')
+
 
 def CheckArguments():
   for key in ARGUMENTS:
@@ -1371,6 +1375,9 @@ def CommandSelLdrTestNacl(env, name, command,
     if env.Bit('build_x86_64'):
       sel_ldr_flags += ['-s']
 
+  if env.Bit('irt'):
+    sel_ldr_flags += ['-B', env.File('${STAGING_DIR}/irt.nexe')]
+
   command = [sel_ldr] + sel_ldr_flags + ['--'] + command
 
   # NOTE(robertm): log handling is a little magical
@@ -2087,6 +2094,14 @@ nacl_env = pre_base_env.Clone(
     EXTRA_LIBS = [],
     EXTRA_LINKFLAGS = ARGUMENTS.get('nacl_linkflags', '').split(':'),
 
+    # This is the address at which a user executable is expected to
+    # place its data segment in order to be compatible with the
+    # integrated runtime (IRT) library.
+    IRT_DATA_REGION_START = '0x10000000',
+    # Load addresses of the IRT's code and data segments.
+    IRT_BLOB_CODE_START = '0x08000000',
+    IRT_BLOB_DATA_START = '0x18000000',
+
     # always optimize binaries
     # Command line option nacl_ccflags=... add additional option to nacl build
     CCFLAGS = ['-O2',
@@ -2118,6 +2133,10 @@ nacl_env = pre_base_env.Clone(
       ['_XOPEN_SOURCE', '600'],
       ],
 )
+
+if nacl_env.Bit('irt'):
+  nacl_env.Append(LINKFLAGS='-Wl,--section-start,.rodata='
+                  '${IRT_DATA_REGION_START}')
 
 # TODO(mseaborn): Make nacl-glibc-based static linking work with just
 # "-static", without specifying a linker script.
@@ -2181,6 +2200,7 @@ nacl_env.Append(
     'src/tools/posix_over_imc/nacl.scons',
     'src/trusted/service_runtime/nacl.scons',
     'src/trusted/validator_x86/nacl.scons',
+    'src/untrusted/irt/nacl.scons',
     'tests/app_lib/nacl.scons',
     'tests/autoloader/nacl.scons',
     'tests/barebones/nacl.scons',
@@ -2472,7 +2492,6 @@ nacl_extra_sdk_env.Append(
       'src/shared/gio/nacl.scons',
       'src/shared/srpc/nacl.scons',
       'src/untrusted/av/nacl.scons',
-      'src/untrusted/irt/nacl.scons',
       'src/untrusted/nacl/nacl.scons',
       ####  ALPHABETICALLY SORTED ####
    ],

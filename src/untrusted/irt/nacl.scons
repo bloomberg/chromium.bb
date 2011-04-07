@@ -10,9 +10,36 @@ Import('env')
 # there's no need to build this module against glibc.
 if env.Bit('nacl_glibc'):
   Return()
+# Although the regular PNaCl frontend is able to link object files
+# generated from assembly code, the sandboxed version cannot.
+if env.Bit('use_sandboxed_translator'):
+  Return()
 
 env.ComponentLibrary('libirt', ['irt.c'])
 
-# TODO(bradchen): Ultimately this should be shipped with the browser
-# and not included in the SDK.
-env.AddLibraryToSdk(['libirt'])
+
+blob_env = env.Clone()
+blob_env.Append(CPPDEFINES=[
+    ['NACL_BLOCK_SHIFT', '5'],
+    ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}'],
+    ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}'],
+    ['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}' ],
+    ['NACL_TARGET_SUBARCH', '${TARGET_SUBARCH}' ],
+    ])
+
+blob_env.Append(LINKFLAGS='-Wl,--section-start,.rodata=${IRT_BLOB_DATA_START}')
+# The PNaCl linker (gold) does not implement the "-Ttext-segment"
+# option.  However, with the linker for x86, the "-Ttext" option does
+# not affect the executable's base address.
+if blob_env.Bit('bitcode'):
+  blob_env.Append(LINKFLAGS='-Wl,-Ttext=${IRT_BLOB_CODE_START}')
+else:
+  blob_env.Append(LINKFLAGS='-Wl,-Ttext-segment=${IRT_BLOB_CODE_START}')
+
+asm_env = blob_env.Clone()
+if asm_env.Bit('bitcode'):
+  asm_env.Replace(CC=env['CC_NATIVE'], OBJSUFFIX='.o')
+asm_helper = asm_env.ComponentObject(
+    'elf_restart_%s.S' % env['TARGET_FULLARCH'].replace('-', '_'))
+
+blob_env.ComponentProgram('irt.nexe', ['irt_entry.c', asm_helper])
