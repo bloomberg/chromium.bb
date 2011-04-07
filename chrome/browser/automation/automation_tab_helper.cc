@@ -82,19 +82,20 @@ void AutomationTabHelper::DidStopLoading() {
 }
 
 void AutomationTabHelper::RenderViewGone() {
-  OnTabOrRenderViewDestroyed();
+  OnTabOrRenderViewDestroyed(tab_contents());
 }
 
-void AutomationTabHelper::OnTabContentsDestroyed() {
-  OnTabOrRenderViewDestroyed();
+void AutomationTabHelper::OnTabContentsDestroyed(TabContents* tab_contents) {
+  OnTabOrRenderViewDestroyed(tab_contents);
 }
 
-void AutomationTabHelper::OnTabOrRenderViewDestroyed() {
+void AutomationTabHelper::OnTabOrRenderViewDestroyed(
+    TabContents* tab_contents) {
   if (has_pending_loads()) {
     is_loading_ = false;
     pending_client_redirects_.clear();
     FOR_EACH_OBSERVER(TabEventObserver, observers_,
-                      OnNoMorePendingLoads(tab_contents()));
+                      OnNoMorePendingLoads(tab_contents));
   }
 }
 

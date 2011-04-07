@@ -95,12 +95,12 @@ class AutomationTabHelper
   virtual void DidStartLoading();
   virtual void DidStopLoading();
   virtual void RenderViewGone();
-  virtual void OnTabContentsDestroyed();
+  virtual void OnTabContentsDestroyed(TabContents* tab_contents);
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   void OnWillPerformClientRedirect(int64 frame_id, double delay_seconds);
   void OnDidCompleteOrCancelClientRedirect(int64 frame_id);
-  void OnTabOrRenderViewDestroyed();
+  void OnTabOrRenderViewDestroyed(TabContents* tab_contents);
 
   // True if the tab is currently loading. If a navigation is scheduled but not
   // yet loading, this will be false.
