@@ -14,25 +14,24 @@
 using webkit_glue::PasswordForm;
 
 namespace {
-// Subclass GetLoginsRequest in order to hold the form information for
-// ForwardLoginsResult call. Note that the form will be empty at first and we
-// populate it in GetLoginsImpl. DCHECK to ensure the form is set before
-// accessing it.
+// Subclass GetLoginsRequest in order to hold a copy of the form information
+// from the GetLogins request for the ForwardLoginsResult call. Note that the
+// other calls such as GetBlacklistLogins and GetAutofillableLogins, the form is
+// not set.
 class FormGetLoginsRequest : public PasswordStore::GetLoginsRequest {
  public:
   explicit FormGetLoginsRequest(PasswordStore::GetLoginsCallback* callback)
       : GetLoginsRequest(callback) {}
 
-  // Accessors for the |form_|.  The request owns a pointer to a copy of the
-  // form so that it can verify with DCHECK that the form has been set before
-  // being accessed.
-  void set_form(const PasswordForm& form) {
+  // We hold a copy of the |form| used in GetLoginsImpl as a pointer.  If the
+  // form is not set (is NULL), then we are not a GetLogins request.
+  void SetLoginsRequestForm(const PasswordForm& form) {
     form_.reset(new PasswordForm(form));
   }
-  const PasswordForm& form() const {
-    DCHECK(form_.get()) << "form has not been set.";
-    return *form_;
+  PasswordForm* form() const {
+    return form_.get();
   }
+  bool IsLoginsRequest() const { return !!form_.get(); }
 
  private:
   scoped_ptr<PasswordForm> form_;
@@ -55,25 +54,24 @@ PasswordStoreWin::~PasswordStoreWin() {
   }
 }
 
+PasswordStore::GetLoginsRequest* PasswordStoreWin::NewGetLoginsRequest(
+    GetLoginsCallback* callback) {
+  return new FormGetLoginsRequest(callback);
+}
+
 void PasswordStoreWin::ForwardLoginsResult(GetLoginsRequest* request) {
-  if (!request->value.empty()) {
-    PasswordStore::ForwardLoginsResult(request);
-  } else {
+  if (static_cast<FormGetLoginsRequest*>(request)->IsLoginsRequest() &&
+      request->value.empty()) {
     IE7PasswordInfo info;
     std::wstring url = ASCIIToWide(
-        static_cast<FormGetLoginsRequest*>(request)->form().origin.spec());
+        static_cast<FormGetLoginsRequest*>(request)->form()->origin.spec());
     info.url_hash = ie7_password::GetUrlHash(url);
     WebDataService::Handle handle = web_data_service_->GetIE7Login(info,
                                                                    this);
     TrackRequest(handle, request);
+  } else {
+    PasswordStore::ForwardLoginsResult(request);
   }
-}
-
-void PasswordStoreWin::GetLoginsImpl(GetLoginsRequest* request,
-                                     const PasswordForm& form) {
-  static_cast<FormGetLoginsRequest*>(request)->set_form(form);
-
-  PasswordStoreDefault::GetLoginsImpl(request, form);
 }
 
 void PasswordStoreWin::OnWebDataServiceRequestDone(
@@ -89,8 +87,10 @@ void PasswordStoreWin::OnWebDataServiceRequestDone(
       return;
 
     // This is a response from WebDataService::GetIE7Login.
-    PasswordForm* ie7_form = GetIE7Result(
-        result, static_cast<FormGetLoginsRequest*>(request.get())->form());
+    PasswordForm* form = static_cast<FormGetLoginsRequest*>(
+        request.get())->form();
+    DCHECK(form);
+    PasswordForm* ie7_form = GetIE7Result(result, *form);
 
     if (ie7_form)
       request->value.push_back(ie7_form);
@@ -101,9 +101,11 @@ void PasswordStoreWin::OnWebDataServiceRequestDone(
   }
 }
 
-PasswordStore::GetLoginsRequest* PasswordStoreWin::NewGetLoginsRequest(
-    GetLoginsCallback* callback) {
-  return new FormGetLoginsRequest(callback);
+void PasswordStoreWin::GetLoginsImpl(GetLoginsRequest* request,
+                                     const PasswordForm& form) {
+  static_cast<FormGetLoginsRequest*>(request)->SetLoginsRequestForm(form);
+
+  PasswordStoreDefault::GetLoginsImpl(request, form);
 }
 
 void PasswordStoreWin::TrackRequest(WebDataService::Handle handle,

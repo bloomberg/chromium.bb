@@ -30,15 +30,17 @@ class PasswordStoreWin : public PasswordStoreDefault {
  private:
   virtual ~PasswordStoreWin();
 
+  virtual GetLoginsRequest* NewGetLoginsRequest(
+      GetLoginsCallback* callback) OVERRIDE;
+
   // See PasswordStoreDefault.
-  virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
-                                           const WDTypedResult* result);
-  virtual GetLoginsRequest* NewGetLoginsRequest(GetLoginsCallback* callback);
-  virtual void ForwardLoginsResult(GetLoginsRequest* request);
+  virtual void ForwardLoginsResult(GetLoginsRequest* request) OVERRIDE;
+  virtual void OnWebDataServiceRequestDone(
+      WebDataService::Handle h, const WDTypedResult* result) OVERRIDE;
 
   // Overridden so that we can save the form for later use.
   virtual void GetLoginsImpl(GetLoginsRequest* request,
-                             const webkit_glue::PasswordForm& form);
+                             const webkit_glue::PasswordForm& form) OVERRIDE;
 
   // Takes ownership of |request| and tracks it under |handle|.
   void TrackRequest(WebDataService::Handle handle, GetLoginsRequest* request);
