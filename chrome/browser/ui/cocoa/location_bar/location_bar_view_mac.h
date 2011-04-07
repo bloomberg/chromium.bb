@@ -138,7 +138,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual SkBitmap GetFavicon() const;
   virtual string16 GetTitle() const;
   virtual InstantController* GetInstant();
-  virtual TabContentsWrapper* GetTabContentsWrapper() const;
+  virtual TabContentsWrapper* GetTabContentsWrapper();
 
   NSImage* GetKeywordImage(const string16& keyword);
 

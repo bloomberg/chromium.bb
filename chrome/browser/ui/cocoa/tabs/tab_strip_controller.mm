@@ -18,7 +18,6 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
-#include "chrome/browser/favicon_tab_helper.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -155,7 +154,7 @@ private:
 - (void)addSubviewToPermanentList:(NSView*)aView;
 - (void)regenerateSubviewList;
 - (NSInteger)indexForContentsView:(NSView*)view;
-- (void)updateFaviconForContents:(TabContentsWrapper*)contents
+- (void)updateFaviconForContents:(TabContents*)contents
                          atIndex:(NSInteger)modelIndex;
 - (void)layoutTabsWithAnimation:(BOOL)animate
              regenerateSubviews:(BOOL)doUpdate;
@@ -1147,7 +1146,7 @@ class NotificationBridge : public NotificationObserver {
   // dragging a tab out into a new window, we have to put the tab's favicon
   // into the right state up front as we won't be told to do it from anywhere
   // else.
-  [self updateFaviconForContents:contents atIndex:modelIndex];
+  [self updateFaviconForContents:contents->tab_contents() atIndex:modelIndex];
 
   [self updateCommonTitlePrefix];
 
@@ -1343,19 +1342,21 @@ class NotificationBridge : public NotificationObserver {
 
 // A helper routine for creating an NSImageView to hold the favicon or app icon
 // for |contents|.
-- (NSImageView*)iconImageViewForContents:(TabContentsWrapper*)contents {
-  BOOL isApp = contents->extension_tab_helper()->is_app();
+- (NSImageView*)iconImageViewForContents:(TabContents*)contents {
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(contents);
+  BOOL isApp = wrapper->extension_tab_helper()->is_app();
   NSImage* image = nil;
   // Favicons come from the renderer, and the renderer draws everything in the
   // system color space.
   CGColorSpaceRef colorSpace = base::mac::GetSystemColorSpace();
   if (isApp) {
-    SkBitmap* icon = contents->extension_tab_helper()->GetExtensionAppIcon();
+    SkBitmap* icon = wrapper->extension_tab_helper()->GetExtensionAppIcon();
     if (icon)
       image = gfx::SkBitmapToNSImageWithColorSpace(*icon, colorSpace);
   } else {
-    image = gfx::SkBitmapToNSImageWithColorSpace(
-        contents->favicon_tab_helper()->GetFavicon(), colorSpace);
+    image = gfx::SkBitmapToNSImageWithColorSpace(contents->GetFavicon(),
+                                                 colorSpace);
   }
 
   // Either we don't have a valid favicon or there was some issue converting it
@@ -1370,7 +1371,7 @@ class NotificationBridge : public NotificationObserver {
 
 // Updates the current loading state, replacing the icon view with a favicon,
 // a throbber, the default icon, or nothing at all.
-- (void)updateFaviconForContents:(TabContentsWrapper*)contents
+- (void)updateFaviconForContents:(TabContents*)contents
                          atIndex:(NSInteger)modelIndex {
   if (!contents)
     return;
@@ -1390,19 +1391,19 @@ class NotificationBridge : public NotificationObserver {
   TabController* tabController = [tabArray_ objectAtIndex:index];
 
   bool oldHasIcon = [tabController iconView] != nil;
-  bool newHasIcon = contents->favicon_tab_helper()->ShouldDisplayFavicon() ||
+  bool newHasIcon = contents->ShouldDisplayFavicon() ||
       tabStripModel_->IsMiniTab(modelIndex);  // Always show icon if mini.
 
   TabLoadingState oldState = [tabController loadingState];
   TabLoadingState newState = kTabDone;
   NSImage* throbberImage = nil;
-  if (contents->tab_contents()->is_crashed()) {
+  if (contents->is_crashed()) {
     newState = kTabCrashed;
     newHasIcon = true;
-  } else if (contents->tab_contents()->waiting_for_response()) {
+  } else if (contents->waiting_for_response()) {
     newState = kTabWaiting;
     throbberImage = throbberWaitingImage;
-  } else if (contents->tab_contents()->is_loading()) {
+  } else if (contents->is_loading()) {
     newState = kTabLoading;
     throbberImage = throbberLoadingImage;
   }
@@ -1462,7 +1463,7 @@ class NotificationBridge : public NotificationObserver {
   if (change != TabStripModelObserver::LOADING_ONLY)
     [self setTabTitle:tabController withContents:contents->tab_contents()];
 
-  [self updateFaviconForContents:contents atIndex:modelIndex];
+  [self updateFaviconForContents:contents->tab_contents() atIndex:modelIndex];
 
   TabContentsController* updatedController =
       [tabContentsArray_ objectAtIndex:index];
@@ -1516,7 +1517,7 @@ class NotificationBridge : public NotificationObserver {
   [tabController setPinned:tabStripModel_->IsTabPinned(modelIndex)];
   [tabController setApp:tabStripModel_->IsAppTab(modelIndex)];
   [tabController setUrl:contents->tab_contents()->GetURL()];
-  [self updateFaviconForContents:contents atIndex:modelIndex];
+  [self updateFaviconForContents:contents->tab_contents() atIndex:modelIndex];
   // If the tab is being restored and it's pinned, the mini state is set after
   // the tab has already been rendered, so re-layout the tabstrip. In all other
   // cases, the state is set before the tab is rendered so this isn't needed.

@@ -48,7 +48,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
-#include "chrome/browser/favicon_tab_helper.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
@@ -814,10 +813,10 @@ bool Browser::GetSavedMaximizedState() const {
 }
 
 SkBitmap Browser::GetCurrentPageIcon() const {
-  TabContentsWrapper* contents = GetSelectedTabContentsWrapper();
+  TabContents* contents = GetSelectedTabContents();
   // |contents| can be NULL since GetCurrentPageIcon() is called by the window
   // during the window's creation (before tabs have been added).
-  return contents ? contents->favicon_tab_helper()->GetFavicon() : SkBitmap();
+  return contents ? contents->GetFavicon() : SkBitmap();
 }
 
 string16 Browser::GetWindowTitleForCurrentTab() const {
@@ -1589,13 +1588,13 @@ void Browser::BookmarkCurrentPage() {
 
   GURL url;
   string16 title;
-  TabContentsWrapper* tab = GetSelectedTabContentsWrapper();
-  bookmark_utils::GetURLAndTitleToBookmark(tab->tab_contents(), &url, &title);
+  TabContents* tab = GetSelectedTabContents();
+  bookmark_utils::GetURLAndTitleToBookmark(tab, &url, &title);
   bool was_bookmarked = model->IsBookmarked(url);
   if (!was_bookmarked && profile_->IsOffTheRecord()) {
     // If we're incognito the favicon may not have been saved. Save it now
     // so that bookmarks have an icon for the page.
-    tab->favicon_tab_helper()->SaveFavicon();
+    tab->SaveFavicon();
   }
   model->SetURLStarred(url, title, true);
   // Make sure the model actually added a bookmark before showing the star. A

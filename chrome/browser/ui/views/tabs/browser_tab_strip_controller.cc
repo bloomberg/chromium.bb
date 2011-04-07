@@ -7,7 +7,6 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
-#include "chrome/browser/favicon_tab_helper.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -401,14 +400,14 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
   if (app_icon)
     data->favicon = *app_icon;
   else
-    data->favicon = wrapper->favicon_tab_helper()->GetFavicon();
+    data->favicon = contents->GetFavicon();
   data->network_state = TabContentsNetworkState(contents);
   data->title = contents->GetTitle();
   data->url = contents->GetURL();
   data->loading = contents->is_loading();
   data->crashed_status = contents->crashed_status();
   data->incognito = contents->profile()->IsOffTheRecord();
-  data->show_icon = wrapper->favicon_tab_helper()->ShouldDisplayFavicon();
+  data->show_icon = contents->ShouldDisplayFavicon();
   data->mini = model_->IsMiniTab(model_index);
   data->blocked = model_->IsTabBlocked(model_index);
   data->app = wrapper->extension_tab_helper()->is_app();

@@ -19,7 +19,6 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/favicon_tab_helper.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_host.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -203,7 +202,7 @@ string16 TaskManagerTabContentsResource::GetTitle() const {
 }
 
 SkBitmap TaskManagerTabContentsResource::GetIcon() const {
-  return tab_contents_->favicon_tab_helper()->GetFavicon();
+  return tab_contents_->tab_contents()->GetFavicon();
 }
 
 TabContentsWrapper* TaskManagerTabContentsResource::GetTabContents() const {

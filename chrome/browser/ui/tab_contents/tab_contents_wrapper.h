@@ -31,7 +31,6 @@ class DevToolsObserver;
 class Extension;
 class ExtensionMessageObserver;
 class ExtensionTabHelper;
-class FaviconTabHelper;
 class FileSelectObserver;
 class FindTabHelper;
 class NavigationController;
@@ -110,8 +109,6 @@ class TabContentsWrapper : public NotificationObserver,
     return extension_tab_helper_.get();
   }
 
-  FaviconTabHelper* favicon_tab_helper() { return favicon_tab_helper_.get(); }
-
   FindTabHelper* find_tab_helper() { return find_tab_helper_.get(); }
 
   PasswordManager* password_manager() { return password_manager_.get(); }
@@ -174,7 +171,6 @@ class TabContentsWrapper : public NotificationObserver,
   scoped_ptr<AutofillManager> autofill_manager_;
   scoped_ptr<AutomationTabHelper> automation_tab_helper_;
   scoped_ptr<ExtensionTabHelper> extension_tab_helper_;
-  scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
   scoped_ptr<FindTabHelper> find_tab_helper_;
 
   // PasswordManager and its delegate. The delegate must outlive the manager,

@@ -18,13 +18,11 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
-#include "chrome/browser/favicon_tab_helper.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/ui/gtk/info_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/content_settings_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -106,7 +104,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   virtual SkBitmap GetFavicon() const OVERRIDE;
   virtual string16 GetTitle() const OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
-  virtual TabContentsWrapper* GetTabContentsWrapper() const OVERRIDE;
+  virtual TabContentsWrapper* GetTabContentsWrapper() OVERRIDE;
 
   // Implement the LocationBar interface.
   virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type);

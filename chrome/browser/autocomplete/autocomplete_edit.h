@@ -79,7 +79,7 @@ class AutocompleteEditController {
   virtual InstantController* GetInstant() = 0;
 
   // Returns the TabContentsWrapper of the currently selected tab.
-  virtual TabContentsWrapper* GetTabContentsWrapper() const = 0;
+  virtual TabContentsWrapper* GetTabContentsWrapper() = 0;
 
  protected:
   virtual ~AutocompleteEditController();

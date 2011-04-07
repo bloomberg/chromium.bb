@@ -17,7 +17,6 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/favicon_tab_helper.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -833,7 +832,7 @@ void LocationBarView::OnSetFocus() {
 }
 
 SkBitmap LocationBarView::GetFavicon() const {
-  return delegate_->GetTabContentsWrapper()->favicon_tab_helper()->GetFavicon();
+  return GetTabContentsFromDelegate(delegate_)->GetFavicon();
 }
 
 string16 LocationBarView::GetTitle() const {
@@ -844,7 +843,7 @@ InstantController* LocationBarView::GetInstant() {
   return delegate_->GetInstant();
 }
 
-TabContentsWrapper* LocationBarView::GetTabContentsWrapper() const {
+TabContentsWrapper* LocationBarView::GetTabContentsWrapper() {
   return delegate_->GetTabContentsWrapper();
 }
 
@@ -1035,13 +1034,11 @@ void LocationBarView::WriteDragDataForView(views::View* sender,
   DCHECK_NE(GetDragOperationsForView(sender, press_pt),
             ui::DragDropTypes::DRAG_NONE);
 
-  TabContentsWrapper* tab_contents = delegate_->GetTabContentsWrapper();
+  TabContents* tab_contents = GetTabContentsFromDelegate(delegate_);
   DCHECK(tab_contents);
-  drag_utils::SetURLAndDragImage(
-      tab_contents->tab_contents()->GetURL(),
-      UTF16ToWideHack(tab_contents->tab_contents()->GetTitle()),
-      tab_contents->favicon_tab_helper()->GetFavicon(),
-      data);
+  drag_utils::SetURLAndDragImage(tab_contents->GetURL(),
+                                 UTF16ToWideHack(tab_contents->GetTitle()),
+                                 tab_contents->GetFavicon(), data);
 }
 
 int LocationBarView::GetDragOperationsForView(views::View* sender,

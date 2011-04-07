@@ -8,14 +8,12 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/blocked_content_container.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/favicon_tab_helper.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_specific_content_settings.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -386,9 +384,6 @@ class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
         &blocked_contents);
     for (std::vector<TabContents*>::const_iterator
          i(blocked_contents.begin()); i != blocked_contents.end(); ++i) {
-      // TODO(avi): move blocked contents from TC to TCW; remove this.
-      TabContentsWrapper* wrapper =
-          TabContentsWrapper::GetCurrentWrapperForContents(*i);
       std::string title(UTF16ToUTF8((*i)->GetTitle()));
       // The popup may not have committed a load yet, in which case it won't
       // have a URL or title.
@@ -396,7 +391,7 @@ class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
         title = l10n_util::GetStringUTF8(IDS_TAB_LOADING_TITLE);
       PopupItem popup_item;
       popup_item.title = title;
-      popup_item.bitmap = wrapper->favicon_tab_helper()->GetFavicon();
+      popup_item.bitmap = (*i)->GetFavicon();
       popup_item.tab_contents = (*i);
       add_popup(popup_item);
     }

@@ -16,7 +16,6 @@
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
-#include "chrome/browser/favicon_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
@@ -504,7 +503,7 @@ SkBitmap Tile::favicon() const {
     if (icon)
       return *icon;
   }
-  return contents_->favicon_tab_helper()->GetFavicon();
+  return contents_->tab_contents()->GetFavicon();
 }
 
 NSRect Tile::GetTitleStartRectRelativeTo(const Tile& tile) const {

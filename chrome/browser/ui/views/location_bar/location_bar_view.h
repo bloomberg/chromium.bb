@@ -74,7 +74,7 @@ class LocationBarView : public LocationBar,
   class Delegate {
    public:
     // Should return the current tab contents.
-    virtual TabContentsWrapper* GetTabContentsWrapper() const = 0;
+    virtual TabContentsWrapper* GetTabContentsWrapper() = 0;
 
     // Returns the InstantController, or NULL if there isn't one.
     virtual InstantController* GetInstant() = 0;
@@ -205,7 +205,7 @@ class LocationBarView : public LocationBar,
   virtual SkBitmap GetFavicon() const OVERRIDE;
   virtual string16 GetTitle() const OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
-  virtual TabContentsWrapper* GetTabContentsWrapper() const OVERRIDE;
+  virtual TabContentsWrapper* GetTabContentsWrapper() OVERRIDE;
 
   // Overridden from views::View:
   virtual std::string GetClassName() const OVERRIDE;

@@ -14,7 +14,6 @@
 #include "chrome/browser/debugger/devtools_handler.h"
 #include "chrome/browser/extensions/extension_message_handler.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
-#include "chrome/browser/favicon_tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/password_manager/password_manager.h"
@@ -58,7 +57,6 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   autofill_manager_.reset(new AutofillManager(contents));
   automation_tab_helper_.reset(new AutomationTabHelper(contents));
   extension_tab_helper_.reset(new ExtensionTabHelper(this));
-  favicon_tab_helper_.reset(new FaviconTabHelper(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(contents));
   password_manager_.reset(

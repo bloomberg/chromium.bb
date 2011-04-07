@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/favicon_tab_helper.h"
+#include "chrome/browser/favicon_helper.h"
 
 #include "build/build_config.h"
 
@@ -18,19 +18,18 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/webui/web_ui.h"
 #include "skia/ext/image_operations.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
 
-FaviconTabHelper::FaviconTabHelper(TabContents* tab_contents)
+FaviconHelper::FaviconHelper(TabContents* tab_contents)
     : TabContentsObserver(tab_contents),
       got_favicon_url_(false),
       got_favicon_from_history_(false),
       favicon_expired_(false) {
 }
 
-FaviconTabHelper::~FaviconTabHelper() {
+FaviconHelper::~FaviconHelper() {
   SkBitmap empty_image;
 
   // Call pending download callbacks with error to allow caller to clean up.
@@ -42,45 +41,7 @@ FaviconTabHelper::~FaviconTabHelper() {
   }
 }
 
-SkBitmap FaviconTabHelper::GetFavicon() const {
-  // Like GetTitle(), we also want to use the favicon for the last committed
-  // entry rather than a pending navigation entry.
-  NavigationEntry* entry = tab_contents()->controller().GetTransientEntry();
-  if (entry)
-    return entry->favicon().bitmap();
-
-  entry = tab_contents()->controller().GetLastCommittedEntry();
-  if (entry)
-    return entry->favicon().bitmap();
-  return SkBitmap();
-}
-
-bool FaviconTabHelper::FaviconIsValid() const {
-  const NavigationController& controller = tab_contents()->controller();
-  NavigationEntry* entry = controller.GetTransientEntry();
-  if (entry)
-    return entry->favicon().is_valid();
-
-  entry = controller.GetLastCommittedEntry();
-  if (entry)
-    return entry->favicon().is_valid();
-
-  return false;
-}
-
-bool FaviconTabHelper::ShouldDisplayFavicon() {
-  // Always display a throbber during pending loads.
-  const NavigationController& controller = tab_contents()->controller();
-  if (controller.GetLastCommittedEntry() && controller.pending_entry())
-    return true;
-
-  WebUI* web_ui = tab_contents()->GetWebUIForCurrentState();
-  if (web_ui)
-    return !web_ui->hide_favicon();
-  return true;
-}
-
-void FaviconTabHelper::FetchFavicon(const GURL& url) {
+void FaviconHelper::FetchFavicon(const GURL& url) {
   cancelable_consumer_.CancelAllRequests();
 
   url_ = url;
@@ -93,22 +54,26 @@ void FaviconTabHelper::FetchFavicon(const GURL& url) {
   if (GetFaviconService()) {
     GetFaviconService()->GetFaviconForURL(url_, history::FAVICON,
         &cancelable_consumer_,
-        NewCallback(this, &FaviconTabHelper::OnFaviconDataForInitialURL));
+        NewCallback(this, &FaviconHelper::OnFaviconDataForInitialURL));
   }
 }
 
-int FaviconTabHelper::DownloadImage(const GURL& image_url,
-                                    int image_size,
-                                    ImageDownloadCallback* callback) {
+int FaviconHelper::DownloadImage(const GURL& image_url,
+                                 int image_size,
+                                 ImageDownloadCallback* callback) {
   DCHECK(callback);  // Must provide a callback.
   return ScheduleDownload(GURL(), image_url, image_size, callback);
 }
 
-FaviconService* FaviconTabHelper::GetFaviconService() {
-  return tab_contents()->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
+Profile* FaviconHelper::profile() {
+  return tab_contents()->profile();
 }
 
-void FaviconTabHelper::SetFavicon(
+FaviconService* FaviconHelper::GetFaviconService() {
+  return profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
+}
+
+void FaviconHelper::SetFavicon(
     const GURL& url,
     const GURL& image_url,
     const SkBitmap& image) {
@@ -130,44 +95,15 @@ void FaviconTabHelper::SetFavicon(
   }
 }
 
-void FaviconTabHelper::SaveFavicon() {
-  NavigationEntry* entry = tab_contents()->controller().GetActiveEntry();
-  if (!entry || entry->url().is_empty())
-    return;
-
-  // Make sure the page is in history, otherwise adding the favicon does
-  // nothing.
-  HistoryService* history =
-      tab_contents()->profile()->GetOriginalProfile()->GetHistoryService(
-          Profile::IMPLICIT_ACCESS);
-  if (!history)
-    return;
-  history->AddPageNoVisitForBookmark(entry->url());
-
-  FaviconService* service = tab_contents()->profile()->
-      GetOriginalProfile()->GetFaviconService(Profile::IMPLICIT_ACCESS);
-  if (!service)
-    return;
-  const NavigationEntry::FaviconStatus& favicon(entry->favicon());
-  if (!favicon.is_valid() || favicon.url().is_empty() ||
-      favicon.bitmap().empty()) {
-    return;
-  }
-  std::vector<unsigned char> image_data;
-  gfx::PNGCodec::EncodeBGRASkBitmap(favicon.bitmap(), false, &image_data);
-  service->SetFavicon(
-      entry->url(), favicon.url(), image_data, history::FAVICON);
-}
-
-void FaviconTabHelper::UpdateFavicon(NavigationEntry* entry,
-                                     scoped_refptr<RefCountedMemory> data) {
+void FaviconHelper::UpdateFavicon(NavigationEntry* entry,
+                                  scoped_refptr<RefCountedMemory> data) {
   SkBitmap image;
   gfx::PNGCodec::Decode(data->front(), data->size(), &image);
   UpdateFavicon(entry, image);
 }
 
-void FaviconTabHelper::UpdateFavicon(NavigationEntry* entry,
-                                     const SkBitmap& image) {
+void FaviconHelper::UpdateFavicon(NavigationEntry* entry,
+                                  const SkBitmap& image) {
   // No matter what happens, we need to mark the favicon as being set.
   entry->favicon().set_is_valid(true);
 
@@ -178,7 +114,7 @@ void FaviconTabHelper::UpdateFavicon(NavigationEntry* entry,
   tab_contents()->NotifyNavigationStateChanged(TabContents::INVALIDATE_TAB);
 }
 
-void FaviconTabHelper::OnUpdateFaviconURL(int32 page_id, const GURL& icon_url) {
+void FaviconHelper::OnUpdateFaviconURL(int32 page_id, const GURL& icon_url) {
   // TODO(davemoore) Should clear on empty url. Currently we ignore it.
   // This appears to be what FF does as well.
   if (icon_url.is_empty())
@@ -205,28 +141,9 @@ void FaviconTabHelper::OnUpdateFaviconURL(int32 page_id, const GURL& icon_url) {
     DownloadFaviconOrAskHistory(entry);
 }
 
-void FaviconTabHelper::NavigateToPendingEntry(
-    const GURL& url,
-    NavigationController::ReloadType reload_type) {
-  if (reload_type != NavigationController::NO_RELOAD &&
-      !tab_contents()->profile()->IsOffTheRecord()) {
-    FaviconService* favicon_service =
-        tab_contents()->profile()->GetFaviconService(Profile::IMPLICIT_ACCESS);
-    if (favicon_service)
-      favicon_service->SetFaviconOutOfDateForPage(url);
-  }
-}
-
-void FaviconTabHelper::DidNavigateMainFramePostCommit(
-    const NavigationController::LoadCommittedDetails& details,
-    const ViewHostMsg_FrameNavigate_Params& /*params*/) {
-  // Get the favicon, either from history or request it from the net.
-  FetchFavicon(details.entry->url());
-}
-
-bool FaviconTabHelper::OnMessageReceived(const IPC::Message& message) {
+bool FaviconHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(FaviconTabHelper, message)
+  IPC_BEGIN_MESSAGE_MAP(FaviconHelper, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidDownloadFavicon, OnDidDownloadFavicon)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -234,10 +151,10 @@ bool FaviconTabHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void FaviconTabHelper::OnDidDownloadFavicon(int id,
-                                            const GURL& image_url,
-                                            bool errored,
-                                            const SkBitmap& image) {
+void FaviconHelper::OnDidDownloadFavicon(int id,
+                                         const GURL& image_url,
+                                         bool errored,
+                                         const SkBitmap& image) {
   DownloadRequests::iterator i = download_requests_.find(id);
   if (i == download_requests_.end()) {
     // Currently TabContents notifies us of ANY downloads so that it is
@@ -254,7 +171,7 @@ void FaviconTabHelper::OnDidDownloadFavicon(int id,
   download_requests_.erase(i);
 }
 
-NavigationEntry* FaviconTabHelper::GetEntry() {
+NavigationEntry* FaviconHelper::GetEntry() {
   NavigationEntry* entry = tab_contents()->controller().GetActiveEntry();
   if (entry && entry->url() == url_ &&
       tab_contents()->IsActiveEntry(entry->page_id())) {
@@ -265,7 +182,7 @@ NavigationEntry* FaviconTabHelper::GetEntry() {
   return NULL;
 }
 
-void FaviconTabHelper::OnFaviconDataForInitialURL(
+void FaviconHelper::OnFaviconDataForInitialURL(
     FaviconService::Handle handle,
     history::FaviconData favicon) {
   NavigationEntry* entry = GetEntry();
@@ -305,7 +222,7 @@ void FaviconTabHelper::OnFaviconDataForInitialURL(
   // renderer to download the icon.
 }
 
-void FaviconTabHelper::DownloadFaviconOrAskHistory(NavigationEntry* entry) {
+void FaviconHelper::DownloadFaviconOrAskHistory(NavigationEntry* entry) {
   DCHECK(entry);  // We should only get here if entry is valid.
   if (favicon_expired_) {
     // We have the mapping, but the favicon is out of date. Download it now.
@@ -314,12 +231,12 @@ void FaviconTabHelper::DownloadFaviconOrAskHistory(NavigationEntry* entry) {
     // We don't know the favicon, but we may have previously downloaded the
     // favicon for another page that shares the same favicon. Ask for the
     // favicon given the favicon URL.
-    if (tab_contents()->profile()->IsOffTheRecord()) {
+    if (profile()->IsOffTheRecord()) {
       GetFaviconService()->GetFavicon(
           entry->favicon().url(),
           history::FAVICON,
           &cancelable_consumer_,
-          NewCallback(this, &FaviconTabHelper::OnFaviconData));
+          NewCallback(this, &FaviconHelper::OnFaviconData));
     } else {
       // Ask the history service for the icon. This does two things:
       // 1. Attempts to fetch the favicon data from the database.
@@ -332,12 +249,12 @@ void FaviconTabHelper::DownloadFaviconOrAskHistory(NavigationEntry* entry) {
           entry->favicon().url(),
           history::FAVICON,
           &cancelable_consumer_,
-          NewCallback(this, &FaviconTabHelper::OnFaviconData));
+          NewCallback(this, &FaviconHelper::OnFaviconData));
     }
   }
 }
 
-void FaviconTabHelper::OnFaviconData(
+void FaviconHelper::OnFaviconData(
     FaviconService::Handle handle,
     history::FaviconData favicon) {
   NavigationEntry* entry = GetEntry();
@@ -360,10 +277,10 @@ void FaviconTabHelper::OnFaviconData(
   }
 }
 
-int FaviconTabHelper::ScheduleDownload(const GURL& url,
-                                       const GURL& image_url,
-                                       int image_size,
-                                       ImageDownloadCallback* callback) {
+int FaviconHelper::ScheduleDownload(const GURL& url,
+                                    const GURL& image_url,
+                                    int image_size,
+                                    ImageDownloadCallback* callback) {
   const int download_id = tab_contents()->render_view_host()->DownloadFavicon(
       image_url, image_size);
 
@@ -376,7 +293,7 @@ int FaviconTabHelper::ScheduleDownload(const GURL& url,
   return download_id;
 }
 
-SkBitmap FaviconTabHelper::ConvertToFaviconSize(const SkBitmap& image) {
+SkBitmap FaviconHelper::ConvertToFaviconSize(const SkBitmap& image) {
   int width = image.width();
   int height = image.height();
   if (width > 0 && height > 0) {
@@ -388,11 +305,11 @@ SkBitmap FaviconTabHelper::ConvertToFaviconSize(const SkBitmap& image) {
   return image;
 }
 
-bool FaviconTabHelper::ShouldSaveFavicon(const GURL& url) {
-  if (!tab_contents()->profile()->IsOffTheRecord())
+bool FaviconHelper::ShouldSaveFavicon(const GURL& url) {
+  if (!profile()->IsOffTheRecord())
     return true;
 
   // Otherwise store the favicon if the page is bookmarked.
-  BookmarkModel* bookmark_model = tab_contents()->profile()->GetBookmarkModel();
+  BookmarkModel* bookmark_model = profile()->GetBookmarkModel();
   return bookmark_model && bookmark_model->IsBookmarked(url);
 }

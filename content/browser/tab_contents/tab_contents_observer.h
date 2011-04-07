@@ -15,7 +15,7 @@ struct ViewHostMsg_FrameNavigate_Params;
 class TabContentsObserver : public IPC::Channel::Listener,
                             public IPC::Message::Sender {
  public:
-  // Use this as a member variable in a class that uses the empty constructor
+  // Use this as a member variable in a class that uses the emptry constructor
   // version of this interface.
   class Registrar {
    public:
@@ -35,9 +35,7 @@ class TabContentsObserver : public IPC::Channel::Listener,
     DISALLOW_COPY_AND_ASSIGN(Registrar);
   };
 
-  virtual void NavigateToPendingEntry(
-      const GURL& url,
-      NavigationController::ReloadType reload_type);
+  virtual void NavigateToPendingEntry();
 
   virtual void DidNavigateMainFramePostCommit(
       const NavigationController::LoadCommittedDetails& details,
