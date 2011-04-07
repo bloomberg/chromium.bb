@@ -3851,7 +3851,7 @@
    ...
    fun:_ZN20ExtensionDataDeleterC1EP7ProfileRK4GURL
    fun:_ZN16ExtensionService18ClearExtensionDataERK4GURL
-   fun:_ZN16ExtensionService18UninstallExtensionERKSsb
+   fun:_ZN16ExtensionService18UninstallExtension*
    fun:*BackgroundApplicationListModelTest*
 }
 {
