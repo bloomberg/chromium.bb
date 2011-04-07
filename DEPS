@@ -55,14 +55,15 @@ deps = {
    "/trunk/deps/third_party/hunspell@65351",
 
   "src/third_party/hunspell_dictionaries":
-   "/trunk/deps/third_party/hunspell_dictionaries@79099",
+    "/trunk/deps/third_party/hunspell_dictionaries@79099",
 
   "src/third_party/safe_browsing/testing":
     (Var("googlecode_url") % "google-safe-browsing") + "/trunk/testing@106",
 
-  # TODO(akalin): Check out only the C++ files.
-  "src/third_party/cacheinvalidation/files":
-    (Var("googlecode_url") % "google-cache-invalidation-api") + "/trunk@80",
+  # TODO(akalin): Rename files2 -> files.
+  "src/third_party/cacheinvalidation/files2/src/google":
+    (Var("googlecode_url") % "google-cache-invalidation-api") +
+    "/trunk/src/google@80",
 
   "src/third_party/leveldb":
     (Var("googlecode_url") % "leveldb") + "/trunk@19",
@@ -78,6 +79,7 @@ deps = {
 
   "src/native_client":
     Var("nacl_trunk") + "/src/native_client@" + Var("nacl_revision"),
+
   "src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin":
     Var("nacl_trunk") + "/src/native_client/tests/prebuilt@" +
     Var("nacl_revision"),

@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(akalin): Make it so that warnings are errors on Windows.
-# TODO(akalin): Clean up warnings on Windows.
+# TODO(akalin): Rename files2 -> files.
 
 {
   'variables': {
@@ -11,7 +10,7 @@
     # for Chromium.
     'chromium_code': 1,
     # The root directory for the proto files.
-    'proto_dir_root': 'files/src',
+    'proto_dir_root': 'files2/src',
     # The relative path of the cacheinvalidation proto files from
     # proto_dir_root.
     # TODO(akalin): Add a RULE_INPUT_DIR predefined variable to gyp so
@@ -87,33 +86,33 @@
         'overrides/google/cacheinvalidation/stl-namespace.h',
         'overrides/google/cacheinvalidation/string_util.h',
         'overrides/google/cacheinvalidation/time.h',
-        'files/src/google/cacheinvalidation/invalidation-client-impl.cc',
-        'files/src/google/cacheinvalidation/invalidation-client-impl.h',
-        'files/src/google/cacheinvalidation/invalidation-client.cc',
-        'files/src/google/cacheinvalidation/invalidation-client.h',
-        'files/src/google/cacheinvalidation/invalidation-types.h',
-        'files/src/google/cacheinvalidation/log-macro.h',
-        'files/src/google/cacheinvalidation/network-manager.cc',
-        'files/src/google/cacheinvalidation/network-manager.h',
-        'files/src/google/cacheinvalidation/persistence-manager.cc',
-        'files/src/google/cacheinvalidation/persistence-manager.h',
-        'files/src/google/cacheinvalidation/persistence-utils.cc',
-        'files/src/google/cacheinvalidation/persistence-utils.h',
-        'files/src/google/cacheinvalidation/proto-converter.cc',
-        'files/src/google/cacheinvalidation/proto-converter.h',
-        'files/src/google/cacheinvalidation/registration-update-manager.cc',
-        'files/src/google/cacheinvalidation/registration-update-manager.h',
-        'files/src/google/cacheinvalidation/session-manager.cc',
-        'files/src/google/cacheinvalidation/session-manager.h',
-        'files/src/google/cacheinvalidation/throttle.cc',
-        'files/src/google/cacheinvalidation/throttle.h',
-        'files/src/google/cacheinvalidation/version-manager.cc',
-        'files/src/google/cacheinvalidation/version-manager.h',
+        'files2/src/google/cacheinvalidation/invalidation-client-impl.cc',
+        'files2/src/google/cacheinvalidation/invalidation-client-impl.h',
+        'files2/src/google/cacheinvalidation/invalidation-client.cc',
+        'files2/src/google/cacheinvalidation/invalidation-client.h',
+        'files2/src/google/cacheinvalidation/invalidation-types.h',
+        'files2/src/google/cacheinvalidation/log-macro.h',
+        'files2/src/google/cacheinvalidation/network-manager.cc',
+        'files2/src/google/cacheinvalidation/network-manager.h',
+        'files2/src/google/cacheinvalidation/persistence-manager.cc',
+        'files2/src/google/cacheinvalidation/persistence-manager.h',
+        'files2/src/google/cacheinvalidation/persistence-utils.cc',
+        'files2/src/google/cacheinvalidation/persistence-utils.h',
+        'files2/src/google/cacheinvalidation/proto-converter.cc',
+        'files2/src/google/cacheinvalidation/proto-converter.h',
+        'files2/src/google/cacheinvalidation/registration-update-manager.cc',
+        'files2/src/google/cacheinvalidation/registration-update-manager.h',
+        'files2/src/google/cacheinvalidation/session-manager.cc',
+        'files2/src/google/cacheinvalidation/session-manager.h',
+        'files2/src/google/cacheinvalidation/throttle.cc',
+        'files2/src/google/cacheinvalidation/throttle.h',
+        'files2/src/google/cacheinvalidation/version-manager.cc',
+        'files2/src/google/cacheinvalidation/version-manager.h',
       ],
       'include_dirs': [
         '<(protoc_out_dir)',
         './overrides',
-        './files/src',
+        './files2/src',
       ],
       'dependencies': [
         '../../base/base.gyp:base',
@@ -127,7 +126,7 @@
         'include_dirs': [
           '<(protoc_out_dir)',
           './overrides',
-          './files/src',
+          './files2/src',
         ],
       },
       'export_dependent_settings': [
@@ -141,11 +140,11 @@
       'type': 'executable',
       'sources': [
         '../../base/test/run_all_unittests.cc',
-        'files/src/google/cacheinvalidation/system-resources-for-test.h',
-        'files/src/google/cacheinvalidation/invalidation-client-impl_test.cc',
-        'files/src/google/cacheinvalidation/persistence-manager_test.cc',
-        'files/src/google/cacheinvalidation/persistence-utils_test.cc',
-        'files/src/google/cacheinvalidation/throttle_test.cc',
+        'files2/src/google/cacheinvalidation/system-resources-for-test.h',
+        'files2/src/google/cacheinvalidation/invalidation-client-impl_test.cc',
+        'files2/src/google/cacheinvalidation/persistence-manager_test.cc',
+        'files2/src/google/cacheinvalidation/persistence-utils_test.cc',
+        'files2/src/google/cacheinvalidation/throttle_test.cc',
       ],
       'dependencies': [
         '../../base/base.gyp:base',
