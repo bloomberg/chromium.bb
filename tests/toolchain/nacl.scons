@@ -44,6 +44,14 @@ env.AddNodeToTestSuite(node,
                        ['toolchain_tests','small_tests'],
                        'run_intrinsics_test')
 
+nexe = env.ComponentProgram('float2.nexe', 'float2.c')
+node = env.CommandSelLdrTestNacl('float2.out',
+                                 command=[nexe],
+                                 stdout_golden=env.File('float2.stdout'))
+env.AddNodeToTestSuite(node,
+                       ['toolchain_tests','small_tests'],
+                       'run_float2_test')
+
 
 nexe = env.ComponentProgram('initfini.nexe', 'initfini.c')
 node = env.CommandSelLdrTestNacl('initfini.out',
