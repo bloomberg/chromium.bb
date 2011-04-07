@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
-#include "ui/gfx/native_theme_linux.h"
+#include "ui/gfx/native_theme.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebColor;
@@ -19,61 +19,61 @@ static gfx::Rect WebRectToRect(const WebRect& rect) {
   return gfx::Rect(rect.x, rect.y, rect.width, rect.height);
 }
 
-static gfx::NativeThemeLinux::Part NativeThemePart(
+static gfx::NativeTheme::Part NativeThemePart(
     WebKit::WebThemeEngine::Part part) {
   switch (part) {
     case WebKit::WebThemeEngine::PartScrollbarDownArrow:
-      return gfx::NativeThemeLinux::kScrollbarDownArrow;
+      return gfx::NativeTheme::kScrollbarDownArrow;
     case WebKit::WebThemeEngine::PartScrollbarLeftArrow:
-      return gfx::NativeThemeLinux::kScrollbarLeftArrow;
+      return gfx::NativeTheme::kScrollbarLeftArrow;
     case WebKit::WebThemeEngine::PartScrollbarRightArrow:
-      return gfx::NativeThemeLinux::kScrollbarRightArrow;
+      return gfx::NativeTheme::kScrollbarRightArrow;
     case WebKit::WebThemeEngine::PartScrollbarUpArrow:
-      return gfx::NativeThemeLinux::kScrollbarUpArrow;
+      return gfx::NativeTheme::kScrollbarUpArrow;
     case WebKit::WebThemeEngine::PartScrollbarHorizontalThumb:
-      return gfx::NativeThemeLinux::kScrollbarHorizontalThumb;
+      return gfx::NativeTheme::kScrollbarHorizontalThumb;
     case WebKit::WebThemeEngine::PartScrollbarVerticalThumb:
-      return gfx::NativeThemeLinux::kScrollbarVerticalThumb;
+      return gfx::NativeTheme::kScrollbarVerticalThumb;
     case WebKit::WebThemeEngine::PartScrollbarHorizontalTrack:
-      return gfx::NativeThemeLinux::kScrollbarHorizontalTrack;
+      return gfx::NativeTheme::kScrollbarHorizontalTrack;
     case WebKit::WebThemeEngine::PartScrollbarVerticalTrack:
-      return gfx::NativeThemeLinux::kScrollbarVerticalTrack;
+      return gfx::NativeTheme::kScrollbarVerticalTrack;
     case WebKit::WebThemeEngine::PartCheckbox:
-      return gfx::NativeThemeLinux::kCheckbox;
+      return gfx::NativeTheme::kCheckbox;
     case WebKit::WebThemeEngine::PartRadio:
-      return gfx::NativeThemeLinux::kRadio;
+      return gfx::NativeTheme::kRadio;
     case WebKit::WebThemeEngine::PartButton:
-      return gfx::NativeThemeLinux::kPushButton;
+      return gfx::NativeTheme::kPushButton;
     case WebKit::WebThemeEngine::PartTextField:
-      return gfx::NativeThemeLinux::kTextField;
+      return gfx::NativeTheme::kTextField;
     case WebKit::WebThemeEngine::PartMenuList:
-      return gfx::NativeThemeLinux::kMenuList;
+      return gfx::NativeTheme::kMenuList;
     case WebKit::WebThemeEngine::PartSliderTrack:
-      return gfx::NativeThemeLinux::kSliderTrack;
+      return gfx::NativeTheme::kSliderTrack;
     case WebKit::WebThemeEngine::PartSliderThumb:
-      return gfx::NativeThemeLinux::kSliderThumb;
+      return gfx::NativeTheme::kSliderThumb;
     case WebKit::WebThemeEngine::PartInnerSpinButton:
-      return gfx::NativeThemeLinux::kInnerSpinButton;
+      return gfx::NativeTheme::kInnerSpinButton;
     case WebKit::WebThemeEngine::PartProgressBar:
-      return gfx::NativeThemeLinux::kProgressBar;
+      return gfx::NativeTheme::kProgressBar;
     default:
-      return gfx::NativeThemeLinux::kScrollbarDownArrow;
+      return gfx::NativeTheme::kScrollbarDownArrow;
   }
 }
 
-static gfx::NativeThemeLinux::State NativeThemeState(
+static gfx::NativeTheme::State NativeThemeState(
     WebKit::WebThemeEngine::State state) {
   switch (state) {
     case WebKit::WebThemeEngine::StateDisabled:
-      return gfx::NativeThemeLinux::kDisabled;
+      return gfx::NativeTheme::kDisabled;
     case WebKit::WebThemeEngine::StateHover:
-      return gfx::NativeThemeLinux::kHovered;
+      return gfx::NativeTheme::kHovered;
     case WebKit::WebThemeEngine::StateNormal:
-      return gfx::NativeThemeLinux::kNormal;
+      return gfx::NativeTheme::kNormal;
     case WebKit::WebThemeEngine::StatePressed:
-      return gfx::NativeThemeLinux::kPressed;
+      return gfx::NativeTheme::kPressed;
     default:
-      return gfx::NativeThemeLinux::kDisabled;
+      return gfx::NativeTheme::kDisabled;
   }
 }
 
@@ -81,7 +81,7 @@ static void GetNativeThemeExtraParams(
     WebKit::WebThemeEngine::Part part,
     WebKit::WebThemeEngine::State state,
     const WebKit::WebThemeEngine::ExtraParams* extra_params,
-    gfx::NativeThemeLinux::ExtraParams* native_theme_extra_params) {
+    gfx::NativeTheme::ExtraParams* native_theme_extra_params) {
   switch (part) {
     case WebKit::WebThemeEngine::PartScrollbarHorizontalTrack:
     case WebKit::WebThemeEngine::PartScrollbarVerticalTrack:
@@ -160,7 +160,7 @@ static void GetNativeThemeExtraParams(
 }
 
 WebKit::WebSize WebThemeEngineImpl::getSize(WebKit::WebThemeEngine::Part part) {
-  return gfx::NativeThemeLinux::instance()->GetPartSize(NativeThemePart(part));
+  return gfx::NativeTheme::instance()->GetPartSize(NativeThemePart(part));
 }
 
 void WebThemeEngineImpl::paint(
@@ -169,10 +169,10 @@ void WebThemeEngineImpl::paint(
     WebKit::WebThemeEngine::State state,
     const WebKit::WebRect& rect,
     const WebKit::WebThemeEngine::ExtraParams* extra_params) {
-  gfx::NativeThemeLinux::ExtraParams native_theme_extra_params;
+  gfx::NativeTheme::ExtraParams native_theme_extra_params;
   GetNativeThemeExtraParams(
       part, state, extra_params, &native_theme_extra_params);
-  gfx::NativeThemeLinux::instance()->Paint(
+  gfx::NativeTheme::instance()->Paint(
       canvas,
       NativeThemePart(part),
       NativeThemeState(state),

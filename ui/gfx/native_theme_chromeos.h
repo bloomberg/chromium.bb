@@ -17,74 +17,76 @@ class NativeThemeChromeos : public gfx::NativeThemeLinux {
   NativeThemeChromeos();
   virtual ~NativeThemeChromeos();
 
-  // Scrollbar painting overrides
+  // NativeTheme overrides
   virtual gfx::Size GetPartSize(Part part) const OVERRIDE;
+
+  // NativeThemeLinux overrides
   virtual void PaintScrollbarTrack(skia::PlatformCanvas* canvas,
       Part part, State state,
       const ScrollbarTrackExtraParams& extra_params,
-      const gfx::Rect& rect) OVERRIDE;
+      const gfx::Rect& rect) const OVERRIDE;
   virtual void PaintArrowButton(skia::PlatformCanvas* canvas,
-      const gfx::Rect& rect, Part direction, State state) OVERRIDE;
+      const gfx::Rect& rect, Part direction, State state) const OVERRIDE;
   virtual void PaintScrollbarThumb(skia::PlatformCanvas* canvas,
-      Part part, State state, const gfx::Rect& rect) OVERRIDE;
+      Part part, State state, const gfx::Rect& rect) const OVERRIDE;
 
   // Draw the checkbox.
   virtual void PaintCheckbox(skia::PlatformCanvas* canvas,
       State state, const gfx::Rect& rect,
-      const ButtonExtraParams& button) OVERRIDE;
+      const ButtonExtraParams& button) const OVERRIDE;
 
   // Draw the radio.
   virtual void PaintRadio(skia::PlatformCanvas* canvas,
       State state,
       const gfx::Rect& rect,
-      const ButtonExtraParams& button) OVERRIDE;
+      const ButtonExtraParams& button) const OVERRIDE;
 
   // Draw the push button.
   virtual void PaintButton(skia::PlatformCanvas* canvas,
       State state,
       const gfx::Rect& rect,
-      const ButtonExtraParams& button) OVERRIDE;
+      const ButtonExtraParams& button) const OVERRIDE;
 
   // Draw the text field.
   virtual void PaintTextField(skia::PlatformCanvas* canvas,
       State state,
       const gfx::Rect& rect,
-      const TextFieldExtraParams& text) OVERRIDE;
+      const TextFieldExtraParams& text) const OVERRIDE;
 
   // Draw the slider track.
   virtual void PaintSliderTrack(skia::PlatformCanvas* canvas,
       State state,
       const gfx::Rect& rect,
-      const SliderExtraParams& slider) OVERRIDE;
+      const SliderExtraParams& slider) const OVERRIDE;
 
   // Draw the slider thumb.
   virtual void PaintSliderThumb(skia::PlatformCanvas* canvas,
       State state,
       const gfx::Rect& rect,
-      const SliderExtraParams& slider) OVERRIDE;
+      const SliderExtraParams& slider) const OVERRIDE;
 
   // Draw the inner spin button.
   virtual void PaintInnerSpinButton(skia::PlatformCanvas* canvas,
       State state,
       const gfx::Rect& rect,
-      const InnerSpinButtonExtraParams& spin_button) OVERRIDE;
+      const InnerSpinButtonExtraParams& spin_button) const OVERRIDE;
 
   // Draw the progress bar.
   virtual void PaintProgressBar(skia::PlatformCanvas* canvas,
       State state,
       const gfx::Rect& rect,
-      const ProgressBarExtraParams& progress_bar) OVERRIDE;
+      const ProgressBarExtraParams& progress_bar) const OVERRIDE;
 
-  SkBitmap* GetHorizontalBitmapNamed(int resource_id);
+  SkBitmap* GetHorizontalBitmapNamed(int resource_id) const;
 
   // Paint a button like rounded rect with gradient background and stroke.
   void PaintButtonLike(skia::PlatformCanvas* canvas,
-      State state, const gfx::Rect& rect, bool stroke_border);
+      State state, const gfx::Rect& rect, bool stroke_border) const;
 
   // Cached images. Resource loader caches all retrieved bitmaps and keeps
   // ownership of the pointers.
   typedef std::map<int, SkBitmap*> SkImageMap;
-  SkImageMap horizontal_bitmaps_;
+  mutable SkImageMap horizontal_bitmaps_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeChromeos);
 };

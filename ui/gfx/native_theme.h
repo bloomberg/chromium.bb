@@ -151,7 +151,6 @@ class NativeTheme {
   NativeTheme() {}
   virtual ~NativeTheme() {}
 
- private:
   static unsigned int thumb_inactive_color_;
   static unsigned int thumb_active_color_;
   static unsigned int track_color_;
