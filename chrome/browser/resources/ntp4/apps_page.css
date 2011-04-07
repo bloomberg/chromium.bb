@@ -1,0 +1,104 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* The frame is what the slider fits into
+ */
+#apps-frame {
+  /* We want this to fill the window except for the region used
+     by footer
+  */
+  position: fixed;
+  width: 100%;
+  top: 0;
+  bottom: 60px;     /* must match #footer height */
+  overflow: hidden;
+}
+
+/* The list holds all the pages and is what the touch events are attached to
+*/
+#apps-page-list {
+  /* fill the apps-frame */
+  height: 100%;
+  display: -webkit-box;
+}
+
+/* The apps-page is the slider card that is moved.
+ */
+.apps-page {
+  margin-top: 50px;
+  width: 100%;
+}
+
+.tile-grid {
+  height: 100%;
+  position: relative;
+  width: 100%;
+}
+
+.app {
+  display: inline-block;
+  position: absolute;
+  /* Animate effects to/from the grabbed state, and the position when drop
+     is cancelled.  I'd like to also animate movement when an app is
+     re-positioned, but since chrome is doing the layout there is no property
+     to animate. */
+  -webkit-transition: -webkit-transform, opacity;
+  -webkit-transition-duration: 200ms;
+  /* Don't offer the context menu on long-press. */
+  -webkit-touch-callout: none;
+}
+
+.app-subcontainer {
+  position: absolute;
+  text-align: center;
+}
+
+.resizing-apps-page .app-subcontainer {
+  -webkit-transition: left 200ms, top 200ms;
+}
+
+.app span {
+  display: block;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* TODO(estade): hover effect? press effect? */
+.app img {
+  cursor: pointer;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  /* -webkit-mask-image set by JavaScript to the image source */
+  -webkit-mask-size: 100% 100%;
+}
+
+/* Pressed is set when an app is first touched.
+   By using the mask, pressing causes a darkening effect of just the image */
+.app.grabber-pressed img {
+  opacity: 0.8;
+}
+
+/* Grabbed is set (and pressed is cleared) when the app has been held. */
+.grabber-grabbed {
+  opacity: 0.8;
+  -webkit-transform: scale3d(1.4, 1.4, 1);
+}
+
+/* Dragging is set (without grabbed being cleared) when a grabbed app is
+   moved */
+.grabber-dragging {
+  /* We need to ensure there is no animation applied to its position
+    (or the drag touch may stop being over top of it */
+  -webkit-transition: none !important;
+
+  /* Ensure the element has a large z-index so that we can get events
+     for it as it moves over other elements.  This is animated as the
+     element flys back, so we want a large value that will stay large until
+     its almost home.  */
+  z-index: 100;
+}
