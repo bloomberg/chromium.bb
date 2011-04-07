@@ -102,6 +102,7 @@
         # Trusted interfaces.
         'c/trusted/ppb_audio_trusted.h',
         'c/trusted/ppb_image_data_trusted.h',
+        'c/trusted/ppb_broker_trusted.h',
         'c/trusted/ppb_url_loader_trusted.h',
       ],
     },

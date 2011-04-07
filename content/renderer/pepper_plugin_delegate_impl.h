@@ -100,6 +100,9 @@ class PepperPluginDelegateImpl
   virtual PlatformContext3D* CreateContext3D();
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       PP_VideoDecoderConfig_Dev* decoder_config);
+  virtual PpapiBroker* ConnectToPpapiBroker(
+      webkit::ppapi::PluginInstance* instance,
+      webkit::ppapi::PPB_Broker_Impl* client);
   virtual void NumberOfFindResultsChanged(int identifier,
                                           int total,
                                           bool final_result);

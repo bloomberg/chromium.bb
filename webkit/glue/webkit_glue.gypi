@@ -230,6 +230,8 @@
         '../plugins/ppapi/ppapi_webplugin_impl.h',
         '../plugins/ppapi/ppb_audio_impl.cc',
         '../plugins/ppapi/ppb_audio_impl.h',
+        '../plugins/ppapi/ppb_broker_impl.cc',
+        '../plugins/ppapi/ppb_broker_impl.h',
         '../plugins/ppapi/ppb_buffer_impl.cc',
         '../plugins/ppapi/ppb_buffer_impl.h',
         '../plugins/ppapi/ppb_char_set_impl.cc',

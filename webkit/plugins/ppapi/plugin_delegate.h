@@ -67,6 +67,7 @@ class FullscreenContainer;
 class PepperFilePath;
 class PluginInstance;
 class PluginModule;
+class PPB_Broker_Impl;
 class PPB_Flash_Menu_Impl;
 class PPB_Flash_NetConnector_Impl;
 
@@ -95,7 +96,7 @@ class PluginDelegate {
   };
 
   // This class is implemented by the PluginDelegate implementation and is
-  // designed to manage the lifetime and communicatin with the proxy's
+  // designed to manage the lifetime and communication with the proxy's
   // HostDispatcher for out-of-process PPAPI plugins.
   //
   // The point of this is to avoid having a relationship from the PPAPI plugin
@@ -204,6 +205,18 @@ class PluginDelegate {
     virtual ~PlatformVideoDecoder() {}
   };
 
+  // Provides access to the ppapi broker.
+  class PpapiBroker {
+   public:
+    virtual ~PpapiBroker() {}
+
+    // Decrements the references to the broker for the instance.
+    // When the references reach 0 for all instances in this renderer, this
+    // object may be destroyed. When the references reach 0 for all instances
+    // using the same module, the broker may shut down.
+    virtual void Release(PluginInstance* instance) = 0;
+  };
+
   // Notification that the given plugin has crashed. When a plugin crashes, all
   // instances associated with that plugin will notify that they've crashed via
   // this function.
@@ -236,6 +249,14 @@ class PluginDelegate {
   virtual PlatformAudio* CreateAudio(uint32_t sample_rate,
                                      uint32_t sample_count,
                                      PlatformAudio::Client* client) = 0;
+
+  // A pointer is returned immediately, but it is not ready to be used until
+  // BrokerConnected has been called.
+  // The caller is responsible for calling Release() on the returned pointer
+  // to clean up the corresponding resources allocated during this call.
+  virtual PpapiBroker* ConnectToPpapiBroker(
+      PluginInstance* instance,
+      webkit::ppapi::PPB_Broker_Impl* client) = 0;
 
   // Notifies that the number of find results has changed.
   virtual void NumberOfFindResultsChanged(int identifier,

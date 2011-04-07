@@ -58,12 +58,14 @@
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppb_proxy_private.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
+#include "ppapi/c/trusted/ppb_broker_trusted.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_audio_impl.h"
+#include "webkit/plugins/ppapi/ppb_broker_impl.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
 #include "webkit/plugins/ppapi/ppb_char_set_impl.h"
 #include "webkit/plugins/ppapi/ppb_console_impl.h"
@@ -225,6 +227,8 @@ const void* GetInterface(const char* name) {
     return PPB_Audio_Impl::GetInterface();
   if (strcmp(name, PPB_AUDIO_TRUSTED_INTERFACE) == 0)
     return PPB_Audio_Impl::GetTrustedInterface();
+  if (strcmp(name, PPB_BROKER_TRUSTED_INTERFACE) == 0)
+    return PPB_Broker_Impl::GetTrustedInterface();
   if (strcmp(name, PPB_BUFFER_DEV_INTERFACE) == 0)
     return PPB_Buffer_Impl::GetInterface();
   if (strcmp(name, PPB_CHAR_SET_DEV_INTERFACE) == 0)

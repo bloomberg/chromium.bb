@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PLUGINS_PPAPI_DEVICE_CONTEXT_AUDIO_H_
-#define WEBKIT_PLUGINS_PPAPI_DEVICE_CONTEXT_AUDIO_H_
+#ifndef WEBKIT_PLUGINS_PPAPI_PPB_AUDIO_IMPL_H_
+#define WEBKIT_PLUGINS_PPAPI_PPB_AUDIO_IMPL_H_
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -105,4 +105,4 @@ class PPB_Audio_Impl : public Resource,
 }  // namespace ppapi
 }  // namespace webkit
 
-#endif  // WEBKIT_PLUGINS_PPAPI_DEVICE_CONTEXT_AUDIO_H_
+#endif  // WEBKIT_PLUGINS_PPAPI_PPB_AUDIO_IMPL_H_

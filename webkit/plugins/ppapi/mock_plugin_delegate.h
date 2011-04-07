@@ -26,6 +26,8 @@ class MockPluginDelegate : public PluginDelegate {
   virtual PlatformAudio* CreateAudio(uint32_t sample_rate,
                                      uint32_t sample_count,
                                      PlatformAudio::Client* client);
+  virtual PpapiBroker* ConnectToPpapiBroker(PluginInstance* instance,
+                                            PPB_Broker_Impl* client);
   virtual void NumberOfFindResultsChanged(int identifier,
                                           int total,
                                           bool final_result);

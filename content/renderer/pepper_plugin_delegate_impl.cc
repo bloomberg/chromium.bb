@@ -53,6 +53,7 @@
 #include "webkit/plugins/ppapi/ppb_file_io_impl.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppb_broker_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_net_connector_impl.h"
 
@@ -554,6 +555,24 @@ PepperPluginDelegateImpl::CreateAudio(
   } else {
     return NULL;
   }
+}
+
+webkit::ppapi::PluginDelegate::PpapiBroker*
+PepperPluginDelegateImpl::ConnectToPpapiBroker(
+    webkit::ppapi::PluginInstance* instance,
+    webkit::ppapi::PPB_Broker_Impl* client) {
+  CHECK(instance);
+  CHECK(client);
+
+  // TODO(ddorwin): Add IPC to broker process to do the following.
+  // 1) Check if there is an existing broker for instance->module().
+  // 2) If not, create.
+  // 3) broker->Connect(client).
+  //     * Asynchronously launches broker if necessary, establishes pipe, and
+  //       calls BrokerConnected.
+  // 4) Return pointer to broker.
+
+  return NULL;
 }
 
 bool PepperPluginDelegateImpl::RunFileChooser(
