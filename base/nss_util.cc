@@ -20,6 +20,7 @@
 
 #include <vector>
 
+#include "base/crypto/scoped_nss_types.h"
 #include "base/environment.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -42,6 +43,37 @@
 namespace base {
 
 namespace {
+
+#if defined(OS_CHROMEOS)
+const char kNSSDatabaseName[] = "Real NSS database";
+
+// Constants for loading opencryptoki.
+const char kOpencryptokiModuleName[] = "opencryptoki";
+const char kOpencryptokiPath[] = "/usr/lib/opencryptoki/libopencryptoki.so";
+
+// TODO(gspencer): Get these values from cryptohomed's dbus API when
+// we ask if it has initialized the TPM yet.  These should not be
+// hard-coded here.
+const char kTPMTokenName[] = "Initialized by CrOS";
+const char kTPMUserPIN[] = "111111";
+const char kTPMSecurityOfficerPIN[] = "000000";
+
+// Fake certificate authority database used for testing.
+static const FilePath::CharType kReadOnlyCertDB[] =
+    FILE_PATH_LITERAL("/etc/fake_root_ca/nssdb");
+#endif  // defined(OS_CHROMEOS)
+
+std::string GetNSSErrorMessage() {
+  std::string result;
+  if (PR_GetErrorTextLength()) {
+    scoped_array<char> error_text(new char[PR_GetErrorTextLength() + 1]);
+    PRInt32 copied = PR_GetErrorText(error_text.get());
+    result = std::string(error_text.get(), copied);
+  } else {
+    result = StringPrintf("NSS error code: %d", PR_GetError());
+  }
+  return result;
+}
 
 #if defined(USE_NSS)
 FilePath GetDefaultConfigDirectory() {
@@ -66,8 +98,6 @@ FilePath GetDefaultConfigDirectory() {
 // caller to failover to NSS_NoDB_Init() at that point.
 FilePath GetInitialConfigDirectory() {
 #if defined(OS_CHROMEOS)
-  static const FilePath::CharType kReadOnlyCertDB[] =
-      FILE_PATH_LITERAL("/etc/fake_root_ca/nssdb");
   return FilePath(kReadOnlyCertDB);
 #else
   return GetDefaultConfigDirectory();
@@ -77,6 +107,12 @@ FilePath GetInitialConfigDirectory() {
 // This callback for NSS forwards all requests to a caller-specified
 // CryptoModuleBlockingPasswordDelegate object.
 char* PKCS11PasswordFunc(PK11SlotInfo* slot, PRBool retry, void* arg) {
+#if defined(OS_CHROMEOS)
+  // If we get asked for a password for the TPM, then return the
+  // static password we use.
+  if (PK11_GetTokenName(slot) == base::GetTPMTokenName())
+    return PORT_Strdup(kTPMUserPIN);
+#endif
   base::CryptoModuleBlockingPasswordDelegate* delegate =
       reinterpret_cast<base::CryptoModuleBlockingPasswordDelegate*>(arg);
   if (delegate) {
@@ -120,21 +156,38 @@ void UseLocalCacheOfNSSDatabaseIfNFS(const FilePath& database_dir) {
 #endif  // defined(OS_LINUX)
 }
 
-// Load nss's built-in root certs.
-SECMODModule *InitDefaultRootCerts() {
-  const char* kModulePath = "libnssckbi.so";
-  char modparams[1024];
-  snprintf(modparams, sizeof(modparams),
-           "name=\"Root Certs\" library=\"%s\"", kModulePath);
-  SECMODModule *root = SECMOD_LoadUserModule(modparams, NULL, PR_FALSE);
-  if (root)
-    return root;
+// A helper class that acquires the SECMOD list read lock while the
+// AutoSECMODListReadLock is in scope.
+class AutoSECMODListReadLock {
+ public:
+  AutoSECMODListReadLock()
+      : lock_(SECMOD_GetDefaultModuleListLock()) {
+    SECMOD_GetReadLock(lock_);
+  }
 
-  // Aw, snap.  Can't find/load root cert shared library.
-  // This will make it hard to talk to anybody via https.
-  NOTREACHED();
+  ~AutoSECMODListReadLock() {
+    SECMOD_ReleaseReadLock(lock_);
+  }
+
+ private:
+  SECMODListLock* lock_;
+  DISALLOW_COPY_AND_ASSIGN(AutoSECMODListReadLock);
+};
+
+PK11SlotInfo* FindSlotWithTokenName(const std::string& token_name) {
+  AutoSECMODListReadLock auto_lock;
+  SECMODModuleList* head = SECMOD_GetDefaultModuleList();
+  for (SECMODModuleList* item = head; item != NULL; item = item->next) {
+    int slot_count = item->module->loaded ? item->module->slotCount : 0;
+    for (int i = 0; i < slot_count; i++) {
+      PK11SlotInfo* slot = item->module->slots[i];
+      if (PK11_GetTokenName(slot) == token_name)
+        return PK11_ReferenceSlot(slot);
+    }
+  }
   return NULL;
 }
+
 #endif  // defined(USE_NSS)
 
 // A singleton to initialize/deinitialize NSPR.
@@ -170,35 +223,94 @@ class NSSInitSingleton {
   void OpenPersistentNSSDB() {
     if (!chromeos_user_logged_in_) {
       // GetDefaultConfigDirectory causes us to do blocking IO on UI thread.
-      // Temporarily allow it until we fix http://crbug.com.70119
+      // Temporarily allow it until we fix http://crbug.com/70119
       ThreadRestrictions::ScopedAllowIO allow_io;
       chromeos_user_logged_in_ = true;
-      real_db_slot_ = OpenUserDB(GetDefaultConfigDirectory(),
-                                 "Real NSS database");
+
+      // This creates another DB slot in NSS that is read/write, unlike
+      // the fake root CA cert DB and the "default" crypto key
+      // provider, which are still read-only (because we initialized
+      // NSS before we had a cryptohome mounted).
+      software_slot_ = OpenUserDB(GetDefaultConfigDirectory(),
+                                     kNSSDatabaseName);
     }
+  }
+
+  bool EnableTPMForNSS() {
+    if (!opencryptoki_module_) {
+      // This loads the opencryptoki module so we can talk to the
+      // hardware TPM.
+      opencryptoki_module_ = LoadModule(
+          kOpencryptokiModuleName,
+          kOpencryptokiPath,
+          // trustOrder=100 -- means it'll select this as the most
+          //   trusted slot for the mechanisms it provides.
+          // slotParams=... -- selects RSA as only mechanism, and only
+          //   asks for the password when necessary (instead of every
+          //   time, or after a timeout).
+          "trustOrder=100 slotParams=(1={slotFlags=[RSA] askpw=only})");
+      if (opencryptoki_module_) {
+        // We shouldn't need to initialize the TPM PIN here because
+        // it'll be taken care of by cryptohomed, but we have to make
+        // sure that it is initialized.
+
+        // TODO(gspencer): replace this with a dbus call that will
+        // check to see that cryptohomed has initialized the PINs, and
+        // will fetch the token name and PINs for accessing the TPM.
+        EnsureTPMInit();
+
+        // If this is set, then we'll use the TPM by default.
+        tpm_slot_ = GetTPMSlot();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  std::string GetTPMTokenName() {
+    // TODO(gspencer): This should come from the dbus interchange with
+    // cryptohomed instead of being hard-coded.
+    return std::string(kTPMTokenName);
+  }
+
+  PK11SlotInfo* GetTPMSlot() {
+    return FindSlotWithTokenName(GetTPMTokenName());
   }
 #endif  // defined(OS_CHROMEOS)
 
+
   bool OpenTestNSSDB(const FilePath& path, const char* description) {
-    test_db_slot_ = OpenUserDB(path, description);
-    return !!test_db_slot_;
+    test_slot_ = OpenUserDB(path, description);
+    return !!test_slot_;
   }
 
   void CloseTestNSSDB() {
-    if (test_db_slot_) {
-      SECStatus status = SECMOD_CloseUserDB(test_db_slot_);
+    if (test_slot_) {
+      SECStatus status = SECMOD_CloseUserDB(test_slot_);
       if (status != SECSuccess)
         LOG(ERROR) << "SECMOD_CloseUserDB failed: " << PORT_GetError();
-      PK11_FreeSlot(test_db_slot_);
-      test_db_slot_ = NULL;
+      PK11_FreeSlot(test_slot_);
+      test_slot_ = NULL;
     }
   }
 
-  PK11SlotInfo* GetDefaultKeySlot() {
-    if (test_db_slot_)
-      return PK11_ReferenceSlot(test_db_slot_);
-    if (real_db_slot_)
-      return PK11_ReferenceSlot(real_db_slot_);
+  PK11SlotInfo* GetPublicNSSKeySlot() {
+    if (test_slot_)
+      return PK11_ReferenceSlot(test_slot_);
+    if (software_slot_)
+      return PK11_ReferenceSlot(software_slot_);
+    return PK11_GetInternalKeySlot();
+  }
+
+  PK11SlotInfo* GetPrivateNSSKeySlot() {
+    if (test_slot_)
+      return PK11_ReferenceSlot(test_slot_);
+    // If the TPM slot has been opened, then return that one.
+    if (tpm_slot_)
+      return PK11_ReferenceSlot(tpm_slot_);
+    // If it hasn't, then return the software slot.
+    if (software_slot_)
+      return PK11_ReferenceSlot(software_slot_);
     return PK11_GetInternalKeySlot();
   }
 
@@ -218,8 +330,10 @@ class NSSInitSingleton {
   friend struct DefaultLazyInstanceTraits<NSSInitSingleton>;
 
   NSSInitSingleton()
-      : real_db_slot_(NULL),
-        test_db_slot_(NULL),
+      : opencryptoki_module_(NULL),
+        software_slot_(NULL),
+        test_slot_(NULL),
+        tpm_slot_(NULL),
         root_(NULL),
         chromeos_user_logged_in_(false) {
     EnsureNSPRInit();
@@ -257,7 +371,7 @@ class NSSInitSingleton {
       status = NSS_NoDB_Init(NULL);
       if (status != SECSuccess) {
         LOG(ERROR) << "Error initializing NSS without a persistent "
-            "database: NSS error code " << PR_GetError();
+                      "database: " << GetNSSErrorMessage();
       }
     } else {
 #if defined(USE_NSS)
@@ -280,16 +394,15 @@ class NSSInitSingleton {
         if (status != SECSuccess) {
           LOG(ERROR) << "Error initializing NSS with a persistent "
                         "database (" << nss_config_dir
-                     << "): NSS error code " << PR_GetError();
+                     << "): " << GetNSSErrorMessage();
         }
       }
       if (status != SECSuccess) {
-        LOG(WARNING) << "Initialize NSS without a persistent database "
-                        "(~/.pki/nssdb).";
+        VLOG(1) << "Initializing NSS without a persistent database.";
         status = NSS_NoDB_Init(NULL);
         if (status != SECSuccess) {
           LOG(ERROR) << "Error initializing NSS without a persistent "
-              "database: NSS error code " << PR_GetError();
+                        "database: " << GetNSSErrorMessage();
           return;
         }
       }
@@ -317,10 +430,14 @@ class NSSInitSingleton {
   // prevent non-joinable threads from using NSS after it's already been shut
   // down.
   ~NSSInitSingleton() {
-    if (real_db_slot_) {
-      SECMOD_CloseUserDB(real_db_slot_);
-      PK11_FreeSlot(real_db_slot_);
-      real_db_slot_ = NULL;
+    if (tpm_slot_) {
+      PK11_FreeSlot(tpm_slot_);
+      tpm_slot_ = NULL;
+    }
+    if (software_slot_) {
+      SECMOD_CloseUserDB(software_slot_);
+      PK11_FreeSlot(software_slot_);
+      software_slot_ = NULL;
     }
     CloseTestNSSDB();
     if (root_) {
@@ -328,15 +445,70 @@ class NSSInitSingleton {
       SECMOD_DestroyModule(root_);
       root_ = NULL;
     }
+    if (opencryptoki_module_) {
+      SECMOD_UnloadUserModule(opencryptoki_module_);
+      SECMOD_DestroyModule(opencryptoki_module_);
+      opencryptoki_module_ = NULL;
+    }
 
     SECStatus status = NSS_Shutdown();
     if (status != SECSuccess) {
       // We VLOG(1) because this failure is relatively harmless (leaking, but
       // we're shutting down anyway).
-      VLOG(1) << "NSS_Shutdown failed; see "
-                 "http://code.google.com/p/chromium/issues/detail?id=4609";
+      VLOG(1) << "NSS_Shutdown failed; see http://crbug.com/4609";
     }
   }
+
+#if defined(USE_NSS)
+  // Load nss's built-in root certs.
+  SECMODModule* InitDefaultRootCerts() {
+    SECMODModule* root = LoadModule("Root Certs", "libnssckbi.so", NULL);
+    if (root)
+      return root;
+
+    // Aw, snap.  Can't find/load root cert shared library.
+    // This will make it hard to talk to anybody via https.
+    NOTREACHED();
+    return NULL;
+  }
+
+  // Load the given module for this NSS session.
+  SECMODModule* LoadModule(const char* name,
+                           const char* library_path,
+                           const char* params) {
+    std::string modparams = StringPrintf(
+        "name=\"%s\" library=\"%s\" %s",
+        name, library_path, params ? params : "");
+
+    // Shouldn't need to const_cast here, but SECMOD doesn't properly
+    // declare input string arguments as const.  Bug
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=642546 was filed
+    // on NSS codebase to address this.
+    SECMODModule* module = SECMOD_LoadUserModule(
+        const_cast<char*>(modparams.c_str()), NULL, PR_FALSE);
+    if (!module) {
+      LOG(ERROR) << "Error loading " << name << " module into NSS: "
+                 << GetNSSErrorMessage();
+      return NULL;
+    }
+    return module;
+  }
+#endif
+
+#if defined(OS_CHROMEOS)
+  void EnsureTPMInit() {
+    base::ScopedPK11Slot tpm_slot(GetTPMSlot());
+    if (tpm_slot.get()) {
+      // TODO(gspencer): Remove this in favor of the dbus API for
+      // cryptohomed when that is available.
+      if (PK11_NeedUserInit(tpm_slot.get())) {
+        PK11_InitPin(tpm_slot.get(),
+                     kTPMSecurityOfficerPIN,
+                     kTPMUserPIN);
+      }
+    }
+  }
+#endif
 
   static PK11SlotInfo* OpenUserDB(const FilePath& path,
                                   const char* description) {
@@ -350,7 +522,7 @@ class NSSInitSingleton {
     }
     else {
       LOG(ERROR) << "Error opening persistent database (" << modspec
-                 << "): NSS error code " << PR_GetError();
+                 << "): " << GetNSSErrorMessage();
     }
     return db_slot;
   }
@@ -358,9 +530,11 @@ class NSSInitSingleton {
   // If this is set to true NSS is forced to be initialized without a DB.
   static bool force_nodb_init_;
 
-  PK11SlotInfo* real_db_slot_;  // Overrides internal key slot if non-NULL.
-  PK11SlotInfo* test_db_slot_;  // Overrides internal key slot and real_db_slot_
-  SECMODModule *root_;
+  SECMODModule* opencryptoki_module_;
+  PK11SlotInfo* software_slot_;
+  PK11SlotInfo* test_slot_;
+  PK11SlotInfo* tpm_slot_;
+  SECMODModule* root_;
   bool chromeos_user_logged_in_;
 #if defined(USE_NSS)
   // TODO(davidben): When https://bugzilla.mozilla.org/show_bug.cgi?id=564011
@@ -482,7 +656,15 @@ AutoNSSWriteLock::~AutoNSSWriteLock() {
 void OpenPersistentNSSDB() {
   g_nss_singleton.Get().OpenPersistentNSSDB();
 }
-#endif
+
+bool EnableTPMForNSS() {
+  return g_nss_singleton.Get().EnableTPMForNSS();
+}
+
+std::string GetTPMTokenName() {
+  return g_nss_singleton.Get().GetTPMTokenName();
+}
+#endif  // defined(OS_CHROMEOS)
 
 // TODO(port): Implement this more simply.  We can convert by subtracting an
 // offset (the difference between NSPR's and base::Time's epochs).
@@ -503,8 +685,12 @@ Time PRTimeToBaseTime(PRTime prtime) {
   return Time::FromUTCExploded(exploded);
 }
 
-PK11SlotInfo* GetDefaultNSSKeySlot() {
-  return g_nss_singleton.Get().GetDefaultKeySlot();
+PK11SlotInfo* GetPublicNSSKeySlot() {
+  return g_nss_singleton.Get().GetPublicNSSKeySlot();
+}
+
+PK11SlotInfo* GetPrivateNSSKeySlot() {
+  return g_nss_singleton.Get().GetPrivateNSSKeySlot();
 }
 
 }  // namespace base

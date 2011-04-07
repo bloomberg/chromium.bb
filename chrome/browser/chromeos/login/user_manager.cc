@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/user_manager.h"
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
@@ -569,6 +571,14 @@ void UserManager::NotifyOnLogin() {
   WmIpc::instance()->SetLoggedInProperty(true);
   // Ensure we've opened the real user's key/certificate database.
   base::OpenPersistentNSSDB();
+
+  // Only load the Opencryptoki library into NSS if we have this switch.
+  // TODO(gspencer): Remove this switch once cryptohomed work is finished:
+  // http://crosbug.com/12295 and http://crosbug.com/12304
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kLoadOpencryptoki)) {
+    base::EnableTPMForNSS();
+  }
 
   // Schedules current user ownership check on file thread.
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,

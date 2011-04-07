@@ -636,7 +636,7 @@ void CertificateManagerHandler::ImportPersonalFileRead(
   file_data_ = data;
 
   // TODO(mattm): allow user to choose a slot to import to.
-  module_ = certificate_manager_model_->cert_db().GetDefaultModule();
+  module_ = certificate_manager_model_->cert_db().GetPrivateModule();
 
   net::CryptoModuleList modules;
   modules.push_back(module_);

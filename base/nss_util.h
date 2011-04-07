@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define BASE_NSS_UTIL_H_
 #pragma once
 
+#include <string>
 #include "base/basictypes.h"
 
 #if defined(USE_NSS)
@@ -79,8 +80,19 @@ void LoadNSSLibraries();
 bool CheckNSSVersion(const char* version);
 
 #if defined(OS_CHROMEOS)
-// Open the r/w nssdb that's stored inside the user's encrypted home directory.
+// Open the r/w nssdb that's stored inside the user's encrypted home
+// directory.  This is the default slot returned by
+// GetPublicNSSKeySlot().
 void OpenPersistentNSSDB();
+
+// Load the opencryptoki library into NSS so that we can access the
+// TPM through NSS.  Once this is called, GetPrivateNSSKeySlot() will
+// return the TPM slot if one was found.  Returns false if it was
+// unable to load opencryptoki or open the TPM slot.
+bool EnableTPMForNSS();
+
+// Get name for the built-in TPM token on ChromeOS.
+std::string GetTPMTokenName();
 #endif
 
 // Convert a NSS PRTime value into a base::Time object.

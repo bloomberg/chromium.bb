@@ -112,7 +112,7 @@ class CertDatabaseNSSTest : public testing::Test {
                               "CertDatabaseNSSTest db"));
       temp_db_initialized_ = true;
     }
-    slot_ = cert_db_.GetDefaultModule();
+    slot_ = cert_db_.GetPublicModule();
 
     // Test db should be empty at start of test.
     EXPECT_EQ(0U, ListCertsInSlot(slot_->os_module_handle()).size());

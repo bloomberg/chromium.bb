@@ -202,6 +202,7 @@ extern const char kInstantURL[];
 extern const char kJavaScriptFlags[];
 extern const char kKeepAliveForTest[];
 extern const char kLoadExtension[];
+extern const char kLoadOpencryptoki[];
 extern const char kUninstallExtension[];
 extern const char kLogNetLog[];
 extern const char kMakeDefaultBrowser[];

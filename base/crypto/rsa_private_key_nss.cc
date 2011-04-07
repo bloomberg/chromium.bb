@@ -107,7 +107,7 @@ RSAPrivateKey* RSAPrivateKey::FindFromPublicKeyInfo(
 
   // Now, look for the associated private key in the user's NSS DB.  If it's
   // not there, consider that an error.
-  PK11SlotInfo *slot = GetDefaultNSSKeySlot();
+  PK11SlotInfo *slot = GetPrivateNSSKeySlot();
   if (!slot) {
     NOTREACHED();
     return NULL;
@@ -190,7 +190,7 @@ RSAPrivateKey* RSAPrivateKey::CreateWithParams(uint16 num_bits,
 
   scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
 
-  PK11SlotInfo *slot = GetDefaultNSSKeySlot();
+  PK11SlotInfo *slot = GetPrivateNSSKeySlot();
   if (!slot)
     return NULL;
 
@@ -216,7 +216,7 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfoWithParams(
 
   scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
 
-  PK11SlotInfo *slot = GetDefaultNSSKeySlot();
+  PK11SlotInfo *slot = GetPrivateNSSKeySlot();
   if (!slot)
     return NULL;
 
