@@ -9,6 +9,19 @@
 cr.define('ntp4', function() {
   'use strict';
 
+  var localStrings = new LocalStrings();
+
+  /**
+   * Returns the text used for a recently closed window.
+   * @param {number} numTabs Number of tabs in the window.
+   * @return {string} The text to use.
+   */
+  function formatTabsText(numTabs) {
+    if (numTabs == 1)
+      return localStrings.getString('closedwindowsingle');
+    return localStrings.getStringF('closedwindowmultiple', numTabs);
+  }
+
   var Menu = cr.ui.Menu;
   var MenuItem = cr.ui.MenuItem;
   var MenuButton = cr.ui.MenuButton;
@@ -21,6 +34,7 @@ cr.define('ntp4', function() {
       MenuButton.prototype.decorate.call(this);
       this.menu = new Menu;
       cr.ui.decorate(this.menu, Menu);
+      this.menu.classList.add('recent-menu');
       document.body.appendChild(this.menu);
 
       this.needsRebuild_ = true;

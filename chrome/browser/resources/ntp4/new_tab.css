@@ -57,18 +57,11 @@ button span {
   color: #888;
 }
 
-.footer-divider {
+#footer-divider {
   background: -webkit-gradient(linear, left top, left bottom,
                                from(#eee), color-stop(0.5, #bbb), to(#eee));
-  width: 1px;
-}
-
-#footer-divider-1 {
   height: 60%;
-}
-
-#footer-divider-2 {
-  height: 40%;
+  width: 1px;
 }
 
 /* TODO(estade): handle overflow better? I tried overflow-x: hidden and
