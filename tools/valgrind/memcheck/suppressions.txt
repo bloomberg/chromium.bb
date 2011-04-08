@@ -4299,6 +4299,12 @@
    fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
    fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
 }
+{
+   bug_78786
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN13sync_notifier104_GLOBAL__N_chrome_browser_sync_notifier_non_blocking_invalidation_notifier_unittest.cc_00000000_5C759CC735NonBlockingInvalidationNotifierTest5SetUpEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
