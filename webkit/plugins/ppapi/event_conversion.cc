@@ -13,6 +13,7 @@
 #include "ppapi/c/pp_input_event.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/plugins/ppapi/common.h"
+#include "webkit/plugins/ppapi/usb_code_for_event.h"
 
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
@@ -76,6 +77,8 @@ void AppendKeyEvent(const WebInputEvent& event,
   PP_InputEvent result = GetPPEventWithCommonFieldsAndType(event);
   result.u.key.modifier = key_event.modifiers;
   result.u.key.key_code = key_event.windowsKeyCode;
+  result.u.key.native_key_code = key_event.nativeKeyCode;
+  result.u.key.usb_key_code = UsbCodeForKeyboardEvent(key_event);
   pp_events->push_back(result);
 }
 

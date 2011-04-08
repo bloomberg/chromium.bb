@@ -114,13 +114,26 @@ struct PP_InputEvent_Key {
   uint32_t modifier;
 
   /**
-   * The key code.
+   * |key_code| reflects the deprecated DOM KeyboardEvent |keyCode| field.
+   * Chrome populates this with the Windows-style Virtual Key code of the key.
    */
-
-// TODO(brettw) define what these actually are.
   uint32_t key_code;
+
+  /**
+   * |native_key_code| reflects the hardware and/or platform specific code for
+   * the key.
+   */
+  uint32_t native_key_code;
+
+  /**
+   * |usb_key_code| contains the equivalent USB HID Page and Usage codes for
+   * the key, in the high- and low-order 16-bit words respectively.  See
+   * http://www.usb.org/developers/hidpage/ for tables of HID Usage codes.
+   * If the no USB HID Usage equivalent is known for the key, the code is zero.
+   */
+  uint32_t usb_key_code;
 };
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Key, 8);
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Key, 16);
 /**
  * @}
  */

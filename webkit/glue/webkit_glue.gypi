@@ -305,6 +305,8 @@
         '../plugins/ppapi/resource_tracker.h',
         '../plugins/ppapi/string.cc',
         '../plugins/ppapi/string.h',
+        '../plugins/ppapi/usb_code_for_event.cc',
+        '../plugins/ppapi/usb_code_for_event.h',
         '../plugins/ppapi/var.cc',
         '../plugins/ppapi/var.h',
         '../plugins/sad_plugin.cc',
