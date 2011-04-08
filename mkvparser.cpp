@@ -7828,7 +7828,7 @@ BlockEntry::~BlockEntry()
 
 bool BlockEntry::EOS() const
 {
-    return (m_index == LONG_MIN);
+    return (GetKind() == kBlockEOS);
 }
 
 
@@ -7840,10 +7840,7 @@ const Cluster* BlockEntry::GetCluster() const
 
 long BlockEntry::GetIndex() const
 {
-    if (m_index == LONG_MIN)  //EOS
-        return -1;
-
-    return labs(m_index);
+    return m_index;
 }
 
 
