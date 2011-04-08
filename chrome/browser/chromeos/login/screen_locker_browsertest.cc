@@ -274,7 +274,8 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestNoPasswordWithKeyPress) {
   TestNoPassword(KeyPress);
 }
 
-IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
+// See http://crbug.com/78764.
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestShowTwice) {
   EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenLockCompleted())
       .Times(2)
       .RetiresOnSaturation();
@@ -294,7 +295,8 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
   EXPECT_FALSE(tester->IsLocked());
 }
 
-IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestEscape) {
+// See http://crbug.com/78764.
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestEscape) {
   EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenLockCompleted())
       .Times(1)
       .RetiresOnSaturation();
