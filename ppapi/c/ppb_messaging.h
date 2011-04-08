@@ -2,18 +2,18 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#ifndef PPAPI_C_DEV_PPB_MESSAGING_DEV_H_
-#define PPAPI_C_DEV_PPB_MESSAGING_DEV_H_
+#ifndef PPAPI_C_PPB_MESSAGING_H_
+#define PPAPI_C_PPB_MESSAGING_H_
 
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_MESSAGING_DEV_INTERFACE "PPB_Messaging(Dev);0.1"
+#define PPB_MESSAGING_INTERFACE "PPB_Messaging;0.1"
 
 /**
  * @file
- * This file defines the PPB_Messaging_Dev interface implemented by the browser.
- * The PPB_Messaging_Dev interface contains pointers to functions related to
+ * This file defines the PPB_Messaging interface implemented by the browser.
+ * The PPB_Messaging interface contains pointers to functions related to
  * sending messages to the JavaScript onmessage handler on the DOM element
  * associated with a specific module instance.
  *
@@ -22,11 +22,11 @@
  */
 
 /**
- * The PPB_Messaging_Dev interface contains pointers to functions related to
+ * The PPB_Messaging interface contains pointers to functions related to
  * sending messages to the JavaScript onmessage handler on the DOM element
  * associated with a specific module instance.
  */
-struct PPB_Messaging_Dev {
+struct PPB_Messaging {
   /**
    * @a PostMessage is a pointer to a function which asynchronously invokes the
    * onmessage handler on the DOM element for the given module instance, if one
@@ -78,5 +78,5 @@ struct PPB_Messaging_Dev {
  * @}
  */
 
-#endif  /* PPAPI_C_DEV_PPB_MESSAGING_DEV_H_ */
+#endif  /* PPAPI_C_PPB_MESSAGING_H_ */
 

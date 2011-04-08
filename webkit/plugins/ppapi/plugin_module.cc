@@ -27,7 +27,6 @@
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/dev/ppb_gles_chromium_texture_mapping_dev.h"
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
-#include "ppapi/c/dev/ppb_messaging_dev.h"
 #include "ppapi/c/dev/ppb_opengles_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
@@ -44,6 +43,7 @@
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_instance.h"
+#include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
@@ -277,7 +277,7 @@ const void* GetInterface(const char* name) {
     return PPB_ImageData_Impl::GetTrustedInterface();
   if (strcmp(name, PPB_INSTANCE_INTERFACE) == 0)
     return PluginInstance::GetInterface();
-  if (strcmp(name, PPB_MESSAGING_DEV_INTERFACE) == 0)
+  if (strcmp(name, PPB_MESSAGING_INTERFACE) == 0)
     return PluginInstance::GetMessagingInterface();
   if (strcmp(name, PPB_PDF_INTERFACE) == 0)
     return PPB_PDF_Impl::GetInterface();

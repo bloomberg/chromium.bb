@@ -30,11 +30,11 @@ struct PP_Var;
 struct PPB_Instance;
 struct PPB_Find_Dev;
 struct PPB_Fullscreen_Dev;
-struct PPB_Messaging_Dev;
+struct PPB_Messaging;
 struct PPB_Zoom_Dev;
 struct PPP_Find_Dev;
 struct PPP_Instance;
-struct PPP_Messaging_Dev;
+struct PPP_Messaging;
 struct PPP_Pdf;
 struct PPP_Selection_Dev;
 struct PPP_Zoom_Dev;
@@ -87,7 +87,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // exposed to the plugin.
   static const PPB_Find_Dev* GetFindInterface();
   static const PPB_Fullscreen_Dev* GetFullscreenInterface();
-  static const PPB_Messaging_Dev* GetMessagingInterface();
+  static const PPB_Messaging* GetMessagingInterface();
   static const PPB_Zoom_Dev* GetZoomInterface();
 
   PluginDelegate* delegate() const { return delegate_; }
@@ -345,7 +345,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   // The plugin-provided interfaces.
   const PPP_Find_Dev* plugin_find_interface_;
-  const PPP_Messaging_Dev* plugin_messaging_interface_;
+  const PPP_Messaging* plugin_messaging_interface_;
   const PPP_Pdf* plugin_pdf_interface_;
   const PPP_Selection_Dev* plugin_selection_interface_;
   const PPP_Zoom_Dev* plugin_zoom_interface_;

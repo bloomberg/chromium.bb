@@ -18,7 +18,7 @@ class PluginInstance;
 
 // MessageChannel implements bidirectional postMessage functionality, allowing
 // calls from JavaScript to plugins and vice-versa. See
-// PPB_Instance::PostMessage and PPP_Instance::HandleMessage for more
+// PPB_Messaging::PostMessage and PPP_Messaging::HandleMessage for more
 // information.
 //
 // Currently, only 1 MessageChannel can exist, to implement postMessage

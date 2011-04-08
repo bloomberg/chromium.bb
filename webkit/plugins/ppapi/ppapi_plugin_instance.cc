@@ -11,10 +11,8 @@
 #include "base/utf_string_conversions.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
-#include "ppapi/c/dev/ppb_messaging_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
-#include "ppapi/c/dev/ppp_messaging_dev.h"
 #include "ppapi/c/dev/ppp_selection_dev.h"
 #include "ppapi/c/dev/ppp_zoom_dev.h"
 #include "ppapi/c/pp_input_event.h"
@@ -24,7 +22,9 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_instance.h"
+#include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppp_instance.h"
+#include "ppapi/c/ppp_messaging.h"
 #include "printing/units.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
@@ -281,7 +281,7 @@ void PostMessage(PP_Instance instance_id, PP_Var message) {
   instance->PostMessage(message);
 }
 
-const PPB_Messaging_Dev ppb_messaging = {
+const PPB_Messaging ppb_messaging = {
   &PostMessage
 };
 
@@ -403,7 +403,7 @@ const PPB_Fullscreen_Dev* PluginInstance::GetFullscreenInterface() {
 }
 
 // static
-const PPB_Messaging_Dev* PluginInstance::GetMessagingInterface() {
+const PPB_Messaging* PluginInstance::GetMessagingInterface() {
   return &ppb_messaging;
 }
 
@@ -921,8 +921,8 @@ bool PluginInstance::LoadMessagingInterface() {
   if (!checked_for_plugin_messaging_interface_) {
     checked_for_plugin_messaging_interface_ = true;
     plugin_messaging_interface_ =
-        reinterpret_cast<const PPP_Messaging_Dev*>(module_->GetPluginInterface(
-            PPP_MESSAGING_DEV_INTERFACE));
+        reinterpret_cast<const PPP_Messaging*>(module_->GetPluginInterface(
+            PPP_MESSAGING_INTERFACE));
   }
 
   return !!plugin_messaging_interface_;

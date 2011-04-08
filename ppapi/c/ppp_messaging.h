@@ -2,18 +2,18 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#ifndef PPAPI_C_DEV_PPP_MESSAGING_DEV_H_
-#define PPAPI_C_DEV_PPP_MESSAGING_DEV_H_
+#ifndef PPAPI_C_PPP_MESSAGING_H_
+#define PPAPI_C_PPP_MESSAGING_H_
 
 #include "ppapi/c/pp_instance.h"
 
 struct PP_Var;
 
-#define PPP_MESSAGING_DEV_INTERFACE "PPP_Messaging_Dev;0.1"
+#define PPP_MESSAGING_INTERFACE "PPP_Messaging;0.1"
 
 /**
  * @file
- * This file defines the PPP_Messaging_Dev structure - a series of pointers to
+ * This file defines the PPP_Messaging structure - a series of pointers to
  * methods that you must implement if you wish to handle messages posted to the
  * module instance via calls to postMessage on the associated DOM element.
  *
@@ -24,11 +24,11 @@ struct PP_Var;
  */
 
 /**
- * The PPP_Messaging_Dev interface contains pointers to a series of functions
+ * The PPP_Messaging interface contains pointers to a series of functions
  * that you must implement if you wish to handle messages posted to the module
  * instance via calls to postMessage on the associated DOM element.
  */
-struct PPP_Messaging_Dev {
+struct PPP_Messaging {
   /**
    * HandleMessage is a pointer to a function that the browser will call when
    * @a postMessage() is invoked on the DOM element for the module instance in
@@ -59,5 +59,5 @@ struct PPP_Messaging_Dev {
 /**
  * @}
  */
-#endif  /* PPAPI_C_DEV_PPP_MESSAGING_DEV_H_ */
+#endif  /* PPAPI_C_PPP_MESSAGING_H_ */
 
