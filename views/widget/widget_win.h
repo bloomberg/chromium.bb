@@ -269,10 +269,10 @@ class WidgetWin : public ui::WindowImpl,
     MESSAGE_HANDLER_EX(WM_NCMOUSELEAVE, OnMouseRange)
 
     // Key events.
-    MESSAGE_HANDLER_EX(WM_KEYDOWN, OnKeyDown)
-    MESSAGE_HANDLER_EX(WM_KEYUP, OnKeyUp)
-    MESSAGE_HANDLER_EX(WM_SYSKEYDOWN, OnKeyDown)
-    MESSAGE_HANDLER_EX(WM_SYSKEYUP, OnKeyUp)
+    MESSAGE_HANDLER_EX(WM_KEYDOWN, OnKeyEvent)
+    MESSAGE_HANDLER_EX(WM_KEYUP, OnKeyEvent)
+    MESSAGE_HANDLER_EX(WM_SYSKEYDOWN, OnKeyEvent)
+    MESSAGE_HANDLER_EX(WM_SYSKEYUP, OnKeyEvent)
 
     // IME Events.
     MESSAGE_HANDLER_EX(WM_IME_SETCONTEXT, OnImeMessages)
@@ -363,8 +363,7 @@ class WidgetWin : public ui::WindowImpl,
   virtual void OnInitMenu(HMENU menu);
   virtual void OnInitMenuPopup(HMENU menu, UINT position, BOOL is_system_menu);
   virtual void OnInputLangChange(DWORD character_set, HKL input_language_id);
-  virtual LRESULT OnKeyDown(UINT message, WPARAM w_param, LPARAM l_param);
-  virtual LRESULT OnKeyUp(UINT message, WPARAM w_param, LPARAM l_param);
+  virtual LRESULT OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param);
   virtual void OnKillFocus(HWND focused_window);
   virtual LRESULT OnMouseActivate(UINT message, WPARAM w_param, LPARAM l_param);
   virtual LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param);

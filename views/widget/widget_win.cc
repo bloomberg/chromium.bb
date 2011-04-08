@@ -790,17 +790,7 @@ void WidgetWin::OnInputLangChange(DWORD character_set, HKL input_language_id) {
   }
 }
 
-LRESULT WidgetWin::OnKeyDown(UINT message, WPARAM w_param, LPARAM l_param) {
-  MSG msg = { hwnd(), message, w_param, l_param };
-  KeyEvent key(msg);
-  if (input_method_.get())
-    input_method_->DispatchKeyEvent(key);
-  else
-    DispatchKeyEventPostIME(key);
-  return 0;
-}
-
-LRESULT WidgetWin::OnKeyUp(UINT message, WPARAM w_param, LPARAM l_param) {
+LRESULT WidgetWin::OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param) {
   MSG msg = { hwnd(), message, w_param, l_param };
   KeyEvent key(msg);
   if (input_method_.get())
