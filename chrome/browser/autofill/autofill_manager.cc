@@ -392,7 +392,12 @@ void AutofillManager::OnQueryFormFieldAutofill(
           icons.assign(icons.size(), string16());
         }
 
-        RemoveDuplicateSuggestions(&values, &labels, &icons, &unique_ids);
+        // When filling credit card suggestions, the values and labels are
+        // typically obfuscated, which makes detecting duplicates hard.  Since
+        // duplicates only tend to be a problem when filling address forms
+        // anyway, only don't de-dup credit card suggestions.
+        if (!is_filling_credit_card)
+          RemoveDuplicateSuggestions(&values, &labels, &icons, &unique_ids);
 
         // The first time we show suggestions on this page, log the number of
         // suggestions shown.

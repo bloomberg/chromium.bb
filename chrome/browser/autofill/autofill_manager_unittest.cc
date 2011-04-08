@@ -73,6 +73,10 @@ class TestPersonalDataManager : public PersonalDataManager {
     web_profiles_->push_back(profile);
   }
 
+  void AddCreditCard(CreditCard* credit_card) {
+    credit_cards_->push_back(credit_card);
+  }
+
   void ClearAutofillProfiles() {
     web_profiles_.reset();
   }
@@ -423,6 +427,10 @@ class TestAutofillManager : public AutofillManager {
 
   void AddProfile(AutofillProfile* profile) {
     test_personal_data_->AddProfile(profile);
+  }
+
+  void AddCreditCard(CreditCard* credit_card) {
+    test_personal_data_->AddCreditCard(credit_card);
   }
 
   int GetPackedCreditCardID(int credit_card_id) {
@@ -980,6 +988,65 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsNonHTTPS) {
   test_personal_data_->ClearCreditCards();
   GetAutofillSuggestions(form, field);
   EXPECT_FALSE(GetAutofillSuggestionsMessage(NULL, NULL, NULL, NULL, NULL));
+}
+
+// Test that we return all credit card suggestions in the case that two cards
+// have the same obfuscated number.
+TEST_F(AutofillManagerTest, GetCreditCardSuggestionsRepeatedObfuscatedNumber) {
+  // Add a credit card with the same obfuscated number as Elvis's.
+  // |credit_card| will be owned by the mock PersonalDataManager.
+  CreditCard* credit_card = new CreditCard;
+  autofill_test::SetCreditCardInfo(credit_card, "Elvis Presley",
+                                   "5231567890123456",  // Mastercard
+                                   "04", "2012");
+  credit_card->set_guid("00000000-0000-0000-0000-000000000007");
+  autofill_manager_->AddCreditCard(credit_card);
+
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormField field = form.fields[1];
+  GetAutofillSuggestions(form, field);
+
+  // No suggestions provided, so send an empty vector as the results.
+  // This triggers the combined message send.
+  AutocompleteSuggestionsReturned(std::vector<string16>());
+
+  // Test that we sent the right message to the renderer.
+  int page_id = 0;
+  std::vector<string16> values;
+  std::vector<string16> labels;
+  std::vector<string16> icons;
+  std::vector<int> unique_ids;
+  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
+
+  string16 expected_values[] = {
+    ASCIIToUTF16("************3456"),
+    ASCIIToUTF16("************8765"),
+    ASCIIToUTF16("************3456")
+  };
+  string16 expected_labels[] = {
+    ASCIIToUTF16("*3456"),
+    ASCIIToUTF16("*8765"),
+    ASCIIToUTF16("*3456"),
+  };
+  string16 expected_icons[] = {
+    ASCIIToUTF16("visaCC"),
+    ASCIIToUTF16("genericCC"),
+    ASCIIToUTF16("masterCardCC")
+  };
+  int expected_unique_ids[] = {
+    autofill_manager_->GetPackedCreditCardID(4),
+    autofill_manager_->GetPackedCreditCardID(5),
+    autofill_manager_->GetPackedCreditCardID(7)
+  };
+  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
+                    kDefaultPageID, arraysize(expected_values), expected_values,
+                    expected_labels, expected_icons, expected_unique_ids);
 }
 
 // Test that we return profile and credit card suggestions for combined forms.
