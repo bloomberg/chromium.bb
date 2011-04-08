@@ -592,9 +592,6 @@ void LoadNSSLibraries() {
   // For Debian derivaties NSS libraries are located here.
   paths.push_back(FilePath("/usr/lib/nss"));
 
-  // For other distros use this path.
-  paths.push_back(FilePath("/usr/lib"));
-
   // A list of library files to load.
   std::vector<std::string> libs;
   libs.push_back("libsoftokn3.so");
@@ -606,12 +603,10 @@ void LoadNSSLibraries() {
   for (size_t i = 0; i < libs.size(); ++i) {
     for (size_t j = 0; j < paths.size(); ++j) {
       FilePath path = paths[j].Append(libs[i]);
-      if (file_util::PathExists(path)) {
-        NativeLibrary lib = base::LoadNativeLibrary(path);
-        if (lib) {
-          ++loaded;
-          break;
-        }
+      NativeLibrary lib = base::LoadNativeLibrary(path);
+      if (lib) {
+        ++loaded;
+        break;
       }
     }
   }
