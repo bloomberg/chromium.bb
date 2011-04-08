@@ -161,6 +161,30 @@ std::string CollectDriverVersionATI() {
   return "";
 }
 
+// Use glXGetClientString to get driver vendor.
+// Return "" on failing.
+std::string CollectDriverVendorGlx() {
+  // TODO(zmo): handle the EGL/GLES2 case.
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL)
+    return "";
+  Display* display = XOpenDisplay(NULL);
+  if (display == NULL)
+    return "";
+  std::string vendor = glXGetClientString(display, GLX_VENDOR);
+  XCloseDisplay(display);
+  return vendor;
+}
+
+// Return 0 on unrecognized vendor.
+uint32 VendorStringToID(const std::string& vendor_string) {
+  if (StartsWithASCII(vendor_string, "NVIDIA", true))
+    return 0x10de;
+  if (StartsWithASCII(vendor_string, "ATI", true))
+    return 0x1002;
+  // TODO(zmo): find a way to identify Intel cards.
+  return 0;
+}
+
 }  // namespace anonymous
 
 namespace gpu_info_collector {
@@ -197,6 +221,14 @@ bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info) {
 bool CollectVideoCardInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
+  std::string driver_vendor = CollectDriverVendorGlx();
+  if (!driver_vendor.empty()) {
+    gpu_info->driver_vendor = driver_vendor;
+    uint32 vendor_id = VendorStringToID(driver_vendor);
+    if (vendor_id != 0)
+      gpu_info->vendor_id = vendor_id;
+  }
+
   if (IsPciSupported() == false) {
     VLOG(1) << "PCI bus scanning is not supported";
     return false;
@@ -222,7 +254,8 @@ bool CollectVideoCardInfo(GPUInfo* gpu_info) {
     (interface->pci_fill_info)(device, 33);  // Fill the IDs and class fields.
     // TODO(zmo): there might be other classes that qualify as display devices.
     if (device->device_class == 0x0300) {  // Device class is DISPLAY_VGA.
-      gpu_list.push_back(device);
+      if (gpu_info->vendor_id == 0 || gpu_info->vendor_id == device->vendor_id)
+        gpu_list.push_back(device);
     }
   }
   if (gpu_list.size() == 1) {
