@@ -158,6 +158,8 @@ class Worker : public Channel::Listener, public Message::Sender {
     return overrided_thread_ ? overrided_thread_ : &listener_thread_;
   }
 
+  const base::Thread& ipc_thread() const { return ipc_thread_; }
+
  private:
   // Called on the listener thread to create the sync channel.
   void OnStart() {
@@ -1164,4 +1166,152 @@ TEST_F(IPCSyncChannelTest, SendAfterClose) {
   EXPECT_FALSE(server.send_result());
 }
 
+//-----------------------------------------------------------------------------
 
+namespace {
+
+class RestrictedDispatchServer : public Worker {
+ public:
+  RestrictedDispatchServer(WaitableEvent* sent_ping_event)
+      : Worker("restricted_channel", Channel::MODE_SERVER),
+        sent_ping_event_(sent_ping_event) { }
+
+  void OnDoPing(int ping) {
+    // Send an asynchronous message that unblocks the caller.
+    IPC::Message* msg = new SyncChannelTestMsg_Ping(ping);
+    msg->set_unblock(true);
+    Send(msg);
+    // Signal the event after the message has been sent on the channel, on the
+    // IPC thread.
+    ipc_thread().message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &RestrictedDispatchServer::OnPingSent));
+  }
+
+  base::Thread* ListenerThread() { return Worker::ListenerThread(); }
+
+ private:
+  bool OnMessageReceived(const Message& message) {
+    IPC_BEGIN_MESSAGE_MAP(RestrictedDispatchServer, message)
+     IPC_MESSAGE_HANDLER(SyncChannelTestMsg_NoArgs, OnNoArgs)
+     IPC_MESSAGE_HANDLER(SyncChannelTestMsg_Done, Done)
+    IPC_END_MESSAGE_MAP()
+    return true;
+  }
+
+  void OnPingSent() {
+    sent_ping_event_->Signal();
+  }
+
+  void OnNoArgs() { }
+  WaitableEvent* sent_ping_event_;
+};
+
+class NonRestrictedDispatchServer : public Worker {
+ public:
+  NonRestrictedDispatchServer()
+      : Worker("non_restricted_channel", Channel::MODE_SERVER) {}
+
+ private:
+  bool OnMessageReceived(const Message& message) {
+    IPC_BEGIN_MESSAGE_MAP(NonRestrictedDispatchServer, message)
+     IPC_MESSAGE_HANDLER(SyncChannelTestMsg_NoArgs, OnNoArgs)
+     IPC_MESSAGE_HANDLER(SyncChannelTestMsg_Done, Done)
+    IPC_END_MESSAGE_MAP()
+    return true;
+  }
+
+  void OnNoArgs() { }
+};
+
+class RestrictedDispatchClient : public Worker {
+ public:
+  RestrictedDispatchClient(WaitableEvent* sent_ping_event,
+                           RestrictedDispatchServer* server,
+                           int* success)
+      : Worker("restricted_channel", Channel::MODE_CLIENT),
+        ping_(0),
+        server_(server),
+        success_(success),
+        sent_ping_event_(sent_ping_event) {}
+
+  void Run() {
+    // Incoming messages from our channel should only be dispatched when we
+    // send a message on that same channel.
+    channel()->SetRestrictDispatchToSameChannel(true);
+
+    server_->ListenerThread()->message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(server_, &RestrictedDispatchServer::OnDoPing, 1));
+    sent_ping_event_->Wait();
+    Send(new SyncChannelTestMsg_NoArgs);
+    if (ping_ == 1)
+      ++*success_;
+    else
+      LOG(ERROR) << "Send failed to dispatch incoming message on same channel";
+
+    scoped_ptr<SyncChannel> non_restricted_channel(new SyncChannel(
+        "non_restricted_channel", Channel::MODE_CLIENT, this,
+        ipc_thread().message_loop(), true, shutdown_event()));
+
+    server_->ListenerThread()->message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(server_, &RestrictedDispatchServer::OnDoPing, 2));
+    sent_ping_event_->Wait();
+    // Check that the incoming message is *not* dispatched when sending on the
+    // non restricted channel.
+    // TODO(piman): there is a possibility of a false positive race condition
+    // here, if the message that was posted on the server-side end of the pipe
+    // is not visible yet on the client side, but I don't know how to solve this
+    // without hooking into the internals of SyncChannel. I haven't seen it in
+    // practice (i.e. not setting SetRestrictDispatchToSameChannel does cause
+    // the following to fail).
+    non_restricted_channel->Send(new SyncChannelTestMsg_NoArgs);
+    if (ping_ == 1)
+      ++*success_;
+    else
+      LOG(ERROR) << "Send dispatched message from restricted channel";
+
+    Send(new SyncChannelTestMsg_NoArgs);
+    if (ping_ == 2)
+      ++*success_;
+    else
+      LOG(ERROR) << "Send failed to dispatch incoming message on same channel";
+
+    non_restricted_channel->Send(new SyncChannelTestMsg_Done);
+    non_restricted_channel.reset();
+    Send(new SyncChannelTestMsg_Done);
+    Done();
+  }
+
+ private:
+  bool OnMessageReceived(const Message& message) {
+    IPC_BEGIN_MESSAGE_MAP(RestrictedDispatchClient, message)
+     IPC_MESSAGE_HANDLER(SyncChannelTestMsg_Ping, OnPing)
+    IPC_END_MESSAGE_MAP()
+    return true;
+  }
+
+  void OnPing(int ping) {
+    ping_ = ping;
+  }
+
+  int ping_;
+  RestrictedDispatchServer* server_;
+  int* success_;
+  WaitableEvent* sent_ping_event_;
+};
+
+}  // namespace
+
+TEST_F(IPCSyncChannelTest, RestrictedDispatch) {
+  WaitableEvent sent_ping_event(false, false);
+
+  RestrictedDispatchServer* server =
+      new RestrictedDispatchServer(&sent_ping_event);
+  int success = 0;
+  std::vector<Worker*> workers;
+  workers.push_back(new NonRestrictedDispatchServer);
+  workers.push_back(server);
+  workers.push_back(
+      new RestrictedDispatchClient(&sent_ping_event, server, &success));
+  RunTest(workers);
+  EXPECT_EQ(3, success);
+}

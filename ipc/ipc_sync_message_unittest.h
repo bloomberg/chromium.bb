@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,3 +109,6 @@ IPC_SYNC_MESSAGE_ROUTED3_3(Msg_R_3_3, int, std::string, bool, std::string,
 // true, out3 is "3_4", out4 is false
 IPC_SYNC_MESSAGE_ROUTED3_4(Msg_R_3_4, bool, int, std::string, int, bool,
                            std::string, bool)
+
+IPC_MESSAGE_CONTROL1(SyncChannelTestMsg_Ping, int)
+IPC_SYNC_MESSAGE_CONTROL0_0(SyncChannelTestMsg_Done)

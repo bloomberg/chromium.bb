@@ -51,6 +51,17 @@ class SyncChannel : public ChannelProxy,
     sync_messages_with_no_timeout_allowed_ = value;
   }
 
+  // Sets this channel to only dispatch its incoming unblocking messages when it
+  // is itself blocked on sending a sync message, not when other channels are.
+  //
+  // Normally, any unblocking message coming from any channel can be dispatched
+  // when any (possibly other) channel is blocked on sending a message. This is
+  // needed in some cases to unblock certain loops (e.g. necessary when some
+  // processes share a window hierarchy), but may cause re-entrancy issues in
+  // some cases where such loops are not possible. This flags allows the tagging
+  // of some particular channels to not re-enter in such cases.
+  void SetRestrictDispatchToSameChannel(bool value);
+
  protected:
   class ReceivedSyncMsgQueue;
   friend class ReceivedSyncMsgQueue;
@@ -98,6 +109,9 @@ class SyncChannel : public ChannelProxy,
       return received_sync_msgs_;
     }
 
+    void set_restrict_dispatch(bool value) { restrict_dispatch_ = value; }
+    bool restrict_dispatch() const { return restrict_dispatch_; }
+
    private:
     ~SyncContext();
     // ChannelProxy methods that we override.
@@ -125,6 +139,7 @@ class SyncChannel : public ChannelProxy,
 
     base::WaitableEvent* shutdown_event_;
     base::WaitableEventWatcher shutdown_watcher_;
+    bool restrict_dispatch_;
   };
 
  private:

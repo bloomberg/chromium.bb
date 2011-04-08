@@ -322,6 +322,7 @@ bool DispatcherWrapper::Init(
     dispatcher_.reset();
     return false;
   }
+  dispatcher_->channel()->SetRestrictDispatchToSameChannel(true);
   return true;
 }
 

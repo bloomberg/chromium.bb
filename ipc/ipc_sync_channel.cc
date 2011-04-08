@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,7 +68,9 @@ class SyncChannel::ReceivedSyncMsgQueue :
     dispatch_event_.Signal();
     if (!was_task_pending) {
       listener_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-          this, &ReceivedSyncMsgQueue::DispatchMessagesTask));
+          this,
+          &ReceivedSyncMsgQueue::DispatchMessagesTask,
+          scoped_refptr<SyncContext>(context)));
     }
   }
 
@@ -78,30 +80,36 @@ class SyncChannel::ReceivedSyncMsgQueue :
 
   // Called on the listener's thread to process any queues synchronous
   // messages.
-  void DispatchMessagesTask() {
+  void DispatchMessagesTask(SyncContext* context) {
     {
       base::AutoLock auto_lock(message_lock_);
       task_pending_ = false;
     }
-    DispatchMessages();
+    context->DispatchMessages();
   }
 
-  void DispatchMessages() {
+  void DispatchMessages(SyncContext* dispatching_context) {
+    SyncMessageQueue delayed_queue;
     while (true) {
       Message* message;
       scoped_refptr<SyncChannel::SyncContext> context;
       {
         base::AutoLock auto_lock(message_lock_);
-        if (message_queue_.empty())
+        if (message_queue_.empty()) {
+          message_queue_ = delayed_queue;
           break;
+        }
 
         message = message_queue_.front().message;
         context = message_queue_.front().context;
         message_queue_.pop_front();
       }
-
-      context->OnDispatchMessage(*message);
-      delete message;
+      if (context->restrict_dispatch() && context != dispatching_context) {
+        delayed_queue.push_back(QueuedMessage(message, context));
+      } else {
+        context->OnDispatchMessage(*message);
+        delete message;
+      }
     }
   }
 
@@ -204,7 +212,8 @@ SyncChannel::SyncContext::SyncContext(
     WaitableEvent* shutdown_event)
     : ChannelProxy::Context(listener, ipc_thread),
       received_sync_msgs_(ReceivedSyncMsgQueue::AddContext()),
-      shutdown_event_(shutdown_event) {
+      shutdown_event_(shutdown_event),
+      restrict_dispatch_(false) {
 }
 
 SyncChannel::SyncContext::~SyncContext() {
@@ -260,7 +269,7 @@ WaitableEvent* SyncChannel::SyncContext::GetDispatchEvent() {
 }
 
 void SyncChannel::SyncContext::DispatchMessages() {
-  received_sync_msgs_->DispatchMessages();
+  received_sync_msgs_->DispatchMessages(this);
 }
 
 bool SyncChannel::SyncContext::TryToUnblockListener(const Message* msg) {
@@ -378,6 +387,10 @@ SyncChannel::SyncChannel(
 SyncChannel::~SyncChannel() {
 }
 
+void SyncChannel::SetRestrictDispatchToSameChannel(bool value) {
+  sync_context()->set_restrict_dispatch(value);
+}
+
 bool SyncChannel::Send(Message* message) {
   return SendWithTimeout(message, base::kNoTimeout);
 }
@@ -422,6 +435,7 @@ bool SyncChannel::SendWithTimeout(Message* message, int timeout_ms) {
 
 void SyncChannel::WaitForReply(
     SyncContext* context, WaitableEvent* pump_messages_event) {
+  context->DispatchMessages();
   while (true) {
     WaitableEvent* objects[] = {
       context->GetDispatchEvent(),
