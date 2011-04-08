@@ -16,6 +16,8 @@
     'proto_dir_relpath': 'google/cacheinvalidation',
     # Where files generated from proto files are put.
     'protoc_out_dir': '<(SHARED_INTERMEDIATE_DIR)/protoc_out',
+    # The path to the protoc executable.
+    'protoc': '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
   },
   'targets': [
     # The rule/action to generate files from the cacheinvalidation proto
@@ -24,9 +26,9 @@
       'target_name': 'cacheinvalidation_proto',
       'type': 'none',
       'sources': [
-        '<(proto_dir_root)/google/cacheinvalidation/internal.proto',
-        '<(proto_dir_root)/google/cacheinvalidation/ticl_persistence.proto',
-        '<(proto_dir_root)/google/cacheinvalidation/types.proto',
+        '<(proto_dir_root)/<(proto_dir_relpath)/internal.proto',
+        '<(proto_dir_root)/<(proto_dir_relpath)/ticl_persistence.proto',
+        '<(proto_dir_root)/<(proto_dir_relpath)/types.proto',
       ],
       # TODO(akalin): This block was copied from the sync_proto target
       # from chrome.gyp.  Decomp the shared blocks out somehow.
@@ -35,14 +37,14 @@
           'rule_name': 'genproto',
           'extension': 'proto',
           'inputs': [
-            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+            '<(protoc)',
           ],
           'outputs': [
             '<(protoc_out_dir)/<(proto_dir_relpath)/<(RULE_INPUT_ROOT).pb.h',
             '<(protoc_out_dir)/<(proto_dir_relpath)/<(RULE_INPUT_ROOT).pb.cc',
           ],
           'action': [
-            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+            '<(protoc)',
             '--proto_path=<(proto_dir_root)',
             # This path needs to be prefixed by proto_path, so we can't
             # use RULE_INPUT_PATH (which is an absolute path).
@@ -55,14 +57,10 @@
       'dependencies': [
         '../../third_party/protobuf/protobuf.gyp:protoc#host',
       ],
-      # This target exports a hard dependency because it generates header
-      # files.
-      'hard_dependency': 1,
     },
-    # The main cache invalidation library.  External clients should depend
-    # only on this.
+    # The C++ files generated from the cache invalidation protocol buffers.
     {
-      'target_name': 'cacheinvalidation',
+      'target_name': 'cacheinvalidation_proto_cpp',
       'type': '<(library)',
       'sources': [
         '<(protoc_out_dir)/<(proto_dir_relpath)/internal.pb.h',
@@ -71,6 +69,32 @@
         '<(protoc_out_dir)/<(proto_dir_relpath)/ticl_persistence.pb.cc',
         '<(protoc_out_dir)/<(proto_dir_relpath)/types.pb.h',
         '<(protoc_out_dir)/<(proto_dir_relpath)/types.pb.cc',
+      ],
+      'dependencies': [
+        '../../third_party/protobuf/protobuf.gyp:protobuf_lite',
+        'cacheinvalidation_proto',
+      ],
+      'include_dirs': [
+        '<(protoc_out_dir)',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(protoc_out_dir)',
+        ],
+      },
+      'export_dependent_settings': [
+        '../../third_party/protobuf/protobuf.gyp:protobuf_lite',
+      ],
+      # This target exports a hard dependency because it contains generated
+      # header files.
+      'hard_dependency': 1,
+    },
+    # The main cache invalidation library.  External clients should depend
+    # only on this.
+    {
+      'target_name': 'cacheinvalidation',
+      'type': '<(library)',
+      'sources': [
         'overrides/google/cacheinvalidation/callback.h',
         'overrides/google/cacheinvalidation/compiler-specific.h',
         'overrides/google/cacheinvalidation/gmock.h',
@@ -108,28 +132,26 @@
         'files/src/google/cacheinvalidation/version-manager.h',
       ],
       'include_dirs': [
-        '<(protoc_out_dir)',
         './overrides',
         './files/src',
       ],
       'dependencies': [
         '../../base/base.gyp:base',
-        '../../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'cacheinvalidation_proto',
+        'cacheinvalidation_proto_cpp',
       ],
-      # This target exports a hard dependency because depedents require
-      # cacheinvalidation_proto to compile.
+      # This target exports a hard dependency because its include files
+      # include generated header files from cache_invalidation_proto_cpp.
       'hard_dependency': 1,
       'direct_dependent_settings': {
         'include_dirs': [
-          '<(protoc_out_dir)',
           './overrides',
           './files/src',
         ],
       },
       'export_dependent_settings': [
-        '../../third_party/protobuf/protobuf.gyp:protobuf_lite',
-        'cacheinvalidation_proto',
+        '../../base/base.gyp:base',
+        'cacheinvalidation_proto_cpp',
       ],
     },
     # Unittests for the cache invalidation library.
@@ -146,6 +168,7 @@
       ],
       'dependencies': [
         '../../base/base.gyp:base',
+        # Needed by run_all_unittests.cc.
         '../../base/base.gyp:test_support_base',
         '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
