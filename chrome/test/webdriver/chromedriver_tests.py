@@ -462,7 +462,8 @@ def GetPathForDataFile(relative_path):
 
 
 class AutofillTest(unittest.TestCase):
-  AUTOFILL_EDIT_ADDRESS = 'chrome://settings/autoFillEditAddress'
+  AUTOFILL_EDIT_ADDRESS = 'chrome://settings/autofillEditAddress'
+  AUTOFILL_EDIT_CC = 'chrome://settings/autofillEditCreditCard'
 
   def setUp(self):
     self._launcher = ChromeDriverLauncher()
@@ -470,18 +471,33 @@ class AutofillTest(unittest.TestCase):
   def tearDown(self):
     self._launcher.Kill()
 
-  def DISABLED_testPostalCodeAndStateLabelsBasedOnCountry(self):
+  def NewDriver(self):
+    return WebDriver(self._launcher.GetURL(), {})
+
+  def _SelectOptionXpath(self, value):
+    """Returns an xpath query used to select an item from a dropdown list.
+
+    Args:
+      value: Option selected for the drop-down list field.
+    """
+    return '//option[@value="%s"]' % value
+
+  def testPostalCodeAndStateLabelsBasedOnCountry(self):
     """Verify postal code and state labels based on selected country."""
     import simplejson
     test_data = simplejson.loads(
         open(GetPathForDataFile('state_zip_labels.txt')).read())
 
-    driver = WebDriver(self._launcher.GetURL(), {})
+    driver = self.NewDriver()
     driver.get(self.AUTOFILL_EDIT_ADDRESS)
+    # Initial check of State and ZIP labels.
     state_label = driver.find_element_by_id('state-label').text
     self.assertEqual('State', state_label)
+    zip_label = driver.find_element_by_id('postal-code-label').text
+    self.assertEqual('ZIP code', zip_label)
+
     for country_code in test_data:
-      query = '//option[@value="%s"]' % country_code
+      query = self._SelectOptionXpath(country_code)
       driver.find_element_by_id('country').find_element_by_xpath(query).select()
       # Compare postal labels.
       actual_postal_label = driver.find_element_by_id(
@@ -496,6 +512,33 @@ class AutofillTest(unittest.TestCase):
       self.assertEqual(
           actual_state_label, expected_state_label,
           'State label does not match Country "%s"' % country_code)
+
+  def testDisplayLineItemForEntriesWithNoCCNum(self):
+    """Verify Autofill creates a line item for CC entries with no CC number."""
+    creditcard_data = {'CREDIT_CARD_NAME': 'Jane Doe',
+                       'CREDIT_CARD_EXP_MONTH': '12',
+                       'CREDIT_CARD_EXP_4_DIGIT_YEAR': '2014'}
+
+    driver = self.NewDriver()
+    driver.get(self.AUTOFILL_EDIT_CC)
+    driver.find_element_by_id('name-on-card').send_keys(
+        creditcard_data['CREDIT_CARD_NAME'])
+    query_month = self._SelectOptionXpath(
+        creditcard_data['CREDIT_CARD_EXP_MONTH'])
+    query_year = self._SelectOptionXpath(
+        creditcard_data['CREDIT_CARD_EXP_4_DIGIT_YEAR'])
+    driver.find_element_by_id('expiration-month').find_element_by_xpath(
+        query_month).select()
+    driver.find_element_by_id('expiration-year').find_element_by_xpath(
+        query_year).select()
+    driver.find_element_by_id(
+        'autofill-edit-credit-card-apply-button').click()
+    list_entry = driver.find_element_by_class_name(
+        'autofill-list-item')
+    self.assertTrue(list_entry.is_displayed)
+    self.assertEqual(list_entry.text, creditcard_data['CREDIT_CARD_NAME'],
+                     'Saved CC line item not same as what was entered.')
+
 
 if __name__ == '__main__':
   unittest.main(module='chromedriver_tests',
