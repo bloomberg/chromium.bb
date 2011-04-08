@@ -17,7 +17,10 @@
 static const int kLeftPadding = 16;
 static const int kRightPadding = 15;
 static const int kDropShadowHeight = 2;
-static const int kTouchFaviconSize = 32;
+
+// The size of the favicon touch area. This generally would be the same as
+// kFaviconSize in ui/gfx/favicon_size.h
+static const int kTouchTabIconSize = 32;
 
 TouchTab::TouchTabImage TouchTab::tab_alpha = {0};
 TouchTab::TouchTabImage TouchTab::tab_active = {0};
@@ -202,7 +205,7 @@ void TouchTab::PaintIcon(gfx::Canvas* canvas) {
     int image_size = frames.height();
     int image_offset = loading_animation_frame() * image_size;
     canvas->DrawBitmapInt(frames, image_offset, 0, image_size, image_size, x, y,
-                          kTouchFaviconSize, kTouchFaviconSize, false);
+                          kTouchTabIconSize, kTouchTabIconSize, false);
   } else {
     canvas->Save();
     canvas->ClipRectInt(0, 0, width(), height());
@@ -211,13 +214,33 @@ void TouchTab::PaintIcon(gfx::Canvas* canvas) {
       SkBitmap crashed_favicon(*rb.GetBitmapNamed(IDR_SAD_FAVICON));
       canvas->DrawBitmapInt(crashed_favicon, 0, 0, crashed_favicon.width(),
           crashed_favicon.height(), x, y + favicon_hiding_offset(),
-          kTouchFaviconSize, kTouchFaviconSize, true);
+          kTouchTabIconSize, kTouchTabIconSize, true);
     } else {
       if (!data().favicon.isNull()) {
-        canvas->DrawBitmapInt(data().favicon, 0, 0,
-                              data().favicon.width(), data().favicon.height(),
-                              x, y + favicon_hiding_offset(),
-                              kTouchFaviconSize, kTouchFaviconSize, true);
+
+        if ((data().favicon.width() == kTouchTabIconSize) &&
+            (data().favicon.height() == kTouchTabIconSize)) {
+          canvas->DrawBitmapInt(data().favicon, 0, 0,
+                                data().favicon.width(), data().favicon.height(),
+                                x, y + favicon_hiding_offset(),
+                                kTouchTabIconSize, kTouchTabIconSize, true);
+        } else {
+          // Draw a background around target touch area in case the favicon
+          // is smaller than touch area (e.g www.google.com is 16x16 now)
+          canvas->DrawRectInt(
+              GetThemeProvider()->GetColor(
+                  ThemeService::COLOR_BUTTON_BACKGROUND),
+              x, y, kTouchTabIconSize, kTouchTabIconSize);
+
+          // We center the image
+          // TODO(saintlou): later request larger image from HistoryService
+          canvas->DrawBitmapInt(data().favicon, 0, 0, data().favicon.width(),
+              data().favicon.height(),
+              x + ((kTouchTabIconSize - data().favicon.width()) / 2),
+              y + ((kTouchTabIconSize - data().favicon.height()) / 2) +
+                                                     favicon_hiding_offset(),
+              data().favicon.width(), data().favicon.height(), true);
+        }
       }
     }
     canvas->Restore();
