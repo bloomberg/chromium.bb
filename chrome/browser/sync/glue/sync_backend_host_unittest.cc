@@ -76,6 +76,16 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
                      credentials,
                      true);
   backend.Shutdown(false);
+  // Scoping for io_thread to get destroyed before other locals.
+  {
+    // The request context gets deleted on the I/O thread. To prevent a leak
+    // supply one here.
+    // TODO(sanjeevr): Investigate whether we can do this within
+    // ResetRequestContext
+    BrowserThread io_thread(BrowserThread::IO, MessageLoop::current());
+    profile.ResetRequestContext();
+  }
+  MessageLoop::current()->RunAllPending();
 }
 
 TEST_F(SyncBackendHostTest, MakePendingConfigModeState) {

@@ -65,7 +65,13 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 
   virtual void TearDown() {
     service_->RemoveObserver(&observer_);
-    profile_.ResetRequestContext();
+    {
+      // The request context gets deleted on the I/O thread. To prevent a leak
+      // supply one here.
+      BrowserThread io_thread(BrowserThread::IO, MessageLoop::current());
+      profile_.ResetRequestContext();
+    }
+    MessageLoop::current()->RunAllPending();
   }
 
  protected:

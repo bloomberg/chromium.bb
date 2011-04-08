@@ -149,7 +149,12 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     service_.reset();
     notification_service_->TearDown();
     history_thread_.Stop();
-    profile_.ResetRequestContext();
+    {
+      // The request context gets deleted on the I/O thread. To prevent a leak
+      // supply one here.
+      BrowserThread io_thread(BrowserThread::IO, MessageLoop::current());
+      profile_.ResetRequestContext();
+    }
     MessageLoop::current()->RunAllPending();
   }
 

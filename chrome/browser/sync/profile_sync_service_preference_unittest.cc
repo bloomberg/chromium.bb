@@ -61,7 +61,12 @@ class ProfileSyncServicePreferenceTest
 
   virtual void TearDown() {
     service_.reset();
-    profile_.reset();
+    {
+      // The request context gets deleted on the I/O thread. To prevent a leak
+      // supply one here.
+      BrowserThread io_thread(BrowserThread::IO, MessageLoop::current());
+      profile_.reset();
+    }
     MessageLoop::current()->RunAllPending();
   }
 

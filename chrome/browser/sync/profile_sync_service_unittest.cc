@@ -53,7 +53,13 @@ class ProfileSyncServiceTest : public testing::Test {
     profile_->CreateRequestContext();
   }
   virtual void TearDown() {
-    profile_->ResetRequestContext();
+    {
+      // The request context gets deleted on the I/O thread. To prevent a leak
+      // supply one here.
+      BrowserThread io_thread(BrowserThread::IO, MessageLoop::current());
+      profile_->ResetRequestContext();
+    }
+    MessageLoop::current()->RunAllPending();
   }
 
   // TODO(akalin): Refactor the StartSyncService*() functions below.

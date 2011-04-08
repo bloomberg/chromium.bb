@@ -93,7 +93,13 @@ class ProfileSyncServiceSessionTest
     helper_.set_service(NULL);
     profile()->set_session_service(NULL);
     sync_service_.reset();
-    profile()->ResetRequestContext();
+    {
+      // The request context gets deleted on the I/O thread. To prevent a leak
+      // supply one here.
+      BrowserThread io_thread(BrowserThread::IO, MessageLoop::current());
+      profile()->ResetRequestContext();
+    }
+    MessageLoop::current()->RunAllPending();
   }
 
   bool StartSyncService(Task* task, bool will_fail_association) {

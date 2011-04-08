@@ -41,7 +41,13 @@ class NonBlockingInvalidationNotifierTest : public testing::Test {
   virtual void TearDown() {
     invalidation_notifier_->RemoveObserver(&mock_observer_);
     invalidation_notifier_.reset();
-    request_context_getter_ = NULL;
+    {
+      // The request context getter gets deleted on the I/O thread. To prevent a
+      // leak supply one here.
+      BrowserThread io_thread(BrowserThread::IO, MessageLoop::current());
+      request_context_getter_ = NULL;
+    }
+    MessageLoop::current()->RunAllPending();
   }
 
   MessageLoop message_loop_;
