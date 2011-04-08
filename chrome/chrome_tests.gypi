@@ -1900,7 +1900,7 @@
         '../content/gpu/gpu_idirect3d9_mock_win.cc',
         '../content/gpu/gpu_idirect3d9_mock_win.h',
         '../content/gpu/gpu_info_collector_unittest.cc',
-        '../content/common/gpu/gpu_info_unittest_win.cc',
+        '../content/gpu/gpu_info_unittest_win.cc',
         '../content/common/gpu/gpu_video_decoder_unittest.cc',
         '../content/renderer/active_notification_tracker_unittest.cc',
         '../content/renderer/audio_message_filter_unittest.cc',
