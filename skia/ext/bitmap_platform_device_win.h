@@ -31,7 +31,7 @@ class BitmapPlatformDeviceFactory : public SkDeviceFactory {
 // For us, that other bitmap will become invalid as soon as the device becomes
 // invalid, which may lead to subtle bugs. Therefore, DO NOT ASSIGN THE
 // DEVICE'S PIXEL DATA TO ANOTHER BITMAP, make sure you copy instead.
-class BitmapPlatformDevice : public PlatformDevice {
+class SK_API BitmapPlatformDevice : public PlatformDevice {
  public:
   // Factory function. The screen DC is used to create the bitmap, and will not
   // be stored beyond this function. is_opaque should be set if the caller
