@@ -325,6 +325,7 @@
         '../third_party/skia/src/core/SkFP.h',
         '../third_party/skia/src/core/SkFilterProc.cpp',
         '../third_party/skia/src/core/SkFilterProc.h',
+        '../third_party/skia/src/core/SkFlate.cpp',
         '../third_party/skia/src/core/SkFlattenable.cpp',
         '../third_party/skia/src/core/SkFloat.cpp',
         '../third_party/skia/src/core/SkFloat.h',
@@ -462,6 +463,19 @@
 
         '../third_party/skia/src/opts/opts_check_SSE2.cpp',
 
+        '../third_party/skia/src/pdf/SkPDFCatalog.cpp',
+        '../third_party/skia/src/pdf/SkPDFDevice.cpp',
+        '../third_party/skia/src/pdf/SkPDFDocument.cpp',
+        '../third_party/skia/src/pdf/SkPDFFont.cpp',
+        '../third_party/skia/src/pdf/SkPDFFormXObject.cpp',
+        '../third_party/skia/src/pdf/SkPDFGraphicState.cpp',
+        '../third_party/skia/src/pdf/SkPDFImage.cpp',
+        '../third_party/skia/src/pdf/SkPDFPage.cpp',
+        '../third_party/skia/src/pdf/SkPDFShader.cpp',
+        '../third_party/skia/src/pdf/SkPDFStream.cpp',
+        '../third_party/skia/src/pdf/SkPDFTypes.cpp',
+        '../third_party/skia/src/pdf/SkPDFUtils.cpp',
+
         #'../third_party/skia/src/ports/SkFontHost_FONTPATH.cpp',
         '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
         #'../third_party/skia/src/ports/SkFontHost_android.cpp',
@@ -521,6 +535,7 @@
         '../third_party/skia/include/core/SkEndian.h',
         '../third_party/skia/include/core/SkFDot6.h',
         '../third_party/skia/include/core/SkFixed.h',
+        '../third_party/skia/include/core/SkFlate.h',
         '../third_party/skia/include/core/SkFlattenable.h',
         '../third_party/skia/include/core/SkFloatBits.h',
         '../third_party/skia/include/core/SkFloatingPoint.h',
@@ -605,6 +620,19 @@
         '../third_party/skia/include/gpu/SkGr.h',
         '../third_party/skia/include/gpu/SkGrTexturePixelRef.h',
 
+        '../third_party/skia/include/pdf/SkPDFCatalog.h',
+        '../third_party/skia/include/pdf/SkPDFDevice.h',
+        '../third_party/skia/include/pdf/SkPDFDocument.h',
+        '../third_party/skia/include/pdf/SkPDFFont.h',
+        '../third_party/skia/include/pdf/SkPDFFormXObject.h',
+        '../third_party/skia/include/pdf/SkPDFGraphicState.h',
+        '../third_party/skia/include/pdf/SkPDFImage.h',
+        '../third_party/skia/include/pdf/SkPDFPage.h',
+        '../third_party/skia/include/pdf/SkPDFShader.h',
+        '../third_party/skia/include/pdf/SkPDFStream.h',
+        '../third_party/skia/include/pdf/SkPDFTypes.h',
+        '../third_party/skia/include/pdf/SkPDFUtils.h',
+
         '../third_party/skia/include/ports/SkStream_Win.h',
         '../third_party/skia/include/ports/SkTypeface_win.h',
 
@@ -654,6 +682,8 @@
         'ext/vector_platform_device_cairo_linux.h',
         'ext/vector_platform_device_emf_win.cc',
         'ext/vector_platform_device_emf_win.h',
+        'ext/vector_platform_device_skia.cc',
+        'ext/vector_platform_device_skia.h',
       ],
       'include_dirs': [
         '..',
@@ -663,6 +693,7 @@
         '../third_party/skia/include/effects',
         '../third_party/skia/include/gpu',
         '../third_party/skia/include/images',
+        '../third_party/skia/include/pdf',
         '../third_party/skia/include/ports',
         '../third_party/skia/include/utils',
         '../third_party/skia/gpu/include',
@@ -752,6 +783,10 @@
           'defines': [
             'SK_BUILD_FOR_MAC',
           ],
+          'sources/': [
+            ['exclude', '/pdf/'],
+            ['exclude', 'ext/vector_platform_device_skia\\.(cc|h)'],
+          ],
           'include_dirs': [
             '../third_party/skia/include/utils/mac',
           ],
@@ -795,7 +830,8 @@
         },],
       ],
       'dependencies': [
-        'skia_opts'
+        'skia_opts',
+        '../third_party/zlib/zlib.gyp:zlib',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -803,6 +839,7 @@
           '../third_party/skia/include/config',
           '../third_party/skia/include/core',
           '../third_party/skia/include/effects',
+          '../third_party/skia/include/pdf',
           '../third_party/skia/include/gpu',
           '../third_party/skia/include/ports',
           '../third_party/skia/gpu/include',
