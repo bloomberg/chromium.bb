@@ -18,7 +18,6 @@
 
 class Balloon;
 class Browser;
-class ExtensionMessageHandler;
 class Profile;
 class SiteInstance;
 struct RendererPreferences;
@@ -47,7 +46,6 @@ class BalloonHost : public RenderViewHostDelegate,
   const string16& GetSource() const;
 
   // RenderViewHostDelegate overrides.
-  virtual bool OnMessageReceived(const IPC::Message& message);
   virtual WebPreferences GetWebkitPrefs();
   virtual SiteInstance* GetSiteInstance() const;
   virtual Profile* GetProfile() const;
@@ -63,6 +61,8 @@ class BalloonHost : public RenderViewHostDelegate,
   virtual int GetBrowserWindowID() const;
   virtual ViewType::Type GetRenderViewType() const;
   virtual RenderViewHostDelegate::View* GetViewDelegate();
+  virtual void ProcessWebUIMessage(
+      const ExtensionHostMsg_DomMessage_Params& params);
 
   // NotificationObserver override.
   virtual void Observe(NotificationType type,
@@ -160,9 +160,6 @@ class BalloonHost : public RenderViewHostDelegate,
   bool enable_web_ui_;
 
   NotificationRegistrar registrar_;
-
-  // Handles extension IPCs.
-  scoped_ptr<ExtensionMessageHandler> extension_message_handler_;
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_BALLOON_HOST_H_

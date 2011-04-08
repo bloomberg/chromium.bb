@@ -26,10 +26,7 @@
 #endif
 
 class Browser;
-class DesktopNotificationHandler;
-class DevToolsHandler;
 class Extension;
-class ExtensionMessageHandler;
 class FileSelectHelper;
 class RenderProcessHost;
 class RenderWidgetHostView;
@@ -131,6 +128,8 @@ class ExtensionHost : public RenderViewHostDelegate,
   // RenderViewHostDelegate implementation.
   virtual RenderViewHostDelegate::View* GetViewDelegate();
   virtual WebPreferences GetWebkitPrefs();
+  virtual void ProcessWebUIMessage(
+      const ExtensionHostMsg_DomMessage_Params& params);
   virtual void RunJavaScriptMessage(const std::wstring& message,
                                     const std::wstring& default_prompt,
                                     const GURL& frame_url,
@@ -237,10 +236,6 @@ class ExtensionHost : public RenderViewHostDelegate,
   // event in platform specific way.
   virtual void UnhandledKeyboardEvent(const NativeWebKeyboardEvent& event) {}
 
-  // Updates extension_function_dispatcher_.  Call this instead of modifying it
-  // directly.
-  void SetExtensionFunctionDispatcher(ExtensionFunctionDispatcher* efd);
-
   // Returns true if we're hosting a background page.
   // This isn't valid until CreateRenderView is called.
   bool is_background_page() const { return !view(); }
@@ -291,15 +286,6 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   // FileSelectHelper, lazily created.
   scoped_ptr<FileSelectHelper> file_select_helper_;
-
-  // Handles desktop notification IPCs.
-  scoped_ptr<DesktopNotificationHandler> desktop_notification_handler_;
-
-  // Filters dev tools IPCs.
-  scoped_ptr<DevToolsHandler> dev_tools_handler_;
-
-  // Handles extension IPCs.
-  scoped_ptr<ExtensionMessageHandler> extension_message_handler_;
 
   // The time that the last javascript message was dismissed.
   base::TimeTicks last_javascript_message_dismissal_;

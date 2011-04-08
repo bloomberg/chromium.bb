@@ -6,16 +6,14 @@
 #define CHROME_BROWSER_DEBUGGER_DEVTOOLS_HANDLER_H_
 #pragma once
 
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/browser/renderer_host/render_view_host_observer.h"
 
-class RenderViewHost;
-
-class DevToolsHandler {
+class DevToolsHandler : public RenderViewHostObserver {
  public:
-  DevToolsHandler(TabContents* tab, RenderViewHost* render_view_host);
+  explicit DevToolsHandler(RenderViewHost* render_view_host);
   virtual ~DevToolsHandler();
 
-  // TabContentsObserver overrides.
+  // RenderViewHostObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
  private:
@@ -28,27 +26,7 @@ class DevToolsHandler {
   void OnRuntimePropertyChanged(const std::string& name,
                                 const std::string& value);
 
-  RenderViewHost* GetRenderViewHost();
-
-  // If tab_ is null, then render_view_host_ is used instead
-  TabContents* tab_;
-  RenderViewHost* render_view_host_;
-
   DISALLOW_COPY_AND_ASSIGN(DevToolsHandler);
-};
-
-// A wrapper around DevToolsHandler that implements TabContentsObserver.
-class DevToolsObserver : public TabContentsObserver {
- public:
-  explicit DevToolsObserver(TabContents* tab_contents);
-
-  // TabContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
-
- private:
-  DevToolsHandler handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(DevToolsObserver);
 };
 
 #endif  // CHROME_BROWSER_DEBUGGER_DEVTOOLS_HANDLER_H_

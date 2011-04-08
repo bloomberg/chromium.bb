@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/dom_view.h"
 
-#include "chrome/browser/extensions/extension_message_handler.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "views/focus/focus_manager.h"
 
@@ -31,8 +30,6 @@ bool DOMView::Init(Profile* profile, SiteInstance* instance) {
   if (GetWidget())
     AttachTabContents();
 
-  extension_message_observer_.reset(new ExtensionMessageObserver(
-      tab_contents_.get()));
   return true;
 }
 

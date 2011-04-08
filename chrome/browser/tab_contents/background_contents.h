@@ -19,8 +19,7 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class TabContents;
-class DesktopNotificationHandler;
-class ExtensionMessageHandler;
+struct ExtensionHostMsg_DomMessage_Params;
 struct WebPreferences;
 
 namespace gfx {
@@ -69,6 +68,8 @@ class BackgroundContents : public RenderViewHostDelegate,
   virtual void DidNavigate(RenderViewHost* render_view_host,
                            const ViewHostMsg_FrameNavigate_Params& params);
   virtual WebPreferences GetWebkitPrefs();
+  virtual void ProcessWebUIMessage(
+      const ExtensionHostMsg_DomMessage_Params& params);
   virtual void RunJavaScriptMessage(const std::wstring& message,
                                     const std::wstring& default_prompt,
                                     const GURL& frame_url,
@@ -80,7 +81,6 @@ class BackgroundContents : public RenderViewHostDelegate,
   virtual void RenderViewGone(RenderViewHost* rvh,
                               base::TerminationStatus status,
                               int error_code);
-  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // RenderViewHostDelegate::View
   virtual void CreateNewWindow(
@@ -165,12 +165,6 @@ class BackgroundContents : public RenderViewHostDelegate,
   GURL url_;
 
   NotificationRegistrar registrar_;
-
-  // Handles desktop notification IPCs.
-  scoped_ptr<DesktopNotificationHandler> desktop_notification_handler_;
-
-  // Handles extension IPCs.
-  scoped_ptr<ExtensionMessageHandler> extension_message_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundContents);
 };
