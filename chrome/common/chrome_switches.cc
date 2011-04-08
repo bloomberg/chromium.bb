@@ -200,6 +200,9 @@ const char kDisableConnectBackupJobs[]      = "disable-connect-backup-jobs";
 // Disables the custom JumpList on Windows 7.
 const char kDisableCustomJumpList[]         = "disable-custom-jumplist";
 
+// Disables data transfer items.
+const char kDisableDataTransferItems[]      = "disable-data-transfer-items";
+
 // Browser flag to disable the web inspector for all renderers.
 const char kDisableDevTools[]               = "disable-dev-tools";
 
@@ -436,9 +439,6 @@ const char kEnableConnectBackupJobs[]       = "enable-connect-backup-jobs";
 
 // Enables web developers to create apps for Chrome without using crx packages.
 const char kEnableCrxlessWebApps[]          = "enable-crxless-web-apps";
-
-// Enables data transfer items.
-const char kEnableDataTransferItems[]       = "enable-data-transfer-items";
 
 // Enables device motion events.
 const char kEnableDeviceMotion[]            = "enable-device-motion";
