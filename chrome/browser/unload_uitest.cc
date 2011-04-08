@@ -363,8 +363,15 @@ TEST_F(UnloadTest, BrowserCloseInfiniteUnload) {
   LoadUrlAndQuitBrowser(INFINITE_UNLOAD_HTML, L"infiniteunload");
 }
 
+#if defined(OS_WIN)
+// Flakily fails, times out: http://crbug.com/78803
+#define MAYBE_BrowserCloseInfiniteBeforeUnload \
+    DISABLED_BrowserCloseInfiniteBeforeUnload
+#else
+#define MAYBE_BrowserCloseInfiniteBeforeUnload BrowserCloseInfiniteBeforeUnload
+#endif
 // Tests closing the browser with a beforeunload handler that hangs.
-TEST_F(UnloadTest, BrowserCloseInfiniteBeforeUnload) {
+TEST_F(UnloadTest, MAYBE_BrowserCloseInfiniteBeforeUnload) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return;
@@ -382,9 +389,17 @@ TEST_F(UnloadTest, BrowserCloseInfiniteUnloadAlert) {
   LoadUrlAndQuitBrowser(INFINITE_UNLOAD_ALERT_HTML, L"infiniteunloadalert");
 }
 
+#if defined(OS_WIN)
+// Flakily fails, times out: http://crbug.com/78803
+#define MAYBE_BrowserCloseInfiniteBeforeUnloadAlert \
+    DISABLED_BrowserCloseInfiniteBeforeUnloadAlert
+#else
+#define MAYBE_BrowserCloseInfiniteBeforeUnloadAlert \
+    BrowserCloseInfiniteBeforeUnloadAlert
+#endif
 // Tests closing the browser with a beforeunload handler that hangs then
 // pops up an alert.
-TEST_F(UnloadTest, BrowserCloseInfiniteBeforeUnloadAlert) {
+TEST_F(UnloadTest, MAYBE_BrowserCloseInfiniteBeforeUnloadAlert) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return;
