@@ -11,6 +11,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPerformance.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRange.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
@@ -39,6 +40,7 @@ using WebKit::WebInputElement;
 using WebKit::WebNode;
 using WebKit::WebPasswordAutocompleteListener;
 using WebKit::WebPerformance;
+using WebKit::WebPoint;
 using WebKit::WebRange;
 using WebKit::WebRect;
 using WebKit::WebURLRequest;
@@ -173,6 +175,7 @@ class MockWebFrame : public WebKit::WebFrame {
   virtual WebString selectionAsText() const;
   virtual WebString selectionAsMarkup() const;
   virtual bool selectWordAroundCaret();
+  virtual void selectRange(const WebPoint& start, const WebPoint& end);
   virtual int printBegin(const WebSize& pageSize,
                          const WebNode& constrainToNode,
                          int printerDPI = 72,

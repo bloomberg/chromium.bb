@@ -303,6 +303,9 @@ bool MockWebFrame::selectWordAroundCaret() {
   return false;
 }
 
+void MockWebFrame::selectRange(const WebPoint& start, const WebPoint& end) {
+}
+
 int MockWebFrame::printBegin(const WebSize& pageSize,
                              const WebNode& constrainToNode,
                              int printerDPI,
