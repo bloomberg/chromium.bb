@@ -43,7 +43,7 @@ ExtensionInfoBar::ExtensionInfoBar(ExtensionInfoBarDelegate* delegate)
 
   ExtensionView* extension_view = delegate->extension_host()->view();
   int height = extension_view->GetPreferredSize().height();
-  SetTargetHeight((height > 0) ?
+  SetBarTargetHeight((height > 0) ?
       (height + InfoBarBackground::kSeparatorLineHeight) : height);
 
   // Get notified of resize events for the ExtensionView.
@@ -130,8 +130,8 @@ void ExtensionInfoBar::OnExtensionPreferredSizeChanged(ExtensionView* view) {
     animation()->Reset(0.0);
 
   // Clamp height to a min and a max size of between 1 and 2 InfoBars.
-  SetTargetHeight(std::min(2 * kDefaultTargetHeight,
-      std::max(kDefaultTargetHeight, view->GetPreferredSize().height())));
+  SetBarTargetHeight(std::min(2 * kDefaultBarTargetHeight,
+      std::max(kDefaultBarTargetHeight, view->GetPreferredSize().height())));
 
   animation()->Show();
 }

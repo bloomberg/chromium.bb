@@ -35,12 +35,7 @@ class InfoBarView : public InfoBar,
   SkPath* fill_path() const { return fill_path_.get(); }
   SkPath* stroke_path() const { return stroke_path_.get(); }
 
-  int tab_height() const { return tab_height_; }
-
  protected:
-  // The target height of the InfoBar, regardless of what its current height
-  // is (due to animation).
-  static const int kDefaultTargetHeight;
   static const int kButtonButtonSpacing;
   static const int kEndOfLabelSpacing;
 
@@ -80,30 +75,21 @@ class InfoBarView : public InfoBar,
   // button from overlapping views that cannot be shrunk any further.
   virtual int ContentMinimumWidth() const;
 
-  // Changes the target height of the main ("bar") portion of the infobar.
-  void SetTargetHeight(int height);
-
   // These return x coordinates delimiting the usable area for subclasses to lay
   // out their controls.
   int StartX() const;
   int EndX() const;
 
-  // Given a control with size |prefsize|, returns the centered y position
-  // within us, taking into account animation so the control "slides in" (or
-  // out) as we animate open and closed.
-  int OffsetY(const gfx::Size prefsize) const;
-
  private:
   static const int kCurveWidth;
   static const int kHorizontalPadding;
   static const int kMaxIconWidth;
-  static const int kTabHeight;
   static const int kTabIconPadding;
   static const int kTabWidth;
 
   // InfoBar:
   virtual void PlatformSpecificHide(bool animate) OVERRIDE;
-  virtual void PlatformSpecificRecalculateHeight() OVERRIDE;
+  virtual void PlatformSpecificOnHeightRecalculated() OVERRIDE;
 
   // views::View:
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
@@ -113,10 +99,6 @@ class InfoBarView : public InfoBar,
   // views::FocusChangeListener:
   virtual void FocusWillChange(View* focused_before,
                                View* focused_now) OVERRIDE;
-
-  // Returns a centered y-position of a control of height specified in
-  // |prefsize| within the standard InfoBar height. Stable during an animation.
-  int CenterY(const gfx::Size prefsize) const;
 
   // Destroys the external focus tracker, if present. If |restore_focus| is
   // true, restores focus to the view tracked by the focus tracker before doing
@@ -139,13 +121,6 @@ class InfoBarView : public InfoBar,
 
   // Used to delete this object after a return to the message loop.
   ScopedRunnableMethodFactory<InfoBarView> delete_factory_;
-
-  // The target height for the bar portion of the InfoBarView.
-  int target_height_;
-
-  // The current heights of the tab and bar portions.
-  int tab_height_;
-  int bar_height_;
 
   // The paths for the InfoBarBackground to draw, sized according to the heights
   // above.

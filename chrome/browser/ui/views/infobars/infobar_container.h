@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_CONTAINER_H_
 #pragma once
 
-#include <set>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "content/common/notification_observer.h"
@@ -42,6 +42,11 @@ class InfoBarContainer : public NotificationObserver {
   // |contents|, and show them all.  |contents| may be NULL.
   void ChangeTabContents(TabContents* contents);
 
+  // Return the amount by which to overlap the toolbar above, and, when
+  // |total_height| is non-NULL, set it to the height of the InfoBarContainer
+  // (including overlap).
+  int GetVerticalOverlap(int* total_height);
+
   // Called when a contained infobar has animated or by some other means changed
   // its height.  The container is expected to do anything necessary to respond,
   // e.g. re-layout.
@@ -57,10 +62,6 @@ class InfoBarContainer : public NotificationObserver {
   // hidden.
   void RemoveInfoBar(InfoBar* infobar);
 
-  // Return the amount by which to overlap the toolbar above, so that the
-  // InfoBars inside may draw anti-spoof arrows atop it.
-  virtual int GetVerticalOverlap() = 0;
-
  protected:
   // Subclasses must call this during destruction, so that we can remove
   // infobars (which will call the pure virtual functions below) while the
@@ -73,7 +74,7 @@ class InfoBarContainer : public NotificationObserver {
   virtual void PlatformSpecificRemoveInfoBar(InfoBar* infobar) = 0;
 
  private:
-  typedef std::set<InfoBar*> InfoBars;
+  typedef std::vector<InfoBar*> InfoBars;
 
   // NotificationObserver:
   virtual void Observe(NotificationType type,

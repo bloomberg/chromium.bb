@@ -37,14 +37,15 @@
 #endif
 
 // static
-const int InfoBarView::kDefaultTargetHeight = 36;
+const int InfoBar::kTabTargetHeight = 9;
+const int InfoBar::kDefaultBarTargetHeight = 36;
+
 const int InfoBarView::kButtonButtonSpacing = 10;
 const int InfoBarView::kEndOfLabelSpacing = 16;
 const int InfoBarView::kHorizontalPadding = 6;
 
 const int InfoBarView::kCurveWidth = 13;
 const int InfoBarView::kMaxIconWidth = 30;
-const int InfoBarView::kTabHeight = 9;
 const int InfoBarView::kTabIconPadding = 2;
 
 const int InfoBarView::kTabWidth = (kCurveWidth + kTabIconPadding) * 2 +
@@ -55,9 +56,6 @@ InfoBarView::InfoBarView(InfoBarDelegate* delegate)
       icon_(NULL),
       close_button_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(delete_factory_(this)),
-      target_height_(kDefaultTargetHeight),
-      tab_height_(0),
-      bar_height_(0),
       fill_path_(new SkPath),
       stroke_path_(new SkPath) {
   set_parent_owned(false);  // InfoBar deletes itself at the appropriate time.
@@ -156,8 +154,8 @@ void InfoBarView::Layout() {
   // width is changed, which affects both paths.
   stroke_path_->rewind();
   fill_path_->rewind();
-  if (tab_height_) {
-    int divider_y = tab_height_ - 1;
+  if (tab_height()) {
+    int divider_y = tab_height() - 1;
     stroke_path_->moveTo(
         SkIntToScalar(GetMirroredXWithWidthInView(0, kTabWidth)),
         SkIntToScalar(divider_y));
@@ -193,9 +191,9 @@ void InfoBarView::Layout() {
     // a fill at a very different place than we'd want.
     stroke_path_->offset(SK_ScalarHalf, SK_ScalarHalf);
   }
-  if (bar_height_) {
-    fill_path_->addRect(0.0, SkIntToScalar(tab_height_), SkIntToScalar(width()),
-                        SkIntToScalar(height()));
+  if (bar_height()) {
+    fill_path_->addRect(0.0, SkIntToScalar(tab_height()),
+                        SkIntToScalar(width()), SkIntToScalar(height()));
   }
 
   int start_x = kHorizontalPadding;
@@ -204,7 +202,7 @@ void InfoBarView::Layout() {
     // entire height (tab + bar).
     gfx::Size icon_size = icon_->GetPreferredSize();
     int center_x = std::max((kTabWidth - icon_size.width()) / 2, 0);
-    int full_height = target_height_ + kTabHeight;
+    int full_height = bar_target_height() + kTabTargetHeight;
 
     // This duplicates OffsetY except centered within the entire height (tab +
     // bar) instead of just within the bar.
@@ -294,9 +292,9 @@ void InfoBarView::PaintChildren(gfx::Canvas* canvas) {
   //
   // gfx::CanvasSkia* canvas_skia = canvas->AsCanvasSkia();
   // canvas_skia->clipPath(*fill_path_);
-  DCHECK_EQ(tab_height_ + bar_height_, height())
+  DCHECK_EQ(total_height(), height())
       << "Infobar piecewise heights do not match overall height";
-  canvas->ClipRectInt(0, tab_height_, width(), bar_height_);
+  canvas->ClipRectInt(0, tab_height(), width(), bar_height());
   views::View::PaintChildren(canvas);
   canvas->Restore();
 }
@@ -314,13 +312,6 @@ int InfoBarView::ContentMinimumWidth() const {
   return 0;
 }
 
-void InfoBarView::SetTargetHeight(int height) {
-  if (target_height_ != height) {
-    target_height_ = height;
-    RecalculateHeight();
-  }
-}
-
 int InfoBarView::StartX() const {
   // Ensure we don't return a value greater than EndX(), so children can safely
   // set something's width to "EndX() - StartX()" without risking that being
@@ -332,14 +323,6 @@ int InfoBarView::StartX() const {
 int InfoBarView::EndX() const {
   const int kCloseButtonSpacing = 12;
   return close_button_->x() - kCloseButtonSpacing;
-}
-
-int InfoBarView::CenterY(const gfx::Size prefsize) const {
-  return std::max((target_height_ - prefsize.height()) / 2, 0);
-}
-
-int InfoBarView::OffsetY(const gfx::Size prefsize) const {
-  return CenterY(prefsize) + tab_height_ - (target_height_ - bar_height_);
 }
 
 void InfoBarView::PlatformSpecificHide(bool animate) {
@@ -357,20 +340,10 @@ void InfoBarView::PlatformSpecificHide(bool animate) {
   DestroyFocusTracker(restore_focus);
 }
 
-void InfoBarView::PlatformSpecificRecalculateHeight() {
-  int old_tab_height = tab_height_;
-  int old_bar_height = bar_height_;
-  tab_height_ = static_cast<int>(kTabHeight * animation()->GetCurrentValue());
-  bar_height_ =
-      static_cast<int>(target_height_ * animation()->GetCurrentValue());
-
-  // Don't re-layout if nothing has changed, e.g. because the animation step was
-  // not large enough to actually change the heights by at least a pixel.
-  if ((old_tab_height != tab_height_) || (old_bar_height != bar_height_)) {
-    // Ensure that notifying our container of our size change will result in a
-    // re-layout.
-    InvalidateLayout();
-  }
+void InfoBarView::PlatformSpecificOnHeightRecalculated() {
+  // Ensure that notifying our container of our size change will result in a
+  // re-layout.
+  InvalidateLayout();
 }
 
 void InfoBarView::GetAccessibleState(ui::AccessibleViewState* state) {
@@ -383,7 +356,7 @@ void InfoBarView::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 gfx::Size InfoBarView::GetPreferredSize() {
-  return gfx::Size(0, tab_height_ + bar_height_);
+  return gfx::Size(0, total_height());
 }
 
 void InfoBarView::FocusWillChange(View* focused_before, View* focused_now) {

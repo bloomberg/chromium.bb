@@ -19,10 +19,6 @@ InfoBarContainerView::~InfoBarContainerView() {
   RemoveAllInfoBarsForDestruction();
 }
 
-int InfoBarContainerView::GetVerticalOverlap() {
-  return GetVerticalOverlap(NULL);
-}
-
 gfx::Size InfoBarContainerView::GetPreferredSize() {
   // We do not have a preferred width (we will expand to fit the available width
   // of the delegate).
@@ -32,12 +28,12 @@ gfx::Size InfoBarContainerView::GetPreferredSize() {
 }
 
 void InfoBarContainerView::Layout() {
-  int top = GetVerticalOverlap();
+  int top = GetVerticalOverlap(NULL);
 
   for (int i = 0; i < child_count(); ++i) {
-    View* child = GetChildViewAt(i);
-    top -= static_cast<InfoBarView*>(child)->tab_height();
-    int child_height = child->GetPreferredSize().height();
+    InfoBarView* child = static_cast<InfoBarView*>(GetChildViewAt(i));
+    top -= child->tab_height();
+    int child_height = child->total_height();
     child->SetBounds(0, top, width(), child_height);
     top += child_height;
   }
@@ -54,22 +50,4 @@ void InfoBarContainerView::PlatformSpecificAddInfoBar(InfoBar* infobar) {
 
 void InfoBarContainerView::PlatformSpecificRemoveInfoBar(InfoBar* infobar) {
   RemoveChildView(static_cast<InfoBarView*>(infobar));
-}
-
-int InfoBarContainerView::GetVerticalOverlap(int* total_height) {
-  // Our |total_height| is the sum of the preferred heights of the InfoBars
-  // contained within us plus the |vertical_overlap|.
-  int vertical_overlap = 0;
-  int next_child_y = 0;
-
-  for (int i = 0; i < child_count(); ++i) {
-    View* child = GetChildViewAt(i);
-    next_child_y -= static_cast<InfoBarView*>(child)->tab_height();
-    vertical_overlap = std::max(vertical_overlap, -next_child_y);
-    next_child_y += child->GetPreferredSize().height();
-  }
-
-  if (total_height)
-    *total_height = next_child_y + vertical_overlap;
-  return vertical_overlap;
 }

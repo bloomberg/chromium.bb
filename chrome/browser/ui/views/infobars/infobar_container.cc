@@ -27,7 +27,7 @@ void InfoBarContainer::ChangeTabContents(TabContents* contents) {
   registrar_.RemoveAll();
 
   while (!infobars_.empty()) {
-    InfoBar* infobar = *infobars_.begin();
+    InfoBar* infobar = infobars_.front();
     // NULL the container pointer first so that if the infobar is currently
     // animating, OnInfoBarAnimated() won't get called; we'll manually trigger
     // this once for the whole set of changes below.  This also prevents
@@ -59,6 +59,24 @@ void InfoBarContainer::ChangeTabContents(TabContents* contents) {
   OnInfoBarHeightChanged(true);
 }
 
+int InfoBarContainer::GetVerticalOverlap(int* total_height) {
+  // Our |total_height| is the sum of the preferred heights of the InfoBars
+  // contained within us plus the |vertical_overlap|.
+  int vertical_overlap = 0;
+  int next_infobar_y = 0;
+
+  for (InfoBars::iterator i(infobars_.begin()); i != infobars_.end(); ++i) {
+    InfoBar* infobar = *i;
+    next_infobar_y -= infobar->tab_height();
+    vertical_overlap = std::max(vertical_overlap, -next_infobar_y);
+    next_infobar_y += infobar->total_height();
+  }
+
+  if (total_height)
+    *total_height = next_infobar_y + vertical_overlap;
+  return vertical_overlap;
+}
+
 void InfoBarContainer::OnInfoBarHeightChanged(bool is_animating) {
   if (delegate_)
     delegate_->InfoBarContainerHeightChanged(is_animating);
@@ -69,8 +87,11 @@ void InfoBarContainer::RemoveDelegate(InfoBarDelegate* delegate) {
 }
 
 void InfoBarContainer::RemoveInfoBar(InfoBar* infobar) {
+  InfoBars::iterator infobar_iterator(std::find(infobars_.begin(),
+                                                infobars_.end(), infobar));
+  DCHECK(infobar_iterator != infobars_.end());
   PlatformSpecificRemoveInfoBar(infobar);
-  infobars_.erase(infobar);
+  infobars_.erase(infobar_iterator);
 }
 
 void InfoBarContainer::RemoveAllInfoBarsForDestruction() {
@@ -130,7 +151,9 @@ void InfoBarContainer::RemoveInfoBar(InfoBarDelegate* delegate,
 void InfoBarContainer::AddInfoBar(InfoBar* infobar,
                                   bool animate,
                                   CallbackStatus callback_status) {
-  infobars_.insert(infobar);
+  DCHECK(std::find(infobars_.begin(), infobars_.end(), infobar) ==
+      infobars_.end());
+  infobars_.push_back(infobar);
   PlatformSpecificAddInfoBar(infobar);
   if (callback_status == WANT_CALLBACK)
     infobar->set_container(this);

@@ -11,7 +11,10 @@
 InfoBar::InfoBar(InfoBarDelegate* delegate)
     : delegate_(delegate),
       container_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(animation_(new ui::SlideAnimation(this))) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(animation_(new ui::SlideAnimation(this))),
+      bar_target_height_(kDefaultBarTargetHeight),
+      tab_height_(0),
+      bar_height_(0) {
   DCHECK(delegate != NULL);
   animation_->SetTweenType(ui::Tween::LINEAR);
 }
@@ -47,15 +50,39 @@ void InfoBar::RemoveInfoBar() {
     container_->RemoveDelegate(delegate_);
 }
 
-void InfoBar::RecalculateHeight() {
-  PlatformSpecificRecalculateHeight();
-  if (container_)
-    container_->OnInfoBarHeightChanged(animation_->is_animating());
+void InfoBar::SetBarTargetHeight(int height) {
+  if (bar_target_height_ != height) {
+    bar_target_height_ = height;
+    RecalculateHeight();
+  }
+}
+
+int InfoBar::OffsetY(const gfx::Size& prefsize) const {
+  return tab_height_ +
+      std::max((bar_target_height_ - prefsize.height()) / 2, 0) -
+      (bar_target_height_ - bar_height_);
 }
 
 void InfoBar::AnimationEnded(const ui::Animation* animation) {
   RecalculateHeight();
   MaybeDelete();
+}
+
+void InfoBar::RecalculateHeight() {
+  int old_tab_height = tab_height_;
+  int old_bar_height = bar_height_;
+  tab_height_ =
+      static_cast<int>(kTabTargetHeight * animation()->GetCurrentValue());
+  bar_height_ =
+      static_cast<int>(bar_target_height_ * animation()->GetCurrentValue());
+
+  // Don't re-layout if nothing has changed, e.g. because the animation step was
+  // not large enough to actually change the heights by at least a pixel.
+  if ((old_tab_height != tab_height_) || (old_bar_height != bar_height_)) {
+    PlatformSpecificOnHeightRecalculated();
+    if (container_)
+      container_->OnInfoBarHeightChanged(animation_->is_animating());
+  }
 }
 
 void InfoBar::MaybeDelete() {

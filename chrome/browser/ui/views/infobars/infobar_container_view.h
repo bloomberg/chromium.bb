@@ -16,8 +16,6 @@ class InfoBarContainerView : public AccessiblePaneView,
   explicit InfoBarContainerView(Delegate* delegate);
   virtual ~InfoBarContainerView();
 
-  virtual int GetVerticalOverlap() OVERRIDE;
-
  private:
   // AccessiblePaneView:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -27,11 +25,6 @@ class InfoBarContainerView : public AccessiblePaneView,
   // InfobarContainer:
   virtual void PlatformSpecificAddInfoBar(InfoBar* infobar) OVERRIDE;
   virtual void PlatformSpecificRemoveInfoBar(InfoBar* infobar) OVERRIDE;
-
-  // Return the amount by which to overlap the toolbar above, and, when
-  // |total_height| is non-NULL, set it to the height of the InfoBarContainer
-  // (including overlap).
-  int GetVerticalOverlap(int* total_height);
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarContainerView);
 };
