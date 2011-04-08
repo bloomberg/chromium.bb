@@ -25,6 +25,7 @@ to unittest.py
   python pyauto.py test_script
 """
 
+import hashlib
 import logging
 import optparse
 import os
@@ -155,6 +156,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     if self.IsChromeOS():  # Enable testing interface on ChromeOS
       if self.get_clear_profile():
         self.CleanupBrowserProfileOnChromeOS()
+      self.EnableCrashReportingOnChromeOS()
       if not named_channel_id:
         named_channel_id = self.EnableChromeTestingOnChromeOS()
     if named_channel_id:
@@ -194,6 +196,26 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     automation_channel_path = automation_channel_path.strip()
     assert len(automation_channel_path), 'Could not enable testing interface'
     return automation_channel_path
+
+  @staticmethod
+  def EnableCrashReportingOnChromeOS():
+    """Enables crash reporting on ChromeOS.
+
+    Writes the "/home/chronos/Consent To Send Stats" file with a 32-char
+    readable string.  See comment in session_manager_setup.sh which does this
+    too.
+
+    Note that crash reporting will work only if breakpad is built in, ie in a
+    'Google Chrome' build (not Chromium).
+    """
+    consent_file = '/home/chronos/Consent To Send Stats'
+    def _HasValidConsentFile():
+      return os.path.isfile(consent_file) and len(open(consent_file).read())
+    if not _HasValidConsentFile():
+      client_id = hashlib.md5('abcdefgh').hexdigest()
+      logging.debug('Using CLIENT_ID=%s' % client_id)
+      open(consent_file, 'w').write(client_id)
+    assert _HasValidConsentFile(), 'Could not create %s' % consent_file
 
   def ExtraChromeFlagsOnChromeOS(self):
     """Return a list of extra chrome flags to use with chrome for testing.
