@@ -25,7 +25,7 @@ IPC_MESSAGE_CONTROL4(FileSystemMsg_OpenComplete,
                      int /* request_id */,
                      bool /* accepted */,
                      std::string /* name */,
-                     FilePath /* root_path */)
+                     GURL /* root_url */)
 
 // WebFileSystem response messages.
 IPC_MESSAGE_CONTROL1(FileSystemMsg_DidSucceed,
@@ -59,30 +59,30 @@ IPC_MESSAGE_CONTROL5(FileSystemHostMsg_Open,
 // WebFileSystem::move() message.
 IPC_MESSAGE_CONTROL3(FileSystemHostMsg_Move,
                      int /* request_id */,
-                     FilePath /* src path */,
-                     FilePath /* dest path */)
+                     GURL /* src path */,
+                     GURL /* dest path */)
 
 // WebFileSystem::copy() message.
 IPC_MESSAGE_CONTROL3(FileSystemHostMsg_Copy,
                      int /* request_id */,
-                     FilePath /* src path */,
-                     FilePath /* dest path */)
+                     GURL /* src path */,
+                     GURL /* dest path */)
 
 // WebFileSystem::remove() message.
 IPC_MESSAGE_CONTROL3(FileSystemMsg_Remove,
                      int /* request_id */,
-                     FilePath /* path */,
+                     GURL /* path */,
                      bool /* recursive */)
 
 // WebFileSystem::readMetadata() message.
 IPC_MESSAGE_CONTROL2(FileSystemHostMsg_ReadMetadata,
                      int /* request_id */,
-                     FilePath /* path */)
+                     GURL /* path */)
 
 // WebFileSystem::create() message.
 IPC_MESSAGE_CONTROL5(FileSystemHostMsg_Create,
                      int /* request_id */,
-                     FilePath /* path */,
+                     GURL /* path */,
                      bool /* exclusive */,
                      bool /* is_directory */,
                      bool /* recursive */)
@@ -90,31 +90,31 @@ IPC_MESSAGE_CONTROL5(FileSystemHostMsg_Create,
 // WebFileSystem::exists() messages.
 IPC_MESSAGE_CONTROL3(FileSystemHostMsg_Exists,
                      int /* request_id */,
-                     FilePath /* path */,
+                     GURL /* path */,
                      bool /* is_directory */)
 
 // WebFileSystem::readDirectory() message.
 IPC_MESSAGE_CONTROL2(FileSystemHostMsg_ReadDirectory,
                      int /* request_id */,
-                     FilePath /* path */)
+                     GURL /* path */)
 
 // WebFileWriter::write() message.
 IPC_MESSAGE_CONTROL4(FileSystemHostMsg_Write,
                      int /* request id */,
-                     FilePath /* file path */,
+                     GURL /* file path */,
                      GURL /* blob URL */,
                      int64 /* position */)
 
 // WebFileWriter::truncate() message.
 IPC_MESSAGE_CONTROL3(FileSystemHostMsg_Truncate,
                      int /* request id */,
-                     FilePath /* file path */,
+                     GURL /* file path */,
                      int64 /* length */)
 
 // Pepper's Touch() message.
 IPC_MESSAGE_CONTROL4(FileSystemHostMsg_TouchFile,
                      int /* request_id */,
-                     FilePath /* path */,
+                     GURL /* path */,
                      base::Time /* last_access_time */,
                      base::Time /* last_modified_time */)
 
