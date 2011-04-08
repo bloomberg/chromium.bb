@@ -102,6 +102,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     bool is_public;  // False if only this extension can load this plugin.
   };
 
+  // An NaCl module included in the extension.
+  struct NaClModuleInfo {
+    FilePath path;
+    std::string mime_type;
+  };
+
   struct TtsVoice {
     std::string voice_name;
     std::string locale;
@@ -499,6 +505,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     return sidebar_defaults_.get();
   }
   const std::vector<PluginInfo>& plugins() const { return plugins_; }
+  const std::vector<NaClModuleInfo>& nacl_modules() const {
+    return nacl_modules_;
+  }
   const GURL& background_url() const { return background_url_; }
   const GURL& options_url() const { return options_url_; }
   const GURL& devtools_url() const { return devtools_url_; }
@@ -730,6 +739,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Optional list of NPAPI plugins and associated properties.
   std::vector<PluginInfo> plugins_;
+
+  // Optional list of NaCl modules and associated properties.
+  std::vector<NaClModuleInfo> nacl_modules_;
 
   // Optional URL to a master page of which a single instance should be always
   // loaded in the background.

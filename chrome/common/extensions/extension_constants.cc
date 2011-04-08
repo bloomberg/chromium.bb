@@ -34,6 +34,9 @@ const char* kLaunchWidth = "app.launch.width";
 const char* kMatches = "matches";
 const char* kMinimumChromeVersion = "minimum_chrome_version";
 const char* kName = "name";
+const char* kNaClModules = "nacl_modules";
+const char* kNaClModulesMIMEType = "mime_type";
+const char* kNaClModulesPath = "path";
 const char* kOmnibox = "omnibox";
 const char* kOmniboxKeyword = "omnibox.keyword";
 const char* kOptionsPage = "options_page";
@@ -194,6 +197,12 @@ const char* kInvalidMinimumChromeVersion =
     "Invalid value for 'minimum_chrome_version'.";
 const char* kInvalidName =
     "Required value 'name' is missing or invalid.";
+const char* kInvalidNaClModules =
+    "Invalid value for 'nacl_modules'.";
+const char* kInvalidNaClModulesPath =
+    "Invalid value for 'nacl_modules[*].path'.";
+const char* kInvalidNaClModulesMIMEType =
+    "Invalid value for 'nacl_modules[*].mime_type'.";
 const char* kInvalidOmniboxKeyword =
     "Invalid value for 'omnibox.keyword'.";
 const char* kInvalidOptionsPage =

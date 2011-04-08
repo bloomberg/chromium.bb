@@ -1618,14 +1618,14 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       return false;
     }
 
-    DictionaryValue* theme_value;
+    DictionaryValue* theme_value = NULL;
     if (!source.GetDictionary(keys::kTheme, &theme_value)) {
       *error = errors::kInvalidTheme;
       return false;
     }
     is_theme_ = true;
 
-    DictionaryValue* images_value;
+    DictionaryValue* images_value = NULL;
     if (theme_value->GetDictionary(keys::kThemeImages, &images_value)) {
       // Validate that the images are all strings
       for (DictionaryValue::key_iterator iter = images_value->begin_keys();
@@ -1639,15 +1639,15 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       theme_images_.reset(images_value->DeepCopy());
     }
 
-    DictionaryValue* colors_value;
+    DictionaryValue* colors_value = NULL;
     if (theme_value->GetDictionary(keys::kThemeColors, &colors_value)) {
       // Validate that the colors are RGB or RGBA lists
       for (DictionaryValue::key_iterator iter = colors_value->begin_keys();
            iter != colors_value->end_keys(); ++iter) {
-        ListValue* color_list;
-        double alpha;
-        int alpha_int;
-        int color;
+        ListValue* color_list = NULL;
+        double alpha = 0.0;
+        int alpha_int = 0;
+        int color = 0;
         // The color must be a list
         if (!colors_value->GetListWithoutPathExpansion(*iter, &color_list) ||
             // And either 3 items (RGB) or 4 (RGBA)
@@ -1667,14 +1667,14 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       theme_colors_.reset(colors_value->DeepCopy());
     }
 
-    DictionaryValue* tints_value;
+    DictionaryValue* tints_value = NULL;
     if (theme_value->GetDictionary(keys::kThemeTints, &tints_value)) {
       // Validate that the tints are all reals.
       for (DictionaryValue::key_iterator iter = tints_value->begin_keys();
            iter != tints_value->end_keys(); ++iter) {
-        ListValue* tint_list;
-        double v;
-        int vi;
+        ListValue* tint_list = NULL;
+        double v = 0.0;
+        int vi = 0;
         if (!tints_value->GetListWithoutPathExpansion(*iter, &tint_list) ||
             tint_list->GetSize() != 3 ||
             !(tint_list->GetDouble(0, &v) || tint_list->GetInteger(0, &vi)) ||
@@ -1687,7 +1687,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       theme_tints_.reset(tints_value->DeepCopy());
     }
 
-    DictionaryValue* display_properties_value;
+    DictionaryValue* display_properties_value = NULL;
     if (theme_value->GetDictionary(keys::kThemeDisplayProperties,
         &display_properties_value)) {
       theme_display_properties_.reset(
@@ -1699,7 +1699,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
 
   // Initialize plugins (optional).
   if (source.HasKey(keys::kPlugins)) {
-    ListValue* list_value;
+    ListValue* list_value = NULL;
     if (!source.GetList(keys::kPlugins, &list_value)) {
       *error = errors::kInvalidPlugins;
       return false;
@@ -1713,7 +1713,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
 #endif
 
     for (size_t i = 0; i < list_value->GetSize(); ++i) {
-      DictionaryValue* plugin_value;
+      DictionaryValue* plugin_value = NULL;
       std::string path_str;
       bool is_public = false;
 
@@ -1744,6 +1744,45 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
     }
   }
 
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalExtensionApis) &&
+      source.HasKey(keys::kNaClModules)) {
+    ListValue* list_value = NULL;
+    if (!source.GetList(keys::kNaClModules, &list_value)) {
+      *error = errors::kInvalidNaClModules;
+      return false;
+    }
+
+    for (size_t i = 0; i < list_value->GetSize(); ++i) {
+      DictionaryValue* module_value = NULL;
+      std::string path_str;
+      std::string mime_type;
+
+      if (!list_value->GetDictionary(i, &module_value)) {
+        *error = errors::kInvalidNaClModules;
+        return false;
+      }
+
+      // Get nacl_modules[i].path.
+      if (!module_value->GetString(keys::kNaClModulesPath, &path_str)) {
+        *error = ExtensionErrorUtils::FormatErrorMessage(
+            errors::kInvalidNaClModulesPath, base::IntToString(i));
+        return false;
+      }
+
+      // Get nacl_modules[i].mime_type.
+      if (!module_value->GetString(keys::kNaClModulesMIMEType, &mime_type)) {
+        *error = ExtensionErrorUtils::FormatErrorMessage(
+            errors::kInvalidNaClModulesMIMEType, base::IntToString(i));
+        return false;
+      }
+
+      nacl_modules_.push_back(NaClModuleInfo());
+      nacl_modules_.back().path = path().AppendASCII(path_str);
+      nacl_modules_.back().mime_type = mime_type;
+    }
+  }
+
   // Initialize background url (optional).
   if (source.HasKey(keys::kBackground)) {
     std::string background_str;
@@ -1760,7 +1799,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalExtensionApis) &&
       source.HasKey(keys::kToolstrips)) {
-    ListValue* list_value;
+    ListValue* list_value = NULL;
     if (!source.GetList(keys::kToolstrips, &list_value)) {
       *error = errors::kInvalidToolstrips;
       return false;
@@ -1768,7 +1807,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
 
     for (size_t i = 0; i < list_value->GetSize(); ++i) {
       GURL toolstrip;
-      DictionaryValue* toolstrip_value;
+      DictionaryValue* toolstrip_value = NULL;
       std::string toolstrip_path;
       if (list_value->GetString(i, &toolstrip_path)) {
         // Support a simple URL value for backwards compatibility.
@@ -1799,7 +1838,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
     }
 
     for (size_t i = 0; i < list_value->GetSize(); ++i) {
-      DictionaryValue* content_script;
+      DictionaryValue* content_script = NULL;
       if (!list_value->GetDictionary(i, &content_script)) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
             errors::kInvalidContentScript, base::IntToString(i));
@@ -1822,7 +1861,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
   DictionaryValue* page_action_value = NULL;
 
   if (source.HasKey(keys::kPageActions)) {
-    ListValue* list_value;
+    ListValue* list_value = NULL;
     if (!source.GetList(keys::kPageActions, &list_value)) {
       *error = errors::kInvalidPageActionsList;
       return false;
@@ -1859,7 +1898,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
 
   // Initialize browser action (optional).
   if (source.HasKey(keys::kBrowserAction)) {
-    DictionaryValue* browser_action_value;
+    DictionaryValue* browser_action_value = NULL;
     if (!source.GetDictionary(keys::kBrowserAction, &browser_action_value)) {
       *error = errors::kInvalidBrowserAction;
       return false;
@@ -2018,7 +2057,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
 
   // Chrome URL overrides (optional)
   if (source.HasKey(keys::kChromeURLOverrides)) {
-    DictionaryValue* overrides;
+    DictionaryValue* overrides = NULL;
     if (!source.GetDictionary(keys::kChromeURLOverrides, &overrides)) {
       *error = errors::kInvalidChromeURLOverrides;
       return false;
@@ -2078,7 +2117,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
 
   // Initialize sidebar action (optional).
   if (source.HasKey(keys::kSidebar)) {
-    DictionaryValue* sidebar_value;
+    DictionaryValue* sidebar_value = NULL;
     if (!source.GetDictionary(keys::kSidebar, &sidebar_value)) {
       *error = errors::kInvalidSidebar;
       return false;
@@ -2094,21 +2133,21 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
 
   // Initialize text-to-speech voices (optional).
   if (source.HasKey(keys::kTts)) {
-    DictionaryValue* tts_dict;
+    DictionaryValue* tts_dict = NULL;
     if (!source.GetDictionary(keys::kTts, &tts_dict)) {
       *error = errors::kInvalidTts;
       return false;
     }
 
     if (tts_dict->HasKey(keys::kTtsVoices)) {
-      ListValue* tts_voices;
+      ListValue* tts_voices = NULL;
       if (!tts_dict->GetList(keys::kTtsVoices, &tts_voices)) {
         *error = errors::kInvalidTtsVoices;
         return false;
       }
 
       for (size_t i = 0; i < tts_voices->GetSize(); i++) {
-        DictionaryValue* one_tts_voice;
+        DictionaryValue* one_tts_voice = NULL;
         if (!tts_voices->GetDictionary(i, &one_tts_voice)) {
           *error = errors::kInvalidTtsVoices;
           return false;
