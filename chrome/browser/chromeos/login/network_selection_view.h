@@ -45,7 +45,7 @@ class NetworkSelectionView : public views::View,
   void Init();
 
   // Update strings from the resources. Executed on language change.
-  void UpdateLocalizedStrings();
+  void UpdateLocalizedStringsAndFonts();
 
   // Returns top level native window for the view.
   gfx::NativeWindow GetNativeWindow() const;
