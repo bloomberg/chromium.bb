@@ -52,7 +52,8 @@ Widget::Widget()
       last_mouse_event_was_move_(false),
       native_widget_(NULL),
       widget_delegate_(NULL),
-      dragged_view_(NULL) {
+      dragged_view_(NULL),
+      got_native_widget_created_(false) {
 }
 
 Widget::~Widget() {
@@ -116,6 +117,14 @@ void Widget::NotifyNativeViewHierarchyChanged(bool attached,
 }
 
 // Converted methods (see header) ----------------------------------------------
+
+#if defined(OS_WIN)
+Widget* Widget::GetTopLevelWidgetWithReason(int* reason) {
+  NativeWidget* native_widget =
+      NativeWidget::GetTopLevelNativeWidgetWithReason(GetNativeView(), reason);
+  return native_widget ? native_widget->GetWidget() : NULL;
+}
+#endif
 
 Widget* Widget::GetTopLevelWidget() {
   return const_cast<Widget*>(
@@ -296,6 +305,7 @@ void Widget::OnNativeBlur(gfx::NativeView focused_view) {
 }
 
 void Widget::OnNativeWidgetCreated() {
+  got_native_widget_created_ = true;
   if (GetTopLevelWidget() == this) {
     // Only the top level Widget in a native widget hierarchy has a focus
     // manager.

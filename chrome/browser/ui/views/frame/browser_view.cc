@@ -2163,14 +2163,16 @@ void BrowserView::LoadAccelerators() {
   DCHECK(focus_manager);
 
   // Debugging code to help track 77651.
-  if (!focus_manager && count > 0) {
+  if (!focus_manager) {
+    int reason = -1;
     views::Widget* widget = GetWidget();
-    volatile views::Widget* v_widget = widget;
-    if (widget) {
-      volatile views::Widget* top_level_widget = widget->GetTopLevelWidget();
-      CHECK(false);
-    }
-    CHECK(false);
+    views::Widget* top_level_widget =
+        widget ? widget->GetTopLevelWidgetWithReason(&reason) : NULL;
+    volatile int v_reason = reason;
+    volatile bool got_native_widget_created =
+        widget ? widget->got_native_widget_created() : false;
+    CHECK(false) << widget << " " << top_level_widget << " " << v_reason <<
+        " " << got_native_widget_created;
   }
 
   // Let's fill our own accelerator table.

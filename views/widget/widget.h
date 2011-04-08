@@ -153,6 +153,11 @@ class Widget : public internal::NativeWidgetDelegate,
   // Widget subclasses are implementing these methods by implementing
   // NativeWidget. Remove this comment once complete.
 
+#if defined(OS_WIN)
+  // Debugging code to help track 77651.
+  Widget* GetTopLevelWidgetWithReason(int* reason);
+#endif
+
   // Returns the topmost Widget in a hierarchy. Will return NULL if called
   // before the underlying Native Widget has been initialized.
   Widget* GetTopLevelWidget();
@@ -283,6 +288,9 @@ class Widget : public internal::NativeWidgetDelegate,
 
   NativeWidget* native_widget() { return native_widget_; }
 
+  // Debugging code to help track 77651.
+  bool got_native_widget_created() const { return got_native_widget_created_; }
+
   // Overridden from NativeWidgetDelegate:
   virtual void OnNativeFocus(gfx::NativeView focused_view) OVERRIDE;
   virtual void OnNativeBlur(gfx::NativeView focused_view) OVERRIDE;
@@ -367,6 +375,9 @@ class Widget : public internal::NativeWidgetDelegate,
 
   // The compositor for accelerated drawing.
   scoped_refptr<ui::Compositor> compositor_;
+
+  // Debugging code to help track 77651.
+  bool got_native_widget_created_;
 
   DISALLOW_COPY_AND_ASSIGN(Widget);
 };

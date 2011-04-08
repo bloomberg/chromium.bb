@@ -1182,6 +1182,44 @@ NativeWidget* NativeWidget::GetNativeWidgetForNativeWindow(
   return GetNativeWidgetForNativeView(native_window);
 }
 
+NativeWidget* NativeWidget::GetTopLevelNativeWidgetWithReason(
+    gfx::NativeView native_view,
+    int* reason) {
+  *reason = 0;
+  if (!native_view) {
+    *reason = 1;
+    return NULL;
+  }
+
+  // First, check if the top-level window is a Widget.
+  HWND root = ::GetAncestor(native_view, GA_ROOT);
+  if (!root) {
+    *reason = 2;
+    return NULL;
+  }
+
+  NativeWidget* widget = GetNativeWidgetForNativeView(root);
+  if (widget) {
+    *reason = 3;
+    return widget;
+  }
+
+  // Second, try to locate the last Widget window in the parent hierarchy.
+  HWND parent_hwnd = native_view;
+  NativeWidget* parent_widget;
+  *reason = 4;
+  do {
+    parent_widget = GetNativeWidgetForNativeView(parent_hwnd);
+    if (parent_widget) {
+      widget = parent_widget;
+      (*reason)++;
+      parent_hwnd = ::GetAncestor(parent_hwnd, GA_PARENT);
+    }
+  } while (parent_hwnd != NULL && parent_widget != NULL);
+
+  return widget;
+}
+
 NativeWidget* NativeWidget::GetTopLevelNativeWidget(
     gfx::NativeView native_view) {
   if (!native_view)
