@@ -30,12 +30,10 @@
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/browser/content_browser_client.h"
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/renderer_host/render_view_host_observer.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/site_instance.h"
@@ -117,14 +115,9 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
 
   DCHECK(instance_);
   DCHECK(delegate_);
-
-  content::GetContentClient()->browser()->RenderViewHostCreated(this);
 }
 
 RenderViewHost::~RenderViewHost() {
-  FOR_EACH_OBSERVER(
-      RenderViewHostObserver, observers_, RenderViewHostDestruction());
-
   NotificationService::current()->Notify(
       NotificationType::RENDER_VIEW_HOST_DELETED,
       Source<RenderViewHost>(this),
@@ -719,12 +712,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
   }
 #endif
 
-  ObserverListBase<RenderViewHostObserver>::Iterator it(observers_);
-  RenderViewHostObserver* observer;
-  while ((observer = it.GetNext()) != NULL)
-    if (observer->OnMessageReceived(msg))
-      return true;
-
   if (delegate_->OnMessageReceived(msg))
     return true;
 
@@ -1236,14 +1223,6 @@ void RenderViewHost::OnAddMessageToConsole(const std::wstring& message,
                                            const std::wstring& source_id) {
   logging::LogMessage("CONSOLE", 0).stream() << "\"" << message
       << "\", source: " << source_id << " (" << line_no << ")";
-}
-
-void RenderViewHost::AddObserver(RenderViewHostObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void RenderViewHost::RemoveObserver(RenderViewHostObserver* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 bool RenderViewHost::PreHandleKeyboardEvent(

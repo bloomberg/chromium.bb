@@ -6,9 +6,11 @@
 
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/common/devtools_messages.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
-DevToolsHandler::DevToolsHandler(RenderViewHost* render_view_host)
-    : RenderViewHostObserver(render_view_host) {
+DevToolsHandler::DevToolsHandler(TabContents* tab,
+                                 RenderViewHost* render_view_host)
+    : tab_(tab), render_view_host_(render_view_host) {
 }
 
 DevToolsHandler::~DevToolsHandler() {
@@ -33,32 +35,46 @@ bool DevToolsHandler::OnMessageReceived(const IPC::Message& message) {
 
 void DevToolsHandler::OnForwardToAgent(const IPC::Message& message) {
   DevToolsManager::GetInstance()->ForwardToDevToolsAgent(
-      render_view_host(), message);
+      GetRenderViewHost(), message);
 }
 
 void DevToolsHandler::OnForwardToClient(const IPC::Message& message) {
   DevToolsManager::GetInstance()->ForwardToDevToolsClient(
-      render_view_host(), message);
+      GetRenderViewHost(), message);
 }
 
 void DevToolsHandler::OnActivateWindow() {
-  DevToolsManager::GetInstance()->ActivateWindow(render_view_host());
+  DevToolsManager::GetInstance()->ActivateWindow(GetRenderViewHost());
 }
 
 void DevToolsHandler::OnCloseWindow() {
-  DevToolsManager::GetInstance()->CloseWindow(render_view_host());
+  DevToolsManager::GetInstance()->CloseWindow(GetRenderViewHost());
 }
 
 void DevToolsHandler::OnRequestDockWindow() {
-  DevToolsManager::GetInstance()->RequestDockWindow(render_view_host());
+  DevToolsManager::GetInstance()->RequestDockWindow(GetRenderViewHost());
 }
 
 void DevToolsHandler::OnRequestUndockWindow() {
-  DevToolsManager::GetInstance()->RequestUndockWindow(render_view_host());
+  DevToolsManager::GetInstance()->RequestUndockWindow(GetRenderViewHost());
 }
 
 void DevToolsHandler::OnRuntimePropertyChanged(const std::string& name,
                                                const std::string& value) {
   DevToolsManager::GetInstance()->RuntimePropertyChanged(
-      render_view_host(), name, value);
+      GetRenderViewHost(), name, value);
+}
+
+RenderViewHost* DevToolsHandler::GetRenderViewHost() {
+  return tab_ ? tab_->render_view_host() : render_view_host_;
+}
+
+
+DevToolsObserver::DevToolsObserver(TabContents* tab_contents)
+    : TabContentsObserver(tab_contents),
+      handler_(tab_contents, NULL) {
+}
+
+bool DevToolsObserver::OnMessageReceived(const IPC::Message& message) {
+  return handler_.OnMessageReceived(message);
 }

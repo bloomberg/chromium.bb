@@ -12,6 +12,10 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/debugger/devtools_handler.h"
+#include "chrome/browser/debugger/devtools_manager.h"
+#include "chrome/browser/desktop_notification_handler.h"
+#include "chrome/browser/extensions/extension_message_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/file_select_helper.h"
@@ -151,6 +155,12 @@ ExtensionHost::ExtensionHost(const Extension* extension,
   // be the same extension that this points to.
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  Source<Profile>(profile_));
+
+  desktop_notification_handler_.reset(
+      new DesktopNotificationHandler(NULL, render_process_host()));
+  dev_tools_handler_.reset(new DevToolsHandler(NULL, render_view_host_));
+  extension_message_handler_.reset(new ExtensionMessageHandler(
+      render_process_host()->id(), render_view_host_, profile_));
 }
 
 ExtensionHost::~ExtensionHost() {
@@ -327,7 +337,7 @@ void ExtensionHost::DidNavigate(RenderViewHost* render_view_host,
     return;
 
   if (!params.url.SchemeIs(chrome::kExtensionScheme)) {
-    extension_function_dispatcher_.reset(NULL);
+    SetExtensionFunctionDispatcher(NULL);
     url_ = params.url;
     return;
   }
@@ -342,12 +352,12 @@ void ExtensionHost::DidNavigate(RenderViewHost* render_view_host,
   // it's better than the alternative.
   // TODO(erikkay) Perhaps we should display errors in developer mode.
   if (params.url.host() != extension_->id()) {
-    extension_function_dispatcher_.reset(NULL);
+    SetExtensionFunctionDispatcher(NULL);
     return;
   }
 
   url_ = params.url;
-  extension_function_dispatcher_.reset(
+  SetExtensionFunctionDispatcher(
       ExtensionFunctionDispatcher::Create(render_view_host_, this, url_));
 }
 
@@ -545,13 +555,6 @@ WebPreferences ExtensionHost::GetWebkitPrefs() {
   if (extension_->HasApiPermission(Extension::kExperimentalPermission))
     webkit_prefs.dom_paste_enabled = true;
   return webkit_prefs;
-}
-
-void ExtensionHost::ProcessWebUIMessage(
-    const ExtensionHostMsg_DomMessage_Params& params) {
-  if (extension_function_dispatcher_.get()) {
-    extension_function_dispatcher_->HandleRequest(params);
-  }
 }
 
 RenderViewHostDelegate::View* ExtensionHost::GetViewDelegate() {
@@ -787,6 +790,13 @@ bool ExtensionHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+
+  if (!handled)
+    handled = desktop_notification_handler_->OnMessageReceived(message);
+  if (!handled)
+    handled = dev_tools_handler_->OnMessageReceived(message);
+  if (!handled)
+    handled = extension_message_handler_->OnMessageReceived(message);
   return handled;
 }
 
@@ -802,7 +812,7 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
   // we'll create 2 EFDs for the first navigation. We should try to find a
   // better way to unify them.
   // See http://code.google.com/p/chromium/issues/detail?id=18240
-  extension_function_dispatcher_.reset(
+  SetExtensionFunctionDispatcher(
       ExtensionFunctionDispatcher::Create(render_view_host, this, url_));
 
   if (extension_host_type_ == ViewType::EXTENSION_POPUP ||
@@ -835,4 +845,10 @@ void ExtensionHost::OnRunFileChooser(
   if (file_select_helper_.get() == NULL)
     file_select_helper_.reset(new FileSelectHelper(profile()));
   file_select_helper_->RunFileChooser(render_view_host_, params);
+}
+
+void ExtensionHost::SetExtensionFunctionDispatcher(
+    ExtensionFunctionDispatcher* efd) {
+  extension_function_dispatcher_.reset(efd);
+  extension_message_handler_->set_extension_function_dispatcher(efd);
 }

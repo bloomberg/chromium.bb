@@ -5,15 +5,17 @@
 #include "chrome/browser/tab_contents/background_contents.h"
 
 #include "chrome/browser/background_contents_service.h"
+#include "chrome/browser/desktop_notification_handler.h"
+#include "chrome/browser/extensions/extension_message_handler.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_types.h"
 #include "content/browser/browsing_instance.h"
+#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/common/notification_service.h"
@@ -42,6 +44,10 @@ BackgroundContents::BackgroundContents(SiteInstance* site_instance,
   // APP_TERMINATING before non-OTR profiles are destroyed).
   registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                  Source<Profile>(profile));
+  desktop_notification_handler_.reset(
+      new DesktopNotificationHandler(NULL, site_instance->GetProcess()));
+  extension_message_handler_.reset(new ExtensionMessageHandler(
+      render_view_host_->process()->id(), render_view_host_, profile));
 }
 
 // Exposed to allow creating mocks.
@@ -194,6 +200,13 @@ void BackgroundContents::RenderViewGone(RenderViewHost* rvh,
   delete this;
 }
 
+bool BackgroundContents::OnMessageReceived(const IPC::Message& message) {
+  bool handled = desktop_notification_handler_->OnMessageReceived(message);
+  if (!handled)
+    handled = extension_message_handler_->OnMessageReceived(message);
+  return handled;
+}
+
 RendererPreferences BackgroundContents::GetRendererPrefs(
     Profile* profile) const {
   RendererPreferences preferences;
@@ -207,15 +220,6 @@ WebPreferences BackgroundContents::GetWebkitPrefs() {
   Profile* profile = render_view_host_->process()->profile();
   return RenderViewHostDelegateHelper::GetWebkitPrefs(profile,
                                                       false);  // is_web_ui
-}
-
-void BackgroundContents::ProcessWebUIMessage(
-    const ExtensionHostMsg_DomMessage_Params& params) {
-  // TODO(rafaelw): It may make sense for extensions to be able to open
-  // BackgroundContents to chrome-extension://<id> pages. Consider implementing.
-  render_view_host_->Send(new ExtensionMsg_Response(
-      render_view_host_->routing_id(), params.request_id, false,
-      std::string(), "Access to extension API denied."));
 }
 
 void BackgroundContents::CreateNewWindow(

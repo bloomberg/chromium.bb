@@ -60,6 +60,7 @@ class ClientSideDetectionHost;
 
 class BlockedContentContainer;
 class WebUI;
+class DesktopNotificationHandlerForTC;
 class DownloadItem;
 class Extension;
 class InfoBarDelegate;
@@ -893,8 +894,6 @@ class TabContents : public PageNavigator,
                                 int maximum_percent,
                                 bool remember);
   virtual void WorkerCrashed();
-  virtual void RequestDesktopNotificationPermission(const GURL& source_origin,
-                                                    int callback_context);
 
   // RenderViewHostManager::Delegate -------------------------------------------
 
@@ -980,6 +979,9 @@ class TabContents : public PageNavigator,
 
   // RenderViewHost::ContentSettingsDelegate.
   scoped_ptr<TabSpecificContentSettings> content_settings_delegate_;
+
+  // Handles desktop notification IPCs.
+  scoped_ptr<DesktopNotificationHandlerForTC> desktop_notification_handler_;
 
   // Handles IPCs related to SafeBrowsing client-side phishing detection.
   scoped_ptr<safe_browsing::ClientSideDetectionHost>

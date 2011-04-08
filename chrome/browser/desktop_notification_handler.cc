@@ -6,17 +6,15 @@
 
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "content/browser/renderer_host/render_process_host.h"
-#include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/desktop_notification_messages.h"
 
 DesktopNotificationHandler::DesktopNotificationHandler(
-    RenderViewHost* render_view_host)
-  : RenderViewHostObserver(render_view_host) {
-}
-
-DesktopNotificationHandler::~DesktopNotificationHandler() {
+    TabContents* tab, RenderProcessHost* process)
+  : tab_(tab),
+    process_(process) {
 }
 
 bool DesktopNotificationHandler::OnMessageReceived(
@@ -35,39 +33,65 @@ bool DesktopNotificationHandler::OnMessageReceived(
 }
 
 void DesktopNotificationHandler::OnShow(
+    const IPC::Message& message,
     const DesktopNotificationHostMsg_Show_Params& params) {
-  RenderProcessHost* process = render_view_host()->process();
+  RenderProcessHost* process = GetRenderProcessHost();
   DesktopNotificationService* service =
       process->profile()->GetDesktopNotificationService();
 
   service->ShowDesktopNotification(
     params,
     process->id(),
-    routing_id(),
+    message.routing_id(),
     DesktopNotificationService::PageNotification);
 }
 
-void DesktopNotificationHandler::OnCancel(int notification_id) {
-  RenderProcessHost* process = render_view_host()->process();
+void DesktopNotificationHandler::OnCancel(const IPC::Message& message,
+                                          int notification_id) {
+  RenderProcessHost* process = GetRenderProcessHost();
   DesktopNotificationService* service =
       process->profile()->GetDesktopNotificationService();
 
   service->CancelDesktopNotification(
       process->id(),
-      routing_id(),
+      message.routing_id(),
       notification_id);
 }
 
 void DesktopNotificationHandler::OnRequestPermission(
-    const GURL& source_origin, int callback_context) {
-  if (render_view_host()->delegate()->RequestDesktopNotificationPermission(
-          source_origin, callback_context)) {
+    const IPC::Message& message, const GURL& source_origin,
+    int callback_context) {
+  RenderProcessHost* process = GetRenderProcessHost();
+  Browser* browser = BrowserList::GetLastActive();
+  // We may not have a BrowserList if the chrome browser process is launched as
+  // a ChromeFrame process in which case we attempt to use the TabContents
+  // provided by the RenderViewHostDelegate.
+  TabContents* tab = browser ? browser->GetSelectedTabContents() : tab_;
+  if (!tab)
     return;
-  }
 
-  RenderProcessHost* process = render_view_host()->process();
   DesktopNotificationService* service =
-      process->profile()->GetDesktopNotificationService();
+      tab->profile()->GetDesktopNotificationService();
   service->RequestPermission(
-      source_origin, process->id(), routing_id(), callback_context, NULL);
+      source_origin,
+      process->id(),
+      message.routing_id(),
+      callback_context,
+      tab);
+}
+
+RenderProcessHost* DesktopNotificationHandler::GetRenderProcessHost() {
+  return tab_ ? tab_->GetRenderProcessHost() : process_;
+}
+
+DesktopNotificationHandlerForTC::DesktopNotificationHandlerForTC(
+    TabContents* tab_contents,
+    RenderProcessHost* process)
+    : TabContentsObserver(tab_contents),
+      handler_(tab_contents, process) {
+}
+
+bool DesktopNotificationHandlerForTC::OnMessageReceived(
+    const IPC::Message& message) {
+  return handler_.OnMessageReceived(message);
 }

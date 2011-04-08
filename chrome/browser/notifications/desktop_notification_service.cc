@@ -17,7 +17,6 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_child_process_host.h"
@@ -501,12 +500,6 @@ void DesktopNotificationService::RequestPermission(
     const GURL& origin, int process_id, int route_id, int callback_context,
     TabContents* tab) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!tab) {
-    Browser* browser = BrowserList::GetLastActive();
-    if (browser)
-      browser->GetSelectedTabContents();
-  }
-
   if (!tab)
     return;
 

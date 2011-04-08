@@ -19,13 +19,10 @@ class WebUIFactory;
 // Embedder API for participating in browser logic.
 class ContentBrowserClient {
  public:
-  // Notifies that a new RenderHostView has been created.
-  virtual void RenderViewHostCreated(RenderViewHost* render_view_host);
-
   // Initialize a RenderViewHost before its CreateRenderView method is called.
   virtual void PreCreateRenderView(RenderViewHost* render_view_host,
                                    Profile* profile,
-                                   const GURL& url);
+                                   const GURL& url) {}
 
   // Gets the WebUIFactory which will be responsible for generating WebUIs.
   virtual WebUIFactory* GetWebUIFactory();

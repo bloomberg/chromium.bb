@@ -4,23 +4,13 @@
 
 #include "chrome/browser/chrome_content_browser_client.h"
 
-#include "chrome/browser/debugger/devtools_handler.h"
-#include "chrome/browser/desktop_notification_handler.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/extensions/extension_message_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "content/browser/renderer_host/render_view_host.h"
 
 namespace chrome {
-
-void ChromeContentBrowserClient::RenderViewHostCreated(
-    RenderViewHost* render_view_host) {
-  new DesktopNotificationHandler(render_view_host);
-  new DevToolsHandler(render_view_host);
-  new ExtensionMessageHandler(render_view_host);
-}
 
 void ChromeContentBrowserClient::PreCreateRenderView(
     RenderViewHost* render_view_host,

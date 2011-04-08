@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/observer_list.h"
 #include "base/process_util.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/common/content_settings_types.h"
@@ -33,7 +32,6 @@ class FilePath;
 class GURL;
 class ListValue;
 class RenderViewHostDelegate;
-class RenderViewHostObserver;
 class SessionStorageNamespace;
 class SiteInstance;
 class SkBitmap;
@@ -501,13 +499,6 @@ class RenderViewHost : public RenderWidgetHost {
                         GURL* url);
 
  protected:
-  friend class RenderViewHostObserver;
-
-  // Add and remove observers for filtering IPC messages.  Clients must be sure
-  // to remove the observer before they go away.
-  void AddObserver(RenderViewHostObserver* observer);
-  void RemoveObserver(RenderViewHostObserver* observer);
-
   // RenderWidgetHost protected overrides.
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut);
@@ -690,9 +681,6 @@ class RenderViewHost : public RenderWidgetHost {
 
   // The enabled/disabled states of various commands.
   std::map<RenderViewCommand, CommandState> command_states_;
-
-  // A list of observers that filter messages.  Weak references.
-  ObserverList<RenderViewHostObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHost);
 };

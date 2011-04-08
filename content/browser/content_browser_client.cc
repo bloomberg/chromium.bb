@@ -10,15 +10,6 @@
 
 namespace content {
 
-void ContentBrowserClient::RenderViewHostCreated(
-    RenderViewHost* render_view_host) {
-}
-
-void ContentBrowserClient::PreCreateRenderView(RenderViewHost* render_view_host,
-                                               Profile* profile,
-                                               const GURL& url) {
-}
-
 WebUIFactory* ContentBrowserClient::GetWebUIFactory() {
   // Return an empty factory so callsites don't have to check for NULL.
   return EmptyWebUIFactory::Get();

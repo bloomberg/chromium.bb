@@ -6,29 +6,55 @@
 #define CHROME_BROWSER_DESKTOP_NOTIFICATION_HANDLER_H_
 #pragma once
 
-#include "content/browser/renderer_host/render_view_host_observer.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 
-class GURL;
 struct DesktopNotificationHostMsg_Show_Params;
+class RenderProcessHost;
 
 // Per-tab Desktop notification handler. Handles desktop notification IPCs
 // coming in from the renderer.
-class DesktopNotificationHandler : public RenderViewHostObserver {
+class DesktopNotificationHandler {
  public:
-  explicit DesktopNotificationHandler(RenderViewHost* render_view_host);
-  virtual ~DesktopNotificationHandler();
+  // tab_contents will be NULL when this object is used with non-tab contents,
+  // i.e. ExtensionHost.
+  DesktopNotificationHandler(TabContents* tab_contents,
+                             RenderProcessHost* process);
+  virtual ~DesktopNotificationHandler() {}
 
- private:
-  // RenderViewHostObserver implementation.
   bool OnMessageReceived(const IPC::Message& message);
 
-  // IPC handlers.
-  void OnShow(const DesktopNotificationHostMsg_Show_Params& params);
-  void OnCancel(int notification_id);
-  void OnRequestPermission(const GURL& origin, int callback_id);
+  RenderProcessHost* GetRenderProcessHost();
 
  private:
+  // IPC handlers.
+  void OnShow(const IPC::Message& message,
+              const DesktopNotificationHostMsg_Show_Params& params);
+  void OnCancel(const IPC::Message& message, int notification_id);
+  void OnRequestPermission(const IPC::Message& message,
+                           const GURL& origin,
+                           int callback_id);
+
+ private:
+  TabContents* tab_;
+  RenderProcessHost* process_;
+
   DISALLOW_COPY_AND_ASSIGN(DesktopNotificationHandler);
+};
+
+// A wrapper around DesktopNotificationHandler that implements
+// TabContentsObserver.
+class DesktopNotificationHandlerForTC : public TabContentsObserver {
+ public:
+  // tab_contents will be NULL when this object is used with non-tab contents,
+  // i.e. ExtensionHost.
+  DesktopNotificationHandlerForTC(TabContents* tab_contents,
+                                  RenderProcessHost* process);
+
+  // TabContentsObserver implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message);
+
+ private:
+  DesktopNotificationHandler handler_;
 };
 
 #endif  // CHROME_BROWSER_DESKTOP_NOTIFICATION_HANDLER_H_

@@ -22,6 +22,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/desktop_notification_handler.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
@@ -35,7 +36,6 @@
 #include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/metrics/metric_event_duration_details.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/omnibox_search_hint.h"
 #include "chrome/browser/pdf_unsupported_feature.h"
 #include "chrome/browser/platform_util.h"
@@ -372,6 +372,8 @@ TabContents::~TabContents() {
 
 void TabContents::AddObservers() {
   favicon_helper_.reset(new FaviconHelper(this));
+  desktop_notification_handler_.reset(
+      new DesktopNotificationHandlerForTC(this, GetRenderProcessHost()));
   plugin_observer_.reset(new PluginObserver(this));
   safebrowsing_detection_host_.reset(new safe_browsing::ClientSideDetectionHost(
       this));
@@ -2422,15 +2424,6 @@ void TabContents::UpdateZoomLimits(int minimum_percent,
 void TabContents::WorkerCrashed() {
   if (delegate())
     delegate()->WorkerCrashed();
-}
-
-void TabContents::RequestDesktopNotificationPermission(
-    const GURL& source_origin, int callback_context) {
-  DesktopNotificationService* service =
-      profile()->GetDesktopNotificationService();
-  service->RequestPermission(
-      source_origin, GetRenderProcessHost()->id(),
-      render_view_host()->routing_id(), callback_context, this);
 }
 
 void TabContents::BeforeUnloadFiredFromRenderManager(
