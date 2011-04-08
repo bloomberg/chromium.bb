@@ -12,7 +12,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyPath.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
-#include "v8/include/v8.h"
 
 namespace webkit_glue {
 
@@ -24,7 +23,6 @@ bool IDBKeysFromValuesAndKeyPath(
     const std::vector<WebSerializedScriptValue>& serialized_script_values,
     const string16& idb_key_path,
     std::vector<WebIDBKey>* values) {
-  v8::Locker lock;
   WebIDBKeyPath web_idb_key_path = WebIDBKeyPath::create(idb_key_path);
   bool error = web_idb_key_path.parseError() != 0;
   // TODO(bulach): what to do when we have a parse error? For now, setting
@@ -46,7 +44,6 @@ WebSerializedScriptValue InjectIDBKey(
     const WebIDBKey& key,
     const WebSerializedScriptValue& value,
     const string16& idb_key_path) {
-  v8::Locker lock;
   return WebIDBKey::injectIDBKeyIntoSerializedValue(
       key, value, WebIDBKeyPath::create(idb_key_path));
 }
