@@ -70,7 +70,7 @@ class NewUserView : public ThrobberHostView,
   void Init();
 
   // Update strings from the resources. Executed on language change.
-  void UpdateLocalizedStrings();
+  void UpdateLocalizedStringsAndFonts();
 
   // Returns bounds of password field in screen coordinates.
   gfx::Rect GetPasswordBounds() const;

@@ -148,21 +148,13 @@ void NewUserView::Init() {
     set_background(views::Background::CreateBackgroundPainter(true, painter));
   }
 
-  // Set up fonts.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::Font title_font = rb.GetFont(ResourceBundle::MediumBoldFont).DeriveFont(
-      kLoginTitleFontDelta);
-  gfx::Font title_hint_font = rb.GetFont(ResourceBundle::BoldFont);
-
   title_label_ = new views::Label();
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  title_label_->SetFont(title_font);
   title_label_->SetMultiLine(true);
   AddChildView(title_label_);
 
   title_hint_label_ = new views::Label();
   title_hint_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  title_hint_label_->SetFont(title_hint_font);
   title_hint_label_->SetColor(SK_ColorGRAY);
   title_hint_label_->SetMultiLine(true);
   AddChildView(title_hint_label_);
@@ -288,22 +280,34 @@ void NewUserView::AddChildView(View* view) {
   }
 }
 
-void NewUserView::UpdateLocalizedStrings() {
+void NewUserView::UpdateLocalizedStringsAndFonts() {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  gfx::Font title_font = rb.GetFont(ResourceBundle::MediumBoldFont).DeriveFont(
+      kLoginTitleFontDelta);
+  const gfx::Font& title_hint_font = rb.GetFont(ResourceBundle::BoldFont);
+  const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
+
+  title_label_->SetFont(title_font);
   title_label_->SetText(UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_LOGIN_TITLE)));
+  title_hint_label_->SetFont(title_hint_font);
   title_hint_label_->SetText(UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_LOGIN_TITLE_HINT)));
+  username_field_->SetFont(base_font);
   username_field_->set_text_to_display_when_empty(
       l10n_util::GetStringUTF16(IDS_LOGIN_USERNAME));
+  password_field_->SetFont(base_font);
   password_field_->set_text_to_display_when_empty(
       l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD));
   sign_in_button_->SetLabel(UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_LOGIN_BUTTON)));
   if (need_create_account_) {
+    create_account_link_->SetFont(base_font);
     create_account_link_->SetText(
         UTF16ToWide(l10n_util::GetStringUTF16(IDS_CREATE_ACCOUNT_BUTTON)));
   }
   if (need_guest_link_) {
+    guest_link_->SetFont(base_font);
     guest_link_->SetText(UTF16ToWide(
         l10n_util::GetStringUTF16(IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON)));
   }
@@ -314,7 +318,7 @@ void NewUserView::UpdateLocalizedStrings() {
 
 void NewUserView::OnLocaleChanged() {
   RecreatePeculiarControls();
-  UpdateLocalizedStrings();
+  UpdateLocalizedStringsAndFonts();
   AddChildView(sign_in_button_);
   AddChildView(languages_menubutton_);
 
