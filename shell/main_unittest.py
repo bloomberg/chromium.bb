@@ -7,6 +7,7 @@
 """Unit tests for main.py."""
 
 import doctest
+import optparse
 import os
 import re
 import unittest
@@ -399,6 +400,67 @@ class TestFindSpec(unittest.TestCase):
                     '_FindSpec("%s") incorrectly returned "%s".' %
                     (spec_name, spec_path))
 
+class TestParseArguments(unittest.TestCase):
+  """Test utils.FindSpec."""
+
+  def setUp(self):
+    """Test initialization."""
+    self.parser = optparse.OptionParser()
+
+    # Verbose defaults to full for now, just to keep people acclimatized to
+    # vast amounts of comforting output.
+    self.parser.add_option('-v', dest='verbose', default=3, type='int',
+        help='Control verbosity: 0=silent, 1=progress, 3=full')
+    self.parser.add_option('-q', action='store_const', dest='verbose', const=0,
+        help='Be quieter (sets verbosity to 1)')
+
+  def testEmpty(self):
+    options, cmd, sub = main._ParseArguments(self.parser,
+        [])
+    self.assertEqual(options.verbose, 3)
+    self.assertEqual(cmd, '')
+    self.assertEqual(sub, [])
+
+  def testBadOption(self):
+    self.assertRaises(SystemExit, main._ParseArguments, self.parser,
+        ['chromite', '--bad'])
+    self.assertRaises(SystemExit, main._ParseArguments, self.parser,
+        ['chromite', '--bad', 'build'])
+
+  def testSubcmd(self):
+    options, cmd, sub = main._ParseArguments(self.parser,
+        ['chromite', 'build'])
+    self.assertEqual(options.verbose, 3)
+    self.assertEqual(cmd, 'build')
+    self.assertEqual(sub, [])
+
+  def testSubcmdQuiet(self):
+    options, cmd, sub = main._ParseArguments(self.parser,
+        ['chromite', '-q', 'build'])
+    self.assertEqual(options.verbose, 0)
+    self.assertEqual(cmd, 'build')
+    self.assertEqual(sub, [])
+
+  def testSubcmdVerbose2(self):
+    options, cmd, sub = main._ParseArguments(self.parser,
+        ['chromite', '-v2', 'build'])
+    self.assertEqual(options.verbose, 2)
+    self.assertEqual(cmd, 'build')
+    self.assertEqual(sub, [])
+
+  def testSubcmdVerbose4(self):
+    options, cmd, sub = main._ParseArguments(self.parser,
+        ['chromite', '-v', '4', 'build'])
+    self.assertEqual(options.verbose, 4)
+    self.assertEqual(cmd, 'build')
+    self.assertEqual(sub, [])
+
+  def testSubcmdArgs(self):
+    options, cmd, sub = main._ParseArguments(self.parser,
+        ['chromite', '-v', '4', 'build', 'seaboard', '--clean'])
+    self.assertEqual(options.verbose, 4)
+    self.assertEqual(cmd, 'build')
+    self.assertEqual(sub, ['seaboard', '--clean'])
 
 if __name__ == '__main__':
   doctest.testmod(main)

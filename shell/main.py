@@ -93,6 +93,58 @@ def _FindCommand(cmd_name):
     return possible_cmds[choice]
 
 
+def _ParseArguments(parser, argv):
+  '''Helper function to separate arguments for a main program and sub-command.
+
+  We split arguments into ones we understand, and ones to pass on to
+  sub-commands. For the former, we put them through the given optparse and
+  return the result options and sub-command name. For the latter, we just
+  return a list of options and arguments not intended for us.
+
+  We want to parse only the options that we understand at the top level of
+  Chromite. Our heuristic here is that anything after the first positional
+  parameter (which we assume is the command) is ignored at this level, and
+  is passed down to the command level to handle.
+
+  TODO(sjg): Revisit this to include tolerant option parser instead
+  http://codereview.chromium.org/6469035/
+
+  Args:
+    parser: Option parser.
+    argv:   List of program arguments
+
+  Returns:
+    options:  Top level options (returned from optparse).
+    cmd_str:  Subcommand to run
+    cmd_args: Arguments intended for subcommands.
+  '''
+  our_args = []
+  cmd_args = list(argv)
+  cmd_str = ''
+  args = []   # Nothing until we call optparse
+  while not cmd_str:
+    if our_args:
+      (options, args) = parser.parse_args(our_args)
+    if len(args) > 1:
+      cmd_str = args[1].lower()
+    elif cmd_args:
+      # We don't have a command yet. Transfer a positional arg from from
+      # cmd_args to our_args to see if that does the trick. We move over any
+      # options we find also.
+      while cmd_args:
+        arg = cmd_args.pop(0)
+        our_args.append(arg)
+        if not arg.startswith( '-'):
+          break
+    else:
+      # No more cmd_args to consume.
+      break
+
+  # We must run the parser, even if it dies due to lack of arguments
+  if not args:
+    (options, args) = parser.parse_args(our_args)
+  return options, cmd_str, cmd_args
+
 def main():
   """Main function for the chromite shell."""
 
@@ -128,7 +180,7 @@ def main():
 
   # Verbose defaults to full for now, just to keep people acclimatized to
   # vast amounts of comforting output.
-  parser.add_option('-v', dest='verbose', default=3,
+  parser.add_option('-v', dest='verbose', default=3, type='int',
       help='Control verbosity: 0=silent, 1=progress, 3=full')
   parser.add_option('-q', action='store_const', dest='verbose', const=0,
       help='Be quieter (sets verbosity to 1)')
@@ -138,10 +190,9 @@ def main():
         help="Chroot spec to use. Can be an absolute path to a spec file "
             "or a substring of a chroot spec name (without .spec suffix)")
   parser.usage = help_str
-  try:
-    (options, args) = parser.parse_args()
-  except:
-    sys.exit(1)
+
+  # Parse the arguments and separate them into top-level and subcmd arguments.
+  options, cmd_str, cmd_args = _ParseArguments(parser, sys.argv)
 
   # Set up the cros system.
   cros_env = chromite_env.ChromiteEnv()
@@ -163,13 +214,6 @@ def main():
     # Already in the chroot; no need to get config...
     chroot_config = None
 
-  # Get command and arguments
-  if args:
-    cmd_str = args[0].lower()
-    args = args[1:]
-  else:
-    cmd_str = ''
-
   # Validate the subcmd, popping a menu if needed.
   cmd_str = _FindCommand(cmd_str)
   oper.Info("Running command '%s'." % cmd_str)
@@ -179,7 +223,7 @@ def main():
   cmd_obj = cmd_cls()
   cmd_obj.SetChromiteEnv(cros_env)
   try:
-    cmd_obj.Run([cmd_str] + args, chroot_config=chroot_config)
+    cmd_obj.Run([cmd_str] + cmd_args, chroot_config=chroot_config)
 
   # Handle an error in one of the scripts: print a message and exit.
   except chromite_env.ChromiteError, msg:
