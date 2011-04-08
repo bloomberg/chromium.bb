@@ -254,7 +254,7 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        state_(GDK_WINDOW_STATE_WITHDRAWN),
        bookmark_bar_is_floating_(false),
        frame_cursor_(NULL),
-       is_active_(false),
+       is_active_(!ui::ActiveWindowWatcherX::WMSupportsActivation()),
        last_click_time_(0),
        maximize_after_show_(false),
        suppress_window_raise_(false),

@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 namespace ui {
 
@@ -33,6 +34,10 @@ class ActiveWindowWatcherX {
   static void AddObserver(Observer* observer);
   static void RemoveObserver(Observer* observer);
 
+  // Checks if the WM supports the active window property. Note that the return
+  // value can change, especially during system startup.
+  static bool WMSupportsActivation();
+
  private:
   friend struct DefaultSingletonTraits<ActiveWindowWatcherX>;
 
@@ -46,9 +51,8 @@ class ActiveWindowWatcherX {
   void NotifyActiveWindowChanged();
 
   // Callback for PropertyChange XEvents.
-  static GdkFilterReturn OnWindowXEvent(GdkXEvent* xevent,
-                                        GdkEvent* event,
-                                        gpointer window_watcher);
+  CHROMEG_CALLBACK_1(ActiveWindowWatcherX, GdkFilterReturn,
+                     OnWindowXEvent, GdkXEvent*, GdkEvent*);
 
   ObserverList<Observer> observers_;
 
