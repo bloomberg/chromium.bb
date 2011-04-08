@@ -23,6 +23,7 @@
 #include "chrome/browser/printing/print_preview_message_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
+#include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
@@ -56,6 +57,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   autocomplete_history_manager_.reset(new AutocompleteHistoryManager(contents));
   autofill_manager_.reset(new AutofillManager(contents));
   automation_tab_helper_.reset(new AutomationTabHelper(contents));
+  download_tab_helper_.reset(new DownloadTabHelper(contents));
   extension_tab_helper_.reset(new ExtensionTabHelper(this));
   find_tab_helper_.reset(new FindTabHelper(contents));
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(contents));

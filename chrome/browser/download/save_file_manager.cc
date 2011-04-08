@@ -16,6 +16,8 @@
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/download/download_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -167,7 +169,7 @@ void SaveFileManager::RemoveSaveFile(int save_id, const GURL& save_url,
                                      SavePackage* package) {
   DCHECK(package);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // A save page job(SavePackage) can only have one manager,
+  // A save page job (SavePackage) can only have one manager,
   // so remove it if it exists.
   if (save_id == -1) {
     SavePackage* old_package = UnregisterStartingRequest(save_url,
@@ -187,8 +189,11 @@ SavePackage* SaveFileManager::GetSavePackageFromRenderIds(
     int render_process_id, int render_view_id) {
   TabContents* contents = tab_util::GetTabContentsByID(render_process_id,
                                                        render_view_id);
-  if (contents)
-    return contents->save_package();
+  if (contents) {
+    TabContentsWrapper* wrapper =
+        TabContentsWrapper::GetCurrentWrapperForContents(contents);
+    return wrapper->download_tab_helper()->save_package();
+  }
 
   return NULL;
 }

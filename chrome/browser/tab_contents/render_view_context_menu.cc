@@ -22,6 +22,7 @@
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/save_package.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -36,8 +37,10 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
-#include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/translate/translate_manager.h"
+#include "chrome/browser/translate/translate_prefs.h"
+#include "chrome/browser/ui/download/download_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_restriction.h"
@@ -1288,9 +1291,13 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       source_tab_contents_->controller().GoForward();
       break;
 
-    case IDC_SAVE_PAGE:
-      source_tab_contents_->OnSavePage();
+    case IDC_SAVE_PAGE: {
+      TabContentsWrapper* wrapper =
+          TabContentsWrapper::GetCurrentWrapperForContents(
+              source_tab_contents_);
+      wrapper->download_tab_helper()->OnSavePage();
       break;
+    }
 
     case IDC_RELOAD:
       // Prevent the modal "Resubmit form post" dialog from appearing in the
