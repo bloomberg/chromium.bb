@@ -38,7 +38,7 @@ namespace prerender {
 
 // PrerenderManager is responsible for initiating and keeping prerendered
 // views of webpages.
-class PrerenderManager : public base::RefCounted<PrerenderManager> {
+class PrerenderManager : public base::RefCountedThreadSafe<PrerenderManager> {
  public:
   // PrerenderManagerMode is used in a UMA_HISTOGRAM, so please do not
   // add in the middle.
@@ -145,7 +145,7 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   // Test that needs needs access to internal functions.
   friend class PrerenderBrowserTest;
 
-  friend class base::RefCounted<PrerenderManager>;
+  friend class base::RefCountedThreadSafe<PrerenderManager>;
 
   struct PrerenderContentsData;
 
