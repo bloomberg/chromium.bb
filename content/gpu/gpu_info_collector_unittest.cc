@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "content/common/gpu_info.h"
+#include "content/common/gpu/gpu_info.h"
 #include "content/gpu/gpu_info_collector.h"
 #include "gpu/command_buffer/common/gl_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"

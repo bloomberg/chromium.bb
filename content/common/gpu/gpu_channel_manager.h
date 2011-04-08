@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_GPU_GPU_RENDER_THREAD_H_
-#define CONTENT_GPU_GPU_RENDER_THREAD_H_
+#ifndef CONTENT_GPU_GPU_CHANNEL_MANAGER_H_
+#define CONTENT_GPU_GPU_CHANNEL_MANAGER_H_
 #pragma once
 
 #include <string>
@@ -16,10 +16,9 @@
 #include "base/time.h"
 #include "build/build_config.h"
 #include "content/common/child_thread.h"
-#include "content/common/gpu_info.h"
-#include "content/gpu/gpu_channel.h"
-#include "content/gpu/gpu_config.h"
-#include "content/gpu/x_util.h"
+#include "content/common/gpu/gpu_channel.h"
+#include "content/common/gpu/gpu_config.h"
+#include "content/common/gpu/x_util.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 #include "ui/gfx/native_widget_types.h"
@@ -28,24 +27,24 @@ namespace IPC {
 struct ChannelHandle;
 }
 
-// A GpuRenderThread is a thread responsible for issuing rendering commands to
-// a GPU. There is currently only one per GPU process. This might change. Assume
-// there are many, all running on different threads.
+// A GpuChannelManager is a thread responsible for issuing rendering commands
+// managing the lifetimes of GPU channels and forwarding IPC requests from the
+// browser process to them based on the corresponding renderer ID.
 //
-// A GpuRenderThread can also be hosted in the browser process in single process
-// or in-process GPU modes. In this case there is no corresponding
+// A GpuChannelManager can also be hosted in the browser process in single
+// process or in-process GPU modes. In this case there is no corresponding
 // GpuChildThread and this is the reason the GpuChildThread is referenced via
 // a pointer to IPC::Message::Sender, which can be implemented by other hosts
 // to send IPC messages to the browser process IO thread on the
-// GpuRenderThread's behalf.
-class GpuRenderThread : public IPC::Channel::Listener,
-                        public IPC::Message::Sender {
+// GpuChannelManager's behalf.
+class GpuChannelManager : public IPC::Channel::Listener,
+                          public IPC::Message::Sender {
  public:
-  GpuRenderThread(IPC::Message::Sender* browser_channel,
-                  GpuWatchdogThread* gpu_watchdog_thread,
-                  MessageLoop* io_message_loop,
-                  base::WaitableEvent* shutdown_event);
-  ~GpuRenderThread();
+  GpuChannelManager(IPC::Message::Sender* browser_channel,
+                    GpuWatchdogThread* gpu_watchdog_thread,
+                    MessageLoop* io_message_loop,
+                    base::WaitableEvent* shutdown_event);
+  ~GpuChannelManager();
 
   // Remove the channel for a particular renderer.
   void RemoveChannel(int renderer_id);
@@ -75,7 +74,7 @@ class GpuRenderThread : public IPC::Channel::Listener,
   MessageLoop* io_message_loop_;
   base::WaitableEvent* shutdown_event_;
 
-  // Either an IPC channel to the browser or, if the GpuRenderThread is
+  // Either an IPC channel to the browser or, if the GpuChannelManager is
   // running in the browser process, a Sender implementation that will post
   // IPC messages to the UI thread.
   IPC::Message::Sender* browser_channel_;
@@ -87,7 +86,7 @@ class GpuRenderThread : public IPC::Channel::Listener,
   GpuChannelMap gpu_channels_;
   GpuWatchdogThread* watchdog_thread_;
 
-  DISALLOW_COPY_AND_ASSIGN(GpuRenderThread);
+  DISALLOW_COPY_AND_ASSIGN(GpuChannelManager);
 };
 
-#endif  // CONTENT_GPU_GPU_RENDER_THREAD_H_
+#endif  // CONTENT_GPU_GPU_CHANNEL_MANAGER_H_

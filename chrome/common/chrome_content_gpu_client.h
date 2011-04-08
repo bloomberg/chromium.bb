@@ -6,7 +6,7 @@
 #define CHROME_COMMON_CHROME_CONTENT_GPU_CLIENT_H_
 #pragma once
 
-#include "content/gpu/content_gpu_client.h"
+#include "content/common/gpu/content_gpu_client.h"
 
 namespace chrome {
 

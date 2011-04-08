@@ -8,7 +8,7 @@
 
 #include "base/shared_memory.h"
 #include "content/common/common_param_traits.h"
-#include "content/common/gpu_info.h"
+#include "content/common/gpu/gpu_info.h"
 #include "content/common/gpu_process_launch_causes.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/ipc/gpu_command_buffer_traits.h"

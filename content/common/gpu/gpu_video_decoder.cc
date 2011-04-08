@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/gpu/gpu_video_decoder.h"
+#include "content/common/gpu/gpu_video_decoder.h"
 
 #include "base/command_line.h"
 #include "content/common/child_thread.h"
+#include "content/common/gpu/gpu_channel.h"
+#include "content/common/gpu/media/fake_gl_video_device.h"
+#include "content/common/gpu/media/fake_gl_video_decode_engine.h"
 #include "content/common/gpu_messages.h"
-#include "content/gpu/gpu_channel.h"
-#include "content/gpu/media/fake_gl_video_decode_engine.h"
-#include "content/gpu/media/fake_gl_video_device.h"
 #include "media/base/data_buffer.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 
 #if defined(OS_WIN)
-#include "content/gpu/media/mft_angle_video_device.h"
+#include "content/common/gpu/media/mft_angle_video_device.h"
 #include "media/video/mft_h264_decode_engine.h"
 #include <d3d9.h>
 #endif

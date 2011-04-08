@@ -15,9 +15,9 @@
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/common/content_switches.h"
+#include "content/common/gpu/gpu_config.h"
 #include "content/common/main_function_params.h"
 #include "content/gpu/gpu_child_thread.h"
-#include "content/gpu/gpu_config.h"
 #include "content/gpu/gpu_process.h"
 
 #if defined(OS_MACOSX)

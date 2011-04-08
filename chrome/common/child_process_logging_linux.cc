@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "content/common/gpu_info.h"
+#include "content/common/gpu/gpu_info.h"
 #include "googleurl/src/gurl.h"
 
 namespace child_process_logging {

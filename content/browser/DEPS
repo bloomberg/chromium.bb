@@ -2,7 +2,5 @@ include_rules = [
   # The following directories have been refactored, so no new dependencies
   # should be added from these directories.
   "-chrome/browser/extensions",
-
-  "+content/gpu",  # For single-process mode.
 ]
 

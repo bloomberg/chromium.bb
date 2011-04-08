@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_GPU_GPU_VIDEO_DECODER_H_
-#define CONTENT_GPU_GPU_VIDEO_DECODER_H_
+#ifndef CONTENT_COMMON_GPU_GPU_VIDEO_DECODER_H_
+#define CONTENT_COMMON_GPU_GPU_VIDEO_DECODER_H_
 
 #include <map>
 #include <vector>
@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
-#include "content/gpu/media/gpu_video_device.h"
+#include "content/common/gpu/media/gpu_video_device.h"
 #include "media/video/video_decode_context.h"
 #include "media/video/video_decode_engine.h"
 #include "ipc/ipc_channel.h"
@@ -206,4 +206,4 @@ class GpuVideoDecoder
   DISALLOW_COPY_AND_ASSIGN(GpuVideoDecoder);
 };
 
-#endif  // CONTENT_GPU_GPU_VIDEO_DECODER_H_
+#endif  // CONTENT_COMMON_GPU_GPU_VIDEO_DECODER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/gpu/media/fake_gl_video_decode_engine.h"
+#include "content/common/gpu/media/fake_gl_video_decode_engine.h"
 
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"

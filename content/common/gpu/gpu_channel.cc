@@ -6,7 +6,7 @@
 #include <windows.h>
 #endif
 
-#include "content/gpu/gpu_channel.h"
+#include "content/common/gpu/gpu_channel.h"
 
 #include "base/command_line.h"
 #include "base/process_util.h"
@@ -15,23 +15,23 @@
 #include "content/common/content_client.h"
 #include "content/common/content_switches.h"
 #include "content/common/gpu_messages.h"
-#include "content/gpu/gpu_render_thread.h"
-#include "content/gpu/gpu_video_service.h"
+#include "content/common/gpu/gpu_channel_manager.h"
+#include "content/common/gpu/gpu_video_service.h"
 #include "content/gpu/transport_texture.h"
-
+ 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
 #endif
 
-GpuChannel::GpuChannel(GpuRenderThread* gpu_render_thread,
+GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
                        GpuWatchdogThread* gpu_watchdog_thread,
                        int renderer_id)
-    : gpu_render_thread_(gpu_render_thread),
+    : gpu_channel_manager_(gpu_channel_manager),
       renderer_id_(renderer_id),
       renderer_process_(base::kNullProcessHandle),
       renderer_pid_(base::kNullProcessId),
       watchdog_thread_(gpu_watchdog_thread) {
-  DCHECK(gpu_render_thread);
+  DCHECK(gpu_channel_manager);
   DCHECK(renderer_id);
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   log_messages_ = command_line->HasSwitch(switches::kLogPluginMessages);
@@ -44,6 +44,15 @@ GpuChannel::~GpuChannel() {
   if (renderer_process_)
     CloseHandle(renderer_process_);
 #endif
+}
+
+TransportTexture* GpuChannel::GetTransportTexture(int32 route_id) {
+  return transport_textures_.Lookup(route_id);
+}
+
+void GpuChannel::DestroyTransportTexture(int32 route_id) {
+  transport_textures_.Remove(route_id);
+  router_.RemoveRoute(route_id);
 }
 
 bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
@@ -69,7 +78,7 @@ bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
 }
 
 void GpuChannel::OnChannelError() {
-  gpu_render_thread_->RemoveChannel(renderer_id_);
+  gpu_channel_manager_->RemoveChannel(renderer_id_);
 }
 
 void GpuChannel::OnChannelConnected(int32 peer_pid) {
@@ -133,15 +142,6 @@ void GpuChannel::DestroyCommandBufferByViewId(int32 render_view_id) {
 }
 #endif
 
-TransportTexture* GpuChannel::GetTransportTexture(int32 route_id) {
-  return transport_textures_.Lookup(route_id);
-}
-
-void GpuChannel::DestroyTransportTexture(int32 route_id) {
-  transport_textures_.Remove(route_id);
-  router_.RemoveRoute(route_id);
-}
-
 bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuChannel, msg)
@@ -155,7 +155,7 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyVideoDecoder,
         OnDestroyVideoDecoder)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateTransportTexture,
-                        OnCreateTransportTexture)
+        OnCreateTransportTexture)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled);
@@ -217,7 +217,7 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
 }
 
 void GpuChannel::OnCreateVideoDecoder(int32 context_route_id,
-                                      int32 decoder_host_id) {
+							int32 decoder_host_id) {
 // TODO(cevans): do NOT re-enable this until GpuVideoService has been checked
 // for integer overflows, including the classic "width * height" overflow.
 #if 0
@@ -243,6 +243,7 @@ void GpuChannel::OnCreateVideoDecoder(int32 context_route_id,
 
 void GpuChannel::OnDestroyVideoDecoder(int32 decoder_id) {
 #if defined(ENABLE_GPU)
+  LOG(ERROR) << "GpuChannel::OnDestroyVideoDecoder";
   GpuVideoService* service = GpuVideoService::GetInstance();
   if (service == NULL)
     return;
@@ -252,21 +253,21 @@ void GpuChannel::OnDestroyVideoDecoder(int32 decoder_id) {
 
 void GpuChannel::OnCreateTransportTexture(int32 context_route_id,
                                           int32 host_id) {
-#if defined(ENABLE_GPU)
-  GpuCommandBufferStub* stub = stubs_.Lookup(context_route_id);
-  int32 route_id = GenerateRouteID();
-
-  scoped_ptr<TransportTexture> transport(
-      new TransportTexture(this, channel_.get(), stub->processor()->decoder(),
-                           host_id, route_id));
-  router_.AddRoute(route_id, transport.get());
-  transport_textures_.AddWithID(transport.release(), route_id);
-
-  IPC::Message* msg = new GpuTransportTextureHostMsg_TransportTextureCreated(
-      host_id, route_id);
-  Send(msg);
-#endif
-}
+ #if defined(ENABLE_GPU)
+   GpuCommandBufferStub* stub = stubs_.Lookup(context_route_id);
+   int32 route_id = GenerateRouteID();
+ 
+   scoped_ptr<TransportTexture> transport(
+       new TransportTexture(this, channel_.get(), stub->processor()->decoder(),
+                            host_id, route_id));
+   router_.AddRoute(route_id, transport.get());
+   transport_textures_.AddWithID(transport.release(), route_id);
+ 
+   IPC::Message* msg = new GpuTransportTextureHostMsg_TransportTextureCreated(
+       host_id, route_id);
+   Send(msg);
+ #endif
+ }
 
 bool GpuChannel::Init(MessageLoop* io_message_loop,
                       base::WaitableEvent* shutdown_event) {

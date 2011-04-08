@@ -5,7 +5,7 @@
 #ifndef CONTENT_GPU_MEDIA_FAKE_GL_VIDEO_DEVICE_H_
 #define CONTENT_GPU_MEDIA_FAKE_GL_VIDEO_DEVICE_H_
 
-#include "content/gpu/media/gpu_video_device.h"
+#include "content/common/gpu/media/gpu_video_device.h"
 
 // A simple GpuVideoDevice that create VideoFrame with GL textures.
 // It uploads frames in RGBA format in system memory to the GL texture.

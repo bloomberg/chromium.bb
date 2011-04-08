@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_GPU_GPU_CHANNEL_H_
-#define CONTENT_GPU_GPU_CHANNEL_H_
+#ifndef CONTENT_COMMON_GPU_GPU_CHANNEL_H_
+#define CONTENT_COMMON_GPU_GPU_CHANNEL_H_
 #pragma once
 
 #include <set>
@@ -14,18 +14,18 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "build/build_config.h"
+#include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/message_router.h"
-#include "content/gpu/gpu_command_buffer_stub.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
-class GpuRenderThread;
+class GpuChannelManager;
 class GpuWatchdogThread;
 struct GPUCreateCommandBufferConfig;
 class MessageLoop;
 class TransportTexture;
-
+	 
 namespace base {
 class WaitableEvent;
 }
@@ -37,15 +37,17 @@ class GpuChannel : public IPC::Channel::Listener,
                    public base::RefCountedThreadSafe<GpuChannel> {
  public:
   // Takes ownership of the renderer process handle.
-  GpuChannel(GpuRenderThread* gpu_render_thread,
+  GpuChannel(GpuChannelManager* gpu_channel_manager,
              GpuWatchdogThread* gpu_watchdog_thread,
              int renderer_id);
   virtual ~GpuChannel();
 
   bool Init(MessageLoop* io_message_loop, base::WaitableEvent* shutdown_event);
 
-  // Get the GpuThread that owns this channel.
-  GpuRenderThread* gpu_render_thread() const { return gpu_render_thread_; }
+  // Get the GpuChannelManager that owns this channel.
+  GpuChannelManager* gpu_channel_manager() const {
+    return gpu_channel_manager_;
+  }
 
   // Returns the name of the associated IPC channel.
   std::string GetChannelName();
@@ -77,7 +79,6 @@ class GpuChannel : public IPC::Channel::Listener,
       int32 route_id, uint64 swap_buffers_count);
   void DestroyCommandBufferByViewId(int32 render_view_id);
 #endif
-
   // Get the TransportTexture by ID.
   TransportTexture* GetTransportTexture(int32 route_id);
 
@@ -99,15 +100,16 @@ class GpuChannel : public IPC::Channel::Listener,
       uint32 parent_texture_id,
       int32* route_id);
   void OnDestroyCommandBuffer(int32 route_id);
+
   void OnCreateVideoDecoder(int32 context_route_id,
                             int32 decoder_host_id);
   void OnDestroyVideoDecoder(int32 decoder_id);
   void OnCreateTransportTexture(int32 context_route_id, int32 host_id);
-
-  // The lifetime of objects of this class is managed by a GpuRenderThread. The
-  // GpuRenderThreads destroy all the GpuChannels that they own when they
+ 
+  // The lifetime of objects of this class is managed by a GpuChannelManager.
+  // The GpuChannelManager destroy all the GpuChannels that they own when they
   // are destroyed. So a raw pointer is safe.
-  GpuRenderThread* gpu_render_thread_;
+  GpuChannelManager* gpu_channel_manager_;
 
   scoped_ptr<IPC::SyncChannel> channel_;
 
@@ -139,4 +141,4 @@ class GpuChannel : public IPC::Channel::Listener,
   DISALLOW_COPY_AND_ASSIGN(GpuChannel);
 };
 
-#endif  // CONTENT_GPU_GPU_CHANNEL_H_
+#endif  // CONTENT_COMMON_GPU_GPU_CHANNEL_H_

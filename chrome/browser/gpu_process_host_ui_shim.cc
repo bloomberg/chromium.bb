@@ -70,7 +70,7 @@ class UIThreadSender : public IPC::Channel::Sender {
     DCHECK(!msg->is_sync());
 #endif
 
-    // When the GpuRenderThread sends an IPC, post it to the UI thread without
+    // When the GpuChannelManager sends an IPC, post it to the UI thread without
     // using IPC.
     bool success = BrowserThread::PostTask(
         BrowserThread::UI,
@@ -82,9 +82,9 @@ class UIThreadSender : public IPC::Channel::Sender {
   }
 };
 
-void ForwardMessageToGpuThread(GpuRenderThread* render_thread,
+void ForwardMessageToGpuThread(GpuChannelManager* gpu_channel_manager,
                                IPC::Message* msg) {
-  bool success = render_thread->OnMessageReceived(*msg);
+  bool success = gpu_channel_manager->OnMessageReceived(*msg);
 
   // If the message was not handled, it is likely it was intended for the
   // GpuChildThread, which does not exist in single process and in process GPU
@@ -163,7 +163,7 @@ GpuProcessHostUIShim::GpuProcessHostUIShim(int host_id,
     content::CauseForGpuLaunch cause_for_gpu_launch)
     : host_id_(host_id),
       gpu_process_(base::kNullProcessHandle),
-      gpu_render_thread_(NULL),
+      gpu_channel_manager_(NULL),
       ui_thread_sender_(NULL) {
   g_hosts_by_id.AddWithID(this, host_id_);
   gpu_data_manager_ = GpuDataManager::GetInstance();
@@ -172,7 +172,7 @@ GpuProcessHostUIShim::GpuProcessHostUIShim(int host_id,
   if (host_id == 0) {
     gpu_process_ = base::GetCurrentProcessHandle();
     ui_thread_sender_ = new UIThreadSender;
-    gpu_render_thread_ = new GpuRenderThread(
+    gpu_channel_manager_ = new GpuChannelManager(
         ui_thread_sender_,
         NULL,
         g_browser_process->io_thread()->message_loop(),
@@ -278,7 +278,7 @@ bool GpuProcessHostUIShim::Send(IPC::Message* msg) {
         BrowserThread::GPU,
         FROM_HERE,
         NewRunnableFunction(ForwardMessageToGpuThread,
-                            gpu_render_thread_,
+                            gpu_channel_manager_,
                             msg));
   } else {
     success = BrowserThread::PostTask(
@@ -488,11 +488,11 @@ GpuProcessHostUIShim::~GpuProcessHostUIShim() {
 #endif
 
   // Ensure these are destroyed on the GPU thread.
-  if (gpu_render_thread_) {
+  if (gpu_channel_manager_) {
     BrowserThread::DeleteSoon(BrowserThread::GPU,
                               FROM_HERE,
-                              gpu_render_thread_);
-    gpu_render_thread_ = NULL;
+                              gpu_channel_manager_);
+    gpu_channel_manager_ = NULL;
   }
   if (ui_thread_sender_) {
     BrowserThread::DeleteSoon(BrowserThread::GPU,

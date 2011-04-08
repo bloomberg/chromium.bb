@@ -13,8 +13,8 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/common/child_process.h"
+#include "content/common/gpu/content_gpu_client.h"
 #include "content/common/gpu_messages.h"
-#include "content/gpu/content_gpu_client.h"
 #include "content/gpu/gpu_info_collector.h"
 #include "content/gpu/gpu_watchdog_thread.h"
 #include "ipc/ipc_channel_handle.h"
@@ -110,7 +110,8 @@ bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
   if (handled)
     return true;
 
-  return render_thread_.get() && render_thread_->OnMessageReceived(msg);
+  return gpu_channel_manager_.get() &&
+      gpu_channel_manager_->OnMessageReceived(msg);
 }
 
 void GpuChildThread::OnInitialize() {
@@ -187,7 +188,7 @@ void GpuChildThread::OnInitialize() {
   // Defer creation of the render thread. This is to prevent it from handling
   // IPC messages before the sandbox has been enabled and all other necessary
   // initialization has succeeded.
-  render_thread_.reset(new GpuRenderThread(
+  gpu_channel_manager_.reset(new GpuChannelManager(
       this,
       watchdog_thread_,
       ChildProcess::current()->io_message_loop(),

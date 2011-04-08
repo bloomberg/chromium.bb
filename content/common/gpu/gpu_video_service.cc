@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/common/gpu/gpu_channel.h"
+#include "content/common/gpu/gpu_video_decoder.h"
+#include "content/common/gpu/gpu_video_service.h"
 #include "content/common/gpu_messages.h"
-#include "content/gpu/gpu_channel.h"
-#include "content/gpu/gpu_video_decoder.h"
-#include "content/gpu/gpu_video_service.h"
 
 struct GpuVideoService::GpuVideoDecoderInfo {
   scoped_refptr<GpuVideoDecoder> decoder;

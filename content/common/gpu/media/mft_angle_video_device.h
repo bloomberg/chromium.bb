@@ -6,7 +6,7 @@
 #define CONTENT_GPU_MEDIA_MFT_ANGLE_VIDEO_DEVICE_H_
 
 #include "base/scoped_comptr_win.h"
-#include "content/gpu/media/gpu_video_device.h"
+#include "content/common/gpu/media/gpu_video_device.h"
 
 struct IDirect3DDevice9;
 extern "C" const GUID IID_IDirect3DDevice9;

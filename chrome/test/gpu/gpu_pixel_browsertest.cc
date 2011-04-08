@@ -23,7 +23,7 @@
 #include "content/browser/gpu_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/gpu_info.h"
+#include "content/common/gpu/gpu_info.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

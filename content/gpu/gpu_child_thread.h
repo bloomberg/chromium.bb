@@ -15,11 +15,11 @@
 #include "base/time.h"
 #include "build/build_config.h"
 #include "content/common/child_thread.h"
-#include "content/common/gpu_info.h"
-#include "content/gpu/gpu_channel.h"
-#include "content/gpu/gpu_config.h"
-#include "content/gpu/gpu_render_thread.h"
-#include "content/gpu/x_util.h"
+#include "content/common/gpu/gpu_channel.h"
+#include "content/common/gpu/gpu_channel_manager.h"
+#include "content/common/gpu/gpu_config.h"
+#include "content/common/gpu/gpu_info.h"
+#include "content/common/gpu/x_util.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace IPC {
@@ -34,7 +34,7 @@ class GpuWatchdogThread;
 
 // The main thread of the GPU child process. There will only ever be one of
 // these per process. It does process initialization and shutdown. It forwards
-// IPC messages to GpuRenderThread, which is responsible for issuing rendering
+// IPC messages to GpuChannelManager, which is responsible for issuing rendering
 // commands to the GPU.
 class GpuChildThread : public ChildThread {
  public:
@@ -79,7 +79,7 @@ class GpuChildThread : public ChildThread {
   bool collecting_dx_diagnostics_;
 #endif
 
-  scoped_ptr<GpuRenderThread> render_thread_;
+  scoped_ptr<GpuChannelManager> gpu_channel_manager_;
 
   // Information about the GPU, such as device and vendor ID.
   GPUInfo gpu_info_;

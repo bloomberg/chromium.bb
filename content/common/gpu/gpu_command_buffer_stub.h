@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_GPU_GPU_COMMAND_BUFFER_STUB_H_
-#define CONTENT_GPU_GPU_COMMAND_BUFFER_STUB_H_
+#ifndef CONTENT_COMMON_GPU_GPU_COMMAND_BUFFER_STUB_H_
+#define CONTENT_COMMON_GPU_GPU_COMMAND_BUFFER_STUB_H_
 #pragma once
 
 #if defined(ENABLE_GPU)
@@ -138,4 +138,4 @@ class GpuCommandBufferStub
 
 #endif  // defined(ENABLE_GPU)
 
-#endif  // CONTENT_GPU_GPU_COMMAND_BUFFER_STUB_H_
+#endif  // CONTENT_COMMON_GPU_GPU_COMMAND_BUFFER_STUB_H_

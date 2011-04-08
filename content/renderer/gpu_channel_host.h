@@ -12,7 +12,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
-#include "content/common/gpu_info.h"
+#include "content/common/gpu/gpu_info.h"
 #include "content/common/message_router.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"

@@ -13,6 +13,7 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '../ui/gfx/gl/gl.gyp:gl',
         '../webkit/support/webkit_support.gyp:appcache',
         '../webkit/support/webkit_support.gyp:blob',
         '../webkit/support/webkit_support.gyp:database',
@@ -98,8 +99,25 @@
         'common/geolocation_messages.h',
         'common/geoposition.cc',
         'common/geoposition.h',
-        'common/gpu_info.cc',
-        'common/gpu_info.h',
+        'common/gpu/content_gpu_client.h',
+        'common/gpu/gpu_channel.cc',
+        'common/gpu/gpu_channel.h',
+        'common/gpu/gpu_channel_manager.cc',
+        'common/gpu/gpu_channel_manager.h',
+        'common/gpu/gpu_command_buffer_stub.cc',
+        'common/gpu/gpu_command_buffer_stub.h',
+        'common/gpu/gpu_config.h',
+        'common/gpu/gpu_info.cc',
+        'common/gpu/gpu_info.h',
+        'common/gpu/gpu_video_decoder.cc',
+        'common/gpu/gpu_video_decoder.h',
+        'common/gpu/gpu_video_service.cc',
+        'common/gpu/gpu_video_service.h',
+        'common/gpu/media/gpu_video_device.h',
+        'common/gpu/media/fake_gl_video_decode_engine.cc',
+        'common/gpu/media/fake_gl_video_decode_engine.h',
+        'common/gpu/media/fake_gl_video_device.cc',
+        'common/gpu/media/fake_gl_video_device.h',
         'common/gpu_process_launch_causes.h',
         'common/gpu_messages.h',
         'common/hi_res_timer_manager_posix.cc',
@@ -195,6 +213,20 @@
       'conditions': [
         ['OS=="win"', {
           'msvs_guid': '062E9260-304A-4657-A74C-0D3AA1A0A0A4',
+          'sources': [
+            'common/gpu/media/mft_angle_video_device.cc',
+            'common/gpu/media/mft_angle_video_device.h',
+          ],
+          'include_dirs': [
+            '<(DEPTH)/third_party/angle/include',
+            '<(DEPTH)/third_party/angle/src',
+            '<(DEPTH)/third_party/wtl/include',
+            '$(DXSDK_DIR)/include',
+          ],
+          'dependencies': [
+            '../third_party/angle/src/build_angle.gyp:libEGL',
+            '../third_party/angle/src/build_angle.gyp:libGLESv2',
+          ],
         }],
         ['OS!="linux"', {
           'sources!': [
@@ -221,9 +253,20 @@
             '../build/linux/system.gyp:gtk',
           ],
         }],
+        ['OS=="linux" and target_arch!="arm"', {
+          'sources': [
+            'common/gpu/x_util.cc',
+            'common/gpu/x_util.h',
+          ],
+        }],
         ['toolkit_views==1', {
           'sources': [
             'common/native_web_keyboard_event_views.cc',
+          ],
+        }],
+        ['enable_gpu==1', {
+          'dependencies': [
+            '../gpu/gpu.gyp:command_buffer_service',
           ],
         }],
       ],
