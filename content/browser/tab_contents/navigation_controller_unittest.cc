@@ -388,6 +388,45 @@ TEST_F(NavigationControllerTest, LoadURL_ExistingPending) {
   EXPECT_EQ(kNewURL, controller().GetActiveEntry()->url());
 }
 
+// Tests navigating to an existing URL when there is a pending new navigation.
+// This will happen if the user enters a URL, but before that commits, the
+// current page fires history.back().
+TEST_F(NavigationControllerTest, LoadURL_BackPreemptsPending) {
+  TestNotificationTracker notifications;
+  RegisterForAllNavNotifications(&notifications, &controller());
+
+  // First make some history.
+  const GURL kExistingURL1("http://eh");
+  controller().LoadURL(kExistingURL1, GURL(), PageTransition::TYPED);
+  rvh()->SendNavigate(0, kExistingURL1);
+  EXPECT_TRUE(notifications.Check1AndReset(
+      NotificationType::NAV_ENTRY_COMMITTED));
+
+  const GURL kExistingURL2("http://bee");
+  controller().LoadURL(kExistingURL2, GURL(), PageTransition::TYPED);
+  rvh()->SendNavigate(1, kExistingURL2);
+  EXPECT_TRUE(notifications.Check1AndReset(
+      NotificationType::NAV_ENTRY_COMMITTED));
+
+  // Now make a pending new navigation.
+  const GURL kNewURL("http://see");
+  controller().LoadURL(kNewURL, GURL(), PageTransition::TYPED);
+  EXPECT_EQ(0U, notifications.size());
+  EXPECT_EQ(-1, controller().pending_entry_index());
+  EXPECT_EQ(1, controller().last_committed_entry_index());
+
+  // Before that commits, a back navigation from the renderer commits.
+  rvh()->SendNavigate(0, kExistingURL1);
+
+  // There should no longer be any pending entry, and the back navigation we
+  // just made should be committed.
+  EXPECT_TRUE(notifications.Check1AndReset(
+      NotificationType::NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(-1, controller().pending_entry_index());
+  EXPECT_EQ(0, controller().last_committed_entry_index());
+  EXPECT_EQ(kExistingURL1, controller().GetActiveEntry()->url());
+}
+
 TEST_F(NavigationControllerTest, Reload) {
   TestNotificationTracker notifications;
   RegisterForAllNavNotifications(&notifications, &controller());

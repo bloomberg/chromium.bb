@@ -641,14 +641,15 @@ NavigationType::Type NavigationController::ClassifyNavigation(
   // Anything below here we know is a main frame navigation.
   if (pending_entry_ &&
       existing_entry != pending_entry_ &&
-      pending_entry_->page_id() == -1) {
+      pending_entry_->page_id() == -1 &&
+      existing_entry == GetLastCommittedEntry()) {
     // In this case, we have a pending entry for a URL but WebCore didn't do a
     // new navigation. This happens when you press enter in the URL bar to
     // reload. We will create a pending entry, but WebKit will convert it to
     // a reload since it's the same page and not create a new entry for it
     // (the user doesn't want to have a new back/forward entry when they do
-    // this). In this case, we want to just ignore the pending entry and go
-    // back to where we were (the "existing entry").
+    // this). If this matches the last committed entry, we want to just ignore
+    // the pending entry and go back to where we were (the "existing entry").
     return NavigationType::SAME_PAGE;
   }
 
