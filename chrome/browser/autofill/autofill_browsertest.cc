@@ -270,7 +270,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, OnChangeAfterAutofill) {
       "<script>"
       "focused_fired = false;"
       "unfocused_fired = false;"
-      "select_fired = false;"
+      "changed_select_fired = false;"
+      "unchanged_select_fired = false;"
       "document.getElementById('firstname').onchange = function() {"
       "  focused_fired = true;"
       "};"
@@ -278,8 +279,12 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, OnChangeAfterAutofill) {
       "  unfocused_fired = true;"
       "};"
       "document.getElementById('state').onchange = function() {"
-      "  select_fired = true;"
+      "  changed_select_fired = true;"
       "};"
+      "document.getElementById('country').onchange = function() {"
+      "  unchanged_select_fired = true;"
+      "};"
+      "document.getElementById('country').value = 'US';"
       "</script>";
 
   // Load the test page.
@@ -288,14 +293,38 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, OnChangeAfterAutofill) {
       GURL(std::string(kDataURIPrefix) + kTestFormString + kOnChangeScript)));
 
   // Invoke Autofill.
-  TryBasicFormFill();
+  FocusFirstNameField();
+
+  // Start filling the first name field with "M" and wait for the popup to be
+  // shown.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+      browser(), ui::VKEY_M, false, true, false, false,
+      NotificationType::AUTOFILL_DID_SHOW_SUGGESTIONS,
+      Source<RenderViewHost>(render_view_host())));
+
+  // Press the down arrow to select the suggestion and preview the autofilled
+  // form.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+      browser(), ui::VKEY_DOWN, false, false, false, false,
+      NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
+      Source<RenderViewHost>(render_view_host())));
+
+  // Press Enter to accept the autofill suggestions.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+      browser(), ui::VKEY_RETURN, false, false, false, false,
+      NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
+      Source<RenderViewHost>(render_view_host())));
+
+  // The form should be filled.
+  ExpectFilledTestForm();
 
   // The change event should have already fired for unfocused fields, both of
   // <input> and of <select> type. However, it should not yet have fired for the
   // focused field.
   bool focused_fired = false;
   bool unfocused_fired = false;
-  bool select_fired = false;
+  bool changed_select_fired = false;
+  bool unchanged_select_fired = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       render_view_host(), L"",
       L"domAutomationController.send(focused_fired);", &focused_fired));
@@ -304,10 +333,16 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, OnChangeAfterAutofill) {
       L"domAutomationController.send(unfocused_fired);", &unfocused_fired));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       render_view_host(), L"",
-      L"domAutomationController.send(select_fired);", &select_fired));
+      L"domAutomationController.send(changed_select_fired);",
+      &changed_select_fired));
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      render_view_host(), L"",
+      L"domAutomationController.send(unchanged_select_fired);",
+      &unchanged_select_fired));
   EXPECT_FALSE(focused_fired);
   EXPECT_TRUE(unfocused_fired);
-  EXPECT_TRUE(select_fired);
+  EXPECT_TRUE(changed_select_fired);
+  EXPECT_FALSE(unchanged_select_fired);
 
   // Unfocus the first name field. Its change event should fire.
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(

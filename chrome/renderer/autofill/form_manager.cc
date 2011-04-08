@@ -694,8 +694,10 @@ bool FormManager::ClearFormWithNode(const WebNode& node) {
     } else {
       DCHECK(IsSelectElement(element));
       WebSelectElement select_element = element.to<WebSelectElement>();
-      select_element.setValue(form_element->control_values[i]);
-      select_element.dispatchFormControlChangeEvent();
+      if (select_element.value() != form_element->control_values[i]) {
+        select_element.setValue(form_element->control_values[i]);
+        select_element.dispatchFormControlChangeEvent();
+      }
     }
   }
 
@@ -900,8 +902,10 @@ void FormManager::FillFormField(WebFormControlElement* field,
   } else {
     DCHECK(IsSelectElement(*field));
     WebSelectElement select_element = field->to<WebSelectElement>();
-    select_element.setValue(data->value);
-    select_element.dispatchFormControlChangeEvent();
+    if (select_element.value() != data->value) {
+      select_element.setValue(data->value);
+      select_element.dispatchFormControlChangeEvent();
+    }
   }
 }
 
