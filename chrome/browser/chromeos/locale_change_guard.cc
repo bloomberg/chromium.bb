@@ -149,12 +149,13 @@ void LocaleChangeGuard::Check() {
       IDR_NOTIFICATION_LOCALE_CHANGE,
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE)));
+  string16 from =
+      l10n_util::GetDisplayNameForLocale(from_locale_, to_locale_, true);
+  string16 to =
+      l10n_util::GetDisplayNameForLocale(to_locale_, to_locale_, true);
   note_->Show(
-      l10n_util::GetStringFUTF16(
-          IDS_LOCALE_CHANGE_MESSAGE,
-          l10n_util::GetDisplayNameForLocale(from_locale_, to_locale_, true),
-          l10n_util::GetDisplayNameForLocale(to_locale_, to_locale_, true)),
-      l10n_util::GetStringUTF16(IDS_LOCALE_CHANGE_REVERT_MESSAGE),
+      l10n_util::GetStringFUTF16(IDS_LOCALE_CHANGE_MESSAGE, from, to),
+      l10n_util::GetStringFUTF16(IDS_LOCALE_CHANGE_REVERT_MESSAGE, from),
       NewCallback(this, &LocaleChangeGuard::RevertLocaleChange),
       true,  // urgent
       false);  // non-sticky

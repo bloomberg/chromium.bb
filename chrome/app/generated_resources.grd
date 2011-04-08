@@ -4342,10 +4342,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!-- Locale Change Notification-->
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_LOCALE_CHANGE_MESSAGE" desc="Message shown when locale was changed based on profile content.">
-          Interface language has been changed: "<ph name="FROM_LOCALE">$1</ph>" => "<ph name="TO_LOCALE">$2</ph>" based on your preference.
+          Chrome's language has changed from "<ph name="FROM_LOCALE">$1<ex>Italian</ex></ph>" to "<ph name="TO_LOCALE">$2<ex>English (United States)</ex></ph>" after syncing your settings.
         </message>
         <message name="IDS_LOCALE_CHANGE_REVERT_MESSAGE" desc="Link to revert a change.">
-          If you are unhappy about it: click here to close browser, sign out and revert.
+          Change back to "<ph name="FROM_LOCALE">$1<ex>Italian</ex></ph>" (requires restart)
         </message>
       </if>
 
