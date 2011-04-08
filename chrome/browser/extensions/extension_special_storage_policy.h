@@ -7,7 +7,7 @@
 #pragma once
 
 #include <map>
-#include <set>
+#include <string>
 
 #include "base/synchronization/lock.h"
 #include "googleurl/src/gurl.h"
@@ -46,7 +46,7 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
 
    private:
     typedef std::map<GURL, bool> CachedResults;
-    typedef std::set<const Extension*> Extensions;
+    typedef std::map<std::string, scoped_refptr<const Extension> > Extensions;
     Extensions extensions_;
     CachedResults cached_resuts_;
   };

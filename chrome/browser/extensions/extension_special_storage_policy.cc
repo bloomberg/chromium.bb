@@ -87,7 +87,7 @@ bool ExtensionSpecialStoragePolicy::SpecialCollection::Contains(
 
   for (Extensions::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
-    if ((*iter)->OverlapsWithOrigin(origin)) {
+    if (iter->second->OverlapsWithOrigin(origin)) {
       cached_resuts_[origin] = true;
       return true;
     }
@@ -99,13 +99,13 @@ bool ExtensionSpecialStoragePolicy::SpecialCollection::Contains(
 void ExtensionSpecialStoragePolicy::SpecialCollection::Add(
     const Extension* extension) {
   cached_resuts_.clear();
-  extensions_.insert(extension);
+  extensions_[extension->id()] = extension;
 }
 
 void ExtensionSpecialStoragePolicy::SpecialCollection::Remove(
     const Extension* extension) {
   cached_resuts_.clear();
-  extensions_.erase(extension);
+  extensions_.erase(extension->id());
 }
 
 void ExtensionSpecialStoragePolicy::SpecialCollection::Clear() {
