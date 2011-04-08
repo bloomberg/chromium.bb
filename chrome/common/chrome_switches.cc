@@ -347,8 +347,7 @@ const char kDisableTabCloseableStateWatcher[] =
 // browser users should disable translate with the preference.
 const char kDisableTranslate[] = "disable-translate";
 
-// Enables the backend service for web resources, used in the new tab page for
-// loading tips and recommendations from a JSON feed.
+// Disables the backend service for web resources.
 const char kDisableWebResources[]           = "disable-web-resources";
 
 // Don't enforce the same-origin policy.  (Used by people testing their sites.)
