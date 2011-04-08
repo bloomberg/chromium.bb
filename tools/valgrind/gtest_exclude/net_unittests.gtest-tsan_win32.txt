@@ -31,6 +31,7 @@ X509CertificateTest.IntermediateCARequireExplicitPolicy
 
 # Time out, see http://crbug.com/68482
 SSLServerSocketTest.*
+X509CertificateTest.TestKnownRoot
 
 #########################################
 # These tests fail if you don't have our SSL certificate installed.
