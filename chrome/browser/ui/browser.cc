@@ -2912,7 +2912,7 @@ void Browser::AddNewContents(TabContents* source,
   DCHECK(disposition != CURRENT_TAB);
 
   // TODO(beng): This belongs behind the platform-specific View interface.
-  //             That's why it's there.
+  //             That's why it's there. http://crbug.com/78853
 #if defined(OS_CHROMEOS)
   if (disposition == NEW_POPUP) {
     // If the popup is bigger than a given factor of the screen, then
