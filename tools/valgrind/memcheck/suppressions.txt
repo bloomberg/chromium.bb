@@ -4290,6 +4290,15 @@
    fun:_Z16DispatchToMethodIN12browser_sync15SyncBackendHost4CoreEMS2_FvRKNS2_19DoInitializeOptionsEES3_EvPT_T0_RK6Tuple1IT1_E
    fun:_ZN14RunnableMethodIN12browser_sync15SyncBackendHost4CoreEMS2_FvRKNS2_19DoInitializeOptionsEE6Tuple1IS3_EE3RunEv
 }
+{
+   bug_78784
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN14TestingProfile20CreateRequestContextEv
+   fun:*ProfileSyncService*SetUpEv
+   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
+   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
