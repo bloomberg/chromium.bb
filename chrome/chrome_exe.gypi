@@ -503,7 +503,6 @@
             '../breakpad/breakpad.gyp:breakpad_handler_win64',
             '../breakpad/breakpad.gyp:breakpad_sender_win64',
             '../base/base.gyp:base_nacl_win64',
-            '../chrome_frame/chrome_frame.gyp:npchrome_frame',
             '../sandbox/sandbox.gyp:sandbox_win64',
           ],
           'defines': [
