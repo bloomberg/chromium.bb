@@ -1,32 +1,7 @@
 #!/usr/bin/python
-# Copyright 2008, Google Inc.
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 
 """Simple testing harness for running commands and checking expected output.
@@ -303,6 +278,10 @@ def ProcessOptions(argv):
 # 2nd match with 'qemu: uncaught target signal ddd' yields the signal
 # number.
 #
+# Since it is possible for there to be an output race with another
+# thread, or additional output due to atexit functions, we scan the
+# output in reverse order for the signal signature.
+#
 # TODO(noelallen,bsy): when nacl_signal testing is enabled for arm,
 # remove/fix the explicit qemu match code below.
 #
@@ -311,16 +290,19 @@ def ExitStatusInfo(stderr):
   sigType = 'normal'
 
   lines = stderr.splitlines()
-  if len(lines) > 0:
-    words = lines[-1].split()
+
+  # Scan for signal msg in reverse order
+  for curline in reversed(lines):
+    words = curline.split()
     if len(words) > 4:
       if words[0] == '**' and words[1] == 'Signal':
         sigNum = -int(words[2])
         sigType= words[4]
+        break
       if (words[0] == 'qemu:' and words[1] == 'uncaught' and
           words[2] == 'target' and words[3] == 'signal'):
         sigNum = -int(words[4])
-
+        break
   return sigNum, sigType
 
 
