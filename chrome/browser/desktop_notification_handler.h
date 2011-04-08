@@ -20,7 +20,7 @@ class DesktopNotificationHandler : public RenderViewHostObserver {
 
  private:
   // RenderViewHostObserver implementation.
-  bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // IPC handlers.
   void OnShow(const DesktopNotificationHostMsg_Show_Params& params);
