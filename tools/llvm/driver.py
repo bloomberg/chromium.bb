@@ -422,6 +422,9 @@ GCCPatterns = [
 
   ( '(-O.+)',          "env.set('OPT_LEVEL', $0)"),
 
+  ( ('-Xlinker','(.*)'),  "env.append('LD_FLAGS', $0)\n"
+                          "env.append('BCLD_FLAGS', $0)"),
+
   ( '-Wl,(.*)',        "env.append('LD_FLAGS', *($0.split(',')))\n"
                        "env.append('BCLD_FLAGS', *($0.split(',')))"),
   ( '(-W.*)',          "env.append('CC_FLAGS', $0)"),
