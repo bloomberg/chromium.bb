@@ -285,7 +285,10 @@ bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
 #if defined(OS_WIN)
     EnumerateModulesModel* loaded_modules =
         EnumerateModulesModel::GetInstance();
-    return loaded_modules->confirmed_bad_modules_detected() > 0;
+    if (loaded_modules->confirmed_bad_modules_detected() <= 0)
+      return false;
+    loaded_modules->AcknowledgeConflictNotification();
+    return true;
 #else
     return false;
 #endif

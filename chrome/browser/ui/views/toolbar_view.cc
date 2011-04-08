@@ -115,7 +115,7 @@ ToolbarView::ToolbarView(Browser* browser)
     registrar_.Add(this, NotificationType::UPGRADE_RECOMMENDED,
                    NotificationService::AllSources());
   }
-  registrar_.Add(this, NotificationType::MODULE_INCOMPATIBILITY_DETECTED,
+  registrar_.Add(this, NotificationType::MODULE_INCOMPATIBILITY_BADGE_CHANGE,
                  NotificationService::AllSources());
 }
 
@@ -387,12 +387,9 @@ void ToolbarView::Observe(NotificationType type,
       Layout();
       SchedulePaint();
     }
-  } else if (type == NotificationType::UPGRADE_RECOMMENDED) {
+  } else if (type == NotificationType::UPGRADE_RECOMMENDED ||
+             type == NotificationType::MODULE_INCOMPATIBILITY_BADGE_CHANGE) {
     UpdateAppMenuBadge();
-  } else if (type == NotificationType::MODULE_INCOMPATIBILITY_DETECTED) {
-    bool confirmed_bad = *Details<bool>(details).ptr();
-    if (confirmed_bad)
-      UpdateAppMenuBadge();
   }
 }
 
@@ -624,7 +621,7 @@ bool ToolbarView::IsUpgradeRecommended() {
 bool ToolbarView::ShouldShowIncompatibilityWarning() {
 #if defined(OS_WIN)
   EnumerateModulesModel* loaded_modules = EnumerateModulesModel::GetInstance();
-  return loaded_modules->confirmed_bad_modules_detected() > 0;
+  return loaded_modules->ShouldShowConflictWarning();
 #else
   return false;
 #endif

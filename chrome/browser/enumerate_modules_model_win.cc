@@ -41,6 +41,11 @@ static const ModuleEnumerator::RecommendedAction kUninstallLink =
     static_cast<ModuleEnumerator::RecommendedAction>(
         ModuleEnumerator::UNINSTALL | ModuleEnumerator::SEE_LINK);
 
+// Short-hand for things on the blacklist we are investigating and have info.
+static const ModuleEnumerator::RecommendedAction kInvestigatingLink =
+    static_cast<ModuleEnumerator::RecommendedAction>(
+        ModuleEnumerator::INVESTIGATING | ModuleEnumerator::SEE_LINK);
+
 // A sort method that sorts by bad modules first, then by full name (including
 // path).
 static bool ModuleSort(const ModuleEnumerator::Module& a,
@@ -104,6 +109,11 @@ bool ConvertToLongPath(const string16& short_path, string16* long_path) {
 const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
   // NOTE: Please keep this list sorted by dll name, then location.
 
+  // Version 3.2.1.6 seems to be implicated in most cases (and 3.2.2.2 in some).
+  // There is a more recent version available for download.
+  // accelerator.dll, "%programfiles%\\speedbit video accelerator\\".
+  { "7ba9402f", "c9132d48", "", "", "", INVESTIGATING },
+
   // apiqq0.dll, "%temp%\\".
   { "26134911", "59145acf", "", "", "", kUninstallLink },
 
@@ -112,6 +122,11 @@ const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
 
   // arking1.dll, "%systemroot%\\system32\\".
   { "c60ca062", "23d01d5b", "", "", "", kUninstallLink },
+
+  // Said to belong to Killer NIC from BigFoot Networks (not verified). Versions
+  // 6.0.0.7 and 6.0.0.10 implicated.
+  // bfllr.dll, "%systemroot%\\system32\\".
+  { "6bb57633", "23d01d5b", "", "", "", INVESTIGATING },
 
   // clickpotatolitesahook.dll, "". Different version each report.
   { "0396e037.dll", "", "", "", "", kUninstallLink },
@@ -124,6 +139,11 @@ const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
 
   // dsoqq0.dll, "%temp%\\".
   { "1c4df325", "59145acf", "", "", "", kUninstallLink },
+
+  // This looks like a malware edition of a Brazilian Bank plugin, sometimes
+  // referred to as Malware.Banc.A.
+  // gbieh.dll, "%programfiles%\\gbplugin\\".
+  { "4cb4f2e3", "88e4a3b1", "", "", "", kUninstallLink },
 
   // hblitesahook.dll. Each report has different version number in location.
   { "5d10b363", "", "", "", "", kUninstallLink },
@@ -170,9 +190,18 @@ const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
   // nodqq0.dll, "%temp%\\".
   { "b86ce04d", "59145acf", "", "", "", kUninstallLink },
 
+  // nProtect GameGuard Anti-cheat system. Every report has a different
+  // location, since it is installed into and run from a game folder. Various
+  // versions implicated.
+  // npggnt.des, no fixed location.
+  { "f2c8790d", "", "", "", "", INVESTIGATING },
+
   // nvlsp.dll,
   // "%programfiles%\\nvidia corporation\\networkaccessmanager\\bin32\\".
   { "37f907e2", "3ad0ff23", "", "", "", INVESTIGATING },
+
+  // post0.dll, "%systemroot%\\system32\\".
+  { "7405c0c8", "23d01d5b", "", "", "", kUninstallLink },
 
   // radhslib.dll (Naomi web filter), "%programfiles%\\rnamfler\\".
   // See http://crbug.com/12517.
@@ -184,12 +213,20 @@ const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
   // rooksdol.dll, "%programfiles%\\trusteer\\rapport\\bin\\".
   { "802aefef", "06120e13", "", "", "", INVESTIGATING },
 
+  // sdata.dll, "%programdata%\\srtserv\\".
+  { "1936d5cc", "223c44be", "", "", "", kUninstallLink },
+
   // searchtree.dll,
   // "%programfiles%\\contentwatch\\internet protection\\modules\\".
   { "f6915a31", "4e61ce60", "", "", "", INVESTIGATING },
 
   // sgprxy.dll, "%commonprogramfiles%\\is3\\anti-spyware\\".
   { "005965ea", "bc5673f2", "", "", "", INVESTIGATING },
+
+  // swi_filter_0001.dll (Sophos Web Intelligence),
+  // "%programfiles%\\sophos\\sophos anti-virus\\web intelligence\\".
+  // A small random sample all showed version 1.0.5.0.
+  { "61112d7b", "25fb120f", "", "", "", INVESTIGATING },
 
   // twking0.dll, "%systemroot%\\system32\\".
   { "0355549b", "23d01d5b", "", "", "", kUninstallLink },
@@ -538,6 +575,7 @@ void ModuleEnumerator::PreparePathMappings() {
   std::vector<string16> env_vars;
   env_vars.push_back(L"LOCALAPPDATA");
   env_vars.push_back(L"ProgramFiles");
+  env_vars.push_back(L"ProgramData");
   env_vars.push_back(L"USERPROFILE");
   env_vars.push_back(L"SystemRoot");
   env_vars.push_back(L"TEMP");
@@ -716,6 +754,27 @@ EnumerateModulesModel* EnumerateModulesModel::GetInstance() {
   return Singleton<EnumerateModulesModel>::get();
 }
 
+bool EnumerateModulesModel::ShouldShowConflictWarning() const {
+  // If the user has acknowledged the conflict notification, then we don't need
+  // to show it again (because the scanning only happens once per the lifetime
+  // of the process). If we were to run the scanning more than once, then we'd
+  // need to clear the flag somewhere when we are ready to show it again.
+  if (conflict_notification_acknowledged_)
+    return false;
+
+  return confirmed_bad_modules_detected_ > 0;
+}
+
+void EnumerateModulesModel::AcknowledgeConflictNotification() {
+  if (!conflict_notification_acknowledged_) {
+    conflict_notification_acknowledged_ = true;
+    NotificationService::current()->Notify(
+        NotificationType::MODULE_INCOMPATIBILITY_BADGE_CHANGE,
+        Source<EnumerateModulesModel>(this),
+        NotificationService::NoDetails());
+  }
+}
+
 void EnumerateModulesModel::ScanNow() {
   if (scanning_)
     return;  // A scan is already in progress.
@@ -731,7 +790,7 @@ void EnumerateModulesModel::ScanNow() {
   module_enumerator_->ScanNow(&enumerated_modules_, limited_mode_);
 }
 
-ListValue* EnumerateModulesModel::GetModuleList() {
+ListValue* EnumerateModulesModel::GetModuleList() const {
   if (scanning_)
     return NULL;
 
@@ -821,8 +880,9 @@ ListValue* EnumerateModulesModel::GetModuleList() {
 }
 
 EnumerateModulesModel::EnumerateModulesModel()
-    : scanning_(false),
-      limited_mode_(false),
+    : limited_mode_(false),
+      scanning_(false),
+      conflict_notification_acknowledged_(false),
       confirmed_bad_modules_detected_(0),
       suspected_bad_modules_detected_(0) {
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
@@ -875,17 +935,14 @@ void EnumerateModulesModel::DoneScanning() {
   if (!cmd_line.HasSwitch(switches::kConflictingModulesCheck))
     return;
 
-  if (suspected_bad_modules_detected_ || confirmed_bad_modules_detected_) {
-    bool found_confirmed_bad_modules = confirmed_bad_modules_detected_  > 0;
-    NotificationService::current()->Notify(
-        NotificationType::MODULE_INCOMPATIBILITY_DETECTED,
-        Source<EnumerateModulesModel>(this),
-        Details<bool>(&found_confirmed_bad_modules));
-  }
+  NotificationService::current()->Notify(
+      NotificationType::MODULE_INCOMPATIBILITY_BADGE_CHANGE,
+      Source<EnumerateModulesModel>(this),
+      NotificationService::NoDetails());
 }
 
 GURL EnumerateModulesModel::ConstructHelpCenterUrl(
-    const ModuleEnumerator::Module& module) {
+    const ModuleEnumerator::Module& module) const {
   if (!(module.recommended_action & ModuleEnumerator::SEE_LINK))
     return GURL();
 

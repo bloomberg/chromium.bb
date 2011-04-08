@@ -122,8 +122,8 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
   // progress). This function does not block while reading the module list
   // (unless we are in limited_mode, see below), and will notify when done
   // through the MODULE_LIST_ENUMERATED notification.
-  // The process will also send MODULE_INCOMPATIBILITY_DETECTED if an
-  // incompatible module was detected.
+  // The process will also send MODULE_INCOMPATIBILITY_BADGE_CHANGE to let
+  // observers know when it is time to update the wrench menu badge.
   // When in |limited_mode|, this function will not leverage the File thread
   // to run asynchronously and will therefore block until scanning is done
   // (and will also not send out any notifications).
@@ -231,15 +231,22 @@ class EnumerateModulesModel {
  public:
   static EnumerateModulesModel* GetInstance();
 
+  // Returns true if we should show the conflict notification. The conflict
+  // notification is only shown once during the lifetime of the process.
+  bool ShouldShowConflictWarning() const;
+
+  // Called when the user has acknowledged the conflict notification.
+  void AcknowledgeConflictNotification();
+
   // Returns the number of suspected bad modules found in the last scan.
   // Returns 0 if no scan has taken place yet.
-  int suspected_bad_modules_detected() {
+  int suspected_bad_modules_detected() const {
     return suspected_bad_modules_detected_;
   }
 
   // Returns the number of confirmed bad modules found in the last scan.
   // Returns 0 if no scan has taken place yet.
-  int confirmed_bad_modules_detected() {
+  int confirmed_bad_modules_detected() const {
     return confirmed_bad_modules_detected_;
   }
 
@@ -254,7 +261,7 @@ class EnumerateModulesModel {
   void ScanNow();
 
   // Gets the whole module list as a ListValue.
-  ListValue* GetModuleList();
+  ListValue* GetModuleList() const;
 
  private:
   friend struct DefaultSingletonTraits<EnumerateModulesModel>;
@@ -269,7 +276,7 @@ class EnumerateModulesModel {
   // Constructs a Help Center article URL for help with a particular module.
   // The module must have the SEE_LINK attribute for |recommended_action| set,
   // otherwise this returns a blank string.
-  GURL ConstructHelpCenterUrl(const ModuleEnumerator::Module& module);
+  GURL ConstructHelpCenterUrl(const ModuleEnumerator::Module& module) const;
 
   // The vector containing all the modules enumerated. Will be normalized and
   // any bad modules will be marked.
@@ -291,6 +298,9 @@ class EnumerateModulesModel {
 
   // True if we are currently scanning for modules.
   bool scanning_;
+
+  // Whether the conflict notification has been acknowledged by the user.
+  bool conflict_notification_acknowledged_;
 
   // The number of confirmed bad modules (not including suspected bad ones)
   // found during last scan.

@@ -1080,10 +1080,9 @@ class NotificationType {
     // other modules of interest). No details are expected.
     MODULE_LIST_ENUMERATED,
 
-    // Sent when Chrome detects an incompatible module. Details is a boolean
-    // specifying true if one or more confirmed bad modules were found or false
-    // if only suspected bad modules were found.
-    MODULE_INCOMPATIBILITY_DETECTED,
+    // Sent when Chrome is done scanning the module list and when the user has
+    // acknowledged the module incompatibility. No details are expected.
+    MODULE_INCOMPATIBILITY_BADGE_CHANGE,
 
     // Background App Tracking Notifications -----------------------------------
     // Sent when the state of the background page tracker has changed (the
