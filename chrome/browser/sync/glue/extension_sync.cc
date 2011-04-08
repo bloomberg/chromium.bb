@@ -19,11 +19,11 @@
 namespace browser_sync {
 
 bool RootNodeHasChildren(const char* tag,
-                         ProfileSyncService* sync_service,
+                         sync_api::UserShare* user_share,
                          bool* has_children) {
   CHECK(has_children);
   *has_children = false;
-  sync_api::ReadTransaction trans(sync_service->GetUserShare());
+  sync_api::ReadTransaction trans(user_share);
   sync_api::ReadNode node(&trans);
   if (!node.InitByTagLookup(tag)) {
     LOG(ERROR) << "Root node with tag " << tag << " does not exist";
@@ -33,22 +33,7 @@ bool RootNodeHasChildren(const char* tag,
   return true;
 }
 
-ExtensionServiceInterface* GetExtensionServiceFromProfile(
-    Profile* profile) {
-  CHECK(profile);
-  ExtensionServiceInterface* extensions_service =
-      profile->GetExtensionService();
-  CHECK(extensions_service);
-  return extensions_service;
-}
-
 namespace {
-
-ExtensionServiceInterface* GetExtensionServiceFromProfileSyncService(
-    ProfileSyncService* sync_service) {
-  CHECK(sync_service);
-  return GetExtensionServiceFromProfile(sync_service->profile());
-}
 
 // Updates the value in |extension_data_map| from the given data,
 // creating an entry if necessary.  Returns a pointer to the
@@ -81,7 +66,7 @@ ExtensionData* SetOrCreateExtensionData(
 void ReadClientDataFromExtensionList(
     const ExtensionList& extensions,
     IsValidAndSyncablePredicate is_valid_and_syncable,
-    ExtensionServiceInterface* extensions_service,
+    const ExtensionServiceInterface& extensions_service,
     std::set<std::string>* unsynced_extensions,
     ExtensionDataMap* extension_data_map) {
   for (ExtensionList::const_iterator it = extensions.begin();
@@ -111,17 +96,17 @@ void ReadClientDataFromExtensionList(
 // enabled and disabled extensions from |extensions_service|.
 void SlurpClientData(
     IsValidAndSyncablePredicate is_valid_and_syncable,
-    ExtensionServiceInterface* extensions_service,
+    const ExtensionServiceInterface& extensions_service,
     std::set<std::string>* unsynced_extensions,
     ExtensionDataMap* extension_data_map) {
-  const ExtensionList* extensions = extensions_service->extensions();
+  const ExtensionList* extensions = extensions_service.extensions();
   CHECK(extensions);
   ReadClientDataFromExtensionList(
       *extensions, is_valid_and_syncable, extensions_service,
       unsynced_extensions, extension_data_map);
 
   const ExtensionList* disabled_extensions =
-      extensions_service->disabled_extensions();
+      extensions_service.disabled_extensions();
   CHECK(disabled_extensions);
   ReadClientDataFromExtensionList(
       *disabled_extensions, is_valid_and_syncable, extensions_service,
@@ -146,9 +131,9 @@ bool SlurpServerData(
     const char* root_node_tag,
     const ExtensionSpecificsGetter extension_specifics_getter,
     const std::set<std::string>& unsynced_extensions,
-    ProfileSyncService* sync_service,
+    sync_api::UserShare* user_share,
     ExtensionDataMap* extension_data_map) {
-  sync_api::WriteTransaction trans(sync_service->GetUserShare());
+  sync_api::WriteTransaction trans(user_share);
   sync_api::ReadNode root(&trans);
   if (!root.InitByTagLookup(root_node_tag)) {
     LOG(ERROR) << GetRootNodeDoesNotExistError(root_node_tag);
@@ -189,10 +174,9 @@ bool SlurpServerData(
 }  // namespace
 
 bool SlurpExtensionData(const ExtensionSyncTraits& traits,
-                        ProfileSyncService* sync_service,
+                        const ExtensionServiceInterface& extensions_service,
+                        sync_api::UserShare* user_share,
                         ExtensionDataMap* extension_data_map) {
-  ExtensionServiceInterface* extensions_service =
-      GetExtensionServiceFromProfileSyncService(sync_service);
   std::set<std::string> unsynced_extensions;
 
   // Read client-side data first so server data takes precedence, and
@@ -203,7 +187,7 @@ bool SlurpExtensionData(const ExtensionSyncTraits& traits,
 
   if (!SlurpServerData(
           traits.root_node_tag, traits.extension_specifics_getter,
-          unsynced_extensions, sync_service, extension_data_map)) {
+          unsynced_extensions, user_share, extension_data_map)) {
     return false;
   }
   return true;
@@ -271,13 +255,30 @@ void TryUpdateClient(
   if (extension) {
     if (!is_valid_and_syncable(*extension)) {
       LOG(DFATAL) << "TryUpdateClient() called for non-syncable extension "
-                  << extension->id();
+                  << id;
       return;
     }
-    SetExtensionProperties(specifics, extensions_service, extension);
+    if (specifics.name() != extension->name()) {
+      LOG(WARNING) << "specifics for extension " << id
+                   << "has a different name than the extension: "
+                   << specifics.name() << " vs. " << extension->name();
+    }
+    GURL update_url(specifics.update_url());
+    if (update_url != extension->update_url()) {
+      LOG(WARNING) << "specifics for extension " << id
+                   << "has a different update URL than the extension: "
+                   << update_url.spec() << " vs. " << extension->update_url();
+    }
+    if (specifics.enabled()) {
+      extensions_service->EnableExtension(id);
+    } else {
+      extensions_service->DisableExtension(id);
+    }
+    extensions_service->SetIsIncognitoEnabled(id,
+                                              specifics.incognito_enabled());
     {
       sync_pb::ExtensionSpecifics extension_specifics;
-      GetExtensionSpecifics(*extension, extensions_service,
+      GetExtensionSpecifics(*extension, *extensions_service,
                             &extension_specifics);
       DCHECK(AreExtensionSpecificsUserPropertiesEqual(
           specifics, extension_specifics))
@@ -306,16 +307,14 @@ void TryUpdateClient(
 
 bool FlushExtensionData(const ExtensionSyncTraits& traits,
                         const ExtensionDataMap& extension_data_map,
-                        ProfileSyncService* sync_service) {
-  sync_api::WriteTransaction trans(sync_service->GetUserShare());
+                        ExtensionServiceInterface* extensions_service,
+                        sync_api::UserShare* user_share) {
+  sync_api::WriteTransaction trans(user_share);
   sync_api::ReadNode root(&trans);
   if (!root.InitByTagLookup(traits.root_node_tag)) {
     LOG(ERROR) << GetRootNodeDoesNotExistError(traits.root_node_tag);
     return false;
   }
-
-  ExtensionServiceInterface* extensions_service =
-      GetExtensionServiceFromProfileSyncService(sync_service);
 
   // Update server and client as necessary.
   bool should_nudge_extension_updater = false;
@@ -350,7 +349,8 @@ bool FlushExtensionData(const ExtensionSyncTraits& traits,
 
 bool UpdateServerData(const ExtensionSyncTraits& traits,
                       const Extension& extension,
-                      ProfileSyncService* sync_service,
+                      const ExtensionServiceInterface& extensions_service,
+                      sync_api::UserShare* user_share,
                       std::string* error) {
   const std::string& id = extension.id();
   if (!traits.is_valid_and_syncable(extension)) {
@@ -361,8 +361,6 @@ bool UpdateServerData(const ExtensionSyncTraits& traits,
     return false;
   }
 
-  ExtensionServiceInterface* extensions_service =
-      GetExtensionServiceFromProfileSyncService(sync_service);
   sync_pb::ExtensionSpecifics client_data;
   GetExtensionSpecifics(extension, extensions_service,
                         &client_data);
@@ -370,7 +368,7 @@ bool UpdateServerData(const ExtensionSyncTraits& traits,
   ExtensionData extension_data =
       ExtensionData::FromData(ExtensionData::CLIENT, client_data);
 
-  sync_api::WriteTransaction trans(sync_service->GetUserShare());
+  sync_api::WriteTransaction trans(user_share);
 
   sync_api::ReadNode node(&trans);
   if (node.InitByClientTagLookup(traits.model_type, id)) {
@@ -408,8 +406,8 @@ bool UpdateServerData(const ExtensionSyncTraits& traits,
 
 void RemoveServerData(const ExtensionSyncTraits& traits,
                       const std::string& id,
-                      ProfileSyncService* sync_service) {
-  sync_api::WriteTransaction trans(sync_service->GetUserShare());
+                      sync_api::UserShare* user_share) {
+  sync_api::WriteTransaction trans(user_share);
   sync_api::WriteNode write_node(&trans);
   if (write_node.InitByClientTagLookup(traits.model_type, id)) {
     write_node.Remove();
@@ -433,7 +431,7 @@ void UpdateClient(const ExtensionSyncTraits& traits,
       return;
     }
     sync_pb::ExtensionSpecifics client_data;
-    GetExtensionSpecifics(*extension, extensions_service,
+    GetExtensionSpecifics(*extension, *extensions_service,
                           &client_data);
     DcheckIsExtensionSpecificsValid(client_data);
     extension_data =

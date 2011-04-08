@@ -6,14 +6,20 @@
 
 #include "base/file_path.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/mock_extension_service.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {
 
 namespace {
+
+using ::testing::_;
+using ::testing::Return;
+using ::testing::StrictMock;
 
 #if defined(OS_WIN)
 const FilePath::CharType kExtensionFilePath[] = FILE_PATH_LITERAL("c:\\foo");
@@ -393,12 +399,19 @@ scoped_refptr<Extension> MakeSyncableExtension(
   return extension;
 }
 
-TEST_F(ExtensionUtilTest, GetExtensionSpecificsHelper) {
+TEST_F(ExtensionUtilTest, GetExtensionSpecifics) {
   FilePath file_path(kExtensionFilePath);
+  StrictMock<MockExtensionService> mock_extension_service;
+  EXPECT_CALL(mock_extension_service, IsExtensionEnabled(_))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_extension_service, IsIncognitoEnabled(_))
+      .WillOnce(Return(false));
+
   scoped_refptr<Extension> extension(
-      MakeSyncableExtension(kValidVersion, kValidUpdateUrl1, kName, file_path));
+      MakeSyncableExtension(
+          kValidVersion, kValidUpdateUrl1, kName, file_path));
   sync_pb::ExtensionSpecifics specifics;
-  GetExtensionSpecificsHelper(*extension, true, false, &specifics);
+  GetExtensionSpecifics(*extension, mock_extension_service, &specifics);
   EXPECT_EQ(extension->id(), specifics.id());
   EXPECT_EQ(extension->VersionString(), kValidVersion);
   EXPECT_EQ(extension->update_url().spec(), kValidUpdateUrl1);

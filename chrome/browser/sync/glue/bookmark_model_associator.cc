@@ -15,7 +15,6 @@
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/syncable/autofill_migration.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/nigori_util.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "content/browser/browser_thread.h"
@@ -550,30 +549,13 @@ bool BookmarkModelAssociator::LoadAssociations() {
   return sync_node_count == id_index.count();
 }
 
-namespace {
-
-// TODO(akalin): Put this function somewhere where other data types
-// can use it.
-
-syncable::ModelTypeSet GetEncryptedTypes(sync_api::UserShare* user_share) {
-  sync_api::ReadTransaction trans(user_share);
-  sync_api::ReadNode node(&trans);
-  if (!node.InitByTagLookup(kNigoriTag)) {
-    // If we don't have a Nigori node, we don't have any encrypted types.
-    return syncable::ModelTypeSet();
-  }
-  return syncable::GetEncryptedDataTypesFromNigori(node.GetNigoriSpecifics());
-}
-
-}  // namespace
-
 bool BookmarkModelAssociator::CryptoReadyIfNecessary() {
-  const syncable::ModelTypeSet& encrypted_types =
-      GetEncryptedTypes(user_share_);
   // We only access the cryptographer while holding a transaction.
   sync_api::ReadTransaction trans(user_share_);
+  const syncable::ModelTypeSet& encrypted_types =
+      GetEncryptedDataTypes(trans.GetWrappedTrans());
   return encrypted_types.count(syncable::BOOKMARKS) == 0 ||
-      user_share_->dir_manager->GetCryptographer(&trans)->is_ready();
+      trans.GetCryptographer()->is_ready();
 }
 
 }  // namespace browser_sync

@@ -81,27 +81,14 @@ bool AreExtensionSpecificsNonUserPropertiesEqual(
 // must be a syncable extension.  |specifics| will be valid after this
 // function is called.
 void GetExtensionSpecifics(const Extension& extension,
-                           ExtensionServiceInterface* extension_service,
+                           const ExtensionServiceInterface& extension_service,
                            sync_pb::ExtensionSpecifics* specifics);
-
-// Exposed only for testing.  Pre- and post-conditions are the same as
-// GetExtensionSpecifics().
-void GetExtensionSpecificsHelper(const Extension& extension,
-                                 bool enabled, bool incognito_enabled,
-                                 sync_pb::ExtensionSpecifics* specifics);
 
 // Returns whether or not the extension should be updated according to
 // the specifics.  |extension| must be syncable and |specifics| must
 // be valid.
 bool IsExtensionOutdated(const Extension& extension,
                          const sync_pb::ExtensionSpecifics& specifics);
-
-// Sets properties of |extension| according to the information in
-// specifics.  |extension| must be syncable and |specifics| must be
-// valid.
-void SetExtensionProperties(
-    const sync_pb::ExtensionSpecifics& specifics,
-    ExtensionServiceInterface* extensions_service, const Extension* extension);
 
 // Merge |specifics| into |merged_specifics|.  Both must be valid and
 // have the same ID.  The merge policy is currently to copy the

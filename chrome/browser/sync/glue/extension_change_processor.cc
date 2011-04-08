@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/extension_sync.h"
 #include "chrome/browser/sync/glue/extension_util.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/browser_thread.h"
@@ -26,7 +27,9 @@ ExtensionChangeProcessor::ExtensionChangeProcessor(
     UnrecoverableErrorHandler* error_handler)
     : ChangeProcessor(error_handler),
       traits_(traits),
-      profile_(NULL) {
+      profile_(NULL),
+      extension_service_(NULL),
+      user_share_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(error_handler);
 }
@@ -65,7 +68,7 @@ void ExtensionChangeProcessor::Observe(NotificationType type,
       const std::string& id = uninstalled_extension_info->extension_id;
       VLOG(1) << "Removing server data for uninstalled extension " << id
               << " of type " << uninstalled_extension_info->extension_type;
-      RemoveServerData(traits_, id, profile_->GetProfileSyncService());
+      RemoveServerData(traits_, id, user_share_);
     }
   } else {
     const Extension* extension = NULL;
@@ -81,8 +84,8 @@ void ExtensionChangeProcessor::Observe(NotificationType type,
       return;
     }
     std::string error;
-    if (!UpdateServerData(traits_, *extension,
-                          profile_->GetProfileSyncService(), &error)) {
+    if (!UpdateServerData(traits_, *extension, *extension_service_,
+                          user_share_, &error)) {
       error_handler()->OnUnrecoverableError(FROM_HERE, error);
     }
   }
@@ -96,8 +99,6 @@ void ExtensionChangeProcessor::ApplyChangesFromSyncModel(
   if (!running()) {
     return;
   }
-  ExtensionServiceInterface* extensions_service =
-      GetExtensionServiceFromProfile(profile_);
   for (int i = 0; i < change_count; ++i) {
     const sync_api::SyncManager::ChangeRecord& change = changes[i];
     switch (change.action) {
@@ -122,7 +123,7 @@ void ExtensionChangeProcessor::ApplyChangesFromSyncModel(
           return;
         }
         StopObserving();
-        UpdateClient(traits_, specifics, extensions_service);
+        UpdateClient(traits_, specifics, extension_service_);
         StartObserving();
         break;
       }
@@ -131,7 +132,7 @@ void ExtensionChangeProcessor::ApplyChangesFromSyncModel(
         if ((*traits_.extension_specifics_entity_getter)(
                 change.specifics, &specifics)) {
           StopObserving();
-          RemoveFromClient(traits_, specifics.id(), extensions_service);
+          RemoveFromClient(traits_, specifics.id(), extension_service_);
           StartObserving();
         } else {
           std::stringstream error;
@@ -148,8 +149,12 @@ void ExtensionChangeProcessor::ApplyChangesFromSyncModel(
 
 void ExtensionChangeProcessor::StartImpl(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(profile);
   profile_ = profile;
+  extension_service_ = profile_->GetExtensionService();
+  user_share_ = profile_->GetProfileSyncService()->GetUserShare();
+  DCHECK(profile_);
+  DCHECK(extension_service_);
+  DCHECK(user_share_);
   StartObserving();
 }
 
@@ -157,6 +162,8 @@ void ExtensionChangeProcessor::StopImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   StopObserving();
   profile_ = NULL;
+  extension_service_ = NULL;
+  user_share_ = NULL;
 }
 
 void ExtensionChangeProcessor::StartObserving() {

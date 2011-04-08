@@ -54,6 +54,8 @@
         'browser/autofill/autofill_common_test.h',
         'browser/autofill/data_driven_test.cc',
         'browser/autofill/data_driven_test.h',
+        'browser/extensions/mock_extension_service.cc',
+        'browser/extensions/mock_extension_service.h',
         'browser/automation/mock_tab_event_observer.cc',
         'browser/automation/mock_tab_event_observer.h',
         # The only thing used from browser is Browser::Type.

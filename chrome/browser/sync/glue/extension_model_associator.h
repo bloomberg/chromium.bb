@@ -11,7 +11,11 @@
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 
-class ProfileSyncService;
+class ExtensionServiceInterface;
+
+namespace sync_api {
+struct UserShare;
+}  // namespace sync_api
 
 namespace browser_sync {
 
@@ -21,7 +25,8 @@ class ExtensionModelAssociator : public AssociatorInterface {
  public:
   // Does not take ownership of sync_service.
   ExtensionModelAssociator(const ExtensionSyncTraits& traits,
-                           ProfileSyncService* sync_service);
+                           ExtensionServiceInterface* extension_service,
+                           sync_api::UserShare* user_share);
   virtual ~ExtensionModelAssociator();
 
   // Used by profile_sync_test_util.h.
@@ -38,8 +43,8 @@ class ExtensionModelAssociator : public AssociatorInterface {
   virtual bool CryptoReadyIfNecessary();
  private:
   const ExtensionSyncTraits traits_;
-  // Weak pointer.  Always non-NULL.
-  ProfileSyncService* sync_service_;
+  ExtensionServiceInterface* const extension_service_;
+  sync_api::UserShare* const user_share_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionModelAssociator);
 };

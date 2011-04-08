@@ -14,10 +14,7 @@
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_type.h"
 
-class ExtensionService;
-class NotificationDetails;
-class NotificationSource;
-class Profile;
+class ExtensionServiceInterface;
 
 namespace browser_sync {
 
@@ -60,8 +57,11 @@ class ExtensionChangeProcessor : public ChangeProcessor,
 
   NotificationRegistrar notification_registrar_;
   const ExtensionSyncTraits traits_;
-  // Owner of the ExtensionService.  Non-NULL iff |running()| is true.
+
+  // Non-NULL iff |running()| is true.
   Profile* profile_;
+  ExtensionServiceInterface* extension_service_;
+  sync_api::UserShare* user_share_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionChangeProcessor);
 };

@@ -11,15 +11,20 @@
 #include "chrome/browser/sync/glue/extension_sync.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
+#include "chrome/browser/sync/syncable/nigori_util.h"
 #include "content/browser/browser_thread.h"
 
 namespace browser_sync {
 
 ExtensionModelAssociator::ExtensionModelAssociator(
-    const ExtensionSyncTraits& traits, ProfileSyncService* sync_service)
-    : traits_(traits), sync_service_(sync_service) {
+    const ExtensionSyncTraits& traits,
+    ExtensionServiceInterface* extension_service,
+    sync_api::UserShare* user_share)
+    : traits_(traits), extension_service_(extension_service),
+      user_share_(user_share) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(sync_service_);
+  DCHECK(extension_service_);
+  DCHECK(user_share_);
 }
 
 ExtensionModelAssociator::~ExtensionModelAssociator() {
@@ -29,10 +34,12 @@ ExtensionModelAssociator::~ExtensionModelAssociator() {
 bool ExtensionModelAssociator::AssociateModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ExtensionDataMap extension_data_map;
-  if (!SlurpExtensionData(traits_, sync_service_, &extension_data_map)) {
+  if (!SlurpExtensionData(
+          traits_, *extension_service_, user_share_, &extension_data_map)) {
     return false;
   }
-  if (!FlushExtensionData(traits_, extension_data_map, sync_service_)) {
+  if (!FlushExtensionData(
+          traits_, extension_data_map, extension_service_, user_share_)) {
     return false;
   }
 
@@ -47,16 +54,16 @@ bool ExtensionModelAssociator::DisassociateModels() {
 
 bool ExtensionModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return RootNodeHasChildren(traits_.root_node_tag, sync_service_, has_nodes);
+  return RootNodeHasChildren(traits_.root_node_tag, user_share_, has_nodes);
 }
 
 bool ExtensionModelAssociator::CryptoReadyIfNecessary() {
   // We only access the cryptographer while holding a transaction.
-  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
-  syncable::ModelTypeSet encrypted_types;
-  sync_service_->GetEncryptedDataTypes(&encrypted_types);
-  return encrypted_types.count(traits_.model_type) == 0 ||
-         sync_service_->IsCryptographerReady(&trans);
+  sync_api::ReadTransaction trans(user_share_);
+  const syncable::ModelTypeSet& encrypted_types =
+      GetEncryptedDataTypes(trans.GetWrappedTrans());
+  return encrypted_types.count(syncable::EXTENSIONS) == 0 ||
+      trans.GetCryptographer()->is_ready();
 }
 
 }  // namespace browser_sync

@@ -15,7 +15,6 @@
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "googleurl/src/gurl.h"
 
 namespace browser_sync {
 
@@ -143,20 +142,12 @@ bool AreExtensionSpecificsNonUserPropertiesEqual(
 }
 
 void GetExtensionSpecifics(const Extension& extension,
-                           ExtensionServiceInterface* extension_service,
+                           const ExtensionServiceInterface& extension_service,
                            sync_pb::ExtensionSpecifics* specifics) {
-  const std::string& id = extension.id();
-  bool enabled = extension_service->IsExtensionEnabled(id);
-  bool incognito_enabled = extension_service->IsIncognitoEnabled(id);
-  GetExtensionSpecificsHelper(extension, enabled, incognito_enabled,
-                              specifics);
-}
-
-void GetExtensionSpecificsHelper(const Extension& extension,
-                                 bool enabled, bool incognito_enabled,
-                                 sync_pb::ExtensionSpecifics* specifics) {
   DCHECK(IsExtensionValid(extension));
   const std::string& id = extension.id();
+  bool enabled = extension_service.IsExtensionEnabled(id);
+  bool incognito_enabled = extension_service.IsIncognitoEnabled(id);
   specifics->set_id(id);
   specifics->set_version(extension.VersionString());
   specifics->set_update_url(extension.update_url().spec());
@@ -177,34 +168,6 @@ bool IsExtensionOutdated(const Extension& extension,
     return false;
   }
   return extension.version()->CompareTo(*specifics_version) < 0;
-}
-
-void SetExtensionProperties(
-    const sync_pb::ExtensionSpecifics& specifics,
-    ExtensionServiceInterface* extensions_service,
-    const Extension* extension) {
-  DcheckIsExtensionSpecificsValid(specifics);
-  CHECK(extensions_service);
-  CHECK(extension);
-  DCHECK(IsExtensionValid(*extension));
-  const std::string& id = extension->id();
-  GURL update_url(specifics.update_url());
-  if (update_url != extension->update_url()) {
-    LOG(WARNING) << "specifics for extension " << id
-                 << "has a different update URL than the extension: "
-                 << update_url.spec() << " vs. " << extension->update_url();
-  }
-  if (specifics.enabled()) {
-    extensions_service->EnableExtension(id);
-  } else {
-    extensions_service->DisableExtension(id);
-  }
-  extensions_service->SetIsIncognitoEnabled(id, specifics.incognito_enabled());
-  if (specifics.name() != extension->name()) {
-    LOG(WARNING) << "specifics for extension " << id
-                 << "has a different name than the extension: "
-                 << specifics.name() << " vs. " << extension->name();
-  }
 }
 
 void MergeExtensionSpecifics(
