@@ -12,7 +12,8 @@ using webkit_glue::PasswordForm;
 
 static const char* kValidPassphrase = "passphrase!";
 
-IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Add) {
+// TODO(rsimha): See http://crbug.com/78840.
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, FLAKY_Add) {
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -35,7 +36,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Add) {
   ASSERT_TRUE(ContainsSamePasswordForms(verifier_forms, forms1));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Race) {
+// TODO(rsimha): See http://crbug.com/78840.
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, FLAKY_Race) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   PasswordForm form0 = CreateTestPasswordForm(0);
@@ -58,7 +60,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Race) {
   ASSERT_TRUE(ContainsSamePasswordForms(forms0, forms1));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, SetPassphrase) {
+// TODO(rsimha): See http://crbug.com/78840.
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, FLAKY_SetPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   SetPassphrase(0, kValidPassphrase, true);
@@ -69,8 +72,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, SetPassphrase) {
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
 }
 
+// TODO(rsimha): See http://crbug.com/78840.
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
-                       SetPassphraseAndAddPassword) {
+                       FLAKY_SetPassphraseAndAddPassword) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   SetPassphrase(0, kValidPassphrase, true);
@@ -94,9 +98,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
   ASSERT_EQ(1U, forms1.size());
 }
 
-// TODO(rsimha): This test fails occasionally -- see http://crbug.com/77956.
+// TODO(rsimha): See http://crbug.com/78840.
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
-                       FAILS_SetPassphraseAndThenSetupSync) {
+                       FLAKY_SetPassphraseAndThenSetupSync) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   ASSERT_TRUE(GetClient(0)->SetupSync());
@@ -109,7 +113,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, SetPassphraseTwice) {
+// TODO(rsimha): See http://crbug.com/78840.
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
+                       FLAKY_SetPassphraseTwice) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   SetPassphrase(0, kValidPassphrase, true);

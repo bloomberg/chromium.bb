@@ -8,7 +8,8 @@
 
 using webkit_glue::PasswordForm;
 
-IN_PROC_BROWSER_TEST_F(SingleClientLivePasswordsSyncTest, Sanity) {
+// TODO(rsimha): See http://crbug.com/78840.
+IN_PROC_BROWSER_TEST_F(SingleClientLivePasswordsSyncTest, FLAKY_Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   PasswordForm form = CreateTestPasswordForm(0);
