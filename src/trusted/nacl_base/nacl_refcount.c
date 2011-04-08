@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/trusted/nacl_base/nacl_refcount.h"
@@ -22,8 +22,8 @@ int NaClRefCountCtor(struct NaClRefCount *nrcp) {
 static void NaClRefCountDtor(struct NaClRefCount  *self) {
   NaClLog(4, "NaClRefCountDtor(0x%08"NACL_PRIxPTR"), refcount %"NACL_PRIdS
           ", destroying.\n",
-          self->ref_count,
-          (uintptr_t) self);
+          (uintptr_t) self,
+          self->ref_count);
   /*
    * NB: refcount could be non-zero.  Here's why: if a subclass's Ctor
    * fails, it will have already run NaClRefCountCtor and have
