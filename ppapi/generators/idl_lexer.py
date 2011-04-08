@@ -6,11 +6,29 @@
 
 """ Lexer for PPAPI IDL """
 
+#
+# IDL Lexer
+#
+# The lexer is uses the PLY lex library to build a tokenizer which understands
+# WebIDL tokens.
+#
+# WebIDL, and WebIDL regular expressions can be found at:
+#   http://dev.w3.org/2006/webapi/WebIDL/
+# PLY can be found at:
+#   http://www.dabeaz.com/ply/
 
 import getopt
 import os.path
 import re
 import sys
+
+LEXER_OPTIONS = {
+  'output': False,
+  'test_expect' : False,
+  'test_same' : False,
+  'verbose': False
+}
+
 
 #
 # Try to load the ply module, if not, then assume it is in the third_party
@@ -23,6 +41,8 @@ except:
   third_party = os.path.join(module_path, '..', '..', 'third_party')
   sys.path.append(third_party)
   from ply import lex
+
+
 
 #
 # IDL Lexer
@@ -42,6 +62,7 @@ class IDLLexer(object):
 
     # Data types
       'FLOAT',
+      'OCT',
       'INT',
       'HEX',
       'STRING',
@@ -69,15 +90,17 @@ class IDLLexer(object):
   #
   # Lex assumes any value or function in the form of 't_<TYPE>' represents a
   # regular expression where a match will emit a token of type <TYPE>.  In the
-  # case of a function, the function is called when a match is made.
+  # case of a function, the function is called when a match is made. These
+  # definitions come from WebIDL.
 
   # 't_ignore' is a special match of items to ignore
   t_ignore = ' \t'
 
   # Constant values
   t_FLOAT = r'-?(\d+\.\d*|\d*\.\d+)([Ee][+-]?\d+)?|-?\d+[Ee][+-]?\d+'
-  t_HEX = r'0x[a-fA-F0-9]+'
-  t_INT = r'-?\d+'
+  t_INT = r'-?[0-9]+'
+  t_OCT = r'-?0[0-7]+'
+  t_HEX = r'-?0[Xx][0-9A-Fa-f]+'
   t_LSHIFT = r'<<'
 
   # A line ending '\n', we use this to increment the line number
@@ -146,8 +169,11 @@ class IDLLexer(object):
     self.index = [0]
     self.lexobj.input(data)
 
-  def __init__(self):
+  def __init__(self, options = {}):
     self.lexobj = lex.lex(object=self, lextab=None, optimize=0)
+    for k in options:
+      LEXER_OPTIONS[k] = True
+
 
 
 #
@@ -191,11 +217,13 @@ def TextToTokens(source):
 # single space.  The new source is then tokenized and compared against the
 # old set.
 #
-def TestSame(values, output=False, verbose=False):
+def TestSame(values):
+  global LEXER_OPTIONS
+
   src1 = ' '.join(values)
   src2 = ' '.join(TextToTokens(src1))
 
-  if output:
+  if LEXER_OPTIONS['output']:
     sys.stdout.write('Generating original.txt and tokenized.txt\n')
     open('original.txt', 'w').write(src1)
     open('tokenized.txt', 'w').write(src2)
@@ -227,7 +255,7 @@ def TestExpect(tokens):
     index += 2
 
     if type != token.type:
-      sys.stderr.write('Mismatch:  Expected %s, but got %s = %s.' %
+      sys.stderr.write('Mismatch:  Expected %s, but got %s = %s.\n' %
                        (type, token.type, token.value))
       errors += 1
 
@@ -242,6 +270,8 @@ def TestExpect(tokens):
 
 
 def Main(args):
+  global LEXER_OPTIONS
+
   try:
     long_opts = ['output', 'verbose', 'test_expect', 'test_same']
     usage = 'Usage: idl_lexer.py %s [<src.idl> ...]' % ' '.join(
@@ -258,27 +288,17 @@ def Main(args):
   verbose = False
 
   for opt, val in opts:
-    if opt == '--output':
-      output = True
-
-    if opt == '--test_expect':
-      test_expect = True
-
-    if opt == '--test_same':
-      test_same = True
-
-    if opt == '--verbose':
-      verbose = True
+    LEXER_OPTIONS[opt[2:]] = True
 
   try:
     tokens = FilesToTokens(filenames, verbose)
     values = [tok.value for tok in tokens]
-    if output: sys.stdout.write(' <> '.join(values) + '\n')
-    if test_same:
-      if TestSame(values, output = output, verbose = verbose):
+    if LEXER_OPTIONS['output']: sys.stdout.write(' <> '.join(values) + '\n')
+    if LEXER_OPTIONS['test_same']:
+      if TestSame(values):
         return -1
 
-    if test_expect:
+    if LEXER_OPTIONS['test_expect']:
       if TestExpect(tokens):
         return -1
     return 0

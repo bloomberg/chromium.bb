@@ -1,0 +1,50 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+   Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file. */
+
+/* This file tests parsing of enumerations under different conditions */
+
+/* OK Enum(Es1) */
+enum Es1 {
+  /* OK EnumItem(E1) */
+  E1 = 1,
+  /* OK EnumItem(E2) */
+  E2 = 2
+};
+
+/* FAIL Enum missing name. */
+enum {
+  E3 = 3,
+  E4 = 4
+};
+
+/* OK Enum(Es3) */
+enum Es3 {
+  E5 = 5,
+  E6 = 6
+};
+
+/* FAIL Unexpected empty block. */
+enum Es4 {
+};
+
+/* OK Enum(Es5) */
+enum Es5 {
+  /* OK EnumItem(E9) */
+  E9 = 9,
+  /* OK EnumItem(E10) */
+  /* FAIL Trailing comma in block. */
+  E10 = 10,
+};
+
+/* FAIL Unexpected trailing comment. */
+enum Es6 {
+  E5 = 11,
+  E6 = 12
+}
+
+/* OK Enum(Es7) */
+enum Es7 {
+  /* OK EnumItem(E11) */
+  E11 = 11
+};

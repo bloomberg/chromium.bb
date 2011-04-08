@@ -1,0 +1,46 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+   Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file. */
+
+/* This file tests parsing of typedefs under different conditions */
+
+/* OK Typedef(T1) */
+typedef int32_t T1;
+
+/* FAIL Unexpected comment "/*" after symbol T2. */
+typedef int32_t T2
+
+/* OK Typedef(T3) */
+typedef int32_t[] T3;
+
+/* OK Typedef(T4) */
+typedef int32_t[][4] T4;
+
+/* FAIL Empty argument list. */
+typedef int32_t[][4] T5();
+
+/* OK Typedef(T6) */
+typedef int32_t[][4] T6(int x);
+
+/* OK Typedef(T7) */
+typedef int32_t[][4] T7(
+  /* OK Param(x) */
+  int x,
+  /* OK Param(y) */
+  int y);
+
+/* OK Typedef(T8) */
+typedef int32_t[][4][5] T8(
+  /* OK Param(x) */
+  int x,
+  /* OK Param(y) */
+  int y,
+  /* OK Param(z) */
+  /* FAIL Missing argument. */
+  int z,);
+
+/* FAIL Unexpected keyword "enum" after symbol int32_t. */
+typedef int32_t enum;
+
+/* FAIL Unexpected ";" after symbol foo. */
+typedef foo;
