@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/gtk/download_shelf_gtk.h"
+#include "chrome/browser/ui/gtk/download/download_shelf_gtk.h"
 
 #include <string>
 
@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
-#include "chrome/browser/ui/gtk/download_item_gtk.h"
+#include "chrome/browser/ui/gtk/download/download_item_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_shrinkable_hbox.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_DOWNLOAD_ITEM_GTK_H_
-#define CHROME_BROWSER_UI_GTK_DOWNLOAD_ITEM_GTK_H_
+#ifndef CHROME_BROWSER_UI_GTK_DOWNLOAD_DOWNLOAD_ITEM_GTK_H_
+#define CHROME_BROWSER_UI_GTK_DOWNLOAD_DOWNLOAD_ITEM_GTK_H_
 #pragma once
 
 #include <gtk/gtk.h>
@@ -12,13 +12,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "ui/base/animation/slide_animation.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 class BaseDownloadItemModel;
@@ -235,4 +235,4 @@ class DownloadItemGtk : public DownloadItem::Observer,
   CancelableRequestConsumerT<int, 0> icon_consumer_;
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_DOWNLOAD_ITEM_GTK_H_
+#endif  // CHROME_BROWSER_UI_GTK_DOWNLOAD_DOWNLOAD_ITEM_GTK_H_
