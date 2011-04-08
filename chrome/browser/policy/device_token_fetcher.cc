@@ -127,8 +127,12 @@ void DeviceTokenFetcher::OnError(DeviceManagementBackend::ErrorCode code) {
     case DeviceManagementBackend::kErrorRequestFailed:
     case DeviceManagementBackend::kErrorTemporaryUnavailable:
     case DeviceManagementBackend::kErrorServiceDeviceNotFound:
-    case DeviceManagementBackend::kErrorServiceManagementTokenInvalid:
       SetState(STATE_TEMPORARY_ERROR);
+      break;
+    case DeviceManagementBackend::kErrorServiceManagementTokenInvalid:
+      // Most probably the GAIA auth cookie has expired. We can not do anything
+      // until the user logs-in again.
+      SetState(STATE_INACTIVE);
       break;
     default:
       SetState(STATE_ERROR);
