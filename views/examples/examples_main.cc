@@ -18,6 +18,7 @@
 #include "views/examples/combobox_example.h"
 #include "views/examples/menu_example.h"
 #include "views/examples/message_box_example.h"
+#include "views/examples/native_theme_button_example.h"
 #include "views/examples/radio_button_example.h"
 #include "views/examples/scroll_view_example.h"
 #include "views/examples/single_split_view_example.h"
@@ -100,6 +101,10 @@ void ExamplesMain::Run() {
   // the second tabbed pane.
   views::Window* window =
       views::Window::CreateChromeWindow(NULL, gfx::Rect(0, 0, 850, 300), this);
+
+  examples::NativeThemeButtonExample native_theme_button_example(this);
+  tabbed_pane->AddTab(native_theme_button_example.GetExampleTitle(),
+                      native_theme_button_example.GetExampleView());
 
   examples::TextfieldExample textfield_example(this);
   tabbed_pane->AddTab(textfield_example.GetExampleTitle(),
