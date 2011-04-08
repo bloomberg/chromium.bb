@@ -8,7 +8,7 @@ vars = {
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
   "nacl_revision": "4559",
-  "nacl_tools_revision": "4632",
+  "nacl_tools_revision": "4802",
   "libjingle_revision": "55",
   "libvpx_revision": "76510",
   "ffmpeg_revision": "79854",
@@ -263,7 +263,7 @@ deps_os = {
 
     "src/third_party/mingw-w64/mingw/bin":
       (Var("nacl_trunk") + "/src/third_party/mingw-w64/mingw/bin@" +
-       Var("nacl_revision")),
+       Var("nacl_tools_revision")),
 
     "src/rlz":
       (Var("googlecode_url") % "rlz") + "/trunk@33",
