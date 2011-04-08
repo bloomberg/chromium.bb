@@ -284,7 +284,7 @@
                       </li><li>
                         <a href="#method-detach">detach</a>
                       </li><li>
-                        <a href="#method-sendCommand">sendCommand</a>
+                        <a href="#method-sendRequest">sendRequest</a>
                       </li>
                     </ol>
                   </li>
@@ -770,21 +770,20 @@ terminated. Extension can then re-establish it via attaching to a tab later.
               </div> <!-- /description -->
 
             </div><div class="apiItem">
-              <a name="method-sendCommand"></a> <!-- method-anchor -->
-              <h4>sendCommand</h4>
+              <a name="method-sendRequest"></a> <!-- method-anchor -->
+              <h4>sendRequest</h4>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.debugger.sendCommand</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
+                  <span>chrome.experimental.debugger.sendRequest</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
                       <var><span>tabId</span></var></span><span class="null"><span>, </span><span>string</span>
-                      <var><span>domain</span></var></span><span class="null"><span>, </span><span>string</span>
-                      <var><span>command</span></var></span><span class="optional"><span>, </span><span>object</span>
-                      <var><span>arguments</span></var></span><span class="optional"><span>, </span><span>function</span>
+                      <var><span>method</span></var></span><span class="optional"><span>, </span><span>object</span>
+                      <var><span>params</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Send given command to the debugger.</p>
+                <p>Send given request to the debugger.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -820,7 +819,7 @@ terminated. Extension can then re-establish it via attaching to a tab later.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The id of the tab to which you want to send debugging command.</dd>
+          <dd>The id of the tab to which you want to send debugging request.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -860,7 +859,7 @@ terminated. Extension can then re-establish it via attaching to a tab later.
                   </div><div>
                     <div>
           <dt>
-            <var>domain</var>
+            <var>method</var>
               <em>
 
                 <!-- TYPE -->
@@ -888,7 +887,7 @@ terminated. Extension can then re-establish it via attaching to a tab later.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Debugging domain to send command in.</dd>
+          <dd>Method name.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -928,75 +927,7 @@ terminated. Extension can then re-establish it via attaching to a tab later.
                   </div><div>
                     <div>
           <dt>
-            <var>command</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>string</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>Command name.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>arguments</var>
+            <var>params</var>
               <em>
 
                 <!-- TYPE -->
@@ -1024,7 +955,7 @@ terminated. Extension can then re-establish it via attaching to a tab later.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>JSON object matching Developer Tools / Web Inspector Protocol command scheme.</dd>
+          <dd>JSON object matching Developer Tools / Web Inspector Protocol scheme.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1092,7 +1023,7 @@ terminated. Extension can then re-establish it via attaching to a tab later.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Command response body. If an error occurs while posting the message, the callback will be called with no arguments and <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set to the error message.</dd>
+          <dd>Request response body. If an error occurs while posting the message, the callback will be called with no arguments and <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set to the error message.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1188,7 +1119,7 @@ terminated. Extension can then re-establish it via attaching to a tab later.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>JSON object with the command response.</dd>
+          <dd>JSON object with the request response.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1344,7 +1275,7 @@ terminated. Extension can then re-establish it via attaching to a tab later.
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.debugger.</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>integer tabId, string domain, string event, object data</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.experimental.debugger.</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>integer tabId, string method, object params</span>) <span class="subdued">{...}</span>);
               </div>
 
               <div class="description">
@@ -1426,7 +1357,7 @@ terminated. Extension can then re-establish it via attaching to a tab later.
                     </div><div>
                       <div>
           <dt>
-            <var>domain</var>
+            <var>method</var>
               <em>
 
                 <!-- TYPE -->
@@ -1454,7 +1385,7 @@ terminated. Extension can then re-establish it via attaching to a tab later.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Event domain.</dd>
+          <dd>Method name.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1494,75 +1425,7 @@ terminated. Extension can then re-establish it via attaching to a tab later.
                     </div><div>
                       <div>
           <dt>
-            <var>event</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>string</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>Event name.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-                    </div><div>
-                      <div>
-          <dt>
-            <var>data</var>
+            <var>params</var>
               <em>
 
                 <!-- TYPE -->

@@ -15,6 +15,7 @@
 
 // Base debugger function.
 
+class DictionaryValue;
 class ExtensionDevToolsClientHost;
 
 class DebuggerFunction : public AsyncExtensionFunction {
@@ -47,16 +48,15 @@ class DetachDebuggerFunction : public DebuggerFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.debugger.detach")
 };
 
-// Implements the debugger.sendCommand() extension function.
-class SendCommandDebuggerFunction : public DebuggerFunction {
+// Implements the debugger.sendRequest() extension function.
+class SendRequestDebuggerFunction : public DebuggerFunction {
  public:
-  SendCommandDebuggerFunction();
-  ~SendCommandDebuggerFunction();
+  SendRequestDebuggerFunction();
+  ~SendRequestDebuggerFunction();
   virtual bool RunImpl();
 
-  void SendResponseBody(Value* body,
-                        const std::string& error);
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.debugger.sendCommand")
+  void SendResponseBody(DictionaryValue* dictionary);
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.debugger.sendRequest")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_DEBUGGER_API_H_

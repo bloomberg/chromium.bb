@@ -326,7 +326,7 @@ void FactoryRegistry::ResetFunctions() {
   // Debugger
   RegisterFunction<AttachDebuggerFunction>();
   RegisterFunction<DetachDebuggerFunction>();
-  RegisterFunction<SendCommandDebuggerFunction>();
+  RegisterFunction<SendRequestDebuggerFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

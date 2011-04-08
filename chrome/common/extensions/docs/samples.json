@@ -42,7 +42,7 @@
     "chrome.experimental.debugger.detach": "experimental.debugger.html#method-detach",
     "chrome.experimental.debugger.onDetach": "experimental.debugger.html#event-onDetach",
     "chrome.experimental.debugger.onEvent": "experimental.debugger.html#event-onEvent",
-    "chrome.experimental.debugger.sendCommand": "experimental.debugger.html#method-sendCommand",
+    "chrome.experimental.debugger.sendRequest": "experimental.debugger.html#method-sendRequest",
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show",
     "chrome.experimental.processes.getProcessIdForTab": "experimental.processes.html#method-getProcessIdForTab",
     "chrome.experimental.processes.onUpdated": "experimental.processes.html#event-onUpdated",

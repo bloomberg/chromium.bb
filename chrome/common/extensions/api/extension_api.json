@@ -4934,32 +4934,27 @@
         ]
       },
       {
-        "name": "sendCommand",
+        "name": "sendRequest",
         "type": "function",
-        "description": "Send given command to the debugger.",
+        "description": "Send given request to the debugger.",
         "parameters": [
           {
             "type": "integer",
             "name": "tabId",
-            "description": "The id of the tab to which you want to send debugging command."
+            "description": "The id of the tab to which you want to send debugging request."
           },
           {
             "type": "string",
-            "name": "domain",
-            "description": "Debugging domain to send command in."
-          },
-          {
-            "type": "string",
-            "name": "command",
-            "description": "Command name."
+            "name": "method",
+            "description": "Method name."
           },
           {
             "type": "object",
-            "name": "arguments",
+            "name": "params",
             "optional": true,
             "properties": {},
             "additionalProperties": { "type": "any" },
-            "description": "JSON object matching Developer Tools / Web Inspector Protocol command scheme."
+            "description": "JSON object matching Developer Tools / Web Inspector Protocol scheme."
           },
           {
             "type": "function",
@@ -4972,10 +4967,10 @@
                 "optional": true,
                 "properties": {},
                 "additionalProperties": { "type": "any" },
-                "description": "JSON object with the command response."
+                "description": "JSON object with the request response."
               }
             ],
-            "description": "Command response body. If an error occurs while posting the message, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
+            "description": "Request response body. If an error occurs while posting the message, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
           }
         ]
       }
@@ -4993,17 +4988,12 @@
           },
           {
             "type": "string",
-            "name": "domain",
-            "description": "Event domain."
-          },
-          {
-            "type": "string",
-            "name": "event",
-            "description": "Event name."
+            "name": "method",
+            "description": "Method name."
           },
           {
             "type": "object",
-            "name": "data",
+            "name": "params",
             "optional": true,
             "properties": {},
             "additionalProperties": { "type": "any" },
