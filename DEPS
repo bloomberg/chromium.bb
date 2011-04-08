@@ -60,8 +60,7 @@ deps = {
   "src/third_party/safe_browsing/testing":
     (Var("googlecode_url") % "google-safe-browsing") + "/trunk/testing@106",
 
-  # TODO(akalin): Rename files2 -> files.
-  "src/third_party/cacheinvalidation/files2/src/google":
+  "src/third_party/cacheinvalidation/files/src/google":
     (Var("googlecode_url") % "google-cache-invalidation-api") +
     "/trunk/src/google@80",
 
