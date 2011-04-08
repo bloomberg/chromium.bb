@@ -10,6 +10,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/private/ppb_flash.h"
+#include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -221,6 +222,13 @@ void PPB_Flash_Proxy::OnMsgNavigate(const HostResource& request_info,
                                     const std::string& target,
                                     bool from_user_action,
                                     int32_t* result) {
+  DCHECK(!dispatcher()->IsPlugin());
+  // We need to allow re-entrancy here, because this may call into Javascript
+  // (e.g. with a "javascript:" URL), or do things like navigate away from the
+  // page, either one of which will need to re-enter into the plugin.
+  // It is safe, because it is essentially equivalent to NPN_GetURL, where Flash
+  // would expect re-entrancy. When running in-process, it does re-enter here.
+  static_cast<HostDispatcher*>(dispatcher())->set_allow_plugin_reentrancy();
   *result = ppb_flash_target()->Navigate(request_info.host_resource(),
                                          target.c_str(),
                                          from_user_action);
