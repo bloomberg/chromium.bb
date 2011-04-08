@@ -521,7 +521,7 @@ void FirstRun::AutoImport(
   importer_list->DetectSourceProfilesHack();
 
   // Do import if there is an available profile for us to import.
-  if (importer_list->GetAvailableProfileCount() > 0) {
+  if (importer_list->count() > 0) {
     // Don't show the warning dialog if import fails.
     importer_host->set_headless();
     int items = 0;

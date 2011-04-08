@@ -49,19 +49,16 @@ class ImporterList : public base::RefCountedThreadSafe<ImporterList> {
   void DetectSourceProfilesHack();
 
   // Returns the number of different source profiles you can import from.
-  int GetAvailableProfileCount() const;
+  size_t count() const { return source_profiles_.size(); }
 
   // Returns the SourceProfile at |index|. The profiles are ordered such that
   // the profile at index 0 is the likely default browser. The SourceProfile
   // should be passed to ImporterHost::StartImportSettings().
-  const importer::SourceProfile& GetSourceProfileAt(int index) const;
+  const importer::SourceProfile& GetSourceProfileAt(size_t index) const;
 
   // Returns the SourceProfile for the given |importer_type|.
   const importer::SourceProfile& GetSourceProfileForImporterType(
       int importer_type) const;
-
-  // Returns true if the source profiles have been loaded.
-  bool source_profiles_loaded() const;
 
  private:
   friend class base::RefCountedThreadSafe<ImporterList>;

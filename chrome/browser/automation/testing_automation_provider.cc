@@ -154,9 +154,9 @@ void TestingAutomationProvider::SourceProfilesLoaded() {
 
   // Get the correct profile based on the browser the user provided.
   importer::SourceProfile source_profile;
-  int num_browsers = importer_list_->GetAvailableProfileCount();
-  int i = 0;
-  for ( ; i < num_browsers; i++) {
+  size_t i = 0;
+  size_t importers_count = importer_list_->count();
+  for ( ; i < importers_count; ++i) {
     importer::SourceProfile profile = importer_list_->GetSourceProfileAt(i);
     if (profile.importer_name == import_settings_data_.browser_name) {
       source_profile = profile;
@@ -164,7 +164,7 @@ void TestingAutomationProvider::SourceProfilesLoaded() {
     }
   }
   // If we made it to the end of the loop, then the input was bad.
-  if (i == num_browsers) {
+  if (i == importers_count) {
     AutomationJSONReply(this, import_settings_data_.reply_message)
         .SendError("Invalid browser name string found.");
     return;

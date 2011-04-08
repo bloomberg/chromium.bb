@@ -136,15 +136,10 @@ void ImporterList::DetectSourceProfilesHack() {
   DetectSourceProfilesWorker();
 }
 
-int ImporterList::GetAvailableProfileCount() const {
-  DCHECK(source_profiles_loaded_);
-  return static_cast<int>(source_profiles_.size());
-}
-
 const importer::SourceProfile& ImporterList::GetSourceProfileAt(
-    int index) const {
+    size_t index) const {
   DCHECK(source_profiles_loaded_);
-  DCHECK(index >= 0 && index < GetAvailableProfileCount());
+  DCHECK(index < count());
   return *source_profiles_[index];
 }
 
@@ -152,17 +147,12 @@ const importer::SourceProfile& ImporterList::GetSourceProfileForImporterType(
     int importer_type) const {
   DCHECK(source_profiles_loaded_);
 
-  int count = GetAvailableProfileCount();
-  for (int i = 0; i < count; ++i) {
+  for (size_t i = 0; i < count(); ++i) {
     if (source_profiles_[i]->importer_type == importer_type)
       return *source_profiles_[i];
   }
   NOTREACHED();
   return *(new importer::SourceProfile());
-}
-
-bool ImporterList::source_profiles_loaded() const {
-  return source_profiles_loaded_;
 }
 
 void ImporterList::DetectSourceProfilesWorker() {
