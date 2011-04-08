@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/touch/tabs/touch_tab_strip.h"
 
+#include <algorithm>
+#include <cmath>
+
 #include "chrome/browser/ui/touch/tabs/touch_tab.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
@@ -15,12 +18,19 @@
 static const int kTouchTabStripHeight = 64;
 static const int kTouchTabWidth = 64;
 static const int kTouchTabHeight = 64;
+static const int kScrollThreshold = 4;
 
 TouchTabStrip::TouchTabStrip(TabStripController* controller)
     : BaseTabStrip(controller, BaseTabStrip::HORIZONTAL_TAB_STRIP),
       in_tab_close_(false),
       last_tap_time_(base::Time::FromInternalValue(0)),
-      last_tapped_view_(NULL) {
+      last_tapped_view_(NULL),
+      initial_mouse_x_(0),
+      initial_scroll_offset_(0),
+      scroll_offset_(0),
+      scrolling_(false),
+      initial_tab_(NULL),
+      min_scroll_offset_(0) {
   Init();
 }
 
@@ -128,12 +138,18 @@ void TouchTabStrip::GenerateIdealBounds() {
   for (int i = 0; i < tab_count(); ++i) {
     TouchTab* tab = GetTabAtTabDataIndex(i);
     if (!tab->closing()) {
-      set_ideal_bounds(i, gfx::Rect(tab_x, tab_y, kTouchTabWidth,
-                                    kTouchTabHeight));
+      int x = tab_x + scroll_offset_;
+      if (tab->IsSelected()) {
+        // limit the extent to which this tab can be displaced.
+        x = std::min(std::max(0, x), width() - kTouchTabWidth);
+      }
+      set_ideal_bounds(i, gfx::Rect(x, tab_y,
+                                    kTouchTabWidth, kTouchTabHeight));
       // offset the next tab to the right by the width of this tab
       tab_x += kTouchTabWidth;
     }
   }
+  min_scroll_offset_ = std::min(0, width() - tab_x);
 }
 
 void TouchTabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
@@ -155,6 +171,100 @@ int TouchTabStrip::GetSizeNeededForTabs(const std::vector<BaseTab*>& tabs) {
   // Not needed as dragging isn't supported.
   NOTIMPLEMENTED();
   return 0;
+}
+
+// TODO(wyck): Someday we might like to get a "scroll" interaction event by way
+// of views, triggered by the gesture manager, and/or mouse scroll wheel.
+// For now, we're just handling a single scroll with these mouse events:
+// OnMousePressed, OnMouseDragged, and OnMouseReleased.
+
+bool TouchTabStrip::OnMousePressed(const views::MouseEvent& event) {
+  // When we press the mouse button, we begin a drag
+  BeginScroll(event.location());
+  return true;
+}
+
+bool TouchTabStrip::OnMouseDragged(const views::MouseEvent& event) {
+  ContinueScroll(event.location());
+  return true;
+}
+
+void TouchTabStrip::OnMouseReleased(const views::MouseEvent& event) {
+  EndScroll(event.location());
+}
+
+void TouchTabStrip::OnMouseCaptureLost() {
+  CancelScroll();
+}
+
+void TouchTabStrip::BeginScroll(const gfx::Point& point ) {
+  initial_mouse_x_ = point.x();
+  initial_scroll_offset_ = scroll_offset_;
+  initial_tab_ = static_cast<TouchTab*>(GetTabAtLocal(point));
+}
+
+void TouchTabStrip::ContinueScroll(const gfx::Point& point) {
+  int delta_x = point.x() - initial_mouse_x_;
+  if (std::abs(delta_x) > kScrollThreshold)
+    scrolling_ = true;
+  if (scrolling_)
+    ScrollTo(delta_x);
+  DoLayout();
+  SchedulePaint();
+}
+
+void TouchTabStrip::EndScroll(const gfx::Point& point) {
+  int delta_x = point.x() - initial_mouse_x_;
+  if (scrolling_) {
+    scrolling_ = false;
+    ScrollTo(delta_x);
+    StopAnimating(false);
+    GenerateIdealBounds();
+    AnimateToIdealBounds();
+  } else {
+    TouchTab* tab = static_cast<TouchTab*>(GetTabAtLocal(point));
+    if (tab && tab == initial_tab_)
+      SelectTab(tab);
+    DoLayout();
+    SchedulePaint();
+  }
+  initial_tab_ = NULL;
+}
+
+void TouchTabStrip::CancelScroll() {
+  // Cancel the scroll by scrolling back to the initial position (deltax = 0).
+  ScrollTo(0);
+  StopAnimating(false);
+  GenerateIdealBounds();
+  AnimateToIdealBounds();
+}
+
+void TouchTabStrip::ScrollTo(int delta_x) {
+  scroll_offset_ = initial_scroll_offset_ + delta_x;
+  // Limit the scrolling here.
+  // When scrolling beyond the limits of min and max offsets, the displacement
+  // is adjusted to 25% of what would normally applied (divided by 4).
+  // Perhaps in the future, Hooke's law could be used to model more physically
+  // based spring-like behavior.
+  int max_scroll_offset = 0;  // Because there's never content to the left of 0.
+  if (scroll_offset_ > max_scroll_offset) {
+    if (scrolling_) {
+      scroll_offset_ = max_scroll_offset
+          + std::min((scroll_offset_ - max_scroll_offset) / 4,
+                     kTouchTabWidth);
+    } else {
+      scroll_offset_ = max_scroll_offset;
+    }
+  }
+  if (scroll_offset_ < min_scroll_offset_) {
+    if (scrolling_) {
+      scroll_offset_ = min_scroll_offset_
+          + std::max((scroll_offset_ - min_scroll_offset_) / 4,
+                     -kTouchTabWidth);
+    } else {
+      scroll_offset_ = min_scroll_offset_;
+    }
+  }
 }
 
 TouchTab* TouchTabStrip::GetTabAtTabDataIndex(int tab_data_index) const {

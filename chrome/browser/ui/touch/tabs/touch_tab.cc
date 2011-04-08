@@ -57,6 +57,20 @@ const gfx::Rect& TouchTab::GetIconBounds() const {
 ////////////////////////////////////////////////////////////////////////////////
 // TouchTab, views::View overrides:
 
+// We'll get selected via the mouse interactions with the TouchTabStrip.  There
+// is no need to directly handle the mouse movements in the TouchTab.
+
+bool TouchTab::OnMousePressed(const views::MouseEvent& event) {
+  return false;
+}
+
+bool TouchTab::OnMouseDragged(const views::MouseEvent& event) {
+  return false;
+}
+
+void TouchTab::OnMouseReleased(const views::MouseEvent& event) {
+}
+
 void TouchTab::OnPaint(gfx::Canvas* canvas) {
   // Don't paint if we're narrower than we can render correctly. (This should
   // only happen during animations).

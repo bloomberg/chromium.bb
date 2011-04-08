@@ -246,6 +246,9 @@ class BaseTabStrip : public AbstractTabStripView,
   // Invoked from Layout if the size changes or layout is really needed.
   virtual void DoLayout();
 
+  // Get tab at a point in local view coordinates.
+  BaseTab* GetTabAtLocal(const gfx::Point& local_point);
+
  private:
   class RemoveTabDelegate;
 

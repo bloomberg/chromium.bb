@@ -378,16 +378,7 @@ BaseTab* BaseTabStrip::GetTabAt(BaseTab* tab,
                                 const gfx::Point& tab_in_tab_coordinates) {
   gfx::Point local_point = tab_in_tab_coordinates;
   ConvertPointToView(tab, this, &local_point);
-  views::View* view = GetEventHandlerForPoint(local_point);
-  if (!view)
-    return NULL;  // No tab contains the point.
-
-  // Walk up the view hierarchy until we find a tab, or the TabStrip.
-  while (view && view != this && view->GetID() != VIEW_ID_TAB)
-    view = view->parent();
-
-  return view && view->GetID() == VIEW_ID_TAB ?
-      static_cast<BaseTab*>(view) : NULL;
+  return GetTabAtLocal(local_point);
 }
 
 void BaseTabStrip::Layout() {
@@ -569,6 +560,20 @@ void BaseTabStrip::DoLayout() {
     tab_data_[i].tab->SetBoundsRect(tab_data_[i].ideal_bounds);
 
   SchedulePaint();
+}
+
+BaseTab* BaseTabStrip::GetTabAtLocal(
+    const gfx::Point& local_point) {
+  views::View* view = GetEventHandlerForPoint(local_point);
+  if (!view)
+    return NULL;  // No tab contains the point.
+
+  // Walk up the view hierarchy until we find a tab, or the TabStrip.
+  while (view && view != this && view->GetID() != VIEW_ID_TAB)
+    view = view->parent();
+
+  return view && view->GetID() == VIEW_ID_TAB ?
+      static_cast<BaseTab*>(view) : NULL;
 }
 
 void BaseTabStrip::StoppedDraggingTab(BaseTab* tab, bool* is_first_tab) {
