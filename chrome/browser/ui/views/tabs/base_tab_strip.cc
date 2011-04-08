@@ -126,10 +126,6 @@ BaseTabStrip::BaseTabStrip(TabStripController* controller, Type type)
 BaseTabStrip::~BaseTabStrip() {
 }
 
-bool BaseTabStrip::IsAnimating() const {
-  return bounds_animator_.IsAnimating();
-}
-
 void BaseTabStrip::AddTabAt(int model_index, const TabRendererData& data) {
   BaseTab* tab = CreateTab();
   tab->SetData(data);
@@ -150,14 +146,11 @@ void BaseTabStrip::AddTabAt(int model_index, const TabRendererData& data) {
 
 void BaseTabStrip::MoveTab(int from_model_index, int to_model_index) {
   int from_tab_data_index = ModelIndexToTabIndex(from_model_index);
-
   BaseTab* tab = tab_data_[from_tab_data_index].tab;
   tab_data_.erase(tab_data_.begin() + from_tab_data_index);
 
   TabData data = {tab, gfx::Rect()};
-
   int to_tab_data_index = ModelIndexToTabIndex(to_model_index);
-
   tab_data_.insert(tab_data_.begin() + to_tab_data_index, data);
 
   StartMoveTabAnimation();
@@ -563,8 +556,11 @@ void BaseTabStrip::DoLayout() {
   SchedulePaint();
 }
 
-BaseTab* BaseTabStrip::GetTabAtLocal(
-    const gfx::Point& local_point) {
+bool BaseTabStrip::IsAnimating() const {
+  return bounds_animator_.IsAnimating();
+}
+
+BaseTab* BaseTabStrip::GetTabAtLocal(const gfx::Point& local_point) {
   views::View* view = GetEventHandlerForPoint(local_point);
   if (!view)
     return NULL;  // No tab contains the point.

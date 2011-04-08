@@ -33,10 +33,6 @@ class BaseTabStrip : public AbstractTabStripView,
 
   Type type() const { return type_; }
 
-  // Returns true if Tabs in this TabStrip are currently changing size or
-  // position.
-  virtual bool IsAnimating() const;
-
   // Starts highlighting the tab at the specified index.
   virtual void StartHighlight(int model_index) = 0;
 
@@ -87,7 +83,7 @@ class BaseTabStrip : public AbstractTabStripView,
 
   // Returns the index of the specified tab in the model coordiate system, or
   // -1 if tab is closing or not valid.
-  virtual int GetModelIndexOfBaseTab(const BaseTab* tab) const;
+  int GetModelIndexOfBaseTab(const BaseTab* tab) const;
 
   // Gets the number of Tabs in the tab strip.
   // WARNING: this is the number of tabs displayed by the tabstrip, which if
@@ -245,6 +241,10 @@ class BaseTabStrip : public AbstractTabStripView,
 
   // Invoked from Layout if the size changes or layout is really needed.
   virtual void DoLayout();
+
+  // Returns true if Tabs in this TabStrip are currently changing size or
+  // position.
+  bool IsAnimating() const;
 
   // Get tab at a point in local view coordinates.
   BaseTab* GetTabAtLocal(const gfx::Point& local_point);
