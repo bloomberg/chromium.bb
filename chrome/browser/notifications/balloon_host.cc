@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/notifications/balloon_host.h"
-
-#include "chrome/browser/extensions/extension_message_handler.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/balloon.h"
@@ -71,12 +69,6 @@ const string16& BalloonHost::GetSource() const {
   return balloon_->notification().display_source();
 }
 
-bool BalloonHost::OnMessageReceived(const IPC::Message& message) {
-  if (!extension_message_handler_.get())
-    return false;
-  return extension_message_handler_->OnMessageReceived(message);
-}
-
 WebPreferences BalloonHost::GetWebkitPrefs() {
   WebPreferences web_prefs =
       RenderViewHostDelegateHelper::GetWebkitPrefs(GetProfile(),
@@ -137,6 +129,13 @@ ViewType::Type BalloonHost::GetRenderViewType() const {
 
 RenderViewHostDelegate::View* BalloonHost::GetViewDelegate() {
   return this;
+}
+
+void BalloonHost::ProcessWebUIMessage(
+    const ExtensionHostMsg_DomMessage_Params& params) {
+  if (extension_function_dispatcher_.get()) {
+    extension_function_dispatcher_->HandleRequest(params);
+  }
 }
 
 // RenderViewHostDelegate::View methods implemented to allow links to
@@ -209,11 +208,6 @@ void BalloonHost::Init() {
             balloon_->notification().content_url());
     static_cast<BrowserRenderProcessHost*>(rvh->process())->set_installed_app(
         installed_app);
-
-    extension_message_handler_.reset(new ExtensionMessageHandler(
-        rvh->process()->id(), rvh, GetProfile()));
-    extension_message_handler_->set_extension_function_dispatcher(
-        extension_function_dispatcher_.get());
   } else if (enable_web_ui_) {
     rvh->AllowBindings(BindingsPolicy::WEB_UI);
   }

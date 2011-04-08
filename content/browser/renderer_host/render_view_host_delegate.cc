@@ -71,3 +71,8 @@ WebPreferences RenderViewHostDelegate::GetWebkitPrefs() {
 bool RenderViewHostDelegate::IsExternalTabContainer() const {
   return false;
 }
+
+bool RenderViewHostDelegate::RequestDesktopNotificationPermission(
+    const GURL& source_origin, int callback_context) {
+  return false;
+}

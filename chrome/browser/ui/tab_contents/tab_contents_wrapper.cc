@@ -11,8 +11,6 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
-#include "chrome/browser/debugger/devtools_handler.h"
-#include "chrome/browser/extensions/extension_message_handler.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/history/top_sites.h"
@@ -73,8 +71,6 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
                  NotificationService::AllSources());
 
   // Create the per-tab observers.
-  dev_tools_observer_.reset(new DevToolsObserver(contents));
-  extension_message_observer_.reset(new ExtensionMessageObserver(contents));
   file_select_observer_.reset(new FileSelectObserver(contents));
   prerender_observer_.reset(new prerender::PrerenderObserver(contents));
   print_preview_.reset(new printing::PrintPreviewMessageHandler(contents));
