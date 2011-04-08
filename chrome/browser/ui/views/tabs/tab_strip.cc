@@ -482,7 +482,6 @@ void TabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
     BaseTab* tab = tabs[i];
     gfx::Rect new_bounds = bounds[i];
     new_bounds.Offset(location.x(), location.y());
-    new_bounds.set_x(GetMirroredXForRect(new_bounds));
     int consecutive_index =
         active_tab_model_index - (active_tab_index - static_cast<int>(i));
     // If this is the initial layout during a drag and the tabs aren't

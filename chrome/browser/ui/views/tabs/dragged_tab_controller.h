@@ -215,16 +215,18 @@ class DraggedTabController : public TabContentsDelegate,
 
   // Returns the index where the dragged TabContents should be inserted into
   // |attached_tabstrip_| given the DraggedTabView's bounds |dragged_bounds| in
-  // coordinates relative to |attached_tabstrip_|.
+  // coordinates relative to |attached_tabstrip_| and has had the mirroring
+  // transformation applied.
   // NOTE: this is invoked from |Attach| before the tabs have been inserted.
   int GetInsertionIndexForDraggedBounds(const gfx::Rect& dragged_bounds) const;
 
-  // Retrieve the bounds of the DraggedTabView, relative to the attached
-  // TabStrip, given location of the dragged tab in screen coordinates.
-  gfx::Rect GetDraggedViewTabStripBounds(const gfx::Point& screen_point);
+  // Retrieve the bounds of the DraggedTabView relative to the attached
+  // TabStrip. |tab_strip_point| is in the attached TabStrip's coordinate
+  // system.
+  gfx::Rect GetDraggedViewTabStripBounds(const gfx::Point& tab_strip_point);
 
   // Get the position of the dragged tab view relative to the attached tab
-  // strip.
+  // strip with the mirroring transform applied.
   gfx::Point GetAttachedDragPoint(const gfx::Point& screen_point);
 
   // Finds the Tabs within the specified TabStrip that corresponds to the

@@ -74,14 +74,11 @@ void DraggedTabView::MoveTo(const gfx::Point& screen_point) {
     // is rendered using a right-to-left orientation so we should calculate the
     // window position differently.
     gfx::Size ps = GetPreferredSize();
-    x = screen_point.x() - ScaleValue(ps.width()) + mouse_tab_offset_.x() +
-        ScaleValue(renderers_[0]->GetMirroredXInView(mouse_tab_offset_.x()));
+    x = screen_point.x() + ScaleValue(mouse_tab_offset_.x() - ps.width());
   } else {
-    x = screen_point.x() + mouse_tab_offset_.x() -
-        ScaleValue(mouse_tab_offset_.x());
+    x = screen_point.x() - ScaleValue(mouse_tab_offset_.x());
   }
-  int y = screen_point.y() + mouse_tab_offset_.y() -
-      ScaleValue(mouse_tab_offset_.y());
+  int y = screen_point.y() - ScaleValue(mouse_tab_offset_.y());
 
 #if defined(OS_WIN)
   // TODO(beng): make this cross-platform

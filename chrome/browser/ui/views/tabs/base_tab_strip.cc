@@ -329,7 +329,7 @@ void BaseTabStrip::MaybeStartDrag(BaseTab* tab,
   drag_controller_.reset(new DraggedTabController());
   std::vector<BaseTab*> tabs;
   int size_to_selected = 0;
-  int x = event.x();
+  int x = tab->GetMirroredXInView(event.x());
   int y = event.y();
   // Build the set of selected tabs to drag and calculate the offset from the
   // first selected tab.
@@ -348,7 +348,8 @@ void BaseTabStrip::MaybeStartDrag(BaseTab* tab,
   }
   DCHECK(!tabs.empty());
   DCHECK(std::find(tabs.begin(), tabs.end(), tab) != tabs.end());
-  drag_controller_->Init(this, tab, tabs, gfx::Point(x, y), event.x());
+  drag_controller_->Init(this, tab, tabs, gfx::Point(x, y),
+                         tab->GetMirroredXInView(event.x()));
 }
 
 void BaseTabStrip::ContinueDrag(const views::MouseEvent& event) {
