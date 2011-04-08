@@ -2,20 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
 #include "chrome/browser/ui/panels/panel.h"
+
+#include "base/logging.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/panels/panel_manager.h"
 #include "ui/gfx/rect.h"
 
-Panel::Panel(Browser* browser) {
-  NOTIMPLEMENTED();
+Panel::Panel(Browser* browser, const gfx::Rect& bounds)
+    : bounds_(bounds),
+      minimized_(false) {
+  browser_window_.reset(BrowserWindow::CreatePanelBrowserWindow(browser, this));
 }
 
 Panel::~Panel() {
+  Close();
+}
+
+PanelManager* Panel::manager() const {
+  return PanelManager::GetInstance();
+}
+
+void Panel::Minimize() {
+  NOTIMPLEMENTED();
+}
+
+void Panel::Restore() {
   NOTIMPLEMENTED();
 }
 
 void Panel::Show() {
-  NOTIMPLEMENTED();
+  browser_window_->Show();
 }
 
 void Panel::ShowInactive() {
@@ -27,7 +44,10 @@ void Panel::SetBounds(const gfx::Rect& bounds) {
 }
 
 void Panel::Close() {
-  NOTIMPLEMENTED();
+  if (!browser_window_.get())
+    return;
+  browser_window_->Close();
+  manager()->Remove(this);
 }
 
 void Panel::Activate() {

@@ -81,6 +81,8 @@
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/options/options_window.h"
+#include "chrome/browser/ui/panels/panel.h"
+#include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -389,6 +391,28 @@ Browser* Browser::CreateForApp(const std::string& app_name,
 }
 
 // static
+Browser* Browser::CreateForPanel(const std::string& app_name,
+                                 const gfx::Size& window_size,
+                                 Profile* profile) {
+  // TODO(jianli): For now we just use TYPE_APP_PANEL to stand for the panel
+  // this is created from the extension when the specific command line flag
+  // is set.
+  Browser::Type type = TYPE_APP_PANEL;
+  Browser* browser = new Browser(type, profile);
+  browser->app_name_ = app_name;
+
+  if (!window_size.IsEmpty()) {
+    gfx::Rect initial_pos(window_size);
+    browser->set_override_bounds(initial_pos);
+  }
+
+  browser->window_ = PanelManager::GetInstance()->Create(browser);
+  browser->InitBrowserWindow();
+
+  return browser;
+}
+
+// static
 Browser* Browser::CreateForDevTools(Profile* profile) {
   Browser* browser = new Browser(TYPE_DEVTOOLS, profile);
   browser->app_name_ = DevToolsWindow::kDevToolsApp;
@@ -568,8 +592,13 @@ TabContents* Browser::OpenApplicationWindow(
     window_size.SetSize(extension->launch_width(),
                         extension->launch_height());
 
-  Browser* browser = Browser::CreateForApp(app_name, window_size, profile,
-                                           as_panel);
+  Browser* browser;
+  if (as_panel &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels)) {
+    browser = Browser::CreateForPanel(app_name, window_size, profile);
+  } else {
+    browser = Browser::CreateForApp(app_name, window_size, profile, as_panel);
+  }
   if (app_browser)
     *app_browser = browser;
 

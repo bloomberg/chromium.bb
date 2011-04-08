@@ -9,6 +9,9 @@
 #include "chrome/browser/ui/browser_window.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/rect.h"
+
+class PanelManager;
 
 // A platform independent implementation of BrowserWindow for Panels.  This
 // class would get the first crack at all the BrowserWindow calls for Panels and
@@ -22,8 +25,19 @@
 //   other Panels.  For example deleting a panel would rearrange other panels.
 class Panel : public BrowserWindow {
  public:
-  explicit Panel(Browser* browser);
+  Panel(Browser* browser, const gfx::Rect& bounds);
   virtual ~Panel();
+
+  // Returns the PanelManager associated with this panel.
+  PanelManager* manager() const;
+
+  void Minimize();
+
+  void Restore();
+
+  const gfx::Rect& bounds() const { return bounds_; }
+
+  bool minimized() const { return minimized_; }
 
   // BrowserWindow overrides.
   virtual void Show();
@@ -122,6 +136,14 @@ class Panel : public BrowserWindow {
   // Platform specifc BrowserWindow implementation for panels.  It'd be one of
   // PanelBrowserWindowGtk/PanelBrowserView/PanelBrowserWindowCocoa.
   scoped_ptr<BrowserWindow> browser_window_;
+
+  // The bounds.
+  gfx::Rect bounds_;
+
+  // Is the panel minimized?
+  bool minimized_;
+
+  DISALLOW_COPY_AND_ASSIGN(Panel);
 };
 
 #endif  // CHROME_BROWSER_UI_PANELS_PANEL_H_

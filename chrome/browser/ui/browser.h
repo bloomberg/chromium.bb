@@ -153,6 +153,11 @@ class Browser : public TabHandlerDelegate,
                                Profile* profile,
                                bool is_panel);
 
+  // Like Create, but creates a panel for extension application.
+  static Browser* CreateForPanel(const std::string& app_name,
+                                 const gfx::Size& window_size,
+                                 Profile* profile);
+
   // Like Create, but creates a tabstrip-less and toolbar-less
   // DevTools "app" window.
   static Browser* CreateForDevTools(Profile* profile);
@@ -180,6 +185,7 @@ class Browser : public TabHandlerDelegate,
   const std::string& app_name() const { return app_name_; }
   Profile* profile() const { return profile_; }
   const std::vector<std::wstring>& user_data_dir_profiles() const;
+  gfx::Rect override_bounds() const { return override_bounds_; }
 
   // Returns the InstantController or NULL if there is no InstantController for
   // this Browser.
