@@ -62,6 +62,7 @@ MultipartResponseDelegate::MultipartResponseDelegate(
     : client_(client),
       loader_(loader),
       original_response_(response),
+      raw_data_length_(0),
       boundary_("--"),
       first_received_data_(true),
       processing_headers_(false),
@@ -76,7 +77,8 @@ MultipartResponseDelegate::MultipartResponseDelegate(
 }
 
 void MultipartResponseDelegate::OnReceivedData(const char* data,
-                                               int data_len) {
+                                               int data_len,
+                                               int raw_data_length) {
   // stop_sending_ means that we've already received the final boundary token.
   // The server should stop sending us data at this point, but if it does, we
   // just throw it away.
@@ -84,6 +86,7 @@ void MultipartResponseDelegate::OnReceivedData(const char* data,
     return;
 
   data_.append(data, data_len);
+  raw_data_length_ += raw_data_length;
   if (first_received_data_) {
     // Some servers don't send a boundary token before the first chunk of
     // data.  We handle this case anyway (Gecko does too).
@@ -141,7 +144,8 @@ void MultipartResponseDelegate::OnReceivedData(const char* data,
         client_->didReceiveData(loader_,
                                 data_.data(),
                                 static_cast<int>(data_length),
-                                -1);
+                                raw_data_length_);
+        raw_data_length_ = 0;
       }
     }
     size_t boundary_end_pos = boundary_pos + boundary_.length();
@@ -172,8 +176,12 @@ void MultipartResponseDelegate::OnReceivedData(const char* data,
     if (data_[data_.length() - 1] == '\n')
       send_length = data_.length();
     if (client_)
-      client_->didReceiveData(loader_, data_.data(), send_length, -1);
+      client_->didReceiveData(loader_,
+                              data_.data(),
+                              send_length,
+                              raw_data_length_);
     data_ = data_.substr(send_length);
+    raw_data_length_ = 0;
   }
 }
 
@@ -183,7 +191,9 @@ void MultipartResponseDelegate::OnCompletedRequest() {
   if (!processing_headers_ && !data_.empty() && !stop_sending_ && client_) {
     client_->didReceiveData(loader_,
                             data_.data(),
-                            static_cast<int>(data_.length()), -1);
+                            static_cast<int>(data_.length()),
+                            raw_data_length_);
+    raw_data_length_ = 0;
   }
 }
 

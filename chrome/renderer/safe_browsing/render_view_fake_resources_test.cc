@@ -166,7 +166,11 @@ void RenderViewFakeResourcesTest::OnRequestResource(
   ASSERT_TRUE(shared_memory.GiveToProcess(base::Process::Current().handle(),
                                           &handle));
   ASSERT_TRUE(channel_->Send(new ResourceMsg_DataReceived(
-      message.routing_id(), request_id, handle, body.size())));
+      message.routing_id(),
+      request_id,
+      handle,
+      body.size(),
+      body.size())));
 
   ASSERT_TRUE(channel_->Send(new ResourceMsg_RequestComplete(
       message.routing_id(),

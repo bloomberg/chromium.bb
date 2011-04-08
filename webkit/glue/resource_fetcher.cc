@@ -86,7 +86,7 @@ void ResourceFetcher::didReceiveResponse(
 
 void ResourceFetcher::didReceiveData(
     WebURLLoader* loader, const char* data, int data_length,
-    int length_received) {
+    int raw_data_length) {
   DCHECK(!completed_);
   DCHECK(data_length > 0);
 

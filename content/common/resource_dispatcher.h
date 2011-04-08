@@ -126,7 +126,8 @@ class ResourceDispatcher : public IPC::Channel::Listener {
       const IPC::Message& message,
       int request_id,
       base::SharedMemoryHandle data,
-      int data_len);
+      int data_len,
+      int raw_data_length);
   void OnDownloadedData(
       const IPC::Message& message,
       int request_id,

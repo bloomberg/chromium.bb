@@ -35,6 +35,7 @@ ResourceDevToolsInfo::~ResourceDevToolsInfo() {}
 
 ResourceResponseInfo::ResourceResponseInfo()
     : content_length(-1),
+      raw_data_length(-1),
       appcache_id(appcache::kNoCacheId),
       connection_id(0),
       connection_reused(false),

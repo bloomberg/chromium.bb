@@ -216,8 +216,12 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
   // We just unmapped the memory.
   read_buffer_ = NULL;
 
+  net::URLRequest* request = rdh_->GetURLRequest(
+      GlobalRequestID(filter_->child_id(), request_id));
+  int raw_data_length =
+      DevToolsNetLogObserver::GetAndResetRawDataLength(request);
   filter_->Send(new ResourceMsg_DataReceived(
-      routing_id_, request_id, handle, *bytes_read));
+      routing_id_, request_id, handle, *bytes_read, raw_data_length));
 
   return true;
 }

@@ -423,7 +423,7 @@ void PPB_URLLoader_Impl::didDownloadData(WebURLLoader* loader,
 void PPB_URLLoader_Impl::didReceiveData(WebURLLoader* loader,
                                         const char* data,
                                         int data_length,
-                                        int length_received) {
+                                        int raw_data_length) {
   bytes_received_ += data_length;
 
   buffer_.insert(buffer_.end(), data, data + data_length);

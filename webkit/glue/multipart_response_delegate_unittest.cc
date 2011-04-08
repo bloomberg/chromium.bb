@@ -70,15 +70,16 @@ class MockWebURLLoaderClient : public WebURLLoaderClient {
       WebKit::WebURLLoader* loader,
       const char* data,
       int data_length,
-      int length_received) {
+      int raw_data_length) {
     ++received_data_;
     data_.append(data, data_length);
+    total_raw_data_length_ += raw_data_length;
   }
   virtual void didFinishLoading(WebURLLoader*, double finishTime) {}
   virtual void didFail(WebURLLoader*, const WebURLError&) {}
 
   void Reset() {
-    received_response_ = received_data_ = 0;
+    received_response_ = received_data_ = total_raw_data_length_ = 0;
     data_.clear();
     response_.reset();
   }
@@ -87,7 +88,7 @@ class MockWebURLLoaderClient : public WebURLLoaderClient {
     return string(response_.httpHeaderField(WebString::fromUTF8(name)).utf8());
   }
 
-  int received_response_, received_data_;
+  int received_response_, received_data_, total_raw_data_length_;
   string data_;
   WebURLResponse response_;
 };
@@ -216,11 +217,13 @@ TEST(MultipartResponseTest, MissingBoundaries) {
     "--bound--"
     "ignore junk after end token --bound\n\nTest2\n");
   delegate.OnReceivedData(no_start_boundary.c_str(),
+                          static_cast<int>(no_start_boundary.length()),
                           static_cast<int>(no_start_boundary.length()));
   EXPECT_EQ(1, client.received_response_);
   EXPECT_EQ(1, client.received_data_);
-  EXPECT_EQ(string("This is a sample response"),
-            client.data_);
+  EXPECT_EQ(string("This is a sample response"), client.data_);
+  EXPECT_EQ(static_cast<int>(no_start_boundary.length()),
+            client.total_raw_data_length_);
 
   delegate.OnCompletedRequest();
   EXPECT_EQ(1, client.received_response_);
@@ -233,16 +236,20 @@ TEST(MultipartResponseTest, MissingBoundaries) {
     "bound\nContent-type: text/plain\n\n"
     "This is a sample response\n");
   delegate2.OnReceivedData(no_end_boundary.c_str(),
+                          static_cast<int>(no_end_boundary.length()),
                           static_cast<int>(no_end_boundary.length()));
   EXPECT_EQ(1, client.received_response_);
   EXPECT_EQ(1, client.received_data_);
   EXPECT_EQ("This is a sample response\n", client.data_);
+  EXPECT_EQ(static_cast<int>(no_end_boundary.length()),
+            client.total_raw_data_length_);
 
   delegate2.OnCompletedRequest();
   EXPECT_EQ(1, client.received_response_);
   EXPECT_EQ(1, client.received_data_);
-  EXPECT_EQ(string("This is a sample response\n"),
-            client.data_);
+  EXPECT_EQ(string("This is a sample response\n"), client.data_);
+  EXPECT_EQ(static_cast<int>(no_end_boundary.length()),
+            client.total_raw_data_length_);
 
   // Neither boundary
   client.Reset();
@@ -251,16 +258,20 @@ TEST(MultipartResponseTest, MissingBoundaries) {
     "Content-type: text/plain\n\n"
     "This is a sample response\n");
   delegate3.OnReceivedData(no_boundaries.c_str(),
+                           static_cast<int>(no_boundaries.length()),
                            static_cast<int>(no_boundaries.length()));
   EXPECT_EQ(1, client.received_response_);
   EXPECT_EQ(1, client.received_data_);
   EXPECT_EQ("This is a sample response\n", client.data_);
+  EXPECT_EQ(static_cast<int>(no_boundaries.length()),
+            client.total_raw_data_length_);
 
   delegate3.OnCompletedRequest();
   EXPECT_EQ(1, client.received_response_);
   EXPECT_EQ(1, client.received_data_);
-  EXPECT_EQ(string("This is a sample response\n"),
-            client.data_);
+  EXPECT_EQ(string("This is a sample response\n"), client.data_);
+  EXPECT_EQ(static_cast<int>(no_boundaries.length()),
+            client.total_raw_data_length_);
 }
 
 TEST(MultipartResponseTest, MalformedBoundary) {
@@ -280,10 +291,13 @@ TEST(MultipartResponseTest, MalformedBoundary) {
     "This is a sample response\n"
     "--bound--"
     "ignore junk after end token --bound\n\nTest2\n");
-  delegate.OnReceivedData(data.c_str(), static_cast<int>(data.length()));
+  delegate.OnReceivedData(data.c_str(),
+                          static_cast<int>(data.length()),
+                          static_cast<int>(data.length()));
   EXPECT_EQ(1, client.received_response_);
   EXPECT_EQ(1, client.received_data_);
   EXPECT_EQ(string("This is a sample response"), client.data_);
+  EXPECT_EQ(static_cast<int>(data.length()), client.total_raw_data_length_);
 
   delegate.OnCompletedRequest();
   EXPECT_EQ(1, client.received_response_);
@@ -298,11 +312,13 @@ struct TestChunk {
   const int expected_responses;
   const int expected_received_data;
   const char* expected_data;
+  const int expected_raw_data_length;
 };
 
 void VariousChunkSizesTest(const TestChunk chunks[], int chunks_size,
                            int responses, int received_data,
-                           const char* completed_data) {
+                           const char* completed_data,
+                           int completed_raw_data_length) {
   const string data(
     "--bound\n"                    // 0-7
     "Content-type: image/png\n\n"  // 8-32
@@ -322,106 +338,107 @@ void VariousChunkSizesTest(const TestChunk chunks[], int chunks_size,
     ASSERT_TRUE(chunks[i].start_pos < chunks[i].end_pos);
     string chunk = data.substr(chunks[i].start_pos,
                                chunks[i].end_pos - chunks[i].start_pos);
-    delegate.OnReceivedData(chunk.c_str(), static_cast<int>(chunk.length()));
-    EXPECT_EQ(chunks[i].expected_responses,
-              client.received_response_);
-    EXPECT_EQ(chunks[i].expected_received_data,
-              client.received_data_);
-    EXPECT_EQ(string(chunks[i].expected_data),
-              client.data_);
+    delegate.OnReceivedData(
+        chunk.c_str(),
+        static_cast<int>(chunk.length()),
+        static_cast<int>(chunk.length()));
+    EXPECT_EQ(chunks[i].expected_responses, client.received_response_);
+    EXPECT_EQ(chunks[i].expected_received_data, client.received_data_);
+    EXPECT_EQ(string(chunks[i].expected_data), client.data_);
+    EXPECT_EQ(chunks[i].expected_raw_data_length,
+              client.total_raw_data_length_);
   }
   // Check final state
   delegate.OnCompletedRequest();
-  EXPECT_EQ(responses,
-            client.received_response_);
-  EXPECT_EQ(received_data,
-            client.received_data_);
-  EXPECT_EQ(string(completed_data),
-            client.data_);
+  EXPECT_EQ(responses, client.received_response_);
+  EXPECT_EQ(received_data, client.received_data_);
+  string completed_data_string(completed_data);
+  EXPECT_EQ(completed_data_string, client.data_);
+  EXPECT_EQ(completed_raw_data_length, client.total_raw_data_length_);
 }
 
 TEST(MultipartResponseTest, BreakInBoundary) {
   // Break in the first boundary
   const TestChunk bound1[] = {
-    { 0, 4, 0, 0, ""},
-    { 4, 110, 2, 2, "foofoofoofoofoo" },
+    { 0, 4, 0, 0, "", 0 },
+    { 4, 110, 2, 2, "foofoofoofoofoo", 110 },
   };
   VariousChunkSizesTest(bound1, arraysize(bound1),
-                        2, 2, "foofoofoofoofoo");
+                        2, 2, "foofoofoofoofoo", 110);
 
   // Break in first and second
   const TestChunk bound2[] = {
-    { 0, 4, 0, 0, ""},
-    { 4, 55, 1, 1, "datadatadatadat" },
-    { 55, 65, 1, 2, "datadatadatadatadata" },
-    { 65, 110, 2, 3, "foofoofoofoofoo" },
+    { 0, 4, 0, 0, "", 0 },
+    { 4, 55, 1, 1, "datadatadatadat", 55 },
+    { 55, 65, 1, 2, "datadatadatadatadata", 65 },
+    { 65, 110, 2, 3, "foofoofoofoofoo", 110 },
   };
   VariousChunkSizesTest(bound2, arraysize(bound2),
-                        2, 3, "foofoofoofoofoo");
+                        2, 3, "foofoofoofoofoo", 110);
 
   // Break in second only
   const TestChunk bound3[] = {
-    { 0, 55, 1, 1, "datadatadatadat" },
-    { 55, 110, 2, 3, "foofoofoofoofoo" },
+    { 0, 55, 1, 1, "datadatadatadat", 55 },
+    { 55, 110, 2, 3, "foofoofoofoofoo", 110 },
   };
   VariousChunkSizesTest(bound3, arraysize(bound3),
-                        2, 3, "foofoofoofoofoo");
+                        2, 3, "foofoofoofoofoo", 110);
 }
 
 TEST(MultipartResponseTest, BreakInHeaders) {
   // Break in first header
   const TestChunk header1[] = {
-    { 0, 10, 0, 0, "" },
-    { 10, 35, 1, 0, "" },
-    { 35, 110, 2, 2, "foofoofoofoofoo" },
+    { 0, 10, 0, 0, "", 0 },
+    { 10, 35, 1, 0, "", 0 },
+    { 35, 110, 2, 2, "foofoofoofoofoo", 110 },
   };
   VariousChunkSizesTest(header1, arraysize(header1),
-                        2, 2, "foofoofoofoofoo");
+                        2, 2, "foofoofoofoofoo", 110);
 
   // Break in both headers
   const TestChunk header2[] = {
-    { 0, 10, 0, 0, "" },
-    { 10, 65, 1, 1, "datadatadatadatadata" },
-    { 65, 110, 2, 2, "foofoofoofoofoo" },
+    { 0, 10, 0, 0, "", 0 },
+    { 10, 65, 1, 1, "datadatadatadatadata", 65 },
+    { 65, 110, 2, 2, "foofoofoofoofoo", 110 },
   };
   VariousChunkSizesTest(header2, arraysize(header2),
-                        2, 2, "foofoofoofoofoo");
+                        2, 2, "foofoofoofoofoo", 110);
 
   // Break at end of a header
   const TestChunk header3[] = {
-    { 0, 33, 1, 0, "" },
-    { 33, 65, 1, 1, "datadatadatadatadata" },
-    { 65, 110, 2, 2, "foofoofoofoofoo" },
+    { 0, 33, 1, 0, "", 0 },
+    { 33, 65, 1, 1, "datadatadatadatadata", 65 },
+    { 65, 110, 2, 2, "foofoofoofoofoo", 110 },
   };
   VariousChunkSizesTest(header3, arraysize(header3),
-                        2, 2, "foofoofoofoofoo");
+                        2, 2, "foofoofoofoofoo", 110);
 }
 
 TEST(MultipartResponseTest, BreakInData) {
   // All data as one chunk
   const TestChunk data1[] = {
-    { 0, 110, 2, 2, "foofoofoofoofoo" },
+    { 0, 110, 2, 2, "foofoofoofoofoo", 110 },
   };
   VariousChunkSizesTest(data1, arraysize(data1),
-                        2, 2, "foofoofoofoofoo");
+                        2, 2, "foofoofoofoofoo", 110);
 
   // breaks in data segment
   const TestChunk data2[] = {
-    { 0, 35, 1, 0, "" },
-    { 35, 65, 1, 1, "datadatadatadatadata" },
-    { 65, 90, 2, 1, "" },
-    { 90, 110, 2, 2, "foofoofoofoofoo" },
+    { 0, 35, 1, 0, "", 0 },
+    { 35, 65, 1, 1, "datadatadatadatadata", 65 },
+    { 65, 90, 2, 1, "", 65 },
+    { 90, 110, 2, 2, "foofoofoofoofoo", 110 },
   };
   VariousChunkSizesTest(data2, arraysize(data2),
-                        2, 2, "foofoofoofoofoo");
+                        2, 2, "foofoofoofoofoo", 110);
 
   // Incomplete send
   const TestChunk data3[] = {
-    { 0, 35, 1, 0, "" },
-    { 35, 90, 2, 1, "" },
+    { 0, 35, 1, 0, "", 0 },
+    { 35, 90, 2, 1, "", 90 },
   };
   VariousChunkSizesTest(data3, arraysize(data3),
-                        2, 2, "foof");
+                        2, 2, "foof", 90);
 }
 
 TEST(MultipartResponseTest, SmallChunk) {
@@ -440,10 +457,12 @@ TEST(MultipartResponseTest, SmallChunk) {
     "--boundContent-type: text/plain\n\n"
     "end--bound--");
   delegate.OnReceivedData(data.c_str(),
+                          static_cast<int>(data.length()),
                           static_cast<int>(data.length()));
   EXPECT_EQ(4, client.received_response_);
   EXPECT_EQ(2, client.received_data_);
   EXPECT_EQ(string("end"), client.data_);
+  EXPECT_EQ(static_cast<int>(data.length()), client.total_raw_data_length_);
 
   delegate.OnCompletedRequest();
   EXPECT_EQ(4, client.received_response_);
@@ -459,13 +478,13 @@ TEST(MultipartResponseTest, MultipleBoundaries) {
   MultipartResponseDelegate delegate(&client, NULL, response, "bound");
 
   string data("--bound\r\n\r\n--bound\r\n\r\nfoofoo--bound--");
-  delegate.OnReceivedData(data.c_str(), static_cast<int>(data.length()));
-  EXPECT_EQ(2,
-            client.received_response_);
-  EXPECT_EQ(1,
-            client.received_data_);
-  EXPECT_EQ(string("foofoo"),
-            client.data_);
+  delegate.OnReceivedData(data.c_str(),
+                          static_cast<int>(data.length()),
+                          static_cast<int>(data.length()));
+  EXPECT_EQ(2, client.received_response_);
+  EXPECT_EQ(1, client.received_data_);
+  EXPECT_EQ(string("foofoo"), client.data_);
+  EXPECT_EQ(static_cast<int>(data.length()), client.total_raw_data_length_);
 }
 
 TEST(MultipartResponseTest, MultipartByteRangeParsingTest) {
@@ -628,22 +647,25 @@ TEST(MultipartResponseTest, MultipartPayloadSet) {
       "Content-type: text/plain\n\n"
       "response data\n"
       "--bound\n");
-  delegate.OnReceivedData(data.c_str(), static_cast<int>(data.length()));
-  EXPECT_EQ(1,
-            client.received_response_);
-  EXPECT_EQ(string("response data"),
-            client.data_);
+  delegate.OnReceivedData(data.c_str(),
+                          static_cast<int>(data.length()),
+                          static_cast<int>(data.length()));
+  EXPECT_EQ(1, client.received_response_);
+  EXPECT_EQ(string("response data"), client.data_);
+  EXPECT_EQ(static_cast<int>(data.length()), client.total_raw_data_length_);
   EXPECT_FALSE(client.response_.isMultipartPayload());
 
   string data2(
       "Content-type: text/plain\n\n"
       "response data2\n"
       "--bound\n");
-  delegate.OnReceivedData(data2.c_str(), static_cast<int>(data2.length()));
-  EXPECT_EQ(2,
-            client.received_response_);
-  EXPECT_EQ(string("response data2"),
-            client.data_);
+  delegate.OnReceivedData(data2.c_str(),
+                          static_cast<int>(data2.length()),
+                          static_cast<int>(data2.length()));
+  EXPECT_EQ(2, client.received_response_);
+  EXPECT_EQ(string("response data2"), client.data_);
+  EXPECT_EQ(static_cast<int>(data.length()) + static_cast<int>(data2.length()),
+            client.total_raw_data_length_);
   EXPECT_TRUE(client.response_.isMultipartPayload());
 }
 

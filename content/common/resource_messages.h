@@ -20,6 +20,7 @@ IPC_STRUCT_TRAITS_BEGIN(webkit_glue::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(charset)
   IPC_STRUCT_TRAITS_MEMBER(security_info)
   IPC_STRUCT_TRAITS_MEMBER(content_length)
+  IPC_STRUCT_TRAITS_MEMBER(raw_data_length)
   IPC_STRUCT_TRAITS_MEMBER(appcache_id)
   IPC_STRUCT_TRAITS_MEMBER(appcache_manifest_url)
   IPC_STRUCT_TRAITS_MEMBER(connection_id)
@@ -121,10 +122,11 @@ IPC_MESSAGE_ROUTED3(ResourceMsg_ReceivedRedirect,
 
 // Sent when some data from a resource request is ready. The handle should
 // already be mapped into the process that receives this message.
-IPC_MESSAGE_ROUTED3(ResourceMsg_DataReceived,
+IPC_MESSAGE_ROUTED4(ResourceMsg_DataReceived,
                     int /* request_id */,
                     base::SharedMemoryHandle /* data */,
-                    int /* data_len */)
+                    int /* data_len */,
+                    int /* raw_data_length */)
 
 // Sent when some data from a resource request has been downloaded to
 // file. This is only called in the 'download_to_file' case and replaces

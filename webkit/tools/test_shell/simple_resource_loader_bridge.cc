@@ -305,7 +305,7 @@ class RequestProxy : public net::URLRequest::Delegate,
     g_io_thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
         this, &RequestProxy::AsyncReadData));
 
-    peer_->OnReceivedData(buf_copy.get(), bytes_read);
+    peer_->OnReceivedData(buf_copy.get(), bytes_read, -1);
   }
 
   void NotifyDownloadedData(int bytes_read) {

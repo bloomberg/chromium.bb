@@ -103,6 +103,11 @@ bool SyncResourceHandler::OnResponseCompleted(
     const std::string& security_info) {
   result_.status = status;
 
+  net::URLRequest* request = rdh_->GetURLRequest(
+      GlobalRequestID(filter_->child_id(), request_id));
+  result_.raw_data_length =
+      DevToolsNetLogObserver::GetAndResetRawDataLength(request);
+
   ResourceHostMsg_SyncLoad::WriteReplyParams(result_message_, result_);
   filter_->Send(result_message_);
   result_message_ = NULL;

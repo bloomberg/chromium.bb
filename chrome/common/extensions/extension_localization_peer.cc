@@ -59,8 +59,10 @@ void ExtensionLocalizationPeer::OnReceivedResponse(
   response_info_ = info;
 }
 
-void ExtensionLocalizationPeer::OnReceivedData(const char* data, int len) {
-  data_.append(data, len);
+void ExtensionLocalizationPeer::OnReceivedData(const char* data,
+                                               int data_length,
+                                               int raw_data_length) {
+  data_.append(data, data_length);
 }
 
 void ExtensionLocalizationPeer::OnCompletedRequest(
@@ -85,7 +87,8 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
   original_peer_->OnReceivedResponse(response_info_);
   if (!data_.empty())
     original_peer_->OnReceivedData(data_.data(),
-                                   static_cast<int>(data_.size()));
+                                   static_cast<int>(data_.size()),
+                                   -1);
   original_peer_->OnCompletedRequest(status, security_info, completion_time);
 }
 

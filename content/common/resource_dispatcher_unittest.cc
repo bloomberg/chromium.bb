@@ -56,9 +56,12 @@ class TestRequestCallback : public ResourceLoaderBridge::Peer {
   virtual void OnDownloadedData(int len) {
   }
 
-  virtual void OnReceivedData(const char* data, int len) {
+  virtual void OnReceivedData(const char* data,
+                              int data_length,
+                              int raw_data_length) {
     EXPECT_FALSE(complete_);
-    data_.append(data, len);
+    data_.append(data, data_length);
+    total_raw_data_length_ += raw_data_length;
   }
 
   virtual void OnCompletedRequest(const net::URLRequestStatus& status,
@@ -68,16 +71,20 @@ class TestRequestCallback : public ResourceLoaderBridge::Peer {
     complete_ = true;
   }
 
+  bool complete() const {
+    return complete_;
+  }
   const std::string& data() const {
     return data_;
   }
-  bool complete() const {
-    return complete_;
+  int total_raw_data_length() const {
+    return total_raw_data_length_;
   }
 
  private:
   bool complete_;
   std::string data_;
+  int total_raw_data_length_;
 };
 
 
@@ -123,7 +130,11 @@ class ResourceDispatcherTest : public testing::Test,
       EXPECT_TRUE(shared_mem.GiveToProcess(
           base::Process::Current().handle(), &dup_handle));
       dispatcher_->OnReceivedData(
-          message_queue_[0], request_id, dup_handle, test_page_contents_len);
+          message_queue_[0],
+          request_id,
+          dup_handle,
+          test_page_contents_len,
+          test_page_contents_len);
 
       message_queue_.erase(message_queue_.begin());
 
@@ -183,6 +194,7 @@ TEST_F(ResourceDispatcherTest, RoundTrip) {
   // and dispatched, uncomment this.
   //EXPECT_TRUE(callback.complete());
   //EXPECT_STREQ(test_page_contents, callback.data().c_str());
+  //EXPECT_EQ(test_page_contents_len, callback.total_raw_data_length());
 
   delete bridge;
 }
@@ -242,7 +254,7 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
                                               &duplicated_handle));
 
     response_message =
-        new ResourceMsg_DataReceived(0, 0, duplicated_handle, 100);
+        new ResourceMsg_DataReceived(0, 0, duplicated_handle, 100, 100);
 
     dispatcher_->OnMessageReceived(*response_message);
 
@@ -272,7 +284,9 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
   virtual void OnDownloadedData(int len) {
   }
 
-  virtual void OnReceivedData(const char* data, int len) {
+  virtual void OnReceivedData(const char* data,
+                              int data_length,
+                              int raw_data_length) {
     EXPECT_EQ(defer_loading_, false);
     set_defer_loading(false);
   }

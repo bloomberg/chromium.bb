@@ -66,7 +66,8 @@ class MockResourceLoaderBridgePeer
   MOCK_METHOD1(OnReceivedResponse, void(
       const webkit_glue::ResourceResponseInfo& info));
   MOCK_METHOD1(OnDownloadedData, void(int len));
-  MOCK_METHOD2(OnReceivedData, void(const char* data, int len));
+  MOCK_METHOD3(OnReceivedData,
+               void(const char* data, int data_length, int raw_data_length));
   MOCK_METHOD3(OnCompletedRequest, void(
       const net::URLRequestStatus& status,
       const std::string& security_info,
@@ -124,11 +125,11 @@ TEST_F(ExtensionLocalizationPeerTest, OnReceivedData) {
   EXPECT_TRUE(GetData(filter_peer_.get()).empty());
 
   const std::string data_chunk("12345");
-  filter_peer_->OnReceivedData(data_chunk.c_str(), data_chunk.length());
+  filter_peer_->OnReceivedData(data_chunk.c_str(), data_chunk.length(), -1);
 
   EXPECT_EQ(data_chunk, GetData(filter_peer_.get()));
 
-  filter_peer_->OnReceivedData(data_chunk.c_str(), data_chunk.length());
+  filter_peer_->OnReceivedData(data_chunk.c_str(), data_chunk.length(), -1);
   EXPECT_EQ(data_chunk + data_chunk, GetData(filter_peer_.get()));
 }
 
@@ -151,7 +152,7 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestEmptyData) {
   // It will self-delete once it exits OnCompletedRequest.
   ExtensionLocalizationPeer* filter_peer = filter_peer_.release();
 
-  EXPECT_CALL(*original_peer_, OnReceivedData(_, _)).Times(0);
+  EXPECT_CALL(*original_peer_, OnReceivedData(_, _, _)).Times(0);
   EXPECT_CALL(*sender_, Send(_)).Times(0);
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_));
@@ -173,7 +174,7 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestNoCatalogs) {
 
   std::string data = GetData(filter_peer);
   EXPECT_CALL(*original_peer_,
-              OnReceivedData(StrEq(data.data()), data.length())).Times(2);
+              OnReceivedData(StrEq(data.data()), data.length(), -1)).Times(2);
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_)).Times(2);
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
@@ -211,7 +212,7 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestWithCatalogs) {
   // __MSG_text__ gets replaced with "new text".
   std::string data("some new text");
   EXPECT_CALL(*original_peer_,
-              OnReceivedData(StrEq(data.data()), data.length()));
+              OnReceivedData(StrEq(data.data()), data.length(), -1));
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_));
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
@@ -241,7 +242,7 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestReplaceMessagesFails) {
 
   // __MSG_missing_message__ is missing, so message stays the same.
   EXPECT_CALL(*original_peer_,
-              OnReceivedData(StrEq(message.data()), message.length()));
+              OnReceivedData(StrEq(message.data()), message.length(), -1));
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_));
   EXPECT_CALL(*original_peer_, OnCompletedRequest(

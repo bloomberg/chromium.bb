@@ -157,6 +157,7 @@ bool GetInfoFromDataURL(const GURL& url,
     info->charset.swap(charset);
     info->security_info.clear();
     info->content_length = -1;
+    info->raw_data_length = 0;
     info->load_timing.base_time = Time::Now();
 
     return true;
@@ -295,7 +296,9 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
       GURL* new_first_party_for_cookies);
   virtual void OnReceivedResponse(const ResourceResponseInfo& info);
   virtual void OnDownloadedData(int len);
-  virtual void OnReceivedData(const char* data, int len);
+  virtual void OnReceivedData(const char* data,
+                              int data_length,
+                              int raw_data_length);
   virtual void OnReceivedCachedMetadata(const char* data, int len);
   virtual void OnCompletedRequest(const net::URLRequestStatus& status,
                                   const std::string& security_info,
@@ -591,23 +594,25 @@ void WebURLLoaderImpl::Context::OnDownloadedData(int len) {
     client_->didDownloadData(loader_, len);
 }
 
-void WebURLLoaderImpl::Context::OnReceivedData(const char* data, int len) {
+void WebURLLoaderImpl::Context::OnReceivedData(const char* data,
+                                               int data_length,
+                                               int raw_data_length) {
   if (!client_)
     return;
 
   // Temporary logging, see site_isolation_metrics.h/cc.
-  SiteIsolationMetrics::SniffCrossOriginHTML(response_url_, data, len);
+  SiteIsolationMetrics::SniffCrossOriginHTML(response_url_, data, data_length);
 
   if (ftp_listing_delegate_.get()) {
     // The FTP listing delegate will make the appropriate calls to
     // client_->didReceiveData and client_->didReceiveResponse.
-    ftp_listing_delegate_->OnReceivedData(data, len);
+    ftp_listing_delegate_->OnReceivedData(data, data_length);
   } else if (multipart_delegate_.get()) {
     // The multipart delegate will make the appropriate calls to
     // client_->didReceiveData and client_->didReceiveResponse.
-    multipart_delegate_->OnReceivedData(data, len);
+    multipart_delegate_->OnReceivedData(data, data_length, raw_data_length);
   } else {
-    client_->didReceiveData(loader_, data, len, -1);
+    client_->didReceiveData(loader_, data, data_length, raw_data_length);
   }
 }
 
@@ -694,7 +699,7 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
   if (GetInfoFromDataURL(request_.url(), &info, &data, &status)) {
     OnReceivedResponse(info);
     if (!data.empty())
-      OnReceivedData(data.data(), data.size());
+      OnReceivedData(data.data(), data.size(), 0);
   }
 
   OnCompletedRequest(status, info.security_info, base::Time::Now());

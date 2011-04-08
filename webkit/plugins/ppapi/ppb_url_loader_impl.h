@@ -80,7 +80,7 @@ class PPB_URLLoader_Impl : public Resource, public WebKit::WebURLLoaderClient {
   virtual void didReceiveData(WebKit::WebURLLoader* loader,
                                const char* data,
                                int data_length,
-                               int length_received);
+                               int raw_data_length);
   virtual void didFinishLoading(WebKit::WebURLLoader* loader,
                                 double finish_time);
   virtual void didFail(WebKit::WebURLLoader* loader,

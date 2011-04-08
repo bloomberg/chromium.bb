@@ -212,6 +212,7 @@ void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
   response->charset = result.charset;
   response->request_time = result.request_time;
   response->response_time = result.response_time;
+  response->raw_data_length = result.raw_data_length;
   response->connection_id = result.connection_id;
   response->connection_reused = result.connection_reused;
   response->load_timing = result.load_timing;
@@ -336,7 +337,8 @@ void ResourceDispatcher::OnReceivedCachedMetadata(
 void ResourceDispatcher::OnReceivedData(const IPC::Message& message,
                                         int request_id,
                                         base::SharedMemoryHandle shm_handle,
-                                        int data_len) {
+                                        int data_len,
+                                        int raw_data_length) {
   // Acknowledge the reception of this data.
   message_sender()->Send(
       new ResourceHostMsg_DataReceived_ACK(message.routing_id(), request_id));
@@ -351,7 +353,7 @@ void ResourceDispatcher::OnReceivedData(const IPC::Message& message,
 
   if (data_len > 0 && shared_mem.Map(data_len)) {
     const char* data = static_cast<char*>(shared_mem.memory());
-    request_info->peer->OnReceivedData(data, data_len);
+    request_info->peer->OnReceivedData(data, data_len, raw_data_length);
   }
 }
 

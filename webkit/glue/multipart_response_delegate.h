@@ -72,7 +72,7 @@ class MultipartResponseDelegate {
                             const std::string& boundary);
 
   // Passed through from ResourceHandleInternal
-  void OnReceivedData(const char* data, int data_len);
+  void OnReceivedData(const char* data, int data_len, int raw_data_length);
   void OnCompletedRequest();
 
   // The request has been canceled, so stop making calls to the client.
@@ -119,6 +119,9 @@ class MultipartResponseDelegate {
   // Find the next boundary in data_.  Returns std::string::npos if there's no
   // full token.
   size_t FindBoundary();
+
+  // Transferred data size accumulated between client callbacks.
+  int raw_data_length_;
 
   // A temporary buffer to hold data between reads for multipart data that
   // gets split in the middle of a header.

@@ -79,7 +79,9 @@ void SecurityFilterPeer::OnReceivedResponse(
   NOTREACHED();
 }
 
-void SecurityFilterPeer::OnReceivedData(const char* data, int len) {
+void SecurityFilterPeer::OnReceivedData(const char* data,
+                                        int data_length,
+                                        int raw_data_length) {
   NOTREACHED();
 }
 
@@ -137,8 +139,10 @@ void BufferedPeer::OnReceivedResponse(
   ProcessResponseInfo(info, &response_info_, mime_type_);
 }
 
-void BufferedPeer::OnReceivedData(const char* data, int len) {
-  data_.append(data, len);
+void BufferedPeer::OnReceivedData(const char* data,
+                                  int data_length,
+                                  int raw_data_length) {
+  data_.append(data, data_length);
 }
 
 void BufferedPeer::OnCompletedRequest(const net::URLRequestStatus& status,
@@ -160,7 +164,8 @@ void BufferedPeer::OnCompletedRequest(const net::URLRequestStatus& status,
   original_peer_->OnReceivedResponse(response_info_);
   if (!data_.empty())
     original_peer_->OnReceivedData(data_.data(),
-                                   static_cast<int>(data_.size()));
+                                   static_cast<int>(data_.size()),
+                                   -1);
   original_peer_->OnCompletedRequest(status, security_info, completion_time);
 }
 
@@ -185,7 +190,9 @@ void ReplaceContentPeer::OnReceivedResponse(
   // Ignore this, we'll serve some alternate content in OnCompletedRequest.
 }
 
-void ReplaceContentPeer::OnReceivedData(const char* data, int len) {
+void ReplaceContentPeer::OnReceivedData(const char* data,
+                                        int data_length,
+                                        int raw_data_length) {
   // Ignore this, we'll serve some alternate content in OnCompletedRequest.
 }
 
@@ -200,7 +207,8 @@ void ReplaceContentPeer::OnCompletedRequest(
   original_peer_->OnReceivedResponse(info);
   if (!data_.empty())
     original_peer_->OnReceivedData(data_.data(),
-                                   static_cast<int>(data_.size()));
+                                   static_cast<int>(data_.size()),
+                                   -1);
   original_peer_->OnCompletedRequest(net::URLRequestStatus(),
                                      security_info,
                                      completion_time);
