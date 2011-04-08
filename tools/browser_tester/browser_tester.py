@@ -62,6 +62,13 @@ def BuildArgParser():
   parser.add_option('--allow_404', dest='allow_404', action='store_true',
                     default=False,
                     help='Allow 404s to occur without failing the test.')
+  parser.add_option('-b', '--bandwidth', dest='bandwidth', action='store',
+                    type='float', default='0.0',
+                    help='The amount of bandwidth (megabits / second) to '
+                    'simulate between the client and the server. This used for '
+                    'replies with file payloads. All other responses are '
+                    'assumed to be short. Bandwidth values <= 0.0 are assumed '
+                    'to mean infinite bandwidth.')
   parser.add_option('--extension', dest='browser_extensions', action='append',
                     type='string', default=[],
                     help='Load the browser extensions located at the list of '
@@ -89,7 +96,7 @@ def Run(url, options):
       raise AssertionError('\'%s\' does not exist.' % real_path)
 
   listener = browsertester.rpclistener.RPCListener(server.TestingEnded)
-  server.Configure(file_mapping, options.allow_404, listener)
+  server.Configure(file_mapping, options.allow_404, options.bandwidth, listener)
 
   browser = browsertester.browserlauncher.ChromeLauncher(options)
 

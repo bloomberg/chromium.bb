@@ -1,13 +1,31 @@
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 import BaseHTTPServer
 import cgi
+import os
 import os.path
 import posixpath
 import SimpleHTTPServer
 import SocketServer
 import threading
+import time
 import urllib
 import urlparse
 
+def GetFileSize(f):
+  return os.fstat(f.fileno()).st_size
+
+def GetNetworkDelay(mbps, f):
+  # TODO(jvoung): account for latency too?
+  if mbps > 0.0:
+    filesize = GetFileSize(f)
+    return (filesize * 8) / (mbps * 1024.0 * 1024.0)
+  else:
+    # A mbps (megabits / second) value <= 0.0 is used to turn off
+    # bandwidth simulation.
+    return 0
 
 class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
@@ -80,6 +98,14 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
       # A normal GET request for transferring files, etc.
       f = self.send_head()
       if f:
+        # Assume all other responses are short / files are the big things.
+        delay = GetNetworkDelay(self.server.bandwidth, f)
+        if (delay > 0.0):
+          # TODO(ncbray): we may want to be more realistic and spread out
+          # the sleeps while copying the file (in the future we may be able
+          # to stream validation, nexe startup, etc.).
+          self.server.listener.Log('Simulate BW with delay %fs' % delay)
+          time.sleep(delay)
         self.copyfile(f, self.wfile)
         f.close()
       self.server.listener.Log('GET %s' % (self.path,))
@@ -93,9 +119,10 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 # when using older versions of Python.
 class Server(BaseHTTPServer.HTTPServer):
 
-  def Configure(self, file_mapping, allow_404, listener):
+  def Configure(self, file_mapping, allow_404, bandwidth, listener):
     self.file_mapping = file_mapping
     self.allow_404 = allow_404
+    self.bandwidth = bandwidth
     self.listener = listener
     self.rpc_lock = threading.Lock()
 
