@@ -8,3 +8,11 @@
 BUGANTONM : fast/events/window-onerror7.html = TEXT
 BUGANTONM : plugins/netscape-plugin-property-access-exception.html = TEXT
 
+// The followings are already rebaselined.
+BUGTKENT MAC : fast/borders/border-radius-circle.html = IMAGE
+BUGTKENT MAC : fast/borders/border-radius-huge-assert.html = IMAGE
+BUGTKENT MAC : fast/box-shadow/border-radius-big.html = IMAGE
+BUGTKENT MAC : fast/box-shadow/inset-with-extraordinary-radii-and-border.html = IMAGE
+BUGTKENT MAC : fast/box-shadow/spread-multiple-inset.html = IMAGE
+BUGTKENT MAC : fast/box-shadow/spread-multiple-normal.html = IMAGE
+BUGTKENT MAC : fast/box-shadow/spread.html = IMAGE
