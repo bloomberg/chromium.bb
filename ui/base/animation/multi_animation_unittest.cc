@@ -28,14 +28,14 @@ TEST_F(MultiAnimationTest, Basic) {
   // Step to 120, which is 20% through the second part.
   as_element->Step(base::TimeTicks() +
                    base::TimeDelta::FromMilliseconds(120));
-  EXPECT_EQ(Tween::CalculateValue(Tween::EASE_OUT, .2),
-            animation.GetCurrentValue());
+  EXPECT_DOUBLE_EQ(Tween::CalculateValue(Tween::EASE_OUT, .2),
+                   animation.GetCurrentValue());
 
   // Step to 320, which is 20% through the second part.
   as_element->Step(base::TimeTicks() +
                    base::TimeDelta::FromMilliseconds(320));
-  EXPECT_EQ(Tween::CalculateValue(Tween::EASE_OUT, .2),
-            animation.GetCurrentValue());
+  EXPECT_DOUBLE_EQ(Tween::CalculateValue(Tween::EASE_OUT, .2),
+                   animation.GetCurrentValue());
 }
 
 TEST_F(MultiAnimationTest, DifferingStartAndEnd) {

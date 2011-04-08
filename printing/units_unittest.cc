@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ TEST(UnitsTest, Convertions) {
   EXPECT_EQ(100, ConvertUnitDouble(100, 100, 100));
   EXPECT_EQ(-100, ConvertUnitDouble(-100, 100, 100));
   EXPECT_EQ(0, ConvertUnitDouble(0, 100, 100));
-  EXPECT_EQ(0.000002, ConvertUnitDouble(2, 1000, 0.001));
+  EXPECT_DOUBLE_EQ(0.000002, ConvertUnitDouble(2, 1000, 0.001));
   EXPECT_EQ(2000000, ConvertUnitDouble(2, 0.001, 1000));
 
   EXPECT_EQ(kHundrethsMMPerInch, ConvertMilliInchToHundredThousanthMeter(1000));
