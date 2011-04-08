@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,18 +19,17 @@ class TemplateURL;
 
 #if defined(OS_WIN)
 // Detects which version of Firefox is installed from registry. Returns its
-// major version, and drops the minor version. Returns 0 if
-// failed. If there are indicators of both FF2 and FF3 it is
-// biased to return the biggest version.
+// major version, and drops the minor version. Returns 0 if failed. If there are
+// indicators of both Firefox 2 and Firefox 3 it is biased to return the biggest
+// version.
 int GetCurrentFirefoxMajorVersionFromRegistry();
 
-// Detects where Firefox lives.  Returns a empty string if Firefox
-// is not installed.
-std::wstring GetFirefoxInstallPathFromRegistry();
+// Detects where Firefox lives. Returns an empty path if Firefox is not
+// installed.
+FilePath GetFirefoxInstallPathFromRegistry();
 #endif  // OS_WIN
 
 #if defined(OS_MACOSX)
-
 // Get the directory in which the Firefox .dylibs live, we need to load these
 // in order to decoded FF profile passwords.
 // The Path is usuall FF App Bundle/Contents/Mac OS/
@@ -41,19 +40,19 @@ FilePath GetFirefoxDylibPath();
 // Returns the path to the Firefox profile.
 FilePath GetFirefoxProfilePath();
 
-// Detects version of Firefox and installation path from given Firefox profile
+// Detects version of Firefox and installation path for the given Firefox
+// profile.
 bool GetFirefoxVersionAndPathFromProfile(const FilePath& profile_path,
                                          int* version,
                                          FilePath* app_path);
 
-// Gets the full path of the profiles.ini file. This file records
-// the profiles that can be used by Firefox.  Returns an empty
-// string if failed.
+// Gets the full path of the profiles.ini file. This file records the profiles
+// that can be used by Firefox. Returns an empty path if failed.
 FilePath GetProfilesINI();
 
 // Parses the profile.ini file, and stores its information in |root|.
-// This file is a plain-text file. Key/value pairs are stored one per
-// line, and they are separeated in different sections. For example:
+// This file is a plain-text file. Key/value pairs are stored one per line, and
+// they are separated in different sections. For example:
 //   [General]
 //   StartWithLastProfile=1
 //
@@ -65,8 +64,8 @@ FilePath GetProfilesINI();
 // "Genenral.StartWithLastProfile" has the value "1".
 void ParseProfileINI(const FilePath& file, DictionaryValue* root);
 
-// Returns true if we want to add the URL to the history. We filter
-// out the URL with a unsupported scheme.
+// Returns true if we want to add the URL to the history. We filter out the URL
+// with a unsupported scheme.
 bool CanImportURL(const GURL& url);
 
 // Parses the OpenSearch XML files in |xml_files| and populates |search_engines|
@@ -92,12 +91,12 @@ bool IsDefaultHomepage(const GURL& homepage, const FilePath& app_path);
 // in |prefs|. Keys are strings, and values can be strings, booleans or
 // integers.  Returns true if it succeeded, false otherwise (in which case
 // |prefs| is not filled).
-// Note: for strings, only valid UTF-8 string values are supported.  If a
+// Note: for strings, only valid UTF-8 string values are supported. If a
 // key/pair is not valid UTF-8, it is ignored and will not appear in |prefs|.
 bool ParsePrefFile(const FilePath& pref_file, DictionaryValue* prefs);
 
-// Parses the value of a particular firefox preference from a string that is
-// the contents of the prefs file.
+// Parses the value of a particular firefox preference from a string that is the
+// contents of the prefs file.
 std::string GetPrefsJsValue(const std::string& prefs,
                             const std::string& pref_key);
 

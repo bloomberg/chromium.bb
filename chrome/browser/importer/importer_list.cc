@@ -78,8 +78,7 @@ void DetectFirefoxProfiles(std::vector<importer::SourceProfile*>* profiles) {
   firefox->importer_type = firefox_type;
   firefox->source_path = profile_path;
 #if defined(OS_WIN)
-  firefox->app_path = FilePath::FromWStringHack(
-      GetFirefoxInstallPathFromRegistry());
+  firefox->app_path = GetFirefoxInstallPathFromRegistry();
 #endif
   if (firefox->app_path.empty())
     firefox->app_path = app_path;

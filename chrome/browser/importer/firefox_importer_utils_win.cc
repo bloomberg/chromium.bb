@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ int GetCurrentFirefoxMajorVersionFromRegistry() {
   return highest_version;
 }
 
-std::wstring GetFirefoxInstallPathFromRegistry() {
+FilePath GetFirefoxInstallPathFromRegistry() {
   // Detects the path that Firefox is installed in.
   std::wstring registry_path = L"Software\\Mozilla\\Mozilla Firefox";
   wchar_t buffer[MAX_PATH];
@@ -50,16 +50,16 @@ std::wstring GetFirefoxInstallPathFromRegistry() {
   LONG result = reg_key.ReadValue(L"CurrentVersion", buffer,
                                   &buffer_length, NULL);
   if (result != ERROR_SUCCESS)
-    return std::wstring();
+    return FilePath();
+
   registry_path += L"\\" + std::wstring(buffer) + L"\\Main";
   buffer_length = sizeof(buffer);
   base::win::RegKey reg_key_directory(HKEY_LOCAL_MACHINE,
                                       registry_path.c_str(), KEY_READ);
   result = reg_key_directory.ReadValue(L"Install Directory", buffer,
                                        &buffer_length, NULL);
-  if (result != ERROR_SUCCESS)
-    return std::wstring();
-  return buffer;
+
+  return (result != ERROR_SUCCESS) ? FilePath() : FilePath(buffer);
 }
 
 FilePath GetProfilesINI() {
