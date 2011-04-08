@@ -1310,4 +1310,10 @@
    fun:RendererMain
    fun:SimpleRenderer
 }
+{
+   bug_78786
+   Heapcheck:Leak
+   fun:sync_notifier::::NonBlockingInvalidationNotifierTest::SetUp
+   fun:testing::internal::HandleExceptionsInMethodIfSupported
+}
 
