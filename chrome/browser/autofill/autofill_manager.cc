@@ -436,17 +436,18 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
   DCHECK(autofill_field);
 
   // Unpack the |unique_id| into component parts.
-  std::string cc_guid;
-  std::string profile_guid;
+  GUIDPair cc_guid;
+  GUIDPair profile_guid;
   UnpackGUIDs(unique_id, &cc_guid, &profile_guid);
-  DCHECK(!guid::IsValidGUID(cc_guid) || !guid::IsValidGUID(profile_guid));
+  DCHECK(!guid::IsValidGUID(cc_guid.first) ||
+         !guid::IsValidGUID(profile_guid.first));
 
   // Find the profile that matches the |profile_id|, if one is specified.
   const AutofillProfile* profile = NULL;
-  if (guid::IsValidGUID(profile_guid)) {
+  if (guid::IsValidGUID(profile_guid.first)) {
     for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
          iter != profiles.end(); ++iter) {
-      if ((*iter)->guid() == profile_guid) {
+      if ((*iter)->guid() == profile_guid.first) {
         profile = *iter;
         break;
       }
@@ -456,10 +457,10 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
 
   // Find the credit card that matches the |cc_id|, if one is specified.
   const CreditCard* credit_card = NULL;
-  if (guid::IsValidGUID(cc_guid)) {
+  if (guid::IsValidGUID(cc_guid.first)) {
     for (std::vector<CreditCard*>::const_iterator iter = credit_cards.begin();
          iter != credit_cards.end(); ++iter) {
-      if ((*iter)->guid() == cc_guid) {
+      if ((*iter)->guid() == cc_guid.first) {
         credit_card = *iter;
         break;
       }
@@ -487,7 +488,7 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
         if (profile) {
           DCHECK_NE(AutofillType::CREDIT_CARD,
                     AutofillType(field_type).group());
-          FillFormField(profile, field_type, &(*iter));
+          FillFormField(profile, field_type, profile_guid.second, &(*iter));
         } else {
           DCHECK_EQ(AutofillType::CREDIT_CARD,
                     AutofillType(field_type).group());
@@ -528,7 +529,15 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
     if (field_group_type != AutofillType::NO_GROUP) {
       if (profile) {
         DCHECK_NE(AutofillType::CREDIT_CARD, field_group_type);
-        FillFormField(profile, field_type, &result.fields[j]);
+        // If the field being filled is the field that the user initiated the
+        // fill from, then take the multi-profile "variant" into account.
+        // Otherwise fill with the default (zeroth) variant.
+        if (result.fields[j] == field) {
+          FillFormField(profile, field_type, profile_guid.second,
+                        &result.fields[j]);
+        } else {
+          FillFormField(profile, field_type, 0, &result.fields[j]);
+        }
       } else {
         DCHECK_EQ(AutofillType::CREDIT_CARD, field_group_type);
         FillCreditCardFormField(credit_card, field_type, &result.fields[j]);
@@ -765,38 +774,76 @@ void AutofillManager::GetProfileSuggestions(FormStructure* form,
                                             std::vector<string16>* icons,
                                             std::vector<int>* unique_ids) {
   const std::vector<AutofillProfile*>& profiles = personal_data_->profiles();
-  std::vector<AutofillProfile*> matched_profiles;
-  for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
-       iter != profiles.end(); ++iter) {
-    AutofillProfile* profile = *iter;
+  if (!field.is_autofilled) {
+    std::vector<AutofillProfile*> matched_profiles;
+    for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
+         iter != profiles.end(); ++iter) {
+      AutofillProfile* profile = *iter;
 
-    // The value of the stored data for this field type in the |profile|.
-    string16 profile_field_value = profile->GetInfo(type);
+      // The value of the stored data for this field type in the |profile|.
+      std::vector<string16> multi_values;
+      profile->GetMultiInfo(type, &multi_values);
 
-    if (!profile_field_value.empty() &&
-        StartsWith(profile_field_value, field.value, false)) {
-      matched_profiles.push_back(profile);
-      values->push_back(profile_field_value);
-      unique_ids->push_back(PackGUIDs(std::string(), profile->guid()));
+      for (size_t i = 0; i < multi_values.size(); ++i) {
+        if (!multi_values[i].empty() &&
+            StartsWith(multi_values[i], field.value, false)) {
+          matched_profiles.push_back(profile);
+          values->push_back(multi_values[i]);
+          unique_ids->push_back(PackGUIDs(GUIDPair(std::string(), 0),
+                                          GUIDPair(profile->guid(), i)));
+          break;
+        }
+      }
     }
+
+    std::vector<AutofillFieldType> form_fields;
+    form_fields.reserve(form->field_count());
+    for (std::vector<AutofillField*>::const_iterator iter = form->begin();
+         iter != form->end(); ++iter) {
+      // The field list is terminated with a NULL AutofillField, so don't try to
+      // dereference it.
+      if (!*iter)
+        break;
+      form_fields.push_back((*iter)->type());
+    }
+
+    AutofillProfile::CreateInferredLabels(&matched_profiles, &form_fields,
+                                          type, 1, labels);
+
+    // No icons for profile suggestions.
+    icons->resize(values->size());
+  } else {
+    for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
+         iter != profiles.end(); ++iter) {
+      AutofillProfile* profile = *iter;
+
+      // The value of the stored data for this field type in the |profile|.
+      std::vector<string16> multi_values;
+      profile->GetMultiInfo(type, &multi_values);
+
+      for (size_t i = 0; i < multi_values.size(); ++i) {
+        if (!multi_values[i].empty() &&
+            StringToLowerASCII(multi_values[i])
+                == StringToLowerASCII(field.value)) {
+          for (size_t j = 0; j < multi_values.size(); ++j) {
+            if (!multi_values[j].empty()) {
+              values->push_back(multi_values[j]);
+              unique_ids->push_back(PackGUIDs(GUIDPair(std::string(), 0),
+                                              GUIDPair(profile->guid(), j)));
+            }
+          }
+          // We've added all the values for this profile so move on to the next.
+          break;
+        }
+      }
+    }
+
+    // No labels for previously filled fields.
+    labels->resize(values->size());
+
+    // No icons for profile suggestions.
+    icons->resize(values->size());
   }
-
-  std::vector<AutofillFieldType> form_fields;
-  form_fields.reserve(form->field_count());
-  for (std::vector<AutofillField*>::const_iterator iter = form->begin();
-       iter != form->end(); ++iter) {
-    // The field list is terminated with a NULL AutofillField, so don't try to
-    // dereference it.
-    if (!*iter)
-      break;
-    form_fields.push_back((*iter)->type());
-  }
-
-  AutofillProfile::CreateInferredLabels(&matched_profiles, &form_fields,
-                                        type, 1, labels);
-
-  // No icons for profile suggestions.
-  icons->resize(values->size());
 }
 
 void AutofillManager::GetCreditCardSuggestions(FormStructure* form,
@@ -830,7 +877,8 @@ void AutofillManager::GetCreditCardSuggestions(FormStructure* form,
       values->push_back(creditcard_field_value);
       labels->push_back(label);
       icons->push_back(credit_card->type());
-      unique_ids->push_back(PackGUIDs(credit_card->guid(), std::string()));
+      unique_ids->push_back(PackGUIDs(GUIDPair(credit_card->guid(), 0),
+                                      GUIDPair(std::string(), 0)));
     }
   }
 }
@@ -860,27 +908,36 @@ void AutofillManager::FillCreditCardFormField(const CreditCard* credit_card,
 
 void AutofillManager::FillFormField(const AutofillProfile* profile,
                                     AutofillFieldType type,
+                                    size_t variant,
                                     webkit_glue::FormField* field) {
   DCHECK(profile);
   DCHECK_NE(AutofillType::CREDIT_CARD, AutofillType(type).group());
   DCHECK(field);
 
   if (AutofillType(type).subgroup() == AutofillType::PHONE_NUMBER) {
-    FillPhoneNumberField(profile, type, field);
+    FillPhoneNumberField(profile, type, variant, field);
   } else {
-    if (field->form_control_type == ASCIIToUTF16("select-one"))
+    if (field->form_control_type == ASCIIToUTF16("select-one")) {
       autofill::FillSelectControl(*profile, type, field);
-    else
-      field->value = profile->GetInfo(type);
+    } else {
+      std::vector<string16> values;
+      profile->GetMultiInfo(type, &values);
+      DCHECK(variant < values.size());
+      field->value = values[variant];
+    }
   }
 }
 
 void AutofillManager::FillPhoneNumberField(const AutofillProfile* profile,
                                            AutofillFieldType type,
+                                           size_t variant,
                                            webkit_glue::FormField* field) {
   // If we are filling a phone number, check to see if the size field
   // matches the "prefix" or "suffix" sizes and fill accordingly.
-  string16 number = profile->GetInfo(type);
+  std::vector<string16> values;
+  profile->GetMultiInfo(type, &values);
+  DCHECK(variant < values.size());
+  string16 number = values[variant];
   bool has_valid_suffix_and_prefix = (number.length() ==
       static_cast<size_t>(PhoneNumber::kPrefixLength +
                           PhoneNumber::kSuffixLength));
@@ -928,11 +985,40 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   }
 }
 
+int AutofillManager::GUIDToID(const GUIDPair& guid) {
+  static int last_id = 1;
+
+  if (!guid::IsValidGUID(guid.first))
+    return 0;
+
+  std::map<GUIDPair, int>::const_iterator iter = guid_id_map_.find(guid);
+  if (iter == guid_id_map_.end()) {
+    guid_id_map_[guid] = last_id;
+    id_guid_map_[last_id] = guid;
+    return last_id++;
+  } else {
+    return iter->second;
+  }
+}
+
+const AutofillManager::GUIDPair AutofillManager::IDToGUID(int id) {
+  if (id == 0)
+    return GUIDPair(std::string(), 0);
+
+  std::map<int, GUIDPair>::const_iterator iter = id_guid_map_.find(id);
+  if (iter == id_guid_map_.end()) {
+    NOTREACHED();
+    return GUIDPair(std::string(), 0);
+  }
+
+  return iter->second;
+}
+
 // When sending IDs (across processes) to the renderer we pack credit card and
 // profile IDs into a single integer.  Credit card IDs are sent in the high
 // word and profile IDs are sent in the low word.
-int AutofillManager::PackGUIDs(const std::string& cc_guid,
-                               const std::string& profile_guid) {
+int AutofillManager::PackGUIDs(const GUIDPair& cc_guid,
+                               const GUIDPair& profile_guid) {
   int cc_id = GUIDToID(cc_guid);
   int profile_id = GUIDToID(profile_guid);
 
@@ -946,41 +1032,12 @@ int AutofillManager::PackGUIDs(const std::string& cc_guid,
 // and profile IDs from a single integer.  Credit card IDs are stored in the
 // high word and profile IDs are stored in the low word.
 void AutofillManager::UnpackGUIDs(int id,
-                                  std::string* cc_guid,
-                                  std::string* profile_guid) {
+                                  GUIDPair* cc_guid,
+                                  GUIDPair* profile_guid) {
   int cc_id = id >> std::numeric_limits<unsigned short>::digits &
       std::numeric_limits<unsigned short>::max();
   int profile_id = id & std::numeric_limits<unsigned short>::max();
 
   *cc_guid = IDToGUID(cc_id);
   *profile_guid = IDToGUID(profile_id);
-}
-
-int AutofillManager::GUIDToID(const std::string& guid) {
-  static int last_id = 1;
-
-  if (!guid::IsValidGUID(guid))
-    return 0;
-
-  std::map<std::string, int>::const_iterator iter = guid_id_map_.find(guid);
-  if (iter == guid_id_map_.end()) {
-    guid_id_map_[guid] = last_id;
-    id_guid_map_[last_id] = guid;
-    return last_id++;
-  } else {
-    return iter->second;
-  }
-}
-
-const std::string AutofillManager::IDToGUID(int id) {
-  if (id == 0)
-    return std::string();
-
-  std::map<int, std::string>::const_iterator iter = id_guid_map_.find(id);
-  if (iter == id_guid_map_.end()) {
-    NOTREACHED();
-    return std::string();
-  }
-
-  return iter->second;
 }

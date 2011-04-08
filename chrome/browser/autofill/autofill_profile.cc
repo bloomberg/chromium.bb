@@ -219,7 +219,14 @@ void AutofillProfile::SetMultiInfo(AutofillFieldType type,
       CopyValuesToItems(type, values, &fax_number_);
       break;
     default:
-      NOTREACHED() << "Attempt to set multiple values on single-valued field.";
+      if (values.size() == 1) {
+        SetInfo(type, values[0]);
+      } else if (values.size() == 0) {
+        SetInfo(type, string16());
+      } else {
+        NOTREACHED()
+            << "Attempt to set multiple values on single-valued field.";
+      }
       break;
   }
 }
@@ -240,9 +247,8 @@ void AutofillProfile::GetMultiInfo(AutofillFieldType type,
       CopyItemsToValues(type, fax_number_, values);
       break;
     default:
-      NOTREACHED()
-          << "Attempt to get multiple values from a single-valued field.";
-      break;
+      values->resize(1);
+      (*values)[0] = GetInfo(type);
   }
 }
 

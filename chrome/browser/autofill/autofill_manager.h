@@ -84,7 +84,13 @@ class AutofillManager : public TabContentsObserver,
   void Reset();
 
  protected:
-  // For tests.
+  // For tests:
+
+  // The string/int pair is composed of the guid string and variant index
+  // respectively.  The variant index is an index into the multi-valued item
+  // (where applicable).
+  typedef std::pair<std::string, size_t> GUIDPair;
+
   AutofillManager(TabContents* tab_contents,
                   PersonalDataManager* personal_data);
 
@@ -99,13 +105,13 @@ class AutofillManager : public TabContentsObserver,
 
   // Maps GUIDs to and from IDs that are used to identify profiles and credit
   // cards sent to and from the renderer process.
-  virtual int GUIDToID(const std::string& guid);
-  virtual const std::string IDToGUID(int id);
+  virtual int GUIDToID(const GUIDPair& guid);
+  virtual const GUIDPair IDToGUID(int id);
 
   // Methods for packing and unpacking credit card and profile IDs for sending
   // and receiving to and from the renderer process.
-  int PackGUIDs(const std::string& cc_guid, const std::string& profile_guid);
-  void UnpackGUIDs(int id, std::string* cc_guid, std::string* profile_guid);
+  int PackGUIDs(const GUIDPair& cc_guid, const GUIDPair& profile_guid);
+  void UnpackGUIDs(int id, GUIDPair* cc_guid, GUIDPair* profile_guid);
 
  private:
   void OnFormSubmitted(const webkit_glue::FormData& form);
@@ -169,14 +175,18 @@ class AutofillManager : public TabContentsObserver,
                                webkit_glue::FormField* field);
 
   // Set |field| argument's value based on |type| and contents of the |profile|.
+  // The |variant| parameter specifies which value in a multi-valued profile.
   void FillFormField(const AutofillProfile* profile,
                      AutofillFieldType type,
+                     size_t variant,
                      webkit_glue::FormField* field);
 
   // Set |field| argument's value for phone/fax number based on contents of the
   // |profile|. |type| is the type of the phone.
+  // The |variant| parameter specifies which value in a multi-valued profile.
   void FillPhoneNumberField(const AutofillProfile* profile,
                             AutofillFieldType type,
+                            size_t variant,
                             webkit_glue::FormField* field);
 
   // Parses the forms using heuristic matching and querying the Autofill server.
@@ -217,8 +227,8 @@ class AutofillManager : public TabContentsObserver,
   bool has_logged_address_suggestions_count_;
 
   // GUID to ID mapping.  We keep two maps to convert back and forth.
-  std::map<std::string, int> guid_id_map_;
-  std::map<int, std::string> id_guid_map_;
+  std::map<GUIDPair, int> guid_id_map_;
+  std::map<int, GUIDPair> id_guid_map_;
 
   friend class AutofillManagerTest;
   friend class FormStructureBrowserTest;
