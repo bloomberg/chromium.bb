@@ -434,24 +434,25 @@ class TestAutofillManager : public AutofillManager {
   }
 
   int GetPackedCreditCardID(int credit_card_id) {
-    return PackGUIDs(IDToGUID(credit_card_id), std::string());
+    return PackGUIDs(IDToGUID(credit_card_id), GUIDPair(std::string(), 0));
   }
 
-  virtual int GUIDToID(const std::string& guid) OVERRIDE {
-    if (guid.empty())
+  virtual int GUIDToID(const GUIDPair& guid) OVERRIDE {
+    if (guid.first.empty())
       return 0;
 
     int id;
-    EXPECT_TRUE(base::StringToInt(guid.substr(guid.rfind("-") + 1), &id));
+    EXPECT_TRUE(base::StringToInt(guid.first.substr(guid.first.rfind("-") + 1),
+                                  &id));
     return id;
   }
 
-  virtual const std::string IDToGUID(int id) OVERRIDE {
+  virtual const GUIDPair IDToGUID(int id) OVERRIDE {
     EXPECT_TRUE(id >= 0);
     if (id <= 0)
-      return std::string();
+      return GUIDPair(std::string(), 0);
 
-    return base::StringPrintf("00000000-0000-0000-0000-%012d", id);
+    return GUIDPair(base::StringPrintf("00000000-0000-0000-0000-%012d", id), 0);
   }
 
  private:
@@ -465,6 +466,8 @@ class TestAutofillManager : public AutofillManager {
 
 class AutofillManagerTest : public TabContentsWrapperTestHarness {
  public:
+  typedef AutofillManager::GUIDPair GUIDPair;
+
   AutofillManagerTest() {}
   virtual ~AutofillManagerTest() {
     // Order of destruction is important as AutofillManager relies on
@@ -1365,6 +1368,104 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
                     expected_labels, expected_icons, expected_unique_ids);
 }
 
+// Test that a non-default value is suggested for multi-valued profile, on an
+// unfilled form.
+TEST_F(AutofillManagerTest, GetFieldSuggestionsForMultiValuedProfileUnfilled) {
+  // Set up our form data.
+  FormData form;
+  CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // |profile| will be owned by the mock PersonalDataManager.
+  AutofillProfile* profile = new AutofillProfile;
+  autofill_test::SetProfileInfo(profile, "Elvis", "", "Presley", "me@x.com", "",
+                                "", "", "", "", "", "", "", "");
+  profile->set_guid("00000000-0000-0000-0000-000000000101");
+  std::vector<string16> multi_values(2);
+  multi_values[0] = ASCIIToUTF16("Elvis Presley");
+  multi_values[1] = ASCIIToUTF16("Cynthia Love");
+  profile->SetMultiInfo(NAME_FULL, multi_values);
+  autofill_manager_->AddProfile(profile);
+
+  // Get the first name field.  And start out with "Cy", hoping for "Cynthia".
+  FormField& field = form.fields[0];
+  field.value = ASCIIToUTF16("Cy");
+  field.is_autofilled = false;
+  GetAutofillSuggestions(form, field);
+
+  // Trigger the |Send|.
+  AutocompleteSuggestionsReturned(std::vector<string16>());
+
+  // Test that we sent the right message to the renderer.
+  int page_id = 0;
+  std::vector<string16> values;
+  std::vector<string16> labels;
+  std::vector<string16> icons;
+  std::vector<int> unique_ids;
+  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
+
+  string16 expected_values[] = { ASCIIToUTF16("Cynthia") };
+  string16 expected_labels[] = { ASCIIToUTF16("me@x.com") };
+  string16 expected_icons[] = { string16() };
+  int expected_unique_ids[] = { 101 };
+  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
+                    kDefaultPageID, arraysize(expected_values), expected_values,
+                    expected_labels, expected_icons, expected_unique_ids);
+}
+
+// Test that all values are suggested for multi-valued profile, on a filled
+// form.  This is the per-field "override" case.
+TEST_F(AutofillManagerTest, GetFieldSuggestionsForMultiValuedProfileFilled) {
+  // Set up our form data.
+  FormData form;
+  CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // |profile| will be owned by the mock PersonalDataManager.
+  AutofillProfile* profile = new AutofillProfile;
+  profile->set_guid("00000000-0000-0000-0000-000000000102");
+  std::vector<string16> multi_values(3);
+  multi_values[0] = ASCIIToUTF16("Travis Smith");
+  multi_values[1] = ASCIIToUTF16("Cynthia Love");
+  multi_values[2] = ASCIIToUTF16("Zac Mango");
+  profile->SetMultiInfo(NAME_FULL, multi_values);
+  autofill_manager_->AddProfile(profile);
+
+  // Get the first name field.  And start out with "Travis", hoping for all the
+  // multi-valued variants as suggestions.
+  FormField& field = form.fields[0];
+  field.value = ASCIIToUTF16("Travis");
+  field.is_autofilled = true;
+  GetAutofillSuggestions(form, field);
+
+  // Trigger the |Send|.
+  AutocompleteSuggestionsReturned(std::vector<string16>());
+
+  // Test that we sent the right message to the renderer.
+  int page_id = 0;
+  std::vector<string16> values;
+  std::vector<string16> labels;
+  std::vector<string16> icons;
+  std::vector<int> unique_ids;
+  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
+
+  string16 expected_values[] = {
+    ASCIIToUTF16("Travis"),
+    ASCIIToUTF16("Cynthia"),
+    ASCIIToUTF16("Zac")
+  };
+  string16 expected_labels[] = { string16(), string16(), string16() };
+  string16 expected_icons[] = { string16(), string16(), string16() };
+  int expected_unique_ids[] = { 102, 102, 102 };
+  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
+                    kDefaultPageID, arraysize(expected_values), expected_values,
+                    expected_labels, expected_icons, expected_unique_ids);
+}
+
 // Test that we correctly fill an address form.
 TEST_F(AutofillManagerTest, FillAddressForm) {
   // Set up our form data.
@@ -1373,10 +1474,11 @@ TEST_F(AutofillManagerTest, FillAddressForm) {
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
-  std::string guid = "00000000-0000-0000-0000-000000000001";
+  GUIDPair guid("00000000-0000-0000-0000-000000000001", 0);
+  GUIDPair empty(std::string(), 0);
   FillAutofillFormData(
       kDefaultPageID, form, form.fields[0],
-      autofill_manager_->PackGUIDs(std::string(), guid));
+      autofill_manager_->PackGUIDs(empty, guid));
 
   int page_id = 0;
   FormData results;
@@ -1392,10 +1494,11 @@ TEST_F(AutofillManagerTest, FillCreditCardForm) {
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
-  std::string guid = "00000000-0000-0000-0000-000000000004";
+  GUIDPair guid("00000000-0000-0000-0000-000000000004", 0);
+  GUIDPair empty(std::string(), 0);
   FillAutofillFormData(
       kDefaultPageID, form, *form.fields.begin(),
-      autofill_manager_->PackGUIDs(guid, std::string()));
+      autofill_manager_->PackGUIDs(guid, empty));
 
   int page_id = 0;
   FormData results;
@@ -1415,10 +1518,11 @@ TEST_F(AutofillManagerTest, FillCreditCardFormNoYearNoMonth) {
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
-  std::string guid = "00000000-0000-0000-0000-000000000007";
+  GUIDPair guid("00000000-0000-0000-0000-000000000007", 0);
+  GUIDPair empty(std::string(), 0);
   FillAutofillFormData(
       kDefaultPageID, form, *form.fields.begin(),
-      autofill_manager_->PackGUIDs(guid, std::string()));
+      autofill_manager_->PackGUIDs(guid, empty));
 
   int page_id = 0;
   FormData results;
@@ -1440,10 +1544,11 @@ TEST_F(AutofillManagerTest, FillCreditCardFormNoYearMonth) {
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
-  std::string guid = "00000000-0000-0000-0000-000000000007";
+  GUIDPair guid("00000000-0000-0000-0000-000000000007", 0);
+  GUIDPair empty(std::string(), 0);
   FillAutofillFormData(
       kDefaultPageID, form, *form.fields.begin(),
-      autofill_manager_->PackGUIDs(guid, std::string()));
+      autofill_manager_->PackGUIDs(guid, empty));
 
   int page_id = 0;
   FormData results;
@@ -1464,10 +1569,11 @@ TEST_F(AutofillManagerTest, FillCreditCardFormYearNoMonth) {
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
-  std::string guid = "00000000-0000-0000-0000-000000000007";
+  GUIDPair guid("00000000-0000-0000-0000-000000000007", 0);
+  GUIDPair empty(std::string(), 0);
   FillAutofillFormData(
       kDefaultPageID, form, *form.fields.begin(),
-      autofill_manager_->PackGUIDs(guid, std::string()));
+      autofill_manager_->PackGUIDs(guid, empty));
 
   int page_id = 0;
   FormData results;
@@ -1489,10 +1595,11 @@ TEST_F(AutofillManagerTest, FillCreditCardFormYearMonth) {
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
-  std::string guid = "00000000-0000-0000-0000-000000000007";
+  GUIDPair guid("00000000-0000-0000-0000-000000000007", 0);
+  GUIDPair empty(std::string(), 0);
   FillAutofillFormData(
       kDefaultPageID, form, *form.fields.begin(),
-      autofill_manager_->PackGUIDs(guid, std::string()));
+      autofill_manager_->PackGUIDs(guid, empty));
 
   int page_id = 0;
   FormData results;
@@ -1511,9 +1618,10 @@ TEST_F(AutofillManagerTest, FillAddressAndCreditCardForm) {
   FormsSeen(forms);
 
   // First fill the address data.
-  std::string guid = "00000000-0000-0000-0000-000000000001";
+  GUIDPair guid("00000000-0000-0000-0000-000000000001", 0);
+  GUIDPair empty(std::string(), 0);
   FillAutofillFormData(kDefaultPageID, form, form.fields[0],
-                       autofill_manager_->PackGUIDs(std::string(), guid));
+                       autofill_manager_->PackGUIDs(empty, guid));
 
   int page_id = 0;
   FormData results;
@@ -1525,10 +1633,10 @@ TEST_F(AutofillManagerTest, FillAddressAndCreditCardForm) {
 
   // Now fill the credit card data.
   const int kPageID2 = 2;
-  guid = "00000000-0000-0000-0000-000000000004";
+  GUIDPair guid2("00000000-0000-0000-0000-000000000004", 0);
   FillAutofillFormData(
       kPageID2, form, form.fields.back(),
-      autofill_manager_->PackGUIDs(guid, std::string()));
+      autofill_manager_->PackGUIDs(guid2, empty));
 
   page_id = 0;
   EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results));
@@ -1554,9 +1662,10 @@ TEST_F(AutofillManagerTest, FillFormWithMultipleSections) {
   FormsSeen(forms);
 
   // Fill the first section.
-  std::string guid = "00000000-0000-0000-0000-000000000001";
+  GUIDPair guid("00000000-0000-0000-0000-000000000001", 0);
+  GUIDPair empty(std::string(), 0);
   FillAutofillFormData(kDefaultPageID, form, form.fields[0],
-                       autofill_manager_->PackGUIDs(std::string(), guid));
+                       autofill_manager_->PackGUIDs(empty, guid));
 
   int page_id = 0;
   FormData results;
@@ -1578,10 +1687,10 @@ TEST_F(AutofillManagerTest, FillFormWithMultipleSections) {
   // Fill the second section, with the initiating field somewhere in the middle
   // of the section.
   const int kPageID2 = 2;
-  guid = "00000000-0000-0000-0000-000000000001";
+  GUIDPair guid2("00000000-0000-0000-0000-000000000001", 0);
   ASSERT_LT(9U, kAddressFormSize);
   FillAutofillFormData(kPageID2, form, form.fields[kAddressFormSize + 9],
-                       autofill_manager_->PackGUIDs(std::string(), guid));
+                       autofill_manager_->PackGUIDs(empty, guid2));
 
   page_id = 0;
   EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results));
@@ -1624,9 +1733,10 @@ TEST_F(AutofillManagerTest, FillFormWithMultipleEmails) {
   FormsSeen(forms);
 
   // Fill the form.
-  std::string guid = "00000000-0000-0000-0000-000000000001";
+  GUIDPair guid("00000000-0000-0000-0000-000000000001", 0);
+  GUIDPair empty(std::string(), 0);
   FillAutofillFormData(kDefaultPageID, form, form.fields[0],
-                       autofill_manager_->PackGUIDs(std::string(), guid));
+                       autofill_manager_->PackGUIDs(empty, guid));
 
   int page_id = 0;
   FormData results;
@@ -1652,10 +1762,11 @@ TEST_F(AutofillManagerTest, FillAutofilledForm) {
   FormsSeen(forms);
 
   // First fill the address data.
-  std::string guid = "00000000-0000-0000-0000-000000000001";
+  GUIDPair guid("00000000-0000-0000-0000-000000000001", 0);
+  GUIDPair empty(std::string(), 0);
   FillAutofillFormData(
       kDefaultPageID, form, *form.fields.begin(),
-      autofill_manager_->PackGUIDs(std::string(), guid));
+      autofill_manager_->PackGUIDs(empty, guid));
 
   int page_id = 0;
   FormData results;
@@ -1669,10 +1780,10 @@ TEST_F(AutofillManagerTest, FillAutofilledForm) {
 
   // Now fill the credit card data.
   const int kPageID2 = 2;
-  guid = "00000000-0000-0000-0000-000000000004";
+  GUIDPair guid2("00000000-0000-0000-0000-000000000004", 0);
   FillAutofillFormData(
       kPageID2, form, form.fields.back(),
-      autofill_manager_->PackGUIDs(guid, std::string()));
+      autofill_manager_->PackGUIDs(guid2, empty));
 
   page_id = 0;
   EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results));
@@ -1692,7 +1803,7 @@ TEST_F(AutofillManagerTest, FillAutofilledForm) {
   const int kPageID3 = 3;
   FillAutofillFormData(
       kPageID3, form, *form.fields.rbegin(),
-      autofill_manager_->PackGUIDs(guid, std::string()));
+      autofill_manager_->PackGUIDs(guid2, empty));
 
   page_id = 0;
   EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results));
@@ -1744,6 +1855,9 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   ASSERT_TRUE(work_profile != NULL);
   string16 saved_phone = work_profile->GetInfo(PHONE_HOME_NUMBER);
 
+  GUIDPair guid(work_profile->guid(), 0);
+  GUIDPair empty(std::string(), 0);
+
   char test_data[] = "1234567890123456";
   for (int i = arraysize(test_data) - 1; i >= 0; --i) {
     test_data[i] = 0;
@@ -1754,7 +1868,7 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
     int page_id = 100 - i;
     FillAutofillFormData(
         page_id, form, *form.fields.begin(),
-        autofill_manager_->PackGUIDs(std::string(), work_profile->guid()));
+        autofill_manager_->PackGUIDs(empty, guid));
     page_id = 0;
     FormData results;
     EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results));
@@ -1789,10 +1903,11 @@ TEST_F(AutofillManagerTest, FormChangesRemoveField) {
   // Now, after the call to |FormsSeen|, we remove the field before filling.
   form.fields.erase(form.fields.begin() + 3);
 
-  std::string guid = "00000000-0000-0000-0000-000000000001";
+  GUIDPair guid("00000000-0000-0000-0000-000000000001", 0);
+  GUIDPair empty(std::string(), 0);
   FillAutofillFormData(
       kDefaultPageID, form, form.fields[0],
-      autofill_manager_->PackGUIDs(std::string(), guid));
+      autofill_manager_->PackGUIDs(empty, guid));
 
   int page_id = 0;
   FormData results;
@@ -1820,10 +1935,11 @@ TEST_F(AutofillManagerTest, FormChangesAddField) {
   // Now, after the call to |FormsSeen|, we restore the field before filling.
   form.fields.insert(pos, field);
 
-  std::string guid = "00000000-0000-0000-0000-000000000001";
+  GUIDPair guid("00000000-0000-0000-0000-000000000001", 0);
+  GUIDPair empty(std::string(), 0);
   FillAutofillFormData(
       kDefaultPageID, form, form.fields[0],
-      autofill_manager_->PackGUIDs(std::string(), guid));
+      autofill_manager_->PackGUIDs(empty, guid));
 
   int page_id = 0;
   FormData results;
@@ -1840,9 +1956,10 @@ TEST_F(AutofillManagerTest, FormSubmitted) {
   FormsSeen(forms);
 
   // Fill the form.
-  std::string guid = "00000000-0000-0000-0000-000000000001";
+  GUIDPair guid("00000000-0000-0000-0000-000000000001", 0);
+  GUIDPair empty(std::string(), 0);
   FillAutofillFormData(kDefaultPageID, form, form.fields[0],
-                       autofill_manager_->PackGUIDs(std::string(), guid));
+                       autofill_manager_->PackGUIDs(empty, guid));
 
   int page_id = 0;
   FormData results;
