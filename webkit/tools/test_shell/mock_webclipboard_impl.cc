@@ -91,10 +91,11 @@ WebKit::WebData MockWebClipboardImpl::readImage(
   CGImageRef image = m_image.getCGImageRef();
   CFDataRef image_data_ref =
       CGDataProviderCopyData(CGImageGetDataProvider(image));
-  webkit_support::EncodeRGBAPNG(CFDataGetBytePtr(image_data_ref),
+  webkit_support::EncodeBGRAPNG(CFDataGetBytePtr(image_data_ref),
                                 CGImageGetWidth(image),
                                 CGImageGetHeight(image),
                                 CGImageGetBytesPerRow(image),
+                                false,
                                 &encoded_image);
   CFRelease(image_data_ref);
 #endif
