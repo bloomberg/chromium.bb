@@ -293,9 +293,9 @@ class ChromeOSTermsHandler
       // No EULA for given language - try en-US as default.
       path = StringPrintf(kEULAPathFormat, "en-US");
       if (!file_util::ReadFileToString(FilePath(path), &contents_)) {
-        // Last resort use EULA from resources.
-        contents_ = ResourceBundle::GetSharedInstance().GetRawDataResource(
-            IDR_TERMS_HTML).as_string();
+        // File with EULA not found, ResponseOnUIThread will load EULA from
+        // resources if contents_ is empty.
+        contents_.clear();
       }
     }
     BrowserThread::PostTask(
@@ -305,6 +305,10 @@ class ChromeOSTermsHandler
 
   void ResponseOnUIThread() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (contents_.empty()) {
+      contents_ = ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_TERMS_HTML).as_string();
+    }
     source_->FinishDataRequest(contents_, request_id_);
   }
 
