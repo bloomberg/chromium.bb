@@ -13,6 +13,8 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/info_bubble.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -192,11 +194,6 @@ void BookmarkBubbleView::Init() {
 
   edit_button_ = new NativeButton(
       this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_BUBBLE_OPTIONS)));
-#if defined(TOUCH_UI)
-  // TODO(saintlou): We need to disable the Edit button for touch since we are
-  // missing some of the controls for the dialog that would pop up next.
-  edit_button_->SetEnabled(false);
-#endif
 
   close_button_ =
       new NativeButton(this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_DONE)));
@@ -372,11 +369,21 @@ void BookmarkBubbleView::HandleButtonPressed(views::Button* sender) {
 }
 
 void BookmarkBubbleView::ShowEditor() {
+#if defined(TOUCH_UI)
+  // Close the InfoBubble
+  Close();
+
+  // Open the Bookmark Manager
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  DCHECK(browser);
+  if (browser)
+    browser->OpenBookmarkManager();
+  else
+    NOTREACHED();
+
+#else
   const BookmarkNode* node =
       profile_->GetBookmarkModel()->GetMostRecentlyAddedNodeForURL(url_);
-
-  // Commit any edits now.
-  ApplyEdits();
 
 #if defined(OS_WIN)
   // Parent the editor to our root ancestor (not the root we're in, as that
@@ -405,6 +412,7 @@ void BookmarkBubbleView::ShowEditor() {
                          BookmarkEditor::EditDetails(node),
                          BookmarkEditor::SHOW_TREE);
   }
+#endif
 }
 
 void BookmarkBubbleView::ApplyEdits() {
