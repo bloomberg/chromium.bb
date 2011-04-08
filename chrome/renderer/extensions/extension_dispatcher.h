@@ -22,6 +22,10 @@ class URLPattern;
 class UserScriptSlave;
 struct ExtensionMsg_Loaded_Params;
 
+namespace WebKit {
+class WebFrame;
+}
+
 namespace v8 {
 class Extension;
 }

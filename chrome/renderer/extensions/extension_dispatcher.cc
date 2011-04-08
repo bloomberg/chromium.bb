@@ -25,6 +25,8 @@ static const int64 kMaxExtensionIdleHandlerDelayS = 5*60 /* seconds */;
 static ExtensionDispatcher* g_extension_dispatcher;
 }
 
+using WebKit::WebFrame;
+
 ExtensionDispatcher* ExtensionDispatcher::Get() {
   return g_extension_dispatcher;
 }
