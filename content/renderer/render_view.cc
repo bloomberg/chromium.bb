@@ -4113,7 +4113,6 @@ void RenderView::OnDragTargetDragEnter(const WebDropData& drop_data,
                                        WebDragOperationsMask ops) {
   WebDragOperation operation = webview()->dragTargetDragEnter(
       drop_data.ToDragData(),
-      0,  // drag identity, unused
       client_point,
       screen_point,
       ops);

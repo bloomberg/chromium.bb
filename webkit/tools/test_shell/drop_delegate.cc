@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,7 @@ DWORD TestDropDelegate::OnDragEnter(IDataObject* data_object,
   POINT client_pt = cursor_position;
   ScreenToClient(GetHWND(), &client_pt);
   WebDragOperation op = webview_->dragTargetDragEnter(
-      drop_data.ToDragData(), 0,  // web drag identity, unused.
+      drop_data.ToDragData(),
       WebPoint(client_pt.x, client_pt.y),
       WebPoint(cursor_position.x, cursor_position.y),
       WebDragOperationCopy);
