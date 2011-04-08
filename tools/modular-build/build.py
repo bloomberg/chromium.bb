@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 import os
 import sys
@@ -439,11 +439,20 @@ int main() {
                     "chrome_binaries_dir=%s" %
                         os.path.join(nacl_dir, "chromebinaries"),
                     "platform=x86-%s" % arch_bits])
-    AddSconsModule(
-        "scons_tests_static_%s" % arch_bits,
-        deps=full_glibc_toolchain_deps,
-        scons_args=["--nacl_glibc", "small_tests", "-k", "nacl_static_link=1",
-                    "platform=x86-%s" % arch_bits])
+    if False:
+      # This is disabled because glibc static linking is broken for hairy
+      # TLS reasons. This stems from libstdc++.a being built -fPIC, which
+      # is normal upstream and works with the upstream linker, but does not
+      # work with nacl-ld because it fails to rewrite the TLS-GD sequences
+      # to TLS-IE sequences as vanilla ld does, after nacl-as has made
+      # those sequences nonstandard by inserting pre-call padding nops.
+      # See http://code.google.com/p/nativeclient/issues/detail?id=237
+      # and http://code.google.com/p/nativeclient/issues/detail?id=1382
+      AddSconsModule(
+          "scons_tests_static_%s" % arch_bits,
+          deps=full_glibc_toolchain_deps,
+          scons_args=["--nacl_glibc", "small_tests", "-k", "nacl_static_link=1",
+                      "platform=x86-%s" % arch_bits])
 
   # Check that all the Scons tests build, including those that do not
   # yet run successfully.

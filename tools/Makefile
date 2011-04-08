@@ -608,12 +608,15 @@ glibc-adhoc-files: | SRC/glibc SRC/linux-headers-for-nacl
 	cp -f $(NACL_MACHINE_HEADERS) $(ARCH_DEST)/include/machine
 	cp ../src/untrusted/include/machine/_default_types.h \
 	    $(ARCH_DEST)/include/machine/_default_types.h
-	echo '/* Intentionally empty */' > \
-	    $(ARCH_DEST)/lib/libnacl.so
-	echo '/* Intentionally empty */' > \
-	    $(ARCH_DEST)/lib/libcrt_platform.a
-	echo '/* Intentionally empty */' > \
-	    $(ARCH_DEST)/lib/libnosys.so
+	# These libraries are in link lines because newlib needs them.
+	# Since glibc doesn't need them, we just stub them out as empty
+	# linker scripts.  For -lfoo the linker looks for libfoo.so first
+	# and then libfoo.a, but only the latter under -static, so install
+	# under .a names to cover both cases.
+	for lib in nacl crt_platform nosys; do \
+	  echo '/* Intentionally empty */' > \
+	      $(ARCH_DEST)/lib/lib$${lib}.a; \
+	done
 	for f in catchsegv gencat getconf getent iconv ldd locale \
 	    localedef mtrace pcprofiledump rpcgen sprof tzselect xtrace; do \
 	    rm -f $(ARCH_DEST)/bin/$$f ; \
