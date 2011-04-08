@@ -74,6 +74,10 @@ bool ValidateAndMapSharedBitmap(const Clipboard::ObjectMapParams& params,
 
 }  // namespace
 
+const char Clipboard::kMimeTypeText[] = "text/plain";
+const char Clipboard::kMimeTypeHTML[] = "text/html";
+const char Clipboard::kMimeTypePNG[] = "image/png";
+
 void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
   // All types apart from CBF_WEBKIT need at least 1 non-empty param.
   if (type != CBF_WEBKIT && (params.empty() || params[0].empty()))

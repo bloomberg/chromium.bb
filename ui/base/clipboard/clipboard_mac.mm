@@ -185,8 +185,13 @@ void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
     return;
   }
 
-  // TODO(dcheng): Implement me.
   types->clear();
+  if (IsFormatAvailable(Clipboard::GetPlainTextFormatType(), buffer))
+    types->push_back(UTF8ToUTF16(kMimeTypeText));
+  if (IsFormatAvailable(Clipboard::GetHtmlFormatType(), buffer))
+    types->push_back(UTF8ToUTF16(kMimeTypeHTML));
+  if ([NSImage canInitWithPasteboard:GetPasteboard()])
+    types->push_back(UTF8ToUTF16(kMimeTypePNG));
   *contains_filenames = false;
 }
 

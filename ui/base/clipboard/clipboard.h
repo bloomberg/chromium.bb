@@ -275,6 +275,11 @@ class Clipboard {
   GtkClipboard* primary_selection_;
 #endif
 
+  // MIME type constants.
+  static const char kMimeTypeText[];
+  static const char kMimeTypeHTML[];
+  static const char kMimeTypePNG[];
+
   DISALLOW_COPY_AND_ASSIGN(Clipboard);
 };
 
