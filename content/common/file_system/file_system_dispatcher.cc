@@ -52,8 +52,8 @@ bool FileSystemDispatcher::OpenFileSystem(
 }
 
 bool FileSystemDispatcher::Move(
-    const GURL& src_path,
-    const GURL& dest_path,
+    const FilePath& src_path,
+    const FilePath& dest_path,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
   if (!ChildThread::current()->Send(new FileSystemHostMsg_Move(
@@ -66,8 +66,8 @@ bool FileSystemDispatcher::Move(
 }
 
 bool FileSystemDispatcher::Copy(
-    const GURL& src_path,
-    const GURL& dest_path,
+    const FilePath& src_path,
+    const FilePath& dest_path,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
   if (!ChildThread::current()->Send(new FileSystemHostMsg_Copy(
@@ -80,7 +80,7 @@ bool FileSystemDispatcher::Copy(
 }
 
 bool FileSystemDispatcher::Remove(
-    const GURL& path,
+    const FilePath& path,
     bool recursive,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
@@ -94,7 +94,7 @@ bool FileSystemDispatcher::Remove(
 }
 
 bool FileSystemDispatcher::ReadMetadata(
-    const GURL& path,
+    const FilePath& path,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
   if (!ChildThread::current()->Send(
@@ -107,7 +107,7 @@ bool FileSystemDispatcher::ReadMetadata(
 }
 
 bool FileSystemDispatcher::Create(
-    const GURL& path,
+    const FilePath& path,
     bool exclusive,
     bool is_directory,
     bool recursive,
@@ -123,7 +123,7 @@ bool FileSystemDispatcher::Create(
 }
 
 bool FileSystemDispatcher::Exists(
-    const GURL& path,
+    const FilePath& path,
     bool is_directory,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
@@ -137,7 +137,7 @@ bool FileSystemDispatcher::Exists(
 }
 
 bool FileSystemDispatcher::ReadDirectory(
-    const GURL& path,
+    const FilePath& path,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
   if (!ChildThread::current()->Send(
@@ -150,7 +150,7 @@ bool FileSystemDispatcher::ReadDirectory(
 }
 
 bool FileSystemDispatcher::Truncate(
-    const GURL& path,
+    const FilePath& path,
     int64 offset,
     int* request_id_out,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
@@ -167,7 +167,7 @@ bool FileSystemDispatcher::Truncate(
 }
 
 bool FileSystemDispatcher::Write(
-    const GURL& path,
+    const FilePath& path,
     const GURL& blob_url,
     int64 offset,
     int* request_id_out,
@@ -198,7 +198,7 @@ bool FileSystemDispatcher::Cancel(
 }
 
 bool FileSystemDispatcher::TouchFile(
-    const GURL& path,
+    const FilePath& path,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
@@ -215,12 +215,12 @@ bool FileSystemDispatcher::TouchFile(
 
 void FileSystemDispatcher::OnOpenComplete(
     int request_id, bool accepted, const std::string& name,
-    const GURL& root) {
+    const FilePath& root_path) {
   fileapi::FileSystemCallbackDispatcher* dispatcher =
       dispatchers_.Lookup(request_id);
   DCHECK(dispatcher);
   if (accepted)
-    dispatcher->DidOpenFileSystem(name, root);
+    dispatcher->DidOpenFileSystem(name, root_path);
   else
     dispatcher->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
   dispatchers_.Remove(request_id);

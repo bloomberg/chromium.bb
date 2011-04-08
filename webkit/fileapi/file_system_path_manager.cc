@@ -100,6 +100,83 @@ FilePath FileSystemPathManager::GetFileSystemRootPathOnFileThread(
   }
 }
 
+bool FileSystemPathManager::CrackFileSystemPath(
+    const FilePath& path, GURL* origin_url, FileSystemType* type,
+    FilePath* virtual_path) const {
+  // TODO(ericu):
+  // Paths come in here [for now] as a URL, followed by a virtual path in
+  // platform format.  For example, on Windows, this will look like
+  // filesystem:http://www.example.com/temporary/\path\to\file.txt.
+  // A potentially dangerous malicious path on Windows might look like:
+  // filesystem:http://www.example.com/temporary/foo/../../\path\to\file.txt.
+  // This code is ugly, but will get cleaned up as we fix the calling side.
+  // Eventually there won't be a distinction between a filesystem path and a
+  // filesystem URL--they'll all be URLs.
+  // We should be passing these to WebKit as string, not FilePath, for ease of
+  // manipulation, or possibly as GURL/KURL.
+
+  std::string path_as_string;
+#ifdef OS_WIN
+  path_as_string = WideToUTF8(path.value());
+#else
+  path_as_string = path.value();
+#endif
+  GURL path_as_url(path_as_string);
+
+  FilePath local_path;
+  GURL local_url;
+  FileSystemType local_type;
+  if (!CrackFileSystemURL(path_as_url, &local_url, &local_type, &local_path))
+    return false;
+
+#if defined(FILE_PATH_USES_WIN_SEPARATORS)
+  // TODO(ericu): This puts the separators back to windows-standard; they come
+  // out of the above code as '/' no matter the platform.  Long-term, we'll
+  // want to let the underlying FileSystemFileUtil implementation do this part,
+  // since they won't all need it.
+  local_path = local_path.NormalizeWindowsPathSeparators();
+#endif
+
+  // Check if file access to this type of file system is allowed
+  // for this origin.
+  switch (local_type) {
+    case kFileSystemTypeTemporary:
+    case kFileSystemTypePersistent:
+      if (!sandbox_provider_->IsAccessAllowed(local_url))
+        return false;
+      break;
+    case kFileSystemTypeLocal:
+      if (!local_provider_.get() ||
+          !local_provider_->IsAccessAllowed(local_url)) {
+        return false;
+      }
+      break;
+    case kFileSystemTypeUnknown:
+    default:
+      NOTREACHED();
+      return false;
+  }
+  // Any paths that include parent references are considered invalid.
+  // These should have been taken care of in CrackFileSystemURL.
+  DCHECK(!local_path.ReferencesParent());
+
+  // The given |local_path| seems valid. Populates the |origin_url|, |type|
+  // and |virtual_path| if they are given.
+
+  if (origin_url) {
+    *origin_url = local_url;
+  }
+
+  if (type)
+    *type = local_type;
+
+  if (virtual_path) {
+    *virtual_path = local_path;
+  }
+
+  return true;
+}
+
 bool FileSystemPathManager::IsAllowedScheme(const GURL& url) const {
   // Basically we only accept http or https. We allow file:// URLs
   // only if --allow-file-access-from-files flag is given.
@@ -133,29 +210,6 @@ bool FileSystemPathManager::IsRestrictedFileName(
     NOTREACHED();
     return true;
   }
-}
-
-// Checks if an origin has access to a particular filesystem type.
-bool FileSystemPathManager::IsAllowedFileSystemType(
-    GURL origin, FileSystemType type) {
-  switch (type) {
-    case kFileSystemTypeTemporary:
-    case kFileSystemTypePersistent:
-      if (!sandbox_provider_->IsAccessAllowed(origin))
-        return false;
-      break;
-    case kFileSystemTypeLocal:
-      if (!local_provider_.get() ||
-          !local_provider_->IsAccessAllowed(origin)) {
-        return false;
-      }
-      break;
-    case kFileSystemTypeUnknown:
-    default:
-      NOTREACHED();
-      return false;
-  }
-  return true;
 }
 
 }  // namespace fileapi

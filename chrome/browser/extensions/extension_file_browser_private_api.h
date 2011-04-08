@@ -10,12 +10,10 @@
 #include <string>
 #include <vector>
 
-#include "base/platform_file.h"
+#include "base/file_path.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
-
-class GURL;
 
 // Implements the Chrome Extension local File API.
 class RequestLocalFileSystemFunction
@@ -32,7 +30,7 @@ class RequestLocalFileSystemFunction
  private:
   friend class LocalFileSystemCallbackDispatcher;
   void RespondSuccessOnUIThread(const std::string& name,
-                                const GURL& root);
+                                const FilePath& path);
   void RespondFailedOnUIThread(base::PlatformFileError error_code);
 
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.requestLocalFileSystem");

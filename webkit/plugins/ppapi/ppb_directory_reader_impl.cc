@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,7 +113,7 @@ int32_t PPB_DirectoryReader_Impl::GetNextEntry(
   PP_Resource resource_id = GetReferenceNoAddRef();
   DCHECK(resource_id != 0);
   if (!instance->delegate()->ReadDirectory(
-          directory_ref_->GetFileSystemURL(),
+          directory_ref_->GetSystemPath(),
           new FileCallbacks(instance->module()->AsWeakPtr(),
                             resource_id,
                             callback, NULL, NULL, this)))
