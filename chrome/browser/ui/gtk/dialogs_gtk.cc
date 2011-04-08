@@ -529,12 +529,12 @@ void SelectFileDialogImpl::SelectSingleFileHelper(GtkWidget* dialog,
 
 void SelectFileDialogImpl::OnSelectSingleFileDialogResponse(GtkWidget* dialog,
                                                             int response_id) {
-  return SelectSingleFileHelper(dialog, response_id, false);
+  SelectSingleFileHelper(dialog, response_id, false);
 }
 
 void SelectFileDialogImpl::OnSelectSingleFolderDialogResponse(GtkWidget* dialog,
                                                               int response_id) {
-  return SelectSingleFileHelper(dialog, response_id, true);
+  SelectSingleFileHelper(dialog, response_id, true);
 }
 
 void SelectFileDialogImpl::OnSelectMultiFileDialogResponse(GtkWidget* dialog,
