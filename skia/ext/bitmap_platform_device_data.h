@@ -43,11 +43,7 @@ class BitmapPlatformDevice::BitmapPlatformDeviceData :
 #endif
 
 #if defined(__APPLE__)
-  void ReleaseBitmapContext() {
-    SkASSERT(bitmap_context_);
-    CGContextRelease(bitmap_context_);
-    bitmap_context_ = NULL;
-  }
+  void ReleaseBitmapContext();
 #endif  // defined(__APPLE__)
 
   // Sets the transform and clip operations. This will not update the CGContext,

@@ -6,6 +6,10 @@
 
 #include "build/build_config.h"
 
+#if defined(OS_MACOSX)
+#import <ApplicationServices/ApplicationServices.h>
+#endif
+
 #if !defined(OS_WIN)
 #include <unistd.h>
 #endif

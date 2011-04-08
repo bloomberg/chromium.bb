@@ -6,8 +6,10 @@
 #define SKIA_EXT_PLATFORM_DEVICE_MAC_H_
 #pragma once
 
-#import <ApplicationServices/ApplicationServices.h>
 #include "third_party/skia/include/core/SkDevice.h"
+
+typedef struct CGContext* CGContextRef;
+typedef struct CGRect CGRect;
 
 class SkMatrix;
 class SkPath;

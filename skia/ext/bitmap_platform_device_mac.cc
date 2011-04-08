@@ -4,6 +4,7 @@
 
 #include "skia/ext/bitmap_platform_device_mac.h"
 
+#import <ApplicationServices/ApplicationServices.h>
 #include <time.h>
 
 #include "base/mac/mac_util.h"
@@ -80,6 +81,12 @@ BitmapPlatformDevice::BitmapPlatformDeviceData::BitmapPlatformDeviceData(
 BitmapPlatformDevice::BitmapPlatformDeviceData::~BitmapPlatformDeviceData() {
   if (bitmap_context_)
     CGContextRelease(bitmap_context_);
+}
+
+void BitmapPlatformDevice::BitmapPlatformDeviceData::ReleaseBitmapContext() {
+  SkASSERT(bitmap_context_);
+  CGContextRelease(bitmap_context_);
+  bitmap_context_ = NULL;
 }
 
 void BitmapPlatformDevice::BitmapPlatformDeviceData::SetMatrixClip(

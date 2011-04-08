@@ -4,6 +4,7 @@
 
 #include "skia/ext/bitmap_platform_device_mac.h"
 
+#import <ApplicationServices/ApplicationServices.h>
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkPath.h"
