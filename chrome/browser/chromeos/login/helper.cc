@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -188,6 +188,12 @@ void CorrectNativeButtonFontSize(views::NativeButton* button) {
 void CorrectTextfieldFontSize(views::Textfield* textfield) {
   if (textfield)
     textfield->SetFont(textfield->font().DeriveFont(kFontSizeCorrectionDelta));
+}
+
+void SetAndCorrectTextfieldFont(views::Textfield* textfield,
+                                const gfx::Font& font) {
+  if (textfield)
+    textfield->SetFont(font.DeriveFont(kFontSizeCorrectionDelta));
 }
 
 GURL GetAccountRecoveryHelpUrl() {

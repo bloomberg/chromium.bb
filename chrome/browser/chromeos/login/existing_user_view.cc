@@ -89,8 +89,9 @@ void ExistingUserView::RecreateFields() {
     password_field_->SetController(this);
     AddChildView(password_field_);
   }
-  password_field_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::BaseFont));
+  const gfx::Font& base_font = ResourceBundle::GetSharedInstance().GetFont(
+      ResourceBundle::BaseFont);
+  SetAndCorrectTextfieldFont(password_field_, base_font);
   password_field_->set_text_to_display_when_empty(
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_EMPTY_PASSWORD_TEXT));
   Layout();

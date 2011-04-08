@@ -293,10 +293,10 @@ void NewUserView::UpdateLocalizedStringsAndFonts() {
   title_hint_label_->SetFont(title_hint_font);
   title_hint_label_->SetText(UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_LOGIN_TITLE_HINT)));
-  username_field_->SetFont(base_font);
+  SetAndCorrectTextfieldFont(username_field_, base_font);
   username_field_->set_text_to_display_when_empty(
       l10n_util::GetStringUTF16(IDS_LOGIN_USERNAME));
-  password_field_->SetFont(base_font);
+  SetAndCorrectTextfieldFont(password_field_, base_font);
   password_field_->set_text_to_display_when_empty(
       l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD));
   sign_in_button_->SetLabel(UTF16ToWide(
