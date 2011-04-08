@@ -8,3 +8,8 @@
 BUGANTONM : fast/events/window-onerror7.html = TEXT
 // Waiting for a V8 roll.
 BUGANTONM : plugins/netscape-plugin-property-access-exception.html = TEXT
+
+// Waiting until V8 change http://code.google.com/p/v8/source/detail?r=7553
+// is rolled
+BUG_YURYS : fast/dom/error-to-string-stack-overflow.html = TEXT
+BUG_YURYS : fast/js/recursion-limit-equal.html = TEXT
