@@ -1,7 +1,7 @@
 #!/usr/bin/python
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 # This script is a replacement for llvm-gcc and llvm-g++ driver.
 # It detects automatically which role it is supposed to assume.
@@ -32,6 +32,7 @@ import os
 import re
 import subprocess
 import sys
+import signal
 
 ######################################################################
 # Environment Settings
@@ -681,6 +682,7 @@ def PrepareChainMap():
 ######################################################################
 
 def main(argv):
+  SetupSignalHandlers()
   env.reset()
   Log.reset()
   Log.Banner(argv)
@@ -1007,6 +1009,8 @@ def CompileOne(arch, outtype, infile, output = None):
     env.setmany(arch=arch, input=curfile, output=nextfile, **entry.extra_env)
     try:
       exec(entry.cmd)
+    except SystemExit, e:
+      raise e
     except Exception, err:
       Log.Fatal('Chain action [%s] failed with: %s', entry.cmd, err)
     env.pop()
@@ -1808,6 +1812,23 @@ def PrettyStringify(args):
     grouping -= 1
   return ret
 
+# If the driver is waiting on a background process in RunWithLog()
+# and the user Ctrl-C's or kill's the driver, it may leave
+# the child process (such as llc) running. To prevent this,
+# the code below sets up a signal handler which issues a kill to
+# the currently running child processes.
+CleanupProcesses = []
+def SetupSignalHandlers():
+  global CleanupProcesses
+  def signal_handler(unused_signum, unused_frame):
+    for p in CleanupProcesses:
+      p.kill()
+    sys.exit(127)
+  if os.name == "posix":
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGHUP, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
 def RunWithLog(args, stdin = None, silent = False, errexit = True):
   "Run the commandline give by the list args system()-style"
 
@@ -1822,8 +1843,12 @@ def RunWithLog(args, stdin = None, silent = False, errexit = True):
     p = subprocess.Popen(args, stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE )
+    CleanupProcesses.append(p)
     buf_stdout, buf_stderr = p.communicate(input = stdin)
+    CleanupProcesses.pop()
     ret = p.returncode
+  except SystemExit, e:
+    raise e
   except Exception, e:
     buf_stdout = ''
     buf_stderr = ''

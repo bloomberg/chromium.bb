@@ -496,3 +496,64 @@ GetAbsolutePath() {
   local absdir="$(cd "${reldir}" && pwd)"
   echo "${absdir}${relname}"
 }
+
+
+# The Queue* functions provide a simple way of keeping track
+# of multiple background processes in order to ensure that:
+# 1) they all finish successfully (with return value 0), and
+# 2) they terminate if the master process is killed/interrupted.
+#    (This is done using a bash "trap" handler)
+#
+# Example Usage:
+#     command1 &
+#     QueueLastProcess
+#     command2 &
+#     QueueLastProcess
+#     command3 &
+#     QueueLastProcess
+#     echo "Waiting for commands finish..."
+#     QueueWait
+#
+# TODO(pdox): Right now, this abstraction is only used for
+# paralellizing translations in the self-build. If we're going
+# to use this for anything more complex, then throttling the
+# number of active processes to exactly UTMAN_CONCURRENCY would
+# be a useful feature.
+CT_WAIT_QUEUE=""
+QueueLastProcess() {
+  local pid=$!
+  CT_WAIT_QUEUE+=" ${pid}"
+  if ! QueueConcurrent ; then
+    QueueWait
+  fi
+}
+
+QueueConcurrent() {
+  [ ${UTMAN_CONCURRENCY} -gt 1 ]
+}
+
+QueueWait() {
+  for pid in ${CT_WAIT_QUEUE} ; do
+    wait ${pid}
+  done
+  CT_WAIT_QUEUE=""
+}
+
+# Add a trap so that if the user Ctrl-C's or kills
+# this script while background processes are running,
+# the background processes don't keep going.
+trap 'QueueKill' SIGINT SIGTERM SIGHUP
+QueueKill() {
+  echo
+  echo "Killing queued processes: ${CT_WAIT_QUEUE}"
+  for pid in ${CT_WAIT_QUEUE} ; do
+    kill ${pid} &> /dev/null || true
+  done
+  echo
+  CT_WAIT_QUEUE=""
+}
+
+QueueEmpty() {
+  [ "${CT_WAIT_QUEUE}" == "" ]
+}
+

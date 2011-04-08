@@ -1889,15 +1889,30 @@ translate-and-install-sb-tool() {
     installer="mv -f"
   fi
 
-  # TODO(pdox): Parallelize these translations if UTMAN_CONCURRENCY > 1
   # In universal/mode/bin directory, we'll end up with every translation:
   # e.g. llc.arm.nexe, llc.x8632.nexe, llc.x8664.nexe
   # In arch/mode/bin directories, we'll end up with just one copy
+  local num_arches=$(wc -w <<< "${arches}")
+  local extra=""
+  if [ ${num_arches} -gt 1 ] && QueueConcurrent; then
+    extra=" (background)"
+  fi
+
+  for tarch in ${arches}; do
+    local nexe="${bindir}/${name}.${tarch}.nexe"
+    StepBanner "TRANSLATE" "Translating ${name}.pexe to ${tarch}${extra}"
+    "${PNACL_TRANSLATE}" -arch ${tarch} "${pexe}" -o "${nexe}" &
+    QueueLastProcess
+  done
+
+  if [ ${num_arches} -gt 1 ] && ! QueueEmpty ; then
+    StepBanner "TRANSLATE" "Waiting for processes to finish"
+  fi
+  QueueWait
+
   for tarch in ${arches}; do
     local nexe="${bindir}/${name}.${tarch}.nexe"
     local bindir_tarch="${PNACL_SB_ROOT}/${tarch}/${mode}/bin"
-    StepBanner "TRANSLATE" "Translating ${name}.pexe to ${tarch}"
-    ${PNACL_TRANSLATE} -arch ${tarch} "${pexe}" -o "${nexe}"
     mkdir -p "${bindir_tarch}"
     ${installer} "${nexe}" "${bindir_tarch}/${name}"
   done
