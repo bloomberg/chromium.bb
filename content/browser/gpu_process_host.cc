@@ -81,7 +81,7 @@ GpuProcessHost::GpuProcessHost(
     int host_id,
     const GpuFeatureFlags& gpu_feature_flags,
     content::CauseForGpuLaunch cause_for_gpu_launch)
-    : BrowserChildProcessHost(GPU_PROCESS, NULL),
+    : BrowserChildProcessHost(GPU_PROCESS),
       host_id_(host_id),
       gpu_feature_flags_(gpu_feature_flags) {
   g_hosts_by_id.AddWithID(this, host_id_);

@@ -19,7 +19,7 @@
 
 UtilityProcessHost::UtilityProcessHost(Client* client,
                                        BrowserThread::ID client_thread_id)
-    : BrowserChildProcessHost(UTILITY_PROCESS, NULL),
+    : BrowserChildProcessHost(UTILITY_PROCESS),
       client_(client),
       client_thread_id_(client_thread_id),
       is_batch_mode_(false) {

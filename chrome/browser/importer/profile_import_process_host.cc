@@ -19,7 +19,7 @@
 ProfileImportProcessHost::ProfileImportProcessHost(
     ProfileImportProcessClient* import_process_client,
     BrowserThread::ID thread_id)
-    : BrowserChildProcessHost(PROFILE_IMPORT_PROCESS, NULL),
+    : BrowserChildProcessHost(PROFILE_IMPORT_PROCESS),
       import_process_client_(import_process_client),
       thread_id_(thread_id) {
 }

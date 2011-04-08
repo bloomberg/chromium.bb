@@ -17,7 +17,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 
 PpapiPluginProcessHost::PpapiPluginProcessHost()
-    : BrowserChildProcessHost(ChildProcessInfo::PPAPI_PLUGIN_PROCESS, NULL) {
+    : BrowserChildProcessHost(ChildProcessInfo::PPAPI_PLUGIN_PROCESS) {
 }
 
 PpapiPluginProcessHost::~PpapiPluginProcessHost() {

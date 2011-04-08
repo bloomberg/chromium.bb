@@ -93,7 +93,7 @@ void PluginProcessHost::OnMapNativeViewId(gfx::NativeViewId id,
 #endif  // defined(TOOLKIT_USES_GTK)
 
 PluginProcessHost::PluginProcessHost()
-    : BrowserChildProcessHost(PLUGIN_PROCESS, NULL)
+    : BrowserChildProcessHost(PLUGIN_PROCESS)
 #if defined(OS_MACOSX)
       , plugin_cursor_visible_(true)
 #endif

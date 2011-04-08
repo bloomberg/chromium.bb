@@ -50,7 +50,7 @@ struct NaClProcessHost::NaClInternal {
 };
 
 NaClProcessHost::NaClProcessHost(const std::wstring& url)
-    : BrowserChildProcessHost(NACL_LOADER_PROCESS, NULL),
+    : BrowserChildProcessHost(NACL_LOADER_PROCESS),
       reply_msg_(NULL),
       internal_(new NaClInternal()),
       running_on_wow64_(false) {
