@@ -143,6 +143,9 @@
       '-databases.DatabasesTest.testModificationsPersistAfterRendererCrash',
       # crbug.com/69619
       '-search_engines.SearchEnginesTest.testDiscoverSearchEngine',
+      # crbug.com/78863
+      '-sync.SyncTest.testDisableAndEnableDatatype',
+      '-sync.SyncTest.testSignInToSync',
     ],
 
     'linux': [  # linux != chromeos
@@ -153,12 +156,17 @@
       # crbug.com/64664
       '-databases.DatabasesTest.testReloadActiveTab',
       '-databases.DatabasesTest.testModificationsPersistAfterRendererCrash',
+      # crbug.com/78855
+      '-ntp.NTPTest.testCannotUninstallWebStore',
+      '-ntp.NTPTest.testUninstallApp',
+      '-ntp.NTPTest.testCloseMultipleWindows',
       # crbug.com/70694
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
       # crbug.com/64274
       # crbug.com/70659
       '-popups.PopupsTest.testPopupBlockerInIncognito',
+     
     ],
 
     # ChromeOS is linux, but note that this section does not include the
