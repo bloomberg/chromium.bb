@@ -40,6 +40,12 @@ source tools/llvm/common-tools.sh
 
 # For different levels of make parallelism change this in your env
 readonly UTMAN_CONCURRENCY=${UTMAN_CONCURRENCY:-8}
+UTMAN_BUILD_ARM=true
+
+if ${BUILD_PLATFORM_MAC} ; then
+  # We don't yet support building ARM tools for mac.
+  UTMAN_BUILD_ARM=false
+fi
 
 # TODO(pdox): Decide what the target should really permanently be
 readonly CROSS_TARGET_ARM=arm-none-linux-gnueabi
@@ -59,9 +65,7 @@ readonly GCC_VER="4.2.1"
 # NOTE: NEWLIB_INSTALL_DIR also server as a SYSROOT
 readonly NEWLIB_INSTALL_DIR="${INSTALL_ROOT}/arm-newlib"
 
-# This toolchain currenlty builds only on linux.
-# TODO(abetul): Remove the restriction on developer's OS choices.
-readonly NACL_TOOLCHAIN=$(pwd)/toolchain/linux_x86
+readonly NACL_TOOLCHAIN=$(pwd)/toolchain/${BUILD_PLATFORM}_x86
 
 readonly PATCH_DIR=$(pwd)/tools/patches
 
@@ -132,6 +136,7 @@ readonly PNACL_AS="${INSTALL_BIN}/pnacl-as"
 readonly PNACL_LD="${INSTALL_BIN}/pnacl-ld"
 readonly PNACL_NM="${INSTALL_BIN}/pnacl-nm"
 readonly PNACL_TRANSLATE="${INSTALL_BIN}/pnacl-translate"
+readonly PNACL_READELF="${INSTALL_BIN}/readelf"
 
 readonly PNACL_AS_ARM="${INSTALL_BIN}/pnacl-arm-as"
 readonly PNACL_AS_X8632="${INSTALL_BIN}/pnacl-i686-as"
@@ -932,8 +937,17 @@ llvm-install() {
 
   mkdir -p "${BFD_PLUGIN_DIR}"
 
-  ln -sf ../../lib/libLLVMgold.so "${BFD_PLUGIN_DIR}"
-  ln -sf ../../lib/libLTO.so "${BFD_PLUGIN_DIR}"
+  if ${BUILD_PLATFORM_MAC} ; then
+    ln -sf ../../lib/libLLVMgold.dylib "${BFD_PLUGIN_DIR}"
+    ln -sf ../../lib/libLTO.dylib "${BFD_PLUGIN_DIR}"
+  elif ${BUILD_PLATFORM_LINUX} ; then
+    ln -sf ../../lib/libLLVMgold.so "${BFD_PLUGIN_DIR}"
+    ln -sf ../../lib/libLTO.so "${BFD_PLUGIN_DIR}"
+  else
+    echo "Unhandled host"
+    exit -1
+  fi
+
   spopd
 }
 
@@ -1351,12 +1365,12 @@ libstdcpp-bitcode-install() {
 
 #+ misc-tools            - Build and install sel_ldr and validator for ARM.
 misc-tools() {
-  if has-trusted-toolchain; then
+  if ${UTMAN_BUILD_ARM} ; then
     StepBanner "MISC-ARM" "Building sel_ldr (ARM)"
 
     # TODO(robertm): revisit some of these options
     RunWithLog arm_sel_ldr \
-      ./scons MODE=opt-linux \
+      ./scons MODE=opt-host \
       platform=arm \
       sdl=none \
       naclsdk_validate=0 \
@@ -1364,22 +1378,27 @@ misc-tools() {
       sel_ldr
     rm -rf  "${INSTALL_ROOT}/tools-arm"
     mkdir "${INSTALL_ROOT}/tools-arm"
-    cp scons-out/opt-linux-arm/obj/src/trusted/service_runtime/sel_ldr \
-      ${INSTALL_ROOT}/tools-arm
+    local sconsdir="scons-out/opt-${BUILD_PLATFORM}-arm"
+    cp "${sconsdir}/obj/src/trusted/service_runtime/sel_ldr" \
+       "${INSTALL_ROOT}/tools-arm"
   else
     StepBanner "MISC-ARM" "Skipping ARM sel_ldr (No trusted ARM toolchain)"
   fi
 
-  StepBanner "MISC-ARM" "Building validator (ARM)"
-  RunWithLog arm_ncval_core \
-    ./scons MODE=opt-linux \
-    targetplatform=arm \
-    sysinfo=0 \
-    arm-ncval-core
-  rm -rf  "${INSTALL_ROOT}/tools-x86"
-  mkdir "${INSTALL_ROOT}/tools-x86"
-  cp scons-out/opt-linux-x86-32-to-arm/obj/src/trusted/validator_arm/\
+  if ${BUILD_PLATFORM_LINUX} ; then
+    StepBanner "MISC-ARM" "Building validator (ARM)"
+    RunWithLog arm_ncval_core \
+      ./scons MODE=opt-host \
+      targetplatform=arm \
+      sysinfo=0 \
+      arm-ncval-core
+    rm -rf  "${INSTALL_ROOT}/tools-x86"
+    mkdir "${INSTALL_ROOT}/tools-x86"
+    cp scons-out/opt-linux-x86-32-to-arm/obj/src/trusted/validator_arm/\
 arm-ncval-core ${INSTALL_ROOT}/tools-x86
+  else
+    StepBanner "MISC-ARM" "Skipping ARM validator (Not yet supported on Mac)"
+  fi
 }
 
 
@@ -1500,6 +1519,10 @@ binutils-arm-install() {
       install ${MAKE_OPTS}
 
   spopd
+
+  # Binutils builds readelf, but doesn't install it.
+  mkdir -p "${INSTALL_BIN}"
+  cp -f "${objdir}"/binutils/readelf "${PNACL_READELF}"
 }
 
 #+-------------------------------------------------------------------------
@@ -2681,19 +2704,19 @@ verify-object-llvm() {
 verify-object-arm() {
   # TODO(robertm): we should check ABI version
   # http://code.google.com/p/nativeclient/issues/detail?id=1482
-  arch_info=$(readelf -A $1)
+  arch_info=$("${PNACL_READELF}" -A $1)
   #TODO(robertm): some refactoring and cleanup needed
-  if ! grep -q "Tag_VFP_arch: VFPv2" <<< ${arch_info} ; then
-    echo "ERROR $1 - bad Tag_VFP_arch\n"
+  if ! grep -q "Tag_FP_arch: VFPv2" <<< ${arch_info} ; then
+    echo "ERROR $1 - bad Tag_FP_arch\n"
     #TODO(robertm): figure out what the right thing to do is here, c.f.
     # http://code.google.com/p/nativeclient/issues/detail?id=966
-    readelf -A $1 | grep  Tag_VFP_arch
+    "${PNACL_READELF}" -A $1 | grep  Tag_FP_arch
     exit -1
   fi
 
   if ! grep -q "Tag_CPU_arch: v7" <<< ${arch_info} ; then
     echo "FAIL bad $1 Tag_CPU_arch\n"
-    readelf -A $1 | grep Tag_CPU_arch
+    "${PNACL_READELF}" -A $1 | grep Tag_CPU_arch
     exit -1
   fi
 }
@@ -2761,14 +2784,16 @@ verify-archive-x86-64() {
 verify() {
   StepBanner "VERIFY"
 
-  SubBanner "VERIFY: ${PNACL_ARM_ROOT}"
-  for i in ${PNACL_ARM_ROOT}/*.o ; do
-    verify-object-arm "$i"
-  done
+  if ${UTMAN_BUILD_ARM}; then
+    SubBanner "VERIFY: ${PNACL_ARM_ROOT}"
+    for i in ${PNACL_ARM_ROOT}/*.o ; do
+      verify-object-arm "$i"
+    done
 
-  for i in ${PNACL_ARM_ROOT}/*.a ; do
-    verify-archive-arm "$i"
-  done
+    for i in ${PNACL_ARM_ROOT}/*.a ; do
+      verify-archive-arm "$i"
+    done
+  fi
 
   SubBanner "VERIFY: ${PNACL_X8632_ROOT}"
   for i in ${PNACL_X8632_ROOT}/*.o ; do
@@ -2873,26 +2898,26 @@ verify-triple-build() {
 # TODO(robertm): figure out what to do about concurrency in debug mode.
 # Perhaps it is fine just tweaking that via UTMAN_CONCURRENCY.
 if ${UTMAN_DEBUG} || ${UTMAN_BUILDBOT}; then
-  readonly SCONS_ARGS=(MODE=nacl,opt-linux
+  readonly SCONS_ARGS=(MODE=nacl,opt-host
                        bitcode=1
                        sdl=none
                        --verbose
                        -j${UTMAN_CONCURRENCY})
 
-  readonly SCONS_ARGS_SEL_LDR=(MODE=opt-linux
+  readonly SCONS_ARGS_SEL_LDR=(MODE=opt-host
                                bitcode=1
                                sdl=none
                                --verbose
                                -j${UTMAN_CONCURRENCY})
 else
-  readonly SCONS_ARGS=(MODE=nacl,opt-linux
+  readonly SCONS_ARGS=(MODE=nacl,opt-host
                        bitcode=1
                        naclsdk_validate=0
                        sdl=none
                        sysinfo=0
                        -j${UTMAN_CONCURRENCY})
 
-  readonly SCONS_ARGS_SEL_LDR=(MODE=opt-linux
+  readonly SCONS_ARGS_SEL_LDR=(MODE=opt-host
                                bitcode=1
                                naclsdk_validate=0
                                sdl=none
@@ -3169,6 +3194,7 @@ check-for-trusted() {
       exit -1
     elif trusted-tc-confirm ; then
       echo "Continuing without ARM trusted toolchain"
+      UTMAN_BUILD_ARM=false
     else
       echo "Okay, stopping."
       exit -1

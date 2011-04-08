@@ -238,10 +238,13 @@ def _SetEnvForPnacl(env, arch):
     pnacl_sdk_ld_flags += ' --pnacl-sb'
 
   # TODO(pdox): Remove the dependency on the gcc toolchain here.
+  nacl_gcc_root = os.path.join('${MAIN_DIR}',
+                               'toolchain',
+                               _PlatformSubdirs(env)[0])
   cc_other_map = {
       'arm':    pnacl_sdk_cc + pnacl_sdk_cc_native_flags,
-      'x86-32': '${MAIN_DIR}/toolchain/linux_x86/bin/nacl-gcc',
-      'x86-64': '${MAIN_DIR}/toolchain/linux_x86/bin/nacl64-gcc'
+      'x86-32': os.path.join(nacl_gcc_root, 'bin', 'nacl-gcc'),
+      'x86-64': os.path.join(nacl_gcc_root, 'bin', 'nacl64-gcc'),
       }
 
   env.Replace(# Replace header and lib paths.

@@ -119,7 +119,11 @@ INITIAL_ENV = {
   'PNACL_AS_X8632'       : '${BASE_BIN}/pnacl-i686-as',
   'PNACL_AS_X8664'       : '${BASE_BIN}/pnacl-x86_64-as',
 
-  'GOLD_PLUGIN_SO'  : '${BASE_ARM}/lib/libLLVMgold.so',
+  'BUILD_OS'        : '',   # Set from env.reset()
+  'SO_EXT'          : '${SO_EXT_%BUILD_OS%}',
+  'SO_EXT_DARWIN'   : '.dylib',
+  'SO_EXT_LINUX'    : '.so',
+  'GOLD_PLUGIN_SO'  : '${BASE_ARM}/lib/libLLVMgold${SO_EXT}',
   'GOLD_PLUGIN_ARGS': '-plugin=${GOLD_PLUGIN_SO} ' +
                       '-plugin-opt=emit-llvm',
 
@@ -1160,7 +1164,7 @@ def LinkBC(inputs, output = None):
   # this somehow.
   arch = GetArch()
   if not arch:
-    arch = 'ARM'
+    arch = 'X8632'
 
   # If there are no native input files at all (e.g. barebones tests),
   # then include empty.o so that gold knows the target arch.
@@ -1295,6 +1299,7 @@ class env:
   def reset(cls):
     cls.data = dict(INITIAL_ENV)
     cls.set('BASE_NACL', FindBaseDir())
+    cls.set('BUILD_OS', GetBuildOS())
 
   @classmethod
   def dump(cls):
@@ -1381,6 +1386,14 @@ def RunWithEnv(cmd, **kwargs):
   env.setmany(**kwargs)
   RunWithLog('${%s}' % cmd)
   env.pop()
+
+def GetBuildOS():
+  name = sys.platform.lower()
+  if 'linux' in name:
+    return 'LINUX'
+  if 'darwin' in name:
+    return 'DARWIN'
+  Log.Fatal("Unsupported platform '%s'" % (name,))
 
 # Crawl backwards, starting from the directory containing this script,
 # until we find the native_client/ directory.

@@ -17,6 +17,24 @@ readonly TC_LOG_ALL="${TC_LOG}/ALL"
 readonly TIME_AT_STARTUP=$(date '+%s')
 
 ######################################################################
+# Detect system type
+######################################################################
+
+readonly BUILD_PLATFORM_UNAME=$(uname)
+if [ "${BUILD_PLATFORM_UNAME}" == "Linux" ] ; then
+  readonly BUILD_PLATFORM_LINUX=true
+  readonly BUILD_PLATFORM_MAC=false
+  readonly BUILD_PLATFORM=linux
+elif [ "${BUILD_PLATFORM_UNAME}" == "Darwin" ] ; then
+  readonly BUILD_PLATFORM_LINUX=false
+  readonly BUILD_PLATFORM_MAC=true
+  readonly BUILD_PLATFORM=mac
+else
+  echo "Unknown system '${BUILD_PLATFORM_UNAME}'"
+  exit -1
+fi
+
+######################################################################
 # Mercurial repository tools
 ######################################################################
 
