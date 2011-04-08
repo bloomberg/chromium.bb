@@ -337,7 +337,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttpAuthentication) {
 
 // Checks that HTML redirects work with prerendering - specifically, checks the
 // page is used and plugins aren't loaded.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRedirect) {
+// http://crbug.com/78861
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderRedirect) {
   std::string redirect_path;
   ASSERT_TRUE(CreateRedirect("prerender_page.html", &redirect_path));
   PrerenderTestURL(redirect_path, FINAL_STATUS_USED, 2);
@@ -366,14 +367,16 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadRefresh) {
 }
 
 // Checks that the referrer is set when prerendering.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReferrer) {
+// http://crbug.com/78861
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderReferrer) {
   PrerenderTestURL("prerender_referrer.html", FINAL_STATUS_USED, 1);
   NavigateToDestURL();
 }
 
 // Checks that the referrer is not set when prerendering and the source page is
 // HTTPS.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoSSLReferrer) {
+// http://crbug.com/78861
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderNoSSLReferrer) {
   set_use_https_src(true);
   PrerenderTestURL("prerender_no_referrer.html", FINAL_STATUS_USED, 1);
   NavigateToDestURL();
@@ -463,7 +466,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderInfiniteLoopMultiple
   EXPECT_FALSE(UrlIsPendingInPrerenderManager(kHtmlFileC));
 }
 
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, TaskManager) {
+// http://crbug.com/78861
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_TaskManager) {
   // Show the task manager. This populates the model.
   browser()->window()->ShowTaskManager();
 
