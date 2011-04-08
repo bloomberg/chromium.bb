@@ -462,12 +462,12 @@ void WebPluginDelegateImpl::PlatformDestroyInstance() {
   }
 }
 
-void WebPluginDelegateImpl::Paint(skia::PlatformCanvas* canvas,
+void WebPluginDelegateImpl::Paint(WebKit::WebCanvas* canvas,
                                   const gfx::Rect& rect) {
   if (windowless_) {
-    HDC hdc = canvas->beginPlatformPaint();
+    HDC hdc = skia::BeginPlatformPaint(canvas);
     WindowlessPaint(hdc, rect);
-    canvas->endPlatformPaint();
+    skia::EndPlatformPaint(canvas);
   }
 }
 

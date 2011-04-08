@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,7 @@ void VideoRendererImpl::SetRect(const gfx::Rect& rect) {
 }
 
 // This method is always called on the renderer's thread.
-void VideoRendererImpl::Paint(skia::PlatformCanvas* canvas,
+void VideoRendererImpl::Paint(SkCanvas* canvas,
                               const gfx::Rect& dest_rect) {
   scoped_refptr<media::VideoFrame> video_frame;
   GetCurrentFrame(&video_frame);
@@ -98,7 +98,7 @@ void VideoRendererImpl::PutCurrentFrame(
 // 4. Canvas is opaque.
 // TODO(hclam): The fast paint method should support flipping and mirroring.
 // Disable the flipping and mirroring checks once we have it.
-bool VideoRendererImpl::CanFastPaint(skia::PlatformCanvas* canvas,
+bool VideoRendererImpl::CanFastPaint(SkCanvas* canvas,
                                      const gfx::Rect& dest_rect) {
   // Fast paint does not handle opacity value other than 1.0. Hence use slow
   // paint if opacity is not 1.0. Since alpha = opacity * 0xFF, we check that
@@ -152,7 +152,7 @@ bool VideoRendererImpl::CanFastPaint(skia::PlatformCanvas* canvas,
 }
 
 void VideoRendererImpl::SlowPaint(media::VideoFrame* video_frame,
-                                  skia::PlatformCanvas* canvas,
+                                  SkCanvas* canvas,
                                   const gfx::Rect& dest_rect) {
   // 1. Convert YUV frame to RGB.
   base::TimeDelta timestamp = video_frame->GetTimestamp();
@@ -199,7 +199,7 @@ void VideoRendererImpl::SlowPaint(media::VideoFrame* video_frame,
 }
 
 void VideoRendererImpl::FastPaint(media::VideoFrame* video_frame,
-                                  skia::PlatformCanvas* canvas,
+                                  SkCanvas* canvas,
                                   const gfx::Rect& dest_rect) {
   DCHECK(video_frame->format() == media::VideoFrame::YV12 ||
          video_frame->format() == media::VideoFrame::YV16);

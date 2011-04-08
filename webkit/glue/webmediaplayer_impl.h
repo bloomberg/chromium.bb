@@ -102,7 +102,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
     WebDataSourceBuildObserverHack* GetBuildObserver();
 
     // Methods for WebMediaPlayerImpl -> Filter communication.
-    void Paint(skia::PlatformCanvas* canvas, const gfx::Rect& dest_rect);
+    void Paint(SkCanvas* canvas, const gfx::Rect& dest_rect);
     void SetSize(const gfx::Rect& rect);
     void Detach();
     void GetCurrentFrame(scoped_refptr<media::VideoFrame>* frame_out);

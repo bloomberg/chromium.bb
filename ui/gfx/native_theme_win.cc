@@ -14,8 +14,8 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/windows_version.h"
-#include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect.h"
@@ -540,7 +540,7 @@ HRESULT NativeThemeWin::PaintScrollbarTrack(
     int classic_state,
     RECT* target_rect,
     RECT* align_rect,
-    skia::PlatformCanvas* canvas) const {
+    SkCanvas* canvas) const {
   HANDLE handle = GetThemeHandle(SCROLLBAR);
   if (handle && draw_theme_)
     return draw_theme_(handle, hdc, part_id, state_id, target_rect, NULL);
@@ -623,7 +623,7 @@ HRESULT NativeThemeWin::PaintTrackbar(HDC hdc,
                                       int state_id,
                                       int classic_state,
                                       RECT* rect,
-                                      skia::PlatformCanvas* canvas) const {
+                                      SkCanvas* canvas) const {
   // Make the channel be 4 px thick in the center of the supplied rect.  (4 px
   // matches what XP does in various menus; GetThemePartSize() doesn't seem to
   // return good values here.)
@@ -732,7 +732,7 @@ HRESULT NativeThemeWin::PaintProgressBar(HDC hdc,
                                          RECT* value_rect,
                                          bool determinate,
                                          double animated_seconds,
-                                         skia::PlatformCanvas* canvas) const {
+                                         SkCanvas* canvas) const {
   // There is no documentation about the animation speed, frame-rate, nor
   // size of moving overlay of the indeterminate progress bar.
   // So we just observed real-world programs and guessed following parameters.

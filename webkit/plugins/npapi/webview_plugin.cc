@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -128,17 +128,15 @@ void WebViewPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
   CGContextTranslateCTM(context, rect_.x(), rect_.y());
   CGContextSaveGState(context);
 #elif WEBKIT_USING_SKIA
-  skia::PlatformCanvas* platform_canvas = canvas;
-  platform_canvas->translate(SkIntToScalar(rect_.x()),
-                             SkIntToScalar(rect_.y()));
-  platform_canvas->save();
+  canvas->translate(SkIntToScalar(rect_.x()), SkIntToScalar(rect_.y()));
+  canvas->save();
 #endif
 
   web_view_->layout();
   web_view_->paint(canvas, paintRect);
 
 #if WEBKIT_USING_SKIA
-  platform_canvas->restore();
+  canvas->restore();
 #elif WEBKIT_USING_CG
   CGContextRestoreGState(context);
 #endif

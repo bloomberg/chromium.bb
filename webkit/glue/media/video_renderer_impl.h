@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -30,7 +30,7 @@ class VideoRendererImpl : public WebVideoRenderer {
   // WebVideoRenderer implementation.
   virtual void SetWebMediaPlayerImplProxy(WebMediaPlayerImpl::Proxy* proxy);
   virtual void SetRect(const gfx::Rect& rect);
-  virtual void Paint(skia::PlatformCanvas* canvas, const gfx::Rect& dest_rect);
+  virtual void Paint(SkCanvas* canvas, const gfx::Rect& dest_rect);
   virtual void GetCurrentFrame(scoped_refptr<media::VideoFrame>* frame_out);
   virtual void PutCurrentFrame(scoped_refptr<media::VideoFrame> frame);
 
@@ -47,18 +47,18 @@ class VideoRendererImpl : public WebVideoRenderer {
  private:
   // Determine the conditions to perform fast paint. Returns true if we can do
   // fast paint otherwise false.
-  bool CanFastPaint(skia::PlatformCanvas* canvas, const gfx::Rect& dest_rect);
+  bool CanFastPaint(SkCanvas* canvas, const gfx::Rect& dest_rect);
 
   // Slow paint does a YUV => RGB, and scaled blit in two separate operations.
   void SlowPaint(media::VideoFrame* video_frame,
-                 skia::PlatformCanvas* canvas,
+                 SkCanvas* canvas,
                  const gfx::Rect& dest_rect);
 
   // Fast paint does YUV => RGB, scaling, blitting all in one step into the
   // canvas. It's not always safe and appropriate to perform fast paint.
   // CanFastPaint() is used to determine the conditions.
   void FastPaint(media::VideoFrame* video_frame,
-                 skia::PlatformCanvas* canvas,
+                 SkCanvas* canvas,
                  const gfx::Rect& dest_rect);
 
   void TransformToSkIRect(const SkMatrix& matrix, const gfx::Rect& src_rect,

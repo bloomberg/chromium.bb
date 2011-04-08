@@ -22,7 +22,6 @@
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/rtc_video_decoder.h"
 #include "media/filters/null_audio_renderer.h"
-#include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
@@ -124,7 +123,7 @@ WebDataSourceBuildObserverHack* WebMediaPlayerImpl::Proxy::GetBuildObserver() {
   return build_observer_.get();
 }
 
-void WebMediaPlayerImpl::Proxy::Paint(skia::PlatformCanvas* canvas,
+void WebMediaPlayerImpl::Proxy::Paint(SkCanvas* canvas,
                                       const gfx::Rect& dest_rect) {
   DCHECK(MessageLoop::current() == render_loop_);
   if (video_renderer_) {

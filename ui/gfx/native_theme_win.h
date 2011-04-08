@@ -19,9 +19,7 @@
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-namespace skia {
-class PlatformCanvas;
-}  // namespace skia
+class SkCanvas;
 
 namespace gfx {
 
@@ -253,7 +251,7 @@ class NativeThemeWin : public NativeTheme {
                               int classic_state,
                               RECT* target_rect,
                               RECT* align_rect,
-                              skia::PlatformCanvas* canvas) const;
+                              SkCanvas* canvas) const;
 
   // This method is deprecated and will be removed in the near future.
   // Paints a scrollbar thumb or gripper.
@@ -296,7 +294,7 @@ class NativeThemeWin : public NativeTheme {
                         int state_id,
                         int classic_state,
                         RECT* rect,
-                        skia::PlatformCanvas* canvas) const;
+                        SkCanvas* canvas) const;
 
   // This method is deprecated and will be removed in the near future.
   HRESULT PaintProgressBar(HDC hdc,
@@ -304,7 +302,7 @@ class NativeThemeWin : public NativeTheme {
                            RECT* value_rect,
                            bool determinate,
                            double animated_seconds,
-                           skia::PlatformCanvas* canvas) const;
+                           SkCanvas* canvas) const;
 
  private:
   NativeThemeWin();

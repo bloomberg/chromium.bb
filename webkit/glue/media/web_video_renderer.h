@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@ class WebVideoRenderer : public media::VideoRendererBase {
   // |dest_rect|.
   //
   // Method called on the render thread.
-  virtual void Paint(skia::PlatformCanvas* canvas,
+  virtual void Paint(SkCanvas* canvas,
                      const gfx::Rect& dest_rect) = 0;
 
   // Clients of this class (painter/compositor) should use GetCurrentFrame()

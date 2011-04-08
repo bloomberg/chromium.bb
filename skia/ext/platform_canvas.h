@@ -114,6 +114,23 @@ class SK_API PlatformCanvas : public SkCanvas {
   PlatformCanvas& operator=(const PlatformCanvas&);
 };
 
+// Creates a canvas with raster bitmap backing.
+// Set is_opaque if you are going to erase the bitmap and not use
+// transparency: this will enable some optimizations.
+SK_API SkCanvas* CreateBitmapCanvas(int width, int height, bool is_opaque);
+
+// These calls should surround calls to platform drawing routines, the
+// surface returned here can be used with the native platform routines.
+//
+// Call EndPlatformPaint when you are done and want to use skia operations
+// after calling the platform-specific BeginPlatformPaint; this will
+// synchronize the bitmap to OS if necessary.
+//
+// Note: These functions will eventually replace
+// PlatformCanvas::beginPlatformPaint and PlatformCanvas::endPlatformPaint.
+SK_API PlatformDevice::PlatformSurface BeginPlatformPaint(SkCanvas* canvas);
+SK_API void EndPlatformPaint(SkCanvas* canvas);
+
 }  // namespace skia
 
 #endif  // SKIA_EXT_PLATFORM_CANVAS_H_

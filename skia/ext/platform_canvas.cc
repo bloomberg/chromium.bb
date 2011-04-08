@@ -41,4 +41,20 @@ bool PlatformCanvas::initializeWithDevice(SkDevice* device) {
   return true;
 }
 
+SkCanvas* CreateBitmapCanvas(int width, int height, bool is_opaque) {
+  return new PlatformCanvas(width, height, is_opaque);
+}
+
+PlatformDevice::PlatformSurface BeginPlatformPaint(SkCanvas* canvas) {
+  // All of our devices should be our special PlatformDevice.
+  PlatformDevice* device = static_cast<PlatformDevice*>(canvas->getDevice());
+  return device->BeginPlatformPaint();
+}
+
+void EndPlatformPaint(SkCanvas* canvas) {
+  // All of our devices should be our special PlatformDevice.
+  PlatformDevice* device = static_cast<PlatformDevice*>(canvas->getDevice());
+  device->EndPlatformPaint();
+}
+
 }  // namespace skia

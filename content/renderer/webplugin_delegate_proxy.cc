@@ -725,7 +725,7 @@ void WebPluginDelegateProxy::Paint(WebKit::WebCanvas* canvas,
 
   // We're using the native OS APIs from here on out.
 #if WEBKIT_USING_SKIA
-  gfx::NativeDrawingContext context = canvas->beginPlatformPaint();
+  gfx::NativeDrawingContext context = skia::BeginPlatformPaint(canvas);
 #elif WEBKIT_USING_CG
   gfx::NativeDrawingContext context = canvas;
 #endif
@@ -763,7 +763,7 @@ void WebPluginDelegateProxy::Paint(WebKit::WebCanvas* canvas,
   }
 
 #if WEBKIT_USING_SKIA
-  canvas->endPlatformPaint();
+  skia::EndPlatformPaint(canvas);
 #endif
 }
 
