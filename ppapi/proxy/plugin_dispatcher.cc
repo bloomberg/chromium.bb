@@ -34,11 +34,7 @@ InstanceToDispatcherMap* g_instance_to_dispatcher = NULL;
 
 PluginDispatcher::PluginDispatcher(base::ProcessHandle remote_process_handle,
                                    GetInterfaceFunc get_interface)
-    : Dispatcher(remote_process_handle, get_interface)
-#if defined(OS_POSIX)
-    , renderer_fd_(-1)
-#endif
-    {
+    : Dispatcher(remote_process_handle, get_interface) {
   SetSerializationRules(new PluginVarSerializationRules);
 
   // As a plugin, we always support the PPP_Class interface. There's no
@@ -47,9 +43,6 @@ PluginDispatcher::PluginDispatcher(base::ProcessHandle remote_process_handle,
 }
 
 PluginDispatcher::~PluginDispatcher() {
-#if defined(OS_POSIX)
-  CloseRendererFD();
-#endif
 }
 
 // static
@@ -197,17 +190,8 @@ InstanceData* PluginDispatcher::GetInstanceData(PP_Instance instance) {
 
 #if defined(OS_POSIX)
 int PluginDispatcher::GetRendererFD() {
-  if (renderer_fd_ == -1 && channel())
-    renderer_fd_ = channel()->GetClientFileDescriptor();
-  return renderer_fd_;
-}
-
-void PluginDispatcher::CloseRendererFD() {
-  if (renderer_fd_ != -1) {
-    if (HANDLE_EINTR(close(renderer_fd_)) < 0)
-      PLOG(ERROR) << "close";
-    renderer_fd_ = -1;
-  }
+  DCHECK(channel());
+  return channel()->GetClientFileDescriptor();
 }
 #endif
 

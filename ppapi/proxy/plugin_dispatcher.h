@@ -69,9 +69,7 @@ class PluginDispatcher : public Dispatcher {
   InstanceData* GetInstanceData(PP_Instance instance);
 
 #if defined(OS_POSIX)
-  // See renderer_fd_ below.
   int GetRendererFD();
-  void CloseRendererFD();
 #endif
 
  private:
@@ -83,13 +81,6 @@ class PluginDispatcher : public Dispatcher {
 
   // IPC message handlers.
   void OnMsgSupportsInterface(const std::string& interface_name, bool* result);
-
-#if defined(OS_POSIX)
-  // FD for the renderer end of the socket. It is closed when the IPC layer
-  // indicates that the channel is connected, proving that the renderer has
-  // access to its side of the socket.
-  int renderer_fd_;
-#endif
 
   // All target proxies currently created. These are ones that receive
   // messages.
