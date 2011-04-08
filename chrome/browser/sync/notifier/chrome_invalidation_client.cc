@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,27 +116,47 @@ void ChromeInvalidationClient::Invalidate(
   DCHECK(invalidation::IsCallbackRepeatable(callback));
   VLOG(1) << "Invalidate: " << InvalidationToString(invalidation);
   syncable::ModelType model_type;
-  if (ObjectIdToRealModelType(invalidation.object_id(), &model_type)) {
-    std::string payload;
-    // payload() CHECK()'s has_payload(), so we must check it ourselves first.
-    if (invalidation.has_payload())
-      payload = invalidation.payload();
-
-    listener_->OnInvalidate(model_type, payload);
-  } else {
+  if (!ObjectIdToRealModelType(invalidation.object_id(), &model_type)) {
     LOG(WARNING) << "Could not get invalidation model type; "
                  << "invalidating everything";
     listener_->OnInvalidateAll();
+    RunAndDeleteClosure(callback);
+    return;
   }
+  // TODO(akalin): Consider moving this version-checking code to the
+  // invalidation client.
+  if (invalidation.version() != UNKNOWN_OBJECT_VERSION) {
+    std::map<syncable::ModelType, int64>::const_iterator it =
+        max_invalidation_versions_.find(model_type);
+    if ((it != max_invalidation_versions_.end()) &&
+        (invalidation.version() <= it->second)) {
+      // Drop redundant invalidations.
+      RunAndDeleteClosure(callback);
+      return;
+    }
+    max_invalidation_versions_[model_type] = invalidation.version();
+  }
+  std::string payload;
+  // payload() CHECK()'s has_payload(), so we must check it ourselves first.
+  if (invalidation.has_payload())
+    payload = invalidation.payload();
+
+  listener_->OnInvalidate(model_type, payload);
+  // TODO(akalin): We should really |callback| only after we get the
+  // updates from the sync server. (see http://crbug.com/78462).
   RunAndDeleteClosure(callback);
 }
 
+// This should behave as if we got an invalidation with version
+// UNKNOWN_OBJECT_VERSION for all known data types.
 void ChromeInvalidationClient::InvalidateAll(
     invalidation::Closure* callback) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   DCHECK(invalidation::IsCallbackRepeatable(callback));
   VLOG(1) << "InvalidateAll";
   listener_->OnInvalidateAll();
+  // TODO(akalin): We should really |callback| only after we get the
+  // updates from the sync server. (see http://crbug.com/76482).
   RunAndDeleteClosure(callback);
 }
 

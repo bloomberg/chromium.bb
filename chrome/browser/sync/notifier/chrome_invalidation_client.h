@@ -9,6 +9,7 @@
 #define CHROME_BROWSER_SYNC_NOTIFIER_CHROME_INVALIDATION_CLIENT_H_
 #pragma once
 
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -44,6 +45,8 @@ class ChromeInvalidationClient
     virtual void OnInvalidate(syncable::ModelType model_type,
                               const std::string& payload) = 0;
 
+    // TODO(akalin): Remove OnInvalidateAll() and have OnInvalidate
+    // take a ModelTypePayloadMap.
     virtual void OnInvalidateAll() = 0;
   };
 
@@ -108,6 +111,7 @@ class ChromeInvalidationClient
   scoped_ptr<CacheInvalidationPacketHandler>
       cache_invalidation_packet_handler_;
   scoped_ptr<RegistrationManager> registration_manager_;
+  std::map<syncable::ModelType, int64> max_invalidation_versions_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeInvalidationClient);
 };
