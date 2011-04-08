@@ -314,14 +314,18 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertAfterOnload) {
 
 // Checks that plugins are not loaded while a page is being preloaded, but
 // are loaded when the page is displayed.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDelayLoadPlugin) {
+// http://crbug.com/78861
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_PrerenderDelayLoadPlugin) {
   PrerenderTestURL("plugin_delay_load.html", FINAL_STATUS_USED, 1);
   NavigateToDestURL();
 }
 
 // Checks that plugins in an iframe are not loaded while a page is
 // being preloaded, but are loaded when the page is displayed.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderIframeDelayLoadPlugin) {
+// http://crbug.com/78861
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_PrerenderIframeDelayLoadPlugin) {
   PrerenderTestURL("prerender_iframe_plugin_delay_load.html",
                    FINAL_STATUS_USED, 1);
   NavigateToDestURL();
