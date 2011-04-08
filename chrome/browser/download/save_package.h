@@ -20,16 +20,17 @@
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
-class SaveFileManager;
-class SaveItem;
-class SavePackage;
 class DownloadItem;
 class DownloadManager;
 class GURL;
 class MessageLoop;
 class PrefService;
 class Profile;
-class TabContents;
+struct SaveFileCreateInfo;
+class SaveFileManager;
+class SaveItem;
+class SavePackage;
+struct SavePackageParam;
 class TabContents;
 
 namespace base {
@@ -41,8 +42,6 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-struct SaveFileCreateInfo;
-struct SavePackageParam;
 
 // The SavePackage object manages the process of saving a page as only-html or
 // complete-html and providing the information for displaying saving status.
