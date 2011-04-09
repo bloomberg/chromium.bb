@@ -658,7 +658,7 @@ stubout:
 	    $(SCONS_DESTINATIONS_NOLIB) ncval_stubout
 	set -e; find $(ARCH_DEST)/lib/ -name '*.so' | \
 	  while read library; do \
-	    $(WINPATH) library; \
+	    $(WINPATH) "$$library"; \
 	  done | \
 	  while read library; do \
 	    if [ "$$(head -c 4 "$$library" | tail -c 3)" = 'ELF' ] ; then \
