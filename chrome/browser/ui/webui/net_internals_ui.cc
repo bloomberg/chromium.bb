@@ -1057,7 +1057,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
     } else {
       net::TransportSecurityState::DomainState state;
       const bool found = transport_security_state->IsEnabledForHost(
-          &state, domain);
+          &state, domain, true);
 
       result->SetBoolean("result", found);
       if (found) {
