@@ -390,6 +390,7 @@ DriverPatterns = [
   ( '--pnacl-bcld-finish',             "env.set('BCLD_FINISH', '1')"),
   ( '--pnacl-bcld-fast',               "env.set('BCLD_FINISH', '0')"),
   ( '--pnacl-skip-ll',                 "env.set('EMIT_LL', '0')"),
+  ( '--pnacl-force-mc',                "env.set('FORCE_MC', '1')"),
 
   # Catch all pattern (must be last)
   ( '(.*)',                            "env.append('ARGV', $0)"),
@@ -562,6 +563,10 @@ def PrepareFlags():
     env.set('MC_DIRECT', '0')
     env.set('SANDBOXED_AS', '0')
     env.set('SANDBOXED_LD', '0')
+
+  if env.has('FORCE_MC'):
+    env.set('USE_MC_ASM', '1')
+    env.set('MC_DIRECT', '1')
 
   if env.getbool('SHARED'):
     env.append('LD_FLAGS', '-shared')
