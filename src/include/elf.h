@@ -52,6 +52,7 @@
 #define NATIVE_CLIENT_SRC_INCLUDE_ELF_H_ 1
 
 
+#include "native_client/src/include/elf_auxv.h"
 #include "native_client/src/include/portability.h"
 
 #if !defined(NACL_TARGET_SUBARCH)
@@ -189,10 +190,6 @@ typedef Elf32_Phdr Elf_Phdr;
 typedef Elf32_Shdr Elf_Shdr;
 
 #endif
-
-/* Keys for auxiliary vector (auxv). */
-#define AT_NULL         0   /* Terminating item in auxv array */
-#define AT_ENTRY        9   /* Entry point of the executable */
 
 EXTERN_C_END
 

@@ -172,6 +172,7 @@ int main(int  argc,
 
   struct GioFile                gout;
   NaClErrorCode                 errcode;
+  struct GioMemoryFileSnapshot  blob_file;
 
   int                           ret_code;
   struct DynArray               env_vars;
@@ -510,25 +511,25 @@ int main(int  argc,
   /* Remove the signal handler if we are not using it. */
   if (!handle_signals) NaClSignalHandlerFini();
 
+  /*
+   * Open both files first because (on Mac OS X at least)
+   * NaClAppLoadFile() enables an outer sandbox.
+   */
+  if (NULL != blob_library_file) {
+    if (0 == GioMemoryFileSnapshotCtor(&blob_file, blob_library_file)) {
+      perror("sel_main");
+      fprintf(stderr, "Cannot open \"%s\".\n", blob_library_file);
+      exit(1);
+    }
+  }
+
   if (!rpc_supplies_nexe) {
     struct GioMemoryFileSnapshot main_file;
-    struct GioMemoryFileSnapshot blob_file;
 
-    /*
-     * Open both files first because (on Mac OS X at least)
-     * NaClAppLoadFile() enables an outer sandbox.
-     */
     if (0 == GioMemoryFileSnapshotCtor(&main_file, nacl_file)) {
       perror("sel_main");
       fprintf(stderr, "Cannot open \"%s\".\n", nacl_file);
       exit(1);
-    }
-    if (NULL != blob_library_file) {
-      if (0 == GioMemoryFileSnapshotCtor(&blob_file, blob_library_file)) {
-        perror("sel_main");
-        fprintf(stderr, "Cannot open \"%s\".\n", blob_library_file);
-        exit(1);
-      }
     }
 
     if (LOAD_OK == errcode) {
@@ -544,15 +545,6 @@ int main(int  argc,
                  " responsible for this error.\n"));
       }
 
-      if (NULL != blob_library_file && LOAD_OK == errcode) {
-        errcode = NaClAppLoadFileDynamically(nap, (struct Gio *) &blob_file);
-        if (LOAD_OK != errcode) {
-          fprintf(stderr, "Error while loading \"%s\": %s\n",
-                  blob_library_file,
-                  NaClErrorString(errcode));
-        }
-      }
-
       NaClXMutexLock(&nap->mu);
       nap->module_load_status = errcode;
       NaClXCondVarBroadcast(&nap->cv);
@@ -564,14 +556,6 @@ int main(int  argc,
       fprintf(stderr, "Error while closing \"%s\".\n", nacl_file);
     }
     (*((struct Gio *) &main_file)->vtbl->Dtor)((struct Gio *) &main_file);
-
-    if (NULL != blob_library_file) {
-      if (-1 == (*((struct Gio *) &blob_file)->vtbl->Close)((struct Gio *)
-                                                            &blob_file)) {
-        fprintf(stderr, "Error while closing \"%s\".\n", blob_library_file);
-      }
-      (*((struct Gio *) &blob_file)->vtbl->Dtor)((struct Gio *) &blob_file);
-    }
 
     if (fuzzing_quit_after_load) {
       exit(0);
@@ -665,6 +649,23 @@ int main(int  argc,
 
     /* Give debuggers a well known point at which xlate_base is known.  */
     NaClGdbHook(&state);
+  }
+
+  if (NULL != blob_library_file) {
+    if (LOAD_OK == errcode) {
+      errcode = NaClAppLoadFileDynamically(nap, (struct Gio *) &blob_file);
+      if (LOAD_OK != errcode) {
+        fprintf(stderr, "Error while loading \"%s\": %s\n",
+                blob_library_file,
+                NaClErrorString(errcode));
+      }
+    }
+
+    if (-1 == (*((struct Gio *) &blob_file)->vtbl->Close)((struct Gio *)
+                                                          &blob_file)) {
+      fprintf(stderr, "Error while closing \"%s\".\n", blob_library_file);
+    }
+    (*((struct Gio *) &blob_file)->vtbl->Dtor)((struct Gio *) &blob_file);
   }
 
   /*

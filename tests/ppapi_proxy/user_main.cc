@@ -6,6 +6,6 @@
 #include <nacl/ppruntime.h>
 
 int main(int argc, char* argv[]) {
-  printf("Hello from before the PluginMain routine starts.\n");
-  return ppapi_proxy::PluginMain();
+  printf("Hello from before the PpapiPluginMain routine starts.\n");
+  return PpapiPluginMain();
 }

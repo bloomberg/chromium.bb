@@ -81,7 +81,7 @@ void* test_nacl_file(void* /*unused*/) {
 int main() {
   int status = 0;
 #if defined(__native_client__)
-  status = ppapi_proxy::PluginMain();
+  status = PpapiPluginMain();
 #endif
   if (status == 0) {
     pthread_t thread1, thread2;

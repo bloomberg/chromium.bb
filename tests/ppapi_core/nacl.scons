@@ -19,16 +19,14 @@ nexe = 'ppapi_core_%s.nexe' % env.get('TARGET_FULLARCH')
 
 env.Alias('ppapi_core.nexe', ['$STAGING_DIR/%s' % nexe])
 
-ppapi_core_nexe = env.ComponentProgram(nexe,
-                                       ['ppapi_core.c',
-                                        'scriptable_object.c'],
-                                       EXTRA_LIBS=['ppruntime',
-                                                   'imc',
-                                                   'platform',
-                                                   'gio',
-                                                   'pthread',
-                                                   'm',
-                                                   'srpc'])
+if env.Bit('irt'):
+  ppapi_libs = ['ppapi_stub']
+else:
+  ppapi_libs = ['ppruntime', 'imc', 'platform', 'gio', 'pthread', 'm', 'srpc']
+ppapi_core_nexe = env.ComponentProgram(
+    nexe,
+    ['ppapi_core.c', 'scriptable_object.c'],
+    EXTRA_LIBS=ppapi_libs + ['pthread', 'platform', 'gio'])
 
 # Note that the html is required to run this program.
 dest_copy = env.Replicate('$STAGING_DIR',

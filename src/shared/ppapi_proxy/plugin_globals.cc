@@ -76,7 +76,9 @@ const PPB_Var_Deprecated* PPBVarInterface() {
       GetBrowserInterfaceSafe(PPB_VAR_DEPRECATED_INTERFACE));
 }
 
-int PluginMain() {
+}  // namespace ppapi_proxy
+
+int PpapiPluginMain() {
   if (getenv("NACL_LD_ACCEPTS_PLUGIN_CONNECTION") != NULL) {
     // Send a message to the page to ask it to reinitialise the
     // plugin's SRPC/PPAPI connection.  This triggers a call to
@@ -108,5 +110,3 @@ int PluginMain() {
 
   return 0;
 }
-
-}  // namespace ppapi_proxy

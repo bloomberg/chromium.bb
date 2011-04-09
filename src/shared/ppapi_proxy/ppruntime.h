@@ -5,11 +5,13 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PPRUNTIME_H_
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PPRUNTIME_H_
 
-namespace ppapi_proxy {
+#include "native_client/src/include/portability.h"
+
+EXTERN_C_BEGIN
 
 // The entry point for the main thread of the PPAPI plugin process.
-int PluginMain();
+int PpapiPluginMain();
 
-}  // namespace ppapi_proxy
+EXTERN_C_END
 
 #endif  // NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PPRUNTIME_H_

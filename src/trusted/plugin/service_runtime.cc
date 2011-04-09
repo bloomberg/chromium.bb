@@ -149,9 +149,15 @@ bool ServiceRuntime::StartFromCommandLine(nacl::string nacl_file,
   //      to socket addresses.
   const char* kSelLdrArgs[] = { "-X", "5" };
   const int kSelLdrArgLength = NACL_ARRAY_SIZE(kSelLdrArgs);
-  vector<nacl::string> kArgv(kSelLdrArgs, kSelLdrArgs + kSelLdrArgLength);
-  vector<nacl::string> kEmpty;
-  subprocess_->InitCommandLine(nacl_file, -1, kArgv, kEmpty);
+  vector<nacl::string> args_for_sel_ldr(kSelLdrArgs,
+                                        kSelLdrArgs + kSelLdrArgLength);
+  vector<nacl::string> args_for_nexe;
+  const char* irt_library_path = getenv("NACL_IRT_LIBRARY");
+  if (NULL != irt_library_path) {
+    args_for_sel_ldr.push_back("-B");
+    args_for_sel_ldr.push_back(irt_library_path);
+  }
+  subprocess_->InitCommandLine(nacl_file, -1, args_for_sel_ldr, args_for_nexe);
 
   nacl::Handle recv_handle = subprocess_->ExportImcFD(6);
   if (recv_handle == nacl::kInvalidHandle) {

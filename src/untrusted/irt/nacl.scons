@@ -42,4 +42,13 @@ if asm_env.Bit('bitcode'):
 asm_helper = asm_env.ComponentObject(
     'elf_restart_%s.S' % env['TARGET_FULLARCH'].replace('-', '_'))
 
-blob_env.ComponentProgram('irt.nexe', ['irt_entry.c', asm_helper])
+files = ['irt_entry.c', 'irt_sbrk.c', 'irt_elf_utils.c', asm_helper]
+# TLS virtualisation only works on x86-64 currently.
+# TODO(mseaborn): Turn on "-mtls-use-call" for the relevant libraries
+# on x86-32 so that this works there too.
+if env.Bit('build_x86_64'):
+  files.append('irt_tls.c')
+blob_env.ComponentProgram(
+    'irt.nexe', files,
+    EXTRA_LIBS=['ppruntime', 'srpc', 'imc', 'platform', 'gio',
+                'pthread', 'm'])

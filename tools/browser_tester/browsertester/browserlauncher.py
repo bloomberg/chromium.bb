@@ -146,6 +146,8 @@ class BrowserLauncher(object):
                           'NFS volume?)' % browser_path)
     if self.options.sel_ldr:
       env['NACL_SEL_LDR'] = self.options.sel_ldr
+    if self.options.irt_library:
+      env['NACL_IRT_LIBRARY'] = self.options.irt_library
     if self.options.enable_experimental_js:
       env['NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS'] = '1'
     print 'ENV:', ' '.join(['='.join(pair) for pair in env.iteritems()])

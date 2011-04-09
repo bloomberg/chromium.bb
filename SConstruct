@@ -1142,6 +1142,8 @@ def PPAPIBrowserTester(env,
   if not env.Bit('disable_dynamic_plugin_loading'):
     command.extend(['--ppapi_plugin', GetPPAPIPluginPath(env['TRUSTED_ENV'])])
     command.extend(['--sel_ldr', GetSelLdr(env)])
+    if env.Bit('irt'):
+      command.extend(['--irt_library', env.File('${STAGING_DIR}/irt.nexe')])
   # Enable experimental JavaScript APIs by default in browser tester for now.
   # TODO(sehr): Move enable to only those browser tests that target the
   # experimental APIs.
@@ -2500,6 +2502,7 @@ nacl_extra_sdk_env.Append(
       'src/shared/gio/nacl.scons',
       'src/shared/srpc/nacl.scons',
       'src/untrusted/av/nacl.scons',
+      'src/untrusted/irt_stub/nacl.scons',
       'src/untrusted/nacl/nacl.scons',
       ####  ALPHABETICALLY SORTED ####
    ],

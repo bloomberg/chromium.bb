@@ -7,7 +7,10 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "native_client/src/include/elf.h"
+#include "native_client/src/include/elf_auxv.h"
+#include "native_client/src/shared/ppapi_proxy/ppruntime.h"
+#include "native_client/src/untrusted/irt/irt_elf_utils.h"
+#include "native_client/src/untrusted/irt/irt_ppapi.h"
 
 
 void jump_to_elf_start(void *initial_stack_pointer,
@@ -26,43 +29,52 @@ typedef int64_t argc_type;
 typedef int32_t argc_type;
 #endif
 
-struct auxv_entry {
-  uint32_t a_type;
-  uint32_t a_val;
-};
-
-
-static void *find_auxv(int argc, char **argv) {
-  /* Find the start of the envp array. */
-  char **ptr = argv + argc + 1;
-  /* Find the end of the envp array. */
-  while (*ptr != NULL)
-    ptr++;
-  return (struct auxv_entry *) (ptr + 1);
-}
-
-static struct auxv_entry *find_auxv_entry(struct auxv_entry *auxv,
-                                          uint32_t key) {
-  for (; auxv->a_type != AT_NULL; auxv++) {
-    if (auxv->a_type == key)
-      return auxv;
-  }
-  return NULL;
-}
 
 static void fatal_error(const char *message) {
   write(2, message, strlen(message));
   _exit(127);
 }
 
+
+struct PP_StartFunctions g_pp_functions;
+
+static void ppapi_start(const struct PP_StartFunctions *funcs) {
+  g_pp_functions = *funcs;
+  PpapiPluginMain();
+}
+
+int32_t PPP_InitializeModule(PP_Module module_id,
+                             PPB_GetInterface get_browser_interface) {
+  return g_pp_functions.PPP_InitializeModule(module_id, get_browser_interface);
+}
+
+void PPP_ShutdownModule() {
+  g_pp_functions.PPP_ShutdownModule();
+}
+
+const void *PPP_GetInterface(const char *interface_name) {
+  return g_pp_functions.PPP_GetInterface(interface_name);
+}
+
+
 int main(int argc, char **argv) {
-  struct auxv_entry *auxv = find_auxv(argc, argv);
-  struct auxv_entry *entry = find_auxv_entry(auxv, AT_ENTRY);
+  struct auxv_entry *auxv = __find_auxv(argc, argv);
+  struct auxv_entry *entry = __find_auxv_entry(auxv, AT_ENTRY);
   if (entry == NULL) {
-    fatal_error("No AT_ENTRY item found in auxv\n");
+    fatal_error("irt_entry: No AT_ENTRY item found in auxv.  "
+                "Is there no user executable loaded?\n");
   }
+  uintptr_t entry_point = entry->a_val;
+
+  /*
+   * The user application does not need to see the AT_ENTRY item.
+   * Reuse the auxv slot and overwrite it with the PPAPI entry point.
+   */
+  entry->a_type = AT_SYSINFO;
+  entry->a_val = (uintptr_t) ppapi_start;
+
   void *stack_pointer = (char *) argv - sizeof(argc_type);
-  jump_to_elf_start(stack_pointer, entry->a_val, 0);
+  jump_to_elf_start(stack_pointer, entry_point, 0);
 
   /* This should never be reached. */
   return 0;

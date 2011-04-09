@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include <sys/unistd.h>
+#include "native_client/src/untrusted/nacl/nacl_thread.h"
 #include "native_client/src/untrusted/nacl/tls.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
@@ -108,7 +109,7 @@ int __pthread_initialize_minimal(size_t tdb_size) {
 
   /* Set %gs, r9, or equivalent platform-specific mechanism.  Requires
    * a syscall since certain bitfields of these registers are trusted. */
-  NACL_SYSCALL(tls_init)(tdb, tdb_size);
+  nacl_tls_init(tdb, tdb_size);
 
   /* initialize newlib's thread-specific pointer. */
   __newlib_thread_init();

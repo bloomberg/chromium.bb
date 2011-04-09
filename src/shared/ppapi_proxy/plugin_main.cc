@@ -13,5 +13,5 @@
 // initialization is needed before the main PPAPI processing happens.
 
 int __attribute__ ((weak)) main(int argc, char* argv[]) {
-  return ppapi_proxy::PluginMain();
+  return PpapiPluginMain();
 }
