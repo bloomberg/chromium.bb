@@ -45,13 +45,6 @@ size_t __nacl_return_address_size() {
 
 
 /* Compiler intrinsic: we only use this for x86-64.
- * See src/untrusted/nacl/tls.h */
-void *__nacl_read_tp() {
-  return NACL_SYSCALL(tls_get)();
-}
-
-
-/* Compiler intrinsic: we only use this for x86-64.
  * TODO(eaeltsin): get rid of this in favor of __nacl_read_tp.
  */
 void *__tls_get_addr(int offset) {
