@@ -15,14 +15,13 @@ class FileSystemDispatcher;
 class WebFileWriterImpl : public fileapi::WebFileWriterBase,
                           public base::SupportsWeakPtr<WebFileWriterImpl> {
  public:
-  WebFileWriterImpl(
-      const WebKit::WebString& path, WebKit::WebFileWriterClient* client);
+  WebFileWriterImpl(const GURL& path, WebKit::WebFileWriterClient* client);
   virtual ~WebFileWriterImpl();
 
  protected:
   // WebFileWriterBase overrides
-  virtual void DoTruncate(const FilePath& path, int64 offset);
-  virtual void DoWrite(const FilePath& path, const GURL& blob_url,
+  virtual void DoTruncate(const GURL& path, int64 offset);
+  virtual void DoWrite(const GURL& path, const GURL& blob_url,
                        int64 offset);
   virtual void DoCancel();
 

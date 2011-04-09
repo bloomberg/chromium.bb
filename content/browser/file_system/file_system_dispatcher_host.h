@@ -17,7 +17,6 @@ class Time;
 }
 
 class ChromeURLRequestContext;
-class FilePath;
 class GURL;
 class HostContentSettingsMap;
 class Profile;
@@ -56,27 +55,27 @@ class FileSystemDispatcherHost : public BrowserMessageFilter {
               int64 requested_size,
               bool create);
   void OnMove(int request_id,
-              const FilePath& src_path,
-              const FilePath& dest_path);
+              const GURL& src_path,
+              const GURL& dest_path);
   void OnCopy(int request_id,
-              const FilePath& src_path,
-              const FilePath& dest_path);
-  void OnRemove(int request_id, const FilePath& path, bool recursive);
-  void OnReadMetadata(int request_id, const FilePath& path);
+              const GURL& src_path,
+              const GURL& dest_path);
+  void OnRemove(int request_id, const GURL& path, bool recursive);
+  void OnReadMetadata(int request_id, const GURL& path);
   void OnCreate(int request_id,
-                const FilePath& path,
+                const GURL& path,
                 bool exclusive,
                 bool is_directory,
                 bool recursive);
-  void OnExists(int request_id, const FilePath& path, bool is_directory);
-  void OnReadDirectory(int request_id, const FilePath& path);
+  void OnExists(int request_id, const GURL& path, bool is_directory);
+  void OnReadDirectory(int request_id, const GURL& path);
   void OnWrite(int request_id,
-               const FilePath& path,
+               const GURL& path,
                const GURL& blob_url,
                int64 offset);
-  void OnTruncate(int request_id, const FilePath& path, int64 length);
+  void OnTruncate(int request_id, const GURL& path, int64 length);
   void OnTouchFile(int request_id,
-                   const FilePath& path,
+                   const GURL& path,
                    const base::Time& last_access_time,
                    const base::Time& last_modified_time);
   void OnCancel(int request_id, int request_to_cancel);

@@ -95,13 +95,13 @@ class SimpleFileSystemCallbackDispatcher
   }
 
   virtual void DidOpenFileSystem(
-      const std::string& name, const FilePath& path) {
+      const std::string& name, const GURL& root) {
     DCHECK(file_system_);
-    if (path.empty())
+    if (!root.is_valid())
       callbacks_->didFail(WebKit::WebFileErrorSecurity);
     else
       callbacks_->didOpenFileSystem(
-          UTF8ToUTF16(name), webkit_glue::FilePathToWebString(path));
+          WebString::fromUTF8(name), WebString::fromUTF8(root.spec()));
   }
 
   virtual void DidFail(base::PlatformFileError error_code) {
@@ -168,80 +168,58 @@ void SimpleFileSystem::OpenFileSystem(
 void SimpleFileSystem::move(
     const WebString& src_path,
     const WebString& dest_path, WebFileSystemCallbacks* callbacks) {
-  FilePath dest_filepath(webkit_glue::WebStringToFilePath(dest_path));
-  FilePath src_filepath(webkit_glue::WebStringToFilePath(src_path));
-
-  GetNewOperation(callbacks)->Move(src_filepath, dest_filepath);
+  GetNewOperation(callbacks)->Move(GURL(src_path), GURL(dest_path));
 }
 
 void SimpleFileSystem::copy(
     const WebString& src_path, const WebString& dest_path,
     WebFileSystemCallbacks* callbacks) {
-  FilePath dest_filepath(webkit_glue::WebStringToFilePath(dest_path));
-  FilePath src_filepath(webkit_glue::WebStringToFilePath(src_path));
-
-  GetNewOperation(callbacks)->Copy(src_filepath, dest_filepath);
+  GetNewOperation(callbacks)->Copy(GURL(src_path), GURL(dest_path));
 }
 
 void SimpleFileSystem::remove(
     const WebString& path, WebFileSystemCallbacks* callbacks) {
-  FilePath filepath(webkit_glue::WebStringToFilePath(path));
-
-  GetNewOperation(callbacks)->Remove(filepath, false /* recursive */);
+  GetNewOperation(callbacks)->Remove(GURL(path), false /* recursive */);
 }
 
 void SimpleFileSystem::removeRecursively(
     const WebString& path, WebFileSystemCallbacks* callbacks) {
-  FilePath filepath(webkit_glue::WebStringToFilePath(path));
-
-  GetNewOperation(callbacks)->Remove(filepath, true /* recursive */);
+  GetNewOperation(callbacks)->Remove(GURL(path), true /* recursive */);
 }
 
 void SimpleFileSystem::readMetadata(
     const WebString& path, WebFileSystemCallbacks* callbacks) {
-  FilePath filepath(webkit_glue::WebStringToFilePath(path));
-
-  GetNewOperation(callbacks)->GetMetadata(filepath);
+  GetNewOperation(callbacks)->GetMetadata(GURL(path));
 }
 
 void SimpleFileSystem::createFile(
     const WebString& path, bool exclusive, WebFileSystemCallbacks* callbacks) {
-  FilePath filepath(webkit_glue::WebStringToFilePath(path));
-
-  GetNewOperation(callbacks)->CreateFile(filepath, exclusive);
+  GetNewOperation(callbacks)->CreateFile(GURL(path), exclusive);
 }
 
 void SimpleFileSystem::createDirectory(
     const WebString& path, bool exclusive, WebFileSystemCallbacks* callbacks) {
-  FilePath filepath(webkit_glue::WebStringToFilePath(path));
-
-  GetNewOperation(callbacks)->CreateDirectory(filepath, exclusive, false);
+  GetNewOperation(callbacks)->CreateDirectory(GURL(path), exclusive, false);
 }
 
 void SimpleFileSystem::fileExists(
     const WebString& path, WebFileSystemCallbacks* callbacks) {
-  FilePath filepath(webkit_glue::WebStringToFilePath(path));
-
-  GetNewOperation(callbacks)->FileExists(filepath);
+  GetNewOperation(callbacks)->FileExists(GURL(path));
 }
 
 void SimpleFileSystem::directoryExists(
     const WebString& path, WebFileSystemCallbacks* callbacks) {
-  FilePath filepath(webkit_glue::WebStringToFilePath(path));
-
-  GetNewOperation(callbacks)->DirectoryExists(filepath);
+  GetNewOperation(callbacks)->DirectoryExists(GURL(path));
 }
 
 void SimpleFileSystem::readDirectory(
     const WebString& path, WebFileSystemCallbacks* callbacks) {
-  FilePath filepath(webkit_glue::WebStringToFilePath(path));
-
-  GetNewOperation(callbacks)->ReadDirectory(filepath);
+  GetNewOperation(callbacks)->ReadDirectory(GURL(path));
 }
 
 WebFileWriter* SimpleFileSystem::createFileWriter(
     const WebString& path, WebFileWriterClient* client) {
-  return new SimpleFileWriter(path, client, file_system_context_.get());
+  return new SimpleFileWriter(GURL(path), client, file_system_context_.get());
 }
 
 FileSystemOperation* SimpleFileSystem::GetNewOperation(

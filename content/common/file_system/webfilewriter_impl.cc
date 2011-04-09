@@ -32,7 +32,7 @@ class WebFileWriterImpl::CallbackDispatcher
     NOTREACHED();
   }
   virtual void DidOpenFileSystem(const std::string& name,
-                                 const FilePath& root_path) {
+                                 const GURL& root) {
     NOTREACHED();
   }
   virtual void DidSucceed() {
@@ -53,7 +53,7 @@ class WebFileWriterImpl::CallbackDispatcher
 };
 
 WebFileWriterImpl::WebFileWriterImpl(
-     const WebKit::WebString& path, WebKit::WebFileWriterClient* client)
+     const GURL& path, WebKit::WebFileWriterClient* client)
   : WebFileWriterBase(path, client),
     request_id_(0) {
 }
@@ -61,16 +61,17 @@ WebFileWriterImpl::WebFileWriterImpl(
 WebFileWriterImpl::~WebFileWriterImpl() {
 }
 
-void WebFileWriterImpl::DoTruncate(const FilePath& path, int64 offset) {
+void WebFileWriterImpl::DoTruncate(const GURL& path, int64 offset) {
   // The FileSystemDispatcher takes ownership of the CallbackDispatcher.
   GetFileSystemDispatcher()->Truncate(path, offset, &request_id_,
                                       new CallbackDispatcher(AsWeakPtr()));
 }
 
 void WebFileWriterImpl::DoWrite(
-    const FilePath& path, const GURL& blob_url, int64 offset) {
-  GetFileSystemDispatcher()->Write(path, blob_url, offset, &request_id_,
-                                   new CallbackDispatcher(AsWeakPtr()));
+    const GURL& path, const GURL& blob_url, int64 offset) {
+  GetFileSystemDispatcher()->Write(
+      path, blob_url, offset, &request_id_,
+      new CallbackDispatcher(AsWeakPtr()));
 }
 
 void WebFileWriterImpl::DoCancel() {

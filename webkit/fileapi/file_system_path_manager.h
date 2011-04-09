@@ -68,14 +68,6 @@ class FileSystemPathManager {
       FileSystemType type,
       const FilePath& virtual_path,
       bool create);
-  // Cracks the given |path|, retrieves the information embedded in the path
-  // and populates |origin_url|, |type| and |virtual_path|.  The |virtual_path|
-  // is a sandboxed path in the file system, i.e. the relative path to the
-  // filesystem root for the given domain and type.
-  bool CrackFileSystemPath(const FilePath& path,
-                           GURL* origin_url,
-                           FileSystemType* type,
-                           FilePath* virtual_path) const;
 
   // Returns true if the given |url|'s scheme is allowed to access
   // filesystem.
@@ -88,6 +80,9 @@ class FileSystemPathManager {
   // Checks if a given |name| contains any restricted names/chars in it.
   bool IsRestrictedFileName(FileSystemType type,
                             const FilePath& filename);
+
+  // Checks if an origin has access to a particular filesystem type.
+  bool IsAllowedFileSystemType(GURL origin, FileSystemType type);
 
   SandboxMountPointProvider* sandbox_provider() const {
     return sandbox_provider_.get();

@@ -6,6 +6,7 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "googleurl/src/gurl.h"
 #include "ppapi/c/pp_errors.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/file_callbacks.h"
@@ -126,7 +127,7 @@ int32_t MakeDirectory(PP_Resource directory_ref_id,
 
   PluginInstance* instance = file_system->instance();
   if (!instance->delegate()->MakeDirectory(
-          directory_ref->GetSystemPath(), PPBoolToBool(make_ancestors),
+          directory_ref->GetFileSystemURL(), PPBoolToBool(make_ancestors),
           new FileCallbacks(instance->module()->AsWeakPtr(), directory_ref_id,
                             callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
@@ -150,7 +151,8 @@ int32_t Touch(PP_Resource file_ref_id,
 
   PluginInstance* instance = file_system->instance();
   if (!instance->delegate()->Touch(
-          file_ref->GetSystemPath(), base::Time::FromDoubleT(last_access_time),
+          file_ref->GetFileSystemURL(),
+          base::Time::FromDoubleT(last_access_time),
           base::Time::FromDoubleT(last_modified_time),
           new FileCallbacks(instance->module()->AsWeakPtr(), file_ref_id,
                             callback, NULL, NULL, NULL)))
@@ -173,7 +175,7 @@ int32_t Delete(PP_Resource file_ref_id,
 
   PluginInstance* instance = file_system->instance();
   if (!instance->delegate()->Delete(
-          file_ref->GetSystemPath(),
+          file_ref->GetFileSystemURL(),
           new FileCallbacks(instance->module()->AsWeakPtr(), file_ref_id,
                             callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
@@ -204,7 +206,7 @@ int32_t Rename(PP_Resource file_ref_id,
   // http://crbug.com/67624
   PluginInstance* instance = file_system->instance();
   if (!instance->delegate()->Rename(
-          file_ref->GetSystemPath(), new_file_ref->GetSystemPath(),
+          file_ref->GetFileSystemURL(), new_file_ref->GetFileSystemURL(),
           new FileCallbacks(instance->module()->AsWeakPtr(), file_ref_id,
                             callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
@@ -320,22 +322,25 @@ std::string PPB_FileRef_Impl::GetPath() const {
 }
 
 FilePath PPB_FileRef_Impl::GetSystemPath() const {
-  if (GetFileSystemType() == PP_FILESYSTEMTYPE_EXTERNAL)
-    return system_path_;
+  if (GetFileSystemType() != PP_FILESYSTEMTYPE_EXTERNAL) {
+    NOTREACHED();
+    return FilePath();
+  }
+  return system_path_;
+}
 
-  // Since |virtual_path_| starts with a '/', it is considered an absolute path
-  // on POSIX systems. We need to remove the '/' before calling Append() or we
-  // will run into a DCHECK.
-  FilePath virtual_file_path(
-#if defined(OS_WIN)
-      UTF8ToWide(virtual_path_.substr(1))
-#elif defined(OS_POSIX)
-      virtual_path_.substr(1)
-#else
-#error "Unsupported platform."
-#endif
-  );
-  return file_system_->root_path().Append(virtual_file_path);
+GURL PPB_FileRef_Impl::GetFileSystemURL() const {
+  if (GetFileSystemType() != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
+      GetFileSystemType() != PP_FILESYSTEMTYPE_LOCALTEMPORARY) {
+    NOTREACHED();
+    return GURL();
+  }
+  if (!virtual_path_.size())
+    return file_system_->root_url();
+  // Since |virtual_path_| starts with a '/', it looks like an absolute path.
+  // We need to trim off the '/' before calling Resolve, as FileSystem URLs
+  // start with a storage type identifier that looks like a path segment.
+  return file_system_->root_url().Resolve(virtual_path_.substr(1));
 }
 
 }  // namespace ppapi

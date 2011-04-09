@@ -13,8 +13,8 @@
 namespace fileapi {
 
 WebFileWriterBase::WebFileWriterBase(
-     const WebKit::WebString& path, WebKit::WebFileWriterClient* client)
-  : path_(webkit_glue::WebStringToFilePath(path)),
+     const GURL& path, WebKit::WebFileWriterClient* client)
+  : path_(path),
     client_(client),
     operation_(kOperationNone),
     cancel_state_(kCancelNotInProgress) {

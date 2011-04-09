@@ -4,7 +4,6 @@
 
 #include "webkit/plugins/ppapi/file_callbacks.h"
 
-#include "base/file_path.h"
 #include "base/logging.h"
 #include "ppapi/c/dev/ppb_file_system_dev.h"
 #include "ppapi/c/dev/pp_file_info_dev.h"
@@ -76,12 +75,12 @@ void FileCallbacks::DidReadDirectory(
 }
 
 void FileCallbacks::DidOpenFileSystem(const std::string&,
-                                      const FilePath& root_path) {
+                                      const GURL& root_url) {
   if (callback_->completed())
     return;
 
   DCHECK(file_system_);
-  file_system_->set_root_path(root_path);
+  file_system_->set_root_url(root_url);
   file_system_->set_opened(true);
 
   callback_->Run(PP_OK);

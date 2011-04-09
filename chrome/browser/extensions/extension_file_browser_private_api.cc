@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
@@ -44,13 +45,13 @@ class LocalFileSystemCallbackDispatcher
     NOTREACHED();
   }
   virtual void DidOpenFileSystem(const std::string& name,
-                                 const FilePath& path) OVERRIDE {
+                                 const GURL& root) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(function_,
             &RequestLocalFileSystemFunction::RespondSuccessOnUIThread,
             name,
-            path));
+            root));
   }
   virtual void DidFail(base::PlatformFileError error_code) OVERRIDE {
     BrowserThread::PostTask(
@@ -85,12 +86,12 @@ bool RequestLocalFileSystemFunction::RunImpl() {
 }
 
 void RequestLocalFileSystemFunction::RespondSuccessOnUIThread(
-    const std::string& name, const FilePath& path) {
+    const std::string& name, const GURL& root) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   result_.reset(new DictionaryValue());
   DictionaryValue* dict = reinterpret_cast<DictionaryValue*>(result_.get());
   dict->SetString("name", name);
-  dict->SetString("path", path.value());
+  dict->SetString("path", root.spec());
   dict->SetInteger("error", base::PLATFORM_FILE_OK);
   SendResponse(true);
 }

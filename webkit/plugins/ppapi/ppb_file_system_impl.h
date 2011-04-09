@@ -6,7 +6,7 @@
 #define WEBKIT_PLUGINS_PPAPI_PPB_FILE_SYSTEM_IMPL_H_
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "googleurl/src/gurl.h"
 #include "ppapi/c/dev/pp_file_info_dev.h"
 #include "webkit/plugins/ppapi/resource.h"
 
@@ -28,8 +28,8 @@ class PPB_FileSystem_Impl : public Resource {
 
   PluginInstance* instance() { return instance_; }
   PP_FileSystemType_Dev type() { return type_; }
-  const FilePath& root_path() const { return root_path_; }
-  void set_root_path(const FilePath& root_path) { root_path_ = root_path; }
+  const GURL& root_url() const { return root_url_; }
+  void set_root_url(const GURL& root_url) { root_url_ = root_url; }
   bool opened() const { return opened_; }
   void set_opened(bool opened) { opened_ = opened; }
   bool called_open() const { return called_open_; }
@@ -38,7 +38,7 @@ class PPB_FileSystem_Impl : public Resource {
  private:
   PluginInstance* instance_;
   PP_FileSystemType_Dev type_;
-  FilePath root_path_;
+  GURL root_url_;
   bool opened_;
   bool called_open_;
 

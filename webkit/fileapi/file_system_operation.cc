@@ -5,6 +5,8 @@
 #include "webkit/fileapi/file_system_operation.h"
 
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
+#include "net/base/escape.h"
 #include "net/url_request/url_request_context.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -63,7 +65,7 @@ void FileSystemOperation::OpenFileSystem(
       callback_factory_.NewCallback(&FileSystemOperation::DidGetRootPath));
 }
 
-void FileSystemOperation::CreateFile(const FilePath& path,
+void FileSystemOperation::CreateFile(const GURL& path,
                                      bool exclusive) {
 #ifndef NDEBUG
   DCHECK(kOperationNone == pending_operation_);
@@ -86,7 +88,7 @@ void FileSystemOperation::CreateFile(const FilePath& path,
                     : &FileSystemOperation::DidEnsureFileExistsNonExclusive));
 }
 
-void FileSystemOperation::CreateDirectory(const FilePath& path,
+void FileSystemOperation::CreateDirectory(const GURL& path,
                                           bool exclusive,
                                           bool recursive) {
 #ifndef NDEBUG
@@ -110,8 +112,8 @@ void FileSystemOperation::CreateDirectory(const FilePath& path,
           &FileSystemOperation::DidFinishFileOperation));
 }
 
-void FileSystemOperation::Copy(const FilePath& src_path,
-                               const FilePath& dest_path) {
+void FileSystemOperation::Copy(const GURL& src_path,
+                               const GURL& dest_path) {
 #ifndef NDEBUG
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationCopy;
@@ -149,8 +151,8 @@ void FileSystemOperation::Copy(const FilePath& src_path,
         &FileSystemOperation::DidFinishFileOperation));
 }
 
-void FileSystemOperation::Move(const FilePath& src_path,
-                               const FilePath& dest_path) {
+void FileSystemOperation::Move(const GURL& src_path,
+                               const GURL& dest_path) {
 #ifndef NDEBUG
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationMove;
@@ -186,7 +188,7 @@ void FileSystemOperation::Move(const FilePath& src_path,
         &FileSystemOperation::DidFinishFileOperation));
 }
 
-void FileSystemOperation::DirectoryExists(const FilePath& path) {
+void FileSystemOperation::DirectoryExists(const GURL& path) {
 #ifndef NDEBUG
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationDirectoryExists;
@@ -207,7 +209,7 @@ void FileSystemOperation::DirectoryExists(const FilePath& path) {
           &FileSystemOperation::DidDirectoryExists));
 }
 
-void FileSystemOperation::FileExists(const FilePath& path) {
+void FileSystemOperation::FileExists(const GURL& path) {
 #ifndef NDEBUG
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationFileExists;
@@ -228,7 +230,7 @@ void FileSystemOperation::FileExists(const FilePath& path) {
           &FileSystemOperation::DidFileExists));
 }
 
-void FileSystemOperation::GetMetadata(const FilePath& path) {
+void FileSystemOperation::GetMetadata(const GURL& path) {
 #ifndef NDEBUG
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationGetMetadata;
@@ -249,7 +251,7 @@ void FileSystemOperation::GetMetadata(const FilePath& path) {
           &FileSystemOperation::DidGetMetadata));
 }
 
-void FileSystemOperation::ReadDirectory(const FilePath& path) {
+void FileSystemOperation::ReadDirectory(const GURL& path) {
 #ifndef NDEBUG
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationReadDirectory;
@@ -270,7 +272,7 @@ void FileSystemOperation::ReadDirectory(const FilePath& path) {
           &FileSystemOperation::DidReadDirectory));
 }
 
-void FileSystemOperation::Remove(const FilePath& path, bool recursive) {
+void FileSystemOperation::Remove(const GURL& path, bool recursive) {
 #ifndef NDEBUG
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationRemove;
@@ -294,7 +296,7 @@ void FileSystemOperation::Remove(const FilePath& path, bool recursive) {
 
 void FileSystemOperation::Write(
     scoped_refptr<net::URLRequestContext> url_request_context,
-    const FilePath& path,
+    const GURL& path,
     const GURL& blob_url,
     int64 offset) {
 #ifndef NDEBUG
@@ -326,7 +328,7 @@ void FileSystemOperation::Write(
           &FileSystemOperation::OnFileOpenedForWrite));
 }
 
-void FileSystemOperation::Truncate(const FilePath& path, int64 length) {
+void FileSystemOperation::Truncate(const GURL& path, int64 length) {
 #ifndef NDEBUG
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationTruncate;
@@ -347,7 +349,7 @@ void FileSystemOperation::Truncate(const FilePath& path, int64 length) {
           &FileSystemOperation::DidFinishFileOperation));
 }
 
-void FileSystemOperation::TouchFile(const FilePath& path,
+void FileSystemOperation::TouchFile(const GURL& path,
                                     const base::Time& last_access_time,
                                     const base::Time& last_modified_time) {
 #ifndef NDEBUG
@@ -408,14 +410,13 @@ void FileSystemOperation::DidGetRootPath(
     bool success,
     const FilePath& path, const std::string& name) {
   DCHECK(success || path.empty());
-  FilePath result;
+  GURL result;
   // We ignore the path, and return a URL instead.  The point was just to verify
   // that we could create/find the path.
   if (success) {
-    GURL root_url = GetFileSystemRootURI(
+    result = GetFileSystemRootURI(
         file_system_operation_context_.src_origin_url(),
         file_system_operation_context_.src_type());
-    result = FilePath().AppendASCII(root_url.spec());
   }
   dispatcher_->DidOpenFileSystem(name, result);
   delete this;
@@ -537,21 +538,37 @@ void FileSystemOperation::OnFileOpenedForWrite(
 }
 
 bool FileSystemOperation::VerifyFileSystemPathForRead(
-    const FilePath& path, GURL* origin_url, FileSystemType* type,
+    const GURL& path, GURL* origin_url, FileSystemType* type,
     FilePath* virtual_path) {
 
   // If we have no context, we just allow any operations, for testing.
   // TODO(ericu): Revisit this hack for security.
   if (!file_system_context()) {
-    *virtual_path = path;
+#ifdef OS_WIN
+    // On Windows, the path will look like /C:/foo/bar; we need to remove the
+    // leading slash to make it valid.  But if it's empty, we shouldn't do
+    // anything.
+    std::string temp = UnescapeURLComponent(path.path(),
+        UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
+    if (temp.size())
+      temp = temp.substr(1);
+    *virtual_path = FilePath(UTF8ToWide(temp)).NormalizeWindowsPathSeparators();
+#else
+    *virtual_path = FilePath(path.path());
+#endif
     *type = file_system_operation_context_.src_type();
+    *origin_url = file_system_operation_context_.src_origin_url();
     return true;
   }
 
   // We may want do more checks, but for now it just checks if the given
-  // |path| is under the valid FileSystem root path for this host context.
-  if (!file_system_context()->path_manager()->CrackFileSystemPath(
-          path, origin_url, type, virtual_path)) {
+  // URL is valid.
+  if (!CrackFileSystemURL(path, origin_url, type, virtual_path)) {
+    dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
+    return false;
+  }
+  if (!file_system_context()->path_manager()->IsAllowedFileSystemType(
+      *origin_url, *type)) {
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return false;
   }
@@ -560,19 +577,35 @@ bool FileSystemOperation::VerifyFileSystemPathForRead(
 }
 
 bool FileSystemOperation::VerifyFileSystemPathForWrite(
-    const FilePath& path, bool create, GURL* origin_url, FileSystemType* type,
+    const GURL& path, bool create, GURL* origin_url, FileSystemType* type,
     FilePath* virtual_path) {
 
   // If we have no context, we just allow any operations, for testing.
   // TODO(ericu): Revisit this hack for security.
   if (!file_system_context()) {
-    *virtual_path = path;
+#ifdef OS_WIN
+    // On Windows, the path will look like /C:/foo/bar; we need to remove the
+    // leading slash to make it valid.  But if it's empty, we shouldn't do
+    // anything.
+    std::string temp = UnescapeURLComponent(path.path(),
+        UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
+    if (temp.size())
+      temp = temp.substr(1);
+    *virtual_path = FilePath(UTF8ToWide(temp)).NormalizeWindowsPathSeparators();
+#else
+    *virtual_path = FilePath(path.path());
+#endif
     *type = file_system_operation_context_.dest_type();
+    *origin_url = file_system_operation_context_.dest_origin_url();
     return true;
   }
 
-  if (!file_system_context()->path_manager()->CrackFileSystemPath(
-          path, origin_url, type, virtual_path)) {
+  if (!CrackFileSystemURL(path, origin_url, type, virtual_path)) {
+    dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
+    return false;
+  }
+  if (!file_system_context()->path_manager()->IsAllowedFileSystemType(
+      *origin_url, *type)) {
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return false;
   }
