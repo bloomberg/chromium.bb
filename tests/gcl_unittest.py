@@ -91,9 +91,9 @@ class GclUnittest(GclTestsBase):
         'RunShell', 'RunShellWithReturnCode', 'SVN',
         'TryChange', 'UnknownFiles', 'Warn',
         'attrs', 'breakpad', 'defer_attributes', 'fix_encoding',
-        'gclient_utils', 'getpass',
-        'json', 'main', 'need_change', 'need_change_and_args', 'no_args',
-        'optparse', 'os', 'presubmit_support', 'random', 're',
+        'gclient_utils', 'json', 'main', 'need_change', 'need_change_and_args',
+        'no_args', 'optparse', 'os', 'presubmit_support', 'random', 're',
+        'rietveld',
         'string', 'subprocess', 'subprocess2', 'sys', 'tempfile', 'time',
         'upload', 'urllib2',
     ]
@@ -179,7 +179,7 @@ class ChangeInfoUnittest(GclTestsBase):
     members = [
       'CloseIssue', 'Delete', 'Exists', 'GetFiles', 'GetFileNames',
       'GetLocalRoot', 'GetIssueDescription', 'Load', 'MissingTests',
-      'NeedsUpload', 'PrimeLint', 'Save', 'SendToRietveld',
+      'NeedsUpload', 'PrimeLint', 'RpcServer', 'Save', 'SendToRietveld',
       'UpdateRietveldDescription',
       'description', 'issue', 'name',
       'needs_upload', 'patch', 'patchset', 'reviewers', 'rietveld',

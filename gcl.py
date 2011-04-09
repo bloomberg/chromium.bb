@@ -8,7 +8,6 @@ Wrapper script around Rietveld's upload.py that simplifies working with groups
 of files.
 """
 
-import getpass
 import optparse
 import os
 import random
@@ -39,9 +38,10 @@ from scm import SVN
 import fix_encoding
 import gclient_utils
 import presubmit_support
+import rietveld
 import subprocess2
 
-__version__ = '1.2'
+__version__ = '1.2.1'
 
 
 CODEREVIEW_SETTINGS = {
@@ -283,7 +283,7 @@ class ChangeInfo(object):
   _SEPARATOR = "\n-----\n"
 
   def __init__(self, name, issue, patchset, description, files, local_root,
-               rietveld, needs_upload=False):
+               rietveld_url, needs_upload=False):
     self.name = name
     self.issue = int(issue)
     self.patchset = int(patchset)
@@ -297,10 +297,11 @@ class ChangeInfo(object):
     self.patch = None
     self._local_root = local_root
     self.needs_upload = needs_upload
-    self.rietveld = rietveld
+    self.rietveld = rietveld_url
     if not self.rietveld:
       # Set the default value.
       self.rietveld = GetCodeReviewSetting('CODE_REVIEW_SERVER')
+    self._rpc_server = None
 
   def _get_description(self):
     return self._description
@@ -384,6 +385,13 @@ class ChangeInfo(object):
     """Removes the changelist information from disk."""
     os.remove(GetChangelistInfoFile(self.name))
 
+  def RpcServer(self):
+    if not self._rpc_server:
+      if not self.rietveld:
+        ErrorExit(CODEREVIEW_SETTINGS_FILE_NOT_FOUND)
+      self._rpc_server = rietveld.Rietveld(self.rietveld, None, None)
+    return self._rpc_server
+
   def CloseIssue(self):
     """Closes the Rietveld issue for this changelist."""
     # Newer versions of Rietveld require us to pass an XSRF token to POST, so
@@ -420,19 +428,8 @@ class ChangeInfo(object):
 
   def SendToRietveld(self, request_path, timeout=None, **kwargs):
     """Send a POST/GET to Rietveld.  Returns the response body."""
-    if not self.rietveld:
-      ErrorExit(CODEREVIEW_SETTINGS_FILE_NOT_FOUND)
-    def GetUserCredentials():
-      """Prompts the user for a username and password."""
-      email = upload.GetEmail('Email (login for uploading to %s)' %
-          self.rietveld)
-      password = getpass.getpass('Password for %s: ' % email)
-      return email, password
-    rpc_server = upload.HttpRpcServer(self.rietveld,
-                                      GetUserCredentials,
-                                      save_cookies=True)
     try:
-      return rpc_server.Send(request_path, timeout=timeout, **kwargs)
+      return self.RpcServer().Send(request_path, timeout=timeout, **kwargs)
     except urllib2.URLError:
       if timeout is None:
         ErrorExit('Error accessing url %s' % request_path)
@@ -536,8 +533,9 @@ class ChangeInfo(object):
     if not os.path.exists(info_file):
       if fail_on_not_found:
         ErrorExit("Changelist " + changename + " not found.")
-      return ChangeInfo(changename, 0, 0, '', None, local_root, rietveld=None,
-                        needs_upload=False)
+      return ChangeInfo(
+          changename, 0, 0, '', None, local_root, rietveld_url=None,
+          needs_upload=False)
     content = gclient_utils.FileRead(info_file, 'r')
     save = False
     try:
@@ -1222,15 +1220,16 @@ def DoPresubmitChecks(change_info, committing, may_prompt):
                                        change_info.GetFiles(),
                                        change_info.issue,
                                        change_info.patchset)
-  output = presubmit_support.DoPresubmitChecks(change=change,
-                                               committing=committing,
-                                               verbose=False,
-                                               output_stream=sys.stdout,
-                                               input_stream=sys.stdin,
-                                               default_presubmit=root_presubmit,
-                                               may_prompt=may_prompt,
-                                               tbr=False,
-                                               host_url=change_info.rietveld)
+  output = presubmit_support.DoPresubmitChecks(
+      change=change,
+      committing=committing,
+      verbose=False,
+      output_stream=sys.stdout,
+      input_stream=sys.stdin,
+      default_presubmit=root_presubmit,
+      may_prompt=may_prompt,
+      tbr=False,
+      rietveld=change_info.RpcServer())
   if not output.should_continue() and may_prompt:
     # TODO(dpranke): move into DoPresubmitChecks(), unify cmd line args.
     print "\nPresubmit errors, can't continue (use --no_presubmit to bypass)"

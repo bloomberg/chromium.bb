@@ -2068,9 +2068,6 @@ def RealMain(argv, data=None):
     The patchset id is None if the base files are not uploaded by this
     script (applies only to SVN checkouts).
   """
-  logging.basicConfig(format=("%(asctime).19s %(levelname)s %(filename)s:"
-                              "%(lineno)s %(message)s "))
-  os.environ['LC_ALL'] = 'C'
   options, args = parser.parse_args(argv[1:])
   global verbosity
   verbosity = options.verbose

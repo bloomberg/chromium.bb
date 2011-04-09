@@ -42,15 +42,16 @@ class Rietveld(object):
   """Accesses rietveld."""
   def __init__(self, url, email, password):
     self.issue = None
-    self.user = email
     self.url = url
-    self._get_creds = lambda: (email, password)
+    if email and password:
+      get_creds = lambda: (email, password)
+      self.rpc_server = upload.HttpRpcServer(
+            self.url,
+            get_creds)
+    else:
+      self.rpc_server = upload.GetRpcServer(url, email)
     self._xsrf_token = None
     self._xsrf_token_time = None
-    self.rpc_server = upload.HttpRpcServer(
-          self.url,
-          self._get_creds,
-          save_cookies=False)
 
   def xsrf_token(self):
     if (not self._xsrf_token_time or
@@ -175,7 +176,8 @@ class Rietveld(object):
         (flag, value)])
 
   def get(self, request_path, **kwargs):
-    return self._send(request_path, payload=None, **kwargs)
+    kwargs.setdefault('payload', None)
+    return self._send(request_path, **kwargs)
 
   def post(self, request_path, data, **kwargs):
     ctype, body = upload.EncodeMultipartFormData(data, [])
@@ -203,3 +205,6 @@ class Rietveld(object):
           raise
       # If reaching this line, loop again. Uses a small backoff.
       time.sleep(1+maxtries*2)
+
+  # DEPRECATED.
+  Send = get

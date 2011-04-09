@@ -39,6 +39,7 @@ from third_party import upload
 import breakpad  # pylint: disable=W0611
 import fix_encoding
 import presubmit_support
+import rietveld
 import scm
 import watchlists
 
@@ -463,7 +464,7 @@ or verify this branch is set up to track another (via the --track argument to
     if not self.has_description:
       if self.GetIssue():
         path = '/' + self.GetIssue() + '/description'
-        rpc_server = self._RpcServer()
+        rpc_server = self.RpcServer()
         self.description = rpc_server.Send(path).strip()
       self.has_description = True
     if pretty:
@@ -494,9 +495,9 @@ or verify this branch is set up to track another (via the --track argument to
 
   def GetPatchSetDiff(self, issue):
     # Grab the last patchset of the issue first.
-    data = json.loads(self._RpcServer().Send('/api/%s' % issue))
+    data = json.loads(self.RpcServer().Send('/api/%s' % issue))
     patchset = data['patchsets'][-1]
-    return self._RpcServer().Send(
+    return self.RpcServer().Send(
         '/download/issue%s_%s.diff' % (issue, patchset))
 
   def SetIssue(self, issue):
@@ -511,7 +512,7 @@ or verify this branch is set up to track another (via the --track argument to
     self.has_issue = False
 
   def CloseIssue(self):
-    rpc_server = self._RpcServer()
+    rpc_server = self.RpcServer()
     # Newer versions of Rietveld require us to pass an XSRF token to POST, so
     # we fetch it from the server.  (The version used by Chromium has been
     # modified so the token isn't required when closing an issue.)
@@ -523,14 +524,15 @@ or verify this branch is set up to track another (via the --track argument to
     data = [("description", self.description),
             ("xsrf_token", xsrf_token)]
     ctype, body = upload.EncodeMultipartFormData(data, [])
-    rpc_server.Send('/' + self.GetIssue() + '/close', body, ctype)
+    rpc_server.Send(
+        '/' + self.GetIssue() + '/close', payload=body, content_type=ctype)
 
-  def _RpcServer(self):
+  def RpcServer(self):
     """Returns an upload.RpcServer() to access this review's rietveld instance.
     """
     if not self._rpc_server:
-      server = self.GetRietveldServer()
-      self._rpc_server = upload.GetRpcServer(server, save_cookies=True)
+      self.GetIssue()
+      self._rpc_server = rietveld.Rietveld(self.rietveld_server, None, None)
     return self._rpc_server
 
   def _IssueSetting(self):
@@ -848,7 +850,7 @@ def RunHook(committing, upstream_branch, rietveld_server, tbr, may_prompt,
     output = presubmit_support.DoPresubmitChecks(change, committing,
         verbose=verbose, output_stream=sys.stdout, input_stream=sys.stdin,
         default_presubmit=None, may_prompt=may_prompt, tbr=tbr,
-        host_url=cl.GetRietveldServer())
+        rietveld=cl.RpcServer())
   except presubmit_support.PresubmitFailure, e:
     DieWithError(
         ('%s\nMaybe your depot_tools is out of date?\n'

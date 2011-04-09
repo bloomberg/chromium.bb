@@ -418,7 +418,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     change = presubmit.Change('mychange', '\n'.join(description_lines),
                               self.fake_root_dir, files, 0, 0)
     output = presubmit.DoPresubmitChecks(
-        change, False, True, None, input_buf, None, False)
+        change, False, True, None, input_buf, None, False, False, None)
     self.failIf(output.should_continue())
     self.assertEqual(output.getvalue().count('!!'), 2)
     self.assertEqual(output.getvalue().count(
@@ -452,13 +452,13 @@ class PresubmitUnittest(PresubmitTestsBase):
     change = presubmit.Change('mychange', '\n'.join(description_lines),
                               self.fake_root_dir, files, 0, 0)
     output = presubmit.DoPresubmitChecks(
-        change, False, True, None, input_buf, None, True)
+        change, False, True, None, input_buf, None, True, False, None)
     self.failIf(output.should_continue())
     self.assertEqual(output.getvalue().count('??'), 2)
 
     input_buf = StringIO.StringIO('y\n')  # say yes to the warning
     output = presubmit.DoPresubmitChecks(
-        change, False, True, None, input_buf, None, True)
+        change, False, True, None, input_buf, None, True, False, None)
     self.failUnless(output.should_continue())
     self.assertEquals(output.getvalue().count('??'), 2)
     self.assertEqual(output.getvalue().count(
@@ -491,7 +491,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     change = presubmit.Change('mychange', '\n'.join(description_lines),
                               self.fake_root_dir, files, 0, 0)
     output = presubmit.DoPresubmitChecks(change, False, True, None, None,
-        None, False)
+        None, False, False, None)
     self.assertEqual(output.getvalue().count('??'), 2)
     self.assertEqual(output.getvalue().count('XX!!XX'), 2)
     self.assertEqual(output.getvalue().count('(y/N)'), 0)
@@ -528,7 +528,8 @@ def CheckChangeOnCommit(input_api, output_api):
     change = presubmit.Change('mychange', '\n'.join(description_lines),
                               self.fake_root_dir, files, 0, 0)
     output = presubmit.DoPresubmitChecks(
-        change, False, True, None, input_buf, DEFAULT_SCRIPT, False)
+        change, False, True, None, input_buf, DEFAULT_SCRIPT, False, False,
+        None)
     self.failIf(output.should_continue())
     text = ('Running presubmit upload checks ...\n'
             'Warning, no presubmit.py found.\n'
@@ -603,7 +604,8 @@ def CheckChangeOnCommit(input_api, output_api):
         'foo', "Blah Blah\n\nSTORY=http://tracker.com/42\nBUG=boo\n",
         self.fake_root_dir, None, 0, 0)
     self.failUnless(presubmit.DoPresubmitChecks(
-        change, False, True, output, input_buf, DEFAULT_SCRIPT, False))
+        change, False, True, output, input_buf, DEFAULT_SCRIPT, False, False,
+        None))
     self.assertEquals(output.getvalue(),
                       ('Running presubmit upload checks ...\n'
                        'Warning, no presubmit.py found.\n'
@@ -687,7 +689,7 @@ def CheckChangeOnCommit(input_api, output_api):
     presubmit.DoPresubmitChecks(mox.IgnoreArg(), False, False,
                                 mox.IgnoreArg(),
                                 mox.IgnoreArg(),
-                                None, False).AndReturn(output)
+                                None, False, False, None).AndReturn(output)
     self.mox.ReplayAll()
 
     self.assertEquals(
@@ -730,8 +732,8 @@ class InputApiUnittest(PresubmitTestsBase):
       'basename', 'cPickle', 'cStringIO', 'canned_checks', 'change', 'environ',
       'host_url', 'is_committing', 'json', 'marshal', 'os_listdir', 'os_walk',
       'os_path', 'owners_db', 'pickle', 'platform', 'python_executable', 're',
-      'subprocess', 'tbr', 'tempfile', 'time', 'traceback', 'unittest',
-      'urllib2', 'version', 'verbose',
+      'rietveld', 'subprocess', 'tbr', 'tempfile', 'time', 'traceback',
+      'unittest', 'urllib2', 'version', 'verbose',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(
@@ -771,7 +773,7 @@ class InputApiUnittest(PresubmitTestsBase):
     api = presubmit.InputApi(
         self.fake_change,
         presubmit_path='foo/path/PRESUBMIT.py',
-        is_committing=False, tbr=False, host_url=None, verbose=False)
+        is_committing=False, tbr=False, rietveld=None, verbose=False)
     self.assertEquals(api.PresubmitLocalPath(), 'foo/path')
     self.assertEquals(api.change, self.fake_change)
     self.assertEquals(api.host_url, 'http://codereview.chromium.org')
@@ -1008,7 +1010,7 @@ class InputApiUnittest(PresubmitTestsBase):
     presubmit_path = join(self.fake_root_dir, 'isdir', 'PRESUBMIT.py')
     api = presubmit.InputApi(
         change=change, presubmit_path=presubmit_path,
-        is_committing=True, tbr=False, host_url=None, verbose=False)
+        is_committing=True, tbr=False, rietveld=None, verbose=False)
     paths_from_api = api.AbsoluteLocalPaths(include_dirs=True)
     self.assertEqual(len(paths_from_api), 2)
     for absolute_paths in [paths_from_change, paths_from_api]:
