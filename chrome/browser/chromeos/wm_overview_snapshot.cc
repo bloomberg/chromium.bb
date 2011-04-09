@@ -6,9 +6,9 @@
 
 #include <vector>
 
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "ui/base/x/x11_util.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"

@@ -18,7 +18,6 @@
 #include "base/string_util.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
 class Profile;

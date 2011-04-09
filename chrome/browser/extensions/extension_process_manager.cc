@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_process_manager.h"
 
-#include "chrome/browser/browser_window.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "content/browser/browsing_instance.h"
 #if defined(OS_MACOSX)
 #include "chrome/browser/extensions/extension_host_mac.h"

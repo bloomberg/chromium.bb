@@ -6,8 +6,8 @@
 
 #include <gtk/gtk.h>
 
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/extensions/extension_popup_gtk.h"
 #include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"

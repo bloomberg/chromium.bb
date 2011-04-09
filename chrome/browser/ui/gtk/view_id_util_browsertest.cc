@@ -4,8 +4,8 @@
 
 #include <gtk/gtk.h>
 
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"

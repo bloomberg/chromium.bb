@@ -9,10 +9,10 @@
 
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/base_tab.h"
 #include "chrome/browser/ui/views/tabs/base_tab_strip.h"

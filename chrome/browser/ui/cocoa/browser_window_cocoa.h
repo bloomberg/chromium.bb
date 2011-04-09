@@ -9,7 +9,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/browser_window.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "content/common/notification_registrar.h"
 
 class Browser;

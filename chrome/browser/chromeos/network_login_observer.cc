@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/network_login_observer.h"
 
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/background_view.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/window.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"

@@ -7,9 +7,9 @@
 
 #include "base/scoped_comptr_win.h"
 #include "chrome/browser/automation/ui_controls.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_win.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"

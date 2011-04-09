@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/automation/ui_controls.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/frame/browser_view.h"

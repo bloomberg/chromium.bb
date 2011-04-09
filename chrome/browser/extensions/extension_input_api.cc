@@ -8,18 +8,18 @@
 
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/key_identifier_conversion_views.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "views/events/event.h"
 #include "views/ime/input_method.h"
-#include "views/widget/widget.h"
 #include "views/widget/root_view.h"
+#include "views/widget/widget.h"
 
 namespace {
 

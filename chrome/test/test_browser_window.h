@@ -6,7 +6,7 @@
 #define CHROME_TEST_TEST_BROWSER_WINDOW_H_
 #pragma once
 
-#include "chrome/browser/browser_window.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/test_location_bar.h"
 
 // An implementation of BrowserWindow used for testing. TestBrowserWindow only
