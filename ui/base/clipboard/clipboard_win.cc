@@ -340,8 +340,13 @@ void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
     return;
   }
 
-  // TODO(dcheng): Implement me.
+  const FORMATETC* textFormat = ClipboardUtil::GetPlainTextFormat();
+  const FORMATETC* htmlFormat = ClipboardUtil::GetHtmlFormat();
   types->clear();
+  if (::IsClipboardFormatAvailable(textFormat->cfFormat))
+    types->push_back(UTF8ToUTF16(kMimeTypeText));
+  if (::IsClipboardFormatAvailable(htmlFormat->cfFormat))
+    types->push_back(UTF8ToUTF16(kMimeTypeHTML));
   *contains_filenames = false;
 }
 
