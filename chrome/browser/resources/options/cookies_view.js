@@ -62,9 +62,8 @@ cr.define('options', function() {
      * @param {!Event} e The event object.
      */
     handleSearchQueryChange_: function(e) {
-      if (this.queryDelayTimerId_) {
+      if (this.queryDelayTimerId_)
         window.clearTimeout(this.queryDelayTimerId_);
-      }
 
       this.queryDelayTimerId_ = window.setTimeout(
           this.searchCookie.bind(this), 500);
@@ -78,9 +77,13 @@ cr.define('options', function() {
      * @param {Event} e Property change event.
      */
     handleVisibleChange_: function(e) {
-      if (!this.initialized_ && this.visible) {
+      if (!this.visible)
+        return;
+      if (!this.initialized_) {
         this.initialized_ = true;
         this.searchCookie();
+      } else {
+        $('cookies-list').redraw();
       }
     },
   };
