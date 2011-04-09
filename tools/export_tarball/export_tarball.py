@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -50,7 +50,7 @@ NONESSENTIAL_DIRS = (
     'third_party/yasm/source/patched-yasm/modules/objfmts/win32/tests',
     'third_party/yasm/source/patched-yasm/modules/objfmts/win64/tests',
     'third_party/yasm/source/patched-yasm/modules/objfmts/xdf/tests',
-    'third_party/WebKit/JavaScriptCore/tests',
+    'third_party/WebKit/Source/JavaScriptCore/tests',
     'third_party/WebKit/LayoutTests',
     'v8/test',
     'webkit/data/layout_tests',
