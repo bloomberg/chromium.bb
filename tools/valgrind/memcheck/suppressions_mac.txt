@@ -444,7 +444,6 @@
    fun:_ZN4base6Thread5StartEv
    fun:_ZN14HistoryService4InitERK8FilePathP15BookmarkServiceb
    fun:_ZN14TestingProfile20CreateHistoryServiceEbb
-   fun:_ZN12_GLOBAL__N_127HistoryContentsProviderTest5SetUpEv
 }
 {
    bug_36605b
