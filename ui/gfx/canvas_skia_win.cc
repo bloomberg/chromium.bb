@@ -469,9 +469,19 @@ void CanvasSkia::DrawFadeTruncatingString(
   int total_string_height;
   SizeStringInt(text, font, &total_string_width, &total_string_height,
                 flags | TEXT_VALIGN_TOP);
-  if (total_string_width <= display_rect.width()) {
+  bool should_draw_directly = total_string_width <= display_rect.width();
+
+  // Create a temporary bitmap to draw the gradient to.
+  scoped_ptr<skia::BitmapPlatformDevice> gradient_bitmap;
+  if (!should_draw_directly) {
+    gradient_bitmap.reset(skia::BitmapPlatformDevice::create(
+        NULL, display_rect.width(), display_rect.height(), false, NULL));
+    should_draw_directly = gradient_bitmap.get() != NULL;
+  }
+
+  if (should_draw_directly) {
     DrawStringInt(text, font, color, display_rect.x(), display_rect.y(),
-                  display_rect.width(), display_rect.height(), flags);
+                  display_rect.width(), display_rect.height(), 0);
     return;
   }
 
@@ -556,9 +566,6 @@ void CanvasSkia::DrawFadeTruncatingString(
   HFONT gray_scale_font = CreateFontIndirect(&font_info);
 
   HDC hdc = beginPlatformPaint();
-  scoped_ptr<skia::BitmapPlatformDevice> gradient_bitmap(
-      skia::BitmapPlatformDevice::create(NULL, display_rect.width(),
-                                         display_rect.height(), false, NULL));
   if (is_truncating_head)
     DrawTextGradientPart(hdc, *gradient_bitmap, text, color, gray_scale_font,
                          text_rect, head_part, is_rtl, flags);
