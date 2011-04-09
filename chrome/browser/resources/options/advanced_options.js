@@ -101,20 +101,22 @@ var OptionsPage = options.OptionsPage;
         };
       }
 
-      if (cr.isWindows || navigator.platform.match(/linux|BSD/i)) {
+      if (!cr.isMac) {
+        // Don't display "Check for server certificate revocation" on Mac until
+        // http://crbug.com/78523 is fixed.
         $('sslCheckRevocation').onclick = function(event) {
           chrome.send('checkRevocationCheckboxAction',
               [String($('sslCheckRevocation').checked)]);
         };
-        $('sslUseSSL3').onclick = function(event) {
-          chrome.send('useSSL3CheckboxAction',
-              [String($('sslUseSSL3').checked)]);
-        };
-        $('sslUseTLS1').onclick = function(event) {
-          chrome.send('useTLS1CheckboxAction',
-              [String($('sslUseTLS1').checked)]);
-        };
       }
+      $('sslUseSSL3').onclick = function(event) {
+        chrome.send('useSSL3CheckboxAction',
+            [String($('sslUseSSL3').checked)]);
+      };
+      $('sslUseTLS1').onclick = function(event) {
+        chrome.send('useTLS1CheckboxAction',
+            [String($('sslUseTLS1').checked)]);
+      };
 
       // 'cloudPrintProxyEnabled' is true for Chrome branded builds on
       // certain platforms, or could be enabled by a lab.
