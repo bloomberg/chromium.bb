@@ -51,8 +51,12 @@ struct wlsc_output {
 	int repaint_needed;
 	int finished;
 
+	struct wlsc_surface *scanout_surface;
+
 	int (*prepare_render)(struct wlsc_output *output);
 	int (*present)(struct wlsc_output *output);
+	int (*image_is_scanoutable)(struct wlsc_output *output,
+				    EGLImageKHR image);
 };
 
 enum wlsc_pointer_type {
@@ -157,6 +161,8 @@ struct wlsc_surface {
 	struct wlsc_output *output;
 	enum wlsc_surface_map_type map_type;
 	struct wlsc_output *fullscreen_output;
+
+	EGLImageKHR image;
 };
 
 void

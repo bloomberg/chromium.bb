@@ -63,6 +63,9 @@ struct drm_output {
 	uint32_t fb_id[2];
 	EGLImageKHR image[2];
 	uint32_t current;	
+
+	uint32_t fs_surf_fb_id;
+	uint32_t pending_fs_surf_fb_id;
 };
 
 static int
@@ -87,6 +90,8 @@ drm_output_present(struct wlsc_output *output_base)
 	struct drm_output *output = (struct drm_output *) output_base;
 	struct drm_compositor *c =
 		(struct drm_compositor *) output->base.compositor;
+	int ret;
+	uint32_t fb_id = 0;
 
 	if (drm_output_prepare_render(&output->base))
 		return -1;
@@ -94,8 +99,29 @@ drm_output_present(struct wlsc_output *output_base)
 
 	output->current ^= 1;
 
+	if (output->base.scanout_surface) {
+		EGLint handle, stride;
+
+		eglExportDRMImageMESA(c->base.display,
+				      output->base.scanout_surface->image,
+				      NULL, &handle, &stride);
+
+		ret = drmModeAddFB(c->drm.fd,
+				   output->base.width, output->base.height,
+				   32, 32, stride, handle,
+				   &output->fs_surf_fb_id);
+		if (ret)
+			return -1;
+
+		printf("pageflip to fullscreen buffer: %d\n", handle);
+
+		fb_id = output->fs_surf_fb_id;
+	} else {
+		fb_id = output->fb_id[output->current ^ 1];
+	}
+
 	drmModePageFlip(c->drm.fd, output->crtc_id,
-			output->fb_id[output->current ^ 1],
+			fb_id,
 			DRM_MODE_PAGE_FLIP_EVENT, output);
 
 	return 0;
@@ -105,11 +131,52 @@ static void
 page_flip_handler(int fd, unsigned int frame,
 		  unsigned int sec, unsigned int usec, void *data)
 {
-	struct wlsc_output *output = data;
+	struct drm_output *output = (struct drm_output *) data;
+	struct drm_compositor *c =
+		(struct drm_compositor *) output->base.compositor;
 	uint32_t msecs;
 
+	if (output->pending_fs_surf_fb_id) {
+		drmModeRmFB(c->drm.fd, output->pending_fs_surf_fb_id);
+		output->pending_fs_surf_fb_id = 0;
+	}
+
+	if (output->fs_surf_fb_id) {
+		output->pending_fs_surf_fb_id = output->fs_surf_fb_id;
+		output->fs_surf_fb_id = 0;
+	}
+
 	msecs = sec * 1000 + usec / 1000;
-	wlsc_output_finish_frame(output, msecs);
+	wlsc_output_finish_frame(&output->base, msecs);
+}
+
+static int
+drm_output_image_is_scanoutable(struct wlsc_output *output_base,
+				EGLImageKHR image)
+{
+	struct drm_output *output = (struct drm_output *) output_base;
+	struct drm_compositor *c =
+		(struct drm_compositor *) output->base.compositor;
+	EGLint handle, stride;
+	int ret;
+	uint32_t fb_id = 0;
+
+	eglExportDRMImageMESA(c->base.display, image,
+			      NULL, &handle, &stride);
+
+	ret = drmModeAddFB(c->drm.fd,
+			   output->base.width, output->base.height,
+			   32, 32, stride, handle,
+			   &fb_id);
+	if (ret)
+		return 0;
+
+	/* FIXME: change interface to keep this fb_id,
+	 * to be used directly in next pageflip? */
+	if (fb_id)
+		drmModeRmFB(c->drm.fd, fb_id);
+
+	return fb_id != 0;
 }
 
 static void
@@ -285,6 +352,7 @@ create_output_for_connector(struct drm_compositor *ec,
 
 	output->base.prepare_render = drm_output_prepare_render;
 	output->base.present = drm_output_present;
+	output->base.image_is_scanoutable = drm_output_image_is_scanoutable;
 
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
 

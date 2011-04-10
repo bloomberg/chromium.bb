@@ -197,6 +197,13 @@ wayland_output_present(struct wlsc_output *output_base)
 }
 
 static int
+wayland_output_image_is_scanoutable(struct wlsc_output *output_base,
+				    EGLImageKHR image)
+{
+	return 0;
+}
+
+static int
 wayland_compositor_create_output(struct wayland_compositor *c,
 				 int width, int height)
 {
@@ -246,6 +253,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 
 	output->base.prepare_render = wayland_output_prepare_render;
 	output->base.present = wayland_output_present;
+	output->base.image_is_scanoutable = wayland_output_image_is_scanoutable;
 
 	wl_list_insert(c->base.output_list.prev, &output->base.link);
 

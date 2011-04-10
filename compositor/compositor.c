@@ -143,6 +143,7 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 
 	surface->compositor = compositor;
 	surface->visual = NULL;
+	surface->image = EGL_NO_IMAGE_KHR;
 	surface->x = x;
 	surface->y = y;
 	surface->width = width;
@@ -201,6 +202,10 @@ destroy_surface(struct wl_resource *resource, struct wl_client *client)
 
 	wl_list_remove(&surface->link);
 	glDeleteTextures(1, &surface->texture);
+
+	if (surface->image != EGL_NO_IMAGE_KHR)
+		eglDestroyImageKHR(surface->compositor->display,
+				   surface->image);
 
 	time = get_time();
 	wl_list_for_each_safe(l, next,
@@ -282,19 +287,17 @@ wlsc_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 	struct wlsc_compositor *ec = es->compositor;
-	EGLImageKHR *image;
 
 	if (buffer->attach) {
 		buffer->attach(buffer, surface);
 	} else {
-		image = eglCreateImageKHR(ec->display, ec->context,
-					  EGL_WAYLAND_BUFFER_WL,
-					  buffer, NULL);
+		es->image = eglCreateImageKHR(ec->display, ec->context,
+					      EGL_WAYLAND_BUFFER_WL,
+					      buffer, NULL);
 
 		glBindTexture(GL_TEXTURE_2D, es->texture);
-		glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, image);
+		glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, es->image);
 		es->visual = buffer->visual;
-		eglDestroyImageKHR(ec->display, image);
 	}
 }
 
@@ -491,6 +494,21 @@ wlsc_output_finish_frame(struct wlsc_output *output, int msecs)
 	compositor->repaint_on_timeout = 1;
 }
 
+static int
+wlsc_surface_is_scanoutable(struct wlsc_surface *es,
+			    struct wlsc_output *output)
+{
+	if (es->width != output->width ||
+	    es->height != output->height ||
+	    es->image == NULL)
+		return 0;
+
+	if (!output->image_is_scanoutable(output, es->image))
+		return 0;
+
+	return 1;
+}
+
 static void
 wlsc_output_repaint(struct wlsc_output *output)
 {
@@ -518,12 +536,20 @@ wlsc_output_repaint(struct wlsc_output *output)
 			      &output->previous_damage_region);
 	pixman_region32_copy(&output->previous_damage_region, &new_damage);
 
+	output->scanout_surface = NULL;
+
 	es = container_of(ec->surface_list.next, struct wlsc_surface, link);
 	if (es->map_type == WLSC_SURFACE_MAP_FULLSCREEN &&
 	    es->fullscreen_output == output) {
-		if (es->width < output->width || es->height < output->height)
-			glClear(GL_COLOR_BUFFER_BIT);
-		wlsc_surface_draw(es, output, &total_damage);
+		if (es->visual == &ec->compositor.rgb_visual &&
+		    wlsc_surface_is_scanoutable(es, output)) {
+			output->scanout_surface = es;
+		} else {
+			if (es->width < output->width ||
+			    es->height < output->height)
+				glClear(GL_COLOR_BUFFER_BIT);
+			wlsc_surface_draw(es, output, &total_damage);
+		}
 	} else {
 		wl_list_for_each(es, &ec->surface_list, link) {
 			if (es->visual != &ec->compositor.rgb_visual)
