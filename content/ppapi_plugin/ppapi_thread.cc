@@ -109,14 +109,16 @@ void PpapiThread::OnMsgCreateChannel(base::ProcessHandle host_process_handle,
 bool PpapiThread::SetupRendererChannel(base::ProcessHandle host_process_handle,
                                        int renderer_id,
                                        IPC::ChannelHandle* handle) {
-  PluginProcessDispatcher* dispatcher = new PluginProcessDispatcher(
-      host_process_handle, get_plugin_interface_);
+  PluginProcessDispatcher* dispatcher(new PluginProcessDispatcher(
+      host_process_handle, get_plugin_interface_));
 
   IPC::ChannelHandle plugin_handle;
   plugin_handle.name = StringPrintf("%d.r%d", base::GetCurrentProcId(),
                                     renderer_id);
-  if (!dispatcher->InitWithChannel(this, plugin_handle, false))
+  if (!dispatcher->InitWithChannel(this, plugin_handle, false)) {
+    delete dispatcher;
     return false;
+  }
 
   handle->name = plugin_handle.name;
 #if defined(OS_POSIX)
@@ -125,6 +127,8 @@ bool PpapiThread::SetupRendererChannel(base::ProcessHandle host_process_handle,
                                         true);
 #endif
 
+  // From here, the dispatcher will manage its own lifetime according to the
+  // lifetime of the attached channel.
   return true;
 }
 
