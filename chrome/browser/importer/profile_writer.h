@@ -6,29 +6,26 @@
 #define CHROME_BROWSER_IMPORTER_PROFILE_WRITER_H_
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
-#include "chrome/browser/bookmarks/bookmark_model_observer.h"
+#include "build/build_config.h"
 #include "chrome/browser/history/history_types.h"
 #include "googleurl/src/gurl.h"
 
+class BookmarkModel;
 class Profile;
 class TemplateURL;
-
-struct IE7PasswordInfo;
-
-namespace history {
-struct ImportedFaviconUsage;
-class URLRow;
-}
 
 namespace webkit_glue {
 struct PasswordForm;
 }
+
+#if defined(OS_WIN)
+struct IE7PasswordInfo;
+#endif
 
 // ProfileWriter encapsulates profile for writing entries into it.
 // This object must be invoked on UI thread.
@@ -71,12 +68,16 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
 
   // Helper methods for adding data to local stores.
   virtual void AddPasswordForm(const webkit_glue::PasswordForm& form);
+
 #if defined(OS_WIN)
   virtual void AddIE7PasswordInfo(const IE7PasswordInfo& info);
 #endif
+
   virtual void AddHistoryPage(const std::vector<history::URLRow>& page,
                               history::VisitSource visit_source);
+
   virtual void AddHomepage(const GURL& homepage);
+
   // Adds the bookmarks to the BookmarkModel.
   // |options| is a bitmask of BookmarkOptions and dictates how and
   // which bookmarks are added. If the bitmask contains IMPORT_TO_BOOKMARK_BAR,
@@ -92,8 +93,10 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
   virtual void AddBookmarkEntry(const std::vector<BookmarkEntry>& bookmark,
                                 const string16& first_folder_name,
                                 int options);
+
   virtual void AddFavicons(
       const std::vector<history::ImportedFaviconUsage>& favicons);
+
   // Add the TemplateURLs in |template_urls| to the local store and make the
   // TemplateURL at |default_keyword_index| the default keyword (does not set
   // a default keyword if it is -1).  The local store becomes the owner of the
@@ -104,14 +107,13 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
   // If unique_on_host_and_path a TemplateURL is only added if there is not an
   // existing TemplateURL that has a replaceable search url with the same
   // host+path combination.
+
   virtual void AddKeywords(const std::vector<TemplateURL*>& template_urls,
                            int default_keyword_index,
                            bool unique_on_host_and_path);
 
   // Shows the bookmarks toolbar.
   void ShowBookmarkBar();
-
-  Profile* profile() const { return profile_; }
 
  protected:
   friend class base::RefCountedThreadSafe<ProfileWriter>;

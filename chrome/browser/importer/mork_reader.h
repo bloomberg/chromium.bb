@@ -39,11 +39,10 @@
 // Source:
 // http://mxr.mozilla.org/firefox/source/db/morkreader/nsMorkReader.h
 
-#ifndef CHROME_BROWSER_IMPORTER_MORK_READER_H__
-#define CHROME_BROWSER_IMPORTER_MORK_READER_H__
+#ifndef CHROME_BROWSER_IMPORTER_MORK_READER_H_
+#define CHROME_BROWSER_IMPORTER_MORK_READER_H_
 #pragma once
 
-#include <iosfwd>
 #include <fstream>
 #include <map>
 #include <string>
@@ -53,18 +52,15 @@
 
 class FilePath;
 class ImporterBridge;
-class MessageLoop;
-class ProfileWriter;
 
 // The nsMorkReader object allows a consumer to read in a mork-format
 // file and enumerate the rows that it contains.  It does not provide
 // any functionality for modifying mork tables.
-
+//
 // References:
 //  http://www.mozilla.org/mailnews/arch/mork/primer.txt
 //  http://www.mozilla.org/mailnews/arch/mork/grammar.txt
 //  http://www.jwz.org/hacks/mork.pl
-
 class MorkReader {
  public:
   // The IDString type has built-in storage for the hex string representation
@@ -165,4 +161,4 @@ class MorkReader {
 // ImportHistoryFromFirefox2 is the main entry point to the importer.
 void ImportHistoryFromFirefox2(const FilePath& file, ImporterBridge* bridge);
 
-#endif  // CHROME_BROWSER_IMPORTER_MORK_READER_H__
+#endif  // CHROME_BROWSER_IMPORTER_MORK_READER_H_

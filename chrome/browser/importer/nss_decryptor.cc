@@ -14,7 +14,6 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "build/build_config.h"
 #include "webkit/glue/password_form.h"
 
 #if defined(USE_NSS)

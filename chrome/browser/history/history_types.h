@@ -167,14 +167,14 @@ class URLRow {
 // Different from page transition types, they describe the origins of visits.
 // (Warning): Please don't change any existing values while it is ok to add
 // new values when needed.
-typedef enum {
+enum VisitSource {
   SOURCE_SYNCED = 0,         // Synchronized from somewhere else.
   SOURCE_BROWSED = 1,        // User browsed.
   SOURCE_EXTENSION = 2,      // Added by an externsion.
   SOURCE_FIREFOX_IMPORTED = 3,
   SOURCE_IE_IMPORTED = 4,
   SOURCE_SAFARI_IMPORTED = 5,
-} VisitSource;
+};
 
 typedef int64 VisitID;
 // Structure to hold the mapping between each visit's id and its source.

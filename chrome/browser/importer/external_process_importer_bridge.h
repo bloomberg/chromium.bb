@@ -6,13 +6,11 @@
 #define CHROME_BROWSER_IMPORTER_EXTERNAL_PROCESS_IMPORTER_BRIDGE_H_
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "build/build_config.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/profile_writer.h"
 
