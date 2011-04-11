@@ -62,6 +62,7 @@ struct wl_frame_handler {
 	wl_display_frame_func_t func;
 	uint32_t key;
 	void *data;
+	struct wl_surface *surface;
 	struct wl_list link;
 };
 
@@ -304,7 +305,8 @@ display_handle_key(void *data,
 	if (!wl_list_empty(&display->frame_list) &&
 	    frame_handler->key == key) {
 		wl_list_remove(&frame_handler->link);
-		frame_handler->func(frame_handler->data, time);
+		frame_handler->func(frame_handler->surface,
+				    frame_handler->data, time);
 		free(frame_handler);
 		return;
 	}
@@ -468,6 +470,7 @@ wl_display_sync_callback(struct wl_display *display,
 
 WL_EXPORT int
 wl_display_frame_callback(struct wl_display *display,
+			  struct wl_surface *surface,
 			  wl_display_frame_func_t func, void *data)
 {
 	struct wl_frame_handler *handler;
@@ -479,9 +482,10 @@ wl_display_frame_callback(struct wl_display *display,
 	handler->func = func;
 	handler->key = display->key++;
 	handler->data = data;
+	handler->surface = surface;
 
 	wl_list_insert(display->frame_list.prev, &handler->link);
-	wl_display_frame(display, handler->key);
+	wl_display_frame(display, handler->surface, handler->key);
 
 	return 0;
 }

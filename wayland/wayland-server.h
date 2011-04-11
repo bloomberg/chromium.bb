@@ -215,7 +215,8 @@ wl_display_set_compositor(struct wl_display *display,
 			  const struct wl_compositor_interface *implementation);
 
 void
-wl_display_post_frame(struct wl_display *display, uint32_t msecs);
+wl_display_post_frame(struct wl_display *display, struct wl_surface *surface,
+		      uint32_t msecs);
 
 void
 wl_client_add_resource(struct wl_client *client,

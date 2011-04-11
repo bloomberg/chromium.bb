@@ -74,6 +74,7 @@ struct wl_frame_listener {
 	struct wl_resource resource;
 	struct wl_client *client;
 	uint32_t key;
+	struct wl_surface *surface;
 	struct wl_list link;
 };
 
@@ -489,7 +490,9 @@ destroy_frame_listener(struct wl_resource *resource, struct wl_client *client)
 
 static void
 display_frame(struct wl_client *client,
-	      struct wl_display *display, uint32_t key)
+	      struct wl_display *display,
+	      struct wl_surface *surface,
+	      uint32_t key)
 {
 	struct wl_frame_listener *listener;
 
@@ -505,6 +508,7 @@ display_frame(struct wl_client *client,
 	listener->resource.object.id = 0;
 	listener->client = client;
 	listener->key = key;
+	listener->surface = surface;
 	wl_list_insert(client->resource_list.prev, &listener->resource.link);
 	wl_list_insert(display->frame_list.prev, &listener->link);
 }
@@ -604,11 +608,14 @@ wl_display_add_global(struct wl_display *display,
 }
 
 WL_EXPORT void
-wl_display_post_frame(struct wl_display *display, uint32_t time)
+wl_display_post_frame(struct wl_display *display, struct wl_surface *surface,
+		      uint32_t time)
 {
 	struct wl_frame_listener *listener, *next;
 
 	wl_list_for_each_safe(listener, next, &display->frame_list, link) {
+		if (listener->surface != surface)
+			continue;
 		wl_client_post_event(listener->client, &display->object,
 				     WL_DISPLAY_KEY, listener->key, time);
 		wl_resource_destroy(&listener->resource, listener->client);
