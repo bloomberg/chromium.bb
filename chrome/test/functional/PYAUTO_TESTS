@@ -93,7 +93,6 @@
       'test_basic',
       'themes',
       'sync',
-      '-sync.SyncTest.testRestartBrowser',  # crbug.com/78677
     ],
 
     'win': [

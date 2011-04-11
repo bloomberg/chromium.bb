@@ -4132,6 +4132,13 @@ void TestingAutomationProvider::AwaitSyncCycleCompletion(
     reply.SendError("Not signed in to sync");
     return;
   }
+  // Ensure that the profile sync service is initialized before waiting for sync
+  // to complete. In cases where the browser is restarted with sync enabled,
+  // the sync service may take a while to get reinitialized.
+  if (!browser->profile()->GetProfileSyncService()) {
+    reply.SendError("ProfileSyncService not initialized.");
+    return;
+  }
   sync_waiter_->AwaitSyncCycleCompletion("Waiting for sync cycle");
   ProfileSyncService::Status status = sync_waiter_->GetStatus();
   if (status.summary == ProfileSyncService::Status::READY) {

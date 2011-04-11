@@ -46,8 +46,7 @@ class SyncTest(pyauto.PyUITest):
     self.assertTrue(self.AwaitSyncCycleCompletion())
     self.assertTrue(self.GetSyncInfo()['summary'] == 'READY')
     self.assertTrue(self.GetSyncInfo()['last synced'] == 'Just now')
-    # TODO(rsimha): Enable this check after http://crbug.com/78548 is fixed.
-    # self.assertTrue(self.GetSyncInfo()['updates received'] == 0)
+    self.assertTrue(self.GetSyncInfo()['updates received'] == 0)
 
 
 if __name__ == '__main__':
