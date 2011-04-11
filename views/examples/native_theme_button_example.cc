@@ -85,7 +85,7 @@ ExampleNativeThemeButton::~ExampleNativeThemeButton() {
 }
 
 std::wstring ExampleNativeThemeButton::MessWithState() {
-  const wchar_t* message;
+  const wchar_t* message = NULL;
   switch(GetThemePart()) {
   case gfx::NativeTheme::kPushButton:
     message = L"Pressed! count:%d";
