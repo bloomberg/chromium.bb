@@ -1050,6 +1050,12 @@ class TestingAutomationProvider : public AutomationProvider,
 
   void DisconnectFromWifiNetwork(DictionaryValue* args,
                                  IPC::Message* reply_message);
+
+  void GetUpdateInfo(DictionaryValue* args, IPC::Message* reply_message);
+
+  void UpdateCheck(DictionaryValue* args, IPC::Message* reply_message);
+
+  void SetReleaseTrack(DictionaryValue* args, IPC::Message* reply_message);
 #endif  // defined(OS_CHROMEOS)
 
   void WaitForTabCountToBecome(int browser_handle,

@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
+#include "chrome/browser/chromeos/cros/update_library.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_provider.h"
@@ -18,8 +19,19 @@
 using chromeos::CrosLibrary;
 using chromeos::NetworkLibrary;
 using chromeos::UserManager;
+using chromeos::UpdateLibrary;
 
 namespace {
+
+bool EnsureCrosLibraryLoaded(AutomationProvider* provider,
+                             IPC::Message* reply_message) {
+  if (!CrosLibrary::Get()->EnsureLoaded()) {
+    AutomationJSONReply(provider, reply_message).SendError(
+        "Could not load cros library.");
+    return false;
+  }
+  return true;
+}
 
 DictionaryValue* GetNetworkInfoDict(const chromeos::Network* network) {
   DictionaryValue* item = new DictionaryValue;
@@ -51,6 +63,66 @@ Value* GetProxySetting(const std::string& setting_name) {
     }
   }
   return NULL;
+}
+
+const char* UpdateStatusToString(chromeos::UpdateStatusOperation status) {
+  switch (status) {
+    case chromeos::UPDATE_STATUS_IDLE:
+      return "idle";
+    case chromeos::UPDATE_STATUS_CHECKING_FOR_UPDATE:
+      return "checking for update";
+    case chromeos::UPDATE_STATUS_UPDATE_AVAILABLE:
+      return "update available";
+    case chromeos::UPDATE_STATUS_DOWNLOADING:
+      return "downloading";
+    case chromeos::UPDATE_STATUS_VERIFYING:
+      return "verifying";
+    case chromeos::UPDATE_STATUS_FINALIZING:
+      return "finalizing";
+    case chromeos::UPDATE_STATUS_UPDATED_NEED_REBOOT:
+      return "updated need reboot";
+    case chromeos::UPDATE_STATUS_REPORTING_ERROR_EVENT:
+      return "reporting error event";
+    default:
+      return "unknown";
+  }
+}
+
+void GetReleaseTrackCallback(void* user_data, const char* track) {
+  AutomationJSONReply* reply = static_cast<AutomationJSONReply*>(user_data);
+
+  if (track == NULL) {
+    reply->SendError("Unable to get release track.");
+    delete reply;
+    return;
+  }
+
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  return_value->SetString("release_track", track);
+
+  UpdateLibrary* update_library = CrosLibrary::Get()->GetUpdateLibrary();
+  const UpdateLibrary::Status& status = update_library->status();
+  chromeos::UpdateStatusOperation update_status = status.status;
+  return_value->SetString("status", UpdateStatusToString(update_status));
+  if (update_status == chromeos::UPDATE_STATUS_DOWNLOADING)
+    return_value->SetDouble("download_progress", status.download_progress);
+  if (status.last_checked_time > 0)
+    return_value->SetInteger("last_checked_time", status.last_checked_time);
+  if (status.new_size > 0)
+    return_value->SetInteger("new_size", status.new_size);
+
+  reply->SendSuccess(return_value.get());
+  delete reply;
+}
+
+void UpdateCheckCallback(void* user_data, chromeos::UpdateResult result,
+                         const char* error_msg) {
+  AutomationJSONReply* reply = static_cast<AutomationJSONReply*>(user_data);
+  if (result == chromeos::UPDATE_RESULT_SUCCESS)
+    reply->SendSuccess(NULL);
+  else
+    reply->SendError(error_msg);
+  delete reply;
 }
 
 }  // namespace
@@ -103,11 +175,8 @@ void TestingAutomationProvider::Login(DictionaryValue* args,
 
 void TestingAutomationProvider::LockScreen(DictionaryValue* args,
                                            IPC::Message* reply_message) {
-  if (!CrosLibrary::Get()->EnsureLoaded()) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "Could not load cros library.");
+  if (!EnsureCrosLibraryLoaded(this, reply_message))
     return;
-  }
 
   new ScreenLockUnlockObserver(this, reply_message, true);
   CrosLibrary::Get()->GetScreenLockLibrary()->
@@ -116,11 +185,8 @@ void TestingAutomationProvider::LockScreen(DictionaryValue* args,
 
 void TestingAutomationProvider::UnlockScreen(DictionaryValue* args,
                                              IPC::Message* reply_message) {
-  if (!CrosLibrary::Get()->EnsureLoaded()) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "Could not load cros library.");
+  if (!EnsureCrosLibraryLoaded(this, reply_message))
     return;
-  }
 
   new ScreenLockUnlockObserver(this, reply_message, false);
   CrosLibrary::Get()->GetScreenLockLibrary()->
@@ -149,12 +215,8 @@ void TestingAutomationProvider::SignoutInScreenLocker(
 
 void TestingAutomationProvider::GetBatteryInfo(DictionaryValue* args,
                                                IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
-
-  if (!CrosLibrary::Get()->EnsureLoaded()) {
-    reply.SendError("Could not load cros library.");
+  if (!EnsureCrosLibraryLoaded(this, reply_message))
     return;
-  }
 
   chromeos::PowerLibrary* power_library = CrosLibrary::Get()->GetPowerLibrary();
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
@@ -178,17 +240,13 @@ void TestingAutomationProvider::GetBatteryInfo(DictionaryValue* args,
     }
   }
 
-  reply.SendSuccess(return_value.get());
+  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
 
 void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
                                                IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
-
-  if (!CrosLibrary::Get()->EnsureLoaded()) {
-    reply.SendError("Could not load cros library.");
+  if (!EnsureCrosLibraryLoaded(this, reply_message))
     return;
-  }
 
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
@@ -267,17 +325,13 @@ void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
     return_value->Set("cellular_networks", items);
   }
 
-  reply.SendSuccess(return_value.get());
+  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
 
 void TestingAutomationProvider::NetworkScan(DictionaryValue* args,
                                             IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
-
-  if (!CrosLibrary::Get()->EnsureLoaded()) {
-    reply.SendError("Could not load cros library.");
+  if (!EnsureCrosLibraryLoaded(this, reply_message))
     return;
-  }
 
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
   network_library->RequestNetworkScan();
@@ -325,6 +379,9 @@ void TestingAutomationProvider::SetProxySettings(DictionaryValue* args,
 
 void TestingAutomationProvider::ConnectToWifiNetwork(
     DictionaryValue* args, IPC::Message* reply_message) {
+  if (!EnsureCrosLibraryLoaded(this, reply_message))
+    return;
+
   AutomationJSONReply reply(this, reply_message);
   std::string service_path, password, identity, certpath;
   if (!args->GetString("service_path", &service_path) ||
@@ -332,11 +389,6 @@ void TestingAutomationProvider::ConnectToWifiNetwork(
       !args->GetString("identity", &identity) ||
       !args->GetString("certpath", &certpath)) {
     reply.SendError("Invalid or missing args.");
-    return;
-  }
-
-  if (!CrosLibrary::Get()->EnsureLoaded()) {
-    reply.SendError("Could not load cros library.");
     return;
   }
 
@@ -363,12 +415,10 @@ void TestingAutomationProvider::ConnectToWifiNetwork(
 
 void TestingAutomationProvider::DisconnectFromWifiNetwork(
     DictionaryValue* args, IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
-  if (!CrosLibrary::Get()->EnsureLoaded()) {
-    reply.SendError("Could not load cros library.");
+  if (!EnsureCrosLibraryLoaded(this, reply_message))
     return;
-  }
 
+  AutomationJSONReply reply(this, reply_message);
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
   const chromeos::WifiNetwork* wifi = network_library->wifi_network();
   if (!wifi) {
@@ -379,3 +429,42 @@ void TestingAutomationProvider::DisconnectFromWifiNetwork(
   network_library->DisconnectFromWirelessNetwork(wifi);
   reply.SendSuccess(NULL);
 }
+
+void TestingAutomationProvider::GetUpdateInfo(DictionaryValue* args,
+                                              IPC::Message* reply_message) {
+  if (!EnsureCrosLibraryLoaded(this, reply_message))
+    return;
+
+  UpdateLibrary* update_library = CrosLibrary::Get()->GetUpdateLibrary();
+  AutomationJSONReply* reply = new AutomationJSONReply(this, reply_message);
+  update_library->GetReleaseTrack(GetReleaseTrackCallback, reply);
+}
+
+void TestingAutomationProvider::UpdateCheck(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  if (!EnsureCrosLibraryLoaded(this, reply_message))
+    return;
+
+  UpdateLibrary* update_library = CrosLibrary::Get()->GetUpdateLibrary();
+  AutomationJSONReply* reply = new AutomationJSONReply(this, reply_message);
+  update_library->RequestUpdateCheck(UpdateCheckCallback, reply);
+}
+
+void TestingAutomationProvider::SetReleaseTrack(DictionaryValue* args,
+                                                IPC::Message* reply_message) {
+  if (!EnsureCrosLibraryLoaded(this, reply_message))
+    return;
+
+  AutomationJSONReply reply(this, reply_message);
+  std::string track;
+  if (!args->GetString("track", &track)) {
+    reply.SendError("Invalid or missing args.");
+    return;
+  }
+
+  UpdateLibrary* update_library = CrosLibrary::Get()->GetUpdateLibrary();
+  update_library->SetReleaseTrack(track);
+  reply.SendSuccess(NULL);
+}
+

@@ -2680,6 +2680,51 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
+  def GetUpdateInfo(self):
+    """Gets the status of the ChromeOS updater.
+
+    Returns:
+      a dictionary.
+      Samples:
+      { u'status': u'idle',
+        u'release_track': u'beta-channel'}
+
+      { u'status': u'downloading',
+        u'release_track': u'beta-channel',
+        u'download_progress': 0.1203236708350371,   # 0.0 ~ 1.0
+        u'new_size': 152033593,                     # size of payload, in bytes
+        u'last_checked_time': 1302055709}           # seconds since UNIX epoch
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'GetUpdateInfo' }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
+  def UpdateCheck(self):
+    """Checks for a ChromeOS update. Blocks until finished updating.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'UpdateCheck' }
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
+  def SetReleaseTrack(self, track):
+    """Sets the release track (channel) of the ChromeOS updater.
+
+    Valid values for the track parameter are 'beta-channel' and 'dev-channel'.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    assert track in ('beta-channel', 'dev-channel')
+    cmd_dict = {
+        'command': 'SetReleaseTrack',
+        'track': track,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
   ## ChromeOS section -- end
 
 

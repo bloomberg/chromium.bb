@@ -2117,6 +2117,10 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::ConnectToWifiNetwork;
   handler_map["DisconnectFromWifiNetwork"] =
       &TestingAutomationProvider::DisconnectFromWifiNetwork;
+
+  handler_map["GetUpdateInfo"] = &TestingAutomationProvider::GetUpdateInfo;
+  handler_map["UpdateCheck"] = &TestingAutomationProvider::UpdateCheck;
+  handler_map["SetReleaseTrack"] = &TestingAutomationProvider::SetReleaseTrack;
 #endif  // defined(OS_CHROMEOS)
 
   std::map<std::string, BrowserJsonHandler> browser_handler_map;
