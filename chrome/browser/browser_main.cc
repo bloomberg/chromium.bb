@@ -417,8 +417,8 @@ void BrowserMainParts::SpdyFieldTrial() {
 
   // Setup SPDY CWND Field trial.
   const base::FieldTrial::Probability kSpdyCwndDivisor = 100;
-  const base::FieldTrial::Probability kSpdyCwnd32 = 20;     // fixed at 32
   const base::FieldTrial::Probability kSpdyCwnd16 = 20;     // fixed at 16
+  const base::FieldTrial::Probability kSpdyCwnd10 = 20;     // fixed at 10
   const base::FieldTrial::Probability kSpdyCwndMin16 = 20;  // no less than 16
   const base::FieldTrial::Probability kSpdyCwndMin10 = 20;  // no less than 10
 
@@ -428,7 +428,7 @@ void BrowserMainParts::SpdyFieldTrial() {
       new base::FieldTrial(
           "SpdyCwnd", kSpdyCwndDivisor, "cwndDynamic", 2011, 6, 30));
 
-  trial->AppendGroup("cwnd32", kSpdyCwnd32);
+  trial->AppendGroup("cwnd10", kSpdyCwnd10);
   trial->AppendGroup("cwnd16", kSpdyCwnd16);
   trial->AppendGroup("cwndMin16", kSpdyCwndMin16);
   trial->AppendGroup("cwndMin10", kSpdyCwndMin10);
