@@ -2583,6 +2583,8 @@
         'browser/ui/gtk/fullscreen_exit_bubble_gtk.h',
         'browser/ui/gtk/gconf_titlebar_listener.cc',
         'browser/ui/gtk/gconf_titlebar_listener.h',
+        'browser/ui/gtk/global_menu_bar.cc',
+        'browser/ui/gtk/global_menu_bar.h',
         'browser/ui/gtk/gtk_chrome_button.cc',
         'browser/ui/gtk/gtk_chrome_button.h',
         'browser/ui/gtk/gtk_chrome_cookie_view.cc',

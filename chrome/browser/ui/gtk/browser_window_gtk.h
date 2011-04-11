@@ -31,6 +31,7 @@ class CustomDrawButton;
 class DownloadShelfGtk;
 class FindBarGtk;
 class FullscreenExitBubbleGtk;
+class GlobalMenuBar;
 class InfoBarContainerGtk;
 class LocationBar;
 class StatusBubbleGtk;
@@ -427,6 +428,10 @@ class BrowserWindowGtk : public BrowserWindow,
   gfx::Rect restored_bounds_;
 
   GdkWindowState state_;
+
+  // Controls a hidden GtkMenuBar that we keep updated so GNOME can take a look
+  // inside "our menu bar" and present it in the top panel, akin to Mac OS.
+  scoped_ptr<GlobalMenuBar> global_menu_bar_;
 
   // The container for the titlebar + tab strip.
   scoped_ptr<BrowserTitlebar> titlebar_;

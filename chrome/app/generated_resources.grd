@@ -4201,6 +4201,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_PPAPI_FLASH_IN_PROCESS_DESCRIPTION" desc="Description for the flag to run the custom flash in-process">
         If the PPAPI version of Flash is in use, run it in each renderer process rather than in a dedicated plugin process.
       </message>
+      <message name="IDS_FLAGS_LINUX_GLOBAL_MENUBAR_NAME" desc="Title for the flag to show a global menu bar on linux.">
+        Experimental GNOME menu bar support.
+      </message>
+      <message name="IDS_FLAGS_LINUX_GLOBAL_MENUBAR_DESCRIPTION" desc="Description for the flag to show a global menu bar on linux.">
+        Newer versions of Unity and GNOME (including the upcoming Ubuntu Natty Narwhal) show an OSX style menubar across the top of the screen.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
@@ -9211,6 +9217,77 @@ Keep your key file in a safe place. You will need it to create new versions of y
           <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Help
         </message>
       </if> <!-- os == 'darwin' -->
+
+      <!-- Linux Global Menubar Menus -->
+      <if expr="os == 'linux2'">
+        <!-- Unity and some other GNOME configurations now have a permanent,
+             Mac-like menu bar that lives outside the window at the top of the
+             screen. The following strings should be in Linux style, not Mac
+             style (i.e. have ampersand accelerators, be title cased, etc.)
+
+             In general, the Linux UI will try to reuse other menu strings
+             since they are otherwise appropriate, but we do need a few
+             additional ones with different formatting. -->
+
+        <!-- Menubar Menu Titles -->
+        <!-- NOTE: Some of these exist in context menus with Title Case support, but we use different IDs in case we need slightly different strings in some language due to the different context. -->
+        <message name="IDS_FILE_MENU_LINUX" desc="The menu title of the Linux file menu.">
+          &amp;File
+        </message>
+        <message name="IDS_EDIT_MENU_LINUX" desc="The menu title of the Linux edit menu.">
+          &amp;Edit
+        </message>
+        <message name="IDS_VIEW_MENU_LINUX" desc="The menu title of the Linux view menu.">
+          &amp;View
+        </message>
+        <message name="IDS_HISTORY_MENU_LINUX" desc="The menu title of the Linux history menu.">
+          Hi&amp;story
+        </message>
+        <message name="IDS_BOOKMARKS_MENU_LINUX" desc="The menu title of the Linux bookmarks menu.">
+          &amp;Bookmarks
+        </message>
+        <message name="IDS_TOOLS_MENU_LINUX" desc="The menu title of the Linux tools menu.">
+          &amp;Tools
+        </message>
+        <message name="IDS_HELP_MENU_LINUX" desc="The menu title of the Linux help menu.">
+          &amp;Help
+        </message>
+
+        <!-- File menu items that we can't reuse. -->
+        <message name="IDS_REOPEN_CLOSED_TABS_LINUX" desc="The Linux menu item reopen recently closed tabs in the file menu.">
+          Reopen Closed Tab
+        </message>
+        <message name="IDS_OPEN_FILE_LINUX" desc="The Linux menu item to open a file in the file menu.">
+          Open &amp;File...
+        </message>
+        <message name="IDS_OPEN_LOCATION_LINUX" desc="The Linux menu item to open a location in the file menu (puts cursor in the url bar).">
+          Open &amp;Location...
+        </message>
+        <message name="IDS_CLOSE_WINDOW_LINUX" desc="The Linux menu item to close a window in the file menu.">
+          Close Win&amp;dow
+        </message>
+        <message name="IDS_CLOSE_TAB_LINUX" desc="The Linux menu item to close a browser tab in the file menu.">
+          &amp;Close Tab
+        </message>
+
+        <!-- View menu items that we can't reuse. -->
+        <message name="IDS_STOP_MENU_LINUX" desc="The Linux menu item stop in the view menu.">
+          &amp;Stop
+        </message>
+        <message name="IDS_RELOAD_MENU_LINUX" desc="The Linux menu item to reload the current page in the view menu.">
+          &amp;Reload This Page
+        </message>
+        <message name="IDS_TEXT_DEFAULT_LINUX" desc="The Linux menu item to make the page actual size in the view menu.">
+          A&amp;ctual Size
+        </message>
+        <message name="IDS_TEXT_BIGGER_LINUX" desc="The Linux menu item to zoom in on the page in the view menu.">
+          Zoom &amp;In
+        </message>
+        <message name="IDS_TEXT_SMALLER_LINUX" desc="The Linux menu item to zoom out on the in the view menu.">
+          Zoom &amp;Out
+        </message>
+
+      </if>
 
     <!-- File chooser dialog default titles (only used on Linux) -->
     <message name="IDS_SELECT_FOLDER_DIALOG_TITLE" desc="The default title for the Select Folder file chooser dialog.">

@@ -52,6 +52,7 @@
 #include "chrome/browser/ui/gtk/edit_search_engine_dialog.h"
 #include "chrome/browser/ui/gtk/find_bar_gtk.h"
 #include "chrome/browser/ui/gtk/fullscreen_exit_bubble_gtk.h"
+#include "chrome/browser/ui/gtk/global_menu_bar.h"
 #include "chrome/browser/ui/gtk/gtk_floating_container.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -1579,6 +1580,15 @@ void BrowserWindowGtk::InitWidgets() {
   // everything except the custom frame border.
   window_vbox_ = gtk_vbox_new(FALSE, 0);
   gtk_widget_show(window_vbox_);
+
+  // We hold an always hidden GtkMenuBar inside our browser window simply to
+  // fool the Unity desktop, which will mirror the contents of the first
+  // GtkMenuBar it sees into the global menu bar. (It doesn't seem to check the
+  // visibility of the GtkMenuBar, so we can just permanently hide it.)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGlobalGnomeMenu)) {
+    global_menu_bar_.reset(new GlobalMenuBar(browser_.get(), this));
+    gtk_container_add(GTK_CONTAINER(window_vbox_), global_menu_bar_->widget());
+  }
 
   // The window container draws the custom browser frame.
   window_container_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);

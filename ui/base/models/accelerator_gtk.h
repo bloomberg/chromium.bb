@@ -45,7 +45,7 @@ class AcceleratorGtk : public Accelerator {
            gdk_keyval_ : ui::GdkKeyCodeForWindowsKeyCode(key_code_, false);
   }
 
-  GdkModifierType gdk_modifier_type() {
+  GdkModifierType gdk_modifier_type() const {
     return static_cast<GdkModifierType>(modifiers());
   }
 
