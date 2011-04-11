@@ -110,6 +110,15 @@ Page.prototype.getSearchResultDOM = function() {
   var datecell = createElementWithClassName('td', 'time');
   datecell.appendChild(document.createTextNode(this.dateShort));
   row.appendChild(datecell);
+  if (this.model_.getEditMode()) {
+    var checkbox = document.createElement('input');
+    checkbox.type = "checkbox";
+    checkbox.name = this.id_;
+    checkbox.time = this.time.toString();
+    checkbox.addEventListener("click", checkboxClicked, false);
+    id2checkbox[this.id_] = checkbox;
+    datecell.appendChild(checkbox);
+  }
 
   var titleCell = document.createElement('td');
   titleCell.valign = 'top';
@@ -484,9 +493,6 @@ HistoryView.prototype.setSearch = function(term, opt_page) {
   this.pageIndex_ = parseInt(opt_page || 0, 10);
   window.scrollTo(0, 0);
   this.model_.setSearchText(term, this.pageIndex_);
-  if (term) {
-    this.setEditMode(false);
-  }
   this.updateEditControls_();
   pageState.setUIState(this.model_.getEditMode(), term, this.pageIndex_);
 };
@@ -640,12 +646,6 @@ HistoryView.prototype.displaySummaryBar_ = function() {
 HistoryView.prototype.updateEditControls_ = function() {
   // Display a button (looking like a link) to enable/disable edit mode.
   var oldButton = this.editButtonTd_.firstChild;
-  if (this.model_.getSearchText()) {
-    this.editButtonTd_.replaceChild(document.createElement('p'), oldButton);
-    this.editingControlsDiv_.textContent = '';
-    return;
-  }
-
   var editMode = this.model_.getEditMode();
   var button = createElementWithClassName('button', 'edit-button');
   button.onclick = toggleEditMode;
