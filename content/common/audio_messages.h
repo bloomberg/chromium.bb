@@ -63,6 +63,23 @@ IPC_MESSAGE_ROUTED4(AudioMsg_NotifyLowLatencyStreamCreated,
                     uint32 /* length */)
 #endif
 
+// Tell the renderer process that a low latency audio input stream has been
+// created, renderer process would be given a SyncSocket that it should read
+// from from then on.
+#if defined(OS_WIN)
+IPC_MESSAGE_ROUTED4(AudioInputMsg_NotifyLowLatencyStreamCreated,
+                    int /* stream id */,
+                    base::SharedMemoryHandle /* handle */,
+                    base::SyncSocket::Handle /* socket handle */,
+                    uint32 /* length */)
+#else
+IPC_MESSAGE_ROUTED4(AudioInputMsg_NotifyLowLatencyStreamCreated,
+                    int /* stream id */,
+                    base::SharedMemoryHandle /* handle */,
+                    base::FileDescriptor /* socket handle */,
+                    uint32 /* length */)
+#endif
+
 // Notification message sent from AudioRendererHost to renderer for state
 // update after the renderer has requested a Create/Start/Close.
 IPC_MESSAGE_ROUTED2(AudioMsg_NotifyStreamStateChanged,
@@ -73,10 +90,20 @@ IPC_MESSAGE_ROUTED2(AudioMsg_NotifyStreamVolume,
                     int /* stream id */,
                     double /* volume */)
 
+IPC_MESSAGE_ROUTED2(AudioInputMsg_NotifyStreamVolume,
+                    int /* stream id */,
+                    double /* volume */)
+
 // Messages sent from the renderer to the browser.
 
 // Request that got sent to browser for creating an audio output stream
 IPC_MESSAGE_ROUTED3(AudioHostMsg_CreateStream,
+                    int /* stream_id */,
+                    AudioParameters /* params */,
+                    bool /* low-latency */)
+
+// Request that got sent to browser for creating an audio input stream
+IPC_MESSAGE_ROUTED3(AudioInputHostMsg_CreateStream,
                     int /* stream_id */,
                     AudioParameters /* params */,
                     bool /* low-latency */)
@@ -92,6 +119,11 @@ IPC_MESSAGE_ROUTED2(AudioHostMsg_NotifyPacketReady,
 IPC_MESSAGE_ROUTED1(AudioHostMsg_PlayStream,
                     int /* stream_id */)
 
+// Start recording the audio input stream specified by
+// (render_view_id, stream_id).
+IPC_MESSAGE_ROUTED1(AudioInputHostMsg_RecordStream,
+                    int /* stream_id */)
+
 // Pause the audio stream specified by (render_view_id, stream_id).
 IPC_MESSAGE_ROUTED1(AudioHostMsg_PauseStream,
                     int /* stream_id */)
@@ -104,12 +136,27 @@ IPC_MESSAGE_ROUTED1(AudioHostMsg_FlushStream,
 IPC_MESSAGE_ROUTED1(AudioHostMsg_CloseStream,
                     int /* stream_id */)
 
+// Close an audio input stream specified by (render_view_id, stream_id).
+IPC_MESSAGE_ROUTED1(AudioInputHostMsg_CloseStream,
+                    int /* stream_id */)
+
 // Get audio volume of the stream specified by (render_view_id, stream_id).
 IPC_MESSAGE_ROUTED1(AudioHostMsg_GetVolume,
+                    int /* stream_id */)
+
+// Get audio volume of the input stream specified by
+// (render_view_id, stream_id).
+IPC_MESSAGE_ROUTED1(AudioInputHostMsg_GetVolume,
                     int /* stream_id */)
 
 // Set audio volume of the stream specified by (render_view_id, stream_id).
 // TODO(hclam): change this to vector if we have channel numbers other than 2.
 IPC_MESSAGE_ROUTED2(AudioHostMsg_SetVolume,
+                    int /* stream_id */,
+                    double /* volume */)
+
+// Set audio volume of the input stream specified by
+// (render_view_id, stream_id).
+IPC_MESSAGE_ROUTED2(AudioInputHostMsg_SetVolume,
                     int /* stream_id */,
                     double /* volume */)
