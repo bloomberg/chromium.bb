@@ -100,7 +100,6 @@ uint8_t NCRemainingMemoryLookahead(NCRemainingMemory* memory, ssize_t n) {
 
 uint8_t NCRemainingMemoryRead(NCRemainingMemory* memory) {
   uint8_t byte = memory->next_byte;
-  memory->read_length++;
   if (memory->cur_pos == memory->mlimit) {
     /* If reached, next_byte already set to 0 by last read. */
     if (0 == memory->overflow_count) {
@@ -108,6 +107,7 @@ uint8_t NCRemainingMemoryRead(NCRemainingMemory* memory) {
     }
     memory->overflow_count++;
   } else {
+    memory->read_length++;
     memory->cur_pos++;
     memory->next_byte = NCRemainingMemoryPeek(memory);
   }

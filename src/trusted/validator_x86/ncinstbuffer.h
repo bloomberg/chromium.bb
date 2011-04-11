@@ -24,6 +24,8 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/validator_x86/types_memory_model.h"
 
+EXTERN_C_BEGIN
+
 struct NCValidatorState;
 
 /* Types of errors that can occur while parsing the memory segment. */
@@ -222,5 +224,7 @@ void NCInstBytesAdvance(NCInstBytesPtr* ptr, int n);
  * on the pointer postiion.
  */
 int NCInstBytesLength(const NCInstBytesPtr* ptr);
+
+EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCINSTBUFFER_H_ */

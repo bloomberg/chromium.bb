@@ -527,3 +527,27 @@ def __AddNegMaxErrors():
               ['small_tests', 'validator_tests'])
 
 __AddNegMaxErrors()
+
+#---------- UNIT TESTS ---------------------------------
+
+# Create an environment to run unit tests using Gtest.
+gtest_env = env.Clone();
+# gtest does not compile with our stringent settings.
+gtest_env.FilterOut(
+    CCFLAGS=['-pedantic'],
+    CXXFLAGS=['-fno-rtti', '-Weffc++'])
+gtest_env.Prepend(CPPPATH=['${SOURCE_ROOT}/testing/gtest/include'])
+
+# List of (unit) test file prefixes to run unit tests on.
+gtest_sources = ['NCRemainingMemory']
+
+for source in gtest_sources:
+  test_exe = gtest_env.ComponentProgram(
+    'x86_validator_tests' + source,
+    [source+'Tests.cc'],
+    EXTRA_LIBS=['gtest', 'ncvalidate']);
+  test_node = gtest_env.CommandTest(
+      source+'Tests.out',
+      command=[test_exe])
+  gtest_env.AddNodeToTestSuite(test_node, ['small_tests'],
+                               'run_x86_validator_tests')
