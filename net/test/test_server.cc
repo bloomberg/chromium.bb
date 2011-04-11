@@ -17,8 +17,8 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
-#include "base/json/json_reader.h"
 #include "base/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
@@ -345,9 +345,6 @@ bool TestServer::AddCommandLineArguments(CommandLine* command_line) const {
   command_line->AppendSwitchASCII("port",
                                   base::IntToString(host_port_pair_.port()));
   command_line->AppendSwitchPath("data-dir", document_root_);
-  command_line->AppendSwitchPath("policy-cert-chain",
-                                 certificates_dir_.AppendASCII("ok_cert.pem"));
-  command_line->AppendSwitchPath("policy-cert-chain", GetRootCertificatePath());
 
   if (logging::GetMinLogLevel() == logging::LOG_VERBOSE) {
     command_line->AppendArg("--log-to-console");

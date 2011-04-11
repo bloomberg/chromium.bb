@@ -48,6 +48,7 @@ import sys
 import time
 import tlslite
 import tlslite.api
+import tlslite.utils
 
 # The name and availability of the json module varies in python versions.
 try:
@@ -58,9 +59,12 @@ except ImportError:
   except ImportError:
     json = None
 
+import asn1der
 import device_management_backend_pb2 as dm
 import cloud_policy_pb2 as cp
 
+# ASN.1 object identifier for PKCS#1/RSA.
+PKCS1_RSA_OID = '\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01'
 
 class RequestHandler(object):
   """Decodes and handles device management requests from clients.
@@ -419,23 +423,35 @@ class RequestHandler(object):
       self.GatherPolicySettings(settings,
                                 self._server.policy[msg.policy_type])
 
+    # Figure out the key we want to use.
+    key = None
+    if (msg.signature_type == dm.PolicyFetchRequest.SHA1_RSA and
+        len(self._server.keys)):
+      key_version = min(max(1, msg.public_key_version), len(self._server.keys))
+      key = self._server.keys[key_version - 1]
+
+    # Fill the policy data protobuf.
     policy_data = dm.PolicyData()
-    policy_data.policy_value = settings.SerializeToString()
     policy_data.policy_type = msg.policy_type
     policy_data.timestamp = int(time.time() * 1000)
     policy_data.request_token = token_info['device_token'];
+    policy_data.policy_value = settings.SerializeToString()
     policy_data.machine_name = token_info['machine_name']
+    if key:
+      policy_data.public_key_version = key_version
+    policy_data.username = self._server.username
+    policy_data.device_id = token_info['device_id']
     signed_data = policy_data.SerializeToString()
 
     response = dm.DeviceManagementResponse()
     response.error = dm.DeviceManagementResponse.SUCCESS
     fetch_response = response.policy_response.response.add()
     fetch_response.policy_data = signed_data
-    fetch_response.policy_data_signature = (
-        self._server.private_key.hashAndSign(signed_data).tostring())
-    for certificate in self._server.cert_chain:
-      fetch_response.certificate_chain.append(
-          certificate.writeBytes().tostring())
+    if key:
+      fetch_response.policy_data_signature = (
+          key['private_key'].hashAndSign(signed_data).tostring())
+      if msg.public_key_version != key_version:
+        fetch_response.new_public_key = key['public_key']
 
     self.DumpMessage('Response', response)
 
@@ -485,16 +501,22 @@ class RequestHandler(object):
 class TestServer(object):
   """Handles requests and keeps global service state."""
 
-  def __init__(self, policy_path, policy_cert_chain):
+  def __init__(self, policy_path, private_key_paths, policy_user):
     """Initializes the server.
 
     Args:
       policy_path: Names the file to read JSON-formatted policy from.
-      policy_cert_chain: List of paths to X.509 certificate files of the
-          certificate chain used for signing responses.
+      private_key_paths: List of paths to read private keys from.
     """
     self._registered_tokens = {}
     self.policy = {}
+
+    # There is no way to for the testserver to know the user name belonging to
+    # the GAIA auth token we received (short of actually talking to GAIA). To
+    # address this, we have a command line parameter to set the username that
+    # the server should report to the client.
+    self.username = policy_user
+
     if json is None:
       print 'No JSON module, cannot parse policy information'
     else :
@@ -503,19 +525,35 @@ class TestServer(object):
       except IOError:
         print 'Failed to load policy from %s' % policy_path
 
-    self.private_key = None
-    self.cert_chain = []
-    for cert_path in policy_cert_chain:
-      try:
-        cert_text = open(cert_path).read()
-      except IOError:
-        print 'Failed to load certificate from %s' % cert_path
-      certificate = tlslite.api.X509()
-      certificate.parse(cert_text)
-      self.cert_chain.append(certificate)
-      if self.private_key is None:
-        self.private_key = tlslite.api.parsePEMKey(cert_text, private=True)
-        assert self.private_key != None
+    self.keys = []
+    if private_key_paths:
+      # Load specified keys from the filesystem.
+      for key_path in private_key_paths:
+        try:
+          key = tlslite.api.parsePEMKey(open(key_path).read(), private=True)
+        except IOError:
+          print 'Failed to load private key from %s' % key_path
+          continue
+
+        assert key != None
+        self.keys.append({ 'private_key' : key })
+    else:
+      # Generate a key if none were specified.
+      key = tlslite.api.generateRSAKey(1024)
+      assert key != None
+      self.keys.append({ 'private_key' : key })
+
+    # Derive the public keys from the loaded private keys.
+    for entry in self.keys:
+      key = entry['private_key']
+
+      algorithm = asn1der.Sequence(
+          [ asn1der.Data(asn1der.OBJECT_IDENTIFIER, PKCS1_RSA_OID),
+            asn1der.Data(asn1der.NULL, '') ])
+      rsa_pubkey = asn1der.Sequence([ asn1der.Integer(key.n),
+                                      asn1der.Integer(key.e) ])
+      pubkey = asn1der.Sequence([ algorithm, asn1der.Bitstring(rsa_pubkey) ])
+      entry['public_key'] = pubkey;
 
   def HandleRequest(self, path, headers, request):
     """Handles a request.
