@@ -35,9 +35,9 @@ class GPUUITest : public UITest {
   FilePath gpu_test_dir_;
 };
 
-#if !defined(OS_WIN) && defined(TOOLKIT_VIEWS)
+#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
 #define UITestCanLaunchWithOSMesa DISABLED_UITestCanLaunchWithOSMesa
-// http://crbug.com/76217
+// http://crbug.com/76217 and http://crbug.com/77536
 #endif
 TEST_F(GPUUITest, UITestCanLaunchWithOSMesa) {
   // Check the webgl test reports success and that the renderer was OSMesa.

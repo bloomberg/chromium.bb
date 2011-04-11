@@ -496,13 +496,15 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5Audio) {
 }
 
 // Checks that prerenderers will terminate when a video tag is encountered.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5Video) {
+// http://crbug.com/77536
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderHTML5Video) {
   PrerenderTestURL("prerender_html5_video.html", FINAL_STATUS_HTML5_MEDIA, 1);
 }
 
 // Checks that prerenderers will terminate when a video tag is inserted via
 // javascript.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5VideoJs) {
+// http://crbug.com/77536
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderHTML5VideoJs) {
   PrerenderTestURL("prerender_html5_video_script.html",
                    FINAL_STATUS_HTML5_MEDIA, 1);
 }
