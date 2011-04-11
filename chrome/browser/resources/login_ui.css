@@ -35,6 +35,7 @@ label {
 a {
   display: block;
   color: blue;
+  font-size: 30px;
 }
 
 a:hover {
