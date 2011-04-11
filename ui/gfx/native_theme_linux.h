@@ -9,10 +9,6 @@
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/native_theme.h"
 
-namespace skia {
-class PlatformCanvas;
-}
-
 namespace gfx {
 class Rect;
 class Size;
@@ -25,7 +21,7 @@ class NativeThemeLinux : public NativeTheme {
 
   // NativeTheme implementation:
   virtual gfx::Size GetPartSize(Part part) const;
-  virtual void Paint(skia::PlatformCanvas* canvas,
+  virtual void Paint(SkCanvas* canvas,
                      Part part,
                      State state,
                      const gfx::Rect& rect,
@@ -37,73 +33,73 @@ class NativeThemeLinux : public NativeTheme {
 
   // Draw the arrow. Used by scrollbar and inner spin button.
   virtual void PaintArrowButton(
-      skia::PlatformCanvas* gc,
+      SkCanvas* gc,
       const gfx::Rect& rect,
       Part direction,
       State state) const;
   // Paint the scrollbar track. Done before the thumb so that it can contain
   // alpha.
-  virtual void PaintScrollbarTrack(skia::PlatformCanvas* canvas,
+  virtual void PaintScrollbarTrack(SkCanvas* canvas,
       Part part,
       State state,
       const ScrollbarTrackExtraParams& extra_params,
       const gfx::Rect& rect) const;
   // Draw the scrollbar thumb over the track.
-  virtual void PaintScrollbarThumb(skia::PlatformCanvas* canvas,
+  virtual void PaintScrollbarThumb(SkCanvas* canvas,
       Part part,
       State state,
       const gfx::Rect& rect) const;
   // Draw the checkbox.
-  virtual void PaintCheckbox(skia::PlatformCanvas* canvas,
+  virtual void PaintCheckbox(SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const ButtonExtraParams& button) const;
   // Draw the radio.
-  virtual void PaintRadio(skia::PlatformCanvas* canvas,
+  virtual void PaintRadio(SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const ButtonExtraParams& button) const;
   // Draw the push button.
-  virtual void PaintButton(skia::PlatformCanvas* canvas,
+  virtual void PaintButton(SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const ButtonExtraParams& button) const;
   // Draw the text field.
-  virtual void PaintTextField(skia::PlatformCanvas* canvas,
+  virtual void PaintTextField(SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const TextFieldExtraParams& text) const;
   // Draw the menu list.
-  virtual void PaintMenuList(skia::PlatformCanvas* canvas,
+  virtual void PaintMenuList(SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const MenuListExtraParams& menu_list) const;
   // Draw the slider track.
-  virtual void PaintSliderTrack(skia::PlatformCanvas* canvas,
+  virtual void PaintSliderTrack(SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const SliderExtraParams& slider) const;
   // Draw the slider thumb.
-  virtual void PaintSliderThumb(skia::PlatformCanvas* canvas,
+  virtual void PaintSliderThumb(SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const SliderExtraParams& slider) const;
   // Draw the inner spin button.
-  virtual void PaintInnerSpinButton(skia::PlatformCanvas* canvas,
+  virtual void PaintInnerSpinButton(SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const InnerSpinButtonExtraParams& spin_button) const;
   // Draw the progress bar.
-  virtual void PaintProgressBar(skia::PlatformCanvas* canvas,
+  virtual void PaintProgressBar(SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const ProgressBarExtraParams& progress_bar) const;
 
  protected:
-  bool IntersectsClipRectInt(skia::PlatformCanvas* canvas,
+  bool IntersectsClipRectInt(SkCanvas* canvas,
                              int x, int y, int w, int h) const;
 
-  void DrawBitmapInt(skia::PlatformCanvas* canvas, const SkBitmap& bitmap,
+  void DrawBitmapInt(SkCanvas* canvas, const SkBitmap& bitmap,
                      int src_x, int src_y, int src_w, int src_h,
                      int dest_x, int dest_y, int dest_w, int dest_h) const;
 

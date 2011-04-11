@@ -296,7 +296,7 @@ gfx::Size NativeThemeChromeos::GetPartSize(Part part) const {
 }
 
 void NativeThemeChromeos::PaintScrollbarTrack(
-    skia::PlatformCanvas* canvas,
+    SkCanvas* canvas,
     Part part,
     State state,
     const ScrollbarTrackExtraParams& extra_params,
@@ -342,7 +342,7 @@ void NativeThemeChromeos::PaintScrollbarTrack(
   }
 }
 
-void NativeThemeChromeos::PaintScrollbarThumb(skia::PlatformCanvas* canvas,
+void NativeThemeChromeos::PaintScrollbarThumb(SkCanvas* canvas,
     Part part, State state, const gfx::Rect& rect) const {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int resource_id = IDR_SCROLL_THUMB;
@@ -387,7 +387,7 @@ void NativeThemeChromeos::PaintScrollbarThumb(skia::PlatformCanvas* canvas,
   }
 }
 
-void NativeThemeChromeos::PaintArrowButton(skia::PlatformCanvas* canvas,
+void NativeThemeChromeos::PaintArrowButton(SkCanvas* canvas,
     const gfx::Rect& rect, Part part, State state) const {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int resource_id =
@@ -407,7 +407,7 @@ void NativeThemeChromeos::PaintArrowButton(skia::PlatformCanvas* canvas,
       rect.x(), rect.y(), rect.width(), rect.height());
 }
 
-void NativeThemeChromeos::PaintCheckbox(skia::PlatformCanvas* canvas,
+void NativeThemeChromeos::PaintCheckbox(SkCanvas* canvas,
     State state, const gfx::Rect& rect,
     const ButtonExtraParams& button) const {
   PaintButtonLike(canvas, state, rect, true);
@@ -428,7 +428,7 @@ void NativeThemeChromeos::PaintCheckbox(skia::PlatformCanvas* canvas,
   }
 }
 
-void NativeThemeChromeos::PaintRadio(skia::PlatformCanvas* canvas,
+void NativeThemeChromeos::PaintRadio(SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const ButtonExtraParams& button) const {
@@ -461,14 +461,14 @@ void NativeThemeChromeos::PaintRadio(skia::PlatformCanvas* canvas,
   }
 }
 
-void NativeThemeChromeos::PaintButton(skia::PlatformCanvas* canvas,
+void NativeThemeChromeos::PaintButton(SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const ButtonExtraParams& button) const {
   PaintButtonLike(canvas, state, rect, button.has_border);
 }
 
-void NativeThemeChromeos::PaintTextField(skia::PlatformCanvas* canvas,
+void NativeThemeChromeos::PaintTextField(SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const TextFieldExtraParams& text) const {
@@ -515,7 +515,7 @@ void NativeThemeChromeos::PaintTextField(skia::PlatformCanvas* canvas,
   canvas->drawPath(border, stroke_paint);
 }
 
-void NativeThemeChromeos::PaintSliderTrack(skia::PlatformCanvas* canvas,
+void NativeThemeChromeos::PaintSliderTrack(SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const SliderExtraParams& slider) const {
@@ -548,7 +548,7 @@ void NativeThemeChromeos::PaintSliderTrack(skia::PlatformCanvas* canvas,
   canvas->drawPath(border, stroke_paint);
 }
 
-void NativeThemeChromeos::PaintSliderThumb(skia::PlatformCanvas* canvas,
+void NativeThemeChromeos::PaintSliderThumb(SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const SliderExtraParams& slider) const {
@@ -558,7 +558,7 @@ void NativeThemeChromeos::PaintSliderThumb(skia::PlatformCanvas* canvas,
   PaintButtonLike(canvas, state, rect, true);
 }
 
-void NativeThemeChromeos::PaintInnerSpinButton(skia::PlatformCanvas* canvas,
+void NativeThemeChromeos::PaintInnerSpinButton(SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const InnerSpinButtonExtraParams& spin_button) const {
@@ -569,7 +569,7 @@ void NativeThemeChromeos::PaintInnerSpinButton(skia::PlatformCanvas* canvas,
   NativeThemeLinux::PaintInnerSpinButton(canvas, state, bounds, spin_button);
 }
 
-void NativeThemeChromeos::PaintProgressBar(skia::PlatformCanvas* canvas,
+void NativeThemeChromeos::PaintProgressBar(SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const ProgressBarExtraParams& progress_bar) const {
@@ -696,7 +696,7 @@ SkBitmap* NativeThemeChromeos::GetHorizontalBitmapNamed(int resource_id) const {
   return NULL;
 }
 
-void NativeThemeChromeos::PaintButtonLike(skia::PlatformCanvas* canvas,
+void NativeThemeChromeos::PaintButtonLike(SkCanvas* canvas,
     State state, const gfx::Rect& rect, bool stroke_border) const {
   SkPath border;
   GetRoundRectPath(rect, kBorderCornerRadius, &border);

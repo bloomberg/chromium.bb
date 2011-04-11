@@ -123,12 +123,12 @@ gfx::Size NativeThemeWin::GetPartSize(Part part) const {
   return SUCCEEDED(hr) ? Size(size.cx, size.cy) : Size();
 }
 
-void NativeThemeWin::Paint(skia::PlatformCanvas* canvas,
+void NativeThemeWin::Paint(SkCanvas* canvas,
                            Part part,
                            State state,
                            const gfx::Rect& rect,
                            const ExtraParams& extra) const {
-  HDC hdc = canvas->beginPlatformPaint();
+  HDC hdc = skia::BeginPlatformPaint(canvas);
 
   switch (part) {
     case kCheckbox:
@@ -160,7 +160,7 @@ void NativeThemeWin::Paint(skia::PlatformCanvas* canvas,
       DCHECK(false);
   }
 
-  canvas->endPlatformPaint();
+  skia::EndPlatformPaint(canvas);
 }
 
 HRESULT NativeThemeWin::PaintScrollbarArrow(HDC hdc,

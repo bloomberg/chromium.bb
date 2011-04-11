@@ -310,7 +310,7 @@ class NativeThemeWin : public NativeTheme {
 
   // NativeTheme Implementation:
   virtual gfx::Size GetPartSize(Part part) const;
-  virtual void Paint(skia::PlatformCanvas* canvas,
+  virtual void Paint(SkCanvas* canvas,
                      Part part,
                      State state,
                      const gfx::Rect& rect,

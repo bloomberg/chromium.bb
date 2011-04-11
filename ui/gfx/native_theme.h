@@ -9,10 +9,6 @@
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace skia {
-class PlatformCanvas;
-}
-
 namespace gfx {
 
 class Rect;
@@ -131,7 +127,7 @@ class NativeTheme {
   virtual Size GetPartSize(Part part) const = 0;
 
   // Paint the part to the canvas.
-  virtual void Paint(skia::PlatformCanvas* canvas,
+  virtual void Paint(SkCanvas* canvas,
                      Part part,
                      State state,
                      const gfx::Rect& rect,

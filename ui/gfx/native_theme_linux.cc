@@ -109,7 +109,7 @@ gfx::Size NativeThemeLinux::GetPartSize(Part part) const {
 }
 
 void NativeThemeLinux::PaintArrowButton(
-    skia::PlatformCanvas* canvas,
+    SkCanvas* canvas,
     const gfx::Rect& rect, Part direction, State state) const {
   int widthMiddle, lengthMiddle;
   SkPaint paint;
@@ -234,7 +234,7 @@ void NativeThemeLinux::PaintArrowButton(
   canvas->drawPath(path, paint);
 }
 
-void NativeThemeLinux::Paint(skia::PlatformCanvas* canvas,
+void NativeThemeLinux::Paint(SkCanvas* canvas,
                              Part part,
                              State state,
                              const gfx::Rect& rect,
@@ -287,7 +287,7 @@ void NativeThemeLinux::Paint(skia::PlatformCanvas* canvas,
   }
 }
 
-void NativeThemeLinux::PaintScrollbarTrack(skia::PlatformCanvas* canvas,
+void NativeThemeLinux::PaintScrollbarTrack(SkCanvas* canvas,
     Part part,
     State state,
     const ScrollbarTrackExtraParams& extra_params,
@@ -308,7 +308,7 @@ void NativeThemeLinux::PaintScrollbarTrack(skia::PlatformCanvas* canvas,
   DrawBox(canvas, rect, paint);
 }
 
-void NativeThemeLinux::PaintScrollbarThumb(skia::PlatformCanvas* canvas,
+void NativeThemeLinux::PaintScrollbarThumb(SkCanvas* canvas,
                                            Part part,
                                            State state,
                                            const gfx::Rect& rect) const {
@@ -387,7 +387,7 @@ void NativeThemeLinux::PaintScrollbarThumb(skia::PlatformCanvas* canvas,
   }
 }
 
-void NativeThemeLinux::PaintCheckbox(skia::PlatformCanvas* canvas,
+void NativeThemeLinux::PaintCheckbox(SkCanvas* canvas,
                                      State state,
                                      const gfx::Rect& rect,
                                      const ButtonExtraParams& button) const {
@@ -412,7 +412,7 @@ void NativeThemeLinux::PaintCheckbox(skia::PlatformCanvas* canvas,
       bounds.x(), bounds.y(), bounds.width(), bounds.height());
 }
 
-void NativeThemeLinux::PaintRadio(skia::PlatformCanvas* canvas,
+void NativeThemeLinux::PaintRadio(SkCanvas* canvas,
                                   State state,
                                   const gfx::Rect& rect,
                                   const ButtonExtraParams& button) const {
@@ -433,7 +433,7 @@ void NativeThemeLinux::PaintRadio(skia::PlatformCanvas* canvas,
       bounds.x(), bounds.y(), bounds.width(), bounds.height());
 }
 
-void NativeThemeLinux::PaintButton(skia::PlatformCanvas* canvas,
+void NativeThemeLinux::PaintButton(SkCanvas* canvas,
                                    State state,
                                    const gfx::Rect& rect,
                                    const ButtonExtraParams& button) const {
@@ -502,7 +502,7 @@ void NativeThemeLinux::PaintButton(skia::PlatformCanvas* canvas,
   }
 }
 
-void NativeThemeLinux::PaintTextField(skia::PlatformCanvas* canvas,
+void NativeThemeLinux::PaintTextField(SkCanvas* canvas,
                                       State state,
                                       const gfx::Rect& rect,
                                       const TextFieldExtraParams& text) const {
@@ -593,7 +593,7 @@ void NativeThemeLinux::PaintTextField(skia::PlatformCanvas* canvas,
 }
 
 void NativeThemeLinux::PaintMenuList(
-    skia::PlatformCanvas* canvas,
+    SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const MenuListExtraParams& menu_list) const {
@@ -619,7 +619,7 @@ void NativeThemeLinux::PaintMenuList(
   canvas->drawPath(path, paint);
 }
 
-void NativeThemeLinux::PaintSliderTrack(skia::PlatformCanvas* canvas,
+void NativeThemeLinux::PaintSliderTrack(SkCanvas* canvas,
                                         State state,
                                         const gfx::Rect& rect,
                                         const SliderExtraParams& slider) const {
@@ -644,7 +644,7 @@ void NativeThemeLinux::PaintSliderTrack(skia::PlatformCanvas* canvas,
   canvas->drawRect(skrect, paint);
 }
 
-void NativeThemeLinux::PaintSliderThumb(skia::PlatformCanvas* canvas,
+void NativeThemeLinux::PaintSliderThumb(SkCanvas* canvas,
                                         State state,
                                         const gfx::Rect& rect,
                                         const SliderExtraParams& slider) const {
@@ -682,7 +682,7 @@ void NativeThemeLinux::PaintSliderThumb(skia::PlatformCanvas* canvas,
   }
 }
 
-void NativeThemeLinux::PaintInnerSpinButton(skia::PlatformCanvas* canvas,
+void NativeThemeLinux::PaintInnerSpinButton(SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const InnerSpinButtonExtraParams& spin_button) const {
@@ -704,7 +704,7 @@ void NativeThemeLinux::PaintInnerSpinButton(skia::PlatformCanvas* canvas,
   PaintArrowButton(canvas, half, kScrollbarDownArrow, south_state);
 }
 
-void NativeThemeLinux::PaintProgressBar(skia::PlatformCanvas* canvas,
+void NativeThemeLinux::PaintProgressBar(SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const ProgressBarExtraParams& progress_bar) const {
@@ -757,7 +757,7 @@ void NativeThemeLinux::PaintProgressBar(skia::PlatformCanvas* canvas,
 }
 
 bool NativeThemeLinux::IntersectsClipRectInt(
-    skia::PlatformCanvas* canvas, int x, int y, int w, int h) const {
+    SkCanvas* canvas, int x, int y, int w, int h) const {
   SkRect clip;
   return canvas->getClipBounds(&clip) &&
       clip.intersect(SkIntToScalar(x), SkIntToScalar(y), SkIntToScalar(x + w),
@@ -796,7 +796,7 @@ void NativeThemeLinux::DrawBox(SkCanvas* canvas,
 }
 
 void NativeThemeLinux::DrawBitmapInt(
-    skia::PlatformCanvas* canvas, const SkBitmap& bitmap,
+    SkCanvas* canvas, const SkBitmap& bitmap,
     int src_x, int src_y, int src_w, int src_h,
     int dest_x, int dest_y, int dest_w, int dest_h) const {
   DLOG_ASSERT(src_x + src_w < std::numeric_limits<int16_t>::max() &&
