@@ -497,8 +497,10 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
 
     std::map<string16, FormField*>::iterator iter =
         name_map.find(field_element.nameForAutofill());
+    // Concatenate labels because some sites might have multiple label
+    // candidates.
     if (iter != name_map.end())
-      iter->second->label = FindChildText(label);
+      iter->second->label += FindChildText(label);
   }
 
   // Loop through the form control elements, extracting the label text from the

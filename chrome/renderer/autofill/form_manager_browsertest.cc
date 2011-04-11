@@ -2903,6 +2903,38 @@ TEST_F(FormManagerTest, LabelForElementHidden) {
   EXPECT_EQ(string16(), form_manager.LabelForElement(firstname));
 }
 
+// If we have multiple labels per id, the labels concatenated into label string.
+TEST_F(FormManagerTest, MultipleLabelsPerElement) {
+  std::vector<string16> labels, names, values;
+
+  labels.push_back(ASCIIToUTF16("First Name:"));
+  names.push_back(ASCIIToUTF16("firstname"));
+  values.push_back(ASCIIToUTF16("John"));
+
+  labels.push_back(ASCIIToUTF16("Last Name:"));
+  names.push_back(ASCIIToUTF16("lastname"));
+  values.push_back(ASCIIToUTF16("Smith"));
+
+  labels.push_back(ASCIIToUTF16("Email:xxx@yyy.com"));
+  names.push_back(ASCIIToUTF16("email"));
+  values.push_back(ASCIIToUTF16("john@example.com"));
+
+  ExpectLabels(
+      "<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+      "  <LABEL for=\"firstname\"> First Name: </LABEL>"
+      "  <LABEL for=\"firstname\"></LABEL>"
+      "    <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
+      "  <LABEL for=\"lastname\"></LABEL>"
+      "  <LABEL for=\"lastname\"> Last Name: </LABEL>"
+      "    <INPUT type=\"text\" id=\"lastname\" value=\"Smith\"/>"
+      "  <LABEL for=\"email\"> Email: </LABEL>"
+      "  <LABEL for=\"email\"> xxx@yyy.com </LABEL>"
+      "    <INPUT type=\"text\" id=\"email\" value=\"john@example.com\"/>"
+      "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+      "</FORM>",
+      labels, names, values);
+}
+
 TEST_F(FormManagerTest, SelectOneAsText) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "  <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
