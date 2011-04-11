@@ -371,7 +371,9 @@ TabContents::~TabContents() {
 }
 
 void TabContents::AddObservers() {
-  favicon_helper_.reset(new FaviconHelper(this));
+  favicon_helper_.reset(new FaviconHelper(this, FaviconHelper::FAVICON));
+  if (browser_defaults::kEnableTouchIcon)
+    touch_icon_helper_.reset(new FaviconHelper(this, FaviconHelper::TOUCH));
   plugin_observer_.reset(new PluginObserver(this));
   safebrowsing_detection_host_.reset(new safe_browsing::ClientSideDetectionHost(
       this));
@@ -410,6 +412,7 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageContents, OnPageContents)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageTranslated, OnPageTranslated)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -1534,6 +1537,9 @@ void TabContents::DidNavigateMainFramePostCommit(
   // Get the favicon, either from history or request it from the net.
   favicon_helper_->FetchFavicon(details.entry->url());
 
+  if (touch_icon_helper_.get())
+    touch_icon_helper_->FetchFavicon(details.entry->url());
+
   // Clear all page actions, blocked content notifications and browser actions
   // for this tab, unless this is an in-page navigation.
   if (!details.is_in_page) {
@@ -2403,6 +2409,14 @@ void TabContents::RequestDesktopNotificationPermission(
   service->RequestPermission(
       source_origin, GetRenderProcessHost()->id(),
       render_view_host()->routing_id(), callback_context, this);
+}
+
+void TabContents::OnUpdateFaviconURL(
+    int32 page_id,
+    const std::vector<FaviconURL>& candidates) {
+  favicon_helper().OnUpdateFaviconURL(page_id, candidates);
+  if (touch_icon_helper_.get())
+    touch_icon_helper_->OnUpdateFaviconURL(page_id, candidates);
 }
 
 void TabContents::BeforeUnloadFiredFromRenderManager(
