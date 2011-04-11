@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "content/browser/browser_thread.h"
 
 namespace chromeos {
@@ -139,8 +140,8 @@ bool GetUserWhitelist(ListValue* user_list) {
     return false;
   }
 
-  ListValue* cached_whitelist = prefs->GetMutableList(kAccountsPrefUsers);
-  cached_whitelist->Clear();
+  ListPrefUpdate cached_whitelist_update(prefs, kAccountsPrefUsers);
+  cached_whitelist_update->Clear();
 
   const UserManager::User& self = UserManager::Get()->logged_in_user();
   bool is_owner = UserManager::Get()->current_user_is_owner();
@@ -156,7 +157,7 @@ bool GetUserWhitelist(ListValue* user_list) {
       user_list->Append(user);
     }
 
-    cached_whitelist->Append(Value::CreateStringValue(email));
+    cached_whitelist_update->Append(Value::CreateStringValue(email));
   }
 
   prefs->ScheduleSavePersistentPrefs();
@@ -536,8 +537,8 @@ void UserCrosSettingsProvider::WhitelistUser(const std::string& email) {
   SignedSettingsHelper::Get()->StartWhitelistOp(
       email, true, UserCrosSettingsTrust::GetInstance());
   PrefService* prefs = g_browser_process->local_state();
-  ListValue* cached_whitelist = prefs->GetMutableList(kAccountsPrefUsers);
-  cached_whitelist->Append(Value::CreateStringValue(email));
+  ListPrefUpdate cached_whitelist_update(prefs, kAccountsPrefUsers);
+  cached_whitelist_update->Append(Value::CreateStringValue(email));
   prefs->ScheduleSavePersistentPrefs();
 }
 
@@ -546,9 +547,9 @@ void UserCrosSettingsProvider::UnwhitelistUser(const std::string& email) {
       email, false, UserCrosSettingsTrust::GetInstance());
 
   PrefService* prefs = g_browser_process->local_state();
-  ListValue* cached_whitelist = prefs->GetMutableList(kAccountsPrefUsers);
+  ListPrefUpdate cached_whitelist_update(prefs, kAccountsPrefUsers);
   StringValue email_value(email);
-  if (cached_whitelist->Remove(email_value) != -1)
+  if (cached_whitelist_update->Remove(email_value) != -1)
     prefs->ScheduleSavePersistentPrefs();
 }
 

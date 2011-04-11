@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
@@ -74,9 +75,8 @@ void SavePathToLocalState(const std::string& username,
                           const std::string& image_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PrefService* local_state = g_browser_process->local_state();
-  DictionaryValue* images =
-      local_state->GetMutableDictionary(kUserImages);
-  images->SetWithoutPathExpansion(username, new StringValue(image_path));
+  DictionaryPrefUpdate images_update(local_state, kUserImages);
+  images_update->SetWithoutPathExpansion(username, new StringValue(image_path));
   DVLOG(1) << "Saving path to user image in Local State.";
   local_state->SavePersistentPrefs();
 }
@@ -279,8 +279,7 @@ std::vector<UserManager::User> UserManager::GetUsers() const {
 
   PrefService* local_state = g_browser_process->local_state();
   const ListValue* prefs_users = local_state->GetList(kLoggedInUsers);
-  const DictionaryValue* prefs_images =
-      local_state->GetMutableDictionary(kUserImages);
+  const DictionaryValue* prefs_images = local_state->GetDictionary(kUserImages);
 
   if (prefs_users) {
     for (ListValue::const_iterator it = prefs_users->begin();
@@ -343,22 +342,22 @@ void UserManager::UserLoggedIn(const std::string& email) {
 
   // Clear the prefs view of the users.
   PrefService* prefs = g_browser_process->local_state();
-  ListValue* prefs_users = prefs->GetMutableList(kLoggedInUsers);
-  prefs_users->Clear();
+  ListPrefUpdate prefs_users_update(prefs, kLoggedInUsers);
+  prefs_users_update->Clear();
 
   user_is_logged_in_ = true;
   logged_in_user_ = User();
   logged_in_user_.set_email(email);
 
   // Make sure this user is first.
-  prefs_users->Append(Value::CreateStringValue(email));
+  prefs_users_update->Append(Value::CreateStringValue(email));
   for (std::vector<User>::iterator it = users.begin();
        it != users.end();
        ++it) {
     std::string user_email = it->email();
     // Skip the most recent user.
     if (email != user_email) {
-      prefs_users->Append(Value::CreateStringValue(user_email));
+      prefs_users_update->Append(Value::CreateStringValue(user_email));
     } else {
       logged_in_user_ = *it;
     }
@@ -398,9 +397,8 @@ void UserManager::RemoveUserFromList(const std::string& email) {
 
   // Clear the prefs view of the users.
   PrefService* prefs = g_browser_process->local_state();
-  ListValue* prefs_users = prefs->GetMutableList(kLoggedInUsers);
-  DCHECK(prefs_users);
-  prefs_users->Clear();
+  ListPrefUpdate prefs_users_update(prefs, kLoggedInUsers);
+  prefs_users_update->Clear();
 
   for (std::vector<User>::iterator it = users.begin();
        it != users.end();
@@ -408,14 +406,13 @@ void UserManager::RemoveUserFromList(const std::string& email) {
     std::string user_email = it->email();
     // Skip user that we would like to delete.
     if (email != user_email)
-      prefs_users->Append(Value::CreateStringValue(user_email));
+      prefs_users_update->Append(Value::CreateStringValue(user_email));
   }
 
-  DictionaryValue* prefs_images = prefs->GetMutableDictionary(kUserImages);
-  DCHECK(prefs_images);
+  DictionaryPrefUpdate prefs_images_update(prefs, kUserImages);
   std::string image_path_string;
-  prefs_images->GetStringWithoutPathExpansion(email, &image_path_string);
-  prefs_images->RemoveWithoutPathExpansion(email, NULL);
+  prefs_images_update->GetStringWithoutPathExpansion(email, &image_path_string);
+  prefs_images_update->RemoveWithoutPathExpansion(email, NULL);
 
   prefs->SavePersistentPrefs();
 

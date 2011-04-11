@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/pref_names.h"
 
 static base::LazyInstance<chromeos::SignedSettings::Delegate<bool> >
@@ -26,13 +27,11 @@ bool SignedSettingsTempStorage::Store(const std::string& name,
                                       const std::string& value,
                                       PrefService* local_state) {
   if (local_state) {
-    DictionaryValue* temp_storage =
-        local_state->GetMutableDictionary(prefs::kSignedSettingsTempStorage);
-    if (temp_storage) {
-      temp_storage->SetWithoutPathExpansion(name,
-                                            Value::CreateStringValue(value));
-      return true;
-    }
+    DictionaryPrefUpdate temp_storage_update(
+        local_state, prefs::kSignedSettingsTempStorage);
+    temp_storage_update->SetWithoutPathExpansion(
+        name, Value::CreateStringValue(value));
+    return true;
   }
   return false;
 }
