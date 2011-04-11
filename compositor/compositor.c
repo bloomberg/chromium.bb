@@ -1142,7 +1142,6 @@ switcher_terminate_binding(struct wlsc_input_device *device,
 				      device, time);
 		wlsc_switcher_destroy(compositor->switcher);
 		compositor->switcher = NULL;
-		compositor->overlay_surface = NULL;
 	}
 }
 
