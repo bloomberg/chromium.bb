@@ -147,6 +147,10 @@ html[anim=false] *,
   text-overflow: ellipsis;
 }
 
+#notification.first-run > * {
+  white-space: normal;
+}
+
 #notification.show {
   opacity: 1;
   pointer-events: all;
