@@ -30,6 +30,8 @@ class PluginsCheck(pyauto.PyUITest):
 
   def testPluginsStates(self):
     """Verify plugins' versions and states."""
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
     if self.IsWin():
       plugins_list = self._ReadPluginsList('win_plugins_list.txt')
     elif self.IsMac():
