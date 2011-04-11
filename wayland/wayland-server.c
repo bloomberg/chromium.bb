@@ -209,7 +209,7 @@ wl_display_post_range(struct wl_display *display, struct wl_client *client)
 	client->id_count += 256;
 }
 
-static struct wl_client *
+WL_EXPORT struct wl_client *
 wl_client_create(struct wl_display *display, int fd)
 {
 	struct wl_client *client;
