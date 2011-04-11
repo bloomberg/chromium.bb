@@ -21,6 +21,7 @@ using WebKit::WebCanvas;
 using WebKit::WebCompositionUnderline;
 using WebKit::WebCursorInfo;
 using WebKit::WebInputEvent;
+using WebKit::WebPoint;
 using WebKit::WebRect;
 using WebKit::WebSize;
 using WebKit::WebString;
@@ -117,6 +118,10 @@ class PepperWidget : public WebWidget {
 
   virtual WebRect caretOrSelectionBounds() {
     return WebRect();
+  }
+
+  virtual bool selectionRange(WebPoint& start, WebPoint& end) const {
+    return false;
   }
 
   virtual void setTextDirection(WebTextDirection) {
