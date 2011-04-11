@@ -276,7 +276,7 @@ void ExternalTabContainer::FocusThroughTabTraversal(
     tab_contents_->tab_contents()->Focus();
 
   // The tab_contents_ member can get destroyed in the context of the call to
-  // TabContentsViewWin::Focus() above. This method eventually calls SetFocus
+  // TabContentsViewViews::Focus() above. This method eventually calls SetFocus
   // on the native window, which could end up dispatching messages like
   // WM_DESTROY for the external tab.
   if (tab_contents_.get() && restore_focus_to_view)

@@ -60,7 +60,7 @@ gboolean OnMouseMove(GtkWidget* widget, GdkEventMotion* event,
   return FALSE;
 }
 
-// See tab_contents_view_win.cc for discussion of mouse scroll zooming.
+// See tab_contents_view_views.cc for discussion of mouse scroll zooming.
 gboolean OnMouseScroll(GtkWidget* widget, GdkEventScroll* event,
                        TabContents* tab_contents) {
   if ((event->state & gtk_accelerator_get_default_mod_mask()) ==

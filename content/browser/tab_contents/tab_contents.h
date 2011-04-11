@@ -653,7 +653,7 @@ class TabContents : public PageNavigator,
   // Temporary until the view/contents separation is complete.
   friend class TabContentsView;
 #if defined(OS_WIN)
-  friend class TabContentsViewWin;
+  friend class TabContentsViewViews;
 #elif defined(OS_MACOSX)
   friend class TabContentsViewMac;
 #elif defined(TOOLKIT_USES_GTK)

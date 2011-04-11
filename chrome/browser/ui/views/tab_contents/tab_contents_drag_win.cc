@@ -21,7 +21,7 @@
 #include "chrome/browser/tab_contents/web_drag_source_win.h"
 #include "chrome/browser/tab_contents/web_drag_utils_win.h"
 #include "chrome/browser/tab_contents/web_drop_target_win.h"
-#include "chrome/browser/ui/views/tab_contents/tab_contents_view_win.h"
+#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -97,7 +97,7 @@ class DragDropThread : public base::Thread {
   DISALLOW_COPY_AND_ASSIGN(DragDropThread);
 };
 
-TabContentsDragWin::TabContentsDragWin(TabContentsViewWin* view)
+TabContentsDragWin::TabContentsDragWin(TabContentsViewViews* view)
     : drag_drop_thread_id_(0),
       view_(view),
       drag_ended_(false),

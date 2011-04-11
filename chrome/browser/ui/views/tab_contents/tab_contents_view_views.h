@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_TAB_CONTENTS_VIEW_WIN_H_
-#define CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_TAB_CONTENTS_VIEW_WIN_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_TAB_CONTENTS_VIEW_VIEWS_H_
+#define CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_TAB_CONTENTS_VIEW_VIEWS_H_
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
@@ -25,14 +25,14 @@ class Point;
 
 // Windows-specific implementation of the TabContentsView. It is a HWND that
 // contains all of the contents of the tab and associated child views.
-class TabContentsViewWin : public TabContentsView,
-                           public views::WidgetWin {
+class TabContentsViewViews : public TabContentsView,
+                             public views::WidgetWin {
  public:
   // The corresponding TabContents is passed in the constructor, and manages our
   // lifetime. This doesn't need to be the case, but is this way currently
   // because that's what was easiest when they were split.
-  explicit TabContentsViewWin(TabContents* tab_contents);
-  virtual ~TabContentsViewWin();
+  explicit TabContentsViewViews(TabContents* tab_contents);
+  virtual ~TabContentsViewViews();
 
   // Reset the native parent of this view to NULL.  Unparented windows should
   // not receive any messages.
@@ -150,12 +150,12 @@ class TabContentsViewWin : public TabContentsView,
   bool close_tab_after_drag_ends_;
 
   // Used to close the tab after the stack has unwound.
-  base::OneShotTimer<TabContentsViewWin> close_tab_timer_;
+  base::OneShotTimer<TabContentsViewViews> close_tab_timer_;
 
   // Used to handle the drag-and-drop.
   scoped_refptr<TabContentsDragWin> drag_handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabContentsViewWin);
+  DISALLOW_COPY_AND_ASSIGN(TabContentsViewViews);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_TAB_CONTENTS_VIEW_WIN_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_TAB_CONTENTS_VIEW_VIEWS_H_

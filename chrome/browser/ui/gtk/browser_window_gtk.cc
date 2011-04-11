@@ -1270,8 +1270,8 @@ void BrowserWindowGtk::UpdateDevToolsForContents(TabContents* contents) {
   if (devtools_contents) {
     // TabContentsViewGtk::WasShown is not called when tab contents is shown by
     // anything other than user selecting a Tab.
-    // See TabContentsViewWin::OnWindowPosChanged for reference on how it should
-    // be implemented.
+    // See TabContentsViewViews::OnWindowPosChanged for reference on how it
+    // should be implemented.
     devtools_contents->tab_contents()->ShowContents();
   }
 

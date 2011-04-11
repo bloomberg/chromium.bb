@@ -15,7 +15,7 @@
 #include "ui/gfx/point.h"
 
 class DragDropThread;
-class TabContentsViewWin;
+class TabContentsViewViews;
 class WebDragSource;
 struct WebDropData;
 
@@ -28,7 +28,7 @@ class TabContentsDragWin
     : public ui::DataObjectImpl::Observer,
       public base::RefCountedThreadSafe<TabContentsDragWin> {
  public:
-  explicit TabContentsDragWin(TabContentsViewWin* view);
+  explicit TabContentsDragWin(TabContentsViewViews* view);
   virtual ~TabContentsDragWin();
 
   // Called on UI thread.
@@ -76,8 +76,8 @@ class TabContentsDragWin
 
   // All the member variables below are accessed on UI thread.
 
-  // Keep track of the TabContentsViewWin it is associated with.
-  TabContentsViewWin* view_;
+  // Keep track of the TabContentsViewViews it is associated with.
+  TabContentsViewViews* view_;
 
   // |drag_source_| is our callback interface passed to the system when we
   // want to initiate a drag and drop operation.  We use it to tell if a
