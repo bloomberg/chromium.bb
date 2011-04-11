@@ -18,11 +18,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
 
-#if defined(OS_WIN)
-#include "printing/native_metafile_factory.h"
-#include "printing/native_metafile.h"
-#endif
-
 // Tests that serialize/deserialize correctly understand each other
 TEST(IPCMessageTest, Serialize) {
   const char* serialize_cases[] = {

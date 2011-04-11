@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
-#include "printing/native_metafile.h"
+#include "printing/metafile.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -20,11 +20,12 @@ namespace printing {
 struct PdfMetafileSkiaData;
 
 // This class uses Skia graphics library to generate a PDF document.
-class PdfMetafileSkia : public NativeMetafile {
+class PdfMetafileSkia : public Metafile {
  public:
+  PdfMetafileSkia();
   virtual ~PdfMetafileSkia();
 
-  // NativeMetafile interface
+  // Metafile methods.
   virtual bool Init();
   virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size);
 
@@ -55,15 +56,9 @@ class PdfMetafileSkia : public NativeMetafile {
 #endif  // if defined(OS_WIN)
 
 #if defined(OS_CHROMEOS)
-  virtual bool SaveToFD(const base::FileDescriptor& fd) const = 0;
+  virtual bool SaveToFD(const base::FileDescriptor& fd) const;
 #endif  // if defined(OS_CHROMEOS)
-
- protected:
-  PdfMetafileSkia();
-
  private:
-  friend class NativeMetafileFactory;
-
   scoped_ptr<PdfMetafileSkiaData> data_;
 
   DISALLOW_COPY_AND_ASSIGN(PdfMetafileSkia);

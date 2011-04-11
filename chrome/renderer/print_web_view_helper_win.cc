@@ -6,9 +6,10 @@
 
 #include "base/logging.h"
 #include "base/process_util.h"
+#include "base/scoped_ptr.h"
 #include "chrome/common/print_messages.h"
-#include "printing/native_metafile_factory.h"
-#include "printing/native_metafile.h"
+#include "printing/metafile.h"
+#include "printing/metafile_impl.h"
 #include "printing/units.h"
 #include "skia/ext/vector_canvas.h"
 #include "skia/ext/vector_platform_device_emf_win.h"
@@ -72,8 +73,8 @@ void PrintWebViewHelper::PrintPageInternal(
     WebFrame* frame) {
   // Generate a memory-based metafile. It will use the current screen's DPI.
   // Each metafile contains a single page.
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::Create());
+  scoped_ptr<printing::Metafile> metafile(new printing::NativeMetafile);
+  metafile->Init();
   DCHECK(metafile->context());
   skia::PlatformDevice::InitializeDC(metafile->context());
 
@@ -131,38 +132,28 @@ void PrintWebViewHelper::CreatePreviewDocument(
   if (!page_count)
     return;
 
-  // NOTE: This is an enhanced-format metafile(EMF) which has an appearance of
-  // single page metafile. For print preview, we need a metafile with multiple
-  // pages.
-  // TODO(kmadhusu): Use a PDF metafile to support multiple pages. After "Skia
-  // PDF backend" work is completed for windows, make changes to replace this
-  // EMF with PDF metafile.
-  // http://code.google.com/p/chromium/issues/detail?id=62889
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::Create());
-  DCHECK(metafile->context());
-  skia::PlatformDevice::InitializeDC(metafile->context());
+  scoped_ptr<printing::Metafile> metafile(new printing::PreviewMetafile);
+  metafile->Init();
 
   // Calculate the dpi adjustment.
-  float shrink = static_cast<float>(params.params.desired_dpi /
-                                    params.params.dpi);
+  float shrink = static_cast<float>(print_params.desired_dpi /
+                                    print_params.dpi);
 
   if (params.pages.empty()) {
     for (int i = 0; i < page_count; ++i) {
       float scale_factor = shrink;
-      RenderPage(params.params, &scale_factor, i, frame, &metafile);
+      RenderPage(print_params, &scale_factor, i, frame, &metafile);
     }
   } else {
     for (size_t i = 0; i < params.pages.size(); ++i) {
       if (params.pages[i] >= page_count)
         break;
       float scale_factor = shrink;
-      RenderPage(params.params, &scale_factor,
+      RenderPage(print_params, &scale_factor,
           static_cast<int>(params.pages[i]), frame, &metafile);
     }
   }
 
-  // Close the device context to retrieve the compiled metafile.
   if (!metafile->FinishDocument())
     NOTREACHED();
 
@@ -192,9 +183,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
 
 void PrintWebViewHelper::RenderPage(
     const PrintMsg_Print_Params& params, float* scale_factor, int page_number,
-    WebFrame* frame, scoped_ptr<printing::NativeMetafile>* metafile) {
-  DCHECK(metafile->get()->context());
-
+    WebFrame* frame, scoped_ptr<printing::Metafile>* metafile) {
   double content_width_in_points;
   double content_height_in_points;
   double margin_top_in_points;
@@ -231,59 +220,63 @@ void PrintWebViewHelper::RenderPage(
   bool result = (*metafile)->FinishPage();
   DCHECK(result);
 
-  skia::VectorPlatformDeviceEmf* platform_device =
-      static_cast<skia::VectorPlatformDeviceEmf*>(device);
-  if (platform_device->alpha_blend_used() && !params.supports_alpha_blend) {
-    // Currently, we handle alpha blend transparency for a single page.
-    // Therefore, expecting a metafile with page count 1.
-    DCHECK((*metafile)->GetPageCount() == 1);
+  if (!params.supports_alpha_blend) {
+    // PreviewMetafile (PDF) supports alpha blend, so we only hit this case
+    // for NativeMetafile.
+    skia::VectorPlatformDeviceEmf* platform_device =
+        static_cast<skia::VectorPlatformDeviceEmf*>(device);
+    if (platform_device->alpha_blend_used()) {
+      // Currently, we handle alpha blend transparency for a single page.
+      // Therefore, expecting a metafile with page count 1.
+      DCHECK_EQ(1U, (*metafile)->GetPageCount());
 
-    // Close the device context to retrieve the compiled metafile.
-    if (!(*metafile)->FinishDocument())
-      NOTREACHED();
+      // Close the device context to retrieve the compiled metafile.
+      if (!(*metafile)->FinishDocument())
+        NOTREACHED();
 
-    scoped_ptr<printing::NativeMetafile> metafile2(
-        printing::NativeMetafileFactory::Create());
-    // Page used alpha blend, but printer doesn't support it.  Rewrite the
-    // metafile and flatten out the transparency.
-    HDC bitmap_dc = CreateCompatibleDC(GetDC(NULL));
-    if (!bitmap_dc)
-      NOTREACHED() << "Bitmap DC creation failed";
-    SetGraphicsMode(bitmap_dc, GM_ADVANCED);
-    void* bits = NULL;
-    BITMAPINFO hdr;
-    gfx::CreateBitmapHeader(width, height, &hdr.bmiHeader);
-    HBITMAP hbitmap = CreateDIBSection(
-        bitmap_dc, &hdr, DIB_RGB_COLORS, &bits, NULL, 0);
-    if (!hbitmap)
-      NOTREACHED() << "Raster bitmap creation for printing failed";
+      // Page used alpha blend, but printer doesn't support it.  Rewrite the
+      // metafile and flatten out the transparency.
+      HDC bitmap_dc = CreateCompatibleDC(GetDC(NULL));
+      if (!bitmap_dc)
+        NOTREACHED() << "Bitmap DC creation failed";
+      SetGraphicsMode(bitmap_dc, GM_ADVANCED);
+      void* bits = NULL;
+      BITMAPINFO hdr;
+      gfx::CreateBitmapHeader(width, height, &hdr.bmiHeader);
+      HBITMAP hbitmap = CreateDIBSection(
+          bitmap_dc, &hdr, DIB_RGB_COLORS, &bits, NULL, 0);
+      if (!hbitmap)
+        NOTREACHED() << "Raster bitmap creation for printing failed";
 
-    HGDIOBJ old_bitmap = SelectObject(bitmap_dc, hbitmap);
-    RECT rect = {0, 0, width, height };
-    HBRUSH whiteBrush = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
-    FillRect(bitmap_dc, &rect, whiteBrush);
+      HGDIOBJ old_bitmap = SelectObject(bitmap_dc, hbitmap);
+      RECT rect = {0, 0, width, height };
+      HBRUSH whiteBrush = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
+      FillRect(bitmap_dc, &rect, whiteBrush);
 
-    HDC hdc = metafile2->context();
-    DCHECK(hdc);
-    skia::PlatformDevice::InitializeDC(hdc);
+      scoped_ptr<printing::Metafile> metafile2(new printing::NativeMetafile);
+      metafile2->Init();
+      HDC hdc = metafile2->context();
+      DCHECK(hdc);
+      skia::PlatformDevice::InitializeDC(hdc);
 
-    RECT metafile_bounds = (*metafile)->GetPageBounds(1).ToRECT();
-    // Process the old metafile, placing all non-AlphaBlend calls into the
-    // new metafile, and copying the results of all the AlphaBlend calls
-    // from the bitmap DC.
-    EnumEnhMetaFile(hdc,
-                    (*metafile)->emf(),
-                    EnhMetaFileProc,
-                    &bitmap_dc,
-                    &metafile_bounds);
+      RECT metafile_bounds = (*metafile)->GetPageBounds(1).ToRECT();
+      // Process the old metafile, placing all non-AlphaBlend calls into the
+      // new metafile, and copying the results of all the AlphaBlend calls
+      // from the bitmap DC.
+      EnumEnhMetaFile(hdc,
+                      (*metafile)->emf(),
+                      EnhMetaFileProc,
+                      &bitmap_dc,
+                      &metafile_bounds);
 
-    SelectObject(bitmap_dc, old_bitmap);
-    metafile->reset(metafile2.release());
+      SelectObject(bitmap_dc, old_bitmap);
+      metafile->reset(metafile2.release());
+    }
   }
 }
 
 bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
-    printing::NativeMetafile* metafile,
+    printing::Metafile* metafile,
     base::SharedMemoryHandle* shared_mem_handle) {
   uint32 buf_size = metafile->GetDataSize();
   base::SharedMemory shared_buf;

@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "printing/native_metafile.h"
+#include "printing/metafile.h"
 
 class FilePath;
 
@@ -24,12 +24,12 @@ class Point;
 namespace printing {
 
 // This class creates a graphics context that renders into a PDF data stream.
-class PdfMetafileCg : public NativeMetafile {
+class PdfMetafileCg : public Metafile {
  public:
-
+  PdfMetafileCg();
   virtual ~PdfMetafileCg();
 
-  // NativeMetafile methods.
+  // Metafile methods.
   virtual bool Init();
   virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size);
 
@@ -64,13 +64,7 @@ class PdfMetafileCg : public NativeMetafile {
                           bool center_horizontally,
                           bool center_vertically) const;
 
- protected:
-  PdfMetafileCg();
-
  private:
-  friend class NativeMetafileFactory;
-  FRIEND_TEST_ALL_PREFIXES(PdfMetafileCgTest, Pdf);
-
   // Returns a CGPDFDocumentRef version of pdf_data_.
   CGPDFDocumentRef GetPDFDocument() const;
 

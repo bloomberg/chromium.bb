@@ -24,7 +24,7 @@ class Font;
 
 namespace printing {
 
-class NativeMetafile;
+class Metafile;
 class PrintedPage;
 class PrintedPagesSource;
 class PrintingContext;
@@ -45,7 +45,7 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
 
   // Sets a page's data. 0-based. Takes metafile ownership.
   // Note: locks for a short amount of time.
-  void SetPage(int page_number, NativeMetafile* metafile, double shrink,
+  void SetPage(int page_number, Metafile* metafile, double shrink,
                const gfx::Size& paper_size, const gfx::Rect& page_rect,
                bool has_visible_overlays);
 

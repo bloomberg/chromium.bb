@@ -6,9 +6,9 @@
 
 #include "base/file_util.h"
 #include "base/md5.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
-#include "printing/native_metafile_factory.h"
+#include "printing/metafile.h"
+#include "printing/metafile_impl.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -34,7 +34,7 @@ Image::Image(const FilePath& path)
   }
 }
 
-Image::Image(const NativeMetafile& metafile)
+Image::Image(const Metafile& metafile)
     : row_length_(0),
       ignore_alpha_(true) {
   LoadMetafile(metafile);
@@ -146,12 +146,10 @@ bool Image::LoadPng(const std::string& compressed) {
 
 bool Image::LoadMetafile(const std::string& data) {
   DCHECK(!data.empty());
-  scoped_ptr<NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateFromData(data.data(),
-                                                      data.size()));
-  if(!metafile.get())
+  printing::NativeMetafile metafile;
+  if (!metafile.InitFromData(data.data(), data.size()))
     return false;
-  return LoadMetafile(*metafile);
+  return LoadMetafile(metafile);
 }
 
 }  // namespace printing

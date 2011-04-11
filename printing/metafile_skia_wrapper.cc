@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "printing/native_metafile_skia_wrapper.h"
+#include "printing/metafile_skia_wrapper.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkMetaData.h"
@@ -12,7 +12,7 @@ namespace printing {
 
 namespace {
 
-static const char* kNativeMetafileKey = "CrNativeMetafile";
+static const char* kMetafileKey = "CrMetafile";
 
 SkMetaData& getMetaData(SkCanvas* canvas) {
   DCHECK(canvas != NULL);
@@ -24,31 +24,29 @@ SkMetaData& getMetaData(SkCanvas* canvas) {
 
 }  // namespace
 
-
 // static
-void NativeMetafileSkiaWrapper::SetMetafileOnCanvas(SkCanvas* canvas,
-                                                    NativeMetafile* metafile) {
-  NativeMetafileSkiaWrapper* wrapper = NULL;
+void MetafileSkiaWrapper::SetMetafileOnCanvas(SkCanvas* canvas,
+                                              Metafile* metafile) {
+  MetafileSkiaWrapper* wrapper = NULL;
   if (metafile)
-    wrapper = new NativeMetafileSkiaWrapper(metafile);
+    wrapper = new MetafileSkiaWrapper(metafile);
 
   SkMetaData& meta = getMetaData(canvas);
-  meta.setRefCnt(kNativeMetafileKey, wrapper);
+  meta.setRefCnt(kMetafileKey, wrapper);
   SkSafeUnref(wrapper);
 }
 
 // static
-NativeMetafile* NativeMetafileSkiaWrapper::GetMetafileFromCanvas(
-    SkCanvas* canvas) {
+Metafile* MetafileSkiaWrapper::GetMetafileFromCanvas(SkCanvas* canvas) {
   SkMetaData& meta = getMetaData(canvas);
   SkRefCnt* value;
-  if (!meta.findRefCnt(kNativeMetafileKey, &value) || !value)
+  if (!meta.findRefCnt(kMetafileKey, &value) || !value)
     return NULL;
 
-  return static_cast<NativeMetafileSkiaWrapper*>(value)->metafile_;
+  return static_cast<MetafileSkiaWrapper*>(value)->metafile_;
 }
 
-NativeMetafileSkiaWrapper::NativeMetafileSkiaWrapper(NativeMetafile* metafile)
+MetafileSkiaWrapper::MetafileSkiaWrapper(Metafile* metafile)
     : metafile_(metafile) {
 }
 

@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "printing/native_metafile.h"
+#include "printing/metafile.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -22,14 +22,14 @@ namespace printing {
 class PrintedPage : public base::RefCountedThreadSafe<PrintedPage> {
  public:
   PrintedPage(int page_number,
-              NativeMetafile* native_metafile,
+              Metafile* metafile,
               const gfx::Size& page_size,
               const gfx::Rect& page_content_rect,
               bool has_visible_overlays);
 
   // Getters
   int page_number() const { return page_number_; }
-  const NativeMetafile* native_metafile() const;
+  const Metafile* metafile() const;
   const gfx::Size& page_size() const { return page_size_; }
   const gfx::Rect& page_content_rect() const { return page_content_rect_; }
   bool has_visible_overlays() const { return has_visible_overlays_; }
@@ -48,7 +48,7 @@ class PrintedPage : public base::RefCountedThreadSafe<PrintedPage> {
   const int page_number_;
 
   // Actual paint data.
-  const scoped_ptr<NativeMetafile> native_metafile_;
+  const scoped_ptr<Metafile> metafile_;
 
   // The physical page size. To support multiple page formats inside on print
   // job.

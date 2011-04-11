@@ -36,9 +36,8 @@
         'image_mac.cc',
         'image_win.cc',
         'image.h',
-        'native_metafile_factory.cc',
-        'native_metafile_factory.h',
-        'native_metafile.h',
+        'metafile.h',
+        'metafile_impl.h',
         'page_number.cc',
         'page_number.h',
         'page_overlays.cc',
@@ -100,8 +99,8 @@
         }],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'sources': [
-            'native_metafile_skia_wrapper.cc',
-            'native_metafile_skia_wrapper.h',
+            'metafile_skia_wrapper.cc',
+            'metafile_skia_wrapper.h',
           ],
           'dependencies': [
             # For FT_Init_FreeType and friends.

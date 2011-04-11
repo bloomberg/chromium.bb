@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/values.h"
+#include "printing/metafile.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings_initializer_gtk.h"
 #include "printing/units.h"
@@ -62,7 +63,7 @@ void PrintingContextCairo::SetCreatePrintDialogFunction(
   create_dialog_func_ = create_dialog_func;
 }
 
-void PrintingContextCairo::PrintDocument(const NativeMetafile* metafile) {
+void PrintingContextCairo::PrintDocument(const Metafile* metafile) {
   DCHECK(print_dialog_);
   DCHECK(metafile);
   print_dialog_->PrintDocument(metafile, document_name_);

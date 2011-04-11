@@ -17,7 +17,6 @@
 #include "content/common/view_messages.h"
 #include "net/base/net_errors.h"
 #include "printing/image.h"
-#include "printing/native_metafile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"

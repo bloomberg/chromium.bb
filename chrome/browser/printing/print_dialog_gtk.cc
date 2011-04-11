@@ -17,6 +17,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "printing/metafile.h"
 #include "printing/print_settings_initializer_gtk.h"
 
 // static
@@ -85,7 +86,7 @@ void PrintDialogGtk::ShowDialog(
   gtk_widget_show(dialog_);
 }
 
-void PrintDialogGtk::PrintDocument(const NativeMetafile* metafile,
+void PrintDialogGtk::PrintDocument(const printing::Metafile* metafile,
                                    const string16& document_name) {
   // This runs on the print worker thread, does not block the UI thread.
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -164,7 +165,7 @@ void PrintDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
   }
 }
 
-void PrintDialogGtk::SaveDocumentToDisk(const NativeMetafile* metafile,
+void PrintDialogGtk::SaveDocumentToDisk(const printing::Metafile* metafile,
                                         const string16& document_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 

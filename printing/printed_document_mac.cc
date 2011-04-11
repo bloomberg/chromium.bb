@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,8 +30,8 @@ void PrintedDocument::RenderPrintedPage(
   gfx::Rect content_area;
   page.GetCenteredPageContentRect(page_setup.physical_size(), &content_area);
 
-  const printing::NativeMetafile* metafile = page.native_metafile();
-  // Each NativeMetafile is a one-page PDF, and pages use 1-based indexing.
+  const printing::Metafile* metafile = page.metafile();
+  // Each Metafile is a one-page PDF, and pages use 1-based indexing.
   const int page_number = 1;
   metafile->RenderPage(page_number, context, content_area.ToCGRect(),
                        false, false, false, false);

@@ -9,12 +9,9 @@
 
 #include "printing/printing_context.h"
 
-#if !defined(OS_CHROMEOS)
-#include "printing/native_metafile.h"
-#endif
-
 namespace printing {
 
+class Metafile;
 class PrintDialogGtkInterface;
 
 class PrintingContextCairo : public PrintingContext {
@@ -29,7 +26,7 @@ class PrintingContextCairo : public PrintingContext {
           PrintingContextCairo* context));
 
   // Prints the document contained in |metafile|.
-  void PrintDocument(const NativeMetafile* metafile);
+  void PrintDocument(const Metafile* metafile);
 #endif
 
   // PrintingContext implementation.

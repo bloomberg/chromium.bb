@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_thread.h"
-#include "printing/native_metafile.h"
 #include "printing/print_dialog_gtk_interface.h"
 #include "printing/printing_context_cairo.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -22,7 +21,10 @@ namespace base {
 class WaitableEvent;
 }
 
-using printing::NativeMetafile;
+namespace printing {
+class Metafile;
+}
+
 using printing::PrintingContextCairo;
 
 // Needs to be freed on the UI thread to clean up its GTK members variables.
@@ -38,7 +40,7 @@ class PrintDialogGtk
   // printing::PrintDialogGtkInterface implementation.
   virtual void ShowDialog(
       PrintingContextCairo::PrintSettingsCallback* callback);
-  virtual void PrintDocument(const NativeMetafile* metafile,
+  virtual void PrintDocument(const printing::Metafile* metafile,
                              const string16& document_name);
   virtual void AddRefToDialog();
   virtual void ReleaseDialog();
@@ -54,7 +56,7 @@ class PrintDialogGtk
   CHROMEGTK_CALLBACK_1(PrintDialogGtk, void, OnResponse, int);
 
   // Saves data in |metafile| to disk for document named |document_name|.
-  void SaveDocumentToDisk(const NativeMetafile* metafile,
+  void SaveDocumentToDisk(const printing::Metafile* metafile,
                           const string16& document_name);
 
   // Prints document named |document_name|.

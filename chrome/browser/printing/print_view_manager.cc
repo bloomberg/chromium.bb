@@ -19,8 +19,8 @@
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
-#include "printing/native_metafile.h"
-#include "printing/native_metafile_factory.h"
+#include "printing/metafile.h"
+#include "printing/metafile_impl.h"
 #include "printing/printed_document.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -146,11 +146,9 @@ void PrintViewManager::OnDidPrintPage(
     }
   }
 
-  scoped_ptr<NativeMetafile> metafile;
+  scoped_ptr<Metafile> metafile(new NativeMetafile);
   if (metafile_must_be_valid) {
-    metafile.reset(NativeMetafileFactory::CreateFromData(shared_buf.memory(),
-                                                         params.data_size));
-    if (!metafile.get()) {
+    if (!metafile->InitFromData(shared_buf.memory(), params.data_size)) {
       NOTREACHED() << "Invalid metafile header";
       tab_contents()->Stop();
       return;

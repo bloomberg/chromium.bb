@@ -7,10 +7,9 @@
 #import <AppKit/AppKit.h>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/common/print_messages.h"
-#include "printing/native_metafile_factory.h"
-#include "printing/native_metafile.h"
+#include "printing/metafile.h"
+#include "printing/metafile_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
 using WebKit::WebFrame;
@@ -19,9 +18,8 @@ void PrintWebViewHelper::PrintPageInternal(
     const PrintMsg_PrintPage_Params& params,
     const gfx::Size& canvas_size,
     WebFrame* frame) {
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::Create());
-  if(!metafile.get())
+  printing::NativeMetafile metafile;
+  if (!metafile.Init())
     return;
 
   float scale_factor = frame->getPrintPageShrink(params.page_number);
@@ -30,11 +28,11 @@ void PrintWebViewHelper::PrintPageInternal(
   // Render page for printing.
   gfx::Point origin(0.0f, 0.0f);
   RenderPage(params.params.printable_size, origin, scale_factor, page_number,
-      frame, metafile.get());
-  metafile->FinishDocument();
+      frame, &metafile);
+  metafile.FinishDocument();
 
   PrintHostMsg_DidPrintPage_Params page_params;
-  page_params.data_size = metafile->GetDataSize();
+  page_params.data_size = metafile.GetDataSize();
   page_params.page_number = page_number;
   page_params.document_cookie = params.params.document_cookie;
   page_params.actual_shrink = scale_factor;
@@ -45,7 +43,7 @@ void PrintWebViewHelper::PrintPageInternal(
                                        params.params.printable_size.height());
 
   // Ask the browser to create the shared memory for us.
-  if (!CopyMetafileDataToSharedMem(metafile.get(),
+  if (!CopyMetafileDataToSharedMem(&metafile,
                                    &(page_params.metafile_data_handle))) {
     page_params.data_size = 0;
   }
@@ -66,9 +64,8 @@ void PrintWebViewHelper::CreatePreviewDocument(
   if (!page_count)
     return;
 
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::Create());
-  if(!metafile.get())
+  printing::PreviewMetafile metafile;
+  if (!metafile.Init())
     return;
 
   float scale_factor = frame->getPrintPageShrink(0);
@@ -76,26 +73,26 @@ void PrintWebViewHelper::CreatePreviewDocument(
   if (params.pages.empty()) {
     for (int i = 0; i < page_count; ++i) {
       RenderPage(printParams.page_size, origin, scale_factor, i, frame,
-          metafile.get());
+                 &metafile);
     }
   } else {
     for (size_t i = 0; i < params.pages.size(); ++i) {
       if (params.pages[i] >= page_count)
         break;
       RenderPage(printParams.page_size, origin, scale_factor,
-          static_cast<int>(params.pages[i]), frame, metafile.get());
+                 static_cast<int>(params.pages[i]), frame, &metafile);
     }
   }
-  metafile->FinishDocument();
+  metafile.FinishDocument();
 
   PrintHostMsg_DidPreviewDocument_Params preview_params;
-  preview_params.data_size = metafile->GetDataSize();
+  preview_params.data_size = metafile.GetDataSize();
   preview_params.document_cookie = params.params.document_cookie;
   preview_params.expected_pages_count = page_count;
 
   // Ask the browser to create the shared memory for us.
-  if (!CopyMetafileDataToSharedMem(metafile.get(),
-          &(preview_params.metafile_data_handle))) {
+  if (!CopyMetafileDataToSharedMem(&metafile,
+                                   &(preview_params.metafile_data_handle))) {
     preview_params.data_size = 0;
     preview_params.expected_pages_count = 0;
   }
@@ -105,7 +102,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
 void PrintWebViewHelper::RenderPage(
     const gfx::Size& page_size, const gfx::Point& content_origin,
     const float& scale_factor, int page_number, WebFrame* frame,
-    printing::NativeMetafile* metafile) {
+    printing::Metafile* metafile) {
   bool success = metafile->StartPage(page_size, content_origin, scale_factor);
   DCHECK(success);
 

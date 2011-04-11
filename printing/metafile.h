@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PRINTING_NATIVE_METAFILE_H_
-#define PRINTING_NATIVE_METAFILE_H_
+#ifndef PRINTING_METAFILE_H_
+#define PRINTING_METAFILE_H_
 
 #include "base/basictypes.h"
 #include "build/build_config.h"
@@ -11,7 +11,6 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#include <vector>
 #elif defined(OS_MACOSX)
 #include <ApplicationServices/ApplicationServices.h>
 #include <CoreFoundation/CoreFoundation.h>
@@ -40,9 +39,9 @@ namespace printing {
 
 // This class creates a graphics context that renders into a data stream
 // (usually PDF or EMF).
-class NativeMetafile {
+class Metafile {
  public:
-  virtual ~NativeMetafile() {}
+  virtual ~Metafile() {}
 
   // Initializes a fresh new metafile for rendering. Returns false on failure.
   // Note: It should only be called from within the renderer process to allocate
@@ -149,4 +148,4 @@ class NativeMetafile {
 
 }  // namespace printing
 
-#endif  // PRINTING_NATIVE_METAFILE_H_
+#endif  // PRINTING_METAFILE_H_

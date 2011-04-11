@@ -64,7 +64,7 @@ PrintedDocument::~PrintedDocument() {
 }
 
 void PrintedDocument::SetPage(int page_number,
-                              NativeMetafile* metafile,
+                              Metafile* metafile,
                               double shrink,
                               const gfx::Size& paper_size,
                               const gfx::Rect& page_rect,
@@ -125,7 +125,7 @@ bool PrintedDocument::IsComplete() const {
     PrintedPages::const_iterator itr = mutable_.pages_.find(page.ToInt());
     if (itr == mutable_.pages_.end() || !itr->second.get())
       return false;
-    if (metafile_must_be_valid && !itr->second->native_metafile())
+    if (metafile_must_be_valid && !itr->second->metafile())
       return false;
   }
   return true;
@@ -151,7 +151,7 @@ uint32 PrintedDocument::MemoryUsage() const {
   }
   uint32 total = 0;
   for (size_t i = 0; i < pages_copy.size(); ++i) {
-    total += pages_copy[i]->native_metafile()->GetDataSize();
+    total += pages_copy[i]->metafile()->GetDataSize();
   }
   return total;
 }
@@ -263,11 +263,11 @@ void PrintedDocument::DebugDump(const PrintedPage& page) {
   filename += ASCIIToUTF16(StringPrintf("%02d", page.page_number()));
 #if defined(OS_WIN)
   filename += ASCIIToUTF16("_.emf");
-  page.native_metafile()->SaveTo(
+  page.metafile()->SaveTo(
       g_debug_dump_info.Get().debug_dump_path.Append(filename));
 #else  // OS_WIN
   filename += ASCIIToUTF16("_.pdf");
-  page.native_metafile()->SaveTo(
+  page.metafile()->SaveTo(
       g_debug_dump_info.Get().debug_dump_path.Append(UTF16ToUTF8(filename)));
 #endif  // OS_WIN
 }

@@ -11,7 +11,7 @@
 #include "base/time.h"
 #include "content/renderer/render_view_observer.h"
 #include "content/renderer/render_view_observer_tracker.h"
-#include "printing/native_metafile.h"
+#include "printing/metafile.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
 #include "ui/gfx/size.h"
@@ -152,7 +152,7 @@ class PrintWebViewHelper : public RenderViewObserver ,
   void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
                          const gfx::Size& canvas_size,
                          WebKit::WebFrame* frame,
-                         printing::NativeMetafile* metafile,
+                         printing::Metafile* metafile,
                          scoped_ptr<skia::VectorCanvas>* canvas);
 #else
   void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
@@ -177,25 +177,25 @@ class PrintWebViewHelper : public RenderViewObserver ,
 #if defined(OS_WIN)
   void RenderPage(const PrintMsg_Print_Params& params, float* scale_factor,
                   int page_number, WebKit::WebFrame* frame,
-                  scoped_ptr<printing::NativeMetafile>* metafile);
+                  scoped_ptr<printing::Metafile>* metafile);
 #elif defined(OS_MACOSX)
   void RenderPage(const gfx::Size& page_size, const gfx::Point& content_origin,
                   const float& scale_factor, int page_number,
-                  WebKit::WebFrame* frame, printing::NativeMetafile* metafile);
+                  WebKit::WebFrame* frame, printing::Metafile* metafile);
 #elif defined(OS_POSIX)
   bool RenderPages(const PrintMsg_PrintPages_Params& params,
                    WebKit::WebFrame* frame,
                    WebKit::WebNode* node,
                    bool send_expected_page_count,
                    int* page_count,
-                   printing::NativeMetafile* metafile);
+                   printing::Metafile* metafile);
 #endif  // defined(OS_WIN)
 
   // Helper methods -----------------------------------------------------------
 
   bool CopyAndPrint(WebKit::WebFrame* web_frame);
 
-  bool CopyMetafileDataToSharedMem(printing::NativeMetafile* metafile,
+  bool CopyMetafileDataToSharedMem(printing::Metafile* metafile,
                                    base::SharedMemoryHandle* shared_mem_handle);
 
   static void GetPageSizeAndMarginsInPoints(

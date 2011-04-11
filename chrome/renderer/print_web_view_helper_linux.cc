@@ -9,9 +9,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/print_messages.h"
 #include "content/common/view_messages.h"
-#include "printing/native_metafile_factory.h"
-#include "printing/native_metafile_skia_wrapper.h"
-#include "printing/native_metafile.h"
+#include "printing/metafile.h"
+#include "printing/metafile_impl.h"
+#include "printing/metafile_skia_wrapper.h"
 #include "skia/ext/vector_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "ui/gfx/point.h"
@@ -26,17 +26,16 @@ using WebKit::WebNode;
 void PrintWebViewHelper::CreatePreviewDocument(
     const PrintMsg_PrintPages_Params& params, WebKit::WebFrame* frame,
     WebKit::WebNode* node) {
-  // We only can use PDF in the renderer because Cairo needs to create a
-  // temporary file for a PostScript surface.
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::Create());
   int page_count = 0;
+  printing::PreviewMetafile metafile;
+  if (!metafile.Init())
+    return;
 
-  if (!RenderPages(params, frame, node, false, &page_count, metafile.get()))
+  if (!RenderPages(params, frame, node, false, &page_count, &metafile))
     return;
 
   // Get the size of the resulting metafile.
-  uint32 buf_size = metafile->GetDataSize();
+  uint32 buf_size = metafile.GetDataSize();
   DCHECK_GT(buf_size, 0u);
 
   PrintHostMsg_DidPreviewDocument_Params preview_params;
@@ -44,7 +43,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
   preview_params.expected_pages_count = page_count;
   preview_params.data_size = buf_size;
 
-  if (!CopyMetafileDataToSharedMem(metafile.get(),
+  if (!CopyMetafileDataToSharedMem(&metafile,
                                    &(preview_params.metafile_data_handle))) {
     preview_params.expected_pages_count = 0;
     preview_params.data_size = 0;
@@ -55,10 +54,6 @@ void PrintWebViewHelper::CreatePreviewDocument(
 void PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
                                     WebFrame* frame,
                                     WebNode* node) {
-  // We only can use PDF in the renderer because Cairo needs to create a
-  // temporary file for a PostScript surface.
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::Create());
   int page_count = 0;
   bool send_expected_page_count =
 #if defined(OS_CHROMEOS)
@@ -67,13 +62,17 @@ void PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
       true;
 #endif  // defined(OS_CHROMEOS)
 
+  printing::NativeMetafile metafile;
+  if (!metafile.Init())
+    return;
+
   if (!RenderPages(params, frame, node, send_expected_page_count, &page_count,
-                   metafile.get())) {
+                   &metafile)) {
     return;
   }
 
   // Get the size of the resulting metafile.
-  uint32 buf_size = metafile->GetDataSize();
+  uint32 buf_size = metafile.GetDataSize();
   DCHECK_GT(buf_size, 0u);
 
 #if defined(OS_CHROMEOS)
@@ -85,7 +84,7 @@ void PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
                                                          &sequence_number))) {
     return;
   }
-  if (!metafile->SaveToFD(fd))
+  if (!metafile.SaveToFD(fd))
     return;
 
   // Tell the browser we've finished writing the file.
@@ -112,7 +111,7 @@ void PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
       NOTREACHED() << "Map failed";
       return;
     }
-    metafile->GetData(shared_buf.memory(), buf_size);
+    metafile.GetData(shared_buf.memory(), buf_size);
     printed_page_params.data_size = buf_size;
     shared_buf.GiveToProcess(base::GetCurrentProcessHandle(),
                              &(printed_page_params.metafile_data_handle));
@@ -149,7 +148,7 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
                                      WebKit::WebNode* node,
                                      bool send_expected_page_count,
                                      int* page_count,
-                                     printing::NativeMetafile* metafile) {
+                                     printing::Metafile* metafile) {
   PrintMsg_Print_Params printParams = params.params;
   scoped_ptr<skia::VectorCanvas> canvas;
 
@@ -197,7 +196,7 @@ void PrintWebViewHelper::PrintPageInternal(
     const PrintMsg_PrintPage_Params& params,
     const gfx::Size& canvas_size,
     WebFrame* frame,
-    printing::NativeMetafile* metafile,
+    printing::Metafile* metafile,
     scoped_ptr<skia::VectorCanvas>* canvas) {
   double content_width_in_points;
   double content_height_in_points;
@@ -228,8 +227,7 @@ void PrintWebViewHelper::PrintPageInternal(
     return;
 
   canvas->reset(new skia::VectorCanvas(device));
-  printing::NativeMetafileSkiaWrapper::SetMetafileOnCanvas(canvas->get(),
-                                                           metafile);
+  printing::MetafileSkiaWrapper::SetMetafileOnCanvas(canvas->get(), metafile);
   frame->printPage(params.page_number, canvas->get());
 
   // TODO(myhuang): We should handle transformation for paper margins.

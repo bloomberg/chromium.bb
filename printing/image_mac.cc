@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,11 +7,12 @@
 #include <ApplicationServices/ApplicationServices.h>
 
 #include "base/mac/scoped_cftyperef.h"
+#include "printing/metafile.h"
 #include "ui/gfx/rect.h"
 
 namespace printing {
 
-bool Image::LoadMetafile(const NativeMetafile& metafile) {
+bool Image::LoadMetafile(const Metafile& metafile) {
   // The printing system uses single-page metafiles (page indexes are 1-based).
   const unsigned int page_number = 1;
   gfx::Rect rect(metafile.GetPageBounds(page_number));

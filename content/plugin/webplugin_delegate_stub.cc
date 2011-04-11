@@ -23,9 +23,7 @@
 #include "webkit/glue/webcursor.h"
 
 #if defined(OS_WIN)
-#include "base/memory/scoped_ptr.h"
-#include "printing/native_metafile_factory.h"
-#include "printing/native_metafile.h"
+#include "printing/metafile_impl.h"
 #endif  // defined(OS_WIN)
 
 using WebKit::WebBindings;
@@ -271,27 +269,26 @@ void WebPluginDelegateStub::OnDidPaint() {
 void WebPluginDelegateStub::OnPrint(base::SharedMemoryHandle* shared_memory,
                                     uint32* size) {
 #if defined(OS_WIN)
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::Create());
-  if (!metafile->Init()) {
+  printing::NativeMetafile metafile;
+  if (!metafile.Init()) {
     NOTREACHED();
     return;
   }
-  HDC hdc = metafile->context();
+  HDC hdc = metafile.context();
   skia::PlatformDevice::InitializeDC(hdc);
   delegate_->Print(hdc);
-  if (!metafile->FinishDocument()) {
+  if (!metafile.FinishDocument()) {
     NOTREACHED();
     return;
   }
 
-  *size = metafile->GetDataSize();
+  *size = metafile.GetDataSize();
   DCHECK(*size);
   base::SharedMemory shared_buf;
   CreateSharedBuffer(*size, &shared_buf, shared_memory);
 
   // Retrieve a copy of the data.
-  bool success = metafile->GetData(shared_buf.memory(), *size);
+  bool success = metafile.GetData(shared_buf.memory(), *size);
   DCHECK(success);
 #else
   // TODO(port): plugin printing.

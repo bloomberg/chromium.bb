@@ -15,6 +15,7 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view.h"
 #include "grit/generated_resources.h"
+#include "printing/metafile.h"
 #include "printing/units.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -636,7 +637,7 @@ void PrintWebViewHelper::RenderPagesForPreview(WebKit::WebFrame* frame,
 
 #if defined(OS_POSIX)
 bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
-    printing::NativeMetafile* metafile,
+    printing::Metafile* metafile,
     base::SharedMemoryHandle* shared_mem_handle) {
   uint32 buf_size = metafile->GetDataSize();
   base::SharedMemoryHandle mem_handle;

@@ -1,9 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "printing/image.h"
 
+#include "printing/metafile.h"
 #include "skia/ext/platform_device.h"
 #include "ui/gfx/gdi_util.h"  // EMF support
 #include "ui/gfx/rect.h"
@@ -44,7 +45,7 @@ class DisableFontSmoothing {
 
 namespace printing {
 
-bool Image::LoadMetafile(const NativeMetafile& metafile) {
+bool Image::LoadMetafile(const Metafile& metafile) {
     gfx::Rect rect(metafile.GetPageBounds(1));
   DisableFontSmoothing disable_in_this_scope;
 

@@ -59,18 +59,15 @@
 #include "webkit/plugins/ppapi/var.h"
 #include "webkit/plugins/sad_plugin.h"
 
-#if defined(OS_POSIX)
-#include "printing/native_metafile.h"
-#endif
-
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "printing/native_metafile_factory.h"
+#include "printing/metafile_impl.h"
 #endif
 
 #if defined(OS_LINUX)
-#include "printing/native_metafile_skia_wrapper.h"
+#include "printing/metafile.h"
+#include "printing/metafile_skia_wrapper.h"
 #endif
 
 #if defined(OS_WIN)
@@ -1202,18 +1199,18 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
 
   bool ret = false;
 #if defined(OS_LINUX)
-  // On Linux we just set the final bits in the native metafile.
-  printing::NativeMetafile* metafile =
-    printing::NativeMetafileSkiaWrapper::GetMetafileFromCanvas(canvas);
+  // On Linux we just set the final bits in the native metafile
+  // (NativeMetafile and PreviewMetafile must have compatible formats,
+  // i.e. both PDF for this to work).
+  printing::Metafile* metafile =
+    printing::MetafileSkiaWrapper::GetMetafileFromCanvas(canvas);
   DCHECK(metafile != NULL);
   if (metafile)
     ret = metafile->InitFromData(buffer->mapped_buffer(), buffer->size());
 #elif defined(OS_MACOSX)
+  printing::NativeMetafile metafile;
   // Create a PDF metafile and render from there into the passed in context.
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateFromData(buffer->mapped_buffer(),
-                                                      buffer->size()));
-  if (metafile.get() != NULL) {
+  if (metafile.InitFromData(buffer->mapped_buffer(), buffer->size())) {
     // Flip the transform.
     CGContextSaveGState(canvas);
     CGContextTranslateCTM(canvas, 0,
@@ -1225,7 +1222,7 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
     page_rect.size.width = current_print_settings_.printable_area.size.width;
     page_rect.size.height = current_print_settings_.printable_area.size.height;
 
-    ret = metafile->RenderPage(1, canvas, page_rect, true, false, true, true);
+    ret = metafile.RenderPage(1, canvas, page_rect, true, false, true, true);
     CGContextRestoreGState(canvas);
   }
 #elif defined(OS_WIN)

@@ -18,8 +18,8 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "printing/backend/print_backend.h"
-#include "printing/native_metafile_factory.h"
-#include "printing/native_metafile.h"
+#include "printing/metafile.h"
+#include "printing/metafile_impl.h"
 #include "printing/print_job_constants.h"
 
 namespace {
@@ -121,7 +121,7 @@ class EnumeratePrintersTaskProxy
 class PrintToPdfTask : public Task {
  public:
   // Takes ownership of |metafile|.
-  PrintToPdfTask(printing::NativeMetafile* metafile, const FilePath& path)
+  PrintToPdfTask(printing::Metafile* metafile, const FilePath& path)
       : metafile_(metafile), path_(path) {
   }
 
@@ -134,7 +134,7 @@ class PrintToPdfTask : public Task {
 
  private:
   // The metafile holding the PDF data.
-  scoped_ptr<printing::NativeMetafile> metafile_;
+  scoped_ptr<printing::Metafile> metafile_;
 
   // The absolute path where the file will be saved.
   FilePath path_;
@@ -262,21 +262,15 @@ void PrintPreviewHandler::SelectFile() {
 
 void PrintPreviewHandler::FileSelected(const FilePath& path,
                                        int index, void* params) {
-#if defined(OS_POSIX)
   PrintPreviewUIHTMLSource::PrintPreviewData data;
   PrintPreviewUI* pp_ui = reinterpret_cast<PrintPreviewUI*>(web_ui_);
   pp_ui->html_source()->GetPrintPreviewData(&data);
   DCHECK(data.first != NULL);
   DCHECK(data.second > 0);
 
-  printing::NativeMetafile* metafile =
-      printing::NativeMetafileFactory::CreateFromData(data.first->memory(),
-                                                      data.second);
-  metafile->FinishDocument();
+  printing::PreviewMetafile* metafile = new printing::PreviewMetafile;
+  metafile->InitFromData(data.first->memory(), data.second);
 
   PrintToPdfTask* task = new PrintToPdfTask(metafile, path);
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, task);
-#else
-  NOTIMPLEMENTED();
-#endif
 }

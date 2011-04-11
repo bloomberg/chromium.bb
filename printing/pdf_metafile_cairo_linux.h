@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "printing/native_metafile.h"
+#include "printing/metafile.h"
 
 namespace gfx {
 class Point;
@@ -23,11 +23,12 @@ namespace printing {
 
 // This class uses Cairo graphics library to generate PDF stream and stores
 // rendering results in a string buffer.
-class PdfMetafileCairo : public NativeMetafile {
+class PdfMetafileCairo : public Metafile {
  public:
+  PdfMetafileCairo();
   virtual ~PdfMetafileCairo();
 
-  // NativeMetafile methods.
+  // Metafile methods.
   virtual bool Init();
 
   //  Calling InitFromData() sets the data for this metafile and masks data
@@ -58,13 +59,7 @@ class PdfMetafileCairo : public NativeMetafile {
   virtual bool SaveToFD(const base::FileDescriptor& fd) const;
 #endif  // if defined(OS_CHROMEOS)
 
- protected:
-  PdfMetafileCairo();
-
  private:
-  friend class NativeMetafileFactory;
-  FRIEND_TEST_ALL_PREFIXES(PdfMetafileCairoTest, Pdf);
-
   // Cleans up all resources.
   void CleanUpAll();
 

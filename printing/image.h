@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,12 +10,13 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "printing/native_metafile.h"
 #include "ui/gfx/size.h"
 
 class FilePath;
 
 namespace printing {
+
+class Metafile;
 
 // Lightweight raw-bitmap management. The image, once initialized, is immutable.
 // The main purpose is testing image contents.
@@ -28,7 +29,7 @@ class Image {
 
   // Creates the image from the metafile.  Deduces bounds based on bounds in
   // metafile.  If loading fails size().IsEmpty() will be true.
-  explicit Image(const NativeMetafile& metafile);
+  explicit Image(const Metafile& metafile);
 
   // Copy constructor.
   explicit Image(const Image& image);
@@ -73,7 +74,7 @@ class Image {
 
   bool LoadMetafile(const std::string& data);
 
-  bool LoadMetafile(const NativeMetafile& metafile);
+  bool LoadMetafile(const Metafile& metafile);
 
   // Pixel dimensions of the image.
   gfx::Size size_;

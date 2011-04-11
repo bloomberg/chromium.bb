@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "printing/native_metafile.h"
+#include "printing/metafile.h"
 
 class FilePath;
 
@@ -23,7 +23,7 @@ class Size;
 namespace printing {
 
 // Simple wrapper class that manage an EMF data stream and its virtual HDC.
-class Emf : public NativeMetafile {
+class Emf : public Metafile {
  public:
   class Record;
   class Enumerator;
@@ -41,7 +41,7 @@ class Emf : public NativeMetafile {
   // Initializes the Emf with the data in |metafile_path|.
   virtual bool InitFromFile(const FilePath& metafile_path);
 
-  // NativeMetafile methods.
+  // Metafile methods.
   virtual bool Init();
   virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size);
 

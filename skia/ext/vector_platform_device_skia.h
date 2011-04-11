@@ -31,8 +31,8 @@ class VectorPlatformDeviceSkiaFactory : public SkDeviceFactory {
 
 class VectorPlatformDeviceSkia : public PlatformDevice {
  public:
-  VectorPlatformDeviceSkia(int width, int height,
-                           SkPDFDevice::OriginTransform flip);
+  SK_API VectorPlatformDeviceSkia(int width, int height,
+                                  SkPDFDevice::OriginTransform flip);
 
   ~VectorPlatformDeviceSkia();
 
@@ -91,7 +91,7 @@ class VectorPlatformDeviceSkia : public PlatformDevice {
   // Our own methods.
 
   // This needs to be called before anything is drawn.
-  void setInitialTransform(int xOffset, int yOffset, float scale_factor);
+  SK_API void setInitialTransform(int xOffset, int yOffset, float scale_factor);
 
  private:
   SkRefPtr<SkPDFDevice> pdf_device_;

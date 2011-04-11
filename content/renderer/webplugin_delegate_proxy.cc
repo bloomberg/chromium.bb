@@ -54,8 +54,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "printing/native_metafile_factory.h"
-#include "printing/native_metafile.h"
+#include "printing/metafile_impl.h"
 #endif
 
 using WebKit::WebBindings;
@@ -923,14 +922,13 @@ void WebPluginDelegateProxy::Print(gfx::NativeDrawingContext context) {
   }
 
 #if defined(OS_WIN)
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::Create());
-  if (!metafile->InitFromData(memory.memory(), size)) {
+  printing::NativeMetafile metafile;
+  if (!metafile.InitFromData(memory.memory(), size)) {
     NOTREACHED();
     return;
   }
   // Playback the buffer.
-  metafile->Playback(context, NULL);
+  metafile.Playback(context, NULL);
 #else
   // TODO(port): plugin printing.
   NOTIMPLEMENTED();
