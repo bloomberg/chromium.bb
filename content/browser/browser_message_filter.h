@@ -48,11 +48,6 @@ class BrowserMessageFilter : public IPC::ChannelProxy::MessageFilter,
   // Can be called on any thread, after OnChannelConnected is called.
   base::ProcessHandle peer_handle() { return peer_handle_; }
 
-  // Checks that the given message can be dispatched on the UI thread, depending
-  // on the platform.  If not, returns false and an error ot the sender.
-  static bool CheckCanDispatchOnUI(const IPC::Message& message,
-                                   IPC::Message::Sender* sender);
-
  protected:
   // Call this if a message couldn't be deserialized.  This kills the renderer.
   // Can be called on any thread.
