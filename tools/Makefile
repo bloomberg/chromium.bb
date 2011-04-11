@@ -450,54 +450,30 @@ BUILD/stamp-$(CROSSARCH)-pregcc-standalone: \
 # NOTE: removes the default pthread.h to enable correct install
 # by the Native Client threads package build.
 ##################################################################
+
+NEWLIB_CFLAGS = -O2 -D_I386MACH_ALLOW_HW_INTERRUPTS -mtls-use-call
+
 BUILD/stamp-$(CROSSARCH)-newlib: | SRC/newlib BUILD
 	rm -rf BUILD/build-newlib-$(CROSSARCH)
 	mkdir BUILD/build-newlib-$(CROSSARCH)
 	../src/trusted/service_runtime/export_header.py ../src/trusted/service_runtime/include \
 		SRC/newlib/newlib/libc/sys/nacl
-	if [ "x$(CROSSARCH)" = "xnacl64" ] ; then \
+	PATH=$(BUILDPATH) && export PATH && \
 	  cd BUILD/build-newlib-$(CROSSARCH) && \
-	    PATH=$(BUILDPATH) \
-		  CFLAGS="-O2" \
-	      ../../SRC/newlib/configure \
-			  --disable-libgloss \
-			  --enable-newlib-iconv \
-			  --enable-newlib-io-long-long \
-			  --enable-newlib-io-long-double \
-			  --enable-newlib-io-c99-formats \
-			  --enable-newlib-mb \
-	        --prefix=$(SDKROOT) \
-	        --target=$(CROSSARCH) && \
-	  cd ../.. ; \
-	  PATH=$(BUILDPATH) \
-	    $(MAKE) -C BUILD/build-newlib-$(CROSSARCH) \
-	                    CCASFLAGS="-D_I386MACH_ALLOW_HW_INTERRUPTS" \
-		    CFLAGS_FOR_TARGET="-m64 -O2" \
-	          CXXFLAGS_FOR_TARGET="-m64 -O2" \
-	      all ; \
-	else \
-	  cd BUILD/build-newlib-$(CROSSARCH) && \
-	    PATH=$(BUILDPATH) \
-		  CFLAGS="-O2" \
-	      ../../SRC/newlib/configure \
-			  --disable-libgloss \
-			  --enable-newlib-iconv \
-			  --enable-newlib-io-long-long \
-			  --enable-newlib-io-long-double \
-			  --enable-newlib-io-c99-formats \
-			  --enable-newlib-mb \
-	        --prefix=$(SDKROOT) \
-	        --target=$(CROSSARCH) ; \
-	  cd ../.. ; \
-	  PATH=$(BUILDPATH) \
-	    $(MAKE) -C BUILD/build-newlib-$(CROSSARCH) \
-		    CFLAGS_FOR_TARGET="-m32 -O2" \
-	          CXXFLAGS_FOR_TARGET="-m32 -O2" \
-	      all ; \
-	fi
-	PATH=$(BUILDPATH) \
-	  $(MAKE) -C BUILD/build-newlib-$(CROSSARCH) \
-	    DESTDIR=$(DESTDIR) install
+	  ../../SRC/newlib/configure \
+		      --disable-libgloss \
+		      --enable-newlib-iconv \
+		      --enable-newlib-io-long-long \
+		      --enable-newlib-io-long-double \
+		      --enable-newlib-io-c99-formats \
+		      --enable-newlib-mb \
+	    --prefix=$(SDKROOT) \
+	    CFLAGS='-O2' \
+	    CFLAGS_FOR_TARGET='$(NEWLIB_CFLAGS)' \
+	    CXXFLAGS_FOR_TARGET='$(NEWLIB_CFLAGS)' \
+	    --target=$(CROSSARCH) && \
+	  $(MAKE) && \
+	  $(MAKE) DESTDIR=$(DESTDIR) install
 	rm $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/pthread.h
 	touch $@
 
