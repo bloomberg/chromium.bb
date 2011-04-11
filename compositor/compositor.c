@@ -1053,6 +1053,82 @@ wlsc_switcher_destroy(struct wlsc_switcher *switcher)
 	free(switcher);
 }
 
+static void
+switcher_next_binding(struct wlsc_input_device *device,
+		      uint32_t time, uint32_t key, uint32_t state, void *data)
+{
+	struct wlsc_compositor *compositor = data;
+
+	if (!state)
+		return;
+	if (wl_list_empty(&compositor->surface_list))
+		return;
+	if (compositor->switcher == NULL)
+		compositor->switcher = wlsc_switcher_create(compositor);
+
+	wlsc_switcher_next(compositor->switcher);
+}
+
+static void
+switcher_terminate_binding(struct wlsc_input_device *device,
+			   uint32_t time, uint32_t key, uint32_t state,
+			   void *data)
+{
+	struct wlsc_compositor *compositor = data;
+
+	if (compositor->switcher && !state) {
+		wlsc_surface_activate(compositor->switcher->current,
+				      device, time);
+		wlsc_switcher_destroy(compositor->switcher);
+		compositor->switcher = NULL;
+		compositor->overlay_surface = NULL;
+	}
+}
+
+struct wlsc_binding {
+	uint32_t key;
+	uint32_t modifier;
+	wlsc_binding_handler_t handler;
+	void *data;
+	struct wl_list link;
+};
+
+static void
+terminate_binding(struct wlsc_input_device *device,
+		  uint32_t time, uint32_t key, uint32_t state, void *data)
+{
+	struct wlsc_compositor *compositor = data;
+
+	wl_display_terminate(compositor->wl_display);
+}
+
+struct wlsc_binding *
+wlsc_compositor_add_binding(struct wlsc_compositor *compositor,
+			    uint32_t key, uint32_t modifier,
+			    wlsc_binding_handler_t handler, void *data)
+{
+	struct wlsc_binding *binding;
+
+	binding = malloc(sizeof *binding);
+	if (binding == NULL)
+		return NULL;
+
+	binding->key = key;
+	binding->modifier = modifier;
+	binding->handler = handler;
+	binding->data = data;
+	wl_list_insert(compositor->binding_list.prev, &binding->link);
+
+	return binding;
+}
+
+void
+wlsc_binding_destroy(struct wlsc_binding *binding)
+{
+	wl_list_remove(&binding->link);
+	free(binding);
+}
+
 void
 notify_key(struct wl_input_device *device,
 	   uint32_t time, uint32_t key, uint32_t state)
@@ -1062,32 +1138,14 @@ notify_key(struct wl_input_device *device,
 		(struct wlsc_compositor *) device->compositor;
 	uint32_t *k, *end;
 	uint32_t modifier;
+	struct wlsc_binding *b;
 
-	switch (key | wd->modifier_state) {
-	case KEY_BACKSPACE | MODIFIER_CTRL | MODIFIER_ALT:
-		wl_display_terminate(compositor->wl_display);
-		return;
-
-	case KEY_TAB | MODIFIER_SUPER:
-		if (!state)
-			return;
-		if (wl_list_empty(&compositor->surface_list))
-			return;
-		if (compositor->switcher == NULL)
-			compositor->switcher = wlsc_switcher_create(compositor);
-
-		wlsc_switcher_next(compositor->switcher);
-		return;
-
-	case KEY_LEFTMETA | MODIFIER_SUPER:
-	case KEY_RIGHTMETA | MODIFIER_SUPER:
-		if (compositor->switcher && !state) {
-			wlsc_surface_activate(compositor->switcher->current,
-					      wd, time);
-			wlsc_switcher_destroy(compositor->switcher);
-			compositor->switcher = NULL;
+	wl_list_for_each(b, &compositor->binding_list, link) {
+		if (b->key == key &&
+		    b->modifier == wd->modifier_state && state) {
+			b->handler(wd, time, key, state, b->data);
+			break;
 		}
-		break;
 	}
 
 	switch (key) {
@@ -1409,6 +1467,17 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	wl_list_init(&ec->surface_list);
 	wl_list_init(&ec->input_device_list);
 	wl_list_init(&ec->output_list);
+	wl_list_init(&ec->binding_list);
+
+	wlsc_compositor_add_binding(ec, KEY_BACKSPACE,
+				    MODIFIER_CTRL | MODIFIER_ALT,
+				    terminate_binding, ec);
+	wlsc_compositor_add_binding(ec, KEY_TAB, MODIFIER_SUPER,
+				    switcher_next_binding, ec);
+	wlsc_compositor_add_binding(ec, KEY_LEFTMETA, MODIFIER_SUPER,
+				    switcher_terminate_binding, ec);
+	wlsc_compositor_add_binding(ec, KEY_RIGHTMETA, MODIFIER_SUPER,
+				    switcher_terminate_binding, ec);
 
 	create_pointer_images(ec);
 

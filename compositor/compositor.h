@@ -100,6 +100,7 @@ struct wlsc_compositor {
 	struct wl_list output_list;
 	struct wl_list input_device_list;
 	struct wl_list surface_list;
+	struct wl_list binding_list;
 
 	/* Repaint state. */
 	struct wl_event_source *timer_source;
@@ -183,6 +184,18 @@ void
 wlsc_compositor_finish_frame(struct wlsc_compositor *compositor, int msecs);
 void
 wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor);
+
+struct wlsc_binding;
+typedef void (*wlsc_binding_handler_t)(struct wlsc_input_device *device,
+				       uint32_t time, uint32_t key,
+				       uint32_t state, void *data);
+struct wlsc_binding *
+wlsc_compositor_add_binding(struct wlsc_compositor *compositor,
+			    uint32_t key, uint32_t modifier,
+			    wlsc_binding_handler_t binding, void *data);
+void
+wlsc_binding_destroy(struct wlsc_binding *binding);
+
 
 void
 wlsc_surface_damage(struct wlsc_surface *surface);
