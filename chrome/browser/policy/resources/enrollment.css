@@ -75,13 +75,17 @@ input[type='submit'] {
   font-weight: bold;
 }
 
-#confirmation-image {
-  margin: 20px;
+#confirmation-content {
+  position: absolute;
+  top: 50%;
+  height: 1.5em;
+  width: 100%;
+  margin-top: -.75em;
   text-align: center;
 }
 
-#confirmation-message {
-  text-align: center;
+#confirmation-image {
+  vertical-align: middle;
 }
 
 #confirmation-footer {
