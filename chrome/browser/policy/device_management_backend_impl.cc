@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "base/stringprintf.h"
-#include "net/base/escape.h"
-#include "net/url_request/url_request_status.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/common/chrome_version_info.h"
+#include "net/base/escape.h"
+#include "net/url_request/url_request_status.h"
 
 namespace policy {
 
@@ -98,9 +98,7 @@ std::string URLQueryParameters::Encode() {
 class DeviceManagementJobBase
     : public DeviceManagementService::DeviceManagementJob {
  public:
-  virtual ~DeviceManagementJobBase() {
-    backend_impl_->JobDone(this);
-  }
+  virtual ~DeviceManagementJobBase() {}
 
   // DeviceManagementJob overrides:
   virtual void HandleResponse(const net::URLRequestStatus& status,
@@ -176,6 +174,8 @@ void DeviceManagementJobBase::HandleResponse(
     const std::string& data) {
   // Delete ourselves when this is done.
   scoped_ptr<DeviceManagementJob> scoped_killer(this);
+  backend_impl_->JobDone(this);
+  backend_impl_ = NULL;
 
   if (status.status() != net::URLRequestStatus::SUCCESS) {
     OnError(DeviceManagementBackend::kErrorRequestFailed);
@@ -367,15 +367,13 @@ DeviceManagementBackendImpl::DeviceManagementBackendImpl(
 }
 
 DeviceManagementBackendImpl::~DeviceManagementBackendImpl() {
-  // Swap to a helper, so we don't interfere with the unregistration on delete.
-  JobSet to_be_deleted;
-  to_be_deleted.swap(pending_jobs_);
-  for (JobSet::iterator job(to_be_deleted.begin());
-       job != to_be_deleted.end();
+  for (JobSet::iterator job(pending_jobs_.begin());
+       job != pending_jobs_.end();
        ++job) {
     service_->RemoveJob(*job);
     delete *job;
   }
+  pending_jobs_.clear();
 }
 
 std::string DeviceManagementBackendImpl::GetAgentString() {

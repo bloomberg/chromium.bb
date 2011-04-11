@@ -20,6 +20,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::IgnoreResult;
+using testing::InvokeWithoutArgs;
 
 namespace policy {
 
@@ -243,6 +245,11 @@ class QueryParams {
 
 class DeviceManagementServiceTest
     : public DeviceManagementServiceTestBase<testing::Test> {
+ public:
+  void ResetBackend() {
+    backend_.reset();
+  }
+
  protected:
   void CheckURLAndQueryParams(const GURL& request_url,
                               const std::string& request_type,
@@ -504,6 +511,31 @@ TEST_F(DeviceManagementServiceTest, CancelRequestAfterShutdown) {
   // Shutdown the service and cancel the job afterwards.
   service_->Shutdown();
   backend_.reset();
+}
+
+TEST_F(DeviceManagementServiceTest, CancelDuringCallback) {
+  // Make a request.
+  DeviceRegisterResponseDelegateMock mock;
+  EXPECT_CALL(mock, OnError(_))
+      .WillOnce(InvokeWithoutArgs(this,
+                                  &DeviceManagementServiceTest::ResetBackend))
+      .RetiresOnSaturation();
+  em::DeviceRegisterRequest request;
+  backend_->ProcessRegisterRequest(kAuthToken, kDeviceId, request, &mock);
+  TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+
+  // Generate a callback.
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
+  fetcher->delegate()->OnURLFetchComplete(fetcher,
+                                          GURL(kServiceUrl),
+                                          status,
+                                          500,
+                                          ResponseCookies(),
+                                          "");
+
+  // Backend should have been reset.
+  EXPECT_FALSE(backend_.get());
 }
 
 }  // namespace policy

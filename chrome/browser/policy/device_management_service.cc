@@ -188,8 +188,8 @@ void DeviceManagementService::OnURLFetchComplete(
   JobFetcherMap::iterator entry(pending_jobs_.find(source));
   if (entry != pending_jobs_.end()) {
     DeviceManagementJob* job = entry->second;
-    job->HandleResponse(status, response_code, cookies, data);
     pending_jobs_.erase(entry);
+    job->HandleResponse(status, response_code, cookies, data);
   } else {
     NOTREACHED() << "Callback from foreign URL fetcher";
   }
