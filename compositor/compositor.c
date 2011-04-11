@@ -492,7 +492,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 	struct wlsc_compositor *ec = output->compositor;
 	struct wlsc_surface *es;
 	struct wlsc_input_device *eid;
-	pixman_region32_t new_damage, total_damage;
+	pixman_region32_t new_damage, total_damage, repaint;
 
 	output->prepare_render(output);
 
@@ -520,6 +520,18 @@ wlsc_output_repaint(struct wlsc_output *output)
 			glClear(GL_COLOR_BUFFER_BIT);
 		wlsc_surface_draw(es, output, &total_damage);
 	} else {
+		wl_list_for_each(es, &ec->surface_list, link) {
+			if (es->visual != &ec->compositor.rgb_visual)
+				continue;
+
+			pixman_region32_init_rect(&repaint,
+						  es->x, es->y,
+						  es->width, es->height);
+			wlsc_surface_draw(es, output, &total_damage);
+			pixman_region32_subtract(&total_damage,
+						 &total_damage, &repaint);
+		}
+
 		if (output->background)
 			wlsc_surface_draw(output->background,
 					  output, &total_damage);
@@ -530,6 +542,14 @@ wlsc_output_repaint(struct wlsc_output *output)
 			if (ec->switcher &&
 			    ec->switcher->current == es)
 				continue;
+
+			if (es->visual == &ec->compositor.rgb_visual) {
+				pixman_region32_union_rect(&total_damage,
+							   &total_damage,
+							   es->x, es->y,
+							   es->width, es->height);
+				continue;
+			}
 
 			wlsc_surface_draw(es, output, &total_damage);
 		}
