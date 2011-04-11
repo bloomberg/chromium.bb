@@ -423,9 +423,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   {
     // Set the policy as a user preference and fire notification observers.
-    ScopedUserPrefUpdate pref_update(prefs, prefs::kExtensionInstallForceList);
-    ListValue* forcelist =
-        prefs->GetMutableList(prefs::kExtensionInstallForceList);
+    ListPrefUpdate pref_update(prefs, prefs::kExtensionInstallForceList);
+    ListValue* forcelist = pref_update.Get();
     ASSERT_TRUE(forcelist->empty());
     forcelist->Append(Value::CreateStringValue(
         std::string(kExtensionId) +

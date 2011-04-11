@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -303,8 +304,8 @@ void ExtensionWebUI::RegisterChromeURLOverrides(
     return;
 
   PrefService* prefs = profile->GetPrefs();
-  DictionaryValue* all_overrides =
-      prefs->GetMutableDictionary(kExtensionURLOverrides);
+  DictionaryPrefUpdate update(prefs, kExtensionURLOverrides);
+  DictionaryValue* all_overrides = update.Get();
 
   // For each override provided by the extension, add it to the front of
   // the override list if it's not already in the list.
@@ -368,8 +369,8 @@ void ExtensionWebUI::UnregisterChromeURLOverride(const std::string& page,
   if (!override)
     return;
   PrefService* prefs = profile->GetPrefs();
-  DictionaryValue* all_overrides =
-      prefs->GetMutableDictionary(kExtensionURLOverrides);
+  DictionaryPrefUpdate update(prefs, kExtensionURLOverrides);
+  DictionaryValue* all_overrides = update.Get();
   ListValue* page_overrides;
   if (!all_overrides->GetList(page, &page_overrides)) {
     // If it's being unregistered, it should already be in the list.
@@ -386,8 +387,8 @@ void ExtensionWebUI::UnregisterChromeURLOverrides(
   if (overrides.empty())
     return;
   PrefService* prefs = profile->GetPrefs();
-  DictionaryValue* all_overrides =
-      prefs->GetMutableDictionary(kExtensionURLOverrides);
+  DictionaryPrefUpdate update(prefs, kExtensionURLOverrides);
+  DictionaryValue* all_overrides = update.Get();
   Extension::URLOverrideMap::const_iterator iter = overrides.begin();
   for (; iter != overrides.end(); ++iter) {
     const std::string& page = iter->first;

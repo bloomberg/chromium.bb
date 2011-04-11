@@ -6,6 +6,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -137,8 +138,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, ShouldCleanUpDuplicateEntries) {
   for (size_t i = 0; i < 3; ++i)
     list->Append(Value::CreateStringValue("http://www.google.com/"));
 
-  browser()->profile()->GetPrefs()->GetMutableDictionary(
-      ExtensionWebUI::kExtensionURLOverrides)->Set("history", list);
+  {
+    DictionaryPrefUpdate update(browser()->profile()->GetPrefs(),
+                                ExtensionWebUI::kExtensionURLOverrides);
+    update.Get()->Set("history", list);
+  }
 
   ASSERT_FALSE(CheckHistoryOverridesContainsNoDupes());
 

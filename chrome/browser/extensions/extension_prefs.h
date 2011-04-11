@@ -354,7 +354,8 @@ class ExtensionPrefs {
 
   // Reads a boolean pref from |ext| with key |pref_key|.
   // Return false if the value is false or |pref_key| does not exist.
-  bool ReadBooleanFromPref(DictionaryValue* ext, const std::string& pref_key);
+  bool ReadBooleanFromPref(const DictionaryValue* ext,
+                           const std::string& pref_key);
 
   // Reads a boolean pref |pref_key| from extension with id |extension_id|.
   bool ReadExtensionPrefBoolean(const std::string& extension_id,
@@ -362,7 +363,8 @@ class ExtensionPrefs {
 
   // Reads an integer pref from |ext| with key |pref_key|.
   // Return false if the value does not exist.
-  bool ReadIntegerFromPref(DictionaryValue* ext, const std::string& pref_key,
+  bool ReadIntegerFromPref(const DictionaryValue* ext,
+                           const std::string& pref_key,
                            int* out_value);
 
   // Reads an integer pref |pref_key| from extension with id |extension_id|.
@@ -373,7 +375,7 @@ class ExtensionPrefs {
   // Reads a list pref |pref_key| from extension with id | extension_id|.
   bool ReadExtensionPrefList(const std::string& extension_id,
                              const std::string& pref_key,
-                             ListValue** out_value);
+                             const ListValue** out_value);
 
   // Reads a list pref |pref_key| as a string set from the extension with
   // id |extension_id|.
@@ -388,16 +390,15 @@ class ExtensionPrefs {
                                    const std::string& pref_key,
                                    const std::set<std::string>& added_values);
 
-  // Ensures and returns a mutable dictionary for extension |id|'s prefs.
-  DictionaryValue* GetOrCreateExtensionPref(const std::string& id);
-
-  // Same as above, but returns NULL if it doesn't exist.
-  DictionaryValue* GetExtensionPref(const std::string& id) const;
+  // Returns a dictionary for extension |id|'s prefs or NULL if it doesn't
+  // exist.
+  const DictionaryValue* GetExtensionPref(const std::string& id) const;
 
   // Returns the dictionary of preferences controlled by the specified extension
   // or creates a new one. All entries in the dictionary contain non-expanded
   // paths.
-  DictionaryValue* GetExtensionControlledPrefs(const std::string& id) const;
+  const DictionaryValue* GetExtensionControlledPrefs(
+      const std::string& id) const;
 
   // Serializes the data and schedules a persistent save via the |PrefService|.
   // Additionally fires a PREF_CHANGED notification with the top-level
@@ -405,7 +406,7 @@ class ExtensionPrefs {
   // TODO(andybons): Switch this to EXTENSION_PREF_CHANGED to be more granular.
   // TODO(andybons): Use a ScopedUserPrefUpdate to update observers on changes
   // to the mutable extension dictionary.
-  void SavePrefsAndNotify();
+  void SavePrefs();
 
   // Checks if kPrefBlacklist is set to true in the DictionaryValue.
   // Return false if the value is false or kPrefBlacklist does not exist.

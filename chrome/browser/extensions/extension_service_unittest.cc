@@ -651,8 +651,8 @@ class ExtensionServiceTest
   }
 
   void ValidatePrefKeyCount(size_t count) {
-    DictionaryValue* dict =
-        profile_->GetPrefs()->GetMutableDictionary("extensions.settings");
+    const DictionaryValue* dict =
+        profile_->GetPrefs()->GetDictionary("extensions.settings");
     ASSERT_TRUE(dict != NULL);
     EXPECT_EQ(count, dict->size());
   }
@@ -746,8 +746,8 @@ class ExtensionServiceTest
                const std::string& pref_path,
                Value* value,
                const std::string& msg) {
-    const DictionaryValue* dict =
-        profile_->GetPrefs()->GetMutableDictionary("extensions.settings");
+    DictionaryPrefUpdate update(profile_->GetPrefs(), "extensions.settings");
+    DictionaryValue* dict = update.Get();
     ASSERT_TRUE(dict != NULL) << msg;
     DictionaryValue* pref = NULL;
     ASSERT_TRUE(dict->GetDictionary(extension_id, &pref)) << msg;
@@ -784,8 +784,8 @@ class ExtensionServiceTest
     std::string msg = " while clearing: ";
     msg += extension_id + " " + pref_path;
 
-    const DictionaryValue* dict =
-        profile_->GetPrefs()->GetMutableDictionary("extensions.settings");
+    DictionaryPrefUpdate update(profile_->GetPrefs(), "extensions.settings");
+    DictionaryValue* dict = update.Get();
     ASSERT_TRUE(dict != NULL) << msg;
     DictionaryValue* pref = NULL;
     ASSERT_TRUE(dict->GetDictionary(extension_id, &pref)) << msg;
@@ -1024,10 +1024,12 @@ TEST_F(ExtensionServiceTest, CleanupOnStartup) {
   InitializeInstalledExtensionService(pref_path, source_install_dir);
 
   // Simulate that one of them got partially deleted by clearing its pref.
-  DictionaryValue* dict =
-      profile_->GetPrefs()->GetMutableDictionary("extensions.settings");
-  ASSERT_TRUE(dict != NULL);
-  dict->Remove("behllobkkfkfnphdnhnkndlbkcpglgmj", NULL);
+  {
+    DictionaryPrefUpdate update(profile_->GetPrefs(), "extensions.settings");
+    DictionaryValue* dict = update.Get();
+    ASSERT_TRUE(dict != NULL);
+    dict->Remove("behllobkkfkfnphdnhnkndlbkcpglgmj", NULL);
+  }
 
   service_->Init();
   loop_.RunAllPending();
@@ -2522,14 +2524,13 @@ TEST_F(ExtensionServiceTest, WillNotLoadPluginExtensionsFromDirectory) {
 TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {
   InitializeEmptyExtensionService();
 
-  ListValue* whitelist =
-      profile_->GetPrefs()->GetMutableList(prefs::kExtensionInstallAllowList);
-  ListValue* blacklist =
-      profile_->GetPrefs()->GetMutableList(prefs::kExtensionInstallDenyList);
-  ASSERT_TRUE(whitelist != NULL && blacklist != NULL);
-
   // Blacklist everything.
-  blacklist->Append(Value::CreateStringValue("*"));
+  {
+    ListPrefUpdate update(profile_->GetPrefs(),
+                          prefs::kExtensionInstallDenyList);
+    ListValue* blacklist = update.Get();
+    blacklist->Append(Value::CreateStringValue("*"));
+  }
 
   // Blacklist prevents us from installing good_crx.
   FilePath extensions_path;
@@ -2541,7 +2542,13 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {
   EXPECT_EQ(0u, service_->extensions()->size());
 
   // Now whitelist this particular extension.
-  whitelist->Append(Value::CreateStringValue(good_crx));
+  {
+    ListPrefUpdate update(profile_->GetPrefs(),
+                          prefs::kExtensionInstallAllowList);
+    ListValue* whitelist = update.Get();
+    whitelist->Append(Value::CreateStringValue(good_crx));
+  }
+
 
   // Ensure we can now install good_crx.
   StartCrxInstall(path);
@@ -2564,9 +2571,8 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyRemovedIfRunning) {
 
   { // Scope for pref update notification.
     PrefService* prefs = profile_->GetPrefs();
-    ScopedUserPrefUpdate pref_update(prefs, prefs::kExtensionInstallDenyList);
-    ListValue* blacklist =
-        prefs->GetMutableList(prefs::kExtensionInstallDenyList);
+    ListPrefUpdate update(prefs, prefs::kExtensionInstallDenyList);
+    ListValue* blacklist = update.Get();
     ASSERT_TRUE(blacklist != NULL);
 
     // Blacklist this extension.
