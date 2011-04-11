@@ -278,6 +278,7 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        maximize_after_show_(false),
        suppress_window_raise_(false),
        accel_group_(NULL),
+       debounce_timer_disabled_(false),
        infobar_arrow_model_(this) {
 }
 
@@ -1327,10 +1328,11 @@ gboolean BrowserWindowGtk::OnConfigure(GtkWidget* widget,
   // reconfigure event in a short while.
   // We don't use Reset() because the timer may not yet be running.
   // (In that case Stop() is a no-op.)
-  window_configure_debounce_timer_.Stop();
-  window_configure_debounce_timer_.Start(base::TimeDelta::FromMilliseconds(
-      kDebounceTimeoutMilliseconds), this,
-      &BrowserWindowGtk::OnDebouncedBoundsChanged);
+  if (!debounce_timer_disabled_)
+    window_configure_debounce_timer_.Stop();
+    window_configure_debounce_timer_.Start(base::TimeDelta::FromMilliseconds(
+        kDebounceTimeoutMilliseconds), this,
+        &BrowserWindowGtk::OnDebouncedBoundsChanged);
 
   return FALSE;
 }
@@ -1446,6 +1448,12 @@ bool BrowserWindowGtk::CanClose() const {
 
 bool BrowserWindowGtk::ShouldShowWindowIcon() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_TITLEBAR);
+}
+
+void BrowserWindowGtk::DisableDebounceTimerForTests(bool is_disabled) {
+  debounce_timer_disabled_ = is_disabled;
+  if (is_disabled)
+    window_configure_debounce_timer_.Stop();
 }
 
 void BrowserWindowGtk::AddFindBar(FindBarGtk* findbar) {

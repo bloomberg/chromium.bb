@@ -166,6 +166,10 @@ class BrowserWindowGtk : public BrowserWindow,
 
   bool ShouldShowWindowIcon() const;
 
+  // This should only be called from tests where the debounce timeout introduces
+  // timing issues.
+  void DisableDebounceTimerForTests(bool is_disabled);
+
   // Add the find bar widget to the window hierarchy.
   void AddFindBar(FindBarGtk* findbar);
 
@@ -498,6 +502,13 @@ class BrowserWindowGtk : public BrowserWindow,
   GtkAccelGroup* accel_group_;
 
   scoped_ptr<FullscreenExitBubbleGtk> fullscreen_exit_bubble_;
+
+  // If true, the debounce timer won't be used and OnDebounceBoundsChanged won't
+  // be called. This should only be enabled in tests where the debounce timeout
+  // introduces timing issues (e.g. in OmniBoxApiTest it dismisses the
+  // autocomplete popup before the results can be read) and the final window
+  // position is unimportant.
+  bool debounce_timer_disabled_;
 
   // The model that tracks the paint state of the arrow for the infobar
   // directly below the toolbar.

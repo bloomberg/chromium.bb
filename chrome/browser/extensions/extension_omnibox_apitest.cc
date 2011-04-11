@@ -22,6 +22,10 @@
 #include "chrome/test/ui_test_utils.h"
 #include "content/common/notification_type.h"
 
+#if defined(TOOLKIT_GTK)
+#include "chrome/browser/ui/gtk/browser_window_gtk.h"
+#endif
+
 // Basic test is flaky on ChromeOS.
 // http://crbug.com/52929
 #if defined(OS_CHROMEOS)
@@ -85,6 +89,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
 
   LocationBar* location_bar = GetLocationBar();
   AutocompleteController* autocomplete_controller = GetAutocompleteController();
+
+#if defined(TOOLKIT_GTK)
+  // Disable the timer because, on Lucid at least, it triggers resize/move
+  // behavior in the browser window, which dismisses the autocomplete popup
+  // before the results can be read.
+  static_cast<BrowserWindowGtk*>(
+      browser()->window())->DisableDebounceTimerForTests(true);
+#endif
 
   // Test that our extension's keyword is suggested to us when we partially type
   // it.
