@@ -498,6 +498,13 @@ void DraggedTabController::UpdateTargetURL(TabContents* source,
   // Ignored.
 }
 
+bool DraggedTabController::ShouldSuppressDialogs() {
+  // When a dialog is about to be shown we revert the drag. Otherwise a modal
+  // dialog might appear and attempt to parent itself to a hidden tabcontents.
+  EndDragImpl(CANCELED);
+  return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // DraggedTabController, NotificationObserver implementation:
 

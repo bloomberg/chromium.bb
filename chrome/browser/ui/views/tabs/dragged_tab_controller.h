@@ -149,6 +149,7 @@ class DraggedTabController : public TabContentsDelegate,
   virtual void ToolbarSizeChanged(TabContents* source,
                                   bool is_animating) OVERRIDE;
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) OVERRIDE;
+  virtual bool ShouldSuppressDialogs() OVERRIDE;
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
