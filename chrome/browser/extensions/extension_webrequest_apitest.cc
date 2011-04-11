@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequest) {
   ASSERT_TRUE(RunExtensionTest("webrequest/api")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestEvents) {
+// See crbug.com/79081
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, FLAKY_WebRequestEvents) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
     switches::kEnableExperimentalExtensionApis);
 
