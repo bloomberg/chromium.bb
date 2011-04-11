@@ -69,7 +69,6 @@
           'common/profiling.cc',
           'common/profiling.h',
           'common/ref_counted_util.h',
-          'common/result_codes.h',
           'common/safebrowsing_messages.h',
           'common/sandbox_policy.cc',
           'common/sandbox_policy.h',
