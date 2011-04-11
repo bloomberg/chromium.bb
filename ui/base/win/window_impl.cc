@@ -147,10 +147,12 @@ void WindowImpl::Init(HWND parent, const gfx::Rect& bounds) {
   hwnd_ = CreateWindowEx(window_ex_style_, GetWindowClassName().c_str(), NULL,
                          window_style_, x, y, width, height,
                          parent, NULL, NULL, this);
-  DCHECK(hwnd_);
+  CHECK(hwnd_);
 
   // The window procedure should have set the data for us.
-  DCHECK(ui::GetWindowUserData(hwnd_) == this);
+  CHECK_EQ(this, ui::GetWindowUserData(hwnd_));
+
+  CHECK(IsWindowImpl(hwnd_));
 }
 
 HICON WindowImpl::GetDefaultWindowIcon() const {

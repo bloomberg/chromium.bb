@@ -331,7 +331,6 @@ void WindowWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
 
   WidgetWin::Init(parent, bounds);
 
-  ui::SetWindowUserData(GetNativeView(), this);
   delegate_->OnNativeWindowCreated(bounds);
 }
 

@@ -602,9 +602,10 @@ void WidgetWin::OnCommand(UINT notification_code, int command_id, HWND window) {
 }
 
 LRESULT WidgetWin::OnCreate(CREATESTRUCT* create_struct) {
-  // Widget::GetWidgetFromNativeView expects the contents of this property
-  // to be of type Widget, so the cast is necessary.
+  CHECK(hwnd());
+  CHECK(ui::WindowImpl::IsWindowImpl(hwnd()));
   SetNativeWindowProperty(kNativeWidgetKey, this);
+  CHECK_EQ(this, GetNativeWidgetForNativeView(hwnd()));
 
   use_layered_buffer_ = !!(window_ex_style() & WS_EX_LAYERED);
 
@@ -1216,6 +1217,9 @@ NativeWidget* NativeWidget::GetTopLevelNativeWidgetWithReason(
       parent_hwnd = ::GetAncestor(parent_hwnd, GA_PARENT);
     }
   } while (parent_hwnd != NULL && parent_widget != NULL);
+
+  if (!widget && !ui::WindowImpl::IsWindowImpl(native_view))
+    *reason = 1000;
 
   return widget;
 }
