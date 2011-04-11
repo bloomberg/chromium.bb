@@ -578,7 +578,8 @@ class RenderViewHost : public RenderWidgetHost {
                           const gfx::Point& image_offset);
   void OnUpdateDragCursor(WebKit::WebDragOperation drag_operation);
   void OnTakeFocus(bool reverse);
-  void OnAddMessageToConsole(const std::wstring& message,
+  void OnAddMessageToConsole(int32 level,
+                             const std::wstring& message,
                              int32 line_no,
                              const std::wstring& source_id);
   void OnUpdateInspectorSetting(const std::string& key,

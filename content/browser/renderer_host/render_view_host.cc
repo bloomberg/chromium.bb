@@ -1236,10 +1236,15 @@ void RenderViewHost::OnTakeFocus(bool reverse) {
     view->TakeFocus(reverse);
 }
 
-void RenderViewHost::OnAddMessageToConsole(const std::wstring& message,
+void RenderViewHost::OnAddMessageToConsole(int32 level,
+                                           const std::wstring& message,
                                            int32 line_no,
                                            const std::wstring& source_id) {
-  logging::LogMessage("CONSOLE", 0).stream() << "\"" << message
+  // Pass through log level only on WebUI pages to limit console spew.
+  int32 resolved_level =
+      BindingsPolicy::is_web_ui_enabled(enabled_bindings_) ? level : 0;
+
+  logging::LogMessage("CONSOLE", resolved_level).stream() << "\"" << message
       << "\", source: " << source_id << " (" << line_no << ")";
 }
 

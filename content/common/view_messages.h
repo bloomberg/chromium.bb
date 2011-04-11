@@ -1663,7 +1663,8 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_ImeCancelComposition)
 
 // WebKit and JavaScript error messages to log to the console
 // or debugger UI.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_AddMessageToConsole,
+IPC_MESSAGE_ROUTED4(ViewHostMsg_AddMessageToConsole,
+                    int32, /* log level */
                     std::wstring, /* msg */
                     int32, /* line number */
                     std::wstring /* source id */)
