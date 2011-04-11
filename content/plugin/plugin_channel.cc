@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -275,6 +275,11 @@ void PluginChannel::OnClearSiteData(const std::string& site,
         max_age = kuint64max;
       }
       err = plugin_lib->NP_ClearSiteData(site_str, flags, max_age);
+      std::string site_name =
+          site.empty() ? "NULL"
+                       : base::StringPrintf("\"%s\"", site_str);
+      VLOG(1) << "NPP_ClearSiteData(" << site_name << ", " << flags << ", "
+              << max_age << ") returned " << err;
       success = (err == NPERR_NO_ERROR);
     }
   }
