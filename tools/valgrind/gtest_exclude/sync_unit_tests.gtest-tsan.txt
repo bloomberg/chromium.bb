@@ -1,3 +1,0 @@
-# Fail under RaceVerifier, see http://crbug.com/74663
-SyncerThread2Test.NudgeCoalescing
-SyncerThread2Test.NudgeWithPayloadsCoalescing

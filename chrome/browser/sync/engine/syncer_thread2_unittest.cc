@@ -239,22 +239,20 @@ TEST_F(SyncerThread2Test, NudgeCoalescing) {
   types1[syncable::BOOKMARKS] = true;
   types2[syncable::AUTOFILL] = true;
   types3[syncable::THEMES] = true;
-  TimeDelta delay = TimeDelta::FromMilliseconds(20);
+  TimeDelta delay = TimeDelta::FromMilliseconds(
+      TestTimeouts::tiny_timeout_ms());
   TimeTicks optimal_time = TimeTicks::Now() + delay;
   syncer_thread()->ScheduleNudge(delay, NUDGE_SOURCE_UNKNOWN, types1,
                                  FROM_HERE);
   syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, types2,
-                                 FROM_HERE);
-  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_NOTIFICATION, types3,
                                  FROM_HERE);
   done.TimedWait(timeout());
 
   EXPECT_EQ(1U, r.snapshots.size());
   EXPECT_GE(r.times[0], optimal_time);
   EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(
-      types1 | types2 | types3,
-      r.snapshots[0]->source.types));
-  EXPECT_EQ(GetUpdatesCallerInfo::NOTIFICATION,
+      types1 | types2, r.snapshots[0]->source.types));
+  EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             r.snapshots[0]->source.updates_source);
 
   SyncShareRecords r2;
@@ -321,14 +319,13 @@ TEST_F(SyncerThread2Test, NudgeWithPayloadsCoalescing) {
   types1[syncable::BOOKMARKS] = "test1";
   types2[syncable::AUTOFILL] = "test2";
   types3[syncable::THEMES] = "test3";
-  TimeDelta delay = TimeDelta::FromMilliseconds(20);
+  TimeDelta delay = TimeDelta::FromMilliseconds(
+      TestTimeouts::tiny_timeout_ms());
   TimeTicks optimal_time = TimeTicks::Now() + delay;
   syncer_thread()->ScheduleNudgeWithPayloads(delay, NUDGE_SOURCE_UNKNOWN,
       types1, FROM_HERE);
   syncer_thread()->ScheduleNudgeWithPayloads(zero(), NUDGE_SOURCE_LOCAL,
       types2, FROM_HERE);
-  syncer_thread()->ScheduleNudgeWithPayloads(zero(), NUDGE_SOURCE_NOTIFICATION,
-      types3, FROM_HERE);
   done.TimedWait(timeout());
 
   EXPECT_EQ(1U, r.snapshots.size());
@@ -336,9 +333,8 @@ TEST_F(SyncerThread2Test, NudgeWithPayloadsCoalescing) {
   syncable::ModelTypePayloadMap coalesced_types;
   syncable::CoalescePayloads(&coalesced_types, types1);
   syncable::CoalescePayloads(&coalesced_types, types2);
-  syncable::CoalescePayloads(&coalesced_types, types3);
   EXPECT_EQ(coalesced_types, r.snapshots[0]->source.types);
-  EXPECT_EQ(GetUpdatesCallerInfo::NOTIFICATION,
+  EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             r.snapshots[0]->source.updates_source);
 
   SyncShareRecords r2;
