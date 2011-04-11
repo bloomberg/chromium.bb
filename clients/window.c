@@ -1295,7 +1295,7 @@ window_get_child_allocation(struct window *window,
 void
 window_set_child_size(struct window *window, int32_t width, int32_t height)
 {
-	if (!window->fullscreen) {
+	if (!window->fullscreen && window->decoration) {
 		window->allocation.x = 20 + window->margin;
 		window->allocation.y = 60 + window->margin;
 		window->allocation.width = width + 20 + window->margin * 2;
