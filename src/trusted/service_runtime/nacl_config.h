@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -51,7 +51,7 @@
  * use while a NaCl thread is in kernel mode, i.e., during
  * startup/exit and during system call processing.
  */
-#define NACL_KERN_STACK_SIZE          (32 << 10)
+#define NACL_KERN_STACK_SIZE          (64 << 10)
 
 /*
  * NACL_CONFIG_PATH_MAX: What is the maximum file path allowed in the
