@@ -126,6 +126,16 @@ class ImageBurnTaskProxy
   explicit ImageBurnTaskProxy(const base::WeakPtr<ImageBurnHandler>& handler)
       : handler_(handler) {}
 
+  void CreateImageDir() {
+    if (handler_)
+      handler_->CreateImageDirOnFileThread(this);
+  }
+
+  void OnImageDirCreated(bool success) {
+    if (handler_)
+      handler_->OnImageDirCreatedOnUIThread(success);
+  }
+
   void BurnImage() {
     if (handler_)
       handler_->BurnImageOnFileThread();
@@ -176,8 +186,9 @@ ImageBurnHandler::ImageBurnHandler(TabContents* contents)
   chromeos::CrosLibrary::Get()->GetMountLibrary()->AddObserver(this);
   chromeos::CrosLibrary::Get()->GetBurnLibrary()->AddObserver(this);
   resource_manager_ = ImageBurnResourceManager::GetInstance();
-  zip_image_file_path_ =
-      resource_manager_->GetImageDir().Append(kImageFileName);
+  zip_image_file_path_.clear();
+  image_file_path_.clear();
+  image_target_.clear();
 }
 
 ImageBurnHandler::~ImageBurnHandler() {
@@ -272,6 +283,23 @@ void ImageBurnHandler::ModelChanged() {
   }
 }
 
+void ImageBurnHandler::OnImageDirCreated(bool success,
+                                         ImageBurnTaskProxy* task) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  // Transfer to UI thread.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(task, &ImageBurnTaskProxy::OnImageDirCreated,
+                        success));
+}
+
+void ImageBurnHandler::OnDownloadStarted(bool success) {
+  if (success)
+    resource_manager_->set_download_started(true);
+  else
+    DownloadCompleted(false);
+}
+
 void ImageBurnHandler::HandleGetRoots(const ListValue* args) {
   ListValue results_value;
   DictionaryValue info_value;
@@ -282,7 +310,7 @@ void ImageBurnHandler::HandleGetRoots(const ListValue* args) {
     for (chromeos::MountLibrary::DiskMap::const_iterator iter =  disks.begin();
          iter != disks.end();
          ++iter) {
-      if (iter->second->mount_path().empty()) {
+      if (iter->second->is_parent()) {
         FilePath disk_path = FilePath(iter->second->system_path()).DirName();
         std::string title = "/dev/" + disk_path.BaseName().value();
         if (!iter->second->on_boot_device()) {
@@ -304,7 +332,16 @@ void ImageBurnHandler::HandleGetRoots(const ListValue* args) {
 
 void ImageBurnHandler::HandleDownloadImage(const ListValue* args) {
   ExtractTargetedDeviceSystemPath(args);
-  resource_manager_->CreateImageUrl(tab_contents_, this);
+  if (resource_manager_->GetImageDir().empty()) {
+    // Create image dir on File thread.
+    scoped_refptr<ImageBurnTaskProxy> task =
+        new ImageBurnTaskProxy(AsWeakPtr());
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        NewRunnableMethod(task.get(), &ImageBurnTaskProxy::CreateImageDir));
+  } else {
+    OnImageDirCreatedOnUIThread(true);
+  }
 }
 
 void ImageBurnHandler::DownloadCompleted(bool success) {
@@ -348,6 +385,23 @@ void ImageBurnHandler::HandleBurnImage(const ListValue* args) {
 
 void ImageBurnHandler::HandleCancelBurnImage(const ListValue* args) {
   image_target_.clear();
+}
+
+void ImageBurnHandler::CreateImageDirOnFileThread(ImageBurnTaskProxy* task) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  resource_manager_->CreateImageDir(this, task);
+}
+
+void ImageBurnHandler::OnImageDirCreatedOnUIThread(bool success) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (success) {
+    zip_image_file_path_ =
+        resource_manager_->GetImageDir().Append(kImageFileName);
+    resource_manager_->CreateImageUrl(tab_contents_, this);
+  } else {
+    DownloadCompleted(success);
+  }
 }
 
 void ImageBurnHandler::BurnImageOnFileThread() {
@@ -416,8 +470,8 @@ string16 ImageBurnHandler::GetBurnProgressText(int64 total_burnt,
   }
 }
 
-void ImageBurnHandler::CreateImageUrlCallback(GURL* image_url) {
-  if (!image_url) {
+void ImageBurnHandler::OnImageUrlCreated(GURL* image_url, bool success) {
+  if (!success) {
     DownloadCompleted(false);
     return;
   }
@@ -428,20 +482,13 @@ void ImageBurnHandler::CreateImageUrlCallback(GURL* image_url) {
 
   if (!resource_manager_->download_started()) {
     resource_manager_->set_download_started(true);
-    net::FileStream* file_stream =
-        resource_manager_->CreateFileStream(&zip_image_file_path_);
-    if (file_stream) {
-      DownloadSaveInfo save_info;
-      save_info.file_path = zip_image_file_path_;
-      save_info.file_stream = linked_ptr<net::FileStream>(file_stream);
-
-      download_manager_->DownloadUrlToFile(*image_download_url_,
-                                           tab_contents_->GetURL(),
-                                           tab_contents_->encoding(),
-                                           save_info,
-                                           tab_contents_);
-    } else {
-      DownloadCompleted(false);
+    if (!resource_manager_->image_download_requested()) {
+      resource_manager_->set_image_download_requested(true);
+      ImageBurnDownloader::GetInstance()->AddListener(this,
+          *image_download_url_);
+      ImageBurnDownloader::GetInstance()->DownloadFile(*image_download_url_,
+                                                       zip_image_file_path_,
+                                                       tab_contents_);
     }
   } else if (resource_manager_->download_finished()) {
     DownloadCompleted(true);
@@ -510,7 +557,8 @@ bool ImageBurnHandler::UnzipImageImpl() {
 ////////////////////////////////////////////////////////////////////////////////
 
 ImageBurnResourceManager::ImageBurnResourceManager()
-    : download_started_(false),
+    : image_download_requested_(false),
+      download_started_(false),
       download_finished_(false),
       burn_in_progress_(false),
       download_manager_(NULL),
@@ -521,7 +569,6 @@ ImageBurnResourceManager::ImageBurnResourceManager()
       config_file_requested_(false),
       config_file_fetched_(true) {
   image_dir_.clear();
-  config_file_path_ = GetImageDir().Append(kImageFetcherName);
 }
 
 ImageBurnResourceManager::~ImageBurnResourceManager() {
@@ -575,12 +622,26 @@ void ImageBurnResourceManager::ModelChanged() {
   }
 }
 
-const FilePath& ImageBurnResourceManager::GetImageDir() {
+void ImageBurnResourceManager::OnDownloadStarted(bool success) {
+  if (!success)
+    ConfigFileFetched(false);
+}
+
+void ImageBurnResourceManager::CreateImageDir(
+    Delegate* delegate,
+    ImageBurnTaskProxy* task) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  bool success = true;
   if (image_dir_.empty()) {
     CHECK(PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &image_dir_));
     image_dir_ = image_dir_.Append(kTempImageFolderName);
-    file_util::CreateDirectory(image_dir_);
+    success = file_util::CreateDirectory(image_dir_);
   }
+  delegate->OnImageDirCreated(success, task);
+}
+
+const FilePath& ImageBurnResourceManager::GetImageDir() {
   return image_dir_;
 }
 
@@ -593,33 +654,25 @@ void ImageBurnResourceManager::SetDownloadFinished(bool finished) {
 }
 
 void ImageBurnResourceManager::CreateImageUrl(TabContents* tab_contents,
-                                              ImageBurnHandler* downloader) {
+    Delegate* delegate) {
   if (config_file_fetched_) {
-    downloader->CreateImageUrlCallback(image_url_.get());
+    delegate->OnImageUrlCreated(image_url_.get(), true);
     return;
   }
-  downloaders_.push_back(downloader);
+  downloaders_.push_back(delegate);
 
   if (config_file_requested_)
     return;
   config_file_requested_ = true;
 
+  config_file_path_ = GetImageDir().Append(kImageFetcherName);
+
   download_manager_ = tab_contents->profile()->GetDownloadManager();
   download_manager_->AddObserver(this);
 
-  net::FileStream* file_stream = CreateFileStream(&config_file_path_);
-  if (file_stream) {
-    DownloadSaveInfo save_info;
-    save_info.file_path = config_file_path_;
-    save_info.file_stream = linked_ptr<net::FileStream>(file_stream);
-    download_manager_->DownloadUrlToFile(config_file_url_,
-                                         tab_contents->GetURL(),
-                                         tab_contents->encoding(),
-                                         save_info,
-                                         tab_contents);
-  } else {
-    ConfigFileFetched(false);
-  }
+  ImageBurnDownloader* downloader = ImageBurnDownloader::GetInstance();
+  downloader->AddListener(this, config_file_url_);
+  downloader->DownloadFile(config_file_url_, config_file_path_, tab_contents);
 }
 
 void ImageBurnResourceManager::ConfigFileFetched(bool fetched) {
@@ -634,19 +687,123 @@ void ImageBurnResourceManager::ConfigFileFetched(bool fetched) {
     config_file_requested_ = false;
   config_file_fetched_ = fetched;
   for (size_t i = 0; i < downloaders_.size(); ++i)
-    downloaders_[i]->CreateImageUrlCallback(image_url_.get());
+    downloaders_[i]->OnImageUrlCreated(image_url_.get(), fetched);
   downloaders_.clear();
 }
 
-net::FileStream* ImageBurnResourceManager::CreateFileStream(
-                                               FilePath* file_path) {
-  DCHECK(file_path && !file_path->empty());
-  scoped_ptr<net::FileStream> file_stream(new net::FileStream);
-  if (file_stream->Open(*file_path, base::PLATFORM_FILE_CREATE_ALWAYS |
-                        base::PLATFORM_FILE_WRITE)) {
-    return NULL;
+////////////////////////////////////////////////////////////////////////////////
+//
+// ImageBurnDownloaderTaskProxy
+//
+////////////////////////////////////////////////////////////////////////////////
+
+class ImageBurnDownloaderTaskProxy
+    : public base::RefCountedThreadSafe<ImageBurnDownloaderTaskProxy> {
+ public:
+  explicit ImageBurnDownloaderTaskProxy() {}
+
+  void CreateFileStream(const GURL& url,
+                        const FilePath& target_path,
+                        TabContents* tab_contents) {
+    ImageBurnDownloader::GetInstance()->CreateFileStreamOnFileThread(url,
+        target_path, tab_contents, this);
   }
-  return file_stream.release();
+
+  void OnFileStreamCreated(const GURL& url,
+                           const FilePath& file_path,
+                           TabContents* tab_contents,
+                           net::FileStream* created_file_stream) {
+    ImageBurnDownloader::GetInstance()->OnFileStreamCreatedOnUIThread(url,
+        file_path, tab_contents, created_file_stream);
+  }
+
+ private:
+  ~ImageBurnDownloaderTaskProxy() {}
+
+  friend class base::RefCountedThreadSafe<ImageBurnDownloaderTaskProxy>;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageBurnDownloaderTaskProxy);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// ImageBurnDownloader
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// static
+ImageBurnDownloader* ImageBurnDownloader::GetInstance() {
+  return Singleton<ImageBurnDownloader>::get();
+}
+
+void ImageBurnDownloader::DownloadFile(const GURL& url,
+    const FilePath& file_path, TabContents* tab_contents) {
+  // First we have to create file stream we will download file to.
+  // That has to be done on File thread.
+  scoped_refptr<ImageBurnDownloaderTaskProxy> task =
+      new ImageBurnDownloaderTaskProxy();
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(task.get(),
+          &ImageBurnDownloaderTaskProxy::CreateFileStream, url, file_path,
+          tab_contents));
+}
+
+void ImageBurnDownloader::CreateFileStreamOnFileThread(
+    const GURL& url, const FilePath& file_path,
+    TabContents* tab_contents, ImageBurnDownloaderTaskProxy* task) {
+
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(!file_path.empty());
+
+  scoped_ptr<net::FileStream> file_stream(new net::FileStream);
+  if (file_stream->Open(file_path, base::PLATFORM_FILE_CREATE_ALWAYS |
+                        base::PLATFORM_FILE_WRITE))
+    file_stream.reset(NULL);
+
+  // Call callback method on UI thread.
+  BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(task,
+            &ImageBurnDownloaderTaskProxy::OnFileStreamCreated,
+            url, file_path, tab_contents, file_stream.release()));
+}
+
+void ImageBurnDownloader::OnFileStreamCreatedOnUIThread(const GURL& url,
+    const FilePath& file_path, TabContents* tab_contents,
+    net::FileStream* created_file_stream) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (created_file_stream) {
+    DownloadManager* download_manager =
+        tab_contents->profile()->GetDownloadManager();
+    DownloadSaveInfo save_info;
+    save_info.file_path = file_path;
+    save_info.file_stream = linked_ptr<net::FileStream>(created_file_stream);
+    DownloadStarted(true, url);
+    download_manager->DownloadUrlToFile(url,
+                                        tab_contents->GetURL(),
+                                        tab_contents->encoding(),
+                                        save_info,
+                                        tab_contents);
+  } else {
+    DownloadStarted(false, url);
+  }
+}
+
+void ImageBurnDownloader::AddListener(Listener* listener, const GURL& url) {
+  listeners_.insert(std::make_pair(url, listener));
+}
+
+void ImageBurnDownloader::DownloadStarted(bool success, const GURL& url) {
+  std::pair<ListenerMap::iterator, ListenerMap::iterator> listener_range =
+      listeners_.equal_range(url);
+  for (ListenerMap::iterator current_listener = listener_range.first;
+       current_listener != listener_range.second;
+       ++current_listener) {
+    current_listener->second->OnDownloadStarted(success);
+  }
+  listeners_.erase(listener_range.first, listener_range.second);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
