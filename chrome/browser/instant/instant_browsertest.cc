@@ -29,12 +29,6 @@
 #define EXPECT_STR_EQ(ascii, utf16) \
   EXPECT_EQ(ASCIIToWide(ascii), UTF16ToWide(utf16))
 
-#if defined(OS_MACOSX)
-// Failing on Mac OS X 10.6
-// http://crbug.78825
-#define OnCancelEvent FAILS_OnCancelEvent
-#endif
-
 class InstantTest : public InProcessBrowserTest {
  public:
   InstantTest()

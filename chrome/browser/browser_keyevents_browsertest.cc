@@ -459,8 +459,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestCtrlEnter));
 }
 #elif defined(OS_MACOSX)
-// Failing on Mac OS X 10.6 http://crbug.com/78825
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FAILS_CommandKeyEvents) {
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CommandKeyEvents) {
   static const KeyEventTestData kTestCmdF = {
     ui::VKEY_F, false, false, false, true,
     false, false, false, false, 2,
