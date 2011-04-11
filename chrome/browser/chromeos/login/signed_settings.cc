@@ -538,7 +538,8 @@ void RetrievePolicyOp::OnStringComplete(void* delegate,
 }
 
 void RetrievePolicyOp::ProcessPolicy(const char* out, const unsigned int len) {
-  if (!out || !policy_.ParseFromString(std::string(out, len))) {
+  if (!out || !policy_.ParseFromString(std::string(out, len)) ||
+      (!policy_.has_policy_data() && !policy_.has_policy_data_signature())) {
     d_->OnSettingsOpCompleted(NOT_FOUND, policy_);
     return;
   }

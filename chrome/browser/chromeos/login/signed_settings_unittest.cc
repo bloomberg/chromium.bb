@@ -532,7 +532,7 @@ TEST_F(SignedSettingsTest, RetrievePolicy) {
   s->OnKeyOpComplete(OwnerManager::SUCCESS, std::vector<uint8>());
 }
 
-TEST_F(SignedSettingsTest, RetrieveNoPolicy) {
+TEST_F(SignedSettingsTest, RetrieveNullPolicy) {
   em::PolicyFetchResponse policy;
   ProtoDelegate d(policy);
   d.expect_failure(SignedSettings::NOT_FOUND);
@@ -543,6 +543,23 @@ TEST_F(SignedSettingsTest, RetrieveNoPolicy) {
       .WillOnce(InvokeArgument<0>(static_cast<void*>(s.get()),
                                   static_cast<const char*>(NULL),
                                   0))
+      .RetiresOnSaturation();
+
+  s->Execute();
+  message_loop_.RunAllPending();
+  UnMockLoginLib();
+}
+
+TEST_F(SignedSettingsTest, RetrieveEmptyPolicy) {
+  std::string serialized;
+  em::PolicyFetchResponse policy = BuildProto("", "", &serialized);
+  ProtoDelegate d(policy);
+  d.expect_failure(SignedSettings::NOT_FOUND);
+  scoped_refptr<SignedSettings> s(SignedSettings::CreateRetrievePolicyOp(&d));
+
+  MockLoginLibrary* lib = MockLoginLib();
+  EXPECT_CALL(*lib, RequestRetrievePolicy(_, s.get()))
+      .WillOnce(InvokeArgument<0>(static_cast<void*>(s.get()), "", 0))
       .RetiresOnSaturation();
 
   s->Execute();
