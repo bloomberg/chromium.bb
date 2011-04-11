@@ -228,6 +228,7 @@ INITIAL_ENV = {
   'LD_SB_ARM'     : '${SEL_LDR_ARM} -a -- ${BASE_SB_ARM}/nonsrpc/bin/ld',
 
   'LLVM_MC'       : '${BASE_ARM}/bin/llvm-mc',
+  'LLVM_LD'       : '${BASE_ARM}/bin/llvm-ld',
   'LLVM_AS'       : '${BASE_ARM}/bin/llvm-as',
   'LLVM_DIS'      : '${BASE_ARM}/bin/llvm-dis',
   'LLVM_LINK'     : '${BASE_ARM}/bin/llvm-link',
@@ -312,6 +313,9 @@ INITIAL_ENV = {
   'BCLD_FLAGS': '--native-client -T ${LD_SCRIPT_X8632} ' +
                 '${GOLD_PLUGIN_ARGS} ${LD_SEARCH_DIRS}',
 
+  # TODO(robertm): move this into the TC once this matures
+  'PEXE_ALLOWED_UNDEFS': 'tools/llvm/non_bitcode_symbols.txt',
+
   # TODO(pdox): empty.o is an empty native object file.
   #             This is a temporary hack so that gold can auto-detect
   #             which architecture is being targetted for the
@@ -358,7 +362,10 @@ INITIAL_ENV = {
               '${STDLIB_NATIVE_PREFIX} ${STDLIB_BC_PREFIX} ${inputs} ' +
               '${STDLIB_BC_SUFFIX} ${STDLIB_NATIVE_SUFFIX} ' +
               '${BASE}/llvm-intrinsics.bc ${BASE}/llvm-preserve.bc ' +
-              '-o "${output}${BCLD_EXT}"'
+              '-o "${output}${BCLD_EXT}"',
+
+  'RUN_PEXECHECK': '${LLVM_LD} --nacl-abi-check ' +
+                   '--nacl-legal-undefs ${PEXE_ALLOWED_UNDEFS} ${inputs}',
 }
 
 ######################################################################
@@ -989,6 +996,10 @@ def Incarnation_nop(unused_argv):
   # unused_argv does not contain argv[0], etc, so we refer to sys.argv here.
   Log.Info('IGNORING: ' + StringifyCommand(sys.argv))
   NiceExit(0)
+
+def Incarnation_pexecheck(argv):
+  """Check whether a pexe satifies our ABI rules"""
+  RunWithEnv('RUN_PEXECHECK', inputs=argv[0])
 
 def NiceExit(code):
   sys.exit(code)

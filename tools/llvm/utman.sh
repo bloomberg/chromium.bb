@@ -2521,7 +2521,7 @@ driver-install() {
   cp tools/llvm/driver.py "${INSTALL_BIN}"
   for s in gcc g++ as arm-as i686-as x86_64-as \
            bclink opt dis ld translate illegal nop \
-           ar nm ranlib ; do
+           ar nm ranlib pexecheck ; do
     local t="pnacl-$s"
     ln -fs driver.py "${INSTALL_BIN}/$t"
   done
