@@ -298,6 +298,15 @@ LEAK
 ...
 *!MiniDumpWriteDump
 
+# http://code.google.com/p/drmemory/issues/detail?id=346
+UNINITIALIZED READ
+...
+GDI32.dll!CloseEnhMetaFile
+
+UNINITIALIZED READ
+GDI32.dll!SetPolyFillMode
+GDI32.dll!CreateICW
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
