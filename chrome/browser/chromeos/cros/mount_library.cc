@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -134,7 +134,7 @@ class MountLibraryImpl : public MountLibrary {
                               MountMethodErrorType error,
                               const char* error_message) {
     DCHECK(device_path);
-    DCHECK(mount_path);
+
     if (error == MOUNT_METHOD_ERROR_NONE && device_path && mount_path) {
       std::string path(device_path);
       DiskMap::iterator iter = disks_.find(path);
@@ -176,7 +176,7 @@ class MountLibraryImpl : public MountLibrary {
   }
 
   void OnGetDiskProperties(const char* device_path,
-                           const DiskInfo* disk,
+                           const DiskInfo* disk1,
                            MountMethodErrorType error,
                            const char* error_message) {
     DCHECK(device_path);
@@ -184,6 +184,11 @@ class MountLibraryImpl : public MountLibrary {
       // TODO(zelidrag): Find a better way to filter these out before we
       // fetch the properties:
       // Ignore disks coming from the device we booted the system from.
+
+      // This cast is temporal solution, until we merge DiskInfo and
+      // DiskInfoAdvanced into single interface.
+      const DiskInfoAdvanced* disk =
+          reinterpret_cast<const DiskInfoAdvanced*>(disk1);
       if (disk->on_boot_device())
         return;
 
@@ -200,6 +205,11 @@ class MountLibraryImpl : public MountLibrary {
       std::string path;
       std::string mountpath;
       std::string systempath;
+      std::string filepath;
+      std::string devicelabel;
+      std::string drivelabel;
+      std::string parentpath;
+
       if (disk->path() != NULL)
         path = disk->path();
 
@@ -209,10 +219,29 @@ class MountLibraryImpl : public MountLibrary {
       if (disk->system_path() != NULL)
         systempath = disk->system_path();
 
+      if (disk->file_path() != NULL)
+        filepath = disk->file_path();
+
+      if (disk->label() != NULL)
+        devicelabel = disk->label();
+
+      if (disk->drive_label() != NULL)
+        drivelabel = disk->drive_label();
+
+      if (disk->partition_slave() != NULL)
+        parentpath = disk->partition_slave();
+
       Disk* new_disk = new Disk(path,
                                 mountpath,
                                 systempath,
+                                filepath,
+                                devicelabel,
+                                drivelabel,
+                                parentpath,
+                                disk->device_type(),
+                                disk->size(),
                                 disk->is_drive(),
+                                disk->is_read_only(),
                                 disk->has_media(),
                                 disk->on_boot_device());
       disks_.insert(

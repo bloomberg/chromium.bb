@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,10 @@ using testing::Invoke;
 const char* kTestSystemPath = "/this/system/path";
 const char* kTestDevicePath = "/this/device/path";
 const char* kTestMountPath = "/media/foofoo";
+const char* kTestFilePath = "/this/file/path";
+const char* kTestDeviceLabel = "A label";
+const char* kTestDriveLabel = "Another label";
+const char* kTestParentPath = "/this/is/my/parent";
 
 void MockMountLibrary::AddObserverInternal(MountLibrary::Observer* observer) {
   observers_.AddObserver(observer);
@@ -46,6 +50,13 @@ void MockMountLibrary::FireDeviceInsertEvents() {
       std::string(kTestDevicePath),
       std::string(),
       std::string(kTestSystemPath),
+      std::string(kTestFilePath),
+      std::string(),
+      std::string(kTestDriveLabel),
+      std::string(kTestParentPath),
+      FLASH,
+      4294967295U,
+      false,
       false,
       true,
       false));
@@ -68,6 +79,13 @@ void MockMountLibrary::FireDeviceInsertEvents() {
       std::string(kTestDevicePath),
       std::string(kTestMountPath),
       std::string(kTestSystemPath),
+      std::string(kTestFilePath),
+      std::string(kTestDeviceLabel),
+      std::string(kTestDriveLabel),
+      std::string(kTestParentPath),
+      FLASH,
+      1073741824,
+      false,
       false,
       true,
       false));
@@ -83,6 +101,13 @@ void MockMountLibrary::FireDeviceRemoveEvents() {
       std::string(kTestDevicePath),
       std::string(kTestMountPath),
       std::string(kTestSystemPath),
+      std::string(kTestFilePath),
+      std::string(kTestDeviceLabel),
+      std::string(kTestDriveLabel),
+      std::string(kTestParentPath),
+      FLASH,
+      1073741824,
+      false,
       false,
       true,
       false));

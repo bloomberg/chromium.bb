@@ -38,13 +38,27 @@ class MountLibrary {
     Disk(const std::string& device_path,
          const std::string& mount_path,
          const std::string& system_path,
+         const std::string& file_path,
+         const std::string& device_label,
+         const std::string& drive_label,
+         const std::string& parent_path,
+         DeviceType device_type,
+         uint64 total_size,
          bool is_parent,
+         bool is_read_only,
          bool has_media,
          bool on_boot_device)
         : device_path_(device_path),
           mount_path_(mount_path),
           system_path_(system_path),
+          file_path_(file_path),
+          device_label_(device_label),
+          drive_label_(drive_label),
+          parent_path_(parent_path),
+          device_type_(device_type),
+          total_size_(total_size),
           is_parent_(is_parent),
+          is_read_only_(is_read_only),
           has_media_(has_media),
           on_boot_device_(on_boot_device) {}
     // The path of the device, used by devicekit-disks.
@@ -53,11 +67,25 @@ class MountLibrary {
     const std::string&  mount_path() const { return mount_path_; }
     // The path of the device according to the udev system.
     const std::string& system_path() const { return system_path_; }
-    // Is the device is a parent device (i.e. sdb rather than sdb1)
+    // The path of the device according to filesystem.
+    const std::string& file_path() const { return file_path_; }
+    // Device's label.
+    const std::string& device_label() const { return device_label_; }
+    // If disk is a parent, then its label, else parents label.
+    const std::string& drive_label() const { return drive_label_; }
+    // Parents device path. If device has no parent, then empty string.
+    const std::string& parent_path() const { return parent_path_; }
+    // Device type.
+    DeviceType device_type() const { return device_type_; }
+    // Total size of the device.
+    uint64 total_size() const { return total_size_; }
+    // Is the device is a parent device (i.e. sdb rather than sdb1).
     bool is_parent() const { return is_parent_; }
+    // Is the device read only.
+    bool is_read_only() const { return is_read_only_; }
     // Does the device contains media.
     bool has_media() const { return has_media_; }
-    // Is the device ont
+    // Is the device on the boot device.
     bool on_boot_device() const { return on_boot_device_; }
 
     void set_mount_path(const char* mount_path) { mount_path_ = mount_path; }
@@ -66,7 +94,14 @@ class MountLibrary {
     std::string device_path_;
     std::string mount_path_;
     std::string system_path_;
+    std::string file_path_;
+    std::string device_label_;
+    std::string drive_label_;
+    std::string parent_path_;
+    DeviceType device_type_;
+    uint64 total_size_;
     bool is_parent_;
+    bool is_read_only_;
     bool has_media_;
     bool on_boot_device_;
   };
