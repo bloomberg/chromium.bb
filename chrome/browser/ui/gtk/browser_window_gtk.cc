@@ -6,6 +6,7 @@
 
 #include <gdk/gdkkeysyms.h>
 
+#include <dlfcn.h>
 #include <string>
 
 #include "base/base_paths.h"
@@ -128,6 +129,24 @@ const int kCustomFrameBackgroundVerticalOffset = 15;
 // The timeout in milliseconds before we'll get the true window position with
 // gtk_window_get_position() after the last GTK configure-event signal.
 const int kDebounceTimeoutMilliseconds = 100;
+
+// Ubuntu patches their verrsion of GTK+ so that there is always a
+// gripper in the bottom right corner of the window. We dynamically
+// look up this symbol because it's a non-standard Ubuntu extension to
+// GTK+. We always need to disable this feature since we can't
+// communicate this to WebKit easily.
+typedef void (*gtk_window_set_has_resize_grip_func)(GtkWindow*, gboolean);
+gtk_window_set_has_resize_grip_func gtk_window_set_has_resize_grip_sym;
+
+void  EnsureResizeGripFunction() {
+  static bool resize_grip_looked_up = false;
+  if (!resize_grip_looked_up) {
+    resize_grip_looked_up = true;
+    gtk_window_set_has_resize_grip_sym =
+        reinterpret_cast<gtk_window_set_has_resize_grip_func>(
+            dlsym(NULL, "gtk_window_set_has_resize_grip"));
+  }
+}
 
 // Using gtk_window_get_position/size creates a race condition, so only use
 // this to get the initial bounds.  After window creation, we pick up the
@@ -288,6 +307,11 @@ void BrowserWindowGtk::Init() {
   g_object_set_qdata(G_OBJECT(window_), GetBrowserWindowQuarkKey(), this);
   gtk_widget_add_events(GTK_WIDGET(window_), GDK_BUTTON_PRESS_MASK |
                                              GDK_POINTER_MOTION_MASK);
+
+  // Disable the resize gripper on Ubuntu.
+  EnsureResizeGripFunction();
+  if (gtk_window_set_has_resize_grip_sym)
+    gtk_window_set_has_resize_grip_sym(GTK_WINDOW(window_), FALSE);
 
   // Add this window to its own unique window group to allow for
   // window-to-parent modality.
