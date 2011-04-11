@@ -902,7 +902,10 @@ void AutofillManager::FillCreditCardFormField(const CreditCard* credit_card,
       field->value = year + ASCIIToUTF16("-") + month;
     }
   } else {
-    field->value = credit_card->GetInfo(type);
+    string16 value = credit_card->GetInfo(type);
+    if (type == CREDIT_CARD_NUMBER)
+      value = CreditCard::StripSeparators(value);
+    field->value = value;
   }
 }
 

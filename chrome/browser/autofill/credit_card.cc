@@ -135,14 +135,6 @@ bool ConvertDate(const string16& date, int* num) {
   return true;
 }
 
-// Return a version of |number| that has any separator characters removed.
-const string16 StripSeparators(const string16& number) {
-  const char16 kSeparators[] = {'-', ' ', '\0'};
-  string16 stripped;
-  RemoveChars(number, kSeparators, &stripped);
-  return stripped;
-}
-
 }  // namespace
 
 CreditCard::CreditCard(const std::string& guid)
@@ -333,7 +325,8 @@ string16 CreditCard::ObfuscatedNumber() const {
   if (number_.size() < 4)
     return number_;
 
-  string16 result(number_.size() - 4, kCreditCardObfuscationSymbol);
+  string16 number = StripSeparators(number_);
+  string16 result(number.size() - 4, kCreditCardObfuscationSymbol);
   result.append(LastFourDigits());
 
   return result;
@@ -342,10 +335,11 @@ string16 CreditCard::ObfuscatedNumber() const {
 string16 CreditCard::LastFourDigits() const {
   static const size_t kNumLastDigits = 4;
 
-  if (number().size() < kNumLastDigits)
+  string16 number = StripSeparators(number_);
+  if (number.size() < kNumLastDigits)
     return string16();
 
-  return number().substr(number().size() - kNumLastDigits, kNumLastDigits);
+  return number.substr(number.size() - kNumLastDigits, kNumLastDigits);
 }
 
 void CreditCard::operator=(const CreditCard& credit_card) {
@@ -387,6 +381,14 @@ bool CreditCard::operator==(const CreditCard& credit_card) const {
 
 bool CreditCard::operator!=(const CreditCard& credit_card) const {
   return !operator==(credit_card);
+}
+
+// static
+const string16 CreditCard::StripSeparators(const string16& number) {
+  const char16 kSeparators[] = {'-', ' ', '\0'};
+  string16 stripped;
+  RemoveChars(number, kSeparators, &stripped);
+  return stripped;
 }
 
 // static
@@ -475,8 +477,8 @@ void CreditCard::SetExpirationYearFromString(const string16& text) {
 }
 
 void CreditCard::SetNumber(const string16& number) {
-  number_ = StripSeparators(number);
-  type_ = ASCIIToUTF16(GetCreditCardType(number_));
+  number_ = number;
+  type_ = ASCIIToUTF16(GetCreditCardType(StripSeparators(number_)));
 }
 
 void CreditCard::SetExpirationMonth(int expiration_month) {
@@ -496,7 +498,7 @@ void CreditCard::SetExpirationYear(int expiration_year) {
 }
 
 bool CreditCard::IsNumber(const string16& text) const {
-  return StripSeparators(text) == number_;
+  return StripSeparators(text) == StripSeparators(number_);
 }
 
 bool CreditCard::IsNameOnCard(const string16& text) const {

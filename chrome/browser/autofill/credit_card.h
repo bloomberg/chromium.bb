@@ -62,6 +62,9 @@ class CreditCard : public FormGroup {
   bool operator==(const CreditCard& credit_card) const;
   bool operator!=(const CreditCard& credit_card) const;
 
+  // Return a version of |number| that has any separator characters removed.
+  static const string16 StripSeparators(const string16& number);
+
   // Returns true if |text| looks like a valid credit card number.
   // Uses the Luhn formula to validate the number.
   static bool IsValidCreditCardNumber(const string16& text);

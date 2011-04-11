@@ -217,6 +217,10 @@ bool PersonalDataManager::ImportFormData(
             DCHECK_EQ(CREDIT_CARD_EXP_MONTH, field_type);
             local_imported_credit_card->SetInfoForMonthInputType(value);
           } else {
+            if (field_type == CREDIT_CARD_NUMBER) {
+              // Clean up any imported credit card numbers.
+              value = CreditCard::StripSeparators(value);
+            }
             local_imported_credit_card->SetInfo(field_type, value);
           }
           ++importable_credit_card_fields;

@@ -123,7 +123,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   void CreateTestCreditCards(ScopedVector<CreditCard>* credit_cards) {
     CreditCard* credit_card = new CreditCard;
     autofill_test::SetCreditCardInfo(credit_card, "Elvis Presley",
-                                     "4234567890123456",  // Visa
+                                     "4234 5678 9012 3456",  // Visa
                                      "04", "2012");
     credit_card->set_guid("00000000-0000-0000-0000-000000000004");
     credit_cards->push_back(credit_card);
