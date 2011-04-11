@@ -62,3 +62,9 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, MAYBE_NavigationRace) {
   ASSERT_TRUE(RunExtensionSubtest("executescript/navigation_race",
                                   "javascript_url.html")) << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptFrameAfterLoad) {
+  SetupDelayedHostResolver();
+  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(RunExtensionTest("executescript/frame_after_load")) << message_;
+}
