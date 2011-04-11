@@ -317,6 +317,8 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   dict->SetString(keys::kMethodKey, request->method());
   dict->SetInteger(keys::kTabIdKey, tab_id);
   dict->SetString(keys::kTypeKey, ResourceTypeToString(resource_type));
+  dict->SetDouble(keys::kTimeStampKey,
+                  request->request_time().ToDoubleT() * 1000);
   args.Append(dict);
 
   if (DispatchEvent(profile_id, event_router, request, callback, listeners,
@@ -352,6 +354,8 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
   dict->SetString(keys::kRequestIdKey,
                   base::Uint64ToString(request->identifier()));
   dict->SetString(keys::kUrlKey, request->url().spec());
+  dict->SetDouble(keys::kTimeStampKey,
+                  request->request_time().ToDoubleT() * 1000);
   // TODO(mpcomplete): request headers.
   args.Append(dict);
 

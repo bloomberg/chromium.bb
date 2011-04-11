@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@ const char kRedirectUrlKey[] = "redirectUrl";
 const char kRequestIdKey[] = "requestId";
 const char kStatusCodeKey[] = "statusCode";
 const char kTabIdKey[] = "tabId";
+const char kTimeStampKey[] = "timeStamp";
 const char kTypeKey[] = "type";
 const char kUrlKey[] = "url";
 

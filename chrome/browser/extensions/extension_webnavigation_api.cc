@@ -40,6 +40,11 @@ int GetFrameId(ProvisionalLoadDetails* details) {
   return details->main_frame() ? 0 : static_cast<int>(details->frame_id());
 }
 
+// Returns |time| as milliseconds since the epoch.
+double MilliSecondsFromTime(const base::Time& time) {
+  return 1000 * time.ToDoubleT();
+}
+
 // Dispatches events to the extension message service.
 void DispatchEvent(Profile* profile,
                    const char* event_name,
@@ -62,6 +67,7 @@ void DispatchOnBeforeNavigate(NavigationController* controller,
   dict->SetInteger(keys::kFrameIdKey, GetFrameId(details));
   dict->SetString(keys::kRequestIdKey,
                   base::Uint64ToString(request_id));
+  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
   std::string json_args;
@@ -89,6 +95,7 @@ void DispatchOnCommitted(NavigationController* controller,
   if (details->transition_type() & PageTransition::FORWARD_BACK)
     qualifiers->Append(Value::CreateStringValue("forward_back"));
   dict->Set(keys::kTransitionQualifiersKey, qualifiers);
+  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
   std::string json_args;
@@ -108,6 +115,7 @@ void DispatchOnDOMContentLoaded(NavigationController* controller,
   dict->SetString(keys::kUrlKey, url.spec());
   dict->SetInteger(keys::kFrameIdKey,
       is_main_frame ? 0 : static_cast<int>(frame_id));
+  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
   std::string json_args;
@@ -127,6 +135,7 @@ void DispatchOnCompleted(NavigationController* controller,
   dict->SetString(keys::kUrlKey, url.spec());
   dict->SetInteger(keys::kFrameIdKey,
       is_main_frame ? 0 : static_cast<int>(frame_id));
+  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
   std::string json_args;
@@ -353,6 +362,7 @@ void ExtensionWebNavigationEventRouter::FailProvisionalLoadWithError(
   dict->SetInteger(keys::kFrameIdKey, GetFrameId(details));
   dict->SetString(keys::kErrorKey,
                   std::string(net::ErrorToString(details->error_code())));
+  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
   std::string json_args;
@@ -371,6 +381,7 @@ void ExtensionWebNavigationEventRouter::CreatingNewWindow(
   dict->SetString(keys::kSourceUrlKey, details->opener_url.spec());
   dict->SetString(keys::kUrlKey,
                   details->target_url.possibly_invalid_spec());
+  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
   std::string json_args;
