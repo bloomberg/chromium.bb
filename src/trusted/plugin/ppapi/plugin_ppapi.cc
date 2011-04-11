@@ -35,9 +35,11 @@ namespace plugin {
 
 namespace {
 
-const char* const kSrcAttribute = "src";  // The "src" attr of the <embed> tag.
+// The "src" attribute of the <embed> tag. The value is expected to be a URL
+// pointing to the nexe (aka nacl module) file.
+const char* const kSrcAttribute = "src";
 // The "nacl" attribute of the <embed> tag.  The value is expected to be either
-// a URL or URI pointing to the manifest file (which is expeceted to contain
+// a URL or URI pointing to the manifest file (which is expected to contain
 // JSON matching ISAs with .nexe URLs).
 const char* const kNaclManifestAttribute = "nacl";
 // This is a pretty arbitrary limit on the byte size of the NaCl manfest file.
@@ -46,9 +48,8 @@ const char* const kNaclManifestAttribute = "nacl";
 const ssize_t kNaclManifestMaxFileBytesPlusNull = 1024;
 const ssize_t kNaclManifestMaxFileBytesNoNull =
     kNaclManifestMaxFileBytesPlusNull - 1;
-// The "nexes" attr of the <embed> tag, and the key used to find the dicitonary
-// of nexe URLs in the manifest file.
-const char* const kNexesAttribute = "nexes";
+// The key used to find the dictionary nexe URLs in the manifest file.
+const char* const kNexesKey = "nexes";
 
 bool UrlAsNaClDesc(void* obj, plugin::SrpcParams* params) {
   // TODO(sehr,polina): this API should take a selector specify which of
@@ -144,23 +145,25 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
       const_cast<char**>(argv));
   if (status) {
     // Note: The order of attribute lookup is important.  This pattern looks
-    // for a "nacl" attribute first, then a "src" attribute, and finally a
-    // "nexes" attribute.
+    // for a "nacl" attribute first, then a "src" attribute.
     const char* nacl_attr = LookupArgument(kNaclManifestAttribute);
     PLUGIN_PRINTF(("PluginPpapi::Init (nacl_attr=%s)\n", nacl_attr));
     if (nacl_attr != NULL) {
       // Issue a GET for the "nacl" attribute.  The value of the attribute
-      // can be a data: URI, or a URL that must be fetched.  In either case,
-      // the GET is started here, and once a valid .nexe file has been
-      // determined, SetSrcPropertyImpl() is called to shut down the current
-      // service runtime (sel_ldr) process and start the download of the new
-      // .nexe.  If the download is successful, a new service runtime starts
-      // and runs the new .nexe.
+      // can be a URI or a URL pointing to the manifest file. The manifest
+      // file will be parsed to determine the nexe URL. Then, just like for
+      // the "src" attribute below, SetSrcPropertyImpl() will be called.
+      //
+      // Sets __nacl property to full manifest URL.
+      // Sets __src property to full nexe URL.
       status = RequestNaClManifest(nacl_attr);
     } else {
       const char* src_attr = LookupArgument(kSrcAttribute);
       PLUGIN_PRINTF(("PluginPpapi::Init (src_attr=%s)\n", src_attr));
       if (src_attr != NULL) {
+        // This will load the nexe and, if successful, start sel_ldr to run it.
+        //
+        // Sets __src property to full nexe URL.
         status = SetSrcPropertyImpl(src_attr);
       }
     }
@@ -459,11 +462,10 @@ bool PluginPpapi::SelectNexeURLFromManifest(
   if (!manifest_root.is_object()) {
     return false;
   }
-  // Look for the 'nexes' key.
-  if (!manifest_root.HasProperty(kNexesAttribute)) {
+  if (!manifest_root.HasProperty(kNexesKey)) {
     return false;
   }
-  pp::Var nexes_dict = manifest_root.GetProperty(kNexesAttribute);
+  pp::Var nexes_dict = manifest_root.GetProperty(kNexesKey);
   // Look for a key with the same name as the ISA string.
   if (!nexes_dict.HasProperty(sandbox_isa)) {
     return false;
