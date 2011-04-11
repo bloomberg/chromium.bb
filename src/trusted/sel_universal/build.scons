@@ -6,22 +6,43 @@
 
 Import('env')
 
+
 if env.CrossToolsBuild():
   Return()
 
+
+def ErrorUnsupportedPlatform(env):
+  import sys
+  print
+  print   "SORRY, SEL_UNIVERSAL/SDL NOT SUPPORTED FOR THIS PLATFORM"
+  print
+  sys.exit(-1)
+
+
+def EnvSDLUpdateLinux(env):
+  import platform
+  # NOTE: you can obtain SDL headers and libs on Ubuntu via:
+  # sudo apt-get install libsdl1.2-dev
+  env.Append(CPPDEFINES=['NACL_SEL_UNIVERSAL_INCLUDE_SDL'])
+    # NOTE: SDLmain.a is a dummy on linux
+  env.Append(LIBS=['SDL'])
+  # When building a 32bit sel_universal with SDL for a 64bit system, do
+  # sudo apt-get install ia32-libs
+  # first which populates /usr/lib32/
+  # Also: there is no /usr/lib32//libSDL.so only  /usr/lib32//libSDL-1.2.so
+  if ('x86-32' == env['BUILD_FULLARCH'] and
+      platform.architecture()[0] == '64bit'):
+    env.FilterOut(LIBS=['SDL'])
+    env.Append(LIBS=['SDL-1.2'])
+    env.Append(LIBPATH=['/usr/lib32'])
+
+
 sdl_multimedia_srcs = []
 if env.Bit('sdl_sel_universal'):
-  # only linux-x86-64 support so far
-  if not env.Bit('host_linux') or not 'x86-64' == env['BUILD_FULLARCH']:
-    import sys
-    print
-    print   "SORRY, SDL ENHANCED SEL_UNIVERSAL ONLY ON"
-    print   "linux-x86-64 for now"
-    print
-    sys.exit(-1)
-  env.Append(CPPDEFINES=['NACL_SEL_UNIVERSAL_INCLUDE_SDL'])
-  env.Append(LIBS=['SDL'])
-  env.Append(LIBS=['SDLmain'])
+  if env.Bit('host_linux'):
+    EnvSDLUpdateLinux(env)
+  else:
+    ErrorUnsupportedPlatform(env)
 
   sdl_multimedia_srcs.append('multimedia_handler.cc')
   sdl_multimedia_srcs.append('sdl_ppapi_event_translator.cc')
