@@ -257,7 +257,7 @@ class TouchEvent : public LocatedEvent {
   // from |source| coordinate system to |target| coordinate system.
   TouchEvent(const TouchEvent& model, View* source, View* target);
 
-  bool identity() const { return touch_id_; }
+  int identity() const { return touch_id_; }
 
  private:
   friend class RootView;
