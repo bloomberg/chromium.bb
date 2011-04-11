@@ -99,6 +99,14 @@ class ScopedUserPrefUpdateTemplate : public subtle::ScopedUserPrefUpdateBase {
         subtle::ScopedUserPrefUpdateBase::Get(type_enum_value));
   }
 
+  T& operator*() {
+    return *Get();
+  }
+
+  T* operator->() {
+    return Get();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ScopedUserPrefUpdateTemplate);
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
@@ -92,15 +93,13 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
   // preferences on the profile, not in the local state.
   PrefService* pref = g_browser_process->local_state();
   if (pref) {  // May be NULL during testing.
-    DictionaryValue* win_pref =
-        pref->GetMutableDictionary(prefs::kExcludedSchemes);
-    CHECK(win_pref);
+    DictionaryPrefUpdate update_excluded_schemas(pref, prefs::kExcludedSchemes);
 
     // Warm up the dictionary if needed.
-    PrepopulateDictionary(win_pref);
+    PrepopulateDictionary(update_excluded_schemas.Get());
 
     bool should_block;
-    if (win_pref->GetBoolean(scheme, &should_block))
+    if (update_excluded_schemas->GetBoolean(scheme, &should_block))
       return should_block ? BLOCK : DONT_BLOCK;
   }
 
@@ -115,14 +114,14 @@ void ExternalProtocolHandler::SetBlockState(const std::string& scheme,
   // preferences on the profile, not in the local state.
   PrefService* pref = g_browser_process->local_state();
   if (pref) {  // May be NULL during testing.
-    DictionaryValue* win_pref =
-        pref->GetMutableDictionary(prefs::kExcludedSchemes);
-    CHECK(win_pref);
+    DictionaryPrefUpdate update_excluded_schemas(pref, prefs::kExcludedSchemes);
 
-    if (state == UNKNOWN)
-      win_pref->Remove(scheme, NULL);
-    else
-      win_pref->SetBoolean(scheme, state == BLOCK ? true : false);
+    if (state == UNKNOWN) {
+      update_excluded_schemas->Remove(scheme, NULL);
+    } else {
+      update_excluded_schemas->SetBoolean(scheme,
+                                          state == BLOCK ? true : false);
+    }
   }
 }
 
