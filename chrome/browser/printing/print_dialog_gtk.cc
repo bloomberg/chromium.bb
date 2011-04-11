@@ -17,54 +17,53 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "content/browser/browser_thread.h"
 #include "printing/print_settings_initializer_gtk.h"
 
 // static
-void* PrintDialogGtk::CreatePrintDialog(
-    PrintingContextCairo::PrintSettingsCallback* callback,
+printing::PrintDialogGtkInterface* PrintDialogGtk::CreatePrintDialog(
     PrintingContextCairo* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  PrintDialogGtk* dialog = new PrintDialogGtk(callback, context);
-  return dialog;
+  return new PrintDialogGtk(context);
 }
 
-// static
-void PrintDialogGtk::PrintDocument(void* print_dialog,
-                                   const NativeMetafile* metafile,
-                                   const string16& document_name) {
-  PrintDialogGtk* dialog = static_cast<PrintDialogGtk*>(print_dialog);
-
-  scoped_ptr<base::WaitableEvent> event(new base::WaitableEvent(false, false));
-  dialog->set_save_document_event(event.get());
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(dialog,
-                        &PrintDialogGtk::SaveDocumentToDisk,
-                        metafile,
-                        document_name));
-  // Wait for SaveDocumentToDisk() to finish.
-  event->Wait();
-}
-
-PrintDialogGtk::PrintDialogGtk(
-    PrintingContextCairo::PrintSettingsCallback* callback,
-    PrintingContextCairo* context)
-    : callback_(callback),
+PrintDialogGtk::PrintDialogGtk(PrintingContextCairo* context)
+    : callback_(NULL),
       context_(context),
       dialog_(NULL),
-      page_setup_(NULL),
-      printer_(NULL),
       gtk_settings_(NULL),
-      save_document_event_(NULL) {
-  // Manual AddRef since PrintDialogGtk manages its own lifetime.
-  AddRef();
-
+      page_setup_(NULL),
+      printer_(NULL) {
   GtkWindow* parent = BrowserList::GetLastActive()->window()->GetNativeHandle();
 
   // TODO(estade): We need a window title here.
   dialog_ = gtk_print_unix_dialog_new(NULL, parent);
+}
+
+PrintDialogGtk::~PrintDialogGtk() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  gtk_widget_destroy(dialog_);
+  dialog_ = NULL;
+  if (gtk_settings_) {
+    g_object_unref(gtk_settings_);
+    gtk_settings_ = NULL;
+  }
+  if (page_setup_) {
+    g_object_unref(page_setup_);
+    page_setup_ = NULL;
+  }
+  if (printer_) {
+    g_object_unref(printer_);
+    printer_ = NULL;
+  }
+}
+
+void PrintDialogGtk::ShowDialog(
+    PrintingContextCairo::PrintSettingsCallback* callback) {
+  DCHECK(!save_document_event_.get());
+
+  callback_ = callback;
+
   // Set modal so user cannot focus the same tab and press print again.
   gtk_window_set_modal(GTK_WINDOW(dialog_), TRUE);
 
@@ -83,19 +82,36 @@ PrintDialogGtk::PrintDialogGtk(
                                              TRUE);
 #endif
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
-
   gtk_widget_show(dialog_);
 }
 
-PrintDialogGtk::~PrintDialogGtk() {
-  gtk_widget_destroy(dialog_);
-  dialog_ = NULL;
-  page_setup_ = NULL;
-  printer_ = NULL;
-  if (gtk_settings_) {
-    g_object_unref(gtk_settings_);
-    gtk_settings_ = NULL;
-  }
+void PrintDialogGtk::PrintDocument(const NativeMetafile* metafile,
+                                   const string16& document_name) {
+  // This runs on the print worker thread, does not block the UI thread.
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // The document printing tasks can outlive the PrintingContext that created
+  // this dialog.
+  AddRef();
+  DCHECK(!save_document_event_.get());
+  save_document_event_.reset(new base::WaitableEvent(false, false));
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+                        &PrintDialogGtk::SaveDocumentToDisk,
+                        metafile,
+                        document_name));
+  // Wait for SaveDocumentToDisk() to finish.
+  save_document_event_->Wait();
+}
+
+void PrintDialogGtk::AddRefToDialog() {
+  AddRef();
+}
+
+void PrintDialogGtk::ReleaseDialog() {
+  Release();
 }
 
 void PrintDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
@@ -103,15 +119,16 @@ void PrintDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
 
   switch (response_id) {
     case GTK_RESPONSE_OK: {
-      // |gtk_settings_| is a new object.
       gtk_settings_ = gtk_print_unix_dialog_get_settings(
-          GTK_PRINT_UNIX_DIALOG(dialog_));
-      // |printer_| and |page_setup_| are owned by |dialog_|.
-      page_setup_ = gtk_print_unix_dialog_get_page_setup(
           GTK_PRINT_UNIX_DIALOG(dialog_));
       printer_ = gtk_print_unix_dialog_get_selected_printer(
           GTK_PRINT_UNIX_DIALOG(dialog_));
+      g_object_ref(printer_);
+      page_setup_ = gtk_print_unix_dialog_get_page_setup(
+          GTK_PRINT_UNIX_DIALOG(dialog_));
+      g_object_ref(page_setup_);
 
+      // Handle page ranges.
       printing::PageRanges ranges_vector;
       gint num_ranges;
       GtkPageRange* gtk_range =
@@ -131,12 +148,13 @@ void PrintDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
           gtk_settings_, page_setup_, ranges_vector, false, &settings);
       context_->InitWithSettings(settings);
       callback_->Run(PrintingContextCairo::OK);
+      callback_ = NULL;
       return;
     }
     case GTK_RESPONSE_DELETE_EVENT:  // Fall through.
     case GTK_RESPONSE_CANCEL: {
       callback_->Run(PrintingContextCairo::CANCEL);
-      Release();
+      callback_ = NULL;
       return;
     }
     case GTK_RESPONSE_APPLY:
@@ -166,6 +184,7 @@ void PrintDialogGtk::SaveDocumentToDisk(const NativeMetafile* metafile,
   save_document_event_->Signal();
 
   if (error) {
+    // Matches AddRef() in PrintDocument();
     Release();
   } else {
     // No errors, continue printing.
@@ -205,12 +224,6 @@ void PrintDialogGtk::OnJobCompleted(GtkPrintJob* print_job, GError* error) {
       path_to_pdf_,
       false,
       NULL);
-  // Printing finished.
+  // Printing finished. Matches AddRef() in PrintDocument();
   Release();
-}
-
-void PrintDialogGtk::set_save_document_event(base::WaitableEvent* event) {
-  DCHECK(event);
-  DCHECK(!save_document_event_);
-  save_document_event_ = event;
 }

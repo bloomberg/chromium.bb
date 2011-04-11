@@ -70,6 +70,7 @@
         'printing_context_mac.h',
         'printing_context_win.cc',
         'printing_context_win.h',
+        'print_dialog_gtk_interface.h',
         'print_job_constants.cc',
         'print_job_constants.h',
         'print_settings.cc',

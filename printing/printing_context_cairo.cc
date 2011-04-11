@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/values.h"
+#include "printing/print_dialog_gtk_interface.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings_initializer_gtk.h"
 #include "printing/units.h"
@@ -19,22 +20,17 @@
 
 #if !defined(OS_CHROMEOS)
 namespace {
-  // Function pointer for creating print dialogs.
-  static void* (*create_dialog_func_)(
-      printing::PrintingContext::PrintSettingsCallback* callback,
+  // Function pointer for creating print dialogs. |callback| is only used when
+  // |show_dialog| is true.
+  static printing::PrintDialogGtkInterface* (*create_dialog_func_)(
       printing::PrintingContextCairo* context) = NULL;
-  // Function pointer for printing documents.
-  static void (*print_document_func_)(
-      void* print_dialog,
-      const printing::NativeMetafile* metafile,
-      const string16& document_name) = NULL;
 }  // namespace
 #endif  // !defined(OS_CHROMEOS)
 
 namespace printing {
 
 // static
-  PrintingContext* PrintingContext::Create(const std::string& app_locale) {
+PrintingContext* PrintingContext::Create(const std::string& app_locale) {
   return static_cast<PrintingContext*>(new PrintingContextCairo(app_locale));
 }
 
@@ -49,28 +45,25 @@ PrintingContextCairo::PrintingContextCairo(const std::string& app_locale)
 
 PrintingContextCairo::~PrintingContextCairo() {
   ReleaseContext();
+
+  if (print_dialog_)
+    print_dialog_->ReleaseDialog();
 }
 
 #if !defined(OS_CHROMEOS)
 // static
-void PrintingContextCairo::SetPrintingFunctions(
-    void* (*create_dialog_func)(PrintSettingsCallback* callback,
-                                PrintingContextCairo* context),
-    void (*print_document_func)(void* print_dialog,
-                                const NativeMetafile* metafile,
-                                const string16& document_name)) {
+void PrintingContextCairo::SetCreatePrintDialogFunction(
+    PrintDialogGtkInterface* (*create_dialog_func)(
+        PrintingContextCairo* context)) {
   DCHECK(create_dialog_func);
-  DCHECK(print_document_func);
   DCHECK(!create_dialog_func_);
-  DCHECK(!print_document_func_);
   create_dialog_func_ = create_dialog_func;
-  print_document_func_ = print_document_func;
 }
 
 void PrintingContextCairo::PrintDocument(const NativeMetafile* metafile) {
   DCHECK(print_dialog_);
   DCHECK(metafile);
-  print_document_func_(print_dialog_, metafile, document_name_);
+  print_dialog_->PrintDocument(metafile, document_name_);
 }
 #endif  // !defined(OS_CHROMEOS)
 
@@ -82,7 +75,9 @@ void PrintingContextCairo::AskUserForSettings(
 #if defined(OS_CHROMEOS)
   callback->Run(OK);
 #else
-  print_dialog_ = create_dialog_func_(callback, this);
+  print_dialog_ = create_dialog_func_(this);
+  print_dialog_->AddRefToDialog();
+  print_dialog_->ShowDialog(callback);
 #endif  // defined(OS_CHROMEOS)
 }
 

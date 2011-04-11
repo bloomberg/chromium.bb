@@ -15,20 +15,18 @@
 
 namespace printing {
 
+class PrintDialogGtkInterface;
+
 class PrintingContextCairo : public PrintingContext {
  public:
   explicit PrintingContextCairo(const std::string& app_locale);
   ~PrintingContextCairo();
 
 #if !defined(OS_CHROMEOS)
-  // Sets the function that creates the print dialog, and the function that
-  // prints the document.
-  static void SetPrintingFunctions(
-      void* (*create_dialog_func)(PrintSettingsCallback* callback,
-                                  PrintingContextCairo* context),
-      void (*print_document_func)(void* print_dialog,
-                                  const NativeMetafile* metafile,
-                                  const string16& document_name));
+  // Sets the function that creates the print dialog.
+  static void SetCreatePrintDialogFunction(
+      PrintDialogGtkInterface* (*create_dialog_func)(
+          PrintingContextCairo* context));
 
   // Prints the document contained in |metafile|.
   void PrintDocument(const NativeMetafile* metafile);
@@ -54,7 +52,7 @@ class PrintingContextCairo : public PrintingContext {
  private:
 #if !defined(OS_CHROMEOS)
   string16 document_name_;
-  void* print_dialog_;
+  PrintDialogGtkInterface* print_dialog_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PrintingContextCairo);

@@ -237,8 +237,7 @@ void BrowserMainPartsPosix::PostMainMessageLoopStart() {
   }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  printing::PrintingContextCairo::SetPrintingFunctions(
-      &PrintDialogGtk::CreatePrintDialog,
-      &PrintDialogGtk::PrintDocument);
+  printing::PrintingContextCairo::SetCreatePrintDialogFunction(
+      &PrintDialogGtk::CreatePrintDialog);
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 }

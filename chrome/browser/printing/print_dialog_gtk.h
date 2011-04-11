@@ -11,7 +11,10 @@
 
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "content/browser/browser_thread.h"
 #include "printing/native_metafile.h"
+#include "printing/print_dialog_gtk_interface.h"
 #include "printing/printing_context_cairo.h"
 #include "ui/base/gtk/gtk_signal.h"
 
@@ -22,27 +25,29 @@ class WaitableEvent;
 using printing::NativeMetafile;
 using printing::PrintingContextCairo;
 
-class PrintDialogGtk : public base::RefCountedThreadSafe<PrintDialogGtk> {
+// Needs to be freed on the UI thread to clean up its GTK members variables.
+class PrintDialogGtk
+    : public printing::PrintDialogGtkInterface,
+      public base::RefCountedThreadSafe<PrintDialogGtk,
+                                        BrowserThread::DeleteOnUIThread> {
  public:
-  // Creates and returns a print dialog. The dialog will initialize the settings
-  // for |context| and call |callback| to inform the print workflow of the
-  // dialog results.
-  static void* CreatePrintDialog(
-      PrintingContextCairo::PrintSettingsCallback* callback,
+  // Creates and returns a print dialog.
+  static printing::PrintDialogGtkInterface* CreatePrintDialog(
       PrintingContextCairo* context);
 
-  // Prints a document named |document_name| based on the settings in
-  // |print_dialog|, with data from |metafile|.
-  // Called from the print worker thread.
-  static void PrintDocument(void* print_dialog,
-                            const NativeMetafile* metafile,
-                            const string16& document_name);
+  // printing::PrintDialogGtkInterface implementation.
+  virtual void ShowDialog(
+      PrintingContextCairo::PrintSettingsCallback* callback);
+  virtual void PrintDocument(const NativeMetafile* metafile,
+                             const string16& document_name);
+  virtual void AddRefToDialog();
+  virtual void ReleaseDialog();
 
  private:
-  friend class base::RefCountedThreadSafe<PrintDialogGtk>;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend class DeleteTask<PrintDialogGtk>;
 
-  PrintDialogGtk(PrintingContextCairo::PrintSettingsCallback* callback,
-                 PrintingContextCairo* context);
+  explicit PrintDialogGtk(PrintingContextCairo* context);
   ~PrintDialogGtk();
 
   // Handles dialog response.
@@ -61,20 +66,20 @@ class PrintDialogGtk : public base::RefCountedThreadSafe<PrintDialogGtk> {
                                   GError* error);
   void OnJobCompleted(GtkPrintJob* print_job, GError* error);
 
-  void set_save_document_event(base::WaitableEvent* event);
-
   // Printing dialog callback.
   PrintingContextCairo::PrintSettingsCallback* callback_;
   PrintingContextCairo* context_;
 
-  // Print dialog settings.
+  // Print dialog settings. PrintDialogGtk owns |dialog_| and holds references
+  // to the other objects.
   GtkWidget* dialog_;
+  GtkPrintSettings* gtk_settings_;
   GtkPageSetup* page_setup_;
   GtkPrinter* printer_;
-  GtkPrintSettings* gtk_settings_;
 
   // Event to signal when save document finishes.
-  base::WaitableEvent* save_document_event_;
+  scoped_ptr<base::WaitableEvent> save_document_event_;
+
   FilePath path_to_pdf_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintDialogGtk);
