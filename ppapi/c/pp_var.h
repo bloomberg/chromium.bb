@@ -26,13 +26,53 @@
  * within a PP_VAR structure.
  */
 typedef enum {
+  /**
+   * An undefined value.
+   */
   PP_VARTYPE_UNDEFINED,
+
+  /**
+   * A NULL value. This is similar to undefined, but JavaScript differentiates
+   * the two so we expose it here as well.
+   */
   PP_VARTYPE_NULL,
+
+  /**
+   * A boolean value, use the as_bool member of the var.
+   */
   PP_VARTYPE_BOOL,
+
+  /**
+   * A 32-bit integer value. Use the as_int member of the var.
+   */
   PP_VARTYPE_INT32,
+
+  /**
+   * A double-precision floating point value. Use the as_double member of the
+   * var.
+   */
   PP_VARTYPE_DOUBLE,
+
+  /**
+   * The Var represents a string. The as_id field is used to identify the
+   * string, which may be created and retrieved from the PPB_Var interface.
+   */
   PP_VARTYPE_STRING,
-  PP_VARTYPE_OBJECT
+
+  /**
+   * Represents a JavaScript object. This vartype is not currently usable
+   * from plugins, although it is used internally for some tasks.
+   */
+  PP_VARTYPE_OBJECT,
+
+  /**
+   * Arrays and dictionaries are not currently supported but will be added
+   * in future revisions. These objects are reference counted so be sure
+   * to properly AddRef/Release them as you would with strings to ensure your
+   * plugin will continue to work with future versions of the API.
+   */
+  PP_VARTYPE_ARRAY,
+  PP_VARTYPE_DICTIONARY
 } PP_VarType;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VarType, 4);
 /**
@@ -73,9 +113,10 @@ struct PP_Var {
     double as_double;
 
     /**
-     * Internal ID for strings and objects. The identifier is an opaque handle
-     * assigned by the browser to the plugin. It is guaranteed never to be 0,
-     * so a plugin can initialize this ID to 0 to indicate a "NULL handle."
+     * Internal ID for strings objects, arrays, and dictionaries. The
+     * identifier is an opaque handle assigned by the browser to the plugin. It
+     * is guaranteed never to be 0, so a plugin can initialize this ID to 0 to
+     * indicate a "NULL handle."
      */
     int64_t as_id;
   } value;

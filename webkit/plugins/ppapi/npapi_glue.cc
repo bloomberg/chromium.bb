@@ -64,6 +64,10 @@ bool PPVarToNPVariant(PP_Var var, NPVariant* result) {
                           *result);
       break;
     }
+    case PP_VARTYPE_ARRAY:
+    case PP_VARTYPE_DICTIONARY:
+      VOID_TO_NPVARIANT(*result);
+      break;
   }
   return true;
 }

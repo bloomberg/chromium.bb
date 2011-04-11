@@ -60,6 +60,8 @@ class Var {
 
   Var& operator=(const Var& other);
 
+  // For objects, dictionaries, and arrays, this operator compares object
+  // identity rather than value identity.
   bool operator==(const Var& other) const;
 
   bool is_undefined() const { return var_.type == PP_VARTYPE_UNDEFINED; }
@@ -195,14 +197,16 @@ class Var {
     PP_Var temp_;
   };
 
+ protected:
+  PP_Var var_;
+  bool needs_release_;
+
  private:
   // Prevent an arbitrary pointer argument from being implicitly converted to
   // a bool at Var construction. If somebody makes such a mistake, (s)he will
   // get a compilation error.
   Var(void* non_scriptable_object_pointer);
 
-  PP_Var var_;
-  bool needs_release_;
 };
 
 }  // namespace pp

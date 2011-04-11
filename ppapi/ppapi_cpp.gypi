@@ -205,6 +205,10 @@
         # Deprecated interfaces.
         'cpp/dev/scriptable_object_deprecated.h',
         'cpp/dev/scriptable_object_deprecated.cc',
+
+        # Private interfaces.
+        'cpp/private/var_private.cc',
+        'cpp/private/var_private.h',
       ],
       'conditions': [
         ['OS=="win"', {

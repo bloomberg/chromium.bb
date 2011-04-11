@@ -35,7 +35,7 @@ template <> const char* interface_name<PPB_Var_Deprecated>() {
 // cross-process calls depending on the plugin. This is an optimization so we
 // only do refcounting on the necessary objects.
 inline bool NeedsRefcounting(const PP_Var& var) {
-  return var.type == PP_VARTYPE_STRING || var.type == PP_VARTYPE_OBJECT;
+  return var.type > PP_VARTYPE_DOUBLE;
 }
 
 }  // namespace
@@ -167,11 +167,8 @@ bool Var::operator==(const Var& other) const {
       if (var_.value.as_id == other.var_.value.as_id)
         return true;
       return AsString() == other.AsString();
-    // TODO(neb): Document that this is === and not ==, unlike strings.
-    case PP_VARTYPE_OBJECT:
+    default:  // Objects, arrays, dictionaries.
       return var_.value.as_id == other.var_.value.as_id;
-    default:
-      return false;
   }
 }
 

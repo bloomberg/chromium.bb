@@ -147,6 +147,11 @@ void SerializedVar::Inner::WriteToMessage(IPC::Message* m) const {
     case PP_VARTYPE_OBJECT:
       m->WriteInt64(var_.value.as_id);
       break;
+    case PP_VARTYPE_ARRAY:
+    case PP_VARTYPE_DICTIONARY:
+      // TODO(brettw) when these are supported, implement this.
+      NOTIMPLEMENTED();
+      break;
   }
 }
 
@@ -195,6 +200,11 @@ bool SerializedVar::Inner::ReadFromMessage(const IPC::Message* m, void** iter) {
       break;
     case PP_VARTYPE_OBJECT:
       success = m->ReadInt64(iter, &var_.value.as_id);
+      break;
+    case PP_VARTYPE_ARRAY:
+    case PP_VARTYPE_DICTIONARY:
+      // TODO(brettw) when these types are supported, implement this.
+      NOTIMPLEMENTED();
       break;
     default:
       // Leave success as false.

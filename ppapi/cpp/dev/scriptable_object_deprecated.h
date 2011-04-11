@@ -11,8 +11,8 @@ struct PPP_Class_Deprecated;
 
 namespace pp {
 class Var;
+class VarPrivate;
 }
-using pp::Var;
 
 namespace pp {
 
@@ -77,6 +77,7 @@ class ScriptableObject {
 
  private:
   friend class ::pp::Var;
+  friend class ::pp::VarPrivate;
   static const PPP_Class_Deprecated* GetClass();
 
   // Unimplemented, copy and assigmnent is not allowed.

@@ -25,6 +25,7 @@
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
+#include "ppapi/cpp/private/var_private.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/url_request_info.h"
@@ -61,7 +62,7 @@ class MyScriptableObject : public pp::deprecated::ScriptableObject {
 
   virtual pp::Var GetProperty(const pp::Var& name, pp::Var* exception) {
     if (name.is_string() && name.AsString() == "blah")
-      return pp::Var(instance_, new MyScriptableObject(instance_));
+      return pp::VarPrivate(instance_, new MyScriptableObject(instance_));
     return pp::Var();
   }
 
@@ -203,9 +204,9 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
                        << " usb=" << std::hex << key_event.usb_key_code;
 
     // Locate the field to update in the page DOM
-    pp::Var window = GetWindowObject();
-    pp::Var doc = window.GetProperty("document");
-    pp::Var last_key_down = doc.Call("getElementById", "lastKeyDown");
+    pp::VarPrivate window = GetWindowObject();
+    pp::VarPrivate doc = window.GetProperty("document");
+    pp::VarPrivate last_key_down = doc.Call("getElementById", "lastKeyDown");
     last_key_down.SetProperty("innerHTML", last_key_down_text.str());
   }
 
@@ -226,7 +227,7 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
   }
 
   virtual pp::Var GetInstanceObject() {
-    return pp::Var(this, new MyScriptableObject(this));
+    return pp::VarPrivate(this, new MyScriptableObject(this));
   }
 
   pp::ImageData PaintImage(int width, int height) {
@@ -294,9 +295,9 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
   void UpdateFps() {
 // Time code doesn't currently compile on Windows, just skip FPS for now.
 #ifndef _WIN32
-    pp::Var window = GetWindowObject();
-    pp::Var doc = window.GetProperty("document");
-    pp::Var fps = doc.Call("getElementById", "fps");
+    pp::VarPrivate window = GetWindowObject();
+    pp::VarPrivate doc = window.GetProperty("document");
+    pp::VarPrivate fps = doc.Call("getElementById", "fps");
 
     struct timeval tv;
     struct timezone tz = {0, 0};
@@ -374,11 +375,11 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
 
  private:
   void SayHello() {
-    pp::Var window = GetWindowObject();
-    pp::Var doc = window.GetProperty("document");
-    pp::Var body = doc.GetProperty("body");
+    pp::VarPrivate window = GetWindowObject();
+    pp::VarPrivate doc = window.GetProperty("document");
+    pp::VarPrivate body = doc.GetProperty("body");
 
-    pp::Var obj(this, new MyScriptableObject(this));
+    pp::VarPrivate obj(this, new MyScriptableObject(this));
 
     // Our object should have its toString method called.
     Log(PP_LOGLEVEL_LOG, "Testing MyScriptableObject::toString():");
