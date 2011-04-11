@@ -320,30 +320,17 @@ static const struct wl_display_listener display_listener = {
 	display_handle_key
 };
 
-WL_EXPORT struct wl_display *
-wl_display_connect(const char *name)
+static int
+connect_to_socket(struct wl_display *display, const char *name)
 {
-	struct wl_display *display;
 	struct sockaddr_un addr;
 	socklen_t size;
 	const char *runtime_dir;
-	const char *debug;
 	size_t name_size;
 
-	debug = getenv("WAYLAND_DEBUG");
-	if (debug)
-		wl_debug = 1;
-
-	display = malloc(sizeof *display);
-	if (display == NULL)
-		return NULL;
-
-	memset(display, 0, sizeof *display);
 	display->fd = socket(PF_LOCAL, SOCK_STREAM, 0);
-	if (display->fd < 0) {
-		free(display);
-		return NULL;
-	}
+	if (display->fd < 0)
+		return -1;
 
 	runtime_dir = getenv("XDG_RUNTIME_DIR");
 	if (runtime_dir == NULL) {
@@ -368,6 +355,40 @@ wl_display_connect(const char *name)
 
 	if (connect(display->fd, (struct sockaddr *) &addr, size) < 0) {
 		close(display->fd);
+		return -1;
+	}
+
+	return 0;
+}
+
+WL_EXPORT struct wl_display *
+wl_display_connect(const char *name)
+{
+	struct wl_display *display;
+	const char *debug;
+	char *connection, *end;
+	int flags;
+
+	debug = getenv("WAYLAND_DEBUG");
+	if (debug)
+		wl_debug = 1;
+
+	display = malloc(sizeof *display);
+	if (display == NULL)
+		return NULL;
+
+	memset(display, 0, sizeof *display);
+	connection = getenv("WAYLAND_SOCKET");
+	if (connection) {
+		display->fd = strtol(connection, &end, 0);
+		if (*end != '\0') {
+			free(display);
+			return NULL;
+		}
+		flags = fcntl(display->fd, F_GETFD);
+		if (flags != -1)
+			fcntl(display->fd, F_SETFD, flags | FD_CLOEXEC);
+	} else if (connect_to_socket(display, name) < 0) {
 		free(display);
 		return NULL;
 	}
