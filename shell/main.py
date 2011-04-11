@@ -16,25 +16,11 @@ import sys
 from chromite.lib import text_menu
 import chromite.lib.cros_build_lib as cros_lib
 from chromite.shell import utils
-from chromite.shell.subcmds import build_cmd
-from chromite.shell.subcmds import clean_cmd
-from chromite.shell.subcmds import shell_cmd
-from chromite.shell.subcmds import workon_cmd
 from chromite.shell import chromite_env
 from chromite.lib import operation
 
-
-# Define command handlers and command strings.
-#
-# ORDER MATTERS here when we show the menu.
-_COMMAND_HANDLERS = [
-  build_cmd.BuildCmd,
-  clean_cmd.CleanCmd,
-  shell_cmd.ShellCmd,
-  workon_cmd.WorkonCmd,
-]
-_COMMAND_STRS = [cls.__name__[:-len('Cmd')].lower()
-                 for cls in _COMMAND_HANDLERS]
+# Set up the cros system.
+_cros_env = chromite_env.ChromiteEnv()
 
 
 def _FindCommand(cmd_name):
@@ -58,17 +44,15 @@ def _FindCommand(cmd_name):
   cmd_name = cmd_name.lower()
 
   # If we're an exact match, we're done!
-  if cmd_name in _COMMAND_STRS:
+  if cmd_name in _cros_env.subcmds:
     return cmd_name
 
   # Find ones that match and put them in a menu...
   possible_cmds = []
   possible_choices = []
-  for cmd_num, this_cmd in enumerate(_COMMAND_STRS):
+  for this_cmd in sorted(_cros_env.subcmds):
     if this_cmd.startswith(cmd_name):
-      handler = _COMMAND_HANDLERS[cmd_num]
-      assert hasattr(handler, '__doc__'), \
-             ('All handlers must have docstrings: %s' % cmd_name)
+      handler = _cros_env.subcmds[this_cmd]
       desc = handler.__doc__.splitlines()[0]
 
       possible_cmds.append(this_cmd)
@@ -194,11 +178,8 @@ def main():
   # Parse the arguments and separate them into top-level and subcmd arguments.
   options, cmd_str, cmd_args = _ParseArguments(parser, sys.argv)
 
-  # Set up the cros system.
-  cros_env = chromite_env.ChromiteEnv()
-
   # Configure the operation setup.
-  oper = cros_env.GetOperation()
+  oper = _cros_env.GetOperation()
   oper.verbose = options.verbose >= 3
   oper.progress = options.verbose >= 1
 
@@ -219,9 +200,9 @@ def main():
   oper.Info("Running command '%s'." % cmd_str)
 
   # Finally, call the function w/ standard argv.
-  cmd_cls = _COMMAND_HANDLERS[_COMMAND_STRS.index(cmd_str)]
+  cmd_cls = _cros_env.subcmds[cmd_str]
   cmd_obj = cmd_cls()
-  cmd_obj.SetChromiteEnv(cros_env)
+  cmd_obj.SetChromiteEnv(_cros_env)
   try:
     cmd_obj.Run([cmd_str] + cmd_args, chroot_config=chroot_config)
 

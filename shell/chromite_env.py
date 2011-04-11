@@ -10,8 +10,10 @@ paths and defaults. It includes methods for querying the environemnt.
 (For now this is just a placeholder to illustrate the concept)
 """
 
+import imp
 import os
 import signal
+import sys
 import utils
 from chromite.lib import operation
 from chromite.lib import cros_subprocess
@@ -34,13 +36,48 @@ class ChromiteEnv:
   chroot, builds, images and so on. It is intended to understand the paths
   to use for each object, and provide methods to accessing and querying
   the various things in the environment.
+
+  Variables:
+    subcmds: A dictionary of sub-commands, with the key being the module name,
+        and the value being the module.
+
+        For each sub-command xxx there must exist
+        chromite.shell.subcmds.xxx_cmd.py containing a class XxxCmd.
   """
   def __init__(self):
     # We have at least a single overall operation always, so set it up.
     self._oper = operation.Operation('operation')
 
+    # Figure out where chromite sub-commands are located.
+    self._subcmd_dir = os.path.join(os.path.dirname(__file__), 'subcmds')
+
+    if not os.path.exists(self._subcmd_dir):
+      raise ChromiteError('Cannot find sub-command directory')
+
+    self.subcmds = {}
+    self._ScanSubcmds()
+
   def __del__(self):
     del self._oper
+
+  def _ScanSubcmds(self):
+    """Scan for sub-commands that we can execute.
+
+    Sets self.subcmds to a dictionary of module names, with the value of each
+    being the module.
+    """
+    for file_name in os.listdir(self._subcmd_dir):
+      if file_name.endswith('_cmd.py'):
+        mod_name = os.path.splitext(file_name)[0]
+        base_name = mod_name.rsplit('_', 1)[0]
+        cls_name = '%sCmd' % base_name.title()
+
+        mod = imp.load_module(mod_name,
+            *imp.find_module(mod_name, [self._subcmd_dir]))
+        cls = getattr(mod, cls_name)
+        assert hasattr(cls, '__doc__'), \
+              ('All handlers must have docstrings: %s' % name)
+        self.subcmds[base_name] = cls
 
   def GetOperation(self):
     """Returns the current operation in progress
