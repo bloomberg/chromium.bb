@@ -217,7 +217,7 @@ create_surface(struct window *window)
 }
 
 static void
-redraw(void *data, uint32_t time)
+redraw(struct wl_surface *surface, void *data, uint32_t time)
 {
 	struct window *window = data;
 	static const GLfloat verts[3][2] = {
@@ -268,7 +268,9 @@ redraw(void *data, uint32_t time)
 	glFlush();
 
 	eglSwapBuffers(window->display->egl.dpy, window->egl_surface);
-	wl_display_frame_callback(window->display->display, redraw, window);
+	wl_display_frame_callback(window->display->display,
+				  window->surface,
+				  redraw, window);
 }
 
 static void
@@ -316,7 +318,8 @@ main(int argc, char **argv)
 	create_surface(&window);
 	init_gl(&window);
 
-	wl_display_frame_callback(display.display, redraw, &window);
+	wl_display_frame_callback(display.display, window.surface,
+				  redraw, &window);
 
 	wl_display_get_fd(display.display, event_mask_update, &display);
 	while (true)

@@ -48,8 +48,11 @@ struct wlsc_output {
 	int32_t x, y, width, height;
 	pixman_region32_t previous_damage_region;
 	uint32_t flags;
+	int repaint_needed;
+	int finished;
 
 	int (*prepare_render)(struct wlsc_output *output);
+	int (*present)(struct wlsc_output *output);
 };
 
 enum wlsc_pointer_type {
@@ -104,7 +107,6 @@ struct wlsc_compositor {
 
 	/* Repaint state. */
 	struct wl_event_source *timer_source;
-	int repaint_needed;
 	int repaint_on_timeout;
 	struct timespec previous_swap;
 	pixman_region32_t damage_region;
@@ -115,7 +117,6 @@ struct wlsc_compositor {
 
 	void (*destroy)(struct wlsc_compositor *ec);
 	int (*authenticate)(struct wlsc_compositor *c, uint32_t id);
-	void (*present)(struct wlsc_compositor *c);
 	struct wl_buffer *(*create_buffer)(struct wlsc_compositor *c,
 					   int32_t width, int32_t height,
 					   int32_t stride, struct wl_visual *visual,
@@ -152,6 +153,7 @@ struct wlsc_surface {
 	struct wlsc_matrix matrix_inv;
 	struct wl_visual *visual;
 	struct wl_buffer *buffer;
+	struct wlsc_output *output;
 	enum wlsc_surface_map_type map_type;
 	struct wlsc_output *fullscreen_output;
 };
@@ -181,7 +183,7 @@ notify_keyboard_focus(struct wl_input_device *device,
 		      struct wl_array *keys);
 
 void
-wlsc_compositor_finish_frame(struct wlsc_compositor *compositor, int msecs);
+wlsc_output_finish_frame(struct wlsc_output *output, int msecs);
 void
 wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor);
 
@@ -196,6 +198,9 @@ wlsc_compositor_add_binding(struct wlsc_compositor *compositor,
 void
 wlsc_binding_destroy(struct wlsc_binding *binding);
 
+
+void
+wlsc_surface_assign_output(struct wlsc_surface *surface);
 
 void
 wlsc_surface_damage(struct wlsc_surface *surface);

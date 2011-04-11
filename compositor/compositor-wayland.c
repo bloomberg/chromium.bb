@@ -156,11 +156,11 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 }
 
 static void
-frame_callback(void *data, uint32_t time)
+frame_callback(struct wl_surface *surface, void *data, uint32_t time)
 {
-	struct wayland_compositor *c = (struct wayland_compositor *) data;
+	struct wlsc_output *output = data;
 
-	wlsc_compositor_finish_frame(&c->base, time);
+	wlsc_output_finish_frame(output, time);
 }
 
 static int
@@ -178,20 +178,22 @@ wayland_output_prepare_render(struct wlsc_output *output_base)
 	return 0;
 }
 
-static void
-wayland_compositor_present(struct wlsc_compositor *base)
+static int
+wayland_output_present(struct wlsc_output *output_base)
 {
-	struct wayland_compositor *c = (struct wayland_compositor *) base;
-	struct wayland_output *output;
+	struct wayland_output *output = (struct wayland_output *) output_base;
+	struct wayland_compositor *c =
+		(struct wayland_compositor *) output->base.compositor;
 
-	wl_list_for_each(output, &base->output_list, base.link) {
-		if (wayland_output_prepare_render(&output->base))
-			continue;
+	if (wayland_output_prepare_render(&output->base))
+		return -1;
 
-		eglSwapBuffers(c->base.display, output->egl_surface);
-	}
+	eglSwapBuffers(c->base.display, output->egl_surface);
+	wl_display_frame_callback(c->parent.display,
+				  output->parent.surface,
+				  frame_callback, &output->base);
 
-	wl_display_frame_callback(c->parent.display, frame_callback, c);
+	return 0;
 }
 
 static int
@@ -243,6 +245,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	glClearColor(0, 0, 0, 0.5);
 
 	output->base.prepare_render = wayland_output_prepare_render;
+	output->base.present = wayland_output_present;
 
 	wl_list_insert(c->base.output_list.prev, &output->base.link);
 
@@ -477,7 +480,6 @@ wayland_compositor_create(struct wl_display *display, int width, int height)
 		return NULL;
 
 	c->base.destroy = wayland_destroy;
-	c->base.present = wayland_compositor_present;
 	c->base.create_buffer = wlsc_shm_buffer_create;
 
 	/* Can't init base class until we have a current egl context */

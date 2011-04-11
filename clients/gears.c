@@ -295,7 +295,7 @@ redraw_handler(struct window *window, void *data)
 }
 
 static void
-frame_callback(void *data, uint32_t time)
+frame_callback(struct wl_surface *surface, void *data, uint32_t time)
 {
 	struct gears *gears = data;
 
@@ -303,6 +303,7 @@ frame_callback(void *data, uint32_t time)
 
 	window_schedule_redraw(gears->window);
 	wl_display_frame_callback(display_get_display(gears->d),
+				  window_get_wl_surface(gears->window),
 				  frame_callback, gears);
 }
 
@@ -363,6 +364,7 @@ gears_create(struct display *display)
 
 	draw_gears(gears);
 	wl_display_frame_callback(display_get_display(gears->d),
+				  window_get_wl_surface(gears->window),
 				  frame_callback, gears);
 
 	return gears;

@@ -49,7 +49,7 @@ struct resizor {
 };
 
 static void
-frame_callback(void *data, uint32_t time)
+frame_callback(struct wl_surface *surface, void *data, uint32_t time)
 {
 	struct resizor *resizor = data;
 	double force, height;
@@ -107,6 +107,7 @@ resizor_draw(struct resizor *resizor)
 
 	if (fabs(resizor->height.previous - resizor->height.target) > 0.1) {
 		wl_display_frame_callback(display_get_display(resizor->display),
+					  window_get_wl_surface(resizor->window),
 					  frame_callback, resizor);
 	}
 }
@@ -140,11 +141,11 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 	switch (sym) {
 	case XK_Down:
 		resizor->height.target = 400;
-		frame_callback(resizor, 0);
+		frame_callback(window_get_wl_surface(window), resizor, 0);
 		break;
 	case XK_Up:
 		resizor->height.target = 200;
-		frame_callback(resizor, 0);
+		frame_callback(window_get_wl_surface(window), resizor, 0);
 		break;
 	}
 }

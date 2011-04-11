@@ -43,6 +43,7 @@ move_grab_motion(struct wl_grab *grab,
 	wlsc_surface_damage(es);
 	es->x = x + move->dx;
 	es->y = y + move->dy;
+	wlsc_surface_assign_output(es);
 	wlsc_surface_update_matrix(es);
 	wlsc_surface_damage(es);
 }

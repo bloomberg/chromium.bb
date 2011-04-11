@@ -913,6 +913,12 @@ window_get_surface(struct window *window)
 	return cairo_surface_reference(window->cairo_surface);
 }
 
+struct wl_surface *
+window_get_wl_surface(struct window *window)
+{
+	return window->surface;
+}
+
 static int
 get_pointer_location(struct window *window, int32_t x, int32_t y)
 {

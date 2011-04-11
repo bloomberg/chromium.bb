@@ -479,9 +479,20 @@ wlsc_surface_update_matrix(struct wlsc_surface *es)
 }
 
 void
-wlsc_compositor_finish_frame(struct wlsc_compositor *compositor, int msecs)
+wlsc_output_finish_frame(struct wlsc_output *output, int msecs)
 {
-	wl_display_post_frame(compositor->wl_display, msecs);
+	struct wlsc_compositor *compositor = output->compositor;
+	struct wlsc_surface *es;
+
+	wl_list_for_each(es, &compositor->surface_list, link) {
+		if (es->output == output) {
+			wl_display_post_frame(compositor->wl_display,
+					      &es->surface, msecs);
+		}
+	}
+
+	output->finished = 1;
+
 	wl_event_source_timer_update(compositor->timer_source, 5);
 	compositor->repaint_on_timeout = 1;
 }
@@ -569,23 +580,37 @@ repaint(void *data)
 {
 	struct wlsc_compositor *ec = data;
 	struct wlsc_output *output;
+	int repainted_all_outputs = 1;
 
-	if (!ec->repaint_needed) {
-		ec->repaint_on_timeout = 0;
-		return;
+	wl_list_for_each(output, &ec->output_list, link) {
+		if (!output->repaint_needed)
+			continue;
+
+		if (!output->finished) {
+			repainted_all_outputs = 0;
+			continue;
+		}
+
+		wlsc_output_repaint(output);
+		output->finished = 0;
+		output->repaint_needed = 0;
+		output->present(output);
 	}
 
-	wl_list_for_each(output, &ec->output_list, link)
-		wlsc_output_repaint(output);
-
-	ec->repaint_needed = 0;
-	ec->present(ec);
+	if (repainted_all_outputs)
+		ec->repaint_on_timeout = 0;
+	else
+		wl_event_source_timer_update(ec->timer_source, 1);
 }
 
 void
 wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor)
 {
-	compositor->repaint_needed = 1;
+	struct wlsc_output *output;
+
+	wl_list_for_each(output, &compositor->output_list, link)
+		output->repaint_needed = 1;
+
 	if (compositor->repaint_on_timeout)
 		return;
 
@@ -598,6 +623,32 @@ surface_destroy(struct wl_client *client,
 		struct wl_surface *surface)
 {
 	wl_resource_destroy(&surface->resource, client);
+}
+
+void
+wlsc_surface_assign_output(struct wlsc_surface *es)
+{
+	struct wlsc_compositor *ec = es->compositor;
+	struct wlsc_output *output;
+
+	struct wlsc_output *tmp = es->output;
+	es->output = NULL;
+
+	wl_list_for_each(output, &ec->output_list, link) {
+		if (output->x < es->x && es->x < output->x + output->width &&
+		    output->y < es->y && es->y < output->y + output->height) {
+			if (output != tmp)
+				printf("assiging surface %p to output %p\n",
+				       es, output);
+			es->output = output;
+		}
+	}
+	
+	if (es->output == NULL) {
+		printf("no output found\n");
+		es->output = container_of(ec->output_list.next,
+					  struct wlsc_output, link);
+	}
 }
 
 static void
@@ -620,6 +671,8 @@ surface_attach(struct wl_client *client,
 	es->y += y;
 	es->width = buffer->width;
 	es->height = buffer->height;
+	if (x != 0 || y != 0)
+		wlsc_surface_assign_output(es);
 	wlsc_surface_update_matrix(es);
 }
 
@@ -628,12 +681,16 @@ surface_map_toplevel(struct wl_client *client,
 		     struct wl_surface *surface)
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+	struct wlsc_compositor *ec = es->compositor;
 
 	switch (es->map_type) {
 	case WLSC_SURFACE_MAP_UNMAPPED:
 		es->x = 10 + random() % 400;
 		es->y = 10 + random() % 400;
 		wlsc_surface_update_matrix(es);
+		/* assign to first output */
+		es->output = container_of(ec->output_list.next,
+					  struct wlsc_output, link);
 		wl_list_insert(&es->compositor->surface_list, &es->link);
 		break;
 	case WLSC_SURFACE_MAP_TOPLEVEL:
@@ -663,6 +720,8 @@ surface_map_transient(struct wl_client *client,
 	switch (es->map_type) {
 	case WLSC_SURFACE_MAP_UNMAPPED:
 		wl_list_insert(&es->compositor->surface_list, &es->link);
+		/* assign to parents output  */
+		es->output = pes->output;
 		break;
 	case WLSC_SURFACE_MAP_FULLSCREEN:
 		es->fullscreen_output = NULL;
@@ -685,10 +744,17 @@ surface_map_fullscreen(struct wl_client *client, struct wl_surface *surface)
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 	struct wlsc_output *output;
 
+	/* FIXME: Fullscreen on first output */
+	/* FIXME: Handle output going away */
+	output = container_of(es->compositor->output_list.next,
+			      struct wlsc_output, link);
+
 	switch (es->map_type) {
 	case WLSC_SURFACE_MAP_UNMAPPED:
 		es->x = 10 + random() % 400;
 		es->y = 10 + random() % 400;
+		/* assign to first output */
+		es->output = output;
 		wl_list_insert(&es->compositor->surface_list, &es->link);
 		break;
 	case WLSC_SURFACE_MAP_FULLSCREEN:
@@ -696,11 +762,6 @@ surface_map_fullscreen(struct wl_client *client, struct wl_surface *surface)
 	default:
 		break;
 	}
-
-	/* FIXME: Fullscreen on first output */
-	/* FIXME: Handle output going away */
-	output = container_of(es->compositor->output_list.next,
-			      struct wlsc_output, link);
 
 	es->saved_x = es->x;
 	es->saved_y = es->y;
@@ -1441,6 +1502,7 @@ wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 		background_create(output, option_background);
 
 	output->flags = flags;
+	output->finished = 1;
 	wlsc_output_move(output, x, y);
 
 	output->object.interface = &wl_output_interface;

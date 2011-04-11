@@ -171,24 +171,24 @@ x11_output_prepare_render(struct wlsc_output *output_base)
 	return 0;
 }
 
-static void
-x11_compositor_present(struct wlsc_compositor *base)
+static int
+x11_output_present(struct wlsc_output *output_base)
 {
-	struct x11_compositor *c = (struct x11_compositor *) base;
-	struct x11_output *output;
+	struct x11_output *output = (struct x11_output *) output_base;
+	struct wlsc_compositor *ec = output->base.compositor;
 	struct timeval tv;
 	uint32_t msec;
 
-	wl_list_for_each(output, &c->base.output_list, base.link) {
-		if (x11_output_prepare_render(&output->base))
-			continue;
+	if (x11_output_prepare_render(&output->base))
+		return -1;
 
-		eglSwapBuffers(c->base.display, output->egl_surface);
-	}
+	eglSwapBuffers(ec->display, output->egl_surface);
 
 	gettimeofday(&tv, NULL);
 	msec = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	wlsc_compositor_finish_frame(&c->base, msec);
+	wlsc_output_finish_frame(&output->base, msec);
+
+	return 0;
 }
 
 static void
@@ -338,6 +338,7 @@ x11_compositor_create_output(struct x11_compositor *c, int width, int height)
 	}
 
 	output->base.prepare_render = x11_output_prepare_render;
+	output->base.present = x11_output_present;
 
 	wl_list_insert(c->base.output_list.prev, &output->base.link);
 
@@ -573,7 +574,6 @@ x11_compositor_create(struct wl_display *display, int width, int height)
 		return NULL;
 
 	c->base.destroy = x11_destroy;
-	c->base.present = x11_compositor_present;
 	c->base.create_buffer = wlsc_shm_buffer_create;
 
 	/* Can't init base class until we have a current egl context */

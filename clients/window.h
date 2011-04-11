@@ -175,6 +175,9 @@ window_damage(struct window *window, int32_t x, int32_t y,
 cairo_surface_t *
 window_get_surface(struct window *window);
 
+struct wl_surface *
+window_get_wl_surface(struct window *window);
+
 void
 window_flush(struct window *window);
 
