@@ -752,12 +752,6 @@ window_set_surface(struct window *window, cairo_surface_t *surface)
 	window->cairo_surface = surface;
 }
 
-struct wl_surface *
-window_get_wl_surface(struct window *window)
-{
-	return window->surface;
-}
-
 static void
 window_resize_cairo_window_surface(struct window *window)
 {
