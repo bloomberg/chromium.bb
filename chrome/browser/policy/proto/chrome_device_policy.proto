@@ -19,7 +19,19 @@ message UserWhitelistProto {
 
 message GuestModeEnabledProto {
   // Determines if guests are allowed to log in to the device.
+  // Should default to true.
   optional bool guest_mode_enabled = 1;
+}
+
+message ShowUserNamesOnSigninProto {
+  // Determines if we show pods for existing users on the sign in screen.
+  // Should default to true.
+  optional bool show_user_names = 1;
+}
+
+message DataRoamingEnabledProto {
+  // Determines if cellular data roaming is enabled.  Should default to false.
+  optional bool data_roaming_enabled = 1;
 }
 
 message DeviceProxySettingsProto {
@@ -35,4 +47,6 @@ message ChromeDeviceSettingsProto {
   optional UserWhitelistProto user_whitelist = 2;
   optional GuestModeEnabledProto guest_mode_enabled = 3;
   optional DeviceProxySettingsProto device_proxy_settings = 4;
+  optional ShowUserNamesOnSigninProto show_user_names = 5;
+  optional DataRoamingEnabledProto data_roaming_enabled = 6;
 }
