@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -168,6 +168,20 @@
 #      ],
 #      'sources': [
 #        'examples/font/simple_font.cc',
+#      ],
+#    },
+#   {
+#      'target_name': 'ppapi_example_gles2',
+#      'dependencies': [
+#        'ppapi_example_skeleton',
+#        'ppapi_gles2',
+#        'lib/gl/gl.gyp:ppapi_egl',
+#      ],
+#      'include_dirs': [
+#        'lib/gl/include',
+#      ],
+#      'sources': [
+#        'examples/gles2/gles2.cc',
 #      ],
 #    },
     {
