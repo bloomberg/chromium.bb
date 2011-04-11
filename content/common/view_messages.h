@@ -1850,19 +1850,19 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_SetCacheMode,
 // |result| is the returned status from the operation.
 IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_ClearCache,
                             bool /* preserve_ssl_host_info */,
-                            int  /* result */)
+                            int /* result */)
 
 // Message sent from the renderer to the browser to request that the browser
 // clear the host cache.  Used for debugging/testing.
 // |result| is the returned status from the operation.
 IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_ClearHostResolverCache,
-                            int  /* result */)
+                            int /* result */)
 
 // Message sent from the renderer to the browser to request that the browser
 // clear the predictor cache.  Used for debugging/testing.
 // |result| is the returned status from the operation.
 IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_ClearPredictorCache,
-                            int  /* result */)
+                            int /* result */)
 
 // Message sent from the renderer to the browser to request that the browser
 // enable or disable spdy.  Used for debugging/testing/benchmarking.

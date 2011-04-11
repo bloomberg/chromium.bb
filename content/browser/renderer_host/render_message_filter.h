@@ -37,12 +37,13 @@ class RenderWidgetHelper;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_CreateWorker_Params;
 
-namespace webkit {
-namespace npapi {
-struct WebPluginInfo;
-}
+namespace WebKit {
+struct WebScreenInfo;
 }
 
+namespace gfx {
+class Rect;
+}
 namespace base {
 class SharedMemory;
 }
@@ -50,6 +51,12 @@ class SharedMemory;
 namespace net {
 class CookieStore;
 class URLRequestContextGetter;
+}
+
+namespace webkit {
+namespace npapi {
+struct WebPluginInfo;
+}
 }
 
 // This class filters out incoming IPC messages for the renderer process on the
@@ -64,6 +71,8 @@ class RenderMessageFilter : public BrowserMessageFilter {
                       RenderWidgetHelper* render_widget_helper);
 
   // BrowserMessageFilter methods:
+  virtual void OverrideThreadForMessage(const IPC::Message& message,
+                                        BrowserThread::ID* thread);
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok);
   virtual void OnDestruct() const;
@@ -106,7 +115,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
                       const std::string& cookieName);
   void OnCookiesEnabled(const GURL& url,
                         const GURL& first_party_for_cookies,
-                        IPC::Message* reply_msg);
+                        bool* cookies_enabled);
   void OnPluginFileDialog(const IPC::Message& msg,
                           bool multiple_files,
                           const std::wstring& title,
@@ -127,25 +136,21 @@ class RenderMessageFilter : public BrowserMessageFilter {
 
 #if !defined(OS_MACOSX)
   // Not handled in the IO thread on Mac.
-  void OnGetScreenInfo(gfx::NativeViewId window, IPC::Message* reply);
+  void OnGetScreenInfo(gfx::NativeViewId window,
+                       WebKit::WebScreenInfo* results);
+  void OnGetWindowRect(gfx::NativeViewId window, gfx::Rect* rect);
+  void OnGetRootWindowRect(gfx::NativeViewId window, gfx::Rect* rect);
 #endif
-  void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
-  void OnGetPluginsOnFileThread(bool refresh, IPC::Message* reply_msg);
+  void OnGetPlugins(bool refresh,
+                    std::vector<webkit::npapi::WebPluginInfo>* plugins);
   void OnGetPluginInfo(int routing_id,
                        const GURL& url,
                        const GURL& policy_url,
                        const std::string& mime_type,
-                       IPC::Message* reply_msg);
-  void OnGetPluginInfoOnFileThread(int render_view_id,
-                                   const GURL& url,
-                                   const GURL& policy_url,
-                                   const std::string& mime_type,
-                                   IPC::Message* reply_msg);
-  void OnGotPluginInfo(bool found,
-                       const webkit::npapi::WebPluginInfo& info,
-                       const std::string& actual_mime_type,
-                       const GURL& policy_url,
-                       IPC::Message* reply_msg);
+                       bool* found,
+                       webkit::npapi::WebPluginInfo* info,
+                       int* setting,
+                       std::string* actual_mime_type);
   void OnOpenChannelToPlugin(int routing_id,
                              const GURL& url,
                              const std::string& mime_type,
@@ -156,16 +161,8 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnDownloadUrl(const IPC::Message& message,
                      const GURL& url,
                      const GURL& referrer);
-  void OnReceiveContextMenuMsg(const IPC::Message& msg);
-
   void OnCheckNotificationPermission(const GURL& source_url,
                                      int* permission_level);
-
-#if !defined(OS_MACOSX)
-  // Not handled in the IO thread on Mac.
-  void OnGetWindowRect(gfx::NativeViewId window, IPC::Message* reply);
-  void OnGetRootWindowRect(gfx::NativeViewId window, IPC::Message* reply);
-#endif
 
   void OnRevealFolderInOS(const FilePath& path);
 
@@ -194,8 +191,8 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnCloseCurrentConnections();
   void OnSetCacheMode(bool enabled);
   void OnClearCache(bool preserve_ssl_host_info, IPC::Message* reply_msg);
-  void OnClearHostResolverCache(IPC::Message* reply_msg);
-  void OnClearPredictorCache(IPC::Message* reply_msg);
+  void OnClearHostResolverCache(int* result);
+  void OnClearPredictorCache(int* result);
   void OnCacheableMetadataAvailable(const GURL& url,
                                     double expected_response_time,
                                     const std::vector<char>& data);
@@ -215,12 +212,6 @@ class RenderMessageFilter : public BrowserMessageFilter {
                                  int flags,
                                  int message_id,
                                  int routing_id);
-
-#if defined(USE_X11)
-  void DoOnGetScreenInfo(gfx::NativeViewId view, IPC::Message* reply_msg);
-  void DoOnGetWindowRect(gfx::NativeViewId view, IPC::Message* reply_msg);
-  void DoOnGetRootWindowRect(gfx::NativeViewId view, IPC::Message* reply_msg);
-#endif
 
   bool CheckBenchmarkingEnabled() const;
   bool CheckPreparsedJsCachingEnabled() const;
@@ -257,7 +248,8 @@ class RenderMessageFilter : public BrowserMessageFilter {
   // Whether this process is used for incognito tabs.
   bool incognito_;
 
-  base::TimeTicks last_plugin_refresh_time_;  // Initialized to 0.
+  // Initialized to 0, accessed on FILE thread only.
+  base::TimeTicks last_plugin_refresh_time_;
 
   scoped_refptr<WebKitContext> webkit_context_;
 
@@ -330,19 +322,6 @@ class GetCookiesCompletion : public net::CompletionCallback {
   int render_view_id_;
   bool raw_cookies_;
   scoped_refptr<net::CookieStore> cookie_store_;
-};
-
-class CookiesEnabledCompletion : public net::CompletionCallback {
- public:
-  CookiesEnabledCompletion(IPC::Message* reply_msg,
-                           RenderMessageFilter* filter);
-  virtual ~CookiesEnabledCompletion();
-
-  virtual void RunWithParams(const Tuple1<int>& params);
-
- private:
-  IPC::Message* reply_msg_;
-  scoped_refptr<RenderMessageFilter> filter_;
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_MESSAGE_FILTER_H_

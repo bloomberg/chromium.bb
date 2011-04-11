@@ -78,36 +78,6 @@ namespace {
 
 const int kPluginsRefreshThresholdInSeconds = 3;
 
-// Context menus are somewhat complicated. We need to intercept them here on
-// the I/O thread to add any spelling suggestions to them. After that's done,
-// we need to forward the modified message to the UI thread and the normal
-// message forwarding isn't set up for sending modified messages.
-//
-// Therefore, this class dispatches the IPC message to the RenderProcessHost
-// with the given ID (if possible) to emulate the normal dispatch.
-class ContextMenuMessageDispatcher : public Task {
- public:
-  ContextMenuMessageDispatcher(
-      int render_process_id,
-      const ViewHostMsg_ContextMenu& context_menu_message)
-      : render_process_id_(render_process_id),
-        context_menu_message_(context_menu_message) {
-  }
-
-  void Run() {
-    RenderProcessHost* host =
-        RenderProcessHost::FromID(render_process_id_);
-    if (host)
-      host->OnMessageReceived(context_menu_message_);
-  }
-
- private:
-  int render_process_id_;
-  const ViewHostMsg_ContextMenu context_menu_message_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContextMenuMessageDispatcher);
-};
-
 // Common functionality for converting a sync renderer message to a callback
 // function in the browser. Derive from this, create it on the heap when
 // issuing your callback. When done, write your reply parameters into
@@ -290,7 +260,28 @@ RenderMessageFilter::~RenderMessageFilter() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
-// Called on the IPC thread:
+void RenderMessageFilter::OverrideThreadForMessage(const IPC::Message& message,
+                                                   BrowserThread::ID* thread) {
+  switch (message.type()) {
+#if defined(USE_X11)
+    case ViewHostMsg_GetScreenInfo::ID:
+    case ViewHostMsg_GetWindowRect::ID:
+    case ViewHostMsg_GetRootWindowRect::ID:
+      *thread = BrowserThread::BACKGROUND_X11;
+      break;
+#endif
+    // Can't load plugins on IO thread.
+    case ViewHostMsg_GetPlugins::ID:
+    // The PluginService::GetFirstAllowedPluginInfo may need to load the
+    // plugins.  Don't do it on the IO thread.
+    case ViewHostMsg_GetPluginInfo::ID:
+      *thread = BrowserThread::FILE;
+      break;
+    default:
+      break;
+  }
+}
+
 bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                                             bool* message_was_ok) {
   bool handled = true;
@@ -301,14 +292,12 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     // the UI thread.  On Windows, we intercept the messages and
     // handle them directly.
 #if !defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetScreenInfo, OnGetScreenInfo)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetWindowRect, OnGetWindowRect)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetRootWindowRect,
-                                    OnGetRootWindowRect)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetScreenInfo, OnGetScreenInfo)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetWindowRect, OnGetWindowRect)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetRootWindowRect, OnGetRootWindowRect)
 #endif
 
     IPC_MESSAGE_HANDLER(ViewHostMsg_GenerateRoutingID, OnGenerateRoutingID)
-
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnMsgCreateWindow)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnMsgCreateWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateFullscreenWidget,
@@ -317,19 +306,16 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetCookies, OnGetCookies)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetRawCookies, OnGetRawCookies)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DeleteCookie, OnDeleteCookie)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_CookiesEnabled,
-                                    OnCookiesEnabled)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CookiesEnabled, OnCookiesEnabled)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_LoadFont, OnLoadFont)
 #endif
 #if defined(OS_WIN)  // This hack is Windows-specific.
     IPC_MESSAGE_HANDLER(ViewHostMsg_PreCacheFont, OnPreCacheFont)
 #endif
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPlugins, OnGetPlugins)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPluginInfo, OnGetPluginInfo)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetPlugins, OnGetPlugins)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginInfo, OnGetPluginInfo)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DownloadUrl, OnDownloadUrl)
-    IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_ContextMenu,
-                                OnReceiveContextMenuMsg(message))
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPlugin,
                                     OnOpenChannelToPlugin)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPepperPlugin,
@@ -350,10 +336,9 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnCloseCurrentConnections)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCacheMode, OnSetCacheMode)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClearCache, OnClearCache)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClearHostResolverCache,
-                                    OnClearHostResolverCache)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClearPredictorCache,
-                                    OnClearPredictorCache)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ClearHostResolverCache,
+                        OnClearHostResolverCache)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ClearPredictorCache, OnClearPredictorCache)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidGenerateCacheableMetadata,
                         OnCacheableMetadataAvailable)
     IPC_MESSAGE_HANDLER(ViewHostMsg_EnableSpdy, OnEnableSpdy)
@@ -389,20 +374,6 @@ void RenderMessageFilter::OnRevealFolderInOS(const FilePath& path) {
 
 void RenderMessageFilter::OnDestruct() const {
   BrowserThread::DeleteOnIOThread::Destruct(this);
-}
-
-void RenderMessageFilter::OnReceiveContextMenuMsg(const IPC::Message& msg) {
-  void* iter = NULL;
-  ContextMenuParams params;
-  if (!IPC::ParamTraits<ContextMenuParams>::Read(&msg, &iter, &params))
-    return;
-
-  // Create a new ViewHostMsg_ContextMenu message.
-  const ViewHostMsg_ContextMenu context_menu_message(msg.routing_id(), params);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      new ContextMenuMessageDispatcher(
-          render_process_id_, context_menu_message));
 }
 
 void RenderMessageFilter::OnMsgCreateWindow(
@@ -527,10 +498,8 @@ void RenderMessageFilter::OnDeleteCookie(const GURL& url,
 void RenderMessageFilter::OnCookiesEnabled(
     const GURL& url,
     const GURL& first_party_for_cookies,
-    IPC::Message* reply_msg) {
+    bool* cookies_enabled) {
   net::URLRequestContext* context = GetRequestContextForURL(url);
-  CookiesEnabledCompletion* callback =
-      new CookiesEnabledCompletion(reply_msg, this);
   int policy = net::OK;
   // TODO(ananta): If this render view is associated with an automation channel,
   // aka ChromeFrame then we need to retrieve cookie settings from the external
@@ -539,7 +508,8 @@ void RenderMessageFilter::OnCookiesEnabled(
     policy = context->cookie_policy()->CanGetCookies(
         url, first_party_for_cookies);
   }
-  callback->Run(policy);
+
+  *cookies_enabled = policy != net::ERR_ACCESS_DENIED;
 }
 
 #if defined(OS_MACOSX)
@@ -569,8 +539,9 @@ void RenderMessageFilter::OnPreCacheFont(LOGFONT font) {
 }
 #endif  // OS_WIN
 
-void RenderMessageFilter::OnGetPlugins(bool refresh,
-                                       IPC::Message* reply_msg) {
+void RenderMessageFilter::OnGetPlugins(
+    bool refresh,
+    std::vector<webkit::npapi::WebPluginInfo>* plugins) {
   // Don't refresh if the specified threshold has not been passed.  Note that
   // this check is performed before off-loading to the file thread.  The reason
   // we do this is that some pages tend to request that the list of plugins be
@@ -587,78 +558,32 @@ void RenderMessageFilter::OnGetPlugins(bool refresh,
         last_plugin_refresh_time_ = now;
   }
 
-  // Can't load plugins on IO thread, so go to the FILE thread.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this, &RenderMessageFilter::OnGetPluginsOnFileThread, refresh,
-          reply_msg));
+  webkit::npapi::PluginList::Singleton()->GetEnabledPlugins(refresh, plugins);
 }
 
-void RenderMessageFilter::OnGetPluginsOnFileThread(
-    bool refresh, IPC::Message* reply_msg) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  std::vector<webkit::npapi::WebPluginInfo> plugins;
-  webkit::npapi::PluginList::Singleton()->GetEnabledPlugins(refresh, &plugins);
-  ViewHostMsg_GetPlugins::WriteReplyParams(reply_msg, plugins);
-  Send(reply_msg);
-}
-
-void RenderMessageFilter::OnGetPluginInfo(int routing_id,
-                                          const GURL& url,
-                                          const GURL& policy_url,
-                                          const std::string& mime_type,
-                                          IPC::Message* reply_msg) {
-  // The PluginService::GetFirstAllowedPluginInfo may need to load the
-  // plugins.  Don't do it on the IO thread.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this, &RenderMessageFilter::OnGetPluginInfoOnFileThread,
-          routing_id, url, policy_url, mime_type, reply_msg));
-}
-
-void RenderMessageFilter::OnGetPluginInfoOnFileThread(
-    int render_view_id,
+void RenderMessageFilter::OnGetPluginInfo(
+    int routing_id,
     const GURL& url,
     const GURL& policy_url,
     const std::string& mime_type,
-    IPC::Message* reply_msg) {
-  std::string actual_mime_type;
-  webkit::npapi::WebPluginInfo info;
-  bool found = plugin_service_->GetFirstAllowedPluginInfo(
-      render_process_id_, render_view_id, url, mime_type, &info,
-      &actual_mime_type);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &RenderMessageFilter::OnGotPluginInfo,
-          found, info, actual_mime_type, policy_url, reply_msg));
-}
+    bool* found,
+    webkit::npapi::WebPluginInfo* info,
+    int* setting,
+    std::string* actual_mime_type) {
+  *found = plugin_service_->GetFirstAllowedPluginInfo(
+      render_process_id_, routing_id, url, mime_type, info, actual_mime_type);
 
-void RenderMessageFilter::OnGotPluginInfo(
-    bool found,
-    const webkit::npapi::WebPluginInfo& info,
-    const std::string& actual_mime_type,
-    const GURL& policy_url,
-    IPC::Message* reply_msg) {
-  int content_setting = CONTENT_SETTING_DEFAULT;
-  webkit::npapi::WebPluginInfo info_copy = info;
-  if (found) {
-    if (!plugin_service_->PluginAllowedForURL(info_copy.path, policy_url))
-      info_copy.enabled |= webkit::npapi::WebPluginInfo::POLICY_DISABLED;
+  *setting = CONTENT_SETTING_DEFAULT;
+  if (*found) {
+    if (!plugin_service_->PluginAllowedForURL(info->path, policy_url))
+      info->enabled |= webkit::npapi::WebPluginInfo::POLICY_DISABLED;
     std::string resource =
-        webkit::npapi::PluginList::Singleton()->GetPluginGroupIdentifier(
-            info_copy);
-    content_setting = content_settings_->GetContentSetting(
+        webkit::npapi::PluginList::Singleton()->GetPluginGroupIdentifier(*info);
+    *setting = content_settings_->GetContentSetting(
         policy_url,
         CONTENT_SETTINGS_TYPE_PLUGINS,
         resource);
   }
-
-  ViewHostMsg_GetPluginInfo::WriteReplyParams(
-      reply_msg, found, info_copy, content_setting, actual_mime_type);
-  Send(reply_msg);
 }
 
 void RenderMessageFilter::OnOpenChannelToPlugin(int routing_id,
@@ -844,10 +769,10 @@ void RenderMessageFilter::OnClearCache(bool preserve_ssl_host_info,
   Send(reply_msg);
 }
 
-void RenderMessageFilter::OnClearHostResolverCache(IPC::Message* reply_msg) {
+void RenderMessageFilter::OnClearHostResolverCache(int* result) {
   // This function is disabled unless the user has enabled
   // benchmarking extensions.
-  int rv = -1;
+  *result = -1;
   DCHECK(CheckBenchmarkingEnabled());
   net::HostResolverImpl* host_resolver_impl =
       request_context_->GetURLRequestContext()->
@@ -856,19 +781,16 @@ void RenderMessageFilter::OnClearHostResolverCache(IPC::Message* reply_msg) {
     net::HostCache* cache = host_resolver_impl->cache();
     DCHECK(cache);
     cache->clear();
-    rv = 0;
+    *result = 0;
   }
-  ViewHostMsg_ClearHostResolverCache::WriteReplyParams(reply_msg, rv);
-  Send(reply_msg);
 }
 
-void RenderMessageFilter::OnClearPredictorCache(IPC::Message* reply_msg) {
+void RenderMessageFilter::OnClearPredictorCache(int* result) {
   // This function is disabled unless the user has enabled
   // benchmarking extensions.
   CHECK(CheckBenchmarkingEnabled());
   chrome_browser_net::ClearPredictorCache();
-  ViewHostMsg_ClearPredictorCache::WriteReplyParams(reply_msg, 0);
-  Send(reply_msg);
+  *result = 0;
 }
 
 bool RenderMessageFilter::CheckPreparsedJsCachingEnabled() const {
@@ -1106,20 +1028,4 @@ void GetCookiesCompletion::RunWithParams(const Tuple1<int>& params) {
 
 void GetCookiesCompletion::set_cookie_store(CookieStore* cookie_store) {
   cookie_store_ = cookie_store;
-}
-
-CookiesEnabledCompletion::CookiesEnabledCompletion(
-    IPC::Message* reply_msg,
-    RenderMessageFilter* filter)
-    : reply_msg_(reply_msg),
-      filter_(filter) {
-}
-
-CookiesEnabledCompletion::~CookiesEnabledCompletion() {}
-
-void CookiesEnabledCompletion::RunWithParams(const Tuple1<int>& params) {
-  bool result = params.a != net::ERR_ACCESS_DENIED;
-  ViewHostMsg_CookiesEnabled::WriteReplyParams(reply_msg_, result);
-  filter_->Send(reply_msg_);
-  delete this;
 }

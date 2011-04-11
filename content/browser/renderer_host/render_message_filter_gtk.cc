@@ -65,13 +65,12 @@ gfx::Rect GetWindowRectFromView(gfx::NativeViewId view) {
 
 // We get null window_ids passed into the two functions below; please see
 // http://crbug.com/9060 for more details.
-
-void RenderMessageFilter::DoOnGetScreenInfo(gfx::NativeViewId view,
-                                            IPC::Message* reply_msg) {
+void RenderMessageFilter::OnGetScreenInfo(gfx::NativeViewId view,
+                                          WebKit::WebScreenInfo* results) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::BACKGROUND_X11));
   Display* display = ui::GetSecondaryDisplay();
 
-  WebScreenInfo results = WebScreenInfoFactory::screenInfo(display,
+  *results = WebScreenInfoFactory::screenInfo(display,
       ui::GetDefaultScreen(display));
 
 #if !defined(OS_CHROMEOS)
@@ -111,34 +110,29 @@ void RenderMessageFilter::DoOnGetScreenInfo(gfx::NativeViewId view,
         }
       }
       XineramaScreenInfo& target_screen = screen_info[max_intersect_index];
-      results.rect = WebKit::WebRect(target_screen.x_org,
-                                     target_screen.y_org,
-                                     target_screen.width,
-                                     target_screen.height);
-      results.availableRect = results.rect;
+      results->rect = WebKit::WebRect(target_screen.x_org,
+                                      target_screen.y_org,
+                                      target_screen.width,
+                                      target_screen.height);
+      results->availableRect = results->rect;
 
       XFree(screen_info);
     }
   }
 #endif  // OS_CHROMEOS
-
-  ViewHostMsg_GetScreenInfo::WriteReplyParams(reply_msg, results);
-  Send(reply_msg);
 }
 
-void RenderMessageFilter::DoOnGetWindowRect(gfx::NativeViewId view,
-                                            IPC::Message* reply_msg) {
-  ViewHostMsg_GetWindowRect::WriteReplyParams(reply_msg,
-                                              GetWindowRectFromView(view));
-  Send(reply_msg);
+void RenderMessageFilter::OnGetWindowRect(gfx::NativeViewId view,
+                                          gfx::Rect* rect) {
+  *rect = GetWindowRectFromView(view);
 }
 
-void RenderMessageFilter::DoOnGetRootWindowRect(gfx::NativeViewId view,
-                                                IPC::Message* reply_msg) {
+void RenderMessageFilter::OnGetRootWindowRect(gfx::NativeViewId view,
+                                              gfx::Rect* rect) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::BACKGROUND_X11));
   // This is called to get the screen coordinates and size of the browser
   // window itself.
-  gfx::Rect rect;
+  *rect = gfx::Rect();
   XID window;
 
   base::AutoLock lock(GtkNativeViewManager::GetInstance()->unrealize_lock());
@@ -149,38 +143,8 @@ void RenderMessageFilter::DoOnGetRootWindowRect(gfx::NativeViewId view,
         int x, y;
         unsigned width, height;
         if (ui::GetWindowGeometry(&x, &y, &width, &height, toplevel))
-          rect = gfx::Rect(x, y, width, height);
+          *rect = gfx::Rect(x, y, width, height);
       }
     }
   }
-
-  ViewHostMsg_GetRootWindowRect::WriteReplyParams(reply_msg, rect);
-  Send(reply_msg);
-}
-
-void RenderMessageFilter::OnGetScreenInfo(gfx::NativeViewId view,
-                                          IPC::Message* reply_msg) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  BrowserThread::PostTask(
-     BrowserThread::BACKGROUND_X11, FROM_HERE,
-     NewRunnableMethod(
-         this, &RenderMessageFilter::DoOnGetScreenInfo, view, reply_msg));
-}
-
-void RenderMessageFilter::OnGetWindowRect(gfx::NativeViewId view,
-                                          IPC::Message* reply_msg) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  BrowserThread::PostTask(
-      BrowserThread::BACKGROUND_X11, FROM_HERE,
-      NewRunnableMethod(
-          this, &RenderMessageFilter::DoOnGetWindowRect, view, reply_msg));
-}
-
-void RenderMessageFilter::OnGetRootWindowRect(gfx::NativeViewId view,
-                                              IPC::Message* reply_msg) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  BrowserThread::PostTask(
-      BrowserThread::BACKGROUND_X11, FROM_HERE,
-      NewRunnableMethod(
-          this, &RenderMessageFilter::DoOnGetRootWindowRect, view, reply_msg));
 }
