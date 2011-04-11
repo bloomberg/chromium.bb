@@ -116,12 +116,12 @@ class TabContentsWrapper : public NotificationObserver,
 
   PasswordManager* password_manager() { return password_manager_.get(); }
 
-  SearchEngineTabHelper* search_engine_tab_helper() {
-    return search_engine_tab_helper_.get();
-  }
-
   printing::PrintViewManager* print_view_manager() {
     return print_view_manager_.get();
+  }
+
+  SearchEngineTabHelper* search_engine_tab_helper() {
+    return search_engine_tab_helper_.get();
   }
 
   // Overrides -----------------------------------------------------------------
@@ -182,10 +182,10 @@ class TabContentsWrapper : public NotificationObserver,
   scoped_ptr<PasswordManagerDelegate> password_manager_delegate_;
   scoped_ptr<PasswordManager> password_manager_;
 
-  scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
-
   // Handles print job for this contents.
   scoped_ptr<printing::PrintViewManager> print_view_manager_;
+
+  scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
 
   // Per-tab observers ---------------------------------------------------------
   // (These provide no API for callers; objects that need to exist 1:1 with tabs
