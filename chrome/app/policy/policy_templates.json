@@ -94,7 +94,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 81
+#   For your editing convenience: highest ID currently used: 82
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1436,6 +1436,22 @@
       If you disable this setting, outdated plugins will not be used and users will not be asked for permission to run them.
 
       If this setting is not set, users will be asked for permission to run outdated plugins.''',
+    },
+    {
+      'name': 'BookmarkBarEnabled',
+      'type': 'main',
+      'supported_on': ['chrome.*:12-', 'chrome_os:0.12-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
+      'id': 82,
+      'caption': '''Enable Bookmark Bar''',
+      'desc': '''Enables the bookmark bar on the new tab page on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will show a bookmark bar on the "New tab" page.
+
+      If you disable this setting, users will never see the bookmark bar.
+
+      If you enable or disable this setting, users cannot change or override it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
     },
   ],
   'messages': {

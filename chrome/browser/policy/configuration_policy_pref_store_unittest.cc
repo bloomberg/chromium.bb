@@ -207,7 +207,9 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(kPolicyTranslateEnabled,
                     prefs::kEnableTranslate),
         TypeAndName(kPolicyAllowOutdatedPlugins,
-                    prefs::kPluginsAllowOutdated)));
+                    prefs::kPluginsAllowOutdated),
+        TypeAndName(kPolicyBookmarkBarEnabled,
+                    prefs::kEnableBookmarkBar)));
 
 #if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(

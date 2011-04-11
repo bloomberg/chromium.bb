@@ -972,6 +972,9 @@ bool TabContents::ShouldShowBookmarkBar() {
   if (!browser_defaults::bookmarks_enabled)
     return false;
 
+  if (!profile()->GetPrefs()->GetBoolean(prefs::kEnableBookmarkBar))
+    return false;
+
   // See GetWebUIForCurrentState() comment for more info. This case is very
   // similar, but for non-first loads, we want to use the committed entry. This
   // is so the bookmarks bar disappears at the same time the page does.

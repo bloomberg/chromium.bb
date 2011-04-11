@@ -157,6 +157,7 @@ NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
   // Watch for pref changes that cause us to need to invalidate the HTML cache.
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
+  pref_change_registrar_.Add(prefs::kEnableBookmarkBar, this);
   pref_change_registrar_.Add(prefs::kNTPShownSections, this);
 }
 
@@ -200,6 +201,7 @@ void NTPResourceCache::Observe(NotificationType type,
   } else if (NotificationType::PREF_CHANGED == type) {
     std::string* pref_name = Details<std::string>(details).ptr();
     if (*pref_name == prefs::kShowBookmarkBar ||
+        *pref_name == prefs::kEnableBookmarkBar ||
         *pref_name == prefs::kHomePageIsNewTabPage ||
         *pref_name == prefs::kNTPShownSections) {
       new_tab_incognito_html_ = NULL;

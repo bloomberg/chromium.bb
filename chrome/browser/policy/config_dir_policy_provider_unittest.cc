@@ -356,6 +356,9 @@ INSTANTIATE_TEST_CASE_P(
             key::kTranslateEnabled),
         ValueTestParams::ForBooleanPolicy(
             kPolicyAllowOutdatedPlugins,
-            key::kAllowOutdatedPlugins)));
+            key::kAllowOutdatedPlugins),
+        ValueTestParams::ForBooleanPolicy(
+            kPolicyBookmarkBarEnabled,
+            key::kBookmarkBarEnabled)));
 
 }  // namespace policy

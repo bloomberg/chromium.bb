@@ -795,7 +795,8 @@ void BookmarkBarGtk::StartThrobbingAfterAllocation(GtkWidget* item) {
 }
 
 bool BookmarkBarGtk::IsAlwaysShown() {
-  return profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
+  return (profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) &&
+          profile_->GetPrefs()->GetBoolean(prefs::kEnableBookmarkBar));
 }
 
 void BookmarkBarGtk::AnimationProgressed(const ui::Animation* animation) {

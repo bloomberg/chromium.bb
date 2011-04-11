@@ -268,6 +268,10 @@ bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
       return bookmark_utils::GetParentForNewNodes(
           parent_, selection_, NULL) != NULL;
 
+    case IDC_BOOKMARK_BAR_ALWAYS_SHOW:
+      return !profile_->GetPrefs()->IsManagedPreference(
+          prefs::kEnableBookmarkBar);
+
     case IDC_COPY:
     case IDC_CUT:
       return !selection_.empty() && !is_root_node;

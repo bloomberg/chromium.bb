@@ -2116,6 +2116,7 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kWebAppCreateInQuickLaunchBar, true);
   prefs->RegisterBooleanPref(prefs::kUseVerticalTabs, false);
   prefs->RegisterBooleanPref(prefs::kEnableTranslate, true);
+  prefs->RegisterBooleanPref(prefs::kEnableBookmarkBar, true);
   prefs->RegisterBooleanPref(prefs::kRemotingHasSetupCompleted, false);
   prefs->RegisterStringPref(prefs::kCloudPrintEmail, std::string());
   prefs->RegisterBooleanPref(prefs::kCloudPrintProxyEnabled, true);

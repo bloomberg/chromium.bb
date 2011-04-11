@@ -719,7 +719,8 @@ int BookmarkBarView::GetToolbarOverlap() const {
 }
 
 bool BookmarkBarView::IsAlwaysShown() const {
-  return profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
+  return (profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) &&
+          profile_->GetPrefs()->GetBoolean(prefs::kEnableBookmarkBar));
 }
 
 bool BookmarkBarView::OnNewTabPage() const {

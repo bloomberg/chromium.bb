@@ -327,6 +327,9 @@ INSTANTIATE_TEST_CASE_P(
             key::kTranslateEnabled),
         PolicyTestParams::ForBooleanPolicy(
             kPolicyAllowOutdatedPlugins,
-            key::kAllowOutdatedPlugins)));
+            key::kAllowOutdatedPlugins),
+        PolicyTestParams::ForBooleanPolicy(
+            kPolicyBookmarkBarEnabled,
+            key::kBookmarkBarEnabled)));
 
 }  // namespace policy

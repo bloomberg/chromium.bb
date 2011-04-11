@@ -406,6 +406,10 @@ void NewTabUI::Observe(NotificationType type,
       break;
     }
     case NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED: {
+      if (GetProfile()->GetPrefs()->IsManagedPreference(
+              prefs::kEnableBookmarkBar)) {
+        break;
+      }
       if (GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar))
         CallJavascriptFunction("bookmarkBarAttached");
       else

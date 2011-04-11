@@ -269,6 +269,7 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
   { Value::TYPE_BOOLEAN, kPolicyCloudPrintProxyEnabled,
     prefs::kCloudPrintProxyEnabled },
   { Value::TYPE_BOOLEAN, kPolicyTranslateEnabled, prefs::kEnableTranslate },
+  { Value::TYPE_BOOLEAN, kPolicyBookmarkBarEnabled, prefs::kEnableBookmarkBar },
   { Value::TYPE_BOOLEAN, kPolicyAllowOutdatedPlugins,
     prefs::kPluginsAllowOutdated },
 
@@ -990,6 +991,8 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
     { kPolicyTranslateEnabled, Value::TYPE_BOOLEAN, key::kTranslateEnabled },
     { kPolicyAllowOutdatedPlugins, Value::TYPE_BOOLEAN,
       key::kAllowOutdatedPlugins },
+    { kPolicyBookmarkBarEnabled, Value::TYPE_BOOLEAN,
+      key::kBookmarkBarEnabled },
 
 #if defined(OS_CHROMEOS)
     { kPolicyChromeOsLockOnIdleSuspend, Value::TYPE_BOOLEAN,
