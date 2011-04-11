@@ -22,7 +22,8 @@ std::string NetAddressToString(const PP_Flash_NetAddress& addr) {
 }
 
 void StringToNetAddress(const std::string& str, PP_Flash_NetAddress* addr) {
-  memcpy(addr->data, str.data(), std::min(str.size(), sizeof(addr->data)));
+  addr->size = std::min(str.size(), sizeof(addr->data));
+  memcpy(addr->data, str.data(), addr->size);
 }
 
 class FlashNetConnector : public PluginResource {
