@@ -82,14 +82,20 @@ list > [selected]:hover {
   padding: 0 12px;
 }
 
-.table-header-sort-image-desc {
-  background-image: url('../images/treeDownTriangleBlack.png');
-  background-repeat: no-repeat;
+.table-header-sort-image-desc:after {
+  position: relative;
+  top: -2px;
+  content: '\25be'; /* BLACK DOWN-POINTING SMALL TRIANGLE */
+  -webkit-padding-start: 0.4em;
+  color: #888;
 }
 
-.table-header-sort-image-asc {
-  background-image: url('../images/treeUpTriangleBlack.png');
-  background-repeat: no-repeat;
+.table-header-sort-image-asc:after {
+  position: relative;
+  top: -2px;
+  content: '\25b4'; /* BLACK UP-POINTING SMALL TRIANGLE */
+  -webkit-padding-start: 0.4em;
+  color: #888;
 }
 
 .table-header-splitter {

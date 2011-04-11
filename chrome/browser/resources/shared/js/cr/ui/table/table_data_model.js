@@ -161,14 +161,30 @@ cr.define('cr.ui.table', function() {
     },
 
     /**
+     * Called before a sort happens so that you may fetch additional data
+     * required for the sort.
+     *
+     * @param {string} field Sort field.
+     * @param {function()} callback The function to invoke when preparation
+     *     is complete.
+     */
+    prepareSort: function(field, callback) {
+      callback();
+    },
+
+    /**
      * Sorts data model according to given field and direction and dispathes
      * sorted event.
      * @param {string} field Sort field.
      * @param {string} direction Sort direction.
      */
     sort: function(field, direction) {
-      var sortPermutation = this.doSort_(field, direction);
-      this.dispatchSortEvent_(sortPermutation);
+      var self = this;
+
+      this.prepareSort(field, function() {
+        var sortPermutation = self.doSort_(field, direction);
+        self.dispatchSortEvent_(sortPermutation);
+      });
     },
 
     /**

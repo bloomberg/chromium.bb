@@ -30,6 +30,9 @@ cr.define('cr.ui.table', function() {
      * @param {!Array.<number>} permutation The reordering permutation.
      */
     adjustToReordering: function(permutation) {
+      if (this.leadIndex != -1)
+        this.leadIndex = permutation[this.leadIndex];
+
       var oldSelectedIndex = this.selectedIndex;
       if (oldSelectedIndex != -1) {
         this.selectedIndex = permutation[oldSelectedIndex];

@@ -148,6 +148,15 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Ensures that a given index is inside the viewport.
+     * @param {number} index The index of the item to scroll into view.
+     * @return {boolean} Whether any scrolling was needed.
+     */
+    scrollIndexIntoView: function(i) {
+      this.list_.scrollIndexIntoView(i);
+    },
+
+    /**
      * Redraws the table.
      * This forces the list to remove all cached items.
      */
