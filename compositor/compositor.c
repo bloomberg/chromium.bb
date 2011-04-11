@@ -578,9 +578,8 @@ repaint(void *data)
 	wl_list_for_each(output, &ec->output_list, link)
 		wlsc_output_repaint(output);
 
-	ec->present(ec);
-
 	ec->repaint_needed = 0;
+	ec->present(ec);
 }
 
 void
