@@ -30,6 +30,7 @@
 #include "views/focus/view_storage.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"
+#include "views/widget/widget_gtk.h"
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
@@ -188,6 +189,9 @@ RenderWidgetHostView* TabContentsViewGtk::CreateViewForWidget(
                    G_CALLBACK(OnMouseScroll), tab_contents());
   gtk_widget_add_events(view->native_view(), GDK_LEAVE_NOTIFY_MASK |
                         GDK_POINTER_MOTION_MASK);
+
+  // Let widget know that the tab contents has been painted.
+  views::WidgetGtk::RegisterChildExposeHandler(view->native_view());
 
   // Renderer target DnD.
   if (tab_contents()->ShouldAcceptDragAndDrop())

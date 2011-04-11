@@ -187,6 +187,17 @@ class WidgetGtk : public Widget,
   // which does not support this property.
   static void UpdateFreezeUpdatesProperty(GtkWindow* window, bool enable);
 
+  // Registers a expose handler that removes FREEZE_UPDATES property.
+  // If you are adding a GtkWidget with its own GdkWindow that may
+  // fill the entire area of the WidgetGtk to the view hierachy, you
+  // need use this function to tell WM that when the widget is ready
+  // to be shown.
+  // Caller of this method do not need to disconnect this because the
+  // handler will be removed upon the first invocation of the handler,
+  // or when the widget is re-attached, and expose won't be emitted on
+  // detached widget.
+  static void RegisterChildExposeHandler(GtkWidget* widget);
+
   // Overridden from NativeWidget:
   virtual void SetCreateParams(const CreateParams& params) OVERRIDE;
   virtual Widget* GetWidget() OVERRIDE;
@@ -297,6 +308,11 @@ class WidgetGtk : public Widget,
 
   // This is called only when the window is transparent.
   CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnWindowPaint, GdkEventExpose*);
+
+  // Callbacks for expose event on child widgets. See the description of
+  // RegisterChildChildExposeHandler.
+  void OnChildExpose(GtkWidget* child);
+  static gboolean ChildExposeHandler(GtkWidget* widget, GdkEventExpose* event);
 
   // Returns the first ancestor of |widget| that is a window.
   static Window* GetWindowImpl(GtkWidget* widget);

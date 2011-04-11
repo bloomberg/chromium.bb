@@ -60,13 +60,19 @@ namespace {
 
 // Links the GtkWidget to its NativeWidget.
 const char* const kNativeWidgetKey = "__VIEWS_NATIVE_WIDGET__";
+
 // A g_object data key to associate a CompositePainter object to a GtkWidget.
 const char* kCompositePainterKey = "__VIEWS_COMPOSITE_PAINTER__";
+
 // A g_object data key to associate the flag whether or not the widget
 // is composited to a GtkWidget. gtk_widget_is_composited simply tells
 // if x11 supports composition and cannot be used to tell if given widget
 // is composited.
 const char* kCompositeEnabledKey = "__VIEWS_COMPOSITE_ENABLED__";
+
+// A g_object data key to associate the expose handler id that is
+// used to remove FREEZE_UPDATE property on the window.
+const char* kExposeHandlerIdKey = "__VIEWS_EXPOSE_HANDLER_ID__";
 
 // CompositePainter draws a composited child widgets image into its
 // drawing area. This object is created at most once for a widget and kept
@@ -161,6 +167,15 @@ void EnumerateChildWidgetsForNativeWidgets(GtkWidget* child_widget,
     NativeWidget::NativeWidgets* widgets =
         reinterpret_cast<NativeWidget::NativeWidgets*>(param);
     widgets->insert(native_widget);
+  }
+}
+
+void RemoveExposeHandlerIfExists(GtkWidget* widget) {
+  gulong id = reinterpret_cast<gulong>(g_object_get_data(G_OBJECT(widget),
+                                                         kExposeHandlerIdKey));
+  if (id) {
+    g_signal_handler_disconnect(G_OBJECT(widget), id);
+    g_object_set_data(G_OBJECT(widget), kExposeHandlerIdKey, 0);
   }
 }
 
@@ -713,9 +728,6 @@ void WidgetGtk::EnableDebugPaint() {
 void WidgetGtk::UpdateFreezeUpdatesProperty(GtkWindow* window, bool enable) {
   if (!GTK_WIDGET_REALIZED(GTK_WIDGET(window)))
     gtk_widget_realize(GTK_WIDGET(window));
-#if 0
-  // Temporarily disabling the FREEZE_UPDATE as this is causing
-  // problem in panels. see crosbug.com/13750.
   GdkWindow* gdk_window = GTK_WIDGET(window)->window;
 
   static GdkAtom freeze_atom_ =
@@ -736,7 +748,15 @@ void WidgetGtk::UpdateFreezeUpdatesProperty(GtkWindow* window, bool enable) {
         GDK_WINDOW_XID(gdk_window);
     gdk_property_delete(gdk_window, freeze_atom_);
   }
-#endif
+}
+
+// static
+void WidgetGtk::RegisterChildExposeHandler(GtkWidget* child) {
+  RemoveExposeHandlerIfExists(child);
+  gulong id = g_signal_connect_after(child, "expose-event",
+                                     G_CALLBACK(&ChildExposeHandler), NULL);
+  g_object_set_data(G_OBJECT(child), kExposeHandlerIdKey,
+                    reinterpret_cast<void*>(id));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1377,6 +1397,28 @@ gboolean WidgetGtk::OnWindowPaint(GtkWidget* widget, GdkEventExpose* event) {
     painted_ = true;
     UpdateFreezeUpdatesProperty(GTK_WINDOW(widget_), false /* remove */);
   }
+  return false;
+}
+
+void WidgetGtk::OnChildExpose(GtkWidget* child) {
+  DCHECK(type_ != TYPE_CHILD);
+  if (!painted_) {
+    painted_ = true;
+    UpdateFreezeUpdatesProperty(GTK_WINDOW(widget_), false /* remove */);
+  }
+  RemoveExposeHandlerIfExists(child);
+}
+
+// static
+gboolean WidgetGtk::ChildExposeHandler(GtkWidget* widget,
+                                       GdkEventExpose* event) {
+  GtkWidget* toplevel = gtk_widget_get_ancestor(widget, GTK_TYPE_WINDOW);
+  CHECK(toplevel);
+  NativeWidget* native_widget =
+      NativeWidget::GetNativeWidgetForNativeView(toplevel);
+  CHECK(native_widget);
+  WidgetGtk* widget_gtk = static_cast<WidgetGtk*>(native_widget);
+  widget_gtk->OnChildExpose(widget);
   return false;
 }
 

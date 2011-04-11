@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,6 +110,9 @@ void NativeViewHostGtk::NativeViewAttached() {
     gtk_widget_reparent(host_->native_view(), fixed_);
   else
     gtk_container_add(GTK_CONTAINER(fixed_), host_->native_view());
+
+  // Let the widget know that the native component has been painted.
+  views::WidgetGtk::RegisterChildExposeHandler(host_->native_view());
 
   if (!destroy_signal_id_) {
     destroy_signal_id_ = g_signal_connect(host_->native_view(),
