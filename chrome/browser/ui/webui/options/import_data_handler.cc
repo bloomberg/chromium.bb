@@ -118,7 +118,7 @@ void ImportDataHandler::ImportData(const ListValue* args) {
   }
 }
 
-void ImportDataHandler::SourceProfilesLoaded() {
+void ImportDataHandler::OnSourceProfilesLoaded() {
   ListValue browser_profiles;
   for (size_t i = 0; i < importer_list_->count(); ++i) {
     const importer::SourceProfile& source_profile =

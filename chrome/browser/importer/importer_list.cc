@@ -213,7 +213,7 @@ void ImporterList::SourceProfilesLoaded(
   source_profiles_loaded_ = true;
   source_thread_id_ = BrowserThread::UI;
 
-  observer_->SourceProfilesLoaded();
+  observer_->OnSourceProfilesLoaded();
   observer_ = NULL;
 
   // TODO(jhawkins): Remove once DetectSourceProfilesHack is removed.

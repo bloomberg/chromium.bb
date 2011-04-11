@@ -24,7 +24,7 @@ class ImporterList : public base::RefCountedThreadSafe<ImporterList> {
   // order to be called back when the source profiles are loaded.
   class Observer {
    public:
-    virtual void SourceProfilesLoaded() = 0;
+    virtual void OnSourceProfilesLoaded() = 0;
 
    protected:
     virtual ~Observer() {}

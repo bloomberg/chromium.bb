@@ -151,10 +151,26 @@ TestingAutomationProvider::~TestingAutomationProvider() {
   BrowserList::RemoveObserver(this);
 }
 
-void TestingAutomationProvider::SourceProfilesLoaded() {
+void TestingAutomationProvider::OnBrowserAdded(const Browser* browser) {
+}
+
+void TestingAutomationProvider::OnBrowserRemoved(const Browser* browser) {
+  // For backwards compatibility with the testing automation interface, we
+  // want the automation provider (and hence the process) to go away when the
+  // last browser goes away.
+  if (BrowserList::empty() && !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kKeepAliveForTest)) {
+    // If you change this, update Observer for NotificationType::SESSION_END
+    // below.
+    MessageLoop::current()->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &TestingAutomationProvider::OnRemoveProvider));
+  }
+}
+
+void TestingAutomationProvider::OnSourceProfilesLoaded() {
   DCHECK_NE(static_cast<ImporterList*>(NULL), importer_list_.get());
 
-  // Get the correct profile based on the browser the user provided.
+  // Get the correct profile based on the browser that the user provided.
   importer::SourceProfile source_profile;
   size_t i = 0;
   size_t importers_count = importer_list_->count();
@@ -3293,9 +3309,6 @@ void TestingAutomationProvider::ImportSettings(Browser* browser,
   import_settings_data_.browser = browser;
   import_settings_data_.reply_message = reply_message;
 
-  // The remaining functionality of importing settings is in
-  // SourceProfilesLoaded(), which is called by |importer_list_| once the source
-  // profiles are loaded.
   importer_list_ = new ImporterList;
   importer_list_->DetectSourceProfiles(this);
 }
@@ -5345,22 +5358,6 @@ void TestingAutomationProvider::OnRedirectQueryComplete(
   Send(reply_message_);
   redirect_query_ = 0;
   reply_message_ = NULL;
-}
-
-void TestingAutomationProvider::OnBrowserAdded(const Browser* browser) {
-}
-
-void TestingAutomationProvider::OnBrowserRemoved(const Browser* browser) {
-  // For backwards compatibility with the testing automation interface, we
-  // want the automation provider (and hence the process) to go away when the
-  // last browser goes away.
-  if (BrowserList::empty() && !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kKeepAliveForTest)) {
-    // If you change this, update Observer for NotificationType::SESSION_END
-    // below.
-    MessageLoop::current()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &TestingAutomationProvider::OnRemoveProvider));
-  }
 }
 
 void TestingAutomationProvider::OnRemoveProvider() {

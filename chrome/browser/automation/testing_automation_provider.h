@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_provider_json.h"
@@ -30,13 +31,9 @@ class TestingAutomationProvider : public AutomationProvider,
  public:
   explicit TestingAutomationProvider(Profile* profile);
 
-  // BrowserList::Observer implementation.
-  virtual void OnBrowserAdded(const Browser* browser);
-  virtual void OnBrowserRemoved(const Browser* browser);
-
-  // IPC::Channel::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
-  virtual void OnChannelError();
+  // IPC::Channel::Listener:
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
  private:
   class PopupMenuWaiter;
@@ -52,13 +49,17 @@ class TestingAutomationProvider : public AutomationProvider,
 
   virtual ~TestingAutomationProvider();
 
-  // ImporterList::Observer implementation.
-  virtual void SourceProfilesLoaded();
+  // BrowserList::Observer:
+  virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
+  virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
 
-  // NotificationObserver implementation.
+  // ImporterList::Observer:
+  virtual void OnSourceProfilesLoaded() OVERRIDE;
+
+  // NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // IPC Message callbacks.
   void CloseBrowser(int handle, IPC::Message* reply_message);

@@ -35,7 +35,7 @@ class ImportDataHandler : public OptionsPageUIHandler,
   void ImportData(const ListValue* args);
 
   // ImporterList::Observer:
-  virtual void SourceProfilesLoaded();
+  virtual void OnSourceProfilesLoaded() OVERRIDE;
 
   // importer::ImporterProgressObserver:
   virtual void ImportStarted() OVERRIDE;
