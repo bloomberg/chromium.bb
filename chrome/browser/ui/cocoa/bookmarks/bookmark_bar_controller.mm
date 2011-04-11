@@ -875,6 +875,35 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   }
 }
 
+// Main menubar observation code, so we can know to close our fake menus if the
+// user clicks on the actual menubar, as multiple unconnected menus sharing
+// the screen looks weird.
+// Needed because the hookForEvent method doesn't see the click on the menubar.
+
+// Gets called when the menubar is clicked.
+- (void)begunTracking:(NSNotification *)notification {
+  [self closeFolderAndStopTrackingMenus];
+}
+
+// Install the callback.
+- (void)startObservingMenubar {
+  NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+  [nc addObserver:self
+         selector:@selector(begunTracking:)
+             name:NSMenuDidBeginTrackingNotification
+           object:[NSApp mainMenu]];
+}
+
+// Remove the callback.
+- (void)stopObservingMenubar {
+  NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+  [nc removeObserver:self
+                name:NSMenuDidBeginTrackingNotification
+              object:[NSApp mainMenu]];
+}
+
+// End of menubar observation code.
+
 // Begin (or end) watching for a click outside this window.  Unlike
 // normal NSWindows, bookmark folder "fake menu" windows do not become
 // key or main.  Thus, traditional notification (e.g. WillResignKey)
@@ -886,11 +915,15 @@ void RecordAppLaunch(Profile* profile, GURL url) {
                                                     sharedApplication]);
   DCHECK([app isKindOfClass:[CrApplication class]]);
   if (watch) {
-    if (!watchingForExitEvent_)
+    if (!watchingForExitEvent_) {
       [app addEventHook:self];
+      [self startObservingMenubar];
+    }
   } else {
-    if (watchingForExitEvent_)
+    if (watchingForExitEvent_) {
       [app removeEventHook:self];
+      [self stopObservingMenubar];
+    }
   }
   watchingForExitEvent_ = watch;
 }
