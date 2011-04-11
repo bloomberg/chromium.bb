@@ -20,6 +20,7 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/nacl_types.h"
+#include "chrome/common/prerender_constants.h"
 #include "chrome/common/search_provider.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/translate_errors.h"
@@ -100,6 +101,7 @@ struct ParamTraits<ContentSettings> {
 IPC_ENUM_TRAITS(ContentSetting)
 IPC_ENUM_TRAITS(ContentSettingsType)
 IPC_ENUM_TRAITS(InstantCompleteBehavior)
+IPC_ENUM_TRAITS(prerender::PrerenderCancellationReason)
 IPC_ENUM_TRAITS(search_provider::OSDDType)
 IPC_ENUM_TRAITS(search_provider::InstallState)
 IPC_ENUM_TRAITS(TranslateErrors::Type)
@@ -469,6 +471,12 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_PageTranslated,
                     std::string           /* the original language */,
                     std::string           /* the translated language */,
                     TranslateErrors::Type /* the error type if available */)
+
+// Message sent from the renderer to the browser to notify it of events which
+// may lead to the cancellation of a prerender. The message is sent only when
+// the renderer is in prerender mode.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_MaybeCancelPrerender,
+                    prerender::PrerenderCancellationReason)
 
 // Suggest results -----------------------------------------------------------
 

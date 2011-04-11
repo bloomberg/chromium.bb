@@ -415,6 +415,8 @@ bool PrerenderContents::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidRedirectProvisionalLoad,
                         OnDidRedirectProvisionalLoad)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_MaybeCancelPrerender,
+                        OnMaybeCancelPrerender)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -449,6 +451,18 @@ void PrerenderContents::OnDidRedirectProvisionalLoad(int32 page_id,
 void PrerenderContents::OnUpdateFaviconURL(int32 page_id,
                                            const GURL& icon_url) {
   icon_url_ = icon_url;
+}
+
+void PrerenderContents::OnMaybeCancelPrerender(
+    PrerenderCancellationReason reason) {
+  switch (reason) {
+    case PRERENDER_CANCELLATION_REASON_HTML5_MEDIA:
+      Destroy(FINAL_STATUS_HTML5_MEDIA);
+      return;
+    default:
+      LOG(DFATAL) << "Invalid reason " << reason
+                  << " in OnMaybeCancelPrerender.";
+  }
 }
 
 bool PrerenderContents::AddAliasURL(const GURL& url) {

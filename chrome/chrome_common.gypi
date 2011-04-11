@@ -65,6 +65,7 @@
           'common/nacl_messages.cc',
           'common/nacl_messages.h',
           'common/nacl_types.h',
+          'common/prerender_constants.h',
           'common/profiling.cc',
           'common/profiling.h',
           'common/ref_counted_util.h',

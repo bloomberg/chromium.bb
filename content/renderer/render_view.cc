@@ -2486,6 +2486,12 @@ WebSharedWorker* RenderView::createSharedWorker(
 
 WebMediaPlayer* RenderView::createMediaPlayer(
     WebFrame* frame, WebMediaPlayerClient* client) {
+  // If this is a prerendering page, start the cancel of the prerender.
+  if (is_prerendering_) {
+    Send(new ViewHostMsg_MaybeCancelPrerender(routing_id_,
+        prerender::PRERENDER_CANCELLATION_REASON_HTML5_MEDIA));
+  }
+
   scoped_ptr<media::MessageLoopFactory> message_loop_factory(
       new media::MessageLoopFactoryImpl());
   scoped_ptr<media::FilterCollection> collection(
