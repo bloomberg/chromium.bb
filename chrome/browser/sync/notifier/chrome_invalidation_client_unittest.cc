@@ -8,6 +8,7 @@
 #include "chrome/browser/sync/notifier/chrome_invalidation_client.h"
 #include "chrome/browser/sync/notifier/state_writer.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,9 +30,8 @@ static const int64 kUnknownVersion =
 
 class MockListener : public ChromeInvalidationClient::Listener {
  public:
-  MOCK_METHOD2(OnInvalidate, void(syncable::ModelType,
-                                  const std::string& payload));
-  MOCK_METHOD0(OnInvalidateAll, void());
+  MOCK_METHOD1(OnInvalidate, void(const syncable::ModelTypePayloadMap&));
+  MOCK_METHOD1(OnSessionStatusChanged, void(bool));
 };
 
 class MockStateWriter : public StateWriter {
@@ -103,25 +103,53 @@ class ChromeInvalidationClientTest : public testing::Test {
   ChromeInvalidationClient client_;
 };
 
+namespace {
+
+syncable::ModelTypePayloadMap MakeMap(syncable::ModelType model_type,
+                                      const std::string& payload) {
+  syncable::ModelTypePayloadMap type_payloads;
+  type_payloads[model_type] = payload;
+  return type_payloads;
+}
+
+syncable::ModelTypePayloadMap MakeMapFromSet(syncable::ModelTypeSet types,
+                                             const std::string& payload) {
+  syncable::ModelTypePayloadMap type_payloads;
+  for (syncable::ModelTypeSet::const_iterator it = types.begin();
+       it != types.end(); ++it) {
+    type_payloads[*it] = payload;
+  }
+  return type_payloads;
+}
+
+}  // namespace
+
 TEST_F(ChromeInvalidationClientTest, InvalidateBadObjectId) {
-  EXPECT_CALL(mock_listener_, OnInvalidateAll());
+  syncable::ModelTypeSet types;
+  types.insert(syncable::BOOKMARKS);
+  types.insert(syncable::APPS);
+  client_.RegisterTypes(types);
+  EXPECT_CALL(mock_listener_, OnInvalidate(MakeMapFromSet(types, "")));
   FireInvalidate("bad", 1, NULL);
 }
 
 TEST_F(ChromeInvalidationClientTest, InvalidateNoPayload) {
-  EXPECT_CALL(mock_listener_, OnInvalidate(syncable::BOOKMARKS, ""));
+  EXPECT_CALL(mock_listener_,
+              OnInvalidate(MakeMap(syncable::BOOKMARKS, "")));
   FireInvalidate("BOOKMARK", 1, NULL);
 }
 
 TEST_F(ChromeInvalidationClientTest, InvalidateWithPayload) {
-  EXPECT_CALL(mock_listener_, OnInvalidate(syncable::PREFERENCES, "payload"));
+  EXPECT_CALL(mock_listener_,
+              OnInvalidate(MakeMap(syncable::PREFERENCES, "payload")));
   FireInvalidate("PREFERENCE", 1, "payload");
 }
 
 TEST_F(ChromeInvalidationClientTest, InvalidateVersion) {
   using ::testing::Mock;
 
-  EXPECT_CALL(mock_listener_, OnInvalidate(syncable::APPS, ""));
+  EXPECT_CALL(mock_listener_,
+              OnInvalidate(MakeMap(syncable::APPS, "")));
 
   // Should trigger.
   FireInvalidate("APP", 1, NULL);
@@ -133,7 +161,8 @@ TEST_F(ChromeInvalidationClientTest, InvalidateVersion) {
 }
 
 TEST_F(ChromeInvalidationClientTest, InvalidateUnknownVersion) {
-  EXPECT_CALL(mock_listener_, OnInvalidate(syncable::EXTENSIONS, ""))
+  EXPECT_CALL(mock_listener_,
+              OnInvalidate(MakeMap(syncable::EXTENSIONS, "")))
       .Times(2);
 
   // Should trigger twice.
@@ -144,8 +173,15 @@ TEST_F(ChromeInvalidationClientTest, InvalidateUnknownVersion) {
 TEST_F(ChromeInvalidationClientTest, InvalidateVersionMultipleTypes) {
   using ::testing::Mock;
 
-  EXPECT_CALL(mock_listener_, OnInvalidate(syncable::APPS, ""));
-  EXPECT_CALL(mock_listener_, OnInvalidate(syncable::EXTENSIONS, ""));
+  syncable::ModelTypeSet types;
+  types.insert(syncable::BOOKMARKS);
+  types.insert(syncable::APPS);
+  client_.RegisterTypes(types);
+
+  EXPECT_CALL(mock_listener_,
+              OnInvalidate(MakeMap(syncable::APPS, "")));
+  EXPECT_CALL(mock_listener_,
+              OnInvalidate(MakeMap(syncable::EXTENSIONS, "")));
 
   // Should trigger both.
   FireInvalidate("APP", 3, NULL);
@@ -159,9 +195,18 @@ TEST_F(ChromeInvalidationClientTest, InvalidateVersionMultipleTypes) {
 
   Mock::VerifyAndClearExpectations(&mock_listener_);
 
-  EXPECT_CALL(mock_listener_, OnInvalidate(syncable::PREFERENCES, ""));
-  EXPECT_CALL(mock_listener_, OnInvalidate(syncable::EXTENSIONS, ""));
-  EXPECT_CALL(mock_listener_, OnInvalidate(syncable::APPS, ""));
+  // InvalidateAll shouldn't change any version state.
+  EXPECT_CALL(mock_listener_, OnInvalidate(MakeMapFromSet(types, "")));
+  FireInvalidateAll();
+
+  Mock::VerifyAndClearExpectations(&mock_listener_);
+
+  EXPECT_CALL(mock_listener_,
+              OnInvalidate(MakeMap(syncable::PREFERENCES, "")));
+  EXPECT_CALL(mock_listener_,
+              OnInvalidate(MakeMap(syncable::EXTENSIONS, "")));
+  EXPECT_CALL(mock_listener_,
+              OnInvalidate(MakeMap(syncable::APPS, "")));
 
   // Should trigger all three.
   FireInvalidate("PREFERENCE", 5, NULL);
@@ -170,7 +215,23 @@ TEST_F(ChromeInvalidationClientTest, InvalidateVersionMultipleTypes) {
 }
 
 TEST_F(ChromeInvalidationClientTest, InvalidateAll) {
-  EXPECT_CALL(mock_listener_, OnInvalidateAll());
+  syncable::ModelTypeSet types;
+  types.insert(syncable::PREFERENCES);
+  types.insert(syncable::EXTENSIONS);
+  client_.RegisterTypes(types);
+  EXPECT_CALL(mock_listener_, OnInvalidate(MakeMapFromSet(types, "")));
+  FireInvalidateAll();
+}
+
+TEST_F(ChromeInvalidationClientTest, RegisterTypes) {
+  syncable::ModelTypeSet types;
+  types.insert(syncable::PREFERENCES);
+  types.insert(syncable::EXTENSIONS);
+  client_.RegisterTypes(types);
+  // Registered types should be preserved across Stop/Start.
+  TearDown();
+  SetUp();
+  EXPECT_CALL(mock_listener_, OnInvalidate(MakeMapFromSet(types, "")));
   FireInvalidateAll();
 }
 

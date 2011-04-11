@@ -16,6 +16,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
@@ -42,30 +43,28 @@ class InvalidationNotifier
   virtual ~InvalidationNotifier();
 
   // SyncNotifier implementation.
-  virtual void AddObserver(SyncNotifierObserver* observer);
-  virtual void RemoveObserver(SyncNotifierObserver* observer);
-  virtual void SetState(const std::string& state);
+  virtual void AddObserver(SyncNotifierObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(SyncNotifierObserver* observer) OVERRIDE;
+  virtual void SetState(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
-      const std::string& email, const std::string& token);
-  virtual void UpdateEnabledTypes(const syncable::ModelTypeSet& types);
-  virtual void SendNotification();
+      const std::string& email, const std::string& token) OVERRIDE;
+  virtual void UpdateEnabledTypes(
+      const syncable::ModelTypeSet& types) OVERRIDE;
+  virtual void SendNotification() OVERRIDE;
 
   // notifier::LoginDelegate implementation.
-  virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task);
-  virtual void OnDisconnect();
+  virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task) OVERRIDE;
+  virtual void OnDisconnect() OVERRIDE;
 
   // ChromeInvalidationClient::Listener implementation.
-  virtual void OnInvalidate(syncable::ModelType model_type,
-                            const std::string& payload);
-  virtual void OnInvalidateAll();
+  virtual void OnInvalidate(
+      const syncable::ModelTypePayloadMap& type_payloads) OVERRIDE;
+  virtual void OnSessionStatusChanged(bool has_session) OVERRIDE;
 
   // StateWriter implementation.
-  virtual void WriteState(const std::string& state);
+  virtual void WriteState(const std::string& state) OVERRIDE;
 
  private:
-  void EmitInvalidation(const syncable::ModelTypeSet& types,
-                        const std::string& payload);
-
   base::NonThreadSafe non_thread_safe_;
 
   // We start off in the STOPPED state.  When we get our initial
@@ -96,10 +95,6 @@ class InvalidationNotifier
 
   // The invalidation client.
   ChromeInvalidationClient invalidation_client_;
-
-  // Passed to |invalidation_client_| and also used to synthesize
-  // notifications by OnInvalidateAll().
-  syncable::ModelTypeSet enabled_types_;
 
   DISALLOW_COPY_AND_ASSIGN(InvalidationNotifier);
 };

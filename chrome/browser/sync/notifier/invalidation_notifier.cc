@@ -83,12 +83,7 @@ void InvalidationNotifier::UpdateCredentials(
 void InvalidationNotifier::UpdateEnabledTypes(
     const syncable::ModelTypeSet& types) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  enabled_types_ = types;
-  if (state_ >= STARTED) {
-    invalidation_client_.RegisterTypes(enabled_types_);
-  }
-  // If |invalidation_client_| hasn't been started yet, it will
-  // register |enabled_types_| in OnConnect().
+  invalidation_client_.RegisterTypes(types);
 }
 
 void InvalidationNotifier::SendNotification() {
@@ -111,53 +106,31 @@ void InvalidationNotifier::OnConnect(
     invalidation_client_.Start(
         kClientId, client_info_, invalidation_state_, this, this, base_task);
     invalidation_state_.clear();
-    invalidation_client_.RegisterTypes(enabled_types_);
     state_ = STARTED;
   }
-  FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
-                    OnNotificationStateChange(true));
 }
 
 void InvalidationNotifier::OnDisconnect() {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
-                    OnNotificationStateChange(false));
+  VLOG(1) << "OnDisconnect";
 }
 
 void InvalidationNotifier::OnInvalidate(
-    syncable::ModelType model_type, const std::string& payload) {
+    const syncable::ModelTypePayloadMap& type_payloads) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  DCHECK_GE(model_type, syncable::FIRST_REAL_MODEL_TYPE);
-  DCHECK_LT(model_type, syncable::MODEL_TYPE_COUNT);
-  VLOG(1) << "OnInvalidate: " << syncable::ModelTypeToString(model_type)
-          << " " << payload;
-  syncable::ModelTypeSet types;
-  types.insert(model_type);
-  EmitInvalidation(types, payload);
+  FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
+                    OnIncomingNotification(type_payloads));
 }
 
-void InvalidationNotifier::OnInvalidateAll() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
-  VLOG(1) << "OnInvalidateAll";
-  EmitInvalidation(enabled_types_, std::string());
+void InvalidationNotifier::OnSessionStatusChanged(bool has_session) {
+  FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
+                    OnNotificationStateChange(has_session));
 }
 
 void InvalidationNotifier::WriteState(const std::string& state) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   VLOG(1) << "WriteState";
   FOR_EACH_OBSERVER(SyncNotifierObserver, observers_, StoreState(state));
-}
-
-void InvalidationNotifier::EmitInvalidation(
-    const syncable::ModelTypeSet& types, const std::string& payload) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
-  // TODO(akalin): Move all uses of ModelTypeBitSet for invalidations
-  // to ModelTypeSet.
-  syncable::ModelTypePayloadMap type_payloads =
-      syncable::ModelTypePayloadMapFromBitSet(
-          syncable::ModelTypeBitSetFromSet(types), payload);
-  FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
-                    OnIncomingNotification(type_payloads));
 }
 
 }  // namespace sync_notifier

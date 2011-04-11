@@ -56,59 +56,31 @@ class InvalidationNotifierTest : public testing::Test {
 TEST_F(InvalidationNotifierTest, Basic) {
   InSequence dummy;
 
-  syncable::ModelTypeSet types;
-  types.insert(syncable::BOOKMARKS);
-  types.insert(syncable::AUTOFILL);
+  syncable::ModelTypePayloadMap type_payloads;
+  type_payloads[syncable::PREFERENCES] = "payload";
+  type_payloads[syncable::BOOKMARKS] = "";
+  type_payloads[syncable::AUTOFILL] = "";
 
   EXPECT_CALL(mock_observer_, OnNotificationStateChange(true));
   EXPECT_CALL(mock_observer_, StoreState("new_fake_state"));
-  {
-    syncable::ModelTypePayloadMap type_payloads;
-    type_payloads[syncable::PREFERENCES] = "payload";
-    EXPECT_CALL(mock_observer_, OnIncomingNotification(type_payloads));
-  }
-  {
-    syncable::ModelTypePayloadMap type_payloads;
-    type_payloads[syncable::BOOKMARKS] = "";
-    type_payloads[syncable::AUTOFILL] = "";
-    EXPECT_CALL(mock_observer_, OnIncomingNotification(type_payloads));
-  }
+  EXPECT_CALL(mock_observer_, OnIncomingNotification(type_payloads));
   EXPECT_CALL(mock_observer_, OnNotificationStateChange(false));
 
   invalidation_notifier_->SetState("fake_state");
   invalidation_notifier_->UpdateCredentials("foo@bar.com", "fake_token");
-  invalidation_notifier_->UpdateEnabledTypes(types);
 
   invalidation_notifier_->OnConnect(fake_base_task_.AsWeakPtr());
+  invalidation_notifier_->OnSessionStatusChanged(true);
 
   invalidation_notifier_->WriteState("new_fake_state");
 
-  // Even though preferences isn't in the set of enabled types, we
-  // should still propagate the notification.
-  invalidation_notifier_->OnInvalidate(syncable::PREFERENCES, "payload");
-  invalidation_notifier_->OnInvalidateAll();
+  invalidation_notifier_->OnInvalidate(type_payloads);
 
+  // Shouldn't trigger notification state change.
   invalidation_notifier_->OnDisconnect();
-}
-
-TEST_F(InvalidationNotifierTest, UpdateEnabledTypes) {
-  InSequence dummy;
-
-  syncable::ModelTypeSet types;
-  types.insert(syncable::BOOKMARKS);
-  types.insert(syncable::AUTOFILL);
-
-  EXPECT_CALL(mock_observer_, OnNotificationStateChange(true));
-  {
-    syncable::ModelTypePayloadMap type_payloads;
-    type_payloads[syncable::BOOKMARKS] = "";
-    type_payloads[syncable::AUTOFILL] = "";
-    EXPECT_CALL(mock_observer_, OnIncomingNotification(type_payloads));
-  }
-
   invalidation_notifier_->OnConnect(fake_base_task_.AsWeakPtr());
-  invalidation_notifier_->UpdateEnabledTypes(types);
-  invalidation_notifier_->OnInvalidateAll();
+
+  invalidation_notifier_->OnSessionStatusChanged(false);
 }
 
 }  // namespace
