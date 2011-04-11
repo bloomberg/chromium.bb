@@ -119,6 +119,11 @@ class SK_API PlatformCanvas : public SkCanvas {
 // transparency: this will enable some optimizations.
 SK_API SkCanvas* CreateBitmapCanvas(int width, int height, bool is_opaque);
 
+// Returns true if native platform routines can be used to draw on the
+// given canvas. If this function returns false, BeginPlatformPaint will
+// return NULL PlatformSurface.
+SK_API bool SupportsPlatformPaint(const SkCanvas* canvas);
+
 // These calls should surround calls to platform drawing routines, the
 // surface returned here can be used with the native platform routines.
 //

@@ -45,6 +45,14 @@ SkCanvas* CreateBitmapCanvas(int width, int height, bool is_opaque) {
   return new PlatformCanvas(width, height, is_opaque);
 }
 
+bool SupportsPlatformPaint(const SkCanvas* canvas) {
+  // All of our devices should be our special PlatformDevice.
+  PlatformDevice* device = static_cast<PlatformDevice*>(canvas->getDevice());
+  // TODO(alokp): Rename PlatformDevice::IsNativeFontRenderingAllowed after
+  // removing these calls from WebKit.
+  return device->IsNativeFontRenderingAllowed();
+}
+
 PlatformDevice::PlatformSurface BeginPlatformPaint(SkCanvas* canvas) {
   // All of our devices should be our special PlatformDevice.
   PlatformDevice* device = static_cast<PlatformDevice*>(canvas->getDevice());
