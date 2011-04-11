@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/window_sizer.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -43,6 +44,7 @@
 #include "ui/gfx/codec/png_codec.h"
 
 namespace keys = extension_tabs_module_constants;
+namespace errors = extension_manifest_errors;
 
 const int CaptureVisibleTabFunction::kDefaultQuality = 90;
 
@@ -471,6 +473,14 @@ bool CreateWindowFunction::RunImpl() {
         window_type = Browser::TYPE_NORMAL;
       } else if (type_str == keys::kWindowTypeValuePopup) {
         window_type = Browser::TYPE_APP_POPUP;
+      } else if (type_str == keys::kWindowTypeValuePanel) {
+        if (GetExtension()->HasApiPermission(
+                Extension::kExperimentalPermission)) {
+          window_type = Browser::TYPE_APP_PANEL;
+        } else {
+          error_ = errors::kExperimentalFeature;
+          return false;
+        }
       } else {
         EXTENSION_FUNCTION_VALIDATE(false);
       }
@@ -1336,6 +1346,11 @@ static bool GetTabById(int tab_id, Profile* profile,
 }
 
 static std::string GetWindowTypeText(Browser::Type type) {
+  if (type == Browser::TYPE_APP_PANEL &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalExtensionApis))
+    return keys::kWindowTypeValuePanel;
+
   if ((type & Browser::TYPE_POPUP) == Browser::TYPE_POPUP)
     return keys::kWindowTypeValuePopup;
 

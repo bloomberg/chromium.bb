@@ -113,6 +113,7 @@ namespace extension_manifest_errors {
   extern const char* kDevToolsExperimental;
   extern const char* kDisabledByPolicy;
   extern const char* kExperimentalFlagRequired;
+  extern const char* kExperimentalFeature;
   extern const char* kExpectString;
   extern const char* kHostedAppsCannotIncludeExtensionFeatures;
   extern const char* kInvalidAllFrames;

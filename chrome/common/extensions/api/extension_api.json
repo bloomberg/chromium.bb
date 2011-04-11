@@ -718,8 +718,8 @@
           "incognito": {"type": "boolean", "description": "Whether the window is incognito."},
           "type": {
             "type": "string",
-            "description": "The type of browser window this is.",
-            "enum": ["normal", "popup", "app"]
+            "description": "The type of browser window this is. The 'panel' type requires the 'experimental' permission.",
+            "enum": ["normal", "popup", "panel", "app"]
           }
         }
       }
@@ -834,8 +834,8 @@
               "type": {
                 "type": "string",
                 "optional": true,
-                "description": "Specifies what type of browser window to create.",
-                "enum": ["normal", "popup"]
+                "description": "Specifies what type of browser window to create. The 'panel' type requires the 'experimental' permission.",
+                "enum": ["normal", "popup", "panel"]
               }
             },
             "optional": true

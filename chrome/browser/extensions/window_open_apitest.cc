@@ -99,3 +99,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenFocus) {
   ASSERT_TRUE(RunExtensionTest("window_open/focus")) << message_;
 }
 #endif
+
+class WindowOpenPanelTest : public ExtensionApiTest {
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, WindowOpenPanel) {
+  ASSERT_TRUE(RunExtensionTest("window_open/panel")) << message_;
+}
