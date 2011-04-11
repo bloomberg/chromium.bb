@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "content/common/notification_observer.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service.h"
@@ -32,17 +33,26 @@ class PrefProxyConfigTracker
     virtual void OnPrefProxyConfigChanged() = 0;
   };
 
+  // Return codes for GetProxyConfig.
+  enum ConfigState {
+    // Configuration is valid and present.
+    CONFIG_PRESENT,
+    // There is a fallback configuration present.
+    CONFIG_FALLBACK,
+    // Configuration is known to be not set.
+    CONFIG_UNSET,
+  };
+
   explicit PrefProxyConfigTracker(PrefService* pref_service);
 
   // Observer manipulation is only valid on the IO thread.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Get the proxy configuration currently defined by preferences. Writes the
-  // configuration to |config| and returns true on success. |config| is not
-  // touched and false is returned if there is no configuration defined. This
-  // must be called on the IO thread.
-  bool GetProxyConfig(net::ProxyConfig* config);
+  // Get the proxy configuration currently defined by preferences. Status is
+  // indicated in the return value. Writes the configuration to |config| unless
+  // the return value is CONFIG_UNSET, in which case |config| is not touched.
+  ConfigState GetProxyConfig(net::ProxyConfig* config);
 
   // Notifies the tracker that the pref service passed upon construction is
   // about to go away. This must be called from the UI thread.
@@ -58,23 +68,29 @@ class PrefProxyConfigTracker
                        const NotificationDetails& details);
 
   // Install a new configuration. This is invoked on the IO thread to update
-  // the internal state after handling a pref change on the UI thread. |valid|
-  // indicates whether there is a preference proxy configuration defined, in
-  // which case this configuration is given by |config|. |config| is ignored if
-  // |valid| is false.
-  void InstallProxyConfig(const net::ProxyConfig& config, bool valid);
+  // the internal state after handling a pref change on the UI thread.
+  // |config_state| indicates the new state we're switching to, and |config| is
+  // the new preference-based proxy configuration if |config_state| is different
+  // from CONFIG_UNSET.
+  void InstallProxyConfig(const net::ProxyConfig& config, ConfigState state);
 
   // Creates a proxy configuration from proxy-related preferences. Configuration
   // is stored in |config| and the return value indicates whether the
   // configuration is valid.
-  bool ReadPrefConfig(net::ProxyConfig* config);
+  ConfigState ReadPrefConfig(net::ProxyConfig* config);
+
+  // Converts a ProxyConfigDictionary to net::ProxyConfig representation.
+  // Returns true if the data from in the dictionary is valid, false otherwise.
+  static bool PrefConfigToNetConfig(const ProxyConfigDictionary& proxy_dict,
+                                    net::ProxyConfig* config);
 
   // Configuration as defined by prefs. Only to be accessed from the IO thread
   // (except for construction).
   net::ProxyConfig pref_config_;
 
-  // Whether |pref_config_| is valid. Only accessed from the IO thread.
-  bool valid_;
+  // Tracks configuration state. |pref_config_| is valid only if |config_state_|
+  // is not CONFIG_UNSET.
+  ConfigState config_state_;
 
   // List of observers, accessed exclusively from the IO thread.
   ObserverList<Observer, true> observers_;
@@ -102,14 +118,15 @@ class PrefProxyConfigService
   // ProxyConfigService implementation:
   virtual void AddObserver(net::ProxyConfigService::Observer* observer);
   virtual void RemoveObserver(net::ProxyConfigService::Observer* observer);
-  virtual bool GetLatestProxyConfig(net::ProxyConfig* config);
+  virtual ConfigAvailability GetLatestProxyConfig(net::ProxyConfig* config);
   virtual void OnLazyPoll();
 
   static void RegisterPrefs(PrefService* user_prefs);
 
  private:
   // ProxyConfigService::Observer implementation:
-  virtual void OnProxyConfigChanged(const net::ProxyConfig& config);
+  virtual void OnProxyConfigChanged(const net::ProxyConfig& config,
+                                    ConfigAvailability availability);
 
   // PrefProxyConfigTracker::Observer implementation:
   virtual void OnPrefProxyConfigChanged();

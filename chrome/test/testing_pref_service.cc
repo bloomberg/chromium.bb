@@ -13,17 +13,19 @@
 
 TestingPrefServiceBase::TestingPrefServiceBase(
     TestingPrefStore* managed_platform_prefs,
-    TestingPrefStore* user_prefs)
+    TestingPrefStore* user_prefs,
+    TestingPrefStore* recommended_platform_prefs)
     : PrefService(managed_platform_prefs,
                   NULL,
                   NULL,
                   NULL,
                   user_prefs,
-                  NULL,
+                  recommended_platform_prefs,
                   NULL,
                   new DefaultPrefStore()),
       managed_platform_prefs_(managed_platform_prefs),
-      user_prefs_(user_prefs) {
+      user_prefs_(user_prefs),
+      recommended_platform_prefs_(recommended_platform_prefs) {
 }
 
 TestingPrefServiceBase::~TestingPrefServiceBase() {
@@ -53,6 +55,20 @@ void TestingPrefServiceBase::RemoveUserPref(const char* path) {
   RemovePref(user_prefs_, path);
 }
 
+const Value* TestingPrefServiceBase::GetRecommendedPref(
+    const char* path) const {
+  return GetPref(recommended_platform_prefs_, path);
+}
+
+void TestingPrefServiceBase::SetRecommendedPref(
+    const char* path, Value* value) {
+  SetPref(recommended_platform_prefs_, path, value);
+}
+
+void TestingPrefServiceBase::RemoveRecommendedPref(const char* path) {
+  RemovePref(recommended_platform_prefs_, path);
+}
+
 const Value* TestingPrefServiceBase::GetPref(TestingPrefStore* pref_store,
                                              const char* path) const {
   const Value* res;
@@ -72,6 +88,7 @@ void TestingPrefServiceBase::RemovePref(TestingPrefStore* pref_store,
 
 TestingPrefService::TestingPrefService()
     : TestingPrefServiceBase(new TestingPrefStore(),
+                             new TestingPrefStore(),
                              new TestingPrefStore()) {
 }
 

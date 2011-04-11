@@ -177,7 +177,8 @@ class ProxyConfigServiceImpl
   void AddObserver(net::ProxyConfigService::Observer* observer);
   void RemoveObserver(net::ProxyConfigService::Observer* observer);
   // Called from GetLatestProxyConfig.
-  bool IOGetProxyConfig(net::ProxyConfig* config);
+  net::ProxyConfigService::ConfigAvailability IOGetProxyConfig(
+      net::ProxyConfig* config);
 
   // Called from UI thread to retrieve proxy configuration in |config|.
   void UIGetProxyConfig(ProxyConfig* config);
@@ -215,11 +216,6 @@ class ProxyConfigServiceImpl
  private:
   friend class base::RefCountedThreadSafe<ProxyConfigServiceImpl>;
 
-  // Init proxy to default config, i.e. AutoDetect.
-  // If |post_to_io_thread| is true, a task will be posted to IO thread to
-  // update |cached_config|.
-  void InitConfigToDefault(bool post_to_io_thread);
-
   // Persists proxy config to device.
   void PersistConfigToDevice();
 
@@ -228,7 +224,9 @@ class ProxyConfigServiceImpl
   void OnUISetProxyConfig(bool update_to_device);
 
   // Posted from UI thread to IO thread to carry the new config information.
-  void IOSetProxyConfig(const ProxyConfig& new_config);
+  void IOSetProxyConfig(
+      const ProxyConfig& new_config,
+      net::ProxyConfigService::ConfigAvailability new_availability);
 
   // Checks that method is called on BrowserThread::IO thread.
   void CheckCurrentlyOnIOThread();
@@ -243,8 +241,8 @@ class ProxyConfigServiceImpl
   // method until the class's ref_count is at least one).
   bool can_post_task_;
 
-  // True if config has been fetched from device or initialized properly.
-  bool has_config_;
+  // Availability status of the configuration.
+  net::ProxyConfigService::ConfigAvailability config_availability_;
 
   // True if settings are to be persisted to device.
   bool persist_to_device_;

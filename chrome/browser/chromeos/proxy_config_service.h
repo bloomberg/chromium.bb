@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,7 @@ namespace chromeos {
 
 // Wrapper class for the RefCountedThreadSafe chromeos::ProxyConfigServiceImpl
 // that forwards net::ProxyConfigService interface to the actual implementation,
-// instantiated in
-// chrome/browser/net/chrome_url_request_context.cc::CreateProxyConfigService.
+// instantiated in ProfileIOData::CreateProxyConfigService.
 class ProxyConfigService : public net::ProxyConfigService {
  public:
   explicit ProxyConfigService(const scoped_refptr<ProxyConfigServiceImpl>& impl)
@@ -27,7 +26,7 @@ class ProxyConfigService : public net::ProxyConfigService {
   virtual void RemoveObserver(Observer* observer) {
     impl_->RemoveObserver(observer);
   }
-  virtual bool GetLatestProxyConfig(net::ProxyConfig* config) {
+  virtual ConfigAvailability GetLatestProxyConfig(net::ProxyConfig* config) {
     return impl_->IOGetProxyConfig(config);
   }
 

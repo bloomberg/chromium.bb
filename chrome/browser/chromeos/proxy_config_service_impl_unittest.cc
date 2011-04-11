@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -547,16 +547,23 @@ TEST_F(ProxyConfigServiceImplTest, ProxyChangedObserver) {
     virtual ~ProxyChangedObserver() {
       config_service_->RemoveObserver(this);
     }
+    net::ProxyConfigService::ConfigAvailability availability() const {
+      return availability_;
+    }
     const net::ProxyConfig& config() const {
       return config_;
     }
 
    private:
-    virtual void OnProxyConfigChanged(const net::ProxyConfig& config) {
+    virtual void OnProxyConfigChanged(
+        const net::ProxyConfig& config,
+        net::ProxyConfigService::ConfigAvailability availability) {
       config_ = config;
+      availability_ = availability;
     }
 
     scoped_refptr<ProxyConfigServiceImpl> config_service_;
+    net::ProxyConfigService::ConfigAvailability availability_;
     net::ProxyConfig config_;
   };
 
@@ -576,6 +583,7 @@ TEST_F(ProxyConfigServiceImplTest, ProxyChangedObserver) {
   SyncGetLatestProxyConfig(&io_config);
 
   // Observer should have gotten the same new proxy config.
+  EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID, observer.availability());
   EXPECT_TRUE(io_config.Equals(observer.config()));
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -391,7 +391,7 @@ bool ProxyConfigServiceImpl::ProxyConfig::DecodeManualProxy(
 
 ProxyConfigServiceImpl::ProxyConfigServiceImpl()
     : can_post_task_(false),
-      has_config_(false),
+      config_availability_(net::ProxyConfigService::CONFIG_PENDING),
       persist_to_device_(true),
       persist_to_device_pending_(false) {
   // Start async fetch of proxy config from settings persisted on device.
@@ -409,13 +409,13 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl()
     }
   }
   if (use_default)
-    InitConfigToDefault(false);
+    config_availability_ = net::ProxyConfigService::CONFIG_UNSET;
   can_post_task_ = true;
 }
 
 ProxyConfigServiceImpl::ProxyConfigServiceImpl(const ProxyConfig& init_config)
     : can_post_task_(true),
-      has_config_(true),
+      config_availability_(net::ProxyConfigService::CONFIG_VALID),
       persist_to_device_(false),
       persist_to_device_pending_(false) {
   reference_config_ = init_config;
@@ -514,15 +514,14 @@ void ProxyConfigServiceImpl::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-bool ProxyConfigServiceImpl::IOGetProxyConfig(net::ProxyConfig* net_config) {
+net::ProxyConfigService::ConfigAvailability
+    ProxyConfigServiceImpl::IOGetProxyConfig(net::ProxyConfig* net_config) {
   // Should be called from IO thread.
   CheckCurrentlyOnIOThread();
-  if (has_config_) {
-    // Simply return the last cached proxy configuration.
+  if (config_availability_ == net::ProxyConfigService::CONFIG_VALID)
     cached_config_.ToNetProxyConfig(net_config);
-    return true;
-  }
-  return false;
+
+  return config_availability_;
 }
 
 void ProxyConfigServiceImpl::OnSettingsOpCompleted(
@@ -540,35 +539,25 @@ void ProxyConfigServiceImpl::OnSettingsOpCompleted(
 void ProxyConfigServiceImpl::OnSettingsOpCompleted(
     SignedSettings::ReturnCode code,
     std::string value) {
+  retrieve_property_op_ = NULL;
   if (SignedSettings::SUCCESS == code) {
     VLOG(1) << "Retrieved proxy setting from device, value=[" << value << "]";
     if (reference_config_.Deserialize(value)) {
-      OnUISetProxyConfig(false);
+      IOSetProxyConfig(reference_config_,
+                       net::ProxyConfigService::CONFIG_VALID);
+      return;
     } else {
       LOG(WARNING) << "Error deserializing device's proxy setting";
-      InitConfigToDefault(true);
     }
   } else {
     LOG(WARNING) << "Error retrieving proxy setting from device";
-    InitConfigToDefault(true);
   }
-  retrieve_property_op_ = NULL;
+
+  // Update the configuration state on the IO thread.
+  IOSetProxyConfig(reference_config_, net::ProxyConfigService::CONFIG_UNSET);
 }
 
 //------------------ ProxyConfigServiceImpl: private methods -------------------
-
-void ProxyConfigServiceImpl::InitConfigToDefault(bool post_to_io_thread) {
-  VLOG(1) << "Using default proxy config: auto-detect";
-  reference_config_.mode = ProxyConfig::MODE_AUTO_DETECT;
-  reference_config_.automatic_proxy.source = ProxyConfig::SOURCE_OWNER;
-  if (post_to_io_thread && can_post_task_) {
-    OnUISetProxyConfig(false);
-  } else {
-    // Update the IO-accessible copy in |cached_config_| as well.
-    cached_config_ = reference_config_;
-    has_config_ = true;
-  }
-}
 
 void ProxyConfigServiceImpl::PersistConfigToDevice() {
   DCHECK(!store_property_op_);
@@ -585,15 +574,7 @@ void ProxyConfigServiceImpl::PersistConfigToDevice() {
 }
 
 void ProxyConfigServiceImpl::OnUISetProxyConfig(bool persist_to_device) {
-  // Posts a task to IO thread with the new config, so it can update
-  // |cached_config_|.
-  Task* task = NewRunnableMethod(this,
-      &ProxyConfigServiceImpl::IOSetProxyConfig, reference_config_);
-  if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, task)) {
-    VLOG(1) << "Couldn't post task to IO thread to set new proxy config";
-    delete task;
-  }
-
+  IOSetProxyConfig(reference_config_, net::ProxyConfigService::CONFIG_VALID);
   if (persist_to_device && CrosLibrary::Get()->EnsureLoaded()) {
     if (store_property_op_) {
       persist_to_device_pending_ = true;
@@ -604,25 +585,38 @@ void ProxyConfigServiceImpl::OnUISetProxyConfig(bool persist_to_device) {
   }
 }
 
+void ProxyConfigServiceImpl::IOSetProxyConfig(
+    const ProxyConfig& new_config,
+    net::ProxyConfigService::ConfigAvailability new_availability) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO) && can_post_task_) {
+    // Posts a task to IO thread with the new config, so it can update
+    // |cached_config_|.
+    Task* task = NewRunnableMethod(this,
+                                   &ProxyConfigServiceImpl::IOSetProxyConfig,
+                                   new_config,
+                                   new_availability);
+    if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, task))
+      VLOG(1) << "Couldn't post task to IO thread to set new proxy config";
+    return;
+  }
+
+  // Now guaranteed to be on the correct thread.
+  VLOG(1) << "Proxy configuration changed";
+  cached_config_ = new_config;
+  config_availability_ = new_availability;
+  // Notify observers of new proxy config.
+  net::ProxyConfig net_config;
+  cached_config_.ToNetProxyConfig(&net_config);
+  FOR_EACH_OBSERVER(net::ProxyConfigService::Observer, observers_,
+                    OnProxyConfigChanged(net_config, config_availability_));
+}
+
 void ProxyConfigServiceImpl::CheckCurrentlyOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
 void ProxyConfigServiceImpl::CheckCurrentlyOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
-void ProxyConfigServiceImpl::IOSetProxyConfig(const ProxyConfig& new_config) {
-  // This is called on the IO thread (posted from UI thread).
-  CheckCurrentlyOnIOThread();
-  VLOG(1) << "Proxy configuration changed";
-  has_config_ = true;
-  cached_config_ = new_config;
-  // Notify observers of new proxy config.
-  net::ProxyConfig net_config;
-  cached_config_.ToNetProxyConfig(&net_config);
-  FOR_EACH_OBSERVER(net::ProxyConfigService::Observer, observers_,
-                    OnProxyConfigChanged(net_config));
 }
 
 }  // namespace chromeos

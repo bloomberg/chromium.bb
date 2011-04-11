@@ -16,9 +16,9 @@ class MockProxyConfigService : public net::ProxyConfigService {
  public:
   virtual void AddObserver(Observer* observer) {}
   virtual void RemoveObserver(Observer* observer) {}
-  virtual bool GetLatestProxyConfig(net::ProxyConfig* results) {
+  virtual ConfigAvailability GetLatestProxyConfig(net::ProxyConfig* results) {
     *results = net::ProxyConfig::CreateFromCustomPacURL(GURL("http://pac"));
-    return true;
+    return CONFIG_VALID;
   }
 };
 

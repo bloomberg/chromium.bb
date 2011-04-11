@@ -35,10 +35,16 @@ class TestingPrefServiceBase : public PrefService {
   void SetUserPref(const char* path, Value* value);
   void RemoveUserPref(const char* path);
 
+  // Similar to the above, but for recommended policy preferences.
+  const Value* GetRecommendedPref(const char* path) const;
+  void SetRecommendedPref(const char* path, Value* value);
+  void RemoveRecommendedPref(const char* path);
+
  protected:
   TestingPrefServiceBase(
       TestingPrefStore* managed_platform_prefs,
-      TestingPrefStore* user_prefs);
+      TestingPrefStore* user_prefs,
+      TestingPrefStore* recommended_platform_prefs);
 
  private:
   // Reads the value of the preference indicated by |path| from |pref_store|.
@@ -54,6 +60,7 @@ class TestingPrefServiceBase : public PrefService {
   // Pointers to the pref stores our value store uses.
   scoped_refptr<TestingPrefStore> managed_platform_prefs_;
   scoped_refptr<TestingPrefStore> user_prefs_;
+  scoped_refptr<TestingPrefStore> recommended_platform_prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingPrefServiceBase);
 };
