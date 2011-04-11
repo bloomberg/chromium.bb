@@ -65,7 +65,7 @@ readonly GCC_VER="4.2.1"
 # NOTE: NEWLIB_INSTALL_DIR also server as a SYSROOT
 readonly NEWLIB_INSTALL_DIR="${INSTALL_ROOT}/arm-newlib"
 
-readonly NACL_TOOLCHAIN=$(pwd)/toolchain/${BUILD_PLATFORM}_x86
+readonly NACL_TOOLCHAIN=$(pwd)/toolchain/${SCONS_BUILD_PLATFORM}_x86
 
 readonly PATCH_DIR=$(pwd)/tools/patches
 
@@ -100,7 +100,7 @@ readonly NEWLIB_INCLUDE_DIR="${TC_SRC_NEWLIB}/newlib-trunk/newlib/libc/include"
 readonly TC_BUILD_LLVM="${TC_BUILD}/llvm"
 readonly TC_BUILD_LLVM_GCC1="${TC_BUILD}/llvm-gcc-stage1"
 readonly TC_BUILD_BINUTILS_ARM="${TC_BUILD}/binutils-arm"
-readonly TC_BUILD_BINUTILS_LIBERTY_X86="${TC_BUILD}/binutils-liberty-x86"
+readonly TC_BUILD_BINUTILS_LIBERTY="${TC_BUILD}/binutils-liberty"
 readonly TC_BUILD_NEWLIB_ARM="${TC_BUILD}/newlib-arm"
 readonly TC_BUILD_NEWLIB_BITCODE="${TC_BUILD}/newlib-bitcode"
 
@@ -137,6 +137,7 @@ readonly PNACL_LD="${INSTALL_BIN}/pnacl-ld"
 readonly PNACL_NM="${INSTALL_BIN}/pnacl-nm"
 readonly PNACL_TRANSLATE="${INSTALL_BIN}/pnacl-translate"
 readonly PNACL_READELF="${INSTALL_BIN}/readelf"
+readonly PNACL_SIZE="${INSTALL_BIN}/size"
 
 readonly PNACL_AS_ARM="${INSTALL_BIN}/pnacl-arm-as"
 readonly PNACL_AS_X8632="${INSTALL_BIN}/pnacl-i686-as"
@@ -166,7 +167,7 @@ SBTC_BUILD_WITH_PNACL="arm x8632 x8664"
 readonly LLVM_REV=eda43d7b2ccb
 readonly LLVM_GCC_REV=38c54bef2849
 readonly NEWLIB_REV=eb9c4bb9ccd7
-readonly BINUTILS_REV=499ffe65010c
+readonly BINUTILS_REV=b785df3ef5e6
 
 # Repositories
 readonly REPO_LLVM_GCC="llvm-gcc.nacl-llvm-branches"
@@ -1519,99 +1520,85 @@ binutils-arm-install() {
 
   spopd
 
-  # Binutils builds readelf, but doesn't install it.
+  # Binutils builds readelf and size, but doesn't install it.
   mkdir -p "${INSTALL_BIN}"
   cp -f "${objdir}"/binutils/readelf "${PNACL_READELF}"
+  cp -f "${objdir}"/binutils/size "${PNACL_SIZE}"
 }
 
 #+-------------------------------------------------------------------------
-#+ binutils-liberty-x86          - Build and install binutils-libiberty for X86
-binutils-liberty-x86() {
+#+ binutils-liberty      - Build native binutils libiberty
+binutils-liberty() {
   local srcdir="${TC_SRC_BINUTILS}"
 
   assert-dir "${srcdir}" "You need to checkout binutils."
 
-  if binutils-liberty-x86-needs-configure; then
-    binutils-liberty-x86-clean
-    binutils-liberty-x86-configure
+  if binutils-liberty-needs-configure; then
+    binutils-liberty-clean
+    binutils-liberty-configure
   else
-    SkipBanner "BINUTILS-LIBERTY-X86" "configure"
+    SkipBanner "BINUTILS-LIBERTY" "configure"
   fi
 
-  if binutils-liberty-x86-needs-make; then
-    binutils-liberty-x86-make
+  if binutils-liberty-needs-make; then
+    binutils-liberty-make
   else
-    SkipBanner "BINUTILS-LIBERTY-X86" "make"
+    SkipBanner "BINUTILS-LIBERTY" "make"
   fi
-
-  binutils-liberty-x86-install
 }
 
-binutils-liberty-x86-needs-configure() {
-  [ ! -f "${TC_BUILD_BINUTILS_LIBERTY_X86}/config.status" ]
+binutils-liberty-needs-configure() {
+  [ ! -f "${TC_BUILD_BINUTILS_LIBERTY}/config.status" ]
   return $?
 }
 
-#+ binutils-liberty-x86-clean    - Clean binutils-liberty
-binutils-liberty-x86-clean() {
-  StepBanner "BINUTILS-LIBERTY-X86" "Clean"
-  local objdir="${TC_BUILD_BINUTILS_LIBERTY_X86}"
+#+ binutils-liberty-clean    - Clean binutils-liberty
+binutils-liberty-clean() {
+  StepBanner "BINUTILS-LIBERTY" "Clean"
+  local objdir="${TC_BUILD_BINUTILS_LIBERTY}"
   rm -rf ${objdir}
 }
 
-#+ binutils-liberty-x86-configure - Configure binutils-liberty for X86
-binutils-liberty-x86-configure() {
-  StepBanner "BINUTILS-LIBERTY-X86" "Configure"
+#+ binutils-liberty-configure - Configure binutils-liberty for X86
+binutils-liberty-configure() {
+  StepBanner "BINUTILS-LIBERTY" "Configure"
 
   local srcdir="${TC_SRC_BINUTILS}"
-  local objdir="${TC_BUILD_BINUTILS_LIBERTY_X86}"
+  local objdir="${TC_BUILD_BINUTILS_LIBERTY}"
 
   mkdir -p "${objdir}"
   spushd "${objdir}"
-  RunWithLog binutils.liberty.x86.configure \
+  RunWithLog binutils.liberty.configure \
       env -i \
       PATH="/usr/bin:/bin" \
       CC=${CC} \
       CXX=${CXX} \
-      ${srcdir}/binutils-2.20/configure --prefix=${PNACL_SB_ROOT}
+      ${srcdir}/binutils-2.20/configure
   spopd
 }
 
-binutils-liberty-x86-needs-make() {
+binutils-liberty-needs-make() {
   local srcdir="${TC_SRC_BINUTILS}"
-  local objdir="${TC_BUILD_BINUTILS_LIBERTY_X86}"
+  local objdir="${TC_BUILD_BINUTILS_LIBERTY}"
 
   ts-modified "$srcdir" "$objdir"
   return $?
 }
 
-#+ binutils-liberty-x86-make     - Make binutils-liberty for X86
-binutils-liberty-x86-make() {
-  StepBanner "BINUTILS-LIBERTY-X86" "Make"
+#+ binutils-liberty-make - Make binutils-liberty for X86
+binutils-liberty-make() {
+  StepBanner "BINUTILS-LIBERTY" "Make"
   local srcdir="${TC_SRC_BINUTILS}"
-  local objdir="${TC_BUILD_BINUTILS_LIBERTY_X86}"
+  local objdir="${TC_BUILD_BINUTILS_LIBERTY}"
   spushd "${objdir}"
 
   ts-touch-open "${objdir}"
 
-  RunWithLog binutils.liberty.x86.make \
+  RunWithLog binutils.liberty.make \
       env -i PATH="/usr/bin:/bin" \
       make ${MAKE_OPTS} all-libiberty
 
   ts-touch-commit "${objdir}"
-
-  spopd
-}
-
-#+ binutils-liberty-x86-install  - Install binutils-liberty for X86
-binutils-liberty-x86-install() {
-  StepBanner "BINUTILS-LIBERTY-X86" "Install"
-  local objdir="${TC_BUILD_BINUTILS_LIBERTY_X86}"
-  spushd "${objdir}"
-
-  RunWithLog binutils.liberty.x86.install \
-      env -i PATH="/usr/bin:/bin" \
-      make install-libiberty ${MAKE_OPTS}
 
   spopd
 }
@@ -1910,8 +1897,8 @@ binutils-sb() {
     exit -1
   fi
 
-  if [ ! -f ${PNACL_SB_ROOT}/lib/libiberty.a ] ; then
-    echo "ERROR: Missing lib. Run this script with binutils-liberty-x86 option"
+  if [ ! -f "${TC_BUILD_BINUTILS_LIBERTY}/libiberty/libiberty.a" ] ; then
+    echo "ERROR: Missing lib. Run this script with binutils-liberty option"
     exit -1
   fi
 
@@ -1964,9 +1951,9 @@ binutils-sb-configure() {
     flags+=" -DNACL_SRPC"
   fi
 
-  mkdir ${objdir}/opcodes
   spushd ${objdir}
-  cp ${PNACL_SB_ROOT}/lib/libiberty.a ./opcodes/.
+  mkdir -p liberty_tmp
+  cp "${TC_BUILD_BINUTILS_LIBERTY}/libiberty/libiberty.a" liberty_tmp
   RunWithLog \
       binutils.${arch}.${mode}.sandboxed.configure \
       env -i \
@@ -1979,7 +1966,7 @@ binutils-sb-configure() {
       RANLIB="${NACL_TOOLCHAIN}/bin/${nacl}-ranlib" \
       CFLAGS="-m${bitsize} -O3 ${flags} -I${NACL_TOOLCHAIN}/${nacl}/include" \
       LDFLAGS="-s" \
-      LDFLAGS_FOR_BUILD="-L ." \
+      LDFLAGS_FOR_BUILD="-L../liberty_tmp" \
       ${srcdir}/binutils-2.20/configure \
         --prefix=${installdir} \
         --host=${nacl} \
@@ -2086,10 +2073,7 @@ install-translators() {
 
   StepBanner "INSTALL SANDBOXED TRANSLATORS (${srpc_kind})"
 
-  StepBanner "X86" "Prepare"
-  StepBanner "---" "-------"
-  binutils-liberty-x86
-  echo ""
+  binutils-liberty
 
   if ${SBTC_PRODUCTION}; then
     # Build each architecture separately.
@@ -3048,6 +3032,10 @@ CollectTimingInfo() {
 #@  are cleared on each run).
 #@  Note that the VERIFY variable effects the timing!
 timed-test-spec() {
+  if ${BUILD_PLATFORM_MAC} ; then
+    echo "Timed-test-spec is not currently supported on MacOS"
+    exit -1
+  fi
   if [ "$#" -lt "3" ]; then
     echo "timed-test-spec {result-file} {spec2krefdir} {setupfunc}" \
          "[ref|train] [benchmark]*"
@@ -3111,6 +3099,10 @@ has-trusted-toolchain() {
 }
 
 check-for-trusted() {
+  if ! ${UTMAN_BUILD_ARM} ; then
+    return
+  fi
+
   if ! has-trusted-toolchain; then
     echo '*******************************************************************'
     echo '*   The ARM trusted toolchain does not appear to be installed yet *'

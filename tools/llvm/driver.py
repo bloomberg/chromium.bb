@@ -33,6 +33,7 @@ import re
 import subprocess
 import sys
 import signal
+import platform
 
 ######################################################################
 # Environment Settings
@@ -101,7 +102,13 @@ INITIAL_ENV = {
   'SKIP_OPT'    : '0',  # Don't run OPT. This is used in cases where
                         # OPT might break things.
 
-  'BASE_NACL'       : '', # Filled in later
+  # These are filled in by env.reset()
+  # TODO(pdox): It should not be necessary to auto-detect these here. Change
+  #             detection method so that toolchain location is relative.
+  'BASE_NACL'       : '',   # Absolute path of native_client/ dir
+  'BUILD_OS'        : '',   # "linux" or "darwin"
+  'BUILD_ARCH'      : '',   # "x86_64" or "i686" or "i386"
+
   'BASE'            : '${BASE_NACL}/toolchain/linux_arm-untrusted',
   'BASE_TRUSTED'    : '${BASE_NACL}/toolchain/linux_arm-trusted',
   'BASE_ARM'        : '${BASE}/arm-none-linux-gnueabi',
@@ -119,10 +126,9 @@ INITIAL_ENV = {
   'PNACL_AS_X8632'       : '${BASE_BIN}/pnacl-i686-as',
   'PNACL_AS_X8664'       : '${BASE_BIN}/pnacl-x86_64-as',
 
-  'BUILD_OS'        : '',   # Set from env.reset()
   'SO_EXT'          : '${SO_EXT_%BUILD_OS%}',
-  'SO_EXT_DARWIN'   : '.dylib',
-  'SO_EXT_LINUX'    : '.so',
+  'SO_EXT_darwin'   : '.dylib',
+  'SO_EXT_linux'    : '.so',
   'GOLD_PLUGIN_SO'  : '${BASE_ARM}/lib/libLLVMgold${SO_EXT}',
   'GOLD_PLUGIN_ARGS': '-plugin=${GOLD_PLUGIN_SO} ' +
                       '-plugin-opt=emit-llvm',
@@ -184,9 +190,14 @@ INITIAL_ENV = {
     '-isystem ${BASE}/arm-newlib/arm-none-linux-gnueabi/include',
 
   # Sandboxed tools
-  'SCONS_STAGING_X8632' : '${BASE_NACL}/scons-out/opt-linux-x86-32/staging',
-  'SCONS_STAGING_X8664' : '${BASE_NACL}/scons-out/opt-linux-x86-64/staging',
-  'SCONS_STAGING_ARM'   : '${BASE_NACL}/scons-out/opt-linux-arm/staging',
+  'SCONS_OUT'           : '${BASE_NACL}/scons-out',
+  'SCONS_STAGING_X8632' : '${SCONS_OUT}/opt-${SCONS_OS}-x86-32/staging',
+  'SCONS_STAGING_X8664' : '${SCONS_OUT}/opt-${SCONS_OS}-x86-64/staging',
+  'SCONS_STAGING_ARM'   : '${SCONS_OUT}/opt-${SCONS_OS}-arm/staging',
+
+  'SCONS_OS'            : '${SCONS_OS_%BUILD_OS%}',
+  'SCONS_OS_linux'      : 'linux',
+  'SCONS_OS_darwin'     : 'mac',
 
   'USE_EMULATOR'        : '0',
   'SEL_UNIVERSAL_PREFIX': '',
@@ -1316,6 +1327,7 @@ class env:
     cls.data = dict(INITIAL_ENV)
     cls.set('BASE_NACL', FindBaseDir())
     cls.set('BUILD_OS', GetBuildOS())
+    cls.set('BUILD_ARCH', GetBuildArch())
 
   @classmethod
   def dump(cls):
@@ -1404,12 +1416,13 @@ def RunWithEnv(cmd, **kwargs):
   env.pop()
 
 def GetBuildOS():
-  name = sys.platform.lower()
-  if 'linux' in name:
-    return 'LINUX'
-  if 'darwin' in name:
-    return 'DARWIN'
-  Log.Fatal("Unsupported platform '%s'" % (name,))
+  name = platform.system().lower()
+  if name not in ('linux', 'darwin'):
+    Log.Fatal("Unsupported platform '%s'" % (name,))
+  return name
+
+def GetBuildArch():
+  return platform.machine()
 
 # Crawl backwards, starting from the directory containing this script,
 # until we find the native_client/ directory.

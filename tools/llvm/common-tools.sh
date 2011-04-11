@@ -20,19 +20,33 @@ readonly TIME_AT_STARTUP=$(date '+%s')
 # Detect system type
 ######################################################################
 
-readonly BUILD_PLATFORM_UNAME=$(uname)
-if [ "${BUILD_PLATFORM_UNAME}" == "Linux" ] ; then
+readonly BUILD_PLATFORM=$(uname | tr '[A-Z]' '[a-z]')
+if [ "${BUILD_PLATFORM}" == "linux" ] ; then
   readonly BUILD_PLATFORM_LINUX=true
   readonly BUILD_PLATFORM_MAC=false
-  readonly BUILD_PLATFORM=linux
-elif [ "${BUILD_PLATFORM_UNAME}" == "Darwin" ] ; then
+  readonly SCONS_BUILD_PLATFORM=linux
+elif [ "${BUILD_PLATFORM}" == "darwin" ] ; then
   readonly BUILD_PLATFORM_LINUX=false
   readonly BUILD_PLATFORM_MAC=true
-  readonly BUILD_PLATFORM=mac
+  readonly SCONS_BUILD_PLATFORM=mac
 else
-  echo "Unknown system '${BUILD_PLATFORM_UNAME}'"
+  echo "Unknown system '${BUILD_PLATFORM}'"
   exit -1
 fi
+
+readonly BUILD_ARCH=$(uname -m)
+if [ "${BUILD_ARCH}" == "i386" ] ||
+   [ "${BUILD_ARCH}" == "i686" ] ; then
+  readonly BUILD_ARCH_X8632=true
+  readonly BUILD_ARCH_X8664=false
+elif [ "${BUILD_ARCH}" == "x86_64" ] ; then
+  readonly BUILD_ARCH_X8632=false
+  readonly BUILD_ARCH_X8664=true
+else
+  echo "Unknown arch '${BUILD_ARCH}'"
+  exit -1
+fi
+
 
 ######################################################################
 # Mercurial repository tools
