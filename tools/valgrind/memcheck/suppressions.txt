@@ -2097,7 +2097,7 @@
    fun:_NPN_RegisterObject
    fun:_ZN7WebCore16ScriptController20windowScriptNPObjectEv
    fun:_ZNK6WebKit12WebFrameImpl12windowObjectEv
-   fun:_ZN11webkit_glue13WebPluginImpl23GetWindowScriptNPObjectEv
+   fun:_ZN6webkit5npapi13WebPluginImpl23GetWindowScriptNPObjectEv
    fun:NPN_GetValue
 }
 {
@@ -2107,9 +2107,9 @@
    ...
    fun:_NPN_RegisterObject
    fun:_ZN7WebCore25createV8ObjectForNPObjectEP8NPObjectS1_
-   fun:_ZN7WebCore16ScriptController18bindToWindowObjectEPNS_5FrameERKNS_6StringEP8NPObject
+   fun:_ZN7WebCore16ScriptController18bindToWindowObjectEPNS_5FrameERKN3WTF6StringEP8NPObject
    fun:_ZN6WebKit12WebFrameImpl18bindToWindowObjectERKNS_9WebStringEP8NPObject
-   fun:_ZN13CppBoundClass16BindToJavascriptEPN6WebKit8WebFrameERKSbIwSt11char_traitsIwESaIwEE
+   fun:_ZN13CppBoundClass16bindToJavascriptEPN6WebKit8WebFrameERKNS0_9WebStringE
 }
 {
    bug_42958_c
