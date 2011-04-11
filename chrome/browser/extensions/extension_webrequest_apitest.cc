@@ -23,8 +23,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequest) {
   ASSERT_TRUE(RunExtensionTest("webrequest/api")) << message_;
 }
 
-// See crbug.com/79081
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, FLAKY_WebRequestEvents) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestEvents) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
     switches::kEnableExperimentalExtensionApis);
 

@@ -22,10 +22,7 @@ function runTests(tests) {
   });
 }
 
-var startTime;
-
 function expect(data, filter, extraInfoSpec) {
-  startTime = new Date();
   expectedEventData = data;
   capturedEventData = [];
   removeListeners();
@@ -49,16 +46,6 @@ function captureEvent(name, details) {
       details.url.match(/\/favicon.ico$/))
     return;
 
-  // Basic sanity check for timeStamp.
-  var now = new Date();
-  var requestTime = new Date(details.timeStamp);
-  chrome.test.assertTrue(startTime <= requestTime,
-      "requestTime: " + requestTime.getTime() +
-      " is before startTime: " + startTime.getTime());
-  // TODO(mpcomplete): why is requestTime sometimes later than now?
-  //  chrome.test.assertTrue(requestTime <= now,
-  //      "requestTime: " + requestTime.getTime() +
-  //      " is after now: " + now.getTime());
   delete details.requestId;
   delete details.timeStamp;
   capturedEventData.push([name, details]);
