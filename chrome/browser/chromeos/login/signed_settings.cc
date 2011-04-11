@@ -218,12 +218,27 @@ CheckWhitelistOp::~CheckWhitelistOp() {}
 void CheckWhitelistOp::Execute() {
   CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());
   std::vector<uint8> sig;
-  if (!CrosLibrary::Get()->GetLoginLibrary()->CheckWhitelist(email_, &sig)) {
-    d_->OnSettingsOpCompleted(NOT_FOUND, false);
-    return;
+  std::string email_to_check = email_;
+  if (!CrosLibrary::Get()->GetLoginLibrary()->CheckWhitelist(
+      email_to_check, &sig)) {
+    // If the exact match was not found try to match agains a wildcard entry
+    // where the domain only matches (e.g. *@example.com). In theory we should
+    // always have correctly formated mail address here but a little precaution
+    // does no harm.
+    if (email_.find('@') != std::string::npos) {
+      email_to_check = std::string("*").append(email_.substr(email_.find('@')));
+      if (!CrosLibrary::Get()->GetLoginLibrary()->CheckWhitelist(
+          email_to_check, &sig)) {
+        d_->OnSettingsOpCompleted(NOT_FOUND, false);
+        return;
+      }
+    } else {
+      d_->OnSettingsOpCompleted(NOT_FOUND, false);
+      return;
+    }
   }
   // Posts a task to the FILE thread to verify |sig|.
-  service_->StartVerifyAttempt(email_, sig, this);
+  service_->StartVerifyAttempt(email_to_check, sig, this);
 }
 
 void CheckWhitelistOp::OnKeyOpComplete(

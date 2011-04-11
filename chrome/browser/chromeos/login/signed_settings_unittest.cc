@@ -96,6 +96,7 @@ class SignedSettingsTest : public ::testing::Test {
  public:
   SignedSettingsTest()
       : fake_email_("fakey@example.com"),
+        fake_domain_("*@example.com"),
         fake_prop_("prop_name"),
         fake_value_("stub"),
         message_loop_(MessageLoop::TYPE_UI),
@@ -245,6 +246,7 @@ class SignedSettingsTest : public ::testing::Test {
   }
 
   const std::string fake_email_;
+  const std::string fake_domain_;
   const std::string fake_prop_;
   const std::string fake_value_;
   MockOwnershipService m_;
@@ -279,6 +281,20 @@ TEST_F(SignedSettingsTest, CheckWhitelist) {
   s->OnKeyOpComplete(OwnerManager::SUCCESS, std::vector<uint8>());
 }
 
+TEST_F(SignedSettingsTest, CheckWhitelistWildcards) {
+  NormalDelegate<bool> d(true);
+  d.expect_success();
+  scoped_refptr<SignedSettings> s(
+      SignedSettings::CreateCheckWhitelistOp(fake_domain_, &d));
+
+  mock_service(s.get(), &m_);
+  EXPECT_CALL(m_, StartVerifyAttempt(fake_domain_, _, _))
+      .Times(1);
+
+  s->Execute();
+  s->OnKeyOpComplete(OwnerManager::SUCCESS, std::vector<uint8>());
+}
+
 TEST_F(SignedSettingsTest, CheckWhitelistNotFound) {
   NormalDelegate<bool> d(true);
   scoped_refptr<SignedSettings> s(
@@ -286,6 +302,9 @@ TEST_F(SignedSettingsTest, CheckWhitelistNotFound) {
   d.expect_failure(SignedSettings::NOT_FOUND);
   MockLoginLibrary* lib = MockLoginLib();
   EXPECT_CALL(*lib, CheckWhitelist(fake_email_, _))
+      .WillOnce(Return(false))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*lib, CheckWhitelist(fake_domain_, _))
       .WillOnce(Return(false))
       .RetiresOnSaturation();
   s->Execute();
