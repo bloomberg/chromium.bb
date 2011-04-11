@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "printing/print_dialog_gtk_interface.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings_initializer_gtk.h"
 #include "printing/units.h"
@@ -16,6 +15,7 @@
 #else
 #include <gtk/gtk.h>
 #include <gtk/gtkprintunixdialog.h>
+#include "printing/print_dialog_gtk_interface.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_CHROMEOS)
@@ -46,8 +46,10 @@ PrintingContextCairo::PrintingContextCairo(const std::string& app_locale)
 PrintingContextCairo::~PrintingContextCairo() {
   ReleaseContext();
 
+#if !defined(OS_CHROMEOS)
   if (print_dialog_)
     print_dialog_->ReleaseDialog();
+#endif
 }
 
 #if !defined(OS_CHROMEOS)
