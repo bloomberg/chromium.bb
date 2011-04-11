@@ -21,6 +21,7 @@ using WebKit::WebCanvas;
 using WebKit::WebCompositionUnderline;
 using WebKit::WebCursorInfo;
 using WebKit::WebInputEvent;
+using WebKit::WebMouseEvent;
 using WebKit::WebPoint;
 using WebKit::WebRect;
 using WebKit::WebSize;
@@ -84,7 +85,39 @@ class PepperWidget : public WebWidget {
   }
 
   virtual bool handleInputEvent(const WebInputEvent& event) {
-    return plugin_->HandleInputEvent(event, &cursor_);
+    bool result = plugin_->HandleInputEvent(event, &cursor_);
+
+    // For normal web pages, WebViewImpl does input event translations and
+    // generates context menu events. Since we don't have a WebView, we need to
+    // do the necessary translation ourselves.
+    if (WebInputEvent::isMouseEventType(event.type)) {
+      const WebMouseEvent& mouse_event =
+          reinterpret_cast<const WebMouseEvent&>(event);
+      bool send_context_menu_event = false;
+      // On Mac/Linux, we handle it on mouse down.
+      // On Windows, we handle it on mouse up.
+#if defined(OS_WIN)
+      send_context_menu_event =
+          mouse_event.type == WebInputEvent::MouseUp &&
+          mouse_event.button == WebMouseEvent::ButtonRight;
+#elif defined(OS_MACOSX)
+      send_context_menu_event =
+          mouse_event.type == WebInputEvent::MouseDown &&
+          (mouse_event.button == WebMouseEvent::ButtonRight ||
+           (mouse_event.button == WebMouseEvent::ButtonLeft &&
+            mouse_event.modifiers & WebMouseEvent::ControlKey));
+#else
+      send_context_menu_event =
+          mouse_event.type == WebInputEvent::MouseDown &&
+          mouse_event.button == WebMouseEvent::ButtonRight;
+#endif
+      if (send_context_menu_event) {
+        WebMouseEvent context_menu_event(mouse_event);
+        context_menu_event.type = WebInputEvent::ContextMenu;
+        plugin_->HandleInputEvent(context_menu_event, &cursor_);
+      }
+    }
+    return result;
   }
 
   virtual void mouseCaptureLost() {

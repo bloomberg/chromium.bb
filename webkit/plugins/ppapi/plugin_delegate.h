@@ -328,9 +328,10 @@ class PluginDelegate {
       webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
       const struct PP_Flash_NetAddress* addr) = 0;
 
-  // Show the given context menu at the given position (in the render view's
+  // Show the given context menu at the given position (in the plugin's
   // coordinates).
   virtual int32_t ShowContextMenu(
+      PluginInstance* instance,
       webkit::ppapi::PPB_Flash_Menu_Impl* menu,
       const gfx::Point& position) = 0;
 

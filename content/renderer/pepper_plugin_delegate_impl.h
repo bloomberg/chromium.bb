@@ -167,6 +167,7 @@ class PepperPluginDelegateImpl
       const PP_Flash_NetAddress& local_addr,
       const PP_Flash_NetAddress& remote_addr);
   virtual int32_t ShowContextMenu(
+      webkit::ppapi::PluginInstance* instance,
       webkit::ppapi::PPB_Flash_Menu_Impl* menu,
       const gfx::Point& position);
   void OnContextMenuClosed(

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,12 @@
 
 namespace webkit_glue {
 
+const int32 CustomContextMenuContext::kCurrentRenderWidget = kint32max;
+
 CustomContextMenuContext::CustomContextMenuContext()
     : is_pepper_menu(false),
-      request_id(0) {
+      request_id(0),
+      render_widget_id(kCurrentRenderWidget) {
 }
 
 }  // namespace webkit_glue

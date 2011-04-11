@@ -118,6 +118,10 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
   // RenderWidgetHost::ForwardEditCommandsForNextKeyEvent().
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& event);
 
+  GdkEventButton* last_mouse_down() const {
+    return last_mouse_down_;
+  }
+
 #if !defined(TOOLKIT_VIEWS)
   // Appends the input methods context menu to the specified |menu| object as a
   // submenu.
@@ -153,6 +157,8 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
 
   // Update the display cursor for the render view.
   void ShowCurrentCursor();
+
+  void set_last_mouse_down(GdkEventButton* event);
 
   // The model object.
   RenderWidgetHost* host_;
@@ -243,6 +249,10 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
   int dragged_at_vertical_edge_;
 
   bool accelerated_surface_acquired_;
+
+  // The event for the last mouse down we handled. We need this for context
+  // menus and drags.
+  GdkEventButton* last_mouse_down_;
 
 #if defined(OS_CHROMEOS)
   // Custimized tooltip window.

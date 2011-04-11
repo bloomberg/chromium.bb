@@ -31,6 +31,7 @@
 #include "content/renderer/gpu_channel_host.h"
 #include "content/renderer/pepper_platform_context_3d_impl.h"
 #include "content/renderer/render_view.h"
+#include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
 #include "ipc/ipc_channel_handle.h"
@@ -798,8 +799,18 @@ void PepperPluginDelegateImpl::OnConnectTcpACK(
 }
 
 int32_t PepperPluginDelegateImpl::ShowContextMenu(
+    webkit::ppapi::PluginInstance* instance,
     webkit::ppapi::PPB_Flash_Menu_Impl* menu,
     const gfx::Point& position) {
+  int32 render_widget_id = render_view_->routing_id();
+  if (instance->IsFullscreen()) {
+    webkit::ppapi::FullscreenContainer* container =
+        instance->fullscreen_container();
+    DCHECK(container);
+    render_widget_id =
+        static_cast<RenderWidgetFullscreenPepper*>(container)->routing_id();
+  }
+
   int request_id = pending_context_menus_.Add(
       new scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl>(menu));
 
@@ -808,7 +819,18 @@ int32_t PepperPluginDelegateImpl::ShowContextMenu(
   params.y = position.y();
   params.custom_context.is_pepper_menu = true;
   params.custom_context.request_id = request_id;
+  params.custom_context.render_widget_id = render_widget_id;
   params.custom_items = menu->menu_data();
+
+  // Transform the position to be in render view's coordinates.
+  if (instance->IsFullscreen()) {
+    WebKit::WebRect rect = render_view_->windowRect();
+    params.x -= rect.x;
+    params.y -= rect.y;
+  } else {
+    params.x += instance->position().x();
+    params.y += instance->position().y();
+  }
 
   IPC::Message* msg = new ViewHostMsg_ContextMenu(render_view_->routing_id(),
                                                   params);

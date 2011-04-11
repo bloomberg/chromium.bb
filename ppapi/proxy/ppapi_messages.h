@@ -461,9 +461,9 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlashMenu_Create,
                            PP_Instance /* instance */,
                            pp::proxy::SerializedFlashMenu /* menu_data */,
                            pp::proxy::HostResource /* result */)
-IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFlashMenu_Show,
-                    pp::proxy::HostResource /* menu */,
-                    PP_Point /* location */)
+IPC_SYNC_MESSAGE_ROUTED2_0(PpapiHostMsg_PPBFlashMenu_Show,
+                           pp::proxy::HostResource /* menu */,
+                           PP_Point /* location */)
 IPC_MESSAGE_ROUTED3(PpapiMsg_PPBFlashMenu_ShowACK,
                     pp::proxy::HostResource /* menu */,
                     int32_t /* selected_id */,

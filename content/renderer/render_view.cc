@@ -72,7 +72,6 @@
 #include "content/renderer/plugin_channel_host.h"
 #include "content/renderer/render_view_observer.h"
 #include "content/renderer/render_view_visitor.h"
-#include "content/renderer/render_widget_fullscreen.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/renderer_webstoragenamespace_impl.h"
@@ -1929,8 +1928,7 @@ WebExternalPopupMenu* RenderView::createExternalPopupMenu(
   return external_popup_menu_.get();
 }
 
-webkit::ppapi::FullscreenContainer*
-RenderView::CreatePepperFullscreenContainer(
+RenderWidgetFullscreenPepper* RenderView::CreatePepperFullscreenContainer(
     webkit::ppapi::PluginInstance* plugin) {
   GURL active_url;
   if (webview() && webview()->mainFrame())

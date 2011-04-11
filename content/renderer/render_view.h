@@ -69,6 +69,7 @@ class PepperDeviceTest;
 class PrintWebViewHelper;
 class RenderViewObserver;
 class RenderViewVisitor;
+class RenderWidgetFullscreenPepper;
 class SkBitmap;
 class SpeechInputDispatcher;
 class SpellCheckProvider;
@@ -105,7 +106,6 @@ class PluginGroup;
 }  // namespace npapi
 
 namespace ppapi {
-class FullscreenContainer;
 class PluginInstance;
 class PluginModule;
 }  // namespace ppapi
@@ -310,7 +310,7 @@ class RenderView : public RenderWidget,
                              int status);
 
   // Creates a fullscreen container for a pepper plugin instance.
-  webkit::ppapi::FullscreenContainer* CreatePepperFullscreenContainer(
+  RenderWidgetFullscreenPepper* CreatePepperFullscreenContainer(
       webkit::ppapi::PluginInstance* plugin);
 
   // Create a new plugin without checking the content settings.

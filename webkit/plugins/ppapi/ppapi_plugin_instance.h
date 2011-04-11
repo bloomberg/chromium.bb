@@ -254,6 +254,10 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // embedded in a page).
   bool IsFullPagePlugin() const;
 
+  FullscreenContainer* fullscreen_container() const {
+    return fullscreen_container_;
+  }
+
  private:
   bool LoadFindInterface();
   bool LoadMessagingInterface();

@@ -181,6 +181,7 @@ int32_t MockPluginDelegate::ConnectTcpAddress(
 }
 
 int32_t MockPluginDelegate::ShowContextMenu(
+    PluginInstance* instance,
     webkit::ppapi::PPB_Flash_Menu_Impl* menu,
     const gfx::Point& position) {
   return PP_ERROR_FAILED;

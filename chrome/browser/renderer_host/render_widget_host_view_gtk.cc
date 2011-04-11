@@ -276,6 +276,10 @@ class RenderWidgetHostViewGtkWidget {
       host_view->GetRenderWidgetHost()->ForwardWheelEvent(web_event);
     }
 #endif
+
+    if (event->type != GDK_BUTTON_RELEASE)
+      host_view->set_last_mouse_down(event);
+
     if (!(event->button == 1 || event->button == 2 || event->button == 3))
       return FALSE;  // We do not forward any other buttons to the renderer.
     if (event->type == GDK_2BUTTON_PRESS || event->type == GDK_3BUTTON_PRESS)
@@ -509,11 +513,13 @@ RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
       destroy_handler_id_(0),
       dragged_at_horizontal_edge_(0),
       dragged_at_vertical_edge_(0),
-      accelerated_surface_acquired_(false) {
+      accelerated_surface_acquired_(false),
+      last_mouse_down_(NULL) {
   host_->set_view(this);
 }
 
 RenderWidgetHostViewGtk::~RenderWidgetHostViewGtk() {
+  set_last_mouse_down(NULL);
   view_.Destroy();
 }
 
@@ -1172,6 +1178,19 @@ void RenderWidgetHostViewGtk::AnimationProgressed(
 void RenderWidgetHostViewGtk::AnimationCanceled(
     const ui::Animation* animation) {
   gtk_widget_queue_draw(view_.get());
+}
+
+void RenderWidgetHostViewGtk::set_last_mouse_down(GdkEventButton* event) {
+  GdkEventButton* temp = NULL;
+  if (event) {
+    temp = reinterpret_cast<GdkEventButton*>(
+        gdk_event_copy(reinterpret_cast<GdkEvent*>(event)));
+  }
+
+  if (last_mouse_down_)
+    gdk_event_free(reinterpret_cast<GdkEvent*>(last_mouse_down_));
+
+  last_mouse_down_ = temp;
 }
 
 // static
