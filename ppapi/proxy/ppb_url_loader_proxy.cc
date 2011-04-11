@@ -153,7 +153,7 @@ int32_t Open(PP_Resource loader_id,
       INTERFACE_ID_PPB_URL_LOADER, loader_object->host_resource(),
       request_object->host_resource(),
       dispatcher->callback_tracker().SendCallback(callback)));
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t FollowRedirect(PP_Resource loader_id,
@@ -166,7 +166,7 @@ int32_t FollowRedirect(PP_Resource loader_id,
   dispatcher->Send(new PpapiHostMsg_PPBURLLoader_FollowRedirect(
       INTERFACE_ID_PPB_URL_LOADER, loader_object->host_resource(),
       dispatcher->callback_tracker().SendCallback(callback)));
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 PP_Bool GetUploadProgress(PP_Resource loader_id,
@@ -229,7 +229,7 @@ int32_t ReadResponseBody(PP_Resource loader_id,
   dispatcher->Send(new PpapiHostMsg_PPBURLLoader_ReadResponseBody(
       INTERFACE_ID_PPB_URL_LOADER,
       loader_object->host_resource(), bytes_to_read));
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t FinishStreamingToFile(PP_Resource loader_id,
@@ -242,7 +242,7 @@ int32_t FinishStreamingToFile(PP_Resource loader_id,
   dispatcher->Send(new PpapiHostMsg_PPBURLLoader_FinishStreamingToFile(
       INTERFACE_ID_PPB_URL_LOADER, loader_object->host_resource(),
       dispatcher->callback_tracker().SendCallback(callback)));
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 void Close(PP_Resource loader_id) {
@@ -402,7 +402,7 @@ void PPB_URLLoader_Proxy::OnMsgOpen(const HostResource& loader,
   PP_CompletionCallback callback = ReceiveCallback(serialized_callback);
   int32_t result = ppb_url_loader_target()->Open(
       loader.host_resource(), request_info.host_resource(), callback);
-  if (result != PP_ERROR_WOULDBLOCK)
+  if (result != PP_OK_COMPLETIONPENDING)
     PP_RunCompletionCallback(&callback, result);
   // TODO(brettw) bug 73236 register for the status callbacks.
 }
@@ -413,7 +413,7 @@ void PPB_URLLoader_Proxy::OnMsgFollowRedirect(
   PP_CompletionCallback callback = ReceiveCallback(serialized_callback);
   int32_t result = ppb_url_loader_target()->FollowRedirect(
       loader.host_resource(), callback);
-  if (result != PP_ERROR_WOULDBLOCK)
+  if (result != PP_OK_COMPLETIONPENDING)
     PP_RunCompletionCallback(&callback, result);
 }
 
@@ -449,7 +449,7 @@ void PPB_URLLoader_Proxy::OnMsgReadResponseBody(
   int32_t result = ppb_url_loader_target()->ReadResponseBody(
       loader.host_resource(), const_cast<char*>(info->read_buffer.c_str()),
       bytes_to_read, callback.pp_completion_callback());
-  if (result != PP_ERROR_WOULDBLOCK) {
+  if (result != PP_OK_COMPLETIONPENDING) {
     // Send error (or perhaps success for synchronous reads) back to plugin.
     // The callback function is already set up to do this and also delete the
     // callback info.
@@ -463,7 +463,7 @@ void PPB_URLLoader_Proxy::OnMsgFinishStreamingToFile(
   PP_CompletionCallback callback = ReceiveCallback(serialized_callback);
   int32_t result = ppb_url_loader_target()->FinishStreamingToFile(
       loader.host_resource(), callback);
-  if (result != PP_ERROR_WOULDBLOCK)
+  if (result != PP_OK_COMPLETIONPENDING)
     PP_RunCompletionCallback(&callback, result);
 }
 

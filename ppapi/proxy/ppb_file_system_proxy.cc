@@ -104,7 +104,7 @@ int32_t Open(PP_Resource file_system,
 
   dispatcher->Send(new PpapiHostMsg_PPBFileSystem_Open(
       INTERFACE_ID_PPB_FILE_SYSTEM, object->host_resource(), expected_size));
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 PP_FileSystemType_Dev GetType(PP_Resource resource) {
@@ -177,7 +177,7 @@ void PPB_FileSystem_Proxy::OnMsgOpen(const HostResource& host_resource,
   int32_t result = ppb_file_system_target()->Open(
       host_resource.host_resource(), expected_size,
       callback.pp_completion_callback());
-  if (result != PP_ERROR_WOULDBLOCK)
+  if (result != PP_OK_COMPLETIONPENDING)
     callback.Run(result);
 }
 

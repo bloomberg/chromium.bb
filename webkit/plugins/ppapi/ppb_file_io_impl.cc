@@ -262,7 +262,7 @@ int32_t PPB_FileIO_Impl::Open(PPB_FileRef_Impl* file_ref,
     return PP_ERROR_FAILED;
 
   RegisterCallback(callback);
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PPB_FileIO_Impl::Query(PP_FileInfo_Dev* info,
@@ -283,7 +283,7 @@ int32_t PPB_FileIO_Impl::Query(PP_FileInfo_Dev* info,
     return PP_ERROR_FAILED;
 
   RegisterCallback(callback);
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PPB_FileIO_Impl::Touch(PP_Time last_access_time,
@@ -301,7 +301,7 @@ int32_t PPB_FileIO_Impl::Touch(PP_Time last_access_time,
     return PP_ERROR_FAILED;
 
   RegisterCallback(callback);
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PPB_FileIO_Impl::Read(int64_t offset,
@@ -323,7 +323,7 @@ int32_t PPB_FileIO_Impl::Read(int64_t offset,
     return PP_ERROR_FAILED;
 
   RegisterCallback(callback);
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PPB_FileIO_Impl::Write(int64_t offset,
@@ -341,7 +341,7 @@ int32_t PPB_FileIO_Impl::Write(int64_t offset,
     return PP_ERROR_FAILED;
 
   RegisterCallback(callback);
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PPB_FileIO_Impl::SetLength(int64_t length,
@@ -357,7 +357,7 @@ int32_t PPB_FileIO_Impl::SetLength(int64_t length,
     return PP_ERROR_FAILED;
 
   RegisterCallback(callback);
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PPB_FileIO_Impl::Flush(PP_CompletionCallback callback) {
@@ -371,7 +371,7 @@ int32_t PPB_FileIO_Impl::Flush(PP_CompletionCallback callback) {
     return PP_ERROR_FAILED;
 
   RegisterCallback(callback);
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 void PPB_FileIO_Impl::Close() {

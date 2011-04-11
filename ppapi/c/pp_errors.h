@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -7,7 +7,7 @@
 
 /**
  * @file
- * This file defines an enumeration of all Native Client errors.
+ * This file defines an enumeration of all PPAPI error codes.
  */
 
 /**
@@ -16,19 +16,25 @@
  * @{
  */
 
-/** This enumeration contains enumerators of all Native Client errors.
+/** This enumeration contains enumerators of all PPAPI error codes.
  * Errors are negative valued.
  */
 enum {
+  /**
+   * This value is returned by a function on successful synchronous completion
+   * or is passed as a result to a PP_CompletionCallback_Func on successful
+   * asynchronous completion.
+   */
   PP_OK = 0,
 
   /**
    * This value is returned by a function that accepts a PP_CompletionCallback
-   * and cannot complete synchronously.  This error indicates that the given
+   * and cannot complete synchronously.  This code indicates that the given
    * callback will be asynchronously notified of the final result once it is
    * available.
    */
-  PP_ERROR_WOULDBLOCK = -1,
+  PP_OK_COMPLETIONPENDING = -1,
+  PP_ERROR_WOULDBLOCK = -1,  /* DEPRECATED: DO NOT USE */
 
   /** This value indicates failure for unspecified reasons. */
   PP_ERROR_FAILED = -2,
@@ -96,4 +102,3 @@ enum {
  */
 
 #endif  /* PPAPI_C_PP_ERRORS_H_ */
-

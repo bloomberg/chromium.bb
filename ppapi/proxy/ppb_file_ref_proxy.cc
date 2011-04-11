@@ -140,7 +140,7 @@ int32_t MakeDirectory(PP_Resource directory_ref,
   dispatcher->Send(new PpapiHostMsg_PPBFileRef_MakeDirectory(
       INTERFACE_ID_PPB_FILE_REF, object->host_resource(), make_ancestors,
       dispatcher->callback_tracker().SendCallback(callback)));
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t Touch(PP_Resource file_ref,
@@ -156,7 +156,7 @@ int32_t Touch(PP_Resource file_ref,
       INTERFACE_ID_PPB_FILE_REF, object->host_resource(),
       last_access_time, last_modified_time,
       dispatcher->callback_tracker().SendCallback(callback)));
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t Delete(PP_Resource file_ref,
@@ -169,7 +169,7 @@ int32_t Delete(PP_Resource file_ref,
   dispatcher->Send(new PpapiHostMsg_PPBFileRef_Delete(
       INTERFACE_ID_PPB_FILE_REF, object->host_resource(),
       dispatcher->callback_tracker().SendCallback(callback)));
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t Rename(PP_Resource file_ref,
@@ -192,7 +192,7 @@ int32_t Rename(PP_Resource file_ref,
       INTERFACE_ID_PPB_FILE_REF, obj1->host_resource(),
       obj2->host_resource(),
       dispatcher1->callback_tracker().SendCallback(callback)));
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 const PPB_FileRef_Dev file_ref_interface = {
@@ -307,7 +307,7 @@ void PPB_FileRef_Proxy::OnMsgMakeDirectory(const HostResource& host_resource,
   int32_t result =
       ppb_file_ref_target()->MakeDirectory(host_resource.host_resource(),
                                            make_ancestors, callback);
-  if (result != PP_ERROR_WOULDBLOCK)
+  if (result != PP_OK_COMPLETIONPENDING)
     PP_RunCompletionCallback(&callback, result);
 }
 
@@ -319,7 +319,7 @@ void PPB_FileRef_Proxy::OnMsgTouch(const HostResource& host_resource,
   int32_t result =
       ppb_file_ref_target()->Touch(host_resource.host_resource(),
                                    last_access, last_modified, callback);
-  if (result != PP_ERROR_WOULDBLOCK)
+  if (result != PP_OK_COMPLETIONPENDING)
     PP_RunCompletionCallback(&callback, result);
 }
 
@@ -328,7 +328,7 @@ void PPB_FileRef_Proxy::OnMsgDelete(const HostResource& host_resource,
   PP_CompletionCallback callback = ReceiveCallback(serialized_callback);
   int32_t result =
       ppb_file_ref_target()->Delete(host_resource.host_resource(), callback);
-  if (result != PP_ERROR_WOULDBLOCK)
+  if (result != PP_OK_COMPLETIONPENDING)
     PP_RunCompletionCallback(&callback, result);
 }
 
@@ -340,7 +340,7 @@ void PPB_FileRef_Proxy::OnMsgRename(const HostResource& file_ref,
       ppb_file_ref_target()->Rename(file_ref.host_resource(),
                                     new_file_ref.host_resource(),
                                     callback);
-  if (result != PP_ERROR_WOULDBLOCK)
+  if (result != PP_OK_COMPLETIONPENDING)
     PP_RunCompletionCallback(&callback, result);
 }
 

@@ -114,7 +114,7 @@ int32_t PPB_Flash_NetConnector_Impl::ConnectTcp(
   }
 
   int32_t rv = instance()->delegate()->ConnectTcp(this, host, port);
-  if (rv == PP_ERROR_WOULDBLOCK) {
+  if (rv == PP_OK_COMPLETIONPENDING) {
     // Record callback and output buffers.
     callback_ = new TrackedCompletionCallback(
         instance()->module()->GetCallbackTracker(), resource_id, callback);
@@ -153,7 +153,7 @@ int32_t PPB_Flash_NetConnector_Impl::ConnectTcpAddress(
   }
 
   int32_t rv = instance()->delegate()->ConnectTcpAddress(this, addr);
-  if (rv == PP_ERROR_WOULDBLOCK) {
+  if (rv == PP_OK_COMPLETIONPENDING) {
     // Record callback and output buffers.
     callback_ = new TrackedCompletionCallback(
         instance()->module()->GetCallbackTracker(), resource_id, callback);

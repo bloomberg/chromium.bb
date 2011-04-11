@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,7 +146,7 @@ void PaintManager::DoPaint() {
   // re-use devices in this way.
   PP_DCHECK(result != PP_ERROR_INPROGRESS);
 
-  if (result == PP_ERROR_WOULDBLOCK) {
+  if (result == PP_OK_COMPLETIONPENDING) {
     flush_pending_ = true;
   } else {
     PP_DCHECK(result == PP_OK);  // Catch all other errors in debug mode.

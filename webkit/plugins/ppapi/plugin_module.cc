@@ -129,13 +129,13 @@ base::MessageLoopProxy* GetMainThreadMessageLoop() {
 
 void AddRefResource(PP_Resource resource) {
   if (!ResourceTracker::Get()->AddRefResource(resource)) {
-    DLOG(WARNING) << "AddRefResource()ing a nonexistent resource";
+    DLOG(WARNING) << "AddRefResource()ing a nonexistent resource " << resource;
   }
 }
 
 void ReleaseResource(PP_Resource resource) {
   if (!ResourceTracker::Get()->UnrefResource(resource)) {
-    DLOG(WARNING) << "ReleaseResource()ing a nonexistent resource";
+    DLOG(WARNING) << "ReleaseResource()ing a nonexistent resource " << resource;
   }
 }
 
@@ -539,4 +539,3 @@ bool PluginModule::InitializeModule() {
 
 }  // namespace ppapi
 }  // namespace webkit
-

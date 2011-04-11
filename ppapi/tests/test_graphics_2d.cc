@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,7 +92,7 @@ bool TestGraphics2D::FlushAndWaitForDone(pp::Graphics2D* context) {
   int32_t rv = context->Flush(cc);
   if (rv == PP_OK)
     return true;
-  if (rv != PP_ERROR_WOULDBLOCK)
+  if (rv != PP_OK_COMPLETIONPENDING)
     return false;
   testing_interface_->RunMessageLoop(instance_->pp_instance());
   return true;
@@ -524,7 +524,7 @@ std::string TestGraphics2D::TestFlush() {
   dc.PaintImageData(background, pp::Point(0, 0));
 
   int32_t rv = dc.Flush(pp::CompletionCallback::Block());
-  if (rv == PP_OK || rv == PP_ERROR_WOULDBLOCK)
+  if (rv == PP_OK || rv == PP_OK_COMPLETIONPENDING)
     return "Flush succeeded from the main thread with no callback.";
 
   // Test flushing with no operations still issues a callback.
@@ -537,13 +537,13 @@ std::string TestGraphics2D::TestFlush() {
 
   // Test that multiple flushes fail if we don't get a callback in between.
   rv = dc_nopaints.Flush(pp::CompletionCallback(&FlushCallbackNOP, NULL));
-  if (rv != PP_OK && rv != PP_ERROR_WOULDBLOCK)
+  if (rv != PP_OK && rv != PP_OK_COMPLETIONPENDING)
     return "Couldn't flush first time for multiple flush test.";
 
   if (rv != PP_OK) {
     // If the first flush would block, then a second should fail.
     rv = dc_nopaints.Flush(pp::CompletionCallback(&FlushCallbackNOP, NULL));
-    if (rv == PP_OK || rv == PP_ERROR_WOULDBLOCK)
+    if (rv == PP_OK || rv == PP_OK_COMPLETIONPENDING)
       return "Second flush succeeded before callback ran.";
   }
 

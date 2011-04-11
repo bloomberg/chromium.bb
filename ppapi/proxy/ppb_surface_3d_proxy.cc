@@ -100,7 +100,7 @@ int32_t SwapBuffers(PP_Resource surface_id,
 
   object->context()->gles2_impl()->SwapBuffers();
 
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 const PPB_Surface3D_Dev surface_3d_interface = {
@@ -170,7 +170,7 @@ void PPB_Surface3D_Proxy::OnMsgSwapBuffers(const HostResource& surface_3d) {
       &PPB_Surface3D_Proxy::SendSwapBuffersACKToPlugin, surface_3d);
   int32_t result = ppb_surface_3d_target()->SwapBuffers(
       surface_3d.host_resource(), callback.pp_completion_callback());
-  if (result != PP_ERROR_WOULDBLOCK) {
+  if (result != PP_OK_COMPLETIONPENDING) {
     // There was some error, so we won't get a flush callback. We need to now
     // issue the ACK to the plugin hears about the error. This will also clean
     // up the data associated with the callback.

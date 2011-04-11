@@ -205,7 +205,7 @@ PPB_URLLoader_Impl::PPB_URLLoader_Impl(PluginInstance* instance,
       total_bytes_to_be_received_(-1),
       user_buffer_(NULL),
       user_buffer_size_(0),
-      done_status_(PP_ERROR_WOULDBLOCK),
+      done_status_(PP_OK_COMPLETIONPENDING),
       has_universal_access_(false),
       status_callback_(NULL) {
 }
@@ -267,7 +267,7 @@ int32_t PPB_URLLoader_Impl::Open(PPB_URLRequestInfo_Impl* request,
 
   // Notify completion when we receive a redirect or response headers.
   RegisterCallback(callback);
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PPB_URLLoader_Impl::FollowRedirect(PP_CompletionCallback callback) {
@@ -283,7 +283,7 @@ int32_t PPB_URLLoader_Impl::FollowRedirect(PP_CompletionCallback callback) {
 
   loader_->setDefersLoading(false);  // Allow the redirect to continue.
   RegisterCallback(callback);
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 bool PPB_URLLoader_Impl::GetUploadProgress(int64_t* bytes_sent,
@@ -329,14 +329,14 @@ int32_t PPB_URLLoader_Impl::ReadResponseBody(void* buffer,
     return FillUserBuffer();
 
   // We may have already reached EOF.
-  if (done_status_ != PP_ERROR_WOULDBLOCK) {
+  if (done_status_ != PP_OK_COMPLETIONPENDING) {
     user_buffer_ = NULL;
     user_buffer_size_ = 0;
     return done_status_;
   }
 
   RegisterCallback(callback);
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PPB_URLLoader_Impl::FinishStreamingToFile(
@@ -348,12 +348,12 @@ int32_t PPB_URLLoader_Impl::FinishStreamingToFile(
     return PP_ERROR_FAILED;
 
   // We may have already reached EOF.
-  if (done_status_ != PP_ERROR_WOULDBLOCK)
+  if (done_status_ != PP_OK_COMPLETIONPENDING)
     return done_status_;
 
   // Wait for didFinishLoading / didFail.
   RegisterCallback(callback);
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 void PPB_URLLoader_Impl::Close() {

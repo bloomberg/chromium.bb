@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,7 +69,7 @@ class CompletionCallback {
 //     void ProcessFile(const FileRef& file) {
 //       CompletionCallback cc = factory_.NewCallback(&MyHandler::DidOpen);
 //       int32_t rv = fio_.Open(file, PP_FileOpenFlag_Read, cc);
-//       if (rv != PP_ERROR_WOULDBLOCK)
+//       if (rv != PP_OK_COMPLETIONPENDING)
 //         cc.Run(rv);
 //     }
 //
@@ -103,7 +103,7 @@ class CompletionCallback {
 //       CompletionCallback cc = factory_.NewCallback(&MyHandler::DidRead);
 //       int32_t rv = fio_.Read(offset_, buf_, sizeof(buf_),
 //                              cc.pp_completion_callback());
-//       if (rv != PP_ERROR_WOULDBLOCK)
+//       if (rv != PP_OK_COMPLETIONPENDING)
 //         cc.Run(rv);
 //     }
 //
@@ -148,7 +148,7 @@ class CompletionCallbackFactory {
   // Allocates a new, single-use CompletionCallback.  The CompletionCallback
   // must be run in order for the memory allocated by NewCallback to be freed.
   // If after passing the CompletionCallback to a PPAPI method, the method does
-  // not return PP_ERROR_WOULDBLOCK, then you should manually call the
+  // not return PP_OK_COMPLETIONPENDING, then you should manually call the
   // CompletionCallback's Run method otherwise memory will be leaked.
 
   template <typename Method>

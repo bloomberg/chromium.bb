@@ -84,7 +84,7 @@ class PPB_FileIO_Impl : public Resource {
                                PP_CompletionCallback callback);
 
   // Sets up |callback| as the pending callback. This should only be called once
-  // it is certain that |PP_ERROR_WOULDBLOCK| will be returned.
+  // it is certain that |PP_OK_COMPLETIONPENDING| will be returned.
   void RegisterCallback(PP_CompletionCallback callback);
 
   void RunPendingCallback(int32_t result);

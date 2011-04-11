@@ -766,7 +766,7 @@ int32_t PepperPluginDelegateImpl::ConnectTcp(
     return PP_ERROR_FAILED;
   }
 
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PepperPluginDelegateImpl::ConnectTcpAddress(
@@ -783,7 +783,7 @@ int32_t PepperPluginDelegateImpl::ConnectTcpAddress(
     return PP_ERROR_FAILED;
   }
 
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 void PepperPluginDelegateImpl::OnConnectTcpACK(
@@ -839,7 +839,7 @@ int32_t PepperPluginDelegateImpl::ShowContextMenu(
     return PP_ERROR_FAILED;
   }
 
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 void PepperPluginDelegateImpl::OnContextMenuClosed(

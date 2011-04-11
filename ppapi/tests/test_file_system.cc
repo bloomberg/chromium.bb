@@ -28,7 +28,7 @@ std::string TestFileSystem::TestOpen() {
   // Open.
   pp::FileSystem_Dev file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
   int32_t rv = file_system.Open(1024, callback);
-  if (rv == PP_ERROR_WOULDBLOCK)
+  if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
     return ReportError("FileSystem::Open", rv);
@@ -39,7 +39,7 @@ std::string TestFileSystem::TestOpen() {
       .Open(1024, callback);
   if (callback.run_count() > 0)
     return "FileSystem::Open ran callback synchronously.";
-  if (rv == PP_ERROR_WOULDBLOCK) {
+  if (rv == PP_OK_COMPLETIONPENDING) {
     rv = callback.WaitForResult();
     if (rv != PP_ERROR_ABORTED)
       return "FileSystem::Open not aborted.";
@@ -61,17 +61,17 @@ std::string TestFileSystem::TestMultipleOpens() {
 
   TestCompletionCallback callback_2(instance_->pp_instance());
   int32_t rv_2 = file_system.Open(1024, callback_2);
-  if (rv_2 == PP_ERROR_WOULDBLOCK || rv_2 == PP_OK)
+  if (rv_2 == PP_OK_COMPLETIONPENDING || rv_2 == PP_OK)
     return "FileSystem::Open should not allow multiple opens.";
 
-  if (rv_1 == PP_ERROR_WOULDBLOCK)
+  if (rv_1 == PP_OK_COMPLETIONPENDING)
     rv_1 = callback_1.WaitForResult();
   if (rv_1 != PP_OK)
     return ReportError("FileSystem::Open", rv_1);
 
   TestCompletionCallback callback_3(instance_->pp_instance());
   int32_t rv_3 = file_system.Open(1024, callback_3);
-  if (rv_3 == PP_ERROR_WOULDBLOCK || rv_3 == PP_OK)
+  if (rv_3 == PP_OK_COMPLETIONPENDING || rv_3 == PP_OK)
     return "FileSystem::Open should not allow multiple opens.";
 
   PASS();

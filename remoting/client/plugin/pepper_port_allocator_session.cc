@@ -123,7 +123,7 @@ class PepperURLFetcher {
     pp::CompletionCallback callback =
         callback_factory_.NewCallback(&PepperURLFetcher::DidOpen);
     int rv = loader_.Open(request, callback);
-    if (rv != PP_ERROR_WOULDBLOCK)
+    if (rv != PP_OK_COMPLETIONPENDING)
       callback.Run(rv);
   }
 
@@ -132,7 +132,7 @@ class PepperURLFetcher {
     pp::CompletionCallback callback =
         callback_factory_.NewCallback(&PepperURLFetcher::DidRead);
     int rv = loader_.ReadResponseBody(buf_, sizeof(buf_), callback);
-    if (rv != PP_ERROR_WOULDBLOCK)
+    if (rv != PP_OK_COMPLETIONPENDING)
       callback.Run(rv);
   }
 

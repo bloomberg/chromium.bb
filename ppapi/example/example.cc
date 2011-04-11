@@ -107,7 +107,7 @@ class MyFetcher {
     pp::CompletionCallback callback =
         callback_factory_.NewCallback(&MyFetcher::DidOpen);
     int rv = loader_.Open(request, callback);
-    if (rv != PP_ERROR_WOULDBLOCK)
+    if (rv != PP_OK_COMPLETIONPENDING)
       callback.Run(rv);
   }
 
@@ -124,7 +124,7 @@ class MyFetcher {
     pp::CompletionCallback callback =
         callback_factory_.NewCallback(&MyFetcher::DidRead);
     int rv = loader_.ReadResponseBody(buf_, sizeof(buf_), callback);
-    if (rv != PP_ERROR_WOULDBLOCK)
+    if (rv != PP_OK_COMPLETIONPENDING)
       callback.Run(rv);
   }
 

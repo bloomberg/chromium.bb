@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,14 +27,14 @@ std::string ReportError(const char* method, int32_t error) {
 }
 
 TestCompletionCallback::TestCompletionCallback(PP_Instance instance)
-    : result_(PP_ERROR_WOULDBLOCK),
+    : result_(PP_OK_COMPLETIONPENDING),
       post_quit_task_(false),
       run_count_(0),
       instance_(instance) {
 }
 
 int32_t TestCompletionCallback::WaitForResult() {
-  result_ = PP_ERROR_WOULDBLOCK;  // Reset
+  result_ = PP_OK_COMPLETIONPENDING;  // Reset
   post_quit_task_ = true;
   GetTestingInterface()->RunMessageLoop(instance_);
   return result_;

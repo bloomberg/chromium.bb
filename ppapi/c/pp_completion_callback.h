@@ -37,7 +37,7 @@ typedef void (*PP_CompletionCallback_Func)(void* user_data, int32_t result);
 /**
  * Any method that takes a PP_CompletionCallback has the option of completing
  * asynchronously if the operation would block.  Such a method should return
- * PP_ERROR_WOULDBLOCK to indicate that the method will complete
+ * PP_OK_COMPLETIONPENDING to indicate that the method will complete
  * asynchronously and will always be invoked from the main thread of PPAPI
  * execution.  If the completion callback is NULL, then the operation will
  * block if necessary to complete its work.  PP_BlockUntilComplete() provides a
@@ -126,4 +126,3 @@ PP_INLINE struct PP_CompletionCallback PP_BlockUntilComplete() {
  */
 
 #endif  /* PPAPI_C_PP_COMPLETION_CALLBACK_H_ */
-

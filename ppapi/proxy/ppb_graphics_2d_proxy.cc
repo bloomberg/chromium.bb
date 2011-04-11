@@ -186,7 +186,7 @@ int32_t Flush(PP_Resource graphics_2d,
 
   dispatcher->Send(new PpapiHostMsg_PPBGraphics2D_Flush(
       INTERFACE_ID_PPB_GRAPHICS_2D, object->host_resource()));
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 const PPB_Graphics2D graphics_2d_interface = {
@@ -288,7 +288,7 @@ void PPB_Graphics2D_Proxy::OnMsgFlush(const HostResource& graphics_2d) {
       &PPB_Graphics2D_Proxy::SendFlushACKToPlugin, graphics_2d);
   int32_t result = ppb_graphics_2d_target()->Flush(
       graphics_2d.host_resource(), callback.pp_completion_callback());
-  if (result != PP_ERROR_WOULDBLOCK) {
+  if (result != PP_OK_COMPLETIONPENDING) {
     // There was some error, so we won't get a flush callback. We need to now
     // issue the ACK to the plugin hears about the error. This will also clean
     // up the data associated with the callback.

@@ -36,17 +36,17 @@ std::string TestTransport::TestBasics() {
 
   TestCompletionCallback connect_cb1(instance_->pp_instance());
   TestCompletionCallback connect_cb2(instance_->pp_instance());
-  ASSERT_EQ(transport1.Connect(connect_cb1), PP_ERROR_WOULDBLOCK);
-  ASSERT_EQ(transport2.Connect(connect_cb2), PP_ERROR_WOULDBLOCK);
+  ASSERT_EQ(transport1.Connect(connect_cb1), PP_OK_COMPLETIONPENDING);
+  ASSERT_EQ(transport2.Connect(connect_cb2), PP_OK_COMPLETIONPENDING);
 
   pp::Var address1;
   pp::Var address2;
   TestCompletionCallback next_address_cb1(instance_->pp_instance());
   TestCompletionCallback next_address_cb2(instance_->pp_instance());
   ASSERT_EQ(transport1.GetNextAddress(&address1, next_address_cb1),
-            PP_ERROR_WOULDBLOCK);
+            PP_OK_COMPLETIONPENDING);
   ASSERT_EQ(transport2.GetNextAddress(&address2, next_address_cb2),
-            PP_ERROR_WOULDBLOCK);
+            PP_OK_COMPLETIONPENDING);
   ASSERT_EQ(next_address_cb1.WaitForResult(), 0);
   ASSERT_EQ(next_address_cb2.WaitForResult(), 0);
   ASSERT_EQ(transport1.GetNextAddress(&address1, next_address_cb1), PP_OK);

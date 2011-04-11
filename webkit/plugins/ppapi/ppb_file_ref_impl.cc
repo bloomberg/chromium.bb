@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,7 +131,7 @@ int32_t MakeDirectory(PP_Resource directory_ref_id,
                             callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
 
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t Touch(PP_Resource file_ref_id,
@@ -156,7 +156,7 @@ int32_t Touch(PP_Resource file_ref_id,
                             callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
 
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t Delete(PP_Resource file_ref_id,
@@ -178,7 +178,7 @@ int32_t Delete(PP_Resource file_ref_id,
                             callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
 
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t Rename(PP_Resource file_ref_id,
@@ -209,7 +209,7 @@ int32_t Rename(PP_Resource file_ref_id,
                             callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
 
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 const PPB_FileRef_Dev ppb_fileref = {
@@ -340,4 +340,3 @@ FilePath PPB_FileRef_Impl::GetSystemPath() const {
 
 }  // namespace ppapi
 }  // namespace webkit
-

@@ -83,7 +83,7 @@ int32_t Show(PP_Resource menu_id,
   dispatcher->Send(new PpapiHostMsg_PPBFlashMenu_Show(
       INTERFACE_ID_PPB_FLASH_MENU, object->host_resource(), *location));
 
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 const PPB_Flash_Menu flash_menu_interface = {
@@ -159,7 +159,7 @@ void PPB_Flash_Menu_Proxy::OnMsgShow(const HostResource& menu,
       &location,
       &request->selected_id,
       callback.pp_completion_callback());
-  if (result != PP_ERROR_WOULDBLOCK) {
+  if (result != PP_OK_COMPLETIONPENDING) {
     // There was some error, so we won't get a callback. We need to now issue
     // the ACK to the plugin so that it hears about the error. This will also
     // clean up the data associated with the callback.

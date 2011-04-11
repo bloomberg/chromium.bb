@@ -103,7 +103,7 @@ int32_t PPB_Broker_Impl::Connect(
   connect_callback_ = new TrackedCompletionCallback(
       instance()->module()->GetCallbackTracker(), resource_id,
       connect_callback);
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PPB_Broker_Impl::GetHandle(int32_t* handle) {

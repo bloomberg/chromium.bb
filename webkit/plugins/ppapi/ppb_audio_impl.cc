@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -310,7 +310,7 @@ int32_t PPB_Audio_Impl::Open(PluginDelegate* plugin_delegate,
   // once and only once.
   create_callback_ = create_callback;
   create_callback_pending_ = true;
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PPB_Audio_Impl::GetSyncSocket(int* sync_socket) {
@@ -373,4 +373,3 @@ void PPB_Audio_Impl::StreamCreated(
 
 }  // namespace ppapi
 }  // namespace webkit
-

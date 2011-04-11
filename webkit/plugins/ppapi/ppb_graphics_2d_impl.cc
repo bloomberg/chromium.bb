@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -399,7 +399,7 @@ int32_t PPB_Graphics2D_Impl::Flush(const PP_CompletionCallback& callback) {
   } else {
     unpainted_flush_callback_.Set(callback);
   }
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 bool PPB_Graphics2D_Impl::ReadImageData(PP_Resource image,

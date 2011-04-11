@@ -107,7 +107,7 @@ int32_t Show(PP_Resource chooser, struct PP_CompletionCallback callback) {
   dispatcher->Send(new PpapiHostMsg_PPBFileChooser_Show(
       INTERFACE_ID_PPB_FILE_CHOOSER,
       object->host_resource()));
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 PP_Resource GetNextChosenFile(PP_Resource chooser) {
@@ -189,7 +189,7 @@ void PPB_FileChooser_Proxy::OnMsgShow(const HostResource& chooser) {
 
   int32_t result = ppb_file_chooser_target()->Show(
       chooser.host_resource(), callback.pp_completion_callback());
-  if (result != PP_ERROR_WOULDBLOCK)
+  if (result != PP_OK_COMPLETIONPENDING)
     callback.Run(result);
 }
 

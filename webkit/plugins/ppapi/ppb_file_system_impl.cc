@@ -77,7 +77,7 @@ int32_t Open(PP_Resource file_system_id,
                             callback, NULL, file_system, NULL)))
     return PP_ERROR_FAILED;
 
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 PP_FileSystemType_Dev GetType(PP_Resource resource) {

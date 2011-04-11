@@ -194,7 +194,7 @@ int32_t PPB_FileChooser_Impl::Show(const PP_CompletionCallback& callback) {
     return PP_ERROR_FAILED;
 
   RegisterCallback(callback);
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 scoped_refptr<PPB_FileRef_Impl> PPB_FileChooser_Impl::GetNextChosenFile() {

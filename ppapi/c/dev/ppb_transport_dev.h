@@ -34,13 +34,13 @@ struct PPB_Transport_Dev {
   // RTT
 
   // Establishes a connection to the remote peer.  Returns
-  // PP_ERROR_WOULDBLOCK and notifies on |cb| when connectivity is
+  // PP_OK_COMPLETIONPENDING and notifies on |cb| when connectivity is
   // established (or timeout occurs).
   int32_t (*Connect)(PP_Resource transport,
                      struct PP_CompletionCallback cb);
 
   // Obtains another ICE candidate address to be provided to the
-  // remote peer. Returns PP_ERROR_WOULDBLOCK if there are no more
+  // remote peer. Returns PP_OK_COMPLETIONPENDING if there are no more
   // addresses to be sent. After the callback is called
   // GetNextAddress() must be called again to get the address.
   int32_t (*GetNextAddress)(PP_Resource transport,
@@ -51,14 +51,14 @@ struct PPB_Transport_Dev {
   int32_t (*ReceiveRemoteAddress)(PP_Resource transport,
                                   struct PP_Var address);
 
-  // Like recv(), receives data. Returns PP_ERROR_WOULDBLOCK if there
+  // Like recv(), receives data. Returns PP_OK_COMPLETIONPENDING if there
   // is currently no data to receive. In that case, the |data| pointer
   // should remain valid until the callback is called.
   int32_t (*Recv)(PP_Resource transport,
                   void* data,
                   uint32_t len,
                   struct PP_CompletionCallback cb);
-  // Like send(), sends data. Returns PP_ERROR_WOULDBLOCK if the
+  // Like send(), sends data. Returns PP_OK_COMPLETIONPENDING if the
   // socket is currently flow-controlled. In that case, the |data|
   // pointer should remain valid until the callback is called.
   int32_t (*Send)(PP_Resource transport,

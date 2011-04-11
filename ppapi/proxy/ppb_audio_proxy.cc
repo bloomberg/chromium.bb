@@ -196,7 +196,7 @@ void PPB_Audio_Proxy::OnMsgCreate(PP_Instance instance_id,
   int32_t open_error = audio_trusted->Open(result->host_resource(),
                                            config_id.host_resource(),
                                            callback.pp_completion_callback());
-  if (open_error != PP_ERROR_WOULDBLOCK)
+  if (open_error != PP_OK_COMPLETIONPENDING)
     callback.Run(open_error);
 }
 

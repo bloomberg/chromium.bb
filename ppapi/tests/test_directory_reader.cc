@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,7 @@ std::string TestDirectoryReader::TestGetNextFile() {
   pp::FileSystem_Dev file_system(
       instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
   int32_t rv = file_system.Open(1024, callback);
-  if (rv == PP_ERROR_WOULDBLOCK)
+  if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
     return ReportError("FileSystem::Open", rv);
@@ -56,19 +56,19 @@ std::string TestDirectoryReader::TestGetNextFile() {
 
   pp::FileIO_Dev file_io_1;
   rv = file_io_1.Open(file_ref_1, PP_FILEOPENFLAG_CREATE, callback);
-  if (rv == PP_ERROR_WOULDBLOCK)
+  if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
     return ReportError("FileIO::Open", rv);
   pp::FileIO_Dev file_io_2;
   rv = file_io_2.Open(file_ref_2, PP_FILEOPENFLAG_CREATE, callback);
-  if (rv == PP_ERROR_WOULDBLOCK)
+  if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
     return ReportError("FileIO::Open", rv);
   pp::FileIO_Dev file_io_3;
   rv = file_io_3.Open(file_ref_3, PP_FILEOPENFLAG_CREATE, callback);
-  if (rv == PP_ERROR_WOULDBLOCK)
+  if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
     return ReportError("FileIO::Open", rv);
@@ -77,17 +77,17 @@ std::string TestDirectoryReader::TestGetNextFile() {
   pp::FileRef_Dev dir_ref_2(file_system, "/dir_2");
   pp::FileRef_Dev dir_ref_3(file_system, "/dir_3");
   rv = dir_ref_1.MakeDirectory(callback);
-  if (rv == PP_ERROR_WOULDBLOCK)
+  if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
     return ReportError("FileRef::MakeDirectory", rv);
   rv = dir_ref_2.MakeDirectory(callback);
-  if (rv == PP_ERROR_WOULDBLOCK)
+  if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
     return ReportError("FileRef::MakeDirectory", rv);
   rv = dir_ref_3.MakeDirectory(callback);
-  if (rv == PP_ERROR_WOULDBLOCK)
+  if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
     return ReportError("FileRef::MakeDirectory", rv);
@@ -98,7 +98,7 @@ std::string TestDirectoryReader::TestGetNextFile() {
     pp::DirectoryEntry_Dev entry;
     do {
       rv = directory_reader.GetNextEntry(&entry, callback);
-      if (rv == PP_ERROR_WOULDBLOCK)
+      if (rv == PP_OK_COMPLETIONPENDING)
         rv = callback.WaitForResult();
       if (rv != PP_OK)
         return ReportError("DirectoryReader::GetNextEntry", rv);
@@ -156,7 +156,7 @@ std::string TestDirectoryReader::TestGetNextFile() {
     // If |GetNextEntry()| is completing asynchronously, the callback should be
     // aborted (i.e., called with |PP_ERROR_ABORTED| from the message loop)
     // since the resource was destroyed.
-    if (rv == PP_ERROR_WOULDBLOCK) {
+    if (rv == PP_OK_COMPLETIONPENDING) {
       // |GetNextEntry()| *may* have written to |entry| (e.g., synchronously,
       // before the resource was destroyed), but it must not write to it after
       // destruction.

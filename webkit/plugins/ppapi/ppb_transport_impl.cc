@@ -154,7 +154,7 @@ int32_t PPB_Transport_Impl::Connect(PP_CompletionCallback callback) {
   CHECK(resource_id);
   connect_callback_ = new TrackedCompletionCallback(
       instance()->module()->GetCallbackTracker(), resource_id, callback);
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PPB_Transport_Impl::GetNextAddress(PP_Var* address,
@@ -172,7 +172,7 @@ int32_t PPB_Transport_Impl::GetNextAddress(PP_Var* address,
   CHECK(resource_id);
   next_address_callback_ = new TrackedCompletionCallback(
       instance()->module()->GetCallbackTracker(), resource_id, callback);
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PPB_Transport_Impl::ReceiveRemoteAddress(PP_Var address) {
@@ -200,7 +200,7 @@ int32_t PPB_Transport_Impl::Recv(void* data, uint32_t len,
   CHECK(resource_id);
   recv_callback_ = new TrackedCompletionCallback(
       instance()->module()->GetCallbackTracker(), resource_id, callback);
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PPB_Transport_Impl::Send(const void* data, uint32_t len,

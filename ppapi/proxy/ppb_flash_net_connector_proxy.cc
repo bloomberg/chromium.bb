@@ -141,7 +141,7 @@ int32_t ConnectWithMessage(FlashNetConnector* object,
   dispatcher->Send(msg_deletor.release());
 
   object->SetCallback(callback, socket_out, local_addr_out, remote_addr_out);
-  return PP_ERROR_WOULDBLOCK;
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t ConnectTcp(PP_Resource connector_id,
@@ -251,7 +251,7 @@ void PPB_Flash_NetConnector_Proxy::OnMsgConnectTcp(
       resource.host_resource(), host.c_str(), port,
       &info->handle, &info->local_addr, &info->remote_addr,
       callback.pp_completion_callback());
-  if (result != PP_ERROR_WOULDBLOCK)
+  if (result != PP_OK_COMPLETIONPENDING)
     OnCompleteCallbackInHost(result, info);
 }
 
@@ -269,7 +269,7 @@ void PPB_Flash_NetConnector_Proxy::OnMsgConnectTcpAddress(
       resource.host_resource(), &net_address,
       &info->handle, &info->local_addr, &info->remote_addr,
       callback.pp_completion_callback());
-  if (result != PP_ERROR_WOULDBLOCK)
+  if (result != PP_OK_COMPLETIONPENDING)
     OnCompleteCallbackInHost(result, info);
 }
 
