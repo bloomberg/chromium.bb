@@ -94,7 +94,7 @@ hooks = [
                "native_client/build/all.gyp"],
   },
   {
-    "pattern": "DEPS$",
+    "pattern": ".",
     "action": ["python", "native_client/build/download_toolchains.py",
                "--x86-version", Var("x86_toolchain_version"),
                "--arm-version", Var("arm_toolchain_version")],
