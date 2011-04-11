@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2011 Google Inc. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -345,14 +345,10 @@ def _AddActionStep(actions_dict, inputs, outputs, description, command):
       'command': command,
   }
 
-  # Using historical second input rule:
-  #   Pick second input, if there isn't one, pick the first.
-  # As more collapsing seems to tickle the build (nacl validator).
-  # TODO(bradnelson): simplify/fix nacl's build and switch back.
-  if len(inputs) > 1:
-    chosen_input = inputs[1]
-  else:
-    chosen_input = inputs[0]
+  # Pick where to stick this action.
+  # While less than optimal in terms of build time, attach them to the first
+  # input for now.
+  chosen_input = inputs[0]
 
   # Add it there.
   if chosen_input not in actions_dict:
