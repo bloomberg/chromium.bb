@@ -409,6 +409,7 @@ DriverPatterns = [
   ( '--pnacl-bcld-fast',               "env.set('BCLD_FINISH', '0')"),
   ( '--pnacl-skip-ll',                 "env.set('EMIT_LL', '0')"),
   ( '--pnacl-force-mc',                "env.set('FORCE_MC', '1')"),
+  ( '--pnacl-force-mc-direct',         "env.set('FORCE_MC_DIRECT', '1')"),
 
   # Catch all pattern (must be last)
   ( '(.*)',                            "env.append('ARGV', $0)"),
@@ -582,8 +583,14 @@ def PrepareFlags():
     env.set('SANDBOXED_AS', '0')
     env.set('SANDBOXED_LD', '0')
 
+  ## Following two options are for ARM testing only
+  #  Enable both direct object emission and using llvm-mc as native assembler
   if env.has('FORCE_MC'):
+    env.set('MC_DIRECT', '1')
     env.set('USE_MC_ASM', '1')
+
+  # Only enable direct object emission for ARM
+  if env.has('FORCE_MC_DIRECT'):
     env.set('MC_DIRECT', '1')
 
   if env.getbool('SHARED'):
