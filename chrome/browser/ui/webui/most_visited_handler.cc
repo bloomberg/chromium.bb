@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/webui/new_tab_ui.h"
 #include "chrome/browser/ui/webui/thumbnail_source.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
@@ -69,7 +68,8 @@ WebUIMessageHandler* MostVisitedHandler::Attach(WebUI* web_ui) {
   ThumbnailSource* thumbnail_src = new ThumbnailSource(profile);
   profile->GetChromeURLDataManager()->AddDataSource(thumbnail_src);
 
-  profile->GetChromeURLDataManager()->AddDataSource(new FaviconSource(profile));
+  FaviconSource* favicon_src = new FaviconSource(profile);
+  profile->GetChromeURLDataManager()->AddDataSource(favicon_src);
 
   // Get notifications when history is cleared.
   registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,

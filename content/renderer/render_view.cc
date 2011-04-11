@@ -2010,14 +2010,9 @@ void RenderView::didStopLoading() {
   // displayed when done loading. Ideally we would send notification when
   // finished parsing the head, but webkit doesn't support that yet.
   // The feed discovery code would also benefit from access to the head.
-
-  // TODO : Get both favicon and touch icon url, and send them to the browser.
   GURL favicon_url(webview()->mainFrame()->favIconURL());
-  if (!favicon_url.is_empty()) {
-    std::vector<FaviconURL> urls;
-    urls.push_back(FaviconURL(favicon_url, FAVICON));
-    Send(new ViewHostMsg_UpdateFaviconURL(routing_id_, page_id_, urls));
-  }
+  if (!favicon_url.is_empty())
+    Send(new ViewHostMsg_UpdateFaviconURL(routing_id_, page_id_, favicon_url));
 
   AddGURLSearchProvider(webview()->mainFrame()->openSearchDescriptionURL(),
                         search_provider::AUTODETECTED_PROVIDER);
@@ -3152,9 +3147,10 @@ void RenderView::didReceiveTitle(WebFrame* frame, const WebString& title) {
 
 void RenderView::didChangeIcons(WebFrame* frame) {
   if (!frame->parent()) {
-    std::vector<FaviconURL> urls;
-    urls.push_back(FaviconURL(frame->favIconURL(), FAVICON));
-    Send(new ViewHostMsg_UpdateFaviconURL(routing_id_, page_id_, urls));
+    Send(new ViewHostMsg_UpdateFaviconURL(
+        routing_id_,
+        page_id_,
+        frame->favIconURL()));
   }
 }
 

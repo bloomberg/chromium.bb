@@ -14,7 +14,6 @@
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
-#include "chrome/common/icon_messages.h"
 #include "chrome/common/prerender_constants.h"
 #include "chrome/common/view_types.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -212,7 +211,7 @@ class PrerenderContents : public RenderViewHostDelegate,
                                     const GURL& source_url,
                                     const GURL& target_url);
 
-  void OnUpdateFaviconURL(int32 page_id, const std::vector<FaviconURL>& urls);
+  void OnUpdateFaviconURL(int32 page_id, const GURL& icon_url);
 
   void OnMaybeCancelPrerender(PrerenderCancellationReason reason);
 

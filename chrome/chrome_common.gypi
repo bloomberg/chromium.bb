@@ -51,8 +51,6 @@
           'common/guid.h',
           'common/guid_posix.cc',
           'common/guid_win.cc',
-          'common/icon_messages.cc',
-          'common/icon_messages.h',
           'common/instant_types.h',
           'common/logging_chrome.cc',
           'common/logging_chrome.h',

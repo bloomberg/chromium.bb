@@ -457,7 +457,6 @@ void CreateUrlApplicationShortcutView::FetchIcon() {
       unprocessed_icons_.back().url,
       std::max(unprocessed_icons_.back().width,
                unprocessed_icons_.back().height),
-      history::FAVICON,
       NewCallback(pending_download_, &IconDownloadCallbackFunctor::Run));
 
   unprocessed_icons_.pop_back();

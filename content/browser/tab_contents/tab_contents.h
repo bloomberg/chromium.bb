@@ -883,8 +883,6 @@ class TabContents : public PageNavigator,
   virtual void RequestDesktopNotificationPermission(const GURL& source_origin,
                                                     int callback_context);
 
-  void OnUpdateFaviconURL(int32 page_id,
-                          const std::vector<FaviconURL>& candidates);
   // RenderViewHostManager::Delegate -------------------------------------------
 
   // Blocks/unblocks interaction with renderer process.
@@ -963,10 +961,6 @@ class TabContents : public PageNavigator,
 
   // Handles downloading favicons.
   scoped_ptr<FaviconHelper> favicon_helper_;
-
-  // Handles downloading touchicons. It is NULL if
-  // browser_defaults::kEnableTouchIcon is false.
-  scoped_ptr<FaviconHelper> touch_icon_helper_;
 
   // RenderViewHost::ContentSettingsDelegate.
   scoped_ptr<TabSpecificContentSettings> content_settings_delegate_;
