@@ -273,26 +273,17 @@ void NPAPIUrlRequestManager::StopAll() {
 
 void NPAPIUrlRequestManager::SetCookiesForUrl(const GURL& url,
                                               const std::string& cookie) {
-  // Use the newer NPAPI way if available
   if (npapi::VersionMinor() >= NPVERS_HAS_URL_AND_AUTH_INFO) {
     npapi::SetValueForURL(instance_, NPNURLVCookie, url.spec().c_str(),
                           cookie.c_str(), cookie.length());
   } else {
-    DVLOG(1) << "Host does not support NPVERS_HAS_URL_AND_AUTH_INFO.  "
-                "Attempting to set cookie using XPCOM cookie service";
-    if (np_utils::SetCookiesUsingXPCOMCookieService(instance_, url.spec(),
-                                                    cookie)) {
-      DVLOG(1) << "Successfully set cookies using XPCOM cookie service "
-               << cookie;
-    } else {
-      NOTREACHED() << "Failed to set cookies for host";
-    }
+    NOTREACHED() << "Unsupported version";
   }
 }
 
 void NPAPIUrlRequestManager::GetCookiesForUrl(const GURL& url, int cookie_id) {
   std::string cookie_string;
-  bool success = true;
+  bool success = false;
 
   if (npapi::VersionMinor() >= NPVERS_HAS_URL_AND_AUTH_INFO) {
     char* cookies = NULL;
@@ -304,19 +295,10 @@ void NPAPIUrlRequestManager::GetCookiesForUrl(const GURL& url, int cookie_id) {
       DVLOG(1) << "Obtained cookies:" << cookies << " from host";
       cookie_string.append(cookies, cookie_length);
       npapi::MemFree(cookies);
-    } else {
-      success = false;
+      success = true;
     }
   } else {
-    DVLOG(1) << "Host does not support NPVERS_HAS_URL_AND_AUTH_INFO.  "
-                "Attempting to read cookie using XPCOM cookie service";
-    if (np_utils::GetCookiesUsingXPCOMCookieService(instance_, url.spec(),
-                                                    &cookie_string)) {
-      DVLOG(1) << "Successfully read cookies using XPCOM cookie service "
-               << cookie_string;
-    } else {
-      success = false;
-    }
+    NOTREACHED() << "Unsupported version";
   }
 
   if (!success)

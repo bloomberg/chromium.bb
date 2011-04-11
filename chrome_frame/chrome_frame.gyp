@@ -5,7 +5,6 @@
 {
   'variables': {
     'chromium_code': 1,
-    'xul_sdk_dir': '../third_party/xulrunner-sdk/<(OS)',
 
     'variables': {
       'version_py_path': '../tools/build/version.py',
@@ -18,16 +17,6 @@
     'chrome_personalization%': 1,
     'use_syncapi_stub%': 0,
 
-    # Deps info.
-    'xul_include_directories': [
-      '<(xul_sdk_dir)/include/caps',
-      '<(xul_sdk_dir)/include/dom',
-      '<(xul_sdk_dir)/include/js',
-      '<(xul_sdk_dir)/include/nspr',
-      '<(xul_sdk_dir)/include/string',
-      '<(xul_sdk_dir)/include/xpcom',
-      '<(xul_sdk_dir)/include/xpconnect',
-    ],
     'conditions': [
       ['OS=="win"', {
         'python': [
@@ -67,25 +56,6 @@
       ],
     },
     {
-      # TODO(slightlyoff): de-win23-ify
-      'target_name': 'xulrunner_sdk',
-      'type': 'none',
-      'conditions': [
-        ['OS=="win"', {
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '<@(xul_include_directories)',
-            ],
-            'libraries': [
-              '../third_party/xulrunner-sdk/win/lib/xpcomglue_s.lib',
-              '../third_party/xulrunner-sdk/win/lib/xpcom.lib',
-              '../third_party/xulrunner-sdk/win/lib/nspr4.lib',
-            ],
-          },
-        },],
-      ],
-    },
-    {
       # Builds our IDL file to the shared intermediate directory.
       'target_name': 'chrome_tab_idl',
       'type': 'none',
@@ -113,7 +83,6 @@
         'chrome_frame_ie',
         'chrome_frame_strings',
         'chrome_tab_idl',
-        'xulrunner_sdk',
       ],
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/chrome_tab.h',
@@ -150,7 +119,6 @@
         'vtable_patch_manager_unittest.cc',
       ],
       'include_dirs': [
-        '<@(xul_include_directories)',
       ],
       'resource_include_dirs': [
         '<(INTERMEDIATE_DIR)',
@@ -294,7 +262,6 @@
         'test_utils.h',
       ],
       'include_dirs': [
-        '<@(xul_include_directories)',
         '<(DEPTH)/third_party/wtl/include',
       ],
       'resource_include_dirs': [
@@ -385,7 +352,6 @@
         'test/win_event_receiver.h',
       ],
       'include_dirs': [
-        '<@(xul_include_directories)',
         '<(DEPTH)/third_party/wtl/include',
       ],
       'conditions': [
@@ -617,7 +583,6 @@
         'test_utils.h',
       ],
       'include_dirs': [
-        '<@(xul_include_directories)',
         '<(DEPTH)/third_party/wtl/include',
         # To allow including "chrome_tab.h"
         '<(INTERMEDIATE_DIR)',
@@ -670,22 +635,12 @@
       'sources': [
         'chrome_frame_npapi.cc',
         'chrome_frame_npapi.h',
-        'ff_30_privilege_check.cc',
-        'ff_privilege_check.h',
-        'np_event_listener.cc',
-        'np_event_listener.h',
-        'np_proxy_service.cc',
-        'np_proxy_service.h',
         'np_utils.cc',
         'np_utils.h',
         'npapi_url_request.cc',
         'npapi_url_request.h',
-        'ns_associate_iid_win.h',
-        'ns_isupports_impl.h',
-        'scoped_ns_ptr_win.h',
       ],
       'include_dirs': [
-        '<@(xul_include_directories)',
       ],
     },
     {
@@ -927,7 +882,6 @@
         'chrome_frame_strings',
         'chrome_frame_utils',
         'chrome_tab_idl',
-        'xulrunner_sdk',
         'chrome_frame_launcher.gyp:chrome_launcher',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         'chrome_frame_launcher.gyp:chrome_frame_helper',
@@ -992,7 +946,7 @@
             'VCLinkerTool': {
               'OutputFile':
                   '$(OutDir)\\servers\\$(ProjectName).dll',
-              'DelayLoadDLLs': ['xpcom.dll', 'nspr4.dll'],
+              'DelayLoadDLLs': [],
               'BaseAddress': '0x33000000',
               # Set /SUBSYSTEM:WINDOWS (for consistency).
               'SubSystem': '2',

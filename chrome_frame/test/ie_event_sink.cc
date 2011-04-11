@@ -190,6 +190,9 @@ bool IEEventSink::IsCFRendering() {
 
 void IEEventSink::PostMessageToCF(const std::wstring& message,
                                   const std::wstring& target) {
+  EXPECT_TRUE(chrome_frame_ != NULL);
+  if (!chrome_frame_)
+    return;
   ScopedBstr message_bstr(message.c_str());
   base::win::ScopedVariant target_variant(target.c_str());
   EXPECT_HRESULT_SUCCEEDED(

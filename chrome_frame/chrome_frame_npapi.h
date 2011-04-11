@@ -12,8 +12,6 @@
 #include "chrome_frame/chrome_frame_automation.h"
 #include "chrome_frame/chrome_frame_plugin.h"
 #include "chrome_frame/np_browser_functions.h"
-#include "chrome_frame/np_event_listener.h"
-#include "chrome_frame/np_proxy_service.h"
 #include "chrome_frame/npapi_url_request.h"
 
 class MessageLoop;
@@ -26,8 +24,7 @@ class nsIURI;
 // IPC-based automation mechanism) for the actual rendering.
 class ChromeFrameNPAPI
     : public CWindowImpl<ChromeFrameNPAPI>,
-      public ChromeFramePlugin<ChromeFrameNPAPI>,
-      public NpEventDelegate {
+      public ChromeFramePlugin<ChromeFrameNPAPI> {
  public:
   typedef ChromeFramePlugin<ChromeFrameNPAPI> Base;
 
@@ -44,7 +41,6 @@ class ChromeFrameNPAPI
     PLUGIN_PROPERTY_ONERROR,
     PLUGIN_PROPERTY_ONMESSAGE,
     PLUGIN_PROPERTY_READYSTATE,
-    PLUGIN_PROPERTY_ONPRIVATEMESSAGE,
     PLUGIN_PROPERTY_USECHROMENETWORK,
     PLUGIN_PROPERTY_ONCLOSE,
     PLUGIN_PROPERTY_COUNT  // must be last
@@ -113,13 +109,6 @@ END_MSG_MAP()
 
   LRESULT OnSetFocus(UINT message, WPARAM wparam, LPARAM lparam,
                      BOOL& handled);  // NO_LINT
-
-  // Implementation of NpEventDelegate
-  virtual void OnEvent(const char* event_name);
-
-  void OnFocus();
-  void OnBlur();
-
   // Implementation of SetProperty, public to allow unittesting.
   bool SetProperty(NPIdentifier name, const NPVariant *variant);
   // Implementation of GetProperty, public to allow unittesting.
@@ -149,9 +138,6 @@ END_MSG_MAP()
   virtual void OnCloseTab();
 
  private:
-  void SubscribeToFocusEvents();
-  void UnsubscribeFromFocusEvents();
-
   // Equivalent of:
   // event = window.document.createEvent("Event");
   // event.initEvent(type, bubbles, cancelable);
@@ -168,12 +154,6 @@ END_MSG_MAP()
   // Calls chrome_frame.dispatchEvent to fire events to event listeners.
   void DispatchEvent(NPObject* event);
 
-  // Returns a pointer to the <object> element in the page that
-  // hosts the plugin.  Note that this is the parent element of the <embed>
-  // element.  The <embed> element doesn't support some of the events that
-  // we require, so we use the object element for receiving events.
-  bool GetObjectElement(nsIDOMElement** element);
-
   // Prototype for all methods that can be invoked from script.
   typedef bool (ChromeFrameNPAPI::*PluginMethod)(NPObject* npobject,
                                                  const NPVariant* args,
@@ -187,10 +167,6 @@ END_MSG_MAP()
 
   bool postMessage(NPObject* npobject, const NPVariant* args,
                    uint32_t arg_count, NPVariant* result);
-
-  // This method is only available when the control is in privileged mode.
-  bool postPrivateMessage(NPObject* npobject, const NPVariant* args,
-                          uint32_t arg_count, NPVariant* result);
 
   // Pointers to method implementations.
   static PluginMethod plugin_methods_[];
@@ -240,9 +216,6 @@ END_MSG_MAP()
   // listeners.  event_type is the name of the event being fired.
   void FireEvent(const std::string& event_type, const NPVariant& data);
 
-  // Returns a new prefs service. Virtual to allow overriding in unittests.
-  virtual NpProxyService* CreatePrefService();
-
   // Returns our associated windows' location.
   virtual std::string GetLocation();
 
@@ -279,12 +252,6 @@ END_MSG_MAP()
   // Set to true if we need a full page plugin.
   bool force_full_page_plugin_;
 
-  scoped_refptr<NpProxyService> pref_service_;
-
-  // Used to receive focus and blur events from the object element
-  // that hosts the plugin.
-  scoped_refptr<NpEventListener> focus_listener_;
-
   // In some cases the IPC channel proxy object is instantiated on the UI
   // thread in FF. It then tries to use the IPC logger, which relies on
   // the message loop being around. Declaring a dummy message loop
@@ -315,7 +282,6 @@ END_MSG_MAP()
   // http://www.w3.org/TR/DOM-Level-3-Events/events.html#Event-types
 
   READYSTATE ready_state_;
-
 
   // Popups are enabled
   bool enabled_popups_;
