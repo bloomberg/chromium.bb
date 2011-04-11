@@ -178,7 +178,6 @@ std::string UserPolicyIdentityStrategy::GetPolicyType() {
   return kChromeUserPolicyType;
 }
 
-
 bool UserPolicyIdentityStrategy::GetCredentials(std::string* username,
                                                 std::string* auth_token) {
   *username = GetCurrentUser();

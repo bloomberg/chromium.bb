@@ -9,6 +9,7 @@
 #include "base/task.h"
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/policy/device_policy_identity_strategy.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
@@ -20,13 +21,19 @@ using google::protobuf::RepeatedPtrField;
 
 namespace policy {
 
-DevicePolicyCache::DevicePolicyCache()
-    : signed_settings_helper_(chromeos::SignedSettingsHelper::Get()) {
+DevicePolicyCache::DevicePolicyCache(
+    DevicePolicyIdentityStrategy* identity_strategy)
+    : identity_strategy_(identity_strategy),
+      signed_settings_helper_(chromeos::SignedSettingsHelper::Get()),
+      starting_up_(true) {
 }
 
 DevicePolicyCache::DevicePolicyCache(
+    DevicePolicyIdentityStrategy* identity_strategy,
     chromeos::SignedSettingsHelper* signed_settings_helper)
-    : signed_settings_helper_(signed_settings_helper) {
+    : identity_strategy_(identity_strategy),
+      signed_settings_helper_(signed_settings_helper),
+      starting_up_(true) {
 }
 
 DevicePolicyCache::~DevicePolicyCache() {
@@ -34,13 +41,11 @@ DevicePolicyCache::~DevicePolicyCache() {
 }
 
 void DevicePolicyCache::Load() {
-  // TODO(jkummerow): check if we're unmanaged; if so, set is_unmanaged_ = true
-  // and return immediately.
-
   signed_settings_helper_->StartRetrievePolicyOp(this);
 }
 
 void DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
+  DCHECK(!starting_up_);
   set_last_policy_refresh_time(base::Time::NowFromSystemTime());
   signed_settings_helper_->StartStorePolicyOp(policy, this);
 }
@@ -54,23 +59,71 @@ void DevicePolicyCache::OnRetrievePolicyCompleted(
     chromeos::SignedSettings::ReturnCode code,
     const em::PolicyFetchResponse& policy) {
   DCHECK(CalledOnValidThread());
-  if (code != chromeos::SignedSettings::SUCCESS) {
-    // TODO(jkummerow): We can't really do anything about this error, but
-    // we may want to notify the user that something is wrong.
-    return;
+  if (starting_up_) {
+    starting_up_ = false;
+    if (code == chromeos::SignedSettings::NOT_FOUND ||
+        code == chromeos::SignedSettings::KEY_UNAVAILABLE ||
+        !policy.has_policy_data()) {
+      InformNotifier(CloudPolicySubsystem::UNENROLLED,
+                     CloudPolicySubsystem::NO_DETAILS);
+      return;
+    }
+    em::PolicyData policy_data;
+    if (!policy_data.ParseFromString(policy.policy_data())) {
+      LOG(WARNING) << "Failed to parse PolicyData protobuf.";
+      InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
+                     CloudPolicySubsystem::POLICY_LOCAL_ERROR);
+      return;
+    }
+    if (!policy_data.has_request_token() ||
+        policy_data.request_token().empty()) {
+      SetUnmanagedInternal(base::Time::NowFromSystemTime());
+      InformNotifier(CloudPolicySubsystem::UNMANAGED,
+                     CloudPolicySubsystem::NO_DETAILS);
+      // TODO(jkummerow): Reminder: When we want to feed device-wide settings
+      // made by a local owner into this cache, we need to call
+      // SetPolicyInternal() here.
+      return;
+    }
+    if (!policy_data.has_username() || !policy_data.has_device_id()) {
+      InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
+                     CloudPolicySubsystem::POLICY_LOCAL_ERROR);
+      return;
+    }
+    identity_strategy_->SetDeviceManagementCredentials(
+        policy_data.username(),
+        policy_data.device_id(),
+        policy_data.request_token());
+    SetPolicyInternal(policy, NULL, false);
+  } else {  // In other words, starting_up_ == false.
+    if (code != chromeos::SignedSettings::SUCCESS) {
+      if (code == chromeos::SignedSettings::BAD_SIGNATURE) {
+        InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
+                       CloudPolicySubsystem::SIGNATURE_MISMATCH);
+      } else {
+        InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
+                       CloudPolicySubsystem::POLICY_LOCAL_ERROR);
+      }
+      return;
+    }
+    SetPolicyInternal(policy, NULL, false);
   }
-  SetPolicyInternal(policy, NULL, false);
 }
 
 void DevicePolicyCache::OnStorePolicyCompleted(
     chromeos::SignedSettings::ReturnCode code) {
   DCHECK(CalledOnValidThread());
   if (code != chromeos::SignedSettings::SUCCESS) {
-    // TODO(jkummerow): We can't really do anything about this error, but
-    // we may want to notify the user that something is wrong.
+    if (code == chromeos::SignedSettings::BAD_SIGNATURE) {
+      InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
+                     CloudPolicySubsystem::SIGNATURE_MISMATCH);
+    } else {
+      InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
+                     CloudPolicySubsystem::POLICY_LOCAL_ERROR);
+    }
     return;
   }
-  Load();
+  signed_settings_helper_->StartRetrievePolicyOp(this);
 }
 
 bool DevicePolicyCache::DecodePolicyData(const em::PolicyData& policy_data,

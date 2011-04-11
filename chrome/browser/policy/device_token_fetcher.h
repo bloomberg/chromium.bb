@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/task.h"
 #include "chrome/browser/policy/device_management_backend.h"
+#include "chrome/browser/policy/policy_notifier.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 
 namespace policy {
@@ -38,10 +39,12 @@ class DeviceTokenFetcher
   // |service| is used to talk to the device management service and |cache| is
   // used to persist whether the device is unmanaged.
   DeviceTokenFetcher(DeviceManagementService* service,
-                     CloudPolicyCacheBase* cache);
-  // Version for tests that allows to set timing paramters.
+                     CloudPolicyCacheBase* cache,
+                     PolicyNotifier* notifier);
+  // Version for tests that allows to set timing parameters.
   DeviceTokenFetcher(DeviceManagementService* service,
                      CloudPolicyCacheBase* cache,
+                     PolicyNotifier* notifier,
                      int64 token_fetch_error_delay_ms,
                      int64 token_fetch_error_max_delay_ms,
                      int64 unmanaged_device_refresh_rate_ms);
@@ -59,6 +62,9 @@ class DeviceTokenFetcher
   // Returns the device management token or the empty string if not available.
   // Declared virtual so it can be overridden by mocks.
   virtual const std::string& GetDeviceToken();
+
+  // Disables the auto-retry-on-error behavior of this token fetcher.
+  void StopAutoRetry();
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -88,12 +94,15 @@ class DeviceTokenFetcher
     // Error, retry later.
     STATE_ERROR,
     // Temporary error. Retry sooner.
-    STATE_TEMPORARY_ERROR
+    STATE_TEMPORARY_ERROR,
+    // Server rejected the auth token.
+    STATE_BAD_AUTH
   };
 
   // Common initialization helper.
   void Initialize(DeviceManagementService* service,
                   CloudPolicyCacheBase* cache,
+                  PolicyNotifier* notifier,
                   int64 token_fetch_error_delay_ms,
                   int64 token_fetch_error_max_delay_ms,
                   int64 unmanaged_device_refresh_rate_ms);
@@ -118,6 +127,8 @@ class DeviceTokenFetcher
 
   // Reference to the cache. Used to persist and read unmanaged state.
   CloudPolicyCacheBase* cache_;
+
+  PolicyNotifier* notifier_;
 
   // Refresh parameters.
   int64 token_fetch_error_delay_ms_;

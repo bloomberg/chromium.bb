@@ -6,9 +6,12 @@
 
 #include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
+#include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/device_token_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "chrome/browser/policy/mock_device_management_backend.h"
+#include "chrome/browser/policy/mock_device_management_service.h"
+#include "chrome/browser/policy/policy_notifier.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/user_policy_cache.h"
 #include "content/browser/browser_thread.h"
@@ -55,7 +58,7 @@ ACTION_P2(MockCloudPolicyIdentityStrategyGetCredentials, username, auth_token) {
 class MockDeviceTokenFetcher : public DeviceTokenFetcher {
  public:
   explicit MockDeviceTokenFetcher(CloudPolicyCacheBase* cache)
-      : DeviceTokenFetcher(NULL, cache) {}
+      : DeviceTokenFetcher(NULL, cache, NULL) {}
   virtual ~MockDeviceTokenFetcher() {}
 
   MOCK_METHOD0(GetDeviceToken, const std::string&());
@@ -81,6 +84,7 @@ class CloudPolicyControllerTest : public testing::Test {
     cache_.reset(new UserPolicyCache(
         temp_user_data_dir_.path().AppendASCII("CloudPolicyControllerTest")));
     token_fetcher_.reset(new MockDeviceTokenFetcher(cache_.get()));
+    service_.set_backend(&backend_);
   }
 
   virtual void TearDown() {
@@ -88,18 +92,19 @@ class CloudPolicyControllerTest : public testing::Test {
   }
 
   // Takes ownership of |backend|.
-  void CreateNewController(DeviceManagementBackend* backend) {
+  void CreateNewController() {
     controller_.reset(new CloudPolicyController(
-        cache_.get(), backend, token_fetcher_.get(), &identity_strategy_));
+        &service_, cache_.get(), token_fetcher_.get(), &identity_strategy_,
+        &notifier_));
   }
 
-  void CreateNewController(DeviceManagementBackend* backend,
-                           int64 policy_refresh_rate_ms,
+  void CreateNewController(int64 policy_refresh_rate_ms,
                            int policy_refresh_deviation_factor_percent,
                            int64 policy_refresh_deviation_max_ms,
                            int64 policy_refresh_error_delay_ms) {
     controller_.reset(new CloudPolicyController(
-        cache_.get(), backend, token_fetcher_.get(), &identity_strategy_,
+        &service_, cache_.get(), token_fetcher_.get(), &identity_strategy_,
+        &notifier_,
         policy_refresh_rate_ms,
         policy_refresh_deviation_factor_percent,
         policy_refresh_deviation_max_ms,
@@ -144,6 +149,9 @@ class CloudPolicyControllerTest : public testing::Test {
   scoped_ptr<CloudPolicyController> controller_;
   scoped_ptr<MockDeviceTokenFetcher> token_fetcher_;
   MockCloudPolicyIdentityStrategy identity_strategy_;
+  MockDeviceManagementBackend backend_;
+  MockDeviceManagementService service_;
+  PolicyNotifier notifier_;
   ScopedTempDir temp_user_data_dir_;
   MessageLoop loop_;
 
@@ -160,10 +168,9 @@ TEST_F(CloudPolicyControllerTest, StartupWithDeviceToken) {
   SetupIdentityStrategy("fake_device_token", "device_id", "machine_id",
                         "google/chromeos/user",
                         em::DeviceRegisterRequest::USER, "", "");
-  MockDeviceManagementBackend* backend = new MockDeviceManagementBackend();
-  EXPECT_CALL(*backend, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
       MockDeviceManagementBackendSucceedSpdyCloudPolicy());
-  CreateNewController(backend);
+  CreateNewController();
   loop_.RunAllPending();
   ExpectHasSpdyPolicy();
 }
@@ -175,7 +182,7 @@ TEST_F(CloudPolicyControllerTest, StartupWithoutDeviceToken) {
                         em::DeviceRegisterRequest::USER,
                         "a@b.com", "auth_token");
   EXPECT_CALL(*token_fetcher_.get(), FetchToken(_, _, _, _)).Times(1);
-  CreateNewController(NULL);
+  CreateNewController();
   loop_.RunAllPending();
 }
 
@@ -186,7 +193,7 @@ TEST_F(CloudPolicyControllerTest, StartupUnmanagedUser) {
                         em::DeviceRegisterRequest::USER,
                         "DannoHelper@gmail.com", "auth_token");
   EXPECT_CALL(*token_fetcher_.get(), FetchToken(_, _, _, _)).Times(0);
-  CreateNewController(NULL);
+  CreateNewController();
   loop_.RunAllPending();
 }
 
@@ -196,12 +203,11 @@ TEST_F(CloudPolicyControllerTest, RefreshAfterSuccessfulPolicy) {
   SetupIdentityStrategy("device_token", "device_id", "machine_id",
                         "google/chromeos/user", em::DeviceRegisterRequest::USER,
                         "DannoHelperDelegate@b.com", "auth_token");
-  MockDeviceManagementBackend* backend = new MockDeviceManagementBackend();
-  EXPECT_CALL(*backend, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
       MockDeviceManagementBackendSucceedSpdyCloudPolicy()).WillOnce(
       MockDeviceManagementBackendFailPolicy(
           DeviceManagementBackend::kErrorRequestFailed));
-  CreateNewController(backend, 0, 0, 0, 1000 * 1000);
+  CreateNewController(0, 0, 0, 1000 * 1000);
   loop_.RunAllPending();
   ExpectHasSpdyPolicy();
 }
@@ -211,12 +217,11 @@ TEST_F(CloudPolicyControllerTest, RefreshAfterError) {
   SetupIdentityStrategy("device_token", "device_id", "machine_id",
                         "google/chromeos/user", em::DeviceRegisterRequest::USER,
                         "DannoHelperDelegateImpl@b.com", "auth_token");
-  MockDeviceManagementBackend* backend = new MockDeviceManagementBackend();
-  EXPECT_CALL(*backend, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
       MockDeviceManagementBackendFailPolicy(
           DeviceManagementBackend::kErrorRequestFailed)).WillOnce(
       MockDeviceManagementBackendSucceedSpdyCloudPolicy());
-  CreateNewController(backend, 1000 * 1000, 0, 0, 0);
+  CreateNewController(1000 * 1000, 0, 0, 0);
   loop_.RunAllPending();
   ExpectHasSpdyPolicy();
 }
@@ -227,12 +232,11 @@ TEST_F(CloudPolicyControllerTest, InvalidToken) {
   SetupIdentityStrategy("device_token", "device_id", "machine_id",
                         "google/chromeos/user", em::DeviceRegisterRequest::USER,
                         "standup@ten.am", "auth");
-  MockDeviceManagementBackend* backend = new MockDeviceManagementBackend();
-  EXPECT_CALL(*backend, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
       MockDeviceManagementBackendFailPolicy(
           DeviceManagementBackend::kErrorServiceManagementTokenInvalid));
   EXPECT_CALL(*token_fetcher_.get(), FetchToken(_, _, _, _)).Times(1);
-  CreateNewController(backend, 1000 * 1000, 0, 0, 0);
+  CreateNewController(1000 * 1000, 0, 0, 0);
   loop_.RunAllPending();
 }
 
@@ -242,12 +246,11 @@ TEST_F(CloudPolicyControllerTest, DeviceNotFound) {
   SetupIdentityStrategy("device_token", "device_id", "machine_id",
                         "google/chromeos/user", em::DeviceRegisterRequest::USER,
                         "me@you.com", "auth");
-  MockDeviceManagementBackend* backend = new MockDeviceManagementBackend();
-  EXPECT_CALL(*backend, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
       MockDeviceManagementBackendFailPolicy(
           DeviceManagementBackend::kErrorServiceDeviceNotFound));
   EXPECT_CALL(*token_fetcher_.get(), FetchToken(_, _, _, _)).Times(1);
-  CreateNewController(backend, 1000 * 1000, 0, 0, 0);
+  CreateNewController(1000 * 1000, 0, 0, 0);
   loop_.RunAllPending();
 }
 
@@ -258,12 +261,11 @@ TEST_F(CloudPolicyControllerTest, NoLongerManaged) {
   SetupIdentityStrategy("device_token", "device_id", "machine_id",
                         "google/chromeos/user", em::DeviceRegisterRequest::USER,
                         "who@what.com", "auth");
-  MockDeviceManagementBackend* backend = new MockDeviceManagementBackend();
-  EXPECT_CALL(*backend, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+  EXPECT_CALL(backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
       MockDeviceManagementBackendFailPolicy(
           DeviceManagementBackend::kErrorServiceManagementNotSupported));
   EXPECT_CALL(*token_fetcher_.get(), SetUnmanagedState()).Times(1);
-  CreateNewController(backend, 0, 0, 0, 1000 * 1000);
+  CreateNewController(0, 0, 0, 1000 * 1000);
   loop_.RunAllPending();
 }
 

@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
+#include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
@@ -18,6 +19,7 @@
 namespace policy {
 
 class PolicyMap;
+class PolicyNotifier;
 
 namespace em = enterprise_management;
 
@@ -36,6 +38,10 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
 
   CloudPolicyCacheBase();
   virtual ~CloudPolicyCacheBase();
+
+  void set_policy_notifier(PolicyNotifier* notifier) {
+    notifier_ = notifier;
+  }
 
   // Loads persisted policy information.
   virtual void Load() = 0;
@@ -82,6 +88,9 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
                             PolicyMap* recommended,
                             base::Time* timestamp);
 
+  void InformNotifier(CloudPolicySubsystem::PolicySubsystemState state,
+                      CloudPolicySubsystem::ErrorDetails error_details);
+
   // See comment for |initialization_complete_|.
   bool initialization_complete() {
     return initialization_complete_;
@@ -104,6 +113,8 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
   // Policy providers.
   scoped_ptr<ConfigurationPolicyProvider> managed_policy_provider_;
   scoped_ptr<ConfigurationPolicyProvider> recommended_policy_provider_;
+
+  PolicyNotifier* notifier_;
 
   // The time at which the policy was last refreshed. Is updated both upon
   // successful and unsuccessful refresh attempts.

@@ -8,7 +8,6 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/policy/cloud_policy_identity_strategy.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
@@ -45,9 +44,9 @@ BrowserPolicyConnector::BrowserPolicyConnector() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableDevicePolicy)) {
     identity_strategy_.reset(new DevicePolicyIdentityStrategy());
-    cloud_policy_subsystem_.reset(
-        new CloudPolicySubsystem(identity_strategy_.get(),
-                                 new DevicePolicyCache()));
+    cloud_policy_subsystem_.reset(new CloudPolicySubsystem(
+        identity_strategy_.get(),
+        new DevicePolicyCache(identity_strategy_.get())));
   }
 #endif
 }
@@ -62,7 +61,9 @@ BrowserPolicyConnector::~BrowserPolicyConnector() {
   if (cloud_policy_subsystem_.get())
     cloud_policy_subsystem_->Shutdown();
   cloud_policy_subsystem_.reset();
+#if defined(OS_CHROMEOS)
   identity_strategy_.reset();
+#endif
 }
 
 ConfigurationPolicyProvider*
@@ -135,6 +136,29 @@ ConfigurationPolicyProvider*
 void BrowserPolicyConnector::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterIntegerPref(prefs::kPolicyDevicePolicyRefreshRate,
                                    kDefaultPolicyRefreshRateInMilliseconds);
+}
+
+void BrowserPolicyConnector::SetCredentials(const std::string& owner_email,
+                                            const std::string& gaia_token,
+                                            const std::string& machine_id) {
+#if defined(OS_CHROMEOS)
+  if (identity_strategy_.get())
+    identity_strategy_->SetAuthCredentials(owner_email, gaia_token, machine_id);
+#endif
+}
+
+bool BrowserPolicyConnector::IsEnterpriseManaged() {
+#if defined(OS_CHROMEOS)
+  return (identity_strategy_.get() &&
+          !identity_strategy_->GetDeviceToken().empty());
+#else
+  return false;
+#endif
+}
+
+void BrowserPolicyConnector::StopAutoRetry() {
+  if (cloud_policy_subsystem_.get())
+    cloud_policy_subsystem_->StopAutoRetry();
 }
 
 void BrowserPolicyConnector::Observe(NotificationType type,

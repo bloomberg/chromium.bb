@@ -13,6 +13,7 @@
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/device_management_backend.h"
+#include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
 
 // Domain names that are known not to be managed.
@@ -60,15 +61,17 @@ static const int kPolicyRefreshRateInMilliseconds =
     3 * 60 * 60 * 1000;  // 3 hours.
 
 CloudPolicyController::CloudPolicyController(
+    DeviceManagementService* service,
     CloudPolicyCacheBase* cache,
-    DeviceManagementBackend* backend,
     DeviceTokenFetcher* token_fetcher,
-    CloudPolicyIdentityStrategy* identity_strategy)
+    CloudPolicyIdentityStrategy* identity_strategy,
+    PolicyNotifier* notifier)
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
-  Initialize(cache,
-             backend,
+  Initialize(service,
+             cache,
              token_fetcher,
              identity_strategy,
+             notifier,
              kPolicyRefreshRateInMilliseconds,
              kPolicyRefreshDeviationFactorPercent,
              kPolicyRefreshDeviationMaxInMilliseconds,
@@ -89,17 +92,13 @@ void CloudPolicyController::SetRefreshRate(int64 refresh_rate_milliseconds) {
     SetState(STATE_POLICY_VALID);
 }
 
+void CloudPolicyController::StopAutoRetry() {
+  CancelDelayedWork();
+  backend_.reset();
+}
+
 void CloudPolicyController::HandlePolicyResponse(
     const em::DevicePolicyResponse& response) {
-  // In case state has changed by the user while request was in progress ignore
-  // the answer.
-  if (state_ == STATE_TOKEN_UNAVAILABLE ||
-      state_ == STATE_TOKEN_UNMANAGED ||
-      state_ == STATE_TOKEN_ERROR) {
-    LOG(WARNING) << "Unexpected reply from policy server received. Ignoring.";
-    return;
-  }
-
   if (response.response_size() > 0) {
     if (response.response_size() > 1) {
       LOG(WARNING) << "More than one policy in the response of the device "
@@ -116,15 +115,6 @@ void CloudPolicyController::HandlePolicyResponse(
 }
 
 void CloudPolicyController::OnError(DeviceManagementBackend::ErrorCode code) {
-  // In case state has changed by the user while request was in progress ignore
-  // the answer.
-  if (state_ == STATE_TOKEN_UNAVAILABLE ||
-      state_ == STATE_TOKEN_UNMANAGED ||
-      state_ == STATE_TOKEN_ERROR) {
-    LOG(WARNING) << "Unexpected reply from policy server received. Ignoring.";
-    return;
-  }
-
   switch (code) {
     case DeviceManagementBackend::kErrorServiceDeviceNotFound:
     case DeviceManagementBackend::kErrorServiceManagementTokenInvalid: {
@@ -177,19 +167,21 @@ void CloudPolicyController::OnCredentialsChanged() {
 }
 
 CloudPolicyController::CloudPolicyController(
+    DeviceManagementService* service,
     CloudPolicyCacheBase* cache,
-    DeviceManagementBackend* backend,
     DeviceTokenFetcher* token_fetcher,
     CloudPolicyIdentityStrategy* identity_strategy,
+    PolicyNotifier* notifier,
     int64 policy_refresh_rate_ms,
     int policy_refresh_deviation_factor_percent,
     int64 policy_refresh_deviation_max_ms,
     int64 policy_refresh_error_delay_ms)
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
-  Initialize(cache,
-             backend,
+  Initialize(service,
+             cache,
              token_fetcher,
              identity_strategy,
+             notifier,
              policy_refresh_rate_ms,
              policy_refresh_deviation_factor_percent,
              policy_refresh_deviation_max_ms,
@@ -197,20 +189,22 @@ CloudPolicyController::CloudPolicyController(
 }
 
 void CloudPolicyController::Initialize(
+    DeviceManagementService* service,
     CloudPolicyCacheBase* cache,
-    DeviceManagementBackend* backend,
     DeviceTokenFetcher* token_fetcher,
     CloudPolicyIdentityStrategy* identity_strategy,
+    PolicyNotifier* notifier,
     int64 policy_refresh_rate_ms,
     int policy_refresh_deviation_factor_percent,
     int64 policy_refresh_deviation_max_ms,
     int64 policy_refresh_error_delay_ms) {
   DCHECK(cache);
 
+  service_ = service;
   cache_ = cache;
-  backend_.reset(backend);
   token_fetcher_ = token_fetcher;
   identity_strategy_ = identity_strategy;
+  notifier_ = notifier;
   state_ = STATE_TOKEN_UNAVAILABLE;
   delayed_work_task_ = NULL;
   policy_refresh_rate_ms_ = policy_refresh_rate_ms;
@@ -242,6 +236,7 @@ void CloudPolicyController::FetchToken() {
 }
 
 void CloudPolicyController::SendPolicyRequest() {
+  backend_.reset(service_->CreateBackend());
   DCHECK(!identity_strategy_->GetDeviceToken().empty());
   em::DevicePolicyRequest policy_request;
   em::PolicyFetchRequest* fetch_request = policy_request.add_request();
@@ -262,7 +257,10 @@ void CloudPolicyController::SendPolicyRequest() {
 void CloudPolicyController::DoDelayedWork() {
   DCHECK(delayed_work_task_);
   delayed_work_task_ = NULL;
+  DoWork();
+}
 
+void CloudPolicyController::DoWork() {
   switch (state_) {
     case STATE_TOKEN_UNAVAILABLE:
     case STATE_TOKEN_ERROR:
@@ -291,6 +289,7 @@ void CloudPolicyController::CancelDelayedWork() {
 void CloudPolicyController::SetState(
     CloudPolicyController::ControllerState new_state) {
   state_ = new_state;
+  backend_.reset();  // Discard any pending requests.
 
   base::Time now(base::Time::NowFromSystemTime());
   base::Time refresh_at;
@@ -299,8 +298,12 @@ void CloudPolicyController::SetState(
     last_refresh = now;
 
   // Determine when to take the next step.
+  bool inform_notifier_done = false;
   switch (state_) {
     case STATE_TOKEN_UNMANAGED:
+      notifier_->Inform(CloudPolicySubsystem::UNMANAGED,
+                        CloudPolicySubsystem::NO_DETAILS,
+                        PolicyNotifier::POLICY_CONTROLLER);
       break;
     case STATE_TOKEN_UNAVAILABLE:
       // The controller is not yet initialized and needs to immediately fetch
@@ -309,6 +312,8 @@ void CloudPolicyController::SetState(
       // Immediately try to fetch the token on initialization or policy after a
       // token update. Subsequent retries will respect the back-off strategy.
       refresh_at = now;
+      // |notifier_| isn't informed about anything at this point, we wait for
+      // the result of the next action first.
       break;
     case STATE_POLICY_VALID:
       // Delay is only reset if the policy fetch operation was successful. This
@@ -317,9 +322,21 @@ void CloudPolicyController::SetState(
       effective_policy_refresh_error_delay_ms_ = policy_refresh_error_delay_ms_;
       refresh_at =
           last_refresh + base::TimeDelta::FromMilliseconds(GetRefreshDelay());
+      notifier_->Inform(CloudPolicySubsystem::SUCCESS,
+                        CloudPolicySubsystem::NO_DETAILS,
+                        PolicyNotifier::POLICY_CONTROLLER);
       break;
     case STATE_TOKEN_ERROR:
+      notifier_->Inform(CloudPolicySubsystem::NETWORK_ERROR,
+                        CloudPolicySubsystem::BAD_DMTOKEN,
+                        PolicyNotifier::POLICY_CONTROLLER);
+      inform_notifier_done = true;
     case STATE_POLICY_ERROR:
+      if (!inform_notifier_done) {
+        notifier_->Inform(CloudPolicySubsystem::NETWORK_ERROR,
+                          CloudPolicySubsystem::POLICY_NETWORK_ERROR,
+                          PolicyNotifier::POLICY_CONTROLLER);
+      }
       refresh_at = now + base::TimeDelta::FromMilliseconds(
                              effective_policy_refresh_error_delay_ms_);
       effective_policy_refresh_error_delay_ms_ =
@@ -330,6 +347,9 @@ void CloudPolicyController::SetState(
       effective_policy_refresh_error_delay_ms_ = policy_refresh_rate_ms_;
       refresh_at = now + base::TimeDelta::FromMilliseconds(
                              effective_policy_refresh_error_delay_ms_);
+      notifier_->Inform(CloudPolicySubsystem::NETWORK_ERROR,
+                        CloudPolicySubsystem::POLICY_NETWORK_ERROR,
+                        PolicyNotifier::POLICY_CONTROLLER);
       break;
   }
 

@@ -11,6 +11,8 @@
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/mock_device_management_backend.h"
+#include "chrome/browser/policy/mock_device_management_service.h"
+#include "chrome/browser/policy/policy_notifier.h"
 #include "chrome/browser/policy/user_policy_cache.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/test/testing_profile.h"
@@ -36,67 +38,6 @@ class MockTokenAvailableObserver : public DeviceTokenFetcher::Observer {
   DISALLOW_COPY_AND_ASSIGN(MockTokenAvailableObserver);
 };
 
-class MockDeviceManagementService : public DeviceManagementService {
- public:
-  MockDeviceManagementService()
-      : DeviceManagementService(""),
-        backend_(NULL) {}
-  virtual ~MockDeviceManagementService() {}
-
-  void set_backend(DeviceManagementBackend* backend) {
-    backend_ = backend;
-  }
-  virtual DeviceManagementBackend* CreateBackend();
-
- private:
-  DeviceManagementBackend* backend_;  // weak
-  DISALLOW_COPY_AND_ASSIGN(MockDeviceManagementService);
-};
-
-// This proxy class is used so that expectations can be defined for a single
-// persistant instance of DMBackend while the DeviceTokenFetcher under test
-// merrily creates and destroys proxies.
-class ProxyDeviceManagementBackend : public DeviceManagementBackend {
- public:
-  explicit ProxyDeviceManagementBackend(DeviceManagementBackend* backend)
-      : backend_(backend) {
-  }
-  virtual ~ProxyDeviceManagementBackend() {}
-
-  virtual void ProcessRegisterRequest(
-      const std::string& auth_token,
-      const std::string& device_id,
-      const em::DeviceRegisterRequest& request,
-      DeviceRegisterResponseDelegate* delegate) {
-    backend_->ProcessRegisterRequest(auth_token, device_id, request, delegate);
-  }
-  virtual void ProcessUnregisterRequest(
-      const std::string& device_management_token,
-      const std::string& device_id,
-      const em::DeviceUnregisterRequest& request,
-      DeviceUnregisterResponseDelegate* delegate) {
-    backend_->ProcessUnregisterRequest(device_management_token, device_id,
-                                       request, delegate);
-  }
-  virtual void ProcessPolicyRequest(
-      const std::string& device_management_token,
-      const std::string& device_id,
-      const em::DevicePolicyRequest& request,
-      DevicePolicyResponseDelegate* delegate) {
-    backend_->ProcessPolicyRequest(device_management_token, device_id,
-                                   request, delegate);
-  }
-
- private:
-  DeviceManagementBackend* backend_;  // weak
-  DISALLOW_COPY_AND_ASSIGN(ProxyDeviceManagementBackend);
-};
-
-DeviceManagementBackend*
-    MockDeviceManagementService::CreateBackend()  {
-  return new ProxyDeviceManagementBackend(backend_);
-}
-
 class DeviceTokenFetcherTest : public testing::Test {
  protected:
   DeviceTokenFetcherTest()
@@ -119,6 +60,7 @@ class DeviceTokenFetcherTest : public testing::Test {
   MockDeviceManagementBackend backend_;
   MockDeviceManagementService service_;
   scoped_ptr<CloudPolicyCacheBase> cache_;
+  PolicyNotifier notifier_;
   ScopedTempDir temp_user_data_dir_;
 
  private:
@@ -130,7 +72,7 @@ TEST_F(DeviceTokenFetcherTest, FetchToken) {
   testing::InSequence s;
   EXPECT_CALL(backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
       MockDeviceManagementBackendSucceedRegister());
-  DeviceTokenFetcher fetcher(&service_, cache_.get());
+  DeviceTokenFetcher fetcher(&service_, cache_.get(), &notifier_);
   MockTokenAvailableObserver observer;
   EXPECT_CALL(observer, OnDeviceTokenAvailable());
   fetcher.AddObserver(&observer);
@@ -162,7 +104,7 @@ TEST_F(DeviceTokenFetcherTest, RetryOnError) {
       MockDeviceManagementBackendFailRegister(
           DeviceManagementBackend::kErrorRequestFailed)).WillOnce(
       MockDeviceManagementBackendSucceedRegister());
-  DeviceTokenFetcher fetcher(&service_, cache_.get(), 0, 0, 0);
+  DeviceTokenFetcher fetcher(&service_, cache_.get(), &notifier_, 0, 0, 0);
   MockTokenAvailableObserver observer;
   EXPECT_CALL(observer, OnDeviceTokenAvailable());
   fetcher.AddObserver(&observer);
@@ -179,7 +121,7 @@ TEST_F(DeviceTokenFetcherTest, UnmanagedDevice) {
       MockDeviceManagementBackendFailRegister(
           DeviceManagementBackend::kErrorServiceManagementNotSupported));
   EXPECT_FALSE(cache_->is_unmanaged());
-  DeviceTokenFetcher fetcher(&service_, cache_.get());
+  DeviceTokenFetcher fetcher(&service_, cache_.get(), &notifier_);
   MockTokenAvailableObserver observer;
   EXPECT_CALL(observer, OnDeviceTokenAvailable()).Times(0);
   fetcher.AddObserver(&observer);

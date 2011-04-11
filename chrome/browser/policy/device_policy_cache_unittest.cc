@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/device_policy_cache.h"
 
+#include "chrome/browser/policy/device_policy_identity_strategy.h"
 #include "policy/configuration_policy_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -77,7 +78,8 @@ class DevicePolicyCacheTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    cache_.reset(new DevicePolicyCache(&signed_settings_helper_));
+    cache_.reset(new DevicePolicyCache(&identity_strategy_,
+                                       &signed_settings_helper_));
   }
 
   virtual void TearDown() {
@@ -90,6 +92,7 @@ class DevicePolicyCacheTest : public testing::Test {
   }
 
   scoped_ptr<DevicePolicyCache> cache_;
+  DevicePolicyIdentityStrategy identity_strategy_;
   MockSignedSettingsHelper signed_settings_helper_;
 
  private:

@@ -35,14 +35,19 @@ class CloudPolicyController
       public CloudPolicyIdentityStrategy::Observer {
  public:
   // Takes ownership of |backend|; the other parameters are weak pointers.
-  CloudPolicyController(CloudPolicyCacheBase* cache,
-                        DeviceManagementBackend* backend,
+  CloudPolicyController(DeviceManagementService* service,
+                        CloudPolicyCacheBase* cache,
                         DeviceTokenFetcher* token_fetcher,
-                        CloudPolicyIdentityStrategy* identity_strategy);
+                        CloudPolicyIdentityStrategy* identity_strategy,
+                        PolicyNotifier* notifier);
   virtual ~CloudPolicyController();
 
   // Sets the refresh rate at which to re-fetch policy information.
   void SetRefreshRate(int64 refresh_rate_milliseconds);
+
+  // Stops all auto-retrying error handling behavior inside the policy
+  // subsystem.
+  void StopAutoRetry();
 
   // DevicePolicyResponseDelegate implementation:
   virtual void HandlePolicyResponse(
@@ -78,20 +83,22 @@ class CloudPolicyController
   friend class CloudPolicyControllerTest;
 
   // More configurable constructor for use by test cases.
-  CloudPolicyController(CloudPolicyCacheBase* cache,
-                        DeviceManagementBackend* backend,
+  CloudPolicyController(DeviceManagementService* service,
+                        CloudPolicyCacheBase* cache,
                         DeviceTokenFetcher* token_fetcher,
                         CloudPolicyIdentityStrategy* identity_strategy,
+                        PolicyNotifier* notifier,
                         int64 policy_refresh_rate_ms,
                         int policy_refresh_deviation_factor_percent,
                         int64 policy_refresh_deviation_max_ms,
                         int64 policy_refresh_error_delay_ms);
 
   // Called by constructors to perform shared initialization.
-  void Initialize(CloudPolicyCacheBase* cache,
-                  DeviceManagementBackend* backend,
+  void Initialize(DeviceManagementService* service,
+                  CloudPolicyCacheBase* cache,
                   DeviceTokenFetcher* token_fetcher,
                   CloudPolicyIdentityStrategy* identity_strategy,
+                  PolicyNotifier* notifier,
                   int64 policy_refresh_rate_ms,
                   int policy_refresh_deviation_factor_percent,
                   int64 policy_refresh_deviation_max_ms,
@@ -104,9 +111,12 @@ class CloudPolicyController
   // isn't already outstanding.
   void SendPolicyRequest();
 
-  // Called back from the delayed work task. Performs whatever action is
-  // required in the current state, e.g. refreshing policy.
+  // Called back from the delayed work task. Calls |DoWork()|.
   void DoDelayedWork();
+
+  // Performs whatever action is required in the current state,
+  // e.g. refreshing policy.
+  void DoWork();
 
   // Cancels the delayed work task.
   void CancelDelayedWork();
@@ -117,12 +127,14 @@ class CloudPolicyController
   // Computes the policy refresh delay to use.
   int64 GetRefreshDelay();
 
+  DeviceManagementService* service_;
   CloudPolicyCacheBase* cache_;
-  scoped_ptr<DeviceManagementBackend> backend_;
   CloudPolicyIdentityStrategy* identity_strategy_;
   DeviceTokenFetcher* token_fetcher_;
+  scoped_ptr<DeviceManagementBackend> backend_;
   ControllerState state_;
   bool initial_fetch_done_;
+  PolicyNotifier* notifier_;
 
   int64 policy_refresh_rate_ms_;
   int policy_refresh_deviation_factor_percent_;

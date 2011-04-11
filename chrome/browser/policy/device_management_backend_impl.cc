@@ -48,7 +48,7 @@ const int kDeviceManagementNotAllowed = 403;
 const int kInvalidURL = 404; // This error is not coming from the GFE.
 const int kPendingApproval = 491;
 const int kInternalServerError = 500;
-const int kServiceUnavaiable = 503;
+const int kServiceUnavailable = 503;
 const int kDeviceNotFound = 901;
 const int kPolicyNotFound = 902; // This error is not sent as HTTP status code.
 
@@ -215,7 +215,7 @@ void DeviceManagementJobBase::HandleResponse(
     }
     case kInvalidURL:
     case kInternalServerError:
-    case kServiceUnavaiable: {
+    case kServiceUnavailable: {
       OnError(DeviceManagementBackend::kErrorTemporaryUnavailable);
       return;
     }

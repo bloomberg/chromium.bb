@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/owner_manager.h"
@@ -42,9 +43,10 @@ class SignedSettings : public base::RefCountedThreadSafe<SignedSettings>,
  public:
   enum ReturnCode {
     SUCCESS,
-    NOT_FOUND,        // Email address or property name not found.
-    KEY_UNAVAILABLE,  // Owner key not yet configured.
-    OPERATION_FAILED  // Signature op or IPC to signed settings daemon failed.
+    NOT_FOUND,         // Email address or property name not found.
+    KEY_UNAVAILABLE,   // Owner key not yet configured.
+    OPERATION_FAILED,  // IPC to signed settings daemon failed.
+    BAD_SIGNATURE      // Signature verification failed.
   };
 
   template <class T>

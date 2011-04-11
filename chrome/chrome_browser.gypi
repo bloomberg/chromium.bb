@@ -1529,6 +1529,8 @@
         'browser/policy/file_based_policy_provider.h',
         'browser/policy/managed_prefs_banner_base.cc',
         'browser/policy/managed_prefs_banner_base.h',
+        'browser/policy/policy_notifier.cc',
+        'browser/policy/policy_notifier.h',
         'browser/policy/policy_path_parser.h',
         'browser/policy/policy_path_parser_mac.mm',
         'browser/policy/policy_path_parser_posix.cc',

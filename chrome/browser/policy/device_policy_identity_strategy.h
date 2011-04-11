@@ -8,51 +8,46 @@
 
 #include <string>
 
-#include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/policy/cloud_policy_identity_strategy.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 
 class TokenService;
 
 namespace policy {
 
 // DM token provider that stores the token in CrOS signed settings.
-class DevicePolicyIdentityStrategy : public CloudPolicyIdentityStrategy,
-                                     public NotificationObserver {
+class DevicePolicyIdentityStrategy : public CloudPolicyIdentityStrategy {
  public:
   DevicePolicyIdentityStrategy();
   virtual ~DevicePolicyIdentityStrategy();
 
-  // Called by DevicePolicyIdentityStrategy::OwnershipChecker:
-  virtual void OnOwnershipInformationAvailable(bool current_user_is_owner);
+  // Sets (GAIA) auth credentials of the owner of the device during device
+  // enrollment. This automatically triggers fetching a DMToken that can
+  // be used for future authentication with DMServer.
+  void SetAuthCredentials(const std::string& username,
+                          const std::string& auth_token,
+                          const std::string& machine_id);
+
+  // Sets the device's credentials when they have been read from disk after
+  // a reboot.
+  void SetDeviceManagementCredentials(const std::string& owner_email,
+                                      const std::string& device_id,
+                                      const std::string& device_token);
 
   // CloudPolicyIdentityStrategy implementation:
-  virtual std::string GetDeviceToken();
-  virtual std::string GetDeviceID();
-  virtual std::string GetMachineID();
-  virtual em::DeviceRegisterRequest_Type GetPolicyRegisterType();
-  virtual std::string GetPolicyType();
+  virtual std::string GetDeviceToken() OVERRIDE;
+  virtual std::string GetDeviceID() OVERRIDE;
+  virtual std::string GetMachineID() OVERRIDE;
+  virtual em::DeviceRegisterRequest_Type GetPolicyRegisterType() OVERRIDE;
+  virtual std::string GetPolicyType() OVERRIDE;
   virtual bool GetCredentials(std::string* username,
-                              std::string* auth_token);
-  virtual void OnDeviceTokenAvailable(const std::string& token);
+                              std::string* auth_token) OVERRIDE;
+  virtual void OnDeviceTokenAvailable(const std::string& token) OVERRIDE;
 
  private:
-  class OwnershipChecker;
-
-  // Recheck whether all parameters are available and if so, trigger a
-  // credentials changed notification.
-  void CheckAndTriggerFetch();
-
-  // Updates the ownership information and then passes control to
-  // |CheckAndTriggerFetch|.
-  void CheckOwnershipAndTriggerFetch();
-
-  // NotificationObserver method overrides:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+  // The e-mail and auth token of the device owner. Set by |SetCredentials()|.
+  std::string username_;
+  std::string auth_token_;
 
   // The machine identifier.
   std::string machine_id_;
@@ -64,19 +59,6 @@ class DevicePolicyIdentityStrategy : public CloudPolicyIdentityStrategy,
 
   // Current token. Empty if not available.
   std::string device_token_;
-
-  // Whether the currently logged in user is the device's owner. This variable
-  // is owned by the UI thread but updated from the FILE thread. Therefore
-  // after an owner login it will take some time before it turns to true.
-  bool current_user_is_owner_;
-
-  // Registers the provider for notification of successful Gaia logins.
-  NotificationRegistrar registrar_;
-
-  scoped_refptr<OwnershipChecker> ownership_checker_;
-
-  // Allows to construct weak ptrs.
-  base::WeakPtrFactory<DevicePolicyIdentityStrategy> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevicePolicyIdentityStrategy);
 };

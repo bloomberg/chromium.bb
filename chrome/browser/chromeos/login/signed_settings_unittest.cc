@@ -490,8 +490,7 @@ TEST_F(SignedSettingsTest, StorePolicyFailed) {
 
 TEST_F(SignedSettingsTest, StorePolicyNoPolicyData) {
   NormalDelegate<bool> d(false);
-  d.expect_failure(
-      SignedSettings::MapKeyOpCode(OwnerManager::OPERATION_FAILED));
+  d.expect_failure(SignedSettings::OPERATION_FAILED);
 
   std::string serialized;
   em::PolicyFetchResponse fake_policy = BuildProto(std::string(),
@@ -573,7 +572,7 @@ TEST_F(SignedSettingsTest, RetrieveUnsignedPolicy) {
                                               std::string(),
                                               &serialized);
   ProtoDelegate d(policy);
-  d.expect_failure(SignedSettings::OPERATION_FAILED);
+  d.expect_failure(SignedSettings::BAD_SIGNATURE);
   scoped_refptr<SignedSettings> s(SignedSettings::CreateRetrievePolicyOp(&d));
 
   MockLoginLibrary* lib = MockLoginLib();
@@ -594,7 +593,7 @@ TEST_F(SignedSettingsTest, RetrieveMalsignedPolicy) {
                                                      fake_value_,
                                                      &signed_serialized);
   ProtoDelegate d(signed_policy);
-  d.expect_failure(SignedSettings::OPERATION_FAILED);
+  d.expect_failure(SignedSettings::BAD_SIGNATURE);
   scoped_refptr<SignedSettings> s(SignedSettings::CreateRetrievePolicyOp(&d));
 
   MockLoginLibrary* lib = MockLoginLib();

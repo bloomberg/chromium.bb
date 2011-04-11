@@ -15,6 +15,7 @@
 
 namespace policy {
 
+class DevicePolicyIdentityStrategy;
 class PolicyMap;
 
 namespace em = enterprise_management;
@@ -24,7 +25,7 @@ namespace em = enterprise_management;
 class DevicePolicyCache : public CloudPolicyCacheBase,
                           public chromeos::SignedSettingsHelper::Callback {
  public:
-  DevicePolicyCache();
+  explicit DevicePolicyCache(DevicePolicyIdentityStrategy* identity_strategy);
   virtual ~DevicePolicyCache();
 
   // CloudPolicyCacheBase implementation:
@@ -44,7 +45,8 @@ class DevicePolicyCache : public CloudPolicyCacheBase,
 
   // Alternate c'tor allowing tests to mock out the SignedSettingsHelper
   // singleton.
-  explicit DevicePolicyCache(
+  DevicePolicyCache(
+      DevicePolicyIdentityStrategy* identity_strategy,
       chromeos::SignedSettingsHelper* signed_settings_helper);
 
   // CloudPolicyCacheBase implementation:
@@ -56,7 +58,11 @@ class DevicePolicyCache : public CloudPolicyCacheBase,
                                  PolicyMap* mandatory,
                                  PolicyMap* recommended);
 
+  DevicePolicyIdentityStrategy* identity_strategy_;
+
   chromeos::SignedSettingsHelper* signed_settings_helper_;
+
+  bool starting_up_;
 
   DISALLOW_COPY_AND_ASSIGN(DevicePolicyCache);
 };

@@ -14,6 +14,7 @@
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/device_token_fetcher.h"
+#include "chrome/browser/policy/policy_notifier.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
@@ -29,26 +30,43 @@ const int64 kPolicyRefreshRateMaxMs = 24 * 60 * 60 * 1000;  // 1 day
 
 namespace policy {
 
+CloudPolicySubsystem::ObserverRegistrar::ObserverRegistrar(
+    CloudPolicySubsystem* cloud_policy_subsystem,
+    CloudPolicySubsystem::Observer* observer)
+    : observer_(observer) {
+  policy_notifier_ = cloud_policy_subsystem->notifier();
+  policy_notifier_->AddObserver(observer);
+}
+
+CloudPolicySubsystem::ObserverRegistrar::~ObserverRegistrar() {
+  if (policy_notifier_)
+    policy_notifier_->RemoveObserver(observer_);
+}
+
 CloudPolicySubsystem::CloudPolicySubsystem(
     CloudPolicyIdentityStrategy* identity_strategy,
     CloudPolicyCacheBase* policy_cache)
     : prefs_(NULL) {
+  notifier_.reset(new PolicyNotifier());
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDeviceManagementUrl)) {
     device_management_service_.reset(new DeviceManagementService(
         command_line->GetSwitchValueASCII(switches::kDeviceManagementUrl)));
     cloud_policy_cache_.reset(policy_cache);
+    cloud_policy_cache_->set_policy_notifier(notifier_.get());
     cloud_policy_cache_->Load();
 
     device_token_fetcher_.reset(
         new DeviceTokenFetcher(device_management_service_.get(),
-                               cloud_policy_cache_.get()));
+                               cloud_policy_cache_.get(),
+                               notifier_.get()));
 
     cloud_policy_controller_.reset(
-        new CloudPolicyController(cloud_policy_cache_.get(),
-                                  device_management_service_->CreateBackend(),
+        new CloudPolicyController(device_management_service_.get(),
+                                  cloud_policy_cache_.get(),
                                   device_token_fetcher_.get(),
-                                  identity_strategy));
+                                  identity_strategy,
+                                  notifier_.get()));
   }
 }
 
@@ -81,6 +99,19 @@ void CloudPolicySubsystem::Shutdown() {
   cloud_policy_cache_.reset();
   policy_refresh_rate_.Destroy();
   prefs_ = NULL;
+}
+
+CloudPolicySubsystem::PolicySubsystemState CloudPolicySubsystem::state() {
+  return notifier_->state();
+}
+
+CloudPolicySubsystem::ErrorDetails CloudPolicySubsystem::error_details() {
+  return notifier_->error_details();
+}
+
+void CloudPolicySubsystem::StopAutoRetry() {
+  cloud_policy_controller_->StopAutoRetry();
+  device_token_fetcher_->StopAutoRetry();
 }
 
 ConfigurationPolicyProvider* CloudPolicySubsystem::GetManagedPolicyProvider() {

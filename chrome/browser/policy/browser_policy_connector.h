@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_POLICY_BROWSER_POLICY_CONNECTOR_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/notification_observer.h"
@@ -21,9 +23,9 @@ class URLRequestContextGetter;
 
 namespace policy {
 
-class CloudPolicyIdentityStrategy;
 class CloudPolicySubsystem;
 class ConfigurationPolicyProvider;
+class DevicePolicyIdentityStrategy;
 
 // Manages the lifecycle of browser-global policy infrastructure, such as the
 // platform policy providers.
@@ -40,7 +42,29 @@ class BrowserPolicyConnector : public NotificationObserver {
   ConfigurationPolicyProvider* GetRecommendedPlatformProvider() const;
   ConfigurationPolicyProvider* GetRecommendedCloudProvider() const;
 
+  // Returns a weak pointer to the CloudPolicySubsystem managed by this
+  // policy connector, or NULL if no such subsystem exists (i.e. when running
+  // outside ChromeOS).
+  CloudPolicySubsystem* cloud_policy_subsystem() {
+    return cloud_policy_subsystem_.get();
+  }
+
   static void RegisterPrefs(PrefService* user_prefs);
+
+  // Used to set the credentials stored in the identity strategy associated
+  // with this policy connector.
+  void SetCredentials(const std::string& owner_email,
+                      const std::string& gaia_token,
+                      const std::string& machine_id);
+
+  // Returns true if this device is managed by an enterprise (as opposed to
+  // a local owner).
+  bool IsEnterpriseManaged();
+
+  // Exposes the StopAutoRetry() method of the CloudPolicySubsystem managed
+  // by this connector, which can be used to disable automatic
+  // retrying behavior.
+  void StopAutoRetry();
 
   // NotificationObserver implementation:
   virtual void Observe(NotificationType type,
@@ -67,7 +91,9 @@ class BrowserPolicyConnector : public NotificationObserver {
   scoped_ptr<ConfigurationPolicyProvider> managed_platform_provider_;
   scoped_ptr<ConfigurationPolicyProvider> recommended_platform_provider_;
 
-  scoped_ptr<CloudPolicyIdentityStrategy> identity_strategy_;
+#if defined(OS_CHROMEOS)
+  scoped_ptr<DevicePolicyIdentityStrategy> identity_strategy_;
+#endif
   scoped_ptr<CloudPolicySubsystem> cloud_policy_subsystem_;
 
   NotificationRegistrar registrar_;

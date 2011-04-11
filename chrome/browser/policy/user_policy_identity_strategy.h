@@ -31,15 +31,14 @@ class UserPolicyIdentityStrategy : public CloudPolicyIdentityStrategy,
   virtual ~UserPolicyIdentityStrategy();
 
   // CloudPolicyIdentityStrategy implementation:
-  virtual std::string GetDeviceToken();
-  virtual std::string GetDeviceID();
-  virtual std::string GetMachineID();
-  virtual em::DeviceRegisterRequest_Type GetPolicyRegisterType();
-  virtual std::string GetPolicyType();
-
+  virtual std::string GetDeviceToken() OVERRIDE;
+  virtual std::string GetDeviceID() OVERRIDE;
+  virtual std::string GetMachineID() OVERRIDE;
+  virtual em::DeviceRegisterRequest_Type GetPolicyRegisterType() OVERRIDE;
+  virtual std::string GetPolicyType() OVERRIDE;
   virtual bool GetCredentials(std::string* username,
-                              std::string* auth_token);
-  virtual void OnDeviceTokenAvailable(const std::string& token);
+                              std::string* auth_token) OVERRIDE;
+  virtual void OnDeviceTokenAvailable(const std::string& token) OVERRIDE;
 
  private:
   class TokenCache;

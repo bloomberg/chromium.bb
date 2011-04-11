@@ -30,7 +30,7 @@ SignedSettings::~SignedSettings() {}
 SignedSettings::ReturnCode SignedSettings::MapKeyOpCode(
     OwnerManager::KeyOpCode return_code) {
   return (return_code == OwnerManager::KEY_UNAVAILABLE ?
-          KEY_UNAVAILABLE : OPERATION_FAILED);
+          KEY_UNAVAILABLE : BAD_SIGNATURE);
 }
 
 void SignedSettings::OnBoolComplete(void* delegate, bool success) {
@@ -543,8 +543,12 @@ void RetrievePolicyOp::ProcessPolicy(const char* out, const unsigned int len) {
     d_->OnSettingsOpCompleted(NOT_FOUND, policy_);
     return;
   }
-  if (!policy_.has_policy_data() || !policy_.has_policy_data_signature()) {
+  if (!policy_.has_policy_data()) {
     d_->OnSettingsOpCompleted(OPERATION_FAILED, em::PolicyFetchResponse());
+    return;
+  }
+  if (!policy_.has_policy_data_signature()) {
+    d_->OnSettingsOpCompleted(BAD_SIGNATURE, em::PolicyFetchResponse());
     return;
   }
   std::vector<uint8> sig;

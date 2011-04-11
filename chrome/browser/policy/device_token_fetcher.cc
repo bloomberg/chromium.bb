@@ -29,10 +29,12 @@ namespace em = enterprise_management;
 
 DeviceTokenFetcher::DeviceTokenFetcher(
     DeviceManagementService* service,
-    CloudPolicyCacheBase* cache)
+    CloudPolicyCacheBase* cache,
+    PolicyNotifier* notifier)
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   Initialize(service,
              cache,
+             notifier,
              kTokenFetchErrorDelayMilliseconds,
              kTokenFetchErrorMaxDelayMilliseconds,
              kUnmanagedDeviceRefreshRateMilliseconds);
@@ -41,12 +43,14 @@ DeviceTokenFetcher::DeviceTokenFetcher(
 DeviceTokenFetcher::DeviceTokenFetcher(
     DeviceManagementService* service,
     CloudPolicyCacheBase* cache,
+    PolicyNotifier* notifier,
     int64 token_fetch_error_delay_ms,
     int64 token_fetch_error_max_delay_ms,
     int64 unmanaged_device_refresh_rate_ms)
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   Initialize(service,
              cache,
+             notifier,
              token_fetch_error_delay_ms,
              token_fetch_error_max_delay_ms,
              unmanaged_device_refresh_rate_ms);
@@ -98,6 +102,14 @@ const std::string& DeviceTokenFetcher::GetDeviceToken() {
   return device_token_;
 }
 
+void DeviceTokenFetcher::StopAutoRetry() {
+  CancelRetryTask();
+  backend_.reset();
+  device_token_.clear();
+  auth_token_.clear();
+  device_id_.clear();
+}
+
 void DeviceTokenFetcher::AddObserver(DeviceTokenFetcher::Observer* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -132,7 +144,7 @@ void DeviceTokenFetcher::OnError(DeviceManagementBackend::ErrorCode code) {
     case DeviceManagementBackend::kErrorServiceManagementTokenInvalid:
       // Most probably the GAIA auth cookie has expired. We can not do anything
       // until the user logs-in again.
-      SetState(STATE_INACTIVE);
+      SetState(STATE_BAD_AUTH);
       break;
     default:
       SetState(STATE_ERROR);
@@ -141,11 +153,13 @@ void DeviceTokenFetcher::OnError(DeviceManagementBackend::ErrorCode code) {
 
 void DeviceTokenFetcher::Initialize(DeviceManagementService* service,
                                     CloudPolicyCacheBase* cache,
+                                    PolicyNotifier* notifier,
                                     int64 token_fetch_error_delay_ms,
                                     int64 token_fetch_error_max_delay_ms,
                                     int64 unmanaged_device_refresh_rate_ms) {
   service_ = service;
   cache_ = cache;
+  notifier_ = notifier;
   token_fetch_error_delay_ms_ = token_fetch_error_delay_ms;
   token_fetch_error_max_delay_ms_ = token_fetch_error_max_delay_ms;
   effective_token_fetch_error_delay_ms_ = token_fetch_error_delay_ms;
@@ -168,13 +182,22 @@ void DeviceTokenFetcher::SetState(FetcherState state) {
       device_token_.clear();
       auth_token_.clear();
       device_id_.clear();
+      notifier_->Inform(CloudPolicySubsystem::UNENROLLED,
+                        CloudPolicySubsystem::NO_DETAILS,
+                        PolicyNotifier::TOKEN_FETCHER);
       break;
     case STATE_TOKEN_AVAILABLE:
       FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceTokenAvailable());
+      notifier_->Inform(CloudPolicySubsystem::SUCCESS,
+                        CloudPolicySubsystem::NO_DETAILS,
+                        PolicyNotifier::TOKEN_FETCHER);
       break;
     case STATE_UNMANAGED:
       delayed_work_at = cache_->last_policy_refresh_time() +
           base::TimeDelta::FromMilliseconds(unmanaged_device_refresh_rate_ms_);
+      notifier_->Inform(CloudPolicySubsystem::UNMANAGED,
+                        CloudPolicySubsystem::NO_DETAILS,
+                        PolicyNotifier::TOKEN_FETCHER);
       break;
     case STATE_TEMPORARY_ERROR:
       delayed_work_at = base::Time::Now() +
@@ -183,12 +206,24 @@ void DeviceTokenFetcher::SetState(FetcherState state) {
       effective_token_fetch_error_delay_ms_ =
           std::min(effective_token_fetch_error_delay_ms_ * 2,
                    token_fetch_error_max_delay_ms_);
+      notifier_->Inform(CloudPolicySubsystem::NETWORK_ERROR,
+                        CloudPolicySubsystem::DMTOKEN_NETWORK_ERROR,
+                        PolicyNotifier::TOKEN_FETCHER);
       break;
     case STATE_ERROR:
       effective_token_fetch_error_delay_ms_ = token_fetch_error_max_delay_ms_;
       delayed_work_at = base::Time::Now() +
           base::TimeDelta::FromMilliseconds(
               effective_token_fetch_error_delay_ms_);
+      notifier_->Inform(CloudPolicySubsystem::NETWORK_ERROR,
+                        CloudPolicySubsystem::DMTOKEN_NETWORK_ERROR,
+                        PolicyNotifier::TOKEN_FETCHER);
+      break;
+    case STATE_BAD_AUTH:
+      // Can't do anything, need to wait for new credentials.
+      notifier_->Inform(CloudPolicySubsystem::BAD_GAIA_TOKEN,
+                        CloudPolicySubsystem::NO_DETAILS,
+                        PolicyNotifier::TOKEN_FETCHER);
       break;
   }
 
@@ -214,6 +249,7 @@ void DeviceTokenFetcher::ExecuteRetryTask() {
     case STATE_UNMANAGED:
     case STATE_ERROR:
     case STATE_TEMPORARY_ERROR:
+    case STATE_BAD_AUTH:
       FetchTokenInternal();
       break;
   }

@@ -204,6 +204,14 @@ message PolicyData {
   // was used to sign this response. Numbering should start at 1 and be
   // increased by 1 at each key rotation.)
   optional int32 public_key_version = 6;
+  
+  // The user this policy is intended for. In case of device policy, the name
+  // of the owner (who registered the device).
+  optional string username = 7;
+  
+  // In this field the DMServer should echo back the "deviceid" HTTP parameter
+  // from the request.
+  optional string device_id = 8;
 }
 
 message PolicyFetchResponse {

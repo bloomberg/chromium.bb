@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/policy/policy_notifier.h"
 
 namespace policy {
 
@@ -54,7 +55,8 @@ class CloudPolicyCacheBase::CloudPolicyProvider
 };
 
 CloudPolicyCacheBase::CloudPolicyCacheBase()
-    : initialization_complete_(false),
+    : notifier_(NULL),
+      initialization_complete_(false),
       is_unmanaged_(false) {
   managed_policy_provider_.reset(
       new CloudPolicyProvider(
@@ -109,6 +111,8 @@ bool CloudPolicyCacheBase::SetPolicyInternal(
     FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
                       observer_list_, OnUpdatePolicy());
   }
+  InformNotifier(CloudPolicySubsystem::SUCCESS,
+                 CloudPolicySubsystem::NO_DETAILS);
   return true;
 }
 
@@ -150,6 +154,15 @@ bool CloudPolicyCacheBase::DecodePolicyResponse(
                  base::TimeDelta::FromMilliseconds(policy_data.timestamp());
   }
   return DecodePolicyData(policy_data, mandatory, recommended);
+}
+
+void CloudPolicyCacheBase::InformNotifier(
+    CloudPolicySubsystem::PolicySubsystemState state,
+    CloudPolicySubsystem::ErrorDetails error_details) {
+  // TODO(jkummerow): To obsolete this NULL-check, make all uses of
+  // UserPolicyCache explicitly set a notifier using |set_policy_notifier()|.
+  if (notifier_)
+    notifier_->Inform(state, error_details, PolicyNotifier::POLICY_CACHE);
 }
 
 }  // namespace policy
