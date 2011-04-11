@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_TAB_CONTENTS_VIEW_VIEWS_H_
-#define CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_TAB_CONTENTS_VIEW_VIEWS_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_TAB_CONTENTS_VIEW_TOUCH_H_
+#define CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_TAB_CONTENTS_VIEW_TOUCH_H_
 #pragma once
 
 #include <vector>
@@ -29,17 +29,17 @@ namespace views {
 class NativeViewHost;
 }  // namespace views
 
-// Views-specific implementation of the TabContentsView for the touch UI.
-class TabContentsViewViews : public TabContentsView, public views::View {
+// Touch-specific implementation of the TabContentsView for the touch UI.
+class TabContentsViewTouch : public TabContentsView, public views::View {
  public:
   // The corresponding TabContents is passed in the constructor, and manages our
   // lifetime. This doesn't need to be the case, but is this way currently
   // because that's what was easiest when they were split.
-  explicit TabContentsViewViews(TabContents* tab_contents);
-  virtual ~TabContentsViewViews();
+  explicit TabContentsViewTouch(TabContents* tab_contents);
+  virtual ~TabContentsViewTouch();
 
   // Unlike Windows, ConstrainedWindows need to collaborate with the
-  // TabContentsViewViews to position the dialogs.
+  // TabContentsViewTouch to position the dialogs.
   void AttachConstrainedWindow(ConstrainedWindowGtk* constrained_window);
   void RemoveConstrainedWindow(ConstrainedWindowGtk* constrained_window);
 
@@ -125,7 +125,7 @@ class TabContentsViewViews : public TabContentsView, public views::View {
   // objects in this vector are owned by the TabContents, not the view.
   std::vector<ConstrainedWindowGtk*> constrained_windows_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabContentsViewViews);
+  DISALLOW_COPY_AND_ASSIGN(TabContentsViewTouch);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_TAB_CONTENTS_VIEW_VIEWS_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_TAB_CONTENTS_VIEW_TOUCH_H_

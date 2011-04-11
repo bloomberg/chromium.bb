@@ -3041,8 +3041,8 @@
         'browser/ui/views/tab_contents/tab_contents_drag_win.h',
         'browser/ui/views/tab_contents/tab_contents_view_gtk.cc',
         'browser/ui/views/tab_contents/tab_contents_view_gtk.h',
-        'browser/ui/views/tab_contents/tab_contents_view_views.cc',
-        'browser/ui/views/tab_contents/tab_contents_view_views.h',
+        'browser/ui/views/tab_contents/tab_contents_view_touch.cc',
+        'browser/ui/views/tab_contents/tab_contents_view_touch.h',
         'browser/ui/views/tab_contents/tab_contents_view_win.cc',
         'browser/ui/views/tab_contents/tab_contents_view_win.h',
         'browser/ui/views/tab_icon_view.cc',
@@ -3422,7 +3422,7 @@
             ['exclude', '^browser/ui/touch/*'],
             ['exclude', '^browser/ui/views/tab_contents/tab_contents_container_views.cc'],
             ['exclude', '^browser/ui/views/tab_contents/tab_contents_container_views.h'],
-            ['exclude', '^browser/ui/views/tab_contents/tab_contents_view_views.*'],
+            ['exclude', '^browser/ui/views/tab_contents/tab_contents_view_touch.*'],
             ['exclude', '^browser/ui/webui/chromeos/login/'],
           ],
         }],
@@ -4085,8 +4085,8 @@
             # Touch build only
             ['OS=="linux" and toolkit_views==1 and touchui==1', {
               'sources/': [
-                ['include', '^browser/ui/views/tab_contents/tab_contents_view_views.cc'],
-                ['include', '^browser/ui/views/tab_contents/tab_contents_view_views.h'],
+                ['include', '^browser/ui/views/tab_contents/tab_contents_view_touch.cc'],
+                ['include', '^browser/ui/views/tab_contents/tab_contents_view_touch.h'],
                 ['include', '^browser/ui/views/tab_contents/tab_contents_container_views.cc'],
                 ['include', '^browser/ui/views/tab_contents/tab_contents_container_views.h'],
                 # TODO(anicolao): exclude these once we have WebUI dialogs

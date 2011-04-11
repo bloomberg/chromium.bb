@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
+#include "chrome/browser/ui/views/tab_contents/tab_contents_view_touch.h"
 
 #include "base/string_util.h"
 #include "build/build_config.h"
@@ -32,10 +32,10 @@ using WebKit::WebInputEvent;
 
 // static
 TabContentsView* TabContentsView::Create(TabContents* tab_contents) {
-  return new TabContentsViewViews(tab_contents);
+  return new TabContentsViewTouch(tab_contents);
 }
 
-TabContentsViewViews::TabContentsViewViews(TabContents* tab_contents)
+TabContentsViewTouch::TabContentsViewTouch(TabContents* tab_contents)
     : TabContentsView(tab_contents),
       sad_tab_(NULL),
       ignore_next_char_event_(false) {
@@ -44,7 +44,7 @@ TabContentsViewViews::TabContentsViewViews(TabContents* tab_contents)
   SetLayoutManager(new views::FillLayout());
 }
 
-TabContentsViewViews::~TabContentsViewViews() {
+TabContentsViewTouch::~TabContentsViewTouch() {
   // Make sure to remove any stored view we may still have in the ViewStorage.
   //
   // It is possible the view went away before us, so we only do this if the
@@ -54,23 +54,23 @@ TabContentsViewViews::~TabContentsViewViews() {
     view_storage->RemoveView(last_focused_view_storage_id_);
 }
 
-void TabContentsViewViews::AttachConstrainedWindow(
+void TabContentsViewTouch::AttachConstrainedWindow(
     ConstrainedWindowGtk* constrained_window) {
   // TODO(anicolao): reimplement all dialogs as WebUI
   NOTIMPLEMENTED();
 }
 
-void TabContentsViewViews::RemoveConstrainedWindow(
+void TabContentsViewTouch::RemoveConstrainedWindow(
     ConstrainedWindowGtk* constrained_window) {
   // TODO(anicolao): reimplement all dialogs as WebUI
   NOTIMPLEMENTED();
 }
 
-void TabContentsViewViews::CreateView(const gfx::Size& initial_size) {
+void TabContentsViewTouch::CreateView(const gfx::Size& initial_size) {
   SetBoundsRect(gfx::Rect(bounds().origin(), initial_size));
 }
 
-RenderWidgetHostView* TabContentsViewViews::CreateViewForWidget(
+RenderWidgetHostView* TabContentsViewTouch::CreateViewForWidget(
     RenderWidgetHost* render_widget_host) {
   if (render_widget_host->view()) {
     // During testing, the view will already be set up in most cases to the
@@ -99,38 +99,38 @@ RenderWidgetHostView* TabContentsViewViews::CreateViewForWidget(
   return view;
 }
 
-gfx::NativeView TabContentsViewViews::GetNativeView() const {
+gfx::NativeView TabContentsViewTouch::GetNativeView() const {
   return GetWidget()->GetNativeView();
 }
 
-gfx::NativeView TabContentsViewViews::GetContentNativeView() const {
+gfx::NativeView TabContentsViewTouch::GetContentNativeView() const {
   RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
   if (!rwhv)
     return NULL;
   return rwhv->GetNativeView();
 }
 
-gfx::NativeWindow TabContentsViewViews::GetTopLevelNativeWindow() const {
+gfx::NativeWindow TabContentsViewTouch::GetTopLevelNativeWindow() const {
   GtkWidget* window = gtk_widget_get_ancestor(GetNativeView(), GTK_TYPE_WINDOW);
   return window ? GTK_WINDOW(window) : NULL;
 }
 
-void TabContentsViewViews::GetContainerBounds(gfx::Rect* out) const {
+void TabContentsViewTouch::GetContainerBounds(gfx::Rect* out) const {
   *out = bounds();
 }
 
-void TabContentsViewViews::StartDragging(const WebDropData& drop_data,
+void TabContentsViewTouch::StartDragging(const WebDropData& drop_data,
                                          WebDragOperationsMask ops,
                                          const SkBitmap& image,
                                          const gfx::Point& image_offset) {
   // TODO(anicolao): implement dragging
 }
 
-void TabContentsViewViews::SetPageTitle(const std::wstring& title) {
+void TabContentsViewTouch::SetPageTitle(const std::wstring& title) {
   // TODO(anicolao): figure out if there's anything useful to do here
 }
 
-void TabContentsViewViews::OnTabCrashed(base::TerminationStatus status,
+void TabContentsViewTouch::OnTabCrashed(base::TerminationStatus status,
                                         int /* error_code */) {
   if (sad_tab_ != NULL)
     return;
@@ -144,7 +144,7 @@ void TabContentsViewViews::OnTabCrashed(base::TerminationStatus status,
   Layout();
 }
 
-void TabContentsViewViews::SizeContents(const gfx::Size& size) {
+void TabContentsViewTouch::SizeContents(const gfx::Size& size) {
   WasSized(size);
 
   // We need to send this immediately.
@@ -153,7 +153,7 @@ void TabContentsViewViews::SizeContents(const gfx::Size& size) {
     rwhv->SetSize(size);
 }
 
-void TabContentsViewViews::Focus() {
+void TabContentsViewTouch::Focus() {
   if (tab_contents()->interstitial_page()) {
     tab_contents()->interstitial_page()->Focus();
     return;
@@ -169,14 +169,14 @@ void TabContentsViewViews::Focus() {
     rwhv->Focus();
 }
 
-void TabContentsViewViews::SetInitialFocus() {
+void TabContentsViewTouch::SetInitialFocus() {
   if (tab_contents()->FocusLocationBarByDefault())
     tab_contents()->SetFocusToLocationBar(false);
   else
     Focus();
 }
 
-void TabContentsViewViews::StoreFocus() {
+void TabContentsViewTouch::StoreFocus() {
   views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
 
   if (view_storage->RetrieveView(last_focused_view_storage_id_) != NULL)
@@ -193,7 +193,7 @@ void TabContentsViewViews::StoreFocus() {
   }
 }
 
-void TabContentsViewViews::RestoreFocus() {
+void TabContentsViewTouch::RestoreFocus() {
   views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
   views::View* last_focused_view =
       view_storage->RetrieveView(last_focused_view_storage_id_);
@@ -221,30 +221,30 @@ void TabContentsViewViews::RestoreFocus() {
   }
 }
 
-void TabContentsViewViews::GetViewBounds(gfx::Rect* out) const {
+void TabContentsViewTouch::GetViewBounds(gfx::Rect* out) const {
   out->SetRect(x(), y(), width(), height());
 }
 
-void TabContentsViewViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+void TabContentsViewTouch::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   if (IsVisibleInRootView())
     WasSized(size());
 }
 
-void TabContentsViewViews::OnPaint(gfx::Canvas* canvas) {
+void TabContentsViewTouch::OnPaint(gfx::Canvas* canvas) {
 }
 
-void TabContentsViewViews::UpdateDragCursor(WebDragOperation operation) {
+void TabContentsViewTouch::UpdateDragCursor(WebDragOperation operation) {
   NOTIMPLEMENTED();
   // It's not even clear a drag cursor will make sense for touch.
   // TODO(anicolao): implement dragging
 }
 
-void TabContentsViewViews::GotFocus() {
+void TabContentsViewTouch::GotFocus() {
   if (tab_contents()->delegate())
     tab_contents()->delegate()->TabContentsFocused(tab_contents());
 }
 
-void TabContentsViewViews::TakeFocus(bool reverse) {
+void TabContentsViewTouch::TakeFocus(bool reverse) {
   if (tab_contents()->delegate() &&
       !tab_contents()->delegate()->TakeFocus(reverse)) {
 
@@ -258,7 +258,7 @@ void TabContentsViewViews::TakeFocus(bool reverse) {
   }
 }
 
-void TabContentsViewViews::VisibilityChanged(views::View *, bool is_visible) {
+void TabContentsViewTouch::VisibilityChanged(views::View *, bool is_visible) {
   if (is_visible) {
     WasShown();
   } else {
@@ -266,7 +266,7 @@ void TabContentsViewViews::VisibilityChanged(views::View *, bool is_visible) {
   }
 }
 
-void TabContentsViewViews::ShowContextMenu(const ContextMenuParams& params) {
+void TabContentsViewTouch::ShowContextMenu(const ContextMenuParams& params) {
   // Allow delegates to handle the context menu operation first.
   if (tab_contents()->delegate() &&
       tab_contents()->delegate()->HandleContextMenu(params))
@@ -290,7 +290,7 @@ void TabContentsViewViews::ShowContextMenu(const ContextMenuParams& params) {
   MessageLoop::current()->SetNestableTasksAllowed(old_state);
 }
 
-void TabContentsViewViews::ShowPopupMenu(const gfx::Rect& bounds,
+void TabContentsViewTouch::ShowPopupMenu(const gfx::Rect& bounds,
                                          int item_height,
                                          double item_font_size,
                                          int selected_item,
@@ -300,15 +300,15 @@ void TabContentsViewViews::ShowPopupMenu(const gfx::Rect& bounds,
   NOTREACHED();
 }
 
-void TabContentsViewViews::WasHidden() {
+void TabContentsViewTouch::WasHidden() {
   tab_contents()->HideContents();
 }
 
-void TabContentsViewViews::WasShown() {
+void TabContentsViewTouch::WasShown() {
   tab_contents()->ShowContents();
 }
 
-void TabContentsViewViews::WasSized(const gfx::Size& size) {
+void TabContentsViewTouch::WasSized(const gfx::Size& size) {
   // We have to check that the RenderWidgetHostView is the proper size.
   // It can be wrong in cases where the renderer has died and the host
   // view needed to be recreated.
@@ -328,7 +328,7 @@ void TabContentsViewViews::WasSized(const gfx::Size& size) {
     SetFloatingPosition(size);
 }
 
-void TabContentsViewViews::SetFloatingPosition(const gfx::Size& size) {
+void TabContentsViewTouch::SetFloatingPosition(const gfx::Size& size) {
   // TODO(anicolao): rework this once we have WebUI views for dialogs
   SetBounds(x(), y(), size.width(), size.height());
 }

@@ -12,7 +12,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 
 #if defined(TOUCH_UI)
-#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
+#include "chrome/browser/ui/views/tab_contents/tab_contents_view_touch.h"
 #else
 #include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
 #endif

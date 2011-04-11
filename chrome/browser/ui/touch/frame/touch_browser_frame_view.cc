@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/touch/frame/keyboard_container_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
+#include "chrome/browser/ui/views/tab_contents/tab_contents_view_touch.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -35,7 +35,7 @@ PropertyAccessor<bool>* GetFocusedStateAccessor() {
 }
 
 bool TabContentsHasFocus(const TabContents* contents) {
-  views::View* view = static_cast<TabContentsViewViews*>(contents->view());
+  views::View* view = static_cast<TabContentsViewTouch*>(contents->view());
   return view->Contains(view->GetFocusManager()->GetFocusedView());
 }
 

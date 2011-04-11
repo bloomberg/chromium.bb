@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_container.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_container_gtk.h"
-#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
+#include "chrome/browser/ui/views/tab_contents/tab_contents_view_touch.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/interstitial_page.h"
@@ -37,7 +37,7 @@ void TabContentsContainer::SetReservedContentsRect(
 
 void TabContentsContainer::ChangeTabContents(TabContents* contents) {
   if (tab_contents_) {
-    views::View *v = static_cast<TabContentsViewViews*>(tab_contents_->view());
+    views::View *v = static_cast<TabContentsViewTouch*>(tab_contents_->view());
     RemoveChildView(v);
     tab_contents_->WasHidden();
     RemoveObservers();
@@ -46,7 +46,7 @@ void TabContentsContainer::ChangeTabContents(TabContents* contents) {
   // When detaching the last tab of the browser ChangeTabContents is invoked
   // with NULL. Don't attempt to do anything in that case.
   if (tab_contents_) {
-    views::View *v = static_cast<TabContentsViewViews*>(contents->view());
+    views::View *v = static_cast<TabContentsViewTouch*>(contents->view());
     AddChildView(v);
     SetLayoutManager(new views::FillLayout());
     Layout();

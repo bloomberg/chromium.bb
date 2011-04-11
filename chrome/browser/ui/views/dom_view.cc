@@ -8,7 +8,7 @@
 #include "views/focus/focus_manager.h"
 
 #if defined(TOUCH_UI)
-#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
+#include "chrome/browser/ui/views/tab_contents/tab_contents_view_touch.h"
 #endif
 
 DOMView::DOMView() : tab_contents_(NULL), initialized_(false) {
@@ -67,7 +67,7 @@ void DOMView::ViewHierarchyChanged(bool is_add, views::View* parent,
 
 void DOMView::AttachTabContents() {
 #if defined(TOUCH_UI)
-  AttachToView(static_cast<TabContentsViewViews*>(tab_contents_->view()));
+  AttachToView(static_cast<TabContentsViewTouch*>(tab_contents_->view()));
 #else
   Attach(tab_contents_->GetNativeView());
 #endif
