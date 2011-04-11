@@ -64,7 +64,7 @@ void SharedResourcesDataSource::StartDataRequest(const std::string& path,
                                                  bool is_incognito,
                                                  int request_id) {
   int idr = PathToIDR(path);
-  DCHECK_NE(-1, idr);
+  DCHECK_NE(-1, idr) << " path: " << path;
   const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   scoped_refptr<RefCountedStaticMemory> bytes(rb.LoadDataResourceBytes(idr));
   SendResponse(request_id, bytes);
