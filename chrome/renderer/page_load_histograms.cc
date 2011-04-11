@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@ namespace {
 
 // Histograms to determine prerendering's impact on perceived PLT.
 void UpdatePrerenderHistograms(NavigationState* navigation_state,
-                               const Time& begin, const Time& finish_all_loads,
+                               const Time& finish_all_loads,
                                const TimeDelta& begin_to_finish_all_loads) {
   // Load time for non-prerendered pages.
   static bool use_prerender_histogram =
@@ -47,6 +47,10 @@ void UpdatePrerenderHistograms(NavigationState* navigation_state,
     return;
   }
 
+  // Do not record stats for redirected prerendered pages.
+  if (navigation_state->was_prerender_redirected())
+    return;
+
   // Histogram for usage rate of prerendered pages.
   Time prerendered_page_display =
       navigation_state->prerendered_page_display_time();
@@ -56,8 +60,10 @@ void UpdatePrerenderHistograms(NavigationState* navigation_state,
     return;
 
   // Histograms for perceived load time of prerendered pages.
+  Time prerendered_page_start =
+      navigation_state->prerendered_page_start_time();
   PLT_HISTOGRAM("PLT.TimeUntilDisplay_PrerenderLoad",
-                prerendered_page_display - begin);
+                prerendered_page_display - prerendered_page_start);
   TimeDelta perceived_load_time = finish_all_loads - prerendered_page_display;
   if (perceived_load_time < TimeDelta::FromSeconds(0)) {
     PLT_HISTOGRAM("PLT.PrerenderIdleTime_PrerenderLoad", -perceived_load_time);
@@ -313,7 +319,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
       break;
   }
 
-  UpdatePrerenderHistograms(navigation_state, begin, finish_all_loads,
+  UpdatePrerenderHistograms(navigation_state, finish_all_loads,
                             begin_to_finish_all_loads);
 
   // Histograms to determine if DNS prefetching has an impact on PLT.

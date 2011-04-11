@@ -2879,10 +2879,23 @@ void RenderView::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
     }
   }
 
+  state->set_was_started_as_prerender(is_prerendering_);
+  if (is_prerendering_ && !frame->parent()) {
+    if (content_initiated) {
+      NavigationState* old_state =
+          NavigationState::FromDataSource(webview()->mainFrame()->dataSource());
+      state->set_prerendered_page_start_time(
+          old_state->prerendered_page_start_time());
+      old_state->set_was_prerender_redirected(true);
+    } else if (!state->request_time().is_null()) {
+      state->set_prerendered_page_start_time(state->request_time());
+    } else {
+      state->set_prerendered_page_start_time(state->start_load_time());
+    }
+  }
+
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, DidCreateDataSource(frame, ds));
-
-  state->set_was_started_as_prerender(is_prerendering_);
 
   ds->setExtraData(state);
 }

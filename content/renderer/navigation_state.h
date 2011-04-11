@@ -151,6 +151,11 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
     first_paint_after_load_time_ = value;
   }
 
+  // The time that prerendering started.  Note that this is preserved against
+  // HTML/Javascript redirects, until the page is displayed.
+  const base::Time& prerendered_page_start_time() const;
+  void set_prerendered_page_start_time(const base::Time& value);
+
   // The time that a prerendered page was displayed.  Invalid for
   // non-prerendered pages.  Can be either before or after
   // |finish_document_load_time_|.
@@ -202,13 +207,21 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
     security_info_ = security_info;
   }
 
+  // True if an error page should be used, if the http status code also
+  // indicates an error.
   bool use_error_page() const { return use_error_page_; }
   void set_use_error_page(bool use_error_page) {
     use_error_page_ = use_error_page;
   }
 
+  // True if a page load started as a prerender.  Preserved across redirects.
   bool was_started_as_prerender() const;
   void set_was_started_as_prerender(bool was_started_as_prerender);
+
+  // True if there was an HTML/Javascript redirect while a page was still being
+  // prerendered.
+  bool was_prerender_redirected() const;
+  void set_was_prerender_redirected(bool was_prerender_redirected);
 
   int http_status_code() const { return http_status_code_; }
   void set_http_status_code(int http_status_code) {
@@ -287,6 +300,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   base::Time finish_load_time_;
   base::Time first_paint_time_;
   base::Time first_paint_after_load_time_;
+  base::Time prerendered_page_start_time_;
   base::Time prerendered_page_display_time_;
   bool load_histograms_recorded_;
   bool web_timing_histograms_recorded_;
@@ -300,12 +314,10 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   scoped_ptr<webkit_glue::AltErrorPageResourceFetcher> alt_error_page_fetcher_;
   std::string security_info_;
 
-  // True if we should use an error page, if the http status code alos indicates
-  // an error.
   bool use_error_page_;
 
-  // True if a page load started as a prerender.  Preserved across redirects.
   bool was_started_as_prerender_;
+  bool was_prerender_redirected_;
 
   bool cache_policy_override_set_;
   WebKit::WebURLRequest::CachePolicy cache_policy_override_;
