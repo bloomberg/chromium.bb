@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -348,7 +348,7 @@ static const struct SuggestedSaveNameTestCase {
   },
 };
 
-TEST_F(SavePackageTest, TestSuggestedSaveNames) {
+TEST_F(SavePackageTest, FLAKY_TestSuggestedSaveNames) {
   for (size_t i = 0; i < arraysize(kSuggestedSaveNames); ++i) {
     scoped_refptr<SavePackage> save_package(
         new SavePackage(contents(), FilePath(), FilePath()));
