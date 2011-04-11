@@ -57,6 +57,7 @@ class TsanAnalyzer(object):
       "|accessing an invalid lock"
       "|which did not acquire this lock")
   RACE_VERIFIER_LINE = "Confirmed a race|unexpected race"
+  TSAN_ASSERTION = "Assertion failed: "
 
   def __init__(self, source_dir, use_gdb=False):
     '''Reads in a set of files.
@@ -96,6 +97,13 @@ class TsanAnalyzer(object):
           result.append(self.stack_trace_line_)
     return result
 
+  def ReadTillTheEnd(self):
+    result = [self.line_]
+    while self.line_:
+      self.ReadLine()
+      result.append(self.line_)
+    return result
+
   def ParseReportFile(self, filename):
     '''Parses a report file and returns a list of ThreadSanitizer reports.
 
@@ -111,7 +119,7 @@ class TsanAnalyzer(object):
     while True:
       # Read ThreadSanitizer reports.
       self.ReadLine()
-      if (self.line_ == ''):
+      if not self.line_:
         break
 
       tmp = []
@@ -128,6 +136,10 @@ class TsanAnalyzer(object):
           not common.IsWindows()): # workaround for http://crbug.com/53198
         tmp.extend(self.ReadSection())
         ret.append(tmp)
+      if re.search(TsanAnalyzer.TSAN_ASSERTION, self.line_):
+        tmp.extend(self.ReadTillTheEnd())
+        ret.append(tmp)
+        break
 
       match = re.search(" used_suppression:\s+([0-9]+)\s(.*)", self.line_)
       if match:
@@ -185,7 +197,7 @@ class TsanAnalyzer(object):
     sys.stdout.flush()
 
     retcode = 0
-    if len(reports) > 0:
+    if reports:
       logging.error("FAIL! Found %i report(s)" % len(reports))
       for report in reports:
         logging.error('\n' + report)
@@ -210,7 +222,7 @@ if __name__ == '__main__':
                     "(used to normalize source paths in baseline)")
 
   (options, args) = parser.parse_args()
-  if len(args) == 0:
+  if not args:
     parser.error("no filename specified")
   filenames = args
 
