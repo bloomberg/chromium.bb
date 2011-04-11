@@ -321,6 +321,10 @@ cr.define('gpu', function() {
       var canv = this.firstCanvas;
       var loWX = this.viewport_.xViewToWorld(loX - canv.offsetLeft);
       var hiWX = this.viewport_.xViewToWorld(hiX - canv.offsetLeft);
+
+      var roundedDuration = Math.round((hiWX - loWX) * 100) / 100;
+      this.dragBox_.textContent = roundedDuration + 'ms';
+
       var e = new cr.Event('selectionChanging');
       e.loWX = loWX;
       e.hiWX = hiWX;

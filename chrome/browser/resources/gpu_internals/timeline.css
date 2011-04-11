@@ -11,6 +11,7 @@ found in the LICENSE file.
   position: fixed;
   background-color: rgba(0, 0, 255, 0.25);
   border: 1px solid rgb(0, 0, 96);
+  font-size: 75%;
 }
 
 .timeline-thread-track {
