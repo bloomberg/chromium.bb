@@ -1769,7 +1769,8 @@ init_egl(struct display *d)
 }
 
 struct display *
-display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
+display_create(int *argc, char **argv[], const GOptionEntry *option_entries,
+	       display_global_handler_t handler)
 {
 	struct display *d;
 	GOptionContext *context;
@@ -1801,6 +1802,8 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 		return NULL;
 
         memset(d, 0, sizeof *d);
+
+	d->global_handler = handler;
 
 	d->display = wl_display_connect(NULL);
 	if (d->display == NULL) {
@@ -1905,11 +1908,4 @@ void
 display_run(struct display *d)
 {
 	g_main_loop_run(d->loop);
-}
-
-void
-display_set_global_handler(struct display *display,
-			   display_global_handler_t handler)
-{
-	display->global_handler = handler;
 }

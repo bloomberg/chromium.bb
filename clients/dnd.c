@@ -679,13 +679,11 @@ main(int argc, char *argv[])
 {
 	struct display *d;
 
-	d = display_create(&argc, &argv, option_entries);
+	d = display_create(&argc, &argv, option_entries, global_handler);
 	if (d == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;
 	}
-
-	display_set_global_handler(d, global_handler);
 
 	dnd_create(d);
 
