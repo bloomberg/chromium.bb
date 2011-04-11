@@ -5,6 +5,7 @@
 #include "extension_info_private_api_chromeos.h"
 
 #include <map>
+#include "base/threading/non_thread_safe.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/values.h"
