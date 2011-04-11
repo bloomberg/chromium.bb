@@ -105,6 +105,10 @@ struct MockAutomationMessageSender : public AutomationMessageSender {
     return proxy_->Send(msg);
   }
 
+  virtual bool Send(IPC::Message* msg, int timeout_ms) {
+    return proxy_->Send(msg);
+  }
+
   void ForwardTo(StrictMock<MockAutomationProxy> *p) {
     proxy_ = p;
   }

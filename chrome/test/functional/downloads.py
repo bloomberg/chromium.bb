@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -215,10 +215,7 @@ class DownloadsTest(pyauto.PyUITest):
     self._ClearLocalDownloadState(downloaded_pkg)
     self.DownloadAndWaitForStart(file_url)
     self._DeleteAfterShutdown(downloaded_pkg)
-    # Waiting for big file to download might exceed automation timeout.
-    # Temporarily increase the automation timeout.
-    test_utils.CallFunctionWithNewTimeout(self, 4 * 60 * 1000,  # 4 min.
-                                          self.WaitForAllDownloadsToComplete)
+    self.WaitForAllDownloadsToComplete(timeout=self.large_test_timeout_ms());
     # Verify that the file was correctly downloaded
     self.assertTrue(os.path.exists(downloaded_pkg),
                     'Downloaded file %s missing.' % downloaded_pkg)
@@ -359,11 +356,7 @@ class DownloadsTest(pyauto.PyUITest):
     resume_dict = self.PerformActionOnDownload(self._GetDownloadId(),
                                                'toggle_pause')
     self.assertFalse(resume_dict['is_paused'])
-
-    # Waiting for big file to download might exceed automation timeout.
-    # Temporarily increase the automation timeout.
-    test_utils.CallFunctionWithNewTimeout(self, 2 * 60 * 1000,  # 2 min.
-                                          self.WaitForAllDownloadsToComplete)
+    self.WaitForAllDownloadsToComplete(timeout=self.large_test_timeout_ms());
 
     # Verify that the file was correctly downloaded after pause and resume.
     self.assertTrue(os.path.exists(downloaded_pkg),

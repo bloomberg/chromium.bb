@@ -444,12 +444,13 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       time.sleep(retry_sleep)
     return False
 
-  class CmdExecutionTimeoutChanger(object):
-    """Facilitate temporary changes to command_execution_timeout_ms.
+
+  class ActionTimeoutChanger(object):
+    """Facilitate temporary changes to action_timeout_ms.
 
     Automatically resets to original timeout when object is destroyed.
     """
-    _saved_timeout = -1  # Saved value for command_execution_timeout_ms
+    _saved_timeout = -1  # Saved value for action_timeout_ms
 
     def __init__(self, ui_test, new_timeout):
       """Initialize.
@@ -458,18 +459,18 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         ui_test: a PyUITest object
         new_timeout: new timeout to use (in milli secs)
       """
-      self._saved_timeout = ui_test.command_execution_timeout_ms()
+      self._saved_timeout = ui_test.action_timeout_ms()
       if new_timeout != self._saved_timeout:
-        ui_test.set_command_execution_timeout_ms(new_timeout)
+        ui_test.set_action_timeout_ms(new_timeout)
       self._ui_test = ui_test
 
     def __del__(self):
       """Reset command_execution_timeout_ms to original value."""
-      if self._ui_test.command_execution_timeout_ms() != self._saved_timeout:
-        self._ui_test.set_command_execution_timeout_ms(self._saved_timeout)
+      if self._ui_test.action_timeout_ms() != self._saved_timeout:
+        self._ui_test.set_action_timeout_ms(self._saved_timeout)
 
 
-  def _GetResultFromJSONRequest(self, cmd_dict, windex=0):
+  def _GetResultFromJSONRequest(self, cmd_dict, windex=0, timeout=-1):
     """Issue call over the JSON automation channel and fetch output.
 
     This method packages the given dictionary into a json string, sends it
@@ -487,13 +488,17 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
               Use -ve windex if the automation command does not apply to a
               browser window. example: chromeos login
 
+      timeout: request timeout (in milliseconds)
+
     Returns:
       a dictionary for the output returned by the automation channel.
 
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
-    result = self._SendJSONRequest(windex, json.dumps(cmd_dict))
+    if timeout == -1:  # Default
+      timeout = self.action_max_timeout_ms()
+    result = self._SendJSONRequest(windex, json.dumps(cmd_dict), timeout)
     if len(result) == 0:
       raise JSONInterfaceError('Automation call received no response.')
     ret_dict = json.loads(result)
@@ -519,7 +524,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     return download_info.DownloadInfo(
         self._SendJSONRequest(
-            windex, json.dumps({'command': 'GetDownloadsInfo'})))
+            windex, json.dumps({'command': 'GetDownloadsInfo'}),
+            self.action_max_timeout_ms()))
 
   def GetOmniboxInfo(self, windex=0):
     """Return info about Omnibox.
@@ -546,7 +552,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     return omnibox_info.OmniboxInfo(
         self._SendJSONRequest(windex,
-                              json.dumps({'command': 'GetOmniboxInfo'})))
+                              json.dumps({'command': 'GetOmniboxInfo'}),
+                              self.action_max_timeout_ms()))
 
   def SetOmniboxText(self, text, windex=0):
     """Enter text into the omnibox. This shifts focus to the omnibox.
@@ -748,7 +755,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       an instance of prefs_info.PrefsInfo
     """
     return prefs_info.PrefsInfo(
-        self._SendJSONRequest(0, json.dumps({'command': 'GetPrefsInfo'})))
+        self._SendJSONRequest(0, json.dumps({'command': 'GetPrefsInfo'}),
+                              self.action_max_timeout_ms()))
 
   def SetPrefs(self, path, value):
     """Set preference for the given path.
@@ -806,14 +814,14 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     cmd_dict['type'] = 3  # kKeyUpType
     self._GetResultFromJSONRequest(cmd_dict)
 
-  def WaitForAllDownloadsToComplete(self, windex=0):
+  def WaitForAllDownloadsToComplete(self, windex=0, timeout=-1):
     """Wait for all downloads to complete.
 
     Note: This method does not work for dangerous downloads. Use
     WaitForGivenDownloadsToComplete (below) instead.
     """
     cmd_dict = {'command': 'WaitForAllDownloadsToComplete'}
-    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+    self._GetResultFromJSONRequest(cmd_dict, windex=windex, timeout=timeout)
 
   def WaitForDownloadToComplete(self, download_path, timeout=-1):
     """Wait for the given downloads to complete.
@@ -1108,7 +1116,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'search_text': search_text,
     }
     return history_info.HistoryInfo(
-        self._SendJSONRequest(0, json.dumps(cmd_dict)))
+        self._SendJSONRequest(0, json.dumps(cmd_dict),
+                              self.action_max_timeout_ms()))
 
   def GetTranslateInfo(self, tab_index=0, window_index=0):
     """Returns info about translate for the given page.
@@ -1464,7 +1473,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       an instance of plugins_info.PluginsInfo
     """
     return plugins_info.PluginsInfo(
-        self._SendJSONRequest(0, json.dumps({'command': 'GetPluginsInfo'})))
+        self._SendJSONRequest(0, json.dumps({'command': 'GetPluginsInfo'}),
+                              self.action_max_timeout_ms()))
 
   def EnablePlugin(self, path):
     """Enable the plugin at the given path.

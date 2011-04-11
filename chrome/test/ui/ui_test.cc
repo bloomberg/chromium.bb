@@ -25,6 +25,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/test/test_file_util.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -159,10 +160,13 @@ void UITestBase::TearDown() {
   EXPECT_EQ(expected_crashes_, actual_crashes) << error_msg;
 }
 
-// TODO(phajdan.jr): get rid of set_command_execution_timeout_ms.
-void UITestBase::set_command_execution_timeout_ms(int timeout) {
-  automation()->set_command_execution_timeout_ms(timeout);
-  VLOG(1) << "Automation command execution timeout set to " << timeout << " ms";
+int UITestBase::action_timeout_ms() {
+  return automation()->action_timeout_ms();
+}
+
+void UITestBase::set_action_timeout_ms(int timeout) {
+  automation()->set_action_timeout_ms(timeout);
+  VLOG(1) << "Automation action timeout set to " << timeout << " ms";
 }
 
 ProxyLauncher* UITestBase::CreateProxyLauncher() {

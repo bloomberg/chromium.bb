@@ -40,6 +40,7 @@ struct WebKeyEvent {
 // completed successfully by the automation provider.
 bool SendAutomationJSONRequest(AutomationMessageSender* sender,
                                const std::string& request,
+                               int timeout_ms,
                                std::string* reply,
                                bool* success) WARN_UNUSED_RESULT;
 

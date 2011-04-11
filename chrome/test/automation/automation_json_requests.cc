@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/test/automation/automation_proxy.h"
@@ -21,7 +22,8 @@ bool SendAutomationJSONRequest(AutomationMessageSender* sender,
   std::string request, reply;
   base::JSONWriter::Write(&request_dict, false, &request);
   bool success = false;
-  if (!SendAutomationJSONRequest(sender, request, &reply, &success))
+  if (!SendAutomationJSONRequest(sender, request,
+          TestTimeouts::action_max_timeout_ms(), &reply, &success))
     return false;
   scoped_ptr<Value> value(base::JSONReader::Read(reply, true));
   if (!value.get() || !value->IsType(Value::TYPE_DICTIONARY)) {
@@ -58,10 +60,11 @@ WebKeyEvent::WebKeyEvent(automation::KeyEventTypes type,
 
 bool SendAutomationJSONRequest(AutomationMessageSender* sender,
                                const std::string& request,
+                               int timeout_ms,
                                std::string* reply,
                                bool* success) {
   return sender->Send(new AutomationMsg_SendJSONRequest(
-      -1, request, reply, success));
+      -1, request, reply, success), timeout_ms);
 }
 
 bool SendGetIndicesFromTabIdJSONRequest(

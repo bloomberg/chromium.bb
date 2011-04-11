@@ -195,13 +195,18 @@ class PyUITestBase {
   int action_max_timeout_ms() const;
 
   %feature("docstring", "Get the timeout (in milli secs) for an automation "
-           "call") command_execution_timeout_ms;
-  int command_execution_timeout_ms() const;
+           "call") action_timeout_ms;
+  int action_timeout_ms();
+
   %feature("docstring", "Set the timeout (in milli secs) for an automation "
            "call.  This is an internal method.  Do not use this directly.  "
-           "Use CmdExecutionTimeoutChanger instead")
-      set_command_execution_timeout_ms;
-  void set_command_execution_timeout_ms(int timeout);
+           "Use ActionTimeoutChanger instead")
+      set_action_timeout_ms;
+  void set_action_timeout_ms(int timeout);
+
+  %feature("docstring", "Timeout (in milli secs) for large tests.")
+      large_test_timeout_ms;
+  int large_test_timeout_ms() const;
 
   %feature("docstring", "Launches the browser and IPC testing server.")
       LaunchBrowserAndServer;
@@ -371,9 +376,12 @@ class PyUITestBase {
   // Meta-method
   %feature("docstring", "Send a sync JSON request to Chrome.  "
                         "Returns a JSON dict as a response.  "
+                        "Given timeout in milliseconds."
                         "Internal method.")
       _SendJSONRequest;
-  std::string _SendJSONRequest(int window_index, const std::string& request);
+  std::string _SendJSONRequest(int window_index,
+                               const std::string& request,
+                               int timeout);
 
   %feature("docstring", "Execute a string of javascript in the specified "
            "(window, tab, frame) and return a string.") ExecuteJavascript;

@@ -133,7 +133,7 @@ void ProxyLauncher::LaunchBrowserAndServer(const LaunchState& state,
                                            bool wait_for_initial_loads) {
   // Set up IPC testing interface as a server.
   automation_proxy_.reset(CreateAutomationProxy(
-                              TestTimeouts::command_execution_timeout_ms()));
+                              TestTimeouts::action_max_timeout_ms()));
 
   LaunchBrowser(state);
   WaitForBrowserLaunch(wait_for_initial_loads);
@@ -142,7 +142,7 @@ void ProxyLauncher::LaunchBrowserAndServer(const LaunchState& state,
 void ProxyLauncher::ConnectToRunningBrowser(bool wait_for_initial_loads) {
   // Set up IPC testing interface as a client.
   automation_proxy_.reset(CreateAutomationProxy(
-                              TestTimeouts::command_execution_timeout_ms()));
+                              TestTimeouts::action_max_timeout_ms()));
   WaitForBrowserLaunch(wait_for_initial_loads);
 }
 
@@ -542,7 +542,7 @@ void NamedProxyLauncher::InitializeConnection(const LaunchState& state,
   // Wait for browser to be ready for connections.
   bool testing_channel_exists = false;
   for (int wait_time = 0;
-       wait_time < TestTimeouts::command_execution_timeout_ms();
+       wait_time < TestTimeouts::action_max_timeout_ms();
        wait_time += automation::kSleepTime) {
     testing_channel_exists = file_util::PathExists(testing_channel_path);
     if (testing_channel_exists)

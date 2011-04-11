@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -223,6 +223,7 @@ class BrowserProxy : public AutomationResourceProxy {
 
   // Generic pattern for sending automation requests.
   bool SendJSONRequest(const std::string& request,
+                       int timeout_ms,
                        std::string* response) WARN_UNUSED_RESULT;
 
   // Gets the load times for all tabs started from the command line.

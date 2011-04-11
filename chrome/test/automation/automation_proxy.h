@@ -49,6 +49,7 @@ class AutomationMessageSender : public IPC::Message::Sender {
   //       and the proxy provider might be still working on the previous
   //       request.
   virtual bool Send(IPC::Message* message) = 0;
+  virtual bool Send(IPC::Message* message, int timeout_ms) = 0;
 };
 
 // This is the interface that external processes can use to interact with
@@ -56,7 +57,7 @@ class AutomationMessageSender : public IPC::Message::Sender {
 class AutomationProxy : public IPC::Channel::Listener,
                         public AutomationMessageSender {
  public:
-  AutomationProxy(int command_execution_timeout_ms, bool disconnect_on_failure);
+  AutomationProxy(int action_timeout_ms, bool disconnect_on_failure);
   virtual ~AutomationProxy();
 
   // Creates a previously unused channel id.
@@ -80,7 +81,7 @@ class AutomationProxy : public IPC::Channel::Listener,
   // Waits for the app to launch and the automation provider to say hello
   // (the app isn't fully done loading by this point).
   // Returns SUCCESS if the launch is successful.
-  // Returns TIMEOUT if there was no response by command_execution_timeout_
+  // Returns TIMEOUT if there was no response by action_timeout_
   // Returns VERSION_MISMATCH if the automation protocol version of the
   // automation provider does not match and if perform_version_check_ is set
   // to true. Note that perform_version_check_ defaults to false, call
@@ -211,6 +212,7 @@ class AutomationProxy : public IPC::Channel::Listener,
 
   // Generic pattern for sending automation requests.
   bool SendJSONRequest(const std::string& request,
+                       int timeout_ms,
                        std::string* response) WARN_UNUSED_RESULT;
 
 #if defined(OS_CHROMEOS)
@@ -226,6 +228,7 @@ class AutomationProxy : public IPC::Channel::Listener,
 
   // AutomationMessageSender implementation.
   virtual bool Send(IPC::Message* message) WARN_UNUSED_RESULT;
+  virtual bool Send(IPC::Message* message, int timeout_ms) WARN_UNUSED_RESULT;
 
   // Wrapper over AutomationHandleTracker::InvalidateHandle. Receives the
   // message from AutomationProxy, unpacks the messages and routes that call to
@@ -240,15 +243,15 @@ class AutomationProxy : public IPC::Channel::Listener,
       gfx::NativeWindow* external_tab_container,
       gfx::NativeWindow* tab);
 
-  int command_execution_timeout_ms() const {
-    return static_cast<int>(command_execution_timeout_.InMilliseconds());
+  int action_timeout_ms() const {
+    return static_cast<int>(action_timeout_.InMilliseconds());
   }
 
   // Sets the timeout for subsequent automation calls.
-  void set_command_execution_timeout_ms(int timeout_ms) {
+  void set_action_timeout_ms(int timeout_ms) {
     DCHECK(timeout_ms <= 10 * 60 * 1000 ) << "10+ min of automation timeout "
         "can make the test hang and be killed by buildbot";
-    command_execution_timeout_ = base::TimeDelta::FromMilliseconds(timeout_ms);
+    action_timeout_ = base::TimeDelta::FromMilliseconds(timeout_ms);
   }
 
   // Returns the server version of the server connected. You may only call this
@@ -303,7 +306,7 @@ class AutomationProxy : public IPC::Channel::Listener,
   bool disconnect_on_failure_;
 
   // Delay to let the browser execute the command.
-  base::TimeDelta command_execution_timeout_;
+  base::TimeDelta action_timeout_;
 
   base::PlatformThreadId listener_thread_id_;
 

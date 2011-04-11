@@ -1409,6 +1409,7 @@
           'msvs_guid': '1556EF78-C7E6-43C8-951F-F6B43AC0DD12',
           'dependencies': [
             'theme_resources',
+            '../base/base.gyp:test_support_base',
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
           ],

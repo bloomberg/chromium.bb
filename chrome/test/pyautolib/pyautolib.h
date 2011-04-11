@@ -168,7 +168,9 @@ class PyUITestBase : public UITestBase {
   // automation proxy additions.  Returns response as JSON dict.
   // Use -ve window_index for automation calls not targetted at a browser
   // window.  Example: Login call for chromeos.
-  std::string _SendJSONRequest(int window_index, const std::string& request);
+  std::string _SendJSONRequest(int window_index,
+                               const std::string& request,
+                               int timeout);
 
   // Execute javascript in a given tab, and return the response. This is
   // a low-level method intended for use mostly by GetDOMValue(). Note that
@@ -203,8 +205,8 @@ class PyUITestBase : public UITestBase {
     return TestTimeouts::action_max_timeout_ms();
   }
 
-  int command_execution_timeout_ms() const {
-    return TestTimeouts::command_execution_timeout_ms();
+  int large_test_timeout_ms() const {
+    return TestTimeouts::large_test_timeout_ms();
   }
 
  private:

@@ -323,16 +323,17 @@ scoped_refptr<BrowserProxy> PyUITestBase::GetBrowserWindow(int window_index) {
 }
 
 std::string PyUITestBase::_SendJSONRequest(int window_index,
-                                           const std::string& request) {
+                                           const std::string& request,
+                                           int timeout) {
   std::string response;
   if (window_index < 0) {  // Do not need to target a browser window.
-    EXPECT_TRUE(automation()->SendJSONRequest(request, &response));
+    EXPECT_TRUE(automation()->SendJSONRequest(request, timeout, &response));
   } else {
     scoped_refptr<BrowserProxy> browser_proxy =
         automation()->GetBrowserWindow(window_index);
     EXPECT_TRUE(browser_proxy.get());
     if (browser_proxy.get()) {
-      EXPECT_TRUE(browser_proxy->SendJSONRequest(request, &response));
+      EXPECT_TRUE(browser_proxy->SendJSONRequest(request, timeout, &response));
     }
   }
   return response;

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "chrome/common/automation_constants.h"
@@ -576,6 +577,7 @@ bool BrowserProxy::WaitForPopupMenuToOpen() {
 }
 
 bool BrowserProxy::SendJSONRequest(const std::string& request,
+                                   int timeout_ms,
                                    std::string* response) {
   if (!is_valid())
     return false;
@@ -584,7 +586,8 @@ bool BrowserProxy::SendJSONRequest(const std::string& request,
   if (!sender_->Send(new AutomationMsg_SendJSONRequest(handle_,
                                                        request,
                                                        response,
-                                                       &result)))
+                                                       &result),
+                                                       timeout_ms))
     return false;
   return result;
 }
@@ -597,7 +600,9 @@ bool BrowserProxy::GetInitialLoadTimes(float* min_start_time,
 
   *max_stop_time = 0;
   *min_start_time = -1;
-  if (!SendJSONRequest(kJSONCommand, &json_response)) {
+  if (!SendJSONRequest(kJSONCommand,
+                       TestTimeouts::action_max_timeout_ms(),
+                       &json_response)) {
     // Older browser versions do not support GetInitialLoadTimes.
     // Fail gracefully and do not record them in this case.
     return false;

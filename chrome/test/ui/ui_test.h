@@ -24,7 +24,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/process.h"
-#include "base/test/test_timeouts.h"
 #include "base/time.h"
 #include "build/build_config.h"
 // TODO(evanm): we should be able to just forward-declare
@@ -62,7 +61,8 @@ class UITestBase {
   void ConnectToRunningBrowser();
 
   // Only for pyauto.
-  void set_command_execution_timeout_ms(int timeout);
+  int action_timeout_ms();
+  void set_action_timeout_ms(int timeout);
 
   // Overridable so that derived classes can provide their own ProxyLauncher.
   virtual ProxyLauncher* CreateProxyLauncher();
