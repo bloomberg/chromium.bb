@@ -33,36 +33,31 @@ def _CheckThirdPartyReadmesUpdated(input_api, output_api):
     r'^Version: [a-zA-Z0-9_\-\.]+\r?$',
     input_api.re.IGNORECASE | input_api.re.MULTILINE)
   release_pattern = input_api.re.compile(
-    r'Included In Release: (yes)|(no)\r?$',
+    r'Security Critical: (yes)|(no)\r?$',
     input_api.re.IGNORECASE | input_api.re.MULTILINE)
 
-  for file in readmes:
+  for f in readmes:
     contents = input_api.ReadFile(f)
-    if not "Name: " in contents:
-      errors.append(output_api.PresubmitError(
-        'Third party README files should contain a \'Name\' field.\n'
-        'Check README.chromium.template for details.',
-        [file]))
     if (not shortname_pattern.search(contents)
         and not name_pattern.search(contents)):
       errors.append(output_api.PresubmitError(
         'Third party README files should contain either a \'Short Name\' or\n'
         'a \'Name\' which is the name under which the package is\n'
         'distributed. Check README.chromium.template for details.',
-        [file]))
+        [f]))
     if not version_pattern.search(contents):
       errors.append(output_api.PresubmitError(
         'Third party README files should contain a \'Version\' field.\n'
         'If the package is not versioned or the version is not known\n'
         'list the version as \'unknown\'.\n'
         'Check README.chromium.template for details.',
-        [file]))
+        [f]))
     if not release_pattern.search(contents):
       errors.append(output_api.PresubmitError(
-        'Third party README files should contain a \'Included In Release\'\n'
+        'Third party README files should contain a \'Security Critical\'\n'
         'field. This field specifies whether the package is built with\n'
         'Chromium. Check README.chromium.template for details.',
-        [file]))
+        [f]))
   return errors
 
 
