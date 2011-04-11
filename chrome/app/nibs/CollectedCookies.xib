@@ -48,7 +48,7 @@
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>
 				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
-				<string key="NSWindowContentMinSize">{537, 200}</string>
+				<string key="NSWindowContentMinSize">{537, 447}</string>
 				<object class="NSView" key="NSWindowView" id="1006">
 					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">274</int>
@@ -203,12 +203,12 @@
 													<object class="NSScroller" id="342557255">
 														<reference key="NSNextResponder" ref="1002552068"/>
 														<int key="NSvFlags">-2147483392</int>
-														<string key="NSFrame">{{447, 1}, {11, 17}}</string>
+														<string key="NSFrame">{{445, 1}, {11, 14}}</string>
 														<reference key="NSSuperview" ref="1002552068"/>
 														<int key="NSsFlags">256</int>
 														<reference key="NSTarget" ref="1002552068"/>
 														<string key="NSAction">_doScroller:</string>
-														<double key="NSPercent">0.99512195121951219</double>
+														<double key="NSPercent">0.82352941176470584</double>
 													</object>
 													<object class="NSScroller" id="33257460">
 														<reference key="NSNextResponder" ref="1002552068"/>
@@ -475,7 +475,7 @@
 						</object>
 						<object class="NSCustomView" id="1064450181">
 							<reference key="NSNextResponder" ref="1006"/>
-							<int key="NSvFlags">292</int>
+							<int key="NSvFlags">289</int>
 							<object class="NSMutableArray" key="NSSubviews">
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSButton" id="877515252">
@@ -508,7 +508,7 @@
 					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>
-				<string key="NSMinSize">{537, 222}</string>
+				<string key="NSMinSize">{537, 469}</string>
 				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
 			</object>
 			<object class="NSCustomView" id="618086819">
@@ -1338,14 +1338,14 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{613, 335}, {537, 593}}</string>
+					<string>{{231, 360}, {537, 593}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{613, 335}, {537, 593}}</string>
+					<string>{{231, 360}, {537, 593}}</string>
 					<boolean value="NO"/>
 					<string>{196, 240}</string>
 					<string>{{357, 418}, {480, 270}}</string>
 					<boolean value="YES"/>
-					<string>{537, 200}</string>
+					<string>{537, 447}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>ImageAndTextCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
