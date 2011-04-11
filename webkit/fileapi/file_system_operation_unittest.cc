@@ -263,8 +263,11 @@ TEST_F(FileSystemOperationTest, TestMoveSuccessSrcDirAndNew) {
 TEST_F(FileSystemOperationTest, TestMoveSuccessSrcDirRecursive) {
   ScopedTempDir src_dir;
   ASSERT_TRUE(src_dir.CreateUniqueTempDir());
-  FilePath child_file;
-  file_util::CreateTemporaryFileInDir(src_dir.path(), &child_file);
+  FilePath child_dir;
+  file_util::CreateTemporaryDirInDir(src_dir.path(),
+      FILE_PATH_LITERAL("prefix"), &child_dir);
+  FilePath grandchild_file;
+  file_util::CreateTemporaryFileInDir(child_dir, &grandchild_file);
 
   ScopedTempDir dest_dir;
   ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
@@ -272,7 +275,11 @@ TEST_F(FileSystemOperationTest, TestMoveSuccessSrcDirRecursive) {
   operation()->Move(src_dir.path(), dest_dir.path());
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
-  EXPECT_TRUE(FileExists(dest_dir.path().Append(child_file.BaseName())));
+  EXPECT_TRUE(file_util::DirectoryExists(dest_dir.path().Append(
+      child_dir.BaseName())));
+  EXPECT_TRUE(FileExists(dest_dir.path().Append(
+      child_dir.BaseName()).Append(
+      grandchild_file.BaseName())));
 }
 
 TEST_F(FileSystemOperationTest, TestCopyFailureSrcDoesntExist) {
@@ -423,8 +430,11 @@ TEST_F(FileSystemOperationTest, TestCopySuccessSrcDirAndNew) {
 TEST_F(FileSystemOperationTest, TestCopySuccessSrcDirRecursive) {
   ScopedTempDir src_dir;
   ASSERT_TRUE(src_dir.CreateUniqueTempDir());
-  FilePath child_file;
-  file_util::CreateTemporaryFileInDir(src_dir.path(), &child_file);
+  FilePath child_dir;
+  file_util::CreateTemporaryDirInDir(src_dir.path(),
+      FILE_PATH_LITERAL("prefix"), &child_dir);
+  FilePath grandchild_file;
+  file_util::CreateTemporaryFileInDir(child_dir, &grandchild_file);
 
   ScopedTempDir dest_dir;
   ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
@@ -432,7 +442,11 @@ TEST_F(FileSystemOperationTest, TestCopySuccessSrcDirRecursive) {
   operation()->Copy(src_dir.path(), dest_dir.path());
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
-  EXPECT_TRUE(FileExists(dest_dir.path().Append(child_file.BaseName())));
+  EXPECT_TRUE(file_util::DirectoryExists(dest_dir.path().Append(
+      child_dir.BaseName())));
+  EXPECT_TRUE(FileExists(dest_dir.path().Append(
+      child_dir.BaseName()).Append(
+      grandchild_file.BaseName())));
 }
 
 TEST_F(FileSystemOperationTest, TestCreateFileFailure) {
