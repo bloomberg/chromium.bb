@@ -71,7 +71,7 @@ deps = {
     (Var("googlecode_url") % "snappy") + "/trunk@25",
 
   "src/tools/gyp":
-    (Var("googlecode_url") % "gyp") + "/trunk@904",
+    (Var("googlecode_url") % "gyp") + "/trunk@912",
 
   "src/v8":
     (Var("googlecode_url") % "v8") + "/trunk@" + Var("v8_revision"),
