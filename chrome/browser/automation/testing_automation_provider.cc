@@ -47,6 +47,7 @@
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/instant/instant_controller.h"
@@ -2093,6 +2094,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::SendOSLevelKeyEventToTab;
   handler_map["ActivateTab"] =
       &TestingAutomationProvider::ActivateTabJSON;
+  handler_map["UpdateExtensionsNow"] =
+      &TestingAutomationProvider::UpdateExtensionsNow;
   handler_map["GetChromeDriverAutomationVersion"] =
       &TestingAutomationProvider::GetChromeDriverAutomationVersion;
 #if defined(OS_CHROMEOS)
@@ -5208,6 +5211,39 @@ void TestingAutomationProvider::ActivateTabJSON(
   browser->SelectTabContentsAt(
       browser->GetIndexOfController(&tab_contents->controller()), true);
   reply.SendSuccess(NULL);
+}
+
+// Sample json input: { "command": "UpdateExtensionsNow" }
+// Sample json output: {}
+void TestingAutomationProvider::UpdateExtensionsNow(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  ExtensionService* service = profile()->GetExtensionService();
+  if (!service) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "No extensions service.");
+    return;
+  }
+
+  ExtensionUpdater* updater = service->updater();
+  if (!updater) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "No updater for extensions service.");
+    return;
+  }
+
+  ExtensionProcessManager* manager = profile()->GetExtensionProcessManager();
+  if (!manager) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "No extension process manager.");
+    return;
+  }
+
+  // Create a new observer that waits until the extensions have been fully
+  // updated (we should not send the reply until after all extensions have
+  // been updated).  This observer will delete itself.
+  new ExtensionsUpdatedObserver(manager, this, reply_message);
+  updater->CheckNow();
 }
 
 void TestingAutomationProvider::GetChromeDriverAutomationVersion(

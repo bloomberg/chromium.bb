@@ -1260,6 +1260,21 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict)['success']
 
+  def UpdateExtensionsNow(self):
+    """Auto-updates installed extensions.
+
+    Waits until all extensions are updated, loaded, and ready for use.
+    This is equivalent to clicking the "Update extensions now" button on the
+    chrome://extensions page.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation returns an error.
+    """
+    cmd_dict = {  # Prepare command for the json interface.
+      'command': 'UpdateExtensionsNow',
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
   def SelectTranslateOption(self, option, tab_index=0, window_index=0):
     """Selects one of the options in the drop-down menu for the translate bar.
 

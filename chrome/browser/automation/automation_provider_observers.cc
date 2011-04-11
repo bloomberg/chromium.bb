@@ -26,6 +26,7 @@
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/save_package.h"
+#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_updater.h"
@@ -645,6 +646,99 @@ void ExtensionUnloadNotificationObserver::Observe(
     did_receive_unload_notification_ = true;
   } else {
     NOTREACHED();
+  }
+}
+
+ExtensionsUpdatedObserver::ExtensionsUpdatedObserver(
+    ExtensionProcessManager* manager, AutomationProvider* automation,
+    IPC::Message* reply_message)
+    : manager_(manager), automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message), updater_finished_(false) {
+  registrar_.Add(this, NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_INSTALL_ERROR,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_INSTALL_NOT_ALLOWED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_UPDATE_FOUND,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_UPDATING_FINISHED,
+                 NotificationService::AllSources());
+}
+
+ExtensionsUpdatedObserver::~ExtensionsUpdatedObserver() {
+}
+
+void ExtensionsUpdatedObserver::Observe(
+    NotificationType type, const NotificationSource& source,
+    const NotificationDetails& details) {
+  if (!automation_) {
+    delete this;
+    return;
+  }
+
+  // We expect the following sequence of events.  First, the ExtensionUpdater
+  // service notifies of each extension that needs to be updated.  Once the
+  // ExtensionUpdater has finished searching for extensions to update, it
+  // notifies that it is finished.  Meanwhile, the extensions are updated
+  // asynchronously: either they will be updated and loaded, or else they will
+  // not load due to (1) not being allowed; (2) having updating disabled; or
+  // (3) encountering an error.  Finally, notifications are also sent whenever
+  // an extension host stops loading.  Updating is not considered complete if
+  // any extension hosts are still loading.
+  switch (type.value) {
+    case NotificationType::EXTENSION_UPDATE_FOUND:
+      // Extension updater has identified an extension that needs to be updated.
+      in_progress_updates_.insert(*(Details<const std::string>(details).ptr()));
+      break;
+
+    case NotificationType::EXTENSION_UPDATING_FINISHED:
+      // Extension updater has completed notifying all extensions to update
+      // themselves.
+      updater_finished_ = true;
+      break;
+
+    case NotificationType::EXTENSION_LOADED:
+    case NotificationType::EXTENSION_INSTALL_NOT_ALLOWED:
+    case NotificationType::EXTENSION_UPDATE_DISABLED: {
+      // An extension has either completed update installation and is now
+      // loaded, or else the install has been skipped because it is
+      // either not allowed or else has been disabled.
+      const Extension* extension = Details<Extension>(details).ptr();
+      in_progress_updates_.erase(extension->id());
+      break;
+    }
+
+    case NotificationType::EXTENSION_INSTALL_ERROR: {
+      // An extension had an error on update installation.
+      CrxInstaller* installer = Source<CrxInstaller>(source).ptr();
+      in_progress_updates_.erase(installer->expected_id());
+      break;
+    }
+
+    case NotificationType::EXTENSION_HOST_DID_STOP_LOADING:
+      // Break out to the conditional check below to see if all extension hosts
+      // have stopped loading.
+      break;
+
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  // Send the reply if (1) the extension updater has finished notifying all
+  // extensions to update themselves; (2) all extensions that need to be updated
+  // have completed installation and are now loaded; and (3) all extension hosts
+  // have stopped loading.
+  if (updater_finished_ && in_progress_updates_.empty() &&
+      DidExtensionHostsStopLoading(manager_)) {
+    AutomationJSONReply reply(automation_, reply_message_.release());
+    reply.SendSuccess(NULL);
+    delete this;
   }
 }
 

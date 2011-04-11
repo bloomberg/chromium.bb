@@ -360,6 +360,33 @@ class ExtensionUnloadNotificationObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(ExtensionUnloadNotificationObserver);
 };
 
+// Observes when the extensions have been fully updated.  The ExtensionUpdater
+// service provides notifications for each extension that gets updated, but
+// it does not wait for the updated extensions to be installed or loaded.  This
+// observer waits until all updated extensions have actually been loaded.
+class ExtensionsUpdatedObserver : public NotificationObserver {
+ public:
+  ExtensionsUpdatedObserver(ExtensionProcessManager* manager,
+                            AutomationProvider* automation,
+                            IPC::Message* reply_message);
+  virtual ~ExtensionsUpdatedObserver();
+
+  // Implementation of NotificationObserver.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NotificationRegistrar registrar_;
+  ExtensionProcessManager* manager_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+  std::set<std::string> in_progress_updates_;
+  bool updater_finished_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionsUpdatedObserver);
+};
+
 class ExtensionTestResultNotificationObserver : public NotificationObserver {
  public:
   explicit ExtensionTestResultNotificationObserver(

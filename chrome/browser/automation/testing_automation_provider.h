@@ -1015,6 +1015,10 @@ class TestingAutomationProvider : public AutomationProvider,
   //   output: none
   void ActivateTabJSON(DictionaryValue* args, IPC::Message* message);
 
+  // Auto-updates installed extensions.
+  // Uses the JSON interface for input/output.
+  void UpdateExtensionsNow(DictionaryValue* args, IPC::Message* reply_message);
+
   // Gets the version of ChromeDriver automation supported by this server.
   // Example:
   //   input: none
