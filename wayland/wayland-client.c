@@ -31,6 +31,7 @@
 #include <sys/un.h>
 #include <ctype.h>
 #include <assert.h>
+#include <fcntl.h>
 #include <sys/poll.h>
 
 #include "wayland-client-protocol.h"
@@ -328,7 +329,7 @@ connect_to_socket(struct wl_display *display, const char *name)
 	const char *runtime_dir;
 	size_t name_size;
 
-	display->fd = socket(PF_LOCAL, SOCK_STREAM, 0);
+	display->fd = socket(PF_LOCAL, SOCK_STREAM | SOCK_CLOEXEC, 0);
 	if (display->fd < 0)
 		return -1;
 

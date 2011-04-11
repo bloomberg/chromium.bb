@@ -197,7 +197,7 @@ wl_event_loop_add_timer(struct wl_event_loop *loop,
 	source->base.interface = &timer_source_interface;
 	source->base.loop = loop;
 
-	source->fd = timerfd_create(CLOCK_MONOTONIC, 0);
+	source->fd = timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC);
 	if (source->fd < 0) {
 		fprintf(stderr, "could not create timerfd\n: %m");
 		free(source);
@@ -296,7 +296,7 @@ wl_event_loop_add_signal(struct wl_event_loop *loop,
 
 	sigemptyset(&mask);
 	sigaddset(&mask, signal_number);
-	source->fd = signalfd(-1, &mask, 0);
+	source->fd = signalfd(-1, &mask, SFD_CLOEXEC);
 	if (source->fd < 0) {
 		fprintf(stderr, "could not create fd to watch signal\n: %m");
 		free(source);
@@ -389,7 +389,7 @@ wl_event_loop_create(void)
 	if (loop == NULL)
 		return NULL;
 
-	loop->epoll_fd = epoll_create(16);
+	loop->epoll_fd = epoll_create1(EPOLL_CLOEXEC);
 	if (loop->epoll_fd < 0) {
 		free(loop);
 		return NULL;

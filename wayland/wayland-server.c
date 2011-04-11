@@ -20,6 +20,8 @@
  * OF THIS SOFTWARE.
  */
 
+#define _GNU_SOURCE
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -33,6 +35,7 @@
 #include <dlfcn.h>
 #include <assert.h>
 #include <sys/time.h>
+#include <fcntl.h>
 #include <ffi.h>
 
 #include "wayland-server.h"
@@ -642,7 +645,8 @@ socket_data(int fd, uint32_t mask, void *data)
 	int client_fd;
 
 	length = sizeof name;
-	client_fd = accept (fd, (struct sockaddr *) &name, &length);
+	client_fd =
+		accept4(fd, (struct sockaddr *) &name, &length, SOCK_CLOEXEC);
 	if (client_fd < 0)
 		fprintf(stderr, "failed to accept\n");
 
@@ -660,7 +664,7 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 	if (s == NULL)
 		return -1;
 
-	s->fd = socket(PF_LOCAL, SOCK_STREAM, 0);
+	s->fd = socket(PF_LOCAL, SOCK_STREAM | SOCK_CLOEXEC, 0);
 	if (s->fd < 0) {
 		free(s);
 		return -1;
