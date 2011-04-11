@@ -9,8 +9,6 @@
 
 #include "base/file_util_proxy.h"
 
-class GURL;
-
 namespace fileapi {
 
 // This class mirrors the callbacks in
@@ -43,7 +41,7 @@ class FileSystemCallbackDispatcher {
   // Callback for opening a file system. Called with a name and root path for
   // the FileSystem when the request is accepted. Used by WebFileSystem API.
   virtual void DidOpenFileSystem(const std::string& name,
-                                 const GURL& root) = 0;
+                                 const FilePath& root_path) = 0;
 
   // Called with an error code when a requested operation has failed.
   virtual void DidFail(base::PlatformFileError error_code) = 0;

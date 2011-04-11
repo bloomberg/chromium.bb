@@ -57,10 +57,9 @@ class BrowserFileSystemCallbackDispatcher
   }
 
   virtual void DidOpenFileSystem(const std::string& name,
-                                 const GURL& root) {
+                                 const FilePath& path) {
     dispatcher_host_->Send(
-        new FileSystemMsg_OpenComplete(
-            request_id_, root.is_valid(), name, root));
+        new FileSystemMsg_OpenComplete(request_id_, !path.empty(), name, path));
   }
 
   virtual void DidFail(base::PlatformFileError error_code) {
@@ -138,7 +137,7 @@ void FileSystemDispatcherHost::OnOpen(
     // TODO(kinuko): Need to notify the UI thread to indicate that
     // there's a blocked content.
     Send(new FileSystemMsg_OpenComplete(
-        request_id, false, std::string(), GURL()));
+        request_id, false, std::string(), FilePath()));
     return;
   }
 
@@ -146,27 +145,27 @@ void FileSystemDispatcherHost::OnOpen(
 }
 
 void FileSystemDispatcherHost::OnMove(
-    int request_id, const GURL& src_path, const GURL& dest_path) {
+    int request_id, const FilePath& src_path, const FilePath& dest_path) {
   GetNewOperation(request_id)->Move(src_path, dest_path);
 }
 
 void FileSystemDispatcherHost::OnCopy(
-    int request_id, const GURL& src_path, const GURL& dest_path) {
+    int request_id, const FilePath& src_path, const FilePath& dest_path) {
   GetNewOperation(request_id)->Copy(src_path, dest_path);
 }
 
 void FileSystemDispatcherHost::OnRemove(
-    int request_id, const GURL& path, bool recursive) {
+    int request_id, const FilePath& path, bool recursive) {
   GetNewOperation(request_id)->Remove(path, recursive);
 }
 
 void FileSystemDispatcherHost::OnReadMetadata(
-    int request_id, const GURL& path) {
+    int request_id, const FilePath& path) {
   GetNewOperation(request_id)->GetMetadata(path);
 }
 
 void FileSystemDispatcherHost::OnCreate(
-    int request_id, const GURL& path, bool exclusive,
+    int request_id, const FilePath& path, bool exclusive,
     bool is_directory, bool recursive) {
   if (is_directory)
     GetNewOperation(request_id)->CreateDirectory(path, exclusive, recursive);
@@ -175,7 +174,7 @@ void FileSystemDispatcherHost::OnCreate(
 }
 
 void FileSystemDispatcherHost::OnExists(
-    int request_id, const GURL& path, bool is_directory) {
+    int request_id, const FilePath& path, bool is_directory) {
   if (is_directory)
     GetNewOperation(request_id)->DirectoryExists(path);
   else
@@ -183,13 +182,13 @@ void FileSystemDispatcherHost::OnExists(
 }
 
 void FileSystemDispatcherHost::OnReadDirectory(
-    int request_id, const GURL& path) {
+    int request_id, const FilePath& path) {
   GetNewOperation(request_id)->ReadDirectory(path);
 }
 
 void FileSystemDispatcherHost::OnWrite(
     int request_id,
-    const GURL& path,
+    const FilePath& path,
     const GURL& blob_url,
     int64 offset) {
   GetNewOperation(request_id)->Write(
@@ -198,14 +197,14 @@ void FileSystemDispatcherHost::OnWrite(
 
 void FileSystemDispatcherHost::OnTruncate(
     int request_id,
-    const GURL& path,
+    const FilePath& path,
     int64 length) {
   GetNewOperation(request_id)->Truncate(path, length);
 }
 
 void FileSystemDispatcherHost::OnTouchFile(
     int request_id,
-    const GURL& path,
+    const FilePath& path,
     const base::Time& last_access_time,
     const base::Time& last_modified_time) {
   GetNewOperation(request_id)->TouchFile(

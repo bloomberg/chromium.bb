@@ -87,20 +87,20 @@ bool MockPluginDelegate::OpenFileSystem(
 }
 
 bool MockPluginDelegate::MakeDirectory(
-    const GURL& path,
+    const FilePath& path,
     bool recursive,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   return false;
 }
 
 bool MockPluginDelegate::Query(
-    const GURL& path,
+    const FilePath& path,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   return false;
 }
 
 bool MockPluginDelegate::Touch(
-    const GURL& path,
+    const FilePath& path,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
@@ -108,20 +108,20 @@ bool MockPluginDelegate::Touch(
 }
 
 bool MockPluginDelegate::Delete(
-    const GURL& path,
+    const FilePath& path,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   return false;
 }
 
 bool MockPluginDelegate::Rename(
-    const GURL& file_path,
-    const GURL& new_file_path,
+    const FilePath& file_path,
+    const FilePath& new_file_path,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   return false;
 }
 
 bool MockPluginDelegate::ReadDirectory(
-    const GURL& directory_path,
+    const FilePath& directory_path,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   return false;
 }

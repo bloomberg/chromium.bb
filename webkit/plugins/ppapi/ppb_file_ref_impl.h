@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/file_path.h"
-#include "googleurl/src/gurl.h"
 #include "ppapi/c/dev/ppb_file_ref_dev.h"
 #include "webkit/plugins/ppapi/resource.h"
 
@@ -52,9 +51,6 @@ class PPB_FileRef_Impl : public Resource {
 
   // Returns the system path corresponding to this file.
   FilePath GetSystemPath() const;
-
-  // Returns the FileSystem API URL corresponding to this file.
-  GURL GetFileSystemURL() const;
 
  private:
   scoped_refptr<PPB_FileSystem_Impl> file_system_;

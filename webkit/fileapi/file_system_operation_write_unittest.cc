@@ -10,6 +10,7 @@
 
 #include "webkit/fileapi/file_system_operation.h"
 
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_temp_dir.h"
@@ -80,16 +81,6 @@ class FileSystemOperationTest : public testing::Test {
   virtual void TearDown();
 
  protected:
-  GURL URLForRelativePath(const std::string& path) const {
-    // Only the path will actually get used.
-    return GURL("file://").Resolve(file_.value()).Resolve(path);
-  }
-
-  GURL URLForPath(const FilePath& path) const {
-    // Only the path will actually get used.
-    return GURL("file://").Resolve(path.value());
-  }
-
   MessageLoop loop_;
 
   ScopedTempDir dir_;
@@ -128,7 +119,7 @@ class MockDispatcher : public FileSystemCallbackDispatcher {
     ADD_FAILURE();
   }
 
-  virtual void DidOpenFileSystem(const std::string&, const GURL&) {
+  virtual void DidOpenFileSystem(const std::string&, const FilePath&) {
     ADD_FAILURE();
   }
 
@@ -174,7 +165,7 @@ TEST_F(FileSystemOperationTest, TestWriteSuccess) {
   url_request_context->blob_storage_controller()->
       RegisterBlobUrl(blob_url, blob_data);
 
-  operation()->Write(url_request_context, URLForPath(file_), blob_url, 0);
+  operation()->Write(url_request_context, file_, blob_url, 0);
   MessageLoop::current()->Run();
 
   url_request_context->blob_storage_controller()->UnregisterBlobUrl(blob_url);
@@ -194,7 +185,7 @@ TEST_F(FileSystemOperationTest, TestWriteZero) {
   url_request_context->blob_storage_controller()->
       RegisterBlobUrl(blob_url, blob_data);
 
-  operation()->Write(url_request_context, URLForPath(file_), blob_url, 0);
+  operation()->Write(url_request_context, file_, blob_url, 0);
   MessageLoop::current()->Run();
 
   url_request_context->blob_storage_controller()->UnregisterBlobUrl(blob_url);
@@ -208,8 +199,7 @@ TEST_F(FileSystemOperationTest, TestWriteInvalidBlobUrl) {
   scoped_refptr<TestURLRequestContext> url_request_context(
       new TestURLRequestContext());
 
-  operation()->Write(url_request_context, URLForPath(file_),
-      GURL("blob:invalid"), 0);
+  operation()->Write(url_request_context, file_, GURL("blob:invalid"), 0);
   MessageLoop::current()->Run();
 
   EXPECT_EQ(0, bytes_written());
@@ -228,7 +218,7 @@ TEST_F(FileSystemOperationTest, TestWriteInvalidFile) {
       RegisterBlobUrl(blob_url, blob_data);
 
   operation()->Write(url_request_context,
-                     URLForRelativePath("nonexist"), blob_url, 0);
+                     FilePath(FILE_PATH_LITERAL("/nonexist")), blob_url, 0);
   MessageLoop::current()->Run();
 
   url_request_context->blob_storage_controller()->UnregisterBlobUrl(blob_url);
@@ -248,7 +238,7 @@ TEST_F(FileSystemOperationTest, TestWriteDir) {
   url_request_context->blob_storage_controller()->
       RegisterBlobUrl(blob_url, blob_data);
 
-  operation()->Write(url_request_context, URLForPath(dir_.path()), blob_url, 0);
+  operation()->Write(url_request_context, dir_.path(), blob_url, 0);
   MessageLoop::current()->Run();
 
   url_request_context->blob_storage_controller()->UnregisterBlobUrl(blob_url);
