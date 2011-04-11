@@ -135,7 +135,7 @@ cr.define('cr', function() {
           case '%': return '%';
           case 'a': return fmt(strings.dayShort[date.getDay()]);
           case 'b': return fmt(strings.monthShort[date.getMonth()]);
-          case 'd': return fmt(date.getDate() + 1, 2);
+          case 'd': return fmt(date.getDate(), 2);
           case 'Y': return date.getFullYear();
           default:
             console.log('Unknown format specifier: ' + code);

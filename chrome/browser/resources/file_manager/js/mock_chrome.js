@@ -56,8 +56,6 @@ chrome.fileBrowserPrivate = {
       BODY_FONT_FAMILY: 'sans-serif',
       BODY_FONT_SIZE: '13px',
 
-      FILES_DISPLAYED_SUMMARY: '%1 Files Displayed',
-      FILES_SELECTED_SUMMARY: '%1 Files Selected',
       FILE_IS_DIRECTORY: 'Folder',
       PARENT_DIRECTORY: 'Parent Directory',
 
@@ -67,6 +65,10 @@ chrome.fileBrowserPrivate = {
       DATE_COLUMN_LABEL: 'Date',
       PREVIEW_COLUMN_LABEL: 'Preview',
 
+      ERROR_CREATING_FOLDER: 'Unable to create folder "$1": $2',
+      ERROR_INVALID_FOLDER_CHARACTER: 'Invalid character in folder name: $1',
+      NEW_FOLDER_PROMPT: 'Enter a name for the new folder',
+      NEW_FOLDER_BUTTON_LABEL: 'New Folder',
       FILENAME_LABEL: 'File Name',
 
       CANCEL_LABEL: 'Cancel',

@@ -170,8 +170,7 @@ FileManager.prototype = {
    * Call an asynchronous method on dirEntry, batching multiple callers.
    *
    * This batches multiple callers into a single invocation, calling all
-   * interested parties back when the async call completes.  If the async call
-   * has already been made this will invoke the successCallback synchronously.
+   * interested parties back when the async call completes.
    *
    * The Entry method to be invoked should take two callbacks as parameters
    * (one for success and one for failure), and it should invoke those
@@ -186,10 +185,10 @@ FileManager.prototype = {
    * @param {DirectoryEntry} dirEntry The DirectoryEntry to apply the method
    *     to.
    * @param {string} methodName The name of the method to dispatch.
-   * @param {Function(*)} successCallback The function to invoke if the method
+   * @param {function(*)} successCallback The function to invoke if the method
    *     succeeds.  The result of the method will be the one parameter to this
    *     callback.
-   * @param {Function(*)} opt_errorCallback The function to invoke if the
+   * @param {function(*)} opt_errorCallback The function to invoke if the
    *     method fails.  The result of the method will be the one parameter to
    *     this callback.  If not provided, the default errorCallback will throw
    *     an exception.
@@ -201,7 +200,9 @@ FileManager.prototype = {
     if (entry[resultCache]) {
       // The result cache for this method already exists.  Just invoke the
       // successCallback with the result of the previuos call.
-      successCallback(entry[resultCache]);
+      // Callback via a setTimeout so the sync/async semantics don't change
+      // based on whether or not the value is cached.
+      setTimeout(function() { successCallback(entry[resultCache]) }, 0);
       return;
     }
 
@@ -244,21 +245,87 @@ FileManager.prototype = {
    * 'cachedSize_' property (if it doesn't already have one) containing the
    * size of the file in bytes.
    *
-   * Note that if the size of the file is already known, the successCallback
-   * will be invoked synchronously.
+   * @param {Entry} entry An HTML5 Entry object.
+   * @param {function(Entry)} successCallback The function to invoke once the
+   *     file size is known.
    */
-  function cacheFileSize(fileEntry, successCallback) {
-    if ('cachedSize_' in fileEntry) {
-      if (successCallback)
-        successCallback(fileEntry);
+  function cacheEntrySize(entry, successCallback) {
+    if (entry.isDirectory) {
+      // No size for a directory, -1 ensures it's sorted before 0 length files.
+      entry.cachedSize_ = -1;
+    }
+
+    if ('cachedSize_' in entry) {
+      if (successCallback) {
+        // Callback via a setTimeout so the sync/async semantics don't change
+        // based on whether or not the value is cached.
+        setTimeout(function() { successCallback(entry) }, 0);
+      }
       return;
     }
 
-    batchAsyncCall(fileEntry, 'file', function(file) {
-      fileEntry.cachedSize_ = file.size;
+    batchAsyncCall(entry, 'file', function(file) {
+      entry.cachedSize_ = file.size;
       if (successCallback)
-        successCallback(fileEntry);
+        successCallback(entry);
     });
+  }
+
+  /**
+   * Get the mtime of a file, caching the result.
+   *
+   * When this method completes, the fileEntry object will get a
+   * 'cachedMtime_' property (if it doesn't already have one) containing the
+   * last modified time of the file as a Date object.
+   *
+   * @param {Entry} entry An HTML5 Entry object.
+   * @param {function(Entry)} successCallback The function to invoke once the
+   *     mtime is known.
+   */
+  function cacheEntryDate(entry, successCallback) {
+    if ('cachedMtime_' in entry) {
+      if (successCallback) {
+        // Callback via a setTimeout so the sync/async semantics don't change
+        // based on whether or not the value is cached.
+        setTimeout(function() { successCallback(entry) }, 0);
+      }
+      return;
+    }
+
+    if (entry.isFile) {
+      batchAsyncCall(entry, 'file', function(file) {
+        entry.cachedMtime_ = file.lastModifiedDate;
+        if (successCallback)
+          successCallback(entry);
+      });
+    } else {
+      batchAsyncCall(entry, 'getMetadata', function(metadata) {
+        entry.cachedMtime_ = metadata.modificationTime;
+        if (successCallback)
+          successCallback(entry);
+      });
+    }
+  }
+
+  /**
+   * Get the icon type of a file, caching the result.
+   *
+   * When this method completes, the fileEntry object will get a
+   * 'cachedIconType_' property (if it doesn't already have one) containing the
+   * icon type of the file as a string.
+   *
+   * The successCallback is always invoked synchronously, since this does not
+   * actually require an async call.  You should not depend on this, as it may
+   * change if we were to start reading magic numbers (for example).
+   *
+   * @param {Entry} entry An HTML5 Entry object.
+   * @param {function(Entry)} successCallback The function to invoke once the
+   *     icon type is known.
+   */
+  function cacheEntryIconType(entry, successCallback) {
+    entry.cachedIconType_ = getIconType(entry);
+    if (successCallback)
+      setTimeout(function() { successCallback(entry) }, 0);
   }
 
   // Public statics.
@@ -304,39 +371,47 @@ FileManager.prototype = {
     this.okButton_ = this.dialogDom_.querySelector('.ok');
     this.cancelButton_ = this.dialogDom_.querySelector('.cancel');
 
-    if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
-      this.filenameInput_.addEventListener(
-          'keyup', this.onFilenameInputKeyUp_.bind(this));
-      this.filenameInput_.addEventListener(
-          'focus', this.onFilenameInputFocus_.bind(this));
-    } else {
-      var label = this.dialogDom_.querySelector('.filename-label');
-      label.style.visibility = 'hidden';
-      this.filenameInput_.style.visibility = 'hidden';
-    }
+    this.filenameInput_.addEventListener(
+        'keyup', this.onFilenameInputKeyUp_.bind(this));
+    this.filenameInput_.addEventListener(
+        'focus', this.onFilenameInputFocus_.bind(this));
 
     this.okButton_.addEventListener('click', this.onOk_.bind(this));
     this.cancelButton_.addEventListener('click', this.onCancel_.bind(this));
+
+    this.dialogDom_.querySelector('button.new-folder').addEventListener(
+        'click', this.onNewFolderButtonClick_.bind(this));
+
+    var ary = this.dialogDom_.querySelectorAll('[visibleif]');
+    for (var i = 0; i < ary.length; i++) {
+      var expr = ary[i].getAttribute('visibleif');
+      if (!eval(expr))
+        ary[i].style.visibility = 'hidden';
+    }
 
     // Populate the static localized strings.
     i18nTemplate.process(this.document_, localStrings.templateData);
 
     // Set up the detail table.
     var dataModel = new cr.ui.table.TableDataModel([]);
-    dataModel.idField = 'name';
-    dataModel.defaultSortField = 'name';
+    dataModel.sort('name');
+    dataModel.addEventListener('sorted',
+                               this.onDataModelSorted_.bind(this));
+    dataModel.prepareSort = this.prepareSort_.bind(this);
 
     var columns = [
+        new cr.ui.table.TableColumn('cachedIconType_', '', 5.4),
         new cr.ui.table.TableColumn('name', str('NAME_COLUMN_LABEL'), 64),
         new cr.ui.table.TableColumn('cachedSize_',
-                                    str('SIZE_COLUMN_LABEL'), 15),
+                                    str('SIZE_COLUMN_LABEL'), 15.5),
         new cr.ui.table.TableColumn('cachedMtime_',
                                     str('DATE_COLUMN_LABEL'), 21)
     ];
 
-    columns[0].renderFunction = this.renderName_.bind(this);
-    columns[1].renderFunction = this.renderSize_.bind(this);
-    columns[2].renderFunction = this.renderDate_.bind(this);
+    columns[0].renderFunction = this.renderIconType_.bind(this);
+    columns[1].renderFunction = this.renderName_.bind(this);
+    columns[2].renderFunction = this.renderSize_.bind(this);
+    columns[3].renderFunction = this.renderDate_.bind(this);
 
     this.table = this.dialogDom_.querySelector('.detail-table');
     cr.ui.Table.decorate(this.table);
@@ -392,6 +467,69 @@ FileManager.prototype = {
   };
 
   /**
+   * Cache necessary data before a sort happens.
+   *
+   * This is called by the table code before a sort happens, so that we can
+   * go fetch data for the sort field that we may not have yet.
+   */
+  FileManager.prototype.prepareSort_ = function(field, callback) {
+    var cacheFunction;
+
+    if (field == 'cachedMtime_') {
+      cacheFunction = cacheEntryDate;
+    } else if (field == 'cachedSize_') {
+      cacheFunction = cacheEntrySize;
+    } else if (field == 'cachedIconType_') {
+      cacheFunction = cacheEntryIconType;
+    } else {
+      callback();
+      return;
+    }
+
+    function checkCount() {
+      if (uncachedCount == 0) {
+        // Callback via a setTimeout so the sync/async semantics don't change
+        // based on whether or not the value is cached.
+        setTimeout(callback, 0);
+      }
+    }
+
+    var dataModel = this.table.dataModel;
+    var uncachedCount = dataModel.length;
+
+    for (var i = uncachedCount - 1; i >= 0 ; i--) {
+      var entry = dataModel.item(i);
+      if (field in entry) {
+        uncachedCount--;
+      } else {
+        cacheFunction(entry, function() {
+          uncachedCount--;
+          checkCount();
+        });
+      }
+    }
+
+    checkCount();
+  }
+
+  /**
+   * Render the type column of the detail table.
+   *
+   * Invoked by cr.ui.Table when a file needs to be rendered.
+   *
+   * @param {Entry} entry The Entry object to render.
+   * @param {string} columnId The id of the column to be rendered.
+   * @param {cr.ui.Table} table The table doing the rendering.
+   */
+  FileManager.prototype.renderIconType_ = function(entry, columnId, table) {
+    var icon = this.document_.createElement('div');
+    icon.className = 'detail-icon';
+    entry.cachedIconType_ = getIconType(entry);
+    icon.setAttribute('iconType', entry.cachedIconType_);
+    return icon;
+  }
+
+  /**
    * Render the Name column of the detail table.
    *
    * Invoked by cr.ui.Table when a file needs to be rendered.
@@ -401,19 +539,10 @@ FileManager.prototype = {
    * @param {cr.ui.Table} table The table doing the rendering.
    */
   FileManager.prototype.renderName_ = function(entry, columnId, table) {
-    var container = this.document_.createElement('div');
-
-    var icon = this.document_.createElement('div');
-    icon.className = 'detail-icon'
-    icon.setAttribute('iconType', getIconType(entry));
-    container.appendChild(icon);
-
     var label = this.document_.createElement('div');
     label.className = 'detail-name';
     label.textContent = entry.name;
-    container.appendChild(label);
-
-    return container;
+    return label;
   };
 
   /**
@@ -427,16 +556,14 @@ FileManager.prototype = {
     var div = this.document_.createElement('div');
     div.className = 'detail-size';
 
-    if (entry.isFile) {
-      div.textContent = '...';
-      cacheFileSize(entry, function(fileEntry) {
-        div.textContent = cr.locale.bytesToSi(fileEntry.cachedSize_);
-      });
-    } else {
-      // No size for a directory, -1 ensures it's sorted before 0 length files.
-      entry.cachedSize_ = -1;
-      div.textContent = '';
-    }
+    div.textContent = '...';
+    cacheEntrySize(entry, function(entry) {
+      if (entry.cachedSize_ == -1) {
+        div.textContent = '';
+      } else {
+        div.textContent = cr.locale.bytesToSi(entry.cachedSize_);
+      }
+    });
 
     return div;
   };
@@ -451,21 +578,13 @@ FileManager.prototype = {
   FileManager.prototype.renderDate_ = function(entry, columnId, table) {
     var div = this.document_.createElement('div');
     div.className = 'detail-date';
+
     div.textContent = '...';
 
-    if (entry.isFile) {
-      batchAsyncCall(entry, 'file', function(file) {
-        entry.cachedMtime_ = file.lastModifiedDate.getTime();
-        div.textContent = cr.locale.formatDate(file.lastModifiedDate,
-                                               str('SHORT_DATE_FORMAT'));
-      });
-    } else {
-      batchAsyncCall(entry, 'getMetadata', function(metadata) {
-        entry.cachedMtime_ = metadata.modificationTime.getTime();
-        div.textContent = cr.locale.formatDate(metadata.modificationTime,
-                                               str('SHORT_DATE_FORMAT'));
-      });
-    }
+    cacheEntryDate(entry, function(entry) {
+      div.textContent = cr.locale.formatDate(entry.cachedMtime_,
+                                             str('LOCALE_FMT_DATE_SHORT'));
+    });
 
     return div;
   };
@@ -542,7 +661,7 @@ FileManager.prototype = {
 
     var self = this;
 
-    function computeNextFile(fileEntry) {
+    function cacheNextFile(fileEntry) {
       if (fileEntry) {
         // We're careful to modify the 'selection', rather than 'self.selection'
         // here, just in case the selection has changed since this summarization
@@ -551,13 +670,13 @@ FileManager.prototype = {
       }
 
       if (pendingFiles.length) {
-        cacheFileSize(pendingFiles.pop(), computeNextFile);
+        cacheEntrySize(pendingFiles.pop(), cacheNextFile);
       } else {
         self.dispatchEvent(new cr.Event('selection-summarized'));
       }
     };
 
-    computeNextFile();
+    cacheNextFile();
   };
 
   /**
@@ -677,6 +796,16 @@ FileManager.prototype = {
   };
 
   /**
+   * Invoked by the table dataModel after a sort completes.
+   *
+   * We use this hook to make sure selected files stay visible after a sort.
+   */
+  FileManager.prototype.onDataModelSorted_ = function() {
+    var i = this.table.selectionModel.leadIndex;
+    this.table.scrollIntoView(i);
+  }
+
+  /**
    * Update the selection summary UI when the selection summarization completes.
    */
   FileManager.prototype.onSelectionSummarized_ = function() {
@@ -758,12 +887,28 @@ FileManager.prototype = {
    * @param {cr.Event} event The directory-changed event.
    */
   FileManager.prototype.onDirectoryChanged_ = function(event) {
+    this.rescanDirectory_();
+  }
+
+  /**
+   * Rescan the current directory, refreshing the list.
+   *
+   * @param {function()} opt_callback Optional function to invoke when the
+   *     rescan is complete.
+   */
+  FileManager.prototype.rescanDirectory_ = function(opt_callback) {
     var self = this;
     var reader;
 
     function onReadSome(entries) {
-      if (entries.length == 0)
+      if (entries.length == 0) {
+        if (self.table.dataModel.sortStatus.field != 'name')
+          self.table.dataModel.updateIndex(0);
+
+        if (opt_callback)
+          opt_callback();
         return;
+      }
 
       // Splice takes the to-be-spliced-in array as individual parameters,
       // rather than as an array, so we need to perform some acrobatics...
@@ -773,7 +918,7 @@ FileManager.prototype = {
       // TODO(rginda): User should be able to override this.  Support for other
       // commonly hidden patterns might be nice too.
       spliceArgs = spliceArgs.filter(function(e) {
-          return e.name.substr(0, 1) != '.';
+        return e.name.substr(0, 1) != '.';
       });
 
       spliceArgs.unshift(0, 0);  // index, deleteCount
@@ -813,6 +958,44 @@ FileManager.prototype = {
     }, 0);
   };
 
+  FileManager.prototype.onNewFolderButtonClick_ = function(event) {
+    var name = '';
+
+    while (1) {
+      name = window.prompt(str('NEW_FOLDER_PROMPT'), name);
+      if (!name)
+        return;
+
+      if (name.indexOf('/') == -1)
+        break;
+
+      alert(strf('ERROR_INVALID_FOLDER_CHARACTER', '/'));
+    }
+
+    var self = this;
+
+    function onSuccess(dirEntry) {
+      self.rescanDirectory_(function () {
+        for (var i = 0; i < self.table.dataModel.length; i++) {
+          if (self.table.dataModel.item(i).name == dirEntry.name) {
+            self.table.selectionModel.selectedIndex = i;
+            self.table.scrollIndexIntoView(i);
+            self.table.focus();
+            return;
+          }
+        };
+      });
+    }
+
+    function onError(err) {
+      window.alert(strf('ERROR_CREATING_FOLDER', name,
+                        util.getFileErrorMnemonic(err.code)));
+    }
+
+    this.currentDirEntry_.getDirectory(name, {create: true, exclusive: true},
+                                       onSuccess, onError);
+  };
+
   /**
    * Handle a click of the cancel button.
    *
@@ -832,6 +1015,8 @@ FileManager.prototype = {
    * @param {Event} event The click event.
    */
   FileManager.prototype.onOk_ = function(event) {
+    var currentPath = this.currentDirEntry_.fullPath.substr(1);
+
     if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
       // Save-as doesn't require a valid selection from the list, since
       // we're going to take the filename from the text input.
@@ -839,8 +1024,7 @@ FileManager.prototype = {
       if (!filename)
         throw new Error('Missing filename!');
 
-      chrome.fileBrowserPrivate.selectFile(this.currentDirEntry_.fullPath +
-                                           '/' + filename, 0);
+      chrome.fileBrowserPrivate.selectFile(currentPath + '/' + filename, 0);
       window.close();
       return;
     }
@@ -861,7 +1045,7 @@ FileManager.prototype = {
         continue;
       }
 
-      ary.push(entry.fullPath);
+      ary.push(currentPath + '/' + entry.name);
     }
 
     // Multi-file selection has no other restrictions.

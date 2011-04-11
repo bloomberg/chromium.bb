@@ -41,12 +41,16 @@ var util = {
    */
   installFileErrorToString: function() {
     FileError.prototype.toString = function() {
-      for (var key in FileError) {
-        if (key.search(/_ERR$/) != -1 && FileError[key] == this.code)
-          return '[object FileError: ' + key + ']';
-      }
-
-      return '[object FileError: ' + this.code + ']';
+      return '[object FileError: ' + util.getFileErrorMnemonic(this.code) + ']';
     }
   },
+
+  getFileErrorMnemonic: function(code) {
+    for (var key in FileError) {
+      if (key.search(/_ERR$/) != -1 && FileError[key] == code)
+        return key;
+    }
+
+    return code;
+  }
 };
