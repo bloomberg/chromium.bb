@@ -2584,8 +2584,8 @@ readonly LLVM_OPT=${INSTALL_DIR}/bin/opt
 readonly LLVM_AR=${CROSS_TARGET_AR}
 
 # Note: we could replace this with a modified version of tools/elf_checker.py
-#       if we do not want to depend on {NACL_TOOLCHAIN}
-readonly NACL_OBJDUMP=${NACL_TOOLCHAIN}/bin/nacl-objdump
+#       if we do not want to depend on binutils
+readonly NACL_OBJDUMP=${INSTALL_DIR}/bin/arm-pc-nacl-objdump
 
 # Usage: VerifyArchive <checker> <filename> <pattern>
 VerifyArchive() {
@@ -2635,13 +2635,23 @@ verify-object-llvm() {
 }
 
 
+
+check-elf-abi() {
+  local arch_info=$(${NACL_OBJDUMP} -f $1)
+  if ! grep -q $2 <<< ${arch_info} ; then
+    echo "ERROR $1 - bad file format: $2 vs ${arch_info}\n"
+    echo ${arch_info}
+    exit -1
+  fi
+}
+
+
 # verify-object-arm <obj>
 #
 #   Ensure that the ARCH properties are what we expect, this is a little
 #   fragile and needs to be updated when tools change
 verify-object-arm() {
-  # TODO(robertm): we should check ABI version
-  # http://code.google.com/p/nativeclient/issues/detail?id=1482
+  check-elf-abi $1 "elf32-littlearm-nacl"
   arch_info=$("${PNACL_READELF}" -A $1)
   #TODO(robertm): some refactoring and cleanup needed
   if ! grep -q "Tag_FP_arch: VFPv2" <<< ${arch_info} ; then
@@ -2663,23 +2673,13 @@ verify-object-arm() {
 # verify-object-x86-32 <obj>
 #
 verify-object-x86-32() {
-  arch_info=$(${NACL_OBJDUMP} -f $1)
-  if ! grep -q "elf32-nacl" <<< ${arch_info} ; then
-    echo "ERROR $1 - bad file format\n"
-    echo ${arch_info}
-    exit -1
-  fi
+  check-elf-abi $1 "elf32-nacl"
 }
 
 # verify-object-x86-64 <obj>
 #
 verify-object-x86-64() {
-  arch_info=$(${NACL_OBJDUMP} -f $1)
-  if ! grep -q "elf64-nacl" <<< ${arch_info} ; then
-    echo "ERROR $1 - bad file format\n"
-    echo ${arch_info}
-    exit -1
-  fi
+  check-elf-abi $1 "elf64-nacl"
 }
 
 
