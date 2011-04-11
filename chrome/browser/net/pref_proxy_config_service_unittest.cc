@@ -234,7 +234,7 @@ TEST_F(PrefProxyConfigServiceTest, Fallback) {
   Mock::VerifyAndClearExpectations(&observer);
   EXPECT_EQ(CONFIG_VALID,
             proxy_config_service_->GetLatestProxyConfig(&actual_config));
-  EXPECT_THAT(actual_config, ProxyConfigMatches(recommended_config));
+  EXPECT_TRUE(actual_config.Equals(recommended_config));
 
   // Override in user prefs.
   EXPECT_CALL(observer,
@@ -247,7 +247,7 @@ TEST_F(PrefProxyConfigServiceTest, Fallback) {
   Mock::VerifyAndClearExpectations(&observer);
   EXPECT_EQ(CONFIG_VALID,
             proxy_config_service_->GetLatestProxyConfig(&actual_config));
-  EXPECT_THAT(actual_config, ProxyConfigMatches(user_config));
+  EXPECT_TRUE(actual_config.Equals(user_config));
 
   // Go back to recommended pref.
   EXPECT_CALL(observer,
@@ -258,7 +258,7 @@ TEST_F(PrefProxyConfigServiceTest, Fallback) {
   Mock::VerifyAndClearExpectations(&observer);
   EXPECT_EQ(CONFIG_VALID,
             proxy_config_service_->GetLatestProxyConfig(&actual_config));
-  EXPECT_THAT(actual_config, ProxyConfigMatches(recommended_config));
+  EXPECT_TRUE(actual_config.Equals(recommended_config));
 
   proxy_config_service_->RemoveObserver(&observer);
 }
