@@ -1,11 +1,12 @@
 #!/bin/bash
 
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 set -o nounset
 set -o errexit
+
 
 ######################################################################
 # CONFIGURATION
@@ -31,19 +32,36 @@ export VERIFY=${VERIFY:-yes}
 export MAKEOPTS=${MAKEOPTS:-}
 export PERF_LOGGER="$(pwd)/emit_perf_log.sh"
 
+
 ######################################################################
 # Helper
 ######################################################################
 
-Banner() {
-  echo "######################################################################"
-  echo "$@"
-  echo "######################################################################"
-}
+source ../../tools/llvm/common-tools.sh
 
-# Print the usage message to stdout.
-Usage() {
-  egrep "^#@" $0 | cut --bytes=3-
+readonly TOOLCHAIN_DIR="$(GetAbsolutePath "../../toolchain")"
+
+readonly ARM_TRUSTED_TC="${TOOLCHAIN_DIR}/linux_arm-trusted"
+readonly QEMU_TOOL="${ARM_TRUSTED_TC}/qemu_tool.sh"
+
+readonly PNACL_TC="${TOOLCHAIN_DIR}/linux_arm-untrusted"
+readonly NNACL_TC="${TOOLCHAIN_DIR}/${SCONS_BUILD_PLATFORM}_x86"
+readonly RUNNABLE_LD_X8632="${NNACL_TC}/nacl/lib/runnable-ld.so"
+readonly RUNNABLE_LD_X8664="${NNACL_TC}/nacl64/lib/runnable-ld.so"
+
+gnu_size() {
+  # If the PNaCl toolchain is installed, prefer to use its "size".
+  if [ -d "${PNACL_TC}" ] ; then
+    GNU_SIZE="${PNACL_TC}/bin/size"
+  elif ${BUILD_PLATFORM_LINUX} ; then
+    GNU_SIZE="size"
+  else
+    # There's nothing we can run here.
+    # The system might have "size" installed, but if it is not GNU,
+    # there's no guarantee it can handle ELF.
+    return 0
+  fi
+  "${GNU_SIZE}" "$@"
 }
 
 ######################################################################
@@ -134,9 +152,7 @@ SetupNaclX8664Opt() {
 
 SetupNaclDynX8632Common() {
   SEL_LDR=$(GetSelLdr "x86-32")
-  RUNNABLE_LD=../../toolchain/linux_x86/nacl/lib/runnable-ld.so
-  RUNNABLE_LD=$(readlink -f ${RUNNABLE_LD})
-  PREFIX="${SEL_LDR} -a -s -f ${RUNNABLE_LD}"
+  PREFIX="${SEL_LDR} -a -s -f ${RUNNABLE_LD_X8632}"
 }
 
 #@
@@ -157,9 +173,7 @@ SetupNaclDynX8632Opt() {
 
 SetupNaclDynX8664Common() {
   SEL_LDR=$(GetSelLdr "x86-64")
-  RUNNABLE_LD=../../toolchain/linux_x86/nacl64/lib/runnable-ld.so
-  RUNNABLE_LD=$(readlink -f ${RUNNABLE_LD})
-  PREFIX="${SEL_LDR} -a -s -f ${RUNNABLE_LD}"
+  PREFIX="${SEL_LDR} -a -s -f ${RUNNABLE_LD_X8664}"
 }
 
 #@
@@ -263,15 +277,14 @@ SetupPnaclTranslatorX8632Opt() {
 #@ SetupGccArm
 #@   use CS cross compiler
 SetupGccArm() {
-  PREFIX="$(readlink -f ../../toolchain/linux_arm-trusted/qemu_tool.sh) run"
+  PREFIX="${QEMU_TOOL} run"
   SUFFIX=gcc.arm
 }
 
 
 SetupPnaclArmCommon() {
-  QEMU=$(readlink -f ../../toolchain/linux_arm-trusted/qemu_tool.sh)
   SEL_LDR=$(GetSelLdr "arm")
-  PREFIX="${QEMU} run ${SEL_LDR} -a -Q -f"
+  PREFIX="${QEMU_TOOL} run ${SEL_LDR} -a -Q -f"
   SUFFIX=pnacl.arm
 }
 
@@ -350,7 +363,7 @@ SetupPnaclTranslatorArmOptHW() {
 }
 
 ConfigInfo() {
-  Banner "Config Info"
+  SubBanner "Config Info"
   echo "benchmarks: $(GetBenchmarkList "$@")"
   echo "script:     $(GetInputSize "$@")"
   echo "suffix      ${SUFFIX}"
@@ -424,15 +437,16 @@ CheckFileBuilt() {
 #+   Get sel_ldr for the given arch.
 GetSelLdr() {
   local arch=$1
-  SEL_LDR=../../scons-out/opt-linux-${arch}/staging/sel_ldr
+  SEL_LDR=../../scons-out/opt-${SCONS_BUILD_PLATFORM}-${arch}/staging/sel_ldr
   CheckFileBuilt "sel_ldr" ${SEL_LDR}
-  SEL_LDR=$(readlink -f ${SEL_LDR})
+  SEL_LDR=$(GetAbsolutePath ${SEL_LDR})
   echo "${SEL_LDR}"
 }
 
 CheckSelUniversal() {
   local arch=$1
-  SEL_UNIV=../../scons-out/opt-linux-${arch}/staging/sel_universal
+  SEL_UNIV=../../scons-out/opt-${SCONS_BUILD_PLATFORM}-${arch}/staging/\
+sel_universal
   CheckFileBuilt "sel_universal" ${SEL_UNIV}
 }
 
@@ -444,7 +458,7 @@ CleanBenchmarks() {
   local list=$(GetBenchmarkList "$@")
   rm -rf bin/
   for i in ${list} ; do
-    Banner "Cleaning: $i"
+    SubBanner "Cleaning: $i"
     cd $i
     make clean
     rm -rf src/ data/
@@ -467,10 +481,15 @@ BuildBenchmarks() {
   local list=$(GetBenchmarkList "$@")
   ConfigInfo "$@"
   for i in ${list} ; do
-    Banner "Building: $i"
+    SubBanner "Building: $i"
     cd $i
 
-    make ${MAKEOPTS} measureit=${timeit} PERF_LOGGER="${PERF_LOGGER}" ${i#*.}.${SUFFIX}
+    make ${MAKEOPTS} measureit=${timeit} \
+         PERF_LOGGER="${PERF_LOGGER}" \
+         BUILD_PLATFORM=${BUILD_PLATFORM} \
+         SCONS_BUILD_PLATFORM=${SCONS_BUILD_PLATFORM} \
+         BUILD_ARCH=${BUILD_ARCH} \
+         ${i#*.}.${SUFFIX}
     cd ..
   done
 }
@@ -485,7 +504,6 @@ TimedRunCmd() {
   /usr/bin/time -f "%U %S %e %C" -o ${target} "$@"
 }
 
-
 #@
 #@ RunBenchmarks <setup> [ref|train] <benchmark>*
 #@
@@ -498,10 +516,10 @@ RunBenchmarks() {
   local script=$(GetInputSize "$@")
   ConfigInfo "$@"
   for i in ${list} ; do
-    Banner "Benchmarking: $i"
+    SubBanner "Benchmarking: $i"
     cd $i
     target_file=./${i#*.}.${SUFFIX}
-    size  ${target_file}
+    gnu_size ${target_file}
     ${script} ${target_file}
     cd ..
   done
@@ -523,12 +541,12 @@ RunTimedBenchmarks() {
 
   ConfigInfo "$@"
   for i in ${list} ; do
-    Banner "Benchmarking: $i"
+    SubBanner "Benchmarking: $i"
     pushd $i
     local benchname=${i#*.}
     local target_file=./${benchname}.${SUFFIX}
     local time_file=${target_file}.run_time
-    size  ${target_file}
+    gnu_size  ${target_file}
     TimedRunCmd ${time_file} ${script} ${target_file}
     # TODO(jvoung): split runtimes by arch as well
     # i.e., pull "arch" out of SUFFIX and add to the "runtime" label.
@@ -598,7 +616,7 @@ ArchivedRunOnArmHW() {
   # Unfortunately, this means we can't reuse GetSelLdr()...
   local TAR_FROM="../.."
   tar -C ${TAR_FROM} -czvf ${TAR_TO}/${SEL_ARCHIVE_ZIPPED} \
-    scons-out/opt-linux-arm/staging/sel_ldr
+    scons-out/opt-${SCONS_BUILD_PLATFORM}-arm/staging/sel_ldr
   # Carefully tar only the parts of the spec harness that we need.
   (cd ${TAR_FROM} ;
     find tests/spec2k -type f -maxdepth 1 -print |
@@ -643,7 +661,7 @@ PopulateFromSpecHarness() {
   local list=$(GetBenchmarkList "$@")
   echo ${list}
   for i in ${list} ; do
-    Banner "Populating: $i"
+    SubBanner "Populating: $i"
     # fix the dir with the same name inside spec harness
     src=$(find ${harness} -name $i)
     # copy relevant dirs over
@@ -672,4 +690,4 @@ if [ "$(type -t $1)" != "function" ]; then
   exit 1
 fi
 
-eval "$@"
+"$@"

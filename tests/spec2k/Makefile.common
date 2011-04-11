@@ -8,7 +8,24 @@
 
 # NOTE: we assume you have a symlink "CLIENT" in this directory pointing
 #       to your .../native_client directory
+
+ifndef BUILD_PLATFORM
+BUILD_PLATFORM="build_platform_undefined"
+endif
+
+ifndef SCONS_BUILD_PLATFORM
+SCONS_BUILD_PLATFORM="scons_build_platform_undefined"
+endif
+
+ifndef BUILD_ARCH
+BUILD_ARCH="build_arch_undefined"
+endif
+
 TC_ROOT=../../../toolchain
+
+NNACL_ROOT=$(TC_ROOT)/$(SCONS_BUILD_PLATFORM)_x86
+PNACL_ROOT=$(TC_ROOT)/linux_arm-untrusted
+ARM_ROOT=$(TC_ROOT)/linux_arm-trusted
 
 CFLAGS = $(CFLAGS_EXTRA)
 
@@ -102,8 +119,8 @@ $(IT).gcc.opt.x8664: $(SRC) $(CPPSRC)
 
 
 ######################################################################
-LOCAL_CROSS_GCC=$(TIME_CMD) \
-	$(TC_ROOT)/linux_arm-trusted/arm-2009q3/bin/arm-none-linux-gnueabi-gcc
+ARM_GCC=$(ARM_ROOT)/arm-2009q3/bin/arm-none-linux-gnueabi-gcc
+LOCAL_CROSS_GCC=$(TIME_CMD) $(ARM_GCC)
 
 # straight arm gcc (code sourcery)
 $(IT).gcc.arm: $(SRC) $(CPPSRC)
@@ -120,7 +137,7 @@ $(IT).gcc.opt.arm: $(SRC) $(CPPSRC)
 ######################################################################
 ## NACL-GCC TOOLCHAINS
 ######################################################################
-NACL_GCC=$(TIME_CMD) $(TC_ROOT)/linux_x86/bin/nacl-gcc
+NACL_GCC=$(TIME_CMD) $(NNACL_ROOT)/bin/nacl-gcc
 
 # nacl x86 gcc
 $(IT).nacl.x8632: $(SRC) $(CPPSRC)
@@ -143,7 +160,7 @@ $(IT).nacl.dyn.opt.x8632: $(SRC) $(CPPSRC)
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 ######################################################################
-NACL64_GCC=$(TIME_CMD) $(TC_ROOT)/linux_x86/bin/nacl64-gcc
+NACL64_GCC=$(TIME_CMD) $(NNACL_ROOT)/bin/nacl64-gcc
 
 # nacl x86-64 gcc
 $(IT).nacl.x8664: $(SRC) $(CPPSRC)
@@ -170,7 +187,6 @@ $(IT).nacl.dyn.opt.x8664: $(SRC) $(CPPSRC)
 ######################################################################
 # BITCODE - FRONTEND
 
-PNACL_ROOT=$(TC_ROOT)/linux_arm-untrusted
 PNACL_BIN=$(PNACL_ROOT)/bin
 PNACL_TRANSLATOR=$(TIME_CMD) $(PNACL_BIN)/pnacl-translate
 PNACL_TRANSLATOR_SB=$(TIME_CMD) $(PNACL_BIN)/pnacl-translate --pnacl-sb

@@ -43,4 +43,4 @@ CFLAGS_EXTRA = -DSPEC_CPU2000 -DLINUX_i386
 
 EXTRA_CLEAN=game.*
 
-include ../Makefile.c\ommon
+include ../Makefile.common
