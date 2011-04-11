@@ -336,7 +336,7 @@ bool SendRequestDebuggerFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &method));
 
   Value *params;
-  if (args_->Get(2, &params))
+  if (!args_->Get(2, &params))
     params = NULL;
 
   client_host_->SendMessageToBackend(this, method, params);
