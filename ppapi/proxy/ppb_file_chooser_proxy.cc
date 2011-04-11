@@ -77,7 +77,9 @@ PP_Resource Create(PP_Instance instance,
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBFileChooser_Create(
       INTERFACE_ID_PPB_FILE_CHOOSER, instance,
-      options->mode, options->accept_mime_types, &result));
+      options->mode,
+      options->accept_mime_types ? options->accept_mime_types : std::string(),
+      &result));
 
   if (result.is_null())
     return 0;
