@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,8 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
+#include "base/win/scoped_comptr.h"
 
 namespace win_util {
 
@@ -24,7 +24,7 @@ namespace win_util {
 bool SaferOpenItemViaShell(HWND hwnd, const std::wstring& window_title,
                            const FilePath& full_path,
                            const std::wstring& source_url) {
-  ScopedComPtr<IAttachmentExecute> attachment_services;
+  base::win::ScopedComPtr<IAttachmentExecute> attachment_services;
   HRESULT hr = attachment_services.CreateInstance(CLSID_AttachmentServices);
   if (FAILED(hr)) {
     // We don't have Attachment Execution Services, it must be a pre-XP.SP2

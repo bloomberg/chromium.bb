@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -181,7 +181,7 @@ class PageLoadTest : public testing::Test {
     chrome_frame_test::TimedMsgLoop message_loop;
 
     // Launch IE.
-    ScopedComPtr<IWebBrowser2> web_browser2;
+    base::win::ScopedComPtr<IWebBrowser2> web_browser2;
     hr = chrome_frame_test::LaunchIEAsComServer(web_browser2.Receive());
     EXPECT_HRESULT_SUCCEEDED(hr);
     EXPECT_TRUE(web_browser2.get() != NULL);

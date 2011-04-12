@@ -20,8 +20,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_comptr_win.h"
 #include "base/time.h"
+#include "base/win/scoped_comptr.h"
 #include "media/base/yuv_convert.h"
 #include "media/tools/mfdecoder/mfdecoder.h"
 #include "ui/gfx/gdi_util.h"
@@ -166,7 +166,7 @@ static bool PaintMediaBufferOntoWindow(HWND video_window,
 static bool PaintD3D9BufferOntoWindow(IDirect3DDevice9* device,
                                       IMFMediaBuffer* video_buffer) {
   CHECK(device != NULL);
-  ScopedComPtr<IDirect3DSurface9> surface;
+  base::win::ScopedComPtr<IDirect3DSurface9> surface;
   HRESULT hr = MFGetService(video_buffer, MR_BUFFER_SERVICE,
                             IID_PPV_ARGS(surface.Receive()));
   if (FAILED(hr)) {
@@ -181,7 +181,7 @@ static bool PaintD3D9BufferOntoWindow(IDirect3DDevice9* device,
       LOG(ERROR) << "Device->Clear() failed";
       return false;
     }
-    ScopedComPtr<IDirect3DSurface9> backbuffer;
+    base::win::ScopedComPtr<IDirect3DSurface9> backbuffer;
     hr = device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO,
                                backbuffer.Receive());
     if (FAILED(hr)) {
@@ -229,7 +229,7 @@ static bool DrawVideoSample(HWND video_window, media::MFDecoder* decoder,
                << "stream has been reached";
     return false;
   }
-  ScopedComPtr<IMFSample> video_sample;
+  base::win::ScopedComPtr<IMFSample> video_sample;
   base::Time decode_time_start(base::Time::Now());
   video_sample.Attach(decoder->ReadVideoSample());
   if (video_sample.get() == NULL) {
@@ -250,7 +250,7 @@ static bool DrawVideoSample(HWND video_window, media::MFDecoder* decoder,
   // For H.264 videos, the number of buffers in the sample is 1.
   CHECK_EQ(buffer_count, 1u) << "buffer_count should be equal "
                                               << "to 1 for H.264 format";
-  ScopedComPtr<IMFMediaBuffer> video_buffer;
+  base::win::ScopedComPtr<IMFMediaBuffer> video_buffer;
   hr = video_sample->GetBufferByIndex(0, video_buffer.Receive());
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to get buffer from sample";
@@ -308,8 +308,8 @@ static IDirect3DDeviceManager9* CreateD3DDevManager(HWND video_window,
   CHECK(device != NULL);
   int ret = -1;
 
-  ScopedComPtr<IDirect3DDeviceManager9> dev_manager;
-  ScopedComPtr<IDirect3D9> d3d;
+  base::win::ScopedComPtr<IDirect3DDeviceManager9> dev_manager;
+  base::win::ScopedComPtr<IDirect3D9> d3d;
   d3d.Attach(Direct3DCreate9(D3D_SDK_VERSION));
   if (d3d == NULL) {
     LOG(ERROR) << "Failed to create D3D9";
@@ -330,7 +330,7 @@ static IDirect3DDeviceManager9* CreateD3DDevManager(HWND video_window,
   present_params.FullScreen_RefreshRateInHz = 0;
   present_params.PresentationInterval = 0;
 
-  ScopedComPtr<IDirect3DDevice9> temp_device;
+  base::win::ScopedComPtr<IDirect3DDevice9> temp_device;
 
   // D3DCREATE_HARDWARE_VERTEXPROCESSING specifies hardware vertex processing.
   HRESULT hr = d3d->CreateDevice(D3DADAPTER_DEFAULT,
@@ -481,8 +481,8 @@ int main(int argc, char** argv) {
     LOG(ERROR) << "Failed to create decoder";
     return -1;
   }
-  ScopedComPtr<IDirect3DDeviceManager9> dev_manager;
-  ScopedComPtr<IDirect3DDevice9> device;
+  base::win::ScopedComPtr<IDirect3DDeviceManager9> dev_manager;
+  base::win::ScopedComPtr<IDirect3DDevice9> device;
   if (decoder->use_dxva2()) {
     dev_manager.Attach(CreateD3DDevManager(video_window, device.Receive()));
     if (dev_manager.get() == NULL || device.get() == NULL) {

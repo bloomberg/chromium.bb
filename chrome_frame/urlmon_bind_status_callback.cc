@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -369,7 +369,7 @@ HRESULT BSCBStorageBind::MayPlayBack(DWORD flags) {
 
   if (data_sniffer_.is_cache_valid()) {
     if (data_sniffer_.is_chrome()) {
-      ScopedComPtr<BindContextInfo> info;
+      base::win::ScopedComPtr<BindContextInfo> info;
       BindContextInfo::FromBindContext(bind_ctx_, info.Receive());
       DCHECK(info);
       if (info) {

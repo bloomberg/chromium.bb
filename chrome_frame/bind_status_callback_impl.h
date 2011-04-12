@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include <string>
 #include <urlmon.h>
 
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 #include "chrome_frame/utils.h"
 
 // A generic base class for IBindStatus callback implementation.
@@ -88,8 +88,8 @@ END_COM_MAP()
   // used for logging.
   std::string me();
 
-  ScopedComPtr<IBindStatusCallback> delegate_;
-  ScopedComPtr<IBindCtx> bind_ctx_;
+  base::win::ScopedComPtr<IBindStatusCallback> delegate_;
+  base::win::ScopedComPtr<IBindCtx> bind_ctx_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BSCBImpl);

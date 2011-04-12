@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,6 @@
 #include "chrome_tab.h"  // NOLINT
 
 using base::win::RegKey;
-using base::win::ScopedComPtr;
 
 // Note that these values are all lower case and are compared to
 // lower-case-transformed values.
@@ -467,7 +466,7 @@ FilePath GetIETemporaryFilesFolder() {
   HRESULT hr = SHGetFolderLocation(NULL, CSIDL_INTERNET_CACHE, NULL,
                                    SHGFP_TYPE_CURRENT, &tif_pidl);
   if (SUCCEEDED(hr) && tif_pidl) {
-    ScopedComPtr<IShellFolder> parent_folder;
+    base::win::ScopedComPtr<IShellFolder> parent_folder;
     LPITEMIDLIST relative_pidl = NULL;
     hr = SHBindToParent(tif_pidl, IID_IShellFolder,
                         reinterpret_cast<void**>(parent_folder.Receive()),
@@ -798,7 +797,7 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
   DCHECK(moniker);
   DCHECK(bind_ctx);
 
-  ScopedComPtr<IWebBrowser2> web_browser2;
+  base::win::ScopedComPtr<IWebBrowser2> web_browser2;
   HRESULT hr = DoQueryService(SID_SWebBrowserApp, browser,
                               web_browser2.Receive());
   DCHECK(web_browser2);
@@ -862,7 +861,7 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
   // HlinkSimpleNavigateToMoniker(moniker, url, NULL, host, bind_context,
   //                              NULL, 0, 0);
 
-  ScopedComPtr<IUriContainer> uri_container;
+  base::win::ScopedComPtr<IUriContainer> uri_container;
   hr = uri_container.QueryFrom(moniker);
 
   base::win::ScopedVariant headers_var;
@@ -878,7 +877,7 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
       &IID_IWebBrowserPriv2IE8XPBeta,
     };
 
-    ScopedComPtr<IWebBrowserPriv2Common, NULL> browser_priv2;
+    base::win::ScopedComPtr<IWebBrowserPriv2Common, NULL> browser_priv2;
     for (int i = 0; i < arraysize(interface_ids) && browser_priv2 == NULL;
          ++i) {
       hr = web_browser2.QueryInterface(*interface_ids[i],
@@ -888,7 +887,7 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
     DCHECK(browser_priv2);
 
     if (browser_priv2) {
-      ScopedComPtr<IUri> uri_obj;
+      base::win::ScopedComPtr<IUri> uri_obj;
       uri_container->GetIUri(uri_obj.Receive());
       DCHECK(uri_obj);
 
@@ -913,7 +912,7 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
     LPOLESTR url = NULL;
     if (SUCCEEDED(hr = moniker->GetDisplayName(bind_ctx, NULL, &url))) {
       DVLOG(1) << __FUNCTION__ << " " << url;
-      ScopedComPtr<IWebBrowserPriv> browser_priv;
+      base::win::ScopedComPtr<IWebBrowserPriv> browser_priv;
       if (SUCCEEDED(hr = browser_priv.QueryFrom(web_browser2))) {
         GURL target_url(url);
         // On IE6 if the original URL has a fragment then the navigation
@@ -1021,14 +1020,14 @@ bool IsSubFrameRequest(IUnknown* service_provider) {
 
   // We need to be able to get at an IWebBrowser2 if we are to decide whether
   // this request originates from a non-top-level frame.
-  ScopedComPtr<IWebBrowser2> web_browser;
+  base::win::ScopedComPtr<IWebBrowser2> web_browser;
   HRESULT hr = DoQueryService(IID_ITargetFrame2, service_provider,
                               web_browser.Receive());
 
   bool is_sub_frame_request = false;
   if (web_browser) {
     // Now check to see if we are in a sub-frame.
-    ScopedComPtr<IHTMLWindow2> current_frame, parent_frame;
+    base::win::ScopedComPtr<IHTMLWindow2> current_frame, parent_frame;
     hr = DoQueryService(IID_IHTMLWindow2, service_provider,
                         current_frame.Receive());
     if (current_frame) {
@@ -1181,7 +1180,7 @@ std::string GetHttpHeadersFromBinding(IBinding* binding) {
     return std::string();
   }
 
-  ScopedComPtr<IWinInetHttpInfo> info;
+  base::win::ScopedComPtr<IWinInetHttpInfo> info;
   if (FAILED(info.QueryFrom(binding))) {
     DLOG(WARNING) << "Failed to QI for IWinInetHttpInfo";
     return std::string();
@@ -1199,7 +1198,7 @@ int GetHttpResponseStatusFromBinding(IBinding* binding) {
 
   int http_status = 0;
 
-  ScopedComPtr<IWinInetHttpInfo> info;
+  base::win::ScopedComPtr<IWinInetHttpInfo> info;
   if (SUCCEEDED(info.QueryFrom(binding))) {
     char status[10] = {0};
     DWORD buf_size = sizeof(status);
@@ -1632,13 +1631,13 @@ bool IsChromeFrameDocument(IWebBrowser2* web_browser) {
   if (!web_browser)
     return false;
 
-  ScopedComPtr<IDispatch> doc;
+  base::win::ScopedComPtr<IDispatch> doc;
   web_browser->get_Document(doc.Receive());
   if (doc) {
     // Detect if CF is rendering based on whether the document is a
     // ChromeActiveDocument. Detecting based on hwnd is problematic as
     // the CF Active Document window may not have been created yet.
-    ScopedComPtr<IChromeFrame> chrome_frame;
+    base::win::ScopedComPtr<IChromeFrame> chrome_frame;
     chrome_frame.QueryFrom(doc);
     return chrome_frame.get() != NULL;
   }

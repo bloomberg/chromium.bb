@@ -4,8 +4,8 @@
 
 #include "chrome_frame/urlmon_url_request.h"
 
-#include <wininet.h>
 #include <urlmon.h>
+#include <wininet.h>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -14,14 +14,14 @@
 #include "base/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome_frame/bind_context_info.h"
 #include "chrome_frame/chrome_frame_activex_base.h"
 #include "chrome_frame/extra_system_apis.h"
 #include "chrome_frame/html_utils.h"
-#include "chrome_frame/urlmon_url_request_private.h"
 #include "chrome_frame/urlmon_upload_data_stream.h"
+#include "chrome_frame/urlmon_url_request_private.h"
 #include "chrome_frame/utils.h"
-#include "chrome/common/automation_messages.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -185,7 +185,7 @@ void UrlmonUrlRequest::TerminateBind(TerminateBindCallback* callback) {
       // should get E_PENDING back and then later we'll get that call
       // to OnDataAvailable.
       std::string data;
-      ScopedComPtr<IStream> read_stream(pending_data_);
+      base::win::ScopedComPtr<IStream> read_stream(pending_data_);
       HRESULT hr;
       while ((hr = ReadStream(read_stream, 0xffff, &data)) == S_OK) {
         // Just drop the data.
@@ -219,7 +219,7 @@ size_t UrlmonUrlRequest::SendDataToDelegate(size_t bytes_to_read) {
       // where we can get a call to OnDataAvailable while inside Read and
       // in our OnDataAvailable call, we can release the stream object
       // while still using it.
-      ScopedComPtr<IStream> pending(pending_data_);
+      base::win::ScopedComPtr<IStream> pending(pending_data_);
       HRESULT hr = ReadStream(pending, bytes_to_read, &read_data);
       if (read_data.empty())
         pending_read_size_ = pending_data_read_save;
@@ -298,7 +298,7 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
       // If we receive a redirect for the initial pending request initiated
       // when our document loads we should stash it away and inform Chrome
       // accordingly when it requests data for the original URL.
-      ScopedComPtr<BindContextInfo> info;
+      base::win::ScopedComPtr<BindContextInfo> info;
       BindContextInfo::FromBindContext(bind_context_, info.Receive());
       DCHECK(info);
       GURL previously_redirected(info ? info->GetUrl() : std::wstring());
@@ -805,16 +805,16 @@ HRESULT UrlmonUrlRequest::StartAsyncDownload() {
   }
 
   if (SUCCEEDED(hr)) {
-    ScopedComPtr<IStream> stream;
+    base::win::ScopedComPtr<IStream> stream;
 
     // BindToStorage may complete synchronously.
     // We still get all the callbacks - OnStart/StopBinding, this may result
     // in destruction of our object. It's fine but we access some members
     // below for debug info. :)
-    ScopedComPtr<IHttpSecurity> self(this);
+    base::win::ScopedComPtr<IHttpSecurity> self(this);
 
     // Inform our moniker patch this binding should not be tortured.
-    ScopedComPtr<BindContextInfo> info;
+    base::win::ScopedComPtr<BindContextInfo> info;
     BindContextInfo::FromBindContext(bind_context_, info.Receive());
     DCHECK(info);
     if (info)
@@ -871,7 +871,7 @@ void UrlmonUrlRequest::TerminateTransaction() {
     // on this with the special flags 0x2000000 cleanly releases the
     // transaction.
     static const int kUrlmonTerminateTransactionFlags = 0x2000000;
-    ScopedComPtr<BindContextInfo> info;
+    base::win::ScopedComPtr<BindContextInfo> info;
     BindContextInfo::FromBindContext(bind_context_, info.Receive());
     DCHECK(info);
     if (info && info->protocol()) {
@@ -964,7 +964,7 @@ void UrlmonUrlRequestManager::SetInfoForUrl(const std::wstring& url,
     DCHECK(start_url.is_valid());
     DCHECK(pending_request_ == NULL);
 
-    ScopedComPtr<BindContextInfo> info;
+    base::win::ScopedComPtr<BindContextInfo> info;
     BindContextInfo::FromBindContext(bind_ctx, info.Receive());
     DCHECK(info);
     IStream* cache = info ? info->cache() : NULL;

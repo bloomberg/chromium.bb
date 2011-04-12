@@ -21,9 +21,9 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome_frame/utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -242,7 +242,7 @@ base::ProcessHandle LaunchIE(const std::wstring& url) {
 int CloseAllIEWindows() {
   int ret = 0;
 
-  ScopedComPtr<IShellWindows> windows;
+  base::win::ScopedComPtr<IShellWindows> windows;
   HRESULT hr = ::CoCreateInstance(__uuidof(ShellWindows), NULL, CLSCTX_ALL,
       IID_IShellWindows, reinterpret_cast<void**>(windows.Receive()));
   DCHECK(SUCCEEDED(hr));
@@ -252,10 +252,10 @@ int CloseAllIEWindows() {
     windows->get_Count(&count);
     VARIANT i = { VT_I4 };
     for (i.lVal = 0; i.lVal < count; ++i.lVal) {
-      ScopedComPtr<IDispatch> folder;
+      base::win::ScopedComPtr<IDispatch> folder;
       windows->Item(i, folder.Receive());
       if (folder != NULL) {
-        ScopedComPtr<IWebBrowser2> browser;
+        base::win::ScopedComPtr<IWebBrowser2> browser;
         if (SUCCEEDED(browser.QueryFrom(folder))) {
           bool is_ie = true;
           HWND window = NULL;
@@ -383,7 +383,7 @@ HRESULT LaunchIEAsComServer(IWebBrowser2** web_browser) {
   if (base::win::GetVersion() == base::win::VERSION_VISTA &&
       GetInstalledIEVersion() == IE_7) {
     // Create medium integrity browser that will launch IE broker.
-    ScopedComPtr<IWebBrowser2> medium_integrity_browser;
+    base::win::ScopedComPtr<IWebBrowser2> medium_integrity_browser;
     hr = medium_integrity_browser.CreateInstance(CLSID_InternetExplorer, NULL,
                                                  CLSCTX_LOCAL_SERVER);
     if (FAILED(hr))

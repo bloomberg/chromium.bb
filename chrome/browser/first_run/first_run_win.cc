@@ -15,12 +15,12 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/scoped_comptr_win.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/object_watcher.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_updater.h"
@@ -71,7 +71,7 @@ bool GetNewerChromeFile(FilePath* path) {
 }
 
 bool InvokeGoogleUpdateForRename() {
-  ScopedComPtr<IProcessLauncher> ipl;
+  base::win::ScopedComPtr<IProcessLauncher> ipl;
   if (!FAILED(ipl.CreateInstance(__uuidof(ProcessLauncherClass)))) {
     ULONG_PTR phandle = NULL;
     DWORD id = GetCurrentProcessId();

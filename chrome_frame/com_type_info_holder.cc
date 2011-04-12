@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,7 +62,7 @@ HRESULT TypeInfoNameCache::Initialize(const IID& iid) {
     return E_UNEXPECTED;
   }
 
-  ScopedComPtr<ITypeLib> type_lib;
+  base::win::ScopedComPtr<ITypeLib> type_lib;
   HRESULT hr = LoadTypeLib(file_path, type_lib.Receive());
   if (SUCCEEDED(hr)) {
     hr = type_lib->GetTypeInfoOfGuid(iid, type_info_.Receive());

@@ -750,7 +750,7 @@ IAccessible* AutocompleteEditViewWin::GetIAccessible() {
       return NULL;
 
     // Wrap the created object in a smart pointer so it won't leak.
-    ScopedComPtr<IAccessible> accessibility_comptr(accessibility);
+    base::win::ScopedComPtr<IAccessible> accessibility_comptr(accessibility);
     if (!SUCCEEDED(accessibility->Initialize(this)))
       return NULL;
 
@@ -2075,7 +2075,7 @@ void AutocompleteEditViewWin::GetSelection(CHARRANGE& sel) const {
   ITextDocument* const text_object_model = GetTextObjectModel();
   if (!text_object_model)
     return;
-  ScopedComPtr<ITextSelection> selection;
+  base::win::ScopedComPtr<ITextSelection> selection;
   const HRESULT hr = text_object_model->GetSelection(selection.Receive());
   DCHECK_EQ(S_OK, hr);
   long flags;
@@ -2105,7 +2105,7 @@ void AutocompleteEditViewWin::SetSelection(LONG start, LONG end) {
   ITextDocument* const text_object_model = GetTextObjectModel();
   if (!text_object_model)
     return;
-  ScopedComPtr<ITextSelection> selection;
+  base::win::ScopedComPtr<ITextSelection> selection;
   const HRESULT hr = text_object_model->GetSelection(selection.Receive());
   DCHECK_EQ(S_OK, hr);
   selection->SetFlags(tomSelStartActive);
@@ -2416,7 +2416,7 @@ ITextDocument* AutocompleteEditViewWin::GetTextObjectModel() const {
   if (!text_object_model_) {
     // This is lazily initialized, instead of being initialized in the
     // constructor, in order to avoid hurting startup performance.
-    ScopedComPtr<IRichEditOle, NULL> ole_interface;
+    base::win::ScopedComPtr<IRichEditOle, NULL> ole_interface;
     ole_interface.Attach(GetOleInterface());
     if (ole_interface) {
       ole_interface.QueryInterface(

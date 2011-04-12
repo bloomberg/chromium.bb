@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,7 @@
 // Active Template Library product.
 
 #include "base/logging.h"
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 
 template <class T>
 class InPlaceMenu {
@@ -42,7 +42,7 @@ class InPlaceMenu {
     if (ole_menu_ || shared_menu_)
       return S_OK;
 
-    ScopedComPtr<IOleInPlaceFrame> in_place_frame;
+    base::win::ScopedComPtr<IOleInPlaceFrame> in_place_frame;
     GetInPlaceFrame(in_place_frame.Receive());
     // We have no IOleInPlaceFrame, no menu merging possible
     if (!in_place_frame) {
@@ -70,7 +70,7 @@ class InPlaceMenu {
   }
 
   HRESULT InPlaceMenuDestroy() {
-    ScopedComPtr<IOleInPlaceFrame> in_place_frame;
+    base::win::ScopedComPtr<IOleInPlaceFrame> in_place_frame;
     GetInPlaceFrame(in_place_frame.Receive());
     if (in_place_frame) {
       in_place_frame->RemoveMenus(shared_menu_);
@@ -177,7 +177,7 @@ class InPlaceMenu {
       // we'll have to get it ourselves.
       if (t->m_spInPlaceSite) {
         t->frame_info_.cb = sizeof(OLEINPLACEFRAMEINFO);
-        ScopedComPtr<IOleInPlaceUIWindow> in_place_ui_window;
+        base::win::ScopedComPtr<IOleInPlaceUIWindow> in_place_ui_window;
         RECT position_rect = {0};
         RECT clip_rect = {0};
         hr = t->m_spInPlaceSite->GetWindowContext(in_place_frame,

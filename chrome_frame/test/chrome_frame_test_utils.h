@@ -17,11 +17,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
-#include "base/scoped_comptr_win.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_comptr.h"
 
-#include "chrome_frame/test_utils.h"
 #include "chrome_frame/test/simulate_input.h"
+#include "chrome_frame/test_utils.h"
 #include "chrome_frame/utils.h"
 
 // Include without path to make GYP build see it.
@@ -118,7 +118,7 @@ class HungCOMCallDetector
   }
 
   void TearDown() {
-    ScopedComPtr<IMessageFilter> prev_filter;
+    base::win::ScopedComPtr<IMessageFilter> prev_filter;
     CoRegisterMessageFilter(prev_filter_.get(), prev_filter.Receive());
     DestroyWindow();
     m_hWnd = NULL;
@@ -182,7 +182,7 @@ class HungCOMCallDetector
 
   // used to detect if outgoing COM calls hung.
   bool is_hung_;
-  ScopedComPtr<IMessageFilter> prev_filter_;
+  base::win::ScopedComPtr<IMessageFilter> prev_filter_;
 };
 
 // MessageLoopForUI wrapper that runs only for a limited time.

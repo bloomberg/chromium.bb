@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 
 #include <sstream>
 
-#include "base/win/scoped_variant.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_variant.h"
 #include "chrome_frame/test/mock_ie_event_sink_actions.h"
 
 // Needed for CreateFunctor.
@@ -157,10 +157,10 @@ void MockIEEventSink::ExpectAnyNavigations() {
 }
 
 void MockIEEventSink::ExpectDocumentReadystate(int ready_state) {
-  ScopedComPtr<IWebBrowser2> browser(event_sink_->web_browser2());
+  base::win::ScopedComPtr<IWebBrowser2> browser(event_sink_->web_browser2());
   EXPECT_TRUE(browser != NULL);
   if (browser) {
-    ScopedComPtr<IDispatch> document;
+    base::win::ScopedComPtr<IDispatch> document;
     browser->get_Document(document.Receive());
     EXPECT_TRUE(document != NULL);
     if (document) {

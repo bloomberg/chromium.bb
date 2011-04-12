@@ -5,13 +5,13 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
-#include "base/scoped_comptr_win.h"
-#include "base/win/scoped_handle.h"
 #include "base/threading/thread.h"
+#include "base/win/scoped_comptr.h"
+#include "base/win/scoped_handle.h"
 #include "chrome_frame/bho.h"
 //#include "chrome_frame/urlmon_moniker.h"
-#include "chrome_frame/test/test_server.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
+#include "chrome_frame/test/test_server.h"
 #include "chrome_frame/test/urlmon_moniker_tests.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -175,14 +175,14 @@ class UrlmonMonikerTestCallback {
 
   HRESULT CreateUrlMonikerAndBindToStorage(const wchar_t* url,
                                            IBindCtx** bind_ctx) {
-    ScopedComPtr<IMoniker> moniker;
+    base::win::ScopedComPtr<IMoniker> moniker;
     HRESULT hr = CreateURLMoniker(NULL, url, moniker.Receive());
     EXPECT_TRUE(moniker != NULL);
     if (moniker) {
-      ScopedComPtr<IBindCtx> context;
+      base::win::ScopedComPtr<IBindCtx> context;
       ::CreateAsyncBindCtx(0, callback(), NULL, context.Receive());
       DCHECK(context);
-      ScopedComPtr<IStream> stream;
+      base::win::ScopedComPtr<IStream> stream;
       hr = moniker->BindToStorage(context, NULL, IID_IStream,
           reinterpret_cast<void**>(stream.Receive()));
       if (SUCCEEDED(hr) && bind_ctx)
@@ -215,7 +215,7 @@ TEST_F(UrlmonMonikerTest, BindToStorageSynchronous) {
   callback.SetCallbackExpectations(
       UrlmonMonikerTestCallback::REQUEST_SYNCHRONOUS, S_OK, false);
 
-  ScopedComPtr<IBindCtx> bind_ctx;
+  base::win::ScopedComPtr<IBindCtx> bind_ctx;
   HRESULT hr = callback.CreateUrlMonikerAndBindToStorage(test_url,
                                                          bind_ctx.Receive());
   // The download should have happened synchronously, so we don't expect
@@ -241,7 +241,7 @@ TEST_F(UrlmonMonikerTest, BindToStorageAsynchronous) {
   callback.SetCallbackExpectations(
       UrlmonMonikerTestCallback::REQUEST_ASYNCHRONOUS, S_OK, true);
 
-  ScopedComPtr<IBindCtx> bind_ctx;
+  base::win::ScopedComPtr<IBindCtx> bind_ctx;
   HRESULT hr = callback.CreateUrlMonikerAndBindToStorage(test_url,
                                                          bind_ctx.Receive());
   EXPECT_EQ(MK_S_ASYNCHRONOUS, hr);
@@ -292,7 +292,7 @@ TEST_F(UrlmonMonikerTest, BindToStorageSwitchContent) {
   if (request_data) {
     EXPECT_EQ(request_data->GetCachedContentSize(),
               arraysize(kTestContent) - 1);
-    ScopedComPtr<IStream> stream;
+    base::win::ScopedComPtr<IStream> stream;
     request_data->GetResetCachedContentStream(stream.Receive());
     EXPECT_TRUE(stream != NULL);
     if (stream) {

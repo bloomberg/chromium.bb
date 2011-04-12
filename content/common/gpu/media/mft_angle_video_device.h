@@ -5,7 +5,7 @@
 #ifndef CONTENT_GPU_MEDIA_MFT_ANGLE_VIDEO_DEVICE_H_
 #define CONTENT_GPU_MEDIA_MFT_ANGLE_VIDEO_DEVICE_H_
 
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 #include "content/common/gpu/media/gpu_video_device.h"
 
 struct IDirect3DDevice9;
@@ -36,7 +36,7 @@ class MftAngleVideoDevice : public GpuVideoDevice {
                                    scoped_refptr<media::VideoFrame> frame);
 
  private:
-  ScopedComPtr<IDirect3DDevice9, &IID_IDirect3DDevice9> device_;
+  base::win::ScopedComPtr<IDirect3DDevice9, &IID_IDirect3DDevice9> device_;
 };
 
 #endif  // CONTENT_GPU_MEDIA_MFT_ANGLE_VIDEO_DEVICE_H_

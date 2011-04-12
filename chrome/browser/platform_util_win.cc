@@ -13,14 +13,14 @@
 #include "app/win/shell.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/path_service.h"
 #include "base/logging.h"
-#include "base/scoped_comptr_win.h"
+#include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
-#include "chrome/installer/util/google_update_settings.h"
+#include "base/win/scoped_comptr.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/message_box_win.h"
@@ -64,7 +64,7 @@ void ShowItemInFolder(const FilePath& full_path) {
     return;
   }
 
-  ScopedComPtr<IShellFolder> desktop;
+  base::win::ScopedComPtr<IShellFolder> desktop;
   HRESULT hr = SHGetDesktopFolder(desktop.Receive());
   if (FAILED(hr))
     return;

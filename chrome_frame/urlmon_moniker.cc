@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome_frame/bho.h"
 #include "chrome_frame/bind_context_info.h"
-#include "chrome_frame/exception_barrier.h"
 #include "chrome_frame/chrome_active_document.h"
+#include "chrome_frame/exception_barrier.h"
 #include "chrome_frame/urlmon_bind_status_callback.h"
 #include "chrome_frame/utils.h"
 #include "chrome_frame/vtable_patch_manager.h"
@@ -38,11 +38,11 @@ HRESULT NavigationManager::NavigateToCurrentUrlInCF(IBrowserService* browser) {
   MarkBrowserOnThreadForCFNavigation(browser);
 
   HRESULT hr = S_OK;
-  ScopedComPtr<IShellBrowser> shell_browser;
-  ScopedComPtr<IBindCtx> bind_context;
+  base::win::ScopedComPtr<IShellBrowser> shell_browser;
+  base::win::ScopedComPtr<IBindCtx> bind_context;
   hr = ::CreateAsyncBindCtxEx(NULL, 0, NULL, NULL, bind_context.Receive(), 0);
 
-  ScopedComPtr<IMoniker> moniker;
+  base::win::ScopedComPtr<IMoniker> moniker;
   DCHECK(bind_context);
   if (SUCCEEDED(hr) &&
       SUCCEEDED(hr = ::CreateURLMonikerEx(NULL, url_.c_str(), moniker.Receive(),
@@ -100,7 +100,7 @@ bool MonikerPatch::Initialize() {
     return true;
   }
 
-  ScopedComPtr<IMoniker> moniker;
+  base::win::ScopedComPtr<IMoniker> moniker;
   HRESULT hr = ::CreateURLMoniker(NULL, L"http://localhost/",
                                   moniker.Receive());
   DCHECK(SUCCEEDED(hr));
@@ -133,7 +133,7 @@ bool ShouldWrapCallback(IMoniker* moniker, REFIID iid, IBindCtx* bind_context) {
     return false;
   }
 
-  ScopedComPtr<BindContextInfo> info;
+  base::win::ScopedComPtr<BindContextInfo> info;
   BindContextInfo::FromBindContext(bind_context, info.Receive());
   DCHECK(info);
   if (info && info->chrome_request()) {
@@ -152,10 +152,10 @@ bool ShouldWrapCallback(IMoniker* moniker, REFIID iid, IBindCtx* bind_context) {
   // Check whether request comes from MSHTML by checking for IInternetBindInfo.
   // We prefer to avoid wrapping if BindToStorage is called from AcroPDF.dll
   // (as a result of OnObjectAvailable)
-  ScopedComPtr<IUnknown> bscb_holder;
+  base::win::ScopedComPtr<IUnknown> bscb_holder;
   if (S_OK == bind_context->GetObjectParam(L"_BSCB_Holder_",
                                            bscb_holder.Receive())) {
-    ScopedComPtr<IBindStatusCallback> bscb;
+    base::win::ScopedComPtr<IBindStatusCallback> bscb;
     if (S_OK != DoQueryService(IID_IBindStatusCallback, bscb_holder,
                                bscb.Receive()))
       return false;
@@ -163,7 +163,7 @@ bool ShouldWrapCallback(IMoniker* moniker, REFIID iid, IBindCtx* bind_context) {
     if (!bscb.get())
       return false;
 
-    ScopedComPtr<IInternetBindInfo> bind_info;
+    base::win::ScopedComPtr<IInternetBindInfo> bind_info;
     if (S_OK != bind_info.QueryFrom(bscb))
       return false;
   }
@@ -171,10 +171,10 @@ bool ShouldWrapCallback(IMoniker* moniker, REFIID iid, IBindCtx* bind_context) {
   // TODO(ananta)
   // Use the IsSubFrameRequest function to determine if a request is a top
   // level request. Something like this.
-  // ScopedComPtr<IUnknown> bscb_holder;
+  // base::win::ScopedComPtr<IUnknown> bscb_holder;
   // bind_context->GetObjectParam(L"_BSCB_Holder_", bscb_holder.Receive());
   // if (bscb_holder) {
-  //   ScopedComPtr<IHttpNegotiate> http_negotiate;
+  //   base::win::ScopedComPtr<IHttpNegotiate> http_negotiate;
   //   http_negotiate.QueryFrom(bscb_holder);
   //   if (http_negotiate && !IsSubFrameRequest(http_negotiate))
   //     return true;
@@ -201,7 +201,7 @@ HRESULT MonikerPatch::BindToObject(IMoniker_BindToObject_Fn original,
   HRESULT hr = S_OK;
   // Bind context is marked for switch when we sniff data in BSCBStorageBind
   // and determine that the renderer to be used is Chrome.
-  ScopedComPtr<BindContextInfo> info;
+  base::win::ScopedComPtr<BindContextInfo> info;
   BindContextInfo::FromBindContext(bind_ctx, info.Receive());
   DCHECK(info);
   if (info) {

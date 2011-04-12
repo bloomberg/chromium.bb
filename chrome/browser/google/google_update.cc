@@ -10,19 +10,19 @@
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "content/browser/browser_thread.h"
-#include "views/window/window.h"
 #include "google_update_idl_i.c"
+#include "views/window/window.h"
 
 using views::Window;
 
@@ -235,7 +235,7 @@ class GoogleUpdateJobObserver
 
   // Allows us control the upgrade process to a small degree. After OnComplete
   // has been called, this object can not be used.
-  ScopedComPtr<IProgressWndEvents> event_sink_;
+  base::win::ScopedComPtr<IProgressWndEvents> event_sink_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -292,9 +292,9 @@ bool GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
                          main_loop);
   }
 
-  ScopedComPtr<IJobObserver> job_holder(job_observer);
+  base::win::ScopedComPtr<IJobObserver> job_holder(job_observer);
 
-  ScopedComPtr<IGoogleUpdate> on_demand;
+  base::win::ScopedComPtr<IGoogleUpdate> on_demand;
 
   bool system_level = false;
 

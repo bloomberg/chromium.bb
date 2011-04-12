@@ -228,11 +228,11 @@ class UrlmonUrlRequest
   };
 
   Status status_;
-  ScopedComPtr<IBinding> binding_;
-  ScopedComPtr<IMoniker> moniker_;
-  ScopedComPtr<IBindCtx> bind_context_;
-  ScopedComPtr<IStream> cache_;
-  ScopedComPtr<IStream> pending_data_;
+  base::win::ScopedComPtr<IBinding> binding_;
+  base::win::ScopedComPtr<IMoniker> moniker_;
+  base::win::ScopedComPtr<IBindCtx> bind_context_;
+  base::win::ScopedComPtr<IStream> cache_;
+  base::win::ScopedComPtr<IStream> pending_data_;
 
   size_t pending_read_size_;
   base::PlatformThreadId thread_;

@@ -10,7 +10,7 @@
 #include <shlobj.h>
 #include <string>
 
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 
 namespace ui {
@@ -112,7 +112,7 @@ class DataObjectImpl : public DownloadFileObserver,
   typedef std::vector<StoredDataInfo*> StoredData;
   StoredData contents_;
 
-  ScopedComPtr<IDataObject> source_object_;
+  base::win::ScopedComPtr<IDataObject> source_object_;
 
   bool is_aborting_;
   bool in_async_mode_;
@@ -170,7 +170,7 @@ class OSExchangeDataProviderWin : public OSExchangeData::Provider {
 
  private:
   scoped_refptr<DataObjectImpl> data_;
-  ScopedComPtr<IDataObject> source_object_;
+  base::win::ScopedComPtr<IDataObject> source_object_;
 
   DISALLOW_COPY_AND_ASSIGN(OSExchangeDataProviderWin);
 };

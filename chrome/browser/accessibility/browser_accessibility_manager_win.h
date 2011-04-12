@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #include <oleacc.h>
 
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"
 #include "webkit/glue/webaccessibility.h"
 
@@ -37,7 +37,7 @@ class BrowserAccessibilityManagerWin : public BrowserAccessibilityManager {
       BrowserAccessibilityFactory* factory);
 
   // A default IAccessible instance for the parent window.
-  ScopedComPtr<IAccessible> window_iaccessible_;
+  base::win::ScopedComPtr<IAccessible> window_iaccessible_;
 
   // Give BrowserAccessibilityManager::Create access to our constructor.
   friend class BrowserAccessibilityManager;

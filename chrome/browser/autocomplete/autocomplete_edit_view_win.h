@@ -14,7 +14,7 @@
 #include <tom.h>  // For ITextDocument, a COM interface to CRichEditCtrl.
 
 #include "base/memory/scoped_ptr.h"
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
@@ -539,7 +539,7 @@ class AutocompleteEditViewWin
   url_parse::Component insecure_scheme_component_;
 
   // Instance of accessibility information and handling.
-  mutable ScopedComPtr<IAccessible> autocomplete_accessibility_;
+  mutable base::win::ScopedComPtr<IAccessible> autocomplete_accessibility_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditViewWin);
 };

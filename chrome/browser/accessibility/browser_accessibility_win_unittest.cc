@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"
 #include "chrome/browser/accessibility/browser_accessibility_win.h"
 #include "content/common/view_messages.h"
@@ -172,12 +172,12 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
 
   // Query for the text IAccessible and verify that it returns "old text" as its
   // value.
-  ScopedComPtr<IDispatch> text_dispatch;
+  base::win::ScopedComPtr<IDispatch> text_dispatch;
   HRESULT hr = manager->GetRoot()->toBrowserAccessibilityWin()->get_accChild(
       CreateI4Variant(1), text_dispatch.Receive());
   ASSERT_EQ(S_OK, hr);
 
-  ScopedComPtr<IAccessible> text_accessible;
+  base::win::ScopedComPtr<IAccessible> text_accessible;
   hr = text_dispatch.QueryInterface(text_accessible.Receive());
   ASSERT_EQ(S_OK, hr);
 

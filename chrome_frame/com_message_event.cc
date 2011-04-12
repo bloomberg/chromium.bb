@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,15 +25,15 @@ bool ComMessageEvent::Initialize(IOleContainer* container,
   type_ = event_type;
 
   // May remain NULL if container not IE
-  ScopedComPtr<IHTMLEventObj> basic_event;
-  ScopedComPtr<IHTMLDocument2> doc;
+  base::win::ScopedComPtr<IHTMLEventObj> basic_event;
+  base::win::ScopedComPtr<IHTMLDocument2> doc;
 
   // Fetching doc may fail in non-IE containers
   // and container might be NULL in some applications.
   if (container)
     container->QueryInterface(doc.Receive());
   if (doc) {
-    ScopedComPtr<IHTMLDocument4> doc4;
+    base::win::ScopedComPtr<IHTMLDocument4> doc4;
     doc4.QueryFrom(doc);
     DCHECK(doc4);  // supported by IE5.5 and higher
     if (doc4) {

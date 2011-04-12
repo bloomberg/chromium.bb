@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include <oleacc.h>
 
 #include "base/basictypes.h"
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 
 class AutocompleteEditViewWin;
 
@@ -105,7 +105,7 @@ class ATL_NO_VTABLE AutocompleteAccessibility
   // A pointer containing the Windows' default IAccessible implementation for
   // this object. Used where it is acceptable to return default MSAA
   // information.
-  ScopedComPtr<IAccessible> default_accessibility_server_;
+  base::win::ScopedComPtr<IAccessible> default_accessibility_server_;
 
  private:
   const AutocompleteEditViewWin* edit_box_;

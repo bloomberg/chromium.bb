@@ -50,7 +50,7 @@ TEST(OSExchangeDataTest, StringDataAccessViaCOM) {
   OSExchangeData data;
   std::wstring input = L"O hai googlz.";
   data.SetString(input);
-  ScopedComPtr<IDataObject> com_data(
+  base::win::ScopedComPtr<IDataObject> com_data(
       OSExchangeDataProviderWin::GetIDataObject(data));
 
   FORMATETC format_etc =
@@ -70,7 +70,7 @@ TEST(OSExchangeDataTest, StringDataWritingViaCOM) {
   OSExchangeData data;
   std::wstring input = L"http://www.google.com/";
 
-  ScopedComPtr<IDataObject> com_data(
+  base::win::ScopedComPtr<IDataObject> com_data(
       OSExchangeDataProviderWin::GetIDataObject(data));
 
   // Store data in the object using the COM SetData API.
@@ -104,7 +104,7 @@ TEST(OSExchangeDataTest, URLDataAccessViaCOM) {
   OSExchangeData data;
   GURL url("http://www.google.com/");
   data.SetURL(url, L"");
-  ScopedComPtr<IDataObject> com_data(
+  base::win::ScopedComPtr<IDataObject> com_data(
       OSExchangeDataProviderWin::GetIDataObject(data));
 
   CLIPFORMAT cfstr_ineturl = RegisterClipboardFormat(CFSTR_INETURL);
@@ -128,7 +128,7 @@ TEST(OSExchangeDataTest, MultipleFormatsViaCOM) {
   data.SetURL(url, L"Google");
   data.SetString(text);
 
-  ScopedComPtr<IDataObject> com_data(
+  base::win::ScopedComPtr<IDataObject> com_data(
       OSExchangeDataProviderWin::GetIDataObject(data));
 
   CLIPFORMAT cfstr_ineturl = RegisterClipboardFormat(CFSTR_INETURL);
@@ -164,9 +164,9 @@ TEST(OSExchangeDataTest, EnumerationViaCOM) {
       RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR);
   CLIPFORMAT text_x_moz_url = RegisterClipboardFormat(L"text/x-moz-url");
 
-  ScopedComPtr<IDataObject> com_data(
+  base::win::ScopedComPtr<IDataObject> com_data(
       OSExchangeDataProviderWin::GetIDataObject(data));
-  ScopedComPtr<IEnumFORMATETC> enumerator;
+  base::win::ScopedComPtr<IEnumFORMATETC> enumerator;
   EXPECT_EQ(S_OK, com_data.get()->EnumFormatEtc(DATADIR_GET,
                                                 enumerator.Receive()));
 
@@ -220,7 +220,7 @@ TEST(OSExchangeDataTest, EnumerationViaCOM) {
   {
     EXPECT_EQ(S_OK, enumerator->Reset());
     EXPECT_EQ(S_OK, enumerator->Skip(1));
-    ScopedComPtr<IEnumFORMATETC> cloned_enumerator;
+    base::win::ScopedComPtr<IEnumFORMATETC> cloned_enumerator;
     EXPECT_EQ(S_OK, enumerator.get()->Clone(cloned_enumerator.Receive()));
     EXPECT_EQ(S_OK, enumerator.get()->Reset());
 
@@ -267,7 +267,7 @@ TEST(OSExchangeDataTest, TestURLExchangeFormats) {
   EXPECT_EQ(url_spec, WideToUTF8(output_string));
 
   // File contents access via COM
-  ScopedComPtr<IDataObject> com_data(
+  base::win::ScopedComPtr<IDataObject> com_data(
       OSExchangeDataProviderWin::GetIDataObject(data));
   {
     CLIPFORMAT cfstr_file_contents =

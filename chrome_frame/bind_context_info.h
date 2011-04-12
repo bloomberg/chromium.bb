@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ class __declspec(uuid("00000000-0000-0000-0000-000000000000")) BindContextInfo
   // Returns the BindContextInfo instance associated with the bind
   // context. Creates it if needed.
   // The returned info object will be AddRef-ed on return, so use
-  // ScopedComPtr<>::Receive() to receive this pointer.
+  // base::win::ScopedComPtr<>::Receive() to receive this pointer.
   static HRESULT FromBindContext(IBindCtx* bind_context,
                                  BindContextInfo** info);
 
@@ -106,7 +106,7 @@ class __declspec(uuid("00000000-0000-0000-0000-000000000000")) BindContextInfo
   bool is_switching_;
   base::win::ScopedComPtr<IUnknown> ftm_;
   scoped_refptr<ProtData> prot_data_;
-  ScopedComPtr<IInternetProtocol> protocol_;
+  base::win::ScopedComPtr<IInternetProtocol> protocol_;
 
   DISALLOW_COPY_AND_ASSIGN(BindContextInfo);
 };

@@ -27,8 +27,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"
-#include "googleurl/src/gurl.h"
 #include "chrome_frame/utils.h"
+#include "googleurl/src/gurl.h"
 
 namespace {
 
@@ -198,7 +198,7 @@ LRESULT ChromeFrameActivex::OnHostMoved(UINT message, WPARAM wparam,
 }
 
 HRESULT ChromeFrameActivex::GetContainingDocument(IHTMLDocument2** doc) {
-  ScopedComPtr<IOleContainer> container;
+  base::win::ScopedComPtr<IOleContainer> container;
   HRESULT hr = m_spClientSite->GetContainer(container.Receive());
   if (container)
     hr = container.QueryInterface(doc);
@@ -206,7 +206,7 @@ HRESULT ChromeFrameActivex::GetContainingDocument(IHTMLDocument2** doc) {
 }
 
 HRESULT ChromeFrameActivex::GetDocumentWindow(IHTMLWindow2** window) {
-  ScopedComPtr<IHTMLDocument2> document;
+  base::win::ScopedComPtr<IHTMLDocument2> document;
   HRESULT hr = GetContainingDocument(document.Receive());
   if (document)
     hr = document->get_parentWindow(window);
@@ -214,7 +214,7 @@ HRESULT ChromeFrameActivex::GetDocumentWindow(IHTMLWindow2** window) {
 }
 
 void ChromeFrameActivex::OnLoad(const GURL& gurl) {
-  ScopedComPtr<IDispatch> event;
+  base::win::ScopedComPtr<IDispatch> event;
   std::string url = gurl.spec();
   if (SUCCEEDED(CreateDomEvent("event", url, "", event.Receive())))
     Fire_onload(event);
@@ -224,7 +224,7 @@ void ChromeFrameActivex::OnLoad(const GURL& gurl) {
 }
 
 void ChromeFrameActivex::OnLoadFailed(int error_code, const std::string& url) {
-  ScopedComPtr<IDispatch> event;
+  base::win::ScopedComPtr<IDispatch> event;
   if (SUCCEEDED(CreateDomEvent("event", url, "", event.Receive())))
     Fire_onloaderror(event);
 
@@ -242,7 +242,7 @@ void ChromeFrameActivex::OnMessageFromChromeFrame(const std::string& message,
 
     if (is_privileged()) {
       // Forward messages if the control is in privileged mode.
-      ScopedComPtr<IDispatch> message_event;
+      base::win::ScopedComPtr<IDispatch> message_event;
       if (SUCCEEDED(CreateDomEvent("message", message, origin,
                                    message_event.Receive()))) {
         base::win::ScopedBstr target_bstr(UTF8ToWide(target).c_str());
@@ -263,7 +263,7 @@ void ChromeFrameActivex::OnMessageFromChromeFrame(const std::string& message,
       return;
   }
 
-  ScopedComPtr<IDispatch> message_event;
+  base::win::ScopedComPtr<IDispatch> message_event;
   if (SUCCEEDED(CreateDomEvent("message", message, origin,
                                message_event.Receive()))) {
     Fire_onmessage(message_event);
@@ -284,7 +284,7 @@ bool ChromeFrameActivex::ShouldShowVersionMismatchDialog(
   }
 
   if (client_site) {
-    ScopedComPtr<IChromeFramePrivileged> service;
+    base::win::ScopedComPtr<IChromeFramePrivileged> service;
     HRESULT hr = DoQueryService(SID_ChromeFramePrivileged,
                                 client_site,
                                 service.Receive());
@@ -346,7 +346,7 @@ STDMETHODIMP ChromeFrameActivex::Load(IPropertyBag* bag, IErrorLog* error_log) {
   base::win::ScopedBstr object_id;
   GetObjectScriptId(obj_element, object_id.Receive());
 
-  ScopedComPtr<IHTMLElement2> element;
+  base::win::ScopedComPtr<IHTMLElement2> element;
   element.QueryFrom(obj_element);
   HRESULT hr = S_OK;
 
@@ -431,7 +431,7 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
     // Drop privileged mode on uninitialization.
     set_is_privileged(false);
   } else {
-    ScopedComPtr<IHTMLDocument2> document;
+    base::win::ScopedComPtr<IHTMLDocument2> document;
     GetContainingDocument(document.Receive());
     if (document) {
       base::win::ScopedBstr url;
@@ -440,7 +440,7 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
     }
 
     // Probe to see whether the host implements the privileged service.
-    ScopedComPtr<IChromeFramePrivileged> service;
+    base::win::ScopedComPtr<IChromeFramePrivileged> service;
     HRESULT service_hr = DoQueryService(SID_ChromeFramePrivileged,
                                         m_spClientSite,
                                         service.Receive());
@@ -502,7 +502,7 @@ HRESULT ChromeFrameActivex::GetObjectScriptId(IHTMLObjectElement* object_elem,
 
   HRESULT hr = E_FAIL;
   if (object_elem) {
-    ScopedComPtr<IHTMLElement> elem;
+    base::win::ScopedComPtr<IHTMLElement> elem;
     hr = elem.QueryFrom(object_elem);
     if (elem) {
       hr = elem->get_id(id);
@@ -517,10 +517,10 @@ HRESULT ChromeFrameActivex::GetObjectElement(IHTMLObjectElement** element) {
   if (!m_spClientSite)
     return E_UNEXPECTED;
 
-  ScopedComPtr<IOleControlSite> site;
+  base::win::ScopedComPtr<IOleControlSite> site;
   HRESULT hr = site.QueryFrom(m_spClientSite);
   if (site) {
-    ScopedComPtr<IDispatch> disp;
+    base::win::ScopedComPtr<IDispatch> disp;
     hr = site->GetExtendedControl(disp.Receive());
     if (disp) {
       hr = disp.QueryInterface(element);
@@ -545,14 +545,14 @@ HRESULT ChromeFrameActivex::CreateScriptBlockForEvent(
     return E_INVALIDARG;
   }
 
-  ScopedComPtr<IHTMLDocument2> document;
+  base::win::ScopedComPtr<IHTMLDocument2> document;
   HRESULT hr = GetContainingDocument(document.Receive());
   if (SUCCEEDED(hr)) {
-    ScopedComPtr<IHTMLElement> element, new_element;
+    base::win::ScopedComPtr<IHTMLElement> element, new_element;
     document->createElement(base::win::ScopedBstr(L"script"),
                             element.Receive());
     if (element) {
-      ScopedComPtr<IHTMLScriptElement> script_element;
+      base::win::ScopedComPtr<IHTMLScriptElement> script_element;
       if (SUCCEEDED(hr = script_element.QueryFrom(element))) {
         script_element->put_htmlFor(instance_id);
         script_element->put_event(event_name);
@@ -572,7 +572,7 @@ HRESULT ChromeFrameActivex::CreateScriptBlockForEvent(
 void ChromeFrameActivex::FireEvent(const EventHandlers& handlers,
                                    const std::string& arg) {
   if (handlers.size()) {
-    ScopedComPtr<IDispatch> event;
+    base::win::ScopedComPtr<IDispatch> event;
     if (SUCCEEDED(CreateDomEvent("event", arg, "", event.Receive()))) {
       FireEvent(handlers, event);
     }
@@ -621,7 +621,7 @@ void ChromeFrameActivex::FireEvent(const EventHandlers& handlers,
 HRESULT ChromeFrameActivex::InstallTopLevelHook(IOleClientSite* client_site) {
   // Get the parent window of the site, and install our hook on the topmost
   // window of the parent.
-  ScopedComPtr<IOleWindow> ole_window;
+  base::win::ScopedComPtr<IOleWindow> ole_window;
   HRESULT hr = ole_window.QueryFrom(client_site);
   if (FAILED(hr))
     return hr;
@@ -650,7 +650,7 @@ HRESULT ChromeFrameActivex::registerBhoIfNeeded() {
     return S_OK;
   }
 
-  ScopedComPtr<IWebBrowser2> web_browser2;
+  base::win::ScopedComPtr<IWebBrowser2> web_browser2;
   HRESULT hr = DoQueryService(SID_SWebBrowserApp, m_spUnkSite,
                               web_browser2.Receive());
   if (FAILED(hr) || web_browser2.get() == NULL) {
@@ -663,7 +663,7 @@ HRESULT ChromeFrameActivex::registerBhoIfNeeded() {
   StringFromGUID2(CLSID_ChromeFrameBHO, bho_class_id_as_string,
                   arraysize(bho_class_id_as_string));
 
-  ScopedComPtr<IObjectWithSite> bho;
+  base::win::ScopedComPtr<IObjectWithSite> bho;
   hr = bho.CreateInstance(CLSID_ChromeFrameBHO, NULL, CLSCTX_INPROC_SERVER);
   if (FAILED(hr)) {
     NOTREACHED() << "Failed to register ChromeFrame BHO. Error:"

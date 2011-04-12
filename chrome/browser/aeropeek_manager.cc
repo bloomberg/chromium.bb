@@ -10,8 +10,8 @@
 #include "app/win/shell.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_native_library.h"
-#include "base/scoped_comptr_win.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/windows_version.h"
@@ -263,7 +263,7 @@ class RegisterThumbnailTask : public Task {
     // taskbar. But it seems to be OK to register it without checking the
     // message.
     // TODO(hbono): we need to check this registered message?
-    ScopedComPtr<ITaskbarList3> taskbar;
+    base::win::ScopedComPtr<ITaskbarList3> taskbar;
     if (FAILED(taskbar.CreateInstance(CLSID_TaskbarList, NULL,
                                       CLSCTX_INPROC_SERVER)) ||
         FAILED(taskbar->HrInit()) ||
@@ -731,7 +731,7 @@ void AeroPeekWindow::Activate() {
   }
 
   // Notify Windows to set the thumbnail focus to this window.
-  ScopedComPtr<ITaskbarList3> taskbar;
+  base::win::ScopedComPtr<ITaskbarList3> taskbar;
   HRESULT result = taskbar.CreateInstance(CLSID_TaskbarList, NULL,
                                           CLSCTX_INPROC_SERVER);
   if (FAILED(result)) {
@@ -785,7 +785,7 @@ void AeroPeekWindow::Destroy() {
     return;
 
   // Remove this window from the tab list of Windows.
-  ScopedComPtr<ITaskbarList3> taskbar;
+  base::win::ScopedComPtr<ITaskbarList3> taskbar;
   HRESULT result = taskbar.CreateInstance(CLSID_TaskbarList, NULL,
                                           CLSCTX_INPROC_SERVER);
   if (FAILED(result))

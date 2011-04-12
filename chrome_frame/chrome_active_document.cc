@@ -30,7 +30,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_variant.h"
 #include "base/win/win_util.h"
-#include "grit/generated_resources.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/common/automation_messages.h"
@@ -45,6 +44,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/navigation_types.h"
 #include "content/common/page_zoom.h"
+#include "grit/generated_resources.h"
 
 DEFINE_GUID(CGID_DocHostCmdPriv, 0x000214D4L, 0, 0, 0xC0, 0, 0, 0, 0, 0, 0,
             0x46);
@@ -154,7 +154,7 @@ STDMETHODIMP ChromeActiveDocument::DoVerb(LONG verb,
   if (doc_site_) {
     switch (verb) {
     case OLEIVERB_SHOW: {
-      ScopedComPtr<IDocHostUIHandler> doc_host_handler;
+      base::win::ScopedComPtr<IDocHostUIHandler> doc_host_handler;
       doc_host_handler.QueryFrom(doc_site_);
       if (doc_host_handler.get())
         doc_host_handler->ShowUI(DOCHOSTUITYPE_BROWSE, this, this, NULL, NULL);
@@ -215,9 +215,9 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
   if (NULL == moniker_name)
     return E_INVALIDARG;
 
-  ScopedComPtr<IOleClientSite> client_site;
+  base::win::ScopedComPtr<IOleClientSite> client_site;
   if (bind_context) {
-    ScopedComPtr<IUnknown> site;
+    base::win::ScopedComPtr<IUnknown> site;
     bind_context->GetObjectParam(SZ_HTML_CLIENTSITE_OBJECTPARAM,
                                  site.Receive());
     if (site)
@@ -232,7 +232,7 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
     // See if mshtml parsed the html header for us.  If so, we need to
     // clear the browser service flag that we use to indicate that this
     // browser instance is navigating to a CF document.
-    ScopedComPtr<IBrowserService> browser_service;
+    base::win::ScopedComPtr<IBrowserService> browser_service;
     DoQueryService(SID_SShellBrowser, client_site, browser_service.Receive());
     if (browser_service) {
       bool flagged = CheckForCFNavigation(browser_service, true);
@@ -245,7 +245,7 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
 
   std::wstring url;
 
-  ScopedComPtr<BindContextInfo> info;
+  base::win::ScopedComPtr<BindContextInfo> info;
   BindContextInfo::FromBindContext(bind_context, info.Receive());
   DCHECK(info);
   if (info && !info->GetUrl().empty()) {
@@ -550,7 +550,7 @@ HRESULT ChromeActiveDocument::IOleObject_SetClientSite(
       cached_document->Release();
     }
 
-    ScopedComPtr<IDocHostUIHandler> doc_host_handler;
+    base::win::ScopedComPtr<IDocHostUIHandler> doc_host_handler;
     if (doc_site_)
       doc_host_handler.QueryFrom(doc_site_);
 
@@ -578,7 +578,7 @@ HRESULT ChromeActiveDocument::ActiveXDocActivate(LONG verb) {
   m_bInPlaceActive = TRUE;
   // get location in the parent window,
   // as well as some information about the parent
-  ScopedComPtr<IOleInPlaceUIWindow> in_place_ui_window;
+  base::win::ScopedComPtr<IOleInPlaceUIWindow> in_place_ui_window;
   frame_info_.cb = sizeof(OLEINPLACEFRAMEINFO);
   HWND parent_window = NULL;
   if (m_spInPlaceSite->GetWindow(&parent_window) == S_OK) {
@@ -607,7 +607,7 @@ HRESULT ChromeActiveDocument::ActiveXDocActivate(LONG verb) {
     SetObjectRects(&position_rect, &clip_rect);
   }
 
-  ScopedComPtr<IOleInPlaceActiveObject> in_place_active_object(this);
+  base::win::ScopedComPtr<IOleInPlaceActiveObject> in_place_active_object(this);
 
   // Gone active by now, take care of UIACTIVATE
   if (DoesVerbUIActivate(verb)) {
@@ -707,7 +707,7 @@ void ChromeActiveDocument::OnCloseTab() {
   BaseActiveX::OnCloseTab();
 
   // Close the container window.
-  ScopedComPtr<IWebBrowser2> web_browser2;
+  base::win::ScopedComPtr<IWebBrowser2> web_browser2;
   DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
   if (web_browser2)
     web_browser2->Quit();
@@ -754,7 +754,7 @@ void ChromeActiveDocument::UpdateNavigationState(
   // event sink's of these bho's and don't invoke the event sink if chrome
   // frame is the currently loaded document.
   if (GetConfigBool(true, kEnableBuggyBhoIntercept)) {
-    ScopedComPtr<IWebBrowser2> wb2;
+    base::win::ScopedComPtr<IWebBrowser2> wb2;
     DoQueryService(SID_SWebBrowserApp, m_spClientSite, wb2.Receive());
     if (wb2 && buggy_bho::BuggyBhoTls::GetInstance()) {
       buggy_bho::BuggyBhoTls::GetInstance()->PatchBuggyBHOs(wb2);
@@ -788,8 +788,8 @@ void ChromeActiveDocument::UpdateNavigationState(
     url_.Allocate(UTF8ToWide(new_navigation_info.url.spec()).c_str());
 
   if (is_internal_navigation) {
-    ScopedComPtr<IDocObjectService> doc_object_svc;
-    ScopedComPtr<IWebBrowserEventsService> web_browser_events_svc;
+    base::win::ScopedComPtr<IDocObjectService> doc_object_svc;
+    base::win::ScopedComPtr<IWebBrowserEventsService> web_browser_events_svc;
 
     DoQueryService(__uuidof(web_browser_events_svc), m_spClientSite,
                    web_browser_events_svc.Receive());
@@ -982,8 +982,8 @@ void ChromeActiveDocument::OnAttachExternalTab(
 }
 
 bool ChromeActiveDocument::PreProcessContextMenu(HMENU menu) {
-  ScopedComPtr<IBrowserService> browser_service;
-  ScopedComPtr<ITravelLog> travel_log;
+  base::win::ScopedComPtr<IBrowserService> browser_service;
+  base::win::ScopedComPtr<ITravelLog> travel_log;
   GetBrowserServiceAndTravelLog(browser_service.Receive(),
                                 travel_log.Receive());
   if (!browser_service || !travel_log)
@@ -1003,7 +1003,7 @@ bool ChromeActiveDocument::PreProcessContextMenu(HMENU menu) {
 
 bool ChromeActiveDocument::HandleContextMenuCommand(
     UINT cmd, const MiniContextMenuParams& params) {
-  ScopedComPtr<IWebBrowser2> web_browser2;
+  base::win::ScopedComPtr<IWebBrowser2> web_browser2;
   DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
 
   if (cmd == IDC_BACK)
@@ -1023,9 +1023,9 @@ HRESULT ChromeActiveDocument::IEExec(const GUID* cmd_group_guid,
                                      VARIANT* in_args, VARIANT* out_args) {
   HRESULT hr = E_FAIL;
 
-  ScopedComPtr<IOleCommandTarget> frame_cmd_target;
+  base::win::ScopedComPtr<IOleCommandTarget> frame_cmd_target;
 
-  ScopedComPtr<IOleInPlaceSite> in_place_site(m_spInPlaceSite);
+  base::win::ScopedComPtr<IOleInPlaceSite> in_place_site(m_spInPlaceSite);
   if (!in_place_site.get() && m_spClientSite != NULL)
     in_place_site.QueryFrom(m_spClientSite);
 
@@ -1251,8 +1251,8 @@ HRESULT ChromeActiveDocument::OnEncodingChange(const GUID* cmd_group_guid,
 void ChromeActiveDocument::OnGoToHistoryEntryOffset(int offset) {
   DVLOG(1) <<  __FUNCTION__ << " - offset:" << offset;
 
-  ScopedComPtr<IBrowserService> browser_service;
-  ScopedComPtr<ITravelLog> travel_log;
+  base::win::ScopedComPtr<IBrowserService> browser_service;
+  base::win::ScopedComPtr<ITravelLog> travel_log;
   GetBrowserServiceAndTravelLog(browser_service.Receive(),
                                 travel_log.Receive());
 
@@ -1261,7 +1261,7 @@ void ChromeActiveDocument::OnGoToHistoryEntryOffset(int offset) {
 }
 
 void ChromeActiveDocument::OnMoveWindow(const gfx::Rect& dimensions) {
-  ScopedComPtr<IWebBrowser2> web_browser2;
+  base::win::ScopedComPtr<IWebBrowser2> web_browser2;
   DoQueryService(SID_SWebBrowserApp, m_spClientSite,
                  web_browser2.Receive());
   if (!web_browser2)
@@ -1289,7 +1289,7 @@ void ChromeActiveDocument::OnMoveWindow(const gfx::Rect& dimensions) {
 HRESULT ChromeActiveDocument::GetBrowserServiceAndTravelLog(
     IBrowserService** browser_service, ITravelLog** travel_log) {
   DCHECK(browser_service || travel_log);
-  ScopedComPtr<IBrowserService> browser_service_local;
+  base::win::ScopedComPtr<IBrowserService> browser_service_local;
   HRESULT hr = DoQueryService(SID_SShellBrowser, m_spClientSite,
                               browser_service_local.Receive());
   if (!browser_service_local) {
@@ -1311,7 +1311,7 @@ HRESULT ChromeActiveDocument::GetBrowserServiceAndTravelLog(
 LRESULT ChromeActiveDocument::OnForward(WORD notify_code, WORD id,
                                         HWND control_window,
                                         BOOL& bHandled) {
-  ScopedComPtr<IWebBrowser2> web_browser2;
+  base::win::ScopedComPtr<IWebBrowser2> web_browser2;
   DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
   DCHECK(web_browser2);
 
@@ -1323,7 +1323,7 @@ LRESULT ChromeActiveDocument::OnForward(WORD notify_code, WORD id,
 LRESULT ChromeActiveDocument::OnBack(WORD notify_code, WORD id,
                                      HWND control_window,
                                      BOOL& bHandled) {
-  ScopedComPtr<IWebBrowser2> web_browser2;
+  base::win::ScopedComPtr<IWebBrowser2> web_browser2;
   DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
   DCHECK(web_browser2);
 
@@ -1338,7 +1338,7 @@ LRESULT ChromeActiveDocument::OnFirePrivacyChange(UINT message, WPARAM wparam,
   if (!m_spClientSite)
     return 0;
 
-  ScopedComPtr<IWebBrowser2> web_browser2;
+  base::win::ScopedComPtr<IWebBrowser2> web_browser2;
   DoQueryService(SID_SWebBrowserApp, m_spClientSite,
                  web_browser2.Receive());
   if (!web_browser2) {
@@ -1346,11 +1346,11 @@ LRESULT ChromeActiveDocument::OnFirePrivacyChange(UINT message, WPARAM wparam,
     return 0;
   }
 
-  ScopedComPtr<IShellBrowser> shell_browser;
+  base::win::ScopedComPtr<IShellBrowser> shell_browser;
   DoQueryService(SID_STopLevelBrowser, web_browser2,
                  shell_browser.Receive());
   DCHECK(shell_browser.get() != NULL);
-  ScopedComPtr<ITridentService2> trident_services;
+  base::win::ScopedComPtr<ITridentService2> trident_services;
   trident_services.QueryFrom(shell_browser);
   if (trident_services)
     trident_services->FirePrivacyImpactedStateChange(wparam);

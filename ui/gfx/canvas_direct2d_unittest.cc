@@ -99,7 +99,7 @@ class TestWindow {
 
   HWND hwnd_;
 
-  ScopedComPtr<ID2D1RenderTarget> rt_;
+  base::win::ScopedComPtr<ID2D1RenderTarget> rt_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindow);
 };

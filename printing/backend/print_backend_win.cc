@@ -16,9 +16,6 @@
 #include "printing/backend/print_backend_consts.h"
 #include "printing/backend/win_helper.h"
 
-using base::win::ScopedBstr;
-using base::win::ScopedComPtr;
-
 namespace {
 
 HRESULT StreamOnHGlobalToString(IStream* stream, std::string* out) {
@@ -111,12 +108,12 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
   HRESULT hr = XPSModule::OpenProvider(printer_name_wide, 1, &provider);
   DCHECK(SUCCEEDED(hr));
   if (provider) {
-    ScopedComPtr<IStream> print_capabilities_stream;
+    base::win::ScopedComPtr<IStream> print_capabilities_stream;
     hr = CreateStreamOnHGlobal(NULL, TRUE,
                                print_capabilities_stream.Receive());
     DCHECK(SUCCEEDED(hr));
     if (print_capabilities_stream) {
-      ScopedBstr error;
+      base::win::ScopedBstr error;
       hr = XPSModule::GetPrintCapabilities(provider,
                                            NULL,
                                            print_capabilities_stream,
@@ -146,7 +143,7 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
       DocumentProperties(
           NULL, printer_handle, const_cast<LPTSTR>(printer_name_wide.c_str()),
           devmode_out, NULL, DM_OUT_BUFFER);
-      ScopedComPtr<IStream> printer_defaults_stream;
+      base::win::ScopedComPtr<IStream> printer_defaults_stream;
       hr = CreateStreamOnHGlobal(NULL, TRUE,
                                  printer_defaults_stream.Receive());
       DCHECK(SUCCEEDED(hr));

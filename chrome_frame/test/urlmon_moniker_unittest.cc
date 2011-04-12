@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,10 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/scoped_comptr_win.h"
-#include "chrome_frame/urlmon_bind_status_callback.h"
+#include "base/win/scoped_comptr.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/urlmon_moniker_tests.h"
+#include "chrome_frame/urlmon_bind_status_callback.h"
 
 using chrome_frame_test::ScopedVirtualizeHklmAndHkcu;
 using testing::Return;
@@ -38,7 +38,7 @@ class MonikerPatchTest : public testing::Test {
   static bool StringToStream(const std::string& data, IStream** ret) {
     EXPECT_TRUE(!data.empty());
 
-    ScopedComPtr<IStream> stream;
+    base::win::ScopedComPtr<IStream> stream;
     HRESULT hr = CreateStreamOnHGlobal(NULL, TRUE, stream.Receive());
     EXPECT_HRESULT_SUCCEEDED(hr);
     if (FAILED(hr)) {
@@ -136,7 +136,7 @@ TEST_F(MonikerPatchTest, SniffDataMetaTag) {
   ASSERT_TRUE(ReadFileAsString(kSmallHtmlMetaTag, &small_html_meta_tag));
   ASSERT_TRUE(ReadFileAsString(kSmallHtmlNoMetaTag, &small_html_no_meta_tag));
 
-  ScopedComPtr<IStream> stream_with_meta, stream_no_meta;
+  base::win::ScopedComPtr<IStream> stream_with_meta, stream_no_meta;
   ASSERT_TRUE(StringToStream(small_html_meta_tag, stream_with_meta.Receive()));
   ASSERT_TRUE(StringToStream(small_html_no_meta_tag,
                              stream_no_meta.Receive()));
@@ -159,7 +159,7 @@ TEST_F(MonikerPatchTest, SniffDataMetaTag) {
 // case 1: callback reads data in 1 read
 TEST_F(MonikerPatchTest, SniffDataPlayback1) {
   std::string small_html_meta_tag;
-  ScopedComPtr<IStream> stream_with_meta;
+  base::win::ScopedComPtr<IStream> stream_with_meta;
   SniffData sniffer;
 
   EXPECT_HRESULT_SUCCEEDED(sniffer.InitializeCache(std::wstring()));
@@ -202,7 +202,7 @@ TEST_F(MonikerPatchTest, SniffDataPlayback1) {
 // case 2: callback reads data in 2 reads.
 TEST_F(MonikerPatchTest, SniffDataPlayback2) {
   std::string small_html_meta_tag;
-  ScopedComPtr<IStream> stream_with_meta;
+  base::win::ScopedComPtr<IStream> stream_with_meta;
   SniffData sniffer;
 
   EXPECT_HRESULT_SUCCEEDED(sniffer.InitializeCache(std::wstring()));

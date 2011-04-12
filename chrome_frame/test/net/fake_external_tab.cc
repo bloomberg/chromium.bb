@@ -16,14 +16,13 @@
 #include "base/file_version_info.h"
 #include "base/i18n/icu_util.h"
 #include "base/path_service.h"
-#include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/threading/platform_thread.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
@@ -36,6 +35,7 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/net/test_automation_resource_message_filter.h"
 #include "chrome_frame/test/simulate_input.h"
@@ -91,7 +91,7 @@ bool PromptAfterSetup() {
 // #pragma comment(lib, "oleacc.lib")).
 bool SetFocusToAccessibleWindow(HWND hwnd) {
   bool ret = false;
-  ScopedComPtr<IAccessible> acc;
+  base::win::ScopedComPtr<IAccessible> acc;
   AccessibleObjectFromWindow(hwnd, OBJID_WINDOW, IID_IAccessible,
       reinterpret_cast<void**>(acc.Receive()));
   if (acc) {

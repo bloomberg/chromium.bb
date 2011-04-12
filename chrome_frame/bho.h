@@ -111,7 +111,7 @@ END_SINK_MAP()
   static void ProcessOptInUrls(IWebBrowser2* browser, BSTR url);
 
   // COM_INTERFACE_ENTRY_CACHED_TEAR_OFF manages the raw pointer from CComPtr
-  // which ScopedComPtr doesn't expose.
+  // which base::win::ScopedComPtr doesn't expose.
   CComPtr<IUnknown> delete_chrome_history_;
 
  protected:

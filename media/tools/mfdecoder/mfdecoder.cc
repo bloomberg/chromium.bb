@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@
 #include <windows.h>
 
 #include "base/logging.h"
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 #include "media/tools/mfdecoder/mfdecoder.h"
 
 #pragma comment(lib, "shlwapi.lib")
@@ -89,7 +89,7 @@ bool MFDecoder::Init(const wchar_t* source_url,
 IMFSample* MFDecoder::ReadVideoSample() {
   CHECK(reader_ != NULL);
   CHECK_GE(video_stream_index_, 0);
-  ScopedComPtr<IMFSample> video_sample;
+  base::win::ScopedComPtr<IMFSample> video_sample;
   DWORD actual_stream_index;
   DWORD output_flags;
 
@@ -153,7 +153,7 @@ bool MFDecoder::InitLibraries() {
 bool MFDecoder::InitSourceReader(const wchar_t* source_url,
                                  IDirect3DDeviceManager9* dev_manager) {
   CHECK(source_url != NULL);
-  ScopedComPtr<IMFAttributes> reader_attributes;
+  base::win::ScopedComPtr<IMFAttributes> reader_attributes;
   if (use_dxva2_) {
     reader_attributes.Attach(GetDXVA2AttributesForSourceReader(dev_manager));
     if (reader_attributes == NULL) {
@@ -176,7 +176,7 @@ IMFAttributes* MFDecoder::GetDXVA2AttributesForSourceReader(
   if (!use_dxva2_)
     return NULL;
   CHECK(dev_manager != NULL);
-  ScopedComPtr<IMFAttributes> attributes;
+  base::win::ScopedComPtr<IMFAttributes> attributes;
 
   // Create an attribute store with an initial size of 2.
   HRESULT hr = MFCreateAttributes(attributes.Receive(), 2);
@@ -201,7 +201,7 @@ bool MFDecoder::SelectVideoStreamOnly() {
   CHECK(reader_ != NULL);
   HRESULT hr;
   for (DWORD stream_index = 0; ; stream_index++) {
-    ScopedComPtr<IMFMediaType> media_type;
+    base::win::ScopedComPtr<IMFMediaType> media_type;
     hr = reader_->GetCurrentMediaType(stream_index, media_type.Receive());
     if (SUCCEEDED(hr)) {
       GUID major_type;
@@ -241,7 +241,7 @@ bool MFDecoder::SelectVideoStreamOnly() {
 bool MFDecoder::InitVideoInfo(IDirect3DDeviceManager9* dev_manager) {
   CHECK(reader_ != NULL);
   CHECK_GE(video_stream_index_, 0);
-  ScopedComPtr<IMFMediaType> video_type;
+  base::win::ScopedComPtr<IMFMediaType> video_type;
   HRESULT hr = reader_->GetCurrentMediaType(video_stream_index_,
                                             video_type.Receive());
   if (FAILED(hr)) {
@@ -267,7 +267,7 @@ bool MFDecoder::InitVideoInfo(IDirect3DDeviceManager9* dev_manager) {
 
   // Try to change to YV12 output format.
   const GUID kOutputVideoSubtype = MFVideoFormat_YV12;
-  ScopedComPtr<IMFMediaType> output_video_format;
+  base::win::ScopedComPtr<IMFMediaType> output_video_format;
   hr = MFCreateMediaType(output_video_format.Receive());
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to create a IMFMediaType object for video output";
@@ -301,7 +301,7 @@ bool MFDecoder::InitVideoInfo(IDirect3DDeviceManager9* dev_manager) {
   // Send a message to the decoder to tell it to use DXVA2.
   if (use_dxva2_) {
     // Call GetServiceForStream to get the interface to the video decoder.
-    ScopedComPtr<IMFTransform> video_decoder;
+    base::win::ScopedComPtr<IMFTransform> video_decoder;
     hr = reader_->GetServiceForStream(video_stream_index_, GUID_NULL,
                                      IID_PPV_ARGS(video_decoder.Receive()));
     if (FAILED(hr)) {

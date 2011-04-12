@@ -174,13 +174,13 @@ bool IEEventSink::IsCFRendering() {
   DCHECK(web_browser2_);
 
   if (web_browser2_) {
-    ScopedComPtr<IDispatch> doc;
+    base::win::ScopedComPtr<IDispatch> doc;
     web_browser2_->get_Document(doc.Receive());
     if (doc) {
       // Detect if CF is rendering based on whether the document is a
       // ChromeActiveDocument. Detecting based on hwnd is problematic as
       // the CF Active Document window may not have been created yet.
-      ScopedComPtr<IChromeFrame> chrome_frame;
+      base::win::ScopedComPtr<IChromeFrame> chrome_frame;
       chrome_frame.QueryFrom(doc);
       return chrome_frame.get();
     }
@@ -241,7 +241,7 @@ void IEEventSink::ExpectAddressBarUrl(
 void IEEventSink::Exec(const GUID* cmd_group_guid, DWORD command_id,
                                DWORD cmd_exec_opt, VARIANT* in_args,
                                VARIANT* out_args) {
-  ScopedComPtr<IOleCommandTarget> shell_browser_cmd_target;
+  base::win::ScopedComPtr<IOleCommandTarget> shell_browser_cmd_target;
   DoQueryService(SID_STopLevelBrowser, web_browser2_,
                  shell_browser_cmd_target.Receive());
   ASSERT_TRUE(NULL != shell_browser_cmd_target);
@@ -260,7 +260,7 @@ HWND IEEventSink::GetRendererWindow() {
   HWND renderer_window = NULL;
   if (IsCFRendering()) {
     DCHECK(chrome_frame_);
-    ScopedComPtr<IOleWindow> ole_window;
+    base::win::ScopedComPtr<IOleWindow> ole_window;
     ole_window.QueryFrom(chrome_frame_);
     EXPECT_TRUE(ole_window.get());
 
@@ -284,12 +284,12 @@ HWND IEEventSink::GetRendererWindow() {
     }
   } else {
     DCHECK(web_browser2_);
-    ScopedComPtr<IDispatch> doc;
+    base::win::ScopedComPtr<IDispatch> doc;
     HRESULT hr = web_browser2_->get_Document(doc.Receive());
     EXPECT_HRESULT_SUCCEEDED(hr);
     EXPECT_TRUE(doc);
     if (doc) {
-      ScopedComPtr<IOleWindow> ole_window;
+      base::win::ScopedComPtr<IOleWindow> ole_window;
       ole_window.QueryFrom(doc);
       EXPECT_TRUE(ole_window);
       if (ole_window) {
@@ -306,7 +306,7 @@ HWND IEEventSink::GetRendererWindowSafe() {
   HWND renderer_window = NULL;
   if (IsCFRendering()) {
     DCHECK(chrome_frame_);
-    ScopedComPtr<IOleWindow> ole_window;
+    base::win::ScopedComPtr<IOleWindow> ole_window;
     ole_window.QueryFrom(chrome_frame_);
 
     if (ole_window) {
@@ -325,10 +325,10 @@ HWND IEEventSink::GetRendererWindowSafe() {
     }
   } else {
     DCHECK(web_browser2_);
-    ScopedComPtr<IDispatch> doc;
+    base::win::ScopedComPtr<IDispatch> doc;
     web_browser2_->get_Document(doc.Receive());
     if (doc) {
-      ScopedComPtr<IOleWindow> ole_window;
+      base::win::ScopedComPtr<IOleWindow> ole_window;
       ole_window.QueryFrom(doc);
       if (ole_window) {
         ole_window->GetWindow(&renderer_window);
@@ -382,12 +382,12 @@ void IEEventSink::ConnectToChromeFrame() {
   DCHECK(web_browser2_);
   if (chrome_frame_.get())
     return;
-  ScopedComPtr<IShellBrowser> shell_browser;
+  base::win::ScopedComPtr<IShellBrowser> shell_browser;
   DoQueryService(SID_STopLevelBrowser, web_browser2_,
                  shell_browser.Receive());
 
   if (shell_browser) {
-    ScopedComPtr<IShellView> shell_view;
+    base::win::ScopedComPtr<IShellView> shell_view;
     shell_browser->QueryActiveShellView(shell_view.Receive());
     if (shell_view) {
       shell_view->GetItemObject(SVGIO_BACKGROUND, __uuidof(IChromeFrame),
@@ -410,7 +410,7 @@ void IEEventSink::DisconnectFromChromeFrame() {
     // Use a local ref counted copy of the IChromeFrame interface as the
     // outgoing calls could cause the interface to be deleted due to a message
     // pump running in the context of the outgoing call.
-    ScopedComPtr<IChromeFrame> chrome_frame(chrome_frame_);
+    base::win::ScopedComPtr<IChromeFrame> chrome_frame(chrome_frame_);
     chrome_frame_.Release();
     base::win::ScopedVariant dummy(static_cast<IDispatch*>(NULL));
     chrome_frame->put_onmessage(dummy);
@@ -450,7 +450,7 @@ STDMETHODIMP_(void) IEEventSink::OnNewWindow2(IDispatch** dispatch,
   // Since we need to listen on events on the new browser, we create one
   // if needed.
   if (!*dispatch) {
-    ScopedComPtr<IDispatch> new_browser;
+    base::win::ScopedComPtr<IDispatch> new_browser;
     HRESULT hr = new_browser.CreateInstance(CLSID_InternetExplorer, NULL,
                                             CLSCTX_LOCAL_SERVER);
     DCHECK(SUCCEEDED(hr) && new_browser);
@@ -528,7 +528,7 @@ STDMETHODIMP_(void) IEEventSink::OnNewWindow3(
   // Since we need to listen on events on the new browser, we create one
   // if needed.
   if (!*dispatch) {
-    ScopedComPtr<IDispatch> new_browser;
+    base::win::ScopedComPtr<IDispatch> new_browser;
     HRESULT hr = new_browser.CreateInstance(CLSID_InternetExplorer, NULL,
                                             CLSCTX_LOCAL_SERVER);
     DCHECK(SUCCEEDED(hr) && new_browser);

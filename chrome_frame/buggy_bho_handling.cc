@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome_frame/buggy_bho_handling.h"
 
 #include "base/logging.h"
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 
 #include "chrome_frame/exception_barrier.h"
 #include "chrome_frame/function_stub.h"
@@ -125,15 +125,15 @@ HRESULT BuggyBhoTls::PatchBuggyBHOs(IWebBrowser2* browser) {
   DCHECK(browser);
   DCHECK(web_browser2_ == NULL);
 
-  ScopedComPtr<IConnectionPointContainer> cpc;
+  base::win::ScopedComPtr<IConnectionPointContainer> cpc;
   HRESULT hr = cpc.QueryFrom(browser);
   if (SUCCEEDED(hr)) {
     const GUID sinks[] = { DIID_DWebBrowserEvents2, DIID_DWebBrowserEvents };
     for (size_t i = 0; i < arraysize(sinks); ++i) {
-      ScopedComPtr<IConnectionPoint> cp;
+      base::win::ScopedComPtr<IConnectionPoint> cp;
       cpc->FindConnectionPoint(sinks[i], cp.Receive());
       if (cp) {
-        ScopedComPtr<IEnumConnections> connections;
+        base::win::ScopedComPtr<IEnumConnections> connections;
         cp->EnumConnections(connections.Receive());
         if (connections) {
           CONNECTDATA cd = {0};
@@ -159,7 +159,7 @@ bool BuggyBhoTls::PatchIfBuggy(IUnknown* unk, const IID& diid) {
   if (!IsBuggyBho(mod))
     return false;
 
-  ScopedComPtr<IDispatch> disp;
+  base::win::ScopedComPtr<IDispatch> disp;
   HRESULT hr = unk->QueryInterface(diid,
       reinterpret_cast<void**>(disp.Receive()));
   if (FAILED(hr))  // Sometimes only IDispatch QI is supported

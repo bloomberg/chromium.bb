@@ -10,8 +10,8 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/scoped_comptr_win.h"
 #include "base/memory/scoped_temp_dir.h"
+#include "base/win/scoped_comptr.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/shell_util.h"
@@ -22,8 +22,8 @@ bool VerifyChromeShortcut(const std::wstring& exe_path,
                           const std::wstring& shortcut,
                           const std::wstring& description,
                           int icon_index) {
-  ScopedComPtr<IShellLink> i_shell_link;
-  ScopedComPtr<IPersistFile> i_persist_file;
+  base::win::ScopedComPtr<IShellLink> i_shell_link;
+  base::win::ScopedComPtr<IPersistFile> i_persist_file;
 
   // Get pointer to the IShellLink interface
   bool failed = FAILED(i_shell_link.CreateInstance(CLSID_ShellLink, NULL,

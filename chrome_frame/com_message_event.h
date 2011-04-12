@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,9 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <mshtml.h>  // IHTMLEventObj
+
 #include "base/basictypes.h"
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 
 // Implements a MessageEvent compliant event object by providing MessageEvent
 // specific properties itself and inherited properties from a browser provided
@@ -63,7 +64,7 @@ END_COM_MAP()
   // calls that we do not directly support.  This may not be initialized
   // if our container does not require the properties/methods exposed by
   // the basic event object.
-  ScopedComPtr<IHTMLEventObj> basic_event_;
+  base::win::ScopedComPtr<IHTMLEventObj> basic_event_;
   std::string message_;
   std::string origin_;
   std::string type_;

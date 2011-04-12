@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,9 +17,6 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 #include "googleurl/src/gurl.h"
-
-using base::win::ScopedVariant;
-using base::win::ScopedBstr;
 
 namespace {
 
@@ -43,12 +40,13 @@ bool CoCreateIndexerFromName(const wchar_t* name,
 // Instantiates the registered indexers from the registry |root| + |path| key
 // and adds them to the |indexers| list.
 void AddRegisteredIndexers(HKEY root, const wchar_t* path,
-    std::vector< ScopedComPtr<IChromeHistoryIndexer> >* indexers) {
+    std::vector< base::win::ScopedComPtr<IChromeHistoryIndexer> >* indexers) {
   IChromeHistoryIndexer* indexer;
   base::win::RegistryKeyIterator r_iter(root, path);
   while (r_iter.Valid()) {
     if (CoCreateIndexerFromName(r_iter.Name(), &indexer)) {
-      indexers->push_back(ScopedComPtr<IChromeHistoryIndexer>(indexer));
+      indexers->push_back(
+          base::win::ScopedComPtr<IChromeHistoryIndexer>(indexer));
       indexer->Release();
     }
     ++r_iter;
@@ -120,11 +118,11 @@ void HistoryPublisher::PublishDataToIndexers(const PageData& page_data)
 
   // Send data to registered indexers.
   base::win::ScopedVariant time(var_time, VT_DATE);
-  ScopedBstr url(ASCIIToWide(page_data.url.spec()).c_str());
-  ScopedBstr html(page_data.html);
-  ScopedBstr title(page_data.title);
+  base::win::ScopedBstr url(ASCIIToWide(page_data.url.spec()).c_str());
+  base::win::ScopedBstr html(page_data.html);
+  base::win::ScopedBstr title(page_data.title);
   // Don't send a NULL string through ASCIIToWide.
-  ScopedBstr format(page_data.thumbnail_format ?
+  base::win::ScopedBstr format(page_data.thumbnail_format ?
       ASCIIToWide(page_data.thumbnail_format).c_str() :
       NULL);
   base::win::ScopedVariant psa(thumbnail_arr.m_psa);

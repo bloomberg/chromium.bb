@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 
 // Typedefs for IHttpNegotiate methods.
 typedef HRESULT (STDMETHODCALLTYPE* IHttpNegotiate_BeginningTransaction_Fn)(

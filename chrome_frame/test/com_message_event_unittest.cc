@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@ class ATL_NO_VTABLE MockDumbContainer :
   STDMETHOD(EnumObjects)(DWORD, IEnumUnknown**) {
     NOTREACHED();
     return E_NOTIMPL;
-  }  
+  }
   STDMETHOD(LockContainer)(BOOL) {
     NOTREACHED();
     return E_NOTIMPL;
@@ -42,12 +42,12 @@ class ATL_NO_VTABLE MockDumbContainer :
 TEST(ComMessageEvent, WithDumbContainer) {
   CComObject<MockDumbContainer>* container_obj = NULL;
   CComObject<MockDumbContainer>::CreateInstance(&container_obj);
-  ScopedComPtr<IOleContainer> container(container_obj);
+  base::win::ScopedComPtr<IOleContainer> container(container_obj);
   EXPECT_FALSE(!container);
 
   CComObject<FriendlyComMessageEvent>* event_obj = NULL;
   CComObject<FriendlyComMessageEvent>::CreateInstance(&event_obj);
-  ScopedComPtr<IUnknown> event_ref(event_obj);
+  base::win::ScopedComPtr<IUnknown> event_ref(event_obj);
 
   bool result = event_obj->Initialize(container, "hi", "http://www.foo.com/",
                                       "message");
@@ -279,14 +279,14 @@ class ATL_NO_VTABLE MockSmartContainer :
 TEST(ComMessageEvent, WithSmartContainer) {
   CComObject<MockSmartContainer>* container_obj = NULL;
   CComObject<MockSmartContainer>::CreateInstance(&container_obj);
-  ScopedComPtr<IOleContainer> container(container_obj);
+  base::win::ScopedComPtr<IOleContainer> container(container_obj);
   EXPECT_FALSE(!container);
 
   CComObject<FriendlyComMessageEvent>* event_obj = NULL;
   CComObject<FriendlyComMessageEvent>::CreateInstance(&event_obj);
-  ScopedComPtr<IUnknown> event_ref(event_obj);
+  base::win::ScopedComPtr<IUnknown> event_ref(event_obj);
 
-  bool succeeded = event_obj->Initialize(container, "hi", 
+  bool succeeded = event_obj->Initialize(container, "hi",
                                          "http://www.foo.com/", "message");
   EXPECT_TRUE(succeeded);
   EXPECT_FALSE(!event_obj->basic_event());

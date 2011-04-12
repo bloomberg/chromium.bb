@@ -37,7 +37,7 @@ AccObject::AccObject(IAccessible* accessible, int child_id)
     : accessible_(accessible), child_id_(child_id) {
   DCHECK(accessible);
   if (child_id != CHILDID_SELF) {
-    ScopedComPtr<IDispatch> dispatch;
+    base::win::ScopedComPtr<IDispatch> dispatch;
     // This class does not support referring to a full MSAA object using the
     // parent object and the child id.
     HRESULT result = accessible_->get_accChild(child_id_, dispatch.Receive());
@@ -51,7 +51,7 @@ AccObject::AccObject(IAccessible* accessible, int child_id)
 
 // static
 AccObject* AccObject::CreateFromWindow(HWND hwnd) {
-  ScopedComPtr<IAccessible> accessible;
+  base::win::ScopedComPtr<IAccessible> accessible;
   ::AccessibleObjectFromWindow(hwnd, OBJID_CLIENT,
       IID_IAccessible, reinterpret_cast<void**>(accessible.Receive()));
   if (accessible)
@@ -62,7 +62,7 @@ AccObject* AccObject::CreateFromWindow(HWND hwnd) {
 // static
 AccObject* AccObject::CreateFromEvent(HWND hwnd, LONG object_id,
                                       LONG child_id) {
-  ScopedComPtr<IAccessible> accessible;
+  base::win::ScopedComPtr<IAccessible> accessible;
   base::win::ScopedVariant acc_child_id;
   ::AccessibleObjectFromEvent(hwnd, object_id, child_id, accessible.Receive(),
                               acc_child_id.Receive());
@@ -74,7 +74,7 @@ AccObject* AccObject::CreateFromEvent(HWND hwnd, LONG object_id,
 // static
 AccObject* AccObject::CreateFromDispatch(IDispatch* dispatch) {
   if (dispatch) {
-    ScopedComPtr<IAccessible> accessible;
+    base::win::ScopedComPtr<IAccessible> accessible;
     accessible.QueryFrom(dispatch);
     if (accessible)
       return new AccObject(accessible);
@@ -84,7 +84,7 @@ AccObject* AccObject::CreateFromDispatch(IDispatch* dispatch) {
 
 // static
 AccObject* AccObject::CreateFromPoint(int x, int y) {
-  ScopedComPtr<IAccessible> accessible;
+  base::win::ScopedComPtr<IAccessible> accessible;
   base::win::ScopedVariant child_id;
   POINT point = {x, y};
   ::AccessibleObjectFromPoint(point, accessible.Receive(), child_id.Receive());
@@ -253,7 +253,7 @@ bool AccObject::GetLocationInClient(gfx::Rect* client_location) {
 AccObject* AccObject::GetParent() {
   if (IsSimpleElement())
     return new AccObject(accessible_);
-  ScopedComPtr<IDispatch> dispatch;
+  base::win::ScopedComPtr<IDispatch> dispatch;
   if (FAILED(accessible_->get_accParent(dispatch.Receive())))
     return NULL;
   return AccObject::CreateFromDispatch(dispatch.get());
@@ -388,7 +388,7 @@ bool AccObject::GetWindowClassName(std::wstring* class_name) {
 bool AccObject::GetSelectionRange(int* start_offset, int* end_offset) {
   DCHECK(start_offset);
   DCHECK(end_offset);
-  ScopedComPtr<IAccessibleText> accessible_text;
+  base::win::ScopedComPtr<IAccessibleText> accessible_text;
   HRESULT hr = DoQueryService(IID_IAccessibleText,
                               accessible_,
                               accessible_text.Receive());
@@ -417,7 +417,7 @@ bool AccObject::GetSelectedText(std::wstring* text) {
   int start = 0, end = 0;
   if (!GetSelectionRange(&start, &end))
     return false;
-  ScopedComPtr<IAccessibleText> accessible_text;
+  base::win::ScopedComPtr<IAccessibleText> accessible_text;
   HRESULT hr = DoQueryService(IID_IAccessibleText,
                               accessible_,
                               accessible_text.Receive());
@@ -499,7 +499,7 @@ AccObject* AccObject::CreateFromVariant(AccObject* object,
     // possible, since this class operates under the assumption that if the
     // child id is not CHILDID_SELF, the object is a simple element. See the
     // DCHECK in the constructor.
-    ScopedComPtr<IDispatch> dispatch;
+    base::win::ScopedComPtr<IDispatch> dispatch;
     HRESULT result = accessible->get_accChild(variant,
                                               dispatch.Receive());
     if (result == S_FALSE || result == E_NOINTERFACE) {

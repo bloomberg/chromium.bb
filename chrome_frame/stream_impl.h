@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 
 // A generic base class for IStream implementation. If provided
 // with a delegate, it delegated calls to it otherwise can be
@@ -35,7 +35,7 @@ class StreamImpl : public IStream {
   STDMETHOD(Clone)(IStream** stream);
 
  protected:
-  ScopedComPtr<IStream> delegate_;
+  base::win::ScopedComPtr<IStream> delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StreamImpl);

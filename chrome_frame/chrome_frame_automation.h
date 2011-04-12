@@ -7,8 +7,8 @@
 
 #include <atlbase.h>
 #include <atlwin.h>
-#include <string>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
@@ -528,7 +528,7 @@ class ChromeFrameAutomationClient
   scoped_refptr<ChromeFrameLaunchParams> chrome_launch_params_;
 
   // Cache security manager for URL zone checking
-  ScopedComPtr<IInternetSecurityManager> security_manager_;
+  base::win::ScopedComPtr<IInternetSecurityManager> security_manager_;
 
   // When host network stack is used, this object is in charge of
   // handling network requests.

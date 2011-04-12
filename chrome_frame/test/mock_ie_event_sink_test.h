@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -203,7 +203,7 @@ class MockPropertyNotifySinkListener : public PropertyNotifySinkListener {
  private:
   CComObject<PropertyNotifySinkImpl>* sink_;
   DWORD cookie_;
-  ScopedComPtr<IUnknown> event_source_;
+  base::win::ScopedComPtr<IUnknown> event_source_;
 };
 
 // Allows tests to observe when processes exit.

@@ -16,8 +16,8 @@
 #include "chrome_frame/bho.h"
 #include "chrome_frame/exception_barrier.h"
 #include "chrome_frame/html_utils.h"
-#include "chrome_frame/urlmon_url_request.h"
 #include "chrome_frame/urlmon_moniker.h"
+#include "chrome_frame/urlmon_url_request.h"
 #include "chrome_frame/utils.h"
 #include "chrome_frame/vtable_patch_manager.h"
 #include "net/http/http_response_headers.h"
@@ -172,11 +172,11 @@ bool HttpNegotiatePatch::Initialize() {
   // Use our SimpleBindStatusCallback class as we need a temporary object that
   // implements IBindStatusCallback.
   CComObjectStackEx<SimpleBindStatusCallback> request;
-  ScopedComPtr<IBindCtx> bind_ctx;
+  base::win::ScopedComPtr<IBindCtx> bind_ctx;
   HRESULT hr = CreateAsyncBindCtx(0, &request, NULL, bind_ctx.Receive());
   DCHECK(SUCCEEDED(hr)) << "CreateAsyncBindCtx";
   if (bind_ctx) {
-    ScopedComPtr<IUnknown> bscb_holder;
+    base::win::ScopedComPtr<IUnknown> bscb_holder;
     bind_ctx->GetObjectParam(L"_BSCB_Holder_", bscb_holder.Receive());
     if (bscb_holder) {
       hr = PatchHttpNegotiate(bscb_holder);
@@ -200,7 +200,7 @@ HRESULT HttpNegotiatePatch::PatchHttpNegotiate(IUnknown* to_patch) {
   DCHECK(to_patch);
   DCHECK_IS_NOT_PATCHED(IHttpNegotiate);
 
-  ScopedComPtr<IHttpNegotiate> http;
+  base::win::ScopedComPtr<IHttpNegotiate> http;
   HRESULT hr = http.QueryFrom(to_patch);
   if (FAILED(hr)) {
     hr = DoQueryService(IID_IHttpNegotiate, to_patch, http.Receive());

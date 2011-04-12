@@ -10,10 +10,10 @@
 #include <exdispid.h>
 #include <string>
 
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 
-#include "chrome_frame/test_utils.h"
 #include "chrome_frame/test/simulate_input.h"
+#include "chrome_frame/test_utils.h"
 
 // Include without path to make GYP build see it.
 #include "chrome_tab.h"  // NOLINT
@@ -233,8 +233,8 @@ END_SINK_MAP()
   HRESULT OnLoadError(const VARIANT* param);
   HRESULT OnMessage(const VARIANT* param);
 
-  ScopedComPtr<IWebBrowser2> web_browser2_;
-  ScopedComPtr<IChromeFrame> chrome_frame_;
+  base::win::ScopedComPtr<IWebBrowser2> web_browser2_;
+  base::win::ScopedComPtr<IChromeFrame> chrome_frame_;
   DispCallback<IEEventSink> onmessage_;
   DispCallback<IEEventSink> onloaderror_;
   DispCallback<IEEventSink> onload_;

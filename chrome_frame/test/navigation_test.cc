@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <string>
 
-#include "base/scoped_comptr_win.h"
 #include "base/test/test_file_util.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/chrome_frame_ui_test_utils.h"
@@ -277,7 +277,7 @@ TEST_P(FullTabNavigationTest, BackForwardAnchor) {
 // dialog appears.
 TEST_P(FullTabNavigationTest, RestrictedSite) {
   // Add the server to restricted sites zone.
-  ScopedComPtr<IInternetSecurityManager> security_manager;
+  base::win::ScopedComPtr<IInternetSecurityManager> security_manager;
   HRESULT hr = security_manager.CreateInstance(CLSID_InternetSecurityManager);
   ASSERT_HRESULT_SUCCEEDED(hr);
   hr = security_manager->SetZoneMapping(URLZONE_UNTRUSTED,

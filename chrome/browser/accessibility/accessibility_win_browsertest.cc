@@ -5,7 +5,7 @@
 #include <atlbase.h>
 #include <vector>
 
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_win.h"
 #include "chrome/browser/ui/browser.h"
@@ -125,7 +125,7 @@ IAccessible* GetAccessibleFromResultVariant(IAccessible* parent, VARIANT *var) {
 HRESULT QueryIAccessible2(IAccessible* accessible, IAccessible2** accessible2) {
   // TODO(ctguil): For some reason querying the IAccessible2 interface from
   // IAccessible fails.
-  ScopedComPtr<IServiceProvider> service_provider;
+  base::win::ScopedComPtr<IServiceProvider> service_provider;
   HRESULT hr = accessible->QueryInterface(service_provider.Receive());
   if (FAILED(hr))
     return hr;
@@ -139,8 +139,8 @@ HRESULT QueryIAccessible2(IAccessible* accessible, IAccessible2** accessible2) {
 // IAccessible2::get_unique_id which is only supported by the child node.
 void AccessibleContainsAccessible(
     IAccessible* parent, IAccessible2* child, bool* result) {
-  vector<ScopedComPtr<IAccessible>> accessible_list;
-  accessible_list.push_back(ScopedComPtr<IAccessible>(parent));
+  vector<base::win::ScopedComPtr<IAccessible>> accessible_list;
+  accessible_list.push_back(base::win::ScopedComPtr<IAccessible>(parent));
 
   LONG unique_id;
   HRESULT hr = child->get_uniqueID(&unique_id);
@@ -148,10 +148,10 @@ void AccessibleContainsAccessible(
   *result = false;
 
   while (accessible_list.size()) {
-    ScopedComPtr<IAccessible> accessible = accessible_list.back();
+    base::win::ScopedComPtr<IAccessible> accessible = accessible_list.back();
     accessible_list.pop_back();
 
-    ScopedComPtr<IAccessible2> accessible2;
+    base::win::ScopedComPtr<IAccessible2> accessible2;
     hr = QueryIAccessible2(accessible, accessible2.Receive());
     if (SUCCEEDED(hr)) {
       LONG child_id;
@@ -176,10 +176,12 @@ void AccessibleContainsAccessible(
     ASSERT_EQ(child_count, obtained_count);
 
     for (int index = 0; index < obtained_count; index++) {
-      ScopedComPtr<IAccessible> child_accessible(
+      base::win::ScopedComPtr<IAccessible> child_accessible(
         GetAccessibleFromResultVariant(accessible, &child_array.get()[index]));
-      if (child_accessible.get())
-        accessible_list.push_back(ScopedComPtr<IAccessible>(child_accessible));
+      if (child_accessible.get()) {
+        accessible_list.push_back(
+            base::win::ScopedComPtr<IAccessible>(child_accessible));
+      }
     }
   }
 }
@@ -314,7 +316,7 @@ void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
   for (AccessibleCheckerVector::iterator child_checker = children_.begin();
        child_checker != children_.end();
        ++child_checker, ++child) {
-    ScopedComPtr<IAccessible> child_accessible;
+    base::win::ScopedComPtr<IAccessible> child_accessible;
     child_accessible.Attach(GetAccessibleFromResultVariant(parent, child));
     ASSERT_TRUE(child_accessible.get());
     (*child_checker)->CheckAccessible(child_accessible);
@@ -358,9 +360,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document2_checker.CheckAccessible(GetRendererAccessible());
 
   // Check that document accessible has a parent accessible.
-  ScopedComPtr<IAccessible> document_accessible(GetRendererAccessible());
+  base::win::ScopedComPtr<IAccessible> document_accessible(
+      GetRendererAccessible());
   ASSERT_NE(document_accessible.get(), reinterpret_cast<IAccessible*>(NULL));
-  ScopedComPtr<IDispatch> parent_dispatch;
+  base::win::ScopedComPtr<IDispatch> parent_dispatch;
   HRESULT hr = document_accessible->get_accParent(parent_dispatch.Receive());
   EXPECT_EQ(S_OK, hr);
   EXPECT_NE(parent_dispatch, reinterpret_cast<IDispatch*>(NULL));
@@ -539,7 +542,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Focus the document accessible. This will un-focus the current node.
-  ScopedComPtr<IAccessible> document_accessible(GetRendererAccessible());
+  base::win::ScopedComPtr<IAccessible> document_accessible(
+      GetRendererAccessible());
   ASSERT_NE(document_accessible.get(), reinterpret_cast<IAccessible*>(NULL));
   HRESULT hr = document_accessible->accSelect(
     SELFLAG_TAKEFOCUS, CreateI4Variant(CHILDID_SELF));
@@ -599,7 +603,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   // Get the accessibility object for the browser window.
   HWND browser_hwnd = browser()->window()->GetNativeHandle();
-  ScopedComPtr<IAccessible> browser_accessible;
+  base::win::ScopedComPtr<IAccessible> browser_accessible;
   HRESULT hr = AccessibleObjectFromWindow(
       browser_hwnd,
       OBJID_WINDOW,
@@ -608,9 +612,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ASSERT_EQ(S_OK, hr);
 
   // Get the accessibility object for the renderer client document.
-  ScopedComPtr<IAccessible> document_accessible(GetRendererAccessible());
+  base::win::ScopedComPtr<IAccessible> document_accessible(
+      GetRendererAccessible());
   ASSERT_NE(document_accessible.get(), reinterpret_cast<IAccessible*>(NULL));
-  ScopedComPtr<IAccessible2> document_accessible2;
+  base::win::ScopedComPtr<IAccessible2> document_accessible2;
   hr = QueryIAccessible2(document_accessible, document_accessible2.Receive());
   ASSERT_EQ(S_OK, hr);
 
@@ -618,9 +623,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   // seem to work for here. Perhaps make IAccessible2 available in views to make
   // unique id comparison available.
   bool found = false;
-  ScopedComPtr<IAccessible> parent = document_accessible;
+  base::win::ScopedComPtr<IAccessible> parent = document_accessible;
   while (parent.get()) {
-    ScopedComPtr<IDispatch> parent_dispatch;
+    base::win::ScopedComPtr<IDispatch> parent_dispatch;
     hr = parent->get_accParent(parent_dispatch.Receive());
     ASSERT_TRUE(SUCCEEDED(hr));
     if (!parent_dispatch.get()) {
@@ -657,17 +662,18 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
 
   // Get the IAccessible object for the document.
-  ScopedComPtr<IAccessible> document_accessible(GetRendererAccessible());
+  base::win::ScopedComPtr<IAccessible> document_accessible(
+      GetRendererAccessible());
   ASSERT_NE(document_accessible.get(), reinterpret_cast<IAccessible*>(NULL));
 
   // Get the ISimpleDOM object for the document.
-  ScopedComPtr<IServiceProvider> service_provider;
+  base::win::ScopedComPtr<IServiceProvider> service_provider;
   HRESULT hr = static_cast<IAccessible*>(document_accessible)->QueryInterface(
       service_provider.Receive());
   ASSERT_EQ(S_OK, hr);
   const GUID refguid = {0x0c539790, 0x12e4, 0x11cf,
                         0xb6, 0x61, 0x00, 0xaa, 0x00, 0x4c, 0xd6, 0xd8};
-  ScopedComPtr<ISimpleDOMNode> document_isimpledomnode;
+  base::win::ScopedComPtr<ISimpleDOMNode> document_isimpledomnode;
   hr = static_cast<IServiceProvider *>(service_provider)->QueryService(
       refguid, IID_ISimpleDOMNode,
       reinterpret_cast<void**>(document_isimpledomnode.Receive()));
@@ -686,7 +692,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(NODETYPE_DOCUMENT, node_type);
   EXPECT_EQ(1, num_children);
 
-  ScopedComPtr<ISimpleDOMNode> body_isimpledomnode;
+  base::win::ScopedComPtr<ISimpleDOMNode> body_isimpledomnode;
   hr = document_isimpledomnode->get_firstChild(
       body_isimpledomnode.Receive());
   ASSERT_EQ(S_OK, hr);
@@ -698,7 +704,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(NODETYPE_ELEMENT, node_type);
   EXPECT_EQ(1, num_children);
 
-  ScopedComPtr<ISimpleDOMNode> checkbox_isimpledomnode;
+  base::win::ScopedComPtr<ISimpleDOMNode> checkbox_isimpledomnode;
   hr = body_isimpledomnode->get_firstChild(
       checkbox_isimpledomnode.Receive());
   ASSERT_EQ(S_OK, hr);

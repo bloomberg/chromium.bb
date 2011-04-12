@@ -96,7 +96,7 @@ ProtocolSinkWrap::~ProtocolSinkWrap() {
   DVLOG(1) << __FUNCTION__ << base::StringPrintf(" 0x%08X", this);
 }
 
-ScopedComPtr<IInternetProtocolSink> ProtocolSinkWrap::CreateNewSink(
+base::win::ScopedComPtr<IInternetProtocolSink> ProtocolSinkWrap::CreateNewSink(
     IInternetProtocolSink* sink, ProtData* data) {
   DCHECK(sink != NULL);
   DCHECK(data != NULL);
@@ -104,7 +104,7 @@ ScopedComPtr<IInternetProtocolSink> ProtocolSinkWrap::CreateNewSink(
   CComObject<ProtocolSinkWrap>::CreateInstance(&new_sink);
   new_sink->delegate_ = sink;
   new_sink->prot_data_ = data;
-  return ScopedComPtr<IInternetProtocolSink>(new_sink);
+  return base::win::ScopedComPtr<IInternetProtocolSink>(new_sink);
 }
 
 // IInternetProtocolSink methods
@@ -147,10 +147,11 @@ STDMETHODIMP ProtocolSinkWrap::ReportResult(HRESULT result, DWORD error,
 
 
 // Helpers
-ScopedComPtr<IBindCtx> BindCtxFromIBindInfo(IInternetBindInfo* bind_info) {
+base::win::ScopedComPtr<IBindCtx> BindCtxFromIBindInfo(
+    IInternetBindInfo* bind_info) {
   LPOLESTR bind_ctx_string = NULL;
   ULONG count;
-  ScopedComPtr<IBindCtx> bind_ctx;
+  base::win::ScopedComPtr<IBindCtx> bind_ctx;
   bind_info->GetBindString(BINDSTRING_PTR_BIND_CONTEXT, &bind_ctx_string, 1,
                            &count);
   if (bind_ctx_string) {
@@ -176,7 +177,7 @@ bool ShouldWrapSink(IInternetProtocolSink* sink, const wchar_t* url) {
   if ((url != StrStrW(url, L"http://")) && (url != StrStrW(url, L"https://")))
     return false;
 
-  ScopedComPtr<IHttpNegotiate> http_negotiate;
+  base::win::ScopedComPtr<IHttpNegotiate> http_negotiate;
   HRESULT hr = DoQueryService(GUID_NULL, sink, http_negotiate.Receive());
   if (http_negotiate && !IsSubFrameRequest(http_negotiate))
     return true;
@@ -186,7 +187,7 @@ bool ShouldWrapSink(IInternetProtocolSink* sink, const wchar_t* url) {
 
 // High level helpers
 bool IsCFRequest(IBindCtx* pbc) {
-  ScopedComPtr<BindContextInfo> info;
+  base::win::ScopedComPtr<BindContextInfo> info;
   BindContextInfo::FromBindContext(pbc, info.Receive());
   if (info && info->chrome_request())
     return true;
@@ -195,7 +196,7 @@ bool IsCFRequest(IBindCtx* pbc) {
 }
 
 bool HasProtData(IBindCtx* pbc) {
-  ScopedComPtr<BindContextInfo> info;
+  base::win::ScopedComPtr<BindContextInfo> info;
   BindContextInfo::FromBindContext(pbc, info.Receive());
   bool result = false;
   if (info)
@@ -207,7 +208,7 @@ void PutProtData(IBindCtx* pbc, ProtData* data) {
   // AddRef and Release to avoid a potential leak of a ProtData instance if
   // FromBindContext fails.
   data->AddRef();
-  ScopedComPtr<BindContextInfo> info;
+  base::win::ScopedComPtr<BindContextInfo> info;
   BindContextInfo::FromBindContext(pbc, info.Receive());
   if (info)
     info->set_prot_data(data);
@@ -418,7 +419,7 @@ HRESULT ProtData::ReportProgress(IInternetProtocolSink* delegate,
         // This may seem awkward. CBinding's implementation of IWinInetHttpInfo
         // will forward to CTransaction that will forward to the real protocol.
         // We may ask CTransaction (our protocol_ member) for IWinInetHttpInfo.
-        ScopedComPtr<IWinInetHttpInfo> info;
+        base::win::ScopedComPtr<IWinInetHttpInfo> info;
         info.QueryFrom(delegate);
         renderer_type_ = DetermineRendererTypeFromMetaData(suggested_mime_type_,
                                                            url_, info);
@@ -552,7 +553,7 @@ void ProtData::FireSuggestedMimeType(IInternetProtocolSink* delegate) {
 
 void ProtData::SaveReferrer(IInternetProtocolSink* delegate) {
   DCHECK(IsChrome(renderer_type_));
-  ScopedComPtr<IWinInetHttpInfo> info;
+  base::win::ScopedComPtr<IWinInetHttpInfo> info;
   info.QueryFrom(delegate);
   if (info) {
     char buffer[4096] = {0};
@@ -644,7 +645,7 @@ STDMETHODIMP Hook_Start(InternetProtocol_Start_Fn orig_start,
     return E_INVALIDARG;
   DVLOG_IF(1, url != NULL) << "OnStart: " << url << PiFlags2Str(flags);
 
-  ScopedComPtr<IBindCtx> bind_ctx = BindCtxFromIBindInfo(bind_info);
+  base::win::ScopedComPtr<IBindCtx> bind_ctx = BindCtxFromIBindInfo(bind_info);
   if (!bind_ctx) {
     // MSHTML sometimes takes a short path, skips the creation of
     // moniker and binding, by directly grabbing protocol from InternetSession
@@ -664,7 +665,7 @@ STDMETHODIMP Hook_Start(InternetProtocol_Start_Fn orig_start,
   }
 
   if (IsCFRequest(bind_ctx)) {
-    ScopedComPtr<BindContextInfo> info;
+    base::win::ScopedComPtr<BindContextInfo> info;
     BindContextInfo::FromBindContext(bind_ctx, info.Receive());
     DCHECK(info);
     if (info) {
@@ -677,7 +678,7 @@ STDMETHODIMP Hook_Start(InternetProtocol_Start_Fn orig_start,
   if (prot_data) {
     DVLOG(1) << "Found existing ProtData!";
     prot_data->UpdateUrl(url);
-    ScopedComPtr<IInternetProtocolSink> new_sink =
+    base::win::ScopedComPtr<IInternetProtocolSink> new_sink =
         ProtocolSinkWrap::CreateNewSink(prot_sink, prot_data);
     return ForwardWrappedHookStart(orig_start, protocol, url, new_sink,
                                    bind_info, flags, reserved);
@@ -694,7 +695,7 @@ STDMETHODIMP Hook_Start(InternetProtocol_Start_Fn orig_start,
   prot_data = new ProtData(protocol, read_fun, url);
   PutProtData(bind_ctx, prot_data);
 
-  ScopedComPtr<IInternetProtocolSink> new_sink =
+  base::win::ScopedComPtr<IInternetProtocolSink> new_sink =
       ProtocolSinkWrap::CreateNewSink(prot_sink, prot_data);
   return ForwardWrappedHookStart(orig_start, protocol, url, new_sink, bind_info,
                                  flags, reserved);
@@ -725,7 +726,7 @@ STDMETHODIMP Hook_StartEx(InternetProtocol_StartEx_Fn orig_start_ex,
   uri->GetPropertyBSTR(Uri_PROPERTY_ABSOLUTE_URI, url.Receive(), 0);
   DVLOG_IF(1, url != NULL) << "OnStartEx: " << url << PiFlags2Str(flags);
 
-  ScopedComPtr<IBindCtx> bind_ctx = BindCtxFromIBindInfo(bind_info);
+  base::win::ScopedComPtr<IBindCtx> bind_ctx = BindCtxFromIBindInfo(bind_info);
   if (!bind_ctx) {
     // MSHTML sometimes takes a short path, skips the creation of
     // moniker and binding, by directly grabbing protocol from InternetSession.
@@ -745,7 +746,7 @@ STDMETHODIMP Hook_StartEx(InternetProtocol_StartEx_Fn orig_start_ex,
   }
 
   if (IsCFRequest(bind_ctx)) {
-    ScopedComPtr<BindContextInfo> info;
+    base::win::ScopedComPtr<BindContextInfo> info;
     BindContextInfo::FromBindContext(bind_ctx, info.Receive());
     DCHECK(info);
     if (info) {
@@ -758,7 +759,7 @@ STDMETHODIMP Hook_StartEx(InternetProtocol_StartEx_Fn orig_start_ex,
   if (prot_data) {
     DVLOG(1) << "Found existing ProtData!";
     prot_data->UpdateUrl(url);
-    ScopedComPtr<IInternetProtocolSink> new_sink =
+    base::win::ScopedComPtr<IInternetProtocolSink> new_sink =
         ProtocolSinkWrap::CreateNewSink(prot_sink, prot_data);
     return ForwardWrappedHookStartEx(orig_start_ex, protocol, uri, new_sink,
                                      bind_info, flags, reserved);
@@ -775,7 +776,7 @@ STDMETHODIMP Hook_StartEx(InternetProtocol_StartEx_Fn orig_start_ex,
   prot_data = new ProtData(protocol, read_fun, url);
   PutProtData(bind_ctx, prot_data);
 
-  ScopedComPtr<IInternetProtocolSink> new_sink =
+  base::win::ScopedComPtr<IInternetProtocolSink> new_sink =
       ProtocolSinkWrap::CreateNewSink(prot_sink, prot_data);
   return ForwardWrappedHookStartEx(orig_start_ex, protocol, uri, new_sink,
                                    bind_info, flags, reserved);
@@ -864,7 +865,7 @@ class FakeProtocol : public CComObjectRootEx<CComSingleThreadModel>,
   STDMETHOD(LockRequest)(DWORD options) { return S_OK; }
   STDMETHOD(UnlockRequest)() { return S_OK; }
 
-  ScopedComPtr<IInternetProtocol> transaction_;
+  base::win::ScopedComPtr<IInternetProtocol> transaction_;
 };
 
 struct FakeFactory : public IClassFactory,
@@ -888,7 +889,7 @@ struct FakeFactory : public IClassFactory,
 };
 
 static void HookTransactionVtable(IInternetProtocol* p) {
-  ScopedComPtr<IInternetProtocolEx> ex;
+  base::win::ScopedComPtr<IInternetProtocolEx> ex;
   ex.QueryFrom(p);
 
   HRESULT hr = vtable_patch::PatchInterfaceMethods(p, CTransaction_PatchInfo);
@@ -906,7 +907,7 @@ void TransactionHooks::InstallHooks() {
   CComObjectStackEx<FakeProtocol> prot;
   CComObjectStackEx<FakeFactory> factory;
   factory.obj_ = &prot;
-  ScopedComPtr<IInternetSession> session;
+  base::win::ScopedComPtr<IInternetSession> session;
   HRESULT hr = ::CoInternetGetSession(0, session.Receive(), 0);
   hr = session->RegisterNameSpace(&factory, CLSID_NULL, L"611", 0, 0, 0);
   DLOG_IF(FATAL, FAILED(hr)) << "Failed to register namespace";
@@ -914,9 +915,9 @@ void TransactionHooks::InstallHooks() {
     return;
 
   do {
-    ScopedComPtr<IMoniker> mk;
-    ScopedComPtr<IBindCtx> bc;
-    ScopedComPtr<IStream> stream;
+    base::win::ScopedComPtr<IMoniker> mk;
+    base::win::ScopedComPtr<IBindCtx> bc;
+    base::win::ScopedComPtr<IStream> stream;
     hr = ::CreateAsyncBindCtxEx(0, 0, 0, 0, bc.Receive(), 0);
     DLOG_IF(FATAL, FAILED(hr)) << "CreateAsyncBindCtxEx failed " << hr;
     if (hr != S_OK)

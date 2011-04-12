@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,7 +65,7 @@ HRESULT BSCBImpl::ReleaseBind() {
 HRESULT BSCBImpl::QueryService(REFGUID service, REFIID iid, void** object) {
   HRESULT hr = E_NOINTERFACE;
   if (delegate_) {
-    ScopedComPtr<IServiceProvider> svc;
+    base::win::ScopedComPtr<IServiceProvider> svc;
     svc.QueryFrom(delegate_);
     if (svc) {
       hr = svc->QueryService(service, iid, object);
@@ -159,7 +159,7 @@ HRESULT BSCBImpl::GetBindInfoEx(DWORD* bindf, BINDINFO* bind_info,
            << base::StringPrintf(" tid=%i", base::PlatformThread::CurrentId());
   HRESULT hr = S_OK;
   if (delegate_) {
-    ScopedComPtr<IBindStatusCallbackEx> bscbex;
+    base::win::ScopedComPtr<IBindStatusCallbackEx> bscbex;
     bscbex.QueryFrom(delegate_);
     if (bscbex)
       hr = bscbex->GetBindInfoEx(bindf, bind_info, bindf2, reserved);
@@ -175,7 +175,7 @@ HRESULT BSCBImpl::BeginningTransaction(LPCWSTR url, LPCWSTR headers,
 
   HRESULT hr = S_OK;
   if (delegate_) {
-    ScopedComPtr<IHttpNegotiate> http_negotiate;
+    base::win::ScopedComPtr<IHttpNegotiate> http_negotiate;
     http_negotiate.QueryFrom(delegate_);
     if (http_negotiate) {
       hr = http_negotiate->BeginningTransaction(url, headers, reserved,
@@ -195,7 +195,7 @@ HRESULT BSCBImpl::OnResponse(DWORD response_code, LPCWSTR response_headers,
 
   HRESULT hr = S_OK;
   if (delegate_) {
-    ScopedComPtr<IHttpNegotiate> http_negotiate;
+    base::win::ScopedComPtr<IHttpNegotiate> http_negotiate;
     http_negotiate.QueryFrom(delegate_);
     if (http_negotiate) {
       hr = http_negotiate->OnResponse(response_code, response_headers,
@@ -209,7 +209,7 @@ HRESULT BSCBImpl::GetRootSecurityId(BYTE* security_id, DWORD* security_id_size,
                                     DWORD_PTR reserved) {
   HRESULT hr = S_OK;
   if (delegate_) {
-    ScopedComPtr<IHttpNegotiate2> http_negotiate;
+    base::win::ScopedComPtr<IHttpNegotiate2> http_negotiate;
     http_negotiate.QueryFrom(delegate_);
     if (http_negotiate) {
       hr = http_negotiate->GetRootSecurityId(security_id, security_id_size,
@@ -223,7 +223,7 @@ HRESULT BSCBImpl::GetSerializedClientCertContext(BYTE** cert,
                                                  DWORD* cert_size) {
   HRESULT hr = S_OK;
   if (delegate_) {
-    ScopedComPtr<IHttpNegotiate3> http_negotiate;
+    base::win::ScopedComPtr<IHttpNegotiate3> http_negotiate;
     http_negotiate.QueryFrom(delegate_);
     if (http_negotiate) {
       return http_negotiate->GetSerializedClientCertContext(cert, cert_size);

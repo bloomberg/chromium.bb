@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,11 +39,11 @@ HRESULT BindContextInfo::FromBindContext(IBindCtx* bind_context,
     return E_POINTER;
   }
 
-  ScopedComPtr<IUnknown> context;
+  base::win::ScopedComPtr<IUnknown> context;
   HRESULT hr = bind_context->GetObjectParam(kBindContextInfo,
                                             context.Receive());
   if (context) {
-    ScopedComPtr<IBindContextInfoInternal> internal;
+    base::win::ScopedComPtr<IBindContextInfoInternal> internal;
     hr = internal.QueryFrom(context);
     if (SUCCEEDED(hr)) {
       hr = internal->GetCppObject(reinterpret_cast<void**>(info));

@@ -63,7 +63,7 @@ ID2D1Brush* CreateD2D1BrushFromSkBitmap(ID2D1RenderTarget* render_target,
                                         const SkBitmap& bitmap,
                                         D2D1_EXTEND_MODE extend_mode_x,
                                         D2D1_EXTEND_MODE extend_mode_y) {
-  ScopedComPtr<ID2D1Bitmap> d2d1_bitmap(
+  base::win::ScopedComPtr<ID2D1Bitmap> d2d1_bitmap(
       CreateD2D1BitmapFromSkBitmap(render_target, bitmap));
 
   ID2D1BitmapBrush* brush = NULL;
@@ -85,7 +85,7 @@ class Direct2DBrush : public gfx::Brush {
   ID2D1Brush* brush() const { return brush_.get(); }
 
  private:
-  ScopedComPtr<ID2D1Brush> brush_;
+  base::win::ScopedComPtr<ID2D1Brush> brush_;
 
   DISALLOW_COPY_AND_ASSIGN(Direct2DBrush);
 };
@@ -204,7 +204,7 @@ void CanvasDirect2D::ScaleInt(int x, int y) {
 
 void CanvasDirect2D::FillRectInt(const SkColor& color,
                                  int x, int y, int w, int h) {
-  ScopedComPtr<ID2D1SolidColorBrush> solid_brush;
+  base::win::ScopedComPtr<ID2D1SolidColorBrush> solid_brush;
   rt_->CreateSolidColorBrush(SkColorToColorF(color), solid_brush.Receive());
   rt_->FillRectangle(RectToRectF(x, y, w, h), solid_brush);
 }
@@ -223,7 +223,7 @@ void CanvasDirect2D::FillRectInt(const gfx::Brush* brush,
 
 void CanvasDirect2D::DrawRectInt(const SkColor& color,
                                  int x, int y, int w, int h) {
-  ScopedComPtr<ID2D1SolidColorBrush> solid_brush;
+  base::win::ScopedComPtr<ID2D1SolidColorBrush> solid_brush;
   rt_->CreateSolidColorBrush(SkColorToColorF(color), solid_brush.Receive());
   rt_->DrawRectangle(RectToRectF(x, y, w, h), solid_brush);
 }
@@ -242,13 +242,13 @@ void CanvasDirect2D::DrawRectInt(int x, int y, int w, int h,
 void CanvasDirect2D::DrawLineInt(const SkColor& color,
                                  int x1, int y1,
                                  int x2, int y2) {
-  ScopedComPtr<ID2D1SolidColorBrush> solid_brush;
+  base::win::ScopedComPtr<ID2D1SolidColorBrush> solid_brush;
   rt_->CreateSolidColorBrush(SkColorToColorF(color), solid_brush.Receive());
   rt_->DrawLine(PointToPoint2F(x1, y1), PointToPoint2F(x2, y2), solid_brush);
 }
 
 void CanvasDirect2D::DrawBitmapInt(const SkBitmap& bitmap, int x, int y) {
-  ScopedComPtr<ID2D1Bitmap> d2d1_bitmap(
+  base::win::ScopedComPtr<ID2D1Bitmap> d2d1_bitmap(
       CreateD2D1BitmapFromSkBitmap(rt_, bitmap));
   rt_->DrawBitmap(d2d1_bitmap,
                   RectToRectF(x, y, bitmap.width(), bitmap.height()),
@@ -268,7 +268,7 @@ void CanvasDirect2D::DrawBitmapInt(const SkBitmap& bitmap,
                                    int dest_x, int dest_y,
                                    int dest_w, int dest_h,
                                    bool filter) {
-  ScopedComPtr<ID2D1Bitmap> d2d1_bitmap(
+  base::win::ScopedComPtr<ID2D1Bitmap> d2d1_bitmap(
       CreateD2D1BitmapFromSkBitmap(rt_, bitmap));
   rt_->DrawBitmap(d2d1_bitmap,
                   RectToRectF(dest_x, dest_y, dest_w, dest_h),
@@ -314,7 +314,7 @@ void CanvasDirect2D::DrawFocusRect(int x, int y, int width, int height) {
 
 void CanvasDirect2D::TileImageInt(const SkBitmap& bitmap,
                                   int x, int y, int w, int h) {
-  ScopedComPtr<ID2D1Brush> brush(
+  base::win::ScopedComPtr<ID2D1Brush> brush(
       CreateD2D1BrushFromSkBitmap(rt_, bitmap, D2D1_EXTEND_MODE_WRAP,
                                   D2D1_EXTEND_MODE_WRAP));
   rt_->FillRectangle(RectToRectF(x, y, w, h), brush);

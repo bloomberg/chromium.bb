@@ -10,8 +10,8 @@
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
-#include "base/scoped_comptr_win.h"
 #include "base/threading/thread.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"
@@ -1659,7 +1659,7 @@ LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
       BrowserAccessibilityManager::Create(m_hWnd, loading_tree, this));
   }
 
-  ScopedComPtr<IAccessible> root(
+  base::win::ScopedComPtr<IAccessible> root(
       browser_accessibility_manager_->GetRoot()->toBrowserAccessibilityWin());
   if (root.get())
     return LresultFromObject(IID_IAccessible, wparam, root.Detach());

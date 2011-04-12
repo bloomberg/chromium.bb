@@ -16,18 +16,18 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/scoped_comptr_win.h"
 #include "base/threading/thread.h"
+#include "base/win/scoped_comptr.h"
 
 #include "chrome_frame/chrome_frame_activex_base.h"
 #include "chrome_frame/com_type_info_holder.h"
+#include "chrome_frame/extra_system_apis.h"
 #include "chrome_frame/find_dialog.h"
 #include "chrome_frame/html_private_window_impl.h"
 #include "chrome_frame/html_window_impl.h"
 #include "chrome_frame/in_place_menu.h"
 #include "chrome_frame/ole_document_impl.h"
 #include "chrome_frame/resource.h"
-#include "chrome_frame/extra_system_apis.h"
 #include "chrome_frame/utils.h"
 
 class Thread;
@@ -467,7 +467,7 @@ END_EXEC_COMMAND_MAP()
   // a new ChromeActiveDocument instance is taking its place.
   bool is_automation_client_reused_;
 
-  ScopedComPtr<INewWindowManager> popup_manager_;
+  base::win::ScopedComPtr<INewWindowManager> popup_manager_;
   bool popup_allowed_;
   HACCEL accelerator_table_;
 

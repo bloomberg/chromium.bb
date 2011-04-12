@@ -31,9 +31,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 
-using base::win::ScopedBstr;
-using base::win::ScopedComPtr;
-
 namespace {
 
 class DevMode {
@@ -89,7 +86,7 @@ HRESULT PrintTicketToDevMode(const std::string& printer_name,
     return E_FAIL;
   }
 
-  ScopedComPtr<IStream> pt_stream;
+  base::win::ScopedComPtr<IStream> pt_stream;
   HRESULT hr = StreamFromPrintTicket(print_ticket, pt_stream.Receive());
   if (FAILED(hr))
     return hr;
@@ -563,8 +560,8 @@ class PrintSystemWin : public PrintSystem {
           return false;
         should_couninit_ = SUCCEEDED(CoInitializeEx(NULL,
                                                     COINIT_MULTITHREADED));
-        ScopedComPtr<IXpsPrintJobStream> doc_stream;
-        ScopedComPtr<IXpsPrintJobStream> print_ticket_stream;
+        base::win::ScopedComPtr<IXpsPrintJobStream> doc_stream;
+        base::win::ScopedComPtr<IXpsPrintJobStream> print_ticket_stream;
         bool ret = false;
         // Use nested SUCCEEDED checks because we want a common return point.
         if (SUCCEEDED(printing::XPSPrintModule::StartXpsPrintJob(
@@ -627,7 +624,7 @@ class PrintSystemWin : public PrintSystem {
       FilePath print_data_file_path_;
       base::win::ScopedHandle job_progress_event_;
       base::win::ObjectWatcher job_progress_watcher_;
-      ScopedComPtr<IXpsPrintJob> xps_print_job_;
+      base::win::ScopedComPtr<IXpsPrintJob> xps_print_job_;
       bool should_couninit_;
       DISALLOW_COPY_AND_ASSIGN(JobSpoolerWin::Core);
     };
@@ -758,7 +755,7 @@ bool PrintSystemWin::ValidatePrintTicket(
                                     1,
                                     &provider);
   if (provider) {
-    ScopedComPtr<IStream> print_ticket_stream;
+    base::win::ScopedComPtr<IStream> print_ticket_stream;
     CreateStreamOnHGlobal(NULL, TRUE, print_ticket_stream.Receive());
     ULONG bytes_written = 0;
     print_ticket_stream->Write(print_ticket_data.c_str(),
@@ -768,8 +765,8 @@ bool PrintSystemWin::ValidatePrintTicket(
     LARGE_INTEGER pos = {0};
     ULARGE_INTEGER new_pos = {0};
     print_ticket_stream->Seek(pos, STREAM_SEEK_SET, &new_pos);
-    ScopedBstr error;
-    ScopedComPtr<IStream> result_ticket_stream;
+    base::win::ScopedBstr error;
+    base::win::ScopedComPtr<IStream> result_ticket_stream;
     CreateStreamOnHGlobal(NULL, TRUE, result_ticket_stream.Receive());
     ret = SUCCEEDED(printing::XPSModule::MergeAndValidatePrintTicket(
         provider,

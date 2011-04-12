@@ -4,8 +4,8 @@
 
 #include <oleacc.h>
 
-#include "base/scoped_comptr_win.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_comptr.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -127,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
   ASSERT_TRUE(NULL != hwnd);
 
   // Get accessibility object.
-  ScopedComPtr<IAccessible> acc_obj;
+  base::win::ScopedComPtr<IAccessible> acc_obj;
   HRESULT hr = ::AccessibleObjectFromWindow(hwnd, OBJID_WINDOW, IID_IAccessible,
                                             reinterpret_cast<void**>(&acc_obj));
   ASSERT_EQ(S_OK, hr);

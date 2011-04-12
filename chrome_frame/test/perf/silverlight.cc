@@ -1,10 +1,12 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include <atlbase.h>
 #include <atlwin.h>
 #include <atlhost.h>
-#include "base/scoped_comptr_win.h"
+
+#include "base/win/scoped_comptr.h"
 #include "chrome_frame/test/perf/chrome_frame_perftest.h"
 
 interface IXcpControlDownloadCallback;
@@ -128,7 +130,7 @@ class SilverlightContainer :
     return hr;
   }
 
-  ScopedComPtr<IAxWinHostWindow> host_;
+  base::win::ScopedComPtr<IAxWinHostWindow> host_;
 };
 
 // Create and in-place Silverlight control. Should be extended to do something
@@ -156,7 +158,7 @@ TEST(ChromeFramePerf, DISABLED_HostSilverlight) {
       WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
       WS_EX_APPWINDOW | WS_EX_WINDOWEDGE);
   EXPECT_TRUE(host.m_hWnd != NULL);
-  ScopedComPtr<IDispatch> disp;
+  base::win::ScopedComPtr<IDispatch> disp;
   HRESULT hr = host.QueryControl(disp.Receive());
   EXPECT_HRESULT_SUCCEEDED(hr);
   disp.Release();

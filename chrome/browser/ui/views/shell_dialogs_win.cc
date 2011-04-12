@@ -14,11 +14,11 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "base/scoped_comptr_win.h"
 #include "base/string_split.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "content/browser/browser_thread.h"
 #include "grit/app_strings.h"
@@ -800,7 +800,7 @@ bool SelectFileDialogImpl::RunSelectFolderDialog(const std::wstring& title,
     STRRET out_dir_buffer;
     ZeroMemory(&out_dir_buffer, sizeof(out_dir_buffer));
     out_dir_buffer.uType = STRRET_WSTR;
-    ScopedComPtr<IShellFolder> shell_folder;
+    base::win::ScopedComPtr<IShellFolder> shell_folder;
     if (SHGetDesktopFolder(shell_folder.Receive()) == NOERROR) {
       HRESULT hr = shell_folder->GetDisplayNameOf(list, SHGDN_FORPARSING,
                                                   &out_dir_buffer);

@@ -12,7 +12,7 @@
 #include "base/string16.h"
 
 #if defined(OS_WIN)
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 #include "history_indexer.h"
 #endif
 
@@ -63,7 +63,8 @@ class HistoryPublisher {
   // Returns '0' if the time object is NULL.
   static double TimeToUTCVariantTime(const base::Time& time);
 
-  typedef std::vector< ScopedComPtr<IChromeHistoryIndexer> > IndexerList;
+  typedef std::vector< base::win::ScopedComPtr<
+      IChromeHistoryIndexer> > IndexerList;
 
   // The list of indexers registered to receive history data from us.
   IndexerList indexers_;

@@ -17,7 +17,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 #include "media/video/video_decode_engine.h"
 
 struct IDirect3DSurface9;
@@ -77,11 +77,12 @@ class MftH264DecodeEngine : public media::VideoDecodeEngine {
   bool DoDecode(const PipelineStatistics& statistics);
   void OnAllocFramesDone();
   void OnUploadVideoFrameDone(
-      ScopedComPtr<IDirect3DSurface9, &IID_IDirect3DSurface9> surface,
+      base::win::ScopedComPtr<IDirect3DSurface9,
+                              &IID_IDirect3DSurface9> surface,
       scoped_refptr<media::VideoFrame> frame, PipelineStatistics statistics);
 
   bool use_dxva_;
-  ScopedComPtr<IMFTransform> decode_engine_;
+  base::win::ScopedComPtr<IMFTransform> decode_engine_;
 
   MFT_INPUT_STREAM_INFO input_stream_info_;
   MFT_OUTPUT_STREAM_INFO output_stream_info_;

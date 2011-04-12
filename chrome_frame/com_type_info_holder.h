@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,8 @@
 #include <map>
 #include <ocidl.h>  // IProvideClassInfo2
 
-#include "base/scoped_comptr_win.h"
 #include "base/synchronization/lock.h"
+#include "base/win/scoped_comptr.h"
 
 #define NO_VTABLE __declspec(novtable)
 
@@ -60,7 +60,7 @@ class TypeInfoNameCache {
   }
 
  protected:
-  ScopedComPtr<ITypeInfo> type_info_;
+  base::win::ScopedComPtr<ITypeInfo> type_info_;
   NameToDispIdCache cache_;
 };
 
@@ -140,8 +140,8 @@ template <class T, const IID& iid = __uuidof(T)>
 class NO_VTABLE IDispatchImpl : public T {
  public:
   STDMETHOD(GetTypeInfoCount)(UINT* count) {
-    if (count == NULL) 
-      return E_POINTER; 
+    if (count == NULL)
+      return E_POINTER;
     *count = 1;
     return S_OK;
   }
@@ -174,7 +174,7 @@ class NO_VTABLE IProvideClassInfo2Impl : public IProvideClassInfo2 {
   }
 
   STDMETHOD(GetGUID)(DWORD guid_kind, GUID* guid) {
-    if(guid == NULL || guid_kind != GUIDKIND_DEFAULT_SOURCE_DISP_IID)
+    if (guid == NULL || guid_kind != GUIDKIND_DEFAULT_SOURCE_DISP_IID)
       return E_INVALIDARG;
 
     *guid = source_iid;

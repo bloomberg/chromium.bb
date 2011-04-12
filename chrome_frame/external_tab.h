@@ -9,11 +9,13 @@
 #include <windows.h>
 #include <atlbase.h>
 #include <atlwin.h>
-#include <vector>
+
 #include <string>
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
-#include "base/scoped_comptr_win.h"
 #include "base/time.h"
+#include "base/win/scoped_comptr.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome_frame/cfproxy.h"
 #include "chrome_frame/task_marshaller.h"

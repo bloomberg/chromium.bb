@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/scoped_comptr_win.h"
 #include "base/time.h"
+#include "base/win/scoped_comptr.h"
 #include "chrome_frame/chrome_frame_delegate.h"
 #include "chrome_frame/urlmon_upload_data_stream.h"
 #include "ipc/ipc_message.h"
@@ -186,7 +186,7 @@ class PluginUrlRequest {
   std::string extra_headers_;
   ResourceType::Type resource_type_;
   int load_flags_;
-  ScopedComPtr<IStream> upload_data_;
+  base::win::ScopedComPtr<IStream> upload_data_;
   bool is_chunked_upload_;
   // Contains the ip address and port of the destination host.
   net::HostPortPair socket_address_;

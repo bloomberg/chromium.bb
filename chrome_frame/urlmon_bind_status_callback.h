@@ -78,7 +78,7 @@ class SniffData {
     return (size_ != 0);
   }
 
-  ScopedComPtr<IStream> cache_;
+  base::win::ScopedComPtr<IStream> cache_;
   std::wstring url_;
   RendererType renderer_type_;
   size_t size_;
