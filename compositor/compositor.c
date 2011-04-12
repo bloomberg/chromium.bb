@@ -1189,24 +1189,11 @@ wlsc_binding_destroy(struct wlsc_binding *binding)
 	free(binding);
 }
 
-void
-notify_key(struct wl_input_device *device,
-	   uint32_t time, uint32_t key, uint32_t state)
+static void
+update_modifier_state(struct wlsc_input_device *device,
+		      uint32_t key, uint32_t state)
 {
-	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
-	struct wlsc_compositor *compositor =
-		(struct wlsc_compositor *) device->compositor;
-	uint32_t *k, *end;
 	uint32_t modifier;
-	struct wlsc_binding *b;
-
-	wl_list_for_each(b, &compositor->binding_list, link) {
-		if (b->key == key &&
-		    b->modifier == wd->modifier_state && state) {
-			b->handler(wd, time, key, state, b->data);
-			break;
-		}
-	}
 
 	switch (key) {
 	case KEY_LEFTCTRL:
@@ -1230,10 +1217,30 @@ notify_key(struct wl_input_device *device,
 	}
 
 	if (state)
-		wd->modifier_state |= modifier;
+		device->modifier_state |= modifier;
 	else
-		wd->modifier_state &= ~modifier;
+		device->modifier_state &= ~modifier;
+}
 
+void
+notify_key(struct wl_input_device *device,
+	   uint32_t time, uint32_t key, uint32_t state)
+{
+	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
+	struct wlsc_compositor *compositor =
+		(struct wlsc_compositor *) device->compositor;
+	uint32_t *k, *end;
+	struct wlsc_binding *b;
+
+	wl_list_for_each(b, &compositor->binding_list, link) {
+		if (b->key == key &&
+		    b->modifier == wd->modifier_state && state) {
+			b->handler(wd, time, key, state, b->data);
+			break;
+		}
+	}
+
+	update_modifier_state(wd, key, state);
 	end = device->keys.data + device->keys.size;
 	for (k = device->keys.data; k < end; k++) {
 		if (*k == key)
@@ -1294,6 +1301,7 @@ notify_keyboard_focus(struct wl_input_device *device,
 	struct wlsc_compositor *compositor =
 		(struct wlsc_compositor *) device->compositor;
 	struct wlsc_surface *es;
+	uint32_t *k, *end;
 
 	if (!wl_list_empty(&compositor->surface_list))
 		es = container_of(compositor->surface_list.next,
@@ -1303,9 +1311,16 @@ notify_keyboard_focus(struct wl_input_device *device,
 
 	if (output) {
 		wl_array_copy(&wd->input_device.keys, keys);
+		wd->modifier_state = 0;
+		end = device->keys.data + device->keys.size;
+		for (k = device->keys.data; k < end; k++) {
+			update_modifier_state(wd, *k, 1);
+		}
+
 		wl_input_device_set_keyboard_focus(&wd->input_device,
 						   &es->surface, time);
 	} else {
+		wd->modifier_state = 0;
 		wl_input_device_set_keyboard_focus(&wd->input_device,
 						   NULL, time);
 	}
