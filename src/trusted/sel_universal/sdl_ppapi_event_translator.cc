@@ -1,7 +1,7 @@
 /*
- * Copyright 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 // This file provives a utilty function to translate and SDL event structure
@@ -162,7 +162,7 @@ static uint32_t SDLKeyToPPKey(uint32_t key) {
     case SDLK_LCTRL:  return PP_K_LCTRL;
     case SDLK_LALT:  return PP_K_LALT;
     case SDLK_LEFT:  return PP_K_LEFT;
-    case SDLK_UP:  return PP_K_LEFT;
+    case SDLK_UP:  return PP_K_UP;
     case SDLK_RIGHT:  return PP_K_RIGHT;
     case SDLK_DOWN:  return PP_K_DOWN;
     case SDLK_KP_MULTIPLY:  return PP_K_KP_MULTIPLY;
