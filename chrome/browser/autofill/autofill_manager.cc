@@ -54,8 +54,8 @@ namespace {
 
 // We only send a fraction of the forms to upload server.
 // The rate for positive/negative matches potentially could be different.
-const double kAutofillPositiveUploadRateDefaultValue = 0.01;
-const double kAutofillNegativeUploadRateDefaultValue = 0.01;
+const double kAutofillPositiveUploadRateDefaultValue = 0.20;
+const double kAutofillNegativeUploadRateDefaultValue = 0.20;
 
 const string16::value_type kCreditCardPrefix[] = {'*', 0};
 
