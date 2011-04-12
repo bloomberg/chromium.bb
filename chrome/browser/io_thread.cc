@@ -42,6 +42,7 @@
 #include "net/base/mapped_host_resolver.h"
 #include "net/base/net_util.h"
 #include "net/proxy/proxy_config_service.h"
+#include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
@@ -209,6 +210,8 @@ ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
   context->set_proxy_service(globals->proxy_script_fetcher_proxy_service.get());
   context->set_http_transaction_factory(
       globals->proxy_script_fetcher_http_transaction_factory.get());
+  context->set_ftp_transaction_factory(
+      globals->proxy_script_fetcher_ftp_transaction_factory.get());
   // In-memory cookie store.
   context->set_cookie_store(new net::CookieMonster(NULL, NULL));
   context->set_network_delegate(globals->system_network_delegate.get());
@@ -229,6 +232,8 @@ ConstructSystemRequestContext(IOThread::Globals* globals,
   context->set_proxy_service(globals->system_proxy_service.get());
   context->set_http_transaction_factory(
       globals->system_http_transaction_factory.get());
+  context->set_ftp_transaction_factory(
+      globals->system_ftp_transaction_factory.get());
   // In-memory cookie store.
   context->set_cookie_store(new net::CookieMonster(NULL, NULL));
   return context;
@@ -451,6 +456,8 @@ void IOThread::Init() {
       new net::HttpNetworkSession(session_params));
   globals_->proxy_script_fetcher_http_transaction_factory.reset(
       new net::HttpNetworkLayer(network_session));
+  globals_->proxy_script_fetcher_ftp_transaction_factory.reset(
+      new net::FtpNetworkLayer(globals_->host_resolver.get()));
 
   scoped_refptr<net::URLRequestContext> proxy_script_fetcher_context =
       ConstructProxyScriptFetcherContext(globals_, net_log_);
@@ -654,6 +661,8 @@ void IOThread::InitSystemRequestContext() {
   globals_->system_http_transaction_factory.reset(
       new net::HttpNetworkLayer(
           new net::HttpNetworkSession(system_params)));
+  globals_->system_ftp_transaction_factory.reset(
+      new net::FtpNetworkLayer(globals_->host_resolver.get()));
   globals_->system_request_context =
       ConstructSystemRequestContext(globals_, net_log_);
 }

@@ -31,6 +31,7 @@ class Predictor;
 namespace net {
 class CertVerifier;
 class DnsRRResolver;
+class FtpTransactionFactory;
 class HostResolver;
 class HttpAuthHandlerFactory;
 class HttpTransactionFactory;
@@ -60,9 +61,12 @@ class IOThread : public BrowserProcessSubThread {
     scoped_refptr<net::ProxyService> proxy_script_fetcher_proxy_service;
     scoped_ptr<net::HttpTransactionFactory>
         proxy_script_fetcher_http_transaction_factory;
+    scoped_ptr<net::FtpTransactionFactory>
+        proxy_script_fetcher_ftp_transaction_factory;
     scoped_ptr<net::URLSecurityManager> url_security_manager;
     scoped_refptr<net::URLRequestContext> proxy_script_fetcher_context;
     scoped_ptr<net::HttpTransactionFactory> system_http_transaction_factory;
+    scoped_ptr<net::FtpTransactionFactory> system_ftp_transaction_factory;
     scoped_refptr<net::ProxyService> system_proxy_service;
     // NOTE(willchan): This request context is unusable until a system
     // SSLConfigService is provided that doesn't rely on
