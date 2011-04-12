@@ -12,6 +12,7 @@
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_host.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
@@ -160,7 +161,7 @@ string16 NotificationOptionsMenuModel::GetLabelForCommandId(int command_id)
     const GURL& origin = notification.origin_url();
 
     DesktopNotificationService* service =
-        balloon_->profile()->GetDesktopNotificationService();
+        DesktopNotificationServiceFactory::GetForProfile(balloon_->profile());
     if (origin.SchemeIs(chrome::kExtensionScheme)) {
       ExtensionService* ext_service =
           balloon_->profile()->GetExtensionService();
@@ -210,7 +211,7 @@ bool NotificationOptionsMenuModel::GetAcceleratorForCommandId(
 
 void NotificationOptionsMenuModel::ExecuteCommand(int command_id) {
   DesktopNotificationService* service =
-      balloon_->profile()->GetDesktopNotificationService();
+      DesktopNotificationServiceFactory::GetForProfile(balloon_->profile());
   ExtensionService* ext_service =
       balloon_->profile()->GetExtensionService();
   const GURL& origin = balloon_->notification().origin_url();

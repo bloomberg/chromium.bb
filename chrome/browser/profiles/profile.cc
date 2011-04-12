@@ -23,7 +23,6 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
-#include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/off_the_record_profile_io_data.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
@@ -505,14 +504,6 @@ class OffTheRecordProfileImpl : public Profile,
     return profile_->GetProtocolHandlerRegistry();
   }
 
-  virtual DesktopNotificationService* GetDesktopNotificationService() {
-    if (!desktop_notification_service_.get()) {
-      desktop_notification_service_.reset(new DesktopNotificationService(
-          this, g_browser_process->notification_ui_manager()));
-    }
-    return desktop_notification_service_.get();
-  }
-
   virtual TokenService* GetTokenService() {
     return NULL;
   }
@@ -701,9 +692,6 @@ class OffTheRecordProfileImpl : public Profile,
 
   // The download manager that only stores downloaded items in memory.
   scoped_refptr<DownloadManager> download_manager_;
-
-  // Use a separate desktop notification service for OTR.
-  scoped_ptr<DesktopNotificationService> desktop_notification_service_;
 
   // We use a non-writable content settings map for OTR.
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;

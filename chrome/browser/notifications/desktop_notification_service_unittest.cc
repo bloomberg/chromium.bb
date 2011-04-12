@@ -7,6 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -102,7 +103,7 @@ class DesktopNotificationServiceTest : public RenderViewHostTestHarness {
 
     // Creates the service, calls InitPrefs() on it which loads data from the
     // profile into the cache and then puts the cache in io thread mode.
-    service_ = profile()->GetDesktopNotificationService();
+    service_ = DesktopNotificationServiceFactory::GetForProfile(profile());
     cache_ = service_->prefs_cache();
   }
 

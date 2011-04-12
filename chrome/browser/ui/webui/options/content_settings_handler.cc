@@ -13,6 +13,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
@@ -375,8 +376,8 @@ std::string ContentSettingsHandler::GetSettingDefaultFromModel(
     default_setting = web_ui_->GetProfile()->
         GetGeolocationContentSettingsMap()->GetDefaultContentSetting();
   } else if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
-    default_setting = web_ui_->GetProfile()->
-        GetDesktopNotificationService()->GetDefaultContentSetting();
+    default_setting = DesktopNotificationServiceFactory::GetForProfile(
+        web_ui_->GetProfile())->GetDefaultContentSetting();
   } else {
     default_setting = GetContentSettingsMap()->GetDefaultContentSetting(type);
   }
@@ -390,8 +391,8 @@ bool ContentSettingsHandler::GetDefaultSettingManagedFromModel(
     return web_ui_->GetProfile()->
         GetGeolocationContentSettingsMap()->IsDefaultContentSettingManaged();
   } else if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
-    return web_ui_->GetProfile()->
-        GetDesktopNotificationService()->IsDefaultContentSettingManaged();
+    return DesktopNotificationServiceFactory::GetForProfile(
+        web_ui_->GetProfile())->IsDefaultContentSettingManaged();
   } else {
     return GetContentSettingsMap()->IsDefaultContentSettingManaged(type);
   }
@@ -491,7 +492,7 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
 
 void ContentSettingsHandler::UpdateNotificationExceptionsView() {
   DesktopNotificationService* service =
-      web_ui_->GetProfile()->GetDesktopNotificationService();
+      DesktopNotificationServiceFactory::GetForProfile(web_ui_->GetProfile());
 
   std::vector<GURL> allowed(service->GetAllowedOrigins());
   std::vector<GURL> blocked(service->GetBlockedOrigins());
@@ -590,7 +591,7 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
     web_ui_->GetProfile()->GetGeolocationContentSettingsMap()->
         SetDefaultContentSetting(default_setting);
   } else if (content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
-    web_ui_->GetProfile()->GetDesktopNotificationService()->
+    DesktopNotificationServiceFactory::GetForProfile(web_ui_->GetProfile())->
         SetDefaultContentSetting(default_setting);
   } else {
     GetContentSettingsMap()->
@@ -632,11 +633,11 @@ void ContentSettingsHandler::RemoveException(const ListValue* args) {
     DCHECK(rv);
     ContentSetting content_setting = ContentSettingFromString(setting);
     if (content_setting == CONTENT_SETTING_ALLOW) {
-      web_ui_->GetProfile()->GetDesktopNotificationService()->
+      DesktopNotificationServiceFactory::GetForProfile(web_ui_->GetProfile())->
           ResetAllowedOrigin(GURL(origin));
     } else {
       DCHECK_EQ(content_setting, CONTENT_SETTING_BLOCK);
-      web_ui_->GetProfile()->GetDesktopNotificationService()->
+      DesktopNotificationServiceFactory::GetForProfile(web_ui_->GetProfile())->
           ResetBlockedOrigin(GURL(origin));
     }
   } else {

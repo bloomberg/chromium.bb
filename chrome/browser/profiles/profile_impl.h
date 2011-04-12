@@ -111,7 +111,6 @@ class ProfileImpl : public Profile,
   virtual SpellCheckHost* GetSpellCheckHost();
   virtual void ReinitializeSpellCheckHost(bool force);
   virtual WebKitContext* GetWebKitContext();
-  virtual DesktopNotificationService* GetDesktopNotificationService();
   virtual BackgroundContentsService* GetBackgroundContentsService() const;
   virtual StatusTray* GetStatusTray();
   virtual void MarkAsCleanShutdown();
@@ -242,7 +241,6 @@ class ProfileImpl : public Profile,
   scoped_refptr<PasswordStore> password_store_;
   scoped_refptr<SessionService> session_service_;
   scoped_refptr<WebKitContext> webkit_context_;
-  scoped_ptr<DesktopNotificationService> desktop_notification_service_;
   scoped_ptr<BackgroundContentsService> background_contents_service_;
   scoped_ptr<BackgroundModeManager> background_mode_manager_;
   scoped_ptr<StatusTray> status_tray_;

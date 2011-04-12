@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/notifications/notification_exceptions_table_model.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -23,7 +24,7 @@ class NotificationExceptionsTableModelTest : public RenderViewHostTestHarness {
 
   virtual void SetUp() {
     RenderViewHostTestHarness::SetUp();
-    service_ = profile()->GetDesktopNotificationService();
+    service_ = DesktopNotificationServiceFactory::GetForProfile(profile());
     ResetModel();
   }
 
