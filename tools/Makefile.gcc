@@ -63,7 +63,7 @@ GCC_CONFIGURE_VARS = \
     CC="$(GCC_CC)" \
     CFLAGS="$(GCC_CFLAGS) $(GCC_DEFINES)" \
     LDFLAGS="$(GCC_LDFLAGS)" \
-    CFLAGS_FOR_TARGET="$(GCC_CFLAGS_FOR_TARGET)"
+    CFLAGS_FOR_TARGET="$(GCC_CFLAGS_FOR_TARGET)" \
     CXXFLAGS_FOR_TARGET="$(GCC_CFLAGS_FOR_TARGET)"
 
 GCC_CFLAGS_FOR_TARGET-newlib =
@@ -72,6 +72,12 @@ GCC_CONFIGURE_FLAGS-pregcc = --disable-shared \
 			     --enable-languages="c" \
 			     --without-headers
 
+# The newlib-based build of the GCC target libraries (libstdc++ et al)
+# gets used in irt.nexe, which must not use direct register access for
+# TLS.  src/untrusted/irt/nacl.scons:run_irt_tls_test ensures that no
+# such accesses leaked into that binary.  The pregcc build does not
+# produce target libraries that are linked into anything, and the glibc
+# build is not used for building irt.nexe, so they do not need this option.
 GCC_CFLAGS_FOR_TARGET-newlib = -mtls-use-call
 GCC_CONFIGURE_FLAGS-newlib = --disable-shared \
 			     --enable-languages="c,c++,objc" \
