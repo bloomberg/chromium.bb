@@ -250,16 +250,6 @@ wlsc_shm_init(struct wlsc_compositor *ec);
 int
 wlsc_shell_init(struct wlsc_compositor *ec);
 
-void
-shell_move(struct wl_client *client, struct wl_shell *shell,
-	   struct wl_surface *surface,
-	   struct wl_input_device *device, uint32_t time);
-
-void
-shell_resize(struct wl_client *client, struct wl_shell *shell,
-	     struct wl_surface *surface,
-	     struct wl_input_device *device, uint32_t time, uint32_t edges);
-
 struct wlsc_compositor *
 x11_compositor_create(struct wl_display *display, int width, int height);
 

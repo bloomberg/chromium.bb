@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <linux/input.h>
 
 #include "wayland-server.h"
 #include "compositor.h"
@@ -74,7 +75,7 @@ static const struct wl_grab_interface move_grab_interface = {
 	move_grab_end
 };
 
-void
+static void
 shell_move(struct wl_client *client, struct wl_shell *shell,
 	   struct wl_surface *surface,
 	   struct wl_input_device *device, uint32_t time)
@@ -169,7 +170,7 @@ static const struct wl_grab_interface resize_grab_interface = {
 	resize_grab_end
 };
 
-void
+static void
 shell_resize(struct wl_client *client, struct wl_shell *shell,
 	     struct wl_surface *surface,
 	     struct wl_input_device *device, uint32_t time, uint32_t edges)
@@ -662,6 +663,51 @@ const static struct wl_shell_interface shell_interface = {
 	shell_create_selection
 };
 
+static void
+move_binding(struct wl_input_device *device, uint32_t time,
+	     uint32_t key, uint32_t button, uint32_t state, void *data)
+{
+	struct wlsc_compositor *compositor = data;
+	struct wlsc_surface *surface =
+		(struct wlsc_surface *) device->pointer_focus;
+
+	shell_move(NULL,
+		   (struct wl_shell *) &compositor->shell,
+		   &surface->surface, device, time);
+}
+
+static void
+resize_binding(struct wl_input_device *device, uint32_t time,
+	       uint32_t key, uint32_t button, uint32_t state, void *data)
+{
+	struct wlsc_compositor *compositor = data;
+	struct wlsc_surface *surface =
+		(struct wlsc_surface *) device->pointer_focus;
+	uint32_t edges = 0;
+	int32_t x, y;
+
+	x = device->grab_x - surface->x;
+	y = device->grab_y - surface->y;
+
+	if (x < surface->width / 3)
+		edges |= WL_SHELL_RESIZE_LEFT;
+	else if (x < 2 * surface->width / 3)
+		edges |= 0;
+	else
+		edges |= WL_SHELL_RESIZE_RIGHT;
+
+	if (y < surface->height / 3)
+		edges |= WL_SHELL_RESIZE_TOP;
+	else if (y < 2 * surface->height / 3)
+		edges |= 0;
+	else
+		edges |= WL_SHELL_RESIZE_BOTTOM;
+
+	shell_resize(NULL,
+		     (struct wl_shell *) &compositor->shell,
+		     &surface->surface, device, time, edges);
+}
+
 int
 wlsc_shell_init(struct wlsc_compositor *ec)
 {
@@ -672,6 +718,11 @@ wlsc_shell_init(struct wlsc_compositor *ec)
 	wl_display_add_object(ec->wl_display, &shell->object);
 	if (wl_display_add_global(ec->wl_display, &shell->object, NULL))
 		return -1;
+
+	wlsc_compositor_add_binding(ec, 0, BTN_LEFT, MODIFIER_SUPER,
+				    move_binding, ec);
+	wlsc_compositor_add_binding(ec, 0, BTN_MIDDLE, MODIFIER_SUPER,
+				    resize_binding, ec);
 
 	return 0;
 }

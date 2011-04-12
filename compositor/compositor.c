@@ -1008,51 +1008,6 @@ wlsc_surface_activate(struct wlsc_surface *surface,
 					   time);
 }
 
-static void
-move_binding(struct wl_input_device *device, uint32_t time,
-	     uint32_t key, uint32_t button, uint32_t state, void *data)
-{
-	struct wlsc_compositor *compositor = data;
-	struct wlsc_surface *surface =
-		(struct wlsc_surface *) device->pointer_focus;
-
-	shell_move(NULL,
-		   (struct wl_shell *) &compositor->shell,
-		   &surface->surface, device, time);
-}
-
-static void
-resize_binding(struct wl_input_device *device, uint32_t time,
-	       uint32_t key, uint32_t button, uint32_t state, void *data)
-{
-	struct wlsc_compositor *compositor = data;
-	struct wlsc_surface *surface =
-		(struct wlsc_surface *) device->pointer_focus;
-	uint32_t edges = 0;
-	int32_t x, y;
-
-	x = device->grab_x - surface->x;
-	y = device->grab_y - surface->y;
-
-	if (x < surface->width / 3)
-		edges |= WL_SHELL_RESIZE_LEFT;
-	else if (x < 2 * surface->width / 3)
-		edges |= 0;
-	else
-		edges |= WL_SHELL_RESIZE_RIGHT;
-
-	if (y < surface->height / 3)
-		edges |= WL_SHELL_RESIZE_TOP;
-	else if (y < 2 * surface->height / 3)
-		edges |= 0;
-	else
-		edges |= WL_SHELL_RESIZE_BOTTOM;
-
-	shell_resize(NULL,
-		     (struct wl_shell *) &compositor->shell,
-		     &surface->surface, device, time, edges);
-}
-
 struct wlsc_binding {
 	uint32_t key;
 	uint32_t button;
@@ -1565,12 +1520,12 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	wlsc_shm_init(ec);
 	eglBindWaylandDisplayWL(ec->display, ec->wl_display);
 
-	wlsc_shell_init(ec);
-
 	wl_list_init(&ec->surface_list);
 	wl_list_init(&ec->input_device_list);
 	wl_list_init(&ec->output_list);
 	wl_list_init(&ec->binding_list);
+
+	wlsc_shell_init(ec);
 
 	wlsc_compositor_add_binding(ec, KEY_BACKSPACE, 0,
 				    MODIFIER_CTRL | MODIFIER_ALT,
@@ -1581,10 +1536,6 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 				    switcher_terminate_binding, ec);
 	wlsc_compositor_add_binding(ec, KEY_RIGHTMETA, MODIFIER_SUPER, 0,
 				    switcher_terminate_binding, ec);
-	wlsc_compositor_add_binding(ec, 0, BTN_LEFT, MODIFIER_SUPER,
-				    move_binding, ec);
-	wlsc_compositor_add_binding(ec, 0, BTN_MIDDLE, MODIFIER_SUPER,
-				    resize_binding, ec);
 
 	create_pointer_images(ec);
 
