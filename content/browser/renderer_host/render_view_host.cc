@@ -465,6 +465,10 @@ void RenderViewHost::DragTargetDragEnter(
     policy->GrantRequestURL(process()->id(),
                             net::FilePathToFileURL(path));
     policy->GrantReadFile(process()->id(), path);
+
+    // Allow dragged directories to be enumerated by the child process.
+    // Note that we can't tell a file from a directory at this point.
+    policy->GrantReadDirectory(process()->id(), path);
   }
   Send(new DragMsg_TargetDragEnter(routing_id(), drop_data, client_pt,
                                    screen_pt, operations_allowed));
@@ -681,6 +685,20 @@ void RenderViewHost::FilesSelectedInChooser(
         process()->id(), *file);
   }
   Send(new ViewMsg_RunFileChooserResponse(routing_id(), files));
+}
+
+void RenderViewHost::DirectoryEnumerationFinished(
+    int request_id,
+    const std::vector<FilePath>& files) {
+  // Grant the security access requested to the given files.
+  for (std::vector<FilePath>::const_iterator file = files.begin();
+       file != files.end(); ++file) {
+    ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(
+        process()->id(), *file);
+  }
+  Send(new ViewMsg_EnumerateDirectoryResponse(routing_id(),
+                                              request_id,
+                                              files));
 }
 
 void RenderViewHost::LoadStateChanged(const GURL& url,

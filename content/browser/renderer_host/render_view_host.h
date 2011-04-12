@@ -385,6 +385,10 @@ class RenderViewHost : public RenderWidgetHost {
   // from an Open File dialog for the form.
   void FilesSelectedInChooser(const std::vector<FilePath>& files);
 
+  // Notifies the listener that a directory enumeration is complete.
+  void DirectoryEnumerationFinished(int request_id,
+                                    const std::vector<FilePath>& files);
+
   // Notifies the RenderViewHost that its load state changed.
   void LoadStateChanged(const GURL& url, net::LoadState load_state,
                         uint64 upload_position, uint64 upload_size);

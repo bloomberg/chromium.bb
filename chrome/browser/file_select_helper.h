@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_FILE_SELECT_HELPER_H_
 #pragma once
 
+#include <map>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -21,7 +22,6 @@ struct ViewHostMsg_RunFileChooser_Params;
 
 class FileSelectHelper
     : public SelectFileDialog::Listener,
-      public net::DirectoryLister::DirectoryListerDelegate,
       public NotificationObserver {
  public:
   explicit FileSelectHelper(Profile* profile);
@@ -31,7 +31,36 @@ class FileSelectHelper
   void RunFileChooser(RenderViewHost* render_view_host,
                       const ViewHostMsg_RunFileChooser_Params& params);
 
+  // Enumerates all the files in directory.
+  void EnumerateDirectory(int request_id,
+                          RenderViewHost* render_view_host,
+                          const FilePath& path);
+
  private:
+  // Utility class which can listen for directory lister events and relay
+  // them to the main object with the correct tracking id.
+  class DirectoryListerDispatchDelegate
+      : public net::DirectoryLister::DirectoryListerDelegate {
+   public:
+    DirectoryListerDispatchDelegate(FileSelectHelper* parent, int id)
+        : parent_(parent),
+          id_(id) {}
+    ~DirectoryListerDispatchDelegate() {}
+    virtual void OnListFile(
+        const net::DirectoryLister::DirectoryListerData& data) {
+      parent_->OnListFile(id_, data);
+    }
+    virtual void OnListDone(int error) {
+      parent_->OnListDone(id_, error);
+    }
+   private:
+    // This FileSelectHelper owns this object.
+    FileSelectHelper* parent_;
+    int id_;
+
+    DISALLOW_COPY_AND_ASSIGN(DirectoryListerDispatchDelegate);
+  };
+
   // SelectFileDialog::Listener overrides.
   virtual void FileSelected(
       const FilePath& path, int index, void* params) OVERRIDE;
@@ -39,18 +68,21 @@ class FileSelectHelper
                                   void* params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
-  // net::DirectoryLister::DirectoryListerDelegate overrides.
-  virtual void OnListFile(
-      const net::DirectoryLister::DirectoryListerData& data) OVERRIDE;
-  virtual void OnListDone(int error) OVERRIDE;
-
   // NotificationObserver overrides.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
-  // Helper method for handling the SelectFileDialog::Listener callbacks.
-  void DirectorySelected(const FilePath& path);
+  // Kicks off a new directory enumeration.
+  void StartNewEnumeration(const FilePath& path,
+                           int request_id,
+                           RenderViewHost* render_view_host);
+
+  // Callbacks from directory enumeration.
+  virtual void OnListFile(
+      int id,
+      const net::DirectoryLister::DirectoryListerData& data);
+  virtual void OnListDone(int id, int error);
 
   // Helper method to get allowed extensions for select file dialog from
   // the specified accept types as defined in the spec:
@@ -61,7 +93,8 @@ class FileSelectHelper
   // Profile used to set/retrieve the last used directory.
   Profile* profile_;
 
-  // The RenderViewHost for the page we are associated with.
+  // The RenderViewHost for the page showing a file dialog (may only be one
+  // such dialog).
   RenderViewHost* render_view_host_;
 
   // Dialog box used for choosing files to upload from file form fields.
@@ -70,12 +103,16 @@ class FileSelectHelper
   // The type of file dialog last shown.
   SelectFileDialog::Type dialog_type_;
 
-  // The current directory lister (runs on a separate thread).
-  scoped_refptr<net::DirectoryLister> directory_lister_;
-
-  // The current directory lister results, which may update incrementally
-  // as the listing proceeds.
-  std::vector<FilePath> directory_lister_results_;
+  // Maintain a list of active directory enumerations.  These could come from
+  // the file select dialog or from drag-and-drop of directories, so there could
+  // be more than one going on at a time.
+  struct ActiveDirectoryEnumeration {
+    scoped_ptr<DirectoryListerDispatchDelegate> delegate_;
+    scoped_refptr<net::DirectoryLister> lister_;
+    RenderViewHost* rvh_;
+    std::vector<FilePath> results_;
+  };
+  std::map<int, ActiveDirectoryEnumeration*> directory_enumerations_;
 
   // Registrar for notifications regarding our RenderViewHost.
   NotificationRegistrar notification_registrar_;
@@ -94,6 +131,9 @@ class FileSelectObserver : public TabContentsObserver {
 
   // Called when a file selection is to be done.
   void OnRunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
+
+  // Called when a direction enumeration is to be done.
+  void OnEnumerateDirectory(int request_id, const FilePath& path);
 
   // FileSelectHelper, lazily created.
   scoped_ptr<FileSelectHelper> file_select_helper_;

@@ -391,6 +391,9 @@ class RenderView : public RenderWidget,
   virtual bool runFileChooser(
       const WebKit::WebFileChooserParams& params,
       WebKit::WebFileChooserCompletion* chooser_completion);
+  virtual bool enumerateDirectory(
+      const WebKit::WebString& path,
+      WebKit::WebFileChooserCompletion* chooser_completion);
   virtual void runModalAlertDialog(WebKit::WebFrame* frame,
                                    const WebKit::WebString& message);
   virtual bool runModalConfirmDialog(WebKit::WebFrame* frame,
@@ -804,6 +807,7 @@ class RenderView : public RenderWidget,
                             WebKit::WebDragOperationsMask operations_allowed);
   void OnEnablePreferredSizeChangedMode(int flags);
   void OnEnableViewSourceMode();
+  void OnEnumerateDirectoryResponse(int id, const std::vector<FilePath>& paths);
   void OnExecuteEditCommand(const std::string& name, const std::string& value);
   void OnFileChooserResponse(const std::vector<FilePath>& paths);
   void OnFind(int request_id, const string16&, const WebKit::WebFindOptions&);
@@ -1258,6 +1262,10 @@ class RenderView : public RenderWidget,
   // still waiting to be run (in order).
   struct PendingFileChooser;
   std::deque< linked_ptr<PendingFileChooser> > file_chooser_completions_;
+
+  // The current directory enumeration callback
+  std::map<int, WebKit::WebFileChooserCompletion*> enumeration_completions_;
+  int enumeration_completion_id_;
 
   // ImageResourceFetchers schedule via DownloadImage.
   ImageResourceFetcherList image_fetchers_;

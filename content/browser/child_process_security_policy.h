@@ -71,6 +71,10 @@ class ChildProcessSecurityPolicy {
   // to upload the file to the web.
   void GrantReadFile(int child_id, const FilePath& file);
 
+  // Grants the child process permission to enumerate all the files in
+  // this directory and read those files.
+  void GrantReadDirectory(int child_id, const FilePath& directory);
+
   // Grants certain permissions to a file. |permissions| must be a bit-set of
   // base::PlatformFileFlags.
   void GrantPermissionsForFile(int child_id,
@@ -105,6 +109,10 @@ class ChildProcessSecurityPolicy {
   // browser should call this method to determine whether the process has the
   // capability to upload the requested file.
   bool CanReadFile(int child_id, const FilePath& file);
+
+  // Before servicing a child process's request to enumerate a directory
+  // the browser should call this method to check for the capability.
+  bool CanReadDirectory(int child_id, const FilePath& directory);
 
   // Determines if certain permissions were granted for a file. |permissions|
   // must be a bit-set of base::PlatformFileFlags.

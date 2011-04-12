@@ -935,6 +935,8 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_InstallMissingPlugin, OnInstallMissingPlugin)
     IPC_MESSAGE_HANDLER(ViewMsg_DisplayPrerenderedPage,
                         OnDisplayPrerenderedPage)
+    IPC_MESSAGE_HANDLER(ViewMsg_EnumerateDirectoryResponse,
+                        OnEnumerateDirectoryResponse)
     IPC_MESSAGE_HANDLER(ViewMsg_RunFileChooserResponse, OnFileChooserResponse)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(ViewMsg_GetAllSavableResourceLinksForCurrentPage,
@@ -2157,6 +2159,17 @@ bool RenderView::runFileChooser(
   ipc_params.accept_types = params.acceptTypes;
 
   return ScheduleFileChooser(ipc_params, chooser_completion);
+}
+
+bool RenderView::enumerateDirectory(
+    const WebString& path,
+    WebFileChooserCompletion* chooser_completion) {
+  int id = enumeration_completion_id_++;
+  enumeration_completions_[id] = chooser_completion;
+  return Send(new ViewHostMsg_EnumerateDirectory(
+      routing_id_,
+      id,
+      webkit_glue::WebStringToFilePath(path)));
 }
 
 void RenderView::runModalAlertDialog(
@@ -4235,6 +4248,20 @@ void RenderView::OnDisplayPrerenderedPage() {
           Time::Now());
     }
   }
+}
+
+void RenderView::OnEnumerateDirectoryResponse(
+    int id,
+    const std::vector<FilePath>& paths) {
+  if (!enumeration_completions_[id])
+    return;
+
+  WebVector<WebString> ws_file_names(paths.size());
+  for (size_t i = 0; i < paths.size(); ++i)
+    ws_file_names[i] = webkit_glue::FilePathToWebString(paths[i]);
+
+  enumeration_completions_[id]->didChooseFile(ws_file_names);
+  enumeration_completions_.erase(id);
 }
 
 void RenderView::OnFileChooserResponse(const std::vector<FilePath>& paths) {

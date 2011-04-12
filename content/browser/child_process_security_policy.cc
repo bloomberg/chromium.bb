@@ -20,6 +20,10 @@ static const int kReadFilePermissions =
     base::PLATFORM_FILE_EXCLUSIVE_READ |
     base::PLATFORM_FILE_ASYNC;
 
+static const int kEnumerateDirectoryPermissions =
+    kReadFilePermissions |
+    base::PLATFORM_FILE_ENUMERATE;
+
 // The SecurityState class is used to maintain per-child process security state
 // information.
 class ChildProcessSecurityPolicy::SecurityState {
@@ -241,6 +245,11 @@ void ChildProcessSecurityPolicy::GrantReadFile(int child_id,
   GrantPermissionsForFile(child_id, file, kReadFilePermissions);
 }
 
+void ChildProcessSecurityPolicy::GrantReadDirectory(int child_id,
+                                                    const FilePath& directory) {
+  GrantPermissionsForFile(child_id, directory, kEnumerateDirectoryPermissions);
+}
+
 void ChildProcessSecurityPolicy::GrantPermissionsForFile(
     int child_id, const FilePath& file, int permissions) {
   base::AutoLock lock(lock_);
@@ -370,6 +379,13 @@ bool ChildProcessSecurityPolicy::CanRequestURL(
 bool ChildProcessSecurityPolicy::CanReadFile(int child_id,
                                              const FilePath& file) {
   return HasPermissionsForFile(child_id, file, kReadFilePermissions);
+}
+
+bool ChildProcessSecurityPolicy::CanReadDirectory(int child_id,
+                                                  const FilePath& directory) {
+  return HasPermissionsForFile(child_id,
+                               directory,
+                               kEnumerateDirectoryPermissions);
 }
 
 bool ChildProcessSecurityPolicy::HasPermissionsForFile(

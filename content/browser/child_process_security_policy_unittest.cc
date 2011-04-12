@@ -215,6 +215,38 @@ TEST_F(ChildProcessSecurityPolicyTest, CanReadFiles) {
   p->Remove(kRendererID);
 }
 
+TEST_F(ChildProcessSecurityPolicyTest, CanReadDirectories) {
+  ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
+
+  p->Add(kRendererID);
+
+  EXPECT_FALSE(p->CanReadDirectory(kRendererID,
+      FilePath(FILE_PATH_LITERAL("/etc/"))));
+  p->GrantReadDirectory(kRendererID, FilePath(FILE_PATH_LITERAL("/etc/")));
+  EXPECT_TRUE(p->CanReadDirectory(kRendererID,
+      FilePath(FILE_PATH_LITERAL("/etc/"))));
+  EXPECT_TRUE(p->CanReadFile(kRendererID,
+      FilePath(FILE_PATH_LITERAL("/etc/passwd"))));
+
+  p->Remove(kRendererID);
+  p->Add(kRendererID);
+
+  EXPECT_FALSE(p->CanReadDirectory(kRendererID,
+      FilePath(FILE_PATH_LITERAL("/etc/"))));
+  EXPECT_FALSE(p->CanReadFile(kRendererID,
+      FilePath(FILE_PATH_LITERAL("/etc/passwd"))));
+
+  // Just granting read permission as a file doesn't imply reading as a
+  // directory.
+  p->GrantReadFile(kRendererID, FilePath(FILE_PATH_LITERAL("/etc/")));
+  EXPECT_TRUE(p->CanReadFile(kRendererID,
+      FilePath(FILE_PATH_LITERAL("/etc/passwd"))));
+  EXPECT_FALSE(p->CanReadDirectory(kRendererID,
+      FilePath(FILE_PATH_LITERAL("/etc/"))));
+
+  p->Remove(kRendererID);
+}
+
 TEST_F(ChildProcessSecurityPolicyTest, FilePermissions) {
   ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
 

@@ -1030,6 +1030,11 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetAltErrorPageURL,
 IPC_MESSAGE_ROUTED1(ViewMsg_RunFileChooserResponse,
                     std::vector<FilePath> /* selected files */)
 
+// Provides the results of directory enumeration.
+IPC_MESSAGE_ROUTED2(ViewMsg_EnumerateDirectoryResponse,
+                    int /* request_id */,
+                    std::vector<FilePath> /* files_in_directory */)
+
 // When a renderer sends a ViewHostMsg_Focus to the browser process,
 // the browser has the option of sending a ViewMsg_CantFocus back to
 // the renderer.
@@ -1641,6 +1646,14 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_SelectionChanged,
 // ViewHost_RunFileChooserResponse message.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_RunFileChooser,
                     ViewHostMsg_RunFileChooser_Params)
+
+// Asks the browser to enumerate a directory.  This is equivalent to running
+// the file chooser in directory-enumeration mode and having the user select
+// the given directory.  The result is returned in a
+// ViewMsg_EnumerateDirectoryResponse message.
+IPC_MESSAGE_ROUTED2(ViewHostMsg_EnumerateDirectory,
+                    int /* request_id */,
+                    FilePath /* file_path */)
 
 // Tells the browser to move the focus to the next (previous if reverse is
 // true) focusable element.
