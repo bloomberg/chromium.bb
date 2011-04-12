@@ -195,8 +195,8 @@ class PrefService : public base::NonThreadSafe {
   // If the path is valid (i.e., registered), update the pref value in the user
   // prefs.
   // To set the value of dictionary or list values in the pref tree use
-  // Set(), but to modify the value of a dictionary or list use
-  // ScopedUserPrefUpdate.
+  // Set(), but to modify the value of a dictionary or list use either
+  // ListPrefUpdate or DictionaryPrefUpdate from scoped_user_pref_update.h.
   void Set(const char* path, const Value& value);
   void SetBoolean(const char* path, bool value);
   void SetInteger(const char* path, int value);
@@ -210,22 +210,6 @@ class PrefService : public base::NonThreadSafe {
   void SetInt64(const char* path, int64 value);
   int64 GetInt64(const char* path) const;
   void RegisterInt64Pref(const char* path, int64 default_value);
-
-  // TODO(battre): Remove GetMutableDictionary and GetMutableList,
-  // once this has been substituted by the new ScopedUserPrefUpdate.
-  // http://crbug.com/58489
-  //
-  // Used to set the value of dictionary or list values in the pref tree.  This
-  // will create a dictionary or list if one does not exist in the pref tree.
-  // This method returns NULL only if you're requesting an unregistered pref or
-  // a non-dict/non-list pref.
-  // WARNING: Changes to the dictionary or list will not automatically notify
-  // pref observers.
-  // Use a ScopedUserPrefUpdate to update observers on changes.
-  // These should really be GetUserMutable... since we will only ever get
-  // a mutable from the user preferences store.
-  DictionaryValue* GetMutableDictionary(const char* path);
-  ListValue* GetMutableList(const char* path);
 
   // Returns true if a value has been set for the specified path.
   // NOTE: this is NOT the same as FindPreference. In particular
@@ -282,9 +266,6 @@ class PrefService : public base::NonThreadSafe {
   friend class subtle::PrefMemberBase;
 
   // Give access to ReportUserPrefChanged() and GetMutableUserPref().
-  // TODO(battre) Remove following line once everything uses the new
-  // ScopedUserPrefUpdate. http://crbug.com/58489
-  friend class ScopedUserPrefUpdate;
   friend class subtle::ScopedUserPrefUpdateBase;
 
   // Construct an incognito version of the pref service. Use
@@ -293,8 +274,7 @@ class PrefService : public base::NonThreadSafe {
               PrefStore* incognito_extension_prefs);
 
   // Sends notification of a changed preference. This needs to be called by
-  // a ScopedUserPrefUpdate if a DictionaryValue or ListValue retrieved by the
-  // GetMutable... methods is changed.
+  // a ScopedUserPrefUpdate if a DictionaryValue or ListValue is changed.
   void ReportUserPrefChanged(const std::string& key);
 
   // If the pref at the given path changes, we call the observer's Observe

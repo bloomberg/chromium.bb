@@ -583,15 +583,6 @@ Value* PrefService::GetMutableUserPref(const char* path,
   return value;
 }
 
-DictionaryValue* PrefService::GetMutableDictionary(const char* path) {
-  return static_cast<DictionaryValue*>(
-      GetMutableUserPref(path, Value::TYPE_DICTIONARY));
-}
-
-ListValue* PrefService::GetMutableList(const char* path) {
-  return static_cast<ListValue*>(GetMutableUserPref(path, Value::TYPE_LIST));
-}
-
 void PrefService::ReportUserPrefChanged(const std::string& key) {
   user_pref_store_->ReportValueChanged(key);
 }

@@ -49,13 +49,9 @@ class PersistentPrefStore : public PrefStore {
   virtual void SetValue(const std::string& key, Value* value) = 0;
 
   // Same as SetValue, but doesn't generate notifications. This is used by
-  // GetMutableDictionary() and GetMutableList() in order to put empty entries
+  // PrefService::GetMutableUserPref() in order to put empty entries
   // into the user pref store. Using SetValue is not an option since existing
   // tests rely on the number of notifications generated.
-  //
-  // TODO(mnissler, danno): Can we replace GetMutableDictionary() and
-  // GetMutableList() with something along the lines of ScopedUserPrefUpdate
-  // that updates the value in the end?
   virtual void SetValueSilently(const std::string& key, Value* value) = 0;
 
   // Removes the value for |key|.

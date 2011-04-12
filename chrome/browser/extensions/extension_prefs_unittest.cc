@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/common/notification_details.h"
@@ -624,14 +625,13 @@ class ExtensionPrefsIdChange : public ExtensionPrefsTest {
         manifest, Extension::LOAD);
     extension_id_ = extension_->id();
 
-    DictionaryValue* extensions_dict =
-        prefs()->pref_service()->GetMutableDictionary(
-            ExtensionPrefs::kExtensionsPref);
+    DictionaryPrefUpdate extensions_dict_update(
+        prefs()->pref_service(), ExtensionPrefs::kExtensionsPref);
 
     Value* extension_prefs;
-    EXPECT_TRUE(extensions_dict->RemoveWithoutPathExpansion(
+    ASSERT_TRUE(extensions_dict_update->RemoveWithoutPathExpansion(
         extension_id_, &extension_prefs));
-    extensions_dict->SetWithoutPathExpansion(
+    extensions_dict_update->SetWithoutPathExpansion(
         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", extension_prefs);
   }
 

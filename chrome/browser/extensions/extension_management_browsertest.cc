@@ -458,7 +458,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
 
   // Check that emptying the list triggers uninstall.
   {
-    ScopedUserPrefUpdate pref_update(prefs, prefs::kExtensionInstallForceList);
     prefs->ClearPref(prefs::kExtensionInstallForceList);
   }
   EXPECT_EQ(size_before + 1, extensions->size());

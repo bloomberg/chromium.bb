@@ -56,34 +56,19 @@ class ScopedUserPrefUpdateBase : public base::NonThreadSafe {
 
 }  // namespace subtle
 
-// TODO(battre) This class is legacy and will be substituted by
-// ScopedUserPrefUpdateTemplate soon. http://crbug.com/58489
-class ScopedUserPrefUpdate {
- public:
-  ScopedUserPrefUpdate(PrefService* service, const char* path);
-  ~ScopedUserPrefUpdate();
-
- private:
-  PrefService* service_;
-  std::string path_;
-};
-
-// TODO(battre) Rename ScopedUserPrefUpdateTemplate to ScopedUserPrefUpdate
-// once the legacy class above is gone. http://crbug.com/58489
-
 // Class to support modifications to DictionaryValues and ListValues while
 // guaranteeing that PrefObservers are notified of changed values.
 //
 // This class may only be used on the UI thread as it requires access to the
 // PrefService.
 template <typename T, Value::ValueType type_enum_value>
-class ScopedUserPrefUpdateTemplate : public subtle::ScopedUserPrefUpdateBase {
+class ScopedUserPrefUpdate : public subtle::ScopedUserPrefUpdateBase {
  public:
-  ScopedUserPrefUpdateTemplate(PrefService* service, const char* path)
+  ScopedUserPrefUpdate(PrefService* service, const char* path)
       : ScopedUserPrefUpdateBase(service, path) {}
 
   // Triggers an update notification if Get() was called.
-  virtual ~ScopedUserPrefUpdateTemplate() {}
+  virtual ~ScopedUserPrefUpdate() {}
 
   // Returns a mutable |T| instance that
   // - is already in the user pref store, or
@@ -108,12 +93,11 @@ class ScopedUserPrefUpdateTemplate : public subtle::ScopedUserPrefUpdateBase {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedUserPrefUpdateTemplate);
+  DISALLOW_COPY_AND_ASSIGN(ScopedUserPrefUpdate);
 };
 
-typedef ScopedUserPrefUpdateTemplate<DictionaryValue, Value::TYPE_DICTIONARY>
+typedef ScopedUserPrefUpdate<DictionaryValue, Value::TYPE_DICTIONARY>
     DictionaryPrefUpdate;
-typedef ScopedUserPrefUpdateTemplate<ListValue, Value::TYPE_LIST>
-    ListPrefUpdate;
+typedef ScopedUserPrefUpdate<ListValue, Value::TYPE_LIST> ListPrefUpdate;
 
 #endif  // CHROME_BROWSER_PREFS_SCOPED_USER_PREF_UPDATE_H_

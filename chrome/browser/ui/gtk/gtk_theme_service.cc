@@ -680,9 +680,7 @@ void GtkThemeService::LoadGtkValues() {
   // Before we start setting images and values, we have to clear out old, stale
   // values. (If we don't do this, we'll regress startup time in the case where
   // someone installs a heavyweight theme, then goes back to GTK.)
-  DictionaryValue* pref_images =
-      profile()->GetPrefs()->GetMutableDictionary(prefs::kCurrentThemeImages);
-  pref_images->Clear();
+  profile()->GetPrefs()->ClearPref(prefs::kCurrentThemeImages);
 
   GtkStyle* frame_style = gtk_rc_get_style(fake_frame_);
 

@@ -34,12 +34,3 @@ void ScopedUserPrefUpdateBase::Notify() {
 }
 
 }  // namespace subtle
-
-ScopedUserPrefUpdate::ScopedUserPrefUpdate(PrefService* service,
-                                           const char* path)
-    : service_(service),
-      path_(path) {}
-
-ScopedUserPrefUpdate::~ScopedUserPrefUpdate() {
-  service_->ReportUserPrefChanged(path_);
-}
