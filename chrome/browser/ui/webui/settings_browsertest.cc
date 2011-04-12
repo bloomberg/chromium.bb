@@ -81,7 +81,14 @@ class SettingsWebUITest : public WebUIBrowserTest {
 // Test the end to end js to WebUI handler code path for
 // the message setBooleanPref.
 // TODO(dtseng): add more EXPECT_CALL's when updating js test.
-IN_PROC_BROWSER_TEST_F(SettingsWebUITest, TestSetBooleanPrefTriggers) {
+
+// Crashes on Mac only. See http://crbug.com/79181
+#if defined(OS_MACOSX)
+#define MAYBE_TestSetBooleanPrefTriggers DISABLED_TestSetBooleanPrefTriggers
+#else
+#define MAYBE_TestSetBooleanPrefTriggers TestSetBooleanPrefTriggers
+#endif
+IN_PROC_BROWSER_TEST_F(SettingsWebUITest, MAYBE_TestSetBooleanPrefTriggers) {
   // This serves as an example of a very constrained test.
   ListValue true_list_value;
   true_list_value.Append(Value::CreateStringValue("browser.show_home_button"));
