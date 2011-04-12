@@ -1,6 +1,6 @@
 /*
- * Copyright 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
  * be found in the LICENSE file.
  */
 
@@ -23,10 +23,8 @@ void NaClExit(int err_code) {
 #else
   /* If the process is scheduled for termination, wait for it.*/
   if (TerminateProcess(GetCurrentProcess(), err_code)) {
-    printf("Terminate passed, but returned.\n");
     while(1);
   }
-  printf("Terminate failed with %d.\n", GetLastError());
 
   /* Otherwise use the standard C process exit to bybass destructors. */
   ExitProcess(err_code);
