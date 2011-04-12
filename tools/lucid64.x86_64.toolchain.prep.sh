@@ -84,7 +84,7 @@ for library in "${!libraries[@]}"; do
     fi
     ar x "${library}_${version}_i386.deb" data.tar.gz
     tar xSvpf data.tar.gz --wildcards './usr/lib/*.*a'
-    if [[ "$library" = "libgmp-dev" ]]; then
+    if [[ "$library" = libgmp*-dev ]]; then
       tar xSvpf data.tar.gz './usr/include/gmp-i386.h'
     fi
     rm data.tar.gz
