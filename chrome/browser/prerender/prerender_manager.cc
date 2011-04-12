@@ -385,6 +385,17 @@ PrerenderContents* PrerenderManager::CreatePrerenderContents(
       this, profile_, url, alias_urls, referrer);
 }
 
+// Helper macro for histograms.
+#define RECORD_PLT(tag, perceived_page_load_time) { \
+    UMA_HISTOGRAM_CUSTOM_TIMES( \
+        base::FieldTrial::MakeName(std::string("Prerender.") + tag, \
+                                   "Prefetch"), \
+        perceived_page_load_time, \
+        base::TimeDelta::FromMilliseconds(10), \
+        base::TimeDelta::FromSeconds(60), \
+        100); \
+  }
+
 // static
 void PrerenderManager::RecordPerceivedPageLoadTime(
     base::TimeDelta perceived_page_load_time,
@@ -396,48 +407,18 @@ void PrerenderManager::RecordPerceivedPageLoadTime(
     return;
   if (!prerender_manager->is_enabled())
     return;
-  UMA_HISTOGRAM_CUSTOM_TIMES(
-      base::FieldTrial::MakeName("Prerender.PerceivedPLT", "Prefetch"),
-      perceived_page_load_time,
-      base::TimeDelta::FromMilliseconds(10),
-      base::TimeDelta::FromSeconds(60),
-      100);
-  if (within_window) {
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        base::FieldTrial::MakeName("Prerender.PerceivedPLTWindowed",
-                                   "Prefetch"),
-        perceived_page_load_time,
-        base::TimeDelta::FromMilliseconds(10),
-        base::TimeDelta::FromSeconds(60),
-        100);
-  }
-  switch (mode_) {
-    case PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP:
-      if (prerender_manager &&
-          prerender_manager->WouldTabContentsBePrerendered(tab_contents)) {
-        UMA_HISTOGRAM_CUSTOM_TIMES(
-            base::FieldTrial::MakeName("Prerender.PerceivedPLTMatched",
-                                       "Prefetch"),
-            perceived_page_load_time,
-            base::TimeDelta::FromMilliseconds(10),
-            base::TimeDelta::FromSeconds(60),
-            100);
-      }
-      break;
-    case PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP:
-      if (prerender_manager &&
-          prerender_manager->IsTabContentsPrerendered(tab_contents)) {
-        UMA_HISTOGRAM_CUSTOM_TIMES(
-            base::FieldTrial::MakeName("Prerender.PerceivedPLTMatched",
-                                       "Prefetch"),
-            perceived_page_load_time,
-            base::TimeDelta::FromMilliseconds(10),
-            base::TimeDelta::FromSeconds(60),
-            100);
-      }
-      break;
-    default:
-      break;
+  RECORD_PLT("PerceivedPLT", perceived_page_load_time);
+  if (within_window)
+    RECORD_PLT("PerceivedPLTWindowed", perceived_page_load_time);
+  if (prerender_manager &&
+      ((mode_ == PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP &&
+        prerender_manager->WouldTabContentsBePrerendered(tab_contents)) ||
+       (mode_ == PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP &&
+        prerender_manager->IsTabContentsPrerendered(tab_contents)))) {
+    RECORD_PLT("PerceivedPLTMatched", perceived_page_load_time);
+  } else {
+    if (within_window)
+      RECORD_PLT("PerceivedPLTWindowNotMatched", perceived_page_load_time);
   }
 }
 
