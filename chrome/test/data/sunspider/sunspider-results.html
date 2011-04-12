@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
+
+<meta charset=utf8>
+
 <!--
  Copyright (C) 2007 Apple Inc.  All rights reserved.
 
@@ -26,14 +29,16 @@
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
 -->
 
-<title>SunSpider JavaScript Benchmark Results</title>
+<title>SunSpider 0.9.1 JavaScript Benchmark Results (sunspider-0.9.1 test suite)</title>
 <link rel="stylesheet" href="sunspider.css">
 </head>
 
 <body>
-<h2><span id="logo">&#x2600;</span>SunSpider JavaScript Benchmark Results</h2>
+<h2><span id="logo">&#x2600;</span>SunSpider 0.9.1 JavaScript Benchmark Results</h2>
 
-<p><a href="sunspider-driver.html">Run Again</a></p>
+<h3>Content Version: sunspider-0.9.1</h3>
+
+<p><a href="driver.html">Run Again</a></p>
 
 <p><input style="width: 90%;" id="selfUrl" type="text" readonly="readonly"><br>
 <small>(You can bookmark this results URL for later comparison.)</small></p>
@@ -45,12 +50,15 @@
 <pre id="console">
 </pre>
 
-
+<script src="../json2.js"></script>
 <script>
 var selfUrlInput = document.getElementById("selfUrl");
 selfUrlInput.value = location;
 
-var output = pivot(eval("(" + decodeURI(location.search.substring(1)) + ")"));
+var outputJSON = JSON.parse(decodeURI(location.search.substring(1)));
+var version = outputJSON["v"];
+delete outputJSON["v"];
+var output = pivot(outputJSON);
 
 function pivot(input) {
     var output = [];
@@ -70,10 +78,7 @@ function print(str) {
     console.appendChild(document.createElement("br"));
 }
 </script>
-
-<script src="../json2.js"></script>
 <script src="../../ui/sunspider_uitest.js"></script>
-
 <script src="sunspider-test-prefix.js"></script>
 <script src="sunspider-analyze-results.js"></script>
 <script src="sunspider-compare-results.js"></script>
@@ -83,14 +88,24 @@ function print(str) {
 automation.SetDone();
 </script>
 
+
 <script>
 var output2 = output;
+var version2 = version;
 
 function compare(other)
 {
     document.getElementById("console").innerHTML = "";
-    var output1 = pivot(eval("(" + decodeURI(other.split("?")[1]) + ")"));
-    sunspiderCompareResults(output1, output2);
+
+    var output1JSON = JSON.parse(decodeURI(other.split("?")[1]));
+    var version1 = output1JSON["v"];
+    delete output1JSON["v"];
+    if (version1 != version2) {
+        print("ERROR: cannot compare version " + version1 + ' with version ' + version2);
+    } else {
+        var output1 = pivot(output1JSON);
+        sunspiderCompareResults(output1, output2);
+    }
 }
 </script>
 

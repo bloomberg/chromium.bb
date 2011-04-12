@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
+
+<meta charset=utf8>
+
 <!--
  Copyright (C) 2007 Apple Inc.  All rights reserved.
 
@@ -26,19 +29,21 @@
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
 -->
 
-<title>SunSpider JavaScript Benchmark (In Progress...)</title>
+<title>SunSpider 0.9.1 JavaScript Benchmark (sunspider-0.9.1 test suite - In Progress...)</title>
 <link rel="stylesheet" href="sunspider.css">
 </head>
 
-<body onload="next()">
+<body onload="start()">
 
 <h2><span id="logo">&#x2600;</span>SunSpider JavaScript Benchmark <small>(In Progress...)</small></h2>
+<h3>Content Version: sunspider-0.9.1</h3>
 
 <script src="sunspider-test-prefix.js"></script>
+<script src="sunspider-test-contents.js"></script>
 <script>
 var testIndex = -1;
-var currentRepeat = 0;
-var repeatCount = 5;
+var currentRepeat = -1;
+var repeatCount = 10;
 
 var output = [];
 output.length = repeatCount;
@@ -46,19 +51,31 @@ for (var i = 0; i < output.length; i++) {
     output[i] = {};
 }
 
-function next() 
+function start() 
 {
     window.setTimeout(reallyNext, 500);
 }
 
+function next() 
+{
+    window.setTimeout(reallyNext, 10);
+}
+
 function reallyNext() 
 {
+    document.getElementById("frameparent").innerHTML = "";
+    document.getElementById("frameparent").innerHTML = "<iframe id='testframe'>";
+    var testFrame = document.getElementById("testframe");
     testIndex++;
     if (testIndex < tests.length) {
-        document.getElementById("testframe").src = tests[testIndex] + ".html";
+        testFrame.contentDocument.open();
+        testFrame.contentDocument.write(testContents[testIndex]);
+        testFrame.contentDocument.close;
     } else if (++currentRepeat < repeatCount) { 
         testIndex = 0;
-        document.getElementById("testframe").src = tests[testIndex] + ".html";
+        testFrame.contentDocument.open();
+        testFrame.contentDocument.write(testContents[testIndex]);
+        testFrame.contentDocument.close;
     } else {
         finish();
     }
@@ -66,13 +83,15 @@ function reallyNext()
 
 function recordResult(time)
 {
-    output[currentRepeat][tests[testIndex]] = time;
+    if (currentRepeat >= 0) // negative repeats are warmups
+        output[currentRepeat][tests[testIndex]] = time;
     next();
 }
 
 function finish()
 {
     var outputString = "{";
+//    outputString += '"v": "sunspider-0.9.1", ';
     for (var test in output[0]) {
         outputString += '"' + test + '":[';
         for (var i = 0; i < output.length; i++) {
@@ -89,8 +108,8 @@ function finish()
 
 </script>
 
-<iframe id="testframe">
-</iframe>
+<div id="frameparent">
+</div>
 
 </body>
 </html>
