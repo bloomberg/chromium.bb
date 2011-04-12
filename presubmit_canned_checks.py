@@ -456,6 +456,7 @@ def RunUnitTests(input_api, output_api, unit_tests):
     cmd.append(unit_test)
     if input_api.verbose:
       print('Running %s' % unit_test)
+      cmd.append('--verbose')
     try:
       if input_api.verbose:
         input_api.subprocess.check_call(cmd, cwd=input_api.PresubmitLocalPath())

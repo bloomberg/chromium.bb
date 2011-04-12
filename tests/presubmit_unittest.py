@@ -2015,8 +2015,8 @@ mac|success|blew
     input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
     input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
     input_api.subprocess.check_call(
-        ['allo'], cwd=self.fake_root_dir)
-    cmd = ['bar.py']
+        ['allo', '--verbose'], cwd=self.fake_root_dir)
+    cmd = ['bar.py', '--verbose']
     if input_api.platform == 'win32':
       cmd.insert(0, input_api.python_executable)
     input_api.subprocess.check_call(
@@ -2044,7 +2044,7 @@ mac|success|blew
     input_api.os_listdir(path).AndReturn(['.', '..', 'a', 'b', 'c'])
     input_api.os_path.isfile = lambda x: not x.endswith('.')
     input_api.subprocess.check_call(
-        [presubmit.os.path.join('random_directory', 'b')],
+        [presubmit.os.path.join('random_directory', 'b'), '--verbose'],
         cwd=self.fake_root_dir)
 
     self.mox.ReplayAll()
