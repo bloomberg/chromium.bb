@@ -77,6 +77,7 @@
 #include "ppapi/proxy/ppb_url_util_proxy.h"
 #include "ppapi/proxy/ppb_var_deprecated_proxy.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
+#include "ppapi/proxy/ppp_graphics_3d_proxy.h"
 #include "ppapi/proxy/ppp_instance_proxy.h"
 #include "ppapi/proxy/var_serialization_rules.h"
 
@@ -144,6 +145,7 @@ InterfaceList::InterfaceList() {
 #endif
 
   // PPP (plugin) interfaces.
+  AddPPP(PPP_Graphics3D_Proxy::GetInfo());
   AddPPP(PPP_Instance_Proxy::GetInfo());
 }
 

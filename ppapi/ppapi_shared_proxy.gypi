@@ -143,6 +143,8 @@
         'proxy/ppb_var_deprecated_proxy.h',
         'proxy/ppp_class_proxy.cc',
         'proxy/ppp_class_proxy.h',
+        'proxy/ppp_graphics_3d_proxy.cc',
+        'proxy/ppp_graphics_3d_proxy.h',
         'proxy/ppp_instance_proxy.cc',
         'proxy/ppp_instance_proxy.h',
         'proxy/serialized_flash_menu.cc',

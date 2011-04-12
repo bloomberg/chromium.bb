@@ -166,6 +166,10 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPPClass_Deallocate,
                     int64 /* ppp_class */,
                     int64 /* object */)
 
+// PPP_Graphics3D_Dev.
+IPC_MESSAGE_ROUTED1(PpapiMsg_PPPGraphics3D_ContextLost,
+                    PP_Instance /* instance */)
+
 // PPP_Instance.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiMsg_PPPInstance_DidCreate,
                            PP_Instance /* instance */,
