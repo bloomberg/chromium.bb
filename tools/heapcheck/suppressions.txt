@@ -1310,4 +1310,38 @@
    fun:RendererMain
    fun:SimpleRenderer
 }
-
+{
+   bug_79132
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::string::_Rep::_S_create
+   fun:std::string::_S_construct
+   fun:std::string::_S_construct_aux
+   fun:std::string::_S_construct
+   fun:basic_string
+   fun:AutofillMetrics::Log
+}
+{
+   bug_79138
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::string::_Rep::_S_create
+   fun:std::string::_Rep::_M_clone
+   fun:std::string::reserve
+   fun:std::operator+
+   fun:HistoryQuickProvider::Start
+   fun:HistoryQuickProviderTest::RunTest
+}
+{
+   bug_79141
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::string::_Rep::_S_create
+   fun:std::string::_Rep::_M_clone
+   fun:std::string::reserve
+   fun:std::operator+
+   fun:ThreadWatcher::Initialize
+   fun:ThreadWatcher
+   fun:CustomThreadWatcher
+   fun:ThreadWatcherTest
+}
