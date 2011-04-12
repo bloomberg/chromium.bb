@@ -69,10 +69,6 @@ static size_t MaxBackingStoreMemory() {
 // Expires the given |backing_store| from |cache|.
 void ExpireBackingStoreAt(BackingStoreCache* cache,
                           BackingStoreCache::iterator backing_store) {
-  NotificationService::current()->Notify(
-      NotificationType::RENDER_WIDGET_HOST_WILL_DESTROY_BACKING_STORE,
-      Source<RenderWidgetHost>(backing_store->first),
-      Details<BackingStore>(backing_store->second));
   cache->Erase(backing_store);
 }
 

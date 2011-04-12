@@ -38,71 +38,36 @@
 // --------
 // This class provides current thumbnails for tabs. The simplest operation is
 // when a request for a thumbnail comes in, to grab the backing store and make
-// a smaller version of that.
+// a smaller version of that. Clients of the class can send such a request by
+// GetThumbnailForRenderer() and AskForSnapshot().
 //
-// A complication happens because we don't always have nice backing stores for
-// all tabs (there is a cache of several tabs we'll keep backing stores for).
-// To get thumbnails for tabs with expired backing stores, we listen for
-// backing stores that are being thrown out, and generate thumbnails before
-// that happens. We attach them to the RenderWidgetHost via the property bag
-// so we can retrieve them later. When a tab has a live backing store again,
-// we throw away the thumbnail since it's now out-of-date.
+// The class also provides a service for updating thumbnails to be used in
+// "Most visited" section of the new tab page. The service can be started
+// by StartThumbnailing(). The current algorithm of the service is as
+// simple as follows:
 //
-// Another complication is performance. If the user brings up a tab switcher, we
-// don't want to get all 5 cached backing stores since it is a very large amount
-// of data. As a result, we generate thumbnails for tabs that are hidden even
-// if the backing store is still valid. This means we'll have to do a maximum
-// of generating thumbnails for the visible tabs at any point.
+//    When a renderer is about to be hidden (this usually occurs when the
+//    current tab is closed or another tab is clicked), update the
+//    thumbnail for the tab rendered by the renderer, if needed. The
+//    heuristics to judge whether or not to update the thumbnail is
+//    implemented in ShouldUpdateThumbnail().
 //
-// The last performance consideration is when the user switches tabs quickly.
-// This can happen by doing Control-PageUp/Down or juct clicking quickly on
-// many different tabs (like when you're looking for one). We don't want to
-// slow this down by making thumbnails for each tab as it's hidden. Therefore,
-// we have a timer so that we don't invalidate thumbnails for tabs that are
-// only shown briefly (which would cause the thumbnail to be regenerated when
-// the tab is hidden).
+// We'll likely revise the algorithm to improve quality of thumbnails this
+// service generates.
 
 namespace {
 
 static const int kThumbnailWidth = 212;
 static const int kThumbnailHeight = 132;
 
-// Indicates the time that the RWH must be visible for us to update the
-// thumbnail on it. If the user holds down control enter, there will be a lot
-// of backing stores created and destroyed. WE don't want to interfere with
-// that.
-//
-// Any operation that happens within this time of being shown is ignored.
-// This means we won't throw the thumbnail away when the backing store is
-// painted in this time.
-static const int kVisibilitySlopMS = 3000;
-
 static const char kThumbnailHistogramName[] = "Thumbnail.ComputeMS";
 
-struct WidgetThumbnail {
-  SkBitmap thumbnail;
-
-  // Indicates the last time the RenderWidgetHost was shown and hidden.
-  base::TimeTicks last_shown;
-  base::TimeTicks last_hidden;
-};
-
-PropertyAccessor<WidgetThumbnail>* GetThumbnailAccessor() {
-  static PropertyAccessor<WidgetThumbnail> accessor;
+// Returns a property accessor used for attaching a TabContents to a
+// RenderWidgetHost. We maintain the RenderWidgetHost to TabContents
+// mapping so that we can retrieve a TabContents from a RenderWidgetHost
+PropertyAccessor<TabContents*>* GetTabContentsAccessor() {
+  static PropertyAccessor<TabContents*> accessor;
   return &accessor;
-}
-
-// Returns the existing WidgetThumbnail for a RVH, or creates a new one and
-// returns that if none exists.
-WidgetThumbnail* GetDataForHost(RenderWidgetHost* host) {
-  WidgetThumbnail* wt = GetThumbnailAccessor()->GetProperty(
-      host->property_bag());
-  if (wt)
-    return wt;
-
-  GetThumbnailAccessor()->SetProperty(host->property_bag(),
-                                      WidgetThumbnail());
-  return GetThumbnailAccessor()->GetProperty(host->property_bag());
 }
 
 // Creates a downsampled thumbnail for the given backing store. The returned
@@ -165,8 +130,7 @@ struct ThumbnailGenerator::AsyncRequestInfo {
   RenderWidgetHost* renderer;  // Not owned.
 };
 
-ThumbnailGenerator::ThumbnailGenerator()
-    : no_timeout_(false) {
+ThumbnailGenerator::ThumbnailGenerator() {
   // The BrowserProcessImpl creates this non-lazily. If you add nontrivial
   // stuff here, be sure to convert it to being lazily created.
   //
@@ -187,8 +151,6 @@ void ThumbnailGenerator::StartThumbnailing() {
                    NotificationService::AllSources());
     registrar_.Add(this, NotificationType::RENDER_WIDGET_VISIBILITY_CHANGED,
                    NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::RENDER_WIDGET_HOST_DESTROYED,
-                   NotificationService::AllSources());
     registrar_.Add(this, NotificationType::TAB_CONTENTS_DISCONNECTED,
                    NotificationService::AllSources());
   }
@@ -200,31 +162,15 @@ void ThumbnailGenerator::MonitorRenderer(RenderWidgetHost* renderer,
   bool currently_monitored =
       registrar_.IsRegistered(
         this,
-        NotificationType::RENDER_WIDGET_HOST_WILL_DESTROY_BACKING_STORE,
+        NotificationType::RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
         renderer_source);
   if (monitor != currently_monitored) {
     if (monitor) {
       registrar_.Add(
           this,
-          NotificationType::RENDER_WIDGET_HOST_WILL_DESTROY_BACKING_STORE,
-          renderer_source);
-      registrar_.Add(
-          this,
-          NotificationType::RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
-          renderer_source);
-      registrar_.Add(
-          this,
           NotificationType::RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
           renderer_source);
     } else {
-      registrar_.Remove(
-          this,
-          NotificationType::RENDER_WIDGET_HOST_WILL_DESTROY_BACKING_STORE,
-          renderer_source);
-      registrar_.Remove(
-          this,
-          NotificationType::RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
-          renderer_source);
       registrar_.Remove(
           this,
           NotificationType::RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
@@ -306,85 +252,18 @@ SkBitmap ThumbnailGenerator::GetThumbnailForRendererWithOptions(
     RenderWidgetHost* renderer,
     int options,
     ClipResult* clip_result) const {
-  WidgetThumbnail* wt = GetDataForHost(renderer);
-
   BackingStore* backing_store = renderer->GetBackingStore(false);
   if (!backing_store) {
     // When we have no backing store, there's no choice in what to use. We
-    // have to return either the existing thumbnail or the empty one if there
-    // isn't a saved one.
-    return wt->thumbnail;
+    // have to return the empty thumbnail.
+    return SkBitmap();
   }
 
-  // Now that we have a backing store, we have a choice to use it to make
-  // a new thumbnail, or use a previously stashed one if we have it.
-  //
-  // Return the previously-computed one if we have it and it hasn't expired.
-  if (!wt->thumbnail.isNull() &&
-      (no_timeout_ ||
-       base::TimeTicks::Now() -
-       base::TimeDelta::FromMilliseconds(kVisibilitySlopMS) < wt->last_shown))
-    return wt->thumbnail;
-
-  // Save this thumbnail in case we need to use it again soon. It will be
-  // invalidated on the next paint.
-  wt->thumbnail = GetBitmapForBackingStore(backing_store,
-                                           kThumbnailWidth,
-                                           kThumbnailHeight,
-                                           options,
-                                           clip_result);
-  return wt->thumbnail;
-}
-
-void ThumbnailGenerator::WidgetWillDestroyBackingStore(
-    RenderWidgetHost* widget,
-    BackingStore* backing_store) {
-  // Since the backing store is going away, we need to save it as a thumbnail.
-  WidgetThumbnail* wt = GetDataForHost(widget);
-
-  // If there is already a thumbnail on the RWH that's visible, it means that
-  // not enough time has elapsed since being shown, and we can ignore generating
-  // a new one.
-  if (!wt->thumbnail.isNull())
-    return;
-
-  // Save a scaled-down image of the page in case we're asked for the thumbnail
-  // when there is no RenderViewHost. If this fails, we don't want to overwrite
-  // an existing thumbnail.
-  SkBitmap new_thumbnail = GetBitmapForBackingStore(backing_store,
-                                                    kThumbnailWidth,
-                                                    kThumbnailHeight,
-                                                    kNoOptions,
-                                                    NULL);
-  if (!new_thumbnail.isNull())
-    wt->thumbnail = new_thumbnail;
-}
-
-void ThumbnailGenerator::WidgetDidUpdateBackingStore(RenderWidgetHost* widget) {
-  // Notify interested parties that they might want to update their
-  // snapshots.
-  NotificationService::current()->Notify(
-      NotificationType::THUMBNAIL_GENERATOR_SNAPSHOT_CHANGED,
-      Source<ThumbnailGenerator>(this),
-      Details<RenderWidgetHost>(widget));
-
-  // Clear the current thumbnail since it's no longer valid.
-  WidgetThumbnail* wt = GetThumbnailAccessor()->GetProperty(
-      widget->property_bag());
-  if (!wt)
-    return;  // Nothing to do.
-
-  // If this operation is within the time slop after being shown, keep the
-  // existing thumbnail.
-  if (no_timeout_ ||
-      base::TimeTicks::Now() -
-      base::TimeDelta::FromMilliseconds(kVisibilitySlopMS) < wt->last_shown)
-    return;  // TODO(brettw) schedule thumbnail generation for this renderer in
-             // case we don't get a paint for it after the time slop, but it's
-             // still visible.
-
-  // Clear the thumbnail, since it's now out of date.
-  wt->thumbnail = SkBitmap();
+  return GetBitmapForBackingStore(backing_store,
+                                  kThumbnailWidth,
+                                  kThumbnailHeight,
+                                  options,
+                                  clip_result);
 }
 
 void ThumbnailGenerator::WidgetDidReceivePaintAtSizeAck(
@@ -430,29 +309,21 @@ void ThumbnailGenerator::Observe(NotificationType type,
     case NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB: {
       // Install our observer for all new RVHs.
       RenderViewHost* renderer = Details<RenderViewHost>(details).ptr();
+      TabContents* contents = Source<TabContents>(source).ptr();
       MonitorRenderer(renderer, true);
+      // Attach the tab contents to the renderer.
+      // TODO(satorux): Rework this code. This relies on some internals of
+      // how TabContents and RVH work. We should make this class
+      // per-tab. See also crbug.com/78990.
+      GetTabContentsAccessor()->SetProperty(
+          renderer->property_bag(), contents);
+      VLOG(1) << "renderer " << renderer << "is created for tab " << contents;
       break;
     }
 
     case NotificationType::RENDER_WIDGET_VISIBILITY_CHANGED:
-      if (*Details<bool>(details).ptr())
-        WidgetShown(Source<RenderWidgetHost>(source).ptr());
-      else
+      if (!*Details<bool>(details).ptr())
         WidgetHidden(Source<RenderWidgetHost>(source).ptr());
-      break;
-
-    case NotificationType::RENDER_WIDGET_HOST_DESTROYED:
-      WidgetDestroyed(Source<RenderWidgetHost>(source).ptr());
-      break;
-
-    case NotificationType::RENDER_WIDGET_HOST_WILL_DESTROY_BACKING_STORE:
-      WidgetWillDestroyBackingStore(
-          Source<RenderWidgetHost>(source).ptr(),
-          Details<BackingStore>(details).ptr());
-      break;
-
-    case NotificationType::RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE:
-      WidgetDidUpdateBackingStore(Source<RenderWidgetHost>(source).ptr());
       break;
 
     case NotificationType::RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK: {
@@ -470,54 +341,21 @@ void ThumbnailGenerator::Observe(NotificationType type,
       break;
 
     default:
-      NOTREACHED();
+      NOTREACHED() << "Unexpected notification type: " << type.value;
   }
-}
-
-void ThumbnailGenerator::WidgetShown(RenderWidgetHost* widget) {
-  WidgetThumbnail* wt = GetDataForHost(widget);
-  wt->last_shown = base::TimeTicks::Now();
-
-  // If there is no thumbnail (like we're displaying a background tab for the
-  // first time), then we don't have do to invalidate the existing one.
-  if (wt->thumbnail.isNull())
-    return;
-
-  std::vector<RenderWidgetHost*>::iterator found =
-      std::find(shown_hosts_.begin(), shown_hosts_.end(), widget);
-  if (found != shown_hosts_.end()) {
-    NOTREACHED() << "Showing a RWH we already think is shown";
-    shown_hosts_.erase(found);
-  }
-  shown_hosts_.push_back(widget);
-
-  // Keep the old thumbnail for a small amount of time after the tab has been
-  // shown. This is so in case it's hidden quickly again, we don't waste any
-  // work regenerating it.
-  if (timer_.IsRunning())
-    return;
-  timer_.Start(base::TimeDelta::FromMilliseconds(
-                   no_timeout_ ? 0 : kVisibilitySlopMS),
-               this, &ThumbnailGenerator::ShownDelayHandler);
 }
 
 void ThumbnailGenerator::WidgetHidden(RenderWidgetHost* widget) {
-  WidgetThumbnail* wt = GetDataForHost(widget);
-  wt->last_hidden = base::TimeTicks::Now();
-
-  // If the tab is on the list of ones to invalidate the thumbnail, we need to
-  // remove it.
-  EraseHostFromShownList(widget);
-
-  // There may still be a valid cached thumbnail on the RWH, so we don't need to
-  // make a new one.
-  if (!wt->thumbnail.isNull())
+  // Retrieve the tab contents rendered by the widget.
+  TabContents** property = GetTabContentsAccessor()->GetProperty(
+      widget->property_bag());
+  if (!property) {
+    LOG(ERROR) << "This widget is not associated with tab contents: "
+               << widget;
     return;
-  wt->thumbnail = GetThumbnailForRenderer(widget);
-}
-
-void ThumbnailGenerator::WidgetDestroyed(RenderWidgetHost* widget) {
-  EraseHostFromShownList(widget);
+  }
+  TabContents* contents = *property;
+  UpdateThumbnailIfNecessary(contents);
 }
 
 void ThumbnailGenerator::TabContentsDisconnected(TabContents* contents) {
@@ -535,39 +373,6 @@ void ThumbnailGenerator::TabContentsDisconnected(TabContents* contents) {
     }
     ++iterator;
   }
-}
-
-void ThumbnailGenerator::ShownDelayHandler() {
-  base::TimeTicks threshold = base::TimeTicks::Now() -
-      base::TimeDelta::FromMilliseconds(kVisibilitySlopMS);
-
-  // Check the list of all pending RWHs (normally only one) to see if any of
-  // their times have expired.
-  for (size_t i = 0; i < shown_hosts_.size(); i++) {
-    WidgetThumbnail* wt = GetDataForHost(shown_hosts_[i]);
-    if (no_timeout_ || wt->last_shown <= threshold) {
-      // This thumbnail has expired, delete it.
-      wt->thumbnail = SkBitmap();
-      shown_hosts_.erase(shown_hosts_.begin() + i);
-      i--;
-    }
-  }
-
-  // We need to schedule another run if there are still items in the list to
-  // process. We use half the timeout for these re-runs to catch the items
-  // that were added since the timer was run the first time.
-  if (!shown_hosts_.empty()) {
-    DCHECK(!no_timeout_);
-    timer_.Start(base::TimeDelta::FromMilliseconds(kVisibilitySlopMS) / 2, this,
-                 &ThumbnailGenerator::ShownDelayHandler);
-  }
-}
-
-void ThumbnailGenerator::EraseHostFromShownList(RenderWidgetHost* widget) {
-  std::vector<RenderWidgetHost*>::iterator found =
-      std::find(shown_hosts_.begin(), shown_hosts_.end(), widget);
-  if (found != shown_hosts_.end())
-    shown_hosts_.erase(found);
 }
 
 double ThumbnailGenerator::CalculateBoringScore(SkBitmap* bitmap) {
@@ -631,16 +436,16 @@ SkBitmap ThumbnailGenerator::GetClippedBitmap(const SkBitmap& bitmap,
 }
 
 void ThumbnailGenerator::UpdateThumbnailIfNecessary(
-    TabContents* tab_contents, const GURL& url) {
+    TabContents* tab_contents) {
+  const GURL& url = tab_contents->GetURL();
   history::TopSites* top_sites = tab_contents->profile()->GetTopSites();
   // Skip if we don't need to update the thumbnail.
   if (!ShouldUpdateThumbnail(tab_contents->profile(), top_sites, url))
     return;
 
-  ThumbnailGenerator* generator = g_browser_process->GetThumbnailGenerator();
   const int options = ThumbnailGenerator::kClippedThumbnail;
   ThumbnailGenerator::ClipResult clip_result = ThumbnailGenerator::kNotClipped;
-  SkBitmap thumbnail = generator->GetThumbnailForRendererWithOptions(
+  SkBitmap thumbnail = GetThumbnailForRendererWithOptions(
       tab_contents->render_view_host(), options, &clip_result);
   // Failed to generate a thumbnail. Maybe the tab is in the background?
   if (thumbnail.isNull())

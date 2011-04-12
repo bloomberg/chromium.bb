@@ -264,6 +264,14 @@ TabContents::TabContents(Profile* profile,
   content_settings_delegate_.reset(
       new TabSpecificContentSettings(this, profile));
 
+  // Start the in-browser thumbnailing if the feature is enabled.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableInBrowserThumbnailing)) {
+    ThumbnailGenerator* generator = g_browser_process->GetThumbnailGenerator();
+    if (generator)
+      generator->StartThumbnailing();
+  }
+
   render_manager_.Init(profile, site_instance, routing_id);
 
   // We have the initial size of the view be based on the size of the passed in
@@ -1771,12 +1779,6 @@ void TabContents::OnPageContents(const GURL& url,
       NotificationType::TAB_LANGUAGE_DETERMINED,
       Source<TabContents>(this),
       Details<std::string>(&lang));
-
-  // Generate the thumbnail here if the in-browser thumbnailing is enabled.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableInBrowserThumbnailing)) {
-    ThumbnailGenerator::UpdateThumbnailIfNecessary(this, url);
-  }
 }
 
 void TabContents::OnPageTranslated(int32 page_id,

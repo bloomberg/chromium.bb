@@ -459,15 +459,6 @@ class NotificationType {
     // the details are not used.
     RENDER_WIDGET_HOST_DID_PAINT,
 
-    // Indicates the RenderWidgetHost is about to destroy the backing store. The
-    // backing store will still be valid when this call is made. The source is
-    // the RenderWidgetHost, the details is the BackingStore.
-    RENDER_WIDGET_HOST_WILL_DESTROY_BACKING_STORE,
-
-    // Indicates that the RenderWidgetHost just updated the backing store. The
-    // source is the RenderWidgetHost, the details are not used.
-    RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
-
     // This notifies the observer that a PaintAtSizeACK was received. The source
     // is the RenderWidgetHost, the details are an instance of
     // RenderWidgetHost::PaintAtSizeAckDetails.

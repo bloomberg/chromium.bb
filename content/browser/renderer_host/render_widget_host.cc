@@ -930,11 +930,6 @@ void RenderWidgetHost::OnMsgUpdateRect(
     WasResized();
   }
 
-  NotificationService::current()->Notify(
-      NotificationType::RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
-      Source<RenderWidgetHost>(this),
-      NotificationService::NoDetails());
-
   // Log the time delta for processing a paint message.
   TimeDelta delta = TimeTicks::Now() - paint_start;
   UMA_HISTOGRAM_TIMES("MPArch.RWH_OnMsgUpdateRect", delta);
@@ -1292,4 +1287,3 @@ void RenderWidgetHost::ActivateDeferredPluginHandles() {
 void RenderWidgetHost::StartUserGesture() {
   OnUserGesture();
 }
-

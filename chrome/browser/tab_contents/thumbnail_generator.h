@@ -98,14 +98,6 @@ class ThumbnailGenerator : NotificationObserver {
   // of |monitor|.
   void MonitorRenderer(RenderWidgetHost* renderer, bool monitor);
 
-#ifdef UNIT_TEST
-  // When true, the class will not use a timeout to do the expiration. This
-  // will cause expiration to happen on the next run of the message loop.
-  // Unit tests case use this to test expiration by choosing when the message
-  // loop runs.
-  void set_no_timeout(bool no_timeout) { no_timeout_ = no_timeout; }
-#endif
-
   // Calculates how "boring" a thumbnail is. The boring score is the
   // 0,1 ranged percentage of pixels that are the most common
   // luma. Higher boring scores indicate that a higher percentage of a
@@ -122,9 +114,8 @@ class ThumbnailGenerator : NotificationObserver {
                                    int desired_height,
                                    ClipResult* clip_result);
 
-  // Update the thumbnail of the given URL if necessary.
-  static void UpdateThumbnailIfNecessary(TabContents* tab_contents,
-                                         const GURL& url);
+  // Update the thumbnail of the given tab contents if necessary.
+  void UpdateThumbnailIfNecessary(TabContents* tab_contents);
 
   // Returns true if we should update the thumbnail of the given URL.
   static bool ShouldUpdateThumbnail(Profile* profile,
@@ -132,11 +123,6 @@ class ThumbnailGenerator : NotificationObserver {
                                     const GURL& url);
 
  private:
-  // RenderWidgetHostPaintingObserver implementation.
-  virtual void WidgetWillDestroyBackingStore(RenderWidgetHost* widget,
-                                             BackingStore* backing_store);
-  virtual void WidgetDidUpdateBackingStore(RenderWidgetHost* widget);
-
   virtual void WidgetDidReceivePaintAtSizeAck(
       RenderWidgetHost* widget,
       int tag,
@@ -148,34 +134,13 @@ class ThumbnailGenerator : NotificationObserver {
                        const NotificationDetails& details);
 
   // Indicates that the given widget has changed is visibility.
-  void WidgetShown(RenderWidgetHost* widget);
   void WidgetHidden(RenderWidgetHost* widget);
-
-  // Called when the given widget is destroyed.
-  void WidgetDestroyed(RenderWidgetHost* widget);
 
   // Called when the given tab contents are disconnected (either
   // through being closed, or because the renderer is no longer there).
   void TabContentsDisconnected(TabContents* contents);
 
-  // Timer function called on a delay after a tab has been shown. It will
-  // invalidate the thumbnail for hosts with expired thumbnails in shown_hosts_.
-  void ShownDelayHandler();
-
-  // Removes the given host from the shown_hosts_ list, if it is there.
-  void EraseHostFromShownList(RenderWidgetHost* host);
-
   NotificationRegistrar registrar_;
-
-  base::OneShotTimer<ThumbnailGenerator> timer_;
-
-  // A list of all RWHs that have been shown and need to have their thumbnail
-  // expired at some time in the future with the "slop" time has elapsed. This
-  // list will normally have 0 or 1 items in it.
-  std::vector<RenderWidgetHost*> shown_hosts_;
-
-  // See the setter above.
-  bool no_timeout_;
 
   // Map of callback objects by sequence number.
   struct AsyncRequestInfo;
