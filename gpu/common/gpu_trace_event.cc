@@ -17,8 +17,9 @@ using namespace base;
 namespace gpu {
 
 // Controls the number of trace events we will buffer in-memory
-// before flushing them.
-#define TRACE_EVENT_BUFFER_SIZE 16384
+// before throwing them away.
+#define TRACE_EVENT_BUFFER_SIZE 500000
+#define TRACE_EVENT_BATCH_SIZE 1000
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -71,12 +72,14 @@ TraceEvent::~TraceEvent() {
 
 
 void TraceEvent::AppendAsJSON(std::string* out,
-    const std::vector<TraceEvent>& events) {
+    const std::vector<TraceEvent>& events,
+    size_t start,
+    size_t count) {
   *out += "[";
-  for (size_t i = 0; i < events.size(); ++i) {
+  for (size_t i = 0; i < count && start + i < events.size(); ++i) {
     if (i > 0)
       *out += ",";
-    events[i].AppendAsJSON(out);
+    events[i + start].AppendAsJSON(out);
   }
   *out += "]";
 }
@@ -187,9 +190,12 @@ void TraceLog::Flush() {
 
 void TraceLog::FlushWithLockAlreadyHeld() {
   if (output_callback_.get() && logged_events_.size()) {
-    std::string json_events;
-    TraceEvent::AppendAsJSON(&json_events, logged_events_);
-    output_callback_->Run(json_events);
+    for (size_t i = 0; i < logged_events_.size(); i += TRACE_EVENT_BATCH_SIZE) {
+      std::string json_events;
+      TraceEvent::AppendAsJSON(&json_events, logged_events_,
+                               i, TRACE_EVENT_BATCH_SIZE);
+      output_callback_->Run(json_events);
+    }
   }
   logged_events_.erase(logged_events_.begin(), logged_events_.end());
 }
@@ -208,6 +214,8 @@ void TraceLog::AddTraceEvent(TraceEventPhase phase,
 #endif
   //static_cast<unsigned long>(base::GetCurrentProcId()),
   AutoLock lock(lock_);
+  if (logged_events_.size() >= TRACE_EVENT_BUFFER_SIZE)
+    return;
   logged_events_.push_back(TraceEvent());
   TraceEvent& event = logged_events_.back();
   event.processId = static_cast<unsigned long>(base::GetCurrentProcId());
@@ -221,9 +229,6 @@ void TraceLog::AddTraceEvent(TraceEventPhase phase,
   event.argNames[1] = arg2name;
   event.argValues[1] = arg2name ? arg2val : "";
   COMPILE_ASSERT(TRACE_MAX_NUM_ARGS == 2, TraceEvent_arc_count_out_of_sync);
-
-  if (logged_events_.size() > TRACE_EVENT_BUFFER_SIZE)
-    FlushWithLockAlreadyHeld();
 }
 
 }  // namespace gpu
