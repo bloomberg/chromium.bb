@@ -36,7 +36,6 @@
 #include "chrome/browser/metrics/metric_event_duration_details.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/omnibox_search_hint.h"
 #include "chrome/browser/pdf_unsupported_feature.h"
 #include "chrome/browser/platform_util.h"
@@ -2408,7 +2407,7 @@ void TabContents::WorkerCrashed() {
 void TabContents::RequestDesktopNotificationPermission(
     const GURL& source_origin, int callback_context) {
   DesktopNotificationService* service =
-      DesktopNotificationServiceFactory::GetForProfile(profile());
+      profile()->GetDesktopNotificationService();
   service->RequestPermission(
       source_origin, GetRenderProcessHost()->id(),
       render_view_host()->routing_id(), callback_context, this);

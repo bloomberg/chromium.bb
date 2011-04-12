@@ -13,7 +13,7 @@
 
 ProfileKeyedServiceFactory::ProfileKeyedServiceFactory(
     ProfileDependencyManager* manager)
-    : dependency_manager_(manager), factory_(NULL) {
+    : dependency_manager_(manager) {
   dependency_manager_->AddComponent(this);
 }
 
@@ -35,22 +35,12 @@ ProfileKeyedService* ProfileKeyedServiceFactory::GetServiceForProfile(
     }
   }
 
-  ProfileKeyedService* service;
-
   std::map<Profile*, ProfileKeyedService*>::iterator it =
       mapping_.find(profile);
-  if (it != mapping_.end()) {
-    service = it->second;
-    if (service || !factory_)
-      return service;
+  if (it != mapping_.end())
+    return it->second;
 
-    // service is NULL but we have a mock factory function
-    mapping_.erase(it);
-    service = factory_(profile);
-  } else {
-    service = BuildServiceInstanceFor(profile);
-  }
-
+  ProfileKeyedService* service = BuildServiceInstanceFor(profile);
   Associate(profile, service);
   return service;
 }
@@ -76,7 +66,7 @@ bool ProfileKeyedServiceFactory::ServiceHasOwnInstanceInIncognito() {
 void ProfileKeyedServiceFactory::ProfileShutdown(Profile* profile) {
   std::map<Profile*, ProfileKeyedService*>::iterator it =
       mapping_.find(profile);
-  if (it != mapping_.end() && it->second)
+  if (it != mapping_.end())
     it->second->Shutdown();
 }
 

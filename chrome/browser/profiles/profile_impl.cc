@@ -46,6 +46,7 @@
 #include "chrome/browser/net/net_pref_observer.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/password_manager/password_store_default.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
@@ -1234,6 +1235,15 @@ WebKitContext* ProfileImpl::GetWebKitContext() {
         clear_local_state_on_exit_);
   }
   return webkit_context_.get();
+}
+
+DesktopNotificationService* ProfileImpl::GetDesktopNotificationService() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!desktop_notification_service_.get()) {
+     desktop_notification_service_.reset(new DesktopNotificationService(
+         this, g_browser_process->notification_ui_manager()));
+  }
+  return desktop_notification_service_.get();
 }
 
 void ProfileImpl::MarkAsCleanShutdown() {

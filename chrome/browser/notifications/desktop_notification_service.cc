@@ -9,7 +9,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_object_proxy.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -188,16 +187,14 @@ string16 NotificationPermissionInfoBarDelegate::GetButtonLabel(
 
 bool NotificationPermissionInfoBarDelegate::Accept() {
   UMA_HISTOGRAM_COUNTS("NotificationPermissionRequest.Allowed", 1);
-  DesktopNotificationServiceFactory::GetForProfile(profile_)->
-      GrantPermission(origin_);
+  profile_->GetDesktopNotificationService()->GrantPermission(origin_);
   action_taken_ = true;
   return true;
 }
 
 bool NotificationPermissionInfoBarDelegate::Cancel() {
   UMA_HISTOGRAM_COUNTS("NotificationPermissionRequest.Denied", 1);
-  DesktopNotificationServiceFactory::GetForProfile(profile_)->
-      DenyPermission(origin_);
+  profile_->GetDesktopNotificationService()->DenyPermission(origin_);
   action_taken_ = true;
   return true;
 }

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
+#include "chrome/test/testing_profile.h"
 
 class ProfileDependencyManagerUnittests : public ::testing::Test {
  protected:
@@ -19,6 +20,11 @@ class ProfileDependencyManagerUnittests : public ::testing::Test {
   void DependOn(ProfileKeyedServiceFactory* child,
                 ProfileKeyedServiceFactory* parent) {
     child->DependsOn(parent);
+  }
+
+  void CreateAndDestroyTestProfile() {
+    TestingProfile profile;
+    profile.SetProfileDependencyManager(&dependency_manager_);
   }
 
   ProfileDependencyManager* manager() { return &dependency_manager_; }
@@ -60,7 +66,7 @@ class TestService : public ProfileKeyedServiceFactory {
 TEST_F(ProfileDependencyManagerUnittests, SingleCase) {
   TestService service("service", shutdown_order(), manager());
 
-  manager()->DestroyProfileServices(NULL);
+  CreateAndDestroyTestProfile();
 
   ASSERT_EQ(1U, shutdown_order()->size());
   EXPECT_STREQ("service", (*shutdown_order())[0].c_str());
@@ -72,7 +78,7 @@ TEST_F(ProfileDependencyManagerUnittests, SimpleDependency) {
   TestService child("child", shutdown_order(), manager());
   DependOn(&child, &parent);
 
-  manager()->DestroyProfileServices(NULL);
+  CreateAndDestroyTestProfile();
 
   ASSERT_EQ(2U, shutdown_order()->size());
   EXPECT_STREQ("child", (*shutdown_order())[0].c_str());
@@ -87,7 +93,7 @@ TEST_F(ProfileDependencyManagerUnittests, TwoChildrenOneParent) {
   DependOn(&child1, &parent);
   DependOn(&child2, &parent);
 
-  manager()->DestroyProfileServices(NULL);
+  CreateAndDestroyTestProfile();
 
   ASSERT_EQ(3U, shutdown_order()->size());
   EXPECT_STREQ("child2", (*shutdown_order())[0].c_str());
@@ -110,7 +116,7 @@ TEST_F(ProfileDependencyManagerUnittests, MConfiguration) {
   TestService child_of_2("child_of_2", shutdown_order(), manager());
   DependOn(&child_of_2, &parent2);
 
-  manager()->DestroyProfileServices(NULL);
+  CreateAndDestroyTestProfile();
 
   ASSERT_EQ(5U, shutdown_order()->size());
   EXPECT_STREQ("child_of_2", (*shutdown_order())[0].c_str());
@@ -134,7 +140,7 @@ TEST_F(ProfileDependencyManagerUnittests, DiamondConfiguration) {
   DependOn(&bottom, &middle_row_1);
   DependOn(&bottom, &middle_row_2);
 
-  manager()->DestroyProfileServices(NULL);
+  CreateAndDestroyTestProfile();
 
   ASSERT_EQ(4U, shutdown_order()->size());
   EXPECT_STREQ("bottom", (*shutdown_order())[0].c_str());
@@ -167,7 +173,7 @@ TEST_F(ProfileDependencyManagerUnittests, ComplexGraph) {
   DependOn(&bottom, &specialized_service);
   DependOn(&bottom, &other_intermediary);
 
-  manager()->DestroyProfileServices(NULL);
+  CreateAndDestroyTestProfile();
 
   ASSERT_EQ(6U, shutdown_order()->size());
   EXPECT_STREQ("bottom", (*shutdown_order())[0].c_str());

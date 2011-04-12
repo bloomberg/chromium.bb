@@ -27,7 +27,6 @@
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/testing_pref_store.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -142,10 +141,6 @@ class TestExtensionURLRequestContextGetter
   scoped_refptr<net::URLRequestContext> context_;
 };
 
-ProfileKeyedService* CreateTestDesktopNotificationService(Profile* profile) {
-  return new DesktopNotificationService(profile, NULL);
-}
-
 }  // namespace
 
 TestingProfile::TestingProfile()
@@ -177,12 +172,6 @@ TestingProfile::TestingProfile()
       CHECK(temp_dir_.Set(system_tmp_dir));
     }
   }
-
-  // Install profile keyed service factory hooks for dummy/test services
-  DesktopNotificationServiceFactory::GetInstance()->set_test_factory(
-      &CreateTestDesktopNotificationService);
-  DesktopNotificationServiceFactory::GetInstance()->ForceAssociationBetween(
-      this, NULL);
 }
 
 TestingProfile::~TestingProfile() {
@@ -371,6 +360,11 @@ TestingPrefService* TestingProfile::GetTestingPrefService() {
     CreateTestingPrefService();
   DCHECK(testing_prefs_);
   return testing_prefs_;
+}
+
+void TestingProfile::SetProfileDependencyManager(
+    ProfileDependencyManager* manager) {
+  profile_dependency_manager_ = manager;
 }
 
 ProfileId TestingProfile::GetRuntimeId() {
@@ -697,6 +691,15 @@ NTPResourceCache* TestingProfile::GetNTPResourceCache() {
   if (!ntp_resource_cache_.get())
     ntp_resource_cache_.reset(new NTPResourceCache(this));
   return ntp_resource_cache_.get();
+}
+
+DesktopNotificationService* TestingProfile::GetDesktopNotificationService() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!desktop_notification_service_.get()) {
+    desktop_notification_service_.reset(new DesktopNotificationService(
+        this, NULL));
+  }
+  return desktop_notification_service_.get();
 }
 
 BackgroundContentsService*

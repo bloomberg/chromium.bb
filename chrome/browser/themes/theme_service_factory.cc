@@ -21,7 +21,6 @@ ThemeService* ThemeServiceFactory::GetForProfile(Profile* profile) {
       GetInstance()->GetServiceForProfile(profile));
 }
 
-// static
 const Extension* ThemeServiceFactory::GetThemeForProfile(Profile* profile) {
   std::string id = GetForProfile(profile)->GetThemeID();
   if (id == ThemeService::kDefaultThemeID)
@@ -30,7 +29,11 @@ const Extension* ThemeServiceFactory::GetThemeForProfile(Profile* profile) {
   return profile->GetExtensionService()->GetExtensionById(id, false);
 }
 
-// static
+void ThemeServiceFactory::ForceAssociationBetween(Profile* profile,
+                                                  ThemeService* provider) {
+  GetInstance()->Associate(profile, provider);
+}
+
 ThemeServiceFactory* ThemeServiceFactory::GetInstance() {
   return Singleton<ThemeServiceFactory>::get();
 }

@@ -5,7 +5,6 @@
 #include "chrome/browser/desktop_notification_handler.h"
 
 #include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -39,7 +38,7 @@ void DesktopNotificationHandler::OnShow(
     const DesktopNotificationHostMsg_Show_Params& params) {
   RenderProcessHost* process = render_view_host()->process();
   DesktopNotificationService* service =
-      DesktopNotificationServiceFactory::GetForProfile(process->profile());
+      process->profile()->GetDesktopNotificationService();
 
   service->ShowDesktopNotification(
     params,
@@ -51,7 +50,7 @@ void DesktopNotificationHandler::OnShow(
 void DesktopNotificationHandler::OnCancel(int notification_id) {
   RenderProcessHost* process = render_view_host()->process();
   DesktopNotificationService* service =
-      DesktopNotificationServiceFactory::GetForProfile(process->profile());
+      process->profile()->GetDesktopNotificationService();
 
   service->CancelDesktopNotification(
       process->id(),
@@ -68,7 +67,7 @@ void DesktopNotificationHandler::OnRequestPermission(
 
   RenderProcessHost* process = render_view_host()->process();
   DesktopNotificationService* service =
-      DesktopNotificationServiceFactory::GetForProfile(process->profile());
+      process->profile()->GetDesktopNotificationService();
   service->RequestPermission(
       source_origin, process->id(), routing_id(), callback_context, NULL);
 }

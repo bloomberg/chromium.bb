@@ -6,7 +6,6 @@
 #include "chrome/browser/content_settings/content_settings_notification_provider.h"
 
 #include "base/string_util.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -228,7 +227,7 @@ void NotificationProvider::NotifySettingsChange() {
   NotificationService::current()->Notify(
       NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
       Source<DesktopNotificationService>(
-          DesktopNotificationServiceFactory::GetForProfile(profile_)),
+          profile_->GetDesktopNotificationService()),
       NotificationService::NoDetails());
 }
 

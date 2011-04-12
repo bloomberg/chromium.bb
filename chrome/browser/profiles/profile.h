@@ -49,6 +49,7 @@ class ChromeAppCacheService;
 class ChromeBlobStorageContext;
 class ChromeURLDataManager;
 class CloudPrintProxyService;
+class DesktopNotificationService;
 class DownloadManager;
 class Extension;
 class ExtensionDevToolsManager;
@@ -448,6 +449,9 @@ class Profile {
 
   // Returns the WebKitContext assigned to this profile.
   virtual WebKitContext* GetWebKitContext() = 0;
+
+  // Returns the provider of desktop notifications for this profile.
+  virtual DesktopNotificationService* GetDesktopNotificationService() = 0;
 
   // Returns the service that manages BackgroundContents for this profile.
   virtual BackgroundContentsService* GetBackgroundContentsService() const = 0;
