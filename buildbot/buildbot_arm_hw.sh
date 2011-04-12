@@ -63,21 +63,21 @@ echo @@@BUILD_STEP small_tests@@@
 ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl small_tests platform=arm bitcode=1 \
-    sdl=none built_elsewhere=1 ||
+    sdl=none naclsdk_validate=0 built_elsewhere=1 ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP medium_tests@@@
 ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl medium_tests platform=arm bitcode=1 \
-    sdl=none built_elsewhere=1 ||
+    sdl=none naclsdk_validate=0 built_elsewhere=1 ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP large_tests@@@
 ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl large_tests platform=arm bitcode=1 \
-    sdl=none built_elsewhere=1 ||
+    sdl=none naclsdk_validate=0 built_elsewhere=1 ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP begin_browser_testing@@@
