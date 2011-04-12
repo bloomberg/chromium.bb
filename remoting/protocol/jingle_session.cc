@@ -54,7 +54,6 @@ net::SSLClientSocket* CreateSSLClientSocket(
     net::CertVerifier* cert_verifier) {
   net::SSLConfig ssl_config;
   ssl_config.false_start_enabled = false;
-  ssl_config.snap_start_enabled = false;
   ssl_config.ssl3_enabled = true;
   ssl_config.tls1_enabled = true;
 

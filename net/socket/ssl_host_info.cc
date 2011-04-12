@@ -15,17 +15,12 @@
 
 namespace net {
 
-SSLHostInfo::State::State()
-    : npn_valid(false),
-      npn_status(SSLClientSocket::kNextProtoUnsupported) {
-}
+SSLHostInfo::State::State() {}
 
 SSLHostInfo::State::~State() {}
 
 void SSLHostInfo::State::Clear() {
   certs.clear();
-  server_hello.clear();
-  npn_valid = false;
 }
 
 SSLHostInfo::SSLHostInfo(
@@ -46,7 +41,6 @@ SSLHostInfo::SSLHostInfo(
       dnsrr_resolver_(NULL),
       dns_callback_(NULL),
       dns_handle_(DnsRRResolver::kInvalidHandle) {
-  state_.npn_valid = false;
 }
 
 SSLHostInfo::~SSLHostInfo() {
@@ -100,19 +94,20 @@ bool SSLHostInfo::ParseInner(const std::string& data) {
     state->certs.push_back(der_cert);
   }
 
-  if (!p.ReadString(&iter, &state->server_hello))
+  std::string throwaway_string;
+  bool throwaway_bool;
+  if (!p.ReadString(&iter, &throwaway_string))
     return false;
 
-  if (!p.ReadBool(&iter, &state->npn_valid))
+  if (!p.ReadBool(&iter, &throwaway_bool))
     return false;
 
-  if (state->npn_valid) {
-    int status;
-    if (!p.ReadInt(&iter, &status) ||
-        !p.ReadString(&iter, &state->npn_protocol)) {
+  if (throwaway_bool) {
+    int throwaway_int;
+    if (!p.ReadInt(&iter, &throwaway_int) ||
+        !p.ReadString(&iter, &throwaway_string)) {
       return false;
     }
-    state->npn_status = static_cast<SSLClientSocket::NextProtoStatus>(status);
   }
 
   if (!state->certs.empty()) {
@@ -166,16 +161,9 @@ std::string SSLHostInfo::Serialize() const {
       return "";
   }
 
-  if (!p.WriteString(state_.server_hello) ||
-      !p.WriteBool(state_.npn_valid)) {
+  if (!p.WriteString("") ||
+      !p.WriteBool(false)) {
     return "";
-  }
-
-  if (state_.npn_valid) {
-    if (!p.WriteInt(state_.npn_status) ||
-        !p.WriteString(state_.npn_protocol)) {
-      return "";
-    }
   }
 
   return std::string(reinterpret_cast<const char *>(p.data()), p.size());
