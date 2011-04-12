@@ -14,11 +14,11 @@ cr.define('options.passwordManager', function() {
    * @constructor
    * @extends {cr.ui.ListItem}
    */
-  function PasswordListItem(entry) {
+  function PasswordListItem(entry, showPasswords) {
     var el = cr.doc.createElement('div');
     el.dataItem = entry;
     el.__proto__ = PasswordListItem.prototype;
-    el.decorate();
+    el.decorate(showPasswords);
 
     return el;
   }
@@ -27,7 +27,7 @@ cr.define('options.passwordManager', function() {
     __proto__: DeletableItem.prototype,
 
     /** @inheritDoc */
-    decorate: function() {
+    decorate: function(showPasswords) {
       DeletableItem.prototype.decorate.call(this);
 
       // The URL of the site.
@@ -53,16 +53,18 @@ cr.define('options.passwordManager', function() {
       passwordInput.type = 'password';
       passwordInput.className = 'inactive-password';
       passwordInput.readOnly = true;
-      passwordInput.value = this.password;
+      passwordInput.value = showPasswords ? this.password : "********";
       passwordInputDiv.appendChild(passwordInput);
 
       // The show/hide button.
-      var button = this.ownerDocument.createElement('button');
-      button.classList.add('hidden');
-      button.classList.add('password-button');
-      button.textContent = localStrings.getString('passwordShowButton');
-      button.addEventListener('click', this.onClick_, true);
-      passwordInputDiv.appendChild(button);
+      if (showPasswords) {
+        var button = this.ownerDocument.createElement('button');
+        button.classList.add('hidden');
+        button.classList.add('password-button');
+        button.textContent = localStrings.getString('passwordShowButton');
+        button.addEventListener('click', this.onClick_, true);
+        passwordInputDiv.appendChild(button);
+      }
 
       this.contentElement.appendChild(passwordInputDiv);
     },
@@ -73,6 +75,9 @@ cr.define('options.passwordManager', function() {
       var textInput = this.querySelector('input[type=text]');
       var input = passwordInput || textInput;
       var button = input.nextSibling;
+      // |button| doesn't exist when passwords can't be shown.
+      if (!button)
+        return;
       if (this.selected) {
         input.classList.remove('inactive-password');
         button.classList.remove('hidden');
@@ -189,9 +194,34 @@ cr.define('options.passwordManager', function() {
   PasswordsList.prototype = {
     __proto__: DeletableItemList.prototype,
 
+    /**
+     * Whether passwords can be revealed or not.
+     * @type {boolean}
+     * @private
+     */
+    showPasswords_: true,
+
+    /** @inheritDoc */
+    decorate: function() {
+      DeletableItemList.prototype.decorate.call(this);
+      Preferences.getInstance().addEventListener(
+          "profile.password_manager_allow_show_passwords",
+          this.onPreferenceChanged_.bind(this));
+    },
+
+    /**
+     * Listener for changes on the preference.
+     * @param {Event} event The preference update event.
+     * @private
+     */
+    onPreferenceChanged_: function(event) {
+      this.showPasswords_ = event.value.value;
+      this.redraw();
+    },
+
     /** @inheritDoc */
     createItem: function(entry) {
-      return new PasswordListItem(entry);
+      return new PasswordListItem(entry, this.showPasswords_);
     },
 
     /** @inheritDoc */

@@ -11,6 +11,7 @@
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
 class PasswordManagerHandler : public OptionsPageUIHandler,
@@ -26,6 +27,11 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
 
   // PasswordStore::Observer implementation.
   virtual void OnLoginsChanged();
+
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  private:
   // The password store associated with the currently active profile.
@@ -113,6 +119,9 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
 
   // User's pref
   std::string languages_;
+
+  // Whether to show stored passwords or not.
+  BooleanPrefMember show_passwords_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerHandler);
 };

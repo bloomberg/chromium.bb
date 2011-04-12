@@ -13,6 +13,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_source.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
@@ -69,6 +71,8 @@ void PasswordManagerHandler::GetLocalizedValues(
 }
 
 void PasswordManagerHandler::Initialize() {
+  show_passwords_.Init(prefs::kPasswordManagerAllowShowPasswords,
+                       web_ui_->GetProfile()->GetPrefs(), this);
   // We should not cache web_ui_->GetProfile(). See crosbug.com/6304.
   GetPasswordStore()->AddObserver(this);
 }
@@ -94,6 +98,19 @@ void PasswordManagerHandler::OnLoginsChanged() {
 
 PasswordStore* PasswordManagerHandler::GetPasswordStore() {
   return web_ui_->GetProfile()->GetPasswordStore(Profile::EXPLICIT_ACCESS);
+}
+
+void PasswordManagerHandler::Observe(NotificationType type,
+                                     const NotificationSource& source,
+                                     const NotificationDetails& details) {
+  if (type.value == NotificationType::PREF_CHANGED) {
+    std::string* pref_name = Details<std::string>(details).ptr();
+    if (*pref_name == prefs::kPasswordManagerAllowShowPasswords) {
+      UpdatePasswordLists(NULL);
+    }
+  }
+
+  OptionsPageUIHandler::Observe(type, source, details);
 }
 
 void PasswordManagerHandler::UpdatePasswordLists(const ListValue* args) {
@@ -141,12 +158,15 @@ void PasswordManagerHandler::RemoveAllPasswordExceptions(
 
 void PasswordManagerHandler::SetPasswordList() {
   ListValue entries;
+  bool show_passwords = *show_passwords_;
+  string16 empty;
   for (size_t i = 0; i < password_list_.size(); ++i) {
     ListValue* entry = new ListValue();
     entry->Append(new StringValue(net::FormatUrl(password_list_[i]->origin,
                                                  languages_)));
     entry->Append(new StringValue(password_list_[i]->username_value));
-    entry->Append(new StringValue(password_list_[i]->password_value));
+    entry->Append(new StringValue(
+        show_passwords ? password_list_[i]->password_value : empty));
     entries.Append(entry);
   }
 
