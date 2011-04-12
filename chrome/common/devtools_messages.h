@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,10 +64,6 @@ IPC_MESSAGE_CONTROL1(DevToolsClientMsg_DispatchOnInspectorFrontend,
 IPC_MESSAGE_CONTROL1(DevToolsClientMsg_DebuggerOutput,
                      std::string /* message */)
 
-// Legacy APU dispatch message.
-IPC_MESSAGE_CONTROL1(DevToolsClientMsg_DispatchToAPU,
-                     std::string /* message */)
-
 
 //-----------------------------------------------------------------------------
 // These are messages sent from DevToolsClient to DevToolsAgent through the
@@ -98,12 +94,9 @@ IPC_MESSAGE_CONTROL2(DevToolsAgentMsg_InspectElement,
                      int /* x */,
                      int /* y */)
 
-// Enables/disables the apu agent.
-IPC_MESSAGE_CONTROL1(DevToolsAgentMsg_SetApuAgentEnabled, bool /* enabled */)
-
 
 //-----------------------------------------------------------------------------
-// These are messages sent from the renderer to the browser.
+// These are messages sent from the browser to the renderer.
 
 // RenderViewHostDelegate::RenderViewCreated method sends this message to a
 // new renderer to notify it that it will host developer tools UI and should
@@ -113,7 +106,7 @@ IPC_MESSAGE_ROUTED0(DevToolsMsg_SetupDevToolsClient)
 
 
 //-----------------------------------------------------------------------------
-// These are messages sent from the browser to the renderer.
+// These are messages sent from the renderer to the browser.
 
 // Wraps an IPC message that's destined to the DevToolsClient on
 // DevToolsAgent->browser hop.
