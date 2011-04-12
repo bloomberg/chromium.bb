@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2010 Google Inc. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -2112,7 +2112,7 @@ def VerifyNoCollidingTargets(targets):
   for target in targets:
     # Separate out 'path/to/file.gyp, 'target_name' from
     # 'path/to/file.gyp:target_name'.
-    path, name = target.split(':')
+    path, name = target.rsplit(':', 1)
     # Separate out 'path/to', 'file.gyp' from 'path/to/file.gyp'.
     subdir, gyp = os.path.split(path)
     # Use '.' for the current directory '', so that the error messages make
