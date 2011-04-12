@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// require: listselectionmodel.js
+// require: array_data_model.js
+// require: list_selection_model.js
+// require: list_selection_controller.js
+// require: list_item.js
 
 /**
  * @fileoverview This implements a list control.
@@ -36,8 +39,10 @@ cr.define('cr.ui', function() {
    * @param {ListItem=} opt_item The list item to use to do the measuring. If
    *     this is not provided an item will be created based on the first value
    *     in the model.
-   * @return {{height: number, margin: number}} The height of the item, taking
-   *     margins into account, and the height of the margins themselves.
+   * @return {{height: number, marginVertical: number, width: number,
+   *     marginHorizontal: number}} The height and width of the item, taking
+   *     margins into account, and the height and width of the margins
+   *     themselves.
    */
   function measureItem(list, opt_item) {
     var dataModel = list.dataModel;
@@ -51,22 +56,37 @@ cr.define('cr.ui', function() {
     var cs = getComputedStyle(item);
     var mt = parseFloat(cs.marginTop);
     var mb = parseFloat(cs.marginBottom);
+    var ml = parseFloat(cs.marginLeft);
+    var mr = parseFloat(cs.marginRight);
     var h = rect.height;
-    var m = 0;
+    var w = rect.width;
+    var mh = 0;
+    var mv = 0;
 
     // Handle margin collapsing.
     if (mt < 0 && mb < 0) {
-      m = Math.min(mt, mb);
+      mv = Math.min(mt, mb);
     } else if (mt >= 0 && mb >= 0) {
-      m = Math.max(mt, mb);
+      mv = Math.max(mt, mb);
     } else {
-      m = mt + mb;
+      mv = mt + mb;
     }
-    h += m;
+    h += mv;
+
+    if (ml < 0 && mr < 0) {
+      mh = Math.min(ml, mr);
+    } else if (ml >= 0 && mr >= 0) {
+      mh = Math.max(ml, mr);
+    } else {
+      mh = ml + mr;
+    }
+    w += mh;
 
     if (!opt_item)
       list.removeChild(item);
-    return {height: Math.max(0, h), margin: m};
+    return {
+        height: Math.max(0, h), marginVertical: mv,
+        width: Math.max(0, w), marginHorizontal: mh};
   }
 
   function getComputedStyle(el) {
@@ -85,23 +105,15 @@ cr.define('cr.ui', function() {
     __proto__: HTMLUListElement.prototype,
 
     /**
-     * The height of list items. This is lazily calculated the first time it is
-     * needed. Note that the lead item is allowed to have a different height, to
+     * Measured size of list items. This is lazily calculated the first time it
+     * is needed. Note that lead item is allowed to have a different height, to
      * accommodate lists where a single item at a time can be expanded to show
      * more detail.
-     * @type {number}
+     * @type {{height: number, marginVertical: number, width: number,
+     *     marginHorizontal: number}}
      * @private
      */
-    itemHeight_: 0,
-
-    /**
-     * The height of list item margins, possibly negative. This is calculated
-     * along with {@code itemHeight_} and used to adjust {@code leadItemHeight_}
-     * without explicitly measuring the lead item's margins.
-     * @type {number}
-     * @private
-     */
-    itemMarginHeight_: 0,
+    measured_: undefined,
 
     /**
      * The height of the lead item, which is allowed to have a different height
@@ -121,6 +133,28 @@ cr.define('cr.ui', function() {
      * @private
      */
     autoExpands_: false,
+
+    /**
+     * Function used to create grid items.
+     * @type {function(): !ListItem}
+     * @private
+     */
+    itemConstructor_: cr.ui.ListItem,
+
+    /**
+     * Function used to create grid items.
+     * @type {function(): !ListItem}
+     */
+    get itemConstructor() {
+      return this.itemConstructor_;
+    },
+    set itemConstructor(func) {
+      if (func != this.itemConstructor_) {
+        this.itemConstructor_ = func;
+        this.cachedItems_ = {};
+        this.redraw();
+      }
+    },
 
     dataModel_: null,
 
@@ -243,9 +277,8 @@ cr.define('cr.ui', function() {
     },
     set leadItemHeight(height) {
       if (height) {
-        // getItemHeight_() calculates itemMarginHeight_, which we need below.
-        this.getItemHeight_();
-        this.leadItemHeight_ = Math.max(0, height + this.itemMarginHeight_);
+        var size = this.getItemSize_();
+        this.leadItemHeight_ = Math.max(0, height + size.marginVertical);
       } else {
         this.leadItemHeight_ = 0;
       }
@@ -331,12 +364,27 @@ cr.define('cr.ui', function() {
      * @private
      */
     getItemHeight_: function() {
-      if (!this.itemHeight_) {
-        var measured = measureItem(this);
-        this.itemHeight_ = measured.height;
-        this.itemMarginHeight_ = measured.margin;
+      return this.getItemSize_().height;
+    },
+
+    /**
+     * @return {number} The width of an item, measuring it if necessary.
+     * @private
+     */
+    getItemWidth_: function() {
+      return this.getItemSize_().width;
+    },
+
+    /**
+     * @return {{height: number, width: number}} The height and width
+     *     of an item, measuring it if necessary.
+     * @private
+     */
+    getItemSize_: function() {
+      if (!this.measured_ || !this.measured_.height) {
+        this.measured_ = measureItem(this);
       }
-      return this.itemHeight_;
+      return this.measured_;
     },
 
     /**
@@ -518,6 +566,32 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * @param {number} index The index of the item.
+     * @return {number} The top position of the item inside the list, not taking
+     *     into account lead item. May vary in the case of multiple columns.
+     */
+    getItemTop: function(index) {
+      return index * this.getItemHeight_();
+    },
+
+    /**
+     * @param {number} index The index of the item.
+     * @return {number} The row of the item. May vary in the case
+     *     of multiple columns.
+     */
+    getItemRow: function(index) {
+      return index;
+    },
+
+    /**
+     * @param {number} row The row.
+     * @return {number} The index of the first item in the row.
+     */
+    getFirstItemInRow: function(row) {
+      return row;
+    },
+
+    /**
      * Ensures that a given index is inside the viewport.
      * @param {number} index The index of the item to scroll into view.
      * @return {boolean} Whether any scrolling was needed.
@@ -529,7 +603,7 @@ cr.define('cr.ui', function() {
 
       var itemHeight = this.getItemHeight_();
       var scrollTop = this.scrollTop;
-      var top = index * itemHeight;
+      var top = this.getItemTop(index);
       var leadIndex = this.selectionModel.leadIndex;
 
       // Adjust for the lead item if it is above the given index.
@@ -590,10 +664,7 @@ cr.define('cr.ui', function() {
      * @return {ListItem} The found list item or null if not found.
      */
     getListItemByIndex: function(index) {
-      if (index < this.firstIndex_ || index >= this.lastIndex_)
-        return null;
-
-      return this.children[index - this.firstIndex_ + 1];
+      return this.cachedItems_[index] || null;
     },
 
     /**
@@ -603,9 +674,7 @@ cr.define('cr.ui', function() {
      */
     getIndexOfListItem: function(item) {
       var index = item.listIndex;
-      var childIndex = index - this.firstIndex_ + 1;
-      if (childIndex >= 0 && childIndex < this.children.length &&
-          this.children[childIndex] == item) {
+      if (this.cachedItems_[index] == item) {
         return index;
       }
       return -1;
@@ -617,13 +686,16 @@ cr.define('cr.ui', function() {
      * @return {!ListItem} The newly created list item.
      */
     createItem: function(value) {
-      return new cr.ui.ListItem({label: value});
+      var item = new this.itemConstructor_(value);
+      item.label = value;
+      item.decorate();
+      return item;
     },
 
     /**
      * Creates the selection controller to use internally.
      * @param {cr.ui.ListSelectionModel} sm The underlying selection model.
-     * @return {!cr.ui.ListSelectionModel} The newly created selection
+     * @return {!cr.ui.ListSelectionController} The newly created selection
      *     controller.
      */
     createSelectionController: function(sm) {
@@ -640,7 +712,7 @@ cr.define('cr.ui', function() {
      */
     getHeightsForIndex_: function(index) {
       var itemHeight = this.getItemHeight_();
-      var top = index * itemHeight;
+      var top = this.getItemTop(index);
       if (this.selectionModel.leadIndex > -1 &&
           this.selectionModel.leadIndex < index) {
         top += this.leadItemHeight - itemHeight;
@@ -652,7 +724,8 @@ cr.define('cr.ui', function() {
 
     /**
      * Find the index of the list item containing the given y offset (measured
-     * in pixels from the top) within the list.
+     * in pixels from the top) within the list. In the case of multiple columns,
+     * returns the first index in the row.
      * @param {number} offset The y offset in pixels to get the index of.
      * @return {number} The index of the list item.
      * @private
@@ -663,18 +736,18 @@ cr.define('cr.ui', function() {
       var leadItemHeight = this.leadItemHeight;
       if (leadIndex < 0 || leadItemHeight == itemHeight) {
         // Simple case: no lead item or lead item height is not different.
-        return Math.floor(offset / itemHeight);
+        return this.getFirstItemInRow(Math.floor(offset / itemHeight));
       }
-      var leadTop = itemHeight * leadIndex;
+      var leadTop = this.getItemTop(leadIndex);
       // If the given offset is above the lead item, it's also simple.
       if (offset < leadTop)
-        return Math.floor(offset / itemHeight);
+        return this.getFirstItemInRow(Math.floor(offset / itemHeight));
       // If the lead item contains the given offset, we just return its index.
       if (offset < leadTop + leadItemHeight)
-        return leadIndex;
+        return this.getFirstItemInRow(this.getItemRow(leadIndex));
       // The given offset must be below the lead item. Adjust and recalculate.
       offset -= leadItemHeight - itemHeight;
-      return Math.floor(offset / itemHeight);
+      return this.getFirstItemInRow(Math.floor(offset / itemHeight));
     },
 
     /**
@@ -688,6 +761,59 @@ cr.define('cr.ui', function() {
     countItemsInRange_: function(startIndex, endOffset) {
       var endIndex = this.getIndexForListOffset_(endOffset);
       return endIndex - startIndex + 1;
+    },
+
+    /**
+     * Calculates the number of items fitting in viewport given the index of
+     * first item and heights.
+     * @param {number} itemHeight The height of the item.
+     * @param {number} firstIndex Index of the first item in viewport.
+     * @param {number} scrollTop The scroll top position.
+     * @return {number} The number of items in view port.
+     */
+    getItemsInViewPort: function(itemHeight, firstIndex, scrollTop) {
+      // This is a bit tricky. We take the minimum of the available items to
+      // show and the number we want to show, so as not to go off the end of the
+      // list. For the number we want to show, we take the maximum of the number
+      // that would fit without a differently-sized lead item, and with one. We
+      // do this so that if the size of the lead item changes without a scroll
+      // event to trigger redrawing the list, we won't end up with empty space.
+      var clientHeight = this.clientHeight;
+      return this.autoExpands_ ? this.dataModel.length : Math.min(
+          this.dataModel.length - firstIndex,
+          Math.max(
+              Math.ceil(clientHeight / itemHeight) + 1,
+              this.countItemsInRange_(firstIndex, scrollTop + clientHeight)));
+    },
+
+    /**
+     * Adds items to the list and {@code newCachedItems}.
+     * @param {number} firstIndex The index of first item, inclusively.
+     * @param {number} lastIndex The index of last item, exclusively.
+     * @param {Object.<string, ListItem>} cachedItems Old items cache.
+     * @param {Object.<string, ListItem>} newCachedItems New items cache.
+     */
+    addItems: function(firstIndex, lastIndex, cachedItems, newCachedItems) {
+      var listItem;
+      var dataModel = this.dataModel;
+
+      for (var y = firstIndex; y < lastIndex; y++) {
+        var dataItem = dataModel.item(y);
+        listItem = cachedItems[y] || this.createItem(dataItem);
+        listItem.listIndex = y;
+        this.appendChild(listItem);
+        newCachedItems[y] = listItem;
+      }
+    },
+
+    /**
+     * Returns the height of after filler in the list.
+     * @param {number} lastIndex The index of item past the last in viewport.
+     * @param {number} itemHeight The height of the item.
+     * @return {number} The height of after filler.
+     */
+    getAfterFillerHeight: function(lastIndex, itemHeight) {
+      return (this.dataModel.length - lastIndex) * itemHeight;
     },
 
     /**
@@ -723,11 +849,8 @@ cr.define('cr.ui', function() {
       // that would fit without a differently-sized lead item, and with one. We
       // do this so that if the size of the lead item changes without a scroll
       // event to trigger redrawing the list, we won't end up with empty space.
-      var itemsInViewPort = autoExpands ? dataModel.length : Math.min(
-          dataModel.length - firstIndex,
-          Math.max(
-              Math.ceil(clientHeight / itemHeight) + 1,
-              this.countItemsInRange_(firstIndex, scrollTop + clientHeight)));
+      var itemsInViewPort = this.getItemsInViewPort(itemHeight, firstIndex,
+          scrollTop);
       var lastIndex = firstIndex + itemsInViewPort;
 
       this.textContent = '';
@@ -738,18 +861,10 @@ cr.define('cr.ui', function() {
 
       var sm = this.selectionModel;
       var leadIndex = sm.leadIndex;
-      var listItem;
 
-      for (var y = firstIndex; y < lastIndex; y++) {
-        var dataItem = dataModel.item(y);
-        listItem = cachedItems[y] || this.createItem(dataItem);
-        listItem.listIndex = y;
-        this.appendChild(listItem);
-        newCachedItems[y] = listItem;
-      }
+      this.addItems(firstIndex, lastIndex, cachedItems, newCachedItems);
 
-      var afterFillerHeight =
-          (dataModel.length - firstIndex - itemsInViewPort) * itemHeight;
+      var afterFillerHeight = this.getAfterFillerHeight(lastIndex, itemHeight);
       if (leadIndex >= lastIndex)
         afterFillerHeight += this.leadItemHeight - itemHeight;
       this.afterFiller_.style.height = afterFillerHeight + 'px';
@@ -757,7 +872,7 @@ cr.define('cr.ui', function() {
 
       // We don't set the lead or selected properties until after adding all
       // items, in case they force relayout in response to these events.
-      listItem = null;
+      var listItem = null;
       if (newCachedItems[leadIndex])
         newCachedItems[leadIndex].lead = true;
       for (var y = firstIndex; y < lastIndex; y++) {
@@ -783,9 +898,7 @@ cr.define('cr.ui', function() {
         var list = this;
         window.setTimeout(function() {
           if (listItem.parentNode == list) {
-            var measured = measureItem(list, listItem);
-            list.itemHeight_ = measured.height;
-            list.itemMarginHeight_ = measured.margin;
+            this.measured_ = measureItem(list, listItem);
           }
         });
       }
