@@ -133,6 +133,10 @@ var CardSlider = (function() {
       this.updateCardWidths_();
       this.transformToCurrentCard_();
 
+      this.mouseWheelScrollAmount_ = 0;
+      this.scrollClearTimeout_ = null;
+      this.container_.addEventListener('mousewheel',
+                                       this.onMouseWheel_.bind(this));
       this.container_.addEventListener(TouchHandler.EventType.TOUCH_START,
                                        this.onTouchStart_.bind(this));
       this.container_.addEventListener(TouchHandler.EventType.DRAG_START,
@@ -197,6 +201,47 @@ var CardSlider = (function() {
     },
 
     /**
+     * Handle horizontal scrolls to flip between pages.
+     * @private
+     */
+    onMouseWheel_: function(e) {
+      if (e.wheelDeltaX == 0)
+        return;
+
+      var scrollAmountPerPage = -120;
+      this.mouseWheelScrollAmount_ += e.wheelDeltaX;
+      if (Math.abs(this.mouseWheelScrollAmount_) >= -scrollAmountPerPage) {
+        var pagesToScroll = this.mouseWheelScrollAmount_ / scrollAmountPerPage;
+        pagesToScroll =
+            (pagesToScroll > 0 ? Math.floor : Math.ceil)(pagesToScroll);
+        var newCardIndex = this.currentCard + pagesToScroll;
+        newCardIndex = Math.min(this.cards_.length,
+                                Math.max(0, newCardIndex));
+        this.selectCard(newCardIndex, true);
+        this.mouseWheelScrollAmount_ -= pagesToScroll * scrollAmountPerPage;
+      }
+
+      // We got a mouse wheel event, so cancel any pending scroll wheel timeout.
+      if (this.scrollClearTimeout_ != null)
+        clearTimeout(this.scrollClearTimeout_);
+      // If we didn't use up all the scroll, hold onto it for a little bit, but
+      // drop it after a delay.
+      if (this.mouseWheelScrollAmount_ != 0) {
+        this.scrollClearTimeout_ =
+            setTimeout(this.clearMouseWheelScroll_.bind(this), 500);
+      }
+    },
+
+    /**
+     * Resets the amount of horizontal scroll we've seen to 0. See
+     * onMouseWheel_.
+     * @private
+     */
+    clearMouseWheelScroll_: function() {
+      this.mouseWheelScrollAmount_ = 0;
+    },
+
+    /**
      * Clear any transition that is in progress and enable dragging for the
      * touch.
      * @param {!TouchHandler.Event} e The TouchHandler event.
@@ -206,7 +251,6 @@ var CardSlider = (function() {
       this.container_.style.WebkitTransition = '';
       e.enableDrag = true;
     },
-
 
     /**
      * Tell the TouchHandler that dragging is acceptable when the user begins by
