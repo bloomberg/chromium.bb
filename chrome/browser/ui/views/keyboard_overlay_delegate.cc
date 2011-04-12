@@ -22,6 +22,11 @@ void KeyboardOverlayDelegate::ShowDialog(gfx::NativeWindow owning_window) {
   HtmlDialogView* html_view =
       new HtmlDialogView(browser->profile(), delegate);
   html_view->InitDialog();
+  html_view->AddAccelerator(
+      views::Accelerator(ui::VKEY_OEM_2, false, true, true));
+  html_view->AddAccelerator(
+      views::Accelerator(ui::VKEY_OEM_2, true, true, true));
+
   chromeos::BubbleWindow::Create(owning_window,
                                  gfx::Rect(),
                                  chromeos::BubbleWindow::STYLE_XSHAPE,

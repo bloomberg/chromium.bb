@@ -59,8 +59,9 @@ gfx::Size HtmlDialogView::GetPreferredSize() {
 }
 
 bool HtmlDialogView::AcceleratorPressed(const views::Accelerator& accelerator) {
-  // Pressing ESC closes the dialog.
-  DCHECK_EQ(ui::VKEY_ESCAPE, accelerator.GetKeyCode());
+  // Pressing Esc, Ctrl+Alt+/, or Ctrl+Alt+? closes the keyboard overlay.
+  DCHECK(ui::VKEY_ESCAPE == accelerator.GetKeyCode() ||
+         ui::VKEY_OEM_2 == accelerator.GetKeyCode());
   OnDialogClosed(std::string());
   return true;
 }
