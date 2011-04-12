@@ -626,6 +626,7 @@ class GitAffectedFile(AffectedFile):
   def GenerateScmDiff(self):
     return scm.GIT.GenerateDiff(self._local_root, files=[self.LocalPath(),])
 
+
 class Change(object):
   """Describe a change.
 
@@ -642,6 +643,7 @@ class Change(object):
   # Matches key/value (or "tag") lines in changelist descriptions.
   _TAG_LINE_RE = re.compile(
       '^\s*(?P<key>[A-Z][A-Z_0-9]*)\s*=\s*(?P<value>.*?)\s*$')
+  scm = ''
 
   def __init__(self, name, description, local_root, files, issue, patchset):
     if files is None:
@@ -652,7 +654,6 @@ class Change(object):
     self._local_root = os.path.abspath(local_root)
     self.issue = issue
     self.patchset = patchset
-    self.scm = ''
 
     # From the description text, build up a dictionary of key/value pairs
     # plus the description minus all key/value or "tag" lines.
@@ -766,11 +767,8 @@ class Change(object):
 
 class SvnChange(Change):
   _AFFECTED_FILES = SvnAffectedFile
-
-  def __init__(self, *args, **kwargs):
-    Change.__init__(self, *args, **kwargs)
-    self.scm = 'svn'
-    self._changelists = None
+  scm = 'svn'
+  _changelists = None
 
   def _GetChangeLists(self):
     """Get all change lists."""
@@ -801,10 +799,7 @@ class SvnChange(Change):
 
 class GitChange(Change):
   _AFFECTED_FILES = GitAffectedFile
-
-  def __init__(self, *args, **kwargs):
-    Change.__init__(self, *args, **kwargs)
-    self.scm = 'git'
+  scm = 'git'
 
 
 def ListRelevantPresubmitFiles(files, root):
