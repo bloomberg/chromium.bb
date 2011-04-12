@@ -28,7 +28,15 @@
  */
 .apps-page {
   margin-top: 50px;
+  text-align: center;
   width: 100%;
+}
+
+.apps-page-title {
+  display: inline-block;
+  font-size: 25px;
+  height: 50px;
+  opacity: 0.3;
 }
 
 .tile-grid {

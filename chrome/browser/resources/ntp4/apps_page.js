@@ -162,11 +162,13 @@ cr.define('ntp4', function() {
   /**
    * Creates a new AppsPage object. This object contains apps and controls
    * their layout.
+   * @param {string} name The display name for the page.
    * @constructor
    * @extends {HTMLDivElement}
    */
-  function AppsPage() {
+  function AppsPage(name) {
     var el = cr.doc.createElement('div');
+    el.pageName = name;
     el.__proto__ = AppsPage.prototype;
     el.initialize();
 
@@ -178,6 +180,11 @@ cr.define('ntp4', function() {
 
     initialize: function() {
       this.className = 'apps-page';
+
+      var title = this.ownerDocument.createElement('span');
+      title.textContent = this.pageName;
+      title.className = 'apps-page-title';
+      this.appendChild(title);
 
       // Div that holds the apps.
       this.tileGrid_ = this.ownerDocument.createElement('div');

@@ -9,6 +9,12 @@
   -webkit-appearance: none;
 }
 
+/* Reserve space for the menu button even when it's hidden. */
+#recently-closed-menu-button[hidden] {
+  display: block;
+  visibility: hidden;
+}
+
 #recently-closed-menu-button img {
   -webkit-transform: rotate(270deg);
 }

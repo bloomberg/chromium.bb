@@ -44,7 +44,7 @@ button span {
 
 #footer-content {
   display: -webkit-box;
-  height: 59px;
+  height: 49px;
   -webkit-box-align: center;
 }
 
@@ -57,40 +57,44 @@ button span {
   color: #888;
 }
 
-#footer-divider {
-  background: -webkit-gradient(linear, left top, left bottom,
-                               from(#eee), color-stop(0.5, #bbb), to(#eee));
-  height: 60%;
-  width: 1px;
-}
-
 /* TODO(estade): handle overflow better? I tried overflow-x: hidden and
    overflow-y: visible (for the new dot animation), but this makes a scroll
    bar appear */
 #dot-list {
+  height: 100%;
   list-style-type: none;
   margin: 0;
   padding: 0;
+  text-align: center;
   white-space: nowrap;
   -webkit-box-flex: 1;
 }
 
 /* TODO(estade): improve focus indicator. */
 .dot {
-  background-color: #bbb;
+  border-top: 5px solid rgba(0, 0, 0, .1);
+  color: rgba(0, 0, 0, 0.2);
   cursor: pointer;
   display: inline-block;
-  height: 13px;
-  margin: 10px;
+  font-size: 9pt;
+  height: 100%;
+  line-height: 30px;
+  margin: 0 10px;
+  text-align: left;
   width: 60px;
-  -webkit-border-radius: 2px;
   -webkit-box-sizing: border-box;
-  -webkit-transition-duration: 500ms;
-  -webkit-transition-property: -webkit-transform;
+  -webkit-padding-start: 5px;
+  -webkit-transition: -webkit-transform 500ms,
+                      background-color 250ms;
 }
 
 .dot.selected {
-  background-color: #888;
+  border-top: 5px solid rgba(0, 0, 0, .4);
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.dot:hover {
+  background-color: rgba(0, 0, 0, .05);
 }
 
 .dot.new {

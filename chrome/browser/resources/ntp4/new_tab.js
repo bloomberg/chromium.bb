@@ -264,7 +264,7 @@ var ntp = (function() {
       var pageIndex = (app.page_index || 0);
       while (pageIndex >= appsPages.length) {
         var origPageCount = appsPages.length;
-        createAppPage();
+        createAppPage('Apps');
         // Confirm that appsPages is a live object, updated when a new page is
         // added (otherwise we'd have an infinite loop)
         assert(appsPages.length == origPageCount + 1, 'expected new page');
@@ -274,8 +274,8 @@ var ntp = (function() {
     }
 
     // Add a couple blank apps pages for testing. TODO(estade): remove this.
-    createAppPage();
-    createAppPage();
+    createAppPage('Foo');
+    createAppPage('Bar');
 
     // Tell the slider about the pages
     updateSliderCards();
@@ -340,16 +340,18 @@ var ntp = (function() {
    * Creates a new page for apps
    *
    * @return {!Element} The apps-page element created.
+   * @param {string} name The display name for the page.
    * @param {boolean=} opt_animate If true, add the class 'new' to the created
    *        dot.
    */
-  function createAppPage(opt_animate) {
-    var appsPage = new ntp4.AppsPage();
+  function createAppPage(name, opt_animate) {
+    var appsPage = new ntp4.AppsPage(name);
     appsPageList.appendChild(appsPage);
 
     // Make a deep copy of the dot template to add a new one.
     var dotCount = dots.length;
     var newDot = dotTemplate.cloneNode(true);
+    newDot.textContent = name;
     if (opt_animate)
       newDot.classList.add('new');
     dotList.appendChild(newDot);
@@ -617,7 +619,7 @@ var ntp = (function() {
     cardSlider.cancelTouch();
 
     // Add an extra blank page in case the user wants to create a new page
-    createAppPage(true);
+    createAppPage('', true);
     var pageAdded = appsPages.length - 1;
     window.setTimeout(function() {
       dots[pageAdded].classList.remove('new');
