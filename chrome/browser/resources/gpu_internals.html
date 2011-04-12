@@ -22,6 +22,15 @@ body {
   padding: 0;
   margin: 0;
 }
+
+#debug-div {
+  display: -webkit-box;
+  position: fixed;
+  top: 0px;
+  left: 50%;
+  border: 1px solid red;
+}
+
 </style>
 <link rel="stylesheet" href="gpu_internals/info_view.css">
 <link rel="stylesheet" href="gpu_internals/overlay.css">
@@ -46,7 +55,6 @@ body {
 <script src="gpu_internals/fast_rect_renderer.js"></script>
 <script src="gpu_internals/timeline_view.js"></script>
 <script src="gpu_internals/raw_events_view.js"></script>
-<script src="gpu_internals/simulated_trace_data.js"></script>
 
 <script>
 var browserBridge;
@@ -98,6 +106,8 @@ document.addEventListener('DOMContentLoaded', onLoad);
 </script>
 </head>
 <body>
+  <div id="debug-div">
+  </div>
   <!-- Tabs -->
   <div id="main-tabs">
     <include src="gpu_internals/info_view.html">

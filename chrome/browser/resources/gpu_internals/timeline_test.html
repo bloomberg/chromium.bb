@@ -13,7 +13,7 @@ found in the LICENSE file.
 <script src="../shared/js/cr/event_target.js"></script>
 <script src="../shared/js/cr/ui.js"></script>
 <script src="fast_rect_renderer.js"></script>
-<script src="simulated_trace_data.js"></script>
+<script src="tracing_controller_tests.js"></script>
 <script src="sorted_array_utils.js"></script>
 <script src="timeline.js"></script>
 <script src="timeline_track.js"></script>
@@ -35,7 +35,7 @@ var timeline;
 
 function testTimeline() {
   model = new gpu.TimelineModel();
-  model.importEvents(getTimelineTestData2());
+  model.importEvents(tracingControllerDataSets);
   timeline = new gpu.Timeline();
   timeline.model = model;
   sandbox.appendChild(timeline);

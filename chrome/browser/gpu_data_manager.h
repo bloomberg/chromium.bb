@@ -34,9 +34,10 @@ class GpuDataManager {
 
   const GPUInfo& gpu_info() const;
 
-  // Returns blacklisting reasons structure from gpu_blacklist or NULL
-  // if not blacklisted. Caller is responsible for deleting returned value.
-  Value* GetBlacklistingReasons() const;
+  // Returns status of various GPU features. Return type is
+  // GpuBlacklist::GetFeatureStatus, or NULL if blacklist is
+  // uninitialized. Caller is responsible for deleting the returned value.
+  Value* GetFeatureStatus();
 
   std::string GetBlacklistVersion() const;
 

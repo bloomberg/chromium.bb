@@ -382,10 +382,10 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
   // Get GPU Info.
   DictionaryValue* gpu_info_val = GpuInfoToDict(gpu_info);
 
-  // Add in blacklisting reasons
-  Value* blacklisting_reasons = gpu_data_manager_->GetBlacklistingReasons();
-  if (blacklisting_reasons)
-    gpu_info_val->Set("blacklistingReasons", blacklisting_reasons);
+  // Add in blacklisting features
+  Value* feature_status = gpu_data_manager_->GetFeatureStatus();
+  if (feature_status)
+    gpu_info_val->Set("featureStatus", feature_status);
 
   // Send GPU Info to javascript.
   web_ui_->CallJavascriptFunction("browserBridge.onGpuInfoUpdate",

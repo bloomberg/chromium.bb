@@ -693,27 +693,172 @@ void GpuBlacklist::GetGpuFeatureFlagEntries(
   }
 }
 
-Value* GpuBlacklist::GetBlacklistingReasons() const {
-  ListValue* reasons = new ListValue();
-  for (size_t i = 0; i < active_entries_.size(); ++i) {
-    DictionaryValue* reason = new DictionaryValue();
-    reason->SetString("description", active_entries_[i]->description());
+Value* GpuBlacklist::GetFeatureStatus(bool gpu_access_allowed,
+                                      bool disable_accelerated_compositing,
+                                      bool enable_accelerated_2D_canvas,
+                                      bool disable_experimental_webgl,
+                                      bool disable_multisampling) const {
+  DictionaryValue* status = new DictionaryValue();
 
-    ListValue* cr_bugs = new ListValue();
-    for (size_t j = 0; j < active_entries_[i]->cr_bugs().size(); ++j)
-      cr_bugs->Append(Value::CreateIntegerValue(
-          active_entries_[i]->cr_bugs()[j]));
-    reason->Set("cr_bugs", cr_bugs);
+  // build the feature_status field
+  {
+    ListValue* feature_status_list = new ListValue();
+    // Iterate over all feature bits in kGpuFeatureAll and set feature status
+    // for each one.
+    for (size_t i = 0; i < sizeof(GpuFeatureFlags::GpuFeatureType) * 8; ++i) {
+      GpuFeatureFlags::GpuFeatureType feature =
+          static_cast<GpuFeatureFlags::GpuFeatureType>(1 << i);
+      if (!(feature & GpuFeatureFlags::kGpuFeatureAll))
+        continue;
 
-    ListValue* webkit_bugs = new ListValue();
-    for (size_t j = 0; j < active_entries_[i]->webkit_bugs().size(); ++j)
-      webkit_bugs->Append(Value::CreateIntegerValue(
-          active_entries_[i]->webkit_bugs()[j]));
-    reason->Set("webkit_bugs", webkit_bugs);
+      DictionaryValue* feature_status = new DictionaryValue();
 
-    reasons->Append(reason);
+      std::string feature_name(
+          GpuFeatureFlags::GpuFeatureTypeToString(feature));
+      feature_status->SetString("name", feature_name);
+
+      // figure out if the feature is on or off
+      bool blacklisted = false;
+      for (size_t i = 0; i < active_entries_.size(); ++i) {
+        if (active_entries_[i]->GetGpuFeatureFlags().flags() & feature)
+          blacklisted |= true;
+      }
+
+      // status is actually a function of blacklisting + enable/disable flags +
+      // global GPU state
+      const char* status;
+      if (!gpu_access_allowed) {
+        status = "unavailable";
+      } else {
+        switch(feature) {
+          case GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas: {
+            if (enable_accelerated_2D_canvas) {
+              if (blacklisted)
+                status = "unavailable";
+              else
+                status = "enabled";
+            } else {
+              status = "software";
+            }
+            break;
+          }
+          case GpuFeatureFlags::kGpuFeatureAcceleratedCompositing: {
+            if (disable_accelerated_compositing) {
+              status = "disabled";
+            } else {
+              if (blacklisted)
+                status = "unavailable";
+              else
+                status = "enabled";
+            }
+            break;
+          }
+          case GpuFeatureFlags::kGpuFeatureWebgl: {
+            if (disable_experimental_webgl) {
+              status = "disabled";
+            } else {
+              if (blacklisted)
+                status = "unavailable";
+              else
+                status = "enabled";
+            }
+            break;
+          }
+          case GpuFeatureFlags::kGpuFeatureMultisampling: {
+            if(disable_multisampling) {
+              status = "disabled";
+            } else {
+              if(blacklisted)
+                status = "unavailable";
+              else
+                status = "enabled";
+            }
+            break;
+          }
+          default: {
+            NOTREACHED();
+            status = "unavailable";
+            break;
+          }
+        }
+      }
+      feature_status->SetString("status", status);
+
+      feature_status_list->Append(feature_status);
+    }
+    status->Set("featureStatus", feature_status_list);
   }
-  return reasons;
+
+  // build the problems list
+  {
+    ListValue* problem_list = new ListValue();
+    if(!gpu_access_allowed) {
+      DictionaryValue* problem = new DictionaryValue();
+      problem->SetString("description",
+          "GPU process was unable to boot. Access to GPU disallowed.");
+      problem->Set("crBugs", new ListValue());
+      problem->Set("webkitBugs", new ListValue());
+      problem_list->Append(problem);
+    }
+    if(!enable_accelerated_2D_canvas) {
+      DictionaryValue* problem = new DictionaryValue();
+      problem->SetString("description",
+          "Accelerated 2D canvas has not been enabled "
+          "(in about:flags or command line)");
+      problem->Set("crBugs", new ListValue());
+      problem->Set("webkitBugs", new ListValue());
+      problem_list->Append(problem);
+    }
+    if(disable_accelerated_compositing) {
+      DictionaryValue* problem = new DictionaryValue();
+      problem->SetString("description",
+          "Accelerated compositing has been disabled, either via about:flags "
+          "or command line");
+      problem->Set("crBugs", new ListValue());
+      problem->Set("webkitBugs", new ListValue());
+      problem_list->Append(problem);
+    }
+    if(disable_experimental_webgl) {
+      DictionaryValue* problem = new DictionaryValue();
+      problem->SetString("description",
+          "WebGL has been disabled, either via about:flags "
+          "or command line");
+      problem->Set("crBugs", new ListValue());
+      problem->Set("webkitBugs", new ListValue());
+      problem_list->Append(problem);
+    }
+    if(disable_multisampling) {
+      DictionaryValue* problem = new DictionaryValue();
+      problem->SetString("description",
+          "Multisampling has been disabled, either via about:flags "
+          "or command line");
+      problem->Set("crBugs", new ListValue());
+      problem->Set("webkitBugs", new ListValue());
+      problem_list->Append(problem);
+    }
+    for (size_t i = 0; i < active_entries_.size(); ++i) {
+      GpuBlacklistEntry* entry = active_entries_[i];
+      DictionaryValue* problem = new DictionaryValue();
+
+      problem->SetString("description", entry->description());
+
+      ListValue* cr_bugs = new ListValue();
+      for (size_t j = 0; j < entry->cr_bugs().size(); ++j)
+        cr_bugs->Append(Value::CreateIntegerValue(
+            entry->cr_bugs()[j]));
+      problem->Set("crBugs", cr_bugs);
+
+      ListValue* webkit_bugs = new ListValue();
+      for (size_t j = 0; j < entry->webkit_bugs().size(); ++j)
+        webkit_bugs->Append(Value::CreateIntegerValue(
+            entry->webkit_bugs()[j]));
+      problem->Set("webkitBugs", webkit_bugs);
+
+      problem_list->Append(problem);
+    }
+    status->Set("problems", problem_list);
+  }
+  return status;
 }
 
 uint32 GpuBlacklist::max_entry_id() const {
@@ -797,4 +942,3 @@ GpuBlacklist::IsEntrySupportedByCurrentBrowserVersion(
   }
   return kSupported;
 }
-

@@ -31,6 +31,13 @@ cr.define('gpu', function() {
 
     this.traceEvents_ = [];
 
+    if (browserBridge.debugMode) {
+      var tracingControllerTests = document.createElement('script');
+      tracingControllerTests.src =
+          './gpu_internals/tracing_controller_tests.js';
+      document.body.appendChild(tracingControllerTests);
+    }
+
     this.onKeydownBoundToThis_ = this.onKeydown_.bind(this);
     this.onKeypressBoundToThis_ = this.onKeypress_.bind(this);
   }
@@ -68,6 +75,10 @@ cr.define('gpu', function() {
 
       window.addEventListener('keypress', this.onKeypressBoundToThis_);
       window.addEventListener('keydown', this.onKeydownBoundToThis_);
+
+      // In debug mode, stop tracing automatically
+      if (browserBridge.debugMode)
+        window.setTimeout(this.endTracing.bind(this), 100);
     },
 
     onKeydown_: function(e) {
@@ -116,8 +127,7 @@ cr.define('gpu', function() {
       if (!browserBridge.debugMode) {
         chrome.send('endTracingAsync');
       } else {
-        var events = window.getTimelineTestData1 ?
-            getTimelineTestData1() : [];
+        var events = tracingControllerTestEvents;
         this.onTraceDataCollected(events);
         window.setTimeout(this.onEndTracingComplete.bind(this), 250);
       }

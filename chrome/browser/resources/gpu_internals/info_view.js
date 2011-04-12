@@ -22,43 +22,12 @@ cr.define('gpu', function() {
     decorate: function() {
       gpu.Tab.prototype.decorate.apply(this);
 
-      this.beginRequestClientInfo();
-
-      this.logMessages_ = [];
-      this.beginRequestLogMessages();
-
       browserBridge.addEventListener('gpuInfoUpdate', this.refresh.bind(this));
+      browserBridge.addEventListener('logMessagesChange',
+                                     this.refresh.bind(this));
+      browserBridge.addEventListener('clientInfoChange',
+                                     this.refresh.bind(this));
       this.refresh();
-    },
-
-    /**
-     * This function begins a request for the ClientInfo. If it comes back
-     * as undefined, then we will issue the request again in 250ms.
-     */
-    beginRequestClientInfo: function() {
-      browserBridge.callAsync('requestClientInfo', undefined, (function(data) {
-        this.clientInfo_ = data;
-        this.refresh();
-        if (data === undefined) { // try again in 250 ms
-          window.setTimeout(this.beginRequestClientInfo.bind(this), 250);
-        }
-      }).bind(this));
-    },
-
-    /**
-     * This function checks for new GPU_LOG messages.
-     * If any are found, a refresh is triggered.
-     */
-    beginRequestLogMessages: function() {
-      browserBridge.callAsync('requestLogMessages', undefined,
-          (function(messages) {
-            if (messages.length != this.logMessages_.length) {
-              this.logMessages_ = messages;
-              this.refresh();
-            }
-            // check again in 250 ms
-            window.setTimeout(this.beginRequestLogMessages.bind(this), 250);
-          }).bind(this));
     },
 
     /**
@@ -66,11 +35,12 @@ cr.define('gpu', function() {
     */
     refresh: function(data) {
       // Client info
-      if (this.clientInfo_) {
-        var chromeVersion = this.clientInfo_.version +
-            ' (' + this.clientInfo_.official +
-            ' ' + this.clientInfo_.cl +
-            ') ' + this.clientInfo_.version_mod;
+      if (browserBridge.clientInfo) {
+        var clientInfo = browserBridge.clientInfo;
+        var chromeVersion = clientInfo.version +
+            ' (' + clientInfo.official +
+            ' ' + clientInfo.cl +
+            ') ' + clientInfo.version_mod;
         this.setTable_('client-info', [
           {
             description: 'Data exported',
@@ -82,81 +52,82 @@ cr.define('gpu', function() {
           },
           {
             description: 'Software rendering list version',
-            value: this.clientInfo_.blacklist_version
+            value: clientInfo.blacklist_version
           }]);
       } else {
         this.setText_('client-info', '... loading...');
       }
 
+      // Feature map
+      var featureNameMap = {
+        'accelerated_2d_canvas': 'Canvas',
+        'accelerated_compositing': '3D CSS',
+        'webgl': 'WebGL',
+        'multisampling': 'WebGL multisampling'
+      };
+
       // GPU info, basic
       var diagnostics = this.querySelector('.diagnostics');
-      var blacklistedIndicator = this.querySelector('.blacklisted-indicator');
+      var featureStatusList = this.querySelector('.feature-status-list');
+      var problemsDiv = this.querySelector('.problems-div');
+      var problemsList = this.querySelector('.problems-list');
       var gpuInfo = browserBridge.gpuInfo;
+      var i;
       if (gpuInfo) {
-        if (gpuInfo.blacklistingReasons) {
-          blacklistedIndicator.hidden = false;
-          // Not using jstemplate here because we need to manipulate
-          // href on the fly
-          var reasonsEl = blacklistedIndicator.querySelector(
-              '.blacklisted-reasons');
-          reasonsEl.textContent = '';
-          for (var i = 0; i < gpuInfo.blacklistingReasons.length; i++) {
-            var reason = gpuInfo.blacklistingReasons[i];
+        // Not using jstemplate here for blacklist status because we construct
+        // href from data, which jstemplate can't seem to do.
+        if (gpuInfo.featureStatus) {
+          // feature status list
+          featureStatusList.textContent = '';
+          for (i = 0; i < gpuInfo.featureStatus.featureStatus.length;
+               i++) {
+            var feature = gpuInfo.featureStatus.featureStatus[i];
+            var featureEl = document.createElement('li');
 
-            var reasonEl = document.createElement('li');
+            var nameEl = document.createElement('span');
+            nameEl.textContent = featureNameMap[feature.name] + ': ';
+            featureEl.appendChild(nameEl);
 
-            // Description of issue
-            var desc = document.createElement('a');
-            desc.textContent = reason.description;
-            reasonEl.appendChild(desc);
-
-            // Spacing ':' element
-            if (reason.cr_bugs.length + reason.webkit_bugs.length > 0) {
-              var tmp = document.createElement('span');
-              tmp.textContent = '  ';
-              reasonEl.appendChild(tmp);
+            var statusEl = document.createElement('span');
+            if (feature.status == 'enabled') {
+              statusEl.textContent = 'enabled';
+              statusEl.className = 'feature-enabled';
+            } else if (feature.status == 'software') {
+              statusEl.textContent = 'software only';
+              statusEl.className = 'feature-software';
+            } else if (feature.status == 'unavailable') {
+              statusEl.textContent = 'unavailable';
+              statusEl.className = 'feature-disabled';
+            } else { // disabled
+              statusEl.textContent = 'disabled';
+              statusEl.className = 'feature-disabled';
             }
+            featureEl.appendChild(statusEl);
 
-            var nreasons = 0;
-            var j;
-            // cr_bugs
-            for (j = 0; j < reason.cr_bugs.length; ++j) {
-              if (nreasons > 0) {
-                var tmp = document.createElement('span');
-                tmp.textContent = ', ';
-                reasonEl.appendChild(tmp);
-              }
-
-              var link = document.createElement('a');
-              var bugid = parseInt(reason.cr_bugs[j]);
-              link.textContent = bugid;
-              link.href = 'http://crbug.com/' + bugid;
-              reasonEl.appendChild(link);
-              nreasons++;
-            }
-
-            for (j = 0; j < reason.webkit_bugs.length; ++j) {
-              if (nreasons > 0) {
-                var tmp = document.createElement('span');
-                tmp.textContent = ', ';
-                reasonEl.appendChild(tmp);
-              }
-
-              var link = document.createElement('a');
-              var bugid = parseInt(reason.webkit_bugs[j]);
-              link.textContent = bugid;
-
-              link.href = 'https://bugs.webkit.org/show_bug.cgi?id=' + bugid;
-              reasonEl.appendChild(link);
-              nreasons++;
-            }
-
-            reasonsEl.appendChild(reasonEl);
+            featureStatusList.appendChild(featureEl);
           }
+
+          // problems list
+          if (gpuInfo.featureStatus.problems.length) {
+            problemsDiv.hidden = false;
+            problemsList.textContent = '';
+            for (i = 0; i < gpuInfo.featureStatus.problems.length; i++) {
+              var problem = gpuInfo.featureStatus.problems[i];
+              var problemEl = this.createProblemEl_(problem);
+              problemsList.appendChild(problemEl);
+            }
+          } else {
+            problemsDiv.hidden = true;
+          }
+
         } else {
-          blacklistedIndicator.hidden = true;
+          featureStatusList.textContent = '';
+          problemsList.hidden = true;
         }
-        this.setTable_('basic-info', gpuInfo.basic_info);
+        if (gpuInfo.basic_info)
+          this.setTable_('basic-info', gpuInfo.basic_info);
+        else
+          this.setTable_('basic-info', []);
 
         if (gpuInfo.diagnostics) {
           diagnostics.hidden = false;
@@ -165,16 +136,69 @@ cr.define('gpu', function() {
           diagnostics.hidden = true;
         }
       } else {
-        blacklistedIndicator.hidden = true;
         this.setText_('basic-info', '... loading ...');
         diagnostics.hidden = true;
+        featureStatusList.textContent = '';
+        problemsDiv.hidden = true;
       }
 
       // Log messages
-      if (!browserBridge.debugMode) {
-        jstProcess(new JsEvalContext({values: this.logMessages_}),
-                   document.getElementById('log-messages'));
+      jstProcess(new JsEvalContext({values: browserBridge.logMessages}),
+                 document.getElementById('log-messages'));
+    },
+
+    createProblemEl_: function(problem) {
+      var problemEl;
+      problemEl = document.createElement('li');
+
+      // Description of issue
+      var desc = document.createElement('a');
+      desc.textContent = problem.description;
+      problemEl.appendChild(desc);
+
+      // Spacing ':' element
+      if (problem.crBugs.length + problem.webkitBugs.length > 0) {
+        var tmp = document.createElement('span');
+        tmp.textContent = ': ';
+        problemEl.appendChild(tmp);
       }
+
+      var nbugs = 0;
+      var j;
+
+      // crBugs
+      for (j = 0; j < problem.crBugs.length; ++j) {
+        if (nbugs > 0) {
+          var tmp = document.createElement('span');
+          tmp.textContent = ', ';
+          problemEl.appendChild(tmp);
+        }
+
+        var link = document.createElement('a');
+        var bugid = parseInt(problem.crBugs[j]);
+        link.textContent = bugid;
+        link.href = 'http://crbug.com/' + bugid;
+        problemEl.appendChild(link);
+        nbugs++;
+      }
+
+      for (j = 0; j < problem.webkitBugs.length; ++j) {
+        if (nbugs > 0) {
+          var tmp = document.createElement('span');
+          tmp.textContent = ', ';
+          problemEl.appendChild(tmp);
+        }
+
+        var link = document.createElement('a');
+        var bugid = parseInt(problem.webkitBugs[j]);
+        link.textContent = bugid;
+
+        link.href = 'https://bugs.webkit.org/show_bug.cgi?id=' + bugid;
+        problemEl.appendChild(link);
+        nbugs++;
+      }
+
+      return problemEl;
     },
 
     setText_: function(outputElementId, text) {

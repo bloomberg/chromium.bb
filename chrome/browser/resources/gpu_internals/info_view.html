@@ -4,14 +4,17 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 <div id=info-view label="GPU Info">
-  <h3>Version Information</h3>
-  <div id="client-info"></div>
-
-  <div class="blacklisted-indicator">
-    <h3>Hardware Acceleration Unavailable</h3>
-    <ul class="blacklisted-reasons">
+  <h3>Hardware Acceleration Status</h3>
+  <ul class="feature-status-list">
+  </ul>
+  <div class='problems-div'>
+    <h3>Problems Detected</h3>
+    <ul class="problems-list">
     </ul>
   </div>
+
+  <h3>Version Information</h3>
+  <div id="client-info"></div>
 
   <h3>Driver Information</h3>
   <div id="basic-info"></div>
@@ -29,7 +32,7 @@ found in the LICENSE file.
       </li>
     </ul>
   </div>
-    
+
   <!-- templates -->
   <div style="display:none">
     <div id="info-view-table-template">

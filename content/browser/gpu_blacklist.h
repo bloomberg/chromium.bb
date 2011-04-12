@@ -61,15 +61,29 @@ class GpuBlacklist {
                                 std::vector<uint32>& entry_ids) const;
 
 
-  // Returns an array of entries, each entry of which has
-  // description, cr_bugs, and webkit_bugs explaining reason for
-  // blacklisting, e.g.:
-  // [{
+  // Returns status information on the blacklist. This is two parted:
+  // {
+  //    featureStatus: []
+  //    problems: []
+  // }
+  //
+  // Each entry in feature_status has:
+  // {
+  //    name:  "name of feature"
+  //    status: "enabled" | "unavailable" | "software" | "disabled";
+  // }
+  //
+  // Each problems has:
+  // {
   //    "description": "Your GPU is too old",
-  //    "cr_bugs": [1234],
-  //    "webkit_bugs": []
-  // }]
-  Value* GetBlacklistingReasons() const;
+  //    "crBugs": [1234],
+  //    "webkitBugs": []
+  // }
+  Value* GetFeatureStatus(bool gpu_access_allowed,
+                          bool disable_accelerated_compositing,
+                          bool enable_accelerated_2D_canvas,
+                          bool disable_experimental_webgl,
+                          bool disable_multisampling) const;
 
   // Return the largest entry id.  This is used for histogramming.
   uint32 max_entry_id() const;

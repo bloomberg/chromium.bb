@@ -91,9 +91,14 @@ const GPUInfo& GpuDataManager::gpu_info() const {
   return gpu_info_;
 }
 
-Value* GpuDataManager::GetBlacklistingReasons() const {
-  if (gpu_feature_flags_.flags() != 0 && gpu_blacklist_.get())
-    return gpu_blacklist_->GetBlacklistingReasons();
+Value* GpuDataManager::GetFeatureStatus() {
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  if (gpu_blacklist_.get())
+    return gpu_blacklist_->GetFeatureStatus(GpuAccessAllowed(),
+        browser_command_line.HasSwitch(switches::kDisableAcceleratedCompositing),
+        browser_command_line.HasSwitch(switches::kEnableAccelerated2dCanvas),
+        browser_command_line.HasSwitch(switches::kDisableExperimentalWebGL),
+        browser_command_line.HasSwitch(switches::kDisableGLMultisampling));
   return NULL;
 }
 

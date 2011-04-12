@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,12 +47,18 @@ class GpuFeatureFlags {
   static GpuFeatureType StringToGpuFeatureType(
       const std::string& feature_string);
 
+  // Gets a string version of a feature type for use in about:gpu. Will yield
+  // strings from StringToGpuFeatureType, e.g. kGpuFeatureAccelerated2dCanvas
+  // becomes "accelerated_2d_canvas"
+  static std::string GpuFeatureTypeToString(GpuFeatureType feature);
+
  private:
   static const char kGpuFeatureNameAccelerated2dCanvas[];
   static const char kGpuFeatureNameAcceleratedCompositing[];
   static const char kGpuFeatureNameWebgl[];
   static const char kGpuFeatureNameMultisampling[];
   static const char kGpuFeatureNameAll[];
+  static const char kGpuFeatureNameUnknown[];
 
   // If a bit is set to 1, corresponding feature is blacklisted.
   uint32 flags_;

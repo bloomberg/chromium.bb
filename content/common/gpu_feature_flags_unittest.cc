@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,3 +52,43 @@ TEST(GpuFeatureFlagsTest, GpuFeatureFlagsBasic) {
             GpuFeatureFlags::kGpuFeatureUnknown);
 }
 
+TEST(GpuFeatureFlagsTest, GpuFeatureTypeToString) {
+
+  // Test GpuFeatureTypeToString for single-bit enums using the all enum
+  EXPECT_STREQ(
+      GpuFeatureFlags::GpuFeatureTypeToString(
+          GpuFeatureFlags::kGpuFeatureAcceleratedCompositing).c_str(),
+      "accelerated_compositing");
+  EXPECT_STREQ(
+      GpuFeatureFlags::GpuFeatureTypeToString(
+          GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas).c_str(),
+      "accelerated_2d_canvas");
+  EXPECT_STREQ(
+      GpuFeatureFlags::GpuFeatureTypeToString(
+          GpuFeatureFlags::kGpuFeatureWebgl).c_str(),
+      "webgl");
+  EXPECT_STREQ(
+      GpuFeatureFlags::GpuFeatureTypeToString(
+          GpuFeatureFlags::kGpuFeatureMultisampling).c_str(),
+      "multisampling");
+  EXPECT_STREQ(
+      GpuFeatureFlags::GpuFeatureTypeToString(
+          GpuFeatureFlags::kGpuFeatureAll).c_str(),
+      "all");
+  EXPECT_STREQ(GpuFeatureFlags::GpuFeatureTypeToString(
+          GpuFeatureFlags::kGpuFeatureUnknown).c_str(),
+      "unknown");
+  EXPECT_STREQ(
+      GpuFeatureFlags::GpuFeatureTypeToString(
+          static_cast<GpuFeatureFlags::GpuFeatureType>(
+              GpuFeatureFlags::kGpuFeatureWebgl |
+              GpuFeatureFlags::kGpuFeatureMultisampling)).c_str(),
+      "webgl,multisampling");
+
+  std::string tmp;
+  tmp = GpuFeatureFlags::GpuFeatureTypeToString(
+      static_cast<GpuFeatureFlags::GpuFeatureType>(
+          GpuFeatureFlags::kGpuFeatureWebgl |
+          GpuFeatureFlags::kGpuFeatureAll));
+  EXPECT_STREQ(tmp.c_str(),  "all");
+}
