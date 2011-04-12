@@ -285,7 +285,8 @@ void SetMacProcessName(const std::string& process_type) {
   int name_id = 0;
   if (process_type == switches::kRendererProcess) {
     name_id = IDS_RENDERER_APP_NAME;
-  } else if (process_type == switches::kPluginProcess) {
+  } else if (process_type == switches::kPluginProcess ||
+             process_type == switches::kPpapiPluginProcess) {
     name_id = IDS_PLUGIN_APP_NAME;
   } else if (process_type == switches::kExtensionProcess) {
     name_id = IDS_WORKER_APP_NAME;

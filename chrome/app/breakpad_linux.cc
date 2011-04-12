@@ -787,6 +787,7 @@ void InitCrashReporter() {
     EnableCrashDumping(getenv(env_vars::kHeadless) != NULL);
   } else if (process_type == switches::kRendererProcess ||
              process_type == switches::kPluginProcess ||
+             process_type == switches::kPpapiPluginProcess ||
              process_type == switches::kZygoteProcess ||
              process_type == switches::kGpuProcess) {
     // We might be chrooted in a zygote or renderer process so we cannot call
