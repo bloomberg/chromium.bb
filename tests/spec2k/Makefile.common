@@ -24,7 +24,7 @@ endif
 TC_ROOT=../../../toolchain
 
 NNACL_ROOT=$(TC_ROOT)/$(SCONS_BUILD_PLATFORM)_x86
-PNACL_ROOT=$(TC_ROOT)/linux_arm-untrusted
+PNACL_ROOT=$(TC_ROOT)/pnacl_$(BUILD_PLATFORM)_$(BUILD_ARCH)
 ARM_ROOT=$(TC_ROOT)/linux_arm-trusted
 
 CFLAGS = $(CFLAGS_EXTRA)

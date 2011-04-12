@@ -1,5 +1,5 @@
 vars = {
-  "arm_toolchain_version": "4819",
+  "arm_toolchain_version": "4826",
   "chrome_rev": "80735",
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "gtest_rev": "364",

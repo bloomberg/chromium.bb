@@ -16,20 +16,19 @@ import sync_tgz
 
 
 PLATFORM_MAPPING = {
-    'windows': [
-        ['win_x86', 'win_x86'],  # Multilib toolchain
-    ],
-    'linux': [
-        ['linux_x86', 'linux_x86'],  # Multilib toolchain
-        ['linux_arm-trusted', 'linux_arm-trusted'],
-        ['linux_arm-untrusted-hardy64-toolchain_arm-untrusted',
-         'linux_arm-untrusted'],
-    ],
-    'mac': [
-        ['mac_x86', 'mac_x86'], # Multilib toolchain
-    ],
+    'windows': {
+        'x86-32': ['win_x86'],
+        'x86-64': ['win_x86'],
+    },
+    'linux': {
+        'x86-32': ['linux_x86','pnacl_linux_i686','linux_arm-trusted'],
+        'x86-64': ['linux_x86','pnacl_linux_x86_64','linux_arm-trusted'],
+    },
+    'mac': {
+        'x86-32': ['mac_x86'],
+        'x86-64': ['mac_x86'],
+    },
 }
-
 
 def main():
   parser = optparse.OptionParser()
@@ -51,19 +50,20 @@ def main():
     parser.error('ERROR: invalid argument')
 
   platform_fixed = download_utils.PlatformName()
-  for flavor in PLATFORM_MAPPING[platform_fixed]:
-    if 'arm' in flavor[0]:
+  arch_fixed = download_utils.ArchName()
+  for flavor in PLATFORM_MAPPING[platform_fixed][arch_fixed]:
+    if 'arm' in flavor or 'pnacl' in flavor:
       version = options.arm_version
     else:
       version = options.x86_version
-    url = '%s/%s/naclsdk_%s.tgz' % (options.base_url, version, flavor[0])
+    url = '%s/%s/naclsdk_%s.tgz' % (options.base_url, version, flavor)
     parent_dir = os.path.dirname(os.path.dirname(__file__))
-    dst = os.path.join(parent_dir, 'toolchain', flavor[1])
+    dst = os.path.join(parent_dir, 'toolchain', flavor)
     if version != 'latest' and download_utils.SourceIsCurrent(dst, url):
       continue
 
     # TODO(bradnelson_): get rid of this when toolchain tarballs flattened.
-    if 'arm' in flavor[0]:
+    if 'arm' in flavor or 'pnacl' in flavor:
       # TODO(cbiffle): we really shouldn't do this until the unpack succeeds!
       # See: http://code.google.com/p/nativeclient/issues/detail?id=834
       download_utils.RemoveDir(dst)

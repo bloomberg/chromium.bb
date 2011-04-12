@@ -30,12 +30,27 @@ PLATFORM_COLLAPSE = {
     'mac': 'mac',
 }
 
+ARCH_COLLAPSE = {
+    'i386'  : 'x86-32',
+    'i686'  : 'x86-32',
+    'x86_64': 'x86-64',
+}
+
 
 def PlatformName(name=None):
   if name is None:
     name = sys.platform
   return PLATFORM_COLLAPSE[name]
 
+def ArchName(name=None):
+  if name is None:
+    if PlatformName() == 'windows':
+      # TODO(pdox): Figure out how to auto-detect 32-bit vs 64-bit Windows.
+      name = 'i386'
+    else:
+      import platform
+      name = platform.machine()
+  return ARCH_COLLAPSE[name]
 
 def EnsureFileCanBeWritten(filename):
   directory = os.path.dirname(filename)

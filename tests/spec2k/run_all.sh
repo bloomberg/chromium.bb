@@ -44,7 +44,7 @@ readonly TOOLCHAIN_DIR="$(GetAbsolutePath "../../toolchain")"
 readonly ARM_TRUSTED_TC="${TOOLCHAIN_DIR}/linux_arm-trusted"
 readonly QEMU_TOOL="${ARM_TRUSTED_TC}/qemu_tool.sh"
 
-readonly PNACL_TC="${TOOLCHAIN_DIR}/linux_arm-untrusted"
+readonly PNACL_TC="${TOOLCHAIN_DIR}/pnacl_${BUILD_PLATFORM}_${BUILD_ARCH}"
 readonly NNACL_TC="${TOOLCHAIN_DIR}/${SCONS_BUILD_PLATFORM}_x86"
 readonly RUNNABLE_LD_X8632="${NNACL_TC}/nacl/lib/runnable-ld.so"
 readonly RUNNABLE_LD_X8664="${NNACL_TC}/nacl64/lib/runnable-ld.so"
