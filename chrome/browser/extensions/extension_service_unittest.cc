@@ -13,6 +13,7 @@
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/stl_util-inl.h"
@@ -519,8 +520,9 @@ class ExtensionServiceTest
                                const FilePath& pem_path,
                                bool should_succeed) {
     FilePath crx_path;
-    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &crx_path));
-    crx_path = crx_path.AppendASCII("temp.crx");
+    ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+    crx_path = temp_dir_.path().AppendASCII("temp.crx");
 
     // Use the existing pem key, if provided.
     FilePath pem_output_path;

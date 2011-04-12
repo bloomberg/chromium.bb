@@ -5,6 +5,7 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
@@ -36,8 +37,8 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
     BrowserWithTestWindowTest::SetUp();
     std::string b = base::Int64ToString(base::Time::Now().ToInternalValue());
 
-    PathService::Get(base::DIR_TEMP, &path_);
-    path_ = path_.Append(FILE_PATH_LITERAL("SessionTestDirs"));
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    path_ = temp_dir_.path().Append(FILE_PATH_LITERAL("SessionTestDirs"));
     file_util::CreateDirectory(path_);
     path_deleter_.reset(new FileAutoDeleter(path_));
     path_ = path_.AppendASCII(b);
@@ -133,6 +134,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
   int sync_save_count_;
 
   // Path used in testing.
+  ScopedTempDir temp_dir_;
   FilePath path_;
   scoped_ptr<FileAutoDeleter> path_deleter_;
 

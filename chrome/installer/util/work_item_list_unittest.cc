@@ -7,6 +7,7 @@
 #include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/win/registry.h"
@@ -32,26 +33,18 @@ class WorkItemListTest : public testing::Test {
     ASSERT_EQ(ERROR_SUCCESS,
         key.Create(HKEY_CURRENT_USER, test_root, KEY_READ));
 
-    // Create a temp directory for test.
-    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &test_dir_));
-    test_dir_ = test_dir_.AppendASCII("WorkItemListTest");
-    file_util::Delete(test_dir_, true);
-    ASSERT_FALSE(file_util::PathExists(test_dir_));
-    file_util::CreateDirectoryW(test_dir_);
-    ASSERT_TRUE(file_util::PathExists(test_dir_));
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
   virtual void TearDown() {
     logging::CloseLogFile();
-    // Clean up test directory
-    ASSERT_TRUE(file_util::Delete(test_dir_, true));
-    ASSERT_FALSE(file_util::PathExists(test_dir_));
+
     // Clean up the temporary key
     RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
     ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(test_root));
   }
 
-  FilePath test_dir_;
+  ScopedTempDir temp_dir_;
 };
 
 }  // namespace
@@ -61,7 +54,7 @@ TEST_F(WorkItemListTest, ExecutionSuccess) {
   scoped_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
   scoped_ptr<WorkItem> work_item;
 
-  FilePath top_dir_to_create(test_dir_);
+  FilePath top_dir_to_create(temp_dir_.path());
   top_dir_to_create = top_dir_to_create.AppendASCII("a");
   FilePath dir_to_create(top_dir_to_create);
   dir_to_create = dir_to_create.AppendASCII("b");
@@ -112,7 +105,7 @@ TEST_F(WorkItemListTest, ExecutionFailAndRollback) {
   scoped_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
   scoped_ptr<WorkItem> work_item;
 
-  FilePath top_dir_to_create(test_dir_);
+  FilePath top_dir_to_create(temp_dir_.path());
   top_dir_to_create = top_dir_to_create.AppendASCII("a");
   FilePath dir_to_create(top_dir_to_create);
   dir_to_create = dir_to_create.AppendASCII("b");
@@ -168,7 +161,7 @@ TEST_F(WorkItemListTest, ConditionalExecutionSuccess) {
   scoped_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
   scoped_ptr<WorkItem> work_item;
 
-  FilePath top_dir_to_create(test_dir_);
+  FilePath top_dir_to_create(temp_dir_.path());
   top_dir_to_create = top_dir_to_create.AppendASCII("a");
   FilePath dir_to_create(top_dir_to_create);
   dir_to_create = dir_to_create.AppendASCII("b");
@@ -223,7 +216,7 @@ TEST_F(WorkItemListTest, ConditionalExecutionConditionFailure) {
   scoped_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
   scoped_ptr<WorkItem> work_item;
 
-  FilePath top_dir_to_create(test_dir_);
+  FilePath top_dir_to_create(temp_dir_.path());
   top_dir_to_create = top_dir_to_create.AppendASCII("a");
   FilePath dir_to_create(top_dir_to_create);
   dir_to_create = dir_to_create.AppendASCII("b");

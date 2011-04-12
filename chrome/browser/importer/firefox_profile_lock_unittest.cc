@@ -6,6 +6,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "build/build_config.h"
 #include "chrome/browser/importer/firefox_profile_lock.h"
 #include "chrome/common/chrome_paths.h"
@@ -13,28 +14,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 class FirefoxProfileLockTest : public testing::Test {
- public:
  protected:
   virtual void SetUp() {
-    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &test_path_));
-    FilePath::StringType dir_name = FILE_PATH_LITERAL("FirefoxProfileLockTest");
-    dir_name.append(StringPrintf(
-        FILE_PATH_LITERAL("-%d"), base::GetCurrentProcId()));
-    test_path_ = test_path_.Append(dir_name);
-    file_util::Delete(test_path_, true);
-    file_util::CreateDirectory(test_path_);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
-  virtual void TearDown() {
-    ASSERT_TRUE(file_util::Delete(test_path_, true));
-    ASSERT_FALSE(file_util::PathExists(test_path_));
-  }
-
-  FilePath test_path_;
+  ScopedTempDir temp_dir_;
 };
 
 TEST_F(FirefoxProfileLockTest, LockTest) {
-  FirefoxProfileLock lock1(test_path_);
+  FirefoxProfileLock lock1(temp_dir_.path());
   ASSERT_TRUE(lock1.HasAcquired());
   lock1.Unlock();
   ASSERT_FALSE(lock1.HasAcquired());

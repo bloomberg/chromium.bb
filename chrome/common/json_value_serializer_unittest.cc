@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -239,23 +240,10 @@ TEST(JSONValueSerializerTest, JSONReaderComments) {
 class JSONFileValueSerializerTest : public testing::Test {
 protected:
   virtual void SetUp() {
-    // Name a subdirectory of the temp directory.
-    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &test_dir_));
-    test_dir_ =
-        test_dir_.Append(FILE_PATH_LITERAL("JSONFileValueSerializerTest"));
-
-    // Create a fresh, empty copy of this directory.
-    file_util::Delete(test_dir_, true);
-    file_util::CreateDirectory(test_dir_);
-  }
-  virtual void TearDown() {
-    // Clean up test directory
-    ASSERT_TRUE(file_util::Delete(test_dir_, false));
-    ASSERT_FALSE(file_util::PathExists(test_dir_));
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
-  // the path to temporary directory used to contain the test operations
-  FilePath test_dir_;
+  ScopedTempDir temp_dir_;
 };
 
 TEST_F(JSONFileValueSerializerTest, Roundtrip) {
@@ -295,7 +283,7 @@ TEST_F(JSONFileValueSerializerTest, Roundtrip) {
 
   // Now try writing.
   const FilePath written_file_path =
-      test_dir_.Append(FILE_PATH_LITERAL("test_output.js"));
+      temp_dir_.path().Append(FILE_PATH_LITERAL("test_output.js"));
 
   ASSERT_FALSE(file_util::PathExists(written_file_path));
   JSONFileValueSerializer serializer(written_file_path);
@@ -324,7 +312,7 @@ TEST_F(JSONFileValueSerializerTest, RoundtripNested) {
 
   // Now try writing.
   FilePath written_file_path =
-      test_dir_.Append(FILE_PATH_LITERAL("test_output.js"));
+      temp_dir_.path().Append(FILE_PATH_LITERAL("test_output.js"));
 
   ASSERT_FALSE(file_util::PathExists(written_file_path));
   JSONFileValueSerializer serializer(written_file_path);

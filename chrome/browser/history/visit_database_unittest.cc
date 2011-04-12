@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/history/visit_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,12 +43,10 @@ class VisitDatabaseTest : public PlatformTest,
   // Test setup.
   void SetUp() {
     PlatformTest::SetUp();
-    FilePath temp_dir;
-    PathService::Get(base::DIR_TEMP, &temp_dir);
-    db_file_ = temp_dir.AppendASCII("VisitTest.db");
-    file_util::Delete(db_file_, false);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    FilePath db_file = temp_dir_.path().AppendASCII("VisitTest.db");
 
-    EXPECT_TRUE(db_.Open(db_file_));
+    EXPECT_TRUE(db_.Open(db_file));
 
     // Initialize the tables for this test.
     CreateURLTable(false);
@@ -56,7 +55,6 @@ class VisitDatabaseTest : public PlatformTest,
   }
   void TearDown() {
     db_.Close();
-    file_util::Delete(db_file_, false);
     PlatformTest::TearDown();
   }
 
@@ -65,7 +63,7 @@ class VisitDatabaseTest : public PlatformTest,
     return db_;
   }
 
-  FilePath db_file_;
+  ScopedTempDir temp_dir_;
   sql::Connection db_;
 };
 

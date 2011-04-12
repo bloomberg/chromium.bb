@@ -280,15 +280,13 @@ TEST_F(KioskModeTest, EnableKioskModeTest) {
 class LaunchBrowserWithNonAsciiUserDatadir : public UITest {
 public:
   void SetUp() {
-    PathService::Get(base::DIR_TEMP, &tmp_profile_);
-    tmp_profile_ = tmp_profile_.AppendASCII("tmp_profile");
-    tmp_profile_ = tmp_profile_.Append(L"Test Chrome G�raldine");
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    FilePath tmp_profile = temp_dir_.path().AppendASCII("tmp_profile");
+    tmp_profile = tmp_profile.Append(L"Test Chrome G�raldine");
 
-    // Create a fresh, empty copy of this directory.
-    file_util::Delete(tmp_profile_, true);
-    file_util::CreateDirectory(tmp_profile_);
+    ASSERT_TRUE(file_util::CreateDirectory(tmp_profile));
 
-    launch_arguments_.AppendSwitchPath(switches::kUserDataDir, tmp_profile_);
+    launch_arguments_.AppendSwitchPath(switches::kUserDataDir, tmp_profile);
   }
 
   bool LaunchAppWithProfile() {
@@ -296,13 +294,8 @@ public:
     return true;
   }
 
-  void TearDown() {
-    UITest::TearDown();
-    EXPECT_TRUE(file_util::DieFileDie(tmp_profile_, true));
-  }
-
 public:
-  FilePath tmp_profile_;
+  ScopedTempDir temp_dir_;
 };
 
 TEST_F(LaunchBrowserWithNonAsciiUserDatadir, TestNonAsciiUserDataDir) {

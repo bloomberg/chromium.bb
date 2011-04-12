@@ -6,6 +6,7 @@
 
 #include "base/file_path.h"
 #include "base/path_service.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/download/save_package.h"
@@ -98,22 +99,22 @@ class SavePackageTest : public RenderViewHostTestHarness {
 
     // Do the initialization in SetUp so contents() is initialized by
     // RenderViewHostTestHarness::SetUp.
-    FilePath test_dir;
-    PathService::Get(base::DIR_TEMP, &test_dir);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     save_package_success_ = new SavePackage(contents(),
-        test_dir.AppendASCII("testfile" HTML_EXTENSION),
-        test_dir.AppendASCII("testfile_files"));
+        temp_dir_.path().AppendASCII("testfile" HTML_EXTENSION),
+        temp_dir_.path().AppendASCII("testfile_files"));
 
     // We need to construct a path that is *almost* kMaxFilePathLength long
     long_file_name.resize(kMaxFilePathLength + long_file_name.length());
     while (long_file_name.length() < kMaxFilePathLength)
       long_file_name += long_file_name;
-    long_file_name.resize(kMaxFilePathLength - 9 - test_dir.value().length());
+    long_file_name.resize(
+        kMaxFilePathLength - 9 - temp_dir_.path().value().length());
 
     save_package_fail_ = new SavePackage(contents(),
-        test_dir.AppendASCII(long_file_name + HTML_EXTENSION),
-        test_dir.AppendASCII(long_file_name + "_files"));
+        temp_dir_.path().AppendASCII(long_file_name + HTML_EXTENSION),
+        temp_dir_.path().AppendASCII(long_file_name + "_files"));
   }
 
  private:
@@ -121,6 +122,8 @@ class SavePackageTest : public RenderViewHostTestHarness {
   scoped_refptr<SavePackage> save_package_success_;
   // SavePackage for failed generating file name.
   scoped_refptr<SavePackage> save_package_fail_;
+
+  ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(SavePackageTest);
 };

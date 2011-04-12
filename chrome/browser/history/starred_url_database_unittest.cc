@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/starred_url_database.h"
@@ -65,8 +66,8 @@ class StarredURLDatabaseTest : public testing::Test,
  private:
   // Test setup.
   void SetUp() {
-    PathService::Get(base::DIR_TEMP, &db_file_);
-    db_file_ = db_file_.AppendASCII("VisitTest.db");
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    db_file_ = temp_dir_.path().AppendASCII("VisitTest.db");
     file_util::Delete(db_file_, false);
 
     // Copy db file over that contains starred table.
@@ -86,7 +87,6 @@ class StarredURLDatabaseTest : public testing::Test,
   }
   void TearDown() {
     db_.Close();
-    file_util::Delete(db_file_, false);
   }
 
   // Provided for URL/StarredURLDatabase.
@@ -94,6 +94,7 @@ class StarredURLDatabaseTest : public testing::Test,
     return db_;
   }
 
+  ScopedTempDir temp_dir_;
   FilePath db_file_;
   sql::Connection db_;
 };

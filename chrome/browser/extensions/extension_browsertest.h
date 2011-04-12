@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer.h"
@@ -122,6 +123,9 @@ class ExtensionBrowserTest
   int extension_installs_observed_;
 
  private:
+  // Temporary directory for testing.
+  ScopedTempDir temp_dir_;
+
   // Specifies the type of UI (if any) to show during installation and what
   // user action to simulate.
   enum InstallUIType {

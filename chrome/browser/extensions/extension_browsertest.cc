@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
@@ -34,6 +35,7 @@ ExtensionBrowserTest::ExtensionBrowserTest()
       extension_installs_observed_(0),
       target_page_action_count_(-1),
       target_visible_page_action_count_(-1) {
+  EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
 }
 
 void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
@@ -126,12 +128,7 @@ bool ExtensionBrowserTest::LoadExtensionAsComponent(const FilePath& path) {
 }
 
 FilePath ExtensionBrowserTest::PackExtension(const FilePath& dir_path) {
-  FilePath crx_path;
-  if (!PathService::Get(base::DIR_TEMP, &crx_path)) {
-    ADD_FAILURE() << "Failed to get DIR_TEMP from PathService.";
-    return FilePath();
-  }
-  crx_path = crx_path.AppendASCII("temp.crx");
+  FilePath crx_path = temp_dir_.path().AppendASCII("temp.crx");
   if (!file_util::Delete(crx_path, false)) {
     ADD_FAILURE() << "Failed to delete crx: " << crx_path.value();
     return FilePath();

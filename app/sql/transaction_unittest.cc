@@ -1,13 +1,12 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "app/sql/connection.h"
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/path_service.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 
@@ -16,20 +15,15 @@ class SQLTransactionTest : public testing::Test {
   SQLTransactionTest() {}
 
   void SetUp() {
-    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &path_));
-    path_ = path_.AppendASCII("SQLStatementTest.db");
-    file_util::Delete(path_, false);
-    ASSERT_TRUE(db_.Open(path_));
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(db_.Open(
+        temp_dir_.path().AppendASCII("SQLTransactionTest.db")));
 
     ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
   }
 
   void TearDown() {
     db_.Close();
-
-    // If this fails something is going on with cleanup and later tests may
-    // fail, so we want to identify problems right away.
-    ASSERT_TRUE(file_util::Delete(path_, false));
   }
 
   sql::Connection& db() { return db_; }
@@ -42,7 +36,7 @@ class SQLTransactionTest : public testing::Test {
   }
 
  private:
-  FilePath path_;
+  ScopedTempDir temp_dir_;
   sql::Connection db_;
 };
 

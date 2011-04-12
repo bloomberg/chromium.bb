@@ -13,6 +13,7 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -22,28 +23,17 @@ class JsonPrefStoreTest : public testing::Test {
  protected:
   virtual void SetUp() {
     message_loop_proxy_ = base::MessageLoopProxy::CreateForCurrentThread();
-    // Name a subdirectory of the temp directory.
-    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &test_dir_));
-    test_dir_ = test_dir_.AppendASCII("JsonPrefStoreTest");
 
-    // Create a fresh, empty copy of this directory.
-    file_util::Delete(test_dir_, true);
-    file_util::CreateDirectory(test_dir_);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_dir_));
     data_dir_ = data_dir_.AppendASCII("pref_service");
     ASSERT_TRUE(file_util::PathExists(data_dir_));
   }
 
-  virtual void TearDown() {
-    // Clean up test directory
-    ASSERT_TRUE(file_util::Delete(test_dir_, true));
-    ASSERT_FALSE(file_util::PathExists(test_dir_));
-  }
-
-  // the path to temporary directory used to contain the test operations
-  FilePath test_dir_;
-  // the path to the directory where the test data is stored
+  // The path to temporary directory used to contain the test operations.
+  ScopedTempDir temp_dir_;
+  // The path to the directory where the test data is stored.
   FilePath data_dir_;
   // A message loop that we can use as the file thread message loop.
   MessageLoop message_loop_;
@@ -64,7 +54,7 @@ TEST_F(JsonPrefStoreTest, NonExistentFile) {
 // Test fallback behavior for an invalid file.
 TEST_F(JsonPrefStoreTest, InvalidFile) {
   FilePath invalid_file_original = data_dir_.AppendASCII("invalid.json");
-  FilePath invalid_file = test_dir_.AppendASCII("invalid.json");
+  FilePath invalid_file = temp_dir_.path().AppendASCII("invalid.json");
   ASSERT_TRUE(file_util::CopyFile(invalid_file_original, invalid_file));
   scoped_refptr<JsonPrefStore> pref_store =
       new JsonPrefStore(invalid_file, message_loop_proxy_.get());
@@ -74,7 +64,7 @@ TEST_F(JsonPrefStoreTest, InvalidFile) {
 
   // The file should have been moved aside.
   EXPECT_FALSE(file_util::PathExists(invalid_file));
-  FilePath moved_aside = test_dir_.AppendASCII("invalid.bad");
+  FilePath moved_aside = temp_dir_.path().AppendASCII("invalid.bad");
   EXPECT_TRUE(file_util::PathExists(moved_aside));
   EXPECT_TRUE(file_util::TextContentsEqual(invalid_file_original,
                                            moved_aside));
@@ -82,10 +72,10 @@ TEST_F(JsonPrefStoreTest, InvalidFile) {
 
 TEST_F(JsonPrefStoreTest, Basic) {
   ASSERT_TRUE(file_util::CopyFile(data_dir_.AppendASCII("read.json"),
-                                  test_dir_.AppendASCII("write.json")));
+                                  temp_dir_.path().AppendASCII("write.json")));
 
   // Test that the persistent value can be loaded.
-  FilePath input_file = test_dir_.AppendASCII("write.json");
+  FilePath input_file = temp_dir_.path().AppendASCII("write.json");
   ASSERT_TRUE(file_util::PathExists(input_file));
   scoped_refptr<JsonPrefStore> pref_store =
       new JsonPrefStore(input_file, message_loop_proxy_.get());

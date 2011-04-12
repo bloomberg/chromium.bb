@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_comptr_win.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/shell_util.h"
@@ -86,24 +87,10 @@ bool VerifyChromeShortcut(const std::wstring& exe_path,
 class ShellUtilTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    // Name a subdirectory of the user temp directory.
-    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &test_dir_));
-    test_dir_ = test_dir_.AppendASCII("ShellUtilTest");
-
-    // Create a fresh, empty copy of this test directory.
-    file_util::Delete(test_dir_, true);
-    file_util::CreateDirectoryW(test_dir_);
-    ASSERT_TRUE(file_util::PathExists(test_dir_));
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
-  virtual void TearDown() {
-    // Clean up test directory
-    ASSERT_TRUE(file_util::Delete(test_dir_, true));
-    ASSERT_FALSE(file_util::PathExists(test_dir_));
-  }
-
-  // The path to temporary directory used to contain the test operations.
-  FilePath test_dir_;
+  ScopedTempDir temp_dir_;
 };
 };
 
@@ -116,10 +103,10 @@ TEST_F(ShellUtilTest, UpdateChromeShortcutTest) {
   EXPECT_FALSE(::GetModuleFileName(NULL, exe_full_path_str, MAX_PATH) == 0);
   FilePath exe_full_path(exe_full_path_str);
 
-  FilePath exe_path = test_dir_.AppendASCII("setup.exe");
+  FilePath exe_path = temp_dir_.path().AppendASCII("setup.exe");
   EXPECT_TRUE(file_util::CopyFile(exe_full_path, exe_path));
 
-  FilePath shortcut_path = test_dir_.AppendASCII("shortcut.lnk");
+  FilePath shortcut_path = temp_dir_.path().AppendASCII("shortcut.lnk");
   const std::wstring description(L"dummy description");
   EXPECT_TRUE(ShellUtil::UpdateChromeShortcut(dist, exe_path.value(),
                                               shortcut_path.value(),
@@ -129,7 +116,7 @@ TEST_F(ShellUtilTest, UpdateChromeShortcutTest) {
                                    description, 0));
 
   // Now specify an icon index in master prefs and make sure it works.
-  FilePath prefs_path = test_dir_.AppendASCII(
+  FilePath prefs_path = temp_dir_.path().AppendASCII(
       installer::kDefaultMasterPrefs);
   std::ofstream file;
   file.open(prefs_path.value().c_str());

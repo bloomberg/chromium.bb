@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "app/sql/connection.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -47,11 +48,10 @@ class URLDatabaseTest : public testing::Test,
  private:
   // Test setup.
   void SetUp() {
-    FilePath temp_dir;
-    PathService::Get(base::DIR_TEMP, &temp_dir);
-    db_file_ = temp_dir.AppendASCII("URLTest.db");
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    FilePath db_file = temp_dir_.path().AppendASCII("URLTest.db");
 
-    EXPECT_TRUE(db_.Open(db_file_));
+    EXPECT_TRUE(db_.Open(db_file));
 
     // Initialize the tables for this test.
     CreateURLTable(false);
@@ -61,10 +61,9 @@ class URLDatabaseTest : public testing::Test,
   }
   void TearDown() {
     db_.Close();
-    file_util::Delete(db_file_, false);
   }
 
-  FilePath db_file_;
+  ScopedTempDir temp_dir_;
   sql::Connection db_;
 };
 

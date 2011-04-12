@@ -7,6 +7,7 @@
 #include "base/memory/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
@@ -54,6 +55,7 @@ class MockSandboxedExtensionUnpackerClient
 class SandboxedExtensionUnpackerTest : public testing::Test {
  public:
   virtual void SetUp() {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_thread_.reset(new BrowserThread(BrowserThread::FILE, &loop_));
     // It will delete itself.
     client_ = new MockSandboxedExtensionUnpackerClient;
@@ -65,9 +67,6 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
     // it posts a task to it.
     sandboxed_unpacker_ = NULL;
     loop_.RunAllPending();
-    // Clean up finally.
-    ASSERT_TRUE(file_util::Delete(install_dir_, true)) <<
-        install_dir_.value();
   }
 
   void SetupUnpacker(const std::string& crx_name) {
@@ -78,15 +77,10 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
         .AppendASCII(crx_name);
     ASSERT_TRUE(file_util::PathExists(original_path)) << original_path.value();
 
-    // Try bots won't let us write into DIR_TEST_DATA, so we have to create
-    // a temp folder to play in.
-    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &install_dir_));
-    install_dir_ =
-        install_dir_.AppendASCII("sandboxed_extension_unpacker_test");
-    file_util::Delete(install_dir_, true);
-    file_util::CreateDirectory(install_dir_);
-
-    FilePath crx_path = install_dir_.AppendASCII(crx_name);
+    // Try bots won't let us write into DIR_TEST_DATA, so we have to write the
+    // CRX to the temp directory, and create a subdirectory into which to
+    // unpack it.
+    FilePath crx_path = temp_dir_.path().AppendASCII(crx_name);
     ASSERT_TRUE(file_util::CopyFile(original_path, crx_path)) <<
         "Original path: " << original_path.value() <<
         ", Crx path: " << crx_path.value();
@@ -94,9 +88,9 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
     unpacker_.reset(new ExtensionUnpacker(crx_path));
 
     // Build a temp area where the extension will be unpacked.
-    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &temp_dir_));
-    temp_dir_ = temp_dir_.AppendASCII("sandboxed_extension_unpacker_test_Temp");
-    ASSERT_TRUE(file_util::CreateDirectory(temp_dir_));
+    temp_path_ =
+        temp_dir_.path().AppendASCII("sandboxed_extension_unpacker_test_Temp");
+    ASSERT_TRUE(file_util::CreateDirectory(temp_path_));
 
     sandboxed_unpacker_ =
         new SandboxedExtensionUnpacker(crx_path, NULL, client_);
@@ -109,9 +103,9 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
 
   bool PrepareUnpackerEnv() {
     sandboxed_unpacker_->extension_root_ =
-      install_dir_.AppendASCII(extension_filenames::kTempExtensionName);
+      temp_dir_.path().AppendASCII(extension_filenames::kTempExtensionName);
 
-    if (!sandboxed_unpacker_->temp_dir_.Set(install_dir_))
+    if (!sandboxed_unpacker_->temp_dir_.Set(temp_dir_.path()))
       return false;
     sandboxed_unpacker_->public_key_ =
       "ocnapchkplbmjmpfehjocmjnipfmogkh";
@@ -124,7 +118,8 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
   }
 
   FilePath GetInstallPath() {
-    return install_dir_.AppendASCII(extension_filenames::kTempExtensionName);
+    return temp_dir_.path().AppendASCII(
+        extension_filenames::kTempExtensionName);
   }
 
   bool TempFilesRemoved() {
@@ -135,7 +130,7 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
         file_util::FileEnumerator::FILES);
 
     file_util::FileEnumerator temp_iterator(
-      temp_dir_,
+      temp_path_,
       true,  // recursive
       files_and_dirs
     );
@@ -152,8 +147,8 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
   }
 
  protected:
-  FilePath install_dir_;
-  FilePath temp_dir_;
+  ScopedTempDir temp_dir_;
+  FilePath temp_path_;
   MockSandboxedExtensionUnpackerClient* client_;
   scoped_ptr<ExtensionUnpacker> unpacker_;
   scoped_refptr<SandboxedExtensionUnpacker> sandboxed_unpacker_;

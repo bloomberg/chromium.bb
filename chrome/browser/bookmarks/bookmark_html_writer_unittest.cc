@@ -12,6 +12,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/i18n/time_formatting.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/importer/firefox2_importer.h"
@@ -43,14 +44,9 @@ void MakeTestSkBitmap(int w, int h, SkBitmap* bmp) {
 class BookmarkHTMLWriterTest : public TestingBrowserProcessTest {
  protected:
   virtual void SetUp() {
-    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &path_));
-    path_ = path_.AppendASCII("bookmarks.html");
-    file_util::Delete(path_, true);
-  }
-
-  virtual void TearDown() {
-    if (!path_.empty())
-      file_util::Delete(path_, true);
+    TestingBrowserProcessTest::SetUp();
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    path_ = temp_dir_.path().AppendASCII("bookmarks.html");
   }
 
   // Converts a BookmarkEntry to a string suitable for assertion testing.
@@ -120,6 +116,7 @@ class BookmarkHTMLWriterTest : public TestingBrowserProcessTest {
               BookmarkEntryToString(entry));
   }
 
+  ScopedTempDir temp_dir_;
   FilePath path_;
 };
 

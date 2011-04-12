@@ -6,9 +6,9 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/path_service.h"
 #include "base/test/test_file_util.h"
 #include "base/values.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -22,12 +22,10 @@
 class PreferenceServiceTest : public UITest {
  public:
   void SetUp() {
-    PathService::Get(base::DIR_TEMP, &tmp_profile_);
-    tmp_profile_ = tmp_profile_.AppendASCII("tmp_profile");
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    FilePath tmp_profile = temp_dir_.path().AppendASCII("tmp_profile");
 
-    // Create a fresh, empty copy of this directory.
-    file_util::Delete(tmp_profile_, true);
-    file_util::CreateDirectory(tmp_profile_);
+    ASSERT_TRUE(file_util::CreateDirectory(tmp_profile));
 
     FilePath reference_pref_file;
     if (new_profile_) {
@@ -36,7 +34,7 @@ class PreferenceServiceTest : public UITest {
           .AppendASCII("window_placement")
           .AppendASCII("Default")
           .Append(chrome::kPreferencesFilename);
-      tmp_pref_file_ = tmp_profile_.AppendASCII("Default");
+      tmp_pref_file_ = tmp_profile.AppendASCII("Default");
       ASSERT_TRUE(file_util::CreateDirectory(tmp_pref_file_));
       tmp_pref_file_ = tmp_pref_file_.Append(chrome::kPreferencesFilename);
     } else {
@@ -44,7 +42,7 @@ class PreferenceServiceTest : public UITest {
             .AppendASCII("profiles")
             .AppendASCII("window_placement")
             .Append(chrome::kLocalStateFilename);
-      tmp_pref_file_ = tmp_profile_.Append(chrome::kLocalStateFilename);
+      tmp_pref_file_ = tmp_profile.Append(chrome::kLocalStateFilename);
     }
 
     ASSERT_TRUE(file_util::PathExists(reference_pref_file));
@@ -59,7 +57,7 @@ class PreferenceServiceTest : public UITest {
         FILE_ATTRIBUTE_NORMAL));
 #endif
 
-    launch_arguments_.AppendSwitchPath(switches::kUserDataDir, tmp_profile_);
+    launch_arguments_.AppendSwitchPath(switches::kUserDataDir, tmp_profile);
   }
 
   bool LaunchAppWithProfile() {
@@ -71,14 +69,14 @@ class PreferenceServiceTest : public UITest {
 
   void TearDown() {
     UITest::TearDown();
-
-    EXPECT_TRUE(file_util::DieFileDie(tmp_profile_, true));
   }
 
  public:
   bool new_profile_;
   FilePath tmp_pref_file_;
-  FilePath tmp_profile_;
+
+ private:
+  ScopedTempDir temp_dir_;
 };
 
 #if !defined(OS_LINUX)

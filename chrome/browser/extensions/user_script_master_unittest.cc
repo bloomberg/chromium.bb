@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_registrar.h"
@@ -29,14 +30,7 @@ class UserScriptMasterTest : public testing::Test,
   }
 
   virtual void SetUp() {
-    // Name a subdirectory of the temp directory.
-    FilePath tmp_dir;
-    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &tmp_dir));
-    script_dir_ = tmp_dir.AppendASCII("UserScriptTest");
-
-    // Create a fresh, empty copy of this directory.
-    file_util::Delete(script_dir_, true);
-    file_util::CreateDirectory(script_dir_);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     // Register for all user script notifications.
     registrar_.Add(this, NotificationType::USER_SCRIPTS_UPDATED,
@@ -49,9 +43,6 @@ class UserScriptMasterTest : public testing::Test,
   }
 
   virtual void TearDown() {
-    // Clean up test directory.
-    ASSERT_TRUE(file_util::Delete(script_dir_, true));
-    ASSERT_FALSE(file_util::PathExists(script_dir_));
     file_thread_.reset();
   }
 
@@ -65,15 +56,15 @@ class UserScriptMasterTest : public testing::Test,
       MessageLoop::current()->Quit();
   }
 
+  // Directory containing user scripts.
+  ScopedTempDir temp_dir_;
+
   NotificationRegistrar registrar_;
 
   // MessageLoop used in tests.
   MessageLoop message_loop_;
 
   scoped_ptr<BrowserThread> file_thread_;
-
-  // Directory containing user scripts.
-  FilePath script_dir_;
 
   // Updated to the script shared memory when we get notified.
   base::SharedMemory* shared_memory_;
@@ -82,7 +73,7 @@ class UserScriptMasterTest : public testing::Test,
 // Test that we get notified even when there are no scripts.
 TEST_F(UserScriptMasterTest, NoScripts) {
   TestingProfile profile;
-  scoped_refptr<UserScriptMaster> master(new UserScriptMaster(script_dir_,
+  scoped_refptr<UserScriptMaster> master(new UserScriptMaster(temp_dir_.path(),
                                                               &profile));
   master->StartScan();
   message_loop_.PostTask(FROM_HERE, new MessageLoop::QuitTask);
@@ -94,13 +85,13 @@ TEST_F(UserScriptMasterTest, NoScripts) {
 // Test that we get notified about scripts if they're already in the test dir.
 TEST_F(UserScriptMasterTest, ExistingScripts) {
   TestingProfile profile;
-  FilePath path = script_dir_.AppendASCII("script.user.js");
+  FilePath path = temp_dir_.path().AppendASCII("script.user.js");
 
   const char content[] = "some content";
   size_t written = file_util::WriteFile(path, content, sizeof(content));
   ASSERT_EQ(written, sizeof(content));
 
-  scoped_refptr<UserScriptMaster> master(new UserScriptMaster(script_dir_,
+  scoped_refptr<UserScriptMaster> master(new UserScriptMaster(temp_dir_.path(),
                                                               &profile));
   master->StartScan();
 
@@ -222,7 +213,7 @@ TEST_F(UserScriptMasterTest, Parse7) {
 }
 
 TEST_F(UserScriptMasterTest, SkipBOMAtTheBeginning) {
-  FilePath path = script_dir_.AppendASCII("script.user.js");
+  FilePath path = temp_dir_.path().AppendASCII("script.user.js");
 
   const std::string content(
     "\xEF\xBB\xBF// ==UserScript==\n"
@@ -233,7 +224,7 @@ TEST_F(UserScriptMasterTest, SkipBOMAtTheBeginning) {
 
   UserScriptList script_list;
   UserScriptMaster::ScriptReloader::LoadScriptsFromDirectory(
-      script_dir_, &script_list);
+      temp_dir_.path(), &script_list);
   ASSERT_EQ(1U, script_list.size());
 
   EXPECT_EQ(content.substr(3),
@@ -243,7 +234,7 @@ TEST_F(UserScriptMasterTest, SkipBOMAtTheBeginning) {
 }
 
 TEST_F(UserScriptMasterTest, LeaveBOMNotAtTheBeginning) {
-  FilePath path = script_dir_.AppendASCII("script.user.js");
+  FilePath path = temp_dir_.path().AppendASCII("script.user.js");
 
   const std::string content(
     "// ==UserScript==\n"
@@ -255,7 +246,7 @@ TEST_F(UserScriptMasterTest, LeaveBOMNotAtTheBeginning) {
 
   UserScriptList script_list;
   UserScriptMaster::ScriptReloader::LoadScriptsFromDirectory(
-      script_dir_, &script_list);
+      temp_dir_.path(), &script_list);
   ASSERT_EQ(1U, script_list.size());
 
   EXPECT_EQ(content, script_list[0].js_scripts()[0].GetContent().as_string());

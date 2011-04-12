@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -89,11 +90,9 @@ TEST(SafeBrowsingBloomFilter, BloomFilterFile) {
     filter_write->Insert(GenHash());
 
   // Remove any left over test filters and serialize.
-  FilePath filter_path;
-  PathService::Get(base::DIR_TEMP, &filter_path);
-  filter_path = filter_path.AppendASCII("SafeBrowsingTestFilter");
-  file_util::Delete(filter_path, false);
-  ASSERT_FALSE(file_util::PathExists(filter_path));
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath filter_path = temp_dir.path().AppendASCII("SafeBrowsingTestFilter");
   ASSERT_TRUE(filter_write->WriteFile(filter_path));
 
   // Create new empty filter and load from disk.
@@ -111,6 +110,4 @@ TEST(SafeBrowsingBloomFilter, BloomFilterFile) {
 
   EXPECT_EQ(0,
       memcmp(filter_write->data(), filter_read->data(), filter_read->size()));
-
-  file_util::Delete(filter_path, false);
 }

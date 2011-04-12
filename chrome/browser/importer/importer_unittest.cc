@@ -24,6 +24,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/importer_data_types.h"
@@ -58,19 +59,13 @@ class ImporterTest : public testing::Test {
  protected:
   virtual void SetUp() {
     // Creates a new profile in a new subdirectory in the temp directory.
-    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &test_path_));
-    test_path_ = test_path_.AppendASCII("ImporterTest");
-    file_util::Delete(test_path_, true);
-    file_util::CreateDirectory(test_path_);
-    profile_path_ = test_path_.AppendASCII("profile");
-    app_path_ = test_path_.AppendASCII("app");
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    FilePath test_path = temp_dir_.path().AppendASCII("ImporterTest");
+    file_util::Delete(test_path, true);
+    file_util::CreateDirectory(test_path);
+    profile_path_ = test_path.AppendASCII("profile");
+    app_path_ = test_path.AppendASCII("app");
     file_util::CreateDirectory(app_path_);
-  }
-
-  virtual void TearDown() {
-    // Deletes the profile and cleans up the profile directory.
-    ASSERT_TRUE(file_util::Delete(test_path_, true));
-    ASSERT_FALSE(file_util::PathExists(test_path_));
   }
 
   void Firefox3xImporterTest(std::string profile_dir,
@@ -116,10 +111,10 @@ class ImporterTest : public testing::Test {
     loop->Run();
   }
 
+  ScopedTempDir temp_dir_;
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
   BrowserThread file_thread_;
-  FilePath test_path_;
   FilePath profile_path_;
   FilePath app_path_;
 };
@@ -332,7 +327,7 @@ void WritePStore(IPStore* pstore, const GUID* type, const GUID* subtype) {
 TEST_F(ImporterTest, IEImporter) {
   // Sets up a favorites folder.
   app::win::ScopedCOMInitializer com_init;
-  std::wstring path = test_path_.AppendASCII("Favorites").value();
+  std::wstring path = temp_dir_.path().AppendASCII("Favorites").value();
   CreateDirectory(path.c_str(), NULL);
   CreateDirectory((path + L"\\SubFolder").c_str(), NULL);
   CreateDirectory((path + L"\\Links").c_str(), NULL);
@@ -396,7 +391,7 @@ TEST_F(ImporterTest, IEImporter) {
   host->SetObserver(observer);
   importer::SourceProfile source_profile;
   source_profile.importer_type = importer::MS_IE;
-  source_profile.source_path = test_path_;
+  source_profile.source_path = temp_dir_.path();
 
   loop->PostTask(FROM_HERE, NewRunnableMethod(host.get(),
       &ImporterHost::StartImportSettings,

@@ -7,6 +7,7 @@
 #include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/installer/util/work_item.h"
@@ -17,27 +18,15 @@ namespace {
   class CreateDirWorkItemTest : public testing::Test {
    protected:
     virtual void SetUp() {
-      // Name a subdirectory of the temp directory.
-      ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &test_dir_));
-      test_dir_ = test_dir_.AppendASCII("CreateDirWorkItemTest");
-
-      // Create a fresh, empty copy of this directory.
-      file_util::Delete(test_dir_, true);
-      file_util::CreateDirectoryW(test_dir_);
-    }
-    virtual void TearDown() {
-      // Clean up test directory
-      ASSERT_TRUE(file_util::Delete(test_dir_, true));
-      ASSERT_FALSE(file_util::PathExists(test_dir_));
+      ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     }
 
-    // the path to temporary directory used to contain the test operations
-    FilePath test_dir_;
+    ScopedTempDir temp_dir_;
   };
 };
 
 TEST_F(CreateDirWorkItemTest, CreatePath) {
-  FilePath parent_dir(test_dir_);
+  FilePath parent_dir(temp_dir_.path());
   parent_dir = parent_dir.AppendASCII("a");
   file_util::CreateDirectory(parent_dir);
   ASSERT_TRUE(file_util::PathExists(parent_dir));
@@ -64,7 +53,7 @@ TEST_F(CreateDirWorkItemTest, CreatePath) {
 }
 
 TEST_F(CreateDirWorkItemTest, CreateExistingPath) {
-  FilePath dir_to_create(test_dir_);
+  FilePath dir_to_create(temp_dir_.path());
   dir_to_create = dir_to_create.AppendASCII("aa");
   file_util::CreateDirectory(dir_to_create);
   ASSERT_TRUE(file_util::PathExists(dir_to_create));
@@ -84,7 +73,7 @@ TEST_F(CreateDirWorkItemTest, CreateExistingPath) {
 }
 
 TEST_F(CreateDirWorkItemTest, CreateSharedPath) {
-  FilePath dir_to_create_1(test_dir_);
+  FilePath dir_to_create_1(temp_dir_.path());
   dir_to_create_1 = dir_to_create_1.AppendASCII("aaa");
 
   FilePath dir_to_create_2(dir_to_create_1);
@@ -117,7 +106,7 @@ TEST_F(CreateDirWorkItemTest, CreateSharedPath) {
 }
 
 TEST_F(CreateDirWorkItemTest, RollbackWithMissingDir) {
-  FilePath dir_to_create_1(test_dir_);
+  FilePath dir_to_create_1(temp_dir_.path());
   dir_to_create_1 = dir_to_create_1.AppendASCII("aaaa");
 
   FilePath dir_to_create_2(dir_to_create_1);

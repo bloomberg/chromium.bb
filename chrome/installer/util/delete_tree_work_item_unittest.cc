@@ -22,25 +22,11 @@ namespace {
   class DeleteTreeWorkItemTest : public testing::Test {
    protected:
     virtual void SetUp() {
-      // Name a subdirectory of the user temp directory.
-      ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &test_dir_));
-      test_dir_ = test_dir_.AppendASCII("DeleteTreeWorkItemTest");
-
-      // Create a fresh, empty copy of this test directory.
-      file_util::Delete(test_dir_, true);
-      file_util::CreateDirectoryW(test_dir_);
-
-      ASSERT_TRUE(file_util::PathExists(test_dir_));
+      ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     }
 
-    virtual void TearDown() {
-      // Clean up test directory
-      ASSERT_TRUE(file_util::Delete(test_dir_, true));
-      ASSERT_FALSE(file_util::PathExists(test_dir_));
-    }
-
-    // the path to temporary directory used to contain the test operations
-    FilePath test_dir_;
+    // The temporary directory used to contain the test operations.
+    ScopedTempDir temp_dir_;
   };
 
   // Simple function to dump some text into a new file.
@@ -59,8 +45,8 @@ namespace {
 
 // Delete a tree without key path. Everything should be deleted.
 TEST_F(DeleteTreeWorkItemTest, DeleteTreeNoKeyPath) {
-  // Create tree to be deleted
-  FilePath dir_name_delete(test_dir_);
+  // Create tree to be deleted.
+  FilePath dir_name_delete(temp_dir_.path());
   dir_name_delete = dir_name_delete.AppendASCII("to_be_delete");
   file_util::CreateDirectory(dir_name_delete);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete));
@@ -85,7 +71,7 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeNoKeyPath) {
   CreateTextFile(file_name_delete_2.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(file_name_delete_2));
 
-  // test Do()
+  // Test Do().
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -112,7 +98,7 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeNoKeyPath) {
 // Rollback should bring back everything
 TEST_F(DeleteTreeWorkItemTest, DeleteTree) {
   // Create tree to be deleted
-  FilePath dir_name_delete(test_dir_);
+  FilePath dir_name_delete(temp_dir_.path());
   dir_name_delete = dir_name_delete.AppendASCII("to_be_delete");
   file_util::CreateDirectory(dir_name_delete);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete));
@@ -162,7 +148,7 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTree) {
 // Delete a tree with key_path in use. Everything should still be there.
 TEST_F(DeleteTreeWorkItemTest, DeleteTreeInUse) {
   // Create tree to be deleted
-  FilePath dir_name_delete(test_dir_);
+  FilePath dir_name_delete(temp_dir_.path());
   dir_name_delete = dir_name_delete.AppendASCII("to_be_delete");
   file_util::CreateDirectory(dir_name_delete);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete));

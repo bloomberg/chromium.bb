@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/file_util.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -29,13 +29,8 @@ class ProfileManagerTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    // Name a subdirectory of the temp directory.
-    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &test_dir_));
-    test_dir_ = test_dir_.Append(FILE_PATH_LITERAL("ProfileManagerTest"));
-
-    // Create a fresh, empty copy of this directory.
-    file_util::Delete(test_dir_, true);
-    file_util::CreateDirectory(test_dir_);
+    // Create a new temporary directory, and store the path
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     // Create a local_state PrefService.
     browser::RegisterLocalState(&test_local_state_);
@@ -45,21 +40,17 @@ class ProfileManagerTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    // Clean up test directory
-    ASSERT_TRUE(file_util::Delete(test_dir_, true));
-    ASSERT_FALSE(file_util::PathExists(test_dir_));
-
     TestingBrowserProcess* testing_browser_process =
         static_cast<TestingBrowserProcess*>(g_browser_process);
     testing_browser_process->SetPrefService(NULL);
   }
 
+  // The path to temporary directory used to contain the test operations.
+  ScopedTempDir temp_dir_;
+
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
   BrowserThread file_thread_;
-
-  // the path to temporary directory used to contain the test operations
-  FilePath test_dir_;
 
   TestingPrefService test_local_state_;
 };
@@ -70,7 +61,7 @@ TEST_F(ProfileManagerTest, CreateProfile) {
   source_path = source_path.Append(FILE_PATH_LITERAL("profiles"));
   source_path = source_path.Append(FILE_PATH_LITERAL("sample"));
 
-  FilePath dest_path = test_dir_;
+  FilePath dest_path = temp_dir_.path();
   dest_path = dest_path.Append(FILE_PATH_LITERAL("New Profile"));
 
   scoped_ptr<Profile> profile;
@@ -127,7 +118,8 @@ TEST_F(ProfileManagerTest, LoggedInProfileDir) {
   FilePath expected_logged_in(profile_dir);
   EXPECT_EQ(expected_logged_in.value(),
             profile_manager.GetCurrentProfileDir().value());
-  VLOG(1) << test_dir_.Append(profile_manager.GetCurrentProfileDir()).value();
+  VLOG(1) << temp_dir_.path().Append(
+      profile_manager.GetCurrentProfileDir()).value();
 }
 
 #endif
@@ -138,10 +130,10 @@ TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
   source_path = source_path.Append(FILE_PATH_LITERAL("profiles"));
   source_path = source_path.Append(FILE_PATH_LITERAL("sample"));
 
-  FilePath dest_path1 = test_dir_;
+  FilePath dest_path1 = temp_dir_.path();
   dest_path1 = dest_path1.Append(FILE_PATH_LITERAL("New Profile 1"));
 
-  FilePath dest_path2 = test_dir_;
+  FilePath dest_path2 = temp_dir_.path();
   dest_path2 = dest_path2.Append(FILE_PATH_LITERAL("New Profile 2"));
 
   scoped_ptr<Profile> profile1;

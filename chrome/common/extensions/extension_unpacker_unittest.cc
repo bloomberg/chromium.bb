@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "base/memory/scoped_temp_dir.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_unpacker.h"
@@ -27,12 +28,9 @@ public:
 
     // Try bots won't let us write into DIR_TEST_DATA, so we have to create
     // a temp folder to play in.
-    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &install_dir_));
-    install_dir_ = install_dir_.AppendASCII("extension_unpacker_test");
-    file_util::Delete(install_dir_, true);
-    file_util::CreateDirectory(install_dir_);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    FilePath crx_path = install_dir_.AppendASCII(crx_name);
+    FilePath crx_path = temp_dir_.path().AppendASCII(crx_name);
     ASSERT_TRUE(file_util::CopyFile(original_path, crx_path)) <<
         "Original path " << original_path.value() <<
         ", Crx path " << crx_path.value();
@@ -40,13 +38,8 @@ public:
     unpacker_.reset(new ExtensionUnpacker(crx_path));
   }
 
-  virtual void TearDown() {
-    ASSERT_TRUE(file_util::Delete(install_dir_, true)) <<
-        install_dir_.value();
-  }
-
  protected:
-  FilePath install_dir_;
+  ScopedTempDir temp_dir_;
   scoped_ptr<ExtensionUnpacker> unpacker_;
 };
 
