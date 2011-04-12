@@ -112,7 +112,7 @@ const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
   // Version 3.2.1.6 seems to be implicated in most cases (and 3.2.2.2 in some).
   // There is a more recent version available for download.
   // accelerator.dll, "%programfiles%\\speedbit video accelerator\\".
-  { "7ba9402f", "c9132d48", "", "", "", INVESTIGATING },
+  { "7ba9402f", "c9132d48", "", "", "", kInvestigatingLink },
 
   // apiqq0.dll, "%temp%\\".
   { "26134911", "59145acf", "", "", "", kUninstallLink },
@@ -126,7 +126,7 @@ const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
   // Said to belong to Killer NIC from BigFoot Networks (not verified). Versions
   // 6.0.0.7 and 6.0.0.10 implicated.
   // bfllr.dll, "%systemroot%\\system32\\".
-  { "6bb57633", "23d01d5b", "", "", "", INVESTIGATING },
+  { "6bb57633", "23d01d5b", "", "", "", kInvestigatingLink },
 
   // clickpotatolitesahook.dll, "". Different version each report.
   { "0396e037.dll", "", "", "", "", kUninstallLink },
@@ -194,7 +194,7 @@ const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
   // location, since it is installed into and run from a game folder. Various
   // versions implicated.
   // npggnt.des, no fixed location.
-  { "f2c8790d", "", "", "", "", INVESTIGATING },
+  { "f2c8790d", "", "", "", "", kInvestigatingLink },
 
   // nvlsp.dll,
   // "%programfiles%\\nvidia corporation\\networkaccessmanager\\bin32\\".
@@ -226,7 +226,7 @@ const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
   // swi_filter_0001.dll (Sophos Web Intelligence),
   // "%programfiles%\\sophos\\sophos anti-virus\\web intelligence\\".
   // A small random sample all showed version 1.0.5.0.
-  { "61112d7b", "25fb120f", "", "", "", INVESTIGATING },
+  { "61112d7b", "25fb120f", "", "", "", kInvestigatingLink },
 
   // twking0.dll, "%systemroot%\\system32\\".
   { "0355549b", "23d01d5b", "", "", "", kUninstallLink },
