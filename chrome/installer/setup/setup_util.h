@@ -31,6 +31,16 @@ int ApplyDiffPatch(const FilePath& src,
 // Returns the maximum version found or NULL if no version is found.
 Version* GetMaxVersionFromArchiveDir(const FilePath& chrome_path);
 
+// Spawns a new process that waits for a specified amount of time before
+// attempting to delete |path|.  This is useful for setup to delete the
+// currently running executable or a file that we cannot close right away but
+// estimate that it will be possible after some period of time.
+// Returns true if a new process was started, false otherwise.  Note that
+// given the nature of this function, it is not possible to know if the
+// delete operation itself succeeded.
+bool DeleteFileFromTempProcess(const FilePath& path,
+                               uint32 delay_before_delete_ms);
+
 // A predicate that compares the program portion of a command line with a given
 // file path.  First, the file paths are compared directly.  If they do not
 // match, the filesystem is consulted to determine if the paths reference the

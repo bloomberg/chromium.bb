@@ -9,6 +9,7 @@
 #include "base/memory/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/util/master_preferences.h"
@@ -138,4 +139,14 @@ TEST_F(SetupUtilTest, ProgramCompare) {
   short_expect.resize(short_len);
   ASSERT_FALSE(FilePath::CompareEqualIgnoreCase(expect.value(), short_expect));
   EXPECT_TRUE(ProgramCompare(expect).Evaluate(L"\"" + short_expect + L"\""));
+}
+
+TEST_F(SetupUtilTest, DeleteFileFromTempProcess) {
+  FilePath test_file;
+  file_util::CreateTemporaryFileInDir(test_dir_.path(), &test_file);
+  ASSERT_TRUE(file_util::PathExists(test_file));
+  file_util::WriteFile(test_file, "foo", 3);
+  EXPECT_TRUE(installer::DeleteFileFromTempProcess(test_file, 0));
+  base::PlatformThread::Sleep(200);
+  EXPECT_FALSE(file_util::PathExists(test_file));
 }

@@ -81,6 +81,63 @@ Version* GetMaxVersionFromArchiveDir(const FilePath& chrome_path) {
   return (version_found ? max_version.release() : NULL);
 }
 
+bool DeleteFileFromTempProcess(const FilePath& path,
+                               uint32 delay_before_delete_ms) {
+  static const wchar_t kRunDll32Path[] =
+      L"%SystemRoot%\\System32\\rundll32.exe";
+  wchar_t rundll32[MAX_PATH];
+  DWORD size = ExpandEnvironmentStrings(kRunDll32Path, rundll32,
+                                        arraysize(rundll32));
+  if (!size || size >= MAX_PATH)
+    return false;
+
+  STARTUPINFO startup = { sizeof(STARTUPINFO) };
+  PROCESS_INFORMATION pi = {0};
+  BOOL ok = ::CreateProcess(NULL, rundll32, NULL, NULL, FALSE, CREATE_SUSPENDED,
+                            NULL, NULL, &startup, &pi);
+  if (ok) {
+    // We use the main thread of the new process to run:
+    //   Sleep(delay_before_delete_ms);
+    //   DeleteFile(path);
+    //   ExitProcess(0);
+    // This runs before the main routine of the process runs, so it doesn't
+    // matter much which executable we choose except that we don't want to
+    // use e.g. a console app that causes a window to be created.
+    size = (path.value().length() + 1) * sizeof(path.value()[0]);
+    void* mem = ::VirtualAllocEx(pi.hProcess, NULL, size, MEM_COMMIT,
+                                 PAGE_READWRITE);
+    if (mem) {
+      SIZE_T written = 0;
+      ::WriteProcessMemory(pi.hProcess, mem, path.value().c_str(),
+          (path.value().size() + 1) * sizeof(path.value()[0]), &written);
+      HMODULE kernel32 = ::GetModuleHandle(L"kernel32.dll");
+      PAPCFUNC sleep = reinterpret_cast<PAPCFUNC>(
+          ::GetProcAddress(kernel32, "Sleep"));
+      PAPCFUNC delete_file = reinterpret_cast<PAPCFUNC>(
+          ::GetProcAddress(kernel32, "DeleteFileW"));
+      PAPCFUNC exit_process = reinterpret_cast<PAPCFUNC>(
+          ::GetProcAddress(kernel32, "ExitProcess"));
+      if (!sleep || !delete_file || !exit_process) {
+        NOTREACHED();
+        ok = FALSE;
+      } else {
+        ::QueueUserAPC(sleep, pi.hThread, delay_before_delete_ms);
+        ::QueueUserAPC(delete_file, pi.hThread,
+                       reinterpret_cast<ULONG_PTR>(mem));
+        ::QueueUserAPC(exit_process, pi.hThread, 0);
+        ::ResumeThread(pi.hThread);
+      }
+    } else {
+      PLOG(ERROR) << "VirtualAllocEx";
+      ::TerminateProcess(pi.hProcess, ~0);
+    }
+    ::CloseHandle(pi.hThread);
+    ::CloseHandle(pi.hProcess);
+  }
+
+  return ok != FALSE;
+}
+
 // Open |path| with minimal access to obtain information about it, returning
 // true and populating |handle| on success.
 // static
