@@ -17,6 +17,31 @@ message UserWhitelistProto {
   repeated string user_whitelist = 1;
 }
 
+message AllowNewUsersProto {
+  // Determines whether we allow arbitrary users to log into the device.
+  // Should default to true.
+  // This interacts with the UserWhitelistProto as follows:
+  // allow_new_users | user_whitelist | user_whitelist_size | anyone can log in
+  //-----------------+----------------+---------------------+------------------
+  //  present, true  | not present    | N/A                 | Yes
+  //-----------------+----------------+---------------------+------------------
+  //  present, true  | present        | >= 0                | Yes
+  //-----------------+----------------+---------------------+------------------
+  //  present, false | not present    | N/A                 | (Broken) Yes
+  //-----------------+----------------+---------------------+------------------
+  //  present, false | present        | 0                   | (Broken) Yes
+  //-----------------+----------------+---------------------+------------------
+  //  present, false | present        | > 0                 | No, W/L enforced
+  //-----------------+----------------+---------------------+------------------
+  //  not present    | not present    | N/A                 | Yes
+  //-----------------+----------------+---------------------+------------------
+  //  not present    | present        | 0                   | Yes
+  //-----------------+----------------+---------------------+------------------
+  //  not present    | present        | > 0                 | No, W/L enforced
+  //-----------------+----------------+---------------------+------------------
+  optional bool allow_new_users = 1;
+}
+
 message GuestModeEnabledProto {
   // Determines if guests are allowed to log in to the device.
   // Should default to true.
@@ -47,6 +72,7 @@ message ChromeDeviceSettingsProto {
   optional UserWhitelistProto user_whitelist = 2;
   optional GuestModeEnabledProto guest_mode_enabled = 3;
   optional DeviceProxySettingsProto device_proxy_settings = 4;
-  optional ShowUserNamesOnSigninProto show_user_names = 5;
-  optional DataRoamingEnabledProto data_roaming_enabled = 6;
+  optional ShowUserNamesOnSigninProto show_user_names = 6;
+  optional DataRoamingEnabledProto data_roaming_enabled = 7;
+  optional AllowNewUsersProto allow_new_users = 8;
 }
