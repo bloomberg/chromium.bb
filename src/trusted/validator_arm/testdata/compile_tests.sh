@@ -15,7 +15,7 @@ source tools/llvm/setup_arm_trusted_toolchain.sh
 topdir=$(pwd)
 cd $dir
 
-ldscript=$topdir/toolchain/linux_arm-untrusted/arm-none-linux-gnueabi/ld_script_arm_untrusted
+ldscript=$topdir/toolchain/pnacl_linux_x86_64/ldscripts/ld_script_arm_untrusted
 
 readonly ARM_CROSS_COMPILER="${ARM_CC}"
 for test_file in *.S ; do

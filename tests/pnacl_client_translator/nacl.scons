@@ -50,14 +50,12 @@ def LayoutTranslatorBinariesOnServer():
          ./mypage.html
          ./mybitcode.pexe
   '''
-  # TODO(jvoung): rename the "arm-untrusted" part to "pnacl-untrusted"
-  # since that is what it really should be.
   # TODO(jvoung): simplify how utman installs these files in the first
   # place so that mapping is pretty much one-to-one (someone could just
   # copy the files from the toolchain-dir to their webserver).
   map_files = []
   replicates = [] # track staging dependencies
-  toolchain_dir = '${SCONSTRUCT_DIR}/toolchain/linux_arm-untrusted'
+  toolchain_dir = '${PNACL_ROOT}'
   # TODO(jvoung): add ARM when we have a sandboxed LD in tools-sb.
   for arch in ['x8632', 'x8664']:
     toolchain_bin = '%s/tools-sb/%s/srpc/bin/' % (toolchain_dir,

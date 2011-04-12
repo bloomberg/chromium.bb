@@ -65,33 +65,24 @@ NACL_PLATFORM_DIR_MAP = {
             '32': ['linux_x86'],
             '64': ['linux_x86'],
         },
-        'arm': {
-            '32': ['linux_arm-untrusted', 'linux_arm-trusted'],
-        },
     },
     'mac': {
         'x86': {
             '32': ['mac_x86'],
             '64': ['mac_x86'],
         },
-        'arm': {
-            # This entry is not actually correct, but it must be here
-            # for launching scons.
-            # TODO(pdox): Refactor this table so that pnacl is recognized
-            # as an x86 toolchain also, not just an ARM toolchain.
-            '32': ['linux_arm-untrusted'],
-        },
-
     },
 }
 
-
-
 def _PlatformSubdirs(env):
-  platform = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
-  arch = env['BUILD_ARCHITECTURE']
-  subarch = env['TARGET_SUBARCH']
-  name = NACL_PLATFORM_DIR_MAP[platform][arch][subarch]
+  if env.Bit('bitcode'):
+    import platform
+    name = 'pnacl_%s_%s' % (platform.system().lower(), platform.machine())
+  else:
+    platform = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
+    arch = env['BUILD_ARCHITECTURE']
+    subarch = env['TARGET_SUBARCH']
+    name = NACL_PLATFORM_DIR_MAP[platform][arch][subarch]
   return name
 
 
@@ -123,10 +114,8 @@ def _GetNaclSdkRoot(env, sdk_mode):
       return '/usr/local/nacl-sdk'
 
   elif sdk_mode == 'download':
-    platforms = _PlatformSubdirs(env)
-    root = os.path.join(env['MAIN_DIR'], 'toolchain', platforms[-1])
-    return root
-
+    tcname = _PlatformSubdirs(env)
+    return os.path.join(env['MAIN_DIR'], 'toolchain', tcname)
   elif sdk_mode.startswith('custom:'):
     return os.path.abspath(sdk_mode[len('custom:'):])
 
@@ -205,22 +194,22 @@ def _SetEnvForX86Sdk(env, sdk_path):
               ASFLAGS=[],
               )
 
-def _SetEnvForPnacl(env, arch):
+def _SetEnvForPnacl(env, root):
+  arch = env['TARGET_FULLARCH']
   assert arch in ['arm', 'x86-32', 'x86-64']
-  pnacl_sdk_root = '${MAIN_DIR}/toolchain/linux_arm-untrusted'
-  pnacl_sdk_lib = pnacl_sdk_root + '/libs-bitcode'
-  #TODO(robertm): remove NACL_SDK_INCLUDE ASAP
-  pnacl_sdk_include = (pnacl_sdk_root +
-                       '/arm-newlib/arm-none-linux-gnueabi/include')
-  pnacl_sdk_ar = (pnacl_sdk_root + '/bin/pnacl-ar')
-  pnacl_sdk_nm = (pnacl_sdk_root + '/bin/pnacl-nm')
-  pnacl_sdk_ranlib = (pnacl_sdk_root + '/bin/pnacl-ranlib')
 
-  pnacl_sdk_cc = (pnacl_sdk_root + '/bin/pnacl-gcc')
-  pnacl_sdk_cxx = (pnacl_sdk_root + '/bin/pnacl-g++')
-  pnacl_sdk_ld =  (pnacl_sdk_root + '/bin/pnacl-ld')
-  pnacl_sdk_disass = (pnacl_sdk_root + '/arm-none-linux-gnueabi' +
-                  '/bin/llvm-dis')
+  env['PNACL_ROOT'] = root
+  pnacl_sdk_lib = '${PNACL_ROOT}/libs-bitcode'
+  #TODO(robertm): remove NACL_SDK_INCLUDE ASAP
+  pnacl_sdk_include = '${PNACL_ROOT}/arm-newlib/arm-none-linux-gnueabi/include'
+  pnacl_sdk_ar = '${PNACL_ROOT}/bin/pnacl-ar'
+  pnacl_sdk_nm = '${PNACL_ROOT}/bin/pnacl-nm'
+  pnacl_sdk_ranlib = '${PNACL_ROOT}/bin/pnacl-ranlib'
+
+  pnacl_sdk_cc = '${PNACL_ROOT}/bin/pnacl-gcc'
+  pnacl_sdk_cxx = '${PNACL_ROOT}/bin/pnacl-g++'
+  pnacl_sdk_ld =  '${PNACL_ROOT}/bin/pnacl-ld'
+  pnacl_sdk_disass = '${PNACL_ROOT}/bin/pnacl-dis'
   # NOTE: XXX_flags start with space for easy concatenation
   pnacl_sdk_cxx_flags = ''
   pnacl_sdk_cc_flags = ' -std=gnu99'
@@ -237,14 +226,14 @@ def _SetEnvForPnacl(env, arch):
   if env.Bit('use_sandboxed_translator'):
     pnacl_sdk_ld_flags += ' --pnacl-sb'
 
-  # TODO(pdox): Remove the dependency on the gcc toolchain here.
-  nacl_gcc_root = os.path.join('${MAIN_DIR}',
-                               'toolchain',
-                               _PlatformSubdirs(env)[0])
+  # TODO(pdox): Remove PNaCl's dependency on the gcc toolchain here.
+  platform = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
+  nnacl_root = os.path.join(env['MAIN_DIR'], 'toolchain', '%s_x86' % platform)
+
   cc_other_map = {
       'arm':    pnacl_sdk_cc + pnacl_sdk_cc_native_flags,
-      'x86-32': os.path.join(nacl_gcc_root, 'bin', 'nacl-gcc'),
-      'x86-64': os.path.join(nacl_gcc_root, 'bin', 'nacl64-gcc'),
+      'x86-32': os.path.join(nnacl_root, 'bin', 'nacl-gcc'),
+      'x86-64': os.path.join(nnacl_root, 'bin', 'nacl64-gcc'),
       }
 
   env.Replace(# Replace header and lib paths.
@@ -397,7 +386,7 @@ def generate(env):
   else:
     # if bitcode=1 use pnacl toolchain
     if env.Bit('bitcode'):
-      _SetEnvForPnacl(env, env['TARGET_FULLARCH'])
+      _SetEnvForPnacl(env, root)
     elif env.Bit('target_x86'):
       _SetEnvForX86Sdk(env, root)
     else:

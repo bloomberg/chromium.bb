@@ -109,7 +109,7 @@ INITIAL_ENV = {
   'BUILD_OS'        : '',   # "linux" or "darwin"
   'BUILD_ARCH'      : '',   # "x86_64" or "i686" or "i386"
 
-  'BASE'            : '${BASE_NACL}/toolchain/linux_arm-untrusted',
+  'BASE'            : '${BASE_NACL}/toolchain/pnacl_${BUILD_OS}_${BUILD_ARCH}',
   'BASE_TRUSTED'    : '${BASE_NACL}/toolchain/linux_arm-trusted',
   'BASE_ARM'        : '${BASE}/arm-none-linux-gnueabi',
   'BASE_ARM_INCLUDE': '${BASE_ARM}/arm-none-linux-gnueabi/include',

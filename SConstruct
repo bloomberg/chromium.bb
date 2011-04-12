@@ -2756,7 +2756,9 @@ def DumpEnvironmentInfo(selected_envs):
       print 'ASPPCOM:', asppcom
       DumpCompilerVersion(cc, env)
       print
-    rev_file = 'toolchain/linux_arm-untrusted/REV'
+    # TODO(pdox): This only works for linux/X86-64. Is there a better way
+    #             of locating the PNaCl toolchain here?
+    rev_file = 'toolchain/pnacl_linux_x86_64/REV'
     if os.path.exists(rev_file):
       for line in open(rev_file).read().split('\n'):
         if "Revision:" in line:

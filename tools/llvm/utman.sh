@@ -12,10 +12,10 @@
 # Directory Layout Description
 ######################################################################
 # All directories are relative to BASE which is
-# currently native_client/toolchain/linux_arm-untrusted
+# On Linux X86-64: native_client/toolchain/pnacl_linux_x86_64/
+# On Linux X86-32: native_client/toolchain/pnacl_linux_i686/
+# On Mac X86-32  : native_client/toolchain/pnacl_darwin_i386/
 #
-# TODO(robertm): arm layout needs to be described
-
 # /x86-32sfi-lib   [experimental] x86 sandboxed libraries and object files
 # /x86-32sfi-tools [experimental] x86-32 crosstool binaries for building
 #                  and linking  x86-32 nexes
@@ -54,7 +54,7 @@ readonly CROSS_TARGET_X86_64=x86_64-none-linux-gnu
 readonly BINUTILS_TARGET=arm-pc-nacl
 readonly REAL_CROSS_TARGET=pnacl
 
-readonly INSTALL_ROOT="$(pwd)/toolchain/linux_arm-untrusted"
+readonly INSTALL_ROOT="$(pwd)/toolchain/pnacl_${BUILD_PLATFORM}_${BUILD_ARCH}"
 readonly INSTALL_BIN="${INSTALL_ROOT}/bin"
 readonly ARM_ARCH=armv7-a
 readonly ARM_FPU=vfp
@@ -535,7 +535,10 @@ download-trusted() {
 
   download-toolchains
 
-  mv "${installdir}" "${dldir}"
+  if [ -d "${installdir}" ]; then
+    mv "${installdir}" "${dldir}"
+  fi
+
   if [ -d "${tmpdir}" ]; then
     mv "${tmpdir}" "${installdir}"
   fi
@@ -1378,7 +1381,7 @@ misc-tools() {
       sel_ldr
     rm -rf  "${INSTALL_ROOT}/tools-arm"
     mkdir "${INSTALL_ROOT}/tools-arm"
-    local sconsdir="scons-out/opt-${BUILD_PLATFORM}-arm"
+    local sconsdir="scons-out/opt-${SCONS_BUILD_PLATFORM}-arm"
     cp "${sconsdir}/obj/src/trusted/service_runtime/sel_ldr" \
        "${INSTALL_ROOT}/tools-arm"
   else

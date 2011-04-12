@@ -18,6 +18,17 @@ set -x
 set -e
 set -u
 
+if [[ ${BUILDBOT_BUILDERNAME} == lucid32-toolchain_arm-untrusted ]]; then
+  # Don't test arm + 64-bit on 32-bit builder.
+  # We can't build 64-bit trusted components on a 32-bit system.
+  # Arm disabled on 32-bit because it runs out of memory.
+  TOOLCHAIN_LABEL=pnacl_linux_i686
+  RUN_TESTS="x86-32 x86-32-pic"
+else
+  TOOLCHAIN_LABEL=pnacl_linux_x86_64
+  RUN_TESTS="x86-32 x86-32-pic arm arm-pic x86-64 x86-64-pic"
+fi
+
 RETCODE=0
 
 echo @@@BUILD_STEP clobber@@@
@@ -30,58 +41,30 @@ UTMAN_BUILDBOT=true tools/llvm/utman.sh show-config
 
 echo @@@BUILD_STEP compile_toolchain@@@
 UTMAN_BUILDBOT=true tools/llvm/utman.sh download-trusted
-UTMAN_BUILDBOT=true tools/llvm/utman.sh untrusted_sdk arm-untrusted.tgz
-chmod a+r arm-untrusted.tgz
+UTMAN_BUILDBOT=true tools/llvm/utman.sh untrusted_sdk pnacl-toolchain.tgz
+chmod a+r pnacl-toolchain.tgz
 
 echo @@@BUILD_STEP untar_toolchain@@@
 # Untar to ensure we can and to place the toolchain where the main build
 # expects it to be.
-mkdir -p toolchain/linux_arm-untrusted
-cd toolchain/linux_arm-untrusted
-tar xfz ../../arm-untrusted.tgz
+mkdir -p toolchain/${TOOLCHAIN_LABEL}
+cd toolchain/${TOOLCHAIN_LABEL}
+tar xfz ../../pnacl-toolchain.tgz
 cd ../..
 
 echo @@@BUILD_STEP archive_build@@@
-if [[ ${BUILDBOT_BUILDERNAME} == lucid32-toolchain_arm-untrusted ]]; then
-  SUFFIX=
-else
-  SUFFIX=-${BUILDBOT_BUILDERNAME}
-fi
 GS_BASE=gs://nativeclient-archive2/toolchain
 /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
-    arm-untrusted.tgz \
-    ${GS_BASE}/${BUILDBOT_GOT_REVISION}/naclsdk_linux_arm-untrusted${SUFFIX}.tgz
+    pnacl-toolchain.tgz \
+    ${GS_BASE}/${BUILDBOT_GOT_REVISION}/naclsdk_${TOOLCHAIN_LABEL}.tgz
 /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
-    arm-untrusted.tgz \
-    ${GS_BASE}/latest/naclsdk_linux_arm-untrusted${SUFFIX}.tgz
+    pnacl-toolchain.tgz \
+    ${GS_BASE}/latest/naclsdk_${TOOLCHAIN_LABEL}.tgz
 
-echo @@@BUILD_STEP test-x86-32@@@
-UTMAN_BUILDBOT=true tools/llvm/utman.sh test-x86-32 ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
-
-echo @@@BUILD_STEP test-x86-32-pic@@@
-UTMAN_BUILDBOT=true tools/llvm/utman.sh test-x86-32-pic ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
-
-# Don't build arm + 64-bit on 32-bit builder.
-# We can't build 64-bit trusted components on a 32-bit system.
-# Arm disabled on 32-bit because it runs out of memory.
-if [[ ${BUILDBOT_BUILDERNAME} != lucid32-toolchain_arm-untrusted ]]; then
-echo @@@BUILD_STEP test-arm@@@
-UTMAN_BUILDBOT=true tools/llvm/utman.sh test-arm ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
-
-echo @@@BUILD_STEP test-arm-pic@@@
-UTMAN_BUILDBOT=true tools/llvm/utman.sh test-arm-pic ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
-
-echo @@@BUILD_STEP test-x86-64@@@
-UTMAN_BUILDBOT=true tools/llvm/utman.sh test-x86-64 ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
-
-echo @@@BUILD_STEP test-x86-64-pic@@@
-UTMAN_BUILDBOT=true tools/llvm/utman.sh test-x86-64-pic ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
-fi
+for arch in ${RUN_TESTS} ; do
+  echo @@@BUILD_STEP test-${arch}@@@
+  UTMAN_BUILDBOT=true tools/llvm/utman.sh test-${arch} ||
+      (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+done
 
 exit ${RETCODE}

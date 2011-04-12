@@ -168,13 +168,13 @@ TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O9'] = ToolchainConfig(
 ######################################################################
 # PNACL + SEL_LDR [ARM]
 ######################################################################
-DRIVER_PATH = 'toolchain/linux_arm-untrusted/bin'
+PNACL_ROOT = 'toolchain/pnacl_linux_x86_64'
 
-PNACL_LLVM_GCC = DRIVER_PATH + '/pnacl-gcc'
+PNACL_LLVM_GCC = PNACL_ROOT + '/bin/pnacl-gcc'
 
-PNACL_LD = DRIVER_PATH + '/pnacl-ld'
+PNACL_LD = PNACL_ROOT + '/bin/pnacl-ld'
 
-PNACL_LIB_DIR = 'toolchain/linux_arm-untrusted/libs-bitcode/'
+PNACL_LIB_DIR = PNACL_ROOT + '/libs-bitcode/'
 
 COMMANDS_llvm_pnacl_arm = [
     ('compile-bc',
