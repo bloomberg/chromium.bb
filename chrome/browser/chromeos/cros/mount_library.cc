@@ -11,6 +11,8 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "content/browser/browser_thread.h"
 
+const char* kLibraryNotLoaded = "Cros Library not loaded";
+
 namespace chromeos {
 
 class MountLibraryImpl : public MountLibrary {
@@ -19,7 +21,7 @@ class MountLibraryImpl : public MountLibrary {
     if (CrosLibrary::Get()->EnsureLoaded())
       Init();
     else
-      LOG(ERROR) << "Cros Library has not been loaded";
+      LOG(ERROR) << kLibraryNotLoaded;
   }
 
   virtual ~MountLibraryImpl() {
@@ -37,24 +39,55 @@ class MountLibraryImpl : public MountLibrary {
   }
 
   virtual void MountPath(const char* device_path) OVERRIDE {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!CrosLibrary::Get()->EnsureLoaded()) {
+      OnMountRemovableDevice(device_path,
+                             NULL,
+                             MOUNT_METHOD_ERROR_LOCAL,
+                             kLibraryNotLoaded);
+      return;
+    }
     MountRemovableDevice(device_path,
                          &MountLibraryImpl::MountRemovableDeviceCallback,
                          this);
   }
 
   virtual void UnmountPath(const char* device_path) OVERRIDE {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!CrosLibrary::Get()->EnsureLoaded()) {
+      OnUnmountRemovableDevice(device_path,
+                               MOUNT_METHOD_ERROR_LOCAL,
+                               kLibraryNotLoaded);
+      return;
+    }
     UnmountRemovableDevice(device_path,
                            &MountLibraryImpl::UnmountRemovableDeviceCallback,
                            this);
   }
 
   virtual void RequestMountInfoRefresh() OVERRIDE {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!CrosLibrary::Get()->EnsureLoaded()) {
+      OnRequestMountInfo(NULL,
+                         0,
+                         MOUNT_METHOD_ERROR_LOCAL,
+                         kLibraryNotLoaded);
+      return;
+    }
     RequestMountInfo(&MountLibraryImpl::RequestMountInfoCallback,
                      this);
   }
 
   virtual void RefreshDiskProperties(const Disk* disk) OVERRIDE {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(disk);
+    if (!CrosLibrary::Get()->EnsureLoaded()) {
+      OnGetDiskProperties(disk->device_path().c_str(),
+                          NULL,
+                          MOUNT_METHOD_ERROR_LOCAL,
+                          kLibraryNotLoaded);
+      return;
+    }
     GetDiskProperties(disk->device_path().c_str(),
                       &MountLibraryImpl::GetDiskPropertiesCallback,
                       this);

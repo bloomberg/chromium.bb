@@ -11090,6 +11090,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Take picture.
       </message>
 
+      <!-- Removable device notifications -->
+      <message name="IDS_REMOVABLE_DEVICE_DETECTION_TITLE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
+        Removable device detected
+      </message>
+      <message name="IDS_REMOVABLE_DEVICE_SCANNING_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
+        Scanning content...
+      </message>
+      <!-- TODO(zelidrag): Remove this one once file system is wired -->
+      <message name="IDS_REMOVABLE_DEVICE_MOUNTED_MESSAGE" desc="Text of notification message which is shown when removable device is ready to be used.">
+        Removable device is ready to be used, click here to open...
+      </message>
 
       <!-- Network state strings for ChromeOS -->
       <message name="IDS_CHROMEOS_NETWORK_STATE_UNKNOWN" desc="Network state in about:network: UNKNOWN">

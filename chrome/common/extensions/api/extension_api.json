@@ -4586,6 +4586,20 @@
           }
         ]
       }
+    ],
+    "events": [
+      {
+        "name": "onDiskChanged",
+        "type": "function",
+        "description": "Fired when disk mount/unmount event is detected.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "fullPath",
+            "description": "Path of the filesystem directory entry that changed."
+          }
+        ]
+      }
     ]
   },
   {

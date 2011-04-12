@@ -73,6 +73,10 @@
 #include "webkit/database/database_util.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
+#endif
+
 using base::Time;
 
 namespace errors = extension_manifest_errors;
@@ -483,6 +487,13 @@ ExtensionService::~ExtensionService() {
     ExternalExtensionProviderInterface* provider = i->get();
     provider->ServiceShutdown();
   }
+
+#if defined(OS_CHROMEOS)
+  if (event_routers_initialized_) {
+    ExtensionFileBrowserEventRouter::GetInstance()->
+        StopObservingFileSystemEvents();
+  }
+#endif
 }
 
 void ExtensionService::InitEventRouters() {
@@ -500,6 +511,10 @@ void ExtensionService::InitEventRouters() {
   ExtensionManagementEventRouter::GetInstance()->Init();
   ExtensionProcessesEventRouter::GetInstance()->ObserveProfile(profile_);
   ExtensionWebNavigationEventRouter::GetInstance()->Init();
+#if defined(OS_CHROMEOS)
+  ExtensionFileBrowserEventRouter::GetInstance()->ObserveFileSystemEvents(
+      profile_);
+#endif
   event_routers_initialized_ = true;
 }
 
