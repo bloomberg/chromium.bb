@@ -45,7 +45,6 @@ HOST_TOOLCHAIN_BITS?=32
 
 GCC_CC = gcc -m$(HOST_TOOLCHAIN_BITS)
 
-
 GCC_CFLAGS = -O2
 
 GCC_DEFINES = \
@@ -54,47 +53,45 @@ GCC_DEFINES = \
     -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
     -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)
 
-
 GCC_LDFLAGS =
 
+# In the use of these, $* is pregcc, newlib, or glibc.
+GCC_CONFIGURE_FLAGS += $(GCC_CONFIGURE_FLAGS-$*)
+GCC_CFLAGS_FOR_TARGET = -O2 -g $(GCC_CFLAGS_FOR_TARGET-$*)
 
 GCC_CONFIGURE_VARS = \
     CC="$(GCC_CC)" \
     CFLAGS="$(GCC_CFLAGS) $(GCC_DEFINES)" \
     LDFLAGS="$(GCC_LDFLAGS)" \
-    CFLAGS_FOR_TARGET="-O2 -g" \
-    CXXFLAGS_FOR_TARGET="-O2 -g"
+    CFLAGS_FOR_TARGET="$(GCC_CFLAGS_FOR_TARGET)"
+    CXXFLAGS_FOR_TARGET="$(GCC_CFLAGS_FOR_TARGET)"
 
+GCC_CFLAGS_FOR_TARGET-newlib =
+GCC_CONFIGURE_FLAGS-pregcc = --disable-shared \
+			     --disable-threads \
+			     --enable-languages="c" \
+			     --without-headers
+
+GCC_CFLAGS_FOR_TARGET-newlib = -mtls-use-call
+GCC_CONFIGURE_FLAGS-newlib = --disable-shared \
+			     --enable-languages="c,c++,objc" \
+			     --enable-threads=nacl \
+			     --enable-tls \
+			     --with-newlib
+
+GCC_CFLAGS_FOR_TARGET-glibc =
+GCC_CONFIGURE_FLAGS-glibc = --enable-shared \
+			    --enable-languages="c,c++" \
+			    --enable-threads=posix \
+			    --enable-tls
 
 .PHONY: configure-pregcc
-configure-pregcc:
+configure-pregcc: configure-gcc-with-pregcc
+
+gcc-variants := pregcc newlib glibc
+all-gcc-configures = $(gcc-variants:%=configure-gcc-with-%)
+.PHONY: $(all-gcc-configures)
+$(all-gcc-configures): configure-gcc-with-%:
 	$(srcdir)/configure \
 	    $(GCC_CONFIGURE_VARS) \
-	    $(GCC_CONFIGURE_FLAGS) \
-	    --disable-shared \
-	    --disable-threads \
-	    --enable-languages="c" \
-	    --without-headers
-
-
-.PHONY: configure-gcc-with-newlib
-configure-gcc-with-newlib:
-	$(srcdir)/configure \
-	    $(GCC_CONFIGURE_VARS) \
-	    $(GCC_CONFIGURE_FLAGS) \
-	    --disable-shared \
-	    --enable-languages="c,c++,objc" \
-	    --enable-threads=nacl \
-	    --enable-tls \
-	    --with-newlib
-
-
-.PHONY: configure-gcc-with-glibc
-configure-gcc-with-glibc:
-	$(srcdir)/configure \
-	    $(GCC_CONFIGURE_VARS) \
-	    $(GCC_CONFIGURE_FLAGS) \
-	    --enable-shared \
-	    --enable-languages="c,c++" \
-	    --enable-threads=posix \
-	    --enable-tls
+	    $(GCC_CONFIGURE_FLAGS)
