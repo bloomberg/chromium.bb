@@ -1329,11 +1329,12 @@ gboolean BrowserWindowGtk::OnConfigure(GtkWidget* widget,
   // reconfigure event in a short while.
   // We don't use Reset() because the timer may not yet be running.
   // (In that case Stop() is a no-op.)
-  if (!debounce_timer_disabled_)
+  if (!debounce_timer_disabled_) {
     window_configure_debounce_timer_.Stop();
     window_configure_debounce_timer_.Start(base::TimeDelta::FromMilliseconds(
         kDebounceTimeoutMilliseconds), this,
         &BrowserWindowGtk::OnDebouncedBoundsChanged);
+  }
 
   return FALSE;
 }

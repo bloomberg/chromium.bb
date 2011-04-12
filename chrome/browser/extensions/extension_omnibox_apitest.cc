@@ -80,6 +80,14 @@ class OmniboxApiTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
+#if defined(TOOLKIT_GTK)
+  // Disable the timer because, on Lucid at least, it triggers resize/move
+  // behavior in the browser window, which dismisses the autocomplete popup
+  // before the results can be read.
+  static_cast<BrowserWindowGtk*>(
+      browser()->window())->DisableDebounceTimerForTests(true);
+#endif
+
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
 
@@ -89,14 +97,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
 
   LocationBar* location_bar = GetLocationBar();
   AutocompleteController* autocomplete_controller = GetAutocompleteController();
-
-#if defined(TOOLKIT_GTK)
-  // Disable the timer because, on Lucid at least, it triggers resize/move
-  // behavior in the browser window, which dismisses the autocomplete popup
-  // before the results can be read.
-  static_cast<BrowserWindowGtk*>(
-      browser()->window())->DisableDebounceTimerForTests(true);
-#endif
 
   // Test that our extension's keyword is suggested to us when we partially type
   // it.
