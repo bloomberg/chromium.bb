@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/sim_unlock_dialog_delegate.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -32,6 +33,8 @@
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
+#include "content/common/notification_service.h"
+#include "content/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -63,6 +66,8 @@ InternetOptionsHandler::InternetOptionsHandler()
     : chromeos::CrosOptionsPageUIHandler(
           new chromeos::UserCrosSettingsProvider),
       use_settings_ui_(false) {
+  registrar_.Add(this, NotificationType::REQUIRE_PIN_SETTING_CHANGE_ENDED,
+      NotificationService::AllSources());
   chromeos::NetworkLibrary* netlib =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   netlib->AddNetworkManagerObserver(this);
@@ -129,6 +134,9 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("networkTabLabel",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_TAB_NETWORK));
+  localized_strings->SetString("securityTabLabel",
+        l10n_util::GetStringUTF16(
+            IDS_OPTIONS_SETTINGS_INTERNET_TAB_SECURITY));
 
   localized_strings->SetString("connectionState",
       l10n_util::GetStringUTF16(
@@ -270,6 +278,34 @@ void InternetOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_SET));
 
+  localized_strings->SetString("accessSecurityTabLink",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ACCESS_SECURITY_TAB));
+  localized_strings->SetString("lockSimCard",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_LOCK_SIM_CARD));
+  localized_strings->SetString("changePinButton",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_BUTTON));
+  localized_strings->SetString("changePinTitle",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_TITLE));
+  localized_strings->SetString("changePinMessage",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_MESSAGE));
+  localized_strings->SetString("incorrectPin",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_INCORRECT_ERROR));
+  localized_strings->SetString("oldPin",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_OLD_PIN));
+  localized_strings->SetString("newPin",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_NEW_PIN));
+  localized_strings->SetString("retypeNewPin",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_RETYPE_PIN));
+
   localized_strings->SetString("planName",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_CELL_PLAN_NAME));
@@ -367,7 +403,11 @@ void InternetOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("showMorePlanInfo",
       NewCallback(this, &InternetOptionsHandler::BuyDataPlanCallback));
   web_ui_->RegisterMessageCallback("setApn",
-      NewCallback(this, &InternetOptionsHandler::SetApnCallback));
+        NewCallback(this, &InternetOptionsHandler::SetApnCallback));
+  web_ui_->RegisterMessageCallback("setSimCardLock",
+        NewCallback(this, &InternetOptionsHandler::SetSimCardLockCallback));
+  web_ui_->RegisterMessageCallback("changePin",
+        NewCallback(this, &InternetOptionsHandler::ChangePinCallback));
 }
 
 void InternetOptionsHandler::EnableWifiCallback(const ListValue* args) {
@@ -425,6 +465,25 @@ void InternetOptionsHandler::SetApnCallback(const ListValue* args) {
     network->SetApn(chromeos::CellularNetwork::Apn(
         apn, network->apn().network_id, username, password));
   }
+}
+
+void InternetOptionsHandler::SetSimCardLockCallback(const ListValue* args) {
+  bool require_pin_new_value;
+  if (!args->GetBoolean(0, &require_pin_new_value)) {
+    NOTREACHED();
+    return;
+  }
+  // 1. Bring up SIM unlock dialog, pass new RequirePin setting in URL.
+  // 2. Dialog will ask for current PIN in any case.
+  // 3. If card is locked it will first call PIN unlock operation
+  // 4. Then it will call Set RequirePin, passing the same PIN.
+  // 5. We'll get notified by REQUIRE_PIN_SETTING_CHANGE_ENDED notification.
+  chromeos::SimUnlockDialogDelegate::ShowDialog(GetNativeWindow(),
+                                                require_pin_new_value);
+}
+
+void InternetOptionsHandler::ChangePinCallback(const ListValue* args) {
+  // TODO(nkostylev): Check OLD pin, compare new PIN inputs, change PIN if ok.
 }
 
 void InternetOptionsHandler::RefreshNetworkData(
@@ -499,6 +558,20 @@ void InternetOptionsHandler::OnCellularDataPlanChanged(
   SetActivationButtonVisibility(cellular, &connection_plans);
   web_ui_->CallJavascriptFunction(
       "options.InternetOptions.updateCellularPlans", connection_plans);
+}
+
+
+void InternetOptionsHandler::Observe(NotificationType type,
+                                     const NotificationSource& source,
+                                     const NotificationDetails& details) {
+  chromeos::CrosOptionsPageUIHandler::Observe(type, source, details);
+  if (type == NotificationType::REQUIRE_PIN_SETTING_CHANGE_ENDED) {
+    bool require_pin = *Details<bool>(details).ptr();
+    DictionaryValue dictionary;
+    dictionary.SetBoolean("requirePin", require_pin);
+    web_ui_->CallJavascriptFunction(
+        "options.InternetOptions.updateSecurityTab", dictionary);
+  }
 }
 
 DictionaryValue* InternetOptionsHandler::CellularDataPlanToDictionary(
@@ -708,6 +781,10 @@ void InternetOptionsHandler::PopulateCellularDetails(
     dictionary->SetString("imsi", device->imsi());
     dictionary->SetString("esn", device->esn());
     dictionary->SetString("min", device->min());
+
+    // TODO(nkostylev): Populate real status for SIM card locked state.
+    // dictionary->SetBoolean("simCardLocked", true);
+    // dictionary->SetBoolean("simCardLockEnabled", true);
   }
 
   SetActivationButtonVisibility(cellular, dictionary);
@@ -796,14 +873,18 @@ void InternetOptionsHandler::LoginToOtherCallback(const ListValue* args) {
 
 void InternetOptionsHandler::CreateModalPopup(views::WindowDelegate* view) {
   DCHECK(!use_settings_ui_);
+  views::Window* window = browser::CreateViewsWindow(GetNativeWindow(),
+                                                     gfx::Rect(),
+                                                     view);
+  window->SetIsAlwaysOnTop(true);
+  window->Show();
+}
 
+gfx::NativeWindow InternetOptionsHandler::GetNativeWindow() const {
   // TODO(beng): This is an improper direct dependency on Browser. Route this
   // through some sort of delegate.
   Browser* browser = BrowserList::FindBrowserWithProfile(web_ui_->GetProfile());
-  views::Window* window = browser::CreateViewsWindow(
-      browser->window()->GetNativeHandle(), gfx::Rect(), view);
-  window->SetIsAlwaysOnTop(true);
-  window->Show();
+  return browser->window()->GetNativeHandle();
 }
 
 void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
@@ -862,8 +943,7 @@ void InternetOptionsHandler::HandleWifiButtonClick(
                 "options.InternetOptions.showPasswordEntry", dictionary);
           }
         } else {
-          CreateModalPopup(
-              new chromeos::NetworkConfigView(wifi));
+          CreateModalPopup(new chromeos::NetworkConfigView(wifi));
         }
       } else {
         cros->ConnectToWifiNetwork(wifi);

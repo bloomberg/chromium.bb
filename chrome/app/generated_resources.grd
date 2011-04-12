@@ -4345,24 +4345,28 @@ Keep your key file in a safe place. You will need it to create new versions of y
         You have DNS certificate provenance checking enabled. This may result in private information being sent to Google.
       </message>
 
-      <!-- Locale Change Notification-->
       <if expr="pp_ifdef('chromeos')">
+        <!-- Locale Change Notification-->
         <message name="IDS_LOCALE_CHANGE_MESSAGE" desc="Message shown when locale was changed based on profile content.">
           Chrome's language has changed from "<ph name="FROM_LOCALE">$1<ex>Italian</ex></ph>" to "<ph name="TO_LOCALE">$2<ex>English (United States)</ex></ph>" after syncing your settings.
         </message>
         <message name="IDS_LOCALE_CHANGE_REVERT_MESSAGE" desc="Link to revert a change.">
           Change back to "<ph name="FROM_LOCALE">$1<ex>Italian</ex></ph>" (requires restart)
         </message>
-      </if>
 
-      <!-- SMS Notifications -->
-      <if expr="pp_ifdef('chromeos')">
+        <!-- SMS Notifications -->
         <message name="IDS_SMS_NOTIFICATION_TITLE" desc="Title of SMS message notification.">
           SMS from <ph name="PHONE_NUMBER">$1<ex>08700 776655</ex></ph>
         </message>
-      </if>
 
-      <if expr="pp_ifdef('chromeos')">
+        <!-- 3G data Notifications -->
+        <message name="IDS_3G_FREE_DATA_NOTIFICATION_TITLE" desc="Title of 3G data notification telling user that she has x free data.">
+          You have <ph name="DATE">$1<ex>3GB</ex></ph> of free data, courtesy of <ph name="DATE">$1<ex>Vodafone</ex></ph>
+        </message>
+        <message name="IDS_3G_NOTIFICATION_MESSAGE" desc="Text of the 3G data notification telling that 3G data is enabled.">
+          Chrome will use 3G data when no WiFi connection is present.
+        </message>
+
         <!-- about:system strings -->
         <message name="IDS_ABOUT_SYS_TITLE" desc="about:system page title">
           About System
@@ -9794,7 +9798,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Join wifi network
       </message>
       <message name="IDS_OPTIONS_SETTINGS_ENABLE_DATA_ROAMING" desc="In the settings tab, the text next to the checkbox for data roaming.">
-        Enable data roaming
+        Allow mobile data roaming
       </message>
       <message name="IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to allow browse without signing in.">
         Enable guest browsing
@@ -9858,6 +9862,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_NETWORK" desc="In settings Internet options, the title for buy cellular data plan button.">
         Network
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_SECURITY" desc="In settings Internet options, the title for security tab.">
+        Security
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID" desc="In settings Internet options, the label for the network id.">
         SSID:
@@ -10119,6 +10126,33 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_SET" desc="Cellular device set APN settings button under network details in chrome:settings/internet.">
         Save
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ACCESS_SECURITY_TAB" desc="In settings Internet options, the text of the link shown when SIM card is locked, to access security tab.">
+        To access Security settings enter the SIM card PIN
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_LOCK_SIM_CARD" desc="Cellular device enable SIM card PIN lock checkbox label in chrome:settings/internet.">
+        Lock SIM card (require PIN to use mobile data)
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_BUTTON" desc="Cellular device change PIN button text in chrome:settings/internet.">
+        Change PIN
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_TITLE" desc="Cellular device change PIN dialog title in chrome:settings/internet.">
+        Change SIM Card PIN
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_MESSAGE" desc="Cellular device change PIN dialog message in chrome:settings/internet.">
+        Please enter old and new PIN.
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_INCORRECT_ERROR" desc="Cellular device change PIN dialog error message in chrome:settings/internet.">
+        Incorrect PIN, please try again.
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_OLD_PIN" desc="Cellular device change PIN dialog old PIN label text in chrome:settings/internet.">
+        Old PIN:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_NEW_PIN" desc="Cellular device change PIN dialog new PIN label text in chrome:settings/internet.">
+        New PIN:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_RETYPE_PIN" desc="Cellular device change PIN dialog re-type new PIN label text in chrome:settings/internet.">
+        Re-type new PIN:
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_CANCEL" desc="Cellular device cancel APN settings edit button under network details in chrome:settings/internet.">
         Cancel
       </message>
@@ -10137,7 +10171,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <message name="IDS_SIM_UNLOCK_ENTER_PIN_TITLE" desc="Title of the SIM card unlock dialog in chrome:sim-unlock.">
-        Enter SIM card PIN
+        Enter SIM Card PIN
       </message>
       <message name="IDS_SIM_UNLOCK_ENTER_PIN_MESSAGE" desc="Message on the the SIM card unlock dialog asking to enter PIN in chrome:sim-unlock.">
         SIM card is locked, please enter PIN.
@@ -10164,7 +10198,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enter PIN Unlocking Key
       </message>
       <message name="IDS_SIM_UNLOCK_ENTER_PUK_WARNING" desc="Warning on the Enter PUK dialog with the number of tries left, which is part of SIM card unlock dialog in chrome:sim-unlock.">
-        If you enter ther incorrect PIN Unlocking Key your SIM card will be permanently disabled. Tries left: <ph name="TRIES_COUNT">$1<ex>42</ex></ph>
+        Your SIM card will be permanently disabled if you cannot enter the correct PIN Unlocking Key. Tries left: <ph name="TRIES_COUNT">$1<ex>42</ex></ph>
       </message>
       <message name="IDS_SIM_UNLOCK_ENTER_PUK_MESSAGE" desc="Message on the Enter PUK dialog, which is part of SIM card unlock dialog in chrome:sim-unlock.">
         Please enter the 8-digit PIN Unlocking Key provided by <ph name="CARRIER_ID">$1<ex>your carrier</ex></ph>.

@@ -1292,6 +1292,13 @@ class NotificationType {
     // changed. The source is the CrosSettings and the details a std::string of
     // the changed setting.
     SYSTEM_SETTING_CHANGED,
+
+    // Sent by SIM unlock dialog when it has finished with the process of
+    // updating RequirePin setting. RequirePin setting might have been changed
+    // to a new value or update might have been canceled.
+    // In either case notification is sent and details contain a bool
+    // that represents current value.
+    REQUIRE_PIN_SETTING_CHANGE_ENDED,
 #endif
 
     // Sent before the repost form warning is brought up.

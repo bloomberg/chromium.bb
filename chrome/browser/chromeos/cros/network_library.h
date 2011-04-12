@@ -308,6 +308,7 @@ class Network {
   ConnectionType type_;
 
   friend class NetworkLibraryImpl;
+  friend class NetworkLibraryStubImpl;
   // ChangeAutoConnectSaveTest accesses |favorite_|.
   FRIEND_TEST_ALL_PREFIXES(WifiConfigViewTest, ChangeAutoConnectSaveTest);
 };
@@ -347,6 +348,7 @@ class WirelessNetwork : public Network {
   void set_strength(int strength) { strength_ = strength; }
 
   friend class NetworkLibraryImpl;
+  friend class NetworkLibraryStubImpl;
 };
 
 // Class for networks of TYPE_CELLULAR.
@@ -468,6 +470,7 @@ class CellularNetwork : public WirelessNetwork {
   void set_last_good_apn(const Apn& apn) { last_good_apn_ = apn; }
 
   friend class NetworkLibraryImpl;
+  friend class NetworkLibraryStubImpl;
 };
 typedef std::vector<CellularNetwork*> CellularNetworkVector;
 

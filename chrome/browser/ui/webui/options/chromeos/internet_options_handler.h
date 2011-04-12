@@ -9,6 +9,8 @@
 
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_options_page_ui_handler.h"
+#include "content/common/notification_registrar.h"
+#include "ui/gfx/native_widget_types.h"
 
 class SkBitmap;
 namespace views {
@@ -40,9 +42,15 @@ class InternetOptionsHandler
   // NetworkLibrary::CellularDataPlanObserver implementation.
   virtual void OnCellularDataPlanChanged(chromeos::NetworkLibrary* network_lib);
 
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
+
  private:
   // Opens a modal popup dialog.
   void CreateModalPopup(views::WindowDelegate* view);
+  gfx::NativeWindow GetNativeWindow() const;
 
   // Passes data needed to show details overlay for network.
   // |args| will be [ network_type, service_path, command ]
@@ -74,6 +82,8 @@ class InternetOptionsHandler
   void DisableCellularCallback(const ListValue* args);
   void BuyDataPlanCallback(const ListValue* args);
   void SetApnCallback(const ListValue* args);
+  void SetSimCardLockCallback(const ListValue* args);
+  void ChangePinCallback(const ListValue* args);
 
   // Parses 'path' to determine if the certificate is stored in a pkcs#11
   // device. flimflam recognizes the string "SETTINGS:" to specify
@@ -127,6 +137,8 @@ class InternetOptionsHandler
   // A boolean flag of whether to use WebUI for connect UI. True to use WebUI
   // and false to use Views dialogs.
   bool use_settings_ui_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(InternetOptionsHandler);
 };

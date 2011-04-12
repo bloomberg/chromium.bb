@@ -18,6 +18,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/notification_service.h"
+#include "content/common/notification_type.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -26,6 +28,7 @@
 namespace {
 
 // JS API callbacks names.
+const char kJsApiCancel[] = "cancel";
 const char kJsApiEnterPinCode[] = "enterPinCode";
 const char kJsApiEnterPukCode[] = "enterPukCode";
 const char kJsApiProceedToPukInput[] = "proceedToPukInput";
@@ -94,14 +97,17 @@ class SimUnlockHandler : public WebUIMessageHandler,
 
  private:
   // Should keep this state enum in sync with similar one in JS code.
+  // SIM_NOT_LOCKED_ASK_PIN - state when SIM card is not locked but we ask user
+  // for PIN input because PinRequired preference change was requested.
   typedef enum SimUnlockState {
     SIM_UNLOCK_LOADING           = -1,
     SIM_ABSEND_NOT_LOCKED        =  0,
-    SIM_LOCKED_PIN               =  1,
-    SIM_LOCKED_NO_PIN_TRIES_LEFT =  2,
-    SIM_LOCKED_PUK               =  3,
-    SIM_LOCKED_NO_PUK_TRIES_LEFT =  4,
-    SIM_DISABLED                 =  5,
+    SIM_NOT_LOCKED_ASK_PIN       =  1,
+    SIM_LOCKED_PIN               =  2,
+    SIM_LOCKED_NO_PIN_TRIES_LEFT =  3,
+    SIM_LOCKED_PUK               =  4,
+    SIM_LOCKED_NO_PUK_TRIES_LEFT =  5,
+    SIM_DISABLED                 =  6,
   } SimUnlockState;
 
   // Type of the SIM unlock code.
@@ -122,6 +128,11 @@ class SimUnlockHandler : public WebUIMessageHandler,
         : handler_(handler),
           code_(code),
           code_type_(code_type) {
+    }
+
+    void HandleCancel() {
+      if (handler_)
+        handler_->CancelDialog();
     }
 
     void HandleEnterCode() {
@@ -151,6 +162,9 @@ class SimUnlockHandler : public WebUIMessageHandler,
     DISALLOW_COPY_AND_ASSIGN(TaskProxy);
   };
 
+  // Processing for the cases when dialog was cancelled.
+  void CancelDialog();
+
   // Pass PIN/PUK code to flimflam and check status.
   void EnterCode(const std::string& code, SimUnlockCode code_type);
 
@@ -161,6 +175,7 @@ class SimUnlockHandler : public WebUIMessageHandler,
   void HandleEnterCode(const ListValue* args, SimUnlockCode code_type);
 
   // Handlers for JS WebUI messages.
+  void HandleCancel(const ListValue* args);
   void HandleEnterPinCode(const ListValue* args);
   void HandleEnterPukCode(const ListValue* args);
   void HandleProceedToPukInput(const ListValue* args);
@@ -168,6 +183,10 @@ class SimUnlockHandler : public WebUIMessageHandler,
 
   // Initialize current SIM card status, passes that to page.
   void InitializeSimStatus();
+
+  // Notifies SIM Security tab handler that RequirePin preference change
+  // has been ended (either updated or cancelled).
+  void NotifyOnRequirePinChangeEnded(bool new_value);
 
   // Checks whether SIM card is in PUK locked state and proceeds to PUK input.
   void ProceedToPukInput();
@@ -181,6 +200,13 @@ class SimUnlockHandler : public WebUIMessageHandler,
 
   TabContents* tab_contents_;
   SimUnlockState state_;
+
+  // True if SIM unlock dialog should unlock card if it's locked and
+  // set new value of PinRequired preference, otherwise just performs unlock.
+  bool changing_pin_required_pref_;
+
+  // New value of the PinRequired preference.
+  bool new_pin_required_value_;
 
   DISALLOW_COPY_AND_ASSIGN(SimUnlockHandler);
 };
@@ -249,7 +275,9 @@ void SimUnlockUIHTMLSource::StartDataRequest(const std::string& path,
 
 SimUnlockHandler::SimUnlockHandler()
     : tab_contents_(NULL),
-      state_(SIM_UNLOCK_LOADING) {
+      state_(SIM_UNLOCK_LOADING),
+      changing_pin_required_pref_(false),
+      new_pin_required_value_(false) {
 }
 
 SimUnlockHandler::~SimUnlockHandler() {
@@ -265,6 +293,8 @@ void SimUnlockHandler::Init(TabContents* contents) {
 }
 
 void SimUnlockHandler::RegisterMessages() {
+  web_ui_->RegisterMessageCallback(kJsApiCancel,
+        NewCallback(this, &SimUnlockHandler::HandleCancel));
   web_ui_->RegisterMessageCallback(kJsApiEnterPinCode,
       NewCallback(this, &SimUnlockHandler::HandleEnterPinCode));
   web_ui_->RegisterMessageCallback(kJsApiEnterPukCode,
@@ -275,11 +305,32 @@ void SimUnlockHandler::RegisterMessages() {
       NewCallback(this, &SimUnlockHandler::HandleSimStatusInitialize));
 }
 
+void SimUnlockHandler::CancelDialog() {
+  if (changing_pin_required_pref_) {
+    // When async (Unlock)/Change RequirePin operation is performed,
+    // dialog UI controls such as Cancel button are disabled.
+    // If dialog was cancelled that means RequirePin preference hasn't been
+    // changed and is not in process of changing in the moment.
+    NotifyOnRequirePinChangeEnded(!new_pin_required_value_);
+  }
+}
+
 void SimUnlockHandler::EnterCode(const std::string& code,
                                  SimUnlockCode code_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // TODO(nkostylev): Pass PIN/PUK code to flimflam.
+  // 1. If SIM card is locked, call EnterPin / UnblockPin (async).
+  // 2. If changing RequirePin preference, cache PIN code value and
+  //    call RequirePin after card is unlocked.
+  // NotifyOnRequirePinChangeEnded(new_pin_required_value_);
   ProcessSimCardState(GetCellularNetwork());
+}
+
+void SimUnlockHandler::NotifyOnRequirePinChangeEnded(bool new_value) {
+  NotificationService::current()->Notify(
+      NotificationType::REQUIRE_PIN_SETTING_CHANGE_ENDED,
+      NotificationService::AllSources(),
+      Details<bool>(&new_value));
 }
 
 void SimUnlockHandler::GetSimInfo(chromeos::CellularNetwork* network,
@@ -288,6 +339,17 @@ void SimUnlockHandler::GetSimInfo(chromeos::CellularNetwork* network,
     // TODO(nkostylev): Extract real tries left information.
     // value->SetInteger(kTriesLeft, tries);
   }
+}
+
+void SimUnlockHandler::HandleCancel(const ListValue* args) {
+  const size_t kEnterCodeParamCount = 0;
+  if (args->GetSize() != kEnterCodeParamCount) {
+    NOTREACHED();
+    return;
+  }
+  scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr());
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(task.get(), &TaskProxy::HandleCancel));
 }
 
 void SimUnlockHandler::HandleEnterCode(const ListValue* args,
@@ -324,6 +386,13 @@ void SimUnlockHandler::HandleProceedToPukInput(const ListValue* args) {
 }
 
 void SimUnlockHandler::HandleSimStatusInitialize(const ListValue* args) {
+  const size_t kSimStatusInitializeParamCount = 2;
+  if (args->GetSize() != kSimStatusInitializeParamCount ||
+      !args->GetBoolean(0, &changing_pin_required_pref_) ||
+      !args->GetBoolean(1, &new_pin_required_value_)) {
+    NOTREACHED();
+    return;
+  }
   scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr());
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(task.get(), &TaskProxy::HandleInitialize));
@@ -345,7 +414,9 @@ void SimUnlockHandler::ProcessSimCardState(chromeos::CellularNetwork* network) {
   // Absent/Not Locked/PIN locked, n tries/PUK locked, n tries/Blocked.
   switch (state_) {
     case SIM_UNLOCK_LOADING:
+      break;
     case SIM_ABSEND_NOT_LOCKED:
+    case SIM_NOT_LOCKED_ASK_PIN:
     case SIM_LOCKED_PIN:
       break;
     case SIM_LOCKED_NO_PIN_TRIES_LEFT:

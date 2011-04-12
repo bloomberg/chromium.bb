@@ -3197,6 +3197,14 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     AddNetwork(cellular1);
     active_cellular_ = cellular1;
 
+    CellularNetwork* cellular2 = new CellularNetwork("fc2");
+    cellular2->set_name("Fake Cellular 2");
+    cellular2->set_strength(70);
+    cellular2->set_connected(true);
+    cellular2->set_activation_state(ACTIVATION_STATE_ACTIVATED);
+    cellular2->set_network_technology(NETWORK_TECHNOLOGY_UMTS);
+    AddNetwork(cellular2);
+
     // Remembered Networks
     ClearRememberedNetworks(true /*delete networks*/);
     WifiNetwork* remembered_wifi2 = new WifiNetwork("fw2");

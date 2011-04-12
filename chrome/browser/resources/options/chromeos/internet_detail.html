@@ -8,7 +8,7 @@
           i18n-content="wifiNetworkTabLabel"></span>
       <span class="active-tab-label" i18n-content="wifiNetworkTabLabel"></span>
     </span>
-    <span id="cellularPlanNavTab" class="tab cellular-details"
+    <span id="cellularPlanNavTab" class="tab cellular-details cdma-only"
         tab-contents="cellularPlanTab">
       <span class="tab-label"
           i18n-content="cellularPlanTabLabel"></span>
@@ -30,6 +30,11 @@
     <span id="internetNavTab" class="tab" tab-contents="internetTab">
       <span class="tab-label" i18n-content="networkTabLabel"></span>
       <span class="active-tab-label" i18n-content="networkTabLabel"></span>
+    </span>
+    <span id="security-nav-tab" class="tab cellular-details gsm-only"
+        tab-contents="security-tab">
+      <span class="tab-label" i18n-content="securityTabLabel"></span>
+      <span class="active-tab-label" i18n-content="securityTabLabel"></span>
     </span>
   </div>
   <div id="wifiNetworkTab" class="subpages-tab-contents wifi-details">
@@ -87,7 +92,8 @@
       </table>
     </section>
   </div>
-  <div id="cellularPlanTab" class="subpages-tab-contents cellular-details">
+  <div id="cellularPlanTab"
+      class="subpages-tab-contents cellular-details cdma-only">
     <section>
       <div>
         <table class="option-control-table" id="details-plan-table">
@@ -259,6 +265,23 @@
         </tr>
       </table>
     </section>
+  </div>
+  <div id="security-tab" class="subpages-tab-contents cellular-details gsm-only">
+    <div id="cellular-security-options">
+      <section>
+        <div id="sim-pin-lock" class="checkbox">
+         <label>
+           <input id="sim-card-lock-enabled" type="checkbox">
+           <span i18n-content="lockSimCard"></span>
+         </label>
+        </div>
+      </section>
+      <section>
+        <div id="change-pin-area">
+          <button id="change-pin" i18n-content="changePinButton"></button>
+        </div>
+      </section>
+    </div>
   </div>
   <div class="action-area bottom-strip button-strip">
     <button id="detailsInternetDismiss"

@@ -95,6 +95,18 @@ cr.define('options', function() {
                                String($('cellularApnUsername').value),
                                String($('cellularApnPassword').value)]);
       });
+      $('sim-card-lock-enabled').addEventListener('click', function(event) {
+        var newValue = $('sim-card-lock-enabled').checked;
+        // Leave value as is because user needs to enter PIN code first.
+        // When PIN will be entered and value changed,
+        // we'll update UI to reflect that change.
+        $('sim-card-lock-enabled').checked = !newValue;
+        InternetOptions.enableSecurityTab(false);
+        chrome.send('setSimCardLock', [newValue]);
+      });
+      $('change-pin').addEventListener('click', function(event) {
+        // TODO(nkostylev): Display change PIN dialog.
+      });
       this.showNetworkDetails_();
     },
 
@@ -161,6 +173,11 @@ cr.define('options', function() {
                                   "true" : "false"]);
     }
     OptionsPage.closeOverlay();
+  };
+
+  InternetOptions.enableSecurityTab = function(enabled) {
+    $('sim-card-lock-enabled').disabled = !enabled;
+    $('change-pin').disabled = !enabled;
   };
 
   InternetOptions.setupAttributes = function(data) {
@@ -277,6 +294,11 @@ cr.define('options', function() {
     page.removeChild(dummy);
   };
 
+  InternetOptions.updateSecurityTab = function(data) {
+    InternetOptions.enableSecurityTab(true);
+    $('sim-card-lock-enabled').checked = data.requirePin;
+  };
+
   InternetOptions.showPasswordEntry = function (data) {
     var element = $(data.servicePath);
     element.showPassword();
@@ -354,7 +376,10 @@ cr.define('options', function() {
         }
       }
     } else if(data.type == 5) {
-      OptionsPage.showTab($('cellularPlanNavTab'));
+      if (!data.gsm)
+        OptionsPage.showTab($('cellularPlanNavTab'));
+      else
+        OptionsPage.showTab($('cellularConnNavTab'));
       page.removeAttribute('ethernet');
       page.removeAttribute('wireless');
       page.removeAttribute('cert');
@@ -386,6 +411,8 @@ cr.define('options', function() {
         $('cellularApn').value = data.apn;
         $('cellularApnUsername').value = data.apn_username;
         $('cellularApnPassword').value = data.apn_password;
+        $('sim-card-lock-enabled').checked = data.simCardLockEnabled;
+        InternetOptions.enableSecurityTab(true);
         page.setAttribute('gsm', true);
       }
 
