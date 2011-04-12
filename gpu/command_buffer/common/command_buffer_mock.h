@@ -28,11 +28,12 @@ class MockCommandBuffer : public CommandBuffer {
   MOCK_METHOD1(Flush, void(int32 put_offset));
   MOCK_METHOD1(FlushSync, State(int32 put_offset));
   MOCK_METHOD1(SetGetOffset, void(int32 get_offset));
-  MOCK_METHOD1(CreateTransferBuffer, int32(size_t size));
+  MOCK_METHOD2(CreateTransferBuffer, int32(size_t size, int32 id_request));
   MOCK_METHOD1(DestroyTransferBuffer, void(int32 handle));
   MOCK_METHOD1(GetTransferBuffer, Buffer(int32 handle));
-  MOCK_METHOD2(RegisterTransferBuffer, int32(base::SharedMemory* shared_memory,
-                                             size_t size));
+  MOCK_METHOD3(RegisterTransferBuffer, int32(base::SharedMemory* shared_memory,
+                                             size_t size,
+                                             int32 id_request));
   MOCK_METHOD1(SetToken, void(int32 token));
   MOCK_METHOD1(SetParseError, void(error::Error error));
 

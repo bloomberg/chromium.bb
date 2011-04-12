@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,11 +37,12 @@ class CommandBufferPepper : public gpu::CommandBuffer {
   virtual void Flush(int32 put_offset);
   virtual State FlushSync(int32 put_offset);
   virtual void SetGetOffset(int32 get_offset);
-  virtual int32 CreateTransferBuffer(size_t size);
+  virtual int32 CreateTransferBuffer(size_t size, int32 id_request);
   virtual void DestroyTransferBuffer(int32 id);
   virtual gpu::Buffer GetTransferBuffer(int32 handle);
   virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
-                                       size_t size);
+                                       size_t size,
+                                       int32 id_request);
   virtual void SetToken(int32 token);
   virtual void SetParseError(gpu::error::Error error);
 

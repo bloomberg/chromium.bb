@@ -6274,7 +6274,13 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
 
 error::Error GLES2DecoderImpl::HandleSetLatchCHROMIUM(
     uint32 immediate_data_size, const gles2::SetLatchCHROMIUM& c) {
-  int32 shm_id = c.shm_id;
+  // Ensure the side effects of previous commands are visible to other contexts.
+  // There is no need to do this for ANGLE because it uses a
+  // single D3D device for all contexts.
+  if (!IsAngle())
+    glFlush();
+
+  int32 shm_id = gpu::kLatchSharedMemoryId;
   uint32 latch_id = c.latch_id;
   uint32 shm_offset = 0;
   base::subtle::Atomic32* latch;
@@ -6292,7 +6298,7 @@ error::Error GLES2DecoderImpl::HandleSetLatchCHROMIUM(
 
 error::Error GLES2DecoderImpl::HandleWaitLatchCHROMIUM(
     uint32 immediate_data_size, const gles2::WaitLatchCHROMIUM& c) {
-  int32 shm_id = c.shm_id;
+  int32 shm_id = gpu::kLatchSharedMemoryId;
   uint32 latch_id = c.latch_id;
   uint32 shm_offset = 0;
   base::subtle::Atomic32* latch;

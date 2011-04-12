@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -139,7 +139,7 @@ void CommandBufferPepper::SetGetOffset(int32 get_offset) {
   GPU_NOTREACHED();
 }
 
-int32 CommandBufferPepper::CreateTransferBuffer(size_t size) {
+int32 CommandBufferPepper::CreateTransferBuffer(size_t size, int32 id_request) {
   int32_t id;
   if (NPERR_NO_ERROR != device_->createBuffer(npp_, context_, size, &id))
     return -1;
@@ -149,7 +149,8 @@ int32 CommandBufferPepper::CreateTransferBuffer(size_t size) {
 
 int32 CommandBufferPepper::RegisterTransferBuffer(
     base::SharedMemory* shared_memory,
-    size_t size) {
+    size_t size,
+    int32 id_request) {
   // Not implemented by proxy.
   GPU_NOTREACHED();
   return -1;

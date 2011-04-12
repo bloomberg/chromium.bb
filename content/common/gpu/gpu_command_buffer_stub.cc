@@ -309,13 +309,16 @@ void GpuCommandBufferStub::OnAsyncFlush(int32 put_offset) {
   Send(new GpuCommandBufferMsg_UpdateState(route_id_, state));
 }
 
-void GpuCommandBufferStub::OnCreateTransferBuffer(int32 size, int32* id) {
-  *id = command_buffer_->CreateTransferBuffer(size);
+void GpuCommandBufferStub::OnCreateTransferBuffer(int32 size,
+                                                  int32 id_request,
+                                                  int32* id) {
+  *id = command_buffer_->CreateTransferBuffer(size, id_request);
 }
 
 void GpuCommandBufferStub::OnRegisterTransferBuffer(
     base::SharedMemoryHandle transfer_buffer,
     size_t size,
+    int32 id_request,
     int32* id) {
 #if defined(OS_WIN)
   // Windows dups the shared memory handle it receives into the current process
@@ -329,7 +332,8 @@ void GpuCommandBufferStub::OnRegisterTransferBuffer(
   base::SharedMemory shared_memory(transfer_buffer, false);
 #endif
 
-  *id = command_buffer_->RegisterTransferBuffer(&shared_memory, size);
+  *id = command_buffer_->RegisterTransferBuffer(&shared_memory, size,
+                                                id_request);
 }
 
 void GpuCommandBufferStub::OnDestroyTransferBuffer(int32 id) {

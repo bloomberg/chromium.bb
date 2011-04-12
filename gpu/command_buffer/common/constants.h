@@ -40,6 +40,12 @@ namespace error {
 // failure.
 const int32 kInvalidSharedMemoryId = -1;
 
+// Common Command Buffer shared memory transfer buffer ID.
+const int32 kCommandBufferSharedMemoryId = 4;
+
+// Common Latch shared memory transfer buffer ID.
+const int32 kLatchSharedMemoryId = 5;
+
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_CONSTANTS_H_

@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/gl/gl_implementation.h"
 
 using ::gfx::MockGLInterface;
 using ::testing::_;
@@ -2873,6 +2874,13 @@ TEST_F(GLES2DecoderWithShaderTest, VertexAttribPointer) {
 }
 
 TEST_F(GLES2DecoderTest, SetLatch) {
+  bool isAngle = false;
+#if defined(OS_WIN)
+  isAngle = (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2);
+#endif
+  if (!isAngle) {
+    EXPECT_CALL(*gl_, Flush()).Times(3);
+  }
   const uint32 kLatchId = 1;
   base::subtle::Atomic32* latches = static_cast<base::subtle::Atomic32*>(
       shared_memory_base_);
@@ -2881,20 +2889,17 @@ TEST_F(GLES2DecoderTest, SetLatch) {
   latches[kLatchId] = 0;
   latches[kLastValidLatchId] = 0;
   SetLatchCHROMIUM cmd;
-  // Check bad shared memory id.
-  cmd.Init(kInvalidSharedMemoryId, kLatchId);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
   // Check out of range latch id.
-  cmd.Init(shared_memory_id_, kInvalidLatchId);
+  cmd.Init(kInvalidLatchId);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  cmd.Init(shared_memory_id_, kLatchId);
+  cmd.Init(kLatchId);
   // Check valid latch.
   EXPECT_EQ(0, latches[kLatchId]);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(1, latches[kLatchId]);
   // Check last valid latch.
   EXPECT_EQ(0, latches[kLastValidLatchId]);
-  cmd.Init(shared_memory_id_, kLastValidLatchId);
+  cmd.Init(kLastValidLatchId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(1, latches[kLastValidLatchId]);
 }
@@ -2908,21 +2913,18 @@ TEST_F(GLES2DecoderTest, WaitLatch) {
   latches[kLatchId] = 0;
   latches[kLastValidLatchId] = 0;
   WaitLatchCHROMIUM cmd;
-  // Check bad shared memory id.
-  cmd.Init(kInvalidSharedMemoryId, kLatchId);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
   // Check out of range latch id.
-  cmd.Init(shared_memory_id_, kInvalidLatchId);
+  cmd.Init(kInvalidLatchId);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
   // Check valid latch.
-  cmd.Init(shared_memory_id_, kLatchId);
+  cmd.Init(kLatchId);
   EXPECT_EQ(0, latches[kLatchId]);
   EXPECT_EQ(error::kWaiting, ExecuteCmd(cmd));
   latches[kLatchId] = 1;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0, latches[kLatchId]);
   // Check last valid latch.
-  cmd.Init(shared_memory_id_, kLastValidLatchId);
+  cmd.Init(kLastValidLatchId);
   EXPECT_EQ(0, latches[kLastValidLatchId]);
   EXPECT_EQ(error::kWaiting, ExecuteCmd(cmd));
   latches[kLastValidLatchId] = 1;

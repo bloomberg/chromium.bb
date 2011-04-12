@@ -877,15 +877,13 @@ void GLES2RequestExtensionCHROMIUM(const char* extension) {
   GPU_CLIENT_LOG("RequestExtensionCHROMIUM" << "(" << extension << ")");
   gles2::GetGLContext()->RequestExtensionCHROMIUM(extension);
 }
-void GLES2SetLatchCHROMIUM(GLint shm_id, GLuint latch_id) {
-  GPU_CLIENT_LOG(
-      "SetLatchCHROMIUM" << "(" << shm_id << ", " << latch_id << ")");
-  gles2::GetGLContext()->SetLatchCHROMIUM(shm_id, latch_id);
+void GLES2SetLatchCHROMIUM(GLuint latch_id) {
+  GPU_CLIENT_LOG("SetLatchCHROMIUM" << "(" << latch_id << ")");
+  gles2::GetGLContext()->SetLatchCHROMIUM(latch_id);
 }
-void GLES2WaitLatchCHROMIUM(GLint shm_id, GLuint latch_id) {
-  GPU_CLIENT_LOG(
-      "WaitLatchCHROMIUM" << "(" << shm_id << ", " << latch_id << ")");
-  gles2::GetGLContext()->WaitLatchCHROMIUM(shm_id, latch_id);
+void GLES2WaitLatchCHROMIUM(GLuint latch_id) {
+  GPU_CLIENT_LOG("WaitLatchCHROMIUM" << "(" << latch_id << ")");
+  gles2::GetGLContext()->WaitLatchCHROMIUM(latch_id);
 }
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_

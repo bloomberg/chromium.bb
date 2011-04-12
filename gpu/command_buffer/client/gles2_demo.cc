@@ -78,7 +78,7 @@ bool GLES2Demo::Setup(void* hwnd, int32 size) {
 
   size_t transfer_buffer_size = 512 * 1024;
   int32 transfer_buffer_id =
-      command_buffer->CreateTransferBuffer(transfer_buffer_size);
+      command_buffer->CreateTransferBuffer(transfer_buffer_size, -1);
   Buffer transfer_buffer =
       command_buffer->GetTransferBuffer(transfer_buffer_id);
   if (!transfer_buffer.ptr)

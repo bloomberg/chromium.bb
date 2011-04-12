@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,7 +62,7 @@ class GLES2MockCommandBufferHelper : public CommandBuffer {
     state_.get_offset = get_offset;
   }
 
-  virtual int32 CreateTransferBuffer(size_t size) {
+  virtual int32 CreateTransferBuffer(size_t size, int32 id_request) {
     transfer_buffer_.reset(new int8[size]);
     transfer_buffer_buffer_.ptr = transfer_buffer_.get();
     transfer_buffer_buffer_.size = size;
@@ -79,7 +79,8 @@ class GLES2MockCommandBufferHelper : public CommandBuffer {
   }
 
   virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
-                                       size_t size) {
+                                       size_t size,
+                                       int32 id_request) {
     GPU_NOTREACHED();
     return -1;
   }
@@ -189,7 +190,7 @@ class GLES2ImplementationTest : public testing::Test {
     command_buffer_->Initialize(kCommandBufferSizeBytes);
 
     EXPECT_EQ(kTransferBufferId,
-              command_buffer_->CreateTransferBuffer(kTransferBufferSize));
+              command_buffer_->CreateTransferBuffer(kTransferBufferSize, -1));
     transfer_buffer_ = command_buffer_->GetTransferBuffer(kTransferBufferId);
     ClearTransferBuffer();
 

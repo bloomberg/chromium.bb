@@ -82,9 +82,10 @@ class GpuCommandBufferStub
   void OnAsyncGetState();
   void OnFlush(int32 put_offset, gpu::CommandBuffer::State* state);
   void OnAsyncFlush(int32 put_offset);
-  void OnCreateTransferBuffer(int32 size, int32* id);
+  void OnCreateTransferBuffer(int32 size, int32 id_request, int32* id);
   void OnRegisterTransferBuffer(base::SharedMemoryHandle transfer_buffer,
                                 size_t size,
+                                int32 id_request,
                                 int32* id);
   void OnDestroyTransferBuffer(int32 id);
   void OnGetTransferBuffer(int32 id,

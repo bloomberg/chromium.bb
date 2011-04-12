@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,7 +77,7 @@ PGLBoolean PGLContextImpl::Initialize(int32 transfer_buffer_size) {
   gpu::Buffer buffer = command_buffer_->GetRingBuffer();
   if (gles2_helper_->Initialize(buffer.size)) {
     transfer_buffer_id_ =
-        command_buffer_->CreateTransferBuffer(kTransferBufferSize);
+        command_buffer_->CreateTransferBuffer(kTransferBufferSize, -1);
     gpu::Buffer transfer_buffer =
         command_buffer_->GetTransferBuffer(transfer_buffer_id_);
     if (transfer_buffer.ptr) {

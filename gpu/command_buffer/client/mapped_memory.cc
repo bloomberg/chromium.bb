@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,7 @@ void* MappedMemoryManager::Alloc(
 
   // Make a new chunk to satisfy the request.
   CommandBuffer* cmd_buf = helper_->command_buffer();
-  int32 id = cmd_buf->CreateTransferBuffer(size);
+  int32 id = cmd_buf->CreateTransferBuffer(size, -1);
   if (id == -1) {
     return NULL;
   }

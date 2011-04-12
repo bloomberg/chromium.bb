@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -199,7 +199,7 @@ int32_t CreateTransferBuffer(PP_Resource context_id, uint32_t size) {
       Resource::GetAs<PPB_Context3D_Impl>(context_id));
   if (!context.get() || !context->command_buffer())
     return 0;
-  return context->command_buffer()->CreateTransferBuffer(size);
+  return context->command_buffer()->CreateTransferBuffer(size, -1);
 }
 
 PP_Bool DestroyTransferBuffer(PP_Resource context_id, int32_t id) {
@@ -310,7 +310,7 @@ bool PPB_Context3D_Impl::CreateImplementation() {
   // Create a transfer buffer used to copy resources between the renderer
   // process and the GPU process.
   transfer_buffer_id_ =
-      command_buffer->CreateTransferBuffer(kTransferBufferSize);
+      command_buffer->CreateTransferBuffer(kTransferBufferSize, -1);
   if (transfer_buffer_id_ < 0)
     return false;
 

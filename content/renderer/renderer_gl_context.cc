@@ -6,7 +6,12 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
+#include "base/shared_memory.h"
+#include "chrome/renderer/render_thread.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/command_buffer_proxy.h"
 #include "content/renderer/gpu_channel_host.h"
 #include "content/renderer/gpu_video_service_host.h"
@@ -33,6 +38,9 @@ const int32 kCommandBufferSize = 1024 * 1024;
 // creation attributes.
 const int32 kTransferBufferSize = 1024 * 1024;
 
+const uint32 kMaxLatchesPerRenderer = 2048;
+const uint32 kInvalidLatchId = 0xffffffffu;
+
 // Singleton used to initialize and terminate the gles2 library.
 class GLES2Initializer {
  public:
@@ -47,6 +55,95 @@ class GLES2Initializer {
  private:
   DISALLOW_COPY_AND_ASSIGN(GLES2Initializer);
 };
+
+// Shared memory allocator for latches. Creates a block of shared memory for
+// each renderer process.
+class LatchAllocator {
+ public:
+  static LatchAllocator* GetInstance();
+  static uint32 size() { return kMaxLatchesPerRenderer*sizeof(uint32); }
+  static const uint32_t kFreeLatch = 0xffffffffu;
+
+  LatchAllocator();
+  ~LatchAllocator();
+
+  base::SharedMemoryHandle handle() const { return shm_->handle(); }
+  base::SharedMemory* shared_memory() { return shm_.get(); }
+
+  bool AllocateLatch(uint32* latch_id);
+  bool FreeLatch(uint32 latch_id);
+
+ private:
+  friend struct DefaultSingletonTraits<LatchAllocator>;
+
+  scoped_ptr<base::SharedMemory> shm_;
+  // Pointer to mapped shared memory.
+  volatile uint32* latches_;
+
+  DISALLOW_COPY_AND_ASSIGN(LatchAllocator);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+/// LatchAllocator implementation
+
+LatchAllocator* LatchAllocator::GetInstance() {
+  return Singleton<LatchAllocator>::get();
+}
+
+LatchAllocator::LatchAllocator() {
+  base::SharedMemoryHandle handle;
+  RenderThread* render_thread = RenderThread::current();
+  if (!render_thread->Send(
+      new ViewHostMsg_AllocateSharedMemoryBuffer(size(), &handle))) {
+    NOTREACHED() << "failed to send sync IPC";
+  }
+
+  if (!base::SharedMemory::IsHandleValid(handle)) {
+    NOTREACHED() << "failed to create shared memory";
+  }
+
+  // Handle is closed by the SharedMemory object below. This stops
+  // base::FileDescriptor from closing it as well.
+#if defined(OS_POSIX)
+  handle.auto_close = false;
+#endif
+
+  shm_.reset(new base::SharedMemory(handle, false));
+  if (!shm_->Map(size())) {
+    NOTREACHED() << "failed to map shared memory";
+  }
+
+  latches_ = static_cast<uint32*>(shm_->memory());
+  // Mark all latches as unallocated.
+  for (uint32 i = 0; i < kMaxLatchesPerRenderer; ++i)
+    latches_[i] = kFreeLatch;
+}
+
+LatchAllocator::~LatchAllocator() {
+}
+
+bool LatchAllocator::AllocateLatch(uint32* latch_id) {
+  for (uint32 i = 0; i < kMaxLatchesPerRenderer; ++i) {
+    if (latches_[i] == kFreeLatch) {
+      // mark latch as taken and blocked.
+      // 0 means waiter will block, 1 means waiter will pass.
+      latches_[i] = 0;
+      *latch_id = i;
+      return true;
+    }
+  }
+  return false;
+}
+
+bool LatchAllocator::FreeLatch(uint32 latch_id) {
+  if (latch_id < kMaxLatchesPerRenderer && latches_[latch_id] != kFreeLatch) {
+    latches_[latch_id] = kFreeLatch;
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 static base::LazyInstance<GLES2Initializer> g_gles2_initializer(
     base::LINKER_INITIALIZED);
@@ -257,9 +354,12 @@ RendererGLContext::RendererGLContext(GpuChannelHost* channel,
       parent_(parent ?
           parent->AsWeakPtr() : base::WeakPtr<RendererGLContext>()),
       parent_texture_id_(0),
+      child_to_parent_latch_(kInvalidLatchId),
+      parent_to_child_latch_(kInvalidLatchId),
+      latch_transfer_buffer_id_(-1),
       command_buffer_(NULL),
       gles2_helper_(NULL),
-      transfer_buffer_id_(0),
+      transfer_buffer_id_(-1),
       gles2_implementation_(NULL),
       last_error_(SUCCESS) {
   DCHECK(channel);
@@ -361,7 +461,8 @@ bool RendererGLContext::Initialize(bool onscreen,
   // Create a transfer buffer used to copy resources between the renderer
   // process and the GPU process.
   transfer_buffer_id_ =
-      command_buffer_->CreateTransferBuffer(kTransferBufferSize);
+      command_buffer_->CreateTransferBuffer(kTransferBufferSize,
+                                            gpu::kCommandBufferSharedMemoryId);
   if (transfer_buffer_id_ < 0) {
     Destroy();
     return false;
@@ -373,6 +474,26 @@ bool RendererGLContext::Initialize(bool onscreen,
   if (!transfer_buffer.ptr) {
     Destroy();
     return false;
+  }
+
+  // Register transfer buffer so that the context can access latches.
+  LatchAllocator* latch_shm = LatchAllocator::GetInstance();
+  latch_transfer_buffer_id_ = command_buffer_->RegisterTransferBuffer(
+      latch_shm->shared_memory(), LatchAllocator::size(),
+      gpu::kLatchSharedMemoryId);
+  if (latch_transfer_buffer_id_ != gpu::kLatchSharedMemoryId) {
+    Destroy();
+    return false;
+  }
+
+  // If this is a child context, setup latches for synchronization between child
+  // and parent.
+  if (parent_.get()) {
+    if (!CreateLatch(&child_to_parent_latch_) ||
+        !CreateLatch(&parent_to_child_latch_)) {
+      Destroy();
+      return false;
+    }
   }
 
   // Create the object exposing the OpenGL API.
@@ -389,15 +510,30 @@ bool RendererGLContext::Initialize(bool onscreen,
 }
 
 void RendererGLContext::Destroy() {
-  if (parent_.get() && parent_texture_id_ != 0)
+  if (parent_.get() && parent_texture_id_ != 0) {
     parent_->gles2_implementation_->FreeTextureId(parent_texture_id_);
+    parent_texture_id_ = 0;
+  }
 
   delete gles2_implementation_;
   gles2_implementation_ = NULL;
 
-  if (command_buffer_ && transfer_buffer_id_ != 0) {
+  if (child_to_parent_latch_ != kInvalidLatchId) {
+    DestroyLatch(child_to_parent_latch_);
+    child_to_parent_latch_ = kInvalidLatchId;
+  }
+  if (parent_to_child_latch_ != kInvalidLatchId) {
+    DestroyLatch(parent_to_child_latch_);
+    parent_to_child_latch_ = kInvalidLatchId;
+  }
+  if (command_buffer_ && latch_transfer_buffer_id_ != -1) {
+    command_buffer_->DestroyTransferBuffer(latch_transfer_buffer_id_);
+    latch_transfer_buffer_id_ = -1;
+  }
+
+  if (command_buffer_ && transfer_buffer_id_ != -1) {
     command_buffer_->DestroyTransferBuffer(transfer_buffer_id_);
-    transfer_buffer_id_ = 0;
+    transfer_buffer_id_ = -1;
   }
 
   delete gles2_helper_;
@@ -420,3 +556,28 @@ void RendererGLContext::OnContextLost() {
   if (context_lost_callback_.get())
     context_lost_callback_->Run();
 }
+
+bool RendererGLContext::CreateLatch(uint32* ret_latch) {
+  return LatchAllocator::GetInstance()->AllocateLatch(ret_latch);
+}
+
+bool RendererGLContext::DestroyLatch(uint32 latch) {
+  return LatchAllocator::GetInstance()->FreeLatch(latch);
+}
+
+bool RendererGLContext::GetParentToChildLatch(uint32* parent_to_child_latch) {
+  if (parent_.get()) {
+    *parent_to_child_latch = parent_to_child_latch_;
+    return true;
+  }
+  return false;
+}
+
+bool RendererGLContext::GetChildToParentLatch(uint32* child_to_parent_latch) {
+  if (parent_.get()) {
+    *child_to_parent_latch = child_to_parent_latch_;
+    return true;
+  }
+  return false;
+}
+

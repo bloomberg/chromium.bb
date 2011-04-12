@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -165,7 +165,7 @@ void CommandBufferProxy::SetGetOffset(int32 get_offset) {
   NOTREACHED();
 }
 
-int32 CommandBufferProxy::CreateTransferBuffer(size_t size) {
+int32 CommandBufferProxy::CreateTransferBuffer(size_t size, int32 id_request) {
   if (last_state_.error != gpu::error::kNoError)
     return -1;
 
@@ -198,6 +198,7 @@ int32 CommandBufferProxy::CreateTransferBuffer(size_t size) {
   if (!Send(new GpuCommandBufferMsg_RegisterTransferBuffer(route_id_,
                                                            handle,
                                                            size,
+                                                           id_request,
                                                            &id))) {
     return -1;
   }
@@ -207,7 +208,8 @@ int32 CommandBufferProxy::CreateTransferBuffer(size_t size) {
 
 int32 CommandBufferProxy::RegisterTransferBuffer(
     base::SharedMemory* shared_memory,
-    size_t size) {
+    size_t size,
+    int32 id_request) {
   if (last_state_.error != gpu::error::kNoError)
     return -1;
 
@@ -216,6 +218,7 @@ int32 CommandBufferProxy::RegisterTransferBuffer(
       route_id_,
       shared_memory->handle(),  // Returns FileDescriptor with auto_close off.
       size,
+      id_request,
       &id))) {
     return -1;
   }

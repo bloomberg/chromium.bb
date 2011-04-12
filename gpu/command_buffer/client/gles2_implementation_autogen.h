@@ -889,12 +889,12 @@ const GLchar* GetRequestableExtensionsCHROMIUM();
 
 void RequestExtensionCHROMIUM(const char* extension);
 
-void SetLatchCHROMIUM(GLint shm_id, GLuint latch_id) {
-  helper_->SetLatchCHROMIUM(shm_id, latch_id);
+void SetLatchCHROMIUM(GLuint latch_id) {
+  helper_->SetLatchCHROMIUM(latch_id);
 }
 
-void WaitLatchCHROMIUM(GLint shm_id, GLuint latch_id) {
-  helper_->WaitLatchCHROMIUM(shm_id, latch_id);
+void WaitLatchCHROMIUM(GLuint latch_id) {
+  helper_->WaitLatchCHROMIUM(latch_id);
 }
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_

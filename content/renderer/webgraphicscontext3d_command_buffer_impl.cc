@@ -340,6 +340,41 @@ void WebGraphicsContext3DCommandBufferImpl::copyTextureToParentTextureCHROMIUM(
   copyTextureToCompositor(texture, parentTexture);
 }
 
+void WebGraphicsContext3DCommandBufferImpl::getParentToChildLatchCHROMIUM(
+    WGC3Duint* latch_id)
+{
+  if (!context_->GetParentToChildLatch(latch_id)) {
+    LOG(ERROR) << "getLatch must only be called on child context";
+    synthesizeGLError(GL_INVALID_OPERATION);
+    *latch_id = 0xffffffffu;
+  }
+}
+
+void WebGraphicsContext3DCommandBufferImpl::getChildToParentLatchCHROMIUM(
+    WGC3Duint* latch_id)
+{
+  if (!context_->GetChildToParentLatch(latch_id)) {
+    LOG(ERROR) << "getLatch must only be called on child context";
+    synthesizeGLError(GL_INVALID_OPERATION);
+    *latch_id = 0xffffffffu;
+  }
+}
+
+void WebGraphicsContext3DCommandBufferImpl::waitLatchCHROMIUM(
+    WGC3Duint latch_id)
+{
+  makeContextCurrent();
+  glWaitLatchCHROMIUM(latch_id);
+}
+
+void WebGraphicsContext3DCommandBufferImpl::setLatchCHROMIUM(
+    WGC3Duint latch_id)
+{
+  makeContextCurrent();
+  glSetLatchCHROMIUM(latch_id);
+  glFlush(); // required to ensure set command is sent to GPU process
+}
+
 WebKit::WebString WebGraphicsContext3DCommandBufferImpl::
     getRequestableExtensionsCHROMIUM() {
   return WebKit::WebString::fromUTF8(glGetRequestableExtensionsCHROMIUM());

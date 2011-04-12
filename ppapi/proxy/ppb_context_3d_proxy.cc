@@ -183,9 +183,10 @@ class PepperCommandBuffer : public gpu::CommandBuffer {
   virtual void Flush(int32 put_offset);
   virtual State FlushSync(int32 put_offset);
   virtual void SetGetOffset(int32 get_offset);
-  virtual int32 CreateTransferBuffer(size_t size);
+  virtual int32 CreateTransferBuffer(size_t size, int32 id_request);
   virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
-                                       size_t size);
+                                       size_t size,
+                                       int32 id_request);
   virtual void DestroyTransferBuffer(int32 id);
   virtual gpu::Buffer GetTransferBuffer(int32 handle);
   virtual void SetToken(int32 token);
@@ -303,7 +304,7 @@ void PepperCommandBuffer::SetGetOffset(int32 get_offset) {
   NOTREACHED();
 }
 
-int32 PepperCommandBuffer::CreateTransferBuffer(size_t size) {
+int32 PepperCommandBuffer::CreateTransferBuffer(size_t size, int32 id_request) {
   if (last_state_.error == gpu::error::kNoError) {
     int32 id;
     if (Send(new PpapiHostMsg_PPBContext3D_CreateTransferBuffer(
@@ -317,7 +318,8 @@ int32 PepperCommandBuffer::CreateTransferBuffer(size_t size) {
 
 int32 PepperCommandBuffer::RegisterTransferBuffer(
     base::SharedMemory* shared_memory,
-    size_t size) {
+    size_t size,
+    int32 id_request) {
   // Not implemented in proxy.
   NOTREACHED();
   return -1;
@@ -425,7 +427,7 @@ bool Context3D::CreateImplementation() {
     return false;
 
   transfer_buffer_id_ =
-      command_buffer_->CreateTransferBuffer(kTransferBufferSize);
+      command_buffer_->CreateTransferBuffer(kTransferBufferSize, -1);
   if (transfer_buffer_id_ < 0)
     return false;
 

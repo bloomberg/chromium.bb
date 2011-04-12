@@ -962,12 +962,12 @@ typedef void (GL_APIENTRYP PFNGLREQUESTEXTENSIONCHROMIUM) (const GLchar *extensi
 #define glSetLatchCHROMIUM  GLES2_GET_FUN(SetLatchCHROMIUM)
 #define glWaitLatchCHROMIUM GLES2_GET_FUN(WaitLatchCHROMIUM)
 #if !defined(GLES2_USE_CPP_BINDINGS)
-GL_APICALL void GL_APIENTRY glSetLatchCHROMIUM (GLint shm_id, GLuint latch_id);
-GL_APICALL void GL_APIENTRY glWaitLatchCHROMIUM (GLint shm_id, GLuint latch_id);
+GL_APICALL void GL_APIENTRY glSetLatchCHROMIUM (GLuint latch_id);
+GL_APICALL void GL_APIENTRY glWaitLatchCHROMIUM (GLuint latch_id);
 #endif
 #else
-typedef void (GL_APIENTRYP PFNGLSETLATCHCHROMIUM) (GLint shm_id, GLuint latch_id);
-typedef void (GL_APIENTRYP PFNGLWaitLATCHCHROMIUM) (GLint shm_id, GLuint latch_id);
+typedef void (GL_APIENTRYP PFNGLSETLATCHCHROMIUM) (GLuint latch_id);
+typedef void (GL_APIENTRYP PFNGLWaitLATCHCHROMIUM) (GLuint latch_id);
 #endif
 #endif
 

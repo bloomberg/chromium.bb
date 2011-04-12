@@ -403,6 +403,11 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void copyTextureToParentTextureCHROMIUM(
       WebGLId texture, WebGLId parentTexture);
 
+  virtual void getParentToChildLatchCHROMIUM(WGC3Duint* latch_id);
+  virtual void getChildToParentLatchCHROMIUM(WGC3Duint* latch_id);
+  virtual void waitLatchCHROMIUM(WGC3Duint latch_id);
+  virtual void setLatchCHROMIUM(WGC3Duint latch_id);
+
   virtual WebKit::WebString getRequestableExtensionsCHROMIUM();
   virtual void requestExtensionCHROMIUM(const char*);
 

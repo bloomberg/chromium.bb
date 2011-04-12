@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,14 +84,21 @@ class CommandBuffer {
   virtual void SetGetOffset(int32 get_offset) = 0;
 
   // Create a transfer buffer and return a handle that uniquely
-  // identifies it or -1 on error.
-  virtual int32 CreateTransferBuffer(size_t size) = 0;
+  // identifies it or -1 on error. id_request lets the caller request a
+  // specific id for the transfer buffer, or -1 if the caller does not care.
+  // If the requested id can not be fulfilled, a different id will be returned.
+  // id_request must be either -1 or between 0 and 100.
+  virtual int32 CreateTransferBuffer(size_t size, int32 id_request) = 0;
 
   // Register an existing shared memory object and get an ID that can be used
   // to identify it in the command buffer. Callee dups the handle until
-  // DestroyTransferBuffer is called.
+  // DestroyTransferBuffer is called. id_request lets the caller request a
+  // specific id for the transfer buffer, or -1 if the caller does not care.
+  // If the requested id can not be fulfilled, a different id will be returned.
+  // id_request must be either -1 or between 0 and 100.
   virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
-                                       size_t size) = 0;
+                                       size_t size,
+                                       int32 id_request) = 0;
 
   // Destroy a transfer buffer and recycle the handle.
   virtual void DestroyTransferBuffer(int32 id) = 0;

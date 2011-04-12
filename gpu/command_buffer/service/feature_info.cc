@@ -107,6 +107,7 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   AddExtensionString("GL_CHROMIUM_resource_safe");
   AddExtensionString("GL_CHROMIUM_resize");
   AddExtensionString("GL_CHROMIUM_strict_attribs");
+  AddExtensionString("GL_CHROMIUM_latch");
 
   // Only turn this feature on if it is requested. Not by default.
   if (desired_features && ext.Desire("GL_CHROMIUM_webglsl")) {

@@ -363,15 +363,17 @@ IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_SwapBuffers)
 
 // Create a shared memory transfer buffer. Returns an id that can be used to
 // identify the transfer buffer from a comment.
-IPC_SYNC_MESSAGE_ROUTED1_1(GpuCommandBufferMsg_CreateTransferBuffer,
+IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_CreateTransferBuffer,
                            int32 /* size */,
+                           int32 /* id_request (-1 means any) */,
                            int32 /* id */)
 
 // Register an existing shared memory transfer buffer. Returns an id that can be
 // used to identify the transfer buffer from a command buffer.
-IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_RegisterTransferBuffer,
+IPC_SYNC_MESSAGE_ROUTED3_1(GpuCommandBufferMsg_RegisterTransferBuffer,
                            base::SharedMemoryHandle /* transfer_buffer */,
                            size_t /* size */,
+                           int32 /* id_request (-1 means any) */,
                            int32 /* id */)
 
 // Destroy a previously created transfer buffer.

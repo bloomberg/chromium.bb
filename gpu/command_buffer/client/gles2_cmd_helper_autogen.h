@@ -1215,14 +1215,14 @@
     c.Init(bucket_id);
   }
 
-  void SetLatchCHROMIUM(GLint shm_id, GLuint latch_id) {
+  void SetLatchCHROMIUM(GLuint latch_id) {
     gles2::SetLatchCHROMIUM& c = GetCmdSpace<gles2::SetLatchCHROMIUM>();
-    c.Init(shm_id, latch_id);
+    c.Init(latch_id);
   }
 
-  void WaitLatchCHROMIUM(GLint shm_id, GLuint latch_id) {
+  void WaitLatchCHROMIUM(GLuint latch_id) {
     gles2::WaitLatchCHROMIUM& c = GetCmdSpace<gles2::WaitLatchCHROMIUM>();
-    c.Init(shm_id, latch_id);
+    c.Init(latch_id);
   }
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
