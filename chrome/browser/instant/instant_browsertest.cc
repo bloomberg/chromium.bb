@@ -771,9 +771,9 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DontCrashOnBlockedJS) {
   // As long as we get the notification we're good (the renderer didn't crash).
 }
 
-// Flaky on views on linux: 77168.
+// Crashes on linux: http://crbug.com/77168.
 #if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
-#define MAYBE_DownloadOnEnter FLAKY_DownloadOnEnter
+#define MAYBE_DownloadOnEnter DISABLED_DownloadOnEnter
 #else
 #define MAYBE_DownloadOnEnter DownloadOnEnter
 #endif
