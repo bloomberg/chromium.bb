@@ -253,6 +253,7 @@ void MouseMove(views::Widget* widget) {
   ui_controls::SendMouseMove(10, 10);
 }
 
+// Crashes on chromeos.  http://crbug.com/79164
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestNoPasswordWithMouseMove) {
   TestNoPassword(MouseMove);
 }
@@ -261,6 +262,7 @@ void MouseClick(views::Widget* widget) {
   ui_controls::SendMouseClick(ui_controls::RIGHT);
 }
 
+// Crashes on chromeos.  http://crbug.com/79164
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest,
     DISABLED_TestNoPasswordWithMouseClick) {
   TestNoPassword(MouseClick);
@@ -271,6 +273,7 @@ void KeyPress(views::Widget* widget) {
                             ui::VKEY_SPACE, false, false, false, false);
 }
 
+// Crashes on chromeos.  http://crbug.com/79164
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestNoPasswordWithKeyPress) {
   TestNoPassword(KeyPress);
 }
