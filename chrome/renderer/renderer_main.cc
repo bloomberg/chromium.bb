@@ -38,13 +38,35 @@
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_MACOSX)
+#include <Carbon/Carbon.h>  // TISCreateInputSourceList
+
 #include "base/eintr_wrapper.h"
 #include "chrome/app/breakpad_mac.h"
+#include "third_party/mach_override/mach_override.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #endif  // OS_MACOSX
 
 #if defined(OS_MACOSX)
 namespace {
+
+CFArrayRef ChromeTISCreateInputSourceList(
+   CFDictionaryRef properties,
+   Boolean includeAllInstalled) {
+  CFTypeRef values[] = { CFSTR("") };
+  return CFArrayCreate(
+      kCFAllocatorDefault, values, arraysize(values), &kCFTypeArrayCallBacks);
+}
+
+void InstallFrameworkHacks() {
+  // See http://crbug.com/31225
+  // TODO: Don't do this on newer OS X revisions that have a fix for
+  // http://openradar.appspot.com/radar?id=1156410
+  mach_error_t err = mach_override_ptr(
+      (void*)&TISCreateInputSourceList,
+      (void*)&ChromeTISCreateInputSourceList,
+      NULL);
+  CHECK_EQ(err_none, err);
+}
 
 // TODO(viettrungluu): crbug.com/28547: The following signal handling is needed,
 // as a stopgap, to avoid leaking due to not releasing Breakpad properly.
@@ -231,6 +253,8 @@ int RendererMain(const MainFunctionParams& parameters) {
   memset(&action, 0, sizeof(action));
   action.sa_handler = SIGTERMHandler;
   CHECK(sigaction(SIGTERM, &action, NULL) == 0);
+
+  InstallFrameworkHacks();
 #endif  // OS_MACOSX
 
 #if defined(OS_CHROMEOS)

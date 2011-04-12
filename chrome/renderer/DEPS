@@ -18,6 +18,7 @@ include_rules = [
   "+webkit/plugins",
   "+v8/include",
   "+third_party/cld/encodings/compact_lang_det/win",
+  "+third_party/mach_override",
   "+third_party/npapi/bindings",
   "+third_party/sqlite",
   "+third_party/tcmalloc",
