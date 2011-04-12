@@ -9,7 +9,8 @@
 class ChromeProcessUtilTest : public UITest {
 };
 
-TEST_F(ChromeProcessUtilTest, SanityTest) {
+// Flaky on Mac only. See http://crbug.com/79175
+TEST_F(ChromeProcessUtilTest, FLAKY_SanityTest) {
   EXPECT_TRUE(IsBrowserRunning());
   ChromeProcessList processes = GetRunningChromeProcesses(browser_process_id());
   EXPECT_FALSE(processes.empty());
