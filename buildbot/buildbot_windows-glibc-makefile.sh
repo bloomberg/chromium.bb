@@ -63,7 +63,11 @@ echo @@@BUILD_STEP untar_toolchain@@@
   tar zSxf ../tools/toolchain.tgz
   find -L toolchain -type f -xtype l |
   while read name ; do
-    ln -Tf "$(readlink -f "$name")" "$name"
+    # Find gives us some files twice because there are symlinks.  Second time
+    # ‘ln’ with fail with ln: “‘xxx’ and ‘yyy’ are the same file” despite ‘-f’.
+    if [[ -L "$name" ]]; then
+      ln -Tf "$(readlink -f "$name")" "$name"
+    fi
   done
   mv toolchain ..
 )
