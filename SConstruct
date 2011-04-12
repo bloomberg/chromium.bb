@@ -1110,11 +1110,21 @@ def DownloadedChromeBinary(env):
 pre_base_env.AddMethod(DownloadedChromeBinary)
 
 
-def GetPPAPIPluginPath(env):
+def GetPPAPIPluginPath(env, redirect_windows=True):
   if env.Bit('mac'):
     return env.File('${STAGING_DIR}/ppNaClPlugin')
   else:
-    return env.File('${STAGING_DIR}/${SHLIBPREFIX}ppNaClPlugin${SHLIBSUFFIX}')
+    fn = env.File('${STAGING_DIR}/${SHLIBPREFIX}ppNaClPlugin${SHLIBSUFFIX}')
+    if env.Bit('windows') and env.Bit('target_x86_64') and redirect_windows:
+      # On win64, we need the 32-bit plugin because the browser is 32 bit.
+      # Unfortunately it is tricky to build the 32-bit plugin (and all the
+      # libraries it needs) in a 64-bit build... so we'll assume it has already
+      # been built in a previous invocation.
+      # TODO(ncbray) better 32/64 builds.
+      fn = env.subst(fn).abspath.replace('-win-x86-64', '-win-x86-32')
+    return fn
+
+pre_base_env.AddMethod(GetPPAPIPluginPath)
 
 
 def PPAPIBrowserTester(env,
@@ -1163,13 +1173,8 @@ pre_base_env.AddMethod(PPAPIBrowserTester)
 
 
 # Disabled for ARM because Chrome binaries for ARM are not available.
-# TODO(ncbray): Enable this on Windows 64 w/ dynamic plugin loading.
-# In this case, processes fail to terminate and windows thinks Chrome has hung.
 def PPAPIBrowserTesterIsBroken(env):
-  return (env.Bit('target_arm') or
-          (env.Bit('host_windows') and
-           env.Bit('target_x86_64') and
-           not env.Bit('disable_dynamic_plugin_loading')))
+  return env.Bit('target_arm')
 
 pre_base_env.AddMethod(PPAPIBrowserTesterIsBroken)
 

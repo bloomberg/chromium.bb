@@ -205,6 +205,7 @@ if not ppapi_env.Bit('chrome'):
     # we need this to build the plugin, so register it here
     ppapi_env.AddPluginPrerequisite([bundle_name])
 
+  ppapi_env.Alias('plugin', ppapi_env.GetPPAPIPluginPath(False))
 
 ###############################################################################
 # PPAPI Plugin Test

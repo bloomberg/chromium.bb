@@ -52,6 +52,14 @@ call vcvarsall.bat %VCBITS% && call scons.bat -j 8 ^
  -k --verbose --mode=%MODE%-win,nacl,doc platform=x86-%BITS%
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
+if %BITS% equ 32 goto NoNeedForPlugin
+echo @@@BUILD_STEP plugin_compile@@@
+call vcvarsall.bat x86 && call scons.bat -j 8 ^
+ DOXYGEN=..\third_party\doxygen\win\doxygen ^
+ -k --verbose --mode=%MODE%-win,nacl,doc platform=x86-32 plugin
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+:NoNeedForPlugin
+
 echo @@@BUILD_STEP small_tests@@@
 call vcvarsall.bat %VCBITS% && call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
