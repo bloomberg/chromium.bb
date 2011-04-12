@@ -13,6 +13,7 @@ set -u
 declare -A libraries=(
   [libppl0.10-dev]=p/ppl
   [libcloog-ppl-dev]=c/cloog-ppl
+  [libgmp3-dev]=g/gmp
   [libgmp-dev]=g/gmp
   [libmpfr-dev]=m/mpfr4
   [libmpc-dev]=m/mpclib
@@ -40,11 +41,18 @@ fi
 
 if ((EUID==0)); then
   install=1
-  apt-get install "${!libraries[@]}"
+  apt-get install "${!libraries[@]}" ||
+    unset libraries[libgmp-dev] && apt-get install "${!libraries[@]}"
 else
+  if ! dpkg -s libgmp-dev ; then
+    unset libraries[libgmp-dev]
+  fi
   echo "If libraries are not all installed please do:"
   echo "  sudo apt-get install ${!libraries[@]}"
   install=0
+fi
+if dpkg -s libgmp-dev ; then
+  unset libraries[libgmp3-dev]
 fi
 for library in "${!libraries[@]}"; do
   dpkg -s "$library" | grep Version |
