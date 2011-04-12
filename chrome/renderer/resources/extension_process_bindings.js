@@ -393,7 +393,6 @@ var chrome = chrome || {};
 
   function setupHiddenContextMenuEvent(extensionId) {
     chromeHidden.contextMenus = {};
-    chromeHidden.contextMenus.nextId = 1;
     chromeHidden.contextMenus.handlers = {};
     var eventName = "contextMenus";
     chromeHidden.contextMenus.event = new chrome.Event(eventName);
