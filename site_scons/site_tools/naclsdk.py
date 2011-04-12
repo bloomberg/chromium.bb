@@ -216,6 +216,16 @@ def _SetEnvForPnacl(env, root):
   pnacl_sdk_cc_native_flags = ' -std=gnu99 -arch %s' % arch
   pnacl_sdk_ld_flags = ' -arch %s' % arch
   pnacl_sdk_ld_flags += ' ' + ' '.join(env['PNACL_BCLDFLAGS'])
+
+  pnacl_bug_424_1588 = ''
+  if arch == 'arm' and not env.Bit('nacl_pic'):
+    # Turn on ONLY direct-mc for non PIC
+    # BUG=http://code.google.com/p/nativeclient/issues/detail?id=424
+    # This block can be deleted once ARM/ELF/MC is fully working
+    pnacl_bug_424_1588 += ' --pnacl-force-mc-direct'
+    pnacl_sdk_cc_flags += pnacl_bug_424_1588
+    pnacl_sdk_cxx_flags += pnacl_bug_424_1588
+
   if env.Bit('nacl_pic'):
     pnacl_sdk_cc_flags += ' -fPIC'
     pnacl_sdk_cxx_flags += ' -fPIC'
@@ -231,7 +241,7 @@ def _SetEnvForPnacl(env, root):
   nnacl_root = os.path.join(env['MAIN_DIR'], 'toolchain', '%s_x86' % platform)
 
   cc_other_map = {
-      'arm':    pnacl_sdk_cc + pnacl_sdk_cc_native_flags,
+      'arm':    pnacl_sdk_cc + pnacl_bug_424_1588 + pnacl_sdk_cc_native_flags,
       'x86-32': os.path.join(nnacl_root, 'bin', 'nacl-gcc'),
       'x86-64': os.path.join(nnacl_root, 'bin', 'nacl64-gcc'),
       }
