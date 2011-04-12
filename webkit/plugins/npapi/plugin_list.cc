@@ -124,7 +124,7 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
     "DivXWebPlayerInstaller.exe" },
   { "realplayer", PluginGroup::kRealPlayerGroupName, "RealPlayer",
     kRealPlayerVersionRange, arraysize(kRealPlayerVersionRange),
-    "http://www.real.com/realplayer/downloads" },
+    "http://www.real.com/realplayer/download" },
   // These are here for grouping, no vulnerabilities known.
   { "windows-media-player", "Windows Media Player", "Windows Media Player",
     NULL, 0, "" },
