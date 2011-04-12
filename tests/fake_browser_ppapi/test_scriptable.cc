@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
+ * Copyright 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
  * be found in the LICENSE file.
  */
@@ -64,6 +64,9 @@ PP_Var PropertyName(PP_VarType type) {
       return MakeString("propString");
     case PP_VARTYPE_OBJECT:
       return MakeString("propObject");
+    case PP_VARTYPE_ARRAY:
+    case PP_VARTYPE_DICTIONARY:
+      break;
   }
   NACL_NOTREACHED();
   return PP_MakeUndefined();
@@ -87,6 +90,9 @@ PP_Var MethodNameWith2Args(PP_VarType type) {
       return MakeString("methodStringWith2Args");
     case PP_VARTYPE_OBJECT:
       return MakeString("methodObjectWith2Args");
+    case PP_VARTYPE_ARRAY:
+    case PP_VARTYPE_DICTIONARY:
+      break;
   }
   NACL_NOTREACHED();
   return PP_MakeUndefined();
@@ -109,6 +115,9 @@ PP_Var PropertyValue(PP_VarType type) {
       return MakeString(kStringValue);
     case PP_VARTYPE_OBJECT:
       return g_instance_interface->GetWindowObject(g_instance_id);
+    case PP_VARTYPE_ARRAY:
+    case PP_VARTYPE_DICTIONARY:
+      break;
   }
   NACL_NOTREACHED();
   return PP_MakeUndefined();
@@ -146,6 +155,9 @@ PP_Bool PropertyIsValidValue(PP_VarType type, PP_Var value) {
       // quite complicated with proxies-to-proxies at the moment.
       return static_cast<PP_Bool>(value.type == PP_VARTYPE_OBJECT);
     }
+    case PP_VARTYPE_ARRAY:
+    case PP_VARTYPE_DICTIONARY:
+      break;
   }
   return PP_FALSE;
 }

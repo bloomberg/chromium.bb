@@ -87,14 +87,14 @@ int32_t BindSurfaces(PP_Resource context_id,
       PluginResource::GetAs<PluginContext3D>(context_id).get();
 
   if (!context)
-    return PP_GRAPHICS3DERROR_BAD_CONTEXT;
+    return PP_ERROR_BADRESOURCE;
 
   scoped_refptr<PluginSurface3D> draw =
       PluginResource::GetAs<PluginSurface3D>(draw_id).get();
 
   if (!draw.get()
       || !PluginResource::GetAs<PluginSurface3D>(read_id).get())
-    return PP_GRAPHICS3DERROR_BAD_SURFACE;
+    return PP_ERROR_BADRESOURCE;
 
   draw->set_bound_context(context_id);
 
@@ -116,7 +116,7 @@ int32_t BindSurfaces(PP_Resource context_id,
     }
     return error;
   } else {
-    return PP_GRAPHICS3DERROR_BAD_CONTEXT;
+    return PP_ERROR_BADRESOURCE;
   }
 
 }

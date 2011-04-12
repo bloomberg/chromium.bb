@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
+ * Copyright 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
  * be found in the LICENSE file.
  */
@@ -138,6 +138,10 @@ uint32_t PpVarSize(const PP_Var& var) {
     }
     case PP_VARTYPE_OBJECT:
       return sizeof(SerializedObject);
+    case PP_VARTYPE_ARRAY:
+    case PP_VARTYPE_DICTIONARY:
+      NACL_NOTREACHED();
+      break;
   }
   // Unrecognized type.
   return 0;
@@ -227,6 +231,9 @@ bool SerializePpVar(const PP_Var* vars,
         element_size = sizeof(SerializedObject);
         break;
       }
+      case PP_VARTYPE_ARRAY:
+      case PP_VARTYPE_DICTIONARY:
+        NACL_NOTREACHED();
       default:
         return false;
     }
@@ -313,11 +320,16 @@ uint32_t DeserializePpVarSize(char* p,
       break;
     case PP_VARTYPE_OBJECT:
       expected_element_size = sizeof(SerializedObject);
+      break;
       //
       // NB: No default case to trigger -Wswitch-enum, so changes to
       // PP_VarType w/o corresponding changes here will cause a
       // compile-time error.
       //
+    case PP_VARTYPE_ARRAY:
+    case PP_VARTYPE_DICTIONARY:
+      NACL_NOTREACHED();
+      break;
   }
   if (length < expected_element_size) {
     return std::numeric_limits<uint32_t>::max();
@@ -404,6 +416,9 @@ bool DeserializePpVar(NaClSrpcChannel* channel,
         DebugPrintf("DONE deserializing object.\n");
         break;
       }
+      case PP_VARTYPE_ARRAY:
+      case PP_VARTYPE_DICTIONARY:
+        NACL_NOTREACHED();
       default:
         return false;
     }

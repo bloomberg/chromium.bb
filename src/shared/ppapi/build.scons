@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Copyright 2011 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
@@ -13,6 +13,10 @@ Dir('.').addRepository(Dir('#/../ppapi'))
 # Don't treat warnings as errors on Windows
 if env.Bit('windows'):
   env.FilterOut(CCFLAGS=['/WX'])
+
+# TODO(ncbray): reenable
+# http://code.google.com/p/nativeclient/issues/detail?id=1643
+env.FilterOut(CCFLAGS=['-Wswitch-enum'])
 
 # Load ppapi_cpp.gypi
 ppapi_cpp_gypi = gyp_extract.LoadGypFile(

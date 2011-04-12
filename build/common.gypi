@@ -104,6 +104,7 @@
     # These come from the above variable scope.
     'target_arch%': '<(target_arch)',
     'nacl_standalone%': '<(nacl_standalone)',
+    'nacl_strict_warnings%': 1,
     'branding%': '<(branding)',
     'buildtype%': '<(buildtype)',
     'library%': '<(library)',
@@ -372,7 +373,7 @@
           '-Wall', # TODO(bradnelson): why does this disappear?!?
         ],
         'conditions': [
-          ['nacl_standalone==1', {
+          ['nacl_standalone==1 and nacl_strict_warnings==1', {
             # TODO(gregoryd): remove the condition when the issues in
             # Chrome code are fixed.
             'cflags': [
@@ -610,7 +611,7 @@
           ],
         },
         'conditions': [
-          ['nacl_standalone==1', {
+          ['nacl_standalone==1 and nacl_strict_warnings==1', {
             'xcode_settings': {
               # TODO(gregoryd): remove the condition when the issues in
               # Chrome code are fixed.
@@ -622,6 +623,8 @@
                 '-Wsign-compare'
               ],
             },
+          }],
+          ['nacl_standalone==1', {
             'target_conditions': [
               ['_type!="static_library"', {
                 'xcode_settings': {

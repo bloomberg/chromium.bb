@@ -3,6 +3,11 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    # TODO(ncbray): reenable
+    # http://code.google.com/p/nativeclient/issues/detail?id=1643
+    'nacl_strict_warnings': 0,
+  },
   'includes': [
     '../../../build/common.gypi',
     '../../../../ppapi/ppapi_cpp.gypi',

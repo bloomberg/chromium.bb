@@ -1,4 +1,4 @@
-// Copyright 2010 The Native Client Authors. All rights reserved.
+// Copyright 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can
 // be found in the LICENSE file.
 
@@ -108,7 +108,7 @@ void Release(PP_Var var) {
       // prematurely. Most likely we are missing an AddRef somewhere. For now
       // just comment out the delete and leak.
       // http://code.google.com/p/nativeclient/issues/detail?id=1308
-      //delete obj_impl;
+      // delete obj_impl;
     }
   }
   StrImpl* str_impl = VarToStrImpl(var);
@@ -390,6 +390,10 @@ std::string PluginVar::DebugString(PP_Var var) {
         SNPRINTF(buf, kBufSize, "%"NACL_PRIu64"", GetVarId(var));
         return std::string("##OBJECT##") + buf + "##";
       }
+    case PP_VARTYPE_ARRAY:
+    case PP_VARTYPE_DICTIONARY:
+      NACL_NOTREACHED();
+      break;
   }
   ASSERT_MSG(0, "Unexpected type seen");
   return "##ERROR##";
@@ -448,6 +452,10 @@ void PluginVar::Print(PP_Var var) {
       }
     case PP_VARTYPE_OBJECT:
       DebugPrintf("PP_Var(object: %"NACL_PRIu64")", GetVarId(var));
+      break;
+    case PP_VARTYPE_ARRAY:
+    case PP_VARTYPE_DICTIONARY:
+      NACL_NOTREACHED();
       break;
   }
 }
