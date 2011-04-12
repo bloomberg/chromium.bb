@@ -6785,14 +6785,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ABOUT_PAGE_CHANNEL" desc="The channel label under _More_Info_.">
         Channel
       </message>
-      <message name="IDS_ABOUT_PAGE_CHANNEL_RELEASE" desc="The release option in the channel select.">
-        Release
+      <message name="IDS_ABOUT_PAGE_CHANNEL_STABLE" desc="The stable option in the channel select.">
+        Stable
       </message>
       <message name="IDS_ABOUT_PAGE_CHANNEL_BETA" desc="The beta option in the channel select.">
         Beta
       </message>
       <message name="IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT" desc="The development option in the channel select.">
-        Development
+        Dev
       </message>
       <message name="IDS_ABOUT_PAGE_CHANNEL_CANARY" desc="The canary option in the channel select.">
         Canary
