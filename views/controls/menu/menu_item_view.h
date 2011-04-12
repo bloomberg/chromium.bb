@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@
 #include "views/view.h"
 
 #if defined(OS_WIN)
-#include "ui/gfx/native_theme_win.h"
+#include "ui/gfx/native_theme.h"
 #endif
 
 namespace ui {
@@ -31,6 +31,8 @@ class MenuButton;
 class MenuController;
 class MenuDelegate;
 class SubmenuView;
+
+struct MenuConfig;
 
 // MenuItemView --------------------------------------------------------------
 
@@ -334,11 +336,9 @@ class MenuItemView : public View {
 #if defined(OS_WIN)
   // Paints the check/radio button indicator. |part_id| is the id passed to the
   // native theme drawing routines.
-  void PaintCheck(HDC dc,
-                  int part_id,
-                  gfx::NativeThemeWin::ControlState control_state,
-                  int icon_width,
-                  int icon_height);
+  void PaintCheck(gfx::Canvas* canvas,
+                  gfx::NativeTheme::State state,
+                  const MenuConfig& config);
 #endif
 
   // Paints the accelerator.

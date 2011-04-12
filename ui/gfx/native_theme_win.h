@@ -100,23 +100,6 @@ class NativeThemeWin : public NativeTheme {
   // Gets our singleton instance.
   static const NativeThemeWin* instance();
 
-  // The PaintXXX methods below this point should be private or be deleted,
-  // but remain public while NativeThemeWin is transitioned over to use the
-  // single Paint() entry point.  Do not make new calls to these methods.
-
-  // This enumeration is used within PaintMenuArrow in order to indicate the
-  // direction the menu arrow should point to.
-  enum MenuArrowDirection {
-    LEFT_POINTING_ARROW,
-    RIGHT_POINTING_ARROW
-  };
-
-  enum ControlState {
-    CONTROL_NORMAL,
-    CONTROL_HIGHLIGHTED,
-    CONTROL_DISABLED
-  };
-
   typedef HRESULT (WINAPI* DrawThemeBackgroundPtr)(HANDLE theme,
                                                    HDC hdc,
                                                    int part_id,
@@ -159,66 +142,9 @@ class NativeThemeWin : public NativeTheme {
                                            int prop_id,
                                            int *value);
 
-  // This method is deprecated and will be removed in the near future.
-  HRESULT PaintButton(HDC hdc,
-                      int part_id,
-                      int state_id,
-                      int classic_state,
-                      RECT* rect) const;
-
-  // This method is deprecated and will be removed in the near future.
-  HRESULT PaintDialogBackground(HDC dc, bool active, RECT* rect) const;
-
-  // This method is deprecated and will be removed in the near future.
-  HRESULT PaintListBackground(HDC dc, bool enabled, RECT* rect) const;
-
-  // This method is deprecated and will be removed in the near future.
-  // |arrow_direction| determines whether the arrow is pointing to the left or
-  // to the right. In RTL locales, sub-menus open from right to left and
-  // therefore the menu arrow should point to the left and not to the right.
-  HRESULT PaintMenuArrow(ThemeName theme,
-                         HDC hdc,
-                         int part_id,
-                         int state_id,
-                         RECT* rect,
-                         MenuArrowDirection arrow_direction,
-                         ControlState state) const;
-
-  // This method is deprecated and will be removed in the near future.
-  HRESULT PaintMenuBackground(ThemeName theme,
-                              HDC hdc,
-                              int part_id,
-                              int state_id,
-                              RECT* rect) const;
-
-  // This method is deprecated and will be removed in the near future.
-  HRESULT PaintMenuCheck(ThemeName theme,
-                         HDC hdc,
-                         int part_id,
-                         int state_id,
-                         RECT* rect,
-                         ControlState state) const;
-
-  // This method is deprecated and will be removed in the near future.
-  HRESULT PaintMenuCheckBackground(ThemeName theme,
-                                   HDC hdc,
-                                   int part_id,
-                                   int state_id,
-                                   RECT* rect) const;
-
-  // This method is deprecated and will be removed in the near future.
-  HRESULT PaintMenuGutter(HDC hdc,
-                          int part_id,
-                          int state_id,
-                          RECT* rect) const;
-
-  // This method is deprecated and will be removed in the near future.
-  HRESULT PaintMenuItemBackground(ThemeName theme,
-                                  HDC hdc,
-                                  int part_id,
-                                  int state_id,
-                                  bool selected,
-                                  RECT* rect) const;
+  // The PaintXXX methods below this point should be private or be deleted,
+  // but remain public while NativeThemeWin is transitioned over to use the
+  // single Paint() entry point.  Do not make new calls to these methods.
 
   // This method is deprecated and will be removed in the near future.
   HRESULT PaintMenuList(HDC hdc,
@@ -226,12 +152,6 @@ class NativeThemeWin : public NativeTheme {
                         int state_id,
                         int classic_state,
                         RECT* rect) const;
-
-  // This method is deprecated and will be removed in the near future.
-  HRESULT PaintMenuSeparator(HDC hdc,
-                             int part_id,
-                             int state_id,
-                             RECT* rect) const;
 
   // This method is deprecated and will be removed in the near future.
   // Paints a scrollbar arrow.  |classic_state| should have the appropriate
@@ -316,6 +236,42 @@ class NativeThemeWin : public NativeTheme {
                      const gfx::Rect& rect,
                      const ExtraParams& extra) const;
 
+  HRESULT PaintButton(HDC hdc,
+                      int part_id,
+                      int state_id,
+                      int classic_state,
+                      RECT* rect) const;
+
+  HRESULT PaintMenuSeparator(HDC hdc,
+                             const gfx::Rect& rect,
+                             const MenuSeparatorExtraParams& extra) const;
+
+  HRESULT PaintMenuGutter(HDC hdc, const gfx::Rect& rect) const;
+
+  // |arrow_direction| determines whether the arrow is pointing to the left or
+  // to the right. In RTL locales, sub-menus open from right to left and
+  // therefore the menu arrow should point to the left and not to the right.
+  HRESULT PaintMenuArrow(HDC hdc,
+                         State state,
+                         const gfx::Rect& rect,
+                         const MenuArrowExtraParams& extra) const;
+
+  HRESULT PaintMenuBackground(HDC hdc, const gfx::Rect& rect) const;
+
+  HRESULT PaintMenuCheck(HDC hdc,
+                         State state,
+                         const gfx::Rect& rect,
+                         const MenuCheckExtraParams& extra) const;
+
+  HRESULT PaintMenuCheckBackground(HDC hdc,
+                                   State state,
+                                   const gfx::Rect& rect) const;
+
+  HRESULT PaintMenuItemBackground(HDC hdc,
+                                  State state,
+                                  const gfx::Rect& rect,
+                                  const MenuItemExtraParams& extra) const;
+
   // Paints a scrollbar arrow.  |classic_state| should have the appropriate
   // classic part number ORed in already.
   HRESULT PaintScrollbarArrow(HDC hdc,
@@ -353,10 +309,10 @@ class NativeThemeWin : public NativeTheme {
   static int GetWindowsPart(Part part);
 
   HRESULT PaintFrameControl(HDC hdc,
-                            RECT* rect,
+                            const gfx::Rect& rect,
                             UINT type,
                             UINT state,
-                            ControlState control_state) const;
+                            State control_state) const;
 
   // Returns a handle to the theme data.
   HANDLE GetThemeHandle(ThemeName theme_name) const;

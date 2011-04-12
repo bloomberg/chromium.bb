@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 #include "views/controls/menu/menu_config.h"
 #include "views/controls/menu/submenu_view.h"
 
-using gfx::NativeThemeWin;
+using gfx::NativeTheme;
 
 namespace views {
 
@@ -33,14 +33,13 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
        !has_children());
   int state = render_selection ? MPI_HOT :
                                  (IsEnabled() ? MPI_NORMAL : MPI_DISABLED);
-  HDC dc = canvas->BeginPlatformPaint();
-  NativeThemeWin::ControlState control_state;
+  NativeTheme::State control_state;
 
   if (!IsEnabled()) {
-    control_state = NativeThemeWin::CONTROL_DISABLED;
+    control_state = NativeTheme::kDisabled;
   } else {
-    control_state = render_selection ? NativeThemeWin::CONTROL_HIGHLIGHTED :
-                                       NativeThemeWin::CONTROL_NORMAL;
+    control_state = render_selection ? NativeTheme::kHovered:
+                                       NativeTheme::kNormal;
   }
 
   // The gutter is rendered before the background.
@@ -49,31 +48,30 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                             config.gutter_width, 0, config.gutter_width,
                             height());
     AdjustBoundsForRTLUI(&gutter_bounds);
-    RECT gutter_rect = gutter_bounds.ToRECT();
-    NativeThemeWin::instance()->PaintMenuGutter(dc, MENU_POPUPGUTTER,
-                                                MPI_NORMAL, &gutter_rect);
+    NativeTheme::ExtraParams extra;
+    NativeTheme::instance()->Paint(canvas->AsCanvasSkia(),
+                                   NativeTheme::kMenuPopupGutter,
+                                   NativeTheme::kNormal,
+                                   gutter_bounds,
+                                   extra);
   }
 
   // Render the background.
   if (mode == PB_NORMAL) {
     gfx::Rect item_bounds(0, 0, width(), height());
+    NativeTheme::ExtraParams extra;
+    extra.menu_item.is_selected = render_selection;
     AdjustBoundsForRTLUI(&item_bounds);
-    RECT item_rect = item_bounds.ToRECT();
-    NativeThemeWin::instance()->PaintMenuItemBackground(
-        NativeThemeWin::MENU, dc, MENU_POPUPITEM, state, render_selection,
-        &item_rect);
+    NativeTheme::instance()->Paint(canvas->AsCanvasSkia(),
+        NativeTheme::kMenuItemBackground, control_state, item_bounds, extra);
   }
 
   int top_margin = GetTopMargin();
   int bottom_margin = GetBottomMargin();
 
-  if (type_ == CHECKBOX && GetDelegate()->IsItemChecked(GetCommand())) {
-    PaintCheck(dc,
-               IsEnabled() ? MC_CHECKMARKNORMAL : MC_CHECKMARKDISABLED,
-               control_state, config.check_height, config.check_width);
-  } else if (type_ == RADIO && GetDelegate()->IsItemChecked(GetCommand())) {
-    PaintCheck(dc, IsEnabled() ? MC_BULLETNORMAL : MC_BULLETDISABLED,
-               control_state, config.radio_height, config.radio_width);
+  if ((type_ == RADIO || type_ == CHECKBOX) &&
+      GetDelegate()->IsItemChecked(GetCommand())) {
+    PaintCheck(canvas, control_state, config);
   }
 
   // Render the foreground.
@@ -81,8 +79,8 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   // get color.
   int default_sys_color = render_selection ? COLOR_HIGHLIGHTTEXT :
       (IsEnabled() ? COLOR_MENUTEXT : COLOR_GRAYTEXT);
-  SkColor fg_color = NativeThemeWin::instance()->GetThemeColorWithDefault(
-      NativeThemeWin::MENU, MENU_POPUPITEM, state, TMT_TEXTCOLOR,
+  SkColor fg_color = gfx::NativeThemeWin::instance()->GetThemeColorWithDefault(
+      gfx::NativeThemeWin::MENU, MENU_POPUPITEM, state, TMT_TEXTCOLOR,
       default_sys_color);
   const gfx::Font& font = MenuConfig::instance().font;
   int accel_width = parent_menu_item_->GetSubmenu()->max_accelerator_width();
@@ -127,45 +125,44 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     // If our sub menus open from right to left (which is the case when the
     // locale is RTL) then we should make sure the menu arrow points to the
     // right direction.
-    NativeThemeWin::MenuArrowDirection arrow_direction;
-    if (base::i18n::IsRTL())
-      arrow_direction = NativeThemeWin::LEFT_POINTING_ARROW;
-    else
-      arrow_direction = NativeThemeWin::RIGHT_POINTING_ARROW;
-
-    RECT arrow_rect = arrow_bounds.ToRECT();
-    NativeThemeWin::instance()->PaintMenuArrow(
-        NativeThemeWin::MENU, dc, MENU_POPUPSUBMENU, state_id, &arrow_rect,
-        arrow_direction, control_state);
+    gfx::NativeTheme::ExtraParams extra;
+    extra.menu_arrow.pointing_right = !base::i18n::IsRTL();
+    gfx::NativeTheme::instance()->Paint(canvas->AsCanvasSkia(),
+        gfx::NativeTheme::kMenuPopupArrow, control_state, arrow_bounds, extra);
   }
-  canvas->EndPlatformPaint();
 }
 
-void MenuItemView::PaintCheck(HDC dc,
-                              int state_id,
-                              NativeThemeWin::ControlState control_state,
-                              int icon_width,
-                              int icon_height) {
+void MenuItemView::PaintCheck(gfx::Canvas* canvas,
+                              NativeTheme::State state,
+                              const MenuConfig& config) {
+  int icon_width;
+  int icon_height;
+  if (type_ == RADIO) {
+    icon_width = config.radio_width;
+    icon_height = config.radio_height;
+  } else {
+    icon_width = config.check_width;
+    icon_height = config.check_height;
+  }
+
   int top_margin = GetTopMargin();
   int icon_x = MenuConfig::instance().item_left_margin;
   int icon_y = top_margin +
       (height() - top_margin - GetBottomMargin() - icon_height) / 2;
+  NativeTheme::ExtraParams extra;
+  extra.menu_check.is_radio = type_ == RADIO;
+
   // Draw the background.
   gfx::Rect bg_bounds(0, 0, icon_x + icon_width, height());
-  int bg_state = IsEnabled() ? MCB_NORMAL : MCB_DISABLED;
   AdjustBoundsForRTLUI(&bg_bounds);
-  RECT bg_rect = bg_bounds.ToRECT();
-  NativeThemeWin::instance()->PaintMenuCheckBackground(
-      NativeThemeWin::MENU, dc, MENU_POPUPCHECKBACKGROUND, bg_state,
-      &bg_rect);
+  NativeTheme::instance()->Paint(canvas->AsCanvasSkia(),
+      NativeTheme::kMenuCheckBackground, state, bg_bounds, extra);
 
   // And the check.
   gfx::Rect icon_bounds(icon_x / 2, icon_y, icon_width, icon_height);
   AdjustBoundsForRTLUI(&icon_bounds);
-  RECT icon_rect = icon_bounds.ToRECT();
-  NativeThemeWin::instance()->PaintMenuCheck(
-      NativeThemeWin::MENU, dc, MENU_POPUPCHECK, state_id, &icon_rect,
-      control_state);
+  NativeTheme::instance()->Paint(canvas->AsCanvasSkia(),
+      NativeTheme::kMenuCheck, state, bg_bounds, extra);
 }
 
 }  // namespace views

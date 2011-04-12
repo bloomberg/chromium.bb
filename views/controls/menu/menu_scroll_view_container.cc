@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,11 +21,9 @@
 #include "views/controls/menu/submenu_view.h"
 
 #if defined(OS_WIN)
-#include "ui/gfx/native_theme_win.h"
-#endif
+#include "ui/gfx/native_theme.h"
 
-#if defined(OS_WIN)
-using gfx::NativeThemeWin;
+using gfx::NativeTheme;
 #endif
 
 // Height of the scroll arrow.
@@ -84,15 +82,13 @@ class MenuScrollButton : public View {
     const MenuConfig& config = MenuConfig::instance();
 
 #if defined(OS_WIN)
-    HDC dc = canvas->BeginPlatformPaint();
-
     // The background.
-    RECT item_bounds = { 0, 0, width(), height() };
-    NativeThemeWin::instance()->PaintMenuItemBackground(
-        NativeThemeWin::MENU, dc, MENU_POPUPITEM, MPI_NORMAL, false,
-        &item_bounds);
-    canvas->EndPlatformPaint();
-
+    gfx::Rect item_bounds(0, 0, width(), height());
+    NativeTheme::ExtraParams extra;
+    extra.menu_item.is_selected = false;
+    NativeTheme::instance()->Paint(canvas->AsCanvasSkia(),
+                                   NativeTheme::kMenuItemBackground,
+                                   NativeTheme::kNormal, item_bounds, extra);
     SkColor arrow_color = color_utils::GetSysSkColor(COLOR_MENUTEXT);
 #else
     SkColor arrow_color = SK_ColorBLACK;
@@ -188,9 +184,10 @@ void MenuScrollViewContainer::OnPaintBackground(gfx::Canvas* canvas) {
 
 #if defined(OS_WIN)
   HDC dc = canvas->BeginPlatformPaint();
-  RECT bounds = {0, 0, width(), height()};
-  NativeThemeWin::instance()->PaintMenuBackground(
-      NativeThemeWin::MENU, dc, MENU_POPUPBACKGROUND, 0, &bounds);
+  gfx::Rect bounds(0, 0, width(), height());
+  NativeTheme::ExtraParams extra;
+  NativeTheme::instance()->Paint(canvas->AsCanvasSkia(),
+      NativeTheme::kMenuPopupBackground, NativeTheme::kNormal, bounds, extra);
   canvas->EndPlatformPaint();
 #elif defined(OS_CHROMEOS)
   static const SkColor kGradientColors[2] = {

@@ -46,6 +46,13 @@ class NativeTheme {
     kPushButton,
     kTextField,
     kMenuList,
+    kMenuCheck,
+    kMenuCheckBackground,
+    kMenuPopupArrow,
+    kMenuPopupBackground,
+    kMenuPopupGutter,
+    kMenuPopupSeparator,
+    kMenuItemBackground,
     kSliderTrack,
     kSliderThumb,
     kInnerSpinButton,
@@ -87,12 +94,28 @@ class NativeTheme {
     SkColor background_color;
   };
 
+  struct MenuArrowExtraParams {
+    bool pointing_right;
+  };
+
+  struct MenuCheckExtraParams {
+    bool is_radio;
+  };
+
+  struct MenuItemExtraParams {
+    bool is_selected;
+  };
+
   struct MenuListExtraParams {
     bool has_border;
     bool has_border_radius;
     int arrow_x;
     int arrow_y;
     SkColor background_color;
+  };
+
+  struct MenuSeparatorExtraParams {
+    bool has_gutter;
   };
 
   struct SliderExtraParams {
@@ -116,7 +139,11 @@ class NativeTheme {
   union ExtraParams {
     ScrollbarTrackExtraParams scrollbar_track;
     ButtonExtraParams button;
+    MenuArrowExtraParams menu_arrow;
+    MenuCheckExtraParams menu_check;
+    MenuItemExtraParams menu_item;
     MenuListExtraParams menu_list;
+    MenuSeparatorExtraParams menu_separator;
     SliderExtraParams slider;
     TextFieldExtraParams text_field;
     InnerSpinButtonExtraParams inner_spin;

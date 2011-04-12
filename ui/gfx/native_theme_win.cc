@@ -140,6 +140,29 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
     case kPushButton:
       PaintPushButton(hdc, part, state, rect, extra.button);
       break;
+    case kMenuPopupArrow:
+      PaintMenuArrow(hdc, state, rect, extra.menu_arrow);
+      break;
+    case kMenuPopupGutter:
+      PaintMenuGutter(hdc, rect);
+      break;
+    case kMenuPopupSeparator:
+      PaintMenuSeparator(hdc, rect, extra.menu_separator);
+      break;
+    case kMenuPopupBackground:
+      PaintMenuBackground(hdc, rect);
+      break;
+    case kMenuCheck:
+      PaintMenuCheck(hdc, state, rect, extra.menu_check);
+      break;
+    case kMenuCheckBackground:
+      PaintMenuCheckBackground(hdc, state, rect);
+      break;
+    case kMenuItemBackground:
+      PaintMenuItemBackground(hdc, state, rect, extra.menu_item);
+      break;
+
+    case kMenuList:
     case kScrollbarDownArrow:
     case kScrollbarUpArrow:
     case kScrollbarLeftArrow:
@@ -149,7 +172,6 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
     case kScrollbarHorizontalTrack:
     case kScrollbarVerticalTrack:
     case kTextField:
-    case kMenuList:
     case kSliderTrack:
     case kSliderThumb:
     case kInnerSpinButton:
@@ -354,50 +376,27 @@ HRESULT NativeThemeWin::PaintButton(HDC hdc,
   return S_OK;
 }
 
-HRESULT NativeThemeWin::PaintDialogBackground(HDC hdc, bool active,
-                                              RECT* rect) const {
-  HANDLE handle = GetThemeHandle(WINDOW);
-  if (handle && draw_theme_) {
-    return draw_theme_(handle, hdc, WP_DIALOG,
-                       active ? FS_ACTIVE : FS_INACTIVE, rect, NULL);
-  }
+HRESULT NativeThemeWin::PaintMenuArrow(HDC hdc,
+                                       State state,
+                                       const gfx::Rect& rect,
+                                       const MenuArrowExtraParams& extra)
+    const {
+  int state_id = MSM_NORMAL;
+  if (state == kDisabled)
+    state_id = MSM_DISABLED;
 
-  // Classic just renders a flat color background.
-  FillRect(hdc, rect, reinterpret_cast<HBRUSH>(COLOR_3DFACE + 1));
-  return S_OK;
-}
-
-HRESULT NativeThemeWin::PaintListBackground(HDC hdc,
-                                            bool enabled,
-                                            RECT* rect) const {
-  HANDLE handle = GetThemeHandle(LIST);
-  if (handle && draw_theme_)
-    return draw_theme_(handle, hdc, 1, TS_NORMAL, rect, NULL);
-
-  // Draw it manually.
-  HBRUSH bg_brush = GetSysColorBrush(COLOR_WINDOW);
-  FillRect(hdc, rect, bg_brush);
-  DrawEdge(hdc, rect, EDGE_SUNKEN, BF_RECT | BF_ADJUST);
-  return S_OK;
-}
-
-HRESULT NativeThemeWin::PaintMenuArrow(ThemeName theme,
-                                       HDC hdc,
-                                       int part_id,
-                                       int state_id,
-                                       RECT* rect,
-                                       MenuArrowDirection arrow_direction,
-                                       ControlState control_state) const {
   HANDLE handle = GetThemeHandle(MENU);
+  RECT rect_win = rect.ToRECT();
   if (handle && draw_theme_) {
-    if (arrow_direction == RIGHT_POINTING_ARROW) {
-      return draw_theme_(handle, hdc, part_id, state_id, rect, NULL);
+    if (extra.pointing_right) {
+      return draw_theme_(handle, hdc, MENU_POPUPSUBMENU, state_id, &rect_win,
+                         NULL);
     } else {
       // There is no way to tell the uxtheme API to draw a left pointing arrow;
       // it doesn't have a flag equivalent to DFCS_MENUARROWRIGHT.  But they
       // are needed for RTL locales on Vista.  So use a memory DC and mirror
       // the region with GDI's StretchBlt.
-      Rect r(*rect);
+      Rect r(rect);
       base::win::ScopedHDC mem_dc(CreateCompatibleDC(hdc));
       base::win::ScopedBitmap mem_bitmap(CreateCompatibleBitmap(hdc, r.width(),
                                                                 r.height()));
@@ -408,7 +407,7 @@ HRESULT NativeThemeWin::PaintMenuArrow(ThemeName theme,
                  hdc, r.right()-1, r.y(), -r.width(), r.height(), SRCCOPY);
       // Draw the arrow.
       RECT theme_rect = {0, 0, r.width(), r.height()};
-      HRESULT result = draw_theme_(handle, mem_dc, part_id,
+      HRESULT result = draw_theme_(handle, mem_dc, MENU_POPUPSUBMENU,
                                    state_id, &theme_rect, NULL);
       // Copy and mirror the result back into mem_dc.
       StretchBlt(hdc, r.x(), r.y(), r.width(), r.height(),
@@ -421,77 +420,101 @@ HRESULT NativeThemeWin::PaintMenuArrow(ThemeName theme,
   // For some reason, Windows uses the name DFCS_MENUARROWRIGHT to indicate a
   // left pointing arrow. This makes the following 'if' statement slightly
   // counterintuitive.
-  UINT state;
-  if (arrow_direction == RIGHT_POINTING_ARROW)
-    state = DFCS_MENUARROW;
+  UINT pfc_state;
+  if (extra.pointing_right)
+    pfc_state = DFCS_MENUARROW;
   else
-    state = DFCS_MENUARROWRIGHT;
-  return PaintFrameControl(hdc, rect, DFC_MENU, state, control_state);
+    pfc_state = DFCS_MENUARROWRIGHT;
+  return PaintFrameControl(hdc, rect, DFC_MENU, pfc_state, state);
 }
 
-HRESULT NativeThemeWin::PaintMenuBackground(ThemeName theme,
-                                            HDC hdc,
-                                            int part_id,
-                                            int state_id,
-                                            RECT* rect) const {
+HRESULT NativeThemeWin::PaintMenuBackground(HDC hdc,
+                                            const gfx::Rect& rect) const {
   HANDLE handle = GetThemeHandle(MENU);
+  RECT rect_win = rect.ToRECT();
   if (handle && draw_theme_) {
-    HRESULT result = draw_theme_(handle, hdc, part_id, state_id, rect, NULL);
-    FrameRect(hdc, rect, GetSysColorBrush(COLOR_3DSHADOW));
+    HRESULT result = draw_theme_(handle, hdc, MENU_POPUPBACKGROUND, 0,
+                                 &rect_win, NULL);
+    FrameRect(hdc, &rect_win, GetSysColorBrush(COLOR_3DSHADOW));
     return result;
   }
 
-  FillRect(hdc, rect, GetSysColorBrush(COLOR_MENU));
-  DrawEdge(hdc, rect, EDGE_RAISED, BF_RECT);
+  FillRect(hdc, &rect_win, GetSysColorBrush(COLOR_MENU));
+  DrawEdge(hdc, &rect_win, EDGE_RAISED, BF_RECT);
   return S_OK;
 }
 
-HRESULT NativeThemeWin::PaintMenuCheckBackground(ThemeName theme,
-                                                 HDC hdc,
-                                                 int part_id,
-                                                 int state_id,
-                                                 RECT* rect) const {
+HRESULT NativeThemeWin::PaintMenuCheckBackground(HDC hdc,
+                                                 State state,
+                                                 const gfx::Rect& rect) const {
   HANDLE handle = GetThemeHandle(MENU);
+  int state_id = state == kDisabled ? MCB_DISABLED : MCB_NORMAL;
+  RECT rect_win = rect.ToRECT();
   if (handle && draw_theme_)
-    return draw_theme_(handle, hdc, part_id, state_id, rect, NULL);
+    return draw_theme_(handle, hdc, MENU_POPUPCHECKBACKGROUND, state_id,
+                       &rect_win, NULL);
   // Nothing to do for background.
   return S_OK;
 }
 
-HRESULT NativeThemeWin::PaintMenuCheck(ThemeName theme,
-                                       HDC hdc,
-                                       int part_id,
-                                       int state_id,
-                                       RECT* rect,
-                                       ControlState control_state) const {
+HRESULT NativeThemeWin::PaintMenuCheck(
+    HDC hdc,
+    State state,
+    const gfx::Rect& rect,
+    const MenuCheckExtraParams& extra) const {
   HANDLE handle = GetThemeHandle(MENU);
-  if (handle && draw_theme_) {
-    return draw_theme_(handle, hdc, part_id, state_id, rect, NULL);
+  int state_id;
+  if (extra.is_radio) {
+    state_id = state == kDisabled ? MC_BULLETDISABLED : MC_BULLETNORMAL;
+  } else {
+    state_id = state == kDisabled ? MC_CHECKMARKDISABLED : MC_CHECKMARKNORMAL;
   }
-  return PaintFrameControl(hdc, rect, DFC_MENU, DFCS_MENUCHECK, control_state);
+
+  RECT rect_win = rect.ToRECT();
+  if (handle && draw_theme_)
+    return draw_theme_(handle, hdc, MENU_POPUPCHECK, state_id, &rect_win, NULL);
+
+  return PaintFrameControl(hdc, rect, DFC_MENU, DFCS_MENUCHECK, state);
 }
 
 HRESULT NativeThemeWin::PaintMenuGutter(HDC hdc,
-                                        int part_id,
-                                        int state_id,
-                                        RECT* rect) const {
+                                        const gfx::Rect& rect) const {
+  RECT rect_win = rect.ToRECT();
   HANDLE handle = GetThemeHandle(MENU);
   if (handle && draw_theme_)
-    return draw_theme_(handle, hdc, part_id, state_id, rect, NULL);
+    return draw_theme_(handle, hdc, MENU_POPUPGUTTER, MPI_NORMAL, &rect_win,
+                       NULL);
   return E_NOTIMPL;
 }
 
-HRESULT NativeThemeWin::PaintMenuItemBackground(ThemeName theme,
-                                                HDC hdc,
-                                                int part_id,
-                                                int state_id,
-                                                bool selected,
-                                                RECT* rect) const {
+HRESULT NativeThemeWin::PaintMenuItemBackground(
+    HDC hdc,
+    State state,
+    const gfx::Rect& rect,
+    const MenuItemExtraParams& extra) const {
   HANDLE handle = GetThemeHandle(MENU);
+  RECT rect_win = rect.ToRECT();
+  int state_id;
+  switch(state) {
+    case kNormal:
+      state_id = MPI_NORMAL;
+      break;
+    case kDisabled:
+      state_id = MPI_DISABLED;
+      break;
+    case kHovered:
+      state_id = MPI_HOT;
+      break;
+    default:
+      NOTREACHED() << "Invalid state " << state;
+      break;
+  }
+
   if (handle && draw_theme_)
-    return draw_theme_(handle, hdc, part_id, state_id, rect, NULL);
-  if (selected)
-    FillRect(hdc, rect, GetSysColorBrush(COLOR_HIGHLIGHT));
+    return draw_theme_(handle, hdc, MENU_POPUPITEM, state_id, &rect_win, NULL);
+
+  if (extra.is_selected)
+    FillRect(hdc, &rect_win, GetSysColorBrush(COLOR_HIGHLIGHT));
   return S_OK;
 }
 
@@ -509,14 +532,24 @@ HRESULT NativeThemeWin::PaintMenuList(HDC hdc,
   return S_OK;
 }
 
-HRESULT NativeThemeWin::PaintMenuSeparator(HDC hdc,
-                                           int part_id,
-                                           int state_id,
-                                           RECT* rect) const {
+HRESULT NativeThemeWin::PaintMenuSeparator(
+    HDC hdc,
+    const gfx::Rect& rect,
+    const MenuSeparatorExtraParams& extra) const {
+  RECT rect_win = rect.ToRECT();
+  if (!extra.has_gutter)
+    rect_win.top = rect.y() + rect.height() / 3 + 1;
+
   HANDLE handle = GetThemeHandle(MENU);
-  if (handle && draw_theme_)
-    return draw_theme_(handle, hdc, part_id, state_id, rect, NULL);
-  DrawEdge(hdc, rect, EDGE_ETCHED, BF_TOP);
+  if (handle && draw_theme_) {
+    // Delta is needed for non-classic to move separator up slightly.
+    --rect_win.top;
+    --rect_win.bottom;
+    return draw_theme_(handle, hdc, MENU_POPUPSEPARATOR, MPI_NORMAL, &rect_win,
+                       NULL);
+  }
+
+  DrawEdge(hdc, &rect_win, EDGE_ETCHED, BF_TOP);
   return S_OK;
 }
 
@@ -951,12 +984,12 @@ void NativeThemeWin::DisableTheming() const {
 }
 
 HRESULT NativeThemeWin::PaintFrameControl(HDC hdc,
-                                          RECT* rect,
+                                          const gfx::Rect& rect,
                                           UINT type,
                                           UINT state,
-                                          ControlState control_state) const {
-  const int width = rect->right - rect->left;
-  const int height = rect->bottom - rect->top;
+                                          State control_state) const {
+  const int width = rect.width();
+  const int height = rect.height();
 
   // DrawFrameControl for menu arrow/check wants a monochrome bitmap.
   base::win::ScopedBitmap mask_bitmap(CreateBitmap(width, height, 1, 1, NULL));
@@ -976,15 +1009,15 @@ HRESULT NativeThemeWin::PaintFrameControl(HDC hdc,
   int bg_color_key;
   int text_color_key;
   switch (control_state) {
-    case CONTROL_HIGHLIGHTED:
+    case gfx::NativeTheme::kHovered:
       bg_color_key = COLOR_HIGHLIGHT;
       text_color_key = COLOR_HIGHLIGHTTEXT;
       break;
-    case CONTROL_NORMAL:
+    case gfx::NativeTheme::kNormal:
       bg_color_key = COLOR_MENU;
       text_color_key = COLOR_MENUTEXT;
       break;
-    case CONTROL_DISABLED:
+    case gfx::NativeTheme::kDisabled:
       bg_color_key = COLOR_MENU;
       text_color_key = COLOR_GRAYTEXT;
       break;
@@ -996,7 +1029,7 @@ HRESULT NativeThemeWin::PaintFrameControl(HDC hdc,
   }
   COLORREF old_bg_color = SetBkColor(hdc, GetSysColor(bg_color_key));
   COLORREF old_text_color = SetTextColor(hdc, GetSysColor(text_color_key));
-  BitBlt(hdc, rect->left, rect->top, width, height, bitmap_dc, 0, 0, SRCCOPY);
+  BitBlt(hdc, rect.x(), rect.y(), width, height, bitmap_dc, 0, 0, SRCCOPY);
   SetBkColor(hdc, old_bg_color);
   SetTextColor(hdc, old_text_color);
 
