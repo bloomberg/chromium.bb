@@ -4694,7 +4694,7 @@ SQLITE_API int sqlite3_blob_write(sqlite3_blob *, const void *z, int n, int iOff
 ** them all and try to load them. If none are loadable successfully, we return
 ** an error. Otherwise, we return OK.
 */
-int sqlite3Preload(sqlite3 *db);
+SQLITE_API int sqlite3_preload(sqlite3 *db);
 /* End preload-cache.patch for Chromium */
 
 /*

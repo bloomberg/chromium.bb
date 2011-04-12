@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,7 +133,7 @@ void Connection::Preload() {
 #if !defined(USE_SYSTEM_SQLITE)
   // This function is only defined in Chromium's version of sqlite.
   // Do not call it when using system sqlite.
-  sqlite3Preload(db_);
+  sqlite3_preload(db_);
 #endif
 }
 

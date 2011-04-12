@@ -46,6 +46,7 @@
         '../ui/base/view_prop_unittest.cc',
         'run_all_unittests.cc',
         'sql/connection_unittest.cc',
+        'sql/sqlite_features_unittest.cc',
         'sql/statement_unittest.cc',
         'sql/transaction_unittest.cc',
         'test_suite.cc',

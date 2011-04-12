@@ -92,45 +92,6 @@ Index: ext/fts3/fts3_tokenizer1.c
        }
        *ppToken = c->pToken;
        *pnBytes = n;
-Index: ext/fts1/simple_tokenizer.c
-===================================================================
---- ext/fts1/simple_tokenizer.c	2009-09-03 13:32:06.000000000 -0700
-+++ ext/fts1/simple_tokenizer.c	2009-09-02 11:40:21.000000000 -0700
-@@ -138,7 +138,7 @@
-         ** case-insensitivity.
-         */
-         char ch = c->pCurrent[ii];
--        c->zToken[ii] = (unsigned char)ch<0x80 ? tolower(ch) : ch;
-+        c->zToken[ii] = ((ch>='A' && ch<='Z') ? (ch-'A'+'a') : ch);
-       }
-       c->zToken[n] = '\0';
-       *ppToken = c->zToken;
-Index: ext/fts1/fts1_tokenizer1.c
-===================================================================
---- ext/fts1/fts1_tokenizer1.c	2009-09-03 13:32:06.000000000 -0700
-+++ ext/fts1/fts1_tokenizer1.c	2009-09-02 11:40:21.000000000 -0700
-@@ -182,7 +182,7 @@
-         ** case-insensitivity.
-         */
-         unsigned char ch = p[iStartOffset+i];
--        c->pToken[i] = ch<0x80 ? tolower(ch) : ch;
-+        c->pToken[i] = (ch>='A' && ch<='Z') ? (ch-'A'+'a') : ch;
-       }
-       *ppToken = c->pToken;
-       *pnBytes = n;
-Index: ext/fts1/fts1.c
-===================================================================
---- ext/fts1/fts1.c	2009-09-04 13:37:41.000000000 -0700
-+++ ext/fts1/fts1.c	2009-09-14 18:16:55.000000000 -0700
-@@ -208,7 +208,7 @@
-   return (c&0x80)==0 ? isspace(c) : 0;
- }
- static int safe_tolower(char c){
--  return (c&0x80)==0 ? tolower(c) : c;
-+  return (c>='A' && c<='Z') ? (c-'A'+'a') : c;
- }
- static int safe_isalnum(char c){
-   return (c&0x80)==0 ? isalnum(c) : 0;
 Index: ext/fts2/fts2.c
 ===================================================================
 --- ext/fts2/fts2.c	2009-09-04 13:37:41.000000000 -0700
