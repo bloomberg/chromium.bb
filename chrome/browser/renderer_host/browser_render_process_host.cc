@@ -71,6 +71,7 @@
 #include "content/browser/file_system/file_system_dispatcher_host.h"
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/plugin_service.h"
+#include "content/browser/renderer_host/audio_input_renderer_host.h"
 #include "content/browser/renderer_host/audio_renderer_host.h"
 #include "content/browser/renderer_host/blob_message_filter.h"
 #include "content/browser/renderer_host/clipboard_message_filter.h"
@@ -466,8 +467,9 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
       g_browser_process->resource_dispatcher_host());
   resource_message_filter->set_url_request_context_override(
       url_request_context_override);
-  channel_->AddFilter(resource_message_filter);
 
+  channel_->AddFilter(resource_message_filter);
+  channel_->AddFilter(new AudioInputRendererHost());
   channel_->AddFilter(new AudioRendererHost());
   channel_->AddFilter(
       new AppCacheDispatcherHost(profile()->GetRequestContext(), id()));

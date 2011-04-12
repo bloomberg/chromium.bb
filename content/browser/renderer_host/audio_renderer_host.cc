@@ -7,38 +7,11 @@
 #include "base/metrics/histogram.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
+#include "content/browser/renderer_host/audio_common.h"
 #include "content/browser/renderer_host/audio_sync_reader.h"
 #include "content/common/audio_messages.h"
 #include "ipc/ipc_logging.h"
 
-namespace {
-
-// The minimum number of samples in a hardware packet.
-// This value is selected so that we can handle down to 5khz sample rate.
-const int kMinSamplesPerHardwarePacket = 1024;
-
-// The maximum number of samples in a hardware packet.
-// This value is selected so that we can handle up to 192khz sample rate.
-const int kMaxSamplesPerHardwarePacket = 64 * 1024;
-
-// This constant governs the hardware audio buffer size, this value should be
-// chosen carefully.
-// This value is selected so that we have 8192 samples for 48khz streams.
-const int kMillisecondsPerHardwarePacket = 170;
-
-uint32 SelectSamplesPerPacket(const AudioParameters& params) {
-  // Select the number of samples that can provide at least
-  // |kMillisecondsPerHardwarePacket| worth of audio data.
-  int samples = kMinSamplesPerHardwarePacket;
-  while (samples <= kMaxSamplesPerHardwarePacket &&
-         samples * base::Time::kMillisecondsPerSecond <
-         params.sample_rate * kMillisecondsPerHardwarePacket) {
-    samples *= 2;
-  }
-  return samples;
-}
-
-}  // namespace
 
 AudioRendererHost::AudioEntry::AudioEntry()
     : render_view_id(0),
