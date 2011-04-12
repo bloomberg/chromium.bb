@@ -125,6 +125,7 @@ class Subprocess2Test(unittest.TestCase):
     expected = {
         'args': ['foo'],
         'a':True,
+        'stdin': subprocess2.VOID,
         'stdout': subprocess2.PIPE,
         'stderr': subprocess2.STDOUT,
     }

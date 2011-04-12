@@ -259,7 +259,10 @@ def capture(args, **kwargs):
 
   - Discards returncode.
   - Discards stderr. By default sets stderr=STDOUT.
+  - Blocks stdin by default since no output will be visible.
   """
+  if kwargs.get('stdin') is None:
+    kwargs['stdin'] = VOID
   if kwargs.get('stdout') is None:
     kwargs['stdout'] = PIPE
   if kwargs.get('stderr') is None:
@@ -275,7 +278,10 @@ def check_output(args, **kwargs):
   - Discards stderr. By default sets stderr=STDOUT.
   - Throws if return code is not 0.
   - Works even prior to python 2.7.
+  - Blocks stdin by default since no output will be visible.
   """
+  if kwargs.get('stdin') is None:
+    kwargs['stdin'] = VOID
   if kwargs.get('stdout') is None:
     kwargs['stdout'] = PIPE
   if kwargs.get('stderr') is None:
