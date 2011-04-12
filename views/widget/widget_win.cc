@@ -376,6 +376,11 @@ void WidgetWin::SetBounds(const gfx::Rect& bounds) {
                SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
+void WidgetWin::SetSize(const gfx::Size& size) {
+  SetWindowPos(NULL, 0, 0, size.width(), size.height(),
+               SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
+}
+
 void WidgetWin::MoveAbove(gfx::NativeView native_view) {
   SetWindowPos(native_view, 0, 0, 0, 0,
                SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);

@@ -895,6 +895,25 @@ void WidgetGtk::SetBounds(const gfx::Rect& bounds) {
   }
 }
 
+void WidgetGtk::SetSize(const gfx::Size& size) {
+  if (type_ == TYPE_CHILD) {
+    GtkWidget* parent = gtk_widget_get_parent(widget_);
+    if (GTK_IS_VIEWS_FIXED(parent)) {
+      gtk_views_fixed_set_widget_size(widget_, size.width(), size.height());
+    } else {
+      DCHECK(GTK_IS_FIXED(parent))
+          << "Parent of WidgetGtk has to be Fixed or ViewsFixed";
+      gtk_widget_set_size_request(widget_, size.width(), size.height());
+    }
+  } else {
+    if (GTK_WIDGET_MAPPED(widget_))
+      gdk_window_resize(widget_->window, size.width(), size.height());
+    GtkWindow* gtk_window = GTK_WINDOW(widget_);
+    if (!size.IsEmpty())
+      gtk_window_resize(gtk_window, size.width(), size.height());
+  }
+}
+
 void WidgetGtk::MoveAbove(gfx::NativeView native_view) {
   ui::StackPopupWindow(GetNativeView(), native_view);
 }

@@ -153,6 +153,10 @@ void Widget::SetBounds(const gfx::Rect& bounds) {
   native_widget_->SetBounds(bounds);
 }
 
+void Widget::SetSize(const gfx::Size& size) {
+  native_widget_->SetSize(size);
+}
+
 void Widget::MoveAboveWidget(Widget* widget) {
   native_widget_->MoveAbove(widget->GetNativeView());
 }

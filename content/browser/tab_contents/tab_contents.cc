@@ -360,10 +360,8 @@ TabContents::~TabContents() {
   // NULL if this contents was part of a window that closed.
   if (GetNativeView()) {
     RenderViewHost* host = render_view_host();
-    if (host && host->view()) {
+    if (host && host->view())
       host->view()->WillWmDestroy();
-    }
-    ::DestroyWindow(GetNativeView());
   }
 #endif
 

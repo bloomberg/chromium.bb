@@ -183,6 +183,7 @@ class Widget : public internal::NativeWidgetDelegate,
 
   // Sizes and/or places the widget to the specified bounds, size or position.
   void SetBounds(const gfx::Rect& bounds);
+  void SetSize(const gfx::Size& size);
 
   // Places the widget in front of the specified widget in z-order.
   void MoveAboveWidget(Widget* widget);

@@ -9,56 +9,27 @@
 #include <vector>
 
 #include "base/time.h"
-#include "chrome/browser/download/download_request_limiter.h"
-#include "chrome/browser/renderer_host/render_widget_host_view_win.h"
-#include "chrome/browser/tab_contents/web_drop_target_win.h"
 #include "chrome/browser/ui/views/sad_tab_view.h"
+#include "chrome/browser/ui/views/tab_contents/native_tab_contents_view.h"
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h"
-#include "chrome/browser/ui/views/tab_contents/tab_contents_drag_win.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
-#include "ui/gfx/canvas_skia_paint.h"
+#include "views/focus/focus_manager.h"
 #include "views/focus/view_storage.h"
 #include "views/screen.h"
+#include "views/widget/native_widget.h"
 #include "views/widget/root_view.h"
+#include "views/widget/widget.h"
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebInputEvent;
-
-// Tabs must be created as child widgets, otherwise they will be given
-// a FocusManager which will conflict with the FocusManager of the
-// window they eventually end up attached to.
-//
-// A tab will not have a parent HWND whenever it is not active in its
-// host window - for example at creation time and when it's in the
-// background, so we provide a default widget to host them.
-//
-// It may be tempting to use GetDesktopWindow() instead, but this is
-// problematic as the shell sends messages to children of the desktop
-// window that interact poorly with us.
-//
-// See: http://crbug.com/16476
-static HWND GetHiddenTabHostWindow() {
-  static views::Widget* widget = NULL;
-
-  if (!widget) {
-    views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
-    widget = views::Widget::CreateWidget(params);
-    widget->Init(NULL, gfx::Rect());
-    // If a background window requests focus, the hidden tab host will
-    // be activated to focus the tab.  Use WS_DISABLED to prevent
-    // this.
-    EnableWindow(widget->GetNativeView(), FALSE);
-  }
-
-  return widget->GetNativeView();
-}
 
 // static
 TabContentsView* TabContentsView::Create(TabContents* tab_contents) {
@@ -67,7 +38,8 @@ TabContentsView* TabContentsView::Create(TabContents* tab_contents) {
 
 TabContentsViewViews::TabContentsViewViews(TabContents* tab_contents)
     : TabContentsView(tab_contents),
-      focus_manager_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(native_tab_contents_view_(
+          NativeTabContentsView::CreateNativeTabContentsView(this))),
       close_tab_after_drag_ends_(false),
       sad_tab_(NULL) {
   last_focused_view_storage_id_ =
@@ -85,24 +57,11 @@ TabContentsViewViews::~TabContentsViewViews() {
 }
 
 void TabContentsViewViews::Unparent() {
-  // Remember who our FocusManager is, we won't be able to access it once
-  // unparented.
-  focus_manager_ = views::WidgetWin::GetFocusManager();
-  // Note that we do not DCHECK on focus_manager_ as it may be NULL when used
-  // with an external tab container.
-  NativeWidget::ReparentNativeView(GetNativeView(), GetHiddenTabHostWindow());
+  native_tab_contents_view_->Unparent();
 }
 
 void TabContentsViewViews::CreateView(const gfx::Size& initial_size) {
-  set_delete_on_destroy(false);
-  // These windows remain hidden until they are parented to the
-  // browser window.
-  set_window_style(WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-  WidgetWin::Init(GetHiddenTabHostWindow(), gfx::Rect());
-
-  // Remove the root view drop target so we can register our own.
-  RevokeDragDrop(GetNativeView());
-  drop_target_ = new WebDropTarget(GetNativeView(), tab_contents());
+  native_tab_contents_view_->InitNativeTabContentsView();
 }
 
 RenderWidgetHostView* TabContentsViewViews::CreateViewForWidget(
@@ -118,69 +77,41 @@ RenderWidgetHostView* TabContentsViewViews::CreateViewForWidget(
   }
 
   // If we were showing sad tab, remove it now.
-  if (sad_tab_ != NULL) {
-    SetContentsView(new views::View());
+  if (sad_tab_) {
+    GetWidget()->SetContentsView(new views::View());
     sad_tab_ = NULL;
   }
 
-  RenderWidgetHostViewWin* view =
-      new RenderWidgetHostViewWin(render_widget_host);
-  view->CreateWnd(GetNativeView());
-  view->ShowWindow(SW_SHOW);
-  return view;
+  return native_tab_contents_view_->CreateRenderWidgetHostView(
+      render_widget_host);
 }
 
 gfx::NativeView TabContentsViewViews::GetNativeView() const {
-  return WidgetWin::GetNativeView();
+  return GetWidget()->GetNativeView();
 }
 
 gfx::NativeView TabContentsViewViews::GetContentNativeView() const {
   RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
-  if (!rwhv)
-    return NULL;
-  return rwhv->GetNativeView();
+  return rwhv ? rwhv->GetNativeView() : NULL;
 }
 
 gfx::NativeWindow TabContentsViewViews::GetTopLevelNativeWindow() const {
-  return ::GetAncestor(GetNativeView(), GA_ROOT);
+  return native_tab_contents_view_->GetTopLevelNativeWindow();
 }
 
 void TabContentsViewViews::GetContainerBounds(gfx::Rect* out) const {
-  *out = GetClientAreaScreenBounds();
+  *out = GetWidget()->GetClientAreaScreenBounds();
 }
 
 void TabContentsViewViews::StartDragging(const WebDropData& drop_data,
                                          WebDragOperationsMask ops,
                                          const SkBitmap& image,
-                                       const gfx::Point& image_offset) {
-  drag_handler_ = new TabContentsDragWin(this);
-  drag_handler_->StartDragging(drop_data, ops, image, image_offset);
-}
-
-void TabContentsViewViews::EndDragging() {
-  if (close_tab_after_drag_ends_) {
-    close_tab_timer_.Start(base::TimeDelta::FromMilliseconds(0), this,
-                           &TabContentsViewViews::CloseTab);
-  }
-
-  tab_contents()->SystemDragEnded();
-  drag_handler_ = NULL;
-}
-
-void TabContentsViewViews::OnDestroy() {
-  if (drop_target_.get()) {
-    RevokeDragDrop(GetNativeView());
-    drop_target_ = NULL;
-  }
-
-  WidgetWin::OnDestroy();
+                                         const gfx::Point& image_offset) {
+  native_tab_contents_view_->StartDragging(drop_data, ops, image, image_offset);
 }
 
 void TabContentsViewViews::SetPageTitle(const std::wstring& title) {
-  if (GetNativeView()) {
-    // It's possible to get this after the hwnd has been destroyed.
-    ::SetWindowText(GetNativeView(), title.c_str());
-  }
+  native_tab_contents_view_->SetPageTitle(title);
 }
 
 void TabContentsViewViews::OnTabCrashed(base::TerminationStatus status,
@@ -192,27 +123,13 @@ void TabContentsViewViews::OnTabCrashed(base::TerminationStatus status,
         status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ?
         SadTabView::KILLED : SadTabView::CRASHED;
     sad_tab_ = new SadTabView(tab_contents(), kind);
-    SetContentsView(sad_tab_);
-    InvalidateRect(GetNativeView(), NULL, FALSE);
+    GetWidget()->SetContentsView(sad_tab_);
+    sad_tab_->SchedulePaint();
   }
 }
 
 void TabContentsViewViews::SizeContents(const gfx::Size& size) {
-  // TODO(brettw) this is a hack and should be removed. See tab_contents_view.h.
-
-  gfx::Rect bounds;
-  GetContainerBounds(&bounds);
-  if (bounds.size() != size) {
-    // Our size really needs to change, invoke SetWindowPos so that we do a
-    // layout and all that good stuff. OnWindowPosChanged will invoke WasSized.
-    UINT swp_flags = SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE;
-    SetWindowPos(NULL, 0, 0, size.width(), size.height(), swp_flags);
-  } else {
-    // Our size isn't changing, which means SetWindowPos won't invoke
-    // OnWindowPosChanged. We need to invoke WasSized though as the renderer may
-    // need to be sized.
-    WasSized(bounds.size());
-  }
+  GetWidget()->SetSize(size);
 }
 
 void TabContentsViewViews::Focus() {
@@ -234,13 +151,8 @@ void TabContentsViewViews::Focus() {
   }
 
   RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
-  if (rwhv) {
-    ::SetFocus(rwhv->GetNativeView());
-    return;
-  }
-
-  // Default to focusing our HWND.
-  ::SetFocus(GetNativeView());
+  GetWidget()->GetFocusManager()->FocusNativeView(rwhv ? rwhv->GetNativeView()
+                                                       : GetNativeView());
 }
 
 void TabContentsViewViews::SetInitialFocus() {
@@ -297,7 +209,7 @@ void TabContentsViewViews::RestoreFocus() {
 }
 
 bool TabContentsViewViews::IsDoingDrag() const {
-  return drag_handler_.get() != NULL;
+  return native_tab_contents_view_->IsDoingDrag();
 }
 
 void TabContentsViewViews::CancelDragAndCloseTab() {
@@ -305,16 +217,16 @@ void TabContentsViewViews::CancelDragAndCloseTab() {
   // We can't close the tab while we're in the drag and
   // |drag_handler_->CancelDrag()| is async.  Instead, set a flag to cancel
   // the drag and when the drag nested message loop ends, close the tab.
-  drag_handler_->CancelDrag();
+  native_tab_contents_view_->CancelDrag();
   close_tab_after_drag_ends_ = true;
 }
 
 void TabContentsViewViews::GetViewBounds(gfx::Rect* out) const {
-  *out = GetWindowScreenBounds();
+  *out = GetWidget()->GetWindowScreenBounds();
 }
 
 void TabContentsViewViews::UpdateDragCursor(WebDragOperation operation) {
-  drop_target_->set_drag_cursor(operation);
+  native_tab_contents_view_->SetDragCursor(operation);
 }
 
 void TabContentsViewViews::GotFocus() {
@@ -334,20 +246,12 @@ void TabContentsViewViews::TakeFocus(bool reverse) {
   }
 }
 
-views::FocusManager* TabContentsViewViews::GetFocusManager() {
-  views::FocusManager* focus_manager = WidgetWin::GetFocusManager();
-  if (focus_manager) {
-    // If focus_manager_ is non NULL, it means we have been reparented, in which
-    // case its value may not be valid anymore.
-    focus_manager_ = NULL;
-    return focus_manager;
-  }
-  // TODO(jcampan): we should DCHECK on focus_manager_, as it should not be
-  // NULL.  We are not doing it as it breaks some unit-tests.  We should
-  // probably have an empty TabContentView implementation for the unit-tests,
-  // that would prevent that code being executed in the unit-test case.
-  // DCHECK(focus_manager_);
-  return focus_manager_;
+views::Widget* TabContentsViewViews::GetWidget() {
+  return native_tab_contents_view_->AsNativeWidget()->GetWidget();
+}
+
+const views::Widget* TabContentsViewViews::GetWidget() const {
+  return native_tab_contents_view_->AsNativeWidget()->GetWidget();
 }
 
 void TabContentsViewViews::CloseTab() {
@@ -383,213 +287,59 @@ void TabContentsViewViews::ShowPopupMenu(const gfx::Rect& bounds,
   NOTREACHED();
 }
 
-void TabContentsViewViews::OnHScroll(int scroll_type,
-                                     short position,
-                                     HWND scrollbar) {
-  ScrollCommon(WM_HSCROLL, scroll_type, position, scrollbar);
+////////////////////////////////////////////////////////////////////////////////
+// TabContentsViewViews, internal::NativeTabContentsViewDelegate implementation:
+
+TabContents* TabContentsViewViews::GetTabContents() {
+  return tab_contents();
 }
 
-LRESULT TabContentsViewViews::OnMouseRange(UINT msg,
-                                           WPARAM w_param,
-                                           LPARAM l_param) {
-  if (tab_contents()->is_crashed() && sad_tab_ != NULL) {
-    return WidgetWin::OnMouseRange(msg, w_param, l_param);
-  }
-
-  switch (msg) {
-    case WM_LBUTTONDOWN:
-    case WM_MBUTTONDOWN:
-    case WM_RBUTTONDOWN: {
-      // Make sure this TabContents is activated when it is clicked on.
-      if (tab_contents()->delegate())
-        tab_contents()->delegate()->ActivateContents(tab_contents());
-      break;
-    }
-    case WM_MOUSEMOVE:
-      // Let our delegate know that the mouse moved (useful for resetting status
-      // bubble state).
-      if (tab_contents()->delegate())
-        tab_contents()->delegate()->ContentsMouseEvent(
-            tab_contents(), views::Screen::GetCursorScreenPoint(), true);
-      break;
-    default:
-      break;
-  }
-
-  return 0;
+bool TabContentsViewViews::IsShowingSadTab() const {
+  return tab_contents()->is_crashed() && sad_tab_;
 }
 
-void TabContentsViewViews::OnPaint(HDC junk_dc) {
-  if (tab_contents()->render_view_host() &&
-      !tab_contents()->render_view_host()->IsRenderViewLive()) {
-    WidgetWin::OnPaint(junk_dc);
-    return;
-  }
-
-  // We need to do this to validate the dirty area so we don't end up in a
-  // WM_PAINTstorm that causes other mysterious bugs (such as WM_TIMERs not
-  // firing etc). It doesn't matter that we don't have any non-clipped area.
-  CPaintDC dc(GetNativeView());
-  SetMsgHandled(FALSE);
-}
-
-// A message is reflected here from view().
-// Return non-zero to indicate that it is handled here.
-// Return 0 to allow view() to further process it.
-LRESULT TabContentsViewViews::OnReflectedMessage(UINT msg,
-                                                 WPARAM w_param,
-                                                 LPARAM l_param) {
-  MSG* message = reinterpret_cast<MSG*>(l_param);
-  switch (message->message) {
-    case WM_MOUSEWHEEL:
-      // This message is reflected from the view() to this window.
-      if (GET_KEYSTATE_WPARAM(message->wParam) & MK_CONTROL) {
-        WheelZoom(GET_WHEEL_DELTA_WPARAM(message->wParam));
-        return 1;
-      }
-      break;
-    case WM_HSCROLL:
-    case WM_VSCROLL:
-      if (ScrollZoom(LOWORD(message->wParam)))
-        return 1;
-    default:
-      break;
-  }
-
-  return 0;
-}
-
-void TabContentsViewViews::OnVScroll(int scroll_type,
-                                     short position,
-                                     HWND scrollbar) {
-  ScrollCommon(WM_VSCROLL, scroll_type, position, scrollbar);
-}
-
-void TabContentsViewViews::OnWindowPosChanged(WINDOWPOS* window_pos) {
-  if (window_pos->flags & SWP_HIDEWINDOW) {
-    WasHidden();
-  } else {
-    // The TabContents was shown by a means other than the user selecting a
-    // Tab, e.g. the window was minimized then restored.
-    if (window_pos->flags & SWP_SHOWWINDOW)
-      WasShown();
-
-    // Unless we were specifically told not to size, cause the renderer to be
-    // sized to the new bounds, which forces a repaint. Not required for the
-    // simple minimize-restore case described above, for example, since the
-    // size hasn't changed.
-    if (!(window_pos->flags & SWP_NOSIZE))
-      WasSized(gfx::Size(window_pos->cx, window_pos->cy));
-  }
-}
-
-void TabContentsViewViews::OnSize(UINT param, const CSize& size) {
-  // NOTE: Because TabContentsViewViews handles OnWindowPosChanged without
-  // calling DefWindowProc, OnSize is NOT called on window resize. This handler
-  // is called only once when the window is created.
-
-  // Don't call base class OnSize to avoid useless layout for 0x0 size.
-  // We will get OnWindowPosChanged later and layout root view in WasSized.
-
-  // Hack for thinkpad touchpad driver.
-  // Set fake scrollbars so that we can get scroll messages,
-  SCROLLINFO si = {0};
-  si.cbSize = sizeof(si);
-  si.fMask = SIF_ALL;
-
-  si.nMin = 1;
-  si.nMax = 100;
-  si.nPage = 10;
-  si.nPos = 50;
-
-  ::SetScrollInfo(GetNativeView(), SB_HORZ, &si, FALSE);
-  ::SetScrollInfo(GetNativeView(), SB_VERT, &si, FALSE);
-}
-
-LRESULT TabContentsViewViews::OnNCCalcSize(BOOL w_param, LPARAM l_param) {
-  // Hack for thinkpad mouse wheel driver. We have set the fake scroll bars
-  // to receive scroll messages from thinkpad touchpad driver. Suppress
-  // painting of scrollbars by returning 0 size for them.
-  return 0;
-}
-
-void TabContentsViewViews::OnNCPaint(HRGN rgn) {
-  // Suppress default WM_NCPAINT handling. We don't need to do anything
-  // here since the view will draw everything correctly.
-}
-
-void TabContentsViewViews::ScrollCommon(UINT message, int scroll_type,
-                                        short position, HWND scrollbar) {
-  // This window can receive scroll events as a result of the ThinkPad's
-  // Trackpad scroll wheel emulation.
-  if (!ScrollZoom(scroll_type)) {
-    // Reflect scroll message to the view() to give it a chance
-    // to process scrolling.
-    SendMessage(GetContentNativeView(), message,
-                MAKELONG(scroll_type, position),
-                reinterpret_cast<LPARAM>(scrollbar));
-  }
-}
-
-void TabContentsViewViews::WasHidden() {
-  tab_contents()->HideContents();
-}
-
-void TabContentsViewViews::WasShown() {
+void TabContentsViewViews::OnNativeTabContentsViewShown() {
   tab_contents()->ShowContents();
 }
 
-void TabContentsViewViews::WasSized(const gfx::Size& size) {
+void TabContentsViewViews::OnNativeTabContentsViewHidden() {
+  tab_contents()->HideContents();
+}
+
+void TabContentsViewViews::OnNativeTabContentsViewSized(const gfx::Size& size) {
   if (tab_contents()->interstitial_page())
     tab_contents()->interstitial_page()->SetSize(size);
   RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetSize(size);
-  // TODO(beng) This really shouldn't be necessary but currently is.
-  if (sad_tab_ && sad_tab_->size() != size)
-    sad_tab_->SetSize(size);
-
-  // We have to layout root view here because we handle OnWindowPosChanged
-  // without calling DefWindowProc (it sends OnSize and OnMove) so we don't
-  // receive OnSize. For performance reasons call SetBounds instead of
-  // LayoutRootView, we actually don't need paint event and we know new size.
-  GetRootView()->SetBounds(0, 0, size.width(), size.height());
 }
 
-bool TabContentsViewViews::ScrollZoom(int scroll_type) {
-  // If ctrl is held, zoom the UI.  There are three issues with this:
-  // 1) Should the event be eaten or forwarded to content?  We eat the event,
-  //    which is like Firefox and unlike IE.
-  // 2) Should wheel up zoom in or out?  We zoom in (increase font size), which
-  //    is like IE and Google maps, but unlike Firefox.
-  // 3) Should the mouse have to be over the content area?  We zoom as long as
-  //    content has focus, although FF and IE require that the mouse is over
-  //    content.  This is because all events get forwarded when content has
-  //    focus.
-  if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-    int distance = 0;
-    switch (scroll_type) {
-      case SB_LINEUP:
-        distance = WHEEL_DELTA;
-        break;
-      case SB_LINEDOWN:
-        distance = -WHEEL_DELTA;
-        break;
-        // TODO(joshia): Handle SB_PAGEUP, SB_PAGEDOWN, SB_THUMBPOSITION,
-        // and SB_THUMBTRACK for completeness
-      default:
-        break;
-    }
-
-    WheelZoom(distance);
-    return true;
-  }
-  return false;
-}
-
-void TabContentsViewViews::WheelZoom(int distance) {
+void TabContentsViewViews::OnNativeTabContentsViewWheelZoom(int distance) {
   if (tab_contents()->delegate()) {
     bool zoom_in = distance > 0;
     tab_contents()->delegate()->ContentsZoomChange(zoom_in);
   }
+}
+
+void TabContentsViewViews::OnNativeTabContentsViewMouseDown() {
+  // Make sure this TabContents is activated when it is clicked on.
+  if (tab_contents()->delegate())
+    tab_contents()->delegate()->ActivateContents(tab_contents());
+}
+
+void TabContentsViewViews::OnNativeTabContentsViewMouseMove() {
+  // Let our delegate know that the mouse moved (useful for resetting status
+  // bubble state).
+  if (tab_contents()->delegate()) {
+    tab_contents()->delegate()->ContentsMouseEvent(
+        tab_contents(), views::Screen::GetCursorScreenPoint(), true);
+  }
+}
+
+void TabContentsViewViews::OnNativeTabContentsViewDraggingEnded() {
+  if (close_tab_after_drag_ends_) {
+    close_tab_timer_.Start(base::TimeDelta::FromMilliseconds(0), this,
+                           &TabContentsViewViews::CloseTab);
+  }
+  tab_contents()->SystemDragEnded();
 }

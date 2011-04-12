@@ -21,7 +21,7 @@
 #include "chrome/browser/tab_contents/web_drag_source_win.h"
 #include "chrome/browser/tab_contents/web_drag_utils_win.h"
 #include "chrome/browser/tab_contents/web_drop_target_win.h"
-#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
+#include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_win.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -97,7 +97,7 @@ class DragDropThread : public base::Thread {
   DISALLOW_COPY_AND_ASSIGN(DragDropThread);
 };
 
-TabContentsDragWin::TabContentsDragWin(TabContentsViewViews* view)
+TabContentsDragWin::TabContentsDragWin(NativeTabContentsViewWin* view)
     : drag_drop_thread_id_(0),
       view_(view),
       drag_ended_(false),
@@ -116,10 +116,10 @@ void TabContentsDragWin::StartDragging(const WebDropData& drop_data,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   drag_source_ = new WebDragSource(view_->GetNativeView(),
-                                   view_->tab_contents());
+                                   view_->GetTabContents());
 
-  const GURL& page_url = view_->tab_contents()->GetURL();
-  const std::string& page_encoding = view_->tab_contents()->encoding();
+  const GURL& page_url = view_->GetTabContents()->GetURL();
+  const std::string& page_encoding = view_->GetTabContents()->encoding();
 
   // If it is not drag-out, do the drag-and-drop in the current UI thread.
   if (drop_data.download_metadata.empty()) {
@@ -214,7 +214,7 @@ void TabContentsDragWin::PrepareDragForDownload(
                            download_url,
                            page_url,
                            page_encoding,
-                           view_->tab_contents());
+                           view_->GetTabContents());
   ui::OSExchangeData::DownloadFileInfo file_download(FilePath(),
                                                      download_file.get());
   data->SetDownloadFileInfo(file_download);
