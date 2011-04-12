@@ -70,7 +70,7 @@ for library in "${!libraries[@]}"; do
         break
       fi
     done
-    if ((!found)) && [[ "$library" = "libgmp-dev" ]]; then
+    if ((!found)) && [[ "$library" = "libmpfr-dev" ]]; then
       for mirror in "${mirrors[@]}"; do
         if wget "$mirror/m/mpfr/${library}_${version}_i386.deb"; then
           found=1
