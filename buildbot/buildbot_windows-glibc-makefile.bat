@@ -17,6 +17,8 @@ bash buildbot/buildbot_windows-glibc-makefile.sh
 if errorlevel 1 exit 1
 endlocal
 
+IF "%BUILDBOT_SLAVE_TYPE%"=="Trybot" goto SkipUpload
+
 :: gsutil does not work when called from cygwin - python versions conflict.
 
 echo @@@BUILD_STEP archive_build@@@
@@ -24,6 +26,7 @@ call ..\..\..\..\scripts\slave\gsutil -h Cache-Control:no-cache cp -a public-rea
  tools\toolchain.tgz ^
  gs://nativeclient-archive2/x86_toolchain/r%BUILDBOT_GOT_REVISION%/toolchain_win_x86.tar.gz
 echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r%BUILDBOT_GOT_REVISION%/@@@
+:SkipUpload
 
 :: Run tests
 

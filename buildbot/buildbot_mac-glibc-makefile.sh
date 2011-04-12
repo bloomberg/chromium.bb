@@ -53,11 +53,13 @@ echo @@@BUILD_STEP tar_toolchain@@@
   tar zScf toolchain.tgz toolchain/ && chmod a+r toolchain.tgz
 )
 
-echo @@@BUILD_STEP archive_build@@@
-/b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
-  tools/toolchain.tgz \
-  gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_mac_x86.tar.gz
-echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/@@@
+if [[ "$BUILDBOT_SLAVE_TYPE" != "Trybot" ]]; then
+  echo @@@BUILD_STEP archive_build@@@
+  /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+    tools/toolchain.tgz \
+    gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_mac_x86.tar.gz
+  echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/@@@
+fi
 
 echo @@@BUILD_STEP untar_toolchain@@@
 (

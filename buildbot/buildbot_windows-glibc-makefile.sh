@@ -61,5 +61,9 @@ echo @@@BUILD_STEP untar_toolchain@@@
   mkdir -p .tmp
   cd .tmp
   tar zSxf ../tools/toolchain.tgz
+  find -L toolchain -type f -xtype l |
+  while read name ; do
+    ln -Tf "$(readlink -f "$name")" "$name"
+  done
   mv toolchain ..
 )
