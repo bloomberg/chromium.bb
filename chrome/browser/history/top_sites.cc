@@ -257,6 +257,19 @@ bool TopSites::GetPageThumbnailScore(const GURL& url,
   return thread_safe_cache_->GetPageThumbnailScore(url, score);
 }
 
+bool TopSites::GetTemporaryPageThumbnailScore(const GURL& url,
+                                              ThumbnailScore* score) {
+  for (TempImages::iterator i = temp_images_.begin(); i != temp_images_.end();
+       ++i) {
+    if (i->first == url) {
+      *score = i->second.thumbnail_score;
+      return true;
+    }
+  }
+  return false;
+}
+
+
 // Returns the index of |url| in |urls|, or -1 if not found.
 static int IndexOf(const MostVisitedURLList& urls, const GURL& url) {
   for (size_t i = 0; i < urls.size(); i++) {

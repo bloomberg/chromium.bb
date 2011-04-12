@@ -1098,6 +1098,11 @@ TEST_F(TopSitesTest, AddTemporaryThumbnail) {
   // We shouldn't get the thumnail back though (the url isn't in to sites yet).
   scoped_refptr<RefCountedBytes> out;
   EXPECT_FALSE(top_sites()->GetPageThumbnail(unknown_url, &out));
+  // But we should be able to get the temporary page thumbnail score.
+  ThumbnailScore out_score;
+  EXPECT_TRUE(top_sites()->GetTemporaryPageThumbnailScore(unknown_url,
+                                                          &out_score));
+  EXPECT_TRUE(medium_score.Equals(out_score));
 
   std::vector<MostVisitedURL> list;
 

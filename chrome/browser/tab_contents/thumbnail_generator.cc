@@ -671,14 +671,18 @@ bool ThumbnailGenerator::ShouldUpdateThumbnail(Profile* profile,
   if (!HistoryService::CanAddURL(url))
     return false;
   // Skip if the top sites list is full, and the URL is not known.
-  const bool is_known = top_sites->IsKnownURL(url);
-  if (top_sites->IsFull() && !is_known)
+  if (top_sites->IsFull() && !top_sites->IsKnownURL(url))
     return false;
   // Skip if we don't have to udpate the existing thumbnail.
   ThumbnailScore current_score;
-  if (is_known &&
-      top_sites->GetPageThumbnailScore(url, &current_score) &&
+  if (top_sites->GetPageThumbnailScore(url, &current_score) &&
       !current_score.ShouldConsiderUpdating())
+    return false;
+  // Skip if we don't have to udpate the temporary thumbnail (i.e. the one
+  // not yet saved).
+  ThumbnailScore temporary_score;
+  if (top_sites->GetTemporaryPageThumbnailScore(url, &temporary_score) &&
+      !temporary_score.ShouldConsiderUpdating())
     return false;
 
   return true;

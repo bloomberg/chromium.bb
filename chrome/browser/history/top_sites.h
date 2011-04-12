@@ -84,6 +84,11 @@ class TopSites
   // be copied to |score|.
   virtual bool GetPageThumbnailScore(const GURL& url, ThumbnailScore* score);
 
+  // Get a temporary thumbnail score for a given page. Returns true iff we
+  // have the thumbnail score. Useful when checking if we should update a
+  // thumbnail for a given page. The score will be copied to |score|.
+  bool GetTemporaryPageThumbnailScore(const GURL& url, ThumbnailScore* score);
+
   // Invoked from History if migration is needed. If this is invoked it will
   // be before HistoryLoaded is invoked.
   void MigrateFromHistory();
