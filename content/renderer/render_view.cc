@@ -2224,6 +2224,7 @@ bool RenderView::runModalBeforeUnloadDialog(
 void RenderView::showContextMenu(
     WebFrame* frame, const WebContextMenuData& data) {
   ContextMenuParams params = ContextMenuParams(data);
+#if !defined(WEBSPELLCHECKCLIENT_HAS_SUGGESTIONS)
   if (!params.misspelled_word.empty() && RenderThread::current()) {
     int misspelled_offset, misspelled_length;
     bool spelled_right = RenderThread::current()->spellchecker()->
@@ -2235,6 +2236,8 @@ void RenderView::showContextMenu(
     if (spelled_right)
       params.misspelled_word.clear();
   }
+#endif
+
   // Serializing a GURL longer than content::kMaxURLChars will fail, so don't do
   // it.  We replace it with an empty GURL so the appropriate items are disabled
   // in the context menu.

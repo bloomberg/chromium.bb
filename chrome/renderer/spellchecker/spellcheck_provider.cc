@@ -20,6 +20,7 @@ using WebKit::WebFrame;
 using WebKit::WebString;
 using WebKit::WebTextCheckingCompletion;
 using WebKit::WebTextCheckingResult;
+using WebKit::WebVector;
 
 SpellCheckProvider::SpellCheckProvider(RenderView* render_view,
                                        SpellCheck* spellcheck)
@@ -76,19 +77,30 @@ bool SpellCheckProvider::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void SpellCheckProvider::spellCheck(const WebString& text,
-                                    int& misspelled_offset,
-                                    int& misspelled_length) {
+void SpellCheckProvider::spellCheck(
+    const WebString& text,
+    int& offset,
+    int& length,
+    WebVector<WebString>* optional_suggestions) {
   EnsureDocumentTag();
 
   string16 word(text);
   RenderThread* thread = RenderThread::current();
   // Will be NULL during unit tests.
   if (thread) {
+    std::vector<string16> suggestions;
     thread->spellchecker()->SpellCheckWord(
         word.c_str(), word.size(), document_tag_,
-        &misspelled_offset, &misspelled_length, NULL);
+        &offset, &length, optional_suggestions ? & suggestions : NULL);
+    if (optional_suggestions)
+      *optional_suggestions = suggestions;
   }
+}
+
+void SpellCheckProvider::spellCheck(const WebString& text,
+                                    int& offset,
+                                    int& length) {
+  spellCheck(text, offset, length, NULL);
 }
 
 void SpellCheckProvider::requestCheckingOfText(

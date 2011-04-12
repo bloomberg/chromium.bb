@@ -5,6 +5,9 @@
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/glue_serialize.h"
 
+// TODO(jam): remove me once WebKit is merged.
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSpellCheckClient.h"
+
 namespace webkit_glue {
 
 const int32 CustomContextMenuContext::kCurrentRenderWidget = kint32max;
@@ -43,6 +46,11 @@ ContextMenuParams::ContextMenuParams(const WebKit::WebContextMenuData& data)
       edit_flags(data.editFlags),
       security_info(data.securityInfo),
       frame_charset(data.frameEncoding.utf8()) {
+#if defined(WEBSPELLCHECKCLIENT_HAS_SUGGESTIONS)
+  for (size_t i = 0; i < data.dictionarySuggestions.size(); ++i)
+    dictionary_suggestions.push_back(data.dictionarySuggestions[i]);
+#endif
+
   custom_context.is_pepper_menu = false;
   for (size_t i = 0; i < data.customItems.size(); ++i)
     custom_items.push_back(WebMenuItem(data.customItems[i]));

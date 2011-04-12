@@ -12,6 +12,9 @@
 #include "content/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSpellCheckClient.h"
 
+// TODO(jam): remove me once WEBSPELLCHECKCLIENT_HAS_SUGGESTIONS is rolled
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
+
 class RenderView;
 class SpellCheck;
 
@@ -54,6 +57,12 @@ class SpellCheckProvider : public RenderViewObserver,
 
  private:
   // WebKit::WebSpellCheckClient implementation.
+  virtual void spellCheck(
+      const WebKit::WebString& text,
+      int& offset,
+      int& length,
+      WebKit::WebVector<WebKit::WebString>* optional_suggestions);
+  // TODO(jam): remove me once WEBSPELLCHECKCLIENT_HAS_SUGGESTIONS is rolled
   virtual void spellCheck(const WebKit::WebString& text,
                           int& offset,
                           int& length);
