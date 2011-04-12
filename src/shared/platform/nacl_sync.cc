@@ -92,7 +92,7 @@ NaClSyncStatus NaClCondVarWait(struct NaClCondVar *cvp,
    * the condvar is signaled.  This is an ugly workaround.
    */
   static struct nacl_abi_timespec const poll_time = {
-    0, 10 * NACL_NANOS_PER_MILLI,
+    0, 250 * NACL_NANOS_PER_MILLI,
   };
 
   /*
