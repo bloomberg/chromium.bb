@@ -10,7 +10,7 @@
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 #include "webkit/glue/p2p_transport.h"
 
-class RenderView;
+class P2PSocketDispatcher;
 
 namespace cricket {
 class Candidate;
@@ -33,10 +33,15 @@ class P2PTransportImpl : public webkit_glue::P2PTransport,
                          public sigslot::has_slots<> {
  public:
   // Create P2PTransportImpl using specified NetworkManager and
-  // PacketSocketFactory. Caller keeps ownership of |network_manager|
-  // and |socket_factory|.
+  // PacketSocketFactory. Takes ownership of |network_manager| and
+  // |socket_factory|.
   P2PTransportImpl(talk_base::NetworkManager* network_manager,
                    talk_base::PacketSocketFactory* socket_factory);
+
+  // Creates P2PTransportImpl using specified
+  // P2PSocketDispatcher. This constructor creates IpcNetworkManager
+  // and IpcPacketSocketFactory, and keeps ownership of these objects.
+  P2PTransportImpl(P2PSocketDispatcher* socket_dispatcher);
 
   virtual ~P2PTransportImpl();
 
@@ -63,8 +68,8 @@ class P2PTransportImpl : public webkit_glue::P2PTransport,
   EventHandler* event_handler_;
   State state_;
 
-  talk_base::NetworkManager* network_manager_;
-  talk_base::PacketSocketFactory* socket_factory_;
+  scoped_ptr<talk_base::NetworkManager> network_manager_;
+  scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;
 
   scoped_ptr<cricket::PortAllocator> allocator_;
   scoped_ptr<cricket::P2PTransportChannel> channel_;

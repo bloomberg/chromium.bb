@@ -30,6 +30,7 @@ JingleThreadWrapper::JingleThreadWrapper(MessageLoop* message_loop)
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   talk_base::ThreadManager::SetCurrent(this);
+  talk_base::MessageQueueManager::Instance()->Add(this);
   message_loop_->AddDestructionObserver(this);
 }
 
@@ -38,6 +39,7 @@ JingleThreadWrapper::~JingleThreadWrapper() {
 
 void JingleThreadWrapper::WillDestroyCurrentMessageLoop() {
   talk_base::ThreadManager::SetCurrent(NULL);
+  talk_base::MessageQueueManager::Instance()->Remove(this);
   message_loop_->RemoveDestructionObserver(this);
   delete this;
 }

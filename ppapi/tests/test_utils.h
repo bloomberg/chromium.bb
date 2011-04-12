@@ -26,6 +26,8 @@ class TestCompletionCallback {
   unsigned run_count() const { return run_count_; }
   void reset_run_count() { run_count_ = 0; }
 
+  int32_t result() const { return result_; }
+
  private:
   static void Handler(void* user_data, int32_t result);
 

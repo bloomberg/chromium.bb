@@ -35,19 +35,14 @@ class ThreadWrapperTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    wrapper_ = new JingleThreadWrapper(&message_loop_);
+    JingleThreadWrapper::EnsureForCurrentThread();
   }
 
   // ThreadWrapper destroyes itself when |message_loop_| is destroyed.
-  JingleThreadWrapper* wrapper_;
   MessageLoop message_loop_;
   MockMessageHandler handler1_;
   MockMessageHandler handler2_;
 };
-
-TEST_F(ThreadWrapperTest, Create) {
-  EXPECT_EQ(thread(), static_cast<talk_base::Thread*>(wrapper_));
-}
 
 MATCHER_P3(MatchMessageAndDeleteData, handler, message_id, data, "") {
   delete arg->pdata;
@@ -154,6 +149,19 @@ TEST_F(ThreadWrapperTest, ClearDelayed) {
   message_loop_.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask(),
                                 kMaxTestDelay);
   message_loop_.Run();
+}
+
+// Verify that the queue is cleared when a handler is destroyed.
+TEST_F(ThreadWrapperTest, ClearDestoroyed) {
+  MockMessageHandler* handler_ptr;
+  {
+    MockMessageHandler handler;
+    handler_ptr = &handler;
+    thread()->Post(&handler, kTestMessage1, NULL);
+  }
+  talk_base::MessageList removed;
+  thread()->Clear(handler_ptr, talk_base::MQID_ANY, &removed);
+  DCHECK_EQ(0U, removed.size());
 }
 
 }  // namespace jingle_glue

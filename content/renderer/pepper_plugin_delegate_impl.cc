@@ -29,6 +29,7 @@
 #include "content/renderer/content_renderer_client.h"
 #include "content/renderer/renderer_gl_context.h"
 #include "content/renderer/gpu_channel_host.h"
+#include "content/renderer/p2p/p2p_transport_impl.h"
 #include "content/renderer/pepper_platform_context_3d_impl.h"
 #include "content/renderer/render_view.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
@@ -923,4 +924,8 @@ void PepperPluginDelegateImpl::HasUnsupportedFeature() {
 
 P2PSocketDispatcher* PepperPluginDelegateImpl::GetP2PSocketDispatcher() {
   return render_view_->p2p_socket_dispatcher();
+}
+
+webkit_glue::P2PTransport* PepperPluginDelegateImpl::CreateP2PTransport() {
+  return new P2PTransportImpl(render_view_->p2p_socket_dispatcher());
 }

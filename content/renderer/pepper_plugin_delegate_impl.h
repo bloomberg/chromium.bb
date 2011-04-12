@@ -190,6 +190,7 @@ class PepperPluginDelegateImpl
   virtual void SetContentRestriction(int restrictions);
   virtual void HasUnsupportedFeature();
   virtual P2PSocketDispatcher* GetP2PSocketDispatcher();
+  virtual webkit_glue::P2PTransport* CreateP2PTransport();
 
  private:
   // Pointer to the RenderView that owns us.

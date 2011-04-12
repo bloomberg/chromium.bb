@@ -98,6 +98,7 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void SetContentRestriction(int restrictions);
   virtual void HasUnsupportedFeature();
   virtual P2PSocketDispatcher* GetP2PSocketDispatcher();
+  virtual webkit_glue::P2PTransport* CreateP2PTransport();
 };
 
 }  // namespace ppapi

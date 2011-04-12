@@ -23,6 +23,11 @@ P2PTransportImpl::P2PTransportImpl(
       socket_factory_(socket_factory) {
 }
 
+P2PTransportImpl::P2PTransportImpl(P2PSocketDispatcher* socket_dispatcher)
+    : network_manager_(new IpcNetworkManager(socket_dispatcher)),
+      socket_factory_(new IpcPacketSocketFactory(socket_dispatcher)) {
+}
+
 P2PTransportImpl::~P2PTransportImpl() {
 }
 
@@ -40,8 +45,9 @@ bool P2PTransportImpl::Init(const std::string& name, const std::string& config,
   // TODO(sergeyu): Implement PortAllocator that can parse |config|
   // and use it here instead of BasicPortAllocator.
   allocator_.reset(new cricket::BasicPortAllocator(
-      network_manager_, socket_factory_));
+      network_manager_.get(), socket_factory_.get()));
 
+  DCHECK(!channel_.get());
   channel_.reset(new cricket::P2PTransportChannel(
       name, "", NULL, allocator_.get()));
   channel_->SignalRequestSignaling.connect(

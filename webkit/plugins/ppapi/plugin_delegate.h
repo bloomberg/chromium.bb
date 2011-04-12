@@ -54,6 +54,10 @@ class WebFileChooserCompletion;
 struct WebFileChooserParams;
 }
 
+namespace webkit_glue {
+class P2PTransport;
+}  // namespace webkit_glue
+
 struct PP_Flash_NetAddress;
 struct PP_VideoDecoderConfig_Dev;
 
@@ -368,9 +372,12 @@ class PluginDelegate {
   // Socket dispatcher for P2P connections. Returns to NULL if P2P API
   // is disabled.
   //
-  // TODO(sergeyu): Replace this with a higher-level P2P API
-  // implementation.
+  // TODO(sergeyu): Stop using GetP2PSocketDispatcher() in remoting
+  // client and remove it from here.
   virtual P2PSocketDispatcher* GetP2PSocketDispatcher() = 0;
+
+  // Creates P2PTransport object.
+  virtual webkit_glue::P2PTransport* CreateP2PTransport() = 0;
 };
 
 }  // namespace ppapi

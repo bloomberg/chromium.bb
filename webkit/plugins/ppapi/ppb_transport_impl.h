@@ -5,30 +5,22 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_PPB_TRANSPORT_IMPL_H_
 #define WEBKIT_PLUGINS_PPAPI_PPB_TRANSPORT_IMPL_H_
 
+#include <list>
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "net/base/completion_callback.h"
 #include "ppapi/c/dev/ppb_transport_dev.h"
-#include "third_party/libjingle/source/talk/base/sigslot.h"
-#include "third_party/libjingle/source/talk/p2p/base/candidate.h"
+#include "webkit/glue/p2p_transport.h"
 #include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/resource.h"
-
-namespace talk_base {
-class NetworkManager;
-class PacketSocketFactory;
-}  // namespace talk_base
-
-namespace cricket {
-class HttpPortAllocator;
-class P2PTransportChannel;
-class TransportChannel;
-class TransportChannelImpl;
-}  // namespace cricket
 
 namespace webkit {
 namespace ppapi {
 
-class PPB_Transport_Impl : public Resource, public sigslot::has_slots<> {
+class PPB_Transport_Impl : public Resource,
+                           public webkit_glue::P2PTransport::EventHandler {
  public:
   static const PPB_Transport_Dev* GetInterface();
 
@@ -38,7 +30,7 @@ class PPB_Transport_Impl : public Resource, public sigslot::has_slots<> {
   bool Init(const char* name, const char* proto);
 
   // Resource override.
-  virtual PPB_Transport_Impl* AsPPB_Transport_Impl();
+  virtual PPB_Transport_Impl* AsPPB_Transport_Impl() OVERRIDE;
 
   bool IsWritable() const;
   int32_t Connect(PP_CompletionCallback cb);
@@ -48,29 +40,29 @@ class PPB_Transport_Impl : public Resource, public sigslot::has_slots<> {
   int32_t Send(const void* data, uint32_t len, PP_CompletionCallback cb);
   int32_t Close();
 
+  // webkit_glue::P2PTransport::EventHandler implementation.
+  virtual void OnCandidateReady(const std::string& address) OVERRIDE;
+  virtual void OnStateChange(webkit_glue::P2PTransport::State state) OVERRIDE;
+
  private:
-  void OnRequestSignaling();
-  void OnCandidateReady(cricket::TransportChannelImpl* channel,
-                        const cricket::Candidate& candidate);
-  void OnWriteableState(cricket::TransportChannel*);
-  void OnReadPacket(cricket::TransportChannel*, const char*, size_t);
+  void OnRead(int result);
+  void OnWritten(int result);
 
-  bool Serialize(const cricket::Candidate& candidate, PP_Var* address);
-  bool Deserialize(PP_Var address, cricket::Candidate* candidate);
-
-  scoped_ptr<talk_base::NetworkManager> network_manager_;
-  scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;
-  scoped_ptr<cricket::HttpPortAllocator> allocator_;
-  scoped_ptr<cricket::P2PTransportChannel> channel_;
-  std::list<cricket::Candidate> local_candidates_;
+  std::string name_;
+  std::string proto_;
+  bool started_;
+  scoped_ptr<webkit_glue::P2PTransport> p2p_transport_;
+  bool writable_;
+  std::list<std::string> local_candidates_;
 
   scoped_refptr<TrackedCompletionCallback> connect_callback_;
-
   scoped_refptr<TrackedCompletionCallback> next_address_callback_;
 
   scoped_refptr<TrackedCompletionCallback> recv_callback_;
-  void* recv_buffer_;
-  uint32_t recv_buffer_size_;
+  scoped_refptr<TrackedCompletionCallback> send_callback_;
+
+  net::CompletionCallbackImpl<PPB_Transport_Impl> channel_write_callback_;
+  net::CompletionCallbackImpl<PPB_Transport_Impl> channel_read_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Transport_Impl);
 };

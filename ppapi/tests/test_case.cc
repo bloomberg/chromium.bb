@@ -9,6 +9,7 @@
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
+// static
 std::string TestCase::MakeFailureMessage(const char* file,
                                          int line,
                                          const char* cmd) {

@@ -203,28 +203,19 @@ class P2PTransportImplTest : public testing::Test {
 
     net::IPAddressNumber ip;
     ASSERT_TRUE(net::ParseIPLiteralToNumber(kTestAddress1, &ip));
-    network_manager1_.reset(new jingle_glue::FakeNetworkManager(ip));
-    socket_factory1_.reset(
-        new jingle_glue::FakeSocketFactory(socket_manager_, ip));
-    transport1_.reset(new P2PTransportImpl(network_manager1_.get(),
-                                           socket_factory1_.get()));
+    transport1_.reset(new P2PTransportImpl(
+        new jingle_glue::FakeNetworkManager(ip),
+        new jingle_glue::FakeSocketFactory(socket_manager_, ip)));
 
     ASSERT_TRUE(net::ParseIPLiteralToNumber(kTestAddress2, &ip));
-    network_manager2_.reset(new jingle_glue::FakeNetworkManager(ip));
-    socket_factory2_.reset(
-        new jingle_glue::FakeSocketFactory(socket_manager_, ip));
-    transport2_.reset(new P2PTransportImpl(network_manager2_.get(),
-                                           socket_factory2_.get()));
+    transport2_.reset(new P2PTransportImpl(
+        new jingle_glue::FakeNetworkManager(ip),
+        new jingle_glue::FakeSocketFactory(socket_manager_, ip)));
   }
 
   MessageLoop message_loop_;
 
-  scoped_ptr<jingle_glue::FakeNetworkManager> network_manager1_;
-  scoped_ptr<jingle_glue::FakeNetworkManager> network_manager2_;
   scoped_refptr<jingle_glue::FakeSocketManager> socket_manager_;
-  scoped_ptr<jingle_glue::FakeSocketFactory> socket_factory1_;
-  scoped_ptr<jingle_glue::FakeSocketFactory> socket_factory2_;
-
   scoped_ptr<P2PTransportImpl> transport1_;
   MockP2PEventHandler event_handler1_;
   scoped_ptr<P2PTransportImpl> transport2_;

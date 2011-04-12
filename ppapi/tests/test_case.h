@@ -34,7 +34,8 @@ class TestCase {
   // first displayed.
   virtual void RunTest() = 0;
 
-  std::string MakeFailureMessage(const char* file, int line, const char* cmd);
+  static std::string MakeFailureMessage(const char* file, int line,
+                                        const char* cmd);
 
   // Returns the scriptable test object for the current test, if any.
   // Internally, this uses CreateTestObject which each test overrides.
@@ -129,4 +130,3 @@ class TestCaseFactory {
 #define PASS() return std::string()
 
 #endif  // PPAPI_TESTS_TEST_CASE_H_
-

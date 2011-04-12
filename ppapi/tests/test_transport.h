@@ -7,13 +7,14 @@
 
 #include <string>
 
+#include "base/scoped_ptr.h"
 #include "ppapi/tests/test_case.h"
 
 struct PPB_Transport_Dev;
 
 namespace pp {
-class Transport;
-}
+class Transport_Dev;
+}  // namespace pp
 
 class TestTransport : public TestCase {
  public:
@@ -24,10 +25,20 @@ class TestTransport : public TestCase {
   virtual void RunTest();
 
  private:
-  std::string TestBasics();
+  std::string InitTargets();
+  std::string Connect();
+  std::string Clean();
+
+  std::string TestCreate();
+  std::string TestConnect();
+  std::string TestSendData();
+  std::string TestConnectAndClose();
 
   // Used by the tests that access the C API directly.
   const PPB_Transport_Dev* transport_interface_;
+
+  scoped_ptr<pp::Transport_Dev> transport1_;
+  scoped_ptr<pp::Transport_Dev> transport2_;
 };
 
 #endif  // PPAPI_TESTS_TEST_TRANSPORT_H_

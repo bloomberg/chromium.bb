@@ -4,12 +4,13 @@
 
 #include "webkit/plugins/ppapi/ppb_transport_impl.h"
 
+#include "base/message_loop.h"
+#include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
+#include "net/socket/socket.h"
 #include "ppapi/c/dev/ppb_transport_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
-#include "third_party/libjingle/source/talk/base/basicpacketsocketfactory.h"
-#include "third_party/libjingle/source/talk/p2p/base/p2ptransportchannel.h"
-#include "third_party/libjingle/source/talk/p2p/client/httpportallocator.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -95,22 +96,32 @@ const PPB_Transport_Dev ppb_transport = {
   &Close,
 };
 
+int MapNetError(int result) {
+  if (result > 0)
+    return result;
+
+  switch (result) {
+    case net::OK:
+      return PP_OK;
+    case net::ERR_IO_PENDING:
+      return PP_OK_COMPLETIONPENDING;
+    case net::ERR_INVALID_ARGUMENT:
+      return PP_ERROR_BADARGUMENT;
+    default:
+      return PP_ERROR_FAILED;
+  }
+}
+
 }  // namespace
 
 PPB_Transport_Impl::PPB_Transport_Impl(PluginInstance* instance)
     : Resource(instance),
-      network_manager_(new talk_base::NetworkManager()),
-      // TODO(sergeyu): Use IpcPacketSocketFactory here when it is
-      // implemented, and when we have talk_base::Thread wrapper for
-      // Chromium threads.
-      socket_factory_(new talk_base::BasicPacketSocketFactory(
-          talk_base::Thread::Current())),
-      allocator_(new cricket::HttpPortAllocator(
-          network_manager_.get(), socket_factory_.get(), "")) {
-  std::vector<talk_base::SocketAddress> stun_hosts;
-  stun_hosts.push_back(talk_base::SocketAddress("stun.l.google.com", 19302));
-  allocator_->SetStunHosts(stun_hosts);
-  // TODO(sergeyu): Use port allocator that works inside sandbox.
+      started_(false),
+      writable_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          channel_write_callback_(this, &PPB_Transport_Impl::OnWritten)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          channel_read_callback_(this, &PPB_Transport_Impl::OnRead)) {
 }
 
 PPB_Transport_Impl::~PPB_Transport_Impl() {
@@ -125,30 +136,33 @@ PPB_Transport_Impl* PPB_Transport_Impl::AsPPB_Transport_Impl() {
 }
 
 bool PPB_Transport_Impl::Init(const char* name, const char* proto) {
-  // For now, always create http://www.google.com/transport/p2p .
-  channel_.reset(new cricket::P2PTransportChannel(
-      name, "", NULL, allocator_.get()));
-  channel_->SignalRequestSignaling.connect(
-      this, &PPB_Transport_Impl::OnRequestSignaling);
-  channel_->SignalWritableState.connect(
-      this, &PPB_Transport_Impl::OnWriteableState);
-  channel_->SignalCandidateReady.connect(
-      this, &PPB_Transport_Impl::OnCandidateReady);
-  channel_->SignalReadPacket.connect(
-      this, &PPB_Transport_Impl::OnReadPacket);
-  return true;
+  name_ = name;
+  proto_ = proto;
+  p2p_transport_.reset(instance()->delegate()->CreateP2PTransport());
+  return p2p_transport_.get() != NULL;
 }
 
 bool PPB_Transport_Impl::IsWritable() const {
-  return channel_->writable();
+  if (!p2p_transport_.get())
+    return false;
+
+  return writable_;
 }
 
 int32_t PPB_Transport_Impl::Connect(PP_CompletionCallback callback) {
-  // TODO(juberti): Fail if we're already connected.
-  if (connect_callback_.get() && !connect_callback_->completed())
+  if (!p2p_transport_.get())
+    return PP_ERROR_FAILED;
+
+  // TODO(sergeyu): Use |proto_| here.
+
+  // Connect() has already been called.
+  if (started_)
     return PP_ERROR_INPROGRESS;
 
-  channel_->Connect();
+  if (!p2p_transport_->Init(name_, "", this))
+    return PP_ERROR_FAILED;
+
+  started_ = true;
 
   PP_Resource resource_id = GetReferenceNoAddRef();
   CHECK(resource_id);
@@ -159,11 +173,15 @@ int32_t PPB_Transport_Impl::Connect(PP_CompletionCallback callback) {
 
 int32_t PPB_Transport_Impl::GetNextAddress(PP_Var* address,
                                            PP_CompletionCallback callback) {
+  if (!p2p_transport_.get())
+    return PP_ERROR_FAILED;
+
   if (next_address_callback_.get() && !next_address_callback_->completed())
     return PP_ERROR_INPROGRESS;
 
   if (!local_candidates_.empty()) {
-    Serialize(local_candidates_.front(), address);
+    *address = StringVar::StringToPPVar(instance()->module(),
+                                        local_candidates_.front());
     local_candidates_.pop_front();
     return PP_OK;
   }
@@ -176,98 +194,111 @@ int32_t PPB_Transport_Impl::GetNextAddress(PP_Var* address,
 }
 
 int32_t PPB_Transport_Impl::ReceiveRemoteAddress(PP_Var address) {
-  cricket::Candidate candidate;
-  if (!Deserialize(address, &candidate)) {
+  if (!p2p_transport_.get())
     return PP_ERROR_FAILED;
-  }
 
-  channel_->OnCandidate(candidate);
-  return PP_OK;
+  scoped_refptr<StringVar> address_str = StringVar::FromPPVar(address);
+  if (!address_str)
+    return PP_ERROR_BADARGUMENT;
+
+  return p2p_transport_->AddRemoteCandidate(address_str->value()) ?
+      PP_OK : PP_ERROR_FAILED;
 }
 
 int32_t PPB_Transport_Impl::Recv(void* data, uint32_t len,
                                  PP_CompletionCallback callback) {
+  if (!p2p_transport_.get())
+    return PP_ERROR_FAILED;
+
   if (recv_callback_.get() && !recv_callback_->completed())
     return PP_ERROR_INPROGRESS;
 
-  // TODO(juberti): Should we store packets that are received when
-  // no callback is installed?
+  net::Socket* channel = p2p_transport_->GetChannel();
+  if (!channel)
+    return PP_ERROR_FAILED;
 
-  recv_buffer_ = data;
-  recv_buffer_size_ = len;
+  scoped_refptr<net::IOBuffer> buffer =
+      new net::WrappedIOBuffer(static_cast<const char*>(data));
+  int result = MapNetError(channel->Read(buffer, len, &channel_read_callback_));
+  if (result == PP_OK_COMPLETIONPENDING) {
+    PP_Resource resource_id = GetReferenceNoAddRef();
+    CHECK(resource_id);
+    recv_callback_ = new TrackedCompletionCallback(
+        instance()->module()->GetCallbackTracker(), resource_id, callback);
+  }
 
-  PP_Resource resource_id = GetReferenceNoAddRef();
-  CHECK(resource_id);
-  recv_callback_ = new TrackedCompletionCallback(
-      instance()->module()->GetCallbackTracker(), resource_id, callback);
-  return PP_OK_COMPLETIONPENDING;
+  return result;
 }
 
 int32_t PPB_Transport_Impl::Send(const void* data, uint32_t len,
                                  PP_CompletionCallback callback) {
-  return channel_->SendPacket(static_cast<const char*>(data), len);
+  if (!p2p_transport_.get())
+    return PP_ERROR_FAILED;
+
+  if (send_callback_.get() && !send_callback_->completed())
+    return PP_ERROR_INPROGRESS;
+
+  net::Socket* channel = p2p_transport_->GetChannel();
+  if (!channel)
+    return PP_ERROR_FAILED;
+
+  scoped_refptr<net::IOBuffer> buffer =
+      new net::WrappedIOBuffer(static_cast<const char*>(data));
+  int result = MapNetError(channel->Write(buffer, len,
+                                          &channel_write_callback_));
+  if (result == PP_OK_COMPLETIONPENDING) {
+    PP_Resource resource_id = GetReferenceNoAddRef();
+    CHECK(resource_id);
+    send_callback_ = new TrackedCompletionCallback(
+        instance()->module()->GetCallbackTracker(), resource_id, callback);
+  }
+
+  return result;
 }
 
 int32_t PPB_Transport_Impl::Close() {
-  channel_->Reset();
+  if (!p2p_transport_.get())
+    return PP_ERROR_FAILED;
+
+  p2p_transport_.reset();
   instance()->module()->GetCallbackTracker()->AbortAll();
   return PP_OK;
 }
 
-void PPB_Transport_Impl::OnRequestSignaling() {
-  channel_->OnSignalingReady();
-}
-
-void PPB_Transport_Impl::OnCandidateReady(
-    cricket::TransportChannelImpl* channel,
-    const cricket::Candidate& candidate) {
+void PPB_Transport_Impl::OnCandidateReady(const std::string& address) {
   // Store the candidate first before calling the callback.
-  local_candidates_.push_back(candidate);
+  local_candidates_.push_back(address);
 
-  if (next_address_callback_.get() && next_address_callback_->completed()) {
+  if (next_address_callback_.get() && !next_address_callback_->completed()) {
     scoped_refptr<TrackedCompletionCallback> callback;
     callback.swap(next_address_callback_);
     callback->Run(PP_OK);
   }
 }
 
-void PPB_Transport_Impl::OnWriteableState(cricket::TransportChannel* channel) {
-  if (connect_callback_.get() && connect_callback_->completed()) {
+void PPB_Transport_Impl::OnStateChange(webkit_glue::P2PTransport::State state) {
+  writable_ = (state | webkit_glue::P2PTransport::STATE_WRITABLE) != 0;
+  if (writable_ && connect_callback_.get() && !connect_callback_->completed()) {
     scoped_refptr<TrackedCompletionCallback> callback;
     callback.swap(connect_callback_);
     callback->Run(PP_OK);
   }
 }
 
-void PPB_Transport_Impl::OnReadPacket(cricket::TransportChannel* channel,
-                                      const char* data, size_t len) {
-  if (recv_callback_.get() && recv_callback_->completed()) {
-    scoped_refptr<TrackedCompletionCallback> callback;
-    callback.swap(recv_callback_);
+void PPB_Transport_Impl::OnRead(int result) {
+  DCHECK(recv_callback_.get() && !recv_callback_->completed());
 
-    if (len <= recv_buffer_size_) {
-      memcpy(recv_buffer_, data, len);
-      callback->Run(PP_OK);
-    } else {
-      callback->Run(PP_ERROR_FAILED);
-    }
-  }
-  // TODO(sergeyu): Buffer incoming packet if there is no pending read.
+  scoped_refptr<TrackedCompletionCallback> callback;
+  callback.swap(recv_callback_);
+  callback->Run(MapNetError(result));
 }
 
-bool PPB_Transport_Impl::Serialize(const cricket::Candidate& candidate,
-                                   PP_Var* address) {
-  // TODO(juberti): Come up with a real wire format!
-  std::string blob = candidate.ToString();
-  Var::PluginReleasePPVar(*address);
-  *address = StringVar::StringToPPVar(instance()->module(), blob);
-  return true;
-}
+void PPB_Transport_Impl::OnWritten(int result) {
+  DCHECK(send_callback_.get() && !send_callback_->completed());
 
-bool PPB_Transport_Impl::Deserialize(PP_Var address,
-                                     cricket::Candidate* candidate) {
-  // TODO(juberti): Implement this.
-  return false;
+  scoped_refptr<TrackedCompletionCallback> callback;
+  callback.swap(send_callback_);
+  callback->Run(MapNetError(result));
 }
 
 }  // namespace ppapi
