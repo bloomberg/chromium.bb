@@ -14,6 +14,9 @@
 #include "printing/print_job_constants.h"
 #include "printing/print_settings_initializer_mac.h"
 
+static const CFStringRef kColorModel = CFSTR("ColorModel");
+static const CFStringRef kGrayColor = CFSTR("Gray");
+
 namespace printing {
 
 // static
@@ -94,11 +97,13 @@ PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
   int copies;
   bool collate;
   bool two_sided;
+  bool color;
   if (!job_settings.GetBoolean(kSettingLandscape, &landscape) ||
       !job_settings.GetString(kSettingPrinterName, &printer_name) ||
       !job_settings.GetInteger(kSettingCopies, &copies) ||
       !job_settings.GetBoolean(kSettingCollate, &collate) ||
-      !job_settings.GetBoolean(kSettingTwoSided, &two_sided)) {
+      !job_settings.GetBoolean(kSettingTwoSided, &two_sided) ||
+      !job_settings.GetBoolean(kSettingColor, &color)) {
     return OnError();
   }
 
@@ -115,6 +120,9 @@ PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
     return OnError();
 
   if (!SetDuplexModeIsTwoSided(two_sided))
+    return OnError();
+
+  if (!SetOutputIsColor(color))
     return OnError();
 
   [print_info_.get() updateFromPMPrintSettings];
@@ -183,6 +191,17 @@ bool PrintingContextMac::SetDuplexModeIsTwoSided(bool two_sided) {
   PMPrintSettings pmPrintSettings =
       static_cast<PMPrintSettings>([print_info_.get() PMPrintSettings]);
   return PMSetDuplex(pmPrintSettings, duplexSetting) == noErr;
+}
+
+bool PrintingContextMac::SetOutputIsColor(bool color) {
+  PMPrintSettings pmPrintSettings =
+      static_cast<PMPrintSettings>([print_info_.get() PMPrintSettings]);
+  CFStringRef output_color = color ? NULL : kGrayColor;
+
+  return PMPrintSettingsSetValue(pmPrintSettings,
+                                 kColorModel,
+                                 output_color,
+                                 false) == noErr;
 }
 
 void PrintingContextMac::ParsePrintInfo(NSPrintInfo* print_info) {
