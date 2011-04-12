@@ -1,5 +1,5 @@
 vars = {
-  "arm_toolchain_version": "4826",
+  "arm_toolchain_version": "4847",
   "chrome_rev": "81243",
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "gtest_rev": "364",
@@ -10,7 +10,7 @@ vars = {
   "python_26_rev": "53573",
   "tools_rev": "4802",
   "wix_rev": "153",
-  "x86_toolchain_version": "4768",
+  "x86_toolchain_version": "4847",
 }
 
 deps = {
