@@ -89,6 +89,8 @@ class FilePatchDiff(FilePatchBase):
 
   def __init__(self, filename, diff, svn_properties):
     super(FilePatchDiff, self).__init__(filename)
+    if not diff:
+      self._fail('File doesn\'t have a diff.')
     self.diff_header, self.diff_hunks = self._split_header(diff)
     self.svn_properties = svn_properties or []
     self.is_git_diff = self._is_git_diff_header(self.diff_header)

@@ -192,6 +192,20 @@ class PatchTest(unittest.TestCase):
     except patch.UnsupportedPatchFormat:
       pass
 
+  def testFilePatchNoDiff(self):
+    try:
+      patch.FilePatchDiff('foo', '', [])
+      self.fail()
+    except patch.UnsupportedPatchFormat:
+      pass
+
+  def testFilePatchNoneDiff(self):
+    try:
+      patch.FilePatchDiff('foo', None, [])
+      self.fail()
+    except patch.UnsupportedPatchFormat:
+      pass
+
   def testFilePatchBadDiffName(self):
     try:
       patch.FilePatchDiff('foo', SVN_PATCH, [])

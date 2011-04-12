@@ -112,10 +112,11 @@ class Rietveld(object):
     props = self.get_patchset_properties(issue, patchset) or {}
     out = []
     for filename, state in props.get('files', {}).iteritems():
+      logging.debug('%s' % filename)
       status = state.get('status')
       if status is None:
         raise patch.UnsupportedPatchFormat(
-            filename, 'File\'s status is None, patchset upload is incomplete')
+            filename, 'File\'s status is None, patchset upload is incomplete.')
 
       # TODO(maruel): That's bad, it confuses property change.
       status = status.strip()
@@ -137,7 +138,8 @@ class Rietveld(object):
           if state['num_chunks']:
             diff = self.get_file_diff(issue, patchset, state['id'])
           else:
-            diff = None
+            raise patch.UnsupportedPatchFormat(
+                filename, 'File doesn\'t have a diff.')
           out.append(patch.FilePatchDiff(filename, diff, props))
       else:
         # Line too long (N/80)
@@ -188,6 +190,7 @@ class Rietveld(object):
     maxtries = 5
     for retry in xrange(maxtries):
       try:
+        logging.debug('%s' % request_path)
         result = self.rpc_server.Send(request_path, **kwargs)
         # Sometimes GAE returns a HTTP 200 but with HTTP 500 as the content. How
         # nice.
