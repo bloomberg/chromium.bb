@@ -413,6 +413,9 @@ void BrowserMainParts::SpdyFieldTrial() {
     } else {
       CHECK(!is_spdy_trial);
     }
+#else
+    // Always enable SPDY on Chrome OS
+    net::HttpNetworkLayer::EnableSpdy("npn");
 #endif  // !defined(OS_CHROMEOS)
   }
 
