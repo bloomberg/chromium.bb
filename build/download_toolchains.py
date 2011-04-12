@@ -23,6 +23,7 @@ PLATFORM_MAPPING = {
     'linux': {
         'x86-32': ['linux_x86','pnacl_linux_i686','linux_arm-trusted'],
         'x86-64': ['linux_x86','pnacl_linux_x86_64','linux_arm-trusted'],
+        'arm'   : ['linux_x86','pnacl_linux_x86_64','linux_arm-trusted'],
     },
     'mac': {
         'x86-32': ['mac_x86'],
