@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/p2p_socket_host_udp.h"
+#include "content/browser/renderer_host/p2p/socket_host_udp.h"
 
 #include "content/common/p2p_messages.h"
 #include "net/base/io_buffer.h"
@@ -121,6 +121,12 @@ void P2PSocketHostUdp::DidCompleteRead(int result) {
 
 void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
                             const std::vector<char>& data) {
+  if (!socket_.get()) {
+    // The Send message may be sent after the an OnError message was
+    // sent by hasn't been processed the renderer.
+    return;
+  }
+
   if (send_pending_) {
     // Silently drop packet if previous send hasn't finished.
     VLOG(1) << "Dropping UDP packet.";

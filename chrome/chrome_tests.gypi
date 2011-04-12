@@ -1877,7 +1877,7 @@
         '../content/browser/in_process_webkit/webkit_thread_unittest.cc',
         '../content/browser/plugin_service_unittest.cc',
         '../content/browser/renderer_host/audio_renderer_host_unittest.cc',
-        '../content/browser/renderer_host/p2p_socket_host_udp_unittest.cc',
+        '../content/browser/renderer_host/p2p/socket_host_udp_unittest.cc',
         '../content/browser/renderer_host/render_view_host_unittest.cc',
         '../content/browser/renderer_host/render_widget_host_unittest.cc',
         '../content/browser/renderer_host/resource_dispatcher_host_unittest.cc',

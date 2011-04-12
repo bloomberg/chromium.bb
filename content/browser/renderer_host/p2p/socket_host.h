@@ -10,7 +10,7 @@
 #include "ipc/ipc_message.h"
 #include "net/base/ip_endpoint.h"
 
-// Base class for P2P sockets used by P2PSocketsHost.
+// Base class for P2P sockets.
 class P2PSocketHost {
  public:
   // Creates P2PSocketHost of the specific type.

@@ -13,7 +13,7 @@
 #include <deque>
 #include <vector>
 
-#include "content/browser/renderer_host/p2p_socket_host_udp.h"
+#include "content/browser/renderer_host/p2p/socket_host_udp.h"
 #include "content/common/p2p_messages.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"

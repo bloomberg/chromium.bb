@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/p2p_sockets_host.h"
+#include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 
-#include "content/browser/renderer_host/p2p_socket_host.h"
+#include "content/browser/renderer_host/p2p/socket_host.h"
 #include "content/common/p2p_messages.h"
 
 namespace {
@@ -35,13 +35,13 @@ bool GetLocalAddress(net::IPEndPoint* addr) {
 
 }  // namespace
 
-P2PSocketsHost::P2PSocketsHost() {
+P2PSocketDispatcherHost::P2PSocketDispatcherHost() {
 }
 
-P2PSocketsHost::~P2PSocketsHost() {
+P2PSocketDispatcherHost::~P2PSocketDispatcherHost() {
 }
 
-void P2PSocketsHost::OnChannelClosing() {
+void P2PSocketDispatcherHost::OnChannelClosing() {
   BrowserMessageFilter::OnChannelClosing();
 
   // Since the IPC channel is gone, close pending connections.
@@ -51,14 +51,14 @@ void P2PSocketsHost::OnChannelClosing() {
   }
 }
 
-void P2PSocketsHost::OnDestruct() const {
+void P2PSocketDispatcherHost::OnDestruct() const {
   BrowserThread::DeleteOnIOThread::Destruct(this);
 }
 
-bool P2PSocketsHost::OnMessageReceived(const IPC::Message& message,
+bool P2PSocketDispatcherHost::OnMessageReceived(const IPC::Message& message,
                                        bool* message_was_ok) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(P2PSocketsHost, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP_EX(P2PSocketDispatcherHost, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(P2PHostMsg_CreateSocket, OnCreateSocket)
     IPC_MESSAGE_HANDLER(P2PHostMsg_Send, OnSend)
     IPC_MESSAGE_HANDLER(P2PHostMsg_DestroySocket, OnDestroySocket)
@@ -67,16 +67,16 @@ bool P2PSocketsHost::OnMessageReceived(const IPC::Message& message,
   return handled;
 }
 
-void P2PSocketsHost::OnCreateSocket(
+void P2PSocketDispatcherHost::OnCreateSocket(
     const IPC::Message& msg, P2PSocketType type, int socket_id,
     const net::IPEndPoint& remote_address) {
   BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &P2PSocketsHost::GetLocalAddressAndCreateSocket,
-                        msg.routing_id(), type, socket_id, remote_address));
+      BrowserThread::FILE, FROM_HERE, NewRunnableMethod(
+          this, &P2PSocketDispatcherHost::GetLocalAddressAndCreateSocket,
+          msg.routing_id(), type, socket_id, remote_address));
 }
 
-void P2PSocketsHost::GetLocalAddressAndCreateSocket(
+void P2PSocketDispatcherHost::GetLocalAddressAndCreateSocket(
     int routing_id, P2PSocketType type, int socket_id,
     const net::IPEndPoint& remote_address) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -86,18 +86,19 @@ void P2PSocketsHost::GetLocalAddressAndCreateSocket(
     LOG(ERROR) << "Failed to get local network address.";
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this, &P2PSocketsHost::Send,
+        NewRunnableMethod(this, &P2PSocketDispatcherHost::Send,
                           new P2PMsg_OnError(routing_id, socket_id)));
     return;
   }
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &P2PSocketsHost::FinishCreateSocket, routing_id,
-                        local_address, type, socket_id, remote_address));
+      NewRunnableMethod(this, &P2PSocketDispatcherHost::FinishCreateSocket,
+                        routing_id, local_address, type, socket_id,
+                        remote_address));
 }
 
-void P2PSocketsHost::FinishCreateSocket(
+void P2PSocketDispatcherHost::FinishCreateSocket(
     int routing_id, const net::IPEndPoint& local_address, P2PSocketType type,
     int socket_id, const net::IPEndPoint& remote_address) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -126,9 +127,9 @@ void P2PSocketsHost::FinishCreateSocket(
   }
 }
 
-void P2PSocketsHost::OnSend(const IPC::Message& msg, int socket_id,
-                            const net::IPEndPoint& socket_address,
-                            const std::vector<char>& data) {
+void P2PSocketDispatcherHost::OnSend(const IPC::Message& msg, int socket_id,
+                                     const net::IPEndPoint& socket_address,
+                                     const std::vector<char>& data) {
   P2PSocketHost* socket = sockets_.Lookup(socket_id);
   if (!socket) {
     LOG(ERROR) << "Received P2PHostMsg_Send for invalid socket_id.";
@@ -137,6 +138,7 @@ void P2PSocketsHost::OnSend(const IPC::Message& msg, int socket_id,
   socket->Send(socket_address, data);
 }
 
-void P2PSocketsHost::OnDestroySocket(const IPC::Message& msg, int socket_id) {
+void P2PSocketDispatcherHost::OnDestroySocket(const IPC::Message& msg,
+                                              int socket_id) {
   sockets_.Remove(socket_id);
 }

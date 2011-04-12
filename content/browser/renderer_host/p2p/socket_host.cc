@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/p2p_socket_host.h"
+#include "content/browser/renderer_host/p2p/socket_host.h"
 
 #include "build/build_config.h"
 
@@ -12,7 +12,7 @@
 #include <arpa/inet.h>
 #endif
 
-#include "content/browser/renderer_host/p2p_socket_host_udp.h"
+#include "content/browser/renderer_host/p2p/socket_host_udp.h"
 
 namespace {
 const int kStunHeaderSize = 20;

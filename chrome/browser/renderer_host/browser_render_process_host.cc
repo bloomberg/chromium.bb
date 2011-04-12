@@ -77,7 +77,7 @@
 #include "content/browser/renderer_host/database_message_filter.h"
 #include "content/browser/renderer_host/file_utilities_message_filter.h"
 #include "content/browser/renderer_host/gpu_message_filter.h"
-#include "content/browser/renderer_host/p2p_sockets_host.h"
+#include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 #include "content/browser/renderer_host/pepper_file_message_filter.h"
 #include "content/browser/renderer_host/pepper_message_filter.h"
 #include "content/browser/renderer_host/render_message_filter.h"
@@ -512,7 +512,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
           widget_helper_.get(), &RenderWidgetHelper::GetNextRoutingID)));
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableP2PApi))
-    channel_->AddFilter(new P2PSocketsHost());
+    channel_->AddFilter(new P2PSocketDispatcherHost());
 
   channel_->AddFilter(new TraceMessageFilter());
   channel_->AddFilter(new ResolveProxyMsgHelper(NULL));

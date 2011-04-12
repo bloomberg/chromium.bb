@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKETS_HOST_H_
-#define CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKETS_HOST_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_DISPATCHER_HOST_H_
+#define CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_DISPATCHER_HOST_H_
 
 #include "base/id_map.h"
 #include "content/browser/browser_message_filter.h"
@@ -12,10 +12,10 @@
 
 class P2PSocketHost;
 
-class P2PSocketsHost : public BrowserMessageFilter {
+class P2PSocketDispatcherHost : public BrowserMessageFilter {
  public:
-  P2PSocketsHost();
-  virtual ~P2PSocketsHost();
+  P2PSocketDispatcherHost();
+  virtual ~P2PSocketDispatcherHost();
 
   // BrowserMessageFilter overrides.
   virtual void OnChannelClosing();
@@ -45,7 +45,7 @@ class P2PSocketsHost : public BrowserMessageFilter {
 
   IDMap<P2PSocketHost, IDMapOwnPointer> sockets_;
 
-  DISALLOW_COPY_AND_ASSIGN(P2PSocketsHost);
+  DISALLOW_COPY_AND_ASSIGN(P2PSocketDispatcherHost);
 };
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKETS_HOST_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_DISPATCHER_HOST_H_
