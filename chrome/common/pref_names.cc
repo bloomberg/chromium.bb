@@ -661,6 +661,9 @@ const char kAutofillNegativeUploadRate[] = "autofill.negative_upload_rate";
 // Boolean option set to true on the first run. Non-persistent.
 const char kAutofillPersonalDataManagerFirstRun[] = "autofill.pdm.first_run";
 
+// Modifying bookmarks is completely disabled when this is set to false.
+const char kEditBookmarksEnabled[] = "bookmarks.editing_enabled";
+
 // Boolean that is true when the tabstrip is to be laid out vertically down the
 // side of the browser window.
 const char kUseVerticalTabs[] = "tabs.use_vertical_tabs";

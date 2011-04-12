@@ -488,6 +488,9 @@ INSTANTIATE_TEST_CASE_P(
             key::kAllowOutdatedPlugins),
         PolicyTestParams::ForBooleanPolicy(
             kPolicyBookmarkBarEnabled,
-            key::kBookmarkBarEnabled)));
+            key::kBookmarkBarEnabled),
+        PolicyTestParams::ForBooleanPolicy(
+            kPolicyEditBookmarksEnabled,
+            key::kEditBookmarksEnabled)));
 
 }  // namespace policy

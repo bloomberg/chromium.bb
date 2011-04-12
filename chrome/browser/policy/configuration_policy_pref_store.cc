@@ -272,6 +272,8 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
   { Value::TYPE_BOOLEAN, kPolicyBookmarkBarEnabled, prefs::kEnableBookmarkBar },
   { Value::TYPE_BOOLEAN, kPolicyAllowOutdatedPlugins,
     prefs::kPluginsAllowOutdated },
+  { Value::TYPE_BOOLEAN, kPolicyEditBookmarksEnabled,
+    prefs::kEditBookmarksEnabled },
 
 #if defined(OS_CHROMEOS)
   { Value::TYPE_BOOLEAN, kPolicyChromeOsLockOnIdleSuspend,
@@ -993,6 +995,8 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
       key::kAllowOutdatedPlugins },
     { kPolicyBookmarkBarEnabled, Value::TYPE_BOOLEAN,
       key::kBookmarkBarEnabled },
+    { kPolicyEditBookmarksEnabled, Value::TYPE_BOOLEAN,
+      key::kEditBookmarksEnabled },
 
 #if defined(OS_CHROMEOS)
     { kPolicyChromeOsLockOnIdleSuspend, Value::TYPE_BOOLEAN,

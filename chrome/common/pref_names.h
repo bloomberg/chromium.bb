@@ -231,6 +231,7 @@ extern const char kAutofillDialogPlacement[];
 extern const char kAutofillPositiveUploadRate[];
 extern const char kAutofillNegativeUploadRate[];
 extern const char kAutofillPersonalDataManagerFirstRun[];
+extern const char kEditBookmarksEnabled[];
 
 extern const char kUseVerticalTabs[];
 extern const char kEnableTranslate[];

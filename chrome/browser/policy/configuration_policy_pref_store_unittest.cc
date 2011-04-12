@@ -209,7 +209,9 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(kPolicyAllowOutdatedPlugins,
                     prefs::kPluginsAllowOutdated),
         TypeAndName(kPolicyBookmarkBarEnabled,
-                    prefs::kEnableBookmarkBar)));
+                    prefs::kEnableBookmarkBar),
+        TypeAndName(kPolicyEditBookmarksEnabled,
+                    prefs::kEditBookmarksEnabled)));
 
 #if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(
