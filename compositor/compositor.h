@@ -162,6 +162,10 @@ void
 wlsc_surface_update_matrix(struct wlsc_surface *es);
 
 void
+wlsc_surface_activate(struct wlsc_surface *surface,
+		      struct wlsc_input_device *device, uint32_t time);
+
+void
 notify_motion(struct wl_input_device *device,
 	      uint32_t time, int x, int y);
 void
@@ -249,6 +253,15 @@ wlsc_shm_init(struct wlsc_compositor *ec);
 
 int
 wlsc_shell_init(struct wlsc_compositor *ec);
+
+struct wlsc_switcher {
+	struct wlsc_compositor *compositor;
+	struct wlsc_surface *current;
+	struct wl_listener listener;
+};
+
+void
+wlsc_switcher_init(struct wlsc_compositor *compositor);
 
 struct wlsc_compositor *
 x11_compositor_create(struct wl_display *display, int width, int height);

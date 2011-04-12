@@ -27,6 +27,7 @@ compositor_SOURCES =				\
 	compositor.c				\
 	compositor.h				\
 	shell.c					\
+	switcher.c				\
 	screenshooter.c				\
 	screenshooter-protocol.c		\
 	screenshooter-server-protocol.h		\
