@@ -22,6 +22,7 @@ declare -A libraries=(
 declare -a mirrors=(
   http://mirrors.kernel.org/ubuntu/pool/main
   http://mirrors.kernel.org/debian/pool/main
+  http://mirrors.kernel.org/ubuntu/pool/universe
 )
 
 working_directory="${TMPDIR:-/tmp}/nacl64.$$"
