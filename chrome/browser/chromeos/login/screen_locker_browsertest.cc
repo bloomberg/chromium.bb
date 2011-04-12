@@ -253,7 +253,7 @@ void MouseMove(views::Widget* widget) {
   ui_controls::SendMouseMove(10, 10);
 }
 
-IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestNoPasswordWithMouseMove) {
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, FLAKY_TestNoPasswordWithMouseMove) {
   TestNoPassword(MouseMove);
 }
 
@@ -261,7 +261,7 @@ void MouseClick(views::Widget* widget) {
   ui_controls::SendMouseClick(ui_controls::RIGHT);
 }
 
-IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestNoPasswordWithMouseClick) {
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, FLAKY_TestNoPasswordWithMouseClick) {
   TestNoPassword(MouseClick);
 }
 
@@ -270,7 +270,7 @@ void KeyPress(views::Widget* widget) {
                             ui::VKEY_SPACE, false, false, false, false);
 }
 
-IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestNoPasswordWithKeyPress) {
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, FLAKY_TestNoPasswordWithKeyPress) {
   TestNoPassword(KeyPress);
 }
 
