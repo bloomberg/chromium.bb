@@ -9,6 +9,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "base/win/scoped_gdi_object.h"
 #include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -469,17 +470,8 @@ void CanvasSkia::DrawFadeTruncatingString(
   int total_string_height;
   SizeStringInt(text, font, &total_string_width, &total_string_height,
                 flags | TEXT_VALIGN_TOP);
-  bool should_draw_directly = total_string_width <= display_rect.width();
 
-  // Create a temporary bitmap to draw the gradient to.
-  scoped_ptr<skia::BitmapPlatformDevice> gradient_bitmap;
-  if (!should_draw_directly) {
-    gradient_bitmap.reset(skia::BitmapPlatformDevice::create(
-        NULL, display_rect.width(), display_rect.height(), false, NULL));
-    should_draw_directly = gradient_bitmap.get() != NULL;
-  }
-
-  if (should_draw_directly) {
+  if (total_string_width <= display_rect.width()) {
     DrawStringInt(text, font, color, display_rect.x(), display_rect.y(),
                   display_rect.width(), display_rect.height(), 0);
     return;
@@ -563,7 +555,13 @@ void CanvasSkia::DrawFadeTruncatingString(
   LOGFONT font_info;
   GetObject(font.GetNativeFont(), sizeof(font_info), &font_info);
   font_info.lfQuality = ANTIALIASED_QUALITY;
-  HFONT gray_scale_font = CreateFontIndirect(&font_info);
+  base::win::ScopedHFONT gray_scale_font(CreateFontIndirect(&font_info));
+
+  // Create a temporary bitmap to draw the gradient to.
+  scoped_ptr<skia::BitmapPlatformDevice> gradient_bitmap(
+      skia::BitmapPlatformDevice::create(
+          display_rect.width(), display_rect.height(), false, NULL));
+  DCHECK(gradient_bitmap.get());
 
   HDC hdc = beginPlatformPaint();
   if (is_truncating_head)
