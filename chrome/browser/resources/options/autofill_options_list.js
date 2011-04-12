@@ -50,6 +50,7 @@ cr.define('options.autofillOptions', function() {
     el.guid = entry[0];
     el.label = entry[1];
     el.icon = entry[2];
+    el.description = entry[3];
     el.__proto__ = CreditCardListItem.prototype;
     el.decorate();
 
@@ -72,6 +73,7 @@ cr.define('options.autofillOptions', function() {
       // The credit card icon.
       var icon = this.ownerDocument.createElement('image');
       icon.src = this.icon;
+      icon.alt = this.description;
       this.contentElement.appendChild(icon);
     },
   };

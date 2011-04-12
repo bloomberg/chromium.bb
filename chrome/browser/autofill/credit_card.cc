@@ -138,14 +138,14 @@ bool ConvertDate(const string16& date, int* num) {
 }  // namespace
 
 CreditCard::CreditCard(const std::string& guid)
-    : type_(ASCIIToUTF16(kGenericCard)),
+    : type_(kGenericCard),
       expiration_month_(0),
       expiration_year_(0),
       guid_(guid) {
 }
 
 CreditCard::CreditCard()
-    : type_(ASCIIToUTF16(kGenericCard)),
+    : type_(kGenericCard),
       expiration_month_(0),
       expiration_year_(0),
       guid_(guid::GenerateGUID()) {
@@ -478,7 +478,7 @@ void CreditCard::SetExpirationYearFromString(const string16& text) {
 
 void CreditCard::SetNumber(const string16& number) {
   number_ = number;
-  type_ = ASCIIToUTF16(GetCreditCardType(StripSeparators(number_)));
+  type_ = GetCreditCardType(StripSeparators(number_));
 }
 
 void CreditCard::SetExpirationMonth(int expiration_month) {

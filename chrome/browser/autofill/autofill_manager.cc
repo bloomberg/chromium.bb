@@ -876,7 +876,7 @@ void AutofillManager::GetCreditCardSuggestions(FormStructure* form,
 
       values->push_back(creditcard_field_value);
       labels->push_back(label);
-      icons->push_back(credit_card->type());
+      icons->push_back(UTF8ToUTF16(credit_card->type()));
       unique_ids->push_back(PackGUIDs(GUIDPair(credit_card->guid(), 0),
                                       GUIDPair(std::string(), 0)));
     }

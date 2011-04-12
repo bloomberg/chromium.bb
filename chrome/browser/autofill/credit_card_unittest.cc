@@ -122,7 +122,7 @@ TEST(CreditCardTest, InvalidMastercardNumber) {
 
   autofill_test::SetCreditCardInfo(&card, "Baby Face Nelson",
                                    "5200000000000004", "01", "2010");
-  EXPECT_EQ(ASCIIToUTF16("genericCC"), card.type());
+  EXPECT_EQ("genericCC", card.type());
 }
 
 // Verify that we preserve exactly what the user typed for credit card numbers.

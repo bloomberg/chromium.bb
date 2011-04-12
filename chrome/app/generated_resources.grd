@@ -7084,6 +7084,31 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_USE_MAC_ADDRESS_BOOK" desc="Checkbox label to enable Address Book on Mac.">
         Include addresses from my Address Book card
       </message>
+      
+      <message name="IDS_AUTOFILL_CC_AMEX" desc="American Express credit card name, for use as an image's 'alt' attribute.">
+        American Express
+      </message>
+      <message name="IDS_AUTOFILL_CC_DINERS" desc="Diners Club credit card name, for use as an image's 'alt' attribute.">
+        Diners Club
+      </message>
+      <message name="IDS_AUTOFILL_CC_DISCOVER" desc="Discover credit card name, for use as an image's 'alt' attribute.">
+        Discover
+      </message>
+      <message name="IDS_AUTOFILL_CC_GENERIC" desc="Generic credit card description, for use as an image's 'alt' attribute.">
+        Credit card (other)
+      </message>
+      <message name="IDS_AUTOFILL_CC_JCB" desc="JCB credit card name, for use as an image's 'alt' attribute.">
+        JCB
+      </message>
+      <message name="IDS_AUTOFILL_CC_MASTERCARD" desc="MasterCard credit card name, for use as an image's 'alt' attribute.">
+        MasterCard
+      </message>
+      <message name="IDS_AUTOFILL_CC_SOLO" desc="Solo credit card name, for use as an image's 'alt' attribute.">
+        Solo debit card
+      </message>
+      <message name="IDS_AUTOFILL_CC_VISA" desc="Visa credit card name, for use as an image's 'alt' attribute.">
+        Visa
+      </message>
 
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="In sentence case: The name of the Addresses group of the Autofill dialog.">

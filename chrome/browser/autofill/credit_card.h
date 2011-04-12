@@ -41,7 +41,7 @@ class CreditCard : public FormGroup {
   // The last four digits of the credit card number.
   string16 LastFourDigits() const;
 
-  const string16& type() const { return type_; }
+  const std::string& type() const { return type_; }
 
   // The guid is the primary identifier for |CreditCard| objects.
   const std::string guid() const { return guid_; }
@@ -117,7 +117,7 @@ class CreditCard : public FormGroup {
 
   string16 number_;  // The credit card number.
   string16 name_on_card_;  // The cardholder's name.
-  string16 type_;  // The type of the card.
+  std::string type_;  // The type of the card.
 
   // These members are zero if not present.
   int expiration_month_;

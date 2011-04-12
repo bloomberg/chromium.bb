@@ -24,8 +24,7 @@
 namespace {
 
 // Converts a credit card type to the appropriate resource ID of the CC icon.
-int CreditCardTypeToResourceID(const string16& type16) {
-  std::string type = UTF16ToUTF8(type16);
+int CreditCardTypeToResourceID(const std::string& type) {
   if (type == kAmericanExpressCard)
     return IDR_AUTOFILL_CC_AMEX;
   else if (type == kDinersCard)
@@ -45,6 +44,29 @@ int CreditCardTypeToResourceID(const string16& type16) {
 
   NOTREACHED();
   return 0;
+}
+
+// Converts a credit card type to the appropriate localized card type.
+string16 LocalizedCreditCardType(const std::string& type) {
+  if (type == kAmericanExpressCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_AMEX);
+  else if (type == kDinersCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_DINERS);
+  else if (type == kDiscoverCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_DISCOVER);
+  else if (type == kGenericCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_GENERIC);
+  else if (type == kJCBCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_JCB);
+  else if (type == kMasterCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MASTERCARD);
+  else if (type == kSoloCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_SOLO);
+  else if (type == kVisaCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_VISA);
+
+  NOTREACHED();
+  return string16();
 }
 
 // Returns a dictionary that maps country codes to data for the country.
@@ -247,6 +269,7 @@ void AutofillOptionsHandler::LoadAutofillData() {
     int res = CreditCardTypeToResourceID((*i)->type());
     entry->Append(
         new StringValue(web_ui_util::GetImageDataUrlFromResource(res)));
+    entry->Append(new StringValue(LocalizedCreditCardType((*i)->type())));
     credit_cards.Append(entry);
   }
 
