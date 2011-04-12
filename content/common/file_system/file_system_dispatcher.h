@@ -38,39 +38,39 @@ class FileSystemDispatcher : public IPC::Channel::Listener {
                       long long size,
                       bool create,
                       fileapi::FileSystemCallbackDispatcher* dispatcher);
-  bool Move(const GURL& src_path,
-            const GURL& dest_path,
+  bool Move(const FilePath& src_path,
+            const FilePath& dest_path,
             fileapi::FileSystemCallbackDispatcher* dispatcher);
-  bool Copy(const GURL& src_path,
-            const GURL& dest_path,
+  bool Copy(const FilePath& src_path,
+            const FilePath& dest_path,
             fileapi::FileSystemCallbackDispatcher* dispatcher);
-  bool Remove(const GURL& path,
+  bool Remove(const FilePath& path,
               bool recursive,
               fileapi::FileSystemCallbackDispatcher* dispatcher);
-  bool ReadMetadata(const GURL& path,
+  bool ReadMetadata(const FilePath& path,
                     fileapi::FileSystemCallbackDispatcher* dispatcher);
-  bool Create(const GURL& path,
+  bool Create(const FilePath& path,
               bool exclusive,
               bool is_directory,
               bool recursive,
               fileapi::FileSystemCallbackDispatcher* dispatcher);
-  bool Exists(const GURL& path,
+  bool Exists(const FilePath& path,
               bool for_directory,
               fileapi::FileSystemCallbackDispatcher* dispatcher);
-  bool ReadDirectory(const GURL& path,
+  bool ReadDirectory(const FilePath& path,
                      fileapi::FileSystemCallbackDispatcher* dispatcher);
-  bool Truncate(const GURL& path,
+  bool Truncate(const FilePath& path,
                 int64 offset,
                 int* request_id_out,
                 fileapi::FileSystemCallbackDispatcher* dispatcher);
-  bool Write(const GURL& path,
+  bool Write(const FilePath& path,
              const GURL& blob_url,
              int64 offset,
              int* request_id_out,
              fileapi::FileSystemCallbackDispatcher* dispatcher);
   bool Cancel(int request_id_to_cancel,
               fileapi::FileSystemCallbackDispatcher* dispatcher);
-  bool TouchFile(const GURL& file_path,
+  bool TouchFile(const FilePath& file_path,
                  const base::Time& last_access_time,
                  const base::Time& last_modified_time,
                  fileapi::FileSystemCallbackDispatcher* dispatcher);
@@ -81,7 +81,7 @@ class FileSystemDispatcher : public IPC::Channel::Listener {
       int request_id,
       bool accepted,
       const std::string& name,
-      const GURL& root);
+      const FilePath& root_path);
   void OnDidSucceed(int request_id);
   void OnDidReadMetadata(int request_id,
                          const base::PlatformFileInfo& file_info,

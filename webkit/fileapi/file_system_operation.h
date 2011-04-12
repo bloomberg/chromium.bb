@@ -57,26 +57,26 @@ class FileSystemOperation {
   void OpenFileSystem(const GURL& origin_url,
                       fileapi::FileSystemType type,
                       bool create);
-  void CreateFile(const GURL& path,
+  void CreateFile(const FilePath& path,
                   bool exclusive);
-  void CreateDirectory(const GURL& path,
+  void CreateDirectory(const FilePath& path,
                        bool exclusive,
                        bool recursive);
-  void Copy(const GURL& src_path,
-            const GURL& dest_path);
-  void Move(const GURL& src_path,
-            const GURL& dest_path);
-  void DirectoryExists(const GURL& path);
-  void FileExists(const GURL& path);
-  void GetMetadata(const GURL& path);
-  void ReadDirectory(const GURL& path);
-  void Remove(const GURL& path, bool recursive);
+  void Copy(const FilePath& src_path,
+            const FilePath& dest_path);
+  void Move(const FilePath& src_path,
+            const FilePath& dest_path);
+  void DirectoryExists(const FilePath& path);
+  void FileExists(const FilePath& path);
+  void GetMetadata(const FilePath& path);
+  void ReadDirectory(const FilePath& path);
+  void Remove(const FilePath& path, bool recursive);
   void Write(scoped_refptr<net::URLRequestContext> url_request_context,
-             const GURL& path,
+             const FilePath& path,
              const GURL& blob_url,
              int64 offset);
-  void Truncate(const GURL& path, int64 length);
-  void TouchFile(const GURL& path,
+  void Truncate(const FilePath& path, int64 length);
+  void TouchFile(const FilePath& path,
                  const base::Time& last_access_time,
                  const base::Time& last_modified_time);
 
@@ -142,7 +142,7 @@ class FileSystemOperation {
   // PLATFORM_FILE_ERROR_SECURITY and returns false.
   // (Note: this doesn't delete this when it calls DidFail and returns false;
   // it's the caller's responsibility.)
-  bool VerifyFileSystemPathForRead(const GURL& path,
+  bool VerifyFileSystemPathForRead(const FilePath& path,
                                    GURL* root_url,
                                    FileSystemType* type,
                                    FilePath* virtual_path);
@@ -161,7 +161,7 @@ class FileSystemOperation {
   // DidFail with PLATFORM_FILE_ERROR_SECURITY and returns false.
   // (Note: this doesn't delete this when it calls DidFail and returns false;
   // it's the caller's responsibility.)
-  bool VerifyFileSystemPathForWrite(const GURL& path,
+  bool VerifyFileSystemPathForWrite(const FilePath& path,
                                     bool create,
                                     GURL* root_url,
                                     FileSystemType* type,

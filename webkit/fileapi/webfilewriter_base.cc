@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,8 @@
 namespace fileapi {
 
 WebFileWriterBase::WebFileWriterBase(
-     const GURL& path, WebKit::WebFileWriterClient* client)
-  : path_(path),
+     const WebKit::WebString& path, WebKit::WebFileWriterClient* client)
+  : path_(webkit_glue::WebStringToFilePath(path)),
     client_(client),
     operation_(kOperationNone),
     cancel_state_(kCancelNotInProgress) {

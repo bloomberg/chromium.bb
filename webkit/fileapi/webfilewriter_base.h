@@ -1,13 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef WEBKIT_FILEAPI_WEBFILEWRITER_BASE_H_
 #define WEBKIT_FILEAPI_WEBFILEWRITER_BASE_H_
 
+#include "base/file_path.h"
 #include "base/platform_file.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileWriter.h"
+
+class GURL;
 
 namespace WebKit {
 class WebFileWriterClient;
@@ -20,7 +22,7 @@ namespace fileapi {
 class WebFileWriterBase : public WebKit::WebFileWriter {
  public:
   WebFileWriterBase(
-      const GURL& path, WebKit::WebFileWriterClient* client);
+      const WebKit::WebString& path, WebKit::WebFileWriterClient* client);
   virtual ~WebFileWriterBase();
 
   // WebFileWriter implementation
@@ -32,8 +34,8 @@ class WebFileWriterBase : public WebKit::WebFileWriter {
   // Derived classes must provide these methods to asynchronously perform
   // the requested operation, and they must call the appropiate DidSomething
   // method upon completion and as progress is made in the Write case.
-  virtual void DoTruncate(const GURL& path, int64 offset) = 0;
-  virtual void DoWrite(const GURL& path, const GURL& blob_url,
+  virtual void DoTruncate(const FilePath& path, int64 offset) = 0;
+  virtual void DoWrite(const FilePath& path, const GURL& blob_url,
                        int64 offset) = 0;
   virtual void DoCancel() = 0;
 
@@ -56,7 +58,7 @@ class WebFileWriterBase : public WebKit::WebFileWriter {
 
   void FinishCancel();
 
-  GURL path_;
+  FilePath path_;
   WebKit::WebFileWriterClient* client_;
   OperationType operation_;
   CancelState cancel_state_;

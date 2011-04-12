@@ -10,7 +10,6 @@
 #include "base/file_util_proxy.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
@@ -59,9 +58,9 @@ void WebFileSystemCallbackDispatcher::DidReadDirectory(
 }
 
 void WebFileSystemCallbackDispatcher::DidOpenFileSystem(
-    const std::string& name, const GURL& root) {
-  callbacks_->didOpenFileSystem(
-      UTF8ToUTF16(name), UTF8ToUTF16(root.spec()));
+    const std::string& name, const FilePath& root_path) {
+  callbacks_->didOpenFileSystem(UTF8ToUTF16(name),
+                                webkit_glue::FilePathToWebString(root_path));
 }
 
 void WebFileSystemCallbackDispatcher::DidFail(
