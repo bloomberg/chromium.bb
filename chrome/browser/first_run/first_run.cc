@@ -468,21 +468,6 @@ bool FirstRun::GetFirstRunSentinelFilePath(FilePath* path) {
   return true;
 }
 
-#if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
-// static
-void Upgrade::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
-  if (new_command_line_) {
-    if (!RelaunchChromeBrowser(*new_command_line_)) {
-      DLOG(ERROR) << "Launching a new instance of the browser failed.";
-    } else {
-      DLOG(WARNING) << "Launched a new instance of the browser.";
-    }
-    delete new_command_line_;
-    new_command_line_ = NULL;
-  }
-}
-#endif  // (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
-
 // static
 void FirstRun::AutoImport(
     Profile* profile,

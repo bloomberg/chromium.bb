@@ -4,7 +4,6 @@
 
 #include "chrome/browser/first_run/first_run.h"
 
-#include <shellapi.h>
 #include <shlobj.h>
 #include <windows.h>
 
@@ -19,8 +18,6 @@
 #include "base/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/object_watcher.h"
-#include "base/win/registry.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_updater.h"
@@ -28,7 +25,6 @@
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/importer_progress_dialog.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/views/first_run_search_engine_view.h"
@@ -50,46 +46,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
-#include "views/controls/button/image_button.h"
-#include "views/controls/button/radio_button.h"
-#include "views/controls/image_view.h"
-#include "views/controls/link.h"
 #include "views/focus/accelerator_handler.h"
-#include "views/layout/grid_layout.h"
-#include "views/layout/layout_constants.h"
-#include "views/widget/root_view.h"
-#include "views/widget/widget.h"
 #include "views/window/window.h"
 
 namespace {
-
-bool GetNewerChromeFile(FilePath* path) {
-  if (!PathService::Get(base::DIR_EXE, path))
-    return false;
-  *path = path->Append(installer::kChromeNewExe);
-  return true;
-}
-
-bool InvokeGoogleUpdateForRename() {
-  base::win::ScopedComPtr<IProcessLauncher> ipl;
-  if (!FAILED(ipl.CreateInstance(__uuidof(ProcessLauncherClass)))) {
-    ULONG_PTR phandle = NULL;
-    DWORD id = GetCurrentProcessId();
-    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    if (!FAILED(ipl->LaunchCmdElevated(dist->GetAppGuid().c_str(),
-                                       google_update::kRegRenameCmdField,
-                                       id, &phandle))) {
-      HANDLE handle = HANDLE(phandle);
-      WaitForSingleObject(handle, INFINITE);
-      DWORD exit_code;
-      ::GetExitCodeProcess(handle, &exit_code);
-      ::CloseHandle(handle);
-      if (exit_code == installer::RENAME_SUCCESSFUL)
-        return true;
-    }
-  }
-  return false;
-}
 
 // Helper class that performs delayed first-run tasks that need more of the
 // chrome infrastructure to be up and running before they can be attempted.
@@ -180,8 +140,6 @@ void FirstRun::DoDelayedInstallExtensions() {
   new FirstRunDelayedTasks(FirstRunDelayedTasks::INSTALL_EXTENSIONS);
 }
 
-CommandLine* Upgrade::new_command_line_ = NULL;
-
 bool FirstRun::CreateChromeDesktopShortcut() {
   FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe))
@@ -202,83 +160,6 @@ bool FirstRun::CreateChromeQuickLaunchShortcut() {
   return ShellUtil::CreateChromeQuickLaunchShortcut(dist, chrome_exe.value(),
       ShellUtil::CURRENT_USER,  // create only for current user.
       true);  // create if doesn't exist.
-}
-
-bool Upgrade::IsBrowserAlreadyRunning() {
-  static HANDLE handle = NULL;
-  FilePath exe_path;
-  PathService::Get(base::FILE_EXE, &exe_path);
-  std::wstring exe = exe_path.value();
-  std::replace(exe.begin(), exe.end(), '\\', '!');
-  std::transform(exe.begin(), exe.end(), exe.begin(), tolower);
-  exe = L"Global\\" + exe;
-  if (handle != NULL)
-    CloseHandle(handle);
-  handle = CreateEvent(NULL, TRUE, TRUE, exe.c_str());
-  int error = GetLastError();
-  return (error == ERROR_ALREADY_EXISTS || error == ERROR_ACCESS_DENIED);
-}
-
-bool Upgrade::RelaunchChromeBrowser(const CommandLine& command_line) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  env->UnSetVar(chrome::kChromeVersionEnvVar);
-  return base::LaunchApp(command_line.command_line_string(),
-                         false, false, NULL);
-}
-
-bool Upgrade::SwapNewChromeExeIfPresent() {
-  FilePath new_chrome_exe;
-  if (!GetNewerChromeFile(&new_chrome_exe))
-    return false;
-  if (!file_util::PathExists(new_chrome_exe))
-    return false;
-  FilePath cur_chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &cur_chrome_exe))
-    return false;
-
-  // First try to rename exe by launching rename command ourselves.
-  bool user_install =
-      InstallUtil::IsPerUserInstall(cur_chrome_exe.value().c_str());
-  HKEY reg_root = user_install ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
-  BrowserDistribution *dist = BrowserDistribution::GetDistribution();
-  base::win::RegKey key;
-  std::wstring rename_cmd;
-  if ((key.Open(reg_root, dist->GetVersionKey().c_str(),
-                KEY_READ) == ERROR_SUCCESS) &&
-      (key.ReadValue(google_update::kRegRenameCmdField,
-                     &rename_cmd) == ERROR_SUCCESS)) {
-    base::ProcessHandle handle;
-    if (base::LaunchApp(rename_cmd, true, true, &handle)) {
-      DWORD exit_code;
-      ::GetExitCodeProcess(handle, &exit_code);
-      ::CloseHandle(handle);
-      if (exit_code == installer::RENAME_SUCCESSFUL)
-        return true;
-    }
-  }
-
-  // Rename didn't work so try to rename by calling Google Update
-  return InvokeGoogleUpdateForRename();
-}
-
-// static
-bool Upgrade::DoUpgradeTasks(const CommandLine& command_line) {
-  if (!Upgrade::SwapNewChromeExeIfPresent())
-    return false;
-  // At this point the chrome.exe has been swapped with the new one.
-  if (!Upgrade::RelaunchChromeBrowser(command_line)) {
-    // The re-launch fails. Feel free to panic now.
-    NOTREACHED();
-  }
-  return true;
-}
-
-// static
-bool Upgrade::IsUpdatePendingRestart() {
-  FilePath new_chrome_exe;
-  if (!GetNewerChromeFile(&new_chrome_exe))
-    return false;
-  return file_util::PathExists(new_chrome_exe);
 }
 
 namespace {
@@ -544,290 +425,3 @@ int FirstRun::ImportFromBrowser(Profile* profile,
   return importer_observer.import_result();
 }
 
-//////////////////////////////////////////////////////////////////////////
-
-namespace {
-
-const wchar_t kHelpCenterUrl[] =
-    L"http://www.google.com/support/chrome/bin/answer.py?answer=150752";
-
-// This class displays a modal dialog using the views system. The dialog asks
-// the user to give chrome another try. This class only handles the UI so the
-// resulting actions are up to the caller. One version looks like this:
-//
-//   /----------------------------------------\
-//   | |icon| You stopped using Google    [x] |
-//   | |icon| Chrome. Would you like to..     |
-//   |        [o] Give the new version a try  |
-//   |        [ ] Uninstall Google Chrome     |
-//   |        [ OK ] [Don't bug me]           |
-//   |        _why_am_I_seeing this?__        |
-//   ------------------------------------------
-class TryChromeDialog : public views::ButtonListener,
-                        public views::LinkController {
- public:
-  explicit TryChromeDialog(size_t version)
-      : version_(version),
-        popup_(NULL),
-        try_chrome_(NULL),
-        kill_chrome_(NULL),
-        result_(Upgrade::TD_LAST_ENUM) {
-  }
-
-  virtual ~TryChromeDialog() {
-  };
-
-  // Shows the modal dialog asking the user to try chrome. Note that the dialog
-  // has no parent and it will position itself in a lower corner of the screen.
-  // The dialog does not steal focus and does not have an entry in the taskbar.
-  Upgrade::TryResult ShowModal(ProcessSingleton* process_singleton) {
-    using views::GridLayout;
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-
-    views::ImageView* icon = new views::ImageView();
-    icon->SetImage(*rb.GetBitmapNamed(IDR_PRODUCT_ICON_32));
-    gfx::Size icon_size = icon->GetPreferredSize();
-
-    // An approximate window size. After Layout() we'll get better bounds.
-    views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
-    params.can_activate = true;
-    popup_ = views::Widget::CreateWidget(params);
-    if (!popup_) {
-      NOTREACHED();
-      return Upgrade::TD_DIALOG_ERROR;
-    }
-
-    gfx::Rect pos(310, 160);
-    popup_->Init(NULL, pos);
-
-    views::RootView* root_view = popup_->GetRootView();
-    // The window color is a tiny bit off-white.
-    root_view->set_background(
-        views::Background::CreateSolidBackground(0xfc, 0xfc, 0xfc));
-
-    views::GridLayout* layout = views::GridLayout::CreatePanel(root_view);
-    if (!layout) {
-      NOTREACHED();
-      return Upgrade::TD_DIALOG_ERROR;
-    }
-    root_view->SetLayoutManager(layout);
-
-    views::ColumnSet* columns;
-    // First row: [icon][pad][text][button].
-    columns = layout->AddColumnSet(0);
-    columns->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
-                       GridLayout::FIXED, icon_size.width(),
-                       icon_size.height());
-    columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
-    columns->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                       GridLayout::USE_PREF, 0, 0);
-    columns->AddColumn(GridLayout::TRAILING, GridLayout::FILL, 1,
-                       GridLayout::USE_PREF, 0, 0);
-    // Second row: [pad][pad][radio 1].
-    columns = layout->AddColumnSet(1);
-    columns->AddPaddingColumn(0, icon_size.width());
-    columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
-    columns->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
-                       GridLayout::USE_PREF, 0, 0);
-    // Third row: [pad][pad][radio 2].
-    columns = layout->AddColumnSet(2);
-    columns->AddPaddingColumn(0, icon_size.width());
-    columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
-    columns->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
-                       GridLayout::USE_PREF, 0, 0);
-    // Fourth row: [pad][pad][button][pad][button].
-    columns = layout->AddColumnSet(3);
-    columns->AddPaddingColumn(0, icon_size.width());
-    columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
-    columns->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
-                       GridLayout::USE_PREF, 0, 0);
-    columns->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
-    columns->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
-                       GridLayout::USE_PREF, 0, 0);
-    // Fifth row: [pad][pad][link].
-    columns = layout->AddColumnSet(4);
-    columns->AddPaddingColumn(0, icon_size.width());
-    columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
-    columns->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
-                       GridLayout::USE_PREF, 0, 0);
-    // First row views.
-    layout->StartRow(0, 0);
-    layout->AddView(icon);
-
-    // Find out what experiment we are conducting.
-    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    if (!dist) {
-      NOTREACHED() << "Cannot determine browser distribution";
-      return Upgrade::TD_DIALOG_ERROR;
-    }
-    BrowserDistribution::UserExperiment experiment;
-    if (!dist->GetExperimentDetails(&experiment, version_) ||
-        !experiment.heading) {
-      NOTREACHED() << "Cannot determine which headline to show.";
-      return Upgrade::TD_DIALOG_ERROR;
-    }
-    string16 heading = l10n_util::GetStringUTF16(experiment.heading);
-    views::Label* label = new views::Label(heading);
-    label->SetFont(rb.GetFont(ResourceBundle::MediumBoldFont));
-    label->SetMultiLine(true);
-    label->SizeToFit(200);
-    label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    layout->AddView(label);
-    // The close button is custom.
-    views::ImageButton* close_button = new views::ImageButton(this);
-    close_button->SetImage(views::CustomButton::BS_NORMAL,
-                          rb.GetBitmapNamed(IDR_CLOSE_BAR));
-    close_button->SetImage(views::CustomButton::BS_HOT,
-                          rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
-    close_button->SetImage(views::CustomButton::BS_PUSHED,
-                          rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
-    close_button->set_tag(BT_CLOSE_BUTTON);
-    layout->AddView(close_button);
-
-    // Second row views.
-    const string16 try_it(l10n_util::GetStringUTF16(IDS_TRY_TOAST_TRY_OPT));
-    layout->StartRowWithPadding(0, 1, 0, 10);
-    try_chrome_ = new views::RadioButton(try_it, 1);
-    layout->AddView(try_chrome_);
-    try_chrome_->SetChecked(true);
-
-    // Third row views.
-    const string16 kill_it(l10n_util::GetStringUTF16(IDS_UNINSTALL_CHROME));
-    layout->StartRow(0, 2);
-    kill_chrome_ = new views::RadioButton(kill_it, 1);
-    layout->AddView(kill_chrome_);
-
-    // Fourth row views.
-    const string16 ok_it(l10n_util::GetStringUTF16(IDS_OK));
-    const string16 cancel_it(l10n_util::GetStringUTF16(IDS_TRY_TOAST_CANCEL));
-    const string16 why_this(l10n_util::GetStringUTF16(IDS_TRY_TOAST_WHY));
-    layout->StartRowWithPadding(0, 3, 0, 10);
-    views::Button* accept_button = new views::NativeButton(this, ok_it);
-    accept_button->set_tag(BT_OK_BUTTON);
-    layout->AddView(accept_button);
-    views::Button* cancel_button = new views::NativeButton(this, cancel_it);
-    cancel_button->set_tag(BT_CLOSE_BUTTON);
-    layout->AddView(cancel_button);
-    // Fifth row views.
-    layout->StartRowWithPadding(0, 4, 0, 10);
-    views::Link* link = new views::Link(why_this);
-    link->SetController(this);
-    layout->AddView(link);
-
-    // We resize the window according to the layout manager. This takes into
-    // account the differences between XP and Vista fonts and buttons.
-    layout->Layout(root_view);
-    gfx::Size preferred = layout->GetPreferredSize(root_view);
-    pos = ComputeWindowPosition(preferred.width(), preferred.height(),
-                                base::i18n::IsRTL());
-    popup_->SetBounds(pos);
-
-    // Carve the toast shape into the window.
-    SetToastRegion(popup_->GetNativeView(),
-                   preferred.width(), preferred.height());
-
-    // Time to show the window in a modal loop. We don't want this chrome
-    // instance trying to serve WM_COPYDATA requests, as we'll surely crash.
-    process_singleton->Lock(popup_->GetNativeView());
-    popup_->Show();
-    MessageLoop::current()->Run();
-    process_singleton->Unlock();
-    return result_;
-  }
-
- protected:
-  // Overridden from ButtonListener. We have two buttons and according to
-  // what the user clicked we set |result_| and we should always close and
-  // end the modal loop.
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
-    if (sender->tag() == BT_CLOSE_BUTTON) {
-      // The user pressed cancel or the [x] button.
-      result_ = Upgrade::TD_NOT_NOW;
-    } else if (!try_chrome_) {
-      // We don't have radio buttons, the user pressed ok.
-      result_ = Upgrade::TD_TRY_CHROME;
-    } else {
-      // The outcome is according to the selected ratio button.
-      result_ = try_chrome_->checked() ? Upgrade::TD_TRY_CHROME :
-                                         Upgrade::TD_UNINSTALL_CHROME;
-    }
-    popup_->Close();
-    MessageLoop::current()->Quit();
-  }
-
-  // Overridden from LinkController. If the user selects the link we need to
-  // fire off the default browser that by some convoluted logic should not be
-  // chrome.
-  virtual void LinkActivated(views::Link* source, int event_flags) {
-    ::ShellExecuteW(NULL, L"open", kHelpCenterUrl, NULL, NULL, SW_SHOW);
-  }
-
- private:
-  enum ButtonTags {
-    BT_NONE,
-    BT_CLOSE_BUTTON,
-    BT_OK_BUTTON,
-  };
-
-  // Returns a screen rectangle that is fit to show the window. In particular
-  // it has the following properties: a) is visible and b) is attached to
-  // the bottom of the working area. For LTR machines it returns a left side
-  // rectangle and for RTL it returns a right side rectangle so that the
-  // dialog does not compete with the standar place of the start menu.
-  gfx::Rect ComputeWindowPosition(int width, int height, bool is_RTL) {
-    // The 'Shell_TrayWnd' is the taskbar. We like to show our window in that
-    // monitor if we can. This code works even if such window is not found.
-    HWND taskbar = ::FindWindowW(L"Shell_TrayWnd", NULL);
-    HMONITOR monitor =
-        ::MonitorFromWindow(taskbar, MONITOR_DEFAULTTOPRIMARY);
-    MONITORINFO info = {sizeof(info)};
-    if (!GetMonitorInfoW(monitor, &info)) {
-      // Quite unexpected. Do a best guess at a visible rectangle.
-      return gfx::Rect(20, 20, width + 20, height + 20);
-    }
-    // The |rcWork| is the work area. It should account for the taskbars that
-    // are in the screen when we called the function.
-    int left = is_RTL ? info.rcWork.left : info.rcWork.right - width;
-    int top = info.rcWork.bottom - height;
-    return gfx::Rect(left, top, width, height);
-  }
-
-  // Create a windows region that looks like a toast of width |w| and
-  // height |h|. This is best effort, so we don't care much if the operation
-  // fails.
-  void SetToastRegion(HWND window, int w, int h) {
-    static const POINT polygon[] = {
-      {0,   4}, {1,   2}, {2,   1}, {4, 0},   // Left side.
-      {w-4, 0}, {w-2, 1}, {w-1, 2}, {w, 4},   // Right side.
-      {w, h}, {0, h}
-    };
-    HRGN region = ::CreatePolygonRgn(polygon, arraysize(polygon), WINDING);
-    ::SetWindowRgn(window, region, FALSE);
-  }
-
-  // controls which version of the text to use.
-  size_t version_;
-
-  // We don't own any of this pointers. The |popup_| owns itself and owns
-  // the other views.
-  views::Widget* popup_;
-  views::RadioButton* try_chrome_;
-  views::RadioButton* kill_chrome_;
-  Upgrade::TryResult result_;
-
-  DISALLOW_COPY_AND_ASSIGN(TryChromeDialog);
-};
-
-}  // namespace
-
-Upgrade::TryResult Upgrade::ShowTryChromeDialog(
-    size_t version,
-    ProcessSingleton* process_singleton) {
-  if (version > 10000) {
-    // This is a test value. We want to make sure we exercise
-    // returning this early. See EarlyReturnTest test harness.
-    return Upgrade::TD_NOT_NOW;
-  }
-  TryChromeDialog td(version);
-  return td.ShowModal(process_singleton);
-}

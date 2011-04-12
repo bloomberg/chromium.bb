@@ -41,6 +41,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extensions_startup.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/first_run/upgrade.h"
 #include "chrome/browser/gpu_data_manager.h"
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
@@ -1230,15 +1231,15 @@ int BrowserMain(const MainFunctionParams& parameters) {
       // It seems that we don't need to run the experiment since chrome
       // in the same profile is already running.
       VLOG(1) << "Retention experiment not required";
-      return Upgrade::TD_NOT_NOW;
+      return Upgrade::NOT_NOW;
     }
     int try_chrome_int;
     base::StringToInt(try_chrome, &try_chrome_int);
     Upgrade::TryResult answer =
         Upgrade::ShowTryChromeDialog(try_chrome_int, &process_singleton);
-    if (answer == Upgrade::TD_NOT_NOW)
+    if (answer == Upgrade::NOT_NOW)
       return ResultCodes::NORMAL_EXIT_CANCEL;
-    if (answer == Upgrade::TD_UNINSTALL_CHROME)
+    if (answer == Upgrade::UNINSTALL_CHROME)
       return ResultCodes::NORMAL_EXIT_EXP2;
 #else
     // We don't support retention experiments on Mac or Linux.
