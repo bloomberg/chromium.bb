@@ -93,6 +93,7 @@
       'test_basic',
       'themes',
       'sync',
+      '-sync',  # crbug.com/79171
     ],
 
     'win': [
@@ -143,6 +144,8 @@
       '-databases.DatabasesTest.testModificationsPersistAfterRendererCrash',
       # crbug.com/69619
       '-search_engines.SearchEnginesTest.testDiscoverSearchEngine',
+      # Keychain popups make sync tests difficult on Mac.  crbug.com/49378
+      '-sync',
       # crbug.com/78863
       '-sync.SyncTest.testDisableAndEnableDatatype',
       '-sync.SyncTest.testSignInToSync',
@@ -166,7 +169,6 @@
       # crbug.com/64274
       # crbug.com/70659
       '-popups.PopupsTest.testPopupBlockerInIncognito',
-     
     ],
 
     # ChromeOS is linux, but note that this section does not include the
