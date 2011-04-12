@@ -198,6 +198,7 @@
         'common/speech_input_result.h',
         'common/unix_domain_socket_posix.cc',
         'common/unix_domain_socket_posix.h',
+        'common/video_capture_messages.h',
         'common/view_messages.h',
         'common/web_database_observer_impl.cc',
         'common/web_database_observer_impl.h',

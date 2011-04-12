@@ -86,6 +86,7 @@ enum IPCMessageStart {
   PrintMsgStart,
   SpellCheckMsgStart,
   ExtensionMsgStart,
+  VideoCaptureMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 
