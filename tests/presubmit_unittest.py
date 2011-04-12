@@ -273,8 +273,14 @@ class PresubmitUnittest(PresubmitTestsBase):
 
     self.mox.ReplayAll()
 
-    change = presubmit.SvnChange('mychange', '\n'.join(description_lines),
-                                 self.fake_root_dir, files, 0, 0)
+    change = presubmit.SvnChange(
+        'mychange',
+        '\n'.join(description_lines),
+        self.fake_root_dir,
+        files,
+        0,
+        0,
+        None)
     self.failUnless(change.Name() == 'mychange')
     self.failUnless(change.DescriptionText() ==
                     'Hello there\nthis is a change\nand some more regular text')
@@ -343,8 +349,14 @@ class PresubmitUnittest(PresubmitTestsBase):
     fake_presubmit = presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
     self.mox.ReplayAll()
 
-    change = presubmit.Change('mychange', '\n'.join(description_lines),
-                              self.fake_root_dir, files, 0, 0)
+    change = presubmit.Change(
+        'mychange',
+        '\n'.join(description_lines),
+        self.fake_root_dir,
+        files,
+        0,
+        0,
+        None)
     executer = presubmit.PresubmitExecuter(change, False, False, None, False)
     self.failIf(executer.ExecPresubmitScript('', fake_presubmit))
     # No error if no on-upload entry point
@@ -415,8 +427,14 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.mox.ReplayAll()
 
     input_buf = StringIO.StringIO('y\n')
-    change = presubmit.Change('mychange', '\n'.join(description_lines),
-                              self.fake_root_dir, files, 0, 0)
+    change = presubmit.Change(
+        'mychange',
+        '\n'.join(description_lines),
+        self.fake_root_dir,
+        files,
+        0,
+        0,
+        None)
     output = presubmit.DoPresubmitChecks(
         change, False, True, None, input_buf, None, False, False, None)
     self.failIf(output.should_continue())
@@ -449,8 +467,14 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.mox.ReplayAll()
 
     input_buf = StringIO.StringIO('n\n')  # say no to the warning
-    change = presubmit.Change('mychange', '\n'.join(description_lines),
-                              self.fake_root_dir, files, 0, 0)
+    change = presubmit.Change(
+        'mychange',
+        '\n'.join(description_lines),
+        self.fake_root_dir,
+        files,
+        0,
+        0,
+        None)
     output = presubmit.DoPresubmitChecks(
         change, False, True, None, input_buf, None, True, False, None)
     self.failIf(output.should_continue())
@@ -488,8 +512,14 @@ class PresubmitUnittest(PresubmitTestsBase):
     presubmit.random.randint(0, 4).AndReturn(1)
     self.mox.ReplayAll()
 
-    change = presubmit.Change('mychange', '\n'.join(description_lines),
-                              self.fake_root_dir, files, 0, 0)
+    change = presubmit.Change(
+        'mychange',
+        '\n'.join(description_lines),
+        self.fake_root_dir,
+        files,
+        0,
+        0,
+        None)
     output = presubmit.DoPresubmitChecks(change, False, True, None, None,
         None, False, False, None)
     self.assertEqual(output.getvalue().count('??'), 2)
@@ -525,8 +555,14 @@ def CheckChangeOnCommit(input_api, output_api):
 
     input_buf = StringIO.StringIO('y\n')
     # Always fail.
-    change = presubmit.Change('mychange', '\n'.join(description_lines),
-                              self.fake_root_dir, files, 0, 0)
+    change = presubmit.Change(
+        'mychange',
+        '\n'.join(description_lines),
+        self.fake_root_dir,
+        files,
+        0,
+        0,
+        None)
     output = presubmit.DoPresubmitChecks(
         change, False, True, None, input_buf, DEFAULT_SCRIPT, False, False,
         None)
@@ -553,8 +589,8 @@ def CheckChangeOnCommit(input_api, output_api):
     presubmit.os.path.isdir(blat).AndReturn(False)
     self.mox.ReplayAll()
 
-    change = presubmit.Change('mychange', 'foo', self.fake_root_dir, files,
-                              0, 0)
+    change = presubmit.Change(
+        'mychange', 'foo', self.fake_root_dir, files, 0, 0, None)
     affected_files = change.AffectedFiles(include_dirs=False)
     self.failUnless(len(affected_files) == 1)
     self.failUnless(affected_files[0].LocalPath().endswith('blat.cc'))
@@ -601,8 +637,13 @@ def CheckChangeOnCommit(input_api, output_api):
     output = StringIO.StringIO()
     input_buf = StringIO.StringIO('y\n')
     change = presubmit.Change(
-        'foo', "Blah Blah\n\nSTORY=http://tracker.com/42\nBUG=boo\n",
-        self.fake_root_dir, None, 0, 0)
+        'foo',
+        'Blah Blah\n\nSTORY=http://tracker.com/42\nBUG=boo\n',
+        self.fake_root_dir,
+        None,
+        0,
+        0,
+        None)
     self.failUnless(presubmit.DoPresubmitChecks(
         change, False, True, output, input_buf, DEFAULT_SCRIPT, False, False,
         None))
@@ -827,8 +868,14 @@ class InputApiUnittest(PresubmitTestsBase):
 
     self.mox.ReplayAll()
 
-    change = presubmit.SvnChange('mychange', '\n'.join(description_lines),
-                                 self.fake_root_dir, files, 0, 0)
+    change = presubmit.SvnChange(
+        'mychange',
+        '\n'.join(description_lines),
+        self.fake_root_dir,
+        files,
+        0,
+        0,
+        None)
     input_api = presubmit.InputApi(
         change,
         join(self.fake_root_dir, 'foo', 'PRESUBMIT.py'),
@@ -945,8 +992,8 @@ class InputApiUnittest(PresubmitTestsBase):
       presubmit.scm.SVN.GetFileProperty(item, 'svn:mime-type').AndReturn(None)
     self.mox.ReplayAll()
 
-    change = presubmit.SvnChange('mychange', '', self.fake_root_dir, files, 0,
-                                 0)
+    change = presubmit.SvnChange(
+        'mychange', '', self.fake_root_dir, files, 0, 0, None)
     input_api = presubmit.InputApi(
         change,
         presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py'),
@@ -967,8 +1014,8 @@ class InputApiUnittest(PresubmitTestsBase):
       presubmit.scm.SVN.GetFileProperty(item, 'svn:mime-type').AndReturn(None)
     self.mox.ReplayAll()
 
-    change = presubmit.SvnChange('mychange', '', self.fake_root_dir, files, 0,
-                                 0)
+    change = presubmit.SvnChange(
+        'mychange', '', self.fake_root_dir, files, 0, 0, None)
     input_api = presubmit.InputApi(
         change, './PRESUBMIT.py', False, False, None, False)
     # Sample usage of overiding the default white and black lists.
@@ -993,7 +1040,8 @@ class InputApiUnittest(PresubmitTestsBase):
     ]
     self.mox.ReplayAll()
 
-    change = presubmit.Change('mychange', '', self.fake_root_dir, files, 0, 0)
+    change = presubmit.Change(
+        'mychange', '', self.fake_root_dir, files, 0, 0, None)
     affected_files = change.AffectedFiles(include_dirs=True)
     # Local paths should remain the same
     self.assertEquals(affected_files[0].LocalPath(), normpath('isdir'))
@@ -1023,7 +1071,8 @@ class InputApiUnittest(PresubmitTestsBase):
     presubmit.warn(mox.IgnoreArg(), category=mox.IgnoreArg(), stacklevel=2)
     self.mox.ReplayAll()
 
-    change = presubmit.Change('mychange', '', self.fake_root_dir, [], 0, 0)
+    change = presubmit.Change(
+        'mychange', '', self.fake_root_dir, [], 0, 0, None)
     api = presubmit.InputApi(
         change,
         presubmit.os.path.join(self.fake_root_dir, 'foo', 'PRESUBMIT.py'), True,
@@ -1033,8 +1082,8 @@ class InputApiUnittest(PresubmitTestsBase):
   def testReadFileStringDenied(self):
     self.mox.ReplayAll()
 
-    change = presubmit.Change('foo', 'foo', self.fake_root_dir, [('M', 'AA')],
-                              0, 0)
+    change = presubmit.Change(
+        'foo', 'foo', self.fake_root_dir, [('M', 'AA')], 0, 0, None)
     input_api = presubmit.InputApi(
         change, presubmit.os.path.join(self.fake_root_dir, '/p'), False,
         False, None, False)
@@ -1045,8 +1094,8 @@ class InputApiUnittest(PresubmitTestsBase):
     presubmit.gclient_utils.FileRead(path, 'x').AndReturn(None)
     self.mox.ReplayAll()
 
-    change = presubmit.Change('foo', 'foo', self.fake_root_dir, [('M', 'AA')],
-                              0, 0)
+    change = presubmit.Change(
+        'foo', 'foo', self.fake_root_dir, [('M', 'AA')], 0, 0, None)
     input_api = presubmit.InputApi(
         change, presubmit.os.path.join(self.fake_root_dir, '/p'), False,
         False, None, False)
@@ -1056,8 +1105,8 @@ class InputApiUnittest(PresubmitTestsBase):
     fileobj = presubmit.AffectedFile('boo', 'M', 'Unrelated')
     self.mox.ReplayAll()
 
-    change = presubmit.Change('foo', 'foo', self.fake_root_dir, [('M', 'AA')],
-                              0, 0)
+    change = presubmit.Change(
+        'foo', 'foo', self.fake_root_dir, [('M', 'AA')], 0, 0, None)
     input_api = presubmit.InputApi(
         change, presubmit.os.path.join(self.fake_root_dir, '/p'), False,
         False, None, False)
@@ -1069,8 +1118,8 @@ class InputApiUnittest(PresubmitTestsBase):
                                      ).AndReturn(None)
     self.mox.ReplayAll()
 
-    change = presubmit.Change('foo', 'foo', self.fake_root_dir, [('M', 'AA')],
-                              0, 0)
+    change = presubmit.Change(
+        'foo', 'foo', self.fake_root_dir, [('M', 'AA')], 0, 0, None)
     input_api = presubmit.InputApi(
         change, presubmit.os.path.join(self.fake_root_dir, '/p'), False,
         False, None, False)
@@ -1222,20 +1271,33 @@ class AffectedFileUnittest(PresubmitTestsBase):
     self.failUnless(files[0] == output[0])
 
 
-class GclChangeUnittest(PresubmitTestsBase):
+class ChangeUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     members = [
         'AbsoluteLocalPaths', 'AffectedFiles', 'AffectedTextFiles',
         'DescriptionText', 'FullDescriptionText', 'LocalPaths', 'Name',
         'RepositoryRoot', 'RightHandSideLines', 'ServerPaths',
-        'issue', 'patchset', 'scm', 'tags',
+        'author_email', 'issue', 'patchset', 'scm', 'tags',
     ]
     # If this test fails, you should add the relevant test.
     self.mox.ReplayAll()
 
-    change = presubmit.Change('foo', 'foo', self.fake_root_dir, [('M', 'AA')],
-                              0, 0)
+    change = presubmit.Change(
+        'foo', 'foo', self.fake_root_dir, [('M', 'AA')], 0, 0, 'foo')
     self.compareMembers(change, members)
+
+  def testMembers(self):
+    change = presubmit.Change(
+        'foo1', 'foo2\nDRU=ro', self.fake_root_dir, [('Y', 'AA')], 3, 5, 'foo3')
+    self.assertEquals('foo1', change.Name())
+    self.assertEquals('foo2', change.DescriptionText())
+    self.assertEquals('foo3', change.author_email)
+    self.assertEquals('ro', change.DRU)
+    self.assertEquals(3, change.issue)
+    self.assertEquals(5, change.patchset)
+    self.assertEquals(self.fake_root_dir, change.RepositoryRoot())
+    self.assertEquals(1, len(change.AffectedFiles(include_dirs=True)))
+    self.assertEquals('Y', change.AffectedFiles(include_dirs=True)[0].Action())
 
 
 class CannedChecksUnittest(PresubmitTestsBase):
@@ -1297,11 +1359,11 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def DescriptionTest(self, check, description1, description2, error_type,
                       committing):
-    change1 = presubmit.Change('foo1', description1, self.fake_root_dir, None,
-                               0, 0)
+    change1 = presubmit.Change(
+        'foo1', description1, self.fake_root_dir, None, 0, 0, None)
     input_api1 = self.MockInputApi(change1, committing)
-    change2 = presubmit.Change('foo2', description2, self.fake_root_dir, None,
-                               0, 0)
+    change2 = presubmit.Change(
+        'foo2', description2, self.fake_root_dir, None, 0, 0, None)
     input_api2 = self.MockInputApi(change2, committing)
     self.mox.ReplayAll()
 
@@ -1312,8 +1374,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(results2[0].__class__, error_type)
 
   def ContentTest(self, check, content1, content2, error_type):
-    change1 = presubmit.Change('foo1', 'foo1\n', self.fake_root_dir, None,
-                               0, 0)
+    change1 = presubmit.Change(
+        'foo1', 'foo1\n', self.fake_root_dir, None, 0, 0, None)
     input_api1 = self.MockInputApi(change1, False)
     affected_file = self.mox.CreateMock(presubmit.SvnAffectedFile)
     affected_file.LocalPath().AndReturn('foo.cc')
@@ -1324,8 +1386,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
       (affected_file, 23, 'ya'),
     ]
     input_api1.RightHandSideLines(mox.IgnoreArg()).AndReturn(output1)
-    change2 = presubmit.Change('foo2', 'foo2\n', self.fake_root_dir, None,
-                               0, 0)
+    change2 = presubmit.Change(
+        'foo2', 'foo2\n', self.fake_root_dir, None, 0, 0, None)
     input_api2 = self.MockInputApi(change2, False)
     output2 = [
       (affected_file, 42, 'yo, ' + content2),
@@ -1343,14 +1405,14 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def ReadFileTest(self, check, content1, content2, error_type):
     self.mox.StubOutWithMock(presubmit.InputApi, 'ReadFile')
-    change1 = presubmit.Change('foo1', 'foo1\n', self.fake_root_dir, None,
-                               0, 0)
+    change1 = presubmit.Change(
+        'foo1', 'foo1\n', self.fake_root_dir, None, 0, 0, None)
     input_api1 = self.MockInputApi(change1, False)
     affected_file1 = self.mox.CreateMock(presubmit.SvnAffectedFile)
     input_api1.AffectedSourceFiles(None).AndReturn([affected_file1])
     input_api1.ReadFile(affected_file1, 'rb').AndReturn(content1)
-    change2 = presubmit.Change('foo2', 'foo2\n', self.fake_root_dir, None,
-                               0, 0)
+    change2 = presubmit.Change(
+        'foo2', 'foo2\n', self.fake_root_dir, None, 0, 0, None)
     input_api2 = self.MockInputApi(change2, False)
     affected_file2 = self.mox.CreateMock(presubmit.SvnAffectedFile)
     input_api2.AffectedSourceFiles(None).AndReturn([affected_file2])
@@ -1366,7 +1428,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def SvnPropertyTest(self, check, property_name, value1, value2, committing,
                       error_type, use_source_file):
-    change1 = presubmit.SvnChange('mychange', '', self.fake_root_dir, [], 0, 0)
+    change1 = presubmit.SvnChange(
+        'mychange', '', self.fake_root_dir, [], 0, 0, None)
     input_api1 = self.MockInputApi(change1, committing)
     files1 = [
       presubmit.SvnAffectedFile('foo/bar.cc', 'A'),
@@ -1380,7 +1443,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
                                       property_name).AndReturn(value1)
     presubmit.scm.SVN.GetFileProperty(presubmit.normpath('foo.cc'),
                                       property_name).AndReturn(value1)
-    change2 = presubmit.SvnChange('mychange', '', self.fake_root_dir, [], 0, 0)
+    change2 = presubmit.SvnChange(
+        'mychange', '', self.fake_root_dir, [], 0, 0, None)
     input_api2 = self.MockInputApi(change2, committing)
     files2 = [
       presubmit.SvnAffectedFile('foo/bar.cc', 'A'),
@@ -1489,8 +1553,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
                      presubmit.OutputApi.PresubmitPromptWarning)
 
     # Make sure makefiles are ignored.
-    change1 = presubmit.Change('foo1', 'foo1\n', self.fake_root_dir, None,
-                               0, 0)
+    change1 = presubmit.Change(
+        'foo1', 'foo1\n', self.fake_root_dir, None, 0, 0, None)
     input_api1 = self.MockInputApi(change1, False)
     affected_file1 = self.mox.CreateMock(presubmit.SvnAffectedFile)
     affected_file1.LocalPath().AndReturn('foo.cc')
@@ -2008,7 +2072,7 @@ mac|success|blew
 
   def testCannedRunUnitTests(self):
     change = presubmit.Change(
-        'foo1', 'description1', self.fake_root_dir, None, 0, 0)
+        'foo1', 'description1', self.fake_root_dir, None, 0, 0, None)
     input_api = self.MockInputApi(change, False)
     input_api.verbose = True
     unit_tests = ['allo', 'bar.py']
@@ -2035,7 +2099,7 @@ mac|success|blew
 
   def testCannedRunUnitTestsInDirectory(self):
     change = presubmit.Change(
-        'foo1', 'description1', self.fake_root_dir, None, 0, 0)
+        'foo1', 'description1', self.fake_root_dir, None, 0, 0, None)
     input_api = self.MockInputApi(change, False)
     input_api.verbose = True
     input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)

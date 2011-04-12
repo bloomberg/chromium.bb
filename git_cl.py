@@ -837,8 +837,14 @@ def RunHook(committing, upstream_branch, rietveld_server, tbr, may_prompt,
     # with these log messages.
     description = RunCommand(['git', 'log', '--pretty=format:%s%n%n%b',
                               '%s...' % (upstream_branch)]).strip()
-  change = presubmit_support.GitChange(name, description, absroot, files,
-                                       issue, patchset)
+  change = presubmit_support.GitChange(
+      name,
+      description,
+      absroot,
+      files,
+      issue,
+      patchset,
+      None)
 
   # Apply watchlists on upload.
   if not committing:

@@ -1219,7 +1219,8 @@ def DoPresubmitChecks(change_info, committing, may_prompt):
                                        change_info.GetLocalRoot(),
                                        change_info.GetFiles(),
                                        change_info.issue,
-                                       change_info.patchset)
+                                       change_info.patchset,
+                                       None)
   output = presubmit_support.DoPresubmitChecks(
       change=change,
       committing=committing,

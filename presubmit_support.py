@@ -530,6 +530,7 @@ class AffectedFile(object):
   def GenerateScmDiff(self):
     raise NotImplementedError()  # Implemented in derived classes.
 
+
 class SvnAffectedFile(AffectedFile):
   """Representation of a file in a change out of a Subversion checkout."""
   # Method 'NNN' is abstract in class 'NNN' but is not overridden
@@ -645,7 +646,8 @@ class Change(object):
       '^\s*(?P<key>[A-Z][A-Z_0-9]*)\s*=\s*(?P<value>.*?)\s*$')
   scm = ''
 
-  def __init__(self, name, description, local_root, files, issue, patchset):
+  def __init__(
+      self, name, description, local_root, files, issue, patchset, author):
     if files is None:
       files = []
     self._name = name
@@ -654,6 +656,7 @@ class Change(object):
     self._local_root = os.path.abspath(local_root)
     self.issue = issue
     self.patchset = patchset
+    self.author_email = author
 
     # From the description text, build up a dictionary of key/value pairs
     # plus the description minus all key/value or "tag" lines.
@@ -1159,6 +1162,7 @@ def Main(argv):
   parser.add_option("-v", "--verbose", action="count", default=0,
                    help="Use 2 times for more debug info")
   parser.add_option("--name", default='no name')
+  parser.add_option("--author")
   parser.add_option("--description", default='')
   parser.add_option("--issue", type='int', default=0)
   parser.add_option("--patchset", type='int', default=0)
@@ -1187,7 +1191,8 @@ def Main(argv):
                     options.root,
                     files,
                     options.issue,
-                    options.patchset),
+                    options.patchset,
+                    options.author),
         options.commit,
         options.verbose,
         sys.stdout,
