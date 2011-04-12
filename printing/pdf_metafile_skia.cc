@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "skia/ext/vector_platform_device_skia.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkScalar.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/pdf/SkPDFDevice.h"
 #include "third_party/skia/include/pdf/SkPDFDocument.h"
@@ -40,11 +41,16 @@ skia::PlatformDevice* PdfMetafileSkia::StartPageForVectorCanvas(
     const float& scale_factor) {
   DCHECK(data_->current_page_.get() == NULL);
 
+  // Adjust for the margins and apply the scale factor.
+  SkMatrix transform;
+  transform.setTranslate(SkIntToScalar(content_origin.x()),
+                         SkIntToScalar(content_origin.y()));
+  transform.preScale(SkFloatToScalar(scale_factor),
+                     SkFloatToScalar(scale_factor));
+
   skia::VectorPlatformDeviceSkia* device =
       new skia::VectorPlatformDeviceSkia(page_size.width(), page_size.height(),
-                                         SkPDFDevice::kFlip_OriginTransform);
-  device->setInitialTransform(content_origin.x(), content_origin.y(),
-                              scale_factor);
+                                         transform);
   data_->current_page_ = device->PdfDevice();
   return device;
 }

@@ -19,10 +19,13 @@ SkDevice* VectorPlatformDeviceSkiaFactory::newDevice(SkCanvas* noUsed,
                                                      bool isOpaque,
                                                      bool isForLayer) {
   SkASSERT(config == SkBitmap::kARGB_8888_Config);
-  SkPDFDevice::OriginTransform flip = SkPDFDevice::kFlip_OriginTransform;
-  if (isForLayer)
-    flip = SkPDFDevice::kNoFlip_OriginTransform;
-  return new VectorPlatformDeviceSkia(width, height, flip);
+  SkMatrix initialTransform;
+  initialTransform.reset();
+  if (isForLayer) {
+    initialTransform.setTranslate(0, height);
+    initialTransform.preScale(1, -1);
+  }
+  return new VectorPlatformDeviceSkia(width, height, initialTransform);
 }
 
 static inline SkBitmap makeABitmap(int width, int height) {
@@ -32,11 +35,10 @@ static inline SkBitmap makeABitmap(int width, int height) {
 }
 
 VectorPlatformDeviceSkia::VectorPlatformDeviceSkia(
-    int width, int height, SkPDFDevice::OriginTransform flip)
+    int width, int height, const SkMatrix& initialTransform)
     : PlatformDevice(makeABitmap(width, height)),
-      pdf_device_(new SkPDFDevice(width, height, flip)) {
+      pdf_device_(new SkPDFDevice(width, height, initialTransform)) {
   pdf_device_->unref();  // SkRefPtr and new both took a reference.
-  base_transform_.reset();
 }
 
 VectorPlatformDeviceSkia::~VectorPlatformDeviceSkia() {
@@ -79,11 +81,8 @@ PlatformDevice::PlatformSurface VectorPlatformDeviceSkia::BeginPlatformPaint() {
 void VectorPlatformDeviceSkia::EndPlatformPaint() {
   DCHECK(raster_surface_ != NULL);
   SkPaint paint;
-  pdf_device_->drawSprite(SkDraw(),
-                          raster_surface_->accessBitmap(false),
-                          base_transform_.getTranslateX(),
-                          base_transform_.getTranslateY(),
-                          paint);
+  pdf_device_->drawSprite(SkDraw(), raster_surface_->accessBitmap(false),
+                          0, 0, paint);
   raster_surface_ = NULL;
 }
 
@@ -106,16 +105,7 @@ int VectorPlatformDeviceSkia::height() const {
 void VectorPlatformDeviceSkia::setMatrixClip(const SkMatrix& matrix,
                                              const SkRegion& region,
                                              const SkClipStack& stack) {
-  SkMatrix transform = base_transform_;
-  transform.preConcat(matrix);
-
-  DCHECK(SkMatrix::kTranslate_Mask == base_transform_.getType() ||
-      SkMatrix::kIdentity_Mask == base_transform_.getType());
-  SkRegion clip = region;
-  clip.translate(base_transform_.getTranslateX(),
-                 base_transform_.getTranslateY());
-
-  pdf_device_->setMatrixClip(transform, clip, stack);
+  pdf_device_->setMatrixClip(matrix, region, stack);
 }
 
 bool VectorPlatformDeviceSkia::readPixels(const SkIRect& srcRect,
@@ -230,25 +220,5 @@ void VectorPlatformDeviceSkia::drawToHDC(HDC dc,
   SkASSERT(false);
 }
 #endif
-
-void VectorPlatformDeviceSkia::setInitialTransform(int xOffset, int yOffset,
-                                                   float scale_factor) {
-  // TODO(vandebo) Supporting a scale factor is some work because we have to
-  // transform both matrices and clips that come in, but Region only supports
-  // translation.  Instead, we could change SkPDFDevice to include it in the
-  // initial transform.  Delay that work until we would use it.  Also checked
-  // in setMatrixClip.
-  DCHECK_EQ(1.0f, scale_factor);
-
-  base_transform_.setTranslate(xOffset, yOffset);
-  SkScalar scale = SkFloatToScalar(scale_factor);
-  base_transform_.postScale(scale, scale);
-
-  SkMatrix matrix;
-  matrix.reset();
-  SkRegion region;
-  SkClipStack stack;
-  setMatrixClip(matrix, region, stack);
-}
 
 }  // namespace skia

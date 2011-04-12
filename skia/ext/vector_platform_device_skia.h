@@ -9,12 +9,12 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "skia/ext/platform_device.h"
-#include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkTScopedPtr.h"
 #include "third_party/skia/include/pdf/SkPDFDevice.h"
 
 class SkClipStack;
+class SkMatrix;
 struct SkIRect;
 struct SkRect;
 
@@ -31,9 +31,9 @@ class VectorPlatformDeviceSkiaFactory : public SkDeviceFactory {
 
 class VectorPlatformDeviceSkia : public PlatformDevice {
  public:
-  SK_API VectorPlatformDeviceSkia(int width, int height,
-                                  SkPDFDevice::OriginTransform flip);
-
+  SK_API VectorPlatformDeviceSkia(int width,
+                                  int height,
+                                  const SkMatrix& initialTransform);
   ~VectorPlatformDeviceSkia();
 
   SkPDFDevice* PdfDevice() { return pdf_device_.get(); }
@@ -88,14 +88,8 @@ class VectorPlatformDeviceSkia : public PlatformDevice {
   virtual void drawToHDC(HDC dc, int x, int y, const RECT* src_rect);
 #endif
 
-  // Our own methods.
-
-  // This needs to be called before anything is drawn.
-  SK_API void setInitialTransform(int xOffset, int yOffset, float scale_factor);
-
  private:
   SkRefPtr<SkPDFDevice> pdf_device_;
-  SkMatrix base_transform_;
   SkRefPtr<BitmapPlatformDevice> raster_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(VectorPlatformDeviceSkia);
