@@ -6,6 +6,10 @@
 # This script will try to sync the bootstrap directories and then defer control.
 
 base_dir=$(dirname "$0")
+if [ -L "$base_dir" ]
+then
+    base_dir=`cd "$base_dir" && pwd -P`
+fi
 
 # Test git and git --version.
 function test_git {
