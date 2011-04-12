@@ -533,8 +533,15 @@ bool NavigationController::RendererDidNavigate(
         return false;
       break;
     case NavigationType::NAV_IGNORE:
-      // There is nothing we can do with this navigation, so we just return to
+      // If a pending navigation was in progress, this canceled it.  We should
+      // discard it and make sure it is removed from the URL bar.  After that,
+      // there is nothing we can do with this navigation, so we just return to
       // the caller that nothing has happened.
+      if (pending_entry_) {
+        DiscardNonCommittedEntries();
+        extra_invalidate_flags |= TabContents::INVALIDATE_URL;
+        tab_contents_->NotifyNavigationStateChanged(extra_invalidate_flags);
+      }
       return false;
     default:
       NOTREACHED();

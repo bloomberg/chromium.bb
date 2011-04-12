@@ -143,6 +143,44 @@ void RegisterForAllNavNotifications(TestNotificationTracker* tracker,
                      Source<NavigationController>(controller));
 }
 
+class TestTabContentsDelegate : public TabContentsDelegate {
+ public:
+  explicit TestTabContentsDelegate() :
+      navigation_state_change_count_(0) {}
+
+  int navigation_state_change_count() {
+    return navigation_state_change_count_;
+  }
+
+  virtual void OpenURLFromTab(TabContents* source,
+                              const GURL& url, const GURL& referrer,
+                              WindowOpenDisposition disposition,
+                              PageTransition::Type transition) {}
+
+  // Keep track of whether the tab has notified us of a navigation state change.
+  virtual void NavigationStateChanged(const TabContents* source,
+                                      unsigned changed_flags) {
+    navigation_state_change_count_++;
+  }
+
+  virtual void AddNewContents(TabContents* source,
+                              TabContents* new_contents,
+                              WindowOpenDisposition disposition,
+                              const gfx::Rect& initial_pos,
+                              bool user_gesture) {}
+  virtual void ActivateContents(TabContents* contents) {}
+  virtual void DeactivateContents(TabContents* contents) {}
+  virtual void LoadingStateChanged(TabContents* source) {}
+  virtual void CloseContents(TabContents* source) {}
+  virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
+  virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
+  virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
+
+ private:
+  // The number of times NavigationStateChanged has been called.
+  int navigation_state_change_count_;
+};
+
 // -----------------------------------------------------------------------------
 
 TEST_F(NavigationControllerTest, Defaults) {
@@ -425,6 +463,44 @@ TEST_F(NavigationControllerTest, LoadURL_BackPreemptsPending) {
   EXPECT_EQ(-1, controller().pending_entry_index());
   EXPECT_EQ(0, controller().last_committed_entry_index());
   EXPECT_EQ(kExistingURL1, controller().GetActiveEntry()->url());
+}
+
+// Tests an ignored navigation when there is a pending new navigation.
+// This will happen if the user enters a URL, but before that commits, the
+// current blank page reloads.  See http://crbug.com/77507.
+TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
+  TestNotificationTracker notifications;
+  RegisterForAllNavNotifications(&notifications, &controller());
+
+  // Set a TabContentsDelegate to listen for state changes.
+  scoped_ptr<TestTabContentsDelegate> delegate(new TestTabContentsDelegate());
+  EXPECT_FALSE(contents()->delegate());
+  contents()->set_delegate(delegate.get());
+
+  // Without any navigations, the renderer starts at about:blank.
+  const GURL kExistingURL("about:blank");
+
+  // Now make a pending new navigation.
+  const GURL kNewURL("http://eh");
+  controller().LoadURL(kNewURL, GURL(), PageTransition::TYPED);
+  EXPECT_EQ(0U, notifications.size());
+  EXPECT_EQ(-1, controller().pending_entry_index());
+  EXPECT_TRUE(controller().pending_entry());
+  EXPECT_EQ(-1, controller().last_committed_entry_index());
+  EXPECT_EQ(1, delegate->navigation_state_change_count());
+
+  // Before that commits, a document.write and location.reload can cause the
+  // renderer to send a FrameNavigate with page_id -1.
+  rvh()->SendNavigate(-1, kExistingURL);
+
+  // This should clear the pending entry and notify of a navigation state
+  // change, so that we do not keep displaying kNewURL.
+  EXPECT_EQ(-1, controller().pending_entry_index());
+  EXPECT_FALSE(controller().pending_entry());
+  EXPECT_EQ(-1, controller().last_committed_entry_index());
+  EXPECT_EQ(2, delegate->navigation_state_change_count());
+
+  contents()->set_delegate(NULL);
 }
 
 TEST_F(NavigationControllerTest, Reload) {
