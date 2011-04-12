@@ -2118,6 +2118,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::SetProxySettings;
   handler_map["ConnectToWifiNetwork"] =
       &TestingAutomationProvider::ConnectToWifiNetwork;
+  handler_map["ConnectToHiddenWifiNetwork"] =
+      &TestingAutomationProvider::ConnectToHiddenWifiNetwork;
   handler_map["DisconnectFromWifiNetwork"] =
       &TestingAutomationProvider::DisconnectFromWifiNetwork;
 

@@ -288,12 +288,14 @@ void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
     const chromeos::WifiNetworkVector& wifi_networks =
         network_library->wifi_networks();
     DictionaryValue* items = new DictionaryValue;
-    for (size_t i = 0; i < wifi_networks.size(); ++i) {
-      DictionaryValue* item = GetNetworkInfoDict(wifi_networks[i]);
-      item->SetInteger("strength", wifi_networks[i]->strength());
-      item->SetBoolean("encrypted", wifi_networks[i]->encrypted());
-      item->SetString("encryption", wifi_networks[i]->GetEncryptionString());
-      items->Set(wifi_networks[i]->service_path(), item);
+    for (chromeos::WifiNetworkVector::const_iterator iter =
+         wifi_networks.begin(); iter != wifi_networks.end(); ++iter) {
+      const chromeos::WifiNetwork* wifi = *iter;
+      DictionaryValue* item = GetNetworkInfoDict(wifi);
+      item->SetInteger("strength", wifi->strength());
+      item->SetBoolean("encrypted", wifi->encrypted());
+      item->SetString("encryption", wifi->GetEncryptionString());
+      items->Set(wifi->service_path(), item);
     }
     return_value->Set("wifi_networks", items);
   }
@@ -407,10 +409,53 @@ void TestingAutomationProvider::ConnectToWifiNetwork(
     wifi->SetCertPath(certpath);
 
   // Set up an observer (it will delete itself).
-  new NetworkConnectObserver(this, reply_message, service_path);
+  new ServicePathConnectObserver(this, reply_message, service_path);
 
   network_library->ConnectToWifiNetwork(wifi);
   network_library->RequestNetworkScan();
+}
+
+void TestingAutomationProvider::ConnectToHiddenWifiNetwork(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  if (!CrosLibrary::Get()->EnsureLoaded()) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("Could not load cros library.");
+    return;
+  }
+
+  std::string ssid, security, password, identity, certpath;
+  if (!args->GetString("ssid", &ssid) ||
+      !args->GetString("security", &security) ||
+      !args->GetString("password", &password) ||
+      !args->GetString("identity", &identity) ||
+      !args->GetString("certpath", &certpath)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("Invalid or missing args.");
+    return;
+  }
+
+  std::map<std::string, chromeos::ConnectionSecurity> connection_security_map;
+  connection_security_map["SECURITY_NONE"] = chromeos::SECURITY_NONE;
+  connection_security_map["SECURITY_WEP"] = chromeos::SECURITY_WEP;
+  connection_security_map["SECURITY_WPA"] = chromeos::SECURITY_WPA;
+  connection_security_map["SECURITY_RSN"] = chromeos::SECURITY_RSN;
+  connection_security_map["SECURITY_8021X"] = chromeos::SECURITY_8021X;
+
+  if (connection_security_map.find(security) == connection_security_map.end()) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("Unknown security type.");
+    return;
+  }
+  chromeos::ConnectionSecurity connection_security =
+      connection_security_map[security];
+
+  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+
+  // Set up an observer (it will delete itself).
+  new SSIDConnectObserver(this, reply_message, ssid);
+
+  network_library->ConnectToWifiNetwork(connection_security, ssid, password,
+                                        identity, certpath, false);
 }
 
 void TestingAutomationProvider::DisconnectFromWifiNetwork(

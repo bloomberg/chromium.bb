@@ -117,11 +117,8 @@ void NetworkScanObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
 }
 
 NetworkConnectObserver::NetworkConnectObserver(AutomationProvider* automation,
-                                               IPC::Message* reply_message,
-                                               const std::string& service_path)
-    : automation_(automation),
-    reply_message_(reply_message),
-    service_path_(service_path) {
+                                               IPC::Message* reply_message)
+    : automation_(automation), reply_message_(reply_message) {
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
   network_library->AddNetworkManagerObserver(this);
 }
@@ -132,21 +129,58 @@ NetworkConnectObserver::~NetworkConnectObserver() {
 }
 
 void NetworkConnectObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
-  AutomationJSONReply reply(automation_, reply_message_);
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
-  chromeos::WifiNetwork* wifi =
-      network_library->FindWifiNetworkByPath(service_path_);
-  if (!wifi)
+  const chromeos::WifiNetwork* wifi = GetWifiNetwork(obj);
+  if (!wifi) {
+    // The network was not found, and we assume it no longer exists.
+    // This could be because the SSID is invalid, or the network went away.
+    scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+    return_value->SetString("error_string", "Network not found.");
+    AutomationJSONReply(automation_, reply_message_)
+        .SendSuccess(return_value.get());
+    delete this;
     return;
+  }
+
   if (wifi->failed()) {
     scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-    return_value->SetString("error_code", wifi->GetErrorString());
-    reply.SendSuccess(return_value.get());
+    return_value->SetString("error_string", wifi->GetErrorString());
+    AutomationJSONReply(automation_, reply_message_)
+        .SendSuccess(return_value.get());
+    delete this;
+  } else if (wifi->connected()) {
+    AutomationJSONReply(automation_, reply_message_).SendSuccess(NULL);
     delete this;
   }
-  if (wifi->connected()) {
-    reply.SendSuccess(NULL);
-    delete this;
-  }
+
+  // The network is in the NetworkLibrary's list, but there's no failure or
+  // success condition, so just continue waiting for more network events.
 }
 
+ServicePathConnectObserver::ServicePathConnectObserver(
+    AutomationProvider* automation, IPC::Message* reply_message,
+    const std::string& service_path)
+    : NetworkConnectObserver(automation, reply_message),
+    service_path_(service_path) {}
+
+const chromeos::WifiNetwork* ServicePathConnectObserver::GetWifiNetwork(
+    NetworkLibrary* network_library) {
+  return network_library->FindWifiNetworkByPath(service_path_);
+}
+
+SSIDConnectObserver::SSIDConnectObserver(
+    AutomationProvider* automation, IPC::Message* reply_message,
+    const std::string& ssid)
+    : NetworkConnectObserver(automation, reply_message), ssid_(ssid) {}
+
+const chromeos::WifiNetwork* SSIDConnectObserver::GetWifiNetwork(
+    NetworkLibrary* network_library) {
+  const chromeos::WifiNetworkVector& wifi_networks =
+      network_library->wifi_networks();
+  for (chromeos::WifiNetworkVector::const_iterator iter = wifi_networks.begin();
+       iter != wifi_networks.end(); ++iter) {
+    const chromeos::WifiNetwork* wifi = *iter;
+    if (wifi->name() == ssid_)
+      return wifi;
+  }
+  return NULL;
+}

@@ -1545,7 +1545,7 @@ void WifiNetwork::SetEAPPassphrase(const std::string& passphrase) {
   SetOrClearStringProperty(kEapPasswordProperty, passphrase);
 }
 
-std::string WifiNetwork::GetEncryptionString() {
+std::string WifiNetwork::GetEncryptionString() const {
   switch (encryption_) {
     case SECURITY_UNKNOWN:
       break;

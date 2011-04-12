@@ -1052,6 +1052,9 @@ class TestingAutomationProvider : public AutomationProvider,
 
   void ConnectToWifiNetwork(DictionaryValue* args, IPC::Message* reply_message);
 
+  void ConnectToHiddenWifiNetwork(DictionaryValue* args,
+                                  IPC::Message* reply_message);
+
   void DisconnectFromWifiNetwork(DictionaryValue* args,
                                  IPC::Message* reply_message);
 

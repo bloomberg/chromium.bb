@@ -518,7 +518,7 @@ class WifiNetwork : public WirelessNetwork {
 
   // Return a string representation of the encryption code.
   // This not translated and should be only used for debugging purposes.
-  std::string GetEncryptionString();
+  std::string GetEncryptionString() const;
 
   // Return true if a passphrase or other input is required to connect.
   bool IsPassphraseRequired() const;

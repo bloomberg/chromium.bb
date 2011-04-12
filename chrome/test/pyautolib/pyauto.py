@@ -2689,8 +2689,42 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'identity': identity,
         'certpath': certpath,
     }
-    result = self._GetResultFromJSONRequest(cmd_dict, windex=-1)
-    return result.get('error_code')
+    result = self._GetResultFromJSONRequest(cmd_dict, windex=-1, timeout=50000)
+    return result.get('error_string')
+
+  def ConnectToHiddenWifiNetwork(self, ssid, security,
+                                 password='', identity='', certpath=''):
+    """Connect to a wifi network by its service path.
+
+    Blocks until connection succeeds or fails.
+
+    Args:
+      ssid: The SSID of the network to connect to.
+      security: The network's security type. One of: 'SECURITY_NONE',
+                'SECURITY_WEP', 'SECURITY_WPA', 'SECURITY_RSN', 'SECURITY_8021X'
+      password: Passphrase for connecting to the wifi network.
+      identity: Identity for 802.11x networks.
+      certpath: Certificate path for 802.11x networks.
+
+    Returns:
+      An error string if an error occured.
+      None otherwise.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    assert security in ('SECURITY_NONE', 'SECURITY_WEP', 'SECURITY_WPA',
+                        'SECURITY_RSN', 'SECURITY_8021X')
+    cmd_dict = {
+        'command': 'ConnectToHiddenWifiNetwork',
+        'ssid': ssid,
+        'security': security,
+        'password': password,
+        'identity': identity,
+        'certpath': certpath,
+    }
+    result = self._GetResultFromJSONRequest(cmd_dict, windex=-1, timeout=50000)
+    return result.get('error_string')
 
   def DisconnectFromWifiNetwork(self):
     """Disconnect from the connected wifi network.
