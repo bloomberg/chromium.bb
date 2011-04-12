@@ -354,12 +354,14 @@ void FormStructure::LogQualityMetrics(
 
     // Log heuristic, server, and overall type quality metrics, independently of
     // whether the field was autofilled.
-    if (heuristic_type == UNKNOWN_TYPE)
-      metric_logger.Log(AutofillMetrics::HEURISTIC_TYPE_UNKNOWN);
-    else if (field_types.count(heuristic_type))
-      metric_logger.Log(AutofillMetrics::HEURISTIC_TYPE_MATCH);
-    else
-      metric_logger.Log(AutofillMetrics::HEURISTIC_TYPE_MISMATCH);
+    if (heuristic_type == UNKNOWN_TYPE) {
+      metric_logger.Log(AutofillMetrics::HEURISTIC_TYPE_UNKNOWN, experiment_id);
+    } else if (field_types.count(heuristic_type)) {
+      metric_logger.Log(AutofillMetrics::HEURISTIC_TYPE_MATCH, experiment_id);
+    } else {
+      metric_logger.Log(AutofillMetrics::HEURISTIC_TYPE_MISMATCH,
+                        experiment_id);
+    }
 
     if (server_type == NO_SERVER_DATA)
       metric_logger.Log(AutofillMetrics::SERVER_TYPE_UNKNOWN, experiment_id);

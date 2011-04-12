@@ -93,7 +93,8 @@ class AutofillMetrics {
   virtual ~AutofillMetrics();
 
   virtual void Log(CreditCardInfoBarMetric metric) const;
-  virtual void Log(HeuristicTypeQualityMetric metric) const;
+  virtual void Log(HeuristicTypeQualityMetric metric,
+                   const std::string& experiment_id) const;
   virtual void Log(PredictedTypeQualityMetric metric,
                    const std::string& experiment_id) const;
   virtual void Log(QualityMetric metric,

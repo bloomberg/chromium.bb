@@ -40,11 +40,16 @@ void AutofillMetrics::Log(CreditCardInfoBarMetric metric) const {
                             NUM_CREDIT_CARD_INFO_BAR_METRICS);
 }
 
-void AutofillMetrics::Log(HeuristicTypeQualityMetric metric) const {
+void AutofillMetrics::Log(HeuristicTypeQualityMetric metric,
+                          const std::string& experiment_id) const {
   DCHECK(metric < NUM_HEURISTIC_TYPE_QUALITY_METRICS);
 
-  UMA_HISTOGRAM_ENUMERATION("Autofill.Quality.HeuristicType", metric,
-                            NUM_HEURISTIC_TYPE_QUALITY_METRICS);
+  std::string histogram_name = "Autofill.Quality.HeuristicType";
+  if (!experiment_id.empty())
+    histogram_name += "_" + experiment_id;
+
+  LogUMAHistogramEnumeration(histogram_name, metric,
+                             NUM_HEURISTIC_TYPE_QUALITY_METRICS);
 }
 
 void AutofillMetrics::Log(PredictedTypeQualityMetric metric,

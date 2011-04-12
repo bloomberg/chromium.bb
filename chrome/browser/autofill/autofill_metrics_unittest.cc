@@ -30,7 +30,8 @@ class MockAutofillMetrics : public AutofillMetrics {
  public:
   MockAutofillMetrics() {}
   MOCK_CONST_METHOD1(Log, void(CreditCardInfoBarMetric metric));
-  MOCK_CONST_METHOD1(Log, void(HeuristicTypeQualityMetric metric));
+  MOCK_CONST_METHOD2(Log, void(HeuristicTypeQualityMetric metric,
+                               const std::string& experiment_id));
   MOCK_CONST_METHOD2(Log, void(QualityMetric metric,
                                const std::string& experiment_id));
   MOCK_CONST_METHOD1(Log, void(ServerQueryMetric metric));
@@ -249,7 +250,7 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_SUBMITTED, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::HEURISTIC_TYPE_MATCH));
+              Log(AutofillMetrics::HEURISTIC_TYPE_MATCH, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::SERVER_TYPE_MISMATCH, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
@@ -260,7 +261,7 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_SUBMITTED, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::HEURISTIC_TYPE_MISMATCH));
+              Log(AutofillMetrics::HEURISTIC_TYPE_MISMATCH, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::SERVER_TYPE_MATCH, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
@@ -283,7 +284,7 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_SUBMITTED, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::HEURISTIC_TYPE_UNKNOWN));
+              Log(AutofillMetrics::HEURISTIC_TYPE_UNKNOWN, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::SERVER_TYPE_UNKNOWN, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
@@ -463,7 +464,7 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_SUBMITTED, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::HEURISTIC_TYPE_UNKNOWN));
+              Log(AutofillMetrics::HEURISTIC_TYPE_UNKNOWN, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::SERVER_TYPE_UNKNOWN, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
@@ -480,7 +481,7 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_SUBMITTED, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::HEURISTIC_TYPE_MATCH));
+              Log(AutofillMetrics::HEURISTIC_TYPE_MATCH, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::SERVER_TYPE_MISMATCH, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
@@ -497,7 +498,7 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_SUBMITTED, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::HEURISTIC_TYPE_MISMATCH));
+              Log(AutofillMetrics::HEURISTIC_TYPE_MISMATCH, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::SERVER_TYPE_MISMATCH, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
@@ -517,7 +518,7 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_SUBMITTED, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::HEURISTIC_TYPE_MATCH));
+              Log(AutofillMetrics::HEURISTIC_TYPE_MATCH, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::SERVER_TYPE_MATCH, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
@@ -624,7 +625,7 @@ TEST_F(AutofillMetricsTest, QualityMetricsWithExperimentId) {
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_SUBMITTED, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::HEURISTIC_TYPE_MATCH));
+              Log(AutofillMetrics::HEURISTIC_TYPE_MATCH, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::SERVER_TYPE_MISMATCH, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
@@ -635,7 +636,7 @@ TEST_F(AutofillMetricsTest, QualityMetricsWithExperimentId) {
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_SUBMITTED, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::HEURISTIC_TYPE_MISMATCH));
+              Log(AutofillMetrics::HEURISTIC_TYPE_MISMATCH, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::SERVER_TYPE_MATCH, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
@@ -658,7 +659,7 @@ TEST_F(AutofillMetricsTest, QualityMetricsWithExperimentId) {
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_SUBMITTED, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::HEURISTIC_TYPE_UNKNOWN));
+              Log(AutofillMetrics::HEURISTIC_TYPE_UNKNOWN, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::SERVER_TYPE_UNKNOWN, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
