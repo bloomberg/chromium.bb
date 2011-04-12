@@ -310,6 +310,16 @@ void GetOptionStringsFromElement(const WebSelectElement& select_element,
   }
 }
 
+// Returns the form's |name| attribute if non-empty; otherwise the form's |id|
+// attribute.
+const string16 GetFormIdentifier(const WebFormElement& form) {
+  string16 identifier = form.name();
+  if (identifier.empty())
+    identifier = form.getAttribute(WebString("id"));
+
+  return identifier;
+}
+
 }  // namespace
 
 namespace autofill {
@@ -426,7 +436,7 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
   if (requirements & REQUIRE_AUTOCOMPLETE && !element.autoComplete())
     return false;
 
-  form->name = element.name();
+  form->name = GetFormIdentifier(element);
   form->method = element.method();
   form->origin = frame->url();
   form->action = frame->document().completeURL(element.action());
@@ -814,7 +824,7 @@ bool FormManager::FindCachedFormElement(const FormData& form,
     // |true| -- WebKit distinguishes between a "null" string (lhs) and an
     // "empty" string (rhs).  We don't want that distinction, so forcing to
     // string16.
-    string16 element_name((*form_iter)->form_element.name());
+    string16 element_name = GetFormIdentifier((*form_iter)->form_element);
     GURL action(
         (*form_iter)->form_element.document().completeURL(
             (*form_iter)->form_element.action()));

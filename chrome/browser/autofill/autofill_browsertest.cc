@@ -352,6 +352,29 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, OnChangeAfterAutofill) {
   EXPECT_TRUE(focused_fired);
 }
 
+// Test that we can autofill forms distinguished only by their |id| attribute.
+IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillFormsDistinguishedById) {
+  CreateTestProfile();
+
+  // Load the test page.
+  const std::string kURL =
+      std::string(kDataURIPrefix) + kTestFormString +
+      "<script>"
+      "var mainForm = document.forms[0];"
+      "mainForm.id = 'mainForm';"
+      "var newForm = document.createElement('form');"
+      "newForm.action = mainForm.action;"
+      "newForm.method = mainForm.method;"
+      "newForm.id = 'newForm';"
+      "mainForm.parentNode.insertBefore(newForm, mainForm);"
+      "</script>";
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), GURL(kURL)));
+
+  // Invoke Autofill.
+  TryBasicFormFill();
+}
+
 // Test that form filling works after reloading the current page.
 // This test brought to you by http://crbug.com/69204
 IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillAfterReload) {
