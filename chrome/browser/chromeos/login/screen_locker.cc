@@ -807,7 +807,8 @@ void ScreenLocker::OnLoginSuccess(
     bool pending_requests) {
   VLOG(1) << "OnLoginSuccess: Sending Unlock request.";
   if (authentication_start_time_.is_null()) {
-    LOG(ERROR) << "authentication_start_time_ is not set";
+    if (!username.empty())
+      LOG(WARNING) << "authentication_start_time_ is not set";
   } else {
     base::TimeDelta delta = base::Time::Now() - authentication_start_time_;
     VLOG(1) << "Authentication success time: " << delta.InSecondsF();

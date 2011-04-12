@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 
+class InProcessBrowserTest;
 template <typename T> struct DefaultSingletonTraits;
 
 namespace chromeos {
@@ -55,6 +56,11 @@ class AudioHandler {
   // and constructor/destructor private as recommended for Singletons.
   friend struct DefaultSingletonTraits<AudioHandler>;
 
+  friend class ::InProcessBrowserTest;
+  // Disable audio in browser tests. This is a workaround for the bug
+  // crosbug.com/17058. Remove this once it's fixed.
+  static void Disable();
+
   // Connect to the current mixer_type_.
   bool TryToConnect(bool async);
 
@@ -89,4 +95,3 @@ class AudioHandler {
 DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::AudioHandler);
 
 #endif  // CHROME_BROWSER_CHROMEOS_AUDIO_HANDLER_H_
-

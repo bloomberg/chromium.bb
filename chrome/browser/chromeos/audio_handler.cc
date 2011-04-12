@@ -24,6 +24,8 @@ const double kMaxVolumeDb = 6.0;
 const double kVolumeBias = 0.5;
 // If a connection is lost, we try again this many times
 const int kMaxReconnectTries = 4;
+// A flag to disable mixer.
+bool g_disabled = false;
 
 }  // namespace
 
@@ -96,6 +98,10 @@ void AudioHandler::Disconnect() {
   mixer_.reset();
 }
 
+void AudioHandler::Disable() {
+  g_disabled = true;
+}
+
 bool AudioHandler::TryToConnect(bool async) {
   if (mixer_type_ == MIXER_TYPE_ALSA) {
     VLOG(1) << "Trying to connect to ALSA";
@@ -149,7 +155,7 @@ AudioHandler::AudioHandler()
       reconnect_tries_(0),
       max_volume_db_(kMaxVolumeDb),
       min_volume_db_(kMinVolumeDb),
-      mixer_type_(MIXER_TYPE_ALSA) {
+      mixer_type_(g_disabled ? MIXER_TYPE_NONE : MIXER_TYPE_ALSA) {
   // Start trying to connect to mixers asynchronously, starting with the current
   // mixer_type_.  If the connection fails, another TryToConnect() for the next
   // mixer will be posted at that time.

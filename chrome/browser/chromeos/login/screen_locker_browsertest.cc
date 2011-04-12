@@ -253,8 +253,7 @@ void MouseMove(views::Widget* widget) {
   ui_controls::SendMouseMove(10, 10);
 }
 
-// Crashes on chromeos.  http://crbug.com/79164
-IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestNoPasswordWithMouseMove) {
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestNoPasswordWithMouseMove) {
   TestNoPassword(MouseMove);
 }
 
@@ -262,9 +261,7 @@ void MouseClick(views::Widget* widget) {
   ui_controls::SendMouseClick(ui_controls::RIGHT);
 }
 
-// Crashes on chromeos.  http://crbug.com/79164
-IN_PROC_BROWSER_TEST_F(ScreenLockerTest,
-    DISABLED_TestNoPasswordWithMouseClick) {
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestNoPasswordWithMouseClick) {
   TestNoPassword(MouseClick);
 }
 
@@ -273,13 +270,11 @@ void KeyPress(views::Widget* widget) {
                             ui::VKEY_SPACE, false, false, false, false);
 }
 
-// Crashes on chromeos.  http://crbug.com/79164
-IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestNoPasswordWithKeyPress) {
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestNoPasswordWithKeyPress) {
   TestNoPassword(KeyPress);
 }
 
-// See http://crbug.com/78764.
-IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestShowTwice) {
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
   EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenLockCompleted())
       .Times(2)
       .RetiresOnSaturation();
@@ -299,8 +294,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestShowTwice) {
   EXPECT_FALSE(tester->IsLocked());
 }
 
-// See http://crbug.com/78764.
-IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestEscape) {
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestEscape) {
   EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenLockCompleted())
       .Times(1)
       .RetiresOnSaturation();

@@ -48,6 +48,10 @@
 #include "chrome/browser/ui/views/frame/browser_frame_win.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/audio_handler.h"
+#endif
+
 namespace {
 
 void InitializeBrowser(Browser* browser) {
@@ -131,6 +135,10 @@ void InProcessBrowserTest::SetUp() {
   // Make sure that the log directory exists.
   FilePath log_dir = logging::GetSessionLogFile(*command_line).DirName();
   file_util::CreateDirectory(log_dir);
+
+  // Disable audio mixer as it can cause hang.
+  // see http://crosbug.com/17058.
+  chromeos::AudioHandler::Disable();
 #endif  // defined(OS_CHROMEOS)
 
   SandboxInitWrapper sandbox_wrapper;
