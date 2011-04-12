@@ -1008,18 +1008,70 @@ wlsc_surface_activate(struct wlsc_surface *surface,
 					   time);
 }
 
+static void
+move_binding(struct wl_input_device *device, uint32_t time,
+	     uint32_t key, uint32_t button, uint32_t state, void *data)
+{
+	struct wlsc_compositor *compositor = data;
+	struct wlsc_surface *surface =
+		(struct wlsc_surface *) device->pointer_focus;
+
+	shell_move(NULL,
+		   (struct wl_shell *) &compositor->shell,
+		   &surface->surface, device, time);
+}
+
+static void
+resize_binding(struct wl_input_device *device, uint32_t time,
+	       uint32_t key, uint32_t button, uint32_t state, void *data)
+{
+	struct wlsc_compositor *compositor = data;
+	struct wlsc_surface *surface =
+		(struct wlsc_surface *) device->pointer_focus;
+	uint32_t edges = 0;
+	int32_t x, y;
+
+	x = device->grab_x - surface->x;
+	y = device->grab_y - surface->y;
+
+	if (x < surface->width / 3)
+		edges |= WL_SHELL_RESIZE_LEFT;
+	else if (x < 2 * surface->width / 3)
+		edges |= 0;
+	else
+		edges |= WL_SHELL_RESIZE_RIGHT;
+
+	if (y < surface->height / 3)
+		edges |= WL_SHELL_RESIZE_TOP;
+	else if (y < 2 * surface->height / 3)
+		edges |= 0;
+	else
+		edges |= WL_SHELL_RESIZE_BOTTOM;
+
+	shell_resize(NULL,
+		     (struct wl_shell *) &compositor->shell,
+		     &surface->surface, device, time, edges);
+}
+
+struct wlsc_binding {
+	uint32_t key;
+	uint32_t button;
+	uint32_t modifier;
+	wlsc_binding_handler_t handler;
+	void *data;
+	struct wl_list link;
+};
+
 void
 notify_button(struct wl_input_device *device,
 	      uint32_t time, int32_t button, int32_t state)
 {
 	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
-	struct wlsc_surface *surface;
 	struct wlsc_compositor *compositor =
 		(struct wlsc_compositor *) device->compositor;
-
-	surface = (struct wlsc_surface *) device->pointer_focus;
-	uint32_t edges = 0;
-	int32_t x, y;
+	struct wlsc_binding *b;
+	struct wlsc_surface *surface =
+		(struct wlsc_surface *) device->pointer_focus;
 
 	if (state && surface && device->grab == NULL) {
 		wlsc_surface_activate(surface, wd, time);
@@ -1028,34 +1080,13 @@ notify_button(struct wl_input_device *device,
 					   button, time);
 	}
 
-	if (state && surface && button == BTN_LEFT &&
-	    (wd->modifier_state & MODIFIER_SUPER))
-		shell_move(NULL,
-			   (struct wl_shell *) &compositor->shell,
-			   &surface->surface, device, time);
-	else if (state && surface && button == BTN_MIDDLE &&
-		 (wd->modifier_state & MODIFIER_SUPER)) {
-
-		x = device->grab_x - surface->x;
-		y = device->grab_y - surface->y;
-
-		if (x < surface->width / 3)
-			edges |= WL_SHELL_RESIZE_LEFT;
-		else if (x < 2 * surface->width / 3)
-			edges |= 0;
-		else
-			edges |= WL_SHELL_RESIZE_RIGHT;
-
-		if (y < surface->height / 3)
-			edges |= WL_SHELL_RESIZE_TOP;
-		else if (y < 2 * surface->height / 3)
-			edges |= 0;
-		else
-			edges |= WL_SHELL_RESIZE_BOTTOM;
-
-		shell_resize(NULL,
-			     (struct wl_shell *) &compositor->shell,
-			     &surface->surface, device, time, edges);
+	wl_list_for_each(b, &compositor->binding_list, link) {
+		if (b->button == button &&
+		    b->modifier == wd->modifier_state && state) {
+			b->handler(&wd->input_device,
+				   time, 0, button, state, b->data);
+			break;
+		}
 	}
 
 	if (device->grab)
@@ -1115,8 +1146,9 @@ wlsc_switcher_destroy(struct wlsc_switcher *switcher)
 }
 
 static void
-switcher_next_binding(struct wlsc_input_device *device,
-		      uint32_t time, uint32_t key, uint32_t state, void *data)
+switcher_next_binding(struct wl_input_device *device, uint32_t time,
+		      uint32_t key, uint32_t button,
+		      uint32_t state, void *data)
 {
 	struct wlsc_compositor *compositor = data;
 
@@ -1131,31 +1163,23 @@ switcher_next_binding(struct wlsc_input_device *device,
 }
 
 static void
-switcher_terminate_binding(struct wlsc_input_device *device,
-			   uint32_t time, uint32_t key, uint32_t state,
-			   void *data)
+switcher_terminate_binding(struct wl_input_device *device,
+			   uint32_t time, uint32_t key, uint32_t button,
+			   uint32_t state, void *data)
 {
 	struct wlsc_compositor *compositor = data;
+	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
 
 	if (compositor->switcher && !state) {
-		wlsc_surface_activate(compositor->switcher->current,
-				      device, time);
+		wlsc_surface_activate(compositor->switcher->current, wd, time);
 		wlsc_switcher_destroy(compositor->switcher);
 		compositor->switcher = NULL;
 	}
 }
 
-struct wlsc_binding {
-	uint32_t key;
-	uint32_t modifier;
-	wlsc_binding_handler_t handler;
-	void *data;
-	struct wl_list link;
-};
-
 static void
-terminate_binding(struct wlsc_input_device *device,
-		  uint32_t time, uint32_t key, uint32_t state, void *data)
+terminate_binding(struct wl_input_device *device, uint32_t time,
+		  uint32_t key, uint32_t button, uint32_t state, void *data)
 {
 	struct wlsc_compositor *compositor = data;
 
@@ -1164,7 +1188,7 @@ terminate_binding(struct wlsc_input_device *device,
 
 struct wlsc_binding *
 wlsc_compositor_add_binding(struct wlsc_compositor *compositor,
-			    uint32_t key, uint32_t modifier,
+			    uint32_t key, uint32_t button, uint32_t modifier,
 			    wlsc_binding_handler_t handler, void *data)
 {
 	struct wlsc_binding *binding;
@@ -1174,6 +1198,7 @@ wlsc_compositor_add_binding(struct wlsc_compositor *compositor,
 		return NULL;
 
 	binding->key = key;
+	binding->button = button;
 	binding->modifier = modifier;
 	binding->handler = handler;
 	binding->data = data;
@@ -1235,7 +1260,8 @@ notify_key(struct wl_input_device *device,
 	wl_list_for_each(b, &compositor->binding_list, link) {
 		if (b->key == key &&
 		    b->modifier == wd->modifier_state && state) {
-			b->handler(wd, time, key, state, b->data);
+			b->handler(&wd->input_device,
+				   time, key, 0, state, b->data);
 			break;
 		}
 	}
@@ -1373,6 +1399,7 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 					     device->input_device.y, 32, 32);
 	device->hotspot_x = 16;
 	device->hotspot_y = 16;
+	device->modifier_state = 0;
 
 	device->input_device.motion_grab.interface = &motion_grab_interface;
 
@@ -1545,15 +1572,19 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	wl_list_init(&ec->output_list);
 	wl_list_init(&ec->binding_list);
 
-	wlsc_compositor_add_binding(ec, KEY_BACKSPACE,
+	wlsc_compositor_add_binding(ec, KEY_BACKSPACE, 0,
 				    MODIFIER_CTRL | MODIFIER_ALT,
 				    terminate_binding, ec);
-	wlsc_compositor_add_binding(ec, KEY_TAB, MODIFIER_SUPER,
+	wlsc_compositor_add_binding(ec, KEY_TAB, MODIFIER_SUPER, 0,
 				    switcher_next_binding, ec);
-	wlsc_compositor_add_binding(ec, KEY_LEFTMETA, MODIFIER_SUPER,
+	wlsc_compositor_add_binding(ec, KEY_LEFTMETA, MODIFIER_SUPER, 0,
 				    switcher_terminate_binding, ec);
-	wlsc_compositor_add_binding(ec, KEY_RIGHTMETA, MODIFIER_SUPER,
+	wlsc_compositor_add_binding(ec, KEY_RIGHTMETA, MODIFIER_SUPER, 0,
 				    switcher_terminate_binding, ec);
+	wlsc_compositor_add_binding(ec, 0, BTN_LEFT, MODIFIER_SUPER,
+				    move_binding, ec);
+	wlsc_compositor_add_binding(ec, 0, BTN_MIDDLE, MODIFIER_SUPER,
+				    resize_binding, ec);
 
 	create_pointer_images(ec);
 
