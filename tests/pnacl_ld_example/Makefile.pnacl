@@ -14,7 +14,11 @@ ELF_PATCHER=../../tools/elf_patcher.py
 ARM_CC=../../toolchain/linux_arm-trusted/arm-2009q3/bin/arm-none-linux-gnueabi-gcc
 QEMU= ../../toolchain/linux_arm-trusted/qemu_tool.sh run
 
+# NOTE: built this using: 
+# ./scons platform=x86-32 ncval
 NCVAL_X86_32=../../scons-out/opt-linux-x86-32/staging/ncval
+# NOTE: built this using: 
+# ./scons buildplatform=x86-64 targetplatform=arm  arm-ncval-core
 NCVAL_ARM=../../scons-out/opt-linux-x86-64-to-arm/staging/arm-ncval-core
 #DEBUG_FLAGS= --pnacl-driver-verbose --pnacl-driver-debug
 DEBUG_FLAGS=
@@ -23,27 +27,32 @@ DEBUG_FLAGS=
 # tools needed
 ######################################################################
 preparation:
-	./scons MODE=opt-linux buildplatform=x86-64 targetplatform=arm arm-ncval-core
-	./scons MODE=opt-linux platform=x86-32 ncval
+	cd ../.. ; ./scons MODE=opt-linux buildplatform=x86-64 targetplatform=arm arm-ncval-core
+	cd ../.. ; ./scons MODE=opt-linux platform=x86-32 ncval
 ######################################################################
 # Platform neutral
 ######################################################################
 
 hello.bc:  hello.c
-	$(PNACL_CC)  -c -fPIC -I../../.. $(DEBUG_FLAGS) -o $@ $?
+	$(PNACL_CC)  -c -fPIC -I../../.. $(DEBUG_FLAGS) -o $@ $^
 
 
 fortytwo.bc:  fortytwo.c
-	$(PNACL_CC)  -c -fPIC -I../../.. $(DEBUG_FLAGS) -o $@ $?
+	$(PNACL_CC)  -c -fPIC -I../../.. $(DEBUG_FLAGS) -o $@ $^
 
 ######################################################################
-LLC_X86_ARGS= $(DEBUG_FLAGS) --add-llc-option -sfi-x86-jmp-mask=-1
+LD_X86_ARGS= --pnacl-driver-set-WHICH_LD=GOLD 
+# http://code.google.com/p/nativeclient/issues/detail?id=1531
+# uncomment this for BFD linking
+#LD_X86_ARGS= --pnacl-driver-set-LD_SCRIPT_X8632=ld_script_x86_32_shared
+LLC_X86_ARGS= --add-llc-option -sfi-x86-jmp-mask=-1 
+X86_FLAGS= $(DEBUG_FLAGS) $(LD_X86_ARGS) $(LLC_X86_ARGS)
 
 # mostly sandboxed
 libsimple.x86-32.so: hello.bc fortytwo.bc
-	$(PNACL_LD) -shared -fPIC  -arch x86-32 $(LLC_X86_ARGS) -o $@ $?
+	$(PNACL_LD) -shared -fPIC  -arch x86-32 $(X86_FLAGS) -o $@ $^
 	# TODO(robertm): enable this once ncval has been fixed
-	# $(NCVAL_X86_32) $@
+	#	$(NCVAL_X86_32) $@
 	$(ELF_PATCHER) -l $@	
 
 # *not* sanboxed
@@ -52,13 +61,19 @@ main.x86-32: main.c libsimple.x86-32.so
 
 run.x86-32: main.x86-32
 	LD_LIBRARY_PATH=. ./main.x86-32
+	echo "success"
 
 ######################################################################
+LD_ARM_ARGS= --pnacl-driver-set-WHICH_LD=GOLD
+# http://code.google.com/p/nativeclient/issues/detail?id=1531
+# uncomment this for BFD linking
+# LD_ARM_ARGS= --pnacl-driver-set-LD_SCRIPT_ARM=ld_script_arm_shared
 LLC_ARM_ARGS= --add-llc-option -sfi-zero-mask
+ARM_FLAGS= $(DEBUG_FLAGS) $(LD_ARM_ARGS) $(LLC_ARM_ARGS)
 
 # mostly sandboxed
 libsimple.arm.so: hello.bc fortytwo.bc
-	$(PNACL_LD) -shared -fPIC  -arch arm $(LLC_ARM_ARGS) -o $@ $?
+	$(PNACL_LD) -shared -fPIC  -arch arm $(ARM_FLAGS) -o $@ $^
 	$(NCVAL_ARM) --zero-masks $@
 	$(ELF_PATCHER) -l $@
 
@@ -68,7 +83,7 @@ main.arm: main.c libsimple.arm.so
 
 run.arm: main.arm
 	LD_LIBRARY_PATH=. $(QEMU) ./main.arm
-
+	echo "success"
 ######################################################################
 
 clean:
