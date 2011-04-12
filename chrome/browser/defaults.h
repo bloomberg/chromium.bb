@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,6 +67,9 @@ extern const bool kAlwaysOpenIncognitoWindow;
 
 // Should the close button be shown in the Task Manager dialog?
 extern const bool kShowCancelButtonInTaskManager;
+
+// Are touch icons enabled? False by default.
+extern const bool kEnableTouchIcon;
 
 //=============================================================================
 // Runtime "const" - set only once after parsing command line option and should

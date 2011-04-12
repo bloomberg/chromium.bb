@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/icon_messages.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/prerender_constants.h"
@@ -334,10 +335,10 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_Thumbnail,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_Snapshot,
                     SkBitmap /* bitmap */)
 
-// Notification that the url for the favicon of a site has been determined.
+// Notification that the urls for the favicon of a site has been determined.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateFaviconURL,
                     int32 /* page_id */,
-                    GURL /* url of the favicon */)
+                    std::vector<FaviconURL> /* urls of the favicon */)
 
 // Following message is used to communicate the values received by the
 // callback binding the JS to Cpp.

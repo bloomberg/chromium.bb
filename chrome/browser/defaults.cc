@@ -68,6 +68,8 @@ const bool kAlwaysOpenIncognitoWindow = false;
 const bool kShowCancelButtonInTaskManager = false;
 #endif
 
+const bool kEnableTouchIcon = false;
+
 #if defined(OS_MACOSX)
 const bool kBrowserAliveWithNoWindows = true;
 #else

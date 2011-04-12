@@ -448,9 +448,18 @@ void PrerenderContents::OnDidRedirectProvisionalLoad(int32 page_id,
     Destroy(FINAL_STATUS_HTTPS);
 }
 
-void PrerenderContents::OnUpdateFaviconURL(int32 page_id,
-                                           const GURL& icon_url) {
-  icon_url_ = icon_url;
+void PrerenderContents::OnUpdateFaviconURL(
+    int32 page_id,
+    const std::vector<FaviconURL>& urls) {
+  LOG(INFO) << "PrerenderContents::OnUpdateFaviconURL" << icon_url_;
+  for (std::vector<FaviconURL>::const_iterator i = urls.begin();
+       i != urls.end(); ++i) {
+    if (i->icon_type == FAVICON) {
+      icon_url_ = i->icon_url;
+      LOG(INFO) << icon_url_;
+      return;
+    }
+  }
 }
 
 void PrerenderContents::OnMaybeCancelPrerender(

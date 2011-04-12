@@ -137,6 +137,7 @@ void UpdateShortcutWorker::DownloadIcon() {
       unprocessed_icons_.back().url,
       std::max(unprocessed_icons_.back().width,
                unprocessed_icons_.back().height),
+      history::FAVICON,
       NewCallback(this, &UpdateShortcutWorker::OnIconDownloaded));
   unprocessed_icons_.pop_back();
 }
