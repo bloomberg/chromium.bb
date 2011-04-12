@@ -128,7 +128,7 @@ void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
       VLOG(1) << "Reassociating window " << window_id << " with " <<
           (*i)->tab_count() << " tabs.";
       window_s.set_window_id(window_id);
-      window_s.set_selected_tab_index((*i)->selected_index());
+      window_s.set_selected_tab_index((*i)->active_index());
       if ((*i)->type() ==
           Browser::TYPE_NORMAL) {
         window_s.set_browser_type(

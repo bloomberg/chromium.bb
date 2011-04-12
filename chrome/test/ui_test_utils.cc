@@ -515,7 +515,7 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
   TabContents* tab_contents = NULL;
   if (disposition == NEW_BACKGROUND_TAB) {
     // We've opened up a new tab, but not selected it.
-    tab_contents = browser->GetTabContentsAt(browser->selected_index() + 1);
+    tab_contents = browser->GetTabContentsAt(browser->active_index() + 1);
     EXPECT_TRUE(tab_contents != NULL)
         << " Unable to wait for navigation to \"" << url.spec()
         << "\" because the new tab is not available yet";

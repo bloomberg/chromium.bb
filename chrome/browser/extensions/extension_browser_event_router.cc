@@ -477,8 +477,7 @@ void ExtensionBrowserEventRouter::TabReplacedAt(
     TabContentsWrapper* new_contents,
     int index) {
   TabClosingAt(tab_strip_model, old_contents, index);
-  TabInsertedAt(new_contents, index,
-                tab_strip_model->selected_index() == index);
+  TabInsertedAt(new_contents, index, tab_strip_model->active_index() == index);
 }
 
 void ExtensionBrowserEventRouter::TabPinnedStateChanged(

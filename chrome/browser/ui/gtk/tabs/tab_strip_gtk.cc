@@ -275,7 +275,7 @@ class InsertTabAnimation : public TabStripGtk::TabAnimation {
   // Overridden from TabStripGtk::TabAnimation:
   virtual double GetWidthForTab(int index) const {
     if (index == index_) {
-      bool is_selected = tabstrip_->model()->selected_index() == index;
+      bool is_selected = tabstrip_->model()->active_index() == index;
       double start_width, target_width;
       if (index < tabstrip_->GetMiniTabCount()) {
         start_width = TabGtk::GetMinimumSelectedSize().width();
@@ -1096,7 +1096,7 @@ bool TabStripGtk::IsTabSelected(const TabGtk* tab) const {
   if (tab->closing())
     return false;
 
-  return GetIndexOfTab(tab) == model_->selected_index();
+  return GetIndexOfTab(tab) == model_->active_index();
 }
 
 bool TabStripGtk::IsTabDetached(const TabGtk* tab) const {

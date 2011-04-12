@@ -369,13 +369,13 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
 
     // Select the first Tab.
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_1, kCtrlOrCmdMask));
-    ASSERT_EQ(0, browser()->selected_index());
+    ASSERT_EQ(0, browser()->active_index());
 
     browser()->FocusLocationBar();
 
     // Select the second Tab.
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_2, kCtrlOrCmdMask));
-    ASSERT_EQ(1, browser()->selected_index());
+    ASSERT_EQ(1, browser()->active_index());
 
     browser()->FocusLocationBar();
 

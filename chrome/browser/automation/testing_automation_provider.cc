@@ -486,7 +486,7 @@ void TestingAutomationProvider::GetActiveTabIndex(int handle,
   *active_tab_index = -1;  // -1 is the error code
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
-    *active_tab_index = browser->selected_index();
+    *active_tab_index = browser->active_index();
   }
 }
 
@@ -1064,7 +1064,7 @@ void TestingAutomationProvider::GetShelfVisibility(int handle, bool* visible) {
          it != BrowserList::end(); ++it) {
       if ((*it)->type() == Browser::TYPE_POPUP) {
         const GURL& url =
-            (*it)->GetTabContentsAt((*it)->selected_index())->GetURL();
+            (*it)->GetTabContentsAt((*it)->active_index())->GetURL();
 
         if (url.SchemeIs(chrome::kChromeUIScheme) &&
             url.host() == chrome::kChromeUIFileBrowseHost) {
@@ -2522,7 +2522,7 @@ void TestingAutomationProvider::GetBrowserInfo(
     browser_item->SetInteger("height", rect.height());
     browser_item->SetBoolean("fullscreen",
                              browser->window()->IsFullscreen());
-    browser_item->SetInteger("selected_tab", browser->selected_index());
+    browser_item->SetInteger("selected_tab", browser->active_index());
     browser_item->SetBoolean("incognito",
                              browser->profile()->IsOffTheRecord());
     // For each window, add info about all tabs in a list of dictionaries,

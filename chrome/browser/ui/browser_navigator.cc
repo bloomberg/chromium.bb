@@ -94,9 +94,8 @@ int GetIndexOfSingletonTab(browser::NavigateParams* params) {
                                            params->browser->profile(),
                                            &reverse_on_redirect);
 
-  // If there are several matches: prefer currently selected tab. So we are
-  // starting our search at selected tab.
-  int start_index = std::max(0, params->browser->selected_index());
+  // If there are several matches: prefer the active tab by starting there.
+  int start_index = std::max(0, params->browser->active_index());
   int tab_count = params->browser->tab_count();
   for (int i = 0; i < tab_count; ++i) {
     int tab_index = (start_index + i) % tab_count;

@@ -1141,7 +1141,7 @@ void AeroPeekManager::TabReplacedAt(TabStripModel* tab_strip_model,
   DeleteAeroPeekWindowForTab(old_contents);
 
   CreateAeroPeekWindowIfNecessary(new_contents,
-                                  (index == tab_strip_model->selected_index()));
+                                  (index == tab_strip_model->active_index()));
   // We don't need to update the selection as if |new_contents| is selected the
   // TabStripModel will send TabSelectedAt.
 }

@@ -209,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
   ui_test_utils::NavigateToURL(browser(), url);
   AddTabAtIndex(0, url, PageTransition::TYPED);
   EXPECT_EQ(2, browser()->tab_count());
-  EXPECT_EQ(0, browser()->selected_index());
+  EXPECT_EQ(0, browser()->active_index());
   TabContents* second_tab = browser()->GetTabContentsAt(1);
   ASSERT_TRUE(second_tab);
   second_tab->render_view_host()->ExecuteJavascriptInWebFrame(
@@ -218,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   alert->CloseModalDialog();
   EXPECT_EQ(2, browser()->tab_count());
-  EXPECT_EQ(1, browser()->selected_index());
+  EXPECT_EQ(1, browser()->active_index());
 }
 
 

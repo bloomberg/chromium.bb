@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTabExisting) {
 
   // We should have one browser with 3 tabs, the 3rd selected.
   EXPECT_EQ(1u, BrowserList::size());
-  EXPECT_EQ(2, browser()->selected_index());
+  EXPECT_EQ(2, browser()->active_index());
 
   unsigned int previous_tab_contents_count =
       created_tab_contents_count_ = 0;
@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTabExisting) {
 
   // The middle tab should now be selected.
   EXPECT_EQ(browser(), p.browser);
-  EXPECT_EQ(1, browser()->selected_index());
+  EXPECT_EQ(1, browser()->active_index());
 
   // No tab contents should have been created
   EXPECT_EQ(previous_tab_contents_count,
@@ -134,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
   // We should have one browser with 1 tab.
   EXPECT_EQ(1u, BrowserList::size());
-  EXPECT_EQ(0, browser()->selected_index());
+  EXPECT_EQ(0, browser()->active_index());
 
   // Navigate to singleton_url1.
   browser::NavigateParams p(MakeNavigateParams());
@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // We should now have 2 tabs, the 2nd one selected.
   EXPECT_EQ(browser(), p.browser);
   EXPECT_EQ(2, browser()->tab_count());
-  EXPECT_EQ(1, browser()->selected_index());
+  EXPECT_EQ(1, browser()->active_index());
 }
 
 // This test verifies that when a navigation results in a foreground tab, the
@@ -564,7 +564,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // We should have one browser with 2 tabs, the 2nd selected.
   EXPECT_EQ(1u, BrowserList::size());
   EXPECT_EQ(2, browser()->tab_count());
-  EXPECT_EQ(1, browser()->selected_index());
+  EXPECT_EQ(1, browser()->active_index());
 
   // Navigate to a new singleton tab with a sub-page.
   browser::NavigateParams p(MakeNavigateParams());
@@ -578,7 +578,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // URL.
   EXPECT_EQ(browser(), p.browser);
   EXPECT_EQ(3, browser()->tab_count());
-  EXPECT_EQ(2, browser()->selected_index());
+  EXPECT_EQ(2, browser()->active_index());
   EXPECT_EQ(GURL("chrome://settings/advanced"),
             browser()->GetSelectedTabContents()->GetURL());
 }
@@ -596,7 +596,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // We should have one browser with 3 tabs, the 3rd selected.
   EXPECT_EQ(1u, BrowserList::size());
   EXPECT_EQ(3, browser()->tab_count());
-  EXPECT_EQ(2, browser()->selected_index());
+  EXPECT_EQ(2, browser()->active_index());
 
   // Navigate to singleton_url1.
   browser::NavigateParams p(MakeNavigateParams());
@@ -610,7 +610,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // URL.
   EXPECT_EQ(browser(), p.browser);
   EXPECT_EQ(3, browser()->tab_count());
-  EXPECT_EQ(1, browser()->selected_index());
+  EXPECT_EQ(1, browser()->active_index());
   EXPECT_EQ(GURL("chrome://settings/advanced"),
             browser()->GetSelectedTabContents()->GetURL());
 }
@@ -628,7 +628,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // We should have one browser with 3 tabs, the 3rd selected.
   EXPECT_EQ(1u, BrowserList::size());
   EXPECT_EQ(3, browser()->tab_count());
-  EXPECT_EQ(2, browser()->selected_index());
+  EXPECT_EQ(2, browser()->active_index());
 
   // Navigate to singleton_url1.
   browser::NavigateParams p(MakeNavigateParams());
@@ -642,7 +642,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // URL.
   EXPECT_EQ(browser(), p.browser);
   EXPECT_EQ(3, browser()->tab_count());
-  EXPECT_EQ(1, browser()->selected_index());
+  EXPECT_EQ(1, browser()->active_index());
   EXPECT_EQ(GURL("chrome://settings/personal"),
             browser()->GetSelectedTabContents()->GetURL());
 }
@@ -660,7 +660,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // We should have one browser with 3 tabs, the 3rd selected.
   EXPECT_EQ(1u, BrowserList::size());
   EXPECT_EQ(3, browser()->tab_count());
-  EXPECT_EQ(2, browser()->selected_index());
+  EXPECT_EQ(2, browser()->active_index());
 
   // Navigate to singleton_url1.
   browser::NavigateParams p(MakeNavigateParams());
@@ -673,7 +673,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // The middle tab should now be selected.
   EXPECT_EQ(browser(), p.browser);
   EXPECT_EQ(3, browser()->tab_count());
-  EXPECT_EQ(1, browser()->selected_index());
+  EXPECT_EQ(1, browser()->active_index());
   EXPECT_EQ(singleton_url1,
             browser()->GetSelectedTabContents()->GetURL());
 }
@@ -690,7 +690,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // We should have one browser with 2 tabs, the 2nd selected.
   EXPECT_EQ(1u, BrowserList::size());
   EXPECT_EQ(2, browser()->tab_count());
-  EXPECT_EQ(1, browser()->selected_index());
+  EXPECT_EQ(1, browser()->active_index());
 
   // Navigate to a different settings path.
   GURL singleton_url_target("chrome://settings/personal");
@@ -704,7 +704,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // The second tab should still be selected, but navigated to the new path.
   EXPECT_EQ(browser(), p.browser);
   EXPECT_EQ(2, browser()->tab_count());
-  EXPECT_EQ(1, browser()->selected_index());
+  EXPECT_EQ(1, browser()->active_index());
   EXPECT_EQ(singleton_url_target,
             browser()->GetSelectedTabContents()->GetURL());
 }
@@ -719,7 +719,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   browser()->AddSelectedTabWithURL(singleton_url_current, PageTransition::LINK);
 
   EXPECT_EQ(initial_tab_count + 1, browser()->tab_count());
-  EXPECT_EQ(initial_tab_count, browser()->selected_index());
+  EXPECT_EQ(initial_tab_count, browser()->active_index());
 
   // Navigate to a different settings path.
   GURL singleton_url_target(
@@ -735,7 +735,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // Last tab should still be selected.
   EXPECT_EQ(browser(), p.browser);
   EXPECT_EQ(initial_tab_count + 1, browser()->tab_count());
-  EXPECT_EQ(initial_tab_count, browser()->selected_index());
+  EXPECT_EQ(initial_tab_count, browser()->active_index());
 }
 
 // This test verifies that the settings page isn't opened in the incognito

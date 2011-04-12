@@ -608,7 +608,7 @@ class TileSet {
 };
 
 void TileSet::Build(TabStripModel* source_model) {
-  selected_index_ =  source_model->selected_index();
+  selected_index_ =  source_model->active_index();
   tiles_.resize(source_model->count());
   for (size_t i = 0; i < tiles_.size(); ++i) {
     tiles_[i] = new Tile;
@@ -1283,7 +1283,7 @@ void AnimateCALayerOpacityFromTo(
       [self fadeAwayInSlomo:([event modifierFlags] & NSShiftKeyMask) != 0];
       break;
     case '\e':  // Escape
-      tileSet_->set_selected_index(tabStripModel_->selected_index());
+      tileSet_->set_selected_index(tabStripModel_->active_index());
       [self fadeAwayInSlomo:([event modifierFlags] & NSShiftKeyMask) != 0];
       break;
   }

@@ -29,7 +29,7 @@ class TabRestoreServiceDelegate {
   // see Browser::tab_count()
   virtual int GetTabCount() const = 0;
 
-  // see Browser::selected_index()
+  // see Browser::active_index()
   virtual int GetSelectedIndex() const = 0;
 
   // see Browser methods with the same names

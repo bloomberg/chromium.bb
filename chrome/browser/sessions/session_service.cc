@@ -1143,7 +1143,7 @@ void SessionService::BuildCommandsForBrowser(
   }
   commands->push_back(
       CreateSetSelectedTabInWindow(browser->session_id(),
-                                   browser->selected_index()));
+                                   browser->active_index()));
 }
 
 void SessionService::BuildCommandsFromBrowsers(

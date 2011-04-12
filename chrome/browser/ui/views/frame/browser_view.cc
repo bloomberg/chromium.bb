@@ -1269,7 +1269,7 @@ void BrowserView::TabDetachedAt(TabContentsWrapper* contents, int index) {
   // We use index here rather than comparing |contents| because by this time
   // the model has already removed |contents| from its list, so
   // browser_->GetSelectedTabContents() will return NULL or something else.
-  if (index == browser_->tabstrip_model()->selected_index()) {
+  if (index == browser_->tabstrip_model()->active_index()) {
     // We need to reset the current tab contents to NULL before it gets
     // freed. This is because the focus manager performs some operations
     // on the selected TabContents when it is removed.
@@ -1302,7 +1302,7 @@ void BrowserView::TabReplacedAt(TabStripModel* tab_strip_model,
                                 TabContentsWrapper* old_contents,
                                 TabContentsWrapper* new_contents,
                                 int index) {
-  if (index != browser_->tabstrip_model()->selected_index())
+  if (index != browser_->tabstrip_model()->active_index())
     return;
 
   // Swap the 'active' and 'preview' and delete what was the active.

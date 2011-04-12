@@ -21,7 +21,7 @@ int BrowserTabRestoreServiceDelegate::GetTabCount() const {
 }
 
 int BrowserTabRestoreServiceDelegate::GetSelectedIndex() const {
-  return browser_->selected_index();
+  return browser_->active_index();
 }
 
 TabContents* BrowserTabRestoreServiceDelegate::GetTabContentsAt(

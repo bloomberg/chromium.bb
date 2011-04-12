@@ -247,7 +247,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
 
   void TestKeyEvent(int tab_index, const KeyEventTestData& test) {
     ASSERT_LT(tab_index, browser()->tab_count());
-    ASSERT_EQ(tab_index, browser()->selected_index());
+    ASSERT_EQ(tab_index, browser()->active_index());
 
     // Inform our testing web page that we are about to start testing a key
     // event.
@@ -355,7 +355,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, NormalKeyEvents) {
   ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
-  int tab_index = browser()->selected_index();
+  int tab_index = browser()->active_index();
   for (size_t i = 0; i < arraysize(kTestNoInput); ++i) {
     EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestNoInput[i]))
         << "kTestNoInput[" << i << "] failed:\n"
@@ -440,7 +440,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
   ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
-  int tab_index = browser()->selected_index();
+  int tab_index = browser()->active_index();
   // Press Ctrl+F, which will make the Find box open and request focus.
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestCtrlF));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
@@ -485,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CommandKeyEvents) {
   ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
-  int tab_index = browser()->selected_index();
+  int tab_index = browser()->active_index();
   // Press Cmd+F, which will make the Find box open and request focus.
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestCmdF));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
@@ -582,7 +582,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
   ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
-  int tab_index = browser()->selected_index();
+  int tab_index = browser()->active_index();
   // Make sure no element is focused.
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L""));
   // Alt+A should focus the element with accesskey = "A".
@@ -677,7 +677,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_ReservedAccelerators) {
   EXPECT_EQ(1, result_length);
 
   EXPECT_EQ(2, browser()->tab_count());
-  ASSERT_EQ(1, browser()->selected_index());
+  ASSERT_EQ(1, browser()->active_index());
 
   // Because of issue http://crbug.com/65375, switching back to the first tab
   // may cause the focus to be grabbed by omnibox. So instead, we load our
@@ -747,7 +747,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, EditorKeyBindings) {
   ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
-  int tab_index = browser()->selected_index();
+  int tab_index = browser()->active_index();
   ASSERT_NO_FATAL_FAILURE(SetFocusedElement(tab_index, L"A"));
   ASSERT_NO_FATAL_FAILURE(SetTextBoxValue(tab_index, L"A", L"Hello"));
   // Move the caret to the beginning of the line.
@@ -784,7 +784,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, PageUpDownKeys) {
   ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
-  int tab_index = browser()->selected_index();
+  int tab_index = browser()->active_index();
   ASSERT_NO_FATAL_FAILURE(SetFocusedElement(tab_index, L"A"));
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestPageUp));
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestPageDown));
@@ -825,7 +825,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FocusMenuBarByAltKey) {
   ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
-  int tab_index = browser()->selected_index();
+  int tab_index = browser()->active_index();
   // Press and release Alt key to focus wrench menu button.
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestAltKey));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_APP_MENU));

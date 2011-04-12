@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Opens in new tab.
   EXPECT_EQ(2, browser()->tab_count());
-  EXPECT_EQ(1, browser()->selected_index());
+  EXPECT_EQ(1, browser()->active_index());
   EXPECT_EQ("/files/title2.html",
             browser()->GetSelectedTabContents()->GetURL().path());
 
@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Opens in new tab.
   EXPECT_EQ(2, browser()->tab_count());
-  EXPECT_EQ(1, browser()->selected_index());
+  EXPECT_EQ(1, browser()->active_index());
 
   // Wait for the cross-site transition in the new tab to finish.
   ui_test_utils::WaitForLoadStop(browser()->GetSelectedTabContents());
@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Opens in same tab.
   EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_EQ(0, browser()->selected_index());
+  EXPECT_EQ(0, browser()->active_index());
   EXPECT_EQ("/files/title2.html",
             browser()->GetSelectedTabContents()->GetURL().path());
 
@@ -330,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ClickLinkAfter204Error) {
 
   // Opens in same tab.
   EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_EQ(0, browser()->selected_index());
+  EXPECT_EQ(0, browser()->active_index());
   EXPECT_EQ("/files/title2.html",
             browser()->GetSelectedTabContents()->GetURL().path());
 

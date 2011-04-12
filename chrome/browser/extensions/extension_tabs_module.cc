@@ -128,7 +128,7 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
   result->SetString(keys::kUrlKey, contents->GetURL().spec());
   result->SetString(keys::kStatusKey, GetTabStatusText(contents->is_loading()));
   result->SetBoolean(keys::kSelectedKey,
-                     tab_strip && tab_index == tab_strip->selected_index());
+                     tab_strip && tab_index == tab_strip->active_index());
   result->SetBoolean(keys::kPinnedKey,
                      tab_strip && tab_strip->IsTabPinned(tab_index));
   result->SetString(keys::kTitleKey, contents->GetTitle());
@@ -633,7 +633,7 @@ bool GetSelectedTabFunction::RunImpl() {
   }
   result_.reset(ExtensionTabUtil::CreateTabValue(contents->tab_contents(),
       tab_strip,
-      tab_strip->selected_index()));
+      tab_strip->active_index()));
   return true;
 }
 
@@ -879,7 +879,7 @@ bool UpdateTabFunction::RunImpl() {
         keys::kSelectedKey,
         &selected));
     if (selected) {
-      if (tab_strip->selected_index() != tab_index) {
+      if (tab_strip->active_index() != tab_index) {
         tab_strip->SelectTabContentsAt(tab_index, false);
         DCHECK_EQ(contents, tab_strip->GetSelectedTabContents());
       }

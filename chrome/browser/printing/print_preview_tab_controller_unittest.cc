@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -101,7 +101,7 @@ TEST_F(PrintPreviewTabControllerTest, MultiplePreviewTabs) {
   EXPECT_NE(-1, preview_tab_1_index);
   EXPECT_NE(-1, preview_tab_2_index);
   // Current tab is |preview_tab_2|.
-  EXPECT_EQ(preview_tab_2_index, browser()->selected_index());
+  EXPECT_EQ(preview_tab_2_index, browser()->active_index());
 
   // Activate |tab_contents_1| tab.
   tab_contents_1->Activate();
@@ -109,5 +109,5 @@ TEST_F(PrintPreviewTabControllerTest, MultiplePreviewTabs) {
   // When we get the preview tab for |tab_contents_1|,
   // |preview_tab_1| is activated and focused.
   tab_controller->GetOrCreatePreviewTab(tab_contents_1);
-  EXPECT_EQ(preview_tab_1_index, browser()->selected_index());
+  EXPECT_EQ(preview_tab_1_index, browser()->active_index());
 }

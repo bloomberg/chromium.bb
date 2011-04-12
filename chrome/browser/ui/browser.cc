@@ -979,8 +979,8 @@ int Browser::tab_count() const {
   return tab_handler_->GetTabStripModel()->count();
 }
 
-int Browser::selected_index() const {
-  return tab_handler_->GetTabStripModel()->selected_index();
+int Browser::active_index() const {
+  return tab_handler_->GetTabStripModel()->active_index();
 }
 
 int Browser::GetIndexOfController(
@@ -1134,7 +1134,7 @@ void Browser::ReplaceRestoredTab(
                                              from_last_session);
 
   tab_handler_->GetTabStripModel()->ReplaceNavigationControllerAt(
-      tab_handler_->GetTabStripModel()->selected_index(),
+      tab_handler_->GetTabStripModel()->active_index(),
       wrapper);
 }
 
@@ -1503,7 +1503,7 @@ void Browser::SelectLastTab() {
 
 void Browser::DuplicateTab() {
   UserMetrics::RecordAction(UserMetricsAction("Duplicate"), profile_);
-  DuplicateContentsAt(selected_index());
+  DuplicateContentsAt(active_index());
 }
 
 void Browser::RestoreTab() {
@@ -1532,7 +1532,7 @@ void Browser::WriteCurrentURLToClipboard() {
 
 void Browser::ConvertPopupToTabbedBrowser() {
   UserMetrics::RecordAction(UserMetricsAction("ShowAsTab"), profile_);
-  int tab_strip_index = tab_handler_->GetTabStripModel()->selected_index();
+  int tab_strip_index = tab_handler_->GetTabStripModel()->active_index();
   TabContentsWrapper* contents =
       tab_handler_->GetTabStripModel()->DetachTabContentsAt(tab_strip_index);
   Browser* browser = Browser::Create(profile_);
@@ -2803,7 +2803,7 @@ void Browser::TabSelectedAt(TabContentsWrapper* old_contents,
     SessionService* session_service = profile_->GetSessionService();
     if (session_service && !tab_handler_->GetTabStripModel()->closing_all()) {
       session_service->SetSelectedTabInWindow(
-          session_id(), tab_handler_->GetTabStripModel()->selected_index());
+          session_id(), tab_handler_->GetTabStripModel()->active_index());
     }
   }
 }
@@ -2822,7 +2822,7 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
                             int index) {
   TabDetachedAtImpl(old_contents, index, DETACH_TYPE_REPLACE);
   TabInsertedAt(new_contents, index,
-                (index == tab_handler_->GetTabStripModel()->selected_index()));
+                (index == tab_handler_->GetTabStripModel()->active_index()));
 
   int entry_count = new_contents->controller().entry_count();
   if (entry_count > 0) {
@@ -3757,7 +3757,7 @@ void Browser::UpdateCommandsForTabState() {
   // Window management commands
   bool non_app_window = !(type() & TYPE_APP);
   command_updater_.UpdateCommandEnabled(IDC_DUPLICATE_TAB,
-      non_app_window && CanDuplicateContentsAt(selected_index()));
+      non_app_window && CanDuplicateContentsAt(active_index()));
 
   // Page-related commands
   window_->SetStarredState(current_tab_wrapper->is_starred());
@@ -4279,7 +4279,7 @@ void Browser::TabDetachedAtImpl(TabContentsWrapper* contents, int index,
   RemoveScheduledUpdatesFor(contents->tab_contents());
 
   if (find_bar_controller_.get() &&
-      index == tab_handler_->GetTabStripModel()->selected_index()) {
+      index == tab_handler_->GetTabStripModel()->active_index()) {
     find_bar_controller_->ChangeTabContents(NULL);
   }
 

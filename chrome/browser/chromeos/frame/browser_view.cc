@@ -243,7 +243,7 @@ void BrowserView::Init() {
   // Make sure the window is set to the right type.
   std::vector<int> params;
   params.push_back(browser()->tab_count());
-  params.push_back(browser()->selected_index());
+  params.push_back(browser()->active_index());
   params.push_back(gtk_get_current_event_time());
   WmIpc::instance()->SetWindowType(
       GTK_WIDGET(frame()->GetWindow()->GetNativeWindow()),
@@ -269,7 +269,7 @@ void BrowserView::ShowInternal(bool is_active) {
     // Have to update the tab count and selected index to reflect reality.
     std::vector<int> params;
     params.push_back(browser()->tab_count());
-    params.push_back(browser()->selected_index());
+    params.push_back(browser()->active_index());
     WmIpc::instance()->SetWindowType(
         GTK_WIDGET(frame()->GetWindow()->GetNativeWindow()),
         WM_IPC_WINDOW_CHROME_TOPLEVEL,

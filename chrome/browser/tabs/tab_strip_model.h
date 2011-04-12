@@ -132,10 +132,8 @@ class TabStripModel : public NotificationObserver {
   // Retrieve the Profile associated with this TabStripModel.
   Profile* profile() const { return profile_; }
 
-  // Retrieve the index of the currently selected TabContents.
-  // TODO(sky): rename this to active and update similar places (observer,
-  // other methods...).
-  int selected_index() const { return selection_model_.active(); }
+  // Retrieve the index of the currently active TabContents.
+  int active_index() const { return selection_model_.active(); }
 
   // Returns true if the tabstrip is currently closing all open tabs (via a
   // call to CloseAllTabs). As tabs close, the selection in the tabstrip

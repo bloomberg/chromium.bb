@@ -1449,7 +1449,7 @@ class NotificationBridge : public NotificationObserver {
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
 
-  if (modelIndex == tabStripModel_->selected_index())
+  if (modelIndex == tabStripModel_->active_index())
     [delegate_ onSelectedTabChange:change];
 
   if (change == TabStripModelObserver::TITLE_NOT_LOADING) {
@@ -1535,7 +1535,7 @@ class NotificationBridge : public NotificationObserver {
 }
 
 - (NSView*)selectedTabView {
-  int selectedIndex = tabStripModel_->selected_index();
+  int selectedIndex = tabStripModel_->active_index();
   // Take closing tabs into account. They can't ever be selected.
   selectedIndex = [self indexFromModelIndex:selectedIndex];
   return [self viewAtIndex:selectedIndex];
@@ -1975,7 +1975,7 @@ class NotificationBridge : public NotificationObserver {
 }
 
 - (TabContentsController*)activeTabContentsController {
-  int modelIndex = tabStripModel_->selected_index();
+  int modelIndex = tabStripModel_->active_index();
   if (modelIndex < 0)
     return nil;
   NSInteger index = [self indexFromModelIndex:modelIndex];

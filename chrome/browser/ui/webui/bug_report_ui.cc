@@ -156,7 +156,7 @@ void ShowHtmlBugReportView(Browser* browser) {
 
   RefreshLastScreenshot(browser);
   std::string bug_report_url = std::string(chrome::kChromeUIBugReportURL) +
-      "#" + base::IntToString(browser->selected_index());
+      "#" + base::IntToString(browser->active_index());
   browser->ShowSingletonTab(GURL(bug_report_url));
 }
 

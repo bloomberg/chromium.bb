@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,12 +30,12 @@ int TabStripModelOrderController::DetermineInsertionIndex(
 
   // NOTE: TabStripModel enforces that all non-mini-tabs occur after mini-tabs,
   // so we don't have to check here too.
-  if (transition == PageTransition::LINK && tabstrip_->selected_index() != -1) {
+  if (transition == PageTransition::LINK && tabstrip_->active_index() != -1) {
     int delta = (insertion_policy_ == TabStripModel::INSERT_AFTER) ? 1 : 0;
     if (foreground) {
       // If the page was opened in the foreground by a link click in another
       // tab, insert it adjacent to the tab that opened that link.
-      return tabstrip_->selected_index() + delta;
+      return tabstrip_->active_index() + delta;
     }
     NavigationController* opener =
         &tabstrip_->GetSelectedTabContents()->controller();
@@ -44,15 +44,15 @@ int TabStripModelOrderController::DetermineInsertionIndex(
     int index;
     if (insertion_policy_ == TabStripModel::INSERT_AFTER) {
       index = tabstrip_->GetIndexOfLastTabContentsOpenedBy(
-          opener, tabstrip_->selected_index());
+          opener, tabstrip_->active_index());
     } else {
       index = tabstrip_->GetIndexOfFirstTabContentsOpenedBy(
-          opener, tabstrip_->selected_index());
+          opener, tabstrip_->active_index());
     }
     if (index != TabStripModel::kNoTab)
       return index + delta;
     // Otherwise insert adjacent to opener...
-    return tabstrip_->selected_index() + delta;
+    return tabstrip_->active_index() + delta;
   }
   // In other cases, such as Ctrl+T, open at the end of the strip.
   return DetermineInsertionIndexForAppending();
@@ -99,7 +99,7 @@ int TabStripModelOrderController::DetermineNewSelectedIndex(
   }
 
   // No opener set, fall through to the default handler...
-  int selected_index = tabstrip_->selected_index();
+  int selected_index = tabstrip_->active_index();
   if (selected_index >= (tab_count - 1))
     return selected_index - 1;
 

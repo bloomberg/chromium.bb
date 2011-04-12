@@ -34,7 +34,7 @@ class MediaPlayerBrowserTest : public InProcessBrowserTest {
          it != BrowserList::end(); ++it) {
       if ((*it)->type() == Browser::TYPE_APP_PANEL) {
         const GURL& url =
-            (*it)->GetTabContentsAt((*it)->selected_index())->GetURL();
+            (*it)->GetTabContentsAt((*it)->active_index())->GetURL();
 
         if (url.SchemeIs(chrome::kChromeUIScheme) &&
             url.host() == chrome::kChromeUIMediaplayerHost) {
@@ -50,7 +50,7 @@ class MediaPlayerBrowserTest : public InProcessBrowserTest {
          it != BrowserList::end(); ++it) {
       if ((*it)->type() == Browser::TYPE_APP_PANEL) {
         const GURL& url =
-            (*it)->GetTabContentsAt((*it)->selected_index())->GetURL();
+            (*it)->GetTabContentsAt((*it)->active_index())->GetURL();
 
         if (url.SchemeIs(chrome::kChromeUIScheme) &&
             url.host() == chrome::kChromeUIMediaplayerHost &&

@@ -26,7 +26,7 @@ class USBMountObserverBrowserTest : public InProcessBrowserTest {
          it != BrowserList::end(); ++it) {
       if ((*it)->type() == Browser::TYPE_POPUP) {
         const GURL& url =
-            (*it)->GetTabContentsAt((*it)->selected_index())->GetURL();
+            (*it)->GetTabContentsAt((*it)->active_index())->GetURL();
         if (url.SchemeIs(chrome::kChromeUIScheme) &&
             url.host() == chrome::kChromeUIFileBrowseHost) {
           return true;

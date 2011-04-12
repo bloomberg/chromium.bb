@@ -346,7 +346,7 @@ class Browser : public TabHandlerDelegate,
   }
 
   int tab_count() const;
-  int selected_index() const;
+  int active_index() const;
   int GetIndexOfController(const NavigationController* controller) const;
   TabContentsWrapper* GetSelectedTabContentsWrapper() const;
   TabContentsWrapper* GetTabContentsWrapperAt(int index) const;

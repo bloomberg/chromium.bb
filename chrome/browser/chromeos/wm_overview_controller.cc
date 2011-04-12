@@ -108,7 +108,7 @@ class BrowserListener : public TabStripModelObserver {
   int ConfigureNextUnconfiguredSnapshot(int start_from);
 
   // Saves the currently selected tab.
-  void SaveCurrentTab() { original_selected_tab_ = browser_->selected_index(); }
+  void SaveCurrentTab() { original_selected_tab_ = browser_->active_index(); }
 
   // Reverts the selected browser tab to the tab that was selected
   // when This BrowserListener was created, or the last time
@@ -208,12 +208,12 @@ void BrowserListener::TabInsertedAt(TabContentsWrapper* contents,
                                     bool foreground) {
   InsertSnapshot(index);
   RenumberSnapshots(index);
-  UpdateSelectedIndex(browser_->selected_index());
+  UpdateSelectedIndex(browser_->active_index());
 }
 
 void BrowserListener::TabDetachedAt(TabContentsWrapper* contents, int index) {
   ClearSnapshot(index);
-  UpdateSelectedIndex(browser_->selected_index());
+  UpdateSelectedIndex(browser_->active_index());
   RenumberSnapshots(index);
 }
 
@@ -228,7 +228,7 @@ void BrowserListener::TabMoved(TabContentsWrapper* contents,
   snapshots_.insert(snapshots_.begin() + to_index, node);
 
   RenumberSnapshots(std::min(to_index, from_index));
-  UpdateSelectedIndex(browser_->selected_index());
+  UpdateSelectedIndex(browser_->active_index());
 }
 
 void BrowserListener::TabChangedAt(
@@ -305,7 +305,7 @@ int BrowserListener::ConfigureNextUnconfiguredSnapshot(int start_from) {
 void BrowserListener::RestoreOriginalSelectedTab() {
   if (original_selected_tab_ >= 0) {
     browser_->SelectTabContentsAt(original_selected_tab_, false);
-    UpdateSelectedIndex(browser_->selected_index());
+    UpdateSelectedIndex(browser_->active_index());
   }
 }
 

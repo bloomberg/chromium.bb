@@ -763,7 +763,7 @@ gboolean BrowserTitlebar::OnWindowStateChanged(GtkWindow* window,
 
 gboolean BrowserTitlebar::OnScroll(GtkWidget* widget, GdkEventScroll* event) {
   TabStripModel* tabstrip_model = browser_window_->browser()->tabstrip_model();
-  int index = tabstrip_model->selected_index();
+  int index = tabstrip_model->active_index();
   if (event->direction == GDK_SCROLL_LEFT ||
       event->direction == GDK_SCROLL_UP) {
     if (index != 0)
