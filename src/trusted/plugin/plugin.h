@@ -128,12 +128,6 @@ class Plugin : public PortableHandle {
   int32_t height() const { return height_; }
   void set_height(int32_t height) { height_ = height; }
 
-  // Video_update_mode tells how the multimedia API should update its window.
-  int32_t video_update_mode() const { return video_update_mode_; }
-  void set_video_update_mode(int32_t video_update_mode) {
-    video_update_mode_ = video_update_mode;
-  }
-
   nacl::DescWrapperFactory* wrapper_factory() const { return wrapper_factory_; }
 
   // Complex methods to set member data.
@@ -211,20 +205,6 @@ class Plugin : public PortableHandle {
   static bool SendAsyncMessage1(void* obj, SrpcParams* params);
   bool StartSrpcServices(nacl::string* error);
   static bool StartSrpcServicesWrapper(void* obj, SrpcParams* params);
-};
-
-// MutexLock support for video locking.  It is in this file to avoid copying
-// between the NPAPI and PPAPI hookups.
-extern void VideoGlobalLock();
-extern void VideoGlobalUnlock();
-
-class VideoScopedGlobalLock {
- public:
-  VideoScopedGlobalLock() { VideoGlobalLock(); }
-  ~VideoScopedGlobalLock() { VideoGlobalUnlock(); }
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(VideoScopedGlobalLock);
 };
 
 }  // namespace plugin

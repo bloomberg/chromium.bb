@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2008 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 # TODO(polina): for Mac build check if no longer need .r files and/or document
 # target browsers for each bundle target.
@@ -58,7 +58,11 @@ if env.Bit('windows'):
     )
 
 # Both the NPAPI and PPAPI plugins depend upon the code that is in the
-# top (plugin) directory and on a large set of libraries.
+# top (plugin) directory and on a large set of libraries.  Although we
+# have removed NPAPI, we continue to keep the common and ppapi specific
+# sources separate.
+# TODO: We should remove common and flatten ppapi into the main plugin dir
+# if we plan to only support one plugin architecture.
 common_inputs = [
     # TODO: we should put a scons file in src/third_party_mod/nacl_plugin
     #       which exports a library which is then linked in.
@@ -119,128 +123,6 @@ if plugin_env.Bit('linux'):
 
 if plugin_env.Bit('windows'):
   os_libs += ['gdi32', 'user32', ]
-
-
-###############################################################################
-# NPAPI Plugin Build
-###############################################################################
-
-# The NPAPI plugin build is for use as an out-of-process plugin on Chrome
-# and for browsers other than Chrome.
-npapi_inputs = [
-    # NPAPI specific code
-    plugin_env.ComponentObject(
-        'np_entry',
-        '${MAIN_DIR}/src/third_party_mod/npapi_plugin/np_entry.cc'),
-    plugin_env.ComponentObject(
-        'npn_gate',
-        '${MAIN_DIR}/src/third_party_mod/npapi_plugin/npn_gate.cc'),
-    'npapi/async_receive.cc',
-    'npapi/browser_impl_npapi.cc',
-    'npapi/closure.cc',
-    'npapi/multimedia_socket.cc',
-    'npapi/npapi_native.cc',
-    'npapi/npp_gate.cc',
-    'npapi/npp_launcher.cc',
-    'npapi/plugin_npapi.cc',
-    'npapi/ret_array.cc',
-    'npapi/scriptable_impl_npapi.cc',
-    'npapi/video.cc',
-]
-
-if env.Bit('windows'):
-  if not env.Bit('chrome'):
-    npapi_inputs += [
-        'win/nacl_plugin.def',
-        env.RES('win/nacl_plugin.rc'),
-    ]
-elif env.Bit('mac'):
-  npapi_inputs += [
-      'osx/open_mac_file.cc',
-  ]
-
-npGoogleNaClPlugin = 'npGoogleNaClPlugin'
-
-# Because of the libraries difference, the NPAPI plugin needs a distinct
-# environment.
-npapi_env = plugin_env.Clone()
-npapi_libs = common_libs
-if npapi_env['SHARED_LIBS_SPECIAL']:
-  npapi_env.Append(LIBS=[l + '_shared' for l in npapi_libs] + os_libs)
-else:
-  npapi_env.Append(LIBS=npapi_libs + os_libs)
-
-if not npapi_env.Bit('mac'):
-  if npapi_env.Bit('chrome'):
-    plugin = npapi_env.ComponentLibrary(npGoogleNaClPlugin,
-                                        common_objs + npapi_inputs,
-                                        COMPONENT_STATIC=True)
-  else:
-    plugin = npapi_env.ComponentLibrary(npGoogleNaClPlugin,
-                                        common_objs + npapi_inputs,
-                                        no_import_lib=True)
-
-  # we need this to build the plugin, so register it here
-  npapi_env.AddPluginPrerequisite([plugin])
-else:
-  REZ = '/Developer/Tools/Rez'
-  npapi_env.Command(target='npGoogleNaClPlugin.rsrc',
-                    source='osx/npGoogleNaClPlugin.r',
-                    action=[Action(REZ + ' -o ${TARGET} ${SOURCE} -useDF')])
-  exe = npapi_env.ComponentProgram(npGoogleNaClPlugin,
-                                   common_objs + npapi_inputs,
-                                   no_import_lib=True)
-  # Bundle pattern can be found in
-  # site_scons/site_tools/target_platform_mac.py
-  bundle_name = '${STAGING_DIR}/' + npGoogleNaClPlugin + '.bundle'
-  npapi_env.Bundle(bundle_name,
-                   BUNDLE_EXE = exe,
-                   BUNDLE_PKGINFO_FILENAME = 0,
-                   BUNDLE_RESOURCES = 'npGoogleNaClPlugin.rsrc',
-                   BUNDLE_INFO_PLIST = 'osx/Info.plist')
-  # we need this to build the plugin, so register it here
-  npapi_env.AddPluginPrerequisite([bundle_name])
-
-
-###############################################################################
-# NPAPI Plugin Test
-###############################################################################
-
-# The test for the NPAPI plugin mostly determines that the proper entry
-# points are defined and that there are no unresolved external symbols in
-# the .so.
-
-# Rather than link nacl_plugin_code statically, this unittest uses dlopen.
-
-if env.Bit('target_x86'):
-  if env.Bit('linux'):
-    unittest = env.ComponentProgram('plugin_unittest',
-                                    'npapi/plugin_unittest.cc',
-                                    no_import_lib=True,
-                                    EXTRA_LIBS=['dl'])
-    node = env.CommandTest('plugin_unittest.out',
-                           command=[unittest, plugin])
-    env.AddNodeToTestSuite(node, ['small_tests'], 'run_plugin_unittest')
-  elif env.Bit('mac'):
-    unittest = env.ComponentProgram('plugin_unittest',
-                                    'npapi/plugin_unittest.cc')
-    node = env.CommandTest('plugin_unittest.out',
-                           command=[unittest, exe])
-    env.AddNodeToTestSuite(node, ['small_tests'], 'run_plugin_unittest')
-
-
-# This test fails to link in our ARM cross-compile environment because
-# the toolchain tarball lacks libraries, specifically libSM.so.6.
-if not env.Bit('target_arm'):
-  string_encoding_test = env.ComponentProgram(
-      'string_encoding_test',
-      ['string_encoding_test.cc',
-       env.ComponentObject('string_encoding_for_test',
-                           'string_encoding.cc')],
-      EXTRA_LIBS=['platform', 'gio'] + os_libs)
-  node = env.CommandTest('string_encoding_test.out',
-                         command=[string_encoding_test])
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_string_encoding_test')
 
 
 ###############################################################################

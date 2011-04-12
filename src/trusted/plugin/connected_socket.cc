@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -71,9 +71,6 @@ ConnectedSocket* ConnectedSocket::New(Plugin* plugin,
 
 bool ConnectedSocket::Init(Plugin* plugin,
                            nacl::DescWrapper* wrapper) {
-  // TODO(sehr): this lock seems like it should be movable to PluginNpapi.
-  VideoScopedGlobalLock video_lock;
-
   if (!DescBasedHandle::Init(plugin, wrapper)) {
     PLUGIN_PRINTF(("ConnectedSocket::Init (DescBasedHandle::Init failed)\n"));
     return false;
@@ -118,3 +115,4 @@ ConnectedSocket::~ConnectedSocket() {
 }
 
 }  // namespace plugin
+

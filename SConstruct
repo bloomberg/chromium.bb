@@ -1751,7 +1751,9 @@ if os.path.exists(pre_base_env.subst('${MAIN_DIR}/supplement/build.scons')):
   base_env.Append(BUILD_SCONSCRIPTS=['${MAIN_DIR}/supplement/build.scons'])
 
 # Select tests to run under coverage build.
-base_env['COVERAGE_TARGETS'] = ['small_tests', 'medium_tests']
+base_env['COVERAGE_TARGETS'] = ['small_tests', 'medium_tests', 'large_tests',
+    'chrome_browser_tests']
+
 
 base_env.Help("""\
 ======================================================================

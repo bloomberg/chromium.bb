@@ -28,8 +28,6 @@
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
-// TODO(sehr): move video_update_mode_ to PluginNpapi
-#include "native_client/src/trusted/plugin/npapi/video.h"
 #include "native_client/src/trusted/plugin/origin.h"
 #include "native_client/src/trusted/plugin/browser_interface.h"
 #include "native_client/src/trusted/plugin/connected_socket.h"
@@ -45,8 +43,7 @@
 namespace {
 
 static int32_t stringToInt32(char* src) {
-  return strtol(src,  // NOLINT(runtime/deprecated_fn)
-                static_cast<char**>(NULL), 0);
+  return strtol(src, static_cast<char**>(NULL), 0);
 }
 
 bool ShmFactory(void* obj, plugin::SrpcParams* params) {
@@ -183,18 +180,6 @@ bool SetWidthProperty(void* obj, plugin::SrpcParams* params) {
   return true;
 }
 
-bool GetVideoUpdateModeProperty(void* obj, plugin::SrpcParams* params) {
-  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
-  params->outs()[0]->u.ival = plugin->video_update_mode();
-  return true;
-}
-
-bool SetVideoUpdateModeProperty(void* obj, plugin::SrpcParams* params) {
-  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
-  plugin->set_video_update_mode(params->ins()[0]->u.ival);
-  return true;
-}
-
 }  // namespace
 
 namespace plugin {
@@ -296,29 +281,14 @@ void Plugin::LoadMethods() {
   // (e.g. height).
   // TODO(polina): Make the PPAPI nexe inherit from the plugin to provide
   // access to these properties.
-#if defined(NACL_PPAPI)  // TODO(polina): do this for NPAPI as well.
   AddPropertyGet(GetHeightProperty, "__height", "i");
   AddPropertySet(SetHeightProperty, "__height", "i");
   AddPropertyGet(GetNaclProperty, "__nacl", "s");
   AddPropertySet(SetNaclProperty, "__nacl", "s");
   AddPropertyGet(GetSrcProperty, "__src", "s");
   AddPropertySet(SetSrcProperty, "__src", "s");
-  // TODO(polina): confirm that videoUpdateMode is irrelevant for PPAPI and
-  // move the property registration and handling functions to PluginNPAPI.
-  AddPropertyGet(GetVideoUpdateModeProperty, "__videoUpdateMode", "i");
-  AddPropertySet(SetVideoUpdateModeProperty, "__videoUpdateMode", "i");
   AddPropertyGet(GetWidthProperty, "__width", "i");
   AddPropertySet(SetWidthProperty, "__width", "i");
-#else
-  AddPropertyGet(GetHeightProperty, "height", "i");
-  AddPropertySet(SetHeightProperty, "height", "i");
-  AddPropertyGet(GetSrcProperty, "src", "s");
-  AddPropertySet(SetSrcProperty, "src", "s");
-  AddPropertyGet(GetVideoUpdateModeProperty, "videoUpdateMode", "i");
-  AddPropertySet(SetVideoUpdateModeProperty, "videoUpdateMode", "i");
-  AddPropertyGet(GetWidthProperty, "width", "i");
-  AddPropertySet(SetWidthProperty, "width", "i");
-#endif
 }
 
 bool Plugin::HasMethodEx(uintptr_t method_id, CallType call_type) {
@@ -385,8 +355,6 @@ bool Plugin::Init(BrowserInterface* browser_interface,
       set_height(stringToInt32(argv[i]));
     } else if (!strncmp(argn[i], "width", 6)) {
       set_width(stringToInt32(argv[i]));
-    } else if (!strncmp(argn[i], "update", 7)) {
-      set_video_update_mode(stringToInt32(argv[i]));
     } else {
       if (NULL != argn_ && NULL != argv_) {
         argn_[argc_] = strdup(argn[i]);
@@ -443,7 +411,6 @@ Plugin::Plugin()
     origin_valid_(false),
     height_(0),
     width_(0),
-    video_update_mode_(kVideoUpdatePluginPaint),
     wrapper_factory_(NULL) {
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p)\n", static_cast<void*>(this)));
 }
@@ -701,35 +668,6 @@ bool Plugin::RunOnfailHandler() {
     return true;
   }
   return browser->EvalString(instance_id(), onfail_handler);
-}
-
-// The NaCl audio/video interface uses a global mutex to protect observed
-// timing-sensitive accesses to the plugin's window when starting up and
-// shutting down.  Because there is a relatively complex relationship between
-// ConnectedSocket and Plugin to synchronize accesses, this code is built in
-// both the NPAPI and PPAPI plugins.  This is unfortunate, because only
-// the NPAPI plugin (when not used as part of the Chrome integration) actually
-// needs the locking.
-// TODO(sehr): move this code to somewhere in the npapi directory.
-class GlobalVideoMutex {
- public:
-  GlobalVideoMutex() { NaClMutexCtor(&mutex_); }
-  ~GlobalVideoMutex() { NaClMutexDtor(&mutex_); }
-  void Lock() { NaClMutexLock(&mutex_); }
-  void Unlock() { NaClMutexUnlock(&mutex_); }
-
- private:
-  NaClMutex mutex_;
-};
-
-static GlobalVideoMutex g_VideoMutex;
-
-void VideoGlobalLock() {
-  g_VideoMutex.Lock();
-}
-
-void VideoGlobalUnlock() {
-  g_VideoMutex.Unlock();
 }
 
 }  // namespace plugin
