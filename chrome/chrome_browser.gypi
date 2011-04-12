@@ -2005,8 +2005,6 @@
         'browser/tabs/pinned_tab_codec.h',
         'browser/tabs/pinned_tab_service.cc',
         'browser/tabs/pinned_tab_service.h',
-        'browser/tabs/pinned_tab_service_factory.cc',
-        'browser/tabs/pinned_tab_service_factory.h',
         'browser/tabs/tab_handler.h',
         'browser/tabs/tab_finder.cc',
         'browser/tabs/tab_finder.h',

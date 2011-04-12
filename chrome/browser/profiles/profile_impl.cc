@@ -66,7 +66,7 @@
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/tabs/pinned_tab_service_factory.h"
+#include "chrome/browser/tabs/pinned_tab_service.h"
 #include "chrome/browser/transport_security_persister.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
@@ -290,7 +290,7 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   ssl_config_service_manager_.reset(
       SSLConfigServiceManager::CreateDefaultManager(GetPrefs(), local_state));
 
-  PinnedTabServiceFactory::GetForProfile(this);
+  pinned_tab_service_.reset(new PinnedTabService(this));
 
   // Initialize the BackgroundModeManager - this has to be done here before
   // InitExtensions() is called because it relies on receiving notifications
