@@ -159,6 +159,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // The install message id for |permission|.  Returns 0 if none exists.
   static int GetPermissionMessageId(const std::string& permission);
 
+  // Given two install sources, return the one which should take priority
+  // over the other. If an extension is installed from two sources A and B,
+  // its install source should be set to GetHigherPriorityLocation(A, B).
+  static Location GetHigherPriorityLocation(Location loc1, Location loc2);
+
   // Returns the full list of permission messages that this extension
   // should display at install time.
   std::vector<string16> GetPermissionMessages() const;

@@ -57,13 +57,14 @@ class PendingExtensionManager {
 
   // Adds an extension in a pending state; the extension with the
   // given info will be installed on the next auto-update cycle.
-  //
-  // It is an error to call this with an already-installed extension
-  // (even a disabled one).
+  // Return true if the extension was added.  Will return false
+  // if the extension is pending from another source which overrides
+  // sync installs (such as a policy extension) or if the extension
+  // is already installed.
   //
   // TODO(akalin): Replace |install_silently| with a list of
   // pre-enabled permissions.
-  void AddFromSync(
+  bool AddFromSync(
       const std::string& id,
       const GURL& update_url,
       PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
@@ -87,7 +88,8 @@ class PendingExtensionManager {
 
  private:
   // Assumes an extension with id |id| is not already installed.
-  void AddExtensionImpl(
+  // Return true if the extension was added.
+  bool AddExtensionImpl(
       const std::string& id,
       const GURL& update_url,
       PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,

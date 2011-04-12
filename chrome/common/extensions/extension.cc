@@ -170,6 +170,60 @@ class ExtensionConfig {
 // in the permissions field of the manifest.
 static const char kWindowPermission[] = "windows";
 
+// Rank extension locations in a way that allows
+// Extension::GetHigherPriorityLocation() to compare locations.
+// An extension installed from two locations will have the location
+// with the higher rank, as returned by this function. The actual
+// integer values may change, and should never be persisted.
+int GetLocationRank(Extension::Location location) {
+  const int kInvalidRank = -1;
+  int rank = kInvalidRank;  // Will CHECK that rank is not kInvalidRank.
+
+  switch (location) {
+    // Component extensions can not be overriden by any other type.
+    case Extension::COMPONENT:
+      rank = 6;
+      break;
+
+    // Policy controlled extensions may not be overridden by any type
+    // that is not part of chrome.
+    case Extension::EXTERNAL_POLICY_DOWNLOAD:
+      rank = 5;
+      break;
+
+    // A developer-loaded extension should override any installed type
+    // that a user can disable.
+    case Extension::LOAD:
+      rank = 4;
+      break;
+
+    // The relative priority of various external sources is not important,
+    // but having some order ensures deterministic behavior.
+    case Extension::EXTERNAL_REGISTRY:
+      rank = 3;
+      break;
+
+    case Extension::EXTERNAL_PREF:
+      rank = 2;
+      break;
+
+    case Extension::EXTERNAL_PREF_DOWNLOAD:
+      rank = 1;
+      break;
+
+    // User installed extensions are overridden by any external type.
+    case Extension::INTERNAL:
+      rank = 0;
+      break;
+
+    default:
+      NOTREACHED() << "Need to add new extension locaton " << location;
+  }
+
+  CHECK(rank != kInvalidRank);
+  return rank;
+}
+
 }  // namespace
 
 const FilePath::CharType Extension::kManifestFilename[] =
@@ -312,6 +366,23 @@ GURL Extension::GalleryUpdateUrl(bool secure) {
 // static
 int Extension::GetPermissionMessageId(const std::string& permission) {
   return ExtensionConfig::GetInstance()->GetPermissionMessageId(permission);
+}
+
+// static
+Extension::Location Extension::GetHigherPriorityLocation(
+    Extension::Location loc1, Extension::Location loc2) {
+  if (loc1 == loc2)
+    return loc1;
+
+  int loc1_rank = GetLocationRank(loc1);
+  int loc2_rank = GetLocationRank(loc2);
+
+  // If two different locations have the same rank, then we can not
+  // deterministicly choose a location.
+  CHECK(loc1_rank != loc2_rank);
+
+  // Lowest rank has highest priority.
+  return (loc1_rank > loc2_rank ? loc1 : loc2 );
 }
 
 std::vector<string16> Extension::GetPermissionMessages() const {

@@ -67,6 +67,45 @@ TEST(ExtensionTest, LocationValuesTest) {
   ASSERT_EQ(3, Extension::EXTERNAL_REGISTRY);
   ASSERT_EQ(4, Extension::LOAD);
   ASSERT_EQ(5, Extension::COMPONENT);
+  ASSERT_EQ(6, Extension::EXTERNAL_PREF_DOWNLOAD);
+  ASSERT_EQ(7, Extension::EXTERNAL_POLICY_DOWNLOAD);
+}
+
+TEST(ExtensionTest, LocationPriorityTest) {
+  for (int i = 0; i < Extension::NUM_LOCATIONS; i++) {
+    Extension::Location loc = static_cast<Extension::Location>(i);
+
+    // INVALID is not a valid location.
+    if (loc == Extension::INVALID)
+      continue;
+
+    // Comparing a location that has no rank will hit a CHECK. Do a
+    // compare with every valid location, to be sure each one is covered.
+
+    // Check that no install source can override a componenet extension.
+    ASSERT_EQ(Extension::COMPONENT,
+              Extension::GetHigherPriorityLocation(Extension::COMPONENT, loc));
+    ASSERT_EQ(Extension::COMPONENT,
+              Extension::GetHigherPriorityLocation(loc, Extension::COMPONENT));
+
+    // Check that any source can override a user install. This might change
+    // in the future, in which case this test should be updated.
+    ASSERT_EQ(loc,
+              Extension::GetHigherPriorityLocation(Extension::INTERNAL, loc));
+    ASSERT_EQ(loc,
+              Extension::GetHigherPriorityLocation(loc, Extension::INTERNAL));
+  }
+
+  // Check a few interesting cases that we know can happen:
+  ASSERT_EQ(Extension::EXTERNAL_POLICY_DOWNLOAD,
+            Extension::GetHigherPriorityLocation(
+                Extension::EXTERNAL_POLICY_DOWNLOAD,
+                Extension::EXTERNAL_PREF));
+
+  ASSERT_EQ(Extension::EXTERNAL_PREF,
+            Extension::GetHigherPriorityLocation(
+                Extension::INTERNAL,
+                Extension::EXTERNAL_PREF));
 }
 
 

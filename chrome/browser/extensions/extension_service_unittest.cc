@@ -516,9 +516,9 @@ class ExtensionServiceTest
   void TestExternalProvider(MockExtensionProvider* provider,
                             Extension::Location location);
 
-  void PackAndInstallExtension(const FilePath& dir_path,
-                               const FilePath& pem_path,
-                               bool should_succeed) {
+  void PackAndInstallCrx(const FilePath& dir_path,
+                         const FilePath& pem_path,
+                         bool should_succeed) {
     FilePath crx_path;
     ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -543,17 +543,17 @@ class ExtensionServiceTest
 
     ASSERT_TRUE(file_util::PathExists(crx_path));
 
-    InstallExtension(crx_path, should_succeed);
+    InstallCrx(crx_path, should_succeed);
   }
 
-  void PackAndInstallExtension(const FilePath& dir_path,
-                               bool should_succeed) {
-      PackAndInstallExtension(dir_path, FilePath(), should_succeed);
+  void PackAndInstallCrx(const FilePath& dir_path,
+                         bool should_succeed) {
+    PackAndInstallCrx(dir_path, FilePath(), should_succeed);
   }
 
   // Create a CrxInstaller and start installation. To allow the install
   // to happen, use loop_.RunAllPending();. Most tests will not use this
-  // method directly.  Instead, use InstallExtension(), which waits for
+  // method directly.  Instead, use InstallCrx(), which waits for
   // the crx to be installed and does extra error checking.
   void StartCrxInstall(const FilePath& crx_path) {
     ASSERT_TRUE(file_util::PathExists(crx_path))
@@ -564,9 +564,30 @@ class ExtensionServiceTest
     installer->InstallCrx(crx_path);
   }
 
-  void InstallExtension(const FilePath& path,
+  void InstallCrx(const FilePath& path,
                         bool should_succeed) {
     StartCrxInstall(path);
+    WaitForCrxInstall(path, should_succeed);
+  }
+
+  void InstallCrxWithLocation(const FilePath& crx_path,
+                              Extension::Location install_location,
+                              bool should_succeed) {
+    ASSERT_TRUE(file_util::PathExists(crx_path))
+        << "Path does not exist: "<< crx_path.value().c_str();
+    scoped_refptr<CrxInstaller> installer(
+        new CrxInstaller(service_,  // frontend
+                         NULL));  // no client (silent install)
+
+    installer->set_install_source(install_location);
+    installer->InstallCrx(crx_path);
+
+    WaitForCrxInstall(crx_path, should_succeed);
+  }
+
+  // Wait for a CrxInstaller to finish. Used by InstallCrx.
+  void WaitForCrxInstall(const FilePath& path,
+                         bool should_succeed) {
     loop_.RunAllPending();
     std::vector<std::string> errors = GetErrors();
     if (should_succeed) {
@@ -1064,14 +1085,14 @@ TEST_F(ExtensionServiceTest, InstallExtension) {
   // Extensions not enabled.
   set_extensions_enabled(false);
   FilePath path = extensions_path.AppendASCII("good.crx");
-  InstallExtension(path, false);
+  InstallCrx(path, false);
   set_extensions_enabled(true);
 
   ValidatePrefKeyCount(0);
 
   // A simple extension that should install without error.
   path = extensions_path.AppendASCII("good.crx");
-  InstallExtension(path, true);
+  InstallCrx(path, true);
   // TODO(erikkay): verify the contents of the installed extension.
 
   int pref_count = 0;
@@ -1081,24 +1102,24 @@ TEST_F(ExtensionServiceTest, InstallExtension) {
 
   // An extension with page actions.
   path = extensions_path.AppendASCII("page_action.crx");
-  InstallExtension(path, true);
+  InstallCrx(path, true);
   ValidatePrefKeyCount(++pref_count);
   ValidateIntegerPref(page_action, "state", Extension::ENABLED);
   ValidateIntegerPref(page_action, "location", Extension::INTERNAL);
 
   // Bad signature.
   path = extensions_path.AppendASCII("bad_signature.crx");
-  InstallExtension(path, false);
+  InstallCrx(path, false);
   ValidatePrefKeyCount(pref_count);
 
   // 0-length extension file.
   path = extensions_path.AppendASCII("not_an_extension.crx");
-  InstallExtension(path, false);
+  InstallCrx(path, false);
   ValidatePrefKeyCount(pref_count);
 
   // Bad magic number.
   path = extensions_path.AppendASCII("bad_magic.crx");
-  InstallExtension(path, false);
+  InstallCrx(path, false);
   ValidatePrefKeyCount(pref_count);
 
   // Extensions cannot have folders or files that have underscores except in
@@ -1106,7 +1127,7 @@ TEST_F(ExtensionServiceTest, InstallExtension) {
   // class of validation that we do to the directory structure of the extension.
   // We did not used to handle this correctly for installation.
   path = extensions_path.AppendASCII("bad_underscore.crx");
-  InstallExtension(path, false);
+  InstallCrx(path, false);
   ValidatePrefKeyCount(pref_count);
 
   // TODO(erikkay): add more tests for many of the failure cases.
@@ -1286,7 +1307,7 @@ TEST_F(ExtensionServiceTest, GrantedPermissions) {
   EXPECT_TRUE(known_api_perms.empty());
   EXPECT_TRUE(known_host_perms.is_empty());
 
-  PackAndInstallExtension(path, pem_path, true);
+  PackAndInstallCrx(path, pem_path, true);
 
   EXPECT_EQ(0u, GetErrors().size());
   ASSERT_EQ(1u, service_->extensions()->size());
@@ -1329,7 +1350,7 @@ TEST_F(ExtensionServiceTest, GrantedFullAccessPermissions) {
 
   ASSERT_TRUE(file_util::PathExists(path));
 
-  PackAndInstallExtension(path, true);
+  PackAndInstallCrx(path, true);
 
   EXPECT_EQ(0u, GetErrors().size());
   EXPECT_EQ(1u, service_->extensions()->size());
@@ -1363,7 +1384,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
 
   ASSERT_TRUE(file_util::PathExists(path));
 
-  PackAndInstallExtension(path, true);
+  PackAndInstallCrx(path, true);
 
   EXPECT_EQ(0u, GetErrors().size());
   EXPECT_EQ(1u, service_->extensions()->size());
@@ -1505,7 +1526,7 @@ TEST_F(ExtensionServiceTest, PackExtension) {
       privkey_path));
 
   ASSERT_TRUE(file_util::PathExists(privkey_path));
-  InstallExtension(crx_path, true);
+  InstallCrx(crx_path, true);
 
   // Try packing with invalid paths.
   creator.reset(new ExtensionCreator());
@@ -1599,7 +1620,7 @@ TEST_F(ExtensionServiceTest, PackPunctuatedExtension) {
     if (HasFatalFailure())
       return;
 
-    InstallExtension(expected_crx_path, true);
+    InstallCrx(expected_crx_path, true);
   }
 }
 
@@ -1633,7 +1654,7 @@ TEST_F(ExtensionServiceTest, PackExtensionOpenSSLKey) {
   ASSERT_TRUE(creator->Run(input_directory, crx_path, privkey_path,
       FilePath()));
 
-  InstallExtension(crx_path, true);
+  InstallCrx(crx_path, true);
 }
 
 TEST_F(ExtensionServiceTest, InstallTheme) {
@@ -1644,7 +1665,7 @@ TEST_F(ExtensionServiceTest, InstallTheme) {
 
   // A theme.
   FilePath path = extensions_path.AppendASCII("theme.crx");
-  InstallExtension(path, true);
+  InstallCrx(path, true);
   int pref_count = 0;
   ValidatePrefKeyCount(++pref_count);
   ValidateIntegerPref(theme_crx, "state", Extension::ENABLED);
@@ -1654,7 +1675,7 @@ TEST_F(ExtensionServiceTest, InstallTheme) {
   // extensions are disabled.
   set_extensions_enabled(false);
   path = extensions_path.AppendASCII("theme2.crx");
-  InstallExtension(path, true);
+  InstallCrx(path, true);
   ValidatePrefKeyCount(++pref_count);
   ValidateIntegerPref(theme2_crx, "state", Extension::ENABLED);
   ValidateIntegerPref(theme2_crx, "location", Extension::INTERNAL);
@@ -1663,12 +1684,12 @@ TEST_F(ExtensionServiceTest, InstallTheme) {
   // this test should fail.
   set_extensions_enabled(true);
   path = extensions_path.AppendASCII("theme_with_extension.crx");
-  InstallExtension(path, false);
+  InstallCrx(path, false);
   ValidatePrefKeyCount(pref_count);
 
   // A theme with image resources missing (misspelt path).
   path = extensions_path.AppendASCII("theme_missing_image.crx");
-  InstallExtension(path, false);
+  InstallCrx(path, false);
   ValidatePrefKeyCount(pref_count);
 }
 
@@ -1698,7 +1719,7 @@ TEST_F(ExtensionServiceTest, InstallLocalizedTheme) {
       .AppendASCII("extensions")
       .AppendASCII("theme_i18n");
 
-  PackAndInstallExtension(theme_path, true);
+  PackAndInstallCrx(theme_path, true);
 
   EXPECT_EQ(0u, GetErrors().size());
   EXPECT_EQ(1u, service_->extensions()->size());
@@ -1713,7 +1734,7 @@ TEST_F(ExtensionServiceTest, InstallApps) {
   extensions_path = extensions_path.AppendASCII("extensions");
 
   // An empty app.
-  PackAndInstallExtension(extensions_path.AppendASCII("app1"), true);
+  PackAndInstallCrx(extensions_path.AppendASCII("app1"), true);
   int pref_count = 0;
   ValidatePrefKeyCount(++pref_count);
   ASSERT_EQ(1u, service_->extensions()->size());
@@ -1722,11 +1743,11 @@ TEST_F(ExtensionServiceTest, InstallApps) {
   ValidateIntegerPref(id, "location", Extension::INTERNAL);
 
   // Another app with non-overlapping extent. Should succeed.
-  PackAndInstallExtension(extensions_path.AppendASCII("app2"), true);
+  PackAndInstallCrx(extensions_path.AppendASCII("app2"), true);
   ValidatePrefKeyCount(++pref_count);
 
   // A third app whose extent overlaps the first. Should fail.
-  PackAndInstallExtension(extensions_path.AppendASCII("app3"), false);
+  PackAndInstallCrx(extensions_path.AppendASCII("app3"), false);
   ValidatePrefKeyCount(pref_count);
 }
 
@@ -1738,7 +1759,7 @@ TEST_F(ExtensionServiceTest, UpdateApps) {
       extensions_path.AppendASCII("extensions").AppendASCII("app_update");
 
   // First install v1 of a hosted app.
-  InstallExtension(extensions_path.AppendASCII("v1.crx"), true);
+  InstallCrx(extensions_path.AppendASCII("v1.crx"), true);
   ASSERT_EQ(1u, service_->extensions()->size());
   std::string id = service_->extensions()->at(0)->id();
   ASSERT_EQ(std::string("1"),
@@ -1762,7 +1783,7 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimtedStorage) {
   int pref_count = 0;
 
   // Install app1 with unlimited storage.
-  PackAndInstallExtension(extensions_path.AppendASCII("app1"), true);
+  PackAndInstallCrx(extensions_path.AppendASCII("app1"), true);
   ValidatePrefKeyCount(++pref_count);
   ASSERT_EQ(1u, service_->extensions()->size());
   const Extension* extension = service_->extensions()->at(0);
@@ -1776,7 +1797,7 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimtedStorage) {
       IsStorageUnlimited(origin1));
 
   // Install app2 from the same origin with unlimited storage.
-  PackAndInstallExtension(extensions_path.AppendASCII("app2"), true);
+  PackAndInstallCrx(extensions_path.AppendASCII("app2"), true);
   ValidatePrefKeyCount(++pref_count);
   ASSERT_EQ(2u, service_->extensions()->size());
   extension = service_->extensions()->at(1);
@@ -1817,7 +1838,7 @@ TEST_F(ExtensionServiceTest, InstallAppsAndCheckStorageProtection) {
   extensions_path = extensions_path.AppendASCII("extensions");
   int pref_count = 0;
 
-  PackAndInstallExtension(extensions_path.AppendASCII("app1"), true);
+  PackAndInstallCrx(extensions_path.AppendASCII("app1"), true);
   ValidatePrefKeyCount(++pref_count);
   ASSERT_EQ(1u, service_->extensions()->size());
   const Extension* extension = service_->extensions()->at(0);
@@ -1828,7 +1849,7 @@ TEST_F(ExtensionServiceTest, InstallAppsAndCheckStorageProtection) {
       IsStorageProtected(origin1));
 
   // App 4 has a different origin (maps.google.com).
-  PackAndInstallExtension(extensions_path.AppendASCII("app4"), true);
+  PackAndInstallCrx(extensions_path.AppendASCII("app4"), true);
   ValidatePrefKeyCount(++pref_count);
   ASSERT_EQ(2u, service_->extensions()->size());
   extension = service_->extensions()->at(1);
@@ -1950,7 +1971,7 @@ TEST_F(ExtensionServiceTest, UpdateExtension) {
 
   FilePath path = extensions_path.AppendASCII("good.crx");
 
-  InstallExtension(path, true);
+  InstallCrx(path, true);
   const Extension* good = service_->extensions()->at(0);
   ASSERT_EQ("1.0.0.0", good->VersionString());
   ASSERT_EQ(good_crx, good->id());
@@ -1985,7 +2006,7 @@ TEST_F(ExtensionServiceTest, UpdateWillNotDowngrade) {
 
   FilePath path = extensions_path.AppendASCII("good2.crx");
 
-  InstallExtension(path, true);
+  InstallCrx(path, true);
   const Extension* good = service_->extensions()->at(0);
   ASSERT_EQ("1.0.0.1", good->VersionString());
   ASSERT_EQ(good_crx, good->id());
@@ -2005,7 +2026,7 @@ TEST_F(ExtensionServiceTest, UpdateToSameVersionIsNoop) {
 
   FilePath path = extensions_path.AppendASCII("good.crx");
 
-  InstallExtension(path, true);
+  InstallCrx(path, true);
   const Extension* good = service_->extensions()->at(0);
   ASSERT_EQ(good_crx, good->id());
   UpdateExtension(good_crx, path, FAILED_SILENTLY);
@@ -2020,7 +2041,7 @@ TEST_F(ExtensionServiceTest, UpdateExtensionPreservesState) {
 
   FilePath path = extensions_path.AppendASCII("good.crx");
 
-  InstallExtension(path, true);
+  InstallCrx(path, true);
   const Extension* good = service_->extensions()->at(0);
   ASSERT_EQ("1.0.0.0", good->VersionString());
   ASSERT_EQ(good_crx, good->id());
@@ -2047,7 +2068,7 @@ TEST_F(ExtensionServiceTest, UpdateExtensionPreservesLocation) {
 
   FilePath path = extensions_path.AppendASCII("good.crx");
 
-  InstallExtension(path, true);
+  InstallCrx(path, true);
   const Extension* good = service_->extensions()->at(0);
 
   ASSERT_EQ("1.0.0.0", good->VersionString());
@@ -2120,7 +2141,7 @@ bool IsExtension(const Extension& extension) {
 TEST_F(ExtensionServiceTest, AddPendingExtensionFromSync) {
   InitializeEmptyExtensionService();
 
-  const std::string kFakeId("fake-id");
+  const std::string kFakeId(all_zero);
   const GURL kFakeUpdateURL("http:://fake.update/url");
   const bool kFakeInstallSilently(true);
   const Extension::State kFakeInitialState(Extension::ENABLED);
@@ -2349,7 +2370,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtensionAlreadyInstalled) {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
   FilePath path = extensions_path.AppendASCII("good.crx");
-  InstallExtension(path, true);
+  InstallCrx(path, true);
   ASSERT_EQ(1u, service_->extensions()->size());
   const Extension* good = service_->extensions()->at(0);
 
@@ -2403,7 +2424,7 @@ TEST_F(ExtensionServiceTest, UnloadBlacklistedExtension) {
 
   FilePath path = extensions_path.AppendASCII("good.crx");
 
-  InstallExtension(path, true);
+  InstallCrx(path, true);
   const Extension* good = service_->extensions()->at(0);
   EXPECT_EQ(good_crx, good->id());
   UpdateExtension(good_crx, path, FAILED_SILENTLY);
@@ -2596,7 +2617,7 @@ TEST_F(ExtensionServiceTest, DisableExtension) {
 
   // A simple extension that should install without error.
   FilePath path = extensions_path.AppendASCII("good.crx");
-  InstallExtension(path, true);
+  InstallCrx(path, true);
 
   const char* extension_id = good_crx;
   EXPECT_FALSE(service_->extensions()->empty());
@@ -2622,7 +2643,7 @@ TEST_F(ExtensionServiceTest, DisableAllExtensions) {
   extensions_path = extensions_path.AppendASCII("extensions");
 
   FilePath path = extensions_path.AppendASCII("good.crx");
-  InstallExtension(path, true);
+  InstallCrx(path, true);
 
   EXPECT_EQ(1u, service_->extensions()->size());
   EXPECT_EQ(0u, service_->disabled_extensions()->size());
@@ -2660,7 +2681,7 @@ TEST_F(ExtensionServiceTest, ReloadExtensions) {
 
   // Simple extension that should install without error.
   FilePath path = extensions_path.AppendASCII("good.crx");
-  InstallExtension(path, true);
+  InstallCrx(path, true);
   const char* extension_id = good_crx;
   service_->DisableExtension(extension_id);
 
@@ -2698,7 +2719,7 @@ TEST_F(ExtensionServiceTest, UninstallExtension) {
 
   // A simple extension that should install without error.
   FilePath path = extensions_path.AppendASCII("good.crx");
-  InstallExtension(path, true);
+  InstallCrx(path, true);
 
   // The directory should be there now.
   const char* extension_id = good_crx;
@@ -2736,7 +2757,7 @@ TEST_F(ExtensionServiceTest, UninstallExtensionHelper) {
 
   // A simple extension that should install without error.
   FilePath path = extensions_path.AppendASCII("good.crx");
-  InstallExtension(path, true);
+  InstallCrx(path, true);
 
   // The directory should be there now.
   const char* extension_id = good_crx;
@@ -2777,7 +2798,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
   path = path.AppendASCII("extensions");
   path = path.AppendASCII("good.crx");
-  InstallExtension(path, true);
+  InstallCrx(path, true);
   const Extension* extension = service_->GetExtensionById(good_crx, false);
   ASSERT_TRUE(extension);
   GURL ext_url(extension->url());
@@ -3535,4 +3556,184 @@ TEST_F(ExtensionServiceTest, ComponentExtensions) {
   service_->ReloadExtensions();
   ASSERT_EQ(1u, service_->extensions()->size());
   EXPECT_EQ(extension_id, service_->extensions()->at(0)->id());
+}
+
+// Test that when multiple sources try to install an extension,
+// we consistently choose the right one. To make tests easy to read,
+// methods that fake requests to install crx files in several ways
+// are provided.
+class ExtensionSourcePriorityTest : public ExtensionServiceTest {
+ public:
+  void SetUp() {
+    // All tests use a single extension.  Put the id and path in member vars
+    // that all methods can read.
+    crx_id_ = kGoodId;
+    FilePath test_data_dir;
+    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+    crx_path_ = test_data_dir.AppendASCII("extensions").AppendASCII("good.crx");
+  }
+
+  // Fake an external source adding a URL to fetch an extension from.
+  void AddPendingExternalPrefUrl() {
+    service_->pending_extension_manager()->AddFromExternalUpdateUrl(
+        crx_id_, GURL(), Extension::EXTERNAL_PREF_DOWNLOAD);
+  }
+
+  // Fake an external file from external_extensions.json.
+  void AddPendingExternalPrefFileInstall() {
+    scoped_ptr<Version> version;
+    version.reset(Version::GetVersionFromString("1.0.0.0"));
+
+    service_->OnExternalExtensionFileFound(
+        crx_id_, version.get(), crx_path_, Extension::EXTERNAL_PREF);
+  }
+
+  // Fake a request from sync to install an extension.
+  bool AddPendingSyncInstall() {
+    return service_->pending_extension_manager()->AddFromSync(
+        crx_id_, GURL(kGoodUpdateURL), &IsExtension,
+        kGoodInstallSilently, kGoodInitialState,
+        kGoodInitialIncognitoEnabled);
+  }
+
+  // Fake a request to install a default app.
+  void AddPendingDefaultAppInstall() {
+    service_->pending_extension_manager()->AddFromDefaultAppList(crx_id_);
+  }
+
+  // Fake a policy install.
+  void AddPendingPolicyInstall() {
+    scoped_ptr<Version> version;
+    version.reset(Version::GetVersionFromString("1.0.0.0"));
+
+    // Get path to the CRX with id |kGoodId|.
+    service_->OnExternalExtensionUpdateUrlFound(
+        crx_id_, GURL(), Extension::EXTERNAL_POLICY_DOWNLOAD);
+  }
+
+  // Get the install source of a pending extension.
+  Extension::Location GetPendingLocation() {
+    PendingExtensionInfo info;
+    EXPECT_TRUE(service_->pending_extension_manager()->GetById(crx_id_, &info));
+    return info.install_source();
+  }
+
+  // Is an extension pending from a sync request?
+  bool GetPendingIsFromSync() {
+    PendingExtensionInfo info;
+    EXPECT_TRUE(service_->pending_extension_manager()->GetById(crx_id_, &info));
+    return info.is_from_sync();
+  }
+
+  // Is the CRX id these tests use pending?
+  bool IsCrxPending() {
+    return service_->pending_extension_manager()->IsIdPending(crx_id_);
+  }
+
+  // Is an extension installed?
+  bool IsCrxInstalled() {
+    return (service_->GetExtensionById(crx_id_, true) != NULL);
+  }
+
+ protected:
+  // All tests use a single extension.  Making the id and path member
+  // vars avoids pasing the same argument to every method.
+  std::string crx_id_;
+  FilePath crx_path_;
+};
+
+// Test that a pending install of an external CRX file from disk overrides
+// a pending install of the same extension from sync.
+TEST_F(ExtensionSourcePriorityTest, PendingExternalFileOverSync) {
+  InitializeEmptyExtensionService();
+
+  ASSERT_FALSE(IsCrxInstalled());
+
+  // Install pending extension from sync.
+  AddPendingSyncInstall();
+  ASSERT_EQ(Extension::INTERNAL, GetPendingLocation());
+  EXPECT_TRUE(GetPendingIsFromSync());
+  ASSERT_FALSE(IsCrxInstalled());
+
+  // Install pending as external prefs json would.
+  AddPendingExternalPrefFileInstall();
+  ASSERT_EQ(Extension::EXTERNAL_PREF, GetPendingLocation());
+  ASSERT_FALSE(IsCrxInstalled());
+
+  // Another request from sync should be ignorred.
+  AddPendingSyncInstall();
+  ASSERT_EQ(Extension::EXTERNAL_PREF, GetPendingLocation());
+  ASSERT_FALSE(IsCrxInstalled());
+
+  WaitForCrxInstall(crx_path_, true);
+  ASSERT_TRUE(IsCrxInstalled());
+}
+
+// Test that an install of an external CRX from an update overrides
+// an install of the same extension from sync.
+TEST_F(ExtensionSourcePriorityTest, PendingExternalUrlOverSync) {
+  InitializeEmptyExtensionService();
+  ASSERT_FALSE(IsCrxInstalled());
+
+  AddPendingSyncInstall();
+  ASSERT_EQ(Extension::INTERNAL, GetPendingLocation());
+  EXPECT_TRUE(GetPendingIsFromSync());
+  ASSERT_FALSE(IsCrxInstalled());
+
+  AddPendingExternalPrefUrl();
+  ASSERT_EQ(Extension::EXTERNAL_PREF_DOWNLOAD, GetPendingLocation());
+  EXPECT_FALSE(GetPendingIsFromSync());
+  ASSERT_FALSE(IsCrxInstalled());
+
+  AddPendingSyncInstall();
+  ASSERT_EQ(Extension::EXTERNAL_PREF_DOWNLOAD, GetPendingLocation());
+  EXPECT_FALSE(GetPendingIsFromSync());
+  ASSERT_FALSE(IsCrxInstalled());
+}
+
+// Test that an install of an external CRX overrides a request for a default
+// app.
+TEST_F(ExtensionSourcePriorityTest, PendingExternalFileOverDefaultApp) {
+  InitializeEmptyExtensionService();
+  ASSERT_FALSE(IsCrxInstalled());
+
+  AddPendingDefaultAppInstall();
+  ASSERT_EQ(Extension::INTERNAL, GetPendingLocation());
+  ASSERT_FALSE(IsCrxInstalled());
+
+  AddPendingExternalPrefFileInstall();
+  ASSERT_EQ(Extension::EXTERNAL_PREF, GetPendingLocation());
+  ASSERT_FALSE(IsCrxInstalled());
+
+  AddPendingDefaultAppInstall();
+  ASSERT_EQ(Extension::EXTERNAL_PREF, GetPendingLocation());
+  ASSERT_FALSE(IsCrxInstalled());
+
+  WaitForCrxInstall(crx_path_, true);
+  ASSERT_TRUE(IsCrxInstalled());
+}
+
+// Test that an external install request stops sync from installing
+// the same extension.
+TEST_F(ExtensionSourcePriorityTest, InstallExternalBlocksSyncRequest) {
+  InitializeEmptyExtensionService();
+  ASSERT_FALSE(IsCrxInstalled());
+
+  // External prefs starts an install.
+  AddPendingExternalPrefFileInstall();
+
+  // Crx installer was made, but has not yet run.
+  ASSERT_FALSE(IsCrxInstalled());
+
+  // Before the CRX installer runs, Sync requests that the same extension
+  // be installed. Should fail, because an external source is pending.
+  ASSERT_FALSE(AddPendingSyncInstall());
+
+  // Wait for the external source to install.
+  WaitForCrxInstall(crx_path_, true);
+  ASSERT_TRUE(IsCrxInstalled());
+
+  // Now that the extension is installed, sync request should fail
+  // because the extension is already installed.
+  ASSERT_FALSE(AddPendingSyncInstall());
 }
