@@ -56,6 +56,16 @@ class FileSystemOperationTest : public testing::Test {
   // Common temp base for nondestructive uses.
   ScopedTempDir base_;
 
+  GURL URLForRelativePath(const std::string& path) const {
+    // Only the path will actually get used.
+    return GURL("file://").Resolve(base_.path().value()).Resolve(path);
+  }
+
+  GURL URLForPath(const FilePath& path) const {
+    // Only the path will actually get used.
+    return GURL("file://").Resolve(path.value());
+  }
+
   // For post-operation status.
   int status_;
   base::PlatformFileInfo info_;
@@ -91,7 +101,7 @@ class MockDispatcher : public FileSystemCallbackDispatcher {
     test_->set_entries(entries);
   }
 
-  virtual void DidOpenFileSystem(const std::string&, const FilePath&) {
+  virtual void DidOpenFileSystem(const std::string&, const GURL&) {
     NOTREACHED();
   }
 
@@ -113,12 +123,15 @@ FileSystemOperation* FileSystemOperationTest::operation() {
       kFileSystemTypeTemporary);
   operation->file_system_operation_context()->set_dest_type(
       kFileSystemTypeTemporary);
+  GURL origin_url("fake://fake.foo/");
+  operation->file_system_operation_context()->set_src_origin_url(origin_url);
+  operation->file_system_operation_context()->set_dest_origin_url(origin_url);
   return operation;
 }
 
 TEST_F(FileSystemOperationTest, TestMoveFailureSrcDoesntExist) {
-  FilePath src(base_.path().Append(FILE_PATH_LITERAL("a")));
-  FilePath dest(base_.path().Append(FILE_PATH_LITERAL("b")));
+  GURL src(URLForRelativePath("a"));
+  GURL dest(URLForRelativePath("b"));
   operation()->Move(src, dest);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
@@ -131,7 +144,7 @@ TEST_F(FileSystemOperationTest, TestMoveFailureContainsPath) {
   ASSERT_TRUE(file_util::CreateTemporaryDirInDir(src_dir.path(),
                                                  FILE_PATH_LITERAL("child_dir"),
                                                  &dest_dir_path));
-  operation()->Move(src_dir.path(), dest_dir_path);
+  operation()->Move(URLForPath(src_dir.path()), URLForPath(dest_dir_path));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, status());
 }
@@ -146,7 +159,7 @@ TEST_F(FileSystemOperationTest, TestMoveFailureSrcDirExistsDestFile) {
   FilePath dest_file;
   file_util::CreateTemporaryFileInDir(dest_dir.path(), &dest_file);
 
-  operation()->Move(src_dir.path(), dest_file);
+  operation()->Move(URLForPath(src_dir.path()), URLForPath(dest_file));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY, status());
 }
@@ -161,7 +174,7 @@ TEST_F(FileSystemOperationTest, TestMoveFailureSrcFileExistsDestNonEmptyDir) {
   FilePath child_file;
   file_util::CreateTemporaryFileInDir(dest_dir.path(), &child_file);
 
-  operation()->Move(src_dir.path(), dest_dir.path());
+  operation()->Move(URLForPath(src_dir.path()), URLForPath(dest_dir.path()));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_EMPTY, status());
 }
@@ -176,7 +189,7 @@ TEST_F(FileSystemOperationTest, TestMoveFailureSrcFileExistsDestDir) {
   ScopedTempDir dest_dir;
   ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
 
-  operation()->Move(src_file, dest_dir.path());
+  operation()->Move(URLForPath(src_file), URLForPath(dest_dir.path()));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_FILE, status());
 }
@@ -189,7 +202,7 @@ TEST_F(FileSystemOperationTest, TestMoveFailureDestParentDoesntExist) {
       FILE_PATH_LITERAL("NonexistingDir")).Append(
           FILE_PATH_LITERAL("NonexistingFile"));
 
-  operation()->Move(src_dir.path(), nonexisting_file);
+  operation()->Move(URLForPath(src_dir.path()), URLForPath(nonexisting_file));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
 }
@@ -205,7 +218,7 @@ TEST_F(FileSystemOperationTest, TestMoveSuccessSrcFileAndOverwrite) {
   FilePath dest_file;
   file_util::CreateTemporaryFileInDir(dest_dir.path(), &dest_file);
 
-  operation()->Move(src_file, dest_file);
+  operation()->Move(URLForPath(src_file), URLForPath(dest_file));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
   EXPECT_TRUE(FileExists(dest_file));
@@ -221,7 +234,7 @@ TEST_F(FileSystemOperationTest, TestMoveSuccessSrcFileAndNew) {
   ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
   FilePath dest_file(dest_dir.path().Append(FILE_PATH_LITERAL("NewFile")));
 
-  operation()->Move(src_file, dest_file);
+  operation()->Move(URLForPath(src_file), URLForPath(dest_file));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
   EXPECT_TRUE(FileExists(dest_file));
@@ -234,7 +247,7 @@ TEST_F(FileSystemOperationTest, TestMoveSuccessSrcDirAndOverwrite) {
   ScopedTempDir dest_dir;
   ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
 
-  operation()->Move(src_dir.path(), dest_dir.path());
+  operation()->Move(URLForPath(src_dir.path()), URLForPath(dest_dir.path()));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
   EXPECT_FALSE(file_util::DirectoryExists(src_dir.path()));
@@ -253,7 +266,7 @@ TEST_F(FileSystemOperationTest, TestMoveSuccessSrcDirAndNew) {
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   FilePath dest_dir_path(dir.path().Append(FILE_PATH_LITERAL("NewDirectory")));
 
-  operation()->Move(src_dir.path(), dest_dir_path);
+  operation()->Move(URLForPath(src_dir.path()), URLForPath(dest_dir_path));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
   EXPECT_FALSE(file_util::DirectoryExists(src_dir.path()));
@@ -272,7 +285,7 @@ TEST_F(FileSystemOperationTest, TestMoveSuccessSrcDirRecursive) {
   ScopedTempDir dest_dir;
   ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
 
-  operation()->Move(src_dir.path(), dest_dir.path());
+  operation()->Move(URLForPath(src_dir.path()), URLForPath(dest_dir.path()));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
   EXPECT_TRUE(file_util::DirectoryExists(dest_dir.path().Append(
@@ -283,9 +296,7 @@ TEST_F(FileSystemOperationTest, TestMoveSuccessSrcDirRecursive) {
 }
 
 TEST_F(FileSystemOperationTest, TestCopyFailureSrcDoesntExist) {
-  FilePath src(base_.path().Append(FILE_PATH_LITERAL("a")));
-  FilePath dest(base_.path().Append(FILE_PATH_LITERAL("b")));
-  operation()->Copy(src, dest);
+  operation()->Copy(URLForRelativePath("a"), URLForRelativePath("b"));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
 }
@@ -297,7 +308,7 @@ TEST_F(FileSystemOperationTest, TestCopyFailureContainsPath) {
   ASSERT_TRUE(file_util::CreateTemporaryDirInDir(src_dir.path(),
                                                  FILE_PATH_LITERAL("child_dir"),
                                                  &dest_dir_path));
-  operation()->Copy(src_dir.path(), dest_dir_path);
+  operation()->Copy(URLForPath(src_dir.path()), URLForPath(dest_dir_path));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, status());
 }
@@ -312,7 +323,7 @@ TEST_F(FileSystemOperationTest, TestCopyFailureSrcDirExistsDestFile) {
   FilePath dest_file;
   file_util::CreateTemporaryFileInDir(dest_dir.path(), &dest_file);
 
-  operation()->Copy(src_dir.path(), dest_file);
+  operation()->Copy(URLForPath(src_dir.path()), URLForPath(dest_file));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY, status());
 }
@@ -327,7 +338,7 @@ TEST_F(FileSystemOperationTest, TestCopyFailureSrcFileExistsDestNonEmptyDir) {
   FilePath child_file;
   file_util::CreateTemporaryFileInDir(dest_dir.path(), &child_file);
 
-  operation()->Copy(src_dir.path(), dest_dir.path());
+  operation()->Copy(URLForPath(src_dir.path()), URLForPath(dest_dir.path()));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_EMPTY, status());
 }
@@ -342,7 +353,7 @@ TEST_F(FileSystemOperationTest, TestCopyFailureSrcFileExistsDestDir) {
   ScopedTempDir dest_dir;
   ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
 
-  operation()->Copy(src_file, dest_dir.path());
+  operation()->Copy(URLForPath(src_file), URLForPath(dest_dir.path()));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_FILE, status());
 }
@@ -358,7 +369,7 @@ TEST_F(FileSystemOperationTest, TestCopyFailureDestParentDoesntExist) {
   FilePath nonexisting_file = nonexisting.Append(
       FILE_PATH_LITERAL("DontExistFile"));
 
-  operation()->Copy(src_dir, nonexisting_file);
+  operation()->Copy(URLForPath(src_dir), URLForPath(nonexisting_file));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
 }
@@ -374,7 +385,7 @@ TEST_F(FileSystemOperationTest, TestCopySuccessSrcFileAndOverwrite) {
   FilePath dest_file;
   file_util::CreateTemporaryFileInDir(dest_dir.path(), &dest_file);
 
-  operation()->Copy(src_file, dest_file);
+  operation()->Copy(URLForPath(src_file), URLForPath(dest_file));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
   EXPECT_TRUE(FileExists(dest_file));
@@ -390,7 +401,7 @@ TEST_F(FileSystemOperationTest, TestCopySuccessSrcFileAndNew) {
   ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
   FilePath dest_file(dest_dir.path().Append(FILE_PATH_LITERAL("NewFile")));
 
-  operation()->Copy(src_file, dest_file);
+  operation()->Copy(URLForPath(src_file), URLForPath(dest_file));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
   EXPECT_TRUE(FileExists(dest_file));
@@ -403,7 +414,7 @@ TEST_F(FileSystemOperationTest, TestCopySuccessSrcDirAndOverwrite) {
   ScopedTempDir dest_dir;
   ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
 
-  operation()->Copy(src_dir.path(), dest_dir.path());
+  operation()->Copy(URLForPath(src_dir.path()), URLForPath(dest_dir.path()));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
 
@@ -421,7 +432,7 @@ TEST_F(FileSystemOperationTest, TestCopySuccessSrcDirAndNew) {
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   FilePath dest_dir(dir.path().Append(FILE_PATH_LITERAL("NewDirectory")));
 
-  operation()->Copy(src_dir.path(), dest_dir);
+  operation()->Copy(URLForPath(src_dir.path()), URLForPath(dest_dir));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
   EXPECT_TRUE(file_util::DirectoryExists(dest_dir));
@@ -439,7 +450,7 @@ TEST_F(FileSystemOperationTest, TestCopySuccessSrcDirRecursive) {
   ScopedTempDir dest_dir;
   ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
 
-  operation()->Copy(src_dir.path(), dest_dir.path());
+  operation()->Copy(URLForPath(src_dir.path()), URLForPath(dest_dir.path()));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
   EXPECT_TRUE(file_util::DirectoryExists(dest_dir.path().Append(
@@ -456,7 +467,7 @@ TEST_F(FileSystemOperationTest, TestCreateFileFailure) {
   FilePath file;
 
   file_util::CreateTemporaryFileInDir(dir.path(), &file);
-  operation()->CreateFile(file, true);
+  operation()->CreateFile(URLForPath(file), true);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS, status());
 }
@@ -468,7 +479,7 @@ TEST_F(FileSystemOperationTest, TestCreateFileSuccessFileExists) {
   FilePath file;
   file_util::CreateTemporaryFileInDir(dir.path(), &file);
 
-  operation()->CreateFile(file, false);
+  operation()->CreateFile(URLForPath(file), false);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
   EXPECT_TRUE(FileExists(file));
@@ -479,7 +490,7 @@ TEST_F(FileSystemOperationTest, TestCreateFileSuccessExclusive) {
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   FilePath file = dir.path().Append(FILE_PATH_LITERAL("FileDoesntExist"));
-  operation()->CreateFile(file, true);
+  operation()->CreateFile(URLForPath(file), true);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
   EXPECT_TRUE(FileExists(file));
@@ -490,7 +501,7 @@ TEST_F(FileSystemOperationTest, TestCreateFileSuccessFileDoesntExist) {
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   FilePath file = dir.path().Append(FILE_PATH_LITERAL("FileDoesntExist"));
-  operation()->CreateFile(file, false);
+  operation()->CreateFile(URLForPath(file), false);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
 }
@@ -502,7 +513,7 @@ TEST_F(FileSystemOperationTest,
       FILE_PATH_LITERAL("DirDoesntExist")));
   FilePath nonexisting_file = nonexisting.Append(
       FILE_PATH_LITERAL("FileDoesntExist"));
-  operation()->CreateDirectory(nonexisting_file, false, false);
+  operation()->CreateDirectory(URLForPath(nonexisting_file), false, false);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
 }
@@ -511,7 +522,7 @@ TEST_F(FileSystemOperationTest, TestCreateDirFailureDirExists) {
   // Exclusive and dir existing at path.
   ScopedTempDir src_dir;
   ASSERT_TRUE(src_dir.CreateUniqueTempDir());
-  operation()->CreateDirectory(src_dir.path(), true, false);
+  operation()->CreateDirectory(URLForPath(src_dir.path()), true, false);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS, status());
 }
@@ -522,7 +533,7 @@ TEST_F(FileSystemOperationTest, TestCreateDirFailureFileExists) {
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   FilePath file;
   file_util::CreateTemporaryFileInDir(dir.path(), &file);
-  operation()->CreateDirectory(file, true, false);
+  operation()->CreateDirectory(URLForPath(file), true, false);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS, status());
 }
@@ -531,14 +542,14 @@ TEST_F(FileSystemOperationTest, TestCreateDirSuccess) {
   // Dir exists and exclusive is false.
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  operation()->CreateDirectory(dir.path(), false, false);
+  operation()->CreateDirectory(URLForPath(dir.path()), false, false);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
 
   // Dir doesn't exist.
   FilePath nonexisting_dir_path(base_.path().Append(
       FILE_PATH_LITERAL("nonexistingdir")));
-  operation()->CreateDirectory(nonexisting_dir_path, false, false);
+  operation()->CreateDirectory(URLForPath(nonexisting_dir_path), false, false);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
   EXPECT_TRUE(file_util::DirectoryExists(nonexisting_dir_path));
@@ -549,7 +560,7 @@ TEST_F(FileSystemOperationTest, TestCreateDirSuccessExclusive) {
   FilePath nonexisting_dir_path(base_.path().Append(
       FILE_PATH_LITERAL("nonexistingdir")));
 
-  operation()->CreateDirectory(nonexisting_dir_path, true, false);
+  operation()->CreateDirectory(URLForPath(nonexisting_dir_path), true, false);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
   EXPECT_TRUE(file_util::DirectoryExists(nonexisting_dir_path));
@@ -558,16 +569,16 @@ TEST_F(FileSystemOperationTest, TestCreateDirSuccessExclusive) {
 TEST_F(FileSystemOperationTest, TestExistsAndMetadataFailure) {
   FilePath nonexisting_dir_path(base_.path().Append(
       FILE_PATH_LITERAL("nonexistingdir")));
-  operation()->GetMetadata(nonexisting_dir_path);
+  operation()->GetMetadata(URLForPath(nonexisting_dir_path));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
 
-  operation()->FileExists(nonexisting_dir_path);
+  operation()->FileExists(URLForPath(nonexisting_dir_path));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
 
   file_util::EnsureEndsWithSeparator(&nonexisting_dir_path);
-  operation()->DirectoryExists(nonexisting_dir_path);
+  operation()->DirectoryExists(URLForPath(nonexisting_dir_path));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
 }
@@ -576,11 +587,11 @@ TEST_F(FileSystemOperationTest, TestExistsAndMetadataSuccess) {
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
 
-  operation()->DirectoryExists(dir.path());
+  operation()->DirectoryExists(URLForPath(dir.path()));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
 
-  operation()->GetMetadata(dir.path());
+  operation()->GetMetadata(URLForPath(dir.path()));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
   EXPECT_TRUE(info().is_directory);
@@ -588,11 +599,11 @@ TEST_F(FileSystemOperationTest, TestExistsAndMetadataSuccess) {
 
   FilePath file;
   file_util::CreateTemporaryFileInDir(dir.path(), &file);
-  operation()->FileExists(file);
+  operation()->FileExists(URLForPath(file));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
 
-  operation()->GetMetadata(file);
+  operation()->GetMetadata(URLForPath(file));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
   EXPECT_FALSE(info().is_directory);
@@ -602,13 +613,13 @@ TEST_F(FileSystemOperationTest, TestExistsAndMetadataSuccess) {
 TEST_F(FileSystemOperationTest, TestTypeMismatchErrors) {
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  operation()->FileExists(dir.path());
+  operation()->FileExists(URLForPath(dir.path()));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_FILE, status());
 
   FilePath file;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(dir.path(), &file));
-  operation()->DirectoryExists(file);
+  operation()->DirectoryExists(URLForPath(file));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY, status());
 }
@@ -618,7 +629,7 @@ TEST_F(FileSystemOperationTest, TestReadDirFailure) {
   FilePath nonexisting_dir_path(base_.path().Append(
       FILE_PATH_LITERAL("NonExistingDir")));
   file_util::EnsureEndsWithSeparator(&nonexisting_dir_path);
-  operation()->ReadDirectory(nonexisting_dir_path);
+  operation()->ReadDirectory(URLForPath(nonexisting_dir_path));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
 
@@ -627,7 +638,7 @@ TEST_F(FileSystemOperationTest, TestReadDirFailure) {
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   FilePath file;
   file_util::CreateTemporaryFileInDir(dir.path(), &file);
-  operation()->ReadDirectory(file);
+  operation()->ReadDirectory(URLForPath(file));
   MessageLoop::current()->RunAllPending();
   // TODO(kkanetkar) crbug.com/54309 to change the error code.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
@@ -646,7 +657,7 @@ TEST_F(FileSystemOperationTest, TestReadDirSuccess) {
   ASSERT_TRUE(file_util::CreateTemporaryDirInDir(
       parent_dir.path(), FILE_PATH_LITERAL("child_dir"), &child_dir));
 
-  operation()->ReadDirectory(parent_dir.path());
+  operation()->ReadDirectory(URLForPath(parent_dir.path()));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationStatusNotSet, status());
   EXPECT_EQ(2u, entries().size());
@@ -668,7 +679,7 @@ TEST_F(FileSystemOperationTest, TestRemoveFailure) {
       FILE_PATH_LITERAL("NonExistingDir")));
   file_util::EnsureEndsWithSeparator(&nonexisting);
 
-  operation()->Remove(nonexisting, false /* recursive */);
+  operation()->Remove(URLForPath(nonexisting), false /* recursive */);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
 
@@ -686,7 +697,7 @@ TEST_F(FileSystemOperationTest, TestRemoveFailure) {
   ASSERT_TRUE(file_util::CreateTemporaryDirInDir(
       parent_dir.path(), FILE_PATH_LITERAL("child_dir"), &child_dir));
 
-  operation()->Remove(parent_dir.path(), false /* recursive */);
+  operation()->Remove(URLForPath(parent_dir.path()), false /* recursive */);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_EMPTY,
             status());
@@ -697,7 +708,7 @@ TEST_F(FileSystemOperationTest, TestRemoveSuccess) {
   ASSERT_TRUE(empty_dir.CreateUniqueTempDir());
   EXPECT_TRUE(file_util::DirectoryExists(empty_dir.path()));
 
-  operation()->Remove(empty_dir.path(), false /* recursive */);
+  operation()->Remove(URLForPath(empty_dir.path()), false /* recursive */);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
   EXPECT_FALSE(file_util::DirectoryExists(empty_dir.path()));
@@ -715,7 +726,7 @@ TEST_F(FileSystemOperationTest, TestRemoveSuccess) {
   ASSERT_TRUE(file_util::CreateTemporaryDirInDir(
       parent_dir.path(), FILE_PATH_LITERAL("child_dir"), &child_dir));
 
-  operation()->Remove(parent_dir.path(), true /* recursive */);
+  operation()->Remove(URLForPath(parent_dir.path()), true /* recursive */);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
   EXPECT_FALSE(file_util::DirectoryExists(parent_dir.path()));
@@ -733,7 +744,7 @@ TEST_F(FileSystemOperationTest, TestTruncate) {
             file_util::WriteFile(file, test_data, data_size));
 
   // Check that its length is the size of the data written.
-  operation()->GetMetadata(file);
+  operation()->GetMetadata(URLForPath(file));
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
   EXPECT_FALSE(info().is_directory);
@@ -741,7 +752,7 @@ TEST_F(FileSystemOperationTest, TestTruncate) {
 
   // Extend the file by truncating it.
   int length = 17;
-  operation()->Truncate(file, length);
+  operation()->Truncate(URLForPath(file), length);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
 
@@ -762,7 +773,7 @@ TEST_F(FileSystemOperationTest, TestTruncate) {
 
   // Shorten the file by truncating it.
   length = 3;
-  operation()->Truncate(file, length);
+  operation()->Truncate(URLForPath(file), length);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, status());
 

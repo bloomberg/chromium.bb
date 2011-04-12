@@ -29,7 +29,8 @@ TEST_F(FileSystemUtilTest, ParsePersistent) {
       "filesystem:http://chromium.org/persistent/directory/file"));
   EXPECT_EQ("http://chromium.org/", origin_url_.spec());
   EXPECT_EQ(kFileSystemTypePersistent, type_);
-  EXPECT_EQ(FILE_PATH_LITERAL("directory/file"), file_path_.value());
+  EXPECT_EQ(FILE_PATH_LITERAL("file"), file_path_.BaseName().value());
+  EXPECT_EQ(FILE_PATH_LITERAL("directory"), file_path_.DirName().value());
 }
 
 TEST_F(FileSystemUtilTest, ParseTemporary) {
@@ -37,7 +38,8 @@ TEST_F(FileSystemUtilTest, ParseTemporary) {
       "filesystem:http://chromium.org/temporary/directory/file"));
   EXPECT_EQ("http://chromium.org/", origin_url_.spec());
   EXPECT_EQ(kFileSystemTypeTemporary, type_);
-  EXPECT_EQ(FILE_PATH_LITERAL("directory/file"), file_path_.value());
+  EXPECT_EQ(FILE_PATH_LITERAL("file"), file_path_.BaseName().value());
+  EXPECT_EQ(FILE_PATH_LITERAL("directory"), file_path_.DirName().value());
 }
 
 TEST_F(FileSystemUtilTest, EnsureFilePathIsRelative) {
@@ -45,7 +47,8 @@ TEST_F(FileSystemUtilTest, EnsureFilePathIsRelative) {
       "filesystem:http://chromium.org/temporary/////directory/file"));
   EXPECT_EQ("http://chromium.org/", origin_url_.spec());
   EXPECT_EQ(kFileSystemTypeTemporary, type_);
-  EXPECT_EQ(FILE_PATH_LITERAL("directory/file"), file_path_.value());
+  EXPECT_EQ(FILE_PATH_LITERAL("file"), file_path_.BaseName().value());
+  EXPECT_EQ(FILE_PATH_LITERAL("directory"), file_path_.DirName().value());
   EXPECT_FALSE(file_path_.IsAbsolute());
 }
 
@@ -59,7 +62,8 @@ TEST_F(FileSystemUtilTest, RejectBadSchemes) {
 TEST_F(FileSystemUtilTest, UnescapePath) {
   ASSERT_TRUE(CrackFileSystemURL(
       "filesystem:http://chromium.org/persistent/%7Echromium/space%20bar"));
-  EXPECT_EQ(FILE_PATH_LITERAL("~chromium/space bar"), file_path_.value());
+  EXPECT_EQ(FILE_PATH_LITERAL("space bar"), file_path_.BaseName().value());
+  EXPECT_EQ(FILE_PATH_LITERAL("~chromium"), file_path_.DirName().value());
 }
 
 TEST_F(FileSystemUtilTest, RejectBadType) {
