@@ -106,12 +106,7 @@ class FileSelectHelper
   // Maintain a list of active directory enumerations.  These could come from
   // the file select dialog or from drag-and-drop of directories, so there could
   // be more than one going on at a time.
-  struct ActiveDirectoryEnumeration {
-    scoped_ptr<DirectoryListerDispatchDelegate> delegate_;
-    scoped_refptr<net::DirectoryLister> lister_;
-    RenderViewHost* rvh_;
-    std::vector<FilePath> results_;
-  };
+  struct ActiveDirectoryEnumeration;
   std::map<int, ActiveDirectoryEnumeration*> directory_enumerations_;
 
   // Registrar for notifications regarding our RenderViewHost.

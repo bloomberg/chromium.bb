@@ -32,6 +32,15 @@ namespace {
 static const int kFileSelectEnumerationId = -1;
 }
 
+struct FileSelectHelper::ActiveDirectoryEnumeration {
+  ActiveDirectoryEnumeration() {}
+
+  scoped_ptr<DirectoryListerDispatchDelegate> delegate_;
+  scoped_refptr<net::DirectoryLister> lister_;
+  RenderViewHost* rvh_;
+  std::vector<FilePath> results_;
+};
+
 FileSelectHelper::FileSelectHelper(Profile* profile)
     : profile_(profile),
       render_view_host_(NULL),
