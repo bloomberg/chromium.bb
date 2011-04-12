@@ -370,6 +370,16 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return ret
 
   @staticmethod
+  def ChromeOSBoard():
+    """What is the ChromeOS board name"""
+    if PyUITest.IsChromeOS():
+      for line in open('/etc/lsb-release'):
+        line = line.strip()
+        if line.startswith('CHROMEOS_RELEASE_BOARD='):
+          return line.split('=')[1]
+    return None
+
+  @staticmethod
   def Kill(pid):
     """Terminate the given pid.
 

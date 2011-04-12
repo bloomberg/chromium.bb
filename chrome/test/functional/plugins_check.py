@@ -28,6 +28,17 @@ class PluginsCheck(pyauto.PyUITest):
     file_path = os.path.join(self.DataDir(), plugins_list_file)
     return self.EvalDataFrom(file_path)
 
+  def _RemoveNonApplicablePlugins(self, plugins_list):
+    """Removes plugins that do not apply to the given ChromeOS board.
+    Note: This function is only run on ChromeOS.
+    """
+    new_list = []
+    for plugin in plugins_list:
+      if self.ChromeOSBoard() in set(plugin['boards']):
+        plugin.pop('boards')
+        new_list.append(plugin)
+    return new_list
+
   def testPluginsStates(self):
     """Verify plugins' versions and states."""
     if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
@@ -38,6 +49,7 @@ class PluginsCheck(pyauto.PyUITest):
       plugins_list = self._ReadPluginsList('mac_plugins_list.txt')
     elif self.IsChromeOS():
       plugins_list = self._ReadPluginsList('chromeos_plugins_list.txt')
+      plugins_list = self._RemoveNonApplicablePlugins(plugins_list)
     elif self.IsLinux():
       # TODO(rohitbm)
       # Add plugins_check support for Linux
