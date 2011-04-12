@@ -326,6 +326,8 @@ void FileBrowseUIHTMLSource::StartDataRequest(const std::string& path,
   localized_strings.SetString("enqueue",
       l10n_util::GetStringUTF16(IDS_FILEBROWSER_ENQUEUE));
   localized_strings.SetString("mediapath", kMediaPath);
+  localized_strings.SetString("downloadtitle",
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_TITLE));
   FilePath default_download_path;
   if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
                         &default_download_path)) {

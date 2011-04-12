@@ -1771,7 +1771,12 @@ function createNewList(title, results, main, path) {
   var list = document.createElement('ul');
   list.className = 'filebrowselist';
   list.id = 'list/dir/' + path;
-  document.title = title;
+  // Use the translated title for the Downloads directory.
+  if (path == localStrings.getString('downloadpath')) {
+    document.title = (localStrings.getString('downloadtitle') || title);
+  } else {
+    document.title = title;
+  }
   if (advancedEnabled) {
     var header = document.createElement('div');
     header.className = 'header';
