@@ -483,12 +483,10 @@ cr.define('options', function() {
           function(e) {
             switch(self.dataType) {
               case 'number':
-                Preferences.setIntegerPref(self.pref, parseInt(self.value, 10),
-                                           self.metric);
+                Preferences.setIntegerPref(self.pref, self.value, self.metric);
                 break;
               case 'double':
-                Preferences.setDoublePref(self.pref, parseFloat(self.value),
-                                          self.metric);
+                Preferences.setDoublePref(self.pref, self.value, self.metric);
                 break;
               default:
                 Preferences.setStringPref(self.pref, self.value, self.metric);

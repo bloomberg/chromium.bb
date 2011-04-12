@@ -82,14 +82,14 @@ void ProxyCrosSettingsProvider::DoSet(const std::string& path,
     if (in_value->GetAsString(&val)) {
       config_service->UISetProxyConfigToProxyPerScheme("https",
           CreateProxyServerFromHost(
-              val, config.https_proxy, net::ProxyServer::SCHEME_HTTPS));
+              val, config.https_proxy, net::ProxyServer::SCHEME_HTTP));
     }
   } else if (path == kProxyHttpsPort) {
     int val;
     if (in_value->GetAsInteger(&val)) {
       config_service->UISetProxyConfigToProxyPerScheme("https",
           CreateProxyServerFromPort(
-              val, config.https_proxy, net::ProxyServer::SCHEME_HTTPS));
+              val, config.https_proxy, net::ProxyServer::SCHEME_HTTP));
     }
   } else if (path == kProxyType) {
     int val;
@@ -283,8 +283,8 @@ net::ProxyServer ProxyCrosSettingsProvider::CreateProxyServerFromHost(
     const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
     net::ProxyServer::Scheme scheme) const {
   uint16 port = proxy.server.host_port_pair().port();
-  if (!port)
-    port = net::ProxyServer::GetDefaultPortForScheme(scheme);
+  if (host.length() == 0 && port == 0)
+    return net::ProxyServer();
   net::HostPortPair host_port_pair(host, port);
   return net::ProxyServer(scheme, host_port_pair);
 }
@@ -294,6 +294,8 @@ net::ProxyServer ProxyCrosSettingsProvider::CreateProxyServerFromPort(
     const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
     net::ProxyServer::Scheme scheme) const {
   std::string host = proxy.server.host_port_pair().host();
+  if (host.length() == 0 && port == 0)
+    return net::ProxyServer();
   net::HostPortPair host_port_pair(host, port);
   return net::ProxyServer(scheme, host_port_pair);
 }
