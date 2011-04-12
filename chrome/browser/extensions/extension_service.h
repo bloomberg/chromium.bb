@@ -519,7 +519,7 @@ class ExtensionService
   bool ready_;
 
   // Our extension updater, if updates are turned on.
-  scoped_refptr<ExtensionUpdater> updater_;
+  scoped_ptr<ExtensionUpdater> updater_;
 
   // The model that tracks extensions with BrowserAction buttons.
   ExtensionToolbarModel toolbar_model_;

@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_temp_dir.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "base/timer.h"
@@ -30,6 +31,7 @@ class ExtensionUpdaterTest;
 class ExtensionUpdaterFileHandler;
 class PrefService;
 class Profile;
+class SafeManifestParser;
 
 // To save on server resources we can request updates for multiple extensions
 // in one manifest check. This class helps us keep track of the id's for a
@@ -160,12 +162,10 @@ class ManifestFetchesBuilder {
 // ExtensionUpdater* updater = new ExtensionUpdater(my_extensions_service,
 //                                                  pref_service,
 //                                                  update_frequency_secs);
-// updater.Start();
+// updater->Start();
 // ....
-// updater.Stop();
-class ExtensionUpdater
-    : public URLFetcher::Delegate,
-      public base::RefCountedThreadSafe<ExtensionUpdater> {
+// updater->Stop();
+class ExtensionUpdater : public URLFetcher::Delegate {
  public:
   // Holds a pointer to the passed |service|, using it for querying installed
   // extensions and installing updated ones. The |frequency_seconds| parameter
@@ -175,6 +175,8 @@ class ExtensionUpdater
                    PrefService* prefs,
                    Profile* profile,
                    int frequency_seconds);
+
+  virtual ~ExtensionUpdater();
 
   // Starts the updater running.  Should be called at most once.
   void Start();
@@ -193,12 +195,9 @@ class ExtensionUpdater
   }
 
  private:
-  friend class base::RefCountedThreadSafe<ExtensionUpdater>;
   friend class ExtensionUpdaterTest;
   friend class ExtensionUpdaterFileHandler;
   friend class SafeManifestParser;
-
-  virtual ~ExtensionUpdater();
 
   // We need to keep track of some information associated with a url
   // when doing a fetch.
@@ -306,6 +305,8 @@ class ExtensionUpdater
 
   // Whether Start() has been called but not Stop().
   bool alive_;
+
+  base::WeakPtrFactory<ExtensionUpdater> weak_ptr_factory_;
 
   // Outstanding url fetch requests for manifests and updates.
   scoped_ptr<URLFetcher> manifest_fetcher_;

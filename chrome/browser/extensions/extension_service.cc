@@ -435,11 +435,11 @@ ExtensionService::ExtensionService(Profile* profile,
           switches::kExtensionsUpdateFrequency),
           &update_frequency);
     }
-    updater_ = new ExtensionUpdater(this,
-                                    extension_prefs,
-                                    profile->GetPrefs(),
-                                    profile,
-                                    update_frequency);
+    updater_.reset(new ExtensionUpdater(this,
+                                        extension_prefs,
+                                        profile->GetPrefs(),
+                                        profile,
+                                        update_frequency));
   }
 
   backend_ = new ExtensionServiceBackend(install_directory_);

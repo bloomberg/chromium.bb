@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <set>
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
@@ -30,6 +31,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
@@ -367,10 +369,15 @@ void ManifestFetchesBuilder::AddExtensionData(
 class ExtensionUpdaterFileHandler
     : public base::RefCountedThreadSafe<ExtensionUpdaterFileHandler> {
  public:
+  explicit ExtensionUpdaterFileHandler(
+      base::WeakPtr<ExtensionUpdater> updater)
+      : updater_(updater) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  }
+
   // Writes crx file data into a tempfile, and calls back the updater.
   void WriteTempFile(const std::string& extension_id, const std::string& data,
-                     const GURL& download_url,
-                     scoped_refptr<ExtensionUpdater> updater) {
+                     const GURL& download_url) {
     // Make sure we're running in the right thread.
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
@@ -389,25 +396,62 @@ class ExtensionUpdaterFileHandler
     }
 
     if (failed) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(
-              updater.get(), &ExtensionUpdater::OnCRXFileWriteError,
-              extension_id));
+      if (!BrowserThread::PostTask(
+              BrowserThread::UI, FROM_HERE,
+              NewRunnableMethod(
+                  this, &ExtensionUpdaterFileHandler::OnCRXFileWriteError,
+                  extension_id))) {
+        NOTREACHED();
+      }
     } else {
-      // The ExtensionUpdater now owns the temp file.
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(
-              updater.get(), &ExtensionUpdater::OnCRXFileWritten, extension_id,
-              path, download_url));
+      if (!BrowserThread::PostTask(
+              BrowserThread::UI, FROM_HERE,
+              NewRunnableMethod(
+                  this, &ExtensionUpdaterFileHandler::OnCRXFileWritten,
+                  extension_id, path, download_url))) {
+        NOTREACHED();
+        // Delete |path| since we couldn't post.
+        extension_file_util::DeleteFile(path, false);
+      }
     }
   }
 
  private:
   friend class base::RefCountedThreadSafe<ExtensionUpdaterFileHandler>;
 
-  ~ExtensionUpdaterFileHandler() {}
+  ~ExtensionUpdaterFileHandler() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+           BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  }
+
+  void OnCRXFileWritten(const std::string& id,
+                        const FilePath& path,
+                        const GURL& download_url) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!updater_) {
+      // Delete |path| since we don't have an updater anymore.
+      if (!BrowserThread::PostTask(
+              BrowserThread::FILE, FROM_HERE,
+              NewRunnableFunction(
+                  extension_file_util::DeleteFile, path, false))) {
+        NOTREACHED();
+      }
+      return;
+    }
+    // The ExtensionUpdater now owns the temp file.
+    updater_->OnCRXFileWritten(id, path, download_url);
+  }
+
+  void OnCRXFileWriteError(const std::string& id) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!updater_) {
+      return;
+    }
+    updater_->OnCRXFileWriteError(id);
+  }
+
+  // Should be accessed only on UI thread.
+  base::WeakPtr<ExtensionUpdater> updater_;
 };
 
 ExtensionUpdater::ExtensionFetch::ExtensionFetch()
@@ -429,9 +473,10 @@ ExtensionUpdater::ExtensionUpdater(ExtensionServiceInterface* service,
                                    PrefService* prefs,
                                    Profile* profile,
                                    int frequency_seconds)
-    : alive_(false), service_(service), frequency_seconds_(frequency_seconds),
+    : alive_(false),
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      service_(service), frequency_seconds_(frequency_seconds),
       extension_prefs_(extension_prefs), prefs_(prefs), profile_(profile),
-      file_handler_(new ExtensionUpdaterFileHandler()),
       blacklist_checks_enabled_(true) {
   Init();
 }
@@ -514,6 +559,9 @@ void ExtensionUpdater::Start() {
   DCHECK(extension_prefs_);
   DCHECK(prefs_);
   DCHECK(profile_);
+  DCHECK(!weak_ptr_factory_.HasWeakPtrs());
+  file_handler_ =
+      new ExtensionUpdaterFileHandler(weak_ptr_factory_.GetWeakPtr());
   alive_ = true;
   // Make sure our prefs are registered, then schedule the first check.
   EnsureInt64PrefRegistered(prefs_, kLastExtensionsUpdateCheck);
@@ -523,7 +571,9 @@ void ExtensionUpdater::Start() {
 }
 
 void ExtensionUpdater::Stop() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
   alive_ = false;
+  file_handler_ = NULL;
   service_ = NULL;
   extension_prefs_ = NULL;
   prefs_ = NULL;
@@ -562,8 +612,9 @@ class SafeManifestParser : public UtilityProcessHost::Client {
  public:
   // Takes ownership of |fetch_data|.
   SafeManifestParser(const std::string& xml, ManifestFetchData* fetch_data,
-                     ExtensionUpdater* updater)
+                     base::WeakPtr<ExtensionUpdater> updater)
       : xml_(xml), updater_(updater) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     fetch_data_.reset(fetch_data);
   }
 
@@ -571,11 +622,13 @@ class SafeManifestParser : public UtilityProcessHost::Client {
   // utility process.
   void Start() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(
-            this, &SafeManifestParser::ParseInSandbox,
-            g_browser_process->resource_dispatcher_host()));
+    if (!BrowserThread::PostTask(
+            BrowserThread::IO, FROM_HERE,
+            NewRunnableMethod(
+                this, &SafeManifestParser::ParseInSandbox,
+                g_browser_process->resource_dispatcher_host()))) {
+      NOTREACHED();
+    }
   }
 
   // Creates the sandboxed utility process and tells it to start parsing.
@@ -593,17 +646,21 @@ class SafeManifestParser : public UtilityProcessHost::Client {
     } else {
       UpdateManifest manifest;
       if (manifest.Parse(xml_)) {
-        BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE,
-            NewRunnableMethod(
-                this, &SafeManifestParser::OnParseUpdateManifestSucceeded,
-                manifest.results()));
+        if (!BrowserThread::PostTask(
+                BrowserThread::UI, FROM_HERE,
+                NewRunnableMethod(
+                    this, &SafeManifestParser::OnParseUpdateManifestSucceeded,
+                    manifest.results()))) {
+          NOTREACHED();
+        }
       } else {
-        BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE,
-            NewRunnableMethod(
-                this, &SafeManifestParser::OnParseUpdateManifestFailed,
-                manifest.errors()));
+        if (!BrowserThread::PostTask(
+                BrowserThread::UI, FROM_HERE,
+                NewRunnableMethod(
+                    this, &SafeManifestParser::OnParseUpdateManifestFailed,
+                    manifest.errors()))) {
+          NOTREACHED();
+        }
       }
     }
   }
@@ -612,23 +669,33 @@ class SafeManifestParser : public UtilityProcessHost::Client {
   virtual void OnParseUpdateManifestSucceeded(
       const UpdateManifest::Results& results) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!updater_) {
+      return;
+    }
     updater_->HandleManifestResults(*fetch_data_, &results);
   }
 
   // Callback from the utility process when parsing failed.
   virtual void OnParseUpdateManifestFailed(const std::string& error_message) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!updater_) {
+      return;
+    }
     LOG(WARNING) << "Error parsing update manifest:\n" << error_message;
     updater_->HandleManifestResults(*fetch_data_, NULL);
   }
 
  private:
-  ~SafeManifestParser() {}
+  ~SafeManifestParser() {
+    // If we're using UtilityProcessHost, we may not be destroyed on
+    // the UI or IO thread.
+  }
 
-  const std::string& xml_;
+  const std::string xml_;
+
+  // Should be accessed only on UI thread.
   scoped_ptr<ManifestFetchData> fetch_data_;
-
-  scoped_refptr<ExtensionUpdater> updater_;
+  base::WeakPtr<ExtensionUpdater> updater_;
 };
 
 
@@ -642,7 +709,8 @@ void ExtensionUpdater::OnManifestFetchComplete(
   if (status.status() == net::URLRequestStatus::SUCCESS &&
       (response_code == 200 || (url.SchemeIsFile() && data.length() > 0))) {
     scoped_refptr<SafeManifestParser> safe_parser(
-        new SafeManifestParser(data, current_manifest_fetch_.release(), this));
+        new SafeManifestParser(data, current_manifest_fetch_.release(),
+                               weak_ptr_factory_.GetWeakPtr()));
     safe_parser->Start();
   } else {
     // TODO(asargent) Do exponential backoff here. (http://crbug.com/12546).
@@ -664,9 +732,7 @@ void ExtensionUpdater::OnManifestFetchComplete(
 void ExtensionUpdater::HandleManifestResults(
     const ManifestFetchData& fetch_data,
     const UpdateManifest::Results* results) {
-  // This can be called after we've been stopped.
-  if (!alive_)
-    return;
+  DCHECK(alive_);
 
   // Remove all the ids's from in_progress_ids_ (we will add them back in
   // below if they actually have updates we need to fetch and install).
@@ -753,12 +819,14 @@ void ExtensionUpdater::OnCRXFetchComplete(const GURL& url,
     } else {
       // Successfully fetched - now write crx to a file so we can have the
       // ExtensionService install it.
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          NewRunnableMethod(
-              file_handler_.get(), &ExtensionUpdaterFileHandler::WriteTempFile,
-              current_extension_fetch_.id, data, url,
-              make_scoped_refptr(this)));
+      if (!BrowserThread::PostTask(
+              BrowserThread::FILE, FROM_HERE,
+              NewRunnableMethod(
+                  file_handler_.get(),
+                  &ExtensionUpdaterFileHandler::WriteTempFile,
+                  current_extension_fetch_.id, data, url))) {
+        NOTREACHED();
+      }
     }
   } else {
     // TODO(asargent) do things like exponential backoff, handling
@@ -781,9 +849,7 @@ void ExtensionUpdater::OnCRXFetchComplete(const GURL& url,
 void ExtensionUpdater::OnCRXFileWritten(const std::string& id,
                                         const FilePath& path,
                                         const GURL& download_url) {
-  // This can be called after we've been stopped.
-  if (!alive_)
-    return;
+  DCHECK(alive_);
   // The ExtensionService is now responsible for cleaning up the temp file
   // at |path|.
   service_->UpdateExtension(id, path, download_url);
@@ -792,9 +858,7 @@ void ExtensionUpdater::OnCRXFileWritten(const std::string& id,
 }
 
 void ExtensionUpdater::OnCRXFileWriteError(const std::string& id) {
-  // This can be called after we've been stopped.
-  if (!alive_)
-    return;
+  DCHECK(alive_);
   in_progress_ids_.erase(id);
   NotifyIfFinished();
 }
