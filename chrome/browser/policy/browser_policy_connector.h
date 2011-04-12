@@ -61,6 +61,9 @@ class BrowserPolicyConnector : public NotificationObserver {
   // a local owner).
   bool IsEnterpriseManaged();
 
+  // Returns the enterprise domain if device is managed.
+  std::string GetEnterpriseDomain();
+
   // Exposes the StopAutoRetry() method of the CloudPolicySubsystem managed
   // by this connector, which can be used to disable automatic
   // retrying behavior.

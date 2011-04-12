@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/oobe_progress_bar.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/views/window.h"
@@ -378,8 +380,19 @@ void BackgroundView::InitInfoLabels() {
           NewCallback(this, &BackgroundView::OnBootTimes));
     }
   } else {
-    os_version_label_->SetText(
-        ASCIIToWide(CrosLibrary::Get()->load_error_string()));
+    UpdateVersionLabel();
+  }
+
+  policy::CloudPolicySubsystem* cloud_policy =
+      g_browser_process->browser_policy_connector()->cloud_policy_subsystem();
+  if (cloud_policy) {
+    cloud_policy_registrar_.reset(
+        new policy::CloudPolicySubsystem::ObserverRegistrar(
+          cloud_policy, this));
+
+    // Ensure that we have up-to-date enterprise info in case enterprise policy
+    // is already fetched and has finished initialization.
+    UpdateEnterpriseInfo();
   }
 }
 
@@ -408,19 +421,61 @@ void BackgroundView::UpdateWindowType() {
       &params);
 }
 
-void BackgroundView::OnVersion(
-    VersionLoader::Handle handle, std::string version) {
+void BackgroundView::UpdateVersionLabel() {
+  if (!CrosLibrary::Get()->EnsureLoaded()) {
+    os_version_label_->SetText(
+        ASCIIToWide(CrosLibrary::Get()->load_error_string()));
+    return;
+  }
+
+  if (version_text_.empty())
+    return;
+
   // TODO(jungshik): Is string concatenation OK here?
-  std::string version_text = l10n_util::GetStringUTF8(IDS_PRODUCT_OS_NAME);
-  version_text += ' ';
-  version_text += l10n_util::GetStringUTF8(IDS_VERSION_FIELD_PREFIX);
-  version_text += ' ';
-  version_text += version;
+  std::string label_text = l10n_util::GetStringUTF8(IDS_PRODUCT_OS_NAME);
+  label_text += ' ';
+  label_text += l10n_util::GetStringUTF8(IDS_VERSION_FIELD_PREFIX);
+  label_text += ' ';
+  label_text += version_text_;
+
+  if (!enterprise_domain_text_.empty()) {
+    label_text += ' ';
+    label_text += l10n_util::GetStringFUTF8(
+        IDS_LOGIN_MANAGED_BY_LABEL_FORMAT,
+        UTF8ToUTF16(enterprise_domain_text_));
+  }
 
   // Workaround over incorrect width calculation in old fonts.
   // TODO(glotov): remove the following line when new fonts are used.
-  version_text += ' ';
-  os_version_label_->SetText(UTF8ToWide(version_text));
+  label_text += ' ';
+  os_version_label_->SetText(UTF8ToWide(label_text));
+}
+
+void BackgroundView::UpdateEnterpriseInfo() {
+  policy::BrowserPolicyConnector* policy_connector =
+      g_browser_process->browser_policy_connector();
+  if (!policy_connector->cloud_policy_subsystem() ||
+      !policy_connector->IsEnterpriseManaged()) {
+    // No enterprise domain if there is no cloud policy or device is not
+    // enterprise managed.
+    SetEnterpriseDomain("");
+    return;
+  }
+
+  SetEnterpriseDomain(policy_connector->GetEnterpriseDomain());
+}
+
+void BackgroundView::SetEnterpriseDomain(const std::string& domain_name) {
+  if (domain_name != enterprise_domain_text_) {
+    enterprise_domain_text_ = domain_name;
+    UpdateVersionLabel();
+  }
+}
+
+void BackgroundView::OnVersion(
+    VersionLoader::Handle handle, std::string version) {
+  version_text_ = version;
+  UpdateVersionLabel();
 }
 
 void BackgroundView::OnBootTimes(
@@ -450,6 +505,12 @@ void BackgroundView::OnBootTimes(
   }
   // Use UTF8ToWide once this string is localized.
   boot_times_label_->SetText(ASCIIToWide(boot_times_text));
+}
+
+void BackgroundView::OnPolicyStateChanged(
+    policy::CloudPolicySubsystem::PolicySubsystemState state,
+    policy::CloudPolicySubsystem::ErrorDetails error_details) {
+  UpdateEnterpriseInfo();
 }
 
 }  // namespace chromeos

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/chromeos/version_loader.h"
+#include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "views/view.h"
 
 namespace views {
@@ -34,7 +35,8 @@ class StatusAreaView;
 // StatusAreaView.
 class BackgroundView : public views::View,
                        public StatusAreaHost,
-                       public chromeos::LoginHtmlDialog::Delegate {
+                       public chromeos::LoginHtmlDialog::Delegate,
+                       public policy::CloudPolicySubsystem::Observer {
  public:
   enum LoginStep {
     SELECT_NETWORK,
@@ -128,11 +130,25 @@ class BackgroundView : public views::View,
   // after we've painted.
   void UpdateWindowType();
 
+  // Update the version label.
+  void UpdateVersionLabel();
+
+  // Check and update enterprise domain.
+  void UpdateEnterpriseInfo();
+
+  // Set enterprise domain name.
+  void SetEnterpriseDomain(const std::string& domain_name);
+
   // Callback from chromeos::VersionLoader giving the version.
   void OnVersion(VersionLoader::Handle handle, std::string version);
   // Callback from chromeos::InfoLoader giving the boot times.
   void OnBootTimes(
       BootTimesLoader::Handle handle, BootTimesLoader::BootTimes boot_times);
+
+  // policy::CloudPolicySubsystem::Observer methods:
+  void OnPolicyStateChanged(
+      policy::CloudPolicySubsystem::PolicySubsystemState state,
+      policy::CloudPolicySubsystem::ErrorDetails error_details);
 
   // All of these variables could be NULL.
   StatusAreaView* status_area_;
@@ -162,8 +178,16 @@ class BackgroundView : public views::View,
   // DOMView for rendering a webpage as a background.
   DOMView* background_area_;
 
+  // Information pieces for version label.
+  std::string version_text_;
+  std::string enterprise_domain_text_;
+
   // Proxy settings dialog that can be invoked from network menu.
   scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;
+
+  // CloudPolicySubsysterm observer registrar
+  scoped_ptr<policy::CloudPolicySubsystem::ObserverRegistrar>
+      cloud_policy_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundView);
 };

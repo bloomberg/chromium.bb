@@ -156,6 +156,24 @@ bool BrowserPolicyConnector::IsEnterpriseManaged() {
 #endif
 }
 
+std::string BrowserPolicyConnector::GetEnterpriseDomain() {
+  std::string domain;
+
+#if defined(OS_CHROMEOS)
+  // TODO(xiyuan): Find a better way to get enterprise domain.
+  std::string username;
+  std::string auth_token;
+  if (identity_strategy_.get() &&
+      identity_strategy_->GetCredentials(&username, &auth_token)) {
+    size_t pos = username.find('@');
+    if (pos != std::string::npos)
+      domain = username.substr(pos + 1);
+  }
+#endif
+
+  return domain;
+}
+
 void BrowserPolicyConnector::StopAutoRetry() {
   if (cloud_policy_subsystem_.get())
     cloud_policy_subsystem_->StopAutoRetry();
