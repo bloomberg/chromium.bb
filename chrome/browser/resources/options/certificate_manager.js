@@ -62,7 +62,7 @@ cr.define('options', function() {
     if (this.importButton !== null) {
       if (id == 'personalCertsTab') {
         this.importButton.onclick = function(e) {
-          chrome.send('importPersonalCertificate', []);
+          chrome.send('importPersonalCertificate', [false]);
         }
       } else if (id == 'serverCertsTab') {
         this.importButton.onclick = function(e) {
@@ -71,6 +71,15 @@ cr.define('options', function() {
       } else if (id == 'caCertsTab') {
         this.importButton.onclick = function(e) {
           chrome.send('importCaCertificate', []);
+        }
+      }
+    }
+
+    this.importAndBindButton = $(id + '-import-and-bind');
+    if (this.importAndBindButton !== null) {
+      if (id == 'personalCertsTab') {
+        this.importAndBindButton.onclick = function(e) {
+          chrome.send('importPersonalCertificate', [true]);
         }
       }
     }

@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"  // for FileAccessProvider
 #include "base/memory/scoped_vector.h"
+#include "base/nss_util.h"
 #include "base/safe_strerror_posix.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
@@ -588,6 +589,13 @@ void CertificateManagerHandler::ExportPersonalFileWritten(int write_errno,
 
 void CertificateManagerHandler::StartImportPersonal(const ListValue* args) {
   SelectFileDialog::FileTypeInfo file_type_info;
+  if (!args->GetBoolean(0, &use_hardware_backed_)){
+    // Unable to retrieve the hardware backed attribute from the args,
+    // so bail.
+    web_ui_->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
+    ImportExportCleanup();
+    return;
+  }
   file_type_info.extensions.resize(1);
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("p12"));
   file_type_info.extension_description_overrides.push_back(
@@ -635,8 +643,11 @@ void CertificateManagerHandler::ImportPersonalFileRead(
 
   file_data_ = data;
 
-  // TODO(mattm): allow user to choose a slot to import to.
-  module_ = certificate_manager_model_->cert_db().GetPrivateModule();
+  if (use_hardware_backed_) {
+    module_ = certificate_manager_model_->cert_db().GetPrivateModule();
+  } else {
+    module_ = certificate_manager_model_->cert_db().GetPublicModule();
+  }
 
   net::CryptoModuleList modules;
   modules.push_back(module_);
@@ -680,6 +691,7 @@ void CertificateManagerHandler::ImportExportCleanup() {
   file_path_.clear();
   password_.clear();
   file_data_.clear();
+  use_hardware_backed_ = false;
   selected_cert_list_.clear();
   module_ = NULL;
 

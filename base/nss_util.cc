@@ -6,11 +6,11 @@
 #include "base/nss_util_internal.h"
 
 #include <nss.h>
+#include <pk11pub.h>
 #include <plarena.h>
 #include <prerror.h>
 #include <prinit.h>
 #include <prtime.h>
-#include <pk11pub.h>
 #include <secmod.h>
 
 #if defined(OS_LINUX)
@@ -111,7 +111,7 @@ char* PKCS11PasswordFunc(PK11SlotInfo* slot, PRBool retry, void* arg) {
   // If we get asked for a password for the TPM, then return the
   // static password we use.
   if (PK11_GetTokenName(slot) == base::GetTPMTokenName())
-    return PORT_Strdup(kTPMUserPIN);
+    return PORT_Strdup(GetTPMUserPIN().c_str());
 #endif
   base::CryptoModuleBlockingPasswordDelegate* delegate =
       reinterpret_cast<base::CryptoModuleBlockingPasswordDelegate*>(arg);
@@ -232,7 +232,7 @@ class NSSInitSingleton {
       // provider, which are still read-only (because we initialized
       // NSS before we had a cryptohome mounted).
       software_slot_ = OpenUserDB(GetDefaultConfigDirectory(),
-                                     kNSSDatabaseName);
+                                  kNSSDatabaseName);
     }
   }
 
@@ -245,7 +245,7 @@ class NSSInitSingleton {
           kOpencryptokiPath,
           // trustOrder=100 -- means it'll select this as the most
           //   trusted slot for the mechanisms it provides.
-          // slotParams=... -- selects RSA as only mechanism, and only
+          // slotParams=... -- selects RSA as the only mechanism, and only
           //   asks for the password when necessary (instead of every
           //   time, or after a timeout).
           "trustOrder=100 slotParams=(1={slotFlags=[RSA] askpw=only})");
@@ -271,6 +271,12 @@ class NSSInitSingleton {
     // TODO(gspencer): This should come from the dbus interchange with
     // cryptohomed instead of being hard-coded.
     return std::string(kTPMTokenName);
+  }
+
+  std::string GetTPMUserPIN() {
+    // TODO(gspencer): This should come from the dbus interchange with
+    // cryptohomed instead of being hard-coded.
+    return std::string(kTPMUserPIN);
   }
 
   PK11SlotInfo* GetTPMSlot() {
@@ -661,6 +667,10 @@ bool EnableTPMForNSS() {
 
 std::string GetTPMTokenName() {
   return g_nss_singleton.Get().GetTPMTokenName();
+}
+
+std::string GetTPMUserPIN() {
+  return g_nss_singleton.Get().GetTPMUserPIN();
 }
 #endif  // defined(OS_CHROMEOS)
 

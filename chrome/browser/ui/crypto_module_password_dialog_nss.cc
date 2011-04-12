@@ -11,6 +11,10 @@
 #include "net/base/crypto_module.h"
 #include "net/base/x509_certificate.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/nss_util.h"
+#endif
+
 namespace {
 
 bool ShouldShowDialog(const net::CryptoModule* module) {
@@ -61,6 +65,15 @@ void SlotUnlocker::Start() {
 
   for (; current_ < modules_.size(); ++current_) {
     if (ShouldShowDialog(modules_[current_].get())) {
+#if defined(OS_CHROMEOS)
+      if (modules_[current_]->GetTokenName() == base::GetTPMTokenName()) {
+        // The user PIN is a well known secret on this machine, and
+        // the user didn't set it, so we need to fetch the value and
+        // supply it for them here.
+        GotPassword(base::GetTPMUserPIN().c_str());
+        return;
+      }
+#endif
       ShowCryptoModulePasswordDialog(
           modules_[current_]->GetTokenName(),
           retry_,

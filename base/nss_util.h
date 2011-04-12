@@ -93,6 +93,9 @@ bool EnableTPMForNSS();
 
 // Get name for the built-in TPM token on ChromeOS.
 std::string GetTPMTokenName();
+
+// Get the user PIN for the built-in TPM token on ChromeOS.
+std::string GetTPMUserPIN();
 #endif
 
 // Convert a NSS PRTime value into a base::Time object.
