@@ -71,7 +71,6 @@ class NTPResourceCache;
 class NavigationController;
 class PasswordStore;
 class PersonalDataManager;
-class PinnedTabService;
 class PrefProxyConfigTracker;
 class PrefService;
 class ProfileSyncFactory;
