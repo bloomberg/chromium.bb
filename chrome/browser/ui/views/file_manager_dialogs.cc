@@ -43,15 +43,15 @@ class FileManagerDialog
       int file_type_index,
       const FilePath::StringType& default_extension);
 
-  void CreateHtmlDialogView(Profile* profile, void* params) {
+  void CreateHtmlDialogView(Profile* profile) {
     HtmlDialogView* html_view = new HtmlDialogView(profile, this);
     browser::CreateViewsWindow(owner_window_, gfx::Rect(), html_view);
     html_view->InitDialog();
     html_view->window()->Show();
     tab_id_ = html_view->tab_contents()->controller().session_id().id();
 
-    // Register our callback and associate it with our tab.
-    FileDialogFunction::AddCallback(tab_id_, std::make_pair(listener_, params));
+    // Register our listener and associate it with our tab.
+    FileDialogFunction::AddListener(tab_id_, listener_);
   }
 
   // BaseShellDialog implementation.
@@ -62,7 +62,7 @@ class FileManagerDialog
 
   virtual void ListenerDestroyed() {
     listener_ = NULL;
-    FileDialogFunction::RemoveCallback(tab_id_);
+    FileDialogFunction::RemoveListener(tab_id_);
   }
 
   // SelectFileDialog implementation.
@@ -203,7 +203,7 @@ void FileManagerDialog::SelectFile(
     Browser* browser = BrowserList::GetLastActive();
     if (browser) {
       DCHECK_EQ(browser->type(), Browser::TYPE_NORMAL);
-      CreateHtmlDialogView(browser->profile(), params);
+      CreateHtmlDialogView(browser->profile());
       return;
     }
   }
@@ -213,7 +213,7 @@ void FileManagerDialog::SelectFile(
       FROM_HERE,
       NewRunnableMethod(this,
                         &FileManagerDialog::CreateHtmlDialogView,
-                        ProfileManager::GetDefaultProfile(), params));
+                        ProfileManager::GetDefaultProfile()));
 }
 
 // static
