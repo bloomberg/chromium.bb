@@ -39,6 +39,12 @@ const char kNoRulesPolicy[] = "# This is a policy with no rules\n"
 
 const char kEmptyPolicy[] = "# This is an empty policy\n";
 
+const char kGlobalPolicy[] = "# This is a test with global deny/allow\n"
+                             "plugin test.so\n"
+                             "deny\n"
+                             "plugin test1.so\n"
+                             "allow\n";
+
 const char kCommentTestPolicy[] = "# This is a policy with inline comments.\n"
                                   "plugin test.so# like this\n"
                                   "allow foo.com # and this\n"
@@ -138,6 +144,13 @@ TEST_F(PluginSelectionPolicyTest, InitFromFile) {
 
   {
     FilePath path;
+    ASSERT_TRUE(CreatePolicy("global", kGlobalPolicy, &path));
+    scoped_refptr<PluginSelectionPolicy> policy = new PluginSelectionPolicy;
+    EXPECT_TRUE(policy->InitFromFile(path));
+  }
+
+  {
+    FilePath path;
     ASSERT_TRUE(CreatePolicy("comment", kCommentTestPolicy, &path));
     scoped_refptr<PluginSelectionPolicy> policy = new PluginSelectionPolicy;
     EXPECT_TRUE(policy->InitFromFile(path));
@@ -145,7 +158,7 @@ TEST_F(PluginSelectionPolicyTest, InitFromFile) {
 
   {
     FilePath path;
-    ASSERT_TRUE(CreatePolicy("comment", kMultiPluginTestPolicy, &path));
+    ASSERT_TRUE(CreatePolicy("multi_plugin", kMultiPluginTestPolicy, &path));
     scoped_refptr<PluginSelectionPolicy> policy = new PluginSelectionPolicy;
     EXPECT_TRUE(policy->InitFromFile(path));
   }

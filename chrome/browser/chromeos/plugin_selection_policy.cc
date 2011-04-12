@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,7 +83,7 @@ bool PluginSelectionPolicy::InitFromFile(const FilePath& policy_file) {
         init_from_file_finished_ = true;
         return false;
       }
-      line = line.substr(6);
+      line = line.substr(5);
       TrimWhitespaceASCII(line, TRIM_ALL, &line);
       line = StringToLowerASCII(line);
       policy.push_back(make_pair(true, line));
@@ -95,13 +95,13 @@ bool PluginSelectionPolicy::InitFromFile(const FilePath& policy_file) {
         init_from_file_finished_ = true;
         return false;
       }
-      line = line.substr(5);
+      line = line.substr(4);
       TrimWhitespaceASCII(line, TRIM_ALL, &line);
       line = StringToLowerASCII(line);
       policy.push_back(make_pair(false, line));
     }
     if (line.find("plugin") == 0) {
-      line = line.substr(7);
+      line = line.substr(6);
       TrimWhitespaceASCII(line, TRIM_ALL, &line);
       if (!policy.empty() && !last_plugin.empty())
         policies.insert(make_pair(last_plugin, policy));
