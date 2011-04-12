@@ -76,6 +76,23 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     else:
       self.SendRPCResponse(response)
 
+  # For Last-Modified-based caching, the timestamp needs to be old enough
+  # for the browser cache to be used (at least 60 seconds).
+  # http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html
+  # Often we clobber and regenerate files for testing, so this is needed
+  # to actually use the browser cache.
+  def send_header(self, keyword, value):
+    if keyword == 'Last-Modified':
+      last_mod_format = '%a, %d %b %Y %H:%M:%S GMT'
+      old_value_as_t = time.strptime(value, last_mod_format)
+      old_value_in_secs = time.mktime(old_value_as_t)
+      new_value_in_secs = old_value_in_secs - 360
+      value = time.strftime(last_mod_format,
+                            time.localtime(new_value_in_secs))
+    SimpleHTTPServer.SimpleHTTPRequestHandler.send_header(self,
+                                                          keyword,
+                                                          value)
+
   def do_GET(self):
     self.server.ResetTimeout()
 
@@ -104,7 +121,7 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
           # TODO(ncbray): we may want to be more realistic and spread out
           # the sleeps while copying the file (in the future we may be able
           # to stream validation, nexe startup, etc.).
-          self.server.listener.Log('Simulate BW with delay %fs' % delay)
+          self.server.listener.Log('Simulate BW with delay %f(s)' % delay)
           time.sleep(delay)
         self.copyfile(f, self.wfile)
         f.close()
