@@ -395,7 +395,7 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
       // However, as it stands, we don't have a way to know which distribution
       // will check the key and run the command, so we add it for all.
       // After the first run, the subsequent runs should just be noops.
-      // (see Upgrade::SwapNewChromeExeIfPresent).
+      // (see upgrade_utils::SwapNewChromeExeIfPresent).
       CommandLine product_rename_cmd(rename);
       products[i]->AppendProductFlags(&product_rename_cmd);
       in_use_update_work_items->AddSetRegValueWorkItem(
@@ -416,7 +416,7 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
           UTF8ToWide(current_version->GetString()),
           true);
       // TODO(tommi): We should move the rename command here. We also need to
-      // update Upgrade::SwapNewChromeExeIfPresent.
+      // update upgrade_utils::SwapNewChromeExeIfPresent.
     }
 
     post_install_task_list->AddWorkItem(in_use_update_work_items.release());

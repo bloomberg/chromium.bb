@@ -6,7 +6,7 @@
 #include "build/build_config.h"
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#include "chrome/browser/first_run/upgrade.h"
+#include "chrome/browser/first_run/upgrade_util.h"
 #endif
 
 // The entry point for all invocations of Chromium, browser and renderer. On
@@ -51,7 +51,7 @@ int main(int argc, const char** argv) {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Launch a new instance if we're shutting down because we detected an
   // upgrade in the persistent mode.
-  Upgrade::RelaunchChromeBrowserWithNewCommandLineIfNeeded();
+  upgrade_util::RelaunchChromeBrowserWithNewCommandLineIfNeeded();
 #endif
 
   return return_code;

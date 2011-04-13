@@ -36,13 +36,13 @@ TryChromeDialogView::TryChromeDialogView(size_t version)
       popup_(NULL),
       try_chrome_(NULL),
       kill_chrome_(NULL),
-      result_(Upgrade::COUNT) {
+      result_(upgrade_util::COUNT) {
 }
 
 TryChromeDialogView::~TryChromeDialogView() {
 }
 
-Upgrade::TryResult TryChromeDialogView::ShowModal(
+upgrade_util::TryResult TryChromeDialogView::ShowModal(
     ProcessSingleton* process_singleton) {
   using views::GridLayout;
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -57,7 +57,7 @@ Upgrade::TryResult TryChromeDialogView::ShowModal(
   popup_ = views::Widget::CreateWidget(params);
   if (!popup_) {
     NOTREACHED();
-    return Upgrade::DIALOG_ERROR;
+    return upgrade_util::DIALOG_ERROR;
   }
 
   gfx::Rect pos(310, 160);
@@ -71,7 +71,7 @@ Upgrade::TryResult TryChromeDialogView::ShowModal(
   views::GridLayout* layout = views::GridLayout::CreatePanel(root_view);
   if (!layout) {
     NOTREACHED();
-    return Upgrade::DIALOG_ERROR;
+    return upgrade_util::DIALOG_ERROR;
   }
   root_view->SetLayoutManager(layout);
 
@@ -121,13 +121,13 @@ Upgrade::TryResult TryChromeDialogView::ShowModal(
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   if (!dist) {
     NOTREACHED() << "Cannot determine browser distribution";
-    return Upgrade::DIALOG_ERROR;
+    return upgrade_util::DIALOG_ERROR;
   }
   BrowserDistribution::UserExperiment experiment;
   if (!dist->GetExperimentDetails(&experiment, version_) ||
       !experiment.heading) {
     NOTREACHED() << "Cannot determine which headline to show.";
-    return Upgrade::DIALOG_ERROR;
+    return upgrade_util::DIALOG_ERROR;
   }
   string16 heading = l10n_util::GetStringUTF16(experiment.heading);
   views::Label* label = new views::Label(heading);
@@ -202,14 +202,14 @@ void TryChromeDialogView::ButtonPressed(views::Button* sender,
                                         const views::Event& event) {
   if (sender->tag() == BT_CLOSE_BUTTON) {
     // The user pressed cancel or the [x] button.
-    result_ = Upgrade::NOT_NOW;
+    result_ = upgrade_util::NOT_NOW;
   } else if (!try_chrome_) {
     // We don't have radio buttons, the user pressed ok.
-    result_ = Upgrade::TRY_CHROME;
+    result_ = upgrade_util::TRY_CHROME;
   } else {
     // The outcome is according to the selected ratio button.
-    result_ = try_chrome_->checked() ? Upgrade::TRY_CHROME :
-      Upgrade::UNINSTALL_CHROME;
+    result_ = try_chrome_->checked() ? upgrade_util::TRY_CHROME :
+                                       upgrade_util::UNINSTALL_CHROME;
   }
   popup_->Close();
   MessageLoop::current()->Quit();

@@ -26,7 +26,7 @@
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_tab_id_map.h"
 #include "chrome/browser/extensions/user_script_listener.h"
-#include "chrome/browser/first_run/upgrade.h"
+#include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/icon_manager.h"
@@ -1000,7 +1000,7 @@ bool BrowserProcessImpl::CanAutorestartForUpdate() const {
   // Check if browser is in the background and if it needs to be restarted to
   // apply a pending update.
   return BrowserList::size() == 0 && BrowserList::WillKeepAlive() &&
-         Upgrade::IsUpdatePendingRestart();
+         upgrade_util::IsUpdatePendingRestart();
 }
 
 // Switches to add when auto-restarting Chrome.
@@ -1039,7 +1039,7 @@ void BrowserProcessImpl::RestartPersistentInstance() {
   BrowserList::CloseAllBrowsersAndExit();
 
   // Transfer ownership to Upgrade.
-  Upgrade::SetNewCommandLine(new_cl.release());
+  upgrade_util::SetNewCommandLine(new_cl.release());
 }
 
 void BrowserProcessImpl::OnAutoupdateTimer() {
