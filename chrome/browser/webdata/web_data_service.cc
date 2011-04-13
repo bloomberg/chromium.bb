@@ -1251,10 +1251,33 @@ void WebDataService::RemoveAutofillProfilesAndCreditCardsModifiedBetweenImpl(
     GenericRequest2<Time, Time>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
+    std::vector<std::string> profile_guids;
+    std::vector<std::string> credit_card_guids;
     if (db_->GetAutofillTable()->
         RemoveAutofillProfilesAndCreditCardsModifiedBetween(
             request->GetArgument1(),
-            request->GetArgument2())) {
+            request->GetArgument2(),
+            &profile_guids,
+            &credit_card_guids)) {
+      for (std::vector<std::string>::iterator iter = profile_guids.begin();
+           iter != profile_guids.end(); ++iter) {
+        AutofillProfileChange change(AutofillProfileChange::REMOVE, *iter,
+                                     NULL);
+        NotificationService::current()->Notify(
+            NotificationType::AUTOFILL_PROFILE_CHANGED,
+            Source<WebDataService>(this),
+            Details<AutofillProfileChange>(&change));
+      }
+
+      for (std::vector<std::string>::iterator iter = credit_card_guids.begin();
+           iter != credit_card_guids.end(); ++iter) {
+        AutofillCreditCardChange change(AutofillCreditCardChange::REMOVE,
+                                        *iter, NULL);
+        NotificationService::current()->Notify(
+            NotificationType::AUTOFILL_CREDIT_CARD_CHANGED,
+            Source<WebDataService>(this),
+            Details<AutofillCreditCardChange>(&change));
+      }
       // Note: It is the caller's responsibility to post notifications for any
       // changes, e.g. by calling the Refresh() method of PersonalDataManager.
       ScheduleCommit();

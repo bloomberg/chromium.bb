@@ -1245,13 +1245,32 @@ bool AutofillTable::RemoveCreditCard(const std::string& guid) {
 
 bool AutofillTable::RemoveAutofillProfilesAndCreditCardsModifiedBetween(
     base::Time delete_begin,
-    base::Time delete_end) {
+    base::Time delete_end,
+    std::vector<std::string>* profile_guids,
+    std::vector<std::string>* credit_card_guids) {
   DCHECK(delete_end.is_null() || delete_begin < delete_end);
 
   time_t delete_begin_t = delete_begin.ToTimeT();
   time_t delete_end_t = delete_end.is_null() ?
       std::numeric_limits<time_t>::max() :
       delete_end.ToTimeT();
+
+  // Remember Autofill profiles in the time range.
+  sql::Statement s_profiles_get(db_->GetUniqueStatement(
+      "SELECT guid FROM autofill_profiles "
+      "WHERE date_modified >= ? AND date_modified < ?"));
+  if (!s_profiles_get) {
+    NOTREACHED() << "Autofill profiles statement prepare failed";
+    return false;
+  }
+
+  s_profiles_get.BindInt64(0, delete_begin_t);
+  s_profiles_get.BindInt64(1, delete_end_t);
+  profile_guids->clear();
+  while (s_profiles_get.Step()) {
+    std::string guid = s_profiles_get.ColumnString(0);
+    profile_guids->push_back(guid);
+  }
 
   // Remove Autofill profiles in the time range.
   sql::Statement s_profiles(db_->GetUniqueStatement(
@@ -1271,7 +1290,24 @@ bool AutofillTable::RemoveAutofillProfilesAndCreditCardsModifiedBetween(
     return false;
   }
 
-  // Remove Autofill profiles in the time range.
+  // Remember Autofill credit cards in the time range.
+  sql::Statement s_credit_cards_get(db_->GetUniqueStatement(
+      "SELECT guid FROM credit_cards "
+      "WHERE date_modified >= ? AND date_modified < ?"));
+  if (!s_credit_cards_get) {
+    NOTREACHED() << "Autofill profiles statement prepare failed";
+    return false;
+  }
+
+  s_credit_cards_get.BindInt64(0, delete_begin_t);
+  s_credit_cards_get.BindInt64(1, delete_end_t);
+  credit_card_guids->clear();
+  while (s_credit_cards_get.Step()) {
+    std::string guid = s_credit_cards_get.ColumnString(0);
+    credit_card_guids->push_back(guid);
+  }
+
+  // Remove Autofill credit cards in the time range.
   sql::Statement s_credit_cards(db_->GetUniqueStatement(
       "DELETE FROM credit_cards "
       "WHERE date_modified >= ? AND date_modified < ?"));

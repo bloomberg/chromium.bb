@@ -1354,8 +1354,14 @@ TEST_F(AutofillTableTest, RemoveAutofillProfilesAndCreditCardsModifiedBetween) {
       "VALUES('00000000-0000-0000-0000-000000000011', 67);"));
 
   // Remove all entries modified in the bounded time range [17,41).
+  std::vector<std::string> profile_guids;
+  std::vector<std::string> credit_card_guids;
   db.GetAutofillTable()->RemoveAutofillProfilesAndCreditCardsModifiedBetween(
-      Time::FromTimeT(17), Time::FromTimeT(41));
+      Time::FromTimeT(17), Time::FromTimeT(41),
+      &profile_guids, &credit_card_guids);
+  ASSERT_EQ(2UL, profile_guids.size());
+  EXPECT_EQ("00000000-0000-0000-0000-000000000001", profile_guids[0]);
+  EXPECT_EQ("00000000-0000-0000-0000-000000000002", profile_guids[1]);
   sql::Statement s_autofill_profiles_bounded(
       db.GetSQLConnection()->GetUniqueStatement(
           "SELECT date_modified FROM autofill_profiles"));
@@ -1369,6 +1375,10 @@ TEST_F(AutofillTableTest, RemoveAutofillProfilesAndCreditCardsModifiedBetween) {
   ASSERT_TRUE(s_autofill_profiles_bounded.Step());
   EXPECT_EQ(61, s_autofill_profiles_bounded.ColumnInt64(0));
   EXPECT_FALSE(s_autofill_profiles_bounded.Step());
+  ASSERT_EQ(3UL, credit_card_guids.size());
+  EXPECT_EQ("00000000-0000-0000-0000-000000000006", credit_card_guids[0]);
+  EXPECT_EQ("00000000-0000-0000-0000-000000000007", credit_card_guids[1]);
+  EXPECT_EQ("00000000-0000-0000-0000-000000000008", credit_card_guids[2]);
   sql::Statement s_credit_cards_bounded(
       db.GetSQLConnection()->GetUniqueStatement(
           "SELECT date_modified FROM credit_cards"));
@@ -1383,7 +1393,11 @@ TEST_F(AutofillTableTest, RemoveAutofillProfilesAndCreditCardsModifiedBetween) {
 
   // Remove all entries modified on or after time 51 (unbounded range).
   db.GetAutofillTable()->RemoveAutofillProfilesAndCreditCardsModifiedBetween(
-      Time::FromTimeT(51), Time());
+      Time::FromTimeT(51), Time(),
+      &profile_guids, &credit_card_guids);
+  ASSERT_EQ(2UL, profile_guids.size());
+  EXPECT_EQ("00000000-0000-0000-0000-000000000004", profile_guids[0]);
+  EXPECT_EQ("00000000-0000-0000-0000-000000000005", profile_guids[1]);
   sql::Statement s_autofill_profiles_unbounded(
       db.GetSQLConnection()->GetUniqueStatement(
           "SELECT date_modified FROM autofill_profiles"));
@@ -1393,6 +1407,9 @@ TEST_F(AutofillTableTest, RemoveAutofillProfilesAndCreditCardsModifiedBetween) {
   ASSERT_TRUE(s_autofill_profiles_unbounded.Step());
   EXPECT_EQ(41, s_autofill_profiles_unbounded.ColumnInt64(0));
   EXPECT_FALSE(s_autofill_profiles_unbounded.Step());
+  ASSERT_EQ(2UL, credit_card_guids.size());
+  EXPECT_EQ("00000000-0000-0000-0000-000000000010", credit_card_guids[0]);
+  EXPECT_EQ("00000000-0000-0000-0000-000000000011", credit_card_guids[1]);
   sql::Statement s_credit_cards_unbounded(
       db.GetSQLConnection()->GetUniqueStatement(
           "SELECT date_modified FROM credit_cards"));
@@ -1403,12 +1420,18 @@ TEST_F(AutofillTableTest, RemoveAutofillProfilesAndCreditCardsModifiedBetween) {
 
   // Remove all remaining entries.
   db.GetAutofillTable()->RemoveAutofillProfilesAndCreditCardsModifiedBetween(
-      Time(), Time());
+      Time(), Time(),
+      &profile_guids, &credit_card_guids);
+  ASSERT_EQ(2UL, profile_guids.size());
+  EXPECT_EQ("00000000-0000-0000-0000-000000000000", profile_guids[0]);
+  EXPECT_EQ("00000000-0000-0000-0000-000000000003", profile_guids[1]);
   sql::Statement s_autofill_profiles_empty(
       db.GetSQLConnection()->GetUniqueStatement(
           "SELECT date_modified FROM autofill_profiles"));
   ASSERT_TRUE(s_autofill_profiles_empty);
   EXPECT_FALSE(s_autofill_profiles_empty.Step());
+  ASSERT_EQ(1UL, credit_card_guids.size());
+  EXPECT_EQ("00000000-0000-0000-0000-000000000009", credit_card_guids[0]);
   sql::Statement s_credit_cards_empty(
       db.GetSQLConnection()->GetUniqueStatement(
           "SELECT date_modified FROM credit_cards"));

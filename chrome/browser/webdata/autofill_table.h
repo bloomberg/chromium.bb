@@ -236,10 +236,13 @@ class AutofillTable : public WebDatabaseTable {
   virtual bool GetCreditCards(std::vector<CreditCard*>* credit_cards);
 
   // Removes rows from autofill_profiles and credit_cards if they were created
-  // on or after |delete_begin| and strictly before |delete_end|.
+  // on or after |delete_begin| and strictly before |delete_end|.  Returns lists
+  // of deleted guids in |profile_guids| and |credit_card_guids|.
   bool RemoveAutofillProfilesAndCreditCardsModifiedBetween(
       base::Time delete_begin,
-      base::Time delete_end);
+      base::Time delete_end,
+      std::vector<std::string>* profile_guids,
+      std::vector<std::string>* credit_card_guids);
 
   // Retrieves all profiles in the database that have been deleted since last
   // "empty" of the trash.
