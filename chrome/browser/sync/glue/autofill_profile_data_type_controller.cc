@@ -4,18 +4,17 @@
 
 #include "chrome/browser/sync/glue/autofill_profile_data_type_controller.h"
 
-#include "chrome/browser/sync/glue/autofill_data_type_controller.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 
 namespace browser_sync {
 
 AutofillProfileDataTypeController::AutofillProfileDataTypeController(
     ProfileSyncFactory* profile_sync_factory,
-    Profile* profile,
-    ProfileSyncService* sync_service) : AutofillDataTypeController(
-        profile_sync_factory,
-        profile,
-        sync_service) {}
+    Profile* profile)
+    : AutofillDataTypeController(
+      profile_sync_factory,
+      profile) {}
 
 AutofillProfileDataTypeController::~AutofillProfileDataTypeController() {}
 
@@ -23,22 +22,38 @@ syncable::ModelType AutofillProfileDataTypeController::type() const {
   return syncable::AUTOFILL_PROFILE;
 }
 
-std::string AutofillProfileDataTypeController::name() const {
-  // For logging only.
-  return "autofill_profile";
+void AutofillProfileDataTypeController::CreateSyncComponents() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  ProfileSyncFactory::SyncComponents sync_components =
+      profile_sync_factory()->
+          CreateAutofillProfileSyncComponents(
+          profile_sync_service(),
+          web_data_service()->GetDatabase(),
+          personal_data(),
+          this);
+  set_model_associator(sync_components.model_associator);
+  set_change_processor(sync_components.change_processor);
 }
 
-ProfileSyncFactory::SyncComponents
-    AutofillProfileDataTypeController::CreateSyncComponents(
-      ProfileSyncService* profile_sync_service,
-      WebDatabase* web_database,
-      PersonalDataManager* personal_data,
-      browser_sync::UnrecoverableErrorHandler* error_handler) {
-  return profile_sync_factory_->CreateAutofillProfileSyncComponents(
-      profile_sync_service,
-      web_database,
-      personal_data,
-      this);
+void AutofillProfileDataTypeController::RecordUnrecoverableError(
+    const tracked_objects::Location& from_here,
+    const std::string& message) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  UMA_HISTOGRAM_COUNTS("Sync.AutofillProfileRunFailures", 1);
 }
+
+void AutofillProfileDataTypeController::RecordAssociationTime(
+    base::TimeDelta time) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  UMA_HISTOGRAM_TIMES("Sync.AutofillProfileAssociationTime", time);
+}
+
+void AutofillProfileDataTypeController::RecordStartFailure(StartResult result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  UMA_HISTOGRAM_ENUMERATION("Sync.AutofillProfileStartFailures",
+                            result,
+                            MAX_START_RESULT);
+}
+
 }  // namepsace browser_sync
 

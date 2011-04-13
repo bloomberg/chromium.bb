@@ -189,10 +189,11 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
           &factory_, &profile_, "test_user", false, root_task, node_task));
       service_->RegisterPreferences();
       profile_.GetPrefs()->SetBoolean(prefs::kSyncPasswords, true);
+      EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
+          Return(service_.get()));
       PasswordDataTypeController* data_type_controller =
           new PasswordDataTypeController(&factory_,
-                                         &profile_,
-                                         service_.get());
+                                         &profile_);
 
       EXPECT_CALL(factory_, CreatePasswordSyncComponents(_, _, _)).
           Times(AtLeast(1)).  // Can be more if we hit NEEDS_CRYPTO.
