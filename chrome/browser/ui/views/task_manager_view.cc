@@ -647,7 +647,10 @@ int TaskManagerView::GetDialogButtons() const {
 
 void TaskManagerView::WindowClosing() {
   // Now that the window is closed, we can allow a new one to be opened.
-  instance_ = NULL;
+  // (WindowClosing comes in asynchronously from the call to Close() and we
+  // may have already opened a new instance).
+  if (instance_ == this)
+    instance_ = NULL;
   task_manager_->OnWindowClosed();
 }
 
