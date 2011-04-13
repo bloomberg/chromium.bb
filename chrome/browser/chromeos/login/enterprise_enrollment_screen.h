@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/enterprise_enrollment_view.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
+#include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 
 namespace chromeos {
@@ -37,7 +38,8 @@ class EnterpriseEnrollmentController {
 class EnterpriseEnrollmentScreen
     : public ViewScreen<EnterpriseEnrollmentView>,
       public EnterpriseEnrollmentController,
-      public GaiaAuthConsumer {
+      public GaiaAuthConsumer,
+      public policy::CloudPolicySubsystem::Observer {
  public:
   explicit EnterpriseEnrollmentScreen(WizardScreenDelegate* delegate);
   virtual ~EnterpriseEnrollmentScreen();
@@ -61,6 +63,10 @@ class EnterpriseEnrollmentScreen
       const std::string& service,
       const GoogleServiceAuthError& error) OVERRIDE;
 
+  // CloudPolicySubsystem::Observer implementation:
+  virtual void OnPolicyStateChanged(
+      policy::CloudPolicySubsystem::PolicySubsystemState state,
+      policy::CloudPolicySubsystem::ErrorDetails error_details) OVERRIDE;
 
  protected:
   // Overriden from ViewScreen:
@@ -70,7 +76,9 @@ class EnterpriseEnrollmentScreen
   void HandleAuthError(const GoogleServiceAuthError& error);
 
   scoped_ptr<GaiaAuthFetcher> auth_fetcher_;
+  std::string user_;
   std::string captcha_token_;
+  scoped_ptr<policy::CloudPolicySubsystem::ObserverRegistrar> registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentScreen);
 };

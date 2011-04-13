@@ -12,6 +12,4 @@ const char kChromeDevicePolicySettingKey[] = "chrome-policy";
 const char kChromeDevicePolicyType[] = "google/chromeos/device";
 const char kChromeUserPolicyType[] = "google/chromeos/user";
 
-const char kRegisterRequestMachineModel[] = "Chrome OS";
-
 }  // namespace policy

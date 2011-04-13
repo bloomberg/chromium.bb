@@ -135,6 +135,14 @@ void EnterpriseEnrollmentView::ShowFatalAuthError() {
   ShowError(IDS_ENTERPRISE_ENROLLMENT_FATAL_AUTH_ERROR);
 }
 
+void EnterpriseEnrollmentView::ShowFatalEnrollmentError() {
+  ShowError(IDS_ENTERPRISE_ENROLLMENT_FATAL_ENROLLMENT_ERROR);
+}
+
+void EnterpriseEnrollmentView::ShowNetworkEnrollmentError() {
+  ShowError(IDS_ENTERPRISE_ENROLLMENT_NETWORK_ENROLLMENT_ERROR);
+}
+
 void EnterpriseEnrollmentView::OnAuthSubmitted(const std::string& user,
                                                const std::string& password,
                                                const std::string& captcha,
@@ -164,6 +172,7 @@ void EnterpriseEnrollmentView::UpdateGaiaLogin(const DictionaryValue& args) {
 void EnterpriseEnrollmentView::ShowError(int message_id) {
   DictionaryValue args;
   args.SetInteger("error", GoogleServiceAuthError::NONE);
+  args.SetBoolean("editable_user", true);
   args.SetString("error_message", l10n_util::GetStringUTF16(message_id));
   UpdateGaiaLogin(args);
 }

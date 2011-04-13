@@ -5,6 +5,8 @@
 #include "chrome/browser/policy/device_policy_identity_strategy.h"
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/net/gaia/token_service.h"
@@ -16,9 +18,24 @@
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 
+// MachineInfo key names.
+static const char kMachineInfoSystemHwqual[] = "hardware_class";
+static const char kMachineInfoSerialNumber[] = "serial_number";
+
 namespace policy {
 
 DevicePolicyIdentityStrategy::DevicePolicyIdentityStrategy() {
+  chromeos::SystemLibrary* sys_lib =
+      chromeos::CrosLibrary::Get()->GetSystemLibrary();
+
+  if (!sys_lib->GetMachineStatistic(kMachineInfoSystemHwqual,
+                                    &machine_model_)) {
+    LOG(ERROR) << "Failed to get machine model.";
+  }
+  if (!sys_lib->GetMachineStatistic(kMachineInfoSerialNumber,
+                                    &machine_id_)) {
+    LOG(ERROR) << "Failed to get machine serial number.";
+  }
 }
 
 DevicePolicyIdentityStrategy::~DevicePolicyIdentityStrategy() {
@@ -36,6 +53,10 @@ std::string DevicePolicyIdentityStrategy::GetMachineID() {
   return machine_id_;
 }
 
+std::string DevicePolicyIdentityStrategy::GetMachineModel() {
+  return machine_model_;
+}
+
 em::DeviceRegisterRequest_Type
 DevicePolicyIdentityStrategy::GetPolicyRegisterType() {
   return em::DeviceRegisterRequest::DEVICE;
@@ -47,11 +68,9 @@ std::string DevicePolicyIdentityStrategy::GetPolicyType() {
 
 void DevicePolicyIdentityStrategy::SetAuthCredentials(
     const std::string& username,
-    const std::string& auth_token,
-    const std::string& machine_id) {
+    const std::string& auth_token) {
   username_ = username;
   auth_token_ = auth_token;
-  machine_id_ = machine_id;
   device_id_ = guid::GenerateGUID();
   NotifyAuthChanged();
 }
@@ -68,10 +87,6 @@ void DevicePolicyIdentityStrategy::SetDeviceManagementCredentials(
 
 bool DevicePolicyIdentityStrategy::GetCredentials(std::string* username,
                                                   std::string* auth_token) {
-  // Need to know the machine id.
-  if (machine_id_.empty())
-    return false;
-
   *username = username_;
   *auth_token = auth_token_;
 

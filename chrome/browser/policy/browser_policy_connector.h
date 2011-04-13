@@ -54,8 +54,7 @@ class BrowserPolicyConnector : public NotificationObserver {
   // Used to set the credentials stored in the identity strategy associated
   // with this policy connector.
   void SetCredentials(const std::string& owner_email,
-                      const std::string& gaia_token,
-                      const std::string& machine_id);
+                      const std::string& gaia_token);
 
   // Returns true if this device is managed by an enterprise (as opposed to
   // a local owner).

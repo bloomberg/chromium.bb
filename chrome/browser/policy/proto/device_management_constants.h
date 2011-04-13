@@ -13,8 +13,6 @@ extern const char kChromeDevicePolicySettingKey[];
 extern const char kChromeDevicePolicyType[];
 extern const char kChromeUserPolicyType[];
 
-extern const char kRegisterRequestMachineModel[];
-
 }  // namespace policy
 
 #endif  // CHROME_BROWSER_POLICY_PROTO_DEVICE_MANAGEMENT_CONSTANTS_H_

@@ -227,11 +227,13 @@ void CloudPolicyController::FetchToken() {
   std::string auth_token;
   std::string device_id = identity_strategy_->GetDeviceID();
   std::string machine_id = identity_strategy_->GetMachineID();
+  std::string machine_model = identity_strategy_->GetMachineModel();
   em::DeviceRegisterRequest_Type policy_type =
       identity_strategy_->GetPolicyRegisterType();
   if (identity_strategy_->GetCredentials(&username, &auth_token) &&
       CanBeInManagedDomain(username)) {
-    token_fetcher_->FetchToken(auth_token, device_id, policy_type, machine_id);
+    token_fetcher_->FetchToken(auth_token, device_id, policy_type,
+                               machine_id, machine_model);
   }
 }
 

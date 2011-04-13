@@ -139,11 +139,10 @@ void BrowserPolicyConnector::RegisterPrefs(PrefService* local_state) {
 }
 
 void BrowserPolicyConnector::SetCredentials(const std::string& owner_email,
-                                            const std::string& gaia_token,
-                                            const std::string& machine_id) {
+                                            const std::string& gaia_token) {
 #if defined(OS_CHROMEOS)
   if (identity_strategy_.get())
-    identity_strategy_->SetAuthCredentials(owner_email, gaia_token, machine_id);
+    identity_strategy_->SetAuthCredentials(owner_email, gaia_token);
 #endif
 }
 

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 
 namespace chromeos {
@@ -22,6 +23,7 @@ void EnterpriseEnrollmentScreen::Authenticate(const std::string& user,
                                               const std::string& captcha,
                                               const std::string& access_code) {
   captcha_token_.clear();
+  user_ = user;
   auth_fetcher_.reset(
       new GaiaAuthFetcher(this, GaiaConstants::kChromeSource,
                           g_browser_process->system_request_context()));
@@ -41,6 +43,8 @@ void EnterpriseEnrollmentScreen::Authenticate(const std::string& user,
 
 void EnterpriseEnrollmentScreen::CancelEnrollment() {
   auth_fetcher_.reset();
+  registrar_.reset();
+  g_browser_process->browser_policy_connector()->StopAutoRetry();
   ScreenObserver* observer = delegate()->GetObserver(this);
   observer->OnExit(ScreenObserver::ENTERPRISE_ENROLLMENT_CANCELLED);
 }
@@ -49,10 +53,6 @@ void EnterpriseEnrollmentScreen::CloseConfirmation() {
   auth_fetcher_.reset();
   ScreenObserver* observer = delegate()->GetObserver(this);
   observer->OnExit(ScreenObserver::ENTERPRISE_ENROLLMENT_COMPLETED);
-}
-
-EnterpriseEnrollmentView* EnterpriseEnrollmentScreen::AllocateView() {
-  return new EnterpriseEnrollmentView(this);
 }
 
 void EnterpriseEnrollmentScreen::OnClientLoginSuccess(
@@ -74,12 +74,23 @@ void EnterpriseEnrollmentScreen::OnIssueAuthTokenSuccess(
     return;
   }
 
-  auth_fetcher_.reset();
+  scoped_ptr<GaiaAuthFetcher> auth_fetcher(auth_fetcher_.release());
 
-  // TODO(mnissler): Trigger actual enrollment here!
+  policy::BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+  if (!connector->cloud_policy_subsystem()) {
+    NOTREACHED() << "Cloud policy subsystem not initialized.";
+    if (view())
+      view()->ShowFatalEnrollmentError();
+    return;
+  }
 
-  if (view())
-    view()->ShowConfirmationScreen();
+  registrar_.reset(new policy::CloudPolicySubsystem::ObserverRegistrar(
+      connector->cloud_policy_subsystem(), this));
+
+  // Push the credentials to the policy infrastructure. It'll start enrollment
+  // and notify us of progress through CloudPolicySubsystem::Observer.
+  connector->SetCredentials(user_, auth_token);
 }
 
 void EnterpriseEnrollmentScreen::OnIssueAuthTokenFailure(
@@ -91,6 +102,46 @@ void EnterpriseEnrollmentScreen::OnIssueAuthTokenFailure(
   }
 
   HandleAuthError(error);
+}
+
+void EnterpriseEnrollmentScreen::OnPolicyStateChanged(
+    policy::CloudPolicySubsystem::PolicySubsystemState state,
+    policy::CloudPolicySubsystem::ErrorDetails error_details) {
+
+  if (view()) {
+    switch (state) {
+      case policy::CloudPolicySubsystem::UNENROLLED:
+        // Still working...
+        return;
+      case policy::CloudPolicySubsystem::BAD_GAIA_TOKEN:
+      case policy::CloudPolicySubsystem::LOCAL_ERROR:
+        view()->ShowFatalEnrollmentError();
+        break;
+      case policy::CloudPolicySubsystem::UNMANAGED:
+        view()->ShowAccountError();
+        break;
+      case policy::CloudPolicySubsystem::NETWORK_ERROR:
+        view()->ShowNetworkEnrollmentError();
+        break;
+      case policy::CloudPolicySubsystem::SUCCESS:
+        // Success!
+        registrar_.reset();
+        view()->ShowConfirmationScreen();
+        return;
+    }
+
+    // We have an error.
+    LOG(WARNING) << "Policy subsystem error during enrollment: " << state
+                 << " details: " << error_details;
+  }
+
+  // Stop the policy infrastructure.
+  registrar_.reset();
+  g_browser_process->browser_policy_connector()->StopAutoRetry();
+}
+
+EnterpriseEnrollmentView* EnterpriseEnrollmentScreen::AllocateView() {
+  return new EnterpriseEnrollmentView(this);
 }
 
 void EnterpriseEnrollmentScreen::HandleAuthError(

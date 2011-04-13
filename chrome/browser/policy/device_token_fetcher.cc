@@ -64,12 +64,14 @@ void DeviceTokenFetcher::FetchToken(
     const std::string& auth_token,
     const std::string& device_id,
     em::DeviceRegisterRequest_Type policy_type,
-    const std::string& machine_id) {
+    const std::string& machine_id,
+    const std::string& machine_model) {
   SetState(STATE_INACTIVE);
   auth_token_ = auth_token;
   device_id_ = device_id;
   policy_type_ = policy_type;
   machine_id_ = machine_id;
+  machine_model_ = machine_model;
   FetchTokenInternal();
 }
 
@@ -86,7 +88,8 @@ void DeviceTokenFetcher::FetchTokenInternal() {
   request.set_type(policy_type_);
   if (!machine_id_.empty())
     request.set_machine_id(machine_id_);
-  request.set_machine_model(kRegisterRequestMachineModel);
+  if (!machine_model_.empty())
+    request.set_machine_model(machine_model_);
   backend_->ProcessRegisterRequest(auth_token_, device_id_, request, this);
 }
 

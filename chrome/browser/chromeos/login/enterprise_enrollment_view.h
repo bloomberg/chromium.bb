@@ -44,6 +44,8 @@ class EnterpriseEnrollmentView : public views::View,
   void ShowAuthError(const GoogleServiceAuthError& error);
   void ShowAccountError();
   void ShowFatalAuthError();
+  void ShowFatalEnrollmentError();
+  void ShowNetworkEnrollmentError();
 
   // EnterpriseEnrollmentUI::Controller implementation.
   virtual void OnAuthSubmitted(const std::string& user,

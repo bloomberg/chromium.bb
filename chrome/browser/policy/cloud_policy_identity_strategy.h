@@ -52,6 +52,9 @@ class CloudPolicyIdentityStrategy {
   // Returns physical machine ID for this device.
   virtual std::string GetMachineID() = 0;
 
+  // Returns physical machine model for this device.
+  virtual std::string GetMachineModel() = 0;
+
   // Returns the policy type to be used for registering at the device management
   // server.
   virtual em::DeviceRegisterRequest_Type GetPolicyRegisterType() = 0;

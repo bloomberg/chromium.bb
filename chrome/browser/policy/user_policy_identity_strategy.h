@@ -34,6 +34,7 @@ class UserPolicyIdentityStrategy : public CloudPolicyIdentityStrategy,
   virtual std::string GetDeviceToken() OVERRIDE;
   virtual std::string GetDeviceID() OVERRIDE;
   virtual std::string GetMachineID() OVERRIDE;
+  virtual std::string GetMachineModel() OVERRIDE;
   virtual em::DeviceRegisterRequest_Type GetPolicyRegisterType() OVERRIDE;
   virtual std::string GetPolicyType() OVERRIDE;
   virtual bool GetCredentials(std::string* username,

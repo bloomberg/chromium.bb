@@ -166,7 +166,11 @@ std::string UserPolicyIdentityStrategy::GetDeviceID() {
 }
 
 std::string UserPolicyIdentityStrategy::GetMachineID() {
-  return "";
+  return std::string();
+}
+
+std::string UserPolicyIdentityStrategy::GetMachineModel() {
+  return std::string();
 }
 
 em::DeviceRegisterRequest_Type

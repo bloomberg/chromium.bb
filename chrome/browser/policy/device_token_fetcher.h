@@ -55,7 +55,8 @@ class DeviceTokenFetcher
   virtual void FetchToken(const std::string& auth_token,
                           const std::string& device_id,
                           em::DeviceRegisterRequest_Type policy_type,
-                          const std::string& machine_id);
+                          const std::string& machine_id,
+                          const std::string& machine_model);
 
   virtual void SetUnmanagedState();
 
@@ -150,6 +151,8 @@ class DeviceTokenFetcher
   em::DeviceRegisterRequest_Type policy_type_;
   // Contains physical machine id to send to the server.
   std::string machine_id_;
+  // Contains physical machine model to send to server.
+  std::string machine_model_;
 
   // Task that has been scheduled to retry fetching a token.
   CancelableTask* retry_task_;

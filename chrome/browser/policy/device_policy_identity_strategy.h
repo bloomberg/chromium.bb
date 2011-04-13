@@ -25,8 +25,7 @@ class DevicePolicyIdentityStrategy : public CloudPolicyIdentityStrategy {
   // enrollment. This automatically triggers fetching a DMToken that can
   // be used for future authentication with DMServer.
   void SetAuthCredentials(const std::string& username,
-                          const std::string& auth_token,
-                          const std::string& machine_id);
+                          const std::string& auth_token);
 
   // Sets the device's credentials when they have been read from disk after
   // a reboot.
@@ -38,6 +37,7 @@ class DevicePolicyIdentityStrategy : public CloudPolicyIdentityStrategy {
   virtual std::string GetDeviceToken() OVERRIDE;
   virtual std::string GetDeviceID() OVERRIDE;
   virtual std::string GetMachineID() OVERRIDE;
+  virtual std::string GetMachineModel() OVERRIDE;
   virtual em::DeviceRegisterRequest_Type GetPolicyRegisterType() OVERRIDE;
   virtual std::string GetPolicyType() OVERRIDE;
   virtual bool GetCredentials(std::string* username,
@@ -49,8 +49,9 @@ class DevicePolicyIdentityStrategy : public CloudPolicyIdentityStrategy {
   std::string username_;
   std::string auth_token_;
 
-  // The machine identifier.
+  // The machine identifier and model.
   std::string machine_id_;
+  std::string machine_model_;
 
   // The device identifier to be sent with requests. (This is actually more like
   // a session identifier since it is re-generated for each registration

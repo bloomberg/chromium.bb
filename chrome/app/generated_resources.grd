@@ -11907,6 +11907,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ENTERPRISE_ENROLLMENT_FATAL_AUTH_ERROR" desc="Error message to show when there is an unrecoverable error while authenticating with GAIA.">
         Fatal error during authentication.
       </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_NETWORK_ENROLLMENT_ERROR" desc="Error message to show when there is a network problem talking to the device management server.">
+        Network communication error when talking to the device management server.
+      </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_FATAL_ENROLLMENT_ERROR" desc="Error message to show when there is an unrecoverable error while performing enrollment.">
+        Fatal error while setting up enrollment.
+      </message>
     </if>
 
     <!-- Register Protocol Handler Strings -->
