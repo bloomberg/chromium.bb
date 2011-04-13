@@ -22,6 +22,7 @@
 #include "content/browser/browsing_instance.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/site_instance.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
@@ -137,6 +138,10 @@ void PrerenderContents::StartPrerendering() {
   // Register all responses to see if we should cancel.
   registrar_.Add(this, NotificationType::DOWNLOAD_INITIATED,
                  NotificationService::AllSources());
+
+  // Register for redirect notifications sourced from |this|.
+  registrar_.Add(this, NotificationType::RESOURCE_RECEIVED_REDIRECT,
+                 Source<RenderViewHostDelegate>(this));
 
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
@@ -322,6 +327,24 @@ void PrerenderContents::Observe(NotificationType type,
       break;
     }
 
+    case NotificationType::RESOURCE_RECEIVED_REDIRECT: {
+      // RESOURCE_RECEIVED_REDIRECT can come for any resource on a page.
+      // If it's a redirect on the top-level resource, the name needs
+      // to be remembered for future matching, and if it redirects to
+      // an https resource, it needs to be canceled. If a subresource
+      // is redirected, nothing changes.
+      DCHECK(Source<RenderViewHostDelegate>(source).ptr() == this);
+      ResourceRedirectDetails* resource_redirect_details =
+          Details<ResourceRedirectDetails>(details).ptr();
+      CHECK(resource_redirect_details);
+      if (resource_redirect_details->resource_type() ==
+          ResourceType::MAIN_FRAME) {
+        if (!AddAliasURL(resource_redirect_details->new_url()))
+          Destroy(FINAL_STATUS_HTTPS);
+      }
+      break;
+    }
+
     default:
       NOTREACHED() << "Unexpected notification sent.";
       break;
@@ -412,8 +435,6 @@ bool PrerenderContents::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP_EX(PrerenderContents, message, message_is_ok)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartProvisionalLoadForFrame,
                         OnDidStartProvisionalLoadForFrame)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidRedirectProvisionalLoad,
-                        OnDidRedirectProvisionalLoad)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MaybeCancelPrerender,
                         OnMaybeCancelPrerender)
@@ -439,13 +460,6 @@ void PrerenderContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
     // has_stopped_loading_ so that the spinner won't be stopped.
     has_stopped_loading_ = false;
   }
-}
-
-void PrerenderContents::OnDidRedirectProvisionalLoad(int32 page_id,
-                                                     const GURL& source_url,
-                                                     const GURL& target_url) {
-  if (!AddAliasURL(target_url))
-    Destroy(FINAL_STATUS_HTTPS);
 }
 
 void PrerenderContents::OnUpdateFaviconURL(

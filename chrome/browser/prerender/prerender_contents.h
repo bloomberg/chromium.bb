@@ -208,9 +208,6 @@ class PrerenderContents : public RenderViewHostDelegate,
   void OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                          bool main_frame,
                                          const GURL& url);
-  void OnDidRedirectProvisionalLoad(int32 page_id,
-                                    const GURL& source_url,
-                                    const GURL& target_url);
 
   void OnUpdateFaviconURL(int32 page_id, const std::vector<FaviconURL>& urls);
 

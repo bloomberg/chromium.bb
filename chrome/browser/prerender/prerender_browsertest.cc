@@ -37,13 +37,14 @@ namespace prerender {
 
 namespace {
 
-bool CreateRedirect(const std::string& dest_url, std::string* redirect_path) {
-  std::vector<net::TestServer::StringPair> replacement_text;
-  replacement_text.push_back(make_pair("REPLACE_WITH_URL", dest_url));
-  return net::TestServer::GetFilePathWithReplacements(
-      "prerender_redirect.html",
-      replacement_text,
-      redirect_path);
+std::string CreateClientRedirect(const std::string& dest_url) {
+  const char* const kClientRedirectBase = "client-redirect?";
+  return kClientRedirectBase + dest_url;
+}
+
+std::string CreateServerRedirect(const std::string& dest_url) {
+  const char* const kServerRedirectBase = "server-redirect?";
+  return kServerRedirectBase + dest_url;
 }
 
 // PrerenderContents that stops the UI message loop on DidStopLoading().
@@ -180,14 +181,16 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   }
 
   bool UrlIsInPrerenderManager(const std::string& html_file) {
-    GURL dest_url = UrlForHtmlFile(html_file);
-
+    GURL dest_url = test_server()->GetURL(html_file);
     return (prerender_manager()->FindEntry(dest_url) != NULL);
   }
 
-  bool UrlIsPendingInPrerenderManager(const std::string& html_file) {
-    GURL dest_url = UrlForHtmlFile(html_file);
+  bool UrlIsInPrerenderManager(const GURL& url) {
+    return (prerender_manager()->FindEntry(url) != NULL);
+  }
 
+  bool UrlIsPendingInPrerenderManager(const std::string& html_file) {
+    GURL dest_url = test_server()->GetURL(html_file);
     return (prerender_manager()->FindPendingEntry(dest_url) != NULL);
   }
 
@@ -199,13 +202,15 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     return TaskManager::GetInstance()->model();
   }
 
+  void set_dest_url(const GURL& dest_url) { dest_url_ = dest_url; }
+
  private:
   void PrerenderTestURLImpl(
       const std::string& html_file,
       const std::deque<FinalStatus>& expected_final_status_queue,
       int total_navigations) {
     ASSERT_TRUE(test_server()->Start());
-    dest_url_ = UrlForHtmlFile(html_file);
+    dest_url_ = test_server()->GetURL(html_file);
 
     std::vector<net::TestServer::StringPair> replacement_text;
     replacement_text.push_back(
@@ -278,13 +283,6 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     return prerender_manager;
   }
 
-  // Non-const as test_server()->GetURL() is not const
-  GURL UrlForHtmlFile(const std::string& html_file) {
-    std::string dest_path = "files/prerender/";
-    dest_path.append(html_file);
-    return test_server()->GetURL(dest_path);
-  }
-
   WaitForLoadPrerenderContentsFactory* prc_factory_;
   GURL dest_url_;
   bool use_https_src_server_;
@@ -294,36 +292,41 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 // <link rel=prefetch> tag and then loaded into a tab in response to a
 // navigation.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
-  PrerenderTestURL("prerender_page.html", FINAL_STATUS_USED, 1);
+  PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
   NavigateToDestURL();
 }
 
 // Checks that the prerendering of a page is canceled correctly when a
 // Javascript alert is called.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertBeforeOnload) {
-  PrerenderTestURL("prerender_alert_before_onload.html",
-                   FINAL_STATUS_JAVASCRIPT_ALERT, 1);
+  PrerenderTestURL("files/prerender/prerender_alert_before_onload.html",
+                   FINAL_STATUS_JAVASCRIPT_ALERT,
+                   1);
 }
 
 // Checks that the prerendering of a page is canceled correctly when a
 // Javascript alert is called.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertAfterOnload) {
-  PrerenderTestURL("prerender_alert_after_onload.html",
-                   FINAL_STATUS_JAVASCRIPT_ALERT, 1);
+  PrerenderTestURL("files/prerender/prerender_alert_after_onload.html",
+                   FINAL_STATUS_JAVASCRIPT_ALERT,
+                   1);
 }
 
 // Checks that plugins are not loaded while a page is being preloaded, but
 // are loaded when the page is displayed.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDelayLoadPlugin) {
-  PrerenderTestURL("plugin_delay_load.html", FINAL_STATUS_USED, 1);
+  PrerenderTestURL("files/prerender/plugin_delay_load.html",
+                   FINAL_STATUS_USED,
+                   1);
   NavigateToDestURL();
 }
 
 // Checks that plugins in an iframe are not loaded while a page is
 // being preloaded, but are loaded when the page is displayed.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderIframeDelayLoadPlugin) {
-  PrerenderTestURL("prerender_iframe_plugin_delay_load.html",
-                   FINAL_STATUS_USED, 1);
+  PrerenderTestURL("files/prerender/prerender_iframe_plugin_delay_load.html",
+                   FINAL_STATUS_USED,
+                   1);
   NavigateToDestURL();
 }
 
@@ -331,43 +334,189 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderIframeDelayLoadPlugin) {
 // iframe with a source that requires http authentication. This should not
 // prerender successfully.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttpAuthentication) {
-  PrerenderTestURL("prerender_http_auth_container.html",
-                   FINAL_STATUS_AUTH_NEEDED, 1);
+  PrerenderTestURL("files/prerender/prerender_http_auth_container.html",
+                   FINAL_STATUS_AUTH_NEEDED,
+                   1);
 }
 
-// Checks that HTML redirects work with prerendering - specifically, checks the
-// page is used and plugins aren't loaded.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRedirect) {
+// Checks that client-issued redirects work with prerendering.
+// This version navigates to the page which issues the redirection, rather
+// than the final destination page.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderClientRedirectNavigateToFirst) {
+  PrerenderTestURL(
+      CreateClientRedirect("files/prerender/prerender_page.html"),
+      FINAL_STATUS_USED,
+      2);
+  NavigateToDestURL();
+}
+
+// Checks that client-issued redirects work with prerendering.
+// This version navigates to the final destination page, rather than the
+// page which does the redirection.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderClientRedirectNavigateToSecond) {
+  PrerenderTestURL(
+      CreateClientRedirect("files/prerender/prerender_page.html"),
+      FINAL_STATUS_USED,
+      2);
+  set_dest_url(test_server()->GetURL("files/prerender/prerender_page.html"));
+  NavigateToDestURL();
+}
+
+// Checks that client-issued redirects to an https page will cancel prerenders.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClientRedirectToHttps) {
+  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
+                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+  GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
+  PrerenderTestURL(CreateClientRedirect(https_url.spec()),
+                   FINAL_STATUS_HTTPS,
+                   1);
+}
+
+// Checks that client-issued redirects within an iframe in a prerendered
+// page will not count as an "alias" for the prerendered page.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClientRedirectInIframe) {
+  std::string redirect_path = CreateClientRedirect(
+      "/files/prerender/prerender_embedded_content.html");
+  std::vector<net::TestServer::StringPair> replacement_text;
+  replacement_text.push_back(
+      std::make_pair("REPLACE_WITH_URL", "/" + redirect_path));
+  std::string replacement_path;
+  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+      "files/prerender/prerender_with_iframe.html",
+      replacement_text,
+      &replacement_path));
+  PrerenderTestURL(replacement_path, FINAL_STATUS_USED, 1);
+  EXPECT_FALSE(UrlIsInPrerenderManager(
+      "files/prerender/prerender_embedded_content.html"));
+  NavigateToDestURL();
+}
+
+// Checks that client-issued redirects within an iframe in a prerendered
+// page to an https page will not cancel the prerender, nor will it
+// count as an "alias" for the prerendered page.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderClientRedirectToHttpsInIframe) {
+  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
+                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+  GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
+  std::string redirect_path = CreateClientRedirect(https_url.spec());
+  std::vector<net::TestServer::StringPair> replacement_text;
+  replacement_text.push_back(
+      std::make_pair("REPLACE_WITH_URL", "/" + redirect_path));
+  std::string replacement_path;
+  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+      "files/prerender/prerender_with_iframe.html",
+      replacement_text,
+      &replacement_path));
+  PrerenderTestURL(replacement_path, FINAL_STATUS_USED, 1);
+  EXPECT_FALSE(UrlIsInPrerenderManager(https_url));
+  NavigateToDestURL();
+}
+
+// Checks that server-issued redirects work with prerendering.
+// This version navigates to the page which issues the redirection, rather
+// than the final destination page.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderServerRedirectNavigateToFirst) {
+  PrerenderTestURL(
+      CreateServerRedirect("files/prerender/prerender_page.html"),
+      FINAL_STATUS_USED,
+      1);
+  NavigateToDestURL();
+}
+
+// Checks that server-issued redirects work with prerendering.
+// This version navigates to the final destination page, rather than the
+// page which does the redirection.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderServerRedirectNavigateToSecond) {
   std::string redirect_path;
-  ASSERT_TRUE(CreateRedirect("prerender_page.html", &redirect_path));
-  PrerenderTestURL(redirect_path, FINAL_STATUS_USED, 2);
+  PrerenderTestURL(
+      CreateServerRedirect("files/prerender/prerender_page.html"),
+      FINAL_STATUS_USED,
+      1);
+  set_dest_url(test_server()->GetURL("files/prerender/prerender_page.html"));
+  NavigateToDestURL();
+}
+
+// TODO(cbentzel): Add server-redirect-to-https test. http://crbug.com/79182
+
+// Checks that server-issued redirects within an iframe in a prerendered
+// page will not count as an "alias" for the prerendered page.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderServerRedirectInIframe) {
+  std::string redirect_path = CreateServerRedirect(
+      "/files/prerender/prerender_embedded_content.html");
+  std::vector<net::TestServer::StringPair> replacement_text;
+  replacement_text.push_back(
+      std::make_pair("REPLACE_WITH_URL", "/" + redirect_path));
+  std::string replacement_path;
+  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+      "files/prerender/prerender_with_iframe.html",
+      replacement_text,
+      &replacement_path));
+  PrerenderTestURL(replacement_path, FINAL_STATUS_USED, 1);
+  EXPECT_FALSE(UrlIsInPrerenderManager(
+      "files/prerender/prerender_embedded_content.html"));
+  NavigateToDestURL();
+}
+
+// Checks that server-issued redirects within an iframe in a prerendered
+// page to an https page will not cancel the prerender, nor will it
+// count as an "alias" for the prerendered page.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderServerRedirectToHttpsInIframe) {
+  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
+                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+  GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
+  std::string redirect_path = CreateServerRedirect(https_url.spec());
+  std::vector<net::TestServer::StringPair> replacement_text;
+  replacement_text.push_back(
+      std::make_pair("REPLACE_WITH_URL", "/" + redirect_path));
+  std::string replacement_path;
+  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+      "files/prerender/prerender_with_iframe.html",
+      replacement_text,
+      &replacement_path));
+  PrerenderTestURL(replacement_path, FINAL_STATUS_USED, 1);
+  EXPECT_FALSE(UrlIsInPrerenderManager(https_url));
   NavigateToDestURL();
 }
 
 // Prerenders a page that contains an automatic download triggered through an
 // iframe. This should not prerender successfully.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadIFrame) {
-  PrerenderTestURL("prerender_download_iframe.html", FINAL_STATUS_DOWNLOAD, 1);
+  PrerenderTestURL("files/prerender/prerender_download_iframe.html",
+                   FINAL_STATUS_DOWNLOAD,
+                   1);
 }
 
 // Prerenders a page that contains an automatic download triggered through
 // Javascript changing the window.location. This should not prerender
 // successfully.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadLocation) {
-  std::string redirect_path;
-  ASSERT_TRUE(CreateRedirect("../download-test1.lib", &redirect_path));
-  PrerenderTestURL(redirect_path, FINAL_STATUS_DOWNLOAD, 1);
+  PrerenderTestURL(CreateClientRedirect("files/download-test1.lib"),
+                   FINAL_STATUS_DOWNLOAD,
+                   1);
 }
 
 // Prerenders a page that contains an automatic download triggered through a
-// <meta http-equiv="refresh"> tag. This should not prerender successfully.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadRefresh) {
-  PrerenderTestURL("prerender_download_refresh.html", FINAL_STATUS_DOWNLOAD, 1);
+// client-issued redirect. This should not prerender successfully.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadClientRedirect) {
+  PrerenderTestURL("files/prerender/prerender_download_refresh.html",
+                   FINAL_STATUS_DOWNLOAD,
+                   1);
 }
 
 // Checks that the referrer is set when prerendering.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReferrer) {
-  PrerenderTestURL("prerender_referrer.html", FINAL_STATUS_USED, 1);
+  PrerenderTestURL("files/prerender/prerender_referrer.html",
+                   FINAL_STATUS_USED,
+                   1);
   NavigateToDestURL();
 }
 
@@ -375,33 +524,28 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReferrer) {
 // HTTPS.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoSSLReferrer) {
   set_use_https_src(true);
-  PrerenderTestURL("prerender_no_referrer.html", FINAL_STATUS_USED, 1);
+  PrerenderTestURL("files/prerender/prerender_no_referrer.html",
+                   FINAL_STATUS_USED,
+                   1);
   NavigateToDestURL();
 }
 
 // Checks that popups on a prerendered page cause cancellation.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPopup) {
-  PrerenderTestURL("prerender_popup.html", FINAL_STATUS_CREATE_NEW_WINDOW, 1);
+  PrerenderTestURL("files/prerender/prerender_popup.html",
+                   FINAL_STATUS_CREATE_NEW_WINDOW,
+                   1);
 }
 
-// Test that page-based redirects to https will cancel prerenders.
-// Disabled, http://crbug.com/73580
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRedirectToHttps) {
-  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
-                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
-  ASSERT_TRUE(https_server.Start());
-  GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
-  std::string redirect_path;
-  ASSERT_TRUE(CreateRedirect(https_url.spec(), &redirect_path));
-  PrerenderTestURL(redirect_path, FINAL_STATUS_HTTPS, 1);
-}
+
 
 // Checks that renderers using excessive memory will be terminated.
 // Disabled, http://crbug.com/77870.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        DISABLED_PrerenderExcessiveMemory) {
-  PrerenderTestURL("prerender_excessive_memory.html",
-                   FINAL_STATUS_MEMORY_LIMIT_EXCEEDED, 1);
+  PrerenderTestURL("files/prerender/prerender_excessive_memory.html",
+                   FINAL_STATUS_MEMORY_LIMIT_EXCEEDED,
+                   1);
 }
 
 // Checks that we don't prerender in an infinite loop.
@@ -430,10 +574,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderInfiniteLoop) {
 
 // Checks that we don't prerender in an infinite loop and multiple links are
 // handled correctly.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderInfiniteLoopMultiple) {
-  const char* const kHtmlFileA = "prerender_infinite_a_multiple.html";
-  const char* const kHtmlFileB = "prerender_infinite_b_multiple.html";
-  const char* const kHtmlFileC = "prerender_infinite_c_multiple.html";
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       FLAKY_PrerenderInfiniteLoopMultiple) {
+  const char* const kHtmlFileA =
+      "files/prerender/prerender_infinite_a_multiple.html";
+  const char* const kHtmlFileB =
+      "files/prerender/prerender_infinite_b_multiple.html";
+  const char* const kHtmlFileC =
+      "files/prerender/prerender_infinite_c_multiple.html";
 
   // We need to set the final status to expect here before starting any
   // prerenders. We set them on a queue so whichever we see first is expected to
@@ -470,7 +618,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, TaskManager) {
 
   // Start with two resources.
   EXPECT_EQ(2, model()->ResourceCount());
-  PrerenderTestURL("prerender_page.html", FINAL_STATUS_USED, 1);
+  PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
 
   // The prerender makes three.
   EXPECT_EQ(3, model()->ResourceCount());
@@ -492,19 +640,24 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, TaskManager) {
 
 // Checks that prerenderers will terminate when an audio tag is encountered.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5Audio) {
-  PrerenderTestURL("prerender_html5_audio.html", FINAL_STATUS_HTML5_MEDIA, 1);
+  PrerenderTestURL("files/prerender/prerender_html5_audio.html",
+                   FINAL_STATUS_HTML5_MEDIA,
+                   1);
 }
 
 // Checks that prerenderers will terminate when a video tag is encountered.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5Video) {
-  PrerenderTestURL("prerender_html5_video.html", FINAL_STATUS_HTML5_MEDIA, 1);
+  PrerenderTestURL("files/prerender/prerender_html5_video.html",
+                   FINAL_STATUS_HTML5_MEDIA,
+                   1);
 }
 
 // Checks that prerenderers will terminate when a video tag is inserted via
 // javascript.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5VideoJs) {
-  PrerenderTestURL("prerender_html5_video_script.html",
-                   FINAL_STATUS_HTML5_MEDIA, 1);
+  PrerenderTestURL("files/prerender/prerender_html5_video_script.html",
+                   FINAL_STATUS_HTML5_MEDIA,
+                   1);
 }
 
 }  // namespace prerender
