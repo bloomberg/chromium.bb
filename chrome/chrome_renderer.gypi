@@ -184,7 +184,11 @@
             'renderer/nacl_desc_wrapper_chrome.cc',
           ],
         }],
-        # Linux-specific rules.
+        ['OS=="mac"', {
+          'dependencies': [
+            '../third_party/mach_override/mach_override.gyp:mach_override',
+          ],
+        }],
         ['OS=="linux"', {
           'conditions': [
             [ 'linux_use_tcmalloc==1', {
@@ -199,13 +203,11 @@
             '../sandbox/sandbox.gyp:sandbox',
           ],
         }],
-        # BSD-specific rules.
         ['OS=="openbsd" or OS=="freebsd"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
           ],
         }],
-        # Windows-specific rules.
         ['OS=="win"', {
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',

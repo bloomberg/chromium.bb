@@ -38,13 +38,45 @@
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_MACOSX)
+#include <Carbon/Carbon.h>  // TISCreateInputSourceList
+
 #include "base/eintr_wrapper.h"
+#include "base/sys_info.h"
 #include "chrome/app/breakpad_mac.h"
+#include "third_party/mach_override/mach_override.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #endif  // OS_MACOSX
 
 #if defined(OS_MACOSX)
 namespace {
+
+CFArrayRef ChromeTISCreateInputSourceList(
+   CFDictionaryRef properties,
+   Boolean includeAllInstalled) {
+  CFTypeRef values[] = { CFSTR("") };
+  return CFArrayCreate(
+      kCFAllocatorDefault, values, arraysize(values), &kCFTypeArrayCallBacks);
+}
+
+void InstallFrameworkHacks() {
+  int32 os_major, os_minor, os_bugfix;
+  base::SysInfo::OperatingSystemVersionNumbers(
+      &os_major, &os_minor, &os_bugfix);
+
+  // See http://crbug.com/31225
+  // TODO: Don't do this on newer OS X revisions that have a fix for
+  // http://openradar.appspot.com/radar?id=1156410
+  if (os_major == 10 && os_minor >= 6) {
+    // Chinese Handwriting was introduced in 10.6. Since doing this override
+    // regresses page cycler memory usage on 10.5, don't do the unnecessary
+    // override there.
+    mach_error_t err = mach_override_ptr(
+        (void*)&TISCreateInputSourceList,
+        (void*)&ChromeTISCreateInputSourceList,
+        NULL);
+    CHECK_EQ(err_none, err);
+  }
+}
 
 // TODO(viettrungluu): crbug.com/28547: The following signal handling is needed,
 // as a stopgap, to avoid leaking due to not releasing Breakpad properly.
@@ -231,6 +263,8 @@ int RendererMain(const MainFunctionParams& parameters) {
   memset(&action, 0, sizeof(action));
   action.sa_handler = SIGTERMHandler;
   CHECK(sigaction(SIGTERM, &action, NULL) == 0);
+
+  InstallFrameworkHacks();
 #endif  // OS_MACOSX
 
 #if defined(OS_CHROMEOS)

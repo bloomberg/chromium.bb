@@ -1,0 +1,29 @@
+Name: mach_override
+Short Name: Part of the mach_star project
+Version: Unknown
+URL: https://github.com/rentzsch/mach_star
+Date: 04/11/2011
+Revision: 2cd209e090640220b48e5f97e7a366165f9de3f9
+License: MIT
+Security Critical: Yes.
+
+
+Description:
+This is the mach_override part of the lastest (as of 04/11/2011) revision of
+mach_star, namely:
+
+  https://github.com/rentzsch/mach_star/tree/2cd209e090640220b48e5f97e7a366165f9de3f9
+
+This package is used to replace framework functions with different
+implementations at run time.
+
+
+Local Modifications:
+
+* Minor fixes to make the file buildable with -std=c99 -Wall -Werror
+* Support for |sub %esp| with a 32bit immediate
+* atomic_mov64 is no longer .globl
+* Removed function mach_override() because it used deprecated functions
+* Added a gyp file
+
+See chromium.diff for details.
