@@ -8222,6 +8222,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FILE_BROWSER_ROOT_DIRECTORY_LABEL" desc="Root directory label.">
         Files
       </message>
+      <message name="IDS_FILE_BROWSER_DOWNLOADS_DIRECTORY_LABEL" desc="/Downloads directory label.">
+        File Shelf
+      </message>
+      <message name="IDS_FILE_BROWSER_MEDIA_DIRECTORY_LABEL" desc="/media directory label.">
+        External Storage
+      </message>
       <message name="IDS_FILE_BROWSER_NAME_COLUMN_LABEL" desc="Name column label.">
         Name
       </message>

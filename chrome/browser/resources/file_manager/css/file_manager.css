@@ -67,6 +67,9 @@ body {
   display: -webkit-box;
   font-size: 15px;
   line-height: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* A single directory name in the list of path breadcrumbs. */

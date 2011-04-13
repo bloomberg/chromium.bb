@@ -15,10 +15,37 @@ var fileManager;
 function init() {
   var params;
 
-  function onFileSystemFound(filesystem) {
+  var rootPaths = ['Downloads', 'media'];
+
+  function onEntriesFound(entries) {
     FileManager.initStrings(function () {
-      fileManager = new FileManager(document.body, filesystem, params);
+      fileManager = new FileManager(document.body, entries, params);
     });
+  };
+
+  function onFileSystemFound(filesystem) {
+    var entries = [];
+
+    function onPathError(path, err) {
+      console.error('Error locating root path: ' + path + ': ' + err);
+    }
+
+    function onEntryFound(entry) {
+      if (entry) {
+        entries.push(entry);
+      } else {
+        onEntriesFound(entries);
+      }
+    }
+
+    if (filesystem.name.match(/^chrome-extension_\S+:local/i)) {
+      // We've been handed the local filesystem, whose root directory
+      // cannot be enumerated.
+      util.getDirectories(filesystem.root, {create: false}, rootPaths,
+                          onEntryFound, onPathError);
+    } else {
+      util.forEachDirEntry(filesystem.root, onEntryFound);
+    }
   };
 
   if (document.location.search) {

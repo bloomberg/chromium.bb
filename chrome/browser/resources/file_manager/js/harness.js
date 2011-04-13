@@ -29,34 +29,10 @@ var harness = {
   },
 
   /**
-   * Utility function to invoke callback once for each entry in dirEntry.
-   *
-   * @param {DirectoryEntry} dirEntry The directory entry to enumerate.
-   * @param {function(Entry)} callback The function to invoke for each entry in
-   *   dirEntry.
-   */
-  forEachDirEntry: function(dirEntry, callback) {
-    var reader;
-
-    function onReadSome(results) {
-      if (results.length == 0)
-        return callback(null);
-
-      for (var i = 0; i < results.length; ++i)
-        callback(results[i]);
-
-      reader.readEntries(onReadSome);
-    };
-
-    reader = dirEntry.createReader();
-    reader.readEntries(onReadSome);
-  },
-
-  /**
    * 'Reset Fileystem' button click handler.
    */
   onClearClick: function() {
-    this.forEachDirEntry(this.filesystem.root, function(dirEntry) {
+    utils.forEachDirEntry(this.filesystem.root, function(dirEntry) {
       if (!dirEntry)
         return console.log('Filesystem reset.');
 

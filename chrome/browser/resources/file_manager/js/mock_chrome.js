@@ -60,6 +60,8 @@ chrome.fileBrowserPrivate = {
       PARENT_DIRECTORY: 'Parent Directory',
 
       ROOT_DIRECTORY_LABEL: 'Files',
+      DOWNLOADS_DIRECTORY_LABEL: 'File Shelf',
+      MEDIA_DIRECTORY_LABEL: 'External Storage',
       NAME_COLUMN_LABEL: 'Name',
       SIZE_COLUMN_LABEL: 'Size',
       DATE_COLUMN_LABEL: 'Date',

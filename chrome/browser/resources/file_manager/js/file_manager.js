@@ -20,11 +20,12 @@
  *     - title: The title for the dialog.  Defaults to a localized string based
  *       on the dialog type.
  */
-function FileManager(dialogDom, filesystem, params) {
+function FileManager(dialogDom, rootEntries, params) {
   console.log('Init FileManager: ' + dialogDom);
 
   this.dialogDom_ = dialogDom;
-  this.filesystem_ = filesystem;
+  this.rootEntries_ = rootEntries;
+  this.filesystem_ = rootEntries[0].filesystem;
   this.params_ = params || {type: FileManager.DialogType.SELECT_OPEN_FILE};
 
   this.document_ = dialogDom.ownerDocument;
@@ -41,9 +42,7 @@ function FileManager(dialogDom, filesystem, params) {
   this.initDom_();
   this.initDialogType_();
 
-  // TODO(rginda): Fix this when we've got the root dir sorted out.
-  // http://code.google.com/p/chromium-os/issues/detail?id=13845
-  this.changeDirectory('/tmp');
+  this.changeDirectory('/');
   this.summarizeSelection_();
   this.updatePreview_();
 
@@ -386,7 +385,7 @@ FileManager.prototype = {
     for (var i = 0; i < ary.length; i++) {
       var expr = ary[i].getAttribute('visibleif');
       if (!eval(expr))
-        ary[i].style.visibility = 'hidden';
+        ary[i].style.display = 'none';
     }
 
     // Populate the static localized strings.
@@ -541,7 +540,15 @@ FileManager.prototype = {
   FileManager.prototype.renderName_ = function(entry, columnId, table) {
     var label = this.document_.createElement('div');
     label.className = 'detail-name';
-    label.textContent = entry.name;
+
+    // This hack lets us localize the top level directories.
+    if (entry.fullPath == '/Downloads') {
+      label.textContent = str('DOWNLOADS_DIRECTORY_LABEL');
+    } else if (entry.fullPath == '/media') {
+      label.textContent = str('MEDIA_DIRECTORY_LABEL');
+    } else {
+      label.textContent = entry.name;
+    }
     return label;
   };
 
@@ -696,7 +703,15 @@ FileManager.prototype = {
 
       var div = this.document_.createElement('div');
       div.className = 'breadcrumb-path';
-      div.textContent = pathNames[i] || str('ROOT_DIRECTORY_LABEL');
+      // This hack lets us localize the top level directories.
+      if (path == '/Downloads/') {
+        div.textContent = str('DOWNLOADS_DIRECTORY_LABEL');
+      } else if (path == '/media/') {
+        div.textContent = str('MEDIA_DIRECTORY_LABEL');
+      } else {
+        div.textContent = pathNames[i] || str('ROOT_DIRECTORY_LABEL');
+      }
+
       div.path = path;
       div.addEventListener('click', this.onBreadcrumbClick_.bind(this));
       bc.appendChild(div);
@@ -933,8 +948,23 @@ FileManager.prototype = {
 
     this.updateBreadcrumbs_();
 
-    reader = this.currentDirEntry_.createReader();
-    reader.readEntries(onReadSome);
+    if (this.currentDirEntry_.fullPath != '/') {
+      // If not the root directory, just read the contents.
+      reader = this.currentDirEntry_.createReader();
+      reader.readEntries(onReadSome);
+      return;
+    }
+
+    // Otherwise, use the provided list of root subdirectories, since the
+    // real local filesystem root directory (the one we use outside the
+    // harness) can't be enumerated yet.
+    var spliceArgs = [].slice.call(this.rootEntries_);
+    spliceArgs.unshift(0, 0);  // index, deleteCount
+    self.table.dataModel.splice.apply(self.table.dataModel, spliceArgs);
+    self.table.dataModel.updateIndex(0);
+
+    if (opt_callback)
+      opt_callback();
   };
 
   FileManager.prototype.onFilenameInputKeyUp_ = function(event) {
