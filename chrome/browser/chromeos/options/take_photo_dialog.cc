@@ -80,7 +80,8 @@ views::View* TakePhotoDialog::GetContentsView() {
 }
 
 void TakePhotoDialog::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->name = l10n_util::GetStringUTF16(IDS_OPTIONS_TAKE_PHOTO);
+  state->name = l10n_util::GetStringUTF16(
+      IDS_OPTIONS_CHANGE_PICTURE_TAKE_PHOTO);
   state->role = ui::AccessibilityTypes::ROLE_DIALOG;
 }
 

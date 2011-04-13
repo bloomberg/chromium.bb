@@ -10,7 +10,7 @@ cr.define('options', function() {
   // ProxyOptions class:
 
   /**
-   * Encapsulated handling of ChromeOS accounts options page.
+   * Encapsulated handling of ChromeOS proxy options page.
    * @constructor
    */
   function ProxyOptions(model) {

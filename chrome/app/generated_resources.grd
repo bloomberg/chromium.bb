@@ -9837,10 +9837,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Change picture
       </message>
       <message name="IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT" desc="Text with description of what to do on Change picture dialog.">
-        Choose a picture to identify your account later on the Sign-in screen.
+        Choose a picture to display for your account on the sign-in screen.
       </message>
-      <message name="IDS_OPTIONS_CHANGE_PICTURE_PICK_FILE" desc="Text on a button that shows file picker to choose a picture.">
-        Pick a file
+      <message name="IDS_OPTIONS_CHANGE_PICTURE_CHOOSE_FILE" desc="Text on a button that shows file dialog to choose a picture from file.">
+        Choose a file
       </message>
       <message name="IDS_OPTIONS_CROP_IMAGE_DIALOG_TITLE" desc="Title of the dialog shown when user wants to crop his/her picture.">
         Crop image
@@ -9848,8 +9848,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_CROP_IMAGE_DIALOG_TEXT" desc="Text with description of what to do on Crop image dialog.">
         Select a square region of the image.
       </message>
-      <message name="IDS_OPTIONS_TAKE_PHOTO" desc="In the Personal Stuff settings tab, the text on the button to take photo of the current user.">
-        Take photo...
+      <message name="IDS_OPTIONS_CHANGE_PICTURE_TAKE_PHOTO" desc="The text on the button to take photo of the current user.">
+        Take photo
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIFI" desc="In settings Internet options, the title for buy cellular data plan button.">
         Wi-Fi

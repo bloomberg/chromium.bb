@@ -67,6 +67,7 @@
 <if expr="pp_ifdef('chromeos')">
   <script src="about_page.js"></script>
   <script src="chromeos/cellular_plan_element.js"></script>
+  <script src="chromeos/change_picture_options.js"></script>
   <script src="chromeos/internet_network_element.js"></script>
   <script src="chromeos/internet_options.js"></script>
   <script src="chromeos/system_options.js"></script>
@@ -78,6 +79,7 @@
   <script>
     var AboutPage = options.AboutPage;
     var AccountsOptions = options.AccountsOptions;
+    var ChangePictureOptions = options.ChangePictureOptions;
     var InternetOptions = options.InternetOptions;
     var LanguageHangulOptions = options.LanguageHangulOptions;
     var SystemOptions = options.SystemOptions;
@@ -185,6 +187,7 @@
            <div class="subpage-sheet-contents">
              <if expr="pp_ifdef('chromeos')">
                <include src="about_page.html">
+               <include src="chromeos/change_picture_options.html">
                <include src="chromeos/proxy.html">
              </if>
              <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">

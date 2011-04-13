@@ -144,6 +144,9 @@ function load() {
     OptionsPage.registerSubPage(ProxyOptions.getInstance(),
                                 AdvancedOptions.getInstance(),
                                 [$('proxiesConfigureButton')]);
+    OptionsPage.registerSubPage(ChangePictureOptions.getInstance(),
+                                PersonalOptions.getInstance(),
+                                [$('change-picture-button')]);
     OptionsPage.registerOverlay(new OptionsPage('detailsInternetPage',
                                                 'detailsInternetPage',
                                                 'detailsInternetPage'),

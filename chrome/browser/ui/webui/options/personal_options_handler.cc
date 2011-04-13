@@ -65,10 +65,6 @@ PersonalOptionsHandler::~PersonalOptionsHandler() {
       web_ui_->GetProfile()->GetProfileSyncService();
   if (sync_service)
     sync_service->RemoveObserver(this);
-#if defined(OS_CHROMEOS)
-  if (select_file_dialog_.get())
-    select_file_dialog_->ListenerDestroyed();
-#endif
 }
 
 void PersonalOptionsHandler::GetLocalizedValues(
@@ -187,8 +183,6 @@ void PersonalOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX));
   localized_strings->SetString("changePicture",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE));
-  localized_strings->SetString("takePhoto",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_TAKE_PHOTO));
 #endif
 }
 
@@ -217,12 +211,6 @@ void PersonalOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       "loadAccountPicture",
       NewCallback(this, &PersonalOptionsHandler::LoadAccountPicture));
-  web_ui_->RegisterMessageCallback(
-      "changeAccountPicture",
-      NewCallback(this, &PersonalOptionsHandler::ChangeAccountPicture));
-  web_ui_->RegisterMessageCallback(
-      "takePhoto",
-      NewCallback(this, &PersonalOptionsHandler::TakePhoto));
 #endif
 }
 
@@ -462,49 +450,4 @@ void PersonalOptionsHandler::LoadAccountPicture(const ListValue* args) {
   }
 }
 
-void PersonalOptionsHandler::ChangeAccountPicture(const ListValue* args) {
-  if (!select_file_dialog_.get())
-    select_file_dialog_ = SelectFileDialog::Create(this);
-
-  SelectFileDialog::FileTypeInfo file_type_info;
-  file_type_info.extensions.resize(5);
-  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("bmp"));
-  file_type_info.extensions[1].push_back(FILE_PATH_LITERAL("gif"));
-  file_type_info.extensions[2].push_back(FILE_PATH_LITERAL("jpg"));
-  file_type_info.extensions[2].push_back(FILE_PATH_LITERAL("jpeg"));
-  file_type_info.extensions[3].push_back(FILE_PATH_LITERAL("png"));
-  file_type_info.extensions[4].push_back(FILE_PATH_LITERAL("tif"));
-  file_type_info.extensions[4].push_back(FILE_PATH_LITERAL("tiff"));
-
-  FilePath downloads_path;
-  if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &downloads_path)) {
-    NOTREACHED();
-    return;
-  }
-  select_file_dialog_->SelectFile(
-      SelectFileDialog::SELECT_OPEN_FILE,
-      l10n_util::GetStringUTF16(IDS_DOWNLOAD_TITLE),
-      downloads_path,
-      &file_type_info,
-      0,
-      FILE_PATH_LITERAL(""),
-      NULL,
-      NULL);
-}
-
-void PersonalOptionsHandler::TakePhoto(const ListValue* args) {
-  Browser* browser = BrowserList::FindBrowserWithProfile(web_ui_->GetProfile());
-  views::Window* window = browser::CreateViewsWindow(
-      browser->window()->GetNativeHandle(),
-      gfx::Rect(),
-      new chromeos::TakePhotoDialog());
-  window->SetIsAlwaysOnTop(true);
-  window->Show();
-}
-
-void PersonalOptionsHandler::FileSelected(const FilePath& path,
-                                          int index,
-                                          void* params) {
-  chromeos::UserManager::Get()->LoadLoggedInUserImage(path);
-}
 #endif

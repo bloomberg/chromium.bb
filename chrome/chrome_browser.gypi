@@ -3222,6 +3222,8 @@
         'browser/ui/webui/options/certificate_manager_handler.h',
         'browser/ui/webui/options/chromeos/accounts_options_handler.cc',
         'browser/ui/webui/options/chromeos/accounts_options_handler.h',
+        'browser/ui/webui/options/chromeos/change_picture_options_handler.cc',
+        'browser/ui/webui/options/chromeos/change_picture_options_handler.h',
         'browser/ui/webui/options/chromeos/core_chromeos_options_handler.cc',
         'browser/ui/webui/options/chromeos/core_chromeos_options_handler.h',
         'browser/ui/webui/options/chromeos/cros_language_options_handler.cc',

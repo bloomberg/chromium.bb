@@ -74,11 +74,8 @@ cr.define('options', function() {
           };
         }
       } else {
-        $('change-picture').onclick = function(event) {
-          chrome.send('changeAccountPicture');
-        };
-        $('take-photo').onclick = function(event) {
-          chrome.send('takePhoto');
+        $('change-picture-button').onclick = function(event) {
+          OptionsPage.navigateToPage('changePicture');
         };
         chrome.send('loadAccountPicture');
       }
