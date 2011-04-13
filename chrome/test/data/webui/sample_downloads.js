@@ -11,3 +11,7 @@ function testAssertFalse() {
 function testInitialFocus() {
   assertTrue(document.activeElement.id == 'term', '');
 }
+
+function testConsoleError() {
+  console.error('checking console.error call causes failure.');
+}

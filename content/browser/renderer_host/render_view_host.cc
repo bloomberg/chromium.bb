@@ -1262,8 +1262,8 @@ void RenderViewHost::OnAddMessageToConsole(int32 level,
   int32 resolved_level =
       BindingsPolicy::is_web_ui_enabled(enabled_bindings_) ? level : 0;
 
-  logging::LogMessage("CONSOLE", resolved_level).stream() << "\"" << message
-      << "\", source: " << source_id << " (" << line_no << ")";
+  logging::LogMessage("CONSOLE", line_no, resolved_level).stream() << "\"" <<
+      message << "\", source: " << source_id << " (" << line_no << ")";
 }
 
 void RenderViewHost::AddObserver(RenderViewHostObserver* observer) {

@@ -4,6 +4,9 @@
 
 #include "content/browser/webui/web_ui_browsertest.h"
 
+#include <string>
+#include <vector>
+
 #include "base/path_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
@@ -15,6 +18,18 @@
 static const FilePath::CharType* kWebUILibraryJS =
     FILE_PATH_LITERAL("test_api.js");
 static const FilePath::CharType* kWebUITestFolder = FILE_PATH_LITERAL("webui");
+static std::vector<std::string> error_messages_;
+
+// Intercepts all log messages.
+bool LogHandler(int severity,
+                const char* file,
+                int line,
+                size_t message_start,
+                const std::string& str) {
+  if (severity == logging::LOG_ERROR)
+    error_messages_.push_back(str);
+  return true;
+}
 
 WebUIBrowserTest::~WebUIBrowserTest() {}
 
@@ -72,7 +87,16 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
     content.append(called_function);
   }
   SetupHandlers();
-  return test_handler_->RunJavascript(content, is_test);
+  logging::SetLogMessageHandler(&LogHandler);
+  bool result = test_handler_->RunJavascript(content, is_test);
+  logging::SetLogMessageHandler(NULL);
+
+  if (error_messages_.size() > 0) {
+    LOG(ERROR) << "Encountered javascript console error(s)";
+    result = false;
+    error_messages_.clear();
+  }
+  return result;
 }
 
 void WebUIBrowserTest::SetupHandlers() {
@@ -99,4 +123,5 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserTest, TestSamplePass) {
 
   ASSERT_TRUE(RunJavascriptTest("testAssertFalse"));
   ASSERT_TRUE(RunJavascriptTest("testInitialFocus"));
+  ASSERT_FALSE(RunJavascriptTest("testConsoleError"));
 }
