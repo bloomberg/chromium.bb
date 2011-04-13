@@ -36,6 +36,8 @@
 #include <assert.h>
 #include <sys/time.h>
 #include <fcntl.h>
+#include <sys/file.h>
+#include <sys/stat.h>
 #include <ffi.h>
 
 #include "wayland-server.h"
@@ -44,7 +46,9 @@
 
 struct wl_socket {
 	int fd;
+	int fd_lock;
 	struct sockaddr_un addr;
+	char lock_addr[113];
 	struct wl_list link;
 };
 
@@ -577,6 +581,8 @@ wl_display_destroy(struct wl_display *display)
 	wl_list_for_each_safe(s, next, &display->socket_list, link) {
 		close(s->fd);
 		unlink(s->addr.sun_path);
+		close(s->fd_lock);
+		unlink(s->lock_addr);
 		free(s);
 	}
 
@@ -660,6 +666,48 @@ socket_data(int fd, uint32_t mask, void *data)
 	wl_client_create(display, client_fd);
 }
 
+static int
+get_socket_lock(struct wl_socket *socket, socklen_t name_size)
+{
+	struct stat socket_stat;
+	int lock_size = name_size + 5;
+
+	snprintf(socket->lock_addr, lock_size,
+		 "%s.lock", socket->addr.sun_path);
+
+	socket->fd_lock = open(socket->lock_addr, O_CREAT | O_CLOEXEC,
+			       (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
+
+	if (socket->fd_lock < 0) {
+		fprintf(stderr,
+			"unable to open lockfile %s check permissions\n",
+			socket->lock_addr);
+		return -1;
+	}
+
+	if (flock(socket->fd_lock, LOCK_EX | LOCK_NB) < 0) {
+		fprintf(stderr,
+			"unable to lock lockfile %s, maybe another compositor is running\n",
+			socket->lock_addr);
+		close(socket->fd_lock);
+		return -1;
+	}
+
+	if (stat(socket->addr.sun_path, &socket_stat) < 0 ) {
+		if (errno != ENOENT) {
+			fprintf(stderr, "did not manage to stat file %s\n",
+				socket->addr.sun_path);
+			close(socket->fd_lock);
+			return -1;
+		}
+	} else if (socket_stat.st_mode & S_IWUSR ||
+		   socket_stat.st_mode & S_IWGRP) {
+		unlink(socket->addr.sun_path);
+	}
+
+	return 0;
+}
+
 WL_EXPORT int
 wl_display_add_socket(struct wl_display *display, const char *name)
 {
@@ -695,6 +743,12 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 	name_size = snprintf(s->addr.sun_path, sizeof s->addr.sun_path,
 			     "%s/%s", runtime_dir, name) + 1;
 	fprintf(stderr, "using socket %s\n", s->addr.sun_path);
+
+	if (get_socket_lock(s,name_size) < 0) {
+		close(s->fd);
+		free(s);
+		return -1;
+	}
 
 	size = offsetof (struct sockaddr_un, sun_path) + name_size;
 	if (bind(s->fd, (struct sockaddr *) &s->addr, size) < 0) {
