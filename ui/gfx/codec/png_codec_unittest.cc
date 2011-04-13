@@ -357,7 +357,7 @@ TEST(PNGCodec, EncodeDecodeWithVaryingCompressionLevels) {
   std::vector<unsigned char> encoded_best;
   EXPECT_TRUE(PNGCodec::EncodeWithCompressionLevel(
         &original[0], PNGCodec::FORMAT_RGBA, Size(w, h), w * 4, false,
-        std::vector<PNGCodec::Comment>(), Z_BEST_COMPRESSION, &encoded_fast));
+        std::vector<PNGCodec::Comment>(), Z_BEST_COMPRESSION, &encoded_best));
 
   // Make sure the different compression settings actually do something; the
   // sizes should be different.
