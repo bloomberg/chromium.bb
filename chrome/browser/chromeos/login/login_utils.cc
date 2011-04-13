@@ -103,20 +103,19 @@ class ResetDefaultProxyConfigServiceTask : public Task {
 
 }  // namespace
 
-class LoginUtilsImpl : public LoginUtils {
+class LoginUtilsImpl : public LoginUtils,
+                       public ProfileManager::Observer {
  public:
   LoginUtilsImpl()
-      : browser_launch_enabled_(true),
-        background_view_(NULL) {
+      : background_view_(NULL) {
   }
 
-  // Invoked after the user has successfully logged in. This launches a browser
-  // and does other bookkeeping after logging in.
-  virtual void CompleteLogin(
+  virtual void PrepareProfile(
       const std::string& username,
       const std::string& password,
       const GaiaAuthConsumer::ClientLoginResult& credentials,
-      bool pending_requests);
+      bool pending_requests,
+      LoginUtils::Delegate* delegate);
 
   // Invoked after the tmpfs is successfully mounted.
   // Launches a browser in the incognito mode.
@@ -129,13 +128,6 @@ class LoginUtilsImpl : public LoginUtils {
   // Creates and returns the authenticator to use. The caller owns the returned
   // Authenticator and must delete it when done.
   virtual Authenticator* CreateAuthenticator(LoginStatusConsumer* consumer);
-
-  // Used to postpone browser launch via DoBrowserLaunch() if some post
-  // login screen is to be shown.
-  virtual void EnableBrowserLaunch(bool enable);
-
-  // Returns if browser launch enabled now or not.
-  virtual bool IsBrowserLaunchEnabled() const;
 
   // Warms the url used by authentication.
   virtual void PrewarmAuthentication();
@@ -157,6 +149,9 @@ class LoginUtilsImpl : public LoginUtils {
   // Gets the current background view.
   virtual chromeos::BackgroundView* GetBackgroundView();
 
+  // ProfileManager::Observer implementation:
+  virtual void OnProfileCreated(Profile* profile);
+
  protected:
   virtual std::string GetOffTheRecordCommandLine(
       const GURL& start_url,
@@ -167,11 +162,16 @@ class LoginUtilsImpl : public LoginUtils {
   // Check user's profile for kApplicationLocale setting.
   void RespectLocalePreference(Profile* pref);
 
-  // Indicates if DoBrowserLaunch will actually launch the browser or not.
-  bool browser_launch_enabled_;
-
   // The current background view.
   chromeos::BackgroundView* background_view_;
+
+  std::string username_;
+  std::string password_;
+  GaiaAuthConsumer::ClientLoginResult credentials_;
+  bool pending_requests_;
+
+  // Delegate to be fired when the profile will be prepared.
+  LoginUtils::Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsImpl);
 };
@@ -204,11 +204,12 @@ class LoginUtilsWrapper {
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsWrapper);
 };
 
-void LoginUtilsImpl::CompleteLogin(
+void LoginUtilsImpl::PrepareProfile(
     const std::string& username,
     const std::string& password,
     const GaiaAuthConsumer::ClientLoginResult& credentials,
-    bool pending_requests) {
+    bool pending_requests,
+    LoginUtils::Delegate* delegate) {
   BootTimesLoader* btl = BootTimesLoader::Get();
 
   VLOG(1) << "Completing login for " << username;
@@ -219,30 +220,31 @@ void LoginUtilsImpl::CompleteLogin(
     btl->AddLoginTimeMarker("StartedSession", false);
   }
 
-  bool first_login = !UserManager::Get()->IsKnownUser(username);
   UserManager::Get()->UserLoggedIn(username);
   btl->AddLoginTimeMarker("UserLoggedIn", false);
-
-  // Now get the new profile.
-  FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
 
   // Switch log file as soon as possible.
   logging::RedirectChromeLogging(*(CommandLine::ForCurrentProcess()));
   btl->AddLoginTimeMarker("LoggingRedirected", false);
 
-  Profile* profile = NULL;
-  {
-    // Loading user profile causes us to do blocking IO on UI thread.
-    // Temporarily allow it until we fix http://crosbug.com/11104
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    // The default profile will have been changed because the ProfileManager
-    // will process the notification that the UserManager sends out.
-    profile = profile_manager->GetDefaultProfile(user_data_dir);
-  }
+  username_ = username;
+  password_ = password;
+  credentials_ = credentials;
+  pending_requests_ = pending_requests;
+  delegate_ = delegate;
+
+  // The default profile will have been changed because the ProfileManager
+  // will process the notification that the UserManager sends out.
+  ProfileManager::CreateDefaultProfileAsync(this);
+}
+
+void LoginUtilsImpl::OnProfileCreated(Profile* profile) {
+  CHECK(profile);
+
+  BootTimesLoader* btl = BootTimesLoader::Get();
   btl->AddLoginTimeMarker("UserProfileGotten", false);
 
+  bool first_login = !UserManager::Get()->IsKnownUser(username_);
   // Change the proxy configuration service of the default request context to
   // use the preference configuration from the logged-in profile. This ensures
   // that requests done through the default context use the proxy configuration
@@ -266,11 +268,11 @@ void LoginUtilsImpl::CompleteLogin(
                               proxy_config_service));
 
   // Since we're doing parallel authentication, only new user sign in
-  // would perform online auth before calling CompleteLogin.
+  // would perform online auth before calling PrepareProfile.
   // For existing users there's usually a pending online auth request.
   // Cookies will be fetched after it's is succeeded.
-  if (!pending_requests) {
-    FetchCookies(profile, credentials);
+  if (!pending_requests_) {
+    FetchCookies(profile, credentials_);
   }
 
   // Init extension event routers; this normally happens in browser_main
@@ -290,16 +292,16 @@ void LoginUtilsImpl::CompleteLogin(
 
   // For existing users there's usually a pending online auth request.
   // Tokens will be fetched after it's is succeeded.
-  if (!pending_requests) {
-    FetchTokens(profile, credentials);
+  if (!pending_requests_) {
+    FetchTokens(profile, credentials_);
   }
   btl->AddLoginTimeMarker("TokensGotten", false);
 
   // Set the CrOS user by getting this constructor run with the
   // user's email on first retrieval.
-  profile->GetProfileSyncService(username)->SetPassphrase(password,
-                                                          false,
-                                                          true);
+  profile->GetProfileSyncService(username_)->SetPassphrase(password_,
+                                                           false,
+                                                           true);
   btl->AddLoginTimeMarker("SyncStarted", false);
 
   // Own TPM device if, for any reason, it has not been done in EULA
@@ -330,13 +332,19 @@ void LoginUtilsImpl::CompleteLogin(
   // done yet to pull down policies from the domain admin. We'll take this
   // out when we get that done properly.
   // TODO(xiyuan): Remove this once enterprise feature is ready.
-  if (EndsWith(username, "@google.com", true)) {
+  if (EndsWith(username_, "@google.com", true)) {
     PrefService* pref_service = profile->GetPrefs();
     pref_service->SetBoolean(prefs::kEnableScreenLock, true);
   }
 
   profile->OnLogin();
-  DoBrowserLaunch(profile);
+
+  delegate_->OnProfilePrepared(profile);
+
+  // TODO(altimofeev): Need to sanitize memory used to store password.
+  password_ = "";
+  username_ = "";
+  credentials_ = GaiaAuthConsumer::ClientLoginResult();
 }
 
 void LoginUtilsImpl::FetchCookies(
@@ -515,14 +523,6 @@ Authenticator* LoginUtilsImpl::CreateAuthenticator(
     return new GoogleAuthenticator(consumer);
 }
 
-void LoginUtilsImpl::EnableBrowserLaunch(bool enable) {
-  browser_launch_enabled_ = enable;
-}
-
-bool LoginUtilsImpl::IsBrowserLaunchEnabled() const {
-  return browser_launch_enabled_;
-}
-
 // We use a special class for this so that it can be safely leaked if we
 // never connect. At shutdown the order is not well defined, and it's possible
 // for the infrastructure needed to unregister might be unstable and crash.
@@ -580,9 +580,6 @@ void LoginUtils::Set(LoginUtils* mock) {
 
 void LoginUtils::DoBrowserLaunch(Profile* profile) {
   BootTimesLoader::Get()->AddLoginTimeMarker("BrowserLaunched", false);
-  // Browser launch was disabled due to some post login screen.
-  if (!LoginUtils::Get()->IsBrowserLaunchEnabled())
-    return;
 
   // Update command line in case loose values were added.
   CommandLine::ForCurrentProcess()->InitFromArgv(

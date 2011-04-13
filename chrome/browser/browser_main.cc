@@ -955,7 +955,8 @@ void InitializeToolkit(const MainFunctionParams& parameters) {
 
 // Class is used to login using passed username and password.
 // The instance will be deleted upon success or failure.
-class StubLogin : public chromeos::LoginStatusConsumer {
+class StubLogin : public chromeos::LoginStatusConsumer,
+                  public chromeos::LoginUtils::Delegate {
  public:
   explicit StubLogin(std::string username, std::string password) {
     authenticator_ = chromeos::LoginUtils::Get()->CreateAuthenticator(this);
@@ -976,10 +977,17 @@ class StubLogin : public chromeos::LoginStatusConsumer {
                       const std::string& password,
                       const GaiaAuthConsumer::ClientLoginResult& credentials,
                       bool pending_requests) {
-    chromeos::LoginUtils::Get()->CompleteLogin(username,
-                                               password,
-                                               credentials,
-                                               pending_requests);
+    // Will call OnProfilePrepared in the end.
+    chromeos::LoginUtils::Get()->PrepareProfile(username,
+                                                password,
+                                                credentials,
+                                                pending_requests,
+                                                this);
+  }
+
+  // LoginUtils::Delegate implementation:
+  virtual void OnProfilePrepared(Profile* profile) {
+    chromeos::LoginUtils::DoBrowserLaunch(profile);
     delete this;
   }
 

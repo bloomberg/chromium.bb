@@ -27,6 +27,11 @@ class Value;
 class JsonPrefStore : public PersistentPrefStore,
                       public ImportantFileWriter::DataSerializer {
  public:
+  class Delegate {
+   public:
+    virtual void OnPrefsRead(PrefReadError error, bool no_dir) = 0;
+  };
+
   // |file_message_loop_proxy| is the MessageLoopProxy for a thread on which
   // file I/O can be done.
   JsonPrefStore(const FilePath& pref_filename,
@@ -46,10 +51,16 @@ class JsonPrefStore : public PersistentPrefStore,
   virtual void RemoveValue(const std::string& key);
   virtual bool ReadOnly() const;
   virtual PrefReadError ReadPrefs();
+  // todo(altimofeev): move it to the PersistentPrefStore inteface.
+  void ReadPrefs(Delegate* delegate);
   virtual bool WritePrefs();
   virtual void ScheduleWritePrefs();
   virtual void CommitPendingWrite();
   virtual void ReportValueChanged(const std::string& key);
+
+  // This method is called after JSON file has been read. Method takes
+  // ownership of the |value| pointer.
+  void OnFileRead(Value* value_owned, PrefReadError error, bool no_dir);
 
  private:
   // ImportantFileWriter::DataSerializer overrides:
@@ -65,6 +76,8 @@ class JsonPrefStore : public PersistentPrefStore,
   ImportantFileWriter writer_;
 
   ObserverList<PrefStore::Observer, true> observers_;
+
+  Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(JsonPrefStore);
 };

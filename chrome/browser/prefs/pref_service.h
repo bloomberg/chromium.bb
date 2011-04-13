@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
+#include "chrome/common/json_pref_store.h"
 
 class DefaultPrefStore;
 class FilePath;
@@ -32,7 +33,8 @@ class PrefMemberBase;
 class ScopedUserPrefUpdateBase;
 };
 
-class PrefService : public base::NonThreadSafe {
+class PrefService : public base::NonThreadSafe,
+                    public JsonPrefStore::Delegate {
  public:
   // A helper class to store all the information associated with a preference.
   class Preference {
@@ -111,6 +113,15 @@ class PrefService : public base::NonThreadSafe {
     DISALLOW_COPY_AND_ASSIGN(Preference);
   };
 
+  class Delegate {
+   public:
+    virtual void OnPrefsLoaded(PrefService* prefs, bool success) = 0;
+  };
+
+  // JsonPrefStore::Delegate implementaion.
+  virtual void OnPrefsRead(PersistentPrefStore::PrefReadError error,
+                           bool no_dir);
+
   // Factory method that creates a new instance of a PrefService with the
   // applicable PrefStores. The |pref_filename| points to the user preference
   // file. The |profile| is the one to which these preferences apply; it may be
@@ -121,6 +132,12 @@ class PrefService : public base::NonThreadSafe {
   static PrefService* CreatePrefService(const FilePath& pref_filename,
                                         PrefStore* extension_pref_store,
                                         Profile* profile);
+
+  // Same as above, but with async initialization.
+  static PrefService* CreatePrefServiceAsync(const FilePath& pref_filename,
+                                             PrefStore* extension_pref_store,
+                                             Profile* profile,
+                                             Delegate* delegate);
 
   // Creates an incognito copy of the pref service that shares most pref stores
   // but uses a fresh non-persistent overlay for the user pref store and an
@@ -238,7 +255,8 @@ class PrefService : public base::NonThreadSafe {
               PersistentPrefStore* user_prefs,
               PrefStore* recommended_platform_prefs,
               PrefStore* recommended_cloud_prefs,
-              DefaultPrefStore* default_store);
+              DefaultPrefStore* default_store,
+              Delegate* delegate);
 
   // The PrefNotifier handles registering and notifying preference observers.
   // It is created and owned by this PrefService. Subclasses may access it for
@@ -319,6 +337,10 @@ class PrefService : public base::NonThreadSafe {
   // is authoritative with respect to what the types and default values
   // of registered preferences are.
   mutable PreferenceSet prefs_;
+
+  // Holds delegator to be called after initialization, if async version
+  // is used.
+  Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefService);
 };

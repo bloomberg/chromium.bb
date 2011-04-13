@@ -25,7 +25,6 @@
 #include "chrome/browser/prefs/overlay_persistent_pref_store.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
 #include "chrome/browser/prefs/pref_value_store.h"
-#include "chrome/common/json_pref_store.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "grit/chromium_strings.h"
@@ -88,6 +87,15 @@ void NotifyReadError(PrefService* pref, int message_id) {
 PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
                                             PrefStore* extension_prefs,
                                             Profile* profile) {
+  return CreatePrefServiceAsync(pref_filename, extension_prefs, profile, NULL);
+}
+
+// static
+PrefService* PrefService::CreatePrefServiceAsync(
+    const FilePath& pref_filename,
+    PrefStore* extension_prefs,
+    Profile* profile,
+    PrefService::Delegate* delegate) {
   using policy::ConfigurationPolicyPrefStore;
 
 #if defined(OS_LINUX)
@@ -121,7 +129,7 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
 
   return new PrefService(managed_platform, managed_cloud, extension_prefs,
                          command_line, user, recommended_platform,
-                         recommended_cloud, default_pref_store);
+                         recommended_cloud, default_pref_store, delegate);
 }
 
 PrefService* PrefService::CreateIncognitoPrefService(
@@ -136,9 +144,11 @@ PrefService::PrefService(PrefStore* managed_platform_prefs,
                          PersistentPrefStore* user_prefs,
                          PrefStore* recommended_platform_prefs,
                          PrefStore* recommended_cloud_prefs,
-                         DefaultPrefStore* default_store)
+                         DefaultPrefStore* default_store,
+                         PrefService::Delegate* delegate)
     : user_pref_store_(user_prefs),
-      default_store_(default_store) {
+      default_store_(default_store),
+      delegate_(delegate) {
   pref_notifier_.reset(new PrefNotifierImpl(this));
   pref_value_store_.reset(
       new PrefValueStore(managed_platform_prefs,
@@ -157,7 +167,8 @@ PrefService::PrefService(const PrefService& original,
                          PrefStore* incognito_extension_prefs)
       : user_pref_store_(
             new OverlayPersistentPrefStore(original.user_pref_store_.get())),
-        default_store_(original.default_store_.get()){
+        default_store_(original.default_store_.get()),
+        delegate_(NULL) {
   pref_notifier_.reset(new PrefNotifierImpl(this));
   pref_value_store_.reset(original.pref_value_store_->CloneAndSpecialize(
       NULL, // managed_platform_prefs
@@ -183,27 +194,48 @@ PrefService::~PrefService() {
   default_store_ = NULL;
 }
 
-void PrefService::InitFromStorage() {
-  const PersistentPrefStore::PrefReadError error =
-      user_pref_store_->ReadPrefs();
-  if (error == PersistentPrefStore::PREF_READ_ERROR_NONE)
+void PrefService::OnPrefsRead(PersistentPrefStore::PrefReadError error,
+                              bool no_dir) {
+  if (no_dir) {
+    // Bad news. When profile is created, the process that creates the directory
+    // is explicitly started. So if directory is missing it probably means that
+    // Chromium hasn't sufficient privileges.
+    CHECK(delegate_);
+    delegate_->OnPrefsLoaded(this, false);
     return;
-
-  // Failing to load prefs on startup is a bad thing(TM). See bug 38352 for
-  // an example problem that this can cause.
-  // Do some diagnosis and try to avoid losing data.
-  int message_id = 0;
-  if (error <= PersistentPrefStore::PREF_READ_ERROR_JSON_TYPE) {
-    message_id = IDS_PREFERENCES_CORRUPT_ERROR;
-  } else if (error != PersistentPrefStore::PREF_READ_ERROR_NO_FILE) {
-    message_id = IDS_PREFERENCES_UNREADABLE_ERROR;
   }
 
-  if (message_id) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(&NotifyReadError, this, message_id));
+  if (error != PersistentPrefStore::PREF_READ_ERROR_NONE) {
+    // Failing to load prefs on startup is a bad thing(TM). See bug 38352 for
+    // an example problem that this can cause.
+    // Do some diagnosis and try to avoid losing data.
+    int message_id = 0;
+    if (error <= PersistentPrefStore::PREF_READ_ERROR_JSON_TYPE) {
+      message_id = IDS_PREFERENCES_CORRUPT_ERROR;
+    } else if (error != PersistentPrefStore::PREF_READ_ERROR_NO_FILE) {
+      message_id = IDS_PREFERENCES_UNREADABLE_ERROR;
+    }
+
+    if (message_id) {
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+          NewRunnableFunction(&NotifyReadError, this, message_id));
+    }
+    UMA_HISTOGRAM_ENUMERATION("PrefService.ReadError", error, 20);
   }
-  UMA_HISTOGRAM_ENUMERATION("PrefService.ReadError", error, 20);
+
+  if (delegate_)
+    delegate_->OnPrefsLoaded(this, true);
+}
+
+void PrefService::InitFromStorage() {
+  if (!delegate_) {
+    const PersistentPrefStore::PrefReadError error =
+        user_pref_store_->ReadPrefs();
+    OnPrefsRead(error, false);
+  } else {
+    // todo(altimofeev): move this method to PersistentPrefStore interface.
+    (static_cast<JsonPrefStore*>(user_pref_store_.get()))->ReadPrefs(this);
+  }
 }
 
 bool PrefService::ReloadPersistentPrefs() {

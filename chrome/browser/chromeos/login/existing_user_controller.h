@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/captcha_view.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_performer.h"
+#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/ownership_status_checker.h"
 #include "chrome/browser/chromeos/login/password_changed_view.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -41,6 +42,7 @@ class UserCrosSettingsProvider;
 class ExistingUserController : public LoginDisplay::Delegate,
                                public NotificationObserver,
                                public LoginPerformer::Delegate,
+                               public LoginUtils::Delegate,
                                public CaptchaView::Delegate,
                                public PasswordChangedView::Delegate {
  public:
@@ -90,6 +92,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
   virtual void OnPasswordChangeDetected(
       const GaiaAuthConsumer::ClientLoginResult& credentials);
   virtual void WhiteListCheckFailed(const std::string& email);
+
+  // LoginUtils::Delegate implementation:
+  virtual void OnProfilePrepared(Profile* profile);
 
   // CaptchaView::Delegate:
   virtual void OnCaptchaEntered(const std::string& captcha);
@@ -158,6 +163,12 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // Factory of callbacks.
   ScopedRunnableMethodFactory<ExistingUserController> method_factory_;
+
+  // Whether everything is ready to launch the browser.
+  bool ready_for_browser_launch_;
+
+  // Whether two factor credentials were used.
+  bool two_factor_credentials_;
 
   // Used to verify ownership before starting enterprise enrollment.
   scoped_ptr<OwnershipStatusChecker> ownership_checker_;

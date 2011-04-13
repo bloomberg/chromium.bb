@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,12 +121,11 @@ ExtensionPortsRemoteService::ExtensionPortsRemoteService(
     LOG(WARNING) << "No profile manager for ExtensionPortsRemoteService";
     return;
   }
-  for (ProfileManager::ProfileVector::const_iterator it
-           = profile_manager->begin();
-       it != profile_manager->end();
-       ++it) {
-    if (!(*it)->IsOffTheRecord()) {
-      service_ = (*it)->GetExtensionMessageService();
+
+  std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
+  for (size_t i = 0; i < profiles.size(); ++i) {
+    if (!profiles[i]->IsOffTheRecord()) {
+      service_ = profiles[i]->GetExtensionMessageService();
       break;
     }
   }

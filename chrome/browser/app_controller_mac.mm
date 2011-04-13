@@ -599,18 +599,17 @@ void RecordLastRunAppBundlePath() {
   if (!profile_manager)
     return YES;
 
-  ProfileManager::const_iterator it = profile_manager->begin();
-  for (; it != profile_manager->end(); ++it) {
-    Profile* profile = *it;
-    DownloadManager* download_manager = profile->GetDownloadManager();
+  std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
+  for (size_t i = 0; i < profiles.size(); ++i) {
+    DownloadManager* download_manager = profiles[i]->GetDownloadManager();
     if (download_manager && download_manager->in_progress_count() > 0) {
       int downloadCount = download_manager->in_progress_count();
       if ([self userWillWaitForInProgressDownloads:downloadCount]) {
         // Create a new browser window (if necessary) and navigate to the
         // downloads page if the user chooses to wait.
-        Browser* browser = BrowserList::FindBrowserWithProfile(profile);
+        Browser* browser = BrowserList::FindBrowserWithProfile(profiles[i]);
         if (!browser) {
-          browser = Browser::Create(profile);
+          browser = Browser::Create(profiles[i]);
           browser->window()->Show();
         }
         DCHECK(browser);
@@ -984,9 +983,8 @@ void RecordLastRunAppBundlePath() {
 }
 
 - (Profile*)defaultProfile {
-  // TODO(jrg): Find a better way to get the "default" profile.
   if (g_browser_process->profile_manager())
-    return *g_browser_process->profile_manager()->begin();
+    return g_browser_process->profile_manager()->GetDefaultProfile();
 
   return NULL;
 }

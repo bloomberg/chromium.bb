@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -52,7 +53,8 @@ namespace chromeos {
 // 2. Pending online auth request.
 class LoginPerformer : public LoginStatusConsumer,
                        public SignedSettingsHelper::Callback,
-                       public NotificationObserver {
+                       public NotificationObserver,
+                       public ProfileManager::Observer {
  public:
   // Delegate class to get notifications from the LoginPerformer.
   class Delegate : public LoginStatusConsumer {
@@ -117,6 +119,9 @@ class LoginPerformer : public LoginStatusConsumer,
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
  private:
+  // ProfeleManager::Observer implementation:
+  void OnProfileCreated(Profile* profile);
+
   // Requests screen lock and subscribes to screen lock notifications.
   void RequestScreenLock();
 
@@ -182,6 +187,8 @@ class LoginPerformer : public LoginStatusConsumer,
   // online authentication response. Used to distinguish cases when screen
   // is locked during that stage. No need to resolve screen lock action then.
   bool initial_online_auth_pending_;
+
+  GaiaAuthConsumer::ClientLoginResult credentials_;
 
   ScopedRunnableMethodFactory<LoginPerformer> method_factory_;
 

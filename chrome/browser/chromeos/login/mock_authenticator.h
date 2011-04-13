@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,12 +111,15 @@ class MockLoginUtils : public LoginUtils {
     return false;
   }
 
-  virtual void CompleteLogin(const std::string& username,
-                             const std::string& password,
-                             const GaiaAuthConsumer::ClientLoginResult& res,
-                             bool pending_requests) {
+  virtual void PrepareProfile(const std::string& username,
+                              const std::string& password,
+                              const GaiaAuthConsumer::ClientLoginResult& res,
+                              bool pending_requests,
+                              Delegate* delegate) {
     EXPECT_EQ(expected_username_, username);
     EXPECT_EQ(expected_password_, password);
+    // Profile hasn't been loaded.
+    delegate->OnProfilePrepared(NULL);
   }
 
   virtual void CompleteOffTheRecordLogin(const GURL& start_url) {
@@ -128,13 +131,6 @@ class MockLoginUtils : public LoginUtils {
   virtual Authenticator* CreateAuthenticator(LoginStatusConsumer* consumer) {
     return new MockAuthenticator(
         consumer, expected_username_, expected_password_);
-  }
-
-  virtual void EnableBrowserLaunch(bool enable) {
-  }
-
-  virtual bool IsBrowserLaunchEnabled() const {
-    return true;
   }
 
   virtual void PrewarmAuthentication() {
