@@ -34,8 +34,9 @@ def GetTemplate(env):
 
 asm_env = env.Clone()
 if asm_env.Bit('bitcode'):
-  asm_env.Replace(CC=env['CC_NATIVE'],
-                  OBJSUFFIX='.o')
+  asm_env.Replace(OBJSUFFIX='.o')
+  asm_env.Append(ASFLAGS=['-arch', '${TARGET_FULLARCH}'])
+
 template_obj = asm_env.ComponentObject(GetTemplate(env))
 
 prog_env = env.Clone()

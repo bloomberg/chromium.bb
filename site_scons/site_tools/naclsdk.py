@@ -217,12 +217,11 @@ def _SetEnvForPnacl(env, root):
   pnacl_sdk_ld_flags = ' -arch %s' % arch
   pnacl_sdk_ld_flags += ' ' + ' '.join(env['PNACL_BCLDFLAGS'])
 
-  pnacl_bug_424_1588 = ''
   if arch == 'arm' and not env.Bit('nacl_pic'):
     # Turn on ONLY direct-mc for non PIC
     # BUG=http://code.google.com/p/nativeclient/issues/detail?id=424
     # This block can be deleted once ARM/ELF/MC is fully working
-    pnacl_bug_424_1588 += ' --pnacl-force-mc-direct'
+    pnacl_bug_424_1588 = ' --pnacl-force-mc-direct'
     pnacl_sdk_cc_flags += pnacl_bug_424_1588
     pnacl_sdk_cxx_flags += pnacl_bug_424_1588
     pnacl_sdk_ld_flags += pnacl_bug_424_1588
@@ -241,25 +240,13 @@ def _SetEnvForPnacl(env, root):
   platform = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
   nnacl_root = os.path.join(env['MAIN_DIR'], 'toolchain', '%s_x86' % platform)
 
-  cc_other_map = {
-      'arm':    pnacl_sdk_cc + pnacl_bug_424_1588 + pnacl_sdk_cc_native_flags,
-      'x86-32': os.path.join(nnacl_root, 'bin', 'nacl-gcc'),
-      'x86-64': os.path.join(nnacl_root, 'bin', 'nacl64-gcc'),
-      }
-
   env.Replace(# Replace header and lib paths.
               NACL_SDK_INCLUDE=pnacl_sdk_include,
               NACL_SDK_LIB=pnacl_sdk_lib,
               # Replace the normal unix tools with the PNaCl ones.
               CC=pnacl_sdk_cc + pnacl_sdk_cc_flags,
               CXX=pnacl_sdk_cxx + pnacl_sdk_cxx_flags,
-              # NOTE: only in bitcode compilation scenarios where
-              #       CC compiles to bitcode and
-              #       CC_NATIVE compiles to native code
-              #       (CC_NATIVE had to handle both .c and .S files)
               OBJSUFFIX=".bc",
-              CC_NATIVE=pnacl_sdk_cc + pnacl_sdk_cc_native_flags,
-              CC_OTHER=cc_other_map[arch],
               LINK=pnacl_sdk_ld + pnacl_sdk_ld_flags,
               LD=pnacl_sdk_ld,
               AR=pnacl_sdk_ar,
@@ -279,19 +266,6 @@ def _SetEnvForSdkManually(env):
               CC=GetEnvOrDummy('CC'),
               CXX=GetEnvOrDummy('CXX'),
               AR=GetEnvOrDummy('AR'),
-              # NOTE: only used in bitcode compilation scenarios where
-              #       CC compiles to bitcode and
-              #       CC_NATIVE compiles to native code
-              #       (CC_NATIVE has to handle both .c and .S files)
-              CC_NATIVE=GetEnvOrDummy('CC_NATIVE'),
-              # NOTE: CC_OTHER is used in bitcode compilation scenarios
-              #       where CC compiles to bitcode and we need to build
-              #       native assembly code source code, typically for
-              #       low-level tests.  We cannot use CC_NATIVE because
-              #       CC_NATIVE on x86 does not handle .S files propery.
-              #       See
-              # http://code.google.com/p/nativeclient/issues/detail?id=1182
-              CC_OTHER=GetEnvOrDummy('CC_OTHER'),
               # NOTE: use g++ for linking so we can handle c AND c++
               LINK=GetEnvOrDummy('LINK'),
               RANLIB=GetEnvOrDummy('RANLIB'),

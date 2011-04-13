@@ -38,7 +38,9 @@ else:
 
 asm_env = blob_env.Clone()
 if asm_env.Bit('bitcode'):
-  asm_env.Replace(CC=env['CC_NATIVE'], OBJSUFFIX='.o')
+  asm_env.Replace(OBJSUFFIX='.o')
+  asm_env.Append(ASFLAGS=['-arch', '${TARGET_FULLARCH}'])
+
 asm_helper = asm_env.ComponentObject(
     'elf_restart_%s.S' % env['TARGET_FULLARCH'].replace('-', '_'))
 
