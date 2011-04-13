@@ -77,6 +77,8 @@ struct AutocompleteMatch {
                              // containing the input.
     SEARCH_SUGGEST,          // A suggested search (with the default engine).
     SEARCH_OTHER_ENGINE,     // A search with a non-default engine.
+    EXTENSION_APP,           // An Extension App with a title/url that contains
+                             // the input.
     NUM_TYPES,
   };
 

@@ -135,9 +135,14 @@ NSImage* AutocompleteEditViewMac::ImageForResource(int resource_id) {
     case IDR_STAR_LIT: image_name = @"star_lit.pdf"; break;
 
     // Values from |AutocompleteMatch::TypeToIcon()|.
-    case IDR_OMNIBOX_SEARCH: image_name = @"omnibox_search.pdf"; break;
-    case IDR_OMNIBOX_HTTP: image_name = @"omnibox_http.pdf"; break;
-    case IDR_OMNIBOX_HISTORY: image_name = @"omnibox_history.pdf"; break;
+    case IDR_OMNIBOX_SEARCH:
+      image_name = @"omnibox_search.pdf"; break;
+    case IDR_OMNIBOX_HTTP:
+      image_name = @"omnibox_http.pdf"; break;
+    case IDR_OMNIBOX_HISTORY:
+      image_name = @"omnibox_history.pdf"; break;
+    case IDR_OMNIBOX_EXTENSION_APP:
+      image_name = @"omnibox_extension_app.pdf"; break;
 
     // Values from |ToolbarModel::GetIcon()|.
     case IDR_OMNIBOX_HTTPS_VALID:

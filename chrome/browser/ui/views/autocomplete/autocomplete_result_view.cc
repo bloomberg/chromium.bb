@@ -271,11 +271,24 @@ const SkBitmap* AutocompleteResultView::GetIcon() const {
       IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match_.type);
   if (model_->IsSelectedIndex(model_index_)) {
     switch (icon) {
-      case IDR_OMNIBOX_HTTP:    icon = IDR_OMNIBOX_HTTP_SELECTED; break;
-      case IDR_OMNIBOX_HISTORY: icon = IDR_OMNIBOX_HISTORY_SELECTED; break;
-      case IDR_OMNIBOX_SEARCH:  icon = IDR_OMNIBOX_SEARCH_SELECTED; break;
-      case IDR_OMNIBOX_STAR:    icon = IDR_OMNIBOX_STAR_SELECTED; break;
-      default:             NOTREACHED(); break;
+      case IDR_OMNIBOX_EXTENSION_APP:
+        icon = IDR_OMNIBOX_EXTENSION_APP_SELECTED;
+        break;
+      case IDR_OMNIBOX_HTTP:
+        icon = IDR_OMNIBOX_HTTP_SELECTED;
+        break;
+      case IDR_OMNIBOX_HISTORY:
+        icon = IDR_OMNIBOX_HISTORY_SELECTED;
+        break;
+      case IDR_OMNIBOX_SEARCH:
+        icon = IDR_OMNIBOX_SEARCH_SELECTED;
+        break;
+      case IDR_OMNIBOX_STAR:
+        icon = IDR_OMNIBOX_STAR_SELECTED;
+        break;
+      default:
+        NOTREACHED();
+        break;
     }
   }
   return ResourceBundle::GetSharedInstance().GetBitmapNamed(icon);

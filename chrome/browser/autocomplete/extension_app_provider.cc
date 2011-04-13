@@ -63,7 +63,8 @@ void ExtensionAppProvider::Start(const AutocompleteInput& input,
         // We have a match, might be a partial match.
         // TODO(finnur): Figure out what type to return here, might want to have
         // the extension icon/a generic icon show up in the Omnibox.
-        AutocompleteMatch match(this, 0, false, AutocompleteMatch::HISTORY_URL);
+        AutocompleteMatch match(this, 0, false,
+                                AutocompleteMatch::EXTENSION_APP);
         match.fill_into_edit = UTF8ToUTF16(url);
         match.destination_url = GURL(url);
         match.inline_autocomplete_offset = string16::npos;

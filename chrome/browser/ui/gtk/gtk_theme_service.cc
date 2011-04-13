@@ -103,6 +103,7 @@ const int kThemeImages[] = {
 // current gtk theme selection color so they stand out against the GtkEntry's
 // base color.
 const int kAutocompleteImages[] = {
+  IDR_OMNIBOX_EXTENSION_APP,
   IDR_OMNIBOX_HTTP,
   IDR_OMNIBOX_HTTP_DARK,
   IDR_OMNIBOX_HISTORY,
@@ -112,7 +113,7 @@ const int kAutocompleteImages[] = {
   IDR_OMNIBOX_STAR,
   IDR_OMNIBOX_STAR_DARK,
   IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON,
-  IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON
+  IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON,
 };
 
 bool IsOverridableImage(int id) {
@@ -953,6 +954,7 @@ SkBitmap* GtkThemeService::GenerateGtkThemeBitmap(int id) const {
     // instead should tint based on the foreground text entry color in GTK+
     // mode because some themes that try to be dark *and* light have very
     // different colors between the omnibox and the normal background area.
+    case IDR_OMNIBOX_EXTENSION_APP:
     case IDR_OMNIBOX_HISTORY:
     case IDR_OMNIBOX_HTTP:
     case IDR_OMNIBOX_SEARCH:
@@ -965,6 +967,7 @@ SkBitmap* GtkThemeService::GenerateGtkThemeBitmap(int id) const {
     // the autocomplete popup and only against the current theme's GtkEntry
     // base[GTK_STATE_SELECTED] color, so tint the icons so they won't collide
     // with the selected color.
+    case IDR_OMNIBOX_EXTENSION_APP_DARK:
     case IDR_OMNIBOX_HISTORY_DARK:
     case IDR_OMNIBOX_HTTP_DARK:
     case IDR_OMNIBOX_SEARCH_DARK:
