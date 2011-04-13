@@ -24,6 +24,7 @@
 
 #include "native_client/src/untrusted/pthread/nc_hash.h"
 #include "native_client/src/untrusted/pthread/pthread.h"
+#include "native_client/src/untrusted/pthread/pthread_internal.h"
 #include "native_client/src/untrusted/pthread/pthread_types.h"
 
 #include "native_client/src/untrusted/valgrind/dynamic_annotations.h"
@@ -368,6 +369,38 @@ int __pthread_initialize(void) {
   return retval;
 }
 
+
+/*
+ * Initialize a thread that was not created by us.  This is for use in
+ * the integrated runtime (IRT), for when a thread is created by the
+ * user executable but IRT code must execute in its context.
+ *
+ * TODO(mseaborn): Currently the data structure we allocate here will
+ * leak.  We will need to hook into the thread_exit syscall to
+ * deallocate it.
+ */
+void *__nc_adopt_thread(void) {
+  nc_thread_descriptor_t *tdb;
+  nc_basic_thread_data_t *basic_data;
+  __pthread_initialize_minimal(sizeof(nc_thread_descriptor_t) +
+                               sizeof(nc_basic_thread_data_t));
+  tdb = nc_get_tdb();
+  basic_data = (nc_basic_thread_data_t *) (tdb + 1);
+  nc_tdb_init(tdb, basic_data);
+  /*
+   * The thread is not ours to join or detach.  We set this just in
+   * case, but it is not strictly necessary.
+   */
+  tdb->joinable = 0;
+  /*
+   * There is no need to use a small integer for this thread's ID
+   * since it will never be looked up by pthread_join() or
+   * pthread_detach().  We do not insert the thread into the hash
+   * table.
+   */
+  basic_data->thread_id = (uintptr_t) basic_data;
+  return tdb;
+}
 
 
 /* pthread functions */

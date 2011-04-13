@@ -49,7 +49,15 @@ struct NaClAppThread {
   struct NaClApp            *nap;
 
   int                       thread_num;  /* index into nap->threads */
-  uintptr_t                 sys_tdb;  /* saved tdb ptr */
+  /*
+   * sys_tdb and tdb2 are TLS values used by user code and the
+   * integrated runtime (IRT) respectively.  The first TLS area may be
+   * accessed via the %gs segment register on x86-32 so must point
+   * into untrusted address space; we store it as a system pointer.
+   * The second TLS may be an arbitrary value.
+   */
+  uintptr_t                 sys_tdb;  /* first saved tdb ptr */
+  uint32_t                  tdb2;  /* second saved tdb value */
 
   struct NaClThread         thread;  /* low level thread representation */
 

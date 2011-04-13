@@ -73,6 +73,8 @@
 #define NACL_sys_tls_init               82
 #define NACL_sys_thread_nice            83
 #define NACL_sys_tls_get                84
+#define NACL_sys_second_tls_set         85
+#define NACL_sys_second_tls_get         86
 
 #define NACL_sys_sem_create             100
 #define NACL_sys_sem_wait               101

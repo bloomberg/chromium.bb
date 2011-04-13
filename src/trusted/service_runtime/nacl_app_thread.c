@@ -93,6 +93,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
 
   natp->thread_num = -1;  /* illegal index */
   natp->sys_tdb = sys_tdb;
+  natp->tdb2 = 0;
 
   natp->dynamic_delete_generation = 0;
 

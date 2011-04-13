@@ -98,3 +98,11 @@ node = env.CommandSelLdrTestNacl(
     )
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_thread_stack_test',
                        is_broken=is_broken)
+
+test_prog = env.ComponentProgram('second_tls_test.nexe',
+                                 env.RawSyscallObjects(['second_tls_test.c']),
+                                 EXTRA_LIBS=['pthread'])
+node = env.CommandSelLdrTestNacl('second_tls_test.out',
+                                 command=[env.File(test_prog)])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_second_tls_test',
+                       is_broken=is_broken)
