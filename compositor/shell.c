@@ -671,6 +671,9 @@ move_binding(struct wl_input_device *device, uint32_t time,
 	struct wlsc_surface *surface =
 		(struct wlsc_surface *) device->pointer_focus;
 
+	if (surface == NULL)
+		return;
+
 	shell_move(NULL,
 		   (struct wl_shell *) &compositor->shell,
 		   &surface->surface, device, time);
@@ -685,6 +688,9 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 		(struct wlsc_surface *) device->pointer_focus;
 	uint32_t edges = 0;
 	int32_t x, y;
+
+	if (surface == NULL)
+		return;
 
 	x = device->grab_x - surface->x;
 	y = device->grab_y - surface->y;
