@@ -49,7 +49,7 @@ class CrashNotificationDelegate : public NotificationDelegate {
  public:
   CrashNotificationDelegate(Profile* profile, const Extension* extension)
       : profile_(profile),
-        is_app_(extension->is_app()),
+        is_hosted_app_(extension->is_hosted_app()),
         extension_id_(extension->id()) {
   }
 
@@ -63,7 +63,7 @@ class CrashNotificationDelegate : public NotificationDelegate {
   void Close(bool by_user) {}
 
   void Click() {
-    if (is_app_) {
+    if (is_hosted_app_) {
       profile_->GetBackgroundContentsService()->
           LoadBackgroundContentsForExtension(profile_, extension_id_);
     } else {
@@ -81,7 +81,7 @@ class CrashNotificationDelegate : public NotificationDelegate {
 
  private:
   Profile* profile_;
-  bool is_app_;
+  bool is_hosted_app_;
   std::string extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(CrashNotificationDelegate);
@@ -89,7 +89,7 @@ class CrashNotificationDelegate : public NotificationDelegate {
 
 void ShowBalloon(const Extension* extension, Profile* profile) {
   string16 message = l10n_util::GetStringFUTF16(
-      extension->is_app() ?  IDS_BACKGROUND_CRASHED_APP_BALLOON_MESSAGE :
+      extension->is_hosted_app() ?  IDS_BACKGROUND_CRASHED_APP_BALLOON_MESSAGE :
       IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE,
       UTF8ToUTF16(extension->name()));
   string16 content_url = DesktopNotificationService::CreateDataUrl(
@@ -171,6 +171,11 @@ void BackgroundContentsService::StartObserving(Profile* profile) {
   registrar_.Add(this, NotificationType::BACKGROUND_CONTENTS_NAVIGATED,
                  Source<Profile>(profile));
 
+  // Listen for new extension installs so that we can load any associated
+  // background page.
+  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+                 Source<Profile>(profile));
+
   // Track when the extensions crash so that the user can be notified
   // about it, and the crashed contents can be restarted.
   registrar_.Add(this, NotificationType::EXTENSION_PROCESS_TERMINATED,
@@ -189,8 +194,6 @@ void BackgroundContentsService::StartObserving(Profile* profile) {
   // uninstalls the extension.
   registrar_.Add(this, NotificationType::EXTENSION_UNINSTALLED,
                  Source<Profile>(profile));
-  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
-                 Source<Profile>(profile));
 }
 
 void BackgroundContentsService::Observe(NotificationType type,
@@ -198,6 +201,7 @@ void BackgroundContentsService::Observe(NotificationType type,
                                         const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::EXTENSIONS_READY:
+      LoadBackgroundContentsFromManifests(Source<Profile>(source).ptr());
       LoadBackgroundContentsFromPrefs(Source<Profile>(source).ptr());
       break;
     case NotificationType::BACKGROUND_CONTENTS_DELETED:
@@ -207,11 +211,49 @@ void BackgroundContentsService::Observe(NotificationType type,
       DCHECK(IsTracked(Details<BackgroundContents>(details).ptr()));
       UnregisterBackgroundContents(Details<BackgroundContents>(details).ptr());
       break;
-    case NotificationType::BACKGROUND_CONTENTS_NAVIGATED:
+    case NotificationType::BACKGROUND_CONTENTS_NAVIGATED: {
       DCHECK(IsTracked(Details<BackgroundContents>(details).ptr()));
+
+      // Do not register in the pref if the extension has a manifest-specified
+      // background page.
+      BackgroundContents* bgcontents =
+          Details<BackgroundContents>(details).ptr();
+      Profile* profile = Source<Profile>(source).ptr();
+      const string16& appid = GetParentApplicationId(bgcontents);
+      ExtensionService* extension_service = profile->GetExtensionService();
+      // extension_service can be NULL when running tests.
+      if (extension_service) {
+        const Extension* extension =
+            extension_service->GetExtensionById(UTF16ToUTF8(appid), false);
+        if (extension && extension->background_url().is_valid())
+          break;
+      }
       RegisterBackgroundContents(Details<BackgroundContents>(details).ptr());
       break;
+    }
+    case NotificationType::EXTENSION_LOADED: {
+      const Extension* extension = Details<const Extension>(details).ptr();
+      Profile* profile = Source<Profile>(source).ptr();
+      if (extension->is_hosted_app() &&
+          extension->background_url().is_valid()) {
+        // If there is a background page specified in the manifest for a hosted
+        // app, then blow away registered urls in the pref.
+        ShutdownAssociatedBackgroundContents(ASCIIToUTF16(extension->id()));
 
+        ExtensionService* service = profile->GetExtensionService();
+        if (service && service->is_ready()) {
+          // Now load the manifest-specified background page. If service isn't
+          // ready, then the background page will be loaded from the
+          // EXTENSIONS_READY callback.
+          LoadBackgroundContents(profile, extension->background_url(),
+              ASCIIToUTF16("background"), UTF8ToUTF16(extension->id()));
+        }
+      }
+
+      // Remove any "This extension has crashed" balloons.
+      ScheduleCloseBalloon(extension->id());
+      break;
+    }
     case NotificationType::EXTENSION_PROCESS_TERMINATED:
     case NotificationType::BACKGROUND_CONTENTS_TERMINATED: {
       Profile* profile = Source<Profile>(source).ptr();
@@ -247,9 +289,17 @@ void BackgroundContentsService::Observe(NotificationType type,
               ASCIIToUTF16(
                   Details<UnloadedExtensionInfo>(details)->extension->id()));
           break;
-        case UnloadedExtensionInfo::UPDATE:
-          // Leave BackgroundContents in place
+        case UnloadedExtensionInfo::UPDATE: {
+          // If there is a manifest specified background page, then shut it down
+          // here, since if the updated extension still has the background page,
+          // then it will be loaded from LOADED callback. Otherwise, leave
+          // BackgroundContents in place.
+          const Extension* extension =
+              Details<UnloadedExtensionInfo>(details)->extension;
+          if (extension->background_url().is_valid())
+            ShutdownAssociatedBackgroundContents(ASCIIToUTF16(extension->id()));
           break;
+        }
         default:
           NOTREACHED();
           ShutdownAssociatedBackgroundContents(
@@ -264,13 +314,6 @@ void BackgroundContentsService::Observe(NotificationType type,
       const UninstalledExtensionInfo* uninstalled_extension =
           Details<const UninstalledExtensionInfo>(details).ptr();
       ScheduleCloseBalloon(uninstalled_extension->extension_id);
-      break;
-    }
-
-    case NotificationType::EXTENSION_LOADED: {
-      // Remove any "This extension has crashed" balloons.
-      const Extension* extension = Details<const Extension>(details).ptr();
-      ScheduleCloseBalloon(extension->id());
       break;
     }
 
@@ -312,6 +355,19 @@ void BackgroundContentsService::LoadBackgroundContentsFromPrefs(
 void BackgroundContentsService::LoadBackgroundContentsForExtension(
     Profile* profile,
     const std::string& extension_id) {
+  // First look if the manifest specifies a background page.
+  const Extension* extension =
+      profile->GetExtensionService()->GetExtensionById(extension_id, false);
+  DCHECK(!extension || extension->is_hosted_app());
+  if (extension && extension->background_url().is_valid()) {
+    LoadBackgroundContents(profile,
+                           extension->background_url(),
+                           ASCIIToUTF16("background"),
+                           UTF8ToUTF16(extension->id()));
+    return;
+  }
+
+  // Now look in the prefs.
   if (!prefs_)
     return;
   const DictionaryValue* contents =
@@ -340,6 +396,23 @@ void BackgroundContentsService::LoadBackgroundContentsFromDictionary(
                          GURL(url),
                          frame_name,
                          UTF8ToUTF16(extension_id));
+}
+
+void BackgroundContentsService::LoadBackgroundContentsFromManifests(
+    Profile* profile) {
+  const ExtensionList* extensions =
+      profile->GetExtensionService()->extensions();
+  ExtensionList::const_iterator iter = extensions->begin();
+  for (; iter != extensions->end(); ++iter) {
+    const Extension* extension = *iter;
+    if (extension->is_hosted_app() &&
+        extension->background_url().is_valid()) {
+      LoadBackgroundContents(profile,
+                             extension->background_url(),
+                             ASCIIToUTF16("background"),
+                             UTF8ToUTF16(extension->id()));
+    }
+  }
 }
 
 void BackgroundContentsService::LoadBackgroundContents(

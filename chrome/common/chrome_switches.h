@@ -26,6 +26,7 @@ namespace switches {
 extern const char kActivateOnLaunch[];
 extern const char kAllowFileAccess[];
 extern const char kAllowOutdatedPlugins[];
+extern const char kAllowHTTPBackgroundPage[];
 extern const char kAllowScriptingGallery[];
 extern const char kAlwaysAuthorizePlugins[];
 extern const char kAlwaysEnableDevTools[];

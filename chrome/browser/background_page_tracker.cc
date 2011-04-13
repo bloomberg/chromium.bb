@@ -160,7 +160,8 @@ void BackgroundPageTracker::Observe(NotificationType type,
     }
     case NotificationType::EXTENSION_LOADED: {
       const Extension* extension = Details<const Extension>(details).ptr();
-      if (extension->background_url().is_valid())
+      if (!extension->is_hosted_app() &&
+          extension->background_url().is_valid())
         OnBackgroundPageLoaded(extension->id());
       break;
     }

@@ -1284,8 +1284,10 @@ bool Extension::EnsureNotHybridApp(const DictionaryValue* manifest,
     if (!IsBaseCrxKey(*key) &&
         *key != keys::kApp &&
         *key != keys::kPermissions &&
-        *key != keys::kOptionsPage) {
-      *error = errors::kHostedAppsCannotIncludeExtensionFeatures;
+        *key != keys::kOptionsPage &&
+        *key != keys::kBackground) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kHostedAppsCannotIncludeExtensionFeatures, *key);
       return false;
     }
   }
@@ -1854,16 +1856,6 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
     }
   }
 
-  // Initialize background url (optional).
-  if (source.HasKey(keys::kBackground)) {
-    std::string background_str;
-    if (!source.GetString(keys::kBackground, &background_str)) {
-      *error = errors::kInvalidBackground;
-      return false;
-    }
-    background_url_ = GetResourceURL(background_str);
-  }
-
   // Initialize toolstrips.  This is deprecated for public use.
   // NOTE(erikkay) Although deprecated, we intend to preserve this parsing
   // code indefinitely.  Please contact me or Joi for details as to why.
@@ -2012,7 +2004,6 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
         return false;
       }
       options_url_ = options_url;
-
     } else {
       GURL absolute(options_str);
       if (absolute.is_valid()) {
@@ -2115,6 +2106,41 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       // a valid URL pattern if it is almost valid.  For example, if it has
       // a valid scheme, and failed to parse because it has a port, show an
       // error.
+    }
+  }
+
+  // Initialize background url (optional).
+  if (source.HasKey(keys::kBackground)) {
+    std::string background_str;
+    if (!source.GetString(keys::kBackground, &background_str)) {
+      *error = errors::kInvalidBackground;
+      return false;
+    }
+
+    if (is_hosted_app()) {
+      // Make sure "background" permission is set.
+      if (api_permissions_.find(kBackgroundPermission) ==
+          api_permissions_.end()) {
+        *error = errors::kBackgroundPermissionNeeded;
+        return false;
+      }
+      // Hosted apps require an absolute URL.
+      GURL bg_page(background_str);
+      if (!bg_page.is_valid()) {
+        *error = errors::kInvalidBackgroundInHostedApp;
+        return false;
+      }
+
+      if (!(bg_page.SchemeIs("https") ||
+           (CommandLine::ForCurrentProcess()->HasSwitch(
+                switches::kAllowHTTPBackgroundPage) &&
+            bg_page.SchemeIs("http")))) {
+        *error = errors::kInvalidBackgroundInHostedApp;
+        return false;
+      }
+      background_url_ = bg_page;
+    } else {
+      background_url_ = GetResourceURL(background_str);
     }
   }
 

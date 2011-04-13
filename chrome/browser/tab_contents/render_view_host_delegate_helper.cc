@@ -58,6 +58,11 @@ RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
   if (!extension)
     return NULL;
 
+  // If the extension manifest specifies a background page, then don't allow one
+  // to be created here.
+  if (extension->background_url().is_valid())
+    return NULL;
+
   // Only allow a single background contents per app.
   if (!profile->GetBackgroundContentsService() ||
       profile->GetBackgroundContentsService()->GetAppBackgroundContents(
