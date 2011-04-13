@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/first_run/upgrade_util.h"
+#include "chrome/browser/first_run/upgrade.h"
 
 #include <algorithm>
 #include <string>
@@ -60,24 +60,11 @@ bool InvokeGoogleUpdateForRename() {
 
 }  // namespace
 
+// static
+CommandLine* Upgrade::new_command_line_ = NULL;
 
-namespace upgrade_util {
-
-bool RelaunchChromeBrowser(const CommandLine& command_line) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  env->UnSetVar(chrome::kChromeVersionEnvVar);
-  return base::LaunchApp(
-      command_line.command_line_string(), false, false, NULL);
-}
-
-bool IsUpdatePendingRestart() {
-  FilePath new_chrome_exe;
-  if (!GetNewerChromeFile(&new_chrome_exe))
-    return false;
-  return file_util::PathExists(new_chrome_exe);
-}
-
-bool IsBrowserAlreadyRunning() {
+// static
+bool Upgrade::IsBrowserAlreadyRunning() {
   static HANDLE handle = NULL;
   FilePath exe_path;
   PathService::Get(base::FILE_EXE, &exe_path);
@@ -92,7 +79,8 @@ bool IsBrowserAlreadyRunning() {
   return (error == ERROR_ALREADY_EXISTS || error == ERROR_ACCESS_DENIED);
 }
 
-bool SwapNewChromeExeIfPresent() {
+// static
+bool Upgrade::SwapNewChromeExeIfPresent() {
   FilePath new_chrome_exe;
   if (!GetNewerChromeFile(&new_chrome_exe))
     return false;
@@ -127,26 +115,43 @@ bool SwapNewChromeExeIfPresent() {
   return InvokeGoogleUpdateForRename();
 }
 
-bool DoUpgradeTasks(const CommandLine& command_line) {
-  if (!SwapNewChromeExeIfPresent())
+// static
+bool Upgrade::DoUpgradeTasks(const CommandLine& command_line) {
+  if (!Upgrade::SwapNewChromeExeIfPresent())
     return false;
   // At this point the chrome.exe has been swapped with the new one.
-  if (!RelaunchChromeBrowser(command_line)) {
+  if (!Upgrade::RelaunchChromeBrowser(command_line)) {
     // The re-launch fails. Feel free to panic now.
     NOTREACHED();
   }
   return true;
 }
 
-TryResult ShowTryChromeDialog(size_t version,
-                              ProcessSingleton* process_singleton) {
+// static
+Upgrade::TryResult Upgrade::ShowTryChromeDialog(
+    size_t version,
+    ProcessSingleton* process_singleton) {
   if (version > 10000) {
     // This is a test value. We want to make sure we exercise
     // returning this early. See EarlyReturnTest test harness.
-    return NOT_NOW;
+    return Upgrade::NOT_NOW;
   }
   TryChromeDialogView dialog(version);
   return dialog.ShowModal(process_singleton);
 }
 
-}  // namespace upgrade_util
+// static
+bool Upgrade::RelaunchChromeBrowser(const CommandLine& command_line) {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  env->UnSetVar(chrome::kChromeVersionEnvVar);
+  return base::LaunchApp(
+      command_line.command_line_string(), false, false, NULL);
+}
+
+// static
+bool Upgrade::IsUpdatePendingRestart() {
+  FilePath new_chrome_exe;
+  if (!GetNewerChromeFile(&new_chrome_exe))
+    return false;
+  return file_util::PathExists(new_chrome_exe);
+}

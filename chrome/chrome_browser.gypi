@@ -1062,10 +1062,10 @@
         'browser/first_run/first_run_gtk.cc',
         'browser/first_run/first_run_mac.mm',
         'browser/first_run/first_run_win.cc',
-        'browser/first_run/upgrade_util.cc',
-        'browser/first_run/upgrade_util.h',
-        'browser/first_run/upgrade_util_linux.cc',
-        'browser/first_run/upgrade_util_win.cc',
+        'browser/first_run/upgrade.cc',
+        'browser/first_run/upgrade.h',
+        'browser/first_run/upgrade_gtk.cc',
+        'browser/first_run/upgrade_win.cc',
         'browser/first_run/try_chrome_dialog_view.cc',
         'browser/first_run/try_chrome_dialog_view.h',
         'browser/fullscreen.h',
@@ -3418,8 +3418,8 @@
         ['chromeos==1', {
           'sources!': [
             'browser/background_mode_manager_linux.cc',
-            'browser/first_run/upgrade_util.cc',
-            'browser/first_run/upgrade_util.h',
+            'browser/first_run/upgrade.cc',
+            'browser/first_run/upgrade.h',
             'browser/password_manager/native_backend_gnome_x.cc',
             'browser/password_manager/native_backend_gnome_x.h',
             'browser/password_manager/native_backend_kwallet_x.cc',
@@ -3487,8 +3487,8 @@
           ],
           'sources': [
             'browser/crash_handler_host_linux.h',
-            'browser/first_run/upgrade_util.cc',
-            'browser/first_run/upgrade_util.h',
+            'browser/first_run/upgrade.cc',
+            'browser/first_run/upgrade.h',
           ],
           'conditions': [
             ['use_gnome_keyring==1', {
@@ -3552,8 +3552,8 @@
             'browser/automation/automation_provider_list_generic.cc',
             'browser/bookmarks/bookmark_context_menu.cc',
             'browser/bookmarks/bookmark_drop_info.cc',
-            'browser/first_run/upgrade_util.cc',
-            'browser/first_run/upgrade_util.h',
+            'browser/first_run/upgrade.cc',
+            'browser/first_run/upgrade.h',
             'browser/importer/nss_decryptor_system_nss.cc',
             'browser/importer/nss_decryptor_system_nss.h',
             'browser/jankometer.cc',
@@ -3714,8 +3714,8 @@
             }
           },
           'sources': [
-            'browser/first_run/upgrade_util.cc',
-            'browser/first_run/upgrade_util.h',
+            'browser/first_run/upgrade.cc',
+            'browser/first_run/upgrade.h',
             # Using built-in rule in vstudio for midl.
             'browser/history/history_indexer.idl',
             'browser/ui/webui/conflicts_ui.cc',
