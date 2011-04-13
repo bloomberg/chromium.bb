@@ -212,7 +212,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 37;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 36;
 
 void WebDatabaseMigrationTest::LoadDatabase(const FilePath::StringType& file) {
   std::string contents;
@@ -1055,7 +1055,16 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     EXPECT_EQ(1297882100L, s1.ColumnInt64(8));
 
     // John P. Doe.
-    // Gets merged during migration from 35 to 37 due to multi-valued fields.
+    ASSERT_TRUE(s1.Step());
+    EXPECT_EQ("589636FD-9037-3053-200C-80ABC97D7344", s1.ColumnString(0));
+    EXPECT_EQ(ASCIIToUTF16("Doe Enterprises"), s1.ColumnString16(1));
+    EXPECT_EQ(ASCIIToUTF16("1 Main St"), s1.ColumnString16(2));
+    EXPECT_EQ(ASCIIToUTF16("Apt 1"), s1.ColumnString16(3));
+    EXPECT_EQ(ASCIIToUTF16("Los Altos"), s1.ColumnString16(4));
+    EXPECT_EQ(ASCIIToUTF16("CA"), s1.ColumnString16(5));
+    EXPECT_EQ(ASCIIToUTF16("94022"), s1.ColumnString16(6));
+    EXPECT_EQ(ASCIIToUTF16("United States"), s1.ColumnString16(7));
+    EXPECT_EQ(1297882100L, s1.ColumnInt64(8));
 
     // Dave Smith.
     ASSERT_TRUE(s1.Step());
@@ -1111,10 +1120,9 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     EXPECT_EQ(ASCIIToUTF16(""), s2.ColumnString16(2));
     EXPECT_EQ(ASCIIToUTF16("Doe"), s2.ColumnString16(3));
 
-    // John P. Doe.  Note same guid as above due to merging of multi-valued
-    // fields.
+    // John P. Doe.
     ASSERT_TRUE(s2.Step());
-    EXPECT_EQ("00580526-FF81-EE2A-0546-1AC593A32E2F", s2.ColumnString(0));
+    EXPECT_EQ("589636FD-9037-3053-200C-80ABC97D7344", s2.ColumnString(0));
     EXPECT_EQ(ASCIIToUTF16("John"), s2.ColumnString16(1));
     EXPECT_EQ(ASCIIToUTF16("P."), s2.ColumnString16(2));
     EXPECT_EQ(ASCIIToUTF16("Doe"), s2.ColumnString16(3));
@@ -1157,8 +1165,9 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     EXPECT_EQ(ASCIIToUTF16("john@doe.com"), s3.ColumnString16(1));
 
     // John P. Doe.
-    // Gets culled during migration from 35 to 37 due to merging of John Doe and
-    // John P. Doe addresses.
+    ASSERT_TRUE(s3.Step());
+    EXPECT_EQ("589636FD-9037-3053-200C-80ABC97D7344", s3.ColumnString(0));
+    EXPECT_EQ(ASCIIToUTF16("john@doe.com"), s3.ColumnString16(1));
 
     // 2 Main Street.
     ASSERT_TRUE(s3.Step());
@@ -1199,12 +1208,16 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     EXPECT_EQ(ASCIIToUTF16("4153334444"), s4.ColumnString16(2));
 
     // John P. Doe phone.
-    // Gets culled during migration from 35 to 37 due to merging of John Doe and
-    // John P. Doe addresses.
+    ASSERT_TRUE(s4.Step());
+    EXPECT_EQ("589636FD-9037-3053-200C-80ABC97D7344", s4.ColumnString(0));
+    EXPECT_EQ(0, s4.ColumnInt(1)); // 0 means phone.
+    EXPECT_EQ(ASCIIToUTF16("4151112222"), s4.ColumnString16(2));
 
     // John P. Doe fax.
-    // Gets culled during migration from 35 to 37 due to merging of John Doe and
-    // John P. Doe addresses.
+    ASSERT_TRUE(s4.Step());
+    EXPECT_EQ("589636FD-9037-3053-200C-80ABC97D7344", s4.ColumnString(0));
+    EXPECT_EQ(1, s4.ColumnInt(1)); // 1 means fax.
+    EXPECT_EQ(ASCIIToUTF16("4153334444"), s4.ColumnString16(2));
 
     // 2 Main Street phone.
     ASSERT_TRUE(s4.Step());
@@ -1243,6 +1256,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     EXPECT_EQ("9E5FE298-62C7-83DF-6293-381BC589183F", s4.ColumnString(0));
     EXPECT_EQ(1, s4.ColumnInt(1)); // 1 means fax.
     EXPECT_EQ(ASCIIToUTF16(""), s4.ColumnString16(2));
+
 
     // Should be all.
     EXPECT_FALSE(s4.Step());

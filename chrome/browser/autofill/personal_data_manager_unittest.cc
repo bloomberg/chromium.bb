@@ -808,7 +808,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentProfiles) {
       "Email:", "email", "second@gmail.com", "text", &field);
   form2.fields.push_back(field);
   autofill_test::CreateTestFormField(
-      "Address:", "address1", "22 Laussat St", "text", &field);
+      "Address:", "address1", "21 Laussat St", "text", &field);
   form2.fields.push_back(field);
   autofill_test::CreateTestFormField(
       "City:", "city", "San Francisco", "text", &field);
@@ -837,110 +837,11 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentProfiles) {
 
   AutofillProfile expected2;
   autofill_test::SetProfileInfo(&expected2, "John", NULL,
-      "Adams", "second@gmail.com", NULL, "22 Laussat St", NULL,
+      "Adams", "second@gmail.com", NULL, "21 Laussat St", NULL,
       "San Francisco", "California", "94102", NULL, NULL, NULL);
   ASSERT_EQ(2U, results2.size());
   EXPECT_EQ(0, expected.Compare(*results2[0]));
   EXPECT_EQ(0, expected2.Compare(*results2[1]));
-}
-
-TEST_F(PersonalDataManagerTest, AggregateTwoProfilesWithMultiValue) {
-  FormData form1;
-  webkit_glue::FormField field;
-  autofill_test::CreateTestFormField(
-      "First name:", "first_name", "George", "text", &field);
-  form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Last name:", "last_name", "Washington", "text", &field);
-  form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Email:", "email", "theprez@gmail.com", "text", &field);
-  form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Address:", "address1", "21 Laussat St", "text", &field);
-  form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "San Francisco", "text", &field);
-  form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State:", "state", "California", "text", &field);
-  form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Zip:", "zip", "94102", "text", &field);
-  form1.fields.push_back(field);
-
-  FormStructure form_structure1(form1);
-  form_structure1.DetermineHeuristicTypes();
-  std::vector<const FormStructure*> forms;
-  forms.push_back(&form_structure1);
-  const CreditCard* imported_credit_card;
-  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
-  ASSERT_FALSE(imported_credit_card);
-
-  // Wait for the refresh.
-  EXPECT_CALL(personal_data_observer_,
-      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
-
-  MessageLoop::current()->Run();
-
-  AutofillProfile expected;
-  autofill_test::SetProfileInfo(&expected, "George", NULL,
-      "Washington", "theprez@gmail.com", NULL, "21 Laussat St", NULL,
-      "San Francisco", "California", "94102", NULL, NULL, NULL);
-  const std::vector<AutofillProfile*>& results1 = personal_data_->profiles();
-  ASSERT_EQ(1U, results1.size());
-  EXPECT_EQ(0, expected.Compare(*results1[0]));
-
-  // Now create a completely different profile.
-  FormData form2;
-  autofill_test::CreateTestFormField(
-      "First name:", "first_name", "John", "text", &field);
-  form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Last name:", "last_name", "Adams", "text", &field);
-  form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Email:", "email", "second@gmail.com", "text", &field);
-  form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Address:", "address1", "21 Laussat St", "text", &field);
-  form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "City:", "city", "San Francisco", "text", &field);
-  form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "State:", "state", "California", "text", &field);
-  form2.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Zip:", "zip", "94102", "text", &field);
-  form2.fields.push_back(field);
-
-  FormStructure form_structure2(form2);
-  form_structure2.DetermineHeuristicTypes();
-  forms.clear();
-  forms.push_back(&form_structure2);
-  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
-  ASSERT_FALSE(imported_credit_card);
-
-  // Wait for the refresh.
-  EXPECT_CALL(personal_data_observer_,
-      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
-
-  MessageLoop::current()->Run();
-
-  const std::vector<AutofillProfile*>& results2 = personal_data_->profiles();
-
-  // Modify expected to include multi-valued fields.
-  std::vector<string16> values;
-  expected.GetMultiInfo(NAME_FULL, &values);
-  values.push_back(ASCIIToUTF16("John Adams"));
-  expected.SetMultiInfo(NAME_FULL, values);
-  expected.GetMultiInfo(EMAIL_ADDRESS, &values);
-  values.push_back(ASCIIToUTF16("second@gmail.com"));
-  expected.SetMultiInfo(EMAIL_ADDRESS, values);
-
-  ASSERT_EQ(1U, results2.size());
-  EXPECT_EQ(0, expected.CompareMulti(*results2[0]));
 }
 
 TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
@@ -1048,14 +949,13 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
 
   const std::vector<AutofillProfile*>& results2 = personal_data_->profiles();
 
-  // Add multi-valued phone number to expectation.  Also, country gets added.
-  std::vector<string16> values;
-  expected.GetMultiInfo(PHONE_HOME_WHOLE_NUMBER, &values);
-  values.push_back(ASCIIToUTF16("1231231234"));
-  expected.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, values);
-  expected.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("United States"));
+  AutofillProfile expected2;
+  autofill_test::SetProfileInfo(&expected2, "George", NULL,
+      "Washington", "theprez@gmail.com", NULL, "1600 Pennsylvania Avenue",
+      "Suite A", "San Francisco", "California", "94102", "USA", "1231231234",
+      NULL);
   ASSERT_EQ(1U, results2.size());
-  EXPECT_EQ(0, expected.CompareMulti(*results2[0]));
+  EXPECT_EQ(0, expected2.Compare(*results2[0]));
 }
 
 TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInOld) {

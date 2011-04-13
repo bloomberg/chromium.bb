@@ -4,7 +4,6 @@
 
 #include "chrome/browser/autofill/autofill_profile.h"
 
-#include <algorithm>
 #include <map>
 #include <set>
 
@@ -135,45 +134,6 @@ void CopyItemsToValues(AutofillFieldType type,
     (*values)[i] = form_group_items[i].GetInfo(type);
 }
 
-// Collapse compound field types to their "full" type.  I.e. First name
-// collapses to full name, area code collapses to full phone, etc.
-void CollapseCompoundFieldTypes(FieldTypeSet* type_set) {
-  FieldTypeSet collapsed_set;
-  for (FieldTypeSet::iterator iter = type_set->begin(); iter != type_set->end();
-       ++iter) {
-    switch (*iter) {
-      case NAME_FIRST:
-      case NAME_MIDDLE:
-      case NAME_LAST:
-      case NAME_MIDDLE_INITIAL:
-      case NAME_FULL:
-      case NAME_SUFFIX:
-        collapsed_set.insert(NAME_FULL);
-        break;
-
-      case PHONE_HOME_NUMBER:
-      case PHONE_HOME_CITY_CODE:
-      case PHONE_HOME_COUNTRY_CODE:
-      case PHONE_HOME_CITY_AND_NUMBER:
-      case PHONE_HOME_WHOLE_NUMBER:
-        collapsed_set.insert(PHONE_HOME_WHOLE_NUMBER);
-        break;
-
-      case PHONE_FAX_NUMBER:
-      case PHONE_FAX_CITY_CODE:
-      case PHONE_FAX_COUNTRY_CODE:
-      case PHONE_FAX_CITY_AND_NUMBER:
-      case PHONE_FAX_WHOLE_NUMBER:
-        collapsed_set.insert(PHONE_FAX_WHOLE_NUMBER);
-        break;
-
-      default:
-        collapsed_set.insert(*iter);
-    }
-  }
-  std::swap(*type_set, collapsed_set);
-}
-
 }  // namespace
 
 AutofillProfile::AutofillProfile(const std::string& guid)
@@ -290,15 +250,6 @@ void AutofillProfile::GetMultiInfo(AutofillFieldType type,
       values->resize(1);
       (*values)[0] = GetInfo(type);
   }
-}
-
-// static
-bool AutofillProfile::SupportsMultiValue(AutofillFieldType type) {
-  AutofillType::FieldTypeGroup group = AutofillType(type).group();
-  return group == AutofillType::NAME ||
-         group == AutofillType::EMAIL ||
-         group == AutofillType::PHONE_HOME ||
-         group == AutofillType::PHONE_FAX;
 }
 
 const string16 AutofillProfile::Label() const {
@@ -460,38 +411,10 @@ bool AutofillProfile::operator!=(const AutofillProfile& profile) const {
 }
 
 const string16 AutofillProfile::PrimaryValue() const {
-  return GetInfo(ADDRESS_HOME_LINE1) +
-         GetInfo(ADDRESS_HOME_CITY);
-}
-
-void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile) {
-  FieldTypeSet field_types;
-  profile.GetAvailableFieldTypes(&field_types);
-
-  // Only transfer "full" types (e.g. full name) and not fragments (e.g.
-  // first name, last name).
-  CollapseCompoundFieldTypes(&field_types);
-
-  for (FieldTypeSet::const_iterator iter = field_types.begin();
-       iter != field_types.end(); ++iter) {
-    if (AutofillProfile::SupportsMultiValue(*iter)) {
-      std::vector<string16> new_values;
-      profile.GetMultiInfo(*iter, &new_values);
-      std::vector<string16> existing_values;
-      GetMultiInfo(*iter, &existing_values);
-      for (std::vector<string16>::iterator value_iter = new_values.begin();
-           value_iter != new_values.end(); ++value_iter) {
-        // Don't add duplicates.
-        if (std::find(existing_values.begin(), existing_values.end(),
-                      *value_iter) == existing_values.end()) {
-          existing_values.insert(existing_values.end(), *value_iter);
-        }
-      }
-      SetMultiInfo(*iter, existing_values);
-    } else {
-      SetInfo(*iter, profile.GetInfo(*iter));
-    }
-  }
+  return GetInfo(NAME_FULL) +
+         GetInfo(ADDRESS_HOME_LINE1) +
+         GetInfo(ADDRESS_HOME_LINE2) +
+         GetInfo(EMAIL_ADDRESS);
 }
 
 string16 AutofillProfile::ConstructInferredLabel(

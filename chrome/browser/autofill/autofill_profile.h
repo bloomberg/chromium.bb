@@ -49,9 +49,6 @@ class AutofillProfile : public FormGroup {
   void GetMultiInfo(AutofillFieldType type,
                     std::vector<string16>* values) const;
 
-  // Returns |true| if |type| accepts multi-values.
-  static bool SupportsMultiValue(AutofillFieldType type);
-
   // The user-visible label of the profile, generated in relation to other
   // profiles. Shows at least 2 fields that differentiate profile from other
   // profiles. See AdjustInferredLabels() further down for more description.
@@ -118,10 +115,6 @@ class AutofillProfile : public FormGroup {
   // basis of comparison for new values that are submitted through forms to
   // aid with correct aggregation of new data.
   const string16 PrimaryValue() const;
-
-  // Overwrites the single-valued field data in |profile| with this
-  // Profile.  Or, for multi-valued fields append the new values.
-  void OverwriteWithOrAddTo(const AutofillProfile& profile);
 
  private:
   typedef std::vector<const FormGroup*> FormGroupList;

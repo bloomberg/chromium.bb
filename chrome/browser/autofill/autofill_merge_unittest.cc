@@ -39,8 +39,8 @@ const AutofillFieldType kProfileFieldTypes[] = {
   ADDRESS_HOME_STATE,
   ADDRESS_HOME_ZIP,
   ADDRESS_HOME_COUNTRY,
-  PHONE_HOME_WHOLE_NUMBER,
-  PHONE_FAX_WHOLE_NUMBER,
+  PHONE_HOME_NUMBER,
+  PHONE_FAX_NUMBER,
 };
 
 // Serializes the |profiles| into a string.
@@ -51,14 +51,10 @@ std::string SerializeProfiles(const std::vector<AutofillProfile*>& profiles) {
     result += "\n";
     for (size_t j = 0; j < arraysize(kProfileFieldTypes); ++j) {
       AutofillFieldType type = kProfileFieldTypes[j];
-      std::vector<string16> values;
-      profiles[i]->GetMultiInfo(type, &values);
-      for (size_t k = 0; k < values.size(); ++k) {
-        result += AutofillType::FieldTypeToString(type);
-        result += kFieldSeparator;
-        result += UTF16ToUTF8(values[k]);
-        result += "\n";
-      }
+      result += AutofillType::FieldTypeToString(type);
+      result += kFieldSeparator;
+      result += UTF16ToUTF8(profiles[i]->GetInfo(type));
+      result += "\n";
     }
   }
 
@@ -148,6 +144,11 @@ void AutofillMergeTest::SetUp() {
 void AutofillMergeTest::GenerateResults(const std::string& input,
                                         std::string* output) {
   MergeProfiles(input, output);
+
+  // Verify that the test is idempotent on the output profiles.
+  std::string merged_output;
+  MergeProfiles(*output, &merged_output);
+  EXPECT_EQ(*output, merged_output);
 }
 
 void AutofillMergeTest::MergeProfiles(const std::string& profiles,
@@ -187,7 +188,8 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
 
     // The first line is always a profile separator, and the last profile is not
     // followed by an explicit separator.
-    if ((i > 0 && line == kProfileSeparator) || i == lines.size() - 1) {
+    if ((i > 0 && line == kProfileSeparator) ||
+        i == lines.size() - 1) {
       // Reached the end of a profile.  Try to import it.
       FormStructure form_structure(form);
       for (size_t i = 0; i < form_structure.field_count(); ++i) {
