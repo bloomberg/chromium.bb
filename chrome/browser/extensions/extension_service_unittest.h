@@ -40,6 +40,7 @@ class ExtensionServiceTestBase : public testing::Test {
   ScopedTempDir temp_dir_;
   scoped_ptr<Profile> profile_;
   FilePath extensions_install_dir_;
+  FilePath data_dir_;
   scoped_refptr<ExtensionService> service_;
   size_t total_successes_;
   MessageLoop loop_;

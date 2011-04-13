@@ -377,6 +377,12 @@ ExtensionServiceTestBase::ExtensionServiceTestBase()
       webkit_thread_(BrowserThread::WEBKIT, &loop_),
       file_thread_(BrowserThread::FILE, &loop_),
       io_thread_(BrowserThread::IO, &loop_) {
+  FilePath test_data_dir;
+  if (!PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir)) {
+    ADD_FAILURE();
+    return;
+  }
+  data_dir_ = test_data_dir.AppendASCII("extensions");
 }
 
 ExtensionServiceTestBase::~ExtensionServiceTestBase() {
@@ -892,10 +898,7 @@ void PackExtensionTestClient::OnPackFailure(const std::string& error_message) {
 // Test loading good extensions from the profile directory.
 TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   // Initialize the test dir with a good Preferences/extensions.
-  FilePath source_install_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_install_dir));
-  source_install_dir = source_install_dir
-      .AppendASCII("extensions")
+  FilePath source_install_dir = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions");
   FilePath pref_path = source_install_dir
@@ -996,10 +999,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
 // Test loading bad extensions from the profile directory.
 TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectoryFail) {
   // Initialize the test dir with a bad Preferences/extensions.
-  FilePath source_install_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_install_dir));
-  source_install_dir = source_install_dir
-      .AppendASCII("extensions")
+  FilePath source_install_dir = data_dir_
       .AppendASCII("bad")
       .AppendASCII("Extensions");
   FilePath pref_path = source_install_dir
@@ -1034,10 +1034,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectoryFail) {
 // Test that partially deleted extensions are cleaned up during startup
 // Test loading bad extensions from the profile directory.
 TEST_F(ExtensionServiceTest, CleanupOnStartup) {
-  FilePath source_install_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_install_dir));
-  source_install_dir = source_install_dir
-      .AppendASCII("extensions")
+  FilePath source_install_dir = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions");
   FilePath pref_path = source_install_dir
@@ -1078,20 +1075,16 @@ TEST_F(ExtensionServiceTest, CleanupOnStartup) {
 TEST_F(ExtensionServiceTest, InstallExtension) {
   InitializeEmptyExtensionService();
 
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
-
   // Extensions not enabled.
   set_extensions_enabled(false);
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
   InstallCrx(path, false);
   set_extensions_enabled(true);
 
   ValidatePrefKeyCount(0);
 
   // A simple extension that should install without error.
-  path = extensions_path.AppendASCII("good.crx");
+  path = data_dir_.AppendASCII("good.crx");
   InstallCrx(path, true);
   // TODO(erikkay): verify the contents of the installed extension.
 
@@ -1101,24 +1094,24 @@ TEST_F(ExtensionServiceTest, InstallExtension) {
   ValidateIntegerPref(good_crx, "location", Extension::INTERNAL);
 
   // An extension with page actions.
-  path = extensions_path.AppendASCII("page_action.crx");
+  path = data_dir_.AppendASCII("page_action.crx");
   InstallCrx(path, true);
   ValidatePrefKeyCount(++pref_count);
   ValidateIntegerPref(page_action, "state", Extension::ENABLED);
   ValidateIntegerPref(page_action, "location", Extension::INTERNAL);
 
   // Bad signature.
-  path = extensions_path.AppendASCII("bad_signature.crx");
+  path = data_dir_.AppendASCII("bad_signature.crx");
   InstallCrx(path, false);
   ValidatePrefKeyCount(pref_count);
 
   // 0-length extension file.
-  path = extensions_path.AppendASCII("not_an_extension.crx");
+  path = data_dir_.AppendASCII("not_an_extension.crx");
   InstallCrx(path, false);
   ValidatePrefKeyCount(pref_count);
 
   // Bad magic number.
-  path = extensions_path.AppendASCII("bad_magic.crx");
+  path = data_dir_.AppendASCII("bad_magic.crx");
   InstallCrx(path, false);
   ValidatePrefKeyCount(pref_count);
 
@@ -1126,7 +1119,7 @@ TEST_F(ExtensionServiceTest, InstallExtension) {
   // certain whitelisted cases (eg _locales). This is an example of a broader
   // class of validation that we do to the directory structure of the extension.
   // We did not used to handle this correctly for installation.
-  path = extensions_path.AppendASCII("bad_underscore.crx");
+  path = data_dir_.AppendASCII("bad_underscore.crx");
   InstallCrx(path, false);
   ValidatePrefKeyCount(pref_count);
 
@@ -1138,10 +1131,7 @@ TEST_F(ExtensionServiceTest, InstallExtension) {
 TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
   InitializeEmptyExtensionService();
 
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
   set_extensions_enabled(true);
 
   scoped_ptr<Version> version;
@@ -1168,7 +1158,7 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
 
   version.reset(Version::GetVersionFromString("1.0.0.1"));
   // Repeat the same thing with a newer version of the extension.
-  path = extensions_path.AppendASCII("good2.crx");
+  path = data_dir_.AppendASCII("good2.crx");
   service_->OnExternalExtensionFileFound(good_crx, version.get(),
                                          path, Extension::EXTERNAL_PREF);
   loop_.RunAllPending();
@@ -1188,10 +1178,7 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
 // Test that external extensions with incorrect IDs are not installed.
 TEST_F(ExtensionServiceTest, FailOnWrongId) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
   set_extensions_enabled(true);
 
   scoped_ptr<Version> version;
@@ -1219,10 +1206,7 @@ TEST_F(ExtensionServiceTest, FailOnWrongId) {
 // Test that external extensions with incorrect versions are not installed.
 TEST_F(ExtensionServiceTest, FailOnWrongVersion) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
   set_extensions_enabled(true);
 
   // Install an external extension with a version from the external
@@ -1250,9 +1234,7 @@ TEST_F(ExtensionServiceTest, InstallUserScript) {
   // integration with ExtensionService.
   InitializeEmptyExtensionService();
 
-  FilePath path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
-  path = path.AppendASCII("extensions")
+  FilePath path = data_dir_
              .AppendASCII("user_script_basic.user.js");
 
   ASSERT_TRUE(file_util::PathExists(path));
@@ -1280,13 +1262,10 @@ TEST_F(ExtensionServiceTest, InstallUserScript) {
 // installing an extension.
 TEST_F(ExtensionServiceTest, GrantedPermissions) {
   InitializeEmptyExtensionService();
-  FilePath path;
-  FilePath pem_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
-  path = path.AppendASCII("extensions")
+  FilePath path = data_dir_
       .AppendASCII("permissions");
 
-  pem_path = path.AppendASCII("unknown.pem");
+  FilePath pem_path = path.AppendASCII("unknown.pem");
   path = path.AppendASCII("unknown");
 
   ASSERT_TRUE(file_util::PathExists(pem_path));
@@ -1340,9 +1319,7 @@ TEST_F(ExtensionServiceTest, GrantedPermissions) {
 TEST_F(ExtensionServiceTest, GrantedFullAccessPermissions) {
   InitializeEmptyExtensionService();
 
-  FilePath path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
-  path = path.AppendASCII("extensions")
+  FilePath path = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions")
       .AppendASCII(good1)
@@ -1376,9 +1353,7 @@ TEST_F(ExtensionServiceTest, GrantedFullAccessPermissions) {
 TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   InitializeEmptyExtensionService();
 
-  FilePath path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
-  path = path.AppendASCII("extensions")
+  FilePath path = data_dir_
       .AppendASCII("permissions")
       .AppendASCII("unknown");
 
@@ -1505,10 +1480,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
 // Test Packaging and installing an extension.
 TEST_F(ExtensionServiceTest, PackExtension) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
-  FilePath input_directory = extensions_path
+  FilePath input_directory = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions")
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
@@ -1553,10 +1525,7 @@ TEST_F(ExtensionServiceTest, PackExtension) {
 // Test Packaging and installing an extension whose name contains punctuation.
 TEST_F(ExtensionServiceTest, PackPunctuatedExtension) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
-  FilePath input_directory = extensions_path
+  FilePath input_directory = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions")
       .AppendASCII(good0)
@@ -1632,15 +1601,12 @@ TEST_F(ExtensionServiceTest, PackPunctuatedExtension) {
 // PrivateKeyInfo ASN.1 structure, we our RSAPrivateKey expects.
 TEST_F(ExtensionServiceTest, PackExtensionOpenSSLKey) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
-  FilePath input_directory = extensions_path
+  FilePath input_directory = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions")
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
       .AppendASCII("1.0.0.0");
-  FilePath privkey_path(extensions_path.AppendASCII(
+  FilePath privkey_path(data_dir_.AppendASCII(
       "openssl_privkey_asn1.pem"));
   ASSERT_TRUE(file_util::PathExists(privkey_path));
 
@@ -1659,12 +1625,9 @@ TEST_F(ExtensionServiceTest, PackExtensionOpenSSLKey) {
 
 TEST_F(ExtensionServiceTest, InstallTheme) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
 
   // A theme.
-  FilePath path = extensions_path.AppendASCII("theme.crx");
+  FilePath path = data_dir_.AppendASCII("theme.crx");
   InstallCrx(path, true);
   int pref_count = 0;
   ValidatePrefKeyCount(++pref_count);
@@ -1674,7 +1637,7 @@ TEST_F(ExtensionServiceTest, InstallTheme) {
   // A theme when extensions are disabled. Themes can be installed, even when
   // extensions are disabled.
   set_extensions_enabled(false);
-  path = extensions_path.AppendASCII("theme2.crx");
+  path = data_dir_.AppendASCII("theme2.crx");
   InstallCrx(path, true);
   ValidatePrefKeyCount(++pref_count);
   ValidateIntegerPref(theme2_crx, "state", Extension::ENABLED);
@@ -1683,12 +1646,12 @@ TEST_F(ExtensionServiceTest, InstallTheme) {
   // A theme with extension elements. Themes cannot have extension elements so
   // this test should fail.
   set_extensions_enabled(true);
-  path = extensions_path.AppendASCII("theme_with_extension.crx");
+  path = data_dir_.AppendASCII("theme_with_extension.crx");
   InstallCrx(path, false);
   ValidatePrefKeyCount(pref_count);
 
   // A theme with image resources missing (misspelt path).
-  path = extensions_path.AppendASCII("theme_missing_image.crx");
+  path = data_dir_.AppendASCII("theme_missing_image.crx");
   InstallCrx(path, false);
   ValidatePrefKeyCount(pref_count);
 }
@@ -1696,10 +1659,7 @@ TEST_F(ExtensionServiceTest, InstallTheme) {
 TEST_F(ExtensionServiceTest, LoadLocalizedTheme) {
   // Load.
   InitializeEmptyExtensionService();
-  FilePath extension_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extension_path));
-  extension_path = extension_path
-      .AppendASCII("extensions")
+  FilePath extension_path = data_dir_
       .AppendASCII("theme_i18n");
 
   service_->LoadExtension(extension_path);
@@ -1713,10 +1673,7 @@ TEST_F(ExtensionServiceTest, LoadLocalizedTheme) {
 
 TEST_F(ExtensionServiceTest, InstallLocalizedTheme) {
   InitializeEmptyExtensionService();
-  FilePath theme_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &theme_path));
-  theme_path = theme_path
-      .AppendASCII("extensions")
+  FilePath theme_path = data_dir_
       .AppendASCII("theme_i18n");
 
   PackAndInstallCrx(theme_path, true);
@@ -1729,12 +1686,9 @@ TEST_F(ExtensionServiceTest, InstallLocalizedTheme) {
 
 TEST_F(ExtensionServiceTest, InstallApps) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
 
   // An empty app.
-  PackAndInstallCrx(extensions_path.AppendASCII("app1"), true);
+  PackAndInstallCrx(data_dir_.AppendASCII("app1"), true);
   int pref_count = 0;
   ValidatePrefKeyCount(++pref_count);
   ASSERT_EQ(1u, service_->extensions()->size());
@@ -1743,20 +1697,17 @@ TEST_F(ExtensionServiceTest, InstallApps) {
   ValidateIntegerPref(id, "location", Extension::INTERNAL);
 
   // Another app with non-overlapping extent. Should succeed.
-  PackAndInstallCrx(extensions_path.AppendASCII("app2"), true);
+  PackAndInstallCrx(data_dir_.AppendASCII("app2"), true);
   ValidatePrefKeyCount(++pref_count);
 
   // A third app whose extent overlaps the first. Should fail.
-  PackAndInstallCrx(extensions_path.AppendASCII("app3"), false);
+  PackAndInstallCrx(data_dir_.AppendASCII("app3"), false);
   ValidatePrefKeyCount(pref_count);
 }
 
 TEST_F(ExtensionServiceTest, UpdateApps) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path =
-      extensions_path.AppendASCII("extensions").AppendASCII("app_update");
+  FilePath extensions_path = data_dir_.AppendASCII("app_update");
 
   // First install v1 of a hosted app.
   InstallCrx(extensions_path.AppendASCII("v1.crx"), true);
@@ -1777,13 +1728,10 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimtedStorage) {
   InitializeEmptyExtensionService();
   EXPECT_TRUE(service_->extensions()->empty());
 
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
   int pref_count = 0;
 
   // Install app1 with unlimited storage.
-  PackAndInstallCrx(extensions_path.AppendASCII("app1"), true);
+  PackAndInstallCrx(data_dir_.AppendASCII("app1"), true);
   ValidatePrefKeyCount(++pref_count);
   ASSERT_EQ(1u, service_->extensions()->size());
   const Extension* extension = service_->extensions()->at(0);
@@ -1797,7 +1745,7 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimtedStorage) {
       IsStorageUnlimited(origin1));
 
   // Install app2 from the same origin with unlimited storage.
-  PackAndInstallCrx(extensions_path.AppendASCII("app2"), true);
+  PackAndInstallCrx(data_dir_.AppendASCII("app2"), true);
   ValidatePrefKeyCount(++pref_count);
   ASSERT_EQ(2u, service_->extensions()->size());
   extension = service_->extensions()->at(1);
@@ -1833,12 +1781,9 @@ TEST_F(ExtensionServiceTest, InstallAppsAndCheckStorageProtection) {
   InitializeEmptyExtensionService();
   EXPECT_TRUE(service_->extensions()->empty());
 
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
   int pref_count = 0;
 
-  PackAndInstallCrx(extensions_path.AppendASCII("app1"), true);
+  PackAndInstallCrx(data_dir_.AppendASCII("app1"), true);
   ValidatePrefKeyCount(++pref_count);
   ASSERT_EQ(1u, service_->extensions()->size());
   const Extension* extension = service_->extensions()->at(0);
@@ -1849,7 +1794,7 @@ TEST_F(ExtensionServiceTest, InstallAppsAndCheckStorageProtection) {
       IsStorageProtected(origin1));
 
   // App 4 has a different origin (maps.google.com).
-  PackAndInstallCrx(extensions_path.AppendASCII("app4"), true);
+  PackAndInstallCrx(data_dir_.AppendASCII("app4"), true);
   ValidatePrefKeyCount(++pref_count);
   ASSERT_EQ(2u, service_->extensions()->size());
   extension = service_->extensions()->at(1);
@@ -1876,12 +1821,9 @@ TEST_F(ExtensionServiceTest, InstallAppsAndCheckStorageProtection) {
 // Test that when an extension version is reinstalled, nothing happens.
 TEST_F(ExtensionServiceTest, Reinstall) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
 
   // A simple extension that should install without error.
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
   StartCrxInstall(path);
   loop_.RunAllPending();
 
@@ -1911,11 +1853,8 @@ TEST_F(ExtensionServiceTest, Reinstall) {
 // Test upgrading a signed extension.
 TEST_F(ExtensionServiceTest, UpgradeSignedGood) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
 
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
   StartCrxInstall(path);
   loop_.RunAllPending();
 
@@ -1925,7 +1864,7 @@ TEST_F(ExtensionServiceTest, UpgradeSignedGood) {
   ASSERT_EQ(0u, GetErrors().size());
 
   // Upgrade to version 2.0
-  path = extensions_path.AppendASCII("good2.crx");
+  path = data_dir_.AppendASCII("good2.crx");
   StartCrxInstall(path);
   loop_.RunAllPending();
 
@@ -1938,11 +1877,8 @@ TEST_F(ExtensionServiceTest, UpgradeSignedGood) {
 // Test upgrading a signed extension with a bad signature.
 TEST_F(ExtensionServiceTest, UpgradeSignedBad) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
 
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
   StartCrxInstall(path);
   loop_.RunAllPending();
 
@@ -1953,7 +1889,7 @@ TEST_F(ExtensionServiceTest, UpgradeSignedBad) {
 
   // Try upgrading with a bad signature. This should fail during the unpack,
   // because the key will not match the signature.
-  path = extensions_path.AppendASCII("bad_signature.crx");
+  path = data_dir_.AppendASCII("bad_signature.crx");
   StartCrxInstall(path);
   loop_.RunAllPending();
 
@@ -1965,18 +1901,15 @@ TEST_F(ExtensionServiceTest, UpgradeSignedBad) {
 // Test a normal update via the UpdateExtension API
 TEST_F(ExtensionServiceTest, UpdateExtension) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
 
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
 
   InstallCrx(path, true);
   const Extension* good = service_->extensions()->at(0);
   ASSERT_EQ("1.0.0.0", good->VersionString());
   ASSERT_EQ(good_crx, good->id());
 
-  path = extensions_path.AppendASCII("good2.crx");
+  path = data_dir_.AppendASCII("good2.crx");
   UpdateExtension(good_crx, path, ENABLED);
   ASSERT_EQ("1.0.0.1", loaded_[0]->version()->GetString());
 }
@@ -1984,11 +1917,8 @@ TEST_F(ExtensionServiceTest, UpdateExtension) {
 // Test updating a not-already-installed extension - this should fail
 TEST_F(ExtensionServiceTest, UpdateNotInstalledExtension) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
 
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
   UpdateExtension(good_crx, path, UPDATED);
   loop_.RunAllPending();
 
@@ -2000,11 +1930,8 @@ TEST_F(ExtensionServiceTest, UpdateNotInstalledExtension) {
 // Makes sure you can't downgrade an extension via UpdateExtension
 TEST_F(ExtensionServiceTest, UpdateWillNotDowngrade) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
 
-  FilePath path = extensions_path.AppendASCII("good2.crx");
+  FilePath path = data_dir_.AppendASCII("good2.crx");
 
   InstallCrx(path, true);
   const Extension* good = service_->extensions()->at(0);
@@ -2012,7 +1939,7 @@ TEST_F(ExtensionServiceTest, UpdateWillNotDowngrade) {
   ASSERT_EQ(good_crx, good->id());
 
   // Change path from good2.crx -> good.crx
-  path = extensions_path.AppendASCII("good.crx");
+  path = data_dir_.AppendASCII("good.crx");
   UpdateExtension(good_crx, path, FAILED);
   ASSERT_EQ("1.0.0.1", service_->extensions()->at(0)->VersionString());
 }
@@ -2020,11 +1947,8 @@ TEST_F(ExtensionServiceTest, UpdateWillNotDowngrade) {
 // Make sure calling update with an identical version does nothing
 TEST_F(ExtensionServiceTest, UpdateToSameVersionIsNoop) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
 
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
 
   InstallCrx(path, true);
   const Extension* good = service_->extensions()->at(0);
@@ -2035,11 +1959,8 @@ TEST_F(ExtensionServiceTest, UpdateToSameVersionIsNoop) {
 // Tests that updating an extension does not clobber old state.
 TEST_F(ExtensionServiceTest, UpdateExtensionPreservesState) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
 
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
 
   InstallCrx(path, true);
   const Extension* good = service_->extensions()->at(0);
@@ -2051,7 +1972,7 @@ TEST_F(ExtensionServiceTest, UpdateExtensionPreservesState) {
   service_->DisableExtension(good->id());
   service_->SetIsIncognitoEnabled(good->id(), true);
 
-  path = extensions_path.AppendASCII("good2.crx");
+  path = data_dir_.AppendASCII("good2.crx");
   UpdateExtension(good_crx, path, INSTALLED);
   ASSERT_EQ(1u, service_->disabled_extensions()->size());
   const Extension* good2 = service_->disabled_extensions()->at(0);
@@ -2062,11 +1983,8 @@ TEST_F(ExtensionServiceTest, UpdateExtensionPreservesState) {
 // Tests that updating preserves extension location.
 TEST_F(ExtensionServiceTest, UpdateExtensionPreservesLocation) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
 
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
 
   InstallCrx(path, true);
   const Extension* good = service_->extensions()->at(0);
@@ -2077,7 +1995,7 @@ TEST_F(ExtensionServiceTest, UpdateExtensionPreservesLocation) {
   // Simulate non-internal location.
   const_cast<Extension*>(good)->location_ = Extension::EXTERNAL_PREF;
 
-  path = extensions_path.AppendASCII("good2.crx");
+  path = data_dir_.AppendASCII("good2.crx");
   UpdateExtension(good_crx, path, ENABLED);
   const Extension* good2 = service_->extensions()->at(0);
   ASSERT_EQ("1.0.0.1", good2->version()->GetString());
@@ -2177,10 +2095,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtension) {
       kGoodInitialIncognitoEnabled);
   EXPECT_TRUE(service_->pending_extension_manager()->IsIdPending(kGoodId));
 
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
   UpdateExtension(kGoodId, path, INSTALLED);
 
   EXPECT_FALSE(service_->pending_extension_manager()->IsIdPending(kGoodId));
@@ -2212,10 +2127,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingTheme) {
       false, Extension::ENABLED, false);
   EXPECT_TRUE(service_->pending_extension_manager()->IsIdPending(theme_crx));
 
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
-  FilePath path = extensions_path.AppendASCII("theme.crx");
+  FilePath path = data_dir_.AppendASCII("theme.crx");
   UpdateExtension(theme_crx, path, ENABLED);
 
   EXPECT_FALSE(service_->pending_extension_manager()->IsIdPending(theme_crx));
@@ -2238,10 +2150,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExternalCrx) {
 
   EXPECT_TRUE(service_->pending_extension_manager()->IsIdPending(theme_crx));
 
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
-  FilePath path = extensions_path.AppendASCII("theme.crx");
+  FilePath path = data_dir_.AppendASCII("theme.crx");
   UpdateExtension(theme_crx, path, ENABLED);
 
   EXPECT_FALSE(service_->pending_extension_manager()->IsIdPending(theme_crx));
@@ -2307,10 +2216,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingCrxThemeMismatch) {
 
   EXPECT_TRUE(service_->pending_extension_manager()->IsIdPending(theme_crx));
 
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
-  FilePath path = extensions_path.AppendASCII("theme.crx");
+  FilePath path = data_dir_.AppendASCII("theme.crx");
   UpdateExtension(theme_crx, path, FAILED_SILENTLY);
 
   EXPECT_FALSE(service_->pending_extension_manager()->IsIdPending(theme_crx));
@@ -2333,10 +2239,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtensionFailedShouldInstallTest) {
       kGoodInitialIncognitoEnabled);
   EXPECT_TRUE(service_->pending_extension_manager()->IsIdPending(kGoodId));
 
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
   UpdateExtension(kGoodId, path, UPDATED);
 
   // TODO(akalin): Figure out how to check that the extensions
@@ -2352,10 +2255,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtensionFailedShouldInstallTest) {
 TEST_F(ExtensionServiceTest, UpdatePendingExtensionNotPending) {
   InitializeEmptyExtensionService();
 
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
   UpdateExtension(kGoodId, path, UPDATED);
 
   EXPECT_FALSE(service_->pending_extension_manager()->IsIdPending(kGoodId));
@@ -2366,10 +2266,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtensionNotPending) {
 TEST_F(ExtensionServiceTest, UpdatePendingExtensionAlreadyInstalled) {
   InitializeEmptyExtensionService();
 
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
   InstallCrx(path, true);
   ASSERT_EQ(1u, service_->extensions()->size());
   const Extension* good = service_->extensions()->at(0);
@@ -2418,11 +2315,8 @@ TEST_F(ExtensionServiceTest, SetUnsetBlacklistInPrefs) {
 // Unload installed extension from blacklist.
 TEST_F(ExtensionServiceTest, UnloadBlacklistedExtension) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
 
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
 
   InstallCrx(path, true);
   const Extension* good = service_->extensions()->at(0);
@@ -2461,10 +2355,7 @@ TEST_F(ExtensionServiceTest, BlacklistedExtensionWillNotInstall) {
   ValidateBooleanPref(good_crx, "blacklist", true);
 
   // We can not install good_crx.
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
   StartCrxInstall(path);
   loop_.RunAllPending();
   EXPECT_EQ(0u, service_->extensions()->size());
@@ -2475,10 +2366,7 @@ TEST_F(ExtensionServiceTest, BlacklistedExtensionWillNotInstall) {
 // blacklisted ones.
 TEST_F(ExtensionServiceTest, WillNotLoadBlacklistedExtensionsFromDirectory) {
   // Initialize the test dir with a good Preferences/extensions.
-  FilePath source_install_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_install_dir));
-  source_install_dir = source_install_dir
-      .AppendASCII("extensions")
+  FilePath source_install_dir = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions");
   FilePath pref_path = source_install_dir
@@ -2515,10 +2403,7 @@ TEST_F(ExtensionServiceTest, WillNotLoadBlacklistedExtensionsFromDirectory) {
 // ones with a plugin.
 TEST_F(ExtensionServiceTest, WillNotLoadPluginExtensionsFromDirectory) {
   // Initialize the test dir with a good Preferences/extensions.
-  FilePath source_install_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_install_dir));
-  source_install_dir = source_install_dir
-      .AppendASCII("extensions")
+  FilePath source_install_dir = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions");
   FilePath pref_path = source_install_dir
@@ -2556,10 +2441,7 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {
   }
 
   // Blacklist prevents us from installing good_crx.
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
   StartCrxInstall(path);
   loop_.RunAllPending();
   EXPECT_EQ(0u, service_->extensions()->size());
@@ -2584,10 +2466,7 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyRemovedIfRunning) {
   InitializeEmptyExtensionService();
 
   // Install good_crx.
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
   StartCrxInstall(path);
   loop_.RunAllPending();
   EXPECT_EQ(1u, service_->extensions()->size());
@@ -2611,12 +2490,9 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyRemovedIfRunning) {
 // Tests disabling extensions
 TEST_F(ExtensionServiceTest, DisableExtension) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
 
   // A simple extension that should install without error.
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
   InstallCrx(path, true);
 
   const char* extension_id = good_crx;
@@ -2638,11 +2514,8 @@ TEST_F(ExtensionServiceTest, DisableExtension) {
 TEST_F(ExtensionServiceTest, DisableAllExtensions) {
   InitializeEmptyExtensionService();
 
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
 
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
   InstallCrx(path, true);
 
   EXPECT_EQ(1u, service_->extensions()->size());
@@ -2675,12 +2548,9 @@ TEST_F(ExtensionServiceTest, DisableAllExtensions) {
 // Tests reloading extensions
 TEST_F(ExtensionServiceTest, ReloadExtensions) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
 
   // Simple extension that should install without error.
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
   InstallCrx(path, true);
   const char* extension_id = good_crx;
   service_->DisableExtension(extension_id);
@@ -2713,12 +2583,9 @@ TEST_F(ExtensionServiceTest, ReloadExtensions) {
 // Tests uninstalling normal extensions
 TEST_F(ExtensionServiceTest, UninstallExtension) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
 
   // A simple extension that should install without error.
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
   InstallCrx(path, true);
 
   // The directory should be there now.
@@ -2751,12 +2618,9 @@ TEST_F(ExtensionServiceTest, UninstallExtension) {
 // Tests the uninstaller helper.
 TEST_F(ExtensionServiceTest, UninstallExtensionHelper) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
 
   // A simple extension that should install without error.
-  FilePath path = extensions_path.AppendASCII("good.crx");
+  FilePath path = data_dir_.AppendASCII("good.crx");
   InstallCrx(path, true);
 
   // The directory should be there now.
@@ -2794,9 +2658,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   InitializeEmptyExtensionService();
 
   // Load a test extension.
-  FilePath path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
-  path = path.AppendASCII("extensions");
+  FilePath path = data_dir_;
   path = path.AppendASCII("good.crx");
   InstallCrx(path, true);
   const Extension* extension = service_->GetExtensionById(good_crx, false);
@@ -2870,11 +2732,8 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
 // Tests loading single extensions (like --load-extension)
 TEST_F(ExtensionServiceTest, LoadExtension) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
 
-  FilePath ext1 = extensions_path
+  FilePath ext1 = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions")
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
@@ -2888,7 +2747,7 @@ TEST_F(ExtensionServiceTest, LoadExtension) {
 
   ValidatePrefKeyCount(1);
 
-  FilePath no_manifest = extensions_path
+  FilePath no_manifest = data_dir_
       .AppendASCII("bad")
       // .AppendASCII("Extensions")
       .AppendASCII("cccccccccccccccccccccccccccccccc")
@@ -2914,11 +2773,8 @@ TEST_F(ExtensionServiceTest, LoadExtension) {
 TEST_F(ExtensionServiceTest, GenerateID) {
   InitializeEmptyExtensionService();
 
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
 
-  FilePath no_id_ext = extensions_path.AppendASCII("no_id");
+  FilePath no_id_ext = data_dir_.AppendASCII("no_id");
   service_->LoadExtension(no_id_ext);
   loop_.RunAllPending();
   EXPECT_EQ(0u, GetErrors().size());
@@ -2947,9 +2803,7 @@ void ExtensionServiceTest::TestExternalProvider(
   provider->set_visit_count(0);
 
   // Register a test extension externally using the mock registry provider.
-  FilePath source_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_path));
-  source_path = source_path.AppendASCII("extensions").AppendASCII("good.crx");
+  FilePath source_path = data_dir_.AppendASCII("good.crx");
 
   // Add the extension.
   provider->UpdateOrAddExtension(good_crx, "1.0.0.0", source_path);
@@ -3142,10 +2996,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallPolicyUpdateUrl) {
 // providers can't account for them.
 TEST_F(ExtensionServiceTest, ExternalUninstall) {
   // Start the extensions service with one external extension already installed.
-  FilePath source_install_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_install_dir));
-  source_install_dir = source_install_dir
-      .AppendASCII("extensions")
+  FilePath source_install_dir = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions");
   FilePath pref_path = source_install_dir
@@ -3197,9 +3048,7 @@ TEST_F(ExtensionServiceTest, MultipleExternalUpdateCheck) {
   EXPECT_EQ(0u, loaded_.size());
 
   // Register a test extension externally using the mock registry provider.
-  FilePath source_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_path));
-  source_path = source_path.AppendASCII("extensions").AppendASCII("good.crx");
+  FilePath source_path = data_dir_.AppendASCII("good.crx");
   provider->UpdateOrAddExtension(good_crx, "1.0.0.0", source_path);
 
   // Two checks for external updates should find the extension, and install it
@@ -3338,10 +3187,7 @@ TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
 // Test loading good extensions from the profile directory.
 TEST_F(ExtensionServiceTest, LoadAndRelocalizeExtensions) {
   // Initialize the test dir with a good Preferences/extensions.
-  FilePath source_install_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_install_dir));
-  source_install_dir = source_install_dir
-      .AppendASCII("extensions")
+  FilePath source_install_dir = data_dir_
       .AppendASCII("l10n");
   FilePath pref_path = source_install_dir.AppendASCII("Preferences");
   InitializeInstalledExtensionService(pref_path, source_install_dir);
@@ -3460,19 +3306,20 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
 TEST_F(ExtensionServiceTest, StorageQuota) {
   InitializeEmptyExtensionService();
 
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions")
+  FilePath extensions_path = data_dir_
       .AppendASCII("storage_quota");
 
-  FilePath limited_quota_ext = extensions_path.AppendASCII("limited_quota")
+  FilePath limited_quota_ext =
+      extensions_path.AppendASCII("limited_quota")
       .AppendASCII("1.0");
 
   // The old permission name for unlimited quota was "unlimited_storage", but
   // we changed it to "unlimitedStorage". This tests both versions.
-  FilePath unlimited_quota_ext = extensions_path.AppendASCII("unlimited_quota")
+  FilePath unlimited_quota_ext =
+      extensions_path.AppendASCII("unlimited_quota")
       .AppendASCII("1.0");
-  FilePath unlimited_quota_ext2 = extensions_path.AppendASCII("unlimited_quota")
+  FilePath unlimited_quota_ext2 =
+      extensions_path.AppendASCII("unlimited_quota")
       .AppendASCII("2.0");
   service_->LoadExtension(limited_quota_ext);
   service_->LoadExtension(unlimited_quota_ext);
@@ -3523,9 +3370,7 @@ TEST_F(ExtensionServiceTest, ComponentExtensions) {
   // Component extensions should work even when extensions are disabled.
   set_extensions_enabled(false);
 
-  FilePath path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
-  path = path.AppendASCII("extensions")
+  FilePath path = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions")
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
@@ -3568,9 +3413,7 @@ class ExtensionSourcePriorityTest : public ExtensionServiceTest {
     // All tests use a single extension.  Put the id and path in member vars
     // that all methods can read.
     crx_id_ = kGoodId;
-    FilePath test_data_dir;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
-    crx_path_ = test_data_dir.AppendASCII("extensions").AppendASCII("good.crx");
+    crx_path_ = data_dir_.AppendASCII("good.crx");
   }
 
   // Fake an external source adding a URL to fetch an extension from.
