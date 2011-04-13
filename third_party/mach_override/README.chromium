@@ -22,6 +22,7 @@ Local Modifications:
 
 * Minor fixes to make the file buildable with -std=c99 -Wall -Werror
 * Support for |sub %esp| with a 32bit immediate
+* Support for |xor %eax, %eax|
 * atomic_mov64 is no longer .globl
 * Removed function mach_override() because it used deprecated functions
 * Added a gyp file
