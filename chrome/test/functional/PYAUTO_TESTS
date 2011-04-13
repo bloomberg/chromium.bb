@@ -64,11 +64,21 @@
       # crbug.com/76639
       '-instant.InstantTest.testInstantLoadsFor100CharsLongQuery',
       'navigation',
-      # crbug.com/77082
-      '-notifications',
+      'notifications',
       # crbug.com/66072
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
       '-notifications.NotificationsTest.testKillNotificationProcess',
+      # crbug.com/79054
+      '-notifications.NotificationsTest.testAllowOnPermissionInfobar',
+      '-notifications.NotificationsTest.testClosePermissionInfobar',
+      '-notifications.NotificationsTest.testCloseTabWithPermissionInfobar',
+      '-notifications.NotificationsTest.testCrashTabWithPermissionInfobar',
+      '-notifications.NotificationsTest.testDenyOnPermissionInfobar',
+      '-notifications.NotificationsTest.testExitBrowserWithInfobar',
+      '-notifications.NotificationsTest.testIncognitoNotification',
+      '-notifications.NotificationsTest.testNavigateAwayWithPermissionInfobar',
+      '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
+      '-notifications.NotificationsTest.testPermissionInfobarAppears',
       'ntp',
       'omnibox',
       '-omnibox.OmniboxTest.testHistoryResult',  # crbug.com/71715
