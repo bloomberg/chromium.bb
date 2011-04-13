@@ -564,14 +564,14 @@ SyncBackendHost::Core::~Core() {
 }
 
 void SyncBackendHost::Core::NotifyPaused() {
-  DCHECK(!host_->using_new_syncer_thread_);
+  DCHECK(!host_ || !host_->using_new_syncer_thread_);
   NotificationService::current()->Notify(NotificationType::SYNC_PAUSED,
                                          NotificationService::AllSources(),
                                          NotificationService::NoDetails());
 }
 
 void SyncBackendHost::Core::NotifyResumed() {
-  DCHECK(!host_->using_new_syncer_thread_);
+  DCHECK(!host_ || !host_->using_new_syncer_thread_);
   NotificationService::current()->Notify(NotificationType::SYNC_RESUMED,
                                          NotificationService::AllSources(),
                                          NotificationService::NoDetails());
