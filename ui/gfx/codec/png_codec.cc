@@ -611,7 +611,7 @@ typedef void (*FormatConverter)(const unsigned char* in, int w,
 bool DoLibpngWrite(png_struct* png_ptr, png_info* info_ptr,
                    PngEncoderState* state,
                    int width, int height, int row_byte_width,
-                   const unsigned char* input,
+                   const unsigned char* input, int compression_level,
                    int png_output_color_type, int output_color_components,
                    FormatConverter converter,
                    const std::vector<PNGCodec::Comment>& comments) {
@@ -620,6 +620,8 @@ bool DoLibpngWrite(png_struct* png_ptr, png_info* info_ptr,
 
   if (setjmp(png_jmpbuf(png_ptr)))
     return false;
+
+  png_set_compression_level(png_ptr, compression_level);
 
   // Set our callback for libpng to give us the data.
   png_set_write_fn(png_ptr, state, EncoderWriteCallback, FakeFlushCallback);
@@ -666,6 +668,21 @@ bool PNGCodec::Encode(const unsigned char* input, ColorFormat format,
                       bool discard_transparency,
                       const std::vector<Comment>& comments,
                       std::vector<unsigned char>* output) {
+  return PNGCodec::EncodeWithCompressionLevel(input, format, size,
+                                              row_byte_width,
+                                              discard_transparency,
+                                              comments, Z_DEFAULT_COMPRESSION,
+                                              output);
+}
+
+// static
+bool PNGCodec::EncodeWithCompressionLevel(const unsigned char* input,
+                                          ColorFormat format, const Size& size,
+                                          int row_byte_width,
+                                          bool discard_transparency,
+                                          const std::vector<Comment>& comments,
+                                          int compression_level,
+                                          std::vector<unsigned char>* output) {
   // Run to convert an input row into the output row format, NULL means no
   // conversion is necessary.
   FormatConverter converter = NULL;
@@ -740,7 +757,7 @@ bool PNGCodec::Encode(const unsigned char* input, ColorFormat format,
   PngEncoderState state(output);
   bool success = DoLibpngWrite(png_ptr, info_ptr, &state,
                                size.width(), size.height(), row_byte_width,
-                               input, png_output_color_type,
+                               input, compression_level, png_output_color_type,
                                output_color_components, converter, comments);
   png_destroy_write_struct(&png_ptr, &info_ptr);
 

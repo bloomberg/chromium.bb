@@ -51,6 +51,16 @@ class PNGCodec {
     std::string text;
   };
 
+  // Calls PNGCodec::EncodeWithCompressionLevel with the default compression
+  // level.
+  static bool Encode(const unsigned char* input,
+                     ColorFormat format,
+                     const Size& size,
+                     int row_byte_width,
+                     bool discard_transparency,
+                     const std::vector<Comment>& comments,
+                     std::vector<unsigned char>* output);
+
   // Encodes the given raw 'input' data, with each pixel being represented as
   // given in 'format'. The encoded PNG data will be written into the supplied
   // vector and true will be returned on success. On failure (false), the
@@ -68,13 +78,16 @@ class PNGCodec {
   //   written to the resulting file. Otherwise, alpha values in the input
   //   will be preserved.
   // comments: comments to be written in the png's metadata.
-  static bool Encode(const unsigned char* input,
-                     ColorFormat format,
-                     const Size& size,
-                     int row_byte_width,
-                     bool discard_transparency,
-                     const std::vector<Comment>& comments,
-                     std::vector<unsigned char>* output);
+  // compression_level: An integer between -1 and 9, corresponding to zlib's
+  //   compression levels. -1 is the default.
+  static bool EncodeWithCompressionLevel(const unsigned char* input,
+                                         ColorFormat format,
+                                         const Size& size,
+                                         int row_byte_width,
+                                         bool discard_transparency,
+                                         const std::vector<Comment>& comments,
+                                         int compression_level,
+                                         std::vector<unsigned char>* output);
 
   // Call PNGCodec::Encode on the supplied SkBitmap |input|, which is assumed
   // to be BGRA, 32 bits per pixel. The params |discard_transparency| and
