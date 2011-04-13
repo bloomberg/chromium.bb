@@ -79,7 +79,11 @@ class ExtensionServiceInterface {
   virtual void SetIsIncognitoEnabled(const std::string& extension_id,
                                      bool enabled) = 0;
 
-  virtual void CheckForUpdates() = 0;
+  // Safe to call multiple times in a row.
+  //
+  // TODO(akalin): Remove this method (and others) once we add
+  // ProcessSyncData().
+  virtual void CheckForUpdatesSoon() = 0;
 };
 
 // Manages installed and running Chromium extensions.
@@ -339,7 +343,7 @@ class ExtensionService
   // set of extensions.
   virtual void CheckAdminBlacklist();
 
-  virtual void CheckForUpdates();
+  virtual void CheckForUpdatesSoon();
 
   void set_extensions_enabled(bool enabled) { extensions_enabled_ = enabled; }
   bool extensions_enabled() { return extensions_enabled_; }

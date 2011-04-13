@@ -127,7 +127,7 @@ class MockService : public ExtensionServiceInterface {
     FAIL();
   }
 
-  virtual void CheckForUpdates() {
+  virtual void CheckForUpdatesSoon() {
     FAIL();
   }
 
@@ -349,6 +349,11 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(updater->timer_.IsRunning());
     updater->timer_.Stop();
     updater->TimerFired();
+  }
+
+  static void SimulateCheckSoon(ExtensionUpdater* updater) {
+    EXPECT_TRUE(updater->will_check_soon_);
+    updater->DoCheckSoon();
   }
 
   // Adds a Result with the given data to results.
@@ -1194,6 +1199,32 @@ TEST(ExtensionUpdaterTest, TestStartUpdateCheckMemory) {
         GURL("http://www.google.com")));
     // This should clear out |manifests_pending_|.
     updater.Stop();
+}
+
+TEST(ExtensionUpdaterTest, TestCheckSoon) {
+    MessageLoop message_loop;
+    BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+    BrowserThread file_thread(BrowserThread::FILE, &message_loop);
+
+    ServiceForManifestTests service;
+    TestURLFetcherFactory factory;
+    URLFetcher::set_factory(&factory);
+    ExtensionUpdater updater(
+        &service, service.extension_prefs(), service.pref_service(),
+        service.profile(), kUpdateFrequencySecs);
+    EXPECT_FALSE(updater.WillCheckSoon());
+    updater.Start();
+    EXPECT_FALSE(updater.WillCheckSoon());
+    updater.CheckSoon();
+    EXPECT_TRUE(updater.WillCheckSoon());
+    updater.CheckSoon();
+    EXPECT_TRUE(updater.WillCheckSoon());
+    ExtensionUpdaterTest::SimulateCheckSoon(&updater);
+    EXPECT_FALSE(updater.WillCheckSoon());
+    updater.CheckSoon();
+    EXPECT_TRUE(updater.WillCheckSoon());
+    updater.Stop();
+    EXPECT_FALSE(updater.WillCheckSoon());
 }
 
 // TODO(asargent) - (http://crbug.com/12780) add tests for:

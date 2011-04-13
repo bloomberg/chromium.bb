@@ -38,7 +38,7 @@ class MockExtensionService : public ExtensionServiceInterface {
   MOCK_METHOD0(HasInstalledExtensions, bool());
   MOCK_CONST_METHOD1(IsIncognitoEnabled, bool(const std::string&));
   MOCK_METHOD2(SetIsIncognitoEnabled, void(const std::string&, bool));
-  MOCK_METHOD0(CheckForUpdates, void());
+  MOCK_METHOD0(CheckForUpdatesSoon, void());
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_MOCK_EXTENSION_SERVICE_H_

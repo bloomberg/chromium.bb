@@ -185,14 +185,23 @@ class ExtensionUpdater : public URLFetcher::Delegate {
   // crx downloads. Does not cancel any in-progress installs.
   void Stop();
 
-  // Starts an update check right now, instead of waiting for the next regularly
-  // scheduled check.
+  // Posts a task to do an update check.  Does nothing if there is
+  // already a pending task that has not yet run.
+  void CheckSoon();
+
+  // Starts an update check right now, instead of waiting for the next
+  // regularly scheduled check or a pending check from CheckSoon().
   void CheckNow();
 
   // Set blacklist checks on or off.
   void set_blacklist_checks_enabled(bool enabled) {
     blacklist_checks_enabled_ = enabled;
   }
+
+  // Returns true iff CheckSoon() has been called but the update check
+  // hasn't been performed yet.  This is used mostly by tests; calling
+  // code should just call CheckSoon().
+  bool WillCheckSoon() const;
 
  private:
   friend class ExtensionUpdaterTest;
@@ -266,6 +275,9 @@ class ExtensionUpdater : public URLFetcher::Delegate {
   // BaseTimer::ReceiverMethod callback.
   void TimerFired();
 
+  // Posted by CheckSoon().
+  void DoCheckSoon();
+
   // Begins an update check. Takes ownership of |fetch_data|.
   void StartUpdateCheck(ManifestFetchData* fetch_data);
 
@@ -328,6 +340,10 @@ class ExtensionUpdater : public URLFetcher::Delegate {
 
   base::OneShotTimer<ExtensionUpdater> timer_;
   int frequency_seconds_;
+
+  ScopedRunnableMethodFactory<ExtensionUpdater> method_factory_;
+
+  bool will_check_soon_;
 
   ExtensionPrefs* extension_prefs_;
   PrefService* prefs_;

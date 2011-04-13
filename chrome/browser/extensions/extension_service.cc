@@ -1156,11 +1156,11 @@ void ExtensionService::CheckAdminBlacklist() {
     UnloadExtension(to_be_removed[i], UnloadedExtensionInfo::DISABLE);
 }
 
-void ExtensionService::CheckForUpdates() {
+void ExtensionService::CheckForUpdatesSoon() {
   if (updater()) {
-    updater()->CheckNow();
+    updater()->CheckSoon();
   } else {
-    LOG(WARNING) << "CheckForUpdates() called with auto-update turned off";
+    LOG(WARNING) << "CheckForUpdatesSoon() called with auto-update turned off";
   }
 }
 

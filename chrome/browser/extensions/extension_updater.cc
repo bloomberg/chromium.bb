@@ -476,8 +476,9 @@ ExtensionUpdater::ExtensionUpdater(ExtensionServiceInterface* service,
     : alive_(false),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       service_(service), frequency_seconds_(frequency_seconds),
-      extension_prefs_(extension_prefs), prefs_(prefs), profile_(profile),
-      blacklist_checks_enabled_(true) {
+      method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      will_check_soon_(false), extension_prefs_(extension_prefs),
+      prefs_(prefs), profile_(profile), blacklist_checks_enabled_(true) {
   Init();
 }
 
@@ -579,6 +580,8 @@ void ExtensionUpdater::Stop() {
   prefs_ = NULL;
   profile_ = NULL;
   timer_.Stop();
+  will_check_soon_ = false;
+  method_factory_.RevokeAll();
   manifest_fetcher_.reset();
   extension_fetcher_.reset();
   STLDeleteElements(&manifests_pending_);
@@ -906,6 +909,30 @@ void ExtensionUpdater::TimerFired() {
   int64 now = Time::Now().ToInternalValue();
   prefs_->SetInt64(kLastExtensionsUpdateCheck, now);
   ScheduleNextCheck(TimeDelta::FromSeconds(frequency_seconds_));
+}
+
+void ExtensionUpdater::CheckSoon() {
+  DCHECK(alive_);
+  if (will_check_soon_) {
+    return;
+  }
+  if (BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          method_factory_.NewRunnableMethod(&ExtensionUpdater::CheckNow))) {
+    will_check_soon_ = true;
+  } else {
+    NOTREACHED();
+  }
+}
+
+bool ExtensionUpdater::WillCheckSoon() const {
+  return will_check_soon_;
+}
+
+void ExtensionUpdater::DoCheckSoon() {
+  DCHECK(will_check_soon_);
+  CheckNow();
+  will_check_soon_ = false;
 }
 
 void ExtensionUpdater::CheckNow() {

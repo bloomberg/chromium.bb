@@ -137,7 +137,7 @@ void SetCurrentThemeFromThemeSpecifics(
       extensions_service->pending_extension_manager()->AddFromSync(
           id, update_url, &IsTheme,
           kInstallSilently, kEnableOnInstall, kEnableIncognitoOnInstall);
-      extensions_service->CheckForUpdates();
+      extensions_service->CheckForUpdatesSoon();
     }
   } else if (theme_specifics.use_system_theme_by_default()) {
     ThemeServiceFactory::GetForProfile(profile)->SetNativeTheme();

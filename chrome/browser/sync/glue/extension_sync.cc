@@ -317,7 +317,6 @@ bool FlushExtensionData(const ExtensionSyncTraits& traits,
   }
 
   // Update server and client as necessary.
-  bool should_nudge_extension_updater = false;
   for (ExtensionDataMap::const_iterator it = extension_data_map.begin();
        it != extension_data_map.end(); ++it) {
     ExtensionData extension_data = it->second;
@@ -334,16 +333,11 @@ bool FlushExtensionData(const ExtensionSyncTraits& traits,
       TryUpdateClient(traits.is_valid_and_syncable,
                       extensions_service, &extension_data);
       if (extension_data.NeedsUpdate(ExtensionData::CLIENT)) {
-        should_nudge_extension_updater = true;
+        extensions_service->CheckForUpdatesSoon();
       }
     }
     DCHECK(!extension_data.NeedsUpdate(ExtensionData::SERVER));
   }
-
-  if (should_nudge_extension_updater) {
-    extensions_service->CheckForUpdates();
-  }
-
   return true;
 }
 
@@ -443,7 +437,7 @@ void UpdateClient(const ExtensionSyncTraits& traits,
     TryUpdateClient(traits.is_valid_and_syncable,
                     extensions_service, &extension_data);
     if (extension_data.NeedsUpdate(ExtensionData::CLIENT)) {
-      extensions_service->CheckForUpdates();
+      extensions_service->CheckForUpdatesSoon();
     }
   }
   DCHECK(!extension_data.NeedsUpdate(ExtensionData::SERVER));
