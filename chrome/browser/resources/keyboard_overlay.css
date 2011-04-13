@@ -8,6 +8,7 @@ body {
 .keyboard-overlay-keyboard {
   border-radius: 6px;
   background: -webkit-linear-gradient(#484848, #252525) no-repeat;
+  background-color: #252525;
   font-family: 'Droid Sans', Arial;
 }
 

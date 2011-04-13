@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/keyboard_overlay_delegate.h"
 
+#include <algorithm>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/frame/bubble_window.h"
@@ -14,6 +16,12 @@
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "views/screen.h"
+
+
+static const int kBaseWidth = 1252;
+static const int kBaseHeight = 516;
+static const int kHorizontalMargin = 28;
 
 void KeyboardOverlayDelegate::ShowDialog(gfx::NativeWindow owning_window) {
   Browser* browser = BrowserList::GetLastActive();
@@ -21,6 +29,7 @@ void KeyboardOverlayDelegate::ShowDialog(gfx::NativeWindow owning_window) {
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_TITLE)));
   HtmlDialogView* html_view =
       new HtmlDialogView(browser->profile(), delegate);
+  delegate->set_view(html_view);
   html_view->InitDialog();
   html_view->AddAccelerator(
       views::Accelerator(ui::VKEY_OEM_2, false, true, true));
@@ -36,7 +45,8 @@ void KeyboardOverlayDelegate::ShowDialog(gfx::NativeWindow owning_window) {
 
 KeyboardOverlayDelegate::KeyboardOverlayDelegate(
     const std::wstring& title)
-    : title_(title) {
+    : title_(title),
+      view_(NULL) {
 }
 
 KeyboardOverlayDelegate::~KeyboardOverlayDelegate() {
@@ -61,7 +71,13 @@ void KeyboardOverlayDelegate::GetWebUIMessageHandlers(
 
 void KeyboardOverlayDelegate::GetDialogSize(
     gfx::Size* size) const {
-  size->SetSize(1252, 516);
+  using std::min;
+  DCHECK(view_);
+  gfx::Rect rect = views::Screen::GetMonitorAreaNearestWindow(
+      view_->native_view());
+  const int width = min(kBaseWidth, rect.width() - kHorizontalMargin);
+  const int height = width * kBaseHeight / kBaseWidth;
+  size->SetSize(width, height);
 }
 
 std::string KeyboardOverlayDelegate::GetDialogArgs() const {
