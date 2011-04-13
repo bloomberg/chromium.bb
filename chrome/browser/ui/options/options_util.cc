@@ -127,7 +127,6 @@ bool OptionsUtil::ResolveMetricsReportingEnabled(bool enabled) {
   MetricsService* metrics = g_browser_process->metrics_service();
   DCHECK(metrics);
   if (metrics) {
-    metrics->SetUserPermitsUpload(enabled);
     if (enabled)
       metrics->Start();
     else

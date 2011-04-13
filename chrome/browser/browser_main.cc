@@ -766,7 +766,6 @@ MetricsService* InitializeMetrics(const CommandLine& parsed_command_line,
 #else
     bool enabled = local_state->GetBoolean(prefs::kMetricsReportingEnabled);
 #endif  // #if defined(OS_CHROMEOS)
-    metrics->SetUserPermitsUpload(enabled);
     if (enabled) {
       metrics->Start();
       chrome_browser_net_websocket_experiment::

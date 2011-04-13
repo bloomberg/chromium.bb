@@ -438,7 +438,6 @@ void MetricsService::DiscardOldStabilityStats(PrefService* local_state) {
 MetricsService::MetricsService()
     : recording_active_(false),
       reporting_active_(false),
-      user_permits_upload_(false),
       server_permits_upload_(true),
       state_(INITIALIZED),
       current_fetch_(NULL),
@@ -457,12 +456,8 @@ MetricsService::~MetricsService() {
   SetRecording(false);
 }
 
-void MetricsService::SetUserPermitsUpload(bool enabled) {
-  HandleIdleSinceLastTransmission(false);
-  user_permits_upload_ = enabled;
-}
-
 void MetricsService::Start() {
+  HandleIdleSinceLastTransmission(false);
   SetRecording(true);
   SetReporting(true);
 }
@@ -473,6 +468,7 @@ void MetricsService::StartRecordingOnly() {
 }
 
 void MetricsService::Stop() {
+  HandleIdleSinceLastTransmission(false);
   SetReporting(false);
   SetRecording(false);
 }
@@ -1026,9 +1022,9 @@ void MetricsService::OnHistogramSynchronizationDone() {
     return;
   }
 
-  // If we're not supposed to upload any UMA data because the response or the
-  // user said so, cancel the upload at this point, but start the timer.
-  if (!TransmissionPermitted()) {
+  // If we're not supposed to upload any UMA data because the response said so,
+  // cancel the upload at this point, but start the timer.
+  if (!ServerPermitsTransmission()) {
     DiscardPendingLog();
     StartLogTransmissionTimer();
     return;
@@ -1105,13 +1101,9 @@ void MetricsService::MakePendingLog() {
   DCHECK(pending_log());
 }
 
-bool MetricsService::TransmissionPermitted() const {
-  // If the user forbids uploading that's they're business, and we don't upload
-  // anything.  If the server forbids uploading, that's our business, so we take
-  // that to mean it forbids current logs, but we still send up the inital logs
-  // and any old logs.
-  if (!user_permits_upload_)
-    return false;
+bool MetricsService::ServerPermitsTransmission() const {
+  // If the server forbids uploading, we take that to mean it forbids current
+  // logs, but we still send up the inital logs and any old logs.
   if (server_permits_upload_)
     return true;
 

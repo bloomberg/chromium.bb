@@ -79,10 +79,6 @@ class MetricsService : public NotificationObserver,
   MetricsService();
   virtual ~MetricsService();
 
-  // Sets whether the user permits uploading.  The argument of this function
-  // should match the checkbox in Options.
-  void SetUserPermitsUpload(bool enabled);
-
   // Start/stop the metrics recording and uploading machine.  These should be
   // used on startup and when the user clicks the checkbox in the prefs.
   // StartRecordingOnly starts the metrics recording but not reporting, for use
@@ -228,10 +224,9 @@ class MetricsService : public NotificationObserver,
   // MakePendingLog does nothing and returns.
   void MakePendingLog();
 
-  // Determines from state_ and permissions set out by the server and by
-  // the user whether the pending_log_ should be sent or discarded.  Called by
-  // TryToStartTransmission.
-  bool TransmissionPermitted() const;
+  // Determines from state_ and permissions set out by the server whether the
+  // pending_log_ should be sent or discarded.
+  bool ServerPermitsTransmission() const;
 
   // Check to see if there are any unsent logs from previous sessions.
   bool unsent_logs() const {
@@ -392,10 +387,6 @@ class MetricsService : public NotificationObserver,
   // SetReporting.
   bool recording_active_;
   bool reporting_active_;
-
-  // Coincides with the check box in options window that lets the user control
-  // whether to upload.
-  bool user_permits_upload_;
 
   // The variable server_permits_upload_ is set true when the response
   // data forbids uploading.  This should coinside with the "die roll"
