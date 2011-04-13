@@ -729,16 +729,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 
 #if defined(TOOLKIT_VIEWS)
 // Make sure Find box grabs the Esc accelerator and restores it again.
-#if defined(OS_LINUX)
-// TODO(oshima): On Gtk/Linux, a focus out event is asynchronous and
-// hiding a find bar does not immediately update the target
-// accelerator. The last condition fails in most cases due to this
-// behavior. See http://crbug.com/26870.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
-                       DISABLED_AcceleratorRestoring) {
-#else
-  IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, AcceleratorRestoring) {
-#endif
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, AcceleratorRestoring) {
   ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to any page.
