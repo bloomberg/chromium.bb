@@ -308,7 +308,12 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FLAKY_SLOW_Loading) {
 }
 
 // Flaky as per http://crbug.com/74549.
-IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FLAKY_OnLoadAndReload) {
+#if defined(OS_MACOSX)
+#define MAYBE_OnLoadAndReload DISABLED_OnLoadAndReload
+#else
+#define MAYBE_OnLoadAndReload FLAKY_OnLoadAndReload
+#endif
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_OnLoadAndReload) {
   ASSERT_TRUE(pdf_test_server()->Start());
 
   GURL url = pdf_test_server()->GetURL("files/onload_reload.html");
