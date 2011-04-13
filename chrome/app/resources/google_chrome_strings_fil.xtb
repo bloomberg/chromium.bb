@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">Tungkol sa Chrome Frame...</translation>
 <translation id="386202838227397562">Mangyaring isara lahat ng mga window ng Google Chrome at muling subukan.</translation>
 <translation id="2770231113462710648">Baguhin ang default na browser sa:</translation>
-<translation id="698670068493841342">Na-install na ang Google Chrome para sa gumagamit na ito. Kung hindi gumagana ang software, paki-uninstall ang Google Chrome at i-download muli ito.</translation>
 <translation id="7400722733683201933">Tungkol sa Google Chrome</translation>
 <translation id="7781002470561365167">May magagamit na bagong bersyon ng Google Chrome.</translation>
 <translation id="7101265395643981223">Magsimula sa Google Chrome</translation>
@@ -36,7 +35,6 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">May available na bago, mas ligtas na bersyon ng Google Chrome.</translation>
 <translation id="5037239767309817516">Pakisara ang lahat ng mga window ng Google Chrome at ilunsad itong muli para magkaroon ng epekto ang pagbabagong ito.</translation>
-<translation id="8810218179782551669">Wika ng Google Chrome:</translation>
 <translation id="7451721381978275812">Di-wastong mga argumento. Hindi mai-install ang Google Chrome Frame sa ready mode nang hindi ini-install din ang Google Chrome.</translation>
 <translation id="5809236835374558741">Mayroon nang pinakabagong bersyon ng Google Chrome Frame ang computer na ito. Kung hindi gumagana ang software, mangyaring alisin sa pagkaka-install ang Google Chrome Frame at i-download itong muli.</translation>
 <translation id="4357846314885556934">Hindi kumikilos nang tama ang Google Chrome</translation>
@@ -50,7 +48,6 @@
 <translation id="8738921060445980047">Hindi kilalang bersyon.</translation>
 <translation id="2485422356828889247">I-uninstall</translation>
 <translation id="3324235665723428530">Ang iyong profile ay hindi magagamit dahil ito ay mula sa isang bagong bersyon ng Google Chrome.\n\nIlang mga tampok ay maaaring hindi magagamit. Mangyaring tukuyin ang isang kakaibang derektoryo ng profile o gamitin ang isan bagong bersyon ng Chrome.</translation>
-<translation id="7214670531148488183">Maaaring gumamit ang Google Chrome ng mga serbisyo sa web upang mapabuti ang iyong karanasan sa pagba-browse. Maaari mong opsyonal na hindi paganahin ang mga serbisyong ito. </translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Tatanggalin din ang iyong data sa pag-browse?</translation>
@@ -92,7 +89,6 @@
 <translation id="2769762047821873045">Hindi Google Chrome ang iyong default na browser.</translation>
 <translation id="7825851276765848807">Nabigo ang pag-install dahil sa hindi natukoy na error. Paki-download muli ang Google Chrome.</translation>
 <translation id="3335672657969596251">Hindi suportado ng Google Chrome ang <ph name="OS_NAME"/>.</translation>
-<translation id="473183893665420670">Kapag i-reset mo ang mga pagpipilian ng Google Chrome, maibabalik ang anumang mga pagbabagong isinagawa mo sa default na mga setting. Nais mo bang i-reset ang mga pagpipilian ng Chrome?</translation>
 <translation id="3636771339108070045">Mayroon nang mas bagong bersyon ng Google Chrome ang computer na ito. Kung hindi gumagana ang software, paki-uninstall ang Google Chrome at i-download muli ito.</translation>
 <translation id="5334545119300433702">Ang module na ito ay kilala bilang salungat sa Google Chrome.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -103,7 +99,6 @@
 <translation id="6049075767726609708">In-install ng isang administrator ang Google Chrome sa system na ito, at magagamit ito ng lahat ng mga gumagamit. Papalitan ngayon ng Google Chrome sa antas ng system ang iyong pag-install sa antas ng gumagamit.</translation>
 <translation id="7123348595797445166">Subukan ito (naka-install na)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">Baguhin ang wika na ginagamit sa mga menu ng Chrome, dialog box, at tooltip.</translation>
 <translation id="9189723490960700326">Tinangka mong maabot &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ngunit ang server ay nagpakita ng isang repasong sertipiko. Walang impormasyong magagamit upang ipahiwatig kung ang sertipiko ay nakompromiso simula noong pagrepaso. Ito ay nangangahulugang ang Google Chrome ay hindi maasahang magagarantiya na makipag-kumunika sa &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; at hindi sa isang umatake. Hindi ka dapat magpatuloy.</translation>
 <translation id="7106741999175697885">Task Manager - Google Chrome</translation>
 <translation id="8449380764213232436">Ang Google Chrome ay nagi-import ngayon ng sumusunod na mga item mula sa <ph name="BROWSER_COMPONENT"/>:</translation>

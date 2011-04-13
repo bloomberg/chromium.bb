@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">Om Chrome Frame...</translation>
 <translation id="386202838227397562">Stäng alla Google Chrome-fönster och försök igen.</translation>
 <translation id="2770231113462710648">Ändra standardwebbläsare till:</translation>
-<translation id="698670068493841342">Google Chrome är redan installerat för den här användaren. Om programmet inte fungerar avinstallerar du Google Chrome och hämtar det igen.</translation>
 <translation id="7400722733683201933">Om Google Chrome</translation>
 <translation id="7781002470561365167">Det finns en ny version av Google Chrome tillgänglig.</translation>
 <translation id="7101265395643981223">Starta Google Chrome</translation>
@@ -36,7 +35,6 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Det finns en ny, ännu säkrare version av Google Chrome.</translation>
 <translation id="5037239767309817516">Stäng alla fönster i Google Chrome och starta om så att ändringen genomförs.</translation>
-<translation id="8810218179782551669">Språk för Google Chrome:</translation>
 <translation id="7451721381978275812">Ogiltiga argument. Google Chrome Frame kan inte installeras i klarläge utan att Google Chrome också installeras.</translation>
 <translation id="5809236835374558741">Det finns redan en senare version av Google Chrome Frame på den här datorn. Om programmet inte fungerar avinstallerar du Google Chrome Frame och hämtar det igen.</translation>
 <translation id="4357846314885556934">Google Chrome uppför sig inte</translation>
@@ -50,7 +48,6 @@
 <translation id="8738921060445980047">Okänd version.</translation>
 <translation id="2485422356828889247">Avinstallera</translation>
 <translation id="3324235665723428530">Din profil kan inte användas eftersom den kommer från en nyare version av Google Chrome.\n\nEn del funktioner kan vara otillgängliga. Ange en annan profilkatalog eller använd en nyare version av Chrome.</translation>
-<translation id="7214670531148488183">Google Chrome kan använda webbtjänster för att förbättra din upplevelse när du surfar. Om du vill kan du inaktivera sådana tjänster.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Vill du även ta bort din webbinformation?</translation>
@@ -92,7 +89,6 @@
 <translation id="2769762047821873045">Google Chrome är inte din standardwebbläsare.</translation>
 <translation id="7825851276765848807">Installationen misslyckades på grund av ett okänt fel. Hämta Google Chrome igen.</translation>
 <translation id="3335672657969596251">Google Chrome saknar stöd för <ph name="OS_NAME"/>.</translation>
-<translation id="473183893665420670">När du återställer alternativen för Google Chrome kommer alla ändringar som du gjort att återställas till standardinställningarna. Vill du återställa alternativen för Chrome?</translation>
 <translation id="3636771339108070045">Det finns redan en senare version av Google Chrome på den här datorn. Om programmet inte fungerar avinstallerar du Google Chrome och hämtar det igen.</translation>
 <translation id="5334545119300433702">Den här modulen har tidigare varit i konflikt med Google Chrome.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -103,7 +99,6 @@
 <translation id="6049075767726609708">En administratör har installerat Google Chrome på systemet så att det är tillgängligt för alla användare. Systemnivåversionen av Google Chrome ersätter nu installationen på användarnivå.</translation>
 <translation id="7123348595797445166">Testa den (redan installerad)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">Ändra språket i menyerna, dialogrutorna och verktygstipsen i Google Chrome.</translation>
 <translation id="9189723490960700326">Du försökte nå &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; men servern angav ett utgånget certifikat. Det finns ingen information om huruvida certifikatet har äventyrats sedan det utgått. Google Chrome kan inte garantera att du kommunicerar med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; och inte en angripare. Du bör inte fortsätta.</translation>
 <translation id="7106741999175697885">Aktivitetshanteraren - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome importerar följande objekt från <ph name="BROWSER_COMPONENT"/>:</translation>

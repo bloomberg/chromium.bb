@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">Про Chrome Frame...</translation>
 <translation id="386202838227397562">Закрийте всі вікна Google Chrome і повторіть спробу.</translation>
 <translation id="2770231113462710648">Змінити веб-переглядач за умовчанням на:</translation>
-<translation id="698670068493841342">Google Chrome уже встановлено для цього користувача. Якщо програмне забезпечення не працює, необхідно видалити Google Chrome і завантажити його ще раз.</translation>
 <translation id="7400722733683201933">Про Google Chrome</translation>
 <translation id="7781002470561365167">Доступна нова версія Google Chrome.</translation>
 <translation id="7101265395643981223">Запустити Google Chrome</translation>
@@ -36,7 +35,6 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Доступна нова, безпечніша версія Google Chrome.</translation>
 <translation id="5037239767309817516">Щоб зміна почала діяти, закрийте всі вікна Google Chrome і перезапустіть веб-переглядач.</translation>
-<translation id="8810218179782551669">Мова Google Chrome:</translation>
 <translation id="7451721381978275812">Недійсні аргументи. Google Chrome Frame неможливо встановити в режимі готовності, не встановивши при цьому Google Chrome.</translation>
 <translation id="5809236835374558741">На цьому комп'ютері вже встановлено новішу версію Google Chrome Frame. Якщо це програмне забезпечення не працює, слід видалити Google Chrome Frame і завантажити його знову.</translation>
 <translation id="4357846314885556934">Google Chrome не працює належним чином</translation>
@@ -50,7 +48,6 @@
 <translation id="8738921060445980047">Невідома версія.</translation>
 <translation id="2485422356828889247">Видалити</translation>
 <translation id="3324235665723428530">Ваш профіль не можна використати, тому що його створено у новішій версії Google Chrome.\n\nДеякі функції можуть не працювати. Вкажіть інший каталог профілю або скористайтеся новішою версією Chrome.</translation>
-<translation id="7214670531148488183">Google Chrome може використовувати Інтернет-послуги для покращення умов перегляду. За бажанням ці послуги можна вимкнути.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Конструкція Google Chrome Canary</translation>
 <translation id="911206726377975832">Також видалити дані веб-перегляду?</translation>
@@ -92,7 +89,6 @@
 <translation id="2769762047821873045">Google Chrome не є веб-переглядачем за умовчанням.</translation>
 <translation id="7825851276765848807">Програму не вдалося встановити через невизначену помилку. Завантажте Google Chrome ще раз.</translation>
 <translation id="3335672657969596251">Google Chrome не підтримує <ph name="OS_NAME"/>.</translation>
-<translation id="473183893665420670">Якщо відновити параметри Google Chrome, будь-які внесені зміни буде повернено до стандартних налаштувань. Відновити параметри Google Chrome?</translation>
 <translation id="3636771339108070045">На комп'ютері вже встановлено новішу версію Google Chrome. Якщо програмне забезпечення не працює, слід видалити Google Chrome і завантажити його знову.</translation>
 <translation id="5334545119300433702">Відомо, що цей модуль конфліктує з Google Chrome.</translation>
 <translation id="3360895254066713204">Помічник Chrome</translation>
@@ -103,7 +99,6 @@
 <translation id="6049075767726609708">Адміністратор установив Google Chrome у цій системі, веб-переглядач доступний для всіх користувачів. Установку Google Chrome на рівні користувача буде змінено установкою на рівні системи.</translation>
 <translation id="7123348595797445166">Спробувати (уже встановлено)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">Змініть мову, яка використовується в меню, діалогових вікнах і підказках Chrome.</translation>
 <translation id="9189723490960700326">Ви спробували отримати доступ до &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, але сервер надав сертифікат, який втратив чинність. Немає доступної інформації, яка б вказувала на те, що сертифікат було пошкоджено після втрати ним чинності. Це означає, що Google Chrome не може гарантувати вам той факт, що ви працюєте з &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не зі зловмисником. Рекомендуємо не продовжувати.</translation>
 <translation id="7106741999175697885">Диспетчер завдань - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome не імпортує наступні компоненти з <ph name="BROWSER_COMPONENT"/>:</translation>

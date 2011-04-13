@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">Quant a Chrome Frame...</translation>
 <translation id="386202838227397562">Tanqueu totes les finestres de Google Chrome i torneu-ho a provar.</translation>
 <translation id="2770231113462710648">Canvia el navegador predeterminat a:</translation>
-<translation id="698670068493841342">Ja s'ha instal·lat Google Chrome per a aquest usuari. Si el programari no funciona, desinstal·la Google Chrome i baixa'l de nou.</translation>
 <translation id="7400722733683201933">Quant a Google Chrome</translation>
 <translation id="7781002470561365167">Hi ha disponible una versió nova de Google Chrome.</translation>
 <translation id="7101265395643981223">Inicieu Google Chrome</translation>
@@ -36,7 +35,6 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Hi ha disponible una nova versió més segura de Google Chrome.</translation>
 <translation id="5037239767309817516">Tanqueu totes les finestres de Google Chrome i torneu a iniciar el programa perquè aquest canvi tingui efecte.</translation>
-<translation id="8810218179782551669">L'idioma de Google Chrome:</translation>
 <translation id="7451721381978275812">Arguments no vàlids. Google Chrome Frame no es pot instal·lar en mode preparat sense instal·lar també Google Chrome.</translation>
 <translation id="5809236835374558741">Aquest equip ja disposa d'una versió més recent de Google Chrome Frame. Si el programari no funciona, desinstal·leu Google Chrome Frame i torneu-lo a baixar.</translation>
 <translation id="4357846314885556934">Google Chrome té un comportament estrany</translation>
@@ -50,7 +48,6 @@
 <translation id="8738921060445980047">Versió desconeguda.</translation>
 <translation id="2485422356828889247">Desinstal·la</translation>
 <translation id="3324235665723428530">El vostre perfil no es pot utilitzar perquè es va crear amb una versió més recent de Google Chrome.\n\nÉs possible que algunes funcions no estiguin disponibles. Especifiqueu un altre directori de perfil o feu servir una versió actualitzada de Google Chrome.</translation>
-<translation id="7214670531148488183">És possible que Google Chrome utilitzi serveis web per millorar la vostra experiència de navegació. Si ho voleu, podeu desactivar aquests serveis.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">També voleu suprimir les dades de navegació?</translation>
@@ -92,7 +89,6 @@
 <translation id="2769762047821873045">Google Chrome no és el navegador predeterminat.</translation>
 <translation id="7825851276765848807">La instal·lació ha fallat a causa d'un error no especificat. Torneu a baixar Google Chrome.</translation>
 <translation id="3335672657969596251">Google Chrome no és compatible amb <ph name="OS_NAME"/>.</translation>
-<translation id="473183893665420670">En restablir les opcions de Google Chrome, els canvis que hàgiu fet es revertiran a la configuració predeterminada. Voleu restablir les opcions de Google Chrome?</translation>
 <translation id="3636771339108070045">Aquest equip ja disposa d'una versió més recent de Google Chrome. Si el programari no funciona, desinstal·la Google Chrome i baixa'l de nou.</translation>
 <translation id="5334545119300433702">Se sap que aquest mòdul entra en conflicte amb Google Chrome.</translation>
 <translation id="3360895254066713204">Aplicació auxiliar de Chrome</translation>
@@ -103,7 +99,6 @@
 <translation id="6049075767726609708">Un administrador ha instal·lat Google Chrome en aquest sistema i ja està disponible per a tots els usuaris. Ara substituirem la instal·lació de Google Chrome en l'àmbit del sistema per la instal·lació en l'àmbit dels usuaris.</translation>
 <translation id="7123348595797445166">Prova-la (ja instal·lada)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">Canvieu l'idioma utilitzat als menús, quadres de diàleg i indicadors de funció de Google Chrome.</translation>
 <translation id="9189723490960700326">Heu intentat accedir a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, però el servidor ha presentat un certificat caducat. No hi ha informació disponible que indiqui si aquest certificat ha estat interceptat des que va caducar. Això significa que Google Chrome no pot garantir que us esteu comunicant amb &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; i no amb un atacant. No hauríeu de continuar.</translation>
 <translation id="7106741999175697885">Gestor de tasques - Google Chrome</translation>
 <translation id="8449380764213232436">En aquests moments, Google Chrome està important els elements següents de <ph name="BROWSER_COMPONENT"/>:</translation>

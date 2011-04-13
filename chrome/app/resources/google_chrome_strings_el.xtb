@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">Σχετικά με το Chrome Frame...</translation>
 <translation id="386202838227397562">Κλείστε όλα τα παράθυρα του Google Chrome και προσπαθήστε ξανά.</translation>
 <translation id="2770231113462710648">Αλλαγή προεπιλεγμένου προγράμματος περιήγησης σε:</translation>
-<translation id="698670068493841342">Το Google Chrome έχει ήδη εγκατασταθεί για αυτόν το χρήστη. Αν το λογισμικό δεν λειτουργεί, απεγκαταστήστε το Google Chrome και κάντε λήψη ξανά.</translation>
 <translation id="7400722733683201933">Πληροφορίες για το Google Chrome</translation>
 <translation id="7781002470561365167">Μια νέα έκδοση του Google Chrome είναι διαθέσιμη.</translation>
 <translation id="7101265395643981223">Έναρξη του Google Chrome</translation>
@@ -36,7 +35,6 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Υπάρχει μια νέα, ασφαλέστερη έκδοση του Google Chrome.</translation>
 <translation id="5037239767309817516">Κλείστε όλα τα παράθυρα του Google Chrome και επανεκκινήστε τον για να εφαρμοστεί αυτή η αλλαγή.</translation>
-<translation id="8810218179782551669">Γλώσσα του Google Chrome:</translation>
 <translation id="7451721381978275812">Μη έγκυρα ορίσματα. Το Google Chrome Frame δεν μπορεί να εγκατασταθεί σε κατάσταση ετοιμότητας χωρίς να γίνει εγκατάσταση και του Google Chrome.</translation>
 <translation id="5809236835374558741">Αυτός ο υπολογιστής διαθέτει ήδη μια πιο πρόσφατη έκδοση του Google Chrome. Αν το λογισμικό δεν λειτουργεί, καταργήστε την εγκατάσταση του Google Chrome και κάντε λήψη ξανά.</translation>
 <translation id="4357846314885556934">Το Google Chrome παρουσιάζει εσφαλμένη συμπεριφορά</translation>
@@ -50,7 +48,6 @@
 <translation id="8738921060445980047">Άγνωστη έκδοση.</translation>
 <translation id="2485422356828889247">Κατάργηση Εγκατάστασης</translation>
 <translation id="3324235665723428530">Το προφίλ σας δεν μπορεί να χρησιμοποιηθεί διότι προέρχεται από νεότερη έκδοση του Google Chrome.\n\nΟρισμένες δυνατότητες δεν θα είναι διαθέσιμες. Καθορίστε έναν διαφορετικό κατάλογο προφίλ ή χρησιμοποιήστε νεότερη έκδοση του Chrome.</translation>
-<translation id="7214670531148488183">Το Google Chrome ενδέχεται να χρησιμοποιεί υπηρεσίες ιστού για να βελτιώσει την εμπειρία περιήγησής σας. Μπορείτε, εάν θέλετε, να απενεργοποιήσετε αυτές τις υπηρεσίες.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Να γίνει διαγραφή και των δεδομένων περιήγησης;</translation>
@@ -92,7 +89,6 @@
 <translation id="2769762047821873045">Το Google Chrome δεν είναι το προεπιλεγμένο πρόγραμμα περιήγησης.</translation>
 <translation id="7825851276765848807">Η εγκατάσταση απέτυχε λόγω μη καθορισμένου σφάλματος. Κάντε λήψη του Google Chrome ξανά.</translation>
 <translation id="3335672657969596251">Το Google Chrome δεν υποστηρίζει το <ph name="OS_NAME"/>.</translation>
-<translation id="473183893665420670">Όταν πραγματοποιείτε επαναφορά των ρυθμίσεων του Google Chrome, θα γίνει αναίρεση τυχόν αλλαγών που έχετε κάνει στις προεπιλεγμένες ρυθμίσεις. Θέλετε να κάνετε επαναφορά των επιλογών του Chrome;</translation>
 <translation id="3636771339108070045">Αυτός ο υπολογιστής διαθέτει ήδη μια πιο πρόσφατη έκδοση του Google Chrome. Αν το λογισμικό δεν λειτουργεί, απεγκαταστήστε το Google Chrome και κάντε λήψη ξανά.</translation>
 <translation id="5334545119300433702">Έχει διαπιστωθεί ότι αυτή η λειτουργική μονάδα έρχεται σε διένεξη με το Google Chrome.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -103,7 +99,6 @@
 <translation id="6049075767726609708">Ο διαχειριστής εγκατέστησε το Google Chrome σε αυτό το σύστημα. Το πρόγραμμα είναι διαθέσιμο σε όλους τους χρήστες. Το Google Chrome σε επίπεδο συστήματος θα αντικαταστήσει τώρα την εγκατάσταση σε επίπεδο χρήστη.</translation>
 <translation id="7123348595797445166">Δοκιμάστε το (ήδη εγκατεστημένο)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">Αλλάξτε τη γλώσσα που χρησιμοποιείται στα μενού, στα παράθυρα διαλόγου και στις επεξηγήσεις εργαλείων του Google Chrome.</translation>
 <translation id="9189723490960700326">Επιχειρήσατε να μεταβείτε στον τομέα &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, αλλά ο διακομιστής παρουσίασε ένα πιστοποιητικό που έχει λήξει. Δεν υπάρχουν διαθέσιμες πληροφορίες για να μάθετε αν η ακεραιότητα αυτού του πιστοποιητικού έχει παραβιαστεί μετά τη λήξη του. Αυτό σημαίνει ότι το Google Chrome δεν μπορεί να εγγυηθεί ότι επικοινωνείτε με τον τομέα &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; και όχι με κάποιον εισβολέα. Δεν πρέπει να προχωρήσετε.</translation>
 <translation id="7106741999175697885">Διαχείριση Εργασιών - Google Chrome</translation>
 <translation id="8449380764213232436">Το Google Chrome πραγματοποιεί εισαγωγή των ακόλουθων στοιχείων από το <ph name="BROWSER_COMPONENT"/>:</translation>

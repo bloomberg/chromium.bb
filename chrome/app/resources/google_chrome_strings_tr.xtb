@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">Chrome Frame Hakkında...</translation>
 <translation id="386202838227397562">Lütfen tüm Google Chrome pencerelerini kapatıp tekrar deneyin.</translation>
 <translation id="2770231113462710648">Varsayılan tarayıcıyı şuna dönüştür:</translation>
-<translation id="698670068493841342">Google Chrome bu kullanıcı için zaten yüklenmiş durumda. Yazılım çalışmıyorsa, lütfen Google Chrome'u kaldırın ve yeniden indirin.</translation>
 <translation id="7400722733683201933">Google Chrome hakkında</translation>
 <translation id="7781002470561365167">Google Chrome'un yeni bir sürümü çıktı.</translation>
 <translation id="7101265395643981223">Google Chrome'u başlat</translation>
@@ -36,7 +35,6 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Google Chrome'un kullanabileceğiniz yeni, daha güvenli bir sürümü var.</translation>
 <translation id="5037239767309817516">Bu değişikliğin geçerli olması için, lütfen tüm Google Chrome pencerelerini kapatın ve Google Chrome'u yeniden başlatın.</translation>
-<translation id="8810218179782551669">Google Chrome dili:</translation>
 <translation id="7451721381978275812">Geçersiz bağımsız değişkenler. Google Chrome Frame, Google Chrome'u da yüklemeden hazır modda yüklenemez.</translation>
 <translation id="5809236835374558741">Bu bilgisayarda Google Chrome Frame'in daha yeni bir sürümü zaten var. Yazılım çalışmıyorsa, lütfen Google Chrome Frame'i kaldırın ve yeniden indirin.</translation>
 <translation id="4357846314885556934">Google Chrome Hatalı Çalışıyor</translation>
@@ -50,7 +48,6 @@
 <translation id="8738921060445980047">Bilinmeyen sürüm.</translation>
 <translation id="2485422356828889247">Yüklemeyi Kaldır</translation>
 <translation id="3324235665723428530">Profiliniz, Google Chrome'un daha yeni bir sürümünden olduğu için kullanılamıyor.\n\nBazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirtin veya Chrome'un daha yeni bir sürümünü kullanın.</translation>
-<translation id="7214670531148488183">Google Chrome, web'de gezinme deneyiminizi geliştirmek için web hizmetleri kullanabilir. İsterseniz bu hizmetleri devre dışı bırakabilirsiniz.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Google Chrome Canary Yapısı</translation>
 <translation id="911206726377975832">Tarama verileriniz de silinsin mi?</translation>
@@ -92,7 +89,6 @@
 <translation id="2769762047821873045">Google Chrome varsayılan tarayıcınız değil.</translation>
 <translation id="7825851276765848807">Yükleme belirtilmeyen bir hata nedeniyle başarısız oldu. Lütfen Google Chrome'u tekrar yükleyin.</translation>
 <translation id="3335672657969596251">Google Chrome, <ph name="OS_NAME"/> işletim sistemini desteklemez.</translation>
-<translation id="473183893665420670">Google Chrome seçeneklerini sıfırladığınızda, yaptığınız tüm değişiklikler varsayılan ayarlara geri döndürülür. Chrome seçeneklerini sıfırlamak istiyor musunuz?</translation>
 <translation id="3636771339108070045">Bu bilgisayarda Google Chrome'un daha yeni bir sürümü zaten var. Yazılım çalışmıyorsa, lütfen Google Chrome'u kaldırın ve yeniden indirin.</translation>
 <translation id="5334545119300433702">Bu modülün Google Chrome'la çakıştığı biliniyor.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -103,7 +99,6 @@
 <translation id="6049075767726609708">Bir yönetici Google Chrome'u bu sisteme yükledi ve ürün tüm kullanıcılar için kullanılabilir durumda. Sistem düzeyindeki Google Chrome artık kullanıcı düzeyindeki yüklemenin yerini alacak.</translation>
 <translation id="7123348595797445166">Deneyin (zaten yüklü)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">Google Chrome menülerinde, iletişim kutularında ve araç ipuçlarında kullanılan dili değiştirin.</translation>
 <translation id="9189723490960700326">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; etki alanına ulaşmayı denediniz, ancak sunucu, süresi dolmuş bir sertifika sundu. Bu sertifikanın süresi dolduktan sonra başkasının eline geçip geçmediğine dair bilgi yok. Bu, Google Chrome'un bir saldırganla değil, &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ile iletişim kurduğunuzun garantisini veremeyeceği anlamına gelir. İlerlememelisiniz.</translation>
 <translation id="7106741999175697885">Görev Yöneticisi - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome, şu anda <ph name="BROWSER_COMPONENT"/> bölümünden aşağıdaki öğeleri alıyor:</translation>

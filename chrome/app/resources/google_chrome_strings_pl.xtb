@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">Chrome Frame – informacje</translation>
 <translation id="386202838227397562">Zamknij wszystkie okna przeglądarki Google Chrome i spróbuj ponownie.</translation>
 <translation id="2770231113462710648">Zmień przeglądarkę domyślną na:</translation>
-<translation id="698670068493841342">Przeglądarka Google Chrome jest już zainstalowana dla tego użytkownika. Jeśli oprogramowanie nie działa, odinstaluj Google Chrome i pobierz go ponownie.</translation>
 <translation id="7400722733683201933">Google Chrome – informacje</translation>
 <translation id="7781002470561365167">Dostępna jest nowa wersja przeglądarki Google Chrome.</translation>
 <translation id="7101265395643981223">Uruchom Google Chrome</translation>
@@ -36,7 +35,6 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Dostępna jest nowa, bezpieczniejsza wersja przeglądarki Google Chrome.</translation>
 <translation id="5037239767309817516">Zamknij wszystkie okna przeglądarki Google Chrome i uruchom ją ponownie, aby zastosować zmiany.</translation>
-<translation id="8810218179782551669">Język przeglądarki Google Chrome:</translation>
 <translation id="7451721381978275812">Nieprawidłowe argumenty. Wtyczki Google Chrome Frame nie można zainstalować w trybie gotowości bez instalowania przeglądarki Google Chrome.</translation>
 <translation id="5809236835374558741">Na tym komputerze jest już zainstalowana nowsza wersja wtyczki Google Chrome Frame. Jeśli oprogramowanie nie działa, odinstaluj wtyczkę Google Chrome Frame i pobierz ją ponownie.</translation>
 <translation id="4357846314885556934">Google Chrome zachowuje się niegrzecznie</translation>
@@ -50,7 +48,6 @@
 <translation id="8738921060445980047">Nieznana wersja.</translation>
 <translation id="2485422356828889247">Odinstaluj</translation>
 <translation id="3324235665723428530">Twój profil nie może zostać użyty ponieważ został utworzony w nowszej wersji przeglądarki Chrome.\n\nNiektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub użyj nowszej wersji przeglądarki Chrome.</translation>
-<translation id="7214670531148488183">Przeglądarka Google Chrome może korzystać z usług sieciowych w celu poprawy wygody użytkowania. Usługi te można opcjonalnie wyłączyć.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Kompilacja Google Chrome Canary</translation>
 <translation id="911206726377975832">Czy usunąć także dane przeglądarki?</translation>
@@ -92,7 +89,6 @@
 <translation id="2769762047821873045">Google Chrome nie jest domyślną przeglądarką.</translation>
 <translation id="7825851276765848807">Instalacja nie powiodła się z powodu nieokreślonego błędu. Pobierz Google Chrome ponownie.</translation>
 <translation id="3335672657969596251">Google Chrome nie obsługuje systemu <ph name="OS_NAME"/>.</translation>
-<translation id="473183893665420670">Po zresetowaniu opcji Google Chrome wszelkie wprowadzone zmiany zostaną cofnięte do ustawień domyślnych. Czy chcesz zresetować opcje przeglądarki Chrome?</translation>
 <translation id="3636771339108070045">Na tym komputerze jest już zainstalowana nowsza wersja Google Chrome. Jeśli oprogramowanie nie działa, odinstaluj Google Chrome i pobierz go ponownie.</translation>
 <translation id="5334545119300433702">Znane są przypadki konfliktu tego modułu z przeglądarką Google Chrome.</translation>
 <translation id="3360895254066713204">Pomoc Chrome</translation>
@@ -103,7 +99,6 @@
 <translation id="6049075767726609708">Administrator zainstalował w tym systemie przeglądarkę Google Chrome i jest ona dostępna dla wszystkich użytkowników. Przeglądarka Google Chrome zainstalowana na poziomie użytkownika zostanie teraz zastąpiona przez instalację systemową.</translation>
 <translation id="7123348595797445166">Wypróbuj (już zainstalowano)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">Zmień język używany w menu, komunikatach i wskazówkach przeglądarki Chrome.</translation>
 <translation id="9189723490960700326">Podjęto próbę przejścia do witryny &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale certyfikat wyświetlony przez serwer utracił ważność. Nie można uzyskać informacji wskazujących, że certyfikat został naruszony od momentu wygaśnięcia ważności. Oznacza to, że przeglądarka Google Chrome nie może  zagwarantować, że komunikujesz się z witryną &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nie intruzem. Nie należy wykonywać dalszych czynności.</translation>
 <translation id="7106741999175697885">Menedżer zadań – Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome rozpoczął importowanie następujących elementów z przeglądarki <ph name="BROWSER_COMPONENT"/></translation>

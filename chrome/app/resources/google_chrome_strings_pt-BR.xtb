@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">Sobre o Frame do Google Chrome...</translation>
 <translation id="386202838227397562">Feche todas as janelas do Google Chrome e tente novamente.</translation>
 <translation id="2770231113462710648">Alterar navegador padrão para:</translation>
-<translation id="698670068493841342">O Google Chrome já foi instalado para este usuário. Se o software não estiver funcionando, desinstale o Google Chrome e baixe-o novamente.</translation>
 <translation id="7400722733683201933">Sobre o Google Chrome</translation>
 <translation id="7781002470561365167">Uma nova versão do Google Chrome está disponível.</translation>
 <translation id="7101265395643981223">Iniciar o Google Chrome</translation>
@@ -36,7 +35,6 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Há uma versão nova e mais segura do Google Chrome disponível.</translation>
 <translation id="5037239767309817516">Feche todas as janelas do Google Chrome e reinicie-o para que essa alteração entre em vigor.</translation>
-<translation id="8810218179782551669">Idioma do Google Chrome:</translation>
 <translation id="7451721381978275812">Argumentos inválidos. O Frame do Google Chrome não pode ser instalado em modo pronto sem a instalação do Google Chrome.</translation>
 <translation id="5809236835374558741">Este computador já tem uma versão mais recente do Frame do Google Chrome. Se o software não estiver funcionando, desinstale o Frame do Google Chrome e faça o download novamente.</translation>
 <translation id="4357846314885556934">O Google Chrome está se comportando de forma inadequada</translation>
@@ -50,7 +48,6 @@
 <translation id="8738921060445980047">Versão desconhecida.</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="3324235665723428530">O seu perfil não pode ser usado, pois ele é de uma versão mais recente do Google Chrome.\n\nAlguns recursos podem estar indisponíveis. Especifique um diretório de perfil diferente ou use uma versão mais recente do Chrome.</translation>
-<translation id="7214670531148488183">O Google Chrome pode usar serviços da web para melhorar a qualidade da sua navegação. Você pode desativar esses serviços.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Excluir também dados de navegação?</translation>
@@ -93,7 +90,6 @@ Se continuar, o Chrome não procurará nenhuma outra correspondência incorreta 
 <translation id="2769762047821873045">O Google Chrome não é o seu navegador padrão.</translation>
 <translation id="7825851276765848807">Houve uma falha na instalação devido a um erro não-especificado. Faça o download do Google Chrome novamente.</translation>
 <translation id="3335672657969596251">O Google Chrome não é compatível com o <ph name="OS_NAME"/>.</translation>
-<translation id="473183893665420670">Ao redefinir as opções do Google Chrome, todas as alterações feitas serão revertidas para as configurações padrão. Deseja redefinir as opções do Chrome?</translation>
 <translation id="3636771339108070045">Este computador já tem uma versão mais recente do Google Chrome. Se o software não estiver funcionando, desinstale o Google Chrome e baixe-o novamente.</translation>
 <translation id="5334545119300433702">Este módulo é conhecido por entrar em conflito com o Google Chrome.</translation>
 <translation id="3360895254066713204">Auxiliar do Google Chrome</translation>
@@ -104,7 +100,6 @@ Se continuar, o Chrome não procurará nenhuma outra correspondência incorreta 
 <translation id="6049075767726609708">Um administrador instalou o Google Chrome no sistema e ele está disponível para todos os usuários. O Google Chrome no nível do sistema substituirá sua instalação no nível do usuário agora.</translation>
 <translation id="7123348595797445166">Experimentar (já instalado)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">Altere o idioma dos menus, caixas de diálogo e dicas de ferramenta do Google Chrome.</translation>
 <translation id="9189723490960700326">Você tentou acessar &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado expirado. Nenhuma informação está disponível para indicar se o certificado foi comprometido desde que expirou. Isto significa que o Google Chrome não pode garantir que você esteja se comunicando com o &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e não com um invasor. Você não deve continuar.</translation>
 <translation id="7106741999175697885">Gerenciador de tarefas - Google Chrome</translation>
 <translation id="8449380764213232436">O Google Chrome agora está importando os seguintes itens do <ph name="BROWSER_COMPONENT"/>:</translation>

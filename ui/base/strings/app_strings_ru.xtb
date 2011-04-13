@@ -11,7 +11,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="3660179305079774227">Стрелка вверх</translation>
 <translation id="3990502903496589789">Правый край</translation>
-<translation id="932327136139879170">Home</translation>
+<translation id="932327136139879170">На главную</translation>
 <translation id="3909791450649380159">Выре&amp;зать</translation>
 <translation id="5076340679995252485">&amp;Вставить</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
@@ -19,6 +19,7 @@
 <translation id="3087734570205094154">Низ</translation>
 <translation id="6364916375976753737">Прокрутка влево</translation>
 <translation id="8210608804940886430">Прокрутка страницы вниз</translation>
+<translation id="5329858601952122676">&amp;Удалить</translation>
 <translation id="6659594942844771486">Вкладка</translation>
 <translation id="2497284189126895209">Все файлы</translation>
 <translation id="7814458197256864873">&amp;Копировать</translation>
@@ -37,7 +38,7 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">Прокрутка вниз</translation>
 <translation id="3157931365184549694">Восстановить</translation>
-<translation id="8179976553408161302">Ввести</translation>
+<translation id="8179976553408161302">Войти</translation>
 <translation id="9170848237812810038">&amp;Отменить</translation>
 <translation id="5583640892426849032">Клавиша возврата (Backspace)</translation>
 <translation id="436869212180315161">Нажать</translation>

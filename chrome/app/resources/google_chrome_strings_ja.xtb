@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">Chrome フレームについて...</translation>
 <translation id="386202838227397562">すべての Google Chrome ウィンドウを閉じてからもう一度お試しください。</translation>
 <translation id="2770231113462710648">既定のブラウザを変更:</translation>
-<translation id="698670068493841342">Google Chrome は既にこのユーザー用にインストールされています。アプリケーションが動作しない場合は、アンインストールしてからダウンロードし直してください。</translation>
 <translation id="7400722733683201933">Google Chrome について</translation>
 <translation id="7781002470561365167">Google クロームブラウザの最新バージョンを是非お試しください。</translation>
 <translation id="7101265395643981223">Google Chrome を起動</translation>
@@ -36,7 +35,6 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Google クロームブラウザがより速く、さらに便利に。いますぐトライ！</translation>
 <translation id="5037239767309817516">この変更を反映するには、すべての Google Chrome ウィンドウを閉じてからもう一度起動してください。</translation>
-<translation id="8810218179782551669">Google Chrome の言語:</translation>
 <translation id="7451721381978275812">引数が無効です。Google Chrome Frame を準備完了モードでインストールするには、一緒に Google Chrome をインストールする必要があります。</translation>
 <translation id="5809236835374558741">新しいバージョンの Google Chrome Frame が既にインストールされています。Google Chrome Frame が動作しない場合は、アンインストールしてから新しくダウンロードし直してください。</translation>
 <translation id="4357846314885556934">Google Chrome の動作がおかしい</translation>
@@ -50,7 +48,6 @@
 <translation id="8738921060445980047">バージョンが不明です。</translation>
 <translation id="2485422356828889247">アンインストール</translation>
 <translation id="3324235665723428530">バージョンが新しい Google Chrome のプロフィールは使用できません。\n\n一部の機能が使用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chrome をご使用ください</translation>
-<translation id="7214670531148488183">Google Chrome は、より快適なブラウジングを提供する目的でウェブサービスを使用することがあります。これらは無効にすることもできます。</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
@@ -92,7 +89,6 @@
 <translation id="2769762047821873045">Google Chromeはデフォルトのブラウザとして設定されていません。</translation>
 <translation id="7825851276765848807">原因不明のエラーによりインストールに失敗しました。Google Chrome をもう一度ダウンロードしてください。</translation>
 <translation id="3335672657969596251">Google Chrome は <ph name="OS_NAME"/> に対応していません。</translation>
-<translation id="473183893665420670">Google Chrome オプションをリセットすると、これまでの変更がすべて消去され既定の設定に戻ります。Chrome オプションをリセットしますか？</translation>
 <translation id="3636771339108070045">より新しいバージョンの Google Chrome が既にインストールされています。Google Chrome が動作しない場合は、それをアンインストールしてから新しくダウンロードし直してください。</translation>
 <translation id="5334545119300433702">このモジュールは Google Chrome と競合することがわかっています。</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -103,7 +99,6 @@
 <translation id="6049075767726609708">このコンピュータには管理者権限のあるユーザーがインストールしたシステムレベル (コンピュータの全ユーザーが利用可) の Google Chromeがあります。ユーザー レベルの Google Chrome はシステム レベルの Google Chrome に置き換えられます。</translation>
 <translation id="7123348595797445166">使ってみる（既にインストール済み）</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">Google Chrome の画面メニューの言語を変更します。</translation>
 <translation id="9189723490960700326">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーの証明書の有効期限が失効しています。証明書の失効後もセキュリティに問題がないことを確認する情報ありません。通信先が本当に <ph name="DOMAIN2"/> であるか Google Chrome で判断できないため、なりすましの可能性を完全には否定できません。ここで操作を止めてください。</translation>
 <translation id="7106741999175697885">タスク マネージャ - Google Chrome</translation>
 <translation id="8449380764213232436"><ph name="BROWSER_COMPONENT"/> から Google Chrome にインポートしています:</translation>

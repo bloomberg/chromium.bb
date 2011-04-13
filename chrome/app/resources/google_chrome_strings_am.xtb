@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">ስለ Chrome ፍሬም…</translation>
 <translation id="386202838227397562">እባክዎ ሁሉንም የChrome መስኮቶች ይዝጉና እንደገና ይሞክሩ።</translation>
 <translation id="2770231113462710648">ነባሪ አሳሽን ወደዚህ ቀይር፦</translation>
-<translation id="698670068493841342">Google Chrome ቀድሞውኑ ለዚህ ተጠቃሚ ተጭኗል። ሶፍትዌሩ የማይሰራ ከሆነ ፣ እባክዎ Google Chromeን ያራግፉና እንደገና ያውርዱ።</translation>
 <translation id="7400722733683201933">ስለ Google Chrome</translation>
 <translation id="7781002470561365167">የGoogle Chrome አዲስ ስሪት አለ።</translation>
 <translation id="7101265395643981223">Google Chromeን ጀምር</translation>
@@ -27,7 +26,6 @@
 <translation id="8446794773162156990">Google Chrome የተለየ ባህሪ እያሳየ ነው።</translation>
 <translation id="3889417619312448367">Google Chromeን አራግፍ</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
-<translation id="8810218179782551669">የGoogle Chrome ቋንቋ፦</translation>
 <translation id="4357846314885556934">Google Chrome የተለየ ባህሪ እያሳየ ነው።</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="1195935957447623558">Google Chrome በትክክል አልተዘጋም። ከፍተዋቸው የነበሩትን ገፆች ዳግም ለመክፈት እነበረበት መልስ የሚለውን ይጫኑ።</translation>
@@ -37,7 +35,6 @@
 <translation id="8738921060445980047">የማይታወቅ ስሪት።</translation>
 <translation id="2485422356828889247">አራግፍ</translation>
 <translation id="3324235665723428530">መገለጫዎ የአዲሱ Google Chrome ስሪት አካል ስለሆነ መጠቀም አይቻልም። \n\nአንዳንድ ባሕሪያት ላይኖሩ ይችላሉ። እባክዎ ሌላ የመገለጫ ማውጫ ይወስኑ ወይም የአዲሱን የChrome ስሪት ይጠቀሙ።</translation>
-<translation id="7214670531148488183">Google Chrome የአሰሳ ልምድዎን ለማሻሻል የድር ግልጋሎቶችን ሊጠቀም ይችላል። እነዚህን ግልጋሎቶች በአማራጭነት እንዳይሰሩ ማድረግ ይችላሉ።</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="911206726377975832">የአሰሳ ውሂብዎም ይሰረዝ?</translation>
 <translation id="2044287590254833138">የGoogle Chrome የመሳሪያ አሞሌ</translation>
@@ -68,7 +65,6 @@
 <translation id="2769762047821873045">Google Chrome መነሻ ማሰሻዎ አይደለም።</translation>
 <translation id="7825851276765848807">ተለይቶ ባልታወቀ ስህተት ምክንያት ጭነት ከሽፏል። እባክዎ Google Chromeን እንደገና ያውርዱ።</translation>
 <translation id="3335672657969596251">Google Chrome <ph name="OS_NAME"/> አይደግፍም።</translation>
-<translation id="473183893665420670">የGoogle Chromeን አማራጮች ዳግም ሲያስጀምሩ ያበጇቸው ለውጦች በሙሉ ወደ ቀድሞው እንደወረደ ቅንጅቶች ይመለሳሉ። የChromeን አማራጮች ዳግም ማስጀመር ይፈልጋሉ?</translation>
 <translation id="3636771339108070045">ይህ ኮምፒውተር ቀድሞውኑም በጣም የቅርብ ጊዜ Google Chrome ስሪት አለው። ሶፍትዌሩ የማይሰራ ከሆነ ፣ እባክዎ Google Chromeን ያርግፉና እንደገና ያውርዱ።</translation>
 <translation id="3360895254066713204">Chrome አጋዥ</translation>
 <translation id="1001534784610492198">የጫኝው መዝገብ ተሰናክሏል ወይም ትክክል አይደለም። እባክዎ Google Chromeን እንደገና ያውርዱ።</translation>
@@ -78,7 +74,6 @@
 <translation id="6049075767726609708">አስተዳዳሪው Google Chromeን በዚህ ስርዓት ላይ ጭኗል፣ ለሁሉም ተጠቃሚዎችም ክፈት ሆኗል። የስርዓተ-ደረጃው Google Chrome የተጠቃሚ ደረጃ ጭነቱን አሁን ይተካዋል።</translation>
 <translation id="7123348595797445166">ይሞክሩት (ቀድሞውንም ተጭኗል)።</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">በGoogle Chrome ምናሌዎች ፣ መገናኛ ሳጥኖች፣ እና የመሣሪያዎች  ፍንጭ ውስጥ የሚጠቀመውን ቋንቋ ለውጥ።</translation>
 <translation id="9189723490960700326">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;ን ለመድረስ ሞክረዋል፣ ነገር ግን አገልጋዩ ጊዜው ያለፈበት ሰርቲፊኬት አቅርቧል። ይህ ሰርቲፊኬት ጊዜው ካለፈበት ቀን ጀምሮ የጠፋ ለመሆኑ የሚያመለክት ምንም መረጃ የለም። Google Chrome ከ&lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ጋር ለሚያደርጉት ግንኙነት እና አጥቂ ላለመሆኑ አስተማማኝ ዋስትና ሊሰጥ አይችልም። መቀጠል የለብዎትም።</translation>
 <translation id="7106741999175697885">ተግባር መሪ - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome አሁን የሚከተሉትን ንጥሎች ከ<ph name="BROWSER_COMPONENT"/> ከውጪ በማምጣት ላይ ነው፦</translation>

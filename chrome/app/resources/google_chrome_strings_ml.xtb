@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">Chrome ഫ്രെയിമിനെക്കുറിച്ച്...</translation>
 <translation id="386202838227397562">ദയവായി എല്ലാ Google Chrome വിന്‍‌ഡോകളും അടച്ച് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="2770231113462710648">സ്ഥിരസ്ഥി ബ്രൌസര്‍‌ ഇനിപ്പറയുന്നതിലേക്ക് മാറ്റുക:</translation>
-<translation id="698670068493841342">ഈ ഉപയോക്താവിനായി Google Chrome ഇതിനകം തന്നെ ഇന്‍സ്റ്റാള്‍ ചെയ്തിട്ടുണ്ട്. സോഫ്റ്റ്‌വെയര്‍ പ്രവര്‍ത്തിക്കുന്നില്ലെങ്കില്‍, ദയവായി Google Chrome വിസ്ഥാപിച്ച് വീണ്ടും ഡൌണ്‍ലോഡ് ചെയ്യുക.</translation>
 <translation id="7400722733683201933">Google Chrome നെ കുറിച്ച്</translation>
 <translation id="7781002470561365167">Google Chrome ന്റെ പുതിയ പതിപ്പ് ലഭ്യമാണ്.</translation>
 <translation id="7101265395643981223">Google Chrome ആരംഭിക്കൂ</translation>
@@ -16,6 +15,7 @@
 <translation id="8970027151245482499">Google Chrome ഇന്‍സ്റ്റാള്‍ ചെയ്തില്ല, അല്ലെങ്കില്‍ അതിന് ഇന്‍സ്റ്റാളേഷന്‍ ഡയറക്‌ടറി കണ്ടെത്താന്‍ കഴിഞ്ഞില്ല. ദയവായി Google Chrome വീണ്ടും ഡൌണ്‍ലോഡ് ചെയ്യുക.</translation>
 <translation id="1761870329818521071">നിലവില്‍ പ്രവര്‍ത്തിക്കുന്ന സമാന Google Chrome ഫ്രെയിം പതിപ്പ് ഇന്‍സ്റ്റാള്‍ ചെയ്യാന്‍ കഴിയില്ല. ദയവായി Google Chrome ഫ്രെയിം അടച്ച് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
+<translation id="5339639696978861456">Chrome ഫ്രെയിം അപ്ഡേറ്റുചെയ്തു. ദയവായി നിങ്ങളുടെ ബ്രൌസര്‍ വീണ്ടും സമാരംഭിക്കുക. Chrome പതിപ്പ്: <ph name="TODO_0001"/>, Chrome ഫ്രെയിം പതിപ്പ്: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">സേവന നിബന്ധനകള്‍</translation>
 <translation id="1779550429052479749">സിസ്റ്റത്തില്‍ Google Chrome ന്‍റെ ഒരു വിരുദ്ധ ഇന്‍സ്റ്റാളേഷന്‍ കണ്ടെത്തി. ദയവായി അത് അണ്‍‌ഇന്‍സ്റ്റാള്‍ ചെയ്ത് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="3555616473548901994">അണ്‍‌ഇന്‍‌സ്റ്റാളേഷന്‍‌ പൂര്‍‌ത്തിയായി.</translation>
@@ -26,6 +26,7 @@
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Google Chrome ഇന്‍‌സ്റ്റാളേഷന്‍ ഡയറക്‌ടറി ഉപയോഗത്തിലാണെന്ന് തോന്നുന്നു. ദയവായി നിങ്ങളുടെ കമ്പ്യൂട്ടര്‍ റീബൂട്ട് ചെയ്ത് വീണ്ടും ശ്രമിക്കൂ.</translation>
 <translation id="8227755444512189073"><ph name="SCHEME"/> ലിങ്കുകള്‍ കൈകാര്യം ചെയ്യുന്നതിനായി Google Chrome ന് ഒരു ബാഹ്യ അപ്ലിക്കേഷന്‍ സമാരംഭിക്കേണ്ട ആവശ്യമുണ്ട്. ലിങ്ക് അഭ്യര്‍ത്ഥിച്ചത് <ph name="PROTOLINK"/> ആകുന്നു.</translation>
+<translation id="8290100596633877290">ഓ! Google Chrome ക്രാഷുചെയ്തു. ഇപ്പോള്‍ വീണ്ടും സമാരംഭിക്കണോ?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1697213158865901863">Google Chrome ഫ്രെയിം</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
@@ -33,7 +34,7 @@
 <translation id="3889417619312448367">Google Chrome അണ്‍‌ഇന്‍സ്റ്റാള്‍ ചെയ്യുക</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">ഒരു പുതിയ സുരക്ഷിതമായGoogle Chrome ന്‍റെ പതിപ്പ് ലഭ്യമാണ്.</translation>
-<translation id="8810218179782551669">Google Chrome ഭാഷ:</translation>
+<translation id="5037239767309817516">ഈ മാറ്റങ്ങള്‍ നടപ്പിലാകുന്നതിനായി ദയവായി എല്ലാ Google Chrome വിന്‍ഡോകളും അടച്ച് ഇത് വീണ്ടും സമാരംഭിക്കുക.</translation>
 <translation id="7451721381978275812">വാദങ്ങള്‍ അസാധുവാണ്. Google Chrome ഉം ഇന്‍സ്റ്റാള്‍ ചെയ്യാതെ Google Chrome Frame റെഡി മോഡില്‍ ഇന്‍സ്റ്റാള്‍ ചെയ്യാന്‍ കഴിയില്ല.</translation>
 <translation id="5809236835374558741">ഈ കമ്പ്യൂട്ടറിന് ഇതിനകം തന്നെ Google Chrome Frame ന്‍റെ കൂടുതല്‍ സമീപകാലത്തുള്ള പതിപ്പുണ്ട്. സോഫ്റ്റ്‍വെയര്‍ പ്രവര്‍ത്തിക്കുന്നില്ലെങ്കില്‍, ദയവായി Google Chrome Frame അണ്‍‌ഇന്‍സ്റ്റാള്‍ ചെയ്ത് അത് വീണ്ടും ഡൌണ്‍ലോഡ് ചെയ്യുക.</translation>
 <translation id="4357846314885556934">Google Chrome തെറ്റായി പ്രവര്‍‌ത്തിക്കുന്നു</translation>
@@ -47,7 +48,6 @@
 <translation id="8738921060445980047">അജ്ഞാത പതിപ്പ്</translation>
 <translation id="2485422356828889247">അണ്‍‌ഇന്‍‌സ്റ്റാള്‍‌ ചെയ്യുക</translation>
 <translation id="3324235665723428530">നിങ്ങളുടെ പ്രൊഫൈല്‍ ഉപയോഗിക്കാന്‍ കഴിയില്ല കാരണം ഇത് Google Chrome ന്റെ പുതിയ പതിപ്പില്‍ നിന്നുമുള്ളതാണ്.\n\nചില സവിശേഷതകള്‍ ലഭ്യമല്ലായിരിക്കാം. ദയവായി മറ്റൊരു പ്രൊഫൈല്‍ ഡയറക്‌ടറി നിര്‍ദ്ദേശിക്കുക, അല്ലെങ്കില്‍ Chrome ന്റെ ഒരു പുതിയ പതിപ്പ് ഉപയോഗിക്കുക.</translation>
-<translation id="7214670531148488183">നിങ്ങളുടെ ബ്രൌസിംഗ് അനുഭവം മെച്ചപ്പെടുത്തുന്നതിന്Google Chrome വെബ് സേവനങ്ങള്‍‌ ഉപയോഗിക്കാം. നിങ്ങള്‍‌ ഈ സേവനങ്ങളെ ഐച്ഛികമായി അപ്രാപ്‌തമാക്കാം.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">നിങ്ങളുടെ ബ്രൌസിംഗ് ഡാറ്റയും ഇതോടൊപ്പം ഇല്ലാതാക്കണോ?</translation>
@@ -73,6 +73,8 @@
 <translation id="7018032895891496381">നിലവില്‍‌ <ph name="PAGE_TITLE"/> ലേക്ക് സജ്ജമാക്കിയിരിക്കുന്ന നിങ്ങളുടെ സ്ഥിരസ്ഥിതി തിരയല്‍‌ എഞ്ചിന്‍‌ Google Chrome ഉപയോഗിക്കുന്നു. നിങ്ങളുടെ സ്ഥിരസ്ഥിതി എഞ്ചിന്‍‌ സൂക്ഷിക്കാന്‍‌ നിങ്ങള്‍‌ താല്‍‌പ്പര്യപ്പെടുന്നോ?</translation>
 <translation id="7161904924553537242">Google Chrome ലേക്ക് സ്വാഗതം</translation>
 <translation id="8669527147644353129">Google Chrome സഹായി</translation>
+<translation id="3444832043240812445">നിങ്ങള്‍ <ph name="BEGIN_LINK"/>ക്രാഷ് റിപ്പോര്‍ട്ടിംഗ് പ്രാപ്തമാക്കുകയാണെങ്കില്‍<ph name="END_LINK"/> നിങ്ങളുടെ സമീപകാല ക്രാഷുകളിലെ വിവരങ്ങള്‍ മാത്രം ഈ പേജ് കാണിക്കുന്നു.</translation>
+<translation id="8614913330719544658">Google Chrome പ്രതികരിക്കുന്നില്ല. ഇപ്പോള്‍ വീണ്ടും സമാരംഭിക്കണോ?</translation>
 <translation id="2681064822612051220">സിസ്റ്റത്തില്‍ Google Chrome ന്‍റെ ഒരു വിരുദ്ധ ഇന്‍സ്റ്റാളേഷന്‍ കണ്ടെത്തി. ദയവായി അത് അണ്‍‌ഇന്‍സ്റ്റാള്‍ ചെയ്ത് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
 <translation id="6126631249883707068">നിങ്ങളുടെ പാസ്‌വേഡ് സംരക്ഷിക്കുന്നതിന് നിങ്ങള്‍‌ക്ക് Google Chrome ആവശ്യമുണ്ടോ?</translation>
@@ -87,7 +89,6 @@
 <translation id="2769762047821873045">Google Chrome നിങ്ങളുടെ സ്ഥിരസ്ഥിതി ബ്രൌസറായിരുന്നില്ല.</translation>
 <translation id="7825851276765848807">വ്യക്തമല്ലാത്ത പിശക് കാരണം ഇന്‍സ്റ്റാളേഷന്‍ പരാജയപ്പെട്ടു. ദയവായി Google Chrome വീണ്ടും ഡൌണ്‍ലോഡ് ചെയ്യുക.</translation>
 <translation id="3335672657969596251"><ph name="OS_NAME"/> നെ Google Chrome പിന്തുണക്കില്ല.</translation>
-<translation id="473183893665420670">നിങ്ങള്‍ Google Chrome ഓപ്ഷനുകള്‍ പുനര്‍സജ്ജീകരിക്കുകയാണെങ്കില്‍ നിങ്ങള്‍ വരുത്തിയിട്ടുള്ള ഏത് മാറ്റങ്ങളും സ്ഥിരസ്ഥിതി ക്രമീകരണങ്ങളിലേക്ക് മാറ്റും. നിങ്ങള്‍ക്ക് Chrome ഓപ്ഷനുകള്‍ പുനര്‍സജ്ജീകരിക്കണമോ?</translation>
 <translation id="3636771339108070045">Google Chrome ന്റെ ഏറ്റവും അടുത്തിടെയുള്ള പതിപ്പ് ഈ കമ്പ്യൂട്ടറില്‍ ഇതിനകം തന്നെയുണ്ട്. സോഫ്റ്റ്‌വെയര്‍ പ്രവര്‍ത്തിക്കുന്നില്ലെങ്കില്‍, ദയവായി Google Chrome വിസ്ഥാപിച്ച് വീണ്ടും ഡൌണ്‍ലോഡ് ചെയ്യുക.</translation>
 <translation id="5334545119300433702">ഈ മൊഡ്യൂള്‍ Google Chrome മായി പൊരുത്തക്കേടിലാണെന്ന് അറിയപ്പെടുന്നു.</translation>
 <translation id="3360895254066713204">Chrome സഹായി‌</translation>
@@ -98,7 +99,6 @@
 <translation id="6049075767726609708">ഒരു അഡ്‌മിനിസ്‌ട്രേറ്റര്‍ Google Chrome ഈ സിസ്റ്റത്തില്‍ ഇന്‍സ്റ്റാള്‍ ചെയ്തു, മാത്രമല്ല ഇത് എല്ലാ ഉപയോക്താക്കള്‍ക്കും ലഭ്യമാണ്. സിസ്റ്റം ലെവല്‍ Google Chrome നിങ്ങളുടെ ഉപയോക്തൃ-നില ഇപ്പോള്‍ പ്രതിസ്ഥാപിക്കും.</translation>
 <translation id="7123348595797445166">ഇത് ശ്രമിക്കൂ (ഇന്‍സ്റ്റാള്‍ ചെയ്തതാണ്) </translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">Google Chrome മെനുകള്‍, ഡയലോഗ് ബോക്സ്, ടൂള്‍ടിപ്പുകള്‍ എന്നിവയില്‍ ഉപയോഗിച്ചിട്ടുള്ള ഭാഷ മാറ്റുക.</translation>
 <translation id="9189723490960700326">നിങ്ങള്‍ &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ല്‍ എത്താന്‍ ശ്രമിച്ചു, പക്ഷെ സെര്‍വര്‍ ഒരു കാലഹരണപ്പെട്ട സര്‍ട്ടിഫിക്കറ്റ് സമര്‍പ്പിച്ചു. ആ സര്‍ട്ടിഫിക്കറ്റ് കാലഹരണപ്പെടുന്നത് വരെ വിട്ടുവീഴ്ചചെയ്തോ എന്നതിനെ സൂചിപ്പിക്കുന്ന വിവരങ്ങള്‍ ഒന്നും ലഭ്യമല്ല. നിങ്ങള്‍ ‍&lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; മായാണ് മറിച്ച് അതിക്രമിയുമായല്ല ആശയവിനിമയം നടത്തുന്നതെന്ന് എന്നതിന് Google Chrome ന് ഗ്യാരണ്ടി നല്‍കാന്‍ കഴിയില്ലെന്നാണ് ഇതിനര്‍ത്ഥം. നിങ്ങള്‍ മുന്നോട്ട് പോകരുത്.</translation>
 <translation id="7106741999175697885">ടാസ്ക് മാനേജര്‍ - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome ഇപ്പോള്‍ <ph name="BROWSER_COMPONENT"/> ല്‍ നിന്ന് താഴെപ്പറയുന്ന ഇനങ്ങള്‍ ഇറക്കുമതി ചെയ്യുകയാണ്:</translation>

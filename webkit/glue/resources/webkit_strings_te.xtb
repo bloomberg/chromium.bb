@@ -31,6 +31,7 @@
 <translation id="7364796246159120393">ఫైల్‌ను ఎంచుకోండి</translation>
 <translation id="2761667185364618470">దయచేసి మీరు కొనసాగాలనుకుంటే ఈ బాక్స్‌కి టిక్కు పెట్టండి.</translation>
 <translation id="8964020114565522021">ఫైల్‌ను ఇక్కడకు లాగండి</translation>
+<translation id="5129723458012748440"><ph name="PLUGIN"/> ప్లగ్-ఇన్ వ్యవస్థాపించబడలేదు.</translation>
 <translation id="838869780401515933">తనిఖీ చెయ్యి</translation>
 <translation id="2846343701378493991">1024 (మధ్యస్థ గ్రేడ్)</translation>
 <translation id="5476505524087279545">ఎంపిక  చెయ్యబడలేదు</translation>
@@ -38,16 +39,20 @@
 <translation id="2507943997699731163">దయచేసి ఈ ఫీల్డ్‌ని పూర్తి చెయ్యండి.</translation>
 <translation id="5253117816378681419">దయచేసి మీరు <ph name="PLUGIN"/> ప్లగ్-ఇన్‌ను వ్యవస్థాపించాలనుకుంటున్నారని నిర్థారించండి. మీరు విశ్వసించే ప్లగ్-ఇన్‌లను మాత్రమే వ్యవస్థాపించాలి.</translation>
 <translation id="6663448176199120256">ఇటీవల శోధనలు</translation>
+<translation id="7335060848622232389">వ్యవస్థాపించబడిన ప్లగ్-ఇన్‌లు నిలిపివెయ్యబడ్డాయి.</translation>
 <translation id="2597378329261239068">ఈ పత్రం అనుమతి పదంచే రక్షించబడింది. దయచేసి అనుమతి పదాన్ని నమోదు చేయండి.</translation>
 <translation id="5466621249238537318">దయచేసి ఒకటి లేదా మరిన్ని ఫైళ్ళను ఎంచుకోండి.</translation>
 <translation id="8750798805984357768">దయచేసి ఈ ఎంపికలలో ఒకదాన్ని ఎంచుకోండి.</translation>
 <translation id="7740050170769002709">HTML కంటెంట్</translation>
 <translation id="2226276347425096477">దయచేసి ఈ వచనాన్ని <ph name="MAX_CHARACTERS"/> అక్షరాలకు లేదా అంతకంటే తక్కువ (మీరు ప్రస్తుతం <ph name="CURRENT_LENGTH"/> అక్షరాలను ఉపయోగిస్తున్నారు)కు తగ్గించండి.</translation>
+<translation id="1639239467298939599">లోడ్ అవుతోంది</translation>
 <translation id="2908441821576996758">దయచేసి కామాతో వేరు చేసిన ఇమెయిల్ చిరునామాల జాబితాను ఎంటర్ చెయ్యండి.</translation>
 <translation id="5939518447894949180">తిరిగి అమర్చండి</translation>
 <translation id="835897206747267392">చెల్లని విలువ.</translation>
+<translation id="3851140433852960970">ఈ కంటెంట్‌ను ప్రదర్శించడానికి ఏ ప్లగ్-ఇన్ అందుబాటులో లేదు.</translation>
 <translation id="1842960171412779397">ఎంచుకోండి</translation>
 <translation id="3450233048674729344">విలువ ఖచ్చితంగా <ph name="MAXIMUM"/> కంటే తగ్గువగా లేదా సమానంగా ఉండాలి.</translation>
+<translation id="9198010615634362518">అవసరమైన ప్లగ్-ఇన్ వ్యవస్థాపించబడలేదు.</translation>
 <translation id="7638452146404718955">ప్లగ్-ఇన్‌ను డౌన్‌లోడ్ చేయడానికి ఇక్కడ క్లిక్ చేయండి</translation>
 <translation id="6119846243427417423">ఆక్టివేట్ చెయ్యి</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> ఫైళ్ళు</translation>

@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">Om Chrome Frame</translation>
 <translation id="386202838227397562">Lukk alle Google Chrome-vinduer og prøv på nytt.</translation>
 <translation id="2770231113462710648">Endre standardnettleser til:</translation>
-<translation id="698670068493841342">Google Chrome er allerede installert for denne brukeren. Hvis programvaren ikke fungerer, må du avinstallere Google Chrome og laste det ned på nytt.</translation>
 <translation id="7400722733683201933">Om Google Chrome</translation>
 <translation id="7781002470561365167">En ny versjon av Google Chrome er tilgjengelig.</translation>
 <translation id="7101265395643981223">Start Google Chrome</translation>
@@ -36,7 +35,6 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">En ny, sikrere versjon av Google Chrome er tilgjengelig</translation>
 <translation id="5037239767309817516">For at endringen skal tre i kraft, må du lukke alle vinduer og starte Google Chrome på nytt.</translation>
-<translation id="8810218179782551669">Google Chrome-språk:</translation>
 <translation id="7451721381978275812">Ugyldige argumenter. Google Chrome Frame kan ikke installeres i klar modus uten at Chrome Frame også er installert.</translation>
 <translation id="5809236835374558741">Denne datamaskinen har allerede en nyere versjon av Google Chrome Frame. Hvis programvaren ikke fungerer, må du avinstallere Google Chrome Frame og laste det ned på nytt.</translation>
 <translation id="4357846314885556934">Google Chrome oppfører seg på feil måte</translation>
@@ -50,7 +48,6 @@
 <translation id="8738921060445980047">Ukjent versjon.</translation>
 <translation id="2485422356828889247">Avinstaller</translation>
 <translation id="3324235665723428530">Profilen kan ikke brukes fordi den er fra en nyere versjon av Google Chrome.\n\nNoen funksjoner kan være utilgjengelige. Angi en annen profilkatalog eller bruk en nyere versjon av Chrome.</translation>
-<translation id="7214670531148488183">Google Chrome bruker nettjenester for å forbedre nettleseropplevelsen. Du kan deaktivere disse tjenestene om du ønsker.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Google Chrome Canary-delversjon</translation>
 <translation id="911206726377975832">Vil du slette all nettleserdata også?</translation>
@@ -92,7 +89,6 @@
 <translation id="2769762047821873045">Google Chrome er ikke din standardnettleser.</translation>
 <translation id="7825851276765848807">Installeringen mislyktes på grunn av en uspesifisert feil. Last ned Google Chrome på nytt.</translation>
 <translation id="3335672657969596251">Google Chrome støtter ikke <ph name="OS_NAME"/>.</translation>
-<translation id="473183893665420670">Når du tilbakestiller Google Chrome-alternativene, endres eventuelle endringer du har gjort, tilbake til standardinnstillingene. Vil du tilbakestille Chrome-alternativene?</translation>
 <translation id="3636771339108070045">Denne datamaskinen har allerede en nyere versjon av Google Chrome. Hvis programvaren ikke fungerer, må du avinstallere Google Chrome og laste det ned på nytt.</translation>
 <translation id="5334545119300433702">Denne modulen har en kjent konflikt med Google Chrome.</translation>
 <translation id="3360895254066713204">Chrome-hjelper</translation>
@@ -103,7 +99,6 @@
 <translation id="6049075767726609708">En administrator har installert Google Chrome på dette systemet, og det er tilgjengelig for alle brukere. Systemnivåinstallasjonen av Google Chrome vil erstatte brukernivåinstallasjonen nå.</translation>
 <translation id="7123348595797445166">Prøv den (allerede installert)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">Endre språket som brukes i Google Chromes menyer, dialogbokser og verktøytips.</translation>
 <translation id="9189723490960700326">Du forsøkte å bruke &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men tjeneren presenterte et utløpt sertifikat. Det finnes ingen tilgjengelig informasjon som viser om dette sertifikatet har blitt skadet etter at det utløp. Dette betyr at Google Chrome ikke kan garantere at du kommuniserer med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, og ikke en angriper. Du bør ikke fortsette.</translation>
 <translation id="7106741999175697885">Oppgavebehandling – Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome importerer nå følgende elementer fra <ph name="BROWSER_COMPONENT"/>.</translation>

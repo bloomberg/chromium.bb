@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">About Chrome Frame...</translation>
 <translation id="386202838227397562">Please close all Google Chrome windows and try again.</translation>
 <translation id="2770231113462710648">Change default browser to:</translation>
-<translation id="698670068493841342">Google Chrome has already been installed for this user. If the software is not working, please uninstall Google Chrome and download it again.</translation>
 <translation id="7400722733683201933">About Google Chrome</translation>
 <translation id="7781002470561365167">There is a new version of Google Chrome available.</translation>
 <translation id="7101265395643981223">Start Google Chrome</translation>
@@ -36,7 +35,6 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">There's a new, safer version of Google Chrome available.</translation>
 <translation id="5037239767309817516">Please close all Google Chrome windows and relaunch it for this change to take effect.</translation>
-<translation id="8810218179782551669">Google Chrome language:</translation>
 <translation id="7451721381978275812">Invalid arguments. Google Chrome Frame cannot be installed in ready mode without also installing Google Chrome.</translation>
 <translation id="5809236835374558741">This computer already has a more recent version of Google Chrome Frame. If the software is not working, please uninstall Google Chrome Frame and download it again.</translation>
 <translation id="4357846314885556934">Google Chrome is Misbehaving</translation>
@@ -50,7 +48,6 @@
 <translation id="8738921060445980047">Unknown version.</translation>
 <translation id="2485422356828889247">Uninstall</translation>
 <translation id="3324235665723428530">Your profile cannot be used because it is from a newer version of Google Chrome.\n\nSome features may be unavailable. Please specify a different profile directory or use a newer version of Chrome.</translation>
-<translation id="7214670531148488183">Google Chrome may use web services to improve your browsing experience. You have the option to disable these services.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Also delete your browsing data?</translation>
@@ -92,7 +89,6 @@
 <translation id="2769762047821873045">Google Chrome isn't your default browser.</translation>
 <translation id="7825851276765848807">Installation failed due to unspecified error. Please download Google Chrome again.</translation>
 <translation id="3335672657969596251">Google Chrome does not support <ph name="OS_NAME"/>.</translation>
-<translation id="473183893665420670">When you reset Google Chrome options, any changes that you've made will revert to the default settings. Do you want to reset Chrome options?</translation>
 <translation id="3636771339108070045">This computer already has a more recent version of Google Chrome. If the software is not working, please uninstall Google Chrome and download it again.</translation>
 <translation id="5334545119300433702">This module is known to conflict with Google Chrome.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -103,7 +99,6 @@
 <translation id="6049075767726609708">An administrator has installed Google Chrome on this system, and it is available for all users. The system-level Google Chrome will replace your user-level installation now.</translation>
 <translation id="7123348595797445166">Try it (already installed)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">Change the language used in Google Chrome menus, dialogue boxes and tooltips.</translation>
 <translation id="9189723490960700326">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented an expired certificate. No information is available to indicate whether that certificate has been compromised since its expiry. This means that Google Chrome cannot guarantee that you are communicating with &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; and not an attacker. You should not proceed.</translation>
 <translation id="7106741999175697885">Task Manager - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome is now importing the following items from <ph name="BROWSER_COMPONENT"/>:</translation>

@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">關於 Chrome 內嵌框架...</translation>
 <translation id="386202838227397562">請關閉所有 Google Chrome 視窗，並再試一次</translation>
 <translation id="2770231113462710648">將預設瀏覽器變更為：</translation>
-<translation id="698670068493841342">已安裝 Google Chrome 供此使用者使用。如果軟體無法順利運作，請移除 Google Chrome，然後重新下載一次。</translation>
 <translation id="7400722733683201933">關於 Google Chrome</translation>
 <translation id="7781002470561365167">Google Chrome 已推出新版。</translation>
 <translation id="7101265395643981223">開啟 Google Chrome</translation>
@@ -36,7 +35,6 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Google Chrome 推出全新版本，安全性更勝以往。</translation>
 <translation id="5037239767309817516">為了讓這項變更生效，請關閉所有 Google Chrome 視窗，並重新啟動瀏覽器。</translation>
-<translation id="8810218179782551669">Google Chrome 語言：</translation>
 <translation id="7451721381978275812">無效的引數。您必須安裝 Google Chrome，才能在就緒模式中安裝「Google Chrome 內嵌框架」。</translation>
 <translation id="5809236835374558741">這台電腦已安裝較新的「Google Chrome 內嵌框架」版本，如果該軟體無法順利運作，請解除安裝「Google Chrome 內嵌框架」，然後重新下載。</translation>
 <translation id="4357846314885556934">Google Chrome 反應異常</translation>
@@ -50,7 +48,6 @@
 <translation id="8738921060445980047">未知版本。</translation>
 <translation id="2485422356828889247">解除安裝</translation>
 <translation id="3324235665723428530">由於您的設定檔是來自較新版本的 Google Chrome，所以系統無法使用該檔案。\n\n這表示您可以無法使用某些功能。請指定另一個設定檔目錄，或使用較新版本的 Google Chrome。</translation>
-<translation id="7214670531148488183">Google Chrome 會使用網頁服務來改善瀏覽功能，當然您也可以選擇停用這些服務。</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Google Chrome Canary 版本</translation>
 <translation id="911206726377975832">您要一併刪除瀏覽資料嗎？</translation>
@@ -92,7 +89,6 @@
 <translation id="2769762047821873045">Google Chrome 並非您的預設瀏覽器。</translation>
 <translation id="7825851276765848807">不明錯誤導致安裝失敗，請再次下載 Google Chrome。</translation>
 <translation id="3335672657969596251">Google Chrome 不支援 <ph name="OS_NAME"/>。</translation>
-<translation id="473183893665420670">重設 Google Chrome 選項時，先前的變更將返回預設設定。確定要重設 Google Chrome 選項嗎？</translation>
 <translation id="3636771339108070045">此電腦已有更新的 Google Chrome 版本可供使用，如果軟體無法順利運作，請移除 Google Chrome，然後重新下載一次。</translation>
 <translation id="5334545119300433702">已知這個模組與 Google Chrome 衝突。</translation>
 <translation id="3360895254066713204">Chrome 小幫手</translation>
@@ -103,7 +99,6 @@
 <translation id="6049075767726609708">管理員已經在此系統安裝 Google Chrome，且供所有使用者使用。系統層級的 Google Chrome 將取代使用者層級的版本。</translation>
 <translation id="7123348595797445166">立即使用 (已安裝)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">為 Google Chrome 功能表、對話方塊及工具提示等變更語言選項。</translation>
 <translation id="9189723490960700326">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但伺服器提供了逾期的憑證。在憑證逾期的情況下，我們沒有足夠資訊判斷憑證是否可靠，因此 Google Chrome 無法保證您的連線對象是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，而非攻擊者，建議您就此停住。</translation>
 <translation id="7106741999175697885">工作管理員 - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome 正從 <ph name="BROWSER_COMPONENT"/> 匯入下列項目:</translation>

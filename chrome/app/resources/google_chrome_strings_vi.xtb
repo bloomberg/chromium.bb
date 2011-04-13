@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">Giới thiệu về Chrome Frame...</translation>
 <translation id="386202838227397562">Vui lòng đóng tất cả cửa sổ của Google Chrome và thử lại.</translation>
 <translation id="2770231113462710648">Thay đổi trình duyệt mặc định thành:</translation>
-<translation id="698670068493841342">Google Chrome đã được cài đặt cho người dùng này. Nếu phần mềm không hoạt động, vui lòng gỡ cài đặt Google Chrome và tải xuống lại phần mềm.</translation>
 <translation id="7400722733683201933">Giới thiệu về Google Chrome</translation>
 <translation id="7781002470561365167">Hiện đã có phiên bản mới của Google Chrome.</translation>
 <translation id="7101265395643981223">Khởi động Google Chrome</translation>
@@ -36,7 +35,6 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Đã có phiên bản Google Chrome mới và an toàn hơn.</translation>
 <translation id="5037239767309817516">Hãy đóng tất cả các cửa sổ Google Chrome và khởi chạy lại Google Chrome để thay đổi này có hiệu lực.</translation>
-<translation id="8810218179782551669">Ngôn ngữ Google Chrome:</translation>
 <translation id="7451721381978275812">Đối số không hợp lệ. Không thể cài đặt Google Chrome Frame ở chế độ sẵn sàng nếu như không đồng thời cài Google Chrome.</translation>
 <translation id="5809236835374558741">Máy tính này đã cài đặt phiên bản Google Chrome Frame mới hơn. Nếu phần mềm không hoạt động, vui lòng gỡ cài đặt Google Chrome Frame và tải xuống lại phần mềm.</translation>
 <translation id="4357846314885556934">Google Chrome Hoạt động không đúng</translation>
@@ -50,7 +48,6 @@
 <translation id="8738921060445980047">Phiên bản không xác định.</translation>
 <translation id="2485422356828889247">Gỡ cài đặt</translation>
 <translation id="3324235665723428530">Không thể sử dụng hồ sơ của bạn vì hồ sơ được tạo từ phiên bản Google Chrome mới.\n\nMột số tính năng có thể không có sẵn. Vui lòng xác định thư mục hồ sơ khác hoặc sử dụng phiên bản Google Chrome mới.</translation>
-<translation id="7214670531148488183">Google Chrome có thể sử dụng các dịch vụ web để cải thiện trải nghiệm duyệt web của bạn. Bạn có thể tuỳ ý vô hiệu hoá các dịch vụ này.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Bạn cũng muốn xoá dữ liệu duyệt web của mình?</translation>
@@ -92,7 +89,6 @@
 <translation id="2769762047821873045">Google Chrome không phải là trình duyệt mặc định của bạn.</translation>
 <translation id="7825851276765848807">Không thể cài đặt do lỗi không xác định. Hãy tải xuống lại Google Chrome.</translation>
 <translation id="3335672657969596251">Google Chrome không hỗ trợ <ph name="OS_NAME"/>.</translation>
-<translation id="473183893665420670">Khi bạn đặt lại các tuỳ chọn Google Chrome, tất cả các thay đổi mà bạn đã tạo sẽ được chuyển về cài đặt mặc định. Bạn có muốn đặt lại các tuỳ chọn của Chrome không?</translation>
 <translation id="3636771339108070045">Máy tính này đã cài phiên bản Google Chrome mới hơn. Nếu phần mềm không hoạt động, vui lòng gỡ cài đặt Google Chrome và tải xuống lại phần mềm.</translation>
 <translation id="5334545119300433702">Mô-đun này được xác định là xung đột với Google Chrome.</translation>
 <translation id="3360895254066713204">Trình trợ giúp của Chrome</translation>
@@ -103,7 +99,6 @@
 <translation id="6049075767726609708">Quản trị viên đã cài đặt Google Chrome trên hệ thống này và Google Chrome khả dụng cho tất cả người dùng. Ngay bây giờ, Google Chrome cấp hệ thống sẽ thay thế cài đặt cấp người dùng của bạn.</translation>
 <translation id="7123348595797445166">Hãy dùng thử (đã được cài đặt)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">Thay đổi ngôn ngữ được sử dụng trong menu, hộp thoại và chú giải công cụ của Google Chrome.</translation>
 <translation id="9189723490960700326">Bạn đã cố truy cập vào &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, nhưng máy chủ xuất trình chứng chỉ đã hết hạn. Không có thông tin nào chứng tỏ chứng chỉ bị thay đổi từ khi hết hạn. Điều này có nghĩa là Google Chrome không thể bảo đảm rằng bạn đang liên lạc với &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; và bạn không phải là kẻ tấn công. Bạn không nên tiếp tục.</translation>
 <translation id="7106741999175697885">Trình quản lý Tác vụ - Google Chrome</translation>
 <translation id="8449380764213232436">Hiện tại, Google Chrome đang nhập các mục sau từ <ph name="BROWSER_COMPONENT"/>:</translation>

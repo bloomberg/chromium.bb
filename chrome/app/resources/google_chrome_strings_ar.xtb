@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">حول إطار Google Chrome...</translation>
 <translation id="386202838227397562">الرجاء إغلاق كل نوافذ Google Chrome وإعادة المحاولة.</translation>
 <translation id="2770231113462710648">تغيير المتصفح الافتراضي إلى:</translation>
-<translation id="698670068493841342">تم تثبيت Google Chrome بالفعل لهذا المستخدم. إذا كان برنامج Google Chrome لا يعمل، يُرجى إزالة تثبيت البرنامج، وتنزيله مرة أخرى.</translation>
 <translation id="7400722733683201933">معلومات عن Google Chrome</translation>
 <translation id="7781002470561365167">يتوفر إصدار جديد من متصفح Google Chrome.</translation>
 <translation id="7101265395643981223">بدء تشغيل Google Chrome</translation>
@@ -36,7 +35,6 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">يتوفر إصدار جديد وأكثر أمانًا لمتصفح Google Chrome.</translation>
 <translation id="5037239767309817516">الرجاء إغلاق جميع نوافذ Google Chrome وإعادة تشغيله حتى يسري هذا التغيير.</translation>
-<translation id="8810218179782551669">لغة Google Chrome:</translation>
 <translation id="7451721381978275812">وسيطات غير صالحة. لا يمكن تثبيت إطار Google Chrome في وضع الاستعداد بدون تثبيت Google Chrome أيضًا.</translation>
 <translation id="5809236835374558741">يوجد في جهاز الكمبيوتر إصدار أحدث من إطار Google Chrome. إذا كان البرنامج لا يعمل، يرجى إزالة إطار Google Chrome وتنزيله مرة أخرى.</translation>
 <translation id="4357846314885556934">لا يعمل Google Chrome بشكل صحيح</translation>
@@ -50,7 +48,6 @@
 <translation id="8738921060445980047">إصدار غير معروف.</translation>
 <translation id="2485422356828889247">إزالة التثبيت</translation>
 <translation id="3324235665723428530">يتعذّر استخدام ملفّ تعريف الارتباط لأنهّ ينمتي إلى إصدار حديث من Google Chrome \n\ وقد ينقصه بعض الميزات المعيّنة. يرجى اختيار دليل آخر لتحديد ملّف التعريف أو استخدام إصدار أحدث من Chrome.</translation>
-<translation id="7214670531148488183">قد يستخدم Google Chrome خدمات الويب لتحسين تجربة التصفُّح لديك، ويمكنك حسب اختيارك تعطيل هذه الخدمات.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">هل تريد أيضًا حذف بيانات التصفح؟</translation>
@@ -92,7 +89,6 @@
 <translation id="2769762047821873045">ليس Google Chrome متصفحك الافتراضي.</translation>
 <translation id="7825851276765848807">فشل التثبيت نظرًا لحدوث خطأ غير محدد. الرجاء تنزيل Google Chrome مرة أخرى.</translation>
 <translation id="3335672657969596251">لا يعمل Google Chrome بموجب نظام التشغيل <ph name="OS_NAME"/>.</translation>
-<translation id="473183893665420670">عند إعادة تعيين خيارات Google Chrome، تتم إعادة أية تغييرات قد أجريتها إلى الإعدادات الافتراضية. فهل تريد إعادة تعيين خيارات Chrome؟</translation>
 <translation id="3636771339108070045">توجد في جهاز الكمبيوتر نسخة أحدث من Google Chrome. إذا كان برنامج Google Chrome لا يعمل، يُرجى إلغاء تثبيت البرنامج، وتنزيله مرة أخرى.</translation>
 <translation id="5334545119300433702">هذه الوحدة معروف أنها تتعارض مع Google Chrome.</translation>
 <translation id="3360895254066713204">مساعد Chrome</translation>
@@ -103,7 +99,6 @@
 <translation id="6049075767726609708">قام أحد المشرفين بتثبيت Google Chrome على هذا الجهاز، وهو متاح لجميع المستخدمين. سيحل Google Chrome على مستوى النظام محل النسخة المثبتة على مستوى المستخدم لديك الآن.</translation>
 <translation id="7123348595797445166">تجربة المتصفح (مثبت فعلاً)</translation>
 <translation id="3870154837782082782">Google Inc‎.‎</translation>
-<translation id="1446473746922165495">تغيّير اللغة المُستخدمة في القوائم ومربّعات الحوار والنوافذ التفسيرية (Tooltips) في Google Chrome.</translation>
 <translation id="9189723490960700326">لقد حاولت الوصول إلى الموقع &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;، لكنّ الشهادة التي قدّمها الخادم منتهية الصلاحية. وبما أنّ لا معلومات أكيدة عمّا إذا كان قد تمّ سرقة الشهادة أو تعديلها منذ انقضاء مدّة صلاحيتها، لا يستطيع Google Chrome أن يضمن أنّ الاتصال يتمّ بالموقع &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; وليس بمتسلّل. يجب عدم المتابعة.</translation>
 <translation id="7106741999175697885">مدير المهام - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome في صدد استيراد العناصر التالية من <ph name="BROWSER_COMPONENT"/>:</translation>

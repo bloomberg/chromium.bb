@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">Tentang Chrome Frame...</translation>
 <translation id="386202838227397562">Tutup semua jendela Google Chrome, lalu coba lagi.</translation>
 <translation id="2770231113462710648">Ubah peramban bawaan ke:</translation>
-<translation id="698670068493841342">Google Chrome telah diinstal untuk pengguna ini. Jika perangkat lunak tidak berfungsi, hapus penginstalan Google Chrome, lalu unduh kembali.</translation>
 <translation id="7400722733683201933">Tentang Google Chrome</translation>
 <translation id="7781002470561365167">Tersedia Google Chrome versi baru.</translation>
 <translation id="7101265395643981223">Aktifkan Google Chrome</translation>
@@ -36,7 +35,6 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Tersedia versi Google Chrome yang baru dan lebih aman.</translation>
 <translation id="5037239767309817516">Harap tutup semua jendela Google Chrome dan luncurkan kembali agar perubahan ini berlaku.</translation>
-<translation id="8810218179782551669">Bahasa Google Chrome:</translation>
 <translation id="7451721381978275812">Parameter tidak valid. Google Chrome Frame tidak dapat dipasang dalam modus siap bila Google Chrome belum dipasang.</translation>
 <translation id="5809236835374558741">Komputer ini telah memasang versi Google Chrome yang lebih baru. Jika perangkat lunak tidak berfungsi, hapus pemasangan Google Chrome Frame dan unduh kembali.</translation>
 <translation id="4357846314885556934">Google Chrome Lagi Ngambek</translation>
@@ -50,7 +48,6 @@
 <translation id="8738921060445980047">Versi tidak diketahui.</translation>
 <translation id="2485422356828889247">Copot instalasi</translation>
 <translation id="3324235665723428530">Profil Anda tidak dapat digunakan karena berasal dari versi Google Chrome yang lebih baru.\n\nBeberapa fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda atau gunakan versi Chrome terbaru.</translation>
-<translation id="7214670531148488183">Google Chrome mungkin akan menggunakan layanan web untuk meningkatkan pengalaman perambanan. Anda dapat menonaktifkan layanan ini.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Build Google Chrome Canary</translation>
 <translation id="911206726377975832">Hapus juga data rambanan Anda?</translation>
@@ -92,7 +89,6 @@
 <translation id="2769762047821873045">Google Chrome bukan peramban bawaan.</translation>
 <translation id="7825851276765848807">Instalasi gagal karena galat yang tidak ditentukan. Silakan unduh Google Chrome lagi.</translation>
 <translation id="3335672657969596251">Google Chrome tidak mendukung <ph name="OS_NAME"/>.</translation>
-<translation id="473183893665420670">Saat Anda menyetel ulang Opsi Google Chrome, perubahan apa pun yang Anda lakukan akan dikembalikan ke setelan bawaan. Apakah Anda ingin menyetel ulang opsi Chrome?</translation>
 <translation id="3636771339108070045">Komputer ini telah menginstal versi Google Chrome yang lebih baru. Jika perangkat lunak tidak berfungsi, hapus penginstalan Google Chrome, kemudian unduh kembali.</translation>
 <translation id="5334545119300433702">Modul ini biasanya konflik dengan Google Chrome.</translation>
 <translation id="3360895254066713204">Pembantu Chrome</translation>
@@ -103,7 +99,6 @@
 <translation id="6049075767726609708">Administrator telah menginstal Google Chrome di sistem ini dan tersedia bagi seluruh pengguna. Sekarang tingkat sistem Google Chrome akan mengganti penginstalan tingkat pengguna Anda.</translation>
 <translation id="7123348595797445166">Coba ya (sudah dipasang)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">Ubah bahasa yang digunakan dalam menu, kotak dialog, dan tooltip Google Chrome.</translation>
 <translation id="9189723490960700326">Anda berupaya membuka &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun server memberikan sertifikat yang kedaluwarsa. Tidak ada informasi yang tersedia untuk menunjukkan bahwa sertifikat rusak sejak kedaluwarsa. Artinya, Google Chrome tidak dapat menjamin bahwa Anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukan pengganggu. Anda tidak boleh melanjutkan.</translation>
 <translation id="7106741999175697885">Manajer Tugas - Google Chrome</translation>
 <translation id="8449380764213232436">Kini Google Chrome mengimpor item berikut dari <ph name="BROWSER_COMPONENT"/>:</translation>

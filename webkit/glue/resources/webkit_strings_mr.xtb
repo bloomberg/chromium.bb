@@ -31,6 +31,7 @@
 <translation id="7364796246159120393">फाइल निवडा</translation>
 <translation id="2761667185364618470">कृपया आपण पुढे चालू ठेवू इच्छित असल्यास हा बॉक्स पहा.</translation>
 <translation id="8964020114565522021">फाइल येथे ड्रॅग करा</translation>
+<translation id="5129723458012748440">प्लग-इन <ph name="PLUGIN"/> स्थापित केले नाही.</translation>
 <translation id="838869780401515933">तपासा</translation>
 <translation id="2846343701378493991">1024 (मध्यम प्रत)</translation>
 <translation id="5476505524087279545">अनचेक</translation>
@@ -38,16 +39,20 @@
 <translation id="2507943997699731163">कृपया हे फील्ड भरा.</translation>
 <translation id="5253117816378681419">कृपया आपल्याला प्लग-इन <ph name="PLUGIN"/> स्थापित करणे आवडत असल्याची पुष्टी करा. आपण आपला विश्वास असलेले प्लग-इन्स फक्त स्थापित करावे. </translation>
 <translation id="6663448176199120256">अलीकडील शोध</translation>
+<translation id="7335060848622232389">प्लग-इन स्थापित करणे अक्षम केले गेले आहे.</translation>
 <translation id="2597378329261239068">हा दस्तऐवज संकेतशब्द संरक्षित आहे. कृपया संकेतशब्द प्रविष्ट करा.</translation>
 <translation id="5466621249238537318">कृपया एक किंवा अधिक फायली निवडा.</translation>
 <translation id="8750798805984357768">कृपया या पर्यायांपैकी एक निवडा.</translation>
 <translation id="7740050170769002709">HTML सामुग्री</translation>
 <translation id="2226276347425096477">कृपया हा मजकूर <ph name="MAX_CHARACTERS"/> वर्ण लहान किंवा कमी करा (आपण सध्या <ph name="CURRENT_LENGTH"/> वर्ण वापरत आहात).</translation>
+<translation id="1639239467298939599">लोड करीत आहे</translation>
 <translation id="2908441821576996758">कृपया ईमेल पत्त्यांची स्वल्पविरामाद्वारे विभक्त सूची प्रविष्ट करा.</translation>
 <translation id="5939518447894949180">रीसेट करा</translation>
 <translation id="835897206747267392">अवैध मूल्य.</translation>
+<translation id="3851140433852960970">ही सामग्री प्रदर्शित करण्यासाठी कोणतेही प्लग-इन उपलब्ध नाही.</translation>
 <translation id="1842960171412779397">निवडा</translation>
 <translation id="3450233048674729344">मूल्य <ph name="MAXIMUM"/> पेक्षा कमी किंवा समान असावे.</translation>
+<translation id="9198010615634362518">आवश्यक असलेले प्लग-इन स्थापित नाही.</translation>
 <translation id="7638452146404718955">प्लग-इन डाउनलोड करण्यासाठी येथे क्लिक करा</translation>
 <translation id="6119846243427417423">सक्रिय करा</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> फायली</translation>

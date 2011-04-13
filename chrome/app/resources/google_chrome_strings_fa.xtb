@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">درباره Chrome Frame...</translation>
 <translation id="386202838227397562">لطفاً همه پنجره های Google Chrome را ببندید و دوباره امتحان کنید.</translation>
 <translation id="2770231113462710648">تغییر مرورگر پیش فرض به:</translation>
-<translation id="698670068493841342">Gooogle Chrome از قبل برای این کاربر نصب شده است. اگر این نرم افزار کار نمی کند، لطفاً Google Chrome را غیر فعال کنید و دوباره آن را دانلود کنید.</translation>
 <translation id="7400722733683201933">درباره Google Chrome</translation>
 <translation id="7781002470561365167">نسخه جدیدی از Google Chrome موجود است.</translation>
 <translation id="7101265395643981223">شروع کردن Google Chrome</translation>
@@ -36,7 +35,6 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">نسخه جدید و امن تری از Google Chrome موجود است.</translation>
 <translation id="5037239767309817516">لطفاً همه پنجره های Google Chrome را ببندید و برای اعمال این تغییر، دوباره آن را راه اندازی کنید.</translation>
-<translation id="8810218179782551669">زبان Google Chrome:</translation>
 <translation id="7451721381978275812">آرگومان های نامعتبر. Google Chrome Frame در حالت آماده بدون نصب Google Chrome امکان پذیر نیست.</translation>
 <translation id="5809236835374558741">این رایانه در حال حاضر دارای نسخه جدیدتری از Google Chrome Frame است. اگر نرم افزار کار نمی کند، لطفاً Google Chrome Frame را حذف نصب کنید و دوباره آن را دانلود کنید.</translation>
 <translation id="4357846314885556934">Google Chrome درست عمل نمی کند</translation>
@@ -50,7 +48,6 @@
 <translation id="8738921060445980047">نسخه ناشناخته.</translation>
 <translation id="2485422356828889247">حذف نصب</translation>
 <translation id="3324235665723428530">استفاده از نمایه شما ممکن نیست چون از نسخه جدیدتر Google Chrome است. ممکن است برخی از ویژگیها در دسترس نباشند. لطفاً دایرکتوری نمایه دیگری را تعیین کنید یا نسخه جدیدتر Chrome را استفاده کنید.</translation>
-<translation id="7214670531148488183">Google Chrome می تواند برای بهبود تجربه مرور، از خدمات وب استفاده کند. اگر بخواهید می توانید این خدمات را غیر فعال کنید.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">داده های مرور شما نیز حذف شود؟</translation>
@@ -92,7 +89,6 @@
 <translation id="2769762047821873045">Google Chrome مرورگر پیش فرض شما نیست.</translation>
 <translation id="7825851276765848807">بدلیل خطای نامشخص، نصب ناموفق بود. لطفاً دوباره Google Chrome را دانلود کنید.</translation>
 <translation id="3335672657969596251">Google Chrome از <ph name="OS_NAME"/> پشتیبانی نمی کند.</translation>
-<translation id="473183893665420670">وقتی گزینه های Google Chrome را بازنشانی می کنید کلیه تغییراتی که انجام شده است به تنظیمات پیش فرض برمی گردد. آیا می خواهید گزینه های Chrome بازنشانی شوند؟</translation>
 <translation id="3636771339108070045">این رایانه دارای نسخه جدیدتر Google Chrome است. اگر نرم افزار کار نمی کند، لطفاً Google Chrome را غیر فعال کنید و دوباره آن را دانلود کنید.</translation>
 <translation id="5334545119300433702">این مدول با Google Chrome تداخل دارد.</translation>
 <translation id="3360895254066713204">راهنمای Chrome</translation>
@@ -103,7 +99,6 @@
 <translation id="6049075767726609708">یک سرپرست Google Chrome را روی این سیستم نصب کرده است، و برای همه کاربران در دسترس است. اکنون Google Chrome در سطح سیستم جایگزین این برنامه نصب شده در سطح کاربر خواهد شد.</translation>
 <translation id="7123348595797445166">این را امتحان کنید (قبلاً نصب شده است)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">زبان مورد استفاده در منوهای Google Chrome، کادرهای گفتگو، و نکات راهنمای ابزار را تغییر دهید.</translation>
 <translation id="9189723490960700326">شما در صدد رسیدن به &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;بودید، اما سرور گواهی منقضی شده ای را ارائه کرد. هیچ اطلاعاتی موجود نیست که نشان دهد آیا گواهی از زمان انقضا بی اعتبار شده است یا خیر. یعنی Google Chrome نمی تواند تضمین کند که شما با &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; نه یک مهاجم در ارتباط هستید. نباید ادامه دهید.</translation>
 <translation id="7106741999175697885">مدیر فعالیت ها - Google Chrome</translation>
 <translation id="8449380764213232436">اکنون Google Chrome آیتم های زیر را از <ph name="BROWSER_COMPONENT"/> وارد می کند:</translation>

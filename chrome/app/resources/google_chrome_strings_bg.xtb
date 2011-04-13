@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">Всичко за Chrome Frame...</translation>
 <translation id="386202838227397562">Моля, затворете всички прозорци на Google Chrome и опитайте отново.</translation>
 <translation id="2770231113462710648">Промяна на браузъра по подразбиране с/ъс:</translation>
-<translation id="698670068493841342">Google Chrome вече е инсталиран за този потребител. Ако софтуерът не работи, моля, деинсталирайте Google Chrome и го изтеглете отново.</translation>
 <translation id="7400722733683201933">Всичко за Google Chrome</translation>
 <translation id="7781002470561365167">Налице е нова версия на Google Chrome.</translation>
 <translation id="7101265395643981223">Стартиране на Google Chrome</translation>
@@ -36,7 +35,6 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Налице е нова, по-сигурна версия на Google Chrome.</translation>
 <translation id="5037239767309817516">Моля, затворете всички прозорци на Google Chrome и го стартирайте отново, за да влезе в сила промяната.</translation>
-<translation id="8810218179782551669">Език на Google Chrome:</translation>
 <translation id="7451721381978275812">Невалидни аргументи. Google Chrome Frame не може да се инсталира в режим на готовност, без да се инсталира и Google Chrome.</translation>
 <translation id="5809236835374558741">На този компютър вече има по-нова версия на Google Chrome Frame. Ако софтуерът не работи, моля, деинсталирайте Google Chrome Frame и го изтеглете отново.</translation>
 <translation id="4357846314885556934">Google Chrome не работи нормално</translation>
@@ -51,7 +49,6 @@
 <translation id="8738921060445980047">Непозната версия.</translation>
 <translation id="2485422356828889247">Деинсталиране</translation>
 <translation id="3324235665723428530">Не можете да използвате профила си, тъй като той е от по-нова версия на Google Chrome.\n\nВъзможно е някои функции да са недостъпни. Моля посочете директория на друг профил или използвайте по-нова версия на Chrome.</translation>
-<translation id="7214670531148488183">Google Chrome може да използва уеб услуги, за да подобри сърфирането ви. Ако искате, можете да ги деактивирате.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Ранна версия на Google Chrome</translation>
 <translation id="911206726377975832">Да се изтрият ли и данните от сърфирането?</translation>
@@ -94,7 +91,6 @@
 <translation id="2769762047821873045">Google Chrome не е браузърът ви по подразбиране.</translation>
 <translation id="7825851276765848807">Инсталацията не бе успешна поради неизвестна грешка. Моля, изтеглете отново Google Chrome.</translation>
 <translation id="3335672657969596251">Google Chrome не поддържа <ph name="OS_NAME"/>.</translation>
-<translation id="473183893665420670">Когато възстановите опциите на Google Chrome, всички направени от вас промени ще бъдат заменени с настройките по подразбиране. Искате ли да възстановите опциите на Google Chrome?</translation>
 <translation id="3636771339108070045">На този компютър вече има по-нова версия на Google Chrome. Ако софтуерът не работи, моля, деинсталирайте Google Chrome и го изтеглете отново.</translation>
 <translation id="5334545119300433702">За този модул е известно, че влиза в конфликт с Google Chrome.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -105,7 +101,6 @@
 <translation id="6049075767726609708">Google Chrome е бил инсталиран на този компютър от администратор и е достъпен за всички потребители. Google Chrome на системно ниво ще замести инсталацията на потребителско ниво.</translation>
 <translation id="7123348595797445166">Ще я изпробвам (вече е инсталирана)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">Промяна на езика, използван в менютата, диалоговите прозорци и екранните пояснения на Google Chrome.</translation>
 <translation id="9189723490960700326">Опитахте да се свърже с &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, но представеният от сървъра сертификат е изтекъл. Няма информация за това дали е преодоляна защитата на сертификата, след като валидността му е изтекла. Това означава, че Google Chrome не може да гарантира, че комуникирате с &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;,  а не с хакер. Не продължавайте по-нататък.</translation>
 <translation id="7106741999175697885">Диспечер на задачите - Google Chrome</translation>
 <translation id="8449380764213232436">Сега Google Chrome импортира следните компоненти от <ph name="BROWSER_COMPONENT"/>:</translation>

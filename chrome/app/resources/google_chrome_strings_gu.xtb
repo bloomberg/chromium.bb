@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">Chrome Frame વિશે...</translation>
 <translation id="386202838227397562">કૃપા કરીને બધી Google Chrome વિંડોઝ બંધ કરો અને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="2770231113462710648">ડિફૉલ્ટ બ્રાઉઝરને આના પર બદલો:</translation>
-<translation id="698670068493841342">Google Chrome આ વપરાશકર્તા માટે પહેલેથી જ ઇન્સ્ટોલ કર્યું છે. જો સૉફ્ટવેર કામ નથી કરતું, તો કૃપા કરીને Google Chrome ને અનઇન્સ્ટોલ કરો અને તેને ફરીથી ડાઉનલોડ કરો.</translation>
 <translation id="7400722733683201933">Google Chrome વિશે</translation>
 <translation id="7781002470561365167">Google Chrome નું નવું સંસ્કરણ ઉપલબ્ધ છે.</translation>
 <translation id="7101265395643981223">Google Chrome પ્રારંભ કરો</translation>
@@ -16,6 +15,7 @@
 <translation id="8970027151245482499">Google Chrome ઇન્સ્ટોલ થયું નથી અથવા તે ઇન્સ્ટોલેશન ડાયરેક્ટરીએ મેળવવામાં નિષ્ફળ રહ્યું છે. કૃપા કરીને Google Chrome ફરીથી ડાઉનલોડ કરો.</translation>
 <translation id="1761870329818521071">હાલમાં ચાલી રહ્યું છે તે જ Google Chrome ફ્રેમ સંસ્કરણને ઇન્સ્ટોલ કરી શકાતું નથી. કૃપા કરીને Google Chrome ફ્રેમ બંધ કરો અને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
+<translation id="5339639696978861456">Chrome Frame અપડેટ કરવામાં આવ્યું છે. કૃપા કરીને તમારા બ્રાઉઝરને ફરીથી લોંચ કરો. Chrome સંસ્કરણ: <ph name="TODO_0001"/>, Chrome Frame સંસ્કરણ: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">સેવાની શરતો</translation>
 <translation id="1779550429052479749">સિસ્ટમ પર Google Chrome અથવા Google Chrome ફ્રેમનું એક વિરોધાભાસી ઇન્સ્ટોલેશન મળ્યું. કૃપા કરીને તેને અનઇન્સ્ટોલ કરો અને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="3555616473548901994">અનઇન્સ્ટોલેશન પૂર્ણ.</translation>
@@ -26,6 +26,7 @@
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Google Chrome ઇન્સ્ટોલેશન ડાયરેક્ટરી ઉપયોગમાં હોય તેવું લાગે છે. કૃપા કરી તમારા કમ્પ્યુટરને રિબૂટ કરીને ફરી પ્રયાસ કરો.</translation>
 <translation id="8227755444512189073">Google Chrome ને <ph name="SCHEME"/> લિંક્સ હેન્ડલ કરવા માટે એક બાહ્ય એપ્લિકેશન શરૂ કરવાની જરૂર છે. જોઈતી લિંક છે, <ph name="PROTOLINK"/>.</translation>
+<translation id="8290100596633877290">ઓહ! Google Chrome ક્રેશ થઈ ગયું. હમણાં ફરીથી લોંચ કરીએ?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
@@ -33,7 +34,7 @@
 <translation id="3889417619312448367">Google Chrome ને અનઇન્સ્ટોલ કરો</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Google Chrome નું નવું, સલામત સંસ્કરણ ઉપલબ્ધ છે.</translation>
-<translation id="8810218179782551669">Google Chrome ભાષા:</translation>
+<translation id="5037239767309817516">આ ફેરફારને પ્રભાવમાં લાવવા માટે કૃપા કરીને બધી Google Chrome વિંડોને બંધ કરો અને તેને ફરીથી લોંચ કરો.</translation>
 <translation id="7451721381978275812">અમાન્ય દલીલો. Google Chrome ફ્રેમ રેડી મોડમાં Google Chrome ને ઇન્સ્ટોલ કર્યા વગર ઇન્સ્ટોલ થઈ શકતું નથી.</translation>
 <translation id="5809236835374558741">આ કમ્પ્યુટર પર પહેલેથી જ Google Chrome ફ્રેમ નું વધુ તાજેતરનું સંસ્કરણ છે. જો સૉફ્ટવેર કામ ન કરતું હોય, તો કૃપા કરીને Google Chrome ફ્રેમ ને અનઇન્સ્ટોલ કરો અને તેને ફરીથી ડાઉનલોડ કરો.</translation>
 <translation id="4357846314885556934">Google Chrome બરાબર વર્તતું નથી</translation>
@@ -47,7 +48,6 @@
 <translation id="8738921060445980047">અજ્ઞાત સંસ્કરણ.</translation>
 <translation id="2485422356828889247">અનઇન્સ્ટોલ કરો</translation>
 <translation id="3324235665723428530">તમારી પ્રોફાઇલ ઉપયોગમાં લઈ શકાતી નથી કારણ કે તે Google Chrome ના નવા વર્ઝનમાંથી છે.\n\nકેટલીક સુવિધાઓ અનુપલબ્ધ હોઈ શકે છે. કૃપા કરીને એક અલગ પ્રોફાઇલ ડાયરેક્ટરીનો ઉલ્લેખ કરો અથવા Chrome ના નવા વર્ઝનનો ઉપયોગ કરો.</translation>
-<translation id="7214670531148488183">Google Chrome તમારા બ્રાઉઝિંગ અનુભવને વિકસાવવા માટે વેબ સેવાઓનો ઉપયોગ કરી શકે છે. તમે આ સેવાઓને વૈકલ્પિક રીતે અક્ષમ કરી શકો છો.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Google Chrome કૅનેરી બિલ્ડ</translation>
 <translation id="911206726377975832">તમારો બ્રાઉઝિંગ ડેટા પણ કાઢી નાખીએ?</translation>
@@ -73,6 +73,8 @@
 <translation id="7018032895891496381">Google  Chrome તમારા ડિફોલ્ટ  શોધ  એંજિનનો ઉપયોગ કરે છે, જે હાલમાં <ph name="PAGE_TITLE"/> પર સેટ છે. શું તમે તમારા ડિફોલ્ટ  શોધ  એંજિનને રાખવા માંગો છો?</translation>
 <translation id="7161904924553537242">Google Chrome માં સ્વાગત છે</translation>
 <translation id="8669527147644353129">Google Chrome સહાયક</translation>
+<translation id="3444832043240812445">આ પૃષ્ઠ તો જ તમારા હાલનાં ક્રેશેસ પર માહિતી બતાવે છે જો તમે <ph name="BEGIN_LINK"/>ક્રેશ રિપોર્ટિંગ સક્ષમ કરો છો<ph name="END_LINK"/>.</translation>
+<translation id="8614913330719544658">Google Chrome પ્રતિસાદ આપતું નથી. હવે ફરીથી લોંચ કરીએ?</translation>
 <translation id="2681064822612051220">સિસ્ટમ પર Google Chrome નું એક વિરોધાભાસી ઇન્સ્ટોલેશન મળ્યું. કૃપા કરીને તેને અનઇન્સ્ટોલ કરો અને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
 <translation id="6126631249883707068">શું તમે ઈચ્છો છો કે Google Chrome તમારો પાસવર્ડ સાચવે?</translation>
@@ -87,7 +89,6 @@
 <translation id="2769762047821873045">Google Chrome તમારુ ડિફોલ્ટ બ્રાઉઝર નથીં.</translation>
 <translation id="7825851276765848807">અનુલ્લેખિત ભૂલને કારણે ઇન્સ્ટોલેશન નિષ્ફળ રહ્યું. કૃપા કરીને Google Chrome ફરીથી ડાઉનલોડ કરો.</translation>
 <translation id="3335672657969596251">Google Chrome <ph name="OS_NAME"/> ને સપોર્ટ કરતું નથી.</translation>
-<translation id="473183893665420670">જ્યારે તમે Google Chrome વિકલ્પો ફરીથી સેટ કરો છો ત્યારે, તમે કરેલા કોઈપણ ફેરફારો ડિફૉલ્ટ સેટિંગ્સમાં ઉમેરાઇ જશે. શું તમે Chrome વિકલ્પોને ફરીથી સેટ કરવા માંગો છો?</translation>
 <translation id="3636771339108070045">આ કમ્પ્યુટર પર પહેલેથી જ Google Chrome નું સૌથી તાજેતરનું વર્ઝન છે. જો સૉફ્ટવેર કામ નથી કરતું, તો કૃપા કરીને Google Chrome ને અનઇન્સ્ટોલ કરો અને તેને ફરીથી ડાઉનલોડ કરો.</translation>
 <translation id="5334545119300433702">આ મોડ્યુલ Google Chrome સાથે વિરોધાભાસ માટે જાણીતું છે.</translation>
 <translation id="3360895254066713204">Chrome સહાયક</translation>
@@ -98,7 +99,6 @@
 <translation id="6049075767726609708">એડમિનિસ્ટ્રેટરે આ સિસ્ટમ પર Google Chrome ઇન્સ્ટોલ કર્યું છે, અને તે બધા વપરાશકર્તાઓ માટે ઉપલબ્ધ છે. હવે સિસ્ટમ-સ્તર Google Chrome તમારા વપરાશકર્તા-સ્તરના ઇન્સ્ટોલેશનને બદલશે.</translation>
 <translation id="7123348595797445166">તેનો પ્રયાસ કરી જુઓ (અગાઉથી ઇન્સ્ટોલ કરેલું છે)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">Google Chrome મેનૂઝ, સંવાદ બૉક્સીસ અને ટૂલટિપ્સમાં ઉપયોગમાં લેવાયેલી ભાષા બદલો.</translation>
 <translation id="9189723490960700326">તમે &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; સુધી પહોંચવાનો પ્રયાસ કર્યો, પરંતુ સર્વરે પ્રસ્તુત કરેલ પ્રમાણપત્રની સમયસીમા સમાપ્ત થઈ ગઈ છે. એ સંકેત આપનારી કોઈ માહિતી ઉપલબ્ધ નથી કે શું પ્રમાણપત્રની સમયસીમા સમાપ્ત થયા પછી તેમાં કોઈ સમાધાન થયા છે કે કેમ.  આનો અર્થ એ કે તમે &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; સાથે વાતચીત કરી રહ્યા છો કોઈ હુમલાખોર સાથે નહીં, એવી કોઈ ગેરેંટી Google Chrome આપી શકતું નથી. તમારે આગળ વધવું ન જોઈએ.</translation>
 <translation id="7106741999175697885">કાર્ય વ્યવસ્થાપક - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome હવે <ph name="BROWSER_COMPONENT"/> માંથી નીચેની આઇટમ્સ આયાત કરી રહ્યું છે:</translation>

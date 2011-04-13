@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">크롬 프레임 정보...</translation>
 <translation id="386202838227397562">Google 크롬 창을 모두 닫고 다시 시도해 보세요.</translation>
 <translation id="2770231113462710648">다음으로 기본 브라우저 변경:</translation>
-<translation id="698670068493841342">이 사용자용 Google 크롬이 설치되어 있습니다. 실행되지 않는 경우 제거 후 다시 다운로드하세요.</translation>
 <translation id="7400722733683201933">Google 크롬 정보</translation>
 <translation id="7781002470561365167">Google 크롬의 새 버전이 출시되었습니다.</translation>
 <translation id="7101265395643981223">Google 크롬 시작</translation>
@@ -26,7 +25,7 @@
 <translation id="6989339256997917931">Google 크롬이 업데이트되었지만, 최소 30일 동안 사용하지 않았습니다.</translation>
 <translation id="5744005218040929396">Google 크롬 유틸리티</translation>
 <translation id="4343226815564935778">Google 크롬 설치 디렉토리가 사용중입니다. 컴퓨터를 재부팅한 다음 다시 시도하세요.</translation>
-<translation id="8227755444512189073"><ph name="SCHEME"/> 링크 처리를 위해 Google 크롬에서 외부 응용 프로그램을 실행해야 합니다. 요청 링크는 <ph name="PROTOLINK"/>입니다.</translation>
+<translation id="8227755444512189073"><ph name="SCHEME"/>링크 처리를 위해 Google 크롬에서 외부 응용 프로그램을 실행해야 합니다. 요청 링크는<ph name="PROTOLINK"/>입니다.</translation>
 <translation id="8290100596633877290">Google 크롬이 다운되었습니다. 다시 시작하시겠습니까?</translation>
 <translation id="1281036569101707544">Google 크롬 <ph name="TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1697213158865901863">Google 크롬 프레임</translation>
@@ -36,7 +35,6 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google 크롬</translation>
 <translation id="3089968997497233615">새롭고 안전한 Google 크롬의 새 버전을 사용할 수 있습니다.</translation>
 <translation id="5037239767309817516">변경사항을 적용하려면 모든 Google 크롬 창을 닫은 다음 다시 시작하시기 바랍니다.</translation>
-<translation id="8810218179782551669">Google 크롬 언어:</translation>
 <translation id="7451721381978275812">인수가 잘못되었습니다. Google 크롬을 함께 설치하지 않으면 Google 크롬 프레임을 준비 모드에서 설치할 수 없습니다.</translation>
 <translation id="5809236835374558741">컴퓨터에 Google 크롬 프레임 최신 버전이 설치되어 있습니다. 실행되지 않는 경우 제거한 후 다시 다운로드하세요.</translation>
 <translation id="4357846314885556934">Google 크롬 오작동</translation>
@@ -50,7 +48,6 @@
 <translation id="8738921060445980047">알 수 없는 버전입니다.</translation>
 <translation id="2485422356828889247">제거</translation>
 <translation id="3324235665723428530">최신 버전의 Google 크롬에서 가져온 사용자 프로필을 사용할 수 없습니다.\n\n일부 기능만 사용 가능할 수 있습니다. 다른 프로필 디렉토리를 지정하거나 최신 버전의 Google 크롬을 사용하세요.</translation>
-<translation id="7214670531148488183">Google 크롬은 브라우저 사용 환경을 개선하기 위해 웹 서비스를 이용할 수 있습니다. 원하지 않는 경우 이러한 서비스를 사용 중지하실 수 있습니다.</translation>
 <translation id="1759842336958782510">크롬</translation>
 <translation id="5008136264574452501">Google 크롬 카나리아 빌드</translation>
 <translation id="911206726377975832">인터넷 사용 기록도 삭제하시겠습니까?</translation>
@@ -65,14 +62,14 @@
 <translation id="7100330187273168372">Google 크롬에서 다음 데이터 디렉토리에 읽고 쓸 수 없습니다.\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">더 이상 묻지 않음</translation>
 <translation id="2290095356545025170">Google 크롬을 제거하시겠습니까?</translation>
-<translation id="6087062680442281307">Google 크롬은 웹페이지와 응용프로그램을 빠르게 실행하는 웹 브라우저입니다. 또한 빠르고 안정적이며 사용하기 쉽습니다. Google 크롬에 기본적으로 제공되는 악성코드 및 피싱 방지로 더욱 안전하게 웹을 탐색하세요.</translation>
+<translation id="6087062680442281307">Google 크롬은 웹페이지와 애플리케이션을 빠르게 실행하는 웹 브라우저입니다. 또한 빠르고 안정적이며 사용하기 쉽습니다. Google 크롬에 기본적으로 제공되는 악성코드 및 피싱 방지로 더욱 안전하게 웹을 탐색하세요.</translation>
 <translation id="5941830788786076944">Google 크롬을 기본 브라우저로</translation>
 <translation id="3612333635265770873">같은 이름의 모듈이 Google 크롬과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="5947389362804196214">환경설정을 읽을 수 없습니다.\n\n일부 기능을 사용할 수 없으며 환경설정의 변경사항이 저장되지 않습니다.</translation>
 <translation id="6650142020817594541">이 사이트는 Google 크롬 프레임을 권장함(이미 설치됨)</translation>
 <translation id="8778247165111716037">Google 크롬 OS는 추가 <ph name="BEGIN_LINK_CROS_OSS"/>오픈소스 소프트웨어<ph name="END_LINK_CROS_OSS"/>의 도움으로 가능하게 되었습니다.</translation>
 <translation id="4127951844153999091">이 경우 인증서에 나와 있는 주소가 귀하의 브라우저에서 이동하려는 웹사이트 주소와 일치하지 않습니다. 이러한 현상은 다른 웹사이트에 인증서를 제출하는 해커가 귀하의 통신을 방해해 불일치가 발생한 것이 원인일 수 있습니다. 또한 모든 사이트에 유효하지 않을 수 있는 인증서 하나가 귀하가 방문하려는 웹사이트를 포함한 여러 개의 웹사이트에 대해 반환되도록 서버가 설정된 것이 원인일 수도 있습니다. Google 크롬은 귀하가 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;에 도달했음을 알려줄 수 있지만 해당 사이트가 귀하가 도달하려는 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;과(와) 같은 사이트임을 확인할 수는 없습니다. 계속 진행할 경우 크롬은 이름 불일치를 더 이상 확인하지 않습니다. 일반적으로 이 시점에는 이전으로 진행하지 않는 것이 좋습니다.</translation>
-<translation id="2712549016134575851">설치된 다른 응용프로그램과의 충돌이 감지되었습니다.</translation>
+<translation id="2712549016134575851">설치된 다른 애플리케이션과의 충돌이 감지되었습니다.</translation>
 <translation id="7018032895891496381">Google 크롬은 현재 <ph name="PAGE_TITLE"/>(으)로 설정되어 있는 기본 검색엔진을 사용합니다. 기본 검색엔진을 계속 유지하시겠습니까?</translation>
 <translation id="7161904924553537242">Google 크롬에 오신 것을 환영합니다.</translation>
 <translation id="8669527147644353129">Google 크롬 도우미</translation>
@@ -86,13 +83,12 @@
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">인터넷 브라우저</translation>
 <translation id="8776515774046280928">Google 크롬이 설치되어 컴퓨터의 모든 사용자가 사용할 수 있습니다. 사용자 수준에서 Google 크롬을 설치하려면 관리자가 설치한 시스템 수준 버전을 제거하세요.</translation>
-<translation id="2189123953385179981">Google 크롬 OS는 외부 응용프로그램 실행을 통한 <ph name="SCHEME"/> 링크 처리를 지원하지 않습니다. 요청된 링크는 <ph name="PROTOLINK"/>입니다.</translation>
+<translation id="2189123953385179981">Google 크롬 OS는 외부 애플리케이션 실행을 통한<ph name="SCHEME"/>링크 처리를 지원하지 않습니다. 요청된 링크는<ph name="PROTOLINK"/>입니다.</translation>
 <translation id="8205111949707227942">선택사항: 사용 통계 및 충돌 보고서를 자동 전송하도록 설정하여 Google 크롬 OS 개선에 도움을 주세요.</translation>
 <translation id="7196020411877309443">이 메시지가 표시되는 이유</translation>
 <translation id="2769762047821873045">Google 크롬이 기본 브라우저로 설정되어 있지 않습니다.</translation>
 <translation id="7825851276765848807">알 수 없는 오류로 인해 설치에 실패했습니다. Google 크롬을 다시 다운로드하세요.</translation>
 <translation id="3335672657969596251">Google 크롬에서는 <ph name="OS_NAME"/>을(를) 지원하지 않습니다.</translation>
-<translation id="473183893665420670">Google 크롬 옵션을 재설정하면 변경한 사항이 기본 설정으로 되돌아갑니다. 크롬 옵션을 재설정하시겠습니까?</translation>
 <translation id="3636771339108070045">컴퓨터에 Google 크롬 최신 버전이 설치되어 있습니다. 실행되지 않는 경우 제거한 후 다시 다운로드하세요.</translation>
 <translation id="5334545119300433702">이 모듈은 Google 크롬과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="3360895254066713204">크롬 도우미</translation>
@@ -103,7 +99,6 @@
 <translation id="6049075767726609708">시스템에 모든 사용자용 Google 크롬이 설치되었습니다. 기존의 사용자 수준 Google 크롬 대신 설치된 시스템 수준 Google 크롬이 사용됩니다.</translation>
 <translation id="7123348595797445166">사용해 보기(이미 설치됨)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">Google 크롬 메뉴, 대화상자 및 툴팁에서 사용되는 언어를 변경합니다.</translation>
 <translation id="9189723490960700326">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;에 접근하려 했지만 서버에서 만료된 인증서를 제출했습니다. 인증서가 만료 후 손상되었는지를 확인할 수 있는 정보가 없습니다. Google 크롬은 통신 중인 상대가 해커가 아닌 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;인지 보장할 수 없습니다. 더 이상 진행하지 않는 것이 좋습니다.</translation>
 <translation id="7106741999175697885">작업 관리자 - Google 크롬</translation>
 <translation id="8449380764213232436">Google 크롬이 <ph name="BROWSER_COMPONENT"/>에서 다음 항목을 가져오는 중입니다.</translation>

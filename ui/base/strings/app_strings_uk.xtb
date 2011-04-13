@@ -19,6 +19,7 @@
 <translation id="3087734570205094154">Низ</translation>
 <translation id="6364916375976753737">Прокрутка вліво</translation>
 <translation id="8210608804940886430">Сторінка вниз</translation>
+<translation id="5329858601952122676">&amp;Видалити</translation>
 <translation id="6659594942844771486">Вкладка</translation>
 <translation id="2497284189126895209">Усі файли</translation>
 <translation id="7814458197256864873">&amp;Копіювати</translation>
@@ -44,7 +45,7 @@
 <translation id="6040143037577758943">Закрити</translation>
 <translation id="7000311294523403548">Веб-сторінка без імені</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
-<translation id="6965382102122355670">OK</translation>
+<translation id="6965382102122355670">ОК</translation>
 <translation id="5941711191222866238">Зменшити</translation>
 <translation id="8328145009876646418">Лівий край</translation>
 </translationbundle>

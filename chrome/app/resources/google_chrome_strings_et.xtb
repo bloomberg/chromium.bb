@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">Info Chrome Frame'i kohta...</translation>
 <translation id="386202838227397562">Sulgege kõik Google Chrome'i aknad ja proovige uuesti.</translation>
 <translation id="2770231113462710648">Asenda vaikebrauser:</translation>
-<translation id="698670068493841342">Sellele kasutajale on Google Chrome juba installitud. Kui tarkvara ei tööta, desinstallige palun Google Chrome ja laadige see uuesti alla.</translation>
 <translation id="7400722733683201933">Google Chrome'i kohta</translation>
 <translation id="7781002470561365167">Saadaval on uus Google Chrome'i versioon.</translation>
 <translation id="7101265395643981223">Käivitage Google Chrome</translation>
@@ -36,7 +35,6 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Saadaval on uus ja turvalisem Google Chrome'i versioon.</translation>
 <translation id="5037239767309817516">Muudatuse rakendamiseks sulgege kõik Google Chrome'i aknad ja taaskäivitage Chrome.</translation>
-<translation id="8810218179782551669">Google Chrome'i keel:</translation>
 <translation id="7451721381978275812">Kehtetud argumendid. Google Chrome Frame'i ei saa valmisrežiimil installida ilma ka Google Chrome'i installimata.</translation>
 <translation id="5809236835374558741">Selles arvutis on juba Google Chrome Frame'i viimane versioon. Kui tarkvara ei tööta, desinstallige Google Chrome Frame ja laadige see uuesti alla.</translation>
 <translation id="4357846314885556934">Google Chrome'i ei toimi korralikult</translation>
@@ -50,7 +48,6 @@
 <translation id="8738921060445980047">Tundmatu versioon.</translation>
 <translation id="2485422356828889247">Desinstalli</translation>
 <translation id="3324235665723428530">Teie profiili ei saa kasutada, kuna see pärineb uuemast Google Chrome'i versioonist.\n\nMõned funktsioonid ei pruugi olla kättesaadavad. Palun täpsustage mõni teine profiilikaust või kasutage Chrome'i uuemat versiooni.</translation>
-<translation id="7214670531148488183">Google Chrome võib sirvimise parandamiseks kasutada veebiteenuseid — võite neid teenuseid valikuliselt keelata.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Google Chrome Canary järk</translation>
 <translation id="911206726377975832">Kas kustutada ka teie sirvimisandmed?</translation>
@@ -92,7 +89,6 @@
 <translation id="2769762047821873045">Google Chrome ei ole vaikebrauser.</translation>
 <translation id="7825851276765848807">Installimine nurjus määramata vea tõttu. Laadige Google Chrome uuesti alla.</translation>
 <translation id="3335672657969596251">Google Chrome ei toeta <ph name="OS_NAME"/>.</translation>
-<translation id="473183893665420670">Google Chrome'i valikute lähtestamisega taastatakse teie tehtud muudatused vaikeseadetele. Kas soovite Chrome'i valikud lähtestada?</translation>
 <translation id="3636771339108070045">Selles arvutis on juba Google Chrome'i viimane versioon. Kui tarkvara ei tööta, desinstallige palun Google Chrome ja laadige see uuesti alla.</translation>
 <translation id="5334545119300433702">Sel moodulil on teadaolev vastuolu Google Chrome'iga.</translation>
 <translation id="3360895254066713204">Chrome'i abistaja</translation>
@@ -103,7 +99,6 @@
 <translation id="6049075767726609708">Administraator on installinud Google Chrome'i sellesse süsteemi ja see on saadaval kõigile kasutajatele. Süsteemitasandi Google Chrome asendab nüüd teie kasutajatasandi installi.</translation>
 <translation id="7123348595797445166">Proovi seda (juba installitud)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">Muutke keelt, mida kasutatakse Google Chrome'i menüüdes, dialoogides ja kohtspikrites.</translation>
 <translation id="9189723490960700326">Te proovisite jõuda aadressile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid server esitas aegunud serdi. Puuduvad andmed serdi turvalisuse ohustamise kohta pärast selle aegumist. Google Chrome ei suuda usaldusväärselt tagada, et teie suhtluspartneriks on &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ja mitte ründaja. Te ei tohiks jätkata.</translation>
 <translation id="7106741999175697885">Tegumihaldur - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome impordib asukohast <ph name="BROWSER_COMPONENT"/> järgnevat:</translation>

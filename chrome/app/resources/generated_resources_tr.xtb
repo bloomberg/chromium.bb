@@ -21,7 +21,6 @@
 <translation id="3835835603544455972">Senkronizasyonu ayarla</translation>
 <translation id="859285277496340001">Sertifika, iptal edilip edilmediğinin denetlenebileceği bir mekanizma belirtmiyor.</translation>
 <translation id="2010799328026760191">Değiştirici tuşlar...</translation>
-<translation id="2160383474450212653">Yazı Tipleri ve Diller</translation>
 <translation id="3300394989536077382">İmzalayan:</translation>
 <translation id="654233263479157500">Navigasyon hatalarının çözülmesine yardımcı olması için bir web hizmeti kullanın</translation>
 <translation id="4940047036413029306">Tırnak</translation>
@@ -42,8 +41,6 @@
 <translation id="5048179823246820836">İskandinav</translation>
 <translation id="1763046204212875858">Uygulama kısayolları oluşturun</translation>
 <translation id="2105006017282194539">Henüz yüklenmedi</translation>
-<translation id="8546541260734613940">[*.]example.com</translation>
-<translation id="9137125502445441547">Çıkmadan önce işlemin onaylanmasını iste.</translation>
 <translation id="777702478322588152">Sorumluluk bölgesi</translation>
 <translation id="561349411957324076">Tamamlandı</translation>
 <translation id="2757513101875140959">Yarım genişlik moduna geç</translation>
@@ -94,7 +91,6 @@
 <translation id="6523841952727744497">Oturum açmadan önce <ph name="NETWORK_ID"/> ağını etkinleştirmek için lütfen bir Misafir oturumu başlatın</translation>
 <translation id="7450044767321666434">Görüntü yazma işlemi başarıyla tamamlandı!</translation>
 <translation id="2653266418988778031">Bir Sertifika Yetkilisi (CA) sertifikasını silerseniz, tarayıcınız bundan sonra söz konusu CA tarafından yayınlanan hiçbir sertifikaya güvenmez.</translation>
-<translation id="6021004449668343960">Sans-Serif Yazı Tipi:</translation>
 <translation id="5341849548509163798"><ph name="NUMBER_MANY"/> saat önce</translation>
 <translation id="4422428420715047158">Etki Alanı:</translation>
 <translation id="2425693476159185661">Ayarlarınız, <ph name="PRODUCT_NAME"/> verilerinizi diğer bilgisayarlarınızla senkronize edecek biçimde yapılmamış.</translation>
@@ -132,7 +128,6 @@
 <translation id="4780321648949301421">Sayfayı Farklı Kaydet...</translation>
 <translation id="9154072353677278078"><ph name="REALM"/> sitesindeki <ph name="DOMAIN"/> sunucusu için kullanıcı adı ve şifre gerekiyor.</translation>
 <translation id="2551191967044410069">Coğrafi Konum İstisnaları</translation>
-<translation id="5016229027501773040">Yapılandır:</translation>
 <translation id="8178665534778830238">İçerik:</translation>
 <translation id="153384433402665971"><ph name="PLUGIN_NAME"/> eklentisi eski olduğu için engellendi.</translation>
 <translation id="4535734014498033861">Proxy sunucu bağlantısı başarısız oldu.</translation>
@@ -145,10 +140,8 @@
 <translation id="8528962588711550376">Oturum açılıyor.</translation>
 <translation id="2336228925368920074">Tüm Sekmelere Yer İşareti Koy...</translation>
 <translation id="4985312428111449076">Sekmeler veya pencereler</translation>
-<translation id="4108206167095122329">Tümünü K&amp;aldır</translation>
 <translation id="7481475534986701730">En son ziyaret edilen siteler</translation>
 <translation id="4260722247480053581">Gizli Pencere'de Aç</translation>
-<translation id="5063480226653192405">Kullanım</translation>
 <translation id="8503758797520866434">Otomatik Doldurma Tercihleri...</translation>
 <translation id="6657585470893396449">Şifre</translation>
 <translation id="1776883657531386793"><ph name="OID"/>: <ph name="INFO"/></translation>
@@ -196,7 +189,6 @@
 <translation id="1493492096534259649">Bu dil yazım denetimi için kullanılamaz</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Arama</translation>
 <translation id="2502105862509471425">Yeni Kredi Kartı Ekle...</translation>
-<translation id="4037998879767732811">Bu sertifikayı yayınlayan Sertifika Yetkilisi'ne güvendiğiniz için dolaylı olarak bu sertifikanın orijinalliğine de güvenirsiniz.</translation>
 <translation id="4037618776454394829">Son kaydedilen ekran görüntüsünü gönder</translation>
 <translation id="182729337634291014">Senkronizasyon hatası...</translation>
 <translation id="2459861677908225199">TLS 1.0 kullanın</translation>
@@ -236,13 +228,10 @@
 <translation id="9123413579398459698">FTP proxy</translation>
 <translation id="8534801226027872331">Bu durumda, tarayıcınıza sunulan sertifika hata içeriyor ve anlaşılamıyor. Bu, sertifikanın içindeki kimlik bilgilerini veya bağlantı güvenliğini sağlamak için kullanılan diğer bazı bilgileri anlayamadığımız anlamına gelebilir. İlerlememelisiniz.</translation>
 <translation id="3608527593787258723">Sekme 1'i etkinleştir</translation>
-<translation id="861850123230661844">Anonim Kimlik:</translation>
 <translation id="4497369307931735818">Uzaktan erişim</translation>
 <translation id="3855676282923585394">Yer İşaretlerini ve Ayarları İçe Aktar...</translation>
-<translation id="8007420400389197224">Cr-48 pilot kullanıcısı olarak, 2 yıl boyunca Verizon Wireless'tan her 30 günde 100MB'lık ücretsiz veri kullanım hakkına sahipsiniz. Kaydolmanız yeterli, hemen çevrimiçi olabilirsiniz!</translation>
 <translation id="1116694919640316211">Hakkında</translation>
 <translation id="8381977081675353473">Slovakça</translation>
-<translation id="8904976895050290827">Chrome Senkronizasyonu</translation>
 <translation id="4422347585044846479">Bu sayfanın yer imini düzenle</translation>
 <translation id="1684638090259711957">Yeni bir istisna kalıbı ekle</translation>
 <translation id="4925481733100738363">Uzaktan erişimi ayarla...</translation>
@@ -298,16 +287,13 @@
 <translation id="6219983382864672018">Web Audio</translation>
 <translation id="479280082949089240">Bu sayfa tarafından ayarlanan çerezler</translation>
 <translation id="4198861010405014042">Paylaşılan erişim</translation>
-<translation id="2518917559152314023">E&amp;kle...</translation>
 <translation id="6204930791202015665">Görüntüle...</translation>
-<translation id="7464038383832981644">Varsayılanlara Sıfırla</translation>
 <translation id="5941343993301164315">Lütfen şurada oturum açın: <ph name="TOKEN_NAME"/>.</translation>
 <translation id="8049151370369915255">Yazı Tiplerini Özelleştir...</translation>
 <translation id="2886862922374605295">Donanım:</translation>
 <translation id="5303618139271450299">Bu web sayfası bulunamadı</translation>
 <translation id="4256316378292851214">Video Olarak Kay&amp;det...</translation>
 <translation id="3528171143076753409">Sunucunun sertifikasına güvenilmiyor.</translation>
-<translation id="7767960058630128695">Şifreler:</translation>
 <translation id="6518014396551869914">Resmi Kop&amp;yala</translation>
 <translation id="3236997602556743698">3 Grup (390)</translation>
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
@@ -343,7 +329,6 @@
 <translation id="950108145290971791">Daha hızlı arama ve göz atma için Anında Arama etkinleştirilsin mi?</translation>
 <translation id="144136026008224475">Daha fazla uzantı edinin &gt;&gt;</translation>
 <translation id="5486326529110362464">Özel anahtara ilişkin giriş anahtarı olmalıdır.</translation>
-<translation id="2393657444484157959">Sunucu Sertifikası:</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="62780591024586043">Deneysel konum özellikleri</translation>
 <translation id="8584280235376696778">Videoyu yeni sekmede &amp;aç</translation>
@@ -399,7 +384,6 @@
 <translation id="2553440850688409052">Bu Eklentiyi Gizle</translation>
 <translation id="1764354371592356238">Kanada Dili (İngilizce)</translation>
 <translation id="3280237271814976245">Farklı k&amp;aydet...</translation>
-<translation id="785407234302763980">Chrome kullandığınız tüm bilgisayarlarda senkronizasyonu durdurmak üzeresiniz. Verileriniz Google'dan da silinecek, ancak Chrome içinde kalmaya devam edecektir. Bunu yapmak istediğinizden emin misiniz?</translation>
 <translation id="8301162128839682420">Dil ekle:</translation>
 <translation id="7658239707568436148">İptal</translation>
 <translation id="4538417792467843292">Kelime sil</translation>
@@ -411,11 +395,9 @@
 <translation id="5078638979202084724">Tüm sekmelere yer işareti koy</translation>
 <translation id="5585118885427931890">Yer işareti klasörü oluşturulamadı.</translation>
 <translation id="2154710561487035718">URL'yi Kopyala</translation>
-<translation id="4244236525807044920">Yazı tipi ve dil ayarlarını değiştir</translation>
 <translation id="8163672774605900272">Proxy sunucusu kullanmamanız gerektiğini düşünüyorsanız, şu adımları deneyin:
         <ph name="PLATFORM_TEXT"/></translation>
 <translation id="3241680850019875542">Paketlenecek uzantının kök dizinini seçin. Bir uzantıyı güncellemek için tekrar kullanılacak özel anahtar dosyasını da seçin.</translation>
-<translation id="6746124502594467657">Aşağı taşı</translation>
 <translation id="7500424997253660722">Kısıtlı havuz:</translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="7972714317346275248">PKCS #1 RSA Şifrelemeli SHA-384</translation>
@@ -459,7 +441,6 @@
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH"/> / <ph name="TOTAL_MATCHCOUNT"/></translation>
 <translation id="8890069497175260255">Klavye Türü</translation>
 <translation id="1202290638211552064">Bir yukarı akış sunucusundan yanıt beklenirken ağ geçidi veya proxy sunucusu zaman aşımına uğradı.</translation>
-<translation id="6909042471249949473">Şu döneme ait verileri temizle:</translation>
 <translation id="5731751937436428514">Vietnamca giriş yöntemi (VIQR)</translation>
 <translation id="8412144371993786373">Mevcut sayfaya yer işareti koy</translation>
 <translation id="7615851733760445951">&lt;seçili çerez yok&gt;</translation>
@@ -494,7 +475,6 @@
 <translation id="9001035236599590379">MIME türü</translation>
 <translation id="5612754943696799373">İndirmeye İzin Verilsin mi?</translation>
 <translation id="5515810278159179124">Hiçbir sitenin fiziksel konumumu izlemesine izin verme</translation>
-<translation id="398967089780480076">İşlem:</translation>
 <translation id="5999606216064768721">Sistem Başlık Çubuğunu ve Kenarlıkları Kullan</translation>
 <translation id="904752364881701675">Sol alt</translation>
 <translation id="3398951731874728419">Hata bilgileri:</translation>
@@ -545,7 +525,6 @@
 <translation id="2686759344028411998">Yüklü bir modül bulunamadı.</translation>
 <translation id="4481614464927987190">Çekçe</translation>
 <translation id="572525680133754531">Hata ayıklama ve katman birleştirme için, birleştirilmiş Oluşturma Katmanlarının etrafında kenarlık çizer.</translation>
-<translation id="2188985920108004776">EAP Yöntemi:</translation>
 <translation id="2011110593081822050">Ağ Yapıcı: <ph name="WORKER_NAME"/></translation>
 <translation id="3294437725009624529">Konuk</translation>
 <translation id="350069200438440499">Dosya adı:</translation>
@@ -581,7 +560,6 @@
 <translation id="7789962463072032349">duraklat</translation>
 <translation id="121827551500866099">Tüm indirilenleri göster...</translation>
 <translation id="1562633988311880769">Şurada oturum aç: <ph name="CLOUD_PRINT_NAME"/></translation>
-<translation id="888062562827966298">İtalik olarak görüntülenen istisnalar yalnızca bu gizli oturuma uygulanır.</translation>
 <translation id="5949910269212525572">Sunucunun DNS adresi çözümlenemiyor.</translation>
 <translation id="3115147772012638511">Önbellek bekleniyor...</translation>
 <translation id="257088987046510401">Temalar</translation>
@@ -590,8 +568,6 @@
 <translation id="1426410128494586442">Evet</translation>
 <translation id="6725970970008349185">Sayfa başına görüntülenecek aday sayısı</translation>
 <translation id="3520476450377425184"><ph name="NUMBER_MANY"/> gün kaldı</translation>
-<translation id="9055207877339166954">Temalar:</translation>
-<translation id="7384668165723613230">Verizon Wireless'tan Ücretsiz Veri</translation>
 <translation id="7643817847124207232">İnternet bağlantısı kaybedildi.</translation>
 <translation id="932327136139879170">Ana Sayfa</translation>
 <translation id="4764675709794295630">« Geri</translation>
@@ -605,7 +581,6 @@
 <translation id="702455272205692181"><ph name="EXTENSION_NAME"/></translation>
 <translation id="7170041865419449892">Aralık dışında</translation>
 <translation id="908263542783690259">Tarama geçmişini temizle</translation>
-<translation id="9016174746774527958">Başlangıç sayfalarını yönet...</translation>
 <translation id="7518003948725431193">Şu web adresi için web sayfası bulunamadı:<ph name="URL"/></translation>
 <translation id="745602119385594863">Yeni arama motoru:</translation>
 <translation id="7484645889979462775">Bu site için hiçbir zaman</translation>
@@ -636,7 +611,6 @@
 <translation id="6002148394280876541">Media Player</translation>
 <translation id="5469868506864199649">İtalyanca</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
-<translation id="323509738684635129">Çerez İstisnaları</translation>
 <translation id="6622980291894852883">Görselleri engellemeye devam et</translation>
 <translation id="5937837224523037661">Bir sitede eklentilerle karşılaştığımda:</translation>
 <translation id="4988792151665380515">Genel anahtar dışa alınamadı.</translation>
@@ -657,7 +631,6 @@
 <translation id="1972131420608645908">FPS sayacı.</translation>
 <translation id="8065982201906486420"><ph name="PLUGIN_NAME"/> eklentisini çalıştırmak için tıklayın.</translation>
 <translation id="6219717821796422795">Hanyu</translation>
-<translation id="7931405184645203530">Lütfen <ph name="PRODUCT_NAME"/> uygulamasını normal bir kullanıcı olarak başlatın. Daha önce <ph name="PRODUCT_NAME"/> uygulamasını kök olarak çalıştırdıysanız, profil dizininizin sahipliğini değiştirmeniz gerekir.</translation>
 <translation id="2688477613306174402">Yapılandırma</translation>
 <translation id="505077122661873132">Şu adımları uygulayarak DNS ön getirme özelliğini devre dışı bırakmayı deneyin: <ph name="BEGIN_BOLD"/> İngiliz anahtarı menüsü &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="ADVANCED_TITLE"/> <ph name="END_BOLD"/> seçeneğine gidin ve &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot; seçimini kaldırın.</translation>
 <translation id="1195447618553298278">Bilinmeyen hata.</translation>
@@ -669,7 +642,6 @@
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME"/> kök olarak çalıştırılamaz.</translation>
 <translation id="5076340679995252485">&amp;Yapıştır</translation>
 <translation id="2904348843321044456">İçerik Ayarları...</translation>
-<translation id="3128292904422893714">Adobe Flash Player</translation>
 <translation id="5518442882456325299">Mevcut arama motoru:</translation>
 <translation id="14171126816530869"><ph name="LOCALITY"/> konumundaki <ph name="ORGANIZATION"/> kuruluşunun kimliği <ph name="ISSUER"/> tarafından doğrulandı.</translation>
 <translation id="6263082573641595914">Microsoft CA Sürümü</translation>
@@ -689,7 +661,6 @@
 <translation id="3473105180351527598">Kimlik avı ve kötü amaçlı yazılımlara karşı korumayı etkinleştir</translation>
 <translation id="6151323131516309312"><ph name="SITE_NAME"/> sitesinde arama yapmak için <ph name="SEARCH_KEY"/> düğmesine basın</translation>
 <translation id="3753317529742723206">Bundan sonra <ph name="PROTOCOL"/>:// bağlantılarını çalıştırmak için <ph name="REPLACED_HANDLER_TITLE"/> yerine <ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) işleyicisini kullanmak ister misiniz?</translation>
-<translation id="8774154763730062725">Yeni İstisna</translation>
 <translation id="6216679966696797604">Misafir oturumu başlat</translation>
 <translation id="5456397824015721611">Zhuyin sembolleri girişi dahil, düzenleme öncesi maksimum Çince karakter sayısı</translation>
 <translation id="2342959293776168129">İndirme geçmişini temizle</translation>
@@ -712,7 +683,6 @@
 <translation id="1737968601308870607">Hata bildir</translation>
 <translation id="4571852245489094179">Yer İmlerini ve Ayarları Al</translation>
 <translation id="99648783926443049"><ph name="BEGIN_BOLD"/> İngiliz anahtarı menüsü &gt; Ayarlar &gt; Gelişmiş Seçenekler &gt; Proxy ayarlarını değiştir <ph name="END_BOLD"/> seçeneğine gidin ve yapılandırmanızın &quot;proxy yok&quot; veya &quot;doğrudan&quot; değerine ayarlandığından emin olun.</translation>
-<translation id="6514771739083339959">Ana sayfa:</translation>
 <translation id="4421917670248123270">Kapat ve indirme işlemlerini iptal et</translation>
 <translation id="5605623530403479164">Diğer arama motorları</translation>
 <translation id="8887243200615092733"><ph name="PRODUCT_NAME"/> şimdi şifrelerinizi senkronize edebilir. Verilerinizi korumak için hesap bilgilerinizi onaylamanız gerekiyor.</translation>
@@ -727,7 +697,6 @@
 <translation id="8486154204771389705">Bu sayfada tut</translation>
 <translation id="6824564591481349393">&amp;E-posta Adresini Kopyala</translation>
 <translation id="907148966137935206">Hiçbir sitede pop-up'lara izin verme (önerilen)</translation>
-<translation id="6208594739197220531">Özellikler:</translation>
 <translation id="5184063094292164363">&amp;JavaScript Konsolu</translation>
 <translation id="333371639341676808">Bu sayfanın ek iletişim kutusu oluşturmasına izin verme.</translation>
 <translation id="7632380866023782514">Sağ üst</translation>
@@ -767,10 +736,8 @@
 <translation id="4064488613268730704">Otomatik Doldurma ayarlarını yönet...</translation>
 <translation id="6830600606572693159"><ph name="URL"/> adresindeki web sayfası şu anda kullanılamıyor. Aşırı yüklenmiş veya bakım için kapatılmış olabilir.</translation>
 <translation id="7886793013438592140">Hizmet işlemi başlatılamadı.</translation>
-<translation id="8990467782371788738">Daha Fazla Uygulama Al</translation>
 <translation id="8417944620073548444"><ph name="MEGABYTES"/> MB kaldı</translation>
 <translation id="7339898014177206373">Yeni pencere</translation>
-<translation id="8249296373107784235">İptal Et</translation>
 <translation id="3026202950002788510"><ph name="BEGIN_BOLD"/>
           Uygulamalar &gt; Sistem Tercihleri &gt; Ağ &gt; Gelişmiş &gt; Proxy'ler
           <ph name="END_BOLD"/>
@@ -796,13 +763,11 @@
 <translation id="3627671146180677314">Netscape Sertifikası Yenileme Zamanı</translation>
 <translation id="1319824869167805246">Tüm Favorileri Yeni Pencerede Aç</translation>
 <translation id="5204967432542742771">Şifre girin</translation>
-<translation id="3493653833301553455">Otomatik form doldurma:</translation>
 <translation id="4388712255200933062"><ph name="CLOUD_PRINT_NAME"/>, yazdırma işleminin daha sezgisel, erişilebilir ve kullanışlı olabileceği fikri üzerine kuruludur. <ph name="CLOUD_PRINT_NAME"/> programını kullanarak, yazıcılarınızı <ph name="CLOUD_PRINT_NAME"/> özelliğinin etkinleştirildiği her türlü web uygulamasından veya mobil uygulamadan kullanabilirsiniz.</translation>
 <translation id="2932611376188126394">Tekli kanji sözlüğü</translation>
 <translation id="5485754497697573575">Tüm Sekmeleri Kurtar</translation>
 <translation id="3371861036502301517">Uzantı Yükleme Hatası</translation>
 <translation id="644038709730536388">Zararlı online yazılımlardan nasıl korunacağınız hakkında daha fazla bilgi edinin.</translation>
-<translation id="1312139124036901403">Otomatik Doldurmayı Devre Dışı Bırak</translation>
 <translation id="5178882880046799307">İngilizce (Colemak)</translation>
 <translation id="2155931291251286316"><ph name="HOST"/> sitesindeki pop-up'lara her zaman izin ver.</translation>
 <translation id="5650551054760837876">Arama sonucu bulunamadı.</translation>
@@ -834,7 +799,6 @@
 <translation id="263325223718984101"><ph name="PRODUCT_NAME"/> yükleme işlemini tamamlayamadı, ancak disk görüntüsünden çalışmaya devam edecek.</translation>
 <translation id="7025190659207909717">Mobil veri hizmeti yönetimi</translation>
 <translation id="8265096285667890932">Yan sekmeleri kullan</translation>
-<translation id="7344633671344536647">Tarama verileri:</translation>
 <translation id="4250680216510889253">Hayır</translation>
 <translation id="6291953229176937411">Bulucu'da &amp;Göster</translation>
 <translation id="2476990193835943955">Bu değiştiricilere ait klavye kısayollarını görmek için&lt;br&gt;Control, Alt veya ÜstKrktr tuşunu basılı tutun.</translation>
@@ -851,7 +815,6 @@
 <translation id="939598580284253335">Parolayı girin</translation>
 <translation id="8371806639176876412">Çok amaçlı adres çubuğu girişi günlüğe kaydedilebilir</translation>
 <translation id="4216499942524365685">Hesap oturum açma bilgileriniz eski. Şifrenizi tekrar girmek için tıklayın.</translation>
-<translation id="4435256380245822831">Resim Ayarları:</translation>
 <translation id="8899388739470541164">Vietnamca</translation>
 <translation id="7475671414023905704">Netscape Kayıp Şifre URL'si</translation>
 <translation id="3335947283844343239">Kapatılan Sekmeyi Tekrar Aç</translation>
@@ -881,7 +844,7 @@
 <translation id="2743322561779022895">Etkinleştirme:</translation>
 <translation id="4181898366589410653">Sunucu sertifikasında iptal mekanizması bulunamadı.</translation>
 <translation id="8705331520020532516">Seri Numarası</translation>
-<translation id="1665770420914915777">Yeni Sekme sayfasını kullanma</translation>
+<translation id="1665770420914915777">Yeni Sekme sayfasını kullan</translation>
 <translation id="2629089419211541119"><ph name="NUMBER_ONE"/> saat önce</translation>
 <translation id="1691063574428301566">Güncelleme tamamlandığında bilgisayarınız yeniden başlatılacak.</translation>
 <translation id="131364520783682672">Caps Lock</translation>
@@ -916,7 +879,6 @@
 <translation id="1976150099241323601">Güvenlik Cihazında oturum açın</translation>
 <translation id="6620110761915583480">Dosyayı Kaydet</translation>
 <translation id="7543025879977230179"><ph name="PRODUCT_NAME"/> Seçenekleri</translation>
-<translation id="2648845569394238430">Ara:</translation>
 <translation id="2175607476662778685">Hızlı başlat çubuğu</translation>
 <translation id="6434309073475700221">Sil</translation>
 <translation id="1425127764082410430"><ph name="SEARCH_ENGINE"/> &amp;arama motorunda '<ph name="SEARCH_TERMS"/>' terimlerini ara</translation>
@@ -926,7 +888,6 @@
 <translation id="4378551569595875038">Bağlanıyor...</translation>
 <translation id="7029809446516969842">Şifreler</translation>
 <translation id="8053278772142718589">PKCS #12 Dosyaları</translation>
-<translation id="1049743911850919806">Gizli mod</translation>
 <translation id="3129020372442395066"><ph name="PRODUCT_NAME_SHORT"/> Otomatik Doldurma seçenekleri</translation>
 <translation id="4114360727879906392">Önceki pencere</translation>
 <translation id="8238649969398088015">Yardım ipucu</translation>
@@ -936,12 +897,12 @@
 <translation id="4734773543612306111">DNS arama başarısız olduğundan <ph name="HOST_NAME"/> ana makinesindeki sunucu bulunamadı. DNS, web sitesinin adını internet adresine çeviren bir web hizmetidir. Bu hata çoğunlukla internet erişiminin olmamasından veya hatalı yapılandırılmış ağdan kaynaklanır. Ayrıca, yanıt vermeyen bir DNS sunucusu ya da <ph name="PRODUCT_NAME"/> uygulamasının ağa erişmesini önleyen bir güvenlik duvarı da bu hataya yol açabilir.</translation>
 <translation id="5894314466642127212">Kullanıcının Geri bildirim gönderme işlemi başarıyla tamamlandı</translation>
 <translation id="894360074127026135">Netscape Uluslararası İlerlemesi</translation>
+<translation id="6025294537656405544">Minimum Yazı Tipi Boyutu</translation>
 <translation id="1201402288615127009">Sonraki</translation>
 <translation id="1335588927966684346">Yardımcı Program:</translation>
 <translation id="662870454757950142">Şifre biçimi yanlış.</translation>
 <translation id="370665806235115550">Yükleniyor...</translation>
 <translation id="1808792122276977615">Sayfa Ekle...</translation>
-<translation id="3810973564298564668">Yönet</translation>
 <translation id="2076269580855484719">Bu eklentiyi gizle</translation>
 <translation id="254416073296957292">&amp;Dil ayarları...</translation>
 <translation id="52912272896845572">Özel anahtar dosyası geçersiz.</translation>
@@ -958,7 +919,6 @@
 <translation id="1813414402673211292">Tarama Verilerini Temizle</translation>
 <translation id="4062903950301992112">Bu siteyi ziyaret etmenin bilgisayarınıza zarar verebileceğini anlıyorsanız, <ph name="PROCEED_LINK"/>.</translation>
 <translation id="2356762928523809690">Güncelleme sunucusu kullanılamıyor (hata: <ph name="ERROR_NUMBER"/>)</translation>
-<translation id="6108162055037814535">Bu sertifikayı yayınlayan Sertifika Yetkilisi'ne güvenmediğiniz için, burada aksi belirtilmedikçe, bu sertifikanın orijinalliğine güvenmezsiniz.</translation>
 <translation id="219008588003277019">Özgün İstemci modülü: <ph name="NEXE_NAME"/></translation>
 <translation id="5436510242972373446">Ara <ph name="SITE_NAME"/>:</translation>
 <translation id="3800764353337460026">Sembol stili</translation>
@@ -975,7 +935,6 @@
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> dakika</translation>
 <translation id="201192063813189384">Önbellekten veri okunurken hata oluştu.</translation>
 <translation id="7851768487828137624">Canary</translation>
-<translation id="188779312703122101">Çalışma</translation>
 <translation id="6129938384427316298">Netscape Sertifikası Yorumu</translation>
 <translation id="8210608804940886430">Page Down</translation>
 <translation id="9065596142905430007"><ph name="PRODUCT_NAME"/> güncel</translation>
@@ -1001,7 +960,6 @@
 <translation id="1196338895211115272">Özel anahtar dışa alınamadı.</translation>
 <translation id="5586329397967040209">Bunu ana sayfam yap</translation>
 <translation id="629730747756840877">Hesap</translation>
-<translation id="6453605194836205054">Yüklü web uygulamalarının arka planda çalışmasına ve sistem başlatıldığında çalıştırılmasına izin ver</translation>
 <translation id="8525306231823319788">Tam ekran</translation>
 <translation id="9054208318010838">Tüm sitelerin fiziksel konumumu izlemesine izin ver</translation>
 <translation id="4922397891305598564">Güncellemenin uygulanması için <ph name="PRODUCT_NAME"/> yeniden başlatılmalıdır.</translation>
@@ -1014,7 +972,6 @@
 <translation id="5188181431048702787">Kabul et ve devam et »</translation>
 <translation id="2490270303663597841">Bunu yalnızca gizli oturumda uygula</translation>
 <translation id="1757915090001272240">Geniş Latince</translation>
-<translation id="1222453244797358782">Web Sayfasını Ön Görüntüleme.</translation>
 <translation id="8496717697661868878">Bu Eklentiyi Çalıştır</translation>
 <translation id="2916073183900451334">Bir web sayfasında Sekme tuşuna basıldığında bağlantılar ve form alanları vurgulanır</translation>
 <translation id="7772127298218883077"><ph name="PRODUCT_NAME"/> hakkında</translation>
@@ -1056,7 +1013,6 @@
 <translation id="1251010908205284827">İngilizce (Dvorak)</translation>
 <translation id="5512074755152723588">Mevcut bir sekmenin URL'sini çok amaçlı adres çubuğuna yazmak, mevcut sekmenin yüklenmesi yerine, sekmenin yeniden odaklanmasına neden olur.</translation>
 <translation id="9157595877708044936">Ayarlanıyor...</translation>
-<translation id="1823768272150895732">Yazı tipi</translation>
 <translation id="4475552974751346499">İndirilenlerde ara</translation>
 <translation id="3021256392995617989">Bir site fiziksel konumumu izlemeye çalıştığında bana sor (önerilen)</translation>
 <translation id="3384622754274354489">Rusça (Fonetik)</translation>
@@ -1110,7 +1066,6 @@
 <translation id="3192947282887913208">Ses Dosyaları</translation>
 <translation id="6295535972717341389">Eklentiler</translation>
 <translation id="8116190140324504026">Daha fazla bilgi...</translation>
-<translation id="3664704721673470303"><ph name="PRODUCT_NAME"/> Tercihleri</translation>
 <translation id="7469894403370665791">Bu ağa otomatik olarak bağlan</translation>
 <translation id="4807098396393229769">Kartın üzerindeki ad</translation>
 <translation id="4094130554533891764">Artık erişebilir:</translation>
@@ -1237,7 +1192,6 @@
 <translation id="9040421302519041149">Bu ağa erişim koruma altında.</translation>
 <translation id="5659593005791499971">E-posta</translation>
 <translation id="8235325155053717782">Hata <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>): <ph name="ERROR_TEXT"/></translation>
-<translation id="7734729626860583526"><ph name="HOST"/> sitesinden çerez alındı</translation>
 <translation id="6584878029876017575">Microsoft Ömür Boyu İmzalama</translation>
 <translation id="562901740552630300">          <ph name="BEGIN_BOLD"/>
           Başlat &gt; Denetim Masası &gt; Ağ ve İnternet &gt; Ağ ve Paylaşım Merkezi &gt; Sorun Giderme (altta) &gt; İnternet Bağlantıları
@@ -1296,6 +1250,7 @@
 <translation id="6549689063733911810">En son</translation>
 <translation id="1529968269513889022">geçen hafta</translation>
 <translation id="185461872046985453">Yalnızca sizin parolanıza sahip olan biri sizin bilgilerinizi okuyabilir. Parolanızı unutursanız senkronizasyonu sıfırlamanız gerekir.</translation>
+<translation id="5542132724887566711">Profil</translation>
 <translation id="5196117515621749903">Önbelleği yok sayarak yeniden yükle</translation>
 <translation id="5552632479093547648">Kötü amaçlı yazılım ve kimlik avı Tespit edildi!</translation>
 <translation id="4310537301481716192">Bu Artık İflah Olmaz!</translation>
@@ -1317,7 +1272,6 @@
 <translation id="696036063053180184">3 Grup (Üst karakter yok)</translation>
 <translation id="945332329539165145">GPU ile Hızlandırılmış 2D Tuval</translation>
 <translation id="5220797120063118010">Bildiri ve simgelerin crx dosyasında paketlenmesi yerine, web sayfası üzerinden bildiri kullanarak dağıtılan Chrome uygulamalarının yüklenmesine yönelik desteği etkinleştirir.</translation>
-<translation id="6987977084204837193">Sayfalara daha hızlı göz atmanızı sağlamak için, web sayfasının tamamını olasılığa dayalı bir şekilde arka planda önceden görüntüler. Varsayılan olarak kullanılan otomatik ayarı bu özelliğin deneme amacıyla rastgele olarak etkinleştirilmesine/devre dışı bırakılmasına neden olabilir.\n</translation>
 <translation id="9148126808321036104">Tekrar oturum açın</translation>
 <translation id="2282146716419988068">GPU İşlemi</translation>
 <translation id="428771275901304970">1 MB'den az veri var</translation>
@@ -1362,7 +1316,6 @@
 <translation id="7814458197256864873">K&amp;opyala</translation>
 <translation id="8186706823560132848">Yazılım</translation>
 <translation id="4692623383562244444">Arama motorları</translation>
-<translation id="2495069335509163989">Bildirim İstisnaları</translation>
 <translation id="567760371929988174">Giriş Yönte&amp;mleri</translation>
 <translation id="5116300307302421503">Dosya ayrıştırılamıyor.</translation>
 <translation id="2745080116229976798">Microsoft Nitelikli Yardımlaşma</translation>
@@ -1463,7 +1416,6 @@
 <translation id="5392544185395226057">Native Client desteğini etkinleştir.</translation>
 <translation id="5400640815024374115">Güvenilen Platform Modülü (TPM) yongası devre dışı bırakıldı veya yok.</translation>
 <translation id="2151576029659734873">Geçersiz sekme dizini girildi.</translation>
-<translation id="8546611606374758193">Şu uzantı kilitlendi: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5150254825601720210">Netscape Sertifikası SSL Sunucu Adı</translation>
 <translation id="6771503742377376720">Sertifika Yetkilisidir</translation>
 <translation id="8814190375133053267">Kablosuz</translation>
@@ -1482,7 +1434,6 @@
 <translation id="1195977189444203128"><ph name="PLUGIN_NAME"/> eklentisi eski.</translation>
 <translation id="3878562341724547165">Görünüşe göre yer değiştirmişsiniz. <ph name="NEW_GOOGLE_URL"/> sitesini kullanmak ister misiniz?</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
-<translation id="8978540966440585844">Göza&amp;t...</translation>
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> saat</translation>
 <translation id="8053390638574070785">Bu Sayfayı Tekrar Yükle</translation>
 <translation id="5507756662695126555">İnkar edilemez</translation>
@@ -1507,7 +1458,6 @@
 <translation id="1204242529756846967">Yazım denetimi için bu dil kullanılıyor</translation>
 <translation id="3981760180856053153">Geçersiz kayıt türü girildi.</translation>
 <translation id="8464591670878858520"><ph name="NETWORK"/> verilerinin kullanım süresi doldu</translation>
-<translation id="6192792657125177640">İstisnalar</translation>
 <translation id="4568660204877256194">Yer İşaretlerini Dışa Aktar...</translation>
 <translation id="4577070033074325641">Yer İşaretlerini İçe Aktar...</translation>
 <translation id="1641504961675316934"><ph name="CLOUD_PRINT_NAME"/></translation>
@@ -1520,7 +1470,6 @@
 <translation id="1767519210550978135">Hsu</translation>
 <translation id="2498539833203011245">Simge durumuna küçült</translation>
 <translation id="4255684106974551453">Flickr</translation>
-<translation id="7255513090217522383">Gönderiliyor</translation>
 <translation id="2435457462613246316">Şifreyi göster</translation>
 <translation id="7988355189918024273">Erişilebilirlik özelliklerini etkinleştir</translation>
 <translation id="5438653034651341183">Geçerli ekran görüntüsünü ekleyin:</translation>
@@ -1529,7 +1478,6 @@
 <translation id="394984172568887996">IE'den Al</translation>
 <translation id="5311260548612583999">Özel anahtar dosyası (isteğe bağlı):</translation>
 <translation id="2430043402233747791">Yalnızca oturum için izin ver</translation>
-<translation id="345397654570398207">Bu sertifikanın orijinalliğine güvenin.</translation>
 <translation id="7363290921156020669"><ph name="NUMBER_ZERO"/> mins</translation>
 <translation id="7568790562536448087">Güncelleniyor</translation>
 <translation id="4856408283021169561">Mikrofon bulunamadı.</translation>
@@ -1548,7 +1496,6 @@
 <translation id="5681833099441553262">Önceki sekmeyi etkinleştir</translation>
 <translation id="4792057643643237295">Uzaktan erişimi devre dışı bırak</translation>
 <translation id="1681614449735360921">Uyumsuzlukları görüntüle</translation>
-<translation id="8405130572442755669">Masaüstü Bildirimleri Ayarları:</translation>
 <translation id="2657327428424666237">Bu web sayfasını daha sonra <ph name="BEGIN_LINK"/>yeniden yükleyin<ph name="END_LINK"/>.</translation>
 <translation id="7347751611463936647">Bu uzantıyı kullanmak için &quot;<ph name="EXTENSION_KEYWORD"/>&quot; yazın, ardından SEKME tuşuna basın ve komutunuzu veya arama teriminizi girin.</translation>
 <translation id="659432221160402784"><ph name="PRODUCT_NAME"/>, yüklediğiniz uygulamaları senkronize ederek, oturum açtığınız herhangi bir <ph name="PRODUCT_NAME"/> tarayıcısından bu uygulamalara erişebilmenizi sağlar.</translation>
@@ -1583,7 +1530,6 @@
 <translation id="4708849949179781599"><ph name="PRODUCT_NAME"/> uygulamasından çık</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT"/> / <ph name="TOTAL_SIZE"/></translation>
 <translation id="6644512095122093795">Şifreleri kaydetmeyi öner</translation>
-<translation id="5384051050210890146">Güvenilen SSL sertifikaları seçin.</translation>
 <translation id="4724450788351008910">İlişki Değişti</translation>
 <translation id="8691686986795184760">(Kurumsal politika tarafından etkinleştirildi)</translation>
 <translation id="1911483096198679472">Bu nedir?</translation>
@@ -1610,7 +1556,6 @@
 <translation id="1898064240243672867">Depolandığı yer: <ph name="CERT_LOCATION"/></translation>
 <translation id="444134486829715816">Genişlet...</translation>
 <translation id="1401874662068168819">Gin Yieh</translation>
-<translation id="353121739889591924">Chrome verileri</translation>
 <translation id="2026524095376928841">İsveç (Fransızca) klavye düzeni</translation>
 <translation id="7208899522964477531"><ph name="SITE_NAME"/> sitesinde <ph name="SEARCH_TERMS"/> terimlerini ara</translation>
 <translation id="6255097610484507482">Kredi Kartını Düzenle</translation>
@@ -1621,7 +1566,6 @@
 <translation id="695755122858488207">Seçili olmayan radyo düğmesi</translation>
 <translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
 <translation id="2224551243087462610">Klasör adını düzenle</translation>
-<translation id="5433207235435438329">Yazım denetleyici dili:</translation>
 <translation id="1358741672408003399">Yazım ve Dilbilgisi</translation>
 <translation id="2527167509808613699">Herhangi bir bağlantı türü</translation>
 <translation id="9095710730982563314">Bildirim İstisnaları</translation>
@@ -1644,7 +1588,6 @@
 <translation id="8986267729801483565">İndirme konumu:</translation>
 <translation id="4322394346347055525">Diğer Sekmeleri Kapat</translation>
 <translation id="881799181680267069">Diğerlerini Gizle</translation>
-<translation id="1442054921249164535">Diğer veriler</translation>
 <translation id="6042308850641462728">Diğer</translation>
 <translation id="8318945219881683434">İptal işlemi kontrol edilemedi.</translation>
 <translation id="1650709179466243265">www. ve .com ekleyin ve adresi açın</translation>
@@ -1655,13 +1598,11 @@
 <translation id="3302709122321372472">İçerik komut dosyasına ilişkin css '<ph name="RELATIVE_PATH"/>' yüklenemedi.</translation>
 <translation id="305803244554250778">Aşağıdaki konumlarda uygulama kısayolları oluştur:</translation>
 <translation id="574392208103952083">Orta</translation>
-<translation id="6858484572026069783">Yazı tipi ayarlarını değiştir</translation>
 <translation id="3745810751851099214">Gönder:</translation>
 <translation id="3937609171782005782">Bu uyarıyı gördüğünüz siteler hakkında Google'a ek veriler göndererek kötü amaçlı yazılımları saptamayı daha iyi hale getirmeye yardımcı olun. Bu veriler <ph name="PRIVACY_PAGE_LINK"/> kapsamında değerlendirilir.</translation>
 <translation id="8877448029301136595">[üst dizin]</translation>
 <translation id="7301360164412453905">Hsu klavye seçim tuşları</translation>
 <translation id="1963227389609234879">Tümünü Kaldır</translation>
-<translation id="1398199512720662928">Başlangıç Sayfalarını Yönet...</translation>
 <translation id="8027581147000338959">Yeni Pencerede Aç</translation>
 <translation id="8019305344918958688">Maalesef hiçbir uzantı yüklenmemiş :-(</translation>
 <translation id="7466861475611330213">Noktalama stili</translation>
@@ -1672,7 +1613,6 @@
 <translation id="6691936601825168937">İle&amp;ri</translation>
 <translation id="6566142449942033617">Eklentiye ilişkin '<ph name="PLUGIN_PATH"/>' yolu yüklenemedi.</translation>
 <translation id="7065534935986314333">Sistem Hakkında</translation>
-<translation id="6273480802234137933">Gears:</translation>
 <translation id="45025857977132537">Sertifika Anahtarı Kullanımı: <ph name="USAGES"/></translation>
 <translation id="6454421252317455908">Çince giriş yöntemi (hızlı)</translation>
 <translation id="368789413795732264">Dosya yazılmaya çalışılırken bir hata oluştu: <ph name="ERROR_TEXT"/>.</translation>
@@ -1750,7 +1690,6 @@
 <translation id="3199127022143353223">Sunucular</translation>
 <translation id="2805646850212350655">Microsoft Şifreleme Dosya Sistemi</translation>
 <translation id="8053959338015477773">Bu sayfada bazı öğeleri görüntülemek için ek bir eklenti gerekir.</translation>
-<translation id="3064231633428118621">Konum Ayarları:</translation>
 <translation id="8813873272012220470">Yazılım uyumsuzluğu (yani tarayıcıyı çökerten üçüncü taraf modüller) tespit edildiğinde sizi uyaran bir arka plan denetimini etkinleştirir.</translation>
 <translation id="5020734739305654865">Giriş bilgilerinizle oturum açın</translation>
 <translation id="7414887922320653780"><ph name="NUMBER_ONE"/> saat kaldı</translation>
@@ -1762,7 +1701,6 @@
 <translation id="6484929352454160200">Yeni bir <ph name="PRODUCT_NAME"/> sürümü hazır</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="2406439899894600510">Felemenkçe klavye düzeni</translation>
-<translation id="4589094618264613095">2. Aşama Kimlik Doğrulaması:</translation>
 <translation id="778881183694837592">Gerekli alan boş bırakılamaz</translation>
 <translation id="2371076942591664043">İşlem tamamlandığın&amp;da aç</translation>
 <translation id="3920504717067627103">Sertifika Politikaları</translation>
@@ -1791,7 +1729,6 @@
 <translation id="2444609190341826949">Parola olmadan şifreleriniz ve diğer şifrelenmiş verileriniz bu bilgisayarda senkronize edilmeyecek.</translation>
 <translation id="77221669950527621">Uzantılar veya Uygulamalar</translation>
 <translation id="6650142020817594541">Bu site, Google Chrome Frame kullanmanızı tavsiye eder (zaten yüklü).</translation>
-<translation id="8393653746005466783">Standart yazı tipi:</translation>
 <translation id="6503077044568424649">En çok ziyaret edilenler</translation>
 <translation id="4625904365165566833">Maalesef, oturum açma izniniz yok. Notebook bilgisayarın sahibine danışın.</translation>
 <translation id="7450633916678972976">Not: &quot;Geri Bildirim Gönder&quot;i tıkladığınızda, Google Chrome, kullandığınız
@@ -1818,9 +1755,7 @@
 <translation id="1040471547130882189">Eklenti Yanıt Vermiyor</translation>
 <translation id="5473075389972733037">IBM</translation>
 <translation id="8307664665247532435">Ayarlar, sonraki yeniden yüklemede silinecektir</translation>
-<translation id="3162832477797684467">Çerez Ayarları:</translation>
 <translation id="790025292736025802"><ph name="URL"/> bulunamadı</translation>
-<translation id="1138248235429035196"><ph name="EXTENSION_NAME"/> uzantısı şu bilgiyi veriyor:</translation>
 <translation id="895347679606913382">Başlatılıyor...</translation>
 <translation id="3319048459796106952">Yeni &amp;gizli pencere</translation>
 <translation id="5832669303303483065">Yeni sokak adresi ekle...</translation>
@@ -1828,13 +1763,11 @@
 <translation id="4195643157523330669">Yeni sekmede aç</translation>
 <translation id="8030169304546394654">Bağlı değil</translation>
 <translation id="4010065515774514159">Tarayıcı İşlemi</translation>
-<translation id="4178055285485194276">Başlangıçta:</translation>
 <translation id="4286563808063000730">Verilerinizi zaten bir parola ile şifrelemiş olduğunuzdan, girdiğiniz parola kullanılamıyor. Lütfen geçerli senkronizasyon parolanızı aşağıya girin.</translation>
-<translation id="1154228249304313899">Şu sayfayı açın:</translation>
+<translation id="1154228249304313899">Ana sayfam şu sayfa olsun:</translation>
 <translation id="3182237543071236785">İngilizce (İngiltere)</translation>
 <translation id="9074348188580488499">Tüm şifreleri kaldırmak istediğinizden emin misiniz?</translation>
 <translation id="3627588569887975815">&amp;Bağlantıyı gizli pencerede aç</translation>
-<translation id="5918363047783857623">İstisnayı Düzenle</translation>
 <translation id="5851868085455377790">Sertifikayı Veren</translation>
 <translation id="8223496248037436966">Otomatik Doldurma Seçenekleri</translation>
 <translation id="5578327870501192725"><ph name="DOMAIN"/> bağlantınız <ph name="BIT_COUNT"/> bit şifrelemeyle şifrelendi.</translation>
@@ -1926,7 +1859,6 @@
 <translation id="9026731007018893674">indir</translation>
 <translation id="7646591409235458998">E-posta:</translation>
 <translation id="703748601351783580">Tüm yer imlerini yeni pencerede aç</translation>
-<translation id="8409023599530904397">Araç Çubuğu:</translation>
 <translation id="6199775032047436064">Geçerli sayfayı yeniden yükle</translation>
 <translation id="6981982820502123353">Erişilebilirlik</translation>
 <translation id="112343676265501403">Eklenti İstisnaları</translation>
@@ -2028,14 +1960,10 @@
 <translation id="7326526699920221209">Pil: %<ph name="PRECENTAGE"/></translation>
 <translation id="952992212772159698">Etkin değil</translation>
 <translation id="8299269255470343364">Japonca</translation>
-<translation id="7589833470611397405">Şifreniz değişti</translation>
-<translation id="5926736929537538875">Her Zaman Devre Dışı</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME"/> (<ph name="DEVICE"/>)</translation>
 <translation id="6429639049555216915">Uygulamaya şu anda erişilemiyor</translation>
 <translation id="2144536955299248197">Sertifika Görüntüleyici: <ph name="CERTIFICATE_NAME"/></translation>
-<translation id="8166891226371092444">Sabit genişlikte yazı tipi:</translation>
 <translation id="50030952220075532"><ph name="NUMBER_ONE"/> gün kaldı</translation>
-<translation id="4990072764219640172">Sertifika:</translation>
 <translation id="2885378588091291677">Görev Yöneticisi</translation>
 <translation id="5792852254658380406">Uzantıları yönet...</translation>
 <translation id="2359808026110333948">Devam Et</translation>
@@ -2074,19 +2002,16 @@
 <translation id="2635276683026132559">İmzalama</translation>
 <translation id="4835836146030131423">Oturum açma hatası.</translation>
 <translation id="7715454002193035316">Yalnızca oturum</translation>
-<translation id="1450278846011949484">Bu sertifika kendinden imzalıdır; burada belirtilmedikçe orijinalliğine güvenmezsiniz.</translation>
 <translation id="3324684065575061611">(Kurumsal politika tarafından devre dışı bırakıldı)</translation>
 <translation id="7385854874724088939">Yazdırmaya çalışırken bir sorun oluştu. Lütfen yazıcınızı denetleyin ve yeniden deneyin.</translation>
 <translation id="770015031906360009">Yunanca</translation>
 <translation id="3834901049798243128">İstisnaları göz ardı et ve üçüncü taraf çerezlerinin ayarlanmasını engelle</translation>
 <translation id="8116152017593700047">Kaydedilen ekran görüntülerini buradan seçebilirsiniz. Şu anda herhangi bir ekran görüntüsü bulunmuyor. Ekran görüntüsü almak için Ctrl + &quot;Genel Görünüm Modu&quot; tuşuna aynı anda basabilirsiniz. Yakaladığınız son üç ekran görüntüsü burada görüntülenir.</translation>
 <translation id="3454157711543303649">Etkinleştirme tamamlandı</translation>
-<translation id="4474796446011988286">Aşağıdaki çerezler bilgisayarınızda saklanıyor:</translation>
 <translation id="884923133447025588">İptal mekanizması bulunamadı.</translation>
 <translation id="556042886152191864">Düğme</translation>
 <translation id="8571226144504132898">Sembol sözlüğü</translation>
 <translation id="7229570126336867161">EVDO gerekli</translation>
-<translation id="7240072072812590475">Gears ayarlarını değiştir</translation>
 <translation id="7582844466922312471">Mobil Veriler</translation>
 <translation id="945522503751344254">Geri bildirim gönder</translation>
 <translation id="6867459744367338172">Diller ve Giriş</translation>
@@ -2102,7 +2027,6 @@
 <translation id="6107012941649240045">Verilen:</translation>
 <translation id="6483805311199035658"><ph name="FILE"/> açılıyor...</translation>
 <translation id="3576278878016363465">Kullanılabilir görüntü hedefleri</translation>
-<translation id="2414393409052352408">tümü</translation>
 <translation id="895541991026785598">Sorun Bildirin</translation>
 <translation id="940425055435005472">Yazı tipi boyutu:</translation>
 <translation id="494286511941020793">Proxy Yapılandırması Yardımı</translation>
@@ -2133,7 +2057,6 @@
 <translation id="6358975074282722691"><ph name="NUMBER_TWO"/> saniye önce</translation>
 <translation id="5423849171846380976">Etkin</translation>
 <translation id="4251486191409116828">Uygulama Kısayolu Oluşturulamadı</translation>
-<translation id="2643322281682265453">Kayıtlı şifreleri göster...</translation>
 <translation id="5190835502935405962">Yer İşareti Çubuğu</translation>
 <translation id="7828272290962178636">Sunucu, isteği gerçekleştirmek için gereken işlevselliğe sahip değil.</translation>
 <translation id="7823073559911777904">Proxy Ayarlarını Değiştir...</translation>
@@ -2151,7 +2074,6 @@
 <translation id="1607220950420093847">Hesabınız silinmiş veya devre dışı bırakılmış olabilir. Lütfen çıkış yapın.</translation>
 <translation id="2233320200890047564">Dizine Alınmış Veritabanları</translation>
 <translation id="7063412606254013905">Phishing tuzakları hakkında daha fazla bilgi edinin.</translation>
-<translation id="1898201150632783194">Chrome, verilerinizi senkronize ederken Google'ın neler sakladığıyla ilgili daha fazla ayrıntıyı Google Hesap Özeti'nde bulabilirsiniz.</translation>
 <translation id="307767688111441685">Sayfa tuhaf görünüyor</translation>
 <translation id="9076523132036239772">Maalesef, e-postanız veya şifreniz doğrulanamadı. Önce bir ağa bağlanmayı deneyin.</translation>
 <translation id="6965978654500191972">Cihaz</translation>
@@ -2163,7 +2085,6 @@
 <translation id="6941937518557314510">Sertifikanızla <ph name="HOST_NAME"/> üzerinde kimlik doğrulaması yapmak için, lütfen <ph name="TOKEN_NAME"/> cihazında oturum açın.</translation>
 <translation id="2783600004153937501">Bazı seçenekler BT yöneticiniz tarafından devre dışı bırakıldı.</translation>
 <translation id="2099686503067610784">&quot;<ph name="CERTIFICATE_NAME"/>&quot; sunucusu sertifikası silinsin mi?</translation>
-<translation id="1660766340404942948">Yayıncı Güvenini Düzenle...</translation>
 <translation id="9027603907212475920">Senkronizasyonu ayarla...</translation>
 <translation id="6873213799448839504">Dizeyi otomatik uygula</translation>
 <translation id="7238585580608191973">SHA-256 Parmak İzi</translation>
@@ -2178,7 +2099,6 @@
 <translation id="1285320974508926690">Bu siteyi hiçbir zaman çevirme</translation>
 <translation id="8954894007019320973">(Dev.)</translation>
 <translation id="3748412725338508953">Çok fazla yeniden yönlendirme vardı.</translation>
-<translation id="8929159553808058020">Web sitelerini okumak için kullandığınız dilleri ekleyin ve önceliğe göre sıralayın. Bazı karakterler diğer dillerdeki web sitelerini temsil etmek için kullanılabileceğinden yalnızca gerekenleri ekleyin.</translation>
 <translation id="5833726373896279253">Bu ayarlar yalnızca sahibi tarafından değiştirilebilir:</translation>
 <translation id="6858960932090176617">WebKit XSS Auditor (XSS Denetleyici) (siteler arası komut dosyası koruması) özelliğini etkinleştirir. Bu özellik, sizi kötü amaçlı web sitelerinin belirli saldırılarına karşı korumayı amaçlar. Güvenliğinizi artırır, ancak tüm web siteleriyle uyumlu olmayabilir.</translation>
 <translation id="8831104962952173133">Phishing Algılandı!</translation>
@@ -2205,7 +2125,6 @@
 <translation id="5139955368427980650">&amp;Aç</translation>
 <translation id="7375268158414503514">Genel geri bildirim/diğer</translation>
 <translation id="4643612240819915418">Videoyu Yeni Sekmede &amp;Aç</translation>
-<translation id="839094735644646458">Yer işaretleri çubuğunuzu göstermek için yer işaretlerini <ph name="BEGIN_LINK"/>içe aktarın<ph name="END_LINK"/> veya ekleyin.</translation>
 <translation id="7997479212858899587">Kimlik:</translation>
 <translation id="8300849813060516376">OTASP başarısız oldu</translation>
 <translation id="2213819743710253654">Sayfa İşlemi</translation>
@@ -2226,20 +2145,17 @@
 <translation id="8652722422052983852">Hata! Bunu düzeltelim.</translation>
 <translation id="5970231080121144965">Geçmişteki URL'ler içinde alt dize ve birden fazla bölüm eşlemeye olanak sağlar.</translation>
 <translation id="3726527440140411893">Bu sayfayı görüntülediğinizde aşağıdaki çerezler ayarlandı:</translation>
-<translation id="3349967884971794272">Sıfırlama</translation>
 <translation id="8562413501751825163">Alma İşleminden Önce Firefox'u Kapatın</translation>
 <translation id="2448046586580826824">Güvenli HTTP proxy'si</translation>
 <translation id="4032534284272647190"><ph name="URL"/> adresine erişim reddedildi.</translation>
 <translation id="4928569512886388887">Sistem güncellemesi tamamlanıyor…</translation>
 <translation id="8258002508340330928">Emin misiniz?</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES"/>K (<ph name="NUM_KILOBYTES_LIVE"/>K aktif)</translation>
-<translation id="4535899795609763134"><ph name="PRODUCT_NAME"/>, bir ESET ürününün güvenli bağlantılara müdahale ettiğini algıladı. ESET yazılımı genellikle aynı bilgisayarda çalıştığından güvenlik sorunu olarak görülmez. Ancak, güvenli <ph name="PRODUCT_NAME"/> bağlantılarının belirli özelliklerine tolerans göstermemesi nedeniyle ESET ürünlerinin bu müdahaleyi yapmayacak şekilde yapılandırılması gerekir. Talimatlar için 'Daha fazla bilgi edinin' bağlantısını tıklayın.</translation>
 <translation id="5034259512732355072">Başka Bir Dizin Seçin...</translation>
 <translation id="8885905466771744233">Belirtilen uzantıya ilişkin özel anahtar zaten var. Var olan anahtarı yeniden kullanın veya öncelikle bu anahtarı silin.</translation>
 <translation id="7831504847856284956">Adres Ekleyin</translation>
 <translation id="7505152414826719222">Yerel Saklama</translation>
 <translation id="4381021079159453506">İçerik Tarayıcı</translation>
-<translation id="5706242308519462060">Varsayılan Kodlama:</translation>
 <translation id="8109246889182548008">Sertifika Mağazası</translation>
 <translation id="5030338702439866405">Veren:</translation>
 <translation id="5280833172404792470">Tam ekrandan çık (<ph name="ACCELERATOR"/>)</translation>
@@ -2288,7 +2204,6 @@
 <translation id="1485146213770915382">URL'de, arama terimlerinin görünmesi gereken yere <ph name="SEARCH_TERMS_LITERAL"/> terimlerini ekleyin.</translation>
 <translation id="4839303808932127586">Video olarak kay&amp;det...</translation>
 <translation id="5626134646977739690">Adı:</translation>
-<translation id="7125953501962311360">Varsayılan tarayıcı:</translation>
 <translation id="5854409662653665676">Sık sık sorun yaşıyorsanız, bu modüldeki sorunu çözmek için şunu deneyebilirsiniz:</translation>
 <translation id="3681007416295224113">Sertifika bilgileri</translation>
 <translation id="3046084099139788433">Sekme 7'yi etkinleştir</translation>
@@ -2356,7 +2271,6 @@
 <translation id="1903219944620007795">Metin girişi için, kullanılabilir yöntemleri görmek üzere bir dil seçin.</translation>
 <translation id="4362187533051781987">İl/İlçe</translation>
 <translation id="9149866541089851383">Düzenle...</translation>
-<translation id="7255289656011555258">Her Zaman Etkin</translation>
 <translation id="7608619752233383356">Senkronizasyonu sıfırla</translation>
 <translation id="1065245965611933814">Kaydedilen bir ekran görüntüsü ekle:</translation>
 <translation id="7876243839304621966">Tümünü kaldır</translation>
@@ -2366,23 +2280,19 @@
 <translation id="869257642790614972">Son kapatılan sekmeyi yeniden aç</translation>
 <translation id="3978267865113951599">(Çöktü)</translation>
 <translation id="8412145213513410671">Kilitlenme Sayısı (<ph name="CRASH_COUNT"/>)</translation>
-<translation id="3146535743396545770">Senkronizasyonu durdur ve verileri Google'dan sil</translation>
 <translation id="7649070708921625228">Yardım</translation>
 <translation id="976526967778596630">Ağın şu anda kapalı olması nedeniyle <ph name="HOST_NAME"/> üzerindeki web sayfasına erişilemiyor. Ağ bağlantısı tekrar sağlandığında sayfa yüklenecektir. &lt;br&gt;</translation>
 <translation id="1734072960870006811">Faks</translation>
 <translation id="5129662217315786329">Lehçe</translation>
 <translation id="3095995014811312755">sürüm</translation>
 <translation id="7052500709156631672">Ağ geçidi veya proxy sunucusu, bir yukarı akış sunucusundan geçersiz bir yanıt aldı.</translation>
-<translation id="7442246004212327644">Temiz&amp;le</translation>
 <translation id="281133045296806353">Mevcut tarayıcı oturumunda yeni pencere oluşturuldu.</translation>
-<translation id="1431316633790098815">Bu sertifikayı yayınlayan Sertifika Yetkilisi'ni bilmediğiniz için burada aksi belirtilmedikçe, bu sertifikanın orijinalliğine güvenmezsiniz.</translation>
 <translation id="7144878232160441200">Tekrar dene</translation>
 <translation id="2860002559146138960"><ph name="PRODUCT_NAME"/> şimdi şifrelerinizi senkronize edebilir; verileriniz Google Hesabı şifrenizle veya kendi seçeceğiniz bir parola ile şifrelenecek.</translation>
 <translation id="3951872452847539732">Ağ proxy ayarlarınız bir uzantı tarafından yönetiliyor.</translation>
 <translation id="6442697326824312960">Sekmeyi Ayır</translation>
 <translation id="6382612843547381371">Geçerlilik süresi: <ph name="START_DATE_TIME"/> - <ph name="END_DATE_TIME"/></translation>
 <translation id="6869402422344886127">İşaretli onay kutusu</translation>
-<translation id="8851432965916021950">Senkronizasyon:</translation>
 <translation id="5637380810526272785">Giriş Yöntemi</translation>
 <translation id="404928562651467259">UYARI</translation>
 <translation id="9002707937526687073">Yazdı&amp;r...</translation>
@@ -2393,7 +2303,6 @@
 <translation id="7507930499305566459">Durum Yanıtlayıcı Sertifikası</translation>
 <translation id="2689915906323125315">Google Hesabı şifremi kullan</translation>
 <translation id="6440205424473899061">Yer işaretleriniz Google Dokümanlar ile senkronize edildi! Yer işaretlerinizi başka bir bilgisayardaki <ph name="PRODUCT_NAME"/> ile birleştirmek ve senkronize etmek için tek yapmanız gereken, aynı kurulum sürecini söz konusu bilgisayarda tekrarlamaktır.</translation>
-<translation id="2503406935270646946">Çıkmak için Onayla</translation>
 <translation id="7727721885715384408">Yeniden adlandır...</translation>
 <translation id="2604243255129603442"><ph name="NAME_OF_EXTENSION"/> devre dışı bırakıldı. Yer işaretlerinizin senkronizasyonunu durdurursanız, bu işlemi, Araçlar menüsünden erişebileceğiniz uzantılar sayfasında tekrar etkinleştirebilirsiniz.</translation>
 <translation id="2024621544377454980">Sayfalar Yüklenmiyor</translation>
@@ -2441,7 +2350,6 @@
 <translation id="464745974361668466">Kalıp:</translation>
 <translation id="5308380583665731573">Bağlan</translation>
 <translation id="9111395131601239814"><ph name="NETWORKDEVICE"/>: <ph name="STATUS"/></translation>
-<translation id="6310196325815724087">Verizon Wireless'a bağlan</translation>
 <translation id="9049981332609050619"><ph name="DOMAIN"/> alan adına erişmeye çalıştınız, ancak sunucu geçersiz bir sertifika sağladı.</translation>
 <translation id="4414232939543644979">Yeni &amp;Gizli Pencere</translation>
 <translation id="1693754753824026215"><ph name="SITE"/> web sitesindeki sayfanın mesajı:</translation>
@@ -2451,7 +2359,6 @@
 <translation id="1902576642799138955">Geçerlilik Süresi</translation>
 <translation id="4910021444507283344">WebGL</translation>
 <translation id="6692173217867674490">Hatalı parola</translation>
-<translation id="8778203255040611372">JavaScript Ayarları:</translation>
 <translation id="5550431144454300634">Girişi otomatik düzelt</translation>
 <translation id="3308006649705061278">Kuruluş Birimi (OU)</translation>
 <translation id="8912362522468806198">Google Hesabı</translation>
@@ -2479,7 +2386,6 @@
 <translation id="5365539031341696497">Tayca giriş yöntemi (Kesmanee klavye)</translation>
 <translation id="2403091441537561402">Ağ Geçidi:</translation>
 <translation id="6337234675334993532">Şifreleme</translation>
-<translation id="3761000923495507277">Araç çubuğunda Home düğmesini göster</translation>
 <translation id="1932098463447129402">Şundan Önce Değil:</translation>
 <translation id="7845920762538502375"><ph name="PRODUCT_NAME"/>, senkronizasyon sunucusuna bağlanamadığından verilerinizi senkronize edemedi. Tekrar deniyor...</translation>
 <translation id="2192664328428693215">Bir site masaüstü bildirimleri göstermek istediğinde bana sor (önerilen)</translation>
@@ -2539,7 +2445,6 @@
 <translation id="6550675742724504774">Seçenekler</translation>
 <translation id="8959208747503200525"><ph name="NUMBER_TWO"/> saat önce</translation>
 <translation id="431076611119798497">&amp;Ayrıntılar</translation>
-<translation id="3051682424004710218">Chrome, senkronizasyon yaptığında bilgileri Google sunucularında saklar. Senkronizasyonu artık kullanmak istemediğinizden kesinlikle eminseniz, tüm senkronizasyonu durdurabilir ve verileri Google'dan silebilirsiniz.</translation>
 <translation id="737801893573836157">Sistem başlık çubuğunu gizle ve küçük kenarlıkları kullan</translation>
 <translation id="5352235189388345738">Şunlara erişilebilir:</translation>
 <translation id="5040262127954254034">Gizlilik</translation>
@@ -2571,7 +2476,6 @@
 <translation id="4880827082731008257">Geçmişte ara</translation>
 <translation id="8661290697478713397">Bağlantıyı Giz&amp;li Pencere'de Aç</translation>
 <translation id="4197700912384709145"><ph name="NUMBER_ZERO"/> saniye</translation>
-<translation id="8609465669617005112">Yukarı taşı</translation>
 <translation id="2158448795143567596">WebGL API'sı aracılığıyla 3D grafikleri kullanmanız için tuval öğelerini etkinleştirir.</translation>
 <translation id="1702534956030472451">Batı</translation>
 <translation id="6636709850131805001">Tanınmayan durum</translation>
@@ -2593,7 +2497,6 @@
 <translation id="2517143724531502372"><ph name="DOMAIN"/> tarafından gönderilen çerezlere yalnızca oturum için izin verildi.</translation>
 <translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Dönüşümü önceki girişe göre ayarla</translation>
-<translation id="2307719516243503680">Web sayfasını barındıran sunucunun aşırı yüklenmiş veya bir hatayla karşılaşmış olduğu görünüyor. <ph name="PRODUCT_NAME"/> çok fazla trafik oluşturmamak ve durumu kötüleştirmemek için sunucuya yapılan istekleri geçici olarak durdurdu.<ph name="LINE_BREAK"/> Bunu, istenmeyen bir davranış olarak görüyorsanız, örneğin kendi Web sitenizde hata ayıklama işlemi gerçekleştiriyorsanız, <ph name="PRODUCT_NAME"/> uygulamasını <ph name="COMMAND_LINE_FLAG"/> komut satırı işareti ile tekrar başlatarak devre dışı bırakabilirsiniz.</translation>
 <translation id="5398353896536222911">Yazım panelini &amp;göster</translation>
 <translation id="5811533512835101223">(Orijinal ekran görüntüsüne dön)</translation>
 <translation id="5131817835990480221">&amp;<ph name="PRODUCT_NAME"/> ürününü güncelle</translation>
@@ -2668,7 +2571,6 @@
 <translation id="5906065664303289925">Donanım adresi:</translation>
 <translation id="2187895286714876935">Sunucu Sertifikası İçe Aktarma Hatası</translation>
 <translation id="5460896875189097758">Yerel Olarak Depolanan Veriler</translation>
-<translation id="343107786065952164">Bu sertifikanın orijinalliğine güvenme</translation>
 <translation id="614998064310228828">Cihaz modeli:</translation>
 <translation id="1581962803218266616">Bulucu'da Göster</translation>
 <translation id="6096326118418049043">X.500 Adı</translation>
@@ -2685,7 +2587,6 @@
 <translation id="6409731863280057959">Pop-up'lar</translation>
 <translation id="3459774175445953971">Son değiştirildiği tarih:</translation>
 <translation id="73289266812733869">Seçili değil</translation>
-<translation id="3435738964857648380">Güvenlik</translation>
 <translation id="9112987648460918699">Bul...</translation>
 <translation id="2231233239095101917">Sayfadaki komut dosyası, bellekte çok fazla yer kapladı. Komut dosyalarını tekrar etkinleştirmek için yeniden yükleyin.</translation>
 <translation id="870805141700401153">Microsoft Bireysel Kod İmzalama</translation>
@@ -2695,7 +2596,6 @@
 <translation id="3943857333388298514">Yapıştır</translation>
 <translation id="385051799172605136">Geri</translation>
 <translation id="1742300158964248589">Görüntü yazma işlemi başarısız oldu!</translation>
-<translation id="1208126399996836490">Sıfırlama</translation>
 <translation id="2670965183549957348">Chewing giriş yöntemi</translation>
 <translation id="3380286644315743596">Tam genişlik moduna geç</translation>
 <translation id="5095208057601539847">Eyalet</translation>
@@ -2734,18 +2634,15 @@
 <translation id="4664482161435122549">PKCS #12 Dışa Aktarma Hatası</translation>
 <translation id="2445081178310039857">Uzantı kök dizini gerekiyor.</translation>
 <translation id="8251578425305135684">Küçük resim kaldırıldı.</translation>
-<translation id="2604355933404423285">Çok sayıda belirli sayfa aç</translation>
 <translation id="6163522313638838258">Tümünü genişlet...</translation>
 <translation id="3037605927509011580">Hata!</translation>
 <translation id="5803531701633845775">Kelime öbeklerini, imleci hareket ettirmeden arkadan seç</translation>
-<translation id="1498146455270488773">Kayıtlı Şifreleri Göster...</translation>
 <translation id="1918141783557917887">Daha &amp;küçük</translation>
 <translation id="6996550240668667907">Klavye yer paylaşımını görüntüle</translation>
 <translation id="4065006016613364460">Resim URL'sini k&amp;opyala</translation>
 <translation id="6965382102122355670">Tamam</translation>
 <translation id="8000066093800657092">Ağ yok</translation>
 <translation id="4481249487722541506">Paketlenmemiş uzantıyı yükle...</translation>
-<translation id="8542113417382134668">Serif Yazı Tipi:</translation>
 <translation id="8321738493186308836">Uzaktan erişim hizmeti ve istemci eklentisi için Arayüz artı yedekleme kodunu etkinleştirin. Uyarı: Bu yalnızca geliştirici testi içindir. Geliştirici ekibinden değilseniz ve beyaz listede bulunmuyorsanız etkinleştirilmiş kullanıcı Arayüzünde hiç bir şey çalışmaz.</translation>
 <translation id="2149973817440762519">Yer İmini Düzenle</translation>
 <translation id="5431318178759467895">Renk</translation>
@@ -2773,7 +2670,6 @@
 <translation id="6394627529324717982">Virgül</translation>
 <translation id="253434972992662860">&amp;Duraklat</translation>
 <translation id="335985608243443814">Göz at...</translation>
-<translation id="6653385924798556138"><ph name="HOST"/> bilgisayarınızda bir çerez oluşturmak istiyor.</translation>
 <translation id="7802488492289385605">Google Japonca Girişi (ABD Dvorak klavye için)</translation>
 <translation id="3129687551880844787">Oturum Depolama</translation>
 <translation id="7427348830195639090">Arka Plan Sayfası: <ph name="BACKGROUND_PAGE_URL"/></translation>
@@ -2782,7 +2678,6 @@
 <translation id="1474842329983231719">Yazdırma Ayarlarını Yönet...</translation>
 <translation id="8095063748969090802">Başka ağa katıl...</translation>
 <translation id="2455981314101692989">Bu web sayfası bu form için otomatik doldurmayı devre dışı bıraktı.</translation>
-<translation id="3560918739529642856">Başlangıç Sayfaları</translation>
 <translation id="5988840637546770870">Geliştirme kanalı, yeni fikirlerin denendiği yerdir, ancak zaman zaman çok tutarsız olabilir. Lütfen dikkatle ilerleyin.</translation>
 <translation id="3569713929051927529">Klasör Ekle...</translation>
 <translation id="4032664149172368180">Japonca giriş yöntemi (US Dvorak klavye için)</translation>
@@ -2814,7 +2709,6 @@
 <translation id="2766006623206032690">Ya&amp;pıştır ve git</translation>
 <translation id="4394049700291259645">Devre dışı bırak</translation>
 <translation id="969892804517981540">Resmi Derleme</translation>
-<translation id="724208122063442954">İndirme işleminden sonra belirli dosya türlerini otomatik olarak açmayı seçtiniz. İndirilen dosyaların otomatik olarak açılmaması için bu ayarları temizleyebilirsiniz.</translation>
 <translation id="9087725134750123268">Çerezleri ve diğer site verilerini sil</translation>
 <translation id="5050255233730056751">Yazılan URL'ler</translation>
 <translation id="3349155901412833452">Aday listesi sayfası için  , ve . tuşlarını kullan</translation>
@@ -2823,7 +2717,6 @@
 <translation id="7561196759112975576">Her zaman</translation>
 <translation id="2116673936380190819">son 1 saat</translation>
 <translation id="5765491088802881382">Ağ kullanılamıyor</translation>
-<translation id="21381969153622804">İşlem</translation>
 <translation id="1971538228422220140">Çerezleri ve diğer site verileriyle eklenti verilerini sil</translation>
 <translation id="883487340845134897">Ara ve Sol Ctrl tuşlarını yer değiştir</translation>
 <translation id="5692957461404855190">Tüm sekmelerinizin önizlemesini görmek için trackpad üzerine üç parmağınızı bastırıp çekin. Seçmek için küçük resme dokunun. Tam ekran modunda mükemmel çalışır.</translation>
@@ -2838,7 +2731,6 @@ Anahtar Dosyası: <ph name="KEY_FILE"/>
 Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümlerini oluşturmak için bu dosyaya ihtiyacınız olacak.</translation>
 <translation id="1846078536247420691">&amp;Evet</translation>
 <translation id="3036649622769666520">Dosya Aç</translation>
-<translation id="1922122670898531137">Adobe Flash Player, ziyaret ettiğiniz web sitelerinin bilgisayarınızda veri saklamasına izin verir. Bu verileri, Adobe tarafından sağlanan bir web sitesini kullanarak yönetebilirsiniz:</translation>
 <translation id="7685049629764448582">JavaScript belleği</translation>
 <translation id="6398765197997659313">Tam ekrandan çık</translation>
 <translation id="6059652578941944813">Sertifika Hiyerarşisi</translation>

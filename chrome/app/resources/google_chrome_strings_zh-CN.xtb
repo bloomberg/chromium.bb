@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">关于 Chrome 浏览器内嵌框架...</translation>
 <translation id="386202838227397562">请关闭所有 Google Chrome 浏览器窗口，然后重试。</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
-<translation id="698670068493841342">已为此用户安装了 Google Chrome 浏览器。如果该软件无法正常运行，请卸载 Google Chrome 浏览器并重新下载。</translation>
 <translation id="7400722733683201933">关于 Google Chrome 浏览器</translation>
 <translation id="7781002470561365167">Google Chrome 浏览器现已推出新版本。</translation>
 <translation id="7101265395643981223">启动 Google Chrome 浏览器</translation>
@@ -36,7 +35,6 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome 浏览器</translation>
 <translation id="3089968997497233615">Google Chrome 浏览器现已推出更安全的新版本。</translation>
 <translation id="5037239767309817516">请关闭所有 Google Chrome 浏览器窗口，然后重新启动，以使此更改生效。</translation>
-<translation id="8810218179782551669">Google Chrome 浏览器语言：</translation>
 <translation id="7451721381978275812">参数无效。在准备模式下，“Google Chrome 浏览器内嵌框架”必须与“Google Chrome 浏览器”同时安装。</translation>
 <translation id="5809236835374558741">该计算机已经有了更高版本的 Google Chrome 浏览器内嵌框架。如果该软件无法正常运行，请卸载 Google Chrome 浏览器内嵌框架并重新下载。</translation>
 <translation id="4357846314885556934">Google Chrome 浏览器功能失常</translation>
@@ -50,7 +48,6 @@
 <translation id="8738921060445980047">版本未知。</translation>
 <translation id="2485422356828889247">卸载</translation>
 <translation id="3324235665723428530">您的配置文件来自新版 Google Chrome 浏览器，因此无法使用。\n\n某些功能可能不能使用。请指定其他配置文件目录，或使用新版 Chrome 浏览器。</translation>
-<translation id="7214670531148488183">Google Chrome 浏览器可能会使用网络服务以改善您的浏览体验。您可自行停用这些服务。</translation>
 <translation id="1759842336958782510">Chrome 浏览器</translation>
 <translation id="5008136264574452501">Google Chrome 浏览器 Canary 版</translation>
 <translation id="911206726377975832">同时删除您的浏览数据吗？</translation>
@@ -92,7 +89,6 @@
 <translation id="2769762047821873045">Google Chrome 浏览器不是您的默认浏览器。</translation>
 <translation id="7825851276765848807">由于未指定的错误导致安装失败。请重新下载 Google Chrome 浏览器。</translation>
 <translation id="3335672657969596251">Google Chrome 浏览器不支持 <ph name="OS_NAME"/>。</translation>
-<translation id="473183893665420670">如果您重置 Google Chrome 浏览器选项，您所做的所有更改将还原为默认设置。您是否还希望执行此操作？</translation>
 <translation id="3636771339108070045">该计算机已经安装了更高版本的 Google Chrome 浏览器。如果该软件无法正常运行，请卸载 Google Chrome 浏览器并重新下载。</translation>
 <translation id="5334545119300433702">已知此模块与 Google Chrome 浏览器存在冲突。</translation>
 <translation id="3360895254066713204">Chrome 浏览器帮助应用程序</translation>
@@ -103,7 +99,6 @@
 <translation id="6049075767726609708">管理员已为该系统安装了 Google Chrome 浏览器，并且所有用户均可使用它。因此，原来针对个别用户安装的浏览器现在可供系统上的所有用户使用。</translation>
 <translation id="7123348595797445166">试用（已安装）</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">更改用于 Google Chrome 浏览器菜单、对话框和工具提示的语言。</translation>
 <translation id="9189723490960700326">您尝试访问 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书已过期。没有信息可表明该证书是否已在过期后受损。这说明 Google Chrome 浏览器无法保证正在与 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 而不是攻击者进行通信。您应该停止操作。</translation>
 <translation id="7106741999175697885">任务管理器 - Google Chrome 浏览器</translation>
 <translation id="8449380764213232436">Google Chrome 浏览器正在从<ph name="BROWSER_COMPONENT"/>中导入以下内容：</translation>

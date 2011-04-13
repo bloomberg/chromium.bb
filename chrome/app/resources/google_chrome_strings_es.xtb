@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">Información de Google Chrome Frame...</translation>
 <translation id="386202838227397562">Cierra todas las ventanas de Google Chrome y vuelve a intentarlo.</translation>
 <translation id="2770231113462710648">Cambiar navegador predeterminado por:</translation>
-<translation id="698670068493841342">Google Chrome ya se ha instalado para este usuario. Si el software no funciona, desinstala Google Chrome y vuelve a descargarlo.</translation>
 <translation id="7400722733683201933">Información de Google Chrome</translation>
 <translation id="7781002470561365167">Hay una nueva versión de Google Chrome disponible.</translation>
 <translation id="7101265395643981223">Iniciar Google Chrome</translation>
@@ -36,7 +35,6 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Hay una nueva versión más segura de Google Chrome disponible.</translation>
 <translation id="5037239767309817516">Cierra todas las ventanas de Google Chrome y reinicia el navegador para que se aplique el cambio.</translation>
-<translation id="8810218179782551669">Idioma de Google Chrome:</translation>
 <translation id="7451721381978275812">Los argumentos no son válidos. Google Chrome Frame no se puede instalar en el modo listo sin instalar también Google Chrome.</translation>
 <translation id="5809236835374558741">Este equipo ya tiene instalada una versión más reciente de Google Chrome Frame. Si el software no funciona, desinstala Google Chrome Frame y vuelve a descargarlo.</translation>
 <translation id="4357846314885556934">Google Chrome no está funcionando correctamente.</translation>
@@ -50,7 +48,6 @@
 <translation id="8738921060445980047">Versión desconocida</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="3324235665723428530">Tu perfil no se puede utilizar porque pertenece a una versión anterior de Google Chrome.\n\nPuede que algunas funciones no estén disponibles. Especifique un directorio de perfil diferente o utilice una versión posterior de Google Chrome.</translation>
-<translation id="7214670531148488183">Google Chrome puede utilizar servicios web para mejorar la experiencia de navegación de los usuarios. Estos servicios se pueden inhabilitar si se desea.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">¿Quieres eliminar también los datos de navegación?</translation>
@@ -92,7 +89,6 @@
 <translation id="2769762047821873045">Google Chrome no es tu navegador predeterminado.</translation>
 <translation id="7825851276765848807">La instalación no se ha podido realizar a causa de un error no especificado. Vuelve a descargar Google Chrome.</translation>
 <translation id="3335672657969596251">Google Chrome no es compatible con <ph name="OS_NAME"/>.</translation>
-<translation id="473183893665420670">Si restableces las opciones de Google Chrome, se desharán los cambios que hayas realizado y se restablecerá la configuración predeterminada. ¿Estás seguro de que quieres restablecer las opciones de Google Chrome?</translation>
 <translation id="3636771339108070045">Este ordenador ya tiene instalada una versión más reciente de Google Chrome. Si el software no funciona, desinstala Google Chrome y vuelve a descargarlo.</translation>
 <translation id="5334545119300433702">Se ha detectado que este módulo provoca un conflicto con Google Chrome.</translation>
 <translation id="3360895254066713204">Ayudante de Chrome</translation>
@@ -103,7 +99,6 @@
 <translation id="6049075767726609708">Un administrador ha instalado Google Chrome en este sistema y el programa se encuentra disponible para todos los usuarios. Ahora, la instalación de Google Chrome de nivel de sistema sustituirá a la instalación de nivel de usuario.</translation>
 <translation id="7123348595797445166">Probarlo (ya instalado)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">Cambia el idioma de los menús, cuadros de diálogo y etiquetas de herramientas de Google Chrome.</translation>
 <translation id="9189723490960700326">Has intentado acceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero el servidor ha presentado un certificado caducado. No existe información disponible que indique si el certificado ha sido vulnerado desde que caducó. Google Chrome no puede garantizar la autenticidad de &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;.  Te aconsejamos que no continúes.</translation>
 <translation id="7106741999175697885">Administrador de tareas de Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome está importando los siguientes elementos de <ph name="BROWSER_COMPONENT"/>:</translation>

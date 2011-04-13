@@ -6,7 +6,6 @@
 <translation id="2383457833405848421">Chrome ಫ್ರೇಮ್ ಬಗ್ಗೆ...</translation>
 <translation id="386202838227397562">ದಯವಿಟ್ಟು ಎಲ್ಲಾ Google Chrome ವಿಂಡೋಗಳನ್ನು ಮುಚ್ಚಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="2770231113462710648">ಡೀಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಅನ್ನು ಇದ್ಕಕೆ ಬದಲಿಸಿ:</translation>
-<translation id="698670068493841342">ಈ ಬಳಕೆದಾರರಿಗಾಗಿ Google Chrome ಅನ್ನು ಈಗಾಗಲೇ ಸ್ಥಾಪನೆ ಮಾಡಲಾಗಿದೆ. ಸಾಫ್ಟ್ವೇರ್ ಕಾರ್ಯನಿರ್ವಹಿಸದಿದ್ದರೆ, ದಯವಿಟ್ಟು Google Chrome ಅನ್ನು ಅಸ್ಥಾಪನೆ ಮಾಡಿ ಮತ್ತು ಅದನ್ನು ಮತ್ತೊಮ್ಮೆ ಡೌನ್ಲೋಡ್ ಮಾಡಿ.</translation>
 <translation id="7400722733683201933">Google Chrome ಬಗ್ಗೆ</translation>
 <translation id="7781002470561365167">Google Chrome ನ ಹೊಸ ಆವೃತ್ತಿ ಲಭ್ಯವಿದೆ.</translation>
 <translation id="7101265395643981223">Google Chrome ಅನ್ನು ಪ್ರಾರಂಭಿಸಿ</translation>
@@ -16,6 +15,7 @@
 <translation id="8970027151245482499">Google Chrome ಇನ್ಸ್ಟಾಲ್ ಆಗಿಲ್ಲ ಅಥವಾ ಸ್ಥಾಪನೆ ಡೈರೆಕ್ಟರಿಯನ್ನು ಹುಡುಕಲು ಅದು ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೊಮ್ಮೆ Google Chrome ಅನ್ನು ಡೌನ್ಲೋಡ್ ಮಾಡಿ.</translation>
 <translation id="1761870329818521071">ಪ್ರಸ್ತುತವಾಗಿ ಚಾಲನೆಯಲ್ಲಿರುವ ಅದೇ Google Chrome Frame ಆವೃತ್ತಿಯನ್ನು ಸ್ಥಾಪಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ದಯವಿಟ್ಟು  Google Chrome Frame ಅನ್ನು ಮುಚ್ಚಿ ಮತ್ತು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
+<translation id="5339639696978861456">Chrome Frame ಅನ್ನು ನವೀಕರಿಸಲಾಗಿದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಬ್ರೌಸರ್ ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ. Chrome ಆವೃತ್ತಿ: <ph name="TODO_0001"/>, Chrome Frame ಆವೃತ್ತಿ: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">ಸೇವೆಯ ನಿಯಮಗಳು</translation>
 <translation id="1779550429052479749">Google Chrome ಅಥವಾ Google Chrome Frame  ಅನ್ನು ಸಿಸ್ಟಂ‌ನಲ್ಲಿ ಸ್ಥಾಪಿಸುವ ಸಂದರ್ಭದಲ್ಲಿ ಸಂಘರ್ಷವು ಪತ್ತೆಯಾಗಿದೆ. ದಯವಿಟ್ಟು ಅಸ್ಥಾಪಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="3555616473548901994">ಅಸ್ಥಾಪನೆ ಪೂರ್ಣಗೊಂಡಿದೆ.</translation>
@@ -26,6 +26,7 @@
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Google Chrome ಸ್ಥಾಪನೆ ಡೈರೆಕ್ಟರಿ ಬಳಕೆಯಲ್ಲಿರುವಂತೆ ತೋರುತ್ತಿದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಅನ್ನು ಪುನರಾರಂಭಿಸಿ ಹಾಗೂ ಮತ್ತೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="8227755444512189073"><ph name="SCHEME"/> ಲಿಂಕ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಲು Google Chrome ಬಾಹ್ಯ ಅಪ್ಲಿಕೇಶನ್ ಅನ್ನು ಪ್ರಾರಂಭಿಸುವುದು ಅವಶ್ಯಕವಾಗಿದೆ. ವಿನಂತಿಸಿದ ಲಿಂಕ್‌<ph name="PROTOLINK"/> ಆಗಿದೆ.</translation>
+<translation id="8290100596633877290">ಓಹ್! Google Chrome ಕ್ರ‍್ಯಾಶ್‌ ಆಗಿದೆ.ಇದೀಗ ಮರುಪ್ರಾರಂಭಿಸುವುದೆ?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
@@ -33,7 +34,7 @@
 <translation id="3889417619312448367">Google Chrome ಅನ್ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">ಹೊಸದಾದ, ಸುರಕ್ಷಿತವಾದ Google Chrome ನ ಆವೃತ್ತಿ ಲಭ್ಯವಿದೆ.</translation>
-<translation id="8810218179782551669">Google Chrome ಭಾಷೆ:</translation>
+<translation id="5037239767309817516">ಈ ಬದಲಾವಣೆಯು ಕಾರ್ಯಗತಗೊಳ್ಳಲು ದಯವಿಟ್ಟು ಎಲ್ಲ Google Chrome ವಿಂಡೊಗಳನ್ನು ಮುಚ್ಚಿ ಹಾಗೂ ಅದನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ.</translation>
 <translation id="7451721381978275812">ಅಮಾನ್ಯವಾದ ವಾದಗಳು. Google Chrome ಸ್ಥಾಪನೆ ಮಾಡದೆ ಸಿದ್ಧತೆಯ ಮೋಡ್‌ನಲ್ಲಿ Google Chrome Frame ಅನ್ನು ಸ್ಥಾಪನೆ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="5809236835374558741">ಈ ಕಂಪ್ಯೂಟರ್ ಈಗಾಗಲೇ ಹೆಚ್ಚು ಇತ್ತೀಚೆಗಿನ Google Chrome Frame ಅನ್ನು ಹೊಂದಿದೆ. ಸಾಫ್ಟ್‌ವೇರ್ ಕಾರ್ಯ ನಿರ್ವಹಿಸದೆ ಇದ್ದರೆ, ದಯವಿಟ್ಟು Google Chrome Frame ಅನ್ನು ಅನ್ ಇನ್ಸ್ಟಾಲ್ ಮಾಡಿ ಮತ್ತು ಪುನಃ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ. </translation>
 <translation id="4357846314885556934">Google Chrome ಅನುಚಿತವಾಗಿ ವರ್ತಿಸುತ್ತಿದೆ</translation>
@@ -47,7 +48,6 @@
 <translation id="8738921060445980047">ಅಜ್ಞಾತ ಆವೃತ್ತಿ.</translation>
 <translation id="2485422356828889247">ಅಸ್ಥಾಪಿಸು</translation>
 <translation id="3324235665723428530">ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಅನ್ನು ಬಳಸಲಾಗುವುದಿಲ್ಲ ಏಕೆಂದರೆ ಅದು Google Chrome ನ ಹೊಸ ಆವೃತ್ತಿ.\n\nಕೆಲವು ವೈಶಿಷ್ಟ್ಯತೆಗಳು ಲಭ್ಯವಿರುವುದಿಲ್ಲ. ದಯವಿಟ್ಟು ಬೇರೆ ಪ್ರೊಫೈಲ್ ಡೈರೆಕ್ಟರಿ ಅನ್ನು ಸ್ಪಷ್ಟವಾಗಿ ನಮೂದಿಸಿ ಅಥವಾ Chrome ನ ಹೊಸ ಆವೃತ್ತಿಯನ್ನು ಬಳಸಿ.</translation>
-<translation id="7214670531148488183">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಅನುಭವವನ್ನು ಸುಧಾರಿಸಲು Google Chrome ವೆಬ್ ಸೇವೆಗಳನ್ನು ಬಳಸಬಹುದು. ನೀವು ಐಚ್ಛಿಕವಾಗಿ ಈ ಸೇವೆಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಬಹುದು.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Google Chrome Canary ಬಿಲ್ಡ್</translation>
 <translation id="911206726377975832">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ಸಹ ಅಳಿಸುವುದೇ?</translation>
@@ -73,6 +73,9 @@
 <translation id="7018032895891496381">ಪ್ರಸ್ತುತ <ph name="PAGE_TITLE"/> ಕ್ಕೆ ಹೊಂದಿಸಿದ, ನಿಮ್ಮ ಡೀಫಾಲ್ಟ್ ಹುಡುಕಾಟ ಎಂಜಿನ್ ಅನ್ನು Google Chrome ಬಳಸುತ್ತದೆ. ನಿಮ್ಮ ಡೀಫಾಲ್ಟ್ ಹುಡುಕಾಟ ಎಂಜಿನ್ ಅನ್ನು ಇರಿಸಿಕೊಳ್ಳಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="7161904924553537242">Google Chrome ಗೆ ಸ್ವಾಗತ</translation>
 <translation id="8669527147644353129">Google Chrome ಸಹಾಯಕ</translation>
+<translation id="3444832043240812445">ನೀವು <ph name="BEGIN_LINK"/>ಕ್ರ‍್ಯಾಶ್‌‌ ವರದಿಮಾಡುವಿಕೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿದರೆ<ph name="END_LINK"/> ನಿಮ್ಮ ಇತ್ತೀಚಿನ ಕ್ರ‍್ಯಾಶ್‌ಗಳಲ್ಲಿ ಮಾಹಿತಿಯನ್ನು ಈ ಪುಟ ತೋರಿಸುತ್ತದೆ.</translation>
+<translation id="8614913330719544658">Google Chrome ಸ್ಪಂದಿಸುತ್ತಿಲ್ಲ. ಇದೀಗ ಮರುಪ್ರಾರಂಭಿಸುವುದೆ?
+</translation>
 <translation id="2681064822612051220">ಸಿಸ್ಟಂ‌ನಲ್ಲಿ Google Chrome ಅನ್ನು ಸ್ಥಾಪಿಸುತ್ತಿರುವಾಗ ಸಂಘರ್ಷಣೆಯೊಂದು ಪತ್ತೆಯಾಗಿದೆ. ದಯವಿಟ್ಟು ಅಸ್ಥಾಪಿಸಿ ಹಾಗೂ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ. </translation>
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
 <translation id="6126631249883707068">Google Chrome ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಉಳಿಸಲು ನೀವು ಬಯಸುವಿರಾ?</translation>
@@ -87,7 +90,6 @@
 <translation id="2769762047821873045">Google Chrome ನಿಮ್ಮ ಡೀಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಅಲ್ಲ.</translation>
 <translation id="7825851276765848807">ಅನಿರ್ದಿಷ್ಟ ದೋಷದಿಂದಾಗಿ ಸ್ಥಾಪನೆ ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೊಮ್ಮೆ Google Chrome ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.</translation>
 <translation id="3335672657969596251">Google Chrome <ph name="OS_NAME"/> ಅನ್ನು ಬೆಂಬಲಿಸುವುದಿಲ್ಲ</translation>
-<translation id="473183893665420670">Google Chrome ಆಯ್ಕೆಗಳನ್ನು ನೀವು ಮರುಹೊಂದಿಸಿದಾಗ ನೀವು ಮಾಡಿದ ಯಾವುದೇ ಬದಲಾವಣೆಗಳು ಡೀಫಾಲ್ಟ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ಹಿಂದಿರುಗುತ್ತವೆ. Chrome ಆಯ್ಕೆಗಳನ್ನು ಮರುಹೊಂದಿಸಲು ನೀವು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="3636771339108070045">ಈ ಕಂಪ್ಯೂಟರ್ ಈಗಾಗಲೇ Google Chrome ನ ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಯನ್ನು ಹೊಂದಿದೆ.  ಸಾಫ್ಟ್ವೇರ್ ಕಾರ್ಯನಿರ್ವಹಿಸದಿದ್ದರೆ, ದಯವಿಟ್ಟು Google Chrome ಅನ್ನು ಅನ್ಇನ್ಸ್ಟಾಲ್ ಮಾಡಿ ಮತ್ತು ಅದನ್ನು ಮತ್ತೊಮ್ಮೆ ಡೌನ್ಲೋಡ್ ಮಾಡಿ.</translation>
 <translation id="5334545119300433702">Google Chrome ನೊಂದಿಗಿನ ಈ ಮಾಡ್ಯೂಲ್‌‌ನ ಘರ್ಷಣೆ ಎಲ್ಲರಿಗೂ ತಿಳಿದಿರುವಂಥದ್ದು. </translation>
 <translation id="3360895254066713204">Chrome ಸಹಾಯಕ</translation>
@@ -98,7 +100,6 @@
 <translation id="6049075767726609708">ಈ ಸಿಸ್ಟಮ್ನಲ್ಲಿ ನಿರ್ವಾಹಕರು Google Chrome ಅನ್ನು ಸ್ಥಾಪನೆ ಮಾಡಿದ್ದಾರೆ, ಮತ್ತು ಇದು ಎಲ್ಲ ಬಳಕೆದಾರರಿಗೆ ಲಭ್ಯವಿದೆ. ನಿಮ್ಮ ಬಳಕೆದಾರರ ಮಟ್ಟದ ಸ್ಥಾಪನೆಯನ್ನು  ಸಿಸ್ಟಮ್ ಮಟ್ಟದ Google Chrome ಇದೀಗ ಬದಲಿ ಇರಿಸುತ್ತದೆ.</translation>
 <translation id="7123348595797445166">ಇದನ್ನೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ (ಈಗಾಗಲೇ ಸ್ಥಾಪಿಸಲಾಗಿದೆ)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">Google Chrome ಮೆನುಗಳಲ್ಲಿ, ಸಂವಾದ ಪೆಟ್ಟಿಗೆಗಳಲ್ಲಿ, ಮತ್ತು ಸಾಧನಸಲಹೆಗಳಲ್ಲಿ ಬಳಸುವ ಭಾಷೆಯನ್ನು ಬದಲಿಸಿ.</translation>
 <translation id="9189723490960700326">ನೀವು &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ಅನ್ನು ತಲುಪಲು ಪ್ರಯತ್ನಿಸಿದ್ದೀರಿ, ಆದರೆ ಸರ್ವರ್ ನೀಡಿದ ಪ್ರಮಾಣಪತ್ರದ ಅವಧಿ ಮುಗಿದಿದೆ. ಆ ಪ್ರಮಾಣಪತ್ರ ಅದರ ಮುಕ್ತಾಯದ ಕಾರಣದಿಂದ ಹೊಂದಾಣಿಕೆಯಾಗಿದೆಯೇ ಎಂಬುದನ್ನು ಕಂಡುಹಿಡಿಯಲು ಯಾವುದೇ ಮಾಹಿತಿ ಲಭ್ಯವಿಲ್ಲ. ನೀವು &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ದೊಂದಿಗೆ ಸಂವಹನ ಮಾಡುತ್ತಿದ್ದೀರಿ ಮತ್ತು ಆಕ್ರಮಣಕಾರರೊಂದಿಗೆ ಅಲ್ಲ ಎಂದು Google Chrome ವಿಶ್ವಾಸಾರ್ಹವಾಗಿ ಖಾತರಿ ನೀಡುವುದಿಲ್ಲ. ನೀವು ಮುಂದುವರಿಯಬಾರದು.</translation>
 <translation id="7106741999175697885">ಕಾರ್ಯ ನಿರ್ವಾಹಕ - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome ಈಗ  <ph name="BROWSER_COMPONENT"/> ನಿಂದ ಕೆಳಗಿನ ವಿಷಯವನ್ನು ಆಮದು ಮಾಡಿಕೊಳ್ಳುತ್ತಿದೆ:</translation>
