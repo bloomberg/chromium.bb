@@ -54,8 +54,8 @@ static const int kMiniTabRendererAsNormalTabWidth =
 static const double kHoverOpacity = 0.33;
 static const double kHoverSlideOpacity = 0.5;
 
-// Opacity for the non-active selected tab.
-static const double kSelectedTabOpacity = .4;
+// Opacity for non-active selected tabs.
+static const double kSelectedTabOpacity = .45;
 
 // Selected (but not active) tabs have their throb value scaled down by this.
 static const double kSelectedTabThrobScale = .5;
@@ -631,8 +631,7 @@ bool Tab::ShouldShowIcon() const {
 
 bool Tab::ShouldShowCloseBox() const {
   // The active tab never clips close button.
-  return !data().mini && IsCloseable() &&
-      (IsActive() || IconCapacity() >= 3);
+  return !data().mini && IsCloseable() && (IsActive() || IconCapacity() >= 3);
 }
 
 double Tab::GetThrobValue() {

@@ -297,9 +297,14 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
   }
 
   if (GetWindow()->non_client_view()->UseNativeFrame()) {
+    bool multiple_tabs_selected = (!selected_tabs.empty() ||
+                                   tabs_dragging.size() > 1);
     // Make sure non-active tabs are somewhat transparent.
     SkPaint paint;
-    paint.setColor(SkColorSetARGB(200, 255, 255, 255));
+    // If there are multiple tabs selected, fade non-selected tabs more to make
+    // the selected tabs more noticable.
+    paint.setColor(SkColorSetARGB(
+                       multiple_tabs_selected ? 150 : 200, 255, 255, 255));
     paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
     paint.setStyle(SkPaint::kFill_Style);
     canvas->DrawRectInt(0, 0, width(),
@@ -894,7 +899,7 @@ void TabStrip::GenerateIdealBounds() {
   double tab_x = 0;
   bool last_was_mini = false;
   for (int i = 0; i < tab_count(); ++i) {
-      Tab* tab = GetTabAtTabDataIndex(i);
+    Tab* tab = GetTabAtTabDataIndex(i);
     if (!tab->closing()) {
       double tab_width = unselected;
       if (tab->data().mini) {
