@@ -20,7 +20,13 @@ const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 
 typedef UITest CollectedCookiesTest;
 
-TEST_F(CollectedCookiesTest, DoubleDisplay) {
+// Crashing on Windows, see http://crbug.com/79331
+#if defined(OS_WINDOWS)
+#define MAYBE_DoubleDisplay DISABLED_DoubleDisplay
+#else
+#define MAYBE_DoubleDisplay DoubleDisplay
+#endif
+TEST_F(CollectedCookiesTest, MAYBE_DoubleDisplay) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
@@ -42,7 +48,13 @@ TEST_F(CollectedCookiesTest, DoubleDisplay) {
   ASSERT_TRUE(tab->ShowCollectedCookiesDialog());
 }
 
-TEST_F(CollectedCookiesTest, NavigateAway) {
+// Crashing on Windows, see http://crbug.com/79331
+#if defined(OS_WINDOWS)
+#define MAYBE_NavigateAway DISABLED_NavigateAway
+#else
+#define MAYBE_NavigateAway NavigateAway
+#endif
+TEST_F(CollectedCookiesTest, MAYBE_NavigateAway) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
