@@ -58,16 +58,19 @@ TEST_F(TalkMediatorImplTest, SetAuthToken) {
       NewMockedTalkMediator(new MockMediatorThread()));
   talk1->SetAuthToken("chromium@gmail.com", "token", "fake_service");
   EXPECT_TRUE(talk1->state_.initialized);
+  talk1->Logout();
 
   scoped_ptr<TalkMediatorImpl> talk2(
       NewMockedTalkMediator(new MockMediatorThread()));
   talk2->SetAuthToken("chromium@mail.google.com", "token", "fake_service");
   EXPECT_TRUE(talk2->state_.initialized);
+  talk2->Logout();
 
   scoped_ptr<TalkMediatorImpl> talk3(
       NewMockedTalkMediator(new MockMediatorThread()));
   talk3->SetAuthToken("chromium@mail.google.com", "token", "fake_service");
   EXPECT_TRUE(talk3->state_.initialized);
+  talk3->Logout();
 }
 
 TEST_F(TalkMediatorImplTest, LoginWiring) {
@@ -165,7 +168,8 @@ TEST_F(TalkMediatorImplTest, MediatorThreadCallbacks) {
   mock->ReceiveNotification(incoming_data);
 
   // Shouldn't trigger a call to the delegate since we disconnect
-  // it before we logout.
+  // it before we logout the mediator thread.
+  talk1->Logout();
   talk1.reset();
 }
 
