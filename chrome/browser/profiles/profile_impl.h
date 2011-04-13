@@ -247,7 +247,6 @@ class ProfileImpl : public Profile,
   scoped_ptr<BackgroundModeManager> background_mode_manager_;
   scoped_ptr<StatusTray> status_tray_;
   scoped_refptr<PersonalDataManager> personal_data_manager_;
-  scoped_ptr<PinnedTabService> pinned_tab_service_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   scoped_ptr<BrowserSignin> browser_signin_;
   bool history_service_created_;
