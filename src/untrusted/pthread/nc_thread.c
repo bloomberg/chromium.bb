@@ -70,7 +70,7 @@ int __nc_memory_block_counter[2];
 
 /* Internal functions */
 
-static inline nc_thread_descriptor_t *nc_get_tdb() {
+static inline nc_thread_descriptor_t *nc_get_tdb(void) {
   return nacl_tls_get();
 }
 
@@ -318,7 +318,7 @@ static int nc_tdb_init(nc_thread_descriptor_t *tdb,
 /* Will be called from the library startup code,
  * which always happens on the application's main thread
  */
-int __pthread_initialize() {
+int __pthread_initialize(void) {
   int retval = 0;
   nc_thread_descriptor_t *tdb;
   nc_basic_thread_data_t *basic_data;
@@ -507,7 +507,7 @@ ret:
   return retval;
 }
 
-int __pthread_shutdown() {
+int __pthread_shutdown(void) {
   pthread_mutex_lock(&__nc_thread_management_lock);
 
   while (1 != __nc_running_threads_counter) {
@@ -706,7 +706,7 @@ int pthread_kill(pthread_t thread_id,
   return -1;
 }
 
-pthread_t pthread_self() {
+pthread_t pthread_self(void) {
   /* get the tdb pointer from gs and use it to return the thread handle*/
   nc_thread_descriptor_t *tdb = nc_get_tdb();
   return tdb->basic_data->thread_id;
