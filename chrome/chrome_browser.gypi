@@ -2743,7 +2743,6 @@
         'browser/ui/options/options_window.h',
         'browser/ui/options/show_options_url.cc',
         'browser/ui/options/show_options_url.h',
-        'browser/ui/panels/display_settings.h',
         'browser/ui/panels/panel.cc',
         'browser/ui/panels/panel.h',
         'browser/ui/panels/panel_manager.cc',

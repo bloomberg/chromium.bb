@@ -23,12 +23,12 @@ class PanelManager {
 
   ~PanelManager();
 
-  // Called when the display settings are changed, i.e. work area is updated.
-  void OnDisplaySettingsChanged();
+  // Called when the display is changed, i.e. work area is updated.
+  void OnDisplayChanged();
 
   // Creates a panel and returns it. The panel might be queued for display
   // later.
-  Panel* Create(Browser* browser);
+  Panel* CreatePanel(Browser* browser);
 
   // Removes the given panel. Both active and pending panel lists are checked.
   // If an active panel is removed, pending panels could put on display if we
@@ -79,8 +79,8 @@ class PanelManager {
 
   // Computes the bounds for next panel.
   // |allow_size_change| is used to indicate if the panel size can be changed to
-  // fall within the size constraint. This is the case we add the panel for the
-  // first time.
+  // fall within the size constraint, e.g., when the panel is created.
+  // Returns true if computed bounds are within the displayable area.
   bool ComputeBoundsForNextPanel(gfx::Rect* bounds, bool allow_size_change);
 
   // Help functions to drag the given panel.
