@@ -83,20 +83,20 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
 
       request_to_info_[source.id] = new ResourceInfo();
 
-      if (request_to_raw_data_length_.size() > kMaxNumEntries) {
-        LOG(WARNING) << "The raw data length observer url request count has "
-                        "grown larger than expected, resetting";
-        request_to_raw_data_length_.clear();
+      if (request_to_encoded_data_length_.size() > kMaxNumEntries) {
+        LOG(WARNING) << "The encoded data length observer url request count "
+                        "has grown larger than expected, resetting";
+        request_to_encoded_data_length_.clear();
       }
 
-      request_to_raw_data_length_[source.id] = 0;
+      request_to_encoded_data_length_[source.id] = 0;
     }
     return;
   } else if (type == net::NetLog::TYPE_REQUEST_ALIVE) {
     // Cleanup records based on the TYPE_REQUEST_ALIVE entry.
     if (is_end) {
       request_to_info_.erase(source.id);
-      request_to_raw_data_length_.erase(source.id);
+      request_to_encoded_data_length_.erase(source.id);
     }
     return;
   }
@@ -196,9 +196,9 @@ void DevToolsNetLogObserver::OnAddSocketEntry(
     return;
   }
 
-  RequestToRawDataLengthMap::iterator raw_data_length_it =
-      request_to_raw_data_length_.find(request_id);
-  if (raw_data_length_it == request_to_raw_data_length_.end())
+  RequestToEncodedDataLengthMap::iterator encoded_data_length_it =
+      request_to_encoded_data_length_.find(request_id);
+  if (encoded_data_length_it == request_to_encoded_data_length_.end())
     return;
 
   if (net::NetLog::TYPE_SOCKET_BYTES_RECEIVED == type) {
@@ -211,7 +211,7 @@ void DevToolsNetLogObserver::OnAddSocketEntry(
     if (!dValue->GetInteger("byte_count", &byte_count))
       return;
 
-    raw_data_length_it->second += byte_count;
+    encoded_data_length_it->second += byte_count;
   }
 }
 
@@ -252,7 +252,7 @@ void DevToolsNetLogObserver::PopulateResponseInfo(net::URLRequest* request,
 }
 
 // static
-int DevToolsNetLogObserver::GetAndResetRawDataLength(
+int DevToolsNetLogObserver::GetAndResetEncodedDataLength(
     net::URLRequest* request) {
   if (!(request->load_flags() & net::LOAD_REPORT_RAW_HEADERS))
     return -1;
@@ -263,11 +263,12 @@ int DevToolsNetLogObserver::GetAndResetRawDataLength(
   if (dev_tools_net_log_observer == NULL)
     return -1;
 
-  RequestToRawDataLengthMap::iterator it =
-      dev_tools_net_log_observer->request_to_raw_data_length_.find(source_id);
-  if (it == dev_tools_net_log_observer->request_to_raw_data_length_.end())
+  RequestToEncodedDataLengthMap::iterator it =
+      dev_tools_net_log_observer->request_to_encoded_data_length_.find(
+          source_id);
+  if (it == dev_tools_net_log_observer->request_to_encoded_data_length_.end())
     return -1;
-  int raw_data_length = it->second;
+  int encoded_data_length = it->second;
   it->second = 0;
-  return raw_data_length;
+  return encoded_data_length;
 }

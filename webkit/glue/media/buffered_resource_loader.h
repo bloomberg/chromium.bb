@@ -135,7 +135,7 @@ class BufferedResourceLoader :
       WebKit::WebURLLoader* loader,
       const char* data,
       int data_length,
-      int raw_data_length);
+      int encoded_data_length);
   virtual void didReceiveCachedMetadata(
       WebKit::WebURLLoader* loader,
       const char* data, int dataLength);

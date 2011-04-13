@@ -61,7 +61,7 @@ void ExtensionLocalizationPeer::OnReceivedResponse(
 
 void ExtensionLocalizationPeer::OnReceivedData(const char* data,
                                                int data_length,
-                                               int raw_data_length) {
+                                               int encoded_data_length) {
   data_.append(data, data_length);
 }
 

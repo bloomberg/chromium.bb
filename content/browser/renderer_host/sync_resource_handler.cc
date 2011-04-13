@@ -105,8 +105,8 @@ bool SyncResourceHandler::OnResponseCompleted(
 
   net::URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(filter_->child_id(), request_id));
-  result_.raw_data_length =
-      DevToolsNetLogObserver::GetAndResetRawDataLength(request);
+  result_.encoded_data_length =
+      DevToolsNetLogObserver::GetAndResetEncodedDataLength(request);
 
   ResourceHostMsg_SyncLoad::WriteReplyParams(result_message_, result_);
   filter_->Send(result_message_);

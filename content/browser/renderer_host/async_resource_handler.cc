@@ -218,10 +218,10 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
 
   net::URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(filter_->child_id(), request_id));
-  int raw_data_length =
-      DevToolsNetLogObserver::GetAndResetRawDataLength(request);
+  int encoded_data_length =
+      DevToolsNetLogObserver::GetAndResetEncodedDataLength(request);
   filter_->Send(new ResourceMsg_DataReceived(
-      routing_id_, request_id, handle, *bytes_read, raw_data_length));
+      routing_id_, request_id, handle, *bytes_read, encoded_data_length));
 
   return true;
 }

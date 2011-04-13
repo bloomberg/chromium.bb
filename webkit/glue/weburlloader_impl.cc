@@ -159,7 +159,7 @@ bool GetInfoFromDataURL(const GURL& url,
     info->charset.swap(charset);
     info->security_info.clear();
     info->content_length = -1;
-    info->raw_data_length = 0;
+    info->encoded_data_length = 0;
     info->load_timing.base_time = Time::Now();
 
     return true;
@@ -300,7 +300,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   virtual void OnDownloadedData(int len);
   virtual void OnReceivedData(const char* data,
                               int data_length,
-                              int raw_data_length);
+                              int encoded_data_length);
   virtual void OnReceivedCachedMetadata(const char* data, int len);
   virtual void OnCompletedRequest(const net::URLRequestStatus& status,
                                   const std::string& security_info,
@@ -598,7 +598,7 @@ void WebURLLoaderImpl::Context::OnDownloadedData(int len) {
 
 void WebURLLoaderImpl::Context::OnReceivedData(const char* data,
                                                int data_length,
-                                               int raw_data_length) {
+                                               int encoded_data_length) {
   if (!client_)
     return;
 
@@ -612,9 +612,9 @@ void WebURLLoaderImpl::Context::OnReceivedData(const char* data,
   } else if (multipart_delegate_.get()) {
     // The multipart delegate will make the appropriate calls to
     // client_->didReceiveData and client_->didReceiveResponse.
-    multipart_delegate_->OnReceivedData(data, data_length, raw_data_length);
+    multipart_delegate_->OnReceivedData(data, data_length, encoded_data_length);
   } else {
-    client_->didReceiveData(loader_, data, data_length, raw_data_length);
+    client_->didReceiveData(loader_, data, data_length, encoded_data_length);
   }
 }
 

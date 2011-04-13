@@ -81,7 +81,7 @@ void SecurityFilterPeer::OnReceivedResponse(
 
 void SecurityFilterPeer::OnReceivedData(const char* data,
                                         int data_length,
-                                        int raw_data_length) {
+                                        int encoded_data_length) {
   NOTREACHED();
 }
 
@@ -141,7 +141,7 @@ void BufferedPeer::OnReceivedResponse(
 
 void BufferedPeer::OnReceivedData(const char* data,
                                   int data_length,
-                                  int raw_data_length) {
+                                  int encoded_data_length) {
   data_.append(data, data_length);
 }
 
@@ -192,7 +192,7 @@ void ReplaceContentPeer::OnReceivedResponse(
 
 void ReplaceContentPeer::OnReceivedData(const char* data,
                                         int data_length,
-                                        int raw_data_length) {
+                                        int encoded_data_length) {
   // Ignore this, we'll serve some alternate content in OnCompletedRequest.
 }
 

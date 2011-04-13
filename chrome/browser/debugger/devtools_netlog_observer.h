@@ -61,7 +61,7 @@ class DevToolsNetLogObserver: public ChromeNetLog::ThreadSafeObserver {
   // are active.
   static DevToolsNetLogObserver* GetInstance();
   static void PopulateResponseInfo(net::URLRequest*, ResourceResponse*);
-  static int GetAndResetRawDataLength(net::URLRequest* request);
+  static int GetAndResetEncodedDataLength(net::URLRequest* request);
 
  private:
   static DevToolsNetLogObserver* instance_;
@@ -73,11 +73,11 @@ class DevToolsNetLogObserver: public ChromeNetLog::ThreadSafeObserver {
 
   ChromeNetLog* chrome_net_log_;
   typedef base::hash_map<uint32, scoped_refptr<ResourceInfo> > RequestToInfoMap;
-  typedef base::hash_map<uint32, int> RequestToRawDataLengthMap;
+  typedef base::hash_map<uint32, int> RequestToEncodedDataLengthMap;
   typedef base::hash_map<uint32, uint32> HTTPStreamJobToSocketMap;
   typedef base::hash_map<uint32, uint32> SocketToRequestMap;
   RequestToInfoMap request_to_info_;
-  RequestToRawDataLengthMap request_to_raw_data_length_;
+  RequestToEncodedDataLengthMap request_to_encoded_data_length_;
   HTTPStreamJobToSocketMap http_stream_job_to_socket_;
   SocketToRequestMap socket_to_request_;
 
