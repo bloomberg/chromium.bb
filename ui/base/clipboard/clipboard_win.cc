@@ -14,11 +14,16 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_gdi_object.h"
+#include "base/win/scoped_hdc.h"
 #include "base/win/wrapped_window_proc.h"
+#include "third_party/zlib/zlib.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/size.h"
 
 namespace ui {
@@ -347,6 +352,8 @@ void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
     types->push_back(UTF8ToUTF16(kMimeTypeText));
   if (::IsClipboardFormatAvailable(htmlFormat->cfFormat))
     types->push_back(UTF8ToUTF16(kMimeTypeHTML));
+  if (::IsClipboardFormatAvailable(CF_BITMAP))
+    types->push_back(UTF8ToUTF16(kMimeTypePNG));
   *contains_filenames = false;
 }
 
@@ -429,6 +436,70 @@ void Clipboard::ReadImage(Buffer buffer, std::string* data) const {
     NOTREACHED();
     return;
   }
+
+  // Acquire the clipboard.
+  ScopedClipboard clipboard;
+  if (!clipboard.Acquire(GetClipboardWindow()))
+    return;
+
+  HBITMAP source_bitmap = static_cast<HBITMAP>(::GetClipboardData(CF_BITMAP));
+  if (!source_bitmap)
+    return;
+
+  base::win::ScopedHDC source_dc(::CreateCompatibleDC(NULL));
+  if (!source_dc)
+    return;
+
+  // Get the dimensions of the bitmap.
+  BITMAPINFO bitmap_info = {};
+  bitmap_info.bmiHeader.biSize = sizeof(bitmap_info.bmiHeader);
+  ::GetDIBits(source_dc, source_bitmap, 0, 0, 0, &bitmap_info, DIB_RGB_COLORS);
+  gfx::Size size(bitmap_info.bmiHeader.biWidth,
+                 abs(bitmap_info.bmiHeader.biHeight));
+
+
+  BITMAPINFO destination_bitmap_info = {};
+  destination_bitmap_info.bmiHeader.biSize =
+      sizeof(destination_bitmap_info.bmiHeader);
+  destination_bitmap_info.bmiHeader.biWidth = size.width();
+  // Convert to a top-down DIB.
+  destination_bitmap_info.bmiHeader.biHeight = -size.height();
+  destination_bitmap_info.bmiHeader.biPlanes = 1;
+  destination_bitmap_info.bmiHeader.biBitCount = 32;
+  destination_bitmap_info.bmiHeader.biCompression = BI_RGB;
+
+  unsigned char* raw_data;
+  base::win::ScopedHDC destination_dc(::CreateCompatibleDC(source_dc));
+  if (!destination_dc)
+    return;
+  base::win::ScopedGDIObject<HBITMAP> destination_bitmap(::CreateDIBSection(
+      destination_dc,
+      &destination_bitmap_info,
+      DIB_RGB_COLORS,
+      reinterpret_cast<void**>(&raw_data),
+      NULL,
+      0));
+  if (!destination_bitmap)
+    return;
+
+  ::SelectObject(source_dc, source_bitmap);
+  ::SelectObject(destination_dc, destination_bitmap);
+  ::BitBlt(destination_dc, 0, 0, size.width(), size.height(), source_dc, 0, 0,
+           SRCCOPY);
+
+  std::vector<unsigned char> png_data;
+  gfx::PNGCodec::EncodeWithCompressionLevel(
+      raw_data,
+      gfx::PNGCodec::FORMAT_BGRA,
+      size,
+      size.width() * 4,
+      false,
+      std::vector<gfx::PNGCodec::Comment>(),
+      Z_BEST_SPEED,
+      &png_data);
+
+  data->assign(reinterpret_cast<char*>(vector_as_array(&png_data)),
+               png_data.size());
 }
 
 void Clipboard::ReadBookmark(string16* title, std::string* url) const {
