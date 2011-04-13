@@ -444,11 +444,9 @@
                 },
                 {
                   'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Internet Plug-Ins',
-                  'files': [
-                    '<(PRODUCT_DIR)/ppGoogleNaClPluginChrome.plugin',
-                  ],
+                  'files': [],
                   'conditions': [
-                    [ 'branding == "Chrome"', {
+                    ['branding == "Chrome"', {
                       'files': [
                         '<(PRODUCT_DIR)/Flash Player Plugin for Chrome.plugin',
                         '<(PRODUCT_DIR)/plugin.vch',
@@ -458,6 +456,11 @@
                       'files': [
                         '<(PRODUCT_DIR)/PDF.plugin',
                       ],
+                    }],
+                    ['disable_nacl!=1', {
+                      'files': [
+                        '<(PRODUCT_DIR)/ppGoogleNaClPluginChrome.plugin',
+                      ],                    
                     }],
                   ],
                 },
