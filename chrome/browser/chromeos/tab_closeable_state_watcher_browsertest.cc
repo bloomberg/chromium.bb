@@ -274,8 +274,9 @@ IN_PROC_BROWSER_TEST_F(TabCloseableStateWatcherTest, CloseIncognitoBrowser) {
 // Tests closing of browser with BeforeUnload handler where user clicks cancel
 // (i.e. stay on the page and cancel closing) - browser and its tabs should stay
 // the same.
+// Sporadically crashing test. See http://crbug.com/79333
 IN_PROC_BROWSER_TEST_F(TabCloseableStateWatcherTest,
-                       CloseBrowserWithBeforeUnloadHandlerCancel) {
+                       DISABLED_CloseBrowserWithBeforeUnloadHandlerCancel) {
   // Navigate to URL with BeforeUnload handler.
   NavigateToBeforeUnloadURL();
   EXPECT_TRUE(CanCloseTab(browser()));
