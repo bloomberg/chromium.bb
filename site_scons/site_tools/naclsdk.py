@@ -179,6 +179,7 @@ def _SetEnvForX86Sdk(env, sdk_path):
               # Grrr... and sometimes we really need ld.
               LD=os.path.join(bin_path, '%s-ld%s' % (arch, ld_mode_flag)),
               RANLIB=os.path.join(bin_path, '%s-ranlib' % arch),
+              OBJDUMP=os.path.join(bin_path, '%s-objdump' % arch),
               CFLAGS = ['-std=gnu99'],
               CCFLAGS=['-O3',
                        '-Werror',

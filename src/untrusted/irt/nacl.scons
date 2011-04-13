@@ -44,13 +44,36 @@ if asm_env.Bit('bitcode'):
 asm_helper = asm_env.ComponentObject(
     'elf_restart_%s.S' % env['TARGET_FULLARCH'].replace('-', '_'))
 
-files = ['irt_entry.c', 'irt_sbrk.c', 'irt_elf_utils.c', asm_helper]
-# TLS virtualisation only works on x86-64 currently.
-# TODO(mseaborn): Turn on "-mtls-use-call" for the relevant libraries
-# on x86-32 so that this works there too.
-if env.Bit('build_x86_64'):
+files = ['irt_entry.c',
+         'irt_sbrk.c',
+         'irt_elf_utils.c',
+         asm_helper]
+
+# The bitcode build does not yet use -mtls-use-call and so it improperly
+# pollutes user TLS with IRT-private TLS.  But until that's fixed,
+# overriding the entry points with the irt_tls.c versions would cause a
+# mismatch where library code using (what should be reserved for) user TLS
+# will crash because it hasn't been initialized.
+if not env.Bit('bitcode'):
   files.append('irt_tls.c')
-blob_env.ComponentProgram(
+
+irt_library = blob_env.ComponentProgram(
     'irt.nexe', files,
-    EXTRA_LIBS=['ppruntime', 'srpc', 'imc', 'platform', 'gio',
-                'pthread', 'm'])
+    EXTRA_LIBS=['ppruntime',
+                'srpc',
+                'imc',
+                'platform',
+                'gio',
+                'pthread',
+                'm'])
+
+if env.Bit('build_x86_32'):
+  # Make sure that the linked IRT nexe never uses TLS via %gs access.
+  # All IRT code must avoid direct use of the TLS ABI register, which
+  # is reserved for user TLS.  Instead, ensure all TLS accesses use a
+  # call to __nacl_read_tp, which the IRT code overrides to segregate
+  # IRT-private TLS from user TLS.
+  node = env.CommandTest('irt_tls_test.out',
+                         ['${PYTHON}', env.File('check_tls.py'),
+                          '${OBJDUMP}', irt_library])
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_tls_test')

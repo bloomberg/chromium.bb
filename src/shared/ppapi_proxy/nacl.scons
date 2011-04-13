@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
@@ -17,6 +17,14 @@ env.Append(CPPPATH=
 env.Append(CPPDEFINES=['XP_UNIX'])
 env.FilterOut(CCFLAGS=['-Wswitch-enum'])
 env.Append(CCFLAGS=['-Wno-long-long'])
+
+# This library is linked into irt.nexe (see src/untrusted/irt/).
+# All IRT code must avoid direct use of the TLS ABI register, which
+# is reserved for user TLS.  Instead, ensure all TLS accesses use a
+# call to __nacl_read_tp, which the IRT code overrides to segregate
+# IRT-private TLS from user TLS.
+if not env.Bit('bitcode'):
+  env.Append(CCFLAGS=['-mtls-use-call'])
 
 # The PPAPI RPCs are specified abstractly via .srpc files.
 # Once a .srpc file is added to the UntrustedSrpc rules below, the low-level
