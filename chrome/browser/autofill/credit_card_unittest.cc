@@ -134,3 +134,13 @@ TEST(CreditCardTest, SetInfoCreditCardNumber) {
   EXPECT_EQ(ASCIIToUTF16("4321-5432-6543-xxxx"),
             card.GetInfo(CREDIT_CARD_NUMBER));
 }
+
+// Verify that we preserve exactly what the user typed for credit card numbers.
+TEST(CreditCardTest, SetInfoCreditCardNumber) {
+  CreditCard card;
+
+  autofill_test::SetCreditCardInfo(&card, "Bob Dylan",
+                                   "4321-5432-6543-xxxx", "07", "2013");
+  EXPECT_EQ(ASCIIToUTF16("4321-5432-6543-xxxx"),
+            card.GetInfo(CREDIT_CARD_NUMBER));
+}

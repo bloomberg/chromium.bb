@@ -153,11 +153,6 @@ class Browser : public TabHandlerDelegate,
                                Profile* profile,
                                bool is_panel);
 
-  // Like Create, but creates a panel for extension application.
-  static Browser* CreateForPanel(const std::string& app_name,
-                                 const gfx::Size& window_size,
-                                 Profile* profile);
-
   // Like Create, but creates a tabstrip-less and toolbar-less
   // DevTools "app" window.
   static Browser* CreateForDevTools(Profile* profile);

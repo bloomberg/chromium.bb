@@ -25,7 +25,6 @@ class PanelManager;
 //   other Panels.  For example deleting a panel would rearrange other panels.
 class Panel : public BrowserWindow {
  public:
-  Panel(Browser* browser, const gfx::Rect& bounds);
   virtual ~Panel();
 
   // Returns the PanelManager associated with this panel.
@@ -133,11 +132,15 @@ class Panel : public BrowserWindow {
   virtual void DestroyBrowser();
 
  private:
+  friend class PanelManager;
+
+  // Panel can only be created using PanelManager::CreatePanel().
+  Panel(Browser* browser, const gfx::Rect& bounds);
+
   // Platform specifc BrowserWindow implementation for panels.  It'd be one of
   // PanelBrowserWindowGtk/PanelBrowserView/PanelBrowserWindowCocoa.
   scoped_ptr<BrowserWindow> browser_window_;
 
-  // The bounds.
   gfx::Rect bounds_;
 
   // Is the panel minimized?
