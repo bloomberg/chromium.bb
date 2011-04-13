@@ -52,8 +52,10 @@ SkCanvas* CreateBitmapCanvas(int width, int height, bool is_opaque) {
 }
 
 void MakeOpaque(const SkIRect& region, SkCanvas* canvas) {
-  GetTopPlatformDevice(canvas)->makeOpaque(region.fLeft, region.fTop,
-      region.width(), region.height());
+  BitmapPlatformDevice* device = static_cast<BitmapPlatformDevice*>(
+      GetTopPlatformDevice(canvas));
+  device->makeOpaque(region.fLeft, region.fTop,
+                     region.width(), region.height());
 }
 
 bool SupportsPlatformPaint(const SkCanvas* canvas) {
