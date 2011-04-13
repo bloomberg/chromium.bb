@@ -14,6 +14,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
@@ -66,7 +67,8 @@ class LocationBarView : public LocationBar,
                         public views::View,
                         public views::DragController,
                         public AutocompleteEditController,
-                        public TemplateURLModelObserver {
+                        public TemplateURLModelObserver,
+                        public NotificationObserver {
  public:
   // The location bar view's class name.
   static const char kViewClassName[];
@@ -252,6 +254,11 @@ class LocationBarView : public LocationBar,
   // Overridden from TemplateURLModelObserver
   virtual void OnTemplateURLModelChanged() OVERRIDE;
 
+  // Overridden from NotificationObserver
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
+
   // Thickness of the left and right edges of the omnibox, in normal mode.
   static const int kNormalHorizontalEdgeThickness;
   // Thickness of the top and bottom edges of the omnibox.
@@ -402,6 +409,9 @@ class LocationBarView : public LocationBar,
   // because calling profile_->GetTemplateURLModel() in the destructor causes a
   // crash.
   TemplateURLModel* template_url_model_;
+
+  // Tracks this preference to determine whether bookmark editing is allowed.
+  BooleanPrefMember edit_bookmarks_enabled_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocationBarView);
 };

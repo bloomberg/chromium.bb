@@ -10,10 +10,12 @@
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/event_utils.h"
+#include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/page_navigator.h"
 #include "content/common/page_transition_types.h"
 #include "grit/app_resources.h"
@@ -134,7 +136,8 @@ bool BookmarkMenuController::CanDrop(MenuItemView* menu,
   // Only accept drops of 1 node, which is the case for all data dragged from
   // bookmark bar and menus.
 
-  if (!drop_data_.Read(data) || drop_data_.elements.size() != 1)
+  if (!drop_data_.Read(data) || drop_data_.elements.size() != 1 ||
+      !profile_->GetPrefs()->GetBoolean(prefs::kEditBookmarksEnabled))
     return false;
 
   if (drop_data_.has_single_url())
@@ -241,7 +244,7 @@ void BookmarkMenuController::WriteDragData(MenuItemView* sender,
 }
 
 int BookmarkMenuController::GetDragOperations(MenuItemView* sender) {
-  return bookmark_utils::BookmarkDragOperation(
+  return bookmark_utils::BookmarkDragOperation(profile_,
       menu_id_to_node_map_[sender->GetCommand()]);
 }
 

@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -124,6 +125,9 @@ LocationBarView::LocationBarView(Profile* profile,
 
   if (mode_ == NORMAL)
     painter_.reset(new views::HorizontalPainter(kNormalModeBackgroundImages));
+
+  edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
+                               profile_->GetPrefs(), this);
 }
 
 LocationBarView::~LocationBarView() {
@@ -266,7 +270,8 @@ SkColor LocationBarView::GetColor(ToolbarModel::SecurityLevel security_level,
 }
 
 void LocationBarView::Update(const TabContents* tab_for_state_restoring) {
-  bool star_enabled = star_view_ && !model_->input_in_progress();
+  bool star_enabled = star_view_ && !model_->input_in_progress() &&
+                      edit_bookmarks_enabled_.GetValue();
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
   if (star_view_)
     star_view_->SetVisible(star_enabled);
@@ -1183,6 +1188,16 @@ void LocationBarView::OnTemplateURLModelChanged() {
   template_url_model_->RemoveObserver(this);
   template_url_model_ = NULL;
   ShowFirstRunBubble(bubble_type_);
+}
+
+void LocationBarView::Observe(NotificationType type,
+                              const NotificationSource& source,
+                              const NotificationDetails& details) {
+  if (type.value == NotificationType::PREF_CHANGED) {
+    std::string* name = Details<std::string>(details).ptr();
+    if (*name == prefs::kEditBookmarksEnabled)
+      Update(NULL);
+  }
 }
 
 #if defined(OS_WIN)

@@ -229,6 +229,8 @@ bool BookmarkContextMenuControllerViews::IsCommandEnabled(int id) const {
   bool is_root_node =
       (selection_.size() == 1 &&
        selection_[0]->parent() == model_->root_node());
+  bool can_edit =
+      profile_->GetPrefs()->GetBoolean(prefs::kEditBookmarksEnabled);
   switch (id) {
     case IDC_BOOKMARK_BAR_OPEN_INCOGNITO:
       return !profile_->IsOffTheRecord() &&
@@ -244,14 +246,14 @@ bool BookmarkContextMenuControllerViews::IsCommandEnabled(int id) const {
 
     case IDC_BOOKMARK_BAR_RENAME_FOLDER:
     case IDC_BOOKMARK_BAR_EDIT:
-      return selection_.size() == 1 && !is_root_node;
+      return selection_.size() == 1 && !is_root_node && can_edit;
 
     case IDC_BOOKMARK_BAR_REMOVE:
-      return !selection_.empty() && !is_root_node;
+      return !selection_.empty() && !is_root_node && can_edit;
 
     case IDC_BOOKMARK_BAR_NEW_FOLDER:
     case IDC_BOOKMARK_BAR_ADD_NEW_BOOKMARK:
-      return bookmark_utils::GetParentForNewNodes(
+      return can_edit && bookmark_utils::GetParentForNewNodes(
           parent_, selection_, NULL) != NULL;
 
     case IDC_BOOKMARK_BAR_ALWAYS_SHOW:
@@ -260,13 +262,15 @@ bool BookmarkContextMenuControllerViews::IsCommandEnabled(int id) const {
 
     case IDC_COPY:
     case IDC_CUT:
-      return !selection_.empty() && !is_root_node;
+      return !selection_.empty() && !is_root_node &&
+             (id == IDC_COPY || can_edit);
 
     case IDC_PASTE:
       // Paste to selection from the Bookmark Bar, to parent_ everywhere else
-      return (!selection_.empty() &&
-              bookmark_utils::CanPasteFromClipboard(selection_[0])) ||
-             bookmark_utils::CanPasteFromClipboard(parent_);
+      return can_edit &&
+             ((!selection_.empty() &&
+               bookmark_utils::CanPasteFromClipboard(selection_[0])) ||
+              bookmark_utils::CanPasteFromClipboard(parent_));
   }
   return true;
 }

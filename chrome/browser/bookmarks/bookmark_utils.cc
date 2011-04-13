@@ -221,12 +221,14 @@ int PreferredDropOperation(int source_operations, int operations) {
   return ui::DragDropTypes::DRAG_NONE;
 }
 
-int BookmarkDragOperation(const BookmarkNode* node) {
+int BookmarkDragOperation(Profile* profile, const BookmarkNode* node) {
+  int move = ui::DragDropTypes::DRAG_MOVE;
+  if (!profile->GetPrefs()->GetBoolean(prefs::kEditBookmarksEnabled))
+    move = 0;
   if (node->is_url()) {
-    return ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE |
-           ui::DragDropTypes::DRAG_LINK;
+    return ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK | move;
   }
-  return ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE;
+  return ui::DragDropTypes::DRAG_COPY | move;
 }
 
 #if defined(TOOLKIT_VIEWS)

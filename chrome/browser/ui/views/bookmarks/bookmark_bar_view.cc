@@ -539,7 +539,8 @@ bool BookmarkBarView::AreDropTypesRequired() {
 }
 
 bool BookmarkBarView::CanDrop(const ui::OSExchangeData& data) {
-  if (!model_ || !model_->IsLoaded())
+  if (!model_ || !model_->IsLoaded() ||
+      !profile_->GetPrefs()->GetBoolean(prefs::kEditBookmarksEnabled))
     return false;
 
   if (!drop_info_.get())
@@ -1114,7 +1115,7 @@ int BookmarkBarView::GetDragOperationsForView(View* sender,
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
     if (sender == GetBookmarkButton(i)) {
       return bookmark_utils::BookmarkDragOperation(
-          model_->GetBookmarkBarNode()->GetChild(i));
+          profile_, model_->GetBookmarkBarNode()->GetChild(i));
     }
   }
   NOTREACHED();
