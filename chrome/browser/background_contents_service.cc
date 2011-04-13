@@ -33,8 +33,16 @@
 
 namespace {
 
+const char kNotificationPrefix[] = "app.background.crashed.";
+
 void CloseBalloon(const std::string id) {
   g_browser_process->notification_ui_manager()->CancelById(id);
+}
+
+void ScheduleCloseBalloon(const std::string& extension_id) {
+  MessageLoop::current()->PostTask(FROM_HERE,
+      NewRunnableFunction(&CloseBalloon,
+          kNotificationPrefix + extension_id));
 }
 
 class CrashNotificationDelegate : public NotificationDelegate {
@@ -62,14 +70,13 @@ class CrashNotificationDelegate : public NotificationDelegate {
       profile_->GetExtensionService()->ReloadExtension(extension_id_);
     }
 
-    // Closing the balloon here should be OK, but it causes a crash on mac
+    // Closing the balloon here should be OK, but it causes a crash on Mac
     // http://crbug.com/78167
-    MessageLoop::current()->PostTask(FROM_HERE,
-        NewRunnableFunction(&CloseBalloon, id()));
+    ScheduleCloseBalloon(extension_id_);
   }
 
   std::string id() const {
-    return "app.background.crashed." + extension_id_;
+    return kNotificationPrefix + extension_id_;
   }
 
  private:
@@ -175,6 +182,15 @@ void BackgroundContentsService::StartObserving(Profile* profile) {
   // BackgroundContents.
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  Source<Profile>(profile));
+
+  // Make sure the extension-crash balloons are removed when the extension is
+  // uninstalled/reloaded. We cannot do this from UNLOADED since a crashed
+  // extension is unloaded immediately after the crash, not when user reloads or
+  // uninstalls the extension.
+  registrar_.Add(this, NotificationType::EXTENSION_UNINSTALLED,
+                 Source<Profile>(profile));
+  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+                 Source<Profile>(profile));
 }
 
 void BackgroundContentsService::Observe(NotificationType type,
@@ -242,6 +258,22 @@ void BackgroundContentsService::Observe(NotificationType type,
           break;
       }
       break;
+
+    case NotificationType::EXTENSION_UNINSTALLED: {
+      // Remove any "This extension has crashed" balloons.
+      const UninstalledExtensionInfo* uninstalled_extension =
+          Details<const UninstalledExtensionInfo>(details).ptr();
+      ScheduleCloseBalloon(uninstalled_extension->extension_id);
+      break;
+    }
+
+    case NotificationType::EXTENSION_LOADED: {
+      // Remove any "This extension has crashed" balloons.
+      const Extension* extension = Details<const Extension>(details).ptr();
+      ScheduleCloseBalloon(extension->id());
+      break;
+    }
+
     default:
       NOTREACHED();
       break;

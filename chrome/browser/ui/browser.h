@@ -847,8 +847,6 @@ class Browser : public TabHandlerDelegate,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  void RemoveCrashedExtensionBalloon(const std::string& id);
-
   // Overridden from ProfileSyncServiceObserver:
   virtual void OnStateChanged();
 

@@ -3428,24 +3428,10 @@ void Browser::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::EXTENSION_UNINSTALLED: {
+    case NotificationType::EXTENSION_UNINSTALLED:
+    case NotificationType::EXTENSION_LOADED:
       window()->GetLocationBar()->UpdatePageActions();
-
-      // Remove any "This extension has crashed" balloons.
-      const UninstalledExtensionInfo* uninstalled_extension =
-          Details<const UninstalledExtensionInfo>(details).ptr();
-      RemoveCrashedExtensionBalloon(uninstalled_extension->extension_id);
       break;
-    }
-
-    case NotificationType::EXTENSION_LOADED: {
-      window()->GetLocationBar()->UpdatePageActions();
-
-      // Remove any "This extension has crashed" balloons.
-      const Extension* extension = Details<const Extension>(details).ptr();
-      RemoveCrashedExtensionBalloon(extension->id());
-      break;
-    }
 
     case NotificationType::BROWSER_THEME_CHANGED:
       window()->UserChangedTheme();
@@ -3507,11 +3493,6 @@ void Browser::Observe(NotificationType type,
     default:
       NOTREACHED() << "Got a notification we didn't register for.";
   }
-}
-
-void Browser::RemoveCrashedExtensionBalloon(const std::string& extension_id) {
-  g_browser_process->notification_ui_manager()->CancelAllBySourceOrigin(
-      Extension::GetBaseURLFromExtensionId(extension_id));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
