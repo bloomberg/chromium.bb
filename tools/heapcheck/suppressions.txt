@@ -1387,5 +1387,5 @@
    bug_79329
    Heapcheck:Leak
    ...
-   fun:*file_util*FileEnumerator*
+   fun:FileEnumerator
 }
