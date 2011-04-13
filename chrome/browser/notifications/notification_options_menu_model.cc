@@ -10,7 +10,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/balloon_collection.h"
-#include "chrome/browser/notifications/balloon_host.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
@@ -22,7 +21,7 @@
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -235,9 +234,14 @@ void NotificationOptionsMenuModel::ExecuteCommand(int command_id) {
       break;
     }
     case kOpenContentSettingsCommand: {
-      TabContents* tab_contents =
-          balloon_->view()->GetHost()->associated_tab_contents();
-      tab_contents->delegate()->ShowContentSettingsPage(
+      Browser* browser =
+          BrowserList::GetLastActiveWithProfile(balloon_->profile());
+      if (!browser) {
+        // It is possible that there is no browser window (e.g. when there are
+        // background pages, or for a chrome frame process on windows).
+        browser = Browser::Create(balloon_->profile());
+      }
+      static_cast<TabContentsDelegate*>(browser)->ShowContentSettingsPage(
           CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
       break;
     }
