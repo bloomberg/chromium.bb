@@ -1,19 +1,20 @@
 #!/bin/bash
 #
-# Copyright 2007 Google Inc. All Rights Reserved.
-# Author: shess@google.com (Scott Hess)
+# Copyright 2011 Google Inc. All Rights Reserved.
+# Author: shess@chromium.org (Scott Hess)
+# TODO(shess): This notice needs updating.
 
 cd src
 
 mkdir bld
 cd bld
 ../configure
-FILES="keywordhash.h opcodes.c opcodes.h parse.c parse.h sqlite3.h"
+FILES="sqlite3.h sqlite3.c"
 OPTS=""
-# These options should match those in ../../tools/config.mk.
+# These options should match those in sqlite.gyp.
 OPTS="$OPTS -DSQLITE_OMIT_LOAD_EXTENSION=1"
 make "OPTS=$OPTS" $FILES
-cp -f $FILES ../../preprocessed
+cp -f $FILES ../../amalgamation
 
 cd ..
 rm -rf bld
