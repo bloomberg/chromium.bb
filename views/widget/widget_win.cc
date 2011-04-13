@@ -6,7 +6,9 @@
 
 #include <dwmapi.h>
 
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drag_source.h"
@@ -607,8 +609,21 @@ void WidgetWin::OnCommand(UINT notification_code, int command_id, HWND window) {
 }
 
 LRESULT WidgetWin::OnCreate(CREATESTRUCT* create_struct) {
+  // Debugging code to help track 77651.
   CHECK(hwnd());
-  CHECK(ui::WindowImpl::IsWindowImpl(hwnd()));
+  if (!ui::WindowImpl::IsWindowImpl(hwnd())) {
+    std::wstring class_name;
+    wchar_t tmp[128];
+    if (!::GetClassName(hwnd(), tmp, 128)) {
+      class_name = L"unable to get class name error=" +
+          UTF8ToWide(base::IntToString(GetLastError()));
+    } else {
+      class_name = std::wstring(tmp);
+    }
+
+    CHECK(false) << " Not a window impl, hwnd=" << hwnd() <<
+        " class_name=" << class_name << " is_window=" << ::IsWindow(hwnd());
+  }
   SetNativeWindowProperty(kNativeWidgetKey, this);
   CHECK_EQ(this, GetNativeWidgetForNativeView(hwnd()));
 

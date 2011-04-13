@@ -144,10 +144,27 @@ void WindowImpl::Init(HWND parent, const gfx::Rect& bounds) {
     height = bounds.height();
   }
 
-  hwnd_ = CreateWindowEx(window_ex_style_, GetWindowClassName().c_str(), NULL,
+  std::wstring name(GetWindowClassName());
+  hwnd_ = CreateWindowEx(window_ex_style_, name.c_str(), NULL,
                          window_style_, x, y, width, height,
                          parent, NULL, NULL, this);
-  CHECK(hwnd_);
+  if (!hwnd_) {
+    LPWSTR error_string = NULL;
+    DWORD last_error = GetLastError();
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                  FORMAT_MESSAGE_FROM_SYSTEM,
+                  0,  // Use the internal message table.
+                  last_error,
+                  0,  // Use default language.
+                  reinterpret_cast<LPWSTR>(&error_string),
+                  0,  // Buffer size.
+                  0);  // Arguments (unused).
+    CHECK(false) << "Create failed error=" << last_error <<
+        " message=" << error_string << " name=" << name << " style=" <<
+        window_style_ << " ex_style=" << window_ex_style_;
+    if (error_string)
+      LocalFree(error_string);
+  }
 
   // The window procedure should have set the data for us.
   CHECK_EQ(this, ui::GetWindowUserData(hwnd_));
