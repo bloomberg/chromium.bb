@@ -4916,6 +4916,16 @@
         "$ref": "Preference",
         "value": ["blockThirdPartyCookies", {"type": "boolean"}],
         "description": "Whether third party cookies should be blocked. The value of this preference is of type boolean."
+      },
+      "enableReferrers": {
+        "$ref": "Preference",
+        "value": ["enableReferrers", {"type":"boolean"}],
+        "description": "Whether referrers should be enabled. The value of this preference is of type boolean."
+      },
+      "enableHyperlinkAuditing": {
+        "$ref": "Preference",
+        "value": ["enableHyperlinkAuditing", {"type":"boolean"}],
+        "description": "Whether to enable hyperlink auditing (\"&lt;a ping&gt;\"). The value of this preference is of type boolean."
       }
     }
   },

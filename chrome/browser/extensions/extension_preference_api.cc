@@ -52,6 +52,14 @@ PrefMappingEntry kPrefMapping[] = {
     prefs::kBlockThirdPartyCookies,
     Extension::kContentSettingsPermission
   },
+  { "enableReferrers",
+    prefs::kEnableReferrers,
+    Extension::kContentSettingsPermission
+  },
+  { "enableHyperlinkAuditing",
+    prefs::kEnableHyperlinkAuditing,
+    Extension::kContentSettingsPermission
+  },
   { "proxy",
     prefs::kProxy,
     Extension::kProxyPermission

@@ -121,6 +121,7 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
 
 }  // namespace
 
+// static
 void ProfileIOData::InitializeProfileParams(Profile* profile,
                                             ProfileParams* params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -270,4 +271,9 @@ void ProfileIOData::ApplyProfileParamsToContext(
   context->set_file_system_context(profile_params.file_system_context);
   context->set_extension_info_map(profile_params.extension_info_map);
   context->set_prerender_manager(profile_params.prerender_manager);
+}
+
+void ProfileIOData::ShutdownOnUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  enable_referrers_.Destroy();
 }

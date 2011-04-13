@@ -12,7 +12,7 @@
 
 namespace prefs {
 
-// Profile prefs
+// Profile prefs. Please add Local State prefs below instead.
 extern const char kAppsPromoCounter[];
 extern const char kDefaultAppsInstalled[];
 extern const char kHomePageIsNewTabPage[];
@@ -242,7 +242,11 @@ extern const char kHttpThrottlingEnabled[];
 extern const char kPolicyUserPolicyRefreshRate[];
 extern const char kPolicyDevicePolicyRefreshRate[];
 
-// Local state
+extern const char kDisable3DAPIs[];
+extern const char kEnableHyperlinkAuditing[];
+extern const char kEnableReferrers[];
+
+// Local state prefs. Please add Profile prefs above instead.
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kSSL3Enabled[];
 extern const char kTLS1Enabled[];
@@ -470,8 +474,6 @@ extern const char kAuthNegotiateDelegateWhitelist[];
 extern const char kGSSAPILibraryName[];
 
 extern const char kKnownBackgroundPages[];
-
-extern const char kDisable3DAPIs[];
 
 extern const char kRegisteredProtocolHandlers[];
 

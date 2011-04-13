@@ -698,6 +698,12 @@ const char kGeolocationContentSettings[] = "geolocation.content_settings";
 // Preference to disable 3D APIs (WebGL, Pepper 3D).
 const char kDisable3DAPIs[] = "disable_3d_apis";
 
+// Whether to enable hyperlink auditing ("<a ping>").
+const char kEnableHyperlinkAuditing[] = "enable_a_ping";
+
+// Whether to enable sending referrers.
+const char kEnableReferrers[] = "enable_referrers";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

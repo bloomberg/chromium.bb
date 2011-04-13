@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -73,6 +73,9 @@ struct RendererPreferences {
   // Currently only changed from default on Linux.  Uses |gtk-cursor-blink|
   // from GtkSettings.
   double caret_blink_interval;
+
+  // Set to false to not send referrers.
+  bool enable_referrers;
 };
 
 #endif  // CONTENT_COMMON_RENDERER_PREFERENCES_H_

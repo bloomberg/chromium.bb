@@ -313,8 +313,6 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         !command_line.HasSwitch(switches::kDisableAcceleratedVideo);
     web_prefs.memory_info_enabled =
         command_line.HasSwitch(switches::kEnableMemoryInfo);
-    web_prefs.hyperlink_auditing_enabled =
-        !command_line.HasSwitch(switches::kNoPings);
     web_prefs.interactive_form_validation_enabled =
         !command_line.HasSwitch(switches::kDisableInteractiveFormValidation);
     web_prefs.fullscreen_enabled =
@@ -346,6 +344,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
       prefs->GetBoolean(prefs::kWebKitUsesUniversalDetector);
   web_prefs.text_areas_are_resizable =
       prefs->GetBoolean(prefs::kWebKitTextAreasAreResizable);
+  web_prefs.hyperlink_auditing_enabled =
+      prefs->GetBoolean(prefs::kEnableHyperlinkAuditing);
 
   // Make sure we will set the default_encoding with canonical encoding name.
   web_prefs.default_encoding =

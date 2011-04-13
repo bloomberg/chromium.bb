@@ -2985,7 +2985,7 @@ void RenderView::willSendRequest(
   request.setRequestorID(routing_id_);
   request.setHasUserGesture(frame->isProcessingUserGesture());
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoReferrers))
+  if (!renderer_preferences_.enable_referrers)
     request.clearHTTPHeaderField("Referer");
 
   // Temporary metrics, see site_isolation_metrics.h

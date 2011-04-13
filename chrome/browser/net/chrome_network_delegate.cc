@@ -9,6 +9,9 @@
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_proxy_api.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
+#include "chrome/browser/prefs/pref_member.h"
+#include "chrome/common/pref_names.h"
+#include "content/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
@@ -36,17 +39,31 @@ void ForwardProxyErrors(net::URLRequest* request,
 ChromeNetworkDelegate::ChromeNetworkDelegate(
     ExtensionEventRouterForwarder* event_router,
     ProfileId profile_id,
+    BooleanPrefMember* enable_referrers,
     ProtocolHandlerRegistry* protocol_handler_registry)
     : event_router_(event_router),
       profile_id_(profile_id),
+      enable_referrers_(enable_referrers),
       protocol_handler_registry_(protocol_handler_registry) {
   DCHECK(event_router);
+  DCHECK(enable_referrers);
 }
 
 ChromeNetworkDelegate::~ChromeNetworkDelegate() {}
 
+// static
+void ChromeNetworkDelegate::InitializeReferrersEnabled(
+    BooleanPrefMember* enable_referrers,
+    PrefService* pref_service) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  enable_referrers->Init(prefs::kEnableReferrers, pref_service, NULL);
+  enable_referrers->MoveToThread(BrowserThread::IO);
+}
+
 int ChromeNetworkDelegate::OnBeforeURLRequest(
     net::URLRequest* request, net::CompletionCallback* callback) {
+  if (!enable_referrers_->GetValue())
+    request->set_referrer(std::string());
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
       profile_id_, event_router_.get(), request, callback);
 }

@@ -160,7 +160,8 @@ const char* kPrefsToObserve[] = {
   prefs::kWebKitMinimumFontSize,
   prefs::kWebKitMinimumLogicalFontSize,
   prefs::kWebkitTabsToLinks,
-  prefs::kDefaultCharset
+  prefs::kDefaultCharset,
+  prefs::kEnableReferrers
 };
 
 const int kPrefsToObserveLength = arraysize(kPrefsToObserve);
@@ -2442,6 +2443,10 @@ void TabContents::Observe(NotificationType type,
         UpdateWebPreferences();
       } else if (*pref_name_in == prefs::kDefaultZoomLevel) {
         UpdateZoomLevel();
+      } else if (*pref_name_in == prefs::kEnableReferrers) {
+        renderer_preferences_util::UpdateFromSystemSettings(
+            &renderer_preferences_, profile());
+        render_view_host()->SyncRendererPrefs();
       } else {
         NOTREACHED() << "unexpected pref change notification" << *pref_name_in;
       }

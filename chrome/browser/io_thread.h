@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process_sub_thread.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/common/net/predictor_common.h"
 #include "net/base/network_change_notifier.h"
 
@@ -180,6 +181,8 @@ class IOThread : public BrowserProcessSubThread {
   // Observer that logs network changes to the ChromeNetLog.
   scoped_ptr<net::NetworkChangeNotifier::IPAddressObserver>
       network_change_observer_;
+
+  BooleanPrefMember system_enable_referrers_;
 
   // Store HTTP Auth-related policies in this thread.
   std::string auth_schemes_;

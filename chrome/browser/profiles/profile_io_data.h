@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
 #include "net/base/cookie_monster.h"
 
@@ -132,6 +133,14 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   // functions have been provided to assist in common operations.
   void LazyInitialize() const;
 
+  // Called when the profile is destroyed.
+  void ShutdownOnUIThread();
+
+  BooleanPrefMember* enable_referrers() const {
+    return &enable_referrers_;
+  }
+
+ private:
   // --------------------------------------------
   // Virtual interface for subtypes to implement:
   // --------------------------------------------
@@ -159,6 +168,7 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
           scoped_refptr<ChromeURLRequestContext> main_context,
           const std::string& app_id) const = 0;
 
+  mutable BooleanPrefMember enable_referrers_;
   mutable bool initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileIOData);

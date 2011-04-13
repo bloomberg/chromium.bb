@@ -312,6 +312,8 @@ IOThread::IOThread(
       prefs::kAuthNegotiateDelegateWhitelist);
   gssapi_library_name_ = local_state->GetString(prefs::kGSSAPILibraryName);
   pref_proxy_config_tracker_ = new PrefProxyConfigTracker(local_state);
+  ChromeNetworkDelegate::InitializeReferrersEnabled(&system_enable_referrers_,
+                                                    local_state);
 }
 
 IOThread::~IOThread() {
@@ -429,7 +431,10 @@ void IOThread::Init() {
   globals_->extension_event_router_forwarder =
       extension_event_router_forwarder_;
   globals_->system_network_delegate.reset(new ChromeNetworkDelegate(
-      extension_event_router_forwarder_, Profile::kInvalidProfileId, NULL));
+      extension_event_router_forwarder_,
+      Profile::kInvalidProfileId,
+      &system_enable_referrers_,
+      NULL));
   globals_->host_resolver.reset(
       CreateGlobalHostResolver(net_log_));
   globals_->cert_verifier.reset(new net::CertVerifier);
@@ -549,6 +554,7 @@ void IOThread::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterStringPref(prefs::kAuthServerWhitelist, "");
   local_state->RegisterStringPref(prefs::kAuthNegotiateDelegateWhitelist, "");
   local_state->RegisterStringPref(prefs::kGSSAPILibraryName, "");
+  local_state->RegisterBooleanPref(prefs::kEnableReferrers, true);
 }
 
 net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(

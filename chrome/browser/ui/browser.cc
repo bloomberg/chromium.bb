@@ -2126,9 +2126,12 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kBrowserWindowPlacement);
   prefs->RegisterDictionaryPref(prefs::kPreferencesWindowPlacement);
   // We need to register the type of these preferences in order to query
-  // them even though they're only typically controlled via policy.
+  // them even though they're typically only controlled via policy or command
+  // line switches.
   prefs->RegisterBooleanPref(prefs::kDisable3DAPIs, false);
   prefs->RegisterBooleanPref(prefs::kPluginsAllowOutdated, false);
+  prefs->RegisterBooleanPref(prefs::kEnableHyperlinkAuditing, true);
+  prefs->RegisterBooleanPref(prefs::kEnableReferrers, true);
 }
 
 // static

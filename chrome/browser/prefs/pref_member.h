@@ -96,7 +96,9 @@ class PrefMemberBase : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  void VerifyValuePrefName() const;
+  void VerifyValuePrefName() const {
+    DCHECK(!pref_name_.empty());
+  }
 
   // This method is used to do the actual sync with the preference.
   // Note: it is logically const, because it doesn't modify the state
@@ -105,11 +107,7 @@ class PrefMemberBase : public NotificationObserver {
 
   // Verifies the preference name, and lazily loads the preference value if
   // it hasn't been loaded yet.
-  void VerifyPref() const {
-    VerifyValuePrefName();
-    if (!internal())
-      UpdateValueFromPref();
-  }
+  void VerifyPref() const;
 
   const std::string& pref_name() const { return pref_name_; }
   PrefService* prefs() { return prefs_; }

@@ -12,7 +12,10 @@
 #include "net/base/network_delegate.h"
 
 class ExtensionEventRouterForwarder;
+template<class T> class PrefMember;
 class ProtocolHandlerRegistry;
+
+typedef PrefMember<bool> BooleanPrefMember;
 
 // ChromeNetworkDelegate is the central point from within the chrome code to
 // add hooks into the network stack.
@@ -20,12 +23,20 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
  public:
   // If |profile_id| is the invalid profile, events will be broadcasted to all
   // profiles, otherwise, they will only be sent to the specified profile.
-  explicit ChromeNetworkDelegate(
+  // |enable_referrers| should be initialized on the UI thread (see below)
+  // beforehand. This object's owner is responsible for cleaning it up
+  // at shutdown.
+  ChromeNetworkDelegate(
       ExtensionEventRouterForwarder* event_router,
       ProfileId profile_id,
+      BooleanPrefMember* enable_referrers,
       ProtocolHandlerRegistry* protocol_handler_registry);
   virtual ~ChromeNetworkDelegate();
 
+  // Binds |enable_referrers| to |pref_service| and moves it to the IO thread.
+  // This method should be called on the UI thread.
+  static void InitializeReferrersEnabled(BooleanPrefMember* enable_referrers,
+                                         PrefService* pref_service);
  private:
   // NetworkDelegate methods:
   virtual int OnBeforeURLRequest(net::URLRequest* request,
@@ -41,6 +52,9 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
 
   scoped_refptr<ExtensionEventRouterForwarder> event_router_;
   const ProfileId profile_id_;
+
+  // Weak, owned by our owner.
+  BooleanPrefMember* enable_referrers_;
   scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkDelegate);
 };

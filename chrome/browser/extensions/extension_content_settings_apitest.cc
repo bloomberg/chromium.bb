@@ -15,6 +15,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettings) {
 
   PrefService* pref_service = browser()->profile()->GetPrefs();
   pref_service->SetBoolean(prefs::kBlockThirdPartyCookies, true);
+  pref_service->SetBoolean(prefs::kEnableReferrers, false);
 
   EXPECT_TRUE(RunExtensionTest("content_settings/standard")) << message_;
 
@@ -23,6 +24,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettings) {
   ASSERT_TRUE(pref);
   EXPECT_TRUE(pref->IsExtensionControlled());
   EXPECT_FALSE(pref_service->GetBoolean(prefs::kBlockThirdPartyCookies));
+  EXPECT_TRUE(pref_service->GetBoolean(prefs::kEnableReferrers));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoContentSettings) {

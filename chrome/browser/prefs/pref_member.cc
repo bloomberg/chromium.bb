@@ -18,8 +18,7 @@ PrefMemberBase::PrefMemberBase()
 }
 
 PrefMemberBase::~PrefMemberBase() {
-  if (prefs_ && !pref_name_.empty())
-    prefs_->RemovePrefObserver(pref_name_.c_str(), this);
+  Destroy();
 }
 
 
@@ -38,7 +37,7 @@ void PrefMemberBase::Init(const char* pref_name, PrefService* prefs,
 }
 
 void PrefMemberBase::Destroy() {
-  if (prefs_) {
+  if (prefs_ && !pref_name_.empty()) {
     prefs_->RemovePrefObserver(pref_name_.c_str(), this);
     prefs_ = NULL;
   }
@@ -62,10 +61,6 @@ void PrefMemberBase::Observe(NotificationType type,
     observer_->Observe(type, source, details);
 }
 
-void PrefMemberBase::VerifyValuePrefName() const {
-  DCHECK(!pref_name_.empty());
-}
-
 void PrefMemberBase::UpdateValueFromPref() const {
   VerifyValuePrefName();
   const PrefService::Preference* pref =
@@ -74,6 +69,12 @@ void PrefMemberBase::UpdateValueFromPref() const {
   if (!internal())
     CreateInternal();
   internal()->UpdateValue(pref->GetValue()->DeepCopy(), pref->IsManaged());
+}
+
+void PrefMemberBase::VerifyPref() const {
+  VerifyValuePrefName();
+  if (!internal())
+    UpdateValueFromPref();
 }
 
 PrefMemberBase::Internal::Internal() : thread_id_(BrowserThread::UI) { }

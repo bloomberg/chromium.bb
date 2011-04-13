@@ -4,7 +4,9 @@
 
 #include "chrome/browser/renderer_preferences_util.h"
 
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
@@ -41,6 +43,9 @@ void UpdateFromSystemSettings(RendererPreferences* prefs, Profile* profile) {
 #endif  // defined(OS_CHROMEOS)
 
 #endif  // defined(TOOLKIT_USES_GTK)
+
+  prefs->enable_referrers =
+      profile->GetPrefs()->GetBoolean(prefs::kEnableReferrers);
 }
 
 }  // renderer_preferences_util

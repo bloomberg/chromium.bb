@@ -183,9 +183,10 @@ class ProfileImpl : public Profile,
   FilePath path_;
   FilePath base_cache_path_;
   scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
-  // Keep prefs_ on top for destruction order because extension_prefs_,
-  // net_pref_observer_, web_resource_service_ and background_contents_service_
-  // store pointers to prefs_ and shall be destructed first.
+  // Keep |prefs_| on top for destruction order because |extension_prefs_|,
+  // |net_pref_observer_|, |web_resource_service_|,
+  // |background_contents_service_| and |io_data_| store pointers to |prefs_|
+  // and shall be destructed first.
   scoped_ptr<PrefService> prefs_;
   scoped_ptr<PrefService> otr_prefs_;
   scoped_ptr<VisitedLinkEventListener> visited_link_event_listener_;

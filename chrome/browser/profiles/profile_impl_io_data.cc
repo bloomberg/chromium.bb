@@ -48,6 +48,8 @@ ProfileImplIOData::Handle::~Handle() {
        ++iter) {
     iter->second->CleanupOnUIThread();
   }
+
+  io_data_->ShutdownOnUIThread();
 }
 
 void ProfileImplIOData::Handle::Init(const FilePath& cookie_path,
@@ -139,6 +141,8 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
     // Keep track of clear_local_state_on_exit for isolated apps.
     io_data_->clear_local_state_on_exit_ =
         io_data_->lazy_params_->profile_params.clear_local_state_on_exit;
+    ChromeNetworkDelegate::InitializeReferrersEnabled(
+        io_data_->enable_referrers(), profile_->GetPrefs());
     initialized_ = true;
   }
 }
@@ -189,6 +193,7 @@ void ProfileImplIOData::LazyInitializeInternal() const {
   network_delegate_.reset(new ChromeNetworkDelegate(
         io_thread_globals->extension_event_router_forwarder.get(),
         profile_params.profile_id,
+        enable_referrers(),
         profile_params.protocol_handler_registry));
   main_request_context_->set_network_delegate(network_delegate_.get());
   media_request_context_->set_network_delegate(network_delegate_.get());

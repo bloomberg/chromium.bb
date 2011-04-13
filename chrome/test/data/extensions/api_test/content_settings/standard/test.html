@@ -16,9 +16,21 @@ chrome.test.runTests([
                  'levelOfControl': "ControllableByThisExtension" },
                "third-party cookies should be blocked"));
   },
+  function getEnableReferrers() {
+    cs.misc.enableReferrers.get(
+        {},
+        expect({ 'value': false,
+                 'levelOfControl': "ControllableByThisExtension" },
+               "referrers should be disabled"));
+  },
   function setBlockThirdPartyCookies() {
     cs.misc.blockThirdPartyCookies.set(
         {'value': false},
+        chrome.test.callbackPass());
+  },
+  function setEnableReferrers() {
+    cs.misc.enableReferrers.set(
+        {'value': true},
         chrome.test.callbackPass());
   }
 ]);

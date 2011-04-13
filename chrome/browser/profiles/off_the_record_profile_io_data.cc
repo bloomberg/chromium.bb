@@ -48,6 +48,8 @@ OffTheRecordProfileIOData::Handle::~Handle() {
        ++iter) {
     iter->second->CleanupOnUIThread();
   }
+
+  io_data_->ShutdownOnUIThread();
 }
 
 scoped_refptr<ChromeURLRequestContextGetter>
@@ -101,6 +103,8 @@ OffTheRecordProfileIOData::Handle::GetIsolatedAppRequestContextGetter(
 void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
   if (!initialized_) {
     InitializeProfileParams(profile_, &io_data_->lazy_params_->profile_params);
+    ChromeNetworkDelegate::InitializeReferrersEnabled(
+        io_data_->enable_referrers(), profile_->GetPrefs());
     initialized_ = true;
   }
 }
@@ -139,6 +143,7 @@ void OffTheRecordProfileIOData::LazyInitializeInternal() const {
   network_delegate_.reset(new ChromeNetworkDelegate(
       io_thread_globals->extension_event_router_forwarder.get(),
       profile_params.profile_id,
+      enable_referrers(),
       profile_params.protocol_handler_registry));
   main_request_context_->set_network_delegate(network_delegate_.get());
 

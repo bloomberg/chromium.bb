@@ -218,6 +218,7 @@ IPC_STRUCT_TRAITS_BEGIN(RendererPreferences)
   IPC_STRUCT_TRAITS_MEMBER(inactive_selection_fg_color)
   IPC_STRUCT_TRAITS_MEMBER(browser_handles_top_level_requests)
   IPC_STRUCT_TRAITS_MEMBER(caret_blink_interval)
+  IPC_STRUCT_TRAITS_MEMBER(enable_referrers)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ViewMsg_StopFinding_Params)
