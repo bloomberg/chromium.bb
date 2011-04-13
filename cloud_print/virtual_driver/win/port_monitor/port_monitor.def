@@ -5,4 +5,5 @@
 EXPORTS        
   InitializePrintMonitor2
   InitializePrintMonitorUI
-
+  DllRegisterServer PRIVATE
+  DllUnregisterServer PRIVATE

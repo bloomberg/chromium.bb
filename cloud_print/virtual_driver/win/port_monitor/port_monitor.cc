@@ -111,6 +111,20 @@ MONITOR2 g_monitor_2 = {
   Monitor2Shutdown
 };
 
+// Returns true if registration/unregistration can be attempted.
+bool CanRegister() {
+  // TODO(abodenha@chromium.org) Add handling for XP.
+  // Should Verify admin rights and that XPS is installed.
+  base::IntegrityLevel level = base::INTEGRITY_UNKNOWN;
+  if (!GetProcessIntegrityLevel(base::GetCurrentProcessHandle(), &level)) {
+    return false;
+  }
+  if (level != base::HIGH_INTEGRITY) {
+    return false;
+  }
+  return true;
+}
+
 // Frees any objects referenced by port_data and sets pointers to NULL.
 void CleanupPortData(PortData* port_data) {
   delete port_data->file_path;
@@ -615,3 +629,31 @@ MONITORUI* WINAPI InitializePrintMonitorUI(void) {
   return &cloud_print::g_monitor_ui;
 }
 
+HRESULT WINAPI DllRegisterServer(void) {
+  if (!cloud_print::CanRegister()) {
+    return E_ACCESSDENIED;
+  }
+  MONITOR_INFO_2 monitor_info = {0};
+  // YUCK!!!  I can either copy the constant, const_cast, or define my own
+  // MONITOR_INFO_2 that will take const strings.
+  monitor_info.pDLLName = const_cast<LPWSTR>(cloud_print::kPortMonitorDllName);
+  monitor_info.pName = const_cast<LPWSTR>(cloud_print::kPortMonitorDllName);
+  if (AddMonitor(NULL, 2, reinterpret_cast<BYTE*>(&monitor_info))) {
+    return S_OK;
+  }
+  DWORD error_code = GetLastError();
+  return HRESULT_FROM_WIN32(error_code);
+}
+
+HRESULT WINAPI DllUnregisterServer(void) {
+  if (!cloud_print::CanRegister()) {
+    return E_ACCESSDENIED;
+  }
+  if (DeleteMonitor(NULL,
+                    NULL,
+                    const_cast<LPWSTR>(cloud_print::kPortMonitorDllName))) {
+    return S_OK;
+  }
+  DWORD error_code = GetLastError();
+  return HRESULT_FROM_WIN32(error_code);
+}
