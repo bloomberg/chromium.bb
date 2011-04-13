@@ -21,6 +21,9 @@ const char kActivateOnLaunch[]              = "activate-on-launch";
 // directories. This switch re-enables file:// for testing.
 const char kAllowFileAccess[]               = "allow-file-access";
 
+// Allow non-https URL for background_page for hosted apps.
+const char kAllowHTTPBackgroundPage[]       = "allow-http-background-page";
+
 // Don't block outdated plugins.
 const char kAllowOutdatedPlugins[]          = "allow-outdated-plugins";
 
