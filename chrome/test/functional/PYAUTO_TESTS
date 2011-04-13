@@ -97,8 +97,6 @@
     ],
 
     'win': [
-      'enterprise',
-      '-enterprise.EnterpriseTest.testDisableSPDY',  # crbug.com/79102
       # crbug.com/77969
       '-autofill.AutofillTest.testComparePhoneNumbers',
       # crbug.com/78519
@@ -287,6 +285,7 @@
     ],
 
     'win': [
+      'enterprise',
     ],
 
     'mac': [

@@ -182,6 +182,8 @@ class EnterpriseTest(pyauto.PyUITest):
 
   def testDisableSPDY(self):
     """Verify that SPDY is disabled."""
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
     self.NavigateToURL('chrome://net-internals/#spdy')
     self.assertEquals(0,
                       self.FindInPage('encrypted.google.com')['match_count'])
@@ -189,7 +191,8 @@ class EnterpriseTest(pyauto.PyUITest):
     self.assertEquals('Google', self.GetActiveTabTitle())
     self.GetBrowserWindow(0).GetTab(0).Reload()
     self.assertEquals(0,
-        self.FindInPage('encrypted.google.com', tab_index=0)['match_count'])
+        self.FindInPage('encrypted.google.com', tab_index=0)['match_count'],
+        msg='SPDY is not disabled.')
 
   def testDisabledPlugins(self):
     """Verify that disabled plugins cannot be enabled."""
