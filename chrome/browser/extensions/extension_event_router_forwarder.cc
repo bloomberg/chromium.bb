@@ -80,11 +80,11 @@ void ExtensionEventRouterForwarder::HandleEvent(
         profile, extension_id, event_name, event_args,
         use_profile_to_restrict_events ? profile : NULL, event_url);
   } else {
-    std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
-    for (size_t i = 0; i < profiles.size(); ++i) {
+    ProfileManager::iterator i;
+    for (i = profile_manager->begin(); i != profile_manager->end(); ++i) {
       CallExtensionEventRouter(
-          profiles[i], extension_id, event_name, event_args,
-          use_profile_to_restrict_events ? profiles[i] : NULL, event_url);
+          *i, extension_id, event_name, event_args,
+          use_profile_to_restrict_events ? (*i) : NULL, event_url);
     }
   }
 }
@@ -112,3 +112,4 @@ void ExtensionEventRouterForwarder::CallExtensionEventRouter(
             event_name, event_args, restrict_to_profile, event_url);
   }
 }
+

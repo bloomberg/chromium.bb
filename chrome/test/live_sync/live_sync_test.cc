@@ -190,9 +190,7 @@ void LiveSyncTest::SetUpCommandLine(CommandLine* cl) {
 Profile* LiveSyncTest::MakeProfile(const FilePath::StringType name) {
   FilePath path;
   PathService::Get(chrome::DIR_USER_DATA, &path);
-
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  return profile_manager->GetProfile(path.Append(name));
+  return ProfileManager::CreateProfile(path.Append(name));
 }
 
 Profile* LiveSyncTest::GetProfile(int index) {

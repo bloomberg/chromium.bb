@@ -130,12 +130,6 @@ class Profile {
     IMPLICIT_ACCESS
   };
 
-  class Delegate {
-   public:
-    // Called when creation of the profile is finished.
-    virtual void OnProfileCreated(Profile* profile, bool success) = 0;
-  };
-
   // Key used to bind profile to the widget with which it is associated.
   static const char* kProfileKey;
 
@@ -151,10 +145,6 @@ class Profile {
 
   // Create a new profile given a path.
   static Profile* CreateProfile(const FilePath& path);
-
-  // Same as above, but uses async initialization.
-  static Profile* CreateProfileAsync(const FilePath& path,
-                                     Delegate* delegate);
 
   // Returns the request context for the "default" profile.  This may be called
   // from any thread.  This CAN return NULL if a first request context has not

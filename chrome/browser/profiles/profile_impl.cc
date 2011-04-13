@@ -231,27 +231,7 @@ void ProfileSizeTask::Run() {
 
 // static
 Profile* Profile::CreateProfile(const FilePath& path) {
-  if (!file_util::PathExists(path)) {
-    // TODO(tc): http://b/1094718 Bad things happen if we can't write to the
-    // profile directory.  We should eventually be able to run in this
-    // situation.
-    if (!file_util::CreateDirectory(path))
-      return NULL;
-  }
-  return new ProfileImpl(path, NULL);
-}
-
-// static
-Profile* Profile::CreateProfileAsync(const FilePath&path,
-                                     Profile::Delegate* delegate) {
-  DCHECK(delegate);
-  // This is safe while all file opeartions are done on the FILE thread.
-  BrowserThread::PostTask(BrowserThread::FILE,
-                          FROM_HERE,
-                          NewRunnableFunction(&file_util::CreateDirectory,
-                                              path));
-  // Async version.
-  return new ProfileImpl(path, delegate);
+  return new ProfileImpl(path);
 }
 
 // static
@@ -261,8 +241,7 @@ void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
   DefaultApps::RegisterUserPrefs(prefs);
 }
 
-ProfileImpl::ProfileImpl(const FilePath& path,
-                         Profile::Delegate* delegate)
+ProfileImpl::ProfileImpl(const FilePath& path)
     : path_(path),
       visited_link_event_listener_(new VisitedLinkEventListener()),
       extension_devtools_manager_(NULL),
@@ -280,31 +259,13 @@ ProfileImpl::ProfileImpl(const FilePath& path,
 #if defined(OS_WIN)
       checked_instant_promo_(false),
 #endif
-      shutdown_session_service_(false),
-      delegate_(delegate) {
+      shutdown_session_service_(false) {
   DCHECK(!path.empty()) << "Using an empty path will attempt to write " <<
                             "profile files to the root directory!";
   create_session_service_timer_.Start(
       TimeDelta::FromMilliseconds(kCreateSessionServiceDelayMS), this,
       &ProfileImpl::EnsureSessionServiceCreated);
 
-  if (delegate_) {
-    prefs_.reset(PrefService::CreatePrefServiceAsync(
-        GetPrefFilePath(),
-        new ExtensionPrefStore(GetExtensionPrefValueMap(), false),
-        GetOriginalProfile(),
-        this));  // Ask to notify us in the end.
-  } else {
-    // Load prefs synchronously.
-    prefs_.reset(PrefService::CreatePrefService(
-        GetPrefFilePath(),
-        new ExtensionPrefStore(GetExtensionPrefValueMap(), false),
-        GetOriginalProfile()));
-    OnPrefsLoaded(prefs_.get(), true);
-  }
-}
-
-void ProfileImpl::DoFinalInit() {
   PrefService* prefs = GetPrefs();
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(prefs::kSpellCheckDictionary, this);
@@ -316,16 +277,7 @@ void ProfileImpl::DoFinalInit() {
   // the cache directory depends on the profile directory, which isn't available
   // to PathService.
   chrome::GetUserCacheDirectory(path_, &base_cache_path_);
-  if (!delegate_) {
-    file_util::CreateDirectory(base_cache_path_);
-  } else {
-    // Async profile loading is used, so call this on the FILE thread instead.
-    // It is safe since all other file operations should also be done there.
-    BrowserThread::PostTask(BrowserThread::FILE,
-                            FROM_HERE,
-                            NewRunnableFunction(&file_util::CreateDirectory,
-                                                base_cache_path_));
-  }
+  file_util::CreateDirectory(base_cache_path_);
 
 #if !defined(OS_CHROMEOS)
   // Listen for bookmark model load, to bootstrap the sync service.
@@ -392,10 +344,6 @@ void ProfileImpl::DoFinalInit() {
   // Initialize the ProfilePolicyConnector after |io_data_| since it requires
   // the URLRequestContextGetter to be initialized.
   GetPolicyConnector()->Initialize();
-
-  // Creation has been finished.
-  if (delegate_)
-    delegate_->OnProfileCreated(this, true);
 }
 
 void ProfileImpl::InitExtensions() {
@@ -794,50 +742,44 @@ net::TransportSecurityState*
   return transport_security_state_.get();
 }
 
-void ProfileImpl::OnPrefsLoaded(PrefService* prefs, bool success) {
-  DCHECK(prefs == prefs_.get());
-
-  if (!success) {
-    DCHECK(delegate_);
-    delegate_->OnProfileCreated(this, false);
-    return;
-  }
-
-  // The Profile class and ProfileManager class may read some prefs so
-  // register known prefs as soon as possible.
-  Profile::RegisterUserPrefs(prefs_.get());
-  browser::RegisterUserPrefs(prefs_.get());
-  // TODO(mirandac): remove migration code after 6 months (crbug.com/69995).
-  if (g_browser_process->local_state()) {
-    browser::MigrateBrowserPrefs(prefs_.get(),
-                                 g_browser_process->local_state());
-  }
-
-  // The last session exited cleanly if there is no pref for
-  // kSessionExitedCleanly or the value for kSessionExitedCleanly is true.
-  last_session_exited_cleanly_ =
-      prefs_->GetBoolean(prefs::kSessionExitedCleanly);
-  // Mark the session as open.
-  prefs_->SetBoolean(prefs::kSessionExitedCleanly, false);
-  // Make sure we save to disk that the session has opened.
-  prefs_->ScheduleSavePersistentPrefs();
-
-  // Ensure that preferences set by extensions are restored in the profile
-  // as early as possible. The constructor takes care of that.
-  extension_prefs_.reset(new ExtensionPrefs(
-      prefs_.get(),
-      GetPath().AppendASCII(ExtensionService::kInstallDirectoryName),
-      GetExtensionPrefValueMap()));
-
-  DCHECK(!net_pref_observer_.get());
-  net_pref_observer_.reset(
-      new NetPrefObserver(prefs_.get(), GetPrerenderManager()));
-
-  DoFinalInit();
-}
-
 PrefService* ProfileImpl::GetPrefs() {
-  DCHECK(prefs_.get());  // Should explicitly be initialized.
+  if (!prefs_.get()) {
+    prefs_.reset(PrefService::CreatePrefService(
+        GetPrefFilePath(),
+        new ExtensionPrefStore(GetExtensionPrefValueMap(), false),
+        GetOriginalProfile()));
+
+    // The Profile class and ProfileManager class may read some prefs so
+    // register known prefs as soon as possible.
+    Profile::RegisterUserPrefs(prefs_.get());
+    browser::RegisterUserPrefs(prefs_.get());
+    // TODO(mirandac): remove migration code after 6 months (crbug.com/69995).
+    if (g_browser_process->local_state()) {
+      browser::MigrateBrowserPrefs(prefs_.get(),
+                                   g_browser_process->local_state());
+    }
+
+    // The last session exited cleanly if there is no pref for
+    // kSessionExitedCleanly or the value for kSessionExitedCleanly is true.
+    last_session_exited_cleanly_ =
+        prefs_->GetBoolean(prefs::kSessionExitedCleanly);
+    // Mark the session as open.
+    prefs_->SetBoolean(prefs::kSessionExitedCleanly, false);
+    // Make sure we save to disk that the session has opened.
+    prefs_->ScheduleSavePersistentPrefs();
+
+    // Ensure that preferences set by extensions are restored in the profile
+    // as early as possible. The constructor takes care of that.
+    extension_prefs_.reset(new ExtensionPrefs(
+        prefs_.get(),
+        GetPath().AppendASCII(ExtensionService::kInstallDirectoryName),
+        GetExtensionPrefValueMap()));
+
+    DCHECK(!net_pref_observer_.get());
+    net_pref_observer_.reset(
+        new NetPrefObserver(prefs_.get(), GetPrerenderManager()));
+  }
+
   return prefs_.get();
 }
 

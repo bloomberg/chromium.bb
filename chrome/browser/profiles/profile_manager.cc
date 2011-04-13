@@ -68,9 +68,8 @@ void ProfileManager::ShutdownSessionServices() {
   ProfileManager* pm = g_browser_process->profile_manager();
   if (!pm)  // Is NULL when running unit tests.
     return;
-  std::vector<Profile*> profiles(pm->GetLoadedProfiles());
-  for (size_t i = 0; i < profiles.size(); ++i)
-    profiles[i]->ShutdownSessionService();
+  for (ProfileManager::const_iterator i = pm->begin(); i != pm->end(); ++i)
+    (*i)->ShutdownSessionService();
 }
 
 // static
@@ -95,6 +94,11 @@ ProfileManager::~ProfileManager() {
   ui::SystemMonitor* system_monitor = ui::SystemMonitor::Get();
   if (system_monitor)
     system_monitor->RemoveObserver(this);
+
+  // Destroy all profiles that we're keeping track of.
+  for (const_iterator i(begin()); i != end(); ++i)
+    delete *i;
+  profiles_.clear();
 }
 
 FilePath ProfileManager::GetDefaultProfileDir(
@@ -151,10 +155,10 @@ Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
     if (!command_line.HasSwitch(switches::kTestType) ||
         command_line.HasSwitch(switches::kLoginProfile)) {
       // Don't init extensions for this profile
-      profile = GetProfile(default_profile_dir);
+      profile = GetProfile(default_profile_dir, false);
       profile = profile->GetOffTheRecordProfile();
     } else {
-      profile = GetProfile(default_profile_dir);
+      profile = GetProfile(default_profile_dir, true);
     }
     return profile;
   }
@@ -162,102 +166,63 @@ Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
   return GetProfile(default_profile_dir);
 }
 
+Profile* ProfileManager::GetProfile(const FilePath& profile_dir) {
+  return GetProfile(profile_dir, true);
+}
+
 Profile* ProfileManager::GetProfileWithId(ProfileId profile_id) {
   DCHECK_NE(Profile::kInvalidProfileId, profile_id);
-  for (ProfilesInfoMap::iterator iter = profiles_info_.begin();
-       iter != profiles_info_.end(); ++iter) {
-    if (iter->second->created) {
-      Profile* candidate = iter->second->profile.get();
-      if (candidate->GetRuntimeId() == profile_id)
-        return candidate;
-      if (candidate->HasOffTheRecordProfile()) {
-        candidate = candidate->GetOffTheRecordProfile();
-        if (candidate->GetRuntimeId() == profile_id)
-          return candidate;
-      }
+  for (iterator i = begin(); i != end(); ++i) {
+    if ((*i)->GetRuntimeId() == profile_id)
+      return *i;
+    if ((*i)->HasOffTheRecordProfile() &&
+        (*i)->GetOffTheRecordProfile()->GetRuntimeId() == profile_id) {
+      return (*i)->GetOffTheRecordProfile();
     }
   }
   return NULL;
 }
 
 bool ProfileManager::IsValidProfile(Profile* profile) {
-  for (ProfilesInfoMap::iterator iter = profiles_info_.begin();
-       iter != profiles_info_.end(); ++iter) {
-    if (iter->second->created) {
-      Profile* candidate = iter->second->profile.get();
-      if (candidate == profile ||
-          (candidate->HasOffTheRecordProfile() &&
-           candidate->GetOffTheRecordProfile() == profile)) {
-        return true;
-      }
+  for (iterator i = begin(); i != end(); ++i) {
+    if (*i == profile)
+      return true;
+    if ((*i)->HasOffTheRecordProfile() &&
+        (*i)->GetOffTheRecordProfile() == profile) {
+      return true;
     }
   }
   return false;
 }
 
-std::vector<Profile*> ProfileManager::GetLoadedProfiles() const {
-  std::vector<Profile*> profiles;
-  for (ProfilesInfoMap::const_iterator iter = profiles_info_.begin();
-       iter != profiles_info_.end(); ++iter) {
-    if (iter->second->created)
-      profiles.push_back(iter->second->profile.get());
-  }
-  return profiles;
-}
-
-Profile* ProfileManager::GetProfile(const FilePath& profile_dir) {
+Profile* ProfileManager::GetProfile(
+    const FilePath& profile_dir, bool init_extensions) {
   // If the profile is already loaded (e.g., chrome.exe launched twice), just
   // return it.
   Profile* profile = GetProfileByPath(profile_dir);
   if (NULL != profile)
     return profile;
 
-  profile = Profile::CreateProfile(profile_dir);
+  if (!ProfileManager::IsProfile(profile_dir)) {
+    // If the profile directory doesn't exist, create it.
+    profile = ProfileManager::CreateProfile(profile_dir);
+  } else {
+    // The profile already exists on disk, just load it.
+    profile = Profile::CreateProfile(profile_dir);
+  }
   DCHECK(profile);
   if (profile) {
-    bool result = AddProfile(profile);
+    bool result = AddProfile(profile, init_extensions);
     DCHECK(result);
   }
   return profile;
 }
 
-void ProfileManager::CreateProfileAsync(const FilePath& user_data_dir,
-                                        Observer* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ProfilesInfoMap::iterator iter = profiles_info_.find(user_data_dir);
-  if (iter != profiles_info_.end()) {
-    ProfileInfo* info = iter->second.get();
-    if (info->created) {
-      // Profile has already been created. Call observer immediately.
-      observer->OnProfileCreated(info->profile.get());
-    } else {
-      // Profile is being created. Add observer to list.
-      info->observers.push_back(observer);
-    }
-  } else {
-    // Initiate asynchronous creation process.
-    ProfileInfo* info =
-        RegisterProfile(Profile::CreateProfileAsync(user_data_dir, this),
-                        false);
-    info->observers.push_back(observer);
-  }
+void ProfileManager::RegisterProfile(Profile* profile) {
+  profiles_.insert(profiles_.end(), profile);
 }
 
-// static
-void ProfileManager::CreateDefaultProfileAsync(Observer* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-
-  FilePath default_profile_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &default_profile_dir);
-  default_profile_dir = default_profile_dir.Append(
-      profile_manager->GetCurrentProfileDir());
-
-  profile_manager->CreateProfileAsync(default_profile_dir,
-                                      observer);
-}
-
-bool ProfileManager::AddProfile(Profile* profile) {
+bool ProfileManager::AddProfile(Profile* profile, bool init_extensions) {
   DCHECK(profile);
 
   // Make sure that we're not loading a profile with the same ID as a profile
@@ -269,22 +234,22 @@ bool ProfileManager::AddProfile(Profile* profile) {
     return false;
   }
 
-  RegisterProfile(profile, true);
-  DoFinalInit(profile);
+  profiles_.insert(profiles_.end(), profile);
+  if (init_extensions)
+    profile->InitExtensions();
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (!command_line.HasSwitch(switches::kDisableWebResources))
+    profile->InitPromoResources();
   return true;
 }
 
-ProfileManager::ProfileInfo* ProfileManager::RegisterProfile(Profile* profile,
-                                                             bool created) {
-  ProfileInfo* info = new ProfileInfo(profile, created);
-  ProfilesInfoMap::iterator new_elem =
-      (profiles_info_.insert(std::make_pair(profile->GetPath(), info))).first;
-  return info;
-}
-
 Profile* ProfileManager::GetProfileByPath(const FilePath& path) const {
-  ProfilesInfoMap::const_iterator iter = profiles_info_.find(path);
-  return (iter == profiles_info_.end()) ? NULL : iter->second->profile.get();
+  for (const_iterator i(begin()); i != end(); ++i) {
+    if ((*i)->GetPath() == path)
+      return *i;
+  }
+
+  return NULL;
 }
 
 void ProfileManager::OnSuspend() {
@@ -296,14 +261,13 @@ void ProfileManager::OnSuspend() {
   DCHECK(posted);
 
   scoped_refptr<net::URLRequestContextGetter> request_context;
-  std::vector<Profile*> profiles(GetLoadedProfiles());
-  for (size_t i = 0; i < profiles.size(); ++i) {
-    request_context = profiles[i]->GetRequestContext();
+  for (const_iterator i(begin()); i != end(); ++i) {
+    request_context = (*i)->GetRequestContext();
     posted = BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableFunction(&SuspendRequestContext, request_context));
     DCHECK(posted);
-    request_context = profiles[i]->GetRequestContextForMedia();
+    request_context = (*i)->GetRequestContextForMedia();
     posted = BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableFunction(&SuspendRequestContext, request_context));
@@ -315,14 +279,13 @@ void ProfileManager::OnResume() {
   DCHECK(CalledOnValidThread());
 
   scoped_refptr<net::URLRequestContextGetter> request_context;
-  std::vector<Profile*> profiles(GetLoadedProfiles());
-  for (size_t i = 0; i < profiles.size(); ++i) {
-    request_context = profiles[i]->GetRequestContext();
+  for (const_iterator i(begin()); i != end(); ++i) {
+    request_context = (*i)->GetRequestContext();
     bool posted = BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableFunction(&ResumeRequestContext, request_context));
     DCHECK(posted);
-    request_context = profiles[i]->GetRequestContextForMedia();
+    request_context = (*i)->GetRequestContextForMedia();
     posted = BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableFunction(&ResumeRequestContext, request_context));
@@ -352,50 +315,30 @@ void ProfileManager::Observe(
 #endif
 }
 
-void ProfileManager::DoFinalInit(Profile* profile) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  bool init_extensions = true;
-#if defined(OS_CHROMEOS)
-  if (!logged_in_ &&
-      (!command_line.HasSwitch(switches::kTestType) ||
-        command_line.HasSwitch(switches::kLoginProfile))) {
-    init_extensions = false;
-  }
-#endif
-  if (init_extensions)
-    profile->InitExtensions();
+// static
+bool ProfileManager::IsProfile(const FilePath& path) {
+  FilePath prefs_path = GetProfilePrefsPath(path);
+  FilePath history_path = path;
+  history_path = history_path.Append(chrome::kHistoryFilename);
 
-  if (!command_line.HasSwitch(switches::kDisableWebResources))
-    profile->InitPromoResources();
+  return file_util::PathExists(prefs_path) &&
+      file_util::PathExists(history_path);
 }
 
-void ProfileManager::OnProfileCreated(Profile* profile, bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  ProfilesInfoMap::iterator iter = profiles_info_.find(profile->GetPath());
-  DCHECK(iter != profiles_info_.end());
-  ProfileInfo* info = iter->second.get();
-
-  std::vector<Observer*> observers;
-  info->observers.swap(observers);
-
-  if (success) {
-    DoFinalInit(profile);
-    info->created = true;
-#if defined(OS_CHROMEOS)
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    if (!logged_in_ &&
-        (!command_line.HasSwitch(switches::kTestType) ||
-         command_line.HasSwitch(switches::kLoginProfile))) {
-      profile = profile->GetOffTheRecordProfile();
-    }
-#endif
-  } else {
-    profile = NULL;
-    profiles_info_.erase(iter);
+// static
+Profile* ProfileManager::CreateProfile(const FilePath& path) {
+  if (IsProfile(path)) {
+    DCHECK(false) << "Attempted to create a profile with the path:\n"
+        << path.value() << "\n but that path already contains a profile";
   }
 
-  for (size_t i = 0; i < observers.size(); ++i) {
-    observers[i]->OnProfileCreated(profile);
+  if (!file_util::PathExists(path)) {
+    // TODO(tc): http://b/1094718 Bad things happen if we can't write to the
+    // profile directory.  We should eventually be able to run in this
+    // situation.
+    if (!file_util::CreateDirectory(path))
+      return NULL;
   }
+
+  return Profile::CreateProfile(path);
 }

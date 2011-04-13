@@ -979,13 +979,12 @@ void TaskManager::OpenAboutMemory() {
 
   if (!browser) {
     // On OS X, the task manager can be open without any open browser windows.
-    if (!g_browser_process || !g_browser_process->profile_manager())
+    if (!g_browser_process ||
+        !g_browser_process->profile_manager() ||
+        g_browser_process->profile_manager()->begin() ==
+            g_browser_process->profile_manager()->end())
       return;
-    Profile* profile =
-        g_browser_process->profile_manager()->GetDefaultProfile();
-    if (!profile)
-      return;
-    browser = Browser::Create(profile);
+    browser = Browser::Create(*g_browser_process->profile_manager()->begin());
     browser->OpenURL(GURL(chrome::kAboutMemoryURL), GURL(), NEW_FOREGROUND_TAB,
                      PageTransition::LINK);
     browser->window()->Show();

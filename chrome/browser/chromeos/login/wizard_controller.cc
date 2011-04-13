@@ -550,6 +550,7 @@ void WizardController::OnUserImageSelected() {
   // Host will mark itself (and all controllers/windows) for deletion.
   host_->OnSessionStart();
   // Launch browser after controller is deleted and its windows are closed.
+  chromeos::LoginUtils::Get()->EnableBrowserLaunch(true);
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,

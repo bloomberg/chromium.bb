@@ -681,11 +681,11 @@ void TaskManagerBackgroundContentsResourceProvider::StartUpdating() {
 
   // Add all the existing BackgroundContents from every profile.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
-  for (size_t i = 0; i < profiles.size(); ++i) {
+  for (ProfileManager::const_iterator it = profile_manager->begin();
+       it != profile_manager->end(); ++it) {
     BackgroundContentsService* background_contents_service =
-        profiles[i]->GetBackgroundContentsService();
-    ExtensionService* extensions_service = profiles[i]->GetExtensionService();
+        (*it)->GetBackgroundContentsService();
+    ExtensionService* extensions_service = (*it)->GetExtensionService();
     std::vector<BackgroundContents*> contents =
         background_contents_service->GetBackgroundContents();
     for (std::vector<BackgroundContents*>::iterator iterator = contents.begin();
@@ -1207,10 +1207,10 @@ void TaskManagerExtensionProcessResourceProvider::StartUpdating() {
 
   // Add all the existing ExtensionHosts.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
-  for (size_t i = 0; i < profiles.size(); ++i) {
+  for (ProfileManager::const_iterator it = profile_manager->begin();
+       it != profile_manager->end(); ++it) {
     ExtensionProcessManager* process_manager =
-        profiles[i]->GetExtensionProcessManager();
+        (*it)->GetExtensionProcessManager();
     if (process_manager) {
       ExtensionProcessManager::const_iterator jt;
       for (jt = process_manager->begin(); jt != process_manager->end(); ++jt)
@@ -1221,7 +1221,7 @@ void TaskManagerExtensionProcessResourceProvider::StartUpdating() {
     // extensions.
     if (BrowserList::IsOffTheRecordSessionActive()) {
       ExtensionProcessManager* process_manager =
-          profiles[i]->GetOffTheRecordProfile()->GetExtensionProcessManager();
+          (*it)->GetOffTheRecordProfile()->GetExtensionProcessManager();
       if (process_manager) {
       ExtensionProcessManager::const_iterator jt;
       for (jt = process_manager->begin(); jt != process_manager->end(); ++jt)

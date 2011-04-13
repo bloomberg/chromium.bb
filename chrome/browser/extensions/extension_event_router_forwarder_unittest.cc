@@ -52,8 +52,8 @@ class ExtensionEventRouterForwarderTest : public TestingBrowserProcessTest {
     profile1_ = new TestingProfile();
     profile2_ = new TestingProfile();
 
-    browser_process->profile_manager()->RegisterProfile(profile1_, true);
-    browser_process->profile_manager()->RegisterProfile(profile2_, true);
+    browser_process->profile_manager()->RegisterProfile(profile1_);
+    browser_process->profile_manager()->RegisterProfile(profile2_);
   }
 
   TestingProfile* CreateIncognitoProfile(TestingProfile* base) {

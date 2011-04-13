@@ -98,10 +98,11 @@ void MemoryPurger::PurgeBrowser() {
       new PurgeMemoryIOHelper(g_browser_process->resource_dispatcher_host()->
           safe_browsing_service()));
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
-  for (size_t i = 0; i < profiles.size(); ++i) {
+  for (ProfileManager::iterator i(profile_manager->begin());
+       i != profile_manager->end(); ++i) {
+    Profile* profile = *i;
     purge_memory_io_helper->AddRequestContextGetter(
-        make_scoped_refptr(profiles[i]->GetRequestContext()));
+        make_scoped_refptr(profile->GetRequestContext()));
 
     // NOTE: Some objects below may be duplicates across profiles.  We could
     // conceivably put all these in sets and then iterate over the sets.
@@ -110,20 +111,20 @@ void MemoryPurger::PurgeBrowser() {
     // Spinning up the history service is expensive, so we avoid doing it if it
     // hasn't been done already.
     HistoryService* history_service =
-        profiles[i]->GetHistoryServiceWithoutCreating();
+        profile->GetHistoryServiceWithoutCreating();
     if (history_service)
       history_service->UnloadBackend();
 
     // Unload all web databases (freeing memory used to cache sqlite).
     WebDataService* web_data_service =
-        profiles[i]->GetWebDataServiceWithoutCreating();
+        profile->GetWebDataServiceWithoutCreating();
     if (web_data_service)
       web_data_service->UnloadDatabase();
 
     // Ask all WebKitContexts to purge memory (freeing memory used to cache
     // the LocalStorage sqlite DB).  WebKitContext creation is basically free so
     // we don't bother with a "...WithoutCreating()" function.
-    profiles[i]->GetWebKitContext()->PurgeMemory();
+    profile->GetWebKitContext()->PurgeMemory();
   }
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,

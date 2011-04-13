@@ -11,10 +11,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
-#include "base/hash_tables.h"
-#include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,16 +22,8 @@ class FilePath;
 
 class ProfileManager : public base::NonThreadSafe,
                        public ui::SystemMonitor::PowerObserver,
-                       public NotificationObserver,
-                       public Profile::Delegate {
+                       public NotificationObserver {
  public:
-  class Observer {
-   public:
-    // This method is called when profile is ready. If profile creation has been
-    // failed, method is called with |profile| equals to NULL.
-    virtual void OnProfileCreated(Profile* profile) = 0;
-  };
-
   ProfileManager();
   virtual ~ProfileManager();
 
@@ -56,16 +44,6 @@ class ProfileManager : public base::NonThreadSafe,
   // otherwise it will create and manage it.
   Profile* GetProfile(const FilePath& profile_dir);
 
-  // Explicit asynchronous creation of the profile. |observer| is called
-  // when profile is created. If profile has already been created, observer
-  // is called immediately. Should be called on the UI thread.
-  void CreateProfileAsync(const FilePath& user_data_dir,
-                          Observer* observer);
-
-  // Initiates default profile creation. If default profile has already been
-  // created, observer is called immediately. Should be called on the UI thread.
-  static void CreateDefaultProfileAsync(Observer* observer);
-
   // Returns the profile with the given |profile_id| or NULL if no such profile
   // exists.
   Profile* GetProfileWithId(ProfileId profile_id);
@@ -74,13 +52,28 @@ class ProfileManager : public base::NonThreadSafe,
   // profile.
   bool IsValidProfile(Profile* profile);
 
+  // Returns a profile for a specific profile directory within the user data
+  // dir with the option of controlling whether extensions are initialized
+  // or not.  This will return an existing profile it had already been created,
+  // otherwise it will create and manage it.
+  // Note that if the profile has already been created, extensions may have
+  // been initialized.  If this matters to you, you should call GetProfileByPath
+  // first to see if the profile already exists.
+  Profile* GetProfile(const FilePath& profile_dir, bool init_extensions);
+
   // Returns the directory where the currently active profile is
   // stored, relative to the user data directory currently in use..
   FilePath GetCurrentProfileDir();
 
-  // Returns created profiles. Note, profiles order is NOT guaranteed to be
-  // related with the creation order.
-  std::vector<Profile*> GetLoadedProfiles() const;
+  // These allow iteration through the current list of profiles.
+  typedef std::vector<Profile*> ProfileVector;
+  typedef ProfileVector::iterator iterator;
+  typedef ProfileVector::const_iterator const_iterator;
+
+  iterator begin() { return profiles_.begin(); }
+  const_iterator begin() const { return profiles_.begin(); }
+  iterator end() { return profiles_.end(); }
+  const_iterator end() const { return profiles_.end(); }
 
   // PowerObserver notifications
   virtual void OnSuspend();
@@ -100,48 +93,35 @@ class ProfileManager : public base::NonThreadSafe,
   // Returns the path to the preferences file given the user profile directory.
   static FilePath GetProfilePrefsPath(const FilePath& profile_dir);
 
+  // Tries to determine whether the given path represents a profile
+  // directory, and returns true if it thinks it does.
+  static bool IsProfile(const FilePath& path);
+
   // If a profile with the given path is currently managed by this object,
   // return a pointer to the corresponding Profile object;
   // otherwise return NULL.
   Profile* GetProfileByPath(const FilePath& path) const;
 
-  // Profile::Delegate implementation:
-  virtual void OnProfileCreated(Profile* profile, bool success);
-
- protected:
-  // Does final initial actions.
-  virtual void DoFinalInit(Profile* profile);
+  // Creates a new profile at the specified path.
+  // This method should always return a valid Profile (i.e., should never
+  // return NULL).
+  static Profile* CreateProfile(const FilePath& path);
 
  private:
   friend class ExtensionEventRouterForwarderTest;
 
-  // This struct contains information about profiles which are being loaded or
-  // were loaded.
-  struct ProfileInfo {
-    ProfileInfo(Profile* profile, bool created)
-        : profile(profile), created(created) {
-    }
-
-    scoped_ptr<Profile> profile;
-    // Whether profile has been fully loaded (created and initialized).
-    bool created;
-    // List of observers which should be notified when profile initialization is
-    // done. Note, when profile is fully loaded this vector will be empty.
-    std::vector<Observer*> observers;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ProfileInfo);
-  };
+  // Helper method for unit tests to inject |profile| into the ProfileManager.
+  void RegisterProfile(Profile* profile);
 
   // Adds a pre-existing Profile object to the set managed by this
   // ProfileManager.  This ProfileManager takes ownership of the Profile.
   // The Profile should not already be managed by this ProfileManager.
   // Returns true if the profile was added, false otherwise.
-  bool AddProfile(Profile* profile);
+  bool AddProfile(Profile* profile, bool init_extensions);
 
-  // Registers profile with given info. Returns pointer to created ProfileInfo
-  // entry.
-  ProfileInfo* RegisterProfile(Profile* profile, bool created);
+  // We keep a simple vector of profiles rather than something fancier
+  // because we expect there to be a small number of profiles active.
+  ProfileVector profiles_;
 
   NotificationRegistrar registrar_;
 
@@ -150,19 +130,7 @@ class ProfileManager : public base::NonThreadSafe,
   // default.
   bool logged_in_;
 
-  // Maps profile path to ProfileInfo (if profile has been created). Use
-  // RegisterProfile() to add into this map.
-  typedef std::map<FilePath, linked_ptr<ProfileInfo> > ProfilesInfoMap;
-  ProfilesInfoMap profiles_info_;
-
   DISALLOW_COPY_AND_ASSIGN(ProfileManager);
-};
-
-// Same as the ProfileManager, but doesn't initialize some services of the
-// profile. This one is useful in unittests.
-class ProfileManagerWithoutInit : public ProfileManager {
- protected:
-  virtual void DoFinalInit(Profile*) {}
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_MANAGER_H_
