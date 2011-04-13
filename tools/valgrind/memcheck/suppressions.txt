@@ -4305,6 +4305,7 @@
 }
 {
    bug_79357
+   Memcheck:Addr4
    fun:_ZN12_GLOBAL__N_119FilePathWatcherImpl5WatchERK8FilePathPN15FilePathWatcher8DelegateE
    fun:_ZN15FilePathWatcher5WatchERK8FilePathPNS_8DelegateE
    fun:_ZN21UserStyleSheetWatcher4InitEv
