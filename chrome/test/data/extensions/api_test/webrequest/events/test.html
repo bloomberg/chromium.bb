@@ -46,47 +46,50 @@ function captureEvent(name, details) {
       details.url.match(/\/favicon.ico$/))
     return;
 
+  // Pull the extra per-event options out of the expected data. These let
+  // us specify special return values per event.
+  var currentIndex = capturedEventData.length;
+  var extraOptions;
+  if (expectedEventData.length >= currentIndex) {
+    extraOptions = expectedEventData[currentIndex][2];
+    expectedEventData[currentIndex].splice(2, 1);
+  }
+
   delete details.requestId;
   delete details.timeStamp;
   capturedEventData.push([name, details]);
   checkExpectations();
+  return extraOptions ? extraOptions.retval : undefined;
 }
 
 function initListeners(filter, extraInfoSpec) {
   chrome.experimental.webRequest.onBeforeRequest.addListener(
       function(details) {
-    captureEvent("onBeforeRequest", details);
-    return {cancel: true};  // no effect unless event is blocking.
+    return captureEvent("onBeforeRequest", details);
   }, filter, extraInfoSpec);
   chrome.experimental.webRequest.onBeforeSendHeaders.addListener(
       function(details) {
-    captureEvent("onBeforeSendHeaders", details);
-    return {cancel: true};  // no effect unless event is blocking.
+    return captureEvent("onBeforeSendHeaders", details);
   }, filter, extraInfoSpec);
   chrome.experimental.webRequest.onRequestSent.addListener(
       function(details) {
-    captureEvent("onRequestSent", details);
-    return {cancel: true};
+    return captureEvent("onRequestSent", details);
   }, filter, extraInfoSpec);
   chrome.experimental.webRequest.onHeadersReceived.addListener(
       function(details) {
-    captureEvent("onHeadersReceived", details);
-    return {cancel: true};
+    return captureEvent("onHeadersReceived", details);
   }, filter, extraInfoSpec);
   chrome.experimental.webRequest.onBeforeRedirect.addListener(
       function(details) {
-    captureEvent("onBeforeRedirect", details);
-    return {cancel: true};
+    return captureEvent("onBeforeRedirect", details);
   }, filter, extraInfoSpec);
   chrome.experimental.webRequest.onCompleted.addListener(
       function(details) {
-    captureEvent("onCompleted", details);
-    return {cancel: true};
+    return captureEvent("onCompleted", details);
   }, filter, extraInfoSpec);
   chrome.experimental.webRequest.onErrorOccurred.addListener(
       function(details) {
-    captureEvent("onErrorOccurred", details);
-    return {cancel: true};
+    return captureEvent("onErrorOccurred", details);
   }, filter, extraInfoSpec);
 }
 
@@ -182,7 +185,7 @@ runTests([
   // Navigates to a page with subresources, with a blocking handler that
   // cancels the page request. The page will not load, and we should not
   // see the subresources.
-  function complexLoadBlocking() {
+  function complexLoadCancelled() {
     expect([
       [ "onBeforeRequest",
         {
@@ -190,7 +193,26 @@ runTests([
           tabId: tabId,
           type: "main_frame",
           url: getURL("complexLoad/a.html")
-        }
+        },
+        { retval: {cancel: true} }
+      ]
+    ], {}, ["blocking"]);
+    chrome.tabs.update(tabId, { url: getURL("complexLoad/a.html") });
+  },
+
+  // Navigates to a page with a blocking handler that redirects to a different
+  // page.
+  // TODO(mpcomplete): will get an onBeforeRedirect event for the new request.
+  function complexLoadRedirected() {
+    expect([
+      [ "onBeforeRequest",
+        {
+          method: "GET",
+          tabId: tabId,
+          type: "main_frame",
+          url: getURL("complexLoad/a.html")
+        },
+        { retval: {redirectUrl: getURL("simpleLoad/a.html")} }
       ]
     ], {}, ["blocking"]);
     chrome.tabs.update(tabId, { url: getURL("complexLoad/a.html") });

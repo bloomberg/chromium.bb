@@ -31,6 +31,9 @@ extern const char kOnErrorOccurred[];
 extern const char kOnHeadersReceived[];
 extern const char kOnRequestSent[];
 
+// Error messages.
+extern const char kInvalidRedirectUrl[];
+
 }  // namespace extension_webrequest_api_constants
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBREQUEST_API_CONSTANTS_H_
