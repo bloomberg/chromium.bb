@@ -118,6 +118,8 @@
         'common/gpu/media/fake_gl_video_decode_engine.h',
         'common/gpu/media/fake_gl_video_device.cc',
         'common/gpu/media/fake_gl_video_device.h',
+        'common/gpu/transport_texture.cc',
+        'common/gpu/transport_texture.h',
         'common/gpu_process_launch_causes.h',
         'common/gpu_messages.h',
         'common/hi_res_timer_manager_posix.cc',

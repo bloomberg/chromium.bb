@@ -31,8 +31,6 @@
         'gpu/gpu_child_thread.h',
         'gpu/gpu_watchdog_thread.cc',
         'gpu/gpu_watchdog_thread.h',
-	'gpu/transport_texture.cc',
-	'gpu/transport_texture.h',
       ],
       'include_dirs': [
         '..',

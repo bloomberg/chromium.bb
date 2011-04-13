@@ -4,7 +4,7 @@
 
 #include "content/common/gpu_messages.h"
 #include "content/common/gpu/gpu_channel.h"
-#include "content/gpu/transport_texture.h"
+#include "content/common/gpu/transport_texture.h"
 
 TransportTexture::TransportTexture(GpuChannel* channel,
                                    IPC::Message::Sender* sender,

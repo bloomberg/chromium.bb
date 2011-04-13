@@ -8,8 +8,8 @@
 //
 // See content/gpu/transport_texture_host.h for usage and details.
 
-#ifndef CONTENT_GPU_TRANSPORT_TEXTURE_H_
-#define CONTENT_GPU_TRANSPORT_TEXTURE_H_
+#ifndef CONTENT_COMMON_GPU_TRANSPORT_TEXTURE_H_
+#define CONTENT_COMMON_GPU_TRANSPORT_TEXTURE_H_
 
 #include <vector>
 #include <map>
@@ -95,4 +95,4 @@ class TransportTexture : public IPC::Channel::Listener {
   DISALLOW_COPY_AND_ASSIGN(TransportTexture);
 };
 
-#endif  // CONTENT_GPU_TRANSPORT_TEXTURE_H_
+#endif  // CONTENT_COMMON_GPU_TRANSPORT_TEXTURE_H_
