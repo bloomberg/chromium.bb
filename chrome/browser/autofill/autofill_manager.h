@@ -196,11 +196,6 @@ class AutofillManager : public TabContentsObserver,
   // |submitted_form|.
   void DeterminePossibleFieldTypesForUpload(FormStructure* submitted_form);
 
-  // Logs quality metrics for the submitted |form|, which should be logically
-  // equivalent to |submitted_form| -- both are passed for internal efficiency.
-  void LogMetricsAboutSubmittedForm(const webkit_glue::FormData& form,
-                                    const FormStructure& submitted_form) const;
-
   // The personal data manager, used to save and load personal data to/from the
   // web database.  This is overridden by the AutofillManagerTest.
   // Weak reference.
@@ -247,6 +242,7 @@ class AutofillManager : public TabContentsObserver,
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormChangesRemoveField);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormChangesAddField);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormSubmitted);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormSubmittedServerTypes);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressSuggestionsCount);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
                            NoQualityMetricsForNonAutofillableForms);

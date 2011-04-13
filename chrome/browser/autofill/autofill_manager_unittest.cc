@@ -455,6 +455,10 @@ class TestAutofillManager : public AutofillManager {
     return GUIDPair(base::StringPrintf("00000000-0000-0000-0000-%012d", id), 0);
   }
 
+  void AddSeenForm(FormStructure* form) {
+    form_structures()->push_back(form);
+  }
+
  private:
   TestPersonalDataManager* test_personal_data_;
   bool autofill_enabled_;
@@ -568,6 +572,30 @@ class AutofillManagerTest : public TabContentsWrapperTestHarness {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillManagerTest);
+};
+
+class TestFormStructure : public FormStructure {
+ public:
+  explicit TestFormStructure(const FormData& form) : FormStructure(form) {}
+  virtual ~TestFormStructure() {}
+
+  void SetFieldTypes(const std::vector<AutofillFieldType>& heuristic_types,
+                     const std::vector<AutofillFieldType>& server_types) {
+    ASSERT_EQ(field_count(), heuristic_types.size());
+    ASSERT_EQ(field_count(), server_types.size());
+
+    for (size_t i = 0; i < field_count(); ++i) {
+      AutofillField* field = (*fields())[i];
+      ASSERT_TRUE(field);
+      field->set_heuristic_type(heuristic_types[i]);
+      field->set_server_type(server_types[i]);
+    }
+
+    UpdateAutofillCount();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestFormStructure);
 };
 
 // Test that we return all address profile suggestions when all form fields are
@@ -1958,6 +1986,43 @@ TEST_F(AutofillManagerTest, FormSubmitted) {
   GUIDPair empty(std::string(), 0);
   FillAutofillFormData(kDefaultPageID, form, form.fields[0],
                        autofill_manager_->PackGUIDs(empty, guid));
+
+  int page_id = 0;
+  FormData results;
+  EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results));
+  ExpectFilledAddressFormElvis(page_id, results, kDefaultPageID, false);
+
+  // Simulate form submission. We should call into the PDM to try to save the
+  // filled data.
+  EXPECT_CALL(*test_personal_data_, SaveImportedProfile(::testing::_)).Times(1);
+  FormSubmitted(results);
+}
+
+// Test that we are able to save form data when forms are submitted and we only
+// have server data for the field types.
+TEST_F(AutofillManagerTest, FormSubmittedServerTypes) {
+  // Set up our form data.
+  FormData form;
+  CreateTestAddressFormData(&form);
+
+  // Simulate having seen this form on page load.
+  // |form_structure| will be owned by |autofill_manager_|.
+  TestFormStructure* form_structure = new TestFormStructure(form);
+  form_structure->DetermineHeuristicTypes();
+
+  // Clear the heuristic types, and instead set the appropriate server types.
+  std::vector<AutofillFieldType> heuristic_types, server_types;
+  for (size_t i = 0; i < form.fields.size(); ++i) {
+    heuristic_types.push_back(UNKNOWN_TYPE);
+    server_types.push_back(form_structure->field(i)->type());
+  }
+  form_structure->SetFieldTypes(heuristic_types, server_types);
+  autofill_manager_->AddSeenForm(form_structure);
+
+  // Fill the form.
+  std::string guid = "00000000-0000-0000-0000-000000000001";
+  FillAutofillFormData(kDefaultPageID, form, form.fields[0],
+                       autofill_manager_->PackGUIDs(std::string(), guid));
 
   int page_id = 0;
   FormData results;

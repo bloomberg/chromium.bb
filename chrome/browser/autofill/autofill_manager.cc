@@ -309,12 +309,18 @@ void AutofillManager::OnFormSubmitted(const FormData& form) {
   if (!submitted_form.ShouldBeParsed(true))
     return;
 
-  DeterminePossibleFieldTypesForUpload(&submitted_form);
-  LogMetricsAboutSubmittedForm(form, submitted_form);
+  // Ignore forms not present in our cache.  These are typically forms with
+  // wonky JavaScript that also makes them not auto-fillable.
+  FormStructure* cached_submitted_form;
+  if (!FindCachedForm(form, &cached_submitted_form))
+    return;
 
+  DeterminePossibleFieldTypesForUpload(&submitted_form);
   UploadFormData(submitted_form);
 
-  submitted_form.DetermineHeuristicTypes();
+  submitted_form.UpdateFromCache(*cached_submitted_form);
+  submitted_form.LogQualityMetrics(*metric_logger_);
+
   if (!submitted_form.IsAutofillable(true))
     return;
 
@@ -619,18 +625,6 @@ void AutofillManager::DeterminePossibleFieldTypesForUpload(
     DCHECK(!field_types.empty());
     submitted_form->set_possible_types(i, field_types);
   }
-}
-
-void AutofillManager::LogMetricsAboutSubmittedForm(
-    const FormData& form,
-    const FormStructure& submitted_form) const {
-  FormStructure* cached_submitted_form;
-  if (!FindCachedForm(form, &cached_submitted_form)) {
-    NOTREACHED();
-    return;
-  }
-
-  submitted_form.LogQualityMetrics(*cached_submitted_form, *metric_logger_);
 }
 
 void AutofillManager::ImportFormData(const FormStructure& submitted_form) {

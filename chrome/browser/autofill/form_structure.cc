@@ -319,9 +319,7 @@ bool FormStructure::ShouldBeParsed(bool require_method_post) const {
   return !require_method_post || (method_ == POST);
 }
 
-void FormStructure::LogQualityMetrics(
-    const FormStructure& cached_form,
-    const AutofillMetrics& metric_logger) const {
+void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
   // Map from field signatures to cached fields.
   std::map<std::string, const AutofillField*> cached_fields;
   for (size_t i = 0; i < cached_form.field_count(); ++i) {
@@ -329,7 +327,28 @@ void FormStructure::LogQualityMetrics(
     cached_fields[field->FieldSignature()] = field;
   }
 
-  std::string experiment_id = cached_form.server_experiment_id();
+  for (std::vector<AutofillField*>::const_iterator iter = begin();
+       iter != end(); ++iter) {
+    AutofillField* field = *iter;
+    if (!field)
+      continue;
+
+    std::map<std::string, const AutofillField*>::const_iterator
+        cached_field = cached_fields.find(field->FieldSignature());
+    if (cached_field != cached_fields.end()) {
+      field->set_heuristic_type(cached_field->second->heuristic_type());
+      field->set_server_type(cached_field->second->server_type());
+    }
+  }
+
+  UpdateAutofillCount();
+
+  server_experiment_id_ = cached_form.server_experiment_id();
+}
+
+void FormStructure::LogQualityMetrics(
+    const AutofillMetrics& metric_logger) const {
+  std::string experiment_id = server_experiment_id();
   for (size_t i = 0; i < field_count(); ++i) {
     const AutofillField* field = this->field(i);
     metric_logger.Log(AutofillMetrics::FIELD_SUBMITTED, experiment_id);
@@ -341,16 +360,9 @@ void FormStructure::LogQualityMetrics(
     if (field_types.count(EMPTY_TYPE) || field_types.count(UNKNOWN_TYPE))
       continue;
 
-    AutofillFieldType heuristic_type = UNKNOWN_TYPE;
-    AutofillFieldType server_type = NO_SERVER_DATA;
-    AutofillFieldType combined_type = UNKNOWN_TYPE;
-    std::map<std::string, const AutofillField*>::const_iterator
-        cached_field = cached_fields.find(field->FieldSignature());
-    if (cached_field != cached_fields.end()) {
-      heuristic_type = cached_field->second->heuristic_type();
-      server_type = cached_field->second->server_type();
-      combined_type = cached_field->second->type();
-    }
+    AutofillFieldType heuristic_type = field->heuristic_type();
+    AutofillFieldType server_type = field->server_type();
+    AutofillFieldType predicted_type = field->type();
 
     // Log heuristic, server, and overall type quality metrics, independently of
     // whether the field was autofilled.
@@ -370,9 +382,9 @@ void FormStructure::LogQualityMetrics(
     else
       metric_logger.Log(AutofillMetrics::SERVER_TYPE_MISMATCH, experiment_id);
 
-    if (combined_type == UNKNOWN_TYPE) {
+    if (predicted_type == UNKNOWN_TYPE) {
       metric_logger.Log(AutofillMetrics::PREDICTED_TYPE_UNKNOWN, experiment_id);
-    } else if (field_types.count(combined_type)) {
+    } else if (field_types.count(predicted_type)) {
       metric_logger.Log(AutofillMetrics::PREDICTED_TYPE_MATCH, experiment_id);
     } else {
       metric_logger.Log(AutofillMetrics::PREDICTED_TYPE_MISMATCH,
