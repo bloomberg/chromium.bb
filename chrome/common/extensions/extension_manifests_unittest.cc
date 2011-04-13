@@ -405,11 +405,9 @@ TEST_F(ExtensionManifestTest, Sidebar) {
 
 TEST_F(ExtensionManifestTest, DisallowHybridApps) {
   LoadAndExpectError("disallow_hybrid_1.json",
-      ExtensionErrorUtils::FormatErrorMessage(
-          errors::kHostedAppsCannotIncludeExtensionFeatures,
-          keys::kBrowserAction));
+                     errors::kHostedAppsCannotIncludeExtensionFeatures);
   LoadAndExpectError("disallow_hybrid_2.json",
-                     errors::kBackgroundPermissionNeeded);
+                     errors::kHostedAppsCannotIncludeExtensionFeatures);
 }
 
 TEST_F(ExtensionManifestTest, OptionsPageInApps) {

@@ -168,11 +168,6 @@ ExtensionHost* ExtensionProcessManager::CreateInfobar(const GURL& url,
 
 void ExtensionProcessManager::CreateBackgroundHost(
     const Extension* extension, const GURL& url) {
-  // Hosted apps are taken care of from BackgroundContentsService. Ignore them
-  // here.
-  if (extension->is_hosted_app())
-    return;
-
   // Don't create multiple background hosts for an extension.
   if (GetBackgroundHostForExtension(extension))
     return;

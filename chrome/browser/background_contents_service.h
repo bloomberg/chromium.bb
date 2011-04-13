@@ -78,10 +78,8 @@ class BackgroundContentsService : private NotificationObserver,
                                                const string16& frame_name,
                                                const string16& application_id);
 
-  // Load the manifest-specified background page for the specified hosted app.
-  // If the manifest doesn't specify one, then load the BackgroundContents
-  // registered in the pref. This is typically used to reload a crashed
-  // background page.
+  // Load the registered BackgroundContents for the specified extension. This
+  // is typically used to reload a crashed background page.
   void LoadBackgroundContentsForExtension(Profile* profile,
                                           const std::string& extension_id);
 
@@ -115,10 +113,6 @@ class BackgroundContentsService : private NotificationObserver,
   void LoadBackgroundContentsFromDictionary(Profile* profile,
                                             const std::string& extension_id,
                                             const DictionaryValue* contents);
-
-  // Load the manifest-specified BackgroundContents for all apps for the
-  // profile.
-  void LoadBackgroundContentsFromManifests(Profile* profile);
 
   // Creates a single BackgroundContents associated with the specified |appid|,
   // creates an associated RenderView with the name specified by |frame_name|,

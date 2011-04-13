@@ -102,9 +102,6 @@ const char* kLaunchContainerWindow = "window";
 namespace extension_manifest_errors {
 const char* kAppsNotEnabled =
     "Apps are not enabled.";
-const char* kBackgroundPermissionNeeded =
-    "Hosted apps that use 'background_page' must have the 'background' "
-    "permission.";
 const char* kCannotAccessPage =
     "Cannot access contents of url \"*\". "
     "Extension manifest must request permission to access this host.";
@@ -131,14 +128,11 @@ const char *kExperimentalFeature =
     "This feature requires 'experimental' permissions and"
     " --enable-experimental-extension-apis command line flag.";
 const char* kHostedAppsCannotIncludeExtensionFeatures =
-    "Hosted apps cannot use the extension feature '*'.";
+    "Hosted apps cannot use extension features.";
 const char* kInvalidAllFrames =
     "Invalid value for 'content_scripts[*].all_frames'.";
 const char* kInvalidBackground =
     "Invalid value for 'background_page'.";
-const char* kInvalidBackgroundInHostedApp =
-    "Invalid value for 'background_page'. Hosted apps must specify an "
-    "absolute HTTPS URL for the background page.";
 const char* kInvalidBrowserAction =
     "Invalid value for 'browser_action'.";
 const char* kInvalidChromeURLOverrides =

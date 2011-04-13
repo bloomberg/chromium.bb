@@ -104,7 +104,6 @@ namespace extension_manifest_values {
 // Error messages returned from Extension::InitFromValue().
 namespace extension_manifest_errors {
   extern const char* kAppsNotEnabled;
-  extern const char* kBackgroundPermissionNeeded;
   extern const char* kCannotAccessPage;
   extern const char* kCannotClaimAllHostsInExtent;
   extern const char* kCannotClaimAllURLsInExtent;
@@ -119,7 +118,6 @@ namespace extension_manifest_errors {
   extern const char* kHostedAppsCannotIncludeExtensionFeatures;
   extern const char* kInvalidAllFrames;
   extern const char* kInvalidBackground;
-  extern const char* kInvalidBackgroundInHostedApp;
   extern const char* kInvalidBrowserAction;
   extern const char* kInvalidBrowseURL;
   extern const char* kInvalidBrowseURLs;

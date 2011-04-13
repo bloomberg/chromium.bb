@@ -363,9 +363,6 @@ void TaskManagerTabContentsResourceProvider::Observe(NotificationType type,
   TabContentsWrapper* tab_contents =
       TabContentsWrapper::GetCurrentWrapperForContents(
           Source<TabContents>(source).ptr());
-  // A background page does not have a TabContentsWrapper.
-  if (!tab_contents)
-    return;
   switch (type.value) {
     case NotificationType::TAB_CONTENTS_CONNECTED:
       Add(tab_contents);

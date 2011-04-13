@@ -245,10 +245,8 @@ bool ValidateExtension(Extension* extension, std::string* error) {
     }
   }
 
-  // Validate background page location, except for hosted apps, which should use
-  // an external URL. Background page for hosted apps are verified when the
-  // extension is created (in Extension::InitFromValue)
-  if (!extension->background_url().is_empty() && !extension->is_hosted_app()) {
+  // Validate background page location.
+  if (!extension->background_url().is_empty()) {
     FilePath page_path = ExtensionURLToRelativeFilePath(
         extension->background_url());
     const FilePath path = extension->GetResource(page_path).GetFilePath();
