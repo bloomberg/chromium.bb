@@ -39,6 +39,8 @@ class MockAutofillMetrics : public AutofillMetrics {
                                const std::string& experiment_id));
   MOCK_CONST_METHOD2(Log, void(PredictedTypeQualityMetric metric,
                                const std::string& experiment_id));
+  MOCK_CONST_METHOD1(LogIsAutofillEnabledAtPageLoad, void(bool enabled));
+  MOCK_CONST_METHOD1(LogIsAutofillEnabledAtStartup, void(bool enabled));
   MOCK_CONST_METHOD1(LogStoredProfileCount, void(size_t num_profiles));
   MOCK_CONST_METHOD1(LogAddressSuggestionsCount, void(size_t num_suggestions));
 
@@ -48,20 +50,23 @@ class MockAutofillMetrics : public AutofillMetrics {
 
 class TestPersonalDataManager : public PersonalDataManager {
  public:
-  TestPersonalDataManager() {
+  TestPersonalDataManager() : autofill_enabled_(true) {
     set_metric_logger(new MockAutofillMetrics);
     CreateTestAutofillProfiles(&web_profiles_);
   }
 
   // Overridden to avoid a trip to the database. This should be a no-op except
   // for the side-effect of logging the profile count.
-  virtual void LoadProfiles() {
+  virtual void LoadProfiles() OVERRIDE {
     std::vector<AutofillProfile*> profiles;
     web_profiles_.release(&profiles);
     WDResult<std::vector<AutofillProfile*> > result(AUTOFILL_PROFILES_RESULT,
                                                     profiles);
     ReceiveLoadedProfiles(0, &result);
   }
+
+  // Overridden to avoid a trip to the database.
+  virtual void LoadCreditCards() OVERRIDE {}
 
   // Adds |profile| to |web_profiles_| and takes ownership of the profile's
   // memory.
@@ -74,8 +79,12 @@ class TestPersonalDataManager : public PersonalDataManager {
         PersonalDataManager::metric_logger());
   }
 
-  static void ResetHasLoggedProfileCount() {
-    PersonalDataManager::set_has_logged_profile_count(false);
+  void set_autofill_enabled(bool autofill_enabled) {
+    autofill_enabled_ = autofill_enabled;
+  }
+
+  virtual bool IsAutofillEnabled() const OVERRIDE {
+    return autofill_enabled_;
   }
 
   MOCK_METHOD1(SaveImportedCreditCard,
@@ -100,6 +109,8 @@ class TestPersonalDataManager : public PersonalDataManager {
     profile->set_guid("00000000-0000-0000-0000-000000000002");
     profiles->push_back(profile);
   }
+
+  bool autofill_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPersonalDataManager);
 };
@@ -671,8 +682,6 @@ TEST_F(AutofillMetricsTest, QualityMetricsWithExperimentId) {
 
 // Test that the profile count is logged correctly.
 TEST_F(AutofillMetricsTest, StoredProfileCount) {
-  TestPersonalDataManager::ResetHasLoggedProfileCount();
-
   // The metric should be logged when the profiles are first loaded.
   EXPECT_CALL(*test_personal_data_->metric_logger(),
               LogStoredProfileCount(2)).Times(1);
@@ -682,6 +691,19 @@ TEST_F(AutofillMetricsTest, StoredProfileCount) {
   EXPECT_CALL(*test_personal_data_->metric_logger(),
               LogStoredProfileCount(::testing::_)).Times(0);
   test_personal_data_->LoadProfiles();
+}
+
+// Test that we correctly log whether Autofill is enabled.
+TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
+  test_personal_data_->set_autofill_enabled(true);
+  EXPECT_CALL(*test_personal_data_->metric_logger(),
+              LogIsAutofillEnabledAtStartup(true)).Times(1);
+  test_personal_data_->Init(NULL);
+
+  test_personal_data_->set_autofill_enabled(false);
+  EXPECT_CALL(*test_personal_data_->metric_logger(),
+              LogIsAutofillEnabledAtStartup(false)).Times(1);
+  test_personal_data_->Init(NULL);
 }
 
 // Test that we log the number of Autofill suggestions when filling a form.
@@ -713,6 +735,7 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
   autofill_manager_->AddSeenForm(form_structure);
 
   // Establish our expectations.
+  ::testing::FLAGS_gmock_verbose = "error";
   ::testing::InSequence dummy;
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               LogAddressSuggestionsCount(2)).Times(1);
@@ -751,6 +774,28 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
   // Simulate activating the autofill popup for the email field after typing.
   form.fields[0].is_autofilled = true;
   autofill_manager_->OnQueryFormFieldAutofill(0, form, field);
+}
+
+// Test that we log whether Autofill is enabled when filling a form.
+TEST_F(AutofillMetricsTest, AutofillIsEnabledAtPageLoad) {
+  // Establish our expectations.
+  ::testing::FLAGS_gmock_verbose = "error";
+  ::testing::InSequence dummy;
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              LogIsAutofillEnabledAtPageLoad(true)).Times(1);
+
+  autofill_manager_->set_autofill_enabled(true);
+  autofill_manager_->OnFormsSeen(std::vector<FormData>());
+
+  // Reset the autofill manager state.
+  autofill_manager_->Reset();
+
+  // Establish our expectations.
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              LogIsAutofillEnabledAtPageLoad(false)).Times(1);
+
+  autofill_manager_->set_autofill_enabled(false);
+  autofill_manager_->OnFormsSeen(std::vector<FormData>());
 }
 
 // Test that credit card infobar metrics are logged correctly.

@@ -227,6 +227,7 @@ AutofillManager::AutofillManager(TabContents* tab_contents)
       download_manager_(tab_contents->profile()),
       disable_download_manager_requests_(false),
       metric_logger_(new AutofillMetrics),
+      has_logged_autofill_enabled_(false),
       has_logged_address_suggestions_count_(false) {
   DCHECK(tab_contents);
 
@@ -328,7 +329,13 @@ void AutofillManager::OnFormSubmitted(const FormData& form) {
 }
 
 void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms) {
-  if (!IsAutofillEnabled())
+  bool enabled = IsAutofillEnabled();
+  if (!has_logged_autofill_enabled_) {
+    metric_logger_->LogIsAutofillEnabledAtPageLoad(enabled);
+    has_logged_autofill_enabled_ = true;
+  }
+
+  if (!enabled)
     return;
 
   ParseForms(forms);
@@ -601,18 +608,8 @@ void AutofillManager::OnHeuristicsRequestError(
 }
 
 bool AutofillManager::IsAutofillEnabled() const {
-  PrefService* prefs =
-      const_cast<AutofillManager*>(this)->tab_contents()->profile()->GetPrefs();
-
-  // Migrate obsolete Autofill pref.
-  if (prefs->FindPreference(prefs::kFormAutofillEnabled)) {
-    bool enabled = prefs->GetBoolean(prefs::kFormAutofillEnabled);
-    prefs->ClearPref(prefs::kFormAutofillEnabled);
-    prefs->SetBoolean(prefs::kAutofillEnabled, enabled);
-    return enabled;
-  }
-
-  return prefs->GetBoolean(prefs::kAutofillEnabled);
+  return const_cast<AutofillManager*>(this)->tab_contents()->profile()->
+      GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
 }
 
 void AutofillManager::DeterminePossibleFieldTypesForUpload(
@@ -671,6 +668,7 @@ void AutofillManager::UploadFormData(const FormStructure& submitted_form) {
 
 void AutofillManager::Reset() {
   form_structures_.reset();
+  has_logged_autofill_enabled_ = false;
   has_logged_address_suggestions_count_ = false;
 }
 
@@ -681,6 +679,7 @@ AutofillManager::AutofillManager(TabContents* tab_contents,
       download_manager_(NULL),
       disable_download_manager_requests_(true),
       metric_logger_(new AutofillMetrics),
+      has_logged_autofill_enabled_(false),
       has_logged_address_suggestions_count_(false) {
   DCHECK(tab_contents);
 }

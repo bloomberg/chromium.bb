@@ -169,14 +169,8 @@ class PersonalDataManager
   friend class ProfileImpl;
   friend class ProfileSyncServiceAutofillTest;
 
-  // For tests.
-  static void set_has_logged_profile_count(bool has_logged_profile_count);
-
   PersonalDataManager();
   virtual ~PersonalDataManager();
-
-  // Returns the profile of the tab contents.
-  Profile* profile();
 
   // Loads the saved profiles from the web database.
   virtual void LoadProfiles();
@@ -210,6 +204,9 @@ class PersonalDataManager
   // The first time this is called, logs an UMA metrics for the number of
   // profiles the user has. On subsequent calls, does nothing.
   void LogProfileCount() const;
+
+  // Returns the value of the AutofillEnabled pref.
+  virtual bool IsAutofillEnabled() const;
 
   // For tests.
   const AutofillMetrics* metric_logger() const;
@@ -251,6 +248,9 @@ class PersonalDataManager
  private:
   // For logging UMA metrics. Overridden by metrics tests.
   scoped_ptr<const AutofillMetrics> metric_logger_;
+
+  // Whether we have already logged the number of profiles this session.
+  mutable bool has_logged_profile_count_;
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManager);
 };

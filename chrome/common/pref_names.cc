@@ -142,12 +142,6 @@ const char kPasswordManagerEnabled[] = "profile.password_manager_enabled";
 const char kPasswordManagerAllowShowPasswords[] =
     "profile.password_manager_allow_show_passwords";
 
-// OBSOLETE.  Boolean that is true if the form Autofill is on (will record
-// values entered in text inputs in forms and shows them in a popup when user
-// type in a text input with the same name later on).  This has been superseded
-// by kAutofillEnabled.
-const char kFormAutofillEnabled[] = "profile.form_autofill_enabled";
-
 // Boolean that is true when SafeBrowsing is enabled.
 const char kSafeBrowsingEnabled[] = "safebrowsing.enabled";
 

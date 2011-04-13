@@ -94,6 +94,14 @@ void AutofillMetrics::Log(ServerTypeQualityMetric metric,
                              NUM_SERVER_TYPE_QUALITY_METRICS);
 }
 
+void AutofillMetrics::LogIsAutofillEnabledAtStartup(bool enabled) const {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.IsEnabled.Startup", enabled);
+}
+
+void AutofillMetrics::LogIsAutofillEnabledAtPageLoad(bool enabled) const {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.IsEnabled.PageLoad", enabled);
+}
+
 void AutofillMetrics::LogStoredProfileCount(size_t num_profiles) const {
   UMA_HISTOGRAM_COUNTS("Autofill.StoredProfileCount", num_profiles);
 }

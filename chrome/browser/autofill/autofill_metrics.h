@@ -103,7 +103,13 @@ class AutofillMetrics {
   virtual void Log(ServerTypeQualityMetric metric,
                    const std::string& experiment_id) const;
 
-  // This should be called at most once per run.
+  // This should be called each time a page containing forms is loaded.
+  virtual void LogIsAutofillEnabledAtPageLoad(bool enabled) const;
+
+  // This should be called each time a new profile is launched.
+  virtual void LogIsAutofillEnabledAtStartup(bool enabled) const;
+
+  // This should be called each time a new profile is launched.
   virtual void LogStoredProfileCount(size_t num_profiles) const;
 
   // Log the number of Autofill suggestions presented to the user when filling a

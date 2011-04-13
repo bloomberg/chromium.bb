@@ -102,9 +102,6 @@ bool IsMinimumAddress(const AutofillProfile& profile) {
          !profile.GetInfo(ADDRESS_HOME_ZIP).empty();
 }
 
-// Whether we have already logged the number of profiles this session.
-bool g_has_logged_profile_count = false;
-
 }  // namespace
 
 PersonalDataManager::~PersonalDataManager() {
@@ -644,24 +641,25 @@ void PersonalDataManager::Refresh() {
   LoadCreditCards();
 }
 
-// static
-void PersonalDataManager::set_has_logged_profile_count(
-    bool has_logged_profile_count) {
-  g_has_logged_profile_count = has_logged_profile_count;
-}
-
 PersonalDataManager::PersonalDataManager()
     : profile_(NULL),
       is_data_loaded_(false),
       pending_profiles_query_(0),
       pending_creditcards_query_(0),
-      metric_logger_(new AutofillMetrics) {
+      metric_logger_(new AutofillMetrics),
+      has_logged_profile_count_(false) {
 }
 
 void PersonalDataManager::Init(Profile* profile) {
   profile_ = profile;
+  metric_logger_->LogIsAutofillEnabledAtStartup(IsAutofillEnabled());
+
   LoadProfiles();
   LoadCreditCards();
+}
+
+bool PersonalDataManager::IsAutofillEnabled() const {
+  return profile_->GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
 }
 
 // static
@@ -904,9 +902,9 @@ void PersonalDataManager::EmptyMigrationTrash() {
 }
 
 void PersonalDataManager::LogProfileCount() const {
-  if (!g_has_logged_profile_count) {
-    g_has_logged_profile_count = true;
+  if (!has_logged_profile_count_) {
     metric_logger_->LogStoredProfileCount(web_profiles_.size());
+    has_logged_profile_count_ = true;
   }
 }
 

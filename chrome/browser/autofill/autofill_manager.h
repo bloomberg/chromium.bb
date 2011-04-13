@@ -215,11 +215,14 @@ class AutofillManager : public TabContentsObserver,
   // For logging UMA metrics. Overridden by metrics tests.
   scoped_ptr<const AutofillMetrics> metric_logger_;
 
-  // Our copy of the form data.
-  ScopedVector<FormStructure> form_structures_;
+  // Have we logged whether Autofill is enabled for this page load?
+  bool has_logged_autofill_enabled_;
 
   // Have we logged an address suggestions count metric for this page?
   bool has_logged_address_suggestions_count_;
+
+  // Our copy of the form data.
+  ScopedVector<FormStructure> form_structures_;
 
   // GUID to ID mapping.  We keep two maps to convert back and forth.
   std::map<GUIDPair, int> guid_id_map_;
@@ -244,6 +247,7 @@ class AutofillManager : public TabContentsObserver,
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormSubmitted);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormSubmittedServerTypes);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressSuggestionsCount);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillIsEnabledAtPageLoad);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
                            NoQualityMetricsForNonAutofillableForms);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, QualityMetrics);
