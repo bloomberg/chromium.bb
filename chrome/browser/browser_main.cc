@@ -61,7 +61,6 @@
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
-#include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -1721,34 +1720,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
           ServiceProcessControlManager::GetInstance()->GetProcessControl(
               profile);
        control->Launch(NULL, NULL);
-    }
-  }
-  if (parsed_command_line.HasSwitch(switches::kCloudPrintFile)) {
-    FilePath cloud_print_file;
-    cloud_print_file =
-        parsed_command_line.GetSwitchValuePath(switches::kCloudPrintFile);
-    if (!cloud_print_file.empty()) {
-      string16 print_job_title;
-    if (parsed_command_line.HasSwitch(switches::kCloudPrintJobTitle)) {
-#ifdef OS_WIN
-      CommandLine::StringType native_job_title;
-      native_job_title = CommandLine::ForCurrentProcess()->GetSwitchValueNative(
-          switches::kCloudPrintJobTitle);
-      print_job_title = string16(native_job_title);
-#elif defined(OS_POSIX)
-      // TODO(abodenha@chromium.org) Implement this for OS_POSIX
-      // Command line string types are different
-#endif
-    }
-      std::string file_type = "application/pdf";
-      if (parsed_command_line.HasSwitch(switches::kCloudPrintFileType)) {
-        file_type = parsed_command_line.GetSwitchValueASCII(
-            switches::kCloudPrintFileType);
-      }
-      print_dialog_cloud::CreatePrintDialogForFile(cloud_print_file,
-                                                   print_job_title,
-                                                   file_type,
-                                                   false);
     }
   }
 

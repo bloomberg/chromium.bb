@@ -6,6 +6,7 @@
 #include "chrome/browser/printing/print_dialog_cloud_internal.h"
 
 #include "base/base64.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/print_messages.h"
 #include "chrome/common/url_constants.h"
@@ -575,6 +577,39 @@ void CreatePrintDialogForFile(const FilePath& path_to_file,
                           print_job_title,
                           file_type,
                           modal));
+}
+
+bool CreatePrintDialogFromCommandLine(const CommandLine& command_line) {
+  if (!command_line.GetSwitchValuePath(switches::kCloudPrintFile).empty()) {
+    FilePath cloud_print_file;
+    cloud_print_file =
+        command_line.GetSwitchValuePath(switches::kCloudPrintFile);
+    if (!cloud_print_file.empty()) {
+      string16 print_job_title;
+      if (command_line.HasSwitch(switches::kCloudPrintJobTitle)) {
+#ifdef OS_WIN
+        CommandLine::StringType native_job_title;
+        native_job_title = command_line.GetSwitchValueNative(
+            switches::kCloudPrintJobTitle);
+        print_job_title = string16(native_job_title);
+#elif defined(OS_POSIX)
+        // TODO(abodenha@chromium.org) Implement this for OS_POSIX
+        // Command line string types are different
+#endif
+      }
+      std::string file_type = "application/pdf";
+      if (command_line.HasSwitch(switches::kCloudPrintFileType)) {
+        file_type = command_line.GetSwitchValueASCII(
+            switches::kCloudPrintFileType);
+      }
+      print_dialog_cloud::CreatePrintDialogForFile(cloud_print_file,
+                                                   print_job_title,
+                                                   file_type,
+                                                   false);
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // end namespace

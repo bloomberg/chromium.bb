@@ -12,6 +12,7 @@
 #include "base/string16.h"
 
 class FilePath;
+class CommandLine;
 
 namespace print_dialog_cloud {
 
@@ -21,6 +22,9 @@ void CreatePrintDialogForFile(const FilePath& path_to_file,
                               const string16& print_job_title,
                               const std::string& file_type,
                               bool modal);
+
+// Parse switches from command_line and display the print dialog as appropriate.
+bool CreatePrintDialogFromCommandLine(const CommandLine& command_line);
 
 }  // end namespace
 

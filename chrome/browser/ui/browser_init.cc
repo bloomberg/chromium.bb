@@ -33,6 +33,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
+#include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -1320,12 +1321,12 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
     silent_launch = true;
     profile->GetCloudPrintProxyService()->ShowTokenExpiredNotification();
   }
+
   // If we are just displaying a print dialog we shouldn't open browser
   // windows.
-  if (!command_line.GetSwitchValuePath(switches::kCloudPrintFile).empty()) {
+  if (print_dialog_cloud::CreatePrintDialogFromCommandLine(command_line)) {
     silent_launch = true;
   }
-
 
   if (command_line.HasSwitch(switches::kExplicitlyAllowedPorts)) {
     std::string allowed_ports =
