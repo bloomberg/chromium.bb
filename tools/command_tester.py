@@ -101,15 +101,20 @@ def ResetGlobalSettings():
   }
 
 
-# NOTE: The failure/success messages are parsed by Pulse and should
-# match the regular expression used by "golden-test" post-processor.
-# See pulse.xml for details.
-def FailureMessage():
-  return 'RESULT: %s FAILED' % GlobalSettings['name']
+# NOTE: The failure/success messages are parsed by Chrome's perf graph
+# generator.
+def FailureMessage(total_time):
+  return 'RESULT %s: FAILED= %f secs' % (
+      os.path.basename(GlobalSettings['name']),
+      total_time
+      )
 
 
-def SuccessMessage():
-  return 'RESULT: %s PASSED' % GlobalSettings['name']
+def SuccessMessage(total_time):
+  return 'RESULT %s: PASSED= %f secs' % (
+      os.path.basename(GlobalSettings['name']),
+      total_time
+      )
 
 
 # Mac OS X returns SIGBUS in most of the cases where Linux returns
@@ -404,7 +409,7 @@ def main(argv):
     Print(stdout)
     Banner('Stderr')
     Print(stderr)
-    Print(FailureMessage())
+    Print(FailureMessage(total_time))
     return -1
 
   for (stream, getter) in [
@@ -421,7 +426,8 @@ def main(argv):
                                             GlobalSettings['filter_inverse'],
                                             GlobalSettings['filter_group_only'],
                                             actual)
-      if DifferentFromGolden(actual, golden_data, stream, FailureMessage()):
+      if DifferentFromGolden(actual, golden_data, stream,
+                             FailureMessage(total_time)):
         return -1
 
   Print('Test %s took %f secs' % (GlobalSettings['name'], total_time))
@@ -429,7 +435,7 @@ def main(argv):
     if total_time > GlobalSettings['time_error']:
       Print('ERROR: should have taken less than %f secs' %
             (GlobalSettings['time_error']))
-      Print(FailureMessage())
+      Print(FailureMessage(total_time))
       return -1
 
   if GlobalSettings['time_warning']:
@@ -438,7 +444,7 @@ def main(argv):
             (GlobalSettings['time_warning']))
 
 
-  Print(SuccessMessage())
+  Print(SuccessMessage(total_time))
   return 0
 
 
