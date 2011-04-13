@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,11 +9,13 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
@@ -61,6 +63,15 @@ class MemoryTest : public UIPerfTest {
     dir = dir.AppendASCII("chrome_mac");
 #endif
     return dir;
+  }
+
+  static FilePath GetUserDataDirSource(std::string subdir) {
+    FilePath profile_dir;
+    EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &profile_dir));
+    profile_dir = profile_dir.AppendASCII("data");
+    profile_dir = profile_dir.AppendASCII("memory_test");
+    profile_dir = profile_dir.AppendASCII(subdir);
+    return profile_dir;
   }
 
   virtual void SetUp() {
@@ -275,12 +286,7 @@ class MemoryTest : public UIPerfTest {
 class GeneralMixMemoryTest : public MemoryTest {
  public:
   virtual FilePath GetUserDataDirSource() const {
-    FilePath profile_dir;
-    PathService::Get(base::DIR_SOURCE_ROOT, &profile_dir);
-    profile_dir = profile_dir.AppendASCII("data");
-    profile_dir = profile_dir.AppendASCII("memory_test");
-    profile_dir = profile_dir.AppendASCII("general_mix");
-    return profile_dir;
+    return MemoryTest::GetUserDataDirSource("general_mix");
   }
 
   virtual size_t GetUrlList(std::string** list) {
@@ -439,12 +445,7 @@ class MembusterMemoryTest : public MemoryTest {
   }
 
   virtual FilePath GetUserDataDirSource() const {
-    FilePath profile_dir;
-    PathService::Get(base::DIR_SOURCE_ROOT, &profile_dir);
-    profile_dir = profile_dir.AppendASCII("data");
-    profile_dir = profile_dir.AppendASCII("memory_test");
-    profile_dir = profile_dir.AppendASCII("membuster");
-    return profile_dir;
+    return MemoryTest::GetUserDataDirSource("membuster");
   }
 
   virtual size_t GetUrlList(std::string** list) {
@@ -519,6 +520,100 @@ std::string MembusterMemoryTest::source_urls_[] = {
 size_t MembusterMemoryTest::urls_length_ =
     arraysize(MembusterMemoryTest::source_urls_);
 
+class GPUMemoryTest : public MemoryTest {
+ public:
+  virtual FilePath GetUserDataDirSource() const {
+    return MemoryTest::GetUserDataDirSource("gpu");
+  }
+
+  virtual size_t GetUrlList(std::string** list) {
+    *list = urls_;
+    return urls_length_;
+  }
+
+  void RunTest(const char* test_name, int num_target_tabs) {
+    std::string* urls;
+    size_t urls_length = GetUrlList(&urls);
+
+    // Record the initial CommitCharge.  This is a system-wide measurement,
+    // so if other applications are running, they can create variance in this
+    // test.
+    size_t start_size = base::GetSystemCommitCharge();
+
+    // Increase execution timeout due to slow loading of WebGL contents.
+    set_action_timeout_ms(TestTimeouts::large_test_timeout_ms());
+
+    // Cycle through the URLs.
+    scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
+    ASSERT_TRUE(window.get());
+    scoped_refptr<TabProxy> tab(window->GetActiveTab());
+    ASSERT_TRUE(tab.get());
+
+    int expected_tab_count = 1;
+
+    for (int counter = 0; counter < num_target_tabs; ++counter) {
+      if (static_cast<size_t>(counter) >= urls_length)
+        break;
+
+      std::string name = StringPrintf("%s_%dof%d_tabs_opened",
+                                      test_name, counter + 1, num_target_tabs);
+      std::string url = urls[counter];
+
+      SCOPED_TRACE(url);
+      EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
+                tab->NavigateToURL(GURL(urls[counter])));
+
+      size_t stop_size = base::GetSystemCommitCharge();
+      PrintIOPerfInfo(name.c_str());
+      PrintMemoryUsageInfo(name.c_str());
+      PrintSystemCommitCharge(name.c_str(), stop_size - start_size,
+                              true /* important */);
+
+      if (GetTabCount() < num_target_tabs) {
+        EXPECT_TRUE(window->AppendTab(GURL(chrome::kAboutBlankURL)));
+        expected_tab_count++;
+        WaitUntilTabCount(expected_tab_count);
+        tab = window->GetActiveTab();
+        ASSERT_TRUE(tab.get());
+        continue;
+      }
+    }
+
+    for (int counter = 1; counter <= num_target_tabs - 1; ++counter) {
+      std::string name = StringPrintf("%s_%dof%d_tabs_closed", test_name,
+                                      counter, num_target_tabs);
+      tab = window->GetActiveTab();
+      ASSERT_TRUE(tab->Close(true));
+      size_t stop_size = base::GetSystemCommitCharge();
+      PrintIOPerfInfo(name.c_str());
+      PrintMemoryUsageInfo(name.c_str());
+      PrintSystemCommitCharge(name.c_str(), stop_size - start_size,
+                              true /* important */);
+    }
+
+    size_t stop_size = base::GetSystemCommitCharge();
+    PrintIOPerfInfo(test_name);
+    PrintMemoryUsageInfo(test_name);
+    PrintSystemCommitCharge(test_name, stop_size - start_size,
+                            true /* important */);
+  }
+
+ private:
+  static std::string urls_[];
+  static size_t urls_length_;
+};
+
+// List of WebGL experiments to use for GPU memory test
+std::string GPUMemoryTest::urls_[] = {
+  "http://webglsamples.googlecode.com/hg/blob/blob.html",
+  "http://webglsamples.googlecode.com/hg/dynamic-cubemap/dynamic-cubemap.html",
+  "http://webglsamples.googlecode.com/hg/field/field.html",
+  "http://webglsamples.googlecode.com/hg/fishtank/fishtank.html",
+  "http://webglsamples.googlecode.com/hg/aquarium/aquarium.html",
+};
+
+size_t GPUMemoryTest::urls_length_ = arraysize(GPUMemoryTest::urls_);
+
 TEST_F(GeneralMixMemoryTest, SingleTabTest) {
   RunTest("_1t", 1);
 }
@@ -529,6 +624,10 @@ TEST_F(GeneralMixMemoryTest, FiveTabTest) {
 
 TEST_F(GeneralMixMemoryTest, TwelveTabTest) {
   RunTest("_12t", 12);
+}
+
+TEST_F(GPUMemoryTest, FourTabTest) {
+  RunTest("_gpu", 4);
 }
 
 // Commented out until the recorded cache data is added.
