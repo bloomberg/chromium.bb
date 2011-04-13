@@ -2398,10 +2398,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Returns:
       A dictionary.
       Sample:
-
-      { u'is_logged_in': True,
-        u'is_guest': False,
-        u'is_screen_locked': False}
+      { u'is_guest': False,
+        u'is_owner': True,
+        u'email': u'example@gmail.com',
+        u'is_screen_locked': False,
+        u'is_logged_in': True}
 
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
