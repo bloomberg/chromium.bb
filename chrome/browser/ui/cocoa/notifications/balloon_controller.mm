@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_options_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
@@ -144,7 +145,7 @@ const int kRightMargin = 2;
 
 - (IBAction)permissionRevoked:(id)sender {
   DesktopNotificationService* service =
-      balloon_->profile()->GetDesktopNotificationService();
+      DesktopNotificationServiceFactory::GetForProfile(balloon_->profile());
   service->DenyPermission(balloon_->notification().origin_url());
 }
 

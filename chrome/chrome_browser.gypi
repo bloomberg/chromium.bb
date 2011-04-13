@@ -1399,6 +1399,8 @@
         'browser/notifications/balloon_host.h',
         'browser/notifications/desktop_notification_service.cc',
         'browser/notifications/desktop_notification_service.h',
+        'browser/notifications/desktop_notification_service_factory.cc',
+        'browser/notifications/desktop_notification_service_factory.h',
         'browser/notifications/notification.cc',
         'browser/notifications/notification.h',
         'browser/notifications/notification_delegate.h',

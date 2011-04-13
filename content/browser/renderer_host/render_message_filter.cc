@@ -19,6 +19,7 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -245,7 +246,8 @@ RenderMessageFilter::RenderMessageFilter(
       extensions_request_context_(profile->GetRequestContextForExtensions()),
       render_widget_helper_(render_widget_helper),
       notification_prefs_(
-          profile->GetDesktopNotificationService()->prefs_cache()),
+          DesktopNotificationServiceFactory::GetForProfile(profile)->
+              prefs_cache()),
       host_zoom_map_(profile->GetHostZoomMap()),
       incognito_(profile->IsOffTheRecord()),
       webkit_context_(profile->GetWebKitContext()),

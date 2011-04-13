@@ -27,7 +27,6 @@ class SpecialStoragePolicy;
 class AutocompleteClassifier;
 class BookmarkModel;
 class CommandLine;
-class DesktopNotificationService;
 class ExtensionPrefs;
 class ExtensionPrefStore;
 class ExtensionPrefValueMap;
@@ -129,8 +128,6 @@ class TestingProfile : public Profile {
                                            const FilePath& install_directory);
 
   TestingPrefService* GetTestingPrefService();
-
-  void SetProfileDependencyManager(ProfileDependencyManager* manager);
 
   virtual ProfileId GetRuntimeId();
 
@@ -250,7 +247,6 @@ class TestingProfile : public Profile {
   virtual void InitRegisteredProtocolHandlers() {}
   virtual NTPResourceCache* GetNTPResourceCache();
 
-  virtual DesktopNotificationService* GetDesktopNotificationService();
   virtual BackgroundContentsService* GetBackgroundContentsService() const;
   virtual StatusTray* GetStatusTray();
   virtual FilePath last_selected_directory();
@@ -371,7 +367,6 @@ class TestingProfile : public Profile {
   scoped_refptr<GeolocationContentSettingsMap>
       geolocation_content_settings_map_;
   scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
-  scoped_ptr<DesktopNotificationService> desktop_notification_service_;
 
   // Find bar state.  Created lazily by GetFindBarState().
   scoped_ptr<FindBarState> find_bar_state_;

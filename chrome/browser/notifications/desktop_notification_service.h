@@ -16,6 +16,7 @@
 #include "chrome/browser/content_settings/content_settings_notification_provider.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/content_settings.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -32,7 +33,8 @@ struct DesktopNotificationHostMsg_Show_Params;
 
 // The DesktopNotificationService is an object, owned by the Profile,
 // which provides the creation of desktop "toasts" to web pages and workers.
-class DesktopNotificationService : public NotificationObserver {
+class DesktopNotificationService : public NotificationObserver,
+                                   public ProfileKeyedService {
  public:
   enum DesktopNotificationSource {
     PageNotification,

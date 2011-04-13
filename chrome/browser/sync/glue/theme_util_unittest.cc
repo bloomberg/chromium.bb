@@ -102,7 +102,8 @@ TEST_F(ThemeUtilTest, SetCurrentThemeDefaultTheme) {
   sync_pb::ThemeSpecifics theme_specifics;
   TestingProfile profile;
   MockThemeService* mock_theme_service = new MockThemeService;
-  ThemeServiceFactory::ForceAssociationBetween(&profile, mock_theme_service);
+  ThemeServiceFactory::GetInstance()->ForceAssociationBetween(&profile,
+      mock_theme_service);
 
   EXPECT_CALL(*mock_theme_service, UseDefaultTheme()).Times(1);
 
@@ -115,7 +116,8 @@ TEST_F(ThemeUtilTest, SetCurrentThemeSystemTheme) {
 
   TestingProfile profile;
   MockThemeService* mock_theme_service = new MockThemeService;
-  ThemeServiceFactory::ForceAssociationBetween(&profile, mock_theme_service);
+  ThemeServiceFactory::GetInstance()->ForceAssociationBetween(&profile,
+      mock_theme_service);
 
   EXPECT_CALL(*mock_theme_service, SetNativeTheme()).Times(1);
 
@@ -215,7 +217,8 @@ TEST_F(ThemeUtilTest, GetThemeSpecificsHelperCustomThemeDistinct) {
 TEST_F(ThemeUtilTest, SetCurrentThemeIfNecessaryDefaultThemeNotNecessary) {
   TestingProfile profile;
   MockThemeService* mock_theme_service = new MockThemeService;
-  ThemeServiceFactory::ForceAssociationBetween(&profile, mock_theme_service);
+  ThemeServiceFactory::GetInstance()->ForceAssociationBetween(&profile,
+      mock_theme_service);
 
   EXPECT_CALL(*mock_theme_service, GetThemeID()).WillRepeatedly(Return(
       ThemeService::kDefaultThemeID));

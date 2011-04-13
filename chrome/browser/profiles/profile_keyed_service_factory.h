@@ -20,10 +20,26 @@ class ProfileKeyedService;
 // shutdown/destruction order. In each derived classes' constructors, the
 // implementors must explicitly state which services are depended on.
 class ProfileKeyedServiceFactory {
- protected:
-  friend class ProfileDependencyManager;
-  friend class ProfileDependencyManagerUnittests;
+ public:
+  typedef ProfileKeyedService* (*FactoryFunction)(Profile* profile);
 
+#if defined(UNIT_TEST)
+  // Associate an already-created |service| with |profile| for this factory.
+  // The service may be a mock, or may be NULL to inhibit automatic creation of
+  // the service by the default function. A mock factory set with
+  // |set_test_factory| will be called instead if the service is NULL.
+  void ForceAssociationBetween(Profile* profile, ProfileKeyedService* service) {
+    Associate(profile, service);
+  }
+
+  // Sets the factory function to use to create mock instances of this service.
+  // The factory function will only be called for profiles for which
+  // |ForceAssociationBetween| has been previously called with a NULL service
+  // pointer, and therefore does not affect normal non-test profiles.
+  void set_test_factory(FactoryFunction factory) { factory_ = factory; }
+#endif
+
+ protected:
   // ProfileKeyedServiceFactories must communicate with a
   // ProfileDependencyManager. For all non-test code, write your subclass
   // constructors like this:
@@ -74,6 +90,9 @@ class ProfileKeyedServiceFactory {
   virtual void ProfileDestroyed(Profile* profile);
 
  private:
+  friend class ProfileDependencyManager;
+  friend class ProfileDependencyManagerUnittests;
+
   // The mapping between a Profile and its service.
   std::map<Profile*, ProfileKeyedService*> mapping_;
 
@@ -81,6 +100,9 @@ class ProfileKeyedServiceFactory {
   // this will always be ProfileDependencyManager::GetInstance(), but unit
   // tests will want to use their own copy.
   ProfileDependencyManager* dependency_manager_;
+
+  // A mock factory function to use to create the service, used by tests.
+  FactoryFunction factory_;
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_KEYED_SERVICE_FACTORY_H_

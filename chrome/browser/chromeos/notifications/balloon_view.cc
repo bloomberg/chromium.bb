@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/notifications/notification_panel.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/notifications/balloon_view_host.h"
@@ -338,7 +339,7 @@ void BalloonViewImpl::DelayedClose(bool by_user) {
 
 void BalloonViewImpl::DenyPermission() {
   DesktopNotificationService* service =
-      balloon_->profile()->GetDesktopNotificationService();
+      DesktopNotificationServiceFactory::GetForProfile(balloon_->profile());
   service->DenyPermission(balloon_->notification().origin_url());
 }
 

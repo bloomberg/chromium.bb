@@ -31,11 +31,6 @@ class ThemeServiceFactory : public ProfileKeyedServiceFactory {
   // no installed theme, or the theme was cleared.
   static const Extension* GetThemeForProfile(Profile* profile);
 
-  // Forces an association between |profile| and |provider|. Used in unit tests
-  // where we need to mock ThemeService.
-  static void ForceAssociationBetween(Profile* profile,
-                                      ThemeService* provider);
-
   static ThemeServiceFactory* GetInstance();
 
  private:
