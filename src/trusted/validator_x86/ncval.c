@@ -131,11 +131,21 @@ int AnalyzeSegmentSections(ncfile *ncf, struct NCValidatorState *vstate) {
   return -badsections;
 }
 
+/* Reports if module is safe. */
 static void NCValidateResults(int result, const char *fname) {
-  if (result == 0) {
-    SegmentDebug("***module %s is safe***\n", fname);
+  if (NACL_FLAGS_stubout_memory) {
+    /* The validator has been run to test stubbing out. Stubbing out,
+     * in this tool, means replacing instructions (modeled using hex
+     * text) that are unsafe and rejected by the validator, and are
+     * replaced with HALT instructions.
+     */
+    SegmentDebug("STUBBED OUT as follows:\n");
   } else {
-    SegmentDebug("***MODULE %s IS UNSAFE***\n", fname);
+    if (result == 0) {
+      SegmentDebug("***module %s is safe***\n", fname);
+    } else {
+      SegmentDebug("***MODULE %s IS UNSAFE***\n", fname);
+    }
   }
 }
 
@@ -162,13 +172,22 @@ static int AnalyzeSegmentCodeSegments(ncfile *ncf, const char *fname) {
  * Code to run SFI validator. *
  ******************************/
 
-/* Reports is module is safe. */
+/* Reports if module is safe. */
 static void NaClReportSafety(Bool success) {
+  if (NACL_FLAGS_stubout_memory) {
+    /* The validator has been run to test stubbing out. Stubbing out,
+     * in this tool, means replacing instructions (modeled using hex
+     * text) that are unsafe and rejected by the validator, and are
+     * replaced with HALT instructions.
+     */
+    gprintf(NaClLogGetGio(), "STUBBED OUT as follows:\n");
+  } else {
     if (success) {
       gprintf(NaClLogGetGio(), "***module is safe***\n");
     } else {
       gprintf(NaClLogGetGio(), "***MODULE IS UNSAFE***\n");
     }
+  }
 }
 
 /* Analyze each section in the given elf file, using the given validator

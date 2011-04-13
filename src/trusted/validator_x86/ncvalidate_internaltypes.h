@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_INTERNALTYPES_H_
@@ -36,8 +36,8 @@ struct SummaryStats {
 /* put all formerly global data into a struct */
 struct NCValidatorState {
   CPUFeatures cpufeatures;  /* from CPUID bit masks; see nacl_cpuid.c */
-  uint32_t iadrbase;
-  uint32_t iadrlimit;
+  NaClPcAddress iadrbase;
+  NaClPcAddress iadrlimit;
   uint8_t alignment;
   uint32_t alignmask;
   struct SummaryStats stats;

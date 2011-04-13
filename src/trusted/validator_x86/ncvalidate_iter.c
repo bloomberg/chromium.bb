@@ -123,6 +123,13 @@ Bool NaClValidatorStateGetDoStubOut(NaClValidatorState *state) {
 void NaClValidatorStateSetDoStubOut(NaClValidatorState *state,
                                     Bool new_value) {
   state->do_stub_out = new_value;
+  /* We also turn off error diagnostics, under the assumption
+   * you don't want them. (Note: if the user wants them,
+   * you can run ncval to get them).
+   */
+  if (new_value) {
+    NaClValidatorStateSetMaxReportedErrors(state, 0);
+  }
 }
 
 /* Returns true if an error message should be printed for the given level, in
@@ -184,12 +191,19 @@ static void NaClRecordErrorReported(NaClValidatorState *state, int level) {
  */
 static int NaClRecordIfValidatorError(NaClValidatorState *state,
                                              int level) {
+  /* Note: don't quit if stubbing out, so all problems are fixed. */
   if (((level == LOG_ERROR) || (level == LOG_FATAL)) &&
-      (NULL != state)) {
+      (NULL != state) && !state->do_stub_out) {
     state->validates_ok = FALSE;
     state->quit = NaClValidatorQuit(state);
   }
   return level;
+}
+
+/* Does stub out of instruction in validator state. */
+static void NaClStubOutInst(NaClInstState* inst) {
+  NCRemainingMemory *memory = inst->bytes.memory;
+  memset(memory->mpc, kNaClFullStop, memory->read_length);
 }
 
 void NaClValidatorMessage(int level,
@@ -269,8 +283,7 @@ void NaClValidatorInstMessage(int level,
     NaClRecordErrorReported(state, level);
   }
   if (state->do_stub_out && (level <= LOG_ERROR)) {
-    NCRemainingMemory *memory = inst->bytes.memory;
-    memset(memory->mpc, kNaClFullStop, memory->read_length);
+    NaClStubOutInst(inst);
   }
 }
 
@@ -303,10 +316,8 @@ void NaClValidatorTwoInstMessage(int level,
     NaClRecordErrorReported(state, level);
   }
   if (state->do_stub_out && (level <= LOG_ERROR)) {
-    NCRemainingMemory* memory1 = inst1->bytes.memory;
-    NCRemainingMemory* memory2 = inst2->bytes.memory;
-    memset(memory1->mpc, kNaClFullStop, memory1->read_length);
-    memset(memory2->mpc, kNaClFullStop, memory2->read_length);
+    NaClStubOutInst(inst1);
+    NaClStubOutInst(inst2);
   }
 }
 

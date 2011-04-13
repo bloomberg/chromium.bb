@@ -1,12 +1,13 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_H_
 
+#include <stdio.h>
 #include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 #include "native_client/src/trusted/validator_x86/types_memory_model.h"
 
@@ -43,6 +44,13 @@ struct NCValidatorState;
  *    NCValidateFinish).
  */
 void NCValidateSetCPUFeatures(CPUFeatures *features);
+
+/*
+ * Set the maximum number of diagnostic errors to be reported to the
+ * given value (-1 implies all error messages).
+ */
+void NCValidateSetNumDiagnostics(struct NCValidatorState* vstate,
+                                 int num_diagnostics);
 
 /*
  * NCValidateInit: Initialize NaCl validator internal state.
@@ -94,10 +102,6 @@ void NCValidateFreeState(struct NCValidatorState **vstate);
 
 /* Print some interesting statistics... */
 void Stats_Print(FILE *f, struct NCValidatorState *vstate);
-
-/* Book-keeping routines called from the decoder. */
-void OpcodeHisto(const uint8_t byte1,
-                 struct NCValidatorState *vstate);
 
 /* Returns the default value used for controlling printing
  * of validator messages.

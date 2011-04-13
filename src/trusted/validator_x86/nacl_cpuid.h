@@ -13,6 +13,8 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NACL_CPUID_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NACL_CPUID_H_
 
+#include "native_client/src/include/portability.h"
+
 typedef unsigned char bool;
 
 /* Features needed to show that the architecture is supported. */

@@ -9,12 +9,16 @@
  * Validate x86 instructions for Native Client
  *
  */
-#include "native_client/src/include/portability.h"
+
+#include "native_client/src/trusted/validator_x86/ncvalidate.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
 #include <assert.h>
+
+#include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/validator_x86/ncdecode.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_internaltypes.h"
 #include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
@@ -273,17 +277,19 @@ void ValidateInstReplacement(const struct NCDecoderState *mstate_old,
  *    an initialized struct NCValidatorState * if everything is okay,
  *    else NULL
  */
-struct NCValidatorState *NCValidateInit(const uint32_t vbase,
-                                        const uint32_t vlimit,
+struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
+                                        const NaClPcAddress vlimit,
                                         const uint8_t alignment) {
   struct NCValidatorState *vstate = NULL;
 
-  dprint(("NCValidateInit(%08x, %08x, %08x)\n", vbase, vlimit, alignment));
+  dprint(("NCValidateInit(%"NACL_PRIxNaClPcAddressAll
+          ", %"NACL_PRIxNaClPcAddressAll", %08x)\n", vbase, vlimit, alignment));
   do {
     if (vlimit <= vbase) break;
     if (alignment != 16 && alignment != 32) break;
     if ((vbase & (alignment - 1)) != 0) break;
-    dprint(("ncv_init(%x, %x)\n", vbase, vlimit));
+    dprint(("ncv_init(%"NACL_PRIxNaClPcAddress", %"NACL_PRIxNaClPcAddress
+            ")\n", vbase, vlimit));
     vstate = (struct NCValidatorState *)calloc(1, sizeof(*vstate));
     if (vstate == NULL) break;
     vstate->num_diagnostics = kMaxDiagnostics;
@@ -320,6 +326,18 @@ struct NCValidatorState *NCValidateInit(const uint32_t vbase,
 void NCValidateSetStubOutMode(struct NCValidatorState *vstate,
                               int do_stub_out) {
   vstate->do_stub_out = do_stub_out;
+  /* We also turn off error diagnostics, under the assumption
+   * you don't want them. (Note: if the user wants them,
+   * you can run ncval to get them)/
+   */
+  if (do_stub_out) {
+    NCValidateSetNumDiagnostics(vstate, 0);
+  }
+}
+
+void NCValidateSetNumDiagnostics(struct NCValidatorState* vstate,
+                                 int num_diagnostics) {
+  vstate->num_diagnostics = num_diagnostics;
 }
 
 static void RememberIP(const NaClPcAddress ip,
@@ -375,7 +393,8 @@ int NCValidateFinish(struct NCValidatorState *vstate) {
     /* non-zero indicates failure */
     return 1;
   }
-  dprint(("CheckTargets: %x-%x\n", vstate->iadrbase, vstate->iadrlimit));
+  dprint(("CheckTargets: %"NACL_PRIxNaClPcAddress"-%"NACL_PRIxNaClPcAddress"\n",
+          vstate->iadrbase, vstate->iadrlimit));
   for (offset = 0;
        offset < vstate->iadrlimit - vstate->iadrbase;
        offset += 1) {
