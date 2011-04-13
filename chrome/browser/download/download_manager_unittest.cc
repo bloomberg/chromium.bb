@@ -522,3 +522,89 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   EXPECT_FALSE(file_util::PathExists(new_path));
   EXPECT_FALSE(file_util::PathExists(cr_path));
 }
+
+TEST_F(DownloadManagerTest, DownloadOverwriteTest) {
+  using ::testing::_;
+  using ::testing::CreateFunctor;
+  using ::testing::Invoke;
+  using ::testing::Return;
+
+  // Create a temporary directory.
+  ScopedTempDir temp_dir_;
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+  // File names we're using.
+  const FilePath new_path(temp_dir_.path().AppendASCII("foo.txt"));
+  const FilePath cr_path(download_util::GetCrDownloadPath(new_path));
+  EXPECT_FALSE(file_util::PathExists(new_path));
+
+  // Create the file that we will overwrite.  Will be automatically cleaned
+  // up when temp_dir_ is destroyed.
+  FILE* fp = file_util::OpenFile(new_path, "w");
+  file_util::CloseFile(fp);
+  EXPECT_TRUE(file_util::PathExists(new_path));
+
+  // Construct the unique file name that normally would be created, but
+  // which we will override.
+  int uniquifier = download_util::GetUniquePathNumber(new_path);
+  FilePath unique_new_path = new_path;
+  EXPECT_NE(0, uniquifier);
+  download_util::AppendNumberToPath(&unique_new_path, uniquifier);
+
+  // |info| will be destroyed in download_manager_.
+  DownloadCreateInfo* info(new DownloadCreateInfo);
+  info->download_id = static_cast<int>(0);
+  info->prompt_user_for_save_location = true;
+  info->is_dangerous_file = false;
+  info->is_dangerous_url = false;
+
+  download_manager_->CreateDownloadItem(info);
+
+  DownloadItem* download = GetActiveDownloadItem(0);
+  ASSERT_TRUE(download != NULL);
+
+  EXPECT_EQ(DownloadItem::IN_PROGRESS, download->state());
+  scoped_ptr<ItemObserver> observer(new ItemObserver(download));
+
+  // Create and initialize the download file.  We're bypassing the first part
+  // of the download process and skipping to the part after the final file
+  // name has been chosen, so we need to initialize the download file
+  // properly.
+  DownloadFile* download_file(
+      new DownloadFile(info, download_manager_));
+  download_file->Rename(cr_path);
+  // This creates the .crdownload version of the file.
+  download_file->Initialize(false);
+  // |download_file| is owned by DownloadFileManager.
+  AddDownloadToFileManager(info->download_id, download_file);
+
+  info->path = new_path;
+  AttachDownloadItem(info);
+  message_loop_.RunAllPending();
+  EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
+
+  download_file->AppendDataToFile(kTestData, kTestDataLen);
+
+  // Finish the download.
+  OnAllDataSaved(0, kTestDataLen, "");
+  message_loop_.RunAllPending();
+
+  // Download is complete.
+  EXPECT_TRUE(GetActiveDownloadItem(0) == NULL);
+  EXPECT_TRUE(observer->hit_state(DownloadItem::IN_PROGRESS));
+  EXPECT_FALSE(observer->hit_state(DownloadItem::CANCELLED));
+  EXPECT_FALSE(observer->hit_state(DownloadItem::INTERRUPTED));
+  EXPECT_TRUE(observer->hit_state(DownloadItem::COMPLETE));
+  EXPECT_FALSE(observer->hit_state(DownloadItem::REMOVING));
+  EXPECT_TRUE(observer->was_updated());
+  EXPECT_TRUE(observer->was_completed());
+  EXPECT_FALSE(observer->was_opened());
+  EXPECT_EQ(DownloadItem::COMPLETE, download->state());
+
+  EXPECT_TRUE(file_util::PathExists(new_path));
+  EXPECT_FALSE(file_util::PathExists(cr_path));
+  EXPECT_FALSE(file_util::PathExists(unique_new_path));
+  std::string file_contents;
+  EXPECT_TRUE(file_util::ReadFileToString(new_path, &file_contents));
+  EXPECT_EQ(std::string(kTestData), file_contents);
+}

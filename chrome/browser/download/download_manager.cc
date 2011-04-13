@@ -668,21 +668,14 @@ void DownloadManager::OnDownloadRenamedToFinalName(int download_id,
   if (!item)
     return;
 
+  if (item->safety_state() == DownloadItem::SAFE) {
+    DCHECK_EQ(0, uniquifier) << "We should not uniquify SAFE downloads twice";
+  }
+
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           file_manager_, &DownloadFileManager::CompleteDownload, download_id));
-
-  if ((item->safety_state() == DownloadItem::SAFE) && (uniquifier != 0)) {
-    // File name conflict: the file name we expected to use at the start
-    // of the safe download was taken.
-    // TODO(ahendrickson): Warn the user that we're cancelling the download.
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(
-            file_manager_, &DownloadFileManager::CancelDownload, download_id));
-    return;
-  }
 
   if (uniquifier)
     item->set_path_uniquifier(uniquifier);

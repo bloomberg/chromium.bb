@@ -106,9 +106,13 @@ class DownloadFileManager
   void RenameInProgressDownloadFile(int id, const FilePath& full_path);
 
   // The DownloadManager in the UI thread has provided a final name for the
-  // download specified by |id|.  Sent from the UI thread and run on the
-  // FILE thread.
-  void RenameFinishedDownloadFile(int id, const FilePath& full_path);
+  // download specified by |id|.
+  // |overwrite_existing_file| prevents uniquification, and is used for SAFE
+  // downloads, as the user may have decided to overwrite the file.
+  // Sent from the UI thread and run on the FILE thread.
+  void RenameFinishedDownloadFile(int id,
+                                  const FilePath& full_path,
+                                  bool overwrite_existing_file);
 
  private:
   friend class base::RefCountedThreadSafe<DownloadFileManager>;

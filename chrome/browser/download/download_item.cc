@@ -490,7 +490,7 @@ void DownloadItem::OnDownloadFinished(DownloadFileManager* file_manager) {
         BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(
             file_manager, &DownloadFileManager::RenameFinishedDownloadFile,
-            id(), GetTargetFilePath()));
+            id(), GetTargetFilePath(), safety_state() == SAFE));
     return;
   }
 

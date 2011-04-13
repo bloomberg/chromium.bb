@@ -330,9 +330,9 @@ void DownloadFileManager::RenameInProgressDownloadFile(
 // 1. foo.crdownload -> foo (final, safe)
 // 2. Unconfirmed.xxx.crdownload -> xxx (final, validated)
 void DownloadFileManager::RenameFinishedDownloadFile(
-    int id, const FilePath& full_path)
-{
+    int id, const FilePath& full_path, bool overwrite_existing_file) {
   VLOG(20) << __FUNCTION__ << "()" << " id = " << id
+           << " overwrite_existing_file = " << overwrite_existing_file
            << " full_path = \"" << full_path.value() << "\"";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
@@ -347,16 +347,18 @@ void DownloadFileManager::RenameFinishedDownloadFile(
 
   int uniquifier = 0;
   FilePath new_path = full_path;
-  // Make our name unique at this point, as if a dangerous file is
-  // downloading and a 2nd download is started for a file with the same
-  // name, they would have the same path.  This is because we uniquify
-  // the name on download start, and at that time the first file does
-  // not exists yet, so the second file gets the same name.
-  // This should not happen in the SAFE case, and we check for that in the UI
-  // thread.
-  uniquifier = download_util::GetUniquePathNumber(new_path);
-  if (uniquifier > 0) {
-    download_util::AppendNumberToPath(&new_path, uniquifier);
+  if (!overwrite_existing_file) {
+    // Make our name unique at this point, as if a dangerous file is
+    // downloading and a 2nd download is started for a file with the same
+    // name, they would have the same path.  This is because we uniquify
+    // the name on download start, and at that time the first file does
+    // not exists yet, so the second file gets the same name.
+    // This should not happen in the SAFE case, and we check for that in the UI
+    // thread.
+    uniquifier = download_util::GetUniquePathNumber(new_path);
+    if (uniquifier > 0) {
+      download_util::AppendNumberToPath(&new_path, uniquifier);
+    }
   }
 
   // Rename the file, overwriting if necessary.
