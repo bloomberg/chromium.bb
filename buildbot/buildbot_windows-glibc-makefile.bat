@@ -10,7 +10,7 @@ echo @@@BUILD_STEP gclient_runhooks@@@
 call gclient runhooks --force
 
 setlocal
-call "%~dp0msvs_env.bat"
+call "%~dp0msvs_env.bat" 64
 call "%~dp0cygwin_env.bat"
 set CYGWIN=nodosfilewarning %CYGWIN%
 bash buildbot/buildbot_windows-glibc-makefile.sh
@@ -31,7 +31,7 @@ echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_
 :: Run tests
 
 setlocal
-call "%~dp0msvs_env.bat"
+call "%~dp0msvs_env.bat" 64
 
 setlocal
 echo @@@BUILD_STEP gyp_compile@@@

@@ -4,10 +4,10 @@
 
 echo on
 
-call buildbot\msvs_env.bat
-
 set BITS=32
 set VCBITS=x86
+
+call buildbot\msvs_env.bat %BITS%
 
 echo @@@BUILD_STEP gclient_runhooks@@@
 cmd /c gclient runhooks

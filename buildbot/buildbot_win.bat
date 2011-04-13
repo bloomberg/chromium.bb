@@ -4,10 +4,10 @@
 
 echo on
 
-call buildbot\msvs_env.bat
-
 set MODE=%1
 set BITS=%2
+
+call buildbot\msvs_env.bat %BITS%
 
 set RETCODE=0
 
