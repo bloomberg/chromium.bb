@@ -115,7 +115,7 @@ function init() {
   console.log('connect request received: ' + chromoting.hostname + ' by ' +
               chromoting.username);
 
-  // TODO(garykac): Clean exit if |connect| isn't a funtion.
+  // TODO(garykac): Clean exit if |connect| isn't a function.
   if (typeof plugin.connect === 'function') {
     if (chromoting.connectMethod == "sandboxed") {
       registerConnection();
@@ -128,6 +128,8 @@ function init() {
   }
 
   document.getElementById('title').innerText = chromoting.hostname;
+
+  window.setTimeout("updateStatusBarStats()", 1000);
 }
 
 function toggleDebugLog() {
@@ -327,4 +329,29 @@ function addToDebugLog(message) {
 
   // Scroll to bottom of div
   debugLog.scrollTop = debugLog.scrollHeight;
+}
+
+/**
+ * Show a client message for the specified amount of time.
+ *
+ * @param {string} message The message to display.
+ */
+function updateStatusBarStats() {
+  var videoBandwidth = chromoting.plugin.videoBandwidth;
+  var videoCaptureLatency = chromoting.plugin.videoCaptureLatency;
+  var videoEncodeLatency = chromoting.plugin.videoEncodeLatency;
+  var videoDecodeLatency = chromoting.plugin.videoDecodeLatency;
+  var videoRenderLatency = chromoting.plugin.videoRenderLatency;
+
+  var status = document.getElementById('status_msg');
+  status.innerText = "Video stats: bandwidth: " + videoBandwidth +
+      ", Latency: capture: " + videoCaptureLatency +
+      ", encode: " + videoEncodeLatency +
+      ", decode: " + videoDecodeLatency +
+      ", render: " + videoRenderLatency;
+  status.style.opacity = 1;
+  status.style.display = '';
+
+  // Update the stats once per second.
+  window.setTimeout("updateStatusBarStats()", 1000);
 }
