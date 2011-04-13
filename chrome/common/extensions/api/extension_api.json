@@ -3539,23 +3539,6 @@
           "tabId": { "type": "integer", "optional": true },
           "windowId": { "type": "integer", "optional": true }
         }
-      },
-      {
-        "id": "BlockingResponse",
-        "type": "object",
-        "description": "Return value for event handlers that have the 'blocking' extraInfoSpec applied. Allows the event handler to modify network requests.",
-        "properties": {
-          "cancel": {
-            "type": "boolean",
-            "optional": true,
-            "description": "If true, the request is cancelled. Used in onBeforeRequest, this prevents the request from being sent."
-          },
-          "redirectUrl": {
-            "type": "string",
-            "optional": true,
-            "description": "If set, the original request is prevented from being sent and is instead redirected to the given URL."
-          }
-        }
       }
     ],
     "functions": [
@@ -3596,9 +3579,12 @@
           {"type": "string", "name": "subEventName"},
           {"type": "string", "name": "requestId"},
           {
-            "$ref": "BlockingResponse",
+            "type": "object",
+            "name": "response",
             "optional": true,
-            "name": "response"
+            "properties": {
+              "cancel": {"type": "boolean", "optional": true}
+            }
           }
         ]
       }

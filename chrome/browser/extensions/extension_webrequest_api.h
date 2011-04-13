@@ -42,8 +42,7 @@ class ExtensionWebRequestEventRouter {
   int OnBeforeRequest(ProfileId profile_id,
                       ExtensionEventRouterForwarder* event_router,
                       net::URLRequest* request,
-                      net::CompletionCallback* callback,
-                      GURL* new_url);
+                      net::CompletionCallback* callback);
 
   // Dispatches the onBeforeSendHeaders event. This is fired for HTTP(s)
   // requests only, and allows modification of the outgoing request headers.
@@ -52,8 +51,8 @@ class ExtensionWebRequestEventRouter {
   int OnBeforeSendHeaders(ProfileId profile_id,
                           ExtensionEventRouterForwarder* event_router,
                           uint64 request_id,
-                          net::CompletionCallback* callback,
-                          net::HttpRequestHeaders* headers);
+                          net::HttpRequestHeaders* headers,
+                          net::CompletionCallback* callback);
 
   void OnURLRequestDestroyed(ProfileId profile_id, net::URLRequest* request);
 
@@ -65,8 +64,7 @@ class ExtensionWebRequestEventRouter {
       const std::string& event_name,
       const std::string& sub_event_name,
       uint64 request_id,
-      bool cancel,
-      const GURL& new_url);
+      bool cancel);
 
   // Adds a listener to the given event. |event_name| specifies the event being
   // listened to. |sub_event_name| is an internal event uniquely generated in
@@ -121,11 +119,10 @@ class ExtensionWebRequestEventRouter {
       ProfileId profile_id,
       const std::string& event_name,
       net::URLRequest* request);
-
   // Decrements the count of event handlers blocking the given request. When the
   // count reaches 0 (or immediately if the request is being cancelled), we
   // stop blocking the request and either resume or cancel it.
-  void DecrementBlockCount(uint64 request_id, bool cancel, const GURL& new_url);
+  void DecrementBlockCount(uint64 request_id, bool cancel);
 
   void OnRequestDeleted(net::URLRequest* request);
 

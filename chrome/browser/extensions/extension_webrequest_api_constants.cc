@@ -26,6 +26,4 @@ const char kOnErrorOccurred[] = "experimental.webRequest.onErrorOccurred";
 const char kOnHeadersReceived[] = "experimental.webRequest.onHeadersReceived";
 const char kOnRequestSent[] = "experimental.webRequest.onRequestSent";
 
-const char kInvalidRedirectUrl[] = "redirectUrl '*' is not a valid URL.";
-
 }  // namespace extension_webrequest_api_constants

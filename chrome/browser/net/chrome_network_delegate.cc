@@ -61,21 +61,19 @@ void ChromeNetworkDelegate::InitializeReferrersEnabled(
 }
 
 int ChromeNetworkDelegate::OnBeforeURLRequest(
-    net::URLRequest* request,
-    net::CompletionCallback* callback,
-    GURL* new_url) {
+    net::URLRequest* request, net::CompletionCallback* callback) {
   if (!enable_referrers_->GetValue())
     request->set_referrer(std::string());
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
-      profile_id_, event_router_.get(), request, callback, new_url);
+      profile_id_, event_router_.get(), request, callback);
 }
 
 int ChromeNetworkDelegate::OnBeforeSendHeaders(
     uint64 request_id,
-    net::CompletionCallback* callback,
-    net::HttpRequestHeaders* headers) {
+    net::HttpRequestHeaders* headers,
+    net::CompletionCallback* callback) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeSendHeaders(
-      profile_id_, event_router_.get(), request_id, callback, headers);
+      profile_id_, event_router_.get(), request_id, headers, callback);
 }
 
 void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
