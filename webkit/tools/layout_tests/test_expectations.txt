@@ -8,3 +8,12 @@
 BUGANTONM : fast/events/window-onerror7.html = TEXT
 // Waiting for a V8 roll.
 BUGANTONM : plugins/netscape-plugin-property-access-exception.html = TEXT
+
+// caseq will rebaseline upstream.
+BUGCASEQ : svg/W3C-SVG-1.1-SE/svgdom-over-01-f.svg = IMAGE+TEXT
+BUGCASEQ : svg/custom/text-dom-01-f.png = IMAGE+TEXT
+BUGCASEQ : svg/dynamic-updates/SVGTextElement-dom-lengthAdjust-attr.html = IMAGE
+BUGCASEQ : svg/dynamic-updates/SVGTextElement-dom-textLength-attr.html = IMAGE
+BUGCASEQ : svg/dynamic-updates/SVGTextElement-svgdom-lengthAdjust-prop.html = IMAGE
+BUGCASEQ : svg/dynamic-updates/SVGTextElement-svgdom-textLength-prop.htmla = IMAGE
+BUGCASEQ : svg/text/lengthAdjust-text-metrics.html = TEXT
