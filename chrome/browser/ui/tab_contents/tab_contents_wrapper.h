@@ -37,6 +37,7 @@ class PasswordManager;
 class PasswordManagerDelegate;
 class SearchEngineTabHelper;
 class TabContentsWrapperDelegate;
+class TranslateTabHelper;
 
 // Wraps TabContents and all of its supporting objects in order to control
 // their ownership and lifetime, while allowing TabContents to remain generic
@@ -124,6 +125,10 @@ class TabContentsWrapper : public NotificationObserver,
     return search_engine_tab_helper_.get();
   }
 
+  TranslateTabHelper* translate_tab_helper() {
+    return translate_tab_helper_.get();
+  }
+
   // Overrides -----------------------------------------------------------------
 
   // TabContentsObserver overrides:
@@ -141,6 +146,9 @@ class TabContentsWrapper : public NotificationObserver,
   // Internal helpers ----------------------------------------------------------
 
   // Message handlers.
+  void OnPageContents(const GURL& url,
+                      int32 page_id,
+                      const string16& contents);
   void OnJSOutOfMemory();
   void OnRegisterProtocolHandler(const std::string& protocol,
                                  const GURL& url,
@@ -186,6 +194,7 @@ class TabContentsWrapper : public NotificationObserver,
   scoped_ptr<printing::PrintViewManager> print_view_manager_;
 
   scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
+  scoped_ptr<TranslateTabHelper> translate_tab_helper_;
 
   // Per-tab observers ---------------------------------------------------------
   // (These provide no API for callers; objects that need to exist 1:1 with tabs

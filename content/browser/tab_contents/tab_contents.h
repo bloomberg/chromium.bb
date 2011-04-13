@@ -20,10 +20,8 @@
 #include "chrome/browser/tab_contents/tab_specific_content_settings.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "chrome/common/instant_types.h"
-#include "chrome/common/translate_errors.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/tab_contents/constrained_window.h"
-#include "content/browser/tab_contents/language_state.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/page_navigator.h"
@@ -544,10 +542,6 @@ class TabContents : public PageNavigator,
   // times, subsequent calls are ignored.
   void OnCloseStarted();
 
-  LanguageState& language_state() {
-    return language_state_;
-  }
-
   // Returns true if underlying TabContentsView should accept drag-n-drop.
   bool ShouldAcceptDragAndDrop() const;
 
@@ -698,15 +692,6 @@ class TabContents : public PageNavigator,
   void OnPDFHasUnsupportedFeature();
 
   void OnGoToEntryAtOffset(int offset);
-  void OnPageContents(const GURL& url,
-                      int32 page_id,
-                      const string16& contents,
-                      const std::string& language,
-                      bool page_translatable);
-  void OnPageTranslated(int32 page_id,
-                        const std::string& original_lang,
-                        const std::string& translated_lang,
-                        TranslateErrors::Type error_type);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished
@@ -1092,9 +1077,6 @@ class TabContents : public PageNavigator,
 
   // The time that this tab was last selected.
   base::TimeTicks last_selected_time_;
-
-  // Information about the language the page is in and has been translated to.
-  LanguageState language_state_;
 
   // See description above setter.
   bool closed_by_user_gesture_;

@@ -1563,14 +1563,6 @@ IPC_SYNC_MESSAGE_ROUTED4_2(ViewHostMsg_RunJavaScriptMessage,
                            bool         /* out - success */,
                            std::wstring /* out - prompt field */)
 
-// Provides the contents for the given page that was loaded recently.
-IPC_MESSAGE_ROUTED5(ViewHostMsg_PageContents,
-                    GURL         /* URL of the page */,
-                    int32        /* page id */,
-                    string16     /* page contents */,
-                    std::string  /* page ISO639_1 language code */,
-                    bool         /* whether the page can be translated */)
-
 // Requests that the given URL be opened in the specified manner.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_OpenURL,
                     GURL /* url */,

@@ -13,6 +13,7 @@
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
+#include "chrome/browser/history/history.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager_delegate_impl.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/printing/print_preview_message_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
@@ -62,6 +64,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   password_manager_.reset(
       new PasswordManager(contents, password_manager_delegate_.get()));
   search_engine_tab_helper_.reset(new SearchEngineTabHelper(contents));
+  translate_tab_helper_.reset(new TranslateTabHelper(contents));
   print_view_manager_.reset(new printing::PrintViewManager(contents));
 
   // Register for notifications about URL starredness changing on any profile.
@@ -215,6 +218,7 @@ void TabContentsWrapper::DidNavigateMainFramePostCommit(
 bool TabContentsWrapper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TabContentsWrapper, message)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PageContents, OnPageContents)
     IPC_MESSAGE_HANDLER(ViewHostMsg_JSOutOfMemory, OnJSOutOfMemory)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterProtocolHandler,
                         OnRegisterProtocolHandler)
@@ -251,6 +255,29 @@ void TabContentsWrapper::Observe(NotificationType type,
 
 ////////////////////////////////////////////////////////////////////////////////
 // Internal helpers
+
+void TabContentsWrapper::OnPageContents(const GURL& url,
+                                        int32 page_id,
+                                        const string16& contents) {
+  // Don't index any https pages. People generally don't want their bank
+  // accounts, etc. indexed on their computer, especially since some of these
+  // things are not marked cachable.
+  // TODO(brettw) we may want to consider more elaborate heuristics such as
+  // the cachability of the page. We may also want to consider subframes (this
+  // test will still index subframes if the subframe is SSL).
+  // TODO(zelidrag) bug chromium-os:2808 - figure out if we want to reenable
+  // content indexing for chromeos in some future releases.
+#if !defined(OS_CHROMEOS)
+  if (!url.SchemeIsSecure()) {
+    Profile* p = profile();
+    if (p && !p->IsOffTheRecord()) {
+      HistoryService* hs = p->GetHistoryService(Profile::IMPLICIT_ACCESS);
+      if (hs)
+        hs->SetPageContents(url, contents);
+    }
+  }
+#endif
+}
 
 void TabContentsWrapper::OnJSOutOfMemory() {
   tab_contents()->AddInfoBar(new SimpleAlertInfoBarDelegate(tab_contents(),

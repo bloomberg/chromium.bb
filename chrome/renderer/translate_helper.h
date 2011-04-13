@@ -17,25 +17,21 @@ class WebDocument;
 class WebFrame;
 }
 
+namespace autofill {
+class AutofillAgent;
+}
+
 // This class deals with page translation.
 // There is one TranslateHelper per RenderView.
 
 class TranslateHelper : public RenderViewObserver {
  public:
-  explicit TranslateHelper(RenderView* render_view);
+  // autofill can be NULL.
+  TranslateHelper(RenderView* render_view, autofill::AutofillAgent* autofill);
   virtual ~TranslateHelper();
 
-  // Returns whether the page associated with |document| is a candidate for
-  // translation.  Some pages can explictly specify (via a meta-tag) that they
-  // should not be translated.
-  static bool IsPageTranslatable(WebKit::WebDocument* document);
-
-  // Returns the language specified in the language meta tag of |document|, or
-  // an empty string if no such tag was found.
-  // The tag may specify several languages, the first one is returned.
-  // Example of such meta-tag:
-  // <meta http-equiv="content-language" content="en, fr">
-  static std::string GetPageLanguageFromMetaTag(WebKit::WebDocument* document);
+  // Informs us that the page's text has been extracted.
+  void PageCaptured(const string16& contents);
 
  protected:
   // The following methods are protected so they can be overridden in
@@ -75,6 +71,22 @@ class TranslateHelper : public RenderViewObserver {
   virtual bool DontDelayTasks();
 
  private:
+  // Returns whether the page associated with |document| is a candidate for
+  // translation.  Some pages can explictly specify (via a meta-tag) that they
+  // should not be translated.
+  static bool IsPageTranslatable(WebKit::WebDocument* document);
+
+  // Returns the language specified in the language meta tag of |document|, or
+  // an empty string if no such tag was found.
+  // The tag may specify several languages, the first one is returned.
+  // Example of such meta-tag:
+  // <meta http-equiv="content-language" content="en, fr">
+  static std::string GetPageLanguageFromMetaTag(WebKit::WebDocument* document);
+
+  // Returns the ISO 639_1 language code of the specified |text|, or 'unknown'
+  // if it failed.
+  static std::string DetermineTextLanguage(const string16& text);
+
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
@@ -122,6 +134,8 @@ class TranslateHelper : public RenderViewObserver {
   int page_id_;
   std::string source_lang_;
   std::string target_lang_;
+
+  autofill::AutofillAgent* autofill_;
 
   // Method factory used to make calls to TranslatePageImpl.
   ScopedRunnableMethodFactory<TranslateHelper> method_factory_;

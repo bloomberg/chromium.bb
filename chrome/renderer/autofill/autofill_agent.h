@@ -38,6 +38,10 @@ class AutofillAgent : public RenderViewObserver,
                 PasswordAutofillManager* password_autofill_manager);
   virtual ~AutofillAgent();
 
+  // Called when the translate helper has finished translating the page.  We
+  // use this signal to re-scan the page for forms.
+  void FrameTranslated(WebKit::WebFrame* frame);
+
   // WebKit::WebAutoFillClient implementation.  Public for tests.
   virtual void didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
                                            const WebKit::WebString& value,
@@ -71,7 +75,6 @@ class AutofillAgent : public RenderViewObserver,
   virtual void FrameWillClose(WebKit::WebFrame* frame);
   virtual void WillSubmitForm(WebKit::WebFrame* frame,
                               const WebKit::WebFormElement& form);
-  virtual void FrameTranslated(WebKit::WebFrame* frame);
 
   // PageClickListener implementation:
   virtual bool InputElementClicked(const WebKit::WebInputElement& element,

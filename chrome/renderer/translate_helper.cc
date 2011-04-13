@@ -5,14 +5,18 @@
 #include "chrome/renderer/translate_helper.h"
 
 #include "base/compiler_specific.h"
+#include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/renderer/autofill/autofill_agent.h"
 #include "content/renderer/render_view.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"
 #include "v8/include/v8.h"
 #include "webkit/glue/dom_operations.h"
 
@@ -41,14 +45,32 @@ static const char* const kAutoDetectionLanguage = "auto";
 ////////////////////////////////////////////////////////////////////////////////
 // TranslateHelper, public:
 //
-TranslateHelper::TranslateHelper(RenderView* render_view)
+TranslateHelper::TranslateHelper(RenderView* render_view,
+                                 autofill::AutofillAgent* autofill)
     : RenderViewObserver(render_view),
       translation_pending_(false),
       page_id_(-1),
+      autofill_(autofill),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 
 TranslateHelper::~TranslateHelper() {
+}
+
+void TranslateHelper::PageCaptured(const string16& contents) {
+  WebDocument document = render_view()->webview()->mainFrame()->document();
+  // If the page explicitly specifies a language, use it, otherwise we'll
+  // determine it based on the text content using the CLD.
+  std::string language = GetPageLanguageFromMetaTag(&document);
+  if (language.empty()) {
+    base::TimeTicks begin_time = base::TimeTicks::Now();
+    language = DetermineTextLanguage(contents);
+    UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.LanguageDetection",
+                               base::TimeTicks::Now() - begin_time);
+  }
+
+  Send(new ViewHostMsg_TranslateLanguageDetermined(
+      routing_id(), language, IsPageTranslatable(&document)));
 }
 
 void TranslateHelper::CancelPendingTranslation() {
@@ -110,6 +132,31 @@ std::string TranslateHelper::GetPageLanguageFromMetaTag(WebDocument* document) {
     language = language.substr(0, coma_index);
   }
   TrimWhitespaceASCII(language, TRIM_ALL, &language);
+  return language;
+}
+
+// static
+std::string TranslateHelper::DetermineTextLanguage(const string16& text) {
+  std::string language = chrome::kUnknownLanguageCode;
+  int num_languages = 0;
+  int text_bytes = 0;
+  bool is_reliable = false;
+  Language cld_language =
+      DetectLanguageOfUnicodeText(NULL, text.c_str(), true, &is_reliable,
+                                  &num_languages, NULL, &text_bytes);
+  // We don't trust the result if the CLD reports that the detection is not
+  // reliable, or if the actual text used to detect the language was less than
+  // 100 bytes (short texts can often lead to wrong results).
+  if (is_reliable && text_bytes >= 100 && cld_language != NUM_LANGUAGES &&
+      cld_language != UNKNOWN_LANGUAGE && cld_language != TG_UNKNOWN_LANGUAGE) {
+    // We should not use LanguageCode_ISO_639_1 because it does not cover all
+    // the languages CLD can detect. As a result, it'll return the invalid
+    // language code for tradtional Chinese among others.
+    // |LanguageCodeWithDialect| will go through ISO 639-1, ISO-639-2 and
+    // 'other' tables to do the 'right' thing. In addition, it'll return zh-CN
+    // for Simplified Chinese.
+    language = LanguageCodeWithDialects(cld_language);
+  }
   return language;
 }
 
@@ -284,8 +331,8 @@ void TranslateHelper::CheckTranslateStatus() {
 
     translation_pending_ = false;
 
-    // Notify the renderer we are done.
-    render_view()->OnPageTranslated();
+    if (autofill_)
+      autofill_->FrameTranslated(render_view()->webview()->mainFrame());
 
     // Notify the browser we are done.
     render_view()->Send(new ViewHostMsg_PageTranslated(

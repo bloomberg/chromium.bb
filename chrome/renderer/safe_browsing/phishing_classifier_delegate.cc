@@ -138,14 +138,14 @@ void PhishingClassifierDelegate::DidCommitProvisionalLoad(
   CancelPendingClassification();
 }
 
-void PhishingClassifierDelegate::PageCaptured(const string16& page_text,
+void PhishingClassifierDelegate::PageCaptured(string16* page_text,
                                               bool preliminary_capture) {
   if (preliminary_capture) {
     return;
   }
   last_finished_load_id_ = render_view()->page_id();
   last_finished_load_url_ = GetToplevelUrl();
-  classifier_page_text_ = page_text;
+  classifier_page_text_.swap(*page_text);
   MaybeStartClassification();
 }
 

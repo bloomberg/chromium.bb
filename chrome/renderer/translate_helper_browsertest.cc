@@ -15,7 +15,7 @@ using testing::Return;
 class TestTranslateHelper : public TranslateHelper {
  public:
   explicit TestTranslateHelper(RenderView* render_view)
-      : TranslateHelper(render_view) {
+      : TranslateHelper(render_view, NULL) {
   }
 
   virtual bool DontDelayTasks() { return true; }

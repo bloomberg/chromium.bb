@@ -67,6 +67,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
@@ -3634,7 +3635,9 @@ void TestingAutomationProvider::GetTranslateInfo(
       this, reply_message, tab_contents, translate_bar);
   // If the language for the page hasn't been loaded yet, then just make
   // the observer, otherwise call observe directly.
-  std::string language = tab_contents->language_state().original_language();
+  TranslateTabHelper* helper = TabContentsWrapper::GetCurrentWrapperForContents(
+      tab_contents)->translate_tab_helper();
+  std::string language = helper->language_state().original_language();
   if (!language.empty()) {
     observer->Observe(NotificationType::TAB_LANGUAGE_DETERMINED,
                       Source<TabContents>(tab_contents),

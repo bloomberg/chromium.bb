@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_TAB_CONTENTS_LANGUAGE_STATE_H_
-#define CONTENT_BROWSER_TAB_CONTENTS_LANGUAGE_STATE_H_
+#ifndef CHROME_BROWSER_TAB_CONTENTS_LANGUAGE_STATE_H_
+#define CHROME_BROWSER_TAB_CONTENTS_LANGUAGE_STATE_H_
 #pragma once
 
 #include <string>
@@ -106,4 +106,4 @@ class LanguageState {
   DISALLOW_COPY_AND_ASSIGN(LanguageState);
 };
 
-#endif  // CONTENT_BROWSER_TAB_CONTENTS_LANGUAGE_STATE_H_
+#endif  // CHROME_BROWSER_TAB_CONTENTS_LANGUAGE_STATE_H_

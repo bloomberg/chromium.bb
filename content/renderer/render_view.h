@@ -78,7 +78,6 @@ class WebPluginDelegateProxy;
 class WebUIBindings;
 struct ContextMenuMediaParams;
 struct PP_Flash_NetAddress;
-struct ThumbnailScore;
 struct ViewHostMsg_RunFileChooser_Params;
 struct ViewMsg_ClosePage_Params;
 struct ViewMsg_Navigate_Params;
@@ -228,6 +227,7 @@ class RenderView : public RenderWidget,
     return webkit_preferences_;
   }
 
+  bool content_state_immediately() { return send_content_state_immediately_; }
   void set_send_content_state_immediately(bool value) {
     send_content_state_immediately_ = value;
   }
@@ -275,10 +275,6 @@ class RenderView : public RenderWidget,
   // didn't schedule anything.
   bool ScheduleFileChooser(const ViewHostMsg_RunFileChooser_Params& params,
                            WebKit::WebFileChooserCompletion* completion);
-
-  // Called when the translate helper has finished translating the page.  We
-  // use this signal to re-scan the page for forms.
-  void OnPageTranslated();
 
   // Sets the content settings that back allowScripts(), allowImages(), and
   // allowPlugins().
@@ -710,26 +706,6 @@ class RenderView : public RenderWidget,
   void OpenURL(const GURL& url, const GURL& referrer,
                WebKit::WebNavigationPolicy policy);
 
-  // Captures the thumbnail and text contents for indexing for the given load
-  // ID. If the view's load ID is different than the parameter, this call is
-  // a NOP. Typically called on a timer, so the load ID may have changed in the
-  // meantime.
-  void CapturePageInfo(int load_id, bool preliminary_capture);
-
-  // Retrieves the text from the given frame contents, the page text up to the
-  // maximum amount kMaxIndexChars will be placed into the given buffer.
-  void CaptureText(WebKit::WebFrame* frame, string16* contents);
-
-  // Creates a thumbnail of |frame|'s contents resized to (|w|, |h|)
-  // and puts that in |thumbnail|. Thumbnail metadata goes in |score|.
-  bool CaptureThumbnail(WebKit::WebView* view, int w, int h,
-                        SkBitmap* thumbnail,
-                        ThumbnailScore* score);
-
-  // Capture a snapshot of a view.  This is used to allow an extension
-  // to get a snapshot of a tab using chrome.tabs.captureVisibleTab().
-  bool CaptureSnapshot(WebKit::WebView* view, SkBitmap* snapshot);
-
   bool RunJavaScriptMessage(int type,
                             const std::wstring& message,
                             const std::wstring& default_value,
@@ -776,8 +752,6 @@ class RenderView : public RenderWidget,
   void OnCopyToFindPboard();
 #endif
   void OnCut();
-  void OnCaptureThumbnail();
-  void OnCaptureSnapshot();
   void OnCSSInsertRequest(const std::wstring& frame_xpath,
                           const std::string& css,
                           const std::string& id);
@@ -1117,10 +1091,6 @@ class RenderView : public RenderWidget,
   // goes back.
   int32 last_page_id_sent_to_browser_;
 
-  // Page_id from the last page we indexed. This prevents us from indexing the
-  // same page twice in a row.
-  int32 last_indexed_page_id_;
-
   // The next available page ID to use. This ensures that the page IDs are
   // globally unique in the renderer.
   static int32 next_page_id_;
@@ -1210,7 +1180,6 @@ class RenderView : public RenderWidget,
 
   // Helper objects ------------------------------------------------------------
 
-  ScopedRunnableMethodFactory<RenderView> page_info_method_factory_;
   ScopedRunnableMethodFactory<RenderView> accessibility_method_factory_;
 
   RendererWebCookieJarImpl cookie_jar_;

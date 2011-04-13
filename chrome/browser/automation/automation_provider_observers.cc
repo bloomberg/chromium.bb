@@ -44,6 +44,7 @@
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
@@ -1303,17 +1304,18 @@ void TabLanguageDeterminedObserver::Observe(
     return;
   }
 
+  TranslateTabHelper* helper = TabContentsWrapper::GetCurrentWrapperForContents(
+      tab_contents_)->translate_tab_helper();
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   return_value->SetBoolean("page_translated",
-                           tab_contents_->language_state().IsPageTranslated());
+                           helper->language_state().IsPageTranslated());
   return_value->SetBoolean(
       "can_translate_page", TranslatePrefs::CanTranslate(
           automation_->profile()->GetPrefs(),
-          tab_contents_->language_state().original_language(),
+          helper->language_state().original_language(),
           tab_contents_->GetURL()));
-  return_value->SetString(
-      "original_language",
-      tab_contents_->language_state().original_language());
+  return_value->SetString("original_language",
+                          helper->language_state().original_language());
   if (translate_bar_) {
     DictionaryValue* bar_info = new DictionaryValue;
     std::map<TranslateInfoBarDelegate::Type, std::string> type_to_string;

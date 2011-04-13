@@ -49,7 +49,6 @@
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
-#include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/bindings_policy.h"
@@ -250,7 +249,6 @@ TabContents::TabContents(Profile* profile,
       suppress_javascript_messages_(false),
       is_showing_before_unload_dialog_(false),
       opener_web_ui_type_(WebUI::kNoWebUI),
-      language_state_(&controller_),
       closed_by_user_gesture_(false),
       minimum_zoom_percent_(
           static_cast<int>(WebKit::WebView::minTextSizeMultiplier * 100)),
@@ -416,8 +414,6 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_PDFHasUnsupportedFeature,
                         OnPDFHasUnsupportedFeature)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PageContents, OnPageContents)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PageTranslated, OnPageTranslated)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -1587,9 +1583,6 @@ void TabContents::DidNavigateAnyFramePostCommit(
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(TabContentsObserver, observers_,
                     DidNavigateAnyFramePostCommit(details, params));
-
-  // Let the LanguageState clear its state.
-  language_state_.DidNavigate(details);
 }
 
 void TabContents::CloseConstrainedWindows() {
@@ -1750,52 +1743,6 @@ void TabContents::OnGoToEntryAtOffset(int offset) {
                                PageTransition::FORWARD_BACK);
     NavigateToEntry(*entry, NavigationController::NO_RELOAD);
   }
-}
-
-void TabContents::OnPageContents(const GURL& url,
-                                 int32 page_id,
-                                 const string16& contents,
-                                 const std::string& language,
-                                 bool page_translatable) {
-  // Don't index any https pages. People generally don't want their bank
-  // accounts, etc. indexed on their computer, especially since some of these
-  // things are not marked cachable.
-  // TODO(brettw) we may want to consider more elaborate heuristics such as
-  // the cachability of the page. We may also want to consider subframes (this
-  // test will still index subframes if the subframe is SSL).
-  // TODO(zelidrag) bug chromium-os:2808 - figure out if we want to reenable
-  // content indexing for chromeos in some future releases.
-#if !defined(OS_CHROMEOS)
-  if (!url.SchemeIsSecure()) {
-    Profile* p = profile();
-    if (p && !p->IsOffTheRecord()) {
-      HistoryService* hs = p->GetHistoryService(Profile::IMPLICIT_ACCESS);
-      if (hs)
-        hs->SetPageContents(url, contents);
-    }
-  }
-#endif
-
-  language_state_.LanguageDetermined(language, page_translatable);
-
-  std::string lang = language;
-  NotificationService::current()->Notify(
-      NotificationType::TAB_LANGUAGE_DETERMINED,
-      Source<TabContents>(this),
-      Details<std::string>(&lang));
-}
-
-void TabContents::OnPageTranslated(int32 page_id,
-                                   const std::string& original_lang,
-                                   const std::string& translated_lang,
-                                   TranslateErrors::Type error_type) {
-  language_state_.set_current_language(translated_lang);
-  language_state_.set_translation_pending(false);
-  PageTranslatedDetails details(original_lang, translated_lang, error_type);
-  NotificationService::current()->Notify(
-      NotificationType::PAGE_TRANSLATED,
-      Source<TabContents>(this),
-      Details<PageTranslatedDetails>(&details));
 }
 
 void TabContents::OnContentSettingsAccessed(bool content_was_blocked) {

@@ -14,10 +14,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/language_state.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -29,7 +31,6 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/language_state.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -208,8 +209,16 @@ void TranslateManager::Observe(NotificationType type,
         NOTREACHED();
         return;
       }
+
+      TabContentsWrapper* wrapper =
+          TabContentsWrapper::GetCurrentWrapperForContents(
+              controller->tab_contents());
+      if (!wrapper || !wrapper->translate_tab_helper())
+        return;
+
+      TranslateTabHelper* helper = wrapper->translate_tab_helper();
       if (!load_details->is_main_frame &&
-          controller->tab_contents()->language_state().translation_declined()) {
+          helper->language_state().translation_declined()) {
         // Some sites (such as Google map) may trigger sub-frame navigations
         // when the user interacts with the page.  We don't want to show a new
         // infobar if the user already dismissed one in that case.
@@ -230,15 +239,17 @@ void TranslateManager::Observe(NotificationType type,
               &TranslateManager::InitiateTranslationPosted,
               controller->tab_contents()->render_view_host()->process()->id(),
               controller->tab_contents()->render_view_host()->routing_id(),
-              controller->tab_contents()->language_state().
-                  original_language()));
+              helper->language_state().original_language()));
       break;
     }
     case NotificationType::TAB_LANGUAGE_DETERMINED: {
       TabContents* tab = Source<TabContents>(source).ptr();
       // We may get this notifications multiple times.  Make sure to translate
       // only once.
-      LanguageState& language_state = tab->language_state();
+      TabContentsWrapper* wrapper =
+          TabContentsWrapper::GetCurrentWrapperForContents(tab);
+      LanguageState& language_state =
+          wrapper->translate_tab_helper()->language_state();
       if (language_state.page_translatable() &&
           !language_state.translation_pending() &&
           !language_state.translation_declined() &&
@@ -407,7 +418,9 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
     return;
   }
 
-  std::string auto_translate_to = tab->language_state().AutoTranslateTo();
+  TranslateTabHelper* helper = TabContentsWrapper::GetCurrentWrapperForContents(
+      tab)->translate_tab_helper();
+  std::string auto_translate_to = helper->language_state().AutoTranslateTo();
   if (!auto_translate_to.empty()) {
     // This page was navigated through a click from a translated page.
     TranslatePage(tab, page_lang, auto_translate_to);
@@ -423,7 +436,12 @@ void TranslateManager::InitiateTranslationPosted(
     int process_id, int render_id, const std::string& page_lang) {
   // The tab might have been closed.
   TabContents* tab = tab_util::GetTabContentsByID(process_id, render_id);
-  if (!tab || tab->language_state().translation_pending())
+  if (!tab)
+    return;
+
+  TranslateTabHelper* helper = TabContentsWrapper::GetCurrentWrapperForContents(
+      tab)->translate_tab_helper();
+  if (helper->language_state().translation_pending())
     return;
 
   InitiateTranslation(tab, page_lang);
@@ -476,8 +494,11 @@ void TranslateManager::RevertTranslation(TabContents* tab_contents) {
   }
   tab_contents->render_view_host()->Send(new ViewMsg_RevertTranslation(
       tab_contents->render_view_host()->routing_id(), entry->page_id()));
-  tab_contents->language_state().set_current_language(
-      tab_contents->language_state().original_language());
+
+  TranslateTabHelper* helper = TabContentsWrapper::GetCurrentWrapperForContents(
+      tab_contents)->translate_tab_helper();
+  helper->language_state().set_current_language(
+      helper->language_state().original_language());
 }
 
 void TranslateManager::ReportLanguageDetectionError(TabContents* tab_contents) {
@@ -487,7 +508,10 @@ void TranslateManager::ReportLanguageDetectionError(TabContents* tab_contents) {
   report_error_url += "?client=cr&action=langidc&u=";
   report_error_url += EscapeUrlEncodedData(page_url.spec());
   report_error_url += "&sl=";
-  report_error_url += tab_contents->language_state().original_language();
+
+  TranslateTabHelper* helper = TabContentsWrapper::GetCurrentWrapperForContents(
+      tab_contents)->translate_tab_helper();
+  report_error_url += helper->language_state().original_language();
   report_error_url += "&hl=";
   report_error_url +=
       GetLanguageCode(g_browser_process->GetApplicationLocale());
@@ -511,8 +535,11 @@ void TranslateManager::DoTranslatePage(TabContents* tab,
     return;
   }
 
-  tab->language_state().set_translation_pending(true);
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab);
 
+  wrapper->translate_tab_helper()->language_state().set_translation_pending(
+      true);
   tab->render_view_host()->Send(new ViewMsg_TranslatePage(
       tab->render_view_host()->routing_id(), entry->page_id(), translate_script,
       source_lang, target_lang));
@@ -521,8 +548,6 @@ void TranslateManager::DoTranslatePage(TabContents* tab,
   // but we don't have that yet.  So before start translation, we clear the
   // current form and re-parse it in AutofillManager first to get the new
   // labels.
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab);
   if (wrapper)
     wrapper->autofill_manager()->Reset();
 }

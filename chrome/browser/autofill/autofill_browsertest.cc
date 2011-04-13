@@ -20,13 +20,13 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/renderer/translate_helper.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/view_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
@@ -434,10 +434,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillAfterTranslate) {
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
 
   // Get translation bar.
-  int page_id = browser()->GetSelectedTabContents()->controller().
-      GetLastCommittedEntry()->page_id();
-  render_view_host()->OnMessageReceived(ViewHostMsg_PageContents(
-      0, url, page_id, ASCIIToUTF16("test"), "ja", true));
+  render_view_host()->OnMessageReceived(ViewHostMsg_TranslateLanguageDetermined(
+      0, "ja", true));
   TranslateInfoBarDelegate* infobar = browser()->GetSelectedTabContents()->
       GetInfoBarDelegateAt(0)->AsTranslateInfoBarDelegate();
 

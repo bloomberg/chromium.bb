@@ -33,15 +33,14 @@ class PhishingClassifierDelegate : public RenderViewObserver {
   // The scorer is passed on to the classifier.
   void SetPhishingScorer(const safe_browsing::Scorer* scorer);
 
-  // RenderViewObserver implementation, public for testing.
-
   // Called by the RenderView once a page has finished loading.  Updates the
   // last-loaded URL and page id, then starts classification if all other
   // conditions are met (see MaybeStartClassification for details).
   // We ignore preliminary captures, since these happen before the page has
   // finished loading.
-  virtual void PageCaptured(const string16& page_text,
-                            bool preliminary_capture);
+  void PageCaptured(string16* page_text, bool preliminary_capture);
+
+  // RenderViewObserver implementation, public for testing.
 
   // Called by the RenderView when a page has started loading in the given
   // WebFrame.  Typically, this will cause any pending classification to be

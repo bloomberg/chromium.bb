@@ -81,14 +81,9 @@ class RenderWidget : public IPC::Channel::Listener,
   }
 
   // May return NULL when the window is closing.
-  WebKit::WebWidget* webwidget() const {
-    return webwidget_;
-  }
-
-  gfx::NativeViewId host_window() const {
-    return host_window_;
-  }
-
+  WebKit::WebWidget* webwidget() const { return webwidget_; }
+  gfx::NativeViewId host_window() const { return host_window_; }
+  gfx::Size size() const { return size_; }
   bool has_focus() const { return has_focus_; }
 
   // IPC::Channel::Listener

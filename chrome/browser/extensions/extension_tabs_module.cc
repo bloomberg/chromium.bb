@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -1262,12 +1263,13 @@ bool DetectTabLanguageFunction::RunImpl() {
 
   AddRef();  // Balanced in GotLanguage()
 
-  if (!contents->tab_contents()->language_state().original_language().empty()) {
+  TranslateTabHelper* helper = contents->translate_tab_helper();
+  if (!helper->language_state().original_language().empty()) {
     // Delay the callback invocation until after the current JS call has
     // returned.
     MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
         this, &DetectTabLanguageFunction::GotLanguage,
-        contents->tab_contents()->language_state().original_language()));
+        helper->language_state().original_language()));
     return true;
   }
   // The tab contents does not know its language yet.  Let's  wait until it

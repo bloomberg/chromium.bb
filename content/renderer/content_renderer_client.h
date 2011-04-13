@@ -49,10 +49,6 @@ class ContentRendererClient {
       const WebKit::WebURLRequest& failed_request,
       const WebKit::WebURLError& error);
 
-  // Returns the ISO 639_1 language code of the specified |text|, or 'unknown'
-  // if it failed.
-  virtual std::string DetermineTextLanguage(const string16& text);
-
   // Returns true if the renderer process should schedule the idle handler when
   // all widgets are hidden.
   virtual bool RunIdleHandlerWhenWidgetsHidden();

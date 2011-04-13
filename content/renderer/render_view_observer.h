@@ -29,7 +29,9 @@ class RenderViewObserver : public IPC::Channel::Listener,
   // they want to outlive it, they can override this function.
   virtual void OnDestruct();
 
-  // These match the WebKit API notifications.
+  // These match the WebKit API notifications
+  virtual void DidStartLoading() {}
+  virtual void DidStopLoading() {}
   virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame) {}
   virtual void DidFailLoad(WebKit::WebFrame* frame,
                            const WebKit::WebURLError& error) {}
@@ -55,10 +57,7 @@ class RenderViewObserver : public IPC::Channel::Listener,
   virtual void PrintPage(WebKit::WebFrame* frame) {}
 
   // These match the RenderView methods below.
-  virtual void FrameTranslated(WebKit::WebFrame* frame) {}
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {}
-  virtual void PageCaptured(const string16& page_text,
-                            bool preliminary_capture) {}
 
  protected:
   explicit RenderViewObserver(RenderView* render_view);

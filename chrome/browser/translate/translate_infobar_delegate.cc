@@ -11,6 +11,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_infobar_view.h"
 #include "chrome/browser/translate/translate_manager.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
@@ -128,7 +130,9 @@ void TranslateInfoBarDelegate::TranslationDeclined() {
   // translations when getting a LANGUAGE_DETERMINED from the page, which
   // happens when a load stops. That could happen multiple times, including
   // after the user already declined the translation.)
-  tab_contents_->language_state().set_translation_declined(true);
+  TranslateTabHelper* helper = TabContentsWrapper::GetCurrentWrapperForContents(
+      tab_contents_)->translate_tab_helper();
+  helper->language_state().set_translation_declined(true);
 }
 
 bool TranslateInfoBarDelegate::IsLanguageBlacklisted() {

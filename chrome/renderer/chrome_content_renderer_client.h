@@ -28,7 +28,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual std::string GetNavigationErrorHtml(
       const WebKit::WebURLRequest& failed_request,
       const WebKit::WebURLError& error);
-  virtual std::string DetermineTextLanguage(const string16& text);
   virtual bool RunIdleHandlerWhenWidgetsHidden();
   virtual bool AllowPopup(const GURL& creator);
   virtual bool ShouldFork(WebKit::WebFrame* frame,

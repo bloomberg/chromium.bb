@@ -1179,11 +1179,11 @@ TEST_F(RenderViewTest, TranslatablePage) {
   LoadHTML("<html><body>A random page with random content.</body></html>");
   ProcessPendingMessages();
   const IPC::Message* message = render_thread_.sink().GetUniqueMessageMatching(
-      ViewHostMsg_PageContents::ID);
+      ViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ViewHostMsg_PageContents::Param params;
-  ViewHostMsg_PageContents::Read(message, &params);
-  EXPECT_TRUE(params.e);  // Translatable should be true.
+  ViewHostMsg_TranslateLanguageDetermined::Param params;
+  ViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  EXPECT_TRUE(params.b);  // Translatable should be true.
   render_thread_.sink().ClearMessages();
 
   // Now the page specifies the META tag to prevent translation.
@@ -1191,10 +1191,10 @@ TEST_F(RenderViewTest, TranslatablePage) {
            "<body>A random page with random content.</body></html>");
   ProcessPendingMessages();
   message = render_thread_.sink().GetUniqueMessageMatching(
-      ViewHostMsg_PageContents::ID);
+      ViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ViewHostMsg_PageContents::Read(message, &params);
-  EXPECT_FALSE(params.e);  // Translatable should be false.
+  ViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  EXPECT_FALSE(params.b);  // Translatable should be false.
   render_thread_.sink().ClearMessages();
 
   // Try the alternate version of the META tag (content instead of value).
@@ -1202,10 +1202,10 @@ TEST_F(RenderViewTest, TranslatablePage) {
            "<body>A random page with random content.</body></html>");
   ProcessPendingMessages();
   message = render_thread_.sink().GetUniqueMessageMatching(
-      ViewHostMsg_PageContents::ID);
+      ViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ViewHostMsg_PageContents::Read(message, &params);
-  EXPECT_FALSE(params.e);  // Translatable should be false.
+  ViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  EXPECT_FALSE(params.b);  // Translatable should be false.
 }
 
 // Tests that the language meta tag takes precedence over the CLD when reporting
@@ -1219,11 +1219,11 @@ TEST_F(RenderViewTest, LanguageMetaTag) {
            "</head><body>A random page with random content.</body></html>");
   ProcessPendingMessages();
   const IPC::Message* message = render_thread_.sink().GetUniqueMessageMatching(
-      ViewHostMsg_PageContents::ID);
+      ViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ViewHostMsg_PageContents::Param params;
-  ViewHostMsg_PageContents::Read(message, &params);
-  EXPECT_EQ("es", params.d);
+  ViewHostMsg_TranslateLanguageDetermined::Param params;
+  ViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  EXPECT_EQ("es", params.a);
   render_thread_.sink().ClearMessages();
 
   // Makes sure we support multiple languages specified.
@@ -1232,8 +1232,8 @@ TEST_F(RenderViewTest, LanguageMetaTag) {
            "</head><body>A random page with random content.</body></html>");
   ProcessPendingMessages();
   message = render_thread_.sink().GetUniqueMessageMatching(
-      ViewHostMsg_PageContents::ID);
+      ViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ViewHostMsg_PageContents::Read(message, &params);
-  EXPECT_EQ("fr", params.d);
+  ViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  EXPECT_EQ("fr", params.a);
 }

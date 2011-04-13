@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -22,6 +21,7 @@
 #include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "chrome/renderer/automation/automation_renderer_helper.h"
 #include "chrome/renderer/blocked_plugin.h"
+#include "chrome/renderer/chrome_render_observer.h"
 #include "chrome/renderer/devtools_agent.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
@@ -48,7 +48,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
-#include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -93,7 +92,20 @@ static bool CrossesExtensionExtents(WebFrame* frame, const GURL& new_url) {
 namespace chrome {
 
 void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
+  safe_browsing::PhishingClassifierDelegate* phishing_classifier = NULL;
+#ifndef OS_CHROMEOS
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableClientSidePhishingDetection)) {
+    phishing_classifier =
+        new safe_browsing::PhishingClassifierDelegate(render_view, NULL);
+  }
+#endif
+
   new DevToolsAgent(render_view);
+  new ExtensionHelper(render_view);
+  new PrintWebViewHelper(render_view);
+  new SearchBox(render_view);
+  new safe_browsing::MalwareDOMDetails(render_view);
 
   PasswordAutofillManager* password_autofill_manager =
       new PasswordAutofillManager(render_view);
@@ -106,23 +118,8 @@ void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
   page_click_tracker->AddListener(password_autofill_manager);
   page_click_tracker->AddListener(autofill_agent);
 
-  new TranslateHelper(render_view);
-
-#ifndef OS_CHROMEOS
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableClientSidePhishingDetection)) {
-    new safe_browsing::PhishingClassifierDelegate(render_view, NULL);
-  }
-#endif
-
-  // Observer for Malware DOM details messages.
-  new safe_browsing::MalwareDOMDetails(render_view);
-
-  new ExtensionHelper(render_view);
-
-  new PrintWebViewHelper(render_view);
-
-  new SearchBox(render_view);
+  TranslateHelper* translate = new TranslateHelper(render_view, autofill_agent);
+  new ChromeRenderObserver(render_view, translate, phishing_classifier);
 
   // Used only for testing/automation.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -310,33 +307,6 @@ std::string ChromeContentRendererClient::GetNavigationErrorHtml(
   }
 
   return html;
-}
-
-// Returns the ISO 639_1 language code of the specified |text|, or 'unknown'
-// if it failed.
-std::string ChromeContentRendererClient::DetermineTextLanguage(
-    const string16& text) {
-  std::string language = chrome::kUnknownLanguageCode;
-  int num_languages = 0;
-  int text_bytes = 0;
-  bool is_reliable = false;
-  Language cld_language =
-      DetectLanguageOfUnicodeText(NULL, text.c_str(), true, &is_reliable,
-                                  &num_languages, NULL, &text_bytes);
-  // We don't trust the result if the CLD reports that the detection is not
-  // reliable, or if the actual text used to detect the language was less than
-  // 100 bytes (short texts can often lead to wrong results).
-  if (is_reliable && text_bytes >= 100 && cld_language != NUM_LANGUAGES &&
-      cld_language != UNKNOWN_LANGUAGE && cld_language != TG_UNKNOWN_LANGUAGE) {
-    // We should not use LanguageCode_ISO_639_1 because it does not cover all
-    // the languages CLD can detect. As a result, it'll return the invalid
-    // language code for tradtional Chinese among others.
-    // |LanguageCodeWithDialect| will go through ISO 639-1, ISO-639-2 and
-    // 'other' tables to do the 'right' thing. In addition, it'll return zh-CN
-    // for Simplified Chinese.
-    language = LanguageCodeWithDialects(cld_language);
-  }
-  return language;
 }
 
 bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {

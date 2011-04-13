@@ -32,7 +32,6 @@
 #include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_view_commands.h"
-#include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
 #include "chrome/renderer/about_handler.h"
@@ -45,7 +44,6 @@
 #include "chrome/renderer/searchbox.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
-#include "chrome/renderer/translate_helper.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "content/common/appcache/appcache_dispatcher.h"
 #include "content/common/clipboard_messages.h"
@@ -89,8 +87,6 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
-#include "skia/ext/bitmap_platform_device.h"
-#include "skia/ext/image_operations.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
@@ -135,12 +131,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWindowFeatures.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/message_box_flags.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
-#include "ui/gfx/skbitmap_operations.h"
 #include "v8/include/v8-testing.h"
 #include "v8/include/v8.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
@@ -265,28 +259,6 @@ using webkit_glue::WebAccessibility;
 typedef std::map<WebKit::WebView*, RenderView*> ViewMap;
 static base::LazyInstance<ViewMap> g_view_map(base::LINKER_INITIALIZED);
 
-// define to write the time necessary for thumbnail/DOM text retrieval,
-// respectively, into the system debug log
-// #define TIME_TEXT_RETRIEVAL
-
-// maximum number of characters in the document to index, any text beyond this
-// point will be clipped
-static const size_t kMaxIndexChars = 65535;
-
-// Size of the thumbnails that we'll generate
-static const int kThumbnailWidth = 212;
-static const int kThumbnailHeight = 132;
-
-// Delay in milliseconds that we'll wait before capturing the page contents
-// and thumbnail.
-static const int kDelayForCaptureMs = 500;
-
-// Typically, we capture the page data once the page is loaded.
-// Sometimes, the page never finishes to load, preventing the page capture
-// To workaround this problem, we always perform a capture after the following
-// delay.
-static const int kDelayForForcedCaptureMs = 6000;
-
 // Time, in seconds, we delay before sending content state changes (such as form
 // state and scroll position) to the browser. We delay sending changes to avoid
 // spamming the browser.
@@ -309,35 +281,6 @@ static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
   result->reserve(urls.size());
   for (size_t i = 0; i < urls.size(); ++i)
     result->push_back(urls[i]);
-}
-
-static bool PaintViewIntoCanvas(WebView* view,
-                                skia::PlatformCanvas& canvas) {
-  view->layout();
-  const WebSize& size = view->size();
-
-  if (!canvas.initialize(size.width, size.height, true))
-    return false;
-
-  view->paint(webkit_glue::ToWebCanvas(&canvas),
-              WebRect(0, 0, size.width, size.height));
-  // TODO: Add a way to snapshot the whole page, not just the currently
-  // visible part.
-
-  return true;
-}
-
-// Calculates how "boring" a thumbnail is. The boring score is the
-// 0,1 ranged percentage of pixels that are the most common
-// luma. Higher boring scores indicate that a higher percentage of a
-// bitmap are all the same brightness.
-static double CalculateBoringScore(SkBitmap* bitmap) {
-  int histogram[256] = {0};
-  color_utils::BuildLumaHistogram(bitmap, histogram);
-
-  int color_count = *std::max_element(histogram, histogram + 256);
-  int pixel_count = bitmap->width() * bitmap->height();
-  return static_cast<double>(color_count) / pixel_count;
 }
 
 // True if |frame| contains content that is white-listed for content settings.
@@ -482,7 +425,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       is_prerendering_(false),
       page_id_(-1),
       last_page_id_sent_to_browser_(-1),
-      last_indexed_page_id_(-1),
       history_list_offset_(-1),
       history_list_length_(0),
       has_unload_listener_(false),
@@ -490,7 +432,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       view_type_(ViewType::INVALID),
       browser_window_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(page_info_method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(accessibility_method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
       geolocation_dispatcher_(NULL),
@@ -884,7 +825,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderView, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_CaptureSnapshot, OnCaptureSnapshot)
     IPC_MESSAGE_HANDLER(ViewMsg_Navigate, OnNavigate)
     IPC_MESSAGE_HANDLER(ViewMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(ViewMsg_ReloadFrame, OnReloadFrame)
@@ -1002,232 +942,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = RenderWidget::OnMessageReceived(message))
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void RenderView::OnCaptureThumbnail() {
-  WebFrame* main_frame = webview()->mainFrame();
-  if (!main_frame)
-    return;
-
-  // get the URL for this page
-  GURL url(main_frame->url());
-  if (url.is_empty())
-    return;
-
-  if (size_.IsEmpty())
-    return;  // Don't create an empty thumbnail!
-
-  ThumbnailScore score;
-  SkBitmap thumbnail;
-  if (!CaptureThumbnail(webview(), kThumbnailWidth, kThumbnailHeight,
-                        &thumbnail, &score))
-    return;
-
-  // send the thumbnail message to the browser process
-  Send(new ViewHostMsg_Thumbnail(routing_id_, url, score, thumbnail));
-}
-
-void RenderView::OnCaptureSnapshot() {
-  SkBitmap snapshot;
-  bool error = false;
-
-  WebFrame* main_frame = webview()->mainFrame();
-  if (!main_frame)
-    error = true;
-
-  if (!error && !CaptureSnapshot(webview(), &snapshot))
-    error = true;
-
-  DCHECK(error == snapshot.empty()) <<
-      "Snapshot should be empty on error, non-empty otherwise.";
-
-  // Send the snapshot to the browser process.
-  Send(new ViewHostMsg_Snapshot(routing_id_, snapshot));
-}
-
-void RenderView::CapturePageInfo(int load_id, bool preliminary_capture) {
-  if (load_id != page_id_)
-    return;  // this capture call is no longer relevant due to navigation
-  if (load_id == last_indexed_page_id_)
-    return;  // we already indexed this page
-
-  if (!webview())
-    return;
-
-  WebFrame* main_frame = webview()->mainFrame();
-  if (!main_frame)
-    return;
-
-  // Don't index/capture pages that are in view source mode.
-  if (main_frame->isViewSourceModeEnabled())
-    return;
-
-  // Don't index/capture pages that failed to load.  This only checks the top
-  // level frame so the thumbnail may contain a frame that failed to load.
-  WebDataSource* ds = main_frame->dataSource();
-  if (ds && ds->hasUnreachableURL())
-    return;
-
-  if (!preliminary_capture)
-    last_indexed_page_id_ = load_id;
-
-  // Get the URL for this page.
-  GURL url(main_frame->url());
-  if (url.is_empty())
-    return;
-
-  // Retrieve the frame's full text.
-  string16 contents;
-  CaptureText(main_frame, &contents);
-  if (contents.size()) {
-    WebKit::WebDocument document = main_frame->document();
-    // If the page explicitly specifies a language, use it, otherwise we'll
-    // determine it based on the text content using the CLD.
-    std::string language =
-        TranslateHelper::GetPageLanguageFromMetaTag(&document);
-    if (language.empty()) {
-      base::TimeTicks begin_time = base::TimeTicks::Now();
-      language = content::GetContentClient()->renderer()->
-          DetermineTextLanguage(contents);
-      UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.LanguageDetection",
-                                 base::TimeTicks::Now() - begin_time);
-    }
-    // Send the text to the browser for indexing (the browser might decide not
-    // to index, if the URL is HTTPS for instance) and language discovery.
-    Send(new ViewHostMsg_PageContents(
-        routing_id_, url, load_id, contents, language,
-        TranslateHelper::IsPageTranslatable(&document)));
-  }
-
-  // Generate the thumbnail here if the in-browser thumbnailing isn't
-  // enabled. TODO(satorux): Remove this and related code once
-  // crbug.com/65936 is complete.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableInBrowserThumbnailing)) {
-    OnCaptureThumbnail();
-  }
-
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
-                    PageCaptured(contents, preliminary_capture));
-}
-
-void RenderView::CaptureText(WebFrame* frame, string16* contents) {
-  contents->clear();
-  if (!frame)
-    return;
-
-#ifdef TIME_TEXT_RETRIEVAL
-  double begin = time_util::GetHighResolutionTimeNow();
-#endif
-
-  // get the contents of the frame
-  *contents = frame->contentAsText(kMaxIndexChars);
-
-#ifdef TIME_TEXT_RETRIEVAL
-  double end = time_util::GetHighResolutionTimeNow();
-  char buf[128];
-  sprintf_s(buf, "%d chars retrieved for indexing in %gms\n",
-            contents.size(), (end - begin)*1000);
-  OutputDebugStringA(buf);
-#endif
-
-  // When the contents are clipped to the maximum, we don't want to have a
-  // partial word indexed at the end that might have been clipped. Therefore,
-  // terminate the string at the last space to ensure no words are clipped.
-  if (contents->size() == kMaxIndexChars) {
-    size_t last_space_index = contents->find_last_of(kWhitespaceUTF16);
-    if (last_space_index == std::wstring::npos)
-      return;  // don't index if we got a huge block of text with no spaces
-    contents->resize(last_space_index);
-  }
-}
-
-bool RenderView::CaptureThumbnail(WebView* view,
-                                  int w,
-                                  int h,
-                                  SkBitmap* thumbnail,
-                                  ThumbnailScore* score) {
-  base::TimeTicks beginning_time = base::TimeTicks::Now();
-
-  skia::PlatformCanvas canvas;
-
-  // Paint |view| into |canvas|.
-  if (!PaintViewIntoCanvas(view, canvas))
-    return false;
-
-  skia::BitmapPlatformDevice& device =
-      static_cast<skia::BitmapPlatformDevice&>(canvas.getTopPlatformDevice());
-
-  const SkBitmap& src_bmp = device.accessBitmap(false);
-
-  SkRect dest_rect = { 0, 0, SkIntToScalar(w), SkIntToScalar(h) };
-  float dest_aspect = dest_rect.width() / dest_rect.height();
-
-  // Get the src rect so that we can preserve the aspect ratio while filling
-  // the destination.
-  SkIRect src_rect;
-  if (src_bmp.width() < dest_rect.width() ||
-      src_bmp.height() < dest_rect.height()) {
-    // Source image is smaller: we clip the part of source image within the
-    // dest rect, and then stretch it to fill the dest rect. We don't respect
-    // the aspect ratio in this case.
-    src_rect.set(0, 0, static_cast<S16CPU>(dest_rect.width()),
-                 static_cast<S16CPU>(dest_rect.height()));
-    score->good_clipping = false;
-  } else {
-    float src_aspect = static_cast<float>(src_bmp.width()) / src_bmp.height();
-    if (src_aspect > dest_aspect) {
-      // Wider than tall, clip horizontally: we center the smaller thumbnail in
-      // the wider screen.
-      S16CPU new_width = static_cast<S16CPU>(src_bmp.height() * dest_aspect);
-      S16CPU x_offset = (src_bmp.width() - new_width) / 2;
-      src_rect.set(x_offset, 0, new_width + x_offset, src_bmp.height());
-      score->good_clipping = false;
-    } else {
-      src_rect.set(0, 0, src_bmp.width(),
-                   static_cast<S16CPU>(src_bmp.width() / dest_aspect));
-      score->good_clipping = true;
-    }
-  }
-
-  score->at_top = (view->mainFrame()->scrollOffset().height == 0);
-
-  SkBitmap subset;
-  device.accessBitmap(false).extractSubset(&subset, src_rect);
-
-  // First do a fast downsample by powers of two to get close to the final size.
-  SkBitmap downsampled_subset =
-      SkBitmapOperations::DownsampleByTwoUntilSize(subset, w, h);
-
-  // Do a high-quality resize from the downscaled size to the final size.
-  *thumbnail = skia::ImageOperations::Resize(
-      downsampled_subset, skia::ImageOperations::RESIZE_LANCZOS3, w, h);
-
-  score->boring_score = CalculateBoringScore(thumbnail);
-
-  HISTOGRAM_TIMES("Renderer4.Thumbnail",
-                  base::TimeTicks::Now() - beginning_time);
-
-  return true;
-}
-
-bool RenderView::CaptureSnapshot(WebView* view, SkBitmap* snapshot) {
-  base::TimeTicks beginning_time = base::TimeTicks::Now();
-
-  skia::PlatformCanvas canvas;
-  if (!PaintViewIntoCanvas(view, canvas))
-    return false;
-
-  skia::BitmapPlatformDevice& device =
-      static_cast<skia::BitmapPlatformDevice&>(canvas.getTopPlatformDevice());
-
-  const SkBitmap& bitmap = device.accessBitmap(false);
-  if (!bitmap.copyTo(snapshot, SkBitmap::kARGB_8888_Config))
-    return false;
-
-  HISTOGRAM_TIMES("Renderer4.Snapshot",
-                  base::TimeTicks::Now() - beginning_time);
-  return true;
 }
 
 void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
@@ -1997,6 +1711,8 @@ void RenderView::didStartLoading() {
   first_default_plugin_.reset();
 
   Send(new ViewHostMsg_DidStartLoading(routing_id_));
+
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidStartLoading());
 }
 
 void RenderView::didStopLoading() {
@@ -2029,11 +1745,7 @@ void RenderView::didStopLoading() {
   if (load_progress_tracker_ != NULL)
     load_progress_tracker_->DidStopLoading();
 
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      page_info_method_factory_.NewRunnableMethod(
-          &RenderView::CapturePageInfo, page_id_, false),
-      send_content_state_immediately_ ? 0 : kDelayForCaptureMs);
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidStopLoading());
 }
 
 void RenderView::didChangeLoadProgress(WebFrame* frame, double load_progress) {
@@ -3081,12 +2793,6 @@ void RenderView::didCommitProvisionalLoad(WebFrame* frame,
     if (history_list_offset_ >= chrome::kMaxSessionHistoryEntries)
       history_list_offset_ = chrome::kMaxSessionHistoryEntries - 1;
     history_list_length_ = history_list_offset_ + 1;
-
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        page_info_method_factory_.NewRunnableMethod(
-            &RenderView::CapturePageInfo, page_id_, true),
-        kDelayForForcedCaptureMs);
   } else {
     // Inspect the navigation_state on this frame to see if the navigation
     // corresponds to a session history navigation...  Note: |frame| may or
@@ -4937,14 +4643,6 @@ bool RenderView::ScheduleFileChooser(
     Send(new ViewHostMsg_RunFileChooser(routing_id_, params));
   }
   return true;
-}
-
-void RenderView::OnPageTranslated() {
-  WebFrame* frame = webview()->mainFrame();
-  if (!frame)
-    return;
-
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, FrameTranslated(frame));
 }
 
 WebKit::WebGeolocationClient* RenderView::geolocationClient() {
