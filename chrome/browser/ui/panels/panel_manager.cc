@@ -8,8 +8,8 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/panels/display_settings.h"
 #include "chrome/browser/ui/panels/panel.h"
-#include "chrome/browser/ui/window_sizer.h"
 
 namespace {
 // Invalid panel index.
@@ -51,35 +51,32 @@ PanelManager::PanelManager()
       bottom_edge_y_(0),
       dragging_panel_index_(kInvalidPanelIndex),
       dragging_panel_original_x_(0) {
-  OnDisplayChanged();
+  OnDisplaySettingsChanged();
 }
 
 PanelManager::~PanelManager() {
-  DCHECK(active_panels_.empty());
-  DCHECK(pending_panels_.empty());
-  DCHECK(panels_pending_to_remove_.empty());
 }
 
-void PanelManager::OnDisplayChanged() {
-  scoped_ptr<WindowSizer::MonitorInfoProvider> info_provider(
-      WindowSizer::CreateDefaultMonitorInfoProvider());
-  gfx::Rect work_area = info_provider->GetPrimaryMonitorWorkArea();
+void PanelManager::OnDisplaySettingsChanged() {
+  gfx::Rect work_area;
+  GetMainScreenWorkArea(&work_area);
 
   min_x_ = work_area.x();
   current_x_ = work_area.right();
   bottom_edge_y_ = work_area.bottom();
+
   max_width_ = static_cast<int>(work_area.width() * kPanelMaxWidthFactor);
   max_height_ = static_cast<int>(work_area.height() * kPanelMaxHeightFactor);
 
   Rearrange(active_panels_.begin());
 }
 
-Panel* PanelManager::CreatePanel(Browser* browser) {
+Panel* PanelManager::Create(Browser* browser) {
   gfx::Rect bounds = browser->override_bounds();
-  bool is_within_bounds = ComputeBoundsForNextPanel(&bounds, true);
+  bool success = ComputeBoundsForNextPanel(&bounds, true);
 
   Panel* panel = new Panel(browser, bounds);
-  if (is_within_bounds)
+  if (success)
     active_panels_.push_back(panel);
   else
     pending_panels_.push_back(panel);
@@ -91,11 +88,12 @@ void PanelManager::ProcessPending() {
   while (!pending_panels_.empty()) {
     Panel* panel = pending_panels_.front();
     gfx::Rect bounds = panel->bounds();
-    if (ComputeBoundsForNextPanel(&bounds, true)) {
-      // TODO(jianli): More work to support displaying pending panels.
-      active_panels_.push_back(panel);
-      pending_panels_.pop_front();
-    }
+    bool success = ComputeBoundsForNextPanel(&bounds, true);
+    if (!success)
+      return;
+    // TODO(jianli): More work to be done to support displaying pending panels.
+    active_panels_.push_back(panel);
+    pending_panels_.pop_front();
   }
 }
 
