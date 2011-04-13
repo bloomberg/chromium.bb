@@ -112,6 +112,8 @@ struct entry {
 };
 
 struct parse_context {
+	const char *filename;
+	XML_Parser parser;
 	struct protocol *protocol;
 	struct interface *interface;
 	struct message *message;
@@ -130,6 +132,14 @@ uppercase_dup(const char *src)
 	u[i] = '\0';
 
 	return u;
+}
+
+static void
+fail(struct parse_context *ctx, const char *msg)
+{
+	fprintf(stderr, "%s:%ld: %s\n",
+		ctx->filename, XML_GetCurrentLineNumber(ctx->parser), msg);
+	exit(EXIT_FAILURE);
 }
 
 static void
@@ -163,23 +173,17 @@ start_element(void *data, const char *element_name, const char **atts)
 	}
 
 	if (strcmp(element_name, "protocol") == 0) {
-		if (name == NULL) {
-			fprintf(stderr, "no protocol name given\n");
-			exit(EXIT_FAILURE);
-		}
+		if (name == NULL)
+			fail(ctx, "no protocol name given");
 
 		ctx->protocol->name = strdup(name);
 		ctx->protocol->uppercase_name = uppercase_dup(name);
 	} else if (strcmp(element_name, "interface") == 0) {
-		if (name == NULL) {
-			fprintf(stderr, "no interface name given\n");
-			exit(EXIT_FAILURE);
-		}
+		if (name == NULL)
+			fail(ctx, "no interface name given");
 
-		if (version == 0) {
-			fprintf(stderr, "no interface version given\n");
-			exit(EXIT_FAILURE);
-		}
+		if (version == 0)
+			fail(ctx, "no interface version given");
 
 		interface = malloc(sizeof *interface);
 		interface->name = strdup(name);
@@ -193,10 +197,8 @@ start_element(void *data, const char *element_name, const char **atts)
 		ctx->interface = interface;
 	} else if (strcmp(element_name, "request") == 0 ||
 		   strcmp(element_name, "event") == 0) {
-		if (name == NULL) {
-			fprintf(stderr, "no request name given\n");
-			exit(EXIT_FAILURE);
-		}
+		if (name == NULL)
+			fail(ctx, "no request name given");
 
 		message = malloc(sizeof *message);
 		message->name = strdup(name);
@@ -231,30 +233,23 @@ start_element(void *data, const char *element_name, const char **atts)
 		else if (strcmp(type, "fd") == 0)
 			arg->type = FD;
 		else if (strcmp(type, "new_id") == 0) {
-			if (interface_name == NULL) {
-				fprintf(stderr, "no interface name given\n");
-				exit(EXIT_FAILURE);
-			}
+			if (interface_name == NULL)
+				fail(ctx, "no interface name given");
 			arg->type = NEW_ID;
 			arg->interface_name = strdup(interface_name);
 		} else if (strcmp(type, "object") == 0) {
-			if (interface_name == NULL) {
-				fprintf(stderr, "no interface name given\n");
-				exit(EXIT_FAILURE);
-			}
+			if (interface_name == NULL)
+				fail(ctx, "no interface name given");
 			arg->type = OBJECT;
 			arg->interface_name = strdup(interface_name);
 		} else {
-			fprintf(stderr, "unknown type: %s\n", type);
-			exit(EXIT_FAILURE);
+			fail(ctx, "unknown type");
 		}
 
 		wl_list_insert(ctx->message->arg_list.prev, &arg->link);
 	} else if (strcmp(element_name, "enum") == 0) {
-		if (name == NULL) {
-			fprintf(stderr, "no enum name given\n");
-			exit(EXIT_FAILURE);
-		}
+		if (name == NULL)
+			fail(ctx, "no enum name given");
 
 		enumeration = malloc(sizeof *enumeration);
 		enumeration->name = strdup(name);
@@ -687,7 +682,6 @@ int main(int argc, char *argv[])
 {
 	struct parse_context ctx;
 	struct protocol protocol;
-	XML_Parser parser;
 	int len;
 	void *buf;
 
@@ -697,26 +691,27 @@ int main(int argc, char *argv[])
 	wl_list_init(&protocol.interface_list);
 	ctx.protocol = &protocol;
 
-	parser = XML_ParserCreate(NULL);
-	XML_SetUserData(parser, &ctx);
-	if (parser == NULL) {
+	ctx.filename = "<stdin>";
+	ctx.parser = XML_ParserCreate(NULL);
+	XML_SetUserData(ctx.parser, &ctx);
+	if (ctx.parser == NULL) {
 		fprintf(stderr, "failed to create parser\n");
 		exit(EXIT_FAILURE);
 	}
 
-	XML_SetElementHandler(parser, start_element, NULL);
+	XML_SetElementHandler(ctx.parser, start_element, NULL);
 	do {
-		buf = XML_GetBuffer(parser, XML_BUFFER_SIZE);
+		buf = XML_GetBuffer(ctx.parser, XML_BUFFER_SIZE);
 		len = fread(buf, 1, XML_BUFFER_SIZE, stdin);
 		if (len < 0) {
 			fprintf(stderr, "fread: %s\n", strerror(errno));
 			exit(EXIT_FAILURE);
 		}
-		XML_ParseBuffer(parser, len, len == 0);
+		XML_ParseBuffer(ctx.parser, len, len == 0);
 
 	} while (len > 0);
 
-	XML_ParserFree(parser);
+	XML_ParserFree(ctx.parser);
 
 	if (strcmp(argv[1], "client-header") == 0) {
 		emit_header(&protocol, 0);
