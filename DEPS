@@ -49,9 +49,6 @@ deps = {
     Var("chromium_trunk") + "/src/third_party/lcov@" + Var("lcov_rev"),
   "third_party/mpfr":
     Var("native_client_trunk") + "/src/third_party/mpfr@" + Var("tools_rev"),
-  "third_party/npapi/bindings":  # Includes needed for using Chromium NPAPI
-    (Var("chromium_trunk") + "/src/third_party/npapi/bindings@" +
-     Var("chrome_rev")),
   "third_party/pyftpdlib":
     Var("chromium_trunk") + "/src/third_party/pyftpdlib@" + Var("chrome_rev"),
   "third_party/pylib":
@@ -60,9 +57,6 @@ deps = {
     Var("native_client_trunk") + "/src/third_party/qemu@" + Var("tools_rev"),
   "third_party/scons-2.0.1":
     (Var("native_client_trunk") + "/src/third_party/scons-2.0.1@" +
-     Var("tools_rev")),
-  "third_party/selenium":
-    (Var("native_client_trunk") + "/src/third_party/selenium@" +
      Var("tools_rev")),
   "third_party/tlslite":
     Var("chromium_trunk") + "/src/third_party/tlslite@" + Var("chrome_rev"),
