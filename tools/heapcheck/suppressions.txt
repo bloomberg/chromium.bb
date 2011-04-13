@@ -1383,3 +1383,9 @@
    fun:TestingProfile::CreateRequestContext
    fun:browser_sync::ProfileSyncServiceSessionTest::SetUp
 }
+{
+   bug_79329
+   Heapcheck:Leak
+   ...
+   fun:*file_util*FileEnumerator*
+}
