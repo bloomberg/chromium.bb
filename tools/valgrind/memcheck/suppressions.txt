@@ -2448,7 +2448,7 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN29ChromeURLRequestContextGetter18CreateOffTheRecordEP7Profile
+   fun:_ZN29ChromeURLRequestContextGetter18CreateOffTheRecordEP7Profile*
    ...
    fun:_ZN23OffTheRecordProfileImpl*Profile
    fun:_ZN7Profile25CreateOffTheRecordProfileEv
@@ -2779,7 +2779,7 @@
    fun:_ZN11BrowserInit18ProcessCmdLineImplERK11CommandLineRK8FilePathbP7ProfilePiPS_
    fun:_ZN11BrowserInit5StartERK11CommandLineRK8FilePathP7ProfilePi
    fun:_Z11BrowserMainRK18MainFunctionParams
-   fun:_ZN54_GLOBAL__N_chrome_app_chrome_main.cc_00000000_82EFB44823RunNamedProcessTypeMainERKSsRK18MainFunctionParams
+   fun:*RunNamedProcessTypeMainERKSsRK18MainFunctionParams
    fun:ChromeMain
    fun:main
 }
@@ -3995,10 +3995,6 @@
    fun:_ZN11PrefService19SavePersistentPrefsEv
    fun:_ZN11ProfileImpl19MarkAsCleanShutdownEv
    fun:_ZN11ProfileImplD0Ev
-   fun:_ZN14ProfileManagerD0Ev
-   fun:_ZN10scoped_ptrI14ProfileManagerE5resetEPS0_
-   fun:_ZN18BrowserProcessImplD0Ev
-   fun:_ZN16browser_shutdown8ShutdownEv
 }
 {
    bug_75634_b
@@ -4018,10 +4014,6 @@
    fun:_ZN11PrefService19SavePersistentPrefsEv
    fun:_ZN11ProfileImpl19MarkAsCleanShutdownEv
    fun:_ZN11ProfileImplD0Ev
-   fun:_ZN14ProfileManagerD0Ev
-   fun:_ZN10scoped_ptrI14ProfileManagerE5resetEPS0_
-   fun:_ZN18BrowserProcessImplD0Ev
-   fun:_ZN16browser_shutdown8ShutdownEv
 }
 {
    bug_75634_c
@@ -4310,6 +4302,12 @@
    Memcheck:Leak
    ...
    fun:*file_util*FileEnumerator*
+}
+{
+   bug_79357
+   fun:_ZN12_GLOBAL__N_119FilePathWatcherImpl5WatchERK8FilePathPN15FilePathWatcher8DelegateE
+   fun:_ZN15FilePathWatcher5WatchERK8FilePathPNS_8DelegateE
+   fun:_ZN21UserStyleSheetWatcher4InitEv
 }
 
 #-----------------------------------------------------------------------
