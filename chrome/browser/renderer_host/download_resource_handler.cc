@@ -12,6 +12,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_file_manager.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/history/download_create_info.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/global_request_id.h"
@@ -45,6 +46,7 @@ DownloadResourceHandler::DownloadResourceHandler(
       buffer_(new DownloadBuffer),
       rdh_(rdh),
       is_paused_(false) {
+  download_util::RecordDownloadCount(download_util::UNTHROTTLED_COUNT);
 }
 
 bool DownloadResourceHandler::OnUploadProgress(int request_id,

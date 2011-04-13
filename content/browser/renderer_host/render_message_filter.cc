@@ -15,6 +15,7 @@
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_types.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor_api.h"
@@ -622,6 +623,8 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
                                            render_process_id_,
                                            message.routing_id(),
                                            context);
+  download_util::RecordDownloadCount(
+      download_util::INITIATED_BY_RENDERER_COUNT);
 }
 
 void RenderMessageFilter::OnCheckNotificationPermission(

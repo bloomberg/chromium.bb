@@ -29,6 +29,9 @@ DownloadThrottlingResourceHandler::DownloadThrottlingResourceHandler(
       tmp_buffer_length_(0),
       ignore_on_read_complete_(in_complete),
       request_closed_(false) {
+  download_util::RecordDownloadCount(
+      download_util::INITIATED_BY_NAVIGATION_COUNT);
+
   // Pause the request.
   host_->PauseRequest(render_process_host_id_, request_id_, true);
 

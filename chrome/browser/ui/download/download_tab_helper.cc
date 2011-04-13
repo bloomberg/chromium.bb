@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/download/download_tab_helper.h"
 
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
@@ -21,8 +22,11 @@ void DownloadTabHelper::OnSavePage() {
   if (!SavePackage::IsSavableContents(tab_contents_->contents_mime_type())) {
     DownloadManager* dlm = tab_contents_->profile()->GetDownloadManager();
     const GURL& current_page_url = tab_contents_->GetURL();
-    if (dlm && current_page_url.is_valid())
+    if (dlm && current_page_url.is_valid()) {
       dlm->DownloadUrl(current_page_url, GURL(), "", tab_contents_);
+      download_util::RecordDownloadCount(
+          download_util::INITIATED_BY_SAVE_PACKAGE_FAILURE_COUNT);
+    }
     return;
   }
 
@@ -48,4 +52,3 @@ bool DownloadTabHelper::SavePage(const FilePath& main_file,
       new SavePackage(tab_contents_, save_type, main_file, dir_path);
   return save_package_->Init();
 }
-

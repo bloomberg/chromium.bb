@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -344,6 +344,9 @@ void DownloadItem::Cancel(bool update_history) {
     // a chance to run.
     return;
   }
+
+  download_util::RecordDownloadCount(download_util::CANCELLED_COUNT);
+
   state_ = CANCELLED;
   UpdateObservers();
   StopProgressTimer();
@@ -366,6 +369,9 @@ void DownloadItem::OnAllDataSaved(int64 size) {
 void DownloadItem::Finished() {
   VLOG(20) << " " << __FUNCTION__ << "() "
            << DebugString(false);
+
+  download_util::RecordDownloadCount(download_util::COMPLETED_COUNT);
+
   // Handle chrome extensions explicitly and skip the shell execute.
   if (is_extension_install()) {
     download_util::OpenChromeExtension(download_manager_->profile(),

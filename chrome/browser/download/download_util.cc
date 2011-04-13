@@ -15,6 +15,7 @@
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
@@ -341,6 +342,11 @@ void OpenChromeExtension(Profile* profile,
   installer->set_is_gallery_install(is_gallery_download);
   installer->InstallCrx(download_item.full_path());
   installer->set_allow_silent_install(is_gallery_download);
+}
+
+void RecordDownloadCount(DownloadCountTypes type) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Download.Counts", type, DOWNLOAD_COUNT_TYPES_LAST_ENTRY);
 }
 
 // Download progress painting --------------------------------------------------

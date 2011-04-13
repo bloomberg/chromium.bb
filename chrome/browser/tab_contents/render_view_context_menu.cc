@@ -22,6 +22,7 @@
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -1209,6 +1210,8 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     case IDC_CONTENT_CONTEXT_SAVEAVAS:
     case IDC_CONTENT_CONTEXT_SAVEIMAGEAS:
     case IDC_CONTENT_CONTEXT_SAVELINKAS: {
+      download_util::RecordDownloadCount(
+          download_util::INITIATED_BY_CONTEXT_MENU_COUNT);
       const GURL& referrer =
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url;
       const GURL& url =
