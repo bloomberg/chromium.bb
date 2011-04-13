@@ -154,35 +154,39 @@ def SetupBoard(buildroot, board='x86-generic'):
       enter_chroot=True)
 
 
-def Build(buildroot, emptytree, build_autotest=True, usepkg=True):
+def Build(buildroot, emptytree, build_autotest=True, usepkg=True,
+          extra_env=None):
   """Wrapper around build_packages."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./build_packages']
+  env = {}
   if not build_autotest: cmd.append('--nowithautotest')
   if not usepkg: cmd.append('--nousepkg')
   if emptytree:
-    cmd = ['sh', '-c', 'EXTRA_BOARD_FLAGS=--emptytree %s' % ' '.join(cmd)]
+    env['EXTRA_BOARD_FLAGS'] = '--emptytree'
+  if extra_env:
+    env.update(extra_env)
 
-  cros_lib.OldRunCommand(cmd, cwd=cwd, enter_chroot=True)
+  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True, extra_env=env)
 
 
-def BuildImage(buildroot):
+def BuildImage(buildroot, extra_env=None):
   _WipeOldOutput(buildroot)
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  cros_lib.OldRunCommand(['./build_image', '--replace'], cwd=cwd,
-                         enter_chroot=True)
+  cros_lib.RunCommand(['./build_image', '--replace'], cwd=cwd,
+                         enter_chroot=True, extra_env=extra_env)
 
 
-def BuildVMImageForTesting(buildroot):
+def BuildVMImageForTesting(buildroot, extra_env=None):
   (vdisk_size, statefulfs_size) = _GetVMConstants(buildroot)
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  cros_lib.OldRunCommand(['./image_to_vm.sh',
-                          '--test_image',
-                          '--full',
-                          '--vdisk_size=%s' % vdisk_size,
-                          '--statefulfs_size=%s' % statefulfs_size,
-                         ], cwd=cwd, enter_chroot=True)
+  cros_lib.RunCommand(['./image_to_vm.sh',
+                       '--test_image',
+                       '--full',
+                       '--vdisk_size=%s' % vdisk_size,
+                       '--statefulfs_size=%s' % statefulfs_size,
+                      ], cwd=cwd, enter_chroot=True, extra_env=extra_env)
 
 
 def RunUnitTests(buildroot, full):

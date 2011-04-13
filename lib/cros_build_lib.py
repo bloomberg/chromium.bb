@@ -7,6 +7,7 @@
 import inspect
 import os
 import re
+import shlex
 import signal
 import subprocess
 import sys
@@ -43,11 +44,13 @@ class RunCommandError(Exception):
 def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
                exit_code=False, redirect_stdout=False, redirect_stderr=False,
                cwd=None, input=None, enter_chroot=False, shell=False,
-               env=None, ignore_sigint=False, combine_stdout_stderr=False):
+               env=None, extra_env=None, ignore_sigint=False,
+               combine_stdout_stderr=False):
   """Runs a command.
 
   Args:
-    cmd: cmd to run.  Should be input to subprocess.Popen.
+    cmd: cmd to run.  Should be input to subprocess.Popen. If a string, it will
+        be converted to an array by shlex.split()
     print_cmd: prints the command before running it.
     error_ok: does not raise an exception on error.
     error_message: prints out this message when an error occurrs.
@@ -61,6 +64,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
     shell: If shell is True, the specified command will be executed through
       the shell.
     env: If non-None, this is the environment for the new process.
+    extra_env: If set, this is added to the environment for the new process.
     ignore_sigint: If True, we'll ignore signal.SIGINT before calling the
       child.  This is the desired behavior if we know our child will handle
       Ctrl-C.  If we don't do this, I think we and the child will both get
@@ -86,16 +90,27 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   # TODO(sosa): gpylint complains about redefining built-in 'input'.
   #   Can we rename this variable?
   if input: stdin = subprocess.PIPE
+
   if isinstance(cmd, basestring):
-    if enter_chroot: cmd = './enter_chroot.sh -- ' + cmd
-    cmd_str = cmd
-  else:
-    if enter_chroot: cmd = ['./enter_chroot.sh', '--'] + cmd
-    cmd_str = ' '.join(cmd)
+    cmd = shlex.split(cmd)
+
+  # If we are using enter_chroot we need to use enterchroot pass env through
+  # to the final command.
+  if enter_chroot:
+    cmd = ['./enter_chroot.sh', '--'] + cmd
+    if extra_env:
+      for (key, value) in extra_env.items():
+        cmd.insert(1, '%s=%s' % (key, value))
+  elif extra_env:
+    if env is not None:
+      env = env.copy()
+    else:
+      env = os.environ.copy()
+    env.update(extra_env)
 
   # Print out the command before running.
   if print_cmd:
-    Info('RunCommand: %s' % cmd_str)
+    Info('RunCommand: %r' % cmd)
   cmd_result.cmd = cmd
 
   try:
@@ -113,7 +128,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
       cmd_result.returncode = proc.returncode
 
     if not error_ok and proc.returncode:
-      msg = ('Command "%s" failed.\n' % cmd_str +
+      msg = ('Command "%r" failed.\n' % cmd +
              (error_message or cmd_result.error or cmd_result.output or ''))
       raise RunCommandError(msg, cmd)
   # TODO(sosa): is it possible not to use the catch-all Exception here?
