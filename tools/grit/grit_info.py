@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -86,6 +86,7 @@ def main(argv):
   # grit build also supports '-E KEY=VALUE', support that to share command
   # line flags.
   parser.add_option("-E", action="append", dest="build_env", default=[])
+  parser.add_option("-w", action="append", dest="whitelist_files", default=[])
 
   options, args = parser.parse_args()
 
@@ -102,6 +103,8 @@ def main(argv):
       inputs = Inputs(filename, defines)
       # Include grd file as second input (works around gyp expecting it).
       inputs = [inputs[0], filename] + inputs[1:]
+      if options.whitelist_files:
+        inputs.extend(options.whitelist_files)
       print '\n'.join(inputs)
   elif options.outputs:
     if len(args) < 2:

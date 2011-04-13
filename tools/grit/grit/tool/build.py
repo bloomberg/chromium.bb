@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -61,6 +61,9 @@ Options:
                     resources_ids next to grit.py.  Set to an empty string
                     if you don't want to use a first id file.
 
+  -w WHITELISTFILE  Path to a file containing the string names of the
+                    resources to include.  Anything not listed is dropped.
+
 
 Conditional inclusion of resources only affects the output of files which
 control which resources get linked into a binary, e.g. it affects .rc files
@@ -75,7 +78,8 @@ are exported to translation interchange files (e.g. XMB files), etc.
   def Run(self, opts, args):
     self.output_directory = '.'
     first_id_filename = None
-    (own_opts, args) = getopt.getopt(args, 'o:D:E:f:')
+    whitelist_filenames = []
+    (own_opts, args) = getopt.getopt(args, 'o:D:E:f:w:')
     for (key, val) in own_opts:
       if key == '-o':
         self.output_directory = val
@@ -87,6 +91,8 @@ are exported to translation interchange files (e.g. XMB files), etc.
         os.environ[env_name] = env_value
       elif key == '-f':
         first_id_filename = val
+      elif key == '-w':
+        whitelist_filenames.append(val)
 
     if len(args):
       print "This tool takes no tool-specific arguments."
@@ -98,6 +104,15 @@ are exported to translation interchange files (e.g. XMB files), etc.
       self.VerboseOut('Output directory: %s (absolute path: %s)\n' %
                       (self.output_directory,
                        os.path.abspath(self.output_directory)))
+
+    if whitelist_filenames:
+      self.whitelist_names = set()
+      for whitelist_filename in whitelist_filenames:
+        self.VerboseOut('Using whitelist: %s\n' % whitelist_filename);
+        whitelist_file = open(whitelist_filename)
+        self.whitelist_names |= set(whitelist_file.read().strip().split('\n'))
+        whitelist_file.close()
+
     self.res = grd_reader.Parse(opts.input, first_id_filename=first_id_filename,
                                 debug=opts.extra_verbose, defines=self.defines)
     self.res.RunGatherers(recursive = True)
@@ -122,6 +137,28 @@ are exported to translation interchange files (e.g. XMB files), etc.
     # output nodes in the file.
     self.scons_targets = None
 
+    # The set of names that are whitelisted to actually be included in the
+    # output.
+    self.whitelist_names = None
+
+
+  # static method
+  def AddWhitelistTags(start_node, whitelist_names):
+    # Walk the tree of nodes added attributes for the nodes that shouldn't
+    # be written into the target files (skip markers).
+    from grit.node import include
+    from grit.node import message
+    for node in start_node.inorder():
+      # Same trick data_pack.py uses to see what nodes actually result in
+      # real items.
+      if (isinstance(node, include.IncludeNode) or
+          isinstance(node, message.MessageNode)):
+        text_ids = node.GetTextualIds()
+        # Mark the item to be skipped if it wasn't in the whitelist.
+        if text_ids and not text_ids[0] in whitelist_names:
+          node.SetWhitelistMarkedAsSkip(True)
+  AddWhitelistTags = staticmethod(AddWhitelistTags)
+
   # static method
   def ProcessNode(node, output_node, outfile):
     '''Processes a node in-order, calling its formatter before and after
@@ -132,13 +169,20 @@ are exported to translation interchange files (e.g. XMB files), etc.
       output_node: grit.node.io.File
       outfile: open filehandle
     '''
+    # See if the node should be skipped by a whitelist.
+    # Note: Some Format calls have side effects, so Format is always called
+    # and the whitelist is used to only avoid the output.
+    should_write = not node.WhitelistMarkedAsSkip()
+
     base_dir = util.dirname(output_node.GetOutputFilename())
 
     try:
       formatter = node.ItemFormatter(output_node.GetType())
       if formatter:
-        outfile.write(formatter.Format(node, output_node.GetLanguage(),
-                                       begin_item=True, output_dir=base_dir))
+        formatted = formatter.Format(node, output_node.GetLanguage(),
+                                     begin_item=True, output_dir=base_dir)
+        if should_write:
+          outfile.write(formatted)
     except:
       print u"Error processing node %s" % unicode(node)
       raise
@@ -148,8 +192,10 @@ are exported to translation interchange files (e.g. XMB files), etc.
 
     try:
       if formatter:
-        outfile.write(formatter.Format(node, output_node.GetLanguage(),
-                                       begin_item=False, output_dir=base_dir))
+        formatted = formatter.Format(node, output_node.GetLanguage(),
+                                     begin_item=False, output_dir=base_dir)
+        if should_write:
+          outfile.write(formatted)
     except:
       print u"Error processing node %s" % unicode(node)
       raise
@@ -171,6 +217,11 @@ are exported to translation interchange files (e.g. XMB files), etc.
       for output in self.res.GetOutputFiles():
         output.output_filename = os.path.abspath(os.path.join(
           self.output_directory, output.GetFilename()))
+
+    # If there are whitelisted names, tag the tree once up front, this way
+    # while looping through the actual output, it is just an attribute check.
+    if self.whitelist_names:
+      self.AddWhitelistTags(self.res, self.whitelist_names)
 
     for output in self.res.GetOutputFiles():
       self.VerboseOut('Creating %s...' % output.GetFilename())

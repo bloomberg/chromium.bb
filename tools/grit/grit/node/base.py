@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -25,6 +25,9 @@ class Node(grit.format.interface.ItemFormatter):
   _CONTENT_TYPE_NONE = 0   # No CDATA content but may have children
   _CONTENT_TYPE_CDATA = 1  # Only CDATA, no children.
   _CONTENT_TYPE_MIXED = 2  # CDATA and children, possibly intermingled
+
+  # Default nodes to not whitelist skipped
+  _whitelist_marked_as_skip = False
 
   def __init__(self):
     self.children = []        # A list of child elements
@@ -519,6 +522,18 @@ class Node(grit.format.interface.ItemFormatter):
         return (p.attrs['fallback_to_english'].lower() == 'true')
       p = p.parent
     return False
+
+  def WhitelistMarkedAsSkip(self):
+    '''Returns true if the node is marked to be skipped in the output by a
+    whitelist.
+    '''
+    return self._whitelist_marked_as_skip
+
+  def SetWhitelistMarkedAsSkip(self, mark_skipped):
+    '''Sets WhitelistMarkedAsSkip.
+    '''
+    self._whitelist_marked_as_skip = mark_skipped
+
 
 class ContentNode(Node):
   '''Convenience baseclass for nodes that can have content.'''

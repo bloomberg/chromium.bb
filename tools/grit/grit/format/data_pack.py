@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -41,7 +41,10 @@ class DataPack(interface.ItemFormatter):
       return nodes
     if (isinstance(item, include.IncludeNode) or
         isinstance(item, message.MessageNode)):
-      return [item]
+      # Include this node if it wasn't marked as skipped by a whitelist.
+      if not item.WhitelistMarkedAsSkip():
+        return [item]
+      return nodes
     for child in item.children:
       nodes.extend(DataPack.GetDataNodes(child))
     return nodes
