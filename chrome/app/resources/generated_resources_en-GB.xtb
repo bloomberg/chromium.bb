@@ -1791,8 +1791,7 @@
 <translation id="4779083564647765204">Zoom</translation>
 <translation id="3282430104564575032">DOM Inspector</translation>
 <translation id="1526560967942511387">Untitled Document</translation>
-<translation id="3979748722126423326">Enable
-<ph name="NETWORKDEVICE"/></translation>
+<translation id="3979748722126423326">Enable <ph name="NETWORKDEVICE"/></translation>
 <translation id="5538307496474303926">Clearing...</translation>
 <translation id="4367133129601245178">C&amp;opy Image URL</translation>
 <translation id="7542995811387359312">Automatic credit card filling is disabled because this form does not use a secure connection.</translation>
@@ -2564,7 +2563,7 @@
 <translation id="6264485186158353794">Back to safety</translation>
 <translation id="5130080518784460891">Eten</translation>
 <translation id="5847724078457510387">This site lists all its valid certificates in DNS. However, the server used one which isn't listed.</translation>
-<translation id="6895607028040775325">English (United Kingdom)</translation>
+<translation id="6895607028040775325">English (United States)</translation>
 <translation id="5037676449506322593">Select All</translation>
 <translation id="2785530881066938471">Could not load file '<ph name="RELATIVE_PATH"/>' for content script. It isn't UTF-8 encoded.</translation>
 <translation id="3807747707162121253">&amp;Cancel</translation>
