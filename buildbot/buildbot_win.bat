@@ -35,6 +35,13 @@ call scons.bat --verbose --mode=nacl_extra_sdk platform=x86-%BITS% ^
  --download extra_sdk_update_header install_libpthread extra_sdk_update
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
+if %BITS% equ 32 goto SkipSync
+echo @@@BUILD_STEP partial_sdk_32@@@
+call vcvarsall.bat x86 && call scons.bat --verbose --mode=nacl_extra_sdk -j 8 ^
+platform=x86-32 --download extra_sdk_update_header install_libpthread ^
+extra_sdk_update
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+
 :SkipSync
 
 echo @@@BUILD_STEP gyp_compile@@@
