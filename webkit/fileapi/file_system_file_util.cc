@@ -5,9 +5,12 @@
 #include "webkit/fileapi/file_system_file_util.h"
 
 #include "base/file_util_proxy.h"
+#include "base/logging.h"
+#include "base/scoped_ptr.h"
 
 namespace fileapi {
 
+// static
 FileSystemFileUtil* FileSystemFileUtil::GetInstance() {
   return Singleton<FileSystemFileUtil>::get();
 }
@@ -129,10 +132,11 @@ PlatformFileError FileSystemFileUtil::Copy(
           context, src_file_path, dest_file_path);
   if (error_code != base::PLATFORM_FILE_OK)
     return error_code;
-  if (!file_util::CopyDirectory(src_file_path, dest_file_path,
-      true /* recursive */))
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  return base::PLATFORM_FILE_OK;
+
+  if (file_util::DirectoryExists(src_file_path))
+    return CopyDirectory(context, src_file_path, dest_file_path);
+  else
+    return CopyOrMoveFile(context, src_file_path, dest_file_path, true);
 }
 
 PlatformFileError FileSystemFileUtil::Move(
@@ -145,9 +149,16 @@ PlatformFileError FileSystemFileUtil::Move(
           context, src_file_path, dest_file_path);
   if (error_code != base::PLATFORM_FILE_OK)
     return error_code;
-  if (!file_util::Move(src_file_path, dest_file_path))
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  return base::PLATFORM_FILE_OK;
+
+  // TODO(dmikurube): ReplaceFile if in the same filesystem.
+  if (file_util::DirectoryExists(src_file_path)) {
+    PlatformFileError error =
+        CopyDirectory(context, src_file_path, dest_file_path);
+    if (error != base::PLATFORM_FILE_OK)
+      return error;
+    return Delete(context, src_file_path, true);
+  } else
+    return CopyOrMoveFile(context, src_file_path, dest_file_path, false);
 }
 
 PlatformFileError FileSystemFileUtil::Delete(
@@ -250,6 +261,62 @@ FileSystemFileUtil::PerformCommonCheckAndPreparationForMoveAndCopy(
   return base::PLATFORM_FILE_OK;
 }
 
+PlatformFileError FileSystemFileUtil::CopyOrMoveFile(
+      FileSystemOperationContext* unused,
+      const FilePath& src_file_path,
+      const FilePath& dest_file_path,
+      bool copy) {
+  if (copy) {
+    if (file_util::CopyFile(src_file_path, dest_file_path))
+      return base::PLATFORM_FILE_OK;
+  } else {
+    DCHECK(!file_util::DirectoryExists(src_file_path));
+    if (file_util::Move(src_file_path, dest_file_path))
+      return base::PLATFORM_FILE_OK;
+  }
+  return base::PLATFORM_FILE_ERROR_FAILED;
+}
+
+PlatformFileError FileSystemFileUtil::CopyDirectory(
+      FileSystemOperationContext* context,
+      const FilePath& src_file_path,
+      const FilePath& dest_file_path) {
+  // Re-check PerformCommonCheckAndPreparationForMoveAndCopy() by DCHECK.
+  DCHECK(DirectoryExists(context, src_file_path));
+  DCHECK(DirectoryExists(context, dest_file_path.DirName()));
+  DCHECK(!src_file_path.IsParent(dest_file_path));
+  DCHECK(!PathExists(context, dest_file_path));
+
+  if (!DirectoryExists(context, dest_file_path)) {
+    PlatformFileError error = CreateDirectory(context,
+        dest_file_path, false, false);
+    if (error != base::PLATFORM_FILE_OK)
+      return error;
+  }
+
+  scoped_ptr<AbstractFileEnumerator> file_enum(
+      CreateFileEnumerator(src_file_path));
+  FilePath src_file_path_each;
+  while (!(src_file_path_each = file_enum->Next()).empty()) {
+    FilePath dest_file_path_each(dest_file_path);
+    src_file_path.AppendRelativePath(src_file_path_each, &dest_file_path_each);
+
+    if (file_enum->IsDirectory()) {
+      PlatformFileError error = CreateDirectory(context,
+          dest_file_path_each, false, false);
+      if (error != base::PLATFORM_FILE_OK)
+        return error;
+    } else {
+      // CopyOrMoveFile here is the virtual overridden member function.
+      PlatformFileError error = CopyOrMoveFile(
+          context, src_file_path_each, dest_file_path_each, true);
+      if (error != base::PLATFORM_FILE_OK)
+        return error;
+    }
+  }
+  return base::PLATFORM_FILE_OK;
+}
+
 bool FileSystemFileUtil::PathExists(
     FileSystemOperationContext* unused,
     const FilePath& file_path) {
@@ -266,6 +333,42 @@ bool FileSystemFileUtil::IsDirectoryEmpty(
     FileSystemOperationContext* unused,
     const FilePath& file_path) {
   return file_util::IsDirectoryEmpty(file_path);
+}
+
+class FileSystemFileEnumerator
+    : public FileSystemFileUtil::AbstractFileEnumerator {
+ public:
+  FileSystemFileEnumerator(const FilePath& root_path,
+                           bool recursive,
+                           file_util::FileEnumerator::FILE_TYPE file_type)
+    : file_enum_(root_path, recursive, file_type) {
+  }
+
+  ~FileSystemFileEnumerator() {}
+
+  virtual FilePath Next();
+  virtual bool IsDirectory();
+
+ private:
+  file_util::FileEnumerator file_enum_;
+};
+
+FilePath FileSystemFileEnumerator::Next() {
+  return file_enum_.Next();
+}
+
+bool FileSystemFileEnumerator::IsDirectory() {
+  file_util::FileEnumerator::FindInfo file_util_info;
+  file_enum_.GetFindInfo(&file_util_info);
+  return file_util::FileEnumerator::IsDirectory(file_util_info);
+}
+
+FileSystemFileUtil::AbstractFileEnumerator*
+FileSystemFileUtil::CreateFileEnumerator(const FilePath& root_path) {
+  return new FileSystemFileEnumerator(
+      root_path, true, static_cast<file_util::FileEnumerator::FILE_TYPE>(
+      file_util::FileEnumerator::FILES |
+      file_util::FileEnumerator::DIRECTORIES));
 }
 
 }  // namespace fileapi
