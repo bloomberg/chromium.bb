@@ -56,10 +56,12 @@
 using views::View;
 
 namespace {
+
 TabContents* GetTabContentsFromDelegate(LocationBarView::Delegate* delegate) {
   const TabContentsWrapper* wrapper = delegate->GetTabContentsWrapper();
   return wrapper ? wrapper->tab_contents() : NULL;
 }
+
 }  // namespace
 
 // static
@@ -843,7 +845,7 @@ InstantController* LocationBarView::GetInstant() {
   return delegate_->GetInstant();
 }
 
-TabContentsWrapper* LocationBarView::GetTabContentsWrapper() {
+TabContentsWrapper* LocationBarView::GetTabContentsWrapper() const {
   return delegate_->GetTabContentsWrapper();
 }
 

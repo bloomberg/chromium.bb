@@ -573,7 +573,7 @@ InstantController* LocationBarViewGtk::GetInstant() {
   return browser_->instant();
 }
 
-TabContentsWrapper* LocationBarViewGtk::GetTabContentsWrapper() {
+TabContentsWrapper* LocationBarViewGtk::GetTabContentsWrapper() const {
   return browser_->GetSelectedTabContentsWrapper();
 }
 

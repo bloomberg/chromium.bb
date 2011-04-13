@@ -288,7 +288,7 @@ InstantController* LocationBarViewMac::GetInstant() {
   return browser_->instant();
 }
 
-TabContentsWrapper* LocationBarViewMac::GetTabContentsWrapper() {
+TabContentsWrapper* LocationBarViewMac::GetTabContentsWrapper() const {
   return browser_->GetSelectedTabContentsWrapper();
 }
 

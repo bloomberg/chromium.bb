@@ -104,7 +104,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   virtual SkBitmap GetFavicon() const OVERRIDE;
   virtual string16 GetTitle() const OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
-  virtual TabContentsWrapper* GetTabContentsWrapper() OVERRIDE;
+  virtual TabContentsWrapper* GetTabContentsWrapper() const OVERRIDE;
 
   // Implement the LocationBar interface.
   virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type);
