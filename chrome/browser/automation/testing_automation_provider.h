@@ -782,6 +782,11 @@ class TestingAutomationProvider : public AutomationProvider,
                       DictionaryValue* args,
                       IPC::Message* reply_message);
 
+  // Launches the specified app from the currently-selected tab.
+  void LaunchApp(Browser* browser,
+                 DictionaryValue* args,
+                 IPC::Message* reply_message);
+
   // Waits for all tabs to stop loading.
   void WaitForAllTabsToStopLoading(DictionaryValue* args,
                                    IPC::Message* reply_message);

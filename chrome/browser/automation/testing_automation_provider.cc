@@ -2272,6 +2272,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   browser_handler_map["SetNTPMenuMode"] =
       &TestingAutomationProvider::SetNTPMenuMode;
 
+  browser_handler_map["LaunchApp"] = &TestingAutomationProvider::LaunchApp;
+
   if (handler_map.find(std::string(command)) != handler_map.end()) {
     (this->*handler_map[command])(dict_value, reply_message);
   } else if (browser_handler_map.find(std::string(command)) !=
@@ -4902,6 +4904,56 @@ void TestingAutomationProvider::SetNTPMenuMode(
   prefs->SetInteger(prefs::kNTPShownSections, shown_sections);
 
   reply.SendSuccess(NULL);
+}
+
+// Sample JSON input: { "command": "LaunchApp",
+//                      "id": "ahfgeienlihckogmohjhadlkjgocpleb" }
+// Sample JSON output: {}
+void TestingAutomationProvider::LaunchApp(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  std::string id;
+  if (!args->GetString("id", &id)) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Must include string id.");
+    return;
+  }
+
+  ExtensionService* service = browser->profile()->GetExtensionService();
+  if (!service) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "No extensions service.");
+    return;
+  }
+
+  const Extension* extension = service->GetExtensionById(
+      id, false  /* do not include disabled extensions */);
+  if (!extension) {
+    AutomationJSONReply(this, reply_message).SendError(
+        StringPrintf("Extension with ID '%s' doesn't exist or is disabled.",
+                     id.c_str()));
+    return;
+  }
+
+  // Look at preferences to find the right launch container.  If no preference
+  // is set, launch as a regular tab.
+  extension_misc::LaunchContainer launch_container =
+      service->extension_prefs()->GetLaunchContainer(
+          extension, ExtensionPrefs::LAUNCH_REGULAR);
+
+  TabContents* old_contents = browser->GetSelectedTabContents();
+  if (!old_contents) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Cannot identify selected tab contents.");
+    return;
+  }
+
+  // This observer will delete itself.
+  new AppLaunchObserver(&old_contents->controller(), this, reply_message,
+                        launch_container);
+  Browser::OpenApplication(profile(), extension, launch_container,
+                           old_contents);
 }
 
 void TestingAutomationProvider::WaitForAllTabsToStopLoading(

@@ -32,6 +32,7 @@
 #include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/automation_constants.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/cancelable_request.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -1133,6 +1134,31 @@ class NTPInfoObserver : public NotificationObserver {
   NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPInfoObserver);
+};
+
+// Observes when an app has been launched, as indicated by a notification that
+// a content load in some tab has stopped.
+class AppLaunchObserver : public NotificationObserver {
+ public:
+  AppLaunchObserver(NavigationController* controller,
+                    AutomationProvider* automation,
+                    IPC::Message* reply_message,
+                    extension_misc::LaunchContainer launch_container);
+  virtual ~AppLaunchObserver();
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NavigationController* controller_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+  NotificationRegistrar registrar_;
+  extension_misc::LaunchContainer launch_container_;
+  int new_window_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppLaunchObserver);
 };
 
 // Allows automation provider to wait until the autocomplete edit

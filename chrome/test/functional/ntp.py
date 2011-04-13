@@ -412,6 +412,28 @@ class NTPTest(pyauto.PyUITest):
                      msg='Call to UninstallApp() returned True.')
     self._VerifyAppInfo(self.GetNTPApps(), self._EXPECTED_DEFAULT_APPS)
 
+  def testLaunchAppWithDefaultSettings(self):
+    """Verifies that an app can be launched with the default settings."""
+    # Install an app.
+    app_crx_file = pyauto.FilePath(
+        os.path.abspath(os.path.join(self.DataDir(), 'pyauto_private', 'apps',
+                                     'countdown.crx')))
+    installed_app_id = self.InstallApp(app_crx_file)
+    self.assertTrue(installed_app_id, msg='App install failed.')
+
+    # Launch the app from the NTP.
+    self.LaunchApp(installed_app_id)
+
+    # Verify that the second tab in the first window is the app launch URL.
+    # It should be the second tab, not the first, since the call to LaunchApp
+    # should have first opened the NTP in a new tab, and then launched the app
+    # from there.
+    info = self.GetBrowserInfo()
+    actual_tab_url = info['windows'][0]['tabs'][1]['url']
+    expected_app_url_start = 'chrome-extension://' + installed_app_id
+    self.assertTrue(actual_tab_url.startswith(expected_app_url_start),
+                    msg='The app was not launched.')
+
   def _VerifyThumbnailOrMenuMode(self, actual_info, expected_info):
     """Verifies that the expected thumbnail/menu info matches the actual info.
 

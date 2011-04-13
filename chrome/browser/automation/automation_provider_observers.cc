@@ -29,6 +29,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/metrics/metric_event_duration_details.h"
@@ -1975,6 +1976,63 @@ void NTPInfoObserver::OnTopSitesReceived(
   AutomationJSONReply(automation_,
                       reply_message_.release()).SendSuccess(ntp_info_.get());
   delete this;
+}
+
+AppLaunchObserver::AppLaunchObserver(
+    NavigationController* controller,
+    AutomationProvider* automation,
+    IPC::Message* reply_message,
+    extension_misc::LaunchContainer launch_container)
+    : controller_(controller),
+      automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message),
+      launch_container_(launch_container),
+      new_window_id_(extension_misc::kUnknownWindowId) {
+  if (launch_container_ == extension_misc::LAUNCH_TAB) {
+    // Need to wait for the currently-active tab to reload.
+    Source<NavigationController> source(controller_);
+    registrar_.Add(this, NotificationType::LOAD_STOP, source);
+  } else {
+    // Need to wait for a new tab in a new window to load.
+    registrar_.Add(this, NotificationType::LOAD_STOP,
+                   NotificationService::AllSources());
+    registrar_.Add(this, NotificationType::BROWSER_WINDOW_READY,
+                   NotificationService::AllSources());
+  }
+}
+
+AppLaunchObserver::~AppLaunchObserver() {}
+
+void AppLaunchObserver::Observe(NotificationType type,
+                                const NotificationSource& source,
+                                const NotificationDetails& details) {
+  if (type.value == NotificationType::LOAD_STOP) {
+    if (launch_container_ == extension_misc::LAUNCH_TAB) {
+      // The app has been launched in the new tab.
+      if (automation_) {
+        AutomationJSONReply(automation_,
+                            reply_message_.release()).SendSuccess(NULL);
+      }
+      delete this;
+      return;
+    } else {
+      // The app has launched only if the loaded tab is in the new window.
+      int window_id = Source<NavigationController>(source)->window_id().id();
+      if (window_id == new_window_id_) {
+        if (automation_) {
+          AutomationJSONReply(automation_,
+                              reply_message_.release()).SendSuccess(NULL);
+        }
+        delete this;
+        return;
+      }
+    }
+  } else if (type.value == NotificationType::BROWSER_WINDOW_READY) {
+    new_window_id_ = ExtensionTabUtil::GetWindowId(
+        Source<Browser>(source).ptr());
+  } else {
+    NOTREACHED();
+  }
 }
 
 AutocompleteEditFocusedObserver::AutocompleteEditFocusedObserver(
