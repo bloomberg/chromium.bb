@@ -507,7 +507,7 @@ void DesktopNotificationService::RequestPermission(
   if (!tab) {
     Browser* browser = BrowserList::GetLastActive();
     if (browser)
-      browser->GetSelectedTabContents();
+      tab = browser->GetSelectedTabContents();
   }
 
   if (!tab)
