@@ -24,6 +24,8 @@ set MSVS8_X86=c:\Program Files (x86)\Microsoft Visual Studio 8.0
 set MSVS9=c:\Program Files\Microsoft Visual Studio 9.0
 set MSVS9_X86=c:\Program Files (x86)\Microsoft Visual Studio 9.0
 
+set VS90COMNTOOLS=%MSVS9_X86%\Common7\Tools\
+set VS80COMNTOOLS=%MSVS8_X86%\Common7\Tools\
 set SCONS_MSCOMMON_DEBUG=-
 
 set PATH=%PATH%;%MSVS9%\VC
