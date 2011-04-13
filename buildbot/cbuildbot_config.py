@@ -45,7 +45,6 @@ build_type -- Upload prebuilts under the specified category. Can be any of
 test_mod -- Create a test mod image for archival.
 factory_install_mod -- Create a factory install image for archival.
 factory_test_mod -- Create a factory test image for archival.
-useflags -- Generic build modifying USE flags, passed as an array, or missing.
 """
 
 # TODO(dgarrett) Make test_mod, factory_install_mod, factory_test_mod options
@@ -79,7 +78,6 @@ default = {
   'test_mod' : False,
   'factory_install_mod' : False,
   'factory_test_mod' : False,
-  'useflags' : None,
 }
 
 arm = {

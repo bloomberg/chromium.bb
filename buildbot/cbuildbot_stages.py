@@ -319,14 +319,10 @@ class BuildTargetStage(BuilderStage):
     BuilderStage.new_binhost = self._GetPortageEnvVar(_FULL_BINHOST)
     emptytree = (BuilderStage.old_binhost and
                  BuilderStage.old_binhost != BuilderStage.new_binhost)
-    env=None
-    if self._build_config.get('useflags'):
-      env={'USE' : ' '.join(self._build_config['useflags'])}
 
     commands.Build(
         self._build_root, emptytree, usepkg=self._build_config['usepkg'],
-        build_autotest=(self._build_config['vm_tests'] and self._options.tests),
-        extra_env=env)
+        build_autotest=(self._build_config['vm_tests'] and self._options.tests))
 
     # TODO(sosa):  Do this optimization in a better way.
     if self._build_type == 'full':
@@ -335,10 +331,10 @@ class BuildTargetStage(BuilderStage):
           self._build_config['rev_overlays'], [], self._build_type,
           False)
 
-    commands.BuildImage(self._build_root, extra_env=env)
+    commands.BuildImage(self._build_root)
 
     if self._build_config['vm_tests']:
-      commands.BuildVMImageForTesting(self._build_root, extra_env=env)
+      commands.BuildVMImageForTesting(self._build_root)
 
 
 class TestStage(BuilderStage):

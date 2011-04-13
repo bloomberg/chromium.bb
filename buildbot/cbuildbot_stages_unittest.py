@@ -472,23 +472,21 @@ class BuildTargetStageTest(AbstractStageTest):
     self.options.tests = True
     self.build_config['build_type'] = 'full'
     self.build_config['usepkg'] = True
-    self.build_config['useflags'] = ['ALPHA', 'BRAVO', 'CHARLIE']
-    proper_env = {'USE' : ' '.join(self.build_config['useflags'])}
 
     stages.BuilderStage._GetPortageEnvVar('FULL_BINHOST').AndReturn('new.com')
     stages.BuilderStage.old_binhost = 'old.com'
 
     commands.Build(
-        self.build_root, True, build_autotest=True, usepkg=True,
-        extra_env=proper_env)
+        self.build_root, True,
+        build_autotest=True, usepkg=True)
 
     commands.UploadPrebuilts(
         self.build_root, self.build_config['board'],
         self.build_config['rev_overlays'], [],
         self.build_config['build_type'], False)
 
-    commands.BuildImage(self.build_root, extra_env=proper_env)
-    commands.BuildVMImageForTesting(self.build_root, extra_env=proper_env)
+    commands.BuildImage(self.build_root)
+    commands.BuildVMImageForTesting(self.build_root)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -498,11 +496,9 @@ class BuildTargetStageTest(AbstractStageTest):
     """Make sure our logic for Build arguments can toggle to false."""
     stages.BuilderStage._GetPortageEnvVar('FULL_BINHOST').AndReturn('new.com')
     stages.BuilderStage.old_binhost = 'new.com'
-    self.build_config['useflags'] = None
 
-    commands.Build(self.build_root, False, build_autotest=False, usepkg=False,
-        extra_env=None)
-    commands.BuildImage(self.build_root, extra_env=None)
+    commands.Build(self.build_root, False, build_autotest=False, usepkg=False)
+    commands.BuildImage(self.build_root)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -512,14 +508,12 @@ class BuildTargetStageTest(AbstractStageTest):
     """Verify emptytree flag is false when there is no old binhost."""
     stages.BuilderStage._GetPortageEnvVar('FULL_BINHOST').AndReturn('new.com')
     stages.BuilderStage.old_binhost = False
-    self.build_config['useflags'] = ['BAKER']
-    proper_env = {'USE' : ' '.join(self.build_config['useflags'])}
 
     commands.Build(
         self.build_root, False,
-        build_autotest=False, usepkg=False, extra_env=proper_env)
+        build_autotest=False, usepkg=False)
 
-    commands.BuildImage(self.build_root, extra_env=proper_env)
+    commands.BuildImage(self.build_root)
 
     self.mox.ReplayAll()
     self.RunStage()
