@@ -225,6 +225,7 @@ def _SetEnvForPnacl(env, root):
     pnacl_bug_424_1588 += ' --pnacl-force-mc-direct'
     pnacl_sdk_cc_flags += pnacl_bug_424_1588
     pnacl_sdk_cxx_flags += pnacl_bug_424_1588
+    pnacl_sdk_ld_flags += pnacl_bug_424_1588
 
   if env.Bit('nacl_pic'):
     pnacl_sdk_cc_flags += ' -fPIC'
