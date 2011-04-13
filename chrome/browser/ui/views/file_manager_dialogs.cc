@@ -195,9 +195,10 @@ void FileManagerDialog::SelectFile(
   title_ = UTF16ToWide(title);
   owner_window_ = owner_window;
 
-  dialog_url_ = GURL(s_extension_base_url_ + "?" + UrlEncodeString(
-      GetArgumentsJson(type, title, default_path, file_types, file_type_index,
-                       default_extension)));
+  std::string json = GetArgumentsJson(type, title, default_path, file_types,
+                                      file_type_index, default_extension);
+  dialog_url_ = GURL(s_extension_base_url_ + "?" +
+                     UrlEncodeStringWithoutEncodingSpaceAsPlus(json));
 
   if (browser_mode_) {
     Browser* browser = BrowserList::GetLastActive();
@@ -258,6 +259,7 @@ std::string FileManagerDialog::GetArgumentsJson(
   DictionaryValue arg_value;
   arg_value.SetString("type", GetDialogTypeAsString(type));
   arg_value.SetString("title", title);
+  arg_value.SetString("defaultPath", default_path.value());
   arg_value.SetString("defaultExtension", default_extension);
 
   ListValue* types_list = new ListValue();

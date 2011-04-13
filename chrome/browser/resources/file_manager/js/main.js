@@ -17,11 +17,17 @@ function init() {
 
   var rootPaths = ['Downloads', 'media'];
 
+  if (document.location.search) {
+    var json = decodeURIComponent(document.location.search.substr(1));
+    var params = JSON.parse(json);
+    console.log('params: ' + JSON.stringify(params));
+  }
+
   function onEntriesFound(entries) {
     FileManager.initStrings(function () {
       fileManager = new FileManager(document.body, entries, params);
     });
-  };
+  }
 
   function onFileSystemFound(filesystem) {
     var entries = [];
@@ -47,12 +53,6 @@ function init() {
       util.forEachDirEntry(filesystem.root, onEntryFound);
     }
   };
-
-  if (document.location.search) {
-    var json = decodeURIComponent(document.location.search.substr(1));
-    console.log('params: ' + json);
-    params = JSON.parse(json);
-  }
 
   util.installFileErrorToString();
 

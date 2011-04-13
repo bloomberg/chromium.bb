@@ -19,6 +19,8 @@
  *       dialog to present.  Defaults to SELECT_OPEN_FILE.
  *     - title: The title for the dialog.  Defaults to a localized string based
  *       on the dialog type.
+ *     - defaultPath: The default path for the dialog.  The default path should
+ *       end with a trailing slash if it represents a directory.
  */
 function FileManager(dialogDom, rootEntries, params) {
   console.log('Init FileManager: ' + dialogDom);
@@ -26,10 +28,13 @@ function FileManager(dialogDom, rootEntries, params) {
   this.dialogDom_ = dialogDom;
   this.rootEntries_ = rootEntries;
   this.filesystem_ = rootEntries[0].filesystem;
-  this.params_ = params || {type: FileManager.DialogType.SELECT_OPEN_FILE};
+  this.params_ = params || {};
 
   this.document_ = dialogDom.ownerDocument;
-  this.dialogType_ = this.params_.type;
+  this.dialogType_ =
+    this.params_.type || FileManager.DialogType.SELECT_OPEN_FILE;
+
+  this.defaultPath_ = params.defaultPath || '/';
 
   // DirectoryEntry representing the current directory of the dialog.
   this.currentDirEntry_ = null;
@@ -42,9 +47,7 @@ function FileManager(dialogDom, rootEntries, params) {
   this.initDom_();
   this.initDialogType_();
 
-  this.changeDirectory('/');
-  this.summarizeSelection_();
-  this.updatePreview_();
+  this.onDetailSelectionChanged_();
 
   this.table.querySelector('.list').focus();
 }
@@ -375,6 +378,7 @@ FileManager.prototype = {
     this.filenameInput_.addEventListener(
         'focus', this.onFilenameInputFocus_.bind(this));
 
+    this.dialogDom_.addEventListener('keydown', this.onKeyDown_.bind(this));
     this.okButton_.addEventListener('click', this.onOk_.bind(this));
     this.cancelButton_.addEventListener('click', this.onCancel_.bind(this));
 
@@ -437,22 +441,53 @@ FileManager.prototype = {
     var defaultTitle;
     var okLabel = str('OPEN_LABEL');
 
+    // Split the dirname from the basename.
+    var ary = this.defaultPath_.match(/^(.*?)(?:\/([^\/]+))?$/);
+    var defaultFolder;
+    var defaultTarget;
+
+    if (!ary) {
+      console.warn('Unable to split defaultPath: ' + defaultPath);
+      ary = [];
+    }
+
     switch (this.dialogType_) {
       case FileManager.DialogType.SELECT_FOLDER:
         defaultTitle = str('SELECT_FOLDER_TITLE');
+        defaultFolder = ary[1] || '/';
+        defaultTarget = ary[2] || '';
         break;
 
       case FileManager.DialogType.SELECT_OPEN_FILE:
         defaultTitle = str('SELECT_OPEN_FILE_TITLE');
+        defaultFolder = ary[1] || '/';
+        defaultTarget = '';
+
+        if (ary[2]) {
+          console.warn('Open should NOT have provided a default ' +
+                       'filename: ' + ary[2]);
+        }
         break;
 
       case FileManager.DialogType.SELECT_OPEN_MULTI_FILE:
         defaultTitle = str('SELECT_OPEN_MULTI_FILE_TITLE');
+        defaultFolder = ary[1] || '/';
+        defaultTarget = '';
+
+        if (ary[2]) {
+          console.warn('Multi-open should NOT have provided a default ' +
+                       'filename: ' + ary[2]);
+        }
         break;
 
       case FileManager.DialogType.SELECT_SAVEAS_FILE:
         defaultTitle = str('SELECT_SAVEAS_FILE_TITLE');
         okLabel = str('SAVE_LABEL');
+
+        defaultFolder = ary[1] || '/';
+        defaultTarget = ary[2] || '';
+        if (!defaultTarget)
+          console.warn('Save-as should have provided a default filename.');
         break;
 
       default:
@@ -463,6 +498,19 @@ FileManager.prototype = {
 
     dialogTitle = this.params_.title || defaultTitle;
     this.dialogDom_.querySelector('.dialog-title').textContent = dialogTitle;
+
+    ary = defaultFolder.match(/^\/home\/[^\/]+\/Downloads(\/.*)?$/);
+    if (ary) {
+        // Chrome will probably suggest the full path to Downloads, but
+        // we're working with 'virtual paths', so we have to translate.
+        // TODO(rginda): Maybe chrome should have suggested the correct place
+        // to begin with, but that would mean it would have to treat the
+        // file manager dialogs differently than the native ones.
+        defaultFolder = '/Downloads' + (ary[1] || '');
+      }
+
+    this.changeDirectory(defaultFolder);
+    this.filenameInput_.value = defaultTarget;
   };
 
   /**
@@ -807,7 +855,14 @@ FileManager.prototype = {
 
     this.filesystem_.root.getDirectory(
         path, {create: false}, onPathFound,
-        util.ferr('Error changing directory to: ' + path));
+        function(err) {
+          console.error('Error changing directory to: ' + path + ', ' + err);
+          if (!self.currentDirEntry_) {
+            // If we've never successfully changed to a directory, force them
+            // to the root.
+            self.changeDirectory('/');
+          }
+        });
   };
 
   /**
@@ -868,9 +923,10 @@ FileManager.prototype = {
       selectable = (this.selection.directoryCount == 0 &&
                     this.selection.fileCount >= 1);
     } else if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
-      selectable = this.selection.leadEntry && this.selection.leadEntry.isFile;
-      if (selectable)
+      if (this.selection.leadEntry && this.selection.leadEntry.isFile)
         this.filenameInput_.value = this.selection.leadEntry.name;
+
+      selectable = !!this.filenameInput_.value;
     } else {
       throw new Error('Unknown dialog type');
     }
@@ -969,6 +1025,9 @@ FileManager.prototype = {
 
   FileManager.prototype.onFilenameInputKeyUp_ = function(event) {
     this.okButton_.disabled = this.filenameInput_.value.length == 0;
+
+    if (event.keyCode == 13 /* Enter */ && !this.okButton_.disabled)
+      this.onOk_();
   };
 
   FileManager.prototype.onFilenameInputFocus_ = function(event) {
@@ -1026,6 +1085,39 @@ FileManager.prototype = {
                                        onSuccess, onError);
   };
 
+  FileManager.prototype.onKeyDown_ = function(event) {
+    if (event.srcElement == this.filenameInput_)
+      return;
+
+    switch (event.keyCode) {
+      case 8: // Backspace => Up one directory.
+        var path = this.currentDirEntry_.fullPath;
+        if (path && path != '/') {
+          var path = path.replace(/\/[^\/]+$/, '');
+          this.changeDirectory(path);
+        }
+        break;
+
+      case 13: // Enter => Change directory or complete dialog.
+        if (this.selection.totalCount == 1 &&
+            this.selection.leadEntry.isDirectory &&
+            this.dialogType_ != FileManager.SELECT_FOLDER) {
+          this.changeDirectory(this.selection.leadEntry.fullPath);
+        } else if (!this.okButton_.disabled) {
+          this.onOk_();
+        }
+        break;
+
+      case 32: // Ctrl-Space => New Folder.
+        if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE &&
+            event.ctrlKey) {
+          event.preventDefault();
+          this.onNewFolderButtonClick_();
+        }
+        break;
+    }
+  };
+
   /**
    * Handle a click of the cancel button.
    *
@@ -1047,6 +1139,9 @@ FileManager.prototype = {
   FileManager.prototype.onOk_ = function(event) {
     var currentPath = this.currentDirEntry_.fullPath.substr(1);
 
+    if (currentPath)
+      currentPath += '/';
+
     if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
       // Save-as doesn't require a valid selection from the list, since
       // we're going to take the filename from the text input.
@@ -1054,7 +1149,7 @@ FileManager.prototype = {
       if (!filename)
         throw new Error('Missing filename!');
 
-      chrome.fileBrowserPrivate.selectFile(currentPath + '/' + filename, 0);
+      chrome.fileBrowserPrivate.selectFile(currentPath + filename, 0);
       window.close();
       return;
     }
@@ -1075,7 +1170,7 @@ FileManager.prototype = {
         continue;
       }
 
-      ary.push(currentPath + '/' + entry.name);
+      ary.push(currentPath + entry.name);
     }
 
     // Multi-file selection has no other restrictions.

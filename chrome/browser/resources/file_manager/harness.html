@@ -30,16 +30,28 @@
         -webkit-box-shadow: 0px 0px 20px rgba(0, 0, 0, 1);
         background-color: white;
       }
+
+      #default-path {
+        width: 20em;
+      }
     </style>
 
     <script src='js/util.js'></script>
     <script src='js/harness.js'></script>
+
+    <title>File Manager Test Harness</title>
   </head>
   <body>
-    [ <a href='?{"type":"saveas-file"}'>Save File</a> |
-    <a href='?{"type":"open-file"}'>Open File</a> |
-    <a href='?{"type":"open-multi-file"}'>Open Files</a> |
-    <a href='?{"type":"folder"}'>Select Folder</a> ]
+    [ <a href='javascript:harness.changeParam("type", "saveas-file")'
+         >Save File</a> |
+    <a href='javascript:harness.changeParam("type", "open-file")'
+       >Open File</a> |
+    <a href='javascript:harness.changeParam("type", "open-multi-file")'
+       >Open Files</a> |
+    <a href='javascript:harness.changeParam("type", "folder")'
+       >Select Folder</a> ],
+    Default Path: <input id=default-path>
+    <a href='javascript:harness.changePath()'>Go</a>
     <div id=screen>
       <iframe id=dialog></iframe>
     </div>

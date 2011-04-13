@@ -24,8 +24,32 @@ var harness = {
                              onFilesystem,
                              util.flog('Error initializing filesystem'));
 
+    var paramstr = decodeURIComponent(document.location.search.substr(1));
+    this.params = JSON.parse(paramstr);
+
+    var input = document.getElementById('default-path');
+    input.value = this.params.defaultPath || '';
+    input.addEventListener('keyup', this.onInputKeyUp.bind(this));
+
     var iframe = document.getElementById('dialog');
     iframe.setAttribute('src', 'main.html' + document.location.search);
+  },
+
+  onInputKeyUp: function(event) {
+    if (event.keyCode != 13)
+      return;
+
+    this.changePath();
+  },
+
+  changePath: function() {
+    var input = document.getElementById('default-path');
+    this.changeParam('defaultPath', input.value);
+  },
+
+  changeParam: function(name, value) {
+    this.params[name] = value;
+    document.location.href = '?' + JSON.stringify(this.params);
   },
 
   /**
