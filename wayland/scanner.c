@@ -543,33 +543,6 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 	}
 }
 
-static const char client_prototypes[] =
-	"struct wl_proxy;\n\n"
-
-	"extern void\n"
-	"wl_proxy_marshal(struct wl_proxy *p, uint32_t opcode, ...);\n"
-
-	"extern struct wl_proxy *\n"
-	"wl_proxy_create(struct wl_proxy *factory,\n"
-	"\t\tconst struct wl_interface *interface);\n"
-
-	"extern struct wl_proxy *\n"
-	"wl_proxy_create_for_id(struct wl_display *display,\n"
-	"\t\t       const struct wl_interface *interface, uint32_t id);\n"
-
-	"extern void\n"
-	"wl_proxy_destroy(struct wl_proxy *proxy);\n\n"
-
-	"extern int\n"
-	"wl_proxy_add_listener(struct wl_proxy *proxy,\n"
-	"\t\t      void (**implementation)(void), void *data);\n\n"
-
-	"extern void\n"
-	"wl_proxy_set_user_data(struct wl_proxy *proxy, void *user_data);\n\n"
-
-	"extern void *\n"
-	"wl_proxy_get_user_data(struct wl_proxy *proxy);\n\n";
-
 
 static void
 emit_header(struct protocol *protocol, int server)
@@ -596,9 +569,6 @@ emit_header(struct protocol *protocol, int server)
 	wl_list_for_each(i, &protocol->interface_list, link)
 		printf("struct wl_%s;\n", i->name);
 	printf("\n");
-
-	if (!server)
-		printf(client_prototypes);
 
 	wl_list_for_each(i, &protocol->interface_list, link) {
 		printf("extern const struct wl_interface "

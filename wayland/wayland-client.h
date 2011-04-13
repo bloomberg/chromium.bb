@@ -24,11 +24,27 @@
 #define _WAYLAND_CLIENT_H
 
 #include "wayland-util.h"
-#include "wayland-client-protocol.h"
 
 #ifdef  __cplusplus
 extern "C" {
 #endif
+
+struct wl_proxy;
+struct wl_display;
+
+void wl_proxy_marshal(struct wl_proxy *p, uint32_t opcode, ...);
+struct wl_proxy *wl_proxy_create(struct wl_proxy *factory,
+				 const struct wl_interface *interface);
+struct wl_proxy *wl_proxy_create_for_id(struct wl_display *display,
+					const struct wl_interface *interface,
+					uint32_t id);
+void wl_proxy_destroy(struct wl_proxy *proxy);
+int wl_proxy_add_listener(struct wl_proxy *proxy,
+			  void (**implementation)(void), void *data);
+void wl_proxy_set_user_data(struct wl_proxy *proxy, void *user_data);
+void *wl_proxy_get_user_data(struct wl_proxy *proxy);
+
+#include "wayland-client-protocol.h"
 
 #define WL_DISPLAY_READABLE 0x01
 #define WL_DISPLAY_WRITABLE 0x02
@@ -69,6 +85,7 @@ struct wl_visual *
 wl_display_get_premultiplied_argb_visual(struct wl_display *display);
 struct wl_visual *
 wl_display_get_rgb_visual(struct wl_display *display);
+
 
 #ifdef  __cplusplus
 }

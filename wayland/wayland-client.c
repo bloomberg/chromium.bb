@@ -34,7 +34,6 @@
 #include <fcntl.h>
 #include <sys/poll.h>
 
-#include "wayland-client-protocol.h"
 #include "connection.h"
 #include "wayland-util.h"
 #include "wayland-client.h"
