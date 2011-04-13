@@ -1311,7 +1311,7 @@
    fun:SimpleRenderer
 }
 {
-   bug_79132
+   bug_79322a
    Heapcheck:Leak
    fun:__gnu_cxx::new_allocator::allocate
    fun:std::string::_Rep::_S_create
@@ -1322,7 +1322,7 @@
    fun:AutofillMetrics::Log
 }
 {
-   bug_79138
+   bug_79322b
    Heapcheck:Leak
    fun:__gnu_cxx::new_allocator::allocate
    fun:std::string::_Rep::_S_create
@@ -1333,7 +1333,7 @@
    fun:HistoryQuickProviderTest::RunTest
 }
 {
-   bug_79141
+   bug_79322c
    Heapcheck:Leak
    fun:__gnu_cxx::new_allocator::allocate
    fun:std::string::_Rep::_S_create
@@ -1344,4 +1344,42 @@
    fun:ThreadWatcher
    fun:CustomThreadWatcher
    fun:ThreadWatcherTest
+}
+{
+   bug_79322d
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::string::_Rep::_S_create
+   fun:std::string::_Rep::_M_clone
+   fun:std::string::reserve
+   fun:std::operator+
+   fun:AutocompleteController::Start
+   fun:::AutocompleteProviderTest::RunTest
+}
+{
+   bug_79326
+   Heapcheck:Leak
+   ...
+   fun:*string*
+   ...
+   fun:browser_sync::HttpBridge::SetUserAgent
+   fun:sync_api::SyncAPIBridgedPost::Init
+   fun:browser_sync::ServerConnectionManager::CheckTime
+   fun:browser_sync::ServerConnectionManager::IsServerReachable
+   fun:browser_sync::ServerConnectionManager::CheckServerReachable
+   fun:sync_api::SyncManager::SyncInternal::CheckServerReachable
+}
+{
+   bug_79327
+   Heapcheck:Leak
+   fun:HttpBridgeFactory
+   fun:browser_sync::SyncBackendHost::MakeHttpBridgeFactory
+   fun:browser_sync::SyncBackendHost::Initialize
+   fun:browser_sync::SyncBackendHostTest_InitShutdown_Test::TestBody
+}
+{
+   bug_79328
+   Heapcheck:Leak
+   fun:TestingProfile::CreateRequestContext
+   fun:browser_sync::ProfileSyncServiceSessionTest::SetUp
 }
