@@ -4310,6 +4310,19 @@
    fun:_ZN15FilePathWatcher5WatchERK8FilePathPNS_8DelegateE
    fun:_ZN21UserStyleSheetWatcher4InitEv
 }
+{
+   bug_79377
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN7WebCore21CSSStyleApplyProperty*
+   ...
+   fun:_ZN7WebCore16CSSStyleSelector*
+   ...
+   fun:_ZN7WebCore20HTMLConstructionSite*
+   ...
+   fun:_ZN7WebCore15HTMLTreeBuilder*
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
