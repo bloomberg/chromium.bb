@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -271,7 +271,8 @@ bool SendMouseMove(long x, long y) {
 // platforms.  E.g. (0,0) is upper-left.
 bool SendMouseMoveNotifyWhenDone(long x, long y, Task* task) {
   NSWindow* window = [[NSApplication sharedApplication] keyWindow];
-  CGFloat screenHeight = [[NSScreen mainScreen] frame].size.height;
+  CGFloat screenHeight =
+    [[[NSScreen screens] objectAtIndex:0] frame].size.height;
   g_mouse_location = NSMakePoint(x, screenHeight - y);  // flip!
   NSPoint pointInWindow = g_mouse_location;
   if (window)
