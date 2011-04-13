@@ -1623,7 +1623,7 @@ def InitTempNames(inputs, output):
   output = os.path.abspath(output)
 
   TempMap = dict()
-  TempBase = output
+  TempBase = output + '---linked'
 
   # TODO(pdox): Figure out if there's a less confusing way
   #             to simplify the intermediate filename in this case.
@@ -1671,7 +1671,7 @@ def InitTempNames(inputs, output):
 def TempNameForOutput(imtype):
   global TempList, TempBase
 
-  temp = TempBase + '---linked.' + imtype
+  temp = TempBase + '.' + imtype
   TempList.append(temp)
   return temp
 
@@ -1680,7 +1680,7 @@ def TempNameForInput(input, imtype):
   fullpath = os.path.abspath(input)
   # If input is already a temporary name, just change the extension
   if fullpath.startswith(TempBase):
-    temp = TempBase + '---linked.' + imtype
+    temp = TempBase + '.' + imtype
   else:
     # Source file
     temp = TempMap[fullpath] + '.' + imtype
