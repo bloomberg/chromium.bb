@@ -195,6 +195,10 @@ bool PersonalDataManager::ImportFormData(
   // possible to import.
   int importable_credit_card_fields = 0;
   std::vector<const FormStructure*>::const_iterator iter;
+
+  // Detect and discard forms with multiple fields of the same type.
+  std::set<AutofillFieldType> types_seen;
+
   for (iter = form_structures.begin(); iter != form_structures.end(); ++iter) {
     const FormStructure* form = *iter;
     for (size_t i = 0; i < form->field_count(); ++i) {
@@ -208,6 +212,20 @@ bool PersonalDataManager::ImportFormData(
 
       AutofillFieldType field_type = field->type();
       FieldTypeGroup group(AutofillType(field_type).group());
+
+      // Abandon the import if two fields of the same type are encountered.
+      // This indicates ambiguous data or miscategorization of types.
+      // Make an exception for PHONE_HOME_NUMBER however as both prefix and
+      // suffix are stored against this type.
+      if (types_seen.count(field_type) &&
+          field_type != PHONE_HOME_NUMBER  &&
+          field_type != PHONE_FAX_NUMBER) {
+        imported_profile.reset();
+        local_imported_credit_card.reset();
+        break;
+      } else {
+        types_seen.insert(field_type);
+      }
 
       if (group == AutofillType::CREDIT_CARD) {
         // If the user has a password set, we have no way of setting credit
@@ -713,7 +731,7 @@ bool PersonalDataManager::MergeProfile(
         if (!profile.PrimaryValue().empty() &&
             (*iter)->PrimaryValue() == profile.PrimaryValue()) {
           merged = true;
-          (*iter)->OverwriteWith(profile);
+          (*iter)->OverwriteWithOrAddTo(profile);
         }
       }
       merged_profiles->push_back(**iter);

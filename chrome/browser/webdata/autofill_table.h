@@ -269,7 +269,7 @@ class AutofillTable : public WebDatabaseTable {
   bool MigrateToVersion33ProfilesBasedOnFirstName();
   bool MigrateToVersion34ProfilesBasedOnCountryCode();
   bool MigrateToVersion35GreatBritainCountryCodes();
-  bool MigrateToVersion36MergeAndCullOlderProfiles();
+  bool MigrateToVersion37MergeAndCullOlderProfiles();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill);

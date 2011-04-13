@@ -2051,7 +2051,7 @@ bool AutofillTable::MigrateToVersion35GreatBritainCountryCodes() {
 }
 
 // Merge and cull older profiles where possible.
-bool AutofillTable::MigrateToVersion36MergeAndCullOlderProfiles() {
+bool AutofillTable::MigrateToVersion37MergeAndCullOlderProfiles() {
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT guid, date_modified FROM autofill_profiles"));
   if (!s)
