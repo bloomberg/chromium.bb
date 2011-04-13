@@ -16,8 +16,8 @@ namespace {
 // Current version number.  Note: when changing the current version number,
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
-const int kCurrentVersionNumber = 36;
-const int kCompatibleVersionNumber = 36;
+const int kCurrentVersionNumber = 37;
+const int kCompatibleVersionNumber = 37;
 
 // Change the version number and possibly the compatibility version of
 // |meta_table_|.
@@ -264,11 +264,19 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
       ChangeVersion(&meta_table_, 35, true);
       // FALL THROUGH
 
+    // Combine migrations 35 and 36.  This is due to enhancements to the merge
+    // step when migrating profiles.  The original migration from 35 to 36 did
+    // not merge profiles with identical addresses, but the migration from 36 to
+    // 37 does.  The step from 35 to 36 should only happen on the Chrome 12 dev
+    // channel.  Chrome 12 beta and release users will jump from 35 to 37
+    // directly getting the full benefits of the multi-valued merge as well as
+    // the culling of bad data.
     case 35:
-      if (!autofill_table_->MigrateToVersion36MergeAndCullOlderProfiles())
-        return FailedMigrationTo(36);
+    case 36:
+      if (!autofill_table_->MigrateToVersion37MergeAndCullOlderProfiles())
+        return FailedMigrationTo(37);
 
-      ChangeVersion(&meta_table_, 36, true);
+      ChangeVersion(&meta_table_, 37, true);
       // FALL THROUGH
 
     // Add successive versions here.  Each should set the version number and
