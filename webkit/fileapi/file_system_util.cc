@@ -88,17 +88,17 @@ bool CrackFileSystemURL(const GURL& url, GURL* origin_url, FileSystemType* type,
   while (!path.empty() && path[0] == '/')
     path.erase(0, 1);
 
-#if defined(OS_WIN)
-  const FilePath::StringType sys_path = base::SysUTF8ToWide(path);
-#elif defined(OS_POSIX)
-  const FilePath::StringType sys_path = path;
-#endif
   if (origin_url)
     *origin_url = origin;
   if (type)
     *type = file_system_type;
   if (file_path)
-    *file_path = FilePath(sys_path);
+#if defined(OS_WIN)
+    *file_path = FilePath(base::SysUTF8ToWide(path)).
+        NormalizeWindowsPathSeparators();
+#elif defined(OS_POSIX)
+    *file_path = FilePath(path);
+#endif
 
   return true;
 }
