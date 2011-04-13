@@ -544,7 +544,7 @@ cr.define('options', function() {
       // Don't allow removing the language if cerntain conditions are met.
       // See removePreloadEnginesByLanguageCode_() for details.
       return (!cr.isChromeOS ||
-              this.removePreloadEnginesByLanguageCode_(languageCode));
+              this.canDeleteLanguage_(languageCode));
     },
 
     /**
@@ -574,19 +574,15 @@ cr.define('options', function() {
     },
 
     /**
-     * Removes preload engines associated with the given language code.
-     * However, this function does not remove engines (input methods) that
-     * are used for other active languages. For instance, if "xkb:us::eng"
-     * is used for English and Filipino, and the two languages are active,
-     * this function does not remove "xkb:us::eng" when either of these
-     * languages is removed. Instead, it'll remove "xkb:us::eng" when the
-     * both languages are gone.
+     * Checks whether it's possible to remove the language specified by
+     * languageCode and returns true if possible. This function returns false
+     * if the removal causes the number of preload engines to be zero.
      *
      * @param {string} languageCode Language code (ex. "fr").
      * @return {boolean} Returns true on success.
      * @private
      */
-    removePreloadEnginesByLanguageCode_: function(languageCode) {
+    canDeleteLanguage_: function(languageCode) {
       // First create the set of engines to be removed from input methods
       // associated with the language code.
       var enginesToBeRemovedSet = {};
@@ -596,6 +592,7 @@ cr.define('options', function() {
       }
 
       // Then eliminate engines that are also used for other active languages.
+      // For instance, if "xkb:us::eng" is used for both English and Filipino.
       var languageCodes = $('language-options-list').getLanguageCodes();
       for (var i = 0; i < languageCodes.length; i++) {
         // Skip the target language code.
@@ -624,12 +621,7 @@ cr.define('options', function() {
       }
       // Don't allow this operation if it causes the number of preload
       // engines to be zero.
-      if (newPreloadEngines.length == 0) {
-        return false;
-      }
-      this.preloadEngines_ = newPreloadEngines;
-      this.savePreloadEnginesPref_();
-      return true;
+      return (newPreloadEngines.length > 0);
     },
 
     /**
@@ -674,6 +666,8 @@ cr.define('options', function() {
           this.preloadEngines_.push(checkboxes[i].inputMethodId);
         }
       }
+      var languageOptionsList = $('language-options-list');
+      languageOptionsList.updateDeletable();
     },
 
     /**
