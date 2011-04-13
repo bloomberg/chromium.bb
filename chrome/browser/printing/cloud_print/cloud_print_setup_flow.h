@@ -116,7 +116,8 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
                                  const string16& js);
 
   // Pointer to the Web UI. This is provided by CloudPrintSetupMessageHandler
-  // when attached.
+  // when attached. We do not own the pointer, instead WebUI owns it's delegate
+  // (us) and controls our lifetime.
   WebUI* web_ui_;
 
   // The args to pass to the initial page.

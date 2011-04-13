@@ -57,7 +57,8 @@ string16& DoneIframeXPath() {
 
 // static
 CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(
-    Profile* profile, const base::WeakPtr<Delegate>& delegate,
+    Profile* profile,
+    const base::WeakPtr<Delegate>& delegate,
     gfx::NativeWindow parent_window) {
   DCHECK(profile);
   // Set the arguments for showing the gaia login page.
@@ -149,6 +150,17 @@ void CloudPrintSetupFlow::GetDialogSize(gfx::Size* size) const {
   }
 
 #if !defined(OS_WIN)
+  // NOTE(scottbyer):The following comment comes from
+  // SyncSetupFlow::GetDialogSize, where this hack was copied from. By starting
+  // off development of the UI on Windows, the hack is seemingly backwards.
+
+  // NOTE(akalin): This is a hack to work around a problem with font height on
+  // windows.  Basically font metrics are incorrectly returned in logical units
+  // instead of pixels on Windows.  Logical units are very commonly 96 DPI
+  // so our localized char/line counts are too small by a factor of 96/72.
+  // So we compensate for this on non-windows platform.
+
+  // TODO(scottbyer): Fix the root cause, kill the hacks.
   float scale_hack = 96.f/72.f;
   size->set_width(size->width() * scale_hack);
   size->set_height(size->height() * scale_hack);
@@ -161,14 +173,13 @@ void CloudPrintSetupFlow::OnDialogClosed(const std::string& json_retval) {
   if (authenticator_.get())
     authenticator_->CancelRequest();
 
-  if (delegate_) {
+  if (delegate_)
     delegate_->OnDialogClosed();
-  }
   delete this;
 }
 
 std::string CloudPrintSetupFlow::GetDialogArgs() const {
-    return dialog_start_args_;
+  return dialog_start_args_;
 }
 
 void CloudPrintSetupFlow::OnCloseContents(TabContents* source,
