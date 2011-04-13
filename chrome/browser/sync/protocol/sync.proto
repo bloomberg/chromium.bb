@@ -105,17 +105,20 @@ message SyncEntity {
   // Present in both GetUpdatesResponse and CommitMessage.
   optional int64 ctime = 6;
 
-  // A unique-in-the parent name for this item.
+  // The name of this item.
+  // Historical note:
+  //   Since November 2010, this value is no different from non_unique_name.
+  //   Before then, server implementations would maintain a unique-within-parent
+  //   value separate from its base, "non-unique" value.  Clients had not
+  //   depended on the uniqueness of the property since November 2009; it was
+  //   removed from Chromium by http://codereview.chromium.org/371029 .
   // Present in both GetUpdatesResponse and CommitMessage.
   required string name = 7;
 
-  // non_unique_name holds the base name stored serverside, which is different
-  // from |name| when |name| has been suffixed in a way to make it unique
-  // among its siblings.  In a GetUpdatesResponse, |non_unique_name| will
-  // be supplied in addition to |name|, and the client may choose which
-  // field to use depending on its needs.  In a CommitMessage,
-  // |non_unique_name| takes precedence over the |name| value if both are
-  // supplied.
+  // The name of this item.  Same as |name|.
+  // |non_unique_name| should take precedence over the |name| value if both
+  // are supplied.  For efficiency, clients and servers should avoid setting
+  // this redundant value.
   // Present in both GetUpdatesResponse and CommitMessage.
   optional string non_unique_name = 8;
 
@@ -273,7 +276,7 @@ message GetUpdatesCallerInfo {
     PERIODIC = 4;  // The source of the update was periodic polling.
     SYNC_CYCLE_CONTINUATION = 5;  // The source of the update was a
                                   // continuation of a previous update.
-    CLEAR_PRIVATE_DATA = 6;       // Source is a call to remove all private data                                  
+    CLEAR_PRIVATE_DATA = 6;       // Source is a call to remove all private data
   }
 
   required GetUpdatesSource source = 1;
@@ -363,6 +366,14 @@ message GetUpdatesMessage {
   // Per-datatype progress marker.  If present, the server will ignore
   // the values of requested_types and from_timestamp, using this instead.
   repeated DataTypeProgressMarker from_progress_marker = 6;
+
+  // Indicates whether the response should be sent in chunks.  This may be
+  // needed for devices with limited memory resources.  If true, the response
+  // will include one or more ClientToServerResponses, with the frist one
+  // containing GetUpdatesMetadataResponse, and the remaining ones, if any,
+  // containing GetUpdatesStreamingResponse.  These ClientToServerResponses are
+  // delimited by a length prefix, which is encoded as a varint.
+  optional bool streaming = 7 [default = false];
 };
 
 message AuthenticateMessage {
@@ -487,6 +498,29 @@ message GetUpdatesResponse {
   repeated DataTypeProgressMarker new_progress_marker = 5;
 };
 
+// The metadata response for GetUpdatesMessage.  This response is sent when
+// streaming is set to true in the request.  It is prefixed with a length
+// delimiter, which is encoded in varint.
+message GetUpdatesMetadataResponse {
+  // Approximate count of changes remaining.  Detailed comment is available in
+  // GetUpdatesResponse.
+  optional int64 changes_remaining = 1;
+
+  // Opaque, per-datatype timestamp-like tokens.  Detailed comment is available
+  // in GetUpdatesResponse.
+  repeated DataTypeProgressMarker new_progress_marker = 2;
+};
+
+// The streaming response message for GetUpdatesMessage.  This message is sent
+// when streaming is set to true in the request.  There may be multiple
+// GetUpdatesStreamingResponse messages in a response.  This type of messages
+// is preceded by GetUpdatesMetadataResponse.  It is prefixed with a length
+// delimiter, which is encoded in varint.
+message GetUpdatesStreamingResponse {
+  // New sync entries that the client should apply.
+  repeated SyncEntity entries = 1;
+};
+
 // A user-identifying struct.  For a given Google account the email and display
 // name can change, but obfuscated_id should be constant.
 // The obfuscated id is optional because at least one planned use of the proto
@@ -526,6 +560,10 @@ message ClientToServerResponse {
   optional GetUpdatesResponse get_updates = 2;
   optional AuthenticateResponse authenticate = 3;
   optional ClearUserDataResponse clear_user_data = 9;
+  optional GetUpdatesMetadataResponse stream_metadata = 10;
+  // If GetUpdatesStreamingResponse is contained in the ClientToServerResponse,
+  // none of the other fields (error_code and etc) will be set.
+  optional GetUpdatesStreamingResponse stream_data = 11;
 
   enum ErrorType {
     SUCCESS            = 0;
@@ -544,6 +582,10 @@ message ClientToServerResponse {
                               // come back later.
     TRANSIENT_ERROR    = 8;   // A transient error occured (eg. backend
                               // timeout). Client should try again later.
+    MIGRATION_DONE     = 9;   // Migration has finished for one or more data
+                              // types.  Client should clear the cache for
+                              // these data types only and then re-sync with
+                              // a server.
     UNKNOWN            = 100; // Unknown value. This should never be explicitly
                               // used; it is the default value when an
                               // out-of-date client parses a value it doesn't
@@ -567,5 +609,9 @@ message ClientToServerResponse {
 
   optional ClientCommand client_command = 7;
   optional ProfilingData profiling_data = 8;
+
+  // The data types whose storage has been migrated.  Present when the value of
+  // error_code is MIGRATION_DONE.
+  repeated int32 migrated_data_type_id = 12;
 };
 
