@@ -666,6 +666,7 @@ bool RenderView::InstallWebApplicationUsingDefinitionFile(WebFrame* frame,
 
   app_definition_fetcher_.reset(new ResourceFetcher(
       pending_app_info_->manifest_url, webview()->mainFrame(),
+      WebURLRequest::TargetIsSubresource,
       NewCallback(this, &RenderView::DidDownloadApplicationDefinition)));
   return true;
 }
@@ -712,6 +713,7 @@ void RenderView::DidDownloadApplicationDefinition(
               webview()->mainFrame(),
               static_cast<int>(i),
               pending_app_info_->icons[i].width,
+              WebURLRequest::TargetIsFavicon,
               NewCallback(this, &RenderView::DidDownloadApplicationIcon))));
     }
   } else {
@@ -3368,7 +3370,8 @@ void RenderView::SyncNavigationState() {
       routing_id_, page_id_, webkit_glue::HistoryItemToString(item)));
 }
 
-bool RenderView::DownloadImage(int id, const GURL& image_url, int image_size) {
+bool RenderView::DownloadFavicon(int id, const GURL& image_url,
+                                 int image_size) {
   // Make sure webview was not shut down.
   if (!webview())
     return false;
@@ -3376,12 +3379,13 @@ bool RenderView::DownloadImage(int id, const GURL& image_url, int image_size) {
   image_fetchers_.push_back(linked_ptr<ImageResourceFetcher>(
       new ImageResourceFetcher(
           image_url, webview()->mainFrame(), id, image_size,
-          NewCallback(this, &RenderView::DidDownloadImage))));
+          WebURLRequest::TargetIsFavicon,
+          NewCallback(this, &RenderView::DidDownloadFavicon))));
   return true;
 }
 
-void RenderView::DidDownloadImage(ImageResourceFetcher* fetcher,
-                                  const SkBitmap& image) {
+void RenderView::DidDownloadFavicon(ImageResourceFetcher* fetcher,
+                                    const SkBitmap& image) {
   // Notify requester of image download status.
   Send(new ViewHostMsg_DidDownloadFavicon(routing_id_,
                                           fetcher->id(),
@@ -3416,7 +3420,7 @@ void RenderView::OnDownloadFavicon(int id,
   }
 
   if (data_image_failed ||
-      !DownloadImage(id, image_url, image_size)) {
+      !DownloadFavicon(id, image_url, image_size)) {
     Send(new ViewHostMsg_DidDownloadFavicon(routing_id_, id, image_url, true,
                                             SkBitmap()));
   }

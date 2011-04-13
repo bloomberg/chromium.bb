@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "webkit/tools/test_shell/test_shell_test.h"
 
 using WebKit::WebFrame;
+using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 using webkit_glue::ResourceFetcher;
 using webkit_glue::ResourceFetcherWithTimeout;
@@ -102,7 +103,7 @@ TEST_F(ResourceFetcherTests, FLAKY_ResourceFetcherDownload) {
   GURL url(test_server_.GetURL("files/test_shell/index.html"));
   scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
   scoped_ptr<ResourceFetcher> fetcher(new ResourceFetcher(
-      url, frame, delegate->NewCallback()));
+      url, frame, WebURLRequest::TargetIsMainFrame, delegate->NewCallback()));
 
   delegate->WaitForResponse();
 
@@ -114,7 +115,9 @@ TEST_F(ResourceFetcherTests, FLAKY_ResourceFetcherDownload) {
   // Test 404 response.
   url = test_server_.GetURL("files/thisfiledoesntexist.html");
   delegate.reset(new FetcherDelegate);
-  fetcher.reset(new ResourceFetcher(url, frame, delegate->NewCallback()));
+  fetcher.reset(new ResourceFetcher(url, frame,
+                                    WebURLRequest::TargetIsMainFrame,
+                                    delegate->NewCallback()));
 
   delegate->WaitForResponse();
 
@@ -133,7 +136,7 @@ TEST_F(ResourceFetcherTests, FLAKY_ResourceFetcherDidFail) {
   GURL url("http://localhost:1339/doesnotexist");
   scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
   scoped_ptr<ResourceFetcher> fetcher(new ResourceFetcher(
-      url, frame, delegate->NewCallback()));
+      url, frame, WebURLRequest::TargetIsMainFrame, delegate->NewCallback()));
 
   delegate->WaitForResponse();
 
@@ -155,7 +158,8 @@ TEST_F(ResourceFetcherTests, ResourceFetcherTimeout) {
   GURL url(test_server_.GetURL("slow?1"));
   scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
   scoped_ptr<ResourceFetcher> fetcher(new ResourceFetcherWithTimeout(
-      url, frame, 0, delegate->NewCallback()));
+      url, frame, WebURLRequest::TargetIsMainFrame,
+      0, delegate->NewCallback()));
 
   delegate->WaitForResponse();
 
@@ -195,7 +199,8 @@ TEST_F(ResourceFetcherTests, ResourceFetcherDeletedInCallback) {
   GURL url(test_server_.GetURL("slow?1"));
   scoped_ptr<EvilFetcherDelegate> delegate(new EvilFetcherDelegate);
   scoped_ptr<ResourceFetcher> fetcher(new ResourceFetcherWithTimeout(
-      url, frame, 0, delegate->NewCallback()));
+      url, frame, WebURLRequest::TargetIsMainFrame,
+      0, delegate->NewCallback()));
   delegate->SetFetcher(fetcher.release());
 
   delegate->WaitForResponse();

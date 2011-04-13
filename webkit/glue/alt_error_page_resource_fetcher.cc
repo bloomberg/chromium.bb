@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 
 using WebKit::WebFrame;
 using WebKit::WebURLError;
+using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 
 namespace webkit_glue {
@@ -26,7 +27,7 @@ AltErrorPageResourceFetcher::AltErrorPageResourceFetcher(
       callback_(callback),
       original_error_(original_error) {
   fetcher_.reset(new ResourceFetcherWithTimeout(
-      url, frame, kDownloadTimeoutSec,
+      url, frame, WebURLRequest::TargetIsMainFrame, kDownloadTimeoutSec,
       NewCallback(this, &AltErrorPageResourceFetcher::OnURLFetchComplete)));
 }
 

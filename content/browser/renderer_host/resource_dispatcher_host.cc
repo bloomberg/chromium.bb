@@ -424,7 +424,9 @@ void ResourceDispatcherHost::BeginRequest(
   } else if (request_data.resource_type == ResourceType::SUB_FRAME) {
     load_flags |= net::LOAD_SUB_FRAME;
   } else if (request_data.resource_type == ResourceType::PREFETCH) {
-    load_flags |= net::LOAD_PREFETCH;
+    load_flags |= (net::LOAD_PREFETCH | net::LOAD_DO_NOT_PROMPT_FOR_LOGIN);
+  } else if (request_data.resource_type == ResourceType::FAVICON) {
+    load_flags |= net::LOAD_DO_NOT_PROMPT_FOR_LOGIN;
   }
 
   if (IsPrerenderingChildRoutePair(child_id, route_id))
@@ -1019,7 +1021,7 @@ void ResourceDispatcherHost::OnReceivedRedirect(net::URLRequest* request,
 void ResourceDispatcherHost::OnAuthRequired(
     net::URLRequest* request,
     net::AuthChallengeInfo* auth_info) {
-  if (request->load_flags() & net::LOAD_PREFETCH) {
+  if (request->load_flags() & net::LOAD_DO_NOT_PROMPT_FOR_LOGIN) {
     request->CancelAuth();
     return;
   }
@@ -1906,6 +1908,9 @@ net::RequestPriority ResourceDispatcherHost::DetermineRequestPriority(
     // downloads or rendering and most pages have some useful content without
     // them.
     case ResourceType::IMAGE:
+    // Favicons aren't required for rendering the current page, but
+    // are user visible.
+    case ResourceType::FAVICON:
       return net::LOWEST;
 
     // Prefetches are at a lower priority than even LOWEST, since they

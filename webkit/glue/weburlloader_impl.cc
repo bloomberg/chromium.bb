@@ -135,6 +135,8 @@ ResourceType::Type FromTargetType(WebURLRequest::TargetType type) {
       return ResourceType::SHARED_WORKER;
     case WebURLRequest::TargetIsPrefetch:
       return ResourceType::PREFETCH;
+    case WebURLRequest::TargetIsFavicon:
+      return ResourceType::FAVICON;
     default:
       NOTREACHED();
       return ResourceType::SUB_RESOURCE;

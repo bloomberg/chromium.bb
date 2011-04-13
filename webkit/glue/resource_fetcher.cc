@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,10 +23,12 @@ using WebKit::WebURLResponse;
 namespace webkit_glue {
 
 ResourceFetcher::ResourceFetcher(const GURL& url, WebFrame* frame,
-                                 Callback* c)
+                                 WebURLRequest::TargetType target_type,
+                                 Callback* callback)
     : url_(url),
+      target_type_(target_type),
       completed_(false),
-      callback_(c) {
+      callback_(callback) {
   // Can't do anything without a frame.  However, delegate can be NULL (so we
   // can do a http request and ignore the results).
   DCHECK(frame);
@@ -47,6 +49,7 @@ void ResourceFetcher::Cancel() {
 
 void ResourceFetcher::Start(WebFrame* frame) {
   WebURLRequest request(url_);
+  request.setTargetType(target_type_);
   frame->dispatchWillSendRequest(request);
 
   loader_.reset(WebKit::webKitClient()->createURLLoader());
@@ -121,8 +124,9 @@ void ResourceFetcher::didFail(WebURLLoader* loader, const WebURLError& error) {
 // A resource fetcher with a timeout
 
 ResourceFetcherWithTimeout::ResourceFetcherWithTimeout(
-    const GURL& url, WebFrame* frame, int timeout_secs, Callback* c)
-    : ResourceFetcher(url, frame, c) {
+    const GURL& url, WebFrame* frame, WebURLRequest::TargetType target_type,
+    int timeout_secs, Callback* callback)
+    : ResourceFetcher(url, frame, target_type, callback) {
   timeout_timer_.Start(TimeDelta::FromSeconds(timeout_secs), this,
                        &ResourceFetcherWithTimeout::TimeoutFired);
 }

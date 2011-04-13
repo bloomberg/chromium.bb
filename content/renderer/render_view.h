@@ -907,10 +907,11 @@ class RenderView : public RenderWidget,
   void DidBlockContentType(ContentSettingsType settings_type,
                            const std::string& resource_identifier);
 
-  // This callback is triggered when DownloadImage completes, either
-  // succesfully or with a failure. See DownloadImage for more details.
-  void DidDownloadImage(webkit_glue::ImageResourceFetcher* fetcher,
-                        const SkBitmap& image);
+  // This callback is triggered when DownloadFavicon completes, either
+  // succesfully or with a failure. See DownloadFavicon for more
+  // details.
+  void DidDownloadFavicon(webkit_glue::ImageResourceFetcher* fetcher,
+                          const SkBitmap& image);
 
   // Callback triggered when we finish downloading the application definition
   // file.
@@ -922,13 +923,14 @@ class RenderView : public RenderWidget,
   void DidDownloadApplicationIcon(webkit_glue::ImageResourceFetcher* fetcher,
                                   const SkBitmap& image);
 
-  // Requests to download an image. When done, the RenderView is
-  // notified by way of DidDownloadImage. Returns true if the request was
-  // successfully started, false otherwise. id is used to uniquely identify the
-  // request and passed back to the DidDownloadImage method. If the image has
-  // multiple frames, the frame whose size is image_size is returned. If the
-  // image doesn't have a frame at the specified size, the first is returned.
-  bool DownloadImage(int id, const GURL& image_url, int image_size);
+  // Requests to download a favicon image. When done, the RenderView
+  // is notified by way of DidDownloadFavicon. Returns true if the
+  // request was successfully started, false otherwise. id is used to
+  // uniquely identify the request and passed back to the
+  // DidDownloadFavicon method. If the image has multiple frames, the
+  // frame whose size is image_size is returned. If the image doesn't
+  // have a frame at the specified size, the first is returned.
+  bool DownloadFavicon(int id, const GURL& image_url, int image_size);
 
   GURL GetAlternateErrorPageURL(const GURL& failed_url,
                                 ErrorPageType error_type);

@@ -411,4 +411,60 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, DISABLED_IncorrectConfirmation) {
   EXPECT_TRUE(test_server()->Stop());
   LOG(INFO) << "Done with test";
 }
+
+// If the favicon is an authenticated resource, we shouldn't prompt
+// for credentials.  The same URL, if requested elsewhere should
+// prompt for credentials.
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, NoLoginPromptForFavicon) {
+  const char* kFaviconTestPage = "files/login/has_favicon.html";
+  const char* kFaviconResource = "auth-basic/favicon.gif";
+
+  ASSERT_TRUE(test_server()->Start());
+
+  TabContentsWrapper* contents =
+      browser()->GetSelectedTabContentsWrapper();
+  ASSERT_TRUE(contents);
+
+  NavigationController* controller = &contents->controller();
+  LoginPromptBrowserTestObserver observer;
+
+  observer.Register(Source<NavigationController>(controller));
+
+  // First load a page that has a favicon that requires
+  // authentication.  There should be no login prompt.
+  {
+    GURL test_page = test_server()->GetURL(kFaviconTestPage);
+    WindowedLoadStopObserver load_stop_waiter(controller);
+    browser()->OpenURL(test_page, GURL(), CURRENT_TAB, PageTransition::TYPED);
+    load_stop_waiter.Wait();
+  }
+
+  // Now request the same favicon, but directly as the document.
+  // There should be one login prompt.
+  {
+    GURL test_page = test_server()->GetURL(kFaviconResource);
+    WindowedLoadStopObserver load_stop_waiter(controller);
+    WindowedAuthNeededObserver auth_needed_waiter(controller);
+    browser()->OpenURL(test_page, GURL(), CURRENT_TAB, PageTransition::TYPED);
+    auth_needed_waiter.Wait();
+    ASSERT_EQ(1u, observer.handlers_.size());
+
+    while (!observer.handlers_.empty()) {
+      WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
+      LoginHandler* handler = *observer.handlers_.begin();
+
+      ASSERT_TRUE(handler);
+      handler->CancelAuth();
+      auth_cancelled_waiter.Wait();
+    }
+
+    load_stop_waiter.Wait();
+  }
+
+  EXPECT_EQ(0, observer.auth_supplied_count_);
+  EXPECT_EQ(1, observer.auth_needed_count_);
+  EXPECT_EQ(1, observer.auth_cancelled_count_);
+  EXPECT_TRUE(test_server()->Stop());
+}
+
 }  // namespace

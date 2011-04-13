@@ -112,6 +112,18 @@ void ParamTraits<ResourceType::Type>::Log(const param_type& p, std::string* l) {
     case ResourceType::SUB_FRAME:
       type = "SUB_FRAME";
       break;
+    case ResourceType::STYLESHEET:
+      type = "STYLESHEET";
+      break;
+    case ResourceType::SCRIPT:
+      type = "SCRIPT";
+      break;
+    case ResourceType::IMAGE:
+      type = "IMAGE";
+      break;
+    case ResourceType::FONT_RESOURCE:
+      type = "FONT_RESOURCE";
+      break;
     case ResourceType::SUB_RESOURCE:
       type = "SUB_RESOURCE";
       break;
@@ -120,6 +132,18 @@ void ParamTraits<ResourceType::Type>::Log(const param_type& p, std::string* l) {
       break;
     case ResourceType::MEDIA:
       type = "MEDIA";
+      break;
+    case ResourceType::WORKER:
+      type = "WORKER";
+      break;
+    case ResourceType::SHARED_WORKER:
+      type = "SHARED_WORKER";
+      break;
+    case ResourceType::PREFETCH:
+      type = "PREFETCH";
+      break;
+    case ResourceType::FAVICON:
+      type = "FAVICON";
       break;
     default:
       type = "UNKNOWN";
