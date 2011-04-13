@@ -75,7 +75,7 @@ class AutofillTest(pyauto.PyUITest):
     self.assertEqual([], profile['credit_cards'])
 
   def testAutofillInvalid(self):
-    """Test filling in invalid values for profiles and credit cards."""
+    """Test filling in invalid values for profiles."""
     # First try profiles with invalid input.
     without_invalid = {'NAME_FIRST': u'Will',
                        'ADDRESS_HOME_CITY': 'Sunnyvale',
@@ -89,13 +89,6 @@ class AutofillTest(pyauto.PyUITest):
     self.FillAutofillProfile(profiles=[with_invalid])
     self.assertEqual([without_invalid],
                      self.GetAutofillProfile()['profiles'])
-
-    # Then try credit cards with invalid input.  Should strip off all non-digits
-    credit_card = {'CREDIT_CARD_NUMBER': 'Not_0123-5Checked'}
-    expected_credit_card = {'CREDIT_CARD_NUMBER': '01235'}
-    self.FillAutofillProfile(credit_cards=[credit_card])
-    self.assertEqual([expected_credit_card],
-                     self.GetAutofillProfile()['credit_cards'])
 
   def testFilterIncompleteAddresses(self):
     """Test Autofill filters out profile with incomplete address info."""
@@ -159,10 +152,10 @@ class AutofillTest(pyauto.PyUITest):
     DOWN_KEYPRESS = 0x28  # Down arrow keyboard key press.
     RETURN_KEYPRESS = 0x0D  # Return keyboard key press.
 
-    self.SendWebkitKeyEvent(TAB_KEYPRESS, tab_index, windex)
-    self.SendWebkitKeyEvent(DOWN_KEYPRESS, tab_index, windex)
-    self.SendWebkitKeyEvent(DOWN_KEYPRESS, tab_index, windex)
-    self.SendWebkitKeyEvent(RETURN_KEYPRESS, tab_index, windex)
+    self.SendWebkitKeypressEvent(TAB_KEYPRESS, tab_index, windex)
+    self.SendWebkitKeypressEvent(DOWN_KEYPRESS, tab_index, windex)
+    self.SendWebkitKeypressEvent(DOWN_KEYPRESS, tab_index, windex)
+    self.SendWebkitKeypressEvent(RETURN_KEYPRESS, tab_index, windex)
 
   def testComparePhoneNumbers(self):
     """Test phone fields parse correctly from a given profile.
@@ -200,10 +193,11 @@ class AutofillTest(pyauto.PyUITest):
     """Test CC info not offered to be saved when autocomplete=off for CC field.
 
     If the credit card number field has autocomplete turned off, then the credit
-    card infobar should not offer to save the credit card info.
+    card infobar should not offer to save the credit card info. The credit card
+    number must be a valid Luhn number.
     """
     credit_card_info = {'CREDIT_CARD_NAME': 'Bob Smith',
-                        'CREDIT_CARD_NUMBER': '6011111111111117',
+                        'CREDIT_CARD_NUMBER': '4408041234567893',
                         'CREDIT_CARD_EXP_MONTH': '12',
                         'CREDIT_CARD_EXP_4_DIGIT_YEAR': '2014'}
 
@@ -290,15 +284,8 @@ class AutofillTest(pyauto.PyUITest):
     list_of_dict = gen.GenerateDataset(num_of_dict_to_generate=1501)
     self.FillAutofillProfile(profiles=list_of_dict)
     self.NavigateToURL(url)
-    # Tab keyboard key press.
-    self.SendWebkitKeyEvent(TAB_KEYPRESS, windex=0, tab_index=0)
-    # Down arrow keyboard key press.
-    self.SendWebkitKeyEvent(DOWN_KEYPRESS, windex=0, tab_index=0)
-    # Down arrow keyboard key press.
-    self.SendWebkitKeyEvent(DOWN_KEYPRESS, windex=0, tab_index=0)
-    # Return keyboard key press.
-    self.SendWebkitKeyEvent(RETURN_KEYPRESS, windex=0, tab_index=0)
-    # TODO (dyu): add automated form hang or crash verification.
+    self._SendKeyEventsToPopulateForm()
+    # TODO(dyu): add automated form hang or crash verification.
     raw_input(
         'Verify the test manually. Test hang time after submitting the form.')
 

@@ -797,19 +797,36 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict)
 
-  def SendWebkitKeyEvent(self, key_code, tab_index=0, windex=0):
-    """Send a webkit key event to the browser.
+  def SendWebkitKeypressEvent(self, key_code, tab_index=0, windex=0):
+    """Send webkit key press event to the browser.
 
-    Used to simulate key presses from the keyboard to interact with the browser.
+    Used to simulate key press from the keyboard to interact with the browser.
+    Simulates a key press which consists of a down key press and up key press.
 
     Args:
       key_code: the hex value associated with the keypress (virtual key code).
-      tab_index: tab index to work on. Defaults to 0 (first tab)
-      windex: window index to work on. Defaults to 0 (first window)
+      tab_index: tab index to work on. Defaults to 0 (first tab).
+      windex: window index to work on. Defaults to 0 (first window).
+    """
+    KEY_DOWN_TYPE = 0  # kRawKeyDownType
+    KEY_UP_TYPE = 3  # kKeyUpType
+
+    # Sending two requests, one each for "key down" and "key up".
+    self.SendWebkitKeyEvent(KEY_DOWN_TYPE, key_code, tab_index, windex)
+    self.SendWebkitKeyEvent(KEY_UP_TYPE, key_code, tab_index, windex)
+
+  def SendWebkitKeyEvent(self, key_type, key_code, tab_index=0, windex=0):
+    """Send a webkit key event to the browser.
+
+    Args:
+      key_type: the raw key type such as 0 for up and 3 for down.
+      key_code: the hex value associated with the keypress (virtual key code).
+      tab_index: tab index to work on. Defaults to 0 (first tab).
+      windex: window index to work on. Defaults to 0 (first window).
     """
     cmd_dict = {
       'command': 'SendWebkitKeyEvent',
-      'type': 0,  # kRawKeyDownType
+      'type': key_type,
       'text': '',
       'isSystemKey': False,
       'unmodifiedText': '',
@@ -819,10 +836,31 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'windex': windex,
       'tab_index': tab_index,
     }
-    # Sending two requests, one each for "key down" and "key up".
-    self._GetResultFromJSONRequest(cmd_dict)
-    cmd_dict['type'] = 3  # kKeyUpType
-    self._GetResultFromJSONRequest(cmd_dict)
+    # Sending request for key event.
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
+  def SendWebkitCharEvent(self, char, tab_index=0, windex=0):
+    """Send a webkit char to the browser.
+
+    Args:
+      char: the char value to be sent to the browser.
+      tab_index: tab index to work on. Defaults to 0 (first tab).
+      windex: window index to work on. Defaults to 0 (first window).
+    """
+    cmd_dict = {
+      'command': 'SendWebkitKeyEvent',
+      'type': 2,  # kCharType
+      'text': char,
+      'isSystemKey': False,
+      'unmodifiedText': char,
+      'nativeKeyCode': 0,
+      'windowsKeyCode': ord((char).upper()),
+      'modifiers': 0,
+      'windex': windex,
+      'tab_index': tab_index,
+    }
+    # Sending request for a char.
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
   def WaitForAllDownloadsToComplete(self, windex=0, timeout=-1):
     """Wait for all downloads to complete.
