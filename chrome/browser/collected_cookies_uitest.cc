@@ -21,7 +21,7 @@ const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 typedef UITest CollectedCookiesTest;
 
 // Crashing on Windows, see http://crbug.com/79331
-#if defined(OS_WINDOWS)
+#if defined(OS_WIN)
 #define MAYBE_DoubleDisplay DISABLED_DoubleDisplay
 #else
 #define MAYBE_DoubleDisplay DoubleDisplay
@@ -49,7 +49,7 @@ TEST_F(CollectedCookiesTest, MAYBE_DoubleDisplay) {
 }
 
 // Crashing on Windows, see http://crbug.com/79331
-#if defined(OS_WINDOWS)
+#if defined(OS_WIN)
 #define MAYBE_NavigateAway DISABLED_NavigateAway
 #else
 #define MAYBE_NavigateAway NavigateAway
