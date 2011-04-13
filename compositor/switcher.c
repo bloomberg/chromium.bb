@@ -26,6 +26,12 @@
 
 #include "compositor.h"
 
+struct wlsc_switcher {
+	struct wlsc_compositor *compositor;
+	struct wlsc_surface *current;
+	struct wl_listener listener;
+};
+
 static void
 wlsc_switcher_next(struct wlsc_switcher *switcher)
 {
@@ -39,6 +45,7 @@ wlsc_switcher_next(struct wlsc_switcher *switcher)
 	wl_list_remove(&switcher->listener.link);
 	wl_list_insert(switcher->current->surface.destroy_listener_list.prev,
 		       &switcher->listener.link);
+	switcher->compositor->overlay = switcher->current;
 	wlsc_surface_damage(switcher->current);
 }
 
@@ -103,6 +110,7 @@ switcher_terminate_binding(struct wl_input_device *device,
 		wlsc_surface_activate(compositor->switcher->current, wd, time);
 		wlsc_switcher_destroy(compositor->switcher);
 		compositor->switcher = NULL;
+		compositor->overlay = NULL;
 	}
 }
 

@@ -544,8 +544,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 			glClear(GL_COLOR_BUFFER_BIT);
 
 		wl_list_for_each_reverse(es, &ec->surface_list, link) {
-			if (ec->switcher &&
-			    ec->switcher->current == es)
+			if (ec->overlay == es)
 				continue;
 
 			if (es->visual == &ec->compositor.rgb_visual) {
@@ -560,9 +559,8 @@ wlsc_output_repaint(struct wlsc_output *output)
 		}
 	}
 
-	if (ec->switcher)
-		wlsc_surface_draw(ec->switcher->current,
-				  output, &total_damage);
+	if (ec->overlay)
+		wlsc_surface_draw(ec->overlay, output, &total_damage);
 
 	if (ec->focus)
 		wl_list_for_each(eid, &ec->input_device_list, link)

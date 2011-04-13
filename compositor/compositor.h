@@ -112,6 +112,7 @@ struct wlsc_compositor {
 	pixman_region32_t damage_region;
 	struct wl_array vertices, indices;
 
+	struct wlsc_surface *overlay;
 	struct wlsc_switcher *switcher;
 	uint32_t focus;
 
@@ -253,12 +254,6 @@ wlsc_shm_init(struct wlsc_compositor *ec);
 
 int
 wlsc_shell_init(struct wlsc_compositor *ec);
-
-struct wlsc_switcher {
-	struct wlsc_compositor *compositor;
-	struct wlsc_surface *current;
-	struct wl_listener listener;
-};
 
 void
 wlsc_switcher_init(struct wlsc_compositor *compositor);
