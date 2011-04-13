@@ -49,7 +49,7 @@ const ContentSetting kDefaultSettings[] = {
   CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_PLUGINS
   CONTENT_SETTING_BLOCK,  // CONTENT_SETTINGS_TYPE_POPUPS
   CONTENT_SETTING_ASK,    // Not used for Geolocation
-  CONTENT_SETTING_ASK,    // Not used for Notifications
+  CONTENT_SETTING_ASK,    // CONTENT_SETTINGS_TYPE_NOTIFICATIONS
   CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_PRERENDER
 };
 COMPILE_ASSERT(arraysize(kDefaultSettings) == CONTENT_SETTINGS_NUM_TYPES,
@@ -70,6 +70,17 @@ const char* kTypeNames[] = {
 };
 COMPILE_ASSERT(arraysize(kTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
                type_names_incorrect_size);
+
+void SetDefaultContentSettings(DictionaryValue* default_settings) {
+  default_settings->Clear();
+
+  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
+    if (kTypeNames[i] != NULL) {
+      default_settings->SetInteger(kTypeNames[i],
+                                   kDefaultSettings[i]);
+    }
+  }
+}
 
 }  // namespace
 
@@ -284,7 +295,16 @@ void PrefDefaultProvider::MigrateObsoleteNotificationPref(PrefService* prefs) {
 
 // static
 void PrefDefaultProvider::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kDefaultContentSettings);
+  // The registration of the preference prefs::kDefaultContentSettings should
+  // also include the default values for default content settings. This allows
+  // functional tests to get default content settings by reading the preference
+  // prefs::kDefaultContentSettings via pyauto.
+  // TODO(markusheintz): Write pyauto hooks for the content settings map as
+  // content settings should be read from the host content settings map.
+  DictionaryValue* default_content_settings = new DictionaryValue();
+  SetDefaultContentSettings(default_content_settings);
+  prefs->RegisterDictionaryPref(prefs::kDefaultContentSettings,
+                                default_content_settings);
 
   // Obsolete prefs, for migrations:
   prefs->RegisterIntegerPref(
