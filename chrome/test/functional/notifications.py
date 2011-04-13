@@ -282,9 +282,9 @@ class NotificationsTest(pyauto.PyUITest):
 
   def testOriginPreferencesBasic(self):
     """Tests that we can allow and deny origins."""
-    altavista = 'www.altavista.com'
-    gmail = 'www.gmail.com'
-    yahoo = 'www.yahoo.com'
+    altavista = 'http://www.altavista.com'
+    gmail = 'http://www.gmail.com'
+    yahoo = 'http://www.yahoo.com'
     self._SetDeniedOrigins([altavista, gmail])
     self.assertEquals(altavista, self._GetDeniedOrigins()[0])
     self.assertEquals(gmail, self._GetDeniedOrigins()[1])
