@@ -2242,13 +2242,13 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 }
 
 - (void)didDragBookmarkToTrash:(BookmarkButton*)button {
-  // TODO(mrossetti): Refactor BookmarkBarFolder common code.
-  // http://crbug.com/35966
-  const BookmarkNode* node = [button bookmarkNode];
-  if (node) {
-    const BookmarkNode* parent = node->parent();
-    bookmarkModel_->Remove(parent,
-                           parent->GetIndexOf(node));
+  if ([self canDragBookmarkButtonToTrash:button]) {
+    const BookmarkNode* node = [button bookmarkNode];
+    if (node) {
+      const BookmarkNode* parent = node->parent();
+      bookmarkModel_->Remove(parent,
+                             parent->GetIndexOf(node));
+    }
   }
 }
 
