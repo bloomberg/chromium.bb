@@ -507,12 +507,12 @@ void TabStrip::CalculateBoundsForDraggedTabs(const std::vector<BaseTab*>& tabs,
   int x = 0;
   for (size_t i = 0; i < tabs.size(); ++i) {
     BaseTab* tab = tabs[i];
+    if (i > 0 && tab->data().mini != tabs[i - 1]->data().mini)
+      x += mini_to_non_mini_gap_;
     gfx::Rect new_bounds = tab->bounds();
     new_bounds.set_origin(gfx::Point(x, 0));
     bounds->push_back(new_bounds);
     x += tab->width() + kTabHOffset;
-    if (i > 0 && tab->data().mini != tabs[i - 1]->data().mini)
-      x += mini_to_non_mini_gap_;
   }
 }
 
