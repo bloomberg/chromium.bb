@@ -48,6 +48,11 @@ std::string GetCertNameOrNickname(X509Certificate::OSCertHandle cert_handle) {
   return "";
 }
 
+std::string GetNickname(X509Certificate::OSCertHandle cert_handle) {
+  // TODO(jamescook): implement me.
+  return "";
+}
+
 std::string GetTokenName(X509Certificate::OSCertHandle cert_handle) {
   // TODO(bulach): implement me.
   return "";
@@ -173,6 +178,11 @@ void GetNicknameStringsFromCertList(
     const std::string& cert_not_yet_valid,
     std::vector<std::string>* nick_names) {
   // TODO(bulach): implement me.
+}
+
+std::string GetPkcs11Id(net::X509Certificate::OSCertHandle cert_handle) {
+  // TODO(jamescook): implement me.
+  return "";
 }
 
 void GetExtensions(

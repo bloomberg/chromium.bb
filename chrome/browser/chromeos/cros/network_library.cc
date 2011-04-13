@@ -162,17 +162,20 @@ const char* kSecurity8021x = "802_1x";
 const char* kSecurityNone = "none";
 
 // Flimflam EAP property names.
+// See src/third_party/flimflam/doc/service-api.txt.
 const char* kEapIdentityProperty = "EAP.Identity";
 const char* kEapMethodProperty = "EAP.EAP";
 const char* kEapPhase2AuthProperty = "EAP.InnerEAP";
 const char* kEapAnonymousIdentityProperty = "EAP.AnonymousIdentity";
-const char* kEapClientCertProperty = "EAP.ClientCert";
-const char* kEapCertIDProperty = "EAP.CertID";
+const char* kEapClientCertProperty = "EAP.ClientCert";  // path
+const char* kEapCertIDProperty = "EAP.CertID";  // PKCS#11 ID
+const char* kEapClientCertNssProperty = "EAP.ClientCertNSS";  // NSS nickname
 const char* kEapPrivateKeyProperty = "EAP.PrivateKey";
 const char* kEapPrivateKeyPasswordProperty = "EAP.PrivateKeyPassword";
 const char* kEapKeyIDProperty = "EAP.KeyID";
-const char* kEapCACertProperty = "EAP.CACert";
-const char* kEapCACertIDProperty = "EAP.CACertID";
+const char* kEapCaCertProperty = "EAP.CACert";  // server CA cert path
+const char* kEapCaCertIDProperty = "EAP.CACertID";  // server CA PKCS#11 ID
+const char* kEapCaCertNssProperty = "EAP.CACertNSS";  // server CA NSS nickname
 const char* kEapUseSystemCAsProperty = "EAP.UseSystemCAs";
 const char* kEapPinProperty = "EAP.PIN";
 const char* kEapPasswordProperty = "EAP.Password";
@@ -346,11 +349,13 @@ enum PropertyIndex {
   PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY,
   PROPERTY_INDEX_EAP_CLIENT_CERT,
   PROPERTY_INDEX_EAP_CERT_ID,
+  PROPERTY_INDEX_EAP_CLIENT_CERT_NSS,
   PROPERTY_INDEX_EAP_PRIVATE_KEY,
   PROPERTY_INDEX_EAP_PRIVATE_KEY_PASSWORD,
   PROPERTY_INDEX_EAP_KEY_ID,
   PROPERTY_INDEX_EAP_CA_CERT,
   PROPERTY_INDEX_EAP_CA_CERT_ID,
+  PROPERTY_INDEX_EAP_CA_CERT_NSS,
   PROPERTY_INDEX_EAP_USE_SYSTEM_CAS,
   PROPERTY_INDEX_EAP_PIN,
   PROPERTY_INDEX_EAP_PASSWORD,
@@ -416,11 +421,13 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kEapAnonymousIdentityProperty, PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY },
   { kEapClientCertProperty, PROPERTY_INDEX_EAP_CLIENT_CERT },
   { kEapCertIDProperty, PROPERTY_INDEX_EAP_CERT_ID },
+  { kEapClientCertNssProperty, PROPERTY_INDEX_EAP_CLIENT_CERT_NSS },
   { kEapPrivateKeyProperty, PROPERTY_INDEX_EAP_PRIVATE_KEY },
   { kEapPrivateKeyPasswordProperty, PROPERTY_INDEX_EAP_PRIVATE_KEY_PASSWORD },
   { kEapKeyIDProperty, PROPERTY_INDEX_EAP_KEY_ID },
-  { kEapCACertProperty, PROPERTY_INDEX_EAP_CA_CERT },
-  { kEapCACertIDProperty, PROPERTY_INDEX_EAP_CA_CERT_ID },
+  { kEapCaCertProperty, PROPERTY_INDEX_EAP_CA_CERT },
+  { kEapCaCertIDProperty, PROPERTY_INDEX_EAP_CA_CERT_ID },
+  { kEapCaCertNssProperty, PROPERTY_INDEX_EAP_CA_CERT_NSS },
   { kEapUseSystemCAsProperty, PROPERTY_INDEX_EAP_USE_SYSTEM_CAS },
   { kEapPinProperty, PROPERTY_INDEX_EAP_PIN },
   { kEapPasswordProperty, PROPERTY_INDEX_EAP_PASSWORD },
@@ -1393,6 +1400,8 @@ bool WifiNetwork::ParseValue(int index, const Value* value) {
       return value->GetAsString(&identity_);
     case PROPERTY_INDEX_CERT_PATH:
       return value->GetAsString(&cert_path_);
+    case PROPERTY_INDEX_EAP_IDENTITY:
+      return value->GetAsString(&eap_identity_);
     case PROPERTY_INDEX_EAP_METHOD: {
       std::string method;
       if (value->GetAsString(&method)) {
@@ -1409,22 +1418,22 @@ bool WifiNetwork::ParseValue(int index, const Value* value) {
       }
       break;
     }
-    case PROPERTY_INDEX_EAP_IDENTITY:
-      return value->GetAsString(&eap_identity_);
     case PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY:
       return value->GetAsString(&eap_anonymous_identity_);
-    case PROPERTY_INDEX_EAP_CLIENT_CERT:
-      return value->GetAsString(&eap_client_cert_path_);
-    case PROPERTY_INDEX_EAP_CA_CERT:
-      return value->GetAsString(&eap_server_ca_cert_path_);
-    case PROPERTY_INDEX_EAP_PASSWORD:
-      return value->GetAsString(&eap_passphrase_);
+    case PROPERTY_INDEX_EAP_CERT_ID:
+      return value->GetAsString(&eap_client_cert_pkcs11_id_);
+    case PROPERTY_INDEX_EAP_CA_CERT_NSS:
+      return value->GetAsString(&eap_server_ca_cert_nss_nickname_);
     case PROPERTY_INDEX_EAP_USE_SYSTEM_CAS:
       return value->GetAsBoolean(&eap_use_system_cas_);
-    case PROPERTY_INDEX_EAP_CERT_ID:
+    case PROPERTY_INDEX_EAP_PASSWORD:
+      return value->GetAsString(&eap_passphrase_);
+    case PROPERTY_INDEX_EAP_CLIENT_CERT:
+    case PROPERTY_INDEX_EAP_CLIENT_CERT_NSS:
     case PROPERTY_INDEX_EAP_PRIVATE_KEY:
     case PROPERTY_INDEX_EAP_PRIVATE_KEY_PASSWORD:
     case PROPERTY_INDEX_EAP_KEY_ID:
+    case PROPERTY_INDEX_EAP_CA_CERT:
     case PROPERTY_INDEX_EAP_CA_CERT_ID:
     case PROPERTY_INDEX_EAP_PIN:
     case PROPERTY_INDEX_EAP_KEY_MGMT:
@@ -1515,14 +1524,17 @@ void WifiNetwork::SetEAPPhase2Auth(EAPPhase2Auth auth) {
   }
 }
 
-void WifiNetwork::SetEAPServerCACert(const std::string& cert_path) {
-  eap_server_ca_cert_path_ = cert_path;
-  SetOrClearStringProperty(kEapCACertProperty, cert_path);
+void WifiNetwork::SetEAPServerCaCertNssNickname(
+    const std::string& nss_nickname) {
+  VLOG(1) << "SetEAPServerCaCertNssNickname " << nss_nickname;
+  eap_server_ca_cert_nss_nickname_ = nss_nickname;
+  SetOrClearStringProperty(kEapCaCertNssProperty, nss_nickname);
 }
 
-void WifiNetwork::SetEAPClientCert(const std::string& cert_path) {
-  eap_client_cert_path_ = cert_path;
-  SetOrClearStringProperty(kEapClientCertProperty, cert_path);
+void WifiNetwork::SetEAPClientCertPkcs11Id(const std::string& pkcs11_id) {
+  VLOG(1) << "SetEAPClientCertPkcs11Id " << pkcs11_id;
+  eap_client_cert_pkcs11_id_ = pkcs11_id;
+  SetOrClearStringProperty(kEapCertIDProperty, pkcs11_id);
 }
 
 void WifiNetwork::SetEAPUseSystemCAs(bool use_system_cas) {

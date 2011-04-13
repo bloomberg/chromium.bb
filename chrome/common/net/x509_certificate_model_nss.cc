@@ -7,10 +7,11 @@
 #include <cert.h>
 #include <cms.h>
 #include <hasht.h>
-#include <pk11pub.h>
+#include <keyhi.h>  // SECKEY_DestroyPrivateKey
+#include <keythi.h>  // SECKEYPrivateKey
+#include <pk11pub.h>  // PK11_FindKeyByAnyCert
+#include <seccomon.h>  // SECItem
 #include <sechash.h>
-
-#include <pk11pub.h>
 
 #include "base/logging.h"
 #include "base/nss_util.h"
@@ -100,7 +101,14 @@ using std::string;
 string GetCertNameOrNickname(X509Certificate::OSCertHandle cert_handle) {
   string name = ProcessIDN(Stringize(CERT_GetCommonName(&cert_handle->subject),
                                      ""));
-  if (name.empty() && cert_handle->nickname) {
+  if (!name.empty())
+    return name;
+  return GetNickname(cert_handle);
+}
+
+string GetNickname(X509Certificate::OSCertHandle cert_handle) {
+  string name;
+  if (cert_handle->nickname) {
     name = cert_handle->nickname;
     // Hack copied from mozilla: Cut off text before first :, which seems to
     // just be the token name.
@@ -247,6 +255,29 @@ void GetNicknameStringsFromCertList(
 
   CERT_FreeNicknames(cert_nicknames);
   CERT_DestroyCertList(cert_list);
+}
+
+// For background see this discussion on dev-tech-crypto.lists.mozilla.org:
+// http://web.archiveorange.com/archive/v/6JJW7E40sypfZGtbkzxX
+//
+// NOTE: This function relies on the convention that the same PKCS#11 ID
+// is shared between a certificate and its associated private and public
+// keys.  I tried to implement this with PK11_GetLowLevelKeyIDForCert(),
+// but that always returns NULL on Chrome OS for me.
+std::string GetPkcs11Id(net::X509Certificate::OSCertHandle cert_handle) {
+  std::string pkcs11_id;
+  SECKEYPrivateKey *priv_key = PK11_FindKeyByAnyCert(cert_handle,
+                                                     NULL /* wincx */);
+  if (priv_key) {
+    // Get the CKA_ID attribute for a key.
+    SECItem* sec_item = PK11_GetLowLevelKeyIDForPrivateKey(priv_key);
+    if (sec_item) {
+      pkcs11_id = base::HexEncode(sec_item->data, sec_item->len);
+      SECITEM_FreeItem(sec_item, PR_TRUE);
+    }
+    SECKEY_DestroyPrivateKey(priv_key);
+  }
+  return pkcs11_id;
 }
 
 void GetExtensions(

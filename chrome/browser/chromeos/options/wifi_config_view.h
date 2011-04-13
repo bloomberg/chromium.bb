@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/ui/shell_dialogs.h"
@@ -26,6 +27,7 @@ class FilePath;
 namespace chromeos {
 
 class NetworkConfigView;
+class WifiConfigModel;
 
 // A dialog box for showing a password textfield.
 class WifiConfigView : public views::View,
@@ -81,6 +83,8 @@ class WifiConfigView : public views::View,
   void UpdateErrorLabel(bool failed);
 
   NetworkConfigView* parent_;
+
+  scoped_ptr<WifiConfigModel> wifi_config_model_;
 
   // Whether or not it is an 802.1x network.
   bool is_8021x_;

@@ -632,6 +632,8 @@
         'browser/chromeos/options/network_config_view.h',
         'browser/chromeos/options/take_photo_dialog.cc',
         'browser/chromeos/options/take_photo_dialog.h',
+        'browser/chromeos/options/wifi_config_model.cc',
+        'browser/chromeos/options/wifi_config_model.h',
         'browser/chromeos/options/wifi_config_view.cc',
         'browser/chromeos/options/wifi_config_view.h',
         'browser/chromeos/panels/panel_scroller.cc',

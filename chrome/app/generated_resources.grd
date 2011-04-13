@@ -9804,7 +9804,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Join other network...
       </message>
       <message name="IDS_OPTIONS_SETTINGS_JOIN_WIFI_NETWORKS" desc="The title for the dialog to join a wifi network.">
-        Join wifi network
+        Join Wi-Fi network
       </message>
       <message name="IDS_OPTIONS_SETTINGS_ENABLE_DATA_ROAMING" desc="In the settings tab, the text next to the checkbox for data roaming.">
         Allow mobile data roaming

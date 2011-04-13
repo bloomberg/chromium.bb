@@ -494,9 +494,10 @@ class WifiNetwork : public WirelessNetwork {
 
   EAPMethod eap_method() const { return eap_method_; }
   EAPPhase2Auth eap_phase_2_auth() const { return eap_phase_2_auth_; }
-  const std::string& eap_server_ca_cert() const {
-    return eap_server_ca_cert_path_; }
-  const std::string& eap_client_cert() const { return eap_client_cert_path_; }
+  const std::string& eap_server_ca_cert_nss_nickname() const {
+    return eap_server_ca_cert_nss_nickname_; }
+  const std::string& eap_client_cert_pkcs11_id() const {
+    return eap_client_cert_pkcs11_id_; }
   const bool eap_use_system_cas() const { return eap_use_system_cas_; }
   const std::string& eap_identity() const { return eap_identity_; }
   const std::string& eap_anonymous_identity() const {
@@ -512,8 +513,8 @@ class WifiNetwork : public WirelessNetwork {
   // 802.1x properties
   void SetEAPMethod(EAPMethod method);
   void SetEAPPhase2Auth(EAPPhase2Auth auth);
-  void SetEAPServerCACert(const std::string& cert_path);
-  void SetEAPClientCert(const std::string& cert_path);
+  void SetEAPServerCaCertNssNickname(const std::string& nss_nickname);
+  void SetEAPClientCertPkcs11Id(const std::string& pkcs11_id);
   void SetEAPUseSystemCAs(bool use_system_cas);
   void SetEAPIdentity(const std::string& identity);
   void SetEAPAnonymousIdentity(const std::string& identity);
@@ -558,8 +559,8 @@ class WifiNetwork : public WirelessNetwork {
 
   EAPMethod eap_method_;
   EAPPhase2Auth eap_phase_2_auth_;
-  std::string eap_server_ca_cert_path_;
-  std::string eap_client_cert_path_;
+  std::string eap_server_ca_cert_nss_nickname_;
+  std::string eap_client_cert_pkcs11_id_;
   bool eap_use_system_cas_;
   std::string eap_identity_;
   std::string eap_anonymous_identity_;
