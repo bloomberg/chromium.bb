@@ -174,8 +174,9 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ScreenLockerTest);
 };
 
-// See http://crbug.com/79374
-IN_PROC_BROWSER_TEST_F(ScreenLockerTest, FLAKY_TestBasic) {
+// Temporarily disabling all screen locker tests while investigating the
+// issue crbug.com/78764.
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestBasic) {
   EXPECT_CALL(*mock_input_method_library_, GetNumActiveInputMethods())
       .Times(1)
       .WillRepeatedly((testing::Return(0)))
@@ -218,8 +219,6 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, FLAKY_TestBasic) {
   EXPECT_FALSE(tester->IsLocked());
 }
 
-// Temporarily disabling screen locker tests while investigating the
-// issue crbug.com/78764.
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestFullscreenExit) {
   EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenUnlockRequested())
       .Times(1)
