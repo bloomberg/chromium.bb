@@ -94,6 +94,7 @@ class FileSystemOperation {
     return &file_system_operation_context_;
   }
   friend class FileSystemOperationTest;
+  friend class FileSystemOperationWriteTest;
 
   // A callback used for OpenFileSystem.
   void DidGetRootPath(bool success,

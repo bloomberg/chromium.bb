@@ -27,33 +27,13 @@
 #include "webkit/fileapi/file_system_file_util.h"
 
 namespace fileapi {
-
-class TestURLRequestContext : public net::URLRequestContext {
- public:
-  webkit_blob::BlobStorageController* blob_storage_controller() {
-    return &blob_storage_controller_;
-  }
-
- private:
-  webkit_blob::BlobStorageController blob_storage_controller_;
-};
-
-static net::URLRequestJob* BlobURLRequestJobFactory(net::URLRequest* request,
-                                                    const std::string& scheme) {
-  webkit_blob::BlobStorageController* blob_storage_controller =
-      static_cast<TestURLRequestContext*>(request->context())->
-          blob_storage_controller();
-  return new webkit_blob::BlobURLRequestJob(
-      request,
-      blob_storage_controller->GetBlobDataFromUrl(request->url()),
-      base::MessageLoopProxy::CreateForCurrentThread());
-}
-
+namespace {
 class MockDispatcher;
+}  // namespace (anonymous)
 
-class FileSystemOperationTest : public testing::Test {
+class FileSystemOperationWriteTest : public testing::Test {
  public:
-  FileSystemOperationTest()
+  FileSystemOperationWriteTest()
       : loop_(MessageLoop::TYPE_IO),
         status_(base::PLATFORM_FILE_OK),
         bytes_written_(0),
@@ -91,12 +71,35 @@ class FileSystemOperationTest : public testing::Test {
   int64 bytes_written_;
   bool complete_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileSystemOperationTest);
+  DISALLOW_COPY_AND_ASSIGN(FileSystemOperationWriteTest);
 };
+
+namespace {
+
+class TestURLRequestContext : public net::URLRequestContext {
+ public:
+  webkit_blob::BlobStorageController* blob_storage_controller() {
+    return &blob_storage_controller_;
+  }
+
+ private:
+  webkit_blob::BlobStorageController blob_storage_controller_;
+};
+
+static net::URLRequestJob* BlobURLRequestJobFactory(net::URLRequest* request,
+                                                    const std::string& scheme) {
+  webkit_blob::BlobStorageController* blob_storage_controller =
+      static_cast<TestURLRequestContext*>(request->context())->
+          blob_storage_controller();
+  return new webkit_blob::BlobURLRequestJob(
+      request,
+      blob_storage_controller->GetBlobDataFromUrl(request->url()),
+      base::MessageLoopProxy::CreateForCurrentThread());
+}
 
 class MockDispatcher : public FileSystemCallbackDispatcher {
  public:
-  MockDispatcher(FileSystemOperationTest* test) : test_(test) { }
+  MockDispatcher(FileSystemOperationWriteTest* test) : test_(test) { }
 
   virtual void DidFail(base::PlatformFileError status) {
     test_->set_failure_status(status);
@@ -129,20 +132,22 @@ class MockDispatcher : public FileSystemCallbackDispatcher {
   }
 
  private:
-  FileSystemOperationTest* test_;
+  FileSystemOperationWriteTest* test_;
 };
 
-void FileSystemOperationTest::SetUp() {
+}  // namespace (anonymous)
+
+void FileSystemOperationWriteTest::SetUp() {
   ASSERT_TRUE(dir_.CreateUniqueTempDir());
   file_util::CreateTemporaryFileInDir(dir_.path(), &file_);
   net::URLRequest::RegisterProtocolFactory("blob", &BlobURLRequestJobFactory);
 }
 
-void FileSystemOperationTest::TearDown() {
+void FileSystemOperationWriteTest::TearDown() {
   net::URLRequest::RegisterProtocolFactory("blob", NULL);
 }
 
-FileSystemOperation* FileSystemOperationTest::operation() {
+FileSystemOperation* FileSystemOperationWriteTest::operation() {
   FileSystemOperation* operation = new FileSystemOperation(
       new MockDispatcher(this),
       base::MessageLoopProxy::CreateForCurrentThread(),
@@ -155,7 +160,7 @@ FileSystemOperation* FileSystemOperationTest::operation() {
   return operation;
 }
 
-TEST_F(FileSystemOperationTest, TestWriteSuccess) {
+TEST_F(FileSystemOperationWriteTest, TestWriteSuccess) {
   GURL blob_url("blob:success");
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
   blob_data->AppendData("Hello, world!\n");
@@ -175,7 +180,7 @@ TEST_F(FileSystemOperationTest, TestWriteSuccess) {
   EXPECT_TRUE(complete());
 }
 
-TEST_F(FileSystemOperationTest, TestWriteZero) {
+TEST_F(FileSystemOperationWriteTest, TestWriteZero) {
   GURL blob_url("blob:zero");
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
   blob_data->AppendData("");
@@ -195,7 +200,7 @@ TEST_F(FileSystemOperationTest, TestWriteZero) {
   EXPECT_TRUE(complete());
 }
 
-TEST_F(FileSystemOperationTest, TestWriteInvalidBlobUrl) {
+TEST_F(FileSystemOperationWriteTest, TestWriteInvalidBlobUrl) {
   scoped_refptr<TestURLRequestContext> url_request_context(
       new TestURLRequestContext());
 
@@ -207,7 +212,7 @@ TEST_F(FileSystemOperationTest, TestWriteInvalidBlobUrl) {
   EXPECT_TRUE(complete());
 }
 
-TEST_F(FileSystemOperationTest, TestWriteInvalidFile) {
+TEST_F(FileSystemOperationWriteTest, TestWriteInvalidFile) {
   GURL blob_url("blob:writeinvalidfile");
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
   blob_data->AppendData("It\'ll not be written.");
@@ -228,7 +233,7 @@ TEST_F(FileSystemOperationTest, TestWriteInvalidFile) {
   EXPECT_TRUE(complete());
 }
 
-TEST_F(FileSystemOperationTest, TestWriteDir) {
+TEST_F(FileSystemOperationWriteTest, TestWriteDir) {
   GURL blob_url("blob:writedir");
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
   blob_data->AppendData("It\'ll not be written, too.");
