@@ -83,6 +83,10 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // Called from WebUI.
   void RequestAutocompleteSuggestions(const ListValue* args);
 
+  // Called when the 'Always show the bookmarks bar' checkbox is toggled.
+  // Notifies any listeners interested in this event.  |args| is ignored.
+  void ToggleShowBookmarksBar(const ListValue* args);
+
   // Returns the string ID for the given default browser state.
   int StatusStringIdForState(ShellIntegration::DefaultBrowserState state);
 

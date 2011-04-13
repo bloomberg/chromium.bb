@@ -28,6 +28,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_service.h"
+#include "content/common/notification_source.h"
+#include "content/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -63,6 +66,7 @@ void BrowserOptionsHandler::GetLocalizedValues(
     { "homepageUseURL", IDS_OPTIONS_HOMEPAGE_USE_URL },
     { "toolbarGroupName", IDS_OPTIONS_TOOLBAR_GROUP_NAME },
     { "toolbarShowHomeButton", IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON },
+    { "toolbarShowBookmarksBar", IDS_OPTIONS_TOOLBAR_SHOW_BOOKMARKS_BAR },
     { "defaultSearchGroupName", IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME },
     { "defaultSearchManageEngines", IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES },
     { "instantName", IDS_INSTANT_PREF },
@@ -112,6 +116,9 @@ void BrowserOptionsHandler::RegisterMessages() {
       "requestAutocompleteSuggestions",
       NewCallback(this,
                   &BrowserOptionsHandler::RequestAutocompleteSuggestions));
+  web_ui_->RegisterMessageCallback(
+      "toggleShowBookmarksBar",
+      NewCallback(this, &BrowserOptionsHandler::ToggleShowBookmarksBar));
 }
 
 void BrowserOptionsHandler::Initialize() {
@@ -415,6 +422,14 @@ void BrowserOptionsHandler::RequestAutocompleteSuggestions(
 
   autocomplete_controller_->Start(input, string16(), true, false, false,
                                   AutocompleteInput::ALL_MATCHES);
+}
+
+void BrowserOptionsHandler::ToggleShowBookmarksBar(const ListValue* args) {
+  Source<Profile> source(web_ui_->GetProfile());
+  NotificationService::current()->Notify(
+      NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
+      source,
+      NotificationService::NoDetails());
 }
 
 void BrowserOptionsHandler::OnResultChanged(bool default_match_changed) {
