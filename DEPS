@@ -1,5 +1,8 @@
 vars = {
-  "arm_toolchain_version": "4847",
+  # These two should be updated to the same revision whenever possible.
+  "arm_toolchain_version": "4848",
+  "x86_toolchain_version": "4848",
+
   "chrome_rev": "81243",
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "gtest_rev": "364",
@@ -10,7 +13,6 @@ vars = {
   "python_26_rev": "53573",
   "tools_rev": "4802",
   "wix_rev": "153",
-  "x86_toolchain_version": "4847",
 }
 
 deps = {
