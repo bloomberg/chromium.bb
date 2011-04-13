@@ -2020,9 +2020,10 @@ TEST_F(AutofillManagerTest, FormSubmittedServerTypes) {
   autofill_manager_->AddSeenForm(form_structure);
 
   // Fill the form.
-  std::string guid = "00000000-0000-0000-0000-000000000001";
+  GUIDPair guid("00000000-0000-0000-0000-000000000001", 0);
+  GUIDPair empty(std::string(), 0);
   FillAutofillFormData(kDefaultPageID, form, form.fields[0],
-                       autofill_manager_->PackGUIDs(std::string(), guid));
+                       autofill_manager_->PackGUIDs(empty, guid));
 
   int page_id = 0;
   FormData results;
