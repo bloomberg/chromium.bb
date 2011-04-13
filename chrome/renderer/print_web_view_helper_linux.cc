@@ -152,6 +152,8 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
   PrintMsg_Print_Params printParams = params.params;
   scoped_ptr<skia::VectorCanvas> canvas;
 
+  UpdatePrintableSizeInPrintParameters(frame, node, &printParams);
+
   {
     // Hack - when |prep_frame_view| goes out of scope, PrintEnd() gets called.
     // Doing this before closing |metafile| below ensures
