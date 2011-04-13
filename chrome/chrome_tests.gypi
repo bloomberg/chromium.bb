@@ -2381,6 +2381,8 @@
         '../content/browser/renderer_host/render_view_host_browsertest.cc',
         '../content/browser/renderer_host/render_view_host_manager_browsertest.cc',
         '../content/browser/speech/speech_input_browsertest.cc',
+        '../content/browser/webui/web_ui_bidi_checker_browsertest.cc',
+        '../content/browser/webui/web_ui_bidi_checker_browsertest.h',
         '../content/browser/webui/web_ui_browsertest.cc',
         '../content/browser/webui/web_ui_browsertest.h',
         '../content/browser/webui/web_ui_test_handler.cc',
