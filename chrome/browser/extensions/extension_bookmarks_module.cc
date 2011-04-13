@@ -808,13 +808,13 @@ BookmarksIOFunction::~BookmarksIOFunction() {
 }
 
 void BookmarksIOFunction::SelectFile(SelectFileDialog::Type type) {
-  // Balanced in one of the three callbacks of SelectFileDialog:
-  // either FileSelectionCanceled, MultiFilesSelected, or FileSelected
-  AddRef();
-  select_file_dialog_ = SelectFileDialog::Create(this);
-  SelectFileDialog::FileTypeInfo file_type_info;
-  file_type_info.extensions.resize(1);
-  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("html"));
+  // GetDefaultFilepathForBookmarkExport() might have to touch the filesystem
+  // (stat or access, for example), so this requires a thread with IO allowed.
+  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+        NewRunnableMethod(this, &BookmarksIOFunction::SelectFile, type));
+    return;
+  }
 
   // Pre-populating the filename field in case this is a SELECT_SAVEAS_FILE
   // dialog. If not, there is no filename field in the dialog box.
@@ -823,6 +823,22 @@ void BookmarksIOFunction::SelectFile(SelectFileDialog::Type type) {
     default_path = GetDefaultFilepathForBookmarkExport();
   else
     DCHECK(type == SelectFileDialog::SELECT_OPEN_FILE);
+
+  // After getting the |default_path|, ask the UI to display the file dialog.
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &BookmarksIOFunction::ShowSelectFileDialog,
+                        type, default_path));
+}
+
+void BookmarksIOFunction::ShowSelectFileDialog(SelectFileDialog::Type type,
+                                               FilePath default_path) {
+  // Balanced in one of the three callbacks of SelectFileDialog:
+  // either FileSelectionCanceled, MultiFilesSelected, or FileSelected
+  AddRef();
+  select_file_dialog_ = SelectFileDialog::Create(this);
+  SelectFileDialog::FileTypeInfo file_type_info;
+  file_type_info.extensions.resize(1);
+  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("html"));
 
   select_file_dialog_->SelectFile(type,
                                   string16(),

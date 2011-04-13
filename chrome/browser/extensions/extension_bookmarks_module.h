@@ -205,6 +205,9 @@ class BookmarksIOFunction : public BookmarksFunction,
 
   void SelectFile(SelectFileDialog::Type type);
 
+ private:
+  void ShowSelectFileDialog(SelectFileDialog::Type type, FilePath default_path);
+
  protected:
   scoped_refptr<SelectFileDialog> select_file_dialog_;
 };
