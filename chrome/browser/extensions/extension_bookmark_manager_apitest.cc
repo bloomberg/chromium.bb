@@ -20,6 +20,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BookmarkManager) {
   ASSERT_TRUE(RunExtensionTest("bookmark_manager/standard")) << message_;
 }
 
+// See http://crbug.com/79335
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_BookmarkManagerEditDisabled) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
