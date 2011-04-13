@@ -14,7 +14,8 @@ class GURL;
 class QuotaDispatcherHost : public BrowserMessageFilter {
  public:
   ~QuotaDispatcherHost();
-  bool OnMessageReceived(const IPC::Message& message, bool* message_was_ok);
+  virtual bool OnMessageReceived(const IPC::Message& message,
+                                 bool* message_was_ok);
 
  private:
   void OnQueryStorageUsageAndQuota(
