@@ -17,7 +17,7 @@
 #include "content/common/gpu_messages.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_video_service.h"
-#include "content/gpu/transport_texture.h"
+#include "content/common/gpu/transport_texture.h"
  
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
