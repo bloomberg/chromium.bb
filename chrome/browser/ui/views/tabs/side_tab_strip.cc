@@ -398,7 +398,7 @@ void SideTabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
     tab->SetBounds(layout_rect.x(), y, layout_rect.width(),
                    tab->GetPreferredSize().height());
     tab->SchedulePaint();
-    y += tab->height();
+    y += tab->height() + kVerticalTabSpacing;
   }
 }
 
@@ -408,9 +408,10 @@ void SideTabStrip::CalculateBoundsForDraggedTabs(
   int y = 0;
   for (size_t i = 0; i < tabs.size(); ++i) {
     BaseTab* tab = tabs[i];
-    gfx::Rect bounds(tab->bounds());
-    bounds.set_y(y);
-    y += tab->height();
+    gfx::Rect tab_bounds(tab->bounds());
+    tab_bounds.set_y(y);
+    y += tab->height() + kVerticalTabSpacing;
+    bounds->push_back(tab_bounds);
   }
 }
 
