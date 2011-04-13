@@ -860,7 +860,7 @@ TEST_F(GLES2ImplementationTest, MapUnmapTexSubImage2DCHROMIUM) {
   Cmds expected;
   expected.tex.Init(
       GL_TEXTURE_2D, kLevel, kXOffset, kYOffset, kWidth, kHeight, kFormat,
-      kType, kTransferBufferId, offset);
+      kType, kTransferBufferId, offset, GL_FALSE);
   expected.set_token.Init(token++);
 
   void* mem = gl_->MapTexSubImage2DCHROMIUM(

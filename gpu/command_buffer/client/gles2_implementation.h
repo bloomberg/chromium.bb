@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -279,6 +279,11 @@ class GLES2Implementation {
   // Asks the service for the max index in an element array buffer.
   GLsizei GetMaxIndexInElementArrayBuffer(
       GLuint buffer_id, GLsizei count, GLenum type, GLuint offset);
+
+  void TexSubImage2DImpl(
+      GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
+      GLsizei height, GLenum format, GLenum type, const void* pixels,
+      GLboolean internal);
 
   GLES2Util util_;
   GLES2CmdHelper* helper_;

@@ -1467,6 +1467,10 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   const Validators* validators_;
   FeatureInfo* feature_info_;
 
+  // This indicates all the following texSubImage2D calls that are part of the
+  // failed texImage2D call should be ignored.
+  bool tex_image_2d_failed_;
+
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
 
@@ -1789,7 +1793,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       current_decoder_error_(error::kNoError),
       use_shader_translator_(true),
       validators_(group_->feature_info()->validators()),
-      feature_info_(group_->feature_info()) {
+      feature_info_(group_->feature_info()),
+      tex_image_2d_failed_(false) {
   attrib_0_value_.v[0] = 0.0f;
   attrib_0_value_.v[1] = 0.0f;
   attrib_0_value_.v[2] = 0.0f;
@@ -5565,12 +5570,14 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
   if (error == GL_NO_ERROR) {
     texture_manager()->SetLevelInfo(feature_info_, info,
         target, level, internal_format, width, height, 1, border, format, type);
+    tex_image_2d_failed_ = false;
   }
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleTexImage2D(
     uint32 immediate_data_size, const gles2::TexImage2D& c) {
+  tex_image_2d_failed_ = true;
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
   GLint internal_format = static_cast<GLint>(c.internalformat);
@@ -5879,6 +5886,104 @@ void GLES2DecoderImpl::DoTexSubImage2D(
   }
   glTexSubImage2D(
       target, level, xoffset, yoffset, width, height, format, type, data);
+}
+
+error::Error GLES2DecoderImpl::HandleTexSubImage2D(
+    uint32 immediate_data_size, const gles2::TexSubImage2D& c) {
+  GLboolean internal = static_cast<GLboolean>(c.internal);
+  if (internal == GL_TRUE && tex_image_2d_failed_)
+    return error::kNoError;
+
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLint xoffset = static_cast<GLint>(c.xoffset);
+  GLint yoffset = static_cast<GLint>(c.yoffset);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLenum format = static_cast<GLenum>(c.format);
+  GLenum type = static_cast<GLenum>(c.type);
+  uint32 data_size;
+  if (!GLES2Util::ComputeImageDataSize(
+      width, height, format, type, unpack_alignment_, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  const void* pixels = GetSharedMemoryAs<const void*>(
+      c.pixels_shm_id, c.pixels_shm_offset, data_size);
+  if (!validators_->texture_target.IsValid(target)) {
+    SetGLError(GL_INVALID_ENUM, "glTexSubImage2D: target GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D: width < 0");
+    return error::kNoError;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D: height < 0");
+    return error::kNoError;
+  }
+  if (!validators_->texture_format.IsValid(format)) {
+    SetGLError(GL_INVALID_ENUM, "glTexSubImage2D: format GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+  if (!validators_->pixel_type.IsValid(type)) {
+    SetGLError(GL_INVALID_ENUM, "glTexSubImage2D: type GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+  if (pixels == NULL) {
+    return error::kOutOfBounds;
+  }
+  DoTexSubImage2D(
+      target, level, xoffset, yoffset, width, height, format, type, pixels);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleTexSubImage2DImmediate(
+    uint32 immediate_data_size, const gles2::TexSubImage2DImmediate& c) {
+  GLboolean internal = static_cast<GLboolean>(c.internal);
+  if (internal == GL_TRUE && tex_image_2d_failed_)
+    return error::kNoError;
+
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLint xoffset = static_cast<GLint>(c.xoffset);
+  GLint yoffset = static_cast<GLint>(c.yoffset);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLenum format = static_cast<GLenum>(c.format);
+  GLenum type = static_cast<GLenum>(c.type);
+  uint32 data_size;
+  if (!GLES2Util::ComputeImageDataSize(
+      width, height, format, type, unpack_alignment_, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  const void* pixels = GetImmediateDataAs<const void*>(
+      c, data_size, immediate_data_size);
+  if (!validators_->texture_target.IsValid(target)) {
+    SetGLError(GL_INVALID_ENUM, "glTexSubImage2D: target GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D: width < 0");
+    return error::kNoError;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D: height < 0");
+    return error::kNoError;
+  }
+  if (!validators_->texture_format.IsValid(format)) {
+    SetGLError(GL_INVALID_ENUM, "glTexSubImage2D: format GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+  if (!validators_->pixel_type.IsValid(type)) {
+    SetGLError(GL_INVALID_ENUM, "glTexSubImage2D: type GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+  if (pixels == NULL) {
+    return error::kOutOfBounds;
+  }
+  DoTexSubImage2D(
+      target, level, xoffset, yoffset, width, height, format, type, pixels);
+  return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleGetVertexAttribPointerv(

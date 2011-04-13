@@ -828,20 +828,22 @@
   void TexSubImage2D(
       GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
       GLsizei height, GLenum format, GLenum type, uint32 pixels_shm_id,
-      uint32 pixels_shm_offset) {
+      uint32 pixels_shm_offset, GLboolean internal) {
     gles2::TexSubImage2D& c = GetCmdSpace<gles2::TexSubImage2D>();
     c.Init(
         target, level, xoffset, yoffset, width, height, format, type,
-        pixels_shm_id, pixels_shm_offset);
+        pixels_shm_id, pixels_shm_offset, internal);
   }
 
   void TexSubImage2DImmediate(
       GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
-      GLsizei height, GLenum format, GLenum type) {
+      GLsizei height, GLenum format, GLenum type, GLboolean internal) {
     const uint32 s = 0;  // TODO(gman): compute correct size
     gles2::TexSubImage2DImmediate& c =
         GetImmediateCmdSpaceTotalSize<gles2::TexSubImage2DImmediate>(s);
-    c.Init(target, level, xoffset, yoffset, width, height, format, type);
+    c.Init(
+        target, level, xoffset, yoffset, width, height, format, type,
+        internal);
   }
 
   void Uniform1f(GLint location, GLfloat x) {

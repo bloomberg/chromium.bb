@@ -986,13 +986,22 @@ void GLES2Implementation::TexImage2D(
   helper_->TexImage2D(
       target, level, internalformat, width, height, border, format, type, 0, 0);
   if (pixels) {
-    TexSubImage2D(target, level, 0, 0, width, height, format, type, pixels);
+    TexSubImage2DImpl(
+        target, level, 0, 0, width, height, format, type, pixels, GL_TRUE);
   }
 }
 
 void GLES2Implementation::TexSubImage2D(
     GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
     GLsizei height, GLenum format, GLenum type, const void* pixels) {
+  TexSubImage2DImpl(
+      target, level, 0, 0, width, height, format, type, pixels, GL_FALSE);
+}
+
+void GLES2Implementation::TexSubImage2DImpl(
+    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
+    GLsizei height, GLenum format, GLenum type, const void* pixels,
+    GLboolean internal) {
   if (level < 0 || height < 0 || width < 0) {
     SetGLError(GL_INVALID_VALUE, "glTexSubImage2D dimension < 0");
     return;
@@ -1031,7 +1040,7 @@ void GLES2Implementation::TexSubImage2D(
       memcpy(buffer, source, part_size);
       helper_->TexSubImage2D(
           target, level, xoffset, yoffset, width, num_rows, format, type,
-          transfer_buffer_id_, transfer_buffer_.GetOffset(buffer));
+          transfer_buffer_id_, transfer_buffer_.GetOffset(buffer), internal);
       transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
       yoffset += num_rows;
       source += part_size;
@@ -1056,7 +1065,7 @@ void GLES2Implementation::TexSubImage2D(
         memcpy(buffer, row_source, part_size);
         helper_->TexSubImage2D(
             target, level, temp_xoffset, yoffset, temp_width, 1, format, type,
-            transfer_buffer_id_, transfer_buffer_.GetOffset(buffer));
+            transfer_buffer_id_, transfer_buffer_.GetOffset(buffer), internal);
         transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
         row_source += part_size;
         temp_xoffset += num_pixels;
@@ -1637,7 +1646,7 @@ void GLES2Implementation::UnmapTexSubImage2DCHROMIUM(const void* mem) {
   const MappedTexture& mt = it->second;
   helper_->TexSubImage2D(
       mt.target, mt.level, mt.xoffset, mt.yoffset, mt.width, mt.height,
-      mt.format, mt.type, mt.shm_id, mt.shm_offset);
+      mt.format, mt.type, mt.shm_id, mt.shm_offset, GL_FALSE);
   mapped_memory_->FreePendingToken(mt.shm_memory, helper_->InsertToken());
   mapped_textures_.erase(it);
 }

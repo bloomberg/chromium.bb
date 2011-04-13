@@ -1494,8 +1494,11 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoTexParameteriv',
   },
   'TexSubImage2D': {
-    'type': 'Data',
-    'decoder_func': 'DoTexSubImage2D',
+    'type': 'Manual',
+    'immediate': True,
+    'cmd_args': 'GLenum target, GLint level, GLint xoffset, GLint yoffset, '
+                'GLsizei width, GLsizei height, GLenum format, GLenum type, '
+                'const void* pixels, GLboolean internal'
   },
   'Uniform1f': {'type': 'PUTXn', 'data_type': 'GLfloat', 'count': 1},
   'Uniform1fv': {
