@@ -41,7 +41,8 @@ TEST_F(NaClUITest, ServerTest) {
   RunTest(test_file, TestTimeouts::action_max_timeout_ms());
 }
 
-TEST_F(NaClUITest, PPAPIHelloWorld) {
+// Uses obsolete srpc interface.
+TEST_F(NaClUITest, DISABLED_PPAPIHelloWorld) {
   FilePath test_file(kPPAPIHwHtmlFileName);
   RunTest(test_file, TestTimeouts::action_max_timeout_ms());
 }
