@@ -55,6 +55,10 @@ class GpuChannelManager : public IPC::Channel::Listener,
   // Sender overrides.
   virtual bool Send(IPC::Message* msg);
 
+  void LoseAllContexts();
+
+  ScopedRunnableMethodFactory<GpuChannelManager> method_factory_;
+
  private:
   // Message handlers.
   void OnEstablishChannel(int renderer_id);
@@ -70,6 +74,8 @@ class GpuChannelManager : public IPC::Channel::Listener,
       int renderer_id, int32 route_id, uint64 swap_buffers_count);
   void OnDestroyCommandBuffer(int renderer_id, int32 renderer_view_id);
 #endif
+
+  void OnLoseAllContexts();
 
   MessageLoop* io_message_loop_;
   base::WaitableEvent* shutdown_event_;

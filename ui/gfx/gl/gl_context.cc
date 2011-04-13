@@ -55,4 +55,21 @@ bool GLContext::InitializeCommon() {
   return true;
 }
 
+bool GLContext::LosesAllContextsOnContextLost()
+{
+  switch (GetGLImplementation()) {
+    case kGLImplementationDesktopGL:
+      return false;
+    case kGLImplementationEGLGLES2:
+      return true;
+    case kGLImplementationOSMesaGL:
+      return false;
+    case kGLImplementationMockGL:
+      return false;
+    default:
+      NOTREACHED();
+      return true;
+  }
+}
+
 }  // namespace gfx

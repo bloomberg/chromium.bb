@@ -70,6 +70,8 @@ class GLContext {
   // OpenGL context shares textures and other resources.
   static GLContext* CreateOffscreenGLContext(GLContext* shared_context);
 
+  static bool LosesAllContextsOnContextLost();
+
  protected:
   bool InitializeCommon();
 

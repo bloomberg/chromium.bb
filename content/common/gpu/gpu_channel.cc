@@ -99,6 +99,10 @@ bool GpuChannel::Send(IPC::Message* message) {
   return channel_->Send(message);
 }
 
+void GpuChannel::LoseAllContexts() {
+  gpu_channel_manager_->LoseAllContexts();
+}
+
 void GpuChannel::CreateViewCommandBuffer(
     gfx::PluginWindowHandle window,
     int32 render_view_id,

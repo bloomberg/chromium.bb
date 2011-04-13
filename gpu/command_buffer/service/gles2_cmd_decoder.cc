@@ -2516,9 +2516,6 @@ void GLES2DecoderImpl::Destroy() {
     // must release the ContextGroup before destroying the context as its
     // destructor uses GL.
     group_ = NULL;
-
-    context_->Destroy();
-    context_.reset();
   } else {
     if (offscreen_target_frame_buffer_.get())
       offscreen_target_frame_buffer_->Invalidate();
@@ -2535,6 +2532,10 @@ void GLES2DecoderImpl::Destroy() {
     if (offscreen_saved_color_texture_.get())
       offscreen_saved_color_texture_->Invalidate();
   }
+
+  if (context_.get())
+    context_->Destroy();
+  context_.reset();
 
   offscreen_target_frame_buffer_.reset();
   offscreen_target_color_texture_.reset();

@@ -24,7 +24,8 @@ GpuChannelManager::GpuChannelManager(IPC::Message::Sender* browser_channel,
                                      GpuWatchdogThread* gpu_watchdog_thread,
                                      MessageLoop* io_message_loop,
                                      base::WaitableEvent* shutdown_event)
-    : io_message_loop_(io_message_loop),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      io_message_loop_(io_message_loop),
       shutdown_event_(shutdown_event),
       browser_channel_(browser_channel),
       watchdog_thread_(gpu_watchdog_thread) {
@@ -145,3 +146,13 @@ void GpuChannelManager::OnDestroyCommandBuffer(
   channel->DestroyCommandBufferByViewId(renderer_view_id);
 }
 #endif
+
+void GpuChannelManager::LoseAllContexts() {
+  MessageLoop::current()->PostTask(
+      FROM_HERE, method_factory_.NewRunnableMethod(
+          &GpuChannelManager::OnLoseAllContexts));
+}
+
+void GpuChannelManager::OnLoseAllContexts() {
+  gpu_channels_.clear();
+}

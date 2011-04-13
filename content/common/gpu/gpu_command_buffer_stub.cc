@@ -13,7 +13,9 @@
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/gpu/gpu_watchdog_thread.h"
+#include "gpu/command_buffer/common/constants.h"
 #include "gpu/common/gpu_trace_event.h"
+#include "ui/gfx/gl/gl_context.h"
 
 #if defined(OS_WIN)
 #include "base/win/wrapped_window_proc.h"
@@ -302,11 +304,18 @@ void GpuCommandBufferStub::OnAsyncGetState() {
 void GpuCommandBufferStub::OnFlush(int32 put_offset,
                                    gpu::CommandBuffer::State* state) {
   *state = command_buffer_->FlushSync(put_offset);
+  if (state->error == gpu::error::kLostContext &&
+      gfx::GLContext::LosesAllContextsOnContextLost())
+    channel_->LoseAllContexts();
 }
 
 void GpuCommandBufferStub::OnAsyncFlush(int32 put_offset) {
   gpu::CommandBuffer::State state = command_buffer_->FlushSync(put_offset);
-  Send(new GpuCommandBufferMsg_UpdateState(route_id_, state));
+  if (state.error == gpu::error::kLostContext &&
+      gfx::GLContext::LosesAllContextsOnContextLost())
+    channel_->LoseAllContexts();
+  else
+    Send(new GpuCommandBufferMsg_UpdateState(route_id_, state));
 }
 
 void GpuCommandBufferStub::OnCreateTransferBuffer(int32 size,

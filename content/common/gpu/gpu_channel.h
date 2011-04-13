@@ -79,6 +79,9 @@ class GpuChannel : public IPC::Channel::Listener,
       int32 route_id, uint64 swap_buffers_count);
   void DestroyCommandBufferByViewId(int32 render_view_id);
 #endif
+
+  void LoseAllContexts();
+
   // Get the TransportTexture by ID.
   TransportTexture* GetTransportTexture(int32 route_id);
 
