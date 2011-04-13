@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/captcha_view.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_performer.h"
+#include "chrome/browser/chromeos/login/ownership_status_checker.h"
 #include "chrome/browser/chromeos/login/password_changed_view.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
@@ -111,6 +112,10 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // provided by authenticator, it is not localized.
   void ShowError(int error_id, const std::string& details);
 
+  // Handles result of ownership check and starts enterprise enrollment if
+  // applicable.
+  void OnEnrollmentOwnershipCheckCompleted(OwnershipService::Status status);
+
   void set_login_performer_delegate(LoginPerformer::Delegate* d) {
     login_performer_delegate_.reset(d);
   }
@@ -153,6 +158,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // Factory of callbacks.
   ScopedRunnableMethodFactory<ExistingUserController> method_factory_;
+
+  // Used to verify ownership before starting enterprise enrollment.
+  scoped_ptr<OwnershipStatusChecker> ownership_checker_;
 
   FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, NewUserLogin);
 

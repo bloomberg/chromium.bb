@@ -532,6 +532,8 @@
         'browser/chromeos/login/owner_key_utils.h',
         'browser/chromeos/login/owner_manager.cc',
         'browser/chromeos/login/owner_manager.h',
+        'browser/chromeos/login/ownership_status_checker.cc',
+        'browser/chromeos/login/ownership_status_checker.h',
         'browser/chromeos/login/ownership_service.cc',
         'browser/chromeos/login/ownership_service.h',
         'browser/chromeos/login/parallel_authenticator.cc',

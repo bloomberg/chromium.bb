@@ -235,13 +235,21 @@ void ExistingUserController::OnUserSelected(const std::string& username) {
 }
 
 void ExistingUserController::OnStartEnterpriseEnrollment() {
-#if !defined(OFFICIAL_BUILD)
-  // TODO(mnissler): Make sure to only start if the device doesn't have an owner
-  // and isn't already enrolled.
-  host_->StartWizard(WizardController::kEnterpriseEnrollmentScreenName,
-                     NULL, GURL());
-  login_display_->OnFadeOut();
-#endif
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableDevicePolicy)) {
+    ownership_checker_.reset(new OwnershipStatusChecker(NewCallback(
+        this, &ExistingUserController::OnEnrollmentOwnershipCheckCompleted)));
+  }
+}
+
+void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
+    OwnershipService::Status status) {
+  if (status == OwnershipService::OWNERSHIP_NONE) {
+    host_->StartWizard(WizardController::kEnterpriseEnrollmentScreenName,
+                       NULL, GURL());
+    login_display_->OnFadeOut();
+  }
+  ownership_checker_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
