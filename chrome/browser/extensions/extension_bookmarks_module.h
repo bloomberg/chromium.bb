@@ -87,6 +87,10 @@ class BookmarksFunction : public AsyncExtensionFunction,
   // as an int64. In case of error, doesn't change id and returns false.
   bool GetBookmarkIdAsInt64(const std::string& id_string, int64* id);
 
+  // Helper that checks if bookmark editing is enabled. If it's not, this sets
+  // error_ to the appropriate error string.
+  bool EditBookmarksEnabled();
+
  private:
   // NotificationObserver:
   virtual void Observe(NotificationType type,

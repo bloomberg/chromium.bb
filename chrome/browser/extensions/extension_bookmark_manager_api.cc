@@ -224,10 +224,14 @@ bool CopyBookmarkManagerFunction::RunImpl() {
 }
 
 bool CutBookmarkManagerFunction::RunImpl() {
+  if (!EditBookmarksEnabled())
+    return false;
   return CopyOrCut(true);
 }
 
 bool PasteBookmarkManagerFunction::RunImpl() {
+  if (!EditBookmarksEnabled())
+    return false;
   BookmarkModel* model = profile()->GetBookmarkModel();
   const BookmarkNode* parent_node = GetNodeFromArguments(model, args_.get());
   if (!parent_node) {
@@ -255,6 +259,8 @@ bool PasteBookmarkManagerFunction::RunImpl() {
 }
 
 bool CanPasteBookmarkManagerFunction::RunImpl() {
+  if (!EditBookmarksEnabled())
+    return false;
   BookmarkModel* model = profile()->GetBookmarkModel();
   const BookmarkNode* parent_node = GetNodeFromArguments(model, args_.get());
   if (!parent_node) {
@@ -268,6 +274,8 @@ bool CanPasteBookmarkManagerFunction::RunImpl() {
 }
 
 bool SortChildrenBookmarkManagerFunction::RunImpl() {
+  if (!EditBookmarksEnabled())
+    return false;
   BookmarkModel* model = profile()->GetBookmarkModel();
   const BookmarkNode* parent_node = GetNodeFromArguments(model, args_.get());
   if (!parent_node) {
@@ -350,6 +358,8 @@ bool BookmarkManagerGetStringsFunction::RunImpl() {
 }
 
 bool StartDragBookmarkManagerFunction::RunImpl() {
+  if (!EditBookmarksEnabled())
+    return false;
   BookmarkModel* model = profile()->GetBookmarkModel();
   std::vector<const BookmarkNode*> nodes;
   EXTENSION_FUNCTION_VALIDATE(
@@ -370,6 +380,9 @@ bool StartDragBookmarkManagerFunction::RunImpl() {
 }
 
 bool DropBookmarkManagerFunction::RunImpl() {
+  if (!EditBookmarksEnabled())
+    return false;
+
   BookmarkModel* model = profile()->GetBookmarkModel();
 
   int64 id;

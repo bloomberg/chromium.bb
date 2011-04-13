@@ -101,6 +101,13 @@ bool BookmarksFunction::GetBookmarkIdAsInt64(
   return false;
 }
 
+bool BookmarksFunction::EditBookmarksEnabled() {
+  if (profile_->GetPrefs()->GetBoolean(prefs::kEditBookmarksEnabled))
+    return true;
+  error_ = keys::kEditBookmarksDisabled;
+  return false;
+}
+
 void BookmarksFunction::Observe(NotificationType type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
@@ -394,6 +401,8 @@ bool RemoveBookmarkFunction::ExtractIds(const ListValue* args,
 }
 
 bool RemoveBookmarkFunction::RunImpl() {
+  if (!EditBookmarksEnabled())
+    return false;
   std::list<int64> ids;
   bool invalid_id = false;
   EXTENSION_FUNCTION_VALIDATE(ExtractIds(args_.get(), &ids, &invalid_id));
@@ -416,6 +425,8 @@ bool RemoveBookmarkFunction::RunImpl() {
 }
 
 bool CreateBookmarkFunction::RunImpl() {
+  if (!EditBookmarksEnabled())
+    return false;
   DictionaryValue* json;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &json));
   EXTENSION_FUNCTION_VALIDATE(json != NULL);
@@ -490,6 +501,8 @@ bool MoveBookmarkFunction::ExtractIds(const ListValue* args,
 }
 
 bool MoveBookmarkFunction::RunImpl() {
+  if (!EditBookmarksEnabled())
+    return false;
   std::list<int64> ids;
   bool invalid_id = false;
   EXTENSION_FUNCTION_VALIDATE(ExtractIds(args_.get(), &ids, &invalid_id));
@@ -569,6 +582,8 @@ bool UpdateBookmarkFunction::ExtractIds(const ListValue* args,
 }
 
 bool UpdateBookmarkFunction::RunImpl() {
+  if (!EditBookmarksEnabled())
+    return false;
   std::list<int64> ids;
   bool invalid_id = false;
   EXTENSION_FUNCTION_VALIDATE(ExtractIds(args_.get(), &ids, &invalid_id));
@@ -861,6 +876,8 @@ void BookmarksIOFunction::MultiFilesSelected(
 }
 
 bool ImportBookmarksFunction::RunImpl() {
+  if (!EditBookmarksEnabled())
+    return false;
   SelectFile(SelectFileDialog::SELECT_OPEN_FILE);
   return true;
 }
