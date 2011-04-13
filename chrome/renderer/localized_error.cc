@@ -26,7 +26,7 @@ using WebKit::WebURLError;
 namespace {
 
 static const char kRedirectLoopLearnMoreUrl[] =
-    "http://www.google.com/support/chrome/bin/answer.py?answer=95626";
+    "https://www.google.com/support/chrome/bin/answer.py?answer=95626";
 static const char kWeakDHKeyLearnMoreUrl[] =
     "http://sites.google.com/a/chromium.org/dev/err_ssl_weak_server_ephemeral_dh_key";
 static const char kESETLearnMoreUrl[] =

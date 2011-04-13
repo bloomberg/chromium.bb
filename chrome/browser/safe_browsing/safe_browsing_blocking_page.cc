@@ -52,12 +52,12 @@ static const char* const kSbReportPhishingUrl =
 
 // URL for the "Learn more" link on the multi threat malware blocking page.
 static const char* const kLearnMoreMalwareUrl =
-    "http://www.google.com/support/bin/answer.py?answer=45449&topic=360"
+    "https://www.google.com/support/bin/answer.py?answer=45449&topic=360"
     "&sa=X&oi=malwarewarninglink&resnum=1&ct=help";
 
 // URL for the "Learn more" link on the phishing blocking page.
 static const char* const kLearnMorePhishingUrl =
-    "http://www.google.com/support/bin/answer.py?answer=106318";
+    "https://www.google.com/support/bin/answer.py?answer=106318";
 
 // URL for the "Safe Browsing Privacy Policies" link on the blocking page.
 // Note: this page is not yet localized.

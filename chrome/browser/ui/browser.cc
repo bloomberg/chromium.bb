@@ -159,23 +159,23 @@ const char kHelpContentUrl[] =
   #if defined(OFFICIAL_BUILD)
       "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html";
   #else
-      "http://www.google.com/support/chromeos/";
+      "https://www.google.com/support/chromeos/";
   #endif
 #else
-    "http://www.google.com/support/chrome/";
+    "https://www.google.com/support/chrome/";
 #endif
 
 // The URL to be opened when the Help link on the Autofill dialog is clicked.
 const char kAutofillHelpUrl[] =
 #if defined(OS_CHROMEOS)
-    "http://www.google.com/support/chromeos/bin/answer.py?answer=142893";
+    "https://www.google.com/support/chromeos/bin/answer.py?answer=142893";
 #else
-    "http://www.google.com/support/chrome/bin/answer.py?answer=142893";
+    "https://www.google.com/support/chrome/bin/answer.py?answer=142893";
 #endif
 
 // The URL to be loaded to display the "Report a broken page" form.
 const char kBrokenPageUrl[] =
-    "http://www.google.com/support/chrome/bin/request.py?contact_type="
+    "https://www.google.com/support/chrome/bin/request.py?contact_type="
     "broken_website&format=inproduct&p.page_title=$1&p.page_url=$2";
 
 // The URL for the privacy dashboard.

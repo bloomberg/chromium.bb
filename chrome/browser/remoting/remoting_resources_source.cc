@@ -23,9 +23,9 @@
 
 // Define the values of standard URLs.
 const char RemotingResourcesSource::kInvalidPasswordHelpUrl[] =
-  "http://www.google.com/support/accounts/bin/answer.py?ctx=ch&answer=27444";
+  "https://www.google.com/support/accounts/bin/answer.py?ctx=ch&answer=27444";
 const char RemotingResourcesSource::kCanNotAccessAccountUrl[] =
-  "http://www.google.com/support/accounts/bin/answer.py?answer=48598";
+  "https://www.google.com/support/accounts/bin/answer.py?answer=48598";
 const char RemotingResourcesSource::kCreateNewAccountUrl[] =
   "https://www.google.com/accounts/NewAccount?service=chromiumsync";
 

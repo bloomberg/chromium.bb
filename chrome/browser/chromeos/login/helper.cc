@@ -39,7 +39,7 @@ const SkColor kBackgroundCenterColor = SkColorSetRGB(41, 50, 67);
 const SkColor kBackgroundEdgeColor = SK_ColorBLACK;
 
 const char kAccountRecoveryHelpUrl[] =
-    "http://www.google.com/support/accounts/bin/answer.py?answer=48598";
+    "https://www.google.com/support/accounts/bin/answer.py?answer=48598";
 
 // Path to OEM partner startup customization manifest.
 const char kStartupCustomizationManifestPath[] =

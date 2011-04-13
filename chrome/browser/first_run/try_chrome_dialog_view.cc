@@ -27,7 +27,7 @@
 namespace {
 
 const wchar_t kHelpCenterUrl[] =
-    L"http://www.google.com/support/chrome/bin/answer.py?answer=150752";
+    L"https://www.google.com/support/chrome/bin/answer.py?answer=150752";
 
 }  // namespace
 

@@ -214,9 +214,9 @@ bool GeolocationConfirmInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   const char kGeolocationLearnMoreUrl[] =
 #if defined(OS_CHROMEOS)
-      "http://www.google.com/support/chromeos/bin/answer.py?answer=142065";
+      "https://www.google.com/support/chromeos/bin/answer.py?answer=142065";
 #else
-      "http://www.google.com/support/chrome/bin/answer.py?answer=142065";
+      "https://www.google.com/support/chrome/bin/answer.py?answer=142065";
 #endif
 
   // Ignore the click disposition and always open in a new top level tab.

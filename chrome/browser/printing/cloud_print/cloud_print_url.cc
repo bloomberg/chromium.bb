@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 
 const char kDefaultCloudPrintServiceURL[] = "https://www.google.com/cloudprint";
 const char kLearnMoreURL[] =
-    "http://www.google.com/support/cloudprint";
+    "https://www.google.com/support/cloudprint";
 const char kTestPageURL[] =
     "http://www.google.com/landing/cloudprint/enable.html?print=true";
 

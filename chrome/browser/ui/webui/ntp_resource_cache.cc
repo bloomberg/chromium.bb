@@ -59,22 +59,22 @@ namespace {
 // The URL for the the Learn More page shown on incognito new tab.
 const char kLearnMoreIncognitoUrl[] =
 #if defined(OS_CHROMEOS)
-    "http://www.google.com/support/chromeos/bin/answer.py?answer=95464";
+    "https://www.google.com/support/chromeos/bin/answer.py?answer=95464";
 #else
-    "http://www.google.com/support/chrome/bin/answer.py?answer=95464";
+    "https://www.google.com/support/chrome/bin/answer.py?answer=95464";
 #endif
 
 // The URL for the Learn More page shown on guest session new tab.
 const char kLearnMoreGuestSessionUrl[] =
-    "http://www.google.com/support/chromeos/bin/answer.py?answer=1057090";
+    "https://www.google.com/support/chromeos/bin/answer.py?answer=1057090";
 
 // The URL for bookmark sync service help.
 const char kSyncServiceHelpUrl[] =
-    "http://www.google.com/support/chrome/bin/answer.py?answer=165139";
+    "https://www.google.com/support/chrome/bin/answer.py?answer=165139";
 
 // The URL to be loaded to display Help.
 const char kHelpContentUrl[] =
-    "http://www.google.com/support/chrome/";
+    "https://www.google.com/support/chrome/";
 
 string16 GetUrlWithLang(const GURL& url) {
   return ASCIIToUTF16(google_util::AppendGoogleLocaleParam(url).spec());
