@@ -93,6 +93,18 @@ void PrerenderContents::StartPrerendering() {
   SiteInstance* site_instance = SiteInstance::CreateSiteInstance(profile_);
   render_view_host_ = new RenderViewHost(site_instance, this, MSG_ROUTING_NONE,
                                          NULL);
+
+  int process_id = render_view_host_->process()->id();
+  int view_id = render_view_host_->routing_id();
+  std::pair<int, int> process_view_pair = std::make_pair(process_id, view_id);
+  NotificationService::current()->Notify(
+      NotificationType::PRERENDER_CONTENTS_STARTED,
+      Source<std::pair<int, int> >(&process_view_pair),
+      NotificationService::NoDetails());
+
+  // Create the RenderView, so it can receive messages.
+  render_view_host_->CreateRenderView(string16());
+
   // Hide the RVH, so that we will run at a lower CPU priority.
   // Once the RVH is being swapped into a tab, we will Restore it again.
   render_view_host_->WasHidden();
@@ -102,14 +114,6 @@ void PrerenderContents::StartPrerendering() {
   // RenderViewHost. This must be done before the Navigate message to catch all
   // resource requests, but as it is on the same thread as the Navigate message
   // (IO) there is no race condition.
-  int process_id = render_view_host_->process()->id();
-  int view_id = render_view_host_->routing_id();
-  std::pair<int, int> process_view_pair = std::make_pair(process_id, view_id);
-  NotificationService::current()->Notify(
-      NotificationType::PRERENDER_CONTENTS_STARTED,
-      Source<std::pair<int, int> >(&process_view_pair),
-      NotificationService::NoDetails());
-
   ResourceDispatcherHost* rdh = g_browser_process->resource_dispatcher_host();
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           NewRunnableFunction(&AddChildRoutePair, rdh,
@@ -126,7 +130,6 @@ void PrerenderContents::StartPrerendering() {
   // TODO(tburkard): figure out if this is needed.
   registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                  Source<Profile>(profile_));
-  render_view_host_->CreateRenderView(string16());
 
   // Register to cancel if Authentication is required.
   registrar_.Add(this, NotificationType::AUTH_NEEDED,
