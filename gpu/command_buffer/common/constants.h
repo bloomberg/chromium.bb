@@ -46,6 +46,9 @@ const int32 kCommandBufferSharedMemoryId = 4;
 // Common Latch shared memory transfer buffer ID.
 const int32 kLatchSharedMemoryId = 5;
 
+// Invalid latch ID.
+const int32 kInvalidLatchId = 0xffffffffu;
+
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_CONSTANTS_H_

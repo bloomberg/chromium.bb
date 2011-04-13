@@ -22,6 +22,7 @@
 #include "chrome/renderer/render_thread.h"
 #include "content/renderer/gpu_channel_host.h"
 #include "content/renderer/render_view.h"
+#include "gpu/command_buffer/common/constants.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
@@ -346,7 +347,7 @@ void WebGraphicsContext3DCommandBufferImpl::getParentToChildLatchCHROMIUM(
   if (!context_->GetParentToChildLatch(latch_id)) {
     LOG(ERROR) << "getLatch must only be called on child context";
     synthesizeGLError(GL_INVALID_OPERATION);
-    *latch_id = 0xffffffffu;
+    *latch_id = gpu::kInvalidLatchId;
   }
 }
 
@@ -356,7 +357,7 @@ void WebGraphicsContext3DCommandBufferImpl::getChildToParentLatchCHROMIUM(
   if (!context_->GetChildToParentLatch(latch_id)) {
     LOG(ERROR) << "getLatch must only be called on child context";
     synthesizeGLError(GL_INVALID_OPERATION);
-    *latch_id = 0xffffffffu;
+    *latch_id = gpu::kInvalidLatchId;
   }
 }
 
