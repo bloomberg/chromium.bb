@@ -41,7 +41,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extensions_startup.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/first_run/upgrade.h"
+#include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/gpu_data_manager.h"
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
@@ -1052,7 +1052,7 @@ DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
   // deletions.  We need this new instance because, the old instance created
   // in ChromeMain() got destructed when the function returned.
   base::AtExitManager exit_manager;
-  Upgrade::RelaunchChromeBrowserWithNewCommandLineIfNeeded();
+  upgrade_util::RelaunchChromeBrowserWithNewCommandLineIfNeeded();
 }
 #endif
 
@@ -1234,15 +1234,15 @@ int BrowserMain(const MainFunctionParams& parameters) {
       // It seems that we don't need to run the experiment since chrome
       // in the same profile is already running.
       VLOG(1) << "Retention experiment not required";
-      return Upgrade::NOT_NOW;
+      return upgrade_util::NOT_NOW;
     }
     int try_chrome_int;
     base::StringToInt(try_chrome, &try_chrome_int);
-    Upgrade::TryResult answer =
-        Upgrade::ShowTryChromeDialog(try_chrome_int, &process_singleton);
-    if (answer == Upgrade::NOT_NOW)
+    upgrade_util::TryResult answer =
+        upgrade_util::ShowTryChromeDialog(try_chrome_int, &process_singleton);
+    if (answer == upgrade_util::NOT_NOW)
       return ResultCodes::NORMAL_EXIT_CANCEL;
-    if (answer == Upgrade::UNINSTALL_CHROME)
+    if (answer == upgrade_util::UNINSTALL_CHROME)
       return ResultCodes::NORMAL_EXIT_EXP2;
 #else
     // We don't support retention experiments on Mac or Linux.
@@ -1342,7 +1342,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // On Windows, we use our startup as an opportunity to do upgrade/uninstall
   // tasks.  Those care whether the browser is already running.  On Linux/Mac,
   // upgrade/uninstall happen separately.
-  bool already_running = Upgrade::IsBrowserAlreadyRunning();
+  bool already_running = upgrade_util::IsBrowserAlreadyRunning();
 
   // If the command line specifies 'uninstall' then we need to work here
   // unless we detect another chrome browser running.
@@ -1485,7 +1485,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_WIN)
   // Do the tasks if chrome has been upgraded while it was last running.
-  if (!already_running && Upgrade::DoUpgradeTasks(parsed_command_line))
+  if (!already_running && upgrade_util::DoUpgradeTasks(parsed_command_line))
     return ResultCodes::NORMAL_EXIT;
 #endif
 
@@ -1803,7 +1803,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
       // available while the browser is running.  We need to save the last
       // modified time of the exe, so we can compare to determine if there is
       // an upgrade while the browser is kept alive by a persistent extension.
-      Upgrade::SaveLastModifiedTimeOfExe();
+      upgrade_util::SaveLastModifiedTimeOfExe();
 #endif
 
       // Record now as the last successful chrome start.

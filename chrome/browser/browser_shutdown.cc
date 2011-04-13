@@ -22,7 +22,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/first_run/upgrade.h"
+#include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -189,9 +189,9 @@ void Shutdown() {
     ResourceBundle::CleanupSharedInstance();
 
 #if defined(OS_WIN)
-  if (!Upgrade::IsBrowserAlreadyRunning() &&
+  if (!upgrade_util::IsBrowserAlreadyRunning() &&
       shutdown_type_ != browser_shutdown::END_SESSION) {
-    Upgrade::SwapNewChromeExeIfPresent();
+    upgrade_util::SwapNewChromeExeIfPresent();
   }
 #endif
 
@@ -225,7 +225,7 @@ void Shutdown() {
       new_cl->AppendSwitch(switches::kRestoreLastSession);
 
 #if defined(OS_WIN) || defined(OS_LINUX)
-    Upgrade::RelaunchChromeBrowser(*new_cl.get());
+    upgrade_util::RelaunchChromeBrowser(*new_cl.get());
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
 #if defined(OS_MACOSX)

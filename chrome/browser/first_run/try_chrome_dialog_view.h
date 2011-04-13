@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/first_run/upgrade.h"
+#include "chrome/browser/first_run/upgrade_util.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link.h"
 #include "ui/gfx/native_widget_types.h"
@@ -47,7 +47,7 @@ class TryChromeDialogView : public views::ButtonListener,
   // Shows the modal dialog asking the user to try chrome. Note that the dialog
   // has no parent and it will position itself in a lower corner of the screen.
   // The dialog does not steal focus and does not have an entry in the taskbar.
-  Upgrade::TryResult ShowModal(ProcessSingleton* process_singleton);
+  upgrade_util::TryResult ShowModal(ProcessSingleton* process_singleton);
 
  protected:
   // views::ButtonListener:
@@ -87,7 +87,7 @@ class TryChromeDialogView : public views::ButtonListener,
   views::Widget* popup_;
   views::RadioButton* try_chrome_;
   views::RadioButton* kill_chrome_;
-  Upgrade::TryResult result_;
+  upgrade_util::TryResult result_;
 
   DISALLOW_COPY_AND_ASSIGN(TryChromeDialogView);
 };
