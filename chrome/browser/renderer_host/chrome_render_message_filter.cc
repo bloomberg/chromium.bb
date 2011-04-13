@@ -35,17 +35,12 @@ ChromeRenderMessageFilter::ChromeRenderMessageFilter(
     : render_process_id_(render_process_id),
       profile_(profile),
       request_context_(request_context) {
-  allow_outdated_plugins_ = new BooleanPrefMember();
-  allow_outdated_plugins_->Init(prefs::kPluginsAllowOutdated,
-                                profile_->GetPrefs(), NULL);
-  allow_outdated_plugins_->MoveToThread(BrowserThread::IO);
+  allow_outdated_plugins_.Init(prefs::kPluginsAllowOutdated,
+                               profile_->GetPrefs(), NULL);
+  allow_outdated_plugins_.MoveToThread(BrowserThread::IO);
 }
 
 ChromeRenderMessageFilter::~ChromeRenderMessageFilter() {
-  // This function should be called on the IO thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE,
-                            allow_outdated_plugins_);
 }
 
 bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
@@ -74,7 +69,8 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
 }
 
 void ChromeRenderMessageFilter::OnDestruct() const {
-  BrowserThread::DeleteOnIOThread::Destruct(this);
+  // Destroy on the UI thread because we contain a PrefMember.
+  BrowserThread::DeleteOnUIThread::Destruct(this);
 }
 
 void ChromeRenderMessageFilter::OverrideThreadForMessage(
@@ -241,10 +237,10 @@ void ChromeRenderMessageFilter::OnRendererTcmalloc(base::ProcessId pid,
 void ChromeRenderMessageFilter::OnGetOutdatedPluginsPolicy(
     ContentSetting* policy) {
   *policy = CONTENT_SETTING_ALLOW;
-  if (!allow_outdated_plugins_->GetValue()) {
+  if (!allow_outdated_plugins_.GetValue()) {
     // If this is false by policy, the plugin is blocked; otherwise, it is
     // blocked initially but the user can load it manually.
-    *policy = allow_outdated_plugins_->IsManaged() ?
+    *policy = allow_outdated_plugins_.IsManaged() ?
         CONTENT_SETTING_BLOCK : CONTENT_SETTING_ASK;
   }
 }
