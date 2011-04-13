@@ -228,9 +228,6 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'build_vim', default=False,
     desc='Build vim')
 
-  BitFromArgument(env, 'build_av_apps', default=True,
-    desc='Build multi media apps')
-
   # This argument allows -lcrypt to be disabled, which
   # makes it easier to build x86-32 NaCl on x86-64 Ubuntu Linux,
   # where there is no -dev package for the 32-bit libcrypto
@@ -2224,6 +2221,7 @@ nacl_env.Append(
     'tests/blob_library_loading/nacl.scons',
     'tests/browser_dynamic_library/nacl.scons',
     'tests/bundle_size/nacl.scons',
+    'tests/chrome_extension/nacl.scons',
     'tests/computed_gotos/nacl.scons',
     'tests/data_not_executable/nacl.scons',
     'tests/debug_stub/nacl.scons',
@@ -2252,6 +2250,7 @@ nacl_env.Append(
     'tests/math/nacl.scons',
     'tests/memcheck_test/nacl.scons',
     'tests/mmap/nacl.scons',
+    'tests/multiarch/nacl.scons',
     'tests/multiple_sandboxes/nacl.scons',
     'tests/nacl.scons',
     'tests/nacl_log/nacl.scons',
@@ -2300,27 +2299,6 @@ nacl_env.Append(
     'tests/unittests/shared/srpc/nacl.scons',
     ####  ALPHABETICALLY SORTED ####
     ])
-
-# NOTE: DEFAULT OFF
-if nacl_env.Bit('build_vim'):
-  nacl_env.Append(
-    BUILD_SCONSCRIPTS = [
-    'tests/vim/nacl.scons',
-    ])
-
-# NOTE: DEFAULT ON
-if nacl_env.Bit('build_av_apps'):
-  nacl_env.Append(
-      BUILD_SCONSCRIPTS = [
-      ####  ALPHABETICALLY SORTED ####
-      'common/console/nacl.scons',
-
-      'tests/earth/nacl.scons',
-      'tests/mandel_nav/nacl.scons',
-      'tests/many/nacl.scons',
-      'tests/multiarch/nacl.scons',
-      'tests/chrome_extension/nacl.scons',
-      ])
 
 nacl_env.Append(
     BUILD_SCONSCRIPTS = [
