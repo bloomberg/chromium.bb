@@ -18,6 +18,10 @@ class desktopui_BrowserTest(chrome_test.ChromeTestBase, cros_ui_test.UITest):
         chrome_test.ChromeTestBase.initialize(self, False)
         cros_ui_test.UITest.initialize(self, creds)
 
+    def cleanup(self):
+        cros_ui_test.UITest.cleanup(self)
+        chrome_test.ChromeTestBase.cleanup(self)
+
     def run_once(self, group=0, total_groups=4):
         tests_to_run = self.filter_bad_tests(
             self.generate_test_list(self.binary_to_run, group, total_groups))
