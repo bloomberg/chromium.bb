@@ -81,6 +81,7 @@
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 #include "content/browser/renderer_host/pepper_file_message_filter.h"
 #include "content/browser/renderer_host/pepper_message_filter.h"
+#include "content/browser/renderer_host/quota_dispatcher_host.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -518,6 +519,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
 
   channel_->AddFilter(new TraceMessageFilter());
   channel_->AddFilter(new ResolveProxyMsgHelper(NULL));
+  channel_->AddFilter(new QuotaDispatcherHost());
 }
 
 int BrowserRenderProcessHost::GetNextRoutingID() {

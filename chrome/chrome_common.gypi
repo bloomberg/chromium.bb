@@ -459,6 +459,7 @@
             # content_common.gypi.
             '../content/common/file_system/file_system_dispatcher_dummy.cc',
             '../content/common/message_router.cc',
+            '../content/common/quota_dispatcher_dummy.cc',
             '../content/common/resource_dispatcher_dummy.cc',
             '../content/common/socket_stream_dispatcher_dummy.cc',
           ],

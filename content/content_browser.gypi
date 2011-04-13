@@ -223,6 +223,8 @@
         'browser/renderer_host/p2p/socket_host_udp.h',
         'browser/renderer_host/p2p/socket_dispatcher_host.cc',
         'browser/renderer_host/p2p/socket_dispatcher_host.h',
+        'browser/renderer_host/quota_dispatcher_host.cc',
+        'browser/renderer_host/quota_dispatcher_host.h',
         'browser/renderer_host/redirect_to_file_resource_handler.cc',
         'browser/renderer_host/redirect_to_file_resource_handler.h',
         'browser/renderer_host/render_message_filter.cc',

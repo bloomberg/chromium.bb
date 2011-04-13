@@ -14,6 +14,7 @@
 class FileSystemDispatcher;
 class MessageLoop;
 class NotificationService;
+class QuotaDispatcher;
 class ResourceDispatcher;
 class SocketStreamDispatcher;
 
@@ -54,6 +55,10 @@ class ChildThread : public IPC::Channel::Listener,
 
   FileSystemDispatcher* file_system_dispatcher() const {
     return file_system_dispatcher_.get();
+  }
+
+  QuotaDispatcher* quota_dispatcher() const {
+    return quota_dispatcher_.get();
   }
 
   // Safe to call on any thread, as long as it's guaranteed that the thread's
@@ -121,6 +126,8 @@ class ChildThread : public IPC::Channel::Listener,
   scoped_ptr<NotificationService> notification_service_;
 
   scoped_ptr<FileSystemDispatcher> file_system_dispatcher_;
+
+  scoped_ptr<QuotaDispatcher> quota_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildThread);
 };

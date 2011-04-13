@@ -54,6 +54,7 @@
 #include "content/common/file_system/webfilesystem_callback_dispatcher.h"
 #include "content/common/notification_service.h"
 #include "content/common/pepper_messages.h"
+#include "content/common/quota_dispatcher.h"
 #include "content/common/renderer_preferences.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/audio_message_filter.h"
@@ -121,6 +122,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSettings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
@@ -229,6 +231,9 @@ using WebKit::WebSettings;
 using WebKit::WebSharedWorker;
 using WebKit::WebSize;
 using WebKit::WebStorageNamespace;
+using WebKit::WebStorageQuotaCallbacks;
+using WebKit::WebStorageQuotaError;
+using WebKit::WebStorageQuotaType;
 using WebKit::WebString;
 using WebKit::WebTextAffinity;
 using WebKit::WebTextDirection;
@@ -3263,6 +3268,37 @@ void RenderView::openFileSystem(
   ChildThread::current()->file_system_dispatcher()->OpenFileSystem(
       GURL(origin.toString()), static_cast<fileapi::FileSystemType>(type),
       size, create, new WebFileSystemCallbackDispatcher(callbacks));
+}
+
+void RenderView::queryStorageUsageAndQuota(
+    WebFrame* frame,
+    WebStorageQuotaType type,
+    WebStorageQuotaCallbacks* callbacks) {
+  DCHECK(frame);
+  WebSecurityOrigin origin = frame->securityOrigin();
+  if (origin.isEmpty()) {
+    // Uninitialized document?
+    callbacks->didFail(WebKit::WebStorageQuotaErrorAbort);
+    return;
+  }
+  ChildThread::current()->quota_dispatcher()->QueryStorageUsageAndQuota(
+      GURL(origin.toString()), type, callbacks);
+}
+
+void RenderView::requestStorageQuota(
+    WebFrame* frame,
+    WebStorageQuotaType type,
+    unsigned long long requested_size,
+    WebStorageQuotaCallbacks* callbacks) {
+  DCHECK(frame);
+  WebSecurityOrigin origin = frame->securityOrigin();
+  if (origin.isEmpty()) {
+    // Uninitialized document?
+    callbacks->didFail(WebKit::WebStorageQuotaErrorAbort);
+    return;
+  }
+  ChildThread::current()->quota_dispatcher()->RequestStorageQuota(
+      GURL(origin.toString()), type, requested_size, callbacks);
 }
 
 // webkit_glue::WebPluginPageDelegate -----------------------------------------

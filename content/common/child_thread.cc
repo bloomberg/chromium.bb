@@ -13,6 +13,7 @@
 #include "content/common/content_switches.h"
 #include "content/common/file_system/file_system_dispatcher.h"
 #include "content/common/notification_service.h"
+#include "content/common/quota_dispatcher.h"
 #include "content/common/resource_dispatcher.h"
 #include "content/common/socket_stream_dispatcher.h"
 #include "ipc/ipc_logging.h"
@@ -53,6 +54,7 @@ void ChildThread::Init() {
   resource_dispatcher_.reset(new ResourceDispatcher(this));
   socket_stream_dispatcher_.reset(new SocketStreamDispatcher());
   file_system_dispatcher_.reset(new FileSystemDispatcher());
+  quota_dispatcher_.reset(new QuotaDispatcher());
 
   sync_message_filter_ =
       new IPC::SyncMessageFilter(ChildProcess::current()->GetShutDownEvent());
@@ -149,6 +151,8 @@ bool ChildThread::OnMessageReceived(const IPC::Message& msg) {
   if (socket_stream_dispatcher_->OnMessageReceived(msg))
     return true;
   if (file_system_dispatcher_->OnMessageReceived(msg))
+    return true;
+  if (quota_dispatcher_->OnMessageReceived(msg))
     return true;
 
   bool handled = true;

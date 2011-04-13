@@ -577,6 +577,17 @@ class RenderView : public RenderWidget,
                               bool create,
                               WebKit::WebFileSystemCallbacks* callbacks);
 
+  virtual void queryStorageUsageAndQuota(
+      WebKit::WebFrame* frame,
+      WebKit::WebStorageQuotaType type,
+      WebKit::WebStorageQuotaCallbacks* callbacks);
+
+  virtual void requestStorageQuota(
+      WebKit::WebFrame* frame,
+      WebKit::WebStorageQuotaType type,
+      unsigned long long requested_size,
+      WebKit::WebStorageQuotaCallbacks* callbacks);
+
   // WebKit::WebPageSerializerClient implementation ----------------------------
 
   virtual void didSerializeDataForFrame(const WebKit::WebURL& frame_url,
