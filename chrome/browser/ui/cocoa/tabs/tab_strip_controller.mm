@@ -556,6 +556,11 @@ class NotificationBridge : public NotificationObserver {
   // It also restores content autoresizing properties.
   [controller ensureContentsVisible];
 
+  // Tell per-tab sheet manager about currently selected tab.
+  if (sheetController_.get()) {
+    [sheetController_ setActiveView:newView];
+  }
+
   // Make sure the new tabs's sheets are visible (necessary when a background
   // tab opened a sheet while it was in the background and now becomes active).
   TabContentsWrapper* newTab = tabStripModel_->GetTabContentsAt(modelIndex);
@@ -573,11 +578,6 @@ class NotificationBridge : public NotificationObserver {
       static_cast<ConstrainedWindowMac*>(constrainedWindow)->Realize(
           static_cast<BrowserWindowController*>(controller));
     }
-  }
-
-  // Tell per-tab sheet manager about currently selected tab.
-  if (sheetController_.get()) {
-    [sheetController_ setActiveView:newView];
   }
 }
 
