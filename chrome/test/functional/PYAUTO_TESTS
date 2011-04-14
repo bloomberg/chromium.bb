@@ -68,17 +68,6 @@
       # crbug.com/66072
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
       '-notifications.NotificationsTest.testKillNotificationProcess',
-      # crbug.com/79054
-      '-notifications.NotificationsTest.testAllowOnPermissionInfobar',
-      '-notifications.NotificationsTest.testClosePermissionInfobar',
-      '-notifications.NotificationsTest.testCloseTabWithPermissionInfobar',
-      '-notifications.NotificationsTest.testCrashTabWithPermissionInfobar',
-      '-notifications.NotificationsTest.testDenyOnPermissionInfobar',
-      '-notifications.NotificationsTest.testExitBrowserWithInfobar',
-      '-notifications.NotificationsTest.testIncognitoNotification',
-      '-notifications.NotificationsTest.testNavigateAwayWithPermissionInfobar',
-      '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
-      '-notifications.NotificationsTest.testPermissionInfobarAppears',
       'ntp',
       'omnibox',
       '-omnibox.OmniboxTest.testHistoryResult',  # crbug.com/71715
@@ -172,9 +161,6 @@
       # crbug.com/70694
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
-      # crbug.com/64274
-      # crbug.com/70659
-      '-popups.PopupsTest.testPopupBlockerInIncognito',
     ],
 
     # ChromeOS is linux, but note that this section does not include the
