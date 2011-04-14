@@ -71,7 +71,17 @@ class ScorerCallback {
   scoped_ptr<base::ScopedCallbackFactory<ScorerCallback> > callback_factory_;
 };
 
-void PhishingClassifierDelegate::SetPhishingModel(
+bool PhishingClassifierFilter::OnControlMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(PhishingClassifierFilter, message)
+    IPC_MESSAGE_HANDLER(SafeBrowsingMsg_SetPhishingModel, OnSetPhishingModel)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void PhishingClassifierFilter::OnSetPhishingModel(
     IPC::PlatformFileForTransit model_file) {
   safe_browsing::Scorer::CreateFromFile(
       IPC::PlatformFileForTransitToPlatformFile(model_file),

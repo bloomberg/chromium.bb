@@ -12,6 +12,8 @@
 #define CHROME_RENDERER_EXTENSIONS_CHROME_APP_BINDINGS_H_
 #pragma once
 
+class ExtensionDispatcher;
+
 namespace v8 {
 class Extension;
 }
@@ -20,7 +22,7 @@ namespace extensions_v8 {
 
 class ChromeAppExtension {
  public:
-  static v8::Extension* Get();
+  static v8::Extension* Get(ExtensionDispatcher* extension_dispatcher);
 };
 
 }  // namespace extensions_v8

@@ -4,6 +4,7 @@ include_rules = [
   "-chrome/renderer/autofill",
   "-chrome/renderer/extensions",
   "-chrome/renderer/safe_browsing",
+  "-chrome/renderer/spellchecker",
 
   "+content/plugin",  # For shared npruntime proxying code.
   "+v8/include",

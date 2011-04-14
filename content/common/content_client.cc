@@ -17,7 +17,7 @@ ContentClient* GetContentClient() {
 }
 
 ContentClient::ContentClient() :
-    browser_(NULL), gpu_(NULL), plugin_(NULL), renderer_(NULL) {
+    browser_(NULL), plugin_(NULL), renderer_(NULL) {
 }
 
 ContentClient::~ContentClient() {

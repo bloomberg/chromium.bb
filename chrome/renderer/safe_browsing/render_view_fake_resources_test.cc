@@ -60,6 +60,7 @@ void RenderViewFakeResourcesTest::SetUp() {
   // but we use a real RenderThread so that we can use the ResourceDispatcher
   // to fetch network resources.  These are then served canned content
   // in OnRequestResource().
+  content::GetContentClient()->set_renderer(&chrome_content_renderer_client_);
   sandbox_init_wrapper_.reset(new SandboxInitWrapper);
   command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
   params_.reset(new MainFunctionParams(*command_line_,

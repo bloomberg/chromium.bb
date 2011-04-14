@@ -10,6 +10,7 @@
 
 #include "v8/include/v8.h"
 
+class ExtensionDispatcher;
 class GURL;
 class RenderThreadBase;
 class RenderView;
@@ -32,7 +33,8 @@ class EventBindings {
 
   // Handle a script context coming / going away.
   static void HandleContextCreated(WebKit::WebFrame* frame,
-                                   bool content_script);
+                                   bool content_script,
+                                   ExtensionDispatcher* extension_dispatcher);
   static void HandleContextDestroyed(WebKit::WebFrame* frame);
 
   // Calls the given function in each registered context which is listening for

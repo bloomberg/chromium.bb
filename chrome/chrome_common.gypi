@@ -140,8 +140,6 @@
         'common/badge_util.h',
         'common/chrome_content_client.cc',
         'common/chrome_content_client.h',
-        'common/chrome_content_gpu_client.cc',
-        'common/chrome_content_gpu_client.h',
         'common/chrome_content_plugin_client.cc',
         'common/chrome_content_plugin_client.h',
         'common/common_glue.cc',

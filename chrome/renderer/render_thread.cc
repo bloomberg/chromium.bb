@@ -22,26 +22,14 @@
 #include "base/threading/thread_local.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_localization_peer.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/safebrowsing_messages.h"
-#include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/automation/dom_automation_v8_extension.h"
-#include "chrome/renderer/devtools_agent_filter.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
-#include "chrome/renderer/external_extension.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
 #include "chrome/renderer/net/renderer_net_predictor.h"
 #include "chrome/renderer/render_process_impl.h"
 #include "chrome/renderer/renderer_histogram_snapshots.h"
-#include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
-#include "chrome/renderer/search_extension.h"
-#include "chrome/renderer/searchbox_extension.h"
-#include "chrome/renderer/security_filter_peer.h"
-#include "chrome/renderer/spellchecker/spellcheck.h"
 #include "content/common/appcache/appcache_dispatcher.h"
 #include "content/common/database_messages.h"
 #include "content/common/db_message_filter.h"
@@ -49,7 +37,6 @@
 #include "content/common/gpu_messages.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/renderer_preferences.h"
-#include "content/common/resource_dispatcher.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/web_database_observer_impl.h"
@@ -103,10 +90,6 @@
 #include <objbase.h>
 #endif
 
-#if defined(OS_MACOSX)
-#include "chrome/app/breakpad_mac.h"
-#endif
-
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
 #endif
@@ -123,48 +106,12 @@ using WebKit::WebStorageEventDispatcher;
 using WebKit::WebView;
 
 namespace {
-static const unsigned int kCacheStatsDelayMS = 2000 /* milliseconds */;
 static const double kInitialIdleHandlerDelayS = 1.0 /* seconds */;
 
 // Keep the global RenderThread in a TLS slot so it is impossible to access
 // incorrectly from the wrong thread.
 static base::LazyInstance<base::ThreadLocalPointer<RenderThread> > lazy_tls(
     base::LINKER_INITIALIZED);
-
-#if defined(OS_POSIX)
-class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
-  void OnChannelError() {
-    // On POSIX, at least, one can install an unload handler which loops
-    // forever and leave behind a renderer process which eats 100% CPU forever.
-    //
-    // This is because the terminate signals (ViewMsg_ShouldClose and the error
-    // from the IPC channel) are routed to the main message loop but never
-    // processed (because that message loop is stuck in V8).
-    //
-    // One could make the browser SIGKILL the renderers, but that leaves open a
-    // large window where a browser failure (or a user, manually terminating
-    // the browser because "it's stuck") will leave behind a process eating all
-    // the CPU.
-    //
-    // So, we install a filter on the channel so that we can process this event
-    // here and kill the process.
-
-#if defined(OS_MACOSX)
-    // TODO(viettrungluu): crbug.com/28547: The following is needed, as a
-    // stopgap, to avoid leaking due to not releasing Breakpad properly.
-    // TODO(viettrungluu): Investigate why this is being called.
-    if (IsCrashReporterEnabled()) {
-      VLOG(1) << "Cleaning up Breakpad.";
-      DestructCrashReporter();
-    } else {
-      VLOG(1) << "Breakpad not enabled; no clean-up needed.";
-    }
-#endif  // OS_MACOSX
-
-    _exit(0);
-  }
-};
-#endif
 
 class RenderViewContentSettingsSetter : public RenderViewVisitor {
  public:
@@ -214,40 +161,6 @@ class RenderViewZoomer : public RenderViewVisitor {
   DISALLOW_COPY_AND_ASSIGN(RenderViewZoomer);
 };
 
-class RenderResourceObserver : public ResourceDispatcher::Observer {
- public:
-  RenderResourceObserver() {
-  }
-
-  virtual webkit_glue::ResourceLoaderBridge::Peer* OnRequestComplete(
-      webkit_glue::ResourceLoaderBridge::Peer* current_peer,
-      ResourceType::Type resource_type,
-      const net::URLRequestStatus& status) {
-    // Update the browser about our cache.
-    RenderThread::current()->InformHostOfCacheStatsLater();
-
-    if (status.status() != net::URLRequestStatus::CANCELED ||
-        status.os_error() == net::ERR_ABORTED) {
-      return NULL;
-    }
-
-    // Resource canceled with a specific error are filtered.
-    return SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
-        resource_type, current_peer, status.os_error());
-  }
-
-  virtual webkit_glue::ResourceLoaderBridge::Peer* OnReceivedResponse(
-      webkit_glue::ResourceLoaderBridge::Peer* current_peer,
-      const std::string& mime_type,
-      const GURL& url) {
-    return ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
-        current_peer, RenderThread::current(), mime_type, url);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RenderResourceObserver);
-};
-
 }  // namespace
 
 // When we run plugins in process, we actually run them on the render thread,
@@ -263,8 +176,6 @@ RenderThread::RenderThread(const std::string& channel_name)
 
 void RenderThread::Init() {
   TRACE_EVENT_BEGIN("RenderThread::Init", 0, "");
-
-  content::GetContentClient()->set_renderer(&renderer_client_);
 
 #if defined(OS_MACOSX)
   // On Mac, the select popups are rendered by the browser.
@@ -284,23 +195,15 @@ void RenderThread::Init() {
   suspend_webkit_shared_timer_ = true;
   notify_webkit_of_modal_loop_ = true;
   plugin_refresh_allowed_ = true;
-  cache_stats_task_pending_ = false;
   widget_count_ = 0;
   hidden_widget_count_ = 0;
   idle_notification_delay_in_s_ = kInitialIdleHandlerDelayS;
   task_factory_.reset(new ScopedRunnableMethodFactory<RenderThread>(this));
 
-  resource_dispatcher()->set_observer(new RenderResourceObserver());
-
-  visited_link_slave_.reset(new VisitedLinkSlave());
   renderer_net_predictor_.reset(new RendererNetPredictor());
   histogram_snapshots_.reset(new RendererHistogramSnapshots());
   appcache_dispatcher_.reset(new AppCacheDispatcher(this));
   indexed_db_dispatcher_.reset(new IndexedDBDispatcher());
-  spellchecker_.reset(new SpellCheck());
-
-  devtools_agent_filter_ = new DevToolsAgentFilter();
-  AddFilter(devtools_agent_filter_.get());
 
   db_message_filter_ = new DBMessageFilter();
   AddFilter(db_message_filter_.get());
@@ -308,12 +211,7 @@ void RenderThread::Init() {
   cookie_message_filter_ = new CookieMessageFilter();
   AddFilter(cookie_message_filter_.get());
 
-#if defined(OS_POSIX)
-  suicide_on_channel_error_filter_ = new SuicideOnChannelErrorFilter;
-  AddFilter(suicide_on_channel_error_filter_.get());
-#endif
-
-  AddObserver(new ExtensionDispatcher());
+  content::GetContentClient()->renderer()->RenderThreadStarted();
 
   TRACE_EVENT_END("RenderThread::Init", 0, "");
 }
@@ -329,7 +227,6 @@ RenderThread::~RenderThread() {
   // Shutdown in reverse of the initialization order.
   RemoveFilter(db_message_filter_.get());
   db_message_filter_ = NULL;
-  RemoveFilter(devtools_agent_filter_.get());
 
   // Shutdown the file thread if it's running.
   if (file_thread_.get())
@@ -469,13 +366,11 @@ bool RenderThread::Send(IPC::Message* msg) {
 void RenderThread::AddRoute(int32 routing_id,
                             IPC::Channel::Listener* listener) {
   widget_count_++;
-  child_process_logging::SetNumberOfViews(widget_count_);
   return ChildThread::AddRoute(routing_id, listener);
 }
 
 void RenderThread::RemoveRoute(int32 routing_id) {
   widget_count_--;
-  child_process_logging::SetNumberOfViews(widget_count_);
   return ChildThread::RemoveRoute(routing_id);
 }
 
@@ -539,21 +434,6 @@ void RenderThread::SendHistograms(int sequence_number) {
   return histogram_snapshots_->SendHistograms(sequence_number);
 }
 
-void RenderThread::OnUpdateVisitedLinks(base::SharedMemoryHandle table) {
-  DCHECK(base::SharedMemory::IsHandleValid(table)) << "Bad table handle";
-  visited_link_slave_->Init(table);
-}
-
-void RenderThread::OnAddVisitedLinks(
-    const VisitedLinkSlave::Fingerprints& fingerprints) {
-  for (size_t i = 0; i < fingerprints.size(); ++i)
-    WebView::updateVisitedLinkState(fingerprints[i]);
-}
-
-void RenderThread::OnResetVisitedLinks() {
-  WebView::resetVisitedLinkState();
-}
-
 void RenderThread::OnSetContentSettingsForCurrentURL(
     const GURL& url,
     const ContentSettings& content_settings) {
@@ -592,9 +472,6 @@ bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderThread, msg)
-    IPC_MESSAGE_HANDLER(ViewMsg_VisitedLink_NewTable, OnUpdateVisitedLinks)
-    IPC_MESSAGE_HANDLER(ViewMsg_VisitedLink_Add, OnAddVisitedLinks)
-    IPC_MESSAGE_HANDLER(ViewMsg_VisitedLink_Reset, OnResetVisitedLinks)
     IPC_MESSAGE_HANDLER(ViewMsg_SetContentSettingsForCurrentURL,
                         OnSetContentSettingsForCurrentURL)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForCurrentURL,
@@ -616,12 +493,7 @@ bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_PurgeMemory, OnPurgeMemory)
     IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache, OnPurgePluginListCache)
     IPC_MESSAGE_HANDLER(DOMStorageMsg_Event, OnDOMStorageEvent)
-    IPC_MESSAGE_HANDLER(SpellCheckMsg_Init, OnInitSpellChecker)
-    IPC_MESSAGE_HANDLER(SpellCheckMsg_WordAdded, OnSpellCheckWordAdded)
-    IPC_MESSAGE_HANDLER(SpellCheckMsg_EnableAutoSpellCorrect,
-                        OnSpellCheckEnableAutoSpellCorrect)
     IPC_MESSAGE_HANDLER(GpuMsg_GpuChannelEstablished, OnGpuChannelEstablished)
-    IPC_MESSAGE_HANDLER(SafeBrowsingMsg_SetPhishingModel, OnSetPhishingModel)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -709,26 +581,6 @@ void RenderThread::OnGetV8HeapStats() {
   v8::V8::GetHeapStatistics(&heap_stats);
   Send(new ViewHostMsg_V8HeapStats(heap_stats.total_heap_size(),
                                    heap_stats.used_heap_size()));
-}
-
-void RenderThread::InformHostOfCacheStats() {
-  EnsureWebKitInitialized();
-  WebCache::UsageStats stats;
-  WebCache::getUsageStats(&stats);
-  Send(new ViewHostMsg_UpdatedCacheStats(stats));
-  cache_stats_task_pending_ = false;
-}
-
-void RenderThread::InformHostOfCacheStatsLater() {
-  // Rate limit informing the host of our cache stats.
-  if (cache_stats_task_pending_)
-    return;
-
-  cache_stats_task_pending_ = true;
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      task_factory_->NewRunnableMethod(
-          &RenderThread::InformHostOfCacheStats),
-      kCacheStatsDelayMS);
 }
 
 void RenderThread::CloseCurrentConnections() {
@@ -839,12 +691,6 @@ void RenderThread::EnsureWebKitInitialized() {
   WebSecurityPolicy::registerURLSchemeAsSecure(extension_scheme);
 
   RegisterExtension(extensions_v8::LoadTimesExtension::Get());
-  RegisterExtension(extensions_v8::ExternalExtension::Get());
-  RegisterExtension(extensions_v8::SearchBoxExtension::Get());
-  v8::Extension* search_extension = extensions_v8::SearchExtension::Get();
-  // search_extension is null if not enabled.
-  if (search_extension)
-    RegisterExtension(search_extension);
 
   if (command_line.HasSwitch(switches::kEnableBenchmarking))
     RegisterExtension(extensions_v8::BenchmarkingExtension::Get());
@@ -949,8 +795,6 @@ void RenderThread::ScheduleIdleHandler(double initial_delay_s) {
 }
 
 void RenderThread::OnPurgeMemory() {
-  spellchecker_.reset(new SpellCheck());
-
   EnsureWebKitInitialized();
 
   // Clear the object cache (as much as possible; some live objects cannot be
@@ -992,24 +836,6 @@ void RenderThread::OnPurgePluginListCache(bool reload_pages) {
   plugin_refresh_allowed_ = true;
 }
 
-void RenderThread::OnInitSpellChecker(
-    IPC::PlatformFileForTransit bdict_file,
-    const std::vector<std::string>& custom_words,
-    const std::string& language,
-    bool auto_spell_correct) {
-  spellchecker_->Init(IPC::PlatformFileForTransitToPlatformFile(bdict_file),
-                      custom_words, language);
-  spellchecker_->EnableAutoSpellCorrect(auto_spell_correct);
-}
-
-void RenderThread::OnSpellCheckWordAdded(const std::string& word) {
-  spellchecker_->WordAdded(word);
-}
-
-void RenderThread::OnSpellCheckEnableAutoSpellCorrect(bool enable) {
-  spellchecker_->EnableAutoSpellCorrect(enable);
-}
-
 void RenderThread::OnSetIsIncognitoProcess(bool is_incognito_process) {
   is_incognito_process_ = is_incognito_process;
 }
@@ -1019,7 +845,7 @@ void RenderThread::OnGpuChannelEstablished(
     base::ProcessHandle renderer_process_for_gpu,
     const GPUInfo& gpu_info) {
   gpu_channel_->set_gpu_info(gpu_info);
-  child_process_logging::SetGpuInfo(gpu_info);
+  content::GetContentClient()->SetGpuInfo(gpu_info);
 
   if (!channel_handle.name.empty() && renderer_process_for_gpu != 0) {
     // Connect to the GPU process if a channel name was received.
@@ -1028,10 +854,6 @@ void RenderThread::OnGpuChannelEstablished(
     // Otherwise cancel the connection.
     gpu_channel_ = NULL;
   }
-}
-
-void RenderThread::OnSetPhishingModel(IPC::PlatformFileForTransit model_file) {
-  safe_browsing::PhishingClassifierDelegate::SetPhishingModel(model_file);
 }
 
 scoped_refptr<base::MessageLoopProxy>

@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/spellcheck_messages.h"
-#include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -31,6 +30,8 @@ SpellCheckProvider::SpellCheckProvider(RenderView* render_view,
       document_tag_(0),
       spelling_panel_visible_(false),
       spellcheck_(spellcheck) {
+  if (render_view)  // NULL in unit tests.
+    render_view->webview()->setSpellCheckClient(this);
 }
 
 SpellCheckProvider::~SpellCheckProvider() {
@@ -85,22 +86,15 @@ void SpellCheckProvider::spellCheck(
   EnsureDocumentTag();
 
   string16 word(text);
-  RenderThread* thread = RenderThread::current();
   // Will be NULL during unit tests.
-  if (thread) {
+  if (spellcheck_) {
     std::vector<string16> suggestions;
-    thread->spellchecker()->SpellCheckWord(
+    spellcheck_->SpellCheckWord(
         word.c_str(), word.size(), document_tag_,
         &offset, &length, optional_suggestions ? & suggestions : NULL);
     if (optional_suggestions)
       *optional_suggestions = suggestions;
   }
-}
-
-void SpellCheckProvider::spellCheck(const WebString& text,
-                                    int& offset,
-                                    int& length) {
-  spellCheck(text, offset, length, NULL);
 }
 
 void SpellCheckProvider::requestCheckingOfText(
@@ -113,10 +107,9 @@ WebString SpellCheckProvider::autoCorrectWord(const WebString& word) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kExperimentalSpellcheckerFeatures)) {
     EnsureDocumentTag();
-    RenderThread* thread = RenderThread::current();
     // Will be NULL during unit tests.
-    if (thread)
-      return thread->spellchecker()->GetAutoCorrectionWord(word, document_tag_);
+    if (spellcheck_)
+      return spellcheck_->GetAutoCorrectionWord(word, document_tag_);
   }
   return string16();
 }

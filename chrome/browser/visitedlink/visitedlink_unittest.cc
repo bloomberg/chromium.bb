@@ -51,7 +51,7 @@ class TrackingVisitedLinkEventListener : public VisitedLinkMaster::Listener {
            i < g_slaves.size(); i++) {
         base::SharedMemoryHandle new_handle = base::SharedMemory::NULLHandle();
         table->ShareToProcess(base::GetCurrentProcessHandle(), &new_handle);
-        g_slaves[i]->Init(new_handle);
+        g_slaves[i]->OnUpdateVisitedLinks(new_handle);
       }
     }
   }
@@ -134,8 +134,7 @@ class VisitedLinkTest : public testing::Test {
     base::SharedMemoryHandle new_handle = base::SharedMemory::NULLHandle();
     master_->shared_memory()->ShareToProcess(
         base::GetCurrentProcessHandle(), &new_handle);
-    bool success = slave.Init(new_handle);
-    ASSERT_TRUE(success);
+    slave.OnUpdateVisitedLinks(new_handle);
     g_slaves.push_back(&slave);
 
     bool found;
@@ -276,7 +275,7 @@ TEST_F(VisitedLinkTest, DeleteAll) {
     base::SharedMemoryHandle new_handle = base::SharedMemory::NULLHandle();
     master_->shared_memory()->ShareToProcess(
         base::GetCurrentProcessHandle(), &new_handle);
-    ASSERT_TRUE(slave.Init(new_handle));
+    slave.OnUpdateVisitedLinks(new_handle);
     g_slaves.push_back(&slave);
 
     // Add the test URLs.
@@ -325,8 +324,7 @@ TEST_F(VisitedLinkTest, Resizing) {
   base::SharedMemoryHandle new_handle = base::SharedMemory::NULLHandle();
   master_->shared_memory()->ShareToProcess(
       base::GetCurrentProcessHandle(), &new_handle);
-  bool success = slave.Init(new_handle);
-  ASSERT_TRUE(success);
+  slave.OnUpdateVisitedLinks(new_handle);
   g_slaves.push_back(&slave);
 
   int32 used_count = master_->GetUsedCount();

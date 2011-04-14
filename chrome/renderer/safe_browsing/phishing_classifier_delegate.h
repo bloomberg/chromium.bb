@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "content/renderer/render_view_observer.h"
+#include "content/renderer/render_process_observer.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_platform_file.h"
 
@@ -18,10 +19,14 @@ namespace safe_browsing {
 class PhishingClassifier;
 class Scorer;
 
+class PhishingClassifierFilter : public RenderProcessObserver {
+ public:
+  virtual bool OnControlMessageReceived(const IPC::Message& message);
+  void OnSetPhishingModel(IPC::PlatformFileForTransit model_file);
+};
+
 class PhishingClassifierDelegate : public RenderViewObserver {
  public:
-  static void SetPhishingModel(IPC::PlatformFileForTransit model_file);
-
   // The RenderView owns us.  This object takes ownership of the classifier.
   // Note that if classifier is null, a default instance of PhishingClassifier
   // will be used.

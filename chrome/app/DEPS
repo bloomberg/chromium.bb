@@ -2,6 +2,7 @@ include_rules = [
   "+breakpad",
   "+chrome/browser",
   "+chrome/installer",
+  "+chrome/renderer",  # For ChromeContentRendererClient
   "+grit",  # For generated headers
   "+policy",  # For generated headers and source
   "+sandbox",

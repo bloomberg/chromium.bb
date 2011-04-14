@@ -183,9 +183,17 @@ class ExtensionViewAccumulator : public RenderViewVisitor {
 
 class ExtensionImpl : public ExtensionBase {
  public:
-  ExtensionImpl() : ExtensionBase(
-      kExtensionName, GetStringResource(IDR_EXTENSION_PROCESS_BINDINGS_JS),
-      arraysize(kExtensionDeps), kExtensionDeps) {}
+  explicit ExtensionImpl(ExtensionDispatcher* extension_dispatcher)
+    : ExtensionBase(kExtensionName,
+                    GetStringResource(IDR_EXTENSION_PROCESS_BINDINGS_JS),
+                    arraysize(kExtensionDeps),
+                    kExtensionDeps) {
+    extension_dispatcher_ = extension_dispatcher;
+  }
+
+  ~ExtensionImpl() {
+    extension_dispatcher_ = NULL;
+  }
 
   static void SetFunctionNames(const std::vector<std::string>& names) {
     std::set<std::string>* name_set = GetFunctionNameSet();
@@ -203,7 +211,7 @@ class ExtensionImpl : public ExtensionBase {
       return std::string();  // this can happen as a tab is closing.
 
     GURL url = renderview->webview()->mainFrame()->url();
-    const ExtensionSet* extensions = ExtensionDispatcher::Get()->extensions();
+    const ExtensionSet* extensions = extension_dispatcher_->extensions();
     if (!extensions->ExtensionBindingsAllowed(url))
       return std::string();
 
@@ -518,7 +526,7 @@ class ExtensionImpl : public ExtensionBase {
   static v8::Handle<v8::Value> IsExtensionProcess(const v8::Arguments& args) {
     bool retval = false;
     if (EventBindings::GetRenderThread())
-      retval = ExtensionDispatcher::Get()->is_extension_process();
+      retval = extension_dispatcher_->is_extension_process();
     return v8::Boolean::New(retval);
   }
 
@@ -528,12 +536,17 @@ class ExtensionImpl : public ExtensionBase {
       retval = EventBindings::GetRenderThread()->IsIncognitoProcess();
     return v8::Boolean::New(retval);
   }
+
+  static ExtensionDispatcher* extension_dispatcher_;
 };
+
+ExtensionDispatcher* ExtensionImpl::extension_dispatcher_;
 
 }  // namespace
 
-v8::Extension* ExtensionProcessBindings::Get() {
-  static v8::Extension* extension = new ExtensionImpl();
+v8::Extension* ExtensionProcessBindings::Get(
+    ExtensionDispatcher* extension_dispatcher) {
+  static v8::Extension* extension = new ExtensionImpl(extension_dispatcher);
   return extension;
 }
 

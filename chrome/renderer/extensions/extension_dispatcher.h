@@ -31,13 +31,9 @@ class Extension;
 }
 
 // Dispatches extension control messages sent to the renderer and stores
-// renderer extension related state.  Object will delete itself when the
-// renderer shuts down.
+// renderer extension related state.
 class ExtensionDispatcher : public RenderProcessObserver {
  public:
-  // Returns the ExtensionDispatcher for this process.
-  static ExtensionDispatcher* Get();
-
   ExtensionDispatcher();
   virtual ~ExtensionDispatcher();
 
@@ -50,7 +46,6 @@ class ExtensionDispatcher : public RenderProcessObserver {
 
   // RenderProcessObserver implementation:
   virtual bool OnControlMessageReceived(const IPC::Message& message);
-  virtual void OnRenderProcessShutdown();
   virtual void WebKitInitialized();
   virtual bool AllowScriptExtension(const std::string& v8_extension_name,
                                     const GURL& url,

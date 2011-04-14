@@ -27,6 +27,8 @@ FilePath GetHunspellDirectory() {
   return hunspell_directory;
 }
 
+}  // namespace
+
 class SpellCheckTest : public testing::Test {
  public:
   SpellCheckTest() {
@@ -690,7 +692,7 @@ TEST_F(SpellCheckTest, GetAutoCorrectionWord_EN_US) {
     {"noen", ""},
     {"what", ""},
   };
-  spell_check()->EnableAutoSpellCorrect(true);
+  spell_check()->OnEnableAutoSpellCorrect(true);
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
     string16 misspelled_word(UTF8ToUTF16(kTestCases[i].input));
@@ -703,5 +705,3 @@ TEST_F(SpellCheckTest, GetAutoCorrectionWord_EN_US) {
     EXPECT_EQ(expected_autocorrect_word, autocorrect_word);
   }
 }
-
-}  // namespace

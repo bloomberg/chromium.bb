@@ -1825,7 +1825,6 @@
         'renderer/net/predictor_queue_unittest.cc',
         'renderer/net/renderer_predictor_unittest.cc',
         'renderer/render_process_unittest.cc',
-        'renderer/render_thread_unittest.cc',
         'renderer/renderer_about_handler_unittest.cc',
         'renderer/renderer_main_unittest.cc',
         'renderer/safe_browsing/features_unittest.cc',

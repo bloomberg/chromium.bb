@@ -25,7 +25,6 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
-#include "chrome/common/chrome_content_gpu_client.h"
 #include "chrome/common/chrome_content_plugin_client.h"
 #include "chrome/common/chrome_counters.h"
 #include "chrome/common/chrome_paths.h"
@@ -35,6 +34,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/profiling.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/renderer/chrome_content_renderer_client.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/content_client.h"
 #include "content/common/content_paths.h"
@@ -217,9 +217,21 @@ void EnableHeapProfiler(const CommandLine& command_line) {
 #endif
 }
 
-void InitializeChromeContentGpuClient() {
-  static chrome::ChromeContentGpuClient chrome_content_gpu_client;
-  content::GetContentClient()->set_gpu(&chrome_content_gpu_client);
+void InitializeChromeContentRendererClient() {
+#if !defined(NACL_WIN64)  // We don't build the renderer code on win nacl64.
+  static chrome::ChromeContentRendererClient chrome_content_renderer_client;
+  content::GetContentClient()->set_renderer(&chrome_content_renderer_client);
+#endif
+}
+
+void InitializeChromeContentClient(const std::string& process_type) {
+  if (process_type == switches::kPluginProcess) {
+    static chrome::ChromeContentPluginClient chrome_content_plugin_client;
+    content::GetContentClient()->set_plugin(&chrome_content_plugin_client);
+  } else if (process_type == switches::kRendererProcess ||
+             process_type == switches::kExtensionProcess) {
+    InitializeChromeContentRendererClient();
+  }
 }
 
 void CommonSubprocessInit(const std::string& process_type) {
@@ -243,12 +255,7 @@ void CommonSubprocessInit(const std::string& process_type) {
   setlocale(LC_NUMERIC, "C");
 #endif
 
-  if (process_type == switches::kPluginProcess) {
-    static chrome::ChromeContentPluginClient chrome_content_plugin_client;
-    content::GetContentClient()->set_plugin(&chrome_content_plugin_client);
-  } else if (process_type == switches::kGpuProcess) {
-    InitializeChromeContentGpuClient();
-  }
+  InitializeChromeContentClient(process_type);
 }
 
 // Returns true if this subprocess type needs the ResourceBundle initialized
@@ -431,6 +438,8 @@ int RunZygote(const MainFunctionParams& main_function_params) {
   // this up for the browser process in a different manner.
   InitCrashReporter();
 #endif
+
+  InitializeChromeContentClient(process_type);
 
   for (size_t i = 0; i < arraysize(kMainFunctions); ++i) {
     if (process_type == kMainFunctions[i].name)
@@ -699,7 +708,7 @@ int ChromeMain(int argc, char** argv) {
     InitWebCoreSystemInterface();
 #endif
 
-    InitializeChromeContentGpuClient();
+    InitializeChromeContentRendererClient();
   }
 #endif  // GOOGLE_CHROME_BUILD
 

@@ -15,19 +15,15 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "build/build_config.h"
-#include "chrome/renderer/chrome_content_renderer_client.h"
-#include "chrome/renderer/visitedlink_slave.h"
 #include "content/common/child_thread.h"
 #include "content/common/css_colors.h"
 #include "content/common/gpu_process_launch_causes.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "ipc/ipc_platform_file.h"
 #include "ui/gfx/native_widget_types.h"
 
 class AppCacheDispatcher;
 class CookieMessageFilter;
 class DBMessageFilter;
-class DevToolsAgentFilter;
 class FilePath;
 class GpuChannelHost;
 class IndexedDBDispatcher;
@@ -36,7 +32,6 @@ class RendererHistogramSnapshots;
 class RenderProcessObserver;
 class RendererNetPredictor;
 class RendererWebKitClientImpl;
-class SpellCheck;
 class SkBitmap;
 class WebDatabaseObserverImpl;
 
@@ -167,20 +162,12 @@ class RenderThread : public RenderThreadBase,
   void DoNotSuspendWebKitSharedTimer();
   void DoNotNotifyWebKitOfModalLoop();
 
-  VisitedLinkSlave* visited_link_slave() const {
-    return visited_link_slave_.get();
-  }
-
   AppCacheDispatcher* appcache_dispatcher() const {
     return appcache_dispatcher_.get();
   }
 
   IndexedDBDispatcher* indexed_db_dispatcher() const {
     return indexed_db_dispatcher_.get();
-  }
-
-  SpellCheck* spellchecker() const {
-    return spellchecker_.get();
   }
 
   bool plugin_refresh_allowed() const { return plugin_refresh_allowed_; }
@@ -197,10 +184,6 @@ class RenderThread : public RenderThreadBase,
 
   // Send all the Histogram data to browser.
   void SendHistograms(int sequence_number);
-
-  // Invokes InformHostOfCacheStats after a short delay.  Used to move this
-  // bookkeeping operation off the critical latency path.
-  void InformHostOfCacheStatsLater();
 
   // Sends a message to the browser to close all connections.
   void CloseCurrentConnections();
@@ -269,9 +252,6 @@ class RenderThread : public RenderThreadBase,
 
   void Init();
 
-  void OnUpdateVisitedLinks(base::SharedMemoryHandle table);
-  void OnAddVisitedLinks(const VisitedLinkSlave::Fingerprints& fingerprints);
-  void OnResetVisitedLinks();
   void OnSetZoomLevelForCurrentURL(const GURL& url, double zoom_level);
   void OnSetContentSettingsForCurrentURL(
       const GURL& url, const ContentSettings& content_settings);
@@ -297,40 +277,23 @@ class RenderThread : public RenderThreadBase,
   void OnPurgeMemory();
   void OnPurgePluginListCache(bool reload_pages);
 
-  void OnInitSpellChecker(IPC::PlatformFileForTransit bdict_file,
-                          const std::vector<std::string>& custom_words,
-                          const std::string& language,
-                          bool auto_spell_correct);
-  void OnSpellCheckWordAdded(const std::string& word);
-  void OnSpellCheckEnableAutoSpellCorrect(bool enable);
-
   void OnGpuChannelEstablished(const IPC::ChannelHandle& channel_handle,
                                base::ProcessHandle renderer_process_for_gpu,
                                const GPUInfo& gpu_info);
 
-  void OnSetPhishingModel(IPC::PlatformFileForTransit model_file);
-
   void OnGetAccessibilityTree();
-
-  // Gather usage statistics from the in-memory cache and inform our host.
-  // These functions should be call periodically so that the host can make
-  // decisions about how to allocation resources using current information.
-  void InformHostOfCacheStats();
 
   // We initialize WebKit as late as possible.
   void EnsureWebKitInitialized();
 
   // These objects live solely on the render thread.
   scoped_ptr<ScopedRunnableMethodFactory<RenderThread> > task_factory_;
-  scoped_ptr<VisitedLinkSlave> visited_link_slave_;
   scoped_ptr<RendererNetPredictor> renderer_net_predictor_;
   scoped_ptr<AppCacheDispatcher> appcache_dispatcher_;
   scoped_ptr<IndexedDBDispatcher> indexed_db_dispatcher_;
-  scoped_refptr<DevToolsAgentFilter> devtools_agent_filter_;
   scoped_ptr<RendererHistogramSnapshots> histogram_snapshots_;
   scoped_ptr<RendererWebKitClientImpl> webkit_client_;
   scoped_ptr<WebKit::WebStorageEventDispatcher> dom_storage_event_dispatcher_;
-  scoped_ptr<SpellCheck> spellchecker_;
 
   // Used on the renderer and IPC threads.
   scoped_refptr<DBMessageFilter> db_message_filter_;
@@ -339,16 +302,8 @@ class RenderThread : public RenderThreadBase,
   // Used on multiple script execution context threads.
   scoped_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
 
-#if defined(OS_POSIX)
-  scoped_refptr<IPC::ChannelProxy::MessageFilter>
-      suicide_on_channel_error_filter_;
-#endif
-
   // If true, then a GetPlugins call is allowed to rescan the disk.
   bool plugin_refresh_allowed_;
-
-  // Is there a pending task for doing CacheStats.
-  bool cache_stats_task_pending_;
 
   // The count of RenderWidgets running through this thread.
   int widget_count_;
@@ -376,8 +331,6 @@ class RenderThread : public RenderThreadBase,
 
   // Map of registered v8 extensions. The key is the extension name.
   std::set<std::string> v8_extensions_;
-
-  chrome::ChromeContentRendererClient renderer_client_;
 
   ObserverList<RenderProcessObserver> observers_;
 

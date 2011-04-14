@@ -12,6 +12,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/task.h"
 
+class ExtensionDispatcher;
 class RenderView;
 struct ExtensionMsg_ExecuteCode_Params;
 
@@ -37,7 +38,8 @@ class WebFrame;
 // ExtensionDispatcher, which contains the mapping from WebFrame to us.
 class UserScriptIdleScheduler {
  public:
-  explicit UserScriptIdleScheduler(WebKit::WebFrame* frame);
+  UserScriptIdleScheduler(WebKit::WebFrame* frame,
+                          ExtensionDispatcher* extension_dispatcher);
   ~UserScriptIdleScheduler();
 
   void ExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
@@ -69,6 +71,8 @@ class UserScriptIdleScheduler {
   // This is only used if we're for the main frame.
   std::queue<linked_ptr<ExtensionMsg_ExecuteCode_Params> >
       pending_code_execution_queue_;
+
+  ExtensionDispatcher* extension_dispatcher_;
 };
 
 #endif  // CHROME_RENDERER_EXTENSIONS_USER_SCRIPT_IDLE_SCHEDULER_H_

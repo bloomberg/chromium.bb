@@ -28,8 +28,10 @@ typedef std::map<WebFrame*, UserScriptIdleScheduler*> SchedulerMap;
 static base::LazyInstance<SchedulerMap> g_schedulers(base::LINKER_INITIALIZED);
 }
 
-ExtensionHelper::ExtensionHelper(RenderView* render_view)
-    : RenderViewObserver(render_view) {
+ExtensionHelper::ExtensionHelper(RenderView* render_view,
+                                 ExtensionDispatcher* extension_dispatcher)
+    : RenderViewObserver(render_view),
+      extension_dispatcher_(extension_dispatcher) {
 }
 
 ExtensionHelper::~ExtensionHelper() {
@@ -47,7 +49,7 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ExtensionHelper::DidFinishDocumentLoad(WebFrame* frame) {
-  ExtensionDispatcher::Get()->user_script_slave()->InjectScripts(
+  extension_dispatcher_->user_script_slave()->InjectScripts(
       frame, UserScript::DOCUMENT_END);
 
   SchedulerMap::iterator i = g_schedulers.Get().find(frame);
@@ -62,7 +64,7 @@ void ExtensionHelper::DidFinishLoad(WebKit::WebFrame* frame) {
 }
 
 void ExtensionHelper::DidCreateDocumentElement(WebFrame* frame) {
-  ExtensionDispatcher::Get()->user_script_slave()->InjectScripts(
+  extension_dispatcher_->user_script_slave()->InjectScripts(
       frame, UserScript::DOCUMENT_START);
 }
 
@@ -89,7 +91,8 @@ void ExtensionHelper::DidCreateDataSource(WebFrame* frame, WebDataSource* ds) {
   if (g_schedulers.Get().count(frame))
     return;
 
-  g_schedulers.Get()[frame] = new UserScriptIdleScheduler(frame);
+  g_schedulers.Get()[frame] = new UserScriptIdleScheduler(
+      frame, extension_dispatcher_);
 }
 
 void ExtensionHelper::OnExtensionResponse(int request_id,

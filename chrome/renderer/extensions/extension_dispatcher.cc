@@ -22,19 +22,11 @@
 namespace {
 static const double kInitialExtensionIdleHandlerDelayS = 5.0 /* seconds */;
 static const int64 kMaxExtensionIdleHandlerDelayS = 5*60 /* seconds */;
-static ExtensionDispatcher* g_extension_dispatcher;
 }
 
 using WebKit::WebFrame;
 
-ExtensionDispatcher* ExtensionDispatcher::Get() {
-  return g_extension_dispatcher;
-}
-
 ExtensionDispatcher::ExtensionDispatcher() {
-  DCHECK(!g_extension_dispatcher);
-  g_extension_dispatcher = this;
-
   std::string type_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kProcessType);
   is_extension_process_ = type_str == switches::kExtensionProcess ||
@@ -49,7 +41,6 @@ ExtensionDispatcher::ExtensionDispatcher() {
 }
 
 ExtensionDispatcher::~ExtensionDispatcher() {
-  g_extension_dispatcher = NULL;
 }
 
 bool ExtensionDispatcher::OnControlMessageReceived(
@@ -72,10 +63,6 @@ bool ExtensionDispatcher::OnControlMessageReceived(
   return handled;
 }
 
-void ExtensionDispatcher::OnRenderProcessShutdown() {
-  delete this;
-}
-
 void ExtensionDispatcher::WebKitInitialized() {
   // For extensions, we want to ensure we call the IdleHandler every so often,
   // even if the extension keeps up activity.
@@ -85,10 +72,10 @@ void ExtensionDispatcher::WebKitInitialized() {
         RenderThread::current(), &RenderThread::IdleHandler);
   }
 
-  RegisterExtension(extensions_v8::ChromeAppExtension::Get(), false);
+  RegisterExtension(extensions_v8::ChromeAppExtension::Get(this), false);
 
   // Add v8 extensions related to chrome extensions.
-  RegisterExtension(ExtensionProcessBindings::Get(), true);
+  RegisterExtension(ExtensionProcessBindings::Get(this), true);
   RegisterExtension(BaseJsV8Extension::Get(), true);
   RegisterExtension(JsonSchemaJsV8Extension::Get(), true);
   RegisterExtension(EventBindings::Get(), true);

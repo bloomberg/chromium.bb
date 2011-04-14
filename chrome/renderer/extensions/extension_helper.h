@@ -10,6 +10,7 @@
 
 #include "content/renderer/render_view_observer.h"
 
+class ExtensionDispatcher;
 class GURL;
 class ListValue;
 struct ExtensionMsg_ExecuteCode_Params;
@@ -17,7 +18,8 @@ struct ExtensionMsg_ExecuteCode_Params;
 // Filters extension related messages sent to RenderViews.
 class ExtensionHelper : public RenderViewObserver {
  public:
-  explicit ExtensionHelper(RenderView* render_view);
+  ExtensionHelper(RenderView* render_view,
+                  ExtensionDispatcher* extension_dispatcher);
   virtual ~ExtensionHelper();
 
  private:
@@ -39,6 +41,8 @@ class ExtensionHelper : public RenderViewObserver {
                                 const ListValue& args,
                                 const GURL& event_url);
   void OnExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
+
+  ExtensionDispatcher* extension_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHelper);
 };

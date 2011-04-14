@@ -96,6 +96,7 @@ void RenderViewTest::LoadHTML(const char* html) {
 void RenderViewTest::SetUp() {
   content::GetContentClient()->set_renderer(&chrome_content_renderer_client_);
   extension_dispatcher_ = new ExtensionDispatcher();
+  chrome_content_renderer_client_.SetExtensionDispatcher(extension_dispatcher_);
   sandbox_init_wrapper_.reset(new SandboxInitWrapper());
   command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
   params_.reset(new MainFunctionParams(*command_line_, *sandbox_init_wrapper_,
@@ -111,7 +112,8 @@ void RenderViewTest::SetUp() {
   WebScriptController::registerExtension(JsonSchemaJsV8Extension::Get());
   WebScriptController::registerExtension(EventBindings::Get());
   WebScriptController::registerExtension(ExtensionApiTestV8Extension::Get());
-  WebScriptController::registerExtension(ExtensionProcessBindings::Get());
+  WebScriptController::registerExtension(ExtensionProcessBindings::Get(
+      extension_dispatcher_));
   WebScriptController::registerExtension(RendererExtensionBindings::Get());
   EventBindings::SetRenderThread(&render_thread_);
 

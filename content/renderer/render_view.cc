@@ -42,8 +42,6 @@
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/searchbox.h"
-#include "chrome/renderer/spellchecker/spellcheck.h"
-#include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "content/common/appcache/appcache_dispatcher.h"
 #include "content/common/clipboard_messages.h"
@@ -442,7 +440,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       geolocation_dispatcher_(NULL),
       speech_input_dispatcher_(NULL),
       device_orientation_dispatcher_(NULL),
-      spellcheck_provider_(NULL),
       accessibility_ack_pending_(false),
       p2p_socket_dispatcher_(NULL),
       pending_app_icon_requests_(0),
@@ -500,11 +497,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
 
   audio_message_filter_ = new AudioMessageFilter(routing_id_);
   render_thread_->AddFilter(audio_message_filter_);
-
-  RenderThread* current_thread = RenderThread::current();
-  SpellCheck* spellcheck = current_thread ? current_thread->spellchecker() : 0;
-  spellcheck_provider_ = new SpellCheckProvider(this, spellcheck);
-  webview()->setSpellCheckClient(spellcheck_provider_);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableP2PApi)) {
@@ -1945,20 +1937,6 @@ bool RenderView::runModalBeforeUnloadDialog(
 void RenderView::showContextMenu(
     WebFrame* frame, const WebContextMenuData& data) {
   ContextMenuParams params = ContextMenuParams(data);
-#if !defined(WEBSPELLCHECKCLIENT_HAS_SUGGESTIONS)
-  if (!params.misspelled_word.empty() && RenderThread::current()) {
-    int misspelled_offset, misspelled_length;
-    bool spelled_right = RenderThread::current()->spellchecker()->
-        SpellCheckWord(
-            params.misspelled_word.c_str(), params.misspelled_word.size(),
-            spellcheck_provider_->document_tag(),
-            &misspelled_offset, &misspelled_length,
-            &params.dictionary_suggestions);
-    if (spelled_right)
-      params.misspelled_word.clear();
-  }
-#endif
-
   // Serializing a GURL longer than content::kMaxURLChars will fail, so don't do
   // it.  We replace it with an empty GURL so the appropriate items are disabled
   // in the context menu.

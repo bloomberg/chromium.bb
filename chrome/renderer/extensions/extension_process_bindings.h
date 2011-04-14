@@ -15,6 +15,7 @@
 #include "chrome/common/view_types.h"
 #include "v8/include/v8.h"
 
+class ExtensionDispatcher;
 class GURL;
 class URLPattern;
 
@@ -25,7 +26,7 @@ class WebView;
 class ExtensionProcessBindings {
  public:
   static void SetFunctionNames(const std::vector<std::string>& names);
-  static v8::Extension* Get();
+  static v8::Extension* Get(ExtensionDispatcher* extension_dispatcher);
 
   // Gets the set of extensions running in this process.
   static void GetActiveExtensions(std::set<std::string>* extension_ids);

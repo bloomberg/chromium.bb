@@ -23,6 +23,7 @@
 #include "content/common/webblobregistry_impl.h"
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/plugin/npobject_util.h"
+#include "content/renderer/content_renderer_client.h"
 #include "content/renderer/render_view.h"
 #include "content/renderer/renderer_webaudiodevice_impl.h"
 #include "content/renderer/renderer_webidbfactory_impl.h"
@@ -201,12 +202,12 @@ bool RendererWebKitClientImpl::SendSyncMessageFromAnyThread(
 unsigned long long RendererWebKitClientImpl::visitedLinkHash(
     const char* canonical_url,
     size_t length) {
-  return RenderThread::current()->visited_link_slave()->ComputeURLFingerprint(
+  return content::GetContentClient()->renderer()->VisitedLinkHash(
       canonical_url, length);
 }
 
 bool RendererWebKitClientImpl::isLinkVisited(unsigned long long link_hash) {
-  return RenderThread::current()->visited_link_slave()->IsVisited(link_hash);
+  return content::GetContentClient()->renderer()->IsLinkVisited(link_hash);
 }
 
 WebKit::WebMessagePortChannel*

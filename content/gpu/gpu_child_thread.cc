@@ -13,7 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/common/child_process.h"
-#include "content/common/gpu/content_gpu_client.h"
+#include "content/common/content_client.h"
 #include "content/common/gpu_messages.h"
 #include "content/gpu/gpu_info_collector.h"
 #include "content/gpu/gpu_watchdog_thread.h"
@@ -125,7 +125,7 @@ void GpuChildThread::OnInitialize() {
   }
   gpu_info_collector::CollectGraphicsInfo(&gpu_info_);
 
-  content::GetContentClient()->gpu()->SetGpuInfo(gpu_info_);
+  content::GetContentClient()->SetGpuInfo(gpu_info_);
   LOG(INFO) << "gpu_info_collector::CollectGraphicsInfo complete";
 
   // Record initialization only after collecting the GPU info because that can

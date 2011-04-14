@@ -9,12 +9,12 @@
 #include "base/basictypes.h"
 
 class GURL;
+struct GPUInfo;
 
 namespace content {
 
 class ContentBrowserClient;
 class ContentClient;
-class ContentGpuClient;
 class ContentPluginClient;
 class ContentRendererClient;
 
@@ -31,8 +31,6 @@ class ContentClient {
 
   ContentBrowserClient* browser() { return browser_; }
   void set_browser(ContentBrowserClient* c) { browser_ = c; }
-  ContentGpuClient* gpu() { return gpu_; }
-  void set_gpu(ContentGpuClient* g) { gpu_ = g; }
   ContentPluginClient* plugin() { return plugin_; }
   void set_plugin(ContentPluginClient* r) { plugin_ = r; }
   ContentRendererClient* renderer() { return renderer_; }
@@ -42,11 +40,12 @@ class ContentClient {
   // clear the URL.
   virtual void SetActiveURL(const GURL& url) {}
 
+  // Sets the data on the current gpu.
+  virtual void SetGpuInfo(const GPUInfo& gpu_info) {}
+
  private:
   // The embedder API for participating in browser logic.
   ContentBrowserClient* browser_;
-  // The embedder API for participating in gpu logic.
-  ContentGpuClient* gpu_;
   // The embedder API for participating in plugin logic.
   ContentPluginClient* plugin_;
   // The embedder API for participating in renderer logic.

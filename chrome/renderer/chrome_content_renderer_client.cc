@@ -9,9 +9,11 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
+#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_localization_peer.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/render_messages.h"
@@ -23,6 +25,7 @@
 #include "chrome/renderer/blocked_plugin.h"
 #include "chrome/renderer/chrome_render_observer.h"
 #include "chrome/renderer/devtools_agent.h"
+#include "chrome/renderer/devtools_agent_filter.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
@@ -30,19 +33,29 @@
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/extension_resource_request_policy.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
+#include "chrome/renderer/external_extension.h"
 #include "chrome/renderer/localized_error.h"
 #include "chrome/renderer/page_click_tracker.h"
 #include "chrome/renderer/print_web_view_helper.h"
+#include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/safe_browsing/malware_dom_details.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
+#include "chrome/renderer/search_extension.h"
 #include "chrome/renderer/searchbox.h"
+#include "chrome/renderer/searchbox_extension.h"
+#include "chrome/renderer/security_filter_peer.h"
+#include "chrome/renderer/spellchecker/spellcheck.h"
+#include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "chrome/renderer/translate_helper.h"
+#include "chrome/renderer/visitedlink_slave.h"
+#include "content/common/resource_dispatcher.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/renderer_resources.h"
 #include "net/base/net_errors.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
@@ -53,9 +66,14 @@
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/app/breakpad_mac.h"
+#endif
+
 using autofill::AutofillAgent;
 using autofill::FormManager;
 using autofill::PasswordAutofillManager;
+using WebKit::WebCache;
 using WebKit::WebFrame;
 using WebKit::WebPlugin;
 using WebKit::WebPluginParams;
@@ -67,26 +85,92 @@ using WebKit::WebVector;
 
 namespace {
 
-// Returns true if the frame is navigating to an URL either into or out of an
-// extension app's extent.
-// TODO(creis): Temporary workaround for crbug.com/65953: Only return true if
-// we would enter an extension app's extent from a non-app, or if we leave an
-// extension with no web extent.  We avoid swapping processes to exit a hosted
-// app with a web extent for now, since we do not yet restore context (such
-// as window.opener) if the window navigates back.
-static bool CrossesExtensionExtents(WebFrame* frame, const GURL& new_url) {
-  const ExtensionSet* extensions = ExtensionDispatcher::Get()->extensions();
-  // If the URL is still empty, this is a window.open navigation. Check the
-  // opener's URL.
-  GURL old_url(frame->url());
-  if (old_url.is_empty() && frame->opener())
-    old_url = frame->opener()->url();
+static const unsigned int kCacheStatsDelayMS = 2000 /* milliseconds */;
 
-  bool old_url_is_hosted_app = extensions->GetByURL(old_url) &&
-      !extensions->GetByURL(old_url)->web_extent().is_empty();
-  return !extensions->InSameExtent(old_url, new_url) &&
-         !old_url_is_hosted_app;
-}
+#if defined(OS_POSIX)
+class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
+  void OnChannelError() {
+    // On POSIX, at least, one can install an unload handler which loops
+    // forever and leave behind a renderer process which eats 100% CPU forever.
+    //
+    // This is because the terminate signals (ViewMsg_ShouldClose and the error
+    // from the IPC channel) are routed to the main message loop but never
+    // processed (because that message loop is stuck in V8).
+    //
+    // One could make the browser SIGKILL the renderers, but that leaves open a
+    // large window where a browser failure (or a user, manually terminating
+    // the browser because "it's stuck") will leave behind a process eating all
+    // the CPU.
+    //
+    // So, we install a filter on the channel so that we can process this event
+    // here and kill the process.
+
+#if defined(OS_MACOSX)
+    // TODO(viettrungluu): crbug.com/28547: The following is needed, as a
+    // stopgap, to avoid leaking due to not releasing Breakpad properly.
+    // TODO(viettrungluu): Investigate why this is being called.
+    if (IsCrashReporterEnabled()) {
+      VLOG(1) << "Cleaning up Breakpad.";
+      DestructCrashReporter();
+    } else {
+      VLOG(1) << "Breakpad not enabled; no clean-up needed.";
+    }
+#endif  // OS_MACOSX
+
+    _exit(0);
+  }
+};
+#endif
+
+class RenderResourceObserver : public ResourceDispatcher::Observer {
+ public:
+  RenderResourceObserver()
+      : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+  }
+
+  virtual webkit_glue::ResourceLoaderBridge::Peer* OnRequestComplete(
+      webkit_glue::ResourceLoaderBridge::Peer* current_peer,
+      ResourceType::Type resource_type,
+      const net::URLRequestStatus& status) {
+    // Update the browser about our cache.
+    // Rate limit informing the host of our cache stats.
+    if (method_factory_.empty()) {
+      MessageLoop::current()->PostDelayedTask(
+         FROM_HERE,
+         method_factory_.NewRunnableMethod(
+             &RenderResourceObserver::InformHostOfCacheStats),
+         kCacheStatsDelayMS);
+    }
+
+    if (status.status() != net::URLRequestStatus::CANCELED ||
+        status.os_error() == net::ERR_ABORTED) {
+      return NULL;
+    }
+
+    // Resource canceled with a specific error are filtered.
+    return SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
+        resource_type, current_peer, status.os_error());
+  }
+
+  virtual webkit_glue::ResourceLoaderBridge::Peer* OnReceivedResponse(
+      webkit_glue::ResourceLoaderBridge::Peer* current_peer,
+      const std::string& mime_type,
+      const GURL& url) {
+    return ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
+        current_peer, RenderThread::current(), mime_type, url);
+  }
+
+ private:
+  void InformHostOfCacheStats() {
+    WebCache::UsageStats stats;
+    WebCache::getUsageStats(&stats);
+    RenderThread::current()->Send(new ViewHostMsg_UpdatedCacheStats(stats));
+  }
+
+  ScopedRunnableMethodFactory<RenderResourceObserver> method_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderResourceObserver);
+};
 
 static void AppendParams(const std::vector<string16>& additional_names,
                          const std::vector<string16>& additional_values,
@@ -119,6 +203,39 @@ static void AppendParams(const std::vector<string16>& additional_names,
 
 namespace chrome {
 
+ChromeContentRendererClient::ChromeContentRendererClient() {
+}
+
+ChromeContentRendererClient::~ChromeContentRendererClient() {
+}
+
+void ChromeContentRendererClient::RenderThreadStarted() {
+  extension_dispatcher_.reset(new ExtensionDispatcher());
+  spellcheck_.reset(new SpellCheck());
+  visited_link_slave_.reset(new VisitedLinkSlave());
+  phishing_classifier_.reset(new safe_browsing::PhishingClassifierFilter);
+
+  RenderThread* thread = RenderThread::current();
+  thread->AddFilter(new DevToolsAgentFilter());
+#if defined(OS_POSIX)
+  thread->AddFilter(new SuicideOnChannelErrorFilter());
+#endif
+
+  thread->AddObserver(extension_dispatcher_.get());
+  thread->AddObserver(phishing_classifier_.get());
+  thread->AddObserver(spellcheck_.get());
+  thread->AddObserver(visited_link_slave_.get());
+
+  thread->RegisterExtension(extensions_v8::ExternalExtension::Get());
+  thread->RegisterExtension(extensions_v8::SearchBoxExtension::Get());
+  v8::Extension* search_extension = extensions_v8::SearchExtension::Get();
+  // search_extension is null if not enabled.
+  if (search_extension)
+    thread->RegisterExtension(search_extension);
+
+  thread->resource_dispatcher()->set_observer(new RenderResourceObserver());
+}
+
 void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
   safe_browsing::PhishingClassifierDelegate* phishing_classifier = NULL;
 #ifndef OS_CHROMEOS
@@ -130,9 +247,10 @@ void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
 #endif
 
   new DevToolsAgent(render_view);
-  new ExtensionHelper(render_view);
+  new ExtensionHelper(render_view, extension_dispatcher_.get());
   new PrintWebViewHelper(render_view);
   new SearchBox(render_view);
+  new SpellCheckProvider(render_view, spellcheck_.get());
   new safe_browsing::MalwareDOMDetails(render_view);
 
   PasswordAutofillManager* password_autofill_manager =
@@ -154,6 +272,10 @@ void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
           switches::kDomAutomationController)) {
     new AutomationRendererHelper(render_view);
   }
+}
+
+void ChromeContentRendererClient::SetNumberOfViews(int number_of_views) {
+  child_process_logging::SetNumberOfViews(number_of_views);
 }
 
 SkBitmap* ChromeContentRendererClient::GetSadPluginBitmap() {
@@ -316,7 +438,7 @@ std::string ChromeContentRendererClient::GetNavigationErrorHtml(
   int resource_id;
   DictionaryValue error_strings;
   if (failed_url.is_valid() && !failed_url.SchemeIs(chrome::kExtensionScheme))
-    extension = ExtensionDispatcher::Get()->extensions()->GetByURL(failed_url);
+    extension = extension_dispatcher_->extensions()->GetByURL(failed_url);
   if (extension) {
     LocalizedError::GetAppErrorStrings(error, failed_url, extension,
                                        &error_strings);
@@ -349,13 +471,13 @@ std::string ChromeContentRendererClient::GetNavigationErrorHtml(
 }
 
 bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
-  return !ExtensionDispatcher::Get()->is_extension_process();
+  return !extension_dispatcher_->is_extension_process();
 }
 
 bool ChromeContentRendererClient::AllowPopup(const GURL& creator) {
   // Extensions and apps always allowed to create unrequested popups. The second
   // check is necessary to include content scripts.
-  return ExtensionDispatcher::Get()->extensions()->GetByURL(creator) ||
+  return extension_dispatcher_->extensions()->GetByURL(creator) ||
       bindings_utils::GetInfoForCurrentContext();
 }
 
@@ -381,7 +503,7 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
 
   if (is_content_initiated) {
     const Extension* extension =
-        ExtensionDispatcher::Get()->extensions()->GetByURL(url);
+        extension_dispatcher_->extensions()->GetByURL(url);
     if (extension && extension->is_app()) {
       UMA_HISTOGRAM_ENUMERATION(
           extension_misc::kAppLaunchHistogram,
@@ -401,7 +523,7 @@ bool ChromeContentRendererClient::WillSendRequest(WebKit::WebFrame* frame,
   // the request and cause an error.
   if (url.SchemeIs(chrome::kExtensionScheme) &&
       !ExtensionResourceRequestPolicy::CanRequestResource(
-          url, GURL(frame->url()), ExtensionDispatcher::Get()->extensions())) {
+          url, GURL(frame->url()), extension_dispatcher_->extensions())) {
     *new_url = GURL("chrome-extension://invalid/");
     return true;
   }
@@ -410,7 +532,8 @@ bool ChromeContentRendererClient::WillSendRequest(WebKit::WebFrame* frame,
 }
 
 void ChromeContentRendererClient::DidCreateScriptContext(WebFrame* frame) {
-  EventBindings::HandleContextCreated(frame, false);
+  EventBindings::HandleContextCreated(
+      frame, false, extension_dispatcher_.get());
 }
 
 void ChromeContentRendererClient::DidDestroyScriptContext(WebFrame* frame) {
@@ -419,7 +542,36 @@ void ChromeContentRendererClient::DidDestroyScriptContext(WebFrame* frame) {
 
 void ChromeContentRendererClient::DidCreateIsolatedScriptContext(
   WebFrame* frame) {
-  EventBindings::HandleContextCreated(frame, true);
+  EventBindings::HandleContextCreated(frame, true, extension_dispatcher_.get());
+}
+
+unsigned long long ChromeContentRendererClient::VisitedLinkHash(
+    const char* canonical_url, size_t length) {
+  return visited_link_slave_->ComputeURLFingerprint(canonical_url, length);
+}
+
+bool ChromeContentRendererClient::IsLinkVisited(unsigned long long link_hash) {
+  return visited_link_slave_->IsVisited(link_hash);
+}
+
+void ChromeContentRendererClient::SetExtensionDispatcher(
+    ExtensionDispatcher* extension_dispatcher) {
+  extension_dispatcher_.reset(extension_dispatcher);
+}
+
+bool ChromeContentRendererClient::CrossesExtensionExtents(WebFrame* frame,
+                                                          const GURL& new_url) {
+  const ExtensionSet* extensions = extension_dispatcher_->extensions();
+  // If the URL is still empty, this is a window.open navigation. Check the
+  // opener's URL.
+  GURL old_url(frame->url());
+  if (old_url.is_empty() && frame->opener())
+    old_url = frame->opener()->url();
+
+  bool old_url_is_hosted_app = extensions->GetByURL(old_url) &&
+      !extensions->GetByURL(old_url)->web_extent().is_empty();
+  return !extensions->InSameExtent(old_url, new_url) &&
+         !old_url_is_hosted_app;
 }
 
 }  // namespace chrome

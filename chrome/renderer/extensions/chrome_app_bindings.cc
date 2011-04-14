@@ -21,19 +21,25 @@ static const char* const kAppExtensionName = "v8/ChromeApp";
 
 class ChromeAppExtensionWrapper : public v8::Extension {
  public:
-  ChromeAppExtensionWrapper() :
-    v8::Extension(kAppExtensionName,
-      "var chrome;"
-      "if (!chrome)"
-      "  chrome = {};"
-      "if (!chrome.app) {"
-      "  chrome.app = new function() {"
-      "    native function GetIsInstalled();"
-      "    native function Install();"
-      "    this.__defineGetter__('isInstalled', GetIsInstalled);"
-      "    this.install = Install;"
-      "  };"
-      "}") {}
+  explicit ChromeAppExtensionWrapper(ExtensionDispatcher* extension_dispatcher)
+      : v8::Extension(kAppExtensionName,
+        "var chrome;"
+        "if (!chrome)"
+        "  chrome = {};"
+        "if (!chrome.app) {"
+        "  chrome.app = new function() {"
+        "    native function GetIsInstalled();"
+        "    native function Install();"
+        "    this.__defineGetter__('isInstalled', GetIsInstalled);"
+        "    this.install = Install;"
+        "  };"
+        "}") {
+    extension_dispatcher_ = extension_dispatcher;
+  }
+
+  ~ChromeAppExtensionWrapper() {
+    extension_dispatcher_ = NULL;
+  }
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
       v8::Handle<v8::String> name) {
@@ -58,7 +64,7 @@ class ChromeAppExtensionWrapper : public v8::Extension {
       return v8::Boolean::New(false);
 
     bool has_web_extent =
-        ExtensionDispatcher::Get()->extensions()->GetByURL(url) != NULL;
+        extension_dispatcher_->extensions()->GetByURL(url) != NULL;
     return v8::Boolean::New(has_web_extent);
   }
 
@@ -73,10 +79,15 @@ class ChromeAppExtensionWrapper : public v8::Extension {
 
     return v8::Undefined();
   }
+
+  static ExtensionDispatcher* extension_dispatcher_;
 };
 
-v8::Extension* ChromeAppExtension::Get() {
-  return new ChromeAppExtensionWrapper();
+ExtensionDispatcher* ChromeAppExtensionWrapper::extension_dispatcher_;
+
+v8::Extension* ChromeAppExtension::Get(
+    ExtensionDispatcher* extension_dispatcher) {
+  return new ChromeAppExtensionWrapper(extension_dispatcher);
 }
 
 }  // namespace extensions_v8

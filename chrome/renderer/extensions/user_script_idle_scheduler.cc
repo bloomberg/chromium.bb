@@ -26,10 +26,12 @@ using WebKit::WebFrame;
 using WebKit::WebString;
 using WebKit::WebView;
 
-UserScriptIdleScheduler::UserScriptIdleScheduler(WebFrame* frame)
+UserScriptIdleScheduler::UserScriptIdleScheduler(
+    WebFrame* frame, ExtensionDispatcher* extension_dispatcher)
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       frame_(frame),
-      has_run_(false) {
+      has_run_(false),
+      extension_dispatcher_(extension_dispatcher) {
 }
 
 UserScriptIdleScheduler::~UserScriptIdleScheduler() {
@@ -78,7 +80,7 @@ void UserScriptIdleScheduler::MaybeRun() {
   // http://code.google.com/p/chromium/issues/detail?id=29644
   has_run_ = true;
 
-  ExtensionDispatcher::Get()->user_script_slave()->InjectScripts(
+  extension_dispatcher_->user_script_slave()->InjectScripts(
       frame_, UserScript::DOCUMENT_IDLE);
 
   while (!pending_code_execution_queue_.empty()) {
@@ -91,9 +93,8 @@ void UserScriptIdleScheduler::MaybeRun() {
 
 void UserScriptIdleScheduler::ExecuteCodeImpl(
     const ExtensionMsg_ExecuteCode_Params& params) {
-  const Extension* extension =
-      ExtensionDispatcher::Get()->extensions()->GetByID(
-          params.extension_id);
+  const Extension* extension = extension_dispatcher_->extensions()->GetByID(
+      params.extension_id);
   RenderView* render_view = RenderView::FromWebView(frame_->view());
 
   // Since extension info is sent separately from user script info, they can

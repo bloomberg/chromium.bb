@@ -28,8 +28,14 @@ namespace content {
 // Embedder API for participating in renderer logic.
 class ContentRendererClient {
  public:
+  // Notifies us that the RenderThread has been created.
+  virtual void RenderThreadStarted();
+
   // Notifies that a new RenderView has been created.
   virtual void RenderViewCreated(RenderView* render_view);
+
+  // Sets a number of views/tabs opened in this process.
+  virtual void SetNumberOfViews(int number_of_views);
 
   // Returns the bitmap to show when a plugin crashed, or NULL for none.
   virtual SkBitmap* GetSadPluginBitmap();
@@ -72,6 +78,11 @@ class ContentRendererClient {
   virtual void DidCreateScriptContext(WebKit::WebFrame* frame);
   virtual void DidDestroyScriptContext(WebKit::WebFrame* frame);
   virtual void DidCreateIsolatedScriptContext(WebKit::WebFrame* frame);
+
+  // See WebKit::WebKitClient.
+  virtual unsigned long long VisitedLinkHash(const char* canonical_url,
+                                             size_t length);
+  virtual bool IsLinkVisited(unsigned long long link_hash);
 };
 
 }  // namespace content

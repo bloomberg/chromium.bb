@@ -6,30 +6,47 @@
 
 #include "base/logging.h"
 #include "base/shared_memory.h"
+#include "chrome/common/render_messages.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+
+using WebKit::WebView;
 
 VisitedLinkSlave::VisitedLinkSlave() : shared_memory_(NULL) {
 }
+
 VisitedLinkSlave::~VisitedLinkSlave() {
   FreeTable();
 }
 
+bool VisitedLinkSlave::OnControlMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(VisitedLinkSlave, message)
+    IPC_MESSAGE_HANDLER(ViewMsg_VisitedLink_NewTable, OnUpdateVisitedLinks)
+    IPC_MESSAGE_HANDLER(ViewMsg_VisitedLink_Add, OnAddVisitedLinks)
+    IPC_MESSAGE_HANDLER(ViewMsg_VisitedLink_Reset, OnResetVisitedLinks)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
 // This function's job is to initialize the table with the given
-// shared memory handle. This memory is mappend into the process.
-bool VisitedLinkSlave::Init(base::SharedMemoryHandle shared_memory) {
+// shared memory handle. This memory is mapped into the process.
+void VisitedLinkSlave::OnUpdateVisitedLinks(base::SharedMemoryHandle table) {
+  DCHECK(base::SharedMemory::IsHandleValid(table)) << "Bad table handle";
   // since this function may be called again to change the table, we may need
   // to free old objects
   FreeTable();
   DCHECK(shared_memory_ == NULL && hash_table_ == NULL);
 
   // create the shared memory object
-  shared_memory_ = new base::SharedMemory(shared_memory, true);
+  shared_memory_ = new base::SharedMemory(table, true);
   if (!shared_memory_)
-    return false;
+    return;
 
   // map the header into our process so we can see how long the rest is,
   // and set the salt
   if (!shared_memory_->Map(sizeof(SharedHeader)))
-    return false;
+    return;
   SharedHeader* header =
     static_cast<SharedHeader*>(shared_memory_->memory());
   DCHECK(header);
@@ -41,7 +58,7 @@ bool VisitedLinkSlave::Init(base::SharedMemoryHandle shared_memory) {
   if (!shared_memory_->Map(sizeof(SharedHeader) +
                           table_len * sizeof(Fingerprint))) {
     shared_memory_->Close();
-    return false;
+    return;
   }
 
   // commit the data
@@ -49,7 +66,16 @@ bool VisitedLinkSlave::Init(base::SharedMemoryHandle shared_memory) {
   hash_table_ = reinterpret_cast<Fingerprint*>(
       static_cast<char*>(shared_memory_->memory()) + sizeof(SharedHeader));
   table_length_ = table_len;
-  return true;
+}
+
+void VisitedLinkSlave::OnAddVisitedLinks(
+    const VisitedLinkSlave::Fingerprints& fingerprints) {
+  for (size_t i = 0; i < fingerprints.size(); ++i)
+    WebView::updateVisitedLinkState(fingerprints[i]);
+}
+
+void VisitedLinkSlave::OnResetVisitedLinks() {
+  WebView::resetVisitedLinkState();
 }
 
 void VisitedLinkSlave::FreeTable() {

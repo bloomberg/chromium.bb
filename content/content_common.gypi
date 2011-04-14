@@ -94,7 +94,6 @@
         'common/geolocation_messages.h',
         'common/geoposition.cc',
         'common/geoposition.h',
-        'common/gpu/content_gpu_client.h',
         'common/gpu/gpu_channel.cc',
         'common/gpu/gpu_channel.h',
         'common/gpu/gpu_channel_manager.cc',

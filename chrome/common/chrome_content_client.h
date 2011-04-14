@@ -13,6 +13,7 @@ namespace chrome {
 class ChromeContentClient : public content::ContentClient {
  public:
   virtual void SetActiveURL(const GURL& url);
+  virtual void SetGpuInfo(const GPUInfo& gpu_info);
 };
 
 }  // namespace chrome

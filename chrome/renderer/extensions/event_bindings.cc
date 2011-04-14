@@ -249,7 +249,10 @@ static void ContextWeakReferenceCallback(v8::Persistent<v8::Value> context,
   NOTREACHED();
 }
 
-void EventBindings::HandleContextCreated(WebFrame* frame, bool content_script) {
+void EventBindings::HandleContextCreated(
+    WebFrame* frame,
+    bool content_script,
+    ExtensionDispatcher* extension_dispatcher) {
   if (!bindings_registered)
     return;
 
@@ -266,7 +269,7 @@ void EventBindings::HandleContextCreated(WebFrame* frame, bool content_script) {
   if (!ds)
     ds = frame->dataSource();
   GURL url = ds->request().url();
-  const ExtensionSet* extensions = ExtensionDispatcher::Get()->extensions();
+  const ExtensionSet* extensions = extension_dispatcher->extensions();
   std::string extension_id = extensions->GetIdByURL(url);
 
   if (!extensions->ExtensionBindingsAllowed(url) &&

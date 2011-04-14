@@ -8,6 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/renderer/render_thread.h"
@@ -24,6 +25,49 @@ SpellCheck::SpellCheck()
 }
 
 SpellCheck::~SpellCheck() {
+}
+
+bool SpellCheck::OnControlMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(SpellCheck, message)
+    IPC_MESSAGE_HANDLER(SpellCheckMsg_Init, OnInit)
+    IPC_MESSAGE_HANDLER(SpellCheckMsg_WordAdded, OnWordAdded)
+    IPC_MESSAGE_HANDLER(SpellCheckMsg_EnableAutoSpellCorrect,
+                        OnEnableAutoSpellCorrect)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
+  if (message.type() == ViewMsg_PurgeMemory::ID) {
+    delete this;
+    new SpellCheck();
+  }
+
+  return handled;
+}
+
+void SpellCheck::OnInit(IPC::PlatformFileForTransit bdict_file,
+                        const std::vector<std::string>& custom_words,
+                        const std::string& language,
+    bool auto_spell_correct) {
+  Init(IPC::PlatformFileForTransitToPlatformFile(bdict_file),
+       custom_words, language);
+  auto_spell_correct_turned_on_ = auto_spell_correct;
+}
+
+void SpellCheck::OnWordAdded(const std::string& word) {
+  if (is_using_platform_spelling_engine_)
+    return;
+
+  if (!hunspell_.get()) {
+    // Save it for later---add it when hunspell is initialized.
+    custom_words_.push_back(word);
+  } else {
+    AddWordToHunspell(word);
+  }
+}
+
+void SpellCheck::OnEnableAutoSpellCorrect(bool enable) {
+  auto_spell_correct_turned_on_ = enable;
 }
 
 void SpellCheck::Init(base::PlatformFile file,
@@ -145,22 +189,6 @@ string16 SpellCheck::GetAutoCorrectionWord(const string16& word, int tag) {
     std::swap(misspelled_word[i], misspelled_word[i + 1]);
   }
   return autocorrect_word;
-}
-
-void SpellCheck::EnableAutoSpellCorrect(bool turn_on) {
-  auto_spell_correct_turned_on_ = turn_on;
-}
-
-void SpellCheck::WordAdded(const std::string& word) {
-  if (is_using_platform_spelling_engine_)
-    return;
-
-  if (!hunspell_.get()) {
-    // Save it for later---add it when hunspell is initialized.
-    custom_words_.push_back(word);
-  } else {
-    AddWordToHunspell(word);
-  }
 }
 
 void SpellCheck::InitializeHunspell() {

@@ -597,7 +597,6 @@
             # and get rid of the common_constants.gypi which was added as a hack
             # to avoid making common compile on 64 bit on Windows.
             '../chrome/common/chrome_content_client.cc',
-            '../chrome/common/chrome_content_gpu_client.cc',
             '../chrome/common/chrome_content_plugin_client.cc',
             '../content/common/child_process.cc',
             '../content/common/child_thread.cc',

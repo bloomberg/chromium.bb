@@ -47,6 +47,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "chrome/renderer/chrome_content_renderer_client.h"
 #include "content/renderer/render_view_visitor.h"
 #include "ipc/ipc_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -119,6 +120,7 @@ class RenderViewFakeResourcesTest : public ::testing::Test,
   static const int32 kViewId;  // arbitrary id for our testing view
 
   MessageLoopForIO message_loop_;
+  chrome::ChromeContentRendererClient chrome_content_renderer_client_;
   // channel that the renderer uses to talk to the browser.
   // For this test, we will handle the browser end of the channel.
   scoped_ptr<IPC::Channel> channel_;

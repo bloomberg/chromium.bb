@@ -9,8 +9,13 @@
 using WebKit::WebFrame;
 
 namespace content {
+void ContentRendererClient::RenderThreadStarted() {
+}
 
 void ContentRendererClient::RenderViewCreated(RenderView* render_view) {
+}
+
+void ContentRendererClient::SetNumberOfViews(int number_of_views) {
 }
 
 SkBitmap* ContentRendererClient::GetSadPluginBitmap() {
@@ -61,6 +66,15 @@ void ContentRendererClient::DidDestroyScriptContext(WebFrame* frame) {
 }
 
 void ContentRendererClient::DidCreateIsolatedScriptContext(WebFrame* frame) {
+}
+
+unsigned long long ContentRendererClient::VisitedLinkHash(
+    const char* canonical_url, size_t length) {
+  return 0;
+}
+
+bool ContentRendererClient::IsLinkVisited(unsigned long long link_hash) {
+  return false;
 }
 
 }  // namespace content

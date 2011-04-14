@@ -72,7 +72,6 @@ class RenderViewVisitor;
 class RenderWidgetFullscreenPepper;
 class SkBitmap;
 class SpeechInputDispatcher;
-class SpellCheckProvider;
 class WebPluginDelegatePepper;
 class WebPluginDelegateProxy;
 class WebUIBindings;
@@ -1214,9 +1213,6 @@ class RenderView : public RenderWidget,
 
   // Device orientation dispatcher attached to this view; lazily initialized.
   DeviceOrientationDispatcher* device_orientation_dispatcher_;
-
-  // spellcheck provider which is registered as a view observer.
-  SpellCheckProvider* spellcheck_provider_;
 
   scoped_refptr<AudioMessageFilter> audio_message_filter_;
 
