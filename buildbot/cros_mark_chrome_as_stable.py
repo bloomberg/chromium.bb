@@ -16,6 +16,7 @@ Returns chrome-base/chromeos-chrome-8.0.552.0_alpha_r1
 emerge-x86-generic =chrome-base/chromeos-chrome-8.0.552.0_alpha_r1
 """
 
+import filecmp
 import optparse
 import os
 import re
@@ -249,6 +250,23 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
   Returns:
     Full portage version atom (including rc's, etc) that was revved.
   """
+  def IsTheNewEBuildRedundant(new_ebuild, stable_ebuild):
+    """Returns True if the new ebuild is redundant.
+
+    This is True if there if the current stable ebuild is the exact same copy
+    of the new one OR the chrome versions are the same and we're revving
+    LATEST_RELEASE (as we don't care about 9999 changes for it).
+    """
+    if not stable_ebuild:
+      return False
+
+    if stable_candidate.chrome_version == new_ebuild.chrome_version:
+      if chrome_rev == LATEST_RELEASE:
+        return True
+      else:
+        return filecmp.cmp(
+            new_ebuild.ebuild_path, stable_ebuild.ebuild_path, shallow=False)
+
   base_path = os.path.join(overlay_dir, 'chromeos-chrome-%s' % chrome_version)
   # Case where we have the last stable candidate with same version just rev.
   if stable_candidate and stable_candidate.chrome_version == chrome_version:
@@ -270,17 +288,12 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
       unstable_ebuild.ebuild_path, new_ebuild_path, 'CROS_SVN_COMMIT', commit,
       make_stable=mark_stable)
   new_ebuild = ChromeEBuild(new_ebuild_path)
-  if stable_candidate and (
-      stable_candidate.chrome_version == new_ebuild.chrome_version):
-    if 0 == RunCommand(['diff', '-Bu', stable_candidate.ebuild_path,
-                        new_ebuild_path],
-                       redirect_stderr=True,
-                       redirect_stdout=True,
-                       exit_code=True):
-      Info('Previous ebuild with same version found and no 9999 changes found.'
-           '  Nothing to do.')
-      os.unlink(new_ebuild_path)
-      return None
+
+  # Determine whether this is ebuild is redundant.
+  if IsTheNewEBuildRedundant(new_ebuild, stable_candidate):
+    Info('Previous ebuild with same version found and ebuild is redundant.')
+    os.unlink(new_ebuild_path)
+    return None
 
   RunCommand(['git', 'add', new_ebuild_path])
   if stable_candidate and stable_candidate != sticky_ebuild:

@@ -6,6 +6,7 @@
 
 """Unit tests for cros_mark_as_stable.py."""
 
+import filecmp
 import fileinput
 import mox
 import os
@@ -160,6 +161,7 @@ class EBuildStableMarkerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(cros_mark_as_stable.fileinput, 'input')
     self.mox.StubOutWithMock(cros_mark_as_stable.os.path, 'exists')
     self.mox.StubOutWithMock(cros_mark_as_stable.shutil, 'copyfile')
+    self.mox.StubOutWithMock(filecmp, 'cmp')
     m_file = self.mox.CreateMock(file)
 
     # Prepare mock fileinput.  This tests to make sure both the commit id
@@ -176,11 +178,8 @@ class EBuildStableMarkerTest(mox.MoxTestBase):
     m_file.write('CROS_WORKON_COMMIT="my_id"\n')
     m_file.write('KEYWORDS="x86 arm"')
     m_file.write('src_unpack(){}')
-    diff_cmd = ['diff', '-Bu', self.m_ebuild.ebuild_path,
-                self.revved_ebuild_path]
-    cros_mark_as_stable.RunCommand(diff_cmd, exit_code=True,
-                                   print_cmd=False, redirect_stderr=True,
-                                   redirect_stdout=True).AndReturn(1)
+    filecmp.cmp(self.m_ebuild.ebuild_path, self.revved_ebuild_path,
+                shallow=False).AndReturn(False)
     cros_mark_as_stable._SimpleRunCommand('git add ' + self.revved_ebuild_path)
     cros_mark_as_stable._SimpleRunCommand('git rm ' + self.m_ebuild.ebuild_path)
 
@@ -194,6 +193,7 @@ class EBuildStableMarkerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(cros_mark_as_stable.fileinput, 'input')
     self.mox.StubOutWithMock(cros_mark_as_stable.os.path, 'exists')
     self.mox.StubOutWithMock(cros_mark_as_stable.shutil, 'copyfile')
+    self.mox.StubOutWithMock(filecmp, 'cmp')
     m_file = self.mox.CreateMock(file)
 
     # Prepare mock fileinput.  This tests to make sure both the commit id
@@ -210,11 +210,8 @@ class EBuildStableMarkerTest(mox.MoxTestBase):
     m_file.write('CROS_WORKON_COMMIT="my_id"\n')
     m_file.write('KEYWORDS="x86 arm"')
     m_file.write('src_unpack(){}')
-    diff_cmd = ['diff', '-Bu', self.m_ebuild.ebuild_path,
-                self.revved_ebuild_path]
-    cros_mark_as_stable.RunCommand(diff_cmd, exit_code=True,
-                                   print_cmd=False, redirect_stderr=True,
-                                   redirect_stdout=True).AndReturn(0)
+    filecmp.cmp(self.m_ebuild.ebuild_path, self.revved_ebuild_path,
+                shallow=False).AndReturn(True)
     cros_mark_as_stable.os.unlink(self.revved_ebuild_path)
 
     self.mox.ReplayAll()
@@ -228,6 +225,7 @@ class EBuildStableMarkerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(cros_mark_as_stable.os.path, 'exists')
     self.mox.StubOutWithMock(cros_mark_as_stable.shutil, 'copyfile')
     self.mox.StubOutWithMock(cros_mark_as_stable, 'Die')
+    self.mox.StubOutWithMock(filecmp, 'cmp')
     m_file = self.mox.CreateMock(file)
 
     revved_ebuild_path = self.m_ebuild.ebuild_path
@@ -250,10 +248,8 @@ class EBuildStableMarkerTest(mox.MoxTestBase):
     m_file.write('CROS_WORKON_COMMIT="my_id"\n')
     m_file.write('KEYWORDS="x86 arm"')
     m_file.write('src_unpack(){}')
-    diff_cmd = ['diff', '-Bu', self.unstable_ebuild_path, revved_ebuild_path]
-    cros_mark_as_stable.RunCommand(diff_cmd, exit_code=True,
-                                   print_cmd=False, redirect_stderr=True,
-                                   redirect_stdout=True).AndReturn(1)
+    filecmp.cmp(self.unstable_ebuild_path, revved_ebuild_path,
+                shallow=False).AndReturn(False)
     cros_mark_as_stable._SimpleRunCommand('git add ' + revved_ebuild_path)
 
     self.mox.ReplayAll()

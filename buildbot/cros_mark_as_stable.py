@@ -6,7 +6,7 @@
 
 """This module uprevs a given package's ebuild to the next revision."""
 
-
+import filecmp
 import fileinput
 import optparse
 import os
@@ -469,9 +469,7 @@ class EBuildStableMarker(object):
                       'CROS_WORKON_COMMIT', commit_id, redirect_file)
 
     old_ebuild_path = self._ebuild.ebuild_path
-    diff_cmd = ['diff', '-Bu', old_ebuild_path, new_stable_ebuild_path]
-    if 0 == RunCommand(diff_cmd, exit_code=True, redirect_stdout=True,
-                       redirect_stderr=True, print_cmd=VERBOSE):
+    if filecmp.cmp(old_ebuild_path, new_stable_ebuild_path, shallow=False):
       os.unlink(new_stable_ebuild_path)
       return None
     else:
