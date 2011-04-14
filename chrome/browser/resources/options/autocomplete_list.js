@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,6 +105,8 @@ cr.define('options', function() {
         if (self.suggestionUpdateRequestCallback_)
           self.suggestionUpdateRequestCallback_(self.targetInput_.value);
       };
+      // Start hidden; adding suggestions will unhide.
+      this.hidden = true;
     },
 
     /** @inheritDoc */
