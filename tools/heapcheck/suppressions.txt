@@ -1381,7 +1381,7 @@
    bug_79328
    Heapcheck:Leak
    fun:TestingProfile::CreateRequestContext
-   fun:browser_sync::ProfileSyncServiceSessionTest::SetUp
+   fun:browser_sync::*
 }
 {
    bug_79377
