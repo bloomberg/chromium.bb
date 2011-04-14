@@ -101,6 +101,12 @@ TEST_F(ErrorPageTest, DNSError_GoBack2AndForward) {
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
 }
 
+// Flaky on Linux x64, see http://crbug.com/79412
+#if defined(OS_LINUX) && defined(ARCH_CPU_64_BITS)
+#define MAYBE_DNSError_GoBack2Forward2 FLAKY_DNSError_GoBack2Forward2
+#else
+#define MAYBE_DNSError_GoBack2Forward2 DNSError_GoBack2Forward2
+#endif
 TEST_F(ErrorPageTest, DNSError_GoBack2Forward2) {
   // Test that a DNS error occuring in the main frame does not result in an
   // additional session history entry.
