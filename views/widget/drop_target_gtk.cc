@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -273,15 +273,18 @@ void DropTargetGtk::RequestFormats(GdkDragContext* context,
   if ((formats & OSExchangeData::STRING) != 0 &&
       (requested_formats_ & OSExchangeData::STRING) == 0) {
     requested_formats_ |= OSExchangeData::STRING;
-    if (known_formats.count(GDK_TARGET_STRING)) {
-      gtk_drag_get_data(widget, context, GDK_TARGET_STRING, time);
-    } else if (known_formats.count(gdk_atom_intern("text/plain", false))) {
-      gtk_drag_get_data(widget, context, gdk_atom_intern("text/plain", false),
-                        time);
+    if (known_formats.count(gdk_atom_intern("UTF8_STRING", false))) {
+      gtk_drag_get_data(widget, context,
+                        gdk_atom_intern("UTF8_STRING", false), time);
     } else if (known_formats.count(gdk_atom_intern("text/plain;charset=utf-8",
                                                    false))) {
       gtk_drag_get_data(widget, context,
                         gdk_atom_intern("text/plain;charset=utf-8", false),
+                        time);
+    } else if (known_formats.count(GDK_TARGET_STRING)) {
+      gtk_drag_get_data(widget, context, GDK_TARGET_STRING, time);
+    } else if (known_formats.count(gdk_atom_intern("text/plain", false))) {
+      gtk_drag_get_data(widget, context, gdk_atom_intern("text/plain", false),
                         time);
     } else if (known_formats.count(gdk_atom_intern("TEXT", false))) {
         gtk_drag_get_data(widget, context, gdk_atom_intern("TEXT", false),
@@ -289,9 +292,6 @@ void DropTargetGtk::RequestFormats(GdkDragContext* context,
     } else if (known_formats.count(gdk_atom_intern("STRING", false))) {
       gtk_drag_get_data(widget, context, gdk_atom_intern("STRING", false),
                         time);
-    } else if (known_formats.count(gdk_atom_intern("UTF8_STRING", false))) {
-      gtk_drag_get_data(widget, context,
-                        gdk_atom_intern("UTF8_STRING", false), time);
     }
   }
   if ((formats & OSExchangeData::URL) != 0 &&
