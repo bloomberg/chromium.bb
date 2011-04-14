@@ -5,7 +5,9 @@
 
 Import('env')
 
+obj=env.ComponentObject('irt_stub',
+                        '${SCONSTRUCT_DIR}/src/untrusted/irt/irt_elf_utils.c')
+
 env.ComponentLibrary('libppapi_stub',
-                     ['plugin_main_irt.c',
-                      '${SCONSTRUCT_DIR}/src/untrusted/irt/irt_elf_utils.c'])
+                     ['plugin_main_irt.c', obj])
 env.AddLibraryToSdk(['libppapi_stub'])
