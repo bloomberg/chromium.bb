@@ -66,7 +66,7 @@ echo @@@BUILD_STEP small_tests64@@@
 call vcvarsall.bat x64 && call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
  --nacl_glibc -k --verbose --mode=dbg-win,nacl,doc small_tests platform=x86-64
-:: if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
+if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 
 # TODO(khim): add medium_tests, large_tests, chrome_browser_tests.
 

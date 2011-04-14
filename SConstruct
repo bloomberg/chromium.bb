@@ -1404,7 +1404,7 @@ def CommandSelLdrTestNacl(env, name, command,
   # Add Architechture Info
   extra['arch'] = env['BUILD_ARCHITECTURE']
   extra['subarch'] = env['BUILD_SUBARCH']
-  return CommandTest(env, name, command, size, **extra)
+  return CommandTest(env, name, command, size, posix_path=True, **extra)
 
 pre_base_env.AddMethod(CommandSelLdrTestNacl)
 
@@ -1433,8 +1433,8 @@ UNSUPPORTED_VALGRIND_EXIT_STATUS = ['sigill' ,
                                     'trusted_sigsegv_or_equivalent'];
 
 
-def CommandTest(env, name, command, size='small',
-                direct_emulation=True, extra_deps=[], **extra):
+def CommandTest(env, name, command, size='small', direct_emulation=True,
+                extra_deps=[], posix_path=False, **extra):
   if not  name.endswith('.out') or name.startswith('$'):
     print "ERROR: bad  test filename for test output ", name
     assert 0
@@ -1481,12 +1481,13 @@ def CommandTest(env, name, command, size='small',
 
   test_script = env.File('${SCONSTRUCT_DIR}/tools/command_tester.py')
   command = ['${PYTHON}', test_script] + script_flags + command
-  return AutoDepsCommand(env, name, command, extra_deps=extra_deps)
+  return AutoDepsCommand(env, name, command,
+                         extra_deps=extra_deps, posix_path=posix_path)
 
 pre_base_env.AddMethod(CommandTest)
 
 
-def AutoDepsCommand(env, name, command, extra_deps=[]):
+def AutoDepsCommand(env, name, command, extra_deps=[], posix_path=False):
   """AutoDepsCommand() takes a command as an array of arguments.  Each
   argument may either be:
 
@@ -1506,7 +1507,10 @@ def AutoDepsCommand(env, name, command, extra_deps=[]):
         # See http://code.google.com/p/nativeclient/issues/detail?id=1086
         raise AssertionError('Argument to AutoDepsCommand() actually contains '
                              'multiple (or zero) arguments: %r' % arg)
-      command[index] = '${SOURCES[%d].abspath}' % len(deps)
+      if posix_path:
+        command[index] = '${SOURCES[%d].posix}' % len(deps)
+      else:
+        command[index] = '${SOURCES[%d].abspath}' % len(deps)
       deps.append(arg)
 
   # If we are testing build output captured from elsewhere,
