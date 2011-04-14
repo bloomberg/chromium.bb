@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/ui/views/info_bubble.h"
+#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -18,22 +18,22 @@ class InstalledBubbleContent;
 class SkBitmap;
 
 // Provides feedback to the user upon successful installation of an
-// extension. Depending on the type of extension, the InfoBubble will
+// extension. Depending on the type of extension, the Bubble will
 // point to:
 //    OMNIBOX_KEYWORD-> The omnibox.
 //    BROWSER_ACTION -> The browserAction icon in the toolbar.
 //    PAGE_ACTION    -> A preview of the pageAction icon in the location
-//                      bar which is shown while the InfoBubble is shown.
+//                      bar which is shown while the Bubble is shown.
 //    GENERIC        -> The wrench menu. This case includes pageActions that
 //                      don't specify a default icon.
 //
 // ExtensionInstallBubble manages its own lifetime.
 class ExtensionInstalledBubble
-    : public InfoBubbleDelegate,
+    : public BubbleDelegate,
       public NotificationObserver,
       public base::RefCountedThreadSafe<ExtensionInstalledBubble> {
  public:
-  // The behavior and content of this InfoBubble comes in these varieties:
+  // The behavior and content of this Bubble comes in these varieties:
   enum BubbleType {
     OMNIBOX_KEYWORD,
     BROWSER_ACTION,
@@ -65,9 +65,8 @@ class ExtensionInstalledBubble
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // InfoBubbleDelegate
-  virtual void InfoBubbleClosing(InfoBubble* info_bubble,
-                                 bool closed_by_escape);
+  // BubbleDelegate
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
   virtual bool CloseOnEscape();
   virtual bool FadeInOnShow();
 

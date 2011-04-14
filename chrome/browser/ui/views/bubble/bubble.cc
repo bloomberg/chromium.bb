@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/info_bubble.h"
+#include "chrome/browser/ui/views/bubble/bubble.h"
 
 #include <vector>
 
@@ -32,11 +32,11 @@ static const int kHideFadeDurationMS = 200;
 
 // Background color of the bubble.
 #if defined(OS_WIN)
-const SkColor InfoBubble::kBackgroundColor =
+const SkColor Bubble::kBackgroundColor =
     color_utils::GetSysSkColor(COLOR_WINDOW);
 #else
 // TODO(beng): source from theme provider.
-const SkColor InfoBubble::kBackgroundColor = SK_ColorWHITE;
+const SkColor Bubble::kBackgroundColor = SK_ColorWHITE;
 #endif
 
 void BorderContents::Init() {
@@ -47,7 +47,7 @@ void BorderContents::Init() {
   DCHECK(!bubble_border_);
   bubble_border_ = new BubbleBorder(arrow_location);
   set_border(bubble_border_);
-  bubble_border_->set_background_color(InfoBubble::kBackgroundColor);
+  bubble_border_->set_background_color(Bubble::kBackgroundColor);
 }
 
 void BorderContents::SizeAndGetBounds(
@@ -62,7 +62,7 @@ void BorderContents::SizeAndGetBounds(
   bubble_border_->set_arrow_location(arrow_location);
   // Set the border.
   set_border(bubble_border_);
-  bubble_border_->set_background_color(InfoBubble::kBackgroundColor);
+  bubble_border_->set_background_color(Bubble::kBackgroundColor);
 
   // Give the contents a margin.
   gfx::Size local_contents_size(contents_size);
@@ -111,7 +111,7 @@ void BorderContents::OnPaint(gfx::Canvas* canvas) {
   SkPaint paint;
   paint.setAntiAlias(true);
   paint.setStyle(SkPaint::kFill_Style);
-  paint.setColor(InfoBubble::kBackgroundColor);
+  paint.setColor(Bubble::kBackgroundColor);
   gfx::Path path;
   gfx::Rect bounds(GetContentsBounds());
   SkRect rect;
@@ -239,21 +239,21 @@ LRESULT BorderWidget::OnMouseActivate(UINT message,
 }
 #endif
 
-// InfoBubbleDelegate ---------------------------------------------------------
+// BubbleDelegate ---------------------------------------------------------
 
-std::wstring InfoBubbleDelegate::accessible_name() {
+std::wstring BubbleDelegate::accessible_name() {
   return L"";
 }
 
-// InfoBubble -----------------------------------------------------------------
+// Bubble -----------------------------------------------------------------
 
 // static
-InfoBubble* InfoBubble::Show(views::Widget* parent,
-                             const gfx::Rect& position_relative_to,
-                             BubbleBorder::ArrowLocation arrow_location,
-                             views::View* contents,
-                             InfoBubbleDelegate* delegate) {
-  InfoBubble* bubble = new InfoBubble;
+Bubble* Bubble::Show(views::Widget* parent,
+                     const gfx::Rect& position_relative_to,
+                     BubbleBorder::ArrowLocation arrow_location,
+                     views::View* contents,
+                     BubbleDelegate* delegate) {
+  Bubble* bubble = new Bubble;
   bubble->InitBubble(parent, position_relative_to, arrow_location,
                      contents, delegate);
   return bubble;
@@ -261,22 +261,22 @@ InfoBubble* InfoBubble::Show(views::Widget* parent,
 
 #if defined(OS_CHROMEOS)
 // static
-InfoBubble* InfoBubble::ShowFocusless(
+Bubble* Bubble::ShowFocusless(
     views::Widget* parent,
     const gfx::Rect& position_relative_to,
     BubbleBorder::ArrowLocation arrow_location,
     views::View* contents,
-    InfoBubbleDelegate* delegate,
+    BubbleDelegate* delegate,
     bool show_while_screen_is_locked) {
-  InfoBubble* bubble = new InfoBubble(views::WidgetGtk::TYPE_POPUP,
-                                      show_while_screen_is_locked);
+  Bubble* bubble = new Bubble(views::WidgetGtk::TYPE_POPUP,
+                              show_while_screen_is_locked);
   bubble->InitBubble(parent, position_relative_to, arrow_location,
                      contents, delegate);
   return bubble;
 }
 #endif
 
-void InfoBubble::Close() {
+void Bubble::Close() {
   if (show_status_ != kOpen)
     return;
 
@@ -288,7 +288,7 @@ void InfoBubble::Close() {
     DoClose(false);
 }
 
-void InfoBubble::AnimationEnded(const ui::Animation* animation) {
+void Bubble::AnimationEnded(const ui::Animation* animation) {
   if (static_cast<int>(animation_->GetCurrentValue()) == 0) {
     // When fading out we just need to close the bubble at the end
     DoClose(false);
@@ -301,7 +301,7 @@ void InfoBubble::AnimationEnded(const ui::Animation* animation) {
   }
 }
 
-void InfoBubble::AnimationProgressed(const ui::Animation* animation) {
+void Bubble::AnimationProgressed(const ui::Animation* animation) {
 #if defined(OS_WIN)
   // Set the opacity for the main contents window.
   unsigned char opacity = static_cast<unsigned char>(
@@ -318,7 +318,7 @@ void InfoBubble::AnimationProgressed(const ui::Animation* animation) {
 #endif
 }
 
-InfoBubble::InfoBubble()
+Bubble::Bubble()
     :
 #if defined(OS_LINUX)
       WidgetGtk(TYPE_WINDOW),
@@ -337,8 +337,7 @@ InfoBubble::InfoBubble()
 }
 
 #if defined(OS_CHROMEOS)
-InfoBubble::InfoBubble(views::WidgetGtk::Type type,
-                       bool show_while_screen_is_locked)
+Bubble::Bubble(views::WidgetGtk::Type type, bool show_while_screen_is_locked)
     : WidgetGtk(type),
       border_contents_(NULL),
       delegate_(NULL),
@@ -350,14 +349,14 @@ InfoBubble::InfoBubble(views::WidgetGtk::Type type,
 }
 #endif
 
-InfoBubble::~InfoBubble() {
+Bubble::~Bubble() {
 }
 
-void InfoBubble::InitBubble(views::Widget* parent,
-                            const gfx::Rect& position_relative_to,
-                            BubbleBorder::ArrowLocation arrow_location,
-                            views::View* contents,
-                            InfoBubbleDelegate* delegate) {
+void Bubble::InitBubble(views::Widget* parent,
+                        const gfx::Rect& position_relative_to,
+                        BubbleBorder::ArrowLocation arrow_location,
+                        views::View* contents,
+                        BubbleDelegate* delegate) {
   delegate_ = delegate;
   position_relative_to_ = position_relative_to;
   arrow_location_ = arrow_location;
@@ -387,7 +386,7 @@ void InfoBubble::InitBubble(views::Widget* parent,
 
   border_->Init(CreateBorderContents(), parent->GetNativeView());
 
-  // We make the BorderWidget the owner of the InfoBubble HWND, so that the
+  // We make the BorderWidget the owner of the Bubble HWND, so that the
   // latter is displayed on top of the former.
   WidgetWin::Init(border_->GetNativeView(), gfx::Rect());
 
@@ -460,7 +459,7 @@ void InfoBubble::InitBubble(views::Widget* parent,
 
   // Done creating the bubble.
   NotificationService::current()->Notify(NotificationType::INFO_BUBBLE_CREATED,
-                                         Source<InfoBubble>(this),
+                                         Source<Bubble>(this),
                                          NotificationService::NoDetails());
 
   // Show the window.
@@ -474,11 +473,11 @@ void InfoBubble::InitBubble(views::Widget* parent,
 #endif
 }
 
-BorderContents* InfoBubble::CreateBorderContents() {
+BorderContents* Bubble::CreateBorderContents() {
   return new BorderContents();
 }
 
-void InfoBubble::SizeToContents() {
+void Bubble::SizeToContents() {
   gfx::Rect window_bounds;
 
 #if defined(OS_WIN)
@@ -501,7 +500,7 @@ void InfoBubble::SizeToContents() {
 }
 
 #if defined(OS_WIN)
-void InfoBubble::OnActivate(UINT action, BOOL minimized, HWND window) {
+void Bubble::OnActivate(UINT action, BOOL minimized, HWND window) {
   // The popup should close when it is deactivated.
   if (action == WA_INACTIVE) {
     Close();
@@ -511,20 +510,20 @@ void InfoBubble::OnActivate(UINT action, BOOL minimized, HWND window) {
   }
 }
 #elif defined(OS_LINUX)
-void InfoBubble::IsActiveChanged() {
+void Bubble::IsActiveChanged() {
   if (!IsActive())
     Close();
 }
 #endif
 
-void InfoBubble::DoClose(bool closed_by_escape) {
+void Bubble::DoClose(bool closed_by_escape) {
   if (show_status_ == kClosed)
     return;
 
   GetFocusManager()->UnregisterAccelerator(
       views::Accelerator(ui::VKEY_ESCAPE, false, false, false), this);
   if (delegate_)
-    delegate_->InfoBubbleClosing(this, closed_by_escape);
+    delegate_->BubbleClosing(this, closed_by_escape);
   show_status_ = kClosed;
 #if defined(OS_WIN)
   border_->Close();
@@ -534,11 +533,11 @@ void InfoBubble::DoClose(bool closed_by_escape) {
 #endif
 }
 
-void InfoBubble::FadeIn() {
+void Bubble::FadeIn() {
   Fade(true);  // |fade_in|.
 }
 
-void InfoBubble::FadeOut() {
+void Bubble::FadeOut() {
 #if defined(OS_WIN)
   // The contents window cannot have the layered flag on by default, since its
   // content doesn't always work inside a layered window, but when animating it
@@ -552,7 +551,7 @@ void InfoBubble::FadeOut() {
   Fade(false);  // |fade_in|.
 }
 
-void InfoBubble::Fade(bool fade_in) {
+void Bubble::Fade(bool fade_in) {
   animation_.reset(new ui::SlideAnimation(this));
   animation_->SetSlideDuration(kHideFadeDurationMS);
   animation_->SetTweenType(ui::Tween::LINEAR);
@@ -564,7 +563,7 @@ void InfoBubble::Fade(bool fade_in) {
     animation_->Hide();
 }
 
-bool InfoBubble::AcceleratorPressed(const views::Accelerator& accelerator) {
+bool Bubble::AcceleratorPressed(const views::Accelerator& accelerator) {
   if (!delegate_ || delegate_->CloseOnEscape()) {
     DoClose(true);
     return true;

@@ -9,13 +9,13 @@
 #include "base/compiler_specific.h"
 #include "base/task.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/ui/views/info_bubble.h"
+#include "chrome/browser/ui/views/bubble/bubble.h"
 
 class FirstRunBubbleViewBase;
 class Profile;
 
-class FirstRunBubble : public InfoBubble,
-                       public InfoBubbleDelegate {
+class FirstRunBubble : public Bubble,
+                       public BubbleDelegate {
  public:
   static FirstRunBubble* Show(Profile* profile, views::Widget* parent,
                               const gfx::Rect& position_relative_to,
@@ -32,13 +32,12 @@ class FirstRunBubble : public InfoBubble,
   void EnableParent();
 
 #if defined(OS_WIN)
-  // Overridden from InfoBubble:
+  // Overridden from Bubble:
   virtual void OnActivate(UINT action, BOOL minimized, HWND window);
 #endif
 
-  // InfoBubbleDelegate.
-  virtual void InfoBubbleClosing(InfoBubble* info_bubble,
-                                 bool closed_by_escape);
+  // BubbleDelegate.
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
   virtual bool CloseOnEscape() { return true; }
   virtual bool FadeInOnShow() { return true; }
 

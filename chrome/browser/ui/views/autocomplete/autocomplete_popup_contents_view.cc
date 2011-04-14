@@ -12,7 +12,7 @@
 #include "chrome/browser/instant/promo_counter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_result_view.h"
-#include "chrome/browser/ui/views/bubble_border.h"
+#include "chrome/browser/ui/views/bubble/bubble_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

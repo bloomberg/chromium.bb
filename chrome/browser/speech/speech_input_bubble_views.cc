@@ -9,7 +9,7 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/views/info_bubble.h"
+#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "grit/generated_resources.h"
@@ -248,7 +248,7 @@ void ContentView::Layout() {
 // Implementation of SpeechInputBubble.
 class SpeechInputBubbleImpl
     : public SpeechInputBubbleBase,
-      public InfoBubbleDelegate {
+      public BubbleDelegate {
  public:
   SpeechInputBubbleImpl(TabContents* tab_contents,
                         Delegate* delegate,
@@ -267,15 +267,14 @@ class SpeechInputBubbleImpl
   // |element_rect| is the html element's bounds in page coordinates.
   gfx::Rect GetInfoBubbleTarget(const gfx::Rect& element_rect);
 
-  // InfoBubbleDelegate
-  virtual void InfoBubbleClosing(InfoBubble* info_bubble,
-                                 bool closed_by_escape);
+  // BubbleDelegate
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
   virtual bool CloseOnEscape();
   virtual bool FadeInOnShow();
 
  private:
   Delegate* delegate_;
-  InfoBubble* info_bubble_;
+  Bubble* bubble_;
   ContentView* bubble_content_;
   gfx::Rect element_rect_;
 
@@ -291,7 +290,7 @@ SpeechInputBubbleImpl::SpeechInputBubbleImpl(TabContents* tab_contents,
                                              const gfx::Rect& element_rect)
     : SpeechInputBubbleBase(tab_contents),
       delegate_(delegate),
-      info_bubble_(NULL),
+      bubble_(NULL),
       bubble_content_(NULL),
       element_rect_(element_rect),
       did_invoke_close_(false) {
@@ -312,9 +311,9 @@ gfx::Rect SpeechInputBubbleImpl::GetInfoBubbleTarget(
       container_rect.y() + element_rect.y() + element_rect.height(), 1, 1);
 }
 
-void SpeechInputBubbleImpl::InfoBubbleClosing(InfoBubble* info_bubble,
-                                              bool closed_by_escape) {
-  info_bubble_ = NULL;
+void SpeechInputBubbleImpl::BubbleClosing(Bubble* bubble,
+                                          bool closed_by_escape) {
+  bubble_ = NULL;
   bubble_content_ = NULL;
   if (!did_invoke_close_)
     delegate_->InfoBubbleFocusChanged();
@@ -329,7 +328,7 @@ bool SpeechInputBubbleImpl::FadeInOnShow() {
 }
 
 void SpeechInputBubbleImpl::Show() {
-  if (info_bubble_)
+  if (bubble_)
     return;  // nothing to do, already visible.
 
   bubble_content_ = new ContentView(delegate_);
@@ -339,30 +338,30 @@ void SpeechInputBubbleImpl::Show() {
       views::NativeWidget::GetTopLevelNativeWidget(
           tab_contents()->view()->GetNativeView());
   if (toplevel_widget) {
-    info_bubble_ = InfoBubble::Show(toplevel_widget->GetWidget(),
-                                    GetInfoBubbleTarget(element_rect_),
-                                    BubbleBorder::TOP_LEFT, bubble_content_,
-                                    this);
+    bubble_ = Bubble::Show(toplevel_widget->GetWidget(),
+                           GetInfoBubbleTarget(element_rect_),
+                           BubbleBorder::TOP_LEFT, bubble_content_,
+                           this);
 
     // We don't want fade outs when closing because it makes speech recognition
     // appear slower than it is. Also setting it to false allows |Close| to
     // destroy the bubble immediately instead of waiting for the fade animation
     // to end so the caller can manage this object's life cycle like a normal
     // stack based or member variable object.
-    info_bubble_->set_fade_away_on_close(false);
+    bubble_->set_fade_away_on_close(false);
   }
 }
 
 void SpeechInputBubbleImpl::Hide() {
-  if (info_bubble_)
-    info_bubble_->Close();
+  if (bubble_)
+    bubble_->Close();
 }
 
 void SpeechInputBubbleImpl::UpdateLayout() {
   if (bubble_content_)
     bubble_content_->UpdateLayout(display_mode(), message_text(), icon_image());
-  if (info_bubble_)  // Will be null on first call.
-    info_bubble_->SizeToContents();
+  if (bubble_)  // Will be null on first call.
+    bubble_->SizeToContents();
 }
 
 void SpeechInputBubbleImpl::UpdateImage() {

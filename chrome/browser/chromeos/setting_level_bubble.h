@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/timer.h"
-#include "chrome/browser/ui/views/info_bubble.h"
+#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 
@@ -20,7 +20,7 @@ class SettingLevelBubbleView;
 
 // Singleton class controlling a bubble displaying a level-based setting like
 // volume or brightness.
-class SettingLevelBubble : public InfoBubbleDelegate,
+class SettingLevelBubble : public BubbleDelegate,
                            public ui::AnimationDelegate {
  public:
   void ShowBubble(int percent);
@@ -52,9 +52,8 @@ class SettingLevelBubble : public InfoBubbleDelegate,
  private:
   void OnTimeout();
 
-  // Overridden from InfoBubbleDelegate.
-  virtual void InfoBubbleClosing(InfoBubble* info_bubble,
-                                 bool closed_by_escape);
+  // Overridden from BubbleDelegate.
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
   virtual bool CloseOnEscape() { return true; }
   virtual bool FadeInOnShow() { return false; }
 
@@ -73,9 +72,9 @@ class SettingLevelBubble : public InfoBubbleDelegate,
   SkBitmap* zero_icon_;
 
   // Currently shown bubble or NULL.
-  InfoBubble* bubble_;
+  Bubble* bubble_;
 
-  // Its contents view, owned by InfoBubble.
+  // Its contents view, owned by Bubble.
   SettingLevelBubbleView* view_;
 
   ui::SlideAnimation animation_;

@@ -8,7 +8,7 @@
 
 #include "base/string16.h"
 #include "chrome/browser/bookmarks/recently_used_folders_combo_model.h"
-#include "chrome/browser/ui/views/info_bubble.h"
+#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
 #include "views/controls/button/button.h"
@@ -27,18 +27,18 @@ class Textfield;
 }
 
 // BookmarkBubbleView is a view intended to be used as the content of an
-// InfoBubble. BookmarkBubbleView provides views for unstarring and editting
-// the bookmark it is created with. Don't create a BookmarkBubbleView directly,
+// Bubble. BookmarkBubbleView provides views for unstarring and editing the
+// bookmark it is created with. Don't create a BookmarkBubbleView directly,
 // instead use the static Show method.
 class BookmarkBubbleView : public views::View,
                            public views::LinkController,
                            public views::ButtonListener,
                            public views::Combobox::Listener,
-                           public InfoBubbleDelegate {
+                           public BubbleDelegate {
  public:
   static void Show(views::Window* window,
                    const gfx::Rect& bounds,
-                   InfoBubbleDelegate* delegate,
+                   BubbleDelegate* delegate,
                    Profile* profile,
                    const GURL& url,
                    bool newly_bookmarked);
@@ -49,7 +49,7 @@ class BookmarkBubbleView : public views::View,
 
   virtual ~BookmarkBubbleView();
 
-  void set_info_bubble(InfoBubble* info_bubble) { info_bubble_ = info_bubble; }
+  void set_bubble(Bubble* bubble) { bubble_ = bubble; }
 
   // Invoked after the bubble has been shown.
   virtual void BubbleShown();
@@ -63,7 +63,7 @@ class BookmarkBubbleView : public views::View,
   // Creates a BookmarkBubbleView.
   // |title| is the title of the page. If newly_bookmarked is false, title is
   // ignored and the title of the bookmark is fetched from the database.
-  BookmarkBubbleView(InfoBubbleDelegate* delegate,
+  BookmarkBubbleView(BubbleDelegate* delegate,
                      Profile* profile,
                      const GURL& url,
                      bool newly_bookmarked);
@@ -85,11 +85,9 @@ class BookmarkBubbleView : public views::View,
                            int prev_index,
                            int new_index);
 
-  // InfoBubbleDelegate methods. These forward to the InfoBubbleDelegate
-  // supplied in the constructor as well as sending out the necessary
-  // notification.
-  virtual void InfoBubbleClosing(InfoBubble* info_bubble,
-                                 bool closed_by_escape);
+  // BubbleDelegate methods. These forward to the BubbleDelegate supplied in the
+  // constructor as well as sending out the necessary notification.
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
   virtual bool CloseOnEscape();
   virtual bool FadeInOnShow();
   virtual std::wstring accessible_name();
@@ -107,13 +105,13 @@ class BookmarkBubbleView : public views::View,
   void ApplyEdits();
 
   // The bookmark bubble, if we're showing one.
-  static BookmarkBubbleView* bubble_;
+  static BookmarkBubbleView* bookmark_bubble_;
 
-  // The InfoBubble showing us.
-  InfoBubble* info_bubble_;
+  // The Bubble showing us.
+  Bubble* bubble_;
 
   // Delegate for the bubble, may be null.
-  InfoBubbleDelegate* delegate_;
+  BubbleDelegate* delegate_;
 
   // The profile.
   Profile* profile_;

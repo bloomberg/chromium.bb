@@ -27,7 +27,7 @@ MessageBubble::MessageBubble(views::WidgetGtk::Type type,
                              const std::wstring& help,
                              bool grab_enabled,
                              MessageBubbleDelegate* delegate)
-    : InfoBubble(type, false),  // don't show while screen is locked
+    : Bubble(type, false),  // don't show while screen is locked
       parent_(parent),
       help_link_(NULL),
       message_delegate_(delegate),
@@ -152,7 +152,7 @@ void MessageBubble::SetMouseCapture() {
 
 void MessageBubble::Close() {
   parent_ = NULL;
-  InfoBubble::Close();
+  Bubble::Close();
 }
 
 }  // namespace chromeos

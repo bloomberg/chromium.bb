@@ -8,7 +8,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/info_bubble.h"
+#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/cert_store.h"
@@ -91,7 +91,7 @@ PageInfoBubbleView::PageInfoBubbleView(gfx::NativeWindow parent_window,
                                             show_history, this)),
       parent_window_(parent_window),
       cert_id_(ssl.cert_id()),
-      info_bubble_(NULL),
+      bubble_(NULL),
       help_center_link_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(resize_animation_(this)),
       animation_start_height_(0) {
@@ -223,7 +223,7 @@ void PageInfoBubbleView::LinkActivated(views::Link* source, int event_flags) {
   // We want to make sure the info bubble closes once the link is activated.  So
   // we close it explicitly rather than relying on a side-effect of opening a
   // new tab (see http://crosbug.com/10186).
-  info_bubble_->Close();
+  bubble_->Close();
 
   GURL url = google_util::AppendGoogleLocaleParam(
       GURL(chrome::kPageInfoHelpCenterURL));
@@ -232,11 +232,11 @@ void PageInfoBubbleView::LinkActivated(views::Link* source, int event_flags) {
 }
 
 void PageInfoBubbleView::AnimationEnded(const ui::Animation* animation) {
-  info_bubble_->SizeToContents();
+  bubble_->SizeToContents();
 }
 
 void PageInfoBubbleView::AnimationProgressed(const ui::Animation* animation) {
-  info_bubble_->SizeToContents();
+  bubble_->SizeToContents();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -363,11 +363,11 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
   // Show the bubble.
   PageInfoBubbleView* page_info_bubble =
       new PageInfoBubbleView(parent, profile, url, ssl, show_history);
-  InfoBubble* info_bubble =
-      InfoBubble::Show(browser_view->GetWidget(), bounds,
-                       BubbleBorder::TOP_LEFT,
-                       page_info_bubble, page_info_bubble);
-  page_info_bubble->set_info_bubble(info_bubble);
+  Bubble* bubble =
+      Bubble::Show(browser_view->GetWidget(), bounds,
+                   BubbleBorder::TOP_LEFT,
+                   page_info_bubble, page_info_bubble);
+  page_info_bubble->set_bubble(bubble);
 }
 
 }

@@ -8,13 +8,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/ui/views/info_bubble.h"
+#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "chrome/common/content_settings_types.h"
 #include "ui/base/animation/linear_animation.h"
 #include "views/controls/image_view.h"
 
 class ContentSettingImageModel;
-class InfoBubble;
+class Bubble;
 class LocationBarView;
 class Profile;
 class TabContents;
@@ -24,7 +24,7 @@ class MouseEvent;
 }
 
 class ContentSettingImageView : public views::ImageView,
-                                public InfoBubbleDelegate,
+                                public BubbleDelegate,
                                 public ui::LinearAnimation {
  public:
   ContentSettingImageView(ContentSettingsType content_type,
@@ -48,9 +48,8 @@ class ContentSettingImageView : public views::ImageView,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
 
-  // InfoBubbleDelegate overrides:
-  virtual void InfoBubbleClosing(InfoBubble* info_bubble,
-                                 bool closed_by_escape) OVERRIDE;
+  // BubbleDelegate overrides:
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
   virtual bool CloseOnEscape() OVERRIDE;
   virtual bool FadeInOnShow() OVERRIDE;
 
@@ -66,7 +65,7 @@ class ContentSettingImageView : public views::ImageView,
   Profile* profile_;
 
   // The currently shown info bubble if any.
-  InfoBubble* info_bubble_;
+  Bubble* bubble_;
 
   string16 animated_text_;
   bool animation_in_progress_;

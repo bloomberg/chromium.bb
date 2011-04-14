@@ -24,8 +24,8 @@
 // get to a more comprehensive settings management dialog.  A few types have
 // more or fewer controls than this.
 
+class Bubble;
 class ContentSettingBubbleModel;
-class InfoBubble;
 class Profile;
 class TabContents;
 
@@ -44,9 +44,9 @@ class ContentSettingBubbleContents : public views::View,
       Profile* profile, TabContents* tab_contents);
   virtual ~ContentSettingBubbleContents();
 
-  // Sets |info_bubble_|, so we can close the bubble if needed.  The caller owns
+  // Sets |bubble_|, so we can close the bubble if needed.  The caller owns
   // the bubble and must keep it alive.
-  void set_info_bubble(InfoBubble* info_bubble) { info_bubble_ = info_bubble; }
+  void set_bubble(Bubble* bubble) { bubble_ = bubble; }
 
   virtual gfx::Size GetPreferredSize();
 
@@ -84,8 +84,8 @@ class ContentSettingBubbleContents : public views::View,
   // A registrar for listening for TAB_CONTENTS_DESTROYED notifications.
   NotificationRegistrar registrar_;
 
-  // The InfoBubble holding us.
-  InfoBubble* info_bubble_;
+  // The Bubble holding us.
+  Bubble* bubble_;
 
   // Some of our controls, so we can tell what's been clicked when we get a
   // message.

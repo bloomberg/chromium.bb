@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/page_info_model.h"
-#include "chrome/browser/ui/views/info_bubble.h"
+#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "views/controls/link.h"
@@ -19,7 +19,7 @@ class Label;
 
 class PageInfoBubbleView : public views::View,
                            public PageInfoModel::PageInfoModelObserver,
-                           public InfoBubbleDelegate,
+                           public BubbleDelegate,
                            public views::LinkController,
                            public ui::AnimationDelegate {
  public:
@@ -33,7 +33,7 @@ class PageInfoBubbleView : public views::View,
   // Show the certificate dialog.
   void ShowCertDialog();
 
-  void set_info_bubble(InfoBubble* info_bubble) { info_bubble_ = info_bubble; }
+  void set_bubble(Bubble* bubble) { bubble_ = bubble; }
 
   // View methods:
   virtual gfx::Size GetPreferredSize();
@@ -41,9 +41,8 @@ class PageInfoBubbleView : public views::View,
   // PageInfoModel::PageInfoModelObserver methods:
   virtual void ModelChanged();
 
-  // InfoBubbleDelegate methods:
-  virtual void InfoBubbleClosing(InfoBubble* info_bubble,
-                                 bool closed_by_escape) {}
+  // BubbleDelegate methods:
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) {}
   virtual bool CloseOnEscape();
   virtual bool FadeInOnShow();
   virtual std::wstring accessible_name();
@@ -62,13 +61,13 @@ class PageInfoBubbleView : public views::View,
   // The model providing the various section info.
   PageInfoModel model_;
 
-  // The parent window of the InfoBubble showing this view.
+  // The parent window of the Bubble showing this view.
   gfx::NativeWindow parent_window_;
 
   // The id of the certificate for this page.
   int cert_id_;
 
-  InfoBubble* info_bubble_;
+  Bubble* bubble_;
 
   // The Help Center link at the bottom of the bubble.
   views::Link* help_center_link_;

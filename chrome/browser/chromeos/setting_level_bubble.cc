@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/views/info_bubble.h"
+#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "views/widget/root_view.h"
 
 namespace {
@@ -43,7 +43,7 @@ namespace chromeos {
 // Temporary helper routine. Tries to first return the widget from the
 // most-recently-focused normal browser window, then from a login
 // background, and finally NULL if both of those fail.
-// TODO(glotov): remove this in favor of enabling InfoBubble class act
+// TODO(glotov): remove this in favor of enabling Bubble class act
 // without |parent| specified. crosbug.com/4025
 static views::Widget* GetToplevelWidget() {
   GtkWindow* window = NULL;
@@ -113,12 +113,12 @@ void SettingLevelBubble::ShowBubble(int percent) {
     const int x = view_size.width() / 2 +
         kBubbleXRatio * (bounds.width() - view_size.width());
     const int y = bounds.height() - view_size.height() / 2 - kBubbleBottomGap;
-    bubble_ = InfoBubble::ShowFocusless(widget,  // parent
-                                        gfx::Rect(x, y, 0, 20),
-                                        BubbleBorder::FLOAT,
-                                        view_,  // contents
-                                        this,   // delegate
-                                        true);  // show while screen is locked
+    bubble_ = Bubble::ShowFocusless(widget,  // parent
+                                    gfx::Rect(x, y, 0, 20),
+                                    BubbleBorder::FLOAT,
+                                    view_,  // contents
+                                    this,   // delegate
+                                    true);  // show while screen is locked
   } else {
     DCHECK(view_);
     timeout_timer_.Stop();
@@ -158,8 +158,8 @@ void SettingLevelBubble::OnTimeout() {
   HideBubble();
 }
 
-void SettingLevelBubble::InfoBubbleClosing(InfoBubble* info_bubble, bool) {
-  DCHECK(info_bubble == bubble_);
+void SettingLevelBubble::BubbleClosing(Bubble* bubble, bool) {
+  DCHECK(bubble == bubble_);
   timeout_timer_.Stop();
   animation_.Stop();
   bubble_ = NULL;

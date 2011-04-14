@@ -824,8 +824,7 @@ void ScreenLocker::OnLoginSuccess(
     CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenUnlockRequested();
 }
 
-void ScreenLocker::InfoBubbleClosing(InfoBubble* info_bubble,
-                                     bool closed_by_escape) {
+void ScreenLocker::BubbleClosing(Bubble* bubble, bool closed_by_escape) {
   error_info_ = NULL;
   screen_lock_view_->SetSignoutEnabled(true);
   if (mouse_event_relay_.get()) {

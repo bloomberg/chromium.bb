@@ -54,7 +54,7 @@ ContentSettingImageView::ContentSettingImageView(
               content_type)),
       parent_(parent),
       profile_(profile),
-      info_bubble_(NULL),
+      bubble_(NULL),
       animation_in_progress_(false),
       text_size_(0),
       visible_text_size_(0) {
@@ -62,8 +62,8 @@ ContentSettingImageView::ContentSettingImageView(
 }
 
 ContentSettingImageView::~ContentSettingImageView() {
-  if (info_bubble_)
-    info_bubble_->Close();
+  if (bubble_)
+    bubble_->Close();
 }
 
 void ContentSettingImageView::UpdateFromTabContents(TabContents* tab_contents) {
@@ -147,15 +147,15 @@ void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event) {
           ContentSettingBubbleModel::CreateContentSettingBubbleModel(
               tab_contents, profile_, content_settings_type),
           profile_, tab_contents);
-  info_bubble_ = InfoBubble::Show(GetWidget(), screen_bounds,
-      BubbleBorder::TOP_RIGHT, bubble_contents, this);
-  bubble_contents->set_info_bubble(info_bubble_);
+  bubble_ = Bubble::Show(GetWidget(), screen_bounds, BubbleBorder::TOP_RIGHT,
+                         bubble_contents, this);
+  bubble_contents->set_bubble(bubble_);
 }
 
 void ContentSettingImageView::VisibilityChanged(View* starting_from,
                                                 bool is_visible) {
-  if (!is_visible && info_bubble_)
-    info_bubble_->Close();
+  if (!is_visible && bubble_)
+    bubble_->Close();
 }
 
 void ContentSettingImageView::OnPaint(gfx::Canvas* canvas) {
@@ -217,9 +217,9 @@ void ContentSettingImageView::OnPaintBackground(gfx::Canvas* canvas) {
                                         kBoxCornerRadius, outer_paint);
 }
 
-void ContentSettingImageView::InfoBubbleClosing(InfoBubble* info_bubble,
-                                                bool closed_by_escape) {
-  info_bubble_ = NULL;
+void ContentSettingImageView::BubbleClosing(Bubble* bubble,
+                                            bool closed_by_escape) {
+  bubble_ = NULL;
 }
 
 bool ContentSettingImageView::CloseOnEscape() {

@@ -61,9 +61,10 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
   virtual void CreateView();
   virtual NetworkSelectionView* AllocateView();
 
-  // Overridden from views::InfoBubbleDelegate.
-  virtual void InfoBubbleClosing(InfoBubble* info_bubble,
-                                 bool closed_by_escape) { bubble_ = NULL; }
+  // Overridden from views::BubbleDelegate.
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) {
+    bubble_ = NULL;
+  }
   virtual bool CloseOnEscape() { return true; }
   virtual bool FadeInOnShow() { return false; }
   virtual void OnHelpLinkActivated();

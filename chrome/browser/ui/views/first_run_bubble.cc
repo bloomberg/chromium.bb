@@ -29,11 +29,11 @@
 
 namespace {
 
-// How much extra padding to put around our content over what the InfoBubble
+// How much extra padding to put around our content over what the Bubble
 // provides.
 const int kBubblePadding = 4;
 
-// How much extra padding to put around our content over what the InfoBubble
+// How much extra padding to put around our content over what the Bubble
 // provides in alternative OEM bubble.
 const int kOEMBubblePadding = 4;
 
@@ -538,11 +538,10 @@ void FirstRunBubble::OnActivate(UINT action, BOOL minimized, HWND window) {
 
   // Keep window from automatically closing until kLingerTime has passed.
   if (::IsWindowEnabled(GetParent()))
-    InfoBubble::OnActivate(action, minimized, window);
+    Bubble::OnActivate(action, minimized, window);
 }
 
-void FirstRunBubble::InfoBubbleClosing(InfoBubble* info_bubble,
-                                       bool closed_by_escape) {
+void FirstRunBubble::BubbleClosing(Bubble* bubble, bool closed_by_escape) {
   // Make sure our parent window is re-enabled.
   if (!IsWindowEnabled(GetParent()))
     ::EnableWindow(GetParent(), true);

@@ -65,8 +65,7 @@ bool StarView::OnKeyPressed(const views::KeyEvent& event) {
   return false;
 }
 
-void StarView::InfoBubbleClosing(InfoBubble* info_bubble,
-                                 bool closed_by_escape) {
+void StarView::BubbleClosing(Bubble* bubble, bool closed_by_escape) {
 }
 
 bool StarView::CloseOnEscape() {

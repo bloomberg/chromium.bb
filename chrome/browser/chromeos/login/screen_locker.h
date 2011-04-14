@@ -75,9 +75,8 @@ class ScreenLocker : public LoginStatusConsumer,
                               const GaiaAuthConsumer::ClientLoginResult& result,
                               bool pending_requests);
 
-  // Overridden from views::InfoBubbleDelegate.
-  virtual void InfoBubbleClosing(InfoBubble* info_bubble,
-                                 bool closed_by_escape);
+  // Overridden from views::BubbleDelegate.
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
   virtual bool CloseOnEscape() { return true; }
   virtual bool FadeInOnShow() { return false; }
   virtual void OnHelpLinkActivated() {}

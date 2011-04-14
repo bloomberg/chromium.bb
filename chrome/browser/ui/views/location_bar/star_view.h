@@ -6,18 +6,18 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_STAR_VIEW_H_
 #pragma once
 
-#include "chrome/browser/ui/views/info_bubble.h"
+#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "views/controls/image_view.h"
 
 class CommandUpdater;
-class InfoBubble;
+class Bubble;
 
 namespace views {
 class KeyEvent;
 class MouseEvent;
 }
 
-class StarView : public views::ImageView, public InfoBubbleDelegate {
+class StarView : public views::ImageView, public BubbleDelegate {
  public:
   explicit StarView(CommandUpdater* command_updater);
   virtual ~StarView();
@@ -34,9 +34,8 @@ class StarView : public views::ImageView, public InfoBubbleDelegate {
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
 
-  // InfoBubbleDelegate overrides:
-  virtual void InfoBubbleClosing(InfoBubble* info_bubble,
-                                 bool closed_by_escape) OVERRIDE;
+  // BubbleDelegate overrides:
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
   virtual bool CloseOnEscape() OVERRIDE;
   virtual bool FadeInOnShow() OVERRIDE;
 

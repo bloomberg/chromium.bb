@@ -115,9 +115,10 @@ class EulaView
                     views::Label* eula_label,
                     const GURL& eula_url);
 
-  // Overridden from views::InfoBubbleDelegate.
-  virtual void InfoBubbleClosing(InfoBubble* info_bubble,
-                                 bool closed_by_escape) { bubble_ = NULL; }
+  // Overridden from views::BubbleDelegate.
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) {
+    bubble_ = NULL;
+  }
   virtual bool CloseOnEscape() { return true; }
   virtual bool FadeInOnShow() { return false; }
   virtual void OnHelpLinkActivated() {}

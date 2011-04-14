@@ -15,7 +15,7 @@
 #include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
-#include "chrome/browser/ui/views/info_bubble.h"
+#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
@@ -112,7 +112,7 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
     : content_setting_bubble_model_(content_setting_bubble_model),
       profile_(profile),
       tab_contents_(tab_contents),
-      info_bubble_(NULL),
+      bubble_(NULL),
       custom_link_(NULL),
       manage_link_(NULL),
       close_button_(NULL) {
@@ -143,8 +143,8 @@ void ContentSettingBubbleContents::ViewHierarchyChanged(bool is_add,
 void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
                                                  const views::Event& event) {
   if (sender == close_button_) {
-    info_bubble_->set_fade_away_on_close(true);
-    info_bubble_->Close();  // CAREFUL: This deletes us.
+    bubble_->set_fade_away_on_close(true);
+    bubble_->Close();  // CAREFUL: This deletes us.
     return;
   }
 
@@ -162,12 +162,12 @@ void ContentSettingBubbleContents::LinkActivated(views::Link* source,
                                                  int event_flags) {
   if (source == custom_link_) {
     content_setting_bubble_model_->OnCustomLinkClicked();
-    info_bubble_->set_fade_away_on_close(true);
-    info_bubble_->Close();  // CAREFUL: This deletes us.
+    bubble_->set_fade_away_on_close(true);
+    bubble_->Close();  // CAREFUL: This deletes us.
     return;
   }
   if (source == manage_link_) {
-    info_bubble_->set_fade_away_on_close(true);
+    bubble_->set_fade_away_on_close(true);
     content_setting_bubble_model_->OnManageLinkClicked();
     // CAREFUL: Showing the settings window activates it, which deactivates the
     // info bubble, which causes it to close, which deletes us.

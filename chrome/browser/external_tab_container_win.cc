@@ -571,11 +571,9 @@ void ExternalTabContainer::ShowPageInfo(Profile* profile,
   PageInfoBubbleView* page_info_bubble =
       new ExternalTabPageInfoBubbleView(this, NULL, profile, url,
                                         ssl, show_history);
-  InfoBubble* info_bubble =
-      InfoBubble::Show(this, bounds,
-                       BubbleBorder::TOP_LEFT,
-                       page_info_bubble, page_info_bubble);
-  page_info_bubble->set_info_bubble(info_bubble);
+  Bubble* bubble = Bubble::Show(this, bounds, BubbleBorder::TOP_LEFT,
+                                page_info_bubble, page_info_bubble);
+  page_info_bubble->set_bubble(bubble);
 }
 
 void ExternalTabContainer::RegisterRenderViewHostForAutomation(
@@ -589,7 +587,6 @@ void ExternalTabContainer::RegisterRenderViewHostForAutomation(
         pending_view);
   }
 }
-
 
 void ExternalTabContainer::RegisterRenderViewHost(
     RenderViewHost* render_view_host) {

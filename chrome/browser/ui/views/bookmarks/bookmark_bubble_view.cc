@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/views/info_bubble.h"
+#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -59,7 +59,7 @@ namespace browser {
 
 void ShowBookmarkBubbleView(views::Window* parent,
                             const gfx::Rect& bounds,
-                            InfoBubbleDelegate* delegate,
+                            BubbleDelegate* delegate,
                             Profile* profile,
                             const GURL& url,
                             bool newly_bookmarked) {
@@ -79,48 +79,49 @@ bool IsBookmarkBubbleViewShowing() {
 
 // BookmarkBubbleView ---------------------------------------------------------
 
-BookmarkBubbleView* BookmarkBubbleView::bubble_ = NULL;
+BookmarkBubbleView* BookmarkBubbleView::bookmark_bubble_ = NULL;
 
 // static
 void BookmarkBubbleView::Show(views::Window* parent,
                               const gfx::Rect& bounds,
-                              InfoBubbleDelegate* delegate,
+                              BubbleDelegate* delegate,
                               Profile* profile,
                               const GURL& url,
                               bool newly_bookmarked) {
   if (IsShowing())
     return;
 
-  bubble_ = new BookmarkBubbleView(delegate, profile, url, newly_bookmarked);
+  bookmark_bubble_ = new BookmarkBubbleView(delegate, profile, url,
+                                            newly_bookmarked);
   // TODO(beng): Pass |parent| after V2 is complete.
-  InfoBubble* info_bubble = InfoBubble::Show(
+  Bubble* bubble = Bubble::Show(
       parent->client_view()->GetWidget(), bounds, BubbleBorder::TOP_RIGHT,
-      bubble_, bubble_);
-  // |bubble_| can be set to NULL in InfoBubbleClosing when we close the bubble
+      bookmark_bubble_, bookmark_bubble_);
+  // |bubble_| can be set to NULL in BubbleClosing when we close the bubble
   // asynchronously. However, that can happen during the Show call above if the
   // window loses activation while we are getting to ready to show the bubble,
   // so we must check to make sure we still have a valid bubble before
   // proceeding.
-  if (!bubble_)
+  if (!bookmark_bubble_)
     return;
-  bubble_->set_info_bubble(info_bubble);
-  info_bubble->SizeToContents();
+  bookmark_bubble_->set_bubble(bubble);
+  bubble->SizeToContents();
   GURL url_ptr(url);
   NotificationService::current()->Notify(
       NotificationType::BOOKMARK_BUBBLE_SHOWN,
       Source<Profile>(profile->GetOriginalProfile()),
       Details<GURL>(&url_ptr));
-  bubble_->BubbleShown();
+  bookmark_bubble_->BubbleShown();
 }
 
 // static
 bool BookmarkBubbleView::IsShowing() {
-  return bubble_ != NULL;
+  return bookmark_bubble_ != NULL;
 }
 
 void BookmarkBubbleView::Hide() {
   if (IsShowing())
-    bubble_->Close();
+    bookmark_bubble_->Close();
 }
 
 BookmarkBubbleView::~BookmarkBubbleView() {
@@ -161,7 +162,7 @@ void BookmarkBubbleView::ViewHierarchyChanged(bool is_add, View* parent,
     Init();
 }
 
-BookmarkBubbleView::BookmarkBubbleView(InfoBubbleDelegate* delegate,
+BookmarkBubbleView::BookmarkBubbleView(BubbleDelegate* delegate,
                                        Profile* profile,
                                        const GURL& url,
                                        bool newly_bookmarked)
@@ -181,7 +182,7 @@ void BookmarkBubbleView::Init() {
   static bool initialized = false;
   if (!initialized) {
     kTitleColor = color_utils::GetReadableColor(SkColorSetRGB(6, 45, 117),
-                                                InfoBubble::kBackgroundColor);
+                                                Bubble::kBackgroundColor);
     kCloseImage = ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_INFO_BUBBLE_CLOSE);
 
@@ -300,7 +301,7 @@ void BookmarkBubbleView::LinkActivated(Link* source, int event_flags) {
   remove_bookmark_ = true;
   apply_edits_ = false;
 
-  info_bubble_->set_fade_away_on_close(true);
+  bubble_->set_fade_away_on_close(true);
   Close();
 }
 
@@ -316,8 +317,8 @@ void BookmarkBubbleView::ItemChanged(Combobox* combobox,
   }
 }
 
-void BookmarkBubbleView::InfoBubbleClosing(InfoBubble* info_bubble,
-                                           bool closed_by_escape) {
+void BookmarkBubbleView::BubbleClosing(Bubble* bubble,
+                                       bool closed_by_escape) {
   if (closed_by_escape) {
     remove_bookmark_ = newly_bookmarked_;
     apply_edits_ = false;
@@ -325,11 +326,11 @@ void BookmarkBubbleView::InfoBubbleClosing(InfoBubble* info_bubble,
 
   // We have to reset |bubble_| here, not in our destructor, because we'll be
   // destroyed asynchronously and the shown state will be checked before then.
-  DCHECK(bubble_ == this);
-  bubble_ = NULL;
+  DCHECK(bookmark_bubble_ == this);
+  bookmark_bubble_ = NULL;
 
   if (delegate_)
-    delegate_->InfoBubbleClosing(info_bubble, closed_by_escape);
+    delegate_->BubbleClosing(bubble, closed_by_escape);
   NotificationService::current()->Notify(
       NotificationType::BOOKMARK_BUBBLE_HIDDEN,
       Source<Profile>(profile_->GetOriginalProfile()),
@@ -351,18 +352,18 @@ std::wstring BookmarkBubbleView::accessible_name() {
 
 void BookmarkBubbleView::Close() {
   ApplyEdits();
-  static_cast<InfoBubble*>(GetWidget())->Close();
+  static_cast<Bubble*>(GetWidget())->Close();
 }
 
 void BookmarkBubbleView::HandleButtonPressed(views::Button* sender) {
   if (sender == edit_button_) {
     UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Edit"),
                               profile_);
-    info_bubble_->set_fade_away_on_close(true);
+    bubble_->set_fade_away_on_close(true);
     ShowEditor();
   } else {
     DCHECK(sender == close_button_);
-    info_bubble_->set_fade_away_on_close(true);
+    bubble_->set_fade_away_on_close(true);
     Close();
   }
   // WARNING: we've most likely been deleted when CloseWindow returns.
@@ -370,7 +371,7 @@ void BookmarkBubbleView::HandleButtonPressed(views::Button* sender) {
 
 void BookmarkBubbleView::ShowEditor() {
 #if defined(TOUCH_UI)
-  // Close the InfoBubble
+  // Close the Bubble
   Close();
 
   // Open the Bookmark Manager

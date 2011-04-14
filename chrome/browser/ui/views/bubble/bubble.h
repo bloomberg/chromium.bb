@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_INFO_BUBBLE_H_
-#define CHROME_BROWSER_UI_VIEWS_INFO_BUBBLE_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_BUBBLE_BUBBLE_H_
+#define CHROME_BROWSER_UI_VIEWS_BUBBLE_BUBBLE_H_
 #pragma once
 
-#include "chrome/browser/ui/views/bubble_border.h"
+#include "chrome/browser/ui/views/bubble/bubble_border.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "views/accelerator.h"
@@ -18,19 +18,19 @@
 #include "views/widget/widget_gtk.h"
 #endif
 
-// InfoBubble is used to display an arbitrary view above all other windows.
-// Think of InfoBubble as a tooltip that allows you to embed an arbitrary view
-// in the tooltip. Additionally the InfoBubble renders an arrow pointing at
+// Bubble is used to display an arbitrary view above all other windows.
+// Think of Bubble as a tooltip that allows you to embed an arbitrary view
+// in the tooltip. Additionally the Bubble renders an arrow pointing at
 // the region the info bubble is providing the information about.
 //
-// To use an InfoBubble, invoke Show() and it'll take care of the rest.  The
-// InfoBubble insets the contents for you, so the contents typically shouldn't
-// have any additional margins.
+// To use an Bubble, invoke Show() and it'll take care of the rest.  The Bubble
+// insets the contents for you, so the contents typically shouldn't have any
+// additional margins.
 
 #if defined(OS_WIN)
 class BorderWidget;
 #endif
-class InfoBubble;
+class Bubble;
 
 namespace gfx {
 class Path;
@@ -44,7 +44,7 @@ namespace views {
 class Widget;
 }
 
-// This is used to paint the border of the InfoBubble.  Windows uses this via
+// This is used to paint the border of the Bubble. Windows uses this via
 // BorderWidget (see below), while others can use it directly in the bubble.
 class BorderContents : public views::View {
  public:
@@ -151,23 +151,22 @@ class BorderWidget : public views::WidgetWin {
 };
 #endif
 
-class InfoBubbleDelegate {
+class BubbleDelegate {
  public:
-  // Called when the InfoBubble is closing and is about to be deleted.
+  // Called when the Bubble is closing and is about to be deleted.
   // |closed_by_escape| is true if the close is the result of the user pressing
   // escape.
-  virtual void InfoBubbleClosing(InfoBubble* info_bubble,
-                                 bool closed_by_escape) = 0;
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) = 0;
 
-  // Whether the InfoBubble should be closed when the Esc key is pressed.
+  // Whether the Bubble should be closed when the Esc key is pressed.
   virtual bool CloseOnEscape() = 0;
 
-  // Whether the InfoBubble should fade in when opening. When trying to
-  // determine whether to use FadeIn, consider whether the bubble is shown as a
-  // direct result of a user action or not. For example, if the bubble is being
-  // shown as a direct result of a mouse-click, we should not use FadeIn.
-  // However, if the bubble appears as a notification that something happened
-  // in the background, we use FadeIn.
+  // Whether the Bubble should fade in when opening. When trying to determine
+  // whether to use FadeIn, consider whether the bubble is shown as a direct
+  // result of a user action or not. For example, if the bubble is being shown
+  // as a direct result of a mouse-click, we should not use FadeIn. However, if
+  // the bubble appears as a notification that something happened in the
+  // background, we use FadeIn.
   virtual bool FadeInOnShow() = 0;
 
   // The name of the window to which this delegate belongs.
@@ -175,9 +174,9 @@ class InfoBubbleDelegate {
 };
 
 // TODO(sky): this code is ifdef-tastic. It might be cleaner to refactor the
-// WidgetFoo subclass into a separate class that calls into InfoBubble.
-// That way InfoBubble has no (or very few) ifdefs.
-class InfoBubble
+// WidgetFoo subclass into a separate class that calls into Bubble.
+// That way Bubble has no (or very few) ifdefs.
+class Bubble
 #if defined(OS_WIN)
     : public views::WidgetWin,
 #elif defined(OS_LINUX)
@@ -186,41 +185,44 @@ class InfoBubble
       public views::AcceleratorTarget,
       public ui::AnimationDelegate {
  public:
-  // Shows the InfoBubble.  |parent| is set as the parent window, |contents| are
-  // the contents shown in the bubble, and |position_relative_to| is a rect in
-  // screen coordinates at which the InfoBubble will point.  Show() takes
-  // ownership of |contents| and deletes the created InfoBubble when another
-  // window is activated.  You can explicitly close the bubble by invoking
-  // Close(). |arrow_location| specifies preferred bubble alignment.
+  // Shows the Bubble.
+  // |parent| is set as the parent window.
+  // |contents| are the contents shown in the bubble.
+  // |position_relative_to| is a rect in screen coordinates at which the Bubble
+  // will point.
+  // Show() takes ownership of |contents| and deletes the created Bubble when
+  // another window is activated. You can explicitly close the bubble by
+  // invoking Close().
+  // |arrow_location| specifies preferred bubble alignment.
   // You may provide an optional |delegate| to:
-  //     - Be notified when the InfoBubble is closed.
-  //     - Prevent the InfoBubble from being closed when the Escape key is
+  //     - Be notified when the Bubble is closed.
+  //     - Prevent the Bubble from being closed when the Escape key is
   //       pressed (the default behavior).
-  static InfoBubble* Show(views::Widget* parent,
-                          const gfx::Rect& position_relative_to,
-                          BubbleBorder::ArrowLocation arrow_location,
-                          views::View* contents,
-                          InfoBubbleDelegate* delegate);
+  static Bubble* Show(views::Widget* parent,
+                      const gfx::Rect& position_relative_to,
+                      BubbleBorder::ArrowLocation arrow_location,
+                      views::View* contents,
+                      BubbleDelegate* delegate);
 
 #if defined(OS_CHROMEOS)
-  // Shows the InfoBubble without grabbing the focus. Others are the same as
+  // Shows the Bubble without grabbing the focus. Others are the same as
   // above.  TYPE_POPUP widget is used to achieve the focusless effect.
   // If |show_while_screen_is_locked| is true, a property is set telling the
   // window manager to continue showing the bubble even while the screen is
   // locked.
-  static InfoBubble* ShowFocusless(views::Widget* parent,
-                                   const gfx::Rect& position_relative_to,
-                                   BubbleBorder::ArrowLocation arrow_location,
-                                   views::View* contents,
-                                   InfoBubbleDelegate* delegate,
-                                   bool show_while_screen_is_locked);
+  static Bubble* ShowFocusless(views::Widget* parent,
+                               const gfx::Rect& position_relative_to,
+                               BubbleBorder::ArrowLocation arrow_location,
+                               views::View* contents,
+                               BubbleDelegate* delegate,
+                               bool show_while_screen_is_locked);
 #endif
 
-  // Resizes and potentially moves the InfoBubble to best accommodate the
+  // Resizes and potentially moves the Bubble to best accommodate the
   // contents preferred size.
   void SizeToContents();
 
-  // Whether the InfoBubble should fade away when it closes. Generally speaking,
+  // Whether the Bubble should fade away when it closes. Generally speaking,
   // we use FadeOut when the user selects something within the bubble that
   // causes the bubble to dismiss. We don't use it when the bubble gets
   // deactivated as a result of clicking outside the bubble.
@@ -238,20 +240,20 @@ class InfoBubble
   static const SkColor kBackgroundColor;
 
  protected:
-  InfoBubble();
+  Bubble();
 #if defined(OS_CHROMEOS)
-  InfoBubble(views::WidgetGtk::Type type, bool show_while_screen_is_locked);
+  Bubble(views::WidgetGtk::Type type, bool show_while_screen_is_locked);
 #endif
-  virtual ~InfoBubble();
+  virtual ~Bubble();
 
-  // Creates the InfoBubble.
+  // Creates the Bubble.
   virtual void InitBubble(views::Widget* parent,
                           const gfx::Rect& position_relative_to,
                           BubbleBorder::ArrowLocation arrow_location,
                           views::View* contents,
-                          InfoBubbleDelegate* delegate);
+                          BubbleDelegate* delegate);
 
-  // Instantiates and returns the BorderContents this InfoBubble should use.
+  // Instantiates and returns the BorderContents this Bubble should use.
   // Subclasses can return their own BorderContents implementation.
   virtual BorderContents* CreateBorderContents();
 
@@ -294,7 +296,7 @@ class InfoBubble
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
 
   // The delegate, if any.
-  InfoBubbleDelegate* delegate_;
+  BubbleDelegate* delegate_;
 
   // The animation used to fade the bubble out.
   scoped_ptr<ui::SlideAnimation> animation_;
@@ -316,7 +318,7 @@ class InfoBubble
 
   views::View* contents_;
 
-  DISALLOW_COPY_AND_ASSIGN(InfoBubble);
+  DISALLOW_COPY_AND_ASSIGN(Bubble);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_INFO_BUBBLE_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_BUBBLE_BUBBLE_H_

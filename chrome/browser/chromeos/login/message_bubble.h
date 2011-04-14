@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_MESSAGE_BUBBLE_H_
 #pragma once
 
-#include "chrome/browser/ui/views/info_bubble.h"
+#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link.h"
 #include "views/view.h"
@@ -22,14 +22,14 @@ class Label;
 
 namespace chromeos {
 
-class MessageBubbleDelegate : public InfoBubbleDelegate {
+class MessageBubbleDelegate : public BubbleDelegate {
  public:
   // Called when the user clicked on help link.
   virtual void OnHelpLinkActivated() = 0;
 };
 
 // MessageBubble is used to show error and info messages on OOBE screens.
-class MessageBubble : public InfoBubble,
+class MessageBubble : public Bubble,
                       public views::ButtonListener,
                       public views::LinkController {
  public:

@@ -99,7 +99,7 @@ NetworkSelectionView* NetworkScreen::AllocateView() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// NetworkScreen, views::InfoBubbleDelegate implementation:
+// NetworkScreen, views::BubbleDelegate implementation:
 
 void NetworkScreen::OnHelpLinkActivated() {
   ClearErrors();

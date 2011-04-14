@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_UI_VIEWS_PINNED_CONTENTS_INFO_BUBBLE_H_
 #pragma once
 
-#include "chrome/browser/ui/views/info_bubble.h"
+#include "chrome/browser/ui/views/bubble/bubble.h"
 
 // This is a specialization of BorderContents, used to draw a border around
-// an InfoBubble that has its contents pinned to a specific location. See
+// an Bubble that has its contents pinned to a specific location. See
 // base class for details.
 class PinnedContentsBorderContents : public BorderContents {
  public:
@@ -32,15 +32,15 @@ class PinnedContentsBorderContents : public BorderContents {
   DISALLOW_COPY_AND_ASSIGN(PinnedContentsBorderContents);
 };
 
-// A specialization of the InfoBubble. Used to draw an InfoBubble which, in
+// A specialization of the Bubble. Used to draw an Bubble which, in
 // addition to having an arrow pointing to where the user clicked, also shifts
 // the bubble horizontally to fix it to a specific location. See base class
 // for details.
-class PinnedContentsInfoBubble : public InfoBubble {
+class PinnedContentsInfoBubble : public Bubble {
  public:
-  // Shows the InfoBubble (see base class function for details).
+  // Shows the Bubble (see base class function for details).
   // |bubble_anchor| specifies how far horizontally to shift the bubble in
-  // order to anchor its contents. Once the InfoBubble has been anchored its
+  // order to anchor its contents. Once the Bubble has been anchored its
   // arrow may be pointing to a slightly different |y| location than specified
   // in |position_relative_to|.
   static PinnedContentsInfoBubble* Show(
@@ -49,9 +49,9 @@ class PinnedContentsInfoBubble : public InfoBubble {
       BubbleBorder::ArrowLocation arrow_location,
       const gfx::Point& bubble_anchor_,
       views::View* contents,
-      InfoBubbleDelegate* delegate);
+      BubbleDelegate* delegate);
 
-  // InfoBubble overrides:
+  // Bubble overrides:
   virtual BorderContents* CreateBorderContents();
 
  private:
