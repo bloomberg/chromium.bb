@@ -21,16 +21,15 @@
     <section>
       <h3 i18n-content="channel"></h3>
       <div>
-        <div>
-          <span id="channel-warning"
-                i18n-content="channel_warning_header"></span>
-          <span i18n-content="channel_warning_text"></span>
-        </div>
         <select id="channelSelect">
           <option value="stable-channel" i18n-content="stable"></option>
           <option value="beta-channel" i18n-content="beta"></option>
           <option value="dev-channel" i18n-content="dev"></option>
         </select>
+        <div hidden id="channelWarningBlock">
+          <div id="channelWarning" i18n-content="channel_warning_header"></div>
+          <div i18n-content="channel_warning_text"></div>
+        </div>
       </div>
     </section>
     <section>

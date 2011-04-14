@@ -38,6 +38,12 @@ cr.define('options', function() {
      */
     statusMessageQueueFlushStarted_: false,
 
+    /**
+     * The selected release channel.
+     * @type {string}
+     */
+    selectedChannel_: '',
+
     // Initialize AboutPage.
     initializePage: function() {
       // Call base class implementation to start preference initialization.
@@ -55,9 +61,9 @@ cr.define('options', function() {
       if (!AccountsOptions.currentUserIsOwner()) {
         $('channelSelect').disabled = true;
       } else {
+        var self = this;
         $('channelSelect').onchange = function(event) {
-          var channel = event.target.value;
-          chrome.send('SetReleaseTrack', [channel]);
+          self.selectedOptionOnChange_(event.target.value);
         };
       }
 
@@ -117,6 +123,31 @@ cr.define('options', function() {
       $('checkNow').disabled = !enable;
     },
 
+    selectedOptionOnChange_: function(value) {
+      if (value == 'dev-channel') {
+        // Open confirm dialog.
+        var self = this;
+        AlertOverlay.show(
+          localStrings.getString('channel_warning_header'),
+          localStrings.getString('channel_warning_text'),
+          localStrings.getString('ok'),
+          localStrings.getString('cancel'),
+          function() {
+            // Ok, so set release track and update selected channel.
+            $('channelWarningBlock').hidden = false;
+            chrome.send('SetReleaseTrack', [value]);
+            self.selectedChannel_ = value; },
+          function() {
+            // Cancel, so switch back to previous selected channel.
+            self.updateSelectedOption_(self.selectedChannel_); }
+          );
+      } else {
+        $('channelWarningBlock').hidden = true;
+        chrome.send('SetReleaseTrack', [value]);
+        this.selectedChannel_ = value;
+      }
+    },
+
     // Updates the selected option in 'channelSelect' <select> element.
     updateSelectedOption_: function(value) {
       var options = $('channelSelect').querySelectorAll('option');
@@ -124,8 +155,11 @@ cr.define('options', function() {
         var option = options[i];
         if (option.value == value) {
           option.selected = true;
+          this.selectedChannel_ = value;
         }
       }
+      if (value == 'dev-channel')
+        $('channelWarningBlock').hidden = false;
     },
 
     // Changes the "check now" button to "restart now" button.

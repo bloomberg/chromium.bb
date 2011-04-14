@@ -6795,7 +6795,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Beta
       </message>
       <message name="IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT" desc="The development option in the channel select.">
-        Dev
+        Dev - Unstable
       </message>
       <message name="IDS_ABOUT_PAGE_CHANNEL_CANARY" desc="The canary option in the channel select.">
         Canary
