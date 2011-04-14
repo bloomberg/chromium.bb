@@ -1085,6 +1085,12 @@ const char kDOMLogin[]                      = "dom-login";
 // Enables device policy support on ChromeOS.
 const char kEnableDevicePolicy[]            = "enable-device-policy";
 
+// Enable all 802.1X EAP Wi-Fi connection modes, like EAP-TLS and LEAP.
+// TODO(jamescook): Remove this when all major 802.1X modes are supported
+// through the full network stack, specifically those that require TPM and
+// client-side certificates.
+const char kEnableExperimentalEap[]         = "enable-experimental-eap";
+
 // Enable the redirection of viewable document requests to the Google
 // Document Viewer.
 const char kEnableGView[]                   = "enable-gview";

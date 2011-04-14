@@ -4,12 +4,14 @@
 
 #include "chrome/browser/chromeos/options/wifi_config_view.h"
 
+#include "base/command_line.h"  // TODO(jamescook): Remove.
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/options/wifi_config_model.h"
+#include "chrome/common/chrome_switches.h"  // TODO(jamescook): Remove.
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -66,12 +68,14 @@ class SecurityComboboxModel : public ui::ComboboxModel {
   DISALLOW_COPY_AND_ASSIGN(SecurityComboboxModel);
 };
 
+// TODO(jamescook):  For M12 we only expose PEAP and EAP-TTLS.  Later, when
+// when we support all methods by default, order this list to be alphabetical.
 enum EAPMethodComboboxIndex {
   EAP_METHOD_INDEX_NONE  = 0,
   EAP_METHOD_INDEX_PEAP  = 1,
-  EAP_METHOD_INDEX_TLS   = 2,
-  EAP_METHOD_INDEX_TTLS  = 3,
-  EAP_METHOD_INDEX_LEAP  = 4,
+  EAP_METHOD_INDEX_TTLS  = 2,  // By default we support up to here.
+  EAP_METHOD_INDEX_TLS   = 3,
+  EAP_METHOD_INDEX_LEAP  = 4,  // Flag "--enable-all-eap" allows up to here.
   EAP_METHOD_INDEX_COUNT = 5
 };
 
@@ -80,6 +84,11 @@ class EAPMethodComboboxModel : public ui::ComboboxModel {
   EAPMethodComboboxModel() {}
   virtual ~EAPMethodComboboxModel() {}
   virtual int GetItemCount() {
+    // TODO(jamescook):  For M12 we only expose PEAP and EAP-TTLS by default.
+    // Remove this switch when all methods are supported.
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableExperimentalEap))
+      return EAP_METHOD_INDEX_TTLS + 1;
     return EAP_METHOD_INDEX_COUNT;
   }
   virtual string16 GetItemAt(int index) {
@@ -330,8 +339,10 @@ void WifiConfigView::RefreshEAPFields() {
     passphrase_textfield_->SetText(string16());
 
   // Client certs only for EAP-TLS
-  client_cert_combobox_->SetEnabled(selected == EAP_METHOD_INDEX_TLS);
-  client_cert_label_->SetEnabled(client_cert_combobox_->IsEnabled());
+  if (client_cert_combobox_) {
+    client_cert_combobox_->SetEnabled(selected == EAP_METHOD_INDEX_TLS);
+    client_cert_label_->SetEnabled(client_cert_combobox_->IsEnabled());
+  }
 
   // No server CA certs for LEAP
   server_ca_cert_combobox_->SetEnabled(selected != EAP_METHOD_INDEX_NONE &&
@@ -511,7 +522,7 @@ bool WifiConfigView::Login() {
       }
 
       // Client certificate
-      if (client_cert_combobox_->IsEnabled()) {
+      if (client_cert_combobox_ && client_cert_combobox_->IsEnabled()) {
         int selected = client_cert_combobox_->selected_item();
         if (selected == 0) {
           // First item is "None".
@@ -666,18 +677,24 @@ void WifiConfigView::Init(WifiNetwork* wifi) {
     layout->AddView(server_ca_cert_combobox_);
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
-    // Client certificate
-    layout->StartRow(0, column_view_set_id);
-    client_cert_label_ = new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
-        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT)));
-    layout->AddView(client_cert_label_);
-    client_cert_combobox_ = new views::Combobox(
-        new ClientCertComboboxModel(wifi_config_model_.get()));
-    client_cert_label_->SetEnabled(false);
-    client_cert_combobox_->SetEnabled(false);
-    client_cert_combobox_->set_listener(this);
-    layout->AddView(client_cert_combobox_);
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    // TODO(jamescook): Add back client certificate combobox when we support
+    // EAP-TLS by default.
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableExperimentalEap)) {
+      // Client certificate
+      layout->StartRow(0, column_view_set_id);
+      client_cert_label_ = new views::Label(
+          UTF16ToWide(l10n_util::GetStringUTF16(
+              IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT)));
+      layout->AddView(client_cert_label_);
+      client_cert_combobox_ = new views::Combobox(
+          new ClientCertComboboxModel(wifi_config_model_.get()));
+      client_cert_label_->SetEnabled(false);
+      client_cert_combobox_->SetEnabled(false);
+      client_cert_combobox_->set_listener(this);
+      layout->AddView(client_cert_combobox_);
+      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    }
 
     // Identity
     layout->StartRow(0, column_view_set_id);
@@ -747,14 +764,22 @@ void WifiConfigView::Init(WifiNetwork* wifi) {
       case EAP_METHOD_PEAP:
         eap_method_combobox_->SetSelectedItem(EAP_METHOD_INDEX_PEAP);
         break;
-      case EAP_METHOD_TLS:
-        eap_method_combobox_->SetSelectedItem(EAP_METHOD_INDEX_TLS);
-        break;
       case EAP_METHOD_TTLS:
         eap_method_combobox_->SetSelectedItem(EAP_METHOD_INDEX_TTLS);
         break;
+      case EAP_METHOD_TLS:
+        if (CommandLine::ForCurrentProcess()->HasSwitch(
+                switches::kEnableExperimentalEap))
+          eap_method_combobox_->SetSelectedItem(EAP_METHOD_INDEX_TLS);
+        else // Clean up from previous run with the switch set.
+          eap_method_combobox_->SetSelectedItem(EAP_METHOD_INDEX_NONE);
+        break;
       case EAP_METHOD_LEAP:
-        eap_method_combobox_->SetSelectedItem(EAP_METHOD_INDEX_LEAP);
+        if (CommandLine::ForCurrentProcess()->HasSwitch(
+                switches::kEnableExperimentalEap))
+          eap_method_combobox_->SetSelectedItem(EAP_METHOD_INDEX_LEAP);
+        else // Clean up from previous run with the switch set.
+          eap_method_combobox_->SetSelectedItem(EAP_METHOD_INDEX_NONE);
         break;
       default:
         break;
@@ -807,7 +832,7 @@ void WifiConfigView::Init(WifiNetwork* wifi) {
     }
 
     // Client certificate
-    if (client_cert_combobox_->IsEnabled()) {
+    if (client_cert_combobox_ && client_cert_combobox_->IsEnabled()) {
       const std::string& pkcs11_id = wifi->eap_client_cert_pkcs11_id();
       if (pkcs11_id.empty()) {
         // First item is "None".

@@ -301,6 +301,7 @@ extern const char kWinHttpProxyResolver[];
 #if defined(OS_CHROMEOS)
 extern const char kDOMLogin[];
 extern const char kEnableDevicePolicy[];
+extern const char kEnableExperimentalEap[];
 extern const char kEnableGView[];
 extern const char kEnableLoginImages[];
 extern const char kLoginManager[];
