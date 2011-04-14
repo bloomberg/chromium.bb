@@ -23,9 +23,7 @@
 <translation id="372362261556059955">Plugin gehigarria behar da</translation>
 <translation id="3789841737615482174">Instalatu</translation>
 <translation id="3934680773876859118">Ezin izan da PDF dokumentua kargatu.</translation>
-<translation id="4003986561708175844">Beharrezko plugina ez dago instalatuta</translation>
 <translation id="4202807286478387388">Salto</translation>
-<translation id="4470547978413275879"><ph name="PLUGIN"/> plugina ez dago instalatuta</translation>
 <translation id="4519964825805946997">Huts egin du plugina instalatzean <ph name="URL"/> URLtik</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5048533449481078685">zerrenda-markatzailea</translation>
@@ -39,7 +37,6 @@
 <translation id="5944544982112848342">2048 (maila handia)</translation>
 <translation id="6119846243427417423">aktibatu</translation>
 <translation id="6663448176199120256">Azken bilaketak</translation>
-<translation id="6765711848403622008">Ez dago eduki hau bistaratzeko pluginik eskura</translation>
 <translation id="6845533974506654842">zapaldu</translation>
 <translation id="709897737746224366">Bete eskatutako formatua mesedez.</translation>
 <translation id="7263440858009898357">Hautatu zerrendako elementu bat mesedez.</translation>

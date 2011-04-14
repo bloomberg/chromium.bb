@@ -1,7 +1,8 @@
 Name: launchpad-translations
 URL: http://people.ubuntu.com/~fta/chromium/translations/trunk/patches/
 InfoURL: https://launchpad.net/chromium-browser
-Version: unknown
+Version: r181
+Security Critical: no
 
 Description:
 Translations for Chromium provided by Launchpad.  These translations are not

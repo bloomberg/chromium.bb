@@ -23,9 +23,7 @@
 <translation id="372362261556059955">Necesítase un complemento adicional</translation>
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="3934680773876859118">Produciuse un fallo ao cargar o documento PDF</translation>
-<translation id="4003986561708175844">Necesítase un complemento que non está instalado</translation>
 <translation id="4202807286478387388">saltar</translation>
-<translation id="4470547978413275879">O complemento <ph name="PLUGIN"/> non está instalado.</translation>
 <translation id="4519964825805946997">Produciuse un erro ao descargar o complemento da páxina <ph name="URL"/>.</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5048533449481078685">marcador de listas</translation>
@@ -39,7 +37,6 @@
 <translation id="5944544982112848342">2048 (alta seguranza)</translation>
 <translation id="6119846243427417423">activar</translation>
 <translation id="6663448176199120256">Buscas recentes</translation>
-<translation id="6765711848403622008">Non hai ningún complemento dispoñíbel para mostrar este contido.</translation>
 <translation id="6845533974506654842">premer</translation>
 <translation id="709897737746224366">Axústese ao formato solicitado.</translation>
 <translation id="7263440858009898357">Seleccione un elemento da lista.</translation>

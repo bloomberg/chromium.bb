@@ -1,16 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
-<translation id="1065751875103714394">Opret Chromium genveje følgende steder:</translation>
-<translation id="1068718416870990145">Chromium vil udføre disse opgaver:</translation>
 <translation id="1185134272377778587">Om Chromium</translation>
 <translation id="1708666629004767631">Der er en nyere og sikrere version af Chromium tilgængelig.</translation>
 <translation id="2407806170074302369">Om Chromium Frame...</translation>
-<translation id="2484334055677766392">Chromium sprog:</translation>
 <translation id="2485422356828889247">Afinstallér</translation>
 <translation id="263863604136125912">Start Chromium</translation>
-<translation id="1018817853520605763"><!-- Vi bruger /n her for at separere linjer manuelt, da NativeCheckboxGtk ikke understøtter flerlinjers. -->
-        Valgfrit: Hjælp med at gøre Chromium bedre ved automatisk at sende brugsstatistik og\nrapporter om nedbrud til Google.</translation>
 <translation id="1105130903706696483">Chromium blev ikke afsluttet korrekt. Vælg Gendan for at genåbne de sider du havde åbne.</translation>
 <translation id="1221340462641866827">Chromium OS understøtter ikke start af eksterne applikationer til at håndtere <ph name="SCHEME"/>-links. Det ønskede link er <ph name="PROTOLINK"/>.</translation>
 <translation id="1929939181775079593">Chromium svarer ikke. Genstart nu?</translation>

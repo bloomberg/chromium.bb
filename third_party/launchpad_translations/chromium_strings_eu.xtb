@@ -1,20 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="eu">
-<translation id="1018817853520605763"><!--Hemen /n erabiltzen dugu lerroak eskuz bereizteko NativeCheckboxGtk-k ez duelako momentuz lerro anitzak onartzen. -->
-        Aukerakoa: Lagundu Chromium hobetzen erabilera-estatistikak eta kraskadura-txostenak \nbidaliz Google-i</translation>
-<translation id="1065751875103714394">Sortu Chromium-en lasterbideak kokapen hauetan:</translation>
-<translation id="1068718416870990145">Chromium-ek hurrengo lanak egingo ditu:</translation>
 <translation id="1105130903706696483">Chromium ez da ondo itxi. Irekita zenituen orriak berriro irekitzeko, egin klik Leheneratu botoian.</translation>
 <translation id="1185134272377778587">Chromium-i buruz</translation>
 <translation id="1221340462641866827">Chromium OS-ek ez du onartzen kanpoko aplikazioak abiaraztea <ph name="SCHEME"/> estekak maneiatzeko. Eskatutako esteka <ph name="PROTOLINK"/> da.</translation>
-<translation id="1497070702591980399">Chromium-en profil-inportatzailea</translation>
 <translation id="1708666629004767631">Chromium-en bertsio berriago eta seguruagoa dago eskuragarri.</translation>
-<translation id="1866700606190113286">Gehitu Chromium lasterbideak zure mahaigainera, abio azkarreko barrara eta Hasi menura</translation>
 <translation id="1967743265616885482">Chromium-en izen bera duen modulu batekin gatazkak sortu ohi dira</translation>
 <translation id="205900032229966545">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; domeinua atzitzen saiatu zara, baina zerbitzariak iraungitako ziurtagiria aurkeztu du. Ez dago informaziorik ziurtagiri hori iraungi denetik arriskuan jarri den jakiteko. Honek esan nahi du Chromium-ek ezin duela bermatu &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; domeinuarekin (eta ez erasotzaile batekin) kontaktuan zaudela. Ez zenuke jarraitu beharko.</translation>
 <translation id="2407806170074302369">Chromium Frame buruz...</translation>
-<translation id="2484334055677766392">Chromium-en hizkuntza:</translation>
 <translation id="2485422356828889247">Desinstalatu</translation>
 <translation id="2558235863893655150">Chromium-ek zure pasahitza gorde dezan nahi duzu?</translation>
 <translation id="2572494885440352020">Chromium-en laguntza</translation>
@@ -30,16 +23,11 @@
 <translation id="3069161343438701711">Chromium Worker</translation>
 <translation id="309634601461115233">Aldaketak aplikatzeko Chromium OS-en saioa amaitu eta berriz hasi mesedez.</translation>
 <translation id="3103660991484857065">Instalatzaileak ezin izan du fitxategia deskonprimitu. Mesedez, deskargatu Chromium berriro.</translation>
-<translation id="3289786827957973841">Aldatu Chromium-ek menuetan, elkarrizketa-koadroetan eta argibideetan erabiltzen duen hizkuntza.</translation>
-<translation id="3415796061834858532">Copyright © 2006-2010 Chromium Egileak. Eskubide guztiak erreserbaturik.</translation>
 <translation id="3509308970982693815">Itxi Chromiumen leiho guztiak eta saiatu berriz mesedez.</translation>
 <translation id="3555616473548901994">Desinstalazioa burutu da.</translation>
-<translation id="3575003045397338641">Orain uzten baduzu, ez dira elementu guztiak inportatuko. Geroago inporta ditzakezu berriro Chromium menutik.</translation>
 <translation id="3838208658251026018">Chromium hurrengo elementuak importatzen ari da <ph name="BROWSER_COMPONENT"/>-tik</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="3849925841547750267">Zoritxarrez, zure Mozilla Firefoxen ezarpenak ez daude eskuragarri nabigatzaile hori abian dagoenean. Ezarpen horiek Chromium-era inportatzeko, gorde zure lana eta itxi Firefoxen leiho guztiak. Gero sakatu Jarraitu.</translation>
-<translation id="3911984803452407990">Chromiumek ez du erantzuten. Berrabiarazi orain?</translation>
-<translation id="4025332521918829306">Chromium prest dago zure instalazioa amaitzeko.</translation>
 <translation id="4124681358536363708">Chromium instalatuko den direktorioa norbait erabiltzen ari dela dirudi. Berrabiarazi zure ordenagailua eta saiatu berriro.</translation>
 <translation id="4179848566211676653">Irten Chromiumetik</translation>
 <translation id="4222661289444749267">Chromium-en markoaren eguneraketa.</translation>
@@ -54,8 +42,6 @@
 <translation id="4890456338028740446">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; atzitzen saiatu zara, baina zerbitzariak zure ordenagailuaren sistema eragilearentzat fidagarria ez den erakunde batek jaulkitako ziurtagiri bat aurkeztu du. Honek esan nahi dezake zerbitzariak bere segurtasun-kredentzial propioak sortu dituela, eta hori Chromium-entzat ez da fidatzekoa nortasun-identifikaziorako, edo erasotzaile bat zure komunikazioak atzematen saiatzen ari dela. Ez zenuke aurrera jarraitu beharko, &lt;strong&gt;bereziki&lt;/strong&gt; abisu hau aurretik inoiz ikusi ez baduzu gune honetarako.</translation>
 <translation id="4931128279570440880">Kasu honetan, ziurtagirian ageri den helbidea ez dator bat zure nabigatzailea atzitzen saiatu den webgunearen helbidearekin. Arrazoi posibletako bat izan daiteke erasotzaile bat zure komunikazioak atzematen ari dela eta beste webgune baten ziurtagiria aurkezten ari dela. Beste arrazoi bat izan daiteke zerbitzaria prestatuta dagoela webgune bat baino gehiagotarako ziurtagiri bera itzultzeko, zu bisitatzen saiatzen ari zaren gunerako barne, nahiz eta ziurtagiri hori baliozkoa ez izan webgune horietarako guztietarako. Chromium-ek segurtatu dezake &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; domeinura iritsi zarela, baina ezin du egiaztatu zu iristen saiatzen ari zaren &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; domeinua dela. Jarraitzen baduzu, Chromium-ek ez ditu egiaztatuko bat ez datozen izen gehiago. Oro har, hobe da aurrera ez jarraitzea puntu honetan.</translation>
 <translation id="4932687624772039103">Chromiumek ez du <ph name="OS_NAME"/> onartzen.</translation>
-<translation id="5236552923972642185">Chromium Frame eguneratu da. Mesedez, berrabiarazi nabigatzailea. Chrome bertsioa: <ph name="TODO_0001"/>, Chromium Frame bertsioa: <ph name="TODO_0002"/></translation>
-<translation id="5381655543170064624">Itxi Chromium leiho guztiak eta berrabiarazi Chromium aldaketak aplikatzeko mesedez.</translation>
 <translation id="5398878173008909840">Chromiumen bertsio berri bat dago eskuragarri.</translation>
 <translation id="5498103559159810756">Chromium-ek zure bilaketa-motore lehenetsia erabiltzen du, une honetan <ph name="PAGE_TITLE"/> dena. Zure lehenetsitako bilaketa-motorea mantendu nahi al duzu?</translation>
 <translation id="5559945513746540383">Chromium ez da instalatu edo ez du aurkitu instalazio-direktorioa. Mesedez deskargatu Chromium berriro.</translation>
@@ -65,7 +51,6 @@
 <translation id="5981059579301719217">Zure profila ezin da erabili Chromium-en bertsio berriago batean sortu zelako.\n\nZenbait ezaugarri ezingo dira erabili. Zehaztu beste profil-direktorio bat edo erabili Chromium-en bertsio berriagoa.</translation>
 <translation id="6055895534982063517">Chromium-en bertsio berria dago eskuragarri, eta inoiz baino azkarragoa da.</translation>
 <translation id="6089587093203430357">Instant</translation>
-<translation id="6209318267439329">Chromium-ek web-zerbitzuak erabil ditzake zure nabigatze-esperientzia hobetzeko. Nahi izanez gero, zerbitzu hauek desgaitu egin ditzakezu.</translation>
 <translation id="6248213926982192922">Ezarri Chromium lehenetsitako nabigatzaile gisa</translation>
 <translation id="6287463253129672858">Ezin da instalatu exekutatzen ari den Chromium Frame-n bertsio bera. Itxi Chromium Frame eta saiatu berriro.</translation>
 <translation id="6373523479360886564">Ziur zaude Chromium desinstalatu nahi duzula?</translation>
@@ -85,17 +70,14 @@
 <translation id="7421823331379285070">Chromium-ek Windows XP edo berriagoa behar du. Zenbait ezaugarrik ez dute funtzionatuko.</translation>
 <translation id="7483335560992089831">Ezin da instalatu exekutatzen ari den Chromium-en bertsio bera. Itxi Chromium eta saiatu berriro.</translation>
 <translation id="7503101070699687603">Chromium pluginen ostalaria</translation>
-<translation id="7526756929942730853">Chromium-en aukerak berrezartzean, aurretik egindako edozein aldaketa balio lehenetsietara itzuliko da. Chromium-en aukerak berrezarri nahi dituzu?</translation>
 <translation id="7641113255207688324">Chromium ez da zure nabigatzaile lehenetsia.</translation>
 <translation id="7747138024166251722">Instalatzaileak ezin izan du behin-behineko direktorioa sortu. Begiratu ea diskoan tokirik dagoen eta softwarea instalatzeko baimenik duzun.</translation>
 <translation id="786596160034915371">Ordenagailu honek Chromium-en bertsio berriagoa dauka. Softwareak ongi funtzionatzen ez badu, desinstalatu Chromium eta deskarga ezazu berriro.</translation>
-<translation id="8191012240651979172">Chromium jadanik instalatuta dago erabiltzaile honentzako. Softwareak ongi funtzionatzen ez badu, desinstalatu Chromium eta deskarga ezazu berriro.</translation>
 <translation id="8422904359318093226">Chromium gaizki portatzen ari da</translation>
 <translation id="8453117565092476964">Instalatzailearen fitxategia hondatuta dago edo baliogabea da. Mesedez deskargatu Chromium berriro.</translation>
 <translation id="8621669128220841554">Instalazioak huts egin du zehaztu gabeko errore baten ondorioz. Mesedez deskargatu Chromium berriro.</translation>
 <translation id="8738921060445980047">Bertsio ezezaguna.</translation>
 <translation id="8770560772173120024">Chromium gogokoenak/laster-markak inportatzen ari da.</translation>
-<translation id="8860251088736138354">Arranopola! Chromium kraskatu egin da. Berrabiarazi orain?</translation>
 <translation id="8862326446509486874">Ez daukazu baimen egokirik sistema-mailako instalazioak egiteko. Saiatu instalatzailea administratzaile modura exekutatzen.</translation>
 <translation id="8865765905101981392">Internet Nabigatzailea</translation>
 <translation id="8971920611044657379">Chromium Frame</translation>

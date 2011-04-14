@@ -1,20 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
-<translation id="1018817853520605763"><!-- 在这里我们使用 /n 手动分隔各行，因为目前 NativeCheckboxGtk 尚不支持多行。 -->
-        可选：自动给 Google 发送使用统计信息与崩溃报告以帮助完善 Chromium</translation>
-<translation id="1065751875103714394">在以下位置创建 Chromium 快捷方式：</translation>
-<translation id="1068718416870990145">Chromium 将执行以下任务：</translation>
 <translation id="1105130903706696483">Chromium 未正常关闭。要重新打开您先前打开的页面，请点击“恢复”。</translation>
 <translation id="1185134272377778587">关于 Chromium</translation>
 <translation id="1221340462641866827">Chromium OS 不支持启动外部程序处理 <ph name="SCHEME"/> 链接。所请求的链接为 <ph name="PROTOLINK"/>。</translation>
-<translation id="1497070702591980399">Chromium 配置文件导入器</translation>
 <translation id="1708666629004767631">有更新、更安全的 Chromium 版本可用。</translation>
-<translation id="1866700606190113286">将 Chromium 快捷方式添加到您的桌面、快速启动栏以及“开始”菜单</translation>
 <translation id="1967743265616885482">同名的模块和 Chromium 存在已知冲突。</translation>
 <translation id="205900032229966545">您在尝试访问 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器所提供的证书已过期。没有信息能表明该证书在过期后是否已吊销。这意味着 Chromium 无法保证您在与 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 而不是与攻击者通信。您不应该继续。</translation>
 <translation id="2407806170074302369">关于 Chromium Frame...</translation>
-<translation id="2484334055677766392">Chromium 语言:</translation>
 <translation id="2485422356828889247">卸载</translation>
 <translation id="2558235863893655150">是否希望 Chromium 为您保存密码?</translation>
 <translation id="2572494885440352020">Chromium 助手</translation>
@@ -30,16 +23,11 @@
 <translation id="3069161343438701711">Chromium Worker</translation>
 <translation id="309634601461115233">请注销 Chromium OS 并重新登录以使更改生效。</translation>
 <translation id="3103660991484857065">安装程序解压压缩文件失败。请重新下载 Chromium。</translation>
-<translation id="3289786827957973841">更改 Chromium 菜单、对话框与工具提示所用的语言。</translation>
-<translation id="3415796061834858532">版权所有 © 2006-2010 The Chromium Authors。保留所有权利。</translation>
 <translation id="3509308970982693815">请关闭所有 Chromium 窗口后重试。</translation>
 <translation id="3555616473548901994">卸载完成。</translation>
-<translation id="3575003045397338641">如果您现在取消，项目不能全部导入。您可以以后通过 Chromium 菜单重新导入。</translation>
 <translation id="3838208658251026018">Chromium 正从 <ph name="BROWSER_COMPONENT"/> 导入以下项目:</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="3849925841547750267">很遗憾，您的 Mozilla Firefox 设置信息在该浏览器运行时不可用。要向 Chromium 导入这些设置，请保存您的工作并关闭所有 Firefox 窗口。然后点击“继续”。</translation>
-<translation id="3911984803452407990">Chromium 无响应。现在重启?</translation>
-<translation id="4025332521918829306">Chromium 已准备好完成您的安装。</translation>
 <translation id="4124681358536363708">Chromium 安装目录似乎在使用中。请重启计算机后再试。</translation>
 <translation id="4179848566211676653">退出 Chromium</translation>
 <translation id="4222661289444749267">Chromium Frame 更新。</translation>
@@ -54,8 +42,6 @@
 <translation id="4890456338028740446">您在尝试访问 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器所提供证书的颁发机构不被您计算机上的操作系统所信任。这可能意味着服务器创建了其自己的安全证书，Chromium 无法信任该信息，或者可能是攻击者在尝试拦截您的通信。您不应当继续，&lt;strong&gt;尤其是&lt;/strong&gt;当您从来没有看到该站点出现此警告时。</translation>
 <translation id="4931128279570440880">这种情况下，证书中所列出的地址与您的浏览器所尝试访问的网站地址不匹配。一种可能的原因是您的通信被攻击者拦截，该攻击者提供了其他网站的证书，就会导致不匹配。另一种可能的原因是服务器被设为为多个网站返回相同的证书，包括您正在尝试访问的网站，即使此证书不对所有这些网站有效。Chromium 可以确保您已访问到 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，但无法验证该站点与您打算访问的 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; 相同。如果您继续，Chromium 将不会进一步检查名称不匹配。总而言之，最好不要跳过警告而继续。</translation>
 <translation id="4932687624772039103">Chromium 不支持 <ph name="OS_NAME"/>。</translation>
-<translation id="5236552923972642185">Chromium Frame 已更新。请重新启动您的浏览器。Chrome 版本: <ph name="TODO_0001"/>, Chromium Frame 版本: <ph name="TODO_0002"/></translation>
-<translation id="5381655543170064624">请关闭所有 Chromium 窗口并重新启动 Chromium 以使更改生效。</translation>
 <translation id="5398878173008909840">有新版 Chromium 可用。</translation>
 <translation id="5498103559159810756">Chromium 使用您当前设定的默认搜索引擎 <ph name="PAGE_TITLE"/>。您是否希望保持默认搜索引擎?</translation>
 <translation id="5559945513746540383">Chromium 未安装或未能找到安装目录。请重新下载 Chromium。</translation>
@@ -65,7 +51,6 @@
 <translation id="5981059579301719217">无法使用您的配置文件，因为它来自更新版本的 Chromium。\n\n部分功能可能不可用。请指定不同的配置文件目录或使用更新版本的 Chromium。</translation>
 <translation id="6055895534982063517">有更新、更快的 Chromium 版本可用。</translation>
 <translation id="6089587093203430357">即时搜索</translation>
-<translation id="6209318267439329">Chromium 可以通过网络服务来改进您的浏览体验。您可以选择禁用这些服务。</translation>
 <translation id="6248213926982192922">将 Chromium 设为默认浏览器</translation>
 <translation id="6287463253129672858">无法安装与当前正在运行的 Chromium Frame 相同的版本。请关闭 Chromium Frame 后再试。</translation>
 <translation id="6373523479360886564">您确实要卸载 Chromium 吗?</translation>
@@ -85,17 +70,14 @@
 <translation id="7421823331379285070">Chromium 要求 Windows XP 或更新版本。某些功能可能无效。</translation>
 <translation id="7483335560992089831">无法安装与当前运行的 Chromium 相同的版本。请关闭 Chromium 后再试。</translation>
 <translation id="7503101070699687603">Chromium 插件宿主</translation>
-<translation id="7526756929942730853">重置 Chromium 选项后，您所作的任何更改都将被恢复为默认设置。是否重置 Chromium 选项?</translation>
 <translation id="7641113255207688324">Chromium 不是您的默认浏览器。</translation>
 <translation id="7747138024166251722">安装程序无法创建临时目录。请检查磁盘上的剩余空间及安装软件的权限。</translation>
 <translation id="786596160034915371">此计算机上已经有更新版本的 Chromium。如果它不工作，请卸载 Chromium 并重新下载它。</translation>
-<translation id="8191012240651979172">Chromium 已经为此用户安装。如果它不工作，请卸载 Chromium 并重新下载它。</translation>
 <translation id="8422904359318093226">Chromium 工作不正常</translation>
 <translation id="8453117565092476964">安装程序压缩包损坏或无效。请重新下载 Chromium。</translation>
 <translation id="8621669128220841554">由于未知原因，安装失败。请重新下载 Chromium。</translation>
 <translation id="8738921060445980047">未知版本。</translation>
 <translation id="8770560772173120024">Chromium 现在正在导入收藏/书签。</translation>
-<translation id="8860251088736138354">唷！Chromium 崩溃了。重新启动吗？</translation>
 <translation id="8862326446509486874">您没有系统级别安装的相应权限。请尝试以管理员身份重新运行安装程序。</translation>
 <translation id="8865765905101981392">Internet 浏览器</translation>
 <translation id="8971920611044657379">Chromium Frame</translation>

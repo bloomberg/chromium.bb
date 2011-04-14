@@ -6,7 +6,6 @@
 <translation id="10122177803156699">Nîşan bide</translation>
 <translation id="1017280919048282932">&amp;Têxe ferhengê</translation>
 <translation id="1018656279737460067">Hate betalkirin</translation>
-<translation id="1022235408517496104">Faks:</translation>
 <translation id="1031460590482534116">Dema ku hewl ida navrûyê sertîfîkayê hilîne çewtiyekê rû da. Çewtî <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>).</translation>
 <translation id="1035650339541835006">Mîhengên dagirtine xweber</translation>
 <translation id="1036561994998035917">Bikaranîna <ph name="ENGINE_NAME"/>ê bidomîne</translation>
@@ -14,7 +13,6 @@
 <translation id="1038842779957582377">navê nenas</translation>
 <translation id="1040471547130882189">Pêvek bersivê nade</translation>
 <translation id="1047726139967079566">Vê rûpelê bixe bijareyan...</translation>
-<translation id="1049743911850919806">Moda nepen</translation>
 <translation id="1055006259534905434">(ji jêrê mijarekê hilbijêre)</translation>
 <translation id="1056898198331236512">Hişyarî</translation>
 <translation id="1058418043520174283"><ph name="INDEX"/> / <ph name="COUNT"/></translation>
@@ -38,7 +36,6 @@
 <translation id="1131850611586448366">Hate ragihandin ku malpera li ser navnîşana <ph name="HOST_NAME"/>ê malpereke &quot;sextekar&quot; e. Malperên sextekar, gelek deman xwe wekî saziyên ewle yên wekî bankayan nîşan didin ji hewlê didin ku agahiyên taybet ên kesan bi dest bixin.</translation>
 <translation id="1134009406053225289">Di pencereyeke nepen de veke</translation>
 <translation id="1135328998467923690">Pakêt tune ye: '<ph name="ERROR_CODE"/>'.</translation>
-<translation id="1138248235429035196">Pêveka <ph name="EXTENSION_NAME"/>ê dibêje:</translation>
 <translation id="1139892513581762545">Hilpekînên kêlekê</translation>
 <translation id="114140604515785785">Pelrêça kakil a pêvekê:</translation>
 <translation id="1143142264369994168">Îmzekara sertîfîkayê</translation>
@@ -70,7 +67,6 @@
 <translation id="1202290638211552064">Dema ku ji pêşkêşkareke jor an jî proksiyekê bersiv dihate hêvîkirin, demê têrê nekir.</translation>
 <translation id="1204242529756846967">Zimanê kontrola rastnivîsê</translation>
 <translation id="1205605488412590044">Kurteriya sepanê biafirîne...</translation>
-<translation id="1208126399996836490">Reset neke</translation>
 <translation id="1209866192426315618"><ph name="NUMBER_DEFAULT"/> xulek man</translation>
 <translation id="1213999834285861200">Zêdekariyên wêneyî</translation>
 <translation id="121632099317611328">Kamera nehat mîhenkirin.</translation>
@@ -78,12 +74,10 @@
 <translation id="121827551500866099">Hemû daxistian nîşan bide...</translation>
 <translation id="122082903575839559">Algorîtmaya îmzeya sertîfîkayê</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 bi şîfrekirina RSAyê</translation>
-<translation id="1222453244797358782">Pêşveçirandina rûpelên webê</translation>
 <translation id="1232569758102978740">Bêsernav</translation>
 <translation id="1234466194727942574">şerîda hilpekînê</translation>
 <translation id="1242521815104806351">Kitekitên girêdanê</translation>
 <translation id="1244147615850840081">Ragirker</translation>
-<translation id="1251010908205284827">Înglîzî (Dvorak)</translation>
 <translation id="1254593899333212300">Girêdana rasterast a înternetê</translation>
 <translation id="1272079795634619415">Sekinandin</translation>
 <translation id="1273291576878293349">Hemû bijareyan di paceya veşartî de veke</translation>
@@ -93,7 +87,6 @@
 <translation id="1290691390430578691">Derbasî moda înglîzî bibe</translation>
 <translation id="1294298200424241932">Mîhengên pêbaweriyê serast bike:</translation>
 <translation id="129553762522093515">Yên herî dawiyê hatine girtin</translation>
-<translation id="1312139124036901403">Dagirtina xweber neçalak bike</translation>
 <translation id="1313405956111467313">Veavakirina bixweber ya proksyê</translation>
 <translation id="131461803491198646">Tora malê, ne di gerê de ye</translation>
 <translation id="1317130519471511503">Bireseran mîheng bike...</translation>
@@ -109,7 +102,6 @@
 <translation id="1362165759943288856">Te di dîroka <ph name="DATE"/>ê de bêsînor dane stand</translation>
 <translation id="1363055550067308502">Di navbera modên tije/nîvçe de here û were</translation>
 <translation id="1368352873613152012">Polîçeyên gera ewle ya nepen</translation>
-<translation id="1368725949478140659">Hema bar bike</translation>
 <translation id="1368832886055348810">Ji Çepê ber bi Rastê ve</translation>
 <translation id="1375198122581997741">Derbarê guhertoyê de</translation>
 <translation id="1375215959205954975">Nû! şîfreya syncê veava bike.</translation>
@@ -122,7 +114,6 @@
 <translation id="1384721974622518101">Dizanibûyî ku tu dikarî ji qutîka li jorê rasterast lêgerînê bikî?</translation>
 <translation id="1387022316521171484">Dibe ku ev taybetiyên ceribandinê biguherin, an jî di demeke ne diyar de tune bibin. Em nikarin tu garantiyê bidin ku piştî çalakirina van ceribandinan ka dê çi biqewime. Dibe ku geroka te hemû daneyên te jê bibe an jî nepenî û ewlekariya te bikeve xetereyê. Eger bidomînî, em tika dikin ku baldar bî.</translation>
 <translation id="1388866984373351434">Daneyên gerê</translation>
-<translation id="1398199512720662928">Rûpelên destpêkê bi rê ve bibe...</translation>
 <translation id="1398853756734560583">Mezintirîn</translation>
 <translation id="1401874662068168819">Gin Yieh</translation>
 <translation id="1407050882688520094">Di pelî de sertîfîkayên ku rayeyên van sertîfîfîkayan rave dikin hene:</translation>
@@ -134,15 +125,12 @@
 <translation id="1425975335069981043">Geriyan:</translation>
 <translation id="1426410128494586442">Erê</translation>
 <translation id="1430915738399379752">Çapkirin</translation>
-<translation id="1431316633790098815">Ji be rku tu rayedarê ev sertîfîka îmze kiriye nas nakî, heta ku li vê derê berevajiyê wê tiştek neyê gotin, nikarî baweriya xwe bi vê sertîfîkayê bînî.</translation>
 <translation id="1437307674059038925">Eger pêşkêşkareke proksiyê bi kar tînî, mîhengên wê bi rêveberê pergala xwe re kontrol bike
         da ku teqez bikî ka pêşkêşkara proksiyê dixebite an na.</translation>
 <translation id="144136026008224475">Zêdetir niçikan bistîne &gt;&gt;</translation>
 <translation id="1441458099223378239">Nikarim bikevim hesabê xwe</translation>
-<translation id="1442054921249164535">Daneyên din</translation>
 <translation id="144518587530125858">Pelrêça '<ph name="IMAGE_PATH"/>' a ji bo dirbê nehate barkirin.</translation>
 <translation id="1446056151692539374">，．</translation>
-<translation id="1450278846011949484">Ev sertîfîka xweberîmzekirî ye, heta ku li vê derê neyê diyarkriin, nikarî pê bawer bî.</translation>
 <translation id="146000042969587795">Ji ber naverokên pênebawer, ev çarçove hate astenkirin.</translation>
 <translation id="1464570622807304272">Vê biceribîne -binivîse &quot;orkîde&quot; û enterê bitikne.</translation>
 <translation id="1465619815762735808">Ji bo lîstandinê bitikîne</translation>
@@ -182,4 +170,7 @@
 <translation id="8870413625673593573">Yên herî dawiyê hatine girtin</translation>
 <translation id="1116694919640316211">Derbarê de</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
+<translation id="1114901192629963971">Rastbûna şîfreya we li ser vê torê nayê kontrol kirin. Ji kerema xwe re toreka din hilbijêrin.</translation>
+<translation id="1199232041627643649"><ph name="KEY_EQUIVALENT"/> pêlkirî bihêle ku derkevî.</translation>
+<translation id="1307041843857566458">Ji nû ve çalakkirinê piştrast bike</translation>
 </translationbundle>

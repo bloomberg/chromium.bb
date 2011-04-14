@@ -1,20 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
-<translation id="1018817853520605763"><!-- We gebruiken /n hier om regels handmatig te scheiden omdat NativeChheckboxGtk momenteel geen ondersteuning biedt voor multi-line. -->
-        Optioneel: Help ons om Chromium beter te maken door automatisch \nstatistieken en crashrapporten naar google te sturen</translation>
-<translation id="1065751875103714394">Maak Chromium-snelkoppelingen aan op de volgende locaties:</translation>
-<translation id="1068718416870990145">Chromium zal de volgende taken uitvoeren:</translation>
 <translation id="1105130903706696483">Chromium werd niet correct afgesloten. Om de pagina's die open stonden te heropenen klikt u op Herstellen.</translation>
 <translation id="1185134272377778587">Over Chromium</translation>
 <translation id="1221340462641866827">Chromium OS ondersteunt het starten van een externe toepassing voor <ph name="SCHEME"/>-links niet. De opgevraagde link is <ph name="PROTOLINK"/>.</translation>
-<translation id="1497070702591980399">Chromium-profiel importeren</translation>
 <translation id="1708666629004767631">Er is een nieuwe, veiligere versie van Chromium beschikbaar.</translation>
-<translation id="1866700606190113286">Voeg verwijzingen naar Chromium toe aan uw bureaublad, snelstartbalk en startmenu</translation>
 <translation id="1967743265616885482">Een module met dezelfde naam staat erom bekend dat het problemen veroorzaakt in Chromium.</translation>
 <translation id="205900032229966545">U heeft geprobeerd om &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar de server heeft een verlopen certificaat. Er is geen informatie beschikbaar om aan te geven of dat certificaat is aangetast sinds het is verlopen. Dit betekent dat Chromium kan niet garanderen dat u communiceert met &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; en niet met een hacker. U moet niet verder gaan.</translation>
 <translation id="2407806170074302369">Over het Chromium Frame…</translation>
-<translation id="2484334055677766392">Chromium taalinstelling:</translation>
 <translation id="2485422356828889247">Verwijderen</translation>
 <translation id="2558235863893655150">Mag Chromium uw wachtwoord opslaan ?</translation>
 <translation id="2572494885440352020">Chromium hulp</translation>
@@ -30,16 +23,11 @@
 <translation id="3069161343438701711">Chromium worker</translation>
 <translation id="309634601461115233">Om de veranderingen toe te passen dient u zich af te melden en weer aan te melden.</translation>
 <translation id="3103660991484857065">Het installatieprogramma kon het archief niet uitpakken. U moet Chromium opnieuw downloaden.</translation>
-<translation id="3289786827957973841">Verander de taal die Chromium gebruikt voor menu's, meldingen en tips.</translation>
-<translation id="3415796061834858532">Copyright © 2006-2010 De Chromium-auteurs. Alle rechten voorbehouden.</translation>
 <translation id="3509308970982693815">Sluit alle Chromium vensters en probeer het opnieuw.</translation>
 <translation id="3555616473548901994">Verwijderen voltooid.</translation>
-<translation id="3575003045397338641">Wanneer u nu annuleert zullen niet alle items geïmporteerd worden. U kunt later opnieuw importeren via het Chromium-menu.</translation>
 <translation id="3838208658251026018">Chromium importeert nu de volgende items van <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="3849925841547750267">Helaas zijn uw instellingen van Mozilla Firefox niet beschikbaar wanneer die browser actief is. Om die instellingen te importeren in Chromium slaat u al uw werk op en sluit u alle Firefox vensters af. Daarna kunt u verder gaan.</translation>
-<translation id="3911984803452407990">Chromium reageert niet. Wilt u herstarten ?</translation>
-<translation id="4025332521918829306">Chromium is klaar om de installatie af te ronden.</translation>
 <translation id="4124681358536363708">De Chromium installatiemap lijkt in gebruik te zijn. Start uw computer opnieuw op en probeer het opnieuw.</translation>
 <translation id="4179848566211676653">Chromium afsluiten</translation>
 <translation id="4222661289444749267">Chromium frame update.</translation>
@@ -57,7 +45,6 @@
 <translation id="5862307444128926510">Welkom bij Chromium</translation>
 <translation id="5981059579301719217">Uw profiel kan niet worden gebruikt omdat het afkomstig is van een nieuwere versie van Chromium.\n\nEnkele functies zijn mogelijk niet beschikbaar. Geef een ander profielmap op of gebruik een nieuwere versie van Chromium.</translation>
 <translation id="6055895534982063517">Er is een nieuwe versie van Chromium beschikbaar is, en het is sneller dan ooit.</translation>
-<translation id="6209318267439329">Chromium kan gebruik maken van webservices om uw surfervaring te verbeteren. U kunt deze diensten desgewenst uitschakelen.</translation>
 <translation id="6248213926982192922">Maak van Chromium de standaard browser</translation>
 <translation id="6287463253129672858">Kan Chromium frame niet installeren als deze actief is. Sluit Chromium frame en probeer het opnieuw.</translation>
 <translation id="6373523479360886564">Weet u zeker dat u Chromium wilt verwijderen?</translation>
@@ -74,7 +61,6 @@
 <translation id="7421823331379285070">Chromium vereist Windows XP of recenter. Sommige functies werken mogelijk niet.</translation>
 <translation id="7483335560992089831">Kan Chromium niet installeren als deze in gebruik is. Sluit Chromium af en probeer het opnieuw.</translation>
 <translation id="7503101070699687603">Chromium plug-in host</translation>
-<translation id="7526756929942730853">Wanneer u Chromium opties hersteld worden alle wijzigingen die u hebt gemaakt teruggezet naar de standaardinstellingen. Wilt u de Chromium opties resetten?</translation>
 <translation id="7641113255207688324">Chromium is niet uw standaard browser.</translation>
 <translation id="7747138024166251722">Het installatieprogramma kon geen tijdelijke map creëren. Controleer of u over voldoende vrije ruimte beschikt en rechten hebt om software te installeren.</translation>
 <translation id="8738921060445980047">Onbekende versie.</translation>
@@ -89,8 +75,6 @@
 <translation id="985602178874221306">De Chromium-auteurs</translation>
 <translation id="4890456338028740446">U probeert naar &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te gaan, maar de server heeft een certificaat dat niet door uw computer vertrouwd wordt. Dit kan betekenen dat de server haar eigen certificaat heeft aangemaakt, die Chromium niet kan controleren, of dat een aanvaller probeert uw communicatie te onderscheppen. U moet niet verdergaan, &lt;strong&gt;zeker&lt;/strong&gt; niet als u deze waarschuwing nooit eerder op deze site hebt gezien.</translation>
 <translation id="4931128279570440880">In dit geval komt het adres in het certificaat niet overeen met het adres waar uw browser mee probeert te verbinden. Een mogelijke verklaring hiervoor is dat uw communicatie door een aanvaller onderschept wordt, en dat deze aanvaller het certificaat van een andere website gebruikt. Een andere verklaring kan zijn dat de server zo is ingesteld dat het hetzelfde certificaat voor verschillende websites teruggeeft, zelfs als dit certificaat niet geldig is voor die websites. Chromium is er zeker van dat u nu &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; bezoekt, maar kan niet weten of dat dezelfde site als &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; is, die u probeerde te bezoeken. Als u doorgaat zal Chromium niet meer controleren of het adres van de website en het certificaat overeen komen. Het is beter dat u niet verder gaat.</translation>
-<translation id="5236552923972642185">Chromium frame is bijgewerkt. U moet uw browser herstarten. Chrome versie: <ph name="TODO_0001"/>, Chromium frame versie: <ph name="TODO_0002"/></translation>
-<translation id="5381655543170064624">Sluit alle Chromium vensters en start Chromium opnieuw om de wijzigingen toe te passen.</translation>
 <translation id="5498103559159810756">Chromium gebruikt uw standaard zoekmachine, dit is momenteel <ph name="PAGE_TITLE"/>. Wilt u uw standaard zoekmachine behouden?</translation>
 <translation id="5559945513746540383">Chromium is niet geïnstalleerd of kan de installatiemap niet vinden. Probeer Chromium opnieuw te downloaden.</translation>
 <translation id="5947389362804196214">Uw voorkeuren kunnen niet gelezen worden.\n\nSommige opties kunnen onbeschikbaar zijn en aanpassingen aan de voorkeuren kunnen niet opgeslagen worden.</translation>
@@ -99,12 +83,10 @@
 <translation id="6676384891291319759">Verken het Internet</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="786596160034915371">Deze computer heeft al een recentere versie van Chromium. Als de software niet werkt kunt u Chromium verwijderen en opnieuw downloaden.</translation>
-<translation id="8191012240651979172">Chromium is al voor deze gebruiker geïnstalleerd. Als de software niet werkt kunt u Chromium verwijderen en opnieuw downloaden.</translation>
 <translation id="8422904359318093226">Chromium misdraagt zich</translation>
 <translation id="8453117565092476964">Het installatiearchief is beschadigd of ongeldig. Probeer Chromium opnieuw te downloaden.</translation>
 <translation id="8621669128220841554">De installatie is door een niet nader omschreven fout mislukt. Probeer Chromium opnieuw te downloaden.</translation>
 <translation id="8770560772173120024">Chromium importeert nu uw Favorieten/Bladwijzers.</translation>
-<translation id="8860251088736138354">Oeps! Chromium is gecrasht. Wilt u Chromium herstarten?</translation>
 <translation id="1293235220023151515">Er werd een conflicterende installatie van Chromium op uw systeem gevonden. Verwijder deze versie van uw systeem en probeer opnieuw.</translation>
 <translation id="3096463977885168586">Copyright © 2006-2011 De auteurs van Chromium. Alle rechten voorbehouden.</translation>
 <translation id="4330297532943865716">Er werd een conflicterende installatie van Chromium of Chromium Frame op uw systeem gevonden. Verwijder deze versie van uw systeem en probeer opnieuw.</translation>
@@ -117,4 +99,5 @@
 <translation id="4649468518813464896">http://www.google.com/support/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=161796</translation>
 <translation id="7278516633989165382">Chromium Frame is geüpdatet, herstart uw browser. Chrome versie: <ph name="TODO_0001"/>, Chromium Frame versie: <ph name="TODO_0002"/></translation>
 <translation id="378917192836375108">Met Chromium kunt u een telefoonnummer aanklikken en opbellen met Skype!</translation>
+<translation id="2886012850691518054">Optioneel: Help Chromium beter te maken door automatisch gebruiker-statistieken en fouten aan Google te melden.</translation>
 </translationbundle>

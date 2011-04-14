@@ -1,20 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
-<translation id="1018817853520605763"><!--Gunakan /n untuk memisahkan baris karena NativeCheckboxGtk saat ini tidak mendukung masukan dengan banyak baris. -->
-        Opsional: Bantu perbaikan Chromium dengan mengirim statistik penggunaan dan laporan kerusakan\nsecara otomatis ke Google</translation>
-<translation id="1065751875103714394">Buat jalan pintas Chromium di lokasi ini:</translation>
-<translation id="1068718416870990145">Chromium akan melakukan tugas berikut:</translation>
 <translation id="1105130903706696483">Chromium tidak ditutup dengan benar. Untuk membuka kembali halaman yang telah dibuka sebelumnya, klik Restore.</translation>
 <translation id="1185134272377778587">Tentang Chromium</translation>
 <translation id="1221340462641866827">Chromium OS tidak mendukung eksekusi aplikasi eksternal yang menangani tautan <ph name="SCHEME"/>. Tautan yang diminta adalah <ph name="PROTOLINK"/>.</translation>
-<translation id="1497070702591980399">Pengimpor Profil Chromium</translation>
 <translation id="1708666629004767631">Telah tersedia versi baru Chromium yang lebih aman.</translation>
-<translation id="1866700606190113286">Tambahkan tautan Chromium ke desktop, menu peluncur, dan menu Start</translation>
 <translation id="1967743265616885482">Modul dengan nama yang sama dikenali konflik dengan Chromium.</translation>
 <translation id="205900032229966545">Anda berniat menghubungi &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun server menyajikan sertifikat yang kadaluarsa. Tidak tersedia informasi apakah sertifikat tersebut telah terkompromi sejak kadaluarsa. Dengan demikian Chromium tidak dapat menjamin bahwa komunikasi berlangsung dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukan penyusup. Usaha komunikasi sebaiknya tidak diteruskan.</translation>
 <translation id="2407806170074302369">Tentang Chromium Frame...</translation>
-<translation id="2484334055677766392">Bahasa Chromium:</translation>
 <translation id="2485422356828889247">Hapus instalasi</translation>
 <translation id="2558235863893655150">Anda ingin Chromium menyimpan kata sandi anda?</translation>
 <translation id="2572494885440352020">Penolong Chromium</translation>
@@ -30,16 +23,11 @@
 <translation id="3069161343438701711">Pelaksana Chromium</translation>
 <translation id="309634601461115233">Keluar dari OS Chromium dan masuk kembali agar perubahan ini berpengaruh.</translation>
 <translation id="3103660991484857065">Aplikasi penginstal gagal memuaikan arsip. Unduh ulang Chromium.</translation>
-<translation id="3289786827957973841">Ubah bahasa yang dipakai pada menu, kotak dialog, dan tooltips.</translation>
-<translation id="3415796061834858532">Copyright © 2006-2010 The Chromium Authors. All Rights Reserved.</translation>
 <translation id="3509308970982693815">Harap tutup semua jendela Chromium dan coba lagi.</translation>
 <translation id="3555616473548901994">Penghapusan instalasi selesai.</translation>
-<translation id="3575003045397338641">Jika anda membatalkan sekarang, tidak semua item akan diimpor. Anda bisa mengimpor kembali nanti dari menu Chromium.</translation>
 <translation id="3838208658251026018">Chromium sedang mengimpor hal berikut dari <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="3849925841547750267">Sayangnya, pengaturan Mozilla Firefox Anda tidak tersedia sewaktu browser sedang berjalan. Untuk mengimpor pengaturan tersebut ke Chromium, simpan pekerjaan Anda dan tutup semua jendela Firefox. Kemudian klik Lanjutkan.</translation>
-<translation id="3911984803452407990">Chromium tidak merespon. Restart sekarang?</translation>
-<translation id="4025332521918829306">Chromium telah siap untuk menyelesaikan proses instalasi.</translation>
 <translation id="4124681358536363708">Sepertinya direktori instalasi dari Chromium sedang digunakan. Silakan reboot komputer Anda dan ulangi kembali.</translation>
 <translation id="4179848566211676653">Tutup Chromium</translation>
 <translation id="4222661289444749267">Pemutakhiran Chromium Frame.</translation>
@@ -54,8 +42,6 @@
 <translation id="4890456338028740446">Anda berniat menghubungi &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun server menyajikan sertifikat yang diterbitkan oleh entitas yang tidak dipercaya sistem operasi Anda. Ini bisa berarti bahwa server tersebut membuat sendiri identitas keamanannya, sehingga keabsahannya tidak dapat diandalkan Chromium, atau penyusup sedang mencegat jalur komunikasi. Usaha komunikasi sebaiknya tidak diteruskan, &lt;strong&gt;terutama&lt;/strong&gt; jika peringatan sejenis belum pernah terlihat sebelumnya pada situs ini.</translation>
 <translation id="4931128279570440880">Pada kasus ini, alamat yang terdaftar dalam sertifikat tidak sesuai dengan alamat situs web yang dituju. Kemungkinannya adalah bahwa jalur komunikasi sedang disadap oleh penyusup yang menampilkan sertifikat milik situs lain, sehingga mengakibatkan ketidakcocokan. Kemungkinan lainnya adalah bahwa server di atur untuk memberikan sertifikat yang sama untuk berbagai situs web, termasuk yang sedang dituju, walaupun sertifikat tersebut hanya cocok untuk sebagian situs saja. Chromium yakin telah mencapai &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, namun tidak dapat memverifikasi apakah situs tersebut sama dengan &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; yang dimaksud. Jika Anda memutuskan untuk melanjutkan, Chromium tidak akan memeriksa ketidakcocokan lebih jauh. Secara umum, sebaiknya akses tidak dilanjutkan.</translation>
 <translation id="4932687624772039103">Chromium tidak mendukung <ph name="OS_NAME"/>.</translation>
-<translation id="5236552923972642185">Chromium Frame telah dimutakhirkan. Harap mulai ulang peramban Anda. Versi Chrome: <ph name="TODO_0001"/>, versi Chromium Frame: <ph name="TODO_0002"/></translation>
-<translation id="5381655543170064624">Tutup semua jendela Chromium dan jalankan ulang Chromium agar perubahan ini berpengaruh.</translation>
 <translation id="5398878173008909840">Sudah tersedia Chromium versi baru.</translation>
 <translation id="5559945513746540383">Chromium tidak terinstal atau direktori instalasi tidak ditemukan. Unduh ulang Chromium.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -64,7 +50,6 @@
 <translation id="5981059579301719217">Profil Anda tidak dapat digunakan karena berasal dari versi Chromium yang lebih baru.\n\nBeberapa fitur mungkin akan tidak tersedia. Tetapkan direktori profil lain atau gunakan versi Chromium yang lebih baru.</translation>
 <translation id="6055895534982063517">Telah tersedia versi mutakhir Chromium, yang makin cepat daripada sebelumnya.</translation>
 <translation id="6089587093203430357">Instan</translation>
-<translation id="6209318267439329">Chromium dapat menggunakan layanan web untuk meningkatkan pengalaman penjelajahan. Layanan ini dapat dimatikan.</translation>
 <translation id="6248213926982192922">Jadikan Chromium sebagai browser default</translation>
 <translation id="6373523479360886564">Apakah Anda ingin menghapus instalasi Chromium?</translation>
 <translation id="6389904555427754410">Anda berniat menghubungi &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun server menyajikan sertifikat yang mengandung kesalahan. Chromium tidak dapat menggunakan sertifikat tersebut, sehingga tidak dapat memvalidasi identitas situs yang akan dihubungi. Koneksi tidak aman, sebaiknya usaha komunikasi tidak diteruskan.</translation>
@@ -89,11 +74,9 @@
 <translation id="5498103559159810756">Chromium menggunakan mesin penelusur default Anda, yaitu <ph name="PAGE_TITLE"/>. Apakah tetap ingin menggunakan penelusur yang sama?</translation>
 <translation id="6287463253129672858">Tidak dapat menginstal Chromium Frame yang sama dengan yang sedang berjalan. Keluar dulu dari Chromium Frame dan coba kembali.</translation>
 <translation id="7483335560992089831">Tidak dapat menginstal versi Chromium yang sama dengan yang sedang berjalan. Keluar dulu dari Chromium dan coba kembali.</translation>
-<translation id="7526756929942730853">Jika opsi Chromium di reset, maka perubahan yang telah Anda lakukan akan dikembalikan ke seting default. Apakah Anda ingin mereset opsi Chromium?</translation>
 <translation id="7641113255207688324">Chromium bukan merupakan browser default Anda.</translation>
 <translation id="7747138024166251722">Penginstal tidak dapat membuat direktori temporer. Periksa sisa ruang media penyimpan dan hak untuk menginstal perangkat lunak.</translation>
 <translation id="786596160034915371">Versi Chromium yang lebih baru telah terinstal pada komputer ini. Jika perangkat lunak tersebut tidak berfungsi, hapus Chromium yang ada dan unduh ulang.</translation>
-<translation id="8191012240651979172">Chromium telah terinstal untuk pengguna ini. Jika perangkat lunak tersebut tidak berfungsi, hapus Chromium yang ada dan unduh ulang.</translation>
 <translation id="8422904359318093226">Chromium tidak berfungsi dengan benar.</translation>
 <translation id="8453117565092476964">Arsip penginstal korup atau tidak valid. Unduh ulang Chromium.</translation>
 <translation id="8621669128220841554">Instalasi gagal kerena kesalahan tertentu. Unduh ulang Chromium.</translation>
