@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
+ * Copyright 2008 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
  */
 
 /*
@@ -70,22 +70,6 @@ static FILE *NaClLogFileIoBufferFromFile(char const *log_file) {
   return log_iob;
 }
 
-/*
- * Setting the log stream buffering to fully buffered, so that the
- * write of the tag string will be less likely to be separated
- * from the write of the actual log message.
- */
-static FILE *NaClGioDupFileIo(FILE *orig) {
-  FILE *copy;
-  copy = FDOPEN(DUP(fileno(orig)), "a");
-  if (NULL == copy) {
-    /* gack!         123456789012345 67 890123456 7 */
-    _exit(write(2, "fdopen(dup(2), \"a\") failed\n", 27));
-  }
-  (void) setvbuf(copy, (char *) NULL, _IOFBF, 1024);
-  return copy;
-}
-
 static struct Gio *NaClLogGioFromFileIoBuffer(FILE *log_iob) {
   struct GioFile *log_gio;
 
@@ -127,7 +111,7 @@ struct Gio *NaClLogDefaultLogGio() {
   log_file = getenv("NACLLOG");
 
   if (NULL == log_file) {
-    log_iob = NaClGioDupFileIo(stderr);
+    log_iob = stderr;
   } else {
     log_iob = NaClLogFileIoBufferFromFile(log_file);
   }
@@ -177,7 +161,7 @@ void NaClLogUnlock(void) {
 
 static INLINE struct Gio *NaClLogGetGio_mu() {
   if (NULL == log_stream) {
-    (void) GioFileRefCtor(&log_file_stream, NaClGioDupFileIo(stderr));
+    (void) GioFileRefCtor(&log_file_stream, stderr);
     log_stream = (struct Gio *) &log_file_stream;
   }
   return log_stream;
