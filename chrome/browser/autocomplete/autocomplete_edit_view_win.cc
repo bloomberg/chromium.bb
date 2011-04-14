@@ -289,10 +289,11 @@ AutocompleteEditViewWin::ScopedFreeze::~ScopedFreeze() {
     long count;
     text_object_model_->Unfreeze(&count);
     if (count == 0) {
-      // We need to UpdateWindow() here instead of InvalidateRect() because, as
-      // far as I can tell, the edit likes to synchronously erase its background
-      // when unfreezing, thus requiring us to synchronously redraw if we don't
-      // want flicker.
+      // We need to UpdateWindow() here in addition to InvalidateRect() because,
+      // as far as I can tell, the edit likes to synchronously erase its
+      // background when unfreezing, thus requiring us to synchronously redraw
+      // if we don't want flicker.
+      edit_->InvalidateRect(NULL, false);
       edit_->UpdateWindow();
     }
   }
