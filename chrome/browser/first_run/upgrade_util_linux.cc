@@ -15,9 +15,7 @@
 
 namespace {
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 double saved_last_modified_time_of_exe = 0;
-#endif
 
 }  // namespace
 
@@ -27,7 +25,6 @@ bool RelaunchChromeBrowser(const CommandLine& command_line) {
   return base::LaunchApp(command_line, false, false, NULL);
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 bool IsUpdatePendingRestart() {
   return saved_last_modified_time_of_exe != GetLastModifiedTimeOfExe();
 }
@@ -50,6 +47,5 @@ double GetLastModifiedTimeOfExe() {
   }
   return exe_file_info.last_modified.ToDoubleT();
 }
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 }  // namespace upgrade_util
