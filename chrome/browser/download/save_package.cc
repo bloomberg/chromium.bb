@@ -1316,6 +1316,11 @@ void SavePackage::CreateDirectoryOnFileThread(
 
 void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
                                       bool can_save_as_complete) {
+  // The TabContents which owns this SavePackage may have disappeared during
+  // the UI->FILE->UI thread hop of
+  // GetSaveInfo->CreateDirectoryOnFileThread->ContinueGetSaveInfo.
+  if (!tab_contents())
+    return;
   DownloadPrefs* download_prefs =
       tab_contents()->profile()->GetDownloadManager()->download_prefs();
   int file_type_index =
