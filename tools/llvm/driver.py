@@ -1818,18 +1818,18 @@ class Log:
 
   @classmethod
   def LogPrint(cls, m, *args):
+    # NOTE: m may contain '%' if no args are given
+    if args:
+      m = m % args
     for o in cls.LOG_OUT:
-      # NOTE: m may contain '%' if no args are given
-      if args:
-        m = m % args
       print >> o, m
 
   @classmethod
   def ErrorPrint(cls, m, *args):
+    # NOTE: m may contain '%' if no args are given
+    if args:
+      m = m % args
     for o in cls.ERROR_OUT:
-      # NOTE: m may contain '%' if no args are given
-      if args:
-        m = m % args
       print >> o, m
 
 def EscapeEcho(s):
