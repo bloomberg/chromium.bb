@@ -118,6 +118,32 @@ def PreFlightRinse(buildroot, board, tracking_branch, overlays):
   cros_lib.OldRunCommand(['sudo', 'killall', 'kvm'], error_ok=True)
 
 
+def ManifestCheckout(buildroot, tracking_branch, next_version,
+                     retries=_DEFAULT_RETRIES,
+                     url='ssh://git.chromium.org:9222/manifest-versions'):
+  """Performs a manifest checkout and clobbers any previous checkouts."""
+
+  print "buildroot %s" % buildroot
+  print "tracking_branch %s" % tracking_branch
+  print "nextversion %s" % next_version
+  print "url %s" % url
+
+  # Assume url is coming in and overriding and set to manifest-versions
+  url = os.path.dirname(url) + '/manifest-versions';
+
+  branch = tracking_branch.split('/');
+  next_version_subdir = next_version.split('.');
+
+  manifest =  os.path.join(
+     'buildspecs',
+     next_version_subdir[0] + '.' + next_version_subdir[1],
+     next_version + '.xml')
+
+  cros_lib.OldRunCommand(['repo', 'init', '-u', url, '-m', manifest ],
+                         cwd=buildroot, input='\n\ny\n')
+  _RepoSync(buildroot, retries)
+
+
 def FullCheckout(buildroot, tracking_branch,
                  retries=_DEFAULT_RETRIES,
                  url='http://git.chromium.org/git/manifest'):

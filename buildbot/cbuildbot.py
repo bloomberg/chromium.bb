@@ -26,7 +26,7 @@ import chromite.buildbot.cbuildbot_stages as stages
 import chromite.lib.cros_build_lib as cros_lib
 
 
-def _GetConfig(config_name):
+def _GetConfig(config_name, options):
   """Gets the configuration for the build"""
   build_config = {}
   if not cbuildbot_config.config.has_key(config_name):
@@ -38,14 +38,23 @@ def _GetConfig(config_name):
       Warning('  %s' % name)
     sys.exit(1)
 
-  return cbuildbot_config.config[config_name]
+  result = cbuildbot_config.config[config_name]
+
+  # Use the config specific url, if not given on command line.
+  if options.url:
+    result['git_url'] = options.url
+
+  return result
 
 
 def RunBuildStages(bot_id, options, build_config):
   """Run the requested build stages."""
   try:
     if options.sync:
-      stages.SyncStage(bot_id, options, build_config).Run()
+      if build_config['manifest_version']:
+        stages.ManifestVersionedSyncStage(bot_id, options, build_config).Run()
+      else:
+        stages.SyncStage(bot_id, options, build_config).Run()
 
     if options.build:
       stages.BuildBoardStage(bot_id, options, build_config).Run()
@@ -75,6 +84,12 @@ def RunBuildStages(bot_id, options, build_config):
       elif build_config['important']:
         cbuildbot_comm.PublishStatus(cbuildbot_comm.STATUS_BUILD_COMPLETE)
 
+      if options.sync and build_config['manifest_version']:
+        stages.ManifestVersionedSyncCompletionStage(bot_id,
+                                                    options,
+                                                    build_config,
+                                                    success=True).Run()
+
     finally:
       if options.archive:
         stages.ArchiveStage(bot_id, options, build_config).Run()
@@ -86,6 +101,11 @@ def RunBuildStages(bot_id, options, build_config):
     if not build_config['master'] and build_config['important']:
       cbuildbot_comm.PublishStatus(cbuildbot_comm.STATUS_BUILD_FAILED)
 
+    if options.sync and build_config['manifest_version']:
+      stages.ManifestVersionedSyncCompletionStage(bot_id,
+                                    options,
+                                    build_config,
+                                    success=False).Run()
     raise
 
 
@@ -166,14 +186,14 @@ def main():
                     default=True,
                     help='Override values from buildconfig and never uprev.')
   parser.add_option('-u', '--url', dest='url',
-                    default='http://git.chromium.org/git/manifest',
-                    help='Run the buildbot on internal manifest')
+                    default=None,
+                    help='Override the GIT repo URL from the build config.')
 
   (options, args) = parser.parse_args()
 
   if len(args) >= 1:
     bot_id = args[-1]
-    build_config = _GetConfig(bot_id)
+    build_config = _GetConfig(bot_id, options)
   else:
     parser.error('Invalid usage.  Use -h to see usage.')
 

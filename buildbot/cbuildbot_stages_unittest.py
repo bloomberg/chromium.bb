@@ -18,6 +18,7 @@ import chromite.buildbot.cbuildbot as cbuildbot
 import chromite.buildbot.cbuildbot_config as config
 import chromite.buildbot.cbuildbot_commands as commands
 import chromite.buildbot.cbuildbot_stages as stages
+import chromite.buildbot.manifest_version as manifest_version
 import chromite.lib.cros_build_lib as cros_lib
 
 
@@ -109,7 +110,9 @@ class AbstractStageTest(mox.MoxTestBase):
     self.bot_id = 'x86-generic-pre-flight-queue'
     self.build_config = config.config[self.bot_id]
     self.build_root = '/fake_root'
+
     self.url = 'fake_url'
+    self.build_config['git_url'] = self.url
 
     self.options = self.mox.CreateMockAnything()
     self.options.buildroot = self.build_root
@@ -117,7 +120,6 @@ class AbstractStageTest(mox.MoxTestBase):
     self.options.prebuilts = False
     self.options.tracking_branch = 'ooga_booga'
     self.options.clobber = False
-    self.options.url = self.url
     self.options.buildnumber = 1234
     self.overlay = os.path.join(self.build_root,
                                 'src/third_party/chromiumos-overlay')
@@ -180,6 +182,7 @@ class BuilderStageTest(AbstractStageTest):
     stage = self.ConstructStage()
     public_overlays = ['public1', 'public2', self.overlay]
     private_overlays = ['private1', 'private2']
+
     self.assertEqual(stage._ResolveOverlays('public'), public_overlays)
     self.assertEqual(stage._ResolveOverlays('private'), private_overlays)
     self.assertEqual(stage._ResolveOverlays('both'),
@@ -228,6 +231,153 @@ class SyncStageTest(AbstractStageTest):
     self.RunStage()
     self.mox.VerifyAll()
 
+
+class ManifestVersionedSyncStageTest(BuilderStageTest):
+  """Tests the two (heavily related) stages ManifestVersionedSync, and
+     ManifestVersionedSyncCompleted.
+  """
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+    BuilderStageTest.setUp(self)
+
+    self.manifest_version_url = 'fake manifest url'
+    self.build_config['manifest_version'] = self.manifest_version_url
+
+    self.next_version = 'next_version'
+
+  def testManifestVersionedSyncOnePartBranch(self):
+    """Tests basic ManifestVersionedSyncStage with branch ooga_booga"""
+
+    self.options.tracking_branch = 'ooga_booga'
+
+    self.mox.StubOutWithMock(manifest_version, 'GenerateWorkload')
+    self.mox.StubOutWithMock(commands, 'ManifestCheckout')
+
+    os.path.isdir(self.build_root + '/.repo').AndReturn(False)
+    manifest_version.GenerateWorkload(
+       tmp_dir='/tmp/git.root',
+       source_repo=self.url,
+       manifest_repo=self.manifest_version_url,
+       branch='master',
+       version_file='src/third_party/chromiumos-overlay/chromeos/config'
+                    '/chromeos_version.sh',
+       build_name=self.build_config['board'],
+       incr_type= 'branch',
+       dry_run=False).AndReturn(self.next_version)
+
+    commands.ManifestCheckout(self.build_root,
+                              self.options.tracking_branch,
+                              self.next_version,
+                              url=self.manifest_version_url)
+
+    os.path.isdir('/fake_root/src/'
+                  'third_party/chromiumos-overlay').AndReturn(True)
+
+    self.mox.ReplayAll()
+    stage = stages.ManifestVersionedSyncStage(self.bot_id,
+                                              self.options,
+                                              self.build_config)
+    stage.Run()
+    self.mox.VerifyAll()
+
+  def testManifestVersionedSyncTwoPartBranch(self):
+    """Tests basic ManifestVersionedSyncStage with branch ooga/booga"""
+
+    self.options.tracking_branch = 'ooga/booga'
+
+    self.mox.StubOutWithMock(manifest_version, 'GenerateWorkload')
+    self.mox.StubOutWithMock(commands, 'ManifestCheckout')
+
+    os.path.isdir(self.build_root + '/.repo').AndReturn(False)
+    manifest_version.GenerateWorkload(
+       tmp_dir='/tmp/git.root',
+       source_repo=self.url,
+       manifest_repo=self.manifest_version_url,
+       branch='booga',
+       version_file='src/third_party/chromiumos-overlay/chromeos/config'
+                    '/chromeos_version.sh',
+       build_name=self.build_config['board'],
+       incr_type= 'patch',
+       dry_run=False).AndReturn(self.next_version)
+
+    commands.ManifestCheckout(self.build_root,
+                              self.options.tracking_branch,
+                              self.next_version,
+                              url=self.manifest_version_url)
+
+    os.path.isdir('/fake_root/src/'
+                  'third_party/chromiumos-overlay').AndReturn(True)
+
+    self.mox.ReplayAll()
+    stage = stages.ManifestVersionedSyncStage(self.bot_id,
+                                              self.options,
+                                              self.build_config)
+    stage.Run()
+    self.mox.VerifyAll()
+
+  def testManifestVersionedSyncCompletedSuccess(self):
+    """Tests basic ManifestVersionedSyncStageCompleted on success"""
+
+    stages.ManifestVersionedSyncStage.build_version = self.next_version
+
+    self.mox.StubOutWithMock(manifest_version, 'UpdateStatus')
+
+    os.path.isdir(self.build_root + '/.repo').AndReturn(False)
+    manifest_version.UpdateStatus(
+       tmp_dir='/tmp/git.root',
+       manifest_repo=self.manifest_version_url,
+       build_name=self.build_config['board'],
+       build_version=self.next_version,
+       success=True,
+       dry_run=False)
+
+    self.mox.ReplayAll()
+    stage = stages.ManifestVersionedSyncCompletionStage(self.bot_id,
+                                                        self.options,
+                                                        self.build_config,
+                                                        success=True)
+    stage.Run()
+    self.mox.VerifyAll()
+
+  def testManifestVersionedSyncCompletedFailure(self):
+    """Tests basic ManifestVersionedSyncStageCompleted on failure"""
+
+    stages.ManifestVersionedSyncStage.build_version = self.next_version
+
+    self.mox.StubOutWithMock(manifest_version, 'UpdateStatus')
+
+    os.path.isdir(self.build_root + '/.repo').AndReturn(False)
+    manifest_version.UpdateStatus(
+       tmp_dir='/tmp/git.root',
+       manifest_repo=self.manifest_version_url,
+       build_name=self.build_config['board'],
+       build_version=self.next_version,
+       success=False,
+       dry_run=False)
+
+    self.mox.ReplayAll()
+    stage = stages.ManifestVersionedSyncCompletionStage(self.bot_id,
+                                                        self.options,
+                                                        self.build_config,
+                                                        success=False)
+    stage.Run()
+    self.mox.VerifyAll()
+
+  def testManifestVersionedSyncCompletedIncomplete(self):
+    """Tests basic ManifestVersionedSyncStageCompleted on incomplete build."""
+
+    stages.ManifestVersionedSyncStage.build_version = None
+
+    os.path.isdir(self.build_root + '/.repo').AndReturn(False)
+
+    self.mox.ReplayAll()
+    stage = stages.ManifestVersionedSyncCompletionStage(self.bot_id,
+                                                        self.options,
+                                                        self.build_config,
+                                                        success=False)
+    stage.Run()
+    self.mox.VerifyAll()
 
 class BuildBoardTest(AbstractStageTest):
 

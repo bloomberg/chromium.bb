@@ -10,6 +10,7 @@ import sys
 import tempfile
 
 import chromite.buildbot.cbuildbot_commands as commands
+import chromite.buildbot.manifest_version as manifest_version
 import chromite.lib.cros_build_lib as cros_lib
 
 _FULL_BINHOST = 'FULL_BINHOST'
@@ -257,12 +258,12 @@ class BuilderStage():
 
 class SyncStage(BuilderStage):
   """Stage that performs syncing for the builder."""
+
   def _PerformStage(self):
     if self._options.clobber or not os.path.isdir(os.path.join(self._build_root,
                                                                '.repo')):
       commands.FullCheckout(self._build_root, self._options.tracking_branch,
-                            url=self._options.url)
-      self._ExtractOverlays()
+                            url=self._build_config['git_url'])
     else:
       commands.PreFlightRinse(self._build_root, self._build_config['board'],
                               self._options.tracking_branch,
@@ -271,9 +272,78 @@ class SyncStage(BuilderStage):
       commands.IncrementalCheckout(self._build_root)
 
     # Check that all overlays can be found.
+    self._ExtractOverlays() # Our list of overlays are from pre-sync, refresh
     for path in BuilderStage.rev_overlays:
       assert os.path.isdir(path), 'Missing overlay: %s' % path
 
+
+class ManifestVersionedSyncStage(BuilderStage):
+  """Stage that generates a unique manifest file, and sync's to it."""
+
+  build_version = None
+
+  def _PerformStage(self):
+    # Need to determine branch and set a local value here
+    branch_parts = self._options.tracking_branch.split('/')
+
+    if len(branch_parts) >= 2:
+      branch = branch_parts[1]
+      increment = 'patch'
+    else:
+      branch = 'master'
+      increment = 'branch'
+
+    next_version = manifest_version.GenerateWorkload(
+       tmp_dir='/tmp/git.root',
+       source_repo=self._build_config['git_url'],
+       manifest_repo=self._build_config['manifest_version'],
+       branch=branch,
+       version_file=os.path.join('src/third_party/chromiumos-overlay',
+                                 'chromeos/config/chromeos_version.sh'),
+       build_name=self._build_config['board'],
+       incr_type=increment,
+       dry_run=self._options.debug)
+
+    if not next_version:
+      print 'AUTOREV: Nothing to build!'
+      sys.exit(0);
+
+    # Store off this value where the Completion stage can find it...
+    ManifestVersionedSyncStage.build_version = next_version
+
+    commands.ManifestCheckout(self._build_root,
+                              self._options.tracking_branch,
+                              next_version,
+                              url=self._build_config['manifest_version'])
+
+    # Check that all overlays can be found.
+    self._ExtractOverlays() # Our list of overlays are from pre-sync, refresh
+    for path in BuilderStage.rev_overlays:
+      assert os.path.isdir(path), 'Missing overlay: %s' % path
+
+
+class ManifestVersionedSyncCompletionStage(BuilderStage):
+  """Stage that records board specific results for a unique manifest file."""
+
+  def __init__(self, bot_id, options, build_config, success):
+    BuilderStage.__init__(self, bot_id, options, build_config)
+    self.success = success
+
+  def _PerformStage(self):
+
+    if not ManifestVersionedSyncStage.build_version:
+      # Nothing to do if ManifestVersionedSyncStage (or an earlier stage)
+      # didn't complete. I don't want an additional error here to mask the
+      # original error.
+      return
+
+    manifest_version.UpdateStatus(
+       tmp_dir='/tmp/git.root',
+       manifest_repo=self._build_config['manifest_version'],
+       build_name=self._build_config['board'],
+       build_version=ManifestVersionedSyncStage.build_version,
+       success=self.success,
+       dry_run=self._options.debug)
 
 class BuildBoardStage(BuilderStage):
   """Stage that is responsible for building host pkgs and setting up a board."""

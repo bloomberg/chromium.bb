@@ -45,6 +45,14 @@ build_type -- Upload prebuilts under the specified category. Can be any of
 test_mod -- Create a test mod image for archival.
 factory_install_mod -- Create a factory install image for archival.
 factory_test_mod -- Create a factory test image for archival.
+
+git_url -- git repository URL for our manifests.
+           External: http://git.chromium.org/git/manifest
+           Internal: ssh://git@gitrw.chromium.org:9222/manifest-internal
+
+manifest_version -- URL to git repo to store per-build manifest.
+                    Usually None or
+                    ssh://git@gitrw.chromium.org:9222/manifest-versions
 """
 
 # TODO(dgarrett) Make test_mod, factory_install_mod, factory_test_mod options
@@ -78,6 +86,9 @@ default = {
   'test_mod' : False,
   'factory_install_mod' : False,
   'factory_test_mod' : False,
+
+  'git_url' : 'http://git.chromium.org/git/manifest',
+  'manifest_version' : None,
 }
 
 arm = {
@@ -244,3 +255,13 @@ config['x86-pineview-full'].update(full)
 config['x86-pineview-full'].update({
   'board' : 'x86-pineview',
 })
+
+config['x86-generic-manifest'] = default.copy()
+config['x86-generic-manifest'].update({
+  'board' : 'x86-generic',
+
+  'git_url' : 'ssh://git@gitrw.chromium.org:9222/manifest-internal',
+  'manifest_version' : 'ssh://git@gitrw.chromium.org:9222/manifest-versions',
+})
+
+
