@@ -10,11 +10,13 @@
       'type': '<(library)',
       'dependencies': [
         'content_common',
+        '../jingle/jingle.gyp:jingle_glue',
         '../ppapi/ppapi.gyp:ppapi_proxy',
         '../skia/skia.gyp:skia',
         '../third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libjingle/libjingle.gyp:libjingle',
+        '../third_party/libjingle/libjingle.gyp:libjingle_p2p',
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/gfx/surface/surface.gyp:surface',
