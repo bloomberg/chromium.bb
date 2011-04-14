@@ -29,7 +29,8 @@ class ChildProcessInfo {
     SANDBOX_HELPER_PROCESS,
     NACL_BROKER_PROCESS,
     GPU_PROCESS,
-    PPAPI_PLUGIN_PROCESS
+    PPAPI_PLUGIN_PROCESS,
+    PPAPI_BROKER_PROCESS
   };
 
   // NOTE: Do not remove or reorder the elements in this enum, and only add new

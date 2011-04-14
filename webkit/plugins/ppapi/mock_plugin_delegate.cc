@@ -53,7 +53,6 @@ MockPluginDelegate::PlatformAudio* MockPluginDelegate::CreateAudio(
 }
 
 MockPluginDelegate::PpapiBroker* MockPluginDelegate::ConnectToPpapiBroker(
-    PluginInstance* instance,
     PPB_Broker_Impl* client) {
   return NULL;
 }

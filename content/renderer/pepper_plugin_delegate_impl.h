@@ -8,12 +8,15 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "ipc/ipc_channel_handle.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
+#include "webkit/plugins/ppapi/ppb_broker_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_menu_impl.h"
 
 class FilePath;
@@ -42,6 +45,30 @@ struct CustomContextMenuContext;
 }
 
 class TransportDIB;
+
+class PpapiBrokerImpl : public webkit::ppapi::PluginDelegate::PpapiBroker {
+ public:
+  PpapiBrokerImpl();
+
+  // PpapiBroker implementation.
+  virtual void Connect(webkit::ppapi::PPB_Broker_Impl* client);
+  virtual void Disconnect(webkit::ppapi::PPB_Broker_Impl* client);
+
+  // Called when the channel to the broker has been established.
+  void OnBrokerChannelConnected(const IPC::ChannelHandle& channel_handle);
+
+  // Asynchronously requests a pipe for this instance from the broker.
+  void RequestPpapiBrokerPipe(webkit::ppapi::PPB_Broker_Impl* client);
+
+ protected:
+  IPC::ChannelHandle channel_handle_;
+
+  std::vector<scoped_refptr<webkit::ppapi::PPB_Broker_Impl> > pending_connects_;
+  std::vector<scoped_refptr<webkit::ppapi::PPB_Broker_Impl> > pending_pipes_;
+
+  DISALLOW_COPY_AND_ASSIGN(PpapiBrokerImpl);
+};
+
 
 class PepperPluginDelegateImpl
     : public webkit::ppapi::PluginDelegate,
@@ -81,6 +108,10 @@ class PepperPluginDelegateImpl
                          base::PlatformFile file,
                          int message_id);
 
+  // Called by RenderView when ViewMsg_PpapiBrokerChannelCreated.
+  void OnPpapiBrokerChannelCreated(int request_id,
+                                   const IPC::ChannelHandle& handle);
+
   // Notification that the render view has been focused or defocused. This
   // notifies all of the plugins.
   void OnSetFocus(bool has_focus);
@@ -101,7 +132,6 @@ class PepperPluginDelegateImpl
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       PP_VideoDecoderConfig_Dev* decoder_config);
   virtual PpapiBroker* ConnectToPpapiBroker(
-      webkit::ppapi::PluginInstance* instance,
       webkit::ppapi::PPB_Broker_Impl* client);
   virtual void NumberOfFindResultsChanged(int identifier,
                                           int total,
@@ -193,6 +223,10 @@ class PepperPluginDelegateImpl
   virtual webkit_glue::P2PTransport* CreateP2PTransport();
 
  private:
+  // Asynchronously attempts to create a PPAPI broker for the given plugin.
+  scoped_refptr<webkit::ppapi::PluginDelegate::PpapiBroker> CreatePpapiBroker(
+      webkit::ppapi::PluginModule* plugin_module);
+
   // Pointer to the RenderView that owns us.
   RenderView* render_view_;
 
@@ -212,6 +246,9 @@ class PepperPluginDelegateImpl
 
   IDMap<scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl>,
         IDMapOwnPointer> pending_context_menus_;
+
+  IDMap<scoped_refptr<PpapiBrokerImpl>, IDMapOwnPointer>
+      pending_connect_broker_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPluginDelegateImpl);
 };

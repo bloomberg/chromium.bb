@@ -389,6 +389,7 @@ PluginModule::PluginModule(const std::string& name,
     : lifetime_delegate_(lifetime_delegate),
       callback_tracker_(new CallbackTracker),
       is_crashed_(false),
+      broker_(NULL),
       library_(NULL),
       name_(name),
       path_(path),
@@ -525,6 +526,16 @@ bool PluginModule::ReserveInstanceID(PP_Instance instance) {
   if (reserve_instance_id_)
     return PPBoolToBool(reserve_instance_id_(pp_module_, instance));
   return true;  // Instance ID is usable.
+}
+
+void PluginModule::SetBroker(
+    scoped_refptr<PluginDelegate::PpapiBroker> broker) {
+  DCHECK(!broker_.get());
+  broker_ = broker;
+}
+
+scoped_refptr<PluginDelegate::PpapiBroker> PluginModule::GetBroker(){
+  return broker_;
 }
 
 bool PluginModule::InitializeModule() {

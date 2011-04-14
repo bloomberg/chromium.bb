@@ -29,7 +29,7 @@
 
 #define IPC_MESSAGE_START PpapiMsgStart
 
-// These are from the plugin to the renderer
+// These are from the browser to the plugin.
 // Loads the given plugin.
 IPC_MESSAGE_CONTROL1(PpapiMsg_LoadPlugin, FilePath /* path */)
 

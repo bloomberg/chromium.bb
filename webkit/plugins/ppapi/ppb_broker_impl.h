@@ -38,7 +38,7 @@ class PPB_Broker_Impl : public Resource {
  private:
   // PluginDelegate ppapi broker object.
   // We don't own this pointer but are responsible for calling Release on it.
-  PluginDelegate::PpapiBroker* broker_;
+  scoped_refptr<PluginDelegate::PpapiBroker> broker_;
 
   // Callback invoked from BrokerConnected.
   scoped_refptr<TrackedCompletionCallback> connect_callback_;

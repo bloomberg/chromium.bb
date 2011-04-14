@@ -157,6 +157,9 @@ class RenderMessageFilter : public BrowserMessageFilter {
                              IPC::Message* reply_msg);
   void OnOpenChannelToPepperPlugin(const FilePath& path,
                                    IPC::Message* reply_msg);
+  void OnOpenChannelToPpapiBroker(int routing_id,
+                                  int request_id,
+                                  const FilePath& path);
   void OnGenerateRoutingID(int* route_id);
   void OnDownloadUrl(const IPC::Message& message,
                      const GURL& url,

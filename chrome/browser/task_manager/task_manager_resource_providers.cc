@@ -933,7 +933,8 @@ string16 TaskManagerChildProcessResource::GetLocalizedTitle() const {
       return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NACL_BROKER_PREFIX);
 
     case ChildProcessInfo::PLUGIN_PROCESS:
-    case ChildProcessInfo::PPAPI_PLUGIN_PROCESS: {
+    case ChildProcessInfo::PPAPI_PLUGIN_PROCESS:
+    case ChildProcessInfo::PPAPI_BROKER_PROCESS: {
       return l10n_util::GetStringFUTF16(
           IDS_TASK_MANAGER_PLUGIN_PREFIX, title,
           WideToUTF16Hack(child_process_.version()));

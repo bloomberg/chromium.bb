@@ -1146,6 +1146,11 @@ IPC_MESSAGE_ROUTED1(ViewMsg_AccessibilityDoDefaultAction,
 // message was processed and it can send addition notifications.
 IPC_MESSAGE_ROUTED0(ViewMsg_AccessibilityNotifications_ACK)
 
+// Reply to ViewHostMsg_OpenChannelToPpapiBroker
+// Tells the renderer that the channel to the broker has been created.
+IPC_MESSAGE_ROUTED2(ViewMsg_PpapiBrokerChannelCreated,
+                    int /* request_id */,
+                    IPC::ChannelHandle /* handle */)
 
 // Messages sent from the renderer to the browser.
 
@@ -1582,13 +1587,23 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_WebUISend,
                     std::string  /* args (as a JSON string) */)
 
 // A renderer sends this to the browser process when it wants to
-// create a pepper plugin.  The browser will create the plugin process if
+// create a ppapi plugin.  The browser will create the plugin process if
 // necessary, and will return a handle to the channel on success.
 // On error an empty string is returned.
 IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_OpenChannelToPepperPlugin,
                             FilePath /* path */,
                             base::ProcessHandle /* plugin_process_handle */,
                             IPC::ChannelHandle /* handle to channel */)
+
+// A renderer sends this to the browser process when it wants to
+// create a ppapi broker.  The browser will create the broker process
+// if necessary, and will return a handle to the channel on success.
+// On error an empty string is returned.
+// The browser will respond with ViewMsg_PpapiBrokerChannelCreated.
+IPC_MESSAGE_CONTROL3(ViewHostMsg_OpenChannelToPpapiBroker,
+                     int /* routing_id */,
+                     int /* request_id */,
+                     FilePath /* path */)
 
 #if defined(USE_X11)
 // A renderer sends this when it needs a browser-side widget for

@@ -932,6 +932,8 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_AccessibilityNotifications_ACK,
                         OnAccessibilityNotificationsAck)
     IPC_MESSAGE_HANDLER(ViewMsg_AsyncOpenFile_ACK, OnAsyncFileOpened)
+    IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerChannelCreated,
+                        OnPpapiBrokerChannelCreated)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
 #endif
@@ -4799,6 +4801,11 @@ void RenderView::OnAsyncFileOpened(base::PlatformFileError error_code,
       error_code,
       IPC::PlatformFileForTransitToPlatformFile(file_for_transit),
       message_id);
+}
+
+void RenderView::OnPpapiBrokerChannelCreated(int request_id,
+                                             const IPC::ChannelHandle& handle) {
+  pepper_delegate_.OnPpapiBrokerChannelCreated(request_id, handle);
 }
 
 #if defined(OS_MACOSX)

@@ -72,7 +72,7 @@ PPB_Broker_Impl::PPB_Broker_Impl(PluginInstance* instance)
 
 PPB_Broker_Impl::~PPB_Broker_Impl() {
   if (broker_) {
-    broker_->Release(instance());
+    broker_->Disconnect(this);
     broker_ = NULL;
   }
 
@@ -94,7 +94,7 @@ int32_t PPB_Broker_Impl::Connect(
     return PP_ERROR_FAILED;
   }
 
-  broker_ = plugin_delegate->ConnectToPpapiBroker(instance(), this);
+  broker_ = plugin_delegate->ConnectToPpapiBroker(this);
   if (!broker_)
     return PP_ERROR_FAILED;
 

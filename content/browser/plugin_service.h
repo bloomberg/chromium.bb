@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/ppapi_plugin_process_host.h"
+#include "content/browser/ppapi_broker_process_host.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -84,6 +85,7 @@ class PluginService
   // started.
   PluginProcessHost* FindNpapiPluginProcess(const FilePath& plugin_path);
   PpapiPluginProcessHost* FindPpapiPluginProcess(const FilePath& plugin_path);
+  PpapiBrokerProcessHost* FindPpapiBrokerProcess(const FilePath& broker_path);
 
   // Returns the plugin process host corresponding to the plugin process that
   // has been started by this service. This will start a process to host the
@@ -92,6 +94,8 @@ class PluginService
   PluginProcessHost* FindOrStartNpapiPluginProcess(
       const FilePath& plugin_path);
   PpapiPluginProcessHost* FindOrStartPpapiPluginProcess(
+      const FilePath& plugin_path);
+  PpapiBrokerProcessHost* FindOrStartPpapiBrokerProcess(
       const FilePath& plugin_path);
 
   // Opens a channel to a plugin process for the given mime type, starting
@@ -104,6 +108,8 @@ class PluginService
                                 PluginProcessHost::Client* client);
   void OpenChannelToPpapiPlugin(const FilePath& path,
                                 PpapiPluginProcessHost::Client* client);
+  void OpenChannelToPpapiBroker(const FilePath& path,
+                                PpapiBrokerProcessHost::Client* client);
 
   // Gets the first allowed plugin in the list of plugins that matches
   // the given url and mime type.  Must be called on the FILE thread.
@@ -151,6 +157,8 @@ class PluginService
                        const NotificationDetails& details);
 
   void RegisterPepperPlugins();
+
+  PepperPluginInfo* GetRegisteredPpapiPluginInfo(const FilePath& plugin_path);
 
   // Helper so we can do the plugin lookup on the FILE thread.
   void GetAllowedPluginForOpenChannelToPlugin(

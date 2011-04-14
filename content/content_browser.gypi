@@ -164,6 +164,8 @@
         'browser/mime_registry_message_filter.h',
         'browser/ppapi_plugin_process_host.cc',
         'browser/ppapi_plugin_process_host.h',
+        'browser/ppapi_broker_process_host.cc',
+        'browser/ppapi_broker_process_host.h',
         'browser/plugin_process_host.cc',
         'browser/plugin_process_host.h',
         'browser/plugin_process_host_mac.cc',

@@ -223,6 +223,22 @@ PpapiPluginProcessHost* PluginService::FindPpapiPluginProcess(
   return NULL;
 }
 
+PpapiBrokerProcessHost* PluginService::FindPpapiBrokerProcess(
+    const FilePath& broker_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  for (BrowserChildProcessHost::Iterator iter(
+           ChildProcessInfo::PPAPI_BROKER_PROCESS);
+       !iter.Done(); ++iter) {
+    PpapiBrokerProcessHost* broker =
+        static_cast<PpapiBrokerProcessHost*>(*iter);
+    if (broker->broker_path() == broker_path)
+      return broker;
+  }
+
+  return NULL;
+}
+
 PluginProcessHost* PluginService::FindOrStartNpapiPluginProcess(
     const FilePath& plugin_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -254,20 +270,39 @@ PpapiPluginProcessHost* PluginService::FindOrStartPpapiPluginProcess(
   if (plugin_host)
     return plugin_host;
 
-  // Validate that the plugin is actually registered. There should generally
-  // be very few plugins so a brute-force search is fine.
-  PepperPluginInfo* info = NULL;
-  for (size_t i = 0; i < ppapi_plugins_.size(); i++) {
-    if (ppapi_plugins_[i].path == plugin_path) {
-      info = &ppapi_plugins_[i];
-      break;
-    }
-  }
+  // Validate that the plugin is actually registered.
+  PepperPluginInfo* info = GetRegisteredPpapiPluginInfo(plugin_path);
   if (!info)
     return NULL;
 
   // This plugin isn't loaded by any plugin process, so create a new process.
   scoped_ptr<PpapiPluginProcessHost> new_host(new PpapiPluginProcessHost);
+  if (!new_host->Init(*info)) {
+    NOTREACHED();  // Init is not expected to fail.
+    return NULL;
+  }
+  return new_host.release();
+}
+
+PpapiBrokerProcessHost* PluginService::FindOrStartPpapiBrokerProcess(
+    const FilePath& plugin_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  PpapiBrokerProcessHost* plugin_host = FindPpapiBrokerProcess(plugin_path);
+  if (plugin_host)
+    return plugin_host;
+
+  // Validate that the plugin is actually registered.
+  PepperPluginInfo* info = GetRegisteredPpapiPluginInfo(plugin_path);
+  if (!info)
+    return NULL;
+
+  // TODO(ddorwin): Uncomment once out of process is supported.
+  // DCHECK(info->is_out_of_process);
+
+  // This broker isn't loaded by any broker process, so create a new process.
+  scoped_ptr<PpapiBrokerProcessHost> new_host(
+      new PpapiBrokerProcessHost);
   if (!new_host->Init(*info)) {
     NOTREACHED();  // Init is not expected to fail.
     return NULL;
@@ -296,6 +331,16 @@ void PluginService::OpenChannelToPpapiPlugin(
   PpapiPluginProcessHost* plugin_host = FindOrStartPpapiPluginProcess(path);
   if (plugin_host)
     plugin_host->OpenChannelToPlugin(client);
+  else  // Send error.
+    client->OnChannelOpened(base::kNullProcessHandle, IPC::ChannelHandle());
+}
+
+void PluginService::OpenChannelToPpapiBroker(
+    const FilePath& path,
+    PpapiBrokerProcessHost::Client* client) {
+  PpapiBrokerProcessHost* plugin_host = FindOrStartPpapiBrokerProcess(path);
+  if (plugin_host)
+    plugin_host->OpenChannelToPpapiBroker(client);
   else  // Send error.
     client->OnChannelOpened(base::kNullProcessHandle, IPC::ChannelHandle());
 }
@@ -501,6 +546,19 @@ void PluginService::RegisterPepperPlugins() {
 
     webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(info);
   }
+}
+
+// There should generally be very few plugins so a brute-force search is fine.
+PepperPluginInfo* PluginService::GetRegisteredPpapiPluginInfo(
+    const FilePath& plugin_path) {
+  PepperPluginInfo* info = NULL;
+  for (size_t i = 0; i < ppapi_plugins_.size(); i++) {
+   if (ppapi_plugins_[i].path == plugin_path) {
+     info = &ppapi_plugins_[i];
+     break;
+   }
+  }
+  return info;
 }
 
 #if defined(OS_LINUX)

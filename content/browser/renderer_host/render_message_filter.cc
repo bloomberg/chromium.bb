@@ -34,6 +34,7 @@
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/ppapi_plugin_process_host.h"
+#include "content/browser/ppapi_broker_process_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_notification_task.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
@@ -182,6 +183,37 @@ class OpenChannelToPpapiPluginCallback : public RenderMessageCompletionCallback,
   }
 };
 
+class OpenChannelToPpapiBrokerCallback : public PpapiBrokerProcessHost::Client {
+ public:
+  OpenChannelToPpapiBrokerCallback(RenderMessageFilter* filter,
+                                   int routing_id,
+                                   int request_id)
+      : filter_(filter),
+        routing_id_(routing_id),
+        request_id_(request_id) {
+  }
+
+  virtual void GetChannelInfo(base::ProcessHandle* renderer_handle,
+                              int* renderer_id) {
+    *renderer_handle = filter_->peer_handle();
+    *renderer_id = filter_->render_process_id();
+  }
+
+  virtual void OnChannelOpened(base::ProcessHandle plugin_process_handle,
+                               const IPC::ChannelHandle& channel_handle) {
+    filter_->Send(
+        new ViewMsg_PpapiBrokerChannelCreated(routing_id_,
+                                              request_id_,
+                                              channel_handle));
+    delete this;
+  }
+
+ private:
+  scoped_refptr<RenderMessageFilter> filter_;
+  int routing_id_;
+  int request_id_;
+};
+
 // Class to assist with clearing out the cache when we want to preserve
 // the sslhostinfo entries.  It's not very efficient, but its just for debug.
 class DoomEntriesHelper {
@@ -323,6 +355,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                                     OnOpenChannelToPlugin)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPepperPlugin,
                                     OnOpenChannelToPepperPlugin)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToPpapiBroker,
+                        OnOpenChannelToPpapiBroker)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_UpdateRect,
         render_widget_helper_->DidReceiveUpdateMsg(message))
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_CheckPermission,
@@ -603,6 +637,13 @@ void RenderMessageFilter::OnOpenChannelToPepperPlugin(
     IPC::Message* reply_msg) {
   plugin_service_->OpenChannelToPpapiPlugin(
       path, new OpenChannelToPpapiPluginCallback(this, reply_msg));
+}
+
+void RenderMessageFilter::OnOpenChannelToPpapiBroker(int routing_id,
+                                                     int request_id,
+                                                     const FilePath& path) {
+  plugin_service_->OpenChannelToPpapiBroker(
+      path, new OpenChannelToPpapiBrokerCallback(this, routing_id, request_id));
 }
 
 void RenderMessageFilter::OnGenerateRoutingID(int* route_id) {

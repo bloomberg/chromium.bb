@@ -145,6 +145,9 @@ class PluginModule : public base::RefCounted<PluginModule>,
       PP_Bool (*reserve)(PP_Module, PP_Instance));
   bool ReserveInstanceID(PP_Instance instance);
 
+  void SetBroker(scoped_refptr<PluginDelegate::PpapiBroker> broker);
+  scoped_refptr<PluginDelegate::PpapiBroker> GetBroker();
+
  private:
   // Calls the InitializeModule entrypoint. The entrypoint must have been
   // set and the plugin must not be out of process (we don't maintain
@@ -166,6 +169,9 @@ class PluginModule : public base::RefCounted<PluginModule>,
   // pointer indicates that the plugin is running out of process and that the
   // entry_points_ aren't valid.
   scoped_ptr<PluginDelegate::OutOfProcessProxy> out_of_process_proxy_;
+
+  // Trusted broker for this plugin module.
+  scoped_refptr<PluginDelegate::PpapiBroker> broker_;
 
   // Holds a reference to the base::NativeLibrary handle if this PluginModule
   // instance wraps functions loaded from a library.  Can be NULL.  If

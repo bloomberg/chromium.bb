@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_PPAPI_PLUGIN_PROCESS_HOST_H_
-#define CONTENT_BROWSER_PPAPI_PLUGIN_PROCESS_HOST_H_
+#ifndef CONTENT_BROWSER_PPAPI_BROKER_PROCESS_HOST_H_
+#define CONTENT_BROWSER_PPAPI_BROKER_PROCESS_HOST_H_
 #pragma once
 
 #include <queue>
@@ -14,7 +14,9 @@
 
 struct PepperPluginInfo;
 
-class PpapiPluginProcessHost : public BrowserChildProcessHost {
+// TODO(ddorwin): Consider merging this with PpapiPluginProcessHost after
+// finishing broker implementation.
+class PpapiBrokerProcessHost : public BrowserChildProcessHost {
  public:
   class Client {
    public:
@@ -22,17 +24,17 @@ class PpapiPluginProcessHost : public BrowserChildProcessHost {
     virtual void GetChannelInfo(base::ProcessHandle* renderer_handle,
                                 int* renderer_id) = 0;
 
-    // Called when the channel is asynchronously opened to the plugin or on
+    // Called when the channel is asynchronously opened to the broker or on
     // error. On error, the parameters should be:
     //   base::kNullProcessHandle
     //   IPC::ChannelHandle()
-    virtual void OnChannelOpened(base::ProcessHandle plugin_process_handle,
+    virtual void OnChannelOpened(base::ProcessHandle broker_process_handle,
                                  const IPC::ChannelHandle& channel_handle) = 0;
   };
 
   // You must call Init before doing anything else.
-  PpapiPluginProcessHost();
-  virtual ~PpapiPluginProcessHost();
+  PpapiBrokerProcessHost();
+  virtual ~PpapiBrokerProcessHost();
 
   // Actually launches the process with the given plugin info. Returns true
   // on success (the process was spawned).
@@ -40,15 +42,15 @@ class PpapiPluginProcessHost : public BrowserChildProcessHost {
 
   // Opens a new channel to the plugin. The client will be notified when the
   // channel is ready or if there's an error.
-  void OpenChannelToPlugin(Client* client);
+  void OpenChannelToPpapiBroker(Client* client);
 
-  const FilePath& plugin_path() const { return plugin_path_; }
+  const FilePath& broker_path() const { return broker_path_; }
 
   // The client pointer must remain valid until its callback is issued.
 
  private:
 
-  void RequestPluginChannel(Client* client);
+  void RequestPpapiBrokerChannel(Client* client);
 
   virtual bool CanShutdown();
   virtual void OnProcessLaunched();
@@ -60,7 +62,7 @@ class PpapiPluginProcessHost : public BrowserChildProcessHost {
   void CancelRequests();
 
   // IPC message handlers.
-  void OnRendererPluginChannelCreated(const IPC::ChannelHandle& handle);
+  void OnRendererPpapiBrokerChannelCreated(const IPC::ChannelHandle& handle);
 
   // Channel requests that we are waiting to send to the plugin process once
   // the channel is opened.
@@ -71,10 +73,9 @@ class PpapiPluginProcessHost : public BrowserChildProcessHost {
   std::queue<Client*> sent_requests_;
 
   // Path to the plugin library.
-  FilePath plugin_path_;
+  FilePath broker_path_;
 
-  DISALLOW_COPY_AND_ASSIGN(PpapiPluginProcessHost);
+  DISALLOW_COPY_AND_ASSIGN(PpapiBrokerProcessHost);
 };
 
-#endif  // CONTENT_BROWSER_PPAPI_PLUGIN_PROCESS_HOST_H_
-
+#endif  // CONTENT_BROWSER_PPAPI_BROKER_PROCESS_HOST_H_

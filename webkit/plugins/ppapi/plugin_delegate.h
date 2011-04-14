@@ -210,15 +210,18 @@ class PluginDelegate {
   };
 
   // Provides access to the ppapi broker.
-  class PpapiBroker {
+  class PpapiBroker : public base::RefCountedThreadSafe<PpapiBroker> {
    public:
-    virtual ~PpapiBroker() {}
+    virtual void Connect(webkit::ppapi::PPB_Broker_Impl* client) = 0;
 
-    // Decrements the references to the broker for the instance.
-    // When the references reach 0 for all instances in this renderer, this
-    // object may be destroyed. When the references reach 0 for all instances
-    // using the same module, the broker may shut down.
-    virtual void Release(PluginInstance* instance) = 0;
+    // Decrements the references to the broker.
+    // When there are no more references, this renderer's dispatcher is
+    // destroyed, allowing the broker to shutdown if appropriate.
+    virtual void Disconnect(webkit::ppapi::PPB_Broker_Impl* client) = 0;
+
+   protected:
+    friend class base::RefCountedThreadSafe<PpapiBroker>;
+    ~PpapiBroker() {}
   };
 
   // Notification that the given plugin has crashed. When a plugin crashes, all
@@ -259,7 +262,6 @@ class PluginDelegate {
   // The caller is responsible for calling Release() on the returned pointer
   // to clean up the corresponding resources allocated during this call.
   virtual PpapiBroker* ConnectToPpapiBroker(
-      PluginInstance* instance,
       webkit::ppapi::PPB_Broker_Impl* client) = 0;
 
   // Notifies that the number of find results has changed.

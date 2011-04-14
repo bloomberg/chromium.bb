@@ -35,7 +35,6 @@
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
-#include "ipc/ipc_channel_handle.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash.h"
@@ -330,6 +329,45 @@ bool DispatcherWrapper::Init(
 
 }  // namespace
 
+PpapiBrokerImpl::PpapiBrokerImpl() {
+}
+
+// If the channel is not ready, queue the connection.
+void PpapiBrokerImpl::Connect(webkit::ppapi::PPB_Broker_Impl* client) {
+  if (channel_handle_.name.empty()) {
+    pending_connects_.push_back(client);
+    return;
+  }
+  DCHECK(pending_connects_.empty());
+
+  RequestPpapiBrokerPipe(client);
+}
+
+void PpapiBrokerImpl::Disconnect(webkit::ppapi::PPB_Broker_Impl* client) {
+  // TODO(ddorwin): Send message using channel_handle_ and clean up any pending
+  // connects or pipes.
+}
+
+void PpapiBrokerImpl::OnBrokerChannelConnected(
+    const IPC::ChannelHandle& channel_handle) {
+  channel_handle_ = channel_handle;
+
+  // Process all pending channel requests from the renderers.
+  for (size_t i = 0; i < pending_connects_.size(); i++)
+    RequestPpapiBrokerPipe(pending_connects_[i]);
+  pending_connects_.clear();
+}
+
+void PpapiBrokerImpl::RequestPpapiBrokerPipe(
+    webkit::ppapi::PPB_Broker_Impl* client) {
+  // TOOD(ddorwin): Send an asynchronous message to the broker using
+  // channel_handle_, queue the client with an ID, then return.
+  // The broker will create the pipe, which will be provided in a message.
+  // That message handler will call then client->BrokerConnected().
+  // Temporarily, just call back.
+  client->BrokerConnected(1);
+}
+
 PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderView* render_view)
     : render_view_(render_view),
       has_saved_context_menu_action_(false),
@@ -389,6 +427,45 @@ PepperPluginDelegateImpl::CreatePepperPlugin(
     return scoped_refptr<webkit::ppapi::PluginModule>();
   module->InitAsProxied(dispatcher.release());
   return module;
+}
+
+scoped_refptr<webkit::ppapi::PluginDelegate::PpapiBroker>
+PepperPluginDelegateImpl::CreatePpapiBroker(
+    webkit::ppapi::PluginModule* plugin_module) {
+  DCHECK(plugin_module);
+  DCHECK(!plugin_module->GetBroker());
+
+  // The broker path is the same as the plugin.
+  const FilePath& broker_path = plugin_module->path();
+
+  scoped_refptr<PpapiBrokerImpl> broker = new PpapiBrokerImpl;
+  plugin_module->SetBroker(broker);
+
+  int request_id =
+      pending_connect_broker_.Add(new scoped_refptr<PpapiBrokerImpl>(broker));
+
+  // Have the browser start the broker process for us.
+  IPC::ChannelHandle channel_handle;
+  IPC::Message* msg =
+      new ViewHostMsg_OpenChannelToPpapiBroker(render_view_->routing_id(),
+                                               request_id,
+                                               broker_path);
+  if (!render_view_->Send(msg)) {
+    pending_connect_broker_.Remove(request_id);
+    return scoped_refptr<webkit::ppapi::PluginDelegate::PpapiBroker>();
+  }
+
+  return broker;
+}
+
+void PepperPluginDelegateImpl::OnPpapiBrokerChannelCreated(
+    int request_id,
+    const IPC::ChannelHandle& handle) {
+  scoped_refptr<PpapiBrokerImpl> broker =
+      *pending_connect_broker_.Lookup(request_id);
+  pending_connect_broker_.Remove(request_id);
+
+  broker->OnBrokerChannelConnected(handle);
 }
 
 void PepperPluginDelegateImpl::ViewInitiatedPaint() {
@@ -560,22 +637,23 @@ PepperPluginDelegateImpl::CreateAudio(
   }
 }
 
+// If a broker has not already been created for this plugin, creates one.
 webkit::ppapi::PluginDelegate::PpapiBroker*
 PepperPluginDelegateImpl::ConnectToPpapiBroker(
-    webkit::ppapi::PluginInstance* instance,
     webkit::ppapi::PPB_Broker_Impl* client) {
-  CHECK(instance);
   CHECK(client);
 
-  // TODO(ddorwin): Add IPC to broker process to do the following.
-  // 1) Check if there is an existing broker for instance->module().
-  // 2) If not, create.
-  // 3) broker->Connect(client).
-  //     * Asynchronously launches broker if necessary, establishes pipe, and
-  //       calls BrokerConnected.
-  // 4) Return pointer to broker.
+  webkit::ppapi::PluginModule* plugin_module = client->instance()->module();
+  scoped_refptr<webkit::ppapi::PluginDelegate::PpapiBroker> broker =
+      plugin_module->GetBroker();
+  if (!broker) {
+    broker = CreatePpapiBroker(plugin_module);
+    if (!broker)
+      return NULL;
+  }
 
-  return NULL;
+  broker->Connect(client);
+  return broker;
 }
 
 bool PepperPluginDelegateImpl::RunFileChooser(
