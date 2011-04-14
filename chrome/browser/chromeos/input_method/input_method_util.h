@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,12 +81,10 @@ std::string GetKeyboardLayoutName(const std::string& input_method_id);
 //
 // Examples:
 //
-// "xkb:us::eng"       => "en_US"
-// "xkb:us:dvorak:eng" => "en_US_dvorak"
-// "xkb:gb::eng"       => "en_GB"
-// "pinyin"            => "zh_CN"
-// "mozc"              => "ja"
-std::string GetKeyboardOverlayId(const std::string& input_method_id);
+// "us"                => "en_US"
+// "us(dvorak)"        => "en_US_dvorak"
+// "gb"                => "en_GB"
+std::string GetKeyboardOverlayId(const std::string& input_method_name);
 
 // Converts an input method ID to a language code of the IME. Returns "Eng"
 // when |input_method_id| is unknown.

@@ -65,8 +65,9 @@ CC_SNIPPET_TEMPLATE="""  localized_strings.SetString("%s",
       l10n_util::GetStringUTF16(%s));
 """
 
-ALTGR_TEMPLATE="""// These layouts shouldn't remap the right alt key.
-const char *kKeepRightAltLayouts[] = {
+ALTGR_TEMPLATE="""// These are the overlay names of layouts that shouldn't
+// remap the right alt key.
+const char* kKeepRightAltOverlays[] = {
 %s
 };
 """

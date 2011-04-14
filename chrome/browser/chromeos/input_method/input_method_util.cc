@@ -34,11 +34,14 @@ typedef std::multimap<std::string, std::string> LanguageCodeToIdsMap;
 // Map from input method ID to associated input method descriptor.
 typedef std::map<std::string, chromeos::InputMethodDescriptor>
     InputMethodIdToDescriptorMap;
+// Map from layout name to associated overlay ID
+typedef std::map<std::string, std::string> InputMethodNameToOverlayIdMap;
 
 struct IdMaps {
   scoped_ptr<LanguageCodeToIdsMap> language_code_to_ids;
   scoped_ptr<std::map<std::string, std::string> > id_to_language_code;
   scoped_ptr<InputMethodIdToDescriptorMap> id_to_descriptor;
+  scoped_ptr<std::map<std::string, std::string> > name_to_overlay_id;
 
   // Returns the singleton instance.
   static IdMaps* GetInstance() {
@@ -59,12 +62,15 @@ struct IdMaps {
     language_code_to_ids->clear();
     id_to_language_code->clear();
     id_to_descriptor->clear();
+    name_to_overlay_id->clear();
 
     for (size_t i = 0; i < supported_input_methods->size(); ++i) {
       const chromeos::InputMethodDescriptor& input_method =
           supported_input_methods->at(i);
       const std::string language_code =
           chromeos::input_method::GetLanguageCodeFromDescriptor(input_method);
+      const std::string keyboard_overlay_id =
+          library->GetKeyboardOverlayId(input_method.id);
       language_code_to_ids->insert(
           std::make_pair(language_code, input_method.id));
       // Remember the pairs.
@@ -72,6 +78,8 @@ struct IdMaps {
           std::make_pair(input_method.id, language_code));
       id_to_descriptor->insert(
           std::make_pair(input_method.id, input_method));
+      name_to_overlay_id->insert(
+          std::make_pair(input_method.keyboard_layout, keyboard_overlay_id));
     }
 
     // Go through the languages listed in kExtraLanguages.
@@ -85,8 +93,12 @@ struct IdMaps {
       // language code and the input method.
       if (iter != id_to_descriptor->end()) {
         const chromeos::InputMethodDescriptor& input_method = iter->second;
+        const std::string keyboard_overlay_id =
+            library->GetKeyboardOverlayId(input_method.id);
         language_code_to_ids->insert(
             std::make_pair(language_code, input_method.id));
+        name_to_overlay_id->insert(
+            std::make_pair(input_method.keyboard_layout, keyboard_overlay_id));
       }
     }
   }
@@ -94,7 +106,8 @@ struct IdMaps {
  private:
   IdMaps() : language_code_to_ids(new LanguageCodeToIdsMap),
              id_to_language_code(new std::map<std::string, std::string>),
-             id_to_descriptor(new InputMethodIdToDescriptorMap) {
+             id_to_descriptor(new InputMethodIdToDescriptorMap),
+             name_to_overlay_id(new std::map<std::string, std::string>) {
     ReloadMaps();
   }
 
@@ -435,6 +448,13 @@ std::string GetKeyboardLayoutName(const std::string& input_method_id) {
       = IdMaps::GetInstance()->id_to_descriptor->find(input_method_id);
   return (iter == IdMaps::GetInstance()->id_to_descriptor->end()) ?
       "" : iter->second.keyboard_layout;
+}
+
+std::string GetKeyboardOverlayId(const std::string& input_method_name) {
+  std::map<std::string, std::string>::const_iterator iter
+      = IdMaps::GetInstance()->name_to_overlay_id->find(input_method_name);
+  return (iter == IdMaps::GetInstance()->name_to_overlay_id->end()) ?
+      "" : iter->second;
 }
 
 std::string GetInputMethodDisplayNameFromId(
