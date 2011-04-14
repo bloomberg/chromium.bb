@@ -11656,6 +11656,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_LAYOUT_UNITED_KINGDOM" desc="In the language menu button, this shows the input mode.">
         UK keyboard
       </message>
+      <message name="IDS_STATUSBAR_LAYOUT_UNITED_KINGDOM_DVORAK" desc="In the language menu button, this shows the input mode.">
+        UK Dvorak keyboard
+      </message>
       <message name="IDS_STATUSBAR_LAYOUT_SLOVAKIA" desc="In the language menu button, this shows the input mode.">
         Slovakian keyboard
       </message>

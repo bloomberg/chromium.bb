@@ -87,6 +87,8 @@ const struct {
   { "xkb:us:intl:eng", "INTL" },
   { "xkb:us:colemak:eng", "CO" },
   { "xkb:de:neo:ger", "NEO" },
+  // To distinguish from "xkb:gb::eng"
+  { "xkb:gb:dvorak:eng", "DV" },
   // To distinguish from "xkb:jp::jpn"
   { "mozc", "\xe3\x81\x82" },  // U+3042, Japanese Hiragana letter A in UTF-8.
   { "mozc-dv", "\xe3\x81\x82" },

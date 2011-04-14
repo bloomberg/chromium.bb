@@ -121,6 +121,12 @@ TEST(InputMethodMenuTest, GetTextForMenuTest) {
     EXPECT_EQ(L"US Dvorak keyboard",
               InputMethodMenu::GetTextForMenu(desc));
   }
+  {
+    InputMethodDescriptor desc("xkb:gb:dvorak:eng", "United Kingdom - Dvorak",
+                               "gb(dvorak)", "eng");
+    EXPECT_EQ(L"UK Dvorak keyboard",
+              InputMethodMenu::GetTextForMenu(desc));
+  }
 
   // For Arabic, Dutch, French, German and Hindi,
   // "language - keyboard layout" pair is returned.

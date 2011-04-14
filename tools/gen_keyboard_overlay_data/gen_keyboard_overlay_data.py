@@ -230,9 +230,9 @@ def FetchSpreadsheetFeeds(client, key, sheets, cols):
 def FetchKeyboardGlyphData(client):
   """Fetches the keyboard glyph data from the spreadsheet."""
   languages = ['en_US', 'en_US_colemak', 'en_US_dvorak', 'en_US_intl',
-               'en_US_altgr_intl', 'ar', 'ar_fr', 'bg',
-               'ca', 'cs', 'da', 'de', 'de_neo', 'el', 'en_fr_hybrid_CA',
-               'en_GB', 'es', 'es_419', 'et', 'fi', 'fil', 'fr', 'fr_CA', 'hi',
+               'en_US_altgr_intl', 'ar', 'ar_fr', 'bg', 'ca', 'cs', 'da',
+               'de', 'de_neo', 'el', 'en_fr_hybrid_CA', 'en_GB', 'en_GB_dvorak',
+               'es', 'es_419', 'et', 'fi', 'fil', 'fr', 'fr_CA', 'hi',
                'hr', 'hu', 'id', 'it', 'iw', 'ja', 'ko', 'lt', 'lv', 'nl', 'no',
                'pl', 'pt_BR', 'pt_PT', 'ro', 'ru', 'sk', 'sl', 'sr', 'sv', 'th',
                'tr', 'uk', 'vi', 'zh_CN', 'zh_TW']

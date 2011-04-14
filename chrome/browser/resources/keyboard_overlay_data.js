@@ -4577,6 +4577,428 @@ var keyboardOverlayData = {
       },
       "layoutName": "E"
     },
+    "en_GB_dvorak": {
+      "keys": {
+        "00": {
+          "key": "glyph_power",
+          "label": "glyph_power",
+          "notes": "power",
+          "position": "999"
+        },
+        "01": {
+          "format": "smaller",
+          "key": "esc",
+          "label": "esc",
+          "notes": "escape",
+          "position": "0"
+        },
+        "02": {
+          "key": "!\n1",
+          "p2": "21",
+          "p8": "31",
+          "position": "110"
+        },
+        "03": {
+          "key": "\"\n2",
+          "p2": "22",
+          "p8": "32",
+          "position": "111"
+        },
+        "04": {
+          "key": "\u00a3\n3",
+          "p2": "A3",
+          "p8": "33",
+          "position": "112"
+        },
+        "05": {
+          "key": "$\n4 \u20ac",
+          "p2": "24",
+          "p8": "34",
+          "p9": "20AC",
+          "position": "113"
+        },
+        "06": {
+          "key": "%\n5",
+          "p2": "25",
+          "p8": "35",
+          "position": "114"
+        },
+        "07": {
+          "key": "^\n6",
+          "p2": "5E",
+          "p8": "36",
+          "position": "115"
+        },
+        "08": {
+          "key": "&\n7",
+          "p2": "26",
+          "p8": "37",
+          "position": "116"
+        },
+        "09": {
+          "key": "*\n8",
+          "p2": "2A",
+          "p8": "38",
+          "position": "117"
+        },
+        "0A": {
+          "key": "(\n9",
+          "p2": "28",
+          "p8": "39",
+          "position": "118"
+        },
+        "0B": {
+          "key": ")\n0",
+          "p2": "29",
+          "p8": "30",
+          "position": "119"
+        },
+        "0C": {
+          "key": "{\n[",
+          "p2": "7B",
+          "p8": "5B",
+          "position": "120"
+        },
+        "0D": {
+          "key": "}\n]",
+          "p2": "7D",
+          "p8": "5D",
+          "position": "121"
+        },
+        "0E": {
+          "format": "right",
+          "key": "backspace",
+          "label": "backspace",
+          "notes": "backspace",
+          "position": "190"
+        },
+        "0F": {
+          "format": "left",
+          "key": "tab",
+          "label": "tab",
+          "notes": "tab",
+          "position": "200"
+        },
+        "10": {
+          "key": "@\n'",
+          "p2": "40",
+          "p8": "27",
+          "position": "210"
+        },
+        "11": {
+          "key": "<\n,",
+          "p2": "3C",
+          "p8": "2C",
+          "position": "211"
+        },
+        "12": {
+          "key": ">\n.",
+          "p2": "3E",
+          "p8": "2E",
+          "position": "212"
+        },
+        "13": {
+          "key": "p",
+          "p5": "70",
+          "position": "213"
+        },
+        "14": {
+          "key": "y",
+          "p5": "79",
+          "position": "214"
+        },
+        "15": {
+          "key": "f",
+          "p5": "66",
+          "position": "215"
+        },
+        "16": {
+          "key": "g",
+          "p5": "67",
+          "position": "216"
+        },
+        "17": {
+          "key": "c",
+          "p5": "63",
+          "position": "217"
+        },
+        "18": {
+          "key": "r",
+          "p5": "72",
+          "position": "218"
+        },
+        "19": {
+          "key": "l",
+          "p5": "6C",
+          "position": "219"
+        },
+        "1A": {
+          "key": "?\n/",
+          "p2": "3F",
+          "p8": "2F",
+          "position": "220"
+        },
+        "1B": {
+          "key": "+\n=",
+          "p2": "2B",
+          "p8": "3D",
+          "position": "221"
+        },
+        "1C": {
+          "format": "right",
+          "key": "glyph_enter",
+          "label": "glyph_enter",
+          "notes": "enter",
+          "position": "390"
+        },
+        "1D": {
+          "format": "left",
+          "key": "ctrl",
+          "label": "ctrl",
+          "notes": "left ctrl",
+          "position": "500"
+        },
+        "1E": {
+          "key": "a",
+          "p5": "61",
+          "position": "310"
+        },
+        "1F": {
+          "key": "o",
+          "p5": "6F",
+          "position": "311"
+        },
+        "20": {
+          "key": "e",
+          "p5": "65",
+          "position": "312"
+        },
+        "21": {
+          "key": "u",
+          "p5": "75",
+          "position": "313"
+        },
+        "22": {
+          "key": "i",
+          "p5": "69",
+          "position": "314"
+        },
+        "23": {
+          "key": "d",
+          "p5": "64",
+          "position": "315"
+        },
+        "24": {
+          "key": "h",
+          "p5": "68",
+          "position": "316"
+        },
+        "25": {
+          "key": "t",
+          "p5": "74",
+          "position": "317"
+        },
+        "26": {
+          "key": "n",
+          "p5": "6E",
+          "position": "318"
+        },
+        "27": {
+          "key": "s",
+          "p5": "73",
+          "position": "319"
+        },
+        "28": {
+          "key": "_\n-",
+          "p2": "5F",
+          "p8": "2D",
+          "position": "320"
+        },
+        "29": {
+          "key": "\u00ac\n` \u00a6",
+          "p2": "AC",
+          "p8": "60",
+          "p9": "00A6",
+          "position": "100"
+        },
+        "2A": {
+          "format": "left",
+          "key": "shift",
+          "label": "shift",
+          "notes": "left shift",
+          "position": "400"
+        },
+        "2B": {
+          "key": "~\n#",
+          "p2": "007E",
+          "p8": "23",
+          "position": "290"
+        },
+        "2C": {
+          "key": ":\n;",
+          "p2": "3A",
+          "p8": "3B",
+          "position": "410"
+        },
+        "2D": {
+          "key": "q",
+          "p5": "71",
+          "position": "411"
+        },
+        "2E": {
+          "key": "j",
+          "p5": "6A",
+          "position": "412"
+        },
+        "2F": {
+          "key": "k",
+          "p5": "6B",
+          "position": "413"
+        },
+        "30": {
+          "key": "x",
+          "p5": "78",
+          "position": "414"
+        },
+        "31": {
+          "key": "b",
+          "p5": "62",
+          "position": "415"
+        },
+        "32": {
+          "key": "m",
+          "p5": "6D",
+          "position": "416"
+        },
+        "33": {
+          "key": "w",
+          "p5": "77",
+          "position": "417"
+        },
+        "34": {
+          "key": "v",
+          "p5": "76",
+          "position": "418"
+        },
+        "35": {
+          "key": "z",
+          "p5": "7A",
+          "position": "419"
+        },
+        "36": {
+          "format": "right",
+          "key": "shift",
+          "label": "shift",
+          "notes": "right shift",
+          "position": "490"
+        },
+        "38": {
+          "format": "left",
+          "key": "alt",
+          "label": "alt",
+          "notes": "left alt",
+          "position": "501"
+        },
+        "3B": {
+          "key": "glyph_back",
+          "label": "glyph_back",
+          "position": "10"
+        },
+        "3C": {
+          "key": "glyph_forward",
+          "label": "glyph_forward",
+          "position": "11"
+        },
+        "3D": {
+          "key": "glyph_reload",
+          "label": "glyph_reload",
+          "position": "12"
+        },
+        "3E": {
+          "key": "glyph_fullscreen",
+          "label": "glyph_fullscreen",
+          "position": "13"
+        },
+        "3F": {
+          "key": "glyph_overview",
+          "label": "glyph_overview",
+          "position": "14"
+        },
+        "40": {
+          "key": "glyph_brightness_down",
+          "label": "glyph_brightness_down",
+          "position": "15"
+        },
+        "41": {
+          "key": "glyph_brightness_up",
+          "label": "glyph_brightness_up",
+          "position": "16"
+        },
+        "42": {
+          "key": "glyph_volume_mute",
+          "label": "glyph_volume_mute",
+          "position": "17"
+        },
+        "43": {
+          "key": "glyph_volume_down",
+          "label": "glyph_volume_down",
+          "position": "18"
+        },
+        "44": {
+          "key": "glyph_volume_up",
+          "label": "glyph_volume_up",
+          "position": "19"
+        },
+        "56": {
+          "key": "|\n\\",
+          "p2": "007C",
+          "p8": "005C",
+          "position": "409"
+        },
+        "E0 1D": {
+          "format": "smaller",
+          "key": "ctrl",
+          "label": "ctrl",
+          "notes": "right ctrl",
+          "position": "581"
+        },
+        "E0 38": {
+          "format": "smaller",
+          "key": "alt gr",
+          "label": "alt gr",
+          "notes": "right alt",
+          "position": "580"
+        },
+        "E0 48": {
+          "key": "glyph_arrow_up",
+          "label": "glyph_arrow_up",
+          "position": "590"
+        },
+        "E0 4B": {
+          "key": "glyph_arrow_left",
+          "label": "glyph_arrow_left",
+          "position": "591"
+        },
+        "E0 4D": {
+          "key": "glyph_arrow_right",
+          "label": "glyph_arrow_right",
+          "position": "593"
+        },
+        "E0 50": {
+          "key": "glyph_arrow_down",
+          "label": "glyph_arrow_down",
+          "position": "592"
+        },
+        "E0 5B": {
+          "format": "left",
+          "key": "glyph_search",
+          "label": "glyph_search",
+          "notes": "search",
+          "position": "300"
+        }
+      },
+      "layoutName": "E"
+    },
     "en_US": {
       "keys": {
         "00": {

@@ -1015,6 +1015,9 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
         "xkb:gb:extd:eng",
         "United Kingdom - Extended - Winkeys", "gb(extd)", "eng"));
     descriptions->push_back(InputMethodDescriptor(
+        "xkb:gb:dvorak:eng",
+        "United Kingdom - Dvorak", "gb(dvorak)", "eng"));
+    descriptions->push_back(InputMethodDescriptor(
         "xkb:fi::fin", "Finland", "fi", "fin"));
     descriptions->push_back(InputMethodDescriptor(
         "xkb:hu::hun", "Hungary", "hu", "hun"));
@@ -1102,6 +1105,7 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
     (*keyboard_overlay_map)["xkb:lv:apostrophe:lav"] = "lv";
     (*keyboard_overlay_map)["xkb:hr::scr"] = "hr";
     (*keyboard_overlay_map)["xkb:gb:extd:eng"] = "en_GB";
+    (*keyboard_overlay_map)["xkb:gb:dvorak:eng"] = "en_GB_dvorak";
     (*keyboard_overlay_map)["xkb:fi::fin"] = "fi";
     (*keyboard_overlay_map)["xkb:hu::hun"] = "hu";
     (*keyboard_overlay_map)["xkb:it::ita"] = "it";

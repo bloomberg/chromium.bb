@@ -213,6 +213,8 @@ const struct EnglishToResouceId {
   { "Lithuania", IDS_STATUSBAR_LAYOUT_LITHUANIA },
   { "United Kingdom - Extended - Winkeys",
     IDS_STATUSBAR_LAYOUT_UNITED_KINGDOM },
+  { "United Kingdom - Dvorak",
+    IDS_STATUSBAR_LAYOUT_UNITED_KINGDOM_DVORAK },
   { "Slovakia", IDS_STATUSBAR_LAYOUT_SLOVAKIA },
   { "Russia", IDS_STATUSBAR_LAYOUT_RUSSIA },
   { "Russia - Phonetic", IDS_STATUSBAR_LAYOUT_RUSSIA_PHONETIC },
