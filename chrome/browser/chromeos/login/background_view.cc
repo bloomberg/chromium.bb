@@ -339,6 +339,8 @@ StatusAreaHost::ScreenMode BackgroundView::GetScreenMode() const {
 void BackgroundView::OnLocaleChanged() {
   // Proxy settings dialog contains localized strings.
   proxy_settings_dialog_.reset();
+  InitInfoLabels();
+  SchedulePaint();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -354,17 +356,29 @@ void BackgroundView::InitStatusArea() {
 void BackgroundView::InitInfoLabels() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
-  os_version_label_ = new views::Label();
-  os_version_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  os_version_label_->SetColor(kVersionColor);
-  os_version_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
-  AddChildView(os_version_label_);
+  {
+    int idx = GetIndexOf(os_version_label_);
+    delete os_version_label_;
+    os_version_label_ = new views::Label();
+    os_version_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    os_version_label_->SetColor(kVersionColor);
+    os_version_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
+    if (idx < 0)
+      AddChildView(os_version_label_);
+    else
+      AddChildViewAt(os_version_label_, idx);
+  }
   if (!is_official_build_) {
+    int idx = GetIndexOf(boot_times_label_);
+    delete boot_times_label_;
     boot_times_label_ = new views::Label();
     boot_times_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     boot_times_label_->SetColor(kVersionColor);
     boot_times_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
-    AddChildView(boot_times_label_);
+    if (idx < 0)
+      AddChildView(boot_times_label_);
+    else
+      AddChildViewAt(boot_times_label_, idx);
   }
 
   if (CrosLibrary::Get()->EnsureLoaded()) {
@@ -448,6 +462,7 @@ void BackgroundView::UpdateVersionLabel() {
   // Workaround over incorrect width calculation in old fonts.
   // TODO(glotov): remove the following line when new fonts are used.
   label_text += ' ';
+
   os_version_label_->SetText(UTF8ToWide(label_text));
 }
 
@@ -474,7 +489,7 @@ void BackgroundView::SetEnterpriseDomain(const std::string& domain_name) {
 
 void BackgroundView::OnVersion(
     VersionLoader::Handle handle, std::string version) {
-  version_text_ = version;
+  version_text_.swap(version);
   UpdateVersionLabel();
 }
 
