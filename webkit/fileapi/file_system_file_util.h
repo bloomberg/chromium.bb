@@ -135,6 +135,8 @@ class FileSystemFileUtil {
   // It will be implemented by each subclass such as FileSystemFileEnumerator.
   class AbstractFileEnumerator {
    public:
+    virtual ~AbstractFileEnumerator() {}
+
     // Returns an empty string if there are no more results.
     virtual FilePath Next() = 0;
 
