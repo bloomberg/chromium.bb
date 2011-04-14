@@ -187,14 +187,21 @@ class ChangeInfoUnittest(GclTestsBase):
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(
-        gcl.ChangeInfo('', 0, 0, '', None, self.fake_root_dir, 'foo'),
+        gcl.ChangeInfo('', 0, 0, '', None, self.fake_root_dir, 'foo', False),
         members)
 
   def testChangeInfoBase(self):
     files = [('M', 'foo'), ('A', 'bar')]
     self.mox.ReplayAll()
-    o = gcl.ChangeInfo('name2', '42', '53', 'description2', files,
-                       self.fake_root_dir, 'foo')
+    o = gcl.ChangeInfo(
+        'name2',
+        '42',
+        '53',
+        'description2',
+        files,
+        self.fake_root_dir,
+        'foo',
+        False)
     self.assertEquals(o.name, 'name2')
     self.assertEquals(o.issue, 42)
     self.assertEquals(o.patchset, 53)
@@ -253,7 +260,8 @@ class ChangeInfoUnittest(GclTestsBase):
         'foo', gcl.json.dumps(values, sort_keys=True, indent=2))
     self.mox.ReplayAll()
 
-    change_info = gcl.ChangeInfo('', 1, 2, '', None, self.fake_root_dir, 'foo')
+    change_info = gcl.ChangeInfo(
+        '', 1, 2, '', None, self.fake_root_dir, 'foo', False)
     change_info.Save()
 
   def testSaveDirty(self):
@@ -323,9 +331,15 @@ class CMDuploadUnittest(GclTestsBase):
         '*** Upload does not submit a try; use gcl try to submit a try. ***\n')
 
   def testServerOverride(self):
-    change_info = gcl.ChangeInfo('naame', 0, 0, 'deescription',
-                                 [('A', 'aa'), ('M', 'bb')],
-                                self.fake_root_dir, 'my_server')
+    change_info = gcl.ChangeInfo(
+        'naame',
+        0,
+        0,
+        'deescription',
+        [('A', 'aa'), ('M', 'bb')],
+        self.fake_root_dir,
+        'my_server',
+        False)
     self.mox.StubOutWithMock(change_info, 'Save')
     change_info.Save()
     output = presubmit_support.PresubmitOutput()
@@ -358,9 +372,15 @@ class CMDuploadUnittest(GclTestsBase):
         '*** Upload does not submit a try; use gcl try to submit a try. ***\n')
 
   def testNormal(self):
-    change_info = gcl.ChangeInfo('naame', 0, 0, 'deescription',
-                                 [('A', 'aa'), ('M', 'bb')],
-                                 self.fake_root_dir, 'my_server')
+    change_info = gcl.ChangeInfo(
+        'naame',
+        0,
+        0,
+        'deescription',
+        [('A', 'aa'), ('M', 'bb')],
+        self.fake_root_dir,
+        'my_server',
+        False)
     self.mox.StubOutWithMock(change_info, 'Save')
     change_info.Save()
     output = presubmit_support.PresubmitOutput()

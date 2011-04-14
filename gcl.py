@@ -283,7 +283,7 @@ class ChangeInfo(object):
   _SEPARATOR = "\n-----\n"
 
   def __init__(self, name, issue, patchset, description, files, local_root,
-               rietveld_url, needs_upload=False):
+               rietveld_url, needs_upload):
     self.name = name
     self.issue = int(issue)
     self.patchset = int(patchset)
@@ -533,9 +533,7 @@ class ChangeInfo(object):
     if not os.path.exists(info_file):
       if fail_on_not_found:
         ErrorExit("Changelist " + changename + " not found.")
-      return ChangeInfo(
-          changename, 0, 0, '', None, local_root, rietveld_url=None,
-          needs_upload=False)
+      return ChangeInfo(changename, 0, 0, '', None, local_root, None, False)
     content = gclient_utils.FileRead(info_file, 'r')
     save = False
     try:
@@ -563,10 +561,15 @@ class ChangeInfo(object):
         if status != item[0]:
           save = True
           files[files.index(item)] = (status, item[1])
-    change_info = ChangeInfo(changename, values['issue'], values['patchset'],
-                             values['description'], files,
-                             local_root, values.get('rietveld'),
-                             values['needs_upload'])
+    change_info = ChangeInfo(
+        changename,
+        values['issue'],
+        values['patchset'],
+        values['description'],
+        files,
+        local_root,
+        values.get('rietveld'),
+        values['needs_upload'])
     if save:
       change_info.Save()
     return change_info
@@ -625,13 +628,11 @@ def LoadChangelistInfoForMultiple(changenames, local_root, fail_on_not_found,
   This is mainly usefull to concatenate many changes into one for a 'gcl try'.
   """
   changes = changenames.split(',')
-  aggregate_change_info = ChangeInfo(changenames, 0, 0, '', None, local_root,
-                                     rietveld=None, needs_upload=False)
+  aggregate_change_info = ChangeInfo(
+      changenames, 0, 0, '', None, local_root, None, False)
   for change in changes:
-    aggregate_change_info._files += ChangeInfo.Load(change,
-                                                    local_root,
-                                                    fail_on_not_found,
-                                                    update_status).GetFiles()
+    aggregate_change_info._files += ChangeInfo.Load(
+        change, local_root, fail_on_not_found, update_status).GetFiles()
   return aggregate_change_info
 
 
