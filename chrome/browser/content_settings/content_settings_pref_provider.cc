@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/content_settings_pattern.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -99,6 +100,14 @@ PrefDefaultProvider::PrefDefaultProvider(Profile* profile)
   DCHECK_EQ(arraysize(kTypeNames),
             static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
   ReadDefaultSettings(true);
+  if (default_content_settings_.settings[CONTENT_SETTINGS_TYPE_COOKIES] ==
+      CONTENT_SETTING_BLOCK) {
+    UserMetrics::RecordAction(
+        UserMetricsAction("CookieBlockingEnabledPerDefault"));
+  } else {
+    UserMetrics::RecordAction(
+        UserMetricsAction("CookieBlockingDisabledPerDefault"));
+  }
 
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(prefs::kDefaultContentSettings, this);

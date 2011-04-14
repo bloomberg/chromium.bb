@@ -41,6 +41,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/instant/instant_controller.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/net/net_pref_observer.h"
@@ -309,6 +310,13 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   InitRegisteredProtocolHandlers();
 
   clear_local_state_on_exit_ = prefs->GetBoolean(prefs::kClearSiteDataOnExit);
+  if (clear_local_state_on_exit_) {
+    UserMetrics::RecordAction(
+        UserMetricsAction("ClearSiteDataOnExitEnabled"));
+  } else {
+    UserMetrics::RecordAction(
+        UserMetricsAction("ClearSiteDataOnExitDisabled"));
+  }
 
   // Log the profile size after a reasonable startup delay.
   BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE,
