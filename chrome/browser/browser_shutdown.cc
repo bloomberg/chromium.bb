@@ -43,6 +43,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)
+#include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/rlz/rlz.h"
 #endif
 

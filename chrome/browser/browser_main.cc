@@ -124,11 +124,26 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #endif
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "chrome/browser/first_run/upgrade_util_linux.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/brightness_observer.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/screen_lock_library.h"
+#include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/external_metrics.h"
+#include "chrome/browser/chromeos/login/authenticator.h"
+#include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/ownership_service.h"
+#include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/metrics_cros_settings_provider.h"
 #include "chrome/browser/oom_priority_manager.h"
+#include "chrome/browser/ui/views/browser_dialogs.h"
 #endif
 
 // TODO(port): several win-only methods have been pulled out of this, but
@@ -145,6 +160,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_trial.h"
 #include "chrome/browser/first_run/try_chrome_dialog_view.h"
+#include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/rlz/rlz.h"
@@ -172,20 +188,6 @@
 #if defined(TOOLKIT_USES_GTK)
 #include "views/widget/widget_gtk.h"
 #endif
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/screen_lock_library.h"
-#include "chrome/browser/chromeos/customization_document.h"
-#include "chrome/browser/chromeos/external_metrics.h"
-#include "chrome/browser/chromeos/login/authenticator.h"
-#include "chrome/browser/chromeos/login/login_utils.h"
-#include "chrome/browser/chromeos/login/ownership_service.h"
-#include "chrome/browser/chromeos/login/screen_locker.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/metrics_cros_settings_provider.h"
-#include "chrome/browser/ui/views/browser_dialogs.h"
 #endif
 
 #if defined(TOOLKIT_USES_GTK)

@@ -21,7 +21,7 @@
 #include "base/win/wrapped_window_proc.h"
 #include "crypto/nss_util.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/first_run/upgrade_util.h"
+#include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/uninstall_view.h"

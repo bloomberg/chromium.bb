@@ -4,10 +4,7 @@
 
 #include "base/process_util.h"
 #include "build/build_config.h"
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "chrome/browser/first_run/upgrade_util.h"
-#endif
 
 // The entry point for all invocations of Chromium, browser and renderer. On
 // windows, this does nothing but load chrome.dll and invoke its entry point in

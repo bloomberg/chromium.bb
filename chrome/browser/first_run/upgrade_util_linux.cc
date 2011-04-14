@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/platform_file.h"
 #include "base/process_util.h"
+#include "chrome/browser/first_run/upgrade_util_linux.h"
 
 namespace {
 
