@@ -161,6 +161,9 @@ function submitLogin() {
 function loginChallengeCallback() {
   // Make the login panel visible.
   document.getElementById("login_panel").style.display = "block";
+
+  // Put the insertion point into the form.
+  document.getElementById('username').focus();
 }
 
 /**
