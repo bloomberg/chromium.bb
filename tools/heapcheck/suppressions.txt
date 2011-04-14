@@ -96,9 +96,9 @@
    bug_51988_c
    Heapcheck:Leak
    ...
-   fun:base::::NSSInitSingleton::OpenUserDB
-   fun:base::::NSSInitSingleton::OpenTestNSSDB
-   fun:base::OpenTestNSSDB
+   fun:crypto::::NSSInitSingleton::OpenUserDB
+   fun:crypto::::NSSInitSingleton::OpenTestNSSDB
+   fun:crypto::OpenTestNSSDB
    fun:net::CertDatabaseNSSTest::SetUp
 }
 {
