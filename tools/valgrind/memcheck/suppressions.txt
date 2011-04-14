@@ -882,6 +882,7 @@
    Histograms via FactoryGet including Linear Custom Boolean and Basic
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN4base*Histogram10FactoryGet*
 }
 {
@@ -1670,8 +1671,7 @@
    ...
    fun:png_write_row
    ...
-   fun:_ZN3gfx8PNGCodec6EncodeEPKhNS0_11ColorFormatERKNS_4SizeEibRKSt6vectorINS0_7CommentESaIS8_EEPS7_IhSaIhEE
-   fun:_ZN3gfx8PNGCodec18EncodeBGRASkBitmapERK8SkBitmapbPSt6vectorIhSaIhEE
+   fun:_ZN3gfx8PNGCodec*Encode*
 }
 {
    bug_30704b
@@ -1680,8 +1680,7 @@
    ...
    fun:png_write_row
    ...
-   fun:_ZN3gfx8PNGCodec6EncodeEPKhNS0_11ColorFormatERKNS_4SizeEibRKSt6vectorINS0_7CommentESaIS8_EEPS7_IhSaIhEE
-   fun:_ZN3gfx8PNGCodec18EncodeBGRASkBitmapERK8SkBitmapbPSt6vectorIhSaIhEE
+   fun:_ZN3gfx8PNGCodec*Encode*
 }
 {
    bug_30704c
@@ -1704,7 +1703,7 @@
    ...
    fun:png_write_row
    fun:_ZN7WebCore12encodePixelsERKNS_7IntSizeEPhbPN3WTF6VectorIhLj0EEE
-   fun:_ZN7WebCore15PNGImageEncoder6encodeERK8SkBitmapPN3WTF6VectorIhLj0EEE
+   fun:_ZN7WebCore15PNGImageEncoder6encode*
 }
 {
    bug_30704f
@@ -3957,14 +3956,14 @@
    Memcheck:Value4
    ...
    fun:png_process_data
-   fun:_ZN3gfx8PNGCodec6DecodeEPKhjP8SkBitmap
+   fun:_ZN3gfx8PNGCodec6Decode*
 }
 {
    bug_75127b
    Memcheck:Cond
    ...
    fun:png_process_data
-   fun:_ZN3gfx8PNGCodec6DecodeEPKhjP8SkBitmap
+   fun:_ZN3gfx8PNGCodec6Decode*
 }
 {
    bug_75137
