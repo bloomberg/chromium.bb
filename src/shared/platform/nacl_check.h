@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -11,13 +11,26 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_CHECK_H_
 #define NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_CHECK_H_
 
+#ifdef __native_client__
+# include "nacl/nacl_log.h"
+
+/* TODO(sehr): move these defs to a common header */
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 /*
- * We cannot include this header file from an installation that does not
- * have the native_client source tree.
- * TODO(sehr): use export_header.py to copy these files out.
+ * Avoid emacs' penchant for auto-indenting extern "C" blocks.
  */
-#include "native_client/src/include/nacl_base.h"
-#include "native_client/src/shared/platform/nacl_log.h"
+#  ifdef __cplusplus
+#    define EXTERN_C_BEGIN extern "C" {
+#    define EXTERN_C_END   }
+#  else
+#    define EXTERN_C_BEGIN
+#    define EXTERN_C_END
+#  endif  /* __cplusplus */
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
+
+#else
+# include "native_client/src/shared/platform/nacl_log.h"
+#endif
 
 EXTERN_C_BEGIN
 

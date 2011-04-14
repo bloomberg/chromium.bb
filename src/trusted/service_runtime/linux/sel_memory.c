@@ -1,20 +1,23 @@
 /*
- * Copyright 2008 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
  * NaCl Service Runtime memory allocation code
  */
-#include <stdint.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+
 #include <sys/mman.h>
-#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 #include <errno.h>
+#include <fcntl.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/include/portability.h"

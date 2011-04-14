@@ -1,11 +1,13 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/shared/ppapi_proxy/utility.h"
+
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/include/nacl_assert.h"

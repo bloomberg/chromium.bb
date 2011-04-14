@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/include/portability.h"
@@ -14,6 +14,8 @@
 #ifdef _WIN64  /* TODO(gregoryd): remove this when win64 issues are fixed */
 #define NACL_NO_INLINE
 #endif
+
+#include <stdio.h>
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
@@ -198,4 +200,3 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
 
   return ret_code;
 }
-

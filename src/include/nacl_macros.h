@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -11,6 +11,7 @@
 #ifndef NATIVE_CLIENT_SRC_INCLUDE_NACL_MACROS_H_
 #define NATIVE_CLIENT_SRC_INCLUDE_NACL_MACROS_H_ 1
 
+#include <stdio.h>
 #include <stdlib.h>
 
 /*****************************************************************************

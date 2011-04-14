@@ -4,6 +4,8 @@
 //
 
 #include <nacl/nacl_log.h>
+
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 

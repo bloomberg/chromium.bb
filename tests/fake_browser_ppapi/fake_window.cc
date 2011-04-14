@@ -1,11 +1,14 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/tests/fake_browser_ppapi/fake_window.h"
+
+#include <stdio.h>
 #include <string.h>
+
 #include <map>
 #include <string>
 

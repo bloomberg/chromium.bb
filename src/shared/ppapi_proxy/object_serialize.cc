@@ -1,13 +1,15 @@
 /*
- * Copyright 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/shared/ppapi_proxy/object_serialize.h"
 
-#include <string.h>
 #include <limits>
+#include <stdio.h>
+#include <string.h>
+
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability_process.h"
