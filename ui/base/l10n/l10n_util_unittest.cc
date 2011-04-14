@@ -232,7 +232,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   SetDefaultLocaleForTest("zh-HK", env.get());
   EXPECT_EQ("zh-TW", l10n_util::GetApplicationLocale(""));
 
-  SetDefaultLocaleForTest("zh-MK", env.get());
+  SetDefaultLocaleForTest("zh-MO", env.get());
   EXPECT_EQ("zh-TW", l10n_util::GetApplicationLocale(""));
 
   SetDefaultLocaleForTest("zh-SG", env.get());
