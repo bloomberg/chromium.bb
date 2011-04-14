@@ -11,13 +11,7 @@ env.Prepend(CPPDEFINES=['XP_UNIX'])
 
 ppapi_example_2d_nexe = env.ComponentProgram('ppapi_example_2d.nexe',
     [ '$SOURCE_ROOT/ppapi/examples/2d/graphics_2d_example.c' ],
-    EXTRA_LIBS=['ppruntime',
-                'imc',
-                'platform',
-                'gio',
-                'pthread',
-                'm',
-                'srpc'])
+    EXTRA_LIBS=['${PPAPI_LIBS}'])
 
 # Note that the html is required to run this program.
 env.Publish('ppapi_example_2d.nexe', 'run',

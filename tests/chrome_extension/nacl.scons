@@ -17,13 +17,7 @@ nexe_sources = env.ComponentObject('extension_test.cc'),
 nexe_target = 'chrome_extension_%s.nexe' % env.get('TARGET_FULLARCH')
 nexe = env.ComponentProgram(nexe_target,
                             [nexe_sources],
-                            EXTRA_LIBS=['ppruntime',
-                                        'ppapi_cpp',
-                                        'platform',
-                                        'gio',
-                                        'pthread',
-                                        'srpc',
-                                        'm'])
+                            EXTRA_LIBS=['${PPAPI_LIBS}', 'ppapi_cpp'])
 
 # Note: this test uses the nexe built above, manifest.json, background.html and
 # test_bridge.js, but these files are loaded from the disk as part of the

@@ -11,14 +11,12 @@ env.Prepend(CPPDEFINES=['XP_UNIX'])
 
 nexe = env.ComponentProgram('ppapi_example_audio.nexe',
                             [ 'audio.cc' ],
-                            EXTRA_LIBS=['ppruntime',
+                            EXTRA_LIBS=['${PPAPI_LIBS}',
                                         'ppapi_cpp',
-                                        'imc',
                                         'platform',
                                         'gio',
                                         'pthread',
-                                        'm',
-                                        'srpc'])
+                                        'm'])
 
 validate = env.CommandValidatorTestNacl('validate_ppapi_example_audio.out',
                                         image=[nexe])

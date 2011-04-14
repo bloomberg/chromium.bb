@@ -2151,6 +2151,13 @@ nacl_env = pre_base_env.Clone(
 if nacl_env.Bit('irt'):
   nacl_env.Append(LINKFLAGS='-Wl,--section-start,.rodata='
                   '${IRT_DATA_REGION_START}')
+  nacl_env.Replace(PPAPI_LIBS=['ppapi_stub'])
+else:
+  # TODO(mseaborn): This will go away when we only support using PPAPI
+  # via the IRT library, so users of this dependency should not rely
+  # on individual libraries like 'platform' being included by default.
+  nacl_env.Replace(PPAPI_LIBS=['ppruntime', 'imc', 'platform', 'gio', 'srpc',
+                               'pthread', 'm'])
 
 # TODO(mseaborn): Make nacl-glibc-based static linking work with just
 # "-static", without specifying a linker script.

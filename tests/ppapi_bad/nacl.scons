@@ -9,12 +9,9 @@ env.Prepend(CPPDEFINES=['XP_UNIX'])
 
 ppapi_bad_nexe = env.ComponentProgram('ppapi_bad.nexe',
                                       ['ppapi_bad.cc', ],
-                                      EXTRA_LIBS=['ppruntime',
-                                                  'imc',
+                                      EXTRA_LIBS=['${PPAPI_LIBS}',
                                                   'platform',
-                                                  'gio',
                                                   'pthread',
-                                                  'm',
-                                                  'srpc'])
+                                                  'gio'])
 
 env.Publish('ppapi_bad.nexe', 'run', ['ppapi_bad.html'])

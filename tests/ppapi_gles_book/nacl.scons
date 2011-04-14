@@ -57,16 +57,12 @@ for demo, sources in gles_book_examples.iteritems():
     env.ComponentProgram(
         'ppapi_' + demo + '.nexe',
         [ 'demos/gles2_book/demo_' + demo + '.cc' ] + sources,
-        EXTRA_LIBS=['ppruntime',
+        EXTRA_LIBS=['${PPAPI_LIBS}',
                     'ppapi_cpp',
                     'ppapi_gles_demo',
                     'ppapi_cpp',
                     'ppapi_gles2',
-                    'platform',
-                    'gio',
-                    'pthread',
-                    'm',
-                    'srpc'])
+                    'm'])
     env.Publish('ppapi_' + demo + '.nexe', 'run',
        ['ppapi_gles_book.html?nexe=' + demo ])
 

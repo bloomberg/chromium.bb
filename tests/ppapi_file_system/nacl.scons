@@ -22,13 +22,10 @@ env.Alias('ppapi_file_system.nexe', ['$STAGING_DIR/%s' % nexe])
 ppapi_file_system_nexe = env.ComponentProgram(nexe,
                                        ['ppapi_file_system.cc',
                                         'scriptable_object.c'],
-                                       EXTRA_LIBS=['ppruntime',
-                                                   'imc',
+                                       EXTRA_LIBS=['${PPAPI_LIBS}',
                                                    'platform',
                                                    'gio',
-                                                   'pthread',
-                                                   'm',
-                                                   'srpc'])
+                                                   'pthread'])
 
 # Note that the html is required to run this program.
 dest_copy = env.Replicate('$STAGING_DIR',

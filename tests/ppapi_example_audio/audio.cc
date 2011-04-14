@@ -22,9 +22,12 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 
-// Most of this example is borrowed from ppapi/examples/audio/audio.cc
+// Due to a bug in nacl-newlib, this #include has to come last.
+// See http://code.google.com/p/nativeclient/issues/detail?id=1654
+#include <nacl/nacl_inttypes.h>
 
-using ppapi_proxy::DebugPrintf;
+
+// Most of this example is borrowed from ppapi/examples/audio/audio.cc
 
 // Separate left and right frequency to make sure we didn't swap L & R.
 // Sounds pretty horrible, though...
@@ -48,10 +51,10 @@ void LogFailure(const char* msg) {
 class MyInstance : public pp::Instance {
  private:
   void ParseArgs(uint32_t argc, const char* argn[], const char* argv[]) {
-    DebugPrintf("example: parsing %d args\n", static_cast<int>(argc));
+    NaClLog(1, "example: parsing %d args\n", static_cast<int>(argc));
     for (uint32_t i = 0; i < argc; ++i) {
-      DebugPrintf("example: arg %d: [%s] [%s]\n",
-                  static_cast<int>(i), argn[i], argv[i]);
+      NaClLog(1, "example: arg %d: [%s] [%s]\n",
+              static_cast<int>(i), argn[i], argv[i]);
       const std::string tag = argn[i];
       if (tag == "frequency_l") frequency_l_ = strtod(argv[i], 0);
       if (tag == "frequency_r") frequency_r_ = strtod(argv[i], 0);
@@ -75,7 +78,7 @@ class MyInstance : public pp::Instance {
         obtained_sample_frame_count_(0) {}
 
   static void StopOutput(void* user_data, int32_t err) {
-    DebugPrintf("example: StopOutput() invoked on main thread\n");
+    NaClLog(1, "example: StopOutput() invoked on main thread\n");
     if (PP_OK == err) {
       MyInstance* instance = static_cast<MyInstance*>(user_data);
       instance->audio_.StopPlayback();
@@ -106,8 +109,9 @@ class MyInstance : public pp::Instance {
     CHECK(NULL != audio_interface);
     PP_Resource audio_config_resource = config.pp_resource();
     PP_Resource audio_resource = audio_.pp_resource();
-    DebugPrintf("example: audio config resource: %d\n", audio_config_resource);
-    DebugPrintf("example: audio resource: %d\n", audio_resource);
+    NaClLog(1, "example: audio config resource: %"NACL_PRId32"\n",
+            audio_config_resource);
+    NaClLog(1, "example: audio resource: %"NACL_PRId32"\n", audio_resource);
     CHECK(PP_TRUE == audio_config_interface->
         IsAudioConfig(audio_config_resource));
     CHECK(PP_TRUE == audio_interface->IsAudio(audio_resource));
@@ -127,12 +131,10 @@ class MyInstance : public pp::Instance {
     CHECK(true == audio_start_playback);
     // Schedule a callback in 10 seconds to stop audio output
     pp::CompletionCallback cc(StopOutput, this);
-    DebugPrintf("example: frequencies are %f %f\n",
-                frequency_l_, frequency_r_);
-    DebugPrintf("example: amplitudes are %f %f\n",
-                amplitude_l_, amplitude_r_);
-    DebugPrintf("example: Scheduling StopOutput on main thread in %dmsec\n",
-                duration_msec_);
+    NaClLog(1, "example: frequencies are %f %f\n", frequency_l_, frequency_r_);
+    NaClLog(1, "example: amplitudes are %f %f\n", amplitude_l_, amplitude_r_);
+    NaClLog(1, "example: Scheduling StopOutput on main thread in %"
+            NACL_PRIu32"msec\n", duration_msec_);
     pp::Module::Get()->core()->CallOnMainThread(duration_msec_, cc, PP_OK);
     return true;
   }

@@ -15,13 +15,7 @@ basic_obj_target = 'ppapi_basic_object_%s.nexe' % env.get('TARGET_FULLARCH')
 env.Alias('ppapi_basic_object.nexe', ['$STAGING_DIR/%s' % basic_obj_target])
 basic_object_nexe = env.ComponentProgram(basic_obj_target,
                                          [basic_obj_sources],
-                                         EXTRA_LIBS=['ppruntime',
-                                                     'imc',
-                                                     'platform',
-                                                     'gio',
-                                                     'pthread',
-                                                     'm',
-                                                     'srpc'])
+                                         EXTRA_LIBS=['${PPAPI_LIBS}'])
 
 # Note that the html and a .nmf manifest is required to run this program.
 dest_copy = env.Replicate('$STAGING_DIR',
@@ -64,14 +58,8 @@ event_target = 'ppapi_event_example_%s.nexe' % env.get('TARGET_FULLARCH')
 env.Alias('ppapi_event_example.nexe', ['$STAGING_DIR/%s' % event_target])
 event_example_nexe = env.ComponentProgram(event_target,
                                           ['event_example.cc',],
-                                          EXTRA_LIBS=['ppruntime',
-                                                      'imc',
-                                                      'platform',
-                                                      'gio',
-                                                      'ppapi_cpp',
-                                                      'pthread',
-                                                      'm',
-                                                      'srpc'])
+                                          EXTRA_LIBS=['${PPAPI_LIBS}',
+                                                      'ppapi_cpp'])
 
 # Note that the html and a .nmf manifest is required to run this program.
 dest_copy = env.Replicate('$STAGING_DIR',
