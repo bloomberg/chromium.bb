@@ -24,7 +24,6 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/search_provider.h"
 #include "chrome/common/view_types.h"
-#include "chrome/renderer/page_load_histograms.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "content/common/edit_command.h"
 #include "content/common/navigation_gesture.h"
@@ -1227,9 +1226,6 @@ class RenderView : public RenderWidget,
 
   // Set if we are waiting for a accessibility notification ack.
   bool accessibility_ack_pending_;
-
-  // Responsible for sending page load related histograms.
-  PageLoadHistograms page_load_histograms_;
 
   // Dispatches all P2P socket used by the renderer.
   P2PSocketDispatcher* p2p_socket_dispatcher_;

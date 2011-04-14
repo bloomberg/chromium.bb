@@ -22,6 +22,7 @@
 #include "chrome/renderer/autofill/form_manager.h"
 #include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "chrome/renderer/automation/automation_renderer_helper.h"
+#include "chrome/renderer/automation/dom_automation_v8_extension.h"
 #include "chrome/renderer/blocked_plugin.h"
 #include "chrome/renderer/chrome_render_observer.h"
 #include "chrome/renderer/devtools_agent.h"
@@ -34,10 +35,14 @@
 #include "chrome/renderer/extensions/extension_resource_request_policy.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/external_extension.h"
+#include "chrome/renderer/loadtimes_extension_bindings.h"
 #include "chrome/renderer/localized_error.h"
+#include "chrome/renderer/net/renderer_net_predictor.h"
 #include "chrome/renderer/page_click_tracker.h"
+#include "chrome/renderer/page_load_histograms.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/render_thread.h"
+#include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "chrome/renderer/safe_browsing/malware_dom_details.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/search_extension.h"
@@ -211,6 +216,8 @@ ChromeContentRendererClient::~ChromeContentRendererClient() {
 
 void ChromeContentRendererClient::RenderThreadStarted() {
   extension_dispatcher_.reset(new ExtensionDispatcher());
+  histogram_snapshots_.reset(new RendererHistogramSnapshots());
+  net_predictor_.reset(new RendererNetPredictor());
   spellcheck_.reset(new SpellCheck());
   visited_link_slave_.reset(new VisitedLinkSlave());
   phishing_classifier_.reset(new safe_browsing::PhishingClassifierFilter);
@@ -222,16 +229,23 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #endif
 
   thread->AddObserver(extension_dispatcher_.get());
+  thread->AddObserver(histogram_snapshots_.get());
   thread->AddObserver(phishing_classifier_.get());
   thread->AddObserver(spellcheck_.get());
   thread->AddObserver(visited_link_slave_.get());
 
   thread->RegisterExtension(extensions_v8::ExternalExtension::Get());
+  thread->RegisterExtension(extensions_v8::LoadTimesExtension::Get());
   thread->RegisterExtension(extensions_v8::SearchBoxExtension::Get());
   v8::Extension* search_extension = extensions_v8::SearchExtension::Get();
   // search_extension is null if not enabled.
   if (search_extension)
     thread->RegisterExtension(search_extension);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDomAutomationController)) {
+    thread->RegisterExtension(DomAutomationV8Extension::Get());
+  }
 
   thread->resource_dispatcher()->set_observer(new RenderResourceObserver());
 }
@@ -248,6 +262,7 @@ void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
 
   new DevToolsAgent(render_view);
   new ExtensionHelper(render_view, extension_dispatcher_.get());
+  new PageLoadHistograms(render_view, histogram_snapshots_.get());
   new PrintWebViewHelper(render_view);
   new SearchBox(render_view);
   new SpellCheckProvider(render_view, spellcheck_.get());
@@ -552,6 +567,11 @@ unsigned long long ChromeContentRendererClient::VisitedLinkHash(
 
 bool ChromeContentRendererClient::IsLinkVisited(unsigned long long link_hash) {
   return visited_link_slave_->IsVisited(link_hash);
+}
+
+void ChromeContentRendererClient::PrefetchHostName(const char* hostname,
+                                                   size_t length) {
+  net_predictor_->Resolve(hostname, length);
 }
 
 void ChromeContentRendererClient::SetExtensionDispatcher(

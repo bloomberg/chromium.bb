@@ -14,6 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram.h"
 #include "base/metrics/stats_table.h"
 #include "base/process_util.h"
 #include "base/shared_memory.h"
@@ -26,11 +27,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/renderer/automation/dom_automation_v8_extension.h"
-#include "chrome/renderer/loadtimes_extension_bindings.h"
-#include "chrome/renderer/net/renderer_net_predictor.h"
 #include "chrome/renderer/render_process_impl.h"
-#include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "content/common/appcache/appcache_dispatcher.h"
 #include "content/common/database_messages.h"
 #include "content/common/db_message_filter.h"
@@ -201,8 +198,6 @@ void RenderThread::Init() {
   idle_notification_delay_in_s_ = kInitialIdleHandlerDelayS;
   task_factory_.reset(new ScopedRunnableMethodFactory<RenderThread>(this));
 
-  renderer_net_predictor_.reset(new RendererNetPredictor());
-  histogram_snapshots_.reset(new RendererHistogramSnapshots());
   appcache_dispatcher_.reset(new AppCacheDispatcher(this));
   indexed_db_dispatcher_.reset(new IndexedDBDispatcher());
 
@@ -427,14 +422,6 @@ void RenderThread::DoNotNotifyWebKitOfModalLoop() {
   notify_webkit_of_modal_loop_ = false;
 }
 
-void RenderThread::Resolve(const char* name, size_t length) {
-  return renderer_net_predictor_->Resolve(name, length);
-}
-
-void RenderThread::SendHistograms(int sequence_number) {
-  return histogram_snapshots_->SendHistograms(sequence_number);
-}
-
 void RenderThread::OnSetContentSettingsForCurrentURL(
     const GURL& url,
     const ContentSettings& content_settings) {
@@ -485,7 +472,6 @@ bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_New, OnCreateNewView)
     IPC_MESSAGE_HANDLER(ViewMsg_SetCacheCapacities, OnSetCacheCapacities)
     IPC_MESSAGE_HANDLER(ViewMsg_ClearCache, OnClearCache)
-    IPC_MESSAGE_HANDLER(ViewMsg_GetRendererHistograms, OnGetRendererHistograms)
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ViewMsg_GetRendererTcmalloc, OnGetRendererTcmalloc)
 #endif
@@ -560,10 +546,6 @@ void RenderThread::OnGetCacheResourceStats() {
   WebCache::ResourceTypeStats stats;
   WebCache::getResourceTypeStats(&stats);
   Send(new ViewHostMsg_ResourceTypeStats(stats));
-}
-
-void RenderThread::OnGetRendererHistograms(int sequence_number) {
-  SendHistograms(sequence_number);
 }
 
 #if defined(USE_TCMALLOC)
@@ -691,8 +673,6 @@ void RenderThread::EnsureWebKitInitialized() {
   WebString extension_scheme(ASCIIToUTF16(chrome::kExtensionScheme));
   WebSecurityPolicy::registerURLSchemeAsSecure(extension_scheme);
 
-  RegisterExtension(extensions_v8::LoadTimesExtension::Get());
-
   if (command_line.HasSwitch(switches::kEnableBenchmarking))
     RegisterExtension(extensions_v8::BenchmarkingExtension::Get());
 
@@ -701,9 +681,6 @@ void RenderThread::EnsureWebKitInitialized() {
       command_line.HasSwitch(switches::kNoJsRandomness)) {
     RegisterExtension(extensions_v8::PlaybackExtension::Get());
   }
-
-  if (command_line.HasSwitch(switches::kDomAutomationController))
-    RegisterExtension(DomAutomationV8Extension::Get());
 
   web_database_observer_impl_.reset(new WebDatabaseObserverImpl(this));
   WebKit::WebDatabase::setObserver(web_database_observer_impl_.get());

@@ -625,8 +625,6 @@ WebKit::WebGeolocationClientMock* TestShell::geolocation_client_mock() {
 
 namespace webkit_glue {
 
-void PrecacheUrl(const char16* url, int url_length) {}
-
 void AppendToLog(const char* file, int line, const char* msg) {
   logging::LogMessage(file, line).stream() << msg;
 }

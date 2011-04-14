@@ -6,17 +6,26 @@
 #define CHROME_RENDERER_PAGE_LOAD_HISTOGRAMS_H_
 
 #include "base/basictypes.h"
+#include "content/renderer/render_view_observer.h"
 
 class NavigationState;
+class RendererHistogramSnapshots;
 
-namespace WebKit {
-class WebDataSource;
-class WebFrame;
-}
-
-class PageLoadHistograms {
+class PageLoadHistograms : public RenderViewObserver {
  public:
-  PageLoadHistograms();
+  PageLoadHistograms(RenderView* render_view,
+                     RendererHistogramSnapshots* histogram_snapshots);
+
+ private:
+  // RenderViewObserver implementation.
+  virtual void FrameWillClose(WebKit::WebFrame* frame);
+  virtual void LogCrossFramePropertyAccess(
+      WebKit::WebFrame* frame,
+      WebKit::WebFrame* target,
+      bool cross_origin,
+      const WebKit::WebString& property_name,
+      unsigned long long event_id);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // Dump all page load histograms appropriate for the given frame.
   //
@@ -39,10 +48,8 @@ class PageLoadHistograms {
   // so first_paint and first_paint_after_load can be 0.
   void Dump(WebKit::WebFrame* frame);
 
-  void IncrementCrossFramePropertyAccess(bool cross_origin);
   void ResetCrossFramePropertyAccess();
 
- private:
   void LogPageLoadTime(const NavigationState* state,
                        const WebKit::WebDataSource* ds) const;
 
@@ -50,6 +57,8 @@ class PageLoadHistograms {
   // These are per-page-load counts, reset to 0 after they are dumped.
   int cross_origin_access_count_;
   int same_origin_access_count_;
+
+  RendererHistogramSnapshots* histogram_snapshots_;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadHistograms);
 };

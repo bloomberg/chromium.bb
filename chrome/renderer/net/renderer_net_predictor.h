@@ -29,10 +29,6 @@
 #include "base/task.h"
 #include "chrome/renderer/net/predictor_queue.h"
 
-// Global API consists to do Prefetching in renderer.  This uses IPC to reach
-// the Browser's global functions.
-void DnsPrefetchCString(const char* hostname, size_t length);
-
 class RendererNetPredictor {
  public:
   RendererNetPredictor();

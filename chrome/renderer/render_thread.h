@@ -179,12 +179,6 @@ class RenderThread : public RenderThreadBase,
     idle_notification_delay_in_s_ = idle_notification_delay_in_s;
   }
 
-  // Do DNS prefetch resolution of a hostname.
-  void Resolve(const char* name, size_t length);
-
-  // Send all the Histogram data to browser.
-  void SendHistograms(int sequence_number);
-
   // Sends a message to the browser to close all connections.
   void CloseCurrentConnections();
 
@@ -267,9 +261,6 @@ class RenderThread : public RenderThreadBase,
   void OnClearCache();
   void OnGetCacheResourceStats();
 
-  // Send all histograms to browser.
-  void OnGetRendererHistograms(int sequence_number);
-
   // Send tcmalloc info to browser.
   void OnGetRendererTcmalloc();
   void OnGetV8HeapStats();
@@ -288,10 +279,8 @@ class RenderThread : public RenderThreadBase,
 
   // These objects live solely on the render thread.
   scoped_ptr<ScopedRunnableMethodFactory<RenderThread> > task_factory_;
-  scoped_ptr<RendererNetPredictor> renderer_net_predictor_;
   scoped_ptr<AppCacheDispatcher> appcache_dispatcher_;
   scoped_ptr<IndexedDBDispatcher> indexed_db_dispatcher_;
-  scoped_ptr<RendererHistogramSnapshots> histogram_snapshots_;
   scoped_ptr<RendererWebKitClientImpl> webkit_client_;
   scoped_ptr<WebKit::WebStorageEventDispatcher> dom_storage_event_dispatcher_;
 

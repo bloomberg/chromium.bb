@@ -9,17 +9,21 @@
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/renderer/render_thread.h"
+#include "chrome/renderer/renderer_histogram_snapshots.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/navigation_state.h"
+#include "content/renderer/render_view.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPerformance.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 using base::Time;
 using base::TimeDelta;
 using WebKit::WebDataSource;
 using WebKit::WebFrame;
 using WebKit::WebPerformance;
+using WebKit::WebString;
 
 static const TimeDelta kPLTMin(TimeDelta::FromMilliseconds(10));
 static const TimeDelta kPLTMax(TimeDelta::FromMinutes(10));
@@ -128,9 +132,12 @@ enum AbandonType {
   ABANDON_TYPE_MAX = 0x10
 };
 
-PageLoadHistograms::PageLoadHistograms()
-    : cross_origin_access_count_(0),
-      same_origin_access_count_(0) {
+PageLoadHistograms::PageLoadHistograms(
+    RenderView* render_view, RendererHistogramSnapshots* histogram_snapshots)
+    : RenderViewObserver(render_view),
+      cross_origin_access_count_(0),
+      same_origin_access_count_(0),
+      histogram_snapshots_(histogram_snapshots) {
 }
 
 void PageLoadHistograms::Dump(WebFrame* frame) {
@@ -840,22 +847,41 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   // TODO(jar) BUG=33233: This needs to be moved to a PostDelayedTask, and it
   // should post when the onload is complete, so that it doesn't interfere with
   // the next load.
-  if (RenderThread::current()) {
-    RenderThread::current()->SendHistograms(
-        chrome::kHistogramSynchronizerReservedSequenceNumber);
-  }
+  histogram_snapshots_->SendHistograms(
+      chrome::kHistogramSynchronizerReservedSequenceNumber);
 }
 
-void PageLoadHistograms::IncrementCrossFramePropertyAccess(bool cross_origin) {
+void PageLoadHistograms::ResetCrossFramePropertyAccess() {
+  cross_origin_access_count_ = 0;
+  same_origin_access_count_ = 0;
+}
+
+void PageLoadHistograms::FrameWillClose(WebFrame* frame) {
+  Dump(frame);
+}
+
+void PageLoadHistograms::LogCrossFramePropertyAccess(
+      WebFrame* frame,
+      WebFrame* target,
+      bool cross_origin,
+      const WebString& property_name,
+      unsigned long long event_id) {
+  // TODO(johnnyg): track the individual properties and repeat event_ids.
   if (cross_origin)
     cross_origin_access_count_++;
   else
     same_origin_access_count_++;
 }
 
-void PageLoadHistograms::ResetCrossFramePropertyAccess() {
-  cross_origin_access_count_ = 0;
-  same_origin_access_count_ = 0;
+bool PageLoadHistograms::OnMessageReceived(const IPC::Message& message) {
+  if (message.type() == ViewMsg_ClosePage::ID) {
+    // TODO(davemoore) This code should be removed once willClose() gets
+    // called when a page is destroyed. page_load_histograms_.Dump() is safe
+    // to call multiple times for the same frame, but it will simplify things.
+    Dump(render_view()->webview()->mainFrame());
+    ResetCrossFramePropertyAccess();
+  }
+  return false;
 }
 
 void PageLoadHistograms::LogPageLoadTime(const NavigationState* state,

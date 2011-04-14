@@ -15,8 +15,10 @@
 #include "base/process.h"
 #include "base/task.h"
 #include "chrome/common/metrics_helpers.h"
+#include "content/renderer/render_process_observer.h"
 
-class RendererHistogramSnapshots : public HistogramSender {
+class RendererHistogramSnapshots : public HistogramSender,
+                                   public RenderProcessObserver {
  public:
   RendererHistogramSnapshots();
   ~RendererHistogramSnapshots();
@@ -25,6 +27,11 @@ class RendererHistogramSnapshots : public HistogramSender {
   void SendHistograms(int sequence_number);
 
  private:
+  // RenderProcessObserver implementation.
+  virtual bool OnControlMessageReceived(const IPC::Message& message);
+
+  void OnGetRendererHistograms(int sequence_number);
+
   // Maintain a map of histogram names to the sample stats we've sent.
   typedef std::map<std::string, base::Histogram::SampleSet> LoggedSampleMap;
   typedef std::vector<std::string> HistogramPickledList;

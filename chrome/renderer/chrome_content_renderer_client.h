@@ -10,6 +10,8 @@
 #include "content/renderer/content_renderer_client.h"
 
 class ExtensionDispatcher;
+class RendererHistogramSnapshots;
+class RendererNetPredictor;
 class SpellCheck;
 class VisitedLinkSlave;
 
@@ -57,6 +59,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual unsigned long long VisitedLinkHash(const char* canonical_url,
                                              size_t length);
   virtual bool IsLinkVisited(unsigned long long link_hash);
+  virtual void PrefetchHostName(const char* hostname, size_t length);
 
   // For testing.
   void SetExtensionDispatcher(ExtensionDispatcher* extension_dispatcher);
@@ -82,6 +85,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   bool CrossesExtensionExtents(WebKit::WebFrame* frame, const GURL& new_url);
 
   scoped_ptr<ExtensionDispatcher> extension_dispatcher_;
+  scoped_ptr<RendererHistogramSnapshots> histogram_snapshots_;
+  scoped_ptr<RendererNetPredictor> net_predictor_;
   scoped_ptr<SpellCheck> spellcheck_;
   scoped_ptr<VisitedLinkSlave> visited_link_slave_;
   scoped_ptr<safe_browsing::PhishingClassifierFilter> phishing_classifier_;

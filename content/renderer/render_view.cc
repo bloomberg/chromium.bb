@@ -38,7 +38,6 @@
 #include "chrome/renderer/automation/dom_automation_controller.h"
 #include "chrome/renderer/external_host_bindings.h"
 #include "chrome/renderer/localized_error.h"
-#include "chrome/renderer/page_load_histograms.h"
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/searchbox.h"
@@ -933,7 +932,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnJavaScriptStressTestControl)
     IPC_MESSAGE_HANDLER(ViewMsg_ContextMenuClosed, OnContextMenuClosed)
     IPC_MESSAGE_HANDLER(ViewMsg_NetworkStateChanged, OnNetworkStateChanged)
-
     // TODO(viettrungluu): Move to a separate message filter.
 #if defined(ENABLE_FLAPPER_HACKS)
     IPC_MESSAGE_HANDLER(PepperMsg_ConnectTcpACK, OnConnectTcpACK)
@@ -2293,8 +2291,6 @@ void RenderView::frameDetached(WebFrame* frame) {
 }
 
 void RenderView::willClose(WebFrame* frame) {
-  page_load_histograms_.Dump(frame);
-
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, FrameWillClose(frame));
 }
 
@@ -3156,8 +3152,11 @@ void RenderView::logCrossFramePropertyAccess(WebFrame* frame,
                                              bool cross_origin,
                                              const WebString& property_name,
                                              unsigned long long event_id) {
-  // TODO(johnnyg): track the individual properties and repeat event_ids.
-  page_load_histograms_.IncrementCrossFramePropertyAccess(cross_origin);
+  FOR_EACH_OBSERVER(
+      RenderViewObserver,
+      observers_,
+      LogCrossFramePropertyAccess(
+          frame, target, cross_origin, property_name, event_id));
 }
 
 void RenderView::didChangeContentsSize(WebFrame* frame, const WebSize& size) {
@@ -4212,11 +4211,6 @@ void RenderView::OnClosePage(const ViewMsg_ClosePage_Params& params) {
   // revisited to avoid having two ways to close a page.  Having a single way
   // to close that can run onunload is also useful for fixing
   // http://b/issue?id=753080.
-  // TODO(davemoore) This code should be removed once willClose() gets
-  // called when a page is destroyed. page_load_histograms_.Dump() is safe
-  // to call multiple times for the same frame, but it will simplify things.
-  page_load_histograms_.Dump(webview()->mainFrame());
-  page_load_histograms_.ResetCrossFramePropertyAccess();
   webview()->dispatchUnloadEvent();
 
   // Just echo back the params in the ACK.

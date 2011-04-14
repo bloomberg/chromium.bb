@@ -20,7 +20,6 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/renderer/net/renderer_net_predictor.h"
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"
 #include "content/common/clipboard_messages.h"
@@ -126,16 +125,6 @@ ScopedClipboardWriterGlue::~ScopedClipboardWriterGlue() {
 }
 
 namespace webkit_glue {
-
-void PrecacheUrl(const wchar_t* url, int url_length) {
-  // TBD: jar: Need implementation that loads the targetted URL into our cache.
-  // For now, at least prefetch DNS lookup
-  std::string url_string;
-  WideToUTF8(url, url_length, &url_string);
-  const std::string host = GURL(url_string).host();
-  if (!host.empty())
-    DnsPrefetchCString(host.data(), host.length());
-}
 
 void AppendToLog(const char* file, int line, const char* msg) {
   logging::LogMessage(file, line).stream() << msg;

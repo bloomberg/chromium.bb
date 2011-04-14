@@ -156,11 +156,6 @@ int GetGlyphPageCount();
 
 //---- BEGIN FUNCTIONS IMPLEMENTED BY EMBEDDER --------------------------------
 
-// This function is called to request a prefetch of the entire URL, loading it
-// into our cache for (expected) future needs.  The given URL may NOT be in
-// canonical form and it will NOT be null-terminated; use the length instead.
-void PrecacheUrl(const char16* url, int url_length);
-
 // This function is called to add a line to the application's log file.
 void AppendToLog(const char* filename, int line, const char* message);
 

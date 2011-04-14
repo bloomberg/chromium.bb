@@ -216,11 +216,13 @@ RendererWebKitClientImpl::createMessagePortChannel() {
 }
 
 void RendererWebKitClientImpl::prefetchHostName(const WebString& hostname) {
-  if (!hostname.isEmpty()) {
-    std::string hostname_utf8;
-    UTF16ToUTF8(hostname.data(), hostname.length(), &hostname_utf8);
-    DnsPrefetchCString(hostname_utf8.data(), hostname_utf8.length());
-  }
+  if (hostname.isEmpty())
+    return;
+
+  std::string hostname_utf8;
+  UTF16ToUTF8(hostname.data(), hostname.length(), &hostname_utf8);
+  content::GetContentClient()->renderer()->PrefetchHostName(
+      hostname_utf8.data(), hostname_utf8.length());
 }
 
 bool RendererWebKitClientImpl::CheckPreparsedJsCachingEnabled() const {

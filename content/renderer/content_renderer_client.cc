@@ -77,4 +77,8 @@ bool ContentRendererClient::IsLinkVisited(unsigned long long link_hash) {
   return false;
 }
 
+void ContentRendererClient::PrefetchHostName(const char* hostname,
+                                             size_t length) {
+}
+
 }  // namespace content

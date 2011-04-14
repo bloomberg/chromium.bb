@@ -33,6 +33,20 @@ void RendererHistogramSnapshots::SendHistograms(int sequence_number) {
           &RendererHistogramSnapshots::UploadAllHistrograms, sequence_number));
 }
 
+bool RendererHistogramSnapshots::OnControlMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(RendererHistogramSnapshots, message)
+    IPC_MESSAGE_HANDLER(ViewMsg_GetRendererHistograms, OnGetRendererHistograms)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void RendererHistogramSnapshots::OnGetRendererHistograms(int sequence_number) {
+  SendHistograms(sequence_number);
+}
+
 void RendererHistogramSnapshots::UploadAllHistrograms(int sequence_number) {
   DCHECK_EQ(0u, pickled_histograms_.size());
 

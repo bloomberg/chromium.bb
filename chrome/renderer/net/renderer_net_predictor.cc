@@ -16,12 +16,6 @@
 #include "chrome/renderer/net/predictor_queue.h"
 #include "chrome/renderer/render_thread.h"
 
-// This API is used in the render process by renderer_glue.cc.
-// IF you are in the render process, you MUST be on the renderer thread to call.
-void DnsPrefetchCString(const char* hostname, size_t length) {
-  RenderThread::current()->Resolve(hostname, length);
-}
-
 // The number of hostnames submitted to Browser DNS resolver per call to
 // SubmitHostsnames() (which reads names from our queue).
 static const size_t kMAX_SUBMISSION_PER_TASK = 30;
