@@ -13,8 +13,8 @@
 #include "base/memory/scoped_native_library.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "ui/gfx/gl/gl_context_egl.h"
 #include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/gl_surface_egl.h"
 
 // ANGLE seems to require that main.h be included before any other ANGLE header.
 #include "libEGL/main.h"
@@ -72,7 +72,7 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   // Need to handle the case when running on top of real EGL/GLES2 drivers.
 
   egl::Display* display = static_cast<egl::Display*>(
-      gfx::BaseEGLContext::GetDisplay());
+      gfx::GLSurfaceEGL::GetDisplay());
   if (!display) {
     LOG(ERROR) << "gfx::BaseEGLContext::GetDisplay() failed";
     return false;

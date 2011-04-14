@@ -55,7 +55,6 @@
         ],
       },
      'sources': [
-        'gl_bindings.gypi',
         'gl_bindings.h',
         'gl_bindings_skia_in_process.cc',
         'gl_bindings_skia_in_process.h',
@@ -75,6 +74,8 @@
         'gl_implementation_win.cc',
         'gl_interface.cc',
         'gl_interface.h',
+        'gl_surface.cc',
+        'gl_surface.h',
         'gl_switches.cc',
         'gl_switches.h',
         '<(gl_binding_output_dir)/gl_bindings_autogen_gl.cc',
@@ -115,18 +116,25 @@
         },
       ],
       'conditions': [
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="win"', {
           'sources': [
+            'egl_util.cc',
+            'egl_util.h',
             'gl_context_egl.cc',
             'gl_context_egl.h',
+            'gl_surface_egl.cc',
+            'gl_surface_egl.h',
             '<(gl_binding_output_dir)/gl_bindings_autogen_egl.cc',
             '<(gl_binding_output_dir)/gl_bindings_autogen_egl.h',
-            '<(gl_binding_output_dir)/gl_bindings_autogen_glx.cc',
-            '<(gl_binding_output_dir)/gl_bindings_autogen_glx.h',
           ],
           'include_dirs': [
-            # We don't use angle, but pull the EGL/GLES headers from there.
             '<(DEPTH)/third_party/angle/include',
+          ],
+        }],
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+          'sources': [
+            '<(gl_binding_output_dir)/gl_bindings_autogen_glx.cc',
+            '<(gl_binding_output_dir)/gl_bindings_autogen_glx.h',
           ],
           'all_dependent_settings': {
             'defines': [
@@ -134,25 +142,18 @@
             ],
           },
         }],
+        ['OS=="win"', {
+          'sources': [
+            '<(gl_binding_output_dir)/gl_bindings_autogen_wgl.cc',
+            '<(gl_binding_output_dir)/gl_bindings_autogen_wgl.h',
+          ],
+        }],
         ['OS=="mac"', {
           'link_settings': {
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
             ],
           },
-        }],
-        ['OS=="win"', {
-          'sources': [
-            'gl_context_egl.cc',
-            'gl_context_egl.h',
-            '<(gl_binding_output_dir)/gl_bindings_autogen_egl.cc',
-            '<(gl_binding_output_dir)/gl_bindings_autogen_egl.h',
-            '<(gl_binding_output_dir)/gl_bindings_autogen_wgl.cc',
-            '<(gl_binding_output_dir)/gl_bindings_autogen_wgl.h',
-          ],
-          'include_dirs': [
-            '<(DEPTH)/third_party/angle/include',
-          ],
         }],
       ],
     },

@@ -17,6 +17,7 @@
 #include "ui/gfx/gl/gl_context_osmesa.h"
 #include "ui/gfx/gl/gl_context_stub.h"
 #include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/gl_surface_egl.h"
 
 namespace gfx {
 
@@ -131,10 +132,6 @@ class PbufferGLContext : public GLContext {
 static HWND g_window;
 static int g_regular_pixel_format = 0;
 static int g_multisampled_pixel_format = 0;
-
-// When using ANGLE we still need a window for D3D. This context creates the
-// D3D device.
-static BaseEGLContext* g_default_context;
 
 const PIXELFORMATDESCRIPTOR kPixelFormatDescriptor = {
   sizeof(kPixelFormatDescriptor),    // Size of structure.
@@ -313,8 +310,8 @@ bool GLContext::InitializeOneOff() {
       break;
     }
     case kGLImplementationEGLGLES2:
-      if (!BaseEGLContext::InitializeOneOff()) {
-        LOG(ERROR) << "BaseEGLContext::InitializeOneOff failed.";
+      if (!GLSurfaceEGL::InitializeOneOff()) {
+        LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
         return false;
       }
       break;
@@ -551,9 +548,14 @@ GLContext* GLContext::CreateViewGLContext(gfx::PluginWindowHandle window,
       return context.release();
     }
     case kGLImplementationEGLGLES2: {
-      scoped_ptr<NativeViewEGLContext> context(
-          new NativeViewEGLContext(window));
-      if (!context->Initialize())
+      scoped_ptr<NativeViewGLSurfaceEGL> surface(new NativeViewGLSurfaceEGL(
+          window));
+      if (!surface->Initialize())
+        return NULL;
+
+      scoped_ptr<GLContextEGL> context(
+          new GLContextEGL(surface.release()));
+      if (!context->Initialize(NULL))
         return NULL;
 
       return context.release();
@@ -706,20 +708,12 @@ GLContext* GLContext::CreateOffscreenGLContext(GLContext* shared_context) {
       return context.release();
     }
     case kGLImplementationEGLGLES2: {
-      if (!shared_context) {
-        if (!g_default_context) {
-          scoped_ptr<NativeViewEGLContext> default_context(
-              new NativeViewEGLContext(g_window));
-          if (!default_context->Initialize())
-            return NULL;
+      scoped_ptr<PbufferGLSurfaceEGL> surface(new PbufferGLSurfaceEGL(
+          gfx::Size(1, 1)));
+      if (!surface->Initialize())
+        return NULL;
 
-          g_default_context = default_context.release();
-        }
-        shared_context = g_default_context;
-      }
-
-      scoped_ptr<SecondaryEGLContext> context(
-          new SecondaryEGLContext());
+      scoped_ptr<GLContextEGL> context(new GLContextEGL(surface.release()));
       if (!context->Initialize(shared_context))
         return NULL;
 

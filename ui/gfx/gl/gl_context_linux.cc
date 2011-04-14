@@ -21,6 +21,7 @@ extern "C" {
 #include "ui/gfx/gl/gl_context_osmesa.h"
 #include "ui/gfx/gl/gl_context_stub.h"
 #include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/gl_surface_egl.h"
 
 namespace {
 
@@ -217,8 +218,8 @@ bool GLContext::InitializeOneOff() {
       break;
     }
     case kGLImplementationEGLGLES2:
-      if (!BaseEGLContext::InitializeOneOff()) {
-        LOG(ERROR) << "BaseEGLContext::InitializeOneOff failed.";
+      if (!GLSurfaceEGL::InitializeOneOff()) {
+        LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
         return false;
       }
       break;
@@ -515,9 +516,14 @@ GLContext* GLContext::CreateViewGLContext(gfx::PluginWindowHandle window,
       return context.release();
     }
     case kGLImplementationEGLGLES2: {
-      scoped_ptr<NativeViewEGLContext> context(
-          new NativeViewEGLContext(reinterpret_cast<void *>(window)));
-      if (!context->Initialize())
+      scoped_ptr<NativeViewGLSurfaceEGL> surface(new NativeViewGLSurfaceEGL(
+          reinterpret_cast<void*>(window)));
+      if (!surface->Initialize())
+        return NULL;
+
+      scoped_ptr<GLContextEGL> context(
+          new GLContextEGL(surface.release()));
+      if (!context->Initialize(NULL))
         return NULL;
 
       return context.release();
@@ -805,8 +811,12 @@ GLContext* GLContext::CreateOffscreenGLContext(GLContext* shared_context) {
       return NULL;
     }
     case kGLImplementationEGLGLES2: {
-      scoped_ptr<SecondaryEGLContext> context(
-          new SecondaryEGLContext());
+      scoped_ptr<PbufferGLSurfaceEGL> surface(new PbufferGLSurfaceEGL(
+          gfx::Size(1, 1)));
+      if (!surface->Initialize())
+        return NULL;
+
+      scoped_ptr<GLContextEGL> context(new GLContextEGL(surface.release()));
       if (!context->Initialize(shared_context))
         return NULL;
 
