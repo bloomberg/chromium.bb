@@ -144,6 +144,7 @@
 #include "app/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_trial.h"
+#include "chrome/browser/first_run/try_chrome_dialog_view.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/rlz/rlz.h"
@@ -1232,15 +1233,15 @@ int BrowserMain(const MainFunctionParams& parameters) {
       // It seems that we don't need to run the experiment since chrome
       // in the same profile is already running.
       VLOG(1) << "Retention experiment not required";
-      return upgrade_util::NOT_NOW;
+      return TryChromeDialogView::NOT_NOW;
     }
     int try_chrome_int;
     base::StringToInt(try_chrome, &try_chrome_int);
-    upgrade_util::TryResult answer =
-        upgrade_util::ShowTryChromeDialog(try_chrome_int, &process_singleton);
-    if (answer == upgrade_util::NOT_NOW)
+    TryChromeDialogView::Result answer =
+        TryChromeDialogView::Show(try_chrome_int, &process_singleton);
+    if (answer == TryChromeDialogView::NOT_NOW)
       return ResultCodes::NORMAL_EXIT_CANCEL;
-    if (answer == upgrade_util::UNINSTALL_CHROME)
+    if (answer == TryChromeDialogView::UNINSTALL_CHROME)
       return ResultCodes::NORMAL_EXIT_EXP2;
 #else
     // We don't support retention experiments on Mac or Linux.

@@ -641,7 +641,7 @@ void GoogleChromeDistribution::LaunchUserExperiment(
     }
   }
 
-  // The |flavor| value ends up being processed by ShowTryChromeDialog to show
+  // The |flavor| value ends up being processed by TryChromeDialogView to show
   // different experiments.
   UserExperiment experiment;
   if (!GetExperimentDetails(&experiment, -1)) {

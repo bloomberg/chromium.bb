@@ -34,15 +34,6 @@ bool RelaunchChromeBrowser(const CommandLine& command_line);
 bool IsUpdatePendingRestart();
 
 #if defined(OS_WIN)
-// Possible results of ShowTryChromeDialog().
-enum TryResult {
-  TRY_CHROME,          // Launch chrome right now.
-  NOT_NOW,             // Don't launch chrome. Exit now.
-  UNINSTALL_CHROME,    // Initiate chrome uninstall and exit.
-  DIALOG_ERROR,        // An error occurred creating the dialog.
-  COUNT
-};
-
 // Check if current chrome.exe is already running as a browser process by
 // trying to create a Global event with name same as full path of chrome.exe.
 // This method caches the handle to this event so on subsequent calls also
@@ -62,14 +53,6 @@ bool SwapNewChromeExeIfPresent();
 // function. If browser is already running, you will need to exit it.
 bool DoUpgradeTasks(const CommandLine& command_line);
 
-// Shows a modal dialog asking the user to give chrome another try. See
-// above for the possible outcomes of the function. This is an experimental,
-// non-localized dialog.
-// |version| can be 0, 1 or 2 and selects what strings to present.
-// |process_singleton| needs to be valid and it will be locked while
-// the dialog is shown.
-TryResult ShowTryChromeDialog(size_t version,
-                              ProcessSingleton* process_singleton);
 #endif  // OS_WIN
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

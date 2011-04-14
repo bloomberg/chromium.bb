@@ -138,15 +138,4 @@ bool DoUpgradeTasks(const CommandLine& command_line) {
   return true;
 }
 
-TryResult ShowTryChromeDialog(size_t version,
-                              ProcessSingleton* process_singleton) {
-  if (version > 10000) {
-    // This is a test value. We want to make sure we exercise
-    // returning this early. See EarlyReturnTest test harness.
-    return NOT_NOW;
-  }
-  TryChromeDialogView dialog(version);
-  return dialog.ShowModal(process_singleton);
-}
-
 }  // namespace upgrade_util

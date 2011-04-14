@@ -31,20 +31,32 @@ const wchar_t kHelpCenterUrl[] =
 
 }  // namespace
 
+// static
+TryChromeDialogView::Result TryChromeDialogView::Show(
+    size_t version,
+    ProcessSingleton* process_singleton) {
+  if (version > 10000) {
+    // This is a test value. We want to make sure we exercise
+    // returning this early. See EarlyReturnTest test harness.
+    return NOT_NOW;
+  }
+  TryChromeDialogView dialog(version);
+  return dialog.ShowModal(process_singleton);
+}
+
 TryChromeDialogView::TryChromeDialogView(size_t version)
     : version_(version),
       popup_(NULL),
       try_chrome_(NULL),
       kill_chrome_(NULL),
-      result_(upgrade_util::COUNT) {
+      result_(COUNT) {
 }
 
 TryChromeDialogView::~TryChromeDialogView() {
 }
 
-upgrade_util::TryResult TryChromeDialogView::ShowModal(
+TryChromeDialogView::Result TryChromeDialogView::ShowModal(
     ProcessSingleton* process_singleton) {
-  using views::GridLayout;
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   views::ImageView* icon = new views::ImageView();
@@ -57,7 +69,7 @@ upgrade_util::TryResult TryChromeDialogView::ShowModal(
   popup_ = views::Widget::CreateWidget(params);
   if (!popup_) {
     NOTREACHED();
-    return upgrade_util::DIALOG_ERROR;
+    return DIALOG_ERROR;
   }
 
   gfx::Rect pos(310, 160);
@@ -71,48 +83,48 @@ upgrade_util::TryResult TryChromeDialogView::ShowModal(
   views::GridLayout* layout = views::GridLayout::CreatePanel(root_view);
   if (!layout) {
     NOTREACHED();
-    return upgrade_util::DIALOG_ERROR;
+    return DIALOG_ERROR;
   }
   root_view->SetLayoutManager(layout);
 
   views::ColumnSet* columns;
   // First row: [icon][pad][text][button].
   columns = layout->AddColumnSet(0);
-  columns->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
-                     GridLayout::FIXED, icon_size.width(),
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
+                     views::GridLayout::FIXED, icon_size.width(),
                      icon_size.height());
   columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
-  columns->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                     GridLayout::USE_PREF, 0, 0);
-  columns->AddColumn(GridLayout::TRAILING, GridLayout::FILL, 1,
-                     GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                     views::GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL, 1,
+                     views::GridLayout::USE_PREF, 0, 0);
   // Second row: [pad][pad][radio 1].
   columns = layout->AddColumnSet(1);
   columns->AddPaddingColumn(0, icon_size.width());
   columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
-  columns->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
-                     GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
+                     views::GridLayout::USE_PREF, 0, 0);
   // Third row: [pad][pad][radio 2].
   columns = layout->AddColumnSet(2);
   columns->AddPaddingColumn(0, icon_size.width());
   columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
-  columns->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
-                     GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
+                     views::GridLayout::USE_PREF, 0, 0);
   // Fourth row: [pad][pad][button][pad][button].
   columns = layout->AddColumnSet(3);
   columns->AddPaddingColumn(0, icon_size.width());
   columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
-  columns->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
-                     GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 0,
+                     views::GridLayout::USE_PREF, 0, 0);
   columns->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
-  columns->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
-                     GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 0,
+                     views::GridLayout::USE_PREF, 0, 0);
   // Fifth row: [pad][pad][link].
   columns = layout->AddColumnSet(4);
   columns->AddPaddingColumn(0, icon_size.width());
   columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
-  columns->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
-                     GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
+                     views::GridLayout::USE_PREF, 0, 0);
   // First row views.
   layout->StartRow(0, 0);
   layout->AddView(icon);
@@ -121,13 +133,13 @@ upgrade_util::TryResult TryChromeDialogView::ShowModal(
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   if (!dist) {
     NOTREACHED() << "Cannot determine browser distribution";
-    return upgrade_util::DIALOG_ERROR;
+    return DIALOG_ERROR;
   }
   BrowserDistribution::UserExperiment experiment;
   if (!dist->GetExperimentDetails(&experiment, version_) ||
       !experiment.heading) {
     NOTREACHED() << "Cannot determine which headline to show.";
-    return upgrade_util::DIALOG_ERROR;
+    return DIALOG_ERROR;
   }
   string16 heading = l10n_util::GetStringUTF16(experiment.heading);
   views::Label* label = new views::Label(heading);
@@ -198,27 +210,6 @@ upgrade_util::TryResult TryChromeDialogView::ShowModal(
   return result_;
 }
 
-void TryChromeDialogView::ButtonPressed(views::Button* sender,
-                                        const views::Event& event) {
-  if (sender->tag() == BT_CLOSE_BUTTON) {
-    // The user pressed cancel or the [x] button.
-    result_ = upgrade_util::NOT_NOW;
-  } else if (!try_chrome_) {
-    // We don't have radio buttons, the user pressed ok.
-    result_ = upgrade_util::TRY_CHROME;
-  } else {
-    // The outcome is according to the selected ratio button.
-    result_ = try_chrome_->checked() ? upgrade_util::TRY_CHROME :
-                                       upgrade_util::UNINSTALL_CHROME;
-  }
-  popup_->Close();
-  MessageLoop::current()->Quit();
-}
-
-void TryChromeDialogView::LinkActivated(views::Link* source, int event_flags) {
-  ::ShellExecuteW(NULL, L"open", kHelpCenterUrl, NULL, NULL, SW_SHOW);
-}
-
 gfx::Rect TryChromeDialogView::ComputeWindowPosition(int width,
                                                      int height,
                                                      bool is_RTL) {
@@ -246,4 +237,24 @@ void TryChromeDialogView::SetToastRegion(HWND window, int w, int h) {
   };
   HRGN region = ::CreatePolygonRgn(polygon, arraysize(polygon), WINDING);
   ::SetWindowRgn(window, region, FALSE);
+}
+
+void TryChromeDialogView::ButtonPressed(views::Button* sender,
+                                        const views::Event& event) {
+  if (sender->tag() == BT_CLOSE_BUTTON) {
+    // The user pressed cancel or the [x] button.
+    result_ = NOT_NOW;
+  } else if (!try_chrome_) {
+    // We don't have radio buttons, the user pressed ok.
+    result_ = TRY_CHROME;
+  } else {
+    // The outcome is according to the selected ratio button.
+    result_ = try_chrome_->checked() ? TRY_CHROME : UNINSTALL_CHROME;
+  }
+  popup_->Close();
+  MessageLoop::current()->Quit();
+}
+
+void TryChromeDialogView::LinkActivated(views::Link* source, int event_flags) {
+  ::ShellExecuteW(NULL, L"open", kHelpCenterUrl, NULL, NULL, SW_SHOW);
 }
