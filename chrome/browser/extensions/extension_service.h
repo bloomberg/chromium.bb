@@ -73,7 +73,6 @@ class ExtensionServiceInterface {
   virtual void UpdateExtensionBlacklist(
     const std::vector<std::string>& blacklist) = 0;
   virtual void CheckAdminBlacklist() = 0;
-  virtual bool HasInstalledExtensions() = 0;
 
   virtual bool IsIncognitoEnabled(const std::string& extension_id) const = 0;
   virtual void SetIsIncognitoEnabled(const std::string& extension_id,
@@ -161,9 +160,6 @@ class ExtensionService
   void register_component_extension(const ComponentExtensionInfo& info) {
     component_extension_manifests_.push_back(info);
   }
-
-  // Returns true if any extensions are installed.
-  virtual bool HasInstalledExtensions();
 
   const FilePath& install_directory() const { return install_directory_; }
 

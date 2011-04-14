@@ -177,21 +177,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, DisableEnable) {
   EXPECT_EQ(0u, service->disabled_extensions()->size());
   const Extension* extension = service->extensions()->at(size_before);
   EXPECT_TRUE(manager->GetBackgroundHostForExtension(extension));
-  ASSERT_TRUE(service->HasInstalledExtensions());
 
   // After disabling, the background page should go away.
   service->DisableExtension("bjafgdebaacbbbecmhlhpofkepfkgcpa");
   EXPECT_EQ(size_before, service->extensions()->size());
   EXPECT_EQ(1u, service->disabled_extensions()->size());
   EXPECT_FALSE(manager->GetBackgroundHostForExtension(extension));
-  ASSERT_TRUE(service->HasInstalledExtensions());
 
   // And bring it back.
   service->EnableExtension("bjafgdebaacbbbecmhlhpofkepfkgcpa");
   EXPECT_EQ(size_before + 1, service->extensions()->size());
   EXPECT_EQ(0u, service->disabled_extensions()->size());
   EXPECT_TRUE(manager->GetBackgroundHostForExtension(extension));
-  ASSERT_TRUE(service->HasInstalledExtensions());
 }
 
 // Used for testing notifications sent during extension updates.
@@ -281,7 +278,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdate) {
   listener1.WaitUntilSatisfied();
   const ExtensionList* extensions = service->extensions();
   ASSERT_EQ(size_before + 1, extensions->size());
-  ASSERT_TRUE(service->HasInstalledExtensions());
   ASSERT_EQ("ogjcoiohnmldgjemafoockdghcjciccf",
             extensions->at(size_before)->id());
   ASSERT_EQ("1.0", extensions->at(size_before)->VersionString());

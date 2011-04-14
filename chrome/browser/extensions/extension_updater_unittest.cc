@@ -112,11 +112,6 @@ class MockService : public ExtensionServiceInterface {
     FAIL();
   }
 
-  virtual bool HasInstalledExtensions() {
-    ADD_FAILURE();
-    return false;
-  }
-
   virtual bool IsIncognitoEnabled(const std::string& id) const {
     ADD_FAILURE();
     return false;
@@ -222,7 +217,7 @@ void SetupPendingExtensionManagerForTest(
 
 class ServiceForManifestTests : public MockService {
  public:
-  ServiceForManifestTests() : has_installed_extensions_(false) {}
+  ServiceForManifestTests() {}
 
   virtual ~ServiceForManifestTests() {}
 
@@ -247,17 +242,8 @@ class ServiceForManifestTests : public MockService {
     extensions_ = extensions;
   }
 
-  virtual bool HasInstalledExtensions() {
-    return has_installed_extensions_;
-  }
-
-  void set_has_installed_extensions(bool value) {
-    has_installed_extensions_ = value;
-  }
-
  private:
   ExtensionList extensions_;
-  bool has_installed_extensions_;
 };
 
 class ServiceForDownloadTests : public MockService {
@@ -398,6 +384,9 @@ class ExtensionUpdaterTest : public testing::Test {
         &service, service.extension_prefs(), service.pref_service(),
         service.profile(), 60*60*24);
     updater.Start();
+    // Disable blacklist checks (tested elsewhere) so that we only see the
+    // update HTTP request.
+    updater.set_blacklist_checks_enabled(false);
 
     // Tell the update that it's time to do update checks.
     SimulateTimerFired(&updater);
@@ -452,17 +441,9 @@ class ExtensionUpdaterTest : public testing::Test {
     // Tell the updater that it's time to do update checks.
     SimulateTimerFired(&updater);
 
-    // No extensions installed, so nothing should have been fetched.
+    // Get the url our mock fetcher was asked to fetch.
     TestURLFetcher* fetcher =
         factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
-    EXPECT_TRUE(fetcher == NULL);
-
-    // Try again with an extension installed.
-    service.set_has_installed_extensions(true);
-    SimulateTimerFired(&updater);
-
-    // Get the url our mock fetcher was asked to fetch.
-    fetcher = factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
     ASSERT_FALSE(fetcher == NULL);
     const GURL& url = fetcher->original_url();
 

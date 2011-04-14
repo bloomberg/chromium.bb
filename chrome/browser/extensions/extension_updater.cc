@@ -965,7 +965,7 @@ void ExtensionUpdater::CheckNow() {
   std::vector<ManifestFetchData*> fetches(fetches_builder.GetFetches());
 
   // Start a fetch of the blacklist if needed.
-  if (blacklist_checks_enabled_ && service_->HasInstalledExtensions()) {
+  if (blacklist_checks_enabled_) {
     // Note: it is very important that we use  the https version of the update
     // url here to avoid DNS hijacking of the blacklist, which is not validated
     // by a public key signature like .crx files are.

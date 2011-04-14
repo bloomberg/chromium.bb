@@ -35,7 +35,6 @@ class MockExtensionService : public ExtensionServiceInterface {
   MOCK_METHOD1(UpdateExtensionBlacklist,
                void(const std::vector<std::string>&));
   MOCK_METHOD0(CheckAdminBlacklist, void());
-  MOCK_METHOD0(HasInstalledExtensions, bool());
   MOCK_CONST_METHOD1(IsIncognitoEnabled, bool(const std::string&));
   MOCK_METHOD2(SetIsIncognitoEnabled, void(const std::string&, bool));
   MOCK_METHOD0(CheckForUpdatesSoon, void());

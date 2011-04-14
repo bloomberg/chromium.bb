@@ -473,10 +473,6 @@ PendingExtensionManager* ExtensionService::pending_extension_manager() {
   return &pending_extension_manager_;
 }
 
-bool ExtensionService::HasInstalledExtensions() {
-  return !(extensions_.empty() && disabled_extensions_.empty());
-}
-
 ExtensionService::~ExtensionService() {
   DCHECK(!profile_);  // Profile should have told us it's going away.
   UnloadAllExtensions();
