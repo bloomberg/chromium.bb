@@ -65,13 +65,6 @@ IPC_STRUCT_BEGIN(GpuVideoDecoderFormatChangeParam)
   IPC_STRUCT_MEMBER(base::SharedMemoryHandle, input_buffer_handle)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(AcceleratedVideoDecoderDecodeParam)
-  IPC_STRUCT_MEMBER(base::SharedMemoryHandle, input_buffer_handle)
-  IPC_STRUCT_MEMBER(int32, offset)
-  IPC_STRUCT_MEMBER(int32, size)
-  IPC_STRUCT_MEMBER(int32, flags)  // Miscellaneous flag bit mask.
-IPC_STRUCT_END()
-
 #if defined(OS_MACOSX)
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params)
   IPC_STRUCT_MEMBER(int32, renderer_id)
@@ -535,27 +528,31 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AcceleratedVideoDecoderMsg_GetConfigs,
 // Message to create the accelerated video decoder.
 IPC_SYNC_MESSAGE_CONTROL1_1(AcceleratedVideoDecoderMsg_Create,
                             std::vector<uint32>, /* Config */
-                            int32) /* Decoder ID, 0 equals failure */
+                            int32) /* Decoder ID, -1 equals failure */
 
 // Send input buffer for decoding.
-IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderMsg_Decode,
+IPC_MESSAGE_ROUTED3(AcceleratedVideoDecoderMsg_Decode,
                     base::SharedMemoryHandle, /* input_buffer_handle */
                     int32, /* offset */
-                    int32, /* size */
-                    int32) /* flags */
+                    int32) /* size */
 
 // Sent from Renderer process to the GPU process to give the texture IDs for
 // generated GL textures.
-IPC_MESSAGE_ROUTED2(AcceleratedVideoDecoderMsg_AssignPictureBuffer,
+IPC_MESSAGE_ROUTED3(AcceleratedVideoDecoderMsg_AssignPictureBuffer,
                     int32, /* Picture buffer ID */
+                    base::SharedMemoryHandle, /* Pointer to sysmem output */
                     std::vector<uint32>) /* TextureIDs for pictures */
 
+// Send from Renderer process to the GPU process to recycle the given picture
+// buffer for further decoding.
 IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_ReusePictureBuffer,
                     int32) /* Picture buffer ID */
 
 // Send flush request to the decoder.
-IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_Flush,
-                    int32) /* 0 for normal flush, 1 for abort flush */
+IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderMsg_Flush)
+
+// Send abort request to the decoder.
+IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderMsg_Abort)
 
 // Destroy and release decoder asynchronously.
 IPC_SYNC_MESSAGE_CONTROL0_0(AcceleratedVideoDecoderMsg_Destroy)
@@ -563,14 +560,16 @@ IPC_SYNC_MESSAGE_CONTROL0_0(AcceleratedVideoDecoderMsg_Destroy)
 //------------------------------------------------------------------------------
 // Accelerated Video Decoder Host Messages
 // These messages are sent from GPU process to Renderer process.
+// Inform AcceleratedVideoDecoderHost that AcceleratedVideoDecoder has been
+// created.
+
 // Accelerated video decoder has consumed input buffer from transfer buffer.
-IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_BitstreamBufferProcessed)
+IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_BitstreamBufferProcessed,
+                    base::SharedMemoryHandle) /* Processed buffer handle */
 
 // Allocate video frames for output of the hardware video decoder.
-IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers,
+IPC_MESSAGE_ROUTED2(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers,
                     int32,  /* Number of video frames to generate */
-                    uint32, /* Width of the video frame */
-                    uint32, /* Height of the video frame */
                     std::vector<uint32>) /* Vector containing the dictionary
                                             for buffer config */
 
@@ -585,6 +584,9 @@ IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_PictureReady,
 
 // Confirm decoder has been flushed.
 IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_FlushDone)
+
+// Confirm decoder has been aborted.
+IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_AbortDone)
 
 // Decoder has faced end of stream marker in the stream.
 IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_EndOfStream)

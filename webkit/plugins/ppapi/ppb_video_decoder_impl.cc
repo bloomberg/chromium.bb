@@ -91,20 +91,20 @@ void ReusePictureBuffer(PP_Resource video_decoder,
   decoder->ReusePictureBuffer(picture_buffer);
 }
 
-PP_Bool Flush(PP_Resource decoder_id,
+PP_Bool Flush(PP_Resource video_decoder,
               PP_CompletionCallback callback) {
   scoped_refptr<PPB_VideoDecoder_Impl> decoder(
-      Resource::GetAs<PPB_VideoDecoder_Impl>(decoder_id));
+      Resource::GetAs<PPB_VideoDecoder_Impl>(video_decoder));
   if (!decoder)
     return PP_FALSE;
 
   return BoolToPPBool(decoder->Flush(callback));
 }
 
-PP_Bool Abort(PP_Resource decoder_id,
+PP_Bool Abort(PP_Resource video_decoder,
               PP_CompletionCallback callback) {
   scoped_refptr<PPB_VideoDecoder_Impl> decoder(
-      Resource::GetAs<PPB_VideoDecoder_Impl>(decoder_id));
+      Resource::GetAs<PPB_VideoDecoder_Impl>(video_decoder));
   if (!decoder)
     return PP_FALSE;
 

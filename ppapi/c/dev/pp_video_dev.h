@@ -31,8 +31,6 @@ enum PP_VideoAttributeDictionary {
   //   PP_VIDEOATTR_DICTIONARY_TERMINATOR
   // };
   // Keys for defining video bitstream format.
-  // Terminating entry for bitstream format descriptions.
-  PP_VIDEOATTR_BITSTREAMFORMATKEY_NONE,
   // Value is type of PP_VideoCodecFourcc. Commonly known attributes values are
   // defined in PP_VideoCodecFourcc enumeration.
   PP_VIDEOATTR_BITSTREAMFORMATKEY_FOURCC,
@@ -287,11 +285,10 @@ union PP_PictureData_Dev {
   PP_Resource sysmem;
   // Structure to define explicitly a GLES2 context.
   struct {
-    // Context allocated using. Use PPB_Context3D_Dev interface to handle this
-    // resource.
+    // Context allocated using PPB_Context3D_Dev.
     PP_Resource context;
     // Texture ID in the given context where picture is stored.
-    GLuint textureId;
+    GLuint texture_id;
   } gles2_texture;
   // Client-specified id for the picture buffer. By using this value client can
   // keep track of the buffers it has assigned to the video decoder and how they
@@ -312,7 +309,7 @@ struct PP_Picture_Dev {
   // information carried over metadata includes timestamps. If there is
   // multiple NAL units each with their own respective metadata, only the
   // metadata from the latest call to Decode will be carried over.
-  void* metadata;
+  void* user_handle;
 };
 
 // Enumeration for error events that may be reported through
@@ -325,6 +322,10 @@ enum PP_VideoDecodeError_Dev {
   PP_VIDEODECODEERROR_UNINITIALIZED,
   // Decoder does not support feature of configuration or bitstream.
   PP_VIDEODECODEERROR_UNSUPPORTED,
+  // Decoder did not get valid input.
+  PP_VIDEODECODERERROR_INVALIDINPUT,
+  // Failure in memory allocation or mapping.
+  PP_VIDEODECODERERROR_MEMFAILURE,
   // Decoder was given bitstream that would result in output pictures but it
   // has not been provided buffers to do all this.
   PP_VIDEODECODEERROR_INSUFFICIENT_BUFFERS,
