@@ -181,8 +181,6 @@
       '-browser.BrowserTest.testWindowResize',
       # no codesign verification on chromeos
       '-codesign',
-      # crosbug.com/9499
-      '-crash_reporter.CrashReporterTest.testRendererCrash',
       # crbug.com/64664
       '-databases.DatabasesTest.testReloadActiveTab',
       '-databases.DatabasesTest.testModificationsPersistAfterRendererCrash',
