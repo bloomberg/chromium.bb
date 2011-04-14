@@ -5,10 +5,4 @@
 
 base_dir=$(dirname "$0")
 
-# Use the batch file as an entry point if on cygwin.
-if [ "${OSTYPE}" = "cygwin" -a "${TERM}" != "xterm" ]; then
-   ${base_dir}/gcl.bat "$@"
-   exit
-fi
-
 exec python "$base_dir/gcl.py" "$@"

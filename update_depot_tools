@@ -47,7 +47,7 @@ get_svn_revision() {
   echo `svn info "$base_dir" | awk '{ if ($1 == "Revision:") { print $2 }}'`
 }
 
-# Update git checkouts prior the cygwin check, we don't want to use msysgit.
+# Update git checkouts.
 if [ "X$DEPOT_TOOLS_UPDATE" != "X0" -a -e "$base_dir/.git" ]
 then
   cd $base_dir
