@@ -60,6 +60,8 @@ void ConflictsUIHTMLSource::StartDataRequest(const std::string& path,
                                              int request_id) {
   // Strings used in the JsTemplate file.
   DictionaryValue localized_strings;
+  localized_strings.SetString("loadingMessage",
+      l10n_util::GetStringUTF16(IDS_CONFLICTS_LOADING_MESSAGE));
   localized_strings.SetString("modulesLongTitle",
       l10n_util::GetStringUTF16(IDS_CONFLICTS_CHECK_PAGE_TITLE_LONG));
   localized_strings.SetString("modulesBlurb",

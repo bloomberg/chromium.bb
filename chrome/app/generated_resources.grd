@@ -4303,6 +4303,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CONFLICTS_HEADER_HELP_TIP" desc="The 'Help tip:' header for each module item in the list">
         Help tip
       </message>
+      <message name="IDS_CONFLICTS_LOADING_MESSAGE" desc="Shown while loading until full list of modules is retrieved">
+        Loading...
+      </message>
       <message name="IDS_CONFLICTS_NOT_LOADED_YET" desc="Shown next to a module that has not been loaded into memory yet">
         Not loaded yet
       </message>
