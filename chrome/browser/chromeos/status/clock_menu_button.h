@@ -11,6 +11,10 @@
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/prefs/pref_member.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_type.h"
 #include "unicode/calendar.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_2.h"
@@ -25,6 +29,7 @@ class StatusAreaHost;
 class ClockMenuButton : public StatusAreaButton,
                         public views::ViewMenuDelegate,
                         public ui::MenuModel,
+                        public NotificationObserver,
                         public PowerLibrary::Observer,
                         public SystemLibrary::Observer {
  public:
@@ -67,6 +72,11 @@ class ClockMenuButton : public StatusAreaButton,
   // changes.
   void UpdateText();
 
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  protected:
   virtual int horizontal_padding() { return 3; }
 
@@ -85,6 +95,8 @@ class ClockMenuButton : public StatusAreaButton,
   scoped_ptr<views::Menu2> clock_menu_;
 
   StatusAreaHost* host_;
+
+  PrefChangeRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ClockMenuButton);
 };

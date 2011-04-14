@@ -193,6 +193,10 @@ static const char* kSynchronizedPreferences[] = {
   // Whether to enable tap-to-click
   //   Settings -> System -> Touchpad
   prefs::kTapToClickEnabled,
+
+  // Whether to use the 24-hour clock format.
+  //   Settings -> System -> Date and Time
+  prefs::kUse24HourClock,
 #endif
 };
 

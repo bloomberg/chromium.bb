@@ -39,6 +39,9 @@ void SystemOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME));
   localized_strings->SetString("timezone",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION));
+  localized_strings->SetString("use_24hour_clock",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_USE_24HOUR_CLOCK_DESCRIPTION));
 
   localized_strings->SetString("touchpad",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_TOUCHPAD));

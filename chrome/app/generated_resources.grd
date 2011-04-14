@@ -9758,6 +9758,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION" desc="In the settings tab, the text next to the timezone combobox.">
         Time zone:
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_USE_24HOUR_CLOCK_DESCRIPTION" desc="In the settings tab, the text next to the checkbox that enables 24-hour clock.">
+        Use 24-hour clock
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_TIMEZONE_DISPLAY_TEMPLATE" desc="In the settings tab, the display template of a timezone in the pull-down list of timezones">
         (<ph name="UTCOffset">$1<ex>UTC-8:00</ex></ph>) <ph name="LongTZName">$2<ex>Pacific Standard Time</ex></ph> (<ph name="ExemplarCity">$3<ex>Los Angeles</ex></ph>)
       </message>

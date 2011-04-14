@@ -97,6 +97,7 @@ extern const char kAudioMute[];
 extern const char kAudioVolume[];
 extern const char kTapToClickEnabled[];
 extern const char kTouchpadSensitivity[];
+extern const char kUse24HourClock[];
 extern const char kLanguageCurrentInputMethod[];
 extern const char kLanguagePreviousInputMethod[];
 extern const char kLanguageHotkeyNextEngineInMenu[];

@@ -10,6 +10,11 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -34,6 +39,11 @@ ClockMenuButton::ClockMenuButton(StatusAreaHost* host)
   // Add as SystemLibrary observer. We update the clock if timezone changes.
   CrosLibrary::Get()->GetSystemLibrary()->AddObserver(this);
   CrosLibrary::Get()->GetPowerLibrary()->AddObserver(this);
+  // Start monitoring the kUse24HourClock preference.
+  if (host->GetProfile()) {  // This can be NULL in the login screen.
+    registrar_.Init(host->GetProfile()->GetPrefs());
+    registrar_.Add(prefs::kUse24HourClock, this);
+  }
 
   set_border(NULL);
   set_use_menu_button_paint(true);
@@ -76,10 +86,35 @@ void ClockMenuButton::UpdateTextAndSetNextTimer() {
 
 void ClockMenuButton::UpdateText() {
   base::Time time(base::Time::Now());
-  SetText(UTF16ToWide(base::TimeFormatTimeOfDay(time)));
+  // If the profie is present, check the use 24-hour clock preference.
+  if (host_->GetProfile()) {  // This can be NULL in the login screen.
+    const bool use_24hour_clock =
+        host_->GetProfile()->GetPrefs()->GetBoolean(prefs::kUse24HourClock);
+    base::HourClockType clock_type = (use_24hour_clock ?
+                                      base::k24HourClock : base::k12HourClock);
+    SetText(UTF16ToWide(base::TimeFormatTimeOfDayWithHourClockType(
+        time, clock_type)));
+  } else {
+    SetText(UTF16ToWide(base::TimeFormatTimeOfDay(time)));
+  }
   SetTooltipText(UTF16ToWide(base::TimeFormatShortDate(time)));
   SchedulePaint();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// ClockMenuButton, NotificationObserver implementation:
+
+void ClockMenuButton::Observe(NotificationType type,
+                              const NotificationSource& source,
+                              const NotificationDetails& details) {
+  if (type == NotificationType::PREF_CHANGED) {
+    std::string* pref_name = Details<std::string>(details).ptr();
+    if (*pref_name == prefs::kUse24HourClock) {
+      UpdateText();
+    }
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // ClockMenuButton, ui::MenuModel implementation:

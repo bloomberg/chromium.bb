@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/preferences.h"
 
+#include "base/i18n/time_formatting.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -42,6 +43,9 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
     prefs->RegisterBooleanPref(prefs::kAccessibilityEnabled, false);
   }
   prefs->RegisterIntegerPref(prefs::kTouchpadSensitivity, 3);
+  // Set the default based on the hour clock type of the current locale.
+  prefs->RegisterBooleanPref(prefs::kUse24HourClock,
+                             base::GetHourClockType() == base::k24HourClock);
   prefs->RegisterStringPref(prefs::kLanguageCurrentInputMethod, "");
   prefs->RegisterStringPref(prefs::kLanguagePreviousInputMethod, "");
   prefs->RegisterStringPref(prefs::kLanguageHotkeyNextEngineInMenu,
@@ -129,6 +133,7 @@ void Preferences::Init(PrefService* prefs) {
   tap_to_click_enabled_.Init(prefs::kTapToClickEnabled, prefs, this);
   accessibility_enabled_.Init(prefs::kAccessibilityEnabled, prefs, this);
   sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, this);
+  use_24hour_clock_.Init(prefs::kUse24HourClock, prefs, this);
   language_hotkey_next_engine_in_menu_.Init(
       prefs::kLanguageHotkeyNextEngineInMenu, prefs, this);
   language_hotkey_previous_engine_.Init(

@@ -87,6 +87,7 @@ class Preferences : public NotificationObserver {
   BooleanPrefMember accessibility_enabled_;
   IntegerPrefMember speed_factor_;
   IntegerPrefMember sensitivity_;
+  BooleanPrefMember use_24hour_clock_;
 
   // Input method preferences.
   StringPrefMember language_hotkey_next_engine_in_menu_;

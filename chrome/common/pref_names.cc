@@ -292,6 +292,9 @@ const char kTapToClickEnabled[] = "settings.touchpad.enable_tap_to_click";
 // A integer pref for the touchpad sensitivity.
 const char kTouchpadSensitivity[] = "settings.touchpad.sensitivity2";
 
+// A boolean pref set to true if time should be displayed in 24-hour clock.
+const char kUse24HourClock[] = "settings.clock.use_24hour_clock";
+
 // A string pref set to the current input method.
 const char kLanguageCurrentInputMethod[] =
     "settings.language.current_input_method";
