@@ -175,32 +175,26 @@ int TemplateURLTableModel::RowCount() {
 string16 TemplateURLTableModel::GetText(int row, int col_id) {
   DCHECK(row >= 0 && row < RowCount());
   const TemplateURL& url = entries_[row]->template_url();
-
-  switch (col_id) {
-    case IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_COLUMN: {
-      string16 url_short_name = url.short_name();
-      // TODO(xji): Consider adding a special case if the short name is a URL,
-      // since those should always be displayed LTR. Please refer to
-      // http://crbug.com/6726 for more information.
-      base::i18n::AdjustStringForLocaleDirection(&url_short_name);
-      if (template_url_model_->GetDefaultSearchProvider() == &url) {
-        return l10n_util::GetStringFUTF16(
-            IDS_SEARCH_ENGINES_EDITOR_DEFAULT_ENGINE,
-            url_short_name);
-      }
-      return url_short_name;
+  if (col_id == IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_COLUMN) {
+    string16 url_short_name = url.short_name();
+    // TODO(xji): Consider adding a special case if the short name is a URL,
+    // since those should always be displayed LTR. Please refer to
+    // http://crbug.com/6726 for more information.
+    base::i18n::AdjustStringForLocaleDirection(&url_short_name);
+    if (template_url_model_->GetDefaultSearchProvider() == &url) {
+      return l10n_util::GetStringFUTF16(
+          IDS_SEARCH_ENGINES_EDITOR_DEFAULT_ENGINE,
+          url_short_name);
     }
-
-    case IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN: {
-      // Keyword should be domain name. Force it to have LTR directionality.
-      string16 keyword = url.keyword();
-      keyword = base::i18n::GetDisplayStringInLTRDirectionality(keyword);
-      return keyword;
-    }
-
-    default:
-      NOTREACHED();
-      return string16();
+    return url_short_name;
+  } else if (col_id == IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN) {
+    // Keyword should be domain name. Force it to have LTR directionality.
+    string16 keyword = url.keyword();
+    keyword = base::i18n::GetDisplayStringInLTRDirectionality(keyword);
+    return keyword;
+  } else {
+    NOTREACHED();
+    return string16();
   }
 }
 

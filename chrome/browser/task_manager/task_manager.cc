@@ -280,107 +280,88 @@ std::pair<int, int> TaskManagerModel::GetGroupRangeForResource(int index)
 
 int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
   CHECK(row1 < ResourceCount() && row2 < ResourceCount());
-  switch (col_id) {
-    case IDS_TASK_MANAGER_PAGE_COLUMN: {
-      // Let's do the default, string compare on the resource title.
-      static icu::Collator* collator = NULL;
-      if (!collator) {
-        UErrorCode create_status = U_ZERO_ERROR;
-        collator = icu::Collator::createInstance(create_status);
-        if (!U_SUCCESS(create_status)) {
-          collator = NULL;
-          NOTREACHED();
-        }
+  if (col_id == IDS_TASK_MANAGER_PAGE_COLUMN) {
+    // Let's do the default, string compare on the resource title.
+    static icu::Collator* collator = NULL;
+    if (!collator) {
+      UErrorCode create_status = U_ZERO_ERROR;
+      collator = icu::Collator::createInstance(create_status);
+      if (!U_SUCCESS(create_status)) {
+        collator = NULL;
+        NOTREACHED();
       }
-      string16 title1 = GetResourceTitle(row1);
-      string16 title2 = GetResourceTitle(row2);
-      UErrorCode compare_status = U_ZERO_ERROR;
-      UCollationResult compare_result = collator->compare(
-          static_cast<const UChar*>(title1.c_str()),
-          static_cast<int>(title1.length()),
-          static_cast<const UChar*>(title2.c_str()),
-          static_cast<int>(title2.length()),
-          compare_status);
-      DCHECK(U_SUCCESS(compare_status));
-      return compare_result;
     }
-
-    case IDS_TASK_MANAGER_NET_COLUMN:
-      return ValueCompare<int64>(GetNetworkUsage(resources_[row1]),
-                                 GetNetworkUsage(resources_[row2]));
-
-    case IDS_TASK_MANAGER_CPU_COLUMN:
-      return ValueCompare<double>(GetCPUUsage(resources_[row1]),
-                                  GetCPUUsage(resources_[row2]));
-
-    case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN: {
-      size_t value1;
-      size_t value2;
-      if (!GetPrivateMemory(row1, &value1) || !GetPrivateMemory(row2, &value2))
-        return 0;
-      return ValueCompare<size_t>(value1, value2);
-    }
-
-    case IDS_TASK_MANAGER_SHARED_MEM_COLUMN: {
-      size_t value1;
-      size_t value2;
-      if (!GetSharedMemory(row1, &value1) || !GetSharedMemory(row2, &value2))
-        return 0;
-      return ValueCompare<size_t>(value1, value2);
-    }
-
-    case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN: {
-      size_t value1;
-      size_t value2;
-      if (!GetPhysicalMemory(row1, &value1) ||
-          !GetPhysicalMemory(row2, &value2))
-        return 0;
-      return ValueCompare<size_t>(value1, value2);
-    }
-
-    case IDS_TASK_MANAGER_PROCESS_ID_COLUMN: {
-      int proc1_id = base::GetProcId(resources_[row1]->GetProcess());
-      int proc2_id = base::GetProcId(resources_[row2]->GetProcess());
-      return ValueCompare<int>(proc1_id, proc2_id);
-    }
-
-    case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
-    case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
-    case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN: {
-      WebKit::WebCache::ResourceTypeStats stats1 = { { 0 } };
-      WebKit::WebCache::ResourceTypeStats stats2 = { { 0 } };
-      if (resources_[row1]->ReportsCacheStats())
-        stats1 = resources_[row1]->GetWebCoreCacheStats();
-      if (resources_[row2]->ReportsCacheStats())
-        stats2 = resources_[row2]->GetWebCoreCacheStats();
-      if (IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN == col_id)
-        return ValueCompare<size_t>(stats1.images.size, stats2.images.size);
-      if (IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN == col_id)
-        return ValueCompare<size_t>(stats1.scripts.size, stats2.scripts.size);
-      DCHECK_EQ(IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN, col_id);
-      return ValueCompare<size_t>(stats1.cssStyleSheets.size,
-                                  stats2.cssStyleSheets.size);
-    }
-
-    case IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN: {
-      return ValueCompare<int>(GetGoatsTeleported(row1),
-                               GetGoatsTeleported(row2));
-    }
-
-    case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN: {
-      size_t value1;
-      size_t value2;
-      bool reports_v8_memory1 = GetV8Memory(row1, &value1);
-      bool reports_v8_memory2 = GetV8Memory(row2, &value2);
-      if (reports_v8_memory1 == reports_v8_memory2)
-        return ValueCompare<size_t>(value1, value2);
-      else
-        return reports_v8_memory1 ? 1 : -1;
-    }
-
-    default:
-      NOTREACHED();
+    string16 title1 = GetResourceTitle(row1);
+    string16 title2 = GetResourceTitle(row2);
+    UErrorCode compare_status = U_ZERO_ERROR;
+    UCollationResult compare_result = collator->compare(
+        static_cast<const UChar*>(title1.c_str()),
+        static_cast<int>(title1.length()),
+        static_cast<const UChar*>(title2.c_str()),
+        static_cast<int>(title2.length()),
+        compare_status);
+    DCHECK(U_SUCCESS(compare_status));
+    return compare_result;
+  } else if (col_id == IDS_TASK_MANAGER_NET_COLUMN) {
+    return ValueCompare<int64>(GetNetworkUsage(resources_[row1]),
+                               GetNetworkUsage(resources_[row2]));
+  } else if (col_id == IDS_TASK_MANAGER_CPU_COLUMN) {
+    return ValueCompare<double>(GetCPUUsage(resources_[row1]),
+                                GetCPUUsage(resources_[row2]));
+  } else if (col_id == IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN) {
+    size_t value1;
+    size_t value2;
+    if (!GetPrivateMemory(row1, &value1) || !GetPrivateMemory(row2, &value2))
       return 0;
+    return ValueCompare<size_t>(value1, value2);
+  } else if (col_id == IDS_TASK_MANAGER_SHARED_MEM_COLUMN) {
+    size_t value1;
+    size_t value2;
+    if (!GetSharedMemory(row1, &value1) || !GetSharedMemory(row2, &value2))
+      return 0;
+    return ValueCompare<size_t>(value1, value2);
+  } else if (col_id == IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN) {
+    size_t value1;
+    size_t value2;
+    if (!GetPhysicalMemory(row1, &value1) ||
+        !GetPhysicalMemory(row2, &value2))
+      return 0;
+    return ValueCompare<size_t>(value1, value2);
+  } else if (col_id == IDS_TASK_MANAGER_PROCESS_ID_COLUMN) {
+    int proc1_id = base::GetProcId(resources_[row1]->GetProcess());
+    int proc2_id = base::GetProcId(resources_[row2]->GetProcess());
+    return ValueCompare<int>(proc1_id, proc2_id);
+  } else if (col_id == IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN ||
+             col_id == IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN ||
+             col_id == IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN) {
+    WebKit::WebCache::ResourceTypeStats stats1 = { { 0 } };
+    WebKit::WebCache::ResourceTypeStats stats2 = { { 0 } };
+    if (resources_[row1]->ReportsCacheStats())
+      stats1 = resources_[row1]->GetWebCoreCacheStats();
+    if (resources_[row2]->ReportsCacheStats())
+      stats2 = resources_[row2]->GetWebCoreCacheStats();
+    if (IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN == col_id)
+      return ValueCompare<size_t>(stats1.images.size, stats2.images.size);
+    if (IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN == col_id)
+      return ValueCompare<size_t>(stats1.scripts.size, stats2.scripts.size);
+    DCHECK_EQ(IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN, col_id);
+    return ValueCompare<size_t>(stats1.cssStyleSheets.size,
+                                stats2.cssStyleSheets.size);
+  } else if (col_id == IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN) {
+    return ValueCompare<int>(GetGoatsTeleported(row1),
+                             GetGoatsTeleported(row2));
+  } else if (col_id == IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN) {
+    size_t value1;
+    size_t value2;
+    bool reports_v8_memory1 = GetV8Memory(row1, &value1);
+    bool reports_v8_memory2 = GetV8Memory(row2, &value2);
+    if (reports_v8_memory1 == reports_v8_memory2)
+      return ValueCompare<size_t>(value1, value2);
+    else
+      return reports_v8_memory1 ? 1 : -1;
+  } else {
+    NOTREACHED();
+    return 0;
   }
 }
 
