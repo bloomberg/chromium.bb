@@ -221,6 +221,9 @@
       '-plugins',
 
       # Local http server not working on chromeos.  crosbug.com/12641
+      '-popups.PopupsTest.testMultiplePopups',
+      '-popups.PopupsTest.testPopupBlockedEverySec',
+      '-popups.PopupsTest.testPopupsLaunchUponBrowserBackButton',
       '-test_basic.SimpleTest.testHTTP',
 
       # file:/// urls not prompting geolocation infobar on chromeos.
