@@ -16,7 +16,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "content/common/notification_service.h"
 
 #if defined(OS_WIN)
@@ -132,12 +131,6 @@ ConfigurationPolicyProvider*
 #endif
 }
 
-// static
-void BrowserPolicyConnector::RegisterPrefs(PrefService* local_state) {
-  local_state->RegisterIntegerPref(prefs::kPolicyDevicePolicyRefreshRate,
-                                   kDefaultPolicyRefreshRateInMilliseconds);
-}
-
 void BrowserPolicyConnector::SetCredentials(const std::string& owner_email,
                                             const std::string& gaia_token) {
 #if defined(OS_CHROMEOS)
@@ -195,11 +188,8 @@ void BrowserPolicyConnector::Initialize(
   // TODO(jkummerow, mnissler): Move this out of the browser startup path.
   DCHECK(local_state);
   DCHECK(request_context);
-  if (cloud_policy_subsystem_.get()) {
-    cloud_policy_subsystem_->Initialize(local_state,
-                                        prefs::kPolicyDevicePolicyRefreshRate,
-                                        request_context);
-  }
+  if (cloud_policy_subsystem_.get())
+    cloud_policy_subsystem_->Initialize(local_state, request_context);
 }
 
 }  // namespace

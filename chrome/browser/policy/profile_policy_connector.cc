@@ -14,7 +14,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
@@ -66,7 +65,6 @@ void ProfilePolicyConnector::Initialize() {
   // TODO(jkummerow, mnissler): Move this out of the browser startup path.
   if (cloud_policy_subsystem_.get()) {
     cloud_policy_subsystem_->Initialize(profile_->GetPrefs(),
-                                        prefs::kPolicyUserPolicyRefreshRate,
                                         profile_->GetRequestContext());
   }
 }
@@ -90,12 +88,6 @@ ConfigurationPolicyProvider*
     return cloud_policy_subsystem_->GetRecommendedPolicyProvider();
 
   return NULL;
-}
-
-// static
-void ProfilePolicyConnector::RegisterPrefs(PrefService* user_prefs) {
-  user_prefs->RegisterIntegerPref(prefs::kPolicyUserPolicyRefreshRate,
-                                  kDefaultPolicyRefreshRateInMilliseconds);
 }
 
 }  // namespace policy

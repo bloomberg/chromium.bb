@@ -15,12 +15,17 @@
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/device_token_fetcher.h"
 #include "chrome/browser/policy/policy_notifier.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
 
 namespace {
+
+// Default refresh rate.
+const int kDefaultPolicyRefreshRateMs = 3 * 60 * 60 * 1000;  // 3 hours.
 
 // Refresh rate sanity interval bounds.
 const int64 kPolicyRefreshRateMinMs = 30 * 60 * 1000;  // 30 minutes
@@ -80,7 +85,6 @@ CloudPolicySubsystem::~CloudPolicySubsystem() {
 
 void CloudPolicySubsystem::Initialize(
     PrefService* prefs,
-    const char* refresh_rate_pref_name,
     net::URLRequestContextGetter* request_context) {
   DCHECK(!prefs_);
   prefs_ = prefs;
@@ -88,7 +92,7 @@ void CloudPolicySubsystem::Initialize(
   if (device_management_service_.get())
     device_management_service_->Initialize(request_context);
 
-  policy_refresh_rate_.Init(refresh_rate_pref_name, prefs_, this);
+  policy_refresh_rate_.Init(prefs::kPolicyRefreshRate, prefs_, this);
   UpdatePolicyRefreshRate();
 }
 
@@ -127,6 +131,12 @@ ConfigurationPolicyProvider*
     return cloud_policy_cache_->GetRecommendedPolicyProvider();
 
   return NULL;
+}
+
+// static
+void CloudPolicySubsystem::RegisterPrefs(PrefService* pref_service) {
+  pref_service->RegisterIntegerPref(prefs::kPolicyRefreshRate,
+                                    kDefaultPolicyRefreshRateMs);
 }
 
 void CloudPolicySubsystem::UpdatePolicyRefreshRate() {

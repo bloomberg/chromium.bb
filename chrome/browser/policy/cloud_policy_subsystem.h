@@ -74,7 +74,6 @@ class CloudPolicySubsystem : public NotificationObserver {
 
   // Initializes the subsystem.
   void Initialize(PrefService* prefs,
-                  const char* refresh_rate_pref_name,
                   net::URLRequestContextGetter* request_context);
 
   // Shuts the subsystem down. This must be called before threading and network
@@ -91,6 +90,9 @@ class CloudPolicySubsystem : public NotificationObserver {
 
   ConfigurationPolicyProvider* GetManagedPolicyProvider();
   ConfigurationPolicyProvider* GetRecommendedPolicyProvider();
+
+  // Registers cloud policy related prefs.
+  static void RegisterPrefs(PrefService* pref_service);
 
  private:
   // Updates the policy controller with a new refresh rate value.

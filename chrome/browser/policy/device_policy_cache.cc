@@ -19,6 +19,19 @@
 
 using google::protobuf::RepeatedPtrField;
 
+// Decodes a protobuf integer to an IntegerValue. The caller assumes ownership
+// of the return Value*. Returns NULL in case the input value is out of bounds.
+static Value* DecodeIntegerValue(google::protobuf::int64 value) {
+  if (value < std::numeric_limits<int>::min() ||
+      value > std::numeric_limits<int>::max()) {
+    LOG(WARNING) << "Integer value " << value
+                 << " out of numeric limits, ignoring.";
+    return NULL;
+  }
+
+  return Value::CreateIntegerValue(static_cast<int>(value));
+}
+
 namespace policy {
 
 DevicePolicyCache::DevicePolicyCache(
@@ -143,8 +156,14 @@ void DevicePolicyCache::DecodeDevicePolicy(
     const em::ChromeDeviceSettingsProto& policy,
     PolicyMap* mandatory,
     PolicyMap* recommended) {
-  // TODO(jkummerow): Implement this when there are consumers for
-  // device-policy-set values in g_browser_process->local_state().
+  if (policy.has_policy_refresh_rate()) {
+    const em::DevicePolicyRefreshRateProto container =
+        policy.policy_refresh_rate();
+    if (container.has_policy_refresh_rate()) {
+      mandatory->Set(kPolicyPolicyRefreshRate,
+                     DecodeIntegerValue(container.policy_refresh_rate()));
+    }
+  }
 }
 
 }  // namespace policy

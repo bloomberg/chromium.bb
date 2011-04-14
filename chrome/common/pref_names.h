@@ -238,8 +238,7 @@ extern const char kEnableBookmarkBar[];
 extern const char kPinnedTabs[];
 extern const char kHttpThrottlingEnabled[];
 
-extern const char kPolicyUserPolicyRefreshRate[];
-extern const char kPolicyDevicePolicyRefreshRate[];
+extern const char kPolicyRefreshRate[];
 
 extern const char kDisable3DAPIs[];
 extern const char kEnableHyperlinkAuditing[];

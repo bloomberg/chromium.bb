@@ -37,11 +37,6 @@ class ProfilePolicyConnector {
   ConfigurationPolicyProvider* GetManagedCloudProvider();
   ConfigurationPolicyProvider* GetRecommendedCloudProvider();
 
-  static void RegisterPrefs(PrefService* user_prefs);
-
-  static const int kDefaultPolicyRefreshRateInMilliseconds =
-      3 * 60 * 60 * 1000;  // 3 hours.
-
  private:
   Profile* profile_;
 

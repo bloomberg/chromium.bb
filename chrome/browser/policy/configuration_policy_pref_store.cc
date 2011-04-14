@@ -262,7 +262,7 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
   { Value::TYPE_BOOLEAN, kPolicyDisablePluginFinder,
     prefs::kDisablePluginFinder },
   { Value::TYPE_INTEGER, kPolicyPolicyRefreshRate,
-    prefs::kPolicyUserPolicyRefreshRate },
+    prefs::kPolicyRefreshRate },
   { Value::TYPE_BOOLEAN, kPolicyInstantEnabled, prefs::kInstantEnabled },
   { Value::TYPE_BOOLEAN, kPolicyDefaultBrowserSettingEnabled,
     prefs::kDefaultBrowserSettingEnabled },

@@ -31,9 +31,6 @@ class DevicePolicyIdentityStrategy;
 // platform policy providers.
 class BrowserPolicyConnector : public NotificationObserver {
  public:
-  static const int kDefaultPolicyRefreshRateInMilliseconds =
-      3 * 60 * 60 * 1000;  // 3 hours.
-
   BrowserPolicyConnector();
   ~BrowserPolicyConnector();
 
@@ -48,8 +45,6 @@ class BrowserPolicyConnector : public NotificationObserver {
   CloudPolicySubsystem* cloud_policy_subsystem() {
     return cloud_policy_subsystem_.get();
   }
-
-  static void RegisterPrefs(PrefService* user_prefs);
 
   // Used to set the credentials stored in the identity strategy associated
   // with this policy connector.
