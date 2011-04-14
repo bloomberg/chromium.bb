@@ -6,8 +6,8 @@
 
 #include <math.h>
 
-#include "chrome/renderer/render_thread.h"
 #include "content/common/audio_messages.h"
+#include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "media/base/filter_host.h"
 

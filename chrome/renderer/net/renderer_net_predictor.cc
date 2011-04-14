@@ -14,7 +14,7 @@
 #include "chrome/common/net/predictor_common.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/net/predictor_queue.h"
-#include "chrome/renderer/render_thread.h"
+#include "content/renderer/render_thread.h"
 
 // The number of hostnames submitted to Browser DNS resolver per call to
 // SubmitHostsnames() (which reads names from our queue).

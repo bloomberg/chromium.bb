@@ -6,7 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "content/common/view_messages.h"
-#include "chrome/renderer/render_thread.h"
+#include "content/renderer/render_thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCookie.h"
 #include "webkit/glue/webcookie.h"
 

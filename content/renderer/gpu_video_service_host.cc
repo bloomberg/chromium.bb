@@ -4,9 +4,9 @@
 
 #include "content/renderer/gpu_video_service_host.h"
 
-#include "chrome/renderer/render_thread.h"
 #include "content/renderer/gpu_video_decoder_host.h"
 #include "content/common/gpu_messages.h"
+#include "content/renderer/render_thread.h"
 #include "content/renderer/video_decode_accelerator_host.h"
 #include "media/video/video_decode_accelerator.h"
 

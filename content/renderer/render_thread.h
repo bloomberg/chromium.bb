@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_RENDER_THREAD_H_
-#define CHROME_RENDERER_RENDER_THREAD_H_
+#ifndef CONTENT_RENDERER_RENDER_THREAD_H_
+#define CONTENT_RENDERER_RENDER_THREAD_H_
 #pragma once
 
 #include <set>
@@ -326,4 +326,4 @@ class RenderThread : public RenderThreadBase,
   DISALLOW_COPY_AND_ASSIGN(RenderThread);
 };
 
-#endif  // CHROME_RENDERER_RENDER_THREAD_H_
+#endif  // CONTENT_RENDERER_RENDER_THREAD_H_

@@ -5,11 +5,11 @@
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 
 #include "base/message_loop.h"
-#include "chrome/renderer/render_thread.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/renderer_gl_context.h"
 #include "content/renderer/gpu_channel_host.h"
 #include "content/renderer/pepper_platform_context_3d_impl.h"
-#include "content/common/view_messages.h"
+#include "content/renderer/render_thread.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"

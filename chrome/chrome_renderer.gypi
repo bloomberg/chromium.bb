@@ -123,8 +123,6 @@
         'renderer/render_process.h',
         'renderer/render_process_impl.cc',
         'renderer/render_process_impl.h',
-        'renderer/render_thread.cc',
-        'renderer/render_thread.h',
         'renderer/renderer_glue.cc',
         'renderer/renderer_histogram_snapshots.cc',
         'renderer/renderer_histogram_snapshots.h',

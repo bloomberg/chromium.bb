@@ -8,11 +8,11 @@
 #include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "base/task.h"
-#include "chrome/renderer/render_thread.h"
 #include "content/common/gpu_messages.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/plugin_channel_host.h"
+#include "content/renderer/render_thread.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "ui/gfx/size.h"
 

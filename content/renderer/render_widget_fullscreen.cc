@@ -4,8 +4,8 @@
 
 #include "content/renderer/render_widget_fullscreen.h"
 
-#include "chrome/renderer/render_thread.h"
 #include "content/common/view_messages.h"
+#include "content/renderer/render_thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
 
 using WebKit::WebWidget;

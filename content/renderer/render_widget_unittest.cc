@@ -7,7 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/renderer/mock_render_process.h"
 #include "chrome/renderer/mock_render_thread.h"
-#include "chrome/renderer/render_thread.h"
+#include "content/renderer/render_thread.h"
 #include "content/renderer/render_widget.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 

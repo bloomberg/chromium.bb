@@ -28,7 +28,7 @@
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
-#include "chrome/renderer/render_thread.h"
+#include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "content/renderer/render_view_visitor.h"
 #include "grit/common_resources.h"

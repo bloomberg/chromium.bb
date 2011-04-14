@@ -4,8 +4,8 @@
 
 #include "content/renderer/pepper_platform_context_3d_impl.h"
 
-#include "chrome/renderer/render_thread.h"
 #include "content/renderer/command_buffer_proxy.h"
+#include "content/renderer/render_thread.h"
 #include "content/renderer/renderer_gl_context.h"
 #include "content/renderer/gpu_channel_host.h"
 #include "googleurl/src/gurl.h"

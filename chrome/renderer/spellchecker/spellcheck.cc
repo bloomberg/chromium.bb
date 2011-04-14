@@ -11,7 +11,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
-#include "chrome/renderer/render_thread.h"
+#include "content/renderer/render_thread.h"
 #include "third_party/hunspell/src/hunspell/hunspell.hxx"
 
 using base::TimeTicks;

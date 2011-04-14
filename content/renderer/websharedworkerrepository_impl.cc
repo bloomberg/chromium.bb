@@ -4,8 +4,8 @@
 
 #include "content/renderer/websharedworkerrepository_impl.h"
 
-#include "chrome/renderer/render_thread.h"
 #include "content/common/view_messages.h"
+#include "content/renderer/render_thread.h"
 #include "content/renderer/websharedworker_proxy.h"
 
 WebSharedWorkerRepositoryImpl::WebSharedWorkerRepositoryImpl() {}
