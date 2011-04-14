@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -86,7 +86,7 @@ class InlinedData:
     self.inlined_data = inlined_data
     self.inlined_files = inlined_files
 
-def DoInline(input_filename, grd_node):
+def DoInline(input_filename, grd_node, allow_external_script=False):
   """Helper function that inlines the resources in a specified file.
 
   Reads input_filename, finds all the src attributes and attempts to
@@ -213,11 +213,14 @@ def DoInline(input_filename, grd_node):
                   lambda m: SrcReplace(m, filepath),
                   text)
 
-  # We need to inline css and js before we inline images so that image
-  # references gets inlined in the css and js
-  flat_text = re.sub('<script .*?src="(?P<filename>[^"\']*)".*?></script>',
-                     InlineScript,
-                     ReadFile(input_filename))
+  flat_text = ReadFile(input_filename)
+
+  if not allow_external_script:
+    # We need to inline css and js before we inline images so that image
+    # references gets inlined in the css and js
+    flat_text = re.sub('<script .*?src="(?P<filename>[^"\']*)".*?></script>',
+                       InlineScript,
+                       flat_text)
 
   flat_text = re.sub(
       '<link rel="stylesheet".+?href="(?P<filename>[^"]*)".*?>',
@@ -232,8 +235,7 @@ def DoInline(input_filename, grd_node):
   # Check conditional elements, remove unsatisfied ones from the file.
   flat_text = CheckConditionalElements(flat_text)
 
-  # TODO(glen): Make this regex not match src="" text that is not inside a tag
-  flat_text = re.sub('src="(?P<filename>[^"\']*)"',
+  flat_text = re.sub('<(?!script)[^>]+?src="(?P<filename>[^"\']*)"',
                      SrcReplace,
                      flat_text)
 
@@ -247,7 +249,7 @@ def DoInline(input_filename, grd_node):
   return InlinedData(flat_text, inlined_files)
 
 
-def InlineToString(input_filename, grd_node):
+def InlineToString(input_filename, grd_node, allow_external_script=False):
   """Inlines the resources in a specified file and returns it as a string.
 
   Args:
@@ -257,7 +259,9 @@ def InlineToString(input_filename, grd_node):
     the inlined data as a string
   """
   try:
-    return DoInline(input_filename, grd_node).inlined_data
+    return DoInline(input_filename,
+                    grd_node,
+                    allow_external_script=allow_external_script).inlined_data
   except IOError, e:
     raise Exception("Failed to open %s while trying to flatten %s. (%s)" %
                     (e.filename, input_filename, e.strerror))
