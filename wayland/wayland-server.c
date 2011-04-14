@@ -244,11 +244,7 @@ wl_client_create(struct wl_display *display, int fd)
 	wl_display_post_range(display, client);
 
 	wl_list_for_each(global, &display->global_list, link)
-		wl_client_post_event(client, &client->display->object,
-				     WL_DISPLAY_GLOBAL,
-				     global->object,
-				     global->object->interface->name,
-				     global->object->interface->version);
+		wl_client_post_global(client, global->object);
 
 	return client;
 }
