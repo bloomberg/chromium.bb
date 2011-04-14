@@ -101,6 +101,8 @@ const char kChromeUITextfieldsURL[] = "chrome://textfields/";
 const char kChromeUIAboutOSCreditsURL[] = "chrome://about/os-credits";
 const char kChromeUIActivationMessage[] = "chrome://activationmessage/";
 const char kChromeUIFileBrowseURL[] = "chrome://filebrowse/";
+const char kChromeUIChooseMobileNetworkURL[] =
+    "chrome://choose-mobile-network/";
 const char kChromeUICollectedCookiesURL[] = "chrome://collected-cookies/";
 const char kChromeUIHttpAuthURL[] = "chrome://http-auth/";
 const char kChromeUIImageBurnerURL[] = "chrome://imageburner/";
@@ -151,6 +153,7 @@ const char kChromeUIThumbnailPath[] = "thumb";
 
 #if defined(OS_CHROMEOS)
 const char kChromeUIActivationMessageHost[] = "activationmessage";
+const char kChromeUIChooseMobileNetworkHost[] = "choose-mobile-network";
 const char kChromeUICollectedCookiesHost[] = "collected-cookies";
 const char kChromeUIFileBrowseHost[] = "filebrowse";
 const char kChromeUIHttpAuthHost[] = "http-auth";

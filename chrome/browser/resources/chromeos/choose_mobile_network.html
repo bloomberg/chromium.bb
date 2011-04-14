@@ -1,0 +1,64 @@
+<!DOCTYPE HTML>
+<html i18n-values="dir:textdirection">
+<head>
+<title i18n-content="title"></title>
+<link rel="stylesheet" href="chrome://resources/css/button.css">
+<link rel="stylesheet" href="mobile_dialogs.css">
+<link rel="stylesheet" href="choose_mobile_network.css">
+<script src="chrome://resources/js/cr.js"></script>
+<script src="chrome://resources/js/cr/event_target.js"></script>
+<script src="chrome://resources/js/local_strings.js"></script>
+<script src="chrome://resources/js/util.js"></script>
+<script src="choose_mobile_network.js"></script>
+<script>
+var ChooseNetwork = mobile.ChooseNetwork;
+
+function load() {
+  // TODO(dpolukhin): refactor spinner code&css to be reusable.
+  // Setup css canvas 'spinner-circle'
+  (function() {
+    var lineWidth = 3;
+    var r = 8;
+    var ctx = document.getCSSCanvasContext(
+        '2d', 'spinner-circle', 2 * r, 2 * r);
+
+    ctx.lineWidth = lineWidth;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    ctx.strokeStyle = '#4e73c7';
+    ctx.beginPath();
+    ctx.moveTo(lineWidth / 2, r - lineWidth / 2);
+    ctx.arc(r, r, r - lineWidth / 2, Math.PI, Math.PI * 3 / 2);
+    ctx.stroke();
+  })();
+
+  ChooseNetwork.initialize();
+}
+
+document.addEventListener('DOMContentLoaded', load);
+</script>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily;">
+  <div id="container" class="container">
+    <div id="choose-mobile-network" class="dialog">
+      <h1 i18n-content="chooseNetworkTitle"></h1>
+      <div id="scanning" class="content-area">
+        <div id="spinner" class="spinner"></div>
+        <div class="scanning-msg" i18n-content="scanningMsgLine1"></div>
+        <div class="scanning-msg" i18n-content="scanningMsgLine2"></div>
+      </div>
+      <div id="choosing" class="content-area" hidden>
+      </div>
+      <div class="action-area">
+        <div class="action-area-right">
+          <div class="button-strip">
+            <button id="connect" i18n-content="connect" ></button>
+            <button id="cancel" i18n-content="cancel"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

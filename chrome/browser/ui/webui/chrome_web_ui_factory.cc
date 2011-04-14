@@ -38,6 +38,7 @@
 #include "googleurl/src/gurl.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/chromeos/choose_mobile_network_ui.h"
 #include "chrome/browser/ui/webui/chromeos/enterprise_enrollment_ui.h"
 #include "chrome/browser/ui/webui/chromeos/imageburner_ui.h"
 #include "chrome/browser/ui/webui/chromeos/keyboard_overlay_ui.h"
@@ -179,6 +180,8 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
 #endif
 
 #if defined(OS_CHROMEOS)
+  if (url.host() == chrome::kChromeUIChooseMobileNetworkHost)
+    return &NewWebUI<chromeos::ChooseMobileNetworkUI>;
   if (url.host() == chrome::kChromeUICollectedCookiesHost ||
       url.host() == chrome::kChromeUIHttpAuthHost) {
     return &NewWebUI<ConstrainedHtmlUI>;

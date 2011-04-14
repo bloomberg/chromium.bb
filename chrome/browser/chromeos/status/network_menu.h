@@ -75,10 +75,6 @@ class NetworkMenu : public views::ViewMenuDelegate,
   NetworkMenu();
   virtual ~NetworkMenu();
 
-  // Retrieves network info for the WebUI NetworkMenu (NetworkMenuUI).
-  // |index| is the index in menu_items_, set when the menu is built.
-  bool GetNetworkAt(int index, NetworkInfo* info) const;
-
   // Connect or reconnect to the network at |index|.
   // If remember >= 0, set the favorite state of the network.
   // Returns true if a connect occurred (e.g. menu should be closed).
@@ -173,17 +169,18 @@ class NetworkMenu : public views::ViewMenuDelegate,
 
  private:
   enum MenuItemFlags {
-    FLAG_DISABLED          = 1 << 0,
-    FLAG_TOGGLE_ETHERNET   = 1 << 1,
-    FLAG_TOGGLE_WIFI       = 1 << 2,
-    FLAG_TOGGLE_CELLULAR   = 1 << 3,
-    FLAG_TOGGLE_OFFLINE    = 1 << 4,
-    FLAG_ASSOCIATED        = 1 << 5,
-    FLAG_ETHERNET          = 1 << 6,
-    FLAG_WIFI              = 1 << 7,
-    FLAG_CELLULAR          = 1 << 8,
-    FLAG_OPTIONS           = 1 << 9,
-    FLAG_OTHER_NETWORK     = 1 << 10,
+    FLAG_DISABLED               = 1 << 0,
+    FLAG_TOGGLE_ETHERNET        = 1 << 1,
+    FLAG_TOGGLE_WIFI            = 1 << 2,
+    FLAG_TOGGLE_CELLULAR        = 1 << 3,
+    FLAG_TOGGLE_OFFLINE         = 1 << 4,
+    FLAG_ASSOCIATED             = 1 << 5,
+    FLAG_ETHERNET               = 1 << 6,
+    FLAG_WIFI                   = 1 << 7,
+    FLAG_CELLULAR               = 1 << 8,
+    FLAG_OPTIONS                = 1 << 9,
+    FLAG_OTHER_WIFI_NETWORK     = 1 << 10,
+    FLAG_OTHER_CELLULAR_NETWORK = 1 << 11,
   };
 
   struct MenuItem {
@@ -220,7 +217,8 @@ class NetworkMenu : public views::ViewMenuDelegate,
   void ShowNetworkConfigView(NetworkConfigView* view) const;
 
   void ActivateCellular(const CellularNetwork* cellular) const;
-  void ShowOther() const;
+  void ShowOtherWifi() const;
+  void ShowOtherCellular() const;
 
   // Set to true if we are currently refreshing the menu.
   bool refreshing_menu_;

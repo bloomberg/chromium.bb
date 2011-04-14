@@ -1112,6 +1112,21 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
         false));
   }
 
+  // Add "Other WiFi network..." if wifi is enabled.
+  if (cros->wifi_enabled()) {
+    list->Append(GetNetwork(
+        kOtherNetworksFakePath,
+        *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK),
+        l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS),
+        false,
+        false,
+        true,
+        chromeos::TYPE_WIFI,
+        false,
+        chromeos::ACTIVATION_STATE_UNKNOWN,
+        false));
+  }
+
   const chromeos::CellularNetworkVector cellular_networks =
       cros->cellular_networks();
   for (chromeos::CellularNetworkVector::const_iterator it =
@@ -1133,21 +1148,6 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
         false,
         (*it)->activation_state(),
         (*it)->restricted_pool()));
-  }
-
-  // Add "Other..." if wifi is enabled.
-  if (cros->wifi_enabled()) {
-    list->Append(GetNetwork(
-        kOtherNetworksFakePath,
-        *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK),
-        l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS),
-        false,
-        false,
-        true,
-        chromeos::TYPE_WIFI,
-        false,
-        chromeos::ACTIVATION_STATE_UNKNOWN,
-        false));
   }
 
   return list;

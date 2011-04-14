@@ -8,6 +8,7 @@
 
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/sim_unlock_dialog_delegate.h"
 #include "chrome/browser/ui/browser.h"
@@ -23,19 +24,6 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/window/window.h"
-
-namespace {
-// Constants passed to Javascript:
-static const char* kNetworkTypeEthernet = "ethernet";
-static const char* kNetworkTypeWifi = "wifi";
-static const char* kNetworkTypeCellular = "cellular";
-static const char* kNetworkTypeOther = "other";
-
-static const char* kNetworkStatusConnected = "connected";
-static const char* kNetworkStatusConnecting = "connecting";
-static const char* kNetworkStatusDisconnected = "disconnected";
-static const char* kNetworkStatusError = "error";
-}
 
 namespace chromeos {
 
@@ -95,104 +83,6 @@ NetworkMenu::NetworkMenu()
 NetworkMenu::~NetworkMenu() {
 }
 
-bool NetworkMenu::GetNetworkAt(int index, NetworkInfo* info) const {
-  DCHECK(info);
-  bool res = true;  // True unless a network doesn't exist.
-  int flags = menu_items_[index].flags;
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
-  if (flags & FLAG_ETHERNET) {
-    info->network_type = kNetworkTypeEthernet;
-    if (cros->ethernet_connected()) {
-      info->status = kNetworkStatusConnected;
-      info->ip_address = cros->ethernet_network() ?
-          cros->ethernet_network()->ip_address() : std::string();
-    }
-    info->need_passphrase = false;
-    info->remembered = true;
-  } else if (flags & FLAG_WIFI) {
-    const WifiNetwork* wifi = cros->FindWifiNetworkByPath(
-        menu_items_[index].wireless_path);
-    if (wifi) {
-      info->network_type = kNetworkTypeWifi;
-      if (cros->wifi_network() &&
-          wifi->service_path() == cros->wifi_network()->service_path()) {
-        if (cros->wifi_connected()) {
-          info->status = kNetworkStatusConnected;
-          info->message = l10n_util::GetStringUTF8(
-              IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED);
-        } else if (cros->wifi_connecting()) {
-          info->status = kNetworkStatusConnecting;
-          info->message = l10n_util::GetStringUTF8(
-              IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING);
-        } else if (wifi->state() == STATE_FAILURE) {
-          info->status = kNetworkStatusError;
-          info->message = wifi->GetErrorString();
-        } else {
-          info->status = kNetworkStatusDisconnected;
-          info->message = l10n_util::GetStringUTF8(
-              IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED);
-        }
-      } else {
-        info->status = kNetworkStatusDisconnected;
-        info->message = l10n_util::GetStringUTF8(
-            IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED);
-      }
-      info->need_passphrase = wifi->IsPassphraseRequired();
-      info->ip_address = wifi->ip_address();
-      info->remembered = wifi->favorite();
-      info->auto_connect = wifi->auto_connect();
-    } else {
-      res = false;  // Network not found, hide entry.
-    }
-  } else if (flags & FLAG_CELLULAR) {
-    const CellularNetwork* cellular = cros->FindCellularNetworkByPath(
-        menu_items_[index].wireless_path);
-    if (cellular) {
-      info->network_type = kNetworkTypeCellular;
-      if (cros->cellular_network() && cellular->service_path() ==
-          cros->cellular_network()->service_path()) {
-        if (cros->cellular_connected()) {
-          info->status = kNetworkStatusConnected;
-          info->message = l10n_util::GetStringUTF8(
-              IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED);
-        } else if (cros->cellular_connecting()) {
-          // TODO(stevenjb): Eliminate status message, or localize properly.
-          info->status = kNetworkStatusConnecting;
-          info->message = l10n_util::GetStringUTF8(
-              IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING)
-              + ": " + cellular->GetStateString();
-        } else if (cellular->state() == STATE_FAILURE) {
-          info->status = kNetworkStatusError;
-          info->message = cellular->GetErrorString();
-        } else {
-          info->status = kNetworkStatusDisconnected;
-          info->message = l10n_util::GetStringUTF8(
-              IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED);
-        }
-      } else {
-        info->status = kNetworkStatusDisconnected;
-        info->message = l10n_util::GetStringUTF8(
-            IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED);
-      }
-      info->ip_address = cellular->ip_address();
-      info->need_passphrase = false;
-      info->remembered = true;
-    } else {
-      res = false;  // Network not found, hide entry.
-    }
-  } else if (flags & FLAG_OTHER_NETWORK) {
-    info->status = kNetworkStatusDisconnected;
-    info->message = l10n_util::GetStringUTF8(
-        IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED);
-    info->network_type = kNetworkTypeOther;
-    info->need_passphrase = true;
-    info->remembered = true;
-  } else {
-    // Not a network, e.g options, separator.
-  }
-  return res;
-}
-
 bool NetworkMenu::ConnectToNetworkAt(int index,
                                      const std::string& passphrase,
                                      const std::string& ssid,
@@ -248,8 +138,10 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
       // display a notification.
       // TODO(stevenjb): Show notification.
     }
-  } else if (flags & FLAG_OTHER_NETWORK) {
-    ShowOther();
+  } else if (flags & FLAG_OTHER_WIFI_NETWORK) {
+    ShowOtherWifi();
+  } else if (flags & FLAG_OTHER_CELLULAR_NETWORK) {
+    ShowOtherCellular();
   }
   return true;
 }
@@ -317,9 +209,11 @@ void NetworkMenu::ActivatedAt(int index) {
     }
   } else if (flags & FLAG_WIFI) {
     ConnectToNetworkAt(index, std::string(), std::string(), -1);
-  } else if (flags & FLAG_OTHER_NETWORK) {
+  } else if (flags & FLAG_OTHER_WIFI_NETWORK) {
     ConnectToNetworkAt(index, std::string(), std::string(), -1);
   } else if (flags & FLAG_CELLULAR) {
+    ConnectToNetworkAt(index, std::string(), std::string(), -1);
+  } else if (flags & FLAG_OTHER_CELLULAR_NETWORK) {
     ConnectToNetworkAt(index, std::string(), std::string(), -1);
   }
 }
@@ -627,6 +521,13 @@ void NetworkMenu::InitMenuItems() {
                    IconForDisplay(icon, badge),
                    wifi_networks[i]->service_path(), flag));
     }
+    if (!separator_added && !menu_items_.empty())
+      menu_items_.push_back(MenuItem());
+    menu_items_.push_back(MenuItem(
+        ui::MenuModel::TYPE_COMMAND,
+        l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS),
+        *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK),
+        std::string(), FLAG_OTHER_WIFI_NETWORK));
   }
 
   // Cellular Networks
@@ -637,10 +538,14 @@ void NetworkMenu::InitMenuItems() {
     const CellularNetwork* active_cellular = cros->cellular_network();
 
     bool separator_added = false;
+    bool is_gsm = false;
     // List Cellular networks.
     for (size_t i = 0; i < cell_networks.size(); ++i) {
       chromeos::ActivationState activation_state =
           cell_networks[i]->activation_state();
+
+      if (cell_networks[i]->is_gsm())
+        is_gsm = true;
 
       // If we are on the OOBE/login screen, do not show activating 3G option.
       if (!IsBrowserMode() && activation_state != ACTIVATION_STATE_ACTIVATED)
@@ -704,6 +609,19 @@ void NetworkMenu::InitMenuItems() {
         }
       }
     }
+    // TOOD(dpolukhin): remove && 0 to when code is ready.
+    if (is_gsm && 0) {
+      // For GSM add mobile network scan.
+      if (!separator_added && !menu_items_.empty())
+        menu_items_.push_back(MenuItem());
+
+      menu_items_.push_back(MenuItem(
+          ui::MenuModel::TYPE_COMMAND,
+          l10n_util::GetStringUTF16(
+              IDS_OPTIONS_SETTINGS_OTHER_CELLULAR_NETWORKS),
+          *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK),
+          std::string(), FLAG_OTHER_CELLULAR_NETWORK));
+    }
   }
 
   // No networks available message.
@@ -712,16 +630,6 @@ void NetworkMenu::InitMenuItems() {
                 l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE));
     menu_items_.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND, label,
         SkBitmap(), std::string(), FLAG_DISABLED));
-  }
-
-  // Add network.
-  if (wifi_available && wifi_enabled) {
-    menu_items_.push_back(MenuItem());  // Separator
-    menu_items_.push_back(MenuItem(
-        ui::MenuModel::TYPE_COMMAND,
-        l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS),
-        *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK),
-        std::string(), FLAG_OTHER_NETWORK));
   }
 
   // Enable / disable wireless.
@@ -816,8 +724,12 @@ void NetworkMenu::ActivateCellular(const CellularNetwork* cellular) const {
   browser->OpenMobilePlanTabAndActivate();
 }
 
-void NetworkMenu::ShowOther() const {
+void NetworkMenu::ShowOtherWifi() const {
   ShowNetworkConfigView(new NetworkConfigView());
+}
+
+void NetworkMenu::ShowOtherCellular() const {
+  ChooseMobileNetworkDialog::ShowDialog(GetNativeWindow());
 }
 
 }  // namespace chromeos

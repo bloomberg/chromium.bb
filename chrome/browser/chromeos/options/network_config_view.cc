@@ -79,7 +79,7 @@ std::wstring NetworkConfigView::GetWindowTitle() const {
 
 void NetworkConfigView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->name =
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS);
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS);
   state->role = ui::AccessibilityTypes::ROLE_DIALOG;
 }
 

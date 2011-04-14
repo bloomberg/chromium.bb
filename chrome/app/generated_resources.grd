@@ -7091,7 +7091,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_USE_MAC_ADDRESS_BOOK" desc="Checkbox label to enable Address Book on Mac.">
         Include addresses from my Address Book card
       </message>
-      
+
       <message name="IDS_AUTOFILL_CC_AMEX" desc="American Express credit card name, for use as an image's 'alt' attribute.">
         American Express
       </message>
@@ -8199,7 +8199,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_MULTI_DOWNLOAD_WARNING_DENY" desc="Text on the deny button in the IDS_MULTI_DOWNLOAD_WARNING dialog">
         Deny
       </message>
-      
+
       <!-- cr.Locale -->
       <message name="IDS_LOCALE_DATE_SHORT" desc="Preferred short date format for this locale.">
         %b %-d, %Y
@@ -9800,8 +9800,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_OPTIONS" desc="In the settings tab, the text on the button to display more options.">
         Options...
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_OTHER_NETWORKS" desc="In the settings tab, the text on the button to display other networks.">
-        Join other network...
+      <message name="IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS" desc="In the settings tab, the text on the button to display other Wi-Fi networks.">
+        Other Wi-Fi network...
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_OTHER_CELLULAR_NETWORKS" desc="In the settings tab, the text on the button to display other cellular networks.">
+        Other mobile network...
       </message>
       <message name="IDS_OPTIONS_SETTINGS_JOIN_WIFI_NETWORKS" desc="The title for the dialog to join a wifi network.">
         Join Wi-Fi network
@@ -10065,9 +10068,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         network password
       </message>
 
-      <message name="IDS_NETWORK_OTHER_MOBILE_NETWORK" desc="Text for the item in the network menu, which changes current mobile network.">
-        Other mobile network...
-      </message>
       <message name="IDS_NETWORK_CHOOSE_MOBILE_NETWORK" desc="Title of the window for choosing mobile network.">
         Choose a Mobile Network
       </message>
