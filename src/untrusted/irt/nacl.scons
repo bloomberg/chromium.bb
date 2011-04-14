@@ -67,7 +67,7 @@ irt_library = blob_env.ComponentProgram(
                 'pthread',
                 'm'])
 
-if env.Bit('build_x86_32'):
+if env.Bit('build_x86_32') and not env.Bit('bitcode'):
   # Make sure that the linked IRT nexe never uses TLS via %gs access.
   # All IRT code must avoid direct use of the TLS ABI register, which
   # is reserved for user TLS.  Instead, ensure all TLS accesses use a
