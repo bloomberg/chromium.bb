@@ -14,7 +14,9 @@ def Main(args):
   objdump = args[0]
   obj_file = args[1]
   assert(len(args) == 2)
-  proc = subprocess.Popen([objdump, '-d', obj_file], stdout=subprocess.PIPE)
+  proc = subprocess.Popen([objdump, '-d', obj_file],
+                          stdout=subprocess.PIPE,
+                          bufsize=-1)
   for line in proc.stdout:
     if '%gs' in line:
       print '%%gs use found: %s' % line

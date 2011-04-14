@@ -76,5 +76,4 @@ if env.Bit('build_x86_32') and not env.Bit('bitcode'):
   node = env.CommandTest('irt_tls_test.out',
                          ['${PYTHON}', env.File('check_tls.py'),
                           '${OBJDUMP}', irt_library])
-# TODO(mcgrathr) : Enable test once fixed for mac
-#  env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_tls_test')
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_tls_test')
