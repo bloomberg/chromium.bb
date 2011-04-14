@@ -504,7 +504,8 @@ void ProfileImpl::InitPromoResources() {
 void ProfileImpl::InitRegisteredProtocolHandlers() {
   if (protocol_handler_registry_)
     return;
-  protocol_handler_registry_ = new ProtocolHandlerRegistry(this);
+  protocol_handler_registry_ = new ProtocolHandlerRegistry(this,
+      new ProtocolHandlerRegistry::Delegate());
   protocol_handler_registry_->Load();
 }
 

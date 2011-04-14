@@ -1289,6 +1289,15 @@ const char kManagedPopupsBlockedForUrls[] =
 // needs to acknowledge this page.
 const char kKnownBackgroundPages[] = "background_pages.known";
 
-// Dictionary that maps URL schemes (protocols) to URL handlers.
-const char kRegisteredProtocolHandlers[] = "registered_protocol_handlers";
+// List of protocol handlers.
+const char kRegisteredProtocolHandlers[] =
+  "custom_handlers.registered_protocol_handlers";
+
+// List of protocol handlers the user has requested not to be asked about again.
+const char kIgnoredProtocolHandlers[] =
+  "custom_handlers.ignored_protocol_handlers";
+
+// Whether user-specified handlers for protocols and content types can be
+// specified.
+const char kCustomHandlersEnabled[] = "custom_handlers.enabled";
 }  // namespace prefs

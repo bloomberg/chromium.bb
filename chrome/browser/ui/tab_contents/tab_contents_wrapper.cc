@@ -9,6 +9,7 @@
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/automation/automation_tab_helper.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/custom_handlers/protocol_handler.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
@@ -288,11 +289,14 @@ void TabContentsWrapper::OnRegisterProtocolHandler(const std::string& protocol,
                                                    const GURL& url,
                                                    const string16& title) {
   ProtocolHandlerRegistry* registry = profile()->GetProtocolHandlerRegistry();
+  if (!registry->enabled()) {
+    return;
+  }
   ProtocolHandler* handler =
       ProtocolHandler::CreateProtocolHandler(protocol, url, title);
   if ((handler != NULL) &&
       registry->CanSchemeBeOverridden(handler->protocol())) {
-    tab_contents()->AddInfoBar(registry->IsAlreadyRegistered(handler) ?
+    tab_contents()->AddInfoBar(registry->IsRegistered(handler) ?
       static_cast<InfoBarDelegate*>(new SimpleAlertInfoBarDelegate(
           tab_contents(), NULL, l10n_util::GetStringFUTF16(
               IDS_REGISTER_PROTOCOL_HANDLER_ALREADY_REGISTERED,
