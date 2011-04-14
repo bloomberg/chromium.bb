@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/mac/nsimage_cache.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -9,10 +10,8 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#include "grit/app_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image.h"
 
 // Simple class to remember how many mouseEntered: and mouseExited:
@@ -66,9 +65,8 @@ TEST_F(BookmarkButtonCellTest, IconOnlySqueeze) {
   [view setCell:cell.get()];
   [[test_window() contentView] addSubview:view];
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  scoped_nsobject<NSImage> image([rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON)
-                                    retain]);
+  scoped_nsobject<NSImage> image(
+      [app::mac::GetCachedImageWithName(@"nav.pdf") retain]);
   EXPECT_TRUE(image.get());
 
   NSRect r = NSMakeRect(0, 0, 100, 100);

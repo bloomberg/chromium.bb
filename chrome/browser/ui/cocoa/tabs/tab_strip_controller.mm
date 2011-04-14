@@ -33,6 +33,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
 #import "chrome/browser/ui/cocoa/profile_menu_button.h"
+#import "chrome/browser/ui/cocoa/tab_contents/favicon_util.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
@@ -366,8 +367,8 @@ class NotificationBridge : public NotificationObserver {
     // (see |-addSubviewToPermanentList:|) will be wiped out.
     permanentSubviews_.reset([[NSMutableArray alloc] init]);
 
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    defaultFavicon_.reset([rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON) retain]);
+    defaultFavicon_.reset(
+        [app::mac::GetCachedImageWithName(@"nav.pdf") retain]);
 
     [self setIndentForControls:[[self class] defaultIndentForControls]];
 
@@ -1355,8 +1356,7 @@ class NotificationBridge : public NotificationObserver {
     if (icon)
       image = gfx::SkBitmapToNSImageWithColorSpace(*icon, colorSpace);
   } else {
-    image = gfx::SkBitmapToNSImageWithColorSpace(contents->GetFavicon(),
-                                                 colorSpace);
+    image = mac::FaviconForTabContents(contents);
   }
 
   // Either we don't have a valid favicon or there was some issue converting it

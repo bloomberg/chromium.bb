@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "app/mac/nsimage_cache.h"
 #include "base/mac/mac_util.h"
 #include "base/process_util.h"
 #include "base/sys_string_conversions.h"
@@ -18,6 +19,7 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#import "chrome/browser/ui/cocoa/tab_contents/favicon_util.h"
 #include "content/common/result_codes.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
@@ -145,16 +147,7 @@ HungRendererController* g_instance = NULL;
       if (title.empty())
         title = TabContentsWrapper::GetDefaultTitle();
       [titles addObject:base::SysUTF16ToNSString(title)];
-
-      // TabContents can return a null SkBitmap if it has no favicon.  If this
-      // happens, use the default favicon.
-      const SkBitmap& bitmap = it->tab_contents()->GetFavicon();
-      if (!bitmap.isNull()) {
-        [favicons addObject:gfx::SkBitmapToNSImage(bitmap)];
-      } else {
-        ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-        [favicons addObject:rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON)];
-      }
+      [favicons addObject:mac::FaviconForTabContents(it->tab_contents())];
     }
   }
   hungTitles_.reset([titles copy]);

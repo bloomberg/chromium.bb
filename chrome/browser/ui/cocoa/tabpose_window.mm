@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "app/mac/nsimage_cache.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_callback_factory.h"
@@ -23,6 +24,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
+#import "chrome/browser/ui/cocoa/tab_contents/favicon_util.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -436,7 +438,7 @@ class Tile {
 
   NSRect GetFaviconStartRectRelativeTo(const Tile& tile) const;
   NSRect favicon_rect() const { return NSIntegralRect(favicon_rect_); }
-  SkBitmap favicon() const;
+  NSImage* favicon() const;
 
   // This changes |title_rect| and |favicon_rect| such that the favicon is on
   // the font's baseline and that the minimum distance between thumb rect and
@@ -497,13 +499,13 @@ NSRect Tile::GetFaviconStartRectRelativeTo(const Tile& tile) const {
   return rect;
 }
 
-SkBitmap Tile::favicon() const {
+NSImage* Tile::favicon() const {
   if (contents_->extension_tab_helper()->is_app()) {
-    SkBitmap* icon = contents_->extension_tab_helper()->GetExtensionAppIcon();
-    if (icon)
-      return *icon;
+    SkBitmap* bitmap = contents_->extension_tab_helper()->GetExtensionAppIcon();
+    if (bitmap)
+      return gfx::SkBitmapToNSImage(*bitmap);
   }
-  return contents_->tab_contents()->GetFavicon();
+  return mac::FaviconForTabContents(contents_->tab_contents());
 }
 
 NSRect Tile::GetTitleStartRectRelativeTo(const Tile& tile) const {
@@ -1076,17 +1078,8 @@ void AnimateCALayerOpacityFromTo(
   NSFont* font = [NSFont systemFontOfSize:tile.title_font_size()];
   tile.set_font_metrics([font ascender], -[font descender]);
 
-  NSImage* nsFavicon = gfx::SkBitmapToNSImage(tile.favicon());
-  // Either we don't have a valid favicon or there was some issue converting
-  // it from an SkBitmap. Either way, just show the default.
-  if (!nsFavicon) {
-    NSImage* defaultFavicon =
-        ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-            IDR_DEFAULT_FAVICON);
-    nsFavicon = defaultFavicon;
-  }
   base::mac::ScopedCFTypeRef<CGImageRef> favicon(
-      base::mac::CopyNSImageToCGImage(nsFavicon));
+      base::mac::CopyNSImageToCGImage(tile.favicon()));
 
   CALayer* faviconLayer = [CALayer layer];
   if (showZoom) {

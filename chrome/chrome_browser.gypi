@@ -2420,6 +2420,8 @@
         'browser/ui/cocoa/styled_text_field.mm',
         'browser/ui/cocoa/styled_text_field_cell.h',
         'browser/ui/cocoa/styled_text_field_cell.mm',
+        'browser/ui/cocoa/tab_contents/favicon_util.h',
+        'browser/ui/cocoa/tab_contents/favicon_util.mm',
         'browser/ui/cocoa/tab_contents/previewable_contents_controller.h',
         'browser/ui/cocoa/tab_contents/previewable_contents_controller.mm',
         'browser/ui/cocoa/tab_contents/sad_tab_controller.h',
