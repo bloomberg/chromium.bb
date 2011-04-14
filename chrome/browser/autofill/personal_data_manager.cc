@@ -727,7 +727,8 @@ bool PersonalDataManager::MergeProfile(
          iter != existing_profiles.end(); ++iter) {
       if (!merged) {
         if (!profile.PrimaryValue().empty() &&
-            (*iter)->PrimaryValue() == profile.PrimaryValue()) {
+            StringToLowerASCII((*iter)->PrimaryValue()) ==
+                StringToLowerASCII(profile.PrimaryValue())) {
           merged = true;
           (*iter)->OverwriteWithOrAddTo(profile);
         }
