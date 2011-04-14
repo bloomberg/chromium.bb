@@ -10,8 +10,8 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/nss_util.h"
 #include "base/time.h"
+#include "crypto/nss_util.h"
 #include "net/base/dns_util.h"
 
 namespace {
@@ -193,13 +193,13 @@ bool DNSSECKeySet::VerifySignature(
     base::StringPiece public_key,
     base::StringPiece signed_data) {
   // This code is largely a copy-and-paste from
-  // base/crypto/signature_verifier_nss.cc. We can't change
-  // base::SignatureVerifier to always use NSS because we want the ability to
-  // be FIPS 140-2 compliant. However, we can't use base::SignatureVerifier
+  // crypto/signature_verifier_nss.cc. We can't change
+  // crypto::SignatureVerifier to always use NSS because we want the ability to
+  // be FIPS 140-2 compliant. However, we can't use crypto::SignatureVerifier
   // here because some platforms don't support SHA256 signatures. Therefore, we
   // use NSS directly.
 
-  base::EnsureNSSInit();
+  crypto::EnsureNSSInit();
 
   CERTSubjectPublicKeyInfo* spki = NULL;
   SECItem spki_der;

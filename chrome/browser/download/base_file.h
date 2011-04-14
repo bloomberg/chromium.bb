@@ -14,7 +14,7 @@
 #include "chrome/browser/power_save_blocker.h"
 #include "googleurl/src/gurl.h"
 
-namespace base {
+namespace crypto {
 class SecureHash;
 }
 namespace net {
@@ -94,7 +94,7 @@ class BaseFile {
 
   // Used to calculate sha256 hash for the file when calculate_hash_
   // is set.
-  scoped_ptr<base::SecureHash> secure_hash_;
+  scoped_ptr<crypto::SecureHash> secure_hash_;
 
   unsigned char sha256_hash_[kSha256HashLen];
 

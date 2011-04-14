@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,9 +15,9 @@ extern "C" {
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/nss_util.h"
 #include "base/test/mock_chrome_application_mac.h"
 #include "base/time.h"
+#include "crypto/nss_util.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -357,8 +357,8 @@ int main(int argc, char** argv) {
 
   base::AtExitManager exit_manager;
 
-  base::EnsureNSPRInit();
-  base::EnsureNSSInit();
+  crypto::EnsureNSPRInit();
+  crypto::EnsureNSSInit();
 
 #if defined(OS_MACOSX)
   mock_cr_app::RegisterMockCrApp();

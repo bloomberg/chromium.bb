@@ -20,6 +20,7 @@ include_rules = [
   "+app/gfx",
 
   # TODO(brettw) - review these; move up if it's ok, or remove the dependency
+  "+crypto",
   "+net/base",
   "+net/ftp",
   "+net/http",

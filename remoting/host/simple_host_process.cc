@@ -24,10 +24,10 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/nss_util.h"
 #include "base/path_service.h"
 #include "base/test/mock_chrome_application_mac.h"
 #include "base/threading/thread.h"
+#include "crypto/nss_util.h"
 #include "media/base/media.h"
 #include "remoting/base/tracer.h"
 #include "remoting/host/capturer_fake.h"
@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
   base::AtExitManager exit_manager;
-  base::EnsureNSPRInit();
+  crypto::EnsureNSPRInit();
 
   // Allocate a chromoting context and starts it.
 #if defined(TOOLKIT_USES_GTK)

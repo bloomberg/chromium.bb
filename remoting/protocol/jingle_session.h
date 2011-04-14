@@ -5,8 +5,8 @@
 #ifndef REMOTING_PROTOCOL_JINGLE_SESSION_H_
 #define REMOTING_PROTOCOL_JINGLE_SESSION_H_
 
-#include "base/crypto/rsa_private_key.h"
 #include "base/memory/ref_counted.h"
+#include "crypto/rsa_private_key.h"
 #include "net/base/completion_callback.h"
 #include "remoting/protocol/session.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
@@ -53,7 +53,7 @@ class JingleSession : public protocol::Session,
   static JingleSession* CreateServerSession(
       JingleSessionManager* manager,
       scoped_refptr<net::X509Certificate> certificate,
-      base::RSAPrivateKey* key);
+      crypto::RSAPrivateKey* key);
 
   // Chromotocol Session interface.
   virtual void SetStateChangeCallback(StateChangeCallback* callback);
@@ -86,7 +86,7 @@ class JingleSession : public protocol::Session,
 
   JingleSession(JingleSessionManager* client,
                 scoped_refptr<net::X509Certificate> server_cert,
-                base::RSAPrivateKey* key);
+                crypto::RSAPrivateKey* key);
   virtual ~JingleSession();
 
   // Called by JingleSessionManager.
@@ -129,7 +129,7 @@ class JingleSession : public protocol::Session,
   scoped_refptr<net::X509Certificate> server_cert_;
 
   // Private key used in SSL server sockets.
-  scoped_ptr<base::RSAPrivateKey> key_;
+  scoped_ptr<crypto::RSAPrivateKey> key_;
 
   State state_;
   scoped_ptr<StateChangeCallback> state_change_callback_;

@@ -7,10 +7,10 @@
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
-#include "base/crypto/crypto_module_blocking_password_delegate.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
+#include "crypto/crypto_module_blocking_password_delegate.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -21,7 +21,7 @@
 namespace {
 
 class CryptoModuleBlockingDialogDelegate
-    : public base::CryptoModuleBlockingPasswordDelegate {
+    : public crypto::CryptoModuleBlockingPasswordDelegate {
  public:
   CryptoModuleBlockingDialogDelegate(browser::CryptoModulePasswordReason reason,
                                      const std::string& server)
@@ -36,7 +36,7 @@ class CryptoModuleBlockingDialogDelegate
     password_.replace(0, password_.size(), password_.size(), 0);
   }
 
-  // base::CryptoModuleBlockingDialogDelegate implementation.
+  // crypto::CryptoModuleBlockingDialogDelegate implementation.
   virtual std::string RequestPassword(const std::string& slot_name, bool retry,
                                       bool* cancelled) {
     DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -220,7 +220,7 @@ void ShowCryptoModulePasswordDialog(const std::string& slot_name,
                                   callback))->Show();
 }
 
-base::CryptoModuleBlockingPasswordDelegate*
+crypto::CryptoModuleBlockingPasswordDelegate*
     NewCryptoModuleBlockingDialogDelegate(
         CryptoModulePasswordReason reason,
         const std::string& server) {

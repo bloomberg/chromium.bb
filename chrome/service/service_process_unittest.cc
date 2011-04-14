@@ -8,7 +8,6 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
-#include "base/crypto/rsa_private_key.h"
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/common/service_process_util.h"

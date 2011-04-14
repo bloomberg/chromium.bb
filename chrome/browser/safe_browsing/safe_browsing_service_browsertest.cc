@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
-#include "base/sha2.h"
+#include "crypto/sha2.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -256,8 +256,8 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     std::string host;
     std::string path;
     safe_browsing_util::CanonicalizeUrl(url, &host, &path, NULL);
-    base::SHA256HashString(host + path, &full_hash->hash,
-                           sizeof(SBFullHash));
+    crypto::SHA256HashString(host + path, &full_hash->hash,
+                             sizeof(SBFullHash));
     full_hash->list_name = list_name;
     full_hash->add_chunk_id = add_chunk_id;
   }

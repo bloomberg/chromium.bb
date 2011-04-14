@@ -37,9 +37,6 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#include "base/nss_util.h"
-#endif
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "base/timer.h"
@@ -72,6 +69,10 @@
 #include "webkit/tools/test_shell/simple_socket_stream_bridge.h"
 #include "webkit/tools/test_shell/test_shell_request_context.h"
 #include "webkit/tools/test_shell/test_shell_webblobregistry_impl.h"
+
+#if defined(OS_MACOSX) || defined(OS_WIN)
+#include "crypto/nss_util.h"
+#endif
 
 using webkit_glue::ResourceLoaderBridge;
 using webkit_glue::ResourceResponseInfo;
@@ -912,7 +913,7 @@ bool SimpleResourceLoaderBridge::EnsureIOThread() {
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
   // We want to be sure to init NSPR on the main thread.
-  base::EnsureNSPRInit();
+  crypto::EnsureNSPRInit();
 #endif
 
   // Create the cache thread. We want the cache thread to outlive the IO thread,

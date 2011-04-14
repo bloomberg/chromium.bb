@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 
-namespace base {
+namespace crypto {
 class RSAPrivateKey;
 }  // namespace base
 
@@ -38,11 +38,11 @@ class HostKeyPair {
   std::string GetSignature(const std::string& message) const;
 
   // Make a new copy of private key. Caller will own the generated private key.
-  base::RSAPrivateKey* CopyPrivateKey() const;
+  crypto::RSAPrivateKey* CopyPrivateKey() const;
   net::X509Certificate* GenerateCertificate() const;
 
  private:
-  scoped_ptr<base::RSAPrivateKey> key_;
+  scoped_ptr<crypto::RSAPrivateKey> key_;
 };
 
 }  // namespace remoting

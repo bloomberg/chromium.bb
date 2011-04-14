@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,9 +9,9 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/nss_util.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "crypto/nss_util.h"
 
 NSSDecryptor::NSSDecryptor() : is_nss_initialized_(false), db_slot_(NULL) {}
 NSSDecryptor::~NSSDecryptor() {
@@ -25,7 +25,7 @@ NSSDecryptor::~NSSDecryptor() {
 }
 
 bool NSSDecryptor::Init(const FilePath& dll_path, const FilePath& db_path) {
-  base::EnsureNSSInit();
+  crypto::EnsureNSSInit();
   is_nss_initialized_ = true;
   const std::string modspec =
       StringPrintf("configDir='%s' tokenDescription='Firefox NSS database' "

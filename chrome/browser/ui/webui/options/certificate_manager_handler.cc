@@ -6,7 +6,6 @@
 
 #include "base/file_util.h"  // for FileAccessProvider
 #include "base/memory/scoped_vector.h"
-#include "base/nss_util.h"
 #include "base/safe_strerror_posix.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"

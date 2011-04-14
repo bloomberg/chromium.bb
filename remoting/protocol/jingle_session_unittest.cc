@@ -4,11 +4,11 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/nss_util.h"
 #include "base/path_service.h"
 #include "base/time.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "crypto/nss_util.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -138,8 +138,8 @@ class JingleSessionTest : public testing::Test {
         reinterpret_cast<const uint8*>(key_string.data()),
         reinterpret_cast<const uint8*>(key_string.data() +
                                        key_string.length()));
-    scoped_ptr<base::RSAPrivateKey> private_key(
-        base::RSAPrivateKey::CreateFromPrivateKeyInfo(key_vector));
+    scoped_ptr<crypto::RSAPrivateKey> private_key(
+        crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_vector));
 
     session_manager_pair_ = new SessionManagerPair(&thread_);
     session_manager_pair_->Init();

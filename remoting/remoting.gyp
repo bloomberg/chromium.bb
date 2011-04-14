@@ -189,6 +189,7 @@
         'chromoting_jingle_glue',
         'chromoting_protocol',
         'differ_block',
+        '../crypto/crypto.gyp:crypto',
       ],
       'sources': [
         'host/access_verifier.cc',
@@ -319,6 +320,7 @@
         'chromoting_base',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
+        '../crypto/crypto.gyp:crypto',
       ],
       'sources': [
         'host/keygen_main.cc',
@@ -363,6 +365,7 @@
       'dependencies': [
         'chromoting_base',
         'chromoting_jingle_glue',
+        '../crypto/crypto.gyp:crypto',
         '../jingle/jingle.gyp:jingle_glue',
       ],
       'export_dependent_settings': [

@@ -12,7 +12,7 @@
 #include "net/base/x509_certificate.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/nss_util.h"
+#include "crypto/nss_util.h"
 #endif
 
 namespace {
@@ -66,11 +66,11 @@ void SlotUnlocker::Start() {
   for (; current_ < modules_.size(); ++current_) {
     if (ShouldShowDialog(modules_[current_].get())) {
 #if defined(OS_CHROMEOS)
-      if (modules_[current_]->GetTokenName() == base::GetTPMTokenName()) {
+      if (modules_[current_]->GetTokenName() == crypto::GetTPMTokenName()) {
         // The user PIN is a well known secret on this machine, and
         // the user didn't set it, so we need to fetch the value and
         // supply it for them here.
-        GotPassword(base::GetTPMUserPIN().c_str());
+        GotPassword(crypto::GetTPMUserPIN().c_str());
         return;
       }
 #endif

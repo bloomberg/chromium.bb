@@ -13,7 +13,7 @@
 #include "base/time.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
-#include "base/sha2.h"
+#include "crypto/sha2.h"
 #include "chrome/browser/safe_browsing/bloom_filter.h"
 #include "chrome/browser/safe_browsing/prefix_set.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
@@ -71,8 +71,8 @@ void GetDownloadUrlPrefix(const GURL& url, SBPrefix* prefix) {
   safe_browsing_util::CanonicalizeUrl(url, &hostname, &path, &query);
 
   SBFullHash full_hash;
-  base::SHA256HashString(hostname + path + query, &full_hash,
-                         sizeof(full_hash));
+  crypto::SHA256HashString(hostname + path + query, &full_hash,
+                           sizeof(full_hash));
   *prefix = full_hash.prefix;
 }
 
@@ -103,8 +103,8 @@ void BrowseFullHashesToCheck(const GURL& url,
     for (size_t j = 0; j < paths.size(); ++j) {
       const std::string& path = paths[j];
       SBFullHash full_hash;
-      base::SHA256HashString(hosts[i] + path, &full_hash,
-                             sizeof(full_hash));
+      crypto::SHA256HashString(hosts[i] + path, &full_hash,
+                               sizeof(full_hash));
       full_hashes->push_back(full_hash);
 
       // We may have /foo as path-prefix in the whitelist which should
@@ -113,8 +113,8 @@ void BrowseFullHashesToCheck(const GURL& url,
       if (include_whitelist_hashes &&
           path.size() > 1 &&
           path[path.size() - 1] == '/') {
-        base::SHA256HashString(hosts[i] + path.substr(0, path.size() - 1),
-                               &full_hash, sizeof(full_hash));
+        crypto::SHA256HashString(hosts[i] + path.substr(0, path.size() - 1),
+                                 &full_hash, sizeof(full_hash));
         full_hashes->push_back(full_hash);
       }
     }
@@ -1297,7 +1297,8 @@ void SafeBrowsingDatabaseNew::LoadCsdWhitelist(
   std::sort(new_csd_whitelist.begin(), new_csd_whitelist.end());
 
   SBFullHash kill_switch;
-  base::SHA256HashString(kCsdKillSwitchUrl, &kill_switch, sizeof(kill_switch));
+  crypto::SHA256HashString(kCsdKillSwitchUrl, &kill_switch,
+                           sizeof(kill_switch));
   if (std::binary_search(new_csd_whitelist.begin(), new_csd_whitelist.end(),
                          kill_switch)) {
     // The kill switch is whitelisted hence we whitelist all URLs.

@@ -10,11 +10,11 @@
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/sha2.h"
 #include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "crypto/sha2.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/mock_feature_extractor_clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -44,7 +44,7 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
 
     for (base::hash_set<std::string>::iterator it = terms.begin();
          it != terms.end(); ++it) {
-      term_hashes_.insert(base::SHA256HashString(*it));
+      term_hashes_.insert(crypto::SHA256HashString(*it));
     }
 
     base::hash_set<std::string> words;
@@ -62,7 +62,7 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
 
     for (base::hash_set<std::string>::iterator it = words.begin();
          it != words.end(); ++it) {
-      word_hashes_.insert(base::SHA256HashString(*it));
+      word_hashes_.insert(crypto::SHA256HashString(*it));
     }
 
     extractor_.reset(new PhishingTermFeatureExtractor(

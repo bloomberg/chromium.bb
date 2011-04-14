@@ -13,13 +13,13 @@
 
 #include "base/at_exit.h"
 #include "base/base64.h"
-#include "base/crypto/rsa_private_key.h"
+#include "crypto/rsa_private_key.h"
 #include "base/memory/scoped_ptr.h"
 
 int main(int argc, char** argv) {
   base::AtExitManager exit_manager;
 
-  scoped_ptr<base::RSAPrivateKey> key(base::RSAPrivateKey::Create(2048));
+  scoped_ptr<crypto::RSAPrivateKey> key(crypto::RSAPrivateKey::Create(2048));
 
   std::vector<uint8> private_key_buf;
   key->ExportPrivateKey(&private_key_buf);

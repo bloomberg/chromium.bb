@@ -14,14 +14,14 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/sha2.h"
 #include "base/stl_util-inl.h"
-#include "base/third_party/nss/blapi.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "crypto/sha2.h"
+#include "crypto/third_party/nss/blapi.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -622,7 +622,7 @@ GURL Extension::GetResourceURL(const GURL& extension_url,
 bool Extension::GenerateId(const std::string& input, std::string* output) {
   CHECK(output);
   uint8 hash[Extension::kIdSize];
-  base::SHA256HashString(input, hash, sizeof(hash));
+  crypto::SHA256HashString(input, hash, sizeof(hash));
   *output = StringToLowerASCII(base::HexEncode(hash, sizeof(hash)));
   ConvertHexadecimalToIDAlphabet(output);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,15 +9,13 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/crypto/rsa_private_key.h"
 #include "base/file_path.h"
+#include "crypto/rsa_private_key.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/login/owner_key_utils.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using ::base::RSAPrivateKey;
 
 namespace chromeos {
 
@@ -31,10 +29,11 @@ class MockKeyUtils : public OwnerKeyUtils {
                             const std::vector<uint8> public_key));
   MOCK_METHOD3(Sign, bool(const std::string& data,
                           std::vector<uint8>* OUT_signature,
-                          base::RSAPrivateKey* key));
-  MOCK_METHOD1(FindPrivateKey, RSAPrivateKey*(const std::vector<uint8>& key));
+                          crypto::RSAPrivateKey* key));
+  MOCK_METHOD1(FindPrivateKey,
+               crypto::RSAPrivateKey*(const std::vector<uint8>& key));
   MOCK_METHOD0(GetOwnerKeyFilePath, FilePath());
-  MOCK_METHOD2(ExportPublicKeyToFile, bool(base::RSAPrivateKey* pair,
+  MOCK_METHOD2(ExportPublicKeyToFile, bool(crypto::RSAPrivateKey* pair,
                                            const FilePath& key_file));
  protected:
   virtual ~MockKeyUtils() {}

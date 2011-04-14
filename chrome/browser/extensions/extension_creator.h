@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 
-namespace base {
+namespace crypto {
 class RSAPrivateKey;
 }
 
@@ -45,11 +45,11 @@ class ExtensionCreator {
                        const FilePath& private_key_output_path);
 
   // Reads private key from |private_key_path|.
-  base::RSAPrivateKey* ReadInputKey(const FilePath& private_key_path);
+  crypto::RSAPrivateKey* ReadInputKey(const FilePath& private_key_path);
 
   // Generates a key pair and writes the private key to |private_key_path|
   // if provided.
-  base::RSAPrivateKey* GenerateKey(const FilePath& private_key_path);
+  crypto::RSAPrivateKey* GenerateKey(const FilePath& private_key_path);
 
   // Creates temporary zip file for the extension.
   bool CreateZip(const FilePath& extension_dir, const FilePath& temp_path,
@@ -57,12 +57,12 @@ class ExtensionCreator {
 
   // Signs the temporary zip and returns the signature.
   bool SignZip(const FilePath& zip_path,
-               base::RSAPrivateKey* private_key,
+               crypto::RSAPrivateKey* private_key,
                std::vector<uint8>* signature);
 
   // Export installable .crx to |crx_path|.
   bool WriteCRX(const FilePath& zip_path,
-                base::RSAPrivateKey* private_key,
+                crypto::RSAPrivateKey* private_key,
                 const std::vector<uint8>& signature,
                 const FilePath& crx_path);
 

@@ -12,7 +12,6 @@
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
-#include "base/sha2.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -20,6 +19,7 @@
 #include "base/time.h"
 #include "base/threading/thread.h"
 #include "base/version.h"
+#include "crypto/sha2.h"
 #include "content/common/notification_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
@@ -787,10 +787,10 @@ void ExtensionUpdater::HandleManifestResults(
 void ExtensionUpdater::ProcessBlacklist(const std::string& data) {
   DCHECK(alive_);
   // Verify sha256 hash value.
-  char sha256_hash_value[base::SHA256_LENGTH];
-  base::SHA256HashString(data, sha256_hash_value, base::SHA256_LENGTH);
+  char sha256_hash_value[crypto::SHA256_LENGTH];
+  crypto::SHA256HashString(data, sha256_hash_value, crypto::SHA256_LENGTH);
   std::string hash_in_hex = base::HexEncode(sha256_hash_value,
-                                            base::SHA256_LENGTH);
+                                            crypto::SHA256_LENGTH);
 
   if (current_extension_fetch_.package_hash != hash_in_hex) {
     NOTREACHED() << "Fetched blacklist checksum is not as expected. "

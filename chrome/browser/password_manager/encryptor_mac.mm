@@ -6,11 +6,11 @@
 
 #include <CommonCrypto/CommonCryptor.h>  // for kCCBlockSizeAES128
 
-#include "base/crypto/encryptor.h"
-#include "base/crypto/symmetric_key.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
+#include "crypto/encryptor.h"
+#include "crypto/symmetric_key.h"
 #include "chrome/browser/password_manager/encryptor_password_mac.h"
 #include "chrome/browser/keychain_mac.h"
 
@@ -37,7 +37,7 @@ const char kEncryptionVersionPrefix[] = "v10";
 // in the Keychain.  The generated key is for AES encryption.  Ownership of the
 // key is passed to the caller.  Returns NULL key in the case password access
 // is denied or key generation error occurs.
-base::SymmetricKey* GetEncryptionKey() {
+crypto::SymmetricKey* GetEncryptionKey() {
 
   std::string password;
   if (use_mock_keychain) {
@@ -54,12 +54,12 @@ base::SymmetricKey* GetEncryptionKey() {
   std::string salt(kSalt);
 
   // Create an encryption key from our password and salt.
-  scoped_ptr<base::SymmetricKey> encryption_key(
-      base::SymmetricKey::DeriveKeyFromPassword(base::SymmetricKey::AES,
-                                                password,
-                                                salt,
-                                                kEncryptionIterations,
-                                                kDerivedKeySizeInBits));
+  scoped_ptr<crypto::SymmetricKey> encryption_key(
+      crypto::SymmetricKey::DeriveKeyFromPassword(crypto::SymmetricKey::AES,
+                                                  password,
+                                                  salt,
+                                                  kEncryptionIterations,
+                                                  kDerivedKeySizeInBits));
   DCHECK(encryption_key.get());
 
   return encryption_key.release();
@@ -89,13 +89,13 @@ bool Encryptor::EncryptString(const std::string& plaintext,
     return true;
   }
 
-  scoped_ptr<base::SymmetricKey> encryption_key(GetEncryptionKey());
+  scoped_ptr<crypto::SymmetricKey> encryption_key(GetEncryptionKey());
   if (!encryption_key.get())
     return false;
 
   std::string iv(kCCBlockSizeAES128, ' ');
-  base::Encryptor encryptor;
-  if (!encryptor.Init(encryption_key.get(), base::Encryptor::CBC, iv))
+  crypto::Encryptor encryptor;
+  if (!encryptor.Init(encryption_key.get(), crypto::Encryptor::CBC, iv))
     return false;
 
   if (!encryptor.Encrypt(plaintext, ciphertext))
@@ -127,13 +127,13 @@ bool Encryptor::DecryptString(const std::string& ciphertext,
   std::string raw_ciphertext =
       ciphertext.substr(strlen(kEncryptionVersionPrefix));
 
-  scoped_ptr<base::SymmetricKey> encryption_key(GetEncryptionKey());
+  scoped_ptr<crypto::SymmetricKey> encryption_key(GetEncryptionKey());
   if (!encryption_key.get())
     return false;
 
   std::string iv(kCCBlockSizeAES128, ' ');
-  base::Encryptor encryptor;
-  if (!encryptor.Init(encryption_key.get(), base::Encryptor::CBC, iv))
+  crypto::Encryptor encryptor;
+  if (!encryptor.Init(encryption_key.get(), crypto::Encryptor::CBC, iv))
     return false;
 
   if (!encryptor.Decrypt(raw_ciphertext, plaintext))

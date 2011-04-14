@@ -10,13 +10,13 @@
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/nss_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "crypto/nss_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
@@ -567,14 +567,14 @@ void UserManager::NotifyOnLogin() {
   // Let the window manager know that we're logged in now.
   WmIpc::instance()->SetLoggedInProperty(true);
   // Ensure we've opened the real user's key/certificate database.
-  base::OpenPersistentNSSDB();
+  crypto::OpenPersistentNSSDB();
 
   // Only load the Opencryptoki library into NSS if we have this switch.
   // TODO(gspencer): Remove this switch once cryptohomed work is finished:
   // http://crosbug.com/12295 and http://crosbug.com/12304
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kLoadOpencryptoki)) {
-    base::EnableTPMForNSS();
+    crypto::EnableTPMForNSS();
   }
 
   // Schedules current user ownership check on file thread.

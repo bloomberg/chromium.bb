@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,18 +14,18 @@
 #include <vector>
 
 #include "base/base64.h"
-#include "base/crypto/encryptor.h"
-#include "base/hmac.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
+#include "crypto/encryptor.h"
+#include "crypto/hmac.h"
 
 using base::Base64Encode;
 using base::Base64Decode;
-using base::Encryptor;
-using base::HMAC;
 using base::RandInt;
-using base::SymmetricKey;
+using crypto::Encryptor;
+using crypto::HMAC;
+using crypto::SymmetricKey;
 
 namespace browser_sync {
 

@@ -178,7 +178,7 @@ void JingleSessionManager::Init(
     const std::string& local_jid,
     cricket::SessionManager* cricket_session_manager,
     IncomingSessionCallback* incoming_session_callback,
-    base::RSAPrivateKey* private_key,
+    crypto::RSAPrivateKey* private_key,
     scoped_refptr<net::X509Certificate> certificate) {
   if (MessageLoop::current() != message_loop()) {
     message_loop()->PostTask(

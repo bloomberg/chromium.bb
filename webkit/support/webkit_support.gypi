@@ -73,6 +73,7 @@
       'target_name': 'webkit_support_common',
       'type': '<(library)',
       'dependencies': [
+        '<(DEPTH)/crypto/crypto.gyp:crypto',
         '<(DEPTH)/skia/skia.gyp:skia',
         'glue',
       ],

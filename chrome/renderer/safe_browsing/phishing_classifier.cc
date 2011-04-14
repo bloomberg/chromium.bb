@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,8 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/sha2.h"
 #include "base/string_util.h"
+#include "crypto/sha2.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/features.h"
@@ -160,7 +160,7 @@ void PhishingClassifier::TermExtractionFinished(bool success) {
          it != features_->features().end(); ++it) {
       VLOG(2) << "Feature: " << it->first << " = " << it->second;
       bool result = hashed_features.AddRealFeature(
-          base::SHA256HashString(it->first), it->second);
+          crypto::SHA256HashString(it->first), it->second);
       DCHECK(result);
     }
 

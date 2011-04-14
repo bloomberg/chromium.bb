@@ -13,13 +13,13 @@
 #include "base/message_loop.h"
 #include "base/metrics/stats_counters.h"
 #include "base/metrics/stats_table.h"
-#include "base/nss_util.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "crypto/nss_util.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/diagnostics/diagnostics_main.h"
 #include "chrome/browser/platform_util.h"
@@ -589,7 +589,7 @@ int ChromeMain(int argc, char** argv) {
   SetupCRT(command_line);
 
 #if defined(USE_NSS)
-  base::EarlySetupForNSSInit();
+  crypto::EarlySetupForNSSInit();
 #endif
 
   // Initialize the Chrome path provider.

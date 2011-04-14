@@ -2,6 +2,7 @@
 # src/chrome in src/content.
 include_rules = [
   "+app",
+  "+crypto",
 
   # TEMPORARY ONLY WHILE WE REDUCE THE DEPENDENCIES.
   # When the src\content refactoring is complete, this will be unnecessary (and

@@ -18,12 +18,12 @@
 
 #include "base/base64.h"
 #include "base/basictypes.h"
-#include "base/crypto/encryptor.h"
-#include "base/crypto/symmetric_key.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/threading/non_thread_safe.h"
+#include "crypto/encryptor.h"
+#include "crypto/symmetric_key.h"
 #include "net/base/completion_callback.h"
 #include "net/base/dns_util.h"
 #include "net/base/dnsrr_resolver.h"
@@ -302,12 +302,12 @@ std::string DnsCertProvenanceChecker::BuildEncryptedReport(
   DCHECK_GE(sizeof(key_data), kKeySizeInBytes + kIVSizeInBytes);
   std::string raw_key(key_data, kKeySizeInBytes);
 
-  scoped_ptr<base::SymmetricKey> symkey(
-      base::SymmetricKey::Import(base::SymmetricKey::AES, raw_key));
+  scoped_ptr<crypto::SymmetricKey> symkey(
+      crypto::SymmetricKey::Import(crypto::SymmetricKey::AES, raw_key));
   std::string iv(key_data + kKeySizeInBytes, kIVSizeInBytes);
 
-  base::Encryptor encryptor;
-  bool r = encryptor.Init(symkey.get(), base::Encryptor::CBC, iv);
+  crypto::Encryptor encryptor;
+  bool r = encryptor.Init(symkey.get(), crypto::Encryptor::CBC, iv);
   CHECK(r);
 
   std::string plaintext(reinterpret_cast<const char*>(p.data()), p.size());

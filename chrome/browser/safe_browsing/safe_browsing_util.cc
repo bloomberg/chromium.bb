@@ -1,13 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
 #include "base/base64.h"
-#include "base/hmac.h"
-#include "base/sha2.h"
 #include "base/string_util.h"
+#include "crypto/hmac.h"
+#include "crypto/sha2.h"
 #include "chrome/browser/google/google_util.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_util.h"
@@ -436,9 +436,9 @@ int GetUrlHashIndex(const GURL& url,
   for (size_t h = 0; h < hosts.size(); ++h) {
     for (size_t p = 0; p < paths.size(); ++p) {
       SBFullHash key;
-      base::SHA256HashString(hosts[h] + paths[p],
-                             key.full_hash,
-                             sizeof(SBFullHash));
+      crypto::SHA256HashString(hosts[h] + paths[p],
+                               key.full_hash,
+                               sizeof(SBFullHash));
       int index = GetHashIndex(key, full_hashes);
       if (index != -1) return index;
     }
@@ -485,7 +485,7 @@ bool VerifyMAC(const std::string& key, const std::string& mac,
   std::string decoded_mac;
   base::Base64Decode(mac_copy, &decoded_mac);
 
-  base::HMAC hmac(base::HMAC::SHA1);
+  crypto::HMAC hmac(crypto::HMAC::SHA1);
   if (!hmac.Init(decoded_key))
     return false;
   const std::string data_str(data, data_length);
@@ -520,12 +520,12 @@ GURL GeneratePhishingReportUrl(const std::string& report_page,
 }
 
 void StringToSBFullHash(const std::string& hash_in, SBFullHash* hash_out) {
-  DCHECK_EQ(static_cast<size_t>(base::SHA256_LENGTH), hash_in.size());
-  memcpy(hash_out->full_hash, hash_in.data(), base::SHA256_LENGTH);
+  DCHECK_EQ(static_cast<size_t>(crypto::SHA256_LENGTH), hash_in.size());
+  memcpy(hash_out->full_hash, hash_in.data(), crypto::SHA256_LENGTH);
 }
 
 std::string SBFullHashToString(const SBFullHash& hash) {
-  DCHECK_EQ(static_cast<size_t>(base::SHA256_LENGTH), sizeof(hash.full_hash));
+  DCHECK_EQ(static_cast<size_t>(crypto::SHA256_LENGTH), sizeof(hash.full_hash));
   return std::string(hash.full_hash, sizeof(hash.full_hash));
 }
 }  // namespace safe_browsing_util

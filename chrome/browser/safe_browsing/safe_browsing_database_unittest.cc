@@ -10,8 +10,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
-#include "base/sha2.h"
 #include "base/time.h"
+#include "crypto/sha2.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_unittest_helper.h"
@@ -26,13 +26,13 @@ namespace {
 
 SBPrefix Sha256Prefix(const std::string& str) {
   SBPrefix prefix;
-  base::SHA256HashString(str, &prefix, sizeof(prefix));
+  crypto::SHA256HashString(str, &prefix, sizeof(prefix));
   return prefix;
 }
 
 SBFullHash Sha256Hash(const std::string& str) {
   SBFullHash hash;
-  base::SHA256HashString(str, &hash, sizeof(hash));
+  crypto::SHA256HashString(str, &hash, sizeof(hash));
   return hash;
 }
 

@@ -82,6 +82,7 @@
                 'chrome_resources',
                 'installer_util_strings',
                 '../content/content.gyp:content_worker',
+                '../crypto/crypto.gyp:crypto',
                 '../printing/printing.gyp:printing',
                 '../net/net.gyp:net_resources',
                 '../third_party/cld/cld.gyp:cld',
@@ -276,6 +277,7 @@
               'dependencies': [
                 # Bring in pdfsqueeze and run it on all pdfs
                 '../build/temp_gyp/pdfsqueeze.gyp:pdfsqueeze',
+                '../crypto/crypto.gyp:crypto',
                 # On Mac, Flash gets put into the framework, so we need this
                 # dependency here. flash_player.gyp will copy the Flash bundle
                 # into PRODUCT_DIR.

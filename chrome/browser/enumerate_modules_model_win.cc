@@ -12,7 +12,6 @@
 #include "base/file_path.h"
 #include "base/file_version_info_win.h"
 #include "base/metrics/histogram.h"
-#include "base/sha2.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -21,6 +20,7 @@
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
+#include "crypto/sha2.h"
 #include "chrome/browser/net/service_providers_win.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -262,7 +262,7 @@ static void GenerateHash(const std::string& input, std::string* output) {
   }
 
   uint8 hash[4];
-  base::SHA256HashString(input, hash, sizeof(hash));
+  crypto::SHA256HashString(input, hash, sizeof(hash));
   *output = StringToLowerASCII(base::HexEncode(hash, sizeof(hash)));
 }
 

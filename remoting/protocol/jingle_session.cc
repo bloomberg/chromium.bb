@@ -4,8 +4,8 @@
 
 #include "remoting/protocol/jingle_session.h"
 
-#include "base/crypto/rsa_private_key.h"
 #include "base/message_loop.h"
+#include "crypto/rsa_private_key.h"
 #include "jingle/glue/channel_socket_adapter.h"
 #include "jingle/glue/stream_socket_adapter.h"
 #include "net/base/cert_status_flags.h"
@@ -83,13 +83,13 @@ JingleSession* JingleSession::CreateClientSession(
 JingleSession* JingleSession::CreateServerSession(
     JingleSessionManager* manager,
     scoped_refptr<net::X509Certificate> certificate,
-    base::RSAPrivateKey* key) {
+    crypto::RSAPrivateKey* key) {
   return new JingleSession(manager, certificate, key);
 }
 
 JingleSession::JingleSession(
     JingleSessionManager* jingle_session_manager,
-    scoped_refptr<net::X509Certificate> server_cert, base::RSAPrivateKey* key)
+    scoped_refptr<net::X509Certificate> server_cert, crypto::RSAPrivateKey* key)
     : jingle_session_manager_(jingle_session_manager),
       server_cert_(server_cert),
       state_(INITIALIZING),
@@ -105,7 +105,7 @@ JingleSession::JingleSession(
   if (key) {
     std::vector<uint8> key_bytes;
     CHECK(key->ExportPrivateKey(&key_bytes));
-    key_.reset(base::RSAPrivateKey::CreateFromPrivateKeyInfo(key_bytes));
+    key_.reset(crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_bytes));
     CHECK(key_.get());
   }
 }

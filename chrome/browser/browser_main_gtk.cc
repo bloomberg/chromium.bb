@@ -27,7 +27,7 @@
 #include "ui/gfx/gtk_util.h"
 
 #if defined(USE_NSS)
-#include "base/nss_util.h"
+#include "crypto/nss_util.h"
 #endif
 
 #if defined(USE_LINUX_BREAKPAD)
@@ -69,7 +69,7 @@ void BrowserMainPartsGtk::PreEarlyInitialization() {
 
 #if defined(USE_NSS)
   // We want to be sure to init NSPR on the main thread.
-  base::EnsureNSPRInit();
+  crypto::EnsureNSPRInit();
 #endif
 }
 

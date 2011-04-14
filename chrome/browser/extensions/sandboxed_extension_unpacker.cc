@@ -7,7 +7,6 @@
 #include <set>
 
 #include "base/base64.h"
-#include "base/crypto/signature_verifier.h"
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
 #include "base/memory/scoped_handle.h"
@@ -16,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"  // TODO(viettrungluu): delete me.
+#include "crypto/signature_verifier.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -367,7 +367,7 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
     return false;
   }
 
-  base::SignatureVerifier verifier;
+  crypto::SignatureVerifier verifier;
   if (!verifier.VerifyInit(extension_misc::kSignatureAlgorithm,
                            sizeof(extension_misc::kSignatureAlgorithm),
                            &signature.front(),

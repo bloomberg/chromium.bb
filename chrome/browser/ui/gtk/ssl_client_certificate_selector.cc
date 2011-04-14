@@ -11,7 +11,6 @@
 
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
-#include "base/nss_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ssl/ssl_client_auth_handler.h"
 #include "chrome/browser/ui/crypto_module_password_dialog.h"

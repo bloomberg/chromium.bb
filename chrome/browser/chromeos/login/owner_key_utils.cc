@@ -6,19 +6,18 @@
 
 #include <limits>
 
-#include "base/crypto/rsa_private_key.h"
-#include "base/crypto/signature_creator.h"
-#include "base/crypto/signature_verifier.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
+#include "crypto/rsa_private_key.h"
+#include "crypto/signature_creator.h"
+#include "crypto/signature_verifier.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/common/extensions/extension_constants.h"
 
-using base::RSAPrivateKey;
 using extension_misc::kSignatureAlgorithm;
 
 namespace chromeos {
@@ -49,16 +48,17 @@ class OwnerKeyUtilsImpl : public OwnerKeyUtils {
 
   bool Sign(const std::string& data,
             std::vector<uint8>* OUT_signature,
-            base::RSAPrivateKey* key);
+            crypto::RSAPrivateKey* key);
 
-  RSAPrivateKey* FindPrivateKey(const std::vector<uint8>& key);
+  crypto::RSAPrivateKey* FindPrivateKey(const std::vector<uint8>& key);
 
   FilePath GetOwnerKeyFilePath();
 
  protected:
   virtual ~OwnerKeyUtilsImpl();
 
-  bool ExportPublicKeyToFile(RSAPrivateKey* pair, const FilePath& key_file);
+  bool ExportPublicKeyToFile(crypto::RSAPrivateKey* pair,
+                             const FilePath& key_file);
 
  private:
   // The file outside the owner's encrypted home directory where her
@@ -83,7 +83,7 @@ OwnerKeyUtilsImpl::OwnerKeyUtilsImpl() {}
 
 OwnerKeyUtilsImpl::~OwnerKeyUtilsImpl() {}
 
-bool OwnerKeyUtilsImpl::ExportPublicKeyToFile(RSAPrivateKey* pair,
+bool OwnerKeyUtilsImpl::ExportPublicKeyToFile(crypto::RSAPrivateKey* pair,
                                               const FilePath& key_file) {
   DCHECK(pair);
   bool ok = false;
@@ -134,7 +134,7 @@ bool OwnerKeyUtilsImpl::ImportPublicKey(const FilePath& key_file,
 bool OwnerKeyUtilsImpl::Verify(const std::string& data,
                                const std::vector<uint8> signature,
                                const std::vector<uint8> public_key) {
-  base::SignatureVerifier verifier;
+  crypto::SignatureVerifier verifier;
   if (!verifier.VerifyInit(kSignatureAlgorithm, sizeof(kSignatureAlgorithm),
                            &signature[0], signature.size(),
                            &public_key[0], public_key.size())) {
@@ -148,9 +148,9 @@ bool OwnerKeyUtilsImpl::Verify(const std::string& data,
 
 bool OwnerKeyUtilsImpl::Sign(const std::string& data,
                              std::vector<uint8>* OUT_signature,
-                             base::RSAPrivateKey* key) {
-  scoped_ptr<base::SignatureCreator> signer(
-      base::SignatureCreator::Create(key));
+                             crypto::RSAPrivateKey* key) {
+  scoped_ptr<crypto::SignatureCreator> signer(
+      crypto::SignatureCreator::Create(key));
   if (!signer->Update(reinterpret_cast<const uint8*>(data.c_str()),
                       data.length())) {
     return false;
@@ -158,9 +158,9 @@ bool OwnerKeyUtilsImpl::Sign(const std::string& data,
   return signer->Final(OUT_signature);
 }
 
-RSAPrivateKey* OwnerKeyUtilsImpl::FindPrivateKey(
+crypto::RSAPrivateKey* OwnerKeyUtilsImpl::FindPrivateKey(
     const std::vector<uint8>& key) {
-  return RSAPrivateKey::FindFromPublicKeyInfo(key);
+  return crypto::RSAPrivateKey::FindFromPublicKeyInfo(key);
 }
 
 FilePath OwnerKeyUtilsImpl::GetOwnerKeyFilePath() {

@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <algorithm>
 
-#include "base/sha2.h"
 #include "base/string_util.h"
+#include "crypto/sha2.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -283,7 +283,7 @@ TEST(SafeBrowsingUtilTest, CanonicalizeUrl) {
 TEST(SafeBrowsingUtilTest, GetUrlHashIndex) {
   GURL url("http://www.evil.com/phish.html");
   SBFullHashResult full_hash;
-  base::SHA256HashString(url.host() + url.path(),
+  crypto::SHA256HashString(url.host() + url.path(),
                          &full_hash.hash,
                          sizeof(SBFullHash));
   std::vector<SBFullHashResult> full_hashes;

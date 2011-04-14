@@ -11,8 +11,8 @@
 #include "base/file_path.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/scoped_nsobject.h"
-#include "base/nss_util.h"
 #include "base/path_service.h"
+#include "crypto/nss_util.h"
 #include "chrome/app/breakpad_mac.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/browser_main_win.h"
@@ -137,7 +137,7 @@ class BrowserMainPartsMac : public BrowserMainPartsPosix {
       net::ClientSocketFactory::UseSystemSSL();
     } else {
       // We want to be sure to init NSPR on the main thread.
-      base::EnsureNSPRInit();
+      crypto::EnsureNSPRInit();
     }
   }
 };

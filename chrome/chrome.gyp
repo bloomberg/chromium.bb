@@ -622,11 +622,13 @@
       'dependencies': [
         'common',
         '../base/base.gyp:base',
+        '../crypto/crypto.gyp:crypto',
         '../skia/skia.gyp:skia',
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
+        '../crypto/crypto.gyp:crypto',
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
       ],
       # This target exports a hard dependency because its header files include

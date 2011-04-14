@@ -64,10 +64,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
-#include "base/sha2.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "crypto/sha2.h"
 #include "chrome/browser/safe_browsing/bloom_filter.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "chrome/common/chrome_paths.h"
@@ -176,7 +176,7 @@ int GeneratePrefixHits(const std::string url,
   for (size_t i = 0; i < hosts.size(); ++i) {
     for (size_t j = 0; j < paths.size(); ++j) {
       SBPrefix prefix;
-      base::SHA256HashString(hosts[i] + paths[j], &prefix, sizeof(prefix));
+      crypto::SHA256HashString(hosts[i] + paths[j], &prefix, sizeof(prefix));
       if (bloom_filter->Exists(prefix))
         prefixes->push_back(prefix);
     }

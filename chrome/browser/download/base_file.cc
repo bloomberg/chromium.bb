@@ -4,11 +4,11 @@
 
 #include "chrome/browser/download/base_file.h"
 
-#include "base/crypto/secure_hash.h"
 #include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
+#include "crypto/secure_hash.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 #include "chrome/browser/download/download_util.h"
@@ -52,7 +52,7 @@ bool BaseFile::Initialize(bool calculate_hash) {
   calculate_hash_ = calculate_hash;
 
   if (calculate_hash_)
-    secure_hash_.reset(base::SecureHash::Create(base::SecureHash::SHA256));
+    secure_hash_.reset(crypto::SecureHash::Create(crypto::SecureHash::SHA256));
 
   if (!full_path_.empty() ||
       download_util::CreateTemporaryFileForDownload(&full_path_))

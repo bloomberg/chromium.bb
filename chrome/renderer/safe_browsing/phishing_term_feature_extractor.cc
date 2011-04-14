@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,10 +10,10 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/sha2.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "crypto/sha2.h"
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -200,7 +200,7 @@ void PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout() {
 
 void PhishingTermFeatureExtractor::HandleWord(const string16& word) {
   std::string word_lower = UTF16ToUTF8(l10n_util::ToLower(word));
-  std::string word_hash = base::SHA256HashString(word_lower);
+  std::string word_hash = crypto::SHA256HashString(word_lower);
 
   // Quick out if the word is not part of any term, which is the common case.
   if (page_word_hashes_->find(word_hash) == page_word_hashes_->end()) {
@@ -234,7 +234,7 @@ void PhishingTermFeatureExtractor::HandleWord(const string16& word) {
   std::string current_term = state_->previous_words;
   for (std::list<size_t>::iterator it = state_->previous_word_sizes.begin();
        it != state_->previous_word_sizes.end(); ++it) {
-    hashes_to_check[base::SHA256HashString(current_term)] = current_term;
+    hashes_to_check[crypto::SHA256HashString(current_term)] = current_term;
     current_term.erase(0, *it);
   }
 

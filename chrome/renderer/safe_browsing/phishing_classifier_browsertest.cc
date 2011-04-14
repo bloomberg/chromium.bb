@@ -12,9 +12,9 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/sha2.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "crypto/sha2.h"
 #include "chrome/renderer/safe_browsing/client_model.pb.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/mock_feature_extractor_clock.h"
@@ -33,13 +33,13 @@ class PhishingClassifierTest : public RenderViewFakeResourcesTest {
     // Construct a model to test with.  We include one feature from each of
     // the feature extractors, which allows us to verify that they all ran.
     ClientSideModel model;
-    model.add_hashes(base::SHA256HashString(features::kUrlTldToken +
-                                            std::string("net")));
-    model.add_hashes(base::SHA256HashString(features::kPageLinkDomain +
-                                            std::string("phishing.com")));
-    model.add_hashes(base::SHA256HashString(features::kPageTerm +
-                                            std::string("login")));
-    model.add_hashes(base::SHA256HashString("login"));
+    model.add_hashes(crypto::SHA256HashString(features::kUrlTldToken +
+                                              std::string("net")));
+    model.add_hashes(crypto::SHA256HashString(features::kPageLinkDomain +
+                                              std::string("phishing.com")));
+    model.add_hashes(crypto::SHA256HashString(features::kPageTerm +
+                                              std::string("login")));
+    model.add_hashes(crypto::SHA256HashString("login"));
 
     // Add a default rule with a non-phishy weight.
     ClientSideModel::Rule* rule = model.add_rule();

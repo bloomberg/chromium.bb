@@ -8,8 +8,8 @@
 
 #include <string>
 
-#include "base/crypto/symmetric_key.h"
 #include "base/memory/scoped_ptr.h"
+#include "crypto/symmetric_key.h"
 
 namespace browser_sync {
 
@@ -73,9 +73,9 @@ class Nigori {
   static const size_t kSigningIterations = 1004;
 
  private:
-  scoped_ptr<base::SymmetricKey> user_key_;
-  scoped_ptr<base::SymmetricKey> encryption_key_;
-  scoped_ptr<base::SymmetricKey> mac_key_;
+  scoped_ptr<crypto::SymmetricKey> user_key_;
+  scoped_ptr<crypto::SymmetricKey> encryption_key_;
+  scoped_ptr<crypto::SymmetricKey> mac_key_;
 };
 
 }  // namespace browser_sync

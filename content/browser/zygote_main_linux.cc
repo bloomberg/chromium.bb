@@ -29,13 +29,13 @@
 #include "base/hash_tables.h"
 #include "base/linux_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/nss_util.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
+#include "crypto/nss_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pepper_plugin_registry.h"
@@ -608,7 +608,7 @@ static void PreSandboxInit() {
   // NSS libraries are loaded before sandbox is activated. This is to allow
   // successful initialization of NSS which tries to load extra library files.
   // Doing so will allow NSS to be used within sandbox for chromoting.
-  base::LoadNSSLibraries();
+  crypto::LoadNSSLibraries();
 #else
     // TODO(bulach): implement openssl support.
     NOTREACHED() << "Remoting is not supported for openssl";

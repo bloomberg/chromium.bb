@@ -18,10 +18,10 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/nss_util.h"
 #include "base/path_service.h"
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
+#include "crypto/nss_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/render_messages.h"
@@ -167,9 +167,9 @@ RenderProcessImpl::RenderProcessImpl()
 #if defined(USE_NSS)
     // We are going to fork to engage the sandbox and we have not loaded
     // any security modules so it is safe to disable the fork check in NSS.
-    base::DisableNSSForkCheck();
-    base::ForceNSSNoDBInit();
-    base::EnsureNSSInit();
+    crypto::DisableNSSForkCheck();
+    crypto::ForceNSSNoDBInit();
+    crypto::EnsureNSSInit();
 #else
     // TODO(bulach): implement openssl support.
     NOTREACHED() << "Remoting is not supported for openssl";

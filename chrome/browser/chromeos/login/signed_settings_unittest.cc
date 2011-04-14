@@ -7,7 +7,6 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_temp_dir.h"
-#include "base/nss_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/test/thread_test_helper.h"
 #include "content/browser/browser_thread.h"
+#include "crypto/rsa_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -259,7 +259,7 @@ class SignedSettingsTest : public ::testing::Test {
   BrowserThread file_thread_;
 
   std::vector<uint8> fake_public_key_;
-  scoped_ptr<RSAPrivateKey> fake_private_key_;
+  scoped_ptr<crypto::RSAPrivateKey> fake_private_key_;
 
   MockKeyUtils* mock_;
   MockInjector injector_;

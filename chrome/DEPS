@@ -1,6 +1,7 @@
 include_rules = [
   "+app",
   "+content",
+  "+crypto",
   "+gpu",
   "+net",
   "+printing",

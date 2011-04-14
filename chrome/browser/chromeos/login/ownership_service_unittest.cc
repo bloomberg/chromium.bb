@@ -6,20 +6,20 @@
 
 #include <string>
 
-#include "base/crypto/rsa_private_key.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_temp_dir.h"
-#include "base/nss_util.h"
+#include "crypto/nss_util.h"
+#include "crypto/rsa_private_key.h"
 #include "chrome/browser/chromeos/login/mock_owner_key_utils.h"
 #include "chrome/browser/chromeos/login/owner_manager_unittest.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::base::RSAPrivateKey;
+using ::crypto::RSAPrivateKey;
 using ::testing::DoAll;
 using ::testing::Eq;
 using ::testing::Invoke;
@@ -42,7 +42,7 @@ class OwnershipServiceTest : public ::testing::Test {
   virtual ~OwnershipServiceTest() {}
 
   virtual void SetUp() {
-    base::OpenPersistentNSSDB();  // TODO(cmasone): use test DB instead
+    crypto::OpenPersistentNSSDB();  // TODO(cmasone): use test DB instead
     fake_private_key_.reset(RSAPrivateKey::Create(256));
     ASSERT_TRUE(fake_private_key_->ExportPublicKey(&fake_public_key_));
 

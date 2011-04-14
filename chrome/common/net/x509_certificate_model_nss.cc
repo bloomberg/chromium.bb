@@ -14,8 +14,8 @@
 #include <sechash.h>
 
 #include "base/logging.h"
-#include "base/nss_util.h"
 #include "base/string_number_conversions.h"
+#include "crypto/nss_util.h"
 #include "net/base/x509_certificate.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertHelper.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertificate.h"
@@ -198,8 +198,8 @@ bool GetTimes(X509Certificate::OSCertHandle cert_handle,
               base::Time* issued, base::Time* expires) {
   PRTime pr_issued, pr_expires;
   if (CERT_GetCertTimes(cert_handle, &pr_issued, &pr_expires) == SECSuccess) {
-    *issued = base::PRTimeToBaseTime(pr_issued);
-    *expires = base::PRTimeToBaseTime(pr_expires);
+    *issued = crypto::PRTimeToBaseTime(pr_issued);
+    *expires = crypto::PRTimeToBaseTime(pr_expires);
     return true;
   }
   return false;

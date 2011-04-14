@@ -15,11 +15,11 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_native_library.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/nss_util.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
+#include "crypto/nss_util.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -295,7 +295,7 @@ class BrowserMainPartsWin : public BrowserMainParts {
       net::ClientSocketFactory::UseSystemSSL();
     } else {
       // We want to be sure to init NSPR on the main thread.
-      base::EnsureNSPRInit();
+      crypto::EnsureNSPRInit();
     }
   }
 };

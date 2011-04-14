@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
 
-#include "base/sha2.h"
+#include "crypto/sha2.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Helper code for testing that a SafeBrowsingStore implementation
@@ -17,7 +17,7 @@
 // Helper to make it easy to initialize SBFullHash constants.
 inline const SBFullHash SBFullHashFromString(const char* str) {
   SBFullHash h;
-  base::SHA256HashString(str, &h.full_hash, sizeof(h.full_hash));
+  crypto::SHA256HashString(str, &h.full_hash, sizeof(h.full_hash));
   return h;
 }
 

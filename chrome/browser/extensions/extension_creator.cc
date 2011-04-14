@@ -7,12 +7,12 @@
 #include <vector>
 #include <string>
 
-#include "base/crypto/rsa_private_key.h"
-#include "base/crypto/signature_creator.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_handle.h"
 #include "base/memory/scoped_temp_dir.h"
 #include "base/string_util.h"
+#include "crypto/rsa_private_key.h"
+#include "crypto/signature_creator.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -74,7 +74,7 @@ bool ExtensionCreator::InitializeInput(
   return true;
 }
 
-base::RSAPrivateKey* ExtensionCreator::ReadInputKey(const FilePath&
+crypto::RSAPrivateKey* ExtensionCreator::ReadInputKey(const FilePath&
     private_key_path) {
   if (!file_util::PathExists(private_key_path)) {
     error_message_ =
@@ -98,14 +98,14 @@ base::RSAPrivateKey* ExtensionCreator::ReadInputKey(const FilePath&
     return NULL;
   }
 
-  return base::RSAPrivateKey::CreateFromPrivateKeyInfo(
+  return crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(
       std::vector<uint8>(private_key_bytes.begin(), private_key_bytes.end()));
 }
 
-base::RSAPrivateKey* ExtensionCreator::GenerateKey(const FilePath&
+crypto::RSAPrivateKey* ExtensionCreator::GenerateKey(const FilePath&
     output_private_key_path) {
-  scoped_ptr<base::RSAPrivateKey> key_pair(
-      base::RSAPrivateKey::Create(kRSAKeySize));
+  scoped_ptr<crypto::RSAPrivateKey> key_pair(
+      crypto::RSAPrivateKey::Create(kRSAKeySize));
   if (!key_pair.get()) {
     error_message_ =
         l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_GENERATE);
@@ -163,10 +163,10 @@ bool ExtensionCreator::CreateZip(const FilePath& extension_dir,
 }
 
 bool ExtensionCreator::SignZip(const FilePath& zip_path,
-                               base::RSAPrivateKey* private_key,
+                               crypto::RSAPrivateKey* private_key,
                                std::vector<uint8>* signature) {
-  scoped_ptr<base::SignatureCreator> signature_creator(
-      base::SignatureCreator::Create(private_key));
+  scoped_ptr<crypto::SignatureCreator> signature_creator(
+      crypto::SignatureCreator::Create(private_key));
   ScopedStdioHandle zip_handle(file_util::OpenFile(zip_path, "rb"));
   size_t buffer_size = 1 << 16;
   scoped_array<uint8> buffer(new uint8[buffer_size]);
@@ -186,7 +186,7 @@ bool ExtensionCreator::SignZip(const FilePath& zip_path,
 }
 
 bool ExtensionCreator::WriteCRX(const FilePath& zip_path,
-                                base::RSAPrivateKey* private_key,
+                                crypto::RSAPrivateKey* private_key,
                                 const std::vector<uint8>& signature,
                                 const FilePath& crx_path) {
   if (file_util::PathExists(crx_path))
@@ -246,7 +246,7 @@ bool ExtensionCreator::Run(const FilePath& extension_dir,
   }
 
   // Initialize Key Pair
-  scoped_ptr<base::RSAPrivateKey> key_pair;
+  scoped_ptr<crypto::RSAPrivateKey> key_pair;
   if (!private_key_path.value().empty())
     key_pair.reset(ReadInputKey(private_key_path));
   else

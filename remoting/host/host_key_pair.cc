@@ -9,12 +9,12 @@
 #include <vector>
 
 #include "base/base64.h"
-#include "base/crypto/rsa_private_key.h"
-#include "base/crypto/signature_creator.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/task.h"
 #include "base/time.h"
+#include "crypto/rsa_private_key.h"
+#include "crypto/signature_creator.h"
 #include "net/base/x509_certificate.h"
 #include "remoting/host/host_config.h"
 
@@ -25,7 +25,7 @@ HostKeyPair::HostKeyPair() { }
 HostKeyPair::~HostKeyPair() { }
 
 void HostKeyPair::Generate() {
-  key_.reset(base::RSAPrivateKey::Create(2048));
+  key_.reset(crypto::RSAPrivateKey::Create(2048));
 }
 
 bool HostKeyPair::LoadFromString(const std::string& key_base64) {
@@ -36,7 +36,7 @@ bool HostKeyPair::LoadFromString(const std::string& key_base64) {
   }
 
   std::vector<uint8> key_buf(key_str.begin(), key_str.end());
-  key_.reset(base::RSAPrivateKey::CreateFromPrivateKeyInfo(key_buf));
+  key_.reset(crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_buf));
   if (key_.get() == NULL) {
     LOG(ERROR) << "Invalid private key.";
     return false;
@@ -76,8 +76,8 @@ std::string HostKeyPair::GetPublicKey() const {
 }
 
 std::string HostKeyPair::GetSignature(const std::string& message) const {
-  scoped_ptr<base::SignatureCreator> signature_creator(
-      base::SignatureCreator::Create(key_.get()));
+  scoped_ptr<crypto::SignatureCreator> signature_creator(
+      crypto::SignatureCreator::Create(key_.get()));
   signature_creator->Update(reinterpret_cast<const uint8*>(message.c_str()),
                             message.length());
   std::vector<uint8> signature_buf;
@@ -88,10 +88,10 @@ std::string HostKeyPair::GetSignature(const std::string& message) const {
   return signature_base64;
 }
 
-base::RSAPrivateKey* HostKeyPair::CopyPrivateKey() const {
+crypto::RSAPrivateKey* HostKeyPair::CopyPrivateKey() const {
   std::vector<uint8> key_bytes;
   CHECK(key_->ExportPrivateKey(&key_bytes));
-  return base::RSAPrivateKey::CreateFromPrivateKeyInfo(key_bytes);
+  return crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_bytes);
 }
 
 net::X509Certificate* HostKeyPair::GenerateCertificate() const {
