@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/task.h"
 #include "chrome/browser/browser_process.h"
@@ -16,7 +17,8 @@
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/safebrowsing_messages.h"
+#include "chrome/common/safe_browsing/csd.pb.h"
+#include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -315,20 +317,24 @@ void ClientSideDetectionHost::DidNavigateMainFramePostCommit(
   }
 }
 
-void ClientSideDetectionHost::OnDetectedPhishingSite(const GURL& phishing_url,
-                                                     double phishing_score) {
+void ClientSideDetectionHost::OnDetectedPhishingSite(
+    const std::string& verdict_str) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // There is something seriously wrong if there is no service class but
   // this method is called.  The renderer should not start phishing detection
   // if there isn't any service class in the browser.
   DCHECK(csd_service_);
-  if (csd_service_) {
+  // We parse the protocol buffer here.  If we're unable to parse it we won't
+  // send the verdict further.
+  scoped_ptr<ClientPhishingRequest> verdict(new ClientPhishingRequest);
+  if (csd_service_ &&
+      verdict->ParseFromString(verdict_str) &&
+      verdict->IsInitialized()) {
     // There shouldn't be any pending requests because we revoke them everytime
     // we navigate away.
     DCHECK(!cb_factory_.HasPendingCallbacks());
     csd_service_->SendClientReportPhishingRequest(
-        phishing_url,
-        phishing_score,
+        verdict.release(),  // The service takes ownership of the verdict.
         cb_factory_.NewCallback(
             &ClientSideDetectionHost::MaybeShowPhishingWarning));
   }

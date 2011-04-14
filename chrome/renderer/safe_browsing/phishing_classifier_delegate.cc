@@ -11,7 +11,8 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/memory/scoped_callback_factory.h"
-#include "chrome/common/safebrowsing_messages.h"
+#include "chrome/common/safe_browsing/csd.pb.h"
+#include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier.h"
@@ -177,19 +178,18 @@ bool PhishingClassifierDelegate::OnMessageReceived(
   return handled;
 }
 
-void PhishingClassifierDelegate::ClassificationDone(bool is_phishy,
-                                                    double phishy_score) {
+void PhishingClassifierDelegate::ClassificationDone(
+    const ClientPhishingRequest& verdict) {
   // We no longer need the page text.
   classifier_page_text_.clear();
-  VLOG(2) << "Phishy verdict = " << is_phishy << " score = " << phishy_score;
-  if (!is_phishy) {
+  VLOG(2) << "Phishy verdict = " << verdict.is_phishing()
+          << " score = " << verdict.client_score();
+  if (!verdict.is_phishing()) {
     return;
   }
-
+  DCHECK(last_url_sent_to_classifier_.spec() == verdict.url());
   Send(new SafeBrowsingHostMsg_DetectedPhishingSite(
-      routing_id(),
-      last_url_sent_to_classifier_,
-      phishy_score));
+      routing_id(), verdict.SerializeAsString()));
 }
 
 GURL PhishingClassifierDelegate::GetToplevelUrl() {

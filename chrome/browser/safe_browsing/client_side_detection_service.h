@@ -33,7 +33,6 @@
 #include "base/platform_file.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "chrome/browser/safe_browsing/csd.pb.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -44,6 +43,7 @@ class URLRequestStatus;
 }  // namespace net
 
 namespace safe_browsing {
+class ClientPhishingRequest;
 
 class ClientSideDetectionService : public URLFetcher::Delegate {
  public:
@@ -77,16 +77,16 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
   // same thread as GetModelFile() was called.
   void GetModelFile(OpenModelDoneCallback* callback);
 
-  // Sends a request to the SafeBrowsing servers with the potentially phishing
-  // URL and the client-side phishing score.  The |phishing_url| scheme should
-  // be HTTP.  This method takes ownership of the |callback| and calls it once
-  // the result has come back from the server or if an error occurs during the
-  // fetch.  If an error occurs the phishing verdict will always be false.  The
-  // callback is always called after SendClientReportPhishingRequest() returns
-  // and on the same thread as SendClientReportPhishingRequest() was called.
+  // Sends a request to the SafeBrowsing servers with the ClientPhishingRequest.
+  // The URL scheme of the |url()| in the request should be HTTP.  This method
+  // takes ownership of the |verdict| as well as the |callback| and calls the
+  // the callback once the result has come back from the server or if an error
+  // occurs during the fetch.  If an error occurs the phishing verdict will
+  // always be false.  The callback is always called after
+  // SendClientReportPhishingRequest() returns and on the same thread as
+  // SendClientReportPhishingRequest() was called.
   virtual void SendClientReportPhishingRequest(
-      const GURL& phishing_url,
-      double score,
+      ClientPhishingRequest* verdict,
       ClientReportPhishingRequestCallback* callback);
 
   // Returns true if the given IP address string falls within a private
@@ -178,11 +178,10 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
   // Helper function which closes the |model_file_| if necessary.
   void CloseModelFile();
 
-  // Starts preparing the request to be sent to the client-side detection
-  // frontends.
+  // Starts sending the request to the client-side detection frontends.
+  // This method takes ownership of both pointers.
   void StartClientReportPhishingRequest(
-      const GURL& phishing_url,
-      double score,
+      ClientPhishingRequest* verdict,
       ClientReportPhishingRequestCallback* callback);
 
   // Starts getting the model file.

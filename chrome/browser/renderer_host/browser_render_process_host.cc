@@ -56,7 +56,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/safebrowsing_messages.h"
+#include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/renderer/render_process_impl.h"
 #include "chrome/renderer/render_thread.h"

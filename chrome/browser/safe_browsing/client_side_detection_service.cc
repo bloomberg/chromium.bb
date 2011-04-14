@@ -15,9 +15,9 @@
 #include "base/stl_util-inl.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "chrome/browser/safe_browsing/csd.pb.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/common/net/url_fetcher.h"
+#include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
@@ -105,15 +105,14 @@ void ClientSideDetectionService::GetModelFile(OpenModelDoneCallback* callback) {
 }
 
 void ClientSideDetectionService::SendClientReportPhishingRequest(
-    const GURL& phishing_url,
-    double score,
+    ClientPhishingRequest* verdict,
     ClientReportPhishingRequestCallback* callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   MessageLoop::current()->PostTask(
       FROM_HERE,
       method_factory_.NewRunnableMethod(
           &ClientSideDetectionService::StartClientReportPhishingRequest,
-          phishing_url, score, callback));
+          verdict, callback));
 }
 
 bool ClientSideDetectionService::IsPrivateIPAddress(
@@ -254,20 +253,17 @@ void ClientSideDetectionService::StartGetModelFile(
 }
 
 void ClientSideDetectionService::StartClientReportPhishingRequest(
-    const GURL& phishing_url,
-    double score,
+    ClientPhishingRequest* verdict,
     ClientReportPhishingRequestCallback* callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  scoped_ptr<ClientPhishingRequest> request(verdict);
   scoped_ptr<ClientReportPhishingRequestCallback> cb(callback);
 
-  ClientPhishingRequest request;
-  request.set_url(phishing_url.spec());
-  request.set_client_score(static_cast<float>(score));
   std::string request_data;
-  if (!request.SerializeToString(&request_data)) {
+  if (!request->SerializeToString(&request_data)) {
     UMA_HISTOGRAM_COUNTS("SBClientPhishing.RequestNotSerialized", 1);
     VLOG(1) << "Unable to serialize the CSD request. Proto file changed?";
-    cb->Run(phishing_url, false);
+    cb->Run(GURL(request->url()), false);
     return;
   }
 
@@ -279,7 +275,7 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
   // Remember which callback and URL correspond to the current fetcher object.
   ClientReportInfo* info = new ClientReportInfo;
   info->callback.swap(cb);  // takes ownership of the callback.
-  info->phishing_url = phishing_url;
+  info->phishing_url = GURL(request->url());
   client_phishing_reports_[fetcher] = info;
 
   fetcher->set_load_flags(net::LOAD_DISABLE_CACHE);

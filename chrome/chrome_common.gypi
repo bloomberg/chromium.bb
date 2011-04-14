@@ -71,7 +71,7 @@
           'common/profiling.cc',
           'common/profiling.h',
           'common/ref_counted_util.h',
-          'common/safebrowsing_messages.h',
+          'common/safe_browsing/safebrowsing_messages.h',
           'common/sandbox_policy.cc',
           'common/sandbox_policy.h',
           'common/switch_utils.cc',
@@ -109,6 +109,7 @@
         'common_constants',
         'common_net',
         'default_plugin/default_plugin.gyp:default_plugin',
+	'safe_browsing_csd_proto',
         'theme_resources',
         '../app/app.gyp:app_base',
         '../app/app.gyp:app_resources',
@@ -209,6 +210,8 @@
         'common/remoting/chromoting_host_info.h',
         'common/render_messages.cc',
         'common/render_messages.h',
+	'<(protoc_out_dir)/chrome/common/safe_browsing/csd.pb.cc',
+        '<(protoc_out_dir)/chrome/common/safe_browsing/csd.pb.h',
         'common/search_provider.h',
         'common/security_style.h',
         'common/service_messages.h',
@@ -409,6 +412,53 @@
           },
         ],
        ],
+    },
+    {
+      # Protobuf compiler / generator for the safebrowsing client-side detection
+      # (csd) request protocol buffer which is used both in the renderer and in
+      # the browser.
+      'target_name': 'safe_browsing_csd_proto',
+      'type': 'none',
+      'sources': [ 'common/safe_browsing/csd.proto' ],
+      'rules': [
+        {
+          'rule_name': 'genproto',
+          'extension': 'proto',
+          'inputs': [
+            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+          ],
+          'variables': {
+            # The protoc compiler requires a proto_path argument with the
+            # directory containing the .proto file.
+            # There's no generator variable that corresponds to this, so fake
+            # it.
+            'rule_input_relpath': 'common/safe_browsing',
+          },
+          'outputs': [
+            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.h',
+            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.cc',
+          ],
+          'action': [
+            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+            '--proto_path=./<(rule_input_relpath)',
+            './<(rule_input_relpath)/<(RULE_INPUT_ROOT)<(RULE_INPUT_EXT)',
+            '--cpp_out=<(protoc_out_dir)/chrome/<(rule_input_relpath)',
+          ],
+          'message': 'Generating C++ code from <(RULE_INPUT_PATH)',
+        },
+      ],
+      'dependencies': [
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+        '../third_party/protobuf/protobuf.gyp:protoc#host',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(protoc_out_dir)',
+        ]
+      },
+      'export_dependent_settings': [
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+      ],
     },
   ],
   'conditions': [

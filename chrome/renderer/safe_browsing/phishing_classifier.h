@@ -27,6 +27,7 @@
 class RenderView;
 
 namespace safe_browsing {
+class ClientPhishingRequest;
 class FeatureExtractorClock;
 class FeatureMap;
 class PhishingDOMFeatureExtractor;
@@ -36,15 +37,16 @@ class Scorer;
 
 class PhishingClassifier {
  public:
-  // Callback to be run when phishing classification finishes.  If the first
-  // argument is true, the page is considered phishy by the client-side model,
-  // and the browser should ping back to get a final verdict.  The second
-  // argument gives the phishyness score which is used in the pingback,
-  // or kInvalidScore if classification failed.
-  typedef Callback2<bool /* phishy */, double /* phishy_score */>::Type
-    DoneCallback;
+  // Callback to be run when phishing classification finishes. The verdict
+  // is a ClientPhishingRequest which contains the verdict computed by the
+  // classifier as well as the extracted features.  If the verdict.is_phishing()
+  // is true, the page is considered phishy by the client-side model,
+  // and the browser should ping back to get a final verdict.  The
+  // verdict.client_score() is set to kInvalidScore if classification failed.
+  typedef Callback1<const ClientPhishingRequest& /* verdict */>::Type
+      DoneCallback;
 
-  static const double kInvalidScore;
+  static const float kInvalidScore;
 
   // Creates a new PhishingClassifier object that will operate on
   // |render_view|.  |clock| is used to time feature extractor operations, and
@@ -87,7 +89,7 @@ class PhishingClassifier {
 
  private:
   // Any score equal to or above this value is considered phishy.
-  static const double kPhishyThreshold;
+  static const float kPhishyThreshold;
 
   // Begins the feature extraction process, by extracting URL features and
   // beginning DOM feature extraction.
@@ -110,7 +112,7 @@ class PhishingClassifier {
   void CheckNoPendingClassification();
 
   // Helper method to run the DoneCallback and clear the state.
-  void RunCallback(bool phishy, double phishy_score);
+  void RunCallback(const ClientPhishingRequest& verdict);
 
   // Helper to run the DoneCallback when feature extraction has failed.
   // This always signals a non-phishy verdict for the page, with kInvalidScore.

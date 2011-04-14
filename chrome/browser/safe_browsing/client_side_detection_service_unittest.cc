@@ -18,9 +18,9 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
-#include "chrome/browser/safe_browsing/csd.pb.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/common/net/url_fetcher.h"
+#include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
@@ -64,10 +64,13 @@ class ClientSideDetectionServiceTest : public testing::Test {
   }
 
   bool SendClientReportPhishingRequest(const GURL& phishing_url,
-                                       double score) {
+                                       float score) {
+    ClientPhishingRequest* request = new ClientPhishingRequest();
+    request->set_url(phishing_url.spec());
+    request->set_client_score(score);
+    request->set_is_phishing(true);  // client thinks the URL is phishing.
     csd_service_->SendClientReportPhishingRequest(
-        phishing_url,
-        score,
+        request,
         NewCallback(this, &ClientSideDetectionServiceTest::SendRequestDone));
     phishing_url_ = phishing_url;
     msg_loop_.Run();  // Waits until callback is called.
@@ -226,7 +229,7 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
       tmp_dir.path().AppendASCII("model"), NULL));
 
   GURL url("http://a.com/");
-  double score = 0.4;  // Some random client score.
+  float score = 0.4f;  // Some random client score.
 
   base::Time before = base::Time::Now();
 

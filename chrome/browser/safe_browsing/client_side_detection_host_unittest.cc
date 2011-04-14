@@ -12,7 +12,8 @@
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/safebrowsing_messages.h"
+#include "chrome/common/safe_browsing/csd.pb.h"
+#include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "chrome/test/testing_profile.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
@@ -21,10 +22,7 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gmock/include/gmock/gmock-actions.h"
-#include "testing/gmock/include/gmock/gmock-generated-nice-strict.h"
-#include "testing/gmock/include/gmock/gmock-more-actions.h"
-#include "testing/gmock/include/gmock/gmock-spec-builders.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
 using ::testing::DeleteArg;
@@ -33,6 +31,7 @@ using ::testing::Eq;
 using ::testing::Mock;
 using ::testing::NiceMock;
 using ::testing::NotNull;
+using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::SetArgumentPointee;
@@ -45,14 +44,19 @@ const bool kTrue = true;
 
 namespace safe_browsing {
 
+MATCHER_P(EqualsProto, other, "") {
+  return other.SerializeAsString() == arg.SerializeAsString();
+}
+
 class MockClientSideDetectionService : public ClientSideDetectionService {
  public:
   explicit MockClientSideDetectionService(const FilePath& model_path)
       : ClientSideDetectionService(model_path, NULL) {}
   virtual ~MockClientSideDetectionService() {};
 
-  MOCK_METHOD3(SendClientReportPhishingRequest,
-               void(const GURL&, double, ClientReportPhishingRequestCallback*));
+  MOCK_METHOD2(SendClientReportPhishingRequest,
+               void(ClientPhishingRequest*,
+                    ClientReportPhishingRequestCallback*));
   MOCK_CONST_METHOD1(IsPrivateIPAddress, bool(const std::string&));
   MOCK_METHOD2(GetValidCachedResult, bool(const GURL&, bool*));
   MOCK_METHOD1(IsInCache, bool(const GURL&));
@@ -143,8 +147,8 @@ class ClientSideDetectionHostTest : public RenderViewHostTestHarness {
     *CommandLine::ForCurrentProcess() = *original_cmd_line_;
   }
 
-  void OnDetectedPhishingSite(const GURL& phishing_url, double phishing_score) {
-    csd_host_->OnDetectedPhishingSite(phishing_url, phishing_score);
+  void OnDetectedPhishingSite(const std::string& verdict_str) {
+    csd_host_->OnDetectedPhishingSite(verdict_str);
   }
 
   void FlushIOMessageLoop() {
@@ -204,7 +208,7 @@ class ClientSideDetectionHostTest : public RenderViewHostTestHarness {
   ClientSideDetectionHost* csd_host_;
   scoped_ptr<StrictMock<MockClientSideDetectionService> > csd_service_;
   scoped_refptr<StrictMock<MockSafeBrowsingService> > sb_service_;
-  MockTestingProfile* mock_profile_;  // We don't own this object.
+  MockTestingProfile* mock_profile_;  // We don't own this object
 
  private:
   scoped_ptr<BrowserThread> ui_thread_;
@@ -212,23 +216,34 @@ class ClientSideDetectionHostTest : public RenderViewHostTestHarness {
   scoped_ptr<CommandLine> original_cmd_line_;
 };
 
+TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteInvalidVerdict) {
+  // Case 0: renderer sends an invalid verdict string that we're unable to
+  // parse.
+  EXPECT_CALL(*csd_service_, SendClientReportPhishingRequest(_, _)).Times(0);
+  OnDetectedPhishingSite("Invalid Protocol Buffer");
+  EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
+}
+
 TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteNotPhishing) {
   // Case 1: client thinks the page is phishing.  The server does not agree.
   // No interstitial is shown.
   ClientSideDetectionService::ClientReportPhishingRequestCallback* cb;
-  GURL phishing_url("http://phishingurl.com/");
+  ClientPhishingRequest verdict;
+  verdict.set_url("http://phishingurl.com/");
+  verdict.set_client_score(1.0f);
+  verdict.set_is_phishing(true);
 
   EXPECT_CALL(*csd_service_,
-              SendClientReportPhishingRequest(phishing_url, 1.0, _))
-      .WillOnce(SaveArg<2>(&cb));
-  OnDetectedPhishingSite(phishing_url, 1.0);
+              SendClientReportPhishingRequest(Pointee(EqualsProto(verdict)), _))
+      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb)));
+  OnDetectedPhishingSite(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb);
 
   // Make sure DisplayBlockingPage is not going to be called.
   EXPECT_CALL(*sb_service_,
               DisplayBlockingPage(_, _, _, _, _, _, _, _)).Times(0);
-  cb->Run(phishing_url, false);
+  cb->Run(GURL(verdict.url()), false);
   delete cb;
   // If there was a message posted on the IO thread to display the
   // interstitial page we know that it would have been posted before
@@ -244,19 +259,22 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteDisabled) {
   // Case 2: client thinks the page is phishing and so does the server but
   // showing the interstitial is disabled => no interstitial is shown.
   ClientSideDetectionService::ClientReportPhishingRequestCallback* cb;
-  GURL phishing_url("http://phishingurl.com/");
+  ClientPhishingRequest verdict;
+  verdict.set_url("http://phishingurl.com/");
+  verdict.set_client_score(1.0f);
+  verdict.set_is_phishing(true);
 
   EXPECT_CALL(*csd_service_,
-              SendClientReportPhishingRequest(phishing_url, 1.0, _))
-      .WillOnce(SaveArg<2>(&cb));
-  OnDetectedPhishingSite(phishing_url, 1.0);
+              SendClientReportPhishingRequest(Pointee(EqualsProto(verdict)), _))
+      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb)));
+  OnDetectedPhishingSite(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb);
 
   // Make sure DisplayBlockingPage is not going to be called.
   EXPECT_CALL(*sb_service_,
               DisplayBlockingPage(_, _, _, _, _, _, _, _)).Times(0);
-  cb->Run(phishing_url, false);
+  cb->Run(GURL(verdict.url()), false);
   delete cb;
 
   FlushIOMessageLoop();
@@ -268,14 +286,18 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteShowInterstitial) {
   // We show an interstitial.
   ClientSideDetectionService::ClientReportPhishingRequestCallback* cb;
   GURL phishing_url("http://phishingurl.com/");
+  ClientPhishingRequest verdict;
+  verdict.set_url(phishing_url.spec());
+  verdict.set_client_score(1.0f);
+  verdict.set_is_phishing(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableClientSidePhishingInterstitial);
 
   EXPECT_CALL(*csd_service_,
-              SendClientReportPhishingRequest(phishing_url, 1.0, _))
-      .WillOnce(SaveArg<2>(&cb));
-  OnDetectedPhishingSite(phishing_url, 1.0);
+              SendClientReportPhishingRequest(Pointee(EqualsProto(verdict)), _))
+      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb)));
+  OnDetectedPhishingSite(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb);
 
@@ -320,14 +342,18 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
   // a single interstitial is shown for the second URL.
   ClientSideDetectionService::ClientReportPhishingRequestCallback* cb;
   GURL phishing_url("http://phishingurl.com/");
+  ClientPhishingRequest verdict;
+  verdict.set_url(phishing_url.spec());
+  verdict.set_client_score(1.0f);
+  verdict.set_is_phishing(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableClientSidePhishingInterstitial);
 
   EXPECT_CALL(*csd_service_,
-              SendClientReportPhishingRequest(phishing_url, 1.0, _))
-      .WillOnce(SaveArg<2>(&cb));
-  OnDetectedPhishingSite(phishing_url, 1.0);
+              SendClientReportPhishingRequest(Pointee(EqualsProto(verdict)), _))
+      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb)));
+  OnDetectedPhishingSite(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb);
   GURL other_phishing_url("http://other_phishing_url.com/bla");
@@ -339,10 +365,12 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
   WaitAndCheckPreClassificationChecks();
 
   ClientSideDetectionService::ClientReportPhishingRequestCallback* cb_other;
+  verdict.set_url(other_phishing_url.spec());
+  verdict.set_client_score(0.8f);
   EXPECT_CALL(*csd_service_,
-              SendClientReportPhishingRequest(other_phishing_url, 0.8, _))
-      .WillOnce(SaveArg<2>(&cb_other));
-  OnDetectedPhishingSite(other_phishing_url, 0.8);
+              SendClientReportPhishingRequest(Pointee(EqualsProto(verdict)), _))
+      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb_other)));
+  OnDetectedPhishingSite(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb_other);
 

@@ -25,7 +25,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/print_messages.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/safebrowsing_messages.h"
+#include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/url_constants.h"

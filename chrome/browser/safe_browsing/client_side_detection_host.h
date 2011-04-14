@@ -47,7 +47,8 @@ class ClientSideDetectionHost : public TabContentsObserver {
   class ShouldClassifyUrlRequest;
   friend class ShouldClassifyUrlRequest;
 
-  void OnDetectedPhishingSite(const GURL& phishing_url, double phishing_score);
+  // Verdict is an encoded ClientPhishingRequest protocol message.
+  void OnDetectedPhishingSite(const std::string& verdict);
 
   // Callback that is called when the server ping back is
   // done. Display an interstitial if |is_phishing| is true.

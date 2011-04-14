@@ -29,11 +29,12 @@ IPC_STRUCT_END()
 // SafeBrowsing client-side detection messages sent from the renderer to the
 // browser.
 
-// Inform the browser that the current URL is phishing according to the
-// client-side phishing detector.
-IPC_MESSAGE_ROUTED2(SafeBrowsingHostMsg_DetectedPhishingSite,
-                    GURL /* phishing_url */,
-                    double /* phishing_score */)
+// Inform the browser that the URL in the given ClientPhishingRequest proto is
+// phishing according to the client-side phishing detector.
+// TODO(noelutz): we may want to create custom ParamTraits for MessageLite to
+// have a generic way to send protocol messages over IPC.
+IPC_MESSAGE_ROUTED1(SafeBrowsingHostMsg_DetectedPhishingSite,
+                    std::string /* encoded ClientPhishingRequest proto */)
 
 // Send part of the DOM to the browser, to be used in a malware report.
 IPC_MESSAGE_ROUTED1(SafeBrowsingHostMsg_MalwareDOMDetails,

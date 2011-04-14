@@ -24,6 +24,7 @@
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/automation/dom_automation_v8_extension.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"

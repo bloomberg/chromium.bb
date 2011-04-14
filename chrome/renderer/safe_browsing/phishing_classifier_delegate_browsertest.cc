@@ -9,7 +9,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/safebrowsing_messages.h"
+#include "chrome/common/safe_browsing/csd.pb.h"
+#include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier.h"
 #include "chrome/renderer/safe_browsing/render_view_fake_resources_test.h"
@@ -69,23 +70,22 @@ class PhishingClassifierDelegateTest : public RenderViewFakeResourcesTest {
     return handled;
   }
 
-  void OnDetectedPhishingSite(GURL phishing_url, double phishing_score) {
-    detected_phishing_site_ = true;
-    detected_url_ = phishing_url;
-    detected_score_ = phishing_score;
+  void OnDetectedPhishingSite(const std::string& verdict_str) {
+    scoped_ptr<ClientPhishingRequest> verdict(new ClientPhishingRequest);
+    if (verdict->ParseFromString(verdict_str) &&
+        verdict->IsInitialized()) {
+      verdict_.swap(verdict);
+    }
     message_loop_.Quit();
   }
 
   // Runs the ClassificationDone callback, then waits for the
   // DetectedPhishingSite IPC to arrive.
   void RunClassificationDone(PhishingClassifierDelegate* delegate,
-                             bool is_phishy, double phishy_score) {
+                             const ClientPhishingRequest& verdict) {
     // Clear out any previous state.
-    detected_phishing_site_ = false;
-    detected_url_ = GURL();
-    detected_score_ = -1.0;
-
-    delegate->ClassificationDone(is_phishy, phishy_score);
+    verdict_.reset();
+    delegate->ClassificationDone(verdict);
     message_loop_.Run();
   }
 
@@ -94,9 +94,7 @@ class PhishingClassifierDelegateTest : public RenderViewFakeResourcesTest {
     delegate->OnStartPhishingDetection(url);
   }
 
-  bool detected_phishing_site_;
-  GURL detected_url_;
-  double detected_score_;
+  scoped_ptr<ClientPhishingRequest> verdict_;
 };
 
 TEST_F(PhishingClassifierDelegateTest, Navigation) {
@@ -340,10 +338,13 @@ TEST_F(PhishingClassifierDelegateTest, DetectedPhishingSite) {
   Mock::VerifyAndClearExpectations(classifier);
 
   // Now run the callback to simulate the classifier finishing.
-  RunClassificationDone(delegate, true, 0.8);
-  EXPECT_TRUE(detected_phishing_site_);
-  EXPECT_EQ(GURL("http://host.com/#a"), detected_url_);
-  EXPECT_EQ(0.8, detected_score_);
+  ClientPhishingRequest verdict;
+  verdict.set_url("http://host.com/#a");
+  verdict.set_client_score(0.8f);
+  verdict.set_is_phishing(true);
+  RunClassificationDone(delegate, verdict);
+  ASSERT_TRUE(verdict_.get());
+  EXPECT_EQ(verdict.SerializeAsString(), verdict_->SerializeAsString());
 
   // The delegate will cancel pending classification on destruction.
   EXPECT_CALL(*classifier, CancelPendingClassification());

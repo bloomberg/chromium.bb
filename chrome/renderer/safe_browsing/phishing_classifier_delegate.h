@@ -16,6 +16,7 @@
 #include "ipc/ipc_platform_file.h"
 
 namespace safe_browsing {
+class ClientPhishingRequest;
 class PhishingClassifier;
 class Scorer;
 
@@ -72,7 +73,7 @@ class PhishingClassifierDelegate : public RenderViewObserver {
   void OnStartPhishingDetection(const GURL& url);
 
   // Called when classification for the current page finishes.
-  void ClassificationDone(bool is_phishy, double phishy_score);
+  void ClassificationDone(const ClientPhishingRequest& verdict);
 
   // Returns the RenderView's toplevel URL.
   GURL GetToplevelUrl();
