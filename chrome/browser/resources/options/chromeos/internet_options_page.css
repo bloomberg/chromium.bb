@@ -208,11 +208,7 @@ html[dir='rtl'] .details-button {
 #detailsInternetPage[nocellplan] .plan-details-info,
 #detailsInternetPage:not([gsm]) .gsm-only,
 #detailsInternetPage[gsm] .cdma-only,
-#detailsInternetPage:not([password]) .password-details,
-#detailsInternetPage[cert] .password-details,
-#detailsInternetPage[certPkcs] .password-details,
-#detailsInternetPage:not([cert]) .cert-details,
-#detailsInternetPage:not([certPkcs]) .cert-pkcs-details {
+#detailsInternetPage:not([password]) .password-details {
   display: none;
 }
 

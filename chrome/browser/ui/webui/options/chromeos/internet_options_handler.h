@@ -85,13 +85,6 @@ class InternetOptionsHandler
   void SetSimCardLockCallback(const ListValue* args);
   void ChangePinCallback(const ListValue* args);
 
-  // Parses 'path' to determine if the certificate is stored in a pkcs#11
-  // device. flimflam recognizes the string "SETTINGS:" to specify
-  // authentication parameters. 'key_id=' indicates that the certificate is
-  // stored in a pkcs#11 device.
-  // See src/third_party/flimflam/files/doc/service-api.txt.
-  bool IsCertificateInPkcs11(const std::string& path);
-
   // Populates the ui with the details of the given device path. This forces
   // an overlay to be displayed in the UI.
   void PopulateDictionaryDetails(const chromeos::Network* net,

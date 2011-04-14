@@ -163,24 +163,12 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("inetSsid",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID));
-  localized_strings->SetString("inetIdent",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY));
-  localized_strings->SetString("inetCert",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT));
-  localized_strings->SetString("inetCertPass",
-      l10n_util::GetStringUTF16(
-           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PRIVATE_KEY_PASSWORD));
   localized_strings->SetString("inetPassProtected",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NET_PROTECTED));
   localized_strings->SetString("inetAutoConnectNetwork",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT));
-  localized_strings->SetString("inetCertPkcs",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_INSTALLED));
   localized_strings->SetString("inetLogin",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN));
@@ -608,44 +596,9 @@ void InternetOptionsHandler::SetDetailsCallback(const ListValue* args) {
   if (!network)
     return;
 
-  if (network->encrypted()) {
-    if (network->encrypted() &&
-        network->encryption() == chromeos::SECURITY_8021X) {
-      std::string ident;
-      if (!args->GetString(2, &ident)) {
-        NOTREACHED();
-        return;
-      }
-      if (ident != network->identity())
-        network->SetIdentity(ident);
-      if (!IsCertificateInPkcs11(network->cert_path())) {
-        std::string certpath;
-        if (!args->GetString(3, &certpath)) {
-          NOTREACHED();
-          return;
-        }
-        if (certpath != network->cert_path())
-          network->SetCertPath(certpath);
-      }
-    }
-  }
-
   bool auto_connect = auto_connect_str == "true";
   if (auto_connect != network->auto_connect())
     network->SetAutoConnect(auto_connect);
-}
-
-bool InternetOptionsHandler::IsCertificateInPkcs11(const std::string& path) {
-  static const std::string settings_string("SETTINGS:");
-  static const std::string pkcs11_key("key_id");
-  if (path.find(settings_string) == 0) {
-    std::string::size_type idx = path.find(pkcs11_key);
-    if (idx != std::string::npos)
-      idx = path.find_first_not_of(kWhitespaceASCII, idx + pkcs11_key.length());
-    if (idx != std::string::npos && path[idx] == '=')
-      return true;
-  }
-  return false;
 }
 
 void InternetOptionsHandler::PopulateDictionaryDetails(
@@ -706,26 +659,7 @@ void InternetOptionsHandler::PopulateWifiDetails(
     DictionaryValue* dictionary) {
   dictionary->SetString("ssid", wifi->name());
   dictionary->SetBoolean("autoConnect", wifi->auto_connect());
-  if (wifi->encrypted()) {
-    dictionary->SetBoolean("encrypted", true);
-    if (wifi->encryption() == chromeos::SECURITY_8021X) {
-      bool certificate_in_pkcs11 =
-          IsCertificateInPkcs11(wifi->cert_path());
-      if (certificate_in_pkcs11) {
-        dictionary->SetBoolean("certInPkcs", true);
-      } else {
-        dictionary->SetBoolean("certInPkcs", false);
-      }
-      dictionary->SetString("certPath", wifi->cert_path());
-      dictionary->SetString("ident", wifi->identity());
-      dictionary->SetBoolean("certNeeded", true);
-      dictionary->SetString("certPass", wifi->GetPassphrase());
-    } else {
-      dictionary->SetBoolean("certNeeded", false);
-    }
-  } else {
-    dictionary->SetBoolean("encrypted", false);
-  }
+  dictionary->SetBoolean("encrypted", wifi->encrypted());
 }
 
 void InternetOptionsHandler::PopulateCellularDetails(

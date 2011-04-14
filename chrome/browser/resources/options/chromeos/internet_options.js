@@ -359,21 +359,8 @@ cr.define('options', function() {
         $('autoConnectNetwork').disabled = true;
       }
       page.removeAttribute('password');
-      page.removeAttribute('cert');
-      page.removeAttribute('certPkcs');
       if (data.encrypted) {
-        if (data.certNeeded) {
-          if (data.certInPkcs) {
-            page.setAttribute('certPkcs', true);
-            $('inetIdentPkcs').textContent = data.ident;
-          } else {
-            page.setAttribute('cert', true);
-            $('inetIdent').value = data.ident;
-            $('inetCert').value = data.certPath;
-          }
-        } else {
-          page.setAttribute('password', true);
-        }
+        page.setAttribute('password', true);
       }
     } else if(data.type == 5) {
       if (!data.gsm)
@@ -382,8 +369,6 @@ cr.define('options', function() {
         OptionsPage.showTab($('cellularConnNavTab'));
       page.removeAttribute('ethernet');
       page.removeAttribute('wireless');
-      page.removeAttribute('cert');
-      page.removeAttribute('certPkcs');
       page.setAttribute('cellular', true);
       $('serviceName').textContent = data.serviceName;
       $('networkTechnology').textContent = data.networkTechnology;
@@ -442,8 +427,6 @@ cr.define('options', function() {
       OptionsPage.showTab($('internetNavTab'));
       page.setAttribute('ethernet', true);
       page.removeAttribute('wireless');
-      page.removeAttribute('cert');
-      page.removeAttribute('certPkcs');
       page.removeAttribute('cellular');
       page.removeAttribute('gsm');
     }
