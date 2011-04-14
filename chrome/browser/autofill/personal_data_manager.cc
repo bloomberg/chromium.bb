@@ -112,11 +112,17 @@ PersonalDataManager::~PersonalDataManager() {
 void PersonalDataManager::OnWebDataServiceRequestDone(
     WebDataService::Handle h,
     const WDTypedResult* result) {
-  // Error from the web database.
-  if (!result)
-    return;
-
   DCHECK(pending_profiles_query_ || pending_creditcards_query_);
+
+  if (!result) {
+    // Error from the web database.
+    if (h == pending_creditcards_query_)
+      pending_creditcards_query_ = 0;
+    else if (h == pending_profiles_query_)
+      pending_profiles_query_ = 0;
+    return;
+  }
+
   DCHECK(result->GetType() == AUTOFILL_PROFILES_RESULT ||
          result->GetType() == AUTOFILL_CREDITCARDS_RESULT);
 
