@@ -332,6 +332,9 @@ bool DispatcherWrapper::Init(
 PpapiBrokerImpl::PpapiBrokerImpl() {
 }
 
+PpapiBrokerImpl::~PpapiBrokerImpl() {
+}
+
 // If the channel is not ready, queue the connection.
 void PpapiBrokerImpl::Connect(webkit::ppapi::PPB_Broker_Impl* client) {
   if (channel_handle_.name.empty()) {

@@ -61,6 +61,7 @@ class PpapiBrokerImpl : public webkit::ppapi::PluginDelegate::PpapiBroker {
   void RequestPpapiBrokerPipe(webkit::ppapi::PPB_Broker_Impl* client);
 
  protected:
+  virtual ~PpapiBrokerImpl();
   IPC::ChannelHandle channel_handle_;
 
   std::vector<scoped_refptr<webkit::ppapi::PPB_Broker_Impl> > pending_connects_;

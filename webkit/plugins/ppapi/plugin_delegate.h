@@ -221,7 +221,7 @@ class PluginDelegate {
 
    protected:
     friend class base::RefCountedThreadSafe<PpapiBroker>;
-    ~PpapiBroker() {}
+    virtual ~PpapiBroker() {}
   };
 
   // Notification that the given plugin has crashed. When a plugin crashes, all
