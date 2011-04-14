@@ -32,6 +32,15 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
 
+// The following macro makes histograms that record the length of paths
+// in this file much easier to read.
+// Windows has a short max path length. If the path length to a
+// file being unpacked from a CRX exceeds the max length, we might
+// fail to install. To see if this is happening, see how long the
+// path to the temp unpack directory is. See crbug.com/69693 .
+#define PATH_LENGTH_HISTOGRAM(name, path) \
+    UMA_HISTOGRAM_CUSTOM_COUNTS(name, path.value().length(), 0, 500, 100)
+
 const char SandboxedExtensionUnpacker::kExtensionHeaderMagic[] = "Cr24";
 
 SandboxedExtensionUnpacker::SandboxedExtensionUnpacker(
@@ -73,12 +82,16 @@ void SandboxedExtensionUnpacker::Start() {
   // file IO on.
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&thread_identifier_));
 
+  PATH_LENGTH_HISTOGRAM("Extensions.SandboxUnpackInitialCrxPathLength",
+                        crx_path_);
   if (!CreateTempDirectory())
     return;  // ReportFailure() already called.
 
   // Initialize the path that will eventually contain the unpacked extension.
   extension_root_ = temp_dir_.path().AppendASCII(
       extension_filenames::kTempExtensionName);
+  PATH_LENGTH_HISTOGRAM("Extensions.SandboxUnpackUnpackedCrxPathLength",
+                        extension_root_);
 
   // Extract the public key and validate the package.
   if (!ValidateSignature())
@@ -86,6 +99,9 @@ void SandboxedExtensionUnpacker::Start() {
 
   // Copy the crx file into our working directory.
   FilePath temp_crx_path = temp_dir_.path().Append(crx_path_.BaseName());
+  PATH_LENGTH_HISTOGRAM("Extensions.SandboxUnpackTempCrxPathLength",
+                        temp_crx_path);
+
   if (!file_util::CopyFile(crx_path_, temp_crx_path)) {
     // Failed to copy extension file to temporary directory.
     ReportFailure(
@@ -117,6 +133,8 @@ void SandboxedExtensionUnpacker::Start() {
           l10n_util::GetStringUTF8(IDS_EXTENSION_UNPACK_FAILED));
       return;
     }
+    PATH_LENGTH_HISTOGRAM("Extensions.SandboxUnpackLinkFreeCrxPathLength",
+                          link_free_crx_path);
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -228,8 +246,26 @@ void SandboxedExtensionUnpacker::OnProcessCrashed(int exit_code) {
 
 bool SandboxedExtensionUnpacker::ValidateSignature() {
   ScopedStdioHandle file(file_util::OpenFile(crx_path_, "rb"));
+
   if (!file.get()) {
-    // Could not open crx file for reading
+    // Could not open crx file for reading.
+#if defined (OS_WIN)
+    // On windows, get the error code.
+    uint32 error_code = ::GetLastError();
+    // TODO(skerner): Use this histogram to understand why so many
+    // windows users hit this error.  crbug.com/69693
+
+    // Windows errors are unit32s, but all of likely errors are in
+    // [1, 1000].  See winerror.h for the meaning of specific values.
+    // Clip errors outside the expected range to a single extra value.
+    // If there are errors in that extra bucket, we will know to expand
+    // the range.
+    const uint32 kMaxErrorToSend = 1001;
+    error_code = std::min(error_code, kMaxErrorToSend);
+    UMA_HISTOGRAM_ENUMERATION("Extensions.ErrorCodeFromCrxOpen",
+                              error_code, kMaxErrorToSend);
+#endif
+
     ReportFailure(
         CRX_FILE_NOT_READABLE,
         l10n_util::GetStringFUTF8(

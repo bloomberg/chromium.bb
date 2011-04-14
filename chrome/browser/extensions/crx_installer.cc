@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_temp_dir.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/stl_util-inl.h"
 #include "base/stringprintf.h"
@@ -421,6 +422,13 @@ void CrxInstaller::CompleteInstall() {
       return;
     }
   }
+
+  // See how long extension install paths are.  This is important on
+  // windows, because file operations may fail if the path to a file
+  // exceeds a small constant.  See crbug.com/69693 .
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+    "Extensions.CrxInstallDirPathLength",
+        install_directory_.value().length(), 0, 500, 100);
 
   FilePath version_dir = extension_file_util::InstallExtension(
       unpacked_extension_root_,
