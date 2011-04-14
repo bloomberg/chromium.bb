@@ -26,7 +26,6 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
@@ -831,71 +830,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_OptionsPage) {
             tab_strip->GetTabContentsAt(1)->tab_contents()->GetURL());
 }
 
-// Test window.chrome.app.isInstalled .
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PropertyAppIsInstalled) {
-  std::string app_host("app.com");
-  std::string nonapp_host("nonapp.com");
-
-  host_resolver()->AddRule(app_host, "127.0.0.1");
-  host_resolver()->AddRule(nonapp_host, "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
-
-  GURL test_file_url(test_server()->GetURL("extensions/test_file.html"));
-  GURL::Replacements replace_host;
-
-  replace_host.SetHostStr(app_host);
-  GURL app_url(test_file_url.ReplaceComponents(replace_host));
-
-  replace_host.SetHostStr(nonapp_host);
-  GURL non_app_url(test_file_url.ReplaceComponents(replace_host));
-
-
-  // Load an app which includes app.com in its extent.
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("app_dot_com_app")));
-
-
-  // Test that a non-app page has chrome.app.isInstalled = false.
-  ui_test_utils::NavigateToURL(browser(), non_app_url);
-  std::wstring get_app_is_installed =
-      L"window.domAutomationController.send("
-      L"    JSON.stringify(window.chrome.app.isInstalled));";
-  std::string result;
-  ASSERT_TRUE(
-      ui_test_utils::ExecuteJavaScriptAndExtractString(
-          browser()->GetSelectedTabContents()->render_view_host(),
-          L"",
-          get_app_is_installed.c_str(),
-          &result));
-  EXPECT_EQ("false", result);
-
-
-  // Check that an app page has chrome.app.isInstalled = true.
-  ui_test_utils::NavigateToURL(browser(), app_url);
-  ASSERT_TRUE(
-      ui_test_utils::ExecuteJavaScriptAndExtractString(
-          browser()->GetSelectedTabContents()->render_view_host(),
-          L"",
-          get_app_is_installed.c_str(),
-          &result));
-  EXPECT_EQ("true", result);
-
-
-  // Test that trying to set window.chrome.app.isInstalled throws
-  // an exception.
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-          browser()->GetSelectedTabContents()->render_view_host(),
-          L"",
-          L"window.domAutomationController.send("
-          L"    function() {"
-          L"      try {"
-          L"        window.chrome.app.isInstalled = false;"
-          L"        return 'BAD: Should have thrown by now...';"
-          L"      } catch (e) {"
-          L"        return 'GOOD: Saw expected error.';"
-          L"      }"
-          L"    }()"
-          L");",
-          &result));
-  EXPECT_EQ("GOOD: Saw expected error.", result);
-}
+//==============================================================================
+// STOP! Please do not add any more random-ass tests here. Create new files for
+// your tests grouped by functionality. Also, you should strongly consider using
+// ExtensionAPITest if possible.
+//==============================================================================

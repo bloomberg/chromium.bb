@@ -59,9 +59,8 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
 #endif
 }
 
-bool ExtensionBrowserTest::LoadExtensionImpl(const FilePath& path,
-                                             bool incognito_enabled,
-                                             bool fileaccess_enabled) {
+const Extension* ExtensionBrowserTest::LoadExtensionImpl(
+    const FilePath& path, bool incognito_enabled, bool fileaccess_enabled) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
   {
     NotificationRegistrar registrar;
@@ -84,7 +83,7 @@ bool ExtensionBrowserTest::LoadExtensionImpl(const FilePath& path,
     }
   }
   if (!extension)
-    return false;
+    return NULL;
 
   // The call to OnExtensionInstalled ensures the other extension prefs
   // are set up with the defaults.
@@ -93,22 +92,27 @@ bool ExtensionBrowserTest::LoadExtensionImpl(const FilePath& path,
   service->SetIsIncognitoEnabled(extension->id(), incognito_enabled);
   service->SetAllowFileAccess(extension, fileaccess_enabled);
 
-  return WaitForExtensionHostsToLoad();
+  if (!WaitForExtensionHostsToLoad())
+    return NULL;
+
+  return extension;
 }
 
-bool ExtensionBrowserTest::LoadExtension(const FilePath& path) {
+const Extension* ExtensionBrowserTest::LoadExtension(const FilePath& path) {
   return LoadExtensionImpl(path, false, true);
 }
 
-bool ExtensionBrowserTest::LoadExtensionIncognito(const FilePath& path) {
+const Extension* ExtensionBrowserTest::LoadExtensionIncognito(
+    const FilePath& path) {
   return LoadExtensionImpl(path, true, true);
 }
 
-bool ExtensionBrowserTest::LoadExtensionNoFileAccess(const FilePath& path) {
+const Extension* ExtensionBrowserTest::LoadExtensionNoFileAccess(
+    const FilePath& path) {
   return LoadExtensionImpl(path, false, false);
 }
 
-bool ExtensionBrowserTest::LoadExtensionIncognitoNoFileAccess(
+const Extension* ExtensionBrowserTest::LoadExtensionIncognitoNoFileAccess(
     const FilePath& path) {
   return LoadExtensionImpl(path, true, false);
 }

@@ -684,6 +684,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kAllowHTTPBackgroundPage,
     switches::kAllowScriptingGallery,
     switches::kAlwaysAuthorizePlugins,
+    switches::kAppsCheckoutURL,
     switches::kAppsGalleryURL,
     // We propagate the Chrome Frame command line here as well in case the
     // renderer is not run in the sandbox.

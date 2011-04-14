@@ -2241,6 +2241,7 @@
         'browser/extensions/browser_action_test_util_gtk.cc',
         'browser/extensions/browser_action_test_util_mac.mm',
         'browser/extensions/browser_action_test_util_views.cc',
+        'browser/extensions/chrome_app_api_browsertest.cc',
         'browser/extensions/content_script_apitest.cc',
         'browser/extensions/convert_web_app_browsertest.cc',
         'browser/extensions/cross_origin_xhr_apitest.cc',

@@ -47,6 +47,10 @@ const char kApp[]                           = "app";
 // according to its configuration.
 const char kAppId[]                         = "app-id";
 
+// Override the apps checkout URL, which is used to determine when to expose
+// some private APIs.
+const char kAppsCheckoutURL[]               = "apps-checkout-url";
+
 // Specifying this flag allows the webstorePrivate APIs to return browser (aka
 // sync) login tokens to be used for auto-login in the Web Store (normally they
 // do not).

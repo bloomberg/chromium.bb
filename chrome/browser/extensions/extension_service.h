@@ -258,7 +258,7 @@ class ExtensionService
   void LoadComponentExtensions();
 
   // Loads particular component extension.
-  void LoadComponentExtension(const ComponentExtensionInfo& info);
+  const Extension* LoadComponentExtension(const ComponentExtensionInfo& info);
 
   // Loads all known extensions (used by startup and testing code).
   void LoadAllExtensions();

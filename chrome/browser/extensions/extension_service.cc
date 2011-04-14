@@ -810,13 +810,13 @@ void ExtensionService::LoadComponentExtensions() {
   }
 }
 
-void ExtensionService::LoadComponentExtension(
+const Extension* ExtensionService::LoadComponentExtension(
     const ComponentExtensionInfo &info) {
   JSONStringValueSerializer serializer(info.manifest);
   scoped_ptr<Value> manifest(serializer.Deserialize(NULL, NULL));
   if (!manifest.get()) {
     DLOG(ERROR) << "Failed to parse manifest for extension";
-    return;
+    return NULL;
   }
 
   int flags = Extension::REQUIRE_KEY;
@@ -831,9 +831,10 @@ void ExtensionService::LoadComponentExtension(
       &error));
   if (!extension.get()) {
     NOTREACHED() << error;
-    return;
+    return NULL;
   }
   AddExtension(extension);
+  return extension;
 }
 
 void ExtensionService::LoadAllExtensions() {
