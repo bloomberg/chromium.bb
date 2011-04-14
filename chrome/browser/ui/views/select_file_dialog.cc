@@ -228,8 +228,10 @@ void SelectFileDialogImpl::SelectFile(
 
   if (browser_mode_) {
     Browser* browser = BrowserList::GetLastActive();
-    DCHECK(browser);
-    browser->BrowserShowHtmlDialog(file_browse_delegate, owning_window);
+    // As SelectFile may be invoked after a delay, it is entirely possible for
+    // it be invoked when no browser is around. Silently ignore this case.
+    if (browser)
+      browser->BrowserShowHtmlDialog(file_browse_delegate, owning_window);
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI,

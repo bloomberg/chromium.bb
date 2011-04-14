@@ -771,13 +771,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DontCrashOnBlockedJS) {
   // As long as we get the notification we're good (the renderer didn't crash).
 }
 
-// Crashes on linux: http://crbug.com/77168.
-#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
-#define MAYBE_DownloadOnEnter DISABLED_DownloadOnEnter
-#else
-#define MAYBE_DownloadOnEnter DownloadOnEnter
-#endif
-IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_DownloadOnEnter) {
+IN_PROC_BROWSER_TEST_F(InstantTest, DownloadOnEnter) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   // Make sure the browser window is the front most window.
