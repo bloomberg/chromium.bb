@@ -9,8 +9,5 @@ BUGANTONM : fast/events/window-onerror7.html = TEXT
 // Waiting for a V8 roll.
 BUGANTONM : plugins/netscape-plugin-property-access-exception.html = TEXT
 
-// New tests, caseq will rebaseline upstream.
-BUGCASEQ : svg/dynamic-updates/SVGFEDiffuseLightingElement-inherit-lighting-color-css-prop.html = IMAGE
-BUGCASEQ : svg/dynamic-updates/SVGFEFloodElement-inherit-flood-color.html = IMAGE
-BUGCASEQ : svg/dynamic-updates/SVGFESpecularLightingElement-inherit-lighting-color-css-prop.html = IMAGE
-BUGCASEQ : svg/dynamic-updates/SVGFESpecularLightingElement-lighting-color-css-prop.html = IMAGE
+// Rebaselined upstream, caseq will remove once WebKit is rolled past r83819.
+BUGCASEQ : fast/frames/iframe-outline.html = IMAGE
