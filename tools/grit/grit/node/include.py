@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -30,12 +30,11 @@ class IncludeNode(base.Node):
   def _IsValidChild(self, child):
     return False
 
-  def _GetFlattenedData(self, allow_external_script=False):
+  def _GetFlattenedData(self):
     if not self._flattened_data:
       filename = self.FilenameToOpen()
       self._flattened_data = (
-          grit.format.html_inline.InlineToString(filename, self,
-              allow_external_script=allow_external_script))
+          grit.format.html_inline.InlineToString(filename, self))
     return self._flattened_data
 
   def MandatoryAttributes(self):
@@ -46,7 +45,6 @@ class IncludeNode(base.Node):
       'generateid': 'true',
       'filenameonly': 'false',
       'flattenhtml': 'false',
-      'allowexternalscript': 'false',
       'relativepath': 'false',
       }
 
@@ -82,8 +80,7 @@ class IncludeNode(base.Node):
     id_map = rc_header.Item.tids_
     id = id_map[self.GetTextualIds()[0]]
     if self.attrs['flattenhtml'] == 'true':
-      allow_external_script = self.attrs['allowexternalscript'] == 'true'
-      data = self._GetFlattenedData(allow_external_script=allow_external_script)
+      data = self._GetFlattenedData()
     else:
       filename = self.FilenameToOpen()
       infile = open(filename, 'rb')
