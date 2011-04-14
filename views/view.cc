@@ -1389,6 +1389,10 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
     Layout();
   }
 
+  if (NeedsNotificationWhenVisibleBoundsChange()) {
+    OnVisibleBoundsChanged();
+  }
+
   // Notify interested Views that visible bounds within the root view may have
   // changed.
   if (descendants_to_notify_.get()) {
@@ -1418,6 +1422,7 @@ void View::UnregisterChildrenForVisibleBoundsNotification(View* view) {
 void View::RegisterForVisibleBoundsNotification() {
   if (registered_for_visible_bounds_notification_)
     return;
+
   registered_for_visible_bounds_notification_ = true;
   View* ancestor = parent();
   while (ancestor) {
