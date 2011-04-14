@@ -34,7 +34,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_config_dangerous.h"
-#include "native_client/src/trusted/service_runtime/nacl_debug.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
@@ -186,7 +185,7 @@ int main(int  argc,
   int                           debug_mode_ignore_validator = 0;
   int                           stub_out_mode = 0;
   int                           skip_qualification = 0;
-  int                           start_broken = 0;
+  int                           enable_debug_stub = 0;
   int                           handle_signals = 0;
 
   const char* sandbox_fd_string;
@@ -253,7 +252,7 @@ int main(int  argc,
 #if NACL_LINUX
                        "+"
 #endif
-                       "abB:cE:f:Fgh:i:Il:Qr:RsSvw:X:")) != -1) {
+                       "aB:cE:f:Fgh:i:Il:Qr:RsSvw:X:")) != -1) {
     switch (opt) {
       case 'c':
         fprintf(stderr, "DEBUG MODE ENABLED (ignore validator)\n");
@@ -262,9 +261,6 @@ int main(int  argc,
       case 'a':
         fprintf(stderr, "DEBUG MODE ENABLED (bypass acl)\n");
         debug_mode_bypass_acl_checks = 1;
-        break;
-      case 'b':
-        start_broken = 1;
         break;
       case 'f':
         nacl_file = optarg;
@@ -278,7 +274,7 @@ int main(int  argc,
 
       case 'g':
         handle_signals = 1;
-        NaClDebugSetAllow(1);
+        enable_debug_stub = 1;
         break;
 
       case 'S':
@@ -379,9 +375,6 @@ int main(int  argc,
     putc('\n', stderr);
   }
 
-  /* Check if we should start broken */
-  if (start_broken) NaClDebugSetStartBroken(1);
-
   if (NACL_DANGEROUS_STUFF_ENABLED) {
     fprintf(stderr,
             "WARNING WARNING WARNING WARNING"
@@ -478,6 +471,7 @@ int main(int  argc,
 
   state.ignore_validator_result = debug_mode_ignore_validator;
   state.validator_stub_out_mode = stub_out_mode;
+  state.enable_debug_stub = enable_debug_stub;
 
   nap = &state;
   errcode = LOAD_OK;

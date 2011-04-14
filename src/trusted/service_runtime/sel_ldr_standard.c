@@ -557,13 +557,16 @@ int NaClCreateMainThread(struct NaClApp     *nap,
     goto cleanup;
   }
 
-  /*
-   * Store information for remote query when debugging.
-   */
-  NaClDebugSetAppInfo(nap);
-  NaClDebugSetAppEnvironment(argc, (char const * const *) argv,
-                             envc, (char const * const *) envv);
-  NaClDebugStart();
+  if (nap->enable_debug_stub) {
+    /*
+     * Enable the debug stub.
+     */
+    if (!NaClDebugInit(nap,
+                       argc, (char const * const *) argv,
+                       envc, (char const * const *) envv)) {
+      goto cleanup;
+    }
+  }
 
   size = 0;
 
@@ -737,7 +740,9 @@ int NaClWaitForMainThreadToExit(struct NaClApp  *nap) {
    * Some thread invoked the exit (exit_group) syscall.
    */
 
-  NaClDebugStop(nap->exit_status);
+  if (NULL != nap->debug_stub_callbacks) {
+    nap->debug_stub_callbacks->process_exit_hook(nap->exit_status);
+  }
 
   return (nap->exit_status);
 }

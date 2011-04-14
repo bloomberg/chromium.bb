@@ -75,6 +75,12 @@ struct NaClDesc;  /* see native_client/src/trusted/desc/nacl_desc_base.h */
 struct NaClDynamicRegion;
 struct NaClSecureService;
 
+struct NaClDebugCallbacks {
+  void (*thread_create_hook)(struct NaClAppThread *natp);
+  void (*thread_exit_hook)(struct NaClAppThread *natp);
+  void (*process_exit_hook)(int exit_status);
+};
+
 struct NaClApp {
   /*
    * public, user settable prior to app start.
@@ -273,6 +279,9 @@ struct NaClApp {
 
   struct NaClMutex          desc_mu;
   struct DynArray           desc_tbl;  /* NaClDesc pointers */
+
+  int                       enable_debug_stub;
+  struct NaClDebugCallbacks *debug_stub_callbacks;
 };
 
 

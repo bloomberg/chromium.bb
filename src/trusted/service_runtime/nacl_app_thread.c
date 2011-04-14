@@ -9,7 +9,6 @@
  */
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/nacl_desc_effector_ldr.h"
-#include "native_client/src/trusted/service_runtime/nacl_debug.h"
 
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
@@ -42,7 +41,9 @@ void WINAPI NaClThreadLauncher(void *state) {
   /*
    * Notify the debug stub, that a new thread is availible.
    */
-   NaClDebugThreadPrepDebugging(natp);
+  if (NULL != natp->nap->debug_stub_callbacks) {
+    natp->nap->debug_stub_callbacks->thread_create_hook(natp);
+  }
 
   /*
    * We need to set an exception handler in every thread we start,
@@ -131,7 +132,9 @@ void NaClAppThreadDtor(struct NaClAppThread *natp) {
   /*
    * Notify the debug stub that we are done with this thread
    */
-  NaClDebugThreadStopDebugging(natp);
+  if (NULL != natp->nap->debug_stub_callbacks) {
+    natp->nap->debug_stub_callbacks->thread_exit_hook(natp);
+  }
 
   NaClThreadDtor(&natp->thread);
   NaClSignalStackUnregister();

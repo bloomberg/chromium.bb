@@ -163,7 +163,7 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
   /*
    * Enable debugging if requested.
    */
-  if (debug) NaClDebugSetAllow(1);
+  nap->enable_debug_stub = debug;
 
   NaClEnvCleanserCtor(&env_cleanser);
   if (!NaClEnvCleanserInit(&env_cleanser, envp)) {

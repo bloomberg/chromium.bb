@@ -18,6 +18,7 @@
 #include "native_client/src/trusted/port/thread.h"
 
 #include "native_client/src/include/nacl_string.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
@@ -313,3 +314,36 @@ void NaClDebugStop(int ErrCode) throw() {
 #endif
 }
 
+#ifdef NACL_DEBUG_STUB
+static struct NaClDebugCallbacks debug_callbacks = {
+  NaClDebugThreadPrepDebugging,
+  NaClDebugThreadStopDebugging,
+  NaClDebugStop,
+};
+#endif
+
+int NaClDebugInit(struct NaClApp *nap,
+                  int argc, char const *const argv[],
+                  int envc, char const *const envv[]) {
+#ifdef NACL_DEBUG_STUB
+  static bool initialised = 0;
+  CHECK(!initialised);
+  initialised = 1;
+  nap->debug_stub_callbacks = &debug_callbacks;
+  NaClDebugStubInit();
+  NaClDebugSetAllow(1);
+  NaClDebugSetAppInfo(nap);
+  NaClDebugSetAppEnvironment(argc, argv, envc, envv);
+  NaClDebugStart();
+  return 1;
+#else
+  UNREFERENCED_PARAMETER(nap);
+  UNREFERENCED_PARAMETER(argc);
+  UNREFERENCED_PARAMETER(argv);
+  UNREFERENCED_PARAMETER(envc);
+  UNREFERENCED_PARAMETER(envv);
+  NaClLog(LOG_FATAL, "NaClDebugInit: "
+          "Debug stub support is not enabled in this build\n");
+  return 0;
+#endif
+}

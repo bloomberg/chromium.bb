@@ -107,6 +107,10 @@ int NaClDebugStart(void) NO_THROW;
  */
 void NaClDebugStop(int exitCode) NO_THROW;
 
+int NaClDebugInit(struct NaClApp *nap,
+                  int argc, char const *const argv[],
+                  int envc, char const *const envv[]);
+
 
 EXTERN_C_END
 

@@ -181,6 +181,9 @@ int NaClAppCtor(struct NaClApp  *nap) {
   nap->data_seg_sel = 0;
 #endif
 
+  nap->enable_debug_stub = 0;
+  nap->debug_stub_callbacks = NULL;
+
   return 1;
 
 #if 0

@@ -105,7 +105,7 @@ class DebugStubTest(unittest.TestCase):
 
   def test_getting_registers(self):
     EnsurePortIsAvailable()
-    proc = subprocess.Popen([os.environ['NACL_SEL_LDR'], '-g', '-b',
+    proc = subprocess.Popen([os.environ['NACL_SEL_LDR'], '-g',
                              os.environ['DEBUGGER_TEST_PROG']])
     try:
       connection = GdbRspConnection()
