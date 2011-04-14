@@ -195,6 +195,10 @@ void CrosMock::SetInputMethodLibraryStatusAreaExpectations() {
       .Times(AnyNumber())
       .WillRepeatedly(InvokeWithoutArgs(CreateInputMethodDescriptors))
       .RetiresOnSaturation();
+  EXPECT_CALL(*mock_input_method_library_, GetKeyboardOverlayId(_))
+      .Times(AnyNumber())
+      .WillRepeatedly((Return("en_US")))
+      .RetiresOnSaturation();
   EXPECT_CALL(*mock_input_method_library_, current_input_method())
       .Times(AnyNumber())
       .WillRepeatedly((ReturnRef(current_input_method_)))
