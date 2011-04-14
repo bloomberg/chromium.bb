@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/accelerator.h"
@@ -24,7 +26,12 @@ RenderViewContextMenuViews::~RenderViewContextMenuViews() {
 }
 
 void RenderViewContextMenuViews::RunMenuAt(int x, int y) {
+  RenderWidgetHostView* rwhv = source_tab_contents_->GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->ShowingContextMenu(true);
   menu_->RunContextMenuAt(gfx::Point(x, y));
+  if (rwhv)
+    rwhv->ShowingContextMenu(false);
 }
 
 #if defined(OS_WIN)
