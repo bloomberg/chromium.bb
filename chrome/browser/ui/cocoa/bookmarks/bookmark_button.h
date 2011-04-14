@@ -79,6 +79,7 @@ class ThemeProvider;
 - (BookmarkModel*)bookmarkModel;
 
 // Perform drag enter/exit operations, such as hover-open and hover-close.
+- (BOOL)draggingAllowed:(id<NSDraggingInfo>)info;
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info;
 - (void)draggingExited:(id<NSDraggingInfo>)info;
 

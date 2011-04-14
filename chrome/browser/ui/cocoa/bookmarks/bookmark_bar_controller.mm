@@ -529,6 +529,11 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   [self closeAllBookmarkFolders];
 }
 
+- (BOOL)canEditBookmarks {
+  PrefService* prefs = browser_->profile()->GetPrefs();
+  return prefs->GetBoolean(prefs::kEditBookmarksEnabled);
+}
+
 - (BOOL)canEditBookmark:(const BookmarkNode*)node {
   // Don't allow edit/delete of the bar node, or of "Other Bookmarks"
   if ((node == nil) ||
@@ -1053,18 +1058,27 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     return NO;
   }
 
+  bool can_edit = [self canEditBookmarks];
   if ((action == @selector(editBookmark:)) ||
       (action == @selector(deleteBookmark:)) ||
       (action == @selector(cutBookmark:)) ||
       (action == @selector(copyBookmark:))) {
-    if (![self canEditBookmark:node]) {
+    if (![self canEditBookmark:node])
       return NO;
-    }
+    if (action != @selector(copyBookmark:) && !can_edit)
+      return NO;
   }
 
   if (action == @selector(pasteBookmark:) &&
-      !bookmark_utils::CanPasteFromClipboard(node))
+      (!bookmark_utils::CanPasteFromClipboard(node) || !can_edit)) {
+      return NO;
+  }
+
+  if ((!can_edit) &&
+      ((action == @selector(addPage:)) ||
+       (action == @selector(addFolder:)))) {
     return NO;
+  }
 
   // If this is an incognito window, don't allow "open in incognito".
   if ((action == @selector(openBookmarkInIncognitoWindow:)) ||
@@ -2238,7 +2252,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 }
 
 - (BOOL)canDragBookmarkButtonToTrash:(BookmarkButton*)button {
-  return [self canEditBookmark:[button bookmarkNode]];
+  return [self canEditBookmarks] &&
+         [self canEditBookmark:[button bookmarkNode]];
 }
 
 - (void)didDragBookmarkToTrash:(BookmarkButton*)button {
@@ -2277,6 +2292,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 - (BookmarkModel*)bookmarkModel {
   return bookmarkModel_;
+}
+
+- (BOOL)draggingAllowed:(id<NSDraggingInfo>)info {
+  return [self canEditBookmarks];
 }
 
 // TODO(jrg): much of this logic is duped with

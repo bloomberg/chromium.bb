@@ -868,6 +868,9 @@ class Browser : public TabHandlerDelegate,
   // Updates commands for enabling developer tools.
   void UpdateCommandsForDevTools();
 
+  // Updates commands for bookmark editing.
+  void UpdateCommandsForBookmarkEditing();
+
   // Updates the printing command state.
   void UpdatePrintingState(int content_restrictions);
 
@@ -1136,6 +1139,9 @@ class Browser : public TabHandlerDelegate,
 
   // Tracks the preference that controls whether incognito mode is allowed.
   BooleanPrefMember incognito_mode_allowed_;
+
+  // Tracks whether bookmarks can be modified.
+  BooleanPrefMember edit_bookmarks_enabled_;
 
   // Indicates if command execution is blocked.
   bool block_command_execution_;

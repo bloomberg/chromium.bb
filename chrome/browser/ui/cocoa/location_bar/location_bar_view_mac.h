@@ -17,6 +17,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/content_settings_types.h"
@@ -170,6 +171,9 @@ class LocationBarViewMac : public AutocompleteEditController,
 
   void ShowFirstRunBubbleInternal(FirstRun::BubbleType bubble_type);
 
+  // Checks if the bookmark star should be enabled or not.
+  bool IsStarEnabled();
+
   scoped_ptr<AutocompleteEditViewMac> edit_view_;
 
   CommandUpdater* command_updater_;  // Weak, owned by Browser.
@@ -220,6 +224,9 @@ class LocationBarViewMac : public AutocompleteEditController,
 
   // Used to schedule a task for the first run info bubble.
   ScopedRunnableMethodFactory<LocationBarViewMac> first_run_bubble_;
+
+  // Used to change the visibility of the star decoration.
+  BooleanPrefMember edit_bookmarks_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewMac);
 };

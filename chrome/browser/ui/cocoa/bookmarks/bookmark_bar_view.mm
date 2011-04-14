@@ -128,6 +128,8 @@
 // NSDraggingDestination methods
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info {
+  if (![controller_ draggingAllowed:info])
+    return NSDragOperationNone;
   if ([[info draggingPasteboard] dataForType:kBookmarkButtonDragType] ||
       [self dragClipboardContainsBookmarks] ||
       [[info draggingPasteboard] containsURLData]) {

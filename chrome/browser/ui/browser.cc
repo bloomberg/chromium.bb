@@ -250,6 +250,8 @@ Browser::Browser(Type type, Profile* profile)
                            profile_->GetPrefs(), this);
   incognito_mode_allowed_.Init(prefs::kIncognitoEnabled,
                                profile_->GetPrefs(), this);
+  edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
+                               profile_->GetPrefs(), this);
 
   InitCommandState();
   BrowserList::AddBrowser(this);
@@ -320,6 +322,7 @@ Browser::~Browser() {
   incognito_mode_allowed_.Destroy();
   instant_enabled_.Destroy();
   use_vertical_tabs_.Destroy();
+  edit_bookmarks_enabled_.Destroy();
 
   if (profile_->IsOffTheRecord() &&
       !BrowserList::IsOffTheRecordSessionActive()) {
@@ -2647,7 +2650,9 @@ bool Browser::CanCloseContentsAt(int index) {
 
 bool Browser::CanBookmarkAllTabs() const {
   BookmarkModel* model = profile()->GetBookmarkModel();
-  return (model && model->IsLoaded() && (tab_count() > 1));
+  return (model && model->IsLoaded()) &&
+         tab_count() > 1 &&
+         edit_bookmarks_enabled_.GetValue();
 }
 
 void Browser::BookmarkAllTabs() {
@@ -3462,6 +3467,8 @@ void Browser::Observe(NotificationType type,
           g_browser_process->devtools_manager()->CloseAllClientHosts();
       } else if (pref_name == prefs::kIncognitoEnabled) {
         break;  // No further action is required.
+      } else if (pref_name == prefs::kEditBookmarksEnabled) {
+        UpdateCommandsForBookmarkEditing();
       } else {
         NOTREACHED();
       }
@@ -3670,10 +3677,6 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_TABPOSE, normal_window);
 #endif
 
-  // Page-related commands
-  command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_PAGE,
-      browser_defaults::bookmarks_enabled && normal_window);
-
   // Clipboard commands
   command_updater_.UpdateCommandEnabled(IDC_COPY_URL, non_devtools_window);
 
@@ -3703,6 +3706,8 @@ void Browser::InitCommandState() {
   UpdateCommandsForFullscreenMode(false);
 
   UpdateCommandsForContentRestrictionState();
+
+  UpdateCommandsForBookmarkEditing();
 }
 
 void Browser::UpdateCommandsForTabState() {
@@ -3727,8 +3732,6 @@ void Browser::UpdateCommandsForTabState() {
 
   // Page-related commands
   window_->SetStarredState(current_tab_wrapper->is_starred());
-  command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_ALL_TABS,
-      browser_defaults::bookmarks_enabled && CanBookmarkAllTabs());
   command_updater_.UpdateCommandEnabled(IDC_VIEW_SOURCE,
       current_tab->controller().CanViewSource());
   command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION,
@@ -3755,6 +3758,7 @@ void Browser::UpdateCommandsForTabState() {
 #endif
 
   UpdateCommandsForContentRestrictionState();
+  UpdateCommandsForBookmarkEditing();
 }
 
 void Browser::UpdateCommandsForContentRestrictionState() {
@@ -3802,6 +3806,16 @@ void Browser::UpdateCommandsForDevTools() {
                                         dev_tools_enabled);
   command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS_INSPECT,
                                         dev_tools_enabled);
+}
+
+void Browser::UpdateCommandsForBookmarkEditing() {
+  bool enabled = edit_bookmarks_enabled_.GetValue() &&
+                 browser_defaults::bookmarks_enabled;
+
+  command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_PAGE,
+      enabled && type() == TYPE_NORMAL);
+  command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_ALL_TABS,
+      enabled && CanBookmarkAllTabs());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -78,6 +78,8 @@
 // http://crbug.com/35966
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info {
   inDrag_ = YES;
+  if (![[self controller] draggingAllowed:info])
+    return NSDragOperationNone;
   if ([[info draggingPasteboard] dataForType:kBookmarkButtonDragType] ||
       [self dragClipboardContainsBookmarks] ||
       [[info draggingPasteboard] containsURLData]) {

@@ -43,6 +43,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
@@ -101,6 +102,9 @@ LocationBarViewMac::LocationBarViewMac(
   registrar_.Add(this,
       NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
       NotificationService::AllSources());
+
+  edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
+                               profile_->GetPrefs(), this);
 }
 
 LocationBarViewMac::~LocationBarViewMac() {
@@ -202,8 +206,7 @@ void LocationBarViewMac::SaveStateToContents(TabContents* contents) {
 
 void LocationBarViewMac::Update(const TabContents* contents,
                                 bool should_restore_state) {
-  bool star_enabled = browser_defaults::bookmarks_enabled &&
-      [field_ isEditable] && !toolbar_model_->input_in_progress();
+  bool star_enabled = IsStarEnabled();
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
   star_decoration_->SetVisible(star_enabled);
   RefreshPageActionDecorations();
@@ -417,8 +420,7 @@ void LocationBarViewMac::TestPageActionPressed(size_t index) {
 
 void LocationBarViewMac::SetEditable(bool editable) {
   [field_ setEditable:editable ? YES : NO];
-  star_decoration_->SetVisible(browser_defaults::bookmarks_enabled &&
-      editable && !toolbar_model_->input_in_progress());
+  star_decoration_->SetVisible(IsStarEnabled());
   UpdatePageActions();
   Layout();
 }
@@ -487,6 +489,12 @@ void LocationBarViewMac::Observe(NotificationType type,
       [field_ setNeedsDisplay:YES];
       break;
     }
+
+    case NotificationType::PREF_CHANGED:
+      star_decoration_->SetVisible(IsStarEnabled());
+      OnChanged();
+      break;
+
     default:
       NOTREACHED() << "Unexpected notification";
       break;
@@ -629,4 +637,11 @@ void LocationBarViewMac::Layout() {
   [field_ updateCursorAndToolTipRects];
 
   [field_ setNeedsDisplay:YES];
+}
+
+bool LocationBarViewMac::IsStarEnabled() {
+  return [field_ isEditable] &&
+         browser_defaults::bookmarks_enabled &&
+         !toolbar_model_->input_in_progress() &&
+         edit_bookmarks_enabled_.GetValue();
 }

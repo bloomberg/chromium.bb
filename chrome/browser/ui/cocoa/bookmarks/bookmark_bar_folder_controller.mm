@@ -1038,6 +1038,10 @@ struct LayoutMetrics {
 
 #pragma mark Actions Forwarded to Parent BookmarkBarController
 
+- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
+  return [barController_ validateUserInterfaceItem:item];
+}
+
 - (IBAction)openBookmark:(id)sender {
   [barController_ openBookmark:sender];
 }
@@ -1307,7 +1311,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 }
 
 - (BOOL)canDragBookmarkButtonToTrash:(BookmarkButton*)button {
-  return [barController_ canEditBookmark:[button bookmarkNode]];
+  return [barController_ canEditBookmarks] &&
+         [barController_ canEditBookmark:[button bookmarkNode]];
 }
 
 - (void)didDragBookmarkToTrash:(BookmarkButton*)button {
@@ -1340,6 +1345,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 - (BookmarkModel*)bookmarkModel {
   return [barController_ bookmarkModel];
+}
+
+- (BOOL)draggingAllowed:(id<NSDraggingInfo>)info {
+  return [barController_ draggingAllowed:info];
 }
 
 // TODO(jrg): Refactor BookmarkBarFolder common code. http://crbug.com/35966

@@ -31,10 +31,6 @@ class BookmarkModel;
 class BookmarkNode;
 class Browser;
 class GURL;
-class PrefService;
-class TabContents;
-@class ToolbarController;
-@protocol ViewResizer;
 
 namespace bookmarks {
 
@@ -327,6 +323,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
 // Checks if operations such as edit or delete are allowed.
 - (BOOL)canEditBookmark:(const BookmarkNode*)node;
+
+// Checks if bookmark editing is enabled at all.
+- (BOOL)canEditBookmarks;
 
 // Actions for manipulating bookmarks.
 // Open a normal bookmark or folder from a button, ...

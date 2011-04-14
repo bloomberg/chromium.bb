@@ -117,6 +117,10 @@ namespace {
   return NO;
 }
 
+- (BOOL)canEditBookmarks {
+  return YES;
+}
+
 // Confirm the pongs.
 
 - (BOOL)dragButtonToPong {
@@ -137,6 +141,10 @@ namespace {
 
 - (BOOL)shouldShowIndicatorShownForPoint:(NSPoint)point {
   return dropIndicatorShown_;
+}
+
+- (BOOL)draggingAllowed:(id<NSDraggingInfo>)info {
+  return YES;
 }
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info {

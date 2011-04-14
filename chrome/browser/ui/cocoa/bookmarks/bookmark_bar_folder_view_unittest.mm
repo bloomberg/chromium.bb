@@ -139,6 +139,10 @@ namespace {
   return dropIndicatorShown_;
 }
 
+- (BOOL)draggingAllowed:(id<NSDraggingInfo>)info {
+  return YES;
+}
+
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info {
   draggingEnteredCalled_ = YES;
   return NSDragOperationNone;

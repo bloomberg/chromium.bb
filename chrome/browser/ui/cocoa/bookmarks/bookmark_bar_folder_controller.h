@@ -23,7 +23,8 @@
 // which look sort of like menus.
 @interface BookmarkBarFolderController :
     NSWindowController<BookmarkButtonDelegate,
-                       BookmarkButtonControllerProtocol> {
+                       BookmarkButtonControllerProtocol,
+                       NSUserInterfaceValidations> {
  @private
   // The button whose click opened us.
   scoped_nsobject<BookmarkButton> parentButton_;
