@@ -15,13 +15,16 @@
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "ui/base/models/combobox_model.h"
 #include "views/controls/button/button.h"
-#include "views/controls/button/checkbox.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/view.h"
 
+namespace views {
+class Checkbox;
+class Label;
+}
 class FilePath;
 
 namespace chromeos {
@@ -103,6 +106,7 @@ class WifiConfigView : public views::View,
   views::Textfield* identity_textfield_;
   views::Label* identity_anonymous_label_;
   views::Textfield* identity_anonymous_textfield_;
+  views::Checkbox* save_credentials_checkbox_;
   views::Combobox* security_combobox_;
   views::Label* passphrase_label_;
   views::Textfield* passphrase_textfield_;

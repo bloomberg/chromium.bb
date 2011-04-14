@@ -502,7 +502,8 @@ class WifiNetwork : public WirelessNetwork {
         passphrase_required_(false),
         eap_method_(EAP_METHOD_UNKNOWN),
         eap_phase_2_auth_(EAP_PHASE_2_AUTH_AUTO),
-        eap_use_system_cas_(true) {
+        eap_use_system_cas_(true),
+        save_credentials_(false) {
   }
 
   bool encrypted() const { return encryption_ != SECURITY_NONE; }
@@ -522,6 +523,7 @@ class WifiNetwork : public WirelessNetwork {
   const std::string& eap_anonymous_identity() const {
     return eap_anonymous_identity_; }
   const std::string& eap_passphrase() const { return eap_passphrase_; }
+  bool save_credentials() const { return save_credentials_; }
 
   const std::string& GetPassphrase() const;
 
@@ -538,6 +540,10 @@ class WifiNetwork : public WirelessNetwork {
   void SetEAPIdentity(const std::string& identity);
   void SetEAPAnonymousIdentity(const std::string& identity);
   void SetEAPPassphrase(const std::string& passphrase);
+  void SetSaveCredentials(bool save_credentials);
+
+  // Erase cached credentials, used when "Save password" is unchecked.
+  void EraseCredentials();
 
   // Return a string representation of the encryption code.
   // This not translated and should be only used for debugging purposes.
@@ -584,6 +590,8 @@ class WifiNetwork : public WirelessNetwork {
   std::string eap_identity_;
   std::string eap_anonymous_identity_;
   std::string eap_passphrase_;
+  // Tells flimflam to save passphrase and EAP credentials to disk.
+  bool save_credentials_;
 
   // Internal state (not stored in flimflam).
   // Passphrase set by user (stored for UI).

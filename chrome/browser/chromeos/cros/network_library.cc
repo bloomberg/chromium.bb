@@ -100,6 +100,7 @@ const char* kPassphraseProperty = "Passphrase";
 const char* kIdentityProperty = "Identity";
 const char* kCertPathProperty = "CertPath";
 const char* kPassphraseRequiredProperty = "PassphraseRequired";
+const char* kSaveCredentialsProperty = "SaveCredentials";
 const char* kProfilesProperty = "Profiles";
 const char* kServicesProperty = "Services";
 const char* kServiceWatchListProperty = "ServiceWatchList";
@@ -414,6 +415,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_PRL_VERSION,
   PROPERTY_INDEX_PROFILES,
   PROPERTY_INDEX_ROAMING_STATE,
+  PROPERTY_INDEX_SAVE_CREDENTIALS,
   PROPERTY_INDEX_SCANNING,
   PROPERTY_INDEX_SECURITY,
   PROPERTY_INDEX_SERVICES,
@@ -487,6 +489,7 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kPaymentURLProperty, PROPERTY_INDEX_PAYMENT_URL },
   { kProfilesProperty, PROPERTY_INDEX_PROFILES },
   { kRoamingStateProperty, PROPERTY_INDEX_ROAMING_STATE },
+  { kSaveCredentialsProperty, PROPERTY_INDEX_SAVE_CREDENTIALS },
   { kScanningProperty, PROPERTY_INDEX_SCANNING },
   { kSecurityProperty, PROPERTY_INDEX_SECURITY },
   { kServiceWatchListProperty, PROPERTY_INDEX_SERVICE_WATCH_LIST },
@@ -754,6 +757,12 @@ static std::string ToHtmlTableRow(Network* network) {
 // for string values from libcros.
 static std::string SafeString(const char* s) {
   return s ? std::string(s) : std::string();
+}
+
+// Erase the memory used by a string, then clear it.
+static void WipeString(std::string* str) {
+  str->assign(str->size(), '\0');
+  str->clear();
 }
 
 static bool EnsureCrosLoaded() {
@@ -1458,6 +1467,8 @@ bool WifiNetwork::ParseValue(int index, const Value* value) {
     }
     case PROPERTY_INDEX_PASSPHRASE_REQUIRED:
       return value->GetAsBoolean(&passphrase_required_);
+    case PROPERTY_INDEX_SAVE_CREDENTIALS:
+      return value->GetAsBoolean(&save_credentials_);
     case PROPERTY_INDEX_IDENTITY:
       return value->GetAsString(&identity_);
     case PROPERTY_INDEX_CERT_PATH:
@@ -1524,6 +1535,22 @@ void WifiNetwork::SetPassphrase(const std::string& passphrase) {
   // Send the change to flimflam. If the format is valid, it will propagate to
   // passphrase_ with a service update.
   SetStringProperty(kPassphraseProperty, passphrase);
+}
+
+void WifiNetwork::SetSaveCredentials(bool save_credentials) {
+  save_credentials_ = save_credentials;
+  SetBooleanProperty(kSaveCredentialsProperty, save_credentials);
+}
+
+// See src/third_party/flimflam/doc/service-api.txt for properties that
+// flimflam will forget when SaveCredentials is false.
+void WifiNetwork::EraseCredentials() {
+  WipeString(&passphrase_);
+  WipeString(&eap_client_cert_pkcs11_id_);
+  WipeString(&eap_identity_);
+  WipeString(&eap_anonymous_identity_);
+  WipeString(&eap_passphrase_);
+  WipeString(&user_passphrase_);
 }
 
 void WifiNetwork::SetIdentity(const std::string& identity) {
@@ -2126,12 +2153,19 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
 
     // Update local cache and notify listeners.
-    if (wireless->type() == TYPE_WIFI)
-      networklib->active_wifi_ = static_cast<WifiNetwork *>(wireless);
-    else if (wireless->type() == TYPE_CELLULAR)
+    if (wireless->type() == TYPE_WIFI) {
+      WifiNetwork* wifi = static_cast<WifiNetwork *>(wireless);
+      // If the user asked not to save credentials, flimflam will have
+      // forgotten them.  Wipe our cache as well.
+      if (!wifi->save_credentials()) {
+        wifi->EraseCredentials();
+      }
+      networklib->active_wifi_ = wifi;
+    } else if (wireless->type() == TYPE_CELLULAR) {
       networklib->active_cellular_ = static_cast<CellularNetwork *>(wireless);
-    else
+    } else {
       LOG(ERROR) << "Network of unexpected type: " << wireless->type();
+    }
 
     // If we succeed, this network will be remembered; request an update.
     // TODO(stevenjb): flimflam should do this automatically.

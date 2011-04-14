@@ -18,6 +18,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "views/controls/button/checkbox.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
@@ -255,6 +256,7 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent, WifiNetwork* wifi)
       identity_textfield_(NULL),
       identity_anonymous_label_(NULL),
       identity_anonymous_textfield_(NULL),
+      save_credentials_checkbox_(NULL),
       security_combobox_(NULL),
       passphrase_label_(NULL),
       passphrase_textfield_(NULL),
@@ -279,6 +281,7 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent)
       identity_textfield_(NULL),
       identity_anonymous_label_(NULL),
       identity_anonymous_textfield_(NULL),
+      save_credentials_checkbox_(NULL),
       security_combobox_(NULL),
       passphrase_label_(NULL),
       passphrase_textfield_(NULL),
@@ -551,6 +554,9 @@ bool WifiConfigView::Login() {
       if (passphrase_textfield_->IsEnabled()) {
         wifi->SetEAPPassphrase(UTF16ToUTF8(passphrase_textfield_->text()));
       }
+
+      // Save credentials
+      wifi->SetSaveCredentials(save_credentials_checkbox_->checked());
     } else {
       const std::string passphrase = GetPassphrase();
       if (passphrase != wifi->passphrase())
@@ -754,6 +760,15 @@ void WifiConfigView::Init(WifiNetwork* wifi) {
     identity_anonymous_textfield_->SetController(this);
     layout->AddView(identity_anonymous_textfield_);
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
+    // Save credentials
+    layout->StartRow(0, column_view_set_id);
+    save_credentials_checkbox_ = new views::Checkbox(
+        UTF16ToWide(l10n_util::GetStringUTF16(
+            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SAVE_CREDENTIALS)));
+    layout->SkipColumns(1);
+    layout->AddView(save_credentials_checkbox_);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   }
 
   // After creating the fields, we set the values. Fields need to be created
@@ -858,6 +873,10 @@ void WifiConfigView::Init(WifiNetwork* wifi) {
     // Passphrase
     if (passphrase_textfield_->IsEnabled())
       passphrase_textfield_->SetText(UTF8ToUTF16(wifi->eap_passphrase()));
+
+    // Save credentials
+    bool save_credentials = (wifi ? wifi->save_credentials() : false);
+    save_credentials_checkbox_->SetChecked(save_credentials);
   }
 
   // Create an error label.

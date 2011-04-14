@@ -9962,6 +9962,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE" desc="In settings Internet options, the label for the passphrase.">
         Password:
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SAVE_CREDENTIALS" desc="In settings Internet options, the label for the checkbox to save identity and password.">
+        Save identity and password
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_PASSPHRASE" desc="In settings Internet options, the label for the bad passphrase.">
         Incorrect password.
       </message>
