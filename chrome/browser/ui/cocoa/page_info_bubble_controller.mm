@@ -275,10 +275,6 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
       [[PageInfoContentView alloc] initWithFrame:contentFrame]);
   [contentView setSubviews:subviews];
 
-  // Replace the window's content.
-  [[[self window] contentView] setSubviews:
-      [NSArray arrayWithObject:contentView]];
-
   NSRect windowFrame = NSMakeRect(0, 0, kWindowWidth, offset);
   windowFrame.size = [[[self window] contentView] convertSize:windowFrame.size
                                                        toView:nil];
@@ -292,6 +288,10 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
   [[self window] setFrame:windowFrame
                   display:YES
                   animate:[[self window] isVisible]];
+
+  // Replace the window's content.
+  [[[self window] contentView] setSubviews:
+      [NSArray arrayWithObject:contentView]];
 
   NSPoint anchorPoint =
       [self anchorPointForWindowWithHeight:NSHeight(windowFrame)
