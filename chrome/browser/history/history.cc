@@ -41,8 +41,7 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
@@ -74,21 +73,22 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
         message_loop_(MessageLoop::current()) {
   }
 
-  virtual void NotifyProfileError(int message_id) {
-    // Send the backend to the history service on the main thread.
+  virtual void NotifyProfileError(sql::InitStatus init_status) OVERRIDE {
+    // Send to the history service on the main thread.
     message_loop_->PostTask(FROM_HERE, NewRunnableMethod(history_service_.get(),
-        &HistoryService::NotifyProfileError, message_id));
+        &HistoryService::NotifyProfileError, init_status));
   }
 
   virtual void SetInMemoryBackend(
-      history::InMemoryHistoryBackend* backend) {
+      history::InMemoryHistoryBackend* backend) OVERRIDE {
     // Send the backend to the history service on the main thread.
     message_loop_->PostTask(FROM_HERE, NewRunnableMethod(history_service_.get(),
         &HistoryService::SetInMemoryBackend, backend));
   }
 
-  virtual void BroadcastNotifications(NotificationType type,
-                                      history::HistoryDetails* details) {
+  virtual void BroadcastNotifications(
+      NotificationType type,
+      history::HistoryDetails* details) OVERRIDE {
     // Send the notification on the history thread.
     if (NotificationService::current()) {
       Details<history::HistoryDetails> det(details);
@@ -101,12 +101,12 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
         &HistoryService::BroadcastNotifications, type, details));
   }
 
-  virtual void DBLoaded() {
+  virtual void DBLoaded() OVERRIDE {
     message_loop_->PostTask(FROM_HERE, NewRunnableMethod(history_service_.get(),
         &HistoryService::OnDBLoaded));
   }
 
-  virtual void StartTopSitesMigration() {
+  virtual void StartTopSitesMigration() OVERRIDE {
     message_loop_->PostTask(FROM_HERE, NewRunnableMethod(history_service_.get(),
         &HistoryService::StartTopSitesMigration));
   }
@@ -722,10 +722,10 @@ void HistoryService::SetInMemoryBackend(
   in_memory_backend_->AttachToHistoryService(profile_);
 }
 
-void HistoryService::NotifyProfileError(int message_id) {
-  Source<HistoryService> source(this);
-  NotificationService::current()->Notify(NotificationType::PROFILE_ERROR,
-                                         source, Details<int>(&message_id));
+void HistoryService::NotifyProfileError(sql::InitStatus init_status) {
+  ShowProfileErrorDialog(
+      (init_status == sql::INIT_FAILURE) ?
+      IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR);
 }
 
 void HistoryService::DeleteURL(const GURL& url) {

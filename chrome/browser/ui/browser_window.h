@@ -238,11 +238,6 @@ class BrowserWindow {
   // Shows the collected cookies dialog box.
   virtual void ShowCollectedCookiesDialog(TabContents* tab_contents) = 0;
 
-  // Shows a dialog to the user that something is wrong with the profile.
-  // |message_id| is the ID for a string in the string table which will be
-  // displayed in the dialog.
-  virtual void ShowProfileErrorDialog(int message_id) = 0;
-
   // Show the bubble that indicates to the user that a theme is being installed.
   virtual void ShowThemeInstallBubble() = 0;
 

@@ -2750,6 +2750,8 @@
         'browser/ui/panels/panel.h',
         'browser/ui/panels/panel_manager.cc',
         'browser/ui/panels/panel_manager.h',
+        'browser/ui/profile_error_dialog.cc',
+        'browser/ui/profile_error_dialog.h',
         'browser/ui/search_engines/edit_search_engine_controller.cc',
         'browser/ui/search_engines/edit_search_engine_controller.h',
         'browser/ui/search_engines/keyword_editor_controller.cc',

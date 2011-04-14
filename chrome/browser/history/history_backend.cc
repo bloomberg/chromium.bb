@@ -530,17 +530,14 @@ void HistoryBackend::InitImpl(const std::string& languages) {
 
   // History database.
   db_.reset(new HistoryDatabase());
-  switch (db_->Init(history_name, tmp_bookmarks_file)) {
+  sql::InitStatus status = db_->Init(history_name, tmp_bookmarks_file);
+  switch (status) {
     case sql::INIT_OK:
       break;
     case sql::INIT_FAILURE:
       // A NULL db_ will cause all calls on this object to notice this error
       // and to not continue.
-      delegate_->NotifyProfileError(IDS_COULDNT_OPEN_PROFILE_ERROR);
-      db_.reset();
-      return;
-    case sql::INIT_TOO_NEW:
-      delegate_->NotifyProfileError(IDS_PROFILE_TOO_NEW_ERROR);
+      delegate_->NotifyProfileError(status);
       db_.reset();
       return;
     default:

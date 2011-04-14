@@ -25,6 +25,7 @@
 #include "chrome/browser/prefs/overlay_persistent_pref_store.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
 #include "chrome/browser/prefs/pref_value_store.h"
+#include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/common/json_pref_store.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
@@ -77,9 +78,7 @@ Value* CreateLocaleDefaultValue(Value::ValueType type, int message_id) {
 // Forwards a notification after a PostMessage so that we can wait for the
 // MessageLoop to run.
 void NotifyReadError(PrefService* pref, int message_id) {
-  Source<PrefService> source(pref);
-  NotificationService::current()->Notify(NotificationType::PROFILE_ERROR,
-                                         source, Details<int>(&message_id));
+  ShowProfileErrorDialog(message_id);
 }
 
 }  // namespace

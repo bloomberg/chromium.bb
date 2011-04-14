@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "app/sql/init_status.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/file_path.h"
@@ -680,8 +681,7 @@ class HistoryService : public CancelableRequestProvider,
   void SetInMemoryBackend(history::InMemoryHistoryBackend* mem_backend);
 
   // Called by our BackendDelegate when there is a problem reading the database.
-  // |message_id| is the relevant message in the string table to display.
-  void NotifyProfileError(int message_id);
+  void NotifyProfileError(sql::InitStatus init_status);
 
   // Call to schedule a given task for running on the history thread with the
   // specified priority. The task will have ownership taken.

@@ -655,11 +655,6 @@ class NotificationType {
     // history_notifications.h).
     FAVICON_CHANGED,
 
-    // Sent by history if there is a problem reading the profile.  The details
-    // is an int that's one of the message IDs in the string table.  The active
-    // browser window should notify the user of this error.
-    PROFILE_ERROR,
-
     // Sent after an incognito profile has been created. The details are none
     // and the source is the new profile.
     OTR_PROFILE_CREATED,

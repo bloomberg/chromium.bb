@@ -339,15 +339,6 @@ void BrowserWindowCocoa::ShowCollectedCookiesDialog(TabContents* tab_contents) {
   new CollectedCookiesMac(GetNativeHandle(), tab_contents);
 }
 
-void BrowserWindowCocoa::ShowProfileErrorDialog(int message_id) {
-  scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
-  [alert addButtonWithTitle:l10n_util::GetNSStringWithFixup(IDS_OK)];
-  [alert setMessageText:l10n_util::GetNSStringWithFixup(IDS_PRODUCT_NAME)];
-  [alert setInformativeText:l10n_util::GetNSStringWithFixup(message_id)];
-  [alert setAlertStyle:NSWarningAlertStyle];
-  [alert runModal];
-}
-
 void BrowserWindowCocoa::ShowThemeInstallBubble() {
   ThemeInstallBubbleView::Show(window());
 }

@@ -184,7 +184,8 @@ bool IsVisible(gfx::NativeView view) {
 void SimpleErrorBox(gfx::NativeWindow parent,
                     const string16& title,
                     const string16& message) {
-  ui::MessageBox(parent, message, title, MB_OK | MB_SETFOREGROUND);
+  ui::MessageBox(parent, message, title,
+                 MB_OK | MB_SETFOREGROUND | MB_ICONWARNING | MB_TOPMOST);
 }
 
 bool SimpleYesNoBox(gfx::NativeWindow parent,

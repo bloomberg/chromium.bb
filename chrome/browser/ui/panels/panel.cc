@@ -250,10 +250,6 @@ void Panel::ShowCollectedCookiesDialog(TabContents* tab_contents) {
   NOTIMPLEMENTED();
 }
 
-void Panel::ShowProfileErrorDialog(int message_id) {
-  NOTIMPLEMENTED();
-}
-
 void Panel::ShowThemeInstallBubble() {
   NOTIMPLEMENTED();
 }

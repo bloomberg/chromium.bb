@@ -961,26 +961,6 @@ void BrowserView::ShowCollectedCookiesDialog(TabContents* tab_contents) {
   browser::ShowCollectedCookiesDialog(GetNativeHandle(), tab_contents);
 }
 
-void BrowserView::ShowProfileErrorDialog(int message_id) {
-#if defined(OS_WIN)
-  string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-  string16 message = l10n_util::GetStringUTF16(message_id);
-  ui::MessageBox(GetNativeHandle(), message, title,
-                 MB_OK | MB_ICONWARNING | MB_TOPMOST);
-#elif defined(OS_LINUX)
-  std::string title = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
-  std::string message = l10n_util::GetStringUTF8(message_id);
-  GtkWidget* dialog = gtk_message_dialog_new(GetNativeHandle(),
-      static_cast<GtkDialogFlags>(0), GTK_MESSAGE_WARNING, GTK_BUTTONS_OK,
-      "%s", message.c_str());
-  gtk_window_set_title(GTK_WINDOW(dialog), title.c_str());
-  g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_destroy), NULL);
-  gtk_widget_show_all(dialog);
-#else
-  NOTIMPLEMENTED();
-#endif
-}
-
 void BrowserView::ShowThemeInstallBubble() {
   TabContents* tab_contents = browser_->GetSelectedTabContents();
   if (!tab_contents)

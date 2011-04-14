@@ -11,6 +11,7 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_database.h"
@@ -569,11 +570,9 @@ void WebDataService::RegisterRequest(WebDataRequest* request) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void WebDataService::DBInitFailed(sql::InitStatus init_status) {
-  Source<WebDataService> source(this);
-  int message_id = (init_status == sql::INIT_FAILURE) ?
-      IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR;
-  NotificationService::current()->Notify(NotificationType::PROFILE_ERROR,
-                                         source, Details<int>(&message_id));
+  ShowProfileErrorDialog(
+      (init_status == sql::INIT_FAILURE) ?
+      IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR);
 }
 
 void WebDataService::InitializeDatabaseIfNecessary() {

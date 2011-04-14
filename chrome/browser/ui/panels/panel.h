@@ -93,7 +93,6 @@ class Panel : public BrowserWindow {
   virtual DownloadShelf* GetDownloadShelf();
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents);
   virtual void ShowCollectedCookiesDialog(TabContents* tab_contents);
-  virtual void ShowProfileErrorDialog(int message_id);
   virtual void ShowThemeInstallBubble();
   virtual void ConfirmBrowserCloseWithPendingDownloads();
   virtual void ShowHTMLDialog(HtmlDialogUIDelegate* delegate,

@@ -53,12 +53,12 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
  public:
   explicit HistoryBackendTestDelegate(HistoryBackendTest* test) : test_(test) {}
 
-  virtual void NotifyProfileError(int message_id) {}
-  virtual void SetInMemoryBackend(InMemoryHistoryBackend* backend);
+  virtual void NotifyProfileError(sql::InitStatus init_status) OVERRIDE {}
+  virtual void SetInMemoryBackend(InMemoryHistoryBackend* backend) OVERRIDE;
   virtual void BroadcastNotifications(NotificationType type,
-                                      HistoryDetails* details);
-  virtual void DBLoaded();
-  virtual void StartTopSitesMigration();
+                                      HistoryDetails* details) OVERRIDE;
+  virtual void DBLoaded() OVERRIDE;
+  virtual void StartTopSitesMigration() OVERRIDE;
 
  private:
   // Not owned by us.

@@ -234,8 +234,6 @@ Browser::Browser(Type type, Profile* profile)
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::PROFILE_ERROR,
-                 NotificationService::AllSources());
 
   // Need to know when to alert the user of theme install delay.
   registrar_.Add(this, NotificationType::EXTENSION_READY_FOR_INSTALL,
@@ -3434,14 +3432,6 @@ void Browser::Observe(NotificationType type,
       GURL download_url = *(Details<GURL>(details).ptr());
       if (ExtensionService::IsDownloadFromMiniGallery(download_url))
         window()->ShowThemeInstallBubble();
-      break;
-    }
-
-    case NotificationType::PROFILE_ERROR: {
-      if (BrowserList::GetLastActive() != this)
-        break;
-      int* message_id = Details<int>(details).ptr();
-      window()->ShowProfileErrorDialog(*message_id);
       break;
     }
 

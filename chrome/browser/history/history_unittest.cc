@@ -88,12 +88,12 @@ class BackendDelegate : public HistoryBackend::Delegate {
       : history_test_(history_test) {
   }
 
-  virtual void NotifyProfileError(int message_id);
-  virtual void SetInMemoryBackend(InMemoryHistoryBackend* backend);
+  virtual void NotifyProfileError(sql::InitStatus init_status) OVERRIDE {}
+  virtual void SetInMemoryBackend(InMemoryHistoryBackend* backend) OVERRIDE;
   virtual void BroadcastNotifications(NotificationType type,
-                                      HistoryDetails* details);
-  virtual void DBLoaded() {}
-  virtual void StartTopSitesMigration() {}
+                                      HistoryDetails* details) OVERRIDE;
+  virtual void DBLoaded() OVERRIDE {}
+  virtual void StartTopSitesMigration() OVERRIDE {}
  private:
   HistoryTest* history_test_;
 };
@@ -277,9 +277,6 @@ class HistoryTest : public testing::Test {
   scoped_ptr<InMemoryHistoryBackend> in_mem_backend_;
   HistoryDatabase* db_;  // Cached reference to the backend's database.
 };
-
-void BackendDelegate::NotifyProfileError(int message_id) {
-}
 
 void BackendDelegate::SetInMemoryBackend(InMemoryHistoryBackend* backend) {
   // Save the in-memory backend to the history test object, this happens
