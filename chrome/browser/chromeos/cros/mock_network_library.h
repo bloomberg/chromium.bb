@@ -23,8 +23,14 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD2(RemoveNetworkObserver, void(const std::string&,
                                            NetworkObserver*));
   MOCK_METHOD1(RemoveObserverForAllNetworks, void(NetworkObserver*));
+  MOCK_METHOD2(AddNetworkDeviceObserver, void(const std::string&,
+                                              NetworkDeviceObserver*));
+  MOCK_METHOD2(RemoveNetworkDeviceObserver, void(const std::string&,
+                                                 NetworkDeviceObserver*));
   MOCK_METHOD1(AddCellularDataPlanObserver, void(CellularDataPlanObserver*));
   MOCK_METHOD1(RemoveCellularDataPlanObserver, void(CellularDataPlanObserver*));
+  MOCK_METHOD1(AddPinOperationObserver, void(PinOperationObserver*));
+  MOCK_METHOD1(RemovePinOperationObserver, void(PinOperationObserver*));
   MOCK_METHOD1(AddUserActionObserver, void(UserActionObserver*));
   MOCK_METHOD1(RemoveUserActionObserver, void(UserActionObserver*));
   MOCK_METHOD0(Lock, void(void));
@@ -68,6 +74,11 @@ class MockNetworkLibrary : public NetworkLibrary {
                      CellularDataPlanVector*(const std::string&));
   MOCK_CONST_METHOD1(GetSignificantDataPlan,
                      CellularDataPlan*(const std::string&));
+
+  MOCK_METHOD2(ChangePin, void(const std::string&, const std::string&));
+  MOCK_METHOD2(ChangeRequirePin, void(bool, const std::string&));
+  MOCK_METHOD1(EnterPin, void(const std::string&));
+  MOCK_METHOD2(UnblockPin, void(const std::string&, const std::string&));
 
   MOCK_METHOD0(RequestNetworkScan, void(void));
   MOCK_METHOD1(GetWifiAccessPoints, bool(WifiAccessPointVector*));

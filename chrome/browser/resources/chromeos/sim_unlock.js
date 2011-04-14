@@ -45,13 +45,14 @@ cr.define('mobile', function() {
         case SimUnlock.SIM_LOCKED_PIN:
           var pinMessage;
           if (error == SimUnlock.ERROR_OK) {
-            pinMessage = SimUnlock.localStrings_.getString('enterPinMessage');
+            pinMessage = SimUnlock.localStrings_.getStringF(
+                'enterPinTriesMessage', tries);
             $('pin-error-msg').classList.remove('error');
           }
           if (error == SimUnlock.ERROR_PIN) {
             if (tries && tries >= 0) {
               pinMessage = SimUnlock.localStrings_.getStringF(
-                  'enterPinTriesMessage', tries);
+                  'incorrectPinTriesMessage', tries);
             } else {
               pinMessage = SimUnlock.localStrings_.getString('enterPinMessage');
             }

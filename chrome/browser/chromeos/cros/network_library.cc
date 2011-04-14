@@ -65,6 +65,15 @@
 // UpdateNetworkStatus: This handles changes to a monitored service, typically
 //     changes to transient states like Strength. (Note: also updates State).
 //
+// AddNetworkDeviceObserver: Adds an observer for a specific device.
+//                           Will be called on any device property change.
+// NetworkDeviceObserverList: A monitor and list of observers of a device.
+// UpdateNetworkDeviceStatus: Handles changes to a monitored device, like
+//     SIM lock state and updates device state.
+//
+// All *Pin(...) methods use internal callback that would update cellular
+//    device state once async call is completed and notify all device observers.
+//
 ////////////////////////////////////////////////////////////////////////////////
 
 namespace chromeos {
@@ -77,6 +86,11 @@ const int kNetworkNotifyDelayMs = 50;
 
 // How long we should remember that cellular plan payment was received.
 const int kRecentPlanPaymentHours = 6;
+
+// Default value of the SIM unlock retries count. It is updated to the real
+// retries count once cellular device with SIM card is initialized.
+// If cellular device doesn't have SIM card, then retries are never used.
+const int kDefaultSimUnlockRetriesCount = 999;
 
 // D-Bus interface string constants.
 
@@ -118,6 +132,15 @@ const char* kErrorProperty = "Error";
 const char* kActiveProfileProperty = "ActiveProfile";
 const char* kEntriesProperty = "Entries";
 const char* kDevicesProperty = "Devices";
+
+// Flimflam property names for SIMLock status.
+const char* kSIMLockStatusProperty = "Cellular.SIMLockStatus";
+const char* kSIMLockTypeProperty = "LockType";
+const char* kSIMLockRetriesLeftProperty = "RetriesLeft";
+
+// Flimflam SIMLock status types.
+const char* kSIMLockPin = "sim-pin";
+const char* kSIMLockPuk = "sim-puk";
 
 // APN info property names.
 const char* kApnProperty = "apn";
@@ -246,8 +269,10 @@ const char* kErrorNeedEvdo = "need-evdo";
 const char* kErrorNeedHomeNetwork = "need-home-network";
 const char* kErrorOtaspFailed = "otasp-failed";
 const char* kErrorAaaFailed = "aaa-failed";
+
 // Flimflam error messages.
 const char* kErrorPassphraseRequiredMsg = "Passphrase required";
+const char* kErrorIncorrectPinMsg = "org.chromium.flimflam.Device.IncorrectPin";
 
 const char* kUnknownString = "UNKNOWN";
 
@@ -394,6 +419,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_SERVICES,
   PROPERTY_INDEX_SERVICE_WATCH_LIST,
   PROPERTY_INDEX_SIGNAL_STRENGTH,
+  PROPERTY_INDEX_SIM_LOCK,
   PROPERTY_INDEX_STATE,
   PROPERTY_INDEX_TYPE,
   PROPERTY_INDEX_UNKNOWN,
@@ -466,6 +492,7 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kServiceWatchListProperty, PROPERTY_INDEX_SERVICE_WATCH_LIST },
   { kServicesProperty, PROPERTY_INDEX_SERVICES },
   { kSignalStrengthProperty, PROPERTY_INDEX_SIGNAL_STRENGTH },
+  { kSIMLockStatusProperty, PROPERTY_INDEX_SIM_LOCK },
   { kStateProperty, PROPERTY_INDEX_STATE },
   { kTypeProperty, PROPERTY_INDEX_TYPE },
   { kUsageURLProperty, PROPERTY_INDEX_USAGE_URL },
@@ -587,6 +614,32 @@ static NetworkTechnology ParseNetworkTechnology(const std::string& technology) {
   static StringToEnum<NetworkTechnology> parser(
       table, arraysize(table), NETWORK_TECHNOLOGY_UNKNOWN);
   return parser.Get(technology);
+}
+
+static SIMLockState ParseSimLockState(const std::string& state) {
+  static StringToEnum<SIMLockState>::Pair table[] = {
+    { "", SIM_UNLOCKED },
+    { kSIMLockPin, SIM_LOCKED_PIN },
+    { kSIMLockPuk, SIM_LOCKED_PUK },
+  };
+  static StringToEnum<SIMLockState> parser(
+      table, arraysize(table), SIM_UNKNOWN);
+  SIMLockState parsed_state = parser.Get(state);
+  DCHECK(parsed_state != SIM_UNKNOWN) << "Unknown SIMLock state encountered";
+  return parsed_state;
+}
+
+bool ParseSimLockStateFromDictionary(const DictionaryValue* info,
+                                     SIMLockState* out_state,
+                                     int* out_retries) {
+  std::string state_string;
+  if (!info->GetString(kSIMLockTypeProperty, &state_string) ||
+      !info->GetInteger(kSIMLockRetriesLeftProperty, out_retries)) {
+    LOG(ERROR) << "Error parsing SIMLock state";
+    return false;
+  }
+  *out_state = ParseSimLockState(state_string);
+  return true;
 }
 
 static NetworkRoamingState ParseRoamingState(const std::string& roaming_state) {
@@ -724,6 +777,8 @@ NetworkDevice::NetworkDevice(const std::string& device_path)
     : device_path_(device_path),
       type_(TYPE_UNKNOWN),
       scanning_(false),
+      sim_lock_state_(SIM_UNKNOWN),
+      sim_retries_left_(kDefaultSimUnlockRetriesCount),
       PRL_version_(0) {
 }
 
@@ -761,6 +816,13 @@ bool NetworkDevice::ParseValue(int index, const Value* value) {
       return value->GetAsString(&model_id_);
     case PROPERTY_INDEX_MANUFACTURER:
       return value->GetAsString(&manufacturer_);
+    case PROPERTY_INDEX_SIM_LOCK:
+      if (value->IsType(Value::TYPE_DICTIONARY)) {
+        return ParseSimLockStateFromDictionary(
+            static_cast<const DictionaryValue*>(value),
+            &sim_lock_state_,
+            &sim_retries_left_);
+      }
     case PROPERTY_INDEX_FIRMWARE_REVISION:
       return value->GetAsString(&firmware_revision_);
     case PROPERTY_INDEX_HARDWARE_REVISION:
@@ -1641,9 +1703,12 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     if (network_manager_monitor_)
       DisconnectPropertyChangeMonitor(network_manager_monitor_);
     data_plan_observers_.Clear();
+    pin_operation_observers_.Clear();
+    user_action_observers_.Clear();
     if (data_plan_monitor_)
       DisconnectDataPlanUpdateMonitor(data_plan_monitor_);
     STLDeleteValues(&network_observers_);
+    STLDeleteValues(&network_device_observers_);
     ClearNetworks(true /*delete networks*/);
     ClearRememberedNetworks(true /*delete networks*/);
     STLDeleteValues(&data_plan_map_);
@@ -1669,12 +1734,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     if (iter != network_observers_.end()) {
       oblist = iter->second;
     } else {
-      std::pair<NetworkObserverMap::iterator, bool> inserted =
-        network_observers_.insert(
-            std::make_pair<std::string, NetworkObserverList*>(
-                service_path,
-                new NetworkObserverList(this, service_path)));
-      oblist = inserted.first->second;
+      oblist = new NetworkObserverList(this, service_path);
+      network_observers_[service_path] = oblist;
     }
     if (!oblist->HasObserver(observer))
       oblist->AddObserver(observer);
@@ -1690,7 +1751,41 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       map_iter->second->RemoveObserver(observer);
       if (!map_iter->second->size()) {
         delete map_iter->second;
-        network_observers_.erase(map_iter++);
+        network_observers_.erase(map_iter);
+      }
+    }
+  }
+
+  virtual void AddNetworkDeviceObserver(const std::string& device_path,
+                                        NetworkDeviceObserver* observer) {
+    DCHECK(observer);
+    if (!EnsureCrosLoaded())
+      return;
+    // First, add the observer to the callback map.
+    NetworkDeviceObserverMap::iterator iter =
+        network_device_observers_.find(device_path);
+    NetworkDeviceObserverList* oblist;
+    if (iter != network_device_observers_.end()) {
+      oblist = iter->second;
+    } else {
+      oblist = new NetworkDeviceObserverList(this, device_path);
+      network_device_observers_[device_path] = oblist;
+    }
+    if (!oblist->HasObserver(observer))
+      oblist->AddObserver(observer);
+  }
+
+  virtual void RemoveNetworkDeviceObserver(const std::string& device_path,
+                                           NetworkDeviceObserver* observer) {
+    DCHECK(observer);
+    DCHECK(device_path.size());
+    NetworkDeviceObserverMap::iterator map_iter =
+        network_device_observers_.find(device_path);
+    if (map_iter != network_device_observers_.end()) {
+      map_iter->second->RemoveObserver(observer);
+      if (!map_iter->second->size()) {
+        delete map_iter->second;
+        network_device_observers_.erase(map_iter);
       }
     }
   }
@@ -1736,6 +1831,15 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   virtual void RemoveCellularDataPlanObserver(
       CellularDataPlanObserver* observer) {
     data_plan_observers_.RemoveObserver(observer);
+  }
+
+  virtual void AddPinOperationObserver(PinOperationObserver* observer) {
+    if (!pin_operation_observers_.HasObserver(observer))
+      pin_operation_observers_.AddObserver(observer);
+  }
+
+  virtual void RemovePinOperationObserver(PinOperationObserver* observer) {
+    pin_operation_observers_.RemoveObserver(observer);
   }
 
   virtual void AddUserActionObserver(UserActionObserver* observer) {
@@ -1884,6 +1988,75 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     if (plans)
       return GetSignificantDataPlanFromVector(plans);
     return NULL;
+  }
+
+  virtual void ChangePin(const std::string& old_pin,
+                         const std::string& new_pin) {
+    const NetworkDevice* cellular = FindCellularDevice();
+    if (!cellular) {
+      NOTREACHED() << "Calling ChangePin method w/o cellular device.";
+      return;
+    }
+    chromeos::RequestChangePin(cellular->device_path().c_str(),
+                               old_pin.c_str(), new_pin.c_str(),
+                               PinOperationCallback, this);
+  }
+
+  virtual void ChangeRequirePin(bool require_pin,
+                                const std::string& pin) {
+    const NetworkDevice* cellular = FindCellularDevice();
+    if (!cellular) {
+      NOTREACHED() << "Calling ChangeRequirePin method w/o cellular device.";
+      return;
+    }
+    chromeos::RequestRequirePin(cellular->device_path().c_str(),
+                                pin.c_str(), require_pin,
+                                PinOperationCallback, this);
+  }
+
+  virtual void EnterPin(const std::string& pin) {
+    const NetworkDevice* cellular = FindCellularDevice();
+    if (!cellular) {
+      NOTREACHED() << "Calling EnterPin method w/o cellular device.";
+      return;
+    }
+    chromeos::RequestEnterPin(cellular->device_path().c_str(),
+                              pin.c_str(),
+                              PinOperationCallback, this);
+  }
+
+  virtual void UnblockPin(const std::string& puk,
+                          const std::string& new_pin) {
+    const NetworkDevice* cellular = FindCellularDevice();
+    if (!cellular) {
+      NOTREACHED() << "Calling UnblockPin method w/o cellular device.";
+      return;
+    }
+    chromeos::RequestUnblockPin(cellular->device_path().c_str(),
+                                puk.c_str(), new_pin.c_str(),
+                                PinOperationCallback, this);
+  }
+
+  static void PinOperationCallback(void* object,
+                                   const char* path,
+                                   NetworkMethodErrorType error,
+                                   const char* error_message) {
+    NetworkLibraryImpl* networklib = static_cast<NetworkLibraryImpl*>(object);
+    DCHECK(networklib);
+    PinOperationError pin_error;
+    if (error == chromeos::NETWORK_METHOD_ERROR_NONE) {
+      pin_error = PIN_ERROR_NONE;
+      VLOG(1) << "Pin operation completed successfuly";
+    } else {
+      if (error_message &&
+          strcmp(error_message, kErrorIncorrectPinMsg) == 0) {
+        pin_error = PIN_ERROR_INCORRECT_CODE;
+      } else {
+        pin_error = PIN_ERROR_UNKNOWN;
+        NOTREACHED() << "Unknown PIN error: " << error_message;
+      }
+    }
+    networklib->NotifyPinOperationCompleted(pin_error);
   }
 
   virtual void RequestNetworkScan() {
@@ -2299,9 +2472,41 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       networklib->UpdateNetworkStatus(path, key, value);
     }
     PropertyChangeMonitor network_monitor_;
+    DISALLOW_COPY_AND_ASSIGN(NetworkObserverList);
   };
 
   typedef std::map<std::string, NetworkObserverList*> NetworkObserverMap;
+
+  class NetworkDeviceObserverList : public ObserverList<NetworkDeviceObserver> {
+   public:
+    NetworkDeviceObserverList(NetworkLibraryImpl* library,
+                              const std::string& device_path) {
+      device_monitor_ = MonitorNetworkDevice(
+          &NetworkDevicePropertyChangedHandler,
+          device_path.c_str(),
+          library);
+    }
+
+    virtual ~NetworkDeviceObserverList() {
+      if (device_monitor_)
+        DisconnectPropertyChangeMonitor(device_monitor_);
+    }
+
+   private:
+    static void NetworkDevicePropertyChangedHandler(void* object,
+                                                    const char* path,
+                                                    const char* key,
+                                                    const Value* value) {
+      NetworkLibraryImpl* networklib = static_cast<NetworkLibraryImpl*>(object);
+      DCHECK(networklib);
+      networklib->UpdateNetworkDeviceStatus(path, key, value);
+    }
+    PropertyChangeMonitor device_monitor_;
+    DISALLOW_COPY_AND_ASSIGN(NetworkDeviceObserverList);
+  };
+
+  typedef std::map<std::string, NetworkDeviceObserverList*>
+      NetworkDeviceObserverMap;
 
   ////////////////////////////////////////////////////////////////////////////
   // Callbacks.
@@ -2875,6 +3080,16 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   ////////////////////////////////////////////////////////////////////////////
   // NetworkDevice list management functions.
 
+  // Returns pointer to device or NULL if device is not found by path.
+  // Use FindNetworkDeviceByPath when you're not intending to change device.
+  NetworkDevice* GetNetworkDeviceByPath(const std::string& path) {
+    NetworkDeviceMap::iterator iter = device_map_.find(path);
+    if (iter != device_map_.end())
+      return iter->second;
+    LOG(WARNING) << "Device path not found: " << path;
+    return NULL;
+  }
+
   // Update device list, and request associated device updates.
   // |devices| represents a complete list of devices.
   void UpdateNetworkDeviceList(const ListValue* devices) {
@@ -3000,16 +3215,60 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
   }
 
+  void NotifyNetworkDeviceChanged(NetworkDevice* device) {
+    DCHECK(device);
+    NetworkDeviceObserverMap::const_iterator iter =
+        network_device_observers_.find(device->device_path());
+    if (iter != network_device_observers_.end()) {
+      NetworkDeviceObserverList* device_observer_list = iter->second;
+      FOR_EACH_OBSERVER(NetworkDeviceObserver,
+                        *device_observer_list,
+                        OnNetworkDeviceChanged(this, device));
+    } else {
+      NOTREACHED() <<
+          "There weren't supposed to be any property change observers of " <<
+           device->device_path();
+    }
+  }
+
   void NotifyCellularDataPlanChanged() {
     FOR_EACH_OBSERVER(CellularDataPlanObserver,
                       data_plan_observers_,
                       OnCellularDataPlanChanged(this));
   }
 
+  void NotifyPinOperationCompleted(PinOperationError error) {
+    FOR_EACH_OBSERVER(PinOperationObserver,
+                      pin_operation_observers_,
+                      OnPinOperationCompleted(this, error));
+  }
+
   void NotifyUserConnectionInitiated(const Network* network) {
     FOR_EACH_OBSERVER(UserActionObserver,
                       user_action_observers_,
                       OnConnectionInitiated(this, network));
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // Device updates.
+
+  void UpdateNetworkDeviceStatus(const char* path,
+                                 const char* key,
+                                 const Value* value) {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (key == NULL || value == NULL)
+      return;
+    NetworkDevice* device = GetNetworkDeviceByPath(path);
+    if (device) {
+      VLOG(1) << "UpdateNetworkDeviceStatus: " << device->name() << "." << key;
+      int index = property_index_parser().Get(std::string(key));
+      if (!device->ParseValue(index, value)) {
+        LOG(WARNING) << "UpdateNetworkDeviceStatus: Error parsing: "
+                     << path << "." << key;
+      }
+      // Notify only observers on device property change.
+      NotifyNetworkDeviceChanged(device);
+    }
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -3139,6 +3398,11 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     enabled_devices_ = devices;
     connected_devices_ = devices;
 
+    NetworkDevice* cellular = new NetworkDevice("cellular");
+    scoped_ptr<Value> cellular_type(Value::CreateStringValue(kTypeCellular));
+    cellular->ParseValue(PROPERTY_INDEX_TYPE, cellular_type.get());
+    device_map_["cellular"] = cellular;
+
     // Networks
     ClearNetworks(true /*delete networks*/);
 
@@ -3236,11 +3500,17 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   // Cellular data plan observer list
   ObserverList<CellularDataPlanObserver> data_plan_observers_;
 
+  // PIN operation observer list.
+  ObserverList<PinOperationObserver> pin_operation_observers_;
+
   // User action observer list
   ObserverList<UserActionObserver> user_action_observers_;
 
   // Network observer map
   NetworkObserverMap network_observers_;
+
+  // Network device observer map.
+  NetworkDeviceObserverMap network_device_observers_;
 
   // For monitoring network manager status changes.
   PropertyChangeMonitor network_manager_monitor_;
@@ -3358,6 +3628,10 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual void RemoveNetworkObserver(const std::string& service_path,
                                      NetworkObserver* observer) {}
   virtual void RemoveObserverForAllNetworks(NetworkObserver* observer) {}
+  virtual void AddNetworkDeviceObserver(const std::string& device_path,
+                                        NetworkDeviceObserver* observer) {}
+  virtual void RemoveNetworkDeviceObserver(const std::string& device_path,
+                                           NetworkDeviceObserver* observer) {}
   virtual void Lock() {}
   virtual void Unlock() {}
   virtual bool IsLocked() { return false; }
@@ -3365,6 +3639,8 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
       CellularDataPlanObserver* observer) {}
   virtual void RemoveCellularDataPlanObserver(
       CellularDataPlanObserver* observer) {}
+  virtual void AddPinOperationObserver(PinOperationObserver* observer) {}
+  virtual void RemovePinOperationObserver(PinOperationObserver* observer) {}
   virtual void AddUserActionObserver(UserActionObserver* observer) {}
   virtual void RemoveUserActionObserver(UserActionObserver* observer) {}
 
@@ -3428,6 +3704,12 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual const CellularDataPlan* GetSignificantDataPlan(
       const std::string& path) const { return NULL; }
 
+  virtual void ChangePin(const std::string& old_pin,
+                         const std::string& new_pin) {}
+  virtual void ChangeRequirePin(bool require_pin, const std::string& pin) {}
+  virtual void EnterPin(const std::string& pin) {}
+  virtual void UnblockPin(const std::string& puk, const std::string& new_pin) {}
+
   virtual void RequestNetworkScan() {}
   virtual bool GetWifiAccessPoints(WifiAccessPointVector* result) {
     return false;
@@ -3448,7 +3730,7 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual void ForgetWifiNetwork(const std::string& service_path) {}
   virtual bool ethernet_available() const { return true; }
   virtual bool wifi_available() const { return false; }
-  virtual bool cellular_available() const { return true; }
+  virtual bool cellular_available() const { return false; }
   virtual bool ethernet_enabled() const { return true; }
   virtual bool wifi_enabled() const { return false; }
   virtual bool cellular_enabled() const { return false; }

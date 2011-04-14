@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
@@ -198,9 +199,18 @@ void NetworkMenu::ActivatedAt(int index) {
   } else if (flags & FLAG_TOGGLE_WIFI) {
     cros->EnableWifiNetworkDevice(!cros->wifi_enabled());
   } else if (flags & FLAG_TOGGLE_CELLULAR) {
-    cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
-    // TODO(nkostylev): Integrate with SIM locked state. crosbug.com/12007.
-    // SimUnlockDialogDelegate::ShowDialog(GetNativeWindow());
+    const NetworkDevice* cellular = cros->FindCellularDevice();
+    if (!cellular) {
+      LOG(ERROR) << "Not found cellular device, it should be available.";
+      cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
+    } else {
+      if (cellular->sim_lock_state() == SIM_UNLOCKED ||
+          cellular->sim_lock_state() == SIM_UNKNOWN) {
+        cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
+      } else {
+        SimUnlockDialogDelegate::ShowDialog(GetNativeWindow());
+      }
+    }
   } else if (flags & FLAG_TOGGLE_OFFLINE) {
     cros->EnableOfflineMode(!cros->offline_mode());
   } else if (flags & FLAG_ETHERNET) {
@@ -653,8 +663,20 @@ void NetworkMenu::InitMenuItems() {
     }
 
     if (cellular_available) {
-      int id = cellular_enabled ? IDS_STATUSBAR_NETWORK_DEVICE_DISABLE :
-                                  IDS_STATUSBAR_NETWORK_DEVICE_ENABLE;
+      const NetworkDevice* cellular = cros->FindCellularDevice();
+      bool is_locked = false;
+      if (!cellular) {
+        LOG(ERROR) << "Not found cellular device, it should be available.";
+      } else {
+        // If cellular is SIM locked then show "Enable" action.
+        is_locked = cellular->sim_lock_state() == SIM_LOCKED_PIN ||
+                    cellular->sim_lock_state() == SIM_LOCKED_PUK;
+      }
+      int id;
+      if (cellular_enabled && !is_locked)
+        id = IDS_STATUSBAR_NETWORK_DEVICE_DISABLE;
+      else
+        id = IDS_STATUSBAR_NETWORK_DEVICE_ENABLE;
       label = l10n_util::GetStringFUTF16(id,
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR));
       menu_items_.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND, label,

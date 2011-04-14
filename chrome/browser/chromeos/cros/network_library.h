@@ -95,6 +95,21 @@ enum NetworkRoamingState {
   ROAMING_STATE_ROAMING = 2,
 };
 
+// SIMLock states (see gobi-cromo-plugin/gobi_gsm_modem.cc)
+enum SIMLockState {
+  SIM_UNKNOWN    = 0,
+  SIM_UNLOCKED   = 1,
+  SIM_LOCKED_PIN = 2,
+  SIM_LOCKED_PUK = 3,  // also when SIM is blocked, then retries = 0.
+};
+
+// Any PIN operation result (EnterPin, UnblockPin etc.).
+enum PinOperationError {
+  PIN_ERROR_NONE           = 0,
+  PIN_ERROR_UNKNOWN        = 1,
+  PIN_ERROR_INCORRECT_CODE = 2,  // Either PIN/PUK specified is incorrect.
+};
+
 // connection errors (see flimflam/include/service.h)
 enum ConnectionError {
   ERROR_UNKNOWN           = 0,
@@ -161,6 +176,8 @@ class NetworkDevice {
   const std::string& min() const { return MIN_; }
   const std::string& model_id() const { return model_id_; }
   const std::string& manufacturer() const { return manufacturer_; }
+  SIMLockState sim_lock_state() const { return sim_lock_state_; }
+  const int sim_retries_left() const { return sim_retries_left_; }
   const std::string& firmware_revision() const { return firmware_revision_; }
   const std::string& hardware_revision() const { return hardware_revision_; }
   const std::string& last_update() const { return last_update_; }
@@ -187,6 +204,8 @@ class NetworkDevice {
   std::string MIN_;
   std::string model_id_;
   std::string manufacturer_;
+  SIMLockState sim_lock_state_;
+  int sim_retries_left_;
   std::string firmware_revision_;
   std::string hardware_revision_;
   std::string last_update_;
@@ -693,10 +712,26 @@ class NetworkLibrary {
                                   const Network* network) = 0;
   };
 
+  class NetworkDeviceObserver {
+   public:
+    // Called when the state of a single device has changed,
+    // for example SIMLock state for cellular.
+    virtual void OnNetworkDeviceChanged(NetworkLibrary* cros,
+                                        const NetworkDevice* device) = 0;
+  };
+
   class CellularDataPlanObserver {
    public:
     // Called when the cellular data plan has changed.
     virtual void OnCellularDataPlanChanged(NetworkLibrary* obj) = 0;
+  };
+
+  class PinOperationObserver {
+   public:
+    // Called when pin async operation has completed.
+    // Network is NULL when we don't have an associated Network object.
+    virtual void OnPinOperationCompleted(NetworkLibrary* cros,
+                                         PinOperationError error) = 0;
   };
 
   class UserActionObserver {
@@ -723,6 +758,13 @@ class NetworkLibrary {
   // Stop |observer| from observing any networks
   virtual void RemoveObserverForAllNetworks(NetworkObserver* observer) = 0;
 
+  // Add an observer for a single network device.
+  virtual void AddNetworkDeviceObserver(const std::string& device_path,
+                                        NetworkDeviceObserver* observer) = 0;
+  // Remove an observer for a single network device.
+  virtual void RemoveNetworkDeviceObserver(const std::string& device_path,
+                                           NetworkDeviceObserver* observer) = 0;
+
   // Temporarily locks down certain functionality in network library to prevent
   // unplanned side effects. During the lock down, Enable*Device() calls cannot
   // be made.
@@ -736,6 +778,9 @@ class NetworkLibrary {
       CellularDataPlanObserver* observer) = 0;
   virtual void RemoveCellularDataPlanObserver(
       CellularDataPlanObserver* observer) = 0;
+
+  virtual void AddPinOperationObserver(PinOperationObserver* observer) = 0;
+  virtual void RemovePinOperationObserver(PinOperationObserver* observer) = 0;
 
   virtual void AddUserActionObserver(UserActionObserver* observer) = 0;
   virtual void RemoveUserActionObserver(UserActionObserver* observer) = 0;
@@ -815,6 +860,21 @@ class NetworkLibrary {
   // gets called, the result becomes invalid.
   virtual const CellularDataPlan* GetSignificantDataPlan(
       const std::string& path) const = 0;
+
+  // Passes |old_pin|, |new_pin| to change SIM card PIM.
+  virtual void ChangePin(const std::string& old_pin,
+                         const std::string& new_pin) = 0;
+
+  // Passes |pin|, |require_pin| value to change SIM card RequirePin setting.
+  virtual void ChangeRequirePin(bool require_pin,
+                                const std::string& pin) = 0;
+
+  // Passes |pin| to unlock SIM card.
+  virtual void EnterPin(const std::string& pin) = 0;
+
+  // Passes |puk|, |new_pin| to unblock SIM card.
+  virtual void UnblockPin(const std::string& puk,
+                          const std::string& new_pin) = 0;
 
   // Request a scan for new wifi networks.
   virtual void RequestNetworkScan() = 0;

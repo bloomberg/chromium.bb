@@ -54,6 +54,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     cros_mock_->InitStatusAreaMocks();
     mock_network_library_ = cros_mock_->mock_network_library();
     mock_login_library_ = new MockLoginLibrary();
+    cellular_.reset(new NetworkDevice("cellular"));
     cros_mock_->test_api()->SetLoginLibrary(mock_login_library_, true);
     EXPECT_CALL(*mock_login_library_, EmitLoginPromptReady())
         .Times(1);
@@ -100,6 +101,10 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     EXPECT_CALL(*mock_network_library_, cellular_connecting())
         .Times(AnyNumber())
         .WillRepeatedly((Return(false)));
+
+    EXPECT_CALL(*mock_network_library_, FindCellularDevice())
+        .Times(AnyNumber())
+        .WillRepeatedly((Return(cellular_.get())));
   }
 
   virtual void TearDownInProcessBrowserTestFixture() {
@@ -128,6 +133,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
 
   MockLoginLibrary* mock_login_library_;
   MockNetworkLibrary* mock_network_library_;
+  scoped_ptr<NetworkDevice> cellular_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkScreenTest);
