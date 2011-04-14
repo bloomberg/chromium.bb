@@ -250,10 +250,6 @@ wl_client_create(struct wl_display *display, int fd)
 				     global->object->interface->name,
 				     global->object->interface->version);
 
-	wl_list_for_each(global, &display->global_list, link)
-		if (global->func)
-			global->func(client, global->object);
-
 	return client;
 }
 
@@ -476,6 +472,18 @@ wl_input_device_update_grab(struct wl_input_device *device,
 }
 
 static void
+display_bind(struct wl_client *client,
+	     struct wl_display *display, uint32_t id,
+	     const char *interface, uint32_t version)
+{
+	struct wl_global *global;
+
+	wl_list_for_each(global, &display->global_list, link)
+		if (global->object->id == id && global->func)
+			global->func(client, global->object);
+}
+
+static void
 display_sync(struct wl_client *client,
 	       struct wl_display *display, uint32_t key)
 {
@@ -518,6 +526,7 @@ display_frame(struct wl_client *client,
 }
 
 struct wl_display_interface display_interface = {
+	display_bind,
 	display_sync,
 	display_frame
 };

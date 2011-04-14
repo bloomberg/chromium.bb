@@ -65,6 +65,13 @@ struct wl_frame_handler {
 	struct wl_list link;
 };
 
+struct wl_global {
+	uint32_t id;
+	char *interface;
+	uint32_t version;
+	struct wl_list link;
+};
+
 struct wl_display {
 	struct wl_proxy proxy;
 	struct wl_connection *connection;
@@ -73,6 +80,7 @@ struct wl_display {
 	uint32_t mask;
 	struct wl_hash_table *objects;
 	struct wl_list global_listener_list;
+	struct wl_list global_list;
 
 	struct wl_visual *argb_visual;
 	struct wl_visual *premultiplied_argb_visual;
@@ -233,6 +241,22 @@ wl_display_get_rgb_visual(struct wl_display *display)
 	return display->rgb_visual;
 }
 
+/* Can't do this, there may be more than one instance of an
+ * interface... */
+WL_EXPORT uint32_t
+wl_display_get_global(struct wl_display *display,
+		      const char *interface, uint32_t version)
+{
+	struct wl_global *global;
+
+	wl_list_for_each(global, &display->global_list, link)
+		if (strcmp(interface, global->interface) == 0 &&
+		    version <= global->version)
+			return global->id;
+
+	return 0;
+}
+
 static void
 display_handle_invalid_object(void *data,
 			      struct wl_display *display, uint32_t id)
@@ -264,12 +288,19 @@ display_handle_global(void *data,
 		      uint32_t id, const char *interface, uint32_t version)
 {
 	struct wl_global_listener *listener;
+	struct wl_global *global;
 
 	if (strcmp(interface, "display") == 0)
 		wl_hash_table_insert(display->objects,
 				     id, &display->proxy.object);
 	else if (strcmp(interface, "visual") == 0)
 		add_visual(display, id);
+
+	global = malloc(sizeof *global);
+	global->id = id;
+	global->interface = strdup(interface);
+	global->version = version;
+	wl_list_insert(display->global_list.prev, &global->link);
 
 	wl_list_for_each(listener, &display->global_listener_list, link)
 		(*listener->handler)(display,
@@ -402,6 +433,7 @@ wl_display_connect(const char *name)
 		return NULL;
 	}
 	wl_list_init(&display->global_listener_list);
+	wl_list_init(&display->global_list);
 
 	display->proxy.object.interface = &wl_display_interface;
 	display->proxy.object.id = 1;
@@ -423,6 +455,9 @@ wl_display_connect(const char *name)
 		free(display);
 		return NULL;
 	}
+
+	wl_display_bind(display, 1, "display", 1);
+
 	return display;
 }
 

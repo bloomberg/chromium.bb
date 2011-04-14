@@ -75,10 +75,13 @@ typedef void (*wl_display_global_func_t)(struct wl_display *display,
 void
 wl_display_remove_global_listener(struct wl_display *display,
 				  struct wl_global_listener *listener);
-
 struct wl_global_listener *
 wl_display_add_global_listener(struct wl_display *display,
 			       wl_display_global_func_t handler, void *data);
+WL_EXPORT uint32_t
+wl_display_get_global(struct wl_display *display,
+		      const char *interface, uint32_t version);
+
 struct wl_visual *
 wl_display_get_argb_visual(struct wl_display *display);
 struct wl_visual *

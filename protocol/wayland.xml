@@ -4,6 +4,12 @@
   <!-- The core global object. This is a special singleton object.
        It is used for internal wayland protocol features. -->
   <interface name="display" version="1">
+    <request name="bind">
+      <arg name="id" type="uint"/>
+      <arg name="interface" type="string"/>
+      <arg name="version" type="uint"/>
+    </request>
+
     <!-- sync is an just an echo, which will reply with a sync event.
          Since requests are handled in-order, this can be used as a
          barrier to ensure all previous requests have ben handled.

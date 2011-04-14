@@ -32,19 +32,11 @@ extern "C" {
 
 #define WL_EGL_PLATFORM 1
 
-struct wl_egl_display;
 struct wl_egl_window;
 struct wl_egl_pixmap;
 
-struct wl_egl_display *
-wl_egl_display_create(struct wl_display *egl_display);
-
-void
-wl_egl_display_destroy(struct wl_egl_display *egl_display);
-
 struct wl_egl_window *
-wl_egl_window_create(struct wl_egl_display *egl_display,
-		     struct wl_surface *surface,
+wl_egl_window_create(struct wl_surface *surface,
 		     int width, int height,
 		     struct wl_visual *visual);
 
@@ -58,22 +50,16 @@ wl_egl_window_resize(struct wl_egl_window *egl_window,
 
 void
 wl_egl_window_get_attached_size(struct wl_egl_window *egl_window,
-			        int *width, int *height);
+				int *width, int *height);
 
 struct wl_egl_pixmap *
-wl_egl_pixmap_create(struct wl_egl_display *egl_display,
-		     int width, int height,
+wl_egl_pixmap_create(int width, int height,
 		     struct wl_visual *visual, uint32_t flags);
 void
 wl_egl_pixmap_destroy(struct wl_egl_pixmap *egl_pixmap);
 
 struct wl_buffer *
-wl_egl_pixmap_create_buffer(struct wl_egl_display *egl_display,
-			    struct wl_egl_pixmap *egl_pixmap);
-
-void
-wl_egl_pixmap_flush(struct wl_egl_display *egl_display,
-		    struct wl_egl_pixmap *egl_pixmap);
+wl_egl_pixmap_create_buffer(struct wl_egl_pixmap *egl_pixmap);
 
 #ifdef  __cplusplus
 }

@@ -322,11 +322,13 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 	/* We provide a hand written constructor for the display object */
 	if (strcmp(interface->name, "display") != 0)
 		printf("static inline struct wl_%s *\n"
-		       "wl_%s_create(struct wl_display *display, uint32_t id)\n"
+		       "wl_%s_create(struct wl_display *display, uint32_t id, uint32_t version)\n"
 		       "{\n"
+		       "\twl_display_bind(display, id, \"%s\", version);\n\n"
 		       "\treturn (struct wl_%s *)\n"
 		       "\t\twl_proxy_create_for_id(display, &wl_%s_interface, id);\n"
 		       "}\n\n",
+		       interface->name,
 		       interface->name,
 		       interface->name,
 		       interface->name,
