@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,65 +7,118 @@
 
 #include "ppapi/c/pp_point.h"
 
+/// @file
+/// This file defines the API to create a 2 dimensional point.
+
 namespace pp {
 
-// A point has an x and y coordinate.
+/// A 2 dimensional point with 0,0 being the upper-left starting coordinate.
 class Point {
  public:
-  Point() {
+    /// A constructor for a point at 0,0.
+    Point() {
     point_.x = 0;
     point_.y = 0;
   }
-  Point(int32_t in_x, int32_t in_y) {
+
+    /// A constructor accepting two int32_t values for x and y and converting
+    /// them to a Point.
+    /// @param[in] in_x An int32_t value representing a horizontal coordinate
+    /// of a point, starting with 0 as the left-most coordinate.
+    /// @param[in] in_y An int32_t value representing a vertical coordinate
+    /// of a point, starting with 0 as the top-most coordinate.
+    Point(int32_t in_x, int32_t in_y) {
     point_.x = in_x;
     point_.y = in_y;
   }
-  Point(const PP_Point& point) {  // Implicit.
+
+    /// A constructor accepting a pointer to a PP_Point and converting the
+    /// PP_Point to a Point. This is an implicit conversion constructor.
+    /// @param[in] point A pointer to a PP_Point.
+    Point(const PP_Point& point) {  // Implicit.
     point_.x = point.x;
     point_.y = point.y;
   }
-
-  ~Point() {
+    /// Destructor.
+    ~Point() {
   }
 
+  /// A function allowing implicit conversion of a Point to a PP_Point.
+  /// @return A Point.
   operator PP_Point() const {
     return point_;
   }
+
+  /// Getter function for returning the internal PP_Point struct.
+  /// @return A const reference to the internal PP_Point struct.
   const PP_Point& pp_point() const {
     return point_;
   }
+
+  /// Getter function for returning the internal PP_Point struct.
+  /// @return A mutable reference to the PP_Point struct.
   PP_Point& pp_point() {
     return point_;
   }
 
+  /// Getter function for returning the value of x.
+  /// @return The value of x for this Point.
   int32_t x() const { return point_.x; }
+
+  /// Setter function for setting the value of x.
+  /// @param[in] in_x A new x value.
   void set_x(int32_t in_x) {
     point_.x = in_x;
   }
 
+  /// Getter function for returning the value of y.
+  /// @return The value of y for this Point.
   int32_t y() const { return point_.y; }
+
+  /// Setter function for setting the value of y.
+  /// @param[in] in_y A new y value.
   void set_y(int32_t in_y) {
     point_.y = in_y;
   }
 
+  /// Adds two Points (this and other) together by adding their x values and
+  /// y values.
+  /// @param[in] other A Point.
+  /// @return A new Point containing the result.
   Point operator+(const Point& other) const {
     return Point(x() + other.x(), y() + other.y());
   }
+
+  /// Subtracts one Point from another Point by subtracting their x values
+  /// and y values. Returnes a new point with the result.
+  /// @param[in] other A Point.
+  /// @return A new Point containing the result.
   Point operator-(const Point& other) const {
     return Point(x() - other.x(), y() - other.y());
   }
 
+  /// Adds two Points (this and other) together by adding their x and y
+  /// values. Returns this point as the result.
+  /// @param[in] other A Point.
+  /// @return This Point containing the result.
   Point& operator+=(const Point& other) {
     point_.x += other.x();
     point_.y += other.y();
     return *this;
   }
+
+  /// Subtracts one Point from another Point by subtracting their x values
+  /// and y values. Returns this point as the result.
+  /// @param[in] other A Point.
+  /// @return This Point containing the result.
   Point& operator-=(const Point& other) {
     point_.x -= other.x();
     point_.y -= other.y();
     return *this;
   }
 
+  /// Swaps the coordinates of two Points.
+  /// @param[in] other A Point.
   void swap(Point& other) {
     int32_t x = point_.x;
     int32_t y = point_.y;
@@ -81,13 +134,21 @@ class Point {
 
 }  // namespace pp
 
+/// Determines whether the x and y values of two Points are equal.
+/// @param[in] lhs The Point on the left-hand side of the equation.
+/// @param[in] rhs The Point on the right-hand side of the equation.
+/// @return true if they are equal, false if unequal.
 inline bool operator==(const pp::Point& lhs, const pp::Point& rhs) {
   return lhs.x() == rhs.x() && lhs.y() == rhs.y();
 }
 
+/// Determines whether two Points have different coordinates.
+/// @param[in] lhs The Point on the left-hand side of the equation.
+/// @param[in] rhs The Point on the right-hand side of the equation.
+/// @return true if the coordinates of lhs are equal to the coordinates
+/// of rhs, otherwise false.
 inline bool operator!=(const pp::Point& lhs, const pp::Point& rhs) {
   return !(lhs == rhs);
 }
 
 #endif  // PPAPI_CPP_POINT_H_
-
