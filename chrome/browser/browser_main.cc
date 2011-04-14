@@ -713,6 +713,19 @@ PrefService* InitializeLocalState(const CommandLine& parsed_command_line,
         parent_local_state->GetString(prefs::kApplicationLocale));
   }
 
+#if defined(OS_CHROMEOS)
+  if (parsed_command_line.HasSwitch(switches::kLoginManager)) {
+    std::string owner_locale = local_state->GetString(prefs::kOwnerLocale);
+    // Ensure that we start with owner's locale.
+    if (!owner_locale.empty() &&
+        local_state->GetString(prefs::kApplicationLocale) != owner_locale &&
+        !local_state->IsManagedPreference(prefs::kApplicationLocale)) {
+      local_state->SetString(prefs::kApplicationLocale, owner_locale);
+      local_state->ScheduleSavePersistentPrefs();
+    }
+  }
+#endif
+
   return local_state;
 }
 

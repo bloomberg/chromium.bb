@@ -77,23 +77,6 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
 }
 
 void ExistingUserController::Init(const UserVector& users) {
-  if (g_browser_process) {
-    PrefService* state = g_browser_process->local_state();
-    if (state) {
-      std::string owner_locale = state->GetString(prefs::kOwnerLocale);
-      // Ensure that we start with owner's locale.
-      if (!owner_locale.empty() &&
-          state->GetString(prefs::kApplicationLocale) != owner_locale &&
-          !state->IsManagedPreference(prefs::kApplicationLocale)) {
-        state->SetString(prefs::kApplicationLocale, owner_locale);
-        state->ScheduleSavePersistentPrefs();
-        // Here we don't enable keyboard layouts, as keyboard layouts are
-        // handled in WizardController.
-        LanguageSwitchMenu::SwitchLanguage(owner_locale);
-      }
-    }
-  }
-
   UserVector filtered_users;
   if (UserCrosSettingsProvider::cached_show_users_on_signin()) {
     for (size_t i = 0; i < users.size(); ++i)
