@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop.h"
 #include "gpu/command_buffer/common/command_buffer_mock.h"
-#include "gpu/command_buffer/service/gpu_processor.h"
+#include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/mocks.h"
@@ -25,7 +25,7 @@ namespace gpu {
 const size_t kRingBufferSize = 1024;
 const size_t kRingBufferEntries = kRingBufferSize / sizeof(CommandBufferEntry);
 
-class GPUProcessorTest : public testing::Test {
+class GpuSchedulerTest : public testing::Test {
  protected:
   virtual void SetUp() {
     shared_memory_.reset(new ::base::SharedMemory);
@@ -55,7 +55,7 @@ class GPUProcessorTest : public testing::Test {
                                 0,
                                 async_api_.get());
 
-    processor_.reset(new GPUProcessor(command_buffer_.get(),
+    scheduler_.reset(new GpuScheduler(command_buffer_.get(),
                                       decoder_,
                                       parser_,
                                       2));
@@ -66,7 +66,7 @@ class GPUProcessorTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    // Ensure that any unexpected tasks posted by the GPU processor are executed
+    // Ensure that any unexpected tasks posted by the GPU scheduler are executed
     // in order to fail the test.
     MessageLoop::current()->RunAllPending();
   }
@@ -84,10 +84,10 @@ class GPUProcessorTest : public testing::Test {
   gles2::MockGLES2Decoder* decoder_;
   CommandParser* parser_;
   scoped_ptr<AsyncAPIMock> async_api_;
-  scoped_ptr<GPUProcessor> processor_;
+  scoped_ptr<GpuScheduler> scheduler_;
 };
 
-TEST_F(GPUProcessorTest, ProcessorDoesNothingIfRingBufferIsEmpty) {
+TEST_F(GpuSchedulerTest, SchedulerDoesNothingIfRingBufferIsEmpty) {
   CommandBuffer::State state;
 
   state.put_offset = 0;
@@ -98,10 +98,10 @@ TEST_F(GPUProcessorTest, ProcessorDoesNothingIfRingBufferIsEmpty) {
   EXPECT_CALL(*command_buffer_, SetParseError(_))
     .Times(0);
 
-  processor_->ProcessCommands();
+  scheduler_->ProcessCommands();
 }
 
-TEST_F(GPUProcessorTest, ProcessesOneCommand) {
+TEST_F(GpuSchedulerTest, ProcessesOneCommand) {
   CommandHeader* header = reinterpret_cast<CommandHeader*>(&buffer_[0]);
   header[0].command = 7;
   header[0].size = 2;
@@ -120,10 +120,10 @@ TEST_F(GPUProcessorTest, ProcessesOneCommand) {
   EXPECT_CALL(*command_buffer_, SetParseError(_))
     .Times(0);
 
-  processor_->ProcessCommands();
+  scheduler_->ProcessCommands();
 }
 
-TEST_F(GPUProcessorTest, ProcessesTwoCommands) {
+TEST_F(GpuSchedulerTest, ProcessesTwoCommands) {
   CommandHeader* header = reinterpret_cast<CommandHeader*>(&buffer_[0]);
   header[0].command = 7;
   header[0].size = 2;
@@ -144,10 +144,10 @@ TEST_F(GPUProcessorTest, ProcessesTwoCommands) {
   EXPECT_CALL(*async_api_, DoCommand(8, 0, &buffer_[2]))
     .WillOnce(Return(error::kNoError));
 
-  processor_->ProcessCommands();
+  scheduler_->ProcessCommands();
 }
 
-TEST_F(GPUProcessorTest, ProcessorSetsTheGLContext) {
+TEST_F(GpuSchedulerTest, SchedulerSetsTheGLContext) {
   EXPECT_CALL(*decoder_, MakeCurrent())
     .WillOnce(Return(true))
     .WillOnce(Return(true));
@@ -159,10 +159,10 @@ TEST_F(GPUProcessorTest, ProcessorSetsTheGLContext) {
 
   EXPECT_CALL(*command_buffer_, SetGetOffset(0));
 
-  processor_->ProcessCommands();
+  scheduler_->ProcessCommands();
 }
 
-TEST_F(GPUProcessorTest, PostsTaskToFinishRemainingCommands) {
+TEST_F(GpuSchedulerTest, PostsTaskToFinishRemainingCommands) {
   CommandHeader* header = reinterpret_cast<CommandHeader*>(&buffer_[0]);
   header[0].command = 7;
   header[0].size = 2;
@@ -186,7 +186,7 @@ TEST_F(GPUProcessorTest, PostsTaskToFinishRemainingCommands) {
 
   EXPECT_CALL(*command_buffer_, SetGetOffset(3));
 
-  processor_->ProcessCommands();
+  scheduler_->ProcessCommands();
 
   // ProcessCommands is called a second time when the pending task is run.
 
@@ -202,7 +202,7 @@ TEST_F(GPUProcessorTest, PostsTaskToFinishRemainingCommands) {
   MessageLoop::current()->RunAllPending();
 }
 
-TEST_F(GPUProcessorTest, SetsErrorCodeOnCommandBuffer) {
+TEST_F(GpuSchedulerTest, SetsErrorCodeOnCommandBuffer) {
   CommandHeader* header = reinterpret_cast<CommandHeader*>(&buffer_[0]);
   header[0].command = 7;
   header[0].size = 1;
@@ -220,40 +220,40 @@ TEST_F(GPUProcessorTest, SetsErrorCodeOnCommandBuffer) {
   EXPECT_CALL(*command_buffer_,
       SetParseError(error::kUnknownCommand));
 
-  processor_->ProcessCommands();
+  scheduler_->ProcessCommands();
 }
 
-TEST_F(GPUProcessorTest, ProcessCommandsDoesNothingAfterError) {
+TEST_F(GpuSchedulerTest, ProcessCommandsDoesNothingAfterError) {
   CommandBuffer::State state;
   state.error = error::kGenericError;
 
   EXPECT_CALL(*command_buffer_, GetState())
     .WillOnce(Return(state));
 
-  processor_->ProcessCommands();
+  scheduler_->ProcessCommands();
 }
 
-TEST_F(GPUProcessorTest, CanGetAddressOfSharedMemory) {
+TEST_F(GpuSchedulerTest, CanGetAddressOfSharedMemory) {
   EXPECT_CALL(*command_buffer_.get(), GetTransferBuffer(7))
     .WillOnce(Return(shared_memory_buffer_));
 
-  EXPECT_EQ(&buffer_[0], processor_->GetSharedMemoryBuffer(7).ptr);
+  EXPECT_EQ(&buffer_[0], scheduler_->GetSharedMemoryBuffer(7).ptr);
 }
 
 ACTION_P2(SetPointee, address, value) {
   *address = value;
 }
 
-TEST_F(GPUProcessorTest, CanGetSizeOfSharedMemory) {
+TEST_F(GpuSchedulerTest, CanGetSizeOfSharedMemory) {
   EXPECT_CALL(*command_buffer_.get(), GetTransferBuffer(7))
     .WillOnce(Return(shared_memory_buffer_));
 
-  EXPECT_EQ(kRingBufferSize, processor_->GetSharedMemoryBuffer(7).size);
+  EXPECT_EQ(kRingBufferSize, scheduler_->GetSharedMemoryBuffer(7).size);
 }
 
-TEST_F(GPUProcessorTest, SetTokenForwardsToCommandBuffer) {
+TEST_F(GpuSchedulerTest, SetTokenForwardsToCommandBuffer) {
   EXPECT_CALL(*command_buffer_, SetToken(7));
-  processor_->set_token(7);
+  scheduler_->set_token(7);
 }
 
 }  // namespace gpu

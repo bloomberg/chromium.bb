@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_COMMAND_BUFFER_SERVICE_GPU_PROCESSOR_H_
-#define GPU_COMMAND_BUFFER_SERVICE_GPU_PROCESSOR_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_GPU_SCHEDULER_H_
+#define GPU_COMMAND_BUFFER_SERVICE_GPU_SCHEDULER_H_
 
 #include <queue>
 #include <vector>
@@ -36,18 +36,18 @@ class ContextGroup;
 
 // This class processes commands in a command buffer. It is event driven and
 // posts tasks to the current message loop to do additional work.
-class GPUProcessor : public CommandBufferEngine {
+class GpuScheduler : public CommandBufferEngine {
  public:
   // If a group is not passed in one will be created.
-  GPUProcessor(CommandBuffer* command_buffer, gles2::ContextGroup* group);
+  GpuScheduler(CommandBuffer* command_buffer, gles2::ContextGroup* group);
 
   // This constructor is for unit tests.
-  GPUProcessor(CommandBuffer* command_buffer,
+  GpuScheduler(CommandBuffer* command_buffer,
                gles2::GLES2Decoder* decoder,
                CommandParser* parser,
                int commands_per_update);
 
-  virtual ~GPUProcessor();
+  virtual ~GpuScheduler();
 
   // Perform platform specific and common initialization.
   bool Initialize(gfx::PluginWindowHandle hwnd,
@@ -55,7 +55,7 @@ class GPUProcessor : public CommandBufferEngine {
                   const gles2::DisallowedExtensions& disallowed_extensions,
                   const char* allowed_extensions,
                   const std::vector<int32>& attribs,
-                  GPUProcessor* parent,
+                  GpuScheduler* parent,
                   uint32 parent_texture_id);
 
   void Destroy();
@@ -114,7 +114,7 @@ class GPUProcessor : public CommandBufferEngine {
 
   virtual void SetCommandProcessedCallback(Callback0::Type* callback);
 
-  // Get the GLES2Decoder associated with this processor.
+  // Get the GLES2Decoder associated with this scheduler.
   gles2::GLES2Decoder* decoder() const { return decoder_.get(); }
 
  protected:
@@ -134,8 +134,8 @@ class GPUProcessor : public CommandBufferEngine {
   // user's swap buffers callback.
   virtual void WillSwapBuffers();
 
-  // The GPUProcessor holds a weak reference to the CommandBuffer. The
-  // CommandBuffer owns the GPUProcessor and holds a strong reference to it
+  // The GpuScheduler holds a weak reference to the CommandBuffer. The
+  // CommandBuffer owns the GpuScheduler and holds a strong reference to it
   // through the ProcessCommands callback.
   CommandBuffer* command_buffer_;
 
@@ -153,11 +153,11 @@ class GPUProcessor : public CommandBufferEngine {
   uint64 acknowledged_swap_buffers_count_;
 #endif
 
-  ScopedRunnableMethodFactory<GPUProcessor> method_factory_;
+  ScopedRunnableMethodFactory<GpuScheduler> method_factory_;
   scoped_ptr<Callback0::Type> wrapped_swap_buffers_callback_;
   scoped_ptr<Callback0::Type> command_processed_callback_;
 };
 
 }  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_SERVICE_GPU_PROCESSOR_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_GPU_SCHEDULER_H_

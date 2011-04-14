@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/service/gpu_processor.h"
+#include "gpu/command_buffer/service/gpu_scheduler.h"
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -17,7 +17,7 @@ static size_t kNumThrottleFences = 1;
 
 namespace gpu {
 
-GPUProcessor::GPUProcessor(CommandBuffer* command_buffer,
+GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
                            gles2::ContextGroup* group)
     : command_buffer_(command_buffer),
       commands_per_update_(100),
@@ -32,7 +32,7 @@ GPUProcessor::GPUProcessor(CommandBuffer* command_buffer,
   decoder_->set_engine(this);
 }
 
-GPUProcessor::GPUProcessor(CommandBuffer* command_buffer,
+GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
                            gles2::GLES2Decoder* decoder,
                            CommandParser* parser,
                            int commands_per_update)
@@ -49,11 +49,11 @@ GPUProcessor::GPUProcessor(CommandBuffer* command_buffer,
   parser_.reset(parser);
 }
 
-GPUProcessor::~GPUProcessor() {
+GpuScheduler::~GpuScheduler() {
   Destroy();
 }
 
-bool GPUProcessor::InitializeCommon(
+bool GpuScheduler::InitializeCommon(
     gfx::GLContext* context,
     const gfx::Size& size,
     const gles2::DisallowedExtensions& disallowed_extensions,
@@ -98,7 +98,7 @@ bool GPUProcessor::InitializeCommon(
                             attribs,
                             parent_decoder,
                             parent_texture_id)) {
-    LOG(ERROR) << "GPUProcessor::InitializeCommon failed because decoder "
+    LOG(ERROR) << "GpuScheduler::InitializeCommon failed because decoder "
                << "failed to initialize.";
     Destroy();
     return false;
@@ -107,7 +107,7 @@ bool GPUProcessor::InitializeCommon(
   return true;
 }
 
-void GPUProcessor::DestroyCommon() {
+void GpuScheduler::DestroyCommon() {
   bool have_context = false;
   if (decoder_.get()) {
     have_context = decoder_->MakeCurrent();
@@ -124,8 +124,8 @@ const unsigned int kMaxOutstandingSwapBuffersCallsPerOnscreenContext = 1;
 }
 #endif
 
-void GPUProcessor::ProcessCommands() {
-  GPU_TRACE_EVENT0("gpu", "GPUProcessor:ProcessCommands");
+void GpuScheduler::ProcessCommands() {
+  GPU_TRACE_EVENT0("gpu", "GpuScheduler:ProcessCommands");
   CommandBuffer::State state = command_buffer_->GetState();
   if (state.error != error::kNoError)
     return;
@@ -206,21 +206,21 @@ void GPUProcessor::ProcessCommands() {
   }
 }
 
-void GPUProcessor::ScheduleProcessCommands() {
+void GpuScheduler::ScheduleProcessCommands() {
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      method_factory_.NewRunnableMethod(&GPUProcessor::ProcessCommands));
+      method_factory_.NewRunnableMethod(&GpuScheduler::ProcessCommands));
 }
 
-Buffer GPUProcessor::GetSharedMemoryBuffer(int32 shm_id) {
+Buffer GpuScheduler::GetSharedMemoryBuffer(int32 shm_id) {
   return command_buffer_->GetTransferBuffer(shm_id);
 }
 
-void GPUProcessor::set_token(int32 token) {
+void GpuScheduler::set_token(int32 token) {
   command_buffer_->SetToken(token);
 }
 
-bool GPUProcessor::SetGetOffset(int32 offset) {
+bool GpuScheduler::SetGetOffset(int32 offset) {
   if (parser_->set_get(offset)) {
     command_buffer_->SetGetOffset(static_cast<int32>(parser_->get()));
     return true;
@@ -228,27 +228,27 @@ bool GPUProcessor::SetGetOffset(int32 offset) {
   return false;
 }
 
-int32 GPUProcessor::GetGetOffset() {
+int32 GpuScheduler::GetGetOffset() {
   return parser_->get();
 }
 
-void GPUProcessor::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
+void GpuScheduler::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
   decoder_->ResizeOffscreenFrameBuffer(size);
 }
 
-void GPUProcessor::SetResizeCallback(Callback1<gfx::Size>::Type* callback) {
+void GpuScheduler::SetResizeCallback(Callback1<gfx::Size>::Type* callback) {
   decoder_->SetResizeCallback(callback);
 }
 
-void GPUProcessor::SetSwapBuffersCallback(
+void GpuScheduler::SetSwapBuffersCallback(
     Callback0::Type* callback) {
   wrapped_swap_buffers_callback_.reset(callback);
   decoder_->SetSwapBuffersCallback(
       NewCallback(this,
-                  &GPUProcessor::WillSwapBuffers));
+                  &GpuScheduler::WillSwapBuffers));
 }
 
-void GPUProcessor::SetCommandProcessedCallback(
+void GpuScheduler::SetCommandProcessedCallback(
     Callback0::Type* callback) {
   command_processed_callback_.reset(callback);
 }

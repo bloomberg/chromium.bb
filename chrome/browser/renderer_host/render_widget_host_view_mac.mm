@@ -1089,7 +1089,7 @@ void RenderWidgetHostViewMac::DestroyFakePluginWindowHandle(
 // This is called by AcceleratedPluginView's -dealloc.
 void RenderWidgetHostViewMac::DeallocFakePluginWindowHandle(
     gfx::PluginWindowHandle window) {
-  // When a browser window with a GPUProcessor is closed, the render process
+  // When a browser window with a GpuScheduler is closed, the render process
   // will attempt to finish all GL commands. It will busy-wait on the GPU
   // process until the command queue is empty. If a paint is pending, the GPU
   // process won't process any GL commands until the browser sends a paint ack,

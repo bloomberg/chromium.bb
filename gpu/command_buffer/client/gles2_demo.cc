@@ -19,7 +19,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
-#include "gpu/command_buffer/service/gpu_processor.h"
+#include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
@@ -29,7 +29,7 @@
 
 using base::SharedMemory;
 using gpu::Buffer;
-using gpu::GPUProcessor;
+using gpu::GpuScheduler;
 using gpu::CommandBufferService;
 using gpu::gles2::GLES2CmdHelper;
 using gpu::gles2::GLES2Implementation;
@@ -56,8 +56,8 @@ bool GLES2Demo::Setup(void* hwnd, int32 size) {
   if (!command_buffer->Initialize(size))
     return NULL;
 
-  GPUProcessor* gpu_processor = new GPUProcessor(command_buffer.get(), NULL);
-  if (!gpu_processor->Initialize(reinterpret_cast<HWND>(hwnd),
+  GpuScheduler* gpu_scheduler = new GpuScheduler(command_buffer.get(), NULL);
+  if (!gpu_scheduler->Initialize(reinterpret_cast<HWND>(hwnd),
                                  gfx::Size(),
                                  gpu::gles2::DisallowedExtensions(),
                                  NULL,
@@ -68,7 +68,7 @@ bool GLES2Demo::Setup(void* hwnd, int32 size) {
   }
 
   command_buffer->SetPutOffsetChangeCallback(
-      NewCallback(gpu_processor, &GPUProcessor::ProcessCommands));
+      NewCallback(gpu_scheduler, &GpuScheduler::ProcessCommands));
 
   GLES2CmdHelper* helper = new GLES2CmdHelper(command_buffer.get());
   if (!helper->Initialize(size)) {

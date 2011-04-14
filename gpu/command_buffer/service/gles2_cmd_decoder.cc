@@ -1841,7 +1841,7 @@ bool GLES2DecoderImpl::Initialize(
   }
 
   if (!group_->Initialize(disallowed_extensions, allowed_extensions)) {
-    LOG(ERROR) << "GPUProcessor::InitializeCommon failed because group "
+    LOG(ERROR) << "GpuScheduler::InitializeCommon failed because group "
                << "failed to initialize.";
     Destroy();
     return false;

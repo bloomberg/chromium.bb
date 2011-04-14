@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/service/gpu_processor.h"
+#include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ui/gfx/gl/gl_context.h"
 
 using ::base::SharedMemory;
 
 namespace gpu {
 
-bool GPUProcessor::Initialize(
+bool GpuScheduler::Initialize(
     gfx::PluginWindowHandle window,
     const gfx::Size& size,
     const gles2::DisallowedExtensions& disallowed_extensions,
     const char* allowed_extensions,
     const std::vector<int32>& attribs,
-    GPUProcessor* parent,
+    GpuScheduler* parent,
     uint32 parent_texture_id) {
   // Get the parent decoder and the GLContext to share IDs with, if any.
   gles2::GLES2Decoder* parent_decoder = NULL;
@@ -46,7 +46,7 @@ bool GPUProcessor::Initialize(
     // not hold on to the reference. It simply extracts the underlying GL
     // context in order to share the namespace with another context.
     if (!surface_->Initialize(context.get(), false)) {
-      LOG(ERROR) << "GPUProcessor::Initialize failed to "
+      LOG(ERROR) << "GpuScheduler::Initialize failed to "
                  << "initialize AcceleratedSurface.";
       Destroy();
       return false;
@@ -62,7 +62,7 @@ bool GPUProcessor::Initialize(
                           parent_texture_id);
 }
 
-void GPUProcessor::Destroy() {
+void GpuScheduler::Destroy() {
   if (surface_.get()) {
     surface_->Destroy();
     surface_.reset();
@@ -71,7 +71,7 @@ void GPUProcessor::Destroy() {
   DestroyCommon();
 }
 
-uint64 GPUProcessor::SetWindowSizeForIOSurface(const gfx::Size& size) {
+uint64 GpuScheduler::SetWindowSizeForIOSurface(const gfx::Size& size) {
   // This is called from an IPC handler, so it's undefined which context is
   // current. Make sure the right one is.
   decoder_->GetGLContext()->MakeCurrent();
@@ -83,36 +83,36 @@ uint64 GPUProcessor::SetWindowSizeForIOSurface(const gfx::Size& size) {
   return surface_->SetSurfaceSize(size);
 }
 
-TransportDIB::Handle GPUProcessor::SetWindowSizeForTransportDIB(
+TransportDIB::Handle GpuScheduler::SetWindowSizeForTransportDIB(
     const gfx::Size& size) {
   ResizeOffscreenFrameBuffer(size);
   decoder_->UpdateOffscreenFrameBufferSize();
   return surface_->SetTransportDIBSize(size);
 }
 
-void GPUProcessor::SetTransportDIBAllocAndFree(
+void GpuScheduler::SetTransportDIBAllocAndFree(
       Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
       Callback1<TransportDIB::Id>::Type* deallocator) {
   surface_->SetTransportDIBAllocAndFree(allocator, deallocator);
 }
 
-uint64 GPUProcessor::GetSurfaceId() {
+uint64 GpuScheduler::GetSurfaceId() {
   if (!surface_.get())
     return 0;
   return surface_->GetSurfaceId();
 }
 
-uint64 GPUProcessor::swap_buffers_count() const {
+uint64 GpuScheduler::swap_buffers_count() const {
   return swap_buffers_count_;
 }
 
-void GPUProcessor::set_acknowledged_swap_buffers_count(
+void GpuScheduler::set_acknowledged_swap_buffers_count(
     uint64 acknowledged_swap_buffers_count) {
   acknowledged_swap_buffers_count_ = acknowledged_swap_buffers_count;
 }
 
-void GPUProcessor::DidDestroySurface() {
-  // When a browser window with a GPUProcessor is closed, the render process
+void GpuScheduler::DidDestroySurface() {
+  // When a browser window with a GpuScheduler is closed, the render process
   // will attempt to finish all GL commands, it will busy-wait on the GPU
   // process until the command queue is empty. If a paint is pending, the GPU
   // process won't process any GL commands until the browser sends a paint ack,
@@ -123,7 +123,7 @@ void GPUProcessor::DidDestroySurface() {
   surface_.reset();
 }
 
-void GPUProcessor::WillSwapBuffers() {
+void GpuScheduler::WillSwapBuffers() {
   DCHECK(decoder_.get());
   DCHECK(decoder_->GetGLContext());
   DCHECK(decoder_->GetGLContext()->IsCurrent());

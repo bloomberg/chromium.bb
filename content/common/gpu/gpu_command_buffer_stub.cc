@@ -157,8 +157,8 @@ void GpuCommandBufferStub::OnCompositorWindowPainted() {
 
 
 GpuCommandBufferStub::~GpuCommandBufferStub() {
-  if (processor_.get()) {
-    processor_->Destroy();
+  if (scheduler_.get()) {
+    scheduler_->Destroy();
   }
 #if defined(OS_WIN)
   if (compositor_window_) {
@@ -240,12 +240,12 @@ void GpuCommandBufferStub::OnInitialize(
   base::SharedMemory shared_memory(ring_buffer, false);
 #endif
 
-  // Initialize the CommandBufferService and GPUProcessor.
+  // Initialize the CommandBufferService and GpuScheduler.
   if (command_buffer_->Initialize(&shared_memory, size)) {
-    gpu::GPUProcessor* parent_processor =
-        parent_ ? parent_->processor_.get() : NULL;
-    processor_.reset(new gpu::GPUProcessor(command_buffer_.get(), NULL));
-    if (processor_->Initialize(
+    gpu::GpuScheduler* parent_processor =
+        parent_ ? parent_->scheduler_.get() : NULL;
+    scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(), NULL));
+    if (scheduler_->Initialize(
         output_window_handle,
         initial_size_,
         disallowed_extensions_,
@@ -254,12 +254,12 @@ void GpuCommandBufferStub::OnInitialize(
         parent_processor,
         parent_texture_id_)) {
       command_buffer_->SetPutOffsetChangeCallback(
-          NewCallback(processor_.get(),
-                      &gpu::GPUProcessor::ProcessCommands));
-      processor_->SetSwapBuffersCallback(
+          NewCallback(scheduler_.get(),
+                      &gpu::GpuScheduler::ProcessCommands));
+      scheduler_->SetSwapBuffersCallback(
           NewCallback(this, &GpuCommandBufferStub::OnSwapBuffers));
       if (watchdog_thread_)
-        processor_->SetCommandProcessedCallback(
+        scheduler_->SetCommandProcessedCallback(
             NewCallback(this, &GpuCommandBufferStub::OnCommandProcessed));
 
 #if defined(OS_MACOSX)
@@ -268,7 +268,7 @@ void GpuCommandBufferStub::OnInitialize(
         // screen, rendered by the accelerated plugin layer in
         // RenderWidgetHostViewMac. Set up a pathway to notify the
         // browser process when its contents change.
-        processor_->SetSwapBuffersCallback(
+        scheduler_->SetSwapBuffersCallback(
             NewCallback(this,
                         &GpuCommandBufferStub::SwapBuffersCallback));
       }
@@ -276,12 +276,12 @@ void GpuCommandBufferStub::OnInitialize(
 
       // Set up a pathway for resizing the output window or framebuffer at the
       // right time relative to other GL commands.
-      processor_->SetResizeCallback(
+      scheduler_->SetResizeCallback(
           NewCallback(this, &GpuCommandBufferStub::ResizeCallback));
 
       *result = true;
     } else {
-      processor_.reset();
+      scheduler_.reset();
       command_buffer_.reset();
     }
   }
@@ -371,7 +371,7 @@ void GpuCommandBufferStub::OnGetTransferBuffer(
 }
 
 void GpuCommandBufferStub::OnResizeOffscreenFrameBuffer(const gfx::Size& size) {
-  processor_->ResizeOffscreenFrameBuffer(size);
+  scheduler_->ResizeOffscreenFrameBuffer(size);
 }
 
 void GpuCommandBufferStub::OnSwapBuffers() {
@@ -383,7 +383,7 @@ void GpuCommandBufferStub::OnSwapBuffers() {
 void GpuCommandBufferStub::OnSetWindowSize(const gfx::Size& size) {
   GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
   // Try using the IOSurface version first.
-  uint64 new_backing_store = processor_->SetWindowSizeForIOSurface(size);
+  uint64 new_backing_store = scheduler_->SetWindowSizeForIOSurface(size);
   if (new_backing_store) {
     GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params params;
     params.renderer_id = renderer_id_;
@@ -409,25 +409,25 @@ void GpuCommandBufferStub::SwapBuffersCallback() {
   params.renderer_id = renderer_id_;
   params.render_view_id = render_view_id_;
   params.window = handle_;
-  params.surface_id = processor_->GetSurfaceId();
+  params.surface_id = scheduler_->GetSurfaceId();
   params.route_id = route_id();
-  params.swap_buffers_count = processor_->swap_buffers_count();
+  params.swap_buffers_count = scheduler_->swap_buffers_count();
   gpu_channel_manager->Send(
       new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
 }
 
 void GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped(
     uint64 swap_buffers_count) {
-  processor_->set_acknowledged_swap_buffers_count(swap_buffers_count);
-  // Wake up the GpuProcessor to start doing work again.
-  processor_->ScheduleProcessCommands();
+  scheduler_->set_acknowledged_swap_buffers_count(swap_buffers_count);
+  // Wake up the GpuScheduler to start doing work again.
+  scheduler_->ScheduleProcessCommands();
 }
 #endif  // defined(OS_MACOSX)
 
 void GpuCommandBufferStub::ResizeCallback(gfx::Size size) {
   if (handle_ == gfx::kNullPluginWindow) {
-    processor_->decoder()->ResizeOffscreenFrameBuffer(size);
-    processor_->decoder()->UpdateOffscreenFrameBufferSize();
+    scheduler_->decoder()->ResizeOffscreenFrameBuffer(size);
+    scheduler_->decoder()->UpdateOffscreenFrameBufferSize();
   } else {
 #if defined(OS_LINUX) && !defined(TOUCH_UI)
     GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();

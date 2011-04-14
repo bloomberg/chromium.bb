@@ -134,7 +134,7 @@ void GpuChannel::AcceleratedSurfaceBuffersSwapped(
 
 void GpuChannel::DestroyCommandBufferByViewId(int32 render_view_id) {
   // This responds to a message from the browser process to destroy the command
-  // buffer when the window with a GPUProcessor is closed (see
+  // buffer when the window with a GpuScheduler is closed (see
   // RenderWidgetHostViewMac::DeallocFakePluginWindowHandle).  Find the route id
   // that matches the given render_view_id and delete the route.
   for (StubMap::const_iterator iter(&stubs_); !iter.IsAtEnd(); iter.Advance()) {
@@ -240,7 +240,7 @@ void GpuChannel::OnCreateVideoDecoder(int32 context_route_id,
   // decoder.
   bool ret = service->CreateVideoDecoder(
       this, &router_, decoder_host_id, decoder_id,
-      stub->processor()->decoder());
+      stub->scheduler()->decoder());
   DCHECK(ret) << "Failed to create a GpuVideoDecoder";
 #endif
 }
@@ -262,7 +262,7 @@ void GpuChannel::OnCreateTransportTexture(int32 context_route_id,
    int32 route_id = GenerateRouteID();
  
    scoped_ptr<TransportTexture> transport(
-       new TransportTexture(this, channel_.get(), stub->processor()->decoder(),
+       new TransportTexture(this, channel_.get(), stub->scheduler()->decoder(),
                             host_id, route_id));
    router_.AddRoute(route_id, transport.get());
    transport_textures_.AddWithID(transport.release(), route_id);

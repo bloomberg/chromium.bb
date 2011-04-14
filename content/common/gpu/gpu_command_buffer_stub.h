@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
-#include "gpu/command_buffer/service/gpu_processor.h"
+#include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 #include "ui/gfx/native_widget_types.h"
@@ -51,7 +51,7 @@ class GpuCommandBufferStub
   virtual bool Send(IPC::Message* msg);
 
   // Get the GLContext associated with this object.
-  gpu::GPUProcessor* processor() const { return processor_.get(); }
+  gpu::GpuScheduler* scheduler() const { return scheduler_.get(); }
 
   // Identifies the renderer process.
   int32 renderer_id() const { return renderer_id_; }
@@ -131,7 +131,7 @@ class GpuCommandBufferStub
   int32 render_view_id_;
 
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
-  scoped_ptr<gpu::GPUProcessor> processor_;
+  scoped_ptr<gpu::GpuScheduler> scheduler_;
   GpuWatchdogThread* watchdog_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferStub);
