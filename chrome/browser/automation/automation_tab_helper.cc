@@ -85,7 +85,7 @@ void AutomationTabHelper::RenderViewGone() {
   OnTabOrRenderViewDestroyed(tab_contents());
 }
 
-void AutomationTabHelper::OnTabContentsDestroyed(TabContents* tab_contents) {
+void AutomationTabHelper::TabContentsDestroyed(TabContents* tab_contents) {
   OnTabOrRenderViewDestroyed(tab_contents);
 }
 

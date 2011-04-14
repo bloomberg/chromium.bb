@@ -38,7 +38,33 @@ void TabContentsObserver::DidNavigateAnyFramePostCommit(
     const ViewHostMsg_FrameNavigate_Params& params) {
 }
 
-void TabContentsObserver::OnProvisionalChangeToMainFrameUrl(const GURL& url) {
+void TabContentsObserver::DidStartProvisionalLoadForFrame(
+    int64 frame_id,
+    bool is_main_frame,
+    const GURL& validated_url,
+    bool is_error_page) {
+}
+
+void TabContentsObserver::ProvisionalChangeToMainFrameUrl(const GURL& url) {
+}
+
+void TabContentsObserver::DidCommitProvisionalLoadForFrame(
+    int64 frame_id,
+    bool is_main_frame,
+    const GURL& url,
+    PageTransition::Type transition_type) {
+}
+
+void TabContentsObserver::DidFailProvisionalLoad(int64 frame_id,
+                                                 bool is_main_frame,
+                                                 const GURL& validated_url,
+                                                 int error_code) {
+}
+
+void TabContentsObserver::DocumentLoadedInFrame(int64 frame_id) {
+}
+
+void TabContentsObserver::DidFinishLoad(int64 frame_id) {
 }
 
 void TabContentsObserver::DidStartLoading() {
@@ -67,7 +93,7 @@ TabContentsObserver::~TabContentsObserver() {
     tab_contents_->RemoveObserver(this);
 }
 
-void TabContentsObserver::OnTabContentsDestroyed(TabContents* tab) {
+void TabContentsObserver::TabContentsDestroyed(TabContents* tab) {
 }
 
 bool TabContentsObserver::OnMessageReceived(const IPC::Message& message) {
@@ -98,9 +124,9 @@ void TabContentsObserver::SetTabContents(TabContents* tab_contents) {
 
 void TabContentsObserver::TabContentsDestroyed() {
   // Do cleanup so that 'this' can safely be deleted from
-  // OnTabContentsDestroyed.
+  // TabContentsDestroyed.
   tab_contents_->RemoveObserver(this);
   TabContents* tab = tab_contents_;
   tab_contents_ = NULL;
-  OnTabContentsDestroyed(tab);
+  TabContentsDestroyed(tab);
 }

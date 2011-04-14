@@ -30,7 +30,7 @@ class PrerenderObserver : public TabContentsObserver {
   virtual ~PrerenderObserver();
 
   // TabContentsObserver implementation.
-  virtual void OnProvisionalChangeToMainFrameUrl(const GURL& url);
+  virtual void ProvisionalChangeToMainFrameUrl(const GURL& url);
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   // Message handler.

@@ -31,7 +31,7 @@ class TabFinder::TabContentsObserverImpl : public TabContentsObserver {
   virtual void DidNavigateAnyFramePostCommit(
       const NavigationController::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
-  virtual void OnTabContentsDestroyed(TabContents* tab) OVERRIDE;
+  virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
 
  private:
   TabFinder* finder_;
@@ -55,7 +55,7 @@ void TabFinder::TabContentsObserverImpl::DidNavigateAnyFramePostCommit(
   finder_->DidNavigateAnyFramePostCommit(tab_contents(), details, params);
 }
 
-void TabFinder::TabContentsObserverImpl::OnTabContentsDestroyed(
+void TabFinder::TabContentsObserverImpl::TabContentsDestroyed(
     TabContents* tab) {
   finder_->TabDestroyed(this);
   delete this;

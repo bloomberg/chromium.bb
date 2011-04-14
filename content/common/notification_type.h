@@ -101,30 +101,6 @@ class NotificationType {
     // are optional.
     LOAD_STOP,
 
-    // A frame is staring a provisional load.  The source is a
-    // Source<NavigationController> corresponding to the tab in which the load
-    // occurs.  Details is a ProvisionalLoadDetails object.
-    FRAME_PROVISIONAL_LOAD_START,
-
-    // The provisional load for a frame was committed. The source is a
-    // NavigationController corresponding to the tab in which the load occurred.
-    // Details is a ProvisionalLoadDetails object. In contrast to
-    // NAV_ENTRY_COMMITTED, this notification is sent when the load was
-    // committed, even if no navigation entry was committed (such as
-    // AUTO_SUBFRAME navigations).
-    FRAME_PROVISIONAL_LOAD_COMMITTED,
-
-    // The DOM for a frame was fully constructed, but referenced resources
-    // might not be fully loaded yet. The source is a
-    // Source<NavigationController> corresponding to the tab in which the load
-    // occurred. Details are the int64 frame ID.
-    FRAME_DOM_CONTENT_LOADED,
-
-    // The frame finished loading. The source is a Source<NavigationController>
-    // corresponding to the tab in which the load occurred. Details are the
-    // int64 frame ID.
-    FRAME_DID_FINISH_LOAD,
-
     // Content was loaded from an in-memory cache.  The source will be a
     // Source<NavigationController> corresponding to the tab in which the load
     // occurred.  Details in the form of a LoadFromMemoryCacheDetails object

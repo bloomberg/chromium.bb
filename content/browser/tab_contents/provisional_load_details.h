@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,8 +14,7 @@
 
 // This class captures some of the information associated to the provisional
 // load of a frame.  It is provided as Details with the
-// NOTIFY_FRAME_PROVISIONAL_LOAD_START, NOTIFY_FRAME_PROVISIONAL_LOAD_COMMITTED
-// and NOTIFY_FAIL_PROVISIONAL_LOAD_WITH_ERROR notifications
+// NOTIFY_FAIL_PROVISIONAL_LOAD_WITH_ERROR notification
 // (see notification_types.h).
 
 // TODO(brettw) this mostly duplicates

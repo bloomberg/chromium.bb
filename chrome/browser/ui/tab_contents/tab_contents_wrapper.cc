@@ -12,6 +12,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
+#include "chrome/browser/extensions/extension_webnavigation_api.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/top_sites.h"
@@ -77,6 +78,8 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   file_select_observer_.reset(new FileSelectObserver(contents));
   prerender_observer_.reset(new prerender::PrerenderObserver(contents));
   print_preview_.reset(new printing::PrintPreviewMessageHandler(contents));
+  webnavigation_observer_.reset(
+      new ExtensionWebNavigationTabObserver(contents));
 }
 
 TabContentsWrapper::~TabContentsWrapper() {

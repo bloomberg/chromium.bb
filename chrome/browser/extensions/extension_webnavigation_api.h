@@ -14,12 +14,11 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
-class NavigationController;
-class ProvisionalLoadDetails;
 class TabContents;
 struct ViewHostMsg_CreateWindow_Params;
 
@@ -54,7 +53,11 @@ class FrameNavigationState {
   // Removes state associated with this tab contents and all of its frames.
   void RemoveTabContentsState(const TabContents* tab_contents);
 
-  void set_allow_extension_scheme() { allow_extension_scheme_ = true; }
+#ifdef UNIT_TEST
+  static void set_allow_extension_scheme(bool allow_extension_scheme) {
+    allow_extension_scheme_ = allow_extension_scheme;
+  }
+#endif
 
  private:
   typedef std::multimap<const TabContents*, int64> TabContentsToFrameIdMap;
@@ -72,11 +75,51 @@ class FrameNavigationState {
   FrameIdToStateMap frame_state_map_;
 
   // If true, also allow events from chrome-extension:// URLs.
-  bool allow_extension_scheme_;
+  static bool allow_extension_scheme_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameNavigationState);
 };
 
+// Tab contents observer that forwards navigation events to the event router.
+class ExtensionWebNavigationTabObserver : public TabContentsObserver {
+ public:
+  explicit ExtensionWebNavigationTabObserver(TabContents* tab_contents);
+  virtual ~ExtensionWebNavigationTabObserver();
+
+  // TabContentsObserver implementation.
+  virtual void DidStartProvisionalLoadForFrame(int64 frame_id,
+                                                 bool is_main_frame,
+                                                 const GURL& validated_url,
+                                                 bool is_error_page) OVERRIDE;
+  virtual void DidCommitProvisionalLoadForFrame(
+      int64 frame_id,
+      bool is_main_frame,
+      const GURL& url,
+      PageTransition::Type transition_type) OVERRIDE;
+  virtual void DidFailProvisionalLoad(int64 frame_id,
+                                      bool is_main_frame,
+                                      const GURL& validated_url,
+                                      int error_code) OVERRIDE;
+  virtual void DocumentLoadedInFrame(int64 frame_id) OVERRIDE;
+  virtual void DidFinishLoad(int64 frame_id) OVERRIDE;
+  virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
+
+ private:
+  // True if the transition and target url correspond to a reference fragment
+  // navigation.
+  bool IsReferenceFragmentNavigation(int64 frame_id, const GURL& url);
+
+  // Simulates a complete series of events for reference fragment navigations.
+  void NavigatedReferenceFragment(int64 frame_id,
+                                  bool is_main_frame,
+                                  const GURL& url,
+                                  PageTransition::Type transition_type);
+
+  // Tracks the state of the frames we are sending events for.
+  FrameNavigationState navigation_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionWebNavigationTabObserver);
+};
 
 // Observes navigation notifications and routes them as events to the extension
 // system.
@@ -89,66 +132,22 @@ class ExtensionWebNavigationEventRouter : public NotificationObserver {
   // up and can start dispatching events to extensions.
   void Init();
 
-#if defined(UNIT_TEST)
-  // Also send events for chrome-extension:// URLs.
-  void EnableExtensionScheme() {
-    navigation_state_.set_allow_extension_scheme();
-  }
-#endif
-
  private:
   friend struct DefaultSingletonTraits<ExtensionWebNavigationEventRouter>;
 
-  ExtensionWebNavigationEventRouter() {}
-  virtual ~ExtensionWebNavigationEventRouter() {}
+  ExtensionWebNavigationEventRouter();
+  virtual ~ExtensionWebNavigationEventRouter();
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Handler for the FRAME_PROVISIONAL_LOAD_START event. The method takes the
-  // details of such an event and constructs a suitable JSON formatted extension
-  // event from it.
-  void FrameProvisionalLoadStart(NavigationController* controller,
-                                 ProvisionalLoadDetails* details);
-
-  // Handler for the FRAME_PROVISIONAL_LOAD_COMMITTED event. The method takes
-  // the details of such an event and constructs a suitable JSON formatted
-  // extension event from it.
-  void FrameProvisionalLoadCommitted(NavigationController* controller,
-                                     ProvisionalLoadDetails* details);
-
-  // Handler for the FRAME_DOM_CONTENT_LOADED event. The method takes the frame
-  // ID and constructs a suitable JSON formatted extension event from it.
-  void FrameDomContentLoaded(NavigationController* controller,
-                             int64 frame_id);
-
-  // Handler for the FRAME_DID_FINISH_LOAD event. The method takes the frame
-  // ID and constructs a suitable JSON formatted extension event from it.
-  void FrameDidFinishLoad(NavigationController* controller, int64 frame_id);
-
-  // Handler for the FAIL_PROVISIONAL_LOAD_WITH_ERROR event. The method takes
-  // the details of such an event and constructs a suitable JSON formatted
-  // extension event from it.
-  void FailProvisionalLoadWithError(NavigationController* controller,
-                                    ProvisionalLoadDetails* details);
-
   // Handler for the CREATING_NEW_WINDOW event. The method takes the details of
   // such an event and constructs a suitable JSON formatted extension event from
   // it.
   void CreatingNewWindow(TabContents* tab_content,
                          const ViewHostMsg_CreateWindow_Params* details);
-
-  // True if the load details correspond to a reference fragment navigation.
-  bool IsReferenceFragmentNavigation(ProvisionalLoadDetails* details);
-
-  // Simulates a complete series of events for reference fragment navigations.
-  void NavigatedReferenceFragment(NavigationController* controller,
-                                  ProvisionalLoadDetails* details);
-
-  // Tracks the state of the frames we are sending events for.
-  FrameNavigationState navigation_state_;
 
   // Used for tracking registrations to navigation notifications.
   NotificationRegistrar registrar_;

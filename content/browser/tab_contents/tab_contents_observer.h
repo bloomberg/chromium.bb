@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_OBSERVER_H_
 
 #include "content/browser/tab_contents/navigation_controller.h"
+#include "content/common/page_transition_types.h"
 #include "ipc/ipc_channel.h"
 
 struct ViewHostMsg_FrameNavigate_Params;
@@ -43,7 +44,22 @@ class TabContentsObserver : public IPC::Channel::Listener,
   virtual void DidNavigateAnyFramePostCommit(
       const NavigationController::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
-  virtual void OnProvisionalChangeToMainFrameUrl(const GURL& url);
+  virtual void DidStartProvisionalLoadForFrame(int64 frame_id,
+                                               bool is_main_frame,
+                                               const GURL& validated_url,
+                                               bool is_error_page);
+  virtual void ProvisionalChangeToMainFrameUrl(const GURL& url);
+  virtual void DidCommitProvisionalLoadForFrame(
+      int64 frame_id,
+      bool is_main_frame,
+      const GURL& url,
+      PageTransition::Type transition_type);
+  virtual void DidFailProvisionalLoad(int64 frame_id,
+                                      bool is_main_frame,
+                                      const GURL& validated_url,
+                                      int error_code);
+  virtual void DocumentLoadedInFrame(int64 frame_id);
+  virtual void DidFinishLoad(int64 frame_id);
 
   virtual void DidStartLoading();
   virtual void DidStopLoading();
@@ -80,7 +96,7 @@ class TabContentsObserver : public IPC::Channel::Listener,
   // Invoked when the TabContents is being destroyed. Gives subclasses a chance
   // to cleanup. At the time this is invoked |tab_contents()| returns NULL.
   // It is safe to delete 'this' from here.
-  virtual void OnTabContentsDestroyed(TabContents* tab);
+  virtual void TabContentsDestroyed(TabContents* tab);
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
@@ -99,7 +115,7 @@ class TabContentsObserver : public IPC::Channel::Listener,
  private:
   friend class TabContents;
 
-  // Invoked from TabContents. Invokes OnTabContentsDestroyed and NULL out
+  // Invoked from TabContents. Invokes TabContentsDestroyed and NULL out
   // |tab_contents_|.
   void TabContentsDestroyed();
 

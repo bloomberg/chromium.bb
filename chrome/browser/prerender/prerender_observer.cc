@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ PrerenderObserver::PrerenderObserver(TabContents* tab_contents)
 PrerenderObserver::~PrerenderObserver() {
 }
 
-void PrerenderObserver::OnProvisionalChangeToMainFrameUrl(const GURL& url) {
+void PrerenderObserver::ProvisionalChangeToMainFrameUrl(const GURL& url) {
   PrerenderManager* pm = MaybeGetPrerenderManager();
   if (pm)
     pm->MarkTabContentsAsNotPrerendered(tab_contents());

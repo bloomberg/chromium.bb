@@ -1223,14 +1223,11 @@ void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
   render_view_host()->FilterURL(ChildProcessSecurityPolicy::GetInstance(),
       GetRenderProcessHost()->id(), &validated_url);
 
-  ProvisionalLoadDetails details(
-      is_main_frame,
-      controller_.IsURLInPageNavigation(validated_url),
-      validated_url, std::string(), is_error_page, frame_id);
-  NotificationService::current()->Notify(
-      NotificationType::FRAME_PROVISIONAL_LOAD_START,
-      Source<NavigationController>(&controller_),
-      Details<ProvisionalLoadDetails>(&details));
+  // Notify observers about the start of the provisional load.
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+                    DidStartProvisionalLoadForFrame(frame_id, is_main_frame,
+                    validated_url, is_error_page));
+
   if (is_main_frame) {
     // If we're displaying a network error page do not reset the content
     // settings delegate's cookies so the user has a chance to modify cookie
@@ -1241,7 +1238,7 @@ void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
 
     // Notify observers about the provisional change in the main frame URL.
     FOR_EACH_OBSERVER(TabContentsObserver, observers_,
-                      OnProvisionalChangeToMainFrameUrl(url));
+                      ProvisionalChangeToMainFrameUrl(url));
   }
 }
 
@@ -1261,7 +1258,7 @@ void TabContents::OnDidRedirectProvisionalLoad(int32 page_id,
 
   // Notify observers about the provisional change in the main frame URL.
   FOR_EACH_OBSERVER(TabContentsObserver, observers_,
-                    OnProvisionalChangeToMainFrameUrl(target_url));
+                    ProvisionalChangeToMainFrameUrl(target_url));
 }
 
 void TabContents::OnDidFailProvisionalLoadWithError(
@@ -1327,6 +1324,10 @@ void TabContents::OnDidFailProvisionalLoadWithError(
       NotificationType::FAIL_PROVISIONAL_LOAD_WITH_ERROR,
       Source<NavigationController>(&controller_),
       Details<ProvisionalLoadDetails>(&details));
+
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+                    DidFailProvisionalLoad(frame_id, is_main_frame,
+                    validated_url, error_code));
 }
 
 void TabContents::OnDidLoadResourceFromMemoryCache(
@@ -1364,17 +1365,13 @@ void TabContents::OnDidRunInsecureContent(
 
 void TabContents::OnDocumentLoadedInFrame(int64 frame_id) {
   controller_.DocumentLoadedInFrame();
-  NotificationService::current()->Notify(
-      NotificationType::FRAME_DOM_CONTENT_LOADED,
-      Source<NavigationController>(&controller_),
-      Details<int64>(&frame_id));
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+                    DocumentLoadedInFrame(frame_id));
 }
 
 void TabContents::OnDidFinishLoad(int64 frame_id) {
-  NotificationService::current()->Notify(
-      NotificationType::FRAME_DID_FINISH_LOAD,
-      Source<NavigationController>(&controller_),
-      Details<int64>(&frame_id));
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+                    DidFinishLoad(frame_id));
 }
 
 void TabContents::OnUpdateContentRestrictions(int restrictions) {
@@ -1921,23 +1918,19 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
     // tracking navigation events, we treat this event as a sub frame navigation
     // event.
     bool is_main_frame = did_navigate ? details.is_main_frame : false;
-    ProvisionalLoadDetails load_details(
-        is_main_frame, details.is_in_page, params.url, std::string(),
-        false, params.frame_id);
-    load_details.set_transition_type(params.transition);
+    PageTransition::Type transition_type = params.transition;
     // Whether or not a page transition was triggered by going backward or
     // forward in the history is only stored in the navigation controller's
     // entry list.
     if (did_navigate &&
         (controller_.GetActiveEntry()->transition_type() &
             PageTransition::FORWARD_BACK)) {
-      load_details.set_transition_type(
-          params.transition | PageTransition::FORWARD_BACK);
+      transition_type = params.transition | PageTransition::FORWARD_BACK;
     }
-    NotificationService::current()->Notify(
-        NotificationType::FRAME_PROVISIONAL_LOAD_COMMITTED,
-        Source<NavigationController>(&controller_),
-        Details<ProvisionalLoadDetails>(&load_details));
+    // Notify observers about the commit of the provisional load.
+    FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+                      DidCommitProvisionalLoadForFrame(params.frame_id,
+                      is_main_frame, params.url, transition_type));
   }
 
   // Update history. Note that this needs to happen after the entry is complete,
