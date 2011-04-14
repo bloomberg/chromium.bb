@@ -323,9 +323,15 @@ class ExtensionImpl : public ExtensionBase {
     std::string path(*v8::String::Utf8Value(args[1]));
 
     WebFrame* webframe = WebFrame::frameForCurrentContext();
+#ifdef WEB_FILE_SYSTEM_TYPE_EXTERNAL
+    return webframe->createFileSystem(WebKit::WebFileSystem::TypeExternal,
+            WebKit::WebString::fromUTF8(name.c_str()),
+            WebKit::WebString::fromUTF8(path.c_str()));
+#else
     return webframe->createFileSystem(fileapi::kFileSystemTypeLocal,
             WebKit::WebString::fromUTF8(name.c_str()),
             WebKit::WebString::fromUTF8(path.c_str()));
+#endif
   }
 
   // Creates a new messaging channel to the tab with the given ID.
