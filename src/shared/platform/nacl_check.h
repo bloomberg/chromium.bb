@@ -11,7 +11,14 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_CHECK_H_
 #define NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_CHECK_H_
 
-#ifdef __native_client__
+/*
+ * NOTE: we build the extra_sdk libs in two phases (C first, C++ later)
+ *       the nacl/nacl_log.h is only made available by the C++ phase.
+ *       So for now access nacl_log.h from the other location:
+ *       native_client/src/shared/platform/
+ *       "defined(NACL_BUILD_ARCH)" indicates we are in extra_sdk mode.
+ */
+#if defined( __native_client__) && !defined(NACL_BUILD_ARCH)
 # include "nacl/nacl_log.h"
 
 /* TODO(sehr): move these defs to a common header */
