@@ -304,12 +304,37 @@ const CGFloat kRapidCloseDist = 2.5;
   // Because we move views between windows, we need to handle the event loop
   // ourselves. Ideally we should use the standard event loop.
   while (1) {
+    const NSUInteger mask =
+        NSLeftMouseUpMask | NSLeftMouseDraggedMask | NSKeyUpMask;
     theEvent =
-        [NSApp nextEventMatchingMask:NSLeftMouseUpMask | NSLeftMouseDraggedMask
+        [NSApp nextEventMatchingMask:mask
                            untilDate:[NSDate distantFuture]
                               inMode:NSDefaultRunLoopMode dequeue:YES];
     NSEventType type = [theEvent type];
-    if (type == NSLeftMouseDragged) {
+    if (type == NSKeyUp) {
+      if ([theEvent keyCode] == kVK_Escape) {
+        // Cancel the drag and restore the previous state.
+        if (draggingWithinTabStrip_) {
+          // Simply pretend the tab wasn't dragged (far enough).
+          tabWasDragged_ = NO;
+        } else {
+          [targetController_ removePlaceholder];
+          if ([sourceController_ numberOfTabs] < 2) {
+            // Revert to a single-tab window.
+            targetController_ = nil;
+          } else {
+            // Change the target to the source controller.
+            targetController_ = sourceController_;
+            [targetController_ insertPlaceholderForTab:self
+                                                 frame:sourceTabFrame_
+                                         yStretchiness:0];
+          }
+        }
+        // Call the |mouseUp:| code to end the drag.
+        [self mouseUp:theEvent];
+        break;
+      }
+    } else if (type == NSLeftMouseDragged) {
       [self mouseDragged:theEvent];
     } else if (type == NSLeftMouseUp) {
       NSPoint upLocation = [theEvent locationInWindow];
