@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -37,7 +37,7 @@ typedef enum {
   // Boolean (default = PP_FALSE).
   PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS,
 
-  // Set to true if you want to be able to pull the upload progress via the
+  // Set to true if you want to be able to poll the upload progress via the
   // URLLoader.GetUploadProgress function.
   //
   // Boolean (default = PP_FALSE).
@@ -51,7 +51,22 @@ typedef enum {
   // result.
   //
   // Undefined/String (default = Undefined)
-  PP_URLREQUESTPROPERTY_CUSTOMREFERRERURL
+  PP_URLREQUESTPROPERTY_CUSTOMREFERRERURL,
+
+  // Whether cross-origin requests are allowed. Cross-origin requests are made
+  // using the CORS (Cross-Origin Resource Sharing) algorithm to check whether
+  // the request should be allowed. For the complete CORS algorithm, see:
+  // http://www.w3.org/TR/access-control
+  //
+  // Boolean (default = PP_FALSE).
+  PP_URLREQUESTPROPERTY_ALLOWCROSSORIGINREQUESTS,
+
+  // Whether HTTP credentials are sent with cross-origin requests. If false,
+  // no credentials are sent with the request and cookies are ignored in the
+  // response. If the request is not cross-origin, this property is ignored.
+  //
+  // Boolean (default = PP_FALSE).
+  PP_URLREQUESTPROPERTY_ALLOWCREDENTIALS
 } PP_URLRequestProperty;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_URLRequestProperty, 4);
 /**

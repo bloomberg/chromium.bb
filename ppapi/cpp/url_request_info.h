@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,6 +57,12 @@ class URLRequestInfo : public Resource {
   // To use the default referrer, set url_string to an Undefined Var.
   bool SetCustomReferrerURL(const Var& url_string) {
     return SetProperty(PP_URLREQUESTPROPERTY_CUSTOMREFERRERURL, url_string);
+  }
+  bool SetAllowCrossOriginRequests(bool enable) {
+    return SetProperty(PP_URLREQUESTPROPERTY_ALLOWCROSSORIGINREQUESTS, enable);
+  }
+  bool SetAllowCredentials(bool enable) {
+    return SetProperty(PP_URLREQUESTPROPERTY_ALLOWCREDENTIALS, enable);
   }
 };
 

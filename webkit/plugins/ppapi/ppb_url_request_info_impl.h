@@ -55,6 +55,11 @@ class PPB_URLRequestInfo_Impl : public Resource {
   bool record_download_progress() const { return record_download_progress_; }
   bool record_upload_progress() const { return record_upload_progress_; }
 
+  bool allow_cross_origin_requests() const {
+    return allow_cross_origin_requests_;
+  }
+  bool allow_credentials() const { return allow_credentials_; }
+
  private:
   struct BodyItem;
   typedef std::vector<BodyItem> Body;
@@ -75,6 +80,9 @@ class PPB_URLRequestInfo_Impl : public Resource {
   // referrer header should be generated.)
   bool has_custom_referrer_url_;
   std::string custom_referrer_url_;
+
+  bool allow_cross_origin_requests_;
+  bool allow_credentials_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_URLRequestInfo_Impl);
 };

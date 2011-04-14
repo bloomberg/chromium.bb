@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -158,6 +158,30 @@ TEST_F(URLRequestInfoTest, RecordUploadProgress) {
   ASSERT_TRUE(info_->SetBooleanProperty(
       PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS, false));
   ASSERT_FALSE(info_->record_upload_progress());
+}
+
+TEST_F(URLRequestInfoTest, AllowCrossOriginRequests) {
+  ASSERT_FALSE(info_->allow_cross_origin_requests());
+
+  ASSERT_TRUE(info_->SetBooleanProperty(
+      PP_URLREQUESTPROPERTY_ALLOWCROSSORIGINREQUESTS, true));
+  ASSERT_TRUE(info_->allow_cross_origin_requests());
+
+  ASSERT_TRUE(info_->SetBooleanProperty(
+      PP_URLREQUESTPROPERTY_ALLOWCROSSORIGINREQUESTS, false));
+  ASSERT_FALSE(info_->allow_cross_origin_requests());
+}
+
+TEST_F(URLRequestInfoTest, AllowCredentials) {
+  ASSERT_FALSE(info_->allow_credentials());
+
+  ASSERT_TRUE(info_->SetBooleanProperty(
+      PP_URLREQUESTPROPERTY_ALLOWCREDENTIALS, true));
+  ASSERT_TRUE(info_->allow_credentials());
+
+  ASSERT_TRUE(info_->SetBooleanProperty(
+      PP_URLREQUESTPROPERTY_ALLOWCREDENTIALS, false));
+  ASSERT_FALSE(info_->allow_credentials());
 }
 
 TEST_F(URLRequestInfoTest, SetURL) {

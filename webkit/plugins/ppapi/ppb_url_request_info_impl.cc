@@ -200,7 +200,9 @@ PPB_URLRequestInfo_Impl::PPB_URLRequestInfo_Impl(PluginInstance* instance)
       follow_redirects_(true),
       record_download_progress_(false),
       record_upload_progress_(false),
-      has_custom_referrer_url_(false) {
+      has_custom_referrer_url_(false),
+      allow_cross_origin_requests_(false),
+      allow_credentials_(false) {
 }
 
 PPB_URLRequestInfo_Impl::~PPB_URLRequestInfo_Impl() {
@@ -241,6 +243,12 @@ bool PPB_URLRequestInfo_Impl::SetBooleanProperty(PP_URLRequestProperty property,
       return true;
     case PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS:
       record_upload_progress_ = value;
+      return true;
+    case PP_URLREQUESTPROPERTY_ALLOWCROSSORIGINREQUESTS:
+      allow_cross_origin_requests_ = value;
+      return true;
+    case PP_URLREQUESTPROPERTY_ALLOWCREDENTIALS:
+      allow_credentials_ = value;
       return true;
     default:
       return false;
