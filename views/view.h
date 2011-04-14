@@ -136,6 +136,9 @@ class DragController {
 //   It is up to the subclass to implement Painting and storage of subclass -
 //   specific properties and functionality.
 //
+//   Unless otherwise documented, views is not thread safe and should only be
+//   accessed from the main thread.
+//
 /////////////////////////////////////////////////////////////////////////////
 class View : public AcceleratorTarget {
  public:

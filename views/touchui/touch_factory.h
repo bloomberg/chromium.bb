@@ -24,29 +24,29 @@ class TouchFactory {
   // Returns the TouchFactory singleton.
   static TouchFactory* GetInstance();
 
-  // Keep a list of touch devices so that it is possible to determine if a
+  // Keeps a list of touch devices so that it is possible to determine if a
   // pointer event is a touch-event or a mouse-event. The list is reset each
   // time this is called.
   void SetTouchDeviceList(const std::vector<unsigned int>& devices);
 
   // Is the device a touch-device?
-  bool IsTouchDevice(unsigned int deviceid);
+  bool IsTouchDevice(unsigned int deviceid) const;
 
-  // Grab the touch devices for the specified window on the specified display.
+  // Grabs the touch devices for the specified window on the specified display.
   // Returns if grab was successful for all touch devices.
   bool GrabTouchDevices(Display* display, ::Window window);
 
-  // Ungrab the touch devices. Returns if ungrab was successful for all touch
+  // Ungrabs the touch devices. Returns if ungrab was successful for all touch
   // devices.
   bool UngrabTouchDevices(Display* display);
 
-  // Update the root window to show (or hide) the cursor. Also indicate whether
+  // Updates the root window to show (or hide) the cursor. Also indicate whether
   // the timer should be started to automatically hide the cursor after a
   // certain duration of inactivity (i.e. it is ignored if |show| is false).
   void SetCursorVisible(bool show, bool start_timer);
 
   // Whether the cursor is currently visible or not.
-  bool is_cursor_visible() {
+  bool is_cursor_visible() const {
     return is_cursor_visible_;
   }
 

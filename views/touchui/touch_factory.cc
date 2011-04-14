@@ -55,7 +55,7 @@ TouchFactory::TouchFactory()
     }
   }
   if (devlist)
-      XFreeDeviceList(devlist);
+    XFreeDeviceList(devlist);
 }
 
 TouchFactory::~TouchFactory() {
@@ -77,7 +77,7 @@ void TouchFactory::SetTouchDeviceList(
   }
 }
 
-bool TouchFactory::IsTouchDevice(unsigned deviceid) {
+bool TouchFactory::IsTouchDevice(unsigned deviceid) const {
   return deviceid < touch_device_lookup_.size() ?
       touch_device_lookup_[deviceid] : false;
 }

@@ -20,46 +20,59 @@ class Transform {
  public:
   virtual ~Transform() {}
 
-  // Create an object that implements this interface (e.g. using skia
+  // Creates an object that implements this interface (e.g. using skia
   // transformation matrices).
   static Transform* Create();
 
-  // Set the rotation of the transformation.
+  // NOTE: The 'Set' functions overwrite the previously set transformation
+  // parameters. The 'Concat' functions apply a transformation (e.g. rotation,
+  // scale, translate) on top of the existing transforms, instead of overwriting
+  // them.
+
+  // NOTE: The order of the 'Set' function calls do not matter. However, the
+  // order of the 'Concat' function calls do matter, especially when combined
+  // with the 'Set' functions.
+
+  // Sets the rotation of the transformation.
   virtual void SetRotate(float degree) = 0;
 
-  // Set the scaling parameters.
+  // Sets the scaling parameters.
   virtual void SetScaleX(float x) = 0;
   virtual void SetScaleY(float y) = 0;
   virtual void SetScale(float x, float y) = 0;
 
-  // Set the translation parameters.
+  // Sets the translation parameters.
   virtual void SetTranslateX(float x) = 0;
   virtual void SetTranslateY(float y) = 0;
   virtual void SetTranslate(float x, float y) = 0;
 
-  // Apply rotation on the current transformation.
+  // Applies rotation on the current transformation.
   virtual void ConcatRotate(float degree) = 0;
 
-  // Apply scaling on current transform.
+  // Applies scaling on current transform.
   virtual void ConcatScale(float x, float y) = 0;
 
-  // Apply translation on current transform.
+  // Applies translation on current transform.
   virtual void ConcatTranslate(float x, float y) = 0;
 
-  // Apply a transformation on the current transformation
-  // (i.e. 'this = this * transform;')
+  // Applies a transformation on the current transformation
+  // (i.e. 'this = this * transform;'). Returns true if the result can be
+  // represented.
   virtual bool ConcatTransform(const Transform& transform) = 0;
 
   // Does the transformation change anything?
   virtual bool HasChange() const = 0;
 
-  // Apply the transformation on the point.
+  // Applies the transformation on the point. Returns true if the point is
+  // transformed successfully.
   virtual bool TransformPoint(gfx::Point* point) = 0;
 
-  // Apply the reverse transformation on the point.
+  // Applies the reverse transformation on the point. Returns true if the point
+  // is transformed successfully.
   virtual bool TransformPointReverse(gfx::Point* point) = 0;
 
-  // Apply transformatino on the rectangle.
+  // Applies transformation on the rectangle. Returns true of the rectangle is
+  // transformed successfully.
   virtual bool TransformRect(gfx::Rect* rect) = 0;
 };
 
