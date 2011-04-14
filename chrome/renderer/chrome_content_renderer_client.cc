@@ -63,6 +63,7 @@ using WebKit::WebString;
 using WebKit::WebURLError;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
+using WebKit::WebVector;
 
 namespace {
 
@@ -85,6 +86,33 @@ static bool CrossesExtensionExtents(WebFrame* frame, const GURL& new_url) {
       !extensions->GetByURL(old_url)->web_extent().is_empty();
   return !extensions->InSameExtent(old_url, new_url) &&
          !old_url_is_hosted_app;
+}
+
+static void AppendParams(const std::vector<string16>& additional_names,
+                         const std::vector<string16>& additional_values,
+                         WebVector<WebString>* existing_names,
+                         WebVector<WebString>* existing_values) {
+  DCHECK(additional_names.size() == additional_values.size());
+  DCHECK(existing_names->size() == existing_values->size());
+
+  size_t existing_size = existing_names->size();
+  size_t total_size = existing_size + additional_names.size();
+
+  WebVector<WebString> names(total_size);
+  WebVector<WebString> values(total_size);
+
+  for (size_t i = 0; i < existing_size; ++i) {
+    names[i] = (*existing_names)[i];
+    values[i] = (*existing_values)[i];
+  }
+
+  for (size_t i = 0; i < additional_names.size(); ++i) {
+    names[existing_size + i] = additional_names[i];
+    values[existing_size + i] = additional_values[i];
+  }
+
+  existing_names->swap(names);
+  existing_values->swap(values);
 }
 
 }  // namespace
@@ -139,16 +167,16 @@ std::string ChromeContentRendererClient::GetDefaultEncoding() {
 WebPlugin* ChromeContentRendererClient::CreatePlugin(
       RenderView* render_view,
       WebFrame* frame,
-      const WebPluginParams& params) {
+      const WebPluginParams& original_params) {
   bool found = false;
   int plugin_setting = CONTENT_SETTING_DEFAULT;
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   webkit::npapi::WebPluginInfo info;
-  GURL url(params.url);
+  GURL url(original_params.url);
   std::string actual_mime_type;
   render_view->Send(new ViewHostMsg_GetPluginInfo(
       render_view->routing_id(), url, frame->top()->url(),
-      params.mimeType.utf8(), &found, &info, &plugin_setting,
+      original_params.mimeType.utf8(), &found, &info, &plugin_setting,
       &actual_mime_type));
 
   if (!found)
@@ -156,6 +184,17 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
   if (!webkit::npapi::IsPluginEnabled(info))
     return NULL;
+
+  WebPluginParams params(original_params);
+  for (size_t i = 0; i < info.mime_types.size(); ++i) {
+    if (info.mime_types[i].mime_type == actual_mime_type) {
+      AppendParams(info.mime_types[i].additional_param_names,
+                   info.mime_types[i].additional_param_values,
+                   &params.attributeNames,
+                   &params.attributeValues);
+      break;
+    }
+  }
 
   const webkit::npapi::PluginGroup* group =
       webkit::npapi::PluginList::Singleton()->GetPluginGroup(info);

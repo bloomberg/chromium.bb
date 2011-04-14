@@ -372,6 +372,8 @@ IPC_STRUCT_TRAITS_BEGIN(webkit::npapi::WebPluginMimeType)
   IPC_STRUCT_TRAITS_MEMBER(mime_type)
   IPC_STRUCT_TRAITS_MEMBER(file_extensions)
   IPC_STRUCT_TRAITS_MEMBER(description)
+  IPC_STRUCT_TRAITS_MEMBER(additional_param_names)
+  IPC_STRUCT_TRAITS_MEMBER(additional_param_values)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(webkit::npapi::WebPluginInfo)

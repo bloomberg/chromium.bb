@@ -1851,7 +1851,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       }
 
       nacl_modules_.push_back(NaClModuleInfo());
-      nacl_modules_.back().path = path().AppendASCII(path_str);
+      nacl_modules_.back().url = GetResourceURL(path_str);
       nacl_modules_.back().mime_type = mime_type;
     }
   }

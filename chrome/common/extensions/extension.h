@@ -104,7 +104,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // An NaCl module included in the extension.
   struct NaClModuleInfo {
-    FilePath path;
+    GURL url;
     std::string mime_type;
   };
 

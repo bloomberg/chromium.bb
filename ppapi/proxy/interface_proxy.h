@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ class InterfaceProxy : public IPC::Channel::Listener,
   // getting the proxied interface on the source side (see dispatcher.h for
   // terminology).
   struct Info {
-    const void* interface;
+    const void* interface_ptr;
 
     const char* name;
     InterfaceID id;

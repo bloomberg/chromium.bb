@@ -102,7 +102,7 @@ class Dispatcher : public IPC::Channel::Listener,
   }
 
   // Wrapper for calling the local GetInterface function.
-  const void* GetLocalInterface(const char* interface);
+  const void* GetLocalInterface(const char* interface_name);
 
   // Shares a file handle (HANDLE / file descriptor) with the remote side. It
   // returns a handle that should be sent in exactly one IPC message. Upon

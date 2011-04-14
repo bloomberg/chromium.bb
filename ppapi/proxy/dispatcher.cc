@@ -266,8 +266,8 @@ void Dispatcher::SetSerializationRules(
   serialization_rules_.reset(var_serialization_rules);
 }
 
-const void* Dispatcher::GetLocalInterface(const char* interface) {
-  return local_get_interface_(interface);
+const void* Dispatcher::GetLocalInterface(const char* interface_name) {
+  return local_get_interface_(interface_name);
 }
 
 IPC::PlatformFileForTransit Dispatcher::ShareHandleWithRemote(

@@ -63,7 +63,7 @@ const void* PluginDispatcher::GetInterfaceFromDispatcher(
   const InterfaceProxy::Info* info = GetPPBInterfaceInfo(interface);
   if (!info)
     return NULL;
-  return info->interface;
+  return info->interface_ptr;
 }
 
 bool PluginDispatcher::InitWithChannel(

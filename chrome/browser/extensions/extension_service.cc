@@ -60,6 +60,7 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/json_value_serializer.h"
+#include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
@@ -1055,7 +1056,19 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
           plugin.path, extension->url());
     }
   }
-  if (plugins_changed)
+
+  bool nacl_modules_changed = false;
+  for (size_t i = 0; i < extension->nacl_modules().size(); ++i) {
+    const Extension::NaClModuleInfo& module = extension->nacl_modules()[i];
+    PepperPluginRegistry::GetInstance()->RegisterNaClModule(module.url,
+                                                            module.mime_type);
+    nacl_modules_changed = true;
+  }
+
+  if (nacl_modules_changed)
+    PepperPluginRegistry::GetInstance()->UpdatePluginListWithNaClModules();
+
+  if (plugins_changed || nacl_modules_changed)
     PluginService::GetInstance()->PurgePluginListCache(false);
 }
 
@@ -1086,7 +1099,18 @@ void ExtensionService::NotifyExtensionUnloaded(
     if (!plugin.is_public)
       PluginService::GetInstance()->RestrictPluginToUrl(plugin.path, GURL());
   }
-  if (plugins_changed)
+
+  bool nacl_modules_changed = false;
+  for (size_t i = 0; i < extension->nacl_modules().size(); ++i) {
+    const Extension::NaClModuleInfo& module = extension->nacl_modules()[i];
+    PepperPluginRegistry::GetInstance()->UnregisterNaClModule(module.url);
+    nacl_modules_changed = true;
+  }
+
+  if (nacl_modules_changed)
+    PepperPluginRegistry::GetInstance()->UpdatePluginListWithNaClModules();
+
+  if (plugins_changed || nacl_modules_changed)
     PluginService::GetInstance()->PurgePluginListCache(false);
 }
 

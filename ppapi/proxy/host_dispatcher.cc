@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -183,7 +183,7 @@ const void* HostDispatcher::GetProxiedInterface(const std::string& interface) {
       INTERFACE_UNQUERIED) {
     // Already queried the plugin if it supports this interface.
     if (plugin_interface_support_[info->id] == INTERFACE_SUPPORTED)
-      return info->interface;
+      return info->interface_ptr;
     return NULL;
   }
 
@@ -194,7 +194,7 @@ const void* HostDispatcher::GetProxiedInterface(const std::string& interface) {
       supported ? INTERFACE_SUPPORTED : INTERFACE_UNSUPPORTED;
 
   if (supported)
-    return info->interface;
+    return info->interface_ptr;
   return NULL;
 }
 

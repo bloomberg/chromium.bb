@@ -208,7 +208,9 @@ void PluginList::RegisterInternalPlugin(const WebPluginInfo& info) {
   InternalPlugin plugin = { info, entry_points };
 
   base::AutoLock lock(lock_);
-  internal_plugins_.push_back(plugin);
+  // Newer registrations go earlier in the list so they can override the MIME
+  // types of older registrations.
+  internal_plugins_.insert(internal_plugins_.begin(), plugin);
 }
 
 void PluginList::RegisterInternalPlugin(const FilePath& filename,

@@ -16,6 +16,7 @@
 #include "content/common/child_process.h"
 #include "content/common/content_switches.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 
 namespace {
 
@@ -216,12 +217,45 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
 
 const char* PepperPluginRegistry::kPDFPluginName = ::kPDFPluginName;
 
+webkit::npapi::WebPluginInfo PepperPluginInfo::ToWebPluginInfo() const {
+  webkit::npapi::WebPluginInfo info;
+
+  info.name = name.empty() ? path.BaseName().LossyDisplayName() :
+      ASCIIToUTF16(name);
+  info.path = path;
+  info.version = ASCIIToUTF16(version);
+  info.desc = ASCIIToUTF16(description);
+  info.mime_types = mime_types;
+
+  webkit::npapi::WebPluginInfo::EnabledStates enabled_state =
+      webkit::npapi::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
+
+  // Enable the Native Client Plugin based on the command line.
+  // TODO(abarth): This is the wrong place to do this work!
+  if (name == kNaClPluginName) {
+    bool nacl_enabled =
+        CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaCl);
+    enabled_state = nacl_enabled ?
+        webkit::npapi::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED :
+        webkit::npapi::WebPluginInfo::USER_DISABLED_POLICY_UNMANAGED;
+  }
+  info.enabled = enabled_state;
+  return info;
+}
+
 PepperPluginInfo::PepperPluginInfo()
     : is_internal(false),
       is_out_of_process(false) {
 }
 
-PepperPluginInfo::~PepperPluginInfo() {}
+PepperPluginInfo::~PepperPluginInfo() {
+}
+
+NaClModuleInfo::NaClModuleInfo() {
+}
+
+NaClModuleInfo::~NaClModuleInfo() {
+}
 
 // static
 PepperPluginRegistry* PepperPluginRegistry::GetInstance() {
@@ -346,4 +380,54 @@ base::WaitableEvent* PepperPluginRegistry::GetShutdownEvent() {
 std::set<PP_Instance>* PepperPluginRegistry::GetGloballySeenInstanceIDSet() {
   // This function is not needed on the host side of the proxy.
   return NULL;
+}
+
+void PepperPluginRegistry::RegisterNaClModule(const GURL& url,
+                                              const std::string& mime_type) {
+  NaClModuleInfo info;
+  info.url = url;
+  info.mime_type = mime_type;
+
+  DCHECK(FindNaClModule(url) == nacl_module_list_.end());
+  nacl_module_list_.push_front(info);
+}
+
+void PepperPluginRegistry::UnregisterNaClModule(const GURL& url) {
+  NaClModuleInfoList::iterator iter = FindNaClModule(url);
+  DCHECK(iter != nacl_module_list_.end());
+  nacl_module_list_.erase(iter);
+}
+
+void PepperPluginRegistry::UpdatePluginListWithNaClModules() {
+  FilePath path;
+  PathService::Get(chrome::FILE_NACL_PLUGIN, &path);
+
+  webkit::npapi::PluginList::Singleton()->UnregisterInternalPlugin(path);
+
+  const PepperPluginInfo* pepper_info = GetInfoForPlugin(path);
+  webkit::npapi::WebPluginInfo info = pepper_info->ToWebPluginInfo();
+
+  DCHECK(nacl_module_list_.size() <= 1);
+  for (NaClModuleInfoList::iterator iter = nacl_module_list_.begin();
+       iter != nacl_module_list_.end(); ++iter) {
+    webkit::npapi::WebPluginMimeType mime_type_info;
+    mime_type_info.mime_type = iter->mime_type;
+    mime_type_info.additional_param_names.push_back(UTF8ToUTF16("nacl"));
+    mime_type_info.additional_param_values.push_back(
+        UTF8ToUTF16(iter->url.spec()));
+    info.mime_types.push_back(mime_type_info);
+  }
+
+  webkit::npapi::PluginList::Singleton()->RefreshPlugins();
+  webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(info);
+}
+
+PepperPluginRegistry::NaClModuleInfoList::iterator
+    PepperPluginRegistry::FindNaClModule(const GURL& url) {
+  for (NaClModuleInfoList::iterator iter = nacl_module_list_.begin();
+       iter != nacl_module_list_.end(); ++iter) {
+    if (iter->url == url)
+      return iter;
+  }
+  return nacl_module_list_.end();
 }
