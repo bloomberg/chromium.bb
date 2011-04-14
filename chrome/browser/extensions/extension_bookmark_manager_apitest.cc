@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/ui_test_utils.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BookmarkManager) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -20,8 +21,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BookmarkManager) {
   ASSERT_TRUE(RunExtensionTest("bookmark_manager/standard")) << message_;
 }
 
-// See http://crbug.com/79335
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_BookmarkManagerEditDisabled) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BookmarkManagerEditDisabled) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
@@ -30,6 +30,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_BookmarkManagerEditDisabled) {
   // Provide some testing data here, since bookmark editing will be disabled
   // within the extension.
   BookmarkModel* model = profile->GetBookmarkModel();
+  ui_test_utils::WaitForBookmarkModelToLoad(model);
   const BookmarkNode* bar = model->GetBookmarkBarNode();
   const BookmarkNode* folder = model->AddFolder(bar, 0, ASCIIToUTF16("Folder"));
   const BookmarkNode* node = model->AddURL(bar, 1, ASCIIToUTF16("AAA"),
