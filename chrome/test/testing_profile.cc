@@ -292,8 +292,7 @@ void TestingProfile::CreateAutocompleteClassifier() {
 }
 
 void TestingProfile::CreateProtocolHandlerRegistry() {
-  protocol_handler_registry_ = new ProtocolHandlerRegistry(this,
-      new ProtocolHandlerRegistry::Delegate());
+  protocol_handler_registry_ = new ProtocolHandlerRegistry(this);
 }
 
 void TestingProfile::CreateWebDataService(bool delete_file) {

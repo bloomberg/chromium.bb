@@ -1303,7 +1303,6 @@
         'browser/content_settings/stub_settings_observer.cc',
         'browser/content_settings/stub_settings_observer.h',
         'browser/cookies_tree_model_unittest.cc',
-        'browser/custom_handlers/protocol_handler_registry_unittest.cc',
         'browser/debugger/devtools_manager_unittest.cc',
         'browser/debugger/devtools_remote_listen_socket_unittest.cc',
         'browser/debugger/devtools_remote_listen_socket_unittest.h',
