@@ -1765,7 +1765,7 @@ init_egl(struct display *d)
 
 #ifdef HAVE_CAIRO_EGL
 	d->device = cairo_egl_device_create(d->dpy, d->ctx);
-	if (d->device == NULL) {
+	if (cairo_device_status(d->device) != CAIRO_STATUS_SUCCESS) {
 		fprintf(stderr, "failed to get cairo egl device\n");
 		return -1;
 	}
