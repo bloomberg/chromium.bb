@@ -35,38 +35,42 @@
 
 namespace {
 
+// How long (in milliseconds) to wait (each cycle) before checking whether
+// Chrome's been upgraded behind our back.
+const int kCheckForUpgradeMs = 2 * 60 * 60 * 1000;  // 2 hours.
+
+// How long to wait (each cycle) before checking which severity level we should
+// be at. Once we reach the highest severity, the timer will stop.
+const int kNotifyCycleTimeMs = 20 * 60 * 1000;  // 20 minutes.
+
+// Same as kNotifyCycleTimeMs but only used during testing.
+const int kNotifyCycleTimeForTestingMs = 5000;  // 5 seconds.
+
+std::string CmdLineInterval() {
+  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+  return cmd_line.GetSwitchValueASCII(switches::kCheckForUpdateIntervalSec);
+}
+
 // How often to check for an upgrade.
 int GetCheckForUpgradeEveryMs() {
   // Check for a value passed via the command line.
   int interval_ms;
-  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
-  std::string interval =
-      cmd_line.GetSwitchValueASCII(switches::kCheckForUpdateIntervalSec);
+  std::string interval = CmdLineInterval();
   if (!interval.empty() && base::StringToInt(interval, &interval_ms))
     return interval_ms * 1000;  // Command line value is in seconds.
 
-  // Otherwise check once an hour for dev channel and once a day for all other
-  // channels/builds.
-  const std::string channel = platform_util::GetVersionStringModifier();
-  int hours;
-  if (channel == "dev")
-    hours = 1;
-  else
-    hours = 24;
-
-  return hours * 60 * 60 * 1000;
+  return kCheckForUpgradeMs;
 }
-
-// How long to wait before notifying the user about the upgrade.
-const int kNotifyUserAfterMs = 0;
 
 // This task checks the currently running version of Chrome against the
 // installed version. If the installed version is newer, it runs the passed
 // callback task. Otherwise it just deletes the task.
 class DetectUpgradeTask : public Task {
  public:
-  explicit DetectUpgradeTask(Task* upgrade_detected_task)
-      : upgrade_detected_task_(upgrade_detected_task) {
+  explicit DetectUpgradeTask(Task* upgrade_detected_task,
+                             bool* is_dev_channel)
+      : upgrade_detected_task_(upgrade_detected_task),
+        is_dev_channel_(is_dev_channel) {
   }
 
   virtual ~DetectUpgradeTask() {
@@ -111,6 +115,9 @@ class DetectUpgradeTask : public Task {
     installed_version.reset(Version::GetVersionFromString(reply));
 #endif
 
+    const std::string channel = platform_util::GetVersionStringModifier();
+    *is_dev_channel_ = channel == "dev";
+
     // Get the version of the currently *running* instance of Chrome.
     chrome::VersionInfo version_info;
     if (!version_info.is_valid()) {
@@ -137,6 +144,7 @@ class DetectUpgradeTask : public Task {
 
  private:
   Task* upgrade_detected_task_;
+  bool* is_dev_channel_;
 };
 
 }  // namespace
@@ -148,6 +156,8 @@ void UpgradeDetector::RegisterPrefs(PrefService* prefs) {
 
 UpgradeDetector::UpgradeDetector()
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      is_dev_channel_(false),
+      upgrade_notification_stage_(UPGRADE_ANNOYANCE_NONE),
       notify_upgrade_(false) {
   CommandLine command_line(*CommandLine::ForCurrentProcess());
   if (command_line.HasSwitch(switches::kDisableBackgroundNetworking))
@@ -184,7 +194,8 @@ void UpgradeDetector::CheckForUpgrade() {
   // while launching a background process and reading its output; on the Mac and
   // on Windows checking for an upgrade requires reading a file.
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          new DetectUpgradeTask(callback_task));
+                          new DetectUpgradeTask(callback_task,
+                                                &is_dev_channel_));
 }
 
 void UpgradeDetector::UpgradeDetected() {
@@ -193,18 +204,58 @@ void UpgradeDetector::UpgradeDetected() {
   // Stop the recurring timer (that is checking for changes).
   detect_upgrade_timer_.Stop();
 
+  upgrade_detected_time_ = base::Time::Now();
+
   NotificationService::current()->Notify(
       NotificationType::UPGRADE_DETECTED,
       Source<UpgradeDetector>(this),
       NotificationService::NoDetails());
 
-  // Start the OneShot timer for notifying the user after a certain period.
+  // Start the repeating timer for notifying the user after a certain period.
+  // The called function will eventually figure out that enough time has passed
+  // and stop the timer.
+  int cycle_time = CmdLineInterval().empty() ? kNotifyCycleTimeMs :
+                                               kNotifyCycleTimeForTestingMs;
   upgrade_notification_timer_.Start(
-      base::TimeDelta::FromMilliseconds(kNotifyUserAfterMs),
+      base::TimeDelta::FromMilliseconds(cycle_time),
       this, &UpgradeDetector::NotifyOnUpgrade);
 }
 
 void UpgradeDetector::NotifyOnUpgrade() {
+  base::TimeDelta delta = base::Time::Now() - upgrade_detected_time_;
+  std::string interval = CmdLineInterval();
+  // A command line interval implies testing, which we'll make more convenient
+  // by switching to minutes of waiting instead of hours between flipping
+  // severity.
+  int time_passed = interval.empty() ? delta.InHours() : delta.InMinutes();
+  const int kSevereThreshold = 14 * (interval.empty() ? 24 : 1);
+  const int kHighThreshold = 7 * (interval.empty() ? 24 : 1);
+  const int kElevatedThreshold = 4  * (interval.empty() ? 24 : 1);
+  // Dev channel is fixed at lowest severity after 1 hour. For other channels
+  // it is after 2 hours. And, as before, if a command line is passed in we
+  // drastically reduce the wait time.
+  const int multiplier = is_dev_channel_ ? 1 : 2;
+  const int kLowThreshold = multiplier * (interval.empty() ? 24 : 1);
+
+  // These if statements (except for the first one) must be sorted (highest
+  // interval first).
+  if (time_passed >= kSevereThreshold)
+    upgrade_notification_stage_ = UPGRADE_ANNOYANCE_SEVERE;
+  else if (time_passed >= kHighThreshold)
+    upgrade_notification_stage_ = UPGRADE_ANNOYANCE_HIGH;
+  else if (time_passed >= kElevatedThreshold)
+    upgrade_notification_stage_ = UPGRADE_ANNOYANCE_ELEVATED;
+  else if (time_passed >= kLowThreshold)
+    upgrade_notification_stage_ = UPGRADE_ANNOYANCE_LOW;
+  else
+    return;  // Not ready to recommend upgrade.
+
+  if (is_dev_channel_ ||
+      upgrade_notification_stage_ == UPGRADE_ANNOYANCE_SEVERE) {
+    // We can't get any higher, baby.
+    upgrade_notification_timer_.Stop();
+  }
+
   notify_upgrade_ = true;
 
   NotificationService::current()->Notify(

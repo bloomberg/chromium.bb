@@ -144,6 +144,9 @@ class ToolbarView : public AccessiblePaneView,
   // Returns true if we should show the upgrade recommended dot.
   bool IsUpgradeRecommended();
 
+  // Retrieve which badge we should show when recommending an upgrade.
+  int GetUpgradeRecommendedBadge() const;
+
   // Returns true if we should show the background page badge.
   bool ShouldShowBackgroundPageBadge();
 

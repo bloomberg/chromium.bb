@@ -618,8 +618,14 @@
       </if>
       <include name="IDR_UPDATE_AVAILABLE" file="update_available.png" type="BINDATA" />
       <include name="IDR_UPDATE_BADGE" file="update_badge.png" type="BINDATA" />
+      <include name="IDR_UPDATE_BADGE2" file="update_badge2.png" type="BINDATA" />
+      <include name="IDR_UPDATE_BADGE3" file="update_badge3.png" type="BINDATA" />
+      <include name="IDR_UPDATE_BADGE4" file="update_badge4.png" type="BINDATA" />
       <include name="IDR_UPDATE_FAIL" file="update_fail.png" type="BINDATA" />
       <include name="IDR_UPDATE_MENU" file="update_menu.png" type="BINDATA" />
+      <include name="IDR_UPDATE_MENU2" file="update_menu2.png" type="BINDATA" />
+      <include name="IDR_UPDATE_MENU3" file="update_menu3.png" type="BINDATA" />
+      <include name="IDR_UPDATE_MENU4" file="update_menu4.png" type="BINDATA" />
       <include name="IDR_UPDATE_UPTODATE" file="update_uptodate.png" type="BINDATA" />
       <include name="IDR_WARNING" file="alert_small.png" type="BINDATA" />
       <if expr="pp_ifdef('_google_chrome')">

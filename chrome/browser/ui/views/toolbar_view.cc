@@ -618,6 +618,23 @@ bool ToolbarView::IsUpgradeRecommended() {
 #endif
 }
 
+int ToolbarView::GetUpgradeRecommendedBadge() const {
+#if defined(OS_CHROMEOS)
+  return IDR_UPDATE_BADGE;
+#else
+  switch (UpgradeDetector::GetInstance()->upgrade_notification_stage()) {
+    case UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE:
+      return IDR_UPDATE_BADGE4;
+    case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
+      return IDR_UPDATE_BADGE3;
+    case UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED:
+      return IDR_UPDATE_BADGE2;
+    default:
+      return IDR_UPDATE_BADGE;
+  }
+#endif
+}
+
 bool ToolbarView::ShouldShowIncompatibilityWarning() {
 #if defined(OS_WIN)
   EnumerateModulesModel* loaded_modules = EnumerateModulesModel::GetInstance();
@@ -733,7 +750,7 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
   // Only one badge can be active at any given time. The Upgrade notification
   // is deemed most important, then the DLL conflict badge.
   if (IsUpgradeRecommended()) {
-    badge = *tp->GetBitmapNamed(IDR_UPDATE_BADGE);
+    badge = *tp->GetBitmapNamed(GetUpgradeRecommendedBadge());
   } else if (ShouldShowIncompatibilityWarning()) {
 #if defined(OS_WIN)
     if (!was_showing)

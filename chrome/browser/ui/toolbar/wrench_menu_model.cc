@@ -225,7 +225,8 @@ bool WrenchMenuModel::IsItemForCommandIdDynamic(int command_id) const {
          command_id == IDC_FULLSCREEN ||
 #endif
          command_id == IDC_SYNC_BOOKMARKS ||
-         command_id == IDC_VIEW_BACKGROUND_PAGES;
+         command_id == IDC_VIEW_BACKGROUND_PAGES ||
+         command_id == IDC_UPGRADE_DIALOG;
 }
 
 string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
@@ -249,10 +250,51 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
       return l10n_util::GetStringFUTF16(IDS_VIEW_BACKGROUND_PAGES,
                                         num_background_pages);
     }
+    case IDC_UPGRADE_DIALOG: {
+#if defined(OS_CHROMEOS)
+      const string16 product_name =
+          l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME);
+#else
+      const string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+#endif
+
+      return l10n_util::GetStringFUTF16(IDS_UPDATE_NOW, product_name);
+    }
     default:
       NOTREACHED();
       return string16();
   }
+}
+
+bool WrenchMenuModel::GetIconForCommandId(int command_id,
+                                          SkBitmap* icon) const {
+  switch (command_id) {
+    case IDC_UPGRADE_DIALOG: {
+      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      int resource_id;
+      UpgradeDetector::UpgradeNotificationAnnoyanceLevel stage =
+          UpgradeDetector::GetInstance()->upgrade_notification_stage();
+      switch (stage) {
+        case UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE:
+          resource_id = IDR_UPDATE_MENU4;
+          break;
+        case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
+          resource_id = IDR_UPDATE_MENU3;
+          break;
+        case UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED:
+          resource_id = IDR_UPDATE_MENU2;
+          break;
+        default:
+          resource_id = IDR_UPDATE_MENU;
+          break;
+      }
+      *icon = *rb.GetBitmapNamed(resource_id);
+      break;
+    }
+    default:
+      break;
+  }
+  return false;
 }
 
 void WrenchMenuModel::ExecuteCommand(int command_id) {
@@ -442,10 +484,8 @@ void WrenchMenuModel::Build() {
   AddItem(IDC_VIEW_INCOMPATIBILITIES, l10n_util::GetStringUTF16(
       IDS_VIEW_INCOMPATIBILITIES));
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  SetIcon(GetIndexOfCommandId(IDC_UPGRADE_DIALOG),
-          *rb.GetBitmapNamed(IDR_UPDATE_MENU));
 #if defined(OS_WIN)
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SetIcon(GetIndexOfCommandId(IDC_VIEW_INCOMPATIBILITIES),
           *rb.GetBitmapNamed(IDR_CONFLICT_MENU));
 #endif
