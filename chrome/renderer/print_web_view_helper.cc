@@ -12,7 +12,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/print_messages.h"
-#include "content/common/view_messages.h"
 #include "content/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "printing/metafile.h"
@@ -22,13 +21,14 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/glue/webkit_glue.h"
+
+#if defined(OS_POSIX)
+#include "content/common/view_messages.h"
+#endif
 
 using printing::ConvertPixelsToPoint;
 using printing::ConvertPixelsToPointDouble;
@@ -39,9 +39,7 @@ using WebKit::WebDocument;
 using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebNode;
-using WebKit::WebRect;
 using WebKit::WebSize;
-using WebKit::WebScreenInfo;
 using WebKit::WebString;
 using WebKit::WebURLRequest;
 using WebKit::WebView;
