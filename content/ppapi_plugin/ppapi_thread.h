@@ -14,6 +14,7 @@
 #include "content/common/child_thread.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/proxy/dispatcher.h"
+#include "ppapi/c/trusted/ppp_broker.h"
 
 class FilePath;
 
@@ -30,7 +31,7 @@ class PluginDispatcher;
 class PpapiThread : public ChildThread,
                     public pp::proxy::Dispatcher::Delegate {
  public:
-  PpapiThread();
+  explicit PpapiThread(bool is_broker);
   ~PpapiThread();
 
  private:
@@ -53,9 +54,16 @@ class PpapiThread : public ChildThread,
                             int renderer_id,
                             IPC::ChannelHandle* handle);
 
+  // True if running in a broker process rather than a normal plugin process.
+  bool is_broker_;
+
   base::ScopedNativeLibrary library_;
 
   pp::proxy::Dispatcher::GetInterfaceFunc get_plugin_interface_;
+
+  // Callback to call when a new instance connects to the broker.
+  // Used only when is_broker_.
+  PP_ConnectInstance_Func connect_instance_func_;
 
   // Local concept of the module ID. Some functions take this. It's necessary
   // for the in-process PPAPI to handle this properly, but for proxied it's
@@ -68,7 +76,7 @@ class PpapiThread : public ChildThread,
   // See Dispatcher::Delegate::GetGloballySeenInstanceIDSet.
   std::set<PP_Instance> globally_seen_instance_ids_;
 
-  DISALLOW_COPY_AND_ASSIGN(PpapiThread);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(PpapiThread);
 };
 
 #endif  // CONTENT_PPAPI_PLUGIN_PPAPI_THREAD_H_

@@ -21,7 +21,7 @@
  */
 
 /**
- * PP_CompletionCallback_Funct defines the signature that you implmeent to
+ * PP_CompletionCallback_Func defines the signature that you implement to
  * receive callbacks on asynchronous completion.
  */
 typedef void (*PP_CompletionCallback_Func)(void* user_data, int32_t result);

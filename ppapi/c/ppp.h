@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -60,7 +60,6 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module module,
  */
 
 /** PPP_ShutdownModule() is called before the Native Client module is unloaded.
- * Your code must implement this function.
  */
 PP_EXPORT void PPP_ShutdownModule();
 /**
@@ -97,4 +96,3 @@ PP_EXPORT const void* PPP_GetInterface(const char* interface_name);
 #endif
 
 #endif  /* PPAPI_C_PPP_H_ */
-

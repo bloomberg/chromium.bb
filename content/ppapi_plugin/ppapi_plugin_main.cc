@@ -21,7 +21,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
   base::PlatformThread::SetName("CrPPAPIMain");
 
   ChildProcess ppapi_process;
-  ppapi_process.set_main_thread(new PpapiThread());
+  ppapi_process.set_main_thread(new PpapiThread(false));  // Not a broker.
 
   main_message_loop.Run();
   return 0;

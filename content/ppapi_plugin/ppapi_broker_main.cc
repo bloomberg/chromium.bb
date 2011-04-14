@@ -14,15 +14,14 @@
 int PpapiBrokerMain(const MainFunctionParams& parameters) {
   const CommandLine& command_line = parameters.command_line_;
   if (command_line.HasSwitch(switches::kPpapiStartupDialog)) {
-    ChildProcess::WaitForDebugger("Ppapi");
+    ChildProcess::WaitForDebugger("PpapiBroker");
   }
 
   MessageLoop main_message_loop(MessageLoop::TYPE_DEFAULT);
   base::PlatformThread::SetName("CrPPAPIBrokerMain");
 
   ChildProcess ppapi_broker_process;
-  //TODO:(ddorwin): Parameterize PpapiThread so the broker can reuse it.
-  ppapi_broker_process.set_main_thread(new PpapiThread());
+  ppapi_broker_process.set_main_thread(new PpapiThread(true));  // Broker.
 
   main_message_loop.Run();
   return 0;

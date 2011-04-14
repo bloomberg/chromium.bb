@@ -16,21 +16,30 @@
 #include "ppapi/c/ppp.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
-PpapiThread::PpapiThread()
-    : get_plugin_interface_(NULL),
+typedef int32_t (*InitializeBrokerFunc)
+    (PP_ConnectInstance_Func* connect_instance_func);
+
+PpapiThread::PpapiThread(bool is_broker)
+    : is_broker_(is_broker),
+      get_plugin_interface_(NULL),
+      connect_instance_func_(NULL),
       local_pp_module_(
           base::RandInt(0, std::numeric_limits<PP_Module>::max())) {
 }
 
 PpapiThread::~PpapiThread() {
-  if (library_.is_valid()) {
-    // The ShutdownModule function is optional.
-    pp::proxy::Dispatcher::ShutdownModuleFunc shutdown_module =
-        reinterpret_cast<pp::proxy::Dispatcher::ShutdownModuleFunc>(
-            library_.GetFunctionPointer("PPP_ShutdownModule"));
-    if (shutdown_module)
-      shutdown_module();
-  }
+  if (!library_.is_valid())
+    return;
+
+  // The ShutdownModule/ShutdownBroker function is optional.
+  pp::proxy::Dispatcher::ShutdownModuleFunc shutdown_function =
+      is_broker_ ?
+      reinterpret_cast<pp::proxy::Dispatcher::ShutdownModuleFunc>(
+          library_.GetFunctionPointer("PPP_ShutdownBroker")) :
+      reinterpret_cast<pp::proxy::Dispatcher::ShutdownModuleFunc>(
+          library_.GetFunctionPointer("PPP_ShutdownModule"));
+  if (shutdown_function)
+    shutdown_function();
 }
 
 // The "regular" ChildThread implements this function and does some standard
@@ -65,29 +74,50 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
   if (!library.is_valid())
     return;
 
-  // Get the GetInterface function (required).
-  get_plugin_interface_ =
-      reinterpret_cast<pp::proxy::Dispatcher::GetInterfaceFunc>(
-          library.GetFunctionPointer("PPP_GetInterface"));
-  if (!get_plugin_interface_) {
-    LOG(WARNING) << "No PPP_GetInterface in plugin library";
-    return;
-  }
+  if (is_broker_) {
+    // Get the InitializeBroker function (required).
+    InitializeBrokerFunc init_broker =
+        reinterpret_cast<InitializeBrokerFunc>(
+            library.GetFunctionPointer("PPP_InitializeBroker"));
+    if (!init_broker) {
+      LOG(WARNING) << "No PPP_InitializeBroker in plugin library";
+      return;
+    }
 
-  // Get the InitializeModule function (required).
-  pp::proxy::Dispatcher::InitModuleFunc init_module =
-      reinterpret_cast<pp::proxy::Dispatcher::InitModuleFunc>(
-          library.GetFunctionPointer("PPP_InitializeModule"));
-  if (!init_module) {
-    LOG(WARNING) << "No PPP_InitializeModule in plugin library";
-    return;
-  }
-  int32_t init_error = init_module(
-      local_pp_module_,
-      &pp::proxy::PluginDispatcher::GetInterfaceFromDispatcher);
-  if (init_error != PP_OK) {
-    LOG(WARNING) << "InitModule failed with error " << init_error;
-    return;
+    int32_t init_error = init_broker(&connect_instance_func_);
+    if (init_error != PP_OK) {
+      LOG(WARNING) << "InitBroker failed with error " << init_error;
+      return;
+    }
+    if (!connect_instance_func_) {
+      LOG(WARNING) << "InitBroker did not provide PP_ConnectInstance_Func";
+      return;
+    }
+  } else {
+    // Get the GetInterface function (required).
+    get_plugin_interface_ =
+        reinterpret_cast<pp::proxy::Dispatcher::GetInterfaceFunc>(
+            library.GetFunctionPointer("PPP_GetInterface"));
+    if (!get_plugin_interface_) {
+      LOG(WARNING) << "No PPP_GetInterface in plugin library";
+      return;
+    }
+
+    // Get the InitializeModule function (required).
+    pp::proxy::Dispatcher::InitModuleFunc init_module =
+        reinterpret_cast<pp::proxy::Dispatcher::InitModuleFunc>(
+            library.GetFunctionPointer("PPP_InitializeModule"));
+    if (!init_module) {
+      LOG(WARNING) << "No PPP_InitializeModule in plugin library";
+      return;
+    }
+    int32_t init_error = init_module(
+        local_pp_module_,
+        &pp::proxy::PluginDispatcher::GetInterfaceFromDispatcher);
+    if (init_error != PP_OK) {
+      LOG(WARNING) << "InitModule failed with error " << init_error;
+      return;
+    }
   }
 
   library_.Reset(library.Release());
@@ -109,6 +139,11 @@ void PpapiThread::OnMsgCreateChannel(base::ProcessHandle host_process_handle,
 bool PpapiThread::SetupRendererChannel(base::ProcessHandle host_process_handle,
                                        int renderer_id,
                                        IPC::ChannelHandle* handle) {
+  // TODO(ddorwin): PluginProcessDispatcher is overkill for the broker. TBD
+  // whether to create separate dispatcher classes for the broker.
+  // TODO(ddorwin): Provide connect_instance_func_ when is_broker_.
+  DCHECK(is_broker_ == (connect_instance_func_ != NULL));
+  DCHECK(is_broker_ == (get_plugin_interface_ == NULL));
   PluginProcessDispatcher* dispatcher(new PluginProcessDispatcher(
       host_process_handle, get_plugin_interface_));
 
@@ -131,4 +166,3 @@ bool PpapiThread::SetupRendererChannel(base::ProcessHandle host_process_handle,
   // lifetime of the attached channel.
   return true;
 }
-
