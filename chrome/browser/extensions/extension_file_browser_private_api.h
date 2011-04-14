@@ -47,11 +47,36 @@ class FileDialogFunction
 
   FileDialogFunction();
 
-  // Methods to register/unregister <tab_id, listener> tuples.
+  // Register/unregister callbacks.
   // When file selection events occur in a tab, we'll call back the
-  // appropriate listener.
-  static void AddListener(int32 tab_id, SelectFileDialog::Listener* l);
-  static void RemoveListener(int32 tab_id);
+  // appropriate listener with the right params.
+  class Callback {
+   public:
+    Callback(SelectFileDialog::Listener* l, void* p)
+        : listener_(l),
+          params_(p) {
+    }
+    SelectFileDialog::Listener* listener() const { return listener_; }
+    void* params() const { return params_; }
+    bool IsNull() const { return listener_ == NULL; }
+
+    static void Add(int32 tab_id,
+                    SelectFileDialog::Listener* listener,
+                    void* params);
+    static void Remove(int32 tab_id);
+    static const Callback& Find(int32 tab_id);
+
+   private:
+    static const Callback& null() { return null_; }
+
+    SelectFileDialog::Listener* listener_;
+    void* params_;
+
+    // statics.
+    typedef std::map<int32, Callback> Map;
+    static Map map_;
+    static Callback null_;
+  };
 
  protected:
   virtual ~FileDialogFunction();
@@ -62,8 +87,8 @@ class FileDialogFunction
   // Callback with converted local paths.
   virtual void GetLocalPathsResponseOnUIThread() {}
 
-  // Get the listener for the hosting tab.
-  SelectFileDialog::Listener* GetListener() const;
+  // Get the callback for the hosting tab.
+  const Callback& GetCallback() const;
 
   VirtualPathVec virtual_paths_;
   FilePathVec selected_files_;
@@ -71,9 +96,6 @@ class FileDialogFunction
  private:
   // Figure out the tab_id of the hosting tab.
   int32 GetTabId() const;
-
-  typedef std::map<int32, SelectFileDialog::Listener*> ListenerMap;
-  static ListenerMap listener_map_;
 };
 
 // Select a single file.

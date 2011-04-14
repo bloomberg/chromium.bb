@@ -112,31 +112,43 @@ FileDialogFunction::~FileDialogFunction() {
 }
 
 // static
-FileDialogFunction::ListenerMap FileDialogFunction::listener_map_;
+FileDialogFunction::Callback
+FileDialogFunction::Callback::null_(Callback(NULL, NULL));
 
 // static
-void FileDialogFunction::AddListener(int32 tab_id,
-                                     SelectFileDialog::Listener* l) {
-  if (listener_map_.find(tab_id) == listener_map_.end()) {
-    listener_map_.insert(std::make_pair(tab_id, l));
+FileDialogFunction::Callback::Map FileDialogFunction::Callback::map_;
+
+// static
+void FileDialogFunction::Callback::Add(int32 tab_id,
+                                     SelectFileDialog::Listener* listener,
+                                     void* params) {
+  if (map_.find(tab_id) == map_.end()) {
+    map_.insert(std::make_pair(tab_id, Callback(listener, params)));
   } else {
-    DLOG_ASSERT("FileDialogFunction::AddListener tab_id already present");
+    DLOG_ASSERT("FileDialogFunction::AddCallback tab_id already present");
   }
 }
 
 // static
-void FileDialogFunction::RemoveListener(int32 tab_id) {
-  listener_map_.erase(tab_id);
+void FileDialogFunction::Callback::Remove(int32 tab_id) {
+  map_.erase(tab_id);
 }
+
+// static
+const FileDialogFunction::Callback&
+FileDialogFunction::Callback::Find(int32 tab_id) {
+  Callback::Map::const_iterator it = map_.find(tab_id);
+  return (it == map_.end()) ? null_ : it->second;
+}
+
 
 int32 FileDialogFunction::GetTabId() const {
   return dispatcher()->delegate()->associated_tab_contents()->
     controller().session_id().id();
 }
 
-SelectFileDialog::Listener* FileDialogFunction::GetListener() const {
-  ListenerMap::const_iterator it = listener_map_.find(GetTabId());
-  return (it == listener_map_.end()) ? NULL : it->second;
+const FileDialogFunction::Callback& FileDialogFunction::GetCallback() const {
+  return Callback::Find(GetTabId());
 }
 
 // GetFileSystemRootPathOnFileThread can only be called from the file thread,
@@ -199,9 +211,12 @@ void SelectFileFunction::GetLocalPathsResponseOnUIThread() {
 
   int index;
   args_->GetInteger(1, &index);
-  SelectFileDialog::Listener* listener = GetListener();
-  if (listener) {
-    listener->FileSelected(selected_files_[0], index, NULL);
+  const Callback& callback = GetCallback();
+  DCHECK(!callback.IsNull());
+  if (!callback.IsNull()) {
+    callback.listener()->FileSelected(selected_files_[0],
+                                      index,
+                                      callback.params());
   }
 }
 
@@ -237,16 +252,18 @@ bool SelectFilesFunction::RunImpl() {
 void SelectFilesFunction::GetLocalPathsResponseOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  SelectFileDialog::Listener* listener = GetListener();
-  if (listener) {
-    listener->MultiFilesSelected(selected_files_, NULL);
+  const Callback& callback = GetCallback();
+  DCHECK(!callback.IsNull());
+  if (!callback.IsNull()) {
+    callback.listener()->MultiFilesSelected(selected_files_, callback.params());
   }
 }
 
 bool CancelFileDialogFunction::RunImpl() {
-  SelectFileDialog::Listener* listener = GetListener();
-  if (listener) {
-    listener->FileSelectionCanceled(NULL);
+  const Callback& callback = GetCallback();
+  DCHECK(!callback.IsNull());
+  if (!callback.IsNull()) {
+    callback.listener()->FileSelectionCanceled(callback.params());
   }
 
   return true;
