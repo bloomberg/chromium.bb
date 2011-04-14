@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/file_path_watcher/file_path_watcher.h"
+#include "base/files/file_path_watcher.h"
 
 #include <fcntl.h>
 #include <sys/event.h>
@@ -14,6 +14,9 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/stringprintf.h"
+
+namespace base {
+namespace files {
 
 namespace {
 
@@ -485,3 +488,6 @@ void FilePathWatcherImpl::CancelOnMessageLoopThread() {
 FilePathWatcher::FilePathWatcher() {
   impl_ = new FilePathWatcherImpl();
 }
+
+}  // namespace files
+}  // namespace base

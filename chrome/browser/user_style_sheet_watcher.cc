@@ -9,6 +9,8 @@
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 
+using ::base::files::FilePathWatcher;
+
 namespace {
 
 // The subdirectory of the profile that contains the style sheet.

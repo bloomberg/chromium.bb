@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/file_path_watcher/file_path_watcher.h"
+#include "base/files/file_path_watcher.h"
 
 #include <errno.h>
 #include <string.h>
@@ -28,6 +28,9 @@
 #include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
+
+namespace base {
+namespace files {
 
 namespace {
 
@@ -454,3 +457,6 @@ bool FilePathWatcherImpl::UpdateWatches() {
 FilePathWatcher::FilePathWatcher() {
   impl_ = new FilePathWatcherImpl();
 }
+
+}  // namespace files
+}  // namespace base

@@ -2372,6 +2372,9 @@
         'test/out_of_proc_test_runner.cc',
         'test/render_view_test.cc',
         'test/render_view_test.h',
+        # TODO(craig): Rename this and run from base_unittests when the test
+        # is safe to run there. See http://crbug.com/78722 for details.
+        '../base/files/file_path_watcher_browsertest.cc',
         '../content/browser/child_process_security_policy_browsertest.cc',
         '../content/browser/device_orientation/device_orientation_browsertest.cc',
         '../content/browser/in_process_webkit/dom_storage_browsertest.cc',
@@ -2387,7 +2390,6 @@
         '../content/browser/webui/web_ui_browsertest.h',
         '../content/browser/webui/web_ui_test_handler.cc',
         '../content/browser/webui/web_ui_test_handler.h',
-        '../content/common/file_path_watcher/file_path_watcher_browsertest.cc',
         '../content/renderer/render_view_browsertest.cc',
         '../content/renderer/render_view_browsertest_mac.mm',
         '../content/renderer/render_widget_browsertest.cc',

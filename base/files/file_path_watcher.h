@@ -4,14 +4,17 @@
 
 // This module provides a way to monitor a file or directory for changes.
 
-#ifndef CONTENT_COMMON_FILE_PATH_WATCHER_FILE_PATH_WATCHER_H_
-#define CONTENT_COMMON_FILE_PATH_WATCHER_FILE_PATH_WATCHER_H_
+#ifndef BASE_FILES_FILE_PATH_WATCHER_H_
+#define BASE_FILES_FILE_PATH_WATCHER_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
+
+namespace base {
+namespace files {
 
 // This class lets you register interest in changes on a FilePath.
 // The delegate will get called whenever the file or directory referenced by the
@@ -119,4 +122,7 @@ class FilePathWatcher {
   DISALLOW_COPY_AND_ASSIGN(FilePathWatcher);
 };
 
-#endif  // CONTENT_COMMON_FILE_PATH_WATCHER_FILE_PATH_WATCHER_H_
+}  // namespace files
+}  // namespace base
+
+#endif  // BASE_FILES_FILE_PATH_WATCHER_H_

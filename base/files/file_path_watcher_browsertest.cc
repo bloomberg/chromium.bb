@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/file_path_watcher/file_path_watcher.h"
+#include "base/files/file_path_watcher.h"
 
 #include <set>
 
@@ -27,6 +27,9 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace base {
+namespace files {
 
 namespace {
 
@@ -614,3 +617,6 @@ TEST_F(FilePathWatcherTest, DirAttributesChanged) {
 
 #endif  // OS_MACOSX
 }  // namespace
+
+}  // namespace files
+}  // namespace base

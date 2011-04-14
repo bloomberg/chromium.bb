@@ -73,11 +73,6 @@
         'common/dx_diag_node.cc',
         'common/dx_diag_node.h',
         'common/edit_command.h',
-        'common/file_path_watcher/file_path_watcher.cc',
-        'common/file_path_watcher/file_path_watcher.h',
-        'common/file_path_watcher/file_path_watcher_inotify.cc',
-        'common/file_path_watcher/file_path_watcher_mac.cc',
-        'common/file_path_watcher/file_path_watcher_win.cc',
         'common/file_system/file_system_dispatcher.cc',
         'common/file_system/file_system_dispatcher.h',
         'common/file_system/webfilesystem_callback_dispatcher.cc',
@@ -232,16 +227,6 @@
           'dependencies': [
             '../third_party/angle/src/build_angle.gyp:libEGL',
             '../third_party/angle/src/build_angle.gyp:libGLESv2',
-          ],
-        }],
-        ['OS!="linux"', {
-          'sources!': [
-            'common/file_path_watcher/file_path_watcher_inotify.cc',
-          ],
-        }],
-        ['OS=="freebsd" or OS=="openbsd"', {
-          'sources': [
-            'common/file_path_watcher/file_path_watcher_stub.cc',
           ],
         }],
         ['OS=="mac"', {

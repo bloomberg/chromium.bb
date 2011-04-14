@@ -29,6 +29,8 @@
 #include "chrome/common/launchd_mac.h"
 #include "content/common/child_process_host.h"
 
+using ::base::files::FilePathWatcher;
+
 namespace {
 
 #define kServiceProcessSessionType "Background"

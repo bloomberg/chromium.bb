@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/file_path_watcher/file_path_watcher.h"
+#include "base/files/file_path_watcher.h"
 
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -11,6 +11,9 @@
 #include "base/message_loop_proxy.h"
 #include "base/time.h"
 #include "base/win/object_watcher.h"
+
+namespace base {
+namespace files {
 
 namespace {
 
@@ -202,6 +205,7 @@ bool FilePathWatcherImpl::SetupWatchHandle(const FilePath& dir,
       error_code != ERROR_ACCESS_DENIED &&
       error_code != ERROR_SHARING_VIOLATION &&
       error_code != ERROR_DIRECTORY) {
+    using ::operator<<; // Pick the right operator<< below.
     PLOG(ERROR) << "FindFirstChangeNotification failed for "
                 << dir.value();
     return false;
@@ -272,3 +276,6 @@ void FilePathWatcherImpl::DestroyWatch() {
 FilePathWatcher::FilePathWatcher() {
   impl_ = new FilePathWatcherImpl();
 }
+
+}  // namespace files
+}  // namespace base

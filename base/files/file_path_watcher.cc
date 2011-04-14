@@ -5,10 +5,13 @@
 // Cross platform methods for FilePathWatcher. See the various platform
 // specific implementation files, too.
 
-#include "content/common/file_path_watcher/file_path_watcher.h"
+#include "base/files/file_path_watcher.h"
 
 #include "base/logging.h"
 #include "base/message_loop.h"
+
+namespace base {
+namespace files {
 
 FilePathWatcher::~FilePathWatcher() {
   impl_->Cancel();
@@ -26,3 +29,5 @@ FilePathWatcher::PlatformDelegate::~PlatformDelegate() {
   DCHECK(is_cancelled());
 }
 
+}  // namespace files
+}  // namespace base

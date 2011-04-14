@@ -38,6 +38,10 @@
 #include "chrome/browser/chromeos/plugin_selection_policy.h"
 #endif
 
+#if defined(OS_LINUX)
+using ::base::files::FilePathWatcher;
+#endif
+
 #if defined(OS_MACOSX)
 static void NotifyPluginsOfActivation() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -147,7 +151,6 @@ PluginService::PluginService()
       &plugin_dirs);
 
   for (size_t i = 0; i < plugin_dirs.size(); ++i) {
-    FilePathWatcher* watcher = new FilePathWatcher();
     // FilePathWatcher can not handle non-absolute paths under windows.
     // We don't watch for file changes in windows now but if this should ever
     // be extended to Windows these lines might save some time of debugging.
@@ -155,6 +158,7 @@ PluginService::PluginService()
     if (!plugin_dirs[i].IsAbsolute())
       continue;
 #endif
+    FilePathWatcher* watcher = new FilePathWatcher();
     VLOG(1) << "Watching for changes in: " << plugin_dirs[i].value();
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,

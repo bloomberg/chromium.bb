@@ -5,7 +5,12 @@
 // This file exists for Unix systems which don't have the inotify headers, and
 // thus cannot build file_watcher_inotify.cc
 
-#include "chrome/common/file_path_watcher/file_path_watcher.h"
+#include "base/files/file_path_watcher.h"
+
+namespace base {
+namespace files {
+
+namespace {
 
 class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
  public:
@@ -16,6 +21,11 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
   }
 };
 
+}  // namespace
+
 FilePathWatcher::FilePathWatcher() {
   impl_ = new FilePathWatcherImpl();
 }
+
+}  // namespace files
+}  // namespace base

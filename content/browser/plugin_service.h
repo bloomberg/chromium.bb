@@ -34,7 +34,7 @@
 #endif
 
 #if defined(OS_LINUX)
-#include "content/common/file_path_watcher/file_path_watcher.h"
+#include "base/files/file_path_watcher.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -177,9 +177,9 @@ class PluginService
 #if defined(OS_LINUX)
   // Registers a new FilePathWatcher for a given path.
   static void RegisterFilePathWatcher(
-      FilePathWatcher* watcher,
+      base::files::FilePathWatcher* watcher,
       const FilePath& path,
-      FilePathWatcher::Delegate* delegate);
+      base::files::FilePathWatcher::Delegate* delegate);
 #endif
 
   // The main thread's message loop.
@@ -210,7 +210,7 @@ class PluginService
 #endif
 
 #if defined(OS_LINUX)
-  ScopedVector<FilePathWatcher> file_watchers_;
+  ScopedVector<base::files::FilePathWatcher> file_watchers_;
   scoped_refptr<PluginDirWatcherDelegate> file_watcher_delegate_;
 #endif
 

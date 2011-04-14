@@ -7,6 +7,8 @@
 #include "base/compiler_specific.h"
 #include "content/browser/browser_thread.h"
 
+using ::base::files::FilePathWatcher;
+
 namespace {
 
 // Amount of time we wait for the files on disk to settle before trying to load

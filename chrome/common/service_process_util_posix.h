@@ -20,8 +20,8 @@ MultiProcessLock* TakeServiceRunningLock(bool waiting);
 #endif  // OS_LINUX
 
 #if defined(OS_MACOSX)
+#include "base/files/file_path_watcher.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "content/common/file_path_watcher/file_path_watcher.h"
 
 class CommandLine;
 CFDictionaryRef CreateServiceProcessLaunchdPlist(CommandLine* cmd_line,
@@ -70,7 +70,7 @@ struct ServiceProcessState::StateData
   bool WatchExecutable();
 
   base::mac::ScopedCFTypeRef<CFDictionaryRef> launchd_conf_;
-  FilePathWatcher executable_watcher_;
+  base::files::FilePathWatcher executable_watcher_;
 #endif  // OS_MACOSX
 #if defined(OS_LINUX)
   scoped_ptr<MultiProcessLock> initializing_lock_;

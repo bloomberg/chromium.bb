@@ -7,10 +7,10 @@
 #pragma once
 
 #include "base/file_path.h"
+#include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/file_path_watcher/file_path_watcher.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -48,7 +48,7 @@ class UserStyleSheetWatcher
   scoped_refptr<UserStyleSheetLoader> loader_;
 
   // Watches for changes to the css file so we can reload the style sheet.
-  scoped_ptr<FilePathWatcher> file_watcher_;
+  scoped_ptr<base::files::FilePathWatcher> file_watcher_;
 
   NotificationRegistrar registrar_;
 
