@@ -92,6 +92,7 @@ function onLoaded() {
                               'hstsQueryInput', 'hstsQueryForm',
                               'hstsQueryOutput',
                               'hstsAddInput', 'hstsAddForm', 'hstsCheckInput',
+                              'hstsAddPins',
                               'hstsDeleteInput', 'hstsDeleteForm');
 
   var httpCacheView = new HttpCacheView('httpCacheTabContent',
@@ -324,8 +325,10 @@ BrowserBridge.prototype.sendHSTSQuery = function(domain) {
   chrome.send('hstsQuery', [domain]);
 };
 
-BrowserBridge.prototype.sendHSTSAdd = function(domain, include_subdomains) {
-  chrome.send('hstsAdd', [domain, include_subdomains]);
+BrowserBridge.prototype.sendHSTSAdd = function(domain,
+                                               include_subdomains,
+                                               pins) {
+  chrome.send('hstsAdd', [domain, include_subdomains, pins]);
 };
 
 BrowserBridge.prototype.sendHSTSDelete = function(domain) {

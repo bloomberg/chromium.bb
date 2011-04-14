@@ -387,7 +387,9 @@ function displayHelpForBugDump() {
       <form id=hstsAddForm>
         Domain: <input type=text id=hstsAddInput type="url"
                  placeholder="example.com"/><br/>
-        Include subdomains: <input type="checkbox" id=hstsCheckInput />
+        Include subdomains: <input type="checkbox" id=hstsCheckInput /><br/>
+        Public key fingerprints: <input type=text id=hstsAddPins style="width: 25em;"/><br/>
+        <p style="font-size: small; color: gray; font-style: italic; margin-left: 2em; max-width: 40em;">(public key fingerprints are comma separated and consist of the hash function followed by a foreslash and the base64 encoded fingerprint, for example <tt>sha1/Guzek9lMwR3KeIS8wwS9gBvVtIg=</tt>)</p>
         <input type=submit value="Add" />
       </form>
 

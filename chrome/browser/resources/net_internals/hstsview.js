@@ -11,13 +11,14 @@
  *  @constructor
  */
 function HSTSView(mainBoxId, queryInputId, formId, queryOutputDivId,
-                  addInputId, addFormId, addCheckId,
+                  addInputId, addFormId, addCheckId, addPinsId,
                   deleteInputId, deleteFormId) {
   DivView.call(this, mainBoxId);
 
   this.queryInput_ = document.getElementById(queryInputId);
   this.addCheck_ = document.getElementById(addCheckId);
   this.addInput_ = document.getElementById(addInputId);
+  this.addPins_ = document.getElementById(addPinsId);
   this.deleteInput_ = document.getElementById(deleteInputId);
   this.queryOutputDiv_ = document.getElementById(queryOutputDivId);
 
@@ -39,11 +40,14 @@ HSTSView.prototype.onSubmitQuery_ = function(event) {
 };
 
 HSTSView.prototype.onSubmitAdd_ = function(event) {
-  g_browser.sendHSTSAdd(this.addInput_.value, this.addCheck_.checked);
+  g_browser.sendHSTSAdd(this.addInput_.value,
+                        this.addCheck_.checked,
+                        this.addPins_.value);
   g_browser.sendHSTSQuery(this.addInput_.value);
   this.queryInput_.value = this.addInput_.value;
   this.addCheck_.checked = false;
   this.addInput_.value = '';
+  this.addPins_.value = '';
   event.preventDefault();
 };
 
@@ -113,6 +117,11 @@ HSTSView.prototype.onHSTSQueryResult = function(result) {
 
   t = addNode(this.queryOutputDiv_, 'tt');
   t.innerText = result.preloaded;
+
+  addTextNode(this.queryOutputDiv_, ' pubkey_hashes:');
+
+  t = addNode(this.queryOutputDiv_, 'tt');
+  t.innerText = result.public_key_hashes;
 
   yellowFade(this.queryOutputDiv_);
 }

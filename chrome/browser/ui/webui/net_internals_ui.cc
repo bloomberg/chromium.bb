@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/memory/singleton.h"
@@ -16,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -46,6 +48,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/sys_addrinfo.h"
+#include "net/base/x509_cert_types.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_alternate_protocols.h"
 #include "net/http/http_cache.h"
@@ -1065,6 +1068,20 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
         result->SetBoolean("subdomains", state.include_subdomains);
         result->SetBoolean("preloaded", state.preloaded);
         result->SetString("domain", state.domain);
+
+        std::vector<std::string> parts;
+        for (std::vector<net::SHA1Fingerprint>::const_iterator
+             i = state.public_key_hashes.begin();
+             i != state.public_key_hashes.end(); i++) {
+          std::string part = "sha1/";
+          std::string hash_str(reinterpret_cast<const char*>(i->data),
+                               sizeof(i->data));
+          std::string b64;
+          base::Base64Encode(hash_str, &b64);
+          part += b64;
+          parts.push_back(part);
+        }
+        result->SetString("public_key_hashes", JoinString(parts, ','));
       }
     }
   }
@@ -1074,7 +1091,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnHSTSAdd(
     const ListValue* list) {
-  // |list| should be: [<domain to query>, <include subdomains>].
+  // |list| should be: [<domain to query>, <include subdomains>, <cert pins>].
   std::string domain;
   CHECK(list->GetString(0, &domain));
   if (!IsStringASCII(domain)) {
@@ -1084,6 +1101,8 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSAdd(
   }
   bool include_subdomains;
   CHECK(list->GetBoolean(1, &include_subdomains));
+  std::string hashes_str;
+  CHECK(list->GetString(2, &hashes_str));
 
   net::TransportSecurityState* transport_security_state =
       context_getter_->GetURLRequestContext()->transport_security_state();
@@ -1093,6 +1112,27 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSAdd(
   net::TransportSecurityState::DomainState state;
   state.expiry = state.created + base::TimeDelta::FromDays(1000);
   state.include_subdomains = include_subdomains;
+  state.public_key_hashes.clear();
+  if (!hashes_str.empty()) {
+    std::vector<std::string> type_and_b64s;
+    base::SplitString(hashes_str, ',', &type_and_b64s);
+    for (std::vector<std::string>::const_iterator
+         i = type_and_b64s.begin(); i != type_and_b64s.end(); i++) {
+      std::string type_and_b64;
+      RemoveChars(*i, " \t\r\n", &type_and_b64);
+      if (type_and_b64.find("sha1/") != 0)
+        continue;
+      std::string b64 = type_and_b64.substr(5, type_and_b64.size() - 5);
+      std::string hash_str;
+      if (!base::Base64Decode(b64, &hash_str))
+        continue;
+      net::SHA1Fingerprint hash;
+      if (hash_str.size() != sizeof(hash.data))
+        continue;
+      memcpy(hash.data, hash_str.data(), sizeof(hash.data));
+      state.public_key_hashes.push_back(hash);
+    }
+  }
 
   transport_security_state->EnableHost(domain, state);
 }
