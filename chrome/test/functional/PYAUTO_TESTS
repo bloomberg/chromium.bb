@@ -266,6 +266,8 @@
       '-omnibox.OmniboxTest.testGoogleSearch',
       '-omnibox.OmniboxTest.testInlinAutoComplete',
       '-omnibox.OmniboxTest.testSuggest',
+      '-popups.PopupsTest.testAllowPopupsFromExternalSite',
+      '-popups.PopupsTest.testPopupsLaunchWhenTabIsClosed',
       '-sync',
     ],
   },
