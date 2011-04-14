@@ -17,7 +17,7 @@ def Main(args):
   proc = subprocess.Popen([objdump, '-d', obj_file], stdout=subprocess.PIPE)
   for line in proc.stdout:
     if '%gs' in line:
-      print '%gs use found: %s' % line
+      print '%%gs use found: %s' % line
       print 'This looks like an x86-32 direct TLS use.'
       print 'Such uses are disallowed by the IRT execution context constraints.'
       print 'These never happen if -mtls-use-call is used in the compilation.'
