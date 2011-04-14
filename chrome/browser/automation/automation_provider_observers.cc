@@ -799,11 +799,15 @@ void ExtensionTestResultNotificationObserver::MaybeSendResult() {
 }
 
 BrowserOpenedNotificationObserver::BrowserOpenedNotificationObserver(
-    AutomationProvider* automation, IPC::Message* reply_message)
+    AutomationProvider* automation,
+    IPC::Message* reply_message)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
+      new_window_id_(extension_misc::kUnknownWindowId),
       for_browser_command_(false) {
   registrar_.Add(this, NotificationType::BROWSER_OPENED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::LOAD_STOP,
                  NotificationService::AllSources());
 }
 
@@ -818,13 +822,23 @@ void BrowserOpenedNotificationObserver::Observe(
     return;
   }
 
-  if (type == NotificationType::BROWSER_OPENED) {
-    if (for_browser_command_) {
-      AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message_.get(),
-                                                           true);
+  if (type.value == NotificationType::BROWSER_OPENED) {
+    // Store the new browser ID and continue waiting for a new tab within it
+    // to stop loading.
+    new_window_id_ = ExtensionTabUtil::GetWindowId(
+        Source<Browser>(source).ptr());
+  } else if (type.value == NotificationType::LOAD_STOP) {
+    // Only send the result if the loaded tab is in the new window.
+    int window_id = Source<NavigationController>(source)->window_id().id();
+    if (window_id == new_window_id_) {
+      if (for_browser_command_) {
+        AutomationMsg_WindowExecuteCommand::WriteReplyParams(
+            reply_message_.get(), true);
+      }
+      automation_->Send(reply_message_.release());
+      delete this;
+      return;
     }
-    automation_->Send(reply_message_.release());
-    delete this;
   } else {
     NOTREACHED();
   }

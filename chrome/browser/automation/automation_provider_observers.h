@@ -419,6 +419,8 @@ class ExtensionTestResultNotificationObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(ExtensionTestResultNotificationObserver);
 };
 
+// Observes when a new browser has been opened and a tab within it has stopped
+// loading.
 class BrowserOpenedNotificationObserver : public NotificationObserver {
  public:
   BrowserOpenedNotificationObserver(AutomationProvider* automation,
@@ -435,6 +437,7 @@ class BrowserOpenedNotificationObserver : public NotificationObserver {
   NotificationRegistrar registrar_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
+  int new_window_id_;
   bool for_browser_command_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserOpenedNotificationObserver);

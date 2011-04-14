@@ -205,18 +205,21 @@ def StripUnmatchedKeys(item_to_strip, reference_item):
 
 def StringContentCheck(test, content_string, have_list, nothave_list):
   """Check for the presence or absence of strings within content.
-  Confirm all strings in have_list are found in content_strings.
-  Confirm all strings in nothave_list are not found in content_strings.
+
+  Confirm all strings in |have_list| are found in |content_string|.
+  Confirm all strings in |nothave_list| are not found in |content_string|.
 
   Args:
-    content_string: string to search for within content
-    have_list: list of strings found within content
-    nothave_list: list of strings not found within content
+    content_string: string containing the content to check.
+    have_list: list of strings expected to be found within the content.
+    nothave_list: list of strings expected to not be found within the content.
   """
   for s in have_list:
-    test.assertTrue(s in content_string, s)
+    test.assertTrue(s in content_string,
+                    msg='"%s" missing from content.' % s)
   for s in nothave_list:
-    test.assertTrue(s not in content_string)
+    test.assertTrue(s not in content_string,
+                    msg='"%s" unexpectedly contained in content.' % s)
 
 
 def CallFunctionWithNewTimeout(self, new_timeout, function):
