@@ -828,7 +828,14 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
     if (policy->IsWebSafeScheme(url.scheme()) ||
         url.SchemeIs(chrome::kFileScheme)) {
 
-      RecordCmdLineAppHistogram();
+      if (profile->GetExtensionService()->IsInstalledApp(url)) {
+        RecordCmdLineAppHistogram();
+      } else {
+        UMA_HISTOGRAM_ENUMERATION(
+            extension_misc::kAppLaunchHistogram,
+            extension_misc::APP_LAUNCH_CMD_LINE_APP_LEGACY,
+            extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+      }
       TabContents* app_tab = Browser::OpenAppShortcutWindow(
           profile,
           url,

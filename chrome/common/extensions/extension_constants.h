@@ -343,6 +343,11 @@ namespace extension_misc {
     // App launched after the user re-enabled it on the NTP.
     APP_LAUNCH_NTP_APP_RE_ENABLE,
 
+    // URL launched using the --app cmd line option, but the URL does not
+    // correspond to an installed app. These launches are left over from a
+    // feature that let you make desktop shortcuts from the file menu.
+    APP_LAUNCH_CMD_LINE_APP_LEGACY,
+
     APP_LAUNCH_BUCKET_BOUNDARY,
     APP_LAUNCH_BUCKET_INVALID
   };
