@@ -70,6 +70,12 @@ ALTGR_TEMPLATE="""// These are the overlay names of layouts that shouldn't
 const char* kKeepRightAltOverlays[] = {
 %s
 };
+
+// These are the overlay names with caps lock remapped
+const char* kCapsLockRemapped[] = {
+%s
+};
+
 """
 
 def SplitBehavior(behavior):
@@ -338,16 +344,28 @@ def OutputCC(hotkey_data, outfile):
 def OutputAltGr(keyboard_glyph_data, outfile):
   """Outputs the keyboard overlay data as a JSON file."""
   print 'Generating: %s' % outfile
-  output = []
+
+  altgr_output = []
+  capslock_output = []
+
   for layout in keyboard_glyph_data.keys():
     try:
       right_alt = keyboard_glyph_data[layout]["keys"]["E0 38"]["key"].strip()
       if right_alt.lower() == "alt gr":
-        output.append('  "%s",' % layout)
+        altgr_output.append('  "%s",' % layout)
     except KeyError:
       pass
+
+    try:
+      caps_lock = keyboard_glyph_data[layout]["keys"]["E0 5B"]["key"].strip()
+      if caps_lock.lower() != "glyph_search":
+        capslock_output.append('  "%s",' % layout)
+    except KeyError:
+      pass
+
   out = file(outfile, 'w')
-  out.write(ALTGR_TEMPLATE % "\n".join(output))
+  out.write(ALTGR_TEMPLATE % (
+      "\n".join(altgr_output), "\n".join(capslock_output)))
 
 
 
