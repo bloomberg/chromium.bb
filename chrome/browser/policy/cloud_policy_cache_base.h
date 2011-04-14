@@ -62,7 +62,18 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
     return last_policy_refresh_time_;
   }
 
+  // Get the version of the encryption key currently used for decoding policy.
+  // Returns true if the version is available, in which case |version| is filled
+  // in.
+  bool GetPublicKeyVersion(int* version);
+
  protected:
+  // Wraps public key version and validity.
+  struct PublicKeyVersion {
+    int version;
+    bool valid;
+  };
+
   // Decodes the given |policy| using |DecodePolicyResponse()|, applies the
   // contents to |{mandatory,recommended}_policy_|, and notifies observers.
   // |timestamp| returns the timestamp embedded in |policy|, callers can pass
@@ -86,7 +97,8 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
   bool DecodePolicyResponse(const em::PolicyFetchResponse& policy_response,
                             PolicyMap* mandatory,
                             PolicyMap* recommended,
-                            base::Time* timestamp);
+                            base::Time* timestamp,
+                            PublicKeyVersion* public_key_version);
 
   void InformNotifier(CloudPolicySubsystem::PolicySubsystemState state,
                       CloudPolicySubsystem::ErrorDetails error_details);
@@ -127,6 +139,9 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
 
   // Whether the the server has indicated this device is unmanaged.
   bool is_unmanaged_;
+
+  // Currently used public key version, if available.
+  PublicKeyVersion public_key_version_;
 
   // Provider observers that are registered with this cache's providers.
   ObserverList<ConfigurationPolicyProvider::Observer, true> observer_list_;

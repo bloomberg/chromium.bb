@@ -250,6 +250,9 @@ void CloudPolicyController::SendPolicyRequest() {
         cache_->last_policy_refresh_time() - base::Time::UnixEpoch();
     fetch_request->set_timestamp(timestamp.InMilliseconds());
   }
+  int key_version = 0;
+  if (cache_->GetPublicKeyVersion(&key_version))
+    fetch_request->set_public_key_version(key_version);
 
   backend_->ProcessPolicyRequest(identity_strategy_->GetDeviceToken(),
                                  identity_strategy_->GetDeviceID(),

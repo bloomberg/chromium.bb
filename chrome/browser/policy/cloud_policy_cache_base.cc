@@ -58,6 +58,7 @@ CloudPolicyCacheBase::CloudPolicyCacheBase()
     : notifier_(NULL),
       initialization_complete_(false),
       is_unmanaged_(false) {
+  public_key_version_.valid = false;
   managed_policy_provider_.reset(
       new CloudPolicyProvider(
           ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
@@ -75,6 +76,13 @@ CloudPolicyCacheBase::~CloudPolicyCacheBase() {
                     observer_list_, OnProviderGoingAway());
 }
 
+bool CloudPolicyCacheBase::GetPublicKeyVersion(int* version) {
+  if (public_key_version_.valid)
+    *version = public_key_version_.version;
+
+  return public_key_version_.valid;
+}
+
 bool CloudPolicyCacheBase::SetPolicyInternal(
     const em::PolicyFetchResponse& policy,
     base::Time* timestamp,
@@ -85,8 +93,9 @@ bool CloudPolicyCacheBase::SetPolicyInternal(
   PolicyMap mandatory_policy;
   PolicyMap recommended_policy;
   base::Time temp_timestamp;
+  PublicKeyVersion temp_public_key_version;
   bool ok = DecodePolicyResponse(policy, &mandatory_policy, &recommended_policy,
-                                 &temp_timestamp);
+                                 &temp_timestamp, &temp_public_key_version);
   if (!ok) {
     LOG(WARNING) << "Decoding policy data failed.";
     return false;
@@ -99,6 +108,8 @@ bool CloudPolicyCacheBase::SetPolicyInternal(
     LOG(WARNING) << "Rejected policy data, file is from the future.";
     return false;
   }
+  public_key_version_.version = temp_public_key_version.version;
+  public_key_version_.valid = temp_public_key_version.valid;
 
   const bool new_policy_differs =
       !mandatory_policy_.Equals(mandatory_policy) ||
@@ -119,6 +130,7 @@ bool CloudPolicyCacheBase::SetPolicyInternal(
 void CloudPolicyCacheBase::SetUnmanagedInternal(const base::Time& timestamp) {
   is_unmanaged_ = true;
   initialization_complete_ = true;
+  public_key_version_.valid = false;
   mandatory_policy_.Clear();
   recommended_policy_.Clear();
   last_policy_refresh_time_ = timestamp;
@@ -142,7 +154,8 @@ bool CloudPolicyCacheBase::DecodePolicyResponse(
     const em::PolicyFetchResponse& policy_response,
     PolicyMap* mandatory,
     PolicyMap* recommended,
-    base::Time* timestamp) {
+    base::Time* timestamp,
+    PublicKeyVersion* public_key_version) {
   std::string data = policy_response.policy_data();
   em::PolicyData policy_data;
   if (!policy_data.ParseFromString(data)) {
@@ -153,6 +166,12 @@ bool CloudPolicyCacheBase::DecodePolicyResponse(
     *timestamp = base::Time::UnixEpoch() +
                  base::TimeDelta::FromMilliseconds(policy_data.timestamp());
   }
+  if (public_key_version) {
+    public_key_version->valid = policy_data.has_public_key_version();
+    if (public_key_version->valid)
+      public_key_version->version = policy_data.public_key_version();
+  }
+
   return DecodePolicyData(policy_data, mandatory, recommended);
 }
 
