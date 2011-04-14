@@ -1,7 +1,7 @@
 
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 import os
 import hashlib
@@ -134,7 +134,6 @@ def NaClSourceSubset(input_tree):
       "native_client/tools/test_lib.py",
       "native_client/tools/tests",
       "third_party/gles2_book",
-      "third_party/npapi",
       "third_party/pylib",
       "third_party/scons-2.0.1",
       # Pulled in from SVN repos via DEPS
