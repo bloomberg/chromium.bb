@@ -207,7 +207,8 @@ class AutofillEntryFactory : public AbstractAutofillFactory {
       ProfileMock* profile,
       ProfileSyncService* service) {
     return new AutofillDataTypeController(factory,
-        profile);
+        profile,
+        service);
   }
 
   void SetExpectation(ProfileSyncFactoryMock* factory,
@@ -227,7 +228,8 @@ class AutofillProfileFactory : public AbstractAutofillFactory {
       ProfileMock* profile,
       ProfileSyncService* service) {
     return new AutofillProfileDataTypeController(factory,
-        profile);
+        profile,
+        service);
    }
 
   void SetExpectation(ProfileSyncFactoryMock* factory,
@@ -300,8 +302,6 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     service_.reset(
         new TestProfileSyncService(&factory_, &profile_, "test_user", false,
                                    task));
-    EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
-        Return(service_.get()));
     AutofillDataTypeController* data_type_controller =
         factory->CreateDataTypeController(&factory_,
             &profile_,
@@ -670,6 +670,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeEntriesEmptySync) {
 }
 
 TEST_F(ProfileSyncServiceAutofillTest, HasProfileEmptySync) {
+
   std::vector<AutofillProfile*> profiles;
   std::vector<AutofillProfile> expected_profiles;
   // Owned by GetAutofillProfiles caller.
