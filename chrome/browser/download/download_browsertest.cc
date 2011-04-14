@@ -253,6 +253,11 @@ class DownloadTest : public InProcessBrowserTest {
 
  protected:
 
+  enum SizeTestType {
+    SIZE_TEST_TYPE_KNOWN,
+    SIZE_TEST_TYPE_UNKNOWN,
+  };
+
   // Must be called after browser creation.  Creates a temporary
   // directory for downloads that is auto-deleted on destruction.
   // Returning false indicates a failure of the function, and should be asserted
@@ -368,14 +373,28 @@ class DownloadTest : public InProcessBrowserTest {
     return downloaded_file_deleted;
   }
 
-  // TODO(ahendrickson) -- |expected_title_in_progress| and
-  // |expected_title_finished| need to be checked.
   bool RunSizeTest(Browser* browser,
-                   const GURL& url,
-                   const string16& expected_title_in_progress,
-                   const string16& expected_title_finished) {
+                   SizeTestType type,
+                   const std::string& partial_indication,
+                   const std::string& total_indication) {
     if (!InitialSetup(false))
       return false;
+
+    EXPECT_TRUE(type == SIZE_TEST_TYPE_UNKNOWN || type == SIZE_TEST_TYPE_KNOWN);
+    if (type != SIZE_TEST_TYPE_KNOWN && type != SIZE_TEST_TYPE_UNKNOWN)
+      return false;
+    GURL url(type == SIZE_TEST_TYPE_KNOWN ?
+             URLRequestSlowDownloadJob::kKnownSizeUrl :
+             URLRequestSlowDownloadJob::kUnknownSizeUrl);
+
+  // TODO(ahendrickson) -- |expected_title_in_progress| and
+  // |expected_title_finished| need to be checked.
+    FilePath filename;
+    net::FileURLToFilePath(url, &filename);
+    string16 expected_title_in_progress(
+        ASCIIToUTF16(partial_indication) + filename.LossyDisplayName());
+    string16 expected_title_finished(
+        ASCIIToUTF16(total_indication) + filename.LossyDisplayName());
 
     // Download a partial web page in a background tab and wait.
     // The mock system will not complete until it gets a special URL.
@@ -409,10 +428,9 @@ class DownloadTest : public InProcessBrowserTest {
     // Make sure the download shelf is showing.
     EXPECT_TRUE(IsDownloadUIVisible(browser));
 
-    FilePath filename;
+    FilePath basefilename(filename.BaseName());
     net::FileURLToFilePath(url, &filename);
-    filename = filename.BaseName();
-    FilePath download_path = downloads_directory_.path().Append(filename);
+    FilePath download_path = downloads_directory_.path().Append(basefilename);
 
     bool downloaded_path_exists = file_util::PathExists(download_path);
     EXPECT_TRUE(downloaded_path_exists);
@@ -613,27 +631,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, PerWindowShelf) {
 // These tests don't currently test much due to holes in |RunSizeTest()|.  See
 // comments in that routine for details.
 IN_PROC_BROWSER_TEST_F(DownloadTest, UnknownSize) {
-  GURL url(URLRequestSlowDownloadJob::kUnknownSizeUrl);
-  FilePath filename;
-  net::FileURLToFilePath(url, &filename);
-  filename = filename.BaseName();
-  ASSERT_TRUE(RunSizeTest(
-                  browser(),
-                  url,
-                  ASCIIToUTF16("32.0 KB - ") + filename.LossyDisplayName(),
-                  ASCIIToUTF16("100% - ") + filename.LossyDisplayName()));
+  ASSERT_TRUE(RunSizeTest(browser(), SIZE_TEST_TYPE_UNKNOWN,
+                          "32.0 KB - ", "100% - "));
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, KnownSize) {
-  GURL url(URLRequestSlowDownloadJob::kKnownSizeUrl);
-  FilePath filename;
-  net::FileURLToFilePath(url, &filename);
-  filename = filename.BaseName();
-  ASSERT_TRUE(RunSizeTest(
-                  browser(),
-                  url,
-                  ASCIIToUTF16("71% - ") + filename.LossyDisplayName(),
-                  ASCIIToUTF16("100% - ") + filename.LossyDisplayName()));
+  ASSERT_TRUE(RunSizeTest(browser(), SIZE_TEST_TYPE_KNOWN,
+                          "71% - ", "100% - "));
 }
 
 // Test that when downloading an item in Incognito mode, we don't crash when
