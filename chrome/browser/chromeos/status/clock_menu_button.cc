@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -136,6 +136,13 @@ void ClockMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
     clock_menu_->Rebuild();
   clock_menu_->UpdateStates();
   clock_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ClockMenuButton, views::View implementation:
+
+void ClockMenuButton::OnLocaleChanged() {
+  UpdateText();
 }
 
 }  // namespace chromeos

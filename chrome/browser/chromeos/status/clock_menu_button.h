@@ -60,6 +60,9 @@ class ClockMenuButton : public StatusAreaButton,
   // Overridden from SystemLibrary::Observer:
   virtual void TimezoneChanged(const icu::TimeZone& timezone);
 
+  // views::View
+  virtual void OnLocaleChanged() OVERRIDE;
+
   // Updates the time on the menu button. Can be called by host if timezone
   // changes.
   void UpdateText();

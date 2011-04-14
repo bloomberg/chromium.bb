@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,6 +103,14 @@ void NetworkMenuButton::OpenButtonOptions() {
 
 bool NetworkMenuButton::ShouldOpenButtonOptions() const {
   return host_->ShouldOpenButtonOptions(this);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkMenuButton, views::View implementation:
+
+void NetworkMenuButton::OnLocaleChanged() {
+  NetworkLibrary* lib = CrosLibrary::Get()->GetNetworkLibrary();
+  SetNetworkIcon(lib, lib->active_network());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

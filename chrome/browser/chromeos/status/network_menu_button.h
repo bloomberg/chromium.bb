@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,14 +65,16 @@ class NetworkMenuButton : public StatusAreaButton,
   // NetworkLibrary::CellularDataPlanObserver implementation.
   virtual void OnCellularDataPlanChanged(NetworkLibrary* cros);
 
- protected:
+ private:
   // NetworkMenu implementation:
   virtual bool IsBrowserMode() const;
   virtual gfx::NativeWindow GetNativeWindow() const;
   virtual void OpenButtonOptions();
   virtual bool ShouldOpenButtonOptions() const;
 
- private:
+  // views::View
+  virtual void OnLocaleChanged() OVERRIDE;
+
   // Sets the icon and the badge.
   void SetIconAndBadge(const SkBitmap* icon, const SkBitmap* badge);
   // Sets the icon only. Keep the previous badge.
