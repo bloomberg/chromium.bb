@@ -136,7 +136,13 @@ class PyNetworkUITest(pyauto.PyUITest):
 
   def _SetServiceOrder(self, service_order):
     self._manager.SetServiceOrder(service_order)
-    self._manager.DisableTechnology('wifi')
+    # Flimflam throws a dbus exception if device is already disabled.  This
+    # is not an error.
+    try:
+      self._manager.DisableTechnology('wifi')
+    except dbus.DBusException as e:
+      if 'org.chromium.flimflam.Error.AlreadyDisabled' not in str(e):
+        raise e
     self._manager.EnableTechnology('wifi')
 
   def _PushServiceOrder(self, service_order):

@@ -38,15 +38,62 @@ class ChromeosWifiCompliance(chromeos_network.PyNetworkUITest):
                      'Did not successfully connect to wifi network %s.' % ssid)
 
     self.DisconnectFromWifiNetwork()
-    self.RouterPower(router_name, False)
 
   def testConnectBelkinG(self):
     """Test connecting to the Belkin G router."""
     self._BasicConnectRouterCompliance('Belkin_G')
 
+  def testConnectBelkinNPlus(self):
+    """Test connecting to the Belkin N+ router."""
+    self._BasicConnectRouterCompliance('Belkin_N+')
+
+  def testConnectDLinkN150(self):
+    """Test connecting to the D-Link N150 router."""
+    self._BasicConnectRouterCompliance('D-Link_N150')
+
+  def testConnectLinksysE3000(self):
+    """Test connecting to the Linksys E3000 router.
+
+    The LinksysE3000 supports broadcasting of up to 2 SSID's.
+    This test will try connecting to each of them one at a time.
+    """
+    self._BasicConnectRouterCompliance('LinksysE3000')
+    self._BasicConnectRouterCompliance('LinksysE3000_2')
+
   def testConnectLinksysWRT54G2(self):
     """Test connecting to the Linksys WRT54G2 router."""
     self._BasicConnectRouterCompliance('Linksys_WRT54G2')
+
+  def testConnectLinksysWRT54GL(self):
+    """Test connecting to the LinksysWRT54GL router."""
+    self._BasicConnectRouterCompliance('Linksys_WRT54GL')
+
+  def testConnectNetgearN300(self):
+    """Test connecting to the Netgear N300 router."""
+    self._BasicConnectRouterCompliance('Netgear_N300')
+
+  def testConnectNetgearWGR614(self):
+    """Test connecting to the Netgear WGR 614 router."""
+    self._BasicConnectRouterCompliance('Netgear_WGR614')
+
+  def testConnectNfiniti(self):
+    """Test connecting to the Nfiniti router."""
+    self._BasicConnectRouterCompliance('Belkin_N+')
+
+  def testConnectSMCWBR145(self):
+    """Test connecting to the SMC WBR 145 router."""
+    self._BasicConnectRouterCompliance('SMC_WBR145')
+
+  def testConnectTrendnet_639gr(self):
+    """Test connecting to the Trendnet 639gr router.
+
+    The LinksysE3000 supports broadcasting of up to 4 SSID's.
+    This test will try connecting to each of them one at a time.
+    """
+    self._BasicConnectRouterCompliance('Trendnet_639gr')
+    self._BasicConnectRouterCompliance('Trendnet_639gr_2')
+    self._BasicConnectRouterCompliance('Trendnet_639gr_3')
+    self._BasicConnectRouterCompliance('Trendnet_639gr_4')
 
 
 if __name__ == '__main__':

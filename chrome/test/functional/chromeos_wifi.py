@@ -25,5 +25,17 @@ class ChromeosWifi(chromeos_network.PyNetworkUITest):
     self.assertTrue(result)
     logging.debug(result)
 
+  def testConnectToHiddenWiFiNonExistent(self):
+    """Connecting to a non-existent network should fail.
+
+    Assume network 'ThisIsANonExistentNetwork' is not a valid ssid within
+    the vicinity of where this test is run.
+    """
+    ssid = 'ThisIsANonExistentNetwork'
+    error = self.ConnectToHiddenWifiNetwork(ssid, 'SECURITY_NONE')
+    self.assertTrue(error, msg='Device connected to a non-existent '
+                                           'network "%s".' % ssid)
+
+
 if __name__ == '__main__':
   pyauto_functional.Main()
