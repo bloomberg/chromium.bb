@@ -5,25 +5,25 @@
 #include "chrome/browser/ui/webui/options/chromeos/language_customize_modifier_keys_handler.h"
 
 #include "base/values.h"
+#include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "grit/generated_resources.h"
-#include "third_party/cros/chromeos_keyboard.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
 const struct ModifierKeysSelectItem {
   int message_id;
-  chromeos::ModifierKey value;
+  chromeos::input_method::ModifierKey value;
 } kModifierKeysSelectItems[] = {
   { IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_SEARCH_LABEL,
-    chromeos::kSearchKey },
+    chromeos::input_method::kSearchKey },
   { IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_LEFT_CTRL,
-    chromeos::kLeftControlKey },
+    chromeos::input_method::kLeftControlKey },
   { IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_LEFT_ALT,
-    chromeos::kLeftAltKey },
+    chromeos::input_method::kLeftAltKey },
   { IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_VOID,
-    chromeos::kVoidKey },
+    chromeos::input_method::kVoidKey },
   { IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_CAPSLOCK,
-    chromeos::kCapsLockKey },
+    chromeos::input_method::kCapsLockKey },
 };
 
 const char* kDataValuesNames[] = {
@@ -58,11 +58,12 @@ void LanguageCustomizeModifierKeysHandler::GetLocalizedValues(
   for (size_t i = 0; i < arraysize(kDataValuesNames); ++i) {
     ListValue* list_value = new ListValue();
     for (size_t j = 0; j < arraysize(kModifierKeysSelectItems); ++j) {
-      const ModifierKey value = kModifierKeysSelectItems[j].value;
+      const input_method::ModifierKey value =
+          kModifierKeysSelectItems[j].value;
       const int message_id = kModifierKeysSelectItems[j].message_id;
       // Only the seach key can be remapped to the caps lock key.
       if (kDataValuesNames[i] != std::string("xkbRemapSearchKeyToValue") &&
-          value == kCapsLockKey) {
+          value == input_method::kCapsLockKey) {
         continue;
       }
       ListValue* option = new ListValue();
