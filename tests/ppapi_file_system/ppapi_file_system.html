@@ -20,24 +20,7 @@ function setupTests(tester, plugin) {
     // TODO(ncbray): Replace with async test harness.
     tester.addTest('PPB_FileSystem_Dev::Open', function() {
       assert(plugin.testOpen());
-      var gotCallbackCount = 0;
-
-      // Deliberately global - this is called from w/in the nexe.
-      OpenCallback = function() {
-        ++gotCallbackCount;
-        tester.log('OpenCallback callback!');
-      }
-
-      function wait() {
-        // We expect OpenCallback to be called 4 times w/in the nexe.
-        if (gotCallbackCount != 4) {
-          halt_and_callback(1, wait);
-        } else {
-          tester.log('Done waiting.');
-        }
-      }
-
-      wait();
+      tester.waitForCallback('OpenCallback', 4);
     });
 
     tester.addTest('PPB_FileSytem_Dev::GetType', function() {

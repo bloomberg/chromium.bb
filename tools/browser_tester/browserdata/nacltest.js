@@ -1,6 +1,6 @@
-// Copyright 2010 The Native Client Authors.  All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 
 function $(id) {
@@ -446,8 +446,36 @@ function Tester() {
     this.rpc.log(this.currentTest, message);
   }
 
-  this.addTest = function(name, callback) {
-    tests.push({name: name, callback: callback});
+  this.addTest = function(name, testFunction) {
+    tests.push({name: name, callback: testFunction});
+  }
+
+  // TODO(ncbray): implement parallelized async test harness
+  this.waitForCallback = function(callbackName, expectedCalls) {
+    tester.log('Waiting for ' + expectedCalls + ' invocations of callback: '
+               + callbackName);
+    var gotCallbacks = 0;
+
+    // Deliberately global - this what the nexe expects.
+    // TODO(ncbray): consider returning this function, so the test has more
+    // flexibility. For example, in the test one could count to N
+    // using a different callback before calling _this_ callback, and
+    // continuing the test. Also, consider calling user-supplieed callback
+    // when done waiting.
+    window[callbackName] = function() {
+      ++gotCallbacks;
+      tester.log('Received callback ' + gotCallbacks);
+    };
+
+    function wait() {
+      if (gotCallbacks < expectedCalls) {
+        halt_and_callback(1, wait);
+      } else {
+        tester.log("Done waiting");
+      }
+    }
+
+    wait();
   }
 
   this.run = function() {

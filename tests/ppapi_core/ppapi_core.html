@@ -37,36 +37,15 @@ function setupTests(tester, plugin) {
     tester.addTest('PPB_Core::AddRefResource+Release(invalid)', function() {
       assert(plugin.testAddRefAndReleaseInvalidResource());
     });
-    
-    // TODO(ncbray) async test harness
-    var waitForCallback = function(callbackName) {
-      var got_callback = false;
-
-      // Deliberately global - this what the nexe expects.
-      window[callbackName] = function() {
-        tester.log('Received callback: ' + callbackName);
-        got_callback = true;
-      };
-
-      function wait() {
-        if (!got_callback) {
-          halt_and_callback(1, wait);
-        } else {
-          tester.log('Done waiting.');
-        }
-      }
-
-      wait();
-    };
 
     tester.addTest('PPB_Core::CallOnMainThread_FromMainThread', function() {
       assert(plugin.testCallOnMainThread_FromMainThread());
-      waitForCallback('CallOnMainThreadCallback_FromMainThread');
+      tester.waitForCallback('CallOnMainThreadCallback_FromMainThread', 1);
     });
 
     tester.addTest('PPB_Core::CallOnMainThread_FromNonMainThread', function() {
       assert(plugin.testCallOnMainThread_FromNonMainThread());
-      waitForCallback('CallOnMainThreadCallback_FromNonMainThread');
+      tester.waitForCallback('CallOnMainThreadCallback_FromNonMainThread', 1);
     });
 }
       //]]>
