@@ -14,7 +14,12 @@
     <includes>
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_MANAGER_RECENT" file="bookmark_manager/images/bookmark_manager_recent.png" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_MANAGER_SEARCH" file="bookmark_manager/images/bookmark_manager_search.png" type="BINDATA" />
-      <include name="IDR_BOOKMARK_MANAGER_MAIN" file="bookmark_manager/main.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_BOOKMARK_MANAGER_MAIN" file="bookmark_manager/main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_MAIN_JS" file="bookmark_manager/js/main.js" type="BINDATA" />
+      <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_BMM_LIST_JS" file="bookmark_manager/js/bmm/bookmark_list.js" type="BINDATA" />
+      <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_BMM_TREE_JS" file="bookmark_manager/js/bmm/bookmark_tree.js" type="BINDATA" />
+      <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_BMM_JS" file="bookmark_manager/js/bmm.js" type="BINDATA" />
+      <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_CSS_JS" file="bookmark_manager/css/bmm.css.js" type="BINDATA" />
 
       <if expr="pp_ifdef('file_manager_extension')">
         <include name="IDR_FILE_MANAGER_MAIN" file="file_manager/main.html" flattenhtml="true" type="BINDATA" />
