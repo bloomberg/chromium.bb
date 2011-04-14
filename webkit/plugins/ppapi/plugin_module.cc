@@ -219,6 +219,9 @@ const PPB_Testing_Dev testing_interface = {
 // GetInterface ----------------------------------------------------------------
 
 const void* GetInterface(const char* name) {
+  // All interfaces should be used on the main thread.
+  DCHECK(IsMainThread());
+
   // Please keep alphabetized by interface macro name with "special" stuff at
   // the bottom.
   if (strcmp(name, PPB_AUDIO_CONFIG_INTERFACE) == 0)
