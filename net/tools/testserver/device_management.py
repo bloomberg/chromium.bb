@@ -62,6 +62,7 @@ except ImportError:
 import asn1der
 import device_management_backend_pb2 as dm
 import cloud_policy_pb2 as cp
+import chrome_device_policy_pb2 as dp
 
 # ASN.1 object identifier for PKCS#1/RSA.
 PKCS1_RSA_OID = '\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01'
@@ -365,7 +366,31 @@ class RequestHandler(object):
       raise Exception('Unknown field type %s' % field.type)
     group_message.__setattr__(field.name, field_value)
 
-  def GatherPolicySettings(self, settings, policies):
+  def GatherDevicePolicySettings(self, settings, policies):
+    '''Copies all the policies from a dictionary into a protobuf of type
+    CloudDeviceSettingsProto.
+
+    Args:
+      settings: The destination ChromeDeviceSettingsProto protobuf.
+      policies: The source dictionary containing policies in JSON format.
+    '''
+    for group in settings.DESCRIPTOR.fields:
+      # Create protobuf message for group.
+      group_message = eval('dp.' + group.message_type.name + '()')
+      # Indicates if at least one field was set in |group_message|.
+      got_fields = False
+      # Iterate over fields of the message and feed them from the
+      # policy config file.
+      for field in group_message.DESCRIPTOR.fields:
+        field_value = None
+        if field.name in policies:
+          got_fields = True
+          field_value = policies[field.name]
+          self.SetProtobufMessageField(group_message, field, field_value)
+      if got_fields:
+        settings.__getattribute__(group.name).CopyFrom(group_message)
+
+  def GatherUserPolicySettings(self, settings, policies):
     '''Copies all the policies from a dictionary into a protobuf of type
     CloudPolicySettings.
 
@@ -414,14 +439,22 @@ class RequestHandler(object):
     if not token_info:
       return error
 
-    settings = cp.CloudPolicySettings()
-
+    # Response is only given if the scope is specified in the config file.
+    # Normally 'google/chromeos/device' and 'google/chromeos/user' should be
+    # accepted.
+    policy_value = ''
     if (msg.policy_type in token_info['allowed_policy_types'] and
         msg.policy_type in self._server.policy):
-      # Response is only given if the scope is specified in the config file.
-      # Normally 'chromeos/device' and 'chromeos/user' should be accepted.
-      self.GatherPolicySettings(settings,
-                                self._server.policy[msg.policy_type])
+      if msg.policy_type == 'google/chromeos/user':
+        settings = cp.CloudPolicySettings()
+        self.GatherUserPolicySettings(settings,
+                                      self._server.policy[msg.policy_type])
+        policy_value = settings.SerializeToString()
+      elif msg.policy_type == 'google/chromeos/device':
+        settings = dp.ChromeDeviceSettingsProto()
+        self.GatherDevicePolicySettings(settings,
+                                        self._server.policy[msg.policy_type])
+        policy_value = settings.SerializeToString()
 
     # Figure out the key we want to use.
     key = None
@@ -435,7 +468,7 @@ class RequestHandler(object):
     policy_data.policy_type = msg.policy_type
     policy_data.timestamp = int(time.time() * 1000)
     policy_data.request_token = token_info['device_token'];
-    policy_data.policy_value = settings.SerializeToString()
+    policy_data.policy_value = policy_value
     policy_data.machine_name = token_info['machine_name']
     if key:
       policy_data.public_key_version = key_version
