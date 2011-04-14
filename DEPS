@@ -280,7 +280,7 @@ deps_os = {
       "/trunk/deps/reference_builds/chrome_mac@71120",
 
     "src/third_party/GTM":
-      (Var("googlecode_url") % "google-toolbox-for-mac") + "/trunk@439",
+      (Var("googlecode_url") % "google-toolbox-for-mac") + "/trunk@440",
     "src/third_party/pdfsqueeze":
       (Var("googlecode_url") % "pdfsqueeze") + "/trunk@4",
     "src/third_party/lighttpd":
