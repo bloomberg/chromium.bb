@@ -8,8 +8,6 @@
 // TYPE_UI, which URLRequest doesn't allow.
 //
 
-#include "webkit/fileapi/file_system_operation.h"
-
 #include "base/message_loop.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_temp_dir.h"
@@ -24,11 +22,9 @@
 #include "webkit/blob/blob_url_request_job.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_file_util.h"
+#include "webkit/fileapi/file_system_operation.h"
 
 namespace fileapi {
-namespace {
-class MockDispatcher;
-}  // namespace (anonymous)
 
 class FileSystemOperationWriteTest : public testing::Test {
  public:
@@ -137,7 +133,8 @@ class MockDispatcher : public FileSystemCallbackDispatcher {
 
   virtual void DidWrite(int64 bytes, bool complete) {
     test_->add_bytes_written(bytes, complete);
-    MessageLoop::current()->Quit();
+    if (complete)
+      MessageLoop::current()->Quit();
   }
 
  private:
