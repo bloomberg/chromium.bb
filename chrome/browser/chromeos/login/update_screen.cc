@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,7 +60,7 @@ UpdateScreen::UpdateScreen(WizardScreenDelegate* delegate)
       checking_for_update_(true),
       reboot_check_delay_(0),
       is_downloading_update_(false),
-      is_all_updates_critical_(false) {
+      is_all_updates_critical_(true) { // See http://crosbug.com/10068
   GetInstanceSet().insert(this);
 }
 
