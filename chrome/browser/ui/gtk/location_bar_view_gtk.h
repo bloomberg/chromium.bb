@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/gtk/info_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
@@ -449,6 +450,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
   // The last search keyword that was shown via the |tab_to_search_box_|.
   string16 last_keyword_;
+
+  // Used to change the visibility of the star decoration.
+  BooleanPrefMember edit_bookmarks_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewGtk);
 };

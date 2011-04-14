@@ -157,6 +157,10 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
+
+  edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
+                               profile_->GetPrefs(), this);
+  OnEditBookmarksEnabledChanged();
 }
 
 BookmarkBarGtk::~BookmarkBarGtk() {
@@ -853,6 +857,10 @@ void BookmarkBarGtk::Observe(NotificationType type,
     }
 
     SetOverflowButtonAppearance();
+  } else if (type == NotificationType::PREF_CHANGED) {
+    const std::string& pref_name = *Details<std::string>(details).ptr();
+    if (pref_name == prefs::kEditBookmarksEnabled)
+      OnEditBookmarksEnabledChanged();
   }
 }
 
@@ -1118,6 +1126,8 @@ void BookmarkBarGtk::OnFolderClicked(GtkWidget* sender) {
 gboolean BookmarkBarGtk::ItemDraggedOverToolbar(GdkDragContext* context,
                                                 int index,
                                                 guint time) {
+  if (!edit_bookmarks_enabled_.GetValue())
+    return FALSE;
   GdkAtom target_type =
       gtk_drag_dest_find_target(bookmark_toolbar_.get(), context, NULL);
   if (target_type == GDK_NONE) {
@@ -1179,6 +1189,8 @@ gboolean BookmarkBarGtk::OnFolderDragMotion(GtkWidget* button,
                                             gint x,
                                             gint y,
                                             guint time) {
+  if (!edit_bookmarks_enabled_.GetValue())
+    return FALSE;
   GdkAtom target_type = gtk_drag_dest_find_target(button, context, NULL);
   if (target_type == GDK_NONE)
     return FALSE;
@@ -1201,6 +1213,17 @@ gboolean BookmarkBarGtk::OnFolderDragMotion(GtkWidget* button,
   // Remove previous highlighting.
   gtk_drag_unhighlight(button);
   return ItemDraggedOverToolbar(context, index, time);
+}
+
+void BookmarkBarGtk::OnEditBookmarksEnabledChanged() {
+  GtkDestDefaults dest_defaults =
+      *edit_bookmarks_enabled_ ? GTK_DEST_DEFAULT_ALL :
+                                 GTK_DEST_DEFAULT_DROP;
+  gtk_drag_dest_set(overflow_button_, dest_defaults, NULL, 0, kDragAction);
+  gtk_drag_dest_set(other_bookmarks_button_, dest_defaults,
+                    NULL, 0, kDragAction);
+  ui::SetDestTargetList(overflow_button_, kDestTargetList);
+  ui::SetDestTargetList(other_bookmarks_button_, kDestTargetList);
 }
 
 void BookmarkBarGtk::ClearToolbarDropHighlighting() {
@@ -1242,6 +1265,11 @@ void BookmarkBarGtk::OnDragReceived(GtkWidget* widget,
                                     gint x, gint y,
                                     GtkSelectionData* selection_data,
                                     guint target_type, guint time) {
+  if (!edit_bookmarks_enabled_.GetValue()) {
+    gtk_drag_finish(context, FALSE, FALSE, time);
+    return;
+  }
+
   gboolean dnd_success = FALSE;
   gboolean delete_selection_data = FALSE;
 

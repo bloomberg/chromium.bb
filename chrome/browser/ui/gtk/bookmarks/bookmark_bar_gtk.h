@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_context_menu_controller.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_bar_instructions_gtk.h"
 #include "chrome/browser/ui/gtk/menu_bar_helper.h"
@@ -298,6 +299,9 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // Overriden from BookmarkBarInstructionsGtk::Delegate.
   virtual void ShowImportDialog();
 
+  // Updates the drag&drop state when |edit_bookmarks_enabled_| changes.
+  void OnEditBookmarksEnabledChanged();
+
   Profile* profile_;
 
   // Used for opening urls.
@@ -403,6 +407,9 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // The currently throbbing widget. This is NULL if no widget is throbbing.
   // We track it because we only want to allow one widget to throb at a time.
   GtkWidget* throbbing_widget_;
+
+  // Tracks whether bookmarks can be modified.
+  BooleanPrefMember edit_bookmarks_enabled_;
 
   ScopedRunnableMethodFactory<BookmarkBarGtk> method_factory_;
 };

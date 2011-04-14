@@ -323,6 +323,9 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   registrar_.Add(this,
                  NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
+  edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
+                               profile_->GetPrefs(), this);
+
   theme_service_ = GtkThemeService::GetFrom(profile_);
   theme_service_->InitThemesFor(this);
 }
@@ -439,14 +442,7 @@ GtkWidget* LocationBarViewGtk::GetPageActionWidget(
 }
 
 void LocationBarViewGtk::Update(const TabContents* contents) {
-  bool star_enabled = star_.get() && !toolbar_model_->input_in_progress();
-  command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
-  if (star_.get()) {
-    if (star_enabled)
-      gtk_widget_show_all(star_.get());
-    else
-      gtk_widget_hide_all(star_.get());
-  }
+  UpdateStarIcon();
   UpdateSiteTypeArea();
   UpdateContentSettingsIcons();
   UpdatePageActions();
@@ -759,7 +755,12 @@ void LocationBarViewGtk::TestPageActionPressed(size_t index) {
 void LocationBarViewGtk::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
-  DCHECK_EQ(type.value,  NotificationType::BROWSER_THEME_CHANGED);
+  if (type.value == NotificationType::PREF_CHANGED) {
+    UpdateStarIcon();
+    return;
+  }
+
+  DCHECK_EQ(type.value, NotificationType::BROWSER_THEME_CHANGED);
 
   if (theme_service_->UseGtkTheme()) {
     gtk_widget_modify_bg(tab_to_search_box_, GTK_STATE_NORMAL, NULL);
@@ -1138,10 +1139,17 @@ void LocationBarViewGtk::SetStarred(bool starred) {
 void LocationBarViewGtk::UpdateStarIcon() {
   if (!star_.get())
     return;
-
-  gtk_image_set_from_pixbuf(GTK_IMAGE(star_image_),
-      theme_service_->GetPixbufNamed(
-          starred_ ? IDR_STAR_LIT : IDR_STAR));
+  bool star_enabled = !toolbar_model_->input_in_progress() &&
+                      edit_bookmarks_enabled_.GetValue();
+  command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
+  if (star_enabled) {
+    gtk_widget_show_all(star_.get());
+    gtk_image_set_from_pixbuf(GTK_IMAGE(star_image_),
+        theme_service_->GetPixbufNamed(
+            starred_ ? IDR_STAR_LIT : IDR_STAR));
+  } else {
+    gtk_widget_hide_all(star_.get());
+  }
 }
 
 bool LocationBarViewGtk::ShouldOnlyShowLocation() {
