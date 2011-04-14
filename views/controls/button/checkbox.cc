@@ -186,6 +186,7 @@ void Checkbox::OnPaintFocusBorder(gfx::Canvas* canvas) {
   // Our focus border is rendered by the label, so we don't do anything here.
 }
 void Checkbox::OnFocus() {
+  NativeButtonBase::OnFocus();
   label_->set_paint_as_focused(true);
 }
 

@@ -15,6 +15,7 @@
 #include "content/common/notification_type.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "views/controls/button/checkbox.h"
 #include "views/controls/button/custom_button.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/button/native_button.h"
@@ -141,7 +142,10 @@ void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
 
   most_recent_profile_ = profile;
   std::string class_name = view->GetClassName();
-  if (class_name == views::MenuButton::kViewClassName ||
+
+  if (class_name == views::Checkbox::kViewClassName) {
+    SendCheckboxNotification(view, type, profile);
+  } else if (class_name == views::MenuButton::kViewClassName ||
       type == NotificationType::ACCESSIBILITY_MENU_OPENED ||
       type == NotificationType::ACCESSIBILITY_MENU_CLOSED) {
     SendMenuNotification(view, type, profile);
@@ -278,3 +282,15 @@ void AccessibilityEventRouterViews::SendComboboxNotification(
       profile, name, value, state.index, state.count);
   SendAccessibilityNotification(type, &info);
 }
+
+void AccessibilityEventRouterViews::SendCheckboxNotification(
+    views::View* view, NotificationType type, Profile* profile) {
+  ui::AccessibleViewState state;
+  view->GetAccessibleState(&state);
+  std::string name = UTF16ToUTF8(state.name);
+  std::string value = UTF16ToUTF8(state.value);
+  AccessibilityCheckboxInfo info(
+      profile, name, state.state == ui::AccessibilityTypes::STATE_CHECKED);
+  SendAccessibilityNotification(type, &info);
+}
+
