@@ -58,7 +58,6 @@
 
 struct display {
 	struct wl_display *display;
-	struct wl_egl_display *native_dpy;
 	struct wl_compositor *compositor;
 	struct wl_shell *shell;
 	struct wl_shm *shm;
@@ -227,8 +226,7 @@ display_create_egl_window_surface(struct display *display,
 
 	visual = wl_display_get_premultiplied_argb_visual(display->display);
 
-	data->window = wl_egl_window_create(display->native_dpy,
-					    surface,
+	data->window = wl_egl_window_create(surface,
 					    rectangle->width,
 					    rectangle->height,
 					    visual);
@@ -298,10 +296,9 @@ display_create_egl_image_surface(struct display *display,
 	data->display = display;
 
 	visual = wl_display_get_premultiplied_argb_visual(display->display);
-	data->pixmap =wl_egl_pixmap_create(display->native_dpy,
-					   rectangle->width,
-					   rectangle->height,
-					   visual, 0);
+	data->pixmap = wl_egl_pixmap_create(rectangle->width,
+					    rectangle->height,
+					    visual, 0);
 	if (data->pixmap == NULL) {
 		free(data);
 		return NULL;
@@ -318,7 +315,7 @@ display_create_egl_image_surface(struct display *display,
 	}
 
 	data->data.buffer =
-		wl_egl_pixmap_create_buffer(display->native_dpy, data->pixmap);
+		wl_egl_pixmap_create_buffer(data->pixmap);
 
 	cairo_device_acquire(display->device);
 	glGenTextures(1, &data->texture);
@@ -1527,7 +1524,7 @@ display_add_input(struct display *d, uint32_t id)
 
 	memset(input, 0, sizeof *input);
 	input->display = d;
-	input->input_device = wl_input_device_create(d->display, id);
+	input->input_device = wl_input_device_create(d->display, id, 1);
 	input->pointer_focus = NULL;
 	input->keyboard_focus = NULL;
 	wl_list_insert(d->input_list.prev, &input->link);
@@ -1634,7 +1631,7 @@ add_selection_offer(struct display *d, uint32_t id)
 	if (offer == NULL)
 		return;
 
-	offer->offer = wl_selection_offer_create(d->display, id);
+	offer->offer = wl_selection_offer_create(d->display, id, 1);
 	offer->display = d;
 	wl_array_init(&offer->types);
 	offer->input = NULL;
@@ -1650,17 +1647,17 @@ display_handle_global(struct wl_display *display, uint32_t id,
 	struct display *d = data;
 
 	if (strcmp(interface, "compositor") == 0) {
-		d->compositor = wl_compositor_create(display, id);
+		d->compositor = wl_compositor_create(display, id, 1);
 	} else if (strcmp(interface, "output") == 0) {
-		d->output = wl_output_create(display, id);
+		d->output = wl_output_create(display, id, 1);
 		wl_output_add_listener(d->output, &output_listener, d);
 	} else if (strcmp(interface, "input_device") == 0) {
 		display_add_input(d, id);
 	} else if (strcmp(interface, "shell") == 0) {
-		d->shell = wl_shell_create(display, id);
+		d->shell = wl_shell_create(display, id, 1);
 		wl_shell_add_listener(d->shell, &shell_listener, d);
 	} else if (strcmp(interface, "shm") == 0) {
-		d->shm = wl_shm_create(display, id);
+		d->shm = wl_shm_create(display, id, 1);
 	} else if (strcmp(interface, "selection_offer") == 0) {
 		add_selection_offer(d, id);
 	} else if (d->global_handler) {
@@ -1736,7 +1733,7 @@ init_egl(struct display *d)
 		EGL_NONE
 	};
 
-	d->dpy = eglGetDisplay(d->native_dpy);
+	d->dpy = eglGetDisplay(d->display);
 	if (!eglInitialize(d->dpy, &major, &minor)) {
 		fprintf(stderr, "failed to initialize display\n");
 		return -1;
@@ -1822,8 +1819,6 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries,
 	/* Set up listener so we'll catch all events. */
 	wl_display_add_global_listener(d->display,
 				       display_handle_global, d);
-
-	d->native_dpy = wl_egl_display_create(d->display);
 
 	/* Process connection events. */
 	wl_display_iterate(d->display, WL_DISPLAY_READABLE);

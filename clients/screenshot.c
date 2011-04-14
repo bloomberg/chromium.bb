@@ -42,7 +42,7 @@ handle_global(struct wl_display *display, uint32_t id,
 	struct wl_screenshooter **screenshooter = data;
 
 	if (strcmp(interface, "screenshooter") == 0)
-		*screenshooter = wl_screenshooter_create(display, id);
+		*screenshooter = wl_screenshooter_create(display, id, 1);
 }
 
 int main(int argc, char *argv[])

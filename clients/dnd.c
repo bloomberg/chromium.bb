@@ -495,7 +495,7 @@ global_handler(struct display *display,
 	if (strcmp(interface, "drag_offer") != 0)
 		return;
 
-	offer = wl_drag_offer_create(display_get_display(display), id);
+	offer = wl_drag_offer_create(display_get_display(display), id, 1);
 
 	dnd_offer = malloc(sizeof *dnd_offer);
 	if (dnd_offer == NULL)

@@ -1371,7 +1371,8 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 }
 
 static void
-wlsc_output_post_geometry(struct wl_client *client, struct wl_object *global)
+wlsc_output_post_geometry(struct wl_client *client,
+			  struct wl_object *global, uint32_t version)
 {
 	struct wlsc_output *output =
 		container_of(global, struct wlsc_output, object);

@@ -35,7 +35,6 @@
 
 struct display {
 	struct wl_display *display;
-	struct wl_egl_display *native;
 	struct wl_compositor *compositor;
 	struct {
 		EGLDisplay dpy;
@@ -105,8 +104,7 @@ init_egl(struct display *display)
 	EGLint major, minor, n;
 	EGLBoolean ret;
 
-	display->egl.dpy =
-		eglGetDisplay(display->native);
+	display->egl.dpy = eglGetDisplay(display->display);
 	assert(display->egl.dpy);
 
 	ret = eglInitialize(display->egl.dpy, &major, &minor);
@@ -198,8 +196,7 @@ create_surface(struct window *window)
 	window->surface = wl_compositor_create_surface(display->compositor);
 	visual = wl_display_get_premultiplied_argb_visual(display->display);
 	window->native =
-		wl_egl_window_create(display->native,
-				     window->surface,
+		wl_egl_window_create(window->surface,
 				     window->geometry.width,
 				     window->geometry.height,
 				     visual);
@@ -280,7 +277,7 @@ display_handle_global(struct wl_display *display, uint32_t id,
 	struct display *d = data;
 
 	if (strcmp(interface, "compositor") == 0)
-		d->compositor = wl_compositor_create(display, id);
+		d->compositor = wl_compositor_create(display, id, 1);
 }
 
 static int
@@ -311,8 +308,6 @@ main(int argc, char **argv)
 
 	wl_display_add_global_listener(display.display,
 				       display_handle_global, &display);
-
-	display.native = wl_egl_display_create(display.display);
 
 	init_egl(&display);
 	create_surface(&window);

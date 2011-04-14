@@ -43,7 +43,6 @@ struct wayland_compositor {
 
 	struct {
 		struct wl_display *display;
-		struct wl_egl_display *egl_display;
 		struct wl_compositor *compositor;
 		struct wl_shell *shell;
 		struct wl_output *output;
@@ -112,7 +111,7 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 		EGL_NONE
 	};
 
-	c->base.display = eglGetDisplay(c->parent.egl_display);
+	c->base.display = eglGetDisplay(c->parent.display);
 	if (c->base.display == NULL) {
 		fprintf(stderr, "failed to create display\n");
 		return -1;
@@ -231,8 +230,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	visual = wl_display_get_premultiplied_argb_visual(c->parent.display);
 
 	output->parent.egl_window =
-		wl_egl_window_create(c->parent.egl_display,
-				     output->parent.surface,
+		wl_egl_window_create(output->parent.surface,
 				     width, height, visual);
 	if (!output->parent.egl_window) {
 		fprintf(stderr, "failure to create wl_egl_window\n");
@@ -409,7 +407,7 @@ display_add_input(struct wayland_compositor *c, uint32_t id)
 	memset(input, 0, sizeof *input);
 
 	input->compositor = c;
-	input->input_device = wl_input_device_create(c->parent.display, id);
+	input->input_device = wl_input_device_create(c->parent.display, id, 1);
 	wl_list_insert(c->input_list.prev, &input->link);
 
 	wl_input_device_add_listener(input->input_device,
@@ -424,14 +422,14 @@ display_handle_global(struct wl_display *display, uint32_t id,
 	struct wayland_compositor *c = data;
 
 	if (strcmp(interface, "compositor") == 0) {
-		c->parent.compositor = wl_compositor_create(display, id);
+		c->parent.compositor = wl_compositor_create(display, id, 1);
 	} else if (strcmp(interface, "output") == 0) {
-		c->parent.output = wl_output_create(display, id);
+		c->parent.output = wl_output_create(display, id, 1);
 		wl_output_add_listener(c->parent.output, &output_listener, c);
 	} else if (strcmp(interface, "input_device") == 0) {
 		display_add_input(c, id);
 	} else if (strcmp(interface, "shell") == 0) {
-		c->parent.shell = wl_shell_create(display, id);
+		c->parent.shell = wl_shell_create(display, id, 1);
 		wl_shell_add_listener(c->parent.shell, &shell_listener, c);
 	}
 }
@@ -486,7 +484,6 @@ wayland_compositor_create(struct wl_display *display, int width, int height)
 	}
 
 	wl_list_init(&c->input_list);
-	c->parent.egl_display = wl_egl_display_create(c->parent.display);
 	wl_display_add_global_listener(c->parent.display,
 				display_handle_global, c);
 
