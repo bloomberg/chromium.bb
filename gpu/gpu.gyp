@@ -150,8 +150,17 @@
     {
       'target_name': 'command_buffer_client',
       'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'all_dependent_settings': {
+        'include_dirs': [
+          '..',
+        ],
+      },
       'dependencies': [
         'command_buffer_common',
+        'gpu_common',
       ],
       'sources': [
         'command_buffer/client/cmd_buffer_helper.cc',

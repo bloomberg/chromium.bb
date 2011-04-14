@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "../client/cmd_buffer_helper.h"
 #include "../common/command_buffer.h"
+#include "gpu/common/gpu_trace_event.h"
 
 namespace gpu {
 
@@ -121,21 +122,27 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
     // need to make sure get wraps first, actually that get is 1 or more (since
     // put will wrap to 0 after we add the jump).
     GPU_DCHECK_LE(1, put_);
-    while (get_ > put_ || get_ == 0) {
-      // Do not loop forever if the flush fails, meaning the command buffer
-      // reader has shutdown.
-      if (!FlushSync())
-        return;
+    if (get_ > put_ || get_ == 0) {
+      GPU_TRACE_EVENT0("gpu", "CommandBufferHelper::WaitForAvailableEntries");
+      while (get_ > put_ || get_ == 0) {
+        // Do not loop forever if the flush fails, meaning the command buffer
+        // reader has shutdown.
+        if (!FlushSync())
+          return;
+      }
     }
     // Insert a jump back to the beginning.
     cmd::Jump::Set(&entries_[put_], 0);
     put_ = 0;
   }
-  while (AvailableEntries() < count) {
-    // Do not loop forever if the flush fails, meaning the command buffer reader
-    // has shutdown.
-    if (!FlushSync())
-      return;
+  if (AvailableEntries() < count) {
+    GPU_TRACE_EVENT0("gpu", "CommandBufferHelper::WaitForAvailableEntries1");
+    while (AvailableEntries() < count) {
+      // Do not loop forever if the flush fails, meaning the command buffer
+      // reader has shutdown.
+      if (!FlushSync())
+        return;
+    }
   }
   // Force a flush if the buffer is getting half full, or even earlier if the
   // reader is known to be idle.
