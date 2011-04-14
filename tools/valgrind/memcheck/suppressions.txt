@@ -4199,15 +4199,6 @@
    fun:nssCertificate_Destroy
    fun:NSSCertificate_Destroy
    fun:CERT_DestroyCertificate
-   fun:ssl_DestroySID
-   fun:ssl_FreeLockedSID
-   fun:UncacheSID
-   fun:SSL_ClearSessionCache
-   fun:_ZN3net19NSSSSLInitSingletonD1Ev
-   fun:_ZN4base25DefaultLazyInstanceTraitsIN3net19NSSSSLInitSingletonEE6DeleteEPv
-   fun:_ZN4base12LazyInstanceIN3net19NSSSSLInitSingletonENS_25DefaultLazyInstanceTraitsIS2_EEE6OnExitEPv
-   fun:_ZN4base13AtExitManager19ProcessCallbacksNowEv
-   fun:_ZN4base13AtExitManagerD1Ev
 }
 {
    bug_78067a
