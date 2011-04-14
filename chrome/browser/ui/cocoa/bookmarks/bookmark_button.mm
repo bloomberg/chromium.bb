@@ -168,9 +168,7 @@ BookmarkButton* gDraggedButton = nil; // Weak
 
   if ([self isFolder]) {
     // Close the folder's drop-down menu if it's visible.
-    const SEL closeFolderSelector = @selector(closeBookmarkFolder:);
-    DCHECK([[self target] respondsToSelector:closeFolderSelector]);
-    [[self target] performSelector:closeFolderSelector withObject:self];
+    [[self target] closeBookmarkFolder:self];
   }
 
   // At the moment, moving bookmarks causes their buttons (like me!)
