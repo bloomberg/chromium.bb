@@ -49,6 +49,7 @@ void TestURLLoader::RunTest() {
   RUN_TEST(CustomRequestHeader);
   RUN_TEST(IgnoresBogusContentLength);
   RUN_TEST(SameOriginRestriction);
+  RUN_TEST(CrossOriginRequest);
   RUN_TEST(StreamToFile);
   RUN_TEST(AuditURLRedirect);
   RUN_TEST(AbortCalls);
@@ -266,6 +267,26 @@ std::string TestURLLoader::TestSameOriginRestriction() {
       return ReportError("URLLoader::Open()", rv);
     }
   }
+
+  PASS();
+}
+
+std::string TestURLLoader::TestCrossOriginRequest() {
+  pp::URLRequestInfo request;
+  // Create a URL that will be considered to be a different origin.
+  request.SetURL("http://127.0.0.1/test_url_loader_data/hello.txt");
+  request.SetAllowCrossOriginRequests(true);
+
+  TestCompletionCallback callback(instance_->pp_instance());
+
+  pp::URLLoader loader(*instance_);
+  int32_t rv = loader.Open(request, callback);
+  if (rv == PP_ERROR_WOULDBLOCK)
+    rv = callback.WaitForResult();
+
+  // We expect success since we allowed a cross-origin request.
+  if (rv == PP_ERROR_NOACCESS)
+    return ReportError("URLLoader::Open()", rv);
 
   PASS();
 }

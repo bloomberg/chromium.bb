@@ -17,6 +17,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoader.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderOptions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
@@ -32,6 +33,7 @@ using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebURLError;
 using WebKit::WebURLLoader;
+using WebKit::WebURLLoaderOptions;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 
@@ -188,7 +190,7 @@ const PPB_URLLoaderTrusted ppb_urlloadertrusted = {
   &SetStatusCallback
 };
 
-WebKit::WebFrame* GetFrame(PluginInstance* instance) {
+WebFrame* GetFrame(PluginInstance* instance) {
   return instance->container()->element().document().frame();
 }
 
@@ -253,11 +255,20 @@ int32_t PPB_URLLoader_Impl::Open(PPB_URLRequestInfo_Impl* request,
     return PP_ERROR_FAILED;
   WebURLRequest web_request(request->ToWebURLRequest(frame));
 
-  rv = CanRequest(frame, web_request.url());
-  if (rv != PP_OK)
-    return rv;
+  WebURLLoaderOptions options;
+  if (has_universal_access_) {
+    // Universal access allows cross-origin requests and sends credentials.
+    options.crossOriginRequestPolicy =
+        WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
+    options.allowCredentials = true;
+  } else if (request->allow_cross_origin_requests()) {
+    // Otherwise, allow cross-origin requests with access control.
+    options.crossOriginRequestPolicy =
+        WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
+    options.allowCredentials = request->allow_credentials();
+  }
 
-  loader_.reset(frame->createAssociatedURLLoader());
+  loader_.reset(frame->createAssociatedURLLoader(options));
   if (!loader_.get())
     return PP_ERROR_FAILED;
 
@@ -276,10 +287,6 @@ int32_t PPB_URLLoader_Impl::FollowRedirect(PP_CompletionCallback callback) {
     return rv;
 
   WebURL redirect_url = GURL(response_info_->redirect_url());
-
-  rv = CanRequest(GetFrame(instance()), redirect_url);
-  if (rv != PP_OK)
-    return rv;
 
   loader_->setDefersLoading(false);  // Allow the redirect to continue.
   RegisterCallback(callback);
@@ -384,12 +391,6 @@ void PPB_URLLoader_Impl::willSendRequest(
     SaveResponse(redirect_response);
     loader_->setDefersLoading(true);
     RunCallback(PP_OK);
-  } else {
-    int32_t rv = CanRequest(GetFrame(instance()), new_request.url());
-    if (rv != PP_OK) {
-      loader_->setDefersLoading(true);
-      RunCallback(rv);
-    }
   }
 }
 
@@ -496,21 +497,11 @@ size_t PPB_URLLoader_Impl::FillUserBuffer() {
   return bytes_to_copy;
 }
 
-void PPB_URLLoader_Impl::SaveResponse(const WebKit::WebURLResponse& response) {
+void PPB_URLLoader_Impl::SaveResponse(const WebURLResponse& response) {
   scoped_refptr<PPB_URLResponseInfo_Impl> response_info(
       new PPB_URLResponseInfo_Impl(instance()));
   if (response_info->Initialize(response))
     response_info_ = response_info;
-}
-
-// Checks that the client can request the URL. Returns a PPAPI error code.
-int32_t PPB_URLLoader_Impl::CanRequest(const WebKit::WebFrame* frame,
-                              const WebKit::WebURL& url) {
-  if (!has_universal_access_ &&
-      !frame->securityOrigin().canRequest(url))
-    return PP_ERROR_NOACCESS;
-
-  return PP_OK;
 }
 
 void PPB_URLLoader_Impl::UpdateStatus() {

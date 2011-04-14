@@ -105,8 +105,6 @@ class PPB_URLLoader_Impl : public Resource, public WebKit::WebURLLoaderClient {
   // Converts a WebURLResponse to a URLResponseInfo and saves it.
   void SaveResponse(const WebKit::WebURLResponse& response);
 
-  int32_t CanRequest(const WebKit::WebFrame* frame, const WebKit::WebURL& url);
-
   // Calls the status_callback_ (if any) with the current upload and download
   // progress. Call this function if you update any of these values to
   // synchronize an out-of-process plugin's state.
