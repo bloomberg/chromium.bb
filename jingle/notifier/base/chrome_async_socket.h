@@ -21,25 +21,22 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
-#include "net/base/ssl_config_service.h"
 #include "talk/xmpp/asyncsocket.h"
 
 namespace net {
-class CertVerifier;
 class ClientSocket;
-class ClientSocketFactory;
 class IOBufferWithSize;
 }  // namespace net
 
 namespace notifier {
 
+class ResolvingClientSocketFactory;
+
 class ChromeAsyncSocket : public buzz::AsyncSocket {
  public:
-  // Takes ownership of |client_socket_factory| but not |cert_verifier| nor
-  // |net_log|.  |cert_verifier| may not be NULL.  |net_log| may be NULL.
-  ChromeAsyncSocket(net::ClientSocketFactory* client_socket_factory,
-                    const net::SSLConfig& ssl_config,
-                    net::CertVerifier* cert_verifier,
+  // Takes ownership of |client_socket_factory| but not |net_log|.
+  // |net_log| may be NULL.
+  ChromeAsyncSocket(ResolvingClientSocketFactory* client_socket_factory,
                     size_t read_buf_size,
                     size_t write_buf_size,
                     net::NetLog* net_log);
@@ -187,9 +184,7 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   net::CompletionCallbackImpl<ChromeAsyncSocket> write_callback_;
   net::CompletionCallbackImpl<ChromeAsyncSocket> ssl_connect_callback_;
 
-  scoped_ptr<net::ClientSocketFactory> client_socket_factory_;
-  const net::SSLConfig ssl_config_;
-  net::CertVerifier* const cert_verifier_;
+  scoped_ptr<ResolvingClientSocketFactory> client_socket_factory_;
   net::BoundNetLog bound_net_log_;
 
   // buzz::AsyncSocket state.

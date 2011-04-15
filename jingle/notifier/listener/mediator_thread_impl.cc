@@ -99,10 +99,7 @@ void MediatorThreadImpl::Core::Login(const buzz::XmppClientSettings& settings) {
   login_.reset(new notifier::Login(this,
                                    settings,
                                    notifier::ConnectionOptions(),
-                                   notifier_options_.request_context_getter->
-                                       GetURLRequestContext()->host_resolver(),
-                                   notifier_options_.request_context_getter->
-                                       GetURLRequestContext()->cert_verifier(),
+                                   notifier_options_.request_context_getter,
                                    GetServerList(notifier_options_),
                                    notifier_options_.try_ssltcp_first,
                                    notifier_options_.auth_mechanism));

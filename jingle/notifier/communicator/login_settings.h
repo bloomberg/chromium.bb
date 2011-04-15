@@ -6,17 +6,13 @@
 #define JINGLE_NOTIFIER_COMMUNICATOR_LOGIN_SETTINGS_H_
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "jingle/notifier/base/server_information.h"
 #include "jingle/notifier/communicator/xmpp_connection_generator.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace buzz {
 class XmppClientSettings;
-}
-
-namespace net {
-class CertVerifier;
-class HostPortPair;
-class HostResolver;
 }
 
 namespace talk_base {
@@ -30,8 +26,8 @@ class LoginSettings {
  public:
   LoginSettings(const buzz::XmppClientSettings& user_settings,
                 const ConnectionOptions& options,
-                net::HostResolver* host_resolver,
-                net::CertVerifier* cert_verifier,
+                const scoped_refptr<net::URLRequestContextGetter>&
+                    request_context_getter,
                 const ServerList& servers,
                 bool try_ssltcp_first,
                 const std::string& auth_mechanism);
@@ -42,12 +38,8 @@ class LoginSettings {
     return try_ssltcp_first_;
   }
 
-  net::HostResolver* host_resolver() {
-    return host_resolver_;
-  }
-
-  net::CertVerifier* cert_verifier() {
-    return cert_verifier_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter() {
+    return request_context_getter_;
   }
 
   ServerList servers() const {
@@ -77,8 +69,7 @@ class LoginSettings {
  private:
   bool try_ssltcp_first_;
 
-  net::HostResolver* const host_resolver_;
-  net::CertVerifier* const cert_verifier_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   const ServerList servers_;
   // Used to handle redirects
   scoped_ptr<ServerInformation> server_override_;

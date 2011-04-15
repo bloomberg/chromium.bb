@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,8 @@
 #include "jingle/notifier/base/weak_xmpp_client.h"
 #include "jingle/notifier/base/xmpp_client_socket_factory.h"
 #include "net/base/ssl_config_service.h"
+#include "net/socket/client_socket_factory.h"
+#include "net/url_request/url_request_context.h"
 #include "talk/xmpp/xmppclientsettings.h"
 
 namespace notifier {
@@ -21,31 +23,32 @@ namespace {
 
 buzz::AsyncSocket* CreateSocket(
     const buzz::XmppClientSettings& xmpp_client_settings,
-    net::CertVerifier* cert_verifier) {
+    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter) {
   bool use_fake_ssl_client_socket =
       (xmpp_client_settings.protocol() == cricket::PROTO_SSLTCP);
-  net::ClientSocketFactory* const client_socket_factory =
-      new XmppClientSocketFactory(
-          net::ClientSocketFactory::GetDefaultFactory(),
-          use_fake_ssl_client_socket);
   // The default SSLConfig is good enough for us for now.
   const net::SSLConfig ssl_config;
   // These numbers were taken from similar numbers in
   // XmppSocketAdapter.
   const size_t kReadBufSize = 64U * 1024U;
   const size_t kWriteBufSize = 64U * 1024U;
-  // TODO(akalin): Use a real NetLog.
-  net::NetLog* const net_log = NULL;
-  return new ChromeAsyncSocket(
-      client_socket_factory, ssl_config, cert_verifier,
-      kReadBufSize, kWriteBufSize, net_log);
+  net::NetLog* const net_log =
+      request_context_getter->GetURLRequestContext()->net_log();
+  XmppClientSocketFactory* const client_socket_factory =
+      new XmppClientSocketFactory(
+          net::ClientSocketFactory::GetDefaultFactory(),
+          ssl_config,
+          request_context_getter,
+          use_fake_ssl_client_socket);
+  return new ChromeAsyncSocket(client_socket_factory,
+                               kReadBufSize, kWriteBufSize, net_log);
 }
 
 }  // namespace
 
 XmppConnection::XmppConnection(
     const buzz::XmppClientSettings& xmpp_client_settings,
-    net::CertVerifier* cert_verifier,
+    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
     Delegate* delegate, buzz::PreXmppAuth* pre_xmpp_auth)
     : task_pump_(new TaskPump()),
       on_connect_called_(false),
@@ -64,7 +67,7 @@ XmppConnection::XmppConnection(
   buzz::XmppReturnStatus connect_status =
       weak_xmpp_client->Connect(xmpp_client_settings, kLanguage,
                                 CreateSocket(xmpp_client_settings,
-                                             cert_verifier),
+                                             request_context_getter),
                                 pre_xmpp_auth);
   // buzz::XmppClient::Connect() should never fail.
   DCHECK_EQ(connect_status, buzz::XMPP_RETURN_OK);

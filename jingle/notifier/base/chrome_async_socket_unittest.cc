@@ -4,6 +4,12 @@
 
 #include "jingle/notifier/base/chrome_async_socket.h"
 
+#if defined(OS_WIN)
+#include <winsock2.h>
+#elif defined(OS_POSIX)
+#include <arpa/inet.h>
+#endif
+
 #include <deque>
 #include <string>
 
@@ -11,11 +17,14 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "jingle/notifier/base/resolving_client_socket_factory.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log.h"
 #include "net/base/ssl_config_service.h"
 #include "net/socket/socket_test_util.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "talk/base/sigslot.h"
 #include "talk/base/socketaddress.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -95,6 +104,53 @@ class AsyncSocketDataProvider : public net::SocketDataProvider {
   DISALLOW_COPY_AND_ASSIGN(AsyncSocketDataProvider);
 };
 
+// Takes a 32-bit integer in host byte order and converts it to a
+// net::IPAddressNumber.
+net::IPAddressNumber Uint32ToIPAddressNumber(uint32 ip) {
+  uint32 ip_nbo = htonl(ip);
+  const unsigned char* const ip_start =
+      reinterpret_cast<const unsigned char*>(&ip_nbo);
+  return net::IPAddressNumber(ip_start, ip_start + (sizeof ip_nbo));
+}
+
+net::AddressList SocketAddressToAddressList(
+    const talk_base::SocketAddress& address) {
+  DCHECK_NE(address.ip(), 0U);
+  return net::AddressList(Uint32ToIPAddressNumber(address.ip()),
+                          address.port(), false);
+}
+
+class MockXmppClientSocketFactory : public ResolvingClientSocketFactory {
+ public:
+  MockXmppClientSocketFactory(
+      net::ClientSocketFactory* mock_client_socket_factory,
+      const net::AddressList& address_list)
+          : mock_client_socket_factory_(mock_client_socket_factory),
+            address_list_(address_list) {
+  }
+
+  // ResolvingClientSocketFactory implementation.
+  virtual net::ClientSocket* CreateTransportClientSocket(
+      const net::HostPortPair& host_and_port, net::NetLog* net_log) {
+    return mock_client_socket_factory_->CreateTransportClientSocket(
+        address_list_, net_log, net::NetLog::Source());
+  }
+
+  virtual net::SSLClientSocket* CreateSSLClientSocket(
+      net::ClientSocketHandle* transport_socket,
+      const net::HostPortPair& host_and_port) {
+    return mock_client_socket_factory_->CreateSSLClientSocket(
+        transport_socket, host_and_port, ssl_config_, NULL, &cert_verifier_,
+        NULL);
+  }
+
+ private:
+  scoped_ptr<net::ClientSocketFactory> mock_client_socket_factory_;
+  net::AddressList address_list_;
+  net::SSLConfig ssl_config_;
+  net::CertVerifier cert_verifier_;
+};
+
 class ChromeAsyncSocketTest
     : public testing::Test,
       public sigslot::has_slots<> {
@@ -114,9 +170,13 @@ class ChromeAsyncSocketTest
     mock_client_socket_factory->AddSSLSocketDataProvider(
         &ssl_socket_data_provider_);
 
+    scoped_ptr<MockXmppClientSocketFactory> mock_xmpp_client_socket_factory(
+        new MockXmppClientSocketFactory(
+            mock_client_socket_factory.release(),
+            SocketAddressToAddressList(addr_)));
     chrome_async_socket_.reset(
-        new ChromeAsyncSocket(mock_client_socket_factory.release(),
-                              ssl_config_, &cert_verifier_, 14, 20,
+        new ChromeAsyncSocket(mock_xmpp_client_socket_factory.release(),
+                              14, 20,
                               &capturing_net_log_)),
 
     chrome_async_socket_->SignalConnected.connect(
@@ -372,8 +432,6 @@ class ChromeAsyncSocketTest
   net::SSLSocketDataProvider ssl_socket_data_provider_;
 
   net::CapturingNetLog capturing_net_log_;
-  net::SSLConfig ssl_config_;
-  net::CertVerifier cert_verifier_;
   scoped_ptr<ChromeAsyncSocket> chrome_async_socket_;
   std::deque<SignalSocketState> signal_socket_states_;
   const talk_base::SocketAddress addr_;

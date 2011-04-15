@@ -68,10 +68,7 @@ void InvalidationNotifier::UpdateCredentials(
         new notifier::Login(this,
                             xmpp_client_settings,
                             notifier::ConnectionOptions(),
-                            notifier_options_.request_context_getter->
-                                GetURLRequestContext()->host_resolver(),
-                            notifier_options_.request_context_getter->
-                                GetURLRequestContext()->cert_verifier(),
+                            notifier_options_.request_context_getter,
                             notifier::GetServerList(notifier_options_),
                             notifier_options_.try_ssltcp_first,
                             notifier_options_.auth_mechanism));

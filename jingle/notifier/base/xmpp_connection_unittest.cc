@@ -12,6 +12,8 @@
 #include "base/message_loop.h"
 #include "jingle/notifier/base/weak_xmpp_client.h"
 #include "net/base/cert_verifier.h"
+#include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_test_util.h"
 #include "talk/xmpp/prexmppauth.h"
 #include "talk/xmpp/xmppclientsettings.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -27,6 +29,32 @@ class CryptString;
 class SocketAddress;
 class Task;
 }  // namespace talk_base
+
+namespace {
+// TODO(sanjeevr): Move this to net_test_support.
+// Used to return a dummy context.
+class TestURLRequestContextGetter : public net::URLRequestContextGetter {
+ public:
+  TestURLRequestContextGetter()
+      : message_loop_proxy_(base::MessageLoopProxy::CreateForCurrentThread()) {
+  }
+  virtual ~TestURLRequestContextGetter() { }
+
+  // net::URLRequestContextGetter:
+  virtual net::URLRequestContext* GetURLRequestContext() {
+    if (!context_)
+      context_ = new TestURLRequestContext();
+    return context_.get();
+  }
+  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const {
+    return message_loop_proxy_;
+  }
+
+ private:
+  scoped_refptr<net::URLRequestContext> context_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
+};
+}  // namespace
 
 namespace notifier {
 
@@ -66,7 +94,9 @@ class MockXmppConnectionDelegate : public XmppConnection::Delegate {
 
 class XmppConnectionTest : public testing::Test {
  protected:
-  XmppConnectionTest() : mock_pre_xmpp_auth_(new MockPreXmppAuth()) {}
+  XmppConnectionTest()
+      : mock_pre_xmpp_auth_(new MockPreXmppAuth()),
+        url_request_context_getter_(new TestURLRequestContextGetter()) {}
 
   virtual ~XmppConnectionTest() {}
 
@@ -77,13 +107,14 @@ class XmppConnectionTest : public testing::Test {
 
   // Needed by XmppConnection.
   MessageLoop message_loop_;
-  net::CertVerifier cert_verifier_;
   MockXmppConnectionDelegate mock_xmpp_connection_delegate_;
   scoped_ptr<MockPreXmppAuth> mock_pre_xmpp_auth_;
+  scoped_refptr<TestURLRequestContextGetter> url_request_context_getter_;
 };
 
 TEST_F(XmppConnectionTest, CreateDestroy) {
-  XmppConnection xmpp_connection(buzz::XmppClientSettings(), &cert_verifier_,
+  XmppConnection xmpp_connection(buzz::XmppClientSettings(),
+                                 url_request_context_getter_,
                                  &mock_xmpp_connection_delegate_, NULL);
 }
 
@@ -94,7 +125,8 @@ TEST_F(XmppConnectionTest, ImmediateFailure) {
   EXPECT_CALL(mock_xmpp_connection_delegate_,
               OnError(buzz::XmppEngine::ERROR_NONE, 0, NULL));
 
-  XmppConnection xmpp_connection(buzz::XmppClientSettings(), &cert_verifier_,
+  XmppConnection xmpp_connection(buzz::XmppClientSettings(),
+                                 url_request_context_getter_,
                                  &mock_xmpp_connection_delegate_, NULL);
 
   // We need to do this *before* |xmpp_connection| gets destroyed or
@@ -113,7 +145,7 @@ TEST_F(XmppConnectionTest, PreAuthFailure) {
               OnError(buzz::XmppEngine::ERROR_AUTH, 5, NULL));
 
   XmppConnection xmpp_connection(
-      buzz::XmppClientSettings(), &cert_verifier_,
+      buzz::XmppClientSettings(), url_request_context_getter_,
       &mock_xmpp_connection_delegate_, mock_pre_xmpp_auth_.release());
 
   // We need to do this *before* |xmpp_connection| gets destroyed or
@@ -131,7 +163,7 @@ TEST_F(XmppConnectionTest, FailureAfterPreAuth) {
               OnError(buzz::XmppEngine::ERROR_NONE, 0, NULL));
 
   XmppConnection xmpp_connection(
-      buzz::XmppClientSettings(), &cert_verifier_,
+      buzz::XmppClientSettings(), url_request_context_getter_,
       &mock_xmpp_connection_delegate_, mock_pre_xmpp_auth_.release());
 
   // We need to do this *before* |xmpp_connection| gets destroyed or
@@ -143,7 +175,8 @@ TEST_F(XmppConnectionTest, RaisedError) {
   EXPECT_CALL(mock_xmpp_connection_delegate_,
               OnError(buzz::XmppEngine::ERROR_NONE, 0, NULL));
 
-  XmppConnection xmpp_connection(buzz::XmppClientSettings(), &cert_verifier_,
+  XmppConnection xmpp_connection(buzz::XmppClientSettings(),
+                                 url_request_context_getter_,
                                  &mock_xmpp_connection_delegate_, NULL);
 
   xmpp_connection.weak_xmpp_client_->
@@ -156,7 +189,8 @@ TEST_F(XmppConnectionTest, Connect) {
       WillOnce(SaveArg<0>(&weak_ptr));
 
   {
-    XmppConnection xmpp_connection(buzz::XmppClientSettings(), &cert_verifier_,
+    XmppConnection xmpp_connection(buzz::XmppClientSettings(),
+                                   url_request_context_getter_,
                                    &mock_xmpp_connection_delegate_, NULL);
 
     xmpp_connection.weak_xmpp_client_->
@@ -173,7 +207,8 @@ TEST_F(XmppConnectionTest, MultipleConnect) {
     EXPECT_CALL(mock_xmpp_connection_delegate_, OnConnect(_)).
         WillOnce(SaveArg<0>(&weak_ptr));
 
-    XmppConnection xmpp_connection(buzz::XmppClientSettings(), &cert_verifier_,
+    XmppConnection xmpp_connection(buzz::XmppClientSettings(),
+                                   url_request_context_getter_,
                                    &mock_xmpp_connection_delegate_, NULL);
 
     xmpp_connection.weak_xmpp_client_->
@@ -194,7 +229,8 @@ TEST_F(XmppConnectionTest, ConnectThenError) {
   EXPECT_CALL(mock_xmpp_connection_delegate_,
               OnError(buzz::XmppEngine::ERROR_NONE, 0, NULL));
 
-  XmppConnection xmpp_connection(buzz::XmppClientSettings(), &cert_verifier_,
+  XmppConnection xmpp_connection(buzz::XmppClientSettings(),
+                                 url_request_context_getter_,
                                  &mock_xmpp_connection_delegate_, NULL);
 
   xmpp_connection.weak_xmpp_client_->

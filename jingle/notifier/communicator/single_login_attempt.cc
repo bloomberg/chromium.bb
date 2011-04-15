@@ -17,6 +17,8 @@
 #include "jingle/notifier/communicator/connection_settings.h"
 #include "jingle/notifier/communicator/login_settings.h"
 #include "jingle/notifier/listener/xml_element_util.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "talk/xmllite/xmlelement.h"
 #include "talk/xmpp/xmppclient.h"
 #include "talk/xmpp/xmppclientsettings.h"
@@ -34,10 +36,14 @@ SingleLoginAttempt::SingleLoginAttempt(LoginSettings* login_settings,
       delegate_(delegate),
       connection_generator_(
           ALLOW_THIS_IN_INITIALIZER_LIST(this),
-          login_settings_->host_resolver(),
+          login_settings_->request_context_getter()->GetURLRequestContext()->
+              host_resolver(),
           &login_settings_->connection_options(),
           login_settings_->try_ssltcp_first(),
           login_settings_->servers()) {
+  // DNS resolution will happen at a lower layer (we are using the socket
+  // pools).
+  connection_generator_.SetShouldResolveDNS(false);
   connection_generator_.StartGenerating();
 }
 
@@ -95,13 +101,6 @@ void SingleLoginAttempt::OnError(buzz::XmppEngine::Error error, int subcode,
 
 void SingleLoginAttempt::OnNewSettings(
     const ConnectionSettings& connection_settings) {
-  // TODO(akalin): Resolve any unresolved IPs, possibly through a
-  // proxy, instead of skipping them.
-  if (connection_settings.server().IsUnresolvedIP()) {
-    connection_generator_.UseNextConnection();
-    return;
-  }
-
   buzz::XmppClientSettings client_settings =
       login_settings_->user_settings();
   // Fill in the rest of the client settings.
@@ -115,7 +114,8 @@ void SingleLoginAttempt::OnNewSettings(
           client_settings.token_service(),
           login_settings_->auth_mechanism());
   xmpp_connection_.reset(
-      new XmppConnection(client_settings, login_settings_->cert_verifier(),
+      new XmppConnection(client_settings,
+                         login_settings_->request_context_getter(),
                          this, pre_xmpp_auth));
 }
 

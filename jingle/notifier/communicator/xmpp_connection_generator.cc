@@ -56,6 +56,7 @@ XmppConnectionGenerator::XmppConnectionGenerator(
       try_ssltcp_first_(try_ssltcp_first),
       successfully_resolved_dns_(false),
       first_dns_error_(0),
+      should_resolve_dns_(true),
       options_(options) {
   DCHECK(delegate_);
   DCHECK(host_resolver);
@@ -119,18 +120,26 @@ void XmppConnectionGenerator::UseNextConnection() {
       return;
     }
 
-    // Resolve the server.
-    const net::HostPortPair& server = current_server_->server;
-    net::HostResolver::RequestInfo request_info(server);
-    int status =
-        host_resolver_.Resolve(
-            request_info, &address_list_, resolve_callback_.get(),
-            bound_net_log_);
-    if (status == net::ERR_IO_PENDING) {
-      // resolve_callback_ will call us when it's called.
-      return;
+    if (should_resolve_dns_) {
+      // Resolve the server.
+      const net::HostPortPair& server = current_server_->server;
+      net::HostResolver::RequestInfo request_info(server);
+      int status =
+          host_resolver_.Resolve(
+              request_info, &address_list_, resolve_callback_.get(),
+              bound_net_log_);
+      if (status == net::ERR_IO_PENDING) {
+        // resolve_callback_ will call us when it's called.
+        return;
+      }
+      HandleServerDNSResolved(status);
+    } else {
+      // We are not resolving DNS here (DNS will be resolved by a lower layer).
+      // Generate settings using an empty IP list (which will just use the
+      // host name for the current server).
+      std::vector<uint32> ip_list;
+      GenerateSettingsForIPList(ip_list);
     }
-    HandleServerDNSResolved(status);
   }
 }
 
@@ -169,6 +178,11 @@ void XmppConnectionGenerator::HandleServerDNSResolved(int status) {
             << " : " << talk_base::SocketAddress::IPToString(ip_list[i]);
   }
 
+  GenerateSettingsForIPList(ip_list);
+}
+
+void XmppConnectionGenerator::GenerateSettingsForIPList(
+    const std::vector<uint32>& ip_list) {
   // Build the ip list.
   DCHECK(settings_list_.get());
   settings_index_ = -1;

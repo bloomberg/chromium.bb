@@ -9,9 +9,11 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "talk/base/sigslot.h"
 #include "talk/xmpp/xmppengine.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
@@ -20,10 +22,6 @@ namespace buzz {
 class PreXmppAuth;
 class XmlElement;
 class XmppClientSettings;
-}  // namespace
-
-namespace net {
-class CertVerifier;
 }  // namespace
 
 namespace talk_base {
@@ -69,7 +67,8 @@ class XmppConnection : public sigslot::has_slots<> {
   //
   // TODO(akalin): Avoid the need for |pre_xmpp_auth|.
   XmppConnection(const buzz::XmppClientSettings& xmpp_client_settings,
-                 net::CertVerifier* cert_verifier,
+                 const scoped_refptr<net::URLRequestContextGetter>&
+                     request_context_getter,
                  Delegate* delegate, buzz::PreXmppAuth* pre_xmpp_auth);
 
   // Invalidates any weak pointers passed to the delegate by

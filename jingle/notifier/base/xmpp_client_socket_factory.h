@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,38 +7,46 @@
 
 #include <string>
 
-#include "net/socket/client_socket_factory.h"
+#include "base/memory/ref_counted.h"
+#include "jingle/notifier/base/resolving_client_socket_factory.h"
+#include "net/base/ssl_config_service.h"
 
 namespace net {
-class DnsCertProvenanceChecker;
+class ClientSocket;
+class ClientSocketFactory;
+class ClientSocketHandle;
 class HostPortPair;
+class NetLog;
+class SSLClientSocket;
 class SSLHostInfo;
+class URLRequestContextGetter;
 }
 
 namespace notifier {
 
-class XmppClientSocketFactory : public net::ClientSocketFactory {
+class XmppClientSocketFactory : public ResolvingClientSocketFactory {
  public:
   // Does not take ownership of |client_socket_factory|.
   XmppClientSocketFactory(
       net::ClientSocketFactory* client_socket_factory,
+      const net::SSLConfig& ssl_config,
+      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       bool use_fake_ssl_client_socket);
 
   virtual ~XmppClientSocketFactory();
 
-  // net::ClientSocketFactory implementation.
+  // ResolvingClientSocketFactory implementation.
   virtual net::ClientSocket* CreateTransportClientSocket(
-      const net::AddressList& addresses, net::NetLog* net_log,
-      const net::NetLog::Source& source);
+      const net::HostPortPair& host_and_port, net::NetLog* net_log);
+
   virtual net::SSLClientSocket* CreateSSLClientSocket(
       net::ClientSocketHandle* transport_socket,
-      const net::HostPortPair& host_and_port, const net::SSLConfig& ssl_config,
-      net::SSLHostInfo* ssl_host_info, net::CertVerifier* cert_verifier,
-      net::DnsCertProvenanceChecker* dns_cert_checker);
-  virtual void ClearSSLSessionCache();
+      const net::HostPortPair& host_and_port);
 
  private:
   net::ClientSocketFactory* const client_socket_factory_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  const net::SSLConfig ssl_config_;
   const bool use_fake_ssl_client_socket_;
 
   DISALLOW_COPY_AND_ASSIGN(XmppClientSocketFactory);

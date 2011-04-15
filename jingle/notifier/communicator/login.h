@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
@@ -23,8 +24,7 @@ class XmppClientSettings;
 }  // namespace buzz
 
 namespace net {
-class CertVerifier;
-class HostResolver;
+class URLRequestContextGetter;
 }  // namespace net
 
 namespace talk_base {
@@ -60,8 +60,8 @@ class Login : public net::NetworkChangeNotifier::IPAddressObserver,
   Login(Delegate* delegate,
         const buzz::XmppClientSettings& user_settings,
         const ConnectionOptions& options,
-        net::HostResolver* host_resolver,
-        net::CertVerifier* cert_verifier,
+        const scoped_refptr<net::URLRequestContextGetter>&
+            request_context_getter,
         const ServerList& servers,
         bool try_ssltcp_first,
         const std::string& auth_mechanism);

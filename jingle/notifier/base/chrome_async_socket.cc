@@ -1,14 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "jingle/notifier/base/chrome_async_socket.h"
-
-#if defined(OS_WIN)
-#include <winsock2.h>
-#elif defined(OS_POSIX)
-#include <arpa/inet.h>
-#endif
 
 #include <algorithm>
 #include <cstring>
@@ -18,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "jingle/notifier/base/resolving_client_socket_factory.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
@@ -25,6 +20,7 @@
 #include "net/base/ssl_config_service.h"
 #include "net/base/sys_addrinfo.h"
 #include "net/socket/client_socket_factory.h"
+#include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/tcp_client_socket.h"
 #include "talk/base/socketaddress.h"
@@ -32,9 +28,7 @@
 namespace notifier {
 
 ChromeAsyncSocket::ChromeAsyncSocket(
-    net::ClientSocketFactory* client_socket_factory,
-    const net::SSLConfig& ssl_config,
-    net::CertVerifier* cert_verifier,
+    ResolvingClientSocketFactory* client_socket_factory,
     size_t read_buf_size,
     size_t write_buf_size,
     net::NetLog* net_log)
@@ -47,8 +41,6 @@ ChromeAsyncSocket::ChromeAsyncSocket(
       ssl_connect_callback_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
                             &ChromeAsyncSocket::ProcessSSLConnectDone),
       client_socket_factory_(client_socket_factory),
-      ssl_config_(ssl_config),
-      cert_verifier_(cert_verifier),
       bound_net_log_(
           net::BoundNetLog::Make(net_log, net::NetLog::SOURCE_SOCKET)),
       state_(STATE_CLOSED),
@@ -103,26 +95,6 @@ void ChromeAsyncSocket::DoNetErrorFromStatus(int status) {
   DoNetError(static_cast<net::Error>(status));
 }
 
-namespace {
-
-// Takes a 32-bit integer in host byte order and converts it to a
-// net::IPAddressNumber.
-net::IPAddressNumber Uint32ToIPAddressNumber(uint32 ip) {
-  uint32 ip_nbo = htonl(ip);
-  const unsigned char* const ip_start =
-      reinterpret_cast<const unsigned char*>(&ip_nbo);
-  return net::IPAddressNumber(ip_start, ip_start + (sizeof ip_nbo));
-}
-
-net::AddressList SocketAddressToAddressList(
-    const talk_base::SocketAddress& address) {
-  DCHECK_NE(address.ip(), 0U);
-  return net::AddressList(Uint32ToIPAddressNumber(address.ip()),
-                          address.port(), false);
-}
-
-}  // namespace
-
 // STATE_CLOSED -> STATE_CONNECTING
 
 bool ChromeAsyncSocket::Connect(const talk_base::SocketAddress& address) {
@@ -131,7 +103,8 @@ bool ChromeAsyncSocket::Connect(const talk_base::SocketAddress& address) {
     DoNonNetError(ERROR_WRONGSTATE);
     return false;
   }
-  if (address.ip() == 0) {
+  // We can't work with an empty hostname and IP address.
+  if (address.hostname().empty() && (address.ip() == 0)) {
     DoNonNetError(ERROR_DNS);
     return false;
   }
@@ -145,10 +118,11 @@ bool ChromeAsyncSocket::Connect(const talk_base::SocketAddress& address) {
   DCHECK(scoped_runnable_method_factory_.empty());
   scoped_runnable_method_factory_.RevokeAll();
 
-  net::AddressList address_list = SocketAddressToAddressList(address);
+  net::HostPortPair dest_host_port_pair(address.IPAsString(), address.port());
+
   transport_socket_.reset(
       client_socket_factory_->CreateTransportClientSocket(
-          address_list, bound_net_log_.net_log(), net::NetLog::Source()));
+          dest_host_port_pair, bound_net_log_.net_log()));
   int status = transport_socket_->Connect(&connect_callback_);
   if (status != net::ERR_IO_PENDING) {
     // We defer execution of ProcessConnectDone instead of calling it
@@ -436,11 +410,11 @@ bool ChromeAsyncSocket::StartTls(const std::string& domain_name) {
   scoped_runnable_method_factory_.RevokeAll();
 
   DCHECK(transport_socket_.get());
+  net::ClientSocketHandle* socket_handle = new net::ClientSocketHandle();
+  socket_handle->set_socket(transport_socket_.release());
   transport_socket_.reset(
       client_socket_factory_->CreateSSLClientSocket(
-          transport_socket_.release(), net::HostPortPair(domain_name, 443),
-          ssl_config_, NULL /* ssl_host_info */,
-          cert_verifier_));
+          socket_handle, net::HostPortPair(domain_name, 443)));
   int status = transport_socket_->Connect(&ssl_connect_callback_);
   if (status != net::ERR_IO_PENDING) {
     MessageLoop* message_loop = MessageLoop::current();

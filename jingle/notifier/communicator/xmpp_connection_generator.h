@@ -57,9 +57,15 @@ class XmppConnectionGenerator {
 
   void UseNextConnection();
 
+  // TODO(sanjeevr): Rip out the DNS resolution code eventually.
+  void SetShouldResolveDNS(bool should_resolve_dns) {
+    should_resolve_dns_ = should_resolve_dns;
+  }
+
  private:
   void OnServerDNSResolved(int status);
   void HandleServerDNSResolved(int status);
+  void GenerateSettingsForIPList(const std::vector<uint32>& ip_list);
 
   Delegate* delegate_;
   net::SingleRequestHostResolver host_resolver_;
@@ -73,6 +79,7 @@ class XmppConnectionGenerator {
   bool try_ssltcp_first_;  // Used when sync tests are run on chromium builders.
   bool successfully_resolved_dns_;
   int first_dns_error_;
+  bool should_resolve_dns_;
   const ConnectionOptions* options_;
 
   DISALLOW_COPY_AND_ASSIGN(XmppConnectionGenerator);

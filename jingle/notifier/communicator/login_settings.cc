@@ -19,20 +19,17 @@ namespace notifier {
 
 LoginSettings::LoginSettings(const buzz::XmppClientSettings& user_settings,
                              const ConnectionOptions& options,
-                             net::HostResolver* host_resolver,
-                             net::CertVerifier* cert_verifier,
+                             const scoped_refptr<net::URLRequestContextGetter>&
+                                 request_context_getter,
                              const ServerList& servers,
                              bool try_ssltcp_first,
                              const std::string& auth_mechanism)
     :  try_ssltcp_first_(try_ssltcp_first),
-       host_resolver_(host_resolver),
-       cert_verifier_(cert_verifier),
+       request_context_getter_(request_context_getter),
        servers_(servers),
        user_settings_(new buzz::XmppClientSettings(user_settings)),
        connection_options_(new ConnectionOptions(options)),
        auth_mechanism_(auth_mechanism) {
-  DCHECK(host_resolver);
-  DCHECK(cert_verifier);
   DCHECK_GT(servers_.size(), 0u);
 }
 
