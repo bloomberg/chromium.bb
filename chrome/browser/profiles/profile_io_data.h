@@ -6,24 +6,26 @@
 #define CHROME_BROWSER_PROFILES_PROFILE_IO_DATA_H_
 #pragma once
 
+#include <set>
 #include "base/basictypes.h"
+#include "base/debug/stack_trace.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/browser/resource_context.h"
 #include "net/base/cookie_monster.h"
 
 class CommandLine;
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
-class ChromeURLRequestContext;
-class ChromeURLRequestContextGetter;
 class ExtensionInfoMap;
 namespace fileapi {
 class FileSystemContext;
-}
+}  // namespace fileapi
 class HostContentSettingsMap;
 class HostZoomMap;
 class IOThread;
@@ -67,6 +69,7 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   scoped_refptr<ChromeURLRequestContext> GetIsolatedAppRequestContext(
       scoped_refptr<ChromeURLRequestContext> main_context,
       const std::string& app_id) const;
+  const content::ResourceContext& GetResourceContext() const;
 
  protected:
   friend class base::RefCountedThreadSafe<ProfileIOData>;
@@ -120,12 +123,8 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   explicit ProfileIOData(bool is_incognito);
   virtual ~ProfileIOData();
 
-  // Static helper functions to assist in common operations executed by
-  // subtypes.
-
-  static void InitializeProfileParams(Profile* profile, ProfileParams* params);
-  static void ApplyProfileParamsToContext(const ProfileParams& profile_params,
-                                          ChromeURLRequestContext* context);
+  void InitializeProfileParams(Profile* profile);
+  void ApplyProfileParamsToContext(ChromeURLRequestContext* context) const;
 
   // Lazy initializes the ProfileIOData object the first time a request context
   // is requested. The lazy logic is implemented here. The actual initialization
@@ -141,13 +140,24 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   }
 
  private:
+  class ResourceContext : public content::ResourceContext {
+   public:
+    explicit ResourceContext(const ProfileIOData* io_data);
+    virtual ~ResourceContext();
+
+   private:
+    virtual void EnsureInitialized() const;
+
+    const ProfileIOData* const io_data_;
+  };
+
   // --------------------------------------------
   // Virtual interface for subtypes to implement:
   // --------------------------------------------
 
   // Does the actual initialization of the ProfileIOData subtype. Subtypes
   // should use the static helper functions above to implement this.
-  virtual void LazyInitializeInternal() const = 0;
+  virtual void LazyInitializeInternal(ProfileParams* profile_params) const = 0;
 
   // Does an on-demand initialization of a RequestContext for the given
   // isolated app.
@@ -168,8 +178,11 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
           scoped_refptr<ChromeURLRequestContext> main_context,
           const std::string& app_id) const = 0;
 
-  mutable BooleanPrefMember enable_referrers_;
   mutable bool initialized_;
+  mutable scoped_ptr<ProfileParams> profile_params_;
+  mutable BooleanPrefMember enable_referrers_;
+  mutable scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
+  mutable ResourceContext resource_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileIOData);
 };

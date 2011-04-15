@@ -86,6 +86,7 @@ class ProfileImpl : public Profile,
   virtual net::URLRequestContextGetter* GetRequestContextForExtensions();
   virtual net::URLRequestContextGetter* GetRequestContextForIsolatedApp(
       const std::string& app_id);
+  virtual const content::ResourceContext& GetResourceContext();
   virtual void RegisterExtensionWithRequestContexts(const Extension* extension);
   virtual void UnregisterExtensionWithRequestContexts(
       const Extension* extension);

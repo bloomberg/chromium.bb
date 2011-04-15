@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/sys_info.h"
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_switches.h"
@@ -21,6 +22,7 @@ const int WorkerService::kMaxWorkersWhenSeparate = 64;
 const int WorkerService::kMaxWorkersPerTabWhenSeparate = 16;
 
 WorkerService* WorkerService::GetInstance() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return Singleton<WorkerService>::get();
 }
 
@@ -71,10 +73,11 @@ void WorkerService::CreateWorker(
     const ViewHostMsg_CreateWorker_Params& params,
     int route_id,
     WorkerMessageFilter* filter,
-    net::URLRequestContextGetter* request_context) {
-
+    net::URLRequestContextGetter* request_context_getter,
+    const content::ResourceContext& resource_context) {
+  // TODO(willchan): Eliminate the need for this downcast.
   ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
-      request_context->GetURLRequestContext());
+      request_context_getter->GetURLRequestContext());
 
   // Generate a unique route id for the browser-worker communication that's
   // unique among all worker processes.  That way when the worker process sends
@@ -89,7 +92,8 @@ void WorkerService::CreateWorker(
       params.is_shared ? 0 : filter->render_process_id(),
       params.is_shared ? 0 : params.parent_appcache_host_id,
       params.is_shared ? params.script_resource_appcache_id : 0,
-      request_context);
+      request_context_getter,
+      resource_context);
   instance.AddFilter(filter, route_id);
   instance.worker_document_set()->Add(
       filter, params.document_id, filter->render_process_id(),
@@ -105,7 +109,6 @@ void WorkerService::LookupSharedWorker(
     bool incognito,
     bool* exists,
     bool* url_mismatch) {
-
   *exists = true;
   WorkerProcessHost::WorkerInstance* instance = FindSharedWorkerInstance(
       params.url, params.name, incognito);
@@ -309,8 +312,9 @@ bool WorkerService::CreateWorkerFromInstance(
   if (!worker) {
     WorkerMessageFilter* first_filter = instance.filters().begin()->first;
     worker = new WorkerProcessHost(
-        first_filter->resource_dispatcher_host(),
-        instance.request_context());
+        instance.request_context_getter(),
+        &instance.resource_context(),
+        first_filter->resource_dispatcher_host());
     // TODO(atwilson): This won't work if the message is from a worker process.
     // We don't support that yet though (this message is only sent from
     // renderers) but when we do, we'll need to add code to pass in the current
@@ -551,8 +555,7 @@ WorkerService::CreatePendingInstance(const GURL& url,
     return instance;
 
   // No existing pending worker - create a new one.
-  WorkerProcessHost::WorkerInstance pending(
-      url, true, incognito, name, MSG_ROUTING_NONE, 0, 0, 0, NULL);
+  WorkerProcessHost::WorkerInstance pending(url, true, incognito, name);
   pending_shared_workers_.push_back(pending);
   return &pending_shared_workers_.back();
 }

@@ -8,16 +8,19 @@
 
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
+#include "base/threading/non_thread_safe.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "googleurl/src/gurl.h"
 
+namespace content {
+class ResourceContext;
+}  // namespace content
 namespace net {
 class URLRequestContextGetter;
-}
-
+}  // namespace net
 struct ViewHostMsg_CreateWorker_Params;
 
-// A singelton for managing HTML5 web workers.
+// A singleton for managing HTML5 web workers.
 class WorkerService {
  public:
   // Returns the WorkerService singleton.
@@ -27,7 +30,8 @@ class WorkerService {
   void CreateWorker(const ViewHostMsg_CreateWorker_Params& params,
                     int route_id,
                     WorkerMessageFilter* filter,
-                    net::URLRequestContextGetter* request_context);
+                    net::URLRequestContextGetter* request_context_getter,
+                    const content::ResourceContext& resource_context);
   void LookupSharedWorker(const ViewHostMsg_CreateWorker_Params& params,
                           int route_id,
                           WorkerMessageFilter* filter,

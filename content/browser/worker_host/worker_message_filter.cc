@@ -5,6 +5,7 @@
 #include "content/browser/worker_host/worker_message_filter.h"
 
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "content/browser/resource_context.h"
 #include "content/browser/worker_host/message_port_service.h"
 #include "content/browser/worker_host/worker_service.h"
 #include "content/common/view_messages.h"
@@ -13,16 +14,20 @@
 
 WorkerMessageFilter::WorkerMessageFilter(
     int render_process_id,
-    net::URLRequestContextGetter* request_context,
+    net::URLRequestContextGetter* request_context_getter,
+    const content::ResourceContext* resource_context,
     ResourceDispatcherHost* resource_dispatcher_host,
     CallbackWithReturnValue<int>::Type* next_routing_id)
     : render_process_id_(render_process_id),
-      request_context_(request_context),
+      request_context_getter_(request_context_getter),
+      resource_context_(resource_context),
       resource_dispatcher_host_(resource_dispatcher_host),
       next_routing_id_(next_routing_id) {
+  DCHECK(resource_context);
 }
 
 WorkerMessageFilter::~WorkerMessageFilter() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
 void WorkerMessageFilter::OnChannelClosing() {
@@ -80,7 +85,7 @@ void WorkerMessageFilter::OnCreateWorker(
   *route_id = params.route_id != MSG_ROUTING_NONE ?
       params.route_id : next_routing_id_->Run();
   WorkerService::GetInstance()->CreateWorker(
-      params, *route_id, this, request_context_);
+      params, *route_id, this, request_context_getter_, *resource_context_);
 }
 
 void WorkerMessageFilter::OnLookupSharedWorker(
@@ -91,7 +96,7 @@ void WorkerMessageFilter::OnLookupSharedWorker(
   *route_id = next_routing_id_->Run();
 
   bool incognito = static_cast<ChromeURLRequestContext*>(
-      request_context_->GetURLRequestContext())->is_incognito();
+      request_context_getter_->GetURLRequestContext())->is_incognito();
   WorkerService::GetInstance()->LookupSharedWorker(
       params, *route_id, this, incognito, exists, url_error);
 }

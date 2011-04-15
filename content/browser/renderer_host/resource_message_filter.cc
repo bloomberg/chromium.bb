@@ -7,15 +7,20 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/resource_context.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 
 ResourceMessageFilter::ResourceMessageFilter(
     int child_id,
     ChildProcessInfo::ProcessType process_type,
+    const content::ResourceContext* resource_context,
     ResourceDispatcherHost* resource_dispatcher_host)
     : child_id_(child_id),
       process_type_(process_type),
-      resource_dispatcher_host_(resource_dispatcher_host) {
+      resource_dispatcher_host_(resource_dispatcher_host),
+      resource_context_(resource_context) {
+  DCHECK(resource_context);
 }
 
 ResourceMessageFilter::~ResourceMessageFilter() {

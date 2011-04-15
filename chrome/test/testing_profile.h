@@ -12,6 +12,10 @@
 #include "base/timer.h"
 #include "chrome/browser/profiles/profile.h"
 
+namespace content {
+class ResourceContextGetter;
+}
+
 namespace history {
 class TopSites;
 }
@@ -206,6 +210,8 @@ class TestingProfile : public Profile {
   virtual net::URLRequestContextGetter* GetRequestContextForExtensions();
   virtual net::URLRequestContextGetter* GetRequestContextForIsolatedApp(
       const std::string& app_id);
+
+  virtual const content::ResourceContext& GetResourceContext();
 
   virtual net::SSLConfigService* GetSSLConfigService();
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher();

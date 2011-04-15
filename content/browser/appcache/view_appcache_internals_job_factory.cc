@@ -4,6 +4,7 @@
 
 #include "content/browser/appcache/view_appcache_internals_job_factory.h"
 
+#include "base/string_util.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/url_constants.h"
 #include "net/url_request/url_request.h"

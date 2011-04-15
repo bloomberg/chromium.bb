@@ -15,6 +15,10 @@ namespace base {
 class Time;
 }
 
+namespace content {
+class ResourceContext;
+}
+
 namespace fileapi {
 class FileSystemContext;
 class SandboxedFileSystemContext;
@@ -339,6 +343,8 @@ class Profile {
   // requested isolated storage.
   virtual net::URLRequestContextGetter* GetRequestContextForIsolatedApp(
       const std::string& app_id) = 0;
+
+  virtual const content::ResourceContext& GetResourceContext() = 0;
 
   // Called by the ExtensionService that lives in this profile. Gives the
   // profile a chance to react to the load event before the EXTENSION_LOADED

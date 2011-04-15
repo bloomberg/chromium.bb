@@ -17,8 +17,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 
 PpapiBrokerProcessHost::PpapiBrokerProcessHost()
-    : BrowserChildProcessHost(
-          ChildProcessInfo::PPAPI_BROKER_PROCESS, NULL) {
+    : BrowserChildProcessHost(ChildProcessInfo::PPAPI_BROKER_PROCESS) {
 }
 
 PpapiBrokerProcessHost::~PpapiBrokerProcessHost() {

@@ -822,6 +822,10 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContextForMedia() {
   return io_data_.GetMediaRequestContextGetter();
 }
 
+const content::ResourceContext& ProfileImpl::GetResourceContext() {
+  return io_data_.GetResourceContext();
+}
+
 FaviconService* ProfileImpl::GetFaviconService(ServiceAccessType sat) {
   if (!favicon_service_created_) {
     favicon_service_created_ = true;

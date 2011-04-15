@@ -13,6 +13,7 @@
 
 class PrefService;
 class Profile;
+class ResourceDispatcherHost;
 
 // A WebResourceService fetches data from a web resource server and store
 // locally as user preference.

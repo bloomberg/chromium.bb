@@ -13,6 +13,10 @@
 class ChromeURLRequestContext;
 class ResourceDispatcherHost;
 
+namespace content {
+class ResourceContext;
+}  // namespace content
+
 namespace net {
 class URLRequestContext;
 }  // namespace net
@@ -42,6 +46,7 @@ class ResourceMessageFilter : public BrowserMessageFilter {
 
   ResourceMessageFilter(int child_id,
                         ChildProcessInfo::ProcessType process_type,
+                        const content::ResourceContext* resource_context,
                         ResourceDispatcherHost* resource_dispatcher_host);
 
   // BrowserMessageFilter implementation.
@@ -74,6 +79,8 @@ class ResourceMessageFilter : public BrowserMessageFilter {
   ResourceDispatcherHost* resource_dispatcher_host_;
 
   scoped_refptr<URLRequestContextOverride> url_request_context_override_;
+
+  const content::ResourceContext* const resource_context_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ResourceMessageFilter);
 };

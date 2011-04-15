@@ -37,6 +37,7 @@ class OffTheRecordProfileIOData : public ProfileIOData {
     explicit Handle(Profile* profile);
     ~Handle();
 
+    const content::ResourceContext& GetResourceContext() const;
     scoped_refptr<ChromeURLRequestContextGetter>
         GetMainRequestContextGetter() const;
     scoped_refptr<ChromeURLRequestContextGetter>
@@ -86,7 +87,6 @@ class OffTheRecordProfileIOData : public ProfileIOData {
     ~LazyParams();
 
     IOThread* io_thread;
-    ProfileParams profile_params;
   };
 
   typedef base::hash_map<std::string, net::HttpTransactionFactory* >
@@ -96,7 +96,7 @@ class OffTheRecordProfileIOData : public ProfileIOData {
   ~OffTheRecordProfileIOData();
 
   // Lazily initializes ProfileIOData.
-  virtual void LazyInitializeInternal() const;
+  virtual void LazyInitializeInternal(ProfileParams* profile_params) const;
   virtual scoped_refptr<RequestContext> InitializeAppRequestContext(
       scoped_refptr<ChromeURLRequestContext> main_context,
       const std::string& app_id) const;

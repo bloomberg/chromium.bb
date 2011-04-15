@@ -39,6 +39,7 @@ class ProfileImplIOData : public ProfileIOData {
               const FilePath& extensions_cookie_path,
               const FilePath& app_path);
 
+    const content::ResourceContext& GetResourceContext() const;
     scoped_refptr<ChromeURLRequestContextGetter>
         GetMainRequestContextGetter() const;
     scoped_refptr<ChromeURLRequestContextGetter>
@@ -98,8 +99,6 @@ class ProfileImplIOData : public ProfileIOData {
     int media_cache_max_size;
     FilePath extensions_cookie_path;
     IOThread* io_thread;
-
-    ProfileParams profile_params;
   };
 
   typedef base::hash_map<std::string, net::HttpTransactionFactory* >
@@ -109,7 +108,7 @@ class ProfileImplIOData : public ProfileIOData {
   virtual ~ProfileImplIOData();
 
   // Lazily initializes ProfileImplIOData.
-  virtual void LazyInitializeInternal() const;
+  virtual void LazyInitializeInternal(ProfileParams* profile_params) const;
   virtual scoped_refptr<RequestContext> InitializeAppRequestContext(
       scoped_refptr<ChromeURLRequestContext> main_context,
       const std::string& app_id) const;
@@ -142,7 +141,7 @@ class ProfileImplIOData : public ProfileIOData {
 
   // Parameters needed for isolated apps.
   FilePath app_path_;
-  bool clear_local_state_on_exit_;
+  mutable bool clear_local_state_on_exit_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImplIOData);
 };

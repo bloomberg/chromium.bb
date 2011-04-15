@@ -26,6 +26,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_notification_task.h"
 #include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
+#include "content/browser/resource_context.h"
 #include "content/browser/worker_host/message_port_service.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/browser/worker_host/worker_service.h"
@@ -84,10 +85,16 @@ class WorkerCrashTask : public Task {
 };
 
 WorkerProcessHost::WorkerProcessHost(
-    ResourceDispatcherHost* resource_dispatcher_host,
-    net::URLRequestContextGetter* request_context)
-    : BrowserChildProcessHost(WORKER_PROCESS, resource_dispatcher_host),
-      request_context_(request_context) {
+    net::URLRequestContextGetter* request_context_getter,
+    const content::ResourceContext* resource_context,
+    ResourceDispatcherHost* resource_dispatcher_host)
+    : BrowserChildProcessHost(WORKER_PROCESS),
+      request_context_getter_(request_context_getter),
+      resource_context_(resource_context),
+      resource_dispatcher_host_(resource_dispatcher_host) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(resource_context);
+  DCHECK(request_context_getter);
 }
 
 WorkerProcessHost::~WorkerProcessHost() {
@@ -201,12 +208,20 @@ bool WorkerProcessHost::Init(int render_process_id) {
 }
 
 void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
+  DCHECK(resource_context_);
   ChromeURLRequestContext* chrome_url_context = GetChromeURLRequestContext();
 
-  worker_message_filter_= new WorkerMessageFilter(
+  ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
+      id(), WORKER_PROCESS, resource_context_, resource_dispatcher_host_);
+  resource_message_filter->set_url_request_context_override(
+      new URLRequestContextOverride(chrome_url_context));
+  AddFilter(resource_message_filter);
+
+  worker_message_filter_ = new WorkerMessageFilter(
       render_process_id,
-      request_context_,
-      resource_dispatcher_host(),
+      request_context_getter_,
+      resource_context_,
+      resource_dispatcher_host_,
       NewCallbackWithReturnValue(
           WorkerService::GetInstance(), &WorkerService::next_worker_route_id));
   AddFilter(worker_message_filter_);
@@ -217,7 +232,7 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       new BlobMessageFilter(id(), chrome_url_context->blob_storage_context()));
   AddFilter(new MimeRegistryMessageFilter());
   AddFilter(new DatabaseMessageFilter(
-      chrome_url_context->database_tracker(),
+      resource_context_->database_tracker(),
       chrome_url_context->host_content_settings_map()));
 
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
@@ -473,7 +488,7 @@ void WorkerProcessHost::UpdateTitle() {
 
 ChromeURLRequestContext* WorkerProcessHost::GetChromeURLRequestContext() {
   return static_cast<ChromeURLRequestContext*>(
-      request_context_->GetURLRequestContext());
+      request_context_getter_->GetURLRequestContext());
 }
 
 void WorkerProcessHost::DocumentDetached(WorkerMessageFilter* filter,
@@ -504,7 +519,8 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(
     int parent_process_id,
     int parent_appcache_host_id,
     int64 main_resource_appcache_id,
-    net::URLRequestContextGetter* request_context)
+    net::URLRequestContextGetter* request_context_getter,
+    const content::ResourceContext& resource_context)
     : url_(url),
       shared_(shared),
       incognito_(incognito),
@@ -514,8 +530,30 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(
       parent_process_id_(parent_process_id),
       parent_appcache_host_id_(parent_appcache_host_id),
       main_resource_appcache_id_(main_resource_appcache_id),
-      request_context_(request_context),
-      worker_document_set_(new WorkerDocumentSet()) {
+      request_context_getter_(request_context_getter),
+      worker_document_set_(new WorkerDocumentSet()),
+      resource_context_(&resource_context) {
+  DCHECK(request_context_getter_);
+  DCHECK(resource_context_);
+}
+
+WorkerProcessHost::WorkerInstance::WorkerInstance(
+    const GURL& url,
+    bool shared,
+    bool incognito,
+    const string16& name)
+    : url_(url),
+      shared_(shared),
+      incognito_(incognito),
+      closed_(false),
+      name_(name),
+      worker_route_id_(MSG_ROUTING_NONE),
+      parent_process_id_(0),
+      parent_appcache_host_id_(0),
+      main_resource_appcache_id_(0),
+      request_context_getter_(NULL),
+      worker_document_set_(new WorkerDocumentSet()),
+      resource_context_(NULL) {
 }
 
 WorkerProcessHost::WorkerInstance::~WorkerInstance() {

@@ -273,6 +273,8 @@
         'browser/renderer_host/sync_resource_handler.h',
         'browser/renderer_host/x509_user_cert_resource_handler.cc',
         'browser/renderer_host/x509_user_cert_resource_handler.h',
+        'browser/resource_context.cc',
+        'browser/resource_context.h',
         'browser/site_instance.cc',
         'browser/site_instance.h',
         'browser/speech/audio_encoder.cc',

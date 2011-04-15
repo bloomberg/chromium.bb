@@ -465,6 +465,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
       id(), ChildProcessInfo::RENDER_PROCESS,
+      &profile()->GetResourceContext(),
       g_browser_process->resource_dispatcher_host());
   resource_message_filter->set_url_request_context_override(
       url_request_context_override);
@@ -507,12 +508,14 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
   channel_->AddFilter(socket_stream_dispatcher_host);
 
   channel_->AddFilter(new SpellCheckMessageFilter());
-  channel_->AddFilter(new WorkerMessageFilter(
-      id(),
-      profile()->GetRequestContext(),
-      g_browser_process->resource_dispatcher_host(),
-      NewCallbackWithReturnValue(
-          widget_helper_.get(), &RenderWidgetHelper::GetNextRoutingID)));
+  channel_->AddFilter(
+      new WorkerMessageFilter(
+          id(),
+          profile()->GetRequestContext(),
+          &profile()->GetResourceContext(),
+          g_browser_process->resource_dispatcher_host(),
+          NewCallbackWithReturnValue(
+              widget_helper_.get(), &RenderWidgetHelper::GetNextRoutingID)));
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableP2PApi))
     channel_->AddFilter(new P2PSocketDispatcherHost());

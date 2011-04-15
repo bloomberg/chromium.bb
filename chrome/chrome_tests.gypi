@@ -177,6 +177,8 @@
         '../content/browser/geolocation/arbitrator_dependency_factories_for_test.h',
         '../content/browser/geolocation/mock_location_provider.cc',
         '../content/browser/geolocation/mock_location_provider.h',
+        '../content/browser/mock_resource_context.cc',
+        '../content/browser/mock_resource_context.h',
         '../content/browser/renderer_host/mock_render_process_host.cc',
         '../content/browser/renderer_host/mock_render_process_host.h',
         '../content/browser/renderer_host/test_backing_store.cc',

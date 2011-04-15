@@ -10,6 +10,7 @@
 #include "chrome/common/render_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
+#include "content/browser/mock_resource_context.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_handler.h"
@@ -130,6 +131,7 @@ class ForwardingFilter : public ResourceMessageFilter {
   explicit ForwardingFilter(IPC::Message::Sender* dest)
     : ResourceMessageFilter(ChildProcessInfo::GenerateChildProcessUniqueId(),
                             ChildProcessInfo::RENDER_PROCESS,
+                            &content::MockResourceContext::GetInstance(),
                             NULL),
       dest_(dest) {
     OnChannelConnected(base::GetCurrentProcId());
@@ -152,9 +154,9 @@ class ResourceDispatcherHostTest : public testing::Test,
                                    public IPC::Message::Sender {
  public:
   ResourceDispatcherHostTest()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(filter_(new ForwardingFilter(this))),
-        ui_thread_(BrowserThread::UI, &message_loop_),
+      : ui_thread_(BrowserThread::UI, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_),
+        ALLOW_THIS_IN_INITIALIZER_LIST(filter_(new ForwardingFilter(this))),
         host_(ResourceQueue::DelegateSet()),
         old_factory_(NULL),
         resource_type_(ResourceType::SUB_RESOURCE) {
@@ -252,10 +254,10 @@ class ResourceDispatcherHostTest : public testing::Test,
     }
   }
 
-  scoped_refptr<ForwardingFilter> filter_;
   MessageLoopForIO message_loop_;
   BrowserThread ui_thread_;
   BrowserThread io_thread_;
+  scoped_refptr<ForwardingFilter> filter_;
   ResourceDispatcherHost host_;
   ResourceIPCAccumulator accum_;
   std::string response_headers_;

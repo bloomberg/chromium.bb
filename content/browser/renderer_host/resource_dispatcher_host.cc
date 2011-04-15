@@ -1589,6 +1589,7 @@ static int GetCertID(net::URLRequest* request, int child_id) {
 
 void ResourceDispatcherHost::NotifyResponseStarted(net::URLRequest* request,
                                                    int child_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Notify the observers on the IO thread.
   FOR_EACH_OBSERVER(Observer, observer_list_, OnRequestStarted(this, request));
 

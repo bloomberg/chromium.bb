@@ -12,8 +12,6 @@
 #include "content/common/child_process_host.h"
 #include "content/common/child_process_info.h"
 
-class ResourceDispatcherHost;
-
 // Plugins/workers and other child processes that live on the IO thread should
 // derive from this class.
 //
@@ -56,12 +54,6 @@ class BrowserChildProcessHost : public ChildProcessHost,
   };
 
  protected:
-  // DEPRECATED constructor. Do not use anymore. We are trying to eliminate
-  // using the default URLRequestContext.
-  BrowserChildProcessHost(
-      ChildProcessInfo::ProcessType type,
-      ResourceDispatcherHost* resource_dispatcher_host);
-
   explicit BrowserChildProcessHost(ChildProcessInfo::ProcessType type);
 
   // Derived classes call this to launch the child process asynchronously.
@@ -107,10 +99,6 @@ class BrowserChildProcessHost : public ChildProcessHost,
   // the host list. Calls ChildProcessHost::ForceShutdown
   virtual void ForceShutdown();
 
-  ResourceDispatcherHost* resource_dispatcher_host() {
-    return resource_dispatcher_host_;
-  }
-
  private:
   // By using an internal class as the ChildProcessLauncher::Client, we can
   // intercept OnProcessLaunched and do our own processing before
@@ -123,8 +111,6 @@ class BrowserChildProcessHost : public ChildProcessHost,
     BrowserChildProcessHost* host_;
   };
   ClientHook client_;
-  // May be NULL if this current process has no resource dispatcher host.
-  ResourceDispatcherHost* resource_dispatcher_host_;
   scoped_ptr<ChildProcessLauncher> child_process_;
 };
 

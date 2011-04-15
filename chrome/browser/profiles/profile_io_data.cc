@@ -8,7 +8,9 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -23,11 +25,13 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/resource_context.h"
 #include "content/common/notification_service.h"
 #include "net/http/http_util.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
+#include "webkit/database/database_tracker.h"
 
 namespace {
 
@@ -121,12 +125,11 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
 
 }  // namespace
 
-// static
-void ProfileIOData::InitializeProfileParams(Profile* profile,
-                                            ProfileParams* params) {
+void ProfileIOData::InitializeProfileParams(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PrefService* pref_service = profile->GetPrefs();
 
+  scoped_ptr<ProfileParams> params(new ProfileParams);
   params->is_incognito = profile->IsOffTheRecord();
   params->clear_local_state_on_exit =
       pref_service->GetBoolean(prefs::kClearSiteDataOnExit);
@@ -177,6 +180,7 @@ void ProfileIOData::InitializeProfileParams(Profile* profile,
       ProxyServiceFactory::CreateProxyConfigService(
           profile->GetProxyConfigTracker()));
   params->profile_id = profile->GetRuntimeId();
+  profile_params_.reset(params.release());
 }
 
 ProfileIOData::RequestContext::RequestContext() {}
@@ -189,7 +193,8 @@ ProfileIOData::ProfileParams::ProfileParams()
 ProfileIOData::ProfileParams::~ProfileParams() {}
 
 ProfileIOData::ProfileIOData(bool is_incognito)
-    : initialized_(false) {
+    : initialized_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(resource_context_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -242,35 +247,51 @@ ProfileIOData::GetIsolatedAppRequestContext(
   return context;
 }
 
+const content::ResourceContext& ProfileIOData::GetResourceContext() const {
+  return resource_context_;
+}
+
+ProfileIOData::ResourceContext::ResourceContext(const ProfileIOData* io_data)
+    : io_data_(io_data) {
+  DCHECK(io_data);
+}
+
+ProfileIOData::ResourceContext::~ResourceContext() {}
+
+void ProfileIOData::ResourceContext::EnsureInitialized() const {
+  io_data_->LazyInitialize();
+}
+
 void ProfileIOData::LazyInitialize() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (initialized_)
     return;
-  LazyInitializeInternal();
+  DCHECK(profile_params_.get());
+  database_tracker_ = profile_params_->database_tracker;
+  resource_context_.set_database_tracker(database_tracker_);
+  LazyInitializeInternal(profile_params_.get());
+  profile_params_.reset();
   initialized_ = true;
 }
 
-// static
 void ProfileIOData::ApplyProfileParamsToContext(
-    const ProfileParams& profile_params,
-    ChromeURLRequestContext* context) {
-  context->set_is_incognito(profile_params.is_incognito);
-  context->set_accept_language(profile_params.accept_language);
-  context->set_accept_charset(profile_params.accept_charset);
-  context->set_referrer_charset(profile_params.referrer_charset);
-  context->set_user_script_dir_path(profile_params.user_script_dir_path);
+    ChromeURLRequestContext* context) const {
+  context->set_is_incognito(profile_params_->is_incognito);
+  context->set_accept_language(profile_params_->accept_language);
+  context->set_accept_charset(profile_params_->accept_charset);
+  context->set_referrer_charset(profile_params_->referrer_charset);
+  context->set_user_script_dir_path(profile_params_->user_script_dir_path);
   context->set_host_content_settings_map(
-      profile_params.host_content_settings_map);
-  context->set_host_zoom_map(profile_params.host_zoom_map);
+      profile_params_->host_content_settings_map);
+  context->set_host_zoom_map(profile_params_->host_zoom_map);
   context->set_transport_security_state(
-      profile_params.transport_security_state);
-  context->set_ssl_config_service(profile_params.ssl_config_service);
-  context->set_database_tracker(profile_params.database_tracker);
-  context->set_appcache_service(profile_params.appcache_service);
-  context->set_blob_storage_context(profile_params.blob_storage_context);
-  context->set_file_system_context(profile_params.file_system_context);
-  context->set_extension_info_map(profile_params.extension_info_map);
-  context->set_prerender_manager(profile_params.prerender_manager);
+      profile_params_->transport_security_state);
+  context->set_ssl_config_service(profile_params_->ssl_config_service);
+  context->set_appcache_service(profile_params_->appcache_service);
+  context->set_blob_storage_context(profile_params_->blob_storage_context);
+  context->set_file_system_context(profile_params_->file_system_context);
+  context->set_extension_info_map(profile_params_->extension_info_map);
+  context->set_prerender_manager(profile_params_->prerender_manager);
 }
 
 void ProfileIOData::ShutdownOnUIThread() {

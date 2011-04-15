@@ -59,29 +59,10 @@ class ChildNotificationTask : public Task {
 
 }  // namespace
 
-// DEPRECATED constructor. Do not use anymore.
-BrowserChildProcessHost::BrowserChildProcessHost(
-    ChildProcessInfo::ProcessType type,
-    ResourceDispatcherHost* resource_dispatcher_host)
-    : ChildProcessInfo(type, -1),
-      ALLOW_THIS_IN_INITIALIZER_LIST(client_(this)),
-      resource_dispatcher_host_(resource_dispatcher_host) {
-  if (resource_dispatcher_host_) {
-    ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
-        id(), type, resource_dispatcher_host_);
-    AddFilter(resource_message_filter);
-  }
-
-  AddFilter(new TraceMessageFilter);
-
-  g_child_process_list.Get().push_back(this);
-}
-
 BrowserChildProcessHost::BrowserChildProcessHost(
     ChildProcessInfo::ProcessType type)
     : ChildProcessInfo(type, -1),
-      ALLOW_THIS_IN_INITIALIZER_LIST(client_(this)),
-      resource_dispatcher_host_(NULL) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(client_(this)) {
   AddFilter(new TraceMessageFilter);
 
   g_child_process_list.Get().push_back(this);

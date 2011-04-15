@@ -9,10 +9,13 @@
 #include "content/browser/browser_message_filter.h"
 
 class ResourceDispatcherHost;
-
+namespace content {
+class ResourceContext;
+}  // namespace content
 namespace net {
 class URLRequestContextGetter;
-}
+}  // namespace net
+
 
 struct ViewHostMsg_CreateWorker_Params;
 
@@ -22,7 +25,8 @@ class WorkerMessageFilter : public BrowserMessageFilter {
   // OnChannelClosing.
   WorkerMessageFilter(
       int render_process_id,
-      net::URLRequestContextGetter* request_context,
+      net::URLRequestContextGetter* request_context_getter,
+      const content::ResourceContext* resource_context,
       ResourceDispatcherHost* resource_dispatcher_host,
       CallbackWithReturnValue<int>::Type* next_routing_id);
 
@@ -53,7 +57,8 @@ class WorkerMessageFilter : public BrowserMessageFilter {
   void OnCreateMessagePort(int* route_id, int* message_port_id);
 
   int render_process_id_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  const content::ResourceContext* const resource_context_;
   ResourceDispatcherHost* resource_dispatcher_host_;
 
   // This is guaranteed to be valid until OnChannelClosing is closed, and it's

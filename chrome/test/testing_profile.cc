@@ -48,6 +48,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/geolocation/geolocation_permission_context.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
+#include "content/browser/mock_resource_context.h"
 #include "content/common/notification_service.h"
 #include "net/base/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
@@ -591,6 +592,10 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContextForIsolatedApp(
   // We don't test isolated app storage here yet, so returning the same dummy
   // context is sufficient for now.
   return GetRequestContext();
+}
+
+const content::ResourceContext& TestingProfile::GetResourceContext() {
+  return content::MockResourceContext::GetInstance();
 }
 
 FindBarState* TestingProfile::GetFindBarState() {

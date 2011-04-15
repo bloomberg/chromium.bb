@@ -422,13 +422,17 @@ class OffTheRecordProfileImpl : public Profile,
     return io_data_.GetMainRequestContextGetter();
   }
 
-  net::URLRequestContextGetter* GetRequestContextForExtensions() {
+  virtual net::URLRequestContextGetter* GetRequestContextForExtensions() {
     return io_data_.GetExtensionsRequestContextGetter();
   }
 
-  net::URLRequestContextGetter* GetRequestContextForIsolatedApp(
+  virtual net::URLRequestContextGetter* GetRequestContextForIsolatedApp(
       const std::string& app_id) {
     return io_data_.GetIsolatedAppRequestContextGetter(app_id);
+  }
+
+  virtual const content::ResourceContext& GetResourceContext() {
+    return io_data_.GetResourceContext();
   }
 
   virtual net::SSLConfigService* GetSSLConfigService() {

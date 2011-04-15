@@ -23,7 +23,6 @@
 #include "net/base/cookie_policy.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "webkit/database/database_tracker.h"
 #include "webkit/fileapi/file_system_context.h"
 
 class ChromeURLDataManagerBackend;
@@ -58,11 +57,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   // May be NULL if requests for this context aren't subject to appcaching.
   ChromeAppCacheService* appcache_service() const {
     return appcache_service_.get();
-  }
-
-  // Gets the database tracker associated with this context's profile.
-  webkit_database::DatabaseTracker* database_tracker() const {
-    return database_tracker_.get();
   }
 
   // Gets the blob storage context associated with this context's profile.
@@ -114,9 +108,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   void set_appcache_service(ChromeAppCacheService* service) {
     appcache_service_ = service;
   }
-  void set_database_tracker(webkit_database::DatabaseTracker* tracker) {
-    database_tracker_ = tracker;
-  }
   void set_blob_storage_context(ChromeBlobStorageContext* context) {
     blob_storage_context_ = context;
   }
@@ -150,7 +141,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
 
   // TODO(willchan): Make these non-refcounted.
   scoped_refptr<ChromeAppCacheService> appcache_service_;
-  scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
