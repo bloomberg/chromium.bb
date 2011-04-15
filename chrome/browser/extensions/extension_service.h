@@ -19,7 +19,7 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "base/tuple.h"
-#include "chrome/browser/extensions/default_apps.h"
+#include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -163,7 +163,7 @@ class ExtensionService
 
   const FilePath& install_directory() const { return install_directory_; }
 
-  DefaultApps* default_apps() { return &default_apps_; }
+  AppsPromo* apps_promo() { return &apps_promo_; }
 
   // Whether this extension can run in an incognito window.
   virtual bool IsIncognitoEnabled(const std::string& extension_id) const;
@@ -555,9 +555,8 @@ class ExtensionService
   typedef std::vector<ComponentExtensionInfo> RegisteredComponentExtensions;
   RegisteredComponentExtensions component_extension_manifests_;
 
-  // Manages the installation of default apps and the promotion of them in the
-  // app launcher.
-  DefaultApps default_apps_;
+  // Manages the promotion of the web store.
+  AppsPromo apps_promo_;
 
   // Flag to make sure event routers are only initialized once.
   bool event_routers_initialized_;

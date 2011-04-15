@@ -142,21 +142,21 @@ menu > button.default {
 }
 
 html.apps-promo-visible #apps-promo {
-  display: block;
+  background: url('chrome://theme/IDR_WEBSTORE_ICON') no-repeat;
+  height: 125px;
+  -webkit-padding-start: 125px;
+  display: table-cell;
+  vertical-align: text-bottom;
 }
 
-#apps-promo > h3 {
-  font-size: 16px;
-  margin-top: 1em;
-  margin-bottom: 0.25em;
-}
-
-#apps-promo-text1 {
-  margin-top: 0;
+#apps-promo-heading {
+  font-size: 115%;
+  font-weight: bold;
+  margin-bottom: 5px;
+  -webkit-margin-start: 3px;
 }
 
 #apps-promo-hide {
-  float: right;
   -webkit-appearance: none;
   -webkit-transition: opacity .15s;
   background-color: transparent;
@@ -165,25 +165,11 @@ html.apps-promo-visible #apps-promo {
   font-family: inherit;
   font-size: 90%;
   text-decoration: underline;
+  margin-top: 2px;
 }
 
 html[dir=rtl] #apps-promo-hide {
   float: left;
-}
-
-html.apps-promo-visible .app.web-store-entry {
-  position: absolute;
-  left: 100%;
-  top: 0;
-  -webkit-margin-start: 22px;
-}
-
-html.apps-promo-visible[dir=rtl] .app.web-store-entry {
-  right: 100%;
-}
-
-html.apps-promo-visible .app.web-store-entry a {
-  font-weight: bold;
 }
 
 /*
@@ -200,4 +186,60 @@ never set .loner while the promo is running.
 
 html[dir=rtl] .app.web-store-entry.loner {
   right: 100%;
+}
+
+/* g-button CSS styles (see go/buttons) */
+@media screen, projection {
+  g-button-basic * {
+    margin: 0;
+    padding: 0;
+  }
+
+  .g-button-basic {
+    direction: ltr;
+    line-height: 1.2;
+    width: 20em;
+    max-width: 795px;
+    background-color: #cadef4;
+    border: 1px solid #ccc;
+    padding: 15px;
+    text-align: center;
+    overflow: visible;
+  }
+
+  .g-button-basic div {
+    font-size: 1.3em;
+    background: url('g-button-chocobo-basic-1.png') no-repeat;
+    background-color: #5679a5;
+  }
+
+  .g-button-basic div span span a {
+    display: block;
+    color: #fff!important;
+    background: url('g-button-chocobo-basic-2.png') no-repeat right bottom;
+    padding: 8px 18px 13px 13px;
+    text-decoration: none;
+    font-weight: bold;
+  }
+
+  .g-button-basic div span {
+    display: block;
+    background: url('g-button-chocobo-basic-1.png') no-repeat right -400px;
+    height: 1%;
+  }
+  
+  .g-button-basic p {
+    text-align: center;
+    margin: 10px 0 0;
+  }
+  
+  .g-button-basic {
+    padding: 0;
+    background: none;
+    border: 0;
+  }
+
+  .g-button-basic div span span {
+    background: url('g-button-chocobo-basic-1.png') no-repeat left bottom;
+  }
 }

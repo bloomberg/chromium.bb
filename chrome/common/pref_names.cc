@@ -1081,6 +1081,12 @@ const char kNTPPrefVersion[] = "ntp.pref_version";
 const char kNTPCustomLogoStart[] = "ntp.alt_logo_start";
 const char kNTPCustomLogoEnd[] = "ntp.alt_logo_end";
 
+// The promo resource service version number.
+const char kNTPPromoVersion[] = "ntp.promo_version";
+
+// The last locale the promo was fetched for.
+const char kNTPPromoLocale[] = "ntp.promo_locale";
+
 // Whether promo should be shown to Dev builds, Beta and Dev, or all builds.
 const char kNTPPromoBuild[] = "ntp.promo_build";
 
@@ -1102,6 +1108,24 @@ const char kNTPPromoLine[] = "ntp.promo_line";
 // from the promo server.
 const char kNTPPromoStart[] = "ntp.promo_start";
 const char kNTPPromoEnd[] = "ntp.promo_end";
+
+// The id of the last web store promo actually displayed on the NTP.
+const char kNTPWebStorePromoLastId[] = "ntp.webstore_last_promo_id";
+
+// The id of the current web store promo.
+const char kNTPWebStorePromoId[] = "ntp.webstorepromo.id";
+
+// The header line for the NTP web store promo.
+const char kNTPWebStorePromoHeader[] = "ntp.webstorepromo.header";
+
+// The button text for the NTP web store promo.
+const char kNTPWebStorePromoButton[] = "ntp.webstorepromo.button";
+
+// The button link for the NTP web store promo.
+const char kNTPWebStorePromoLink[] = "ntp.webstorepromo.link";
+
+// The "hide this" link text for the NTP web store promo.
+const char kNTPWebStorePromoExpire[] = "ntp.webstorepromo.expire";
 
 // The most up-to-date GPU blacklist downloaded from the web, which replaces
 // the one that's installed with chrome.

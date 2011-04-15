@@ -1317,6 +1317,9 @@ class NotificationType {
     // process/route id pair for the RenderViewHost. There are no details.
     PRERENDER_CONTENTS_USED,
 
+    // Sent when a new web store promo has been loaded.
+    WEB_STORE_PROMO_LOADED,
+
     // Count (must be last) ----------------------------------------------------
     // Used to determine the number of notification types.  Not valid as
     // a type parameter when registering for or posting notifications.

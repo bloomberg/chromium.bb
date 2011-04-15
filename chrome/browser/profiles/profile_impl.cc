@@ -25,7 +25,6 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/download/download_manager.h"
-#include "chrome/browser/extensions/default_apps.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_event_router.h"
@@ -238,7 +237,6 @@ Profile* Profile::CreateProfile(const FilePath& path) {
 void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled, false);
   prefs->RegisterBooleanPref(prefs::kClearSiteDataOnExit, false);
-  DefaultApps::RegisterUserPrefs(prefs);
 }
 
 ProfileImpl::ProfileImpl(const FilePath& path)
@@ -385,7 +383,6 @@ void ProfileImpl::InitExtensions() {
 
   RegisterComponentExtensions();
   extensions_service_->Init();
-  InstallDefaultApps();
 
   // Load any extensions specified with --load-extension.
   if (command_line->HasSwitch(switches::kLoadExtension)) {
@@ -481,22 +478,6 @@ void ProfileImpl::RegisterComponentExtensions() {
         ExtensionService::ComponentExtensionInfo(manifest, path));
   }
 #endif
-}
-
-void ProfileImpl::InstallDefaultApps() {
-  ExtensionService* extension_service = GetExtensionService();
-  DefaultApps* default_apps = extension_service->default_apps();
-
-  if (!default_apps->ShouldInstallDefaultApps(extension_service->GetAppIds()))
-    return;
-
-  const ExtensionIdSet& app_ids = default_apps->default_apps();
-  PendingExtensionManager* pending_extension_manager =
-      extension_service->pending_extension_manager();
-  for (ExtensionIdSet::const_iterator iter = app_ids.begin();
-       iter != app_ids.end(); ++iter) {
-    pending_extension_manager->AddFromDefaultAppList(*iter);
-  }
 }
 
 void ProfileImpl::InitPromoResources() {

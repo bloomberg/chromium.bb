@@ -24,7 +24,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/default_apps.h"
+#include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
@@ -410,8 +410,7 @@ ExtensionService::ExtensionService(Profile* profile,
       show_extensions_prompts_(true),
       ready_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(toolbar_model_(this)),
-      default_apps_(profile->GetPrefs(),
-                    g_browser_process->GetApplicationLocale()),
+      apps_promo_(profile->GetPrefs()),
       event_routers_initialized_(false) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -1669,12 +1668,6 @@ void ExtensionService::OnExtensionInstalled(const Extension* extension) {
         NotificationType::EXTENSION_INSTALLED,
         Source<Profile>(profile_),
         Details<const Extension>(extension));
-  }
-
-  if (extension->is_app()) {
-    ExtensionIdSet installed_ids = GetAppIds();
-    installed_ids.insert(id);
-    default_apps_.DidInstallApp(installed_ids);
   }
 
   // Transfer ownership of |extension| to AddExtension.

@@ -13,7 +13,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/default_apps.h"
+#include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/platform_util.h"
@@ -145,7 +145,7 @@ bool AppLauncherHandler::HandlePing(Profile* profile, const std::string& path) {
   // promo if its still displayed.
   if (is_promo_active) {
     DCHECK(profile->GetExtensionService());
-    profile->GetExtensionService()->default_apps()->SetPromoHidden();
+    profile->GetExtensionService()->apps_promo()->ExpireDefaultApps();
   }
 
   if (is_web_store_ping) {
@@ -180,6 +180,8 @@ void AppLauncherHandler::RegisterMessages() {
       NewCallback(this, &AppLauncherHandler::HandleReorderApps));
   web_ui_->RegisterMessageCallback("setPageIndex",
       NewCallback(this, &AppLauncherHandler::HandleSetPageIndex));
+  web_ui_->RegisterMessageCallback("promoSeen",
+      NewCallback(this, &AppLauncherHandler::HandlePromoSeen));
 }
 
 void AppLauncherHandler::Observe(NotificationType type,
@@ -192,6 +194,9 @@ void AppLauncherHandler::Observe(NotificationType type,
     case NotificationType::EXTENSION_LOADED:
     case NotificationType::EXTENSION_UNLOADED:
     case NotificationType::EXTENSION_LAUNCHER_REORDERED:
+    // The promo may not load until a couple seconds after the first NTP view,
+    // so we listen for the load notification and notify the NTP when ready.
+    case NotificationType::WEB_STORE_PROMO_LOADED:
       if (web_ui_->tab_contents())
         HandleGetApps(NULL);
       break;
@@ -248,8 +253,15 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
 
   dictionary->SetBoolean(
       "showLauncher",
-      extensions_service_->default_apps()->ShouldShowAppLauncher(
+      extensions_service_->apps_promo()->ShouldShowAppLauncher(
           extensions_service_->GetAppIds()));
+}
+
+void AppLauncherHandler::FillPromoDictionary(DictionaryValue* dictionary) {
+  dictionary->SetString("promoHeader", AppsPromo::GetPromoHeaderText());
+  dictionary->SetString("promoButton", AppsPromo::GetPromoButtonText());
+  dictionary->SetString("promoLink", AppsPromo::GetPromoLink().spec());
+  dictionary->SetString("promoExpire", AppsPromo::GetPromoExpireText());
 }
 
 void AppLauncherHandler::HandleGetApps(const ListValue* args) {
@@ -263,22 +275,28 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   //    expired.
   // b) Conceptually, it doesn't really make sense to count a
   //    prefchange-triggered refresh as a promo 'view'.
-  DefaultApps* default_apps = extensions_service_->default_apps();
-  bool promo_just_expired = false;
-  if (default_apps->ShouldShowPromo(extensions_service_->GetAppIds(),
-                                    &promo_just_expired)) {
+  AppsPromo* apps_promo = extensions_service_->apps_promo();
+  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
+  bool apps_promo_just_expired = false;
+  if (apps_promo->ShouldShowPromo(extensions_service_->GetAppIds(),
+                                  &apps_promo_just_expired)) {
+    // Maximize the apps section on the first promo view.
+    apps_promo->MaximizeAppsIfFirstView();
     dictionary.SetBoolean("showPromo", true);
+    FillPromoDictionary(&dictionary);
     promo_active_ = true;
   } else {
-    if (promo_just_expired) {
-      ignore_changes_ = true;
-      UninstallDefaultApps();
-      ignore_changes_ = false;
-      ShownSectionsHandler::SetShownSection(web_ui_->GetProfile()->GetPrefs(),
-                                            THUMB);
-    }
     dictionary.SetBoolean("showPromo", false);
     promo_active_ = false;
+  }
+
+  // If the default apps have just expired (user viewed them too many times with
+  // no interaction), then we uninstall them and focus the recent sites section.
+  if (apps_promo_just_expired) {
+    ignore_changes_ = true;
+    UninstallDefaultApps();
+    ignore_changes_ = false;
+    ShownSectionsHandler::SetShownSection(prefs, THUMB);
   }
 
   FillAppDictionary(&dictionary);
@@ -292,6 +310,8 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
     registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
         NotificationService::AllSources());
     registrar_.Add(this, NotificationType::EXTENSION_LAUNCHER_REORDERED,
+        NotificationService::AllSources());
+    registrar_.Add(this, NotificationType::WEB_STORE_PROMO_LOADED,
         NotificationService::AllSources());
   }
   if (pref_change_registrar_.IsEmpty()) {
@@ -346,7 +366,7 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
 
   if (extension_id != extension_misc::kWebStoreAppId) {
     RecordAppLaunchByID(promo_active_, launch_bucket);
-    extensions_service_->default_apps()->SetPromoHidden();
+    extensions_service_->apps_promo()->ExpireDefaultApps();
   }
 
   if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {
@@ -420,15 +440,9 @@ void AppLauncherHandler::HandleHideAppsPromo(const ListValue* args) {
   // If the user has intentionally hidden the promotion, we'll uninstall all the
   // default apps (we know the user hasn't installed any apps on their own at
   // this point, or the promotion wouldn't have been shown).
-  UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppsPromoHistogram,
-                            extension_misc::PROMO_CLOSE,
-                            extension_misc::PROMO_BUCKET_BOUNDARY);
-
-  ShownSectionsHandler::SetShownSection(web_ui_->GetProfile()->GetPrefs(),
-                                        THUMB);
   ignore_changes_ = true;
   UninstallDefaultApps();
-  extensions_service_->default_apps()->SetPromoHidden();
+  extensions_service_->apps_promo()->HidePromo();
   ignore_changes_ = false;
   HandleGetApps(NULL);
 }
@@ -478,6 +492,12 @@ void AppLauncherHandler::HandleSetPageIndex(const ListValue* args) {
 
   extensions_service_->extension_prefs()->SetPageIndex(extension_id,
       static_cast<int>(page_index));
+}
+
+void AppLauncherHandler::HandlePromoSeen(const ListValue* args) {
+  UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppsPromoHistogram,
+                            extension_misc::PROMO_SEEN,
+                            extension_misc::PROMO_BUCKET_BOUNDARY);
 }
 
 // static
@@ -612,8 +632,8 @@ ExtensionInstallUI* AppLauncherHandler::GetExtensionInstallUI() {
 }
 
 void AppLauncherHandler::UninstallDefaultApps() {
-  DefaultApps* default_apps = extensions_service_->default_apps();
-  const ExtensionIdSet& app_ids = default_apps->default_apps();
+  AppsPromo* apps_promo = extensions_service_->apps_promo();
+  const ExtensionIdSet& app_ids = apps_promo->old_default_apps();
   for (ExtensionIdSet::const_iterator iter = app_ids.begin();
        iter != app_ids.end(); ++iter) {
     if (extensions_service_->GetExtensionById(*iter, true))

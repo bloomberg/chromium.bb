@@ -52,6 +52,8 @@ class WebResourceService
   // and get proper install directory.
   PrefService* prefs_;
 
+  Profile* profile_;
+
  private:
   class WebResourceFetcher;
   friend class WebResourceFetcher;
@@ -66,8 +68,6 @@ class WebResourceService
 
   // Notify listeners that the state of a web resource has changed.
   void WebResourceStateChange();
-
-  Profile* profile_;
 
   scoped_ptr<WebResourceFetcher> web_resource_fetcher_;
 

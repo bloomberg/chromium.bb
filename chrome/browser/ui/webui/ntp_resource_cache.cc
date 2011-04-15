@@ -301,8 +301,6 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_NEW_TAB_SHOW_HIDE_LIST_TOOLTIP));
   localized_strings.SetString("pagedisplaytooltip",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_PAGE_DISPLAY_TOOLTIP));
-  localized_strings.SetString("firstrunnotification",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_FIRST_RUN_NOTIFICATION));
   localized_strings.SetString("closefirstrunnotification",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_CLOSE_FIRST_RUN_NOTIFICATION));
   localized_strings.SetString("close", l10n_util::GetStringUTF16(IDS_CLOSE));
@@ -334,14 +332,6 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE));
   localized_strings.SetString("web_store_url",
       GetUrlWithLang(GURL(Extension::ChromeStoreLaunchURL())));
-  localized_strings.SetString("appspromohide",
-      l10n_util::GetStringUTF16(IDS_APPS_PROMO_HIDE));
-  localized_strings.SetString("appspromoheader",
-      l10n_util::GetStringUTF16(IDS_APPS_PROMO_HEADER));
-  localized_strings.SetString("appspromotext1",
-      l10n_util::GetStringUTF16(IDS_APPS_PROMO_TEXT_1));
-  localized_strings.SetString("appspromotext2",
-      l10n_util::GetStringUTF16(IDS_APPS_PROMO_TEXT_2));
   localized_strings.SetString("syncpromotext",
       l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL));
 #if defined(OS_CHROMEOS)

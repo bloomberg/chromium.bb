@@ -87,7 +87,7 @@ function addClosedMenuEntry(menu, url, title, imageUrl, opt_pingUrl) {
   a.textContent = title;
   a.style.backgroundImage = 'url(' + imageUrl + ')';
   if (opt_pingUrl)
-    a.setAttribute('ping', opt_pingUrl);
+    a.ping = opt_pingUrl;
   addClosedMenuEntryWithLink(menu, a);
 }
 
@@ -287,8 +287,8 @@ function createRecentItem(data) {
     el = document.createElement('a');
     el.className = 'item';
     el.href = data.url;
-    el.setAttribute('ping',
-        getAppPingUrl('PING_BY_URL', data.url, 'NTP_RECENTLY_CLOSED'));
+    el.ping = getAppPingUrl(
+        'PING_BY_URL', data.url, 'NTP_RECENTLY_CLOSED');
     el.style.backgroundImage = url('chrome://favicon/' + data.url);
     el.dir = data.direction;
     el.textContent = data.title;
@@ -310,8 +310,8 @@ function addRecentMenuItem(menu, data) {
     a.href = '';  // To make underline show up.
   } else {
     a.href = data.url;
-    a.setAttribute('ping',
-        getAppPingUrl('PING_BY_URL', data.url, 'NTP_RECENTLY_CLOSED'));
+    a.ping = getAppPingUrl(
+        'PING_BY_URL', data.url, 'NTP_RECENTLY_CLOSED');
     a.style.backgroundImage = 'url(chrome://favicon/' + data.url + ')';
     a.textContent = data.title;
   }
@@ -1076,13 +1076,6 @@ function hideNotification() {
   }
 }
 
-function showFirstRunNotification() {
-  showNotification(localStrings.getString('firstrunnotification'),
-                   null, null, 30000);
-  var notificationElement = $('notification');
-  notification.classList.add('first-run');
-}
-
 function showPromoNotification() {
   showNotification(parseHtmlSubset(localStrings.getString('serverpromo')),
                    localStrings.getString('syncpromotext'),
@@ -1450,10 +1443,7 @@ function mostVisitedPages(data, firstRun, hasBlacklistedUrls) {
     maybeDoneLoading();
   }, 1);
 
-  // Only show the first run notification if first run.
-  if (firstRun) {
-    showFirstRunNotification();
-  } else if (localStrings.getString('serverpromo')) {
+  if (localStrings.getString('serverpromo')) {
     showPromoNotification();
   }
 }
@@ -1467,12 +1457,10 @@ function isDoneLoading() {
   return !document.body.classList.contains('loading');
 }
 
-// Initialize the apps promo.
+// Initialize the listener for the "hide this" link on the apps promo. We do
+// this outside of getAppsCallback because it only needs to be done once per
+// NTP load.
 document.addEventListener('DOMContentLoaded', function() {
-  var promoLink = document.querySelector('#apps-promo-text1 a');
-  promoLink.id = 'apps-promo-link';
-  promoLink.href = localStrings.getString('web_store_url');
-
   $('apps-promo-hide').addEventListener('click', function() {
     chrome.send('hideAppsPromo', []);
     document.documentElement.classList.remove('apps-promo-visible');

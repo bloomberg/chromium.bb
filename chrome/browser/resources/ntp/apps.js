@@ -18,6 +18,7 @@ function getAppsCallback(data) {
   var appsSectionContent = $('apps-content');
   var appsMiniview = appsSection.getElementsByClassName('miniview')[0];
   var appsPromo = $('apps-promo');
+  var appsPromoLink = $('apps-promo-link');
   var appsPromoPing = APP_LAUNCH_URL.PING_WEBSTORE + '+' + apps.showPromo;
   var webStoreEntry, webStoreMiniEntry;
 
@@ -48,8 +49,6 @@ function getAppsCallback(data) {
 
   markNewApps(data.apps);
   apps.data = data.apps;
-  if (!apps.detachWebstoreEntry)
-    apps.data.push('web-store-entry');
 
   clearClosedMenu(apps.menu);
 
@@ -62,9 +61,33 @@ function getAppsCallback(data) {
     appsSectionContent.appendChild(apps.createElement(app));
   });
 
-  webStoreEntry = apps.createWebStoreElement();
-  webStoreEntry.querySelector('a').setAttribute('ping', appsPromoPing);
-  appsSectionContent.appendChild(webStoreEntry);
+  if (data.showPromo) {
+    // Add the promo content...
+    $('apps-promo-heading').textContent = data.promoHeader;
+    appsPromoLink.href = data.promoLink;
+    appsPromoLink.textContent = data.promoButton;
+    appsPromoLink.ping = appsPromoPing;
+    $('apps-promo-hide').textContent = data.promoExpire;
+
+    // ... then display the promo.
+    document.documentElement.classList.add('apps-promo-visible');
+  } else {
+    document.documentElement.classList.remove('apps-promo-visible');
+  }
+
+  // Only show the web store entry if there are apps installed, since the promo
+  // is sufficient otherwise.
+  if (data.apps.length > 0) {
+    webStoreEntry = apps.createWebStoreElement();
+    webStoreEntry.querySelector('a').ping = appsPromoPing;
+    appsSectionContent.appendChild(webStoreEntry);
+    if (apps.detachWebstoreEntry) {
+      webStoreEntry.classList.add('loner');
+    } else {
+      webStoreEntry.classList.remove('loner');
+      apps.data.push('web-store-entry');
+    }
+  }
 
   data.apps.slice(0, MAX_MINIVIEW_ITEMS).forEach(function(app) {
     appsMiniview.appendChild(apps.createMiniviewElement(app));
@@ -72,7 +95,7 @@ function getAppsCallback(data) {
   });
   if (data.apps.length < MAX_MINIVIEW_ITEMS) {
     webStoreMiniEntry = apps.createWebStoreMiniElement();
-    webStoreEntry.querySelector('a').setAttribute('ping', appsPromoPing);
+    webStoreMiniEntry.querySelector('a').ping = appsPromoPing;
     appsMiniview.appendChild(webStoreMiniEntry);
     addClosedMenuEntryWithLink(apps.menu,
                                apps.createWebStoreClosedMenuElement());
@@ -86,23 +109,13 @@ function getAppsCallback(data) {
   addClosedMenuFooter(apps.menu, 'apps', MENU_APPS, Section.APPS);
 
   apps.loaded = true;
-  if (apps.showPromo)
-    document.documentElement.classList.add('apps-promo-visible');
-  else
-    document.documentElement.classList.remove('apps-promo-visible');
 
-  var appsPromoLink = $('apps-promo-link');
   if (appsPromoLink)
-    appsPromoLink.setAttribute('ping', appsPromoPing);
+    appsPromoLink.ping = appsPromoPing;
   maybeDoneLoading();
 
   // Disable the animations when the app launcher is being (re)initailized.
   apps.layout({disableAnimations:true});
-
-  if (apps.detachWebstoreEntry)
-    webStoreEntry.classList.add('loner');
-  else
-    webStoreEntry.classList.remove('loner');
 
   if (isDoneLoading()) {
     updateMiniviewClipping(appsMiniview);
@@ -175,6 +188,11 @@ var apps = (function() {
     chrome.send('launchApp', args);
   }
 
+  function isAppSectionMaximized() {
+    return getAppLaunchType() == APP_LAUNCH.NTP_APPS_MAXIMIZED &&
+      !$('apps').classList.contains('disabled');
+  }
+
   function isAppsMenu(node) {
     return node.id == 'apps-menu';
   }
@@ -216,6 +234,7 @@ var apps = (function() {
   };
 
   var currentApp;
+  var promoHasBeenSeen = false;
 
   function addContextMenu(el, app) {
     el.addEventListener('contextmenu', cr.ui.contextMenuHandler);
@@ -345,6 +364,14 @@ var apps = (function() {
     set visible(visible) {
       this.visible_ = visible;
       this.invalidate_();
+    },
+
+    maybePingPromoSeen_: function() {
+      if (promoHasBeenSeen || !this.showPromo || !isAppSectionMaximized())
+        return;
+
+      promoHasBeenSeen = true;
+      chrome.send('promoSeen', []);
     },
 
     // DragAndDropDelegate
@@ -564,9 +591,13 @@ var apps = (function() {
     },
 
     layoutImpl_: function() {
-      var apps = this.data;
+      var apps = this.data || [];
       var rects = this.getLayoutRects_(apps.length);
       var appsContent = this.dragContainer;
+
+      // Ping the PROMO_SEEN histogram only when the promo is maximized, and
+      // maximum once per NTP load.
+      this.maybePingPromoSeen_();
 
       if (!this.visible)
         return;
@@ -651,8 +682,8 @@ var apps = (function() {
       var a = div.firstChild;
 
       a.onclick = handleClick;
-      a.setAttribute('ping',
-          getAppPingUrl('PING_BY_ID', this.showPromo, 'NTP_APPS_MAXIMIZED'));
+      a.ping = getAppPingUrl(
+          'PING_BY_ID', this.showPromo, 'NTP_APPS_MAXIMIZED');
       a.style.backgroundImage = url(app['icon_big']);
       if (app.isNew) {
         div.setAttribute('new', 'new');
@@ -691,8 +722,8 @@ var apps = (function() {
       a.textContent = app['name'];
       a.href = app['launch_url'];
       a.onclick = handleClick;
-      a.setAttribute('ping',
-          getAppPingUrl('PING_BY_ID', this.showPromo, 'NTP_APPS_COLLAPSED'));
+      a.ping = getAppPingUrl(
+          'PING_BY_ID', this.showPromo, 'NTP_APPS_COLLAPSED');
       a.style.backgroundImage = url(app['icon_small']);
       a.className = 'item';
       span.appendChild(a);
@@ -708,8 +739,8 @@ var apps = (function() {
       a.textContent = app['name'];
       a.href = app['launch_url'];
       a.onclick = handleClick;
-      a.setAttribute('ping',
-          getAppPingUrl('PING_BY_ID', this.showPromo, 'NTP_APPS_MENU'));
+      a.ping = getAppPingUrl(
+          'PING_BY_ID', this.showPromo, 'NTP_APPS_MENU');
       a.style.backgroundImage = url(app['icon_small']);
       a.className = 'item';
 

@@ -55,6 +55,9 @@ class AppLauncherHandler : public WebUIMessageHandler,
   // Populate the given dictionary with all installed app info.
   void FillAppDictionary(DictionaryValue* value);
 
+  // Populate the given dictionary with the web store promo content.
+  void FillPromoDictionary(DictionaryValue* value);
+
   // Callback for the "getApps" message.
   void HandleGetApps(const ListValue* args);
 
@@ -78,6 +81,9 @@ class AppLauncherHandler : public WebUIMessageHandler,
 
   // Callback for the "setPageIndex" message.
   void HandleSetPageIndex(const ListValue* args);
+
+  // Callback for the "promoSeen" message.
+  void HandlePromoSeen(const ListValue* args);
 
  private:
   // Records a web store launch in the appropriate histograms. |promo_active|
