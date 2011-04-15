@@ -35,6 +35,7 @@
               }],
               [ 'OS == "win"', {
                 'files': [
+                  'binaries/win/FlashPlayerCPLApp.cpl',
                   'binaries/win/gcswf32.dll',
                   'binaries/win/plugin.vch',
                   'symbols/win/gcswf32.pdb',

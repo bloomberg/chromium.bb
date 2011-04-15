@@ -53,3 +53,4 @@ libGLESv2.dll: %(VersionDir)s\
 [GOOGLE_CHROME]
 gcswf32.dll: %(VersionDir)s\
 plugin.vch: %(VersionDir)s\
+FlashPlayerCPLApp.cpl: %(VersionDir)s\
