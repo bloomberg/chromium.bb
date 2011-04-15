@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/infobars/infobar.h"
 
+#include <cmath>
+
 #include "ui/base/animation/slide_animation.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/ui/views/infobars/infobar_container.h"
@@ -13,7 +15,7 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
       container_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_(new ui::SlideAnimation(this))),
       bar_target_height_(kDefaultBarTargetHeight),
-      tab_height_(0),
+      arrow_height_(0),
       bar_height_(0) {
   DCHECK(delegate != NULL);
   animation_->SetTweenType(ui::Tween::LINEAR);
@@ -58,9 +60,13 @@ void InfoBar::SetBarTargetHeight(int height) {
 }
 
 int InfoBar::OffsetY(const gfx::Size& prefsize) const {
-  return tab_height_ +
+  return arrow_height_ +
       std::max((bar_target_height_ - prefsize.height()) / 2, 0) -
       (bar_target_height_ - bar_height_);
+}
+
+bool InfoBar::DrawInfoBarArrows(int* x) const {
+  return container_ && container_->DrawInfoBarArrows(x);
 }
 
 void InfoBar::AnimationEnded(const ui::Animation* animation) {
@@ -69,16 +75,25 @@ void InfoBar::AnimationEnded(const ui::Animation* animation) {
 }
 
 void InfoBar::RecalculateHeight() {
-  int old_tab_height = tab_height_;
+  int old_arrow_height = arrow_height_;
   int old_bar_height = bar_height_;
-  tab_height_ =
-      static_cast<int>(kTabTargetHeight * animation()->GetCurrentValue());
+  // The arrow area is |arrow_size| ^ 2.  By taking the square root of the
+  // animation value, we cause a linear animation of the area, which matches the
+  // perception of the animation of the InfoBar.
+  arrow_height_ = static_cast<int>(kArrowTargetHeight *
+      sqrt(animation()->GetCurrentValue()));
+  // Add one more pixel for the stroke, if the arrow is to be visible at all.
+  // Without this, changing the arrow height from 0 to 1 would produce no
+  // visible effect, because the single pixel of stroke would paint atop the
+  // divider line above the infobar.
+  if (arrow_height_)
+    ++arrow_height_;
   bar_height_ =
       static_cast<int>(bar_target_height_ * animation()->GetCurrentValue());
 
   // Don't re-layout if nothing has changed, e.g. because the animation step was
   // not large enough to actually change the heights by at least a pixel.
-  if ((old_tab_height != tab_height_) || (old_bar_height != bar_height_)) {
+  if ((old_arrow_height != arrow_height_) || (old_bar_height != bar_height_)) {
     PlatformSpecificOnHeightRecalculated();
     if (container_)
       container_->OnInfoBarHeightChanged(animation_->is_animating());

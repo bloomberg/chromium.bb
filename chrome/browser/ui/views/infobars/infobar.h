@@ -35,13 +35,14 @@ class InfoBar : public ui::AnimationDelegate {
   // container (triggering its deletion), and its delegate is closed.
   void Hide(bool animate);
 
-  int tab_height() const { return tab_height_; }
-  int total_height() const { return tab_height_ + bar_height_; }
+  int arrow_height() const { return arrow_height_; }
+  int total_height() const { return arrow_height_ + bar_height_; }
 
  protected:
-  // The target heights of the InfoBar tab and bar portions, regardless of what
-  // their current heights are (due to animation).  Platforms must define these!
-  static const int kTabTargetHeight;
+  // The target heights of the InfoBar arrow and bar portions, regardless of
+  // what their current heights are (due to animation).  Platforms must define
+  // these!
+  static const int kArrowTargetHeight;
   static const int kDefaultBarTargetHeight;
 
   // ui::AnimationDelegate:
@@ -59,9 +60,11 @@ class InfoBar : public ui::AnimationDelegate {
   // out) as we animate open and closed.
   int OffsetY(const gfx::Size& prefsize) const;
 
+  // Passthrough to the container function of the same name.
+  bool DrawInfoBarArrows(int* x) const;
+
   ui::SlideAnimation* animation() { return animation_.get(); }
   const ui::SlideAnimation* animation() const { return animation_.get(); }
-  int bar_target_height() const { return bar_target_height_; }
   int bar_height() const { return bar_height_; }
 
   // Platforms may optionally override these if they need to do work during
@@ -73,7 +76,7 @@ class InfoBar : public ui::AnimationDelegate {
   // ui::AnimationDelegate:
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
 
-  // Finds the new desired tab and bar heights, and if they differ from the
+  // Finds the new desired arrow and bar heights, and if they differ from the
   // current ones, calls PlatformSpecificOnHeightRecalculated() and informs our
   // container our height has changed.
   void RecalculateHeight();
@@ -90,8 +93,8 @@ class InfoBar : public ui::AnimationDelegate {
   // The target height for the bar portion of the InfoBarView.
   int bar_target_height_;
 
-  // The current heights of the tab and bar portions.
-  int tab_height_;
+  // The current heights of the arrow and bar portions.
+  int arrow_height_;
   int bar_height_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBar);

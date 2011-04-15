@@ -67,7 +67,7 @@ int InfoBarContainer::GetVerticalOverlap(int* total_height) {
 
   for (InfoBars::iterator i(infobars_.begin()); i != infobars_.end(); ++i) {
     InfoBar* infobar = *i;
-    next_infobar_y -= infobar->tab_height();
+    next_infobar_y -= infobar->arrow_height();
     vertical_overlap = std::max(vertical_overlap, -next_infobar_y);
     next_infobar_y += infobar->total_height();
   }
@@ -80,6 +80,10 @@ int InfoBarContainer::GetVerticalOverlap(int* total_height) {
 void InfoBarContainer::OnInfoBarHeightChanged(bool is_animating) {
   if (delegate_)
     delegate_->InfoBarContainerHeightChanged(is_animating);
+}
+
+bool InfoBarContainer::DrawInfoBarArrows(int* x) const {
+  return delegate_ && delegate_->DrawInfoBarArrows(x);
 }
 
 void InfoBarContainer::RemoveDelegate(InfoBarDelegate* delegate) {

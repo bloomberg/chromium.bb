@@ -25,10 +25,14 @@ class TabContents;
 // functions, which are pure virtual here.
 class InfoBarContainer : public NotificationObserver {
  public:
-  // The delegate is notified each time the infobar container changes height.
   class Delegate {
    public:
+    // The delegate is notified each time the infobar container changes height.
     virtual void InfoBarContainerHeightChanged(bool is_animating) = 0;
+
+    // The delegate needs to tell us whether "unspoofable" arrows should be
+    // drawn, and if so, at what |x| coordinate.  |x| may not be NULL.
+    virtual bool DrawInfoBarArrows(int* x) const = 0;
 
    protected:
     virtual ~Delegate();
@@ -51,6 +55,9 @@ class InfoBarContainer : public NotificationObserver {
   // its height.  The container is expected to do anything necessary to respond,
   // e.g. re-layout.
   void OnInfoBarHeightChanged(bool is_animating);
+
+  // Passthrough to the delegate function of the same name.
+  bool DrawInfoBarArrows(int* x) const;
 
   // Remove the specified InfoBarDelegate from the selected TabContents. This
   // will notify us back and cause us to close the InfoBar.  This is called from

@@ -9,7 +9,6 @@
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "chrome/browser/ui/views/infobars/infobar_button_border.h"
-#include "chrome/browser/ui/views/infobars/infobar_container.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -37,19 +36,12 @@
 #endif
 
 // static
-const int InfoBar::kTabTargetHeight = 9;
+const int InfoBar::kArrowTargetHeight = 9;
 const int InfoBar::kDefaultBarTargetHeight = 36;
 
 const int InfoBarView::kButtonButtonSpacing = 10;
 const int InfoBarView::kEndOfLabelSpacing = 16;
 const int InfoBarView::kHorizontalPadding = 6;
-
-const int InfoBarView::kCurveWidth = 13;
-const int InfoBarView::kMaxIconWidth = 30;
-const int InfoBarView::kTabIconPadding = 2;
-
-const int InfoBarView::kTabWidth = (kCurveWidth + kTabIconPadding) * 2 +
-    kMaxIconWidth;
 
 InfoBarView::InfoBarView(InfoBarDelegate* delegate)
     : InfoBar(delegate),
@@ -154,32 +146,20 @@ void InfoBarView::Layout() {
   // width is changed, which affects both paths.
   stroke_path_->rewind();
   fill_path_->rewind();
-  if (tab_height()) {
-    int divider_y = tab_height() - 1;
-    stroke_path_->moveTo(
-        SkIntToScalar(GetMirroredXWithWidthInView(0, kTabWidth)),
-        SkIntToScalar(divider_y));
-    stroke_path_->rCubicTo(
-        SkScalarDiv(kCurveWidth, 2), 0.0,
-        SkScalarDiv(kCurveWidth, 2),
-        SkIntToScalar(-divider_y),
-        SkIntToScalar(kCurveWidth),
-        SkIntToScalar(-divider_y));
-    stroke_path_->rLineTo(SkScalarMulAdd(kTabIconPadding, 2, kMaxIconWidth),
-                          0.0);
-    stroke_path_->rCubicTo(
-        SkScalarDiv(kCurveWidth, 2), 0.0,
-        SkScalarDiv(kCurveWidth, 2),
-        SkIntToScalar(divider_y),
-        SkIntToScalar(kCurveWidth),
-        SkIntToScalar(divider_y));
+  int arrow_bottom = std::max(arrow_height() - 1, 0);
+  SkScalar arrow_bottom_scalar = SkIntToScalar(arrow_bottom);
+  int arrow_x;
+  if (DrawInfoBarArrows(&arrow_x) && arrow_bottom) {
+    stroke_path_->moveTo(SkIntToScalar(arrow_x - arrow_bottom),
+                         arrow_bottom_scalar);
+    stroke_path_->rLineTo(arrow_bottom_scalar, -arrow_bottom_scalar);
+    stroke_path_->rLineTo(arrow_bottom_scalar, arrow_bottom_scalar);
 
-    // Create the fill portion of the tab.  Because the fill is inside the
-    // bounds and will not cover the separator, we need to extend downward by a
-    // pixel before closing.
+    // Without extending the fill downward by a pixel, Skia doesn't seem to want
+    // to fill over the divider above the bar portion.
     *fill_path_ = *stroke_path_;
     fill_path_->rLineTo(0.0, 1.0);
-    fill_path_->rLineTo(-SkIntToScalar(kTabWidth), 0.0);
+    fill_path_->rLineTo(-arrow_bottom_scalar * 2, 0.0);
     fill_path_->close();
 
     // Fill and stroke have different opinions about how to treat paths.
@@ -192,25 +172,15 @@ void InfoBarView::Layout() {
     stroke_path_->offset(SK_ScalarHalf, SK_ScalarHalf);
   }
   if (bar_height()) {
-    fill_path_->addRect(0.0, SkIntToScalar(tab_height()),
+    fill_path_->addRect(0.0, SkIntToScalar(arrow_height()),
                         SkIntToScalar(width()), SkIntToScalar(height()));
   }
 
   int start_x = kHorizontalPadding;
   if (icon_ != NULL) {
-    // Center the icon horizontally within the tab, and vertically between the
-    // entire height (tab + bar).
     gfx::Size icon_size = icon_->GetPreferredSize();
-    int center_x = std::max((kTabWidth - icon_size.width()) / 2, 0);
-    int full_height = bar_target_height() + kTabTargetHeight;
-
-    // This duplicates OffsetY except centered within the entire height (tab +
-    // bar) instead of just within the bar.
-    int offset_y =
-        std::max((full_height - icon_size.height()) / 2, 0) -
-        (full_height - height());
-    icon_->SetBounds(center_x, offset_y, icon_size.width(), icon_size.height());
-    start_x += icon_->bounds().right();
+    icon_->SetBounds(start_x, OffsetY(icon_size), icon_size.width(),
+                     icon_size.height());
   }
 
   gfx::Size button_size = close_button_->GetPreferredSize();
@@ -294,7 +264,7 @@ void InfoBarView::PaintChildren(gfx::Canvas* canvas) {
   // canvas_skia->clipPath(*fill_path_);
   DCHECK_EQ(total_height(), height())
       << "Infobar piecewise heights do not match overall height";
-  canvas->ClipRectInt(0, tab_height(), width(), bar_height());
+  canvas->ClipRectInt(0, arrow_height(), width(), bar_height());
   views::View::PaintChildren(canvas);
   canvas->Restore();
 }

@@ -375,6 +375,7 @@ class BrowserView : public BrowserBubbleHost,
 
   // InfoBarContainer::Delegate overrides
   virtual void InfoBarContainerHeightChanged(bool is_animating) OVERRIDE;
+  virtual bool DrawInfoBarArrows(int* x) const OVERRIDE;
 
   // views::SingleSplitView::Observer overrides:
   virtual bool SplitHandleMoved(views::SingleSplitView* view) OVERRIDE;
@@ -433,11 +434,6 @@ class BrowserView : public BrowserBubbleHost,
   // Creates the system menu.
   void InitSystemMenu();
 #endif
-
-  // Get the X value, in this BrowserView's coordinate system, where
-  // the points of the infobar arrows should be anchored.  This is the
-  // center of the omnibox location icon.
-  int GetInfoBarArrowCenterX() const;
 
   // Returns the BrowserViewLayout.
   BrowserViewLayout* GetBrowserViewLayout() const;

@@ -207,6 +207,7 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   // InfoBarContainer::Delegate overrides
   virtual void InfoBarContainerHeightChanged(bool is_animating) OVERRIDE;
+  virtual bool DrawInfoBarArrows(int* x) const OVERRIDE;
 
   virtual void TabContentsCreated(TabContents* new_contents);
 

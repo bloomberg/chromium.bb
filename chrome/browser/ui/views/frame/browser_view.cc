@@ -1657,6 +1657,16 @@ void BrowserView::InfoBarContainerHeightChanged(bool is_animating) {
   SelectedTabToolbarSizeChanged(is_animating);
 }
 
+bool BrowserView::DrawInfoBarArrows(int* x) const {
+  const LocationIconView* location_icon_view =
+      toolbar_->location_bar()->location_icon_view();
+  gfx::Rect icon_bounds = location_icon_view->GetLocalBounds();
+  gfx::Point icon_center = icon_bounds.CenterPoint();
+  ConvertPointToView(location_icon_view, this, &icon_center);
+  *x = icon_center.x();
+  return true;
+}
+
 bool BrowserView::SplitHandleMoved(views::SingleSplitView* view) {
   for (int i = 0; i < view->child_count(); ++i)
     view->GetChildViewAt(i)->InvalidateLayout();
@@ -1819,15 +1829,6 @@ void BrowserView::InitSystemMenu() {
   system_menu_->Rebuild();
 }
 #endif
-
-int BrowserView::GetInfoBarArrowCenterX() const {
-  const LocationIconView* location_icon_view =
-      toolbar_->location_bar()->location_icon_view();
-  gfx::Rect icon_bounds = location_icon_view->GetLocalBounds();
-  gfx::Point icon_center = icon_bounds.CenterPoint();
-  ConvertPointToView(location_icon_view, this, &icon_center);
-  return icon_center.x();
-}
 
 BrowserViewLayout* BrowserView::GetBrowserViewLayout() const {
   return static_cast<BrowserViewLayout*>(GetLayoutManager());

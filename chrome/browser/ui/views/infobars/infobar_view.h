@@ -81,11 +81,7 @@ class InfoBarView : public InfoBar,
   int EndX() const;
 
  private:
-  static const int kCurveWidth;
   static const int kHorizontalPadding;
-  static const int kMaxIconWidth;
-  static const int kTabIconPadding;
-  static const int kTabWidth;
 
   // InfoBar:
   virtual void PlatformSpecificHide(bool animate) OVERRIDE;

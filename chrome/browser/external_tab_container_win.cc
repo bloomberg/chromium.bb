@@ -918,6 +918,10 @@ void ExternalTabContainer::InfoBarContainerHeightChanged(bool is_animating) {
     external_tab_view_->Layout();
 }
 
+bool ExternalTabContainer::DrawInfoBarArrows(int* x) const {
+  return false;
+}
+
 // ExternalTabContainer instances do not have a window.
 views::Window* ExternalTabContainer::GetWindow() {
   return NULL;

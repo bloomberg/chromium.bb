@@ -32,7 +32,7 @@ void InfoBarContainerView::Layout() {
 
   for (int i = 0; i < child_count(); ++i) {
     InfoBarView* child = static_cast<InfoBarView*>(GetChildViewAt(i));
-    top -= child->tab_height();
+    top -= child->arrow_height();
     int child_height = child->total_height();
     child->SetBounds(0, top, width(), child_height);
     top += child_height;
