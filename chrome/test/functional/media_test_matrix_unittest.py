@@ -22,7 +22,7 @@ class MediaTestMatrixTest(unittest.TestCase):
     """
     matrix = MediaTestMatrix()
     # Pyauto.DataDir() method is not used to avoid dependency to pyauto.
-    data_file = os.path.join(os.pardir, 'data', 'media',
+    data_file = os.path.join(os.pardir, 'data', 'media', 'csv',
                              'media_matrix_data.csv')
     matrix.ReadData(data_file)
     return matrix
@@ -39,7 +39,7 @@ class MediaTestMatrixTest(unittest.TestCase):
                      'total number of elements in the returned list is wrong')
     mobile_test_info = MediaTestMatrix.LookForMediaInfoInCompactFormByNickName(
         media_test_matrix_list, 'mobile0.webm')
-    self.assertEqual(mobile_test_info[1], 'mobile0.webm',
+    self.assertEqual(mobile_test_info[2], 'mobile0.webm',
                      'the nickname of the returned element is wrong')
 
   def testGenerateAllMediaInfos(self):

@@ -6,16 +6,17 @@
 
 """Performance test for HTML5 media tag.
 
-This PyAuto powered script plays media (video or audio) files (using HTML5 tag
-embedded in player.html file) and measures CPU and memory usage using psutil
-library in a different thread using UIPerfTestMeasureThread class.
-The parameters needed to run this performance test are passed in the form of
-environment variables (such as the number of runs). media_perf_runner.py is
-used for generating these variables (PyAuto does not support direct
-parameters).
+This PyAuto powered script plays media (video or audio) files using the HTML5
+tag embedded in an HTML file (specified in the GetPlayerHTMLFileName() method)
+and measures CPU and memory usage using the psutil library in a different
+thread using the UIPerfTestMeasureThread class. The parameters needed to
+run this test are passed in the form of environment variables
+(such as the number of runs). media_perf_runner.py is used for
+generating these variables (PyAuto does not support direct parameters).
 
 Ref: http://code.google.com/p/psutil/wiki/Documentation
 """
+
 import os
 import time
 
@@ -23,6 +24,7 @@ import pyauto_functional  # Must be imported before pyauto.
 import pyauto
 
 from media_test_base import MediaTestBase
+from media_test_env_names import MediaTestEnvNames
 from ui_perf_test_measure_thread import UIPerfTestMeasureThread
 from ui_perf_test_utils import UIPerfTestUtils
 
@@ -32,8 +34,6 @@ class MediaPerformanceTest(MediaTestBase):
   # Since PyAuto does not support commandline argument, we have to rely on
   # environment variables. The followings are the names of the environment
   # variables that are used in the tests.
-  # Define the interval for the measurement.
-  MEASURE_INTERVAL_ENV_NAME = 'MEASURE_INTERVALS'
   # Time interval between measurement.
   DEFAULT_MEASURE_INTERVAL = 1
   TIMEOUT = 10000
@@ -71,7 +71,7 @@ class MediaPerformanceTest(MediaTestBase):
   measure_thread = None
 
   def testHTML5MediaTag(self):
-    """test HTML5 Media Tag."""
+    """Test the HTML5 media tag."""
     MediaTestBase.ExecuteTest(self)
 
   def PreAllRunsProcess(self):
@@ -103,7 +103,7 @@ class MediaPerformanceTest(MediaTestBase):
     MediaTestBase.PreEachRunProcess(self, run_counter)
 
     self.run_counter = run_counter
-    measure_intervals = os.getenv(self.MEASURE_INTERVAL_ENV_NAME,
+    measure_intervals = os.getenv(MediaTestEnvNames.MEASURE_INTERVAL_ENV_NAME,
                                   self.DEFAULT_MEASURE_INTERVAL)
     # Start the thread.
     self.measure_thread = UIPerfTestMeasureThread()

@@ -19,23 +19,21 @@ class TestUIPerfUtils(unittest.TestCase):
     self.assertEqual(output_string, '[1.02334, 2.32333, 2.44232]',
                      'result output is wrong')
 
-  def testPrintResultsImpl(self):
+  def testGetResultStringForPerfBot(self):
     """Test PrintResultList method."""
     times = [1.023, 2.323, 2.44232]
-    output_string = UIPerfTestUtils.PrintResultsImpl('playback', '', 'bear',
-                                                     times, 'ms')
+    output_string = UIPerfTestUtils.GetResultStringForPerfBot(
+        'playback', '', 'bear', times, 'ms')
     self.assertEqual(output_string,
                      'RESULT playback: bear= [1.02300, 2.32300, 2.44232] ms',
                      'result output is wrong')
 
-  def testPrintResultsImplEmptyData(self):
+  def testGetResultStringForPerfBotEmptyData(self):
     """Test PrintResultList method with empty data."""
     times = []
-    output_string = UIPerfTestUtils.PrintResultsImpl('playback', '', 'bear',
-                                                     times, 'ms')
-    self.assertEqual(output_string,
-                     'RESULT playback: bear= [] ms',
-                     'result output is wrong')
+    output_string = UIPerfTestUtils.GetResultStringForPerfBot(
+        'playback', '', 'bear', times, 'ms')
+    self.assertFalse(output_string, msg='Result output is not empty.')
 
   def testFindProcessesAndGetResourceInfo(self):
     """Test FindProcesses and GetResourceInfo methods.

@@ -217,4 +217,4 @@ class MediaTestMatrix:
     """
     for url, nickname, tag in compact_list:
       if target == nickname:
-        return (url, nickname, tag)
+        return (tag, url, nickname)

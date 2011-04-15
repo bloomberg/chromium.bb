@@ -4,11 +4,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Simple test for HTML5 media tag to measure playback time.
+"""Simple event test for the HTML5 media tag.
 
 This PyAuto powered script plays media (video or audio) files using the HTML5
 tag embedded in an HTML file (specified in the GetPlayerHTMLFileName() method)
-and measures simple playback time. The parameters needed to run this test are
+and asserts proper event occurrence. The parameters needed to run this test are
 passed in the form of environment variables (such as the number of runs).
 media_perf_runner.py is used for generating these variables
 (PyAuto does not support direct parameters).
@@ -17,15 +17,15 @@ media_perf_runner.py is used for generating these variables
 import pyauto_functional  # Must be imported before pyauto.
 import pyauto
 
-from media_test_base import MediaTestBase
+from media_event_test_base import MediaEventTestBase
 
 
-class MediaPlaybackTimeTest(MediaTestBase):
-  """Test class to record playback time."""
+class MediaEventSimpleTest(MediaEventTestBase):
+  """Tests for simple media events."""
 
   def testHTML5MediaTag(self):
     """Test the HTML5 media tag."""
-    MediaTestBase.ExecuteTest(self)
+    MediaEventTestBase.ExecuteTest(self)
 
 
 if __name__ == '__main__':

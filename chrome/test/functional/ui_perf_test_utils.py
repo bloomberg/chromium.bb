@@ -50,10 +50,10 @@ class UIPerfTestUtils:
     return output
 
   @staticmethod
-  def PrintResultsImpl(measurement, modifier, trace, values, units):
-    """Print results in a format that can be displayed on the BuildBot.
+  def GetResultStringForPerfBot(measurement, modifier, trace, values, units):
+    """Get a result string in a format that can be displayed on the PerfBot.
 
-    The followings are acceptable (it can be shown in BuildBot) format:
+    The following are acceptable (it can be shown in PerfBot) format:
       <*>RESULT <graph_name>: <trace_name>= <value> <units>
       <*>RESULT <graph_name>: <trace_name>= {<mean>, <std deviation>} <units>
       <*>RESULT <graph_name>: <trace_name>= [<value>,value,value,...,] <units>
@@ -66,8 +66,11 @@ class UIPerfTestUtils:
       units: units of values such as "sec" or "msec".
 
     Returns:
-      a output string that contains all information.
+      An output string that contains all information, or the empty string if
+        there is no information available.
     """
+    if not values:
+      return ''
     output_string = '%sRESULT %s%s: %s= %s %s' % (
         '', measurement, modifier, trace,
         UIPerfTestUtils.ConvertDataListToString(values), units)
@@ -230,7 +233,8 @@ class UIPerfTestUtils:
       parameter_string: a string that contains all parameters used.
       title: a title string for identifying perf data.
     Returns:
-      an output string that contains all information.
+      An output string that contains all information, or the empty string
+        if there is no information to output.
     """
     output_string = ''
     for i in range(len(measured_data_name_list)):
@@ -246,7 +250,9 @@ class UIPerfTestUtils:
               data = measured_data_list[counter][time_index][i]
               psutil_data.append(data)
         name = measured_data_name_list[i] + '-' + str(time_index)
-        output_string += UIPerfTestUtils.PrintResultsImpl(
+        output_string_line = UIPerfTestUtils.GetResultStringForPerfBot(
             parameter_string + '-', name, title, psutil_data,
-            measured_data_unit_list[i]) + '\n'
+            measured_data_unit_list[i])
+        if output_string_line:
+          output_string += output_string_line + '\n'
     return output_string

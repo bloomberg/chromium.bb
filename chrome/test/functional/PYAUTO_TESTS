@@ -299,5 +299,14 @@
       '-translate',
     ],
   },
-
+  
+  # HTML5 media performance tests.
+  'MEDIA_TESTS': {
+    'linux': [
+      'media_playbacktime',
+      'media_perf',
+      'media_fps',
+      'media_event_simple_test',
+    ],
+  },
 }

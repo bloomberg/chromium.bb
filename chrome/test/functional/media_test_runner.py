@@ -26,46 +26,59 @@ import shlex
 import sys
 from subprocess import Popen
 
+from media_test_env_names import MediaTestEnvNames
 from media_test_matrix import MediaTestMatrix
-
-EXTRA_NICKNAMES = ['nocache', 'cache']
-# Disable/enable media_cache.
-CHROME_FLAGS = ['--chrome-flags=\'--media-cache-size=1\'', '']
-# T parameter is passed to player.html to disable/enable cache.
-ADD_T_PARAMETERS = ['Y', 'N']
-DEFAULT_PERF_PROG_NAME = 'media_perf.py'
-DEFAULT_PLAYER_HTML_URL = 'DEFAULT'
-DEFAULT_PLAYER_HTML_URL_NICKNAME = 'local'
-PRINT_ONLY_TIME = 'Y'
-REMOVE_FIRST_RESULT = 'N'
-DEFAULT_NUMBER_OF_RUNS = 3
-DEFAULT_MEASURE_INTERVALS = 3
 
 
 def main():
-  input_filename = os.path.join(os.pardir, 'data', 'media', 'dataset.csv')
+  EXTRA_NICKNAMES = ['nocache', 'cache']
+  # Disable/enable media_cache.
+  CHROME_FLAGS = ['--chrome-flags=\'--media-cache-size=1\'', '']
+  # The 't' parameter is passed to player.html to disable/enable the media
+  # cache.
+  ADD_T_PARAMETERS = ['Y', 'N']
+  # Player.html should contain all the HTML and Javascript that is
+  # necessary to run these tests.
+  DEFAULT_PLAYER_HTML_URL = 'DEFAULT'
+  DEFAULT_PLAYER_HTML_URL_NICKNAME = 'local'
+  # Default base url nickname used to display the result in case it is not
+  # specified by the environment variable.
+  DEFAULT_PLAYER_HTML_URL_NICKNAME = 'local'
+  PRINT_ONLY_TIME = 'Y'
+  REMOVE_FIRST_RESULT = 'N'
+  # The number of runs for each test. This is used to compute average values
+  # from among all runs.
+  DEFAULT_NUMBER_OF_RUNS = 3
+  # The interval between measurement calls.
+  DEFAULT_MEASURE_INTERVALS = 3
+  DEFAULT_SUITE_NAME = 'MEDIA_TESTS'
+  # This script is used to run the PYAUTO suite.
+  pyauto_functional_script_name = os.path.join(os.path.dirname(__file__),
+                                               'pyauto_functional.py')
+
+  default_input_filename = os.path.join(os.pardir, 'data', 'media', 'csv',
+                                        'media_list_data.csv')
   parser = OptionParser()
   # TODO(imasaki@chromium.org): add parameter verification.
   parser.add_option(
-      '-i', '--input', dest='input_filename', default=input_filename,
+      '-i', '--input', dest='input_filename', default=default_input_filename,
       help='Data source file (file contents in list form) [defaults to "%s"]' %
-      input_filename, metavar='FILE')
+      default_input_filename, metavar='FILE')
   parser.add_option(
-      '-s', '--input_matrix', dest='input_matrix_filename',
+      '-x', '--input_matrix', dest='input_matrix_filename',
       help='Data source file (file contents in matrix form)', metavar='FILE')
   parser.add_option('-t', '--input_matrix_testcase',
                     dest='input_matrix_testcase_name',
                     help='Run particular test in matrix')
-  parser.add_option('-x', '--video_matrix_home_url',
+  parser.add_option('-r', '--video_matrix_home_url',
                     default='',
                     dest='video_matrix_home_url',
                     help='Video Matrix home URL')
-  parser.add_option('-p', '--perf_prog_name', dest='perf_prog_name',
-                    default=DEFAULT_PERF_PROG_NAME,
-                    help='Performance main program name [defaults to "%s"]' %
-                         DEFAULT_PERF_PROG_NAME, metavar='FILE')
+  parser.add_option('-p', '--test_prog_name', dest='test_prog_name',
+                    help='Test main program name (not using suite)',
+                    metavar='FILE')
   parser.add_option('-b', '--player_html_url', dest='player_html_url',
-                    default=DEFAULT_PLAYER_HTML_URL,
+                    default='None',
                     help='Player.html URL [defaults to "%s"] ' %
                          DEFAULT_PLAYER_HTML_URL, metavar='FILE')
   parser.add_option('-u', '--player_html_url_nickname',
@@ -85,6 +98,8 @@ def main():
                     default=True, # Currently default is True
                                   # since we want to test only 1 combination.
                     help='Run only one parameter combination')
+  parser.add_option('-s', '--suite', dest='suite',
+                    help='Suite file')
   options, args = parser.parse_args()
   if args:
     parser.print_help()
@@ -108,7 +123,7 @@ def main():
       # Use all test cases.
       test_data_list = all_data_list
     else:
-      # Choose particular test case.
+      # Choose particular video.
       media_info = MediaTestMatrix.LookForMediaInfoInCompactFormByNickName(
           all_data_list, options.input_matrix_testcase_name)
       if media_info is not None:
@@ -117,21 +132,42 @@ def main():
       for j in range(len(CHROME_FLAGS)):
         for k in range(len(ADD_T_PARAMETERS)):
            parent_envs = copy.deepcopy(os.environ)
+           if options.input_matrix_filename is None:
+             filename = os.path.join(os.pardir, filename)
            envs = {
-             'HTML_TAG': tag,
-             'MEDIA_FILENAME': filename,
-             'MEDIA_FILENAME_NICKNAME': nickname,
-             'PLAYER_HTML_URL': options.player_html_url,
-             'PLAYER_HTML_URL_NICKNAME': options.player_html_url_nickname,
-             'EXTRA_NICKNAME': EXTRA_NICKNAMES[j],
-             'ADD_T_PARAMETER': ADD_T_PARAMETERS[k],
-             'PRINT_ONLY_TIME': PRINT_ONLY_TIME,
-             'N_RUNS': str(options.number_of_runs),
-             'REMOVE_FIRST_RESULT': REMOVE_FIRST_RESULT,
-             'MEASURE_INTERVALS': str(options.measure_intervals),
+             MediaTestEnvNames.MEDIA_TAG_ENV_NAME: tag,
+             MediaTestEnvNames.MEDIA_FILENAME_ENV_NAME: filename,
+             MediaTestEnvNames.MEDIA_FILENAME_NICKNAME_ENV_NAME: nickname,
+             MediaTestEnvNames.PLAYER_HTML_URL_ENV_NAME:
+               options.player_html_url,
+             MediaTestEnvNames.PLAYER_HTML_URL_NICKNAME_ENV_NAME:
+               options.player_html_url_nickname,
+             MediaTestEnvNames.EXTRA_NICKNAME_ENV_NAME:
+               EXTRA_NICKNAMES[j],
+             MediaTestEnvNames.ADD_T_PARAMETER_ENV_NAME: ADD_T_PARAMETERS[k],
+             MediaTestEnvNames.PRINT_ONLY_TIME_ENV_NAME: PRINT_ONLY_TIME,
+             MediaTestEnvNames.N_RUNS_ENV_NAME: str(options.number_of_runs),
+             MediaTestEnvNames.REMOVE_FIRST_RESULT_ENV_NAME:
+               REMOVE_FIRST_RESULT,
+             MediaTestEnvNames.MEASURE_INTERVAL_ENV_NAME:
+               str(options.measure_intervals),
            }
            envs.update(parent_envs)
-           cmd = [options.perf_prog_name, CHROME_FLAGS[j]]
+           if options.suite is None and options.test_prog_name is not None:
+             # Suite is not used - run test program directly.
+             test_prog_name = options.test_prog_name
+             suite_string = ''
+           else:
+             # Suite is used.
+             # The test script names are in the PYAUTO_TEST file.
+             test_prog_name = pyauto_functional_script_name
+             if options.suite is None:
+               suite_name = DEFAULT_SUITE_NAME
+             else:
+               suite_name = options.suite
+             suite_string = ' --suite=%s' % suite_name
+           test_prog_name = sys.executable + ' ' + test_prog_name
+           cmd = test_prog_name + suite_string + ' ' + CHROME_FLAGS[j]
            proc = Popen(cmd, env=envs, shell=True)
            proc.communicate()
            if options.one_combination:
