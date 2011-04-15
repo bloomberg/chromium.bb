@@ -194,8 +194,10 @@ def Readconfig(output_dir, input_file, current_version):
 
 def RunSystemCommand(cmd):
   print 'Running [' + cmd + ']'
-  if (os.system(cmd) != 0):
-    raise "Error while running cmd: %s" % cmd
+  exit_code = os.system(cmd)
+  if (exit_code != 0):
+    raise Exception("Error while running cmd: %s, exit_code: %s" %
+                    (cmd, exit_code))
 
 def CreateArchiveFile(options, staging_dir, current_version, prev_version):
   """Creates a new installer archive file after deleting any existing old file.
@@ -245,7 +247,8 @@ def PrepareSetupExec(options, staging_dir, current_version, prev_version):
     setup_file = SETUP_EXEC
   elif options.setup_exe_format == "DIFF":
     if not options.last_chrome_installer:
-      raise "To use DIFF for setup.exe, --last_chrome_installer is needed."
+      raise Exception(
+          "To use DIFF for setup.exe, --last_chrome_installer is needed.")
     prev_setup_file = os.path.join(options.last_chrome_installer, SETUP_EXEC)
     new_setup_file = os.path.join(options.output_dir, SETUP_EXEC)
     patch_file = os.path.join(options.output_dir, SETUP_PATCH_FILE_PREFIX +
