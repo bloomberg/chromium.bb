@@ -107,12 +107,15 @@ class PrefValueStore {
   //   MANAGED_PLATFORM contains all managed preference values that are
   //       provided by a platform-specific policy mechanism (e.g. Windows
   //       Group Policy).
-  //   DEVICE_MANAGEMENT contains all managed preference values supplied
+  //   MANAGED_CLOUD contains all managed preference values supplied
   //       by the device management server (cloud policy).
   //   EXTENSION contains preference values set by extensions.
   //   COMMAND_LINE contains preference values set by command-line switches.
   //   USER contains all user-set preference values.
-  //   RECOMMENDED contains all recommended (policy) preference values.
+  //   RECOMMENDED_PLATFORM contains all recommended (policy) preference values
+  //      that are provided by a platform-specific policy mechanism.
+  //   RECOMMENDED_CLOUD contains all recommended (policy) preference values
+  //      that are provided by the device management server (cloud policy).
   //   DEFAULT contains all application default preference values.
   enum PrefStoreType {
     // INVALID_STORE is not associated with an actual PrefStore but used as

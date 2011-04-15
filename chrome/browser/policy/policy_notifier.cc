@@ -56,7 +56,7 @@ void PolicyNotifier::RecomputeState() {
     error_details_ = e[TOKEN_FETCHER];
   } else if (s[POLICY_CONTROLLER] == CloudPolicySubsystem::NETWORK_ERROR) {
     state_ = s[POLICY_CONTROLLER];
-    error_details_ = e[TOKEN_FETCHER];
+    error_details_ = e[POLICY_CONTROLLER];
   } else {
     state_ = s[POLICY_CACHE];
     error_details_ = e[POLICY_CACHE];

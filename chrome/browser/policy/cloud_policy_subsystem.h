@@ -35,21 +35,21 @@ class CloudPolicySubsystem
       public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   enum PolicySubsystemState {
-    UNENROLLED,  // No enrollment attempt has been performed yet.
-    BAD_GAIA_TOKEN,  // The server rejected the GAIA auth token.
-    UNMANAGED,  // This device is unmanaged.
+    UNENROLLED,     // No enrollment attempt has been performed yet.
+    BAD_GAIA_TOKEN, // The server rejected the GAIA auth token.
+    UNMANAGED,      // This device is unmanaged.
     NETWORK_ERROR,  // A network error occurred, retrying makes sense.
-    LOCAL_ERROR,  // Retrying is futile.
-    SUCCESS  // Policy has been fetched successfully and is in effect.
+    LOCAL_ERROR,    // Retrying is futile.
+    SUCCESS         // Policy has been fetched successfully and is in effect.
   };
 
   enum ErrorDetails {
-    NO_DETAILS,  // No error, so no error details either.
-    DMTOKEN_NETWORK_ERROR,  // DeviceTokenFetcher encountered a network error.
+    NO_DETAILS,            // No error, so no error details either.
+    DMTOKEN_NETWORK_ERROR, // DeviceTokenFetcher encountered a network error.
     POLICY_NETWORK_ERROR,  // CloudPolicyController encountered a network error.
-    BAD_DMTOKEN,  // The server rejected the DMToken.
-    POLICY_LOCAL_ERROR,  // The policy cache encountered a local error.
-    SIGNATURE_MISMATCH,  // The policy cache detected a signature mismatch.
+    BAD_DMTOKEN,           // The server rejected the DMToken.
+    POLICY_LOCAL_ERROR,    // The policy cache encountered a local error.
+    SIGNATURE_MISMATCH,    // The policy cache detected a signature mismatch.
   };
 
   class Observer {
