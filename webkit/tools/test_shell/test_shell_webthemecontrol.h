@@ -95,7 +95,7 @@ class Control {
 
   // canvas is the canvas to draw onto, and rect gives the size of the
   // control. ctype and cstate specify the type and state of the control.
-  Control(skia::PlatformCanvas* canvas, const SkIRect& rect,
+  Control(SkCanvas* canvas, const SkIRect& rect,
           Type ctype, State cstate);
   ~Control();
 
@@ -153,7 +153,7 @@ class Control {
   // color is which.
   void markState();
 
-  skia::PlatformCanvas* canvas_;
+  SkCanvas* canvas_;
   const SkIRect irect_;
   const Type type_;
   const State state_;
