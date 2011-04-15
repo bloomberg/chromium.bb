@@ -27,4 +27,6 @@ BUGCASEQ MAC : svg/dynamic-updates/SVGFEFloodElement-inherit-flood-color.html = 
 BUGCASEQ MAC : svg/dynamic-updates/SVGFESpecularLightingElement-inherit-lighting-color-css-prop.html = IMAGE
 BUGCASEQ MAC : svg/dynamic-updates/SVGFESpecularLightingElement-lighting-color-css-prop.html = IMAGE
 BUGCASEQ : fast/text/zero-font-size.html = IMAGE+TEXT
-
+BUGCASEQ WIN LINUX : editing/selection/select-from-textfield-outwards.html = IMAGE+TEXT
+BUGCASEQ WIN LINUX : fast/forms/input-text-drag-down.html = IMAGE+TEXT
+BUGCASEQ MAC : fast/canvas/image-object-in-canvas.html = IMAGE
