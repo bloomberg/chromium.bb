@@ -97,6 +97,8 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
     std::copy(expected_final_status_queue.begin(),
               expected_final_status_queue.end(),
               expected_final_status_queue_.begin());
+    LOG(INFO) << "Factory created with queue length " <<
+                 expected_final_status_queue_.size();
   }
 
   virtual PrerenderContents* CreatePrerenderContents(

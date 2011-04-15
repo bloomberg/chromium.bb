@@ -142,6 +142,8 @@ bool PrerenderManager::AddPreload(const GURL& url,
   if (FindEntry(url))
     return false;
 
+  LOG(INFO) << "Adding preload for " << url.path();
+
   // Local copy, since we may have to add an additional entry to it.
   std::vector<GURL> all_alias_urls = alias_urls;
 
@@ -234,6 +236,8 @@ void PrerenderManager::AddPendingPreload(
     return;
   }
 
+  LOG(INFO) << "Adding pending preload for " << url.path();
+
   PendingPrerenderList::iterator it =
       pending_prerender_list_.find(child_route_id_pair);
   if (it == pending_prerender_list_.end()) {
@@ -317,6 +321,8 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
     for (std::vector<PendingContentsData>::iterator content_it =
             pending_it->second.begin();
          content_it != pending_it->second.end(); ++content_it) {
+      LOG(INFO) << "Adding preload for " << content_it->url_.path() <<
+                   " from pending list.";
       AddPreload(content_it->url_, content_it->alias_urls_,
                  content_it->referrer_);
     }
