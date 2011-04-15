@@ -571,7 +571,7 @@ class PrebuiltUploader(object):
 
     # Record URL where prebuilts were uploaded.
     url_value = '%s/%s/' % (self._binhost_base_url.rstrip('/'),
-                            url_suffix.rstrip('/'))
+                            packages_url_suffix.rstrip('/'))
     if git_sync:
       git_file = os.path.join(build_path, _PREBUILT_MAKE_CONF[_HOST_TARGET])
       RevGitFile(git_file, url_value, key=key)
@@ -617,7 +617,7 @@ class PrebuiltUploader(object):
 
     # Record URL where prebuilts were uploaded.
     url_value = '%s/%s/' % (self._binhost_base_url.rstrip('/'),
-                            url_suffix.rstrip('/'))
+                            packages_url_suffix.rstrip('/'))
     if git_sync:
       git_file = DeterminePrebuiltConfFile(build_path, board)
       RevGitFile(git_file, url_value, key=key)

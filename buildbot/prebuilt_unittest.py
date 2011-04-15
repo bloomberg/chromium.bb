@@ -457,7 +457,8 @@ class TestSyncPrebuilts(unittest.TestCase):
         'target': prebuilt._HOST_TARGET }
     packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
     self.uploader._UploadPrebuilt(package_path, packages_url_suffix)
-    url_value = '%s/%s/' % (self.binhost.rstrip('/'), url_suffix.rstrip('/'))
+    url_value = '%s/%s/' % (self.binhost.rstrip('/'),
+                            packages_url_suffix.rstrip('/'))
     prebuilt.RevGitFile(mox.IgnoreArg(), url_value, key=self.key)
     prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, url_value)
     self.mox.ReplayAll()
@@ -483,7 +484,8 @@ class TestSyncPrebuilts(unittest.TestCase):
     self.uploader._UploadPrebuilt(package_path, packages_url_suffix)
     multiprocessing.Process.join()
     multiprocessing.Process.exitcode = 0
-    url_value = '%s/%s/' % (self.binhost.rstrip('/'), url_suffix.rstrip('/'))
+    url_value = '%s/%s/' % (self.binhost.rstrip('/'),
+                            packages_url_suffix.rstrip('/'))
     prebuilt.DeterminePrebuiltConfFile(self.build_path, board).AndReturn('foo')
     prebuilt.RevGitFile('foo', url_value, key=self.key)
     prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, url_value)
