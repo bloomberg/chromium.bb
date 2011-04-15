@@ -127,6 +127,13 @@ class Panel : public BrowserWindow {
   virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window);
 #endif
 
+  // Construct a native panel BrowserWindow implementation for the specified
+  // |browser|.
+  // TODO(jianli): to be implemented in platform-specific files.
+  static BrowserWindow* CreateNativePanel(Browser* browser, Panel* panel) {
+    return NULL;
+  }
+
  protected:
   virtual void DestroyBrowser();
 

@@ -12,7 +12,7 @@
 Panel::Panel(Browser* browser, const gfx::Rect& bounds)
     : bounds_(bounds),
       minimized_(false) {
-  browser_window_.reset(BrowserWindow::CreatePanelBrowserWindow(browser, this));
+  browser_window_.reset(CreateNativePanel(browser, this));
 }
 
 Panel::~Panel() {
@@ -173,17 +173,14 @@ void Panel::RotatePaneFocus(bool forwards) {
 }
 
 bool Panel::IsBookmarkBarVisible() const {
-  NOTIMPLEMENTED();
   return false;
 }
 
 bool Panel::IsBookmarkBarAnimating() const {
-  NOTIMPLEMENTED();
   return false;
 }
 
 bool Panel::IsTabStripEditable() const {
-  NOTIMPLEMENTED();
   return false;
 }
 

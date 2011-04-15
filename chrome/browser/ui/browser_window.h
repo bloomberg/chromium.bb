@@ -334,13 +334,6 @@ class BrowserWindow {
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(Browser* browser);
 
-  // Construct a panel BrowserWindow implementation for the specified |browser|.
-  // TODO (jianli): to be implemented.
-  static BrowserWindow* CreatePanelBrowserWindow(Browser* browser,
-                                                 Panel* panel) {
-    return NULL;
-  }
-
   // Construct a FindBar implementation for the specified |browser|.
   static FindBar* CreateFindBar(Browser* browser_window);
 
