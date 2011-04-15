@@ -40,6 +40,7 @@ a:active {
 }
 
 #search-field {
+  font-size: inherit;
   margin: 0;
 }
 
