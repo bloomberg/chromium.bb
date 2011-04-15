@@ -1579,3 +1579,25 @@
    fun:_ZN20SelectFileDialogImpl10SelectFileEN16SelectFileDialog4TypeERKSbItN4base20string16_char_traitsESaItEERK8FilePathPKNS0_12FileTypeInfoEiRKSsP8NSWindowPv
    fun:_ZN15DownloadManager24OnPathExistenceAvailableEP18DownloadCreateInfo
 }
+{
+   bug_79570
+   Memcheck:Value4
+   ...
+   fun:_ZN8Security12HandleObject5State4findEli
+   fun:_ZN8Security12HandleObject4findINS_6CursorEEERT_li
+   fun:_ZN8Security13AppleDatabase14dataAbortQueryERNS_9DbContextEl
+   fun:_Z19cssm_DataAbortQuery17cssm_dl_db_handlel
+   fun:CSSM_DL_DataAbortQuery
+   fun:_ZN11SSDLSession14DataAbortQueryEll
+   fun:_Z19cssm_DataAbortQuery17cssm_dl_db_handlel
+   fun:CSSM_DL_DataAbortQuery
+   fun:tpDbFindIssuerCrl
+   fun:tpVerifyCertGroupWithCrls
+   fun:_ZN14AppleTPSession15CertGroupVerifyEllRK14cssm_certgroupPK22cssm_tp_verify_contextP29cssm_tp_verify_context_result
+   fun:_Z20cssm_CertGroupVerifylllPK14cssm_certgroupPK22cssm_tp_verify_contextP29cssm_tp_verify_context_result
+   fun:CSSM_TP_CertGroupVerify
+   fun:_ZN8Security10CssmClient6TPImpl15certGroupVerifyERKNS_9CertGroupERKNS_15TPVerifyContextEPNS_14TPVerifyResultE
+   fun:_ZN8Security12KeychainCore5Trust8evaluateEv
+   fun:SecTrustEvaluate
+   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
+}

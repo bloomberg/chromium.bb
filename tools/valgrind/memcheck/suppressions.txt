@@ -3892,6 +3892,13 @@
    fun:_ZN2v88internal18StackFrameIterator12SingletonForENS0_10StackFrame4TypeE
 }
 {
+   bug_73722c
+   Memcheck:Addr4
+   fun:_ZN2v88internal13StandardFrame23IsArgumentsAdaptorFrameEPh
+   fun:_ZN2v88internal10StackFrame11ComputeType*
+   fun:_ZN2v88internal18StackFrameIterator5ResetEv
+}
+{
    bug_73828
    Memcheck:Leak
    ...
@@ -4295,10 +4302,19 @@
    fun:_ZN13sync_notifier104_GLOBAL__N_chrome_browser_sync_notifier_non_blocking_invalidation_notifier_unittest.cc_00000000_5C759CC735NonBlockingInvalidationNotifierTest5SetUpEv
 }
 {
-   bug_79357
+   bug_79357a
    Memcheck:Addr4
-   fun:_ZN12_GLOBAL__N_119FilePathWatcherImpl5WatchERK8FilePathPN15FilePathWatcher8DelegateE
-   fun:_ZN15FilePathWatcher5WatchERK8FilePathPNS_8DelegateE
+   ...
+   fun:*FilePathWatcherImpl*Watch*Delegate*
+   fun:*FilePathWatcher*Watch*
+   fun:_ZN21UserStyleSheetWatcher4InitEv
+}
+{
+   bug_79357b
+   Memcheck:Leak
+   ...
+   fun:*FilePathWatcherImpl*Watch*Delegate*
+   fun:*FilePathWatcher*Watch*
    fun:_ZN21UserStyleSheetWatcher4InitEv
 }
 {
