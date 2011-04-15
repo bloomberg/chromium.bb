@@ -22,6 +22,7 @@ const struct ExtraLanguage {
   const char* language_code;
   const char* input_method_id;
 } kExtraLanguages[] = {
+  { "en-AU", "xkb:us::eng" },  // For Austrailia, use US keyboard layout.
   { "id", "xkb:us::eng" }, // For Indonesian, use US keyboard layout.
   // The code "fil" comes from app/l10_util.cc.
   { "fil", "xkb:us::eng" },  // For Filipino, use US keyboard layout.
