@@ -389,8 +389,6 @@ void ProfileImpl::InitExtensions(bool extensions_enabled) {
   extensions_service_->Init();
 
   if (extensions_enabled) {
-    InstallDefaultApps();
-
     // Load any extensions specified with --load-extension.
     if (command_line->HasSwitch(switches::kLoadExtension)) {
       FilePath path = command_line->GetSwitchValuePath(
