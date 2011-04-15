@@ -159,10 +159,33 @@ v8::Local<v8::Context> MockWebFrame::mainWorldScriptContext() const {
   return v8::Local<v8::Context>();
 }
 
+#ifdef WEB_FILE_SYSTEM_TYPE_EXTERNAL
 v8::Handle<v8::Value> MockWebFrame::createFileSystem(
-    int type, const WebString& name, const WebString& path) {
+    WebKit::WebFileSystem::Type type, const WebString& name,
+    const WebString& path) {
   return v8::Handle<v8::Value>();
 }
+
+v8::Handle<v8::Value> MockWebFrame::createFileEntry(
+    WebKit::WebFileSystem::Type type, const WebString& fileSystemName,
+    const WebString& fileSystemPath, const WebString& filePath,
+    bool isDirectory) {
+  return v8::Handle<v8::Value>();
+}
+#else
+v8::Handle<v8::Value> MockWebFrame::createFileSystem(
+    int type, const WebString& name,
+    const WebString& path) {
+  return v8::Handle<v8::Value>();
+}
+
+v8::Handle<v8::Value> MockWebFrame::createFileEntry(
+    int type, const WebString& fileSystemName,
+    const WebString& fileSystemPath, const WebString& filePath,
+    bool isDirectory) {
+  return v8::Handle<v8::Value>();
+}
+#endif
 #endif
 
 

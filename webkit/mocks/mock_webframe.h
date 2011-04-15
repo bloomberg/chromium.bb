@@ -117,8 +117,23 @@ class MockWebFrame : public WebKit::WebFrame {
   virtual v8::Handle<v8::Value> executeScriptAndReturnValue(
       const WebScriptSource&);
   virtual v8::Local<v8::Context> mainWorldScriptContext() const;
+#ifdef WEB_FILE_SYSTEM_TYPE_EXTERNAL
   virtual v8::Handle<v8::Value> createFileSystem(
-      int type, const WebString& name, const WebString& path);
+      WebKit::WebFileSystem::Type type, const WebString& name,
+      const WebString& path);
+  virtual v8::Handle<v8::Value> createFileEntry(
+      WebKit::WebFileSystem::Type type, const WebString& fileSystemName,
+      const WebString& fileSystemPath, const WebString& filePath,
+      bool isDirectory);
+#else
+  virtual v8::Handle<v8::Value> createFileSystem(
+      int type, const WebString& name,
+      const WebString& path);
+  virtual v8::Handle<v8::Value> createFileEntry(
+      int type, const WebString& fileSystemName,
+      const WebString& fileSystemPath, const WebString& filePath,
+      bool isDirectory);
+#endif
 #endif
   virtual bool insertStyleText(const WebString& styleText,
                                const WebString& elementId);
