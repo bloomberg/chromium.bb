@@ -1238,6 +1238,9 @@ const char kCloudPrintEmail[] = "cloud_print.email";
 // Settings specific to underlying print system.
 const char kCloudPrintPrintSystemSettings[] =
     "cloud_print.print_system_settings";
+// A boolean indicating whether we should poll for print jobs when don't have
+// an XMPP connection (false by default).
+const char kCloudPrintEnableJobPoll[] = "cloud_print.enable_job_poll";
 
 // Used by the service process to determine if the remoting host is enabled.
 const char kRemotingHostEnabled[] = "remoting.host_enabled";

@@ -42,7 +42,8 @@ class CloudPrintProxyBackend::Core
   // use system default (local) print server.
   explicit Core(CloudPrintProxyBackend* backend,
                 const GURL& cloud_print_server_url,
-                const DictionaryValue* print_system_settings);
+                const DictionaryValue* print_system_settings,
+                bool enable_job_poll);
 
   // Note:
   //
@@ -225,6 +226,8 @@ class CloudPrintProxyBackend::Core
   base::TimeTicks notifications_enabled_since_;
   // Indicates whether a task to poll for jobs has been scheduled.
   bool job_poll_scheduled_;
+  // Indicates whether we should poll for jobs when we lose XMPP connection.
+  bool enable_job_poll_;
   // The channel we are interested in receiving push notifications for.
   // This is "cloudprint.google.com/proxy/<proxy_id>"
   std::string push_notifications_channel_;
@@ -235,12 +238,16 @@ class CloudPrintProxyBackend::Core
 CloudPrintProxyBackend::CloudPrintProxyBackend(
     CloudPrintProxyFrontend* frontend,
     const GURL& cloud_print_server_url,
-    const DictionaryValue* print_system_settings)
+    const DictionaryValue* print_system_settings,
+    bool enable_job_poll)
       : core_thread_("Chrome_CloudPrintProxyCoreThread"),
         frontend_loop_(MessageLoop::current()),
         frontend_(frontend) {
   DCHECK(frontend_);
-  core_ = new Core(this, cloud_print_server_url, print_system_settings);
+  core_ = new Core(this,
+                   cloud_print_server_url,
+                   print_system_settings,
+                   enable_job_poll);
 }
 
 CloudPrintProxyBackend::~CloudPrintProxyBackend() {
@@ -291,7 +298,8 @@ void CloudPrintProxyBackend::RegisterPrinters(
 
 CloudPrintProxyBackend::Core::Core(CloudPrintProxyBackend* backend,
                                    const GURL& cloud_print_server_url,
-                                   const DictionaryValue* print_system_settings)
+                                   const DictionaryValue* print_system_settings,
+                                   bool enable_job_poll)
     : backend_(backend),
       cloud_print_server_url_(cloud_print_server_url),
       complete_list_available_(false),
@@ -300,7 +308,8 @@ CloudPrintProxyBackend::Core::Core(CloudPrintProxyBackend* backend,
       new_printers_available_(false),
       registration_in_progress_(false),
       notifications_enabled_(false),
-      job_poll_scheduled_(false) {
+      job_poll_scheduled_(false),
+      enable_job_poll_(enable_job_poll) {
   if (print_system_settings) {
     // It is possible to have no print settings specified.
     print_system_settings_.reset(print_system_settings->DeepCopy());
@@ -615,8 +624,9 @@ void CloudPrintProxyBackend::Core::PollForJobs() {
       index->second->CheckForJobs(kJobFetchReasonPoll);
   }
   job_poll_scheduled_ = false;
-  // If we don't have notifications, poll again after a while.
-  if (!notifications_enabled_)
+  // If we don't have notifications and job polling is enabled, poll again
+  // after a while.
+  if (!notifications_enabled_ && enable_job_poll_)
     ScheduleJobPoll();
 }
 
@@ -878,27 +888,23 @@ bool CloudPrintProxyBackend::Core::RemovePrinterFromList(
 void CloudPrintProxyBackend::Core::OnNotificationStateChange(
     bool notification_enabled) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-  bool state_changed = (notification_enabled != notifications_enabled_);
   notifications_enabled_ = notification_enabled;
   if (notifications_enabled_) {
     notifications_enabled_since_ = base::TimeTicks::Now();
     VLOG(1) << "Notifications for proxy " << proxy_id_ << " were enabled at "
             << notifications_enabled_since_.ToInternalValue();
   } else {
-    VLOG(1) << "Notifications for proxy " << proxy_id_ << " disabled.";
+    LOG(ERROR) << "Notifications for proxy " << proxy_id_ << " disabled.";
     notifications_enabled_since_ = base::TimeTicks();
   }
   // A state change means one of two cases.
   // Case 1: We just lost notifications. This this case we want to schedule a
-  // job poll.
+  // job poll if enable_job_poll_ is true.
   // Case 2: Notifications just got re-enabled. In this case we want to schedule
-  // a poll once for jobs we might have missed when we were dark. In reality
-  // this is only needed when notifications get enabled for the first time. In
-  // all other cases there would already be a scheduled task to poll in the
-  // queue.
+  // a poll once for jobs we might have missed when we were dark.
   // Note that ScheduleJobPoll will not schedule again if a job poll task is
   // already scheduled.
-  if (state_changed)
+  if (enable_job_poll_ || notifications_enabled_)
     ScheduleJobPoll();
 }
 

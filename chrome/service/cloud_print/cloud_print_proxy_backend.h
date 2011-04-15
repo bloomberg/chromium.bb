@@ -51,7 +51,8 @@ class CloudPrintProxyBackend {
   // use system default settings.
   explicit CloudPrintProxyBackend(CloudPrintProxyFrontend* frontend,
                                   const GURL& cloud_print_server_url,
-                                  const DictionaryValue* print_sys_settings);
+                                  const DictionaryValue* print_sys_settings,
+                                  bool enable_job_poll);
   ~CloudPrintProxyBackend();
 
   bool InitializeWithLsid(const std::string& lsid, const std::string& proxy_id);

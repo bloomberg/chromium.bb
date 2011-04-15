@@ -82,10 +82,17 @@ void CloudPrintProxy::EnableForUser(const std::string& lsid) {
     cloud_print_server_url_str = kDefaultCloudPrintServerUrl;
   }
 
+  // By default we don't poll for jobs when we lose XMPP connection. But this
+  // behavior can be overridden by a preference.
+  bool enable_job_poll = false;
+  service_prefs_->GetBoolean(prefs::kCloudPrintEnableJobPoll,
+                             &enable_job_poll);
+
   GURL cloud_print_server_url(cloud_print_server_url_str.c_str());
   DCHECK(cloud_print_server_url.is_valid());
   backend_.reset(new CloudPrintProxyBackend(this, cloud_print_server_url,
-                                            print_system_settings));
+                                            print_system_settings,
+                                            enable_job_poll));
   // If we have been passed in an LSID, we want to use this to authenticate.
   // Else we will try and retrieve the last used auth tokens from prefs.
   if (!lsid.empty()) {
