@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -59,7 +59,7 @@ int SendDatagramTo(const MessageHeader* message, int flags,
   UNREFERENCED_PARAMETER(message);
   UNREFERENCED_PARAMETER(flags);
   UNREFERENCED_PARAMETER(name);
-  NaClLog(LOG_FATAL, "SendDatagramTo(): Not used on OSX\n");
+  NaClLog(LOG_FATAL, "SendDatagramTo(): Not used on Linux\n");
   return -1;
 }
 
