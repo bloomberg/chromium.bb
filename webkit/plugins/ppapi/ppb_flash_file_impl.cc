@@ -72,6 +72,13 @@ void FreeDirContents(PP_Instance instance, PP_DirContents_Dev* contents) {
 
 namespace {
 
+bool CreateThreadAdapterForInstance(PP_Instance instance) {
+  return false;  // No multithreaded access allowed.
+}
+
+void ClearThreadAdapterForInstance(PP_Instance instance) {
+}
+
 int32_t OpenModuleLocalFile(PP_Instance pp_instance,
                             const char* path,
                             int32_t mode,
@@ -205,6 +212,8 @@ int32_t GetModuleLocalDirContents(PP_Instance pp_instance,
 }
 
 const PPB_Flash_File_ModuleLocal ppb_flash_file_modulelocal = {
+  &CreateThreadAdapterForInstance,
+  &ClearThreadAdapterForInstance,
   &OpenModuleLocalFile,
   &RenameModuleLocalFile,
   &DeleteModuleLocalFileOrDir,

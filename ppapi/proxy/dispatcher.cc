@@ -192,6 +192,7 @@ Dispatcher::~Dispatcher() {
 bool Dispatcher::InitWithChannel(Delegate* delegate,
                                  const IPC::ChannelHandle& channel_handle,
                                  bool is_client) {
+  delegate_ = delegate;
   IPC::Channel::Mode mode = is_client ? IPC::Channel::MODE_CLIENT
                                       : IPC::Channel::MODE_SERVER;
   channel_.reset(new IPC::SyncChannel(channel_handle, mode, this,
@@ -295,6 +296,15 @@ IPC::PlatformFileForTransit Dispatcher::ShareHandleWithRemote(
   #error Not implemented.
 #endif
   return out_handle;
+}
+
+MessageLoop* Dispatcher::GetIPCMessageLoop() {
+  return delegate_->GetIPCMessageLoop();
+}
+
+void Dispatcher::AddIOThreadMessageFilter(
+    IPC::ChannelProxy::MessageFilter* filter) {
+  channel_->AddFilter(filter);
 }
 
 bool Dispatcher::Send(IPC::Message* msg) {

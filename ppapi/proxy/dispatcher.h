@@ -15,6 +15,7 @@
 #include "base/process.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_instance.h"
@@ -113,6 +114,18 @@ class Dispatcher : public IPC::Channel::Listener,
   IPC::PlatformFileForTransit ShareHandleWithRemote(
       base::PlatformFile handle,
       bool should_close_source);
+
+  // Returns the pointer to the IO thread for processing IPC messages.
+  // TODO(brettw) remove this. It's a hack to support the Flash
+  // ModuleLocalThreadAdapter. When the thread stuff is sorted out, this
+  // implementation detail should be hidden.
+  MessageLoop* GetIPCMessageLoop();
+
+  // Adds the given filter to the IO thread. Takes ownership of the pointer.
+  // TODO(brettw) remove this. It's a hack to support the Flash
+  // ModuleLocalThreadAdapter. When the thread stuff is sorted out, this
+  // implementation detail should be hidden.
+  void AddIOThreadMessageFilter(IPC::ChannelProxy::MessageFilter* filter);
 
   // Called if the remote side is declaring to us which interfaces it supports
   // so we don't have to query for each one. We'll pre-create proxies for
