@@ -352,25 +352,13 @@ bool DeserializeString(char* p,
                        NaClSrpcChannel* channel) {
   SerializedString* ss = reinterpret_cast<SerializedString*>(p);
   uint32_t string_length = ss->fixed.u.string_length;
-  if (0 == string_length) {
-    // Zero-length string.  Rely on what the PPB_Var_Deprecated does.
-    *var = PPBVarInterface()->VarFromUtf8(LookupModuleIdForSrpcChannel(channel),
-                                          ss->string_bytes,
-                                          0);
-  } else {
-    // We need to copy the string payload using memory allocated by
-    // NPN_MemAlloc.
-    void* copy = PPBCoreInterface()->MemAlloc(string_length + 1);
-    if (NULL == copy) {
-      // Memory allocation failed.
-      return false;
-    } else {
-      memmove(copy, ss->string_bytes, string_length);
-    }
-    *var = PPBVarInterface()->VarFromUtf8(LookupModuleIdForSrpcChannel(channel),
-                                          reinterpret_cast<const char*>(copy),
-                                          string_length);
-  }
+  // VarFromUtf8 creates a buffer of size string_length using the browser-side
+  // memory allocation function, and copies string_length bytes from
+  // ss->string_bytes in to that buffer.  The ref count of the returned var is
+  // 1.
+  *var = PPBVarInterface()->VarFromUtf8(LookupModuleIdForSrpcChannel(channel),
+                                        ss->string_bytes,
+                                        string_length);
   return true;
 }
 
