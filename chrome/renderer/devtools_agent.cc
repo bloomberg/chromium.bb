@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/command_line.h"
+#include "base/message_loop.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/devtools_messages.h"
 #include "chrome/renderer/devtools_agent_filter.h"

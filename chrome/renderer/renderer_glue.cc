@@ -20,7 +20,6 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/renderer/render_process.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/socket_stream_dispatcher.h"
 #include "content/common/view_messages.h"

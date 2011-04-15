@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
+#include "base/message_loop.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/url_constants.h"

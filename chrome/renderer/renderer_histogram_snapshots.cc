@@ -10,7 +10,6 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/render_process.h"
 #include "content/renderer/render_thread.h"
 
 // TODO(raman): Before renderer shuts down send final snapshot lists.

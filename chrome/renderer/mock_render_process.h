@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_MOCK_RENDER_PROCESS_H_
 #pragma once
 
-#include "chrome/renderer/render_process.h"
+#include "content/renderer/render_process.h"
 
 // This class is a mock of the child process singleton which we use during
 // running of the RenderView unit tests.

@@ -5,6 +5,7 @@
 #include "chrome/renderer/translate_helper.h"
 
 #include "base/compiler_specific.h"
+#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"

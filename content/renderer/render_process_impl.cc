@@ -10,7 +10,7 @@
 #include <mlang.h>
 #endif
 
-#include "chrome/renderer/render_process_impl.h"
+#include "content/renderer/render_process_impl.h"
 
 #include "base/basictypes.h"
 #include "base/command_line.h"

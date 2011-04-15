@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/autofill/autofill_agent.h"
 
+#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_constants.h"

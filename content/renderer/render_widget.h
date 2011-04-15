@@ -10,7 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/renderer/render_process.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "content/renderer/paint_aggregator.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"

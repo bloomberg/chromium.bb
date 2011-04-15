@@ -5,6 +5,7 @@
 #include "chrome/renderer/devtools_client.h"
 
 #include "base/command_line.h"
+#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/devtools_messages.h"

@@ -21,6 +21,5 @@ include_rules = [
   "+third_party/mach_override",
   "+third_party/npapi/bindings",
   "+third_party/sqlite",
-  "+third_party/tcmalloc",
 ]
 

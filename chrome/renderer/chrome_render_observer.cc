@@ -5,6 +5,7 @@
 #include "chrome/renderer/chrome_render_observer.h"
 
 #include "base/command_line.h"
+#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
@@ -15,6 +16,7 @@
 #include "content/renderer/render_view.h"
 #include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/image_operations.h"
+#include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"

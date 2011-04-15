@@ -22,6 +22,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/render_messages.h"
+#include "content/common/child_process.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/view_messages.h"
 #include "content/plugin/npobject_proxy.h"
