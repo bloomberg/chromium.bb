@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
 
+#include <algorithm>
+#include <deque>
 #include <vector>
 
 #include "base/logging.h"
@@ -12,6 +14,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_url_loader.h"
+#include "ppapi/c/private/ppb_proxy_private.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -37,6 +40,15 @@ class URLLoader : public PluginResource {
 
   PP_Resource GetResponseInfo();
 
+  // Appends the given data to the buffer_.
+  void PushBuffer(const char* data, size_t data_size);
+
+  // Reads the give bytes out of the buffer_, placing them in the given output
+  // buffer, and removes the bytes from the buffer.
+  //
+  // The size must be not more than the current size of the buffer.
+  void PopBuffer(void* output_buffer, int32_t output_size);
+
   // Initialized to -1. Will be set to nonnegative values by the UpdateProgress
   // message when the values are known.
   int64_t bytes_sent_;
@@ -48,6 +60,11 @@ class URLLoader : public PluginResource {
   // the buffer to put the data.
   PP_CompletionCallback current_read_callback_;
   void* current_read_buffer_;
+  int32_t current_read_buffer_size_;
+
+  // A buffer of all the data that's been sent to us from the host that we
+  // have yet to send out to the plugin.
+  std::deque<char> buffer_;
 
   // Cached copy of the response info. When nonzero, we're holding a reference
   // to this resource.
@@ -65,6 +82,7 @@ URLLoader::URLLoader(const HostResource& resource)
       total_bytes_to_be_received_(-1),
       current_read_callback_(PP_MakeCompletionCallback(NULL, NULL)),
       current_read_buffer_(NULL),
+      current_read_buffer_size_(0),
       response_info_(0) {
 }
 
@@ -103,7 +121,24 @@ PP_Resource URLLoader::GetResponseInfo() {
   return response_info_;
 }
 
+void URLLoader::PushBuffer(const char* data, size_t data_size) {
+  buffer_.insert(buffer_.end(), data, data + data_size);
+}
+
+void URLLoader::PopBuffer(void* output_buffer, int32_t output_size) {
+  CHECK(output_size <= static_cast<int32_t>(buffer_.size()));
+  std::copy(buffer_.begin(),
+            buffer_.begin() + output_size,
+            static_cast<char*>(output_buffer));
+  buffer_.erase(buffer_.begin(),
+                buffer_.begin() + output_size);
+}
+
 namespace {
+
+// The maximum size we'll read into the plugin without being explicitly
+// asked for a larger buffer.
+static const int32_t kMaxReadBufferSize = 16777216;  // 16MB
 
 // Converts the given loader ID to the dispatcher associated with it and the
 // loader object. Returns true if the object was found.
@@ -208,14 +243,14 @@ int32_t ReadResponseBody(PP_Resource loader_id,
                          void* buffer,
                          int32_t bytes_to_read,
                          PP_CompletionCallback callback) {
-  URLLoader* loader_object;
+  URLLoader* object;
   PluginDispatcher* dispatcher;
-  if (!RoutingDataFromURLLoader(loader_id, &loader_object, &dispatcher))
+  if (!RoutingDataFromURLLoader(loader_id, &object, &dispatcher))
     return PP_ERROR_BADRESOURCE;
 
-  if (!buffer)
+  if (!buffer || bytes_to_read <= 0)
     return PP_ERROR_BADARGUMENT;  // Must specify an output buffer.
-  if (loader_object->current_read_callback_.func)
+  if (object->current_read_callback_.func)
     return PP_ERROR_INPROGRESS;  // Can only have one request pending.
 
   // Currently we don't support sync calls to read. We'll need to revisit
@@ -223,12 +258,20 @@ int32_t ReadResponseBody(PP_Resource loader_id,
   if (!callback.func)
     return PP_ERROR_BADARGUMENT;
 
-  loader_object->current_read_callback_ = callback;
-  loader_object->current_read_buffer_ = buffer;
+  if (static_cast<size_t>(bytes_to_read) <= object->buffer_.size()) {
+    // Special case: we've buffered enough data to be able to synchronously
+    // return data to the caller. Do so without making IPCs.
+    object->PopBuffer(buffer, bytes_to_read);
+    return bytes_to_read;
+  }
+
+  object->current_read_callback_ = callback;
+  object->current_read_buffer_ = buffer;
+  object->current_read_buffer_size_ = bytes_to_read;
 
   dispatcher->Send(new PpapiHostMsg_PPBURLLoader_ReadResponseBody(
       INTERFACE_ID_PPB_URL_LOADER,
-      loader_object->host_resource(), bytes_to_read));
+      object->host_resource(), bytes_to_read));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -433,6 +476,19 @@ void PPB_URLLoader_Proxy::OnMsgReadResponseBody(
     bytes_to_read = 0;
   }
 
+  // Read more than requested if there are bytes available for synchronous
+  // reading. This prevents us from getting too far behind due to IPC message
+  // latency. Any extra data will get buffered in the plugin.
+  int32_t synchronously_available_bytes =
+      static_cast<HostDispatcher*>(dispatcher())->ppb_proxy()->
+          GetURLLoaderBufferedBytes(loader.host_resource());
+  if (bytes_to_read < kMaxReadBufferSize) {
+    // Grow the amount to read so we read ahead synchronously, if possible.
+    bytes_to_read =
+        std::max(bytes_to_read,
+                 std::min(synchronously_available_bytes, kMaxReadBufferSize));
+  }
+
   // This heap object will get deleted by the callback handler.
   // TODO(brettw) this will be leaked if the plugin closes the resource!
   // (Also including the plugin unloading and having the resource implicitly
@@ -508,15 +564,27 @@ void PPB_URLLoader_Proxy::OnMsgReadResponseBodyAck(
     return;
   }
 
-  // In the error case, the string will be empty, so we can always just copy
-  // out of it before issuing the callback.
-  memcpy(object->current_read_buffer_, data.c_str(), data.length());
+  // Append the data we requested to the internal buffer.
+  // TODO(brettw) avoid double-copying data that's coming from IPC and going
+  // into the plugin buffer (we can skip the internal buffer in this case).
+  object->PushBuffer(data.data(), data.length());
+
+  if (result >= 0) {
+    // Fill the user buffer. We may get fewer bytes than requested in the
+    // case of stream end.
+    int32_t bytes_to_return =
+        std::min(object->current_read_buffer_size_,
+                 static_cast<int32_t>(object->buffer_.size()));
+    object->PopBuffer(object->current_read_buffer_, bytes_to_return);
+    result = bytes_to_return;
+  }
 
   // The plugin should be able to make a new request from their callback, so
   // we have to clear our copy first.
   PP_CompletionCallback temp_callback = object->current_read_callback_;
   object->current_read_callback_ = PP_BlockUntilComplete();
   object->current_read_buffer_ = NULL;
+  object->current_read_buffer_size_ = 0;
   PP_RunCompletionCallback(&temp_callback, result);
 }
 

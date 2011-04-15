@@ -7,6 +7,7 @@
 #include "ppapi/c/private/ppb_proxy_private.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
 #include "webkit/plugins/ppapi/resource.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 
@@ -35,10 +36,19 @@ void SetReserveInstanceIDCallback(PP_Module module,
     plugin_module->SetReserveInstanceIDCallback(reserve);
 }
 
+int32_t GetURLLoaderBufferedBytes(PP_Resource url_loader) {
+ scoped_refptr<PPB_URLLoader_Impl> loader(
+      Resource::GetAs<PPB_URLLoader_Impl>(url_loader));
+  if (!loader)
+    return 0;
+  return loader->buffer_size();
+}
+
 const PPB_Proxy_Private ppb_proxy = {
   &PluginCrashed,
   &GetInstanceForResource,
-  &SetReserveInstanceIDCallback
+  &SetReserveInstanceIDCallback,
+  &GetURLLoaderBufferedBytes
 };
 
 }  // namespace

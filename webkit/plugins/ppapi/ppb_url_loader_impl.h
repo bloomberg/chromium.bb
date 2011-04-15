@@ -88,6 +88,10 @@ class PPB_URLLoader_Impl : public Resource, public WebKit::WebURLLoaderClient {
 
   PPB_URLResponseInfo_Impl* response_info() const { return response_info_; }
 
+  // Returns the number of bytes currently available for synchronous reading
+  // in the loader.
+  int32_t buffer_size() const { return buffer_.size(); }
+
  private:
   // Check that |callback| is valid (only non-blocking operation is supported)
   // and that no callback is already pending. Returns |PP_OK| if okay, else
