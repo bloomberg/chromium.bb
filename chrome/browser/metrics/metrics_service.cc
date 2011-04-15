@@ -228,8 +228,8 @@ static const int kInitialInterlogDuration = 60;  // one minute
 // data.
 static const int kMaxHistogramGatheringWaitDuration = 60000;  // 60 seconds.
 
-// The default maximum number of events in a log uploaded to the UMA server.
-static const int kInitialEventLimit = 2400;
+// The maximum number of events in a log uploaded to the UMA server.
+static const int kEventLimit = 2400;
 
 // If an upload fails, and the transmission was over this byte count, then we
 // will discard the log, and not try to retransmit it.  We also don't persist
@@ -445,7 +445,6 @@ MetricsService::MetricsService()
       ALLOW_THIS_IN_INITIALIZER_LIST(log_sender_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(state_saver_factory_(this)),
       interlog_duration_(TimeDelta::FromSeconds(kInitialInterlogDuration)),
-      log_event_limit_(kInitialEventLimit),
       timer_pending_(false) {
   DCHECK(IsSingleThreaded());
   InitializeMetricsState();
@@ -852,7 +851,7 @@ void MetricsService::StopRecording(MetricsLogBase** log) {
 
   // TODO(jar): Integrate bounds on log recording more consistently, so that we
   // can stop recording logs that are too big much sooner.
-  if (current_log_->num_events() > log_event_limit_) {
+  if (current_log_->num_events() > kEventLimit) {
     UMA_HISTOGRAM_COUNTS("UMA.Discarded Log Events",
                          current_log_->num_events());
     current_log_->CloseLog();
@@ -1398,16 +1397,13 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source,
     if (local_state)
       local_state->ScheduleSavePersistentPrefs();
 
-    // Provide a default (free of exponetial backoff, other varances) in case
-    // the server does not specify a value.
-    interlog_duration_ = TimeDelta::FromSeconds(kMinSecondsPerLog);
-
-    GetSettingsFromResponseData(data);
-    // Override server specified interlog delay if there are unsent logs to
-    // transmit.
+    // Override usual interlog delay if there are unsent logs to transmit,
+    // otherwise reset back to default.
     if (unsent_logs()) {
       DCHECK(state_ < SENDING_CURRENT_LOGS);
       interlog_duration_ = TimeDelta::FromSeconds(kUnsentLogDelay);
+    } else {
+      interlog_duration_ = TimeDelta::FromSeconds(kMinSecondsPerLog);
     }
   }
 
@@ -1435,167 +1431,6 @@ void MetricsService::HandleBadResponseCode() {
             << interlog_duration_.InSeconds() << " seconds for "
             << compressed_log_;
   }
-}
-
-void MetricsService::GetSettingsFromResponseData(const std::string& data) {
-  // We assume that the file is structured as a block opened by <response>
-  // and that inside response, there is a block opened by tag <chrome_config>
-  // other tags are ignored for now except the content of <chrome_config>.
-  VLOG(1) << "METRICS: getting settings from response data: " << data;
-
-  int data_size = static_cast<int>(data.size());
-  if (data_size < 0) {
-    VLOG(1) << "METRICS: server response data bad size: " << data_size
-            << "; aborting extraction of settings";
-    return;
-  }
-  xmlDocPtr doc = xmlReadMemory(data.c_str(), data_size, "", NULL, 0);
-  // If the document is malformed, we just use the settings that were there.
-  if (!doc) {
-    VLOG(1) << "METRICS: reading xml from server response data failed";
-    return;
-  }
-
-  xmlNodePtr top_node = xmlDocGetRootElement(doc), chrome_config_node = NULL;
-  // Here, we find the chrome_config node by name.
-  for (xmlNodePtr p = top_node->children; p; p = p->next) {
-    if (xmlStrEqual(p->name, BAD_CAST "chrome_config")) {
-      chrome_config_node = p;
-      break;
-    }
-  }
-  // If the server data is formatted wrong and there is no
-  // config node where we expect, we just drop out.
-  if (chrome_config_node != NULL)
-    GetSettingsFromChromeConfigNode(chrome_config_node);
-  xmlFreeDoc(doc);
-}
-
-void MetricsService::GetSettingsFromChromeConfigNode(
-    xmlNodePtr chrome_config_node) {
-  // Iterate through all children of the config node.
-  for (xmlNodePtr current_node = chrome_config_node->children;
-       current_node;
-       current_node = current_node->next) {
-    // If we find the upload tag, we appeal to another function
-    // GetSettingsFromUploadNode to read all the data in it.
-    if (xmlStrEqual(current_node->name, BAD_CAST "upload")) {
-      GetSettingsFromUploadNode(current_node);
-      continue;
-    }
-  }
-}
-
-void MetricsService::InheritedProperties::OverwriteWhereNeeded(
-    xmlNodePtr node) {
-  xmlChar* salt_value = xmlGetProp(node, BAD_CAST "salt");
-  if (salt_value)  // If the property isn't there, xmlGetProp returns NULL.
-      salt = atoi(reinterpret_cast<char*>(salt_value));
-  // If the property isn't there, we keep the value the property had before
-
-  xmlChar* denominator_value = xmlGetProp(node, BAD_CAST "denominator");
-  if (denominator_value)
-     denominator = atoi(reinterpret_cast<char*>(denominator_value));
-}
-
-void MetricsService::GetSettingsFromUploadNode(xmlNodePtr upload_node) {
-  InheritedProperties props;
-  GetSettingsFromUploadNodeRecursive(upload_node, props, "", true);
-}
-
-void MetricsService::GetSettingsFromUploadNodeRecursive(
-    xmlNodePtr node,
-    InheritedProperties props,
-    const std::string& path_prefix,
-    bool uploadOn) {
-  props.OverwriteWhereNeeded(node);
-
-  // The bool uploadOn is set to true if the data represented by current
-  // node should be uploaded. This gets inherited in the tree; the children
-  // of a node that has already been rejected for upload get rejected for
-  // upload.
-  uploadOn = uploadOn && NodeProbabilityTest(node, props);
-
-  // The path is a / separated list of the node names ancestral to the current
-  // one. So, if you want to check if the current node has a certain name,
-  // compare to name.  If you want to check if it is a certan tag at a certain
-  // place in the tree, compare to the whole path.
-  std::string name = std::string(reinterpret_cast<const char*>(node->name));
-  std::string path = path_prefix + "/" + name;
-
-  if (path == "/upload") {
-    xmlChar* upload_interval_val = xmlGetProp(node, BAD_CAST "interval");
-    if (upload_interval_val) {
-      interlog_duration_ = TimeDelta::FromSeconds(
-          atoi(reinterpret_cast<char*>(upload_interval_val)));
-    }
-
-    server_permits_upload_ = uploadOn;
-  } else if (path == "/upload/logs") {
-    xmlChar* log_event_limit_val = xmlGetProp(node, BAD_CAST "event_limit");
-    if (log_event_limit_val)
-      log_event_limit_ = atoi(reinterpret_cast<char*>(log_event_limit_val));
-  }
-
-  // Recursive call.  If the node is a leaf i.e. if it ends in a "/>", then it
-  // doesn't have children, so node->children is NULL, and this loop doesn't
-  // call (that's how the recursion ends).
-  for (xmlNodePtr child_node = node->children;
-       child_node;
-       child_node = child_node->next) {
-    GetSettingsFromUploadNodeRecursive(child_node, props, path, uploadOn);
-  }
-}
-
-bool MetricsService::NodeProbabilityTest(xmlNodePtr node,
-                                         InheritedProperties props) const {
-  // Default value of probability on any node is 1, but recall that
-  // its parents can already have been rejected for upload.
-  double probability = 1;
-
-  // If a probability is specified in the node, we use it instead.
-  xmlChar* probability_value = xmlGetProp(node, BAD_CAST "probability");
-  if (probability_value)
-    probability = atoi(reinterpret_cast<char*>(probability_value));
-
-  return ProbabilityTest(probability, props.salt, props.denominator);
-}
-
-bool MetricsService::ProbabilityTest(double probability,
-                                     int salt,
-                                     int denominator) const {
-  // Okay, first we figure out how many of the digits of the
-  // client_id_ we need in order to make a nice pseudorandomish
-  // number in the range [0,denominator).  Too many digits is
-  // fine.
-
-  // n is the length of the client_id_ string
-  size_t n = client_id_.size();
-
-  // idnumber is a positive integer generated from the client_id_.
-  // It plus salt is going to give us our pseudorandom number.
-  int idnumber = 0;
-  const char* client_id_c_str = client_id_.c_str();
-
-  // Here we hash the relevant digits of the client_id_
-  // string somehow to get a big integer idnumber (could be negative
-  // from wraparound)
-  int big = 1;
-  int last_pos = n - 1;
-  for (size_t j = 0; j < n; ++j) {
-    idnumber += static_cast<int>(client_id_c_str[last_pos - j]) * big;
-    big *= 10;
-  }
-
-  // Mod id number by denominator making sure to get a non-negative
-  // answer.
-  idnumber = ((idnumber % denominator) + denominator) % denominator;
-
-  // ((idnumber + salt) % denominator) / denominator is in the range [0,1]
-  // if it's less than probability we call that an affirmative coin
-  // toss.
-  return static_cast<double>((idnumber + salt) % denominator) <
-      probability * denominator;
 }
 
 void MetricsService::LogWindowChange(NotificationType type,

@@ -266,51 +266,6 @@ class MetricsService : public NotificationObserver,
   // a response code not equal to 200.
   void HandleBadResponseCode();
 
-  // Class to hold all attributes that gets inherited by children in the UMA
-  // response data xml tree.  This is to make it convenient in the
-  // recursive function that does the tree traversal to pass all such
-  // data in the recursive call.  If you want to add more such attributes,
-  // add them to this class.
-  class InheritedProperties {
-    public:
-    InheritedProperties() : salt(123123), denominator(1000000) {}
-    int salt, denominator;
-    // Notice salt and denominator are inherited from parent nodes, but
-    // not probability; the default value of probability is 1.
-
-    // When a new node is reached it might have fields which overwrite inherited
-    // properties for that node (and its children).  Call this method to
-    // overwrite those settings.
-    void OverwriteWhereNeeded(xmlNodePtr node);
-  };
-
-  // Called by OnURLFetchComplete with data as the argument
-  // parses the xml returned by the server in the call to OnURLFetchComplete
-  // and extracts settings for subsequent frequency and content of log posts.
-  void GetSettingsFromResponseData(const std::string& data);
-
-  // This is a helper function for GetSettingsFromResponseData which iterates
-  // through the xml tree at the level of the <chrome_config> node.
-  void GetSettingsFromChromeConfigNode(xmlNodePtr chrome_config_node);
-
-  // GetSettingsFromUploadNode handles iteration over the children of the
-  // <upload> child of the <chrome_config> node.  It calls the recursive
-  // function GetSettingsFromUploadNodeRecursive which does the actual
-  // tree traversal.
-  void GetSettingsFromUploadNode(xmlNodePtr upload_node);
-  void GetSettingsFromUploadNodeRecursive(xmlNodePtr node,
-      InheritedProperties props,
-      const std::string& path_prefix,
-      bool uploadOn);
-
-  // NodeProbabilityTest gets called at every node in the tree traversal
-  // performed by GetSettingsFromUploadNodeRecursive.  It determines from
-  // the inherited attributes (salt, denominator) and the probability
-  // assiciated with the node whether that node and its contents should
-  // contribute to the upload.
-  bool NodeProbabilityTest(xmlNodePtr node, InheritedProperties props) const;
-  bool ProbabilityTest(double probability, int salt, int denominator) const;
-
   // Records a window-related notification.
   void LogWindowChange(NotificationType type,
                        const NotificationSource& source,
@@ -457,11 +412,6 @@ class MetricsService : public NotificationObserver,
   // build up a log, but if other unsent-logs from previous sessions exist, we
   // quickly transmit those unsent logs while we continue to build a log.
   base::TimeDelta interlog_duration_;
-
-  // The maximum number of events which get transmitted in a log.  This defaults
-  // to a constant and otherwise is provided by the UMA server in the server
-  // response data.
-  int log_event_limit_;
 
   // Indicate that a timer for sending the next log has already been queued.
   bool timer_pending_;
