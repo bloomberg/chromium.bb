@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/memory/scoped_temp_dir.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/windows_version.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/shell_util.h"
@@ -145,4 +146,117 @@ TEST_F(ShellUtilTest, UpdateChromeShortcutTest) {
   EXPECT_TRUE(VerifyChromeShortcut(exe_path.value(),
                                    shortcut_path.value(),
                                    description2, 1));
+}
+
+TEST_F(ShellUtilTest, CreateChromeDesktopShortcutTest) {
+  // Run this test on Vista+ only if we are running elevated.
+  if (base::win::GetVersion() > base::win::VERSION_XP && !IsUserAnAdmin()) {
+    LOG(ERROR) << "Must be admin to run this test on Vista+";
+    return;
+  }
+
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  ASSERT_TRUE(dist != NULL);
+  // Create an executable in test path by copying ourself to it.
+  wchar_t exe_full_path_str[MAX_PATH];
+  EXPECT_FALSE(::GetModuleFileName(NULL, exe_full_path_str, MAX_PATH) == 0);
+  FilePath exe_full_path(exe_full_path_str);
+
+  FilePath exe_path = temp_dir_.path().AppendASCII("setup.exe");
+  EXPECT_TRUE(file_util::CopyFile(exe_full_path, exe_path));
+
+  const std::wstring description(L"dummy description");
+
+  FilePath user_desktop_path;
+  EXPECT_TRUE(ShellUtil::GetDesktopPath(false, &user_desktop_path));
+  FilePath system_desktop_path;
+  EXPECT_TRUE(ShellUtil::GetDesktopPath(true, &system_desktop_path));
+
+  std::wstring shortcut_name;
+  EXPECT_TRUE(ShellUtil::GetChromeShortcutName(dist, &shortcut_name, false));
+
+  FilePath user_shortcut_path = user_desktop_path.Append(shortcut_name);
+  FilePath system_shortcut_path = system_desktop_path.Append(shortcut_name);
+
+  // Test simple creation of a user-level shortcut.
+  EXPECT_TRUE(ShellUtil::CreateChromeDesktopShortcut(dist,
+                                                     exe_path.value(),
+                                                     description,
+                                                     ShellUtil::CURRENT_USER,
+                                                     false,
+                                                     true));
+  EXPECT_TRUE(VerifyChromeShortcut(exe_path.value(),
+                                   user_shortcut_path.value(),
+                                   description,
+                                   0));
+  EXPECT_TRUE(ShellUtil::RemoveChromeDesktopShortcut(dist,
+                                                     ShellUtil::CURRENT_USER,
+                                                     false));
+
+  // Test simple creation of a system-level shortcut.
+  EXPECT_TRUE(ShellUtil::CreateChromeDesktopShortcut(dist,
+                                                     exe_path.value(),
+                                                     description,
+                                                     ShellUtil::SYSTEM_LEVEL,
+                                                     false,
+                                                     true));
+  EXPECT_TRUE(VerifyChromeShortcut(exe_path.value(),
+                                   system_shortcut_path.value(),
+                                   description,
+                                   0));
+  EXPECT_TRUE(ShellUtil::RemoveChromeDesktopShortcut(dist,
+                                                     ShellUtil::SYSTEM_LEVEL,
+                                                     false));
+
+  // Test creation of a user-level shortcut when a system-level shortcut
+  // is already present (should fail).
+  EXPECT_TRUE(ShellUtil::CreateChromeDesktopShortcut(dist,
+                                                     exe_path.value(),
+                                                     description,
+                                                     ShellUtil::SYSTEM_LEVEL,
+                                                     false,
+                                                     true));
+  EXPECT_FALSE(ShellUtil::CreateChromeDesktopShortcut(dist,
+                                                      exe_path.value(),
+                                                      description,
+                                                      ShellUtil::CURRENT_USER,
+                                                      false,
+                                                      true));
+  EXPECT_TRUE(VerifyChromeShortcut(exe_path.value(),
+                                   system_shortcut_path.value(),
+                                   description,
+                                   0));
+  EXPECT_FALSE(file_util::PathExists(user_shortcut_path));
+  EXPECT_TRUE(ShellUtil::RemoveChromeDesktopShortcut(dist,
+                                                     ShellUtil::SYSTEM_LEVEL,
+                                                     false));
+
+  // Test creation of a system-level shortcut when a user-level shortcut
+  // is already present (should succeed).
+  EXPECT_TRUE(ShellUtil::CreateChromeDesktopShortcut(dist,
+                                                     exe_path.value(),
+                                                     description,
+                                                     ShellUtil::CURRENT_USER,
+                                                     false,
+                                                     true));
+  EXPECT_TRUE(ShellUtil::CreateChromeDesktopShortcut(dist,
+                                                     exe_path.value(),
+                                                     description,
+                                                     ShellUtil::SYSTEM_LEVEL,
+                                                     false,
+                                                     true));
+  EXPECT_TRUE(VerifyChromeShortcut(exe_path.value(),
+                                   user_shortcut_path.value(),
+                                   description,
+                                   0));
+  EXPECT_TRUE(VerifyChromeShortcut(exe_path.value(),
+                                   system_shortcut_path.value(),
+                                   description,
+                                   0));
+  EXPECT_TRUE(ShellUtil::RemoveChromeDesktopShortcut(dist,
+                                                     ShellUtil::CURRENT_USER,
+                                                     false));
+  EXPECT_TRUE(ShellUtil::RemoveChromeDesktopShortcut(dist,
+                                                     ShellUtil::SYSTEM_LEVEL,
+                                                     false));
 }

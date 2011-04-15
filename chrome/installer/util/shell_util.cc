@@ -458,7 +458,7 @@ bool ShellUtil::CreateChromeDesktopShortcut(BrowserDistribution* dist,
     // desktop folder.
     bool got_system_desktop = ShellUtil::GetDesktopPath(true, &shortcut_path);
     FilePath shortcut = shortcut_path.Append(shortcut_name);
-    if (!got_system_desktop || !file_util::PathExists(shortcut_path)) {
+    if (!got_system_desktop || !file_util::PathExists(shortcut)) {
       // Either we couldn't query the "All Users" Desktop folder or there's
       // nothing in it, so let's continue.
       if (ShellUtil::GetDesktopPath(false, &shortcut_path)) {
