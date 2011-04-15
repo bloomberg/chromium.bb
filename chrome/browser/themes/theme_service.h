@@ -231,9 +231,7 @@ class ThemeService : public base::NonThreadSafe,
   virtual void LoadThemePrefs();
 
   // Let all the browser views know that themes have changed.
-  // extension is NULL iff the theme is being set to the
-  // default/system theme.
-  virtual void NotifyThemeChanged(const Extension* extension);
+  virtual void NotifyThemeChanged();
 
 #if defined(OS_MACOSX)
   // Let all the browser views know that themes have changed in a platform way.

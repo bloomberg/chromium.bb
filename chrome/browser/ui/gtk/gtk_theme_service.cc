@@ -348,7 +348,7 @@ void GtkThemeService::SetNativeTheme() {
   profile()->GetPrefs()->SetBoolean(prefs::kUsesSystemTheme, true);
   ClearAllThemeData();
   LoadGtkValues();
-  NotifyThemeChanged(NULL);
+  NotifyThemeChanged();
 }
 
 bool GtkThemeService::UsingDefaultTheme() {
@@ -631,8 +631,8 @@ void GtkThemeService::LoadThemePrefs() {
   RebuildMenuIconSets();
 }
 
-void GtkThemeService::NotifyThemeChanged(const Extension* extension) {
-  ThemeService::NotifyThemeChanged(extension);
+void GtkThemeService::NotifyThemeChanged() {
+  ThemeService::NotifyThemeChanged();
 
   // Notify all GtkChromeButtons of their new rendering mode:
   for (std::vector<GtkWidget*>::iterator it = chrome_buttons_.begin();
@@ -664,7 +664,7 @@ void GtkThemeService::OnStyleSet(GtkWidget* widget,
   if (profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme)) {
     ClearAllThemeData();
     LoadGtkValues();
-    NotifyThemeChanged(NULL);
+    NotifyThemeChanged();
   }
 
   RebuildMenuIconSets();

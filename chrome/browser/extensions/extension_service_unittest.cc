@@ -474,8 +474,6 @@ class ExtensionServiceTest
                    NotificationService::AllSources());
     registrar_.Add(this, NotificationType::EXTENSION_INSTALLED,
                    NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::THEME_INSTALLED,
-                   NotificationService::AllSources());
   }
 
   virtual void Observe(NotificationType type,
@@ -505,7 +503,6 @@ class ExtensionServiceTest
         break;
       }
       case NotificationType::EXTENSION_INSTALLED:
-      case NotificationType::THEME_INSTALLED:
         installed_ = Details<const Extension>(details).ptr();
         break;
 

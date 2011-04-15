@@ -100,8 +100,7 @@ void ThemeInstalledInfoBarDelegate::Observe(
   DCHECK_EQ(NotificationType::BROWSER_THEME_CHANGED, type.value);
   // If the new theme is different from what this info bar is associated
   // with, close this info bar since it is no longer relevant.
-  const Extension* extension = Details<const Extension>(details).ptr();
-  if (!extension || theme_id_ != extension->id()) {
+  if (theme_id_ != theme_service_->GetThemeID()) {
     if (tab_contents_ && !tab_contents_->is_being_destroyed()) {
       tab_contents_->RemoveInfoBar(this);
       // The infobar is gone so there is no reason for this delegate to keep

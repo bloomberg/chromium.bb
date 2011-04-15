@@ -1657,19 +1657,10 @@ void ExtensionService::OnExtensionInstalled(const Extension* extension) {
     extension_prefs_->SetAllowFileAccess(id, true);
   }
 
-  // If the extension is a theme, tell the profile (and therefore ThemeProvider)
-  // to apply it.
-  if (extension->is_theme()) {
-    NotificationService::current()->Notify(
-        NotificationType::THEME_INSTALLED,
-        Source<Profile>(profile_),
-        Details<const Extension>(extension));
-  } else {
-    NotificationService::current()->Notify(
-        NotificationType::EXTENSION_INSTALLED,
-        Source<Profile>(profile_),
-        Details<const Extension>(extension));
-  }
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_INSTALLED,
+      Source<Profile>(profile_),
+      Details<const Extension>(extension));
 
   // Transfer ownership of |extension| to AddExtension.
   AddExtension(scoped_extension);

@@ -209,8 +209,12 @@ void ThemeService::Init(Profile* profile) {
   DCHECK(CalledOnValidThread());
   profile_ = profile;
 
+  // Listen to EXTENSION_LOADED instead of EXTENSION_INSTALLED because
+  // the extension cannot yet be found via GetExtensionById() if it is
+  // installed but not loaded (which may confuse listeners to
+  // BROWSER_THEME_CHANGED).
   registrar_.Add(this,
-                 NotificationType::THEME_INSTALLED,
+                 NotificationType::EXTENSION_LOADED,
                  Source<Profile>(profile_));
 
   LoadThemePrefs();
@@ -308,7 +312,7 @@ void ThemeService::SetTheme(const Extension* extension) {
   BuildFromExtension(extension);
   SaveThemeID(extension->id());
 
-  NotifyThemeChanged(extension);
+  NotifyThemeChanged();
   UserMetrics::RecordAction(UserMetricsAction("Themes_Installed"), profile_);
 }
 
@@ -333,7 +337,7 @@ void ThemeService::RemoveUnusedThemes() {
 
 void ThemeService::UseDefaultTheme() {
   ClearAllThemeData();
-  NotifyThemeChanged(NULL);
+  NotifyThemeChanged();
   UserMetrics::RecordAction(UserMetricsAction("Themes_Reset"), profile_);
 }
 
@@ -590,13 +594,13 @@ void ThemeService::LoadThemePrefs() {
   }
 }
 
-void ThemeService::NotifyThemeChanged(const Extension* extension) {
+void ThemeService::NotifyThemeChanged() {
   VLOG(1) << "Sending BROWSER_THEME_CHANGED";
   // Redraw!
   NotificationService* service = NotificationService::current();
   service->Notify(NotificationType::BROWSER_THEME_CHANGED,
                   Source<ThemeService>(this),
-                  Details<const Extension>(extension));
+                  NotificationService::NoDetails());
 #if defined(OS_MACOSX)
   NotifyPlatformThemeChanged();
 #endif  // OS_MACOSX
@@ -611,8 +615,11 @@ void ThemeService::FreePlatformCaches() {
 void ThemeService::Observe(NotificationType type,
                            const NotificationSource& source,
                            const NotificationDetails& details) {
-  DCHECK(type == NotificationType::THEME_INSTALLED);
+  DCHECK(type == NotificationType::EXTENSION_LOADED);
   const Extension* extension = Details<const Extension>(details).ptr();
+  if (!extension->is_theme()) {
+    return;
+  }
   SetTheme(extension);
 }
 

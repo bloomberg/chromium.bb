@@ -261,7 +261,7 @@ class NotificationType {
     // actual snapshot.
     TAB_SNAPSHOT_TAKEN,
 
-    // The user has changed the browser theme.
+    // The user has changed the browser theme.  There are no details.
     BROWSER_THEME_CHANGED,
 
     // Sent when the renderer returns focus to the browser, as part of focus
@@ -828,10 +828,6 @@ class NotificationType {
 
     // Sent when an extension install turns out to not be a theme.
     NO_THEME_DETECTED,
-
-    // Sent when a new theme is installed. The details are an Extension, and the
-    // source is a Profile.
-    THEME_INSTALLED,
 
     // Sent when new extensions are installed. The details are an Extension, and
     // the source is a Profile.

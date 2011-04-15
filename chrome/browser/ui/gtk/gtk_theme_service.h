@@ -156,7 +156,7 @@ class GtkThemeService : public ThemeService {
   virtual void LoadThemePrefs();
 
   // Let all the browser views know that themes have changed.
-  virtual void NotifyThemeChanged(const Extension* extension);
+  virtual void NotifyThemeChanged();
 
   // Additionally frees the CairoCachedSurfaces.
   virtual void FreePlatformCaches();
