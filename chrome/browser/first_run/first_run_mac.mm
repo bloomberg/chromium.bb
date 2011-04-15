@@ -16,6 +16,10 @@
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 
+#if defined(GOOGLE_CHROME_BUILD)
+#include "chrome/browser/browser_process.h"
+#endif
+
 namespace {
 
 // Show the search engine selection dialog.
