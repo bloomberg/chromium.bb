@@ -40,6 +40,7 @@ GLContextEGL::GLContextEGL(GLSurfaceEGL* surface)
 }
 
 GLContextEGL::~GLContextEGL() {
+  Destroy();
 }
 
 bool GLContextEGL::Initialize(GLContext* shared_context) {
@@ -85,6 +86,11 @@ void GLContextEGL::Destroy() {
     }
 
     context_ = NULL;
+  }
+
+  if (surface_.get()) {
+    surface_->Destroy();
+    surface_.reset();
   }
 }
 

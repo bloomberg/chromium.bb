@@ -144,6 +144,10 @@
         }],
         ['OS=="win"', {
           'sources': [
+            'gl_context_wgl.cc',
+            'gl_context_wgl.h',
+            'gl_surface_wgl.cc',
+            'gl_surface_wgl.h',
             '<(gl_binding_output_dir)/gl_bindings_autogen_wgl.cc',
             '<(gl_binding_output_dir)/gl_bindings_autogen_wgl.h',
           ],

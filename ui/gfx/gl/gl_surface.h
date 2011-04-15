@@ -39,14 +39,6 @@ class GLSurface {
   // FBO. Otherwise returns 0.
   virtual unsigned int GetBackingFrameBufferObject();
 
-#if !defined(OS_MACOSX)
-  // Create a surface corresponding to a view.
-  static GLSurface* CreateViewGLContext(gfx::PluginWindowHandle window);
-#endif
-
-  // Create a surface used for offscreen rendering.
-  static GLSurface* CreateOffscreenGLContext(const gfx::Size& size);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurface);
 };
