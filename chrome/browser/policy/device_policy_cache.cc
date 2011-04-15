@@ -9,18 +9,18 @@
 #include "base/logging.h"
 #include "base/task.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
+#include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/device_policy_identity_strategy.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "chrome/browser/policy/proto/cloud_policy.pb.h"
+#include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "content/browser/browser_thread.h"
 #include "policy/configuration_policy_type.h"
-
-using google::protobuf::RepeatedPtrField;
 
 namespace {
 
@@ -62,6 +62,7 @@ class StorePolicyOperation : public chromeos::SignedSettingsHelper::Callback,
           new_key_data, this);
       return;
     } else {
+      UpdateUserCrosSettings();
       callback_->Run(chromeos::SignedSettings::SUCCESS);
       delete this;
       return;
@@ -70,11 +71,19 @@ class StorePolicyOperation : public chromeos::SignedSettingsHelper::Callback,
 
   // OwnerManager::KeyUpdateDelegate implementation:
   virtual void OnKeyUpdated() OVERRIDE {
+    UpdateUserCrosSettings();
     callback_->Run(chromeos::SignedSettings::SUCCESS);
     delete this;
   }
 
  private:
+  void UpdateUserCrosSettings() {
+    // TODO(mnissler): Find a better way. This is a hack that updates the
+    // UserCrosSettingsProvider's cache, since it is unable to notice we've
+    // updated policy information.
+    chromeos::UserCrosSettingsProvider().Reload();
+  }
+
   chromeos::SignedSettingsHelper* signed_settings_helper_;
   em::PolicyFetchResponse policy_;
   scoped_ptr<Callback> callback_;

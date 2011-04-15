@@ -40,6 +40,9 @@ class UserCrosSettingsProvider : public CrosSettingsProvider {
   bool RequestTrustedShowUsersOnSignin(Task* callback);
   bool RequestTrustedOwner(Task* callback);
 
+  // Reloads values from device settings.
+  void Reload();
+
   // Helper functions to access cached settings.
   static bool cached_allow_guest();
   static bool cached_allow_new_user();

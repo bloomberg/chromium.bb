@@ -200,6 +200,13 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
     }
   }
 
+  void Reload() {
+    for (size_t i = 0; i < arraysize(kBooleanSettings); ++i)
+      StartFetchingSetting(kBooleanSettings[i]);
+    for (size_t i = 0; i < arraysize(kStringSettings); ++i)
+      StartFetchingSetting(kStringSettings[i]);
+  }
+
   void Set(const std::string& path, Value* in_value) {
     PrefService* prefs = g_browser_process->local_state();
     DCHECK(!prefs->IsManagedPreference(path.c_str()));
@@ -240,10 +247,7 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
       : ownership_service_(OwnershipService::GetSharedInstance()),
         retries_left_(kNumRetriesLimit) {
     // Start prefetching Boolean and String preferences.
-    for (size_t i = 0; i < arraysize(kBooleanSettings); ++i)
-      StartFetchingSetting(kBooleanSettings[i]);
-    for (size_t i = 0; i < arraysize(kStringSettings); ++i)
-      StartFetchingSetting(kStringSettings[i]);
+    Reload();
   }
 
   ~UserCrosSettingsTrust() {
@@ -429,6 +433,10 @@ bool UserCrosSettingsProvider::RequestTrustedDataRoamingEnabled(
 bool UserCrosSettingsProvider::RequestTrustedOwner(Task* callback) {
   return UserCrosSettingsTrust::GetInstance()->RequestTrustedEntity(
       kDeviceOwner, callback);
+}
+
+void UserCrosSettingsProvider::Reload() {
+  UserCrosSettingsTrust::GetInstance()->Reload();
 }
 
 // static
