@@ -66,17 +66,6 @@ class PopupsTest(pyauto.PyUITest):
     file_url = self.GetFileURLForPath(os.path.join(
         self.DataDir(), 'popup_blocker', 'popup-window-open.html'))
     self.NavigateToURL(file_url, 1, 0)
-    # TODO(sunandt): Work around for debugging the flakiness
-    # Related to crbug.com/64274
-    attempts = 0
-    while attempts < 3:
-      if self.GetActiveTabTitle(window_index=1) != \
-        'Popup created using window.open':
-        logging.debug('Attempt %s' % str(attempts + 1))
-        self.NavigateToURL(file_url, 1, 0)
-        attempts = attempts + 1
-      else:
-        break
     self.assertEquals('Popup created using window.open',
                       self.GetActiveTabTitle(window_index=1))
     # Wait until the popup is blocked
@@ -89,7 +78,10 @@ class PopupsTest(pyauto.PyUITest):
     # Verify that popup window was created
     self.assertEqual(3, self.GetBrowserWindowCount(),
                      msg='Popup could not be launched');
-    self.assertEqual('Popup Success!', self.GetActiveTabTitle(2))
+    # Wait until popup title is read correctly.
+    self.assertTrue(self.WaitUntil(lambda:
+        self.GetActiveTabTitle(2), expect_retval='Popup Success!'),
+        msg='Popup title is wrong.')
 
   def testMultiplePopups(self):
     """Verify multiple popups are blocked."""
