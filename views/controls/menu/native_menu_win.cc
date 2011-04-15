@@ -4,6 +4,8 @@
 
 #include "views/controls/menu/native_menu_win.h"
 
+#include <Windowsx.h>
+
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
@@ -50,6 +52,15 @@ struct NativeMenuWin::ItemData {
   int model_index;
 };
 
+// Returns the NativeMenuWin for a particular HMENU.
+static NativeMenuWin* GetNativeMenuWinFromHMENU(HMENU hmenu) {
+  MENUINFO mi = {0};
+  mi.cbSize = sizeof(mi);
+  mi.fMask = MIM_MENUDATA | MIM_STYLE;
+  GetMenuInfo(hmenu, &mi);
+  return reinterpret_cast<NativeMenuWin*>(mi.dwMenuData);
+}
+
 // A window that receives messages from Windows relevant to the native menu
 // structure we have constructed in NativeMenuWin.
 class NativeMenuWin::MenuHostWindow {
@@ -86,14 +97,6 @@ class NativeMenuWin::MenuHostWindow {
     registered = true;
   }
 
-  NativeMenuWin* GetNativeMenuWinFromHMENU(HMENU hmenu) const {
-    MENUINFO mi = {0};
-    mi.cbSize = sizeof(mi);
-    mi.fMask = MIM_MENUDATA | MIM_STYLE;
-    GetMenuInfo(hmenu, &mi);
-    return reinterpret_cast<NativeMenuWin*>(mi.dwMenuData);
-  }
-
   // Converts the WPARAM value passed to WM_MENUSELECT into an index
   // corresponding to the menu item that was selected.
   int GetMenuItemIndexFromWPARAM(HMENU menu, WPARAM w_param) const {
@@ -122,9 +125,16 @@ class NativeMenuWin::MenuHostWindow {
 
   // Called when the user selects a specific item.
   void OnMenuCommand(int position, HMENU menu) {
-    NativeMenuWin* intergoat = GetNativeMenuWinFromHMENU(menu);
-    ui::MenuModel* model = intergoat->model_;
-    model->ActivatedAt(position);
+    NativeMenuWin* menu_win = GetNativeMenuWinFromHMENU(menu);
+    ui::MenuModel* model = menu_win->model_;
+    NativeMenuWin* root_menu = menu_win;
+    while (root_menu->parent_)
+      root_menu = root_menu->parent_;
+
+    // Only notify the model if it didn't already send out notification.
+    // See comment in MenuMessageHook for details.
+    if (root_menu->menu_action_ == MenuWrapper::MENU_ACTION_NONE)
+      model->ActivatedAt(position);
   }
 
   // Called as the user moves their mouse or arrows through the contents of the
@@ -296,6 +306,22 @@ class NativeMenuWin::MenuHostWindow {
   DISALLOW_COPY_AND_ASSIGN(MenuHostWindow);
 };
 
+struct NativeMenuWin::HighlightedMenuItemInfo {
+  HighlightedMenuItemInfo()
+      : has_parent(false),
+        has_submenu(false),
+        menu(NULL),
+        position(-1) {
+  }
+
+  bool has_parent;
+  bool has_submenu;
+
+  // The menu and position. These are only set for non-disabled menu items.
+  NativeMenuWin* menu;
+  int position;
+};
+
 // static
 const wchar_t* NativeMenuWin::MenuHostWindow::kWindowClassName =
     L"ViewsMenuHostWindow";
@@ -310,7 +336,10 @@ NativeMenuWin::NativeMenuWin(ui::MenuModel* model, HWND system_menu_for)
                   !system_menu_for),
       system_menu_for_(system_menu_for),
       first_item_index_(0),
-      menu_action_(MENU_ACTION_NONE) {
+      menu_action_(MENU_ACTION_NONE),
+      menu_to_select_(NULL),
+      position_to_select_(-1),
+      parent_(NULL) {
 }
 
 NativeMenuWin::~NativeMenuWin() {
@@ -343,11 +372,18 @@ void NativeMenuWin::RunMenuAt(const gfx::Point& point, int alignment) {
   // Command dispatch is done through WM_MENUCOMMAND, handled by the host
   // window.
   HWND hwnd = host_window_->hwnd();
-  TrackPopupMenuEx(menu_, flags, point.x(), point.y(), host_window_->hwnd(),
+  menu_to_select_ = NULL;
+  position_to_select_ = -1;
+  TrackPopupMenu(menu_, flags, point.x(), point.y(), 0, host_window_->hwnd(),
                    NULL);
 
   UnhookWindowsHookEx(hhook);
   open_native_menu_win_ = NULL;
+
+  if (menu_to_select_) {
+    menu_action_ = MENU_ACTION_SELECTED;
+    menu_to_select_->model_->ActivatedAt(position_to_select_);
+  }
 }
 
 void NativeMenuWin::CancelMenu() {
@@ -424,16 +460,20 @@ NativeMenuWin* NativeMenuWin::open_native_menu_win_ = NULL;
 
 // static
 bool NativeMenuWin::GetHighlightedMenuItemInfo(
-    HMENU menu, bool* has_parent, bool* has_submenu) {
+    HMENU menu,
+    HighlightedMenuItemInfo* info) {
   for (int i = 0; i < ::GetMenuItemCount(menu); i++) {
     UINT state = ::GetMenuState(menu, i, MF_BYPOSITION);
     if (state & MF_HILITE) {
       if (state & MF_POPUP) {
         HMENU submenu = GetSubMenu(menu, i);
-        if (GetHighlightedMenuItemInfo(submenu, has_parent, has_submenu))
-          *has_parent = true;
+        if (GetHighlightedMenuItemInfo(submenu, info))
+          info->has_parent = true;
         else
-          *has_submenu = true;
+          info->has_submenu = true;
+      } else if (!(state & MF_SEPARATOR) && !(state & MF_DISABLED)) {
+        info->menu = GetNativeMenuWinFromHMENU(menu);
+        info->position = i;
       }
       return true;
     }
@@ -457,16 +497,32 @@ LRESULT CALLBACK NativeMenuWin::MenuMessageHook(
   }
 
   MSG* msg = reinterpret_cast<MSG*>(l_param);
-  if (msg->message == WM_KEYDOWN) {
-    bool has_parent = false;
-    bool has_submenu = false;
-    GetHighlightedMenuItemInfo(this_ptr->menu_, &has_parent, &has_submenu);
-    if (msg->wParam == VK_LEFT && !has_parent) {
-      this_ptr->menu_action_ = MENU_ACTION_PREVIOUS;
-      ::EndMenu();
-    } else if (msg->wParam == VK_RIGHT && !has_parent && !has_submenu) {
-      this_ptr->menu_action_ = MENU_ACTION_NEXT;
-      ::EndMenu();
+  if (msg->message == WM_LBUTTONUP) {
+    HighlightedMenuItemInfo info;
+    if (GetHighlightedMenuItemInfo(this_ptr->menu_, &info) && info.menu) {
+      // It appears that when running a menu by way of TrackPopupMenu(Ex) win32
+      // gets confused if the underlying window paints itself. As its very easy
+      // for the underlying window to repaint itself (especially since some menu
+      // items trigger painting of the tabstrip on mouse over) we have this
+      // workaround. When the mouse is released on a menu item we remember the
+      // menu item and end the menu. When the nested message loop returns we
+      // notify the model. It's still possible to get a WM_MENUCOMMAND, so we
+      // have to be careful that we don't notify the model twice.
+      this_ptr->menu_to_select_ = info.menu;
+      this_ptr->position_to_select_ = info.position;
+      EndMenu();
+    }
+  } else if (msg->message == WM_KEYDOWN) {
+    HighlightedMenuItemInfo info;
+    if (GetHighlightedMenuItemInfo(this_ptr->menu_, &info)) {
+      if (msg->wParam == VK_LEFT && !info.has_parent) {
+        this_ptr->menu_action_ = MENU_ACTION_PREVIOUS;
+        ::EndMenu();
+      } else if (msg->wParam == VK_RIGHT && !info.has_parent &&
+                 !info.has_submenu) {
+        this_ptr->menu_action_ = MENU_ACTION_NEXT;
+        ::EndMenu();
+      }
     }
   }
 
@@ -497,6 +553,7 @@ void NativeMenuWin::AddMenuItemAt(int menu_index, int model_index) {
     item_data->submenu.reset(new Menu2(model_->GetSubmenuModelAt(model_index)));
     mii.fMask |= MIIM_SUBMENU;
     mii.hSubMenu = item_data->submenu->GetNativeMenu();
+    GetNativeMenuWinFromHMENU(mii.hSubMenu)->parent_ = this;
   } else {
     if (type == ui::MenuModel::TYPE_RADIO)
       mii.fType |= MFT_RADIOCHECK;
