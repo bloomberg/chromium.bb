@@ -5,18 +5,14 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/dummy_configuration_policy_provider.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/common/notification_service.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/policy/configuration_policy_provider_win.h"
@@ -33,11 +29,10 @@
 
 namespace policy {
 
-BrowserPolicyConnector::BrowserPolicyConnector() {
+BrowserPolicyConnector::BrowserPolicyConnector()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   managed_platform_provider_.reset(CreateManagedPlatformProvider());
   recommended_platform_provider_.reset(CreateRecommendedPlatformProvider());
-  registrar_.Add(this, NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE,
-                 NotificationService::AllSources());
 
 #if defined(OS_CHROMEOS)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -46,6 +41,11 @@ BrowserPolicyConnector::BrowserPolicyConnector() {
     cloud_policy_subsystem_.reset(new CloudPolicySubsystem(
         identity_strategy_.get(),
         new DevicePolicyCache(identity_strategy_.get())));
+
+    // Initialize the subsystem once the message loops are spinning.
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        method_factory_.NewRunnableMethod(&BrowserPolicyConnector::Initialize));
   }
 #endif
 }
@@ -54,7 +54,8 @@ BrowserPolicyConnector::BrowserPolicyConnector(
     ConfigurationPolicyProvider* managed_platform_provider,
     ConfigurationPolicyProvider* recommended_platform_provider)
     : managed_platform_provider_(managed_platform_provider),
-      recommended_platform_provider_(recommended_platform_provider) {}
+      recommended_platform_provider_(recommended_platform_provider),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {}
 
 BrowserPolicyConnector::~BrowserPolicyConnector() {
   if (cloud_policy_subsystem_.get())
@@ -171,25 +172,13 @@ void BrowserPolicyConnector::StopAutoRetry() {
     cloud_policy_subsystem_->StopAutoRetry();
 }
 
-void BrowserPolicyConnector::Observe(NotificationType type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
-  if (type == NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE) {
-    Initialize(g_browser_process->local_state(),
-               Profile::GetDefaultRequestContext());
-  } else {
-    NOTREACHED();
-  }
-}
-
-void BrowserPolicyConnector::Initialize(
-    PrefService* local_state,
-    net::URLRequestContextGetter* request_context) {
+void BrowserPolicyConnector::Initialize() {
   // TODO(jkummerow, mnissler): Move this out of the browser startup path.
-  DCHECK(local_state);
-  DCHECK(request_context);
-  if (cloud_policy_subsystem_.get())
-    cloud_policy_subsystem_->Initialize(local_state, request_context);
+  if (cloud_policy_subsystem_.get()) {
+    cloud_policy_subsystem_->Initialize(
+        g_browser_process->local_state(),
+        g_browser_process->system_request_context());
+  }
 }
 
 }  // namespace

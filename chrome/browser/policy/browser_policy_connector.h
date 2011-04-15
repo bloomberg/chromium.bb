@@ -10,8 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "base/task.h"
 
 class PrefService;
 class TestingBrowserProcess;
@@ -29,7 +28,7 @@ class DevicePolicyIdentityStrategy;
 
 // Manages the lifecycle of browser-global policy infrastructure, such as the
 // platform policy providers.
-class BrowserPolicyConnector : public NotificationObserver {
+class BrowserPolicyConnector {
  public:
   BrowserPolicyConnector();
   ~BrowserPolicyConnector();
@@ -63,11 +62,6 @@ class BrowserPolicyConnector : public NotificationObserver {
   // retrying behavior.
   void StopAutoRetry();
 
-  // NotificationObserver implementation:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
  private:
   friend class ::TestingBrowserProcess;
 
@@ -80,10 +74,8 @@ class BrowserPolicyConnector : public NotificationObserver {
       ConfigurationPolicyProvider* managed_platform_provider,
       ConfigurationPolicyProvider* recommended_platform_provider);
 
-  // Activates the cloud policy subsystem. Called when the default request
-  // context is available.
-  void Initialize(PrefService* local_state,
-                  net::URLRequestContextGetter* request_context);
+  // Activates the cloud policy subsystem.
+  void Initialize();
 
   scoped_ptr<ConfigurationPolicyProvider> managed_platform_provider_;
   scoped_ptr<ConfigurationPolicyProvider> recommended_platform_provider_;
@@ -93,7 +85,7 @@ class BrowserPolicyConnector : public NotificationObserver {
 #endif
   scoped_ptr<CloudPolicySubsystem> cloud_policy_subsystem_;
 
-  NotificationRegistrar registrar_;
+  ScopedRunnableMethodFactory<BrowserPolicyConnector> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPolicyConnector);
 };
