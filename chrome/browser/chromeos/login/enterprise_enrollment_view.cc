@@ -82,7 +82,8 @@ class EnrollmentDomView : public WebPageDomView,
 
 EnterpriseEnrollmentView::EnterpriseEnrollmentView(
     EnterpriseEnrollmentController* controller)
-    : controller_(controller) {}
+    : controller_(controller),
+      editable_user_(true) {}
 
 EnterpriseEnrollmentView::~EnterpriseEnrollmentView() {}
 
@@ -122,7 +123,7 @@ void EnterpriseEnrollmentView::ShowAuthError(
     const GoogleServiceAuthError& error) {
   DictionaryValue args;
   args.SetInteger("error", error.state());
-  args.SetBoolean("editable_user", true);
+  args.SetBoolean("editable_user", editable_user_);
   args.SetString("captchaUrl", error.captcha().image_url.spec());
   UpdateGaiaLogin(args);
 }
@@ -158,6 +159,10 @@ void EnterpriseEnrollmentView::OnConfirmationClosed() {
   controller_->CloseConfirmation();
 }
 
+bool EnterpriseEnrollmentView::GetInitialUser(std::string* user) {
+  return controller_->GetInitialUser(user);
+}
+
 void EnterpriseEnrollmentView::UpdateGaiaLogin(const DictionaryValue& args) {
   std::string json;
   base::JSONWriter::Write(&args, false, &json);
@@ -172,13 +177,17 @@ void EnterpriseEnrollmentView::UpdateGaiaLogin(const DictionaryValue& args) {
 void EnterpriseEnrollmentView::ShowError(int message_id) {
   DictionaryValue args;
   args.SetInteger("error", GoogleServiceAuthError::NONE);
-  args.SetBoolean("editable_user", true);
+  args.SetBoolean("editable_user", editable_user_);
   args.SetString("error_message", l10n_util::GetStringUTF16(message_id));
   UpdateGaiaLogin(args);
 }
 
 void EnterpriseEnrollmentView::Layout() {
   enrollment_page_view_->SetBoundsRect(GetContentsBounds());
+}
+
+void EnterpriseEnrollmentView::set_editable_user(bool editable) {
+  editable_user_ = editable;
 }
 
 }  // namespace chromeos

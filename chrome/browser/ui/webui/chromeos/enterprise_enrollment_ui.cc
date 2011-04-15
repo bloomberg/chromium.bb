@@ -288,11 +288,15 @@ void EnterpriseEnrollmentUI::RenderViewCreated(
   tab_contents()->profile()->GetChromeURLDataManager()->AddDataSource(
       new EnterpriseEnrollmentDataSource());
 
+  std::string user;
+  bool has_init_user = GetController(this)->GetInitialUser(&user);
+  if (!has_init_user)
+    user = "";
   // Set the arguments for showing the gaia login page.
   DictionaryValue args;
-  args.SetString("user", "");
+  args.SetString("user", user);
   args.SetInteger("error", 0);
-  args.SetBoolean("editable_user", true);
+  args.SetBoolean("editable_user", !has_init_user);
   args.SetString("initialScreen", "login-screen");
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);

@@ -6,15 +6,33 @@
 
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 
 namespace chromeos {
 
+// Retry for InstallAttrs initialization every 500ms.
+const int kLockboxRetryIntervalMs = 500;
+
 EnterpriseEnrollmentScreen::EnterpriseEnrollmentScreen(
     WizardScreenDelegate* delegate)
-    : ViewScreen<EnterpriseEnrollmentView>(delegate) {}
+    : ViewScreen<EnterpriseEnrollmentView>(delegate),
+      ALLOW_THIS_IN_INITIALIZER_LIST(runnable_method_factory_(this)) {
+  // Init the TPM if it has not been done until now (in debug build we might
+  // have not done that yet).
+  chromeos::CryptohomeLibrary* cryptohome =
+      chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
+  if (cryptohome) {
+    if (cryptohome->TpmIsEnabled() &&
+        !cryptohome->TpmIsBeingOwned() &&
+        !cryptohome->TpmIsOwned()) {
+      cryptohome->TpmCanAttemptOwnership();
+    }
+  }
+}
 
 EnterpriseEnrollmentScreen::~EnterpriseEnrollmentScreen() {}
 
@@ -55,10 +73,34 @@ void EnterpriseEnrollmentScreen::CloseConfirmation() {
   observer->OnExit(ScreenObserver::ENTERPRISE_ENROLLMENT_COMPLETED);
 }
 
+bool EnterpriseEnrollmentScreen::GetInitialUser(std::string* user) {
+  chromeos::CryptohomeLibrary* cryptohome =
+      chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
+  if (cryptohome &&
+      cryptohome->InstallAttributesIsReady() &&
+      !cryptohome->InstallAttributesIsFirstInstall()) {
+    std::string value;
+    if (cryptohome->InstallAttributesGet("enterprise.owned", &value) &&
+        value == "true") {
+      if (cryptohome->InstallAttributesGet("enterprise.user", &value)) {
+        // If we landed in the enrollment dialogue with a locked InstallAttrs
+        // this means we might only want to reenroll with the DMServer so lock
+        // the username to what has been stored in the InstallAttrs already.
+        *user = value;
+        if (view())
+          view()->set_editable_user(false);
+        return true;
+      }
+    }
+    LOG(ERROR) << "Enrollment will not finish because the InstallAttrs has "
+               << "been locked already but does not contain valid data.";
+  }
+  return false;
+}
+
 void EnterpriseEnrollmentScreen::OnClientLoginSuccess(
     const ClientLoginResult& result) {
-  auth_fetcher_->StartIssueAuthToken(result.sid, result.lsid,
-                                     GaiaConstants::kDeviceManagementService);
+  WriteInstallAttributesData(result);
 }
 
 void EnterpriseEnrollmentScreen::OnClientLoginFailure(
@@ -175,6 +217,89 @@ void EnterpriseEnrollmentScreen::HandleAuthError(
   }
 
   NOTREACHED() << error.state();
+}
+
+void EnterpriseEnrollmentScreen::WriteInstallAttributesData(
+    const ClientLoginResult& result) {
+  // Since this method is also called directly.
+  runnable_method_factory_.RevokeAll();
+
+  if (!view())
+    return;
+
+  chromeos::CryptohomeLibrary* cryptohome =
+      chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
+  if (!cryptohome) {
+    LOG(ERROR) << "Enrollment can not proceed because the InstallAttrs can not "
+               << "be accessed.";
+    view()->ShowFatalEnrollmentError();
+    return;
+  }
+
+  if (!cryptohome->InstallAttributesIsReady()) {
+    // Lockbox is not ready yet, retry later.
+    LOG(WARNING) << "Lockbox is not ready yet will retry in "
+                 << kLockboxRetryIntervalMs << "ms.";
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        runnable_method_factory_.NewRunnableMethod(
+            &EnterpriseEnrollmentScreen::WriteInstallAttributesData, result),
+        kLockboxRetryIntervalMs);
+    return;
+  }
+
+  // Clearing the TPM password seems to be always a good deal.
+  if (cryptohome->TpmIsEnabled() &&
+      !cryptohome->TpmIsBeingOwned() &&
+      cryptohome->TpmIsOwned()) {
+    cryptohome->TpmClearStoredPassword();
+  }
+
+  // Make sure we really have a working InstallAttrs.
+  if (cryptohome->InstallAttributesIsInvalid()) {
+    LOG(ERROR) << "Enrollment can not proceed because the InstallAttrs "
+               << "is corrupt or failed to initialize!";
+    view()->ShowFatalEnrollmentError();
+    return;
+  }
+  if (!cryptohome->InstallAttributesIsFirstInstall()) {
+    std::string value;
+    if (cryptohome->InstallAttributesGet("enterprise.owned", &value) &&
+        value ==  "true") {
+      if (cryptohome->InstallAttributesGet("enterprise.user", &value)) {
+        if (value == user_) {
+          // If we landed here with a locked InstallAttrs this would mean we
+          // only want to reenroll with the DMServer so lock just continue.
+          auth_fetcher_->StartIssueAuthToken(
+              result.sid, result.lsid,
+              GaiaConstants::kDeviceManagementService);
+          return;
+        }
+      }
+    }
+
+    LOG(ERROR) << "Enrollment can not proceed because the InstallAttrs "
+               << "has been locked already!";
+    view()->ShowFatalEnrollmentError();
+    return;
+  }
+
+  // Set values in the InstallAttrs and lock it.
+  DCHECK(cryptohome->InstallAttributesIsFirstInstall());
+  cryptohome->InstallAttributesSet("enterprise.owned", "true");
+  cryptohome->InstallAttributesSet("enterprise.user", user_);
+  DCHECK(cryptohome->InstallAttributesCount() == 2);
+  cryptohome->InstallAttributesFinalize();
+  if (cryptohome->InstallAttributesIsFirstInstall()) {
+    LOG(ERROR) << "Enrollment can not proceed because the InstallAttrs "
+               << "can not be sealed!";
+    view()->ShowFatalEnrollmentError();
+    return;
+  }
+
+  // Proceed with register and policy fetch.
+  auth_fetcher_->StartIssueAuthToken(
+      result.sid, result.lsid, GaiaConstants::kDeviceManagementService);
 }
 
 }  // namespace chromeos

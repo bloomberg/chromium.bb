@@ -10,6 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/message_loop.h"
+#include "base/task.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/enterprise_enrollment_view.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
@@ -31,6 +34,10 @@ class EnterpriseEnrollmentController {
 
   // Closes the confirmation window.
   virtual void CloseConfirmation() = 0;
+
+  // Returns whether the GAIA login should be prepolutated with an user and if
+  // yes which one.
+  virtual bool GetInitialUser(std::string* user) = 0;
 };
 
 // The screen implementation that links the enterprise enrollment UI into the
@@ -51,6 +58,7 @@ class EnterpriseEnrollmentScreen
                             const std::string& access_code) OVERRIDE;
   virtual void CancelEnrollment() OVERRIDE;
   virtual void CloseConfirmation() OVERRIDE;
+  virtual bool GetInitialUser(std::string* user) OVERRIDE;
 
   // GaiaAuthConsumer implementation:
   virtual void OnClientLoginSuccess(const ClientLoginResult& result) OVERRIDE;
@@ -75,10 +83,15 @@ class EnterpriseEnrollmentScreen
  private:
   void HandleAuthError(const GoogleServiceAuthError& error);
 
+  // Starts the Lockbox storage process.
+  void WriteInstallAttributesData(const ClientLoginResult& result);
+
   scoped_ptr<GaiaAuthFetcher> auth_fetcher_;
   std::string user_;
   std::string captcha_token_;
   scoped_ptr<policy::CloudPolicySubsystem::ObserverRegistrar> registrar_;
+  ScopedRunnableMethodFactory<EnterpriseEnrollmentScreen>
+      runnable_method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentScreen);
 };

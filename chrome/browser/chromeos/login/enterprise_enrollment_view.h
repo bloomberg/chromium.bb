@@ -34,6 +34,8 @@ class EnterpriseEnrollmentView : public views::View,
   explicit EnterpriseEnrollmentView(EnterpriseEnrollmentController* controller);
   virtual ~EnterpriseEnrollmentView();
 
+  void set_editable_user(bool editable);
+
   // Initialize view controls and layout.
   void Init();
 
@@ -54,6 +56,7 @@ class EnterpriseEnrollmentView : public views::View,
                                const std::string& access_code) OVERRIDE;
   virtual void OnAuthCancelled() OVERRIDE;
   virtual void OnConfirmationClosed() OVERRIDE;
+  virtual bool GetInitialUser(std::string* user) OVERRIDE;
 
  private:
   // Updates the gaia login box.
@@ -69,6 +72,8 @@ class EnterpriseEnrollmentView : public views::View,
 
   // Controls.
   WebPageDomView* enrollment_page_view_;
+
+  bool editable_user_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentView);
 };

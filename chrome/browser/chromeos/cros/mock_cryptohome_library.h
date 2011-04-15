@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,6 +79,16 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
   MOCK_METHOD1(TpmGetPassword, bool(std::string* password));
   MOCK_METHOD0(TpmCanAttemptOwnership, void(void));
   MOCK_METHOD0(TpmClearStoredPassword, void(void));
+
+  MOCK_METHOD2(InstallAttributesGet, bool(const std::string&, std::string*));
+  MOCK_METHOD2(InstallAttributesSet, bool(const std::string&,
+                                          const std::string&));
+  MOCK_METHOD0(InstallAttributesCount, int(void));
+  MOCK_METHOD0(InstallAttributesFinalize, bool(void));
+  MOCK_METHOD0(InstallAttributesIsReady, bool(void));
+  MOCK_METHOD0(InstallAttributesIsSecure, bool(void));
+  MOCK_METHOD0(InstallAttributesIsInvalid, bool(void));
+  MOCK_METHOD0(InstallAttributesIsFirstInstall, bool(void));
 
   void SetAsyncBehavior(bool outcome, int code) {
     outcome_ = outcome;

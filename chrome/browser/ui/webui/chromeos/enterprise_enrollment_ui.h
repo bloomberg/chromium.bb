@@ -27,6 +27,7 @@ class EnterpriseEnrollmentUI : public WebUI {
                                  const std::string& access_code) = 0;
     virtual void OnAuthCancelled() = 0;
     virtual void OnConfirmationClosed() = 0;
+    virtual bool GetInitialUser(std::string* user) = 0;
   };
 
   explicit EnterpriseEnrollmentUI(TabContents* contents);
