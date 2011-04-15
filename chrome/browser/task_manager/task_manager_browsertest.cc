@@ -7,6 +7,7 @@
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/background_contents_service.h"
+#include "chrome/browser/background_contents_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -159,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeBGContentsChanges) {
                                      FilePath(kTitle1File)));
 
   BackgroundContentsService* service =
-      browser()->profile()->GetBackgroundContentsService();
+      BackgroundContentsServiceFactory::GetForProfile(browser()->profile());
   string16 application_id(ASCIIToUTF16("test_app_id"));
   service->LoadBackgroundContents(browser()->profile(),
                                   url,
@@ -187,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillBGContents) {
                                      FilePath(kTitle1File)));
 
   BackgroundContentsService* service =
-      browser()->profile()->GetBackgroundContentsService();
+      BackgroundContentsServiceFactory::GetForProfile(browser()->profile());
   string16 application_id(ASCIIToUTF16("test_app_id"));
   service->LoadBackgroundContents(browser()->profile(),
                                   url,

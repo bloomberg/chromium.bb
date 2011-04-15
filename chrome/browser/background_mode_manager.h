@@ -9,6 +9,7 @@
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/background_application_list_model.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -39,7 +40,8 @@ class StatusTray;
 class BackgroundModeManager
     : public NotificationObserver,
       public ui::SimpleMenuModel::Delegate,
-      public BackgroundApplicationListModel::Observer {
+      public BackgroundApplicationListModel::Observer,
+      public ProfileKeyedService {
  public:
   BackgroundModeManager(Profile* profile, CommandLine* command_line);
   virtual ~BackgroundModeManager();

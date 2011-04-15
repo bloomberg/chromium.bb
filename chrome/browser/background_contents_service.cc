@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/background_contents_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -64,7 +65,7 @@ class CrashNotificationDelegate : public NotificationDelegate {
 
   void Click() {
     if (is_hosted_app_) {
-      profile_->GetBackgroundContentsService()->
+      BackgroundContentsServiceFactory::GetForProfile(profile_)->
           LoadBackgroundContentsForExtension(profile_, extension_id_);
     } else {
       profile_->GetExtensionService()->ReloadExtension(extension_id_);
@@ -261,8 +262,9 @@ void BackgroundContentsService::Observe(NotificationType type,
       if (type.value == NotificationType::BACKGROUND_CONTENTS_TERMINATED) {
         BackgroundContents* bg =
             Details<BackgroundContents>(details).ptr();
-        std::string extension_id = UTF16ToASCII(profile->
-            GetBackgroundContentsService()->GetParentApplicationId(bg));
+        std::string extension_id = UTF16ToASCII(
+            BackgroundContentsServiceFactory::GetForProfile(profile)->
+                GetParentApplicationId(bg));
         extension =
           profile->GetExtensionService()->GetExtensionById(extension_id, false);
       } else {

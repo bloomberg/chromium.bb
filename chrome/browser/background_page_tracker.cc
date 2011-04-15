@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/background_application_list_model.h"
 #include "chrome/browser/background_contents_service.h"
+#include "chrome/browser/background_contents_service_factory.h"
 #include "chrome/browser/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -233,7 +234,7 @@ bool BackgroundPageTracker::UpdateExtensionList() {
 
   // Add all apps with background contents also.
   BackgroundContentsService* background_contents_service =
-      profile->GetBackgroundContentsService();
+      BackgroundContentsServiceFactory::GetForProfile(profile);
   std::vector<BackgroundContents*> background_contents =
       background_contents_service->GetBackgroundContents();
   for (std::vector<BackgroundContents*>::const_iterator iter =

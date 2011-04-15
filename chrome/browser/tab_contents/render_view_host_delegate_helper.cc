@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/background_contents_service.h"
+#include "chrome/browser/background_contents_service_factory.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/gpu_data_manager.h"
@@ -64,8 +65,9 @@ RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
     return NULL;
 
   // Only allow a single background contents per app.
-  if (!profile->GetBackgroundContentsService() ||
-      profile->GetBackgroundContentsService()->GetAppBackgroundContents(
+  BackgroundContentsService* service =
+      BackgroundContentsServiceFactory::GetForProfile(profile);
+  if (!service || service->GetAppBackgroundContents(
           ASCIIToUTF16(extension->id())))
     return NULL;
 
@@ -77,8 +79,8 @@ RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
     return NULL;
 
   // Passed all the checks, so this should be created as a BackgroundContents.
-  return profile->GetBackgroundContentsService()->CreateBackgroundContents(
-      site, route_id, profile, frame_name, ASCIIToUTF16(extension->id()));
+  return service->CreateBackgroundContents(site, route_id, profile, frame_name,
+                                           ASCIIToUTF16(extension->id()));
 }
 
 TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(

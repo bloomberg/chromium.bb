@@ -42,7 +42,6 @@ class DatabaseTracker;
 }
 
 class AutocompleteClassifier;
-class BackgroundContentsService;
 class BookmarkModel;
 class BrowserSignin;
 class ChromeAppCacheService;
@@ -448,9 +447,6 @@ class Profile {
 
   // Returns the WebKitContext assigned to this profile.
   virtual WebKitContext* GetWebKitContext() = 0;
-
-  // Returns the service that manages BackgroundContents for this profile.
-  virtual BackgroundContentsService* GetBackgroundContentsService() const = 0;
 
   // Returns the StatusTray, which provides an API for displaying status icons
   // in the system status tray. Returns NULL if status icons are not supported

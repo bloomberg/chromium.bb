@@ -4,6 +4,7 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/background_contents_service.h"
+#include "chrome/browser/background_contents_service_factory.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -124,6 +125,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, ManifestBackgroundPage) {
   ASSERT_TRUE(LoadExtension(app_dir));
 
   const Extension* extension = GetSingleLoadedExtension();
-  ASSERT_TRUE(browser()->profile()->GetBackgroundContentsService()->
-                  GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
+  ASSERT_TRUE(
+      BackgroundContentsServiceFactory::GetForProfile(browser()->profile())->
+          GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
 }

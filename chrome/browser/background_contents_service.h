@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/task.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -41,7 +42,8 @@ struct BackgroundContentsOpenedDetails;
 // BackgroundContents and their parent app, and shutting them down when the
 // parent app is unloaded.
 class BackgroundContentsService : private NotificationObserver,
-                                  public BackgroundContents::Delegate {
+                                  public BackgroundContents::Delegate,
+                                  public ProfileKeyedService {
  public:
   BackgroundContentsService(Profile* profile, const CommandLine* command_line);
   virtual ~BackgroundContentsService();

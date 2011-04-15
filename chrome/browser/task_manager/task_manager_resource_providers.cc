@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/background_contents_service.h"
+#include "chrome/browser/background_contents_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -687,7 +688,7 @@ void TaskManagerBackgroundContentsResourceProvider::StartUpdating() {
   for (ProfileManager::const_iterator it = profile_manager->begin();
        it != profile_manager->end(); ++it) {
     BackgroundContentsService* background_contents_service =
-        (*it)->GetBackgroundContentsService();
+        BackgroundContentsServiceFactory::GetForProfile(*it);
     ExtensionService* extensions_service = (*it)->GetExtensionService();
     std::vector<BackgroundContents*> contents =
         background_contents_service->GetBackgroundContents();

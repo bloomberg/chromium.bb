@@ -19,7 +19,6 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
-class BackgroundModeManager;
 class ExtensionPrefs;
 class ExtensionPrefValueMap;
 class PrefService;
@@ -111,7 +110,6 @@ class ProfileImpl : public Profile,
   virtual SpellCheckHost* GetSpellCheckHost();
   virtual void ReinitializeSpellCheckHost(bool force);
   virtual WebKitContext* GetWebKitContext();
-  virtual BackgroundContentsService* GetBackgroundContentsService() const;
   virtual StatusTray* GetStatusTray();
   virtual void MarkAsCleanShutdown();
   virtual void InitExtensions();
@@ -184,9 +182,8 @@ class ProfileImpl : public Profile,
   FilePath base_cache_path_;
   scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
   // Keep |prefs_| on top for destruction order because |extension_prefs_|,
-  // |net_pref_observer_|, |web_resource_service_|,
-  // |background_contents_service_| and |io_data_| store pointers to |prefs_|
-  // and shall be destructed first.
+  // |net_pref_observer_|, |web_resource_service_|, and |io_data_| store
+  // pointers to |prefs_| and shall be destructed first.
   scoped_ptr<PrefService> prefs_;
   scoped_ptr<PrefService> otr_prefs_;
   scoped_ptr<VisitedLinkEventListener> visited_link_event_listener_;
@@ -242,8 +239,6 @@ class ProfileImpl : public Profile,
   scoped_refptr<PasswordStore> password_store_;
   scoped_refptr<SessionService> session_service_;
   scoped_refptr<WebKitContext> webkit_context_;
-  scoped_ptr<BackgroundContentsService> background_contents_service_;
-  scoped_ptr<BackgroundModeManager> background_mode_manager_;
   scoped_ptr<StatusTray> status_tray_;
   scoped_refptr<PersonalDataManager> personal_data_manager_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;

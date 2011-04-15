@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
+#include "chrome/browser/background_contents_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -179,6 +180,8 @@ TestingProfile::TestingProfile()
   }
 
   // Install profile keyed service factory hooks for dummy/test services
+  BackgroundContentsServiceFactory::GetInstance()->ForceAssociationBetween(
+      this, NULL);
   DesktopNotificationServiceFactory::GetInstance()->set_test_factory(
       &CreateTestDesktopNotificationService);
   DesktopNotificationServiceFactory::GetInstance()->ForceAssociationBetween(
@@ -697,11 +700,6 @@ NTPResourceCache* TestingProfile::GetNTPResourceCache() {
   if (!ntp_resource_cache_.get())
     ntp_resource_cache_.reset(new NTPResourceCache(this));
   return ntp_resource_cache_.get();
-}
-
-BackgroundContentsService*
-TestingProfile::GetBackgroundContentsService() const {
-  return NULL;
 }
 
 StatusTray* TestingProfile::GetStatusTray() {

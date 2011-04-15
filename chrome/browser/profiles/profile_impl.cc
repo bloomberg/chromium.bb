@@ -16,8 +16,8 @@
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
-#include "chrome/browser/background_contents_service.h"
-#include "chrome/browser/background_mode_manager.h"
+#include "chrome/browser/background_contents_service_factory.h"
+#include "chrome/browser/background_mode_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_signin.h"
@@ -298,12 +298,10 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   // ChromeOS because Chrome is always running (no need for special keep-alive
   // or launch-on-startup support).
 #if !defined(OS_CHROMEOS)
-  background_mode_manager_.reset(new BackgroundModeManager(this,
-      CommandLine::ForCurrentProcess()));
+  BackgroundModeManagerFactory::GetForProfile(this);
 #endif
 
-  background_contents_service_.reset(
-      new BackgroundContentsService(this, CommandLine::ForCurrentProcess()));
+  BackgroundContentsServiceFactory::GetForProfile(this);
 
   extension_info_map_ = new ExtensionInfoMap();
 
@@ -689,10 +687,6 @@ VisitedLinkMaster* ProfileImpl::GetVisitedLinkMaster() {
 
 ExtensionService* ProfileImpl::GetExtensionService() {
   return extensions_service_.get();
-}
-
-BackgroundContentsService* ProfileImpl::GetBackgroundContentsService() const {
-  return background_contents_service_.get();
 }
 
 StatusTray* ProfileImpl::GetStatusTray() {

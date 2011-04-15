@@ -14,7 +14,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/background_contents_service.h"
+#include "chrome/browser/background_contents_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_manager.h"
@@ -166,8 +166,7 @@ class OffTheRecordProfileImpl : public Profile,
 
     BrowserList::AddObserver(this);
 
-    background_contents_service_.reset(
-        new BackgroundContentsService(this, CommandLine::ForCurrentProcess()));
+    BackgroundContentsServiceFactory::GetForProfile(this);
 
     DCHECK(real_profile->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled));
 
@@ -265,10 +264,6 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual ExtensionService* GetExtensionService() {
     return GetOriginalProfile()->GetExtensionService();
-  }
-
-  virtual BackgroundContentsService* GetBackgroundContentsService() const {
-    return background_contents_service_.get();
   }
 
   virtual StatusTray* GetStatusTray() {
@@ -725,9 +720,6 @@ class OffTheRecordProfileImpl : public Profile,
   scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
 
   FilePath last_selected_directory_;
-
-  // Tracks all BackgroundContents running under this profile.
-  scoped_ptr<BackgroundContentsService> background_contents_service_;
 
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
 
