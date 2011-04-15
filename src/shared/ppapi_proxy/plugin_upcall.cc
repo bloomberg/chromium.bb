@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -29,6 +29,20 @@ using ppapi_proxy::CompletionCallbackTable;
 
 namespace ppapi_proxy {
 
+namespace {
+
+  class CallOnMainThreadCriticalSection {
+    static pthread_mutex_t mutex_;
+   public:
+    CallOnMainThreadCriticalSection() { pthread_mutex_lock(&mutex_); }
+    ~CallOnMainThreadCriticalSection() { pthread_mutex_unlock(&mutex_); }
+  };
+
+  pthread_mutex_t CallOnMainThreadCriticalSection::mutex_ =
+      PTHREAD_MUTEX_INITIALIZER;
+
+}  // namespace
+
 // The call on main thread is implemented via an RPC to the browser side on the
 // upcall channel, instead of locally to the plugin. This is to ensure that
 // when the callback runs (and potentially calls one of the PPB_ methods
@@ -36,6 +50,9 @@ namespace ppapi_proxy {
 void PluginUpcallCoreCallOnMainThread(int32_t delay_in_milliseconds,
                                       PP_CompletionCallback callback,
                                       int32_t result) {
+  // Force PluginUpcallCoreCallOnMainThread, from multiple threads, to occur
+  // one at a time.
+  CallOnMainThreadCriticalSection guard;
   NaClSrpcChannel* upcall_channel = GetUpcallSrpcChannel();
   if (upcall_channel == NULL) {
     DebugPrintf("PluginUpcallCoreCallOnMainThread: NULL channel.\n");
@@ -52,4 +69,3 @@ void PluginUpcallCoreCallOnMainThread(int32_t delay_in_milliseconds,
 }
 
 }  // namespace ppapi_proxy
-
