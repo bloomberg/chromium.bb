@@ -100,6 +100,20 @@ class MockKeyUser : public OwnerManager::Delegate {
   DISALLOW_COPY_AND_ASSIGN(MockKeyUser);
 };
 
+class MockKeyUpdateUser : public OwnerManager::KeyUpdateDelegate {
+ public:
+  MockKeyUpdateUser() {}
+  virtual ~MockKeyUpdateUser() {}
+
+  virtual void OnKeyUpdated() {
+    MessageLoop::current()->Quit();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockKeyUpdateUser);
+};
+
+
 class MockSigner : public OwnerManager::Delegate {
  public:
   MockSigner(const OwnerManager::KeyOpCode expected,

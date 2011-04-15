@@ -80,6 +80,20 @@ class OwnerManagerTest : public ::testing::Test {
 
 };
 
+TEST_F(OwnerManagerTest, UpdateOwnerKey) {
+  scoped_refptr<OwnerManager> manager(new OwnerManager);
+
+  MockKeyUpdateUser delegate;
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(manager.get(),
+                        &OwnerManager::UpdateOwnerKey,
+                        BrowserThread::UI,
+                        std::vector<uint8>(),
+                        &delegate));
+  message_loop_.Run();
+}
+
 TEST_F(OwnerManagerTest, LoadOwnerKeyFail) {
   StartUnowned();
   MockKeyLoadObserver loader;

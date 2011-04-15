@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,6 +83,21 @@ void OwnershipService::StartLoadOwnerKeyAttempt() {
       NewRunnableFunction(&TryLoadOwnerKeyAttempt, this));
 }
 
+void OwnershipService::StartUpdateOwnerKey(const std::vector<uint8>& new_key,
+                                           OwnerManager::KeyUpdateDelegate* d) {
+  BrowserThread::ID thread_id;
+  if (!BrowserThread::GetCurrentThreadIdentifier(&thread_id))
+    thread_id = BrowserThread::UI;
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableFunction(&OwnershipService::UpdateOwnerKey,
+                          this,
+                          thread_id,
+                          new_key,
+                          d));
+  return;
+}
+
 void OwnershipService::StartSigningAttempt(const std::string& data,
                                            OwnerManager::Delegate* d) {
   BrowserThread::ID thread_id;
@@ -130,6 +145,15 @@ bool OwnershipService::CurrentUserIsOwner() {
   // If this user has the private key associated with the owner's
   // public key, this user is the owner.
   return IsAlreadyOwned() && manager_->EnsurePrivateKey();
+}
+
+// static
+void OwnershipService::UpdateOwnerKey(OwnershipService* service,
+                                      const BrowserThread::ID thread_id,
+                                      const std::vector<uint8>& new_key,
+                                      OwnerManager::KeyUpdateDelegate* d) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  service->manager()->UpdateOwnerKey(thread_id, new_key, d);
 }
 
 // static
@@ -193,4 +217,3 @@ void OwnershipService::SetStatus(Status new_status) {
 }
 
 }  // namespace chromeos
-

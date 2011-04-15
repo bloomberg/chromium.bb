@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/login/owner_key_utils.h"
 #include "chrome/browser/chromeos/login/owner_manager.h"
@@ -35,6 +36,12 @@ class OwnershipService : public NotificationObserver {
   // Returns the singleton instance of the OwnershipService.
   static OwnershipService* GetSharedInstance();
   virtual ~OwnershipService();
+
+  // Sets a new owner key. This will _not_ load the key material from disk, but
+  // rather update Chrome's in-memory copy of the key. |callback| will be
+  // invoked once the operation completes.
+  virtual void StartUpdateOwnerKey(const std::vector<uint8>& new_key,
+                                   OwnerManager::KeyUpdateDelegate* d);
 
   // If the device has been owned already, posts a task to the FILE thread to
   // fetch the public key off disk.
@@ -93,6 +100,10 @@ class OwnershipService : public NotificationObserver {
   // Sets ownership status. May be called on either thread.
   void SetStatus(Status new_status);
 
+  static void UpdateOwnerKey(OwnershipService* service,
+                             const BrowserThread::ID thread_id,
+                             const std::vector<uint8>& new_key,
+                             OwnerManager::KeyUpdateDelegate* d);
   static void TryLoadOwnerKeyAttempt(OwnershipService* service);
   static void TrySigningAttempt(OwnershipService* service,
                                 const BrowserThread::ID thread_id,

@@ -26,6 +26,18 @@ OwnerManager::OwnerManager()
 
 OwnerManager::~OwnerManager() {}
 
+void OwnerManager::UpdateOwnerKey(const BrowserThread::ID thread_id,
+                                  const std::vector<uint8>& key,
+                                  KeyUpdateDelegate* d) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  public_key_ = key;
+
+  BrowserThread::PostTask(
+      thread_id, FROM_HERE,
+      NewRunnableMethod(this, &OwnerManager::CallKeyUpdateDelegate, d));
+}
+
 void OwnerManager::LoadOwnerKey() {
   BootTimesLoader::Get()->AddLoginTimeMarker("LoadOwnerKeyStart", false);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));

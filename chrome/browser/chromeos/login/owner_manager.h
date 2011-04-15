@@ -42,8 +42,19 @@ class OwnerManager : public base::RefCountedThreadSafe<OwnerManager> {
                                  const std::vector<uint8>& payload) = 0;
   };
 
+  class KeyUpdateDelegate {
+   public:
+    // Called upon completion of a key update operation.
+    virtual void OnKeyUpdated() = 0;
+  };
+
   OwnerManager();
   virtual ~OwnerManager();
+
+  // Sets a new owner key from a provided memory buffer.
+  void UpdateOwnerKey(const BrowserThread::ID thread_id,
+                      const std::vector<uint8>& key,
+                      KeyUpdateDelegate* d);
 
   // Pulls the owner's public key off disk and into memory.
   //
@@ -81,6 +92,11 @@ class OwnerManager : public base::RefCountedThreadSafe<OwnerManager> {
   // A helper method to send a notification on another thread.
   void SendNotification(NotificationType type,
                         const NotificationDetails& details);
+
+  // Calls back a key update delegate on a given thread.
+  void CallKeyUpdateDelegate(KeyUpdateDelegate* d) {
+    d->OnKeyUpdated();
+  }
 
   // A helper method to call back a delegte on another thread.
   void CallDelegate(Delegate* d,

@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_callback_factory.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
@@ -34,8 +35,6 @@ class DevicePolicyCache : public CloudPolicyCacheBase,
   virtual void SetUnmanaged() OVERRIDE;
 
   // SignedSettingsHelper::Callback implementation:
-  virtual void OnStorePolicyCompleted(
-      chromeos::SignedSettings::ReturnCode code) OVERRIDE;
   virtual void OnRetrievePolicyCompleted(
       chromeos::SignedSettings::ReturnCode code,
       const em::PolicyFetchResponse& policy) OVERRIDE;
@@ -54,6 +53,8 @@ class DevicePolicyCache : public CloudPolicyCacheBase,
                                 PolicyMap* mandatory,
                                 PolicyMap* recommended) OVERRIDE;
 
+  void PolicyStoreOpCompleted(chromeos::SignedSettings::ReturnCode code);
+
   static void DecodeDevicePolicy(const em::ChromeDeviceSettingsProto& policy,
                                  PolicyMap* mandatory,
                                  PolicyMap* recommended);
@@ -63,6 +64,8 @@ class DevicePolicyCache : public CloudPolicyCacheBase,
   chromeos::SignedSettingsHelper* signed_settings_helper_;
 
   bool starting_up_;
+
+  base::ScopedCallbackFactory<DevicePolicyCache> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevicePolicyCache);
 };

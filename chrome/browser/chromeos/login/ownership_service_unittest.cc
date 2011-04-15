@@ -122,6 +122,13 @@ TEST_F(OwnershipServiceTest, LoadOwnerKeyFail) {
   message_loop_.Run();
 }
 
+TEST_F(OwnershipServiceTest, UpdateOwnerKey) {
+  MockKeyUpdateUser delegate;
+  service_->StartUpdateOwnerKey(std::vector<uint8>(), &delegate);
+
+  message_loop_.Run();
+}
+
 TEST_F(OwnershipServiceTest, LoadOwnerKey) {
   MockKeyLoadObserver loader;
   loader.ExpectKeyFetchSuccess(true);
