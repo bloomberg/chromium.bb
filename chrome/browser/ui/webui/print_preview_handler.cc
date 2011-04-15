@@ -255,6 +255,7 @@ void PrintPreviewHandler::SelectFile() {
       &file_type_info,
       0,
       FILE_PATH_LITERAL(""),
+      web_ui_->tab_contents(),
       platform_util::GetTopLevel(
           web_ui_->tab_contents()->GetNativeView()),
       NULL);

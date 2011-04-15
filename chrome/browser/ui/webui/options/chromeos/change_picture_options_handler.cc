@@ -94,6 +94,7 @@ void ChangePictureOptionsHandler::ChooseFile(const ListValue* args) {
       &file_type_info,
       0,
       FILE_PATH_LITERAL(""),
+      web_ui_->tab_contents(),
       NULL,
       NULL);
 }

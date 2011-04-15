@@ -249,6 +249,8 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
     prefs::kPluginsAllowOutdated },
   { Value::TYPE_BOOLEAN, kPolicyEditBookmarksEnabled,
     prefs::kEditBookmarksEnabled },
+  { Value::TYPE_BOOLEAN, kPolicyAllowFileSelectionDialogs,
+    prefs::kAllowFileSelectionDialogs },
 
 #if defined(OS_CHROMEOS)
   { Value::TYPE_BOOLEAN, kPolicyChromeOsLockOnIdleSuspend,
@@ -956,6 +958,8 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
       key::kBookmarkBarEnabled },
     { kPolicyEditBookmarksEnabled, Value::TYPE_BOOLEAN,
       key::kEditBookmarksEnabled },
+    { kPolicyAllowFileSelectionDialogs, Value::TYPE_BOOLEAN,
+      key::kAllowFileSelectionDialogs },
 
 #if defined(OS_CHROMEOS)
     { kPolicyChromeOsLockOnIdleSuspend, Value::TYPE_BOOLEAN,

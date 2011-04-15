@@ -837,5 +837,6 @@ void ExtensionHost::OnRunFileChooser(
     const ViewHostMsg_RunFileChooser_Params& params) {
   if (file_select_helper_.get() == NULL)
     file_select_helper_.reset(new FileSelectHelper(profile()));
-  file_select_helper_->RunFileChooser(render_view_host_, params);
+  file_select_helper_->RunFileChooser(render_view_host_,
+                                      associated_tab_contents(), params);
 }

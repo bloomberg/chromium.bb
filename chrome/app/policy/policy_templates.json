@@ -94,7 +94,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 83
+#   For your editing convenience: highest ID currently used: 84
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1466,6 +1466,22 @@
       If you enable this setting, bookmarks can be added, removed or modified. This is the default.
 
       If you disable this setting, bookmarks can not be added, removed or modified. Existing bookmarks are still available.''',
+    },
+    {
+      'name': 'AllowFileSelectionDialogs',
+      'type': 'main',
+      'supported_on': ['chrome.*:12-', 'chrome_os:0.11-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
+      'id': 84,
+      'caption': '''Allow invocation of file selection dialogs.''',
+      'desc': '''Allows access to local files on the machine by allowing <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to display file selection dialogs.
+
+      If you enable this setting, users can open file selection dialogs as normal.
+
+      If you disable this setting, whenever the user perfoms an action which would provoke a file selection dialog (like importing bookmarks, uploading files, saving links, etc.) a message is displayed instead and the user is assumed to have clicked Cancel on the file selection dialog.
+
+      If this setting is not set, users can open file selection dialogs as normal.''',
     },
   ],
   'messages': {

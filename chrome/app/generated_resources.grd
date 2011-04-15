@@ -9494,6 +9494,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
     </if>
 
+    <!-- File Selection Dialog Policy - Infobar -->
+    <message name="IDS_FILE_SELECTION_DIALOG_INFOBAR" desc="Infobar message on disallowed file selection dialog.">
+      Access to local files on your machine is disabled by your administrator.
+    </message>
+
     <!-- Filebrowser Strings -->
     <message name="IDS_FILEBROWSER_TITLE" desc="Title of the filebrowser">
       Content Browser

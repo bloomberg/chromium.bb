@@ -341,7 +341,7 @@ void AdvancedOptionsHandler::HandleSelectDownloadLocation(
       SelectFileDialog::SELECT_FOLDER,
       l10n_util::GetStringUTF16(IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE),
       pref_service->GetFilePath(prefs::kDownloadDefaultDirectory),
-      NULL, 0, FILE_PATH_LITERAL(""),
+      NULL, 0, FILE_PATH_LITERAL(""), web_ui_->tab_contents(),
       web_ui_->tab_contents()->view()->GetTopLevelNativeWindow(), NULL);
 }
 

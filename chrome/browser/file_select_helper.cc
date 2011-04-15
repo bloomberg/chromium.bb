@@ -17,6 +17,8 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "content/common/view_messages.h"
@@ -234,6 +236,7 @@ SelectFileDialog::FileTypeInfo* FileSelectHelper::GetFileTypesFromAcceptType(
 
 void FileSelectHelper::RunFileChooser(
     RenderViewHost* render_view_host,
+    TabContents* tab_contents,
     const ViewHostMsg_RunFileChooser_Params& params) {
   DCHECK(!render_view_host_);
   render_view_host_ = render_view_host;
@@ -270,12 +273,14 @@ void FileSelectHelper::RunFileChooser(
 
   gfx::NativeWindow owning_window =
       platform_util::GetTopLevel(render_view_host_->view()->GetNativeView());
+
   select_file_dialog_->SelectFile(dialog_type_,
                                   params.title,
                                   default_file_name,
                                   file_types.get(),
                                   file_types.get() ? 1 : 0,  // 1-based index.
                                   FILE_PATH_LITERAL(""),
+                                  tab_contents,
                                   owning_window,
                                   NULL);
 }
@@ -318,6 +323,7 @@ void FileSelectObserver::OnRunFileChooser(
   if (!file_select_helper_.get())
     file_select_helper_.reset(new FileSelectHelper(tab_contents()->profile()));
   file_select_helper_->RunFileChooser(tab_contents()->render_view_host(),
+                                      tab_contents(),
                                       params);
 }
 

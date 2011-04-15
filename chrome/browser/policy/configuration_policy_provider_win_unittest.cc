@@ -491,6 +491,9 @@ INSTANTIATE_TEST_CASE_P(
             key::kBookmarkBarEnabled),
         PolicyTestParams::ForBooleanPolicy(
             kPolicyEditBookmarksEnabled,
-            key::kEditBookmarksEnabled)));
+            key::kEditBookmarksEnabled),
+        PolicyTestParams::ForBooleanPolicy(
+            kPolicyAllowFileSelectionDialogs,
+            key::kAllowFileSelectionDialogs)));
 
 }  // namespace policy

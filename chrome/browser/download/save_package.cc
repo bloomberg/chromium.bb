@@ -1392,6 +1392,7 @@ void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
                                     &file_type_info,
                                     file_type_index,
                                     default_extension,
+                                    tab_contents(),
                                     platform_util::GetTopLevel(
                                         tab_contents()->GetNativeView()),
                                     NULL);

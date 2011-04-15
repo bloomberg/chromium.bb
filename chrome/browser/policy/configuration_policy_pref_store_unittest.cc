@@ -211,7 +211,9 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(kPolicyBookmarkBarEnabled,
                     prefs::kEnableBookmarkBar),
         TypeAndName(kPolicyEditBookmarksEnabled,
-                    prefs::kEditBookmarksEnabled)));
+                    prefs::kEditBookmarksEnabled),
+        TypeAndName(kPolicyAllowFileSelectionDialogs,
+                    prefs::kAllowFileSelectionDialogs)));
 
 #if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(

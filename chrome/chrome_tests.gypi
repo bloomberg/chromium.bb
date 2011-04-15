@@ -1741,6 +1741,7 @@
         'browser/ui/find_bar/find_backend_unittest.cc',
         'browser/ui/login/login_prompt_unittest.cc',
         'browser/ui/search_engines/keyword_editor_controller_unittest.cc',
+        'browser/ui/shell_dialogs_unittest.cc',
         'browser/ui/tabs/dock_info_unittest.cc',
         'browser/ui/tabs/tab_menu_model_unittest.cc',
         'browser/ui/tests/ui_gfx_image_unittest.cc',

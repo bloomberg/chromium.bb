@@ -310,6 +310,8 @@ extern const char kDownloadDirUpgraded[];
 extern const char kSaveFileDefaultDirectory[];
 extern const char kSaveFileType[];
 
+extern const char kAllowFileSelectionDialogs[];
+
 extern const char kSelectFileLastDirectory[];
 
 extern const char kHungPluginDetectFrequency[];

@@ -855,12 +855,19 @@ void BookmarksIOFunction::ShowSelectFileDialog(SelectFileDialog::Type type,
   file_type_info.extensions.resize(1);
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("html"));
 
+  TabContents* tab_contents = dispatcher()->delegate()->
+      associated_tab_contents();
+
+  // |tab_contents| can be NULL (for background pages), which is fine. In such
+  // a case if file-selection dialogs are forbidden by policy, we will not
+  // show an InfoBar, which is better than letting one appear out of the blue.
   select_file_dialog_->SelectFile(type,
                                   string16(),
                                   default_path,
                                   &file_type_info,
                                   0,
                                   FILE_PATH_LITERAL(""),
+                                  tab_contents,
                                   NULL,
                                   NULL);
 }

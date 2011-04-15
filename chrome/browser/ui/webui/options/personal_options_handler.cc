@@ -438,7 +438,8 @@ void PersonalOptionsHandler::LoadAccountPicture(const ListValue* args) {
       chromeos::UserManager::Get()->logged_in_user();
   std::string email = user.email();
   if (!email.empty()) {
-    // int64 is either long or long long, but we need a certain format specifier.
+    // int64 is either long or long long, but we need a certain format
+    // specifier.
     long long timestamp = base::TimeTicks::Now().ToInternalValue();
     StringValue image_url(
         StringPrintf("%s%s?id=%lld",

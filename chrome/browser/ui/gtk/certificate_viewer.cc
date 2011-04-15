@@ -697,7 +697,7 @@ void CertificateViewer::OnExportClicked(GtkButton *button,
     return;
   }
 
-  ShowCertExportDialog(GTK_WINDOW(viewer->dialog_),
+  ShowCertExportDialog(NULL, GTK_WINDOW(viewer->dialog_),
                        viewer->cert_chain_list_[cert_index]);
 }
 

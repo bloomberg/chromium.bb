@@ -535,17 +535,19 @@ class SelectFileDialogImpl : public SelectFileDialog,
  public:
   explicit SelectFileDialogImpl(Listener* listener);
 
-  // SelectFileDialog implementation:
-  virtual void SelectFile(Type type,
-                          const string16& title,
-                          const FilePath& default_path,
-                          const FileTypeInfo* file_types,
-                          int file_type_index,
-                          const FilePath::StringType& default_extension,
-                          gfx::NativeWindow owning_window,
-                          void* params);
   virtual bool IsRunning(HWND owning_hwnd) const;
   virtual void ListenerDestroyed();
+
+ protected:
+  // SelectFileDialog implementation:
+  virtual void SelectFileImpl(Type type,
+                              const string16& title,
+                              const FilePath& default_path,
+                              const FileTypeInfo* file_types,
+                              int file_type_index,
+                              const FilePath::StringType& default_extension,
+                              gfx::NativeWindow owning_window,
+                              void* params);
 
  private:
   virtual ~SelectFileDialogImpl();
@@ -630,21 +632,19 @@ class SelectFileDialogImpl : public SelectFileDialog,
                                          LPARAM parameter,
                                          LPARAM data);
 
-  // The listener to be notified of selection completion.
-  Listener* listener_;
 
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImpl);
 };
 
 SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener)
-    : listener_(listener),
+    : SelectFileDialog(listener),
       BaseShellDialogImpl() {
 }
 
 SelectFileDialogImpl::~SelectFileDialogImpl() {
 }
 
-void SelectFileDialogImpl::SelectFile(
+void SelectFileDialogImpl::SelectFileImpl(
     Type type,
     const string16& title,
     const FilePath& default_path,

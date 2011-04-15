@@ -508,7 +508,7 @@ void NetInternalsMessageHandler::OnLoadLogFile(const ListValue* list) {
   select_log_file_dialog_ = SelectFileDialog::Create(this);
   select_log_file_dialog_->SelectFile(
       SelectFileDialog::SELECT_OPEN_FILE, string16(), FilePath(), NULL, 0,
-      FILE_PATH_LITERAL(""),
+      FILE_PATH_LITERAL(""), web_ui_->tab_contents(),
       web_ui_->tab_contents()->view()->GetTopLevelNativeWindow(), NULL);
 }
 

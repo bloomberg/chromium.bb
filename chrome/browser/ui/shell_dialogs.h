@@ -14,6 +14,8 @@
 #include "base/string16.h"
 #include "ui/gfx/native_widget_types.h"
 
+class TabContents;
+
 // This function is declared extern such that it is accessible for unit tests
 // in /chrome/browser/ui/views/shell_dialogs_win_unittest.cc
 extern std::wstring AppendExtensionIfNeeded(const std::wstring& filename,
@@ -97,7 +99,11 @@ class SelectFileDialog
     bool include_all_files;
   };
 
-  // Selects a file. This will start displaying the dialog box. This will also
+  // Selects a File.
+  // Before doing anything this function checks if FileBrowsing is forbidden
+  // by Policy. If so, it tries to show an InfoBar and behaves as though no File
+  // was selected (the user clicked `Cancel` immediately).
+  // Otherwise it will start displaying the dialog box. This will also
   // block the calling window until the dialog box is complete. The listener
   // associated with this object will be notified when the selection is
   // complete.
@@ -114,28 +120,58 @@ class SelectFileDialog
   // |default_extension| is the default extension to add to the file if the
   //   user doesn't type one. This should NOT include the '.'. On Windows, if
   //   you specify this you must also specify |file_types|.
+  // |source_contents| is the TabContents the call is originating from, i.e.
+  //   where the InfoBar should be shown in case file-selection dialogs are
+  //   forbidden by policy, or NULL if no InfoBar should be shown.
   // |owning_window| is the window the dialog is modal to, or NULL for a
   //   modeless dialog.
   // |params| is data from the calling context which will be passed through to
   //   the listener. Can be NULL.
   // NOTE: only one instance of any shell dialog can be shown per owning_window
   //       at a time (for obvious reasons).
-  virtual void SelectFile(Type type,
-                          const string16& title,
-                          const FilePath& default_path,
-                          const FileTypeInfo* file_types,
-                          int file_type_index,
-                          const FilePath::StringType& default_extension,
-                          gfx::NativeWindow owning_window,
-                          void* params) = 0;
+  void SelectFile(Type type,
+                  const string16& title,
+                  const FilePath& default_path,
+                  const FileTypeInfo* file_types,
+                  int file_type_index,
+                  const FilePath::StringType& default_extension,
+                  TabContents* source_contents,
+                  gfx::NativeWindow owning_window,
+                  void* params);
 
   // browser_mode is true when running inside the browser.
   virtual void set_browser_mode(bool value) {}
 
  protected:
   friend class base::RefCountedThreadSafe<SelectFileDialog>;
-  SelectFileDialog();
+  explicit SelectFileDialog(Listener* listener);
   virtual ~SelectFileDialog();
+
+  // Displays the actual file-selection dialog.
+  // This is overridden in the platform-specific descendants of FileSelectDialog
+  // and gets called from SelectFile after testing the
+  // AllowFileSelectionDialogs-Policy.
+  virtual void SelectFileImpl(Type type,
+                              const string16& title,
+                              const FilePath& default_path,
+                              const FileTypeInfo* file_types,
+                              int file_type_index,
+                              const FilePath::StringType& default_extension,
+                              gfx::NativeWindow owning_window,
+                              void* params) = 0;
+
+  // The listener to be notified of selection completion.
+  Listener* listener_;
+
+ private:
+  // Tests if the file selection dialog can be displayed by
+  // testing if the AllowFileSelectionDialogs-Policy is
+  // either unset or set to true.
+  bool CanOpenSelectFileDialog();
+
+  // Informs the |listener_| that the file seleciton dialog was canceled. Moved
+  // to a function for being able to post it to the message loop.
+  void CancelFileSelection(void* params);
 };
 
 #endif  // CHROME_BROWSER_UI_SHELL_DIALOGS_H_

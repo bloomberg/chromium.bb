@@ -43,20 +43,21 @@ class SelectFileDialogImpl : public SelectFileDialog {
   virtual bool IsRunning(gfx::NativeWindow parent_window) const;
   virtual void ListenerDestroyed();
 
-  // SelectFileDialog implementation.
-  // |params| is user data we pass back via the Listener interface.
-  virtual void SelectFile(Type type,
-                          const string16& title,
-                          const FilePath& default_path,
-                          const FileTypeInfo* file_types,
-                          int file_type_index,
-                          const FilePath::StringType& default_extension,
-                          gfx::NativeWindow owning_window,
-                          void* params);
-
   virtual void set_browser_mode(bool value) {
     browser_mode_ = value;
   }
+
+ protected:
+  // SelectFileDialog implementation.
+  // |params| is user data we pass back via the Listener interface.
+  virtual void SelectFileImpl(Type type,
+                              const string16& title,
+                              const FilePath& default_path,
+                              const FileTypeInfo* file_types,
+                              int file_type_index,
+                              const FilePath::StringType& default_extension,
+                              gfx::NativeWindow owning_window,
+                              void* params);
 
  private:
   virtual ~SelectFileDialogImpl();
@@ -155,9 +156,6 @@ class SelectFileDialogImpl : public SelectFileDialog {
   // True when opening in browser, otherwise in OOBE/login mode.
   bool browser_mode_;
 
-  // The listener to be notified of selection completion.
-  Listener* listener_;
-
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImpl);
 };
 
@@ -169,8 +167,8 @@ SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
 }
 
 SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener)
-    : browser_mode_(true),
-      listener_(listener) {
+    : SelectFileDialog(listener),
+      browser_mode_(true) {
 }
 
 SelectFileDialogImpl::~SelectFileDialogImpl() {
@@ -186,7 +184,7 @@ void SelectFileDialogImpl::ListenerDestroyed() {
   listener_ = NULL;
 }
 
-void SelectFileDialogImpl::SelectFile(
+void SelectFileDialogImpl::SelectFileImpl(
     Type type,
     const string16& title,
     const FilePath& default_path,
@@ -271,8 +269,8 @@ void SelectFileDialogImpl::OnDialogClosed(FileBrowseDelegate* delegate,
           FilePath path(
               base::SysWideToNativeMB(base::SysUTF8ToWide(path_string)));
 #endif
-          listener_->FileSelected(path, kSaveCompletePageIndex,
-                                  delegate->params_);
+          listener_->
+              FileSelected(path, kSaveCompletePageIndex, delegate->params_);
           notification_fired = true;
         }
       } else if (delegate->type_ == SELECT_OPEN_MULTI_FILE) {

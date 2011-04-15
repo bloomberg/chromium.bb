@@ -38,16 +38,17 @@ class SelectFileDialogImpl : public SelectFileDialog {
   virtual bool IsRunning(gfx::NativeWindow parent_window) const;
   virtual void ListenerDestroyed();
 
+ protected:
   // SelectFileDialog implementation.
   // |params| is user data we pass back via the Listener interface.
-  virtual void SelectFile(Type type,
-                          const string16& title,
-                          const FilePath& default_path,
-                          const FileTypeInfo* file_types,
-                          int file_type_index,
-                          const FilePath::StringType& default_extension,
-                          gfx::NativeWindow owning_window,
-                          void* params);
+  virtual void SelectFileImpl(Type type,
+                              const string16& title,
+                              const FilePath& default_path,
+                              const FileTypeInfo* file_types,
+                              int file_type_index,
+                              const FilePath::StringType& default_extension,
+                              gfx::NativeWindow owning_window,
+                              void* params);
 
  private:
   virtual ~SelectFileDialogImpl();
@@ -55,7 +56,6 @@ class SelectFileDialogImpl : public SelectFileDialog {
   // Add the filters from |file_types_| to |chooser|.
   void AddFilters(GtkFileChooser* chooser);
 
-  // Notifies the listener that a single file was chosen.
   void FileSelected(GtkWidget* dialog, const FilePath& path);
 
   // Notifies the listener that multiple files were chosen.
@@ -125,9 +125,6 @@ class SelectFileDialogImpl : public SelectFileDialog {
   // Callback for when we update the preview for the selection.
   CHROMEGTK_CALLBACK_0(SelectFileDialogImpl, void, OnUpdatePreview);
 
-  // The listener to be notified of selection completion.
-  Listener* listener_;
-
   // A map from dialog windows to the |params| user data associated with them.
   std::map<GtkWidget*, void*> params_map_;
 
@@ -168,7 +165,7 @@ SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
 }
 
 SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener)
-    : listener_(listener),
+    : SelectFileDialog(listener),
       file_type_index_(0),
       type_(SELECT_NONE),
       preview_(NULL) {
@@ -193,7 +190,7 @@ void SelectFileDialogImpl::ListenerDestroyed() {
 }
 
 // We ignore |default_extension|.
-void SelectFileDialogImpl::SelectFile(
+void SelectFileDialogImpl::SelectFileImpl(
     Type type,
     const string16& title,
     const FilePath& default_path,

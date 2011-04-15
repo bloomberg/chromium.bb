@@ -446,7 +446,7 @@ void DownloadManager::OnPathExistenceAvailable(DownloadCreateInfo* info) {
                                     string16(),
                                     info->suggested_path,
                                     &file_type_info, 0, FILE_PATH_LITERAL(""),
-                                    owning_window, info);
+                                    contents, owning_window, info);
     FOR_EACH_OBSERVER(Observer, observers_,
                       SelectFileDialogDisplayed(info->download_id));
   } else {

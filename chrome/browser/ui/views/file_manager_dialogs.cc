@@ -66,16 +66,6 @@ class FileManagerDialog
   }
 
   // SelectFileDialog implementation.
-
-  virtual void SelectFile(Type type,
-                          const string16& title,
-                          const FilePath& default_path,
-                          const FileTypeInfo* file_types,
-                          int file_type_index,
-                          const FilePath::StringType& default_extension,
-                          gfx::NativeWindow owning_window,
-                          void* params);
-
   virtual void set_browser_mode(bool value) {
     browser_mode_ = value;
   }
@@ -133,10 +123,20 @@ class FileManagerDialog
     return true;
   }
 
+ protected:
+  // SelectFileDialog implementation.
+  virtual void SelectFileImpl(Type type,
+                              const string16& title,
+                              const FilePath& default_path,
+                              const FileTypeInfo* file_types,
+                              int file_type_index,
+                              const FilePath::StringType& default_extension,
+                              gfx::NativeWindow owning_window,
+                              void* params);
+
  private:
   virtual ~FileManagerDialog() {}
 
-  Listener* listener_;
   int32 tab_id_;
 
   // True when opening in browser, otherwise in OOBE/login mode.
@@ -171,13 +171,13 @@ std::string FileManagerDialog::s_extension_base_url_ =
     "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/main.html";
 
 FileManagerDialog::FileManagerDialog(Listener* listener)
-    : tab_id_(0),
+    : SelectFileDialog(listener),
+      tab_id_(0),
       browser_mode_(true),
       owner_window_(0) {
-  listener_ = listener;
 }
 
-void FileManagerDialog::SelectFile(
+void FileManagerDialog::SelectFileImpl(
     Type type,
     const string16& title,
     const FilePath& default_path,

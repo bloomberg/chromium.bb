@@ -896,6 +896,9 @@ const char kSaveFileType[] = "savefile.type";
 // or opening a file.
 const char kSelectFileLastDirectory[] = "selectfile.last_directory";
 
+// Boolean that specifies if file selection dialogs are shown.
+const char kAllowFileSelectionDialogs[] = "select_file_dialogs.allowed";
+
 // Extensions which should be opened upon completion.
 const char kDownloadExtensionsToOpen[] = "download.extensions_to_open";
 

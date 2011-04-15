@@ -73,7 +73,8 @@ std::string GetBase64String(net::X509Certificate::OSCertHandle cert) {
 
 class Exporter : public SelectFileDialog::Listener {
  public:
-  Exporter(gfx::NativeWindow parent, net::X509Certificate::OSCertHandle cert);
+  Exporter(TabContents* tab_contents, gfx::NativeWindow parent,
+           net::X509Certificate::OSCertHandle cert);
   ~Exporter();
 
   // SelectFileDialog::Listener implemenation.
@@ -87,7 +88,8 @@ class Exporter : public SelectFileDialog::Listener {
   net::X509Certificate::OSCertHandles cert_chain_list_;
 };
 
-Exporter::Exporter(gfx::NativeWindow parent,
+Exporter::Exporter(TabContents* tab_contents,
+                   gfx::NativeWindow parent,
                    net::X509Certificate::OSCertHandle cert)
     : select_file_dialog_(SelectFileDialog::Create(this)) {
   x509_certificate_model::GetCertChainFromCert(cert, &cert_chain_list_);
@@ -102,6 +104,7 @@ Exporter::Exporter(gfx::NativeWindow parent,
   ShowCertSelectFileDialog(select_file_dialog_.get(),
                            SelectFileDialog::SELECT_SAVEAS_FILE,
                            suggested_path,
+                           tab_contents,
                            parent,
                            NULL);
 }
@@ -153,6 +156,7 @@ void Exporter::FileSelectionCanceled(void* params) {
 void ShowCertSelectFileDialog(SelectFileDialog* select_file_dialog,
                               SelectFileDialog::Type type,
                               const FilePath& suggested_path,
+                              TabContents* tab_contents,
                               gfx::NativeWindow parent,
                               void* params) {
   SelectFileDialog::FileTypeInfo file_type_info;
@@ -178,11 +182,12 @@ void ShowCertSelectFileDialog(SelectFileDialog* select_file_dialog,
   select_file_dialog->SelectFile(
       type, string16(),
       suggested_path, &file_type_info, 1,
-      FILE_PATH_LITERAL("crt"), parent,
-      params);
+      FILE_PATH_LITERAL("crt"), tab_contents,
+      parent, params);
 }
 
-void ShowCertExportDialog(gfx::NativeWindow parent,
+void ShowCertExportDialog(TabContents* tab_contents,
+                          gfx::NativeWindow parent,
                           net::X509Certificate::OSCertHandle cert) {
-  new Exporter(parent, cert);
+  new Exporter(tab_contents, parent, cert);
 }

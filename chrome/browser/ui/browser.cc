@@ -1790,6 +1790,7 @@ void Browser::OpenFile() {
   select_file_dialog_->SelectFile(SelectFileDialog::SELECT_OPEN_FILE,
                                   string16(), directory,
                                   NULL, 0, FILE_PATH_LITERAL(""),
+                                  GetSelectedTabContents(),
                                   parent_window, NULL);
 #endif
 }
@@ -2053,6 +2054,7 @@ void Browser::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kOptionsWindowLastTabIndex, 0);
   prefs->RegisterIntegerPref(prefs::kExtensionSidebarWidth, -1);
   prefs->RegisterIntegerPref(prefs::kMultipleProfilePrefMigration, 0);
+  prefs->RegisterBooleanPref(prefs::kAllowFileSelectionDialogs, true);
   // Educated guess: Chrome has a bundled Flash version supporting
   // clearing LSO data, Chromium hasn't.
 #if defined(GOOGLE_CHROME_BUILD)

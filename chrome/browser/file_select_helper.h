@@ -20,6 +20,10 @@ class Profile;
 class RenderViewHost;
 struct ViewHostMsg_RunFileChooser_Params;
 
+
+// This class handles file-selection requests coming from WebUI elements
+// (via the ExtensionHost class). It implements both the initialisation
+// and listener functions for file-selection dialogs.
 class FileSelectHelper
     : public SelectFileDialog::Listener,
       public NotificationObserver {
@@ -29,6 +33,7 @@ class FileSelectHelper
 
   // Show the file chooser dialog.
   void RunFileChooser(RenderViewHost* render_view_host,
+                      TabContents* tab_contents,
                       const ViewHostMsg_RunFileChooser_Params& params);
 
   // Enumerates all the files in directory.
