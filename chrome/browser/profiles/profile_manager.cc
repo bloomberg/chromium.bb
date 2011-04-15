@@ -154,11 +154,11 @@ Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
     // TODO(davemoore) Fix the tests so they allow OTR profiles.
     if (!command_line.HasSwitch(switches::kTestType) ||
         command_line.HasSwitch(switches::kLoginProfile)) {
-      // Don't init extensions for this profile
-      profile = GetProfile(default_profile_dir, false);
+      // Init only component extensions login profile.
+      profile = GetProfileImpl(default_profile_dir, false);
       profile = profile->GetOffTheRecordProfile();
     } else {
-      profile = GetProfile(default_profile_dir, true);
+      profile = GetProfileImpl(default_profile_dir, true);
     }
     return profile;
   }
@@ -167,7 +167,7 @@ Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
 }
 
 Profile* ProfileManager::GetProfile(const FilePath& profile_dir) {
-  return GetProfile(profile_dir, true);
+  return GetProfileImpl(profile_dir, true);
 }
 
 Profile* ProfileManager::GetProfileWithId(ProfileId profile_id) {
@@ -195,8 +195,8 @@ bool ProfileManager::IsValidProfile(Profile* profile) {
   return false;
 }
 
-Profile* ProfileManager::GetProfile(
-    const FilePath& profile_dir, bool init_extensions) {
+Profile* ProfileManager::GetProfileImpl(
+    const FilePath& profile_dir, bool extensions_enabled) {
   // If the profile is already loaded (e.g., chrome.exe launched twice), just
   // return it.
   Profile* profile = GetProfileByPath(profile_dir);
@@ -212,7 +212,7 @@ Profile* ProfileManager::GetProfile(
   }
   DCHECK(profile);
   if (profile) {
-    bool result = AddProfile(profile, init_extensions);
+    bool result = AddProfile(profile, extensions_enabled);
     DCHECK(result);
   }
   return profile;
@@ -222,7 +222,7 @@ void ProfileManager::RegisterProfile(Profile* profile) {
   profiles_.insert(profiles_.end(), profile);
 }
 
-bool ProfileManager::AddProfile(Profile* profile, bool init_extensions) {
+bool ProfileManager::AddProfile(Profile* profile, bool extensions_enabled) {
   DCHECK(profile);
 
   // Make sure that we're not loading a profile with the same ID as a profile
@@ -235,8 +235,7 @@ bool ProfileManager::AddProfile(Profile* profile, bool init_extensions) {
   }
 
   profiles_.insert(profiles_.end(), profile);
-  if (init_extensions)
-    profile->InitExtensions();
+  profile->InitExtensions(extensions_enabled);
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kDisableWebResources))
     profile->InitPromoResources();

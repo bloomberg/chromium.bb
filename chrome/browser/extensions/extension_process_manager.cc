@@ -89,12 +89,13 @@ ExtensionProcessManager* ExtensionProcessManager::Create(Profile* profile) {
 
 ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
     : browsing_instance_(new BrowsingInstance(profile)) {
+  Profile* original_profile = profile->GetOriginalProfile();
   registrar_.Add(this, NotificationType::EXTENSIONS_READY,
-                 NotificationService::AllSources());
+                 Source<Profile>(original_profile));
   registrar_.Add(this, NotificationType::EXTENSION_LOADED,
-                 NotificationService::AllSources());
+                 Source<Profile>(original_profile));
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
-                 NotificationService::AllSources());
+                 Source<Profile>(original_profile));
   registrar_.Add(this, NotificationType::EXTENSION_HOST_DESTROYED,
                  Source<Profile>(profile));
   registrar_.Add(this, NotificationType::RENDERER_PROCESS_TERMINATED,

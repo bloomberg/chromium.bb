@@ -264,10 +264,13 @@ void ExtensionManagementEventRouter::Init() {
     NotificationType::EXTENSION_UNLOADED
   };
 
-  for (size_t i = 0; i < arraysize(types); i++) {
-    registrar_.Add(this,
-                   types[i],
-                   NotificationService::AllSources());
+  // Don't re-init (eg in the case of multiple profiles).
+  if (registrar_.IsEmpty()) {
+    for (size_t i = 0; i < arraysize(types); i++) {
+      registrar_.Add(this,
+                     types[i],
+                     NotificationService::AllSources());
+    }
   }
 }
 

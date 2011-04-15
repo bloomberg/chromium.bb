@@ -90,8 +90,8 @@ IN_PROC_BROWSER_TEST_F(LoginProfileTest, UserNotPassed) {
   Profile* profile = browser()->profile();
   EXPECT_EQ("Default", profile->GetPath().BaseName().value());
   EXPECT_TRUE(profile->IsOffTheRecord());
-  // Ensure there's no extension service for this profile.
-  EXPECT_EQ(NULL, profile->GetExtensionService());
+  // Ensure there's extension service for this profile.
+  EXPECT_TRUE(profile->GetExtensionService());
 }
 
 } // namespace chromeos

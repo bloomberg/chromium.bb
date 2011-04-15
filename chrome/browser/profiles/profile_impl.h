@@ -112,7 +112,7 @@ class ProfileImpl : public Profile,
   virtual WebKitContext* GetWebKitContext();
   virtual StatusTray* GetStatusTray();
   virtual void MarkAsCleanShutdown();
-  virtual void InitExtensions();
+  virtual void InitExtensions(bool extensions_enabled);
   virtual void InitPromoResources();
   virtual void InitRegisteredProtocolHandlers();
   virtual NTPResourceCache* GetNTPResourceCache();

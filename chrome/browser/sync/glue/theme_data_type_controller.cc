@@ -27,7 +27,7 @@ syncable::ModelType ThemeDataTypeController::type() const {
 }
 
 bool ThemeDataTypeController::StartModels() {
-  profile_->InitExtensions();
+  profile_->InitExtensions(true);
   return true;
 }
 

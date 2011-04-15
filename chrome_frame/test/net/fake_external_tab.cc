@@ -223,7 +223,7 @@ void FakeExternalTab::Initialize() {
 
   FilePath profile_path(ProfileManager::GetDefaultProfileDir(user_data()));
   Profile* profile = g_browser_process->profile_manager()->GetProfile(
-      profile_path, false);
+      profile_path);
   // Create the child threads.
   g_browser_process->db_thread();
   g_browser_process->file_thread();

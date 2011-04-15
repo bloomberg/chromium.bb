@@ -1448,7 +1448,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   // This forces the ProfileManager to be created and register for the
   // notification it needs to track the logged in user.
-  g_browser_process->profile_manager()->GetDefaultProfile();
+  g_browser_process->profile_manager();
 
   // Allow access to file:// on ChromeOS for tests.
   if (parsed_command_line.HasSwitch(switches::kAllowFileAccess)) {

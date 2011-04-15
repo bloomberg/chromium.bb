@@ -63,9 +63,9 @@ bool LiveExtensionsSyncTestBase::SetupClients() {
     return false;
 
   for (int i = 0; i < num_clients(); ++i) {
-    GetProfile(i)->InitExtensions();
+    GetProfile(i)->InitExtensions(true);
   }
-  verifier()->InitExtensions();
+  verifier()->InitExtensions(true);
 
   if (!extension_base_dir_.CreateUniqueTempDir())
     return false;

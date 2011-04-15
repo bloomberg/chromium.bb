@@ -360,7 +360,8 @@ ExtensionService* TestingProfile::CreateExtensionService(
                                              command_line,
                                              install_directory,
                                              extension_prefs_.get(),
-                                             false);
+                                             false,
+                                             true);
   return extensions_service_;
 }
 

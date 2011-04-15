@@ -146,7 +146,8 @@ class ExtensionService
                    const CommandLine* command_line,
                    const FilePath& install_directory,
                    ExtensionPrefs* extension_prefs,
-                   bool autoupdate_enabled);
+                   bool autoupdate_enabled,
+                   bool extensions_enabled);
 
   // Gets the list of currently installed extensions.
   virtual const ExtensionList* extensions() const;

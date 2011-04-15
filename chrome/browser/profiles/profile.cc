@@ -563,7 +563,7 @@ class OffTheRecordProfileImpl : public Profile,
   virtual void MarkAsCleanShutdown() {
   }
 
-  virtual void InitExtensions() {
+  virtual void InitExtensions(bool extensions_enabled) {
     NOTREACHED();
   }
 

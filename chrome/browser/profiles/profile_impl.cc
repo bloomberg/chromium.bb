@@ -349,7 +349,7 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   GetPolicyConnector()->Initialize();
 }
 
-void ProfileImpl::InitExtensions() {
+void ProfileImpl::InitExtensions(bool extensions_enabled) {
   if (user_script_master_ || extensions_service_)
     return;  // Already initialized.
 
@@ -372,22 +372,31 @@ void ProfileImpl::InitExtensions() {
 
   bool autoupdate_enabled = true;
 #if defined(OS_CHROMEOS)
-  autoupdate_enabled = !command_line->HasSwitch(switches::kGuestSession);
+  if (!extensions_enabled)
+    autoupdate_enabled = false;
+  else
+    autoupdate_enabled = !command_line->HasSwitch(switches::kGuestSession);
 #endif
   extensions_service_ = new ExtensionService(
       this,
       CommandLine::ForCurrentProcess(),
       GetPath().AppendASCII(ExtensionService::kInstallDirectoryName),
       extension_prefs_.get(),
-      autoupdate_enabled);
+      autoupdate_enabled,
+      extensions_enabled);
 
   RegisterComponentExtensions();
   extensions_service_->Init();
 
-  // Load any extensions specified with --load-extension.
-  if (command_line->HasSwitch(switches::kLoadExtension)) {
-    FilePath path = command_line->GetSwitchValuePath(switches::kLoadExtension);
-    extensions_service_->LoadExtension(path);
+  if (extensions_enabled) {
+    InstallDefaultApps();
+
+    // Load any extensions specified with --load-extension.
+    if (command_line->HasSwitch(switches::kLoadExtension)) {
+      FilePath path = command_line->GetSwitchValuePath(
+          switches::kLoadExtension);
+      extensions_service_->LoadExtension(path);
+    }
   }
 
   // Make the chrome://extension-icon/ resource available.

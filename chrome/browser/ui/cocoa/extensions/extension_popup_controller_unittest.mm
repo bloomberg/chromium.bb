@@ -36,7 +36,8 @@ class ExtensionTestingProfile : public TestingProfile {
                                      CommandLine::ForCurrentProcess(),
                                      GetExtensionsInstallDir(),
                                      extension_prefs_.get(),
-                                     false);
+                                     false,
+                                     true);
     service_->set_extensions_enabled(true);
     service_->set_show_extensions_prompts(false);
     service_->ClearProvidersForTesting();

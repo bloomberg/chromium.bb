@@ -401,12 +401,13 @@ ExtensionService::ExtensionService(Profile* profile,
                                    const CommandLine* command_line,
                                    const FilePath& install_directory,
                                    ExtensionPrefs* extension_prefs,
-                                   bool autoupdate_enabled)
+                                   bool autoupdate_enabled,
+                                   bool extensions_enabled)
     : profile_(profile),
       extension_prefs_(extension_prefs),
       ALLOW_THIS_IN_INITIALIZER_LIST(pending_extension_manager_(*this)),
       install_directory_(install_directory),
-      extensions_enabled_(true),
+      extensions_enabled_(extensions_enabled),
       show_extensions_prompts_(true),
       ready_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(toolbar_model_(this)),
@@ -444,7 +445,7 @@ ExtensionService::ExtensionService(Profile* profile,
 
   backend_ = new ExtensionServiceBackend(install_directory_);
 
-  if (extensions_enabled()) {
+  if (extensions_enabled_) {
     ExternalExtensionProviderImpl::CreateExternalProviders(
         this, profile_, &external_extension_providers_);
   }

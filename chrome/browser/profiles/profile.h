@@ -459,7 +459,10 @@ class Profile {
   // that it can be invoked when the user logs out/powers down (WM_ENDSESSION).
   virtual void MarkAsCleanShutdown() = 0;
 
-  virtual void InitExtensions() = 0;
+  // Initializes extensions machinery.
+  // Component extensions are always enabled, external and user extensions
+  // are controlled by |extensions_enabled|.
+  virtual void InitExtensions(bool extensions_enabled) = 0;
 
   // Start up service that gathers data from a promo resource feed.
   virtual void InitPromoResources() = 0;

@@ -27,7 +27,7 @@ syncable::ModelType ExtensionDataTypeController::type() const {
 }
 
 bool ExtensionDataTypeController::StartModels() {
-  profile_->InitExtensions();
+  profile_->InitExtensions(true);
   return true;
 }
 

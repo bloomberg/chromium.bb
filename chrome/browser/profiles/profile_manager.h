@@ -52,15 +52,6 @@ class ProfileManager : public base::NonThreadSafe,
   // profile.
   bool IsValidProfile(Profile* profile);
 
-  // Returns a profile for a specific profile directory within the user data
-  // dir with the option of controlling whether extensions are initialized
-  // or not.  This will return an existing profile it had already been created,
-  // otherwise it will create and manage it.
-  // Note that if the profile has already been created, extensions may have
-  // been initialized.  If this matters to you, you should call GetProfileByPath
-  // first to see if the profile already exists.
-  Profile* GetProfile(const FilePath& profile_dir, bool init_extensions);
-
   // Returns the directory where the currently active profile is
   // stored, relative to the user data directory currently in use..
   FilePath GetCurrentProfileDir();
@@ -110,6 +101,15 @@ class ProfileManager : public base::NonThreadSafe,
  private:
   friend class ExtensionEventRouterForwarderTest;
 
+  // Returns a profile for a specific profile directory within the user data
+  // dir with the option of controlling whether extensions are initialized
+  // or not.  This will return an existing profile it had already been created,
+  // otherwise it will create and manage it.
+  // Note that if the profile has already been created, extensions may have
+  // been initialized.  If this matters to you, you should call GetProfileByPath
+  // first to see if the profile already exists.
+  Profile* GetProfileImpl(const FilePath& profile_dir, bool extensions_enabled);
+
   // Helper method for unit tests to inject |profile| into the ProfileManager.
   void RegisterProfile(Profile* profile);
 
@@ -117,7 +117,7 @@ class ProfileManager : public base::NonThreadSafe,
   // ProfileManager.  This ProfileManager takes ownership of the Profile.
   // The Profile should not already be managed by this ProfileManager.
   // Returns true if the profile was added, false otherwise.
-  bool AddProfile(Profile* profile, bool init_extensions);
+  bool AddProfile(Profile* profile, bool extensions_enabled);
 
   // We keep a simple vector of profiles rather than something fancier
   // because we expect there to be a small number of profiles active.
