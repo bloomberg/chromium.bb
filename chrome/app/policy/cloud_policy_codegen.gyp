@@ -102,6 +102,7 @@
         '<(proto_rel_path)/chrome_device_policy.proto',
         '<(proto_rel_path)/device_management_backend.proto',
         '<(proto_rel_path)/device_management_local.proto',
+        '<(proto_rel_path)/old_generic_format.proto',
       ],
       'rules': [
         {
@@ -117,18 +118,16 @@
           ],
           'action': [
             '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-            '--proto_path=<(policy_out_dir)/policy',
             '--proto_path=<(proto_rel_path)',
             '<(proto_rel_path)/<(RULE_INPUT_NAME)',
             '--cpp_out=<(protoc_out_dir)/<(proto_path_substr)',
             '--python_out=<(PRODUCT_DIR)/pyproto/device_management_pb',
           ],
           'message': 'Generating C++ and Python code from <(RULE_INPUT_PATH)',
-        }
+        },
       ],
       'dependencies': [
         '<(DEPTH)/third_party/protobuf/protobuf.gyp:protoc#host',
-        'cloud_policy_proto_compile',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -153,6 +152,8 @@
         '<(protobuf_decoder_path)',
         '<(protoc_out_dir)/<(proto_path_substr)/cloud_policy.pb.h',
         '<(protoc_out_dir)/<(proto_path_substr)/cloud_policy.pb.cc',
+        '<(protoc_out_dir)/<(proto_path_substr)/old_generic_format.pb.h',
+        '<(protoc_out_dir)/<(proto_path_substr)/old_generic_format.pb.cc',
         '<(DEPTH)/chrome/browser/policy/policy_map.h',
         '<(DEPTH)/chrome/browser/policy/policy_map.cc',
       ],

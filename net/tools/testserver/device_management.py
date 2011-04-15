@@ -352,7 +352,7 @@ class RequestHandler(object):
     if field.type == field.TYPE_BOOL:
       assert type(field_value) == bool
     elif field.type == field.TYPE_STRING:
-      assert type(field_value) == str
+      assert type(field_value) == str or type(field_value) == unicode
     elif field.type == field.TYPE_INT64:
       assert type(field_value) == int
     elif (field.type == field.TYPE_MESSAGE and

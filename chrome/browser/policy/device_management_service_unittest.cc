@@ -364,61 +364,6 @@ TEST_F(DeviceManagementServiceTest, UnregisterRequest) {
                                           response_data);
 }
 
-TEST_F(DeviceManagementServiceTest, PolicyRequest) {
-  DevicePolicyResponseDelegateMock mock;
-  em::DevicePolicyResponse expected_response;
-  em::DevicePolicySetting* policy_setting = expected_response.add_setting();
-  policy_setting->set_policy_key(kChromeDevicePolicySettingKey);
-  policy_setting->set_watermark("fresh");
-  em::GenericSetting* policy_value = policy_setting->mutable_policy_value();
-  em::GenericNamedValue* named_value = policy_value->add_named_value();
-  named_value->set_name("HomepageLocation");
-  named_value->mutable_value()->set_value_type(
-      em::GenericValue::VALUE_TYPE_STRING);
-  named_value->mutable_value()->set_string_value("http://www.chromium.org");
-  named_value = policy_value->add_named_value();
-  named_value->set_name("HomepageIsNewTabPage");
-  named_value->mutable_value()->set_value_type(
-      em::GenericValue::VALUE_TYPE_BOOL);
-  named_value->mutable_value()->set_bool_value(false);
-  EXPECT_CALL(mock, HandlePolicyResponse(MessageEquals(expected_response)));
-
-  em::DevicePolicyRequest request;
-  request.set_policy_scope(kChromePolicyScope);
-  em::DevicePolicySettingRequest* setting_request =
-      request.add_setting_request();
-  setting_request->set_key(kChromeDevicePolicySettingKey);
-  setting_request->set_watermark("stale");
-  backend_->ProcessPolicyRequest(kDMToken, kDeviceId, request, &mock);
-  TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-
-  CheckURLAndQueryParams(fetcher->original_url(),
-                         DeviceManagementBackendImpl::kValueRequestPolicy,
-                         kDeviceId);
-
-  em::DeviceManagementRequest expected_request_wrapper;
-  expected_request_wrapper.mutable_policy_request()->CopyFrom(request);
-  std::string expected_request_data;
-  ASSERT_TRUE(expected_request_wrapper.SerializeToString(
-      &expected_request_data));
-  EXPECT_EQ(expected_request_data, fetcher->upload_data());
-
-  // Generate the response.
-  std::string response_data;
-  em::DeviceManagementResponse response_wrapper;
-  response_wrapper.set_error(em::DeviceManagementResponse::SUCCESS);
-  response_wrapper.mutable_policy_response()->CopyFrom(expected_response);
-  ASSERT_TRUE(response_wrapper.SerializeToString(&response_data));
-  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
-  fetcher->delegate()->OnURLFetchComplete(fetcher,
-                                          GURL(kServiceUrl),
-                                          status,
-                                          200,
-                                          ResponseCookies(),
-                                          response_data);
-}
-
 TEST_F(DeviceManagementServiceTest, CancelRegisterRequest) {
   DeviceRegisterResponseDelegateMock mock;
   EXPECT_CALL(mock, HandleRegisterResponse(_)).Times(0);

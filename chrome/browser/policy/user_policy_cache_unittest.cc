@@ -15,6 +15,7 @@
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
+#include "chrome/browser/policy/proto/old_generic_format.pb.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -333,6 +334,43 @@ TEST_F(UserPolicyCacheTest, FreshPolicyOverride) {
   expected.Set(kPolicyHomepageLocation,
                Value::CreateStringValue("http://www.chromium.org"));
   EXPECT_TRUE(expected.Equals(mandatory_policy(cache)));
+}
+
+// Test case for the temporary support for GenericNamedValues in the
+// CloudPolicySettings protobuf. Can be removed when this support is no longer
+// required.
+TEST_F(UserPolicyCacheTest, OldStylePolicy) {
+  UserPolicyCache cache(test_file());
+  em::PolicyFetchResponse* policy = new em::PolicyFetchResponse();
+  em::PolicyData signed_response;
+  em::LegacyChromeSettingsProto settings;
+  em::GenericNamedValue* named_value = settings.add_named_value();
+  named_value->set_name("HomepageLocation");
+  em::GenericValue* value_container = named_value->mutable_value();
+  value_container->set_value_type(em::GenericValue::VALUE_TYPE_STRING);
+  value_container->set_string_value("http://www.example.com");
+  EXPECT_TRUE(
+      settings.SerializeToString(signed_response.mutable_policy_value()));
+  base::TimeDelta timestamp =
+      base::Time::NowFromSystemTime() - base::Time::UnixEpoch();
+  signed_response.set_timestamp(timestamp.InMilliseconds());
+  EXPECT_TRUE(
+      signed_response.SerializeToString(policy->mutable_policy_data()));
+
+  SetPolicy(&cache, policy, true);
+  PolicyMap expected;
+  expected.Set(kPolicyHomepageLocation,
+               Value::CreateStringValue("http://www.example.com"));
+  PolicyMap empty;
+  EXPECT_TRUE(expected.Equals(mandatory_policy(cache)));
+  EXPECT_TRUE(empty.Equals(recommended_policy(cache)));
+  // If new-style policy comes in, it should override old-style policy.
+  policy = CreateHomepagePolicy("http://www.example.com",
+                                base::Time::NowFromSystemTime(),
+                                em::PolicyOptions::RECOMMENDED);
+  SetPolicy(&cache, policy, true);
+  EXPECT_TRUE(expected.Equals(recommended_policy(cache)));
+  EXPECT_TRUE(empty.Equals(mandatory_policy(cache)));
 }
 
 }  // namespace policy

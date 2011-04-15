@@ -78,6 +78,10 @@ class ConfigurationPolicyProvider {
  private:
   friend class ConfigurationPolicyObserverRegistrar;
 
+  // Temporarily needed for access to ApplyPolicyValueTree as long as we need
+  // to support old-style policy.
+  friend class UserPolicyCache;
+
   virtual void AddObserver(ConfigurationPolicyProvider::Observer* observer) = 0;
   virtual void RemoveObserver(
       ConfigurationPolicyProvider::Observer* observer) = 0;
