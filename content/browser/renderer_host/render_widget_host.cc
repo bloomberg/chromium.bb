@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
+#include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
@@ -18,6 +19,7 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/common/gpu_messages.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/notification_service.h"
 #include "content/common/result_codes.h"
@@ -220,6 +222,14 @@ void RenderWidgetHost::WasHidden() {
   // reduce its resource utilization.
   Send(new ViewMsg_WasHidden(routing_id_));
 
+  GpuProcessHostUIShim* host_ui_shim =
+      GpuProcessHostUIShim::GetForRenderer(
+          process()->id(), content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH);
+  if (host_ui_shim) {
+    host_ui_shim->Send(new GpuMsg_VisibilityChanged(
+        routing_id_, process()->id(), false));
+  }
+
   // TODO(darin): what about constrained windows?  it doesn't look like they
   // see a message when their parent is hidden.  maybe there is something more
   // generic we can do at the TabContents API level instead of relying on
@@ -255,6 +265,14 @@ void RenderWidgetHost::WasRestored() {
     needs_repainting = false;
   }
   Send(new ViewMsg_WasRestored(routing_id_, needs_repainting));
+
+  GpuProcessHostUIShim* host_ui_shim =
+      GpuProcessHostUIShim::GetForRenderer(
+          process()->id(), content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH);
+  if (host_ui_shim) {
+    host_ui_shim->Send(new GpuMsg_VisibilityChanged(
+        routing_id_, process()->id(), true));
+  }
 
   process_->WidgetRestored();
 

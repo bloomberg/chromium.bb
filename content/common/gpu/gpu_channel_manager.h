@@ -63,6 +63,8 @@ class GpuChannelManager : public IPC::Channel::Listener,
   // Message handlers.
   void OnEstablishChannel(int renderer_id);
   void OnCloseChannel(const IPC::ChannelHandle& channel_handle);
+  void OnVisibilityChanged(
+      int32 render_view_id, int32 renderer_id, bool visible);
   void OnSynchronize();
   void OnCreateViewCommandBuffer(
       gfx::PluginWindowHandle window,

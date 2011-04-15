@@ -49,8 +49,9 @@ bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuMsg_EstablishChannel, OnEstablishChannel)
     IPC_MESSAGE_HANDLER(GpuMsg_CloseChannel, OnCloseChannel)
     IPC_MESSAGE_HANDLER(GpuMsg_CreateViewCommandBuffer,
-                        OnCreateViewCommandBuffer);
+                        OnCreateViewCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuMsg_Synchronize, OnSynchronize)
+    IPC_MESSAGE_HANDLER(GpuMsg_VisibilityChanged, OnVisibilityChanged)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(GpuMsg_AcceleratedSurfaceBuffersSwappedACK,
                         OnAcceleratedSurfaceBuffersSwappedACK)
@@ -110,6 +111,11 @@ void GpuChannelManager::OnCloseChannel(
 
 void GpuChannelManager::OnSynchronize() {
   Send(new GpuHostMsg_SynchronizeReply());
+}
+
+void GpuChannelManager::OnVisibilityChanged(
+    int32 render_view_id, int32 renderer_id, bool visible) {
+  // TODO(amarinichev): this will be used for context eviction
 }
 
 void GpuChannelManager::OnCreateViewCommandBuffer(

@@ -144,6 +144,11 @@ IPC_MESSAGE_CONTROL1(GpuMsg_CloseChannel,
 // asynchronously.) Results in a GpuHostMsg_SynchronizeReply.
 IPC_MESSAGE_CONTROL0(GpuMsg_Synchronize)
 
+IPC_MESSAGE_CONTROL3(GpuMsg_VisibilityChanged,
+                     int32, /*render_view_id */
+                     int32, /* renderer_id */
+                     bool /* is_visible */)
+
 // Tells the GPU process to create a new command buffer that renders directly
 // to a native view. A corresponding GpuCommandBufferStub is created.
 IPC_MESSAGE_CONTROL4(GpuMsg_CreateViewCommandBuffer,

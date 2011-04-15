@@ -212,6 +212,9 @@ GpuProcessHostUIShim* GpuProcessHostUIShim::GetForRenderer(int renderer_id,
     return it.GetCurrentValue();
   }
 
+  if (cause_for_gpu_launch == content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH)
+    return NULL;
+
   int host_id;
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU)) {
