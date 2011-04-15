@@ -120,15 +120,20 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   const size_t kIovSize = 7;
   struct msghdr msg = {0};
   struct iovec iov[kIovSize];
-  char crash_context[kCrashContextSize];
+
+  // Freed in WriteDumpFile();
+  char* crash_context = new char[kCrashContextSize];
+  // Freed in CrashDumpTask();
   char* guid = new char[kGuidSize + 1];
   char* crash_url = new char[kMaxActiveURLSize + 1];
   char* distro = new char[kDistroSize + 1];
+
   char* tid_buf_addr = NULL;
   int tid_fd = -1;
   uint64_t uptime;
   char control[kControlMsgSize];
-  const ssize_t expected_msg_size = sizeof(crash_context) +
+  const ssize_t expected_msg_size =
+      kCrashContextSize +
       kGuidSize + 1 +
       kMaxActiveURLSize + 1 +
       kDistroSize + 1 +
@@ -136,7 +141,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
       sizeof(uptime);
 
   iov[0].iov_base = crash_context;
-  iov[0].iov_len = sizeof(crash_context);
+  iov[0].iov_len = kCrashContextSize;
   iov[1].iov_base = guid;
   iov[1].iov_len = kGuidSize + 1;
   iov[2].iov_base = crash_url;
@@ -280,6 +285,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   // Sanitize the string data a bit more
   guid[kGuidSize] = crash_url[kMaxActiveURLSize] = distro[kDistroSize] = 0;
 
+  // Freed in CrashDumpTask();
   BreakpadInfo* info = new BreakpadInfo;
 
   info->process_type_length = process_type_.length();
@@ -306,7 +312,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
                         &CrashHandlerHostLinux::WriteDumpFile,
                         info,
                         crashing_pid,
-                        reinterpret_cast<char*>(&crash_context),
+                        crash_context,
                         signal_fd));
 }
 
@@ -329,7 +335,9 @@ void CrashHandlerHostLinux::WriteDumpFile(BreakpadInfo* info,
                                       kCrashContextSize)) {
     LOG(ERROR) << "Failed to write crash dump for pid " << crashing_pid;
   }
+  delete[] crash_context;
 
+  // Freed in CrashDumpTask();
   char* minidump_filename_str = new char[minidump_filename.length() + 1];
   minidump_filename.copy(minidump_filename_str, minidump_filename.length());
   minidump_filename_str[minidump_filename.length()] = '\0';
