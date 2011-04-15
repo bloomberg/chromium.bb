@@ -84,6 +84,21 @@ void WarnAboutMinimumSystemRequirements() {
   }
 }
 
+void RecordBrowserStartupTime() {
+  // Calculate the time that has elapsed from our own process creation.
+  FILETIME creation_time = {};
+  FILETIME ignore = {};
+  ::GetProcessTimes(::GetCurrentProcess(), &creation_time, &ignore, &ignore,
+      &ignore);
+
+  base::TimeDelta elapsed_from_startup =
+      base::Time::Now() - base::Time::FromFileTime(creation_time);
+
+  // Record the time to present in a histogram.
+  UMA_HISTOGRAM_MEDIUM_TIMES("Startup.BrowserMessageLoopStartTime",
+                             elapsed_from_startup);
+}
+
 int AskForUninstallConfirmation() {
   int ret = ResultCodes::NORMAL_EXIT;
   views::Window::CreateChromeWindow(NULL, gfx::Rect(),

@@ -37,6 +37,10 @@ void RecordBreakpadStatusUMA(MetricsService* metrics) {
   metrics->RecordBreakpadHasDebugger(base::debug::BeingDebugged());
 }
 
+void RecordBrowserStartupTime() {
+  // Not implemented on Mac for now.
+}
+
 void WarnAboutMinimumSystemRequirements() {
   // Nothing to check for on Mac right now.
 }

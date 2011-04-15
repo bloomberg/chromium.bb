@@ -172,4 +172,8 @@ void RecordBreakpadStatusUMA(MetricsService* metrics);
 // present on the current platform.
 void WarnAboutMinimumSystemRequirements();
 
+// Records the time from our process' startup to the present time in
+// the UMA histogram |metric_name|.
+void RecordBrowserStartupTime();
+
 #endif  // CHROME_BROWSER_BROWSER_MAIN_H_

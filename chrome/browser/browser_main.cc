@@ -560,6 +560,10 @@ void HandleTestParameters(const CommandLine& command_line) {
 
 void RunUIMessageLoop(BrowserProcess* browser_process) {
   TRACE_EVENT_BEGIN("BrowserMain:MESSAGE_LOOP", 0, "");
+  // This should be invoked as close to the start of the browser's
+  // UI thread message loop as possible to get a stable measurement
+  // across versions.
+  RecordBrowserStartupTime();
 
   // If the UI thread blocks, the whole UI is unresponsive.
   // Do not allow disk IO from the UI thread.
@@ -1773,6 +1777,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
     parameters.ui_task->Run();
     delete parameters.ui_task;
   } else {
+    // Most general initialization is behind us, but opening a
+    // tab and/or session restore and such is still to be done.
+    base::TimeTicks browser_open_start = base::TimeTicks::Now();
+
     // We are in regular browser boot sequence. Open initial tabs and enter the
     // main message loop.
     if (browser_init.Start(parsed_command_line, FilePath(), profile,
@@ -1799,6 +1807,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
       // because Start() will add things to it while creating the main window.
       if (pool)
         pool->Recycle();
+
+      UMA_HISTOGRAM_MEDIUM_TIMES("Startup.BrowserOpenTabs",
+                                 base::TimeTicks::Now() - browser_open_start);
+
       RunUIMessageLoop(browser_process.get());
     }
   }
