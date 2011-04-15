@@ -225,6 +225,10 @@ SyncChannel::SyncContext::~SyncContext() {
 // we know how to deserialize the reply.  Returns a handle that's set when
 // the reply has arrived.
 void SyncChannel::SyncContext::Push(SyncMessage* sync_msg) {
+  // Create the tracking information for this message. This object is stored
+  // by value since all members are pointers that are cheap to copy. These
+  // pointers are cleaned up in the Pop() function.
+  //
   // The event is created as manual reset because in between Signal and
   // OnObjectSignalled, another Send can happen which would stop the watcher
   // from being called.  The event would get watched later, when the nested

@@ -28,6 +28,34 @@ class MessageReplyDeserializer;
 
 // This is similar to ChannelProxy, with the added feature of supporting sending
 // synchronous messages.
+//
+// Overview of how the sync channel works
+// --------------------------------------
+// When the sending thread sends a synchronous message, we create a bunch
+// of tracking info (created in SendWithTimeout, stored in the PendingSyncMsg
+// structure) associated with the message that we identify by the unique
+// "MessageId" on the SyncMessage. Among the things we save is the
+// "Deserializer" which is provided by the sync message. This object is in
+// charge of reading the parameters from the reply message and putting them in
+// the output variables provided by its caller.
+//
+// The info gets stashed in a queue since we could have a nested stack of sync
+// messages (each side could send sync messages in response to sync messages,
+// so it works like calling a function). The message is sent to the I/O thread
+// for dispatch and the original thread blocks waiting for the reply.
+//
+// SyncContext maintains the queue in a threadsafe way and listens for replies
+// on the I/O thread. When a reply comes in that matches one of the messages
+// it's looking for (using the unique message ID), it will execute the
+// deserializer stashed from before, and unblock the original thread.
+//
+//
+// Significant complexity results from the fact that messages are still coming
+// in while the original thread is blocked. Normal async messages are queued
+// and dispatched after the blocking call is complete. Sync messages must
+// be dispatched in a reentrant manner to avoid deadlock.
+//
+//
 // Note that care must be taken that the lifetime of the ipc_thread argument
 // is more than this object.  If the message loop goes away while this object
 // is running and it's used to send a message, then it will use the invalid
