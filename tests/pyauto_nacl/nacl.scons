@@ -5,9 +5,18 @@
 
 Import('env')
 
-node = env.PyAutoTester('pyautosanity.out', env.File('sanity.py'))
-
+node = env.PyAutoTester('pyauto_sanity.out', env.File('sanity.py'))
 env.AddNodeToTestSuite(node,
                        ['pyauto_tests'],
                        'run_pyauto_sanity_test',
+                       is_broken=env.PyAutoTesterIsBroken())
+
+node = env.PyAutoTester('pyauto_surfaway.out',
+                        env.File('surfaway.py'),
+                        files=[env.File('${STAGING_DIR}/nacltest.js'),
+                               env.File('${STAGING_DIR}/srpc_hw.nexe'),
+                               env.File('${STAGING_DIR}/srpc_hw.html')])
+env.AddNodeToTestSuite(node,
+                       ['pyauto_tests'],
+                       'run_pyauto_surfaway_test',
                        is_broken=env.PyAutoTesterIsBroken())

@@ -1204,8 +1204,12 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2, args=[]):
     chrome_flags += ('--register-pepper-plugins=%s;application/x-nacl' %
                      GetPPAPIPluginPath(env['TRUSTED_ENV']))
     chrome_flags += ' --no-sandbox'
+
     # Pass the sel_ldr location to Chrome via the NACL_SEL_LDR variable.
-    env['NACL_SEL_LDR'] = GetSelLdr(env)
+    env['ENV']['NACL_SEL_LDR'] = GetSelLdr(env)
+
+    # Enable experimental JavaScript APIs.
+    env['ENV']['NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS'] = '1'
   else:
     chrome_flags += '--enable-nacl'
 
@@ -1224,6 +1228,14 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2, args=[]):
 
   node = env.AutoDepsCommand(target, command)
 
+  if not env.Bit('disable_dynamic_plugin_loading'):
+    # Add explicit dependencies on sel_ldr and the PPAPI plugin.
+    env.Depends(node, GetSelLdr(env))
+    env.Depends(node, GetPPAPIPluginPath(env['TRUSTED_ENV']))
+
+  # Add an explicit dependency on the files used by pyauto tests.
+  env.Depends(node, files)
+
   # Add an explicit dependency on the chrome binary assuming we are not running
   # on the Chrome bots.
   if 'chrome_browser_path' not in ARGUMENTS:
@@ -1235,13 +1247,15 @@ pre_base_env.AddMethod(PyAutoTester)
 
 
 # Disabled for ARM (because Chrome binaries for ARM are not available), on the
-# Chrome bots (because PyAuto is not expected to be available on them), and when
+# Chrome bots (because PyAuto is not expected to be available on them), when
 # 32-bit test binaries are run on a 64-bit machine (because 32-bit python is not
-# available on 64-bit machines).
+# available on 64-bit machines) and on Windows (because loading a nexe in Chrome
+# using a local HTTP server is broken on Windows).
 def PyAutoTesterIsBroken(env):
   return (PPAPIBrowserTesterIsBroken(env) or
           'chrome_browser_path' in ARGUMENTS or
-          (env.Bit('build_x86_32') and platform.architecture()[0] == '64bit'))
+          (env.Bit('build_x86_32') and platform.architecture()[0] == '64bit') or
+          env.Bit('host_windows'))
 
 pre_base_env.AddMethod(PyAutoTesterIsBroken)
 
