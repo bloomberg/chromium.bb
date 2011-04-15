@@ -7,5 +7,6 @@ include_rules = [
   "-chrome/renderer/spellchecker",
 
   "+content/plugin",  # For shared npruntime proxying code.
+  "+third_party/tcmalloc",
   "+v8/include",
 ]
