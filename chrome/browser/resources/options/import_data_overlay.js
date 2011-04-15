@@ -166,8 +166,8 @@ cr.define('options', function() {
       ImportDataOverlay.getInstance().updateCheckboxes_();
     }
     $('import-browsers').disabled = state;
-    $('import-data-commit').disabled = state;
     $('import-throbber').style.visibility = state ? "visible" : "hidden";
+    ImportDataOverlay.getInstance().validateCommitButton_();
   };
 
   /**
