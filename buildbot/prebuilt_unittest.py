@@ -6,6 +6,7 @@
 import copy
 import mox
 import os
+import multiprocessing
 import shutil
 import sys
 import tempfile
@@ -454,7 +455,8 @@ class TestSyncPrebuilts(unittest.TestCase):
                                 prebuilt._HOST_PACKAGES_PATH)
     url_suffix = prebuilt._REL_HOST_PATH % {'version': self.version,
         'target': prebuilt._HOST_TARGET }
-    self.uploader._UploadPrebuilt(package_path, url_suffix)
+    packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
+    self.uploader._UploadPrebuilt(package_path, packages_url_suffix)
     url_value = '%s/%s/' % (self.binhost.rstrip('/'), url_suffix.rstrip('/'))
     prebuilt.RevGitFile(mox.IgnoreArg(), url_value, key=self.key)
     prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, url_value)
@@ -469,14 +471,25 @@ class TestSyncPrebuilts(unittest.TestCase):
     package_path = os.path.join(board_path, 'packages')
     url_suffix = prebuilt._REL_BOARD_PATH % {'version': self.version,
         'board': board }
-    self.uploader._UploadPrebuilt(package_path, url_suffix)
+    packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
+    process = None
+    self.mox.StubOutWithMock(multiprocessing.Process, '__init__')
+    self.mox.StubOutWithMock(multiprocessing.Process, 'exitcode')
+    self.mox.StubOutWithMock(multiprocessing.Process, 'start')
+    self.mox.StubOutWithMock(multiprocessing.Process, 'join')
+    multiprocessing.Process.__init__(target=self.uploader._UploadBoardTarball,
+      args=(board_path, url_suffix))
+    multiprocessing.Process.start()
+    self.uploader._UploadPrebuilt(package_path, packages_url_suffix)
+    multiprocessing.Process.join()
+    multiprocessing.Process.exitcode = 0
     url_value = '%s/%s/' % (self.binhost.rstrip('/'), url_suffix.rstrip('/'))
     prebuilt.DeterminePrebuiltConfFile(self.build_path, board).AndReturn('foo')
     prebuilt.RevGitFile('foo', url_value, key=self.key)
     prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, url_value)
     self.mox.ReplayAll()
     self.uploader._SyncBoardPrebuilts(board, self.build_path, self.version,
-        self.key, True, True)
+        self.key, True, True, True)
 
 
 class TestMain(unittest.TestCase):
@@ -498,6 +511,7 @@ class TestMain(unittest.TestCase):
     options.private = True
     options.sync_host = True
     options.git_sync = True
+    options.upload_board_tarball = True
     options.upload = 'gs://upload/'
     options.binhost_base_url = options.upload
     options.prepend_version = True
@@ -526,7 +540,7 @@ class TestMain(unittest.TestCase):
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '_SyncBoardPrebuilts')
     prebuilt.PrebuiltUploader._SyncBoardPrebuilts(options.board,
         options.build_path, mox.IgnoreArg(), options.key, options.git_sync,
-        options.sync_binhost_conf)
+        options.sync_binhost_conf, options.upload_board_tarball)
     self.mox.ReplayAll()
     prebuilt.main()
 

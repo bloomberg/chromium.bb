@@ -51,10 +51,10 @@ _HOST_PACKAGES_PATH = 'chroot/var/lib/portage/pkgs'
 _CATEGORIES_PATH = 'chroot/etc/portage/categories'
 _HOST_TARGET = 'amd64'
 _BOARD_PATH = 'chroot/build/%(board)s'
-# board/board-target/version/packages/'
-_REL_BOARD_PATH = 'board/%(board)s/%(version)s/packages'
-# host/host-target/version/packages/'
-_REL_HOST_PATH = 'host/%(target)s/%(version)s/packages'
+# board/board-target/version/'
+_REL_BOARD_PATH = 'board/%(board)s/%(version)s'
+# host/host-target/version/'
+_REL_HOST_PATH = 'host/%(target)s/%(version)s'
 # Private overlays to look at for builds to filter
 # relative to build path
 _PRIVATE_OVERLAY_DIR = 'src/private-overlays'
@@ -515,6 +515,32 @@ class PrebuiltUploader(object):
         if not _RetryRun(cmd, shell=True, cwd=package_path):
           raise UploadFailed('Could not run %s' % cmd)
 
+  def _UploadBoardTarball(self, board_path, url_suffix):
+    """Upload a tarball of the board at the specified path to Google Storage.
+
+    Args:
+      board_path: The path to the board dir.
+      url_suffix: The remote subdirectory where we should upload the packages.
+    """
+    remote_location = '%s/%s' % (self._upload_location.rstrip('/'), url_suffix)
+    assert remote_location.startswith('gs://')
+    cwd, boardname = os.path.split(board_path.rstrip(os.path.sep))
+    tmpdir = tempfile.mkdtemp()
+    try:
+      tarfile = os.path.join(tmpdir, '%s.tbz2' % boardname)
+      cmd = ['sudo', 'tar', '-I', 'pbzip2', '-cf', tarfile]
+      excluded_paths = ('usr/lib/debug', 'usr/local/autotest', 'packages',
+                        'tmp')
+      for path in excluded_paths:
+        cmd.append('--exclude=%s/%s/*' % (boardname, path))
+      cmd.append(boardname)
+      cros_build_lib.RunCommand(cmd, cwd=cwd)
+      remote_tarfile = '%s/%s.tbz2' % (remote_location.rstrip('/'), boardname)
+      if _GsUpload((tarfile, remote_tarfile, self._acl)):
+        sys.exit(1)
+    finally:
+      cros_build_lib.RunCommand(['sudo', 'rm', '-rf', tmpdir], cwd=cwd)
+
   def _SyncHostPrebuilts(self, build_path, version, key, git_sync,
                         sync_binhost_conf):
     """Synchronize host prebuilt files.
@@ -540,7 +566,8 @@ class PrebuiltUploader(object):
     # Upload prebuilts.
     package_path = os.path.join(build_path, _HOST_PACKAGES_PATH)
     url_suffix = _REL_HOST_PATH % {'version': version, 'target': _HOST_TARGET}
-    self._UploadPrebuilt(package_path, url_suffix)
+    packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
+    self._UploadPrebuilt(package_path, packages_url_suffix)
 
     # Record URL where prebuilts were uploaded.
     url_value = '%s/%s/' % (self._binhost_base_url.rstrip('/'),
@@ -554,7 +581,7 @@ class PrebuiltUploader(object):
       UpdateBinhostConfFile(binhost_conf, key, url_value)
 
   def _SyncBoardPrebuilts(self, board, build_path, version, key, git_sync,
-                         sync_binhost_conf):
+                          sync_binhost_conf, upload_board_tarball):
     """Synchronize board prebuilt files.
 
     Args:
@@ -567,12 +594,26 @@ class PrebuiltUploader(object):
           prebuilt packages generated here.
       sync_binhost_conf: If set, update binhost config file in
           chromiumos-overlay for the current board.
+      upload_board_tarball: Include a tarball of the board in our upload.
     """
-    # Upload prebuilts.
     board_path = os.path.join(build_path, _BOARD_PATH % {'board': board})
     package_path = os.path.join(board_path, 'packages')
     url_suffix = _REL_BOARD_PATH % {'board': board, 'version': version}
-    self._UploadPrebuilt(package_path, url_suffix)
+    packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
+
+    # Upload board tarballs in the background.
+    if upload_board_tarball:
+      tar_process = multiprocessing.Process(target=self._UploadBoardTarball,
+                                            args=(board_path, url_suffix))
+      tar_process.start()
+
+    # Upload prebuilts.
+    self._UploadPrebuilt(package_path, packages_url_suffix)
+
+    # Make sure we finished uploading the board tarballs.
+    if upload_board_tarball:
+      tar_process.join()
+      assert tar_process.exitcode == 0
 
     # Record URL where prebuilts were uploaded.
     url_value = '%s/%s/' % (self._binhost_base_url.rstrip('/'),
@@ -627,12 +668,20 @@ def ParseOptions():
                     help='Update binhost.conf')
   parser.add_option('-P', '--private', dest='private', action='store_true',
                     default=False, help='Mark gs:// uploads as private.')
+  parser.add_option('', '--upload-board-tarball', dest='upload_board_tarball',
+                    action='store_true', default=False,
+                    help='Upload board tarball to Google Storage.')
 
   options, args = parser.parse_args()
   if not options.build_path:
     usage(parser, 'Error: you need provide a chroot path')
   if not options.upload:
     usage(parser, 'Error: you need to provide an upload location using -u')
+
+
+  if options.upload_board_tarball and not options.upload.startswith('gs://'):
+    usage(parser, 'Error: --upload-board-tarball only works with gs:// URLs.\n'
+                  '--upload must be a gs:// URL.')
 
   if options.private:
     if options.sync_host:
@@ -684,7 +733,8 @@ def main():
   if options.board:
     uploader._SyncBoardPrebuilts(options.board, options.build_path, version,
                                  options.key, options.git_sync,
-                                 options.sync_binhost_conf)
+                                 options.sync_binhost_conf,
+                                 options.upload_board_tarball)
 
 if __name__ == '__main__':
   main()
