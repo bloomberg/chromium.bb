@@ -12,6 +12,7 @@
 #include "content/browser/webui/web_ui.h"
 
 class EnumeratePrintersTaskProxy;
+class FilePath;
 class FundamentalValue;
 
 namespace printing {
@@ -33,7 +34,7 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   virtual void FileSelected(const FilePath& path, int index, void* params);
 
   // Displays a modal dialog, prompting the user to select a file.
-  void SelectFile();
+  void SelectFile(const FilePath& default_path);
 
  private:
   friend class EnumeratePrintersTaskProxy;
@@ -73,6 +74,8 @@ class PrintPreviewHandler : public WebUIMessageHandler,
 
   // The underlying dialog object.
   scoped_refptr<SelectFileDialog> select_file_dialog_;
+
+  static FilePath* last_saved_path_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewHandler);
 };

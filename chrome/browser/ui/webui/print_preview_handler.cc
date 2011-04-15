@@ -6,13 +6,19 @@
 
 #include <string>
 
+#include "base/i18n/file_util_icu.h"
 #include "base/json/json_reader.h"
+#include "base/path_service.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/print_preview_ui_html_source.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/print_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -140,6 +146,9 @@ class PrintToPdfTask : public Task {
   FilePath path_;
 };
 
+// static
+FilePath* PrintPreviewHandler::last_saved_path_ = NULL;
+
 PrintPreviewHandler::PrintPreviewHandler()
     : print_backend_(printing::PrintBackend::CreateInstance(NULL)),
       need_to_generate_preview_(true),
@@ -202,11 +211,30 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   if (!settings.get())
     return;
 
-  bool print_to_pdf;
+  bool print_to_pdf = false;
   settings->GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf);
 
   if (print_to_pdf) {
-    SelectFile();
+    // Pre-populating select file dialog with print job title.
+    TabContentsWrapper* wrapper =
+        TabContentsWrapper::GetCurrentWrapperForContents(
+            web_ui_->tab_contents());
+
+    string16 print_job_title_utf16 =
+        wrapper->print_view_manager()->RenderSourceName();
+
+#if defined(OS_WIN)
+    FilePath::StringType print_job_title(print_job_title_utf16);
+#elif defined(OS_POSIX)
+    FilePath::StringType print_job_title = UTF16ToUTF8(print_job_title_utf16);
+#endif
+
+    file_util::ReplaceIllegalCharactersInPath(&print_job_title, '_');
+    FilePath default_filename(print_job_title);
+    default_filename =
+        default_filename.ReplaceExtension(FILE_PATH_LITERAL("pdf"));
+
+    SelectFile(default_filename);
   } else {
     RenderViewHost* rvh = web_ui_->GetRenderViewHost();
     rvh->Send(new PrintMsg_PrintForPrintPreview(rvh->routing_id(), *settings));
@@ -240,10 +268,20 @@ void PrintPreviewHandler::ProcessLandscapeSetting(
   }
 }
 
-void PrintPreviewHandler::SelectFile() {
+void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
   SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions.resize(1);
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("pdf"));
+
+  // Initializing last_saved_path_ if it is not already initialized.
+  if (!last_saved_path_) {
+    last_saved_path_ = new FilePath();
+    // Allowing IO operation temporarily. It is ok to do so here because
+    // the select file dialog performs IO anyway in order to display the
+    // folders and also it is modal.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    PathService::Get(chrome::DIR_USER_DOCUMENTS, last_saved_path_);
+  }
 
   if (!select_file_dialog_.get())
     select_file_dialog_ = SelectFileDialog::Create(this);
@@ -251,7 +289,7 @@ void PrintPreviewHandler::SelectFile() {
   select_file_dialog_->SelectFile(
       SelectFileDialog::SELECT_SAVEAS_FILE,
       string16(),
-      FilePath(),
+      last_saved_path_->Append(default_filename),
       &file_type_info,
       0,
       FILE_PATH_LITERAL(""),
@@ -271,6 +309,9 @@ void PrintPreviewHandler::FileSelected(const FilePath& path,
 
   printing::PreviewMetafile* metafile = new printing::PreviewMetafile;
   metafile->InitFromData(data.first->memory(), data.second);
+
+  // Updating last_saved_path_ to the newly selected folder.
+  *last_saved_path_ = path.DirName();
 
   PrintToPdfTask* task = new PrintToPdfTask(metafile, path);
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, task);
