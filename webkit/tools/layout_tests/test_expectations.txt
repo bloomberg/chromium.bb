@@ -6,16 +6,17 @@
 // until the changes can be landed upstream.
 
 // Temporary suppressed pending rebaseline upstream (skia shadow code change in r83936)
-BUGCASEQ REBASELINE WIN : fast/multicol/shadow-breaking.html = IMAGE
-BUGCASEQ REBASELINE WIN : fast/repaint/shadow-multiple-horizontal.html = IMAGE
-BUGCASEQ REBASELINE WIN : fast/repaint/shadow-multiple-strict-horizontal.html = IMAGE
-BUGCASEQ REBASELINE WIN : fast/repaint/shadow-multiple-strict-vertical.html = IMAGE
-BUGCASEQ REBASELINE WIN : fast/repaint/shadow-multiple-vertical.html = IMAGE
-BUGCASEQ REBASELINE WIN : fast/text/shadow-translucent-fill.html = IMAGE
-BUGCASEQ REBASELINE WIN : fast/transforms/shadows.html = IMAGE
-BUGCASEQ REBASELINE WIN : svg/css/composite-shadow-text.svg = IMAGE
-BUGCASEQ REBASELINE WIN : svg/css/group-with-shadow.svg = IMAGE
-BUGCASEQ REBASELINE WIN : svg/css/shadow-changes.svg = IMAGE
-BUGCASEQ REBASELINE WIN : svg/css/text-shadow-multiple.xhtml = IMAGE
-BUGCASEQ REBASELINE WIN : transitions/svg-text-shadow-transition.html = IMAGE
-BUGCASEQ REBASELINE WIN : fast/forms/select-background-none.html = IMAGE
+BUGCASEQ WIN : fast/multicol/shadow-breaking.html = IMAGE
+BUGCASEQ WIN : fast/repaint/shadow-multiple-horizontal.html = IMAGE
+BUGCASEQ WIN : fast/repaint/shadow-multiple-strict-horizontal.html = IMAGE
+BUGCASEQ WIN : fast/repaint/shadow-multiple-strict-vertical.html = IMAGE
+BUGCASEQ WIN : fast/repaint/shadow-multiple-vertical.html = IMAGE
+BUGCASEQ WIN : fast/text/shadow-translucent-fill.html = IMAGE
+BUGCASEQ WIN : fast/transforms/shadows.html = IMAGE
+BUGCASEQ WIN : svg/css/composite-shadow-text.svg = IMAGE
+BUGCASEQ WIN : svg/css/group-with-shadow.svg = IMAGE
+BUGCASEQ WIN : svg/css/shadow-changes.svg = IMAGE
+BUGCASEQ WIN : svg/css/text-shadow-multiple.xhtml = IMAGE
+BUGCASEQ WIN : transitions/svg-text-shadow-transition.html = IMAGE
+BUGCASEQ WIN : fast/forms/select-background-none.html = IMAGE
+BUGCASEQ : svg/css/composite-shadow-text.svg = IMAGE
