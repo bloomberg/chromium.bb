@@ -326,7 +326,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     void CreateSyncNotifier(const scoped_refptr<net::URLRequestContextGetter>&
         request_context_getter);
 
-
     // Note:
     //
     // The Do* methods are the various entry points from our SyncBackendHost.
@@ -401,6 +400,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     void DoProcessMessage(
         const std::string& name, const JsArgList& args,
         const JsEventHandler* sender);
+
+    void DoStartConfigurationMode();
 
     // A callback from the SyncerThread when it is safe to continue config.
     void FinishConfigureDataTypes();

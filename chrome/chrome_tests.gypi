@@ -2915,6 +2915,7 @@
         'browser/sync/engine/syncer_proto_util_unittest.cc',
         'browser/sync/engine/syncer_thread_unittest.cc',
         'browser/sync/engine/syncer_thread2_unittest.cc',
+        'browser/sync/engine/syncer_thread2_whitebox_unittest.cc',
         'browser/sync/engine/syncer_unittest.cc',
         'browser/sync/engine/syncproto_unittest.cc',
         'browser/sync/engine/syncapi_mock.h',

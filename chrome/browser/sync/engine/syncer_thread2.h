@@ -99,30 +99,67 @@ class SyncerThread : public sessions::SyncSession::Delegate,
   virtual void OnServerConnectionEvent(const ServerConnectionEvent2& event);
 
  private:
-  friend class SyncerThread2Test;
-
-  // State pertaining to exponential backoff or throttling periods.
-  struct WaitInterval;
-
-  // An enum used to describe jobs for scheduling purposes.
-  enum SyncSessionJobPurpose {
-    // Our poll timer schedules POLL jobs periodically based on a server
-    // assigned poll interval.
-    POLL,
-    // A nudge task can come from a variety of components needing to force
-    // a sync.  The source is inferable from |session.source()|.
-    NUDGE,
-    // The user invoked a function in the UI to clear their entire account
-    // and stop syncing (globally).
-    CLEAR_USER_DATA,
-    // Typically used for fetching updates for a subset of the enabled types
-    // during initial sync or reconfiguration.  We don't run all steps of
-    // the sync cycle for these (e.g. CleanupDisabledTypes is skipped).
-    CONFIGURATION,
+  enum JobProcessDecision {
+    // Indicates we should continue with the current job.
+    CONTINUE,
+    // Indicates that we should save it to be processed later.
+    SAVE,
+    // Indicates we should drop this job.
+    DROP,
   };
 
-  // Internal state for every sync task that is scheduled.
-  struct SyncSessionJob;
+  struct SyncSessionJob {
+    // An enum used to describe jobs for scheduling purposes.
+    enum SyncSessionJobPurpose {
+      // Our poll timer schedules POLL jobs periodically based on a server
+      // assigned poll interval.
+      POLL,
+      // A nudge task can come from a variety of components needing to force
+      // a sync.  The source is inferable from |session.source()|.
+      NUDGE,
+      // The user invoked a function in the UI to clear their entire account
+      // and stop syncing (globally).
+      CLEAR_USER_DATA,
+      // Typically used for fetching updates for a subset of the enabled types
+      // during initial sync or reconfiguration.  We don't run all steps of
+      // the sync cycle for these (e.g. CleanupDisabledTypes is skipped).
+      CONFIGURATION,
+    };
+    SyncSessionJob();
+    SyncSessionJob(SyncSessionJobPurpose purpose, base::TimeTicks start,
+        linked_ptr<sessions::SyncSession> session, bool is_canary_job,
+        const tracked_objects::Location& nudge_location);
+    ~SyncSessionJob();
+    SyncSessionJobPurpose purpose;
+    base::TimeTicks scheduled_start;
+    linked_ptr<sessions::SyncSession> session;
+    bool is_canary_job;
+
+    // This is the location the nudge came from. used for debugging purpose.
+    // In case of multiple nudges getting coalesced this stores the first nudge
+    // that came in.
+    tracked_objects::Location nudge_location;
+  };
+  friend class SyncerThread2Test;
+  friend class SyncerThread2WhiteboxTest;
+
+  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest,
+      DropNudgeWhileExponentialBackOff);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest, SaveNudge);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest, ContinueNudge);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest, DropPoll);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest, ContinuePoll);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest, ContinueConfiguration);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest,
+                           SaveConfigurationWhileThrottled);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest,
+                           SaveNudgeWhileThrottled);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest,
+                           ContinueClearUserDataUnderAllCircumstances);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest,
+                           ContinueCanaryJobConfig);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest,
+      ContinueNudgeWhileExponentialBackOff);
 
   // A component used to get time delays associated with exponential backoff.
   // Encapsulated into a class to facilitate testing.
@@ -135,11 +172,39 @@ class SyncerThread : public sessions::SyncSession::Delegate,
     DISALLOW_COPY_AND_ASSIGN(DelayProvider);
   };
 
+  struct WaitInterval {
+    enum Mode {
+      // A wait interval whose duration has been affected by exponential
+      // backoff.
+      // EXPONENTIAL_BACKOFF intervals are nudge-rate limited to 1 per interval.
+      EXPONENTIAL_BACKOFF,
+      // A server-initiated throttled interval.  We do not allow any syncing
+      // during such an interval.
+      THROTTLED,
+    };
+    WaitInterval();
+    ~WaitInterval();
+
+    Mode mode;
+
+    // This bool is set to true if we have observed a nudge during this
+    // interval and mode == EXPONENTIAL_BACKOFF.
+    bool had_nudge;
+    base::TimeDelta length;
+    base::OneShotTimer<SyncerThread> timer;
+
+    // Configure jobs are saved only when backing off or throttling. So we
+    // expose the pointer here.
+    scoped_ptr<SyncSessionJob> pending_configure_job;
+    WaitInterval(Mode mode, base::TimeDelta length);
+  };
+
   // Helper to assemble a job and post a delayed task to sync.
-  void ScheduleSyncSessionJob(const base::TimeDelta& delay,
-                              SyncSessionJobPurpose purpose,
-                              sessions::SyncSession* session,
-                              const tracked_objects::Location& nudge_location);
+  void ScheduleSyncSessionJob(
+      const base::TimeDelta& delay,
+      SyncSessionJob::SyncSessionJobPurpose purpose,
+      sessions::SyncSession* session,
+      const tracked_objects::Location& nudge_location);
 
   // Invoke the Syncer to perform a sync.
   void DoSyncSessionJob(const SyncSessionJob& job);
@@ -161,22 +226,35 @@ class SyncerThread : public sessions::SyncSession::Delegate,
   // Helper to ScheduleNextSync in case of consecutive sync errors.
   void HandleConsecutiveContinuationError(const SyncSessionJob& old_job);
 
-  // Determines if it is legal to run a sync job for |purpose| at
-  // |scheduled_start|.  This checks current operational mode, backoff or
-  // throttling, freshness (so we don't make redundant syncs), and connection.
-  bool ShouldRunJob(SyncSessionJobPurpose purpose,
-                    const base::TimeTicks& scheduled_start);
+  // Determines if it is legal to run |job| by checking current
+  // operational mode, backoff or throttling, freshness
+  // (so we don't make redundant syncs), and connection.
+  bool ShouldRunJob(const SyncSessionJob& job);
+
+  // Decide whether we should CONTINUE, SAVE or DROP the job.
+  JobProcessDecision DecideOnJob(const SyncSessionJob& job);
+
+  // Decide on whether to CONTINUE, SAVE or DROP the job when we are in
+  // backoff mode.
+  JobProcessDecision DecideWhileInWaitInterval(const SyncSessionJob& job);
+
+  // Saves the job for future execution. Note: It drops all the poll jobs.
+  void SaveJob(const SyncSessionJob& job);
+
+  // Coalesces the current job with the pending nudge.
+  void InitOrCoalescePendingJob(const SyncSessionJob& job);
 
   // 'Impl' here refers to real implementation of public functions, running on
   // |thread_|.
   void StartImpl(Mode mode, linked_ptr<ModeChangeCallback> callback);
   void ScheduleNudgeImpl(
       const base::TimeDelta& delay,
-      NudgeSource source,
+      sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
       const syncable::ModelTypePayloadMap& types_with_payloads,
-      const tracked_objects::Location& nudge_location);
+      bool is_canary_job, const tracked_objects::Location& nudge_location);
   void ScheduleConfigImpl(const ModelSafeRoutingInfo& routing_info,
-                          const std::vector<ModelSafeWorker*>& workers);
+      const std::vector<ModelSafeWorker*>& workers,
+      const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
   void ScheduleClearUserDataImpl();
 
   // Returns true if the client is currently in exponential backoff.
@@ -189,12 +267,21 @@ class SyncerThread : public sessions::SyncSession::Delegate,
   void DoCanaryJob();
   void Unthrottle();
 
+  // Executes the pending job. Called whenever an event occurs that may
+  // change conditions permitting a job to run. Like when network connection is
+  // re-established, mode changes etc.
+  void DoPendingJobIfPossible(bool is_canary_job);
+
+  // The pointer is owned by the caller.
+  browser_sync::sessions::SyncSession* CreateSyncSession(
+      const browser_sync::sessions::SyncSourceInfo& info);
+
   // Creates a session for a poll and performs the sync.
   void PollTimerCallback();
 
   // Assign |start| and |end| to appropriate SyncerStep values for the
   // specified |purpose|.
-  void SetSyncerStepsForPurpose(SyncSessionJobPurpose purpose,
+  void SetSyncerStepsForPurpose(SyncSessionJob::SyncSessionJobPurpose purpose,
                                 SyncerStep* start,
                                 SyncerStep* end);
 

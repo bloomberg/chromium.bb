@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,11 +41,14 @@ void SyncSession::Coalesce(const SyncSession& session) {
                  std::back_inserter(temp));
   workers_.swap(temp);
 
-  ModelSafeRoutingInfo temp_r;
-  std::set_union(routing_info_.begin(), routing_info_.end(),
-      session.routing_info_.begin(), session.routing_info_.end(),
-      std::insert_iterator<ModelSafeRoutingInfo>(temp_r, temp_r.begin()));
-  routing_info_.swap(temp_r);
+  // We have to update the model safe routing info to the union. In case the
+  // same key is present in both pick the one from session.
+  for (ModelSafeRoutingInfo::const_iterator it =
+       session.routing_info_.begin();
+       it != session.routing_info_.end();
+       ++it) {
+    routing_info_[it->first] = it->second;
+  }
 }
 
 void SyncSession::ResetTransientState() {

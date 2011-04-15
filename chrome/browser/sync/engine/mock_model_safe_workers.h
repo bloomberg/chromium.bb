@@ -30,6 +30,8 @@ class MockModelSafeWorkerRegistrar : public ModelSafeWorkerRegistrar {
  public:
   virtual ~MockModelSafeWorkerRegistrar();
   static MockModelSafeWorkerRegistrar* PassiveBookmarks();
+  static MockModelSafeWorkerRegistrar* PassiveForTypes(
+      const syncable::ModelTypeBitSet& set);
   virtual void GetWorkers(std::vector<ModelSafeWorker*>* out);
   virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out);
 

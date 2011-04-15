@@ -522,6 +522,7 @@ void ProfileSyncService::OnBackendInitialized() {
 
 void ProfileSyncService::OnSyncCycleCompleted() {
   UpdateLastSyncedTime();
+  VLOG(2) << "Notifying observers sync cycle completed";
   NotifyObservers();
 }
 

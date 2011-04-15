@@ -412,8 +412,10 @@ void SyncBackendHost::ConfigureDataTypes(
   // If we're doing the first configure (at startup) this is redundant as the
   // syncer thread always must start in config mode.
   if (using_new_syncer_thread_) {
-    core_->syncapi()->StartConfigurationMode(NewCallback(core_.get(),
-        &SyncBackendHost::Core::FinishConfigureDataTypes));
+    core_thread_.message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(core_.get(),
+        &SyncBackendHost::Core::DoStartConfigurationMode));
   } else {
     FinishConfigureDataTypesOnFrontendLoop();
   }
@@ -1209,6 +1211,11 @@ void SyncBackendHost::Core::DoProcessMessage(
     const JsEventHandler* sender) {
   DCHECK_EQ(MessageLoop::current(), host_->core_thread_.message_loop());
   syncapi_->GetJsBackend()->ProcessMessage(name, args, sender);
+}
+
+void SyncBackendHost::Core::DoStartConfigurationMode() {
+  syncapi_->StartConfigurationMode(NewCallback(this,
+        &SyncBackendHost::Core::FinishConfigureDataTypes));
 }
 
 void SyncBackendHost::Core::DeferNudgeForCleanup() {

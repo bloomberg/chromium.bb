@@ -24,6 +24,21 @@ MockModelSafeWorkerRegistrar*
   return m;
 }
 
+MockModelSafeWorkerRegistrar* MockModelSafeWorkerRegistrar::PassiveForTypes(
+    const syncable::ModelTypeBitSet& set) {
+  ModelSafeRoutingInfo routes;
+  for (int i = syncable::UNSPECIFIED ; i < syncable::MODEL_TYPE_COUNT; ++i) {
+      syncable::ModelType type = syncable::ModelTypeFromInt(i);
+      if (set[type]) {
+        routes[type] = GROUP_PASSIVE;
+      }
+  }
+  MockModelSafeWorkerRegistrar* m = new MockModelSafeWorkerRegistrar(routes);
+  m->passive_worker_ = new ModelSafeWorker();
+  return m;
+}
+
+
 void MockModelSafeWorkerRegistrar::GetWorkers(
     std::vector<ModelSafeWorker*>* out) {
   if (passive_worker_.get())
