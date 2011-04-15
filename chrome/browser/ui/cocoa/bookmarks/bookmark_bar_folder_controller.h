@@ -151,6 +151,10 @@
 // Return the parent button that owns the bookmark folder we represent.
 - (BookmarkButton*)parentButton;
 
+// Gets notified when a fav icon asynchronously loads, so we can now use the
+// real icon instead of a generic placeholder.
+- (void)faviconLoadedForNode:(const BookmarkNode*)node;
+
 // Offset our folder menu window. This is usually needed in response to a
 // parent folder menu window or the bookmark bar changing position due to
 // the dragging of a bookmark node from the parent into this folder menu.

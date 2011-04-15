@@ -1495,6 +1495,20 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   return folderController_;
 }
 
+- (void)faviconLoadedForNode:(const BookmarkNode*)node {
+  for (BookmarkButton* button in buttons_.get()) {
+    if ([button bookmarkNode] == node) {
+      [button setImage:[barController_ faviconForNode:node]];
+      [button setNeedsDisplay:YES];
+      return;
+    }
+  }
+
+  // Node was not in this menu, try submenu.
+  if (folderController_)
+    [folderController_ faviconLoadedForNode:node];
+}
+
 // Add a new folder controller as triggered by the given folder button.
 - (void)addNewFolderControllerWithParentButton:(BookmarkButton*)parentButton {
   if (folderController_)

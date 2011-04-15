@@ -2124,6 +2124,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       [self checkForBookmarkButtonGrowth:button];
     }
   }
+
+  if (folderController_)
+    [folderController_ faviconLoadedForNode:node];
 }
 
 // TODO(jrg): for now this is brute force.
