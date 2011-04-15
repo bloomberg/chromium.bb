@@ -1,7 +1,7 @@
 /*
- * Copyright 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/shared/ppapi_proxy/plugin_context_3d.h"
@@ -168,8 +168,9 @@ bool PluginContext3D::InitFromBrowserResource(PP_Resource res) {
   gles2_helper_.reset(new gpu::gles2::GLES2CmdHelper(command_buffer_.get()));
   gpu::Buffer buffer = command_buffer_->GetRingBuffer();
   if (gles2_helper_->Initialize(buffer.size)) {
+    // Request id -1 to signify 'don't care'
     int32 transfer_buffer_id =
-        command_buffer_->CreateTransferBuffer(kTransferBufferSize);
+        command_buffer_->CreateTransferBuffer(kTransferBufferSize, -1);
     gpu::Buffer transfer_buffer =
         command_buffer_->GetTransferBuffer(transfer_buffer_id);
     if (transfer_buffer.ptr) {

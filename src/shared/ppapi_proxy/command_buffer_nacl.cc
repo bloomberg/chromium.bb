@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,14 +104,14 @@ void CommandBufferNacl::SetGetOffset(int32 get_offset) {
   GPU_NOTREACHED();
 }
 
-int32 CommandBufferNacl::CreateTransferBuffer(size_t size) {
+int32 CommandBufferNacl::CreateTransferBuffer(size_t size, int32 id_request) {
   DebugPrintf("CommandBufferNacl::CreateTransferBuffer\n");
   int32_t id;
 
   NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
   NaClSrpcError retval =
       PpbGraphics3DRpcClient::PPB_Context3DTrusted_CreateTransferBuffer(
-          channel, context_3d_, size, &id);
+          channel, context_3d_, size, id_request, &id);
   if (NACL_SRPC_RESULT_OK != retval)
     return 0;
 

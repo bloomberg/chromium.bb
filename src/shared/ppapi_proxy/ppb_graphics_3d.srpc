@@ -84,6 +84,7 @@
           {'name': 'PPB_Context3DTrusted_CreateTransferBuffer',
            'inputs': [['resource_id', 'PP_Resource'],
                       ['size', 'int32_t'],
+                      ['request_id', 'int32_t']
                      ],
            'outputs': [['id', 'int32_t']]
           },

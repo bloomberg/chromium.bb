@@ -3,7 +3,7 @@ vars = {
   "arm_toolchain_version": "4889",
   "x86_toolchain_version": "4889",
 
-  "chrome_rev": "81243",
+  "chrome_rev": "81576",
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "gtest_rev": "364",
   "gyp_rev": "906",

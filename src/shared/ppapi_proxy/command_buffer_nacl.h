@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,8 +31,10 @@ class CommandBufferNacl : public gpu::CommandBuffer {
   virtual void Flush(int32 put_offset);
   virtual State FlushSync(int32 put_offset);
   virtual void SetGetOffset(int32 get_offset);
-  virtual int32 CreateTransferBuffer(size_t size);
-  virtual int32 RegisterTransferBuffer(base::SharedMemory* buffer, size_t sz) {
+  virtual int32 CreateTransferBuffer(size_t size, int32 id_request);
+  virtual int32 RegisterTransferBuffer(base::SharedMemory* buffer,
+                                       size_t size,
+                                       int32 id_request) {
     // TODO(neb): support for nacl if neccessary
     return -1;
   }

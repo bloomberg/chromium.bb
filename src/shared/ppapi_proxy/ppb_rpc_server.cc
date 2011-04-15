@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -831,6 +831,7 @@ static void PPB_Context3DTrusted_CreateTransferBufferDispatcher(
       done,
       inputs[0]->u.ival,
       inputs[1]->u.ival,
+      inputs[2]->u.ival,
       &(outputs[0]->u.ival)
   );
 }
@@ -1342,7 +1343,7 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Context3DTrusted_GetState:i:C", PPB_Context3DTrusted_GetStateDispatcher },
   { "PPB_Context3DTrusted_Flush:ii:", PPB_Context3DTrusted_FlushDispatcher },
   { "PPB_Context3DTrusted_FlushSync:ii:C", PPB_Context3DTrusted_FlushSyncDispatcher },
-  { "PPB_Context3DTrusted_CreateTransferBuffer:ii:i", PPB_Context3DTrusted_CreateTransferBufferDispatcher },
+  { "PPB_Context3DTrusted_CreateTransferBuffer:iii:i", PPB_Context3DTrusted_CreateTransferBufferDispatcher },
   { "PPB_Context3DTrusted_DestroyTransferBuffer:ii:", PPB_Context3DTrusted_DestroyTransferBufferDispatcher },
   { "PPB_Context3DTrusted_GetTransferBuffer:ii:hi", PPB_Context3DTrusted_GetTransferBufferDispatcher },
   { "PPB_ImageData_GetNativeImageDataFormat::i", PPB_ImageData_GetNativeImageDataFormatDispatcher },

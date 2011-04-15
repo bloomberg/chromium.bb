@@ -204,7 +204,10 @@ void PpbGraphics3DRpcServer::PPB_Context3DTrusted_CreateTransferBuffer(
     NaClSrpcClosure* done,
     PP_Resource resource_id,
     int32_t size,
+    int32_t id_request,
     int32_t* id) {
+  UNREFERENCED_PARAMETER(id_request);
+
   DebugPrintf("PPB_Context3DTrusted_CreateTransferBuffer\n");
   NaClSrpcClosureRunner runner(done);
   *id = ppapi_proxy::PPBContext3DTrustedInterface()->CreateTransferBuffer(

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -422,6 +422,7 @@ class PpbGraphics3DRpcServer {
       NaClSrpcClosure* done,
       PP_Resource resource_id,
       int32_t size,
+      int32_t request_id,
       int32_t* id);
   static void PPB_Context3DTrusted_DestroyTransferBuffer(
       NaClSrpcRpc* rpc,
