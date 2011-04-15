@@ -57,6 +57,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/plugins/npapi/webplugininfo.h"
+
 #ifdef CHROME_V8
 #include "v8/include/v8.h"
 #endif
@@ -920,10 +923,28 @@ std::string AboutVersion(DictionaryValue* localized_strings) {
   localized_strings->SetString("name",
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   localized_strings->SetString("version", version_info.Version());
+  // Bug 79458: Need to evaluate the use of getting the version string on
+  // this thread.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   localized_strings->SetString("version_modifier",
                                platform_util::GetVersionStringModifier());
   localized_strings->SetString("js_engine", js_engine);
   localized_strings->SetString("js_version", js_version);
+
+  // Obtain the version of the first enabled Flash plugin.
+  std::vector<webkit::npapi::WebPluginInfo> info_array;
+  webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
+      GURL(), "application/x-shockwave-flash", false, &info_array, NULL);
+  string16 flash_version =
+      l10n_util::GetStringUTF16(IDS_PLUGINS_DISABLED_PLUGIN);
+  for (size_t i = 0; i < info_array.size(); ++i) {
+    if (webkit::npapi::IsPluginEnabled(info_array[i])) {
+      flash_version = info_array[i].version;
+      break;
+    }
+  }
+  localized_strings->SetString("flash_plugin", "Flash");
+  localized_strings->SetString("flash_version", flash_version);
   localized_strings->SetString("webkit_version", webkit_version);
   localized_strings->SetString("company",
       l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COMPANY_NAME));
