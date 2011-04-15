@@ -7,11 +7,20 @@
 #include <utility>
 #include <vector>
 
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#include <sys/utsname.h>
+#endif
+
 #include "base/stringprintf.h"
+#include "base/sys_info.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/common/chrome_version_info.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_status.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/system_access.h"
+#endif
 
 namespace policy {
 
@@ -21,6 +30,7 @@ const char DeviceManagementBackendImpl::kParamDeviceType[] = "devicetype";
 const char DeviceManagementBackendImpl::kParamAppType[] = "apptype";
 const char DeviceManagementBackendImpl::kParamDeviceID[] = "deviceid";
 const char DeviceManagementBackendImpl::kParamAgent[] = "agent";
+const char DeviceManagementBackendImpl::kParamPlatform[] = "platform";
 
 // String constants for the device and app type we report to the server.
 const char DeviceManagementBackendImpl::kValueRequestRegister[] = "register";
@@ -32,7 +42,8 @@ const char DeviceManagementBackendImpl::kValueAppType[] = "Chrome";
 
 namespace {
 
-const char kValueAgent[] = "%s enterprise management client %s (%s)";
+const char kValueAgent[] = "%s %s(%s)";
+const char kValuePlatform[] = "%s|%s|%s";
 
 const char kPostContentType[] = "application/protobuf";
 
@@ -51,6 +62,12 @@ const int kInternalServerError = 500;
 const int kServiceUnavailable = 503;
 const int kDeviceNotFound = 901;
 const int kPolicyNotFound = 902; // This error is not sent as HTTP status code.
+
+#if defined(OS_CHROMEOS)
+// Machine info keys.
+const char kMachineInfoHWClass[] = "hardware_class";
+const char kMachineInfoBoard[] = "CHROMEOS_RELEASE_BOARD";
+#endif
 
 }  // namespace
 
@@ -85,9 +102,9 @@ std::string URLQueryParameters::Encode() {
        ++entry) {
     if (entry != params_.begin())
       result += '&';
-    result += EscapeUrlEncodedData(entry->first);
+    result += EscapeQueryParamValue(entry->first, true);
     result += '=';
-    result += EscapeUrlEncodedData(entry->second);
+    result += EscapeQueryParamValue(entry->second, true);
   }
   return result;
 }
@@ -122,6 +139,8 @@ class DeviceManagementJobBase
     query_params_.Put(DeviceManagementBackendImpl::kParamDeviceID, device_id);
     query_params_.Put(DeviceManagementBackendImpl::kParamAgent,
                       DeviceManagementBackendImpl::GetAgentString());
+    query_params_.Put(DeviceManagementBackendImpl::kParamPlatform,
+                      DeviceManagementBackendImpl::GetPlatformString());
   }
 
   void SetQueryParam(const std::string& name, const std::string& value) {
@@ -377,11 +396,58 @@ DeviceManagementBackendImpl::~DeviceManagementBackendImpl() {
 }
 
 std::string DeviceManagementBackendImpl::GetAgentString() {
+  static std::string agent;
+  if (!agent.empty())
+    return agent;
+
   chrome::VersionInfo version_info;
-  return base::StringPrintf(kValueAgent,
-                            version_info.Name().c_str(),
-                            version_info.Version().c_str(),
-                            version_info.LastChange().c_str());
+  agent = base::StringPrintf(kValueAgent,
+                             version_info.Name().c_str(),
+                             version_info.Version().c_str(),
+                             version_info.LastChange().c_str());
+  return agent;
+}
+
+std::string DeviceManagementBackendImpl::GetPlatformString() {
+  static std::string platform;
+  if (!platform.empty())
+    return platform;
+
+  std::string os_name(base::SysInfo::OperatingSystemName());
+  std::string os_hardware(base::SysInfo::CPUArchitecture());
+
+#if defined(OS_CHROMEOS)
+  chromeos::SystemAccess* sys_lib = chromeos::SystemAccess::GetInstance();
+
+  std::string hwclass;
+  std::string board;
+  if (!sys_lib->GetMachineStatistic(kMachineInfoHWClass, &hwclass) ||
+      !sys_lib->GetMachineStatistic(kMachineInfoBoard, &board)) {
+    LOG(ERROR) << "Failed to get machine information";
+  }
+  os_name += ",CrOS," + board;
+  os_hardware += "," + hwclass;
+#endif
+
+  std::string os_version("-");
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+  int32 os_major_version = 0;
+  int32 os_minor_version = 0;
+  int32 os_bugfix_version = 0;
+  base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
+                                               &os_minor_version,
+                                               &os_bugfix_version);
+  os_version = base::StringPrintf("%d.%d.%d",
+                                  os_major_version,
+                                  os_minor_version,
+                                  os_bugfix_version);
+#endif
+
+  platform = base::StringPrintf(kValuePlatform,
+                                os_name.c_str(),
+                                os_hardware.c_str(),
+                                os_version.c_str());
+  return platform;
 }
 
 void DeviceManagementBackendImpl::JobDone(DeviceManagementJobBase* job) {
