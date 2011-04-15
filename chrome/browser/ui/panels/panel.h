@@ -129,7 +129,10 @@ class Panel : public BrowserWindow {
 
   // Construct a native panel BrowserWindow implementation for the specified
   // |browser|.
-  static BrowserWindow* CreateNativePanel(Browser* browser, Panel* panel);
+  // TODO(jianli): to be implemented in platform-specific files.
+  static BrowserWindow* CreateNativePanel(Browser* browser, Panel* panel) {
+    return NULL;
+  }
 
  protected:
   virtual void DestroyBrowser();
