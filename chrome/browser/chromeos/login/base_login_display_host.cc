@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
-#include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/apply_services_customization.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/views_login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/system_access.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "content/common/notification_service.h"
@@ -276,7 +276,8 @@ void ShowLoginWizard(const std::string& first_screen_name,
     if (!timezone_name.empty()) {
       icu::TimeZone* timezone = icu::TimeZone::createTimeZone(
           icu::UnicodeString::fromUTF8(timezone_name));
-      chromeos::CrosLibrary::Get()->GetSystemLibrary()->SetTimezone(timezone);
+      CHECK(timezone) << "Timezone could not be set for " << timezone_name;
+      chromeos::SystemAccess::GetInstance()->SetTimezone(*timezone);
     }
   }
 }

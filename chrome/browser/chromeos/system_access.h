@@ -6,81 +6,92 @@
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_ACCESS_H_
 #pragma once
 
+#include <map>
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
+#include "base/observer_list.h"
+#include "unicode/timezone.h"
+
 namespace chromeos {
-namespace system_access {
 
-// Returns the current timezone ID, such as "US/Pacific".
-// Returns an empty string if there's an error.
-std::string GetTimezoneID();
+// Machine information is represented as a key-value map.
+typedef std::map<std::string, std::string> MachineInfo;
 
-// Sets the current timezone ID.
-void SetTimezoneID(const std::string& id);
-
-// TODO(satorux): We should rework this with a std::map.
-struct MachineInfo {
-  MachineInfo() : name_value_size(0), name_values(NULL) {}
-  struct NVPair {
-    char* name;
-    char* value;
+// This class provides access to Chrome OS system APIs such as the
+// timezone setting.
+class SystemAccess {
+ public:
+  class Observer {
+   public:
+    // Called when the timezone has changed. |timezone| is non-null.
+    virtual void TimezoneChanged(const icu::TimeZone& timezone) = 0;
   };
-  int name_value_size;
-  NVPair* name_values;
+
+  static SystemAccess* GetInstance();
+
+  // Returns the current timezone as an icu::Timezone object.
+  const icu::TimeZone& GetTimezone();
+
+  // Sets the current timezone. |timezone| must be non-null.
+  void SetTimezone(const icu::TimeZone& timezone);
+
+  // Retrieve the named machine statistic (e.g. "hardware_class").
+  // This does not update the statistcs.
+  bool GetMachineStatistic(const std::string& name, std::string* result);
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+ private:
+  friend struct DefaultSingletonTraits<SystemAccess>;
+
+  SystemAccess();
+  // Updates the machine statistcs by examining the system.
+  void UpdateMachineStatistics();
+
+  scoped_ptr<icu::TimeZone> timezone_;
+  ObserverList<Observer> observers_;
+  MachineInfo machine_info_;
+
+  DISALLOW_COPY_AND_ASSIGN(SystemAccess);
 };
 
-// TODO(satorux): We should rework this with a std::map.
-//
-// Returns the system hardware info.
-// The MachineInfo instance that is returned by this function MUST be
-// deleted by calling FreeMachineInfo.
-// Returns NULL on error.
-MachineInfo* GetMachineInfo();
-
-// TODO(satorux): Remove this.
-//
-// Deletes a MachineInfo type that was allocated in the ChromeOS dll.
-// We need to do this to safely pass data over the dll boundary
-// between our .so and Chrome.
-void FreeMachineInfo(MachineInfo* info);
-
-
-// TODO(satorux): We should rename it to something like NVParser.
-//
-// Implementation class. Defined here to be accessable by tests.
-class ChromeOSSystem {
+// The parser is used to get machine info as name-value pairs. Defined
+// here to be accessable by tests.
+class NameValuePairsParser {
  public:
   typedef std::vector<std::pair<std::string, std::string> > NameValuePairs;
 
-  void AddNVPair(const std::string& key, const std::string& value);
+  // The obtained machine info will be written into machine_info.
+  explicit NameValuePairsParser(MachineInfo* machine_info);
 
-  // Execute tool and insert (key, <output>) into nv_pairs_.
-  bool GetSingleValueFromTool(const std::string& tool,
+  void AddNameValuePair(const std::string& key, const std::string& value);
+
+  // Executes tool and inserts (key, <output>) into name_value_pairs_.
+  bool GetSingleValueFromTool(int argc, const char* argv[],
                               const std::string& key);
-  // Execute tool, parse the output using ParseNVPairs, and insert the results
-  // into nv_pairs_.
-  bool ParseNVPairsFromTool(const std::string& tool,
-                            const std::string& eq, const std::string& delim);
-  // Fills in machine_info from nv_pairs_.
-  void SetMachineInfo(MachineInfo* machine_info);
-
-  const NameValuePairs& nv_pairs() const { return nv_pairs_; }
+  // Executes tool, parses the output using ParseNameValuePairs,
+  // and inserts the results into name_value_pairs_.
+  bool ParseNameValuePairsFromTool(int argc, const char* argv[],
+                                   const std::string& eq,
+                                   const std::string& delim);
 
  private:
   // This will parse strings with output in the format:
   // <key><EQ><value><DELIM>[<key><EQ><value>][...]
-  // e.g. ParseNVPairs("key1=value1 key2=value2", "=", " ")
-  bool ParseNVPairs(const std::string& in_string,
-                    const std::string& eq,
-                    const std::string& delim);
-  // Similar to file_util::ReadFileToString, but executes a command instead.
-  bool ExecCmdToString(const std::string& command, std::string* contents);
+  // e.g. ParseNameValuePairs("key1=value1 key2=value2", "=", " ")
+  bool ParseNameValuePairs(const std::string& in_string,
+                           const std::string& eq,
+                           const std::string& delim);
 
-  NameValuePairs nv_pairs_;
+  MachineInfo* machine_info_;
+
+  DISALLOW_COPY_AND_ASSIGN(NameValuePairsParser);
 };
 
-}  // namespace system_access
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_SYSTEM_ACCESS_H_

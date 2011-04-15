@@ -185,12 +185,12 @@ SystemSettingsProvider::SystemSettingsProvider() {
     timezones_.push_back(icu::TimeZone::createTimeZone(
         icu::UnicodeString(kTimeZones[i], -1, US_INV)));
   }
-  CrosLibrary::Get()->GetSystemLibrary()->AddObserver(this);
+  SystemAccess::GetInstance()->AddObserver(this);
 
 }
 
 SystemSettingsProvider::~SystemSettingsProvider() {
-  CrosLibrary::Get()->GetSystemLibrary()->RemoveObserver(this);
+  SystemAccess::GetInstance()->RemoveObserver(this);
   STLDeleteElements(&timezones_);
 }
 
@@ -207,7 +207,7 @@ void SystemSettingsProvider::DoSet(const std::string& path, Value* in_value) {
     const icu::TimeZone* timezone = GetTimezone(value);
     if (!timezone)
       return;
-    CrosLibrary::Get()->GetSystemLibrary()->SetTimezone(timezone);
+    SystemAccess::GetInstance()->SetTimezone(*timezone);
   }
 }
 
@@ -215,7 +215,7 @@ bool SystemSettingsProvider::Get(const std::string& path,
                                  Value** out_value) const {
   if (path == kSystemTimezone) {
     *out_value = Value::CreateStringValue(GetKnownTimezoneID(
-        CrosLibrary::Get()->GetSystemLibrary()->GetTimezone()));
+        SystemAccess::GetInstance()->GetTimezone()));
     return true;
   }
   return false;

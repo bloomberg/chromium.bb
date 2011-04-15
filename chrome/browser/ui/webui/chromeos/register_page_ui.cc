@@ -15,9 +15,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/system_access.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -273,8 +273,8 @@ void RegisterPageHandler::SendUserInfo() {
 #if defined(OS_CHROMEOS)
   DictionaryValue value;
 
-  chromeos::SystemLibrary* sys_lib =
-      chromeos::CrosLibrary::Get()->GetSystemLibrary();
+  chromeos::SystemAccess * sys_lib =
+      chromeos::SystemAccess::GetInstance();
 
   // Required info.
   std::string system_hwqual;

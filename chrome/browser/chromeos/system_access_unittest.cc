@@ -4,43 +4,50 @@
 
 #include "chrome/browser/chromeos/system_access.h"
 
+#include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 namespace system_access {
 
 TEST(SystemAccessTest, TestGetSingleValueFromTool) {
-  ChromeOSSystem system;
-  EXPECT_TRUE(system.GetSingleValueFromTool(
-      "echo Foo", "foo"));
-  EXPECT_STREQ("foo", system.nv_pairs()[0].first.c_str());
-  EXPECT_STREQ("Foo", system.nv_pairs()[0].second.c_str());
+  MachineInfo machine_info;
+  NameValuePairsParser parser(&machine_info);
+  const char* command[] = { "echo", "Foo" };
+  EXPECT_TRUE(parser.GetSingleValueFromTool(arraysize(command), command,
+                                            "foo"));
+  ASSERT_EQ(1U, machine_info.size());
+  EXPECT_EQ("Foo", machine_info["foo"]);
 }
 
-TEST(SystemAccessTest, TestParseNVPairsFromTool) {
-  ChromeOSSystem system;
-  EXPECT_TRUE(system.ParseNVPairsFromTool(
-      "echo 'foo=Foo bar=Bar\nfoobar=FooBar\n'", "=", " \n"));
-  EXPECT_STREQ("foo", system.nv_pairs()[0].first.c_str());
-  EXPECT_STREQ("Foo", system.nv_pairs()[0].second.c_str());
-  EXPECT_STREQ("bar", system.nv_pairs()[1].first.c_str());
-  EXPECT_STREQ("Bar", system.nv_pairs()[1].second.c_str());
-  EXPECT_STREQ("foobar", system.nv_pairs()[2].first.c_str());
-  EXPECT_STREQ("FooBar", system.nv_pairs()[2].second.c_str());
-  EXPECT_EQ(3U, system.nv_pairs().size());
+TEST(SystemAccessTest, TestParseNameValuePairsFromTool) {
+  MachineInfo machine_info;
+  NameValuePairsParser parser(&machine_info);
+  const char* command1[] = { "echo", "foo=Foo bar=Bar\nfoobar=FooBar\n" };
+  EXPECT_TRUE(parser.ParseNameValuePairsFromTool(
+      arraysize(command1), command1, "=", " \n"));
+  ASSERT_EQ(3U, machine_info.size());
+  EXPECT_EQ("Foo", machine_info["foo"]);
+  EXPECT_EQ("Bar", machine_info["bar"]);
+  EXPECT_EQ("FooBar", machine_info["foobar"]);
 
-  EXPECT_TRUE(system.ParseNVPairsFromTool(
-      "echo 'foo=Foo,bar=Bar'", "=", ",\n"));
-  EXPECT_STREQ("foo", system.nv_pairs()[0].first.c_str());
-  EXPECT_STREQ("Foo", system.nv_pairs()[0].second.c_str());
-  EXPECT_STREQ("bar", system.nv_pairs()[1].first.c_str());
-  EXPECT_STREQ("Bar", system.nv_pairs()[1].second.c_str());
+  machine_info.clear();
+  const char* command2[] = { "echo", "foo=Foo,bar=Bar" };
+  EXPECT_TRUE(parser.ParseNameValuePairsFromTool(
+      arraysize(command2), command2, "=", ",\n"));
+  ASSERT_EQ(2U, machine_info.size());
+  EXPECT_EQ("Foo", machine_info["foo"]);
+  EXPECT_EQ("Bar", machine_info["bar"]);
 
-  EXPECT_FALSE(system.ParseNVPairsFromTool(
-      "echo 'foo=Foo=foo,bar=Bar'", "=", ",\n"));
+  machine_info.clear();
+  const char* command3[] = { "echo", "foo=Foo=foo,bar=Bar" };
+  EXPECT_FALSE(parser.ParseNameValuePairsFromTool(
+      arraysize(command3), command3, "=", ",\n"));
 
-  EXPECT_FALSE(system.ParseNVPairsFromTool(
-      "echo 'foo=Foo,=Bar'", "=", ",\n"));
+  machine_info.clear();
+  const char* command4[] = { "echo", "foo=Foo,=Bar" };
+  EXPECT_FALSE(parser.ParseNameValuePairsFromTool(
+      arraysize(command4), command4, "=", ",\n"));
 }
 
 }  // namespace system_access

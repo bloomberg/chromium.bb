@@ -9,12 +9,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
-#include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_type.h"
+#include "chrome/browser/chromeos/system_access.h"
 #include "unicode/calendar.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_2.h"
@@ -31,7 +31,7 @@ class ClockMenuButton : public StatusAreaButton,
                         public ui::MenuModel,
                         public NotificationObserver,
                         public PowerLibrary::Observer,
-                        public SystemLibrary::Observer {
+                        public SystemAccess::Observer {
  public:
   explicit ClockMenuButton(StatusAreaHost* host);
   virtual ~ClockMenuButton();
@@ -62,7 +62,7 @@ class ClockMenuButton : public StatusAreaButton,
   virtual void PowerChanged(PowerLibrary* obj) {}
   virtual void SystemResumed();
 
-  // Overridden from SystemLibrary::Observer:
+  // Overridden from SystemAccess::Observer:
   virtual void TimezoneChanged(const icu::TimeZone& timezone);
 
   // views::View

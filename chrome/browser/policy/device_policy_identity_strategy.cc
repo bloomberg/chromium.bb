@@ -6,9 +6,9 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/system_access.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,8 +25,7 @@ static const char kMachineInfoSerialNumber[] = "serial_number";
 namespace policy {
 
 DevicePolicyIdentityStrategy::DevicePolicyIdentityStrategy() {
-  chromeos::SystemLibrary* sys_lib =
-      chromeos::CrosLibrary::Get()->GetSystemLibrary();
+  chromeos::SystemAccess* sys_lib = chromeos::SystemAccess::GetInstance();
 
   if (!sys_lib->GetMachineStatistic(kMachineInfoSystemHwqual,
                                     &machine_model_)) {

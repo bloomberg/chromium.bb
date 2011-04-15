@@ -194,8 +194,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/chromeos/external_metrics.h"
+#include "chrome/browser/chromeos/system_access.h"
 #endif
 
 namespace {
@@ -343,9 +343,8 @@ class MetricsService::InitTask : public Task {
     webkit::npapi::PluginList::Singleton()->GetPlugins(false, &plugins);
     std::string hardware_class;  // Empty string by default.
 #if defined(OS_CHROMEOS)
-    chromeos::SystemLibrary* system_library =
-        chromeos::CrosLibrary::Get()->GetSystemLibrary();
-    system_library->GetMachineStatistic("hardware_class", &hardware_class);
+    chromeos::SystemAccess::GetInstance()->GetMachineStatistic(
+        "hardware_class", &hardware_class);
 #endif  // OS_CHROMEOS
     callback_loop_->PostTask(FROM_HERE, new InitTaskComplete(
         hardware_class, plugins));

@@ -36,8 +36,8 @@ const int kFontSizeDelta = 1;
 ClockMenuButton::ClockMenuButton(StatusAreaHost* host)
     : StatusAreaButton(this),
       host_(host) {
-  // Add as SystemLibrary observer. We update the clock if timezone changes.
-  CrosLibrary::Get()->GetSystemLibrary()->AddObserver(this);
+  // Add as SystemAccess observer. We update the clock if timezone changes.
+  SystemAccess::GetInstance()->AddObserver(this);
   CrosLibrary::Get()->GetPowerLibrary()->AddObserver(this);
   // Start monitoring the kUse24HourClock preference.
   if (host->GetProfile()) {  // This can be NULL in the login screen.
@@ -57,7 +57,7 @@ ClockMenuButton::ClockMenuButton(StatusAreaHost* host)
 
 ClockMenuButton::~ClockMenuButton() {
   CrosLibrary::Get()->GetPowerLibrary()->RemoveObserver(this);
-  CrosLibrary::Get()->GetSystemLibrary()->RemoveObserver(this);
+  SystemAccess::GetInstance()->RemoveObserver(this);
 }
 
 void ClockMenuButton::UpdateTextAndSetNextTimer() {
@@ -155,7 +155,7 @@ void ClockMenuButton::SystemResumed() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ClockMenuButton, SystemLibrary::Observer implementation:
+// ClockMenuButton, SystemAccess::Observer implementation:
 
 void ClockMenuButton::TimezoneChanged(const icu::TimeZone& timezone) {
   UpdateText();

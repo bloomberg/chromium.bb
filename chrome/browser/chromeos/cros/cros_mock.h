@@ -20,7 +20,6 @@ class MockNetworkLibrary;
 class MockPowerLibrary;
 class MockScreenLockLibrary;
 class MockSpeechSynthesisLibrary;
-class MockSystemLibrary;
 class MockTouchpadLibrary;
 
 // Class for initializing mocks for some parts of CrosLibrary. Once you mock
@@ -52,7 +51,6 @@ class CrosMock {
   void InitMockScreenLockLibrary();
   void InitMockSpeechSynthesisLibrary();
   void InitMockTouchpadLibrary();
-  void InitMockSystemLibrary();
 
   // Get mocks.
   MockCryptohomeLibrary* mock_cryptohome_library();
@@ -62,7 +60,6 @@ class CrosMock {
   MockPowerLibrary* mock_power_library();
   MockScreenLockLibrary* mock_screen_lock_library();
   MockSpeechSynthesisLibrary* mock_speech_synthesis_library();
-  MockSystemLibrary* mock_system_library();
   MockTouchpadLibrary* mock_touchpad_library();
 
   // This method sets up corresponding expectations for basic mocks that
@@ -80,8 +77,6 @@ class CrosMock {
   void SetPowerLibraryStatusAreaExpectations();
   void SetPowerLibraryExpectations();
   void SetSpeechSynthesisLibraryExpectations();
-  void SetSystemLibraryStatusAreaExpectations();
-  void SetSystemLibraryExpectations();
   void SetTouchpadLibraryExpectations();
 
   void TearDownMocks();
@@ -103,7 +98,6 @@ class CrosMock {
   MockPowerLibrary* mock_power_library_;
   MockScreenLockLibrary* mock_screen_lock_library_;
   MockSpeechSynthesisLibrary* mock_speech_synthesis_library_;
-  MockSystemLibrary* mock_system_library_;
   MockTouchpadLibrary* mock_touchpad_library_;
 
   ImePropertyList ime_properties_;
