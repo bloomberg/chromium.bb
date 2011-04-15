@@ -43,6 +43,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)
+#include "chrome/browser/browser_util_win.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/rlz/rlz.h"
 #endif
@@ -190,7 +191,7 @@ void Shutdown() {
     ResourceBundle::CleanupSharedInstance();
 
 #if defined(OS_WIN)
-  if (!upgrade_util::IsBrowserAlreadyRunning() &&
+  if (!browser_util::IsBrowserAlreadyRunning() &&
       shutdown_type_ != browser_shutdown::END_SESSION) {
     upgrade_util::SwapNewChromeExeIfPresent();
   }

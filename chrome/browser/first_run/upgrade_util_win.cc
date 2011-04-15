@@ -59,7 +59,6 @@ bool InvokeGoogleUpdateForRename() {
 
 }  // namespace
 
-
 namespace upgrade_util {
 
 bool RelaunchChromeBrowser(const CommandLine& command_line) {
@@ -74,21 +73,6 @@ bool IsUpdatePendingRestart() {
   if (!GetNewerChromeFile(&new_chrome_exe))
     return false;
   return file_util::PathExists(new_chrome_exe);
-}
-
-bool IsBrowserAlreadyRunning() {
-  static HANDLE handle = NULL;
-  FilePath exe_path;
-  PathService::Get(base::FILE_EXE, &exe_path);
-  std::wstring exe = exe_path.value();
-  std::replace(exe.begin(), exe.end(), '\\', '!');
-  std::transform(exe.begin(), exe.end(), exe.begin(), tolower);
-  exe = L"Global\\" + exe;
-  if (handle != NULL)
-    CloseHandle(handle);
-  handle = CreateEvent(NULL, TRUE, TRUE, exe.c_str());
-  int error = GetLastError();
-  return (error == ERROR_ALREADY_EXISTS || error == ERROR_ACCESS_DENIED);
 }
 
 bool SwapNewChromeExeIfPresent() {

@@ -316,6 +316,8 @@
         'browser/browser_trial.h',
         'browser/browser_url_handler.cc',
         'browser/browser_url_handler.h',
+        'browser/browser_util_win.cc',
+        'browser/browser_util_win.h',
         'browser/browsing_data_appcache_helper.cc',
         'browser/browsing_data_appcache_helper.h',
         'browser/browsing_data_database_helper.cc',

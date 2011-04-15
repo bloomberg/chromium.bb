@@ -20,8 +20,8 @@
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
 #include "crypto/nss_util.h"
+#include "chrome/browser/browser_util_win.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/uninstall_view.h"
@@ -110,7 +110,7 @@ int DoUninstallTasks(bool chrome_still_running) {
     return ResultCodes::UNINSTALL_CHROME_ALIVE;
   }
   int ret = AskForUninstallConfirmation();
-  if (upgrade_util::IsBrowserAlreadyRunning()) {
+  if (browser_util::IsBrowserAlreadyRunning()) {
     ShowCloseBrowserFirstMessageBox();
     return ResultCodes::UNINSTALL_CHROME_ALIVE;
   }

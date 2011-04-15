@@ -83,7 +83,7 @@ class ProcessSingleton : public base::NonThreadSafe {
   // of Chrome running with this profile. In general, you should not use this
   // function. Instead consider using NotifyOtherProcessOrCreate().
   // For non profile-specific method, use
-  // upgrade_util::IsBrowserAlreadyRunning().
+  // browser_util::IsBrowserAlreadyRunning().
   bool FoundOtherProcessWindow() const {
       return (NULL != remote_window_);
   }

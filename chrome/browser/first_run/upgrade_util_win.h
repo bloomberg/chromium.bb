@@ -10,13 +10,6 @@ class CommandLine;
 
 namespace upgrade_util {
 
-// Check if current chrome.exe is already running as a browser process by
-// trying to create a Global event with name same as full path of chrome.exe.
-// This method caches the handle to this event so on subsequent calls also
-// it can first close the handle and check for any other process holding the
-// handle to the event.
-bool IsBrowserAlreadyRunning();
-
 // If the new_chrome.exe exists (placed by the installer then is swapped
 // to chrome.exe and the old chrome is renamed to old_chrome.exe. If there
 // is no new_chrome.exe or the swap fails the return is false;

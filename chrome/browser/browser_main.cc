@@ -159,6 +159,7 @@
 #include "app/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_trial.h"
+#include "chrome/browser/browser_util_win.h"
 #include "chrome/browser/first_run/try_chrome_dialog_view.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -1356,7 +1357,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // On Windows, we use our startup as an opportunity to do upgrade/uninstall
   // tasks.  Those care whether the browser is already running.  On Linux/Mac,
   // upgrade/uninstall happen separately.
-  bool already_running = upgrade_util::IsBrowserAlreadyRunning();
+  bool already_running = browser_util::IsBrowserAlreadyRunning();
 
   // If the command line specifies 'uninstall' then we need to work here
   // unless we detect another chrome browser running.
