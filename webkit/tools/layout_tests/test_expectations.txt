@@ -5,9 +5,5 @@
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
 
-BUGANTONM : fast/events/window-onerror7.html = TEXT
-// Waiting for a V8 roll.
-BUGANTONM : plugins/netscape-plugin-property-access-exception.html = TEXT
-
 // Rebaselined upstream, caseq will remove once WebKit is rolled past r83819.
 BUGCASEQ : fast/frames/iframe-outline.html = IMAGE
