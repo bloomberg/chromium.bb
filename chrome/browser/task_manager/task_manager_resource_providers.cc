@@ -423,7 +423,13 @@ string16 TaskManagerPrerenderResource::GetTitle() const {
   RenderViewHost* render_view_host =
       RenderViewHost::FromID(process_route_id_pair_.first,
                              process_route_id_pair_.second);
-  CHECK(render_view_host);
+
+  // In some instances, for instance when the RenderProcessHost has been
+  // destroyed, we try to get the title for a RenderViewHost that has
+  // been removed. Return an empty string in this case.
+  if (!render_view_host)
+    return EmptyString16();
+
   RenderViewHostDelegate* delegate = render_view_host->delegate();
 
   string16 title = UTF8ToUTF16(delegate->GetURL().spec());
