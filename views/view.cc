@@ -1133,7 +1133,7 @@ void View::OnPaintBorder(gfx::Canvas* canvas) {
 }
 
 void View::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus() && (IsFocusable() || IsAccessibilityFocusableInRootView()))
+  if ((IsFocusable() || IsAccessibilityFocusableInRootView()) && HasFocus())
     canvas->DrawFocusRect(0, 0, width(), height());
 }
 

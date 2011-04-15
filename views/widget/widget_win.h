@@ -88,9 +88,6 @@ class WidgetWin : public ui::WindowImpl,
   WidgetWin();
   virtual ~WidgetWin();
 
-  // Returns the Widget associated with the specified HWND (if any).
-  static WidgetWin* GetWidget(HWND hwnd);
-
   // Returns true if we are on Windows Vista or greater and composition is
   // enabled.
   static bool IsAeroGlassEnabled();

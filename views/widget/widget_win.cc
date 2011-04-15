@@ -6,9 +6,7 @@
 
 #include <dwmapi.h>
 
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drag_source.h"
@@ -157,16 +155,6 @@ WidgetWin::~WidgetWin() {
   // because it'll set focus_manager_ to NULL.
   input_method_.reset();
   DestroyRootView();
-}
-
-// static
-WidgetWin* WidgetWin::GetWidget(HWND hwnd) {
-  // TODO(jcivelli): http://crbug.com/44499 We need a way to test that hwnd is
-  //                 associated with a WidgetWin (it might be a pure
-  //                 WindowImpl).
-  if (!WindowImpl::IsWindowImpl(hwnd))
-    return NULL;
-  return reinterpret_cast<WidgetWin*>(ui::GetWindowUserData(hwnd));
 }
 
 // static
@@ -609,21 +597,6 @@ void WidgetWin::OnCommand(UINT notification_code, int command_id, HWND window) {
 }
 
 LRESULT WidgetWin::OnCreate(CREATESTRUCT* create_struct) {
-  // Debugging code to help track 77651.
-  CHECK(hwnd());
-  if (!ui::WindowImpl::IsWindowImpl(hwnd())) {
-    std::wstring class_name;
-    wchar_t tmp[128];
-    if (!::GetClassName(hwnd(), tmp, 128)) {
-      class_name = L"unable to get class name error=" +
-          UTF8ToWide(base::IntToString(GetLastError()));
-    } else {
-      class_name = std::wstring(tmp);
-    }
-
-    CHECK(false) << " Not a window impl, hwnd=" << hwnd() <<
-        " class_name=" << class_name << " is_window=" << ::IsWindow(hwnd());
-  }
   SetNativeWindowProperty(kNativeWidgetKey, this);
   CHECK_EQ(this, GetNativeWidgetForNativeView(hwnd()));
 
@@ -1192,8 +1165,6 @@ bool Widget::ConvertRect(const Widget* source,
 
 NativeWidget* NativeWidget::GetNativeWidgetForNativeView(
     gfx::NativeView native_view) {
-  if (!ui::WindowImpl::IsWindowImpl(native_view))
-    return NULL;
   return reinterpret_cast<WidgetWin*>(
       ViewProp::GetValue(native_view, kNativeWidgetKey));
 }
@@ -1201,47 +1172,6 @@ NativeWidget* NativeWidget::GetNativeWidgetForNativeView(
 NativeWidget* NativeWidget::GetNativeWidgetForNativeWindow(
     gfx::NativeWindow native_window) {
   return GetNativeWidgetForNativeView(native_window);
-}
-
-NativeWidget* NativeWidget::GetTopLevelNativeWidgetWithReason(
-    gfx::NativeView native_view,
-    int* reason) {
-  *reason = 0;
-  if (!native_view) {
-    *reason = 1;
-    return NULL;
-  }
-
-  // First, check if the top-level window is a Widget.
-  HWND root = ::GetAncestor(native_view, GA_ROOT);
-  if (!root) {
-    *reason = 2;
-    return NULL;
-  }
-
-  NativeWidget* widget = GetNativeWidgetForNativeView(root);
-  if (widget) {
-    *reason = 3;
-    return widget;
-  }
-
-  // Second, try to locate the last Widget window in the parent hierarchy.
-  HWND parent_hwnd = native_view;
-  NativeWidget* parent_widget;
-  *reason = 4;
-  do {
-    parent_widget = GetNativeWidgetForNativeView(parent_hwnd);
-    if (parent_widget) {
-      widget = parent_widget;
-      (*reason)++;
-      parent_hwnd = ::GetAncestor(parent_hwnd, GA_PARENT);
-    }
-  } while (parent_hwnd != NULL && parent_widget != NULL);
-
-  if (!widget && !ui::WindowImpl::IsWindowImpl(native_view))
-    *reason = 1000;
-
-  return widget;
 }
 
 NativeWidget* NativeWidget::GetTopLevelNativeWidget(

@@ -44,13 +44,6 @@ class NativeWidget {
   static NativeWidget* GetNativeWidgetForNativeWindow(
       gfx::NativeWindow native_window);
 
-#if defined(OS_WIN)
-  // Debugging code to help track 77651.
-  static NativeWidget* GetTopLevelNativeWidgetWithReason(
-      gfx::NativeView native_view,
-      int* reason);
-#endif
-
   // Retrieves the top NativeWidget in the hierarchy containing the given
   // NativeView, or NULL if there is no NativeWidget that contains it.
   static NativeWidget* GetTopLevelNativeWidget(gfx::NativeView native_view);

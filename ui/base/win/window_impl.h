@@ -71,9 +71,6 @@ class WindowImpl : public MessageMapInterface {
   }
   UINT initial_class_style() const { return class_style_; }
 
-  // Returns true if the specified |hwnd| is a WindowImpl.
-  static bool IsWindowImpl(HWND hwnd);
-
  protected:
   // Handles the WndProc callback for this object.
   virtual LRESULT OnWndProc(UINT message, WPARAM w_param, LPARAM l_param);

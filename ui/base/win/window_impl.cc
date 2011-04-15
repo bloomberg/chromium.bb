@@ -159,31 +159,18 @@ void WindowImpl::Init(HWND parent, const gfx::Rect& bounds) {
                   reinterpret_cast<LPWSTR>(&error_string),
                   0,  // Buffer size.
                   0);  // Arguments (unused).
+    // Typical reason for failure is ERROR_NOT_ENOUGH_MEMORY (8).
     CHECK(false) << "Create failed error=" << last_error <<
         " message=" << error_string << " name=" << name << " style=" <<
         window_style_ << " ex_style=" << window_ex_style_;
-    if (error_string)
-      LocalFree(error_string);
   }
 
   // The window procedure should have set the data for us.
   CHECK_EQ(this, ui::GetWindowUserData(hwnd_));
-
-  CHECK(IsWindowImpl(hwnd_));
 }
 
 HICON WindowImpl::GetDefaultWindowIcon() const {
   return NULL;
-}
-
-// static
-bool WindowImpl::IsWindowImpl(HWND hwnd) {
-  wchar_t tmp[128];
-  if (!::GetClassName(hwnd, tmp, 128))
-    return false;
-
-  std::wstring class_name(tmp);
-  return class_name.find(kBaseClassName) == 0;
 }
 
 LRESULT WindowImpl::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {

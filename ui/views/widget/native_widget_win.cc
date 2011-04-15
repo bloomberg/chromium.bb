@@ -631,8 +631,6 @@ NativeWidget* NativeWidget::CreateNativeWidget(
 // static
 NativeWidget* NativeWidget::GetNativeWidgetForNativeView(
     gfx::NativeView native_view) {
-  if (!WindowImpl::IsWindowImpl(native_view))
-    return NULL;
   return reinterpret_cast<internal::NativeWidgetWin*>(
       ViewProp::GetValue(native_view, internal::kNativeWidgetKey));
 }
