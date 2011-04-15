@@ -233,6 +233,10 @@ bool VPNConfigView::Login() {
 void VPNConfigView::Cancel() {
 }
 
+void VPNConfigView::InitFocus() {
+  // TODO(jamescook): Put focus in a more reasonable widget.
+}
+
 const std::string VPNConfigView::GetTextFromField(
     views::Textfield* textfield, bool trim_whitespace) const {
   std::string untrimmed = UTF16ToUTF8(textfield->text());

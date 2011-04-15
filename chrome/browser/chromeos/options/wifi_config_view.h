@@ -59,15 +59,15 @@ class WifiConfigView : public ChildNetworkConfigView,
                            int prev_index, int new_index);
 
   // ChildNetworkConfigView implementation.
-  virtual string16 GetTitle();
-  virtual bool CanLogin();
-
-  // Login to network. Returns false if the dialog should remain open.
-  virtual bool Login();
-  virtual void Cancel();
+  virtual string16 GetTitle() OVERRIDE;
+  virtual bool CanLogin() OVERRIDE;
+  virtual bool Login() OVERRIDE;
+  virtual void Cancel() OVERRIDE;
+  virtual void InitFocus() OVERRIDE;
 
   // Get the typed in ssid.
   std::string GetSSID() const;
+
   // Get the typed in passphrase.
   std::string GetPassphrase() const;
 

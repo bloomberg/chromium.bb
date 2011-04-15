@@ -889,4 +889,14 @@ void WifiConfigView::Init(WifiNetwork* wifi) {
   UpdateErrorLabel();
 }
 
+void WifiConfigView::InitFocus() {
+  // Set focus to a reasonable widget, depending on what we're showing.
+  if (ssid_textfield_)
+    ssid_textfield_->RequestFocus();
+  else if (eap_method_combobox_)
+    eap_method_combobox_->RequestFocus();
+  else if (passphrase_textfield_ && passphrase_textfield_->IsEnabled())
+    passphrase_textfield_->RequestFocus();
+}
+
 }  // namespace chromeos

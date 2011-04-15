@@ -53,6 +53,7 @@ class VPNConfigView : public ChildNetworkConfigView,
   virtual bool CanLogin() OVERRIDE;
   virtual bool Login() OVERRIDE;
   virtual void Cancel() OVERRIDE;
+  virtual void InitFocus() OVERRIDE;
 
  private:
   class ProviderTypeComboboxModel : public ui::ComboboxModel {

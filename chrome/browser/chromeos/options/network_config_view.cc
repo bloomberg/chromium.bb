@@ -118,8 +118,10 @@ void NetworkConfigView::ViewHierarchyChanged(
     bool is_add, views::View* parent, views::View* child) {
   // Can't init before we're inserted into a Container, because we require
   // a HWND to parent native child controls to.
-  if (is_add && child == this)
+  if (is_add && child == this) {
     AddChildView(child_config_view_);
+    child_config_view_->InitFocus();
+  }
 }
 
 }  // namespace chromeos

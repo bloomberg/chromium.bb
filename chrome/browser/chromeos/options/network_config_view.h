@@ -109,6 +109,10 @@ class ChildNetworkConfigView : public views::View {
   // Called when "Cancel" button is clicked.
   virtual void Cancel() = 0;
 
+  // Called to set initial focus in a reasonable widget.  Must be done
+  // post-construction after the view has a parent window.
+  virtual void InitFocus() = 0;
+
   // Width of passphrase fields.
   static const int kPassphraseWidth;
 
