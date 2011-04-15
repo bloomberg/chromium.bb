@@ -32,6 +32,7 @@
 
 namespace enterprise_management {
 class PolicyFetchResponse;
+class PolicyData;
 }  // namespace enterprise_management
 namespace em = enterprise_management;
 
@@ -89,16 +90,25 @@ class SignedSettings : public base::RefCountedThreadSafe<SignedSettings>,
   static SignedSettings* CreateRetrievePolicyOp(
       SignedSettings::Delegate<const em::PolicyFetchResponse&>* d);
 
+  static bool EnumerateWhitelist(std::vector<std::string>* whitelisted);
+
   static ReturnCode MapKeyOpCode(OwnerManager::KeyOpCode code);
 
   virtual void Execute() = 0;
 
-  // Implementation of OwnerManager::Delegate::OnKeyOpComplete()
+  virtual void Fail(ReturnCode code) = 0;
+
+  // Implementation of OwnerManager::Delegate
   void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
                        const std::vector<uint8>& payload) = 0;
 
  protected:
-  static void OnBoolComplete(void* delegate, bool success);
+  static bool PolicyIsSane(const em::PolicyFetchResponse& value,
+                           em::PolicyData* poldata);
+
+  void set_service(OwnershipService* service) { service_ = service; }
+
+  void TryToFetchPolicyAndCallBack();
 
   OwnershipService* service_;
 
@@ -106,7 +116,26 @@ class SignedSettings : public base::RefCountedThreadSafe<SignedSettings>,
   friend class SignedSettingsTest;
   friend class SignedSettingsHelperTest;
 
-  void set_service(OwnershipService* service) { service_ = service; }
+  class Relay
+      : public SignedSettings::Delegate<const em::PolicyFetchResponse&> {
+   public:
+    // |s| must outlive your Relay instance.
+    explicit Relay(SignedSettings* s);
+    virtual ~Relay();
+    // Implementation of SignedSettings::Delegate
+    virtual void OnSettingsOpCompleted(SignedSettings::ReturnCode code,
+                                       const em::PolicyFetchResponse& value);
+   private:
+    SignedSettings* settings_;
+    DISALLOW_COPY_AND_ASSIGN(Relay);
+  };
+
+  // Format of this string is documented in device_management_backend.proto.
+  static const char kDevicePolicyType[];
+
+  scoped_ptr<Relay> relay_;
+  scoped_refptr<SignedSettings> polfetcher_;
+  DISALLOW_COPY_AND_ASSIGN(SignedSettings);
 };
 
 }  // namespace chromeos

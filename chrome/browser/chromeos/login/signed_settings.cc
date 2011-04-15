@@ -13,30 +13,90 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
+#include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
+#include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "content/browser/browser_thread.h"
 
 namespace chromeos {
+using google::protobuf::RepeatedPtrField;
+using std::string;
+
+// static
+const char SignedSettings::kDevicePolicyType[] = "google/chromeos/device";
+
+SignedSettings::Relay::Relay(SignedSettings* s) : settings_(s) {
+}
+
+SignedSettings::Relay::~Relay() {}
+
+void SignedSettings::Relay::OnSettingsOpCompleted(
+    SignedSettings::ReturnCode code,
+    const em::PolicyFetchResponse& value) {
+  if (code == SignedSettings::SUCCESS) {
+    settings_->Execute();
+    return;
+  }
+  settings_->Fail(code);
+}
 
 SignedSettings::SignedSettings()
-    : service_(OwnershipService::GetSharedInstance()) {
+    : service_(OwnershipService::GetSharedInstance()),
+      relay_(NULL),
+      polfetcher_(NULL) {
 }
 
 SignedSettings::~SignedSettings() {}
 
+void SignedSettings::TryToFetchPolicyAndCallBack() {
+  relay_.reset(new Relay(this));
+  polfetcher_ = SignedSettings::CreateRetrievePolicyOp(relay_.get());
+  polfetcher_->set_service(service_);
+  polfetcher_->Execute();
+}
+
+// static
+bool SignedSettings::PolicyIsSane(const em::PolicyFetchResponse& value,
+                                  em::PolicyData* poldata) {
+  if (value.has_policy_data()) {
+    poldata->ParseFromString(value.policy_data());
+    if (poldata->has_policy_type() &&
+        poldata->policy_type() == kDevicePolicyType &&
+        poldata->has_policy_value()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// static
 SignedSettings::ReturnCode SignedSettings::MapKeyOpCode(
     OwnerManager::KeyOpCode return_code) {
   return (return_code == OwnerManager::KEY_UNAVAILABLE ?
           KEY_UNAVAILABLE : BAD_SIGNATURE);
 }
 
-void SignedSettings::OnBoolComplete(void* delegate, bool success) {
-  SignedSettings::Delegate<bool>* d =
-      static_cast< SignedSettings::Delegate<bool>* >(delegate);
-  d->OnSettingsOpCompleted(success ? SUCCESS : NOT_FOUND, success);
+// static
+bool SignedSettings::EnumerateWhitelist(std::vector<std::string>* whitelisted) {
+  OwnershipService* service = OwnershipService::GetSharedInstance();
+  if (!service->has_cached_policy())
+    return false;
+  em::ChromeDeviceSettingsProto pol;
+  pol.ParseFromString(service->cached_policy().policy_value());
+  if (!pol.has_user_whitelist())
+    return false;
+
+  const RepeatedPtrField<std::string>& whitelist =
+      pol.user_whitelist().user_whitelist();
+  for (RepeatedPtrField<std::string>::const_iterator it = whitelist.begin();
+       it != whitelist.end();
+       ++it) {
+    whitelisted->push_back(*it);
+  }
+  return true;
 }
 
 class CheckWhitelistOp : public SignedSettings {
@@ -45,55 +105,88 @@ class CheckWhitelistOp : public SignedSettings {
                    SignedSettings::Delegate<bool>* d);
   virtual ~CheckWhitelistOp();
   void Execute();
-  // Implementation of OwnerManager::Delegate::OnKeyOpComplete()
+  void Fail(SignedSettings::ReturnCode code);
+  void Succeed(bool value);
+  // Implementation of OwnerManager::Delegate
   void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
                        const std::vector<uint8>& payload);
 
  private:
+  bool LookUpInPolicy(const std::string& email);
+  // Always call d_->OnSettingOpCompleted() via this call.
+  // It guarantees that the callback will not be triggered until _after_
+  // Execute() returns, which is implicitly assumed by SignedSettingsHelper
+  // in some cases.
+  void PerformCallback(SignedSettings::ReturnCode code, bool value);
+
   const std::string email_;
   SignedSettings::Delegate<bool>* d_;
 };
 
 class WhitelistOp : public SignedSettings,
-                    public LoginLibrary::Delegate {
+                    public SignedSettings::Delegate<bool> {
  public:
   WhitelistOp(const std::string& email,
               bool add_to_whitelist,
               SignedSettings::Delegate<bool>* d);
   virtual ~WhitelistOp();
   void Execute();
-  // Implementation of OwnerManager::Delegate::OnKeyOpComplete()
+  void Fail(SignedSettings::ReturnCode code);
+  void Succeed(bool value);
+  // Implementation of OwnerManager::Delegate
   void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
                        const std::vector<uint8>& payload);
-  // Implementation of LoginLibrary::Delegate::OnComplete()
-  void OnComplete(bool value);
+  // Implementation of SignedSettings::Delegate
+  void OnSettingsOpCompleted(ReturnCode code, bool value);
 
  private:
-  bool InitiateWhitelistOp(const std::vector<uint8>& signature);
+  void ModifyWhitelist(const std::string& email,
+                       bool add_to_whitelist,
+                       em::UserWhitelistProto* whitelist_proto);
+  // Always call d_->OnSettingOpCompleted() via this call.
+  // It guarantees that the callback will not be triggered until _after_
+  // Execute() returns, which is implicitly assumed by SignedSettingsHelper
+  // in some cases.
+  void PerformCallback(SignedSettings::ReturnCode code, bool value);
 
   const std::string email_;
   const bool add_to_whitelist_;
   SignedSettings::Delegate<bool>* d_;
+  em::PolicyFetchResponse to_store_;
+  scoped_refptr<SignedSettings> store_op_;
 };
 
 class StorePropertyOp : public SignedSettings,
-                        public LoginLibrary::Delegate {
+                        public SignedSettings::Delegate<bool> {
  public:
   StorePropertyOp(const std::string& name,
                   const std::string& value,
                   SignedSettings::Delegate<bool>* d);
   virtual ~StorePropertyOp();
   void Execute();
-  // Implementation of OwnerManager::Delegate::OnKeyOpComplete()
+  void Fail(SignedSettings::ReturnCode code);
+  void Succeed(bool value);
+  // Implementation of OwnerManager::Delegate
   void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
                        const std::vector<uint8>& payload);
-  // Implementation of LoginLibrary::Delegate::OnComplete()
-  void OnComplete(bool value);
+  // Implementation of SignedSettings::Delegate
+  void OnSettingsOpCompleted(ReturnCode code, bool value);
 
  private:
+  void SetInPolicy(const std::string& prop,
+                   const std::string& value,
+                   em::PolicyData* poldata);
+  // Always call d_->OnSettingOpCompleted() via this call.
+  // It guarantees that the callback will not be triggered until _after_
+  // Execute() returns, which is implicitly assumed by SignedSettingsHelper
+  // in some cases.
+  void PerformCallback(SignedSettings::ReturnCode code, bool value);
+
   std::string name_;
   std::string value_;
   SignedSettings::Delegate<bool>* d_;
+  em::PolicyFetchResponse to_store_;
+  scoped_refptr<SignedSettings> store_op_;
 };
 
 class RetrievePropertyOp : public SignedSettings {
@@ -102,15 +195,22 @@ class RetrievePropertyOp : public SignedSettings {
                      SignedSettings::Delegate<std::string>* d);
   virtual ~RetrievePropertyOp();
   void Execute();
+  void Fail(SignedSettings::ReturnCode code);
+  void Succeed(const std::string& value);
   // Implementation of OwnerManager::Delegate::OnKeyOpComplete()
   void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
                        const std::vector<uint8>& payload);
 
  private:
-  // RetrievePropertyCallback
-  static void OnRetrievePropertyNotify(void* user_data,
-                                       bool success,
-                                       const Property* property);
+  static const char* kVeritas[];
+
+  std::string LookUpInPolicy(const std::string& prop);
+  // Always call d_->OnSettingOpCompleted() via this call.
+  // It guarantees that the callback will not be triggered until _after_
+  // Execute() returns, which is implicitly assumed by SignedSettingsHelper
+  // in some cases.
+  void PerformCallback(SignedSettings::ReturnCode code,
+                       const std::string& value);
 
   std::string name_;
   std::string value_;
@@ -123,11 +223,20 @@ class StorePolicyOp : public SignedSettings {
                 SignedSettings::Delegate<bool>* d);
   virtual ~StorePolicyOp();
   void Execute();
-  // Implementation of OwnerManager::Delegate::OnKeyOpComplete()
+  void Fail(SignedSettings::ReturnCode code);
+  void Succeed(bool value);
+  // Implementation of OwnerManager::Delegate
   void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
                        const std::vector<uint8>& payload);
 
  private:
+  static void OnBoolComplete(void* delegate, bool success);
+  // Always call d_->OnSettingOpCompleted() via this call.
+  // It guarantees that the callback will not be triggered until _after_
+  // Execute() returns, which is implicitly assumed by SignedSettingsHelper
+  // in some cases.
+  void PerformCallback(SignedSettings::ReturnCode code, bool value);
+
   em::PolicyFetchResponse* policy_;
   SignedSettings::Delegate<bool>* d_;
 
@@ -140,7 +249,9 @@ class RetrievePolicyOp : public SignedSettings {
       SignedSettings::Delegate<const em::PolicyFetchResponse&>* d);
   virtual ~RetrievePolicyOp();
   void Execute();
-  // Implementation of OwnerManager::Delegate::OnKeyOpComplete()
+  void Fail(SignedSettings::ReturnCode code);
+  void Succeed(const em::PolicyFetchResponse& value);
+  // Implementation of OwnerManager::Delegate
   void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
                        const std::vector<uint8>& payload);
 
@@ -148,11 +259,17 @@ class RetrievePolicyOp : public SignedSettings {
   static void OnStringComplete(void* delegate,
                                const char* policy,
                                const unsigned int len);
+  // Always call d_->OnSettingOpCompleted() via this call.
+  // It guarantees that the callback will not be triggered until _after_
+  // Execute() returns, which is implicitly assumed by SignedSettingsHelper
+  // in some cases.
+  void PerformCallback(SignedSettings::ReturnCode code,
+                       const em::PolicyFetchResponse& value);
+
+  void ProcessPolicy(const char* out, const unsigned int len);
 
   em::PolicyFetchResponse policy_;
   SignedSettings::Delegate<const em::PolicyFetchResponse&>* d_;
-
-  void ProcessPolicy(const char* out, const unsigned int len);
 };
 
 // static
@@ -219,31 +336,48 @@ void CheckWhitelistOp::Execute() {
   CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());
   std::vector<uint8> sig;
   std::string email_to_check = email_;
-  if (!CrosLibrary::Get()->GetLoginLibrary()->CheckWhitelist(
-      email_to_check, &sig)) {
-    // If the exact match was not found try to match agains a wildcard entry
-    // where the domain only matches (e.g. *@example.com). In theory we should
-    // always have correctly formated mail address here but a little precaution
-    // does no harm.
-    if (email_.find('@') != std::string::npos) {
-      email_to_check = std::string("*").append(email_.substr(email_.find('@')));
-      if (!CrosLibrary::Get()->GetLoginLibrary()->CheckWhitelist(
-          email_to_check, &sig)) {
-        d_->OnSettingsOpCompleted(NOT_FOUND, false);
-        return;
-      }
-    } else {
-      d_->OnSettingsOpCompleted(NOT_FOUND, false);
+  if (!service_->has_cached_policy()) {
+    TryToFetchPolicyAndCallBack();
+    return;
+  }
+  if (LookUpInPolicy(email_to_check)) {
+    VLOG(2) << "Whitelist check was successful for " << email_to_check;
+    Succeed(true);
+    return;
+  }
+  // If the exact match was not found try to match against a wildcard entry
+  // where the domain only matches (e.g. *@example.com). In theory we should
+  // always have correctly formated mail address here but a little precaution
+  // does no harm.
+  if (email_.find('@') != std::string::npos) {
+    email_to_check = std::string("*").append(email_.substr(email_.find('@')));
+    if (LookUpInPolicy(email_to_check)) {
+      VLOG(2) << "Whitelist check was successful for " << email_to_check;
+      Succeed(true);
       return;
     }
   }
-  // Posts a task to the FILE thread to verify |sig|.
-  service_->StartVerifyAttempt(email_to_check, sig, this);
+  Fail(NOT_FOUND);
+  return;
+}
+
+void CheckWhitelistOp::Fail(SignedSettings::ReturnCode code) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &CheckWhitelistOp::PerformCallback, code, false));
+}
+
+void CheckWhitelistOp::Succeed(bool value) {
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          NewRunnableMethod(this,
+                                            &CheckWhitelistOp::PerformCallback,
+                                            SUCCESS, value));
 }
 
 void CheckWhitelistOp::OnKeyOpComplete(
     const OwnerManager::KeyOpCode return_code,
     const std::vector<uint8>& payload) {
+  NOTREACHED();
   // Ensure we're on the UI thread, due to the need to send DBus traffic.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
@@ -255,11 +389,33 @@ void CheckWhitelistOp::OnKeyOpComplete(
   }
   if (return_code == OwnerManager::SUCCESS) {
     VLOG(2) << "Whitelist check was successful.";
-    d_->OnSettingsOpCompleted(SUCCESS, true);
+    Succeed(true);
   } else {
     VLOG(2) << "Whitelist check failed.";
-    d_->OnSettingsOpCompleted(SignedSettings::MapKeyOpCode(return_code), false);
+    Fail(SignedSettings::MapKeyOpCode(return_code));
   }
+}
+
+bool CheckWhitelistOp::LookUpInPolicy(const std::string& email) {
+  em::ChromeDeviceSettingsProto pol;
+  pol.ParseFromString(service_->cached_policy().policy_value());
+  if (!pol.has_user_whitelist())
+    return false;
+
+  const RepeatedPtrField<std::string>& whitelist =
+      pol.user_whitelist().user_whitelist();
+  for (RepeatedPtrField<std::string>::const_iterator it = whitelist.begin();
+       it != whitelist.end();
+       ++it) {
+    if (email == *it)
+      return true;
+  }
+  return false;
+}
+
+void CheckWhitelistOp::PerformCallback(SignedSettings::ReturnCode code,
+                                       bool value) {
+  d_->OnSettingsOpCompleted(code, value);
 }
 
 WhitelistOp::WhitelistOp(const std::string& email,
@@ -273,43 +429,98 @@ WhitelistOp::WhitelistOp(const std::string& email,
 WhitelistOp::~WhitelistOp() {}
 
 void WhitelistOp::Execute() {
-  // Posts a task to the FILE thread to sign |email_|.
-  service_->StartSigningAttempt(email_, this);
+  if (!service_->has_cached_policy()) {
+    TryToFetchPolicyAndCallBack();
+    return;
+  }
+  em::PolicyData to_sign;
+  to_sign.CheckTypeAndMergeFrom(service_->cached_policy());
+  em::ChromeDeviceSettingsProto pol;
+  pol.ParseFromString(to_sign.policy_value());
+  em::UserWhitelistProto* whitelist_proto = pol.mutable_user_whitelist();
+  ModifyWhitelist(email_, add_to_whitelist_, whitelist_proto);
+  to_sign.set_policy_value(pol.SerializeAsString());
+  to_store_.set_policy_data(to_sign.SerializeAsString());
+  service_->StartSigningAttempt(to_store_.policy_data(), this);
+}
+
+void WhitelistOp::Fail(SignedSettings::ReturnCode code) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &WhitelistOp::PerformCallback, code, false));
+}
+
+void WhitelistOp::Succeed(bool value) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &WhitelistOp::PerformCallback, SUCCESS, value));
 }
 
 void WhitelistOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
-                                  const std::vector<uint8>& payload) {
+                                  const std::vector<uint8>& sig) {
   // Ensure we're on the UI thread, due to the need to send DBus traffic.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
                           &WhitelistOp::OnKeyOpComplete,
-                          return_code, payload));
+                          return_code, sig));
     return;
   }
+  VLOG(2) << "WhitelistOp::OnKeyOpComplete return_code = " << return_code;
   // Now, sure we're on the UI thread.
   if (return_code == OwnerManager::SUCCESS) {
-    // OnComplete() will be called by this call, if it succeeds.
-    if (!InitiateWhitelistOp(payload))
-      d_->OnSettingsOpCompleted(OPERATION_FAILED, false);
+    to_store_.set_policy_data_signature(
+        std::string(reinterpret_cast<const char*>(&sig[0]), sig.size()));
+    store_op_ = CreateStorePolicyOp(&to_store_, this);
+    // d_->OnSettingsOpCompleted() will be called by this call.
+    store_op_->Execute();
   } else {
-    d_->OnSettingsOpCompleted(SignedSettings::MapKeyOpCode(return_code), false);
+    Fail(SignedSettings::MapKeyOpCode(return_code));
   }
 }
 
-void WhitelistOp::OnComplete(bool value) {
-  if (value)
-    d_->OnSettingsOpCompleted(SUCCESS, value);
-  else
-    d_->OnSettingsOpCompleted(NOT_FOUND, false);
+void WhitelistOp::OnSettingsOpCompleted(ReturnCode code, bool value) {
+  if (value && to_store_.has_policy_data()) {
+    em::PolicyData poldata;
+    poldata.ParseFromString(to_store_.policy_data());
+    service_->set_cached_policy(poldata);
+    Succeed(value);
+    return;
+  }
+  Fail(NOT_FOUND);
 }
 
-bool WhitelistOp::InitiateWhitelistOp(const std::vector<uint8>& signature) {
-  LoginLibrary* library = CrosLibrary::Get()->GetLoginLibrary();
-  if (add_to_whitelist_)
-    return library->WhitelistAsync(email_, signature, this);
-  return library->UnwhitelistAsync(email_, signature, this);
+void WhitelistOp::ModifyWhitelist(const std::string& email,
+                                  bool add_to_whitelist,
+                                  em::UserWhitelistProto* whitelist_proto) {
+  int i = 0;
+  const RepeatedPtrField<string>& whitelist = whitelist_proto->user_whitelist();
+  for (RepeatedPtrField<string>::const_iterator it = whitelist.begin();
+       it != whitelist.end();
+       ++it, ++i) {
+    if (email == *it)
+      break;
+  }
+  // |i| contains the index of |email|, if it is in |whitelist|.
+  if (add_to_whitelist) {
+    if (i >= whitelist.size())  // |email| was not in |whitelist|, we must add.
+      whitelist_proto->add_user_whitelist(email);
+    return;
+  } else {
+    if (i < whitelist.size()) {  // |email| was in |whitelist|, we must remove.
+      RepeatedPtrField<string>* change_list =
+          whitelist_proto->mutable_user_whitelist();
+      change_list->SwapElements(i, whitelist.size() - 1);  // Move to end.
+      change_list->RemoveLast();
+    }
+    return;
+  }
+  LOG(WARNING) << "Whitelist modification no-op: " << email;
+}
+
+void WhitelistOp::PerformCallback(SignedSettings::ReturnCode code, bool value) {
+  d_->OnSettingsOpCompleted(code, value);
 }
 
 StorePropertyOp::StorePropertyOp(const std::string& name,
@@ -317,7 +528,8 @@ StorePropertyOp::StorePropertyOp(const std::string& name,
                                  SignedSettings::Delegate<bool>* d)
     : name_(name),
       value_(value),
-      d_(d) {
+      d_(d),
+      store_op_(NULL) {
 }
 
 StorePropertyOp::~StorePropertyOp() {}
@@ -328,49 +540,110 @@ void StorePropertyOp::Execute() {
         g_browser_process->local_state() &&
         SignedSettingsTempStorage::Store(name_, value_,
                                          g_browser_process->local_state())) {
-      d_->OnSettingsOpCompleted(SUCCESS, true);
+      Succeed(true);
       return;
     }
   }
-  // Posts a task to the FILE thread to sign |name_|=|value_|.
-  std::string to_sign = base::StringPrintf("%s=%s",
-                                           name_.c_str(),
-                                           value_.c_str());
-  service_->StartSigningAttempt(to_sign, this);
+  if (!service_->has_cached_policy()) {
+    TryToFetchPolicyAndCallBack();
+    return;
+  }
+  // Posts a task to the FILE thread to sign policy.
+  em::PolicyData to_sign;
+  to_sign.CheckTypeAndMergeFrom(service_->cached_policy());
+  SetInPolicy(name_, value_, &to_sign);
+  to_store_.set_policy_data(to_sign.SerializeAsString());
+  service_->StartSigningAttempt(to_store_.policy_data(), this);
+}
+
+void StorePropertyOp::Fail(SignedSettings::ReturnCode code) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &StorePropertyOp::PerformCallback, code, false));
+}
+
+void StorePropertyOp::Succeed(bool value) {
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          NewRunnableMethod(this,
+                                            &StorePropertyOp::PerformCallback,
+                                            SUCCESS, value));
 }
 
 void StorePropertyOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
-                                      const std::vector<uint8>& payload) {
+                                      const std::vector<uint8>& sig) {
   // Ensure we're on the UI thread, due to the need to send DBus traffic.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
                           &StorePropertyOp::OnKeyOpComplete,
-                          return_code, payload));
+                          return_code, sig));
     return;
   }
   VLOG(2) << "StorePropertyOp::OnKeyOpComplete return_code = " << return_code;
   // Now, sure we're on the UI thread.
   if (return_code == OwnerManager::SUCCESS) {
-    // OnComplete() will be called by this call, if it succeeds.
-    if (!CrosLibrary::Get()->GetLoginLibrary()->StorePropertyAsync(name_,
-                                                                   value_,
-                                                                   payload,
-                                                                   this)) {
-      d_->OnSettingsOpCompleted(OPERATION_FAILED, false);
-    }
+    to_store_.set_policy_data_signature(
+        std::string(reinterpret_cast<const char*>(&sig[0]), sig.size()));
+    store_op_ = CreateStorePolicyOp(&to_store_, this);
+    // d_->OnSettingsOpCompleted() will be called by this call.
+    store_op_->Execute();
   } else {
-    d_->OnSettingsOpCompleted(SignedSettings::MapKeyOpCode(return_code), false);
+    Fail(SignedSettings::MapKeyOpCode(return_code));
   }
 }
 
-void StorePropertyOp::OnComplete(bool value) {
-  if (value)
-    d_->OnSettingsOpCompleted(SUCCESS, value);
-  else
-    d_->OnSettingsOpCompleted(NOT_FOUND, false);
+void StorePropertyOp::OnSettingsOpCompleted(ReturnCode code, bool value) {
+  if (value && to_store_.has_policy_data()) {
+    em::PolicyData poldata;
+    poldata.ParseFromString(to_store_.policy_data());
+    service_->set_cached_policy(poldata);
+    Succeed(value);
+    return;
+  }
+  Fail(NOT_FOUND);
 }
+
+void StorePropertyOp::SetInPolicy(const std::string& prop,
+                                  const std::string& value,
+                                  em::PolicyData* poldata) {
+  em::ChromeDeviceSettingsProto pol;
+  pol.ParseFromString(poldata->policy_value());
+  if (prop == kAccountsPrefAllowNewUser) {
+    em::AllowNewUsersProto* allow = pol.mutable_allow_new_users();
+    allow->set_allow_new_users(value == "true");
+
+  } else if (prop == kAccountsPrefAllowGuest) {
+    em::GuestModeEnabledProto* guest = pol.mutable_guest_mode_enabled();
+    guest->set_guest_mode_enabled(value == "true");
+
+  } else if (prop == kAccountsPrefShowUserNamesOnSignIn) {
+    em::ShowUserNamesOnSigninProto* show = pol.mutable_show_user_names();
+    show->set_show_user_names(value == "true");
+
+  } else if (prop == kSignedDataRoamingEnabled) {
+    em::DataRoamingEnabledProto* roam = pol.mutable_data_roaming_enabled();
+    roam->set_data_roaming_enabled(value == "true");
+
+  } else if (prop == kSettingProxyEverywhere) {
+    // TODO(cmasone): NOTIMPLEMENTED() once http://crosbug.com/13052 is fixed.
+    // TODO(cmasone): Until then, we will have to parse serialized JSON
+    // representing proxy settings, as generated by
+    // ProxyConfigServiceImpl::Serialize().  The code needs to translate into a
+    // DeviceProxySettingsProto (defined in chrome_device_policy.proto).
+  } else {
+    NOTREACHED();
+  }
+  poldata->set_policy_value(pol.SerializeAsString());
+}
+
+void StorePropertyOp::PerformCallback(SignedSettings::ReturnCode code,
+                                      bool value) {
+  d_->OnSettingsOpCompleted(code, value);
+}
+
+// static
+const char* RetrievePropertyOp::kVeritas[] = { "false", "true" };
 
 RetrievePropertyOp::RetrievePropertyOp(const std::string& name,
                                        SignedSettings::Delegate<std::string>* d)
@@ -392,58 +665,93 @@ void RetrievePropertyOp::Execute() {
         g_browser_process->local_state() &&
         SignedSettingsTempStorage::Retrieve(
             name_, &value_, g_browser_process->local_state())) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this,
-                            &RetrievePropertyOp::OnKeyOpComplete,
-                            OwnerManager::SUCCESS, std::vector<uint8>()));
+      Succeed(value_);
       return;
     }
   }
 
-  CrosLibrary::Get()->GetLoginLibrary()->RequestRetrieveProperty(name_,
-      &RetrievePropertyOp::OnRetrievePropertyNotify, this);
-}
-
-// static
-void RetrievePropertyOp::OnRetrievePropertyNotify(void* user_data,
-    bool success, const Property* property) {
-  RetrievePropertyOp* self = static_cast<RetrievePropertyOp*>(user_data);
-  if (!success) {
-    self->d_->OnSettingsOpCompleted(NOT_FOUND, std::string());
+  if (!service_->has_cached_policy()) {
+    TryToFetchPolicyAndCallBack();
     return;
   }
-
-  self->value_ = property->value;
-
-  std::vector<uint8> sig;
-  sig.assign(property->signature->data,
-             property->signature->data + property->signature->length);
-
-  std::string to_verify = base::StringPrintf("%s=%s",
-                                             self->name_.c_str(),
-                                             self->value_.c_str());
-  // Posts a task to the FILE thread to verify |sig|.
-  self->service_->StartVerifyAttempt(to_verify, sig, self);
+  std::string value = LookUpInPolicy(name_);
+  if (value.empty())
+    Fail(NOT_FOUND);
+  else
+    Succeed(value);
 }
 
+void RetrievePropertyOp::Fail(SignedSettings::ReturnCode code) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this,
+                        &RetrievePropertyOp::PerformCallback,
+                        code, std::string()));
+}
+
+void RetrievePropertyOp::Succeed(const std::string& value) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this,
+                        &RetrievePropertyOp::PerformCallback, SUCCESS, value));
+}
+
+// DEPRECATED.
 void RetrievePropertyOp::OnKeyOpComplete(
     const OwnerManager::KeyOpCode return_code,
-    const std::vector<uint8>& payload) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &RetrievePropertyOp::OnKeyOpComplete,
-                          return_code, payload));
-    return;
+    const std::vector<uint8>& sig) {
+  NOTREACHED();
+}
+
+std::string RetrievePropertyOp::LookUpInPolicy(const std::string& prop) {
+  em::ChromeDeviceSettingsProto pol;
+  pol.ParseFromString(service_->cached_policy().policy_value());
+  if (prop == kAccountsPrefAllowNewUser) {
+    if (pol.has_allow_new_users() &&
+        pol.allow_new_users().has_allow_new_users() &&
+        pol.allow_new_users().allow_new_users()) {
+      return kVeritas[1];  // New users allowed, user_whitelist() ignored.
+    }
+    // If we have the allow_new_users bool, and it is true, we honor that above.
+    // In all other cases (don't have it, have it and it is set to false, etc),
+    // We will honor the user_whitelist() if it is there and populated.
+    // Otherwise, fail open (to do otherwise could render the device unusable).
+    if (!pol.has_user_whitelist())
+      return kVeritas[1];  // Default to allowing new users.
+    return kVeritas[pol.user_whitelist().user_whitelist_size() == 0];
+
+  } else if (prop == kAccountsPrefAllowGuest) {
+    if (!pol.has_guest_mode_enabled() ||
+        !pol.guest_mode_enabled().has_guest_mode_enabled())
+      return kVeritas[1];  // Default to allowing guests;
+    return kVeritas[pol.guest_mode_enabled().guest_mode_enabled()];
+
+  } else if (prop == kAccountsPrefShowUserNamesOnSignIn) {
+    if (!pol.has_show_user_names() ||
+        !pol.show_user_names().has_show_user_names())
+      return kVeritas[1];  // Default to showing pods on the login screen;
+    return kVeritas[pol.show_user_names().show_user_names()];
+
+  } else if (prop == kSignedDataRoamingEnabled) {
+    if (!pol.has_data_roaming_enabled() ||
+        !pol.data_roaming_enabled().has_data_roaming_enabled())
+      return kVeritas[0];  // Default to disabling cellular data roaming;
+    return kVeritas[pol.data_roaming_enabled().data_roaming_enabled()];
+
+  } else if (prop == kSettingProxyEverywhere) {
+    // TODO(cmasone): NOTIMPLEMENTED() once http://crosbug.com/13052 is fixed.
+    // TODO(cmasone): Until then, we will have to return serialized JSON
+    // representing proxy settings, to be consumed by
+    // ProxyConfigServiceImpl::Deserialize().  We need code to translate a
+    // DeviceProxySettingsProto (defined in chrome_device_policy.proto) into
+    // a serialzed JSON string of this form.
   }
-  // Now, sure we're on the UI thread.
-  if (return_code == OwnerManager::SUCCESS)
-    d_->OnSettingsOpCompleted(SUCCESS, value_);
-  else
-    d_->OnSettingsOpCompleted(SignedSettings::MapKeyOpCode(return_code),
-                              std::string());
+  return std::string();
+}
+
+void RetrievePropertyOp::PerformCallback(SignedSettings::ReturnCode code,
+                                         const std::string& value) {
+  d_->OnSettingsOpCompleted(code, value);
 }
 
 StorePolicyOp::StorePolicyOp(em::PolicyFetchResponse* policy,
@@ -454,14 +762,44 @@ StorePolicyOp::StorePolicyOp(em::PolicyFetchResponse* policy,
 
 StorePolicyOp::~StorePolicyOp() {}
 
+// static
+void StorePolicyOp::OnBoolComplete(void* delegate, bool success) {
+  StorePolicyOp* op = static_cast<StorePolicyOp*>(delegate);
+  if (success)
+    op->Succeed(true);
+  else
+    op->Fail(NOT_FOUND);
+}
+
 void StorePolicyOp::Execute() {
   // get protobuf contents to sign
   if (!policy_->has_policy_data())
-    d_->OnSettingsOpCompleted(OPERATION_FAILED, false);
+    Fail(OPERATION_FAILED);
   if (!policy_->has_policy_data_signature())
     service_->StartSigningAttempt(policy_->policy_data(), this);
   else
     RequestStorePolicy();
+}
+
+void StorePolicyOp::Fail(SignedSettings::ReturnCode code) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &StorePolicyOp::PerformCallback, code, false));
+}
+
+void StorePolicyOp::Succeed(bool ignored) {
+  SignedSettings::ReturnCode code = SUCCESS;
+  bool to_ret = true;
+  em::PolicyData poldata;
+  if (SignedSettings::PolicyIsSane(*policy_, &poldata)) {
+    service_->set_cached_policy(poldata);
+  } else {
+    code = NOT_FOUND;
+    to_ret = false;
+  }
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &StorePolicyOp::PerformCallback, code, to_ret));
 }
 
 void StorePolicyOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
@@ -483,7 +821,7 @@ void StorePolicyOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
     RequestStorePolicy();
     return;
   }
-  d_->OnSettingsOpCompleted(SignedSettings::MapKeyOpCode(return_code), false);
+  Fail(SignedSettings::MapKeyOpCode(return_code));
 }
 
 void StorePolicyOp::RequestStorePolicy() {
@@ -491,11 +829,16 @@ void StorePolicyOp::RequestStorePolicy() {
   if (policy_->SerializeToString(&serialized)) {
     CrosLibrary::Get()->GetLoginLibrary()->RequestStorePolicy(
         serialized,
-        &SignedSettings::OnBoolComplete,
-        d_);
+        &StorePolicyOp::OnBoolComplete,
+        this);
   } else {
-    d_->OnSettingsOpCompleted(OPERATION_FAILED, false);
+    Fail(OPERATION_FAILED);
   }
+}
+
+void StorePolicyOp::PerformCallback(SignedSettings::ReturnCode code,
+                                    bool value) {
+  d_->OnSettingsOpCompleted(code, value);
 }
 
 RetrievePolicyOp::RetrievePolicyOp(
@@ -508,6 +851,28 @@ RetrievePolicyOp::~RetrievePolicyOp() {}
 void RetrievePolicyOp::Execute() {
   CrosLibrary::Get()->GetLoginLibrary()->RequestRetrievePolicy(
       &RetrievePolicyOp::OnStringComplete, this);
+}
+
+void RetrievePolicyOp::Fail(SignedSettings::ReturnCode code) {
+  VLOG(2) << "RetrievePolicyOp::Execute() failed with " << code;
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &RetrievePolicyOp::PerformCallback, code,
+                        em::PolicyFetchResponse()));
+}
+
+void RetrievePolicyOp::Succeed(const em::PolicyFetchResponse& value) {
+  em::PolicyData poldata;
+  if (SignedSettings::PolicyIsSane(value, &poldata)) {
+    service_->set_cached_policy(poldata);
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+                          &RetrievePolicyOp::PerformCallback,
+                          SUCCESS, value));
+  } else {
+    Fail(NOT_FOUND);
+  }
 }
 
 void RetrievePolicyOp::OnKeyOpComplete(
@@ -523,10 +888,9 @@ void RetrievePolicyOp::OnKeyOpComplete(
   }
   // Now, sure we're on the UI thread.
   if (return_code == OwnerManager::SUCCESS)
-    d_->OnSettingsOpCompleted(SUCCESS, policy_);
+    Succeed(policy_);
   else
-    d_->OnSettingsOpCompleted(SignedSettings::MapKeyOpCode(return_code),
-                              em::PolicyFetchResponse());
+    Fail(SignedSettings::MapKeyOpCode(return_code));
 }
 
 // static
@@ -540,21 +904,26 @@ void RetrievePolicyOp::OnStringComplete(void* delegate,
 void RetrievePolicyOp::ProcessPolicy(const char* out, const unsigned int len) {
   if (!out || !policy_.ParseFromString(std::string(out, len)) ||
       (!policy_.has_policy_data() && !policy_.has_policy_data_signature())) {
-    d_->OnSettingsOpCompleted(NOT_FOUND, policy_);
+    Fail(NOT_FOUND);
     return;
   }
   if (!policy_.has_policy_data()) {
-    d_->OnSettingsOpCompleted(OPERATION_FAILED, em::PolicyFetchResponse());
+    Fail(OPERATION_FAILED);
     return;
   }
   if (!policy_.has_policy_data_signature()) {
-    d_->OnSettingsOpCompleted(BAD_SIGNATURE, em::PolicyFetchResponse());
+    Fail(BAD_SIGNATURE);
     return;
   }
   std::vector<uint8> sig;
   const char* sig_ptr = policy_.policy_data_signature().c_str();
   sig.assign(sig_ptr, sig_ptr + policy_.policy_data_signature().length());
   service_->StartVerifyAttempt(policy_.policy_data(), sig, this);
+}
+
+void RetrievePolicyOp::PerformCallback(SignedSettings::ReturnCode code,
+                                       const em::PolicyFetchResponse& value) {
+  d_->OnSettingsOpCompleted(code, value);
 }
 
 }  // namespace chromeos

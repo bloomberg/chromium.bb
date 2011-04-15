@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,9 @@ namespace chromeos {
 
 class MockOwnershipService : public OwnershipService {
  public:
+  MOCK_METHOD1(set_cached_policy, void(const em::PolicyData&));
+  MOCK_METHOD0(has_cached_policy, bool(void));
+  MOCK_METHOD0(cached_policy, const em::PolicyData&(void));
   MOCK_METHOD0(IsAlreadyOwned, bool(void));
   MOCK_METHOD1(GetStatus, OwnershipService::Status(bool));
   MOCK_METHOD0(StartLoadOwnerKeyAttempt, void(void));

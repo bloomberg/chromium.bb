@@ -77,6 +77,11 @@ class LoginLibrary {
                                 const std::vector<uint8>& signature,
                                 Delegate* callback) = 0;
 
+  // DEPRECATED.  We have re-implemented owner-signed settings by fetching
+  // and caching a policy, and then pulling values from there.  This is all
+  // handled at the SignedSettings layer, so anyone using this stuff directly
+  // should not be doing so anymore.
+  //
   // Retrieves the user white list. Note the call is for display purpose only.
   // To determine if an email is white listed, you MUST use CheckWhitelist.
   //  Returns true if the request is successfully dispatched.

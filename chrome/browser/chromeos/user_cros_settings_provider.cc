@@ -133,9 +133,7 @@ bool GetUserWhitelist(ListValue* user_list) {
   DCHECK(!prefs->IsManagedPreference(kAccountsPrefUsers));
 
   std::vector<std::string> whitelist;
-  if (!CrosLibrary::Get()->EnsureLoaded() ||
-      !CrosLibrary::Get()->GetLoginLibrary()->EnumerateWhitelisted(
-          &whitelist)) {
+  if (!SignedSettings::EnumerateWhitelist(&whitelist)) {
     LOG(WARNING) << "Failed to retrieve user whitelist.";
     return false;
   }

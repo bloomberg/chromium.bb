@@ -1,21 +1,31 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
 
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/login/mock_ownership_service.h"
 #include "chrome/browser/chromeos/login/owner_manager.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
+#include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
+#include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::A;
+using ::testing::AtLeast;
 using ::testing::InSequence;
+using ::testing::Invoke;
 using ::testing::Return;
+using ::testing::ReturnRef;
+using ::testing::SaveArg;
+using ::testing::WithArg;
 
+namespace em = enterprise_management;
 namespace chromeos {
 
 class MockSignedSettingsHelperCallback : public SignedSettingsHelper::Callback {
@@ -41,8 +51,8 @@ class SignedSettingsHelperTest : public ::testing::Test,
  public:
   SignedSettingsHelperTest()
       : fake_email_("fakey@example.com"),
-        fake_prop_("prop_name"),
-        fake_value_("stub"),
+        fake_prop_(kAccountsPrefAllowGuest),
+        fake_value_("false"),
         message_loop_(MessageLoop::TYPE_UI),
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE),
@@ -64,13 +74,24 @@ class SignedSettingsHelperTest : public ::testing::Test,
   }
 
   virtual void OnOpStarted(SignedSettings* op) {
-    op->OnKeyOpComplete(OwnerManager::SUCCESS, std::vector<uint8>());
   }
 
   virtual void OnOpCompleted(SignedSettings* op) {
     --pending_ops_;
     if (!pending_ops_)
       MessageLoop::current()->Quit();
+  }
+
+  static void OnKeyOpComplete(OwnerManager::Delegate* op) {
+    op->OnKeyOpComplete(OwnerManager::SUCCESS, std::vector<uint8>());
+  }
+
+  em::PolicyData BuildPolicyData() {
+    em::PolicyData to_return;
+    em::ChromeDeviceSettingsProto pol;
+    to_return.set_policy_type(SignedSettings::kDevicePolicyType);
+    to_return.set_policy_value(pol.SerializeAsString());
+    return to_return;
   }
 
   const std::string fake_email_;
@@ -90,29 +111,45 @@ class SignedSettingsHelperTest : public ::testing::Test,
 TEST_F(SignedSettingsHelperTest, SerializedOps) {
   MockSignedSettingsHelperCallback cb;
 
-  ON_CALL(m_, GetStatus(_))
-      .WillByDefault(Return(OwnershipService::OWNERSHIP_TAKEN));
-  EXPECT_CALL(m_, GetStatus(_)).Times(2);
+  EXPECT_CALL(m_, GetStatus(_))
+      .Times(2)
+      .WillRepeatedly(Return(OwnershipService::OWNERSHIP_TAKEN));
+  EXPECT_CALL(m_, has_cached_policy())
+      .Times(5)
+      .WillRepeatedly(Return(true));
+  em::PolicyData fake_pol = BuildPolicyData();
+  EXPECT_CALL(m_, cached_policy())
+      .Times(5)
+      .WillRepeatedly(ReturnRef(fake_pol));
+  EXPECT_CALL(m_, set_cached_policy(A<const em::PolicyData&>()))
+      .Times(3)
+      .WillRepeatedly(SaveArg<0>(&fake_pol));
+
   InSequence s;
-  EXPECT_CALL(m_, StartVerifyAttempt(_, _, _)).Times(1);
-  EXPECT_CALL(cb, OnCheckWhitelistCompleted(SignedSettings::SUCCESS, _))
-      .Times(1);
-  EXPECT_CALL(m_, StartSigningAttempt(_, _)).Times(1);
+  EXPECT_CALL(m_, StartSigningAttempt(_, A<OwnerManager::Delegate*>()))
+      .WillOnce(WithArg<1>(Invoke(&SignedSettingsHelperTest::OnKeyOpComplete)));
   EXPECT_CALL(cb, OnWhitelistCompleted(SignedSettings::SUCCESS, _))
       .Times(1);
-  EXPECT_CALL(m_, StartSigningAttempt(_, _)).Times(1);
+
+  EXPECT_CALL(cb, OnCheckWhitelistCompleted(SignedSettings::SUCCESS, _))
+      .Times(1);
+
+  EXPECT_CALL(m_, StartSigningAttempt(_, A<OwnerManager::Delegate*>()))
+      .WillOnce(WithArg<1>(Invoke(&SignedSettingsHelperTest::OnKeyOpComplete)));
   EXPECT_CALL(cb, OnUnwhitelistCompleted(SignedSettings::SUCCESS, _))
       .Times(1);
-  EXPECT_CALL(m_, StartSigningAttempt(_, _)).Times(1);
+
+  EXPECT_CALL(m_, StartSigningAttempt(_, A<OwnerManager::Delegate*>()))
+      .WillOnce(WithArg<1>(Invoke(&SignedSettingsHelperTest::OnKeyOpComplete)));
   EXPECT_CALL(cb, OnStorePropertyCompleted(SignedSettings::SUCCESS, _, _))
       .Times(1);
-  EXPECT_CALL(m_, StartVerifyAttempt(_, _, _)).Times(1);
+
   EXPECT_CALL(cb, OnRetrievePropertyCompleted(SignedSettings::SUCCESS, _, _))
       .Times(1);
 
   pending_ops_ = 5;
-  SignedSettingsHelper::Get()->StartCheckWhitelistOp(fake_email_, &cb);
   SignedSettingsHelper::Get()->StartWhitelistOp(fake_email_, true, &cb);
+  SignedSettingsHelper::Get()->StartCheckWhitelistOp(fake_email_, &cb);
   SignedSettingsHelper::Get()->StartWhitelistOp(fake_email_, false, &cb);
   SignedSettingsHelper::Get()->StartStorePropertyOp(fake_prop_, fake_value_,
       &cb);
@@ -124,34 +161,49 @@ TEST_F(SignedSettingsHelperTest, SerializedOps) {
 TEST_F(SignedSettingsHelperTest, CanceledOps) {
   MockSignedSettingsHelperCallback cb;
 
-  ON_CALL(m_, GetStatus(_))
-      .WillByDefault(Return(OwnershipService::OWNERSHIP_TAKEN));
-  EXPECT_CALL(m_, GetStatus(_)).Times(2);
+  EXPECT_CALL(m_, GetStatus(_))
+      .Times(2)
+      .WillRepeatedly(Return(OwnershipService::OWNERSHIP_TAKEN));
+  EXPECT_CALL(m_, has_cached_policy())
+      .Times(6)
+      .WillRepeatedly(Return(true));
+  em::PolicyData fake_pol = BuildPolicyData();
+  EXPECT_CALL(m_, cached_policy())
+      .Times(7)
+      .WillRepeatedly(ReturnRef(fake_pol));
+  EXPECT_CALL(m_, set_cached_policy(A<const em::PolicyData&>()))
+      .Times(3)
+      .WillRepeatedly(SaveArg<0>(&fake_pol));
+
   InSequence s;
-  EXPECT_CALL(m_, StartVerifyAttempt(_, _, _)).Times(1);
-  EXPECT_CALL(cb, OnCheckWhitelistCompleted(SignedSettings::SUCCESS, _))
-      .Times(1);
-  EXPECT_CALL(m_, StartSigningAttempt(_, _)).Times(1);
+
+  EXPECT_CALL(m_, StartSigningAttempt(_, A<OwnerManager::Delegate*>()))
+      .WillOnce(WithArg<1>(Invoke(&SignedSettingsHelperTest::OnKeyOpComplete)));
   EXPECT_CALL(cb, OnWhitelistCompleted(SignedSettings::SUCCESS, _))
       .Times(1);
-  EXPECT_CALL(m_, StartSigningAttempt(_, _)).Times(1);
+
+  EXPECT_CALL(cb, OnCheckWhitelistCompleted(SignedSettings::SUCCESS, _))
+      .Times(1);
+
+  EXPECT_CALL(m_, StartSigningAttempt(_, A<OwnerManager::Delegate*>()))
+      .WillOnce(WithArg<1>(Invoke(&SignedSettingsHelperTest::OnKeyOpComplete)));
   EXPECT_CALL(cb, OnUnwhitelistCompleted(SignedSettings::SUCCESS, _))
       .Times(1);
 
   // CheckWhitelistOp for cb_to_be_canceled still gets executed but callback
   // does not happen.
-  EXPECT_CALL(m_, StartVerifyAttempt(_, _, _)).Times(1);
 
-  EXPECT_CALL(m_, StartSigningAttempt(_, _)).Times(1);
+  EXPECT_CALL(m_, StartSigningAttempt(_, A<OwnerManager::Delegate*>()))
+      .WillOnce(WithArg<1>(Invoke(&SignedSettingsHelperTest::OnKeyOpComplete)));
   EXPECT_CALL(cb, OnStorePropertyCompleted(SignedSettings::SUCCESS, _, _))
       .Times(1);
-  EXPECT_CALL(m_, StartVerifyAttempt(_, _, _)).Times(1);
+
   EXPECT_CALL(cb, OnRetrievePropertyCompleted(SignedSettings::SUCCESS, _, _))
       .Times(1);
 
   pending_ops_ = 6;
-  SignedSettingsHelper::Get()->StartCheckWhitelistOp(fake_email_, &cb);
   SignedSettingsHelper::Get()->StartWhitelistOp(fake_email_, true, &cb);
+  SignedSettingsHelper::Get()->StartCheckWhitelistOp(fake_email_, &cb);
   SignedSettingsHelper::Get()->StartWhitelistOp(fake_email_, false, &cb);
 
   MockSignedSettingsHelperCallback cb_to_be_canceled;

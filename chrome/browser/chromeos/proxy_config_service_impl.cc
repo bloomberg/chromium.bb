@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/common/json_value_serializer.h"
 #include "content/browser/browser_thread.h"
 
@@ -91,9 +92,6 @@ std::string ProxyConfigToString(
   stream << proxy_config;
   return stream.str();
 }
-
-// Name of signed setting persisted on device, writeable only by owner.
-const char* kSettingProxyEverywhere = "cros.proxy.everywhere";
 
 // Names used for dictionary values to serialize chromeos::ProxyConfig.
 const char* kMode = "mode";

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,9 @@ const char kAccountsPrefAllowNewUser[] = "cros.accounts.allowGuest";
 const char kAccountsPrefShowUserNamesOnSignIn[]
     = "cros.accounts.showUserNamesOnSignIn";
 const char kAccountsPrefUsers[] = "cros.accounts.users";
+
+// Name of signed setting persisted on device, writeable only by owner.
+const char kSettingProxyEverywhere[] = "cros.proxy.everywhere";
 
 // All cros.signed.* settings are stored in SignedSettings.
 const char kSignedDataRoamingEnabled[] = "cros.signed.data_roaming_enabled";

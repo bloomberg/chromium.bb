@@ -28,6 +28,7 @@ OwnershipService* OwnershipService::GetSharedInstance() {
 OwnershipService::OwnershipService()
     : manager_(new OwnerManager),
       utils_(OwnerKeyUtils::Create()),
+      policy_(NULL),
       ownership_status_(OWNERSHIP_UNKNOWN) {
   notification_registrar_.Add(
       this,
@@ -49,6 +50,19 @@ OwnershipService::OwnershipService()
 }
 
 OwnershipService::~OwnershipService() {}
+
+void OwnershipService::set_cached_policy(const em::PolicyData& pol) {
+  policy_.reset(pol.New());
+  policy_->CheckTypeAndMergeFrom(pol);
+}
+
+bool OwnershipService::has_cached_policy() {
+  return policy_.get();
+}
+
+const em::PolicyData& OwnershipService::cached_policy() {
+  return *(policy_.get());
+}
 
 bool OwnershipService::IsAlreadyOwned() {
   return file_util::PathExists(utils_->GetOwnerKeyFilePath());

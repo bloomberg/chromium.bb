@@ -9,12 +9,15 @@
 #include "base/timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/login/signed_settings.h"
 #include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
+#include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 
+namespace em = enterprise_management;
 namespace chromeos {
 
 class LoginLibraryImpl : public LoginLibrary {
@@ -113,7 +116,9 @@ class LoginLibraryImpl : public LoginLibrary {
     return rv;
   }
 
+  // DEPRECATED.
   bool EnumerateWhitelisted(std::vector<std::string>* whitelisted) {
+    NOTREACHED();
     UserList* list = NULL;
     if (chromeos::EnumerateWhitelistedSafe(&list)) {
       for (int i = 0; i < list->num_users; i++)
@@ -193,6 +198,24 @@ class LoginLibraryImpl : public LoginLibrary {
     base::OneShotTimer<JobRestartRequest> timer_;
   };
 
+  class StubDelegate
+      : public SignedSettings::Delegate<const em::PolicyFetchResponse&> {
+   public:
+    StubDelegate() : polfetcher_(NULL) {}
+    virtual ~StubDelegate() {}
+    void set_fetcher(SignedSettings* s) { polfetcher_ = s; }
+    SignedSettings* fetcher() { return polfetcher_.get(); }
+    // Implementation of SignedSettings::Delegate
+    virtual void OnSettingsOpCompleted(SignedSettings::ReturnCode code,
+                                       const em::PolicyFetchResponse& value) {
+      VLOG(2) << "Done Fetching Policy";
+      delete this;
+    }
+   private:
+    scoped_refptr<SignedSettings> polfetcher_;
+    DISALLOW_COPY_AND_ASSIGN(StubDelegate);
+  };
+
   static void Handler(void* object, const OwnershipEvent& event) {
     LoginLibraryImpl* self = static_cast<LoginLibraryImpl*>(object);
     switch (event) {
@@ -253,9 +276,10 @@ class LoginLibraryImpl : public LoginLibrary {
   }
 
   void CompletePropertyOp(bool result) {
-    if (property_op_callback_) {
-      property_op_callback_->OnComplete(result);
-      property_op_callback_ = NULL;
+    if (result) {
+      StubDelegate* stub = new StubDelegate();  // Manages its own lifetime.
+      stub->set_fetcher(SignedSettings::CreateRetrievePolicyOp(stub));
+      stub->fetcher()->Execute();
     }
   }
 

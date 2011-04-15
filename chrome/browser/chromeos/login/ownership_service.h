@@ -13,6 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/login/owner_key_utils.h"
 #include "chrome/browser/chromeos/login/owner_manager.h"
+#include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -22,6 +23,7 @@ namespace base {
 template <typename T> struct DefaultLazyInstanceTraits;
 }
 
+namespace em = enterprise_management;
 namespace chromeos {
 
 class OwnershipService : public NotificationObserver {
@@ -36,6 +38,17 @@ class OwnershipService : public NotificationObserver {
   // Returns the singleton instance of the OwnershipService.
   static OwnershipService* GetSharedInstance();
   virtual ~OwnershipService();
+
+  // Owner settings are being re-implemented as a single, signed protobuf
+  // that is stored by the session manager.  Thus, to write a setting, you
+  // need to have the existing policy, update it, re-sign it, and then have
+  // it stored.  This could be done by requesting the policy every time, or
+  // by caching it and updating it upon every successful store.
+  // Caching is faster and easier, so we'll do that.  These are the
+  // getters/setters for the cached policy.
+  virtual void set_cached_policy(const em::PolicyData& pol);
+  virtual bool has_cached_policy();
+  virtual const em::PolicyData& cached_policy();
 
   // Sets a new owner key. This will _not_ load the key material from disk, but
   // rather update Chrome's in-memory copy of the key. |callback| will be
@@ -120,6 +133,7 @@ class OwnershipService : public NotificationObserver {
 
   scoped_refptr<OwnerManager> manager_;
   scoped_refptr<OwnerKeyUtils> utils_;
+  scoped_ptr<em::PolicyData> policy_;
   NotificationRegistrar notification_registrar_;
   Status ownership_status_;
   base::Lock ownership_status_lock_;
