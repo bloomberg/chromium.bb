@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "ui/base/models/combobox_model.h"
 #include "views/controls/button/button.h"
@@ -29,11 +30,10 @@ class FilePath;
 
 namespace chromeos {
 
-class NetworkConfigView;
 class WifiConfigModel;
 
 // A dialog box for showing a password textfield.
-class WifiConfigView : public views::View,
+class WifiConfigView : public ChildNetworkConfigView,
                        public views::TextfieldController,
                        public views::ButtonListener,
                        public views::Combobox::Listener {
@@ -58,19 +58,18 @@ class WifiConfigView : public views::View,
   virtual void ItemChanged(views::Combobox* combo_box,
                            int prev_index, int new_index);
 
+  // ChildNetworkConfigView implementation.
+  virtual string16 GetTitle();
+  virtual bool CanLogin();
+
   // Login to network. Returns false if the dialog should remain open.
   virtual bool Login();
-
-  // Cancel the dialog.
   virtual void Cancel();
 
   // Get the typed in ssid.
   std::string GetSSID() const;
   // Get the typed in passphrase.
   std::string GetPassphrase() const;
-
-  // Returns whether or not we can login.
-  bool CanLogin();
 
  private:
   // Initializes UI.
@@ -83,16 +82,12 @@ class WifiConfigView : public views::View,
   void RefreshEAPFields();
 
   // Updates the error text label.
-  void UpdateErrorLabel(bool failed);
-
-  NetworkConfigView* parent_;
+  void UpdateErrorLabel();
 
   scoped_ptr<WifiConfigModel> wifi_config_model_;
 
   // Whether or not it is an 802.1x network.
   bool is_8021x_;
-
-  std::string service_path_;
 
   views::Textfield* ssid_textfield_;
   views::Combobox* eap_method_combobox_;

@@ -63,6 +63,8 @@ class InternetOptionsHandler
                              const std::string& command);
   void HandleCellularButtonClick(const std::string& service_path,
                                  const std::string& command);
+  void HandleVPNButtonClick(const std::string& service_path,
+                            const std::string& command);
 
   // Initiates cellular plan data refresh. The results from libcros will be
   // passed through CellularDataPlanChanged() callback method.
@@ -94,6 +96,8 @@ class InternetOptionsHandler
   void PopulateCellularDetails(chromeos::NetworkLibrary* cros,
                                const chromeos::CellularNetwork* cellular,
                                DictionaryValue* dictionary);
+  void PopulateVPNDetails(const chromeos::VirtualNetwork* vpn,
+                          DictionaryValue* dictionary);
 
   // Converts CellularDataPlan structure into dictionary for JS. Formats plan
   // settings into human readable texts.

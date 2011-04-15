@@ -19,7 +19,8 @@
 namespace chromeos {
 
 NetworkLoginObserver::NetworkLoginObserver(NetworkLibrary* netlib) {
-  RefreshStoredNetworks(netlib->wifi_networks());
+  RefreshStoredNetworks(netlib->wifi_networks(),
+                        netlib->virtual_networks());
   netlib->AddNetworkManagerObserver(this);
 }
 
@@ -49,39 +50,49 @@ void NetworkLoginObserver::CreateModalPopup(views::WindowDelegate* view) {
 }
 
 void NetworkLoginObserver::RefreshStoredNetworks(
-    const WifiNetworkVector& wifi_networks) {
-  wifi_network_failures_.clear();
+    const WifiNetworkVector& wifi_networks,
+    const VirtualNetworkVector& virtual_networks) {
+  network_failures_.clear();
   for (WifiNetworkVector::const_iterator it = wifi_networks.begin();
-       it < wifi_networks.end(); it++) {
+       it != wifi_networks.end(); it++) {
     const WifiNetwork* wifi = *it;
-    wifi_network_failures_[wifi->service_path()] = wifi->failed();
+    network_failures_[wifi->service_path()] = wifi->failed();
+  }
+  for (VirtualNetworkVector::const_iterator it = virtual_networks.begin();
+       it != virtual_networks.end(); it++) {
+    const VirtualNetwork* vpn = *it;
+    network_failures_[vpn->service_path()] = vpn->failed();
   }
 }
 
 void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
   const WifiNetworkVector& wifi_networks = cros->wifi_networks();
+  const VirtualNetworkVector& virtual_networks = cros->virtual_networks();
 
   NetworkConfigView* view = NULL;
   // Check to see if we have any newly failed wifi network.
   for (WifiNetworkVector::const_iterator it = wifi_networks.begin();
-       it < wifi_networks.end(); it++) {
+       it != wifi_networks.end(); it++) {
     WifiNetwork* wifi = *it;
     if (wifi->failed()) {
-      WifiFailureMap::iterator iter =
-          wifi_network_failures_.find(wifi->service_path());
+      NetworkFailureMap::iterator iter =
+          network_failures_.find(wifi->service_path());
       // If the network did not previously exist, then don't do anything.
       // For example, if the user travels to a location and finds a service
       // that has previously failed, we don't want to show an error.
-      if (iter == wifi_network_failures_.end())
+      if (iter == network_failures_.end())
         continue;
 
       // If this network was in a failed state previously, then it's not new.
       if (iter->second)
         continue;
 
-      // Display login box again for bad_passphrase and bad_wepkey errors.
+      // Display login dialog again for bad_passphrase and bad_wepkey errors.
+      // Always re-display the login dialog for added networks that failed to
+      // connect for any reason (e.g. incorrect security type was chosen).
       if (wifi->error() == ERROR_BAD_PASSPHRASE ||
-          wifi->error() == ERROR_BAD_WEPKEY) {
+          wifi->error() == ERROR_BAD_WEPKEY ||
+          wifi->added()) {
         // The NetworkConfigView will show the appropriate error message.
         view = new NetworkConfigView(wifi);
         // There should only be one wifi network that failed to connect.
@@ -91,8 +102,28 @@ void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
       }
     }
   }
+  // Check to see if we have any newly failed virtual network.
+  // See wifi section for detailed comments.
+  if (!view) {
+    for (VirtualNetworkVector::const_iterator it = virtual_networks.begin();
+         it != virtual_networks.end(); it++) {
+      VirtualNetwork* vpn = *it;
+      if (vpn->failed()) {
+        NetworkFailureMap::iterator iter =
+            network_failures_.find(vpn->service_path());
+        if (iter == network_failures_.end())
+          continue;  // New network.
+        if (iter->second)
+          continue;  // Previous failure.
+        if (vpn->error() == ERROR_BAD_PASSPHRASE || vpn->added()) {
+          view = new NetworkConfigView(vpn);
+          break;
+        }
+      }
+    }
+  }
 
-  RefreshStoredNetworks(wifi_networks);
+  RefreshStoredNetworks(wifi_networks, virtual_networks);
 
   // Show login box if necessary.
   if (view)

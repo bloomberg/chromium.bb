@@ -16,7 +16,7 @@ class Window;
 
 namespace chromeos {
 
-class WifiConfigView;
+class ChildNetworkConfigView;
 
 // A dialog box for showing a password textfield.
 class NetworkConfigView : public views::View,
@@ -34,10 +34,10 @@ class NetworkConfigView : public views::View,
      virtual ~Delegate() {}
   };
 
-  // Login dialog for wifi.
-  explicit NetworkConfigView(WifiNetwork* wifi);
-  // Login dialog for hidden networks.
-  explicit NetworkConfigView();
+  // Login dialog for known networks.
+  explicit NetworkConfigView(Network* network);
+  // Login dialog for new/hidden networks.
+  explicit NetworkConfigView(ConnectionType type);
   virtual ~NetworkConfigView() {}
 
   // Returns corresponding native window.
@@ -83,15 +83,48 @@ class NetworkConfigView : public views::View,
   // True when opening in browser, otherwise in OOBE/login mode.
   bool browser_mode_;
 
-  std::wstring title_;
-
-  // WifiConfig is the only child of this class.
-  // It will get deleted when NetworkConfigView gets cleaned up.
-  WifiConfigView* wificonfig_view_;
+  // There's always only one child view, which will get deleted when
+  // NetworkConfigView gets cleaned up.
+  ChildNetworkConfigView* child_config_view_;
 
   Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigView);
+};
+
+// Children of NetworkConfigView must subclass this and implement the virtual
+// methods, which are called by NetworkConfigView.
+class ChildNetworkConfigView : public views::View {
+ public:
+  // Called to get title for parent NetworkConfigView dialog box.
+  virtual string16 GetTitle() = 0;
+
+  // Called to determine if "Connect" button should be enabled.
+  virtual bool CanLogin() = 0;
+
+  // Called when "Connect" button is clicked.
+  // Should return false if dialog should remain open.
+  virtual bool Login() = 0;
+
+  // Called when "Cancel" button is clicked.
+  virtual void Cancel() = 0;
+
+  // Width of passphrase fields.
+  static const int kPassphraseWidth;
+
+ protected:
+  explicit ChildNetworkConfigView(NetworkConfigView* parent, Network* network)
+      : service_path_(network->service_path()),
+        parent_(parent) {}
+  explicit ChildNetworkConfigView(NetworkConfigView* parent)
+      : parent_(parent) {}
+  virtual ~ChildNetworkConfigView() {}
+
+  std::string service_path_;
+  NetworkConfigView* parent_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChildNetworkConfigView);
 };
 
 }  // namespace chromeos

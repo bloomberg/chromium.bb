@@ -70,6 +70,8 @@ class MockNetworkLibrary : public NetworkLibrary {
                      WifiNetwork*(const std::string&));
   MOCK_CONST_METHOD1(FindCellularNetworkByPath,
                      CellularNetwork*(const std::string&));
+  MOCK_CONST_METHOD1(FindVirtualNetworkByPath,
+                     VirtualNetwork*(const std::string&));
   MOCK_CONST_METHOD1(GetDataPlans,
                      CellularDataPlanVector*(const std::string&));
   MOCK_CONST_METHOD1(GetSignificantDataPlan,
@@ -84,17 +86,22 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD1(GetWifiAccessPoints, bool(WifiAccessPointVector*));
   MOCK_METHOD1(ConnectToWifiNetwork, void(WifiNetwork*));
   MOCK_METHOD1(ConnectToWifiNetwork, void(const std::string&));
-  MOCK_METHOD6(ConnectToWifiNetwork, void(ConnectionSecurity security,
+  MOCK_METHOD5(ConnectToWifiNetwork, void(ConnectionSecurity security,
                                           const std::string&,
                                           const std::string&,
                                           const std::string&,
-                                          const std::string&,
-                                          bool));
+                                          const std::string&));
   MOCK_METHOD1(ConnectToCellularNetwork, void(CellularNetwork*));
+  MOCK_METHOD1(ConnectToVirtualNetwork, void(VirtualNetwork*));
+  MOCK_METHOD5(ConnectToVirtualNetworkPSK, void(const std::string&,
+                                                const std::string&,
+                                                const std::string&,
+                                                const std::string&,
+                                                const std::string&));
   MOCK_METHOD0(SignalCellularPlanPayment, void(void));
   MOCK_METHOD0(HasRecentCellularPlanPayment, bool(void));
 
-  MOCK_METHOD1(DisconnectFromWirelessNetwork, void(const WirelessNetwork*));
+  MOCK_METHOD1(DisconnectFromNetwork, void(const Network*));
   MOCK_METHOD1(ForgetWifiNetwork, void(const std::string&));
 
   MOCK_CONST_METHOD0(ethernet_available, bool(void));
@@ -108,6 +115,8 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_CONST_METHOD0(wifi_scanning, bool(void));
 
   MOCK_CONST_METHOD0(active_network, const Network*(void));
+  MOCK_CONST_METHOD0(connected_network, const Network*(void));
+
   MOCK_CONST_METHOD0(offline_mode, bool(void));
 
   MOCK_METHOD1(EnableEthernetNetworkDevice, void(bool));

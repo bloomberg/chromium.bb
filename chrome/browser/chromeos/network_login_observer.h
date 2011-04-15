@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,17 +25,18 @@ class NetworkLoginObserver : public NetworkLibrary::NetworkManagerObserver {
   explicit NetworkLoginObserver(NetworkLibrary* netlib);
   virtual ~NetworkLoginObserver();
 
-  typedef std::map<std::string, bool> WifiFailureMap;
+  typedef std::map<std::string, bool> NetworkFailureMap;
  private:
   virtual void CreateModalPopup(views::WindowDelegate* view);
 
-  virtual void RefreshStoredNetworks(const WifiNetworkVector& wifi_networks);
+  virtual void RefreshStoredNetworks(const WifiNetworkVector& wifi_networks,
+                                     const VirtualNetworkVector& vpn_networks);
 
   // NetworkLibrary::NetworkManagerObserver implementation.
   virtual void OnNetworkManagerChanged(NetworkLibrary* obj);
 
   // Wifi networks by service path mapped to if it failed previously.
-  WifiFailureMap wifi_network_failures_;
+  NetworkFailureMap network_failures_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkLoginObserver);
 };

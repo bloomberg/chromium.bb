@@ -9,7 +9,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/options/wifi_config_model.h"
 #include "chrome/common/chrome_switches.h"  // TODO(jamescook): Remove.
 #include "grit/chromium_strings.h"
@@ -30,9 +29,6 @@
 namespace chromeos {
 
 namespace {
-
-// The width of the password field.
-const int kPasswordWidth = 150;
 
 enum SecurityComboboxIndex {
   SECURITY_INDEX_NONE  = 0,
@@ -240,10 +236,9 @@ class ClientCertComboboxModel : public ui::ComboboxModel {
 }  // namespace
 
 WifiConfigView::WifiConfigView(NetworkConfigView* parent, WifiNetwork* wifi)
-    : parent_(parent),
+    : ChildNetworkConfigView(parent, wifi),
       wifi_config_model_(new WifiConfigModel()),
       is_8021x_(false),
-      service_path_(wifi->service_path()),
       ssid_textfield_(NULL),
       eap_method_combobox_(NULL),
       phase_2_auth_label_(NULL),
@@ -266,7 +261,7 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent, WifiNetwork* wifi)
 }
 
 WifiConfigView::WifiConfigView(NetworkConfigView* parent)
-    : parent_(parent),
+    : ChildNetworkConfigView(parent),
       wifi_config_model_(new WifiConfigModel()),
       is_8021x_(false),
       ssid_textfield_(NULL),
@@ -291,6 +286,10 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent)
 }
 
 WifiConfigView::~WifiConfigView() {
+}
+
+string16 WifiConfigView::GetTitle() {
+  return l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_JOIN_WIFI_NETWORKS);
 }
 
 bool WifiConfigView::CanLogin() {
@@ -361,27 +360,25 @@ void WifiConfigView::RefreshEAPFields() {
     identity_anonymous_textfield_->SetText(string16());
 }
 
-void WifiConfigView::UpdateErrorLabel(bool failed) {
-  static const int kNoError = -1;
-  int id = kNoError;
+void WifiConfigView::UpdateErrorLabel() {
+  std::string error_msg;
   if (!service_path_.empty()) {
     NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
     const WifiNetwork* wifi = cros->FindWifiNetworkByPath(service_path_);
-    if (wifi) {
-      // Right now, only displaying bad_passphrase and bad_wepkey errors.
-      if (wifi->error() == ERROR_BAD_PASSPHRASE)
-        id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_PASSPHRASE;
-      else if (wifi->error() == ERROR_BAD_WEPKEY)
-        id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_WEPKEY;
+    if (wifi && wifi->failed()) {
+      if (wifi->error() == ERROR_BAD_PASSPHRASE) {
+        error_msg = l10n_util::GetStringUTF8(
+            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_PASSPHRASE);
+      } else if (wifi->error() == ERROR_BAD_WEPKEY) {
+        error_msg = l10n_util::GetStringUTF8(
+            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_WEPKEY);
+      } else {
+        error_msg = wifi->GetErrorString();
+      }
     }
   }
-  if (id == kNoError && failed) {
-    // We don't know what the error was. For now assume bad identity or
-    // passphrase. See TODO comment in Login() and crosbug.com/9538.
-    id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_CREDENTIALS;
-  }
-  if (id != kNoError) {
-    error_label_->SetText(UTF16ToWide(l10n_util::GetStringUTF16(id)));
+  if (!error_msg.empty()) {
+    error_label_->SetText(UTF8ToWide(error_msg));
     error_label_->SetVisible(true);
   } else {
     error_label_->SetVisible(false);
@@ -452,7 +449,7 @@ bool WifiConfigView::Login() {
         break;
     }
     cros->ConnectToWifiNetwork(
-        sec, GetSSID(), GetPassphrase(), std::string(), std::string(), true);
+        sec, GetSSID(), GetPassphrase(), std::string(), std::string());
   } else {
     WifiNetwork* wifi = cros->FindWifiNetworkByPath(service_path_);
     if (!wifi) {
@@ -606,7 +603,8 @@ void WifiConfigView::Init(WifiNetwork* wifi) {
                         views::GridLayout::USE_PREF, 0, 0);
   // Textfield
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
-                        views::GridLayout::USE_PREF, 0, kPasswordWidth);
+                        views::GridLayout::USE_PREF, 0,
+                        ChildNetworkConfigView::kPassphraseWidth);
   // Password visible button
   column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::FILL, 1,
                         views::GridLayout::USE_PREF, 0, 0);
@@ -675,8 +673,8 @@ void WifiConfigView::Init(WifiNetwork* wifi) {
             IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_CA)));
     layout->AddView(server_ca_cert_label_);
     server_ca_cert_combobox_ = new ComboboxWithWidth(
-        new ServerCACertComboboxModel(
-            wifi_config_model_.get()), kPasswordWidth);
+        new ServerCACertComboboxModel(wifi_config_model_.get()),
+        ChildNetworkConfigView::kPassphraseWidth);
     server_ca_cert_label_->SetEnabled(false);
     server_ca_cert_combobox_->SetEnabled(false);
     server_ca_cert_combobox_->set_listener(this);
@@ -888,7 +886,7 @@ void WifiConfigView::Init(WifiNetwork* wifi) {
   layout->AddView(error_label_);
 
   // Set or hide the error text.
-  UpdateErrorLabel(false);
+  UpdateErrorLabel();
 }
 
 }  // namespace chromeos

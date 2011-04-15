@@ -62,8 +62,6 @@ NetworkMessageObserver::~NetworkMessageObserver() {
   notification_connection_error_.Hide();
   notification_low_data_.Hide();
   notification_no_data_.Hide();
-  STLDeleteValues(&cellular_networks_);
-  STLDeleteValues(&wifi_networks_);
 }
 
 // static
@@ -162,63 +160,83 @@ void NetworkMessageObserver::ShowLowDataNotification(
       false, false);
 }
 
-void NetworkMessageObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
-  const WifiNetworkVector& wifi_networks = obj->wifi_networks();
-  const CellularNetworkVector& cellular_networks = obj->cellular_networks();
+bool NetworkMessageObserver::CheckNetworkFailed(const Network* network) {
+  if (network->failed()) {
+    NetworkStateMap::iterator iter =
+        network_states_.find(network->service_path());
+    // If the network did not previously exist, then don't do anything.
+    // For example, if the user travels to a location and finds a service
+    // that has previously failed, we don't want to show a notification.
+    if (iter == network_states_.end())
+      return false;
+    // If network connection failed, display a notification.
+    // We only do this if we were trying to make a new connection.
+    // So if a previously connected network got disconnected for any reason,
+    // we don't display notification.
+    ConnectionState prev_state = iter->second;
+    if (Network::IsConnectingState(prev_state))
+      return true;
+  }
+  return false;
+}
 
-  std::string new_failed_network;
-  // Check to see if we have any newly failed wifi network.
-  for (WifiNetworkVector::const_iterator it = wifi_networks.begin();
-       it < wifi_networks.end(); it++) {
-    const WifiNetwork* wifi = *it;
-    if (wifi->failed()) {
-      ServicePathWifiMap::iterator iter =
-          wifi_networks_.find(wifi->service_path());
-      // If the network did not previously exist, then don't do anything.
-      // For example, if the user travels to a location and finds a service
-      // that has previously failed, we don't want to show a notification.
-      if (iter == wifi_networks_.end())
-        continue;
+void NetworkMessageObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
+  const Network* new_failed_network = NULL;
+  // Check to see if we have any newly failed networks.
+  for (WifiNetworkVector::const_iterator it = cros->wifi_networks().begin();
+       it != cros->wifi_networks().end(); it++) {
+    const WifiNetwork* net = *it;
+    if (CheckNetworkFailed(net)) {
+      new_failed_network = net;
+      break;  // There should only be one failed network.
+    }
+  }
 
-      const WifiNetwork* wifi_old = iter->second;
-      // If network connection failed, display a notification.
-      // We only do this if we were trying to make a new connection.
-      // So if a previously connected network got disconnected for any reason,
-      // we don't display notification.
-      if (wifi_old->connecting()) {
-        new_failed_network = wifi->name();
-        // Like above, there should only be one newly failed network.
-        break;
+  if (!new_failed_network) {
+    for (CellularNetworkVector::const_iterator it =
+             cros->cellular_networks().begin();
+         it != cros->cellular_networks().end(); it++) {
+      const CellularNetwork* net = *it;
+      if (CheckNetworkFailed(net)) {
+        new_failed_network = net;
+        break;  // There should only be one failed network.
       }
     }
   }
 
-  // Refresh stored networks.
-  STLDeleteValues(&wifi_networks_);
-  wifi_networks_.clear();
-  for (WifiNetworkVector::const_iterator it = wifi_networks.begin();
-       it < wifi_networks.end(); it++) {
-    const WifiNetwork* wifi = *it;
-    wifi_networks_[wifi->service_path()] = new WifiNetwork(*wifi);
+  if (!new_failed_network) {
+    for (VirtualNetworkVector::const_iterator it =
+             cros->virtual_networks().begin();
+         it != cros->virtual_networks().end(); it++) {
+      const VirtualNetwork* net = *it;
+      if (CheckNetworkFailed(net)) {
+        new_failed_network = net;
+        break;  // There should only be one failed network.
+      }
+    }
   }
 
-  STLDeleteValues(&cellular_networks_);
-  cellular_networks_.clear();
-  for (CellularNetworkVector::const_iterator it = cellular_networks.begin();
-       it < cellular_networks.end(); it++) {
-    const CellularNetwork* cellular = *it;
-    cellular_networks_[cellular->service_path()] =
-        new CellularNetwork(*cellular);
-  }
+  network_states_.clear();
+  for (WifiNetworkVector::const_iterator it = cros->wifi_networks().begin();
+       it != cros->wifi_networks().end(); it++)
+    network_states_[(*it)->service_path()] = (*it)->state();
+  for (CellularNetworkVector::const_iterator it =
+           cros->cellular_networks().begin();
+       it != cros->cellular_networks().end(); it++)
+    network_states_[(*it)->service_path()] = (*it)->state();
+  for (VirtualNetworkVector::const_iterator it =
+           cros->virtual_networks().begin();
+       it != cros->virtual_networks().end(); it++)
+    network_states_[(*it)->service_path()] = (*it)->state();
 
   // Show connection error notification if necessary.
-  if (!new_failed_network.empty()) {
+  if (new_failed_network) {
     // Hide if already shown to force show it in case user has closed it.
     if (notification_connection_error_.visible())
       notification_connection_error_.Hide();
     notification_connection_error_.Show(l10n_util::GetStringFUTF16(
         IDS_NETWORK_CONNECTION_ERROR_MESSAGE,
-        ASCIIToUTF16(new_failed_network)), false, false);
+        ASCIIToUTF16(new_failed_network->name())), false, false);
   }
 }
 
@@ -279,7 +297,7 @@ void NetworkMessageObserver::OnCellularDataPlanChanged(NetworkLibrary* cros) {
   cellular_data_plan_type_ = current_plan->plan_type;
 }
 
-void NetworkMessageObserver::OnConnectionInitiated(NetworkLibrary* obj,
+void NetworkMessageObserver::OnConnectionInitiated(NetworkLibrary* cros,
                                                    const Network* network) {
   // If user initiated any network connection, we hide the error notification.
   notification_connection_error_.Hide();

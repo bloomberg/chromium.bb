@@ -1091,6 +1091,9 @@ const char kEnableDevicePolicy[]            = "enable-device-policy";
 // client-side certificates.
 const char kEnableExperimentalEap[]         = "enable-experimental-eap";
 
+// Enables VPN support on ChromeOS.
+const char kEnableVPN[]                     = "enable-vpn";
+
 // Enable the redirection of viewable document requests to the Google
 // Document Viewer.
 const char kEnableGView[]                   = "enable-gview";

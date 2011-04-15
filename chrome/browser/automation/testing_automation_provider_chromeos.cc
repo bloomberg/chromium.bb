@@ -459,7 +459,7 @@ void TestingAutomationProvider::ConnectToHiddenWifiNetwork(
   new SSIDConnectObserver(this, reply_message, ssid);
 
   network_library->ConnectToWifiNetwork(connection_security, ssid, password,
-                                        identity, certpath, false);
+                                        identity, certpath);
 }
 
 void TestingAutomationProvider::DisconnectFromWifiNetwork(
@@ -475,7 +475,7 @@ void TestingAutomationProvider::DisconnectFromWifiNetwork(
     return;
   }
 
-  network_library->DisconnectFromWirelessNetwork(wifi);
+  network_library->DisconnectFromNetwork(wifi);
   reply.SendSuccess(NULL);
 }
 

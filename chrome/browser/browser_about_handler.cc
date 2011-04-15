@@ -363,11 +363,180 @@ std::string AboutAbout() {
 }
 
 #if defined(OS_CHROMEOS)
+
+// Html output helper functions
+// TODO(stevenjb): L10N this.
+
+// Helper function to wrap Html with <th> tag.
+static std::string WrapWithTH(std::string text) {
+  return "<th>" + text + "</th>";
+}
+
+// Helper function to wrap Html with <td> tag.
+static std::string WrapWithTD(std::string text) {
+  return "<td>" + text + "</td>";
+}
+
+// Helper function to create an Html table header for a Network.
+static std::string ToHtmlTableHeader(const chromeos::Network* network) {
+  std::string str =
+      WrapWithTH("Name") +
+      WrapWithTH("Active") +
+      WrapWithTH("State");
+  if (network->type() == chromeos::TYPE_WIFI ||
+      network->type() == chromeos::TYPE_CELLULAR) {
+    str += WrapWithTH("Auto-Connect");
+    str += WrapWithTH("Strength");
+  }
+  if (network->type() == chromeos::TYPE_WIFI) {
+    str += WrapWithTH("Encryption");
+    str += WrapWithTH("Passphrase");
+    str += WrapWithTH("Identity");
+    str += WrapWithTH("Certificate");
+  }
+  if (network->type() == chromeos::TYPE_CELLULAR) {
+    str += WrapWithTH("Technology");
+    str += WrapWithTH("Connectivity");
+    str += WrapWithTH("Activation");
+    str += WrapWithTH("Roaming");
+  }
+  if (network->type() == chromeos::TYPE_VPN) {
+    str += WrapWithTH("Host");
+    str += WrapWithTH("Provider Type");
+    str += WrapWithTH("PSK Passphrase");
+    str += WrapWithTH("Username");
+    str += WrapWithTH("User Passphrase");
+  }
+  str += WrapWithTH("Error");
+  str += WrapWithTH("IP Address");
+  return str;
+}
+
+// Helper function to create an Html table row for a Network.
+static std::string ToHtmlTableRow(const chromeos::Network* network) {
+  std::string str =
+      WrapWithTD(network->name()) +
+      WrapWithTD(base::IntToString(network->is_active())) +
+      WrapWithTD(network->GetStateString());
+  if (network->type() == chromeos::TYPE_WIFI ||
+      network->type() == chromeos::TYPE_CELLULAR) {
+    const chromeos::WirelessNetwork* wireless =
+        static_cast<const chromeos::WirelessNetwork*>(network);
+    str += WrapWithTD(base::IntToString(wireless->auto_connect()));
+    str += WrapWithTD(base::IntToString(wireless->strength()));
+  }
+  if (network->type() == chromeos::TYPE_WIFI) {
+    const chromeos::WifiNetwork* wifi =
+        static_cast<const chromeos::WifiNetwork*>(network);
+    str += WrapWithTD(wifi->GetEncryptionString());
+    str += WrapWithTD(std::string(wifi->passphrase().length(), '*'));
+    str += WrapWithTD(wifi->identity());
+    str += WrapWithTD(wifi->cert_path());
+  }
+  if (network->type() == chromeos::TYPE_CELLULAR) {
+    const chromeos::CellularNetwork* cell =
+        static_cast<const chromeos::CellularNetwork*>(network);
+    str += WrapWithTH(cell->GetNetworkTechnologyString());
+    str += WrapWithTH(cell->GetConnectivityStateString());
+    str += WrapWithTH(cell->GetActivationStateString());
+    str += WrapWithTH(cell->GetRoamingStateString());
+  }
+  if (network->type() == chromeos::TYPE_VPN) {
+    const chromeos::VirtualNetwork* vpn =
+        static_cast<const chromeos::VirtualNetwork*>(network);
+    str += WrapWithTH(vpn->server_hostname());
+    str += WrapWithTH(vpn->GetProviderTypeString());
+    str += WrapWithTD(std::string(vpn->psk_passphrase().length(), '*'));
+    str += WrapWithTH(vpn->username());
+    str += WrapWithTD(std::string(vpn->user_passphrase().length(), '*'));
+  }
+  str += WrapWithTD(network->failed() ? network->GetErrorString() : "");
+  str += WrapWithTD(network->ip_address());
+  return str;
+}
+
+std::string GetNetworkHtmlInfo(int refresh) {
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  std::string output;
+  output.append("<html><head><title>About Network</title>");
+  if (refresh > 0)
+    output.append("<meta http-equiv=\"refresh\" content=\"" +
+                  base::IntToString(refresh) + "\"/>");
+  output.append("</head><body>");
+  if (refresh > 0) {
+    output.append("(Auto-refreshing page every " +
+                  base::IntToString(refresh) + "s)");
+  } else {
+    output.append("(To auto-refresh this page: about:network/&lt;secs&gt;)");
+  }
+
+  if (cros->ethernet_enabled()) {
+    output.append("<h3>Ethernet:</h3><table border=1>");
+    const chromeos::EthernetNetwork* ethernet = cros->ethernet_network();
+    if (ethernet) {
+      output.append("<tr>" + ToHtmlTableHeader(ethernet) + "</tr>");
+      output.append("<tr>" + ToHtmlTableRow(ethernet) + "</tr>");
+    }
+  }
+
+  if (cros->wifi_enabled()) {
+    output.append("</table><h3>Wifi Networks:</h3><table border=1>");
+    const chromeos::WifiNetworkVector& wifi_networks = cros->wifi_networks();
+    for (size_t i = 0; i < wifi_networks.size(); ++i) {
+      if (i == 0)
+        output.append("<tr>" + ToHtmlTableHeader(wifi_networks[i]) +
+                      "</tr>");
+      output.append("<tr>" + ToHtmlTableRow(wifi_networks[i]) + "</tr>");
+    }
+  }
+
+  if (cros->cellular_enabled()) {
+    output.append("</table><h3>Cellular Networks:</h3><table border=1>");
+    const chromeos::CellularNetworkVector& cellular_networks =
+        cros->cellular_networks();
+    for (size_t i = 0; i < cellular_networks.size(); ++i) {
+      if (i == 0)
+        output.append("<tr>" + ToHtmlTableHeader(cellular_networks[i]) +
+                      "</tr>");
+      output.append("<tr>" + ToHtmlTableRow(cellular_networks[i]) + "</tr>");
+    }
+  }
+
+  {
+    output.append("</table><h3>Virtual Networks:</h3><table border=1>");
+    const chromeos::VirtualNetworkVector& virtual_networks =
+        cros->virtual_networks();
+    for (size_t i = 0; i < virtual_networks.size(); ++i) {
+      if (i == 0)
+        output.append("<tr>" + ToHtmlTableHeader(virtual_networks[i]) +
+                      "</tr>");
+      output.append("<tr>" + ToHtmlTableRow(virtual_networks[i]) + "</tr>");
+    }
+  }
+
+  {
+    output.append(
+        "</table><h3>Remembered Wi-Fi Networks:</h3><table border=1>");
+    const chromeos::WifiNetworkVector& remembered_wifi_networks =
+        cros->remembered_wifi_networks();
+    for (size_t i = 0; i < remembered_wifi_networks.size(); ++i) {
+      if (i == 0)
+        output.append("<tr>" +
+                      ToHtmlTableHeader(remembered_wifi_networks[i]) + "</tr>");
+      output.append("<tr>" + ToHtmlTableRow(remembered_wifi_networks[i]) +
+                    "</tr>");
+    }
+  }
+
+  output.append("</table></body></html>");
+  return output;
+}
+
 std::string AboutNetwork(const std::string& query) {
   int refresh;
   base::StringToInt(query, &refresh);
-  return chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-      GetHtmlInfo(refresh);
+  return GetNetworkHtmlInfo(refresh);
 }
 #endif
 

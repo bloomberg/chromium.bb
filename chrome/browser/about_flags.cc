@@ -309,6 +309,18 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE("")
 #endif
   },
+  {
+    "enable-vpn",
+    IDS_FLAGS_ENABLE_VPN_NAME,
+    IDS_FLAGS_ENABLE_VPN_DESCRIPTION,
+    kOsCrOS,
+#if defined(OS_CHROMEOS)
+    // The switch exists only on Chrome OS.
+    SINGLE_VALUE_TYPE(switches::kEnableVPN)
+#else
+    SINGLE_VALUE_TYPE("")
+#endif
+  },
 };
 
 const Experiment* experiments = kExperiments;

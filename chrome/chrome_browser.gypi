@@ -638,6 +638,8 @@
         'browser/chromeos/options/wifi_config_model.h',
         'browser/chromeos/options/wifi_config_view.cc',
         'browser/chromeos/options/wifi_config_view.h',
+        'browser/chromeos/options/vpn_config_view.cc',
+        'browser/chromeos/options/vpn_config_view.h',
         'browser/chromeos/panels/panel_scroller.cc',
         'browser/chromeos/panels/panel_scroller.h',
         'browser/chromeos/panels/panel_scroller_container.cc',

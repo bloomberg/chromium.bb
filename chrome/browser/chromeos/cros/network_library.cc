@@ -133,6 +133,8 @@ const char* kErrorProperty = "Error";
 const char* kActiveProfileProperty = "ActiveProfile";
 const char* kEntriesProperty = "Entries";
 const char* kDevicesProperty = "Devices";
+const char* kProviderProperty = "Provider";
+const char* kHostProperty = "Host";
 
 // Flimflam property names for SIMLock status.
 const char* kSIMLockStatusProperty = "Cellular.SIMLockStatus";
@@ -185,6 +187,14 @@ const char* kSecurityRsn = "rsn";
 const char* kSecurity8021x = "802_1x";
 const char* kSecurityNone = "none";
 
+// Flimflam L2TPIPsec property names.
+const char* kL2TPIPSecCACertProperty = "L2TPIPsec.CACert";
+const char* kL2TPIPSecCertProperty = "L2TPIPsec.Cert";
+const char* kL2TPIPSecKeyProperty = "L2TPIPsec.Key";
+const char* kL2TPIPSecPSKProperty = "L2TPIPsec.PSK";
+const char* kL2TPIPSecUserProperty = "L2TPIPsec.User";
+const char* kL2TPIPSecPasswordProperty = "L2TPIPsec.Password";
+
 // Flimflam EAP property names.
 // See src/third_party/flimflam/doc/service-api.txt.
 const char* kEapIdentityProperty = "EAP.Identity";
@@ -219,6 +229,11 @@ const std::string& kEapPhase2AuthTTLSMSCHAPV2 = "autheap=MSCHAPV2";
 const std::string& kEapPhase2AuthTTLSMSCHAP = "autheap=MSCHAP";
 const std::string& kEapPhase2AuthTTLSPAP = "autheap=PAP";
 const std::string& kEapPhase2AuthTTLSCHAP = "autheap=CHAP";
+
+// Flimflam VPN provider types.
+const char* kProviderL2tpIpsec = "l2tpipsec";
+const char* kProviderOpenVpn = "openvpn";
+
 
 // Flimflam state options.
 const char* kStateIdle = "idle";
@@ -320,6 +335,20 @@ static const char* SecurityToString(ConnectionSecurity security) {
   return kUnknownString;
 }
 
+static const char* ProviderTypeToString(VirtualNetwork::ProviderType type) {
+  switch (type) {
+    case VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_PSK:
+    case VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT:
+      return kProviderL2tpIpsec;
+    case VirtualNetwork::PROVIDER_TYPE_OPEN_VPN:
+      return kProviderOpenVpn;
+    case VirtualNetwork::PROVIDER_TYPE_MAX:
+      break;
+  }
+  LOG(ERROR) << "ProviderTypeToString called with unknown type: " << type;
+  return kUnknownString;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 
 // Helper class to cache maps of strings to enums.
@@ -393,11 +422,18 @@ enum PropertyIndex {
   PROPERTY_INDEX_FIRMWARE_REVISION,
   PROPERTY_INDEX_HARDWARE_REVISION,
   PROPERTY_INDEX_HOME_PROVIDER,
+  PROPERTY_INDEX_HOST,
   PROPERTY_INDEX_IDENTITY,
   PROPERTY_INDEX_IMEI,
   PROPERTY_INDEX_IMSI,
   PROPERTY_INDEX_IS_ACTIVE,
   PROPERTY_INDEX_LAST_DEVICE_UPDATE,
+  PROPERTY_INDEX_L2TPIPSEC_CA_CERT,
+  PROPERTY_INDEX_L2TPIPSEC_CERT,
+  PROPERTY_INDEX_L2TPIPSEC_KEY,
+  PROPERTY_INDEX_L2TPIPSEC_PASSWORD,
+  PROPERTY_INDEX_L2TPIPSEC_PSK,
+  PROPERTY_INDEX_L2TPIPSEC_USER,
   PROPERTY_INDEX_MANUFACTURER,
   PROPERTY_INDEX_MDN,
   PROPERTY_INDEX_MEID,
@@ -414,6 +450,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_PAYMENT_URL,
   PROPERTY_INDEX_PRL_VERSION,
   PROPERTY_INDEX_PROFILES,
+  PROPERTY_INDEX_PROVIDER,
   PROPERTY_INDEX_ROAMING_STATE,
   PROPERTY_INDEX_SAVE_CREDENTIALS,
   PROPERTY_INDEX_SCANNING,
@@ -467,10 +504,17 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kFirmwareRevisionProperty, PROPERTY_INDEX_FIRMWARE_REVISION },
   { kHardwareRevisionProperty, PROPERTY_INDEX_HARDWARE_REVISION },
   { kHomeProviderProperty, PROPERTY_INDEX_HOME_PROVIDER },
+  { kHostProperty, PROPERTY_INDEX_HOST },
   { kIdentityProperty, PROPERTY_INDEX_IDENTITY },
   { kImeiProperty, PROPERTY_INDEX_IMEI },
   { kImsiProperty, PROPERTY_INDEX_IMSI },
   { kIsActiveProperty, PROPERTY_INDEX_IS_ACTIVE },
+  { kL2TPIPSecCACertProperty, PROPERTY_INDEX_L2TPIPSEC_CA_CERT },
+  { kL2TPIPSecCertProperty, PROPERTY_INDEX_L2TPIPSEC_CERT },
+  { kL2TPIPSecKeyProperty, PROPERTY_INDEX_L2TPIPSEC_KEY },
+  { kL2TPIPSecPasswordProperty, PROPERTY_INDEX_L2TPIPSEC_PASSWORD },
+  { kL2TPIPSecPSKProperty, PROPERTY_INDEX_L2TPIPSEC_PSK },
+  { kL2TPIPSecUserProperty, PROPERTY_INDEX_L2TPIPSEC_USER },
   { kLastDeviceUpdateProperty, PROPERTY_INDEX_LAST_DEVICE_UPDATE },
   { kManufacturerProperty, PROPERTY_INDEX_MANUFACTURER },
   { kMdnProperty, PROPERTY_INDEX_MDN },
@@ -488,6 +532,7 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kPassphraseRequiredProperty, PROPERTY_INDEX_PASSPHRASE_REQUIRED },
   { kPaymentURLProperty, PROPERTY_INDEX_PAYMENT_URL },
   { kProfilesProperty, PROPERTY_INDEX_PROFILES },
+  { kProviderProperty, PROPERTY_INDEX_PROVIDER },
   { kRoamingStateProperty, PROPERTY_INDEX_ROAMING_STATE },
   { kSaveCredentialsProperty, PROPERTY_INDEX_SAVE_CREDENTIALS },
   { kScanningProperty, PROPERTY_INDEX_SCANNING },
@@ -575,6 +620,17 @@ static ConnectionError ParseError(const std::string& error) {
   static StringToEnum<ConnectionError> parser(
       table, arraysize(table), ERROR_UNKNOWN);
   return parser.Get(error);
+}
+
+// VirtualNetwork
+static VirtualNetwork::ProviderType ParseProviderType(const std::string& mode) {
+  static StringToEnum<VirtualNetwork::ProviderType>::Pair table[] = {
+    { kProviderL2tpIpsec, VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_PSK },
+    { kProviderOpenVpn, VirtualNetwork::PROVIDER_TYPE_OPEN_VPN },
+  };
+  static StringToEnum<VirtualNetwork::ProviderType> parser(
+      table, arraysize(table), VirtualNetwork::PROVIDER_TYPE_MAX);
+  return parser.Get(mode);
 }
 
 // CellularNetwork.
@@ -697,59 +753,6 @@ static EAPPhase2Auth ParseEAPPhase2Auth(const std::string& auth) {
   return parser.Get(auth);
 }
 
-////////////////////////////////////////////////////////////////////////////
-// Html output helper functions
-
-// Helper function to wrap Html with <th> tag.
-static std::string WrapWithTH(std::string text) {
-  return "<th>" + text + "</th>";
-}
-
-// Helper function to wrap Html with <td> tag.
-static std::string WrapWithTD(std::string text) {
-  return "<td>" + text + "</td>";
-}
-
-// Helper function to create an Html table header for a Network.
-static std::string ToHtmlTableHeader(Network* network) {
-  std::string str;
-  if (network->type() == TYPE_ETHERNET) {
-    str += WrapWithTH("Active");
-  } else if (network->type() == TYPE_WIFI || network->type() == TYPE_CELLULAR) {
-    str += WrapWithTH("Name") + WrapWithTH("Active") +
-        WrapWithTH("Auto-Connect") + WrapWithTH("Strength");
-    if (network->type() == TYPE_WIFI)
-      str += WrapWithTH("Encryption") + WrapWithTH("Passphrase") +
-          WrapWithTH("Identity") + WrapWithTH("Certificate");
-  }
-  str += WrapWithTH("State") + WrapWithTH("Error") + WrapWithTH("IP Address");
-  return str;
-}
-
-// Helper function to create an Html table row for a Network.
-static std::string ToHtmlTableRow(Network* network) {
-  std::string str;
-  if (network->type() == TYPE_ETHERNET) {
-    str += WrapWithTD(base::IntToString(network->is_active()));
-  } else if (network->type() == TYPE_WIFI || network->type() == TYPE_CELLULAR) {
-    WirelessNetwork* wireless = static_cast<WirelessNetwork*>(network);
-    str += WrapWithTD(wireless->name()) +
-        WrapWithTD(base::IntToString(network->is_active())) +
-        WrapWithTD(base::IntToString(wireless->auto_connect())) +
-        WrapWithTD(base::IntToString(wireless->strength()));
-    if (network->type() == TYPE_WIFI) {
-      WifiNetwork* wifi = static_cast<WifiNetwork*>(network);
-      str += WrapWithTD(wifi->GetEncryptionString()) +
-          WrapWithTD(std::string(wifi->passphrase().length(), '*')) +
-          WrapWithTD(wifi->identity()) + WrapWithTD(wifi->cert_path());
-    }
-  }
-  str += WrapWithTD(network->GetStateString()) +
-      WrapWithTD(network->failed() ? network->GetErrorString() : "") +
-      WrapWithTD(network->ip_address());
-  return str;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Misc.
 
@@ -852,10 +855,12 @@ void NetworkDevice::ParseInfo(const DictionaryValue* info) {
     const std::string& key = *iter;
     Value* value;
     bool res = info->GetWithoutPathExpansion(key, &value);
-    CHECK(res);
-    int index = property_index_parser().Get(key);
-    if (!ParseValue(index, value))
-      VLOG(1) << "NetworkDevice: Unhandled key: " << key;
+    DCHECK(res);
+    if (res) {
+      int index = property_index_parser().Get(key);
+      if (!ParseValue(index, value))
+        VLOG(1) << "NetworkDevice: Unhandled key: " << key;
+    }
   }
 }
 
@@ -937,46 +942,15 @@ void Network::ParseInfo(const DictionaryValue* info) {
     const std::string& key = *iter;
     Value* value;
     bool res = info->GetWithoutPathExpansion(key, &value);
-    CHECK(res);
-    int index = property_index_parser().Get(key);
-    if (!ParseValue(index, value))  // virtual.
-      VLOG(1) << "Network: Type: " << type_ << " Unhandled key: " << key;
+    DCHECK(res);
+    if (res) {
+      int index = property_index_parser().Get(key);
+      if (!ParseValue(index, value))  // virtual.
+        VLOG(1) << "Network: " << name()
+                << " Type: " << ConnectionTypeToString(type())
+                << " Unhandled key: " << key;
+    }
   }
-}
-
-void Network::SetAutoConnect(bool auto_connect) {
-  auto_connect_ = auto_connect;
-  SetBooleanProperty(kAutoConnectProperty, auto_connect);
-}
-
-void Network::SetStringProperty(const char* prop, const std::string& str) {
-  scoped_ptr<Value> value(Value::CreateStringValue(str));
-  SetValueProperty(prop, value.get());
-}
-
-void Network::SetBooleanProperty(const char* prop, bool b) {
-  scoped_ptr<Value> value(Value::CreateBooleanValue(b));
-  SetValueProperty(prop, value.get());
-}
-
-void Network::SetIntegerProperty(const char* prop, int i) {
-  scoped_ptr<Value> value(Value::CreateIntegerValue(i));
-  SetValueProperty(prop, value.get());
-}
-
-void Network::ClearProperty(const char* prop) {
-  DCHECK(prop);
-  if (!EnsureCrosLoaded())
-    return;
-  ClearNetworkServiceProperty(service_path_.c_str(), prop);
-}
-
-void Network::SetOrClearStringProperty(const char* prop,
-                                       const std::string& str) {
-  if (str.empty())
-    ClearProperty(prop);
-  else
-    SetStringProperty(prop, str);
 }
 
 void Network::SetValueProperty(const char* prop, Value* val) {
@@ -987,7 +961,51 @@ void Network::SetValueProperty(const char* prop, Value* val) {
   SetNetworkServiceProperty(service_path_.c_str(), prop, val);
 }
 
-// Used by GetHtmlInfo() which is called from the about:network handler.
+void Network::ClearProperty(const char* prop) {
+  DCHECK(prop);
+  if (!EnsureCrosLoaded())
+    return;
+  ClearNetworkServiceProperty(service_path_.c_str(), prop);
+}
+
+void Network::SetStringProperty(
+    const char* prop, const std::string& str, std::string* dest) {
+  if (dest)
+    *dest = str;
+  scoped_ptr<Value> value(Value::CreateStringValue(str));
+  SetValueProperty(prop, value.get());
+}
+
+void Network::SetOrClearStringProperty(const char* prop,
+                                       const std::string& str,
+                                       std::string* dest) {
+  if (str.empty()) {
+    ClearProperty(prop);
+    if (dest)
+      dest->clear();
+  } else {
+    SetStringProperty(prop, str, dest);
+  }
+}
+
+void Network::SetBooleanProperty(const char* prop, bool b, bool* dest) {
+  if (dest)
+    *dest = b;
+  scoped_ptr<Value> value(Value::CreateBooleanValue(b));
+  SetValueProperty(prop, value.get());
+}
+
+void Network::SetIntegerProperty(const char* prop, int i, int* dest) {
+  if (dest)
+    *dest = i;
+  scoped_ptr<Value> value(Value::CreateIntegerValue(i));
+  SetValueProperty(prop, value.get());
+}
+
+void Network::SetAutoConnect(bool auto_connect) {
+  SetBooleanProperty(kAutoConnectProperty, auto_connect, &auto_connect_);
+}
+
 std::string Network::GetStateString() const {
   switch (state_) {
     case STATE_UNKNOWN:
@@ -1009,9 +1027,6 @@ std::string Network::GetStateString() const {
     case STATE_ACTIVATION_FAILURE:
       return l10n_util::GetStringUTF8(
           IDS_CHROMEOS_NETWORK_STATE_ACTIVATION_FAILURE);
-    default:
-      // Usually no default, but changes to libcros may add states.
-      break;
   }
   return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED);
 }
@@ -1046,9 +1061,6 @@ std::string Network::GetErrorString() const {
       return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_ERROR_OTASP_FAILED);
     case ERROR_AAA_FAILED:
       return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_ERROR_AAA_FAILED);
-    default:
-      // Usually no default, but changes to libcros may add errors.
-      break;
   }
   return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED);
 }
@@ -1068,6 +1080,145 @@ void Network::InitIPAddress() {
       }
       FreeIPConfigStatus(ipconfig_status);
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// VirtualNetwork
+
+bool VirtualNetwork::ParseProviderValue(int index, const Value* value) {
+  switch (index) {
+    case PROPERTY_INDEX_HOST:
+      return value->GetAsString(&server_hostname_);
+    case PROPERTY_INDEX_NAME:
+      // Note: shadows Network::name_ property.
+      return value->GetAsString(&name_);
+    case PROPERTY_INDEX_TYPE: {
+      std::string provider_type_string;
+      if (value->GetAsString(&provider_type_string)) {
+        provider_type_ = ParseProviderType(provider_type_string);
+        return true;
+      }
+      break;
+    }
+    default:
+      break;
+  }
+  return false;
+}
+
+bool VirtualNetwork::ParseValue(int index, const Value* value) {
+  switch (index) {
+    case PROPERTY_INDEX_PROVIDER: {
+      DCHECK_EQ(value->GetType(), Value::TYPE_DICTIONARY);
+      const DictionaryValue* dict = static_cast<const DictionaryValue*>(value);
+      for (DictionaryValue::key_iterator iter = dict->begin_keys();
+           iter != dict->end_keys(); ++iter) {
+        const std::string& key = *iter;
+        Value* v;
+        bool res = dict->GetWithoutPathExpansion(key, &v);
+        DCHECK(res);
+        if (res) {
+          int index = property_index_parser().Get(key);
+          if (!ParseProviderValue(index, v))
+            VLOG(1) << name() << ": Provider unhandled key: " << key
+                    << " Type: " << v->GetType();
+        }
+      }
+      return true;
+    }
+    case PROPERTY_INDEX_L2TPIPSEC_CA_CERT:
+      return value->GetAsString(&ca_cert_);
+    case PROPERTY_INDEX_L2TPIPSEC_PSK:
+      return value->GetAsString(&psk_passphrase_);
+    case PROPERTY_INDEX_L2TPIPSEC_CERT:
+      return value->GetAsString(&user_cert_);
+    case PROPERTY_INDEX_L2TPIPSEC_KEY:
+      return value->GetAsString(&user_cert_key_);
+    case PROPERTY_INDEX_L2TPIPSEC_USER:
+      return value->GetAsString(&username_);
+    case PROPERTY_INDEX_L2TPIPSEC_PASSWORD:
+      return value->GetAsString(&user_passphrase_);
+    default:
+      return Network::ParseValue(index, value);
+      break;
+  }
+  return false;
+}
+
+void VirtualNetwork::ParseInfo(const DictionaryValue* info) {
+  Network::ParseInfo(info);
+  VLOG(1) << "VPN: " << name()
+          << " Type: " << ProviderTypeToString(provider_type());
+  if (provider_type_ == PROVIDER_TYPE_L2TP_IPSEC_PSK) {
+    if (!user_cert_.empty())
+      provider_type_ = PROVIDER_TYPE_L2TP_IPSEC_USER_CERT;
+  }
+}
+
+bool VirtualNetwork::NeedMoreInfoToConnect() const {
+  if (server_hostname_.empty() || username_.empty() || user_passphrase_.empty())
+    return true;
+  switch (provider_type_) {
+    case PROVIDER_TYPE_L2TP_IPSEC_PSK:
+      if (psk_passphrase_.empty())
+        return true;
+      break;
+    case PROVIDER_TYPE_L2TP_IPSEC_USER_CERT:
+    case PROVIDER_TYPE_OPEN_VPN:
+      if (user_cert_.empty())
+        return true;
+      break;
+    case PROVIDER_TYPE_MAX:
+      break;
+  }
+  return false;
+}
+
+void VirtualNetwork::SetCACert(const std::string& ca_cert) {
+  SetStringProperty(kL2TPIPSecCACertProperty, ca_cert, &ca_cert_);
+}
+
+void VirtualNetwork::SetPSKPassphrase(const std::string& psk_passphrase) {
+  SetStringProperty(kL2TPIPSecPSKProperty, psk_passphrase,
+                           &psk_passphrase_);
+}
+
+void VirtualNetwork::SetUserCert(const std::string& user_cert) {
+  SetStringProperty(kL2TPIPSecCertProperty, user_cert, &user_cert_);
+}
+
+void VirtualNetwork::SetUserCertKey(const std::string& key) {
+  SetStringProperty(kL2TPIPSecKeyProperty, key, &user_cert_key_);
+}
+
+void VirtualNetwork::SetUsername(const std::string& username) {
+  SetStringProperty(kL2TPIPSecUserProperty, username, &username_);
+}
+
+void VirtualNetwork::SetUserPassphrase(const std::string& user_passphrase) {
+  SetStringProperty(kL2TPIPSecPasswordProperty, user_passphrase,
+                    &user_passphrase_);
+}
+
+std::string VirtualNetwork::GetProviderTypeString() const {
+  switch (this->provider_type_) {
+    case PROVIDER_TYPE_L2TP_IPSEC_PSK:
+      return l10n_util::GetStringUTF8(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_PSK);
+      break;
+    case PROVIDER_TYPE_L2TP_IPSEC_USER_CERT:
+      return l10n_util::GetStringUTF8(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_USER_CERT);
+      break;
+    case PROVIDER_TYPE_OPEN_VPN:
+      return l10n_util::GetStringUTF8(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_OPEN_VPN);
+      break;
+    default:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
+      break;
   }
 }
 
@@ -1534,12 +1685,12 @@ void WifiNetwork::SetPassphrase(const std::string& passphrase) {
     user_passphrase_ = passphrase_;
   // Send the change to flimflam. If the format is valid, it will propagate to
   // passphrase_ with a service update.
-  SetStringProperty(kPassphraseProperty, passphrase);
+  SetStringProperty(kPassphraseProperty, passphrase, NULL);
 }
 
 void WifiNetwork::SetSaveCredentials(bool save_credentials) {
-  save_credentials_ = save_credentials;
-  SetBooleanProperty(kSaveCredentialsProperty, save_credentials);
+  SetBooleanProperty(kSaveCredentialsProperty, save_credentials,
+                     &save_credentials_);
 }
 
 // See src/third_party/flimflam/doc/service-api.txt for properties that
@@ -1554,29 +1705,27 @@ void WifiNetwork::EraseCredentials() {
 }
 
 void WifiNetwork::SetIdentity(const std::string& identity) {
-  identity_ = identity;
-  SetStringProperty(kIdentityProperty, identity);
+  SetStringProperty(kIdentityProperty, identity, &identity_);
 }
 
 void WifiNetwork::SetCertPath(const std::string& cert_path) {
-  cert_path_ = cert_path;
-  SetStringProperty(kCertPathProperty, cert_path);
+  SetStringProperty(kCertPathProperty, cert_path, &cert_path_);
 }
 
 void WifiNetwork::SetEAPMethod(EAPMethod method) {
   eap_method_ = method;
   switch (method) {
     case EAP_METHOD_PEAP:
-      SetStringProperty(kEapMethodProperty, kEapMethodPEAP);
+      SetStringProperty(kEapMethodProperty, kEapMethodPEAP, NULL);
       break;
     case EAP_METHOD_TLS:
-      SetStringProperty(kEapMethodProperty, kEapMethodTLS);
+      SetStringProperty(kEapMethodProperty, kEapMethodTLS, NULL);
       break;
     case EAP_METHOD_TTLS:
-      SetStringProperty(kEapMethodProperty, kEapMethodTTLS);
+      SetStringProperty(kEapMethodProperty, kEapMethodTTLS, NULL);
       break;
     case EAP_METHOD_LEAP:
-      SetStringProperty(kEapMethodProperty, kEapMethodLEAP);
+      SetStringProperty(kEapMethodProperty, kEapMethodLEAP, NULL);
       break;
     default:
       ClearProperty(kEapMethodProperty);
@@ -1594,21 +1743,23 @@ void WifiNetwork::SetEAPPhase2Auth(EAPPhase2Auth auth) {
     case EAP_PHASE_2_AUTH_MD5:
       SetStringProperty(kEapPhase2AuthProperty,
                         is_peap ? kEapPhase2AuthPEAPMD5
-                                : kEapPhase2AuthTTLSMD5);
+                                : kEapPhase2AuthTTLSMD5,
+                        NULL);
       break;
     case EAP_PHASE_2_AUTH_MSCHAPV2:
       SetStringProperty(kEapPhase2AuthProperty,
                         is_peap ? kEapPhase2AuthPEAPMSCHAPV2
-                                : kEapPhase2AuthTTLSMSCHAPV2);
+                                : kEapPhase2AuthTTLSMSCHAPV2,
+                        NULL);
       break;
     case EAP_PHASE_2_AUTH_MSCHAP:
-      SetStringProperty(kEapPhase2AuthProperty, kEapPhase2AuthTTLSMSCHAP);
+      SetStringProperty(kEapPhase2AuthProperty, kEapPhase2AuthTTLSMSCHAP, NULL);
       break;
     case EAP_PHASE_2_AUTH_PAP:
-      SetStringProperty(kEapPhase2AuthProperty, kEapPhase2AuthTTLSPAP);
+      SetStringProperty(kEapPhase2AuthProperty, kEapPhase2AuthTTLSPAP, NULL);
       break;
     case EAP_PHASE_2_AUTH_CHAP:
-      SetStringProperty(kEapPhase2AuthProperty, kEapPhase2AuthTTLSCHAP);
+      SetStringProperty(kEapPhase2AuthProperty, kEapPhase2AuthTTLSCHAP, NULL);
       break;
   }
 }
@@ -1616,34 +1767,32 @@ void WifiNetwork::SetEAPPhase2Auth(EAPPhase2Auth auth) {
 void WifiNetwork::SetEAPServerCaCertNssNickname(
     const std::string& nss_nickname) {
   VLOG(1) << "SetEAPServerCaCertNssNickname " << nss_nickname;
-  eap_server_ca_cert_nss_nickname_ = nss_nickname;
-  SetOrClearStringProperty(kEapCaCertNssProperty, nss_nickname);
+  SetOrClearStringProperty(kEapCaCertNssProperty, nss_nickname,
+                           &eap_server_ca_cert_nss_nickname_);
 }
 
 void WifiNetwork::SetEAPClientCertPkcs11Id(const std::string& pkcs11_id) {
   VLOG(1) << "SetEAPClientCertPkcs11Id " << pkcs11_id;
-  eap_client_cert_pkcs11_id_ = pkcs11_id;
-  SetOrClearStringProperty(kEapCertIDProperty, pkcs11_id);
+  SetOrClearStringProperty(kEapCertIDProperty, pkcs11_id,
+                           &eap_client_cert_pkcs11_id_);
 }
 
 void WifiNetwork::SetEAPUseSystemCAs(bool use_system_cas) {
-  eap_use_system_cas_ = use_system_cas;
-  SetBooleanProperty(kEapUseSystemCAsProperty, use_system_cas);
+  SetBooleanProperty(kEapUseSystemCAsProperty, use_system_cas,
+                     &eap_use_system_cas_);
 }
 
 void WifiNetwork::SetEAPIdentity(const std::string& identity) {
-  eap_identity_ = identity;
-  SetOrClearStringProperty(kEapIdentityProperty, identity);
+  SetOrClearStringProperty(kEapIdentityProperty, identity, &eap_identity_);
 }
 
 void WifiNetwork::SetEAPAnonymousIdentity(const std::string& identity) {
-  eap_anonymous_identity_ = identity;
-  SetOrClearStringProperty(kEapAnonymousIdentityProperty, identity);
+  SetOrClearStringProperty(kEapAnonymousIdentityProperty, identity,
+                           &eap_anonymous_identity_);
 }
 
 void WifiNetwork::SetEAPPassphrase(const std::string& passphrase) {
-  eap_passphrase_ = passphrase;
-  SetOrClearStringProperty(kEapPasswordProperty, passphrase);
+  SetOrClearStringProperty(kEapPasswordProperty, passphrase, &eap_passphrase_);
 }
 
 std::string WifiNetwork::GetEncryptionString() const {
@@ -1923,10 +2072,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   const std::string& IPAddress() const {
     // Returns IP address for the active network.
+    // TODO(stevenjb): Fix this for VPNs. See chromium-os:13972.
     const Network* result = active_network();
-    if (active_virtual_ && active_virtual_->is_active() &&
-        (!result || active_virtual_->priority_ > result->priority_))
-      result = active_virtual_;
+    if (!result)
+      result = connected_network();  // happens if we are connected to a VPN.
     if (!result)
       result = ethernet_;  // Use non active ethernet addr if no active network.
     if (result)
@@ -1998,6 +2147,14 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     Network* network = FindNetworkByPath(path);
     if (network && network->type() == TYPE_CELLULAR)
       return static_cast<CellularNetwork*>(network);
+    return NULL;
+  }
+
+  virtual VirtualNetwork* FindVirtualNetworkByPath(
+      const std::string& path) const {
+    Network* network = FindNetworkByPath(path);
+    if (network && network->type() == TYPE_VPN)
+      return static_cast<VirtualNetwork*>(network);
     return NULL;
   }
 
@@ -2124,74 +2281,77 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     return true;
   }
 
-  static void WirelessConnectCallback(void *object,
-                                      const char *path,
-                                      NetworkMethodErrorType error,
-                                      const char* error_message) {
+  static void NetworkConnectCallback(void *object,
+                                     const char *path,
+                                     NetworkMethodErrorType error,
+                                     const char* error_message) {
     NetworkLibraryImpl* networklib = static_cast<NetworkLibraryImpl*>(object);
     DCHECK(networklib);
 
-    WirelessNetwork* wireless = networklib->FindWirelessNetworkByPath(path);
-    if (!wireless) {
-      LOG(ERROR) << "No wireless network for path: " << path;
+    Network* network = networklib->FindNetworkByPath(path);
+    if (!network) {
+      LOG(ERROR) << "No network for path: " << path;
       return;
     }
 
     if (error != NETWORK_METHOD_ERROR_NONE) {
+      LOG(WARNING) << "Error from ServiceConnect callback for: "
+                   << network->name()
+                   << " Error: " << error << " Message: " << error_message;
       if (error_message &&
           strcmp(error_message, kErrorPassphraseRequiredMsg) == 0) {
         // This will trigger the connection failed notification.
         // TODO(stevenjb): Remove if chromium-os:13203 gets fixed.
-        wireless->set_state(STATE_FAILURE);
-        wireless->set_error(ERROR_BAD_PASSPHRASE);
+        network->set_state(STATE_FAILURE);
+        network->set_error(ERROR_BAD_PASSPHRASE);
         networklib->NotifyNetworkManagerChanged(true);  // Forced update.
-      } else {
-        LOG(WARNING) << "Error from ServiceConnect callback: "
-                     << error_message;
       }
       return;
     }
 
+    VLOG(1) << "Connected to service: " << network->name();
+
     // Update local cache and notify listeners.
-    if (wireless->type() == TYPE_WIFI) {
-      WifiNetwork* wifi = static_cast<WifiNetwork *>(wireless);
+    if (network->type() == TYPE_WIFI) {
+      WifiNetwork* wifi = static_cast<WifiNetwork *>(network);
       // If the user asked not to save credentials, flimflam will have
       // forgotten them.  Wipe our cache as well.
       if (!wifi->save_credentials()) {
         wifi->EraseCredentials();
       }
       networklib->active_wifi_ = wifi;
-    } else if (wireless->type() == TYPE_CELLULAR) {
-      networklib->active_cellular_ = static_cast<CellularNetwork *>(wireless);
+    } else if (network->type() == TYPE_CELLULAR) {
+      networklib->active_cellular_ = static_cast<CellularNetwork *>(network);
+    } else if (network->type() == TYPE_VPN) {
+      networklib->active_virtual_ = static_cast<VirtualNetwork *>(network);
     } else {
-      LOG(ERROR) << "Network of unexpected type: " << wireless->type();
+      LOG(ERROR) << "Network of unexpected type: " << network->type();
     }
 
     // If we succeed, this network will be remembered; request an update.
     // TODO(stevenjb): flimflam should do this automatically.
     networklib->RequestRememberedNetworksUpdate();
     // Notify observers.
-    networklib->NotifyNetworkManagerChanged(false);  // Not forced.
-    networklib->NotifyUserConnectionInitiated(wireless);
+    networklib->NotifyNetworkManagerChanged(true);  // Forced update.
+    networklib->NotifyUserConnectionInitiated(network);
   }
 
 
-  void CallConnectToNetworkForWifi(WifiNetwork* wifi) {
-    // If we haven't correctly set the parameters (e.g. passphrase), flimflam
-    // might fail without attempting a connection. In order to trigger any
-    // notifications, set the state locally and notify observers.
-    // TODO(stevenjb): Remove if chromium-os:13203 gets fixed.
-    wifi->set_connecting(true);
+  void CallConnectToNetwork(Network* network) {
+    // In order to be certain to trigger any notifications, set the connecting
+    // state locally and notify observers. Otherwise there might be a state
+    // change without a forced notify.
+    network->set_connecting(true);
     NotifyNetworkManagerChanged(true);  // Forced update.
-    RequestNetworkServiceConnect(wifi->service_path().c_str(),
-                                 WirelessConnectCallback, this);
+    RequestNetworkServiceConnect(network->service_path().c_str(),
+                                 NetworkConnectCallback, this);
   }
 
   virtual void ConnectToWifiNetwork(WifiNetwork* wifi) {
     DCHECK(wifi);
     if (!EnsureCrosLoaded() || !wifi)
       return;
-    CallConnectToNetworkForWifi(wifi);
+    CallConnectToNetwork(wifi);
   }
 
   // Use this to connect to a wifi network by service path.
@@ -2204,7 +2364,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                    << service_path;
       return;
     }
-    CallConnectToNetworkForWifi(wifi);
+    CallConnectToNetwork(wifi);
   }
 
   // Use this to connect to an unlisted wifi network.
@@ -2214,16 +2374,20 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                                     const std::string& ssid,
                                     const std::string& passphrase,
                                     const std::string& identity,
-                                    const std::string& certpath,
-                                    bool auto_connect) {
+                                    const std::string& certpath) {
     if (!EnsureCrosLoaded())
       return;
+    // Store the connection data to be used by the callback.
+    connect_data_.service_name = ssid;
+    connect_data_.passphrase = passphrase;
+    connect_data_.identity = identity;
+    connect_data_.cert_path = certpath;
+    // Asynchronously request service properties and call
+    // WifiServiceUpdateAndConnect.
     RequestHiddenWifiNetwork(ssid.c_str(),
                              SecurityToString(security),
                              WifiServiceUpdateAndConnect,
                              this);
-    // Store the connection data to be used by the callback.
-    connect_data_.SetData(ssid, passphrase, identity, certpath, auto_connect);
   }
 
   // Callback
@@ -2237,38 +2401,33 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       const DictionaryValue* dict = static_cast<const DictionaryValue*>(info);
       Network* network =
           networklib->ParseNetwork(std::string(service_path), dict);
-      // Blocking DBus call. TODO(stevenjb): make async.
-      networklib->ConnectToNetworkUsingConnectData(network);
+      DCHECK(network->type() == TYPE_WIFI);
+      networklib->ConnectToWifiNetworkUsingConnectData(
+          static_cast<WifiNetwork*>(network));
     }
   }
 
-  void ConnectToNetworkUsingConnectData(Network* network) {
+  void ConnectToWifiNetworkUsingConnectData(WifiNetwork* wifi) {
     ConnectData& data = connect_data_;
-    if (network->name() != data.name) {
-      LOG(WARNING) << "Network name does not match ConnectData: "
-                   << network->name() << " != " << data.name;
+    if (wifi->name() != data.service_name) {
+      LOG(WARNING) << "Wifi network name does not match ConnectData: "
+                   << wifi->name() << " != " << data.service_name;
       return;
     }
+    wifi->set_added(true);
+    wifi->SetIdentity(data.identity);
+    wifi->SetPassphrase(data.passphrase);
+    if (!data.cert_path.empty())
+      wifi->SetCertPath(data.cert_path);
 
-    WifiNetwork *wifi = static_cast<WifiNetwork *>(network);
-    if (!data.passphrase.empty())
-      wifi->SetPassphrase(data.passphrase);
-    if (!data.identity.empty())
-      wifi->SetIdentity(data.identity);
-    if (!data.certpath.empty())
-      wifi->SetCertPath(data.certpath);
-    wifi->SetAutoConnect(data.auto_connect);
-
-    CallConnectToNetworkForWifi(wifi);
+    CallConnectToNetwork(wifi);
   }
 
   virtual void ConnectToCellularNetwork(CellularNetwork* network) {
     DCHECK(network);
     if (!EnsureCrosLoaded() || !network)
       return;
-
-    RequestNetworkServiceConnect(network->service_path().c_str(),
-                                 WirelessConnectCallback, this);
+    CallConnectToNetwork(network);
   }
 
   // Records information that cellular play payment had happened.
@@ -2283,22 +2442,92 @@ class NetworkLibraryImpl : public NetworkLibrary  {
             cellular_plan_payment_time_).InHours() < kRecentPlanPaymentHours;
   }
 
-  virtual void DisconnectFromWirelessNetwork(const WirelessNetwork* network) {
+  virtual void ConnectToVirtualNetwork(VirtualNetwork* network) {
     DCHECK(network);
     if (!EnsureCrosLoaded() || !network)
       return;
-    if (DisconnectFromNetwork(network->service_path().c_str())) {
+    CallConnectToNetwork(network);
+  }
+
+  virtual void ConnectToVirtualNetworkPSK(
+      const std::string& service_name,
+      const std::string& server,
+      const std::string& psk,
+      const std::string& username,
+      const std::string& user_passphrase) {
+    if (!EnsureCrosLoaded())
+      return;
+    // Store the connection data to be used by the callback.
+    connect_data_.service_name = service_name;
+    connect_data_.psk_key = psk;
+    connect_data_.server_hostname = server;
+    connect_data_.identity = username;
+    connect_data_.passphrase = user_passphrase;
+    RequestVirtualNetwork(service_name.c_str(),
+                          server.c_str(),
+                          kProviderL2tpIpsec,
+                          VPNServiceUpdateAndConnect,
+                          this);
+  }
+
+  // Callback
+  static void VPNServiceUpdateAndConnect(void* object,
+                                         const char* service_path,
+                                         const Value* info) {
+    NetworkLibraryImpl* networklib = static_cast<NetworkLibraryImpl*>(object);
+    DCHECK(networklib);
+    if (service_path && info) {
+      VLOG(1) << "Connecting to new VPN Service: " << service_path;
+      DCHECK_EQ(info->GetType(), Value::TYPE_DICTIONARY);
+      const DictionaryValue* dict = static_cast<const DictionaryValue*>(info);
+      Network* network =
+          networklib->ParseNetwork(std::string(service_path), dict);
+      DCHECK(network->type() == TYPE_VPN);
+      networklib->ConnectToVirtualNetworkUsingConnectData(
+          static_cast<VirtualNetwork*>(network));
+    } else {
+      LOG(WARNING) << "Unable to create VPN Service: " << service_path;
+    }
+  }
+
+  void ConnectToVirtualNetworkUsingConnectData(VirtualNetwork* vpn) {
+    ConnectData& data = connect_data_;
+    if (vpn->name() != data.service_name) {
+      LOG(WARNING) << "Virtual network name does not match ConnectData: "
+                   << vpn->name() << " != " << data.service_name;
+      return;
+    }
+
+    vpn->set_added(true);
+    vpn->set_server_hostname(data.server_hostname);
+    vpn->SetCACert("");
+    vpn->SetUserCert("");
+    vpn->SetUserCertKey("");
+    vpn->SetPSKPassphrase(data.psk_key);
+    vpn->SetUsername(data.identity);
+    vpn->SetUserPassphrase(data.passphrase);
+
+    CallConnectToNetwork(vpn);
+  }
+
+  virtual void DisconnectFromNetwork(const Network* network) {
+    DCHECK(network);
+    if (!EnsureCrosLoaded() || !network)
+      return;
+    VLOG(1) << "Disconnect from network: " << network->service_path();
+    if (chromeos::DisconnectFromNetwork(network->service_path().c_str())) {
       // Update local cache and notify listeners.
-      WirelessNetwork* wireless =
-          FindWirelessNetworkByPath(network->service_path());
-      if (wireless) {
-        wireless->set_connected(false);
-        if (wireless == active_wifi_)
+      Network* found_network = FindNetworkByPath(network->service_path());
+      if (found_network) {
+        found_network->set_connected(false);
+        if (found_network == active_wifi_)
           active_wifi_ = NULL;
-        else if (wireless == active_cellular_)
+        else if (found_network == active_cellular_)
           active_cellular_ = NULL;
+        else if (found_network == active_virtual_)
+          active_virtual_ = NULL;
       }
-      NotifyNetworkManagerChanged(false);  // Not forced.
+      NotifyNetworkManagerChanged(true);  // Forced update.
     }
   }
 
@@ -2313,7 +2542,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     // https://crosbug.com/9295
     if (DeleteRememberedService(service_path.c_str())) {
       DeleteRememberedNetwork(service_path);
-      NotifyNetworkManagerChanged(false);  // Not forced.
+      NotifyNetworkManagerChanged(true);  // Forced update.
     }
   }
 
@@ -2350,11 +2579,30 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     Network* result = NULL;
     if (ethernet_ && ethernet_->is_active())
       result = ethernet_;
-    if (active_wifi_ && active_wifi_->is_active() &&
-        (!result || active_wifi_->priority_ > result->priority_))
+    if ((active_wifi_ && active_wifi_->is_active()) &&
+        (!result ||
+         active_wifi_->priority_order_ < result->priority_order_))
       result = active_wifi_;
-    if (active_cellular_ && active_cellular_->is_active() &&
-        (!result || active_cellular_->priority_ > result->priority_))
+    if ((active_cellular_ && active_cellular_->is_active()) &&
+        (!result ||
+         active_cellular_->priority_order_ < result->priority_order_))
+      result = active_cellular_;
+    return result;
+  }
+
+  virtual const Network* connected_network() const {
+    // Use flimflam's ordering of the services to determine what the connected
+    // network is (i.e. don't assume priority of network types).
+    Network* result = NULL;
+    if (ethernet_ && ethernet_->connected())
+      result = ethernet_;
+    if ((active_wifi_ && active_wifi_->connected()) &&
+        (!result ||
+         active_wifi_->priority_order_ < result->priority_order_))
+      result = active_wifi_;
+    if ((active_cellular_ && active_cellular_->connected()) &&
+        (!result ||
+         active_cellular_->priority_order_ < result->priority_order_))
       result = active_cellular_;
     return result;
   }
@@ -2417,62 +2665,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       }
     }
     return ipconfig_vector;
-  }
-
-  virtual std::string GetHtmlInfo(int refresh) {
-    std::string output;
-    output.append("<html><head><title>About Network</title>");
-    if (refresh > 0)
-      output.append("<meta http-equiv=\"refresh\" content=\"" +
-          base::IntToString(refresh) + "\"/>");
-    output.append("</head><body>");
-    if (refresh > 0) {
-      output.append("(Auto-refreshing page every " +
-                    base::IntToString(refresh) + "s)");
-    } else {
-      output.append("(To auto-refresh this page: about:network/&lt;secs&gt;)");
-    }
-
-    if (ethernet_enabled()) {
-      output.append("<h3>Ethernet:</h3><table border=1>");
-      if (ethernet_) {
-        output.append("<tr>" + ToHtmlTableHeader(ethernet_) + "</tr>");
-        output.append("<tr>" + ToHtmlTableRow(ethernet_) + "</tr>");
-      }
-    }
-
-    if (wifi_enabled()) {
-      output.append("</table><h3>Wifi:</h3><table border=1>");
-      for (size_t i = 0; i < wifi_networks_.size(); ++i) {
-        if (i == 0)
-          output.append("<tr>" + ToHtmlTableHeader(wifi_networks_[i]) +
-                        "</tr>");
-        output.append("<tr>" + ToHtmlTableRow(wifi_networks_[i]) + "</tr>");
-      }
-    }
-
-    if (cellular_enabled()) {
-      output.append("</table><h3>Cellular:</h3><table border=1>");
-      for (size_t i = 0; i < cellular_networks_.size(); ++i) {
-        if (i == 0)
-          output.append("<tr>" + ToHtmlTableHeader(cellular_networks_[i]) +
-                        "</tr>");
-        output.append("<tr>" + ToHtmlTableRow(cellular_networks_[i]) + "</tr>");
-      }
-    }
-
-    output.append("</table><h3>Remembered Wifi:</h3><table border=1>");
-    for (size_t i = 0; i < remembered_wifi_networks_.size(); ++i) {
-      if (i == 0)
-        output.append(
-            "<tr>" + ToHtmlTableHeader(remembered_wifi_networks_[i]) +
-            "</tr>");
-      output.append("<tr>" + ToHtmlTableRow(remembered_wifi_networks_[i]) +
-          "</tr>");
-    }
-
-    output.append("</table></body></html>");
-    return output;
   }
 
  private:
@@ -2633,10 +2825,13 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   static void NetworkManagerUpdate(void* object,
                                    const char* manager_path,
                                    const Value* info) {
-    VLOG(1) << "Received NetworkManagerUpdate.";
     NetworkLibraryImpl* networklib = static_cast<NetworkLibraryImpl*>(object);
     DCHECK(networklib);
-    DCHECK(info);
+    if (!info) {
+      LOG(ERROR) << "Error retrieving manager properties: " << manager_path;
+      return;
+    }
+    VLOG(1) << "Received NetworkManagerUpdate.";
     DCHECK_EQ(info->GetType(), Value::TYPE_DICTIONARY);
     const DictionaryValue* dict = static_cast<const DictionaryValue*>(info);
     networklib->ParseNetworkManager(dict);
@@ -2658,7 +2853,11 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                             const Value* info) {
     NetworkLibraryImpl* networklib = static_cast<NetworkLibraryImpl*>(object);
     DCHECK(networklib);
-    DCHECK(info);
+    if (!info) {
+      LOG(ERROR) << "Error retrieving profile: " << profile_path;
+      return;
+    }
+    VLOG(1) << "Received ProfileUpdate for: " << profile_path;
     DCHECK_EQ(info->GetType(), Value::TYPE_DICTIONARY);
     const DictionaryValue* dict = static_cast<const DictionaryValue*>(info);
     ListValue* entries(NULL);
@@ -2921,7 +3120,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     NetworkMap old_network_map = network_map_;
     ClearNetworks(false /*don't delete*/);
     // Clear the list of update requests.
-    int network_priority = 0;
+    int network_priority_order = 0;
     network_update_requests_.clear();
     // wifi_scanning_ will remain false unless we request a network update.
     wifi_scanning_ = false;
@@ -2944,7 +3143,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         // rely on watched network updates and only request updates here for
         // new networks.
         // Use update_request map to store network priority.
-        network_update_requests_[service_path] = network_priority++;
+        network_update_requests_[service_path] = network_priority_order++;
         wifi_scanning_ = true;
         RequestNetworkServiceInfo(service_path.c_str(),
                                   &NetworkServiceUpdate,
@@ -3057,7 +3256,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     // Find and erase entry in update_requests, and set network priority.
     PriorityMap::iterator found2 = network_update_requests_.find(service_path);
     if (found2 != network_update_requests_.end()) {
-      network->priority_ = found2->second;
+      network->priority_order_ = found2->second;
       network_update_requests_.erase(found2);
       if (network_update_requests_.empty()) {
         // Clear wifi_scanning_ when we have no pending requests.
@@ -3069,7 +3268,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       //              << service_path;
     }
 
-    VLOG(1) << "ParseNetwork:" << network->name();
+    VLOG(1) << "ParseNetwork: " << network->name();
     NotifyNetworkManagerChanged(false);  // Not forced.
     return network;
   }
@@ -3086,7 +3285,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       AddRememberedNetwork(network);
     }
     network->ParseInfo(info);  // virtual.
-    VLOG(1) << "ParseRememberedNetwork:" << network->name();
+    VLOG(1) << "ParseRememberedNetwork: " << network->name();
     NotifyNetworkManagerChanged(false);  // Not forced.
     return network;
   }
@@ -3235,6 +3434,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   void NotifyNetworkChanged(Network* network) {
+    VLOG(2) << "Network changed: " << network->name();
     DCHECK(network);
     NetworkObserverMap::const_iterator iter = network_observers_.find(
         network->service_path());
@@ -3316,7 +3516,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       return;
     Network* network = FindNetworkByPath(path);
     if (network) {
-      VLOG(1) << "UpdateNetworkStatus: " << network->name() << "." << key;
+      VLOG(2) << "UpdateNetworkStatus: " << network->name() << "." << key;
       // Note: ParseValue is virtual.
       int index = property_index_parser().Get(std::string(key));
       if (!network->ParseValue(index, value)) {
@@ -3448,6 +3648,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     wifi1->set_name("Fake Wifi Connected");
     wifi1->set_strength(90);
     wifi1->set_connected(true);
+    wifi1->set_active(true);
     wifi1->set_encryption(SECURITY_NONE);
     AddNetwork(wifi1);
 
@@ -3481,7 +3682,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     CellularNetwork* cellular1 = new CellularNetwork("fc1");
     cellular1->set_name("Fake Cellular");
     cellular1->set_strength(70);
-    cellular1->set_connected(false);
+    cellular1->set_connected(true);
+    cellular1->set_active(true);
     cellular1->set_activation_state(ACTIVATION_STATE_ACTIVATED);
     cellular1->set_payment_url(std::string("http://www.google.com"));
     cellular1->set_usage_url(std::string("http://www.google.com"));
@@ -3523,6 +3725,32 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     remembered_wifi2->set_connected(true);
     remembered_wifi2->set_encryption(SECURITY_WEP);
     AddRememberedNetwork(remembered_wifi2);
+
+    // VPNs.
+    VirtualNetwork* vpn1 = new VirtualNetwork("fv1");
+    vpn1->set_name("Fake VPN Provider 1");
+    vpn1->set_server_hostname("vpn1server.fake.com");
+    vpn1->set_provider_type(VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_PSK);
+    vpn1->set_username("VPN User 1");
+    vpn1->set_connected(false);
+    AddNetwork(vpn1);
+
+    VirtualNetwork* vpn2 = new VirtualNetwork("fv2");
+    vpn2->set_name("Fake VPN Provider 2");
+    vpn2->set_server_hostname("vpn2server.fake.com");
+    vpn2->set_provider_type(VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT);
+    vpn2->set_username("VPN User 2");
+    vpn2->set_connected(true);
+    AddNetwork(vpn2);
+
+    VirtualNetwork* vpn3 = new VirtualNetwork("fv3");
+    vpn3->set_name("Fake VPN Provider 3");
+    vpn3->set_server_hostname("vpn3server.fake.com");
+    vpn3->set_provider_type(VirtualNetwork::PROVIDER_TYPE_OPEN_VPN);
+    vpn3->set_connected(false);
+    AddNetwork(vpn3);
+
+    active_virtual_ = vpn2;
 
     wifi_scanning_ = false;
     offline_mode_ = false;
@@ -3623,23 +3851,12 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   // Temporary connection data for async connect calls.
   struct ConnectData {
-    ConnectData() : auto_connect(false) {}
-    void SetData(const std::string& n,
-                 const std::string& p,
-                 const std::string& id,
-                 const std::string& cert,
-                 bool autocon) {
-      name = n;
-      passphrase = p;
-      identity = id;
-      certpath = cert;
-      auto_connect = autocon;
-    }
-    std::string name;
+    std::string service_name;
     std::string passphrase;
     std::string identity;
-    std::string certpath;
-    bool auto_connect;
+    std::string cert_path;
+    std::string psk_key;
+    std::string server_hostname;
   };
   ConnectData connect_data_;
 
@@ -3733,6 +3950,8 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
       const std::string& path) const { return NULL; }
   virtual CellularNetwork* FindCellularNetworkByPath(
       const std::string& path) const { return NULL; }
+  virtual VirtualNetwork* FindVirtualNetworkByPath(
+      const std::string& path) const { return NULL; }
   virtual const CellularDataPlanVector* GetDataPlans(
       const std::string& path) const { return NULL; }
   virtual const CellularDataPlan* GetSignificantDataPlan(
@@ -3755,12 +3974,18 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
                                     const std::string& ssid,
                                     const std::string& passphrase,
                                     const std::string& identity,
-                                    const std::string& certpath,
-                                    bool auto_connect) {}
+                                    const std::string& certpath) {}
   virtual void ConnectToCellularNetwork(CellularNetwork* network) {}
+  virtual void ConnectToVirtualNetwork(VirtualNetwork* network) {}
+  virtual void ConnectToVirtualNetworkPSK(
+      const std::string& service_name,
+      const std::string& server,
+      const std::string& psk,
+      const std::string& username,
+      const std::string& user_passphrase) {}
   virtual void SignalCellularPlanPayment() {}
   virtual bool HasRecentCellularPlanPayment() { return false; }
-  virtual void DisconnectFromWirelessNetwork(const WirelessNetwork* network) {}
+  virtual void DisconnectFromNetwork(const Network* network) {}
   virtual void ForgetWifiNetwork(const std::string& service_path) {}
   virtual bool ethernet_available() const { return true; }
   virtual bool wifi_available() const { return false; }
@@ -3770,6 +3995,7 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual bool cellular_enabled() const { return false; }
   virtual bool wifi_scanning() const { return false; }
   virtual const Network* active_network() const { return NULL; }
+  virtual const Network* connected_network() const { return NULL; }
   virtual bool offline_mode() const { return false; }
   virtual void EnableEthernetNetworkDevice(bool enable) {}
   virtual void EnableWifiNetworkDevice(bool enable) {}
@@ -3780,7 +4006,6 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
     hardware_address->clear();
     return NetworkIPConfigVector();
   }
-  virtual std::string GetHtmlInfo(int refresh) { return std::string(); }
 
  private:
   std::string ip_address_;

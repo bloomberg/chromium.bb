@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,8 +27,6 @@ class NetworkMessageObserver : public NetworkLibrary::NetworkManagerObserver,
   explicit NetworkMessageObserver(Profile* profile);
   virtual ~NetworkMessageObserver();
 
-  typedef std::map<std::string, WifiNetwork*> ServicePathWifiMap;
-  typedef std::map<std::string, CellularNetwork*> ServicePathCellularMap;
   static bool IsApplicableBackupPlan(const CellularDataPlan* plan,
                                      const CellularDataPlan* other_plan);
  private:
@@ -38,6 +36,7 @@ class NetworkMessageObserver : public NetworkLibrary::NetworkManagerObserver,
   virtual void ShowNeedsPlanNotification(const CellularNetwork* cellular);
   virtual void ShowNoDataNotification(CellularDataPlanType plan_type);
   virtual void ShowLowDataNotification(const CellularDataPlan* plan);
+  virtual bool CheckNetworkFailed(const Network* network);
 
   // NetworkLibrary::NetworkManagerObserver implementation.
   virtual void OnNetworkManagerChanged(NetworkLibrary* obj);
@@ -47,10 +46,10 @@ class NetworkMessageObserver : public NetworkLibrary::NetworkManagerObserver,
   virtual void OnConnectionInitiated(NetworkLibrary* obj,
                                      const Network* network);
 
-  // Wifi networks by service path.
-  ServicePathWifiMap wifi_networks_;
-  // Cellular networks by service path.
-  ServicePathCellularMap cellular_networks_;
+  typedef std::map<std::string, ConnectionState> NetworkStateMap;
+
+  // Network state by service path.
+  NetworkStateMap network_states_;
 
   // Current connect celluar service path.
   std::string cellular_service_path_;

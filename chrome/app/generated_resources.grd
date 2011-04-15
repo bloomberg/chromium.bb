@@ -4213,6 +4213,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_EAP_DESCRIPTION" desc="Description of the 'Experimental Wi-Fi EAP methods' lab.">
         Experimental support for additional Wi-Fi Extensible Authentication Protocol methods, such as EAP-TLS and LEAP.
       </message>
+      <message name="IDS_FLAGS_ENABLE_VPN_NAME" desc="Title for the flag to enable VPN support">
+        VPN support
+      </message>
+      <message name="IDS_FLAGS_ENABLE_VPN_DESCRIPTION" desc="Description for the flag to enable VPN support">
+        Show Private networks in the Network menu to enable conencting to a VPN.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
@@ -9848,6 +9854,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_JOIN_WIFI_NETWORKS" desc="The title for the dialog to join a wifi network.">
         Join Wi-Fi network
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_ADD_VPN" desc="In the settings tab, the text on the button to add a private network.">
+        Add private network
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_ENABLE_DATA_ROAMING" desc="In the settings tab, the text next to the checkbox for data roaming.">
         Allow mobile data roaming
       </message>
@@ -10007,8 +10016,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_MORE" desc="In settings Internet options, the title for buy cellular data plan button.">
         Buy data plan...
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_CREDENTIALS" desc="In settings Internet options, the label for invalid passphrase or identity input.">
-        Password is too short or invalid.
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_UNKNOWN_ERROR" desc="In settings Internet options, the label for an unknown connection error.">
+        Failed to connect to network.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELL_PLAN_NAME" desc="In settings Internet options, the label displayed next to cellular plan name.">
         Plan name:
@@ -10093,6 +10102,36 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONNECT_TITLE" desc="In settings Internet options, Title of the overlay when the user is not connected and can.">
         Connect to network
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_PSK" desc="In settings Internet options, a string specifying L2TP/IPSec + PSK.">
+        L2TP/IPSec + Pre-shared key
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_USER_CERT" desc="In settings Internet options, a string specifying L2TP/IPSec + User Certificate.">
+        L2TP/IPSec + User certificate
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_OPEN_VPN" desc="In settings Internet options, a string specifying OpenVPN.">
+        OpenVPN
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVICE_NAME" desc="In settings Internet options, a string specifying VPN service name.">
+        Service name:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVER_HOSTNAME" desc="In settings Internet options, a string specifying VPN server hostname.">
+        Server hostname:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PROVIDER_TYPE" desc="In settings Internet options, a string specifying VPN provider type.">
+        Provider type:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PSK_PASSPHRASE" desc="In settings Internet options, a string specifying VPN PSK passphrase.">
+        Pre-shared key:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_CERT" desc="In settings Internet options, a string specifying VPN user certificate.">
+        User certificate:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USERNAME" desc="In settings Internet options, a string specifying VPN username.">
+        Username:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_PASSPHRASE" desc="In settings Internet options, a string specifying VPN user passphrase.">
+        Password:
       </message>
       <message name="IDS_NETWORK_RECONNECT_TITLE" desc="In network menu, title of the reconnect button that allows user to retry connection on error.">
         Reconnect
@@ -10980,6 +11019,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_NETWORK_OPEN_PROXY_SETTINGS_DIALOG" desc="The menu item in the network menu button at login screen for opening the options dialog">
         Proxy settings...
       </message>
+      <message name="IDS_STATUSBAR_NETWORK_PRIVATE_NETWORKS" desc="In the network status menu, the text for submenu of private networks.">
+        Private networks
+      </message>
+      <message name="IDS_STATUSBAR_NETWORK_ADD_VPN" desc="In the network status menu, the text in Private networks submenu to add a private network.">
+        Add private network...
+      </message>
+      <message name="IDS_STATUSBAR_NETWORK_DISCONNECT_VPN" desc="In the network status menu, the text in Private networks submenu to disconnect from a private network.">
+        Disconnect private network
+      </message>
       <message name="IDS_STATUSBAR_NO_NETWORKS_MESSAGE" desc="No networks are available">
         No networks are available
       </message>
@@ -11218,7 +11266,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Network error strings for ChromeOS -->
       <message name="IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN" desc="Network error in about:network: UNKNOWN">
-        Unknown
+        Unknown network error
       </message>
       <message name="IDS_CHROMEOS_NETWORK_ERROR_OUT_OF_RANGE" desc="Network error in about:network: OUT_OF_RANGE">
         Out of range

@@ -598,7 +598,7 @@ void MobileSetupHandler::StartOTASP() {
       network->connected() &&
       network->activation_state() == chromeos::ACTIVATION_STATE_ACTIVATED) {
     chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-        DisconnectFromWirelessNetwork(network);
+        DisconnectFromNetwork(network);
   } else {
     EvaluateCellularNetwork(network);
   }
@@ -624,7 +624,7 @@ void MobileSetupHandler::DisconnectFromNetwork(
   DCHECK(network);
   LOG(INFO) << "Disconnecting from: " << network->service_path();
   chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-      DisconnectFromWirelessNetwork(network);
+      DisconnectFromNetwork(network);
   // Disconnect will force networks to be reevaluated, so
   // we don't want to continue processing on this path anymore.
   evaluating_ = false;
@@ -696,7 +696,7 @@ void MobileSetupHandler::ForceReconnect(
   // First, disconnect...
   LOG(INFO) << "Disconnecting from " << network->service_path();
   chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-      DisconnectFromWirelessNetwork(network);
+      DisconnectFromNetwork(network);
   // Check the network state 3s after we disconnect to make sure.
   scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr(),
                                                 delay);
@@ -760,8 +760,7 @@ void MobileSetupHandler::EvaluateCellularNetwork(
         }
         default: {
           if (network->failed_or_disconnected() ||
-              network->connection_state() ==
-                  chromeos::STATE_ACTIVATION_FAILURE) {
+              network->state() == chromeos::STATE_ACTIVATION_FAILURE) {
             new_state = (network->activation_state() ==
                          chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED) ?
                             PLAN_ACTIVATION_TRYING_OTASP :
@@ -942,7 +941,7 @@ void MobileSetupHandler::EvaluateCellularNetwork(
         network->activation_state() == chromeos::ACTIVATION_STATE_ACTIVATING) &&
         (network->error() == chromeos::ERROR_UNKNOWN ||
             network->error() == chromeos::ERROR_OTASP_FAILED) &&
-        network->connection_state() == chromeos::STATE_ACTIVATION_FAILURE) {
+        network->state() == chromeos::STATE_ACTIVATION_FAILURE) {
       LOG(WARNING) << "Activation failure detected "
                    << network->service_path().c_str();
       switch (state_) {
@@ -1224,7 +1223,7 @@ bool MobileSetupHandler::GotActivationError(
   const char* error_code = kErrorDefault;
 
   // This is the magic for detection of errors in during activation process.
-  if (network->connection_state() == chromeos::STATE_FAILURE &&
+  if (network->state() == chromeos::STATE_FAILURE &&
       network->error() == chromeos::ERROR_AAA_FAILED) {
     if (network->activation_state() ==
             chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED) {
@@ -1238,8 +1237,7 @@ bool MobileSetupHandler::GotActivationError(
       }
     }
     got_error = true;
-  } else if (network->connection_state() ==
-                 chromeos::STATE_ACTIVATION_FAILURE) {
+  } else if (network->state() == chromeos::STATE_ACTIVATION_FAILURE) {
     if (network->error() == chromeos::ERROR_NEED_EVDO) {
       if (network->activation_state() ==
               chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED)

@@ -648,6 +648,14 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
     } else {
       PopulateCellularDetails(cros, cellular, &dictionary);
     }
+  } else if (type == chromeos::TYPE_VPN) {
+    const chromeos::VirtualNetwork* vpn =
+        cros->FindVirtualNetworkByPath(net->service_path());
+    if (!vpn) {
+      LOG(WARNING) << "Cannot find network " << net->service_path();
+    } else {
+      PopulateVPNDetails(vpn, &dictionary);
+    }
   }
 
   web_ui_->CallJavascriptFunction(
@@ -722,6 +730,12 @@ void InternetOptionsHandler::PopulateCellularDetails(
   }
 
   SetActivationButtonVisibility(cellular, dictionary);
+}
+
+void InternetOptionsHandler::PopulateVPNDetails(
+    const chromeos::VirtualNetwork* vpn,
+    DictionaryValue* dictionary) {
+  // TODO(altimofeev): implement this.
 }
 
 void InternetOptionsHandler::SetActivationButtonVisibility(
@@ -801,8 +815,7 @@ void InternetOptionsHandler::LoginToOtherCallback(const ListValue* args) {
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
 
-  cros->ConnectToWifiNetwork(sec, ssid, password, std::string(), std::string(),
-                             true);
+  cros->ConnectToWifiNetwork(sec, ssid, password, std::string(), std::string());
 }
 
 void InternetOptionsHandler::CreateModalPopup(views::WindowDelegate* view) {
@@ -843,6 +856,8 @@ void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
     HandleWifiButtonClick(service_path, command);
   } else if (type == chromeos::TYPE_CELLULAR) {
     HandleCellularButtonClick(service_path, command);
+  } else if (type == chromeos::TYPE_VPN) {
+    HandleVPNButtonClick(service_path, command);
   } else {
     NOTREACHED();
   }
@@ -862,7 +877,7 @@ void InternetOptionsHandler::HandleWifiButtonClick(
     cros->ForgetWifiNetwork(service_path);
   } else if (!use_settings_ui_ && service_path == kOtherNetworksFakePath) {
     // Other wifi networks.
-    CreateModalPopup(new chromeos::NetworkConfigView());
+    CreateModalPopup(new chromeos::NetworkConfigView(chromeos::TYPE_WIFI));
   } else if ((wifi = cros->FindWifiNetworkByPath(service_path))) {
     if (command == "connect") {
       // Connect to wifi here. Open password page if appropriate.
@@ -883,7 +898,7 @@ void InternetOptionsHandler::HandleWifiButtonClick(
         cros->ConnectToWifiNetwork(wifi);
       }
     } else if (command == "disconnect") {
-      cros->DisconnectFromWirelessNetwork(wifi);
+      cros->DisconnectFromNetwork(wifi);
     } else if (command == "options") {
       PopulateDictionaryDetails(wifi, cros);
     }
@@ -901,7 +916,7 @@ void InternetOptionsHandler::HandleCellularButtonClick(
     if (command == "connect") {
       cros->ConnectToCellularNetwork(cellular);
     } else if (command == "disconnect") {
-      cros->DisconnectFromWirelessNetwork(cellular);
+      cros->DisconnectFromNetwork(cellular);
     } else if (command == "activate") {
       Browser* browser = BrowserList::GetLastActive();
       if (browser)
@@ -912,6 +927,35 @@ void InternetOptionsHandler::HandleCellularButtonClick(
   }
 }
 
+void InternetOptionsHandler::HandleVPNButtonClick(
+    const std::string& service_path,
+    const std::string& command) {
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  chromeos::VirtualNetwork* network = NULL;
+  // TODO(altimofeev): verify if service_path in condition is correct.
+  if (!use_settings_ui_ && service_path == kOtherNetworksFakePath) {
+    // Other VPN networks.
+    CreateModalPopup(new chromeos::NetworkConfigView(chromeos::TYPE_VPN));
+  } else if ((network = cros->FindVirtualNetworkByPath(service_path))) {
+    if (command == "connect") {
+      // Connect to VPN here. Open password page if appropriate.
+      if (network->NeedMoreInfoToConnect()) {
+        if (use_settings_ui_) {
+          // TODO(altimofeev): implement this.
+        } else {
+          CreateModalPopup(new chromeos::NetworkConfigView(network));
+        }
+      } else {
+        cros->ConnectToVirtualNetwork(network);
+      }
+    } else if (command == "disconnect") {
+      cros->DisconnectFromNetwork(network);
+    } else if (command == "options") {
+      PopulateDictionaryDetails(network, cros);
+    }
+  }
+}
 void InternetOptionsHandler::RefreshCellularPlanCallback(
     const ListValue* args) {
   std::string service_path;
@@ -1000,13 +1044,16 @@ ListValue* InternetOptionsHandler::GetWiredList() {
     const chromeos::EthernetNetwork* ethernet_network =
         cros->ethernet_network();
     const SkBitmap* icon = rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK);
-    const SkBitmap* badge = !ethernet_network ||
+    const SkBitmap* bottom_right_badge = !ethernet_network ||
         (!ethernet_network->connecting() && !ethernet_network->connected()) ?
             rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED) : NULL;
+    const SkBitmap* bottom_left_badge =
+        chromeos::NetworkMenu::BadgeForPrivateNetworkStatus(ethernet_network);
     if (ethernet_network) {
       list->Append(GetNetwork(
           ethernet_network->service_path(),
-          chromeos::NetworkMenu::IconForDisplay(icon, badge),
+          chromeos::NetworkMenu::IconForDisplay(icon, bottom_right_badge, NULL,
+                                                bottom_left_badge),
           l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET),
           ethernet_network->connecting(),
           ethernet_network->connected(),
@@ -1026,16 +1073,24 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   ListValue* list = new ListValue();
 
+  const chromeos::Network* active_network = cros->active_network();
+  bool has_vpn = active_network && cros->virtual_network();
+  bool vpn_on_wireless = has_vpn &&
+      active_network->type() == chromeos::TYPE_WIFI;
   const chromeos::WifiNetworkVector& wifi_networks = cros->wifi_networks();
   for (chromeos::WifiNetworkVector::const_iterator it =
       wifi_networks.begin(); it != wifi_networks.end(); ++it) {
     const SkBitmap* icon =
         chromeos::NetworkMenu::IconForNetworkStrength(*it, true);
-    const SkBitmap* badge = (*it)->encrypted() ?
+    const SkBitmap* bottom_right_badge = (*it)->encrypted() ?
         rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE) : NULL;
+    const SkBitmap* bottom_left_badge =
+        vpn_on_wireless && active_network == (*it) ?
+        chromeos::NetworkMenu::BadgeForPrivateNetworkStatus(NULL) : NULL;
     list->Append(GetNetwork(
         (*it)->service_path(),
-        chromeos::NetworkMenu::IconForDisplay(icon, badge),
+        chromeos::NetworkMenu::IconForDisplay(icon, bottom_right_badge, NULL,
+                                              bottom_left_badge),
         (*it)->name(),
         (*it)->connecting(),
         (*it)->connected(),
@@ -1061,19 +1116,25 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
         false));
   }
 
+  bool vpn_on_cellular = has_vpn &&
+                         active_network->type() == chromeos::TYPE_CELLULAR;
   const chromeos::CellularNetworkVector cellular_networks =
       cros->cellular_networks();
   for (chromeos::CellularNetworkVector::const_iterator it =
       cellular_networks.begin(); it != cellular_networks.end(); ++it) {
     const SkBitmap* icon =
         chromeos::NetworkMenu::IconForNetworkStrength(*it, true);
-    const SkBitmap* badge =
+    const SkBitmap* bottom_right_badge =
         chromeos::NetworkMenu::BadgeForNetworkTechnology(*it);
     const SkBitmap* roaming_badge =
         chromeos::NetworkMenu::BadgeForRoamingStatus(*it);
+    const SkBitmap* bottom_left_badge =
+        vpn_on_cellular && active_network == (*it) ?
+        chromeos::NetworkMenu::BadgeForPrivateNetworkStatus(NULL) : NULL;
     list->Append(GetNetwork(
         (*it)->service_path(),
-        chromeos::NetworkMenu::IconForDisplay(icon, badge, roaming_badge),
+        chromeos::NetworkMenu::IconForDisplay(icon, bottom_right_badge,
+                                              roaming_badge, bottom_left_badge),
         (*it)->name(),
         (*it)->connecting(),
         (*it)->connected(),
@@ -1101,6 +1162,9 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
       cros->remembered_wifi_networks();
   const chromeos::WifiNetworkVector& wifi_networks =
       cros->wifi_networks();
+  const chromeos::Network* active_network = cros->active_network();
+  bool vpn_on_wireless = active_network && cros->virtual_network() &&
+                         active_network->type() == chromeos::TYPE_WIFI;
 
   // The remembered networks from libcros/flimflam don't include the signal
   // strength, so fall back to the detected networks for this data.  We
@@ -1130,11 +1194,15 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
     // Place the secure badge on the icon if the remembered network is
     // encrypted (the matching detected network, if any, will have the same
     // encrypted property by definition).
-    const SkBitmap* badge = wifi->encrypted() ?
+    const SkBitmap* bottom_right_badge = wifi->encrypted() ?
         rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE) : NULL;
+    const SkBitmap* bottom_left_badge =
+        vpn_on_wireless && active_network == wifi ?
+        chromeos::NetworkMenu::BadgeForPrivateNetworkStatus(NULL) : NULL;
     list->Append(GetNetwork(
         wifi->service_path(),
-        chromeos::NetworkMenu::IconForDisplay(icon, badge),
+        chromeos::NetworkMenu::IconForDisplay(icon, bottom_right_badge, NULL,
+                                              bottom_left_badge),
         wifi->name(),
         wifi->connecting(),
         wifi->connected(),

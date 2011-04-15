@@ -65,9 +65,11 @@ class NetworkMenuButton : public StatusAreaButton,
   // NetworkLibrary::CellularDataPlanObserver implementation.
   virtual void OnCellularDataPlanChanged(NetworkLibrary* cros);
 
- private:
   // NetworkMenu implementation:
   virtual bool IsBrowserMode() const;
+
+ protected:
+  // NetworkMenu implementation:
   virtual gfx::NativeWindow GetNativeWindow() const;
   virtual void OpenButtonOptions();
   virtual bool ShouldOpenButtonOptions() const;
@@ -75,12 +77,15 @@ class NetworkMenuButton : public StatusAreaButton,
   // views::View
   virtual void OnLocaleChanged() OVERRIDE;
 
-  // Sets the icon and the badge.
-  void SetIconAndBadge(const SkBitmap* icon, const SkBitmap* badge);
+ private:
+  // Sets the icon and the badges (badges are at the bottom of the icon).
+  void SetIconAndBadges(const SkBitmap* icon,
+                        const SkBitmap* right_badge,
+                        const SkBitmap* left_badge);
   // Sets the icon only. Keep the previous badge.
   void SetIconOnly(const SkBitmap* icon);
-  // Sets the badge only. Keep the previous icon.
-  void SetBadgeOnly(const SkBitmap* badge);
+  // Sets the badges only. Keep the previous icon.
+  void SetBadgesOnly(const SkBitmap* right_badge, const SkBitmap* left_badge);
   // Set the network icon based on the status of the |network|
   void SetNetworkIcon(NetworkLibrary* cros, const Network* network);
 
@@ -93,8 +98,10 @@ class NetworkMenuButton : public StatusAreaButton,
 
   // The icon showing the network strength.
   const SkBitmap* icon_;
-  // A badge icon displayed on top of the icon.
-  const SkBitmap* badge_;
+  // A badge icon displayed on top of icon, in bottom-right corner.
+  const SkBitmap* right_badge_;
+  // A  badge icon displayed on top of icon, in bottom-left corner.
+  const SkBitmap* left_badge_;
 
   // The throb animation that does the wifi connecting animation.
   ui::ThrobAnimation animation_connecting_;

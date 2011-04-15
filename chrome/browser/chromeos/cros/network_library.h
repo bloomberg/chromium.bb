@@ -227,9 +227,7 @@ class Network {
   ConnectionType type() const { return type_; }
   ConnectionMode mode() const { return mode_; }
   ConnectionState connection_state() const { return state_; }
-  bool connecting() const { return state_ == STATE_ASSOCIATION ||
-                                   state_ == STATE_CONFIGURATION ||
-                                   state_ == STATE_CARRIER; }
+  bool connecting() const { return IsConnectingState(state_); }
   bool configuring() const { return state_ == STATE_CONFIGURATION; }
   bool connected() const { return state_ == STATE_READY; }
   bool connecting_or_connected() const { return connecting() || connected(); }
@@ -249,6 +247,7 @@ class Network {
   bool favorite() const { return favorite_; }
   bool auto_connect() const { return auto_connect_; }
   ConnectivityState connectivity_state() const { return connectivity_state_; }
+  bool added() const { return added_; }
 
   // We don't have a setter for |favorite_| because to unfavorite a network is
   // equivalent to forget a network, so we call forget network on cros for
@@ -261,6 +260,12 @@ class Network {
   // Return a string representation of the error code.
   std::string GetErrorString() const;
 
+  static bool IsConnectingState(ConnectionState state) {
+    return (state == STATE_ASSOCIATION ||
+            state == STATE_CONFIGURATION ||
+            state == STATE_CARRIER);
+  }
+
  protected:
   Network(const std::string& service_path, ConnectionType type)
       : state_(STATE_UNKNOWN),
@@ -270,23 +275,27 @@ class Network {
         favorite_(false),
         auto_connect_(false),
         connectivity_state_(CONN_STATE_UNKNOWN),
-        priority_(0),
+        priority_order_(0),
+        added_(false),
         service_path_(service_path),
         type_(type) {}
 
   // Parse name/value pairs from libcros.
   virtual bool ParseValue(int index, const Value* value);
-  void ParseInfo(const DictionaryValue* info);
+  virtual void ParseInfo(const DictionaryValue* info);
 
   // Methods to asynchronously set network service properties
-  virtual void SetStringProperty(const char* prop, const std::string& str);
-  virtual void SetBooleanProperty(const char* prop, bool b);
-  virtual void SetIntegerProperty(const char* prop, int i);
+  virtual void SetStringProperty(const char* prop, const std::string& str,
+                                 std::string* dest);
+  virtual void SetBooleanProperty(const char* prop, bool b, bool* dest);
+  virtual void SetIntegerProperty(const char* prop, int i, int* dest);
   virtual void SetValueProperty(const char* prop, Value* val);
   virtual void ClearProperty(const char* prop);
+
   // This will clear the property if string is empty. Otherwise, it will set it.
   virtual void SetOrClearStringProperty(const char* prop,
-                                        const std::string& str);
+                                        const std::string& str,
+                                        std::string* dest);
 
   std::string device_path_;
   std::string name_;
@@ -315,12 +324,16 @@ class Network {
   void set_connectivity_state(ConnectivityState connectivity_state) {
     connectivity_state_ = connectivity_state;
   }
+  void set_added(bool added) { added_ = added; }
 
   // Initialize the IP address field
   void InitIPAddress();
 
-  // Priority value, corresponds to index in list from flimflam (0 = highest)
-  int priority_;
+  // Priority value, corresponds to index in list from flimflam (0 = first)
+  int priority_order_;
+
+  // Set to true if the UI requested this as a new network.
+  bool added_;
 
   // These must not be modified after construction.
   std::string service_path_;
@@ -328,6 +341,7 @@ class Network {
 
   friend class NetworkLibraryImpl;
   friend class NetworkLibraryStubImpl;
+  DISALLOW_COPY_AND_ASSIGN(Network);
   // ChangeAutoConnectSaveTest accesses |favorite_|.
   FRIEND_TEST_ALL_PREFIXES(WifiConfigViewTest, ChangeAutoConnectSaveTest);
 };
@@ -338,14 +352,92 @@ class EthernetNetwork : public Network {
   explicit EthernetNetwork(const std::string& service_path) :
       Network(service_path, TYPE_ETHERNET) {
   }
+ private:
+  friend class NetworkLibraryImpl;
+  DISALLOW_COPY_AND_ASSIGN(EthernetNetwork);
 };
 
 // Class for networks of TYPE_VPN.
 class VirtualNetwork : public Network {
  public:
+  enum ProviderType {
+    PROVIDER_TYPE_L2TP_IPSEC_PSK,
+    PROVIDER_TYPE_L2TP_IPSEC_USER_CERT,
+    PROVIDER_TYPE_OPEN_VPN,
+    // Add new provider types before PROVIDER_TYPE_MAX.
+    PROVIDER_TYPE_MAX,
+  };
+
   explicit VirtualNetwork(const std::string& service_path) :
-      Network(service_path, TYPE_VPN) {
+      Network(service_path, TYPE_VPN),
+      provider_type_(PROVIDER_TYPE_L2TP_IPSEC_PSK) {
   }
+
+  const std::string& server_hostname() const { return server_hostname_; }
+  ProviderType provider_type() const { return provider_type_; }
+  const std::string& ca_cert() const { return ca_cert_; }
+  const std::string& psk_passphrase() const { return psk_passphrase_; }
+  const std::string& user_cert() const { return user_cert_; }
+  const std::string& user_cert_key() const { return user_cert_key_; }
+  const std::string& username() const { return username_; }
+  const std::string& user_passphrase() const { return user_passphrase_; }
+
+  bool NeedMoreInfoToConnect() const;
+
+  // Public setters.
+  void SetCACert(const std::string& ca_cert);
+  void SetPSKPassphrase(const std::string& psk_passphrase);
+  void SetUserCert(const std::string& user_cert);
+  void SetUserCertKey(const std::string& key);
+  void SetUsername(const std::string& username);
+  void SetUserPassphrase(const std::string& user_passphrase);
+
+  std::string GetProviderTypeString() const;
+
+ private:
+  // Network overrides.
+  virtual bool ParseValue(int index, const Value* value);
+  virtual void ParseInfo(const DictionaryValue* info);
+
+  // VirtualNetwork private methods.
+  bool ParseProviderValue(int index, const Value* value);
+
+  void set_server_hostname(const std::string& server_hostname) {
+    server_hostname_ = server_hostname;
+  }
+  void set_provider_type(ProviderType provider_type) {
+    provider_type_ = provider_type;
+  }
+  void set_ca_cert(const std::string& ca_cert) {
+    ca_cert_ = ca_cert;
+  }
+  void set_psk_passphrase(const std::string& psk_passphrase) {
+    psk_passphrase_ = psk_passphrase;
+  }
+  void set_user_cert(const std::string& user_cert) {
+    user_cert_ = user_cert;
+  }
+  void set_user_cert_key(const std::string& key) {
+    user_cert_key_ = key;
+  }
+  void set_username(const std::string& username) {
+    username_ = username;
+  }
+  void set_user_passphrase(const std::string& user_passphrase) {
+    user_passphrase_ = user_passphrase;
+  }
+
+  std::string server_hostname_;
+  ProviderType provider_type_;
+  std::string ca_cert_;
+  std::string psk_passphrase_;
+  std::string user_cert_;
+  std::string user_cert_key_;
+  std::string username_;
+  std::string user_passphrase_;
+
+  friend class NetworkLibraryImpl;
+  DISALLOW_COPY_AND_ASSIGN(VirtualNetwork);
 };
 typedef std::vector<VirtualNetwork*> VirtualNetworkVector;
 
@@ -368,6 +460,7 @@ class WirelessNetwork : public Network {
 
   friend class NetworkLibraryImpl;
   friend class NetworkLibraryStubImpl;
+  DISALLOW_COPY_AND_ASSIGN(WirelessNetwork);
 };
 
 // Class for networks of TYPE_CELLULAR.
@@ -490,6 +583,7 @@ class CellularNetwork : public WirelessNetwork {
 
   friend class NetworkLibraryImpl;
   friend class NetworkLibraryStubImpl;
+  DISALLOW_COPY_AND_ASSIGN(CellularNetwork);
 };
 typedef std::vector<CellularNetwork*> CellularNetworkVector;
 
@@ -598,6 +692,7 @@ class WifiNetwork : public WirelessNetwork {
   std::string user_passphrase_;
 
   friend class NetworkLibraryImpl;
+  DISALLOW_COPY_AND_ASSIGN(WifiNetwork);
 };
 typedef std::vector<WifiNetwork*> WifiNetworkVector;
 
@@ -854,6 +949,8 @@ class NetworkLibrary {
   virtual WifiNetwork* FindWifiNetworkByPath(const std::string& path) const = 0;
   virtual CellularNetwork* FindCellularNetworkByPath(
       const std::string& path) const = 0;
+  virtual VirtualNetwork* FindVirtualNetworkByPath(
+      const std::string& path) const = 0;
 
   // Retrieves the data plans associated with |path|, NULL if there are no
   // associated plans.
@@ -903,13 +1000,13 @@ class NetworkLibrary {
   // Same as above but searches for an existing network by name.
   virtual void ConnectToWifiNetwork(const std::string& service_path) = 0;
 
-  // Connect to the specified network with security, ssid, and passphrase.
+  // Connect to the specified network with security, ssid, passphrase, identity,
+  // and (optionally) certpath.
   virtual void ConnectToWifiNetwork(ConnectionSecurity security,
                                     const std::string& ssid,
                                     const std::string& passphrase,
                                     const std::string& identity,
-                                    const std::string& certpath,
-                                    bool auto_connect) = 0;
+                                    const std::string& certpath) = 0;
 
   // Connect to the specified cellular network.
   virtual void ConnectToCellularNetwork(CellularNetwork* network) = 0;
@@ -920,9 +1017,20 @@ class NetworkLibrary {
   // Returns true if cellular plan payment had been recorded recently.
   virtual bool HasRecentCellularPlanPayment() = 0;
 
-  // Disconnect from the specified wireless (either cellular or wifi) network.
-  virtual void DisconnectFromWirelessNetwork(
-      const WirelessNetwork* network) = 0;
+  // Connect to the specified virtual network.
+  virtual void ConnectToVirtualNetwork(VirtualNetwork* network) = 0;
+
+  // Connect to the specified virtual network with service name,
+  // server hostname, provider_type, PSK passphrase, username and passphrase.
+  virtual void ConnectToVirtualNetworkPSK(
+      const std::string& service_name,
+      const std::string& server_hostname,
+      const std::string& psk,
+      const std::string& username,
+      const std::string& user_passphrase) = 0;
+
+  // Disconnect from the specified network.
+  virtual void DisconnectFromNetwork(const Network* network) = 0;
 
   // Forget the wifi network corresponding to service_path.
   virtual void ForgetWifiNetwork(const std::string& service_path) = 0;
@@ -938,6 +1046,7 @@ class NetworkLibrary {
   virtual bool wifi_scanning() const = 0;
 
   virtual const Network* active_network() const = 0;
+  virtual const Network* connected_network() const = 0;
 
   virtual bool offline_mode() const = 0;
 
@@ -960,10 +1069,6 @@ class NetworkLibrary {
   virtual NetworkIPConfigVector GetIPConfigs(
       const std::string& device_path,
       std::string* hardware_address) = 0;
-
-  // Fetches debug network info for display in about:network.
-  // The page will have a meta refresh of |refresh| seconds if |refresh| > 0.
-  virtual std::string GetHtmlInfo(int refresh) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via CrosLibrary::Get().
