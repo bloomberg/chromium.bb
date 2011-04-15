@@ -42,5 +42,4 @@ include_rules = [
   # FIXME: these should probably not be here, we need to find a better
   # structure for these includes.
   "+chrome/renderer",
-  "+chrome/gpu",
 ]
