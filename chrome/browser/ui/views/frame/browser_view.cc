@@ -103,7 +103,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/views/keyboard_overlay_dialog_view.h"
+#include "chrome/browser/ui/views/keyboard_overlay_delegate.h"
 #endif
 
 using base::TimeDelta;
@@ -1186,7 +1186,7 @@ gfx::Rect BrowserView::GetInstantBounds() {
 
 #if defined(OS_CHROMEOS)
 void BrowserView::ShowKeyboardOverlay(gfx::NativeWindow owning_window) {
-  KeyboardOverlayDialogView::ShowDialog(owning_window, this);
+  KeyboardOverlayDelegate::ShowDialog(owning_window);
 }
 #endif
 

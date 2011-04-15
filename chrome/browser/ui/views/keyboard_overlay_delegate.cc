@@ -8,6 +8,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/frame/bubble_window.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/html_dialog_view.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/url_constants.h"
@@ -19,6 +22,26 @@
 static const int kBaseWidth = 1252;
 static const int kBaseHeight = 516;
 static const int kHorizontalMargin = 28;
+
+void KeyboardOverlayDelegate::ShowDialog(gfx::NativeWindow owning_window) {
+  Browser* browser = BrowserList::GetLastActive();
+  KeyboardOverlayDelegate* delegate = new KeyboardOverlayDelegate(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_TITLE)));
+  HtmlDialogView* html_view =
+      new HtmlDialogView(browser->profile(), delegate);
+  delegate->set_view(html_view);
+  html_view->InitDialog();
+  html_view->AddAccelerator(
+      views::Accelerator(ui::VKEY_OEM_2, false, true, true));
+  html_view->AddAccelerator(
+      views::Accelerator(ui::VKEY_OEM_2, true, true, true));
+
+  chromeos::BubbleWindow::Create(owning_window,
+                                 gfx::Rect(),
+                                 chromeos::BubbleWindow::STYLE_XSHAPE,
+                                 html_view);
+  html_view->window()->Show();
+}
 
 KeyboardOverlayDelegate::KeyboardOverlayDelegate(
     const std::wstring& title)

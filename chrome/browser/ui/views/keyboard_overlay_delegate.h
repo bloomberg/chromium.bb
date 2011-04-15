@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_KEYBOARD_OVERLAY_DELEGATE_H_
 
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "ui/gfx/native_widget_types.h"
 
 
 class HtmlDialogView;
@@ -13,6 +14,9 @@ class HtmlDialogView;
 class KeyboardOverlayDelegate : public HtmlDialogUIDelegate {
  public:
   explicit KeyboardOverlayDelegate(const std::wstring& title);
+
+  // Shows the keyboard overlay dialog box.
+  static void ShowDialog(gfx::NativeWindow owning_window);
 
   void set_view(HtmlDialogView* html_view) {
     view_ = html_view;
