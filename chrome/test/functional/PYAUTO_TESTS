@@ -24,6 +24,7 @@
 {
   # The CONTINUOUS suite includes tests that we expect to pass on a
   # continuous builder.
+  # This is the suite that gets run on 'Chromium' builds.
   'CONTINUOUS': {
     'all': [
       'autofill',
@@ -271,6 +272,7 @@
   },
 
   # The FULL suite includes CONTINUOUS, and more.
+  # This the suite that gets run on 'Google Chrome' builds.
   'FULL': {
     'all': [
       '@CONTINUOUS',
@@ -299,7 +301,10 @@
       '-translate',
     ],
   },
-  
+
+  'EMPTY': {
+  },
+
   # HTML5 media performance tests.
   'MEDIA_TESTS': {
     'linux': [
