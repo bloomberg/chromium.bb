@@ -54,10 +54,6 @@
 #include "ipc/ipc_channel_posix.h"
 #endif
 
-#if defined(OS_WIN)
-#include "printing/metafile_impl.h"
-#endif
-
 using WebKit::WebBindings;
 using WebKit::WebCursorInfo;
 using WebKit::WebDragData;
@@ -908,32 +904,6 @@ bool WebPluginDelegateProxy::BackgroundChanged(
 #endif
 
   return false;
-}
-
-void WebPluginDelegateProxy::Print(gfx::NativeDrawingContext context) {
-  base::SharedMemoryHandle shared_memory;
-  uint32 size;
-  if (!Send(new PluginMsg_Print(instance_id_, &shared_memory, &size)))
-    return;
-
-  base::SharedMemory memory(shared_memory, true);
-  if (!memory.Map(size)) {
-    NOTREACHED();
-    return;
-  }
-
-#if defined(OS_WIN)
-  printing::NativeMetafile metafile;
-  if (!metafile.InitFromData(memory.memory(), size)) {
-    NOTREACHED();
-    return;
-  }
-  // Playback the buffer.
-  metafile.Playback(context, NULL);
-#else
-  // TODO(port): plugin printing.
-  NOTIMPLEMENTED();
-#endif
 }
 
 NPObject* WebPluginDelegateProxy::GetPluginScriptableObject() {

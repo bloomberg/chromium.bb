@@ -469,10 +469,6 @@ void WebPluginDelegateImpl::Paint(CGContextRef context, const gfx::Rect& rect) {
 #endif
 }
 
-void WebPluginDelegateImpl::Print(CGContextRef context) {
-  NOTIMPLEMENTED();
-}
-
 bool WebPluginDelegateImpl::PlatformHandleInputEvent(
     const WebInputEvent& event, WebCursorInfo* cursor_info) {
   DCHECK(cursor_info != NULL);

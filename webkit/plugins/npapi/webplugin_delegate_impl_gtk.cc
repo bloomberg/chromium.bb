@@ -116,10 +116,6 @@ void WebPluginDelegateImpl::Paint(WebKit::WebCanvas* canvas,
   skia::EndPlatformPaint(canvas);
 }
 
-void WebPluginDelegateImpl::Print(cairo_t* context) {
-  NOTIMPLEMENTED();
-}
-
 void WebPluginDelegateImpl::InstallMissingPlugin() {
   NOTIMPLEMENTED();
 }

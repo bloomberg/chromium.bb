@@ -9,6 +9,7 @@
 #include <vector>
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_handle.h"
+#include "base/process.h"
 #include "build/build_config.h"
 #include "content/plugin/plugin_channel_base.h"
 #include "content/plugin/webplugin_delegate_stub.h"

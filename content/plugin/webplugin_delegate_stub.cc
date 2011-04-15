@@ -22,10 +22,6 @@
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 #include "webkit/glue/webcursor.h"
 
-#if defined(OS_WIN)
-#include "printing/metafile_impl.h"
-#endif  // defined(OS_WIN)
-
 using WebKit::WebBindings;
 using WebKit::WebCursorInfo;
 using webkit::npapi::WebPlugin;
@@ -104,7 +100,6 @@ bool WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginMsg_HandleInputEvent, OnHandleInputEvent)
     IPC_MESSAGE_HANDLER(PluginMsg_Paint, OnPaint)
     IPC_MESSAGE_HANDLER(PluginMsg_DidPaint, OnDidPaint)
-    IPC_MESSAGE_HANDLER(PluginMsg_Print, OnPrint)
     IPC_MESSAGE_HANDLER(PluginMsg_GetPluginScriptableObject,
                         OnGetPluginScriptableObject)
     IPC_MESSAGE_HANDLER(PluginMsg_UpdateGeometry, OnUpdateGeometry)
@@ -266,36 +261,6 @@ void WebPluginDelegateStub::OnDidPaint() {
   webplugin_->DidPaint();
 }
 
-void WebPluginDelegateStub::OnPrint(base::SharedMemoryHandle* shared_memory,
-                                    uint32* size) {
-#if defined(OS_WIN)
-  printing::NativeMetafile metafile;
-  if (!metafile.Init()) {
-    NOTREACHED();
-    return;
-  }
-  HDC hdc = metafile.context();
-  skia::PlatformDevice::InitializeDC(hdc);
-  delegate_->Print(hdc);
-  if (!metafile.FinishDocument()) {
-    NOTREACHED();
-    return;
-  }
-
-  *size = metafile.GetDataSize();
-  DCHECK(*size);
-  base::SharedMemory shared_buf;
-  CreateSharedBuffer(*size, &shared_buf, shared_memory);
-
-  // Retrieve a copy of the data.
-  bool success = metafile.GetData(shared_buf.memory(), *size);
-  DCHECK(success);
-#else
-  // TODO(port): plugin printing.
-  NOTIMPLEMENTED();
-#endif
-}
-
 void WebPluginDelegateStub::OnUpdateGeometry(
     const PluginMsg_UpdateGeometry_Param& param) {
   webplugin_->UpdateGeometry(
@@ -396,33 +361,6 @@ void WebPluginDelegateStub::OnDidManualLoadFail() {
 
 void WebPluginDelegateStub::OnInstallMissingPlugin() {
   delegate_->InstallMissingPlugin();
-}
-
-void WebPluginDelegateStub::CreateSharedBuffer(
-    uint32 size,
-    base::SharedMemory* shared_buf,
-    base::SharedMemoryHandle* remote_handle) {
-  if (!shared_buf->CreateAndMapAnonymous(size)) {
-    NOTREACHED();
-    shared_buf->Close();
-    return;
-  }
-
-#if defined(OS_WIN)
-  BOOL result = DuplicateHandle(GetCurrentProcess(),
-                                shared_buf->handle(),
-                                channel_->renderer_handle(),
-                                remote_handle, 0, FALSE,
-                                DUPLICATE_SAME_ACCESS);
-  DCHECK_NE(result, 0);
-
-  // If the calling function's shared_buf is on the stack, its destructor will
-  // close the shared memory buffer handle. This is fine since we already
-  // duplicated the handle to the renderer process so it will stay "alive".
-#else
-  // TODO(port): this should use TransportDIB.
-  NOTIMPLEMENTED();
-#endif
 }
 
 void WebPluginDelegateStub::OnHandleURLRequestReply(

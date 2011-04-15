@@ -471,21 +471,6 @@ void WebPluginDelegateImpl::Paint(WebKit::WebCanvas* canvas,
   }
 }
 
-void WebPluginDelegateImpl::Print(HDC hdc) {
-  // Disabling the call to NPP_Print as it causes a crash in
-  // flash in some cases. In any case this does not work as expected
-  // as the EMF meta file dc passed in needs to be created with the
-  // the plugin window dc as its sibling dc and the window rect
-  // in .01 mm units.
-#if 0
-  NPPrint npprint;
-  npprint.mode = NP_EMBED;
-  npprint.print.embedPrint.platformPrint = reinterpret_cast<void*>(hdc);
-  npprint.print.embedPrint.window = window_;
-  instance()->NPP_Print(&npprint);
-#endif
-}
-
 void WebPluginDelegateImpl::InstallMissingPlugin() {
   NPEvent evt;
   evt.event = default_plugin::kInstallMissingPluginMessage;

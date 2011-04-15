@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/shared_memory.h"
 #include "base/task.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
@@ -73,7 +72,6 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
                           bool* handled, WebCursor* cursor);
   void OnPaint(const gfx::Rect& damaged_rect);
   void OnDidPaint();
-  void OnPrint(base::SharedMemoryHandle* shared_memory, uint32* size);
   void OnUpdateGeometry(const PluginMsg_UpdateGeometry_Param& param);
   void OnGetPluginScriptableObject(int* route_id);
   void OnSendJavaScriptStream(const GURL& url,
@@ -103,10 +101,6 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
                                const GURL& url,
                                int notify_id);
   void OnHTTPRangeRequestReply(unsigned long resource_id, int range_request_id);
-
-  void CreateSharedBuffer(uint32 size,
-                          base::SharedMemory* shared_buf,
-                          base::SharedMemoryHandle* remote_handle);
 
   std::string mime_type_;
   int instance_id_;

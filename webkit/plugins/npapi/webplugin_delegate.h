@@ -80,9 +80,6 @@ class WebPluginDelegate : public WebPlugin2DDeviceDelegate,
   // windowless plugins.
   virtual void Paint(WebKit::WebCanvas* canvas, const gfx::Rect& rect) = 0;
 
-  // Tells the plugin to print itself.
-  virtual void Print(gfx::NativeDrawingContext hdc) = 0;
-
   // Informs the plugin that it has gained or lost focus. This is only called in
   // windowless mode.
   virtual void SetFocus(bool focused) = 0;

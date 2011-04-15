@@ -4,7 +4,6 @@
 //
 // Multiply-included message file, hence no include guard.
 
-#include "base/shared_memory.h"
 #include "build/build_config.h"
 #include "content/common/common_param_traits.h"
 #include "content/common/webkit_param_traits.h"
@@ -177,10 +176,6 @@ IPC_SYNC_MESSAGE_ROUTED1_0(PluginMsg_Paint,
 // Sent by the renderer after it paints from its backing store so that the
 // plugin knows it can send more invalidates.
 IPC_MESSAGE_ROUTED0(PluginMsg_DidPaint)
-
-IPC_SYNC_MESSAGE_ROUTED0_2(PluginMsg_Print,
-                           base::SharedMemoryHandle /* shared_memory*/,
-                           uint32 /* size */)
 
 IPC_SYNC_MESSAGE_ROUTED0_1(PluginMsg_GetPluginScriptableObject,
                            int /* route_id */)
