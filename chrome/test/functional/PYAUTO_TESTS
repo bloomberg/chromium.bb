@@ -126,7 +126,6 @@
       # codesign tests should run *after* signing. crbug.com/50481
       '-crash_reporter.CrashReporterTest.testRendererCrash',  # crbug.com/69464
       '-codesign',
-      '-content.ContentTest.testThreeWindows',  # crbug.com/47457
       # crbug.com/71158
       '-databases.DatabasesTest.testModificationsPersistAfterRendererCrash',
       # crbug.com/75724
@@ -154,7 +153,6 @@
       '-autofill.AutofillTest.testAutofillInvalid', # crbug.com/74843
       '-browser.BrowserTest.testWindowResize',  # crbug.com/44963
       '-browser.BrowserTest.testFlashLoadsAfterKill',  # crbug.com/63039
-      '-content.ContentTest.testThreeWindows',  # crbug.com/47457
       # crbug.com/64664
       '-databases.DatabasesTest.testReloadActiveTab',
       '-databases.DatabasesTest.testModificationsPersistAfterRendererCrash',
