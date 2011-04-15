@@ -39,6 +39,7 @@ echo @@@BUILD_STEP scons_compile@@@
 echo @@@BUILD_STEP coverage@@@
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=coverage-linux,nacl,doc coverage platform=x86-${BITS}
+python tools/coverage_linux.py ${BITS}
 
 echo @@@BUILD_STEP archive_coverage@@@
 export GSUTIL="/b/build/scripts/slave/gsutil -h Cache-Control:no-cache"
