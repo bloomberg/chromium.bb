@@ -171,9 +171,6 @@ const float kAnimateCloseDuration = 0.12;
 - (void)animateOpen {
   // Force the frame size to be 0 and then start an animation.
   NSRect frame = [[self view] frame];
-  // Slide the origin down so it doesn't animate on top of the toolbar, but
-  // rather just in the content area.
-  frame.origin.y -= infobars::kAntiSpoofHeight;
   CGFloat finalHeight = frame.size.height;
   frame.size.height = 0;
   [[self view] setFrame:frame];
@@ -191,11 +188,6 @@ const float kAnimateCloseDuration = 0.12;
 - (void)animateClosed {
   // Notify the container of our intentions.
   [containerController_ willRemoveController:self];
-
-  // Take out the anti-spoof height so that the animation does not jump.
-  NSRect frame = [[self view] frame];
-  frame.size.height -= infobars::kAntiSpoofHeight;
-  [[self view] setFrame:frame];
 
   // Start animating closed.  We will receive a notification when the animation
   // is done, at which point we can remove our view from the hierarchy and

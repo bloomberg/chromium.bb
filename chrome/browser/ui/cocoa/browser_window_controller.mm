@@ -2000,6 +2000,16 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   [destWindow setWindowController:self];
   [self adjustUIForFullscreen:fullscreen];
 
+  // Adjust the infobar container. In fullscreen, it needs to be below all
+  // top chrome elements so it only sits atop the web contents. When in normal
+  // mode, it needs to draw over the bookmark bar and part of the toolbar.
+  [[infoBarContainerController_ view] removeFromSuperview];
+  NSView* infoBarDest = [[destWindow contentView] superview];
+  [infoBarDest addSubview:[infoBarContainerController_ view]
+               positioned:fullscreen ? NSWindowBelow : NSWindowAbove
+               relativeTo:fullscreen ? floatingBarBackingView_
+                                     : [bookmarkBarController_ view]];
+
   // When entering fullscreen mode, the controller forces a layout for us.  When
   // exiting, we need to call layoutSubviews manually.
   if (fullscreen) {

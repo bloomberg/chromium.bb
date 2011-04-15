@@ -70,7 +70,7 @@ void VerticallyCenterView(NSView* toMove) {
   // rather than in the total height (which includes the bulge).
   CGFloat superHeight = NSHeight(superViewFrame);
   if ([[toMove superview] isKindOfClass:[InfoBarGradientView class]])
-    superHeight -= infobars::kAntiSpoofHeight;
+    superHeight = infobars::kBaseHeight;
   viewFrame.origin.y =
       floor((superHeight - NSHeight(viewFrame)) / 2.0);
   [toMove setFrame:viewFrame];
@@ -287,8 +287,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   NSRect optionsFrame = [optionsPopUp_ frame];
   for (NSControl* control in visibleControls) {
     [GTMUILocalizerAndLayoutTweaker sizeToFitView:control];
-    [control setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin |
-        NSViewMaxYMargin];
+    [control setAutoresizingMask:NSViewMaxXMargin];
 
     // Need to check if a view is already attached since |label1_| is always
     // parented and we don't want to add it again.
@@ -463,8 +462,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
       setTitle:GetNSStringWithFixup(IDS_TRANSLATE_INFOBAR_REVERT)];
 
   // Add and configure controls that are visible in all modes.
-  [optionsPopUp_ setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin |
-          NSViewMaxYMargin];
+  [optionsPopUp_ setAutoresizingMask:NSViewMinXMargin];
   // Add "options" popup z-ordered below all other controls so when we
   // resize the toolbar it doesn't hide them.
   [infoBarView_ addSubview:optionsPopUp_

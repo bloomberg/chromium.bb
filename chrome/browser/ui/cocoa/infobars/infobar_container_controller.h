@@ -31,7 +31,7 @@ class TabStripModel;
 namespace infobars {
 
 // How tall the tip is on a normal infobar.
-const CGFloat kAntiSpoofHeight = 9.0;
+const CGFloat kBaseHeight = 36.0;
 
 };  // namespace infobars
 
@@ -100,7 +100,8 @@ const CGFloat kAntiSpoofHeight = 9.0;
 - (NSUInteger)infobarCount;
 
 // Returns the amount of additional height the container view needs to draw the
-// anti-spoofing bulge. This will return 0 if |-infobarCount| is 0.
+// anti-spoofing tip. This will return 0 if |-infobarCount| is 0. This is the
+// total amount of overlap for all infobars.
 - (CGFloat)antiSpoofHeight;
 
 @end

@@ -153,7 +153,7 @@ class InfoBarNotificationObserver : public NotificationObserver {
 }
 
 - (CGFloat)antiSpoofHeight {
-  return [self infobarCount] ? infobars::kAntiSpoofHeight : 0;
+  return 0;
 }
 
 - (void)resizeView:(NSView*)view newHeight:(CGFloat)height {
@@ -173,9 +173,9 @@ class InfoBarNotificationObserver : public NotificationObserver {
 @implementation InfoBarContainerController (PrivateMethods)
 
 - (CGFloat)desiredHeight {
-  CGFloat height = [self antiSpoofHeight];
+  CGFloat height = 0;
   for (InfoBarController* controller in infobarControllers_.get())
-    height += NSHeight([[controller view] frame]) - infobars::kAntiSpoofHeight;
+    height += NSHeight([[controller view] frame]);
   return height;
 }
 
@@ -235,10 +235,11 @@ class InfoBarNotificationObserver : public NotificationObserver {
     NSView* view = [controller view];
     NSRect frame = [view frame];
     frame.origin.x = NSMinX(containerBounds);
-    frame.size.width = NSWidth(containerBounds);
     frame.origin.y = minY;
-    minY += frame.size.height - infobars::kAntiSpoofHeight;
+    frame.size.width = NSWidth(containerBounds);
     [view setFrame:frame];
+
+    minY += NSHeight(frame);
   }
 
   [resizeDelegate_ resizeView:[self view] newHeight:[self desiredHeight]];
