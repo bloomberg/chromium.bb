@@ -21,3 +21,10 @@ BUGCASEQ : svg/css/composite-shadow-text.svg = IMAGE
 // new tests, need rebaseline
 BUGCASEQ WIN MAC : fast/forms/select-background-none.html = MISSING IMAGE
 BUGCASEQ LINUX WIN : fast/frames/iframe-outline.html = IMAGE
+
+BUGCASEQ MAC : svg/dynamic-updates/SVGFEDiffuseLightingElement-inherit-lighting-color-css-prop.html = IMAGE
+BUGCASEQ MAC : svg/dynamic-updates/SVGFEFloodElement-inherit-flood-color.html = IMAGE
+BUGCASEQ MAC : svg/dynamic-updates/SVGFESpecularLightingElement-inherit-lighting-color-css-prop.html = IMAGE
+BUGCASEQ MAC : svg/dynamic-updates/SVGFESpecularLightingElement-lighting-color-css-prop.html = IMAGE
+BUGCASEQ : fast/text/zero-font-size.html = IMAGE+TEXT
+
