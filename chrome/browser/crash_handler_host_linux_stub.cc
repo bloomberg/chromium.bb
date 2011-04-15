@@ -58,3 +58,14 @@ RendererCrashHandlerHostLinux::~RendererCrashHandlerHostLinux() {
 RendererCrashHandlerHostLinux* RendererCrashHandlerHostLinux::GetInstance() {
   return Singleton<RendererCrashHandlerHostLinux>::get();
 }
+
+PpapiCrashHandlerHostLinux::PpapiCrashHandlerHostLinux() {
+}
+
+PpapiCrashHandlerHostLinux::~PpapiCrashHandlerHostLinux() {
+}
+
+// static
+PpapiCrashHandlerHostLinux* PpapiCrashHandlerHostLinux::GetInstance() {
+  return Singleton<PpapiCrashHandlerHostLinux>::get();
+}

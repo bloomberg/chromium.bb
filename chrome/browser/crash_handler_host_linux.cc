@@ -431,3 +431,19 @@ void RendererCrashHandlerHostLinux::SetProcessType() {
 RendererCrashHandlerHostLinux* RendererCrashHandlerHostLinux::GetInstance() {
   return Singleton<RendererCrashHandlerHostLinux>::get();
 }
+
+PpapiCrashHandlerHostLinux::PpapiCrashHandlerHostLinux() {
+  InitCrashUploaderThread();
+}
+
+PpapiCrashHandlerHostLinux::~PpapiCrashHandlerHostLinux() {
+}
+
+void PpapiCrashHandlerHostLinux::SetProcessType() {
+  process_type_ = "ppapi";
+}
+
+// static
+PpapiCrashHandlerHostLinux* PpapiCrashHandlerHostLinux::GetInstance() {
+  return Singleton<PpapiCrashHandlerHostLinux>::get();
+}
