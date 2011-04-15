@@ -800,7 +800,9 @@ void TabContents::BlockTabContent(bool blocked) {
   SkColor greyish = SkColorSetARGB(178, 0, 0, 0);
   if (rwhv)
     rwhv->SetVisuallyDeemphasized(blocked ? &greyish : NULL, false);
-  render_view_host()->set_ignore_input_events(blocked);
+  // RenderViewHost may be NULL during shutdown.
+  if (render_view_host())
+    render_view_host()->set_ignore_input_events(blocked);
   if (delegate_)
     delegate_->SetTabContentBlocked(this, blocked);
 }
