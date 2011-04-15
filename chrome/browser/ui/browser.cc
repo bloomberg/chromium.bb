@@ -131,7 +131,6 @@
 #if defined(OS_WIN)
 #include "app/win/shell.h"
 #include "chrome/browser/autofill/autofill_ie_toolbar_import_win.h"
-#include "chrome/browser/download/save_package.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/task_manager/task_manager.h"
@@ -1647,12 +1646,12 @@ void Browser::EmailPageLocation() {
 
 void Browser::Print() {
   UserMetrics::RecordAction(UserMetricsAction("PrintPreview"), profile_);
-  TabContents* current_tab = GetSelectedTabContents();
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnablePrintPreview)) {
-    printing::PrintPreviewTabController::PrintPreview(current_tab);
+    printing::PrintPreviewTabController::PrintPreview(
+        GetSelectedTabContents());
   } else {
-    current_tab->PrintNow();
+    GetSelectedTabContentsWrapper()->print_view_manager()->PrintNow();
   }
 }
 

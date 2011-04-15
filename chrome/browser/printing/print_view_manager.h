@@ -36,6 +36,11 @@ class PrintViewManager : public NotificationObserver,
   // in |tab_contents|.
   void OverrideTitle(TabContents* tab_contents);
 
+  // Prints the current document immediately. Since the rendering is
+  // asynchronous, the actual printing will not be completed on the return of
+  // this function. Returns false if printing is impossible at the moment.
+  bool PrintNow();
+
   // PrintedPagesSource implementation.
   virtual string16 RenderSourceName();
   virtual GURL RenderSourceUrl();

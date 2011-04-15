@@ -23,7 +23,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/print_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "chrome/common/spellcheck_messages.h"
@@ -385,10 +384,6 @@ void RenderViewHost::Stop() {
 
 void RenderViewHost::ReloadFrame() {
   Send(new ViewMsg_ReloadFrame(routing_id()));
-}
-
-bool RenderViewHost::PrintPages() {
-  return Send(new PrintMsg_PrintPages(routing_id()));
 }
 
 void RenderViewHost::StartFinding(int request_id,

@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/common/automation_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -297,12 +298,13 @@ void AutomationProvider::SetInitialFocus(const IPC::Message& message,
 }
 
 void AutomationProvider::PrintAsync(int tab_handle) {
-  NavigationController* tab = NULL;
-  TabContents* tab_contents = GetTabContentsForHandle(tab_handle, &tab);
-  if (tab_contents) {
-    if (tab_contents->PrintNow())
-      return;
-  }
+  TabContents* tab_contents = GetTabContentsForHandle(tab_handle, NULL);
+  if (!tab_contents)
+    return;
+
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+  wrapper->print_view_manager()->PrintNow();
 }
 
 ExternalTabContainer* AutomationProvider::GetExternalTabForHandle(int handle) {

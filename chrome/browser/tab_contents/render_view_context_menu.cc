@@ -1319,7 +1319,10 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
           printing::PrintPreviewTabController::PrintPreview(
               source_tab_contents_);
         } else {
-          source_tab_contents_->PrintNow();
+          TabContentsWrapper* wrapper =
+              TabContentsWrapper::GetCurrentWrapperForContents(
+                  source_tab_contents_);
+          wrapper->print_view_manager()->PrintNow();
         }
       } else {
         RenderViewHost* rvh = source_tab_contents_->render_view_host();

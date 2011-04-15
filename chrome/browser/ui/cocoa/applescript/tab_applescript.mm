@@ -228,7 +228,7 @@
 }
 
 - (void)handlesPrintScriptCommand:(NSScriptCommand*)command {
-  bool initiateStatus = tabContents_->tab_contents()->PrintNow();
+  bool initiateStatus = tabContents_->print_view_manager()->PrintNow();
   if (initiateStatus == false) {
     AppleScript::SetError(AppleScript::errInitiatePrinting);
   }

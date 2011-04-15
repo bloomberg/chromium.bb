@@ -55,6 +55,14 @@ PrintViewManager::~PrintViewManager() {
   DisconnectFromCurrentPrintJob();
 }
 
+bool PrintViewManager::PrintNow() {
+  // Don't print interstitials.
+  if (tab_contents()->showing_interstitial_page())
+    return false;
+
+  return Send(new PrintMsg_PrintPages(routing_id()));
+}
+
 void PrintViewManager::StopNavigation() {
   // Cancel the current job, wait for the worker to finish.
   TerminatePrintJob(true);

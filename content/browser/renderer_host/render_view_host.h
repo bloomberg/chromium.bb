@@ -211,10 +211,6 @@ class RenderViewHost : public RenderWidgetHost {
   // Reloads the current frame.
   void ReloadFrame();
 
-  // Asks the renderer to "render" printed pages and initiate printing on our
-  // behalf.
-  bool PrintPages();
-
   // Start looking for a string within the content of the page, with the
   // specified options.
   void StartFinding(int request_id,

@@ -1059,14 +1059,6 @@ void TabContents::EmailPageLocation() {
   platform_util::OpenExternal(GURL(mailto));
 }
 
-bool TabContents::PrintNow() {
-  // We can't print interstitial page for now.
-  if (showing_interstitial_page())
-    return false;
-
-  return render_view_host()->PrintPages();
-}
-
 bool TabContents::IsActiveEntry(int32 page_id) {
   NavigationEntry* active_entry = controller_.GetActiveEntry();
   return (active_entry != NULL &&

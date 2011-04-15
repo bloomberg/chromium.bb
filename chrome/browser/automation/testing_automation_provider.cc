@@ -5,6 +5,7 @@
 #include "chrome/browser/automation/testing_automation_provider.h"
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -1460,7 +1461,6 @@ void TestingAutomationProvider::IsMenuCommandEnabled(int browser_handle,
 
 void TestingAutomationProvider::PrintNow(int tab_handle,
                                          IPC::Message* reply_message) {
-
   NavigationController* tab = NULL;
   TabContents* tab_contents = GetTabContentsForHandle(tab_handle, &tab);
   if (tab_contents) {
@@ -1469,7 +1469,9 @@ void TestingAutomationProvider::PrintNow(int tab_handle,
     NotificationObserver* observer =
         new DocumentPrintedNotificationObserver(this, reply_message);
 
-    if (!tab_contents->PrintNow()) {
+    TabContentsWrapper* wrapper =
+        TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+    if (!wrapper->print_view_manager()->PrintNow()) {
       // Clean up the observer. It will send the reply message.
       delete observer;
     }
@@ -3468,7 +3470,8 @@ void TestingAutomationProvider::GetSavedPasswords(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   Profile* profile = browser->profile();
-  // Use EXPLICIT_ACCESS since saved passwords can be retreived in incognito mode.
+  // Use EXPLICIT_ACCESS since saved passwords can be retrieved in
+  // incognito mode.
   PasswordStore* password_store =
       profile->GetPasswordStore(Profile::EXPLICIT_ACCESS);
   password_store->GetAutofillableLogins(
