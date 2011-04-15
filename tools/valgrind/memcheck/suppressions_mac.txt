@@ -193,8 +193,21 @@
 }
 {
    # See also http://openradar.appspot.com/radar?id=1169404
-   bug_79533
+   bug_79533a
    Memcheck:Value4
+   ...
+   fun:_Z*19cssm_DataAbortQuery17cssm_dl_db_handlel
+   fun:CSSM_DL_DataAbortQuery
+   fun:_ZN11SSDLSession14DataAbortQueryEll
+   fun:_Z*19cssm_DataAbortQuery17cssm_dl_db_handlel
+   fun:CSSM_DL_DataAbortQuery
+   fun:tpDbFindIssuerCrl
+   fun:tpVerifyCertGroupWithCrls
+}
+{
+   # See also http://openradar.appspot.com/radar?id=1169404
+   bug_79533b
+   Memcheck:Cond
    ...
    fun:_Z*19cssm_DataAbortQuery17cssm_dl_db_handlel
    fun:CSSM_DL_DataAbortQuery
