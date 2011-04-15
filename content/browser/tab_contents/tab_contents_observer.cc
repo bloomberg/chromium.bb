@@ -79,6 +79,12 @@ void TabContentsObserver::RenderViewGone() {
 void TabContentsObserver::StopNavigation() {
 }
 
+void TabContentsObserver::DidOpenURL(const GURL& url,
+                                     const GURL& referrer,
+                                     WindowOpenDisposition disposition,
+                                     PageTransition::Type transition) {
+}
+
 TabContentsObserver::TabContentsObserver(TabContents* tab_contents) {
   SetTabContents(tab_contents);
   tab_contents_->AddObserver(this);

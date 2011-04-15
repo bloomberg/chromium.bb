@@ -8,6 +8,7 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/common/page_transition_types.h"
 #include "ipc/ipc_channel.h"
+#include "webkit/glue/window_open_disposition.h"
 
 struct ViewHostMsg_FrameNavigate_Params;
 
@@ -65,6 +66,11 @@ class TabContentsObserver : public IPC::Channel::Listener,
   virtual void DidStopLoading();
   virtual void RenderViewGone();
   virtual void StopNavigation();
+
+  virtual void DidOpenURL(const GURL& url,
+                          const GURL& referrer,
+                          WindowOpenDisposition disposition,
+                          PageTransition::Type transition);
 
 #if 0
   // For unifying with delegate...

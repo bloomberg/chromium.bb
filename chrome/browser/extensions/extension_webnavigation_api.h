@@ -103,6 +103,11 @@ class ExtensionWebNavigationTabObserver : public TabContentsObserver {
   virtual void DocumentLoadedInFrame(int64 frame_id) OVERRIDE;
   virtual void DidFinishLoad(int64 frame_id) OVERRIDE;
   virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
+  virtual void DidOpenURL(const GURL& url,
+                          const GURL& referrer,
+                          WindowOpenDisposition disposition,
+                          PageTransition::Type transition);
+
 
  private:
   // True if the transition and target url correspond to a reference fragment

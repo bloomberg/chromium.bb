@@ -145,6 +145,25 @@ void DispatchOnCompleted(TabContents* tab_contents,
   DispatchEvent(tab_contents->profile(), keys::kOnCompleted, json_args);
 }
 
+// Constructs and dispatches an onBeforeRetarget event.
+void DispatchOnBeforeRetarget(TabContents* tab_contents,
+                              Profile* profile,
+                              const GURL& opener_url,
+                              const GURL& target_url) {
+  ListValue args;
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetInteger(keys::kSourceTabIdKey,
+                   ExtensionTabUtil::GetTabId(tab_contents));
+  dict->SetString(keys::kSourceUrlKey, opener_url.spec());
+  dict->SetString(keys::kUrlKey, target_url.possibly_invalid_spec());
+  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
+  args.Append(dict);
+
+  std::string json_args;
+  base::JSONWriter::Write(&args, false, &json_args);
+  DispatchEvent(profile, keys::kOnBeforeRetarget, json_args);
+}
+
 }  // namespace
 
 
@@ -265,19 +284,10 @@ void ExtensionWebNavigationEventRouter::Observe(
 void ExtensionWebNavigationEventRouter::CreatingNewWindow(
     TabContents* tab_contents,
     const ViewHostMsg_CreateWindow_Params* details) {
-  ListValue args;
-  DictionaryValue* dict = new DictionaryValue();
-  dict->SetInteger(keys::kSourceTabIdKey,
-                   ExtensionTabUtil::GetTabId(tab_contents));
-  dict->SetString(keys::kSourceUrlKey, details->opener_url.spec());
-  dict->SetString(keys::kUrlKey,
-                  details->target_url.possibly_invalid_spec());
-  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
-  args.Append(dict);
-
-  std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(tab_contents->profile(), keys::kOnBeforeRetarget, json_args);
+  DispatchOnBeforeRetarget(tab_contents,
+                           tab_contents->profile(),
+                           details->opener_url,
+                           details->target_url);
 }
 
 
@@ -370,6 +380,31 @@ void ExtensionWebNavigationTabObserver::DidFinishLoad(
 void ExtensionWebNavigationTabObserver::TabContentsDestroyed(
     TabContents* tab) {
   navigation_state_.RemoveTabContentsState(tab);
+}
+
+void ExtensionWebNavigationTabObserver::DidOpenURL(
+    const GURL& url,
+    const GURL& referrer,
+    WindowOpenDisposition disposition,
+    PageTransition::Type transition) {
+  if (disposition != NEW_FOREGROUND_TAB &&
+      disposition != NEW_BACKGROUND_TAB &&
+      disposition != NEW_WINDOW &&
+      disposition != OFF_THE_RECORD) {
+    return;
+  }
+  Profile* profile = tab_contents()->profile();
+  if (disposition == OFF_THE_RECORD) {
+    if (!profile->HasOffTheRecordProfile()) {
+      NOTREACHED();
+      return;
+    }
+    profile = profile->GetOffTheRecordProfile();
+  }
+  DispatchOnBeforeRetarget(tab_contents(),
+                           profile,
+                           tab_contents()->GetURL(),
+                           url);
 }
 
 // See also NavigationController::IsURLInPageNavigation.

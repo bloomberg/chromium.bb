@@ -646,8 +646,12 @@ bool TabContents::NeedToFireBeforeUnload() {
 void TabContents::OpenURL(const GURL& url, const GURL& referrer,
                           WindowOpenDisposition disposition,
                           PageTransition::Type transition) {
-  if (delegate_)
+  if (delegate_) {
     delegate_->OpenURLFromTab(this, url, referrer, disposition, transition);
+    // Notify observers.
+    FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+                      DidOpenURL(url, referrer, disposition, transition));
+  }
 }
 
 bool TabContents::NavigateToPendingEntry(
