@@ -311,6 +311,18 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
   CallClientFunction(ASCIIToUTF16("WebInspector.addExtensions"), results);
 }
 
+void DevToolsWindow::OpenURLFromTab(TabContents* source,
+                                    const GURL& url,
+                                    const GURL& referrer,
+                                    WindowOpenDisposition disposition,
+                                    PageTransition::Type transition) {
+  if (inspected_tab_)
+    inspected_tab_->OpenURL(url,
+                            GURL(),
+                            NEW_FOREGROUND_TAB,
+                            PageTransition::LINK);
+}
+
 void DevToolsWindow::CallClientFunction(const string16& function_name,
                                         const Value& arg) {
   std::string json;

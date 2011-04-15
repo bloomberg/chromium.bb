@@ -75,7 +75,7 @@ class DevToolsWindow
                               const GURL& url,
                               const GURL& referrer,
                               WindowOpenDisposition disposition,
-                              PageTransition::Type transition) {}
+                              PageTransition::Type transition);
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags) {}
   virtual void AddNewContents(TabContents* source,
