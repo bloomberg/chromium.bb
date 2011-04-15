@@ -108,6 +108,7 @@ enum PinOperationError {
   PIN_ERROR_NONE           = 0,
   PIN_ERROR_UNKNOWN        = 1,
   PIN_ERROR_INCORRECT_CODE = 2,  // Either PIN/PUK specified is incorrect.
+  PIN_ERROR_BLOCKED        = 3,  // No more PIN retries left, SIM is blocked.
 };
 
 // connection errors (see flimflam/include/service.h)

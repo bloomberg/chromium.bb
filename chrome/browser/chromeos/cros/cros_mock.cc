@@ -218,9 +218,13 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
   // We don't care how often these are called, just set their return values:
   EXPECT_CALL(*mock_network_library_, AddNetworkManagerObserver(_))
       .Times(AnyNumber());
+  EXPECT_CALL(*mock_network_library_, AddNetworkDeviceObserver(_, _))
+      .Times(AnyNumber());
   EXPECT_CALL(*mock_network_library_, AddCellularDataPlanObserver(_))
       .Times(AnyNumber());
   EXPECT_CALL(*mock_network_library_, RemoveNetworkManagerObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_network_library_, RemoveNetworkDeviceObserver(_, _))
       .Times(AnyNumber());
   EXPECT_CALL(*mock_network_library_, RemoveObserverForAllNetworks(_))
       .Times(AnyNumber());
@@ -229,6 +233,9 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
   EXPECT_CALL(*mock_network_library_, IsLocked())
       .Times(AnyNumber())
       .WillRepeatedly((Return(false)));
+  EXPECT_CALL(*mock_network_library_, FindCellularDevice())
+      .Times(AnyNumber())
+      .WillRepeatedly((Return((const NetworkDevice*)(NULL))));
   EXPECT_CALL(*mock_network_library_, ethernet_available())
       .Times(AnyNumber())
       .WillRepeatedly((Return(true)));

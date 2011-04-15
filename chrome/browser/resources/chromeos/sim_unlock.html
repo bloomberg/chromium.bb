@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', load);
     <div id="locked-pin-overlay" class="dialog" hidden>
       <h1 i18n-content="enterPinTitle"></h1>
       <div id="pin-content-area" class="content-area">
-        <div id="pin-error-msg" class="error"></div>
+        <div id="pin-error-msg"></div>
         <div id="pin-input-area" class="input-area">
           <input id="pin-input" class="code-input" type="password"
               maxlength="8" size="14">
@@ -72,6 +72,37 @@ document.addEventListener('DOMContentLoaded', load);
           <div class="button-strip">
             <button id="enter-puk-confirm" i18n-content="ok"></button>
             <button id="enter-puk-dismiss" i18n-content="cancel"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="choose-pin-overlay" class="dialog" hidden>
+      <h1 i18n-content="choosePinTitle"></h1>
+      <div id="choose-pin-content-area" class="content-area">
+        <div id="choose-pin-msg" i18n-content="choosePinMessage"></div>
+        <div class="input-with-label">
+          <div id="new-pin-label" i18n-content="newPin" class="label"></div>
+          <div id="new-pin-input-area" class="choose-pin-input-area">
+            <input id="new-pin-input" class="code-input" type="text"
+                maxlength="8" size="14">
+          </div>
+        </div>
+        <div class="input-with-label">
+          <div id="retype-new-pin-label" i18n-content="retypeNewPin"
+              class="label"></div>
+          <div id="retype-new-pin-input-area" class="choose-pin-input-area">
+            <input id="retype-new-pin-input" class="code-input" type="text"
+                maxlength="8" size="14">
+          </div>
+        </div>
+        <div id="choose-pin-error" class="error"
+            i18n-content="pinsDontMatchMessage" hidden></div>
+      </div>
+      <div id="choose-pin-action-area" class="action-area">
+        <div class="action-area-right">
+          <div class="button-strip">
+            <button id="choose-pin-confirm" i18n-content="ok"></button>
+            <button id="choose-pin-dismiss" i18n-content="cancel"></button>
           </div>
         </div>
       </div>

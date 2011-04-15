@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -37,9 +38,13 @@ NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)) {
   animation_connecting_.SetThrobDuration(kThrobDuration);
   animation_connecting_.SetTweenType(ui::Tween::EASE_IN_OUT);
-  OnNetworkManagerChanged(CrosLibrary::Get()->GetNetworkLibrary());
-  CrosLibrary::Get()->GetNetworkLibrary()->AddNetworkManagerObserver(this);
-  CrosLibrary::Get()->GetNetworkLibrary()->AddCellularDataPlanObserver(this);
+  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  OnNetworkManagerChanged(network_library);
+  network_library->AddNetworkManagerObserver(this);
+  network_library->AddCellularDataPlanObserver(this);
+  const NetworkDevice* cellular = network_library->FindCellularDevice();
+  if (cellular)
+    network_library->AddNetworkDeviceObserver(cellular->device_path(), this);
 }
 
 NetworkMenuButton::~NetworkMenuButton() {
@@ -47,6 +52,9 @@ NetworkMenuButton::~NetworkMenuButton() {
   netlib->RemoveNetworkManagerObserver(this);
   netlib->RemoveObserverForAllNetworks(this);
   netlib->RemoveCellularDataPlanObserver(this);
+  const NetworkDevice* cellular = netlib->FindCellularDevice();
+  if (cellular)
+    netlib->RemoveNetworkDeviceObserver(cellular->device_path(), this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -61,6 +69,15 @@ void NetworkMenuButton::AnimationProgressed(const ui::Animation* animation) {
   } else {
     MenuButton::AnimationProgressed(animation);
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkLibrary::NetworkDeviceObserver implementation:
+
+void NetworkMenuButton::OnNetworkDeviceChanged(NetworkLibrary* cros,
+                                               const NetworkDevice* device) {
+  // Device status, such as SIMLock may have changed.
+  OnNetworkChanged(cros, cros->active_network());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

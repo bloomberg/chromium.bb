@@ -289,6 +289,7 @@ const char* kErrorAaaFailed = "aaa-failed";
 // Flimflam error messages.
 const char* kErrorPassphraseRequiredMsg = "Passphrase required";
 const char* kErrorIncorrectPinMsg = "org.chromium.flimflam.Device.IncorrectPin";
+const char* kErrorPinBlockedMsg = "org.chromium.flimflam.Device.PinBlocked";
 
 const char* kUnknownString = "UNKNOWN";
 
@@ -2228,6 +2229,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     NetworkLibraryImpl* networklib = static_cast<NetworkLibraryImpl*>(object);
     DCHECK(networklib);
     PinOperationError pin_error;
+    VLOG(1) << "PinOperationCallback, error: " << error
+            << " error_msg: " << error_message;
     if (error == chromeos::NETWORK_METHOD_ERROR_NONE) {
       pin_error = PIN_ERROR_NONE;
       VLOG(1) << "Pin operation completed successfuly";
@@ -2235,6 +2238,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       if (error_message &&
           strcmp(error_message, kErrorIncorrectPinMsg) == 0) {
         pin_error = PIN_ERROR_INCORRECT_CODE;
+      } else if (error_message &&
+                 strcmp(error_message, kErrorPinBlockedMsg) == 0) {
+        pin_error = PIN_ERROR_BLOCKED;
       } else {
         pin_error = PIN_ERROR_UNKNOWN;
         NOTREACHED() << "Unknown PIN error: " << error_message;

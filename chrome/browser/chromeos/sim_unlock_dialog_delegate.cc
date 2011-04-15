@@ -6,6 +6,8 @@
 
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/frame/bubble_window.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/html_dialog_view.h"
@@ -55,9 +57,16 @@ void SimUnlockDialogDelegate::ShowDialog(gfx::NativeWindow owning_window,
 // static
 void SimUnlockDialogDelegate::ShowDialog(gfx::NativeWindow owning_window,
                                          SimRequirePin require_pin) {
-  Browser* browser = BrowserList::GetLastActive();
+  Profile* profile;
+  if (UserManager::Get()->user_is_logged_in()) {
+    Browser* browser = BrowserList::GetLastActive();
+    DCHECK(browser);
+    profile = browser->profile();
+  } else {
+    profile = ProfileManager::GetDefaultProfile();
+  }
   HtmlDialogView* html_view = new HtmlDialogWithoutContextMenuView(
-      browser->profile(), new SimUnlockDialogDelegate(require_pin));
+      profile, new SimUnlockDialogDelegate(require_pin));
   html_view->InitDialog();
   chromeos::BubbleWindow::Create(owning_window,
                                  gfx::Rect(),

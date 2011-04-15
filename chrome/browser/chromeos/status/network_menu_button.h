@@ -48,6 +48,7 @@ class StatusAreaHost;
 // The label will be BOLD if the network is currently connected.
 class NetworkMenuButton : public StatusAreaButton,
                           public NetworkMenu,
+                          public NetworkLibrary::NetworkDeviceObserver,
                           public NetworkLibrary::NetworkManagerObserver,
                           public NetworkLibrary::NetworkObserver,
                           public NetworkLibrary::CellularDataPlanObserver {
@@ -58,6 +59,9 @@ class NetworkMenuButton : public StatusAreaButton,
   // ui::AnimationDelegate implementation.
   virtual void AnimationProgressed(const ui::Animation* animation);
 
+  // NetworkLibrary::NetworkDeviceObserver implementation.
+  virtual void OnNetworkDeviceChanged(NetworkLibrary* cros,
+                                      const NetworkDevice* device);
   // NetworkLibrary::NetworkManagerObserver implementation.
   virtual void OnNetworkManagerChanged(NetworkLibrary* cros);
   // NetworkLibrary::NetworkObserver implementation.

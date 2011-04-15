@@ -10243,6 +10243,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_RETYPE_PIN" desc="Cellular device change PIN dialog re-type new PIN label text in chrome:settings/internet.">
         Re-type new PIN:
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PINS_DONT_MATCH_ERROR" desc="Cellular device change PIN dialog message shown when entered new PINs don't match in chrome:settings/internet.">
+        PINs don't match!
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_CANCEL" desc="Cellular device cancel APN settings edit button under network details in chrome:settings/internet.">
         Cancel
       </message>
@@ -10295,6 +10298,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_SIM_UNLOCK_ENTER_PUK_MESSAGE" desc="Message on the Enter PUK dialog, which is part of SIM card unlock dialog in chrome:sim-unlock.">
         Please enter the 8-digit PIN Unlocking Key provided by <ph name="CARRIER_ID">$1<ex>your carrier</ex></ph>.
+      </message>
+      <message name="IDS_SIM_UNLOCK_CHOOSE_PIN_TITLE" desc="Title of the Choose new PIN dialog, which is part of SIM card unlock dialog in chrome:sim-unlock.">
+        Choose New PIN
+      </message>
+      <message name="IDS_SIM_UNLOCK_CHOOSE_PIN_MESSAGE" desc="Message on the Choose new PIN dialog, which is part of SIM card unlock dialog in chrome:sim-unlock.">
+        Please choose a new PIN.
       </message>
       <message name="IDS_SIM_UNLOCK_NO_PUK_TRIES_LEFT_MESSAGE" desc="Message shown when there're not PUK tries left, right after last try was used and SIM card is now disabled.">
         You have entered the incorrect PIN Unlocking Key too many times. Your SIM card is permanently disabled.

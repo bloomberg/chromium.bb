@@ -175,8 +175,8 @@ class SimUnlockHandler : public WebUIMessageHandler,
   // Pass PIN/PUK code to flimflam and check status.
   void EnterCode(const std::string& code, SimUnlockCode code_type);
 
-  // Single handler for PIN/PUK code input JS callbacks.
-  void HandleEnterCode(const ListValue* args, SimUnlockCode code_type);
+  // Single handler for PIN/PUK code operations.
+  void HandleEnterCode(SimUnlockCode code_type, const std::string& code);
 
   // Handlers for JS WebUI messages.
   void HandleCancel(const ListValue* args);
@@ -211,6 +211,9 @@ class SimUnlockHandler : public WebUIMessageHandler,
 
   // New value of the PinRequired preference.
   bool new_pin_required_value_;
+
+  // New PIN value for the case when we unblock SIM card.
+  std::string new_pin_;
 
   DISALLOW_COPY_AND_ASSIGN(SimUnlockHandler);
 };
@@ -255,6 +258,16 @@ void SimUnlockUIHTMLSource::StartDataRequest(const std::string& path,
   strings.SetString("enterPukMessage", l10n_util::GetStringFUTF16(
       IDS_SIM_UNLOCK_ENTER_PUK_MESSAGE,
       l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_DEFAULT_CARRIER)));
+  strings.SetString("choosePinTitle",
+      l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_CHOOSE_PIN_TITLE));
+  strings.SetString("choosePinMessage",
+      l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_CHOOSE_PIN_MESSAGE));
+  strings.SetString("newPin", l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_NEW_PIN));
+  strings.SetString("retypeNewPin", l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_RETYPE_PIN));
+  strings.SetString("pinsDontMatchMessage", l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PINS_DONT_MATCH_ERROR));
   strings.SetString("noPukTriesLeft",
       l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_NO_PUK_TRIES_LEFT_MESSAGE));
   strings.SetString("simDisabledTitle",
@@ -338,10 +351,6 @@ void SimUnlockHandler::OnPinOperationCompleted(NetworkLibrary* cros,
   const NetworkDevice* cellular = cros->FindCellularDevice();
   DCHECK(cellular);
   VLOG(1) << "OnPinOperationCompleted, error: " << error;
-  chromeos::SIMLockState lock_state = cellular->sim_lock_state();
-  int retries_left = cellular->sim_retries_left();
-  VLOG(1) << "OnPinOperationCompleted, lock: " << lock_state
-          << ", retries: " << retries_left;
   if (state_ == SIM_NOT_LOCKED_ASK_PIN && error == PIN_ERROR_NONE) {
     CHECK(changing_pin_required_pref_);
     // Async change RequirePin operation has finished OK.
@@ -349,7 +358,11 @@ void SimUnlockHandler::OnPinOperationCompleted(NetworkLibrary* cros,
     // Dialog will close itself.
     state_ = SIM_ABSENT_NOT_LOCKED;
   }
-  ProcessSimCardState(cellular);
+  // If previous EnterPIN was last PIN attempt and SIMLock state was already
+  // processed by OnNetworkDeviceChanged, let dialog stay on
+  // NO_PIN_RETRIES_LEFT step.
+  if (!(state_ == SIM_LOCKED_NO_PIN_TRIES_LEFT && error == PIN_ERROR_BLOCKED))
+    ProcessSimCardState(cellular);
 }
 
 void SimUnlockHandler::CancelDialog() {
@@ -385,8 +398,8 @@ void SimUnlockHandler::EnterCode(const std::string& code,
       lib->EnterPin(code);
       break;
     case CODE_PUK:
-      // TODO(nkostylev): Ask for a new PIN code user first.
-      // lib->UnblockPin(code, new_pin);
+      DCHECK(!new_pin_.empty());
+      lib->UnblockPin(code, new_pin_);
       break;
   }
 }
@@ -409,26 +422,35 @@ void SimUnlockHandler::HandleCancel(const ListValue* args) {
       NewRunnableMethod(task.get(), &TaskProxy::HandleCancel));
 }
 
-void SimUnlockHandler::HandleEnterCode(const ListValue* args,
-                                       SimUnlockCode code_type) {
-  const size_t kEnterCodeParamCount = 1;
-  std::string code;
-  if (args->GetSize() != kEnterCodeParamCount ||
-      !args->GetString(0, &code)) {
-    NOTREACHED();
-    return;
-  }
+void SimUnlockHandler::HandleEnterCode(SimUnlockCode code_type,
+                                       const std::string& code) {
   scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr(), code, code_type);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(task.get(), &TaskProxy::HandleEnterCode));
 }
 
 void SimUnlockHandler::HandleEnterPinCode(const ListValue* args) {
-  HandleEnterCode(args, CODE_PIN);
+  const size_t kEnterPinParamCount = 1;
+  std::string pin;
+  if (args->GetSize() != kEnterPinParamCount || !args->GetString(0, &pin)) {
+    NOTREACHED();
+    return;
+  }
+  HandleEnterCode(CODE_PIN, pin);
 }
 
 void SimUnlockHandler::HandleEnterPukCode(const ListValue* args) {
-  HandleEnterCode(args, CODE_PUK);
+  const size_t kEnterPukParamCount = 2;
+  std::string puk;
+  std::string new_pin;
+  if (args->GetSize() != kEnterPukParamCount ||
+      !args->GetString(0, &puk) ||
+      !args->GetString(1, &new_pin)) {
+    NOTREACHED();
+    return;
+  }
+  new_pin_ = new_pin;
+  HandleEnterCode(CODE_PUK, puk);
 }
 
 void SimUnlockHandler::HandleProceedToPukInput(const ListValue* args) {
@@ -517,8 +539,14 @@ void SimUnlockHandler::ProcessSimCardState(
         state_ = SIM_LOCKED_PUK;
         break;
       case SIM_LOCKED_PUK:
-        if (retries_left == 0)
+        if (lock_state == chromeos::SIM_UNLOCKED ||
+            lock_state == chromeos::SIM_UNKNOWN) {
+          state_ = SIM_ABSENT_NOT_LOCKED;
+        } else if (retries_left == 0) {
           state_ = SIM_LOCKED_NO_PUK_TRIES_LEFT;
+        }
+        // Otherwise SIM card is still locked with PUK code.
+        // Dialog will display enter PUK screen with an updated retries count.
         break;
       case SIM_LOCKED_NO_PUK_TRIES_LEFT:
       case SIM_DISABLED:
