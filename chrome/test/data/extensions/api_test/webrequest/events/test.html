@@ -3,8 +3,6 @@ var getURL = chrome.extension.getURL;
 var expectedEventData;
 var capturedEventData;
 var tabId;
-var tabReady = true;
-var eventsReady;
 
 // PORT will be changed to the port of the test server.
 var URL_HTTP_SIMPLE_LOAD =
@@ -24,27 +22,30 @@ function runTests(tests) {
   });
 }
 
+var readyCount = 0;
+function succeedIfReady() {
+  if (++readyCount == 0)
+    chrome.test.succeed();
+}
+
+// Helper to advance to the next test only when the tab has finished loading.
+// This is because tabs.update can sometimes fail if the tab is in the middle
+// of a navigation (from the previous test), resulting in flakiness.
 function navigateAndWait(url) {
   chrome.tabs.onUpdated.addListener(function listener(_, info, tab) {
     if (tab.id == tabId && info.status == "complete") {
       chrome.tabs.onUpdated.removeListener(listener);
-      tabReady = true;
       succeedIfReady();
     }
   });
-  tabReady = false;
+  --readyCount;
   chrome.tabs.update(tabId, {url: url});
-}
-
-function succeedIfReady() {
-  if (tabReady && eventsReady)
-    chrome.test.succeed();
 }
 
 function expect(data, filter, extraInfoSpec) {
   expectedEventData = data;
   capturedEventData = [];
-  eventsReady = false;
+  --readyCount;
   removeListeners();
   initListeners(filter, extraInfoSpec);
 }
@@ -56,7 +57,6 @@ function checkExpectations() {
   // TODO(mpcomplete): allow partial ordering of events
   chrome.test.assertEq(JSON.stringify(expectedEventData),
       JSON.stringify(capturedEventData));
-  eventsReady = true;
   succeedIfReady();
 }
 
@@ -146,7 +146,7 @@ runTests([
         }
       ],
     ]);
-    chrome.tabs.update(tabId, { url: getURL("simpleLoad/a.html") });
+    navigateAndWait(getURL("simpleLoad/a.html"));
   },
 
   // Navigates to a blank page via HTTP. Only HTTP requests get the
@@ -167,7 +167,7 @@ runTests([
         }
       ],
     ]);
-    chrome.tabs.update(tabId, { url: URL_HTTP_SIMPLE_LOAD });
+    navigateAndWait(URL_HTTP_SIMPLE_LOAD);
   },
 
   // Navigates to a page with subresources.
@@ -234,6 +234,17 @@ runTests([
           url: getURL("complexLoad/a.html")
         },
         { retval: {redirectUrl: getURL("simpleLoad/a.html")} }
+      ],
+      // TODO(mpcomplete): This second event should not fire in general. Our
+      // process switching logic cancels the original redirect request and
+      // starts this new one. See http://crbug.com/79520.
+      [ "onBeforeRequest",
+        {
+          method: "GET",
+          tabId: tabId,
+          type: "main_frame",
+          url: getURL("simpleLoad/a.html")
+        },
       ]
     ], {}, ["blocking"]);
     navigateAndWait(getURL("complexLoad/a.html"));
@@ -262,12 +273,9 @@ runTests([
     ], {urls: [getURL("complexLoad/*")],
         types: ["main_frame", "image"],
         tabId: tabId}, []);
-    console.log("started");
     chrome.tabs.create({ url: getURL("simpleLoad/a.html") },
         function(newTab) {
-      console.log("tab created");
       chrome.tabs.remove(newTab.id);
-      console.log("tab removed");
       navigateAndWait(getURL("complexLoad/a.html"));
     });
   },
