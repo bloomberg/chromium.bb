@@ -508,10 +508,6 @@ void ExternalTabContainer::UpdateTargetURL(TabContents* source,
 void ExternalTabContainer::ContentsZoomChange(bool zoom_in) {
 }
 
-void ExternalTabContainer::ToolbarSizeChanged(TabContents* source,
-                                              bool finished) {
-}
-
 void ExternalTabContainer::ForwardMessageToExternalHost(
     const std::string& message, const std::string& origin,
     const std::string& target) {

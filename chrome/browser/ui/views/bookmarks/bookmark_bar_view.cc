@@ -750,12 +750,12 @@ bool BookmarkBarView::is_animating() {
 
 void BookmarkBarView::AnimationProgressed(const ui::Animation* animation) {
   if (browser_)
-    browser_->ToolbarSizeChanged(true);
+    browser_->BookmarkBarSizeChanged(true);
 }
 
 void BookmarkBarView::AnimationEnded(const ui::Animation* animation) {
   if (browser_)
-    browser_->ToolbarSizeChanged(false);
+    browser_->BookmarkBarSizeChanged(false);
 
   SchedulePaint();
 }

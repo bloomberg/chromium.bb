@@ -81,9 +81,6 @@ class BlockedContentContainer : public TabContentsDelegate {
   // Returns our |owner_|.
   virtual TabContents* GetConstrainingContents(TabContents* source);
 
-  // Ignored; BlockedContentContainer doesn't display a toolbar.
-  virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
-
   // Ignored; BlockedContentContainer doesn't display a URL bar.
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
 

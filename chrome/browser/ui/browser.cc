@@ -1046,8 +1046,8 @@ void Browser::BrowserRenderWidgetShowing() {
   RenderWidgetShowing();
 }
 
-void Browser::ToolbarSizeChanged(bool is_animating) {
-  ToolbarSizeChanged(NULL, is_animating);
+void Browser::BookmarkBarSizeChanged(bool is_animating) {
+  window_->ToolbarSizeChanged(is_animating);
 }
 
 TabContents* Browser::AddRestoredTab(
@@ -3008,13 +3008,6 @@ void Browser::DetachContents(TabContents* source) {
 bool Browser::IsPopup(const TabContents* source) const {
   // A non-tabbed BROWSER is an unconstrained popup.
   return !!(type() & TYPE_POPUP);
-}
-
-void Browser::ToolbarSizeChanged(TabContents* source, bool is_animating) {
-  if (source == GetSelectedTabContents() || source == NULL) {
-    // This will refresh the shelf if needed.
-    window_->SelectedTabToolbarSizeChanged(is_animating);
-  }
 }
 
 void Browser::ContentsMouseEvent(

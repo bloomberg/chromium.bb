@@ -175,11 +175,6 @@ bool DraggedTabControllerGtk::IsPopup(const TabContents* source) const {
   return false;
 }
 
-void DraggedTabControllerGtk::ToolbarSizeChanged(TabContents* source,
-                                                 bool finished) {
-  // Dragged tabs don't care about this.
-}
-
 void DraggedTabControllerGtk::UpdateTargetURL(TabContents* source,
                                               const GURL& url) {
   // Ignored.

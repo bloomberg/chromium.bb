@@ -175,11 +175,6 @@ void HtmlDialogView::MoveContents(TabContents* source, const gfx::Rect& pos) {
   GetWidget()->SetBounds(pos);
 }
 
-void HtmlDialogView::ToolbarSizeChanged(TabContents* source,
-                                        bool is_animating) {
-  Layout();
-}
-
 // A simplified version of BrowserView::HandleKeyboardEvent().
 // We don't handle global keyboard shortcuts here, but that's fine since
 // they're all browser-specific. (This may change in the future.)

@@ -113,7 +113,6 @@ class SidebarContainer
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
   virtual bool IsPopup(const TabContents* source) const;
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
-  virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
 
   // Overridden from ImageLoadingTracker::Observer.
   virtual void OnImageLoaded(SkBitmap* image,

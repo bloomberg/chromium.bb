@@ -48,7 +48,6 @@ class HtmlDialogGtk : public HtmlDialogTabContentsDelegate,
 
   // Overridden from TabContentsDelegate:
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
-  virtual void ToolbarSizeChanged(TabContents* source, bool is_animating);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
  private:

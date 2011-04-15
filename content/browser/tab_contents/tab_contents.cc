@@ -1006,12 +1006,6 @@ bool TabContents::ShouldShowBookmarkBar() {
       false : render_manager_.web_ui()->force_bookmark_bar_visible();
 }
 
-void TabContents::ToolbarSizeChanged(bool is_animating) {
-  TabContentsDelegate* d = delegate();
-  if (d)
-    d->ToolbarSizeChanged(this, is_animating);
-}
-
 bool TabContents::CanDownload(int request_id) {
   TabContentsDelegate* d = delegate();
   if (d)

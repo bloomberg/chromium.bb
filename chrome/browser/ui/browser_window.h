@@ -96,7 +96,7 @@ class BrowserWindow {
   // selected tab.
   // TODO(beng): Remove. Infobars/Boomarks bars should talk directly to
   //             BrowserView.
-  virtual void SelectedTabToolbarSizeChanged(bool is_animating) = 0;
+  virtual void ToolbarSizeChanged(bool is_animating) = 0;
 
   // Inform the frame that the selected tab favicon or title has changed. Some
   // frames may need to refresh their title bar.

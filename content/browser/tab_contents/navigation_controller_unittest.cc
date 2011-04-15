@@ -173,7 +173,6 @@ class TestTabContentsDelegate : public TabContentsDelegate {
   virtual void LoadingStateChanged(TabContents* source) {}
   virtual void CloseContents(TabContents* source) {}
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
-  virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
 
  private:

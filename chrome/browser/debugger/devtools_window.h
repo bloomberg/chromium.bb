@@ -90,7 +90,6 @@ class DevToolsWindow
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
   virtual bool CanReloadContents(TabContents* source) const;
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
-  virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);

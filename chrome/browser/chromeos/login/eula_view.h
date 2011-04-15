@@ -63,7 +63,6 @@ class EULATabContentsDelegate : public TabContentsDelegate {
     return false;
   }
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
-  virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
   virtual bool HandleContextMenu(const ContextMenuParams& params) {
     return true;
   }

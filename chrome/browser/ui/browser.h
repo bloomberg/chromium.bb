@@ -415,9 +415,9 @@ class Browser : public TabHandlerDelegate,
   // Called when a popup select is about to be displayed.
   void BrowserRenderWidgetShowing();
 
-  // Notification that some of our content has changed size as
-  // part of an animation.
-  void ToolbarSizeChanged(bool is_animating);
+  // Notification that the bookmark bar has changed size.  We need to resize the
+  // content area and notify our InfoBarContainer.
+  void BookmarkBarSizeChanged(bool is_animating);
 
   // Replaces the state of the currently selected tab with the session
   // history restored from the SessionRestore system.
@@ -776,7 +776,6 @@ class Browser : public TabHandlerDelegate,
   virtual void DetachContents(TabContents* source);
   virtual bool IsPopup(const TabContents* source) const;
   virtual bool CanReloadContents(TabContents* source) const;
-  virtual void ToolbarSizeChanged(TabContents* source, bool is_animating);
   virtual void UpdateTargetURL(TabContents* source, const GURL& url);
   virtual void ContentsMouseEvent(
       TabContents* source, const gfx::Point& location, bool motion);

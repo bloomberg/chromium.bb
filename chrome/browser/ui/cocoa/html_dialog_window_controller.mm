@@ -48,7 +48,6 @@ public:
 
   // HtmlDialogTabContentsDelegate declarations.
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
-  virtual void ToolbarSizeChanged(TabContents* source, bool is_animating);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
 private:
@@ -169,11 +168,6 @@ void HtmlDialogWindowDelegateBridge::OnDialogClosed(
 void HtmlDialogWindowDelegateBridge::MoveContents(TabContents* source,
                                                   const gfx::Rect& pos) {
   // TODO(akalin): Actually set the window bounds.
-}
-
-void HtmlDialogWindowDelegateBridge::ToolbarSizeChanged(
-    TabContents* source, bool is_animating) {
-  // TODO(akalin): Figure out what to do here.
 }
 
 // A simplified version of BrowserWindowCocoa::HandleKeyboardEvent().

@@ -118,10 +118,6 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // Invoked prior to the TabContents showing a constrained window.
   virtual void WillShowConstrainedWindow(TabContents* source);
 
-  // Notification that some of our content has changed size as
-  // part of an animation.
-  virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) = 0;
-
   // Notification that the target URL has changed.
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) = 0;
 

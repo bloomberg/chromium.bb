@@ -192,8 +192,6 @@ class InstantLoader::TabContentsDelegateImpl
                             const gfx::Rect& pos) OVERRIDE;
   virtual bool ShouldFocusConstrainedWindow() OVERRIDE;
   virtual void WillShowConstrainedWindow(TabContents* source) OVERRIDE;
-  virtual void ToolbarSizeChanged(TabContents* source,
-                                  bool is_animating) OVERRIDE;
   virtual void UpdateTargetURL(TabContents* source,
                                const GURL& url) OVERRIDE;
   virtual bool ShouldSuppressDialogs() OVERRIDE;
@@ -477,11 +475,6 @@ void InstantLoader::TabContentsDelegateImpl::WillShowConstrainedWindow(
     UnregisterForPaintNotifications();
     loader_->ShowPreview();
   }
-}
-
-void InstantLoader::TabContentsDelegateImpl::ToolbarSizeChanged(
-    TabContents* source,
-    bool is_animating) {
 }
 
 void InstantLoader::TabContentsDelegateImpl::UpdateTargetURL(

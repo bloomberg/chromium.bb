@@ -108,11 +108,6 @@ void HtmlDialogGtk::MoveContents(TabContents* source, const gfx::Rect& pos) {
   // if it's a dialog we know about, we trust it not to be mean to the user.
 }
 
-void HtmlDialogGtk::ToolbarSizeChanged(TabContents* source,
-                                       bool is_animating) {
-  // Ignored.
-}
-
 // A simplified version of BrowserWindowGtk::HandleKeyboardEvent().
 // We don't handle global keyboard shortcuts here, but that's fine since
 // they're all browser-specific. (This may change in the future.)

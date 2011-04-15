@@ -705,7 +705,7 @@ StatusBubble* BrowserWindowGtk::GetStatusBubble() {
   return status_bubble_.get();
 }
 
-void BrowserWindowGtk::SelectedTabToolbarSizeChanged(bool is_animating) {
+void BrowserWindowGtk::ToolbarSizeChanged(bool is_animating) {
   // On Windows, this is used for a performance optimization.
   // http://code.google.com/p/chromium/issues/detail?id=12291
 }

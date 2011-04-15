@@ -146,8 +146,6 @@ class DraggedTabController : public TabContentsDelegate,
   virtual void CloseContents(TabContents* source) OVERRIDE;
   virtual void MoveContents(TabContents* source,
                             const gfx::Rect& pos) OVERRIDE;
-  virtual void ToolbarSizeChanged(TabContents* source,
-                                  bool is_animating) OVERRIDE;
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) OVERRIDE;
   virtual bool ShouldSuppressDialogs() OVERRIDE;
 

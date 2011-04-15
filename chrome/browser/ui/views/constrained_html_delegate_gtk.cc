@@ -50,7 +50,6 @@ class ConstrainedHtmlDelegateGtk : public views::WidgetGtk,
 
   // HtmlDialogTabContentsDelegate interface.
   void MoveContents(TabContents* source, const gfx::Rect& pos) {}
-  void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {}
 
   void set_window(ConstrainedWindow* window) {

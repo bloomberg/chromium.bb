@@ -38,7 +38,6 @@ class ConstrainedHtmlDelegateWin : public TabContentsContainer,
 
   // HtmlDialogTabContentsDelegate interface.
   void MoveContents(TabContents* source, const gfx::Rect& pos) {}
-  void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {}
 
   // Overridden from TabContentsContainer.

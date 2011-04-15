@@ -50,7 +50,7 @@ class Panel : public BrowserWindow {
   virtual gfx::NativeWindow GetNativeHandle();
   virtual BrowserWindowTesting* GetBrowserWindowTesting();
   virtual StatusBubble* GetStatusBubble();
-  virtual void SelectedTabToolbarSizeChanged(bool is_animating);
+  virtual void ToolbarSizeChanged(bool is_animating);
   virtual void UpdateTitleBar();
   virtual void ShelfVisibilityChanged();
   virtual void UpdateDevTools();

@@ -81,7 +81,7 @@ StatusBubble* Panel::GetStatusBubble() {
   return NULL;
 }
 
-void Panel::SelectedTabToolbarSizeChanged(bool is_animating){
+void Panel::ToolbarSizeChanged(bool is_animating){
   NOTIMPLEMENTED();
 }
 

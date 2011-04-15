@@ -232,7 +232,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual gfx::NativeWindow GetNativeHandle() OVERRIDE;
   virtual BrowserWindowTesting* GetBrowserWindowTesting() OVERRIDE;
   virtual StatusBubble* GetStatusBubble() OVERRIDE;
-  virtual void SelectedTabToolbarSizeChanged(bool is_animating) OVERRIDE;
+  virtual void ToolbarSizeChanged(bool is_animating) OVERRIDE;
   virtual void UpdateTitleBar() OVERRIDE;
   virtual void ShelfVisibilityChanged() OVERRIDE;
   virtual void UpdateDevTools() OVERRIDE;

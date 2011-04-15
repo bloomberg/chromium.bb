@@ -488,11 +488,6 @@ void DraggedTabController::MoveContents(TabContents* source,
   // own window. Should be ignored since we're moving the window...
 }
 
-void DraggedTabController::ToolbarSizeChanged(TabContents* source,
-                                            bool finished) {
-  // Dragged tabs don't care about this.
-}
-
 void DraggedTabController::UpdateTargetURL(TabContents* source,
                                            const GURL& url) {
   // Ignored.

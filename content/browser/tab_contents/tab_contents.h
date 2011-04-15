@@ -436,9 +436,6 @@ class TabContents : public PageNavigator,
   // Notifies the delegate that a download started.
   void OnStartDownload(DownloadItem* download);
 
-  // Notify our delegate that some of our content has animated.
-  void ToolbarSizeChanged(bool is_animating);
-
   // Called when a ConstrainedWindow we own is about to be closed.
   void WillClose(ConstrainedWindow* window);
 

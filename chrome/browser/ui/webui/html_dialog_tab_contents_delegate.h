@@ -34,7 +34,6 @@ class HtmlDialogTabContentsDelegate : public TabContentsDelegate {
   // TabContentsDelegate declarations.  Subclasses of this still need to
   // override:
   //   virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
-  //   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating);
 
   virtual void OpenURLFromTab(TabContents* source,
                               const GURL& url, const GURL& referrer,

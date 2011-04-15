@@ -614,7 +614,7 @@ StatusBubble* BrowserView::GetStatusBubble() {
   return status_bubble_.get();
 }
 
-void BrowserView::SelectedTabToolbarSizeChanged(bool is_animating) {
+void BrowserView::ToolbarSizeChanged(bool is_animating) {
   if (is_animating) {
     contents_container_->SetFastResize(true);
     UpdateUIForContents(browser_->GetSelectedTabContentsWrapper());
@@ -938,7 +938,7 @@ void BrowserView::SetDownloadShelfVisible(bool visible) {
   // SetDownloadShelfVisible can force-close the shelf, so make sure we lay out
   // everything correctly, as if the animation had finished. This doesn't
   // matter for showing the shelf, as the show animation will do it.
-  SelectedTabToolbarSizeChanged(false);
+  ToolbarSizeChanged(false);
 }
 
 bool BrowserView::IsDownloadShelfVisible() const {
@@ -1654,7 +1654,7 @@ void BrowserView::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 void BrowserView::InfoBarContainerHeightChanged(bool is_animating) {
-  SelectedTabToolbarSizeChanged(is_animating);
+  ToolbarSizeChanged(is_animating);
 }
 
 bool BrowserView::DrawInfoBarArrows(int* x) const {

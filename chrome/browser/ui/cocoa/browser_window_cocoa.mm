@@ -139,7 +139,7 @@ StatusBubble* BrowserWindowCocoa::GetStatusBubble() {
   return [controller_ statusBubble];
 }
 
-void BrowserWindowCocoa::SelectedTabToolbarSizeChanged(bool is_animating) {
+void BrowserWindowCocoa::ToolbarSizeChanged(bool is_animating) {
   // According to beng, this is an ugly method that comes from the days when the
   // download shelf was a ChromeView attached to the TabContents, and as its
   // size changed via animation it notified through TCD/etc to the browser view

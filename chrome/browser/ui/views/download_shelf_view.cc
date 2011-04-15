@@ -235,7 +235,7 @@ void DownloadShelfView::AnimationProgressed(const ui::Animation *animation) {
     // otherwise leave blank white areas where the shelf was and where the
     // user's eye is. Thankfully bottom-resizing is a lot faster than
     // top-resizing.
-    parent_->SelectedTabToolbarSizeChanged(shelf_animation_->IsShowing());
+    parent_->ToolbarSizeChanged(shelf_animation_->IsShowing());
   }
 }
 
