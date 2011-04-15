@@ -24,13 +24,13 @@
 #endif
 
 GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
-                       GpuWatchdogThread* gpu_watchdog_thread,
+                       GpuWatchdog* watchdog,
                        int renderer_id)
     : gpu_channel_manager_(gpu_channel_manager),
       renderer_id_(renderer_id),
       renderer_process_(base::kNullProcessHandle),
       renderer_pid_(base::kNullProcessId),
-      watchdog_thread_(gpu_watchdog_thread) {
+      watchdog_(watchdog) {
   DCHECK(gpu_channel_manager);
   DCHECK(renderer_id);
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -117,7 +117,7 @@ void GpuChannel::CreateViewCommandBuffer(
       this, window, NULL, gfx::Size(), disallowed_extensions_,
       init_params.allowed_extensions,
       init_params.attribs, 0, *route_id, renderer_id_, render_view_id,
-      watchdog_thread_));
+      watchdog_));
   router_.AddRoute(*route_id, stub.get());
   stubs_.AddWithID(stub.release(), *route_id);
 #endif  // ENABLE_GPU
@@ -203,7 +203,7 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
       init_params.attribs,
       parent_texture_id,
       *route_id,
-      0, 0, watchdog_thread_));
+      0, 0, watchdog_));
   router_.AddRoute(*route_id, stub.get());
   stubs_.AddWithID(stub.release(), *route_id);
 #else

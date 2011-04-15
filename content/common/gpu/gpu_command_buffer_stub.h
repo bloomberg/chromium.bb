@@ -21,7 +21,7 @@
 #include "ui/gfx/size.h"
 
 class GpuChannel;
-class GpuWatchdogThread;
+class GpuWatchdog;
 
 class GpuCommandBufferStub
     : public IPC::Channel::Listener,
@@ -40,7 +40,7 @@ class GpuCommandBufferStub
       int32 route_id,
       int32 renderer_id,
       int32 render_view_id,
-      GpuWatchdogThread* gpu_watchdog_thread);
+      GpuWatchdog* watchdog);
 
   virtual ~GpuCommandBufferStub();
 
@@ -132,7 +132,7 @@ class GpuCommandBufferStub
 
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::GpuScheduler> scheduler_;
-  GpuWatchdogThread* watchdog_thread_;
+  GpuWatchdog* watchdog_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferStub);
 };

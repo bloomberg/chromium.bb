@@ -107,6 +107,7 @@
         'common/gpu/gpu_video_decoder.h',
         'common/gpu/gpu_video_service.cc',
         'common/gpu/gpu_video_service.h',
+        'common/gpu/gpu_watchdog.h',
         'common/gpu/media/gpu_video_device.h',
         'common/gpu/media/fake_gl_video_decode_engine.cc',
         'common/gpu/media/fake_gl_video_decode_engine.h',

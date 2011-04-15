@@ -27,6 +27,8 @@ namespace IPC {
 struct ChannelHandle;
 }
 
+class GpuWatchdog;
+
 // A GpuChannelManager is a thread responsible for issuing rendering commands
 // managing the lifetimes of GPU channels and forwarding IPC requests from the
 // browser process to them based on the corresponding renderer ID.
@@ -41,7 +43,7 @@ class GpuChannelManager : public IPC::Channel::Listener,
                           public IPC::Message::Sender {
  public:
   GpuChannelManager(IPC::Message::Sender* browser_channel,
-                    GpuWatchdogThread* gpu_watchdog_thread,
+                    GpuWatchdog* watchdog,
                     MessageLoop* io_message_loop,
                     base::WaitableEvent* shutdown_event);
   ~GpuChannelManager();
@@ -92,7 +94,7 @@ class GpuChannelManager : public IPC::Channel::Listener,
   // process.
   typedef base::hash_map<int, scoped_refptr<GpuChannel> > GpuChannelMap;
   GpuChannelMap gpu_channels_;
-  GpuWatchdogThread* watchdog_thread_;
+  GpuWatchdog* watchdog_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelManager);
 };

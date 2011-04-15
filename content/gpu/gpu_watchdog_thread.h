@@ -11,10 +11,12 @@
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
+#include "content/common/gpu/gpu_watchdog.h"
 
 // A thread that intermitently sends tasks to a group of watched message loops
 // and deliberately crashes if one of them does not respond after a timeout.
 class GpuWatchdogThread : public base::Thread,
+                          public GpuWatchdog,
                           public base::RefCountedThreadSafe<GpuWatchdogThread> {
  public:
   explicit GpuWatchdogThread(int timeout);
@@ -23,7 +25,9 @@ class GpuWatchdogThread : public base::Thread,
   // Accessible on watched thread but only modified by watchdog thread.
   bool armed() const { return armed_; }
   void PostAcknowledge();
-  void CheckArmed();
+
+  // Implement GpuWatchdog.
+  virtual void CheckArmed();
 
  protected:
   virtual void Init();

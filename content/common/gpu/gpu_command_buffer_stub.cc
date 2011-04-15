@@ -12,7 +12,7 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
-#include "content/gpu/gpu_watchdog_thread.h"
+#include "content/common/gpu/gpu_watchdog.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/common/gpu_trace_event.h"
 #include "ui/gfx/gl/gl_context.h"
@@ -39,7 +39,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     int32 route_id,
     int32 renderer_id,
     int32 render_view_id,
-    GpuWatchdogThread* gpu_watchdog_thread)
+    GpuWatchdog* watchdog)
     : channel_(channel),
       handle_(handle),
       parent_(
@@ -55,7 +55,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
 #endif  // defined(OS_WIN)
       renderer_id_(renderer_id),
       render_view_id_(render_view_id),
-      watchdog_thread_(gpu_watchdog_thread) {
+      watchdog_(watchdog) {
 }
 
 #if defined(OS_WIN)
@@ -258,7 +258,7 @@ void GpuCommandBufferStub::OnInitialize(
                       &gpu::GpuScheduler::ProcessCommands));
       scheduler_->SetSwapBuffersCallback(
           NewCallback(this, &GpuCommandBufferStub::OnSwapBuffers));
-      if (watchdog_thread_)
+      if (watchdog_)
         scheduler_->SetCommandProcessedCallback(
             NewCallback(this, &GpuCommandBufferStub::OnCommandProcessed));
 
@@ -288,8 +288,8 @@ void GpuCommandBufferStub::OnInitialize(
 }
 
 void GpuCommandBufferStub::OnCommandProcessed() {
-  if (watchdog_thread_)
-    watchdog_thread_->CheckArmed();
+  if (watchdog_)
+    watchdog_->CheckArmed();
 }
 
 void GpuCommandBufferStub::OnGetState(gpu::CommandBuffer::State* state) {

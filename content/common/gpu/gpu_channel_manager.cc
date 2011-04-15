@@ -15,20 +15,19 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/common/child_process.h"
 #include "content/common/gpu_messages.h"
-#include "content/gpu/gpu_watchdog_thread.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
 
 GpuChannelManager::GpuChannelManager(IPC::Message::Sender* browser_channel,
-                                     GpuWatchdogThread* gpu_watchdog_thread,
+                                     GpuWatchdog* watchdog,
                                      MessageLoop* io_message_loop,
                                      base::WaitableEvent* shutdown_event)
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       io_message_loop_(io_message_loop),
       shutdown_event_(shutdown_event),
       browser_channel_(browser_channel),
-      watchdog_thread_(gpu_watchdog_thread) {
+      watchdog_(watchdog) {
   DCHECK(browser_channel);
   DCHECK(io_message_loop);
   DCHECK(shutdown_event);
@@ -74,7 +73,7 @@ void GpuChannelManager::OnEstablishChannel(int renderer_id) {
 
   GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
   if (iter == gpu_channels_.end())
-    channel = new GpuChannel(this, watchdog_thread_, renderer_id);
+    channel = new GpuChannel(this, watchdog_, renderer_id);
   else
     channel = iter->second;
 
