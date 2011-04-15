@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -444,9 +444,9 @@ def main(options, args):
   global BASE_DIRECTORY
   if not options.base_directory:
     BASE_DIRECTORY = os.path.abspath(
-        os.path.join(os.path.abspath(sys.argv[0]), "../../.."))
+        os.path.join(os.path.abspath(os.path.dirname(__file__)), "../.."))
   else:
-    BASE_DIRECTORY = os.path.abspath(sys.argv[2])
+    BASE_DIRECTORY = os.path.abspath(options.base_directory)
 
   # Figure out which directory we have to check.
   if len(args) == 0:
