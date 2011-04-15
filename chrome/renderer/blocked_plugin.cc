@@ -16,6 +16,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMenuItemInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPoint.h"

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "chrome/common/security_style.h"
 #include "content/common/common_param_traits.h"
 #include "content/common/page_type.h"
+#include "content/common/webkit_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "net/base/host_port_pair.h"

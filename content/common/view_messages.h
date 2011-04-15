@@ -14,6 +14,7 @@
 #include "content/common/page_transition_types.h"
 #include "content/common/page_zoom.h"
 #include "content/common/renderer_preferences.h"
+#include "content/common/webkit_param_traits.h"
 #include "content/common/window_container_type.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"

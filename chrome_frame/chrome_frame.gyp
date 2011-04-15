@@ -890,7 +890,6 @@
         '../chrome/chrome.gyp:chrome_dll',
         '../chrome/chrome.gyp:chrome_dll_version',
         '../chrome/chrome.gyp:common',
-        '../chrome/chrome.gyp:utility',
       ],
       'sources': [
         'chrome_frame_elevation.rgs',

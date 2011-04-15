@@ -17,7 +17,7 @@
 #include "base/string16.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/common/content_settings.h"
+#include "chrome/common/common_param_traits.h"
 #include "chrome/common/icon_messages.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/nacl_types.h"
@@ -99,8 +99,6 @@ struct ParamTraits<ContentSettings> {
 
 #define IPC_MESSAGE_START ChromeMsgStart
 
-IPC_ENUM_TRAITS(ContentSetting)
-IPC_ENUM_TRAITS(ContentSettingsType)
 IPC_ENUM_TRAITS(InstantCompleteBehavior)
 IPC_ENUM_TRAITS(prerender::PrerenderCancellationReason)
 IPC_ENUM_TRAITS(search_provider::OSDDType)

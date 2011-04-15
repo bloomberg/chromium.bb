@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -7,6 +7,7 @@
 #include "base/shared_memory.h"
 #include "build/build_config.h"
 #include "content/common/common_param_traits.h"
+#include "content/common/webkit_param_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/native_widget_types.h"

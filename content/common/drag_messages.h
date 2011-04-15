@@ -9,6 +9,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
+#include "ui/gfx/point.h"
 #include "webkit/glue/webdropdata.h"
 
 #define IPC_MESSAGE_START DragMsgStart

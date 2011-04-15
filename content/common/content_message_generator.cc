@@ -1,10 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Get basic type definitions.
 #define IPC_MESSAGE_IMPL
-#include "content/common/common_param_traits.h"
 #include "content/common/content_message_generator.h"
 
 // Generate constructors.

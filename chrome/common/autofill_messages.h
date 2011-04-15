@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "content/common/webkit_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"

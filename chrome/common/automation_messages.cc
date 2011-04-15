@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/common/common_param_traits.h"
 #include "content/common/common_param_traits.h"
 
 #define IPC_MESSAGE_IMPL
@@ -676,22 +677,5 @@ void ParamTraits<AttachExternalTabParams>::Log(const param_type& p,
   LogParam(p.profile_name, l);
   l->append(")");
 }
-
-// The traits for these are defined in render_messages.h
-template <>
-struct ParamTraits<ContentSetting> {
-  typedef ContentSetting param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ContentSettingsType> {
-  typedef ContentSettingsType param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
 
 }  // namespace IPC
