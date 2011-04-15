@@ -134,7 +134,7 @@ void AutomationTabHelper::OnWillPerformClientRedirect(
 }
 
 void AutomationTabHelper::OnDidCompleteOrCancelClientRedirect(int64 frame_id) {
-  std::set<int64>::const_iterator iter =
+  std::set<int64>::iterator iter =
       pending_client_redirects_.find(frame_id);
   // It is possible that we did not track the redirect becasue it had a non-zero
   // delay. See the comment in |OnWillPerformClientRedirect|.
