@@ -1,7 +1,7 @@
 /*
- * Copyright 2009  The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdio.h>
@@ -69,14 +69,24 @@ int TestNanoSleep(struct timespec *t_suspend) {
     return 1;
   }
 
+  /*
+   * We add a microsecond in case of rounding/synchronization issues
+   * between the nanosleep/scheduler clock and the time-of-day clock,
+   * where the time-of-day clock doesn't _quite_ get incremented in
+   * time even though the entire nanosleep duration had passed.
+   * (We've seen this occur on the mac.)
+   */
+
   t_elapsed.tv_sec = t_end.tv_sec - t_start.tv_sec;
-  t_elapsed.tv_usec = t_end.tv_usec - t_start.tv_usec;
+  t_elapsed.tv_usec = t_end.tv_usec - t_start.tv_usec + 1;
+
   if (t_elapsed.tv_usec < 0) {
     t_elapsed.tv_usec += MICROS_PER_UNIT;
     t_elapsed.tv_sec -= 1;
   }
   if (t_elapsed.tv_usec >= MICROS_PER_UNIT) {
-    fprintf(stderr, "Microsecond field too large: %ld\n", t_elapsed.tv_usec);
+    t_elapsed.tv_usec -= MICROS_PER_UNIT;
+    t_elapsed.tv_sec += 1;
   }
 
   printf("%40s: %"NACL_PRIdNACL_TIME".%06ld seconds\n",
