@@ -106,6 +106,8 @@ TEST_F(PromoResourceServiceTest, UnpackLogoSignal) {
   EXPECT_EQ(logo_start, 0);  // date value reset to 0;
   logo_end = prefs->GetDouble(prefs::kNTPCustomLogoEnd);
   EXPECT_EQ(logo_end, 0);  // date value reset to 0;
+
+  testing_browser_process->SetPrefService(NULL);
 }
 
 TEST_F(PromoResourceServiceTest, UnpackPromoSignal) {
@@ -175,6 +177,8 @@ TEST_F(PromoResourceServiceTest, UnpackPromoSignal) {
   double promo_end =
       prefs->GetDouble(prefs::kNTPPromoEnd);
   EXPECT_EQ(promo_end, 1327971600);  // unix epoch for Jan 31 2012 0100 GMT.
+
+  testing_browser_process->SetPrefService(NULL);
 }
 
 TEST_F(PromoResourceServiceTest, UnpackWebStoreSignal) {
@@ -224,6 +228,8 @@ TEST_F(PromoResourceServiceTest, UnpackWebStoreSignal) {
   EXPECT_EQ("The button label!", AppsPromo::GetPromoButtonText());
   EXPECT_EQ(GURL("http://link.com"), AppsPromo::GetPromoLink());
   EXPECT_EQ("No thanks, hide this.", AppsPromo::GetPromoExpireText());
+
+  testing_browser_process->SetPrefService(NULL);
 }
 
 TEST_F(PromoResourceServiceTest, IsBuildTargeted) {
