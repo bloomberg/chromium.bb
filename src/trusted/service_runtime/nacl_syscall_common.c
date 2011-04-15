@@ -460,12 +460,12 @@ int32_t NaClCommonSysNameService(struct NaClAppThread *natp,
     goto done;
   }
 
-  desc = *(int32_t *) sysaddr;
+  desc = *(int32_t volatile *) sysaddr;
   if (-1 == desc) {
     /* read */
     desc = NaClSetAvail(natp->nap,
                         NaClDescRef(natp->nap->name_service_conn_cap));
-    *(int32_t *) sysaddr = desc;
+    *(int32_t volatile *) sysaddr = desc;
     retval = 0;
   } else {
     struct NaClDesc *desc_obj_ptr = NaClGetDesc(natp->nap, desc);
@@ -886,7 +886,7 @@ int32_t NaClCommonSysLseek(struct NaClAppThread *natp,
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
-  offset = *(nacl_abi_off_t *) sysaddr;
+  offset = *(nacl_abi_off_t volatile *) sysaddr;
   NaClLog(4, "offset 0x%08"NACL_PRIxNACL_OFF"\n", offset);
   ndp = NaClGetDesc(natp->nap, d);
   if (NULL == ndp) {
@@ -899,7 +899,7 @@ int32_t NaClCommonSysLseek(struct NaClAppThread *natp,
   if (NaClOff64IsNegErrno(&retval64)) {
     retval = (int32_t) retval64;
   } else {
-    *(nacl_abi_off_t *) sysaddr = retval64;
+    *(nacl_abi_off_t volatile *) sysaddr = retval64;
     retval = 0;
   }
   NaClDescUnref(ndp);
@@ -1642,7 +1642,7 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
-  offset = *(nacl_abi_off_t *) sysaddr;
+  offset = *(nacl_abi_off_t volatile *) sysaddr;
 
   NaClLog(4, " offset = 0x%08"NACL_PRIxNACL_OFF"\n", offset);
 
@@ -1790,7 +1790,7 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread         *natp,
     goto cleanup_leave;
   }
 
-  kern_nanimh = *(struct NaClAbiNaClImcMsgHdr *) sysaddr;
+  kern_nanimh = *(struct NaClAbiNaClImcMsgHdr volatile *) sysaddr;
   /* copy before validating */
 
   /*
@@ -1941,20 +1941,20 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread         *natp,
                                  int                          d,
                                  struct NaClAbiNaClImcMsgHdr  *nanimhp,
                                  int                          flags) {
-  int32_t                       retval = -NACL_ABI_EINVAL;
-  ssize_t                       ssize_retval;
-  uintptr_t                     sysaddr;
-  struct NaClAbiNaClImcMsgHdr   *kern_nanimhp;
-  size_t                        i;
-  struct NaClDesc               *ndp;
-  struct NaClAbiNaClImcMsgHdr   kern_nanimh;
-  struct NaClAbiNaClImcMsgIoVec kern_naiov[NACL_ABI_IMC_IOVEC_MAX];
-  struct NaClImcMsgIoVec        kern_iov[NACL_ABI_IMC_IOVEC_MAX];
-  int32_t                       *kern_descv;
-  struct NaClImcTypedMsgHdr     recv_hdr;
-  struct NaClDesc               *new_desc[NACL_ABI_IMC_DESC_MAX];
-  nacl_abi_size_t               num_user_desc;
-  struct NaClDesc               *invalid_desc = NULL;
+  int32_t                               retval = -NACL_ABI_EINVAL;
+  ssize_t                               ssize_retval;
+  uintptr_t                             sysaddr;
+  struct NaClAbiNaClImcMsgHdr volatile  *kern_nanimhp;
+  size_t                                i;
+  struct NaClDesc                       *ndp;
+  struct NaClAbiNaClImcMsgHdr           kern_nanimh;
+  struct NaClAbiNaClImcMsgIoVec         kern_naiov[NACL_ABI_IMC_IOVEC_MAX];
+  struct NaClImcMsgIoVec                kern_iov[NACL_ABI_IMC_IOVEC_MAX];
+  int32_t volatile                      *kern_descv;
+  struct NaClImcTypedMsgHdr             recv_hdr;
+  struct NaClDesc                       *new_desc[NACL_ABI_IMC_DESC_MAX];
+  nacl_abi_size_t                       num_user_desc;
+  struct NaClDesc                       *invalid_desc = NULL;
 
   NaClLog(3,
           ("Entered NaClCommonSysImc_RecvMsg(0x%08"NACL_PRIxPTR", %d,"
@@ -1975,8 +1975,9 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread         *natp,
     retval = -NACL_ABI_EFAULT;
     goto cleanup_leave;
   }
-  kern_nanimhp = (struct NaClAbiNaClImcMsgHdr *) sysaddr;
-  kern_nanimh = *kern_nanimhp;  /* copy before validating */
+  kern_nanimhp = (struct NaClAbiNaClImcMsgHdr volatile *) sysaddr;
+  kern_nanimh = *kern_nanimhp;
+  /* copy before validating */
 
   if (kern_nanimh.iov_length > NACL_ABI_IMC_IOVEC_MAX) {
     NaClLog(4, "gather/scatter array too large: %"NACL_PRIdNACL_SIZE"\n",
@@ -2034,10 +2035,10 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread         *natp,
       retval = -NACL_ABI_EFAULT;
       goto cleanup_leave;
     }
-    kern_descv = (int32_t *) sysaddr;
+    kern_descv = (int32_t volatile *) sysaddr;
   } else {
     /* ensure we will SEGV if there's a bug below */
-    kern_descv = (int32_t *) NULL;
+    kern_descv = (int32_t volatile *) NULL;
   }
 
   ndp = NaClGetDesc(natp->nap, d);
@@ -2174,7 +2175,7 @@ cleanup:
 }
 
 int32_t NaClCommonSysImc_SocketPair(struct NaClAppThread *natp,
-                                    int32_t              *d_out) {
+                                    int32_t volatile     *d_out) {
   uintptr_t               sysaddr;
   struct NaClDesc         *pair[2];
   int32_t                 retval;
@@ -2193,7 +2194,7 @@ int32_t NaClCommonSysImc_SocketPair(struct NaClAppThread *natp,
     goto cleanup;
   }
 
-  d_out = (int32_t *) sysaddr;
+  d_out = (int32_t volatile *) sysaddr;
   retval = NaClCommonDescSocketPair(pair);
   if (0 != retval) {
     goto cleanup;
@@ -2512,7 +2513,7 @@ int32_t NaClCommonSysCond_Timed_Wait_Abs(struct NaClAppThread     *natp,
     goto cleanup;
   }
   /* TODO(gregoryd): validate ts - do we have a limit for time to wait? */
-  memcpy(&trusted_ts, (void*) sys_ts, sizeof(trusted_ts));
+  memcpy(&trusted_ts, (void *) sys_ts, sizeof(trusted_ts));
 
   cv_desc = NaClGetDesc(natp->nap, cond_handle);
   if (NULL == cv_desc) {

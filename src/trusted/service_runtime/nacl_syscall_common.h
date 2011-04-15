@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -242,7 +242,7 @@ int32_t NaClCommonSysCond_Timed_Wait_Abs(struct NaClAppThread     *natp,
 int32_t NaClCommonDescSocketPair(struct NaClDesc      **pair);
 
 int32_t NaClCommonSysImc_SocketPair(struct NaClAppThread *natp,
-                                    int32_t              *d_out);
+                                    int32_t volatile     *d_out);
 /* Semaphores */
 int32_t NaClCommonSysSem_Create(struct NaClAppThread *natp,
                                 int32_t              init_value);
