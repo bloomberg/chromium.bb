@@ -100,7 +100,7 @@
         ],
         'use_threaded_compositing': 1,
       }],
-      ['OS=="mac"', {
+      ['OS=="mac" or OS=="linux" or OS=="win"', {
         'feature_defines': [
           'ENABLE_WEB_AUDIO=1',
         ],
