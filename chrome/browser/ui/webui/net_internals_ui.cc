@@ -283,6 +283,8 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnHSTSDelete(const ListValue* list);
   void OnGetHttpCacheInfo(const ListValue* list);
   void OnGetSocketPoolInfo(const ListValue* list);
+  void OnCloseIdleSockets(const ListValue* list);
+  void OnFlushSocketPools(const ListValue* list);
   void OnGetSpdySessionInfo(const ListValue* list);
   void OnGetSpdyStatus(const ListValue* list);
   void OnGetSpdyAlternateProtocolMappings(const ListValue* list);
@@ -559,6 +561,12 @@ void NetInternalsMessageHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       "getSocketPoolInfo",
       proxy_->CreateCallback(&IOThreadImpl::OnGetSocketPoolInfo));
+  web_ui_->RegisterMessageCallback(
+      "closeIdleSockets",
+      proxy_->CreateCallback(&IOThreadImpl::OnCloseIdleSockets));
+  web_ui_->RegisterMessageCallback(
+      "flushSocketPools",
+      proxy_->CreateCallback(&IOThreadImpl::OnFlushSocketPools));
   web_ui_->RegisterMessageCallback(
       "getSpdySessionInfo",
       proxy_->CreateCallback(&IOThreadImpl::OnGetSpdySessionInfo));
@@ -1187,6 +1195,25 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetSocketPoolInfo(
     socket_pool_info = http_network_session->SocketPoolInfoToValue();
 
   CallJavascriptFunction(L"g_browser.receivedSocketPoolInfo", socket_pool_info);
+}
+
+
+void NetInternalsMessageHandler::IOThreadImpl::OnFlushSocketPools(
+    const ListValue* list) {
+  net::HttpNetworkSession* http_network_session =
+      GetHttpNetworkSession(context_getter_->GetURLRequestContext());
+
+  if (http_network_session)
+    http_network_session->CloseAllConnections();
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::OnCloseIdleSockets(
+    const ListValue* list) {
+  net::HttpNetworkSession* http_network_session =
+      GetHttpNetworkSession(context_getter_->GetURLRequestContext());
+
+  if (http_network_session)
+    http_network_session->CloseIdleConnections();
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetSpdySessionInfo(

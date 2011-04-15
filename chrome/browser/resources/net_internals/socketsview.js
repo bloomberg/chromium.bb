@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,12 +11,19 @@
  *
  *  @constructor
  */
-function SocketsView(mainBoxId, socketPoolDivId, socketPoolGroupsDivId) {
+function SocketsView(mainBoxId, socketPoolDivId, socketPoolGroupsDivId,
+                     closeIdleSocketsButtonId, socketPoolFlushButtonId) {
   DivView.call(this, mainBoxId);
 
   g_browser.addSocketPoolInfoObserver(this);
   this.socketPoolDiv_ = document.getElementById(socketPoolDivId);
   this.socketPoolGroupsDiv_ = document.getElementById(socketPoolGroupsDivId);
+
+  var closeIdleButton = document.getElementById(closeIdleSocketsButtonId);
+  closeIdleButton.onclick = this.closeIdleSockets.bind(this);
+
+  var flushSocketsButton = document.getElementById(socketPoolFlushButtonId);
+  flushSocketsButton.onclick = this.flushSocketPools.bind(this);
 }
 
 inherits(SocketsView, DivView);
@@ -42,3 +49,13 @@ SocketsView.prototype.onSocketPoolInfoChanged = function(socketPoolInfo) {
     }
   }
 };
+
+SocketsView.prototype.closeIdleSockets = function() {
+  g_browser.sendCloseIdleSockets();
+  g_browser.checkForUpdatedInfo(false);
+}
+
+SocketsView.prototype.flushSocketPools = function() {
+  g_browser.sendFlushSocketPools();
+  g_browser.checkForUpdatedInfo(false);
+}

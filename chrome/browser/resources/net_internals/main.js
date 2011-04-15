@@ -100,7 +100,9 @@ function onLoaded() {
 
   var socketsView = new SocketsView('socketsTabContent',
                                     'socketPoolDiv',
-                                    'socketPoolGroupsDiv');
+                                    'socketPoolGroupsDiv',
+                                    'socketPoolCloseIdleButton',
+                                    'socketPoolFlushButton');
 
   var spdyView = new SpdyView('spdyTabContent',
                               'spdyEnabledSpan',
@@ -341,6 +343,14 @@ BrowserBridge.prototype.sendGetHttpCacheInfo = function() {
 
 BrowserBridge.prototype.sendGetSocketPoolInfo = function() {
   chrome.send('getSocketPoolInfo');
+};
+
+BrowserBridge.prototype.sendCloseIdleSockets = function() {
+  chrome.send('closeIdleSockets');
+};
+
+BrowserBridge.prototype.sendFlushSocketPools = function() {
+  chrome.send('flushSocketPools');
 };
 
 BrowserBridge.prototype.sendGetSpdySessionInfo = function() {

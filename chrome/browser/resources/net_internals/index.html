@@ -140,7 +140,15 @@ found in the LICENSE file.
     </div>
     <div id=socketsTabContent>
       <h4>Socket pools</h4>
-      <a href='#events&q=type:SOCKET%20is:active'>View live sockets</a>
+      <ul>
+        <li><input type=button value="Close idle sockets" id=socketPoolCloseIdleButton />
+        </li>
+        <li><input type=button value="Flush socket pools" id=socketPoolFlushButton />
+          <span class=warningText >May break pages with active connections</span>
+        </li>
+        <li><a href='#events&q=type:SOCKET%20is:active'>View live sockets</a>
+        </li>
+      </ul>
       <p>
         <div id=socketPoolDiv>
         </div>
