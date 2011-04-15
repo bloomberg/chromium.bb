@@ -25,7 +25,7 @@ var harness = {
                              util.flog('Error initializing filesystem'));
 
     var paramstr = decodeURIComponent(document.location.search.substr(1));
-    this.params = JSON.parse(paramstr);
+    this.params = paramstr ? JSON.parse(paramstr) : {};
 
     var input = document.getElementById('default-path');
     input.value = this.params.defaultPath || '';

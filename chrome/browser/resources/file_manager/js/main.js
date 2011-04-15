@@ -30,6 +30,8 @@ function init() {
   }
 
   function onFileSystemFound(filesystem) {
+    console.log('Found filesystem: ' + filesystem.name, filesystem);
+
     var entries = [];
 
     function onPathError(path, err) {
@@ -44,7 +46,7 @@ function init() {
       }
     }
 
-    if (filesystem.name.match(/^chrome-extension_\S+:local/i)) {
+    if (filesystem.name.match(/^chrome-extension_\S+:external/i)) {
       // We've been handed the local filesystem, whose root directory
       // cannot be enumerated.
       util.getDirectories(filesystem.root, {create: false}, rootPaths,
@@ -56,5 +58,6 @@ function init() {
 
   util.installFileErrorToString();
 
+  console.log('Requesting filesystem.');
   chrome.fileBrowserPrivate.requestLocalFileSystem(onFileSystemFound);
 }

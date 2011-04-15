@@ -67,6 +67,7 @@ body {
   display: -webkit-box;
   font-size: 15px;
   line-height: 15px;
+  height: 18px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -34,7 +34,7 @@ function FileManager(dialogDom, rootEntries, params) {
   this.dialogType_ =
     this.params_.type || FileManager.DialogType.SELECT_OPEN_FILE;
 
-  this.defaultPath_ = params.defaultPath || '/';
+  this.defaultPath_ = this.params_.defaultPath || '/';
 
   // DirectoryEntry representing the current directory of the dialog.
   this.currentDirEntry_ = null;
@@ -48,6 +48,9 @@ function FileManager(dialogDom, rootEntries, params) {
   this.initDialogType_();
 
   this.onDetailSelectionChanged_();
+
+  chrome.fileBrowserPrivate.onDiskChanged.addListener(
+      this.onDiskChanged_.bind(this));
 
   this.table.querySelector('.list').focus();
 }
@@ -574,7 +577,18 @@ FileManager.prototype = {
     entry.cachedIconType_ = getIconType(entry);
     icon.setAttribute('iconType', entry.cachedIconType_);
     return icon;
-  }
+  };
+
+  FileManager.prototype.getLabelForRootPath_ = function(path) {
+    // This hack lets us localize the top level directories.
+    if (path == 'Downloads')
+      return str('DOWNLOADS_DIRECTORY_LABEL');
+
+    if (path == 'media')
+      return str('MEDIA_DIRECTORY_LABEL');
+
+    return path || str('ROOT_DIRECTORY_LABEL');
+  };
 
   /**
    * Render the Name column of the detail table.
@@ -588,15 +602,12 @@ FileManager.prototype = {
   FileManager.prototype.renderName_ = function(entry, columnId, table) {
     var label = this.document_.createElement('div');
     label.className = 'detail-name';
-
-    // This hack lets us localize the top level directories.
-    if (entry.fullPath == '/Downloads') {
-      label.textContent = str('DOWNLOADS_DIRECTORY_LABEL');
-    } else if (entry.fullPath == '/media') {
-      label.textContent = str('MEDIA_DIRECTORY_LABEL');
+    if (this.currentDirEntry_.name == '') {
+      label.textContent = this.getLabelForRootPath_(entry.name);
     } else {
       label.textContent = entry.name;
     }
+
     return label;
   };
 
@@ -751,17 +762,16 @@ FileManager.prototype = {
 
       var div = this.document_.createElement('div');
       div.className = 'breadcrumb-path';
-      // This hack lets us localize the top level directories.
-      if (path == '/Downloads/') {
-        div.textContent = str('DOWNLOADS_DIRECTORY_LABEL');
-      } else if (path == '/media/') {
-        div.textContent = str('MEDIA_DIRECTORY_LABEL');
+      if (i <= 1) {
+        // i == 0: root directory itself, i == 1: the files it contains.
+        div.textContent = this.getLabelForRootPath_(pathName);
       } else {
-        div.textContent = pathNames[i] || str('ROOT_DIRECTORY_LABEL');
+        div.textContent = pathName;
       }
 
       div.path = path;
       div.addEventListener('click', this.onBreadcrumbClick_.bind(this));
+
       bc.appendChild(div);
 
       if (i == pathNames.length - 1) {
@@ -797,7 +807,11 @@ FileManager.prototype = {
       return;
     }
 
-    this.previewFilename_.textContent = this.selection.leadEntry.name;
+    var previewName = this.selection.leadEntry.name;
+    if (this.currentDirEntry_.name == '')
+      previewName = this.getLabelForRootPath_(previewName);
+
+    this.previewFilename_.textContent = previewName;
 
     var entry = this.selection.leadEntry;
     var iconType = getIconType(entry);
@@ -959,7 +973,16 @@ FileManager.prototype = {
    */
   FileManager.prototype.onDirectoryChanged_ = function(event) {
     this.rescanDirectory_();
-  }
+  };
+
+  /**
+   * Update the UI when a disk is mounted or unmounted.
+   *
+   * @param {string} path The path that has been mounted or unmounted.
+   */
+  FileManager.prototype.onDiskChanged_ = function(path) {
+    this.changeDirectory(path);
+  };
 
   /**
    * Rescan the current directory, refreshing the list.
@@ -1091,10 +1114,11 @@ FileManager.prototype = {
 
     switch (event.keyCode) {
       case 8: // Backspace => Up one directory.
+        event.preventDefault();
         var path = this.currentDirEntry_.fullPath;
         if (path && path != '/') {
           var path = path.replace(/\/[^\/]+$/, '');
-          this.changeDirectory(path);
+          this.changeDirectory(path || '/');
         }
         break;
 

@@ -8249,7 +8249,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- cr.Locale -->
-      <message name="IDS_LOCALE_DATE_SHORT" desc="Preferred short date format for this locale.">
+      <message name="IDS_LOCALE_FMT_DATE_SHORT" desc="Preferred short date format for this locale.">
         %b %-d, %Y
       </message>
       <message name="IDS_LOCALE_MONTHS_SHORT" desc="Abbreviated month names, caret delimited.">

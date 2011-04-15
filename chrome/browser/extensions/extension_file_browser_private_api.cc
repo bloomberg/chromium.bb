@@ -276,7 +276,7 @@ bool FileDialogStringsFunction::RunImpl() {
 #define SET_STRING(ns, id) \
   dict->SetString(#id, l10n_util::GetStringUTF16(ns##_##id))
 
-  SET_STRING(IDS, LOCALE_DATE_SHORT);
+  SET_STRING(IDS, LOCALE_FMT_DATE_SHORT);
   SET_STRING(IDS, LOCALE_MONTHS_SHORT);
   SET_STRING(IDS, LOCALE_DAYS_SHORT);
 

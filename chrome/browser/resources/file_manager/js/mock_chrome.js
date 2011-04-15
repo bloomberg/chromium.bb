@@ -43,6 +43,14 @@ chrome.fileBrowserPrivate = {
   },
 
   /**
+   * Disk mount/unmount notification.
+   */
+  onDiskChanged: {
+    callbacks: [],
+    addListener: function(cb) { this.callbacks.push(cb) }
+  },
+
+  /**
    * Return localized strings.
    */
   getStrings: function(callback) {
