@@ -81,6 +81,7 @@ void ChromeFrameOperations::AddKeyFiles(
     std::vector<FilePath>* key_files) const {
   DCHECK(key_files);
   key_files->push_back(FilePath(installer::kChromeFrameDll));
+  key_files->push_back(FilePath(installer::kChromeFrameHelperExe));
   if (options.find(kOptionCeee) != options.end()) {
     key_files->push_back(FilePath(installer::kCeeeIeDll));
     key_files->push_back(FilePath(installer::kCeeeBrokerExe));
