@@ -58,7 +58,7 @@ cr.define('options', function() {
 
       if (cr.isChromeOS) {
         this.initializeInputMethodList_();
-        this.initializeLanguageCodeToInputMehotdIdsMap_();
+        this.initializeLanguageCodeToInputMethodIdsMap_();
       }
       Preferences.getInstance().addEventListener(this.spellCheckDictionaryPref,
           this.handleSpellCheckDictionaryPrefChange_.bind(this));
@@ -273,7 +273,7 @@ cr.define('options', function() {
      * Initializes the map of language code to input method IDs.
      * @private
      */
-    initializeLanguageCodeToInputMehotdIdsMap_: function() {
+    initializeLanguageCodeToInputMethodIdsMap_: function() {
       var inputMethodList = templateData.inputMethodList;
       for (var i = 0; i < inputMethodList.length; i++) {
         var inputMethod = inputMethodList[i];
@@ -465,6 +465,7 @@ cr.define('options', function() {
       var value = e.value.value;
       this.preloadEngines_ = this.filterBadPreloadEngines_(value.split(','));
       this.updateCheckboxesFromPreloadEngines_();
+      $('language-options-list').updateDeletable();
     },
 
     /**
@@ -541,8 +542,6 @@ cr.define('options', function() {
       // Don't allow removing the language if it's as UI language.
       if (languageCode == templateData.currentUiLanguageCode)
         return false;
-      // Don't allow removing the language if cerntain conditions are met.
-      // See removePreloadEnginesByLanguageCode_() for details.
       return (!cr.isChromeOS ||
               this.canDeleteLanguage_(languageCode));
     },
