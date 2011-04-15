@@ -223,6 +223,7 @@ void PopulateURLResponse(
     load_info.setHTTPStatusCode(info.devtools_info->http_status_code);
     load_info.setHTTPStatusText(WebString::fromUTF8(
         info.devtools_info->http_status_text));
+    load_info.setEncodedDataLength(info.encoded_data_length);
 
     const HeadersVector& request_headers = info.devtools_info->request_headers;
     for (HeadersVector::const_iterator it = request_headers.begin();
