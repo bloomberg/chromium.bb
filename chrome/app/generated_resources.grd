@@ -5471,7 +5471,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!-- Enterprise enrollment strings -->
 
       <!-- Print Preview -->
-      <message name="IDS_PRINT_PREVIEW_TITLE" desc="Fallback title for print preview page ">
+      <message name="IDS_PRINT_PREVIEW_TITLE" desc="Fallback title for print preview page.">
         Print Preview
       </message>
       <message name="IDS_PRINT_PREVIEW_TITLE_FORMAT" desc="The format for the print preview page title.">
@@ -5494,6 +5494,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PRINT_PREVIEW_OPTION_ALL_PAGES" desc="Option to print all pages.">
         All
+      </message>
+      <message name="IDS_PRINT_PREVIEW_DESTINATION_LABEL" desc="Destination option label. It is displayed right on top of the available printers list.">
+        Destination
+      </message>
+      <message name="IDS_PRINT_PREVIEW_BINDING_LABEL" desc="Binding option label.">
+        Binding
+      </message>
+      <message name="IDS_PRINT_PREVIEW_OPTION_LONG_EDGE_BINDING" desc="Option to specify long edge binding when duplex printing is used.">
+        Long-edge binding
+      </message>
+      <message name="IDS_PRINT_PREVIEW_OPTION_SHORT_EDGE_BINDING" desc="Option to specify short edge binding when duplex printing is used.">
+        Short-edge binding
       </message>
       <message name="IDS_PRINT_PREVIEW_OPTION_BW" desc="Option to print in black and white.">
         Black and white
@@ -5532,16 +5544,31 @@ Keep your key file in a safe place. You will need it to create new versions of y
         page range radio button
       </message>
       <message name="IDS_PRINT_PREVIEW_PAGE_RANGE_INVALID_TOOL_TIP"
-               desc="Tooltip text shown in invalid page range text">
+               desc="Tooltip text shown in invalid page range text.">
         Invalid page range
       </message>
       <message name="IDS_PRINT_PREVIEW_INVALID_COPIES_TOOL_TIP"
-               desc="Tooltip text shown in invalid number of copies text">
-        Invalid number
+               desc="Tooltip text shown in invalid number of copies text.">
+        Invalid number of copies
       </message>
       <message name="IDS_PRINT_PREVIEW_PRINT_TO_PDF"
                desc="Option shown on printer drop-down list for saving previewed document to PDF.">
         Print to PDF
+      </message>
+      <message name="IDS_PRINT_PREVIEW_SUMMARY_FORMAT" desc="Print summary, explaining to the user how many pages will be printed.">
+        Total: <ph name="NUMBER_OF_PAGES">$1<ex>4</ex></ph> <ph name="PAGE_OR_PAGES_LABEL">$2<ex>Pages</ex></ph> <ph name="TWO_SIDED">$3<ex>(two-sided)</ex></ph> <ph name="TIMES">$4<ex>x</ex></ph> <ph name="NUMBER_OF_COPIES">$5<ex>2</ex></ph> <ph name="COPIES_LABEL">$6<ex>copies</ex></ph> <ph name="EQUAL_SIGN">$7<ex>=</ex></ph> <ph name="NUMBER_OF_SHEETS">$8<ex>10</ex></ph> <ph name="SHEETS_LABEL">$9<ex>sheets of paper</ex></ph>
+      </message>
+      <message name="IDS_PRINT_PREVIEW_SHEETS_LABEL" desc="Label shown in the print preview summary.">
+        sheets of paper
+      </message>
+      <message name="IDS_PRINT_PREVIEW_PAGE_LABEL_SINGULAR" desc="Label shown in the print preview summary.">
+        page
+      </message>
+      <message name="IDS_PRINT_PREVIEW_PAGE_LABEL_PLURAL" desc="Label shown in the print preview summary.">
+        pages
+      </message>
+      <message name="IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION" desc="Option allowing the user to use the native print system dialog instead of printing through the print preview mechanism.">
+        Print using system dialog…
       </message>
 
       <!-- Load State -->

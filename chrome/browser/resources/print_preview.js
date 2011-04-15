@@ -12,25 +12,25 @@ var printJobTitle = '';
  * Window onload handler, sets up the page.
  */
 function load() {
+  initializeAnimation();
+
+  updateSummary();
+
   $('printer-list').disabled = true;
   $('print-button').disabled = true;
-
   $('print-button').addEventListener('click', printFile);
-
   $('cancel-button').addEventListener('click', function(e) {
     window.close();
   });
 
-  $('pages').addEventListener('input', selectPageRange);
-  $('pages').addEventListener('blur', validatePageRangeInfo);
-  $('all-pages').addEventListener('click', handlePrintAllPages);
-  $('print-pages').addEventListener('click', validatePageRangeInfo);
   $('copies').addEventListener('input', validateNumberOfCopies);
   $('copies').addEventListener('blur', handleCopiesFieldBlur);
-  $('layout').onchange = getPreview;
-  $('color').onchange = getPreview;
+  $('individual-pages').addEventListener('blur', handlePageRangesFieldBlur);
+  $('landscape').onclick = getPreview;
+  $('portrait').onclick = getPreview;
+  $('color').onclick = getPreview;
+  $('bw').onclick = getPreview;
 
-  updateCollateCheckboxState();
   chrome.send('getPrinters');
 };
 
@@ -48,31 +48,28 @@ function validateNumberOfCopies() {
   copiesField.setCustomValidity(message);
   copiesField.title = message;
   updatePrintButtonState();
-  updateCollateCheckboxState();
 }
 
 /**
  * Handles copies field blur event.
  */
 function handleCopiesFieldBlur() {
-  checkAndSetInputFieldDefaultValue($('copies'), 1);
+  checkAndSetCopiesField();
+  printSettingChanged();
 }
 
 /**
- * Updates the state of collate checkbox.
- *
- * Depending on the validity of 'copies' value, enables/disables the collate
- * checkbox.
+ * Handles page ranges field blur event.
+ */
+function handlePageRangesFieldBlur() {
+  checkAndSetPageRangesField();
+}
+
+/**
+ * Depending on 'copies' value, shows/hides the collate checkbox.
  */
 function updateCollateCheckboxState() {
-  var copiesField = $('copies');
-  var collateField = $('collate');
-  collateField.disabled = !(copiesField.checkValidity() &&
-                            copiesField.value > 1);
-  if (collateField.disabled)
-    $('collateOptionLabel').classList.add('disabled-label-text');
-  else
-    $('collateOptionLabel').classList.remove('disabled-label-text');
+  $('collate-option').hidden = getCopies() <= 1;
 }
 
 /**
@@ -91,74 +88,50 @@ function isNumberOfCopiesValid() {
 }
 
 /**
- * Checks whether the input field text is empty or not. If the value is empty,
- * sets the input field default value.
- * @param {HTMLElement} inpElement An input element.
- * @param {string} defaultVal Input field default value.
+ * Checks the value of the copies field. If it is a valid number it does
+ * nothing. If it can only parse the first part of the string it replaces the
+ * string with the first part. Example: '123abcd' becomes '123'.
+ * If the string can't be parsed at all it replaces with 1.
  */
-function checkAndSetInputFieldDefaultValue(inpElement, defaultVal) {
-  var inpElementText = inpElement.value.replace(/\s/g, '');
-  if (inpElementText == '')
-    inpElement.value = defaultVal;
+function checkAndSetCopiesField() {
+  var copiesField = $('copies');
+  var copies = parseInt(copiesField.value, 10);
+  if (isNaN(copies))
+    copies = 1;
+  copiesField.value = copies;
+  updateSummary();
 }
 
 /**
- * Validates the 'from' and 'to' values of page range.
- * @param {string} printFromText The 'from' value of page range.
- * @param {string} printToText The 'to' value of page range.
- * @return {boolean} true if the page range is valid else returns false.
+ * Checks the value of the page ranges text field. It parses the page ranges and
+ * normalizes them. For example: '1,2,3,5,9-10' becomes '1-3, 5, 9-10'.
+ * If it can't parse the whole string it will replace with the part it parsed.
+ * For example: '1-6,9-10,sd343jf' becomes '1-6, 9-10'. If the specified page
+ * range includes all pages it replaces it with the empty string (so that the
+ * example text is automatically shown.
+ *
  */
-function isValidPageRange(printFromText, printToText) {
-  var numericExp = /^[0-9]+$/;
-  if (numericExp.test(printFromText) && numericExp.test(printToText)) {
-    var printFrom = Number(printFromText);
-    var printTo = Number(printToText);
-    if (printFrom <= printTo && printFrom != 0 && printTo != 0 &&
-        printTo <= expectedPageCount) {
-      return true;
-    }
+function checkAndSetPageRangesField() {
+  var pageRanges = getPageRanges();
+  var parsedPageRanges = '';
+  var individualPagesField = $('individual-pages');
+
+  if (pageRanges.length == 1 && pageRanges[0].from == 1 &&
+          pageRanges[0].to == expectedPageCount) {
+    individualPagesField.value = parsedPageRanges;
+    return;
   }
-  return false;
-}
 
-/**
- * Parses the given page range text and populates |pageRangesInfo| array.
- *
- * If the page range text is valid, this function populates the |pageRangesInfo|
- * array with page range objects and returns true. Each page range object has
- * 'from' and 'to' fields with values.
- *
- * If the page range text is invalid, returns false.
- *
- * E.g.: If the page range text is specified as '1-3,7-9,8', create an array
- * with three objects [{from:1, to:3}, {from:7, to:9}, {from:8, to:8}].
- *
- * @return {boolean} true if page range text parsing is successful else false.
- */
-function parsePageRanges() {
-  var pageRangeText = $('pages').value;
-  var pageRangeList = pageRangeText.replace(/\s/g, '').split(',');
-  pageRangesInfo = [];
-  for (var i = 0; i < pageRangeList.length; i++) {
-    var tempRange = pageRangeList[i].split('-');
-    var tempRangeLen = tempRange.length;
-    var printFrom = tempRange[0];
-    var printTo;
-    if (tempRangeLen > 2)
-      return false;  // Invalid page range (E.g.: 1-2-3).
-    else if (tempRangeLen > 1)
-      printTo = tempRange[1];
+  for (var i = 0; i < pageRanges.length; i++) {
+    if (pageRanges[i].from == pageRanges[i].to)
+      parsedPageRanges += pageRanges[i].from;
     else
-      printTo = tempRange[0];
-
-    // Validate the page range information.
-    if (!isValidPageRange(printFrom, printTo))
-      return false;
-
-    pageRangesInfo.push({'from': parseInt(printFrom, 10),
-                         'to': parseInt(printTo, 10)});
+      parsedPageRanges += pageRanges[i].from + '-' + pageRanges[i].to;
+    if (i < pageRanges.length - 1)
+      parsedPageRanges += ', ';
   }
-  return true;
+  individualPagesField.value = parsedPageRanges;
+  updateSummary();
 }
 
 /**
@@ -167,7 +140,7 @@ function parsePageRanges() {
  * @return {boolean} true if layout is 'landscape'.
  */
 function isLandscape() {
-  return ($('layout').options[$('layout').selectedIndex].value == '1');
+  return $('landscape').checked;
 }
 
 /**
@@ -176,7 +149,7 @@ function isLandscape() {
  * @return {boolean} true if color is 'color'.
  */
 function isColor() {
-  return ($('color').options[$('color').selectedIndex].value == '1');
+  return $('color').checked;
 }
 
 /**
@@ -186,7 +159,30 @@ function isColor() {
  */
 function isCollated() {
   var collateField = $('collate');
-  return (!collateField.disabled && collateField.checked);
+  return !collateField.disabled && collateField.checked;
+}
+
+/**
+ * Returns the number of copies currently indicated in the copies textfield. If
+ * the contents of the textfield can not be converted to a number or if <1 it
+ * returns 1.
+ *
+ * @return {number} number of copies.
+ */
+function getCopies() {
+  var copies = parseInt($('copies').value, 10);
+  if (!copies || copies <= 1)
+    copies = 1;
+  return copies;
+}
+
+/**
+ * Checks whether the preview two-sided checkbox is checked.
+ *
+ * @return {boolean} true if two-sided is checked.
+ */
+function isTwoSided() {
+  return $('two-sided').checked;
 }
 
 /**
@@ -200,21 +196,16 @@ function getSettingsJSON() {
   if (selectedPrinter >= 0)
     printerName = $('printer-list').options[selectedPrinter].textContent;
   var printAll = $('all-pages').checked;
-  var twoSided = $('two-sided').checked;
-  var copies = parseInt($('copies').value, 10);
-  var collate = isCollated();
-  var landscape = isLandscape();
-  var color = isColor();
   var printToPDF = (printerName == localStrings.getString('printToPDF'));
 
   return JSON.stringify({'printerName': printerName,
-                         'pageRange': pageRangesInfo,
+                         'pageRange': getPageRanges(),
                          'printAll': printAll,
-                         'twoSided': twoSided,
-                         'copies': copies,
-                         'collate': collate,
-                         'landscape': landscape,
-                         'color': color,
+                         'twoSided': isTwoSided(),
+                         'copies': getCopies(),
+                         'collate': isCollated(),
+                         'landscape': isLandscape(),
+                         'color': isColor(),
                          'printToPDF': printToPDF});
 }
 
@@ -234,8 +225,8 @@ function getPreview() {
 
 /**
  * Fill the printer list drop down.
- * @param {array} printers Array of printer names.
- * @param {int} defaultPrinterIndex The index of the default printer.
+ * @param {Array} printers Array of printer names.
+ * @param {number} defaultPrinterIndex The index of the default printer.
  */
 function setPrinters(printers, defaultPrinterIndex) {
   if (printers.length > 0) {
@@ -289,11 +280,7 @@ function onPDFLoad() {
  */
 function updatePrintPreview(pageCount, jobTitle) {
   // Set the expected page count.
-  if (expectedPageCount != pageCount) {
-    expectedPageCount = pageCount;
-    // Set the initial page range text.
-    $('pages').value = '1-' + expectedPageCount;
-  }
+  expectedPageCount = pageCount;
 
   // Set the print job title.
   printJobTitle = jobTitle;
@@ -302,6 +289,8 @@ function updatePrintPreview(pageCount, jobTitle) {
   document.title = localStrings.getStringF('printPreviewTitleFormat', jobTitle);
 
   createPDFPlugin();
+
+  updateSummary();
 }
 
 /**
@@ -342,45 +331,6 @@ function createPDFPlugin() {
   pdfPlugin.onload('onPDFLoad()');
 }
 
-function selectPageRange() {
-  $('print-pages').checked = true;
-}
-
-/**
- * Validates the page range text.
- *
- * If the page range text is an empty string, initializes the text value to
- * a default page range and updates the state of print button.
- *
- * If the page range text is not an empty string, parses the page range text
- * for validation. If the specified page range text is valid, |pageRangesInfo|
- * array will have the page ranges information.
- * If the specified page range is invalid, displays an invalid warning icon on
- * the text box and sets the error message as the title message of text box.
- */
-function validatePageRangeInfo() {
-  var pageRangeField = $('pages');
-
-  checkAndSetInputFieldDefaultValue(pageRangeField, ('1-' + expectedPageCount));
-
-  if ($('print-pages').checked) {
-    var message = '';
-    if (!parsePageRanges())
-      message = localStrings.getString('pageRangeInvalidTitleToolTip');
-    pageRangeField.setCustomValidity(message);
-    pageRangeField.title = message;
-  }
-  updatePrintButtonState();
-}
-
-/**
- * Handles the 'All' pages option click event.
- */
-function handlePrintAllPages() {
-  pageRangesInfo = [];
-  updatePrintButtonState();
-}
-
 /**
  * Updates the state of print button depending on the user selection.
  *
@@ -392,8 +342,151 @@ function handlePrintAllPages() {
  */
 function updatePrintButtonState() {
   $('print-button').disabled = (!($('all-pages').checked ||
-                                  $('pages').checkValidity()) ||
+                                  $('individual-pages').checkValidity()) ||
                                 !$('copies').checkValidity());
 }
 
 window.addEventListener('DOMContentLoaded', load);
+
+/**
+ * Listener function that executes whenever any of the available settings
+ * is changed.
+ */
+function printSettingChanged() {
+  updateCollateCheckboxState();
+  updateSummary();
+}
+
+/**
+ * Updates the print summary based on the currently selected user options.
+ *
+ */
+function updateSummary() {
+  var html = '';
+  var pageList = getPageList();
+  var copies = getCopies();
+  var printButton = $('print-button');
+  var printSummary = $('print-summary');
+
+  if (isNaN($('copies').value)) {
+    html = localStrings.getString('invalidNumberOfCopiesTitleToolTip');
+    printSummary.innerHTML = html;
+    return;
+  }
+
+  if (pageList.length <= 0) {
+    html = localStrings.getString('pageRangeInvalidTitleToolTip');
+    printSummary.innerHTML = html;
+    printButton.disabled = true;
+    return;
+  }
+
+  var pagesLabel = localStrings.getString('printPreviewPageLabelSingular');
+  var twoSidedLabel = '';
+  var timesSign = '';
+  var numOfCopies = '';
+  var copiesLabel = '';
+  var equalSign = '';
+  var numOfSheets = '';
+  var sheetsLabel = '';
+
+  printButton.disabled = false;
+
+  if (pageList.length > 1)
+    pagesLabel = localStrings.getString('printPreviewPageLabelPlural');
+
+  if (isTwoSided())
+    twoSidedLabel = '('+localStrings.getString('optionTwoSided')+')';
+
+  if (copies > 1) {
+    timesSign = '×';
+    numOfCopies = copies;
+    copiesLabel = localStrings.getString('copiesLabel').toLowerCase();
+  }
+
+  if ((copies > 1) || (isTwoSided())) {
+    numOfSheets = pageList.length;
+
+    if (isTwoSided())
+      numOfSheets = Math.ceil(numOfSheets / 2);
+
+    equalSign = '=';
+    numOfSheets *= copies;
+    sheetsLabel = localStrings.getString('printPreviewSheetsLabel');
+  }
+
+  html = localStrings.getStringF('printPreviewSummaryFormat', pageList.length,
+                                  pagesLabel, twoSidedLabel, timesSign,
+                                  numOfCopies, copiesLabel, equalSign,
+                                  '<strong>'+numOfSheets+'</strong>',
+                                  '<strong>'+sheetsLabel+'</strong>');
+
+  // Removing extra spaces from within the string.
+  html.replace(/\s{2,}/g, ' ');
+  printSummary.innerHTML = html;
+}
+
+/**
+ * Handles a click event on the two-sided option.
+ */
+function handleTwoSidedClick(event) {
+  var el = $('binding');
+  handleZippyClickEl(el);
+  printSettingChanged(event);
+}
+
+/**
+ * Returns a list of all pages in the specified ranges. If the page ranges can't
+ * be parsed an empty list is returned.
+ *
+ * @return {Array}
+ */
+function getPageList() {
+  var pageText = $('individual-pages').value;
+
+  if ($('all-pages').checked || pageText == '')
+    pageText = '1-' + expectedPageCount;
+
+  var pageList = [];
+  var parts = pageText.split(/,/);
+
+  for (var i = 0; i < parts.length; i++) {
+    var part = parts[i];
+    var match = part.match(/([0-9]+)-([0-9]+)/);
+
+    if (match && match[1] && match[2]) {
+      var from = parseInt(match[1], 10);
+      var to = parseInt(match[2], 10);
+
+      if (from && to) {
+        for (var j = from; j <= to; j++)
+          if (j <= expectedPageCount)
+            pageList.push(j);
+      }
+    } else if (parseInt(part, 10)) {
+      if (parseInt(part, 10) <= expectedPageCount)
+        pageList.push(parseInt(part, 10));
+    }
+  }
+  return pageList;
+}
+
+/**
+ * Parses the selected page ranges, processes them and returns the results.
+ * It squashes whenever possible. Example '1-2,3,5-7' becomes 1-3,5-7
+ *
+ * @return {Array} an array of page range objects. A page range object has
+ *     fields 'from' and 'to'.
+ */
+function getPageRanges() {
+  var pageList = getPageList();
+  var pageRanges = [];
+  for (var i = 0; i < pageList.length; i++) {
+    tempFrom = pageList[i];
+    while (i + 1 < pageList.length && pageList[i + 1] == pageList[i] + 1)
+      i++;
+    tempTo = pageList[i];
+    pageRanges.push({'from': tempFrom, 'to': tempTo});
+  }
+  return pageRanges;
+}

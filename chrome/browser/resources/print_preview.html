@@ -1,90 +1,138 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html i18n-values="dir:textdirection;">
 <head>
 <meta charset="utf-8">
 <title i18n-content="title"></title>
 <link rel="icon" href="../../app/theme/print_preview_favicon.png">
-
 <link rel="stylesheet" href="webui.css">
 <link rel="stylesheet" href="print_preview.css">
-
 <script src="chrome://resources/js/local_strings.js"></script>
 <script src="chrome://resources/js/util.js"></script>
 <script src="print_preview.js"></script>
+<script src="print_preview_animations.js"></script>
 </head>
-<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
-<div id="navbar-container">
-  <div id="destination-container">
-    <h1>Destination</h1>
-    <select id="printer-list"></select>
-    <div id="buttons">
-      <button id="print-button" i18n-content="printButton"></button>
-      <button id="cancel-button" i18n-content="cancelButton"></button>
+<body>
+  <div class="sidebar">
+    <div class="scrollbar-inside">
+    <header>
+      <h1 i18n-content="title"></h1>
+    </header>
+    <section class="body">
+      <section class="text form">
+        <div class="main">
+          <span id="print-summary"></span>
+          <button id="print-button" i18n-content="printButton"
+              class="default"></button>
+          <button id="cancel-button" i18n-content="cancelButton"></button>
+        </div>
+        <hr>
+        <h3 i18n-content="destinationLabel"></h3>
+        <div>
+          <select id="printer-list"></select>
+        </div>
+        <hr>
+        <div class="left-label">
+          <h3 i18n-content="pagesLabel"></h3>
+          <div class="options-block">
+            <div>
+              <input name="pages" checked type="radio"
+                  onclick="printSettingChanged()" id="all-pages">
+              <label for="all-pages" i18n-content="optionAllPages"></label>
+            </div>
+            <div>
+              <input name="pages" type="radio" onclick="printSettingChanged()"
+                  id="print-pages">
+              <label for="print-pages">
+                <input id="individual-pages" type="text"
+                    class="medium with-hint"
+                    i18n-values="placeholder:examplePageRangeText"
+                    name="individual-pages" oninput="printSettingChanged()">
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="left-label">
+          <div class="options-block">
+            <input name="two-sided" type="checkbox" id="two-sided"
+                onclick="handleTwoSidedClick(event)">
+              <label for="two-sided" i18n-content="optionTwoSided"></label>
+          </div>
+        </div>
+        <div class="left-label">
+          <div class="hidden-section" id="binding">
+            <div class="extra" style="margin-top: -10px">
+              <h3 i18n-content="bindingLabel"></h3>
+              <div class="options-block">
+                <div>
+                  <input type="radio" name="binding" checked id="long-edge"
+                      onclick="printSettingChanged()">
+                  <label for="long-edge"
+                      i18n-content="optionLongEdgeBinding"></label>
+                </div>
+                <div>
+                  <input type="radio" name="binding" id="short-edge"
+                      onclick="printSettingChanged()">
+                  <label for="short-edge"
+                      i18n-content="optionShortEdgeBinding"></label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="left-label">
+          <h3 i18n-content="copiesLabel"></h3>
+          <div class="options-block">
+            <input type="text" name="copies" id="copies" value="1" class="small"
+                oninput="printSettingChanged()">
+            <span id="collate-option" hidden>
+              <input name="collate" type="checkbox" id="collate">
+              <label for="collate" i18n-content="optionCollate"></label>
+            </span>
+          </div>
+        </div>
+        <hr>
+        <div class="left-label">
+          <h3 i18n-content="layoutLabel"></h3>
+          <div class="options-block">
+            <div>
+              <input type="radio" name="layout" checked id="portrait"
+                  onclick="printSettingChanged()">
+              <label for="portrait" i18n-content="optionPortrait"></label>
+            </div>
+            <div>
+              <input type="radio" name="layout" id="landscape"
+                  onclick="printSettingChanged()">
+              <label for="landscape" i18n-content="optionLandscape"></label>
+            </div>
+          </div>
+        </div>
+        <hr>
+        <div class="left-label">
+          <h3 i18n-content="optionColor"></h3>
+          <div class="options-block">
+            <div>
+              <input type="radio" name="color" type="color" id="color"
+                  onclick="printSettingChanged()">
+              <label for="color" i18n-content="optionColor"></label>
+            </div>
+            <div>
+              <input type="radio" name="color" checked type="bw" id="bw"
+                  onclick="printSettingChanged()">
+              <label for="bw" i18n-content="optionBw"></label>
+            </div>
+          </div>
+        </div>
+        <hr>
+        <div>
+          <a i18n-content="systemDialogOption"></a>
+        </div>
+      </section>
+    </section>
     </div>
   </div>
-
-  <section>
-    <h3 i18n-content="pagesLabel"></h3>
-    <div class="option">
-      <div class="radio">
-        <input id="all-pages" type="radio" name="pages-group" checked>
-        <label for="all-pages" i18n-content="optionAllPages"></label>
-      </div>
-      <div class="pages-option radio">
-        <input id="print-pages" type="radio" name="pages-group"
-            i18n-values="aria-label:pageRangeRadio">
-        <div>
-          <input id="pages" type="text" class="validating"
-              i18n-values="aria-label:pageRangeTextBox">
-          <div id="example-text" i18n-content="examplePageRangeText"></div>
-        </div>
-      </div>
-      <div>
-        <input id="two-sided" type="checkbox">
-        <label for="two-sided" i18n-content="optionTwoSided"></label>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <h3 i18n-content="copiesLabel"></h3>
-    <div class="option">
-      <input id="copies" type="text" value="1" class="validating"></input>
-      <div>
-        <label>
-          <input id="collate" type="checkbox">
-          <span id="collateOptionLabel" i18n-content="optionCollate"></span>
-        </label>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <h3 i18n-content="layoutLabel"></h3>
-    <div>
-      <select id="layout">
-        <option value="0" i18n-content="optionPortrait"></option>
-        <option value="1" i18n-content="optionLandscape"></option>
-      </select>
-    </div>
-  </section>
-
-  <section>
-    <h3 i18n-content="optionColor"></h3>
-    <div>
-      <select id="color">
-        <option value="0" i18n-content="optionBw"></option>
-        <option value="1" i18n-content="optionColor"></option>
-      </select>
-    </div>
-  </section>
-
-</div>
-<div id="separator"></div>
-<div id="mainview">
-  <p id="loading" i18n-content="loading"></p>
-  <p id="no-plugin" class="hidden" i18n-content="noPlugin"></p>
-</div>
-
+  <div id="mainview">
+      <p id="loading" i18n-content="loading"></p>
+      <p id="no-plugin" class="hidden" i18n-content="noPlugin"></p>
+  </div>
 </body>
 </html>
