@@ -59,8 +59,7 @@ bool AppCacheBackendImpl::SetSpawningHostId(
   AppCacheHost* host = GetHost(host_id);
   if (!host)
     return false;
-  // TODO(michaeln): Write me, see the bug for details.
-  // http://code.google.com/p/chromium/issues/detail?id=68479
+  host->SetSpawningHostId(process_id_, spawning_host_id);
   return true;
 }
 

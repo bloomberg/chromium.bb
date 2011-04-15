@@ -83,8 +83,10 @@ void MockAppCacheStorage::StoreGroupAndNewestCache(
 }
 
 void MockAppCacheStorage::FindResponseForMainRequest(
-    const GURL& url, Delegate* delegate) {
+    const GURL& url, const GURL& preferred_manifest_url, Delegate* delegate) {
   DCHECK(delegate);
+
+  // Note: MockAppCacheStorage does not respect the preferred_manifest_url.
 
   // Always make this operation look async.
   ScheduleTask(method_factory_.NewRunnableMethod(

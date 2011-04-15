@@ -53,7 +53,7 @@ WebApplicationCacheHostImpl* WebApplicationCacheHostImpl::FromId(int id) {
 }
 
 WebApplicationCacheHostImpl* WebApplicationCacheHostImpl::FromFrame(
-    WebFrame* frame) {
+    const WebFrame* frame) {
   if (!frame)
     return NULL;
   WebDataSource* data_source = frame->dataSource();
@@ -166,10 +166,15 @@ void WebApplicationCacheHostImpl::willStartMainResourceRequest(
   DCHECK(method == StringToUpperASCII(method));
 
   if (frame) {
-    if (WebApplicationCacheHostImpl* parent = FromFrame(frame->parent()))
-      backend_->SetSpawningHostId(host_id_, parent->host_id());
-    else if (WebApplicationCacheHostImpl* opener = FromFrame(frame->opener()))
-      backend_->SetSpawningHostId(host_id_, opener->host_id());
+    const WebFrame* spawning_frame = frame->parent();
+    if (!spawning_frame)
+      spawning_frame = frame->opener();
+    if (!spawning_frame)
+      spawning_frame = frame;
+
+    WebApplicationCacheHostImpl* spawning_host = FromFrame(spawning_frame);
+    if (spawning_host && (spawning_host != this))
+      backend_->SetSpawningHostId(host_id_, spawning_host->host_id());
   }
 }
 

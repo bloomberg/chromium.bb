@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -223,6 +223,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     fallback_job = handler_->MaybeLoadFallbackForResponse(request_.get());
     EXPECT_FALSE(fallback_job);
 
+    EXPECT_TRUE(host_->preferred_manifest_url().is_empty());
+
     TestFinished();
   }
 
@@ -263,6 +265,9 @@ class AppCacheRequestHandlerTest : public testing::Test {
     AppCacheURLRequestJob* fallback_job;
     fallback_job = handler_->MaybeLoadFallbackForResponse(request_.get());
     EXPECT_FALSE(fallback_job);
+
+    EXPECT_EQ(GURL("http://blah/manifest/"),
+              host_->preferred_manifest_url());
 
     TestFinished();
   }
@@ -317,6 +322,9 @@ class AppCacheRequestHandlerTest : public testing::Test {
     EXPECT_TRUE(host_->main_resource_was_fallback_);
     EXPECT_EQ(GURL("http://blah/fallbackurl"), host_->fallback_url_);
 
+    EXPECT_EQ(GURL("http://blah/manifest/"),
+              host_->preferred_manifest_url());
+
     TestFinished();
   }
 
@@ -366,6 +374,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     // Precondition, the host is waiting on cache selection.
     scoped_refptr<AppCache> cache(MakeNewCache());
     host_->pending_selected_cache_id_ = cache->cache_id();
+    host_->set_preferred_manifest_url(cache->owning_group()->manifest_url());
 
     request_.reset(new MockURLRequest(GURL("http://blah/")));
     handler_.reset(host_->CreateRequestHandler(request_.get(),

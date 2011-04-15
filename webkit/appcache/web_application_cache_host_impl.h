@@ -25,7 +25,7 @@ class WebApplicationCacheHostImpl : public WebKit::WebApplicationCacheHost {
   static WebApplicationCacheHostImpl* FromId(int id);
 
   // Returns the host associated with the current document in frame.
-  static WebApplicationCacheHostImpl* FromFrame(WebKit::WebFrame* frame);
+  static WebApplicationCacheHostImpl* FromFrame(const WebKit::WebFrame* frame);
 
   WebApplicationCacheHostImpl(WebKit::WebApplicationCacheHostClient* client,
                               AppCacheBackend* backend);

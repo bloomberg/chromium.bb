@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -509,12 +509,13 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
 
 void AppCacheStorageImpl::StoreGroupAndCacheTask::RunCompleted() {
   if (success_) {
-    // TODO(kkanetkar): Add to creation time when that's enabled.
     storage_->origins_with_groups_.insert(group_->manifest_url().GetOrigin());
     if (cache_ != group_->newest_complete_cache()) {
       cache_->set_complete(true);
       group_->AddCache(cache_);
     }
+    if (group_->creation_time().is_null())
+      group_->set_creation_time(group_record_.creation_time);
     group_->AddNewlyDeletableResponseIds(&newly_deletable_response_ids_);
   }
   FOR_EACH_DELEGATE(delegates_,
@@ -536,9 +537,13 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::CancelCompletion() {
 
 class AppCacheStorageImpl::FindMainResponseTask : public DatabaseTask {
  public:
-  FindMainResponseTask(AppCacheStorageImpl* storage, const GURL& url,
+  FindMainResponseTask(AppCacheStorageImpl* storage,
+                       const GURL& url,
+                       const GURL& preferred_manifest_url,
                        const AppCacheWorkingSet::GroupMap* groups_in_use)
-      : DatabaseTask(storage), url_(url), cache_id_(kNoCacheId) {
+      : DatabaseTask(storage), url_(url),
+        preferred_manifest_url_(preferred_manifest_url),
+        cache_id_(kNoCacheId) {
     if (groups_in_use) {
       for (AppCacheWorkingSet::GroupMap::const_iterator it =
                groups_in_use->begin();
@@ -555,7 +560,15 @@ class AppCacheStorageImpl::FindMainResponseTask : public DatabaseTask {
   virtual void Run();
   virtual void RunCompleted();
 
+ private:
+  typedef std::vector<AppCacheDatabase::FallbackNameSpaceRecord*>
+      FallbackNameSpaceVector;
+  bool FindExactMatch(int64 preferred_id);
+  bool FindFallback(int64 preferred_id);
+  bool FindFirstValidFallback(const FallbackNameSpaceVector& fallbacks);
+
   GURL url_;
+  GURL preferred_manifest_url_;
   std::set<int64> cache_ids_in_use_;
   AppCacheEntry entry_;
   AppCacheEntry fallback_entry_;
@@ -566,6 +579,32 @@ class AppCacheStorageImpl::FindMainResponseTask : public DatabaseTask {
 
 // Helpers for FindMainResponseTask::Run()
 namespace {
+class SortByCachePreference
+    : public std::binary_function<
+        AppCacheDatabase::EntryRecord,
+        AppCacheDatabase::EntryRecord,
+        bool> {
+ public:
+  SortByCachePreference(int64 preferred_id, const std::set<int64>& in_use_ids)
+      : preferred_id_(preferred_id), in_use_ids_(in_use_ids) {
+  }
+  bool operator()(
+      const AppCacheDatabase::EntryRecord& lhs,
+      const AppCacheDatabase::EntryRecord& rhs) {
+    return compute_value(lhs) > compute_value(rhs);
+  }
+ private:
+  int compute_value(const AppCacheDatabase::EntryRecord& entry) {
+    if (entry.cache_id == preferred_id_)
+      return 100;
+    else if (in_use_ids_.find(entry.cache_id) != in_use_ids_.end())
+      return 50;
+    return 0;
+  }
+  int64 preferred_id_;
+  const std::set<int64>& in_use_ids_;
+};
+
 bool SortByLength(
     const AppCacheDatabase::FallbackNameSpaceRecord& lhs,
     const AppCacheDatabase::FallbackNameSpaceRecord& rhs) {
@@ -609,99 +648,150 @@ class NetworkNamespaceHelper {
   WhiteListMap namespaces_map_;
   AppCacheDatabase* database_;
 };
+
+bool FindManifestForEntry(
+    const AppCacheDatabase::EntryRecord& entry_record,
+    AppCacheDatabase* database,
+    GURL* manifest_url_out) {
+  AppCacheDatabase::GroupRecord group_record;
+  if (!database->FindGroupForCache(entry_record.cache_id, &group_record)) {
+    NOTREACHED() << "A cache without a group is not expected.";
+    return false;
+  }
+  *manifest_url_out = group_record.manifest_url;
+  return true;
+}
+
 }  // namespace
 
 void AppCacheStorageImpl::FindMainResponseTask::Run() {
-  // We have a bias for hits from caches that are in use.
+  // NOTE: The heuristics around choosing amoungst multiple candidates
+  // is underspecified, and just plain not fully understood. This needs
+  // to be refined.
 
-  // TODO(michaeln): The heuristics around choosing amoungst
-  // multiple candidates is under specified, and just plain
-  // not fully understood. Refine these over time. In particular,
-  // * prefer candidates from newer caches
-  // * take into account the cache associated with the document
-  //   that initiated the navigation
-  // * take into account the cache associated with the document
-  //   currently residing in the frame being navigated
+  // The 'preferred_manifest_url' is the url of the manifest associated
+  // with the page that opened or embedded the page being loaded now.
+  // We have a strong preference to use resources from that cache.
+  // We also have a lesser bias to use resources from caches that are currently
+  // being used by other unrelated pages.
+  // TODO(michaeln): come up with a 'preferred_manifest_url' in more cases
+  // - when navigating a frame whose current contents are from an appcache
+  // - when clicking an href in a frame that is appcached
+  int64 preferred_cache_id = kNoCacheId;
+  if (!preferred_manifest_url_.is_empty()) {
+    AppCacheDatabase::GroupRecord preferred_group;
+    AppCacheDatabase::CacheRecord preferred_cache;
+    if (database_->FindGroupForManifestUrl(
+            preferred_manifest_url_, &preferred_group) &&
+        database_->FindCacheForGroup(
+            preferred_group.group_id, &preferred_cache)) {
+      preferred_cache_id = preferred_cache.cache_id;
+    }
+  }
 
-  // First look for an exact match. We don't worry about whether
-  // the containing cache is in-use in this loop because the
-  // storage class's FindResponseForMainRequest method does that
-  // as a pre-optimization.
+  if (FindExactMatch(preferred_cache_id) ||
+      FindFallback(preferred_cache_id)) {
+    // We found something.
+    DCHECK(cache_id_ != kNoCacheId && !manifest_url_.is_empty());
+    return;
+  }
+
+  // We didn't find anything.
+  DCHECK(cache_id_ == kNoCacheId && manifest_url_.is_empty());
+}
+
+bool AppCacheStorageImpl::
+FindMainResponseTask::FindExactMatch(int64 preferred_cache_id) {
   std::vector<AppCacheDatabase::EntryRecord> entries;
   if (database_->FindEntriesForUrl(url_, &entries) && !entries.empty()) {
+    // Sort them in order of preference, from the preferred_cache first,
+    // followed by hits from caches that are 'in use', then the rest.
+    std::sort(entries.begin(), entries.end(),
+              SortByCachePreference(preferred_cache_id, cache_ids_in_use_));
+
+    // Take the first with a valid, non-foreign entry.
     std::vector<AppCacheDatabase::EntryRecord>::iterator iter;
     for (iter = entries.begin(); iter < entries.end(); ++iter) {
-      if (iter->flags & AppCacheEntry::FOREIGN)
-        continue;
-
-      AppCacheDatabase::GroupRecord group_record;
-      if (!database_->FindGroupForCache(iter->cache_id, &group_record)) {
-        NOTREACHED() << "A cache without a group is not expected.";
+      if ((iter->flags & AppCacheEntry::FOREIGN) ||
+          !FindManifestForEntry(*iter, database_, &manifest_url_)) {
         continue;
       }
       entry_ = AppCacheEntry(iter->flags, iter->response_id);
       cache_id_ = iter->cache_id;
-      manifest_url_ = group_record.manifest_url;
-      return;
+      return true;  // We found an exact match.
     }
   }
+  return false;
+}
 
-  // No exact matches, look at the fallback namespaces for this origin.
-  std::vector<AppCacheDatabase::FallbackNameSpaceRecord> fallbacks;
-  if (!database_->FindFallbackNameSpacesForOrigin(url_.GetOrigin(), &fallbacks)
-      || fallbacks.empty()) {
-    return;
+bool AppCacheStorageImpl::
+FindMainResponseTask::FindFallback(int64 preferred_cache_id) {
+  std::vector<AppCacheDatabase::FallbackNameSpaceRecord> all_fallbacks;
+  if (!database_->FindFallbackNameSpacesForOrigin(
+          url_.GetOrigin(), &all_fallbacks)
+      || all_fallbacks.empty()) {
+    return false;
   }
 
-  // Sort by namespace url string length, longest to shortest,
-  // since longer matches trump when matching a url to a namespace.
-  std::sort(fallbacks.begin(), fallbacks.end(), SortByLength);
+  // Sort them by length, longer matches within the same cache/bucket take
+  // precedence.
+  std::sort(all_fallbacks.begin(), all_fallbacks.end(), SortByLength);
 
-  bool has_candidate = false;
-  GURL candidate_fallback_namespace;
-  std::vector<AppCacheDatabase::FallbackNameSpaceRecord>::iterator iter;
+  // Filter the list and bin them into buckets.
   NetworkNamespaceHelper network_namespace_helper(database_);
-  for (iter = fallbacks.begin(); iter < fallbacks.end(); ++iter) {
-    // Skip this fallback namespace if the requested url falls into a network
-    // namespace of the containing appcache.
+  FallbackNameSpaceVector preferred_fallbacks;
+  FallbackNameSpaceVector inuse_fallbacks;
+  FallbackNameSpaceVector other_fallbacks;
+  std::vector<AppCacheDatabase::FallbackNameSpaceRecord>::iterator iter;
+  for (iter = all_fallbacks.begin(); iter < all_fallbacks.end(); ++iter) {
+    // Skip those that aren't a prefix match.
+    if (!StartsWithASCII(url_.spec(), iter->namespace_url.spec(), true))
+      continue;
+
+    // Skip fallback namespaces where the requested url falls into a network
+    // namespace of its containing appcache.
     if (network_namespace_helper.IsInNetworkNamespace(url_, iter->cache_id))
       continue;
 
-    if (has_candidate &&
-        (candidate_fallback_namespace.spec().length() >
-         iter->namespace_url.spec().length())) {
-      break;  // Stop iterating since longer namespace prefix matches win.
-    }
+    // Bin them into one of our three buckets.
+    if (iter->cache_id == preferred_cache_id)
+      preferred_fallbacks.push_back(&(*iter));
+    else if (cache_ids_in_use_.find(iter->cache_id) != cache_ids_in_use_.end())
+      inuse_fallbacks.push_back(&(*iter));
+    else
+      other_fallbacks.push_back(&(*iter));
+  }
 
-    if (StartsWithASCII(url_.spec(), iter->namespace_url.spec(), true)) {
-      bool is_cache_in_use = cache_ids_in_use_.find(iter->cache_id) !=
-                             cache_ids_in_use_.end();
+  if (FindFirstValidFallback(preferred_fallbacks) ||
+      FindFirstValidFallback(inuse_fallbacks) ||
+      FindFirstValidFallback(other_fallbacks))
+    return true;  // We found one.
 
-      bool take_new_candidate = !has_candidate || is_cache_in_use;
+  // We didn't find anything.
+  return false;
+}
 
-      AppCacheDatabase::EntryRecord entry_record;
-      if (take_new_candidate &&
-          database_->FindEntry(iter->cache_id, iter->fallback_entry_url,
-                               &entry_record)) {
-        if (entry_record.flags & AppCacheEntry::FOREIGN)
-          continue;
-        AppCacheDatabase::GroupRecord group_record;
-        if (!database_->FindGroupForCache(iter->cache_id, &group_record)) {
-          NOTREACHED() << "A cache without a group is not expected.";
-          continue;
-        }
-        cache_id_ = iter->cache_id;
-        fallback_url_ = iter->fallback_entry_url;
-        manifest_url_ = group_record.manifest_url;
-        fallback_entry_ = AppCacheEntry(
-            entry_record.flags, entry_record.response_id);
-        if (is_cache_in_use)
-          break;  // Stop iterating since we favor hits from in-use caches.
-        candidate_fallback_namespace = iter->namespace_url;
-        has_candidate = true;
+bool AppCacheStorageImpl::
+FindMainResponseTask::FindFirstValidFallback(
+    const FallbackNameSpaceVector& fallbacks) {
+  // Take the first with a valid, non-foreign entry.
+  FallbackNameSpaceVector::const_iterator iter;
+  for (iter = fallbacks.begin(); iter < fallbacks.end();  ++iter) {
+    AppCacheDatabase::EntryRecord entry_record;
+    if (database_->FindEntry((*iter)->cache_id, (*iter)->fallback_entry_url,
+                             &entry_record)) {
+      if ((entry_record.flags & AppCacheEntry::FOREIGN) ||
+          !FindManifestForEntry(entry_record, database_, &manifest_url_)) {
+        continue;
       }
+      cache_id_ = (*iter)->cache_id;
+      fallback_url_ = (*iter)->fallback_entry_url;
+      fallback_entry_ = AppCacheEntry(
+          entry_record.flags, entry_record.response_id);
+      return true;  // We found one.
     }
   }
+  return false;  // We didn't find a match.
 }
 
 void AppCacheStorageImpl::FindMainResponseTask::RunCompleted() {
@@ -1038,7 +1128,8 @@ void AppCacheStorageImpl::StoreGroupAndNewestCache(
 }
 
 void AppCacheStorageImpl::FindResponseForMainRequest(
-    const GURL& url, Delegate* delegate) {
+    const GURL& url, const GURL& preferred_manifest_url,
+    Delegate* delegate) {
   DCHECK(delegate);
 
   const GURL* url_ptr = &url;
@@ -1057,21 +1148,22 @@ void AppCacheStorageImpl::FindResponseForMainRequest(
   const AppCacheWorkingSet::GroupMap* groups_in_use =
       working_set()->GetGroupsInOrigin(origin);
   if (groups_in_use) {
-    for (AppCacheWorkingSet::GroupMap::const_iterator it =
-            groups_in_use->begin();
-         it != groups_in_use->end(); ++it) {
-      AppCacheGroup* group = it->second;
-      AppCache* cache = group->newest_complete_cache();
-      if (group->is_obsolete() || !cache)
-        continue;
-
-      AppCacheEntry* entry = cache->GetEntry(*url_ptr);
-      if (entry && !entry->IsForeign()) {
-        ScheduleSimpleTask(method_factory_.NewRunnableMethod(
-            &AppCacheStorageImpl::DeliverShortCircuitedFindMainResponse,
-            url, *entry, make_scoped_refptr(group), make_scoped_refptr(cache),
-            make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
-        return;
+    if (!preferred_manifest_url.is_empty()) {
+      AppCacheWorkingSet::GroupMap::const_iterator found =
+          groups_in_use->find(preferred_manifest_url);
+      if (found != groups_in_use->end() &&
+          FindResponseForMainRequestInGroup(
+              found->second, *url_ptr, delegate)) {
+          return;
+      }
+    } else {
+      for (AppCacheWorkingSet::GroupMap::const_iterator it =
+              groups_in_use->begin();
+           it != groups_in_use->end(); ++it) {
+        if (FindResponseForMainRequestInGroup(
+                it->second, *url_ptr, delegate)) {
+          return;
+        }
       }
     }
   }
@@ -1091,9 +1183,27 @@ void AppCacheStorageImpl::FindResponseForMainRequest(
 
   // We have to query the database, schedule a database task to do so.
   scoped_refptr<FindMainResponseTask> task(
-      new FindMainResponseTask(this, *url_ptr, groups_in_use));
+      new FindMainResponseTask(this, *url_ptr, preferred_manifest_url,
+                               groups_in_use));
   task->AddDelegate(GetOrCreateDelegateReference(delegate));
   task->Schedule();
+}
+
+bool AppCacheStorageImpl::FindResponseForMainRequestInGroup(
+    AppCacheGroup* group,  const GURL& url, Delegate* delegate) {
+  AppCache* cache = group->newest_complete_cache();
+  if (group->is_obsolete() || !cache)
+    return false;
+
+  AppCacheEntry* entry = cache->GetEntry(url);
+  if (!entry || entry->IsForeign())
+    return false;
+
+  ScheduleSimpleTask(method_factory_.NewRunnableMethod(
+      &AppCacheStorageImpl::DeliverShortCircuitedFindMainResponse,
+      url, *entry, make_scoped_refptr(group), make_scoped_refptr(cache),
+      make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
+  return true;
 }
 
 void AppCacheStorageImpl::DeliverShortCircuitedFindMainResponse(

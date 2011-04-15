@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -394,7 +394,7 @@ TEST_F(MockAppCacheStorageTest, FindNoMainResponse) {
   MockStorageDelegate delegate;
   GURL url("http://blah/some_url");
   EXPECT_NE(url, delegate.found_url_);
-  storage->FindResponseForMainRequest(url, &delegate);
+  storage->FindResponseForMainRequest(url, GURL(), &delegate);
   EXPECT_NE(url, delegate.found_url_);
   MessageLoop::current()->RunAllPending();  // Do async task execution.
   EXPECT_EQ(url, delegate.found_url_);
@@ -431,7 +431,7 @@ TEST_F(MockAppCacheStorageTest, BasicFindMainResponse) {
   // Conduct the test.
   MockStorageDelegate delegate;
   EXPECT_NE(kEntryUrl, delegate.found_url_);
-  storage->FindResponseForMainRequest(kEntryUrl, &delegate);
+  storage->FindResponseForMainRequest(kEntryUrl, GURL(), &delegate);
   EXPECT_NE(kEntryUrl, delegate.found_url_);
   MessageLoop::current()->RunAllPending();  // Do async task execution.
   EXPECT_EQ(kEntryUrl, delegate.found_url_);
@@ -486,7 +486,7 @@ TEST_F(MockAppCacheStorageTest, BasicFindMainFallbackResponse) {
   // Conduct the test.
   MockStorageDelegate delegate;
   EXPECT_NE(kTestUrl, delegate.found_url_);
-  storage->FindResponseForMainRequest(kTestUrl, &delegate);
+  storage->FindResponseForMainRequest(kTestUrl, GURL(), &delegate);
   EXPECT_NE(kTestUrl, delegate.found_url_);
   MessageLoop::current()->RunAllPending();  // Do async task execution.
   EXPECT_EQ(kTestUrl, delegate.found_url_);
@@ -543,7 +543,7 @@ TEST_F(MockAppCacheStorageTest, FindMainResponseWithMultipleCandidates) {
   // since it's "in use".
   MockStorageDelegate delegate;
   EXPECT_NE(kEntryUrl, delegate.found_url_);
-  storage->FindResponseForMainRequest(kEntryUrl, &delegate);
+  storage->FindResponseForMainRequest(kEntryUrl, GURL(), &delegate);
   EXPECT_NE(kEntryUrl, delegate.found_url_);
   MessageLoop::current()->RunAllPending();  // Do async task execution.
   EXPECT_EQ(kEntryUrl, delegate.found_url_);
@@ -589,7 +589,7 @@ TEST_F(MockAppCacheStorageTest, FindMainResponseExclusions) {
 
   // We should not find anything for the foreign entry.
   EXPECT_NE(kEntryUrl, delegate.found_url_);
-  storage->FindResponseForMainRequest(kEntryUrl, &delegate);
+  storage->FindResponseForMainRequest(kEntryUrl, GURL(), &delegate);
   EXPECT_NE(kEntryUrl, delegate.found_url_);
   MessageLoop::current()->RunAllPending();  // Do async task execution.
   EXPECT_EQ(kEntryUrl, delegate.found_url_);
@@ -603,7 +603,7 @@ TEST_F(MockAppCacheStorageTest, FindMainResponseExclusions) {
 
   // We should not find anything for the online namespace.
   EXPECT_NE(kOnlineNamespaceUrl, delegate.found_url_);
-  storage->FindResponseForMainRequest(kOnlineNamespaceUrl, &delegate);
+  storage->FindResponseForMainRequest(kOnlineNamespaceUrl, GURL(), &delegate);
   EXPECT_NE(kOnlineNamespaceUrl, delegate.found_url_);
   MessageLoop::current()->RunAllPending();  // Do async task execution.
   EXPECT_EQ(kOnlineNamespaceUrl, delegate.found_url_);

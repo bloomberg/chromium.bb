@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,9 @@ void FillCacheInfo(
 
 AppCacheHost::AppCacheHost(int host_id, AppCacheFrontend* frontend,
                            AppCacheService* service)
-    : host_id_(host_id), parent_host_id_(kNoHostId), parent_process_id_(0),
+    : host_id_(host_id),
+      spawning_host_id_(kNoHostId), spawning_process_id_(0),
+      parent_host_id_(kNoHostId), parent_process_id_(0),
       pending_main_resource_cache_id_(kNoCacheId),
       pending_selected_cache_id_(kNoCacheId),
       frontend_(frontend), service_(service),
@@ -89,6 +91,7 @@ void AppCacheHost::SelectCache(const GURL& document_url,
     // Note: The client detects if the document was not loaded using HTTP GET
     // and invokes SelectCache without a manifest url, so that detection step
     // is also skipped here. See WebApplicationCacheHostImpl.cc
+    set_preferred_manifest_url(manifest_url);
     new_master_entry_url_ = document_url;
     LoadOrCreateGroup(manifest_url);
     return;
@@ -230,6 +233,17 @@ void AppCacheHost::DoPendingSwapCache() {
   pending_callback_param_ = NULL;
 }
 
+void AppCacheHost::SetSpawningHostId(
+    int spawning_process_id, int spawning_host_id) {
+  spawning_process_id_ = spawning_process_id;
+  spawning_host_id_ = spawning_host_id;
+}
+
+const AppCacheHost* AppCacheHost::GetSpawningHost() const {
+  AppCacheBackendImpl* backend = service_->GetBackend(spawning_process_id_);
+  return backend ? backend->GetHost(spawning_host_id_) : NULL;
+}
+
 AppCacheHost* AppCacheHost::GetParentAppCacheHost() const {
   DCHECK(is_for_dedicated_worker());
   AppCacheBackendImpl* backend = service_->GetBackend(parent_process_id_);
@@ -338,6 +352,7 @@ void AppCacheHost::FinishCacheSelection(
     // context being navigated.
     DCHECK(cache->owning_group());
     DCHECK(new_master_entry_url_.is_empty());
+    DCHECK_EQ(cache->owning_group()->manifest_url(), preferred_manifest_url_);
     AppCacheGroup* owing_group = cache->owning_group();
     const char* kFormatString =
         "Document was loaded from Application Cache with manifest %s";
@@ -358,6 +373,7 @@ void AppCacheHost::FinishCacheSelection(
     // resource from which document was loaded as the new master resourse.
     DCHECK(!group->is_obsolete());
     DCHECK(new_master_entry_url_.is_valid());
+    DCHECK_EQ(group->manifest_url(), preferred_manifest_url_);
     const char* kFormatString = group->HasCache() ?
         "Adding master entry to Application Cache with manifest %s" :
         "Creating Application Cache with manifest %s";

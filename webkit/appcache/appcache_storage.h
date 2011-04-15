@@ -114,7 +114,9 @@ class AppCacheStorage {
   // Schedules a query to identify a response for a main request. Upon
   // completion the delegate will be called back.
   virtual void FindResponseForMainRequest(
-      const GURL& url, Delegate* delegate) = 0;
+      const GURL& url,
+      const GURL& preferred_manifest_url,
+      Delegate* delegate) = 0;
 
   // Performs an immediate lookup of the in-memory cache to
   // identify a response for a sub resource request.

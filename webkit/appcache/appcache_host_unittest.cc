@@ -156,6 +156,7 @@ TEST_F(AppCacheHostTest, SelectNoCache) {
   EXPECT_EQ(&mock_frontend_, host.frontend());
   EXPECT_EQ(NULL, host.associated_cache());
   EXPECT_FALSE(host.is_selection_pending());
+  EXPECT_TRUE(host.preferred_manifest_url().is_empty());
 }
 
 TEST_F(AppCacheHostTest, ForeignEntry) {

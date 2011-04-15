@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@ namespace {
 const base::Time kZeroTime;
 const GURL kManifestUrl("http://blah/manifest");
 const GURL kManifestUrl2("http://blah/manifest2");
+const GURL kManifestUrl3("http://blah/manifest3");
 const GURL kEntryUrl("http://blah/entry");
 const GURL kEntryUrl2("http://blah/entry2");
 const GURL kFallbackNamespace("http://blah/fallback_namespace/");
@@ -33,6 +34,9 @@ const GURL kFallbackTestUrl("http://blah/fallback_namespace/longer/test");
 const GURL kOnlineNamespace("http://blah/online_namespace");
 const GURL kOnlineNamespaceWithinFallback(
     "http://blah/fallback_namespace/online/");
+
+const int kManifestEntryIdOffset = 100;
+const int kFallbackEntryIdOffset = 1000;
 
 // For the duration of this test case, we hijack the AppCacheThread API
 // calls and implement them in terms of the io and db threads created here.
@@ -723,7 +727,7 @@ class AppCacheStorageImplTest : public testing::Test {
        this, &AppCacheStorageImplTest::Verify_FindNoMainResponse));
 
     // Conduct the test.
-    storage()->FindResponseForMainRequest(kEntryUrl, delegate());
+    storage()->FindResponseForMainRequest(kEntryUrl, GURL(), delegate());
     EXPECT_NE(kEntryUrl, delegate()->found_url_);
   }
 
@@ -783,7 +787,7 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     // Conduct the test.
-    storage()->FindResponseForMainRequest(kEntryUrl, delegate());
+    storage()->FindResponseForMainRequest(kEntryUrl, GURL(), delegate());
     EXPECT_NE(kEntryUrl,  delegate()->found_url_);
   }
 
@@ -844,7 +848,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Conduct the test. The test url is in both fallback namespace urls,
     // but should match the longer of the two.
-    storage()->FindResponseForMainRequest(kFallbackTestUrl, delegate());
+    storage()->FindResponseForMainRequest(kFallbackTestUrl, GURL(), delegate());
     EXPECT_NE(kFallbackTestUrl, delegate()->found_url_);
   }
 
@@ -866,37 +870,98 @@ class AppCacheStorageImplTest : public testing::Test {
     PushNextTask(NewRunnableMethod(this,
         &AppCacheStorageImplTest::Verify_FindMainResponseWithMultipleHits));
 
-    // Setup some preconditions. Create 2 complete caches with an entry
-    // for the same url.
+    // Setup some preconditions, create a few caches with an identical set
+    // of entries and fallback namespaces. Only the last one remains in
+    // the working set to simulate appearing as "in use".
+    MakeMultipleHitCacheAndGroup(kManifestUrl, 1);
+    MakeMultipleHitCacheAndGroup(kManifestUrl2, 2);
+    MakeMultipleHitCacheAndGroup(kManifestUrl3, 3);
 
-    // The first cache, in the database but not in the working set.
-    MakeCacheAndGroup(kManifestUrl, 1, 1, true);
-    cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT, 1));
-    AppCacheDatabase::EntryRecord entry_record;
-    entry_record.cache_id = 1;
-    entry_record.url = kEntryUrl;
-    entry_record.flags = AppCacheEntry::EXPLICIT;
-    entry_record.response_id = 1;
-    EXPECT_TRUE(database()->InsertEntry(&entry_record));
-    cache_ = NULL;
-    group_ = NULL;
-
-    // The second cache, in the database and working set.
-    MakeCacheAndGroup(kManifestUrl2, 2, 2, true);
-    cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT, 2));
-    entry_record.cache_id = 2;
-    entry_record.url = kEntryUrl;
-    entry_record.flags = AppCacheEntry::EXPLICIT;
-    entry_record.response_id = 2;
-    EXPECT_TRUE(database()->InsertEntry(&entry_record));
-
-    // Conduct the test, we should find the response from the second cache
+    // Conduct the test, we should find the response from the last cache
     // since it's "in use".
-    storage()->FindResponseForMainRequest(kEntryUrl, delegate());
+    storage()->FindResponseForMainRequest(kEntryUrl, GURL(), delegate());
     EXPECT_NE(kEntryUrl, delegate()->found_url_);
   }
 
+  void MakeMultipleHitCacheAndGroup(const GURL& manifest_url, int id) {
+    MakeCacheAndGroup(manifest_url, id, id, true);
+    AppCacheDatabase::EntryRecord entry_record;
+
+    // Add an entry for kEntryUrl
+    entry_record.cache_id = id;
+    entry_record.url = kEntryUrl;
+    entry_record.flags = AppCacheEntry::EXPLICIT;
+    entry_record.response_id = id;
+    EXPECT_TRUE(database()->InsertEntry(&entry_record));
+    cache_->AddEntry(
+        entry_record.url,
+        AppCacheEntry(entry_record.flags, entry_record.response_id));
+
+    // Add an entry for the manifestUrl
+    entry_record.cache_id = id;
+    entry_record.url = manifest_url;
+    entry_record.flags = AppCacheEntry::MANIFEST;
+    entry_record.response_id = id + kManifestEntryIdOffset;
+    EXPECT_TRUE(database()->InsertEntry(&entry_record));
+    cache_->AddEntry(
+        entry_record.url,
+        AppCacheEntry(entry_record.flags, entry_record.response_id));
+
+    // Add a fallback entry and namespace
+    entry_record.cache_id = id;
+    entry_record.url = kEntryUrl2;
+    entry_record.flags = AppCacheEntry::FALLBACK;
+    entry_record.response_id = id + kFallbackEntryIdOffset;
+    EXPECT_TRUE(database()->InsertEntry(&entry_record));
+    cache_->AddEntry(
+        entry_record.url,
+        AppCacheEntry(entry_record.flags, entry_record.response_id));
+    AppCacheDatabase::FallbackNameSpaceRecord fallback_namespace_record;
+    fallback_namespace_record.cache_id = id;
+    fallback_namespace_record.fallback_entry_url = entry_record.url;
+    fallback_namespace_record.namespace_url = kFallbackNamespace;
+    fallback_namespace_record.origin = manifest_url.GetOrigin();
+    EXPECT_TRUE(
+        database()->InsertFallbackNameSpace(&fallback_namespace_record));
+    cache_->fallback_namespaces_.push_back(
+        FallbackNamespace(kFallbackNamespace, kEntryUrl2));
+  }
+
   void Verify_FindMainResponseWithMultipleHits() {
+    EXPECT_EQ(kEntryUrl, delegate()->found_url_);
+    EXPECT_EQ(kManifestUrl3, delegate()->found_manifest_url_);
+    EXPECT_FALSE(delegate()->found_blocked_by_policy_);
+    EXPECT_EQ(3, delegate()->found_cache_id_);
+    EXPECT_EQ(3, delegate()->found_entry_.response_id());
+    EXPECT_TRUE(delegate()->found_entry_.IsExplicit());
+    EXPECT_FALSE(delegate()->found_fallback_entry_.has_response_id());
+
+    // Conduct another test perferring kManifestUrl
+    delegate_.reset(new MockStorageDelegate(this));
+    PushNextTask(NewRunnableMethod(this,
+        &AppCacheStorageImplTest::Verify_FindMainResponseWithMultipleHits2));
+    storage()->FindResponseForMainRequest(kEntryUrl, kManifestUrl, delegate());
+    EXPECT_NE(kEntryUrl, delegate()->found_url_);
+  }
+
+  void Verify_FindMainResponseWithMultipleHits2() {
+    EXPECT_EQ(kEntryUrl, delegate()->found_url_);
+    EXPECT_EQ(kManifestUrl, delegate()->found_manifest_url_);
+    EXPECT_FALSE(delegate()->found_blocked_by_policy_);
+    EXPECT_EQ(1, delegate()->found_cache_id_);
+    EXPECT_EQ(1, delegate()->found_entry_.response_id());
+    EXPECT_TRUE(delegate()->found_entry_.IsExplicit());
+    EXPECT_FALSE(delegate()->found_fallback_entry_.has_response_id());
+
+    // Conduct the another test perferring kManifestUrl2
+    delegate_.reset(new MockStorageDelegate(this));
+    PushNextTask(NewRunnableMethod(this,
+        &AppCacheStorageImplTest::Verify_FindMainResponseWithMultipleHits3));
+    storage()->FindResponseForMainRequest(kEntryUrl, kManifestUrl2, delegate());
+    EXPECT_NE(kEntryUrl, delegate()->found_url_);
+  }
+
+  void Verify_FindMainResponseWithMultipleHits3() {
     EXPECT_EQ(kEntryUrl, delegate()->found_url_);
     EXPECT_EQ(kManifestUrl2, delegate()->found_manifest_url_);
     EXPECT_FALSE(delegate()->found_blocked_by_policy_);
@@ -904,6 +969,47 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_EQ(2, delegate()->found_entry_.response_id());
     EXPECT_TRUE(delegate()->found_entry_.IsExplicit());
     EXPECT_FALSE(delegate()->found_fallback_entry_.has_response_id());
+
+    // Conduct another test with no preferred manifest that hits the fallback.
+    delegate_.reset(new MockStorageDelegate(this));
+    PushNextTask(NewRunnableMethod(this,
+        &AppCacheStorageImplTest::Verify_FindMainResponseWithMultipleHits4));
+    storage()->FindResponseForMainRequest(
+        kFallbackTestUrl, GURL(), delegate());
+    EXPECT_NE(kFallbackTestUrl, delegate()->found_url_);
+  }
+
+  void Verify_FindMainResponseWithMultipleHits4() {
+    EXPECT_EQ(kFallbackTestUrl, delegate()->found_url_);
+    EXPECT_EQ(kManifestUrl3, delegate()->found_manifest_url_);
+    EXPECT_FALSE(delegate()->found_blocked_by_policy_);
+    EXPECT_EQ(3, delegate()->found_cache_id_);
+    EXPECT_FALSE(delegate()->found_entry_.has_response_id());
+    EXPECT_EQ(3 + kFallbackEntryIdOffset,
+              delegate()->found_fallback_entry_.response_id());
+    EXPECT_TRUE(delegate()->found_fallback_entry_.IsFallback());
+    EXPECT_EQ(kEntryUrl2, delegate()->found_fallback_url_);
+
+    // Conduct another test preferring kManifestUrl2 that hits the fallback.
+    delegate_.reset(new MockStorageDelegate(this));
+    PushNextTask(NewRunnableMethod(this,
+        &AppCacheStorageImplTest::Verify_FindMainResponseWithMultipleHits5));
+    storage()->FindResponseForMainRequest(
+        kFallbackTestUrl, kManifestUrl2, delegate());
+    EXPECT_NE(kFallbackTestUrl, delegate()->found_url_);
+  }
+
+  void Verify_FindMainResponseWithMultipleHits5() {
+    EXPECT_EQ(kFallbackTestUrl, delegate()->found_url_);
+    EXPECT_EQ(kManifestUrl2, delegate()->found_manifest_url_);
+    EXPECT_FALSE(delegate()->found_blocked_by_policy_);
+    EXPECT_EQ(2, delegate()->found_cache_id_);
+    EXPECT_FALSE(delegate()->found_entry_.has_response_id());
+    EXPECT_EQ(2 + kFallbackEntryIdOffset,
+              delegate()->found_fallback_entry_.response_id());
+    EXPECT_TRUE(delegate()->found_fallback_entry_.IsFallback());
+    EXPECT_EQ(kEntryUrl2, delegate()->found_fallback_url_);
+
     TestFinished();
   }
 
@@ -961,7 +1067,7 @@ class AppCacheStorageImplTest : public testing::Test {
     PushNextTask(NewRunnableMethod(
         this, &AppCacheStorageImplTest::Verify_ExclusionNotFound,
         kEntryUrl, 1));
-    storage()->FindResponseForMainRequest(kEntryUrl, delegate());
+    storage()->FindResponseForMainRequest(kEntryUrl, GURL(), delegate());
   }
 
   void Verify_ExclusionNotFound(GURL expected_url, int phase) {
@@ -980,7 +1086,8 @@ class AppCacheStorageImplTest : public testing::Test {
       PushNextTask(NewRunnableMethod(this,
           &AppCacheStorageImplTest::Verify_ExclusionNotFound,
           kOnlineNamespace, 2));
-      storage()->FindResponseForMainRequest(kOnlineNamespace, delegate());
+      storage()->FindResponseForMainRequest(
+          kOnlineNamespace, GURL(), delegate());
       return;
     }
     if (phase == 2) {
@@ -990,7 +1097,7 @@ class AppCacheStorageImplTest : public testing::Test {
           &AppCacheStorageImplTest::Verify_ExclusionNotFound,
           kOnlineNamespaceWithinFallback, 3));
       storage()->FindResponseForMainRequest(
-          kOnlineNamespaceWithinFallback, delegate());
+          kOnlineNamespaceWithinFallback, GURL(), delegate());
       return;
     }
 
