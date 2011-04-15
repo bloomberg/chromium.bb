@@ -166,7 +166,6 @@ bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
 void PrintWebViewHelper::OnPrintForPrintPreview(
     const DictionaryValue& job_settings) {
   DCHECK(is_preview_);
-#if defined(OS_MACOSX)
   // If still not finished with earlier print request simply ignore.
   if (print_web_view_)
     return;
@@ -200,7 +199,6 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
 
   // Render Pages for printing.
   RenderPagesForPrint(pdf_frame, &pdf_element);
-#endif
 }
 
 bool PrintWebViewHelper::GetPrintFrame(WebKit::WebFrame** frame) {
