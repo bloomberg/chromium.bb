@@ -21,14 +21,12 @@ void CapturerHelper::ClearInvalidRects() {
 }
 
 void CapturerHelper::InvalidateRects(const InvalidRects& inval_rects) {
+  base::AutoLock auto_inval_rects_lock(inval_rects_lock_);
   InvalidRects temp_rects;
   std::set_union(inval_rects_.begin(), inval_rects_.end(),
                  inval_rects.begin(), inval_rects.end(),
                  std::inserter(temp_rects, temp_rects.begin()));
-  {
-    base::AutoLock auto_inval_rects_lock(inval_rects_lock_);
-    inval_rects_.swap(temp_rects);
-  }
+  inval_rects_.swap(temp_rects);
 }
 
 void CapturerHelper::InvalidateScreen(const gfx::Size& size) {
