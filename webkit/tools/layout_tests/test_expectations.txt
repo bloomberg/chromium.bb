@@ -13,7 +13,6 @@ BUGCASEQ WIN : fast/repaint/shadow-multiple-strict-vertical.html = IMAGE
 BUGCASEQ WIN : fast/repaint/shadow-multiple-vertical.html = IMAGE
 BUGCASEQ WIN : fast/text/shadow-translucent-fill.html = IMAGE
 BUGCASEQ WIN : fast/transforms/shadows.html = IMAGE
-BUGCASEQ WIN : svg/css/composite-shadow-text.svg = IMAGE
 BUGCASEQ WIN : svg/css/group-with-shadow.svg = IMAGE
 BUGCASEQ WIN : svg/css/shadow-changes.svg = IMAGE
 BUGCASEQ WIN : svg/css/text-shadow-multiple.xhtml = IMAGE
