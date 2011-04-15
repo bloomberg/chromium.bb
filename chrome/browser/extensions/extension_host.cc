@@ -609,7 +609,10 @@ void ExtensionHost::ShowCreatedWindow(int route_id,
                                                contents->profile(),
                                                contents,
                                                initial_pos);
-    browser->window()->Show();
+    if (user_gesture)
+      browser->window()->Show();
+    else
+      browser->window()->ShowInactive();
     return;
   }
 

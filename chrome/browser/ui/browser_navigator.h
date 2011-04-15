@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -115,12 +115,20 @@ struct NavigateParams {
   //             remove this comment.
   gfx::Rect window_bounds;
 
-  // True if the target window should be made visible at the end of the call
-  // to Navigate(). This activates the window if it was already visible.
-  // Default is false.
-  // If disposition is NEW_WINDOW or NEW_POPUP, |show_window| is set to true
-  // automatically.
-  bool show_window;
+  // Determines if and how the target window should be made visible at the end
+  // of the call to Navigate().
+  enum WindowAction {
+    // Do not show or activate the browser window after navigating.
+    NO_ACTION,
+    // Show and activate the browser window after navigating.
+    SHOW_WINDOW,
+    // Show the browser window after navigating but do not activate.
+    SHOW_WINDOW_INACTIVE
+  };
+  // Default is NO_ACTION (don't show or activate the window).
+  // If disposition is NEW_WINDOW or NEW_POPUP, and |window_action| is set to
+  // NO_ACTION, |window_action| will be set to SHOW_WINDOW.
+  WindowAction window_action;
 
   // What to do with the path component of the URL for singleton navigations.
   enum PathBehavior {

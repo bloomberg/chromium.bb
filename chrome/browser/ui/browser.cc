@@ -1135,7 +1135,7 @@ browser::NavigateParams Browser::GetSingletonTabNavigateParams(
     const GURL& url) {
   browser::NavigateParams params(this, url, PageTransition::AUTO_BOOKMARK);
   params.disposition = SINGLETON_TAB;
-  params.show_window = true;
+  params.window_action = browser::NavigateParams::SHOW_WINDOW;
   return params;
 }
 
@@ -2870,7 +2870,7 @@ void Browser::OpenURLFromTab(TabContents* source,
   params.referrer = referrer;
   params.disposition = disposition;
   params.tabstrip_add_types = TabStripModel::ADD_NONE;
-  params.show_window = true;
+  params.window_action = browser::NavigateParams::SHOW_WINDOW;
   browser::Navigate(&params);
 }
 
@@ -2921,7 +2921,12 @@ void Browser::AddNewContents(TabContents* source,
           tabstrip_model()->GetWrapperIndex(source));
   params.disposition = disposition;
   params.window_bounds = initial_pos;
-  params.show_window = true;
+  // If we create a popup or panel from a non user-gesture, don't activate
+  // the new window / panel.
+  if (disposition == NEW_POPUP && !user_gesture)
+    params.window_action = browser::NavigateParams::SHOW_WINDOW_INACTIVE;
+  else
+    params.window_action = browser::NavigateParams::SHOW_WINDOW;
   browser::Navigate(&params);
 }
 

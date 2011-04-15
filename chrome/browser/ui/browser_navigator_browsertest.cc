@@ -28,7 +28,7 @@ browser::NavigateParams BrowserNavigatorTest::MakeNavigateParams(
     Browser* browser) const {
   browser::NavigateParams params(browser, GetGoogleURL(),
                                  PageTransition::LINK);
-  params.show_window = true;
+  params.window_action = browser::NavigateParams::SHOW_WINDOW;
   return params;
 }
 
@@ -245,9 +245,15 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopup) {
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_POPUP;
   browser::Navigate(&p);
+  // Wait for new popup to to load and gain focus.
+  ui_test_utils::WaitForNavigationInCurrentTab(p.browser);
 
-  // Navigate() should have opened a new popup window.
+  // Navigate() should have opened a new, focused popup window.
   EXPECT_NE(browser(), p.browser);
+#if defined(OS_WIN)
+  // TODO(stevenjb): Enable this test for other OSs, see: crbug.com/79493
+  EXPECT_TRUE(p.browser->window()->IsActive());
+#endif
   EXPECT_EQ(Browser::TYPE_POPUP, p.browser->type());
 
   // We should have two windows, the browser() provided by the framework and the
@@ -339,6 +345,25 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_NewPopupFromExtensionApp) {
   // TODO(beng): TBD.
 }
+
+#if defined(OS_WIN)
+// TODO(stevenjb): Enable this test for other OSs, see: crbug.com/79493
+// This test verifies that navigating with window_action = SHOW_WINDOW_INACTIVE
+// does not focus a new new popup window.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupUnfocused) {
+  browser::NavigateParams p(MakeNavigateParams());
+  p.disposition = NEW_POPUP;
+  p.window_action = browser::NavigateParams::SHOW_WINDOW_INACTIVE;
+  browser::Navigate(&p);
+  // Wait for new popup to load (and gain focus if the test fails).
+  ui_test_utils::WaitForNavigationInCurrentTab(p.browser);
+
+  // Navigate() should have opened a new, unfocused, popup window.
+  EXPECT_NE(browser(), p.browser);
+  EXPECT_EQ(Browser::TYPE_POPUP, p.browser->type());
+  EXPECT_FALSE(p.browser->window()->IsActive());
+}
+#endif
 
 // This test verifies that navigating with WindowOpenDisposition = NEW_WINDOW
 // always opens a new window.
@@ -570,7 +595,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
   p.url = GURL("chrome://settings/advanced");
-  p.show_window = true;
+  p.window_action = browser::NavigateParams::SHOW_WINDOW;
   p.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
   browser::Navigate(&p);
 
@@ -602,7 +627,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
   p.url = GURL("chrome://settings/advanced");
-  p.show_window = true;
+  p.window_action = browser::NavigateParams::SHOW_WINDOW;
   p.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
   browser::Navigate(&p);
 
@@ -634,7 +659,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
   p.url = GURL("chrome://settings/personal");
-  p.show_window = true;
+  p.window_action = browser::NavigateParams::SHOW_WINDOW;
   p.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
   browser::Navigate(&p);
 
@@ -666,7 +691,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
   p.url = GURL("chrome://settings/personal");
-  p.show_window = true;
+  p.window_action = browser::NavigateParams::SHOW_WINDOW;
   p.path_behavior = browser::NavigateParams::IGNORE_AND_STAY_PUT;
   browser::Navigate(&p);
 
@@ -697,7 +722,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
   p.url = singleton_url_target;
-  p.show_window = true;
+  p.window_action = browser::NavigateParams::SHOW_WINDOW;
   p.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
   browser::Navigate(&p);
 
@@ -728,7 +753,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
   p.url = singleton_url_target;
-  p.show_window = true;
+  p.window_action = browser::NavigateParams::SHOW_WINDOW;
   p.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
   browser::Navigate(&p);
 
@@ -752,7 +777,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   browser::NavigateParams p(MakeNavigateParams(incognito_browser));
   p.disposition = SINGLETON_TAB;
   p.url = GURL("chrome://settings");
-  p.show_window = true;
+  p.window_action = browser::NavigateParams::SHOW_WINDOW;
   browser::Navigate(&p);
 
   // The settings page should be opened in browser() window.
@@ -777,7 +802,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   browser::NavigateParams p(MakeNavigateParams(incognito_browser));
   p.disposition = SINGLETON_TAB;
   p.url = GURL("chrome://bookmarks");
-  p.show_window = true;
+  p.window_action = browser::NavigateParams::SHOW_WINDOW;
   browser::Navigate(&p);
 
   // The bookmarks page should be opened in browser() window.

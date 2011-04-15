@@ -140,7 +140,7 @@ void AdjustNavigateParamsForURL(browser::NavigateParams* params) {
       params->disposition = SINGLETON_TAB;
       params->profile = profile;
       params->browser = Browser::GetOrCreateTabbedBrowser(profile);
-      params->show_window = true;
+      params->window_action = browser::NavigateParams::SHOW_WINDOW;
     }
   }
 }
@@ -245,7 +245,8 @@ void NormalizeDisposition(browser::NavigateParams* params) {
     case NEW_POPUP:
       // Code that wants to open a new window typically expects it to be shown
       // automatically.
-      params->show_window = true;
+      if (params->window_action == browser::NavigateParams::NO_ACTION)
+        params->window_action = browser::NavigateParams::SHOW_WINDOW;
       // Fall-through.
     case NEW_FOREGROUND_TAB:
     case SINGLETON_TAB:
@@ -285,7 +286,9 @@ class ScopedBrowserDisplayer {
       : params_(params) {
   }
   ~ScopedBrowserDisplayer() {
-    if (params_->show_window)
+    if (params_->window_action == browser::NavigateParams::SHOW_WINDOW_INACTIVE)
+      params_->browser->window()->ShowInactive();
+    else if (params_->window_action == browser::NavigateParams::SHOW_WINDOW)
       params_->browser->window()->Show();
   }
  private:
@@ -342,7 +345,7 @@ NavigateParams::NavigateParams(
       transition(a_transition),
       tabstrip_index(-1),
       tabstrip_add_types(TabStripModel::ADD_SELECTED),
-      show_window(false),
+      window_action(NO_ACTION),
       path_behavior(RESPECT),
       browser(a_browser),
       profile(NULL) {
@@ -356,7 +359,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
       transition(PageTransition::LINK),
       tabstrip_index(-1),
       tabstrip_add_types(TabStripModel::ADD_SELECTED),
-      show_window(false),
+      window_action(NO_ACTION),
       path_behavior(RESPECT),
       browser(a_browser),
       profile(NULL) {
@@ -381,10 +384,11 @@ void Navigate(NavigateParams* params) {
     params->referrer = GURL();
   }
 
-  if (source_browser != params->browser &&
+  if (params->window_action == browser::NavigateParams::NO_ACTION &&
+      source_browser != params->browser &&
       params->browser->tabstrip_model()->empty()) {
     // A new window has been created. So it needs to be displayed.
-    params->show_window = true;
+    params->window_action = browser::NavigateParams::SHOW_WINDOW;
   }
 
   // Make sure the Browser is shown if params call for it.

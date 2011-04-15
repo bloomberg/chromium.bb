@@ -832,7 +832,7 @@ void TabContents::AddNewContents(TabContents* new_contents,
     // Unrequested popups from normal pages are constrained unless they're in
     // the whitelist.  The popup owner will handle checking this.
     delegate_->GetConstrainingContents(this)->AddPopup(
-        new_contents, initial_pos);
+        new_contents, initial_pos, user_gesture);
   } else {
     new_contents->DisassociateFromPopupCount();
     delegate_->AddNewContents(this, new_contents, disposition, initial_pos,
@@ -1422,7 +1422,8 @@ void TabContents::SetIsLoading(bool is_loading,
 }
 
 void TabContents::AddPopup(TabContents* new_contents,
-                           const gfx::Rect& initial_pos) {
+                           const gfx::Rect& initial_pos,
+                           bool user_gesture) {
   // A page can't spawn popups (or do anything else, either) until its load
   // commits, so when we reach here, the popup was spawned by the
   // NavigationController's last committed entry, not the active entry.  For
@@ -1436,12 +1437,12 @@ void TabContents::AddPopup(TabContents* new_contents,
   if (creator.is_valid() &&
       profile()->GetHostContentSettingsMap()->GetContentSetting(
           creator, CONTENT_SETTINGS_TYPE_POPUPS, "") == CONTENT_SETTING_ALLOW) {
-    AddNewContents(new_contents, NEW_POPUP, initial_pos, true);
+    AddNewContents(new_contents, NEW_POPUP, initial_pos, user_gesture);
   } else {
     if (!blocked_contents_)
       blocked_contents_ = new BlockedContentContainer(this);
     blocked_contents_->AddTabContents(new_contents, NEW_POPUP, initial_pos,
-                                      true);
+                                      user_gesture);
     content_settings_delegate_->OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS,
                                                  std::string());
   }

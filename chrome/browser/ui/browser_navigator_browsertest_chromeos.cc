@@ -40,7 +40,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
   browser::NavigateParams p(MakeNavigateParams(incognito_browser));
   p.disposition = SINGLETON_TAB;
   p.url = GURL("chrome://settings");
-  p.show_window = true;
+  p.window_action = browser::NavigateParams::SHOW_WINDOW;
   p.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
   browser::Navigate(&p);
 

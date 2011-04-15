@@ -702,7 +702,8 @@ class TabContents : public PageNavigator,
 
   // Adds the incoming |new_contents| to the |blocked_contents_| container.
   void AddPopup(TabContents* new_contents,
-                const gfx::Rect& initial_pos);
+                const gfx::Rect& initial_pos,
+                bool user_gesture);
 
   // Called by derived classes to indicate that we're no longer waiting for a
   // response. This won't actually update the throbber, but it will get picked
