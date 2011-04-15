@@ -250,8 +250,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopup) {
 
   // Navigate() should have opened a new, focused popup window.
   EXPECT_NE(browser(), p.browser);
-#if defined(OS_WIN)
-  // TODO(stevenjb): Enable this test for other OSs, see: crbug.com/79493
+#if 0
+  // TODO(stevenjb): Enable this test. See: crbug.com/79493
   EXPECT_TRUE(p.browser->window()->IsActive());
 #endif
   EXPECT_EQ(Browser::TYPE_POPUP, p.browser->type());
@@ -346,8 +346,6 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // TODO(beng): TBD.
 }
 
-#if defined(OS_WIN)
-// TODO(stevenjb): Enable this test for other OSs, see: crbug.com/79493
 // This test verifies that navigating with window_action = SHOW_WINDOW_INACTIVE
 // does not focus a new new popup window.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupUnfocused) {
@@ -361,9 +359,11 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupUnfocused) {
   // Navigate() should have opened a new, unfocused, popup window.
   EXPECT_NE(browser(), p.browser);
   EXPECT_EQ(Browser::TYPE_POPUP, p.browser->type());
+#if 0
+// TODO(stevenjb): Enable this test. See: crbug.com/79493
   EXPECT_FALSE(p.browser->window()->IsActive());
-}
 #endif
+}
 
 // This test verifies that navigating with WindowOpenDisposition = NEW_WINDOW
 // always opens a new window.
