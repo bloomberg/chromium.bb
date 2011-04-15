@@ -166,6 +166,13 @@
    fun:PR_LoadLibraryWithFlags
 }
 {
+   dlopen leak on error. TODO(timurrrr): file a bug
+   Memcheck:Leak
+   fun:calloc
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.1
+}
+{
    glibc leak.  See also http://sources.redhat.com/bugzilla/show_bug.cgi?id=2451
    Memcheck:Leak
    fun:malloc
@@ -3877,7 +3884,7 @@
 {
    bug_73722a
    Memcheck:Cond
-   fun:_ZN2v88internal10StackFrame11ComputeTypeEPNS1_5StateE
+   fun:_ZN2v88internal10StackFrame11ComputeType*
 }
 {
    bug_73722b
@@ -4306,6 +4313,25 @@
    fun:_ZN7WebCore20HTMLConstructionSite*
    ...
    fun:_ZN7WebCore15HTMLTreeBuilder*
+}
+{
+   bug_79568
+   Memcheck:Leak
+   ...
+   fun:_ZN12browser_sync2s312SyncerThread34HandleConsecutiveContinuationErrorERKNS1_14SyncSessionJobE
+   fun:_ZN12browser_sync2s312SyncerThread16ScheduleNextSyncERKNS1_14SyncSessionJobE
+   fun:_ZN12browser_sync2s312SyncerThread20FinishSyncSessionJobERKNS1_14SyncSessionJobE
+   fun:_ZN12browser_sync2s312SyncerThread16DoSyncSessionJobERKNS1_14SyncSessionJobE
+}
+{
+   bug_79569
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8chromeos18NetworkLibraryImpl12InitTestDataEv
+   fun:_ZN8chromeos18NetworkLibraryImplC1Ev
+   fun:_ZN8chromeos14NetworkLibrary7GetImplEb
+   fun:_ZN8chromeos11CrosLibrary7LibraryINS_14NetworkLibraryEE14GetDefaultImplEb
+   fun:_ZN8chromeos11CrosLibrary17GetNetworkLibraryEv
 }
 
 #-----------------------------------------------------------------------

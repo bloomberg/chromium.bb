@@ -1395,3 +1395,12 @@
    ...
    fun:WebCore::HTMLTreeBuilder::*
 }
+{
+   bug_79568
+   Heapcheck:Leak
+   ...
+   fun:browser_sync::s3::SyncerThread::HandleConsecutiveContinuationError
+   fun:browser_sync::s3::SyncerThread::ScheduleNextSync
+   fun:browser_sync::s3::SyncerThread::FinishSyncSessionJob
+   fun:browser_sync::s3::SyncerThread::DoSyncSessionJob
+}
