@@ -2757,6 +2757,9 @@
         'browser/ui/options/show_options_url.h',
         'browser/ui/panels/panel.cc',
         'browser/ui/panels/panel.h',
+        'browser/ui/panels/panel_browser_window_cocoa.mm',
+        'browser/ui/panels/panel_browser_window_gtk.cc',
+        'browser/ui/panels/panel_browser_view.cc',
         'browser/ui/panels/panel_manager.cc',
         'browser/ui/panels/panel_manager.h',
         'browser/ui/profile_error_dialog.cc',
@@ -4104,6 +4107,7 @@
                 ['exclude', '^browser/tab_contents/tab_contents_view_gtk.cc'],
                 ['exclude', '^browser/tab_contents/tab_contents_view_gtk.h'],
                 ['exclude', '^browser/ui/browser_list_gtk.cc'],
+                ['exclude', '^browser/ui/panels/panel_browser_window_gtk.cc'],
               ],
             }],
             # Exclude these toolkit_views specific files again.
