@@ -372,6 +372,9 @@ class PluginDelegate {
   // Tells the browser that the PDF has an unsupported feature.
   virtual void HasUnsupportedFeature() = 0;
 
+  // Tells the browser to bring up SaveAs dialog.
+  virtual void SaveAs() = 0;
+
   // Socket dispatcher for P2P connections. Returns to NULL if P2P API
   // is disabled.
   //

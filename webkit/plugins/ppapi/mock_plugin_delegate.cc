@@ -219,6 +219,9 @@ void MockPluginDelegate::SetContentRestriction(int restrictions) {
 void MockPluginDelegate::HasUnsupportedFeature() {
 }
 
+void MockPluginDelegate::SaveAs() {
+}
+
 P2PSocketDispatcher* MockPluginDelegate::GetP2PSocketDispatcher() {
   return NULL;
 }

@@ -96,6 +96,7 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void DidStopLoading();
   virtual void SetContentRestriction(int restrictions);
   virtual void HasUnsupportedFeature();
+  virtual void SaveAs();
   virtual P2PSocketDispatcher* GetP2PSocketDispatcher();
   virtual webkit_glue::P2PTransport* CreateP2PTransport();
 };

@@ -8,10 +8,11 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/download/save_package.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 
 // Per-tab download controller. Handles dealing with various per-tab download
 // duties.
-class DownloadTabHelper {
+class DownloadTabHelper : public TabContentsObserver {
  public:
   explicit DownloadTabHelper(TabContents* tab_contents);
   virtual ~DownloadTabHelper();
@@ -29,7 +30,8 @@ class DownloadTabHelper {
   SavePackage* save_package() const { return save_package_.get(); }
 
  private:
-  TabContents* tab_contents_;
+  // TabContentsObserver overrides.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // SavePackage, lazily created.
   scoped_refptr<SavePackage> save_package_;

@@ -506,6 +506,9 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateContentRestrictions,
 // The currently displayed PDF has an unsupported feature.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_PDFHasUnsupportedFeature)
 
+// Brings up SaveAs... dialog (similar to the wrench->SaveAs...).
+IPC_MESSAGE_ROUTED0(ViewHostMsg_SaveAs)
+
 // JavaScript related messages -----------------------------------------------
 
 // Notify the JavaScript engine in the render to change its parameters

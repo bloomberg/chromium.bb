@@ -1003,6 +1003,11 @@ void PepperPluginDelegateImpl::HasUnsupportedFeature() {
       render_view_->routing_id()));
 }
 
+void PepperPluginDelegateImpl::SaveAs() {
+  render_view_->Send(new ViewHostMsg_SaveAs(
+      render_view_->routing_id()));
+}
+
 P2PSocketDispatcher* PepperPluginDelegateImpl::GetP2PSocketDispatcher() {
   return render_view_->p2p_socket_dispatcher();
 }
