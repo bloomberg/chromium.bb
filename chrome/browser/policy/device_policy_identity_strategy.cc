@@ -94,8 +94,6 @@ bool DevicePolicyIdentityStrategy::GetCredentials(std::string* username,
 
 void DevicePolicyIdentityStrategy::OnDeviceTokenAvailable(
     const std::string& token) {
-  DCHECK(!machine_id_.empty());
-
   device_token_ = token;
   NotifyDeviceTokenChanged();
 }
