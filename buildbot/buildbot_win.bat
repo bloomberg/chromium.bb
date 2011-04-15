@@ -12,9 +12,9 @@ call buildbot\msvs_env.bat %BITS%
 
 set RETCODE=0
 
-if %MODE% equ "dbg" (set GYPMODE=Debug) else (set GYPMODE=Release)
+if "%MODE%" equ "dbg" (set GYPMODE=Debug) else (set GYPMODE=Release)
 if %BITS% equ 32 (set VCBITS=x86) else (set VCBITS=x64)
-if %TOOLCHAIN% equ "glibc" (set GLIBCOPTS=--nacl_glibc) else (set GLIBCOPTS=)
+if "%TOOLCHAIN%" equ "glibc" (set GLIBCOPTS=--nacl_glibc) else (set GLIBCOPTS=)
 
 :: Skip over hooks, clobber, and partial_sdk when run inside the toolchain
 :: build as the toolchain takes care or the clobber, hooks aren't needed, and
@@ -32,24 +32,31 @@ rd /s /q scons-out ^
  & rd /s /q build\Debug-Win32 build\Release-Win32 ^
  & rd /s /q build\Debug-x64 build\Release-x64
 
-if %TOOLCHAIN% equ "glibc" (
+echo @@@BUILD_STEP partial_sdk@@@
+if "%TOOLCHAIN%" equ "glibc" (
   setlocal
   call "%~dp0cygwin_env.bat"
   set CYGWIN=nodosfilewarning %CYGWIN%
-  bash buildbot/download_glibc_toolchain.sh
+  bash buildbot/download_glibc_toolchain.sh win %BITS%
   if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
   endlocal
+
+  if %BITS% equ 32 goto SkipSync
+  echo @@@BUILD_STEP partial_sdk_32@@@
+  call vcvarsall.bat x86 && call scons.bat --verbose --mode=nacl_extra_sdk -j 8 ^
+    %GLIBCOPTS% platform=x86-32 extra_sdk_update_header extra_sdk_update
+  if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 ) else (
-  echo @@@BUILD_STEP partial_sdk@@@
   call scons.bat --verbose --mode=nacl_extra_sdk platform=x86-%BITS% ^
     --download extra_sdk_update_header install_libpthread extra_sdk_update
   if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
-)
 
-if %BITS% equ 32 goto SkipSync
-echo @@@BUILD_STEP partial_sdk_32@@@
-call vcvarsall.bat x86 && call scons.bat --verbose --mode=nacl_extra_sdk -j 8 ^
-if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+  if %BITS% equ 32 goto SkipSync
+  echo @@@BUILD_STEP partial_sdk_32@@@
+  call vcvarsall.bat x86 && call scons.bat --verbose --mode=nacl_extra_sdk -j 8 ^
+    platform=x86-32 extra_sdk_update_header install_libpthread extra_sdk_update
+  if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+)
 :SkipSync
 
 echo @@@BUILD_STEP gyp_compile@@@
@@ -67,7 +74,7 @@ call vcvarsall.bat %VCBITS% && call scons.bat -j 8 ^
  %GLIBCOPTS% -k --verbose --mode=%MODE%-win,nacl,doc platform=x86-%BITS%
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
-if %TOOLCHAIN% equ "glibc" goto NoNeedForPlugin
+if "%TOOLCHAIN%" equ "glibc" goto NoNeedForPlugin
 echo @@@BUILD_STEP plugin_compile@@@
 call vcvarsall.bat x86 && call scons.bat -j 8 ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
@@ -82,7 +89,7 @@ call vcvarsall.bat %VCBITS% && call scons.bat ^
  platform=x86-%BITS%
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 
-if %TOOLCHAIN% equ "glibc" goto SkipNonGlibsTests
+if "%TOOLCHAIN%" equ "glibc" goto SkipNonGlibsTests
 echo @@@BUILD_STEP medium_tests@@@
 call vcvarsall.bat %VCBITS% && call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
