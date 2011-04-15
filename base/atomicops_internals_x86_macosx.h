@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -191,89 +191,6 @@ inline Atomic64 Release_Load(volatile const Atomic64 *ptr) {
 }
 
 #endif  // defined(__LP64__)
-
-// MacOS uses long for intptr_t, AtomicWord and Atomic32 are always different
-// on the Mac, even when they are the same size.  We need to explicitly cast
-// from AtomicWord to Atomic32 to implement the AtomicWord interface.
-// When in 64-bit mode, AtomicWord is the same as Atomic64, so we need not
-// add duplicate definitions.
-#ifndef __LP64__
-#define AtomicWordCastType Atomic32
-
-inline AtomicWord NoBarrier_CompareAndSwap(volatile AtomicWord* ptr,
-                                           AtomicWord old_value,
-                                           AtomicWord new_value) {
-  return NoBarrier_CompareAndSwap(
-      reinterpret_cast<volatile AtomicWordCastType*>(ptr),
-      old_value, new_value);
-}
-
-inline AtomicWord NoBarrier_AtomicExchange(volatile AtomicWord* ptr,
-                                           AtomicWord new_value) {
-  return NoBarrier_AtomicExchange(
-      reinterpret_cast<volatile AtomicWordCastType*>(ptr), new_value);
-}
-
-inline AtomicWord NoBarrier_AtomicIncrement(volatile AtomicWord* ptr,
-                                            AtomicWord increment) {
-  return NoBarrier_AtomicIncrement(
-      reinterpret_cast<volatile AtomicWordCastType*>(ptr), increment);
-}
-
-inline AtomicWord Barrier_AtomicIncrement(volatile AtomicWord* ptr,
-                                          AtomicWord increment) {
-  return Barrier_AtomicIncrement(
-      reinterpret_cast<volatile AtomicWordCastType*>(ptr), increment);
-}
-
-inline AtomicWord Acquire_CompareAndSwap(volatile AtomicWord* ptr,
-                                         AtomicWord old_value,
-                                         AtomicWord new_value) {
-  return base::subtle::Acquire_CompareAndSwap(
-      reinterpret_cast<volatile AtomicWordCastType*>(ptr),
-      old_value, new_value);
-}
-
-inline AtomicWord Release_CompareAndSwap(volatile AtomicWord* ptr,
-                                         AtomicWord old_value,
-                                         AtomicWord new_value) {
-  return base::subtle::Release_CompareAndSwap(
-      reinterpret_cast<volatile AtomicWordCastType*>(ptr),
-      old_value, new_value);
-}
-
-inline void NoBarrier_Store(volatile AtomicWord *ptr, AtomicWord value) {
-  NoBarrier_Store(
-      reinterpret_cast<volatile AtomicWordCastType*>(ptr), value);
-}
-
-inline void Acquire_Store(volatile AtomicWord* ptr, AtomicWord value) {
-  return base::subtle::Acquire_Store(
-      reinterpret_cast<volatile AtomicWordCastType*>(ptr), value);
-}
-
-inline void Release_Store(volatile AtomicWord* ptr, AtomicWord value) {
-  return base::subtle::Release_Store(
-      reinterpret_cast<volatile AtomicWordCastType*>(ptr), value);
-}
-
-inline AtomicWord NoBarrier_Load(volatile const AtomicWord *ptr) {
-  return NoBarrier_Load(
-      reinterpret_cast<volatile const AtomicWordCastType*>(ptr));
-}
-
-inline AtomicWord Acquire_Load(volatile const AtomicWord* ptr) {
-  return base::subtle::Acquire_Load(
-      reinterpret_cast<volatile const AtomicWordCastType*>(ptr));
-}
-
-inline AtomicWord Release_Load(volatile const AtomicWord* ptr) {
-  return base::subtle::Release_Load(
-      reinterpret_cast<volatile const AtomicWordCastType*>(ptr));
-}
-
-#undef AtomicWordCastType
-#endif
 
 }   // namespace base::subtle
 }   // namespace base
