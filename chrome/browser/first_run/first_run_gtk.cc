@@ -12,7 +12,7 @@
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/gtk/first_run_dialog.h"
 #include "chrome/common/chrome_switches.h"

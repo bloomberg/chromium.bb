@@ -10,6 +10,8 @@
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/first_run/first_run_import_observer.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_list.h"
@@ -569,47 +571,6 @@ void FirstRun::AutoImport(
 
   process_singleton->Unlock();
   FirstRun::CreateSentinel();
-}
-
-// FirstRunBrowserProcess -----------------------------------------------------
-
-FirstRunBrowserProcess::FirstRunBrowserProcess(const CommandLine& command_line)
-    : BrowserProcessImpl(command_line) {
-}
-
-FirstRunBrowserProcess::~FirstRunBrowserProcess() {}
-
-GoogleURLTracker* FirstRunBrowserProcess::google_url_tracker() {
-  return NULL;
-}
-
-IntranetRedirectDetector* FirstRunBrowserProcess::intranet_redirect_detector() {
-  return NULL;
-}
-
-// FirstRunImportObserver -----------------------------------------------------
-
-FirstRunImportObserver::FirstRunImportObserver()
-    : loop_running_(false), import_result_(ResultCodes::NORMAL_EXIT) {
-}
-
-int FirstRunImportObserver::import_result() const {
-  return import_result_;
-}
-
-void FirstRunImportObserver::RunLoop() {
-  loop_running_ = true;
-  MessageLoop::current()->Run();
-}
-
-void FirstRunImportObserver::Finish() {
-  if (loop_running_)
-    MessageLoop::current()->Quit();
-}
-
-void FirstRunImportObserver::ImportCompleted() {
-  import_result_ = ResultCodes::NORMAL_EXIT;
-  Finish();
 }
 
 #if defined(OS_POSIX)

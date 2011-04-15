@@ -13,6 +13,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_MACOSX)
+#include <CoreFoundation/CoreFoundation.h>
+
 #include "base/mac/foundation_util.h"
 #include "chrome/browser/importer/safari_importer.h"
 #endif

@@ -10,9 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/browser_process_impl.h"
-#include "chrome/browser/importer/importer_observer.h"
-#include "content/common/result_codes.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
 #include "ui/gfx/native_widget_types.h"
 
 class CommandLine;
@@ -211,45 +210,6 @@ class FirstRun {
 
   // This class is for scoping purposes.
   DISALLOW_IMPLICIT_CONSTRUCTORS(FirstRun);
-};
-
-
-// A subclass of BrowserProcessImpl that does not have a GoogleURLTracker or
-// IntranetRedirectDetector so we don't do any URL fetches (as we have no IO
-// thread to fetch on).
-class FirstRunBrowserProcess : public BrowserProcessImpl {
- public:
-  explicit FirstRunBrowserProcess(const CommandLine& command_line);
-  virtual ~FirstRunBrowserProcess();
-
-  virtual GoogleURLTracker* google_url_tracker();
-  virtual IntranetRedirectDetector* intranet_redirect_detector();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FirstRunBrowserProcess);
-};
-
-// This class is used by FirstRun::ImportNow to get notified of the outcome of
-// the import operation. It differs from ImportProcessRunner in that this
-// class executes in the context of importing child process.
-// The values that it handles are meant to be used as the process exit code.
-class FirstRunImportObserver : public ImporterObserver {
- public:
-  FirstRunImportObserver();
-
-  int import_result() const;
-  void RunLoop();
-
- private:
-  void Finish();
-
-  // ImporterObserver:
-  virtual void ImportCompleted() OVERRIDE;
-
-  bool loop_running_;
-  int import_result_;
-
-  DISALLOW_COPY_AND_ASSIGN(FirstRunImportObserver);
 };
 
 #endif  // CHROME_BROWSER_FIRST_RUN_FIRST_RUN_H_

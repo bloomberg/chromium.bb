@@ -32,15 +32,16 @@
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_main_win.h"
-#include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extensions_startup.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/first_run/first_run_browser_process.h"
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/gpu_data_manager.h"
 #include "chrome/browser/jankometer.h"
@@ -120,6 +121,7 @@
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <dbus/dbus-glib.h>
+
 #include "chrome/browser/browser_main_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #endif
@@ -131,7 +133,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/brightness_observer.h"
-#include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
@@ -142,6 +143,7 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/metrics_cros_settings_provider.h"
+#include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/oom_priority_manager.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #endif
@@ -180,6 +182,7 @@
 
 #if defined(OS_MACOSX)
 #include <Security/Security.h>
+
 #include "chrome/browser/cocoa/install_from_dmg.h"
 #endif
 
