@@ -84,11 +84,11 @@ cd ../../..
 
 
 if [[ ${PLATFORM} == win ]]; then
-  cmd /c "call buildbot\\buildbot_win.bat opt 64"
+  cmd /c "call buildbot\\buildbot_win.bat opt 64 newlib"
 elif [[ ${PLATFORM} == mac ]]; then
-  buildbot/buildbot_mac.sh opt
+  buildbot/buildbot_mac.sh opt 32 newlib
 elif [[ ${PLATFORM} == linux ]]; then
-  buildbot/buildbot_linux.sh opt 32
+  buildbot/buildbot_linux.sh opt 32 newlib
 else
   echo "ERROR, bad platform."
   exit 1

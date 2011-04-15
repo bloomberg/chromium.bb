@@ -92,6 +92,7 @@ def GetPreferredTrySlaves():
       'nacl-lucid32_newlib_opt',
       'nacl-lucid32_glibc_opt',
       'nacl-hardy64_newlib_opt',
+      'nacl-lucid64_newlib_dbg',
       'nacl-lucid64_newlib_opt',
       'nacl-lucid64_glibc_opt',
       'nacl-lucid64-pnacl1',
