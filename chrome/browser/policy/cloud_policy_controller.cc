@@ -92,6 +92,11 @@ void CloudPolicyController::SetRefreshRate(int64 refresh_rate_milliseconds) {
     SetState(STATE_POLICY_VALID);
 }
 
+void CloudPolicyController::Retry() {
+  CancelDelayedWork();
+  DoWork();
+}
+
 void CloudPolicyController::StopAutoRetry() {
   CancelDelayedWork();
   backend_.reset();

@@ -52,6 +52,7 @@ CloudPolicySubsystem::CloudPolicySubsystem(
     CloudPolicyIdentityStrategy* identity_strategy,
     CloudPolicyCacheBase* policy_cache)
     : prefs_(NULL) {
+  net::NetworkChangeNotifier::AddIPAddressObserver(this);
   notifier_.reset(new PolicyNotifier());
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDeviceManagementUrl)) {
@@ -81,6 +82,14 @@ CloudPolicySubsystem::~CloudPolicySubsystem() {
   device_token_fetcher_.reset();
   cloud_policy_cache_.reset();
   device_management_service_.reset();
+  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+}
+
+void CloudPolicySubsystem::OnIPAddressChanged() {
+  if (state() == CloudPolicySubsystem::NETWORK_ERROR &&
+      cloud_policy_controller_.get()) {
+    cloud_policy_controller_->Retry();
+  }
 }
 
 void CloudPolicySubsystem::Initialize(

@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/common/notification_observer.h"
+#include "net/base/network_change_notifier.h"
 
 class PrefService;
 
@@ -29,7 +30,9 @@ class PolicyNotifier;
 // This class is a container for the infrastructure required to support cloud
 // policy. It glues together the backend, the policy controller and manages the
 // life cycle of the policy providers.
-class CloudPolicySubsystem : public NotificationObserver {
+class CloudPolicySubsystem
+    : public NotificationObserver,
+      public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   enum PolicySubsystemState {
     UNENROLLED,  // No enrollment attempt has been performed yet.
@@ -71,6 +74,9 @@ class CloudPolicySubsystem : public NotificationObserver {
   CloudPolicySubsystem(CloudPolicyIdentityStrategy* identity_strategy,
                        CloudPolicyCacheBase* policy_cache);
   virtual ~CloudPolicySubsystem();
+
+  // net::NetworkChangeNotifier::IPAddressObserver:
+  virtual void OnIPAddressChanged() OVERRIDE;
 
   // Initializes the subsystem.
   void Initialize(PrefService* prefs,
