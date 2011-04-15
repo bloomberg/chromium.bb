@@ -438,6 +438,7 @@ void WizardController::ShowHTMLPageScreen() {
 
 void WizardController::ShowEnterpriseEnrollmentScreen() {
   SetStatusAreaVisible(true);
+  host_->SetOobeProgress(chromeos::BackgroundView::SIGNIN);
   SetCurrentScreen(GetEnterpriseEnrollmentScreen());
 }
 
