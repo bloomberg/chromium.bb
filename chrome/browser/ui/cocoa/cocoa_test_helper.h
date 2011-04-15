@@ -109,13 +109,13 @@ class CocoaTest : public PlatformTest {
 // from a window. All tests that work with NSView subclasses and/or
 // NSViewController subclasses should use it.
 #define TEST_VIEW(test_fixture, test_view) \
-  TEST_F(test_fixture, AddRemove##test_fixture) { \
+  TEST_F(test_fixture, test_fixture##_TestViewMacroAddRemove) { \
     scoped_nsobject<NSView> view([test_view retain]); \
     EXPECT_EQ([test_window() contentView], [view superview]); \
     [view removeFromSuperview]; \
     EXPECT_FALSE([view superview]); \
   } \
-  TEST_F(test_fixture, Display##test_fixture) { \
+  TEST_F(test_fixture, test_fixture##_TestViewMacroDisplay) { \
     [test_view display]; \
   }
 
