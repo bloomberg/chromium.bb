@@ -191,6 +191,22 @@
    ...
    fun:_ZN8remoting*CapturerMac*
 }
+{
+   # See also http://openradar.appspot.com/radar?id=1169404
+   bug_79533
+   Memcheck:Value4
+   ...
+   fun:_ZN8Security13MappingHandleIlE4findINS_6CursorEEERT_li
+   fun:_ZN8Security13AppleDatabase14dataAbortQueryERNS_9DbContextEl
+   fun:_ZN8Security15DatabaseSession14DataAbortQueryEll
+   fun:_ZL19cssm_DataAbortQuery17cssm_dl_db_handlel
+   fun:CSSM_DL_DataAbortQuery
+   fun:_ZN11SSDLSession14DataAbortQueryEll
+   fun:_ZL19cssm_DataAbortQuery17cssm_dl_db_handlel
+   fun:CSSM_DL_DataAbortQuery
+   fun:tpDbFindIssuerCrl
+   fun:tpVerifyCertGroupWithCrls
+}
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing.
@@ -972,13 +988,8 @@
    fun:__cxa_get_globals
    fun:__cxa_allocate_exception
    fun:_ZN8Security9CssmError7throwMeEi
-   fun:_ZNK8Security9DbVersion9findTableEj
-   fun:_ZNK8Security9DbVersion12createCursorEPK10cssm_query
-   fun:_ZN8Security10DbModifier12createCursorEPK10cssm_query
-   fun:_ZN8Security13AppleDatabase12dataGetFirstERNS_9DbContextEPKNS_9CssmQueryEP29cssm_db_record_attribute_dataPNS_8CssmDataERP21cssm_db_unique_record
-   fun:_ZN8Security15DatabaseSession12DataGetFirstElPKNS_9CssmQueryEP29cssm_db_record_attribute_dataPNS_8CssmDataERP21cssm_db_unique_record
-   fun:_ZL17cssm_DataGetFirst17cssm_dl_db_handlePK10cssm_queryPlP29cssm_db_record_attribute_dataP9cssm_dataPP21cssm_db_unique_record
-   fun:CSSM_DL_DataGetFirst
+   ...
+   fun:SecTrustEvaluate
 }
 {
    bug_51682c

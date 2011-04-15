@@ -175,16 +175,12 @@
     <div>
       <div><button id="certificatesManageButton"
           i18n-content="certificatesManageButton"></button></div>
-<if expr="os != 'darwin'">
-      <!-- Don't display "Check for server certificate revocation" on Mac until
-           http://crbug.com/78523 is fixed. -->
       <div class="checkbox">
         <label>
           <input id="sslCheckRevocation" type="checkbox">
           <span i18n-content="sslCheckRevocation"></span>
         </label>
       </div>
-</if>
       <div class="checkbox">
         <label>
           <input id="sslUseSSL3" type="checkbox">

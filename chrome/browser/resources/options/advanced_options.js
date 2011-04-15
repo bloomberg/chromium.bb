@@ -101,14 +101,10 @@ var OptionsPage = options.OptionsPage;
         };
       }
 
-      if (!cr.isMac) {
-        // Don't display "Check for server certificate revocation" on Mac until
-        // http://crbug.com/78523 is fixed.
-        $('sslCheckRevocation').onclick = function(event) {
-          chrome.send('checkRevocationCheckboxAction',
-              [String($('sslCheckRevocation').checked)]);
-        };
-      }
+      $('sslCheckRevocation').onclick = function(event) {
+        chrome.send('checkRevocationCheckboxAction',
+            [String($('sslCheckRevocation').checked)]);
+      };
       $('sslUseSSL3').onclick = function(event) {
         chrome.send('useSSL3CheckboxAction',
             [String($('sslUseSSL3').checked)]);

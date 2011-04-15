@@ -612,9 +612,6 @@ void AdvancedOptionsHandler::SetupProxySettingsSection() {
 }
 
 void AdvancedOptionsHandler::SetupSSLConfigSettings() {
-#if !defined(OS_MACOSX)
-    // Don't display "Check for server certificate revocation" on Mac until
-    // http://crbug.com/78523 is fixed.
   {
     FundamentalValue checked(rev_checking_enabled_.GetValue());
     FundamentalValue disabled(rev_checking_enabled_.IsManaged());
@@ -622,7 +619,6 @@ void AdvancedOptionsHandler::SetupSSLConfigSettings() {
         "options.AdvancedOptions.SetCheckRevocationCheckboxState", checked,
         disabled);
   }
-#endif
   {
     FundamentalValue checked(ssl3_enabled_.GetValue());
     FundamentalValue disabled(ssl3_enabled_.IsManaged());

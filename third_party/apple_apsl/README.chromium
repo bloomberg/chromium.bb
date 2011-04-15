@@ -1,7 +1,9 @@
 Name: Darwin
 URL: http://www.opensource.apple.com/
+Version: unknown
+Security Critical: yes
 
-Three files are excerpted here:
+Four files are excerpted here:
 
 malloc.h from:
 http://www.opensource.apple.com/source/Libc/Libc-583/include/malloc/malloc.h
@@ -32,3 +34,10 @@ Modifications:
 - Renamed __CFAllocator to ChromeCFAllocator9and10 to avoid possible name
   conflicts.
 - Added a presumed definition of ChromeCFAllocator11.
+
+cssmapplePriv.h from:
+http://www.opensource.apple.com/source/libsecurity_cssm/libsecurity_cssm-31536/lib/cssmapplePriv.h
+
+Modifications:
+- Removed unneeded definitions for internal Apple CSP DL enums and structs
+- Added a comment explaining its usage
