@@ -1861,6 +1861,22 @@ std::vector<DictionaryValue*>* GetAppInfoFromExtensions(
       AppLauncherHandler::CreateAppInfo(*ext, ext_prefs, app_info);
       app_info->SetBoolean("is_component_extension",
                            (*ext)->location() == Extension::COMPONENT);
+
+      // Convert the launch_type integer into a more descriptive string.
+      int launch_type;
+      app_info->GetInteger("launch_type", &launch_type);
+      if (launch_type == ExtensionPrefs::LAUNCH_PINNED) {
+        app_info->SetString("launch_type", "pinned");
+      } else if (launch_type == ExtensionPrefs::LAUNCH_REGULAR) {
+        app_info->SetString("launch_type", "regular");
+      } else if (launch_type == ExtensionPrefs::LAUNCH_FULLSCREEN) {
+        app_info->SetString("launch_type", "fullscreen");
+      } else if (launch_type == ExtensionPrefs::LAUNCH_WINDOW) {
+        app_info->SetString("launch_type", "window");
+      } else {
+        app_info->SetString("launch_type", "unknown");
+      }
+
       apps_list->push_back(app_info);
     }
   }

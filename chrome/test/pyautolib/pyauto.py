@@ -1081,11 +1081,12 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                         u'tabs': [ {
                           u'index': 0,
                           u'infobars': [],
+                          u'pinned': True,
                           u'renderer_pid': 93747,
                           u'url': u'http://www.google.com/' }, {
-
                           u'index': 1,
                           u'infobars': [],
+                          u'pinned': False,
                           u'renderer_pid': 93919,
                           u'url': u'https://chrome.google.com/'}, {
                           u'index': 2,
@@ -1095,6 +1096,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                             u'text': u'slides.html5rocks.com wants to track '
                                       'your physical location',
                             u'type': u'confirm_infobar'}],
+                          u'pinned': False,
                           u'renderer_pid': 93929,
                           u'url': u'http://slides.html5rocks.com/#slide14'},
                             ],
@@ -2202,6 +2204,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   def GetNTPApps(self):
     """Retrieves information about the apps listed on the NTP.
 
+    In the sample data below, the "launch_type" will be one of the following
+    strings: "pinned", "regular", "fullscreen", "window", or "unknown".
+
     SAMPLE:
     [
       {
@@ -2213,7 +2218,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         u'is_component_extension': True,
         u'is_disabled': False,
         u'launch_container': 2,
-        u'launch_type': 1,
+        u'launch_type': u'regular',
         u'launch_url': u'https://chrome.google.com/webstore',
         u'name': u'Chrome Web Store',
         u'options_url': u'',
@@ -2230,7 +2235,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         u'is_component_extension': False,
         u'is_disabled': False,
         u'launch_container': 2,
-        u'launch_type': 1
+        u'launch_type': u'regular',
         u'launch_url': (u'chrome-extension://aeabikdlfbfeihglecobdkdflahfgcpd/'
                         u'launchLocalPath.html'),
         u'name': u'Countdown',
@@ -2320,6 +2325,32 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'id': app_id,
     }
     return self._GetResultFromJSONRequest(cmd_dict)
+
+  def SetAppLaunchType(self, app_id, launch_type, windex=0):
+    """Sets the launch type for the specified app.
+
+    Args:
+      app_id: The string ID of the app whose launch type should be set.
+      launch_type: The string launch type, which must be one of the following:
+                   'pinned': Launch in a pinned tab.
+                   'regular': Launch in a regular tab.
+                   'fullscreen': Launch in a fullscreen tab.
+                   'window': Launch in a new browser window.
+      windex: The index of the browser window to work on.  Defaults to 0 (the
+              first window).
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    self.assertTrue(launch_type in ('pinned', 'regular', 'fullscreen',
+                                    'window'),
+                    msg='Unexpected launch type value: "%s"' % launch_type)
+    cmd_dict = {
+      'command': 'SetAppLaunchType',
+      'id': app_id,
+      'launch_type': launch_type,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
   def KillRendererProcess(self, pid):
     """Kills the given renderer process.

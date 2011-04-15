@@ -787,6 +787,11 @@ class TestingAutomationProvider : public AutomationProvider,
                  DictionaryValue* args,
                  IPC::Message* reply_message);
 
+  // Sets the launch type for the specified app.
+  void SetAppLaunchType(Browser* browser,
+                        DictionaryValue* args,
+                        IPC::Message* reply_message);
+
   // Waits for all tabs to stop loading.
   void WaitForAllTabsToStopLoading(DictionaryValue* args,
                                    IPC::Message* reply_message);
