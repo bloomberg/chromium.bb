@@ -5,6 +5,7 @@
 cr.define('options', function() {
 
   var OptionsPage = options.OptionsPage;
+  var Preferences = options.Preferences;
 
   /////////////////////////////////////////////////////////////////////////////
   // ProxyOptions class:
@@ -18,12 +19,21 @@ cr.define('options', function() {
                      'proxyPage');
   }
 
-  ProxyOptions.getInstance = function() {
-    if (!ProxyOptions.instance_) {
-      ProxyOptions.instance_ = new ProxyOptions(null);
-    }
-    return ProxyOptions.instance_;
-  };
+  cr.addSingletonGetter(ProxyOptions);
+
+  /**
+   * UI pref change handler.
+   */
+  function handlePrefUpdate(e) {
+    ProxyOptions.getInstance().updateControls();
+  }
+
+  /**
+   * Monitor pref change of given element.
+   */
+  function observePrefsUI(el) {
+    Preferences.getInstance().addEventListener(el.pref, handlePrefUpdate);
+  }
 
   ProxyOptions.prototype = {
     // Inherit ProxyOptions from OptionsPage.
@@ -46,6 +56,11 @@ cr.define('options', function() {
       $('manualProxy').addEventListener('click', this.enableManual_);
       $('autoProxy').addEventListener('click', this.disableManual_);
       $('proxyAllProtocols').addEventListener('click', this.toggleSingle_);
+
+      observePrefsUI($('directProxy'));
+      observePrefsUI($('manualProxy'));
+      observePrefsUI($('autoProxy'));
+      observePrefsUI($('proxyAllProtocols'));
     },
 
     proxyListInitalized_: false,
