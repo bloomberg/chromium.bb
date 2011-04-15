@@ -4147,6 +4147,7 @@
                 ['exclude', '^browser/ui/browser_list_stub.cc'],
                 ['exclude', '^browser/ui/views/autocomplete/autocomplete_popup_gtk.cc'],
                 ['exclude', '^browser/ui/views/autocomplete/autocomplete_popup_gtk.h'],
+                ['exclude', '^browser/ui/chrome/browser/ui/panels/panel_browser_view.cc'],
               ],
             }],
             # Touch build only
