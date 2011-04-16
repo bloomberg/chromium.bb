@@ -318,6 +318,7 @@ var chrome = chrome || {};
       "experimental.webRequest",
       "history",
       "idle",
+      "fileBrowserHandler",
       "fileBrowserPrivate",
       "fileSystem",
       "management",

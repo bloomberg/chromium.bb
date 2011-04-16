@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #ifndef CHROME_COMMON_EXTENSIONS_URL_PATTERN_H_
@@ -77,12 +77,13 @@ class URLPattern {
  public:
   // A collection of scheme bitmasks for use with valid_schemes.
   enum SchemeMasks {
-    SCHEME_NONE     = 0,
-    SCHEME_HTTP     = 1 << 0,
-    SCHEME_HTTPS    = 1 << 1,
-    SCHEME_FILE     = 1 << 2,
-    SCHEME_FTP      = 1 << 3,
-    SCHEME_CHROMEUI = 1 << 4,
+    SCHEME_NONE       = 0,
+    SCHEME_HTTP       = 1 << 0,
+    SCHEME_HTTPS      = 1 << 1,
+    SCHEME_FILE       = 1 << 2,
+    SCHEME_FTP        = 1 << 3,
+    SCHEME_CHROMEUI   = 1 << 4,
+    SCHEME_FILESYSTEM = 1 << 5,
     // SCHEME_ALL will match every scheme, including chrome://, chrome-
     // extension://, about:, etc. Because this has lots of security
     // implications, third-party extensions should never be able to get access
