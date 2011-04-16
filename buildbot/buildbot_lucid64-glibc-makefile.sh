@@ -37,7 +37,7 @@ echo @@@BUILD_STEP compile_toolchain@@@
 echo @@@BUILD_STEP tar_glibc@@@
 (
   cd tools/glibc
-  tar zScf ../glibc.tgz *
+  tar zScf ../glibc.tgz ./*
   chmod a+r ../glibc.tgz
 )
 

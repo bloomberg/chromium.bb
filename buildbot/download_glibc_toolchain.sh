@@ -43,8 +43,8 @@ curl --fail --location --url \
 $tar xSvpf "toolchain_${PLATFORM}_x86.tar.gz"
 rm -f "toolchain_${PLATFORM}_x86.tar.gz"
 if [[ $PLATFORM = win ]]; then
-  find -L toolchain -type f -xtype l |
-  while read name ; do
+  find -L toolchain -type f -xtype l -print0 |
+  while IFS="" read -r -d "" name ; do
     # Find gives us some files twice because there are symlinks.  Second time
     # ‘ln’ will fail with “ln: ‘xxx’ and ‘yyy’ are the same file” despite ‘-f’.
     if [[ -L "$name" ]]; then
