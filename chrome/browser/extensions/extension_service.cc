@@ -1086,7 +1086,8 @@ void ExtensionService::NotifyExtensionUnloaded(
         RevokeRightsForExtension(extension);
 #if defined(OS_CHROMEOS)
     // Revoke external file access to
-    if (profile_->GetFileSystemContext()->path_manager() &&
+    if (profile_->GetFileSystemContext() &&
+        profile_->GetFileSystemContext()->path_manager() &&
         profile_->GetFileSystemContext()->path_manager()->external_provider()) {
       profile_->GetFileSystemContext()->path_manager()->external_provider()->
           RevokeAccessForExtension(extension->id());
