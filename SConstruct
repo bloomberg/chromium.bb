@@ -253,6 +253,9 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'disable_dynamic_plugin_loading', default=False,
     desc='Do not do dynamic plugin injection')
 
+  BitFromArgument(env, 'disable_flaky_tests', default=False,
+    desc='Do not run potentially flaky tests - used on Chrome bots')
+
   BitFromArgument(env, 'sdl_sel_universal', default=False,
     desc='enhance sel_universal with SDL ppapi emulation')
 
@@ -558,7 +561,8 @@ def ShouldSkipTest(env, node_name):
   return False
 
 
-def AddNodeToTestSuite(env, node, suite_name, node_name=None, is_broken=False):
+def AddNodeToTestSuite(env, node, suite_name, node_name=None, is_broken=False,
+                       is_flaky=False):
   global BROKEN_TEST_COUNT
 
   # CommandTest can return an empty list when it silently discards a test
@@ -574,7 +578,7 @@ def AddNodeToTestSuite(env, node, suite_name, node_name=None, is_broken=False):
   else:
     display_name = '<no name>'
 
-  if is_broken:
+  if is_broken or is_flaky and env.Bit('disable_flaky_tests'):
     # Only print if --verbose is specified
     if not GetOption('brief_comstr'):
       print '*** BROKEN ', display_name

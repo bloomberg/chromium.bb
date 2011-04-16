@@ -43,4 +43,5 @@ node = env.PPAPIBrowserTester(
 
 env.AddNodeToTestSuite(node, ['chrome_browser_tests'],
                        'run_inbrowser_test_runner_chrome',
+                       is_flaky=True, # Don't subject Chrome to our problems.
                        is_broken=env.PPAPIBrowserTesterIsBroken())

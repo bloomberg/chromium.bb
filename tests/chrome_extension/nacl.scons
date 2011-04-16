@@ -42,4 +42,5 @@ env.Depends(node, dest_copy)
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_chrome_extension_test',
+                       is_flaky=True, # Don't subject Chrome to our problems.
                        is_broken=env.PPAPIBrowserTesterIsBroken())
