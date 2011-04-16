@@ -45,14 +45,14 @@ namespace {
 
 // Helper class that we pass to SocketStreamDispatcherHost so that it can find
 // the right net::URLRequestContext for a request.
-class URLRequestContextOverride
-    : public ResourceMessageFilter::URLRequestContextOverride {
+class URLRequestContextSelector
+    : public ResourceMessageFilter::URLRequestContextSelector {
  public:
-  explicit URLRequestContextOverride(
+  explicit URLRequestContextSelector(
       net::URLRequestContext* url_request_context)
       : url_request_context_(url_request_context) {
   }
-  virtual ~URLRequestContextOverride() {}
+  virtual ~URLRequestContextSelector() {}
 
   virtual net::URLRequestContext* GetRequestContext(
       ResourceType::Type resource_type) {
@@ -212,9 +212,9 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
   ChromeURLRequestContext* chrome_url_context = GetChromeURLRequestContext();
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
-      id(), WORKER_PROCESS, resource_context_, resource_dispatcher_host_);
-  resource_message_filter->set_url_request_context_override(
-      new URLRequestContextOverride(chrome_url_context));
+      id(), WORKER_PROCESS, resource_context_,
+      new URLRequestContextSelector(chrome_url_context),
+      resource_dispatcher_host_);
   AddFilter(resource_message_filter);
 
   worker_message_filter_ = new WorkerMessageFilter(
@@ -226,19 +226,19 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
           WorkerService::GetInstance(), &WorkerService::next_worker_route_id));
   AddFilter(worker_message_filter_);
   AddFilter(new AppCacheDispatcherHost(chrome_url_context, id()));
-  AddFilter(new FileSystemDispatcherHost(chrome_url_context));
+  AddFilter(new FileSystemDispatcherHost(
+      chrome_url_context, resource_context_->file_system_context()));
   AddFilter(new FileUtilitiesMessageFilter(id()));
   AddFilter(
-      new BlobMessageFilter(id(), chrome_url_context->blob_storage_context()));
+      new BlobMessageFilter(id(), resource_context_->blob_storage_context()));
   AddFilter(new MimeRegistryMessageFilter());
   AddFilter(new DatabaseMessageFilter(
       resource_context_->database_tracker(),
       chrome_url_context->host_content_settings_map()));
 
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
-      new SocketStreamDispatcherHost();
-  socket_stream_dispatcher_host->set_url_request_context_override(
-      new URLRequestContextOverride(chrome_url_context));
+      new SocketStreamDispatcherHost(
+          new URLRequestContextSelector(chrome_url_context));
   AddFilter(socket_stream_dispatcher_host);
 }
 

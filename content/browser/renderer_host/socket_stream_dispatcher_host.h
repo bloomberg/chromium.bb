@@ -22,7 +22,8 @@ class SocketStreamHost;
 class SocketStreamDispatcherHost : public BrowserMessageFilter,
                                    public net::SocketStream::Delegate {
  public:
-  SocketStreamDispatcherHost();
+  explicit SocketStreamDispatcherHost(
+      ResourceMessageFilter::URLRequestContextSelector* selector);
   virtual ~SocketStreamDispatcherHost();
 
   // BrowserMessageFilter methods.
@@ -40,11 +41,6 @@ class SocketStreamDispatcherHost : public BrowserMessageFilter,
                               const char* data, int len);
   virtual void OnClose(net::SocketStream* socket);
 
-  void set_url_request_context_override(
-      ResourceMessageFilter::URLRequestContextOverride* u) {
-    url_request_context_override_ = u;
-  }
-
  private:
   // Message handlers called by OnMessageReceived.
   void OnConnect(const GURL& url, int socket_id);
@@ -56,8 +52,8 @@ class SocketStreamDispatcherHost : public BrowserMessageFilter,
   net::URLRequestContext* GetURLRequestContext();
 
   IDMap<SocketStreamHost> hosts_;
-  scoped_refptr<ResourceMessageFilter::URLRequestContextOverride>
-      url_request_context_override_;
+  const scoped_ptr<ResourceMessageFilter::URLRequestContextSelector>
+      url_request_context_selector_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketStreamDispatcherHost);
 };

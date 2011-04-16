@@ -122,6 +122,15 @@ void ResourceIPCAccumulator::GetClassifiedMessages(ClassifiedMessages* msgs) {
   }
 }
 
+class MockURLRequestContextSelector
+    : public ResourceMessageFilter::URLRequestContextSelector {
+ public:
+  virtual net::URLRequestContext* GetRequestContext(
+      ResourceType::Type request_type) {
+    return NULL;
+  }
+};
+
 // This class forwards the incoming messages to the ResourceDispatcherHostTest.
 // This is used to emulate different sub-processes, since this filter will
 // have a different ID than the original. For the test, we want all the incoming
@@ -132,6 +141,7 @@ class ForwardingFilter : public ResourceMessageFilter {
     : ResourceMessageFilter(ChildProcessInfo::GenerateChildProcessUniqueId(),
                             ChildProcessInfo::RENDER_PROCESS,
                             &content::MockResourceContext::GetInstance(),
+                            new MockURLRequestContextSelector,
                             NULL),
       dest_(dest) {
     OnChannelConnected(base::GetCurrentProcId());

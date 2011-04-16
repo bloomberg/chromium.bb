@@ -43,6 +43,7 @@
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/in_process_webkit/webkit_thread.h"
 #include "content/browser/plugin_service.h"
+#include "content/browser/resource_context.h"
 #include "content/browser/renderer_host/async_resource_handler.h"
 #include "content/browser/renderer_host/buffered_resource_handler.h"
 #include "content/browser/renderer_host/cross_site_resource_handler.h"
@@ -355,10 +356,12 @@ void ResourceDispatcherHost::BeginRequest(
 
   ChromeURLRequestContext* context = filter_->GetURLRequestContext(
       request_data.resource_type);
+  const content::ResourceContext& resource_context =
+      filter_->resource_context();
 
   // Might need to resolve the blob references in the upload data.
-  if (request_data.upload_data && context) {
-    context->blob_storage_context()->controller()->
+  if (request_data.upload_data) {
+    resource_context.blob_storage_context()->controller()->
         ResolveBlobReferencesInUploadData(request_data.upload_data.get());
   }
 
@@ -519,18 +522,18 @@ void ResourceDispatcherHost::BeginRequest(
   chrome_browser_net::SetOriginPIDForRequest(
       request_data.origin_pid, request);
 
-  if (request->url().SchemeIs(chrome::kBlobScheme) && context) {
+  if (request->url().SchemeIs(chrome::kBlobScheme)) {
     // Hang on to a reference to ensure the blob is not released prior
     // to the job being started.
     webkit_blob::BlobStorageController* controller =
-        context->blob_storage_context()->controller();
+        resource_context.blob_storage_context()->controller();
     extra_info->set_requested_blob_data(
         controller->GetBlobDataFromUrl(request->url()));
   }
 
   // Have the appcache associate its extra info with the request.
   appcache::AppCacheInterceptor::SetExtraRequestInfo(
-      request, context ? context->appcache_service() : NULL, child_id,
+      request, resource_context.appcache_service(), child_id,
       request_data.appcache_host_id, request_data.resource_type);
 
   BeginRequestInternal(request);

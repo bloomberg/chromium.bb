@@ -15,12 +15,15 @@ ResourceMessageFilter::ResourceMessageFilter(
     int child_id,
     ChildProcessInfo::ProcessType process_type,
     const content::ResourceContext* resource_context,
+    URLRequestContextSelector* url_request_context_selector,
     ResourceDispatcherHost* resource_dispatcher_host)
     : child_id_(child_id),
       process_type_(process_type),
-      resource_dispatcher_host_(resource_dispatcher_host),
-      resource_context_(resource_context) {
+      resource_context_(resource_context),
+      url_request_context_selector_(url_request_context_selector),
+      resource_dispatcher_host_(resource_dispatcher_host) {
   DCHECK(resource_context);
+  DCHECK(url_request_context_selector);
 }
 
 ResourceMessageFilter::~ResourceMessageFilter() {
@@ -42,16 +45,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message,
 
 ChromeURLRequestContext* ResourceMessageFilter::GetURLRequestContext(
     ResourceType::Type type) {
-  net::URLRequestContext* rv = NULL;
-  if (url_request_context_override_.get())
-    rv = url_request_context_override_->GetRequestContext(type);
-
-  if (!rv) {
-    net::URLRequestContextGetter* context_getter =
-        Profile::GetDefaultRequestContext();
-    if (context_getter)
-      rv = context_getter->GetURLRequestContext();
-  }
-
+  net::URLRequestContext* rv =
+      url_request_context_selector_->GetRequestContext(type);
   return static_cast<ChromeURLRequestContext*>(rv);
 }

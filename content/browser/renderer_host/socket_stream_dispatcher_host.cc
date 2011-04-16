@@ -14,7 +14,10 @@
 #include "net/websockets/websocket_job.h"
 #include "net/websockets/websocket_throttle.h"
 
-SocketStreamDispatcherHost::SocketStreamDispatcherHost() {
+SocketStreamDispatcherHost::SocketStreamDispatcherHost(
+    ResourceMessageFilter::URLRequestContextSelector* selector)
+    : url_request_context_selector_(selector) {
+  DCHECK(selector);
   net::WebSocketJob::EnsureInit();
 }
 
@@ -148,17 +151,6 @@ void SocketStreamDispatcherHost::DeleteSocketStreamHost(int socket_id) {
 }
 
 net::URLRequestContext* SocketStreamDispatcherHost::GetURLRequestContext() {
-  net::URLRequestContext* rv = NULL;
-  if (url_request_context_override_.get()) {
-    rv = url_request_context_override_->GetRequestContext(
-        ResourceType::SUB_RESOURCE);
-  }
-  if (!rv) {
-    net::URLRequestContextGetter* context_getter =
-        Profile::GetDefaultRequestContext();
-    if (context_getter)
-      rv = context_getter->GetURLRequestContext();
-  }
-
-  return rv;
+  return url_request_context_selector_->GetRequestContext(
+      ResourceType::SUB_RESOURCE);
 }

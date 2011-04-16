@@ -248,10 +248,10 @@ namespace {
 
 // Helper class that we pass to ResourceMessageFilter so that it can find the
 // right net::URLRequestContext for a request.
-class RendererURLRequestContextOverride
-    : public ResourceMessageFilter::URLRequestContextOverride {
+class RendererURLRequestContextSelector
+    : public ResourceMessageFilter::URLRequestContextSelector {
  public:
-  RendererURLRequestContextOverride(Profile* profile,
+  RendererURLRequestContextSelector(Profile* profile,
                                     const Extension* installed_app)
       : request_context_(profile->GetRequestContextForPossibleApp(
                              installed_app)),
@@ -270,7 +270,7 @@ class RendererURLRequestContextOverride
   }
 
  private:
-  virtual ~RendererURLRequestContextOverride() {}
+  virtual ~RendererURLRequestContextSelector() {}
 
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   scoped_refptr<net::URLRequestContextGetter> media_request_context_;
@@ -460,15 +460,11 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
       profile(),
       profile()->GetRequestContextForPossibleApp(installed_app_)));
 
-  scoped_refptr<RendererURLRequestContextOverride> url_request_context_override(
-      new RendererURLRequestContextOverride(profile(), installed_app_));
-
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
       id(), ChildProcessInfo::RENDER_PROCESS,
       &profile()->GetResourceContext(),
+      new RendererURLRequestContextSelector(profile(), installed_app_),
       g_browser_process->resource_dispatcher_host());
-  resource_message_filter->set_url_request_context_override(
-      url_request_context_override);
 
   channel_->AddFilter(resource_message_filter);
   channel_->AddFilter(new AudioInputRendererHost());
@@ -502,9 +498,8 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
       profile()->GetDatabaseTracker(), profile()->GetHostContentSettingsMap()));
 
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
-      new SocketStreamDispatcherHost();
-  socket_stream_dispatcher_host->set_url_request_context_override(
-      url_request_context_override);
+      new SocketStreamDispatcherHost(
+          new RendererURLRequestContextSelector(profile(), installed_app_));
   channel_->AddFilter(socket_stream_dispatcher_host);
 
   channel_->AddFilter(new SpellCheckMessageFilter());

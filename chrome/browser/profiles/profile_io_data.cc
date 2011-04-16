@@ -267,8 +267,18 @@ void ProfileIOData::LazyInitialize() const {
   if (initialized_)
     return;
   DCHECK(profile_params_.get());
+
+  // Take ownership over these parameters.
   database_tracker_ = profile_params_->database_tracker;
+  appcache_service_ = profile_params_->appcache_service;
+  blob_storage_context_ = profile_params_->blob_storage_context;
+  file_system_context_ = profile_params_->file_system_context;
+
   resource_context_.set_database_tracker(database_tracker_);
+  resource_context_.set_appcache_service(appcache_service_);
+  resource_context_.set_blob_storage_context(blob_storage_context_);
+  resource_context_.set_file_system_context(file_system_context_);
+
   LazyInitializeInternal(profile_params_.get());
   profile_params_.reset();
   initialized_ = true;

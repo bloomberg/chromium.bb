@@ -182,6 +182,9 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   mutable scoped_ptr<ProfileParams> profile_params_;
   mutable BooleanPrefMember enable_referrers_;
   mutable scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
+  mutable scoped_refptr<ChromeAppCacheService> appcache_service_;
+  mutable scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
+  mutable scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   mutable ResourceContext resource_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileIOData);

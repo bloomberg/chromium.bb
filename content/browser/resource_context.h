@@ -8,6 +8,11 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 
+class ChromeAppCacheService;
+class ChromeBlobStorageContext;
+namespace fileapi {
+class FileSystemContext;
+}  // namespace fileapi
 namespace webkit_database {
 class DatabaseTracker;
 }  // namespace webkit_database
@@ -22,8 +27,17 @@ class ResourceContext {
  public:
   virtual ~ResourceContext();
 
+  ChromeAppCacheService* appcache_service() const;
+  void set_appcache_service(ChromeAppCacheService* service);
+
   webkit_database::DatabaseTracker* database_tracker() const;
   void set_database_tracker(webkit_database::DatabaseTracker* tracker);
+
+  fileapi::FileSystemContext* file_system_context() const;
+  void set_file_system_context(fileapi::FileSystemContext* context);
+
+  ChromeBlobStorageContext* blob_storage_context() const;
+  void set_blob_storage_context(ChromeBlobStorageContext* context);
 
  protected:
   ResourceContext();
@@ -31,7 +45,10 @@ class ResourceContext {
  private:
   virtual void EnsureInitialized() const = 0;
 
+  ChromeAppCacheService* appcache_service_;
   webkit_database::DatabaseTracker* database_tracker_;
+  fileapi::FileSystemContext* file_system_context_;
+  ChromeBlobStorageContext* blob_storage_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceContext);
 };

@@ -38,7 +38,8 @@ class FileSystemDispatcherHost : public BrowserMessageFilter {
   // Used by the renderer.
   explicit FileSystemDispatcherHost(Profile* profile);
   // Used by the worker, since it has the context handy already.
-  explicit FileSystemDispatcherHost(ChromeURLRequestContext* context);
+  FileSystemDispatcherHost(ChromeURLRequestContext* request_context,
+                           fileapi::FileSystemContext* file_system_context);
   ~FileSystemDispatcherHost();
 
   // BrowserMessageFilter implementation.

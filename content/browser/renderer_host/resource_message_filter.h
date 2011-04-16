@@ -28,25 +28,23 @@ class URLRequestContext;
 // will not interfere with browser UI.
 class ResourceMessageFilter : public BrowserMessageFilter {
  public:
-  // Allows overriding the net::URLRequestContext used to service requests.
-  class URLRequestContextOverride
-      : public base::RefCountedThreadSafe<URLRequestContextOverride> {
+  // Allows selecting the net::URLRequestContext used to service requests.
+  class URLRequestContextSelector {
    public:
-    URLRequestContextOverride() {}
+    URLRequestContextSelector() {}
+    virtual ~URLRequestContextSelector() {}
 
     virtual net::URLRequestContext* GetRequestContext(
         ResourceType::Type request_type) = 0;
 
-   protected:
-    friend class base::RefCountedThreadSafe<URLRequestContextOverride>;
-    virtual ~URLRequestContextOverride() {}
-
-    DISALLOW_COPY_AND_ASSIGN(URLRequestContextOverride);
+   private:
+    DISALLOW_COPY_AND_ASSIGN(URLRequestContextSelector);
   };
 
   ResourceMessageFilter(int child_id,
                         ChildProcessInfo::ProcessType process_type,
                         const content::ResourceContext* resource_context,
+                        URLRequestContextSelector* url_request_context_selector,
                         ResourceDispatcherHost* resource_dispatcher_host);
 
   // BrowserMessageFilter implementation.
@@ -54,13 +52,13 @@ class ResourceMessageFilter : public BrowserMessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok);
 
+  const content::ResourceContext& resource_context() const {
+    return *resource_context_;
+  }
+
   // Returns the net::URLRequestContext for the given request.
   ChromeURLRequestContext* GetURLRequestContext(
       ResourceType::Type request_type);
-
-  void set_url_request_context_override(URLRequestContextOverride* u) {
-    url_request_context_override_ = u;
-  }
 
   int child_id() const { return child_id_; }
   ChildProcessInfo::ProcessType process_type() const { return process_type_; }
@@ -75,12 +73,13 @@ class ResourceMessageFilter : public BrowserMessageFilter {
 
   ChildProcessInfo::ProcessType process_type_;
 
+  // Owned by ProfileIOData* which is guaranteed to outlive us.
+  const content::ResourceContext* const resource_context_;
+
+  const scoped_ptr<URLRequestContextSelector> url_request_context_selector_;
+
   // Owned by BrowserProcess, which is guaranteed to outlive us.
   ResourceDispatcherHost* resource_dispatcher_host_;
-
-  scoped_refptr<URLRequestContextOverride> url_request_context_override_;
-
-  const content::ResourceContext* const resource_context_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ResourceMessageFilter);
 };

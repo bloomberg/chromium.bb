@@ -107,10 +107,11 @@ FileSystemDispatcherHost::FileSystemDispatcherHost(Profile* profile)
 }
 
 FileSystemDispatcherHost::FileSystemDispatcherHost(
-    ChromeURLRequestContext* context)
-    : context_(context->file_system_context()),
-      host_content_settings_map_(context->host_content_settings_map()),
-      request_context_(context) {
+    ChromeURLRequestContext* request_context,
+    fileapi::FileSystemContext* file_system_context)
+    : context_(file_system_context),
+      host_content_settings_map_(request_context->host_content_settings_map()),
+      request_context_(request_context) {
 }
 
 FileSystemDispatcherHost::~FileSystemDispatcherHost() {
