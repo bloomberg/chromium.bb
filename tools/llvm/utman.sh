@@ -2507,7 +2507,7 @@ driver-install() {
   rm -f "${INSTALL_BIN}/pnacl-*"
   cp tools/llvm/driver.py "${INSTALL_BIN}"
   for s in gcc g++ as arm-as i686-as x86_64-as \
-           bclink opt dis ld translate illegal nop \
+           bclink opt dis ld strip translate illegal nop \
            ar nm ranlib pexecheck ; do
     local t="pnacl-$s"
     ln -fs driver.py "${INSTALL_BIN}/$t"

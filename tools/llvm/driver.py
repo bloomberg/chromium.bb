@@ -275,7 +275,7 @@ INITIAL_ENV = {
   'LLC_MCPU_X8664'  : 'core2',
 
   'OPT'      : '${BASE_ARM}/bin/opt',
-  'OPT_FLAGS': '-std-compile-opts -O3 -strip',
+  'OPT_FLAGS': '-std-compile-opts -O3',
   'OPT_LEVEL': '',
 
   'BINUTILS_BASE' : '${BASE_ARM}/bin/arm-pc-nacl-',
@@ -390,11 +390,12 @@ DriverPatterns = [
   ( '--pnacl-driver-set-([^=]+)=(.*)', "env.set($0, $1)"),
   ( '--pnacl-driver-append-([^=]+)=(.*)', "env.append($0, $1)"),
   ( ('-arch', '(.+)'),                 "env.set('ARCH', FixArch($0))"),
-  ( '--pnacl-opt',                     "env.set('INCARNATION', 'opt')"),
-  ( '--pnacl-dis',                     "env.set('INCARNATION', 'dis')"),
   ( '--pnacl-as',                      "env.set('INCARNATION', 'as')"),
+  ( '--pnacl-dis',                     "env.set('INCARNATION', 'dis')"),
   ( '--pnacl-gcc',                     "env.set('INCARNATION', 'gcc')"),
   ( '--pnacl-ld',                      "env.set('INCARNATION', 'ld')"),
+  ( '--pnacl-opt',                     "env.set('INCARNATION', 'opt')"),
+  ( '--pnacl-strip',                   "env.set('INCARNATION', 'strip')"),
   ( '--pnacl-translate',               "env.set('INCARNATION', 'translate')"),
   ( ('--add-llc-option', '(.+)'),      "env.append('LLC_FLAGS_COMMON', $0)"),
   ( '--pnacl-sb',                      "env.set('SANDBOXED', '1')"),
@@ -423,9 +424,11 @@ GCCPatterns = [
   ( '-S',              "env.set('GCC_MODE', '-S')"),
   ( '-c',              "env.set('GCC_MODE', '-c')"),
 
+  # NOTE: For scons tests, the code generation fPIC flag is used with pnacl-ld.
   ( '-fPIC',           "env.set('PIC', '1')"),
   ( '-nostdinc',       "env.set('NOSTDINC', '1')"),
-  ( '-nostdlib',       "env.set('NOSTDLIB', '1')"),
+  # Different semantics for gcc and ld, but they both accept this flag.
+  ( '-nostdlib',          "env.set('NOSTDLIB', '1')"),
 
   # Call ForceFileType for all input files at the time they are
   # parsed on the command-line. This ensures that the gcc "-x"
@@ -445,13 +448,17 @@ GCCPatterns = [
   ( '(.+\\.pexe)',     "env.append('INPUTS', $0); ForceFileType($0)"),
   ( '(-l.+)',          "env.append('INPUTS', $0)"),
 
+  # This is currently only used for the front-end, but we may want to have
+  # this control LTO optimization level as well.
   ( '(-O.+)',          "env.set('OPT_LEVEL', $0)"),
 
+  # TODO(pdox): Figure out a way to only accept LD flags that we handle
+  # instead of allowing everything through this.
   ( ('-Xlinker','(.*)'),  "env.append('LD_FLAGS', $0)\n"
                           "env.append('BCLD_FLAGS', $0)"),
+  ( '-Wl,(.*)',           "env.append('LD_FLAGS', *($0.split(',')))\n"
+                          "env.append('BCLD_FLAGS', *($0.split(',')))"),
 
-  ( '-Wl,(.*)',        "env.append('LD_FLAGS', *($0.split(',')))\n"
-                       "env.append('BCLD_FLAGS', *($0.split(',')))"),
   ( '(-W.*)',          "env.append('CC_FLAGS', $0)"),
   ( '(-std=.*)',       "env.append('CC_FLAGS', $0)"),
   ( '(-B.*)',          "env.append('CC_FLAGS', $0)"),
@@ -472,7 +479,6 @@ GCCPatterns = [
   ( '-L(.+)',                 "env.append('LD_SEARCH_DIRS', '-L' + $0);"
                               "env.append('SEARCH_DIRS', $0)"),
   ( '(-Wp,.*)',               "env.append('CC_FLAGS', $0)"),
-  ( '(-soname=.*)',           "env.append('LD_FLAGS', $0)"),
 
   ( '(-MMD)',                 "env.append('CC_FLAGS', $0)"),
   ( '(-MP)',                  "env.append('CC_FLAGS', $0)"),
@@ -496,6 +502,14 @@ GCCPatterns = [
   ( ('-e','(.*)'),            "env.append('LD_FLAGS', '-e', $0)"),
   ( ('-Ttext','(.*)'),        "env.append('LD_FLAGS', '-Ttext', $0)"),
   ( ('(--section-start)','(.*)'), "env.append('LD_FLAGS', $0, $1)"),
+  ( '(-soname=.*)',           "env.append('LD_FLAGS', $0)"),
+  # NOTE: "-s" is also a gcc flag that is similar in spirit, but we'll
+  # just use it as an LD_FLAG.
+  ( '-s',                     "env.append('LD_FLAGS', '-s')"),
+  ( '--strip-all',            "env.append('LD_FLAGS', '--strip-all')"),
+  # NOTE: the ld -S flag currently conflicts with the gcc -S flag, so omit.
+  #( '-S',                     "env.append('LD_FLAGS', '-S')"),
+  ( '--strip-debug',          "env.append('LD_FLAGS', '--strip-debug')"),
   ( '-melf_nacl',             "env.set('ARCH', 'X8632')"),
   ( ('-m','elf_nacl'),        "env.set('ARCH', 'X8632')"),
   ( '-melf64_nacl',           "env.set('ARCH', 'X8664')"),
@@ -592,6 +606,14 @@ def PrepareFlags():
   # Only enable direct object emission for ARM
   if env.has('FORCE_MC_DIRECT'):
     env.set('MC_DIRECT', '1')
+
+  # Copy LD flags related to stripping over to OPT to have the analogous
+  # actions be done to the bitcode.
+  linkflags = env.get('LD_FLAGS')
+  if '-s' in linkflags or '--strip-all' in linkflags:
+    env.append('OPT_FLAGS', '-strip')
+  if '-S' in linkflags or '--strip-debug' in linkflags:
+    env.append('OPT_FLAGS', '-strip-debug')
 
   if env.getbool('SHARED'):
     env.append('LD_FLAGS', '-shared')
@@ -770,6 +792,7 @@ def GetArch(required = False):
   return arch
 
 def Incarnation_opt(argv):
+  # This probably only needs the input file type, output, and "-O" option?
   ParseArgs(argv, GCCPatterns)
   AssertParseComplete()
   PrepareCompile()
@@ -783,12 +806,19 @@ def Incarnation_opt(argv):
     Log.Fatal('Output file must be specified')
   infile = inputs[0]
 
+  # If the input is llvm assembly, return llvm assembly instead of binary.
   intype = FileType(infile)
   if intype == 'll':
     env.append('OPT_FLAGS', '-S')
 
   OptimizeBC(infile, output)
   return 0
+
+def Incarnation_strip(argv):
+  # We do not handle the usual commandline options of the "strip" command,
+  # we just go ahead and do the equivalent of --strip-all to bitcode.
+  env.set('OPT_FLAGS', '-disable-opt -strip')
+  return Incarnation_opt(argv)
 
 def Incarnation_gxx(argv):
   env.set('CC', '${LLVM_GXX}')
@@ -972,6 +1002,7 @@ def Incarnation_as(argv):
   return 0
 
 def Incarnation_bclink(argv):
+  # This probably only needs the input file type patterns and output?
   ParseArgs(argv, GCCPatterns)
   AssertParseComplete()
   PrepareCompile()
@@ -986,6 +1017,7 @@ def Incarnation_bclink(argv):
   return 0
 
 def Incarnation_dis(argv):
+  # This probably only needs the input file type patterns and output?
   ParseArgs(argv, GCCPatterns)
   AssertParseComplete()
   PrepareCompile()
