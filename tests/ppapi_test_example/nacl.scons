@@ -1,0 +1,48 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+# This test demonstrates sample usage of ppapi_test_lib.
+#
+# These ppapi_test_lib/ headers should be used by the test setup:
+#   test_interface.h - test interface + setup to be implemented by the tester.
+#   get_browser_interface.h - provides getters for proxy-supported interfaces.
+#
+# ppapi_test_example.cc - sample implementation test_interface.h.
+# ppapi_test_example.html - sample test driver that uses scripting.
+# ppapi_test_example.nmf - sample manifest for platform-specific nexes.
+
+Import('env')
+
+env.Prepend(CPPDEFINES=['XP_UNIX'])
+
+nexe = 'ppapi_test_example_%s.nexe' % env.get('TARGET_FULLARCH')
+env.Alias('ppapi_test_example.nexe', [ '$STAGING_DIR/%s' % nexe ])
+
+ppapi_test_example_nexe = env.ComponentProgram(
+    nexe,
+    [ 'ppapi_test_example.cc' ],
+    EXTRA_LIBS=['${PPAPI_LIBS}',
+                 'ppapi_test_lib',
+                 'platform',  # for CHECK
+                 ])
+
+dest_copy = env.Replicate('$STAGING_DIR',
+                          [ 'ppapi_test_example.html',
+                            'ppapi_test_example.nmf',
+                            env.File('${SCONSTRUCT_DIR}/tools/browser_tester/'
+                                     'browserdata/nacltest.js') ]
+                          )
+env.Depends(nexe, dest_copy)
+
+node = env.PPAPIBrowserTester('ppapi_test_example_browser_test.out',
+                              url='ppapi_test_example.html',
+                              files=[ ppapi_test_example_nexe,
+                                      env.File('ppapi_test_example.nmf'),
+                                      env.File('ppapi_test_example.html')] )
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_ppapi_test_example_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())

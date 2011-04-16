@@ -1,28 +1,25 @@
 # -*- python -*-
-# Copyright 2011 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
-
-# This is a C PPAPI
+# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 #
-# ppapi_core.html - test driver that loads the nexe and scripts it
-# ppapi_core.nmf - manifest file for servier platform specific nexe binary.
-#
-# ppapi_core.c - implementation of PPP interface and PPP_Instance
-# scriptable_object.c - implementation of the scripting interface
+# This test uses ppapi_test_lib.
 
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
 nexe = 'ppapi_core_%s.nexe' % env.get('TARGET_FULLARCH')
-
 env.Alias('ppapi_core.nexe', ['$STAGING_DIR/%s' % nexe])
 
 ppapi_core_nexe = env.ComponentProgram(
     nexe,
-    ['ppapi_core.c', 'scriptable_object.c'],
-    EXTRA_LIBS=['${PPAPI_LIBS}', 'pthread', 'platform', 'gio'])
+    ['ppapi_core.cc'],
+    EXTRA_LIBS=['${PPAPI_LIBS}',
+                'ppapi_test_lib',
+                'pthread',
+                'platform',
+                'gio'])
 
 # Note that the html is required to run this program.
 dest_copy = env.Replicate('$STAGING_DIR',

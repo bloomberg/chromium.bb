@@ -2302,6 +2302,8 @@ nacl_env.Append(
     'tests/ppapi_geturl/nacl.scons',
     'tests/ppapi_gles_book/nacl.scons',
     'tests/ppapi_proxy/nacl.scons',
+    'tests/ppapi_test_example/nacl.scons',
+    'tests/ppapi_test_lib/nacl.scons',
     # uncomment this test once issue
     # http://code.google.com/p/nativeclient/issues/detail?id=902 gets fixed
     # 'tests/ppapi_tests/nacl.scons',
