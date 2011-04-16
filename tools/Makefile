@@ -513,13 +513,13 @@ BUILD/stamp-glibc32: BUILD/stamp-$(CROSSARCH)-pregcc-standalone \
 	    CFLAGS="$(GLIBC_CFLAGS) -pipe -fno-strict-aliasing -mno-tls-direct-seg-refs -march=i486" \
 	    libc_cv_forced_unwind=yes \
 	    libc_cv_c_cleanup=yes \
-	    libc_cv_slibdir=$(PREFIX)/nacl64/lib32 \
-	    --prefix=$(PREFIX)/nacl \
+	    libc_cv_slibdir=/nacl64/lib32 \
+	    --prefix=/nacl \
 	    --host=i486-linux-gnu \
 	    --with-headers=$(LINUX_HEADERS) \
 	    --enable-kernel=2.2.0
 	$(MAKE) -C BUILD/build-glibc32
-	$(MAKE) -C BUILD/build-glibc32 install_root=$(DESTDIR) install
+	$(MAKE) -C BUILD/build-glibc32 install_root=$(DESTDIR)$(PREFIX) install
 	touch $@
 
 BUILD/stamp-glibc64: BUILD/stamp-$(CROSSARCH)-pregcc-standalone \
@@ -532,13 +532,13 @@ BUILD/stamp-glibc64: BUILD/stamp-$(CROSSARCH)-pregcc-standalone \
 	    CFLAGS="$(GLIBC_CFLAGS) -pipe -fno-strict-aliasing -mno-tls-direct-seg-refs" \
 	    libc_cv_forced_unwind=yes \
 	    libc_cv_c_cleanup=yes \
-	    libc_cv_slibdir=$(PREFIX)/nacl64/lib \
-	    --prefix=$(PREFIX)/nacl64 \
+	    libc_cv_slibdir=/nacl64/lib \
+	    --prefix=/nacl64 \
 	    --host=x86_64-linux-gnu \
 	    --with-headers=$(LINUX_HEADERS) \
 	    --enable-kernel=2.2.0
 	$(MAKE) -C BUILD/build-glibc64
-	$(MAKE) -C BUILD/build-glibc64 install_root=$(DESTDIR) install
+	$(MAKE) -C BUILD/build-glibc64 install_root=$(DESTDIR)$(PREFIX) install
 	touch $@
 
 # Can be used to make a glibc archive separately from the main install tree.
@@ -548,16 +548,12 @@ INST_GLIBC_PREFIX?=PREFIX
 install-glibc: BUILD/stamp-glibc32 BUILD/stamp-glibc64
 	rm -rf "$(INST_GLIBC_PREFIX)"/glibc
 	mkdir "$(INST_GLIBC_PREFIX)"/glibc
-	mkdir -p "$(INST_GLIBC_PREFIX)/$(PREFIX)"
-	rmdir "$(INST_GLIBC_PREFIX)/$(PREFIX)" || \
-	  rm "$(INST_GLIBC_PREFIX)/$(PREFIX)"
-	ln -sfn "$(INST_GLIBC_PREFIX)/glibc" "$(INST_GLIBC_PREFIX)/$(PREFIX)"
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs \
 	  DESTDIR="" SDKROOT="$(INST_GLIBC_PREFIX)/glibc"
 	$(MAKE) -f $(THISMAKEFILE) -C BUILD/build-glibc32 \
-	  install_root=$(INST_GLIBC_PREFIX) install
+	  install_root="$(INST_GLIBC_PREFIX)/glibc" install
 	$(MAKE) -f $(THISMAKEFILE) -C BUILD/build-glibc64 \
-	  install_root=$(INST_GLIBC_PREFIX) install
+	  install_root="$(INST_GLIBC_PREFIX)/glibc" install
 	$(MAKE) -f $(THISMAKEFILE) stubout LIB_BITS=32 \
 	  DESTDIR="" SDKROOT="$(INST_GLIBC_PREFIX)/glibc"
 	$(MAKE) -f $(THISMAKEFILE) stubout LIB_BITS=64 \
@@ -806,17 +802,19 @@ gdb: BUILD/stamp-$(CROSSARCH)-gdb
 ##################################################################
 # Build the libraries and c runtime stubs.
 ##################################################################
-nc_threads: ALWAYS
+.PHONY: nc_threads
+nc_threads:
 	cd .. && \
 	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
 	  --mode=nacl_extra_sdk install_libpthread --verbose \
 	  targetplatform=x86-$(BITSPLATFORM)
 
-nacl_libraries_nocpp: ALWAYS
+.PHONY: nacl_libraries_nocpp
+nacl_libraries_nocpp:
 	cd .. && \
 	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
 	    --mode=nacl_extra_sdk extra_sdk_update_header \
-	    nocpp=yes --verbose ) && \
+	    --verbose ) && \
 	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
 	    --mode=nacl_extra_sdk extra_sdk_update \
 	    nocpp=yes targetplatform=x86-32 --verbose ) && \
@@ -828,7 +826,8 @@ nacl_libraries_nocpp: ALWAYS
 # nacl_libraries:
 # Injects nacl-specific libraries in toolchain.
 ##################################################################
-nacl_libraries: ALWAYS
+.PHONY: nacl_libraries
+nacl_libraries:
 	cd .. && \
 	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
 	    --mode=nacl_extra_sdk extra_sdk_update_header --verbose ) && \
@@ -841,11 +840,13 @@ nacl_libraries: ALWAYS
 	chmod a-x "$(DESTDIR)$(SDKROOT)/"{nacl,"$(CROSSARCH)"}/lib/*.a
 	rm -f "$(DESTDIR)$(SDKROOT)/"{nacl,"$(CROSSARCH)"}/lib/*.la
 
-sdk_minimal_test: ALWAYS
+.PHONY: sdk_minimal_test
+sdk_minimal_test:
 	cd .. && \
 	   ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
 	     --mode=nacl sdk_minimal_test platform=x86-32 --verbose;
 
+.PHONY: gdb_minimal_test
 gdb_minimal_test: BUILD/stamp-$(CROSSARCH)-gdb
 	cd .. && \
 	  ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
@@ -862,7 +863,8 @@ gdb_minimal_test: BUILD/stamp-$(CROSSARCH)-gdb
 #
 # Use redirector on other platforms to save space.
 
-redirector: ALWAYS
+.PHONY: redirector
+redirector:
 ifeq ($(PLATFORM), win)
 	for exe in "$(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)"-*.exe ; do \
 	  if ! cmp redirector.exe "$$exe" > /dev/null ; then \
@@ -987,7 +989,7 @@ buildbot-mark-version: | \
 DEJAGNU_TIMESTAMP := $(shell date +%y%m%d%H%M%S)
 
 .PHONY: check
-check: ALWAYS
+check:
 	(cd .. && \
 	  ./$(SCONS) naclsdk_mode=custom:$(DESTDIR)$(SDKROOT) \
 	    --mode=dbg-linux,nacl platform=x86-$(BITSPLATFORM) \
@@ -1007,7 +1009,8 @@ check: ALWAYS
 ##################################################################
 # Compile Native Client tests with the toolchain and run them.
 ##################################################################
-nacl-check: ALWAYS
+.PHONY: nacl-check
+nacl-check:
 	(cd .. && \
 	  ./$(SCONS) -k \
 	    $(SCONS_DESTINATIONS_NOLIB) \
@@ -1023,5 +1026,3 @@ nacl-check: ALWAYS
 .PHONY: clean
 clean:
 	rm -rf BUILD
-
-.PHONY: ALWAYS
