@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/cocoa/background_gradient_view.h"
 
 #import "chrome/browser/themes/theme_service.h"
+#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
 
@@ -62,7 +63,8 @@
       // Draw bottom stroke
       [[self strokeColor] set];
       NSRect borderRect, contentRect;
-      NSDivideRect([self bounds], &borderRect, &contentRect, 1, NSMinYEdge);
+      NSDivideRect([self bounds], &borderRect, &contentRect,
+                   [self cr_lineWidth], NSMinYEdge);
       NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
     }
   }

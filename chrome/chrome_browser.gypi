@@ -2398,6 +2398,8 @@
         'browser/ui/cocoa/notifications/balloon_view_host_mac.mm',
         'browser/ui/cocoa/nsmenuitem_additions.h',
         'browser/ui/cocoa/nsmenuitem_additions.mm',
+        'browser/ui/cocoa/nsview_additions.h',
+        'browser/ui/cocoa/nsview_additions.mm',
         'browser/ui/cocoa/objc_method_swizzle.h',
         'browser/ui/cocoa/objc_method_swizzle.mm',
         'browser/ui/cocoa/objc_zombie.h',

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "chrome/browser/themes/theme_service.h"
+#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
@@ -35,14 +36,15 @@
 // responsible for mimicking this bottom border, unless it's the selected
 // tab.
 - (void)drawBorder:(NSRect)bounds {
+  const CGFloat lineWidth = [self cr_lineWidth];
   NSRect borderRect, contentRect;
 
   borderRect = bounds;
-  borderRect.origin.y = 1;
-  borderRect.size.height = 1;
+  borderRect.origin.y = lineWidth;
+  borderRect.size.height = lineWidth;
   [[NSColor colorWithCalibratedWhite:0.0 alpha:0.2] set];
   NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
-  NSDivideRect(bounds, &borderRect, &contentRect, 1, NSMinYEdge);
+  NSDivideRect(bounds, &borderRect, &contentRect, lineWidth, NSMinYEdge);
 
   ThemeService* themeProvider =
       static_cast<ThemeService*>([[self window] themeProvider]);

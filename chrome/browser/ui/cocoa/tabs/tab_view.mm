@@ -8,6 +8,7 @@
 #import "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "chrome/browser/themes/theme_service.h"
+#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -647,6 +648,8 @@ const CGFloat kRapidCloseDist = 2.5;
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
+  const CGFloat lineWidth = [self cr_lineWidth];
+
   NSGraphicsContext* context = [NSGraphicsContext currentContext];
   [context saveGraphicsState];
 
@@ -749,14 +752,14 @@ const CGFloat kRapidCloseDist = 2.5;
   // the default theme.
   if (selected && themeProvider && themeProvider->UsingDefaultTheme()) {
     NSAffineTransform* highlightTransform = [NSAffineTransform transform];
-    [highlightTransform translateXBy:1.0 yBy:-1.0];
+    [highlightTransform translateXBy:lineWidth yBy:-lineWidth];
     scoped_nsobject<NSBezierPath> highlightPath([path copy]);
     [highlightPath transformUsingAffineTransform:highlightTransform];
     [highlightColor setStroke];
-    [highlightPath setLineWidth:1.0];
+    [highlightPath setLineWidth:lineWidth];
     [highlightPath stroke];
     highlightTransform = [NSAffineTransform transform];
-    [highlightTransform translateXBy:-2.0 yBy:0.0];
+    [highlightTransform translateXBy:-2 * lineWidth yBy:0.0];
     [highlightPath transformUsingAffineTransform:highlightTransform];
     [highlightPath stroke];
   }
@@ -766,7 +769,7 @@ const CGFloat kRapidCloseDist = 2.5;
   // Draw the top stroke.
   [context saveGraphicsState];
   [borderColor set];
-  [path setLineWidth:1.0];
+  [path setLineWidth:lineWidth];
   [path stroke];
   [context restoreGraphicsState];
 
@@ -775,8 +778,8 @@ const CGFloat kRapidCloseDist = 2.5;
   if (!selected) {
     [path addClip];
     NSRect borderRect = rect;
-    borderRect.origin.y = 1;
-    borderRect.size.height = 1;
+    borderRect.origin.y = lineWidth;
+    borderRect.size.height = lineWidth;
     [borderColor set];
     NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
 
@@ -1018,14 +1021,17 @@ const CGFloat kRapidCloseDist = 2.5;
 
 // Returns the bezier path used to draw the tab given the bounds to draw it in.
 - (NSBezierPath*)bezierPathForRect:(NSRect)rect {
-  // Outset by 0.5 in order to draw on pixels rather than on borders (which
-  // would cause blurry pixels). Subtract 1px of height to compensate, otherwise
-  // clipping will occur.
-  rect = NSInsetRect(rect, -0.5, -0.5);
-  rect.size.height -= 1.0;
+  const CGFloat lineWidth = [self cr_lineWidth];
+  const CGFloat halfLineWidth = lineWidth / 2.0;
 
-  NSPoint bottomLeft = NSMakePoint(NSMinX(rect), NSMinY(rect) + 2);
-  NSPoint bottomRight = NSMakePoint(NSMaxX(rect), NSMinY(rect) + 2);
+  // Outset by halfLineWidth in order to draw on pixels rather than on borders
+  // (which would cause blurry pixels). Subtract lineWidth of height to
+  // compensate, otherwise clipping will occur.
+  rect = NSInsetRect(rect, -halfLineWidth, -halfLineWidth);
+  rect.size.height -= lineWidth;
+
+  NSPoint bottomLeft = NSMakePoint(NSMinX(rect), NSMinY(rect) + 2 * lineWidth);
+  NSPoint bottomRight = NSMakePoint(NSMaxX(rect), NSMinY(rect) + 2 * lineWidth);
   NSPoint topRight =
       NSMakePoint(NSMaxX(rect) - kInsetMultiplier * NSHeight(rect),
                   NSMaxY(rect));
@@ -1036,11 +1042,12 @@ const CGFloat kRapidCloseDist = 2.5;
   CGFloat baseControlPointOutset = NSHeight(rect) * kControlPoint1Multiplier;
   CGFloat bottomControlPointInset = NSHeight(rect) * kControlPoint2Multiplier;
 
-  // Outset many of these values by 1 to cause the fill to bleed outside the
-  // clip area.
+  // Outset many of these values by lineWidth to cause the fill to bleed outside
+  // the clip area.
   NSBezierPath* path = [NSBezierPath bezierPath];
-  [path moveToPoint:NSMakePoint(bottomLeft.x - 1, bottomLeft.y - 2)];
-  [path lineToPoint:NSMakePoint(bottomLeft.x - 1, bottomLeft.y)];
+  [path moveToPoint:NSMakePoint(bottomLeft.x - lineWidth,
+                                bottomLeft.y - (2 * lineWidth))];
+  [path lineToPoint:NSMakePoint(bottomLeft.x - lineWidth, bottomLeft.y)];
   [path lineToPoint:bottomLeft];
   [path curveToPoint:topLeft
        controlPoint1:NSMakePoint(bottomLeft.x + baseControlPointOutset,
@@ -1053,8 +1060,9 @@ const CGFloat kRapidCloseDist = 2.5;
                                  topRight.y)
        controlPoint2:NSMakePoint(bottomRight.x - baseControlPointOutset,
                                  bottomRight.y)];
-  [path lineToPoint:NSMakePoint(bottomRight.x + 1, bottomRight.y)];
-  [path lineToPoint:NSMakePoint(bottomRight.x + 1, bottomRight.y - 2)];
+  [path lineToPoint:NSMakePoint(bottomRight.x + lineWidth, bottomRight.y)];
+  [path lineToPoint:NSMakePoint(bottomRight.x + lineWidth,
+                                bottomRight.y - (2 * lineWidth))];
   return path;
 }
 
