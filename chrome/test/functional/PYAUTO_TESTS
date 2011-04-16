@@ -28,12 +28,8 @@
   'CONTINUOUS': {
     'all': [
       'autofill',
-      # crbug.com/73439
-      '-autofill.AutofillTest.testFilterMalformedEmailAddresses',
       # crbug.com/77969
       '-autofill.AutofillTest.testFillProfileCrazyCharacters',
-      # crbug.com/78844
-      '-autofill.AutofillTest.testAutofillInvalid',
       'bookmark_bar',
       'bookmarks',
       'browser',
@@ -97,10 +93,6 @@
     ],
 
     'win': [
-      # crbug.com/77969
-      '-autofill.AutofillTest.testComparePhoneNumbers',
-      # crbug.com/78519
-      '-autofill.AutofillTest.testNoAutofillForReadOnlyFields',
       # testBookmarkBarVisible fails on windows. crbug.com/42823
       '-bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
       # crbug.com/64664

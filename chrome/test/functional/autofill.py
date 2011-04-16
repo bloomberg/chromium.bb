@@ -6,6 +6,7 @@
 import logging
 import os
 import pickle
+import re
 
 import autofill_dataset_converter
 import autofill_dataset_generator
@@ -90,8 +91,132 @@ class AutofillTest(pyauto.PyUITest):
     self.assertEqual([without_invalid],
                      self.GetAutofillProfile()['profiles'])
 
-  def testFilterIncompleteAddresses(self):
-    """Test Autofill filters out profile with incomplete address info."""
+  def testAutofillPrefsStringSavedAsIs(self):
+    """Test invalid credit card numbers typed in prefs should be saved as-is."""
+    credit_card = {'CREDIT_CARD_NUMBER': 'Not_0123-5Checked'}
+    self.FillAutofillProfile(credit_cards=[credit_card])
+    self.assertEqual([credit_card],
+                     self.GetAutofillProfile()['credit_cards'],
+                     msg='Credit card number in prefs not saved as-is.')
+
+  def _LuhnCreditCardNumberValidator(self, number):
+    """Validates whether a number is valid or invalid using the Luhn test.
+
+    Validation example:
+      1. Example number: 49927398716
+      2. Reverse the digits: 61789372994
+      3. Sum the digits in the odd-numbered position for s1:
+      6 + 7 + 9 + 7 + 9 + 4 = 42
+      4. Take the digits in the even-numbered position: 1, 8, 3, 2, 9
+        4.1. Two times each digit in the even-numbered position: 2, 16, 6, 4, 18
+        4.2. For each resulting value that is now 2 digits, add the digits
+        together: 2, 7, 6, 4, 9
+        (0 + 2 = 2, 1 + 6 = 7, 0 + 6 = 6, 0 + 4 = 4, 1 + 8 = 9)
+        4.3. Sum together the digits for s2: 2 + 7 + 6 + 4 + 9 = 28
+      5. Sum together s1 + s2 and if the sum ends in zero, the number passes the
+      Luhn test: 42 + 28 = 70 which is a valid credit card number.
+
+    Args:
+      number: the credit card number being validated, as a string.
+
+    Return:
+      boolean whether the credit card number is valid or not.
+    """
+    # Filters out non-digit characters.
+    number = re.sub('[^0-9]', '', number)
+    reverse = [int(ch) for ch in str(number)][::-1]
+    # The divmod of the function splits a number into two digits, ready for
+    # summing.
+    return ((sum(reverse[0::2]) + sum(sum(divmod(d*2, 10))
+                                      for d in reverse[1::2])) % 10 == 0)
+
+  def testInvalidCreditCardNumberIsNotAggregated(self):
+    """Test credit card info with an invalid number is not aggregated.
+
+    When filling out a form with an invalid credit card number (one that
+    does not pass the Luhn test) the credit card info should not be saved into
+    Autofill preferences.
+    """
+    invalid_cc_info = {'CREDIT_CARD_NAME': 'Bob Smith',
+                       'CREDIT_CARD_NUMBER': '4408 0412 3456 7890',
+                       'CREDIT_CARD_EXP_MONTH': '12',
+                       'CREDIT_CARD_EXP_4_DIGIT_YEAR': '2014'}
+
+    cc_number = invalid_cc_info['CREDIT_CARD_NUMBER']
+    self.assertFalse(self._LuhnCreditCardNumberValidator(cc_number),
+                     msg='This test requires an invalid credit card number.')
+    url = self.GetHttpURLForDataPath(
+        os.path.join('autofill', 'autofill_creditcard_form.html'))
+    self.NavigateToURL(url)
+    for key, value in invalid_cc_info.iteritems():
+      script = ('document.getElementById("%s").value = "%s"; '
+                'window.domAutomationController.send("done");') % (key, value)
+      self.ExecuteJavascript(script, 0, 0)
+    js_code = """
+      document.getElementById("cc_submit").submit();
+      window.addEventListener("unload", function() {
+        window.domAutomationController.send("done");
+      });
+    """
+    self.ExecuteJavascript(js_code, 0, 0)
+    # Wait until the form is submitted and the page completes loading.
+    self.WaitUntil(
+        lambda: self.GetDOMValue('document.readyState'),
+        expect_retval='complete')
+    cc_infobar = self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars']
+    self.assertFalse(
+        cc_infobar, msg='Save credit card infobar offered to save CC info.')
+
+  def testWhitespacesAndSeparatorCharsStrippedForValidCCNums(self):
+    """Test whitespaces and separator chars are stripped for valid CC numbers.
+
+    The credit card numbers used in this test pass the Luhn test.
+    For reference: http://www.merriampark.com/anatomycc.htm
+    """
+    credit_card_info = [{'CREDIT_CARD_NAME': 'Bob Smith',
+                         'CREDIT_CARD_NUMBER': '4408 0412 3456 7893',
+                         'CREDIT_CARD_EXP_MONTH': '12',
+                         'CREDIT_CARD_EXP_4_DIGIT_YEAR': '2014'},
+                        {'CREDIT_CARD_NAME': 'Jane Doe',
+                         'CREDIT_CARD_NUMBER': '4417-1234-5678-9113',
+                         'CREDIT_CARD_EXP_MONTH': '10',
+                         'CREDIT_CARD_EXP_4_DIGIT_YEAR': '2013'}]
+
+    url = self.GetHttpURLForDataPath(
+        os.path.join('autofill', 'autofill_creditcard_form.html'))
+    for cc_info in credit_card_info:
+      cc_number = credit_card_info['CREDIT_CARD_NUMBER']
+      self.assertTrue(self._LuhnCreditCardNumberValidator(cc_number),
+                      msg='This test requires a valid credit card number.')
+      self.NavigateToURL(url)
+      for key, value in cc_info.iteritems():
+        script = ('document.getElementById("%s").value = "%s"; '
+                  'window.domAutomationController.send("done");') % (key, value)
+        self.ExecuteJavascript(script, 0, 0)
+      js_code = """
+        document.getElementById("cc_submit").submit();
+        window.addEventListener("unload", function() {
+          window.domAutomationController.send("done");
+        });
+      """
+      self.ExecuteJavascript(js_code, 0, 0)
+      # Wait until form is submitted and page completes loading.
+      self.WaitUntil(
+          lambda: self.GetDOMValue('document.readyState'),
+          expect_retval='complete')
+      self.PerformActionOnInfobar('accept', infobar_index=0)
+
+    # Verify the filled-in credit card number against the aggregated number.
+    aggregated_cc_1 = (
+        self.GetAutofillProfile()['credit_cards'][0]['CREDIT_CARD_NUMBER'])
+    aggregated_cc_2 = (
+        self.GetAutofillProfile()['credit_cards'][1]['CREDIT_CARD_NUMBER'])
+    self.assertFalse((' ' in aggregated_cc_1 or ' ' in aggregated_cc_2 or
+                      '-' in aggregated_cc_1 or '-' in aggregated_cc_2),
+                     msg='Whitespaces or separator chars not stripped.')
+
+  def testProfilesNotAggregatedWithNoAddress(self):
+    """Test Autofill does not aggregate profiles with no address info."""
     profile = {'NAME_FIRST': 'Bob',
                'NAME_LAST': 'Smith',
                'EMAIL_ADDRESS': 'bsmith@example.com',
@@ -111,10 +236,11 @@ class AutofillTest(pyauto.PyUITest):
       });
     """
     self.ExecuteJavascript(js_code, 0, 0)
-    self.assertEqual([], self.GetAutofillProfile()['profiles'])
+    self.assertFalse(self.GetAutofillProfile()['profiles'],
+                     msg='Profile with no address info was aggregated.')
 
-  def testFilterMalformedEmailAddresses(self):
-    """Test Autofill filters out malformed email address during form submit."""
+  def testProfilesNotAggregatedWithInvalidEmail(self):
+    """Test Autofill does not aggregate profiles with an invalid email."""
     profile = {'NAME_FIRST': 'Bob',
                'NAME_LAST': 'Smith',
                'EMAIL_ADDRESS': 'garbage',
@@ -138,8 +264,8 @@ class AutofillTest(pyauto.PyUITest):
       });
     """
     self.ExecuteJavascript(js_code, 0, 0)
-    if 'EMAIL_ADDRESS' in self.GetAutofillProfile()['profiles'][0]:
-      raise KeyError('TEST FAIL: Malformed email address is saved in profiles.')
+    self.assertFalse(self.GetAutofillProfile()['profiles'],
+                     msg='Profile with invalid email was aggregated.')
 
   def _SendKeyEventsToPopulateForm(self, tab_index=0, windex=0):
     """Send key events to populate a web form with Autofill profile data.
@@ -186,8 +312,9 @@ class AutofillTest(pyauto.PyUITest):
             js_returning_field_value, 0, 0)
         self.assertEqual(
             form_values[key], value,
-            ('Original profile not equal to expected profile at key: "%s"\n'
-             'Expected: "%s"\nReturned: "%s"' % (key, value, form_values[key])))
+            msg=('Original profile not equal to expected profile at key: "%s"\n'
+                 'Expected: "%s"\nReturned: "%s"' % (
+                     key, value, form_values[key])))
 
   def testCCInfoNotStoredWhenAutocompleteOff(self):
     """Test CC info not offered to be saved when autocomplete=off for CC field.
@@ -220,8 +347,8 @@ class AutofillTest(pyauto.PyUITest):
         lambda: self.GetDOMValue('document.readyState'),
         expect_retval='complete')
     cc_infobar = self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars']
-    self.assertEqual(0, len(cc_infobar),
-                     'Save credit card infobar offered to save CC info.')
+    self.assertFalse(cc_infobar,
+                     msg='Save credit card infobar offered to save CC info.')
 
   def testNoAutofillForReadOnlyFields(self):
     """Test that Autofill does not fill in read-only fields."""
