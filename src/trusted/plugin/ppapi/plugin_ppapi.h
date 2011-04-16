@@ -91,6 +91,15 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // or NACL_NO_FILE_DESC. The caller must take ownership of the descriptor.
   int32_t GetPOSIXFileDesc(const nacl::string& url);
 
+  // The MIME type used to instantiate this instance of the NaCl plugin.
+  // Typically, the MIME type will be application/x-nacl.  However, if the NEXE
+  // is being used as a content type handler for another content type (such as
+  // PDF), then this function will return that type.
+  const nacl::string& mime_type() const { return mime_type_; }
+
+  // The default MIME type for the NaCl plugin.
+  static const char* const kNaClMIMEType;
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginPpapi);
   // Prevent construction and destruction from outside the class:
@@ -180,6 +189,8 @@ class PluginPpapi : public pp::Instance, public Plugin {
   bool replayDidChangeView;
   pp::Rect replayDidChangeViewPosition;
   pp::Rect replayDidChangeViewClip;
+
+  nacl::string mime_type_;
 
   // Keep track of the FileDownloaders created to fetch urls.
   std::set<FileDownloader*> url_downloaders_;

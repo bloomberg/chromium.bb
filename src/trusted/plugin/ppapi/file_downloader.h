@@ -15,6 +15,8 @@
 
 namespace plugin {
 
+class PluginPpapi;
+
 // A class that wraps PPAPI URLLoader and FileIO functionality for downloading
 // the url into a file and providing an open file descriptor.
 class FileDownloader {
@@ -29,7 +31,7 @@ class FileDownloader {
 
   // Initialize() can only be called once during the lifetime of this instance.
   // After the first call, subesquent calls do nothing.
-  void Initialize(pp::Instance* instance);
+  void Initialize(PluginPpapi* instance);
 
   // Issues a GET on |url| downloading the response into a file. The file is
   // then opened and a file descriptor is made available. Returns immediately
@@ -69,7 +71,7 @@ class FileDownloader {
   void URLLoadFinishNotify(int32_t pp_error);
   void FileOpenNotify(int32_t pp_error);
 
-  pp::Instance* instance_;
+  PluginPpapi* instance_;
   nacl::string url_to_open_;
   nacl::string url_;
   pp::CompletionCallback file_open_notify_callback_;

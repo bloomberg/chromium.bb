@@ -38,6 +38,7 @@ namespace {
 // The "src" attribute of the <embed> tag. The value is expected to be a URL
 // pointing to the nexe (aka nacl module) file.
 const char* const kSrcAttribute = "src";
+const char* const kTypeAttribute = "type";
 // The "nacl" attribute of the <embed> tag.  The value is expected to be either
 // a URL or URI pointing to the manifest file (which is expected to contain
 // JSON matching ISAs with .nexe URLs).
@@ -67,6 +68,8 @@ bool UrlAsNaClDesc(void* obj, plugin::SrpcParams* params) {
 }
 
 }  // namespace
+
+const char* const PluginPpapi::kNaClMIMEType = "application/x-nacl";
 
 bool PluginPpapi::SetAsyncCallback(void* obj, SrpcParams* params) {
   PluginPpapi* plugin =
@@ -144,6 +147,12 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
       const_cast<char**>(argn),
       const_cast<char**>(argv));
   if (status) {
+    const char* type_attr = LookupArgument(kTypeAttribute);
+    if (type_attr != NULL) {
+      mime_type_ = nacl::string(type_attr);
+      std::transform(mime_type_.begin(), mime_type_.end(), mime_type_.begin(),
+                     tolower);
+    }
     // Note: The order of attribute lookup is important.  This pattern looks
     // for a "nacl" attribute first, then a "src" attribute.
     const char* nacl_attr = LookupArgument(kNaclManifestAttribute);

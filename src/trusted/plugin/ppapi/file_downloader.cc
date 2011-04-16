@@ -9,16 +9,18 @@
 
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 #include "native_client/src/trusted/plugin/utility.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/dev/ppb_file_io_dev.h"
+#include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/cpp/dev/file_ref_dev.h"
 #include "ppapi/cpp/url_request_info.h"
 #include "ppapi/cpp/url_response_info.h"
 
 namespace {
 
-const char* const kChromeExtensionScheme = "chrome-extension";
+const char* const kChromeExtensionScheme = "chrome-extension:";
 const int32_t kExtensionRequestStatusOk = 0;
 
 // A helper function that tests to see if |url| is in the chrome-extension
@@ -32,7 +34,7 @@ bool IsChromeExtensionUrl(const std::string& url) {
 
 namespace plugin {
 
-void FileDownloader::Initialize(pp::Instance* instance) {
+void FileDownloader::Initialize(PluginPpapi* instance) {
   PLUGIN_PRINTF(("FileDownloader::FileDownloader (this=%p)\n",
                  static_cast<void*>(this)));
   CHECK(instance != NULL);
@@ -56,6 +58,22 @@ bool FileDownloader::Open(const nacl::string& url,
   // Note that we have the only refernce to the underlying objects, so
   // this will implicitly close any pending IO and destroy them.
   url_loader_ = pp::URLLoader(instance_);
+
+  if (!instance_->mime_type().empty() &&
+      instance_->mime_type() != PluginPpapi::kNaClMIMEType &&
+      IsChromeExtensionUrl(url)) {
+    // This NEXE is being used as a content type handler rather than directly
+    // by an HTML document. In that case, the NEXE runs in the security context
+    // of the content it is rendering and the NEXE itself appears to be a
+    // cross-origin resource stored in a Chrome extension. We request universal
+    // access during this load so that we can read the NEXE.
+    const PPB_URLLoaderTrusted* url_loaded_trusted =
+        static_cast<const PPB_URLLoaderTrusted*>(
+        pp::Module::Get()->GetBrowserInterface(PPB_URLLOADERTRUSTED_INTERFACE));
+    if (url_loaded_trusted)
+      url_loaded_trusted->GrantUniversalAccess(url_loader_.pp_resource());
+  }
+
   file_reader_ = pp::FileIO_Dev(instance_);
   file_io_trusted_interface_ = static_cast<const PPB_FileIOTrusted_Dev*>(
       pp::Module::Get()->GetBrowserInterface(PPB_FILEIOTRUSTED_DEV_INTERFACE));
