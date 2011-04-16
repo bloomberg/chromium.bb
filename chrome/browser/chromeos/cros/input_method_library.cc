@@ -940,7 +940,7 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
     descriptions->push_back(InputMethodDescriptor(
         "m17n:th:tis820", "tis820 (m17n)", "us", "th"));
     descriptions->push_back(InputMethodDescriptor(
-        "chewing", "Chewing", "us", "zh_TW"));
+        "mozc-chewing", "Mozc Chewing (Chewing)", "us", "zh_TW"));
     descriptions->push_back(InputMethodDescriptor(
         "m17n:zh:cangjie", "cangjie (m17n)", "us", "zh"));
     descriptions->push_back(InputMethodDescriptor(
@@ -1069,7 +1069,9 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
     (*keyboard_overlay_map)["m17n:th:kesmanee"] = "th";
     (*keyboard_overlay_map)["m17n:th:pattachote"] = "th";
     (*keyboard_overlay_map)["m17n:th:tis820"] = "th";
+    // TODO(yusukes): Remove chewing.
     (*keyboard_overlay_map)["chewing"] = "zh_TW";
+    (*keyboard_overlay_map)["mozc-chewing"] = "zh_TW";
     (*keyboard_overlay_map)["m17n:zh:cangjie"] = "zh_TW";
     (*keyboard_overlay_map)["m17n:zh:quick"] = "zh_TW";
     (*keyboard_overlay_map)["m17n:vi:tcvn"] = "vi";

@@ -97,10 +97,12 @@ const struct {
   { "pinyin", "\xe6\x8b\xbc" },  // U+62FC
   // For traditional Chinese input methods
   { "chewing", "\xe9\x85\xb7" },  // U+9177
+  { "mozc-chewing", "\xe9\x85\xb7" },  // U+9177
   { "m17n:zh:cangjie", "\xe5\x80\x89" },  // U+5009
   { "m17n:zh:quick", "\xe9\x80\x9f" },  // U+901F
   // For Hangul input method.
   { "hangul", "\xed\x95\x9c" },  // U+D55C
+  // TODO(yusukes): Remove chewing.
 };
 const size_t kMappingFromIdToIndicatorTextLen =
     ARRAYSIZE_UNSAFE(kMappingFromIdToIndicatorText);
@@ -301,9 +303,11 @@ string16 InputMethodMenu::GetLabelAt(int index) const {
   if (IndexIsInInputMethodList(index)) {
     name = GetTextForMenu(input_method_descriptors_->at(index));
   } else if (GetPropertyIndex(index, &index)) {
-    const ImePropertyList& property_list
-        = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
-    return input_method::GetStringUTF16(property_list.at(index).label);
+    InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
+    const ImePropertyList& property_list = library->current_ime_properties();
+    const std::string& input_method_id = library->current_input_method().id;
+    return input_method::GetStringUTF16(
+        property_list.at(index).label, input_method_id);
   }
 
   return WideToUTF16(name);
@@ -609,7 +613,7 @@ std::wstring InputMethodMenu::GetTextForMenu(
       language_code == "de") {
     text = GetLanguageName(language_code) + L" - ";
   }
-  text += input_method::GetString(input_method.display_name);
+  text += input_method::GetString(input_method.display_name, input_method.id);
 
   DCHECK(!text.empty());
   return text;

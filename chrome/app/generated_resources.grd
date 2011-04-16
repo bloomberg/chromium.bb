@@ -11700,6 +11700,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Switch to full width mode
       </message>
 
+      <message name="IDS_STATUSBAR_IME_CHINESE_MOZC_CHEWING_ENGLISH_MODE" desc="In the language menu button, this shows the input mode.">
+	English
+      </message>
+      <message name="IDS_STATUSBAR_IME_CHINESE_MOZC_CHEWING_CHINESE_MODE" desc="In the language menu button, this shows the input mode.">
+	Chinese
+      </message>
+      <message name="IDS_STATUSBAR_IME_CHINESE_MOZC_CHEWING_FULL_WIDTH_ENGLISH_MODE" desc="In the language menu button, this shows the input mode.">
+	Full-width English
+      </message>
+
       <message name="IDS_STATUSBAR_LAYOUT_JAPAN" desc="In the language menu button, this shows the input mode.">
         Japanese keyboard
       </message>

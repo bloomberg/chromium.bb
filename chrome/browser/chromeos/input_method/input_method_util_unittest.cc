@@ -31,18 +31,24 @@ class InputMethodUtilTest : public testing::Test {
 
 TEST_F(InputMethodUtilTest, GetStringUTF8) {
   EXPECT_EQ("Pinyin input method",
-            GetStringUTF8("Pinyin"));
+            GetStringUTF8("Pinyin", ""));
   EXPECT_EQ("Japanese input method (for US Dvorak keyboard)",
-            GetStringUTF8("Mozc (US Dvorak keyboard layout)"));
+            GetStringUTF8("Mozc (US Dvorak keyboard layout)", ""));
   EXPECT_EQ("Google Japanese Input (for US Dvorak keyboard)",
-            GetStringUTF8("Google Japanese Input (US Dvorak keyboard layout)"));
+            GetStringUTF8("Google Japanese Input (US Dvorak keyboard layout)",
+                          ""));
 }
 
 TEST_F(InputMethodUtilTest, StringIsSupported) {
-  EXPECT_TRUE(StringIsSupported("Hiragana"));
-  EXPECT_TRUE(StringIsSupported("Latin"));
-  EXPECT_TRUE(StringIsSupported("Direct input"));
-  EXPECT_FALSE(StringIsSupported("####THIS_STRING_IS_NOT_SUPPORTED####"));
+  EXPECT_TRUE(StringIsSupported("Hiragana", "mozc"));
+  EXPECT_TRUE(StringIsSupported("Latin", "mozc"));
+  EXPECT_TRUE(StringIsSupported("Direct input", "mozc"));
+  EXPECT_FALSE(StringIsSupported(
+      "####THIS_STRING_IS_NOT_SUPPORTED####", "mozc"));
+  EXPECT_TRUE(StringIsSupported("Chinese", "pinyin"));
+  EXPECT_TRUE(StringIsSupported("Chinese", "mozc-chewing"));
+  // The string "Chinese" is not for "hangul".
+  EXPECT_FALSE(StringIsSupported("Chinese", "hangul"));
 }
 
 TEST_F(InputMethodUtilTest, NormalizeLanguageCode) {
@@ -78,8 +84,6 @@ TEST_F(InputMethodUtilTest, GetLanguageCodeFromDescriptor) {
       InputMethodDescriptor("anthy", "Anthy", "us", "ja")));
   EXPECT_EQ("zh-TW", GetLanguageCodeFromDescriptor(
       InputMethodDescriptor("chewing", "Chewing", "us", "zh")));
-  EXPECT_EQ("zh-TW", GetLanguageCodeFromDescriptor(
-      InputMethodDescriptor("bopomofo", "Bopomofo(Zhuyin)", "us", "zh")));
   EXPECT_EQ("zh-TW", GetLanguageCodeFromDescriptor(
       InputMethodDescriptor("m17n:zh:cangjie", "Cangjie", "us", "zh")));
   EXPECT_EQ("zh-TW", GetLanguageCodeFromDescriptor(
@@ -264,7 +268,7 @@ TEST_F(InputMethodUtilTest, GetFirstLoginInputMethodIds_Us_And_ZhTw) {
   GetFirstLoginInputMethodIds("zh-TW", *descriptor, &input_method_ids);
   ASSERT_EQ(2U, input_method_ids.size());
   EXPECT_EQ("xkb:us::eng", input_method_ids[0]);
-  EXPECT_EQ("chewing", input_method_ids[1]);  // Chewing.
+  EXPECT_EQ("mozc-chewing", input_method_ids[1]);  // Chewing.
 }
 
 // US keyboard + Thai = US keyboard + kesmanee.

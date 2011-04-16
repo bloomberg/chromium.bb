@@ -69,7 +69,7 @@ TEST(InputMethodMenuTest, GetTextForIndicatorTest) {
               InputMethodMenu::GetTextForIndicator(desc));
   }
   {
-    InputMethodDescriptor desc("chewing", "Chewing", "us", "zh-TW");
+    InputMethodDescriptor desc("mozc-chewing", "Chewing", "us", "zh-TW");
     EXPECT_EQ(UTF8ToWide("\xe9\x85\xb7"),
               InputMethodMenu::GetTextForIndicator(desc));
   }

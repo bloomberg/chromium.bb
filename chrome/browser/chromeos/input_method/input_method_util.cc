@@ -120,7 +120,7 @@ const struct EnglishToResouceId {
   const char* english_string_from_ibus;
   int resource_id;
 } kEnglishToResourceIdArray[] = {
-  // For ibus-mozc: third_party/ibus-mozc/files/src/unix/ibus/.
+  // For ibus-mozc.
   { "Direct input", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_DIRECT_INPUT },
   { "Hiragana", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HIRAGANA },
   { "Katakana", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_KATAKANA },
@@ -132,8 +132,7 @@ const struct EnglishToResouceId {
   // For ibus-hangul: third_party/ibus-hangul/files/po/.
   { "Enable/Disable Hanja mode", IDS_STATUSBAR_IME_KOREAN_HANJA_MODE },
 
-  // For ibus-pinyin: third_party/ibus-pinyin/files/po/.
-  { "Chinese", IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_CHINESE_ENGLISH },
+  // For ibus-pinyin.
   { "Full/Half width",
     IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_FULL_HALF },
   { "Full/Half width punctuation",
@@ -142,10 +141,18 @@ const struct EnglishToResouceId {
     IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_S_T_CHINESE },
 
   // For ibus-chewing: third_party/ibus-chewing/files/src/IBusChewingEngine.gob.
+  // TODO(yusukes): Remove ibus-chewing support. We should also remove IDs from
+  //                chrome/app/generated_resources.grd.
   { "Chi", IDS_STATUSBAR_IME_CHINESE_CHEWING_SWITCH_CHINESE_TO_ENGLISH },
   { "Eng", IDS_STATUSBAR_IME_CHINESE_CHEWING_SWITCH_ENGLISH_TO_CHINESE },
   { "Full", IDS_STATUSBAR_IME_CHINESE_CHEWING_SWITCH_FULL_TO_HALF },
   { "Half", IDS_STATUSBAR_IME_CHINESE_CHEWING_SWITCH_HALF_TO_FULL },
+
+  // For ibus-mozc-chewing.
+  { "English",
+    IDS_STATUSBAR_IME_CHINESE_MOZC_CHEWING_ENGLISH_MODE },
+  { "Full-width English",
+    IDS_STATUSBAR_IME_CHINESE_MOZC_CHEWING_FULL_WIDTH_ENGLISH_MODE },
 
   // For the "Languages and Input" dialog.
   { "kbd (m17n)", IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD },
@@ -172,7 +179,10 @@ const struct EnglishToResouceId {
   { "vni (m17n)",
     IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_VNI_INPUT_METHOD },
   { "Bopomofo", IDS_OPTIONS_SETTINGS_LANGUAGES_BOPOMOFO_INPUT_METHOD },
+  // TODO(yusukes): Remove Chewing.
   { "Chewing", IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_INPUT_METHOD },
+  { "Mozc Chewing (Chewing)",
+    IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_INPUT_METHOD },
   { "Pinyin", IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_INPUT_METHOD },
   { "Mozc (US keyboard layout)",
     IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_MOZC_US_INPUT_METHOD },
@@ -243,7 +253,21 @@ const struct EnglishToResouceId {
   { "Korea, Republic of - 101/104 key Compatible",
     IDS_STATUSBAR_LAYOUT_KOREA_104 },
 };
-const size_t kNumEntries = arraysize(kEnglishToResourceIdArray);
+const size_t kEnglishToResourceIdArraySize =
+    arraysize(kEnglishToResourceIdArray);
+
+const struct EnglishAndInputMethodIdToResouceId {
+  const char* english_string_from_ibus;
+  const char* input_method_id;
+  int resource_id;
+} kEnglishAndInputMethodIdToResourceIdArray[] = {
+  { "Chinese", "pinyin",
+    IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_CHINESE_ENGLISH },
+  { "Chinese", "mozc-chewing",
+    IDS_STATUSBAR_IME_CHINESE_MOZC_CHEWING_CHINESE_MODE },
+};
+const size_t kEnglishAndInputMethodIdToResourceIdArraySize =
+    arraysize(kEnglishAndInputMethodIdToResourceIdArray);
 
 // There are some differences between ISO 639-2 (T) and ISO 639-2 B, and
 // some language codes are not recognized by ICU (i.e. ICU cannot convert
@@ -285,35 +309,65 @@ struct CompareLanguageCodesByLanguageName
   icu::Collator* collator_;
 };
 
-bool GetLocalizedString(
-    const std::string& english_string, string16 *out_string) {
+bool GetLocalizedString(const std::string& english_string,
+                        const std::string& input_method_id,
+                        string16 *out_string) {
   DCHECK(out_string);
+
+  // Initialize the primary map if needed.
   typedef base::hash_map<std::string, int> HashType;
   static HashType* english_to_resource_id = NULL;
-
-  // Initialize the map if needed.
   if (!english_to_resource_id) {
     // We don't free this map.
-    english_to_resource_id = new HashType(kNumEntries);
-    for (size_t i = 0; i < kNumEntries; ++i) {
-      const bool result = english_to_resource_id->insert(
-          std::make_pair(kEnglishToResourceIdArray[i].english_string_from_ibus,
-                         kEnglishToResourceIdArray[i].resource_id)).second;
+    english_to_resource_id = new HashType(kEnglishToResourceIdArraySize);
+    for (size_t i = 0; i < kEnglishToResourceIdArraySize; ++i) {
+      const EnglishToResouceId& map_entry = kEnglishToResourceIdArray[i];
+      const bool result = english_to_resource_id->insert(std::make_pair(
+          map_entry.english_string_from_ibus, map_entry.resource_id)).second;
       DCHECK(result) << "Duplicated string is found: "
-                     << kEnglishToResourceIdArray[i].english_string_from_ibus;
+                     << map_entry.english_string_from_ibus;
+    }
+  }
+
+  // Initialize the secondary map if needed.
+  typedef std::map<std::pair<std::string, std::string>, int> MapType;
+  static MapType* english_and_input_method_id_to_resource_id = NULL;
+  if (!english_and_input_method_id_to_resource_id) {
+    // We don't free this map.
+    english_and_input_method_id_to_resource_id = new MapType;
+    for (size_t i = 0; i < kEnglishAndInputMethodIdToResourceIdArraySize; ++i) {
+      const EnglishAndInputMethodIdToResouceId& map_entry =
+          kEnglishAndInputMethodIdToResourceIdArray[i];
+      const std::pair<std::string, std::string> key = std::make_pair(
+          map_entry.english_string_from_ibus, map_entry.input_method_id);
+      const bool result = english_and_input_method_id_to_resource_id->insert(
+          std::make_pair(key, map_entry.resource_id)).second;
+      DCHECK(result) << "Duplicated key is found: pair of "
+                     << map_entry.english_string_from_ibus
+                     << " and "
+                     << map_entry.input_method_id;
     }
   }
 
   HashType::const_iterator iter = english_to_resource_id->find(english_string);
   if (iter == english_to_resource_id->end()) {
-    // TODO(yusukes): Write Autotest which checks if all display names and all
-    // property names for supported input methods are listed in the resource ID
-    // array (crosbug.com/4572).
-    LOG(ERROR) << "Resource ID is not found for: " << english_string;
-    return false;
+    // The string is not found in the primary map. Try the secondary map with
+    // |input_method_id|.
+    const std::pair<std::string, std::string> key =
+        std::make_pair(english_string, input_method_id);
+    MapType::const_iterator iter2 =
+        english_and_input_method_id_to_resource_id->find(key);
+    if (iter2 == english_and_input_method_id_to_resource_id->end()) {
+      // TODO(yusukes): Write Autotest which checks if all display names and all
+      // property names for supported input methods are listed in the resource
+      // ID array (crosbug.com/4572).
+      LOG(ERROR) << "Resource ID is not found for: " << english_string;
+      return false;
+    }
+    *out_string = l10n_util::GetStringUTF16(iter2->second);
+  } else {
+    *out_string = l10n_util::GetStringUTF16(iter->second);
   }
-
-  *out_string = l10n_util::GetStringUTF16(iter->second);
   return true;
 };
 
@@ -322,33 +376,37 @@ bool GetLocalizedString(
 namespace chromeos {
 namespace input_method {
 
-std::wstring GetString(const std::string& english_string) {
+std::wstring GetString(const std::string& english_string,
+                       const std::string& input_method_id) {
   string16 localized_string;
-  if (GetLocalizedString(english_string, &localized_string)) {
+  if (GetLocalizedString(english_string, input_method_id, &localized_string)) {
     return UTF16ToWide(localized_string);
   }
   return UTF8ToWide(english_string);
 }
 
-std::string GetStringUTF8(const std::string& english_string) {
+std::string GetStringUTF8(const std::string& english_string,
+                          const std::string& input_method_id) {
   string16 localized_string;
-  if (GetLocalizedString(english_string, &localized_string)) {
+  if (GetLocalizedString(english_string, input_method_id, &localized_string)) {
     return UTF16ToUTF8(localized_string);
   }
   return english_string;
 }
 
-string16 GetStringUTF16(const std::string& english_string) {
+string16 GetStringUTF16(const std::string& english_string,
+                        const std::string& input_method_id) {
   string16 localized_string;
-  if (GetLocalizedString(english_string, &localized_string)) {
+  if (GetLocalizedString(english_string, input_method_id, &localized_string)) {
     return localized_string;
   }
   return UTF8ToUTF16(english_string);
 }
 
-bool StringIsSupported(const std::string& english_string) {
+bool StringIsSupported(const std::string& english_string,
+                       const std::string& input_method_id) {
   string16 localized_string;
-  return GetLocalizedString(english_string, &localized_string);
+  return GetLocalizedString(english_string, input_method_id, &localized_string);
 }
 
 std::string NormalizeLanguageCode(
@@ -403,10 +461,11 @@ std::string GetLanguageCodeFromDescriptor(
   if (descriptor.language_code == "zh") {
     if (descriptor.id == "pinyin") {
       return "zh-CN";
-    } else if (descriptor.id == "bopomofo" ||
-               descriptor.id == "chewing" ||
+    } else if (descriptor.id == "chewing" ||
+               descriptor.id == "mozc-chewing" ||
                descriptor.id == "m17n:zh:cangjie" ||
                descriptor.id == "m17n:zh:quick") {
+      // TODO(yusukes): Remove chewing.
       return "zh-TW";
     }
   }
@@ -464,7 +523,7 @@ std::string GetInputMethodDisplayNameFromId(
   InputMethodIdToDescriptorMap::const_iterator iter
       = IdMaps::GetInstance()->id_to_descriptor->find(input_method_id);
   return (iter == IdMaps::GetInstance()->id_to_descriptor->end()) ?
-      "" : GetStringUTF8(iter->second.display_name);
+      "" : GetStringUTF8(iter->second.display_name, input_method_id);
 }
 
 const chromeos::InputMethodDescriptor* GetInputMethodDescriptorFromId(
