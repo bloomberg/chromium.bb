@@ -721,14 +721,14 @@ const int NetworkMenu::kBarsImagesBlack[kNumBarsImages] = {
   IDR_STATUSBAR_NETWORK_BARS3_BLACK,
   IDR_STATUSBAR_NETWORK_BARS4_BLACK,
 };
-/*
 // static
-const int NetworkMenu::kBarsImagesLowData[kNumBarsImages] = {
+const int NetworkMenu::kBarsImagesOrange[kNumBarsImages] = {
   IDR_STATUSBAR_NETWORK_BARS1_ORANGE,
   IDR_STATUSBAR_NETWORK_BARS2_ORANGE,
   IDR_STATUSBAR_NETWORK_BARS3_ORANGE,
   IDR_STATUSBAR_NETWORK_BARS4_ORANGE,
 };
+#if 0
 // static
 const int NetworkMenu::kBarsImagesVLowData[kNumBarsImages] = {
   IDR_STATUSBAR_NETWORK_BARS1_RED,
@@ -736,7 +736,7 @@ const int NetworkMenu::kBarsImagesVLowData[kNumBarsImages] = {
   IDR_STATUSBAR_NETWORK_BARS3_RED,
   IDR_STATUSBAR_NETWORK_BARS4_RED,
 };
-*/
+#endif
 
 // static
 const int NetworkMenu::kNumAnimatingImages = 10;
@@ -910,9 +910,9 @@ const SkBitmap* NetworkMenu::BadgeForNetworkTechnology(
 // static
 const SkBitmap* NetworkMenu::BadgeForRoamingStatus(
     const CellularNetwork* cellular) {
-  // TODO(nkostylev): Return "R" badge, http://crosbug.com/12010.
   if (cellular->roaming_state() == ROAMING_STATE_ROAMING)
-    return NULL;
+    return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        IDR_STATUSBAR_NETWORK_ROAMING);
   else
     return NULL;
 }

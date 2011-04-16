@@ -278,9 +278,9 @@ class NetworkMenu : public views::ViewMenuDelegate {
   // Bars image resources.
   static const int kBarsImages[];
   static const int kBarsImagesBlack[];
-  // TODO(chocobo): Add these back when we decide to do colored bars again.
-//  static const int kBarsImagesLowData[];
-//  static const int kBarsImagesVLowData[];
+  static const int kBarsImagesOrange[];
+  // TODO(chocobo): Add this back when we decide to do colored bars again.
+  // static const int kBarsImagesVLowData[];
 
   // The number of animating images for network connecting.
   static const int kNumAnimatingImages;

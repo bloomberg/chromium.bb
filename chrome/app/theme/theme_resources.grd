@@ -793,6 +793,7 @@
         <include name="IDR_STATUSBAR_NETWORK_HSPA_PLUS" file="statusbar_network_hspa_plus.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_LTE" file="statusbar_network_lte.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_LTE_ADVANCED" file="statusbar_network_lte_advanced.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_ROAMING" file="statusbar_network_roaming.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_SECURE" file="statusbar_network_secure.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_WARNING" file="statusbar_network_warning.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WIRED" file="statusbar_wired.png" type="BINDATA" />
