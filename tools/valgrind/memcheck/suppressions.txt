@@ -4363,15 +4363,6 @@
    fun:_ZN*18SessionRestoreImpl21ProcessSessionWindowsEPSt6vectorIP13SessionWindowSaIS3_EE
    fun:_ZN*18SessionRestoreImpl12OnGotSessionEiPSt6vectorIP13SessionWindowSaIS3_EE
 }
-{
-   bug_79656
-   Memcheck:Addr4
-   fun:_ZNK10scoped_ptrIN7fileapi21FileSystemPathManagerEE3getEv
-   fun:_ZN7fileapi17FileSystemContext12path_managerEv
-   fun:_ZN16ExtensionService23NotifyExtensionUnloadedEPK9ExtensionN21UnloadedExtensionInfo6ReasonE
-   fun:_ZN16ExtensionService15UnloadExtensionERKSsN21UnloadedExtensionInfo6ReasonE
-   fun:_ZN16ExtensionService18UninstallExtensionERKSsbPSs
-}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations

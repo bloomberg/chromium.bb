@@ -16,8 +16,5 @@ P2PTransportImplTest.Create
 P2PTransportImplTest.Connect
 P2PTransportImplTest.SendData
 
-# Crashes on CrOS, see http://crbug.com/79656
-BackgroundApplicationListModelTest.LoadExplicitExtensions
-
 # Failing on CrOS, see http://crbug.com/79657
 SignedSettingsTest.StorePolicyNoPolicyData
