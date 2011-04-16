@@ -19,6 +19,8 @@ const char* kDefaultLocale = "default_locale";
 const char* kDescription = "description";
 const char* kDevToolsPage = "devtools_page";
 const char* kExcludeGlobs = "exclude_globs";
+const char* kFileFilters = "file_filters";
+const char* kFileBrowserHandlers = "file_browser_handlers";
 const char* kHomepageURL = "homepage_url";
 const char* kIcons = "icons";
 const char* kIncognito = "incognito";
@@ -157,6 +159,12 @@ const char* kInvalidDescription =
     "Invalid value for 'description'.";
 const char* kInvalidDevToolsPage =
     "Invalid value for 'devtools_page'.";
+const char* kInvalidFileBrowserHandler =
+    "Invalid value for 'file_browser_handers'.";
+const char* kInvalidFileFiltersList =
+    "Invalid value for 'file_filters'.";
+const char* kInvalidFileFilterValue =
+    "Invalid value for 'file_filters[*]'.";
 const char* kInvalidGlob =
     "Invalid value for 'content_scripts[*].*[*]'.";
 const char* kInvalidGlobList =
@@ -296,6 +304,8 @@ const char* kInvalidTtsVoicesVoiceName =
     "Invalid value for 'tts.voices[*].voiceName'.";
 const char* kInvalidUpdateURL =
     "Invalid value for update url: '[*]'.";
+const char* kInvalidURLPatternError =
+    "Invalid url pattern '*'";
 const char* kInvalidVersion =
     "Required value 'version' is missing or invalid. It must be between 1-4 "
     "dot-separated integers each between 0 and 65536.";

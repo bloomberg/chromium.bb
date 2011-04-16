@@ -24,6 +24,8 @@ namespace extension_manifest_keys {
   extern const char* kDescription;
   extern const char* kDevToolsPage;
   extern const char* kExcludeGlobs;
+  extern const char* kFileFilters;
+  extern const char* kFileBrowserHandlers;
   extern const char* kHomepageURL;
   extern const char* kIcons;
   extern const char* kIncognito;
@@ -131,6 +133,9 @@ namespace extension_manifest_errors {
   extern const char* kInvalidDefaultLocale;
   extern const char* kInvalidDescription;
   extern const char* kInvalidDevToolsPage;
+  extern const char* kInvalidFileBrowserHandler;
+  extern const char* kInvalidFileFiltersList;
+  extern const char* kInvalidFileFilterValue;
   extern const char* kInvalidGlob;
   extern const char* kInvalidGlobList;
   extern const char* kInvalidHomepageURL;
@@ -199,6 +204,7 @@ namespace extension_manifest_errors {
   extern const char* kInvalidTtsVoicesLocale;
   extern const char* kInvalidTtsVoicesVoiceName;
   extern const char* kInvalidUpdateURL;
+  extern const char* kInvalidURLPatternError;
   extern const char* kInvalidVersion;
   extern const char* kInvalidWebURL;
   extern const char* kInvalidWebURLs;

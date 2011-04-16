@@ -13,6 +13,7 @@
 
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -27,6 +28,8 @@ class DictionaryValue;
 class ExtensionAction;
 class ExtensionResource;
 class ExtensionSidebarDefaults;
+class FileBrowserHandler;
+class ListValue;
 class SkBitmap;
 class Version;
 
@@ -35,6 +38,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
  public:
   typedef std::map<const std::string, GURL> URLOverrideMap;
   typedef std::vector<std::string> ScriptingWhitelist;
+  typedef std::vector<linked_ptr<FileBrowserHandler> > FileBrowserHandlerList;
 
   // What an extension was loaded from.
   // NOTE: These values are stored as integers in the preferences and used
@@ -207,7 +211,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   static const char kDebuggerPermission[];
   static const char kExperimentalPermission[];
   static const char kFileBrowserHandlerPermission[];
-  static const char kFileSystemPermission[];
   static const char kFileBrowserPrivatePermission[];
   static const char kGeolocationPermission[];
   static const char kHistoryPermission[];
@@ -510,6 +513,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   ExtensionSidebarDefaults* sidebar_defaults() const {
     return sidebar_defaults_.get();
   }
+  const FileBrowserHandlerList* file_browser_handlers() const {
+    return file_browser_handlers_.get();
+  }
   const std::vector<PluginInfo>& plugins() const { return plugins_; }
   const std::vector<NaClModuleInfo>& nacl_modules() const {
     return nacl_modules_;
@@ -638,6 +644,13 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   ExtensionAction* LoadExtensionActionHelper(
       const DictionaryValue* extension_action, std::string* error);
 
+  // Helper method to load an FileBrowserHandlerList from the manifest.
+  FileBrowserHandlerList* LoadFileBrowserHandlers(
+      const ListValue* extension_actions, std::string* error);
+  // Helper method to load an FileBrowserHandler from manifest.
+  FileBrowserHandler* LoadFileBrowserHandler(
+      const DictionaryValue* file_browser_handlers, std::string* error);
+
   // Helper method to load an ExtensionSidebarDefaults from the sidebar manifest
   // entry.
   ExtensionSidebarDefaults* LoadExtensionSidebarDefaults(
@@ -739,6 +752,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The extension's browser action, if any.
   scoped_ptr<ExtensionAction> browser_action_;
+
+  // The extension's file browser actions, if any.
+  scoped_ptr<FileBrowserHandlerList> file_browser_handlers_;
 
   // The extension's sidebar, if any.
   scoped_ptr<ExtensionSidebarDefaults> sidebar_defaults_;

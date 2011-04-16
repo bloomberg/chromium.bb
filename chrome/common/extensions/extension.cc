@@ -32,6 +32,7 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/extension_sidebar_defaults.h"
 #include "chrome/common/extensions/extension_sidebar_utils.h"
+#include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/url_util.h"
@@ -265,7 +266,6 @@ const char Extension::kChromeosInfoPrivatePermissions[] = "chromeosInfoPrivate";
 const char Extension::kDebuggerPermission[] = "debugger";
 const char Extension::kExperimentalPermission[] = "experimental";
 const char Extension::kFileBrowserHandlerPermission[] = "fileBrowserHandler";
-const char Extension::kFileSystemPermission[] = "fileSystem";
 const char Extension::kFileBrowserPrivatePermission[] = "fileBrowserPrivate";
 const char Extension::kGeolocationPermission[] = "geolocation";
 const char Extension::kHistoryPermission[] = "history";
@@ -290,7 +290,6 @@ const Extension::Permission Extension::kPermissions[] = {
   { kDebuggerPermission, IDS_EXTENSION_PROMPT_WARNING_DEBUGGER },
   { kExperimentalPermission, 0 },
   { kFileBrowserHandlerPermission, 0 },
-  { kFileSystemPermission, 0 },
   { kFileBrowserPrivatePermission, 0 },
   { kGeolocationPermission, IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION },
   { kIdlePermission, 0 },
@@ -947,6 +946,91 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
       DCHECK(!result->HasPopup(ExtensionAction::kDefaultTabId))
           << "Shouldn't be posible for the popup to be set.";
     }
+  }
+
+  return result.release();
+}
+
+Extension::FileBrowserHandlerList* Extension::LoadFileBrowserHandlers(
+    const ListValue* extension_actions, std::string* error) {
+  scoped_ptr<FileBrowserHandlerList> result(
+      new FileBrowserHandlerList());
+  for (ListValue::const_iterator iter = extension_actions->begin();
+       iter != extension_actions->end();
+       ++iter) {
+    if (!(*iter)->IsType(Value::TYPE_DICTIONARY)) {
+      *error = errors::kInvalidFileBrowserHandler;
+      return NULL;
+    }
+    scoped_ptr<FileBrowserHandler> action(
+        LoadFileBrowserHandler(
+            reinterpret_cast<DictionaryValue*>(*iter), error));
+    if (!action.get())
+      return NULL;  // Failed to parse file browser action definition.
+    result->push_back(linked_ptr<FileBrowserHandler>(action.release()));
+  }
+  return result.release();
+}
+
+FileBrowserHandler* Extension::LoadFileBrowserHandler(
+    const DictionaryValue* file_browser_handler, std::string* error) {
+  scoped_ptr<FileBrowserHandler> result(
+      new FileBrowserHandler());
+  result->set_extension_id(id());
+
+  std::string id;
+  // Read the file action |id| (mandatory).
+  if (!file_browser_handler->HasKey(keys::kPageActionId) ||
+      !file_browser_handler->GetString(keys::kPageActionId, &id)) {
+    *error = errors::kInvalidPageActionId;
+    return NULL;
+  }
+  result->set_id(id);
+
+  // Read the page action title from |default_title| (mandatory).
+  std::string title;
+  if (!file_browser_handler->HasKey(keys::kPageActionDefaultTitle) ||
+      !file_browser_handler->GetString(keys::kPageActionDefaultTitle, &title)) {
+    *error = errors::kInvalidPageActionDefaultTitle;
+    return NULL;
+  }
+  result->set_title(title);
+
+  // Initialize file filters (mandatory).
+  ListValue* list_value = NULL;
+  if (!file_browser_handler->HasKey(keys::kFileFilters) ||
+      !file_browser_handler->GetList(keys::kFileFilters, &list_value) ||
+      list_value->empty()) {
+    *error = errors::kInvalidFileFiltersList;
+    return NULL;
+  }
+  for (size_t i = 0; i < list_value->GetSize(); ++i) {
+    std::string filter;
+    if (!list_value->GetString(i, &filter)) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidFileFilterValue, base::IntToString(i));
+      return NULL;
+    }
+    URLPattern pattern(URLPattern::SCHEME_FILESYSTEM);
+    if (URLPattern::PARSE_SUCCESS != pattern.Parse(filter,
+                                                   URLPattern::PARSE_STRICT)) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidURLPatternError, filter);
+      return NULL;
+    }
+    result->AddPattern(pattern);
+  }
+
+  std::string default_icon;
+  // Read the file browser action |default_icon| (optional).
+  if (file_browser_handler->HasKey(keys::kPageActionDefaultIcon)) {
+    if (!file_browser_handler->GetString(
+            keys::kPageActionDefaultIcon,&default_icon) ||
+        default_icon.empty()) {
+      *error = errors::kInvalidPageActionIconPath;
+      return NULL;
+    }
+    result->set_icon_path(default_icon);
   }
 
   return result.release();
@@ -1975,6 +2059,21 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       return false;  // Failed to parse browser action definition.
   }
 
+  // Initialize file browser actions (optional).
+  if (source.HasKey(keys::kFileBrowserHandlers)) {
+    ListValue* file_browser_handlers_value = NULL;
+    if (!source.GetList(keys::kFileBrowserHandlers,
+                              &file_browser_handlers_value)) {
+      *error = errors::kInvalidFileBrowserHandler;
+      return false;
+    }
+
+    file_browser_handlers_.reset(
+        LoadFileBrowserHandlers(file_browser_handlers_value, error));
+    if (!file_browser_handlers_.get())
+      return false;  // Failed to parse file browser actions definition.
+  }
+
   // Load App settings.
   if (!LoadIsApp(manifest_value_.get(), error) ||
       !LoadExtent(manifest_value_.get(), keys::kWebURLs,
@@ -2040,7 +2139,12 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       // Only COMPONENT extensions can use private APIs.
       // TODO(asargent) - We want a more general purpose mechanism for this,
       // and better error messages. (http://crbug.com/54013)
-      if (!IsComponentOnlyPermission(permission_str)) {
+      if (!IsComponentOnlyPermission(permission_str)
+#ifndef NDEBUG
+           && !CommandLine::ForCurrentProcess()->HasSwitch(
+                 switches::kExposePrivateExtensionApi)
+#endif
+          ) {
         continue;
       }
 
@@ -2672,7 +2776,12 @@ bool Extension::IsAPIPermission(const std::string& str) const {
 }
 
 bool Extension::CanExecuteScriptEverywhere() const {
-  if (location() == Extension::COMPONENT)
+  if (location() == Extension::COMPONENT
+#ifndef NDEBUG
+      || CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kExposePrivateExtensionApi)
+#endif
+      )
     return true;
 
   ScriptingWhitelist* whitelist =

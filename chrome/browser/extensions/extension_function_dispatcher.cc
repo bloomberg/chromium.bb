@@ -20,7 +20,6 @@
 #include "chrome/browser/extensions/extension_context_menu_api.h"
 #include "chrome/browser/extensions/extension_cookies_api.h"
 #include "chrome/browser/extensions/extension_debugger_api.h"
-#include "chrome/browser/extensions/extension_file_browser_private_api.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_history_api.h"
 #include "chrome/browser/extensions/extension_i18n_api.h"
@@ -66,6 +65,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/extensions/extension_file_browser_private_api.h"
 #include "chrome/browser/extensions/extension_info_private_api_chromeos.h"
 #endif
 
@@ -201,9 +201,6 @@ void FactoryRegistry::ResetFunctions() {
   // Processes.
   RegisterFunction<GetProcessIdForTabFunction>();
 
-  // Local filesystem.
-  RegisterFunction<RequestLocalFileSystemFunction>();
-
   // Metrics.
   RegisterFunction<MetricsGetEnabledFunction>();
   RegisterFunction<MetricsSetEnabledFunction>();
@@ -312,15 +309,19 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<SetPreferenceFunction>();
   RegisterFunction<ClearPreferenceFunction>();
 
-  // File Dialog.
+  // ChromeOS-specific part of the API.
+#if defined(OS_CHROMEOS)
+  // Device Customization.
+  RegisterFunction<GetChromeosInfoFunction>();
+
+  // FileBrowserPrivate functions.
+  RegisterFunction<ExecuteTasksFileBrowserFunction>();
+  RegisterFunction<GetFileTasksFileBrowserFunction>();
+  RegisterFunction<RequestLocalFileSystemFunction>();
   RegisterFunction<SelectFileFunction>();
   RegisterFunction<SelectFilesFunction>();
   RegisterFunction<CancelFileDialogFunction>();
   RegisterFunction<FileDialogStringsFunction>();
-
-#if defined(OS_CHROMEOS)
-  // Device Customization.
-  RegisterFunction<GetChromeosInfoFunction>();
 #endif
 
   // Debugger
