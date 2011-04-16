@@ -14,6 +14,7 @@
         '<(DEPTH)/net/net.gyp:net',
       ],
       'sources': [
+        'file_system_callback_dispatcher.cc',
         'file_system_callback_dispatcher.h',
         'file_system_context.cc',
         'file_system_context.h',

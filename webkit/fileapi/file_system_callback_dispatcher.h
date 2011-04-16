@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/file_util_proxy.h"
-#include "base/logging.h"
 #include "base/platform_file.h"
 #include "base/process.h"
 
@@ -21,7 +20,7 @@ namespace fileapi {
 // but uses chromium types.
 class FileSystemCallbackDispatcher {
  public:
-  virtual ~FileSystemCallbackDispatcher() {}
+  virtual ~FileSystemCallbackDispatcher();
 
   // Callback for various operations that don't require return values.
   virtual void DidSucceed() = 0;
@@ -58,9 +57,7 @@ class FileSystemCallbackDispatcher {
   // for Pepper.
   virtual void DidOpenFile(
       base::PlatformFile file,
-      base::ProcessHandle peer_handle) {
-    NOTREACHED();
-  }
+      base::ProcessHandle peer_handle);
 };
 
 }  // namespace fileapi
