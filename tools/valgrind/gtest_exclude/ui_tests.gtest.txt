@@ -41,12 +41,14 @@ AutomationProxyTest.NavigateToURLWithTimeout1
 AutomationProxyTest.NavigateToURLWithTimeout2
 # See http://crbug.com/29586
 NewTabUITest.ChromeInternalLoadsNTP
+# See http://crbug.com/38575
+WorkerTest.*
 # See http://crbug.com/42205
 DownloadTest.*
 # See http://crbug.com/45792
 DefaultPluginUITest.DefaultPluginLoadTest
-# See http://crbug.com/38575
-WorkerTest.*
+# See http://crbug.com/46643
+ErrorPageTest.DNSError_Basic
 # See http://crbug.com/59659
 NewTabUITest.NTPHasLoginName
 

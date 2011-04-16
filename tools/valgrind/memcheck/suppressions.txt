@@ -853,6 +853,7 @@
    bug_61585a
    Memcheck:Leak
    fun:calloc
+   ...
    fun:error_get_my_stack
    fun:nss_ClearErrorStack
    fun:NSSArena_Create
@@ -860,7 +861,7 @@
    fun:nss_Init
    fun:NSS_InitReadWrite
    ...
-   fun:_ZN4base13EnsureNSSInitEv
+   fun:*13EnsureNSSInitEv
 }
 {
    bug_61585b
@@ -2273,7 +2274,7 @@
    fun:*DnsReloadTimer7ExpiredEv
    fun:_ZN3net24DnsReloadTimerHasExpiredEv
    fun:_ZN3net22SystemHostResolverProcERKSsNS_13AddressFamilyEiPNS_11AddressListEPi
-   fun:_ZN3net15ResolveAddrInfoEPNS_16HostResolverProcERKSsNS_13AddressFamilyEiPNS_11AddressListEPi
+   fun:_ZN3net*15ResolveAddrInfoEPNS_16HostResolverProc*
    fun:_ZN3net16HostResolverImpl3Job8DoLookupEv
    fun:_Z16DispatchToMethodIN3net16HostResolverImpl3JobEMS2_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN14RunnableMethodIN3net16HostResolverImpl3JobEMS2_FvvE6Tuple0E3RunEv
@@ -2288,9 +2289,7 @@
    fun:_ZNSt6vectorIPN11MessageLoop12TaskObserverESaIS2_EE9push_backERKS2_
    fun:_ZN16ObserverListBaseIN11MessageLoop12TaskObserverEE11AddObserverEPS1_
    fun:_ZN11MessageLoop15AddTaskObserverEPNS_12TaskObserverE
-   fun:_ZN57_GLOBAL__N_chrome_browser_jankometer.cc_*IOJankObserver21AttachToCurrentThreadEv
-   fun:_Z16DispatchToMethodIN57_GLOBAL__N_chrome_browser_jankometer.cc_*IOJankObserverEMS1_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN14RunnableMethodIN57_GLOBAL__N_chrome_browser_jankometer.cc_*IOJankObserverEMS1_FvvE6Tuple0E3RunEv
+   fun:*IOJankObserver21AttachToCurrentThreadEv
 }
 {
    bug_46420a
@@ -3153,7 +3152,7 @@
    fun:calloc
    fun:_dlerror_run
    fun:dlsym
-   fun:_Z26InitLibcLocaltimeFunctionsv
+   fun:_Z*26InitLibcLocaltimeFunctionsv
    fun:pthread_once
    fun:_ZNK4base4Time7ExplodeEbPNS0_8ExplodedE
    fun:_ZNK4base4Time12LocalExplodeEPNS0_8ExplodedE
@@ -3667,8 +3666,8 @@
    fun:_ZN3WTF14ThreadSpecificINS_13WTFThreadDataEEcvPS1_Ev
    fun:_ZN3WTF14ThreadSpecificINS_13WTFThreadDataEEdeEv
    fun:_ZN3WTF13wtfThreadDataEv
-   fun:_ZN3WTF11stringTableEv
-   fun:_ZN3WTF16addToStringTableIPKcNS_17CStringTranslatorEEENS_10PassRefPtrINS_10StringImplEEERKT_
+   fun:_ZN3WTF*11stringTableEv
+   fun:_ZN3WTF*16addToStringTableIPKcNS_17CStringTranslatorEEENS_10PassRefPtrINS_10StringImplEEERKT_
    fun:_ZN3WTF12AtomicString3addEPKc
    fun:_ZN3WTF12AtomicStringC1EPKc
    fun:_ZN3WTF12AtomicString4initEv
