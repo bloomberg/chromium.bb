@@ -273,6 +273,13 @@ int32_t PPB_URLLoader_Impl::Open(PPB_URLRequestInfo_Impl* request,
     return PP_ERROR_FAILED;
 
   loader_->loadAsynchronously(web_request, this);
+  // Check for immediate failure; The AssociatedURLLoader will call our
+  // didFail method synchronously for certain kinds of access violations
+  // so we must return an error to the caller.
+  // TODO(bbudge) Modify the underlying AssociatedURLLoader to only call
+  // back asynchronously.
+  if (done_status_ == PP_ERROR_FAILED)
+    return PP_ERROR_NOACCESS;
 
   request_info_ = scoped_refptr<PPB_URLRequestInfo_Impl>(request);
 
