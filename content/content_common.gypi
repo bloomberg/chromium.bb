@@ -125,6 +125,8 @@
         'common/indexed_db_messages.h',
         'common/indexed_db_param_traits.cc',
         'common/indexed_db_param_traits.h',
+        'common/json_value_serializer.cc',
+        'common/json_value_serializer.h',
         'common/main_function_params.h',
         'common/message_router.cc',
         'common/message_router.h',

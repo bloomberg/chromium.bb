@@ -14,13 +14,10 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/json_value_serializer.h"
 #include "net/proxy/proxy_config_service_common_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-
-#if !defined(NDEBUG)
-#include "chrome/common/json_value_serializer.h"
-#endif  // !defined(NDEBUG)
 
 namespace chromeos {
 

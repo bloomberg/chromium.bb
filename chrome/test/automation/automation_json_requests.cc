@@ -11,8 +11,8 @@
 #include "base/json/json_writer.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/common/automation_messages.h"
-#include "chrome/common/json_value_serializer.h"
 #include "chrome/test/automation/automation_proxy.h"
+#include "content/common/json_value_serializer.h"
 
 namespace {
 

@@ -13,8 +13,8 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/json_value_serializer.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/json_value_serializer.h"
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
 

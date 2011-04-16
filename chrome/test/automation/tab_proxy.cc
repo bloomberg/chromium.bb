@@ -11,10 +11,10 @@
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/automation_messages.h"
-#include "chrome/common/json_value_serializer.h"
 #include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
+#include "content/common/json_value_serializer.h"
 #include "googleurl/src/gurl.h"
 
 TabProxy::TabProxy(AutomationMessageSender* sender,

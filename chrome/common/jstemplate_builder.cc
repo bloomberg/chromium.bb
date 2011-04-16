@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "chrome/common/json_value_serializer.h"
+#include "content/common/json_value_serializer.h"
 #include "grit/common_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 

@@ -10,8 +10,8 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/json_value_serializer.h"
 #include "chrome/common/logging_chrome.h"
+#include "content/common/json_value_serializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

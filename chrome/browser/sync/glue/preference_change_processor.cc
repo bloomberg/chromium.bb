@@ -14,9 +14,9 @@
 #include "chrome/browser/sync/glue/preference_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
-#include "chrome/common/json_value_serializer.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/json_value_serializer.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 

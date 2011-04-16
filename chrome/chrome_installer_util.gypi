@@ -96,6 +96,7 @@
             'common_constants',
             'chrome_resources',
             'chrome_strings',
+            '../content/content.gyp:content_common',
             '<(DEPTH)/courgette/courgette.gyp:courgette_lib',
             '<(DEPTH)/third_party/bspatch/bspatch.gyp:bspatch',
             '<(DEPTH)/third_party/icu/icu.gyp:icui18n',

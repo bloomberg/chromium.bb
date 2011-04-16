@@ -4,8 +4,8 @@
 
 #include "chrome/test/automation/javascript_execution_controller.h"
 
-#include "chrome/common/json_value_serializer.h"
 #include "chrome/test/automation/javascript_message_utils.h"
+#include "content/common/json_value_serializer.h"
 
 using javascript_utils::JavaScriptPrintf;
 

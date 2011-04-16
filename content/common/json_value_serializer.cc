@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/json_value_serializer.h"
+#include "content/common/json_value_serializer.h"
 
 #include "base/file_util.h"
 #include "base/json/json_reader.h"

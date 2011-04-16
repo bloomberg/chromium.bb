@@ -9,10 +9,10 @@
 #include "base/path_service.h"
 #include "base/stringprintf.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/json_value_serializer.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
+#include "content/common/json_value_serializer.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

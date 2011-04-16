@@ -7,10 +7,10 @@
 #include <windows.h>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/json_value_serializer.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_chrome_distribution.h"
+#include "content/common/json_value_serializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(GOOGLE_CHROME_BUILD)

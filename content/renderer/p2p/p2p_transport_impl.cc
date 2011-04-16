@@ -5,10 +5,10 @@
 #include "content/renderer/p2p/p2p_transport_impl.h"
 
 #include "base/values.h"
+#include "content/common/json_value_serializer.h"
 #include "content/renderer/p2p/ipc_network_manager.h"
 #include "content/renderer/p2p/ipc_socket_factory.h"
 #include "content/renderer/render_view.h"
-#include "chrome/common/json_value_serializer.h"
 #include "jingle/glue/channel_socket_adapter.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "third_party/libjingle/source/talk/p2p/base/p2ptransportchannel.h"

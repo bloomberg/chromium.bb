@@ -24,13 +24,13 @@
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
-#include "chrome/common/json_value_serializer.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item_list.h"
+#include "content/common/json_value_serializer.h"
 
 using base::win::RegKey;
 using installer::ProductState;

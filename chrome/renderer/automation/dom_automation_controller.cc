@@ -4,8 +4,8 @@
 
 #include "chrome/renderer/automation/dom_automation_controller.h"
 
-#include "chrome/common/json_value_serializer.h"
 #include "chrome/common/render_messages.h"
+#include "content/common/json_value_serializer.h"
 #include "base/string_util.h"
 
 DomAutomationController::DomAutomationController()

@@ -6,8 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-
-#include "chrome/common/chrome_switches.h"
+#include "content/common/content_switches.h"
 
 void SandboxInitWrapper::SetServices(sandbox::SandboxInterfaceInfo* info) {
   if (!info)

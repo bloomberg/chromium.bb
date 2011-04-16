@@ -8,7 +8,7 @@
 
 #include "base/file_util.h"
 #include "base/values.h"
-#include "chrome/common/json_value_serializer.h"
+#include "content/common/json_value_serializer.h"
 
 namespace policy {
 
