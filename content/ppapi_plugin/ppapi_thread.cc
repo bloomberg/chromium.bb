@@ -9,6 +9,7 @@
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "content/common/child_process.h"
+#include "content/ppapi_plugin/broker_process_dispatcher.h"
 #include "content/ppapi_plugin/plugin_process_dispatcher.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
@@ -32,11 +33,11 @@ PpapiThread::~PpapiThread() {
     return;
 
   // The ShutdownModule/ShutdownBroker function is optional.
-  pp::proxy::Dispatcher::ShutdownModuleFunc shutdown_function =
+  pp::proxy::ProxyChannel::ShutdownModuleFunc shutdown_function =
       is_broker_ ?
-      reinterpret_cast<pp::proxy::Dispatcher::ShutdownModuleFunc>(
+      reinterpret_cast<pp::proxy::ProxyChannel::ShutdownModuleFunc>(
           library_.GetFunctionPointer("PPP_ShutdownBroker")) :
-      reinterpret_cast<pp::proxy::Dispatcher::ShutdownModuleFunc>(
+      reinterpret_cast<pp::proxy::ProxyChannel::ShutdownModuleFunc>(
           library_.GetFunctionPointer("PPP_ShutdownModule"));
   if (shutdown_function)
     shutdown_function();
@@ -139,18 +140,31 @@ void PpapiThread::OnMsgCreateChannel(base::ProcessHandle host_process_handle,
 bool PpapiThread::SetupRendererChannel(base::ProcessHandle host_process_handle,
                                        int renderer_id,
                                        IPC::ChannelHandle* handle) {
-  // TODO(ddorwin): PluginProcessDispatcher is overkill for the broker. TBD
-  // whether to create separate dispatcher classes for the broker.
-  // TODO(ddorwin): Provide connect_instance_func_ when is_broker_.
   DCHECK(is_broker_ == (connect_instance_func_ != NULL));
   DCHECK(is_broker_ == (get_plugin_interface_ == NULL));
-  PluginProcessDispatcher* dispatcher(new PluginProcessDispatcher(
-      host_process_handle, get_plugin_interface_));
-
   IPC::ChannelHandle plugin_handle;
   plugin_handle.name = StringPrintf("%d.r%d", base::GetCurrentProcId(),
                                     renderer_id);
-  if (!dispatcher->InitWithChannel(this, plugin_handle, false)) {
+
+  pp::proxy::ProxyChannel* dispatcher = NULL;
+  bool init_result = false;
+  if (is_broker_) {
+    BrokerProcessDispatcher* broker_dispatcher =
+      new BrokerProcessDispatcher(host_process_handle, connect_instance_func_);
+      init_result = broker_dispatcher->InitBrokerWithChannel(this,
+                                                             plugin_handle,
+                                                             false);
+      dispatcher = broker_dispatcher;
+  } else {
+    PluginProcessDispatcher* plugin_dispatcher =
+        new PluginProcessDispatcher(host_process_handle, get_plugin_interface_);
+    init_result = plugin_dispatcher->InitPluginWithChannel(this,
+                                                           plugin_handle,
+                                                           false);
+    dispatcher = plugin_dispatcher;
+  }
+
+  if (!init_result) {
     delete dispatcher;
     return false;
   }

@@ -12,6 +12,8 @@
         '../ppapi/ppapi.gyp:ppapi_proxy',
       ],
       'sources': [
+        'ppapi_plugin/broker_process_dispatcher.cc',
+        'ppapi_plugin/broker_process_dispatcher.h',
         'ppapi_plugin/plugin_process_dispatcher.cc',
         'ppapi_plugin/plugin_process_dispatcher.h',
         'ppapi_plugin/ppapi_broker_main.cc',

@@ -11,9 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "ipc/ipc_message.h"
-#include "ipc/ipc_sync_channel.h"
-#include "ipc/ipc_test_sink.h"
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/c/dev/ppb_char_set_dev.h"
 #include "ppapi/c/dev/ppb_context_3d_dev.h"
@@ -178,32 +175,13 @@ InterfaceList* InterfaceList::GetInstance() {
 
 Dispatcher::Dispatcher(base::ProcessHandle remote_process_handle,
                        GetInterfaceFunc local_get_interface)
-    : delegate_(NULL),
-      remote_process_handle_(remote_process_handle),
-      test_sink_(NULL),
+    : ProxyChannel(remote_process_handle),
       disallow_trusted_interfaces_(false),  // TODO(brettw) make this settable.
       local_get_interface_(local_get_interface),
       callback_tracker_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 Dispatcher::~Dispatcher() {
-}
-
-bool Dispatcher::InitWithChannel(Delegate* delegate,
-                                 const IPC::ChannelHandle& channel_handle,
-                                 bool is_client) {
-  delegate_ = delegate;
-  IPC::Channel::Mode mode = is_client ? IPC::Channel::MODE_CLIENT
-                                      : IPC::Channel::MODE_SERVER;
-  channel_.reset(new IPC::SyncChannel(channel_handle, mode, this,
-                                      delegate->GetIPCMessageLoop(), false,
-                                      delegate->GetShutdownEvent()));
-  return true;
-}
-
-void Dispatcher::InitWithTestSink(IPC::TestSink* test_sink) {
-  DCHECK(!test_sink_);
-  test_sink_ = test_sink;
 }
 
 bool Dispatcher::OnMessageReceived(const IPC::Message& msg) {
@@ -218,10 +196,6 @@ bool Dispatcher::OnMessageReceived(const IPC::Message& msg) {
     return handled;
   }
   return false;
-}
-
-void Dispatcher::OnChannelError() {
-  channel_.reset();
 }
 
 // static
@@ -271,53 +245,14 @@ const void* Dispatcher::GetLocalInterface(const char* interface_name) {
   return local_get_interface_(interface_name);
 }
 
-IPC::PlatformFileForTransit Dispatcher::ShareHandleWithRemote(
-      base::PlatformFile handle,
-      bool should_close_source) {
-  IPC::PlatformFileForTransit out_handle;
-#if defined(OS_WIN)
-  DWORD options = DUPLICATE_SAME_ACCESS;
-  if (should_close_source)
-    options |= DUPLICATE_CLOSE_SOURCE;
-  if (!::DuplicateHandle(::GetCurrentProcess(),
-                         handle,
-                         remote_process_handle_,
-                         &out_handle,
-                         0,
-                         FALSE,
-                         options))
-    out_handle = IPC::InvalidPlatformFileForTransit();
-#elif defined(OS_POSIX)
-  // If asked to close the source, we can simply re-use the source fd instead of
-  // dup()ing and close()ing.
-  int fd = should_close_source ? handle : ::dup(handle);
-  out_handle = base::FileDescriptor(fd, true);
-#else
-  #error Not implemented.
-#endif
-  return out_handle;
-}
-
 MessageLoop* Dispatcher::GetIPCMessageLoop() {
-  return delegate_->GetIPCMessageLoop();
+  return delegate()->GetIPCMessageLoop();
 }
 
 void Dispatcher::AddIOThreadMessageFilter(
     IPC::ChannelProxy::MessageFilter* filter) {
-  channel_->AddFilter(filter);
-}
-
-bool Dispatcher::Send(IPC::Message* msg) {
-  if (test_sink_)
-    return test_sink_->Send(msg);
-  if (channel_.get())
-    return channel_->Send(msg);
-
-  // Remote side crashed, drop this message.
-  delete msg;
-  return false;
+  channel()->AddFilter(filter);
 }
 
 }  // namespace proxy
 }  // namespace pp
-

@@ -54,6 +54,8 @@
       'sources': [
         'proxy/callback_tracker.cc',
         'proxy/callback_tracker.h',
+        'proxy/broker_dispatcher.cc',
+        'proxy/broker_dispatcher.h',
         'proxy/dispatcher.cc',
         'proxy/dispatcher.h',
         'proxy/host_dispatcher.cc',
@@ -147,6 +149,8 @@
         'proxy/ppp_graphics_3d_proxy.h',
         'proxy/ppp_instance_proxy.cc',
         'proxy/ppp_instance_proxy.h',
+        'proxy/proxy_channel.cc',
+        'proxy/proxy_channel.h',
         'proxy/serialized_flash_menu.cc',
         'proxy/serialized_flash_menu.h',
         'proxy/serialized_structs.cc',

@@ -86,6 +86,13 @@ HostDispatcher::~HostDispatcher() {
   g_module_to_dispatcher->erase(pp_module_);
 }
 
+bool HostDispatcher::InitHostWithChannel(
+    ProxyChannel::Delegate* delegate,
+    const IPC::ChannelHandle& channel_handle,
+    bool is_client) {
+  return Dispatcher::InitWithChannel(delegate, channel_handle, is_client);
+}
+
 // static
 HostDispatcher* HostDispatcher::GetForInstance(PP_Instance instance) {
   if (!g_instance_to_dispatcher)

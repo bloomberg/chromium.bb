@@ -22,12 +22,6 @@ namespace IPC {
 struct ChannelHandle;
 }
 
-namespace pp {
-namespace proxy {
-class PluginDispatcher;
-}
-}
-
 class PpapiThread : public ChildThread,
                     public pp::proxy::Dispatcher::Delegate {
  public:

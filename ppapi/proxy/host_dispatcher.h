@@ -36,11 +36,18 @@ class HostDispatcher : public Dispatcher {
  public:
   // Constructor for the renderer side.
   //
-  // You must call Dispatcher::InitWithChannel after the constructor.
+  // You must call InitHostWithChannel after the constructor.
   HostDispatcher(base::ProcessHandle host_process_handle,
                  PP_Module module,
                  GetInterfaceFunc local_get_interface);
   ~HostDispatcher();
+
+  // You must call this function before anything else. Returns true on success.
+  // The delegate pointer must outlive this class, ownership is not
+  // transferred.
+  virtual bool InitHostWithChannel(ProxyChannel::Delegate* delegate,
+                                     const IPC::ChannelHandle& channel_handle,
+                                     bool is_client);
 
   // The host side maintains a mapping from PP_Instance to Dispatcher so
   // that we can send the messages to the right channel.

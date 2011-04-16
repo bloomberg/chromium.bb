@@ -35,7 +35,7 @@ class PluginDispatcher : public Dispatcher {
   // will be automatically called when requested by the renderer side. The
   // module ID will be set upon receipt of the InitializeModule message.
   //
-  // You must call Dispatcher::InitWithChannel after the constructor.
+  // You must call InitPluginWithChannel after the constructor.
   PluginDispatcher(base::ProcessHandle remote_process_handle,
                    GetInterfaceFunc get_interface);
   virtual ~PluginDispatcher();
@@ -48,10 +48,14 @@ class PluginDispatcher : public Dispatcher {
 
   static const void* GetInterfaceFromDispatcher(const char* interface);
 
+  // You must call this function before anything else. Returns true on success.
+  // The delegate pointer must outlive this class, ownership is not
+  // transferred.
+  virtual bool InitPluginWithChannel(Dispatcher::Delegate* delegate,
+                                     const IPC::ChannelHandle& channel_handle,
+                                     bool is_client);
+
   // Dispatcher overrides.
-  virtual bool InitWithChannel(Delegate* delegate,
-                               const IPC::ChannelHandle& channel_handle,
-                               bool is_client);
   virtual bool IsPlugin() const;
   virtual bool Send(IPC::Message* msg);
 
@@ -67,10 +71,6 @@ class PluginDispatcher : public Dispatcher {
   // Gets the data for an existing instance, or NULL if the instance id doesn't
   // correspond to  a known instance.
   InstanceData* GetInstanceData(PP_Instance instance);
-
-#if defined(OS_POSIX)
-  int GetRendererFD();
-#endif
 
  private:
   friend class PluginDispatcherTest;

@@ -66,8 +66,8 @@ const void* PluginDispatcher::GetInterfaceFromDispatcher(
   return info->interface_ptr;
 }
 
-bool PluginDispatcher::InitWithChannel(
-    Delegate* delegate,
+bool PluginDispatcher::InitPluginWithChannel(
+    PluginDispatcher::Delegate* delegate,
     const IPC::ChannelHandle& channel_handle,
     bool is_client) {
   if (!Dispatcher::InitWithChannel(delegate, channel_handle, is_client))
@@ -187,13 +187,6 @@ InstanceData* PluginDispatcher::GetInstanceData(PP_Instance instance) {
   InstanceDataMap::iterator it = instance_map_.find(instance);
   return (it == instance_map_.end()) ? NULL : &it->second;
 }
-
-#if defined(OS_POSIX)
-int PluginDispatcher::GetRendererFD() {
-  DCHECK(channel());
-  return channel()->GetClientFileDescriptor();
-}
-#endif
 
 void PluginDispatcher::ForceFreeAllInstances() {
   if (!g_instance_to_dispatcher)
