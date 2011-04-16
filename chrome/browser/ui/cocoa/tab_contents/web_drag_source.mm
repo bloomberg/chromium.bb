@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,9 @@
 #include "base/sys_string_conversions.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
+#import "chrome/app/scoped_crash_key_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
@@ -40,6 +42,12 @@ NSString* const kNSURLTitlePboardType = @"public.url-name";
 // TODO(viettrungluu): Refactor to make it common across platforms,
 // and move it somewhere sensible.
 FilePath GetFileNameFromDragData(const WebDropData& drop_data) {
+  // Set a breakpad key for the scope of this function to help debug
+  // http://crbug.com/78782
+  static NSString* const kUrlKey = @"drop_data_url";
+  NSString* value = SysUTF8ToNSString(drop_data.url.spec());
+  ScopedCrashKey key(kUrlKey, value);
+
   // Images without ALT text will only have a file extension so we need to
   // synthesize one from the provided extension and URL.
   FilePath file_name([SysUTF16ToNSString(drop_data.file_description_filename)
@@ -307,6 +315,11 @@ void PromiseWriterTask::Run() {
       GetFileNameFromDragData(*dropData_) : downloadFileName_;
   FilePath filePath(SysNSStringToUTF8(path));
   filePath = filePath.Append(fileName);
+
+  // CreateFileStreamForDrop() will call file_util::PathExists(),
+  // which is blocking.  Since this operation is already blocking the
+  // UI thread on OSX, it should be reasonable to let it happen.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   FileStream* fileStream =
       drag_download_util::CreateFileStreamForDrop(&filePath);
   if (!fileStream)

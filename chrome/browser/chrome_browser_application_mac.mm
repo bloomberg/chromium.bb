@@ -8,7 +8,7 @@
 #import "base/metrics/histogram.h"
 #import "base/memory/scoped_nsobject.h"
 #import "base/sys_string_conversions.h"
-#import "chrome/app/breakpad_mac.h"
+#import "chrome/app/scoped_crash_key_mac.h"
 #import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/ui/cocoa/objc_method_swizzle.h"
 #import "chrome/browser/ui/cocoa/objc_zombie.h"
@@ -177,23 +177,6 @@ void CancelTerminate() {
 }  // namespace chrome_browser_application_mac
 
 namespace {
-
-// Helper to make it easy to get crash keys right.
-// TODO(shess): Find a better home for this.  app/breakpad_mac.h
-// doesn't work.
-class ScopedCrashKey {
- public:
-  ScopedCrashKey(NSString* key, NSString* value)
-      : crash_key_([key retain]) {
-    SetCrashKeyValue(crash_key_.get(), value);
-  }
-  ~ScopedCrashKey() {
-    ClearCrashKeyValue(crash_key_.get());
-  }
-
- private:
-  scoped_nsobject<NSString> crash_key_;
-};
 
 // Do-nothing wrapper so that we can arrange to only swizzle
 // -[NSException raise] when DCHECK() is turned on (as opposed to
