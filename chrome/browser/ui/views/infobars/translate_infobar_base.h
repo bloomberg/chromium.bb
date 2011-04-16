@@ -53,7 +53,6 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
                       double animation_value,
                       const views::Background& background);
 
-  InfoBarBackground normal_background_;
   InfoBarBackground error_background_;
   scoped_ptr<ui::SlideAnimation> background_color_animation_;
 

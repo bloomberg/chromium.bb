@@ -60,9 +60,7 @@ class InfoBar : public ui::AnimationDelegate {
   // out) as we animate open and closed.
   int OffsetY(const gfx::Size& prefsize) const;
 
-  // Passthrough to the container function of the same name.
-  bool DrawInfoBarArrows(int* x) const;
-
+  const InfoBarContainer* container() const { return container_; }
   ui::SlideAnimation* animation() { return animation_.get(); }
   const ui::SlideAnimation* animation() const { return animation_.get(); }
   int bar_height() const { return bar_height_; }

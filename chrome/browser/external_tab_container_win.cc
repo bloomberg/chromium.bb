@@ -44,6 +44,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/view_prop.h"
 #include "views/layout/grid_layout.h"
 #include "views/widget/root_view.h"
@@ -907,6 +908,10 @@ scoped_refptr<ExternalTabContainer> ExternalTabContainer::RemovePendingTab(
   NOTREACHED() << "Failed to find ExternalTabContainer for cookie: "
                << cookie;
   return NULL;
+}
+
+SkColor ExternalTabContainer::GetInfoBarSeparatorColor() const {
+  return ResourceBundle::toolbar_separator_color;
 }
 
 void ExternalTabContainer::InfoBarContainerHeightChanged(bool is_animating) {

@@ -8,6 +8,8 @@
 
 #include "base/task.h"
 #include "chrome/browser/ui/views/infobars/infobar.h"
+#include "chrome/browser/ui/views/infobars/infobar_background.h"
+#include "chrome/browser/ui/views/infobars/infobar_container.h"
 #include "views/controls/button/button.h"
 #include "views/focus/focus_manager.h"
 
@@ -79,6 +81,9 @@ class InfoBarView : public InfoBar,
   // out their controls.
   int StartX() const;
   int EndX() const;
+
+  // Convenience getter.
+  const InfoBarContainer::Delegate* container_delegate() const;
 
  private:
   static const int kHorizontalPadding;

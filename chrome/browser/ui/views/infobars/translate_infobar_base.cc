@@ -46,7 +46,6 @@ const int TranslateInfoBarBase::kButtonInLabelSpacing = 5;
 
 TranslateInfoBarBase::TranslateInfoBarBase(TranslateInfoBarDelegate* delegate)
     : InfoBarView(delegate),
-      normal_background_(InfoBarDelegate::PAGE_ACTION_TYPE),
       error_background_(InfoBarDelegate::WARNING_TYPE) {
 }
 
@@ -94,6 +93,12 @@ TranslateInfoBarDelegate* TranslateInfoBarBase::GetDelegate() {
 }
 
 void TranslateInfoBarBase::OnPaintBackground(gfx::Canvas* canvas) {
+  // We need to set the separator color for |error_background_| like
+  // InfoBarView::Layout() does for the normal background.
+  const InfoBarContainer::Delegate* delegate = container_delegate();
+  if (delegate)
+    error_background_.set_separator_color(delegate->GetInfoBarSeparatorColor());
+
   // If we're not animating, simply paint the background for the current state.
   if (!background_color_animation_->is_animating()) {
     GetBackground().Paint(canvas, this);
@@ -101,7 +106,7 @@ void TranslateInfoBarBase::OnPaintBackground(gfx::Canvas* canvas) {
   }
 
   FadeBackground(canvas, 1.0 - background_color_animation_->GetCurrentValue(),
-                 normal_background_);
+                 *background());
   FadeBackground(canvas, background_color_animation_->GetCurrentValue(),
                  error_background_);
 }
@@ -114,7 +119,7 @@ void TranslateInfoBarBase::AnimationProgressed(const ui::Animation* animation) {
 }
 
 const views::Background& TranslateInfoBarBase::GetBackground() {
-  return GetDelegate()->IsError() ? error_background_ : normal_background_;
+  return GetDelegate()->IsError() ? error_background_ : *background();
 }
 
 void TranslateInfoBarBase::FadeBackground(gfx::Canvas* canvas,

@@ -534,6 +534,7 @@ class View : public AcceleratorTarget {
   // The background object is owned by this object and may be NULL.
   void set_background(Background* b) { background_.reset(b); }
   const Background* background() const { return background_.get(); }
+  Background* background() { return background_.get(); }
 
   // The border object is owned by this object and may be NULL.
   void set_border(Border* b) { border_.reset(b); }

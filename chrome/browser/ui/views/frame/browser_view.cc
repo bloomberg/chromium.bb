@@ -1653,6 +1653,13 @@ void BrowserView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_CLIENT;
 }
 
+SkColor BrowserView::GetInfoBarSeparatorColor() const {
+  // NOTE: Keep this in sync with ToolbarView::OnPaint()!
+  return (IsTabStripVisible() ||
+          !frame_->GetWindow()->non_client_view()->UseNativeFrame()) ?
+      ResourceBundle::toolbar_separator_color : SK_ColorBLACK;
+}
+
 void BrowserView::InfoBarContainerHeightChanged(bool is_animating) {
   ToolbarSizeChanged(is_animating);
 }

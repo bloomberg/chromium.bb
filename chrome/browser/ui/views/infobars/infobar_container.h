@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 class InfoBar;
 class InfoBarDelegate;
@@ -27,6 +28,9 @@ class InfoBarContainer : public NotificationObserver {
  public:
   class Delegate {
    public:
+    // The separator color may vary depending on where the container is hosted.
+    virtual SkColor GetInfoBarSeparatorColor() const = 0;
+
     // The delegate is notified each time the infobar container changes height.
     virtual void InfoBarContainerHeightChanged(bool is_animating) = 0;
 
@@ -56,9 +60,6 @@ class InfoBarContainer : public NotificationObserver {
   // e.g. re-layout.
   void OnInfoBarHeightChanged(bool is_animating);
 
-  // Passthrough to the delegate function of the same name.
-  bool DrawInfoBarArrows(int* x) const;
-
   // Remove the specified InfoBarDelegate from the selected TabContents. This
   // will notify us back and cause us to close the InfoBar.  This is called from
   // the InfoBar's close button handler.
@@ -68,6 +69,8 @@ class InfoBarContainer : public NotificationObserver {
   // is about to delete itself.  At this point, |infobar| should already be
   // hidden.
   void RemoveInfoBar(InfoBar* infobar);
+
+  const Delegate* delegate() const { return delegate_; }
 
  protected:
   // Subclasses must call this during destruction, so that we can remove

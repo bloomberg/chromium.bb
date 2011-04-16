@@ -51,9 +51,7 @@ InfoBarView::InfoBarView(InfoBarDelegate* delegate)
       fill_path_(new SkPath),
       stroke_path_(new SkPath) {
   set_parent_owned(false);  // InfoBar deletes itself at the appropriate time.
-
-  InfoBarDelegate::Type infobar_type = delegate->GetInfoBarType();
-  set_background(new InfoBarBackground(infobar_type));
+  set_background(new InfoBarBackground(delegate->GetInfoBarType()));
 }
 
 InfoBarView::~InfoBarView() {
@@ -148,28 +146,33 @@ void InfoBarView::Layout() {
   fill_path_->rewind();
   int arrow_bottom = std::max(arrow_height() - 1, 0);
   SkScalar arrow_bottom_scalar = SkIntToScalar(arrow_bottom);
+  const InfoBarContainer::Delegate* delegate = container_delegate();
   int arrow_x;
-  if (DrawInfoBarArrows(&arrow_x) && arrow_bottom) {
-    stroke_path_->moveTo(SkIntToScalar(arrow_x - arrow_bottom),
-                         arrow_bottom_scalar);
-    stroke_path_->rLineTo(arrow_bottom_scalar, -arrow_bottom_scalar);
-    stroke_path_->rLineTo(arrow_bottom_scalar, arrow_bottom_scalar);
+  if (delegate) {
+    static_cast<InfoBarBackground*>(background())->set_separator_color(
+        delegate->GetInfoBarSeparatorColor());
+    if (delegate->DrawInfoBarArrows(&arrow_x) && arrow_bottom) {
+      stroke_path_->moveTo(SkIntToScalar(arrow_x - arrow_bottom),
+                           arrow_bottom_scalar);
+      stroke_path_->rLineTo(arrow_bottom_scalar, -arrow_bottom_scalar);
+      stroke_path_->rLineTo(arrow_bottom_scalar, arrow_bottom_scalar);
 
-    // Without extending the fill downward by a pixel, Skia doesn't seem to want
-    // to fill over the divider above the bar portion.
-    *fill_path_ = *stroke_path_;
-    fill_path_->rLineTo(0.0, 1.0);
-    fill_path_->rLineTo(-arrow_bottom_scalar * 2, 0.0);
-    fill_path_->close();
+      // Without extending the fill downward by a pixel, Skia doesn't seem to
+      // want to fill over the divider above the bar portion.
+      *fill_path_ = *stroke_path_;
+      fill_path_->rLineTo(0.0, 1.0);
+      fill_path_->rLineTo(-arrow_bottom_scalar * 2, 0.0);
+      fill_path_->close();
 
-    // Fill and stroke have different opinions about how to treat paths.
-    // Because in Skia integral coordinates represent pixel boundaries,
-    // offsetting the path makes it go exactly through pixel centers; this
-    // results in lines that are exactly where we expect, instead of having odd
-    // "off by one" issues.  Were we to do this for |fill_path|, however, which
-    // tries to fill "inside" the path (using some questionable math), we'd get
-    // a fill at a very different place than we'd want.
-    stroke_path_->offset(SK_ScalarHalf, SK_ScalarHalf);
+      // Fill and stroke have different opinions about how to treat paths.
+      // Because in Skia integral coordinates represent pixel boundaries,
+      // offsetting the path makes it go exactly through pixel centers; this
+      // results in lines that are exactly where we expect, instead of having
+      // odd "off by one" issues.  Were we to do this for |fill_path|, however,
+      // which tries to fill "inside" the path (using some questionable math),
+      // we'd get a fill at a very different place than we'd want.
+      stroke_path_->offset(SK_ScalarHalf, SK_ScalarHalf);
+    }
   }
   if (bar_height()) {
     fill_path_->addRect(0.0, SkIntToScalar(arrow_height()),
@@ -293,6 +296,11 @@ int InfoBarView::StartX() const {
 int InfoBarView::EndX() const {
   const int kCloseButtonSpacing = 12;
   return close_button_->x() - kCloseButtonSpacing;
+}
+
+const InfoBarContainer::Delegate* InfoBarView::container_delegate() const {
+  const InfoBarContainer* infobar_container = container();
+  return infobar_container ? infobar_container->delegate() : NULL;
 }
 
 void InfoBarView::PlatformSpecificHide(bool animate) {

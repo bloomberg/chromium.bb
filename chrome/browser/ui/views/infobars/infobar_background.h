@@ -16,6 +16,7 @@ class InfoBarBackground : public views::Background {
   explicit InfoBarBackground(InfoBarDelegate::Type infobar_type);
   virtual ~InfoBarBackground();
 
+  void set_separator_color(SkColor color) { separator_color_ = color; }
   static SkColor GetTopColor(InfoBarDelegate::Type infobar_type);
   static SkColor GetBottomColor(InfoBarDelegate::Type infobar_type);
 
@@ -23,6 +24,7 @@ class InfoBarBackground : public views::Background {
   // views::Background:
   virtual void Paint(gfx::Canvas* canvas, views::View* view) const;
 
+  SkColor separator_color_;
   SkColor top_color_;
   SkColor bottom_color_;
 

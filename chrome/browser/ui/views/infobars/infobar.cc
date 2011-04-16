@@ -65,10 +65,6 @@ int InfoBar::OffsetY(const gfx::Size& prefsize) const {
       (bar_target_height_ - bar_height_);
 }
 
-bool InfoBar::DrawInfoBarArrows(int* x) const {
-  return container_ && container_->DrawInfoBarArrows(x);
-}
-
 void InfoBar::AnimationEnded(const ui::Animation* animation) {
   RecalculateHeight();
   MaybeDelete();

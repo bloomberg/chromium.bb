@@ -374,6 +374,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual gfx::Size GetMinimumSize() OVERRIDE;
 
   // InfoBarContainer::Delegate overrides
+  virtual SkColor GetInfoBarSeparatorColor() const OVERRIDE;
   virtual void InfoBarContainerHeightChanged(bool is_animating) OVERRIDE;
   virtual bool DrawInfoBarArrows(int* x) const OVERRIDE;
 

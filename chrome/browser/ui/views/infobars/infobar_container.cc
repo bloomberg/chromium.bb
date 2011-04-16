@@ -82,10 +82,6 @@ void InfoBarContainer::OnInfoBarHeightChanged(bool is_animating) {
     delegate_->InfoBarContainerHeightChanged(is_animating);
 }
 
-bool InfoBarContainer::DrawInfoBarArrows(int* x) const {
-  return delegate_ && delegate_->DrawInfoBarArrows(x);
-}
-
 void InfoBarContainer::RemoveDelegate(InfoBarDelegate* delegate) {
   tab_contents_->RemoveInfoBar(delegate);
 }
