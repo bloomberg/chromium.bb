@@ -375,6 +375,52 @@ void FileSystemOperation::TouchFile(const GURL& path,
       callback_factory_.NewCallback(&FileSystemOperation::DidTouchFile));
 }
 
+void FileSystemOperation::OpenFile(const GURL& path,
+                                   int file_flags,
+                                   base::ProcessHandle peer_handle) {
+#ifndef NDEBUG
+  DCHECK(kOperationNone == pending_operation_);
+  pending_operation_ = kOperationOpenFile;
+#endif
+
+  peer_handle_ = peer_handle;
+  FilePath virtual_path;
+  GURL origin_url;
+  FileSystemType type;
+  if (file_flags & (
+      (base::PLATFORM_FILE_ENUMERATE | base::PLATFORM_FILE_TEMPORARY |
+       base::PLATFORM_FILE_HIDDEN))) {
+    delete this;
+    return;
+  }
+  if (file_flags &
+      (base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_OPEN_ALWAYS |
+       base::PLATFORM_FILE_CREATE_ALWAYS |
+       base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_EXCLUSIVE_WRITE |
+       base::PLATFORM_FILE_DELETE_ON_CLOSE | base::PLATFORM_FILE_TRUNCATE |
+       base::PLATFORM_FILE_WRITE_ATTRIBUTES)) {
+    if (!VerifyFileSystemPathForWrite(path, true /* create */, &origin_url,
+        &type, &virtual_path)) {
+      delete this;
+      return;
+    }
+  } else {
+    if (!VerifyFileSystemPathForRead(path, &origin_url, &type, &virtual_path)) {
+      delete this;
+      return;
+    }
+  }
+  file_system_operation_context_.set_src_origin_url(origin_url);
+  file_system_operation_context_.set_src_type(type);
+  FileSystemFileUtilProxy::CreateOrOpen(
+      file_system_operation_context_,
+      proxy_,
+      virtual_path,
+      file_flags,
+      callback_factory_.NewCallback(
+          &FileSystemOperation::DidOpenFile));
+}
+
 // We can only get here on a write or truncate that's not yet completed.
 // We don't support cancelling any other operation at this time.
 void FileSystemOperation::Cancel(FileSystemOperation* cancel_operation_ptr) {
@@ -522,6 +568,17 @@ void FileSystemOperation::DidWrite(
 void FileSystemOperation::DidTouchFile(base::PlatformFileError rv) {
   if (rv == base::PLATFORM_FILE_OK)
     dispatcher_->DidSucceed();
+  else
+    dispatcher_->DidFail(rv);
+  delete this;
+}
+
+void FileSystemOperation::DidOpenFile(
+    base::PlatformFileError rv,
+    base::PassPlatformFile file,
+    bool unused) {
+  if (rv == base::PLATFORM_FILE_OK)
+    dispatcher_->DidOpenFile(file.ReleaseValue(), peer_handle_);
   else
     dispatcher_->DidFail(rv);
   delete this;

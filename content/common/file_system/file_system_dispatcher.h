@@ -10,8 +10,10 @@
 #include "base/basictypes.h"
 #include "base/file_util_proxy.h"
 #include "base/id_map.h"
+#include "base/process.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_platform_file.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_types.h"
 
@@ -75,6 +77,11 @@ class FileSystemDispatcher : public IPC::Channel::Listener {
                  const base::Time& last_modified_time,
                  fileapi::FileSystemCallbackDispatcher* dispatcher);
 
+  // This returns a raw open PlatformFile, unlike the above, which are
+  // self-contained operations.
+  bool OpenFile(const GURL& file_path,
+                int file_flags,  // passed to FileUtilProxy::CreateOrOpen
+                fileapi::FileSystemCallbackDispatcher* dispatcher);
  private:
   // Message handlers.
   void OnOpenComplete(
@@ -92,6 +99,9 @@ class FileSystemDispatcher : public IPC::Channel::Listener {
       bool has_more);
   void OnDidFail(int request_id, base::PlatformFileError error_code);
   void OnDidWrite(int request_id, int64 bytes, bool complete);
+  void OnDidOpenFile(
+      int request_id,
+      IPC::PlatformFileForTransit file);
 
   IDMap<fileapi::FileSystemCallbackDispatcher, IDMapOwnPointer> dispatchers_;
 

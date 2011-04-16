@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "base/platform_file.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/common/file_system_messages.h"
 #include "googleurl/src/gurl.h"
+#include "ipc/ipc_platform_file.h"
 #include "net/url_request/url_request_context.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -72,6 +74,27 @@ class BrowserFileSystemCallbackDispatcher
         request_id_, bytes, complete));
   }
 
+  virtual void DidOpenFile(
+      base::PlatformFile file,
+      base::ProcessHandle peer_handle) {
+    IPC::PlatformFileForTransit file_for_transit =
+        IPC::InvalidPlatformFileForTransit();
+    if (file != base::kInvalidPlatformFileValue) {
+#if defined(OS_WIN)
+      if (!::DuplicateHandle(::GetCurrentProcess(), file, peer_handle,
+                             &file_for_transit, 0, false,
+                             DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE))
+        file_for_transit = IPC::InvalidPlatformFileForTransit();
+#elif defined(OS_POSIX)
+      file_for_transit = base::FileDescriptor(file, true);
+#else
+  #error Not implemented.
+#endif
+    }
+    dispatcher_host_->Send(new FileSystemMsg_DidOpenFile(
+        request_id_, file_for_transit));
+  }
+
  private:
   scoped_refptr<FileSystemDispatcherHost> dispatcher_host_;
   int request_id_;
@@ -120,6 +143,7 @@ bool FileSystemDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Truncate, OnTruncate)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_TouchFile, OnTouchFile)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_CancelWrite, OnCancel)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_OpenFile, OnOpenFile)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -226,6 +250,11 @@ void FileSystemDispatcherHost::OnCancel(
     Send(new FileSystemMsg_DidFail(
         request_id, base::PLATFORM_FILE_ERROR_INVALID_OPERATION));
   }
+}
+
+void FileSystemDispatcherHost::OnOpenFile(
+    int request_id, const GURL& path, int file_flags) {
+  GetNewOperation(request_id)->OpenFile(path, file_flags, peer_handle());
 }
 
 FileSystemOperation* FileSystemDispatcherHost::GetNewOperation(

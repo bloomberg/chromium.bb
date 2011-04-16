@@ -703,7 +703,7 @@ bool PepperPluginDelegateImpl::OpenFileSystem(
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
   return file_system_dispatcher->OpenFileSystem(
-      url, type, size, true /* create */, dispatcher);
+      url.GetWithEmptyPath(), type, size, true /* create */, dispatcher);
 }
 
 bool PepperPluginDelegateImpl::MakeDirectory(
@@ -759,6 +759,61 @@ bool PepperPluginDelegateImpl::ReadDirectory(
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
   return file_system_dispatcher->ReadDirectory(directory_path, dispatcher);
+}
+
+class AsyncOpenFileSystemURLCallbackTranslator :
+    public fileapi::FileSystemCallbackDispatcher {
+public:
+  AsyncOpenFileSystemURLCallbackTranslator(
+      webkit::ppapi::PluginDelegate::AsyncOpenFileCallback* callback)
+    : callback_(callback) {
+  }
+
+  virtual ~AsyncOpenFileSystemURLCallbackTranslator() {}
+
+  virtual void DidSucceed() {
+    NOTREACHED();
+  }
+  virtual void DidReadMetadata(
+      const base::PlatformFileInfo& file_info,
+      const FilePath& platform_path) {
+    NOTREACHED();
+  }
+  virtual void DidReadDirectory(
+      const std::vector<base::FileUtilProxy::Entry>& entries,
+      bool has_more) {
+    NOTREACHED();
+  }
+  virtual void DidOpenFileSystem(const std::string& name,
+                                 const GURL& root) {
+    NOTREACHED();
+  }
+
+  virtual void DidFail(base::PlatformFileError error_code) {
+    callback_->Run(error_code, base::kInvalidPlatformFileValue);
+  }
+
+  virtual void DidWrite(int64 bytes, bool complete) {
+    NOTREACHED();
+  }
+
+  virtual void DidOpenFile(
+      base::PlatformFile file,
+      base::ProcessHandle unused) {
+    callback_->Run(base::PLATFORM_FILE_OK, file);
+  }
+
+private:  // TODO(ericu): Delete this?
+  webkit::ppapi::PluginDelegate::AsyncOpenFileCallback* callback_;
+};
+
+bool PepperPluginDelegateImpl::AsyncOpenFileSystemURL(
+    const GURL& path, int flags, AsyncOpenFileCallback* callback) {
+
+  FileSystemDispatcher* file_system_dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  return file_system_dispatcher->OpenFile(path, flags,
+      new AsyncOpenFileSystemURLCallbackTranslator(callback));
 }
 
 base::PlatformFileError PepperPluginDelegateImpl::OpenFile(

@@ -284,6 +284,9 @@ class PluginDelegate {
   virtual bool AsyncOpenFile(const FilePath& path,
                              int flags,
                              AsyncOpenFileCallback* callback) = 0;
+  virtual bool AsyncOpenFileSystemURL(const GURL& path,
+                                      int flags,
+                                      AsyncOpenFileCallback* callback) = 0;
 
   virtual bool OpenFileSystem(
       const GURL& url,

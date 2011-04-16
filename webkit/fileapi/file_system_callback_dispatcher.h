@@ -8,6 +8,9 @@
 #include <vector>
 
 #include "base/file_util_proxy.h"
+#include "base/logging.h"
+#include "base/platform_file.h"
+#include "base/process.h"
 
 class GURL;
 
@@ -50,6 +53,14 @@ class FileSystemCallbackDispatcher {
 
   // Callback for FileWriter's write() call.
   virtual void DidWrite(int64 bytes, bool complete) = 0;
+
+  // Callback for OpenFile.  This isn't in WebFileSystemCallbacks, as it's just
+  // for Pepper.
+  virtual void DidOpenFile(
+      base::PlatformFile file,
+      base::ProcessHandle peer_handle) {
+    NOTREACHED();
+  }
 };
 
 }  // namespace fileapi

@@ -7,6 +7,7 @@
 
 #include "base/file_util_proxy.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_platform_file.h"
 #include "webkit/fileapi/file_system_types.h"
 
 #define IPC_MESSAGE_START FileSystemMsgStart
@@ -42,6 +43,9 @@ IPC_MESSAGE_CONTROL3(FileSystemMsg_DidWrite,
                      int /* request_id */,
                      int64 /* byte count */,
                      bool /* complete */)
+IPC_MESSAGE_CONTROL2(FileSystemMsg_DidOpenFile,
+                     int /* request_id */,
+                     IPC::PlatformFileForTransit)
 IPC_MESSAGE_CONTROL2(FileSystemMsg_DidFail,
                      int /* request_id */,
                      base::PlatformFileError /* error_code */)
@@ -122,3 +126,9 @@ IPC_MESSAGE_CONTROL4(FileSystemHostMsg_TouchFile,
 IPC_MESSAGE_CONTROL2(FileSystemHostMsg_CancelWrite,
                      int /* request id */,
                      int /* id of request to cancel */)
+
+// Pepper's OpenFile message.
+IPC_MESSAGE_CONTROL3(FileSystemHostMsg_OpenFile,
+                     int /* request id */,
+                     GURL /* file path */,
+                     int /* file flags */)

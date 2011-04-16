@@ -253,13 +253,26 @@ int32_t PPB_FileIO_Impl::Open(PPB_FileRef_Impl* file_ref,
   } else {
     flags |= base::PLATFORM_FILE_OPEN;
   }
-
   file_system_type_ = file_ref->GetFileSystemType();
-  if (!instance()->delegate()->AsyncOpenFile(
-          file_ref->GetSystemPath(), flags,
-          callback_factory_.NewCallback(
-              &PPB_FileIO_Impl::AsyncOpenFileCallback)))
-    return PP_ERROR_FAILED;
+  switch (file_system_type_) {
+    case PP_FILESYSTEMTYPE_EXTERNAL:
+      if (!instance()->delegate()->AsyncOpenFile(
+              file_ref->GetSystemPath(), flags,
+              callback_factory_.NewCallback(
+                  &PPB_FileIO_Impl::AsyncOpenFileCallback)))
+        return PP_ERROR_FAILED;
+      break;
+    case PP_FILESYSTEMTYPE_LOCALPERSISTENT:
+    case PP_FILESYSTEMTYPE_LOCALTEMPORARY:
+      if (!instance()->delegate()->AsyncOpenFileSystemURL(
+              file_ref->GetFileSystemURL(), flags,
+              callback_factory_.NewCallback(
+                  &PPB_FileIO_Impl::AsyncOpenFileCallback)))
+        return PP_ERROR_FAILED;
+      break;
+    default:
+      return PP_ERROR_FAILED;
+  }
 
   RegisterCallback(callback);
   return PP_OK_COMPLETIONPENDING;

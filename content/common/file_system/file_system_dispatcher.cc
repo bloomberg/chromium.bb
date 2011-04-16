@@ -5,6 +5,7 @@
 #include "content/common/file_system/file_system_dispatcher.h"
 
 #include "base/file_util.h"
+#include "base/process.h"
 #include "content/common/child_thread.h"
 #include "content/common/file_system_messages.h"
 
@@ -32,6 +33,7 @@ bool FileSystemDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FileSystemMsg_DidReadMetadata, OnDidReadMetadata)
     IPC_MESSAGE_HANDLER(FileSystemMsg_DidFail, OnDidFail)
     IPC_MESSAGE_HANDLER(FileSystemMsg_DidWrite, OnDidWrite)
+    IPC_MESSAGE_HANDLER(FileSystemMsg_DidOpenFile, OnDidOpenFile)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -213,6 +215,21 @@ bool FileSystemDispatcher::TouchFile(
   return true;
 }
 
+bool FileSystemDispatcher::OpenFile(
+    const GURL& file_path,
+    int file_flags,
+    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+  int request_id = dispatchers_.Add(dispatcher);
+  if (!ChildThread::current()->Send(
+          new FileSystemHostMsg_OpenFile(
+              request_id, file_path, file_flags))) {
+    dispatchers_.Remove(request_id);  // destroys |dispatcher|
+    return false;
+  }
+
+  return true;
+}
+
 void FileSystemDispatcher::OnOpenComplete(
     int request_id, bool accepted, const std::string& name,
     const GURL& root) {
@@ -272,4 +289,14 @@ void FileSystemDispatcher::OnDidWrite(
   dispatcher->DidWrite(bytes, complete);
   if (complete)
     dispatchers_.Remove(request_id);
+}
+
+void FileSystemDispatcher::OnDidOpenFile(
+    int request_id, IPC::PlatformFileForTransit file) {
+  fileapi::FileSystemCallbackDispatcher* dispatcher =
+      dispatchers_.Lookup(request_id);
+  DCHECK(dispatcher);
+  dispatcher->DidOpenFile(IPC::PlatformFileForTransitToPlatformFile(file),
+      base::kNullProcessHandle);
+  dispatchers_.Remove(request_id);
 }

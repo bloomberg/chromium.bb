@@ -340,7 +340,9 @@ GURL PPB_FileRef_Impl::GetFileSystemURL() const {
   // Since |virtual_path_| starts with a '/', it looks like an absolute path.
   // We need to trim off the '/' before calling Resolve, as FileSystem URLs
   // start with a storage type identifier that looks like a path segment.
-  return file_system_->root_url().Resolve(virtual_path_.substr(1));
+  // TODO(ericu): Switch this to use Resolve after fixing GURL to understand
+  // FileSystem URLs.
+  return GURL(file_system_->root_url().spec() + virtual_path_.substr(1));
 }
 
 }  // namespace ppapi

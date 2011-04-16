@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
+#include "base/process.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -79,6 +80,10 @@ class FileSystemOperation {
   void TouchFile(const GURL& path,
                  const base::Time& last_access_time,
                  const base::Time& last_modified_time);
+  void OpenFile(
+      const GURL& path,
+      int file_flags,
+      base::ProcessHandle peer_handle);
 
   // Try to cancel the current operation [we support cancelling write or
   // truncate only].  Report failure for the current operation, then tell the
@@ -129,6 +134,10 @@ class FileSystemOperation {
       int64 bytes,
       bool complete);
   void DidTouchFile(base::PlatformFileError rv);
+  void DidOpenFile(
+      base::PlatformFileError rv,
+      base::PassPlatformFile file,
+      bool created);
 
   // Helper for Write().
   void OnFileOpenedForWrite(
@@ -184,6 +193,7 @@ class FileSystemOperation {
     kOperationWrite,
     kOperationTruncate,
     kOperationTouchFile,
+    kOperationOpenFile,
     kOperationCancel,
   };
 
@@ -205,6 +215,10 @@ class FileSystemOperation {
   scoped_ptr<FileWriterDelegate> file_writer_delegate_;
   scoped_ptr<net::URLRequest> blob_request_;
   scoped_ptr<FileSystemOperation> cancel_operation_;
+
+  // Used only by OpenFile, in order to clone the file handle back to the
+  // requesting process.
+  base::ProcessHandle peer_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperation);
 };
