@@ -102,7 +102,8 @@ class FileBrowseUiObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(FileBrowseUiObserver);
 };
 
-IN_PROC_BROWSER_TEST_F(FileBrowseBrowserTest, InputFileTriggerFileBrowse) {
+IN_PROC_BROWSER_TEST_F(FileBrowseBrowserTest,
+                       DISABLED_InputFileTriggerFileBrowse) {
   ASSERT_TRUE(test_server()->Start());
   ui_test_utils::NavigateToURL(browser(),
                                test_server()->GetURL("files/input_file.html"));
