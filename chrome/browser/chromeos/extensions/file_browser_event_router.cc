@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_event_names.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/extensions/file_manager_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -144,9 +145,8 @@ void ExtensionFileBrowserEventRouter::OnDiskChanged(
           std::pair<std::string, std::string>(disk->device_path(),
                                               disk->mount_path()));
       DispatchEvent(disk->mount_path());
-      // TODO(zelidrag): Find better icon here.
-      ShowDeviceNotification(disk->system_path(), IDR_PAGEINFO_INFO,
-          l10n_util::GetStringUTF16(IDS_REMOVABLE_DEVICE_MOUNTED_MESSAGE));
+      HideDeviceNotification(disk->system_path());
+      FileManagerUtil::ShowFullTabUrl(profile_, FilePath(disk->mount_path()));
     }
   }
 }
