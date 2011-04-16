@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -200,17 +200,20 @@ def main_linux(options, args):
     print 'Cannot find minidump_stackwalk.'
     return 1
 
-  if options.architecture:
-    bits = options.architecture
+  if options.symbol_filename:
+    symbol_file = options.symbol_filename
   else:
-    bits = struct.calcsize('P') * 8
-  if bits == 32:
-    symbol_file = 'chrome.breakpad.ia32'
-  elif bits == 64:
-    symbol_file = 'chrome.breakpad.x64'
-  else:
-    print 'Unknown architecture'
-    return 1
+    if options.architecture:
+      bits = options.architecture
+    else:
+      bits = struct.calcsize('P') * 8
+    if bits == 32:
+      symbol_file = 'chrome.breakpad.ia32'
+    elif bits == 64:
+      symbol_file = 'chrome.breakpad.x64'
+    else:
+      print 'Unknown architecture'
+      return 1
 
   symbol_dir = options.symbol_dir
   if not options.symbol_dir:
@@ -276,6 +279,9 @@ if '__main__' == __name__:
                          'specified. Default is the Chromium crash directory.')
   parser.add_option('', '--symbol-dir', default='',
                     help='The directory with the symbols file. [Required]')
+  parser.add_option('', '--symbol-filename', default='',
+                    help='The name of the symbols file to use.  '
+                         'This argument overrides --architecture.')
   parser.add_option('', '--architecture', type='int', default=None,
                     help='Override automatic x86/x86-64 detection. '
                          'Valid values are 32 and 64')
