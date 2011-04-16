@@ -1,0 +1,205 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.most-visited {
+  position: absolute;
+}
+
+.most-visited {
+  color: hsl(213, 90%, 24%);
+  display: -webkit-box;
+  position: absolute;
+  text-decoration: none;
+  -webkit-box-orient: vertical;
+}
+
+.most-visited:focus {
+  outline: none;
+}
+
+.most-visited > .title {
+  color: black;
+  font-size: 100%;
+  font-weight: normal;
+  height: 16px;
+  line-height: 16px;
+  margin: 0;
+  margin-top: 4px;
+  opacity: 1;
+  padding: 0 3px;
+  -webkit-transition: opacity .15s, width .15s;
+}
+
+.edit-mode-border {
+  border-radius: 4px;
+  display: -webkit-box;
+  -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
+}
+
+.thumbnail-wrapper {
+  background: no-repeat 4px 4px;
+  background-color: white;
+  background-size: 212px 132px;
+  border-radius: 5px;
+  display: block;
+  position: relative;
+  -webkit-box-flex: 1;
+  -webkit-transition: background-size .15s;
+}
+
+/* filler mode: hide everything except the thumbnail --- leave a grey
+ * in its place. */
+.filler * {
+  visibility: hidden;
+}
+
+.filler {
+  pointer-events: none;
+}
+
+.filler .thumbnail-wrapper {
+  border: 3px solid hsl(213, 60%, 92%);
+  visibility: visible;
+}
+
+.filler .thumbnail {
+  background-color: hsl(213, 60%, 92%);
+  border: 1px solid white;
+  padding: 0;
+  visibility: inherit;
+}
+
+/* The edit bar appears on hover. */
+.edit-bar {
+  background: hsl(213, 54%, 95%);
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  cursor: move;
+  display: -webkit-box;
+  font-size: 100%;
+  height: 17px; /* 23 - 2 * 3 */
+  line-height: 17px;
+  margin-bottom: -21px;
+  margin-top: 21px;
+  padding: 3px;
+  padding-bottom: 0;
+  position: relative;
+  -webkit-box-align: stretch;
+  -webkit-box-orient: horizontal;
+  -webkit-transition: margin .15s, background .15s;
+}
+
+.edit-bar > * {
+  display: block;
+  position: relative;
+}
+
+.most-visited:focus .edit-bar,
+.most-visited:hover .edit-bar {
+  margin-top: 0;
+  margin-bottom: 0;
+  -webkit-transition-delay: .5s, 0s;
+  /* We need background-color as well to get the fade out animation correct */
+  background-color: hsl(213, 66%, 57%);
+  background-image: -webkit-linear-gradient(hsl(213, 87%, 67%),
+                                            hsl(213, 66%, 57%));
+}
+
+.edit-bar > .spacer {
+  -webkit-box-flex: 1;
+}
+
+.edit-bar > .pin,
+.edit-bar > .remove {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  background-image: no-repeat 50% 50%;
+}
+
+.edit-bar > .pin {
+  background-image: url('../ntp/ntp_pin_off.png');
+}
+
+.edit-bar > .pin:hover {
+  background-image: url('../ntp/ntp_pin_off_h.png');
+}
+
+.edit-bar > .pin:active {
+  background-image: url('../ntp/ntp_pin_off_p.png');
+}
+
+.pinned .edit-bar > .pin {
+  background-image: url('../ntp/ntp_pin_on.png');
+}
+
+.pinned .edit-bar > .pin:hover {
+  background-image: url(../ntp/ntp_pin_on_h.png');
+}
+
+.pinned .edit-bar > .pin:active {
+  background-image: url(../ntp/ntp_pin_on_p.png');
+}
+
+.edit-bar > .remove {
+  background-image: url('../ntp/ntp_close.png');
+}
+
+.edit-bar > .remove:hover {
+  background-image: url('../ntp/ntp_close_h.png');
+}
+
+.edit-bar > .remove:active {
+  background-image: url('../ntp/ntp_close_p.png');
+}
+
+.most-visited > .title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: no-repeat 0 50%;
+  background-size: 16px;
+  /* We cannot use -webkit-padding-start here because even if we set the
+     direction we always want the icon on the same side. */
+  padding-left: 20px;
+  padding-right: 0;
+}
+
+.thumbnail {
+  border: 3px solid hsl(213, 63%, 93%);
+  bottom: 0;
+  border-radius: 5px;
+  display: block;
+  left: 0;
+  padding: 1px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  -webkit-box-shadow: 0px 2px 2px hsla(0, 0%, 0%, 0);
+  -webkit-transition: width .15s, height .15s, border-color .15s,
+      border-top-left-radius .15s, border-top-right-radius .15s,
+      -webkit-box-shadow .15s;
+}
+
+.most-visited:focus .thumbnail,
+.most-visited:hover .thumbnail {
+  background-image: -webkit-linear-gradient(hsla(0, 0%, 0%, 0),
+                                            hsla(0, 0%, 47%, 0) 85%,
+                                            hsla(0, 0%, 47%, 0.2));
+  border-color: hsl(213, 66%, 57%);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+
+  -webkit-box-shadow: 0px 2px 2px hsla(0, 0%, 0%, 0);
+  /* delay border radius transition as much as the edit bar slide delay */
+  -webkit-transition-delay: 0, 0, 0, .5s, .5s, 0;
+}
+
+.most-visited:focus > .edit-mode-border,
+.most-visited:hover > .edit-mode-border {
+  background-color: hsl(213, 66%, 57%);
+  -webkit-box-shadow: 0px 2px 2px hsla(0, 0%, 0%, .5);
+}

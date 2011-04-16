@@ -26,10 +26,16 @@ var ntp = (function() {
   var dotTemplate;
 
   /**
-   * The 'apps-page-list' element.
+   * The 'page-list' element.
    * @type {!Element|undefined}
    */
-  var appsPageList;
+  var pageList;
+
+  /**
+   * A list of all 'tile-page' elements.
+   * @type {!NodeList|undefined}
+   */
+  var tilePages;
 
   /**
    * A list of all 'apps-page' elements.
@@ -73,13 +79,6 @@ var ntp = (function() {
   var grabbers = [];
 
   /**
-   * Holds all event handlers tied to apps (and so subject to removal when the
-   * app list is refreshed)
-   * @type {!EventTracker}
-   */
-  var appEvents = new EventTracker();
-
-  /**
    * Invoked at startup once the DOM is available to initialize the app.
    */
   function initialize() {
@@ -87,7 +86,7 @@ var ntp = (function() {
     themeChanged(false);
 
     dotList = getRequiredElement('dot-list');
-    appsPageList = getRequiredElement('apps-page-list');
+    pageList = getRequiredElement('page-list');
     trash = getRequiredElement('trash');
     trash.hidden = true;
 
@@ -110,21 +109,22 @@ var ntp = (function() {
     dotTemplate = dots[0];
     dotList.removeChild(dots[0]);
 
-    appsPages = appsPageList.getElementsByClassName('apps-page');
+    tilePages = pageList.getElementsByClassName('tile-page');
+    appsPages = pageList.getElementsByClassName('apps-page');
 
     // Initialize the cardSlider without any cards at the moment
-    var appsFrame = getRequiredElement('apps-frame');
-    cardSlider = new CardSlider(appsFrame, appsPageList, [], 0,
-                                appsFrame.offsetWidth);
+    var sliderFrame = getRequiredElement('card-slider-frame');
+    cardSlider = new CardSlider(sliderFrame, pageList, [], 0,
+                                sliderFrame.offsetWidth);
     cardSlider.initialize();
 
     // Ensure the slider is resized appropriately with the window
     window.addEventListener('resize', function() {
-      cardSlider.resize(appsFrame.offsetWidth);
+      cardSlider.resize(sliderFrame.offsetWidth);
     });
 
     // Handle the page being changed
-    appsPageList.addEventListener(
+    pageList.addEventListener(
         CardSlider.EventType.CARD_CHANGED,
         function(e) {
           // Update the active dot
@@ -148,8 +148,8 @@ var ntp = (function() {
     // Add handles to manage the transition into/out-of rearrange mode
     // Note that we assume here that we only use a Grabber for moving apps,
     // so ANY GRAB event means we're enterring rearrange mode.
-    appsFrame.addEventListener(Grabber.EventType.GRAB, enterRearrangeMode);
-    appsFrame.addEventListener(Grabber.EventType.RELEASE, leaveRearrangeMode);
+    sliderFrame.addEventListener(Grabber.EventType.GRAB, enterRearrangeMode);
+    sliderFrame.addEventListener(Grabber.EventType.RELEASE, leaveRearrangeMode);
 
     // Add handlers for the tash can
     trash.addEventListener(Grabber.EventType.DRAG_ENTER, function(e) {
@@ -165,6 +165,9 @@ var ntp = (function() {
 
     cr.ui.decorate($('recently-closed-menu-button'), ntp4.RecentMenuButton);
     chrome.send('getRecentlyClosedTabs');
+
+    // TODO(estade): populate most visited pages.
+    appendTilePage(new ntp4.MostVisitedPage('Most Visited'));
   }
 
   /**
@@ -198,21 +201,6 @@ var ntp = (function() {
   }
 
   /**
-   * Remove all children of an element which have a given class in
-   * their classList.
-   * @param {!Element} element The parent element to examine.
-   * @param {string} className The class to look for.
-   */
-  function removeChildrenByClassName(element, className) {
-    for (var child = element.firstElementChild; child;) {
-      var prev = child;
-      child = child.nextElementSibling;
-      if (prev.classList.contains(className))
-        element.removeChild(prev);
-    }
-  }
-
-  /**
    * Callback invoked by chrome with the apps available.
    *
    * Note that calls to this function can occur at any time, not just in
@@ -237,7 +225,6 @@ var ntp = (function() {
     assert(!draggingAppContainer && !draggingAppOriginalPosition &&
            !draggingAppOriginalPage);
     grabbers = [];
-    appEvents.removeAll();
 
     // Clear any existing apps pages and dots.
     // TODO(rbyers): It might be nice to preserve animation of dots after an
@@ -245,10 +232,13 @@ var ntp = (function() {
     // unfortunate to have Chrome send us the entire apps list after an
     // uninstall.
     for (var i = 0; i < appsPages.length; i++) {
-      appsPages[i].tearDown();
+      var page = appsPages[i];
+      var dot = page.navigationDot;
+
+      page.tearDown();
+      page.parentNode.removeChild(page);
+      dot.parentNode.removeChild(dot);
     }
-    removeChildrenByClassName(appsPageList, 'apps-page');
-    removeChildrenByClassName(dotList, 'dot');
 
     // Get the array of apps and add any special synthesized entries
     var apps = data.apps;
@@ -264,7 +254,7 @@ var ntp = (function() {
       var pageIndex = (app.page_index || 0);
       while (pageIndex >= appsPages.length) {
         var origPageCount = appsPages.length;
-        createAppPage('Apps');
+        appendTilePage(new ntp4.AppsPage('Apps'));
         // Confirm that appsPages is a live object, updated when a new page is
         // added (otherwise we'd have an infinite loop)
         assert(appsPages.length == origPageCount + 1, 'expected new page');
@@ -274,8 +264,8 @@ var ntp = (function() {
     }
 
     // Add a couple blank apps pages for testing. TODO(estade): remove this.
-    createAppPage('Foo');
-    createAppPage('Bar');
+    appendTilePage(new ntp4.AppsPage('Foo'));
+    appendTilePage(new ntp4.AppsPage('Bar'));
 
     // Tell the slider about the pages
     updateSliderCards();
@@ -328,33 +318,32 @@ var ntp = (function() {
    */
   function updateSliderCards() {
     var pageNo = cardSlider.currentCard;
-    if (pageNo >= appsPages.length)
-      pageNo = appsPages.length - 1;
+    if (pageNo >= tilePages.length)
+      pageNo = tilePages.length - 1;
     var pageArray = [];
-    for (var i = 0; i < appsPages.length; i++)
-      pageArray[i] = appsPages[i];
+    for (var i = 0; i < tilePages.length; i++)
+      pageArray[i] = tilePages[i];
     cardSlider.setCards(pageArray, pageNo);
   }
 
   /**
-   * Creates a new page for apps
+   * Appends a tile page (for apps or most visited).
    *
-   * @return {!Element} The apps-page element created.
-   * @param {string} name The display name for the page.
+   * @param {TilePage} page The page element.
    * @param {boolean=} opt_animate If true, add the class 'new' to the created
    *        dot.
    */
-  function createAppPage(name, opt_animate) {
-    var appsPage = new ntp4.AppsPage(name);
-    appsPageList.appendChild(appsPage);
+  function appendTilePage(page, opt_animate) {
+    pageList.appendChild(page);
 
     // Make a deep copy of the dot template to add a new one.
     var dotCount = dots.length;
     var newDot = dotTemplate.cloneNode(true);
-    newDot.textContent = name;
+    newDot.querySelector('span').textContent = page.pageName;
     if (opt_animate)
       newDot.classList.add('new');
     dotList.appendChild(newDot);
+    page.navigationDot = newDot;
 
     // Add click handler to the dot to change the page.
     // TODO(rbyers): Perhaps this should be TouchHandler.START_EVENT_ (so we
@@ -367,10 +356,10 @@ var ntp = (function() {
       cardSlider.selectCard(dotCount, true);
       e.stopPropagation();
     }
-    appEvents.add(newDot, 'click', switchPage, false);
+    newDot.addEventListener('click', switchPage);
 
     // Change pages whenever an app is dragged over a dot.
-    appEvents.add(newDot, Grabber.EventType.DRAG_ENTER, switchPage, false);
+    newDot.addEventListener(Grabber.EventType.DRAG_ENTER, switchPage);
   }
   /**
    * Search an elements ancestor chain for the nearest element that is a member
@@ -379,8 +368,7 @@ var ntp = (function() {
    * @param {string} className The name of the class to locate.
    * @return {Element} The first ancestor of the specified class or null.
    */
-  function getParentByClassName(element, className)
-  {
+  function getParentByClassName(element, className) {
     for (var e = element; e; e = e.parentElement) {
       if (e.classList.contains(className))
         return e;
@@ -412,12 +400,12 @@ var ntp = (function() {
    * @param {Grabber.Event} e The event from the Grabber indicating the drag.
    */
   function appDragStart(e) {
-    // Pull the element out to the appsFrame using fixed positioning. This
+    // Pull the element out to the sliderFrame using fixed positioning. This
     // ensures that the app is not affected (remains under the finger) if the
     // slider changes cards and is translated.  An alternate approach would be
     // to use fixed positioning for the slider (so that changes to its position
     // don't affect children that aren't positioned relative to it), but we
-    // don't yet have GPU acceleration for this.  Note that we use the appsFrame
+    // don't yet have GPU acceleration for this.
     var element = e.grabbedElement;
 
     var pos = element.getBoundingClientRect();
@@ -439,7 +427,7 @@ var ntp = (function() {
 
     // Move the app out of the container
     // Note that appendChild also removes the element from its current parent.
-    getRequiredElement('apps-frame').appendChild(element);
+    sliderFrame.appendChild(element);
   }
 
   /**
@@ -619,7 +607,7 @@ var ntp = (function() {
     cardSlider.cancelTouch();
 
     // Add an extra blank page in case the user wants to create a new page
-    createAppPage('', true);
+    appendTilePage(new ntp4.AppsPage(''), true);
     var pageAdded = appsPages.length - 1;
     window.setTimeout(function() {
       dots[pageAdded].classList.remove('new');
@@ -660,9 +648,8 @@ var ntp = (function() {
    * Remove the page with the specified index and update the slider.
    * @param {number} pageNo The index of the page to remove.
    */
-  function removePage(pageNo)
-  {
-    appsPageList.removeChild(appsPages[pageNo]);
+  function removePage(pageNo) {
+    pageList.removeChild(tilePages[pageNo]);
 
     // Remove the corresponding dot
     // Need to give it a chance to animate though

@@ -3,68 +3,8 @@
  * found in the LICENSE file.
  */
 
-/* The frame is what the slider fits into
- */
-#apps-frame {
-  /* We want this to fill the window except for the region used
-     by footer
-  */
-  position: fixed;
-  width: 100%;
-  top: 0;
-  bottom: 60px;     /* must match #footer height */
-  overflow: hidden;
-}
-
-/* The list holds all the pages and is what the touch events are attached to
-*/
-#apps-page-list {
-  /* fill the apps-frame */
-  height: 100%;
-  display: -webkit-box;
-}
-
-/* The apps-page is the slider card that is moved.
- */
-.apps-page {
-  margin-top: 50px;
-  text-align: center;
-  width: 100%;
-}
-
-.apps-page-title {
-  display: inline-block;
-  font-size: 25px;
-  height: 50px;
-  opacity: 0.3;
-}
-
-.tile-grid {
-  height: 100%;
-  position: relative;
-  width: 100%;
-}
-
 .app {
-  display: inline-block;
   position: absolute;
-  /* Animate effects to/from the grabbed state, and the position when drop
-     is cancelled.  I'd like to also animate movement when an app is
-     re-positioned, but since chrome is doing the layout there is no property
-     to animate. */
-  -webkit-transition: -webkit-transform, opacity;
-  -webkit-transition-duration: 200ms;
-  /* Don't offer the context menu on long-press. */
-  -webkit-touch-callout: none;
-}
-
-.app-subcontainer {
-  position: absolute;
-  text-align: center;
-}
-
-.resizing-apps-page .app-subcontainer {
-  -webkit-transition: left 200ms, top 200ms;
 }
 
 .app span {

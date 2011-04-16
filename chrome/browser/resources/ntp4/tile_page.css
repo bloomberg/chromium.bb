@@ -1,0 +1,40 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.tile-page {
+  margin-top: 50px;
+  text-align: center;
+  width: 100%;
+}
+
+.tile-page-title {
+  display: inline-block;
+  font-size: 25px;
+  height: 50px;
+  opacity: 0.3;
+}
+
+.tile-grid {
+  height: 100%;
+  position: relative;
+  width: 100%;
+}
+
+.tile {
+  display: inline-block;
+  position: absolute;
+  /* Animate effects to/from the grabbed state, and the position when drop
+     is cancelled.  I'd like to also animate movement when an app is
+     re-positioned, but since chrome is doing the layout there is no property
+     to animate. */
+  -webkit-transition: -webkit-transform, opacity;
+  -webkit-transition-duration: 200ms;
+  /* Don't offer the context menu on long-press. */
+  -webkit-touch-callout: none;
+}
+
+.resizing-tile-page .tile {
+  -webkit-transition: left 200ms, top 200ms;
+}

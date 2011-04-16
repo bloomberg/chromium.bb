@@ -14,8 +14,10 @@
 
 <link rel="stylesheet" href="../shared/css/menu.css">
 <link rel="stylesheet" href="apps_page.css">
+<link rel="stylesheet" href="most_visited_page.css">
 <link rel="stylesheet" href="new_tab.css">
 <link rel="stylesheet" href="recently_closed.css">
+<link rel="stylesheet" href="tile_page.css">
 <link id="themecss" rel="stylesheet">
 
 <script src="../shared/js/event_tracker.js"></script>
@@ -29,7 +31,10 @@
 <script src="../shared/js/cr/ui/position_util.js"></script>
 <script src="../shared/js/cr/ui/menu_button.js"></script>
 
+<script src="tile_page.js"></script>
 <script src="apps_page.js"></script>
+<script src="most_visited_page.js"></script>
+
 <script src="card_slider.js"></script>
 <script src="grabber.js"></script>
 <script src="new_tab.js"></script>
@@ -38,9 +43,8 @@
 </head>
 
 <body>
-  <div id="apps-frame">
-    <div id="apps-page-list">
-      <!-- apps pages go here -->
+  <div id="card-slider-frame">
+    <div id="page-list">
     </div>
   </div>
   <div id="footer">
@@ -50,7 +54,7 @@
 
       <ul id="dot-list">
         <!-- This is another template node (see above). -->
-        <li class="dot" tabindex="0" role="button"></li>
+        <li class="dot" tabindex="0" role="button"><span></span></li>
       </ul>
 
       <button id="recently-closed-menu-button">

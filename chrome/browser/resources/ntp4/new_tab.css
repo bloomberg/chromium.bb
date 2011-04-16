@@ -27,6 +27,23 @@ button span {
   font-size: 14px;
 }
 
+#card-slider-frame {
+  /* Must match #footer height. */
+  bottom: 50px;
+  overflow: hidden;
+  /* We want this to fill the window except for the region used
+     by footer */
+  position: fixed;
+  top: 0;
+  width: 100%;
+}
+
+#page-list {
+  /* fill the apps-frame */
+  height: 100%;
+  display: -webkit-box;
+}
+
 #footer {
   bottom: 0;
   position: fixed;
@@ -61,13 +78,15 @@ button span {
    overflow-y: visible (for the new dot animation), but this makes a scroll
    bar appear */
 #dot-list {
+  display: -webkit-box;
   height: 100%;
   list-style-type: none;
   margin: 0;
   padding: 0;
-  text-align: center;
-  white-space: nowrap;
+  /* Expand to take up all available horizontal space.  */
   -webkit-box-flex: 1;
+  /* Center child dots. */
+  -webkit-box-pack: center;
 }
 
 /* TODO(estade): improve focus indicator. */
@@ -75,11 +94,10 @@ button span {
   border-top: 5px solid rgba(0, 0, 0, .1);
   color: rgba(0, 0, 0, 0.2);
   cursor: pointer;
-  display: inline-block;
   font-size: 9pt;
   height: 100%;
-  line-height: 30px;
   margin: 0 10px;
+  padding-top: 5px;
   text-align: left;
   width: 60px;
   -webkit-box-sizing: border-box;

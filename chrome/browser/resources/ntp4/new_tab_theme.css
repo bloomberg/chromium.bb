@@ -35,28 +35,28 @@ body {
   color: $9; /* COLOR_NTP_LINK */
 }
 
-.thumbnail {
+.most-visited > .thumbnail {
   border-color: $$1; /* COLOR_NTP_SECTION */
 }
 
-.thumbnail-container,
-.thumbnail-container > .title {
+.most-visited,
+.most-visited > .title {
   color: $8; /* COLOR_NTP_TEXT */
 }
 
-.thumbnail-container:focus .thumbnail,
-.thumbnail-container:hover .thumbnail {
+.most-visited:focus .thumbnail,
+.most-visited:hover .thumbnail {
   border-color: $6; /* COLOR_NTP_HEADER */
 }
 
-.thumbnail-container:focus .edit-bar,
-.thumbnail-container:hover .edit-bar {
+.most-visited:focus .edit-bar,
+.most-visited:hover .edit-bar {
   background-color: $6; /* COLOR_NTP_HEADER */
   background-image: -webkit-linear-gradient(
                         $7, /* COLOR_HEADER_GRADIENT_LIGHT */
                         $6); /* COLOR_NTP_HEADER */
 }
-.thumbnail-container:hover > .edit-mode-border {
+.most-visited:hover > .edit-mode-border {
   background-color: $6; /* COLOR_NTP_HEADER */
 }
 
