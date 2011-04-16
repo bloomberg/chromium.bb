@@ -328,7 +328,7 @@ class ExtensionImpl : public ExtensionBase {
             WebKit::WebString::fromUTF8(name.c_str()),
             WebKit::WebString::fromUTF8(path.c_str()));
 #else
-    return webframe->createFileSystem(fileapi::kFileSystemTypeLocal,
+    return webframe->createFileSystem(fileapi::kFileSystemTypeExternal,
             WebKit::WebString::fromUTF8(name.c_str()),
             WebKit::WebString::fromUTF8(path.c_str()));
 #endif

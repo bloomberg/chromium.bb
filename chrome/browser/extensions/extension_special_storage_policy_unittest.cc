@@ -58,6 +58,59 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
     EXPECT_TRUE(unlimited_app.get()) << error;
     return unlimited_app;
   }
+
+  scoped_refptr<Extension> CreateComponentApp() {
+#if defined(OS_WIN)
+    FilePath path(FILE_PATH_LITERAL("c:\\component"));
+#elif defined(OS_POSIX)
+    FilePath path(FILE_PATH_LITERAL("/component"));
+#endif
+    DictionaryValue manifest;
+    manifest.SetString(keys::kName, "Component");
+    manifest.SetString(keys::kVersion, "1");
+    manifest.SetString(keys::kPublicKey,
+        "MIGdMA0GCSqGSIb3DQEBAQUAA4GLADCBhwKBgQDOuXEIuoK1kAkBe0SKiJn/N9oNn3oU" \
+        "xGa4dwj40MnJqPn+w0aR2vuyocm0R4Drp67aYwtLjOVPF4CICRq6ICP6eU07gGwQxGdZ" \
+        "7HJASXV8hm0tab5I70oJmRLfFJyVAMCeWlFaOGq05v2i6EbifZM0qO5xALKNGQt+yjXi" \
+        "5INM5wIBIw==");
+    ListValue* list = new ListValue();
+    list->Append(Value::CreateStringValue("unlimitedStorage"));
+    list->Append(Value::CreateStringValue("fileSystem"));
+    list->Append(Value::CreateStringValue("fileBrowserPrivate"));
+    manifest.Set(keys::kPermissions, list);
+    std::string error;
+    scoped_refptr<Extension> component_app = Extension::Create(
+        path, Extension::COMPONENT, manifest, Extension::STRICT_ERROR_CHECKS,
+        &error);
+    EXPECT_TRUE(component_app.get()) << error;
+    return component_app;
+  }
+
+  scoped_refptr<Extension> CreateHandlerApp() {
+#if defined(OS_WIN)
+    FilePath path(FILE_PATH_LITERAL("c:\\handler"));
+#elif defined(OS_POSIX)
+    FilePath path(FILE_PATH_LITERAL("/handler"));
+#endif
+    DictionaryValue manifest;
+    manifest.SetString(keys::kName, "Handler");
+    manifest.SetString(keys::kVersion, "1");
+    manifest.SetString(keys::kPublicKey,
+        "MIGdMA0GCSqGSIb3DQEBAQUAA4GLADCBhwKBgQChptAQ0n4R56N03nWQ1ogR7DVRBjGo" \
+        "80Vw6G9KLjzZv44D8rq5Q5IkeQrtKgWyZfXevlsCe3LaLo18rcz8iZx6lK2xhLdUR+OR" \
+        "jsjuBfdEL5a5cWeRTSxf75AcqndQsmpwMBdrMTCZ8jQNusUI+XlrihLNNJuI5TM4vNIN" \
+        "I5bYFQIBIw==");
+    ListValue* list = new ListValue();
+    list->Append(Value::CreateStringValue("unlimitedStorage"));
+    list->Append(Value::CreateStringValue("fileSystem"));
+    manifest.Set(keys::kPermissions, list);
+    std::string error;
+    scoped_refptr<Extension> handler_app = Extension::Create(
+        path, Extension::INVALID, manifest, Extension::STRICT_ERROR_CHECKS,
+        &error);
+    EXPECT_TRUE(handler_app.get()) << error;
+    return handler_app;
+  }
 };
 
 TEST_F(ExtensionSpecialStoragePolicyTest, EmptyPolicy) {

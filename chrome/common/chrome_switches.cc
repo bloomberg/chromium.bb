@@ -1154,6 +1154,10 @@ const char kSetToken[]                      = "set-token";
 // If host is specified, it also makes initial delay shorter (5 min to 5 sec)
 // to make it faster to test websocket live experiment code.
 const char kWebSocketLiveExperimentHost[]   = "websocket-live-experiment-host";
+
+// Debug only switch to give access to all private extension APIs to
+// any non-component extension that is requesting it.
+const char kExposePrivateExtensionApi[]   = "expose-private-extension-api";
 #endif
 
 #if defined(HAVE_XINPUT2)

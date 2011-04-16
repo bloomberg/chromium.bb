@@ -111,9 +111,6 @@ namespace fileapi {
 const FilePath::CharType SandboxMountPointProvider::kFileSystemDirectory[] =
     FILE_PATH_LITERAL("FileSystem");
 
-const char SandboxMountPointProvider::kPersistentName[] = "Persistent";
-const char SandboxMountPointProvider::kTemporaryName[] = "Temporary";
-
 SandboxMountPointProvider::SandboxMountPointProvider(
     FileSystemPathManager* path_manager,
     scoped_refptr<base::MessageLoopProxy> file_message_loop,
@@ -126,7 +123,11 @@ SandboxMountPointProvider::SandboxMountPointProvider(
 SandboxMountPointProvider::~SandboxMountPointProvider() {
 }
 
-bool SandboxMountPointProvider::IsAccessAllowed(const GURL& origin_url) {
+bool SandboxMountPointProvider::IsAccessAllowed(const GURL& origin_url,
+                                                FileSystemType type,
+                                                const FilePath& unused) {
+  if (type != kFileSystemTypeTemporary && type != kFileSystemTypePersistent)
+    return false;
   // We essentially depend on quota to do our access controls.
   return path_manager_->IsAllowedScheme(origin_url);
 }
@@ -211,6 +212,14 @@ bool SandboxMountPointProvider::IsRestrictedFileName(const FilePath& filename)
   return false;
 }
 
+std::vector<FilePath> SandboxMountPointProvider::GetRootDirectories() const {
+  NOTREACHED();
+  // TODO(ericu): Implement this method and check for access permissions as
+  // fileBrowserPrivate extension API does. We currently have another mechanism,
+  // but we should switch over.
+  return  std::vector<FilePath>();
+}
+
 void SandboxMountPointProvider::GetFileSystemRootPath(
     const GURL& origin_url, fileapi::FileSystemType type,
     bool create, FileSystemPathManager::GetRootPathCallback* callback_ptr) {
@@ -278,12 +287,12 @@ std::string SandboxMountPointProvider::OriginEnumerator::Next() {
 
 bool SandboxMountPointProvider::OriginEnumerator::HasTemporary() {
   return !current_.empty() && file_util::DirectoryExists(current_.AppendASCII(
-      SandboxMountPointProvider::kTemporaryName));
+      fileapi::kTemporaryName));
 }
 
 bool SandboxMountPointProvider::OriginEnumerator::HasPersistent() {
   return !current_.empty() && file_util::DirectoryExists(current_.AppendASCII(
-      SandboxMountPointProvider::kPersistentName));
+      fileapi::kPersistentName));
 }
 
 bool SandboxMountPointProvider::GetOriginBasePathAndName(

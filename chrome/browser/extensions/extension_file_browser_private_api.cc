@@ -79,7 +79,7 @@ bool RequestLocalFileSystemFunction::RunImpl() {
           profile()->GetFileSystemContext(),
           NULL);
   GURL origin_url = source_url().GetOrigin();
-  operation->OpenFileSystem(origin_url, fileapi::kFileSystemTypeLocal,
+  operation->OpenFileSystem(origin_url, fileapi::kFileSystemTypeExternal,
                             false);     // create
   // Will finish asynchronously.
   return true;
@@ -171,7 +171,7 @@ void FileDialogFunction::GetLocalPathsOnFileThread() {
     std::string virtual_path = virtual_paths_[i];
     FilePath root = path_manager->GetFileSystemRootPathOnFileThread(
         origin_url,
-        fileapi::kFileSystemTypeLocal,
+        fileapi::kFileSystemTypeExternal,
         FilePath(virtual_path),
         false);
     if (!root.empty()) {

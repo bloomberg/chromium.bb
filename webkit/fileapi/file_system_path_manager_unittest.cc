@@ -173,7 +173,7 @@ class TestSpecialStoragePolicy : public quota::SpecialStoragePolicy {
     return true;
   }
 
-  virtual bool IsLocalFileSystemAccessAllowed(const GURL& origin) {
+  virtual bool IsFileHandler(const std::string& extension_id) {
     return true;
   }
 };

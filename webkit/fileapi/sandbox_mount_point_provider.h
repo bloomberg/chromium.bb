@@ -6,6 +6,7 @@
 #define WEBKIT_FILEAPI_SANDBOX_MOUNT_POINT_PROVIDER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/file_path.h"
 #include "googleurl/src/gurl.h"
@@ -28,8 +29,10 @@ class SandboxMountPointProvider : public FileSystemMountPointProvider {
       const FilePath& profile_path);
   virtual ~SandboxMountPointProvider();
 
-  // Checks if mount point access is allowed from |origin_url|.
-  virtual bool IsAccessAllowed(const GURL& origin_url);
+  // Checks if access to |virtual_path| is allowed from |origin_url|.
+  virtual bool IsAccessAllowed(const GURL& origin_url,
+                               FileSystemType type,
+                               const FilePath& virtual_path);
 
   // Retrieves the root path for the given |origin_url| and |type|, and
   // calls the given |callback| with the root path and name.
@@ -51,15 +54,14 @@ class SandboxMountPointProvider : public FileSystemMountPointProvider {
   // The FileSystem directory name.
   static const FilePath::CharType kFileSystemDirectory[];
 
-  static const char kPersistentName[];
-  static const char kTemporaryName[];
-
   const FilePath& base_path() const {
     return base_path_;
   }
 
   // Checks if a given |name| contains any restricted names/chars in it.
   virtual bool IsRestrictedFileName(const FilePath& filename) const;
+
+  virtual std::vector<FilePath> GetRootDirectories() const;
 
   // Returns the origin identifier string, which is used as a part of the
   // sandboxed path component, for the given |url|.

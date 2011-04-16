@@ -10,7 +10,7 @@ namespace fileapi {
 enum FileSystemType {
   kFileSystemTypeTemporary,
   kFileSystemTypePersistent,
-  kFileSystemTypeLocal,
+  kFileSystemTypeExternal,
   kFileSystemTypeUnknown,
 };
 

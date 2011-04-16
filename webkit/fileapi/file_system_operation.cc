@@ -626,8 +626,8 @@ bool FileSystemOperation::VerifyFileSystemPathForRead(
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return false;
   }
-  if (!file_system_context()->path_manager()->IsAllowedFileSystemType(
-      *origin_url, *type)) {
+  if (!file_system_context()->path_manager()->IsAccessAllowed(
+      *origin_url, *type, *virtual_path)) {
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return false;
   }
@@ -663,8 +663,8 @@ bool FileSystemOperation::VerifyFileSystemPathForWrite(
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return false;
   }
-  if (!file_system_context()->path_manager()->IsAllowedFileSystemType(
-      *origin_url, *type)) {
+  if (!file_system_context()->path_manager()->IsAccessAllowed(
+      *origin_url, *type, *virtual_path)) {
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return false;
   }

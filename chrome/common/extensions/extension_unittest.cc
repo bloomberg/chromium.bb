@@ -1023,6 +1023,10 @@ TEST(ExtensionTest, PermissionMessages) {
 
   // This permission requires explicit user action (context menu handler)
   // so we won't prompt for it for now.
+  skip.insert(Extension::kFileBrowserHandlerPermission);
+
+  // This permission requires explicit user action (context menu handler)
+  // so we won't prompt for it for now.
   skip.insert(Extension::kFileSystemPermission);
 
   // If you've turned on the experimental command-line flag, we don't need

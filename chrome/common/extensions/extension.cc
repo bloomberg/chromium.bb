@@ -264,6 +264,7 @@ const char Extension::kCookiePermission[] = "cookies";
 const char Extension::kChromeosInfoPrivatePermissions[] = "chromeosInfoPrivate";
 const char Extension::kDebuggerPermission[] = "debugger";
 const char Extension::kExperimentalPermission[] = "experimental";
+const char Extension::kFileBrowserHandlerPermission[] = "fileBrowserHandler";
 const char Extension::kFileSystemPermission[] = "fileSystem";
 const char Extension::kFileBrowserPrivatePermission[] = "fileBrowserPrivate";
 const char Extension::kGeolocationPermission[] = "geolocation";
@@ -288,6 +289,7 @@ const Extension::Permission Extension::kPermissions[] = {
   { kCookiePermission, 0 },
   { kDebuggerPermission, IDS_EXTENSION_PROMPT_WARNING_DEBUGGER },
   { kExperimentalPermission, 0 },
+  { kFileBrowserHandlerPermission, 0 },
   { kFileSystemPermission, 0 },
   { kFileBrowserPrivatePermission, 0 },
   { kGeolocationPermission, IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION },

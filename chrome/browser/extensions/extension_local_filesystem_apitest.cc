@@ -6,7 +6,8 @@
 
 #if defined(OS_CHROMEOS)
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, LocalFileSystem) {
+// TODO(zelidrag): Remove disable prefix on this test once API changes land.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_LocalFileSystem) {
   ASSERT_TRUE(RunComponentExtensionTest("local_filesystem")) << message_;
 }
 

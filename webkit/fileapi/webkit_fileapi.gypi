@@ -58,6 +58,9 @@
         ['chromeos==1', {
           'sources': [
             '../chromeos/fileapi/cros_mount_point_provider.cc',
+            '../chromeos/fileapi/cros_mount_point_provider.h',
+            '../chromeos/fileapi/file_access_permissions.cc',
+            '../chromeos/fileapi/file_access_permissions.h',
           ],
         }],
       ],

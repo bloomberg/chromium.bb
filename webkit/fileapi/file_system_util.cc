@@ -15,9 +15,13 @@
 
 namespace fileapi {
 
-static const char kPersistentDir[] = "/persistent/";
-static const char kTemporaryDir[] = "/temporary/";
-static const char kLocalDir[] = "/local/";
+const char kPersistentDir[] = "/persistent/";
+const char kTemporaryDir[] = "/temporary/";
+const char kExternalDir[] = "/external/";
+
+const char kPersistentName[] = "Persistent";
+const char kTemporaryName[] = "Temporary";
+const char kExternalName[] = "External";
 
 bool CrackFileSystemURL(const GURL& url, GURL* origin_url, FileSystemType* type,
                         FilePath* file_path) {
@@ -77,9 +81,9 @@ bool CrackFileSystemURL(const GURL& url, GURL* origin_url, FileSystemType* type,
   } else if (path.compare(0, strlen(kTemporaryDir), kTemporaryDir) == 0) {
     file_system_type = kFileSystemTypeTemporary;
     path = path.substr(strlen(kTemporaryDir));
-  } else if (path.compare(0, strlen(kLocalDir), kLocalDir) == 0) {
-    file_system_type = kFileSystemTypeLocal;
-    path = path.substr(strlen(kLocalDir));
+  } else if (path.compare(0, strlen(kExternalDir), kExternalDir) == 0) {
+    file_system_type = kFileSystemTypeExternal;
+    path = path.substr(strlen(kExternalDir));
   } else {
     return false;
   }
@@ -114,8 +118,8 @@ GURL GetFileSystemRootURI(
   case kFileSystemTypePersistent:
     path += (kPersistentDir + 1);  // We don't want the leading slash.
     break;
-  case kFileSystemTypeLocal:
-    path += (kLocalDir + 1);  // We don't want the leading slash.
+  case kFileSystemTypeExternal:
+    path += (kExternalDir + 1);  // We don't want the leading slash.
     break;
   default:
     NOTREACHED();

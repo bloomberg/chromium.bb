@@ -155,6 +155,8 @@ void SimpleFileSystem::OpenFileSystem(
     type = fileapi::kFileSystemTypeTemporary;
   else if (web_filesystem_type == WebFileSystem::TypePersistent)
     type = fileapi::kFileSystemTypePersistent;
+  else if (web_filesystem_type == WebFileSystem::TypeExternal)
+    type = fileapi::kFileSystemTypeExternal;
   else {
     // Unknown type filesystem is requested.
     callbacks->didFail(WebKit::WebFileErrorSecurity);

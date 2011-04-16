@@ -76,6 +76,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
+#include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_mount_point_provider.h"
+#include "webkit/fileapi/file_system_path_manager.h"
 #endif
 
 using base::Time;
@@ -1081,6 +1084,11 @@ void ExtensionService::NotifyExtensionUnloaded(
     profile_->UnregisterExtensionWithRequestContexts(extension);
     profile_->GetExtensionSpecialStoragePolicy()->
         RevokeRightsForExtension(extension);
+#if defined(OS_CHROMEOS)
+    // Revoke external file access to
+    profile_->GetFileSystemContext()->path_manager()->external_provider()->
+        RevokeAccessForExtension(extension->id());
+#endif
   }
 
   bool plugins_changed = false;

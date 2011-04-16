@@ -20,7 +20,7 @@ class MessageLoopProxy;
 
 namespace fileapi {
 
-class FileSystemMountPointProvider;
+class ExternalFileSystemMountPointProvider;
 class SandboxMountPointProvider;
 
 // TODO(kinuko): Probably this module must be called FileSystemPathUtil
@@ -81,11 +81,17 @@ class FileSystemPathManager {
   bool IsRestrictedFileName(FileSystemType type,
                             const FilePath& filename);
 
-  // Checks if an origin has access to a particular filesystem type.
-  bool IsAllowedFileSystemType(GURL origin, FileSystemType type);
+  // Checks if an origin has access to a particular filesystem type and
+  // file element represented by |virtual_path|.
+  bool IsAccessAllowed(const GURL& origin, FileSystemType type,
+                       const FilePath& virtual_path);
 
   SandboxMountPointProvider* sandbox_provider() const {
     return sandbox_provider_.get();
+  }
+
+  ExternalFileSystemMountPointProvider* external_provider() const {
+    return external_provider_.get();
   }
 
   bool is_incognito() const {
@@ -96,7 +102,7 @@ class FileSystemPathManager {
   const bool is_incognito_;
   const bool allow_file_access_from_files_;
   scoped_ptr<SandboxMountPointProvider> sandbox_provider_;
-  scoped_ptr<FileSystemMountPointProvider> local_provider_;
+  scoped_ptr<ExternalFileSystemMountPointProvider> external_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemPathManager);
 };

@@ -5,6 +5,8 @@
 #ifndef WEBKIT_QUOTA_SPECIAL_STORAGE_POLICY_H_
 #define WEBKIT_QUOTA_SPECIAL_STORAGE_POLICY_H_
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 
 class GURL;
@@ -27,8 +29,9 @@ class SpecialStoragePolicy
   // Unlimited storage is not subject to 'quotas'.
   virtual bool IsStorageUnlimited(const GURL& origin) = 0;
 
-  // Local file system access allowed via File API.
-  virtual bool IsLocalFileSystemAccessAllowed(const GURL& origin) = 0;
+  // Checks if extension identified with |extension_id| is registered as
+  // file handler.
+  virtual bool IsFileHandler(const std::string& extension_id) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<SpecialStoragePolicy>;

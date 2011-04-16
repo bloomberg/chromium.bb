@@ -47,7 +47,7 @@ FileSystemPathManager::FileSystemPathManager(
               file_message_loop,
               profile_path)) {
 #if defined(OS_CHROMEOS)
-  local_provider_.reset(
+  external_provider_.reset(
       new chromeos::CrosMountPointProvider(special_storage_policy));
 #endif
 }
@@ -64,9 +64,9 @@ void FileSystemPathManager::GetFileSystemRootPath(
     sandbox_provider_->GetFileSystemRootPath(
         origin_url, type, create, callback_ptr);
     break;
-  case kFileSystemTypeLocal:
-    if (local_provider_.get()) {
-      local_provider_->GetFileSystemRootPath(
+  case kFileSystemTypeExternal:
+    if (external_provider_.get()) {
+      external_provider_->GetFileSystemRootPath(
           origin_url, type, create, callback_ptr);
     } else {
       callback_ptr->Run(false, FilePath(), std::string());
@@ -88,9 +88,9 @@ FilePath FileSystemPathManager::GetFileSystemRootPathOnFileThread(
     return sandbox_provider_->GetFileSystemRootPathOnFileThread(
         origin_url, type, virtual_path, create);
     break;
-  case kFileSystemTypeLocal:
-    return local_provider_.get() ?
-        local_provider_->GetFileSystemRootPathOnFileThread(
+  case kFileSystemTypeExternal:
+    return external_provider_.get() ?
+        external_provider_->GetFileSystemRootPathOnFileThread(
            origin_url, type, virtual_path, create) :
         FilePath();
   case kFileSystemTypeUnknown:
@@ -112,9 +112,11 @@ bool FileSystemPathManager::IsAllowedScheme(const GURL& url) const {
 std::string FileSystemPathManager::GetFileSystemTypeString(
     fileapi::FileSystemType type) {
   if (type == fileapi::kFileSystemTypeTemporary)
-    return fileapi::SandboxMountPointProvider::kTemporaryName;
+    return fileapi::kTemporaryName;
   else if (type == fileapi::kFileSystemTypePersistent)
-    return fileapi::SandboxMountPointProvider::kPersistentName;
+    return fileapi::kPersistentName;
+  else if (type == fileapi::kFileSystemTypeExternal)
+    return fileapi::kExternalName;
   return std::string();
 }
 
@@ -125,9 +127,9 @@ bool FileSystemPathManager::IsRestrictedFileName(
   case kFileSystemTypeTemporary:
   case kFileSystemTypePersistent:
     return sandbox_provider_->IsRestrictedFileName(filename);
-  case kFileSystemTypeLocal:
-    return local_provider_.get() ?
-               local_provider_->IsRestrictedFileName(filename) : true;
+  case kFileSystemTypeExternal:
+    return external_provider_.get() ?
+               external_provider_->IsRestrictedFileName(filename) : true;
   case kFileSystemTypeUnknown:
   default:
     NOTREACHED();
@@ -136,17 +138,17 @@ bool FileSystemPathManager::IsRestrictedFileName(
 }
 
 // Checks if an origin has access to a particular filesystem type.
-bool FileSystemPathManager::IsAllowedFileSystemType(
-    GURL origin, FileSystemType type) {
+bool FileSystemPathManager::IsAccessAllowed(
+    const GURL& origin, FileSystemType type, const FilePath& virtual_path) {
   switch (type) {
     case kFileSystemTypeTemporary:
     case kFileSystemTypePersistent:
-      if (!sandbox_provider_->IsAccessAllowed(origin))
+      if (!sandbox_provider_->IsAccessAllowed(origin, type, virtual_path))
         return false;
       break;
-    case kFileSystemTypeLocal:
-      if (!local_provider_.get() ||
-          !local_provider_->IsAccessAllowed(origin)) {
+    case kFileSystemTypeExternal:
+      if (!external_provider_.get() ||
+          !external_provider_->IsAccessAllowed(origin, type, virtual_path)) {
         return false;
       }
       break;
@@ -164,3 +166,5 @@ COMPILE_ASSERT(int(WebFileSystem::TypeTemporary) == \
                int(fileapi::kFileSystemTypeTemporary), mismatching_enums);
 COMPILE_ASSERT(int(WebFileSystem::TypePersistent) == \
                int(fileapi::kFileSystemTypePersistent), mismatching_enums);
+COMPILE_ASSERT(int(WebFileSystem::TypeExternal) == \
+               int(fileapi::kFileSystemTypeExternal), mismatching_enums);

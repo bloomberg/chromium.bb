@@ -344,6 +344,7 @@ extern const char kKeepMouseCursor[];
 extern const char kClearTokenService[];
 extern const char kSetToken[];
 extern const char kWebSocketLiveExperimentHost[];
+extern const char kExposePrivateExtensionApi[];
 #endif
 
 #if !defined(OFFICIAL_BUILD)

@@ -462,6 +462,11 @@
             '../../../skia/ext/platform_canvas_unittest.cc',
           ],
         }],
+        ['chromeos==1', {
+          'sources': [
+            '../../chromeos/fileapi/file_access_permissions_unittest.cc',
+          ],
+        }],
         ['OS=="mac"', {
           # mac tests load the resources from the built test_shell beside the
           # test
