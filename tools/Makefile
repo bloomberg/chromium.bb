@@ -366,7 +366,7 @@ BUILD/stamp-$(CROSSARCH)-pregcc: | SRC/gcc BUILD
 	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
 	    HOST_TOOLCHAIN_BITS=$(HOST_TOOLCHAIN_BITS) \
 	    MULTILIB=$(MULTILIB) \
-	    configure-pregcc
+	    configure-gcc-with-nolibc
 	PATH=$(BUILDPATH) $(MAKE) \
 	    -C BUILD/build-pregcc-$(CROSSARCH) \
 	    all-gcc all-target-libgcc
@@ -428,7 +428,7 @@ BUILD/stamp-$(CROSSARCH)-pregcc-standalone: \
 	    DEFAULT_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
 	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
 	    MULTILIB=$(MULTILIB) \
-	    configure-pregcc
+	    configure-gcc-with-nolibc
 	$(MAKE) \
 	    -C $(PREGCC_BUILD_DIR) \
 	    all-gcc \
