@@ -6,6 +6,7 @@
 
 #include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 
+#include <algorithm>
 #include <stdio.h>
 
 #include "native_client/src/include/nacl_base.h"
