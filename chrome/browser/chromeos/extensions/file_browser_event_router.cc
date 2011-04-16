@@ -162,6 +162,7 @@ void ExtensionFileBrowserEventRouter::OnDeviceAdded(
 
 void ExtensionFileBrowserEventRouter::OnDeviceRemoved(
     const std::string& system_path) {
+  HideDeviceNotification(system_path);
 }
 
 void ExtensionFileBrowserEventRouter::OnDeviceScanned(
