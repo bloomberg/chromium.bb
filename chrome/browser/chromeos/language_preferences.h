@@ -69,7 +69,7 @@ extern const LanguageBooleanPrefs kChewingBooleanPrefs[];
 // This is not ideal, but we should hard-code the number here as the value
 // is referenced in other header files as array sizes. We have a
 // COMPILE_ASSERT in .cc to ensure that the number is correct.
-const size_t kNumChewingBooleanPrefs = 8;
+const size_t kNumChewingBooleanPrefs = 8 - 2; // -2 is for crosbug.com/14185
 
 extern const LanguageIntegerRangePreference kChewingIntegerPrefs[];
 // See comments at kNumChewingBooleanPrefs for why we hard-code this here.
