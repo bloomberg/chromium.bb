@@ -2026,7 +2026,6 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN29ChromeURLRequestContextGetter14CreateOriginalEP7ProfileRK8FilePathS4_i
    fun:_ZN11ProfileImpl17GetRequestContextEv
    fun:_ZN19SafeBrowsingService5StartEv
    fun:_ZN19SafeBrowsingService10InitializeEv
@@ -2454,8 +2453,6 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN29ChromeURLRequestContextGetter18CreateOffTheRecordEP7Profile*
-   ...
    fun:_ZN23OffTheRecordProfileImpl*Profile
    fun:_ZN7Profile25CreateOffTheRecordProfileEv
    fun:_ZN11ProfileImpl22GetOffTheRecordProfileEv
@@ -2844,14 +2841,6 @@
    fun:_ZNSt3setISsSt4lessISsESaISsEE6insertERKSs
    fun:*13ExtensionImpl16SetFunctionNamesERKSt6vectorISsSaISsEE
    fun:_ZN24ExtensionProcessBindings16SetFunctionNamesERKSt6vectorISsSaISsEE
-   fun:_ZN12RenderThread27OnSetExtensionFunctionNamesERKSt6vectorISsSaISsEE
-   fun:_Z16DispatchToMethodI12RenderThreadMS0_FvRKSt6vectorISsSaISsEEES3_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN3IPC16MessageWithTupleI6Tuple1ISt6vectorISsSaISsEEEE8DispatchI12RenderThreadMS8_FvRKS4_EEEbPKNS_7MessageEPT_T0_
-   fun:_ZN12RenderThread24OnControlMessageReceivedERKN3IPC7MessageE
-   fun:_ZN11ChildThread17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
-   fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEES3_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
 }
 {
    bug_57799
@@ -3459,10 +3448,8 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN11ProfileImpl14GetHostZoomMapEv
-   fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
    ...
-   fun:_ZN29ChromeURLRequestContextGetter14CreateOriginalEP7ProfilePK13ProfileIOData
-   fun:_ZNK13ProfileIOData6Handle27GetMainRequestContextGetterEv
+   fun:_ZNK17ProfileImplIOData6Handle27GetMainRequestContextGetterEv
    fun:_ZN11ProfileImpl17GetRequestContextEv
    fun:_ZN19SafeBrowsingService5StartEv
    fun:_ZN19SafeBrowsingService10InitializeEv
@@ -3470,7 +3457,7 @@
    fun:_ZN18BrowserProcessImpl28CreateResourceDispatcherHostEv
    fun:_ZN18BrowserProcessImpl24resource_dispatcher_hostEv
    fun:_ZN16ExtensionService4InitEv
-   fun:_ZN11ProfileImpl14InitExtensionsEv
+   fun:_ZN11ProfileImpl14InitExtensionsE*
    fun:_ZN14ProfileManager10AddProfileEP7Profileb
 }
 {
@@ -3478,10 +3465,8 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN11ProfileImpl25GetHostContentSettingsMapEv
-   fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
    ...
-   fun:_ZN29ChromeURLRequestContextGetter14CreateOriginalEP7ProfilePK13ProfileIOData
-   fun:_ZNK13ProfileIOData6Handle27GetMainRequestContextGetterEv
+   fun:_ZNK17ProfileImplIOData6Handle27GetMainRequestContextGetterEv
    fun:_ZN11ProfileImpl17GetRequestContextEv
    fun:_ZN19SafeBrowsingService5StartEv
    fun:_ZN19SafeBrowsingService10InitializeEv
@@ -3489,7 +3474,7 @@
    fun:_ZN18BrowserProcessImpl28CreateResourceDispatcherHostEv
    fun:_ZN18BrowserProcessImpl24resource_dispatcher_hostEv
    fun:_ZN16ExtensionService4InitEv
-   fun:_ZN11ProfileImpl14InitExtensionsEv
+   fun:_ZN11ProfileImpl14InitExtensionsE*
    fun:_ZN14ProfileManager10AddProfileEP7Profileb
 }
 {
@@ -3893,7 +3878,7 @@
 {
    bug_73722c
    Memcheck:Addr4
-   fun:_ZN2v88internal13StandardFrame23IsArgumentsAdaptorFrameEPh
+   ...
    fun:_ZN2v88internal10StackFrame11ComputeType*
    fun:_ZN2v88internal18StackFrameIterator5ResetEv
 }
@@ -4261,7 +4246,7 @@
    fun:_ZN18BrowserProcessImpl28CreateResourceDispatcherHostEv
    fun:_ZN18BrowserProcessImpl24resource_dispatcher_hostEv
    fun:_ZN16ExtensionService4InitEv
-   fun:_ZN11ProfileImpl14InitExtensionsEv
+   fun:_ZN11ProfileImpl14InitExtensionsE*
 }
 {
    bug_78528_a
@@ -4298,7 +4283,7 @@
    bug_78786
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN13sync_notifier104_GLOBAL__N_chrome_browser_sync_notifier_non_blocking_invalidation_notifier_unittest.cc_00000000_5C759CC735NonBlockingInvalidationNotifierTest5SetUpEv
+   fun:*35NonBlockingInvalidationNotifierTest5SetUpEv
 }
 {
    bug_79357a
@@ -4347,6 +4332,45 @@
    fun:_ZN8chromeos14NetworkLibrary7GetImplEb
    fun:_ZN8chromeos11CrosLibrary7LibraryINS_14NetworkLibraryEE14GetDefaultImplEb
    fun:_ZN8chromeos11CrosLibrary17GetNetworkLibraryEv
+}
+{
+   bug_79651
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8notifier14XmppConnectionC1ERKN4buzz18XmppClientSettingsERK13scoped_refptrIN3net23URLRequestContextGetterEEPNS0_8DelegateEPNS1_11PreXmppAuthE
+   fun:_ZN8notifier18SingleLoginAttempt13OnNewSettingsERKNS_18ConnectionSettingsE
+   fun:_ZN8notifier23XmppConnectionGenerator17UseNextConnectionEv
+   fun:_ZN8notifier23XmppConnectionGenerator15StartGeneratingEv
+   fun:_ZN8notifier18SingleLoginAttemptC1EPNS_13LoginSettingsEPNS0_8DelegateE
+   fun:_ZN8notifier5Login15StartConnectionEv
+   fun:_ZN13sync_notifier20InvalidationNotifier17UpdateCredentialsERKSsS2_
+   fun:*35InvalidationNotifierTest_Basic_Test8TestBodyEv
+}
+{
+   bug_79652
+   Memcheck:Leak
+   ...
+   fun:_ZN8chromeos14AudioMixerAlsa19InitializeAlsaMixerEv
+   fun:_ZN8chromeos14AudioMixerAlsa6DoInitEP14CallbackRunnerI6Tuple1IbEE
+}
+{
+   bug_79654
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZNSt3setIP16RenderWidgetHostSt4lessIS1_ESaIS1_EE6insertERKS1_
+   fun:_ZN*9TabLoader12TabIsLoadingEP20NavigationController
+   fun:_ZN*18SessionRestoreImpl21ProcessSessionWindowsEPSt6vectorIP13SessionWindowSaIS3_EE
+   fun:_ZN*18SessionRestoreImpl12OnGotSessionEiPSt6vectorIP13SessionWindowSaIS3_EE
+}
+{
+   bug_79656
+   Memcheck:Addr4
+   fun:_ZNK10scoped_ptrIN7fileapi21FileSystemPathManagerEE3getEv
+   fun:_ZN7fileapi17FileSystemContext12path_managerEv
+   fun:_ZN16ExtensionService23NotifyExtensionUnloadedEPK9ExtensionN21UnloadedExtensionInfo6ReasonE
+   fun:_ZN16ExtensionService15UnloadExtensionERKSsN21UnloadedExtensionInfo6ReasonE
+   fun:_ZN16ExtensionService18UninstallExtensionERKSsbPSs
 }
 
 #-----------------------------------------------------------------------

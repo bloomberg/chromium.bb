@@ -1589,3 +1589,29 @@
    fun:_ZN20SelectFileDialogImpl10SelectFileEN16SelectFileDialog4TypeERKSbItN4base20string16_char_traitsESaItEERK8FilePathPKNS0_12FileTypeInfoEiRKSsP8NSWindowPv
    fun:_ZN15DownloadManager24OnPathExistenceAvailableEP18DownloadCreateInfo
 }
+{
+   bug_79655a
+   Memcheck:Addr1
+   ...
+   fun:dlopen
+   fun:_ZN20IOSurfaceSupportImplC2Ev
+   fun:_ZN20IOSurfaceSupportImplC1Ev
+   fun:_ZN22DefaultSingletonTraitsI20IOSurfaceSupportImplE3NewEv
+   fun:_ZN9SingletonI20IOSurfaceSupportImpl22DefaultSingletonTraitsIS0_ES0_E3getEv
+   fun:_ZN20IOSurfaceSupportImpl11GetInstanceEv
+   fun:_ZN16IOSurfaceSupport10InitializeEv
+   fun:_ZN11TabContents14GetWebkitPrefsEv
+}
+{
+   bug_79655b
+   Memcheck:Leak
+   ...
+   fun:dlopen
+   fun:_ZN20IOSurfaceSupportImplC2Ev
+   fun:_ZN20IOSurfaceSupportImplC1Ev
+   fun:_ZN22DefaultSingletonTraitsI20IOSurfaceSupportImplE3NewEv
+   fun:_ZN9SingletonI20IOSurfaceSupportImpl22DefaultSingletonTraitsIS0_ES0_E3getEv
+   fun:_ZN20IOSurfaceSupportImpl11GetInstanceEv
+   fun:_ZN16IOSurfaceSupport10InitializeEv
+   fun:_ZN11TabContents14GetWebkitPrefsEv
+}
