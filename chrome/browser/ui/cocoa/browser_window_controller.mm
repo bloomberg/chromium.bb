@@ -14,6 +14,7 @@
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util_mac.h"
@@ -62,6 +63,7 @@
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
 
 // ORGANIZATION: This is a big file. It is (in principle) organized as follows
 // (in order):
@@ -1858,6 +1860,11 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   [previewableContentsController_ hidePreview];
   [self updateBookmarkBarVisibilityWithAnimation:NO];
 }
+
+- (void)commitInstant {
+  InstantController::CommitIfCurrent(browser_->instant());
+}
+
 
 - (NSRect)instantFrame {
   // The view's bounds are in its own coordinate system.  Convert that to the

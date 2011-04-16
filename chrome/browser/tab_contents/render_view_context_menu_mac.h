@@ -23,6 +23,7 @@ class RenderViewContextMenuMac : public RenderViewContextMenu {
                            const ContextMenuParams& params,
                            NSView* parent_view);
   virtual ~RenderViewContextMenuMac();
+  virtual void ExecuteCommand(int id);
 
  protected:
   // RenderViewContextMenu implementation-

@@ -267,6 +267,7 @@ class TabContents;
 // Shows or hides the Instant preview contents.
 - (void)showInstant:(TabContents*)previewContents;
 - (void)hideInstant;
+- (void)commitInstant;
 
 // Returns the frame, in Cocoa (unflipped) screen coordinates, of the area where
 // Instant results are.  If Instant is not showing, returns the frame of where

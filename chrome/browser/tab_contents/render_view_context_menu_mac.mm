@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
 #include "grit/generated_resources.h"
 
@@ -57,6 +58,11 @@ void RenderViewContextMenuMac::PlatformInit() {
                    withEvent:clickEvent
                      forView:parent_view_];
   }
+}
+
+void RenderViewContextMenuMac::ExecuteCommand(int id) {
+  [[[parent_view_ window] windowController] commitInstant];
+  RenderViewContextMenu::ExecuteCommand(id);
 }
 
 bool RenderViewContextMenuMac::GetAcceleratorForCommandId(
