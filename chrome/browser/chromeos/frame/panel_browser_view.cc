@@ -116,6 +116,16 @@ void PanelBrowserView::OnWindowActivationChanged(bool active) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// TabStripModelObserver overrides.
+
+void PanelBrowserView::TabChangedAt(TabContentsWrapper* contents,
+                                    int index,
+                                    TabChangeType change_type) {
+  if (change_type == TabStripModelObserver::TITLE_NOT_LOADING)
+    panel_controller_->SetUrgent(true);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // PanelController::Delegate overrides.
 
 string16 PanelBrowserView::GetPanelTitle() {
@@ -132,6 +142,10 @@ bool PanelBrowserView::CanClosePanel() {
 
 void PanelBrowserView::ClosePanel() {
   Close();
+}
+
+void PanelBrowserView::ActivatePanel() {
+  Activate();
 }
 
 }  // namespace chromeos

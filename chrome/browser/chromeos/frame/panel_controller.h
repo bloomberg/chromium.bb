@@ -16,6 +16,10 @@ class BrowserView;
 class SkBitmap;
 typedef unsigned long XID;
 
+namespace base {
+class Time;
+}
+
 namespace views {
 class ImageButton;
 class ImageView;
@@ -50,6 +54,9 @@ class PanelController {
 
     // Close the panel. Called when a close button is pressed.
     virtual void ClosePanel() = 0;
+
+    // Activate the panel. Called when maximized.
+    virtual void ActivatePanel() = 0;
   };
 
   PanelController(Delegate* delegate_window,
@@ -70,9 +77,12 @@ class PanelController {
   void OnFocusOut();
 
   void UpdateTitleBar();
+  void SetUrgent(bool urgent);
   void Close();
 
   void SetState(State state);
+
+  bool urgent() { return urgent_; }
 
  private:
   class TitleContentView : public views::View,
@@ -155,6 +165,15 @@ class PanelController {
 
   // GTK client event handler id.
   int client_event_handler_id_;
+
+  // Focused state.
+  bool focused_;
+
+  // Urgent (highlight) state.
+  bool urgent_;
+
+  // Timestamp to prevent setting urgent immediately after clearing it.
+  base::TimeTicks urgent_cleared_time_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelController);
 };

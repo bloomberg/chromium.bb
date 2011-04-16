@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "content/common/notification_service.h"
@@ -51,12 +52,21 @@ const int kTitleCornerRadius = 4;
 const int kTitleCloseButtonPad = 6;
 const SkColor kTitleActiveGradientStart = SK_ColorWHITE;
 const SkColor kTitleActiveGradientEnd = 0xffe7edf1;
+const SkColor kTitleUrgentGradientStart = 0xfffea044;
+const SkColor kTitleUrgentGradientEnd = 0xfffa983a;
 const SkColor kTitleActiveColor = SK_ColorBLACK;
 const SkColor kTitleInactiveColor = SK_ColorBLACK;
 const SkColor kTitleCloseButtonColor = SK_ColorBLACK;
+// Delay before the urgency can be set after it has been cleared.
+const base::TimeDelta kSetUrgentDelay = base::TimeDelta::FromMilliseconds(500);
 
 // Used to draw the background of the panel title window.
 class TitleBackgroundPainter : public views::Painter {
+ public:
+  explicit TitleBackgroundPainter(PanelController* controller)
+      : panel_controller_(controller) { }
+
+ private:
   virtual void Paint(int w, int h, gfx::Canvas* canvas) {
     SkRect rect = {0, 0, w, h};
     SkPath path;
@@ -72,6 +82,10 @@ class TitleBackgroundPainter : public views::Painter {
     paint.setFlags(SkPaint::kAntiAlias_Flag);
     SkPoint p[2] = { {0, 0}, {0, h} };
     SkColor colors[2] = {kTitleActiveGradientStart, kTitleActiveGradientEnd};
+    if (panel_controller_->urgent()) {
+      colors[0] = kTitleUrgentGradientStart;
+      colors[1] = kTitleUrgentGradientEnd;
+    }
     SkShader* s = SkGradientShader::CreateLinear(
         p, colors, NULL, 2, SkShader::kClamp_TileMode, NULL);
     paint.setShader(s);
@@ -79,6 +93,8 @@ class TitleBackgroundPainter : public views::Painter {
     s->unref();
     canvas->AsCanvasSkia()->drawPath(path, paint);
   }
+
+  PanelController* panel_controller_;
 };
 
 static bool resources_initialized;
@@ -114,7 +130,9 @@ PanelController::PanelController(Delegate* delegate,
        expanded_(true),
        mouse_down_(false),
        dragging_(false),
-       client_event_handler_id_(0) {
+       client_event_handler_id_(0),
+       focused_(false),
+       urgent_(false) {
 }
 
 void PanelController::Init(bool initial_focus,
@@ -164,6 +182,22 @@ void PanelController::UpdateTitleBar() {
   title_content_->title_icon()->SetImage(delegate_->GetPanelIcon());
 }
 
+void PanelController::SetUrgent(bool urgent) {
+  if (!urgent)
+    urgent_cleared_time_ = base::TimeTicks::Now();
+  if (urgent == urgent_)
+    return;
+  if (urgent && focused_)
+    return;  // Don't set urgency for focused panels.
+  if (urgent && base::TimeTicks::Now() < urgent_cleared_time_ + kSetUrgentDelay)
+    return;  // Don't set urgency immediately after clearing it.
+  urgent_ = urgent;
+  if (title_window_) {
+    gtk_window_set_urgency_hint(panel_, urgent ? TRUE : FALSE);
+    title_content_->SchedulePaint();
+  }
+}
+
 bool PanelController::TitleMousePressed(const views::MouseEvent& event) {
   if (!event.IsOnlyLeftMouseButton())
     return false;
@@ -204,6 +238,12 @@ void PanelController::TitleMouseCaptureLost() {
 
   mouse_down_ = false;
   if (!dragging_) {
+    // Always activate the panel here, even if we are about to minimize it.
+    // This lets panels like GTalk know that they have been acknowledged,
+    // so they don't change the title again (which would trigger SetUrgent).
+    // Activating the panel also clears the urgent state.
+    delegate_->ActivatePanel();
+    // Set State after activating.
     SetState(expanded_ ?
              PanelController::MINIMIZED : PanelController::EXPANDED);
   } else {
@@ -260,9 +300,13 @@ bool PanelController::OnPanelClientEvent(
 void PanelController::OnFocusIn() {
   if (title_window_)
     title_content_->OnFocusIn();
+  focused_ = true;
+  // Clear urgent when focused.
+  SetUrgent(false);
 }
 
 void PanelController::OnFocusOut() {
+  focused_ = false;
   if (title_window_)
     title_content_->OnFocusOut();
 }
@@ -332,7 +376,7 @@ PanelController::TitleContentView::TitleContentView(
 
   set_background(
       views::Background::CreateBackgroundPainter(
-          true, new TitleBackgroundPainter()));
+          true, new TitleBackgroundPainter(panel_controller)));
   OnFocusOut();
 }
 

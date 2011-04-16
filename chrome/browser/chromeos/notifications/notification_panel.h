@@ -102,6 +102,7 @@ class NotificationPanel : public PanelController::Delegate,
   virtual SkBitmap GetPanelIcon();
   virtual bool CanClosePanel();
   virtual void ClosePanel();
+  virtual void ActivatePanel();
 
   // NotificationObserver overrides:
   virtual void Observe(NotificationType type,

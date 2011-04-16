@@ -594,6 +594,11 @@ void NotificationPanel::ClosePanel() {
   UpdatePanel(false);
 }
 
+void NotificationPanel::ActivatePanel() {
+  if (active_)
+    active_->Activated();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NotificationObserver overrides.
 

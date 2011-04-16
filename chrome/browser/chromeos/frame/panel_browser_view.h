@@ -35,11 +35,17 @@ class PanelBrowserView : public ::BrowserView,
   virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const;
   virtual void OnWindowActivationChanged(bool active);
 
+  // BrowserView : TabStripModelObserver overrides.
+  virtual void TabChangedAt(TabContentsWrapper* contents,
+                            int index,
+                            TabChangeType change_type);
+
   // PanelController::Delegate overrides
   virtual string16 GetPanelTitle();
   virtual SkBitmap GetPanelIcon();
   virtual bool CanClosePanel();
   virtual void ClosePanel();
+  virtual void ActivatePanel();
   virtual void OnPanelStateChanged(PanelController::State state) {}
 
  private:
