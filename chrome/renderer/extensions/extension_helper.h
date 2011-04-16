@@ -8,19 +8,34 @@
 
 #include <map>
 
+#include "content/renderer/render_view.h"
 #include "content/renderer/render_view_observer.h"
+#include "content/renderer/render_view_observer_tracker.h"
 
 class ExtensionDispatcher;
 class GURL;
 class ListValue;
 struct ExtensionMsg_ExecuteCode_Params;
+struct WebApplicationInfo;
+
+namespace webkit_glue {
+class ResourceFetcher;
+}
 
 // Filters extension related messages sent to RenderViews.
-class ExtensionHelper : public RenderViewObserver {
+class ExtensionHelper : public RenderViewObserver,
+                        public RenderViewObserverTracker<ExtensionHelper> {
  public:
   ExtensionHelper(RenderView* render_view,
                   ExtensionDispatcher* extension_dispatcher);
   virtual ~ExtensionHelper();
+
+  // Starts installation of the page in the specified frame as a web app. The
+  // page must link to an external 'definition file'. This is different from
+  // the 'application shortcuts' feature where we pull the application
+  // definition out of optional meta tags in the page.
+  bool InstallWebApplicationUsingDefinitionFile(WebKit::WebFrame* frame,
+                                                string16* error);
 
  private:
   // RenderViewObserver implementation.
@@ -41,8 +56,37 @@ class ExtensionHelper : public RenderViewObserver {
                                 const ListValue& args,
                                 const GURL& event_url);
   void OnExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
+  void OnGetApplicationInfo(int page_id);
+
+  // Callback triggered when we finish downloading the application definition
+  // file.
+  void DidDownloadApplicationDefinition(const WebKit::WebURLResponse& response,
+                                        const std::string& data);
+
+  // Callback triggered after each icon referenced by the application definition
+  // is downloaded.
+  void DidDownloadApplicationIcon(webkit_glue::ImageResourceFetcher* fetcher,
+                                  const SkBitmap& image);
+
+  // Helper to add an error message to the root frame's console.
+  void AddErrorToRootConsole(const string16& message);
 
   ExtensionDispatcher* extension_dispatcher_;
+
+  // The app info that we are processing. This is used when installing an app
+  // via application definition. The in-progress web app is stored here while
+  // its manifest and icons are downloaded.
+  scoped_ptr<WebApplicationInfo> pending_app_info_;
+
+  // Used to download the application definition file.
+  scoped_ptr<webkit_glue::ResourceFetcher> app_definition_fetcher_;
+
+  // Used to download the icons for an application.
+  RenderView::ImageResourceFetcherList app_icon_fetchers_;
+
+  // The number of app icon requests outstanding. When this reaches zero, we're
+  // done processing an app definition file.
+  int pending_app_icon_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHelper);
 };

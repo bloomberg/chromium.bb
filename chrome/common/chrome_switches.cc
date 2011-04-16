@@ -152,10 +152,6 @@ const char kDeviceManagementUrl[]           = "device-management-url";
 // Triggers a pletora of diagnostic modes.
 const char kDiagnostics[]                   = "diagnostics";
 
-// Disables accelerated compositing.
-const char kDisableAcceleratedCompositing[] =
-    "disable-accelerated-compositing";
-
 // Disables the hardware acceleration of 3D CSS and animation.
 const char kDisableAcceleratedLayers[]      = "disable-accelerated-layers";
 
@@ -207,14 +203,8 @@ const char kDisableConnectBackupJobs[]      = "disable-connect-backup-jobs";
 // Disables the custom JumpList on Windows 7.
 const char kDisableCustomJumpList[]         = "disable-custom-jumplist";
 
-// Disables data transfer items.
-const char kDisableDataTransferItems[]      = "disable-data-transfer-items";
-
 // Browser flag to disable the web inspector for all renderers.
 const char kDisableDevTools[]               = "disable-dev-tools";
-
-// Disables device orientation events.
-const char kDisableDeviceOrientation[]      = "disable-device-orientation";
 
 // Disable extensions.
 const char kDisableExtensions[]             = "disable-extensions";
@@ -227,15 +217,6 @@ const char kDisableExtensionsFileAccessCheck[] =
 // Disables the sandbox for the built-in flash player.
 const char kDisableFlashSandbox[]           = "disable-flash-sandbox";
 
-// Suppresses support for the Geolocation javascript API.
-const char kDisableGeolocation[]            = "disable-geolocation";
-
-// Disable GL multisampling.
-const char kDisableGLMultisampling[]        = "disable-gl-multisampling";
-
-// Disable the GLSL translator.
-const char kDisableGLSLTranslator[]         = "disable-glsl-translator";
-
 // Suppresses hang monitor dialogs in renderer processes.  This may allow slow
 // unload handlers on a page to prevent the tab from closing, but the Task
 // Manager can be used to terminate the offending process in this case.
@@ -246,9 +227,6 @@ const char kDisableHistoryQuickProvider[]   = "disable-history-quick-provider";
 
 // Disable the use of the HistoryURLProvider for autocomplete results.
 const char kDisableHistoryURLProvider[]     = "disable-history-url-provider";
-
-// Disable the Indexed Database API.
-const char kDisableIndexedDatabase[]        = "disable-indexed-database";
 
 // Disables HTML5 Forms interactive validation.
 const char kDisableInteractiveFormValidation[] =
@@ -271,18 +249,6 @@ const char kDisableIPPooling[]              = "disable-ip-pooling";
 // Disable speculative TCP/IP preconnection.
 const char kDisablePreconnect[]             = "disable-preconnect";
 
-// Prevent Java from running.
-const char kDisableJava[]                   = "disable-java";
-
-// Don't execute JavaScript (browser JS like the new tab page still runs).
-const char kDisableJavaScript[]             = "disable-javascript";
-
-// Disable JavaScript I18N API.
-const char kDisableJavaScriptI18NAPI[]      = "disable-javascript-i18n-api";
-
-// Disable LocalStorage.
-const char kDisableLocalStorage[]           = "disable-local-storage";
-
 // Whether we should prevent the new tab page from showing the first run
 // notification.
 const char kDisableNewTabFirstRun[]         = "disable-new-tab-first-run";
@@ -304,17 +270,8 @@ const char kDisableRendererAccessibility[]  = "disable-renderer-accessibility";
 const char kDisableRestoreBackgroundContents[] =
     "disable-restore-background-contents";
 
-// Disable session storage.
-const char kDisableSessionStorage[]         = "disable-session-storage";
-
-// Enable shared workers. Functionality not yet complete.
-const char kDisableSharedWorkers[]          = "disable-shared-workers";
-
 // Disable site-specific tailoring to compatibility issues in WebKit.
 const char kDisableSiteSpecificQuirks[]     = "disable-site-specific-quirks";
-
-// Disables speech input.
-const char kDisableSpeechInput[]            = "disable-speech-input";
 
 // Disable False Start in SSL and TLS connections.
 const char kDisableSSLFalseStart[]          = "disable-ssl-false-start";
@@ -447,9 +404,6 @@ const char kEnableConnectBackupJobs[]       = "enable-connect-backup-jobs";
 // Enables web developers to create apps for Chrome without using crx packages.
 const char kEnableCrxlessWebApps[]          = "enable-crxless-web-apps";
 
-// Enables device motion events.
-const char kEnableDeviceMotion[]            = "enable-device-motion";
-
 // Enable DNS side checking of certificates. Still experimental, should only
 // be used by developers at the current time.
 const char kEnableDNSCertProvenanceChecking[] =
@@ -571,9 +525,6 @@ const char kEnableVideoLogging[]            = "enable-video-logging";
 // Order of the listed sub-arguments does not matter.
 const char kEnableWatchdog[]                = "enable-watchdog";
 
-// Enable web audio API.
-const char kEnableWebAudio[]                = "enable-webaudio";
-
 // Enables experimental features for Spellchecker. Right now, the first
 // experimental feature is auto spell correct, which corrects words which are
 // misppelled by typing the word with two consecutive letters swapped. The
@@ -690,18 +641,12 @@ const char kImport[]                        = "import";
 // setting encodes the file path. It may be used jointly with kImport.
 const char kImportFromFile[]                = "import-from-file";
 
-// Runs plugins inside the renderer process
-const char kInProcessPlugins[]              = "in-process-plugins";
-
 // Causes the browser to launch directly in incognito mode.
 const char kIncognito[]                     = "incognito";
 
 // URL to use for instant. If specified this overrides the url from the
 // TemplateURL.
 const char kInstantURL[]                    = "instant-url";
-
-// Specifies the flags passed to JS engine
-const char kJavaScriptFlags[]               = "js-flags";
 
 // Used for testing - keeps browser alive after last browser window closes.
 const char kKeepAliveForTest[]              = "keep-alive-for-test";
@@ -780,13 +725,6 @@ const char kNoExperiments[]                 = "no-experiments";
 // you're for some reason tempted to pass them both.
 const char kNoFirstRun[]                    = "no-first-run";
 
-// Support a separate switch that enables the v8 playback extension.
-// The extension causes javascript calls to Date.now() and Math.random()
-// to return consistent values, such that subsequent loads of the same
-// page will result in consistent js-generated data and XHR requests.
-// Pages may still be able to generate inconsistent data from plugins.
-const char kNoJsRandomness[]                = "no-js-randomness";
-
 // Don't send hyperlink auditing pings
 const char kNoPings[]                       = "no-pings";
 
@@ -825,10 +763,6 @@ const char kPackExtensionKey[]              = "pack-extension-key";
 
 // Specifies the path to the user data folder for the parent profile.
 const char kParentProfile[]                 = "parent-profile";
-
-// Read previously recorded data from the cache. Only cached data is read.
-// See kRecordMode.
-const char kPlaybackMode[]                  = "playback-mode";
 
 // Forces the PPAPI version of Flash (if it's being used) to run in the
 // renderer process rather than in a separate plugin process.
@@ -897,12 +831,6 @@ const char kProxyServer[]                   = "proxy-server";
 //
 // NOTE: This is only implemented for Views.
 const char kPurgeMemoryButton[]             = "purge-memory-button";
-
-// Chrome supports a playback and record mode.  Record mode saves *everything*
-// to the cache.  Playback mode reads data exclusively from the cache.  This
-// allows us to record a session into the cache and then replay it at will.
-// See also kPlaybackMode.
-const char kRecordMode[]                    = "record-mode";
 
 // Reload pages that have been killed when they are next focused by the user.
 const char kReloadKilledTabs[]              = "reload-killed-tabs";
@@ -973,10 +901,6 @@ const char kShowCompositedLayerTree[]       = "show-composited-layer-tree";
 
 // Draws a FPS indicator
 const char kShowFPSCounter[]                = "show-fps-counter";
-
-// Visibly render a border around paint rects in the web page to help debug
-// and study painting behavior.
-const char kShowPaintRects[]                = "show-paint-rects";
 
 // Change the DCHECKS to dump memory and continue instead of displaying error
 // dialog. This is valid only in Release mode when --enable-dcheck is

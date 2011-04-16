@@ -11,6 +11,7 @@
 #include "base/string16.h"
 #include "content/common/content_client.h"
 
+class FilePath;
 class GURL;
 class RenderView;
 class SkBitmap;
@@ -73,6 +74,13 @@ class ContentRendererClient {
   virtual bool WillSendRequest(WebKit::WebFrame* frame,
                                const GURL& url,
                                GURL* new_url);
+
+  // Returns the file path where the media library files are.
+  virtual FilePath GetMediaLibraryPath();
+
+  // Whether to pump events when sending sync cookie messages.  Needed if the
+  // embedder can potentiall put up a modal dialog on the UI thread as a result.
+  virtual bool ShouldPumpEventsDuringCookieMessage();
 
   // See the corresponding functions in WebKit::WebFrameClient.
   virtual void DidCreateScriptContext(WebKit::WebFrame* frame);

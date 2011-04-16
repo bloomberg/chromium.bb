@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_CHROME_RENDER_OBSERVER_H_
-#define CHROME_RENDERER_CHROME_RENDER_OBSERVER_H_
+#ifndef CHROME_RENDERER_CHROME_RENDER_VIEW_OBSERVER_H_
+#define CHROME_RENDERER_CHROME_RENDER_VIEW_OBSERVER_H_
 #pragma once
 
 #include "base/task.h"
@@ -12,6 +12,7 @@
 class SkBitmap;
 class TranslateHelper;
 struct ThumbnailScore;
+struct ViewMsg_Navigate_Params;
 
 namespace WebKit {
 class WebView;
@@ -23,14 +24,14 @@ class PhishingClassifierDelegate;
 
 // This class holds the Chrome specific parts of RenderView, and has the same
 // lifetime.
-class ChromeRenderObserver : public RenderViewObserver {
+class ChromeRenderViewObserver : public RenderViewObserver {
  public:
   // translate_helper and/or phishing_classifier can be NULL.
-  ChromeRenderObserver(
+  ChromeRenderViewObserver(
       RenderView* render_view,
       TranslateHelper* translate_helper,
       safe_browsing::PhishingClassifierDelegate* phishing_classifier);
-  virtual ~ChromeRenderObserver();
+  virtual ~ChromeRenderViewObserver();
 
  private:
   // RenderViewObserver implementation.
@@ -40,6 +41,7 @@ class ChromeRenderObserver : public RenderViewObserver {
                                         bool is_new_navigation) OVERRIDE;
 
   void OnCaptureSnapshot();
+  void OnNavigate(const ViewMsg_Navigate_Params& params);
 
   // Captures the thumbnail and text contents for indexing for the given load
   // ID. If the view's load ID is different than the parameter, this call is
@@ -66,14 +68,15 @@ class ChromeRenderObserver : public RenderViewObserver {
   // Has the same lifetime as us.
   TranslateHelper* translate_helper_;
   safe_browsing::PhishingClassifierDelegate* phishing_classifier_;
-  
+
   // Page_id from the last page we indexed. This prevents us from indexing the
   // same page twice in a row.
   int32 last_indexed_page_id_;
 
-  ScopedRunnableMethodFactory<ChromeRenderObserver> page_info_method_factory_;
+  ScopedRunnableMethodFactory<ChromeRenderViewObserver>
+      page_info_method_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeRenderObserver);
+  DISALLOW_COPY_AND_ASSIGN(ChromeRenderViewObserver);
 };
 
-#endif  // CHROME_RENDERER_CHROME_OBSERVER_H_
+#endif  // CHROME_RENDERER_CHROME_RENDER_VIEW_OBSERVER_H_

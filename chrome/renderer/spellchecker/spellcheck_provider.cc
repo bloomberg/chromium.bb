@@ -6,6 +6,8 @@
 
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/render_view_commands.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "content/renderer/render_view.h"
@@ -76,6 +78,27 @@ bool SpellCheckProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void SpellCheckProvider::FocusedNodeChanged(const WebKit::WebNode& unused) {
+  bool is_enabled = false;
+  WebKit::WebNode node = render_view()->GetFocusedNode();
+  if (!node.isNull())
+    is_enabled = render_view()->IsEditableNode(node);
+
+  RenderViewCommandCheckedState checked_state =
+      RENDER_VIEW_COMMAND_CHECKED_STATE_UNCHECKED;
+  if (is_enabled && render_view()->webview()) {
+    WebFrame* frame = render_view()->webview()->focusedFrame();
+    if (frame->isContinuousSpellCheckingEnabled())
+      checked_state = RENDER_VIEW_COMMAND_CHECKED_STATE_CHECKED;
+  }
+
+  Send(new ViewHostMsg_CommandStateChanged(
+      routing_id(),
+      RENDER_VIEW_COMMAND_TOGGLE_SPELL_CHECK,
+      is_enabled,
+      checked_state));
 }
 
 void SpellCheckProvider::spellCheck(

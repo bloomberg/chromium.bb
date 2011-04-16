@@ -4,10 +4,16 @@
 
 #include "content/renderer/render_process_observer.h"
 
+#include "content/renderer/render_thread.h"
+
 RenderProcessObserver::RenderProcessObserver() {
 }
 
 RenderProcessObserver::~RenderProcessObserver() {
+}
+
+bool RenderProcessObserver::Send(IPC::Message* message) {
+  return RenderThread::current()->Send(message);
 }
 
 bool RenderProcessObserver::OnControlMessageReceived(

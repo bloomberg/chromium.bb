@@ -4,7 +4,6 @@
 
 #include "content/renderer/renderer_webstoragenamespace_impl.h"
 
-#include "chrome/common/render_messages.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/renderer_webstoragearea_impl.h"
 

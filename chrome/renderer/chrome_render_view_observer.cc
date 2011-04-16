@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/chrome_render_observer.h"
+#include "chrome/renderer/chrome_render_view_observer.h"
 
 #include "base/command_line.h"
 #include "base/message_loop.h"
@@ -10,8 +10,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/thumbnail_score.h"
+#include "chrome/renderer/about_handler.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/translate_helper.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/content_renderer_client.h"
 #include "content/renderer/render_view.h"
 #include "skia/ext/bitmap_platform_device.h"
@@ -83,7 +85,7 @@ static double CalculateBoringScore(SkBitmap* bitmap) {
   return static_cast<double>(color_count) / pixel_count;
 }
 
-ChromeRenderObserver::ChromeRenderObserver(
+ChromeRenderViewObserver::ChromeRenderViewObserver(
     RenderView* render_view,
     TranslateHelper* translate_helper,
     safe_browsing::PhishingClassifierDelegate* phishing_classifier)
@@ -94,19 +96,25 @@ ChromeRenderObserver::ChromeRenderObserver(
       ALLOW_THIS_IN_INITIALIZER_LIST(page_info_method_factory_(this)) {
 }
 
-ChromeRenderObserver::~ChromeRenderObserver() {
+ChromeRenderViewObserver::~ChromeRenderViewObserver() {
 }
 
-bool ChromeRenderObserver::OnMessageReceived(const IPC::Message& message) {
+bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ChromeRenderObserver, message)
+  IPC_BEGIN_MESSAGE_MAP(ChromeRenderViewObserver, message)
     IPC_MESSAGE_HANDLER(ViewMsg_CaptureSnapshot, OnCaptureSnapshot)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+
+  // Filter only.
+  IPC_BEGIN_MESSAGE_MAP(ChromeRenderViewObserver, message)
+    IPC_MESSAGE_HANDLER(ViewMsg_Navigate, OnNavigate)
+  IPC_END_MESSAGE_MAP()
+
   return handled;
 }
 
-void ChromeRenderObserver::OnCaptureSnapshot() {
+void ChromeRenderViewObserver::OnCaptureSnapshot() {
   SkBitmap snapshot;
   bool error = false;
 
@@ -124,30 +132,35 @@ void ChromeRenderObserver::OnCaptureSnapshot() {
   Send(new ViewHostMsg_Snapshot(routing_id(), snapshot));
 }
 
-void ChromeRenderObserver::DidStopLoading() {
+void ChromeRenderViewObserver::OnNavigate(
+    const ViewMsg_Navigate_Params& params) {
+  AboutHandler::MaybeHandle(params.url);
+}
+
+void ChromeRenderViewObserver::DidStopLoading() {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       page_info_method_factory_.NewRunnableMethod(
-          &ChromeRenderObserver::CapturePageInfo, render_view()->page_id(),
+          &ChromeRenderViewObserver::CapturePageInfo, render_view()->page_id(),
           false),
       render_view()->content_state_immediately() ? 0 : kDelayForCaptureMs);
 }
 
-void ChromeRenderObserver::DidCommitProvisionalLoad(WebFrame* frame,
-                                                    bool is_new_navigation) {
+void ChromeRenderViewObserver::DidCommitProvisionalLoad(
+    WebFrame* frame, bool is_new_navigation) {
   if (!is_new_navigation)
     return;
 
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       page_info_method_factory_.NewRunnableMethod(
-          &ChromeRenderObserver::CapturePageInfo, render_view()->page_id(),
+          &ChromeRenderViewObserver::CapturePageInfo, render_view()->page_id(),
           true),
       kDelayForForcedCaptureMs);
 }
 
-void ChromeRenderObserver::CapturePageInfo(int load_id,
-                                           bool preliminary_capture) {
+void ChromeRenderViewObserver::CapturePageInfo(int load_id,
+                                               bool preliminary_capture) {
   if (load_id != render_view()->page_id())
     return;  // This capture call is no longer relevant due to navigation.
 
@@ -203,7 +216,8 @@ void ChromeRenderObserver::CapturePageInfo(int load_id,
     phishing_classifier_->PageCaptured(&contents, preliminary_capture);
 }
 
-void ChromeRenderObserver::CaptureText(WebFrame* frame, string16* contents) {
+void ChromeRenderViewObserver::CaptureText(WebFrame* frame,
+                                           string16* contents) {
   contents->clear();
   if (!frame)
     return;
@@ -234,7 +248,7 @@ void ChromeRenderObserver::CaptureText(WebFrame* frame, string16* contents) {
   }
 }
 
-void ChromeRenderObserver::CaptureThumbnail() {
+void ChromeRenderViewObserver::CaptureThumbnail() {
   WebFrame* main_frame = render_view()->webview()->mainFrame();
   if (!main_frame)
     return;
@@ -257,11 +271,11 @@ void ChromeRenderObserver::CaptureThumbnail() {
   Send(new ViewHostMsg_Thumbnail(routing_id(), url, score, thumbnail));
 }
 
-bool ChromeRenderObserver::CaptureFrameThumbnail(WebView* view,
-                                                 int w,
-                                                 int h,
-                                                 SkBitmap* thumbnail,
-                                                 ThumbnailScore* score) {
+bool ChromeRenderViewObserver::CaptureFrameThumbnail(WebView* view,
+                                                     int w,
+                                                     int h,
+                                                     SkBitmap* thumbnail,
+                                                     ThumbnailScore* score) {
   base::TimeTicks beginning_time = base::TimeTicks::Now();
 
   skia::PlatformCanvas canvas;
@@ -326,7 +340,8 @@ bool ChromeRenderObserver::CaptureFrameThumbnail(WebView* view,
   return true;
 }
 
-bool ChromeRenderObserver::CaptureSnapshot(WebView* view, SkBitmap* snapshot) {
+bool ChromeRenderViewObserver::CaptureSnapshot(WebView* view,
+                                               SkBitmap* snapshot) {
   base::TimeTicks beginning_time = base::TimeTicks::Now();
 
   skia::PlatformCanvas canvas;

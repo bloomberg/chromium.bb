@@ -174,11 +174,6 @@ IPC_MESSAGE_CONTROL1(ViewMsg_VisitedLink_Add, std::vector<uint64>)
 // re-calculated.
 IPC_MESSAGE_CONTROL0(ViewMsg_VisitedLink_Reset)
 
-// Sent when user prompting is required before a ViewHostMsg_GetCookies
-// message can complete.  This message indicates that the renderer should
-// pump messages while waiting for cookies.
-IPC_MESSAGE_CONTROL0(ViewMsg_SignalCookiePromptEvent)
-
 // Set the content settings for a particular url that the renderer is in the
 // process of loading.  This will be stored, to be used if the load commits
 // and ignored otherwise.
@@ -194,11 +189,6 @@ IPC_MESSAGE_CONTROL2(ViewMsg_SetContentSettingsForCurrentURL,
 
 // Install the first missing pluign.
 IPC_MESSAGE_ROUTED0(ViewMsg_InstallMissingPlugin)
-
-// Tells the renderer to empty its plugin list cache, optional reloading
-// pages containing plugins.
-IPC_MESSAGE_CONTROL1(ViewMsg_PurgePluginListCache,
-                     bool /* reload_pages */)
 
 // Tells the render view to load all blocked plugins.
 IPC_MESSAGE_ROUTED0(ViewMsg_LoadBlockedPlugins)

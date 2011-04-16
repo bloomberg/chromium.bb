@@ -16,6 +16,7 @@ class WebDataSource;
 class WebFrame;
 class WebFormElement;
 class WebMouseEvent;
+class WebNode;
 class WebString;
 class WebURL;
 struct WebURLError;
@@ -62,8 +63,9 @@ class RenderViewObserver : public IPC::Channel::Listener,
       bool cross_origin,
       const WebKit::WebString& property_name,
       unsigned long long event_id) {}
+  virtual void FocusedNodeChanged(const WebKit::WebNode& node) {}
 
-  // These match the RenderView methods below.
+  // These match the RenderView methods.
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {}
 
  protected:

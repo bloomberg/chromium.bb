@@ -15,17 +15,12 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/file_util.h"
 #include "base/message_loop.h"
-#include "base/metrics/histogram.h"
-#include "base/path_service.h"
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
-#include "crypto/nss_util.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/render_messages.h"
+#include "content/common/content_switches.h"
 #include "content/common/view_messages.h"
+#include "content/renderer/content_renderer_client.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "ipc/ipc_channel.h"
@@ -40,50 +35,10 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
-#elif defined(OS_WIN)
-#include "app/win/iat_patch_function.h"
 #endif
 
 #if defined(OS_LINUX)
 #include "content/renderer/renderer_sandbox_support_linux.h"
-#endif
-
-#if defined(OS_WIN)
-
-static app::win::IATPatchFunction g_iat_patch_createdca;
-HDC WINAPI CreateDCAPatch(LPCSTR driver_name,
-                          LPCSTR device_name,
-                          LPCSTR output,
-                          const void* init_data) {
-  DCHECK(std::string("DISPLAY") == std::string(driver_name));
-  DCHECK(!device_name);
-  DCHECK(!output);
-  DCHECK(!init_data);
-
-  // CreateDC fails behind the sandbox, but not CreateCompatibleDC.
-  return CreateCompatibleDC(NULL);
-}
-
-static app::win::IATPatchFunction g_iat_patch_get_font_data;
-DWORD WINAPI GetFontDataPatch(HDC hdc,
-                              DWORD table,
-                              DWORD offset,
-                              LPVOID buffer,
-                              DWORD length) {
-  int rv = GetFontData(hdc, table, offset, buffer, length);
-  if (rv == GDI_ERROR && hdc) {
-    HFONT font = static_cast<HFONT>(GetCurrentObject(hdc, OBJ_FONT));
-
-    LOGFONT logfont;
-    if (GetObject(font, sizeof(LOGFONT), &logfont)) {
-      std::vector<char> font_data;
-      if (RenderThread::current()->Send(new ViewHostMsg_PreCacheFont(logfont)))
-        rv = GetFontData(hdc, table, offset, buffer, length);
-    }
-  }
-  return rv;
-}
-
 #endif
 
 RenderProcessImpl::RenderProcessImpl()
@@ -124,18 +79,11 @@ RenderProcessImpl::RenderProcessImpl()
         command_line.GetSwitchValueASCII(switches::kJavaScriptFlags));
   }
 
-  if (command_line.HasSwitch(switches::kEnableWatchdog)) {
-    // TODO(JAR): Need to implement renderer IO msgloop watchdog.
-  }
-
-  if (command_line.HasSwitch(switches::kDumpHistogramsOnExit)) {
-    base::StatisticsRecorder::set_dump_on_exit(true);
-  }
-
   // Note that under Linux, the media library will normally already have
   // been initialized by the Zygote before this instance became a Renderer.
-  FilePath media_path;
-  if (PathService::Get(chrome::DIR_MEDIA_LIBS, &media_path))
+  FilePath media_path =
+      content::GetContentClient()->renderer()->GetMediaLibraryPath();
+  if (!media_path.empty())
     media::InitializeMediaLibrary(media_path);
 
 #if !defined(OS_MACOSX)
@@ -144,36 +92,6 @@ RenderProcessImpl::RenderProcessImpl()
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableOpenMax)) {
     media::InitializeOpenMaxLibrary(media_path);
-  }
-#endif
-
-#if defined(OS_WIN)
-  // Need to patch a few functions for font loading to work correctly.
-  FilePath pdf;
-  if (PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf) &&
-      file_util::PathExists(pdf)) {
-    g_iat_patch_createdca.Patch(
-        pdf.value().c_str(), "gdi32.dll", "CreateDCA", CreateDCAPatch);
-    g_iat_patch_get_font_data.Patch(
-        pdf.value().c_str(), "gdi32.dll", "GetFontData", GetFontDataPatch);
-  }
-#endif
-
-#if defined(OS_LINUX)
-  // Remoting requires NSS to function properly.
-
-  if (!command_line.HasSwitch(switches::kSingleProcess) &&
-      command_line.HasSwitch(switches::kEnableRemoting)) {
-#if defined(USE_NSS)
-    // We are going to fork to engage the sandbox and we have not loaded
-    // any security modules so it is safe to disable the fork check in NSS.
-    crypto::DisableNSSForkCheck();
-    crypto::ForceNSSNoDBInit();
-    crypto::EnsureNSSInit();
-#else
-    // TODO(bulach): implement openssl support.
-    NOTREACHED() << "Remoting is not supported for openssl";
-#endif
   }
 #endif
 }

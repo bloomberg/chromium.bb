@@ -1155,6 +1155,12 @@ IPC_MESSAGE_ROUTED2(ViewMsg_PpapiBrokerChannelCreated,
                     int /* request_id */,
                     IPC::ChannelHandle /* handle */)
 
+// Tells the renderer to empty its plugin list cache, optional reloading
+// pages containing plugins.
+IPC_MESSAGE_CONTROL1(ViewMsg_PurgePluginListCache,
+                     bool /* reload_pages */)
+
+
 // Messages sent from the renderer to the browser.
 
 // Sent by the renderer when it is creating a new window.  The browser creates

@@ -37,8 +37,6 @@
         'renderer/audio_message_filter.h',
         'renderer/content_renderer_client.cc',
         'renderer/content_renderer_client.h',
-        'renderer/cookie_message_filter.cc',
-        'renderer/cookie_message_filter.h',
         'renderer/device_orientation_dispatcher.cc',
         'renderer/device_orientation_dispatcher.h',
         'renderer/external_popup_menu.cc',

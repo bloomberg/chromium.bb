@@ -30,6 +30,7 @@
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 #include "content/common/plugin_messages.h"
+#include "content/common/view_messages.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugininfo.h"

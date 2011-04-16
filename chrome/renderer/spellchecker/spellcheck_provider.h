@@ -51,6 +51,7 @@ class SpellCheckProvider : public RenderViewObserver,
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual void FocusedNodeChanged(const WebKit::WebNode& node);
 
  private:
   // WebKit::WebSpellCheckClient implementation.

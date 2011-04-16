@@ -14,6 +14,7 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/extension_helper.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
@@ -123,7 +124,9 @@ class ChromeAppExtensionWrapper : public v8::Extension {
     RenderView* render_view = bindings_utils::GetRenderViewForCurrentContext();
     if (frame && render_view) {
       string16 error;
-      if (!render_view->InstallWebApplicationUsingDefinitionFile(frame, &error))
+
+      ExtensionHelper* helper = ExtensionHelper::Get(render_view);
+      if (!helper->InstallWebApplicationUsingDefinitionFile(frame, &error))
         v8::ThrowException(v8::String::New(UTF16ToUTF8(error).c_str()));
     }
 

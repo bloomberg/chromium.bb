@@ -4,6 +4,7 @@
 
 #include "content/renderer/content_renderer_client.h"
 
+#include "base/file_path.h"
 #include "content/renderer/render_view.h"
 
 using WebKit::WebFrame;
@@ -56,6 +57,14 @@ bool ContentRendererClient::ShouldFork(WebFrame* frame,
 bool ContentRendererClient::WillSendRequest(WebFrame* frame,
                                             const GURL& url,
                                             GURL* new_url) {
+  return false;
+}
+
+FilePath ContentRendererClient::GetMediaLibraryPath() {
+  return FilePath();
+}
+
+bool ContentRendererClient::ShouldPumpEventsDuringCookieMessage() {
   return false;
 }
 

@@ -9,8 +9,11 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/path_service.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/child_process_logging.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -25,7 +28,8 @@
 #include "chrome/renderer/automation/automation_renderer_helper.h"
 #include "chrome/renderer/automation/dom_automation_v8_extension.h"
 #include "chrome/renderer/blocked_plugin.h"
-#include "chrome/renderer/chrome_render_observer.h"
+#include "chrome/renderer/chrome_render_process_observer.h"
+#include "chrome/renderer/chrome_render_view_observer.h"
 #include "chrome/renderer/devtools_agent.h"
 #include "chrome/renderer/devtools_agent_filter.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
@@ -64,6 +68,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
@@ -83,6 +88,7 @@ using WebKit::WebCache;
 using WebKit::WebFrame;
 using WebKit::WebPlugin;
 using WebKit::WebPluginParams;
+using WebKit::WebSecurityPolicy;
 using WebKit::WebString;
 using WebKit::WebURLError;
 using WebKit::WebURLRequest;
@@ -216,6 +222,7 @@ ChromeContentRendererClient::~ChromeContentRendererClient() {
 }
 
 void ChromeContentRendererClient::RenderThreadStarted() {
+  chrome_observer_.reset(new ChromeRenderProcessObserver());
   extension_dispatcher_.reset(new ExtensionDispatcher());
   histogram_snapshots_.reset(new RendererHistogramSnapshots());
   net_predictor_.reset(new RendererNetPredictor());
@@ -229,6 +236,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   thread->AddFilter(new SuicideOnChannelErrorFilter());
 #endif
 
+  thread->AddObserver(chrome_observer_.get());
   thread->AddObserver(extension_dispatcher_.get());
   thread->AddObserver(histogram_snapshots_.get());
   thread->AddObserver(phishing_classifier_.get());
@@ -249,6 +257,16 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   }
 
   thread->resource_dispatcher()->set_observer(new RenderResourceObserver());
+
+  // chrome: pages should not be accessible by normal content, and should
+  // also be unable to script anything but themselves (to help limit the damage
+  // that a corrupt chrome: page could cause).
+  WebString chrome_ui_scheme(ASCIIToUTF16(chrome::kChromeUIScheme));
+  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_ui_scheme);
+
+  // chrome-extension: resources shouldn't trigger insecure content warnings.
+  WebString extension_scheme(ASCIIToUTF16(chrome::kExtensionScheme));
+  WebSecurityPolicy::registerURLSchemeAsSecure(extension_scheme);
 }
 
 void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
@@ -281,7 +299,7 @@ void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
   page_click_tracker->AddListener(autofill_agent);
 
   TranslateHelper* translate = new TranslateHelper(render_view, autofill_agent);
-  new ChromeRenderObserver(render_view, translate, phishing_classifier);
+  new ChromeRenderViewObserver(render_view, translate, phishing_classifier);
 
   // Used only for testing/automation.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -545,6 +563,21 @@ bool ChromeContentRendererClient::WillSendRequest(WebKit::WebFrame* frame,
   }
 
   return false;
+}
+
+FilePath ChromeContentRendererClient::GetMediaLibraryPath() {
+  FilePath rv;
+  PathService::Get(chrome::DIR_MEDIA_LIBS, &rv);
+  return rv;
+}
+
+bool ChromeContentRendererClient::ShouldPumpEventsDuringCookieMessage() {
+  // We only need to pump events for chrome frame processes as the
+  // cookie policy is controlled by the host browser (IE). If the
+  // policy is set to prompt then the host would put up UI which
+  // would require plugins if any to also pump to ensure that we
+  // don't have a deadlock.
+  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame);
 }
 
 void ChromeContentRendererClient::DidCreateScriptContext(WebFrame* frame) {

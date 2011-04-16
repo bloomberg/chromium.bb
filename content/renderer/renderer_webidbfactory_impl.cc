@@ -4,7 +4,6 @@
 
 #include "content/renderer/renderer_webidbfactory_impl.h"
 
-#include "chrome/common/render_messages.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/indexed_db_dispatcher.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMStringList.h"

@@ -22,13 +22,13 @@
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
-#include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "content/renderer/render_view_visitor.h"
 #include "grit/common_resources.h"
@@ -530,17 +530,12 @@ class ExtensionImpl : public ExtensionBase {
   }
 
   static v8::Handle<v8::Value> IsExtensionProcess(const v8::Arguments& args) {
-    bool retval = false;
-    if (EventBindings::GetRenderThread())
-      retval = extension_dispatcher_->is_extension_process();
-    return v8::Boolean::New(retval);
+    return v8::Boolean::New(extension_dispatcher_->is_extension_process());
   }
 
   static v8::Handle<v8::Value> IsIncognitoProcess(const v8::Arguments& args) {
-    bool retval = false;
-    if (EventBindings::GetRenderThread())
-      retval = EventBindings::GetRenderThread()->IsIncognitoProcess();
-    return v8::Boolean::New(retval);
+    return v8::Boolean::New(
+        ChromeRenderProcessObserver::is_incognito_process());
   }
 
   static ExtensionDispatcher* extension_dispatcher_;

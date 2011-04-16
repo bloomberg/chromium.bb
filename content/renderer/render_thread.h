@@ -22,7 +22,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 class AppCacheDispatcher;
-class CookieMessageFilter;
 class DBMessageFilter;
 class FilePath;
 class GpuChannelHost;
@@ -35,7 +34,6 @@ class RendererWebKitClientImpl;
 class SkBitmap;
 class WebDatabaseObserverImpl;
 
-struct ContentSettings;
 struct RendererPreferences;
 struct DOMStorageMsg_Event_Params;
 struct GPUInfo;
@@ -106,9 +104,6 @@ class RenderThreadBase {
   // Called by a RenderWidget when it is hidden or restored.
   virtual void WidgetHidden() = 0;
   virtual void WidgetRestored() = 0;
-
-  // True if this process is running in an incognito profile.
-  virtual bool IsIncognitoProcess() const = 0;
 };
 
 // The RenderThread class represents a background thread where RenderView
@@ -149,7 +144,6 @@ class RenderThread : public RenderThreadBase,
   virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter);
   virtual void WidgetHidden();
   virtual void WidgetRestored();
-  virtual bool IsIncognitoProcess() const;
 
   void AddObserver(RenderProcessObserver* observer);
   void RemoveObserver(RenderProcessObserver* observer);
@@ -247,31 +241,15 @@ class RenderThread : public RenderThreadBase,
   void Init();
 
   void OnSetZoomLevelForCurrentURL(const GURL& url, double zoom_level);
-  void OnSetContentSettingsForCurrentURL(
-      const GURL& url, const ContentSettings& content_settings);
   void OnDOMStorageEvent(const DOMStorageMsg_Event_Params& params);
   void OnSetNextPageID(int32 next_page_id);
-  void OnSetIsIncognitoProcess(bool is_incognito_process);
   void OnSetCSSColors(const std::vector<CSSColors::CSSColorMapping>& colors);
   void OnCreateNewView(const ViewMsg_New_Params& params);
   void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);
-  void OnSetCacheCapacities(size_t min_dead_capacity,
-                            size_t max_dead_capacity,
-                            size_t capacity);
-  void OnClearCache();
-  void OnGetCacheResourceStats();
-
-  // Send tcmalloc info to browser.
-  void OnGetRendererTcmalloc();
-  void OnGetV8HeapStats();
-
-  void OnPurgeMemory();
   void OnPurgePluginListCache(bool reload_pages);
-
   void OnGpuChannelEstablished(const IPC::ChannelHandle& channel_handle,
                                base::ProcessHandle renderer_process_for_gpu,
                                const GPUInfo& gpu_info);
-
   void OnGetAccessibilityTree();
 
   // We initialize WebKit as late as possible.
@@ -286,7 +264,6 @@ class RenderThread : public RenderThreadBase,
 
   // Used on the renderer and IPC threads.
   scoped_refptr<DBMessageFilter> db_message_filter_;
-  scoped_refptr<CookieMessageFilter> cookie_message_filter_;
 
   // Used on multiple script execution context threads.
   scoped_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
@@ -302,9 +279,6 @@ class RenderThread : public RenderThreadBase,
 
   // The current value of the idle notification timer delay.
   double idle_notification_delay_in_s_;
-
-  // True if this renderer is incognito.
-  bool is_incognito_process_;
 
   bool suspend_webkit_shared_timer_;
   bool notify_webkit_of_modal_loop_;

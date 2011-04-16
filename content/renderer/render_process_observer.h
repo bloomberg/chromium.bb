@@ -13,10 +13,13 @@ class GURL;
 
 // Base class for objects that want to filter control IPC messages and get
 // notified of events.
-class RenderProcessObserver {
+class RenderProcessObserver : public IPC::Message::Sender {
  public:
   RenderProcessObserver();
   virtual ~RenderProcessObserver();
+
+  // IPC::Message::Sender
+  virtual bool Send(IPC::Message* message);
 
   // Allows filtering of control messages.
   virtual bool OnControlMessageReceived(const IPC::Message& message);

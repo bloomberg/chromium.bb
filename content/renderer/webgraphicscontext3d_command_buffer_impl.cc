@@ -18,7 +18,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "chrome/common/chrome_switches.h"
+#include "content/common/content_switches.h"
 #include "content/renderer/gpu_channel_host.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"

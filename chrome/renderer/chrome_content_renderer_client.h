@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/renderer/content_renderer_client.h"
 
+class ChromeRenderProcessObserver;
 class ExtensionDispatcher;
 class RendererHistogramSnapshots;
 class RendererNetPredictor;
@@ -53,6 +54,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual bool WillSendRequest(WebKit::WebFrame* frame,
                                const GURL& url,
                                GURL* new_url);
+  virtual FilePath GetMediaLibraryPath();
+  virtual bool ShouldPumpEventsDuringCookieMessage();
   virtual void DidCreateScriptContext(WebKit::WebFrame* frame);
   virtual void DidDestroyScriptContext(WebKit::WebFrame* frame);
   virtual void DidCreateIsolatedScriptContext(WebKit::WebFrame* frame);
@@ -84,6 +87,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   // as window.opener) if the window navigates back.
   bool CrossesExtensionExtents(WebKit::WebFrame* frame, const GURL& new_url);
 
+  scoped_ptr<ChromeRenderProcessObserver> chrome_observer_;
   scoped_ptr<ExtensionDispatcher> extension_dispatcher_;
   scoped_ptr<RendererHistogramSnapshots> histogram_snapshots_;
   scoped_ptr<RendererNetPredictor> net_predictor_;

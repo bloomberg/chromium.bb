@@ -18,16 +18,12 @@
 #include "base/metrics/stats_table.h"
 #include "base/process_util.h"
 #include "base/shared_memory.h"
-#include "base/string_util.h"
 #include "base/task.h"
 #include "base/threading/thread_local.h"
-#include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/safe_browsing/safebrowsing_messages.h"
-#include "chrome/common/url_constants.h"
+// DO NOT ADD ANY MORE INCLUDES TO "chrome/"!
 #include "content/common/appcache/appcache_dispatcher.h"
+#include "content/common/content_switches.h"
 #include "content/common/database_messages.h"
 #include "content/common/db_message_filter.h"
 #include "content/common/dom_storage_messages.h"
@@ -39,7 +35,6 @@
 #include "content/common/web_database_observer_impl.h"
 #include "content/plugin/npobject_util.h"
 #include "content/renderer/content_renderer_client.h"
-#include "content/renderer/cookie_message_filter.h"
 #include "content/renderer/gpu_channel_host.h"
 #include "content/renderer/gpu_video_service_host.h"
 #include "content/renderer/indexed_db_dispatcher.h"
@@ -54,19 +49,14 @@
 #include "ipc/ipc_platform_file.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
-#include "third_party/sqlite/sqlite3.h"
 #include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebColor.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCrossOriginPreflightResultCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFontCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptController.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageEventDispatcher.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -92,12 +82,8 @@
 #include "ipc/ipc_channel_posix.h"
 #endif
 
-using WebKit::WebCache;
-using WebKit::WebCrossOriginPreflightResultCache;
-using WebKit::WebFontCache;
 using WebKit::WebFrame;
 using WebKit::WebRuntimeFeatures;
-using WebKit::WebSecurityPolicy;
 using WebKit::WebScriptController;
 using WebKit::WebString;
 using WebKit::WebStorageEventDispatcher;
@@ -110,27 +96,6 @@ static const double kInitialIdleHandlerDelayS = 1.0 /* seconds */;
 // incorrectly from the wrong thread.
 static base::LazyInstance<base::ThreadLocalPointer<RenderThread> > lazy_tls(
     base::LINKER_INITIALIZED);
-
-class RenderViewContentSettingsSetter : public RenderViewVisitor {
- public:
-  RenderViewContentSettingsSetter(const GURL& url,
-                                  const ContentSettings& content_settings)
-      : url_(url),
-        content_settings_(content_settings) {
-  }
-
-  virtual bool Visit(RenderView* render_view) {
-    if (GURL(render_view->webview()->mainFrame()->url()) == url_)
-      render_view->SetContentSettings(content_settings_);
-    return true;
-  }
-
- private:
-  GURL url_;
-  ContentSettings content_settings_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderViewContentSettingsSetter);
-};
 
 class RenderViewZoomer : public RenderViewVisitor {
  public:
@@ -189,7 +154,6 @@ void RenderThread::Init() {
 #endif
 
   // In single process the single process is all there is.
-  is_incognito_process_ = false;
   suspend_webkit_shared_timer_ = true;
   notify_webkit_of_modal_loop_ = true;
   plugin_refresh_allowed_ = true;
@@ -203,9 +167,6 @@ void RenderThread::Init() {
 
   db_message_filter_ = new DBMessageFilter();
   AddFilter(db_message_filter_.get());
-
-  cookie_message_filter_ = new CookieMessageFilter();
-  AddFilter(cookie_message_filter_.get());
 
   content::GetContentClient()->renderer()->RenderThreadStarted();
 
@@ -273,31 +234,17 @@ bool RenderThread::Send(IPC::Message* msg) {
   // opportunity for re-entrancy into WebKit, so we need to take care to disable
   // callbacks, timers, and pending network loads that could trigger such
   // callbacks.
-  bool pumping_events = false, may_show_cookie_prompt = false;
+  bool pumping_events = false;
   if (msg->is_sync()) {
     if (msg->is_caller_pumping_messages()) {
       pumping_events = true;
     } else {
-      // We only need to pump events for chrome frame processes as the
-      // cookie policy is controlled by the host browser (IE). If the
-      // policy is set to prompt then the host would put up UI which
-      // would require plugins if any to also pump to ensure that we
-      // don't have a deadlock.
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kChromeFrame)) {
-        switch (msg->type()) {
-          case ViewHostMsg_GetCookies::ID:
-          case ViewHostMsg_GetRawCookies::ID:
-          case ViewHostMsg_CookiesEnabled::ID:
-          case DOMStorageHostMsg_SetItem::ID:
-          case ResourceHostMsg_SyncLoad::ID:
-          case DatabaseHostMsg_Allow::ID:
-            may_show_cookie_prompt = true;
-            pumping_events = true;
-            break;
-          default:
-            break;
-        }
+      if ((msg->type() == ViewHostMsg_GetCookies::ID ||
+           msg->type() == ViewHostMsg_GetRawCookies::ID ||
+           msg->type() == ViewHostMsg_CookiesEnabled::ID) &&
+          content::GetContentClient()->renderer()->
+              ShouldPumpEventsDuringCookieMessage()) {
+        pumping_events = true;
       }
     }
   }
@@ -311,12 +258,6 @@ bool RenderThread::Send(IPC::Message* msg) {
   gfx::NativeViewId host_window = 0;
 
   if (pumping_events) {
-    // See ViewMsg_SignalCookiePromptEvent.
-    if (may_show_cookie_prompt) {
-      static_cast<IPC::SyncMessage*>(msg)->set_pump_messages_event(
-          cookie_message_filter_->pump_messages_event());
-    }
-
     if (suspend_webkit_shared_timer)
       webkit_client_->SuspendSharedTimer();
 
@@ -345,15 +286,6 @@ bool RenderThread::Send(IPC::Message* msg) {
 
     if (suspend_webkit_shared_timer)
       webkit_client_->ResumeSharedTimer();
-
-    // We may end up nesting calls to Send, so we defer the reset until we
-    // return to the top-most message loop.
-    if (may_show_cookie_prompt &&
-        cookie_message_filter_->pump_messages_event()->IsSignaled()) {
-      MessageLoop::current()->PostNonNestableTask(FROM_HERE,
-          NewRunnableMethod(cookie_message_filter_.get(),
-                            &CookieMessageFilter::ResetPumpMessagesEvent));
-    }
   }
 
   return rv;
@@ -402,10 +334,6 @@ void RenderThread::WidgetRestored() {
   idle_timer_.Stop();
 }
 
-bool RenderThread::IsIncognitoProcess() const {
-  return is_incognito_process_;
-}
-
 void RenderThread::AddObserver(RenderProcessObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -420,13 +348,6 @@ void RenderThread::DoNotSuspendWebKitSharedTimer() {
 
 void RenderThread::DoNotNotifyWebKitOfModalLoop() {
   notify_webkit_of_modal_loop_ = false;
-}
-
-void RenderThread::OnSetContentSettingsForCurrentURL(
-    const GURL& url,
-    const ContentSettings& content_settings) {
-  RenderViewContentSettingsSetter setter(url, content_settings);
-  RenderView::ForEach(&setter);
 }
 
 void RenderThread::OnSetZoomLevelForCurrentURL(const GURL& url,
@@ -460,24 +381,13 @@ bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderThread, msg)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetContentSettingsForCurrentURL,
-                        OnSetContentSettingsForCurrentURL)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForCurrentURL,
                         OnSetZoomLevelForCurrentURL)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetIsIncognitoProcess, OnSetIsIncognitoProcess)
     IPC_MESSAGE_HANDLER(ViewMsg_SetNextPageID, OnSetNextPageID)
     IPC_MESSAGE_HANDLER(ViewMsg_SetCSSColors, OnSetCSSColors)
     // TODO(port): removed from render_messages_internal.h;
     // is there a new non-windows message I should add here?
     IPC_MESSAGE_HANDLER(ViewMsg_New, OnCreateNewView)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetCacheCapacities, OnSetCacheCapacities)
-    IPC_MESSAGE_HANDLER(ViewMsg_ClearCache, OnClearCache)
-#if defined(USE_TCMALLOC)
-    IPC_MESSAGE_HANDLER(ViewMsg_GetRendererTcmalloc, OnGetRendererTcmalloc)
-#endif
-    IPC_MESSAGE_HANDLER(ViewMsg_GetV8HeapStats, OnGetV8HeapStats)
-    IPC_MESSAGE_HANDLER(ViewMsg_GetCacheResourceStats, OnGetCacheResourceStats)
-    IPC_MESSAGE_HANDLER(ViewMsg_PurgeMemory, OnPurgeMemory)
     IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache, OnPurgePluginListCache)
     IPC_MESSAGE_HANDLER(DOMStorageMsg_Event, OnDOMStorageEvent)
     IPC_MESSAGE_HANDLER(GpuMsg_GpuChannelEstablished, OnGpuChannelEstablished)
@@ -526,44 +436,6 @@ void RenderThread::OnCreateNewView(const ViewMsg_New_Params& params) {
       params.view_id,
       params.session_storage_namespace_id,
       params.frame_name);
-}
-
-void RenderThread::OnSetCacheCapacities(size_t min_dead_capacity,
-                                        size_t max_dead_capacity,
-                                        size_t capacity) {
-  EnsureWebKitInitialized();
-  WebCache::setCapacities(
-      min_dead_capacity, max_dead_capacity, capacity);
-}
-
-void RenderThread::OnClearCache() {
-  EnsureWebKitInitialized();
-  WebCache::clear();
-}
-
-void RenderThread::OnGetCacheResourceStats() {
-  EnsureWebKitInitialized();
-  WebCache::ResourceTypeStats stats;
-  WebCache::getResourceTypeStats(&stats);
-  Send(new ViewHostMsg_ResourceTypeStats(stats));
-}
-
-#if defined(USE_TCMALLOC)
-void RenderThread::OnGetRendererTcmalloc() {
-  std::string result;
-  char buffer[1024 * 32];
-  base::ProcessId pid = base::GetCurrentProcId();
-  MallocExtension::instance()->GetStats(buffer, sizeof(buffer));
-  result.append(buffer);
-  Send(new ViewHostMsg_RendererTcmalloc(pid, result));
-}
-#endif
-
-void RenderThread::OnGetV8HeapStats() {
-  v8::HeapStatistics heap_stats;
-  v8::V8::GetHeapStatistics(&heap_stats);
-  Send(new ViewHostMsg_V8HeapStats(heap_stats.total_heap_size(),
-                                   heap_stats.used_heap_size()));
 }
 
 void RenderThread::CloseCurrentConnections() {
@@ -662,16 +534,6 @@ void RenderThread::EnsureWebKitInitialized() {
 
   webkit_glue::EnableWebCoreLogChannels(
       command_line.GetSwitchValueASCII(switches::kWebCoreLogChannels));
-
-  // chrome: pages should not be accessible by normal content, and should
-  // also be unable to script anything but themselves (to help limit the damage
-  // that a corrupt chrome: page could cause).
-  WebString chrome_ui_scheme(ASCIIToUTF16(chrome::kChromeUIScheme));
-  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_ui_scheme);
-
-  // chrome-extension: resources shouldn't trigger insecure content warnings.
-  WebString extension_scheme(ASCIIToUTF16(chrome::kExtensionScheme));
-  WebSecurityPolicy::registerURLSchemeAsSecure(extension_scheme);
 
   if (command_line.HasSwitch(switches::kEnableBenchmarking))
     RegisterExtension(extensions_v8::BenchmarkingExtension::Get());
@@ -772,37 +634,6 @@ void RenderThread::ScheduleIdleHandler(double initial_delay_s) {
       this, &RenderThread::IdleHandler);
 }
 
-void RenderThread::OnPurgeMemory() {
-  EnsureWebKitInitialized();
-
-  // Clear the object cache (as much as possible; some live objects cannot be
-  // freed).
-  WebCache::clear();
-
-  // Clear the font/glyph cache.
-  WebFontCache::clear();
-
-  // Clear the Cross-Origin Preflight cache.
-  WebCrossOriginPreflightResultCache::clear();
-
-  // Release all freeable memory from the SQLite process-global page cache (a
-  // low-level object which backs the Connection-specific page caches).
-  while (sqlite3_release_memory(std::numeric_limits<int>::max()) > 0) {
-  }
-
-  // Repeatedly call the V8 idle notification until it returns true ("nothing
-  // more to free").  Note that it makes more sense to do this than to implement
-  // a new "delete everything" pass because object references make it difficult
-  // to free everything possible in just one pass.
-  while (!v8::V8::IdleNotification()) {
-  }
-
-#if (defined(OS_WIN) || defined(OS_LINUX)) && defined(USE_TCMALLOC)
-  // Tell tcmalloc to release any free pages it's still holding.
-  MallocExtension::instance()->ReleaseFreeMemory();
-#endif
-}
-
 void RenderThread::OnPurgePluginListCache(bool reload_pages) {
   EnsureWebKitInitialized();
   // The call below will cause a GetPlugins call with refresh=true, but at this
@@ -812,10 +643,6 @@ void RenderThread::OnPurgePluginListCache(bool reload_pages) {
   plugin_refresh_allowed_ = false;
   WebKit::resetPluginCache(reload_pages);
   plugin_refresh_allowed_ = true;
-}
-
-void RenderThread::OnSetIsIncognitoProcess(bool is_incognito_process) {
-  is_incognito_process_ = is_incognito_process;
 }
 
 void RenderThread::OnGpuChannelEstablished(

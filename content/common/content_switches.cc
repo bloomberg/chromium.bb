@@ -22,6 +22,9 @@ const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
 // support for controlling access to these APIs.
 const char kDisable3DAPIs[]                 = "disable-3d-apis";
 
+// Disables accelerated compositing.
+const char kDisableAcceleratedCompositing[] = "disable-accelerated-compositing";
+
 // Disable the ApplicationCache.
 const char kDisableApplicationCache[]       = "disable-application-cache";
 
@@ -32,14 +35,29 @@ const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 // Disables HTML5 DB support.
 const char kDisableDatabases[]              = "disable-databases";
 
+// Disables data transfer items.
+const char kDisableDataTransferItems[]      = "disable-data-transfer-items";
+
 // Disables desktop notifications (default enabled on windows).
 const char kDisableDesktopNotifications[]   = "disable-desktop-notifications";
+
+// Disables device orientation events.
+const char kDisableDeviceOrientation[]      = "disable-device-orientation";
 
 // Disable experimental WebGL support.
 const char kDisableExperimentalWebGL[]      = "disable-webgl";
 
 // Disable FileSystem API.
 const char kDisableFileSystem[]             = "disable-file-system";
+
+// Suppresses support for the Geolocation javascript API.
+const char kDisableGeolocation[]            = "disable-geolocation";
+
+// Disable GL multisampling.
+const char kDisableGLMultisampling[]        = "disable-gl-multisampling";
+
+// Disable the GLSL translator.
+const char kDisableGLSLTranslator[]         = "disable-glsl-translator";
 
 // Disable the GPU process sandbox.
 const char kDisableGpuSandbox[]             = "disable-gpu-sandbox";
@@ -52,6 +70,21 @@ const char kDisableGpuWatchdog[]            = "disable-gpu-watchdog";
 // here to aid debugging eventual problems, it can be removed once hole punching
 // has been out there for a few dev channel releases without problems.
 const char kDisableHolePunching[]           = "disable-hole-punching";
+
+// Disable the Indexed Database API.
+const char kDisableIndexedDatabase[]        = "disable-indexed-database";
+
+// Prevent Java from running.
+const char kDisableJava[]                   = "disable-java";
+
+// Don't execute JavaScript (browser JS like the new tab page still runs).
+const char kDisableJavaScript[]             = "disable-javascript";
+
+// Disable JavaScript I18N API.
+const char kDisableJavaScriptI18NAPI[]      = "disable-javascript-i18n-api";
+
+// Disable LocalStorage.
+const char kDisableLocalStorage[]           = "disable-local-storage";
 
 // Force logging to be disabled.  Logging is enabled by default in debug
 // builds.
@@ -66,6 +99,15 @@ const char kDisablePopupBlocking[]          = "disable-popup-blocking";
 // Disable the seccomp sandbox (Linux only)
 const char kDisableSeccompSandbox[]         = "disable-seccomp-sandbox";
 
+// Disable session storage.
+const char kDisableSessionStorage[]         = "disable-session-storage";
+
+// Enable shared workers. Functionality not yet complete.
+const char kDisableSharedWorkers[]          = "disable-shared-workers";
+
+// Disables speech input.
+const char kDisableSpeechInput[]            = "disable-speech-input";
+
 // Disable Web Sockets support.
 const char kDisableWebSockets[]             = "disable-web-sockets";
 
@@ -77,6 +119,9 @@ const char kEnableAcceleratedDrawing[]      = "enable-accelerated-drawing";
 
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
+
+// Enables device motion events.
+const char kEnableDeviceMotion[]            = "enable-device-motion";
 
 // Enable the GPU plugin and Pepper 3D rendering.
 const char kEnableGPUPlugin[]               = "enable-gpu-plugin";
@@ -102,6 +147,9 @@ const char kEnableSeccompSandbox[]          = "enable-seccomp-sandbox";
 
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";
+
+// Enable web audio API.
+const char kEnableWebAudio[]                = "enable-webaudio";
 
 // Enables experimental features for the geolocation API.
 // Current features:
@@ -129,8 +177,14 @@ const char kGpuStartupDialog[]              = "gpu-startup-dialog";
 // Run the GPU process as a thread in the browser process.
 const char kInProcessGPU[]                  = "in-process-gpu";
 
+// Runs plugins inside the renderer process
+const char kInProcessPlugins[]              = "in-process-plugins";
+
 // Runs WebGL inside the renderer process.
 const char kInProcessWebGL[]                = "in-process-webgl";
+
+// Specifies the flags passed to JS engine
+const char kJavaScriptFlags[]               = "js-flags";
 
 // Use LevelDB as back-end for Indexed Database API.
 const char kLevelDBIndexedDatabase[]        = "indexeddb-use-leveldb";
@@ -148,11 +202,22 @@ const char kLogPluginMessages[]             = "log-plugin-messages";
 // Causes the process to run as a NativeClient loader.
 const char kNaClLoaderProcess[]             = "nacl-loader";
 
+// Support a separate switch that enables the v8 playback extension.
+// The extension causes javascript calls to Date.now() and Math.random()
+// to return consistent values, such that subsequent loads of the same
+// page will result in consistent js-generated data and XHR requests.
+// Pages may still be able to generate inconsistent data from plugins.
+const char kNoJsRandomness[]                = "no-js-randomness";
+
 // Don't send HTTP-Referer headers.
 const char kNoReferrers[]                   = "no-referrers";
 
 // Disables the sandbox for all process types that are normally sandboxed.
 const char kNoSandbox[]                     = "no-sandbox";
+
+// Read previously recorded data from the cache. Only cached data is read.
+// See kRecordMode.
+const char kPlaybackMode[]                  = "playback-mode";
 
 // Specifies a command that should be used to launch the plugin process.  Useful
 // for running the plugin process through purify or quantify.  Ex:
@@ -203,6 +268,12 @@ const char kProcessPerSite[]                = "process-per-site";
 // script connections to each other).
 const char kProcessPerTab[]                 = "process-per-tab";
 
+// Chrome supports a playback and record mode.  Record mode saves *everything*
+// to the cache.  Playback mode reads data exclusively from the cache.  This
+// allows us to record a session into the cache and then replay it at will.
+// See also kPlaybackMode.
+const char kRecordMode[]                    = "record-mode";
+
 // The value of this switch determines whether the process is started as a
 // renderer or plugin host.  If it's empty, it's the browser.
 const char kProcessType[]                   = "type";
@@ -231,6 +302,10 @@ const char kSafePlugins[]                   = "safe-plugins";
 
 // Causes the process to run as a service process.
 const char kServiceProcess[]                = "service";
+
+// Visibly render a border around paint rects in the web page to help debug
+// and study painting behavior.
+const char kShowPaintRects[]                = "show-paint-rects";
 
 // Runs the renderer and plugins in the same process as the browser
 const char kSingleProcess[]                 = "single-process";

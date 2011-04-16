@@ -11,7 +11,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
-#include "content/renderer/render_thread.h"
 #include "third_party/hunspell/src/hunspell/hunspell.hxx"
 
 using base::TimeTicks;
@@ -226,7 +225,7 @@ bool SpellCheck::InitializeIfNeeded() {
     return false;
 
   if (!initialized_) {
-    RenderThread::current()->Send(new SpellCheckHostMsg_RequestDictionary);
+    Send(new SpellCheckHostMsg_RequestDictionary);
     initialized_ = true;
     return true;
   }
@@ -244,8 +243,7 @@ bool SpellCheck::CheckSpelling(const string16& word_to_check, int tag) {
   bool word_correct = false;
 
   if (is_using_platform_spelling_engine_) {
-    RenderThread::current()->Send(
-        new SpellCheckHostMsg_PlatformCheckSpelling(word_to_check, tag,
+    Send(new SpellCheckHostMsg_PlatformCheckSpelling(word_to_check, tag,
                                                     &word_correct));
   } else {
     std::string word_to_check_utf8(UTF16ToUTF8(word_to_check));
@@ -270,9 +268,8 @@ void SpellCheck::FillSuggestionList(
     const string16& wrong_word,
     std::vector<string16>* optional_suggestions) {
   if (is_using_platform_spelling_engine_) {
-    RenderThread::current()->Send(
-        new SpellCheckHostMsg_PlatformFillSuggestionList(
-            wrong_word, optional_suggestions));
+    Send(new SpellCheckHostMsg_PlatformFillSuggestionList(
+        wrong_word, optional_suggestions));
     return;
   }
 

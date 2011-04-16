@@ -4,7 +4,6 @@
 
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 
-#include "chrome/common/content_settings_types.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"

@@ -16,8 +16,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extension_groups.h"
-#include "content/renderer/render_thread.h"
 #include "googleurl/src/gurl.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -81,7 +81,8 @@ void UserScriptSlave::GetActiveExtensions(
 bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
   scripts_.clear();
 
-  bool only_inject_incognito = RenderThread::current()->IsIncognitoProcess();
+  bool only_inject_incognito =
+      ChromeRenderProcessObserver::is_incognito_process();
 
   // Create the shared memory object (read only).
   shared_memory_.reset(new base::SharedMemory(shared_memory, true));
@@ -177,7 +178,7 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
 void UserScriptSlave::InsertInitExtensionCode(
     std::vector<WebScriptSource>* sources, const std::string& extension_id) {
   DCHECK(sources);
-  bool incognito = RenderThread::current()->IsIncognitoProcess();
+  bool incognito = ChromeRenderProcessObserver::is_incognito_process();
   sources->insert(sources->begin(), WebScriptSource(WebString::fromUTF8(
       StringPrintf(kInitExtension, extension_id.c_str(),
                    incognito ? "true" : "false"))));

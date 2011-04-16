@@ -20,8 +20,6 @@
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/child_process_logging.h"
-#include "chrome/common/render_messages.h"
 #include "content/common/child_process.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/view_messages.h"
@@ -430,7 +428,7 @@ void WebPluginDelegateProxy::InstallMissingPlugin() {
 }
 
 bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
-  child_process_logging::SetActiveURL(page_url_);
+  content::GetContentClient()->SetActiveURL(page_url_);
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebPluginDelegateProxy, msg)

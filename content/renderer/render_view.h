@@ -80,7 +80,6 @@ struct ViewHostMsg_RunFileChooser_Params;
 struct ViewMsg_ClosePage_Params;
 struct ViewMsg_Navigate_Params;
 struct ViewMsg_StopFinding_Params;
-struct WebApplicationInfo;
 struct WebDropData;
 
 namespace base {
@@ -282,15 +281,15 @@ class RenderView : public RenderWidget,
   // aggregated to the user metrics service.
   void UserMetricsRecordAction(const std::string& action);
 
-  // Starts installation of the page in the specified frame as a web app. The
-  // page must link to an external 'definition file'. This is different from
-  // the 'application shortcuts' feature where we pull the application
-  // definition out of optional meta tags in the page.
-  bool InstallWebApplicationUsingDefinitionFile(WebKit::WebFrame* frame,
-                                                string16* error);
-
   // Sets whether  the renderer should report load progress to the browser.
   void SetReportLoadProgressEnabled(bool enabled);
+
+  // Gets the focused node. If no such node exists then the node will be isNull.
+  WebKit::WebNode GetFocusedNode() const;
+
+  // Returns true if the parameter node is a textfield, text area or a content
+  // editable div.
+  bool IsEditableNode(const WebKit::WebNode& node);
 
   // Plugin-related functions --------------------------------------------------
   // (See also WebPluginPageDelegate implementation.)
@@ -610,6 +609,11 @@ class RenderView : public RenderWidget,
 
   virtual void DidFlushPaint();
 
+  // Cannot use std::set unfortunately since linked_ptr<> does not support
+  // operator<.
+  typedef std::vector<linked_ptr<webkit_glue::ImageResourceFetcher> >
+      ImageResourceFetcherList;
+
  protected:
   // RenderWidget overrides:
   virtual void Close();
@@ -655,11 +659,6 @@ class RenderView : public RenderWidget,
 
   typedef std::map<GURL, ContentSettings> HostContentSettings;
   typedef std::map<GURL, double> HostZoomLevels;
-
-  // Cannot use std::set unfortunately since linked_ptr<> does not support
-  // operator<.
-  typedef std::vector<linked_ptr<webkit_glue::ImageResourceFetcher> >
-      ImageResourceFetcherList;
 
   // Identifies an accessibility notification from webkit.
   struct RendererAccessibilityNotification {
@@ -799,7 +798,6 @@ class RenderView : public RenderWidget,
   void OnFindReplyAck();
   void OnEnableAccessibility();
   void OnGetAllSavableResourceLinksForCurrentPage(const GURL& page_url);
-  void OnGetApplicationInfo(int page_id);
   void OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
       const std::vector<GURL>& links,
       const std::vector<FilePath>& local_paths,
@@ -913,16 +911,6 @@ class RenderView : public RenderWidget,
   void DidDownloadFavicon(webkit_glue::ImageResourceFetcher* fetcher,
                           const SkBitmap& image);
 
-  // Callback triggered when we finish downloading the application definition
-  // file.
-  void DidDownloadApplicationDefinition(const WebKit::WebURLResponse& response,
-                                        const std::string& data);
-
-  // Callback triggered after each icon referenced by the application definition
-  // is downloaded.
-  void DidDownloadApplicationIcon(webkit_glue::ImageResourceFetcher* fetcher,
-                                  const SkBitmap& image);
-
   // Requests to download a favicon image. When done, the RenderView
   // is notified by way of DidDownloadFavicon. Returns true if the
   // request was successfully started, false otherwise. id is used to
@@ -937,9 +925,6 @@ class RenderView : public RenderWidget,
 
   // Locates a sub frame with given xpath
   WebKit::WebFrame* GetChildFrame(const std::wstring& frame_xpath) const;
-
-  // Gets the focused node. If no such node exists then the node will be isNull.
-  WebKit::WebNode GetFocusedNode() const;
 
   WebUIBindings* GetWebUIBindings();
 
@@ -989,12 +974,6 @@ class RenderView : public RenderWidget,
   // Update the target url and tell the browser that the target URL has changed.
   // If |url| is empty, show |fallback_url|.
   void UpdateTargetURL(const GURL& url, const GURL& fallback_url);
-
-  // Updates the state of the toggle spell check command in the browser process.
-  void UpdateToggleSpellCheckCommandState();
-
-  // Helper to add an error message to the root frame's console.
-  void AddErrorToRootConsole(const string16& message);
 
   // ---------------------------------------------------------------------------
   // ADDING NEW FUNCTIONS? Please keep private functions alphabetized and put
@@ -1245,21 +1224,6 @@ class RenderView : public RenderWidget,
 
   // ImageResourceFetchers schedule via DownloadImage.
   ImageResourceFetcherList image_fetchers_;
-
-  // The app info that we are processing. This is used when installing an app
-  // via application definition. The in-progress web app is stored here while
-  // its manifest and icons are downloaded.
-  scoped_ptr<WebApplicationInfo> pending_app_info_;
-
-  // Used to download the application definition file.
-  scoped_ptr<webkit_glue::ResourceFetcher> app_definition_fetcher_;
-
-  // Used to download the icons for an application.
-  ImageResourceFetcherList app_icon_fetchers_;
-
-  // The number of app icon requests outstanding. When this reaches zero, we're
-  // done processing an app definition file.
-  int pending_app_icon_requests_;
 
   // The SessionStorage namespace that we're assigned to has an ID, and that ID
   // is passed to us upon creation.  WebKit asks for this ID upon first use and

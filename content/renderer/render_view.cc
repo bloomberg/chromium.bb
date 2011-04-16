@@ -21,25 +21,16 @@
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/autofill_messages.h"
 #include "chrome/common/bindings_policy.h"
-#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/json_value_serializer.h"
 #include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_view_commands.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/web_apps.h"
-#include "chrome/renderer/about_handler.h"
 #include "chrome/renderer/automation/dom_automation_controller.h"
 #include "chrome/renderer/external_host_bindings.h"
 #include "chrome/renderer/localized_error.h"
-#include "chrome/renderer/searchbox.h"
-#include "chrome/renderer/visitedlink_slave.h"
 #include "content/common/appcache/appcache_dispatcher.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/content_constants.h"
@@ -147,7 +138,6 @@
 #include "webkit/glue/image_resource_fetcher.h"
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/password_form_dom_manager.h"
-#include "webkit/glue/resource_fetcher.h"
 #include "webkit/glue/site_isolation_metrics.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webdropdata.h"
@@ -308,21 +298,6 @@ static bool IsWhitelistedForContentSettings(WebFrame* frame) {
   return false;
 }
 
-// Returns true if the parameter node is a textfield, text area or a content
-// editable div.
-static bool IsEditableNode(const WebNode& node) {
-  bool is_editable_node = false;
-  if (!node.isNull()) {
-    if (node.isContentEditable()) {
-      is_editable_node = true;
-    } else if (node.isElementNode()) {
-      is_editable_node =
-          node.toConst<WebElement>().isTextFormControlElement();
-    }
-  }
-  return is_editable_node;
-}
-
 static bool WebAccessibilityNotificationToViewHostMsg(
     WebAccessibilityNotification notification,
     ViewHostMsg_AccessibilityNotification_Type::Value* type) {
@@ -441,7 +416,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       device_orientation_dispatcher_(NULL),
       accessibility_ack_pending_(false),
       p2p_socket_dispatcher_(NULL),
-      pending_app_icon_requests_(0),
       session_storage_namespace_id_(session_storage_namespace_id) {
 
   ClearBlockedContentSettings();
@@ -616,52 +590,6 @@ void RenderView::UserMetricsRecordAction(const std::string& action) {
   Send(new ViewHostMsg_UserMetricsRecordAction(action));
 }
 
-bool RenderView::InstallWebApplicationUsingDefinitionFile(WebFrame* frame,
-                                                          string16* error) {
-  // There is an issue of drive-by installs with the below implementation. A web
-  // site could force a user to install an app by timing the dialog to come up
-  // just before the user clicks.
-  //
-  // We do show a success UI that allows users to uninstall, but it seems that
-  // we might still want to put up an infobar before showing the install dialog.
-  //
-  // TODO(aa): Figure out this issue before removing the kEnableCrxlessWebApps
-  // switch.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableCrxlessWebApps)) {
-    *error = ASCIIToUTF16("CRX-less web apps aren't enabled.");
-    return false;
-  }
-
-  if (frame != frame->top()) {
-    *error = ASCIIToUTF16("Applications can only be installed from the top "
-                          "frame.");
-    return false;
-  }
-
-  if (pending_app_info_.get()) {
-    *error = ASCIIToUTF16("An application install is already in progress.");
-    return false;
-  }
-
-  pending_app_info_.reset(new WebApplicationInfo());
-  if (!web_apps::ParseWebAppFromWebDocument(frame, pending_app_info_.get(),
-                                            error)) {
-    return false;
-  }
-
-  if (!pending_app_info_->manifest_url.is_valid()) {
-    *error = ASCIIToUTF16("Web application definition not found or invalid.");
-    return false;
-  }
-
-  app_definition_fetcher_.reset(new ResourceFetcher(
-      pending_app_info_->manifest_url, webview()->mainFrame(),
-      WebURLRequest::TargetIsSubresource,
-      NewCallback(this, &RenderView::DidDownloadApplicationDefinition)));
-  return true;
-}
-
 void RenderView::SetReportLoadProgressEnabled(bool enabled) {
   if (!enabled) {
     load_progress_tracker_.reset(NULL);
@@ -669,97 +597,6 @@ void RenderView::SetReportLoadProgressEnabled(bool enabled) {
   }
   if (load_progress_tracker_ == NULL)
     load_progress_tracker_.reset(new LoadProgressTracker(this));
-}
-
-void RenderView::DidDownloadApplicationDefinition(
-    const WebKit::WebURLResponse& response,
-    const std::string& data) {
-  scoped_ptr<WebApplicationInfo> app_info(
-      pending_app_info_.release());
-
-  JSONStringValueSerializer serializer(data);
-  int error_code = 0;
-  std::string error_message;
-  scoped_ptr<Value> result(serializer.Deserialize(&error_code, &error_message));
-  if (!result.get()) {
-    AddErrorToRootConsole(UTF8ToUTF16(error_message));
-    return;
-  }
-
-  string16 error_message_16;
-  if (!web_apps::ParseWebAppFromDefinitionFile(result.get(), app_info.get(),
-                                               &error_message_16)) {
-    AddErrorToRootConsole(error_message_16);
-    return;
-  }
-
-  if (!app_info->icons.empty()) {
-    pending_app_info_.reset(app_info.release());
-    pending_app_icon_requests_ =
-        static_cast<int>(pending_app_info_->icons.size());
-    for (size_t i = 0; i < pending_app_info_->icons.size(); ++i) {
-      app_icon_fetchers_.push_back(linked_ptr<ImageResourceFetcher>(
-          new ImageResourceFetcher(
-              pending_app_info_->icons[i].url,
-              webview()->mainFrame(),
-              static_cast<int>(i),
-              pending_app_info_->icons[i].width,
-              WebURLRequest::TargetIsFavicon,
-              NewCallback(this, &RenderView::DidDownloadApplicationIcon))));
-    }
-  } else {
-    Send(new ExtensionHostMsg_InstallApplication(routing_id_, *app_info));
-  }
-}
-
-void RenderView::DidDownloadApplicationIcon(ImageResourceFetcher* fetcher,
-                                            const SkBitmap& image) {
-  pending_app_info_->icons[fetcher->id()].data = image;
-
-  // Remove the image fetcher from our pending list. We're in the callback from
-  // ImageResourceFetcher, best to delay deletion.
-  for (ImageResourceFetcherList::iterator iter = app_icon_fetchers_.begin();
-       iter != app_icon_fetchers_.end(); ++iter) {
-    if (iter->get() == fetcher) {
-      iter->release();
-      app_icon_fetchers_.erase(iter);
-      break;
-    }
-  }
-
-  // We're in the callback from the ImageResourceFetcher, best to delay
-  // deletion.
-  MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
-
-  if (--pending_app_icon_requests_ > 0)
-    return;
-
-  // There is a maximum size of IPC on OS X and Linux that we have run into in
-  // some situations. We're not sure what it is, but our hypothesis is in the
-  // neighborhood of 1 MB.
-  //
-  // To be on the safe side, we give ourselves 128 KB for just the image data.
-  // This should be more than enough for 128, 48, and 16 px 32-bit icons. If we
-  // want to start allowing larger icons (see bug 63406), we'll have to either
-  // experiment mor ewith this and find the real limit, or else come up with
-  // some alternative way to transmit the icon data to the browser process.
-  //
-  // See also: bug 63729.
-  const size_t kMaxIconSize = 1024 * 128;
-  size_t actual_icon_size = 0;
-  for (size_t i = 0; i < pending_app_info_->icons.size(); ++i) {
-    size_t current_size = pending_app_info_->icons[i].data.getSize();
-    if (current_size > kMaxIconSize - actual_icon_size) {
-      AddErrorToRootConsole(ASCIIToUTF16(
-        "Icons are too large. Maximum total size for app icons is 128 KB."));
-      return;
-    }
-    actual_icon_size += current_size;
-  }
-
-  Send(new ExtensionHostMsg_InstallApplication(
-      routing_id_, *pending_app_info_));
-  pending_app_info_.reset(NULL);
 }
 
 void RenderView::PluginCrashed(const FilePath& plugin_path) {
@@ -813,7 +650,7 @@ void RenderView::UnregisterPluginDelegate(WebPluginDelegateProxy* delegate) {
 bool RenderView::OnMessageReceived(const IPC::Message& message) {
   WebFrame* main_frame = webview() ? webview()->mainFrame() : NULL;
   if (main_frame)
-    child_process_logging::SetActiveURL(main_frame->url());
+    content::GetContentClient()->SetActiveURL(main_frame->url());
 
   ObserverListBase<RenderViewObserver>::Iterator it(observers_);
   RenderViewObserver* observer;
@@ -882,7 +719,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(
         ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
         OnGetSerializedHtmlDataForCurrentPageWithLocalLinks)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_GetApplicationInfo, OnGetApplicationInfo)
     IPC_MESSAGE_HANDLER(ViewMsg_ShouldClose, OnShouldClose)
     IPC_MESSAGE_HANDLER(ViewMsg_ClosePage, OnClosePage)
     IPC_MESSAGE_HANDLER(ViewMsg_ThemeChanged, OnThemeChanged)
@@ -950,9 +786,7 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
   history_list_offset_ = params.current_history_list_offset;
   history_list_length_ = params.current_history_list_length;
 
-  child_process_logging::SetActiveURL(params.url);
-
-  AboutHandler::MaybeHandle(params.url);
+  content::GetContentClient()->SetActiveURL(params.url);
 
   bool is_reload =
       params.navigation_type == ViewMsg_Navigate_Type::RELOAD ||
@@ -1982,27 +1816,6 @@ void RenderView::UpdateTargetURL(const GURL& url, const GURL& fallback_url) {
   }
 }
 
-void RenderView::UpdateToggleSpellCheckCommandState() {
-  bool is_enabled = false;
-  WebKit::WebNode node = GetFocusedNode();
-  if (!node.isNull())
-    is_enabled = IsEditableNode(node);
-
-  RenderViewCommandCheckedState checked_state =
-      RENDER_VIEW_COMMAND_CHECKED_STATE_UNCHECKED;
-  if (is_enabled && webview()) {
-    WebFrame* frame = webview()->focusedFrame();
-    if (frame->isContinuousSpellCheckingEnabled())
-      checked_state = RENDER_VIEW_COMMAND_CHECKED_STATE_CHECKED;
-  }
-
-  Send(new ViewHostMsg_CommandStateChanged(
-      routing_id_,
-      RENDER_VIEW_COMMAND_TOGGLE_SPELL_CHECK,
-      is_enabled,
-      checked_state));
-}
-
 void RenderView::StartNavStateSyncTimerIfNecessary() {
   int delay;
   if (send_content_state_immediately_)
@@ -2080,7 +1893,7 @@ void RenderView::focusedNodeChanged(const WebNode& node) {
         WebKit::WebAccessibilityNotificationFocusedUIElementChanged);
   }
 
-  UpdateToggleSpellCheckCommandState();
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, FocusedNodeChanged(node));
 }
 
 void RenderView::navigateBackForwardSoon(int offset) {
@@ -2554,13 +2367,6 @@ void RenderView::didCompleteClientRedirect(
 }
 
 void RenderView::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
-  // If there are any app-related fetches in progress, they can be cancelled now
-  // since we have navigated away from the page that created them.
-  if (!frame->parent()) {
-    app_icon_fetchers_.clear();
-    app_definition_fetcher_.reset(NULL);
-  }
-
   // The rest of RenderView assumes that a WebDataSource will always have a
   // non-null NavigationState.
   bool content_initiated = !pending_navigation_state_.get();
@@ -3418,29 +3224,6 @@ SkBitmap RenderView::ImageFromDataUrl(const GURL& url) const {
   return SkBitmap();
 }
 
-void RenderView::OnGetApplicationInfo(int page_id) {
-  WebApplicationInfo app_info;
-  if (page_id == page_id_) {
-    string16 error;
-    web_apps::ParseWebAppFromWebDocument(webview()->mainFrame(), &app_info,
-                                         &error);
-  }
-
-  // Prune out any data URLs in the set of icons.  The browser process expects
-  // any icon with a data URL to have originated from a favicon.  We don't want
-  // to decode arbitrary data URLs in the browser process.  See
-  // http://b/issue?id=1162972
-  for (size_t i = 0; i < app_info.icons.size(); ++i) {
-    if (app_info.icons[i].url.SchemeIs(chrome::kDataScheme)) {
-      app_info.icons.erase(app_info.icons.begin() + i);
-      --i;
-    }
-  }
-
-  Send(new ExtensionHostMsg_DidGetApplicationInfo(
-      routing_id_, page_id, app_info));
-}
-
 GURL RenderView::GetAlternateErrorPageURL(const GURL& failed_url,
                                           ErrorPageType error_type) {
   if (failed_url.SchemeIsSecure()) {
@@ -3824,6 +3607,19 @@ WebNode RenderView::GetFocusedNode() const {
   }
 
   return WebNode();
+}
+
+bool RenderView::IsEditableNode(const WebNode& node) {
+  bool is_editable_node = false;
+  if (!node.isNull()) {
+    if (node.isContentEditable()) {
+      is_editable_node = true;
+    } else if (node.isElementNode()) {
+      is_editable_node =
+          node.toConst<WebElement>().isTextFormControlElement();
+    }
+  }
+  return is_editable_node;
 }
 
 void RenderView::EvaluateScript(const string16& frame_xpath,
@@ -4794,13 +4590,6 @@ void RenderView::OnSelectPopupMenuItem(int selected_index) {
   external_popup_menu_.reset();
 }
 #endif
-
-void RenderView::AddErrorToRootConsole(const string16& message) {
-  if (webview() && webview()->mainFrame()) {
-    webview()->mainFrame()->addMessageToConsole(
-        WebConsoleMessage(WebConsoleMessage::LevelError, message));
-  }
-}
 
 #if defined(ENABLE_FLAPPER_HACKS)
 void RenderView::OnConnectTcpACK(
