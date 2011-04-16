@@ -26,8 +26,8 @@ function load() {
   $('copies').addEventListener('input', validateNumberOfCopies);
   $('copies').addEventListener('blur', handleCopiesFieldBlur);
   $('individual-pages').addEventListener('blur', handlePageRangesFieldBlur);
-  $('landscape').onclick = getPreview;
-  $('portrait').onclick = getPreview;
+  $('landscape').onclick = onLayoutModeToggle;
+  $('portrait').onclick = onLayoutModeToggle;
   $('color').onclick = getPreview;
   $('bw').onclick = getPreview;
 
@@ -433,6 +433,18 @@ function handleTwoSidedClick(event) {
   var el = $('binding');
   handleZippyClickEl(el);
   printSettingChanged(event);
+}
+
+/**
+ * When the user switches printing orientation mode the page field selection is
+ * reset to "all pages selected". After the change the number of pages will be
+ * different and currently selected page numbers might no longer be valid.
+ * Even if they are still valid the content of these pages will be different.
+ */
+function onLayoutModeToggle() {
+  $('individual-pages').value = '';
+  $('all-pages').checked = true;
+  getPreview();
 }
 
 /**
