@@ -16,8 +16,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_sidebar_defaults.h"
-#include "chrome/common/extensions/file_browser_handler.h"
-#include "chrome/common/extensions/url_pattern.h"
 #include "content/common/json_value_serializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -569,39 +567,4 @@ TEST_F(ExtensionManifestTest, IsolatedApps) {
       LoadAndExpectSuccess("isolated_app_valid.json"));
   EXPECT_TRUE(extension2->is_storage_isolated());
   *CommandLine::ForCurrentProcess() = old_command_line;
-}
-
-
-TEST_F(ExtensionManifestTest, FileBrowserHandlers) {
-  LoadAndExpectError("filebrowser_invalid_actions_1.json",
-      errors::kInvalidFileBrowserHandler);
-  LoadAndExpectError("filebrowser_invalid_actions_2.json",
-      errors::kInvalidFileBrowserHandler);
-  LoadAndExpectError("filebrowser_invalid_action_id.json",
-      errors::kInvalidPageActionId);
-  LoadAndExpectError("filebrowser_invalid_action_title.json",
-      errors::kInvalidPageActionDefaultTitle);
-  LoadAndExpectError("filebrowser_invalid_action_id.json",
-      errors::kInvalidPageActionId);
-  LoadAndExpectError("filebrowser_invalid_file_filters_1.json",
-      errors::kInvalidFileFiltersList);
-  LoadAndExpectError("filebrowser_invalid_file_filters_2.json",
-      ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidFileFilterValue, base::IntToString(0)));
-  LoadAndExpectError("filebrowser_invalid_file_filters_url.json",
-      ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidURLPatternError,
-                                              "http:*.html"));
-
-  scoped_refptr<Extension> extension(
-      LoadAndExpectSuccess("filebrowser_valid.json"));
-  ASSERT_TRUE(extension->file_browser_handlers() != NULL);
-  ASSERT_EQ(extension->file_browser_handlers()->size(), 1U);
-  const FileBrowserHandler* action =
-      extension->file_browser_handlers()->at(0).get();
-  EXPECT_EQ(action->title(), "Default title");
-  EXPECT_EQ(action->icon_path(), "icon.png");
-  const FileBrowserHandler::PatternList& patterns = action->file_url_patterns();
-  ASSERT_EQ(patterns.size(), 1U);
-  ASSERT_TRUE(action->MatchesURL(
-      GURL("filesystem:chrome-extension://foo/local/test.txt")));
 }

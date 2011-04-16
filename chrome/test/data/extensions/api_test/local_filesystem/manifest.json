@@ -7,7 +7,7 @@
   "permissions": [
     "tabs",
     "unlimitedStorage",
-    "fileBrowserHandler",
+    "fileSystem",
     "fileBrowserPrivate"
   ]
 }

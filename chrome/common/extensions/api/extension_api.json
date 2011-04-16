@@ -4529,44 +4529,8 @@
     ]
   },
   {
-    "namespace":"fileBrowserHandler",
-    "nodoc": "true",
-    "events": [
-      {
-        "name": "onExecute",
-        "type": "function",
-        "description": "Fired when file system action is executed from ChromeOS file browser.",
-        "parameters": [
-          {
-            "name": "id",
-            "type": "string",
-            "description": "File browser action id as specified in the listener component's manifest."
-          },
-          {
-            "name": "entries",
-            "type": "any",
-            "optional": true,
-            "description": "Array of Entry instances representing files that are targets of this action (selected in ChromeOS file browser)."
-          }
-        ]
-      }
-    ]
-  },
-  {
     "namespace":"fileBrowserPrivate",
     "nodoc": "true",
-    "types": [
-      {
-        "id": "FileBrowserTask",
-        "type": "object",
-        "description": "Represents information about available browser tasks. A task is an abstraction of an operation that the file browser can perform over a selected file set.",
-        "properties": {
-          "taskId": {"type": "string", "description": "The unique identifier of the task."},
-          "title": {"type": "string", "description": "Task title."},
-          "iconUrl": {"type": "string", "description": "Task icon url (from chrome://extension-icon/...)"}
-        }
-      }
-    ],
     "functions": [
       {
         "name": "requestLocalFileSystem",
@@ -4578,65 +4542,8 @@
             "optional": "false",
             "parameters": [
               {
-                "name" : "fileSystem",
                 "type": "object",
-                "optional": "true",
-                "description": "A DOMFileSystem instance for local file system access. null if the caller has no appropriate permissions."
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "getFileTasks",
-        "description": "Gets the of tasks that can be performed over selected files.",
-        "parameters": [
-          {
-            "name": "fileURLs",
-            "type": "array",
-            "description": "Array of selected file URLs",
-            "items": { "type": "string" }
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "optional": "false",
-            "parameters": [
-              {
-                "name": "tasks",
-                "type": "array",
-                "items": {"$ref": "FileBrowserTask"},
-                "description": "The list of available tasks that can be performed on all of the passed file paths."
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "executeTask",
-        "description": "Executes file browser task over selected files",
-        "parameters": [
-          {
-            "name": "taskId",
-            "type": "string",
-            "description": "The unique identifier of task to execute."
-          },
-          {
-            "name": "fileURLs",
-            "type": "array",
-            "description": "Array of file URLs",
-            "items": { "type": "string" }
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "optional": "false",
-            "parameters": [
-              {
-                "name": "success",
-                "type": "boolean",
-                "optional": "true",
-                "description": "True of task execution was successfully initiated."
+                "isInstanceOf": "DOMFileSystem"
               }
             ]
           }

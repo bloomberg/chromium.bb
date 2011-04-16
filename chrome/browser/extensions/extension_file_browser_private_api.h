@@ -13,62 +13,29 @@
 #include "base/platform_file.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/ui/shell_dialogs.h"
-#include "googleurl/src/url_util.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 
 class GURL;
 
-// Implements the chrome.fileBrowserPrivate.requestLocalFileSystem method.
-class RequestLocalFileSystemFunction : public AsyncExtensionFunction {
+// Implements the Chrome Extension local File API.
+class RequestLocalFileSystemFunction
+    : public AsyncExtensionFunction {
+ public:
+  RequestLocalFileSystemFunction();
+
  protected:
+  virtual ~RequestLocalFileSystemFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
   friend class LocalFileSystemCallbackDispatcher;
-  // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
   void RespondSuccessOnUIThread(const std::string& name,
-                                const GURL& root_path);
+                                const GURL& root);
   void RespondFailedOnUIThread(base::PlatformFileError error_code);
-  void RequestOnFileThread(const GURL& source_url);
+
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.requestLocalFileSystem");
-};
-
-// Implements the chrome.fileBrowserPrivate.getFileTasks method.
-class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
- protected:
-  // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-
- private:
-  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getFileTasks");
-};
-
-
-// Implements the chrome.fileBrowserPrivate.executeTask method.
-class ExecuteTasksFileBrowserFunction : public AsyncExtensionFunction {
- protected:
-  // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-
- private:
-  struct FileDefinition {
-    GURL target_file_url;
-    FilePath virtual_path;
-    bool is_directory;
-  };
-  typedef std::vector<FileDefinition> FileDefinitionList;
-  friend class ExecuteTasksFileSystemCallbackDispatcher;
-  // Initates execution of context menu tasks identified with |task_id| for
-  // each element of |files_list|.
-  bool InitiateFileTaskExecution(const std::string& task_id,
-                                 ListValue* files_list);
-  void RequestFileEntryOnFileThread(const GURL& source_url,
-                                    const std::string& task_id,
-                                    const std::vector<GURL>& file_urls);
-  void RespondFailedOnUIThread(base::PlatformFileError error_code);
-  void ExecuteFileActionsOnUIThread(const std::string& task_id,
-                                    const std::string& file_system_name,
-                                    const GURL& file_system_root,
-                                    const FileDefinitionList& file_list);
-  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.executeTask");
 };
 
 // Parent class for the chromium extension APIs for the file dialog.

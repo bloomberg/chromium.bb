@@ -3439,8 +3439,6 @@
             ['exclude', 'browser/ui/webui/filebrowse_ui.cc'],
             ['exclude', 'browser/ui/webui/mediaplayer_ui.cc'],
             ['exclude', 'browser/ui/webui/slideshow_ui.cc'],
-            ['exclude', 'browser/extensions/extension_file_browser_private_api.cc'],
-            ['exclude', 'browser/extensions/extension_file_browser_private_api.h'],
           ],
         }],
         ['chromeos==1', {

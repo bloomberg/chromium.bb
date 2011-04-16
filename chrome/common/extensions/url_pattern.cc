@@ -24,7 +24,6 @@ const char* kValidSchemes[] = {
   chrome::kFileScheme,
   chrome::kFtpScheme,
   chrome::kChromeUIScheme,
-  chrome::kFileSystemScheme,
 };
 
 const int kValidSchemeMasks[] = {
@@ -33,7 +32,6 @@ const int kValidSchemeMasks[] = {
   URLPattern::SCHEME_FILE,
   URLPattern::SCHEME_FTP,
   URLPattern::SCHEME_CHROMEUI,
-  URLPattern::SCHEME_FILESYSTEM,
 };
 
 COMPILE_ASSERT(arraysize(kValidSchemes) == arraysize(kValidSchemeMasks),
