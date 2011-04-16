@@ -30,44 +30,6 @@ echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_
 
 :: Run tests
 
-setlocal
-call "%~dp0msvs_env.bat" 64
+set INSIDE_TOOLCHAIN=1
+buildbot\buildbot_win.bat opt 64 glibc
 
-setlocal
-echo @@@BUILD_STEP gyp_compile@@@
-call vcvarsall.bat x86 && call devenv.com build\all.sln /build Release
-if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
-
-echo @@@BUILD_STEP gyp_tests@@@
-python_slave.exe trusted_test.py --config Release
-if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
-endlocal
-
-setlocal
-echo @@@BUILD_STEP scons_compile32@@@
-call vcvarsall.bat x86 && call scons.bat -j 8 ^
- DOXYGEN=..\third_party\doxygen\win\doxygen ^
- --nacl_glibc -k --verbose --mode=opt-win,nacl,doc platform=x86-32
-if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
-endlocal
-
-setlocal
-echo @@@BUILD_STEP scons_compile64@@@
-call vcvarsall.bat x64 && call scons.bat -j 8 ^
- DOXYGEN=..\third_party\doxygen\win\doxygen ^
- --nacl_glibc -k --verbose --mode=opt-win,nacl,doc platform=x86-64
-if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
-endlocal
-
-setlocal
-set RETCODE=0
-
-echo @@@BUILD_STEP small_tests64@@@
-call vcvarsall.bat x64 && call scons.bat ^
- DOXYGEN=..\third_party\doxygen\win\doxygen ^
- --nacl_glibc -k --verbose --mode=dbg-win,nacl,doc small_tests platform=x86-64
-if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
-
-# TODO(khim): add medium_tests, large_tests, chrome_browser_tests.
-
-exit /b %RETCODE%

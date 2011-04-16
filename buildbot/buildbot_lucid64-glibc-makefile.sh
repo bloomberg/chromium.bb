@@ -71,38 +71,7 @@ echo @@@BUILD_STEP untar_toolchain@@@
   mv toolchain ..
 )
 
-echo @@@BUILD_STEP gyp_compile@@@
-(
-  cd ..
-  make -k -j8 V=1 BUILDTYPE=Release
-)
-
-RETCODE=0
-
-echo @@@BUILD_STEP gyp_tests@@@
-python trusted_test.py --config Release ||
-  (RETCODE=$? && echo @@@STEP_FAILURE@@@)
-
-echo @@@BUILD_STEP scons_compile32@@@
-./scons -k -j 8 DOXYGEN=../third_party/doxygen/linux/doxygen \
-  --nacl_glibc --verbose --mode=opt-linux,nacl,doc platform=x86-32
-
-echo @@@BUILD_STEP scons_compile64@@@
-./scons -k -j 8 DOXYGEN=../third_party/doxygen/linux/doxygen \
-  --nacl_glibc --verbose --mode=opt-linux,nacl,doc platform=x86-64
-
-echo @@@BUILD_STEP small_tests32@@@
-./scons -k -j 8 \
-  --mode=dbg-host,nacl platform=x86-32 \
-  --nacl_glibc --verbose small_tests ||
-  (RETCODE=$? && echo @@@STEP_FAILURE@@@)
-
-echo @@@BUILD_STEP small_tests64@@@
-./scons -k -j 8 \
-  --mode=dbg-host,nacl platform=x86-64 \
-  --nacl_glibc --verbose small_tests ||
-  (RETCODE=$? && echo @@@STEP_FAILURE@@@)
-
-# TODO(pasko): add medium_tests, large_tests, chrome_browser_tests.
-
-exit ${RETCODE}
+# First run 32bit tests, then 64bit tests. Both shell succeed.
+export INSIDE_TOOLCHAIN=1
+buildbot/buildbot_linux.sh opt 32 glibc
+exec buildbot/buildbot_linux.sh opt 32 glibc

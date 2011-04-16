@@ -71,25 +71,5 @@ echo @@@BUILD_STEP untar_toolchain@@@
   mv toolchain ..
 )
 
-echo @@@BUILD_STEP gyp_compile@@@
-xcodebuild -project build/all.xcodeproj -configuration Release
-
-RETCODE=0
-
-echo @@@BUILD_STEP gyp_tests@@@
-python trusted_test.py --config Release ||
-  (RETCODE=$? && echo @@@STEP_FAILURE@@@)
-
-echo @@@BUILD_STEP scons_compile32@@@
-./scons -k -j 8 DOXYGEN=../third_party/doxygen/osx/doxygen \
-  --nacl_glibc --verbose --mode=opt-mac,nacl,doc platform=x86-32
-
-echo @@@BUILD_STEP small_tests32@@@
-./scons -k -j 8 \
-  --mode=dbg-host,nacl platform=x86-32 \
-  --nacl_glibc --verbose small_tests ||
-  (RETCODE=$? && echo @@@STEP_FAILURE@@@)
-
-# TODO(khim): add medium_tests, large_tests, chrome_browser_tests.
-
-exit ${RETCODE}
+export INSIDE_TOOLCHAIN=1
+exec buildbot/buildbot_mac.sh opt 32 glibc

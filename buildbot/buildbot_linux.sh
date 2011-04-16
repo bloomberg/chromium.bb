@@ -51,7 +51,7 @@ echo @@@BUILD_STEP clobber@@@
 rm -rf scons-out toolchain compiler hg ../xcodebuild ../sconsbuild ../out \
     src/third_party/nacl_sdk/arm-newlib
 
-echo @@@BUILD_STEP partial_sdk@@@
+echo @@@BUILD_STEP partial_sdk${BITS}@@@
 if [[ $TOOLCHAIN = glibc ]]; then
   buildbot/download_glibc_toolchain.sh linux ${BITS}
 else
@@ -67,11 +67,11 @@ make -C .. -k -j12 V=1 BUILDTYPE=${GYPMODE}
 echo @@@BUILD_STEP gyp_tests@@@
 python trusted_test.py --config ${GYPMODE}
 
-echo @@@BUILD_STEP scons_compile@@@
+echo @@@BUILD_STEP scons_compile${BITS}@@@
 ./scons -j 8 DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc platform=x86-${BITS}
 
-echo @@@BUILD_STEP small_tests@@@
+echo @@@BUILD_STEP small_tests${BITS}@@@
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc small_tests \
     platform=x86-${BITS} ||
@@ -79,13 +79,13 @@ echo @@@BUILD_STEP small_tests@@@
 
 # TODO(khim): run other tests with glibc toolchain
 if [[ $TOOLCHAIN != glibc ]]; then
-echo @@@BUILD_STEP medium_tests@@@
+echo @@@BUILD_STEP medium_tests${BITS}@@@
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc medium_tests \
     platform=x86-${BITS} ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
-echo @@@BUILD_STEP large_tests@@@
+echo @@@BUILD_STEP large_tests${BITS}@@@
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc large_tests \
     platform=x86-${BITS} ||
@@ -104,7 +104,7 @@ DISPLAY=localhost:20 XAUTHORITY=/home/chrome-bot/.Xauthority \
     chrome_browser_tests ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
-echo @@@BUILD_STEP pyauto_tests@@@
+echo @@@BUILD_STEP pyauto_tests${BITS}@@@
 DISPLAY=localhost:20 XAUTHORITY=/home/chrome-bot/.Xauthority \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
