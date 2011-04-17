@@ -1619,6 +1619,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     if (toIndex == -1)
       toIndex = [buttons_ count];
     BookmarkButton* movedButton = [buttons_ objectAtIndex:fromIndex];
+    if (movedButton == buttonThatMouseIsIn_)
+      buttonThatMouseIsIn_ = nil;
     [buttons_ removeObjectAtIndex:fromIndex];
     NSRect movedFrame = [movedButton frame];
     NSPoint toOrigin = movedFrame.origin;
