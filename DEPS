@@ -7,7 +7,7 @@ vars = {
   "webkit_revision": "84046",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
-  "nacl_revision": "4559",
+  "nacl_revision": "4906",
   "nacl_tools_revision": "4802",
   "libjingle_revision": "55",
   "libvpx_revision": "76510",
