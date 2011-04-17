@@ -15,6 +15,7 @@
 #define FOR_ALL_PLUGIN_RESOURCES(F)                   \
   F(Audio) \
   F(AudioConfig) \
+  F(Broker) \
   F(Buffer) \
   F(Context3D) \
   F(FileChooser) \

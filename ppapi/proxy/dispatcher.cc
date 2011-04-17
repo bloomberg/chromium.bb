@@ -44,6 +44,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_audio_config_proxy.h"
 #include "ppapi/proxy/ppb_audio_proxy.h"
+#include "ppapi/proxy/ppb_broker_proxy.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/proxy/ppb_char_set_proxy.h"
 #include "ppapi/proxy/ppb_console_proxy.h"
@@ -106,6 +107,7 @@ InterfaceList::InterfaceList() {
   // PPB (browser) interfaces.
   AddPPB(PPB_AudioConfig_Proxy::GetInfo());
   AddPPB(PPB_Audio_Proxy::GetInfo());
+  AddPPB(PPB_Broker_Proxy::GetInfo());
   AddPPB(PPB_Buffer_Proxy::GetInfo());
   AddPPB(PPB_CharSet_Proxy::GetInfo());
   AddPPB(PPB_Console_Proxy::GetInfo());

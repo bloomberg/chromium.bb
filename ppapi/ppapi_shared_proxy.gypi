@@ -85,6 +85,8 @@
         'proxy/ppb_audio_config_proxy.h',
         'proxy/ppb_audio_proxy.cc',
         'proxy/ppb_audio_proxy.h',
+        'proxy/ppb_broker_proxy.cc',
+        'proxy/ppb_broker_proxy.h',
         'proxy/ppb_buffer_proxy.cc',
         'proxy/ppb_buffer_proxy.h',
         'proxy/ppb_char_set_proxy.cc',

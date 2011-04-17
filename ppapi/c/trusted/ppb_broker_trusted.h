@@ -28,6 +28,11 @@
  * with greater privileges than the plugin. The interface only supports
  * out-of-process plugins and is to be used by proxy implementations.  All
  * functions should be called from the main thread only.
+ *
+ * A PPB_BrokerTrusted resource represents a connection to the broker. Its
+ * lifetime controls the lifetime of the broker, regardless of whether the
+ * handle is closed. The handle should be closed before the resource is
+ * released.
  */
 struct PPB_BrokerTrusted {
   /**
@@ -42,7 +47,12 @@ struct PPB_BrokerTrusted {
 
   /**
    * Connects to the trusted broker. It may have already
-   * been launched by another plugin instance.
+   * been launched by another instance.
+   * The plugin takes ownership of the handle once the callback has been called
+   * with a result of PP_OK. The plugin should immediately call GetHandle and
+   * begin managing it. If the result is not PP_OK, the browser still owns the
+   * handle.
+   *
    * Returns PP_ERROR_WOULD_BLOCK on success, and invokes
    * the |connect_callback| asynchronously to complete.
    * As this function should always be invoked from the main thread,
@@ -55,7 +65,8 @@ struct PPB_BrokerTrusted {
   /**
    * Returns the handle to the pipe. Use once Connect has completed.
    * Returns PP_OK on success.
-   * Each plugin instance has its own pipe.
+   * Each instance of this interface has its own pipe.
+   * handle is only set when returning PP_OK.
    */
   int32_t (*GetHandle)(PP_Resource broker, int32_t* handle);
 };

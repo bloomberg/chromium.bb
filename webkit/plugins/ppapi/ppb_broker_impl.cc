@@ -59,6 +59,18 @@ const PPB_BrokerTrusted ppb_brokertrusted = {
   &GetHandle,
 };
 
+// TODO(ddorwin): Put conversion functions in a common place and/or add an
+// invalid value to sync_socket.h.
+int32_t PlatformFileToInt(base::PlatformFile handle) {
+#if defined(OS_WIN)
+  return static_cast<int32_t>(reinterpret_cast<intptr_t>(handle));
+#elif defined(OS_POSIX)
+  return handle;
+#else
+  #error Not implemented.
+#endif
+}
+
 }  // namespace
 
 // PPB_Broker_Impl ------------------------------------------------------
@@ -67,7 +79,7 @@ PPB_Broker_Impl::PPB_Broker_Impl(PluginInstance* instance)
     : Resource(instance),
       broker_(NULL),
       connect_callback_(),
-      pipe_handle_(0) {
+      pipe_handle_(PlatformFileToInt(base::kInvalidPlatformFileValue)) {
 }
 
 PPB_Broker_Impl::~PPB_Broker_Impl() {
@@ -76,8 +88,8 @@ PPB_Broker_Impl::~PPB_Broker_Impl() {
     broker_ = NULL;
   }
 
-  // TODO(ddorwin): Should the plugin or Chrome free the handle?
-  pipe_handle_ = 0;
+  // The plugin owns the handle.
+  pipe_handle_ = PlatformFileToInt(base::kInvalidPlatformFileValue);
 }
 
 const PPB_BrokerTrusted* PPB_Broker_Impl::GetTrustedInterface() {
@@ -108,10 +120,6 @@ int32_t PPB_Broker_Impl::Connect(
 
 int32_t PPB_Broker_Impl::GetHandle(int32_t* handle) {
   *handle = pipe_handle_;
-
-  if (!*handle)
-    return PP_ERROR_FAILED;
-
   return PP_OK;
 }
 
@@ -119,6 +127,7 @@ PPB_Broker_Impl* PPB_Broker_Impl::AsPPB_Broker_Impl() {
   return this;
 }
 
+// Transfers ownership of the handle to the plugin.
 void PPB_Broker_Impl::BrokerConnected(int32_t handle) {
   DCHECK(handle);
   pipe_handle_ = handle;
@@ -128,7 +137,7 @@ void PPB_Broker_Impl::BrokerConnected(int32_t handle) {
 
   scoped_refptr<TrackedCompletionCallback> callback;
   callback.swap(connect_callback_);
-  callback->Run(0);  // Will complete abortively if necessary.
+  callback->Run(PP_OK);  // Will complete abortively if necessary.
 }
 
 }  // namespace ppapi

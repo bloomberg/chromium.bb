@@ -83,6 +83,13 @@ IPC_MESSAGE_ROUTED5(PpapiMsg_PPBAudio_NotifyAudioStreamCreated,
                     base::SharedMemoryHandle /* handle */,
                     int32_t /* length */)
 
+// PPB_Broker.
+IPC_MESSAGE_ROUTED3(
+    PpapiMsg_PPBBroker_ConnectComplete,
+    pp::proxy::HostResource /* broker */,
+    IPC::PlatformFileForTransit /* handle */,
+    int32_t /* result */)
+
 // PPB_FileChooser.
 IPC_MESSAGE_ROUTED3(
     PpapiMsg_PPBFileChooser_ChooseComplete,
@@ -237,6 +244,13 @@ IPC_SYNC_MESSAGE_ROUTED2_1(
     int32_t /* sample_rate */,
     uint32_t /* requested */,
     uint32_t /* result */)
+
+// PPB_Broker.
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBBroker_Create,
+                           PP_Instance /* instance */,
+                           pp::proxy::HostResource /* result_resource */)
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBBroker_Connect,
+                    pp::proxy::HostResource /* broker */)
 
 // PPB_Buffer.
 IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBBuffer_Create,

@@ -44,6 +44,7 @@ class PPB_Broker_Impl : public Resource {
   scoped_refptr<TrackedCompletionCallback> connect_callback_;
 
   // Pipe handle for the plugin instance to use to communicate with the broker.
+  // Never owned by this object.
   int32_t pipe_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Broker_Impl);
