@@ -924,7 +924,7 @@ endif
 	$(MAKE) -f $(THISMAKEFILE) scons-libs-glibc LIB_BITS=32
 	$(MAKE) -f $(THISMAKEFILE) scons-libs-glibc LIB_BITS=64
 	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib/*.a*,nacl64/lib{,32}/*.la}
-	rm -rf "$(DESTDIR)$(SDKROOT)"/{lib/*.so*,lib{32,64}}
+	rm -rf "$(DESTDIR)$(SDKROOT)"/{lib/{*/*/*/*{,/*}.la,*.so*},lib{32,64}}
 
 .PHONY: build-with-newlib
 build-with-newlib:

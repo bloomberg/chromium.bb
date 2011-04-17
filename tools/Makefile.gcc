@@ -87,7 +87,7 @@ GCC_CONFIGURE_FLAGS-newlib = --disable-shared \
 
 GCC_CFLAGS_FOR_TARGET-glibc =
 GCC_CONFIGURE_FLAGS-glibc = --enable-shared \
-			    --enable-languages="c,c++" \
+			    --enable-languages="c,c++,objc,obj-c++,fortran" \
 			    --enable-threads=posix \
 			    --enable-tls
 

@@ -13,6 +13,9 @@ if [ ! -n "${GMP_VERSION}" ] || [ ! -n "${MPFR_VERSION}" ]; then
   exit 2
 fi
 
+readonly SCRIPT_DIR="$(dirname "$0")"
+readonly SCRIPT_DIR_ABS="$(cd "${SCRIPT_DIR}" ; pwd)"
+
 GNU_MP_MAJOR=0
 GMP_HEADER=""
 for header in gmp-i386.h gmp.h ; do
@@ -36,10 +39,10 @@ if [[ "$GNU_MP_MAJOR" -lt 4 ]] ||
      [[ "$GNU_MP_MINOR" -eq 3 ]] &&
      [[ "$GNU_MP_PATCHLEVEL" -lt 1 ]] ) ; then
   echo "symlinking GMP"
-  ln -sf gmp-${GMP_VERSION} SRC/gcc/gmp
+  ln -sf gmp-${GMP_VERSION} "$SCRIPT_DIR_ABS/SRC/gcc/gmp"
 else
   echo "using GMP installed in the system"
-  rm -f SRC/gcc/gmp
+  rm -f "$SCRIPT_DIR_ABS/SRC/gcc/gmp"
 fi
 
 MPFR_VERSION_MAJOR=0
@@ -58,8 +61,8 @@ if [[ ! -e /usr/include/mpfr.h ]] ||
      [[ "$MPFR_VERSION_MINOR" -eq 4 ]] &&
      [[ "$MPFR_VERSION_PATCHLEVEL" -lt 1 ]] ) ; then
   echo "symlinking MPFR"
-  ln -sf mpfr-${MPFR_VERSION} SRC/gcc/mpfr
+  ln -sf mpfr-${MPFR_VERSION} "$SCRIPT_DIR_ABS/SRC/gcc/mpfr"
 else
   echo "using MPFR installed in the system"
-  rm -f SRC/gcc/mpfr
+  rm -f "$SCRIPT_DIR_ABS/SRC/gcc/mpfr"
 fi
