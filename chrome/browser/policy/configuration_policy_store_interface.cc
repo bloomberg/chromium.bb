@@ -30,8 +30,11 @@ void ObservingPolicyStoreInterface::Apply(ConfigurationPolicyType policy,
 
 void FilteringPolicyStoreInterface::Apply(ConfigurationPolicyType policy,
                                           Value* value) {
+  // Apply() takes ownership of |value|.
   if (IsProxyPolicy(policy) && apply_proxy_policies_)
     next_->Apply(policy, value);
+  else
+    delete value;
 }
 
 } // namespace policy
