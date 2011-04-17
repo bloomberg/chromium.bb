@@ -9557,6 +9557,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_FILEBROWSER_ERROR_UNKNOWN_FILE_TYPE" desc="Error message when user attempts to open a file of unknown type in file browser.">
       <ph name="FILENAME">$1</ph> - Unknown file type.
     </message>
+    <message name="IDS_FILEBROWSER_SHOW_ALL_DOWNLOADS"
+             desc="Link label shown at the bottom of the downloads panel">
+      Show all downloads
+    </message>
+
     <!-- Imageburn Strings -->
     <if expr="pp_ifdef('chromeos')">
       <message name="IDS_CHECKING_FOR_UPDATES" desc="Notification for checking for update">
