@@ -420,22 +420,6 @@ TEST_F(ExtensionUtilTest, GetExtensionSpecifics) {
   EXPECT_EQ(kName, specifics.name());
 }
 
-TEST_F(ExtensionUtilTest, IsExtensionOutdated) {
-  FilePath file_path(kExtensionFilePath);
-  scoped_refptr<Extension> extension(
-      MakeSyncableExtension(kVersion2, kValidUpdateUrl1, kName, file_path));
-  sync_pb::ExtensionSpecifics specifics;
-  specifics.set_id(kValidId);
-  specifics.set_update_url(kValidUpdateUrl1);
-
-  specifics.set_version(kVersion1);
-  EXPECT_FALSE(IsExtensionOutdated(*extension, specifics));
-  specifics.set_version(kVersion2);
-  EXPECT_FALSE(IsExtensionOutdated(*extension, specifics));
-  specifics.set_version(kVersion3);
-  EXPECT_TRUE(IsExtensionOutdated(*extension, specifics));
-}
-
 // TODO(akalin): Make ExtensionService/ExtensionUpdater testable
 // enough to be able to write a unittest for SetExtensionProperties().
 

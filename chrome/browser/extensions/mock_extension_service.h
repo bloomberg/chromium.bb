@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "chrome/browser/extensions/extension_service.h"
+// Needed to keep gmock happy.
+#include "chrome/browser/extensions/extension_sync_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class MockExtensionService : public ExtensionServiceInterface {
@@ -38,6 +40,10 @@ class MockExtensionService : public ExtensionServiceInterface {
   MOCK_CONST_METHOD1(IsIncognitoEnabled, bool(const std::string&));
   MOCK_METHOD2(SetIsIncognitoEnabled, void(const std::string&, bool));
   MOCK_METHOD0(CheckForUpdatesSoon, void());
+  MOCK_METHOD2(ProcessSyncData,
+               void(const ExtensionSyncData&,
+                    PendingExtensionInfo::ShouldAllowInstallPredicate
+                        should_allow_install));
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_MOCK_EXTENSION_SERVICE_H_

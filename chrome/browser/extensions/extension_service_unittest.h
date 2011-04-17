@@ -18,15 +18,18 @@
 class ExtensionServiceTestBase : public testing::Test {
  public:
   ExtensionServiceTestBase();
-  ~ExtensionServiceTestBase();
+  virtual ~ExtensionServiceTestBase();
 
-  virtual void InitializeExtensionService(
-      const FilePath& pref_file, const FilePath& extensions_install_dir);
+  void InitializeExtensionService(
+      const FilePath& pref_file, const FilePath& extensions_install_dir,
+      bool autoupdate_enabled);
 
-  virtual void InitializeInstalledExtensionService(
+  void InitializeInstalledExtensionService(
       const FilePath& prefs_file, const FilePath& source_install_dir);
 
-  virtual void InitializeEmptyExtensionService();
+  void InitializeEmptyExtensionService();
+
+  void InitializeExtensionServiceWithUpdater();
 
   static void SetUpTestCase();
 
@@ -37,6 +40,8 @@ class ExtensionServiceTestBase : public testing::Test {
   }
 
  protected:
+  void InitializeExtensionServiceHelper(bool autoupdate_enabled);
+
   ScopedTempDir temp_dir_;
   scoped_ptr<Profile> profile_;
   FilePath extensions_install_dir_;

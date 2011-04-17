@@ -12,6 +12,7 @@
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -157,19 +158,6 @@ void GetExtensionSpecifics(const Extension& extension,
   DcheckIsExtensionSpecificsValid(*specifics);
 }
 
-bool IsExtensionOutdated(const Extension& extension,
-                         const sync_pb::ExtensionSpecifics& specifics) {
-  DCHECK(IsExtensionValid(extension));
-  DcheckIsExtensionSpecificsValid(specifics);
-  scoped_ptr<Version> specifics_version(
-      Version::GetVersionFromString(specifics.version()));
-  if (!specifics_version.get()) {
-    // If version is invalid, assume we're up-to-date.
-    return false;
-  }
-  return extension.version()->CompareTo(*specifics_version) < 0;
-}
-
 void MergeExtensionSpecifics(
     const sync_pb::ExtensionSpecifics& specifics,
     bool merge_user_properties,
@@ -192,6 +180,33 @@ void MergeExtensionSpecifics(
       CopyUserProperties(specifics, merged_specifics);
     }
   }
+}
+
+bool GetExtensionSyncData(
+    const sync_pb::ExtensionSpecifics& specifics,
+    ExtensionSyncData* sync_data) {
+  if (!Extension::IdIsValid(specifics.id())) {
+    return false;
+  }
+
+  scoped_ptr<Version> version(
+      Version::GetVersionFromString(specifics.version()));
+  if (!version.get()) {
+    return false;
+  }
+
+  // The update URL must be either empty or valid.
+  GURL update_url(specifics.update_url());
+  if (!update_url.is_empty() && !update_url.is_valid()) {
+    return false;
+  }
+
+  sync_data->id = specifics.id();
+  sync_data->update_url = update_url;
+  sync_data->version = *version;
+  sync_data->enabled = specifics.enabled();
+  sync_data->incognito_enabled = specifics.incognito_enabled();
+  return true;
 }
 
 }  // namespace browser_sync

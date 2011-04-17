@@ -14,6 +14,7 @@
 class Extension;
 class ExtensionPrefs;
 class ExtensionServiceInterface;
+struct ExtensionSyncData;
 struct UninstalledExtensionInfo;
 
 namespace sync_pb {
@@ -84,12 +85,6 @@ void GetExtensionSpecifics(const Extension& extension,
                            const ExtensionServiceInterface& extension_service,
                            sync_pb::ExtensionSpecifics* specifics);
 
-// Returns whether or not the extension should be updated according to
-// the specifics.  |extension| must be syncable and |specifics| must
-// be valid.
-bool IsExtensionOutdated(const Extension& extension,
-                         const sync_pb::ExtensionSpecifics& specifics);
-
 // Merge |specifics| into |merged_specifics|.  Both must be valid and
 // have the same ID.  The merge policy is currently to copy the
 // non-user properties of |specifics| into |merged_specifics| (and the
@@ -99,6 +94,12 @@ void MergeExtensionSpecifics(
     const sync_pb::ExtensionSpecifics& specifics,
     bool merge_user_properties,
     sync_pb::ExtensionSpecifics* merged_specifics);
+
+// Fills |sync_data| with the data from |specifics|.  Returns true iff
+// succesful.
+bool GetExtensionSyncData(
+    const sync_pb::ExtensionSpecifics& specifics,
+    ExtensionSyncData* sync_data);
 
 }  // namespace browser_sync
 

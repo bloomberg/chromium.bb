@@ -19,6 +19,7 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "base/tuple.h"
+#include "base/version.h"
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"
@@ -39,6 +40,7 @@
 class ExtensionBrowserEventRouter;
 class ExtensionPreferenceEventRouter;
 class ExtensionServiceBackend;
+struct ExtensionSyncData;
 class ExtensionToolbarModel;
 class ExtensionUpdater;
 class GURL;
@@ -80,9 +82,29 @@ class ExtensionServiceInterface {
 
   // Safe to call multiple times in a row.
   //
-  // TODO(akalin): Remove this method (and others) once we add
-  // ProcessSyncData().
+  // TODO(akalin): Remove this method (and others) once we refactor
+  // themes sync to not use it directly.
   virtual void CheckForUpdatesSoon() = 0;
+
+  // Take any actions required to make the local state of the
+  // extension match the state in |extension_sync_data| (including
+  // installing/uninstalling the extension).
+  //
+  // TODO(akalin): We'll eventually need a separate method for app
+  // sync.  See http://crbug.com/58077 and http://crbug.com/61447.
+  virtual void ProcessSyncData(
+      const ExtensionSyncData& extension_sync_data,
+      PendingExtensionInfo::ShouldAllowInstallPredicate should_allow) = 0;
+
+  // TODO(akalin): Add a method like:
+  //
+  //   virtual void
+  //     GetInitialSyncData(bool (*filter)(Extension),
+  //                        map<string, ExtensionSyncData>* out) const;
+  //
+  // which would fill |out| with sync data for the extensions that
+  // match |filter|.  Sync would use this for the initial syncing
+  // step.
 };
 
 // Manages installed and running Chromium extensions.
@@ -341,6 +363,11 @@ class ExtensionService
   virtual void CheckAdminBlacklist();
 
   virtual void CheckForUpdatesSoon();
+
+  virtual void ProcessSyncData(
+      const ExtensionSyncData& extension_sync_data,
+      PendingExtensionInfo::ShouldAllowInstallPredicate
+          should_allow_install);
 
   void set_extensions_enabled(bool enabled) { extensions_enabled_ = enabled; }
   bool extensions_enabled() { return extensions_enabled_; }

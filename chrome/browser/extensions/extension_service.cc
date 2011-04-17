@@ -38,6 +38,7 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
+#include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extension_webnavigation_api.h"
@@ -1195,6 +1196,63 @@ void ExtensionService::CheckForUpdatesSoon() {
   } else {
     LOG(WARNING) << "CheckForUpdatesSoon() called with auto-update turned off";
   }
+}
+
+void ExtensionService::ProcessSyncData(
+    const ExtensionSyncData& extension_sync_data,
+    PendingExtensionInfo::ShouldAllowInstallPredicate should_allow) {
+  const std::string& id = extension_sync_data.id;
+
+  // Handle uninstalls first.
+  if (extension_sync_data.uninstalled) {
+    std::string error;
+    if (!UninstallExtensionHelper(this, id)) {
+      LOG(WARNING) << "Could not uninstall extension " << id
+                   << " for sync";
+    }
+    return;
+  }
+
+  const Extension* extension = GetExtensionByIdInternal(id, true, true);
+  // TODO(akalin): Figure out what to do with terminated extensions.
+
+  // Handle already-installed extensions (just update settings).
+  //
+  // TODO(akalin): Ideally, we should be able to set prefs for an
+  // extension regardless of whether or not it's installed (and have
+  // it automatially apply on install).
+  if (extension) {
+    if (extension_sync_data.enabled) {
+      EnableExtension(id);
+    } else {
+      DisableExtension(id);
+    }
+    SetIsIncognitoEnabled(id, extension_sync_data.incognito_enabled);
+    int result = extension->version()->CompareTo(extension_sync_data.version);
+    if (result < 0) {
+      // Extension is outdated.
+      CheckForUpdatesSoon();
+    } else if (result > 0) {
+      // Sync version is outdated.  Do nothing for now, as sync code
+      // in other places will eventually update the sync data.
+      //
+      // TODO(akalin): Move that code here.
+    }
+    return;
+  }
+
+  // Handle not-yet-installed extensions.
+  //
+  // TODO(akalin): Replace silent update with a list of enabled
+  // permissions.
+  pending_extension_manager()->AddFromSync(
+      id,
+      extension_sync_data.update_url,
+      should_allow,
+      true,  // install_silently
+      extension_sync_data.enabled,
+      extension_sync_data.incognito_enabled);
+  CheckForUpdatesSoon();
 }
 
 bool ExtensionService::IsIncognitoEnabled(

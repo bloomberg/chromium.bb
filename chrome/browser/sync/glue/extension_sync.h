@@ -76,16 +76,6 @@ void RemoveServerData(const ExtensionSyncTraits& traits,
                       const std::string& id,
                       sync_api::UserShare* user_share);
 
-// Starts updating the client data from the given server data.
-void UpdateClient(const ExtensionSyncTraits& traits,
-                  const sync_pb::ExtensionSpecifics& server_data,
-                  ExtensionServiceInterface* extensions_service);
-
-// Removes existing client data for the given extension.
-void RemoveFromClient(const ExtensionSyncTraits& traits,
-                      const std::string& id,
-                      ExtensionServiceInterface* extensions_service);
-
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_GLUE_EXTENSION_SYNC_H_

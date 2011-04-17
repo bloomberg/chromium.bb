@@ -271,7 +271,7 @@ class BookmarkBarControllerTestBase : public CocoaTest {
   BookmarkBarControllerTestBase() {
     FilePath extension_dir;
     helper_.profile()->CreateExtensionService(CommandLine::ForCurrentProcess(),
-                                              extension_dir);
+                                              extension_dir, false);
     resizeDelegate_.reset([[ViewResizerPong alloc] init]);
     NSRect parent_frame = NSMakeRect(0, 0, 800, 50);
     parent_view_.reset([[NSView alloc] initWithFrame:parent_frame]);

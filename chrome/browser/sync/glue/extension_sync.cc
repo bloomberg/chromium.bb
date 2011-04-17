@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/extension_data.h"
@@ -234,75 +235,6 @@ bool UpdateServer(
   return true;
 }
 
-// Tries to update the client data from the given extension data.
-// extension_data->ServerNeedsUpdate() must not hold and
-// extension_data->ClientNeedsUpdate() must hold before this function
-// is called.  If the update was successful,
-// extension_data->ClientNeedsUpdate() will be false after this
-// function is called.  Otherwise, the extension needs updating to a
-// new version.
-void TryUpdateClient(
-    IsValidAndSyncablePredicate is_valid_and_syncable,
-    ExtensionServiceInterface* extensions_service,
-    ExtensionData* extension_data) {
-  DCHECK(!extension_data->NeedsUpdate(ExtensionData::SERVER));
-  DCHECK(extension_data->NeedsUpdate(ExtensionData::CLIENT));
-  const sync_pb::ExtensionSpecifics& specifics =
-      extension_data->merged_data();
-  DcheckIsExtensionSpecificsValid(specifics);
-  const std::string& id = specifics.id();
-  const Extension* extension = extensions_service->GetExtensionById(id, true);
-  if (extension) {
-    if (!is_valid_and_syncable(*extension)) {
-      LOG(DFATAL) << "TryUpdateClient() called for non-syncable extension "
-                  << id;
-      return;
-    }
-    if (specifics.name() != extension->name()) {
-      LOG(WARNING) << "specifics for extension " << id
-                   << "has a different name than the extension: "
-                   << specifics.name() << " vs. " << extension->name();
-    }
-    GURL update_url(specifics.update_url());
-    if (update_url != extension->update_url()) {
-      LOG(WARNING) << "specifics for extension " << id
-                   << "has a different update URL than the extension: "
-                   << update_url.spec() << " vs. " << extension->update_url();
-    }
-    if (specifics.enabled()) {
-      extensions_service->EnableExtension(id);
-    } else {
-      extensions_service->DisableExtension(id);
-    }
-    extensions_service->SetIsIncognitoEnabled(id,
-                                              specifics.incognito_enabled());
-    {
-      sync_pb::ExtensionSpecifics extension_specifics;
-      GetExtensionSpecifics(*extension, *extensions_service,
-                            &extension_specifics);
-      DCHECK(AreExtensionSpecificsUserPropertiesEqual(
-          specifics, extension_specifics))
-          << ExtensionSpecificsToString(specifics) << ", "
-          << ExtensionSpecificsToString(extension_specifics);
-    }
-    if (!IsExtensionOutdated(*extension, specifics)) {
-      extension_data->ResolveData(ExtensionData::CLIENT);
-      DCHECK(!extension_data->NeedsUpdate(ExtensionData::CLIENT));
-    }
-  } else {
-    GURL update_url(specifics.update_url());
-    // TODO(akalin): Replace silent update with a list of enabled
-    // permissions.
-    extensions_service->pending_extension_manager()->AddFromSync(
-        id, update_url,
-        is_valid_and_syncable,
-        true,  // install_silently
-        specifics.enabled(),
-        specifics.incognito_enabled());
-  }
-  DCHECK(!extension_data->NeedsUpdate(ExtensionData::SERVER));
-}
-
 }  // namespace
 
 bool FlushExtensionData(const ExtensionSyncTraits& traits,
@@ -329,14 +261,14 @@ bool FlushExtensionData(const ExtensionSyncTraits& traits,
       }
     }
     DCHECK(!extension_data.NeedsUpdate(ExtensionData::SERVER));
-    if (extension_data.NeedsUpdate(ExtensionData::CLIENT)) {
-      TryUpdateClient(traits.is_valid_and_syncable,
-                      extensions_service, &extension_data);
-      if (extension_data.NeedsUpdate(ExtensionData::CLIENT)) {
-        extensions_service->CheckForUpdatesSoon();
-      }
+    ExtensionSyncData sync_data;
+    if (!GetExtensionSyncData(extension_data.merged_data(), &sync_data)) {
+      // TODO(akalin): Should probably recover or drop.
+      NOTREACHED();
+      return false;
     }
-    DCHECK(!extension_data.NeedsUpdate(ExtensionData::SERVER));
+    extensions_service->ProcessSyncData(sync_data,
+                                        traits.is_valid_and_syncable);
   }
   return true;
 }
@@ -407,55 +339,6 @@ void RemoveServerData(const ExtensionSyncTraits& traits,
     write_node.Remove();
   } else {
     LOG(ERROR) << "Server data does not exist for extension " << id;
-  }
-}
-
-void UpdateClient(const ExtensionSyncTraits& traits,
-                  const sync_pb::ExtensionSpecifics& server_data,
-                  ExtensionServiceInterface* extensions_service) {
-  DcheckIsExtensionSpecificsValid(server_data);
-  ExtensionData extension_data =
-      ExtensionData::FromData(ExtensionData::SERVER, server_data);
-  const Extension* extension =
-      extensions_service->GetExtensionById(server_data.id(), true);
-  if (extension) {
-    if (!traits.is_valid_and_syncable(*extension)) {
-      LOG(WARNING) << "Ignoring server data for invalid or "
-                   << "non-syncable extension " << extension->id();
-      return;
-    }
-    sync_pb::ExtensionSpecifics client_data;
-    GetExtensionSpecifics(*extension, *extensions_service,
-                          &client_data);
-    DcheckIsExtensionSpecificsValid(client_data);
-    extension_data =
-        ExtensionData::FromData(ExtensionData::CLIENT, client_data);
-    extension_data.SetData(ExtensionData::SERVER, true, server_data);
-  }
-  DCHECK(!extension_data.NeedsUpdate(ExtensionData::SERVER));
-  if (extension_data.NeedsUpdate(ExtensionData::CLIENT)) {
-    TryUpdateClient(traits.is_valid_and_syncable,
-                    extensions_service, &extension_data);
-    if (extension_data.NeedsUpdate(ExtensionData::CLIENT)) {
-      extensions_service->CheckForUpdatesSoon();
-    }
-  }
-  DCHECK(!extension_data.NeedsUpdate(ExtensionData::SERVER));
-}
-
-void RemoveFromClient(const ExtensionSyncTraits& traits,
-                      const std::string& id,
-                      ExtensionServiceInterface* extensions_service) {
-  const Extension* extension = extensions_service->GetExtensionById(id, true);
-  if (extension) {
-    if (traits.is_valid_and_syncable(*extension)) {
-      extensions_service->UninstallExtension(id, false, NULL);
-    } else {
-      LOG(WARNING) << "Ignoring server data for invalid or "
-                   << "non-syncable extension " << extension->id();
-    }
-  } else {
-    LOG(ERROR) << "Trying to uninstall nonexistent extension " << id;
   }
 }
 

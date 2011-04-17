@@ -345,7 +345,8 @@ void TestingProfile::SetTemplateURLModel(TemplateURLModel* model) {
 
 ExtensionService* TestingProfile::CreateExtensionService(
     const CommandLine* command_line,
-    const FilePath& install_directory) {
+    const FilePath& install_directory,
+    bool autoupdate_enabled) {
   // Extension pref store, created for use by |extension_prefs_|.
 
   extension_pref_value_map_.reset(new ExtensionPrefValueMap);
@@ -361,7 +362,7 @@ ExtensionService* TestingProfile::CreateExtensionService(
                                              command_line,
                                              install_directory,
                                              extension_prefs_.get(),
-                                             false,
+                                             autoupdate_enabled,
                                              true);
   return extensions_service_;
 }

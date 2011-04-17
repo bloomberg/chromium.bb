@@ -982,6 +982,8 @@
         'browser/extensions/extension_sidebar_api.h',
         'browser/extensions/extension_special_storage_policy.cc',
         'browser/extensions/extension_special_storage_policy.h',
+        'browser/extensions/extension_sync_data.cc',
+        'browser/extensions/extension_sync_data.h',
         'browser/extensions/extension_tab_id_map.cc',
         'browser/extensions/extension_tab_id_map.h',
         'browser/extensions/extension_tab_helper.cc',

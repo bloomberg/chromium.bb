@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/extension_sync.h"
 #include "chrome/browser/sync/glue/extension_util.h"
@@ -101,6 +102,7 @@ void ExtensionChangeProcessor::ApplyChangesFromSyncModel(
   }
   for (int i = 0; i < change_count; ++i) {
     const sync_api::SyncManager::ChangeRecord& change = changes[i];
+    sync_pb::ExtensionSpecifics specifics;
     switch (change.action) {
       case sync_api::SyncManager::ChangeRecord::ACTION_ADD:
       case sync_api::SyncManager::ChangeRecord::ACTION_UPDATE: {
@@ -113,30 +115,14 @@ void ExtensionChangeProcessor::ApplyChangesFromSyncModel(
           return;
         }
         DCHECK_EQ(node.GetModelType(), traits_.model_type);
-        const sync_pb::ExtensionSpecifics& specifics =
-            (*traits_.extension_specifics_getter)(node);
-        if (!IsExtensionSpecificsValid(specifics)) {
-          std::string error =
-              std::string("Invalid server specifics: ") +
-              ExtensionSpecificsToString(specifics);
-          error_handler()->OnUnrecoverableError(FROM_HERE, error);
-          return;
-        }
-        StopObserving();
-        UpdateClient(traits_, specifics, extension_service_);
-        StartObserving();
+        specifics = (*traits_.extension_specifics_getter)(node);
         break;
       }
       case sync_api::SyncManager::ChangeRecord::ACTION_DELETE: {
-        sync_pb::ExtensionSpecifics specifics;
-        if ((*traits_.extension_specifics_entity_getter)(
+        if (!(*traits_.extension_specifics_entity_getter)(
                 change.specifics, &specifics)) {
-          StopObserving();
-          RemoveFromClient(traits_, specifics.id(), extension_service_);
-          StartObserving();
-        } else {
           std::stringstream error;
-          error << "Could not get extension ID for deleted node "
+          error << "Could not get extension specifics from deleted node "
                 << change.id;
           error_handler()->OnUnrecoverableError(FROM_HERE, error.str());
           LOG(DFATAL) << error.str();
@@ -144,6 +130,21 @@ void ExtensionChangeProcessor::ApplyChangesFromSyncModel(
         break;
       }
     }
+    ExtensionSyncData sync_data;
+    if (!GetExtensionSyncData(specifics, &sync_data)) {
+      // TODO(akalin): Should probably recover or drop.
+      std::string error =
+          std::string("Invalid server specifics: ") +
+          ExtensionSpecificsToString(specifics);
+      error_handler()->OnUnrecoverableError(FROM_HERE, error);
+      return;
+    }
+    sync_data.uninstalled =
+        (change.action == sync_api::SyncManager::ChangeRecord::ACTION_DELETE);
+    StopObserving();
+    extension_service_->ProcessSyncData(sync_data,
+                                        traits_.is_valid_and_syncable);
+    StartObserving();
   }
 }
 

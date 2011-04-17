@@ -132,6 +132,13 @@ class MockService : public ExtensionServiceInterface {
     return &pending_extension_manager_;
   }
 
+  virtual void ProcessSyncData(
+      const ExtensionSyncData& extension_sync_data,
+      PendingExtensionInfo::ShouldAllowInstallPredicate
+          should_allow_install) {
+    FAIL();
+  }
+
   Profile* profile() { return &profile_; }
 
   ExtensionPrefs* extension_prefs() { return prefs_.prefs(); }

@@ -28,10 +28,14 @@
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
+#include "chrome/browser/extensions/extension_sync_data.h"
+#include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/external_extension_provider_impl.h"
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
 #include "chrome/browser/extensions/external_pref_extension_loader.h"
 #include "chrome/browser/extensions/pack_extension_job.cc"
+#include "chrome/browser/extensions/pending_extension_info.h"
+#include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -395,7 +399,8 @@ ExtensionServiceTestBase::~ExtensionServiceTestBase() {
 }
 
 void ExtensionServiceTestBase::InitializeExtensionService(
-    const FilePath& pref_file, const FilePath& extensions_install_dir) {
+    const FilePath& pref_file, const FilePath& extensions_install_dir,
+    bool autoupdate_enabled) {
   ExtensionTestingProfile* profile = new ExtensionTestingProfile();
   // Create a PrefService that only contains user defined preference values.
   PrefService* prefs =
@@ -408,7 +413,8 @@ void ExtensionServiceTestBase::InitializeExtensionService(
 
   service_ = profile->CreateExtensionService(
       CommandLine::ForCurrentProcess(),
-      extensions_install_dir);
+      extensions_install_dir,
+      autoupdate_enabled);
   service_->set_extensions_enabled(true);
   service_->set_show_extensions_prompts(false);
   profile->set_extensions_service(service_.get());
@@ -437,10 +443,20 @@ void ExtensionServiceTestBase::InitializeInstalledExtensionService(
   file_util::Delete(extensions_install_dir_, true);
   file_util::CopyDirectory(source_install_dir, extensions_install_dir_, true);
 
-  InitializeExtensionService(temp_prefs, extensions_install_dir_);
+  InitializeExtensionService(temp_prefs, extensions_install_dir_, false);
 }
 
 void ExtensionServiceTestBase::InitializeEmptyExtensionService() {
+  InitializeExtensionServiceHelper(false);
+}
+
+void ExtensionServiceTestBase::InitializeExtensionServiceWithUpdater() {
+  InitializeExtensionServiceHelper(true);
+  service_->updater()->Start();
+}
+
+void ExtensionServiceTestBase::InitializeExtensionServiceHelper(
+    bool autoupdate_enabled) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   FilePath path_ = temp_dir_.path();
   path_ = path_.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
@@ -452,7 +468,8 @@ void ExtensionServiceTestBase::InitializeEmptyExtensionService() {
   file_util::Delete(extensions_install_dir_, true);
   file_util::CreateDirectory(extensions_install_dir_);
 
-  InitializeExtensionService(prefs_filename, extensions_install_dir_);
+  InitializeExtensionService(prefs_filename, extensions_install_dir_,
+                             autoupdate_enabled);
 }
 
 // static
@@ -3256,7 +3273,8 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   // By default, we are enabled.
   command_line.reset(new CommandLine(CommandLine::NO_PROGRAM));
   service = profile->CreateExtensionService(command_line.get(),
-                                            install_dir);
+                                            install_dir,
+                                            false);
   EXPECT_TRUE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();
@@ -3267,7 +3285,8 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   profile.reset(new TestingProfile());
   command_line->AppendSwitch(switches::kDisableExtensions);
   service = profile->CreateExtensionService(command_line.get(),
-                                             install_dir);
+                                            install_dir,
+                                            false);
   EXPECT_FALSE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();
@@ -3277,7 +3296,8 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   profile.reset(new TestingProfile());
   profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
   service = profile->CreateExtensionService(command_line.get(),
-                                            install_dir);
+                                            install_dir,
+                                            false);
   EXPECT_FALSE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();
@@ -3288,7 +3308,8 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
   command_line.reset(new CommandLine(CommandLine::NO_PROGRAM));
   service = profile->CreateExtensionService(command_line.get(),
-                                             install_dir);
+                                            install_dir,
+                                            false);
   EXPECT_FALSE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();
@@ -3398,6 +3419,138 @@ TEST_F(ExtensionServiceTest, ComponentExtensions) {
   service_->ReloadExtensions();
   ASSERT_EQ(1u, service_->extensions()->size());
   EXPECT_EQ(extension_id, service_->extensions()->at(0)->id());
+}
+
+namespace {
+
+bool AlwaysInstall(const Extension& extension) {
+  return true;
+}
+
+}  // namespace
+
+TEST_F(ExtensionServiceTest, ProcessSyncDataUninstall) {
+  InitializeEmptyExtensionService();
+
+  ExtensionSyncData extension_sync_data;
+  extension_sync_data.id = good_crx;
+  extension_sync_data.uninstalled = true;
+
+  // Should do nothing.
+  service_->ProcessSyncData(extension_sync_data, &AlwaysInstall);
+
+  // Install the extension.
+  FilePath extension_path = data_dir_.AppendASCII("good.crx");
+  InstallCrx(extension_path, true);
+  EXPECT_TRUE(service_->GetExtensionById(good_crx, true));
+
+  // Should uninstall the extension.
+  service_->ProcessSyncData(extension_sync_data, &AlwaysInstall);
+  EXPECT_FALSE(service_->GetExtensionById(good_crx, true));
+
+  // Should again do nothing.
+  service_->ProcessSyncData(extension_sync_data, &AlwaysInstall);
+}
+
+
+TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
+  InitializeEmptyExtensionService();
+
+  FilePath extension_path = data_dir_.AppendASCII("good.crx");
+  InstallCrx(extension_path, true);
+  EXPECT_TRUE(service_->IsExtensionEnabled(good_crx));
+  EXPECT_FALSE(service_->IsIncognitoEnabled(good_crx));
+
+  ExtensionSyncData extension_sync_data;
+  extension_sync_data.id = good_crx;
+  extension_sync_data.version =
+      *(service_->GetExtensionById(good_crx, true)->version());
+
+  extension_sync_data.enabled = false;
+  service_->ProcessSyncData(extension_sync_data, &AlwaysInstall);
+  EXPECT_FALSE(service_->IsExtensionEnabled(good_crx));
+  EXPECT_FALSE(service_->IsIncognitoEnabled(good_crx));
+
+  extension_sync_data.enabled = true;
+  extension_sync_data.incognito_enabled = true;
+  service_->ProcessSyncData(extension_sync_data, &AlwaysInstall);
+  EXPECT_TRUE(service_->IsExtensionEnabled(good_crx));
+  EXPECT_TRUE(service_->IsIncognitoEnabled(good_crx));
+
+  extension_sync_data.enabled = false;
+  extension_sync_data.incognito_enabled = true;
+  service_->ProcessSyncData(extension_sync_data, &AlwaysInstall);
+  EXPECT_FALSE(service_->IsExtensionEnabled(good_crx));
+  EXPECT_TRUE(service_->IsIncognitoEnabled(good_crx));
+
+  EXPECT_FALSE(service_->pending_extension_manager()->IsIdPending(good_crx));
+}
+
+TEST_F(ExtensionServiceTest, ProcessSyncDataVersionCheck) {
+  InitializeExtensionServiceWithUpdater();
+
+  // Install the extension.
+  FilePath extension_path = data_dir_.AppendASCII("good.crx");
+  InstallCrx(extension_path, true);
+  EXPECT_TRUE(service_->IsExtensionEnabled(good_crx));
+  EXPECT_FALSE(service_->IsIncognitoEnabled(good_crx));
+
+  ExtensionSyncData extension_sync_data;
+  extension_sync_data.id = good_crx;
+  extension_sync_data.enabled = true;
+  extension_sync_data.version =
+      *(service_->GetExtensionById(good_crx, true)->version());
+
+  // Should do nothing if extension version == sync version.
+  service_->ProcessSyncData(extension_sync_data, &AlwaysInstall);
+  EXPECT_FALSE(service_->updater()->WillCheckSoon());
+
+  // Should do nothing if extension version > sync version (but see
+  // the TODO in ProcessSyncData).
+  {
+    scoped_ptr<Version> version(Version::GetVersionFromString("0.0.0.0"));
+    extension_sync_data.version = *version;
+    service_->ProcessSyncData(extension_sync_data, &AlwaysInstall);
+    EXPECT_FALSE(service_->updater()->WillCheckSoon());
+  }
+
+  // Should kick off an update if extension version < sync version.
+  {
+    scoped_ptr<Version> version(Version::GetVersionFromString("9.9.9.9"));
+    extension_sync_data.version = *version;
+    service_->ProcessSyncData(extension_sync_data, &AlwaysInstall);
+    EXPECT_TRUE(service_->updater()->WillCheckSoon());
+  }
+
+  EXPECT_FALSE(service_->pending_extension_manager()->IsIdPending(good_crx));
+}
+
+TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
+  InitializeExtensionServiceWithUpdater();
+
+  ExtensionSyncData extension_sync_data;
+  extension_sync_data.id = good_crx;
+  extension_sync_data.update_url = GURL("http://www.google.com");
+  extension_sync_data.enabled = true;
+  {
+    scoped_ptr<Version> version(Version::GetVersionFromString("1.2.3.4"));
+    extension_sync_data.version = *version;
+  }
+
+  service_->ProcessSyncData(extension_sync_data, &AlwaysInstall);
+  EXPECT_TRUE(service_->updater()->WillCheckSoon());
+
+  PendingExtensionInfo info;
+  EXPECT_TRUE(
+      service_->pending_extension_manager()->GetById(good_crx, &info));
+  EXPECT_EQ(extension_sync_data.update_url, info.update_url());
+  EXPECT_TRUE(info.is_from_sync());
+  EXPECT_TRUE(info.install_silently());
+  EXPECT_EQ(extension_sync_data.enabled, info.enable_on_install());
+  EXPECT_EQ(extension_sync_data.incognito_enabled,
+            info.enable_incognito_on_install());
+  EXPECT_EQ(Extension::INTERNAL, info.install_source());
+  // TODO(akalin): Figure out a way to test |info.ShouldAllowInstall()|.
 }
 
 // Test that when multiple sources try to install an extension,

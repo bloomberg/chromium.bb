@@ -129,7 +129,8 @@ class TestingProfile : public Profile {
   // ExtensionService to make sure that is still alive to be notified when the
   // profile is destroyed.
   ExtensionService* CreateExtensionService(const CommandLine* command_line,
-                                           const FilePath& install_directory);
+                                           const FilePath& install_directory,
+                                           bool autoupdate_enabled);
 
   TestingPrefService* GetTestingPrefService();
 

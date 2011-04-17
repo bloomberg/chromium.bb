@@ -68,7 +68,7 @@ void BackgroundApplicationListModelTest::InitializeEmptyExtensionService() {
   profile_.reset(profile);
   service_ = profile->CreateExtensionService(
       CommandLine::ForCurrentProcess(),
-      bogus_file_path());
+      bogus_file_path(), false);
   service_->set_extensions_enabled(true);
   service_->set_show_extensions_prompts(false);
   service_->OnLoadedInstalledExtensions(); /* Sends EXTENSIONS_READY */
