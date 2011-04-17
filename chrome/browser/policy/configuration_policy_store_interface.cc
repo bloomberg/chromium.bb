@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_store_interface.h"
 
 namespace {
