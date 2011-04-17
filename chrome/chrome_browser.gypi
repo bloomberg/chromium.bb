@@ -1539,6 +1539,7 @@
         'browser/policy/configuration_policy_provider_mac.h',
         'browser/policy/configuration_policy_provider_win.cc',
         'browser/policy/configuration_policy_provider_win.h',
+        'browser/policy/configuration_policy_store_interface.cc',
         'browser/policy/configuration_policy_store_interface.h',
         'browser/policy/device_management_backend.h',
         'browser/policy/device_management_backend_impl.cc',

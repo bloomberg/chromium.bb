@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "policy/configuration_policy_type.h"
 
 class Value;
@@ -47,6 +48,48 @@ class ConfigurationPolicyStoreInterface {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyStoreInterface);
+};
+
+// Helper class. A pass-through ConfigurationPolicyStoreInterface, that observes
+// the application of well-known policies.
+class ObservingPolicyStoreInterface: public ConfigurationPolicyStoreInterface {
+ public:
+  explicit ObservingPolicyStoreInterface(
+      ConfigurationPolicyStoreInterface* next)
+      : next_(next),
+        proxy_policy_applied_(false) {}
+
+  // ConfigurationPolicyStoreInterface methods:
+  virtual void Apply(ConfigurationPolicyType policy, Value* value) OVERRIDE;
+
+  bool IsProxyPolicyApplied() const {
+    return proxy_policy_applied_;
+  }
+
+ private:
+  ConfigurationPolicyStoreInterface* next_;
+  bool proxy_policy_applied_;
+
+  DISALLOW_COPY_AND_ASSIGN(ObservingPolicyStoreInterface);
+};
+
+// Helper class. A ConfigurationPolicyStoreInterface that filters out most
+// policies, and only applies well-known policies.
+class FilteringPolicyStoreInterface: public ConfigurationPolicyStoreInterface {
+ public:
+  FilteringPolicyStoreInterface(ConfigurationPolicyStoreInterface* next,
+                                bool apply_proxy_policies)
+      : next_(next),
+        apply_proxy_policies_(apply_proxy_policies) {}
+
+  // ConfigurationPolicyStoreInterface methods:
+  virtual void Apply(ConfigurationPolicyType policy, Value* value) OVERRIDE;
+
+ private:
+  ConfigurationPolicyStoreInterface* next_;
+  bool apply_proxy_policies_;
+
+  DISALLOW_COPY_AND_ASSIGN(FilteringPolicyStoreInterface);
 };
 
 }  // namespace policy

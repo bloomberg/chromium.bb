@@ -7,6 +7,9 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/user_policy_cache.h"
@@ -53,10 +56,22 @@ ProfilePolicyConnector::ProfilePolicyConnector(Profile* profile)
     cloud_policy_subsystem_.reset(new CloudPolicySubsystem(
         identity_strategy_.get(),
         new UserPolicyCache(policy_cache_dir.Append(kPolicyCacheFile))));
+
+    BrowserPolicyConnector* browser_connector =
+        g_browser_process->browser_policy_connector();
+
+    managed_cloud_provider_.reset(new MergingPolicyProvider(
+        browser_connector->GetManagedCloudProvider(),
+        cloud_policy_subsystem_->GetManagedPolicyProvider()));
+    recommended_cloud_provider_.reset(new MergingPolicyProvider(
+        browser_connector->GetRecommendedCloudProvider(),
+        cloud_policy_subsystem_->GetRecommendedPolicyProvider()));
   }
 }
 
 ProfilePolicyConnector::~ProfilePolicyConnector() {
+  managed_cloud_provider_.reset();
+  recommended_cloud_provider_.reset();
   cloud_policy_subsystem_.reset();
   identity_strategy_.reset();
 }
@@ -76,18 +91,73 @@ void ProfilePolicyConnector::Shutdown() {
 
 ConfigurationPolicyProvider*
     ProfilePolicyConnector::GetManagedCloudProvider() {
-  if (cloud_policy_subsystem_.get())
-    return cloud_policy_subsystem_->GetManagedPolicyProvider();
-
-  return NULL;
+  return managed_cloud_provider_.get();
 }
 
 ConfigurationPolicyProvider*
     ProfilePolicyConnector::GetRecommendedCloudProvider() {
-  if (cloud_policy_subsystem_.get())
-    return cloud_policy_subsystem_->GetRecommendedPolicyProvider();
+  return recommended_cloud_provider_.get();
+}
 
-  return NULL;
+MergingPolicyProvider::MergingPolicyProvider(
+    ConfigurationPolicyProvider* browser_policy_provider,
+    ConfigurationPolicyProvider* profile_policy_provider)
+    : ConfigurationPolicyProvider(
+          ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList()),
+      browser_policy_provider_(browser_policy_provider),
+      profile_policy_provider_(profile_policy_provider),
+      browser_registrar_(new ConfigurationPolicyObserverRegistrar()),
+      profile_registrar_(new ConfigurationPolicyObserverRegistrar()) {
+  browser_registrar_->Init(browser_policy_provider_, this);
+  profile_registrar_->Init(profile_policy_provider_, this);
+}
+
+MergingPolicyProvider::~MergingPolicyProvider() {
+  if (browser_policy_provider_ && profile_policy_provider_) {
+    FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
+                      observer_list_, OnProviderGoingAway());
+  }
+}
+
+bool MergingPolicyProvider::Provide(ConfigurationPolicyStoreInterface* store) {
+  // First, apply the profile policies and observe if interesting policies
+  // have been applied.
+  ObservingPolicyStoreInterface observe(store);
+  bool rv = profile_policy_provider_->Provide(&observe);
+
+  // Now apply policies from the browser provider, if they were not applied
+  // by the profile provider.
+  // Currently, these include only the proxy settings.
+  FilteringPolicyStoreInterface filter(store, !observe.IsProxyPolicyApplied());
+  rv = rv && browser_policy_provider_->Provide(&filter);
+
+  return rv;
+}
+
+void MergingPolicyProvider::AddObserver(
+    ConfigurationPolicyProvider::Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void MergingPolicyProvider::RemoveObserver(
+    ConfigurationPolicyProvider::Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void MergingPolicyProvider::OnUpdatePolicy() {
+  FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
+                    observer_list_, OnUpdatePolicy());
+}
+
+void MergingPolicyProvider::OnProviderGoingAway() {
+  if (browser_policy_provider_ && profile_policy_provider_) {
+    FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
+                      observer_list_, OnProviderGoingAway());
+    browser_registrar_.reset();
+    profile_registrar_.reset();
+    browser_policy_provider_ = NULL;
+    profile_policy_provider_ = NULL;
+  }
 }
 
 }  // namespace policy
