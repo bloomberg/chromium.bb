@@ -11,6 +11,8 @@ import sys
 def Main():
   # TODO(ncbray): figure out why this is failing on windows and enable.
   if sys.platform in ['win32', 'cygwin']: return
+  # TODO(ncbray): use xvfb on linux and re-enable.
+  if sys.platform in ['linux', 'linux2']: return
 
   script_dir = os.path.dirname(os.path.abspath(__file__))
   test_dir = os.path.dirname(script_dir)
