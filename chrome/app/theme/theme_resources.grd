@@ -678,6 +678,8 @@
       <!-- Images only used by ChromeOS. -->
       <if expr="pp_ifdef('chromeos')">
         <include name="IDR_BRIGHTNESS_BUBBLE_ICON" file="brightness_icon.png" type="BINDATA" />
+        <include name="IDR_BUTTON_USER_IMAGE_CHOOSE_FILE" file="choose_file.png" type="BINDATA" />
+        <include name="IDR_BUTTON_USER_IMAGE_TAKE_PHOTO" file="take_photo.png" type="BINDATA" />
         <include name="IDR_COMPACTNAV_BACK" file="compactnav_back.png" type="BINDATA" />
         <include name="IDR_COMPACTNAV_FORWARD" file="compactnav_forward.png" type="BINDATA" />
         <include name="IDR_COMPACTNAV_SEPARATOR" file="compactnav_separator.png" type="BINDATA" />
