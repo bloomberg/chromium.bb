@@ -8,9 +8,13 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "third_party/libjingle/source/talk/base/urlencode.h"
+#include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_mount_point_provider.h"
+#include "webkit/fileapi/file_system_util.h"
 
 // This is the "well known" url for the file manager extension from
 // browser/resources/file_manager.  In the future we may provide a way to swap
@@ -21,6 +25,34 @@ const char kBaseFileBrowserUrl[] =
 // static
 GURL FileManagerUtil::GetFileBrowserUrl() {
   return GURL(kBaseFileBrowserUrl);
+}
+
+// static
+bool FileManagerUtil::ConvertFileToFileSystemUrl(
+    Profile* profile, const FilePath& full_file_path, const GURL& origin_url,
+    GURL* url) {
+  fileapi::FileSystemPathManager* path_manager =
+      profile->GetFileSystemContext()->path_manager();
+  fileapi::ExternalFileSystemMountPointProvider* provider =
+      path_manager->external_provider();
+  if (!provider)
+    return false;
+
+  // Find if this file path is managed by the external provider.
+  std::vector<FilePath> root_dirs = provider->GetRootDirectories();
+  for (std::vector<FilePath>::iterator iter = root_dirs.begin();
+       iter != root_dirs.end();
+       ++iter) {
+    FilePath path;
+    const FilePath& root_path = *iter;
+    if (root_path.AppendRelativePath(full_file_path, &path)) {
+      GURL base_url = fileapi::GetFileSystemRootURI(origin_url,
+          fileapi::kFileSystemTypeExternal);
+      *url = GURL(base_url.spec() + root_path.Append(path).value().substr(1));
+      return true;
+    }
+  }
+  return false;
 }
 
 // static

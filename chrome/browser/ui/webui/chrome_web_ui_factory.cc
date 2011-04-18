@@ -48,7 +48,6 @@
 #include "chrome/browser/ui/webui/chromeos/sim_unlock_ui.h"
 #include "chrome/browser/ui/webui/chromeos/system_info_ui.h"
 #include "chrome/browser/ui/webui/active_downloads_ui.h"
-#include "chrome/browser/ui/webui/filebrowse_ui.h"
 #include "chrome/browser/ui/webui/mediaplayer_ui.h"
 #endif
 
@@ -187,8 +186,6 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
       url.host() == chrome::kChromeUIHttpAuthHost) {
     return &NewWebUI<ConstrainedHtmlUI>;
   }
-  if (url.host() == chrome::kChromeUIFileBrowseHost)
-    return &NewWebUI<FileBrowseUI>;
   if (url.host() == chrome::kChromeUIActiveDownloadsHost)
     return &NewWebUI<ActiveDownloadsUI>;
   if (url.host() == chrome::kChromeUIImageBurnerHost)

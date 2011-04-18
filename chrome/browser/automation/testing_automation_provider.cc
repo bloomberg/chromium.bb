@@ -1069,7 +1069,7 @@ void TestingAutomationProvider::GetShelfVisibility(int handle, bool* visible) {
             (*it)->GetTabContentsAt((*it)->active_index())->GetURL();
 
         if (url.SchemeIs(chrome::kChromeUIScheme) &&
-            url.host() == chrome::kChromeUIFileBrowseHost) {
+            url.host() == chrome::kChromeUIActiveDownloadsHost) {
           *visible = true;
           break;
         }

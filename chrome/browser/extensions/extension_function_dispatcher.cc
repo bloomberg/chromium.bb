@@ -315,13 +315,14 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<GetChromeosInfoFunction>();
 
   // FileBrowserPrivate functions.
+  RegisterFunction<CancelFileDialogFunction>();
   RegisterFunction<ExecuteTasksFileBrowserFunction>();
+  RegisterFunction<FileDialogStringsFunction>();
   RegisterFunction<GetFileTasksFileBrowserFunction>();
   RegisterFunction<RequestLocalFileSystemFunction>();
   RegisterFunction<SelectFileFunction>();
   RegisterFunction<SelectFilesFunction>();
-  RegisterFunction<CancelFileDialogFunction>();
-  RegisterFunction<FileDialogStringsFunction>();
+  RegisterFunction<ViewFilesFunction>();
 #endif
 
   // Debugger

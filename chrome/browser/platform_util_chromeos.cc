@@ -10,10 +10,11 @@
 #include "base/process_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/extensions/file_manager_util.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/webui/filebrowse_ui.h"
 #include "chrome/browser/ui/webui/mediaplayer_ui.h"
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/process_watcher.h"
 #include "googleurl/src/gurl.h"
@@ -31,18 +32,15 @@ static const std::string kGmailComposeUrl =
 void OpenFileBrowserOnUIThread(const FilePath& dir) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  Profile* profile;
-  profile = BrowserList::GetLastActive()->profile();
-
-  FileBrowseUI::OpenPopup(profile,
-                          dir.value(),
-                          FileBrowseUI::kPopupWidth,
-                          FileBrowseUI::kPopupHeight);
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser)
+    return;
+  GURL url = FileManagerUtil::GetFileBrowserUrlWithParams(
+     SelectFileDialog::SELECT_NONE, string16(), dir, NULL, 0,
+     FilePath::StringType());
+  browser->ShowSingletonTab(url);
 }
 
-// TODO(estade): It would be nice to be able to select the file in the file
-// manager, but that probably requires extending xdg-open. For now just
-// show the folder.
 void ShowItemInFolder(const FilePath& full_path) {
   FilePath dir = full_path.DirName();
   if (!file_util::DirectoryExists(dir))
@@ -61,13 +59,13 @@ void OpenItem(const FilePath& full_path) {
   std::string ext = full_path.Extension();
   // For things supported natively by the browser, we should open it
   // in a tab.
-  if (ext == ".jpg" ||
-      ext == ".jpeg" ||
-      ext == ".png" ||
-      ext == ".gif" ||
-      ext == ".txt" ||
-      ext == ".html" ||
-      ext == ".htm") {
+  if (base::strcasecmp(ext.data(), ".jpg") == 0 ||
+      base::strcasecmp(ext.data(), ".jpeg") == 0 ||
+      base::strcasecmp(ext.data(), ".png") == 0 ||
+      base::strcasecmp(ext.data(), ".gif") == 0 ||
+      base::strcasecmp(ext.data(), ".txt") == 0 ||
+      base::strcasecmp(ext.data(), ".html") == 0 ||
+      base::strcasecmp(ext.data(), ".htm") == 0) {
     std::string path;
     path = "file://";
     path.append(full_path.value());
@@ -82,17 +80,17 @@ void OpenItem(const FilePath& full_path) {
     browser->AddSelectedTabWithURL(GURL(path), PageTransition::LINK);
     return;
   }
-  if (ext == ".avi" ||
-      ext == ".wav" ||
-      ext == ".mp4" ||
-      ext == ".mp3" ||
-      ext == ".mkv" ||
-      ext == ".ogg") {
+  if (base::strcasecmp(ext.data(), ".avi") == 0 ||
+      base::strcasecmp(ext.data(), ".wav") == 0 ||
+      base::strcasecmp(ext.data(), ".mp4") == 0 ||
+      base::strcasecmp(ext.data(), ".mp3") == 0 ||
+      base::strcasecmp(ext.data(), ".mkv") == 0 ||
+      base::strcasecmp(ext.data(), ".ogg") == 0) {
+    Browser* browser = BrowserList::GetLastActive();
+    if (!browser)
+      return;
     MediaPlayer* mediaplayer = MediaPlayer::GetInstance();
-    std::string url = "file://";
-    url += full_path.value();
-    GURL gurl(url);
-    mediaplayer->EnqueueMediaURL(gurl, NULL);
+    mediaplayer->EnqueueMediaFile(browser->profile(), full_path, NULL);
     return;
   }
 

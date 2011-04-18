@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/webui/extension_icon_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -454,7 +455,6 @@ class ExecuteTasksFileSystemCallbackDispatcher
     GURL file_origin_url;
     FilePath virtual_path;
     fileapi::FileSystemType type;
-
     if (!CrackFileSystemURL(origin_file_url, &file_origin_url, &type,
                             &virtual_path)) {
       return false;
@@ -726,9 +726,9 @@ const FileDialogFunction::Callback& FileDialogFunction::GetCallback() const {
 // so here we are. This function takes a vector of virtual paths, converts
 // them to local paths and calls GetLocalPathsResponseOnUIThread with the
 // result vector, on the UI thread.
-void FileDialogFunction::GetLocalPathsOnFileThread() {
+void FileDialogFunction::GetLocalPathsOnFileThread(const UrlList& file_urls) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(selected_files_.empty());
+  FilePathList selected_files;
 
   // FilePath(virtual_path) doesn't work on win, so limit this to ChromeOS.
 #if defined(OS_CHROMEOS)
@@ -736,58 +736,120 @@ void FileDialogFunction::GetLocalPathsOnFileThread() {
   fileapi::FileSystemPathManager* path_manager =
       profile()->GetFileSystemContext()->path_manager();
 
-  size_t len = virtual_paths_.size();
-  selected_files_.reserve(len);
+  size_t len = file_urls.size();
+  selected_files.reserve(len);
   for (size_t i = 0; i < len; ++i) {
-    std::string virtual_path = virtual_paths_[i];
+    const GURL& file_url = file_urls[i];
+    GURL file_origin_url;
+    FilePath virtual_path;
+    fileapi::FileSystemType type;
+    if (!CrackFileSystemURL(file_url, &file_origin_url, &type,
+                            &virtual_path)) {
+      continue;
+    }
+    if (type != fileapi::kFileSystemTypeExternal) {
+      NOTREACHED();
+      continue;
+    }
     FilePath root = path_manager->GetFileSystemRootPathOnFileThread(
         origin_url,
         fileapi::kFileSystemTypeExternal,
         FilePath(virtual_path),
         false);
     if (!root.empty()) {
-      selected_files_.push_back(root.Append(virtual_path));
+      selected_files.push_back(root.Append(virtual_path));
     } else {
-      LOG(WARNING) << "GetLocalPathsOnFileThread failed " << virtual_path;
+      LOG(WARNING) << "GetLocalPathsOnFileThread failed "
+                   << file_url.spec();
     }
   }
 #endif
 
-  if (!selected_files_.empty()) {
+  if (!selected_files.empty()) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
-            &FileDialogFunction::GetLocalPathsResponseOnUIThread));
+            &FileDialogFunction::GetLocalPathsResponseOnUIThread,
+            selected_files));
   }
 }
 
 bool SelectFileFunction::RunImpl() {
-  DCHECK_EQ(static_cast<size_t>(2), args_->GetSize());
-
-  std::string virtual_path;
-  args_->GetString(0, &virtual_path);
-  virtual_paths_.push_back(virtual_path);
+  if (args_->GetSize() != 2) {
+    return false;
+  }
+  std::string file_url;
+  args_->GetString(0, &file_url);
+  UrlList file_paths;
+  file_paths.push_back(GURL(file_url));
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this,
-          &SelectFileFunction::GetLocalPathsOnFileThread));
+          &SelectFileFunction::GetLocalPathsOnFileThread,
+          file_paths));
 
   return true;
 }
 
-void SelectFileFunction::GetLocalPathsResponseOnUIThread() {
+void SelectFileFunction::GetLocalPathsResponseOnUIThread(
+    const FilePathList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(selected_files_.size(), static_cast<size_t>(1));
-
+  if (files.size() != 1) {
+    return;
+  }
   int index;
   args_->GetInteger(1, &index);
   const Callback& callback = GetCallback();
   DCHECK(!callback.IsNull());
   if (!callback.IsNull()) {
-    callback.listener()->FileSelected(selected_files_[0],
+    callback.listener()->FileSelected(files[0],
                                       index,
                                       callback.params());
+  }
+}
+
+
+ViewFilesFunction::ViewFilesFunction() {
+}
+
+ViewFilesFunction::~ViewFilesFunction() {
+}
+
+bool ViewFilesFunction::RunImpl() {
+  if (args_->GetSize() != 1) {
+    return false;
+  }
+
+  ListValue* path_list = NULL;
+  args_->GetList(0, &path_list);
+  DCHECK(path_list);
+
+  std::string virtual_path;
+  size_t len = path_list->GetSize();
+  UrlList file_urls;
+  file_urls.reserve(len);
+  for (size_t i = 0; i < len; ++i) {
+    path_list->GetString(i, &virtual_path);
+    file_urls.push_back(GURL(virtual_path));
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+          &ViewFilesFunction::GetLocalPathsOnFileThread,
+          file_urls));
+
+  return true;
+}
+
+void ViewFilesFunction::GetLocalPathsResponseOnUIThread(
+    const FilePathList& files) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  for (FilePathList::const_iterator iter = files.begin();
+       iter != files.end();
+       ++iter) {
+    platform_util::OpenItem(*iter);
   }
 }
 
@@ -798,7 +860,9 @@ SelectFilesFunction::~SelectFilesFunction() {
 }
 
 bool SelectFilesFunction::RunImpl() {
-  DCHECK_EQ(static_cast<size_t>(1), args_->GetSize());
+  if (args_->GetSize() != 1) {
+    return false;
+  }
 
   ListValue* path_list = NULL;
   args_->GetList(0, &path_list);
@@ -806,27 +870,30 @@ bool SelectFilesFunction::RunImpl() {
 
   std::string virtual_path;
   size_t len = path_list->GetSize();
-  virtual_paths_.reserve(len);
+  UrlList file_urls;
+  file_urls.reserve(len);
   for (size_t i = 0; i < len; ++i) {
     path_list->GetString(i, &virtual_path);
-    virtual_paths_.push_back(virtual_path);
+    file_urls.push_back(GURL(virtual_path));
   }
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this,
-          &SelectFilesFunction::GetLocalPathsOnFileThread));
+          &SelectFilesFunction::GetLocalPathsOnFileThread,
+          file_urls));
 
   return true;
 }
 
-void SelectFilesFunction::GetLocalPathsResponseOnUIThread() {
+void SelectFilesFunction::GetLocalPathsResponseOnUIThread(
+    const FilePathList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const Callback& callback = GetCallback();
   DCHECK(!callback.IsNull());
   if (!callback.IsNull()) {
-    callback.listener()->MultiFilesSelected(selected_files_, callback.params());
+    callback.listener()->MultiFilesSelected(files, callback.params());
   }
 }
 

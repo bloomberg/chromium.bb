@@ -86,18 +86,6 @@ const Experiment kExperiments[] = {
 #endif
   },
   {
-    kMediaPlayerExperimentName,
-    IDS_FLAGS_MEDIA_PLAYER_NAME,
-    IDS_FLAGS_MEDIA_PLAYER_DESCRIPTION,
-    kOsCrOS,
-#if defined(OS_CHROMEOS)
-    // The switch exists only on Chrome OS.
-    SINGLE_VALUE_TYPE(switches::kEnableMediaPlayer)
-#else
-    SINGLE_VALUE_TYPE("")
-#endif
-  },
-  {
     kAdvancedFileSystemExperimentName,
     IDS_FLAGS_ADVANCED_FS_NAME,
     IDS_FLAGS_ADVANCED_FS_DESCRIPTION,

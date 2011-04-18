@@ -4569,19 +4569,36 @@
     ],
     "functions": [
       {
-        "name": "requestLocalFileSystem",
-        "description": "Requests access to local file system",
+        "name": "cancelDialog",
+        "type": "function",
+        "description": "Cancel file selection.",
+        "parameters": []
+      },
+      {
+        "name": "executeTask",
+        "description": "Executes file browser task over selected files",
         "parameters": [
+          {
+            "name": "taskId",
+            "type": "string",
+            "description": "The unique identifier of task to execute."
+          },
+          {
+            "name": "fileURLs",
+            "type": "array",
+            "description": "Array of file URLs",
+            "items": { "type": "string" }
+          },
           {
             "name": "callback",
             "type": "function",
             "optional": "false",
             "parameters": [
               {
-                "name" : "fileSystem",
-                "type": "object",
+                "name": "success",
+                "type": "boolean",
                 "optional": "true",
-                "description": "A DOMFileSystem instance for local file system access. null if the caller has no appropriate permissions."
+                "description": "True of task execution was successfully initiated."
               }
             ]
           }
@@ -4613,30 +4630,37 @@
         ]
       },
       {
-        "name": "executeTask",
-        "description": "Executes file browser task over selected files",
+        "name": "getStrings",
+        "type": "function",
+        "description": "Get Strings.",
         "parameters": [
           {
-            "name": "taskId",
-            "type": "string",
-            "description": "The unique identifier of task to execute."
-          },
-          {
-            "name": "fileURLs",
-            "type": "array",
-            "description": "Array of file URLs",
-            "items": { "type": "string" }
-          },
+            "type": "function",
+             "name": "callback",
+             "parameters": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": {"type": "string"}
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "requestLocalFileSystem",
+        "description": "Requests access to local file system",
+        "parameters": [
           {
             "name": "callback",
             "type": "function",
             "optional": "false",
             "parameters": [
               {
-                "name": "success",
-                "type": "boolean",
+                "name" : "fileSystem",
+                "type": "object",
                 "optional": "true",
-                "description": "True of task execution was successfully initiated."
+                "description": "A DOMFileSystem instance for local file system access. null if the caller has no appropriate permissions."
               }
             ]
           }
@@ -4670,26 +4694,14 @@
         ]
       },
       {
-        "name": "cancelDialog",
+        "name": "viewFiles",
         "type": "function",
-        "description": "Cancel file selection.",
-        "parameters": []
-      },
-      {
-        "name": "getStrings",
-        "type": "function",
-        "description": "Get Strings.",
+        "description": "View multiple files.",
         "parameters": [
           {
-            "type": "function",
-             "name": "callback",
-             "parameters": [
-              {
-                "type": "object",
-                "properties": {},
-                "additionalProperties": {"type": "string"}
-              }
-            ]
+            "type": "array",
+            "description": "Array of selected paths",
+            "items": {"type": "string"}
           }
         ]
       }

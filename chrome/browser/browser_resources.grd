@@ -92,7 +92,6 @@
         <include name="IDR_CHOOSE_MOBILE_NETWORK_HTML" file="resources\chromeos\choose_mobile_network.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_COLLECTED_COOKIES_HTML" file="resources\collected_cookies.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_GUEST_SESSION_TAB_HTML" file="resources\guest_session_tab.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_FILEBROWSE_HTML" file="resources\filebrowse.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_ACTIVE_DOWNLOADS_HTML" file="resources\active_downloads.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_HOST_REGISTRATION_PAGE_HTML" file="resources\host_registration_page.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_HTTP_AUTH_HTML" file="resources\http_auth.html" flattenhtml="true" type="BINDATA" />

@@ -75,9 +75,6 @@ class ExecuteTasksFileBrowserFunction : public AsyncExtensionFunction {
 class FileDialogFunction
     : public AsyncExtensionFunction {
  public:
-  typedef std::vector<std::string> VirtualPathVec;
-  typedef std::vector<FilePath> FilePathVec;
-
   FileDialogFunction();
 
   // Register/unregister callbacks.
@@ -112,19 +109,19 @@ class FileDialogFunction
   };
 
  protected:
+  typedef std::vector<GURL> UrlList;
+  typedef std::vector<FilePath> FilePathList;
+
   virtual ~FileDialogFunction();
 
   // Convert virtual paths to local paths on the file thread.
-  void GetLocalPathsOnFileThread();
+  void GetLocalPathsOnFileThread(const UrlList& file_urls);
 
   // Callback with converted local paths.
-  virtual void GetLocalPathsResponseOnUIThread() {}
+  virtual void GetLocalPathsResponseOnUIThread(const FilePathList& files) {}
 
   // Get the callback for the hosting tab.
   const Callback& GetCallback() const;
-
-  VirtualPathVec virtual_paths_;
-  FilePathVec selected_files_;
 
  private:
   // Figure out the tab_id of the hosting tab.
@@ -144,10 +141,31 @@ class SelectFileFunction
   virtual bool RunImpl() OVERRIDE;
 
   // FileDialogFunction overrides.
-  virtual void GetLocalPathsResponseOnUIThread() OVERRIDE;
+  virtual void GetLocalPathsResponseOnUIThread(
+      const FilePathList& files) OVERRIDE;
 
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.selectFile");
+};
+
+// Views multiple selected file.
+class ViewFilesFunction
+    : public FileDialogFunction {
+ public:
+  ViewFilesFunction();
+
+ protected:
+  virtual ~ViewFilesFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+  // FileDialogFunction overrides.
+  virtual void GetLocalPathsResponseOnUIThread(
+      const FilePathList& files) OVERRIDE;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.viewFiles");
 };
 
 // Select multiple files.
@@ -163,7 +181,8 @@ class SelectFilesFunction
   virtual bool RunImpl() OVERRIDE;
 
   // FileDialogFunction overrides.
-  virtual void GetLocalPathsResponseOnUIThread() OVERRIDE;
+  virtual void GetLocalPathsResponseOnUIThread(
+      const FilePathList& files) OVERRIDE;
 
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.selectFiles");

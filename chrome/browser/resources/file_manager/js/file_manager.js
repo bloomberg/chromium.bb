@@ -713,7 +713,7 @@ FileManager.prototype = {
       var entry = this.table.dataModel.item(selectedIndexes[i]);
 
       selection.entries.push(entry);
-      selection.uris.push(entry.toURI());
+      selection.uris.push(entry.toURL());
 
       if (selection.iconType == null) {
         selection.iconType = getIconType(entry);
@@ -997,7 +997,7 @@ FileManager.prototype = {
       selectable = !!this.filenameInput_.value;
     } else if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
       // No "select" buttons on the full page UI.
-      selectable = false;
+      selectable = true;
     } else {
       throw new Error('Unknown dialog type');
     }
@@ -1218,10 +1218,11 @@ FileManager.prototype = {
    * @param {Event} event The click event.
    */
   FileManager.prototype.onOk_ = function(event) {
-    var currentPath = this.currentDirEntry_.fullPath.substr(1);
+    console.log("dialogType = " + this.dialogType_);
+    var currentDirUrl = this.currentDirEntry_.toURL();
 
-    if (currentPath)
-      currentPath += '/';
+    if (currentDirUrl.charAt(currentDirUrl.length - 1) != '/')
+      currentDirUrl += '/';
 
     if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
       // Save-as doesn't require a valid selection from the list, since
@@ -1230,7 +1231,8 @@ FileManager.prototype = {
       if (!filename)
         throw new Error('Missing filename!');
 
-      chrome.fileBrowserPrivate.selectFile(currentPath + filename, 0);
+      chrome.fileBrowserPrivate.selectFile(currentDirUrl + encodeURI(filename),
+                                           0);
       window.close();
       return;
     }
@@ -1251,13 +1253,19 @@ FileManager.prototype = {
         continue;
       }
 
-      ary.push(currentPath + entry.name);
+      ary.push(currentDirUrl + encodeURI(entry.name));
     }
 
     // Multi-file selection has no other restrictions.
     if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_MULTI_FILE) {
       chrome.fileBrowserPrivate.selectFiles(ary);
       window.close();
+      return;
+    }
+
+    // In full screen mode, open all files for vieweing.
+    if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
+      chrome.fileBrowserPrivate.viewFiles(ary);
       return;
     }
 

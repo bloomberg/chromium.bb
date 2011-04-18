@@ -131,11 +131,10 @@ const char kChromeUIThemePath[] = "theme";
 const char kChromeUIThumbnailPath[] = "thumb";
 
 #if defined(OS_CHROMEOS)
+const char kChromeUIActiveDownloadsHost[] = "active-downloads";
 const char kChromeUIActivationMessageHost[] = "activationmessage";
 const char kChromeUIChooseMobileNetworkHost[] = "choose-mobile-network";
 const char kChromeUICollectedCookiesHost[] = "collected-cookies";
-const char kChromeUIFileBrowseHost[] = "filebrowse";
-const char kChromeUIActiveDownloadsHost[] = "active-downloads";
 const char kChromeUIHttpAuthHost[] = "http-auth";
 const char kChromeUIImageBurnerHost[] = "imageburner";
 const char kChromeUIKeyboardOverlayHost[] = "keyboardoverlay";

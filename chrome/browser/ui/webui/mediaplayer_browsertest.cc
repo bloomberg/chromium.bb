@@ -21,10 +21,6 @@ class MediaPlayerBrowserTest : public InProcessBrowserTest {
  public:
   MediaPlayerBrowserTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    command_line->AppendSwitch(switches::kEnableMediaPlayer);
-  }
-
   GURL GetMusicTestURL() {
     return GURL("http://localhost:1337/files/plugin/sample_mp3.mp3");
   }
@@ -73,7 +69,7 @@ IN_PROC_BROWSER_TEST_F(MediaPlayerBrowserTest, Popup) {
   // Check that its not currently visible
   ASSERT_FALSE(IsPlayerVisible());
 
-  player->EnqueueMediaURL(GetMusicTestURL(), NULL);
+  player->EnqueueMediaFileUrl(GetMusicTestURL(), NULL);
 
   ASSERT_TRUE(IsPlayerVisible());
 }
@@ -87,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(MediaPlayerBrowserTest, PopupPlaylist) {
 
   MediaPlayer* player = MediaPlayer::GetInstance();
 
-  player->EnqueueMediaURL(GetMusicTestURL(), NULL);
+  player->EnqueueMediaFileUrl(GetMusicTestURL(), NULL);
 
   EXPECT_FALSE(IsPlaylistVisible());
 

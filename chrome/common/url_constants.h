@@ -120,11 +120,10 @@ extern const char kChromeUIThemePath[];
 extern const char kChromeUIThumbnailPath[];
 
 #if defined(OS_CHROMEOS)
-extern const char kChromeUIActivationMessageHost[];
 extern const char kChromeUIActiveDownloadsHost[];
+extern const char kChromeUIActivationMessageHost[];
 extern const char kChromeUIChooseMobileNetworkHost[];
 extern const char kChromeUICollectedCookiesHost[];
-extern const char kChromeUIFileBrowseHost[];
 extern const char kChromeUIHttpAuthHost[];
 extern const char kChromeUIImageBurnerHost[];
 extern const char kChromeUIKeyboardOverlayHost[];

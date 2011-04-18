@@ -21,6 +21,14 @@ chrome.fileBrowserPrivate = {
   },
 
   /**
+   * View multiple files.
+   */
+  viewFiles: function(selectedFiles) {
+    console.log('viewFiles called: ' + selectedFiles.length +
+                ' files selected');
+  },
+
+  /**
    * Select multiple files.
    */
   selectFiles: function(selectedFiles) {

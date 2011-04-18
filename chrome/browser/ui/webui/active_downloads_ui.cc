@@ -414,25 +414,23 @@ void ActiveDownloadsHandler::HandleGetRoots(const ListValue* args) {
 
 void ActiveDownloadsHandler::PlayMediaFile(const ListValue* args) {
 #if defined(OS_CHROMEOS)
-  std::string url = UTF16ToUTF8(ExtractStringValue(args));
-  GURL gurl(url);
+  FilePath file_path(UTF16ToUTF8(ExtractStringValue(args)));
 
   Browser* browser = Browser::GetBrowserForController(
       &tab_contents_->controller(), NULL);
   MediaPlayer* mediaplayer = MediaPlayer::GetInstance();
-  mediaplayer->ForcePlayMediaURL(gurl, browser);
+  mediaplayer->ForcePlayMediaFile(profile_, file_path, browser);
 #endif
 }
 
 void ActiveDownloadsHandler::EnqueueMediaFile(const ListValue* args) {
 #if defined(OS_CHROMEOS)
-  std::string url = UTF16ToUTF8(ExtractStringValue(args));
-  GURL gurl(url);
+  FilePath file_path(UTF16ToUTF8(ExtractStringValue(args)));
 
   Browser* browser = Browser::GetBrowserForController(
       &tab_contents_->controller(), NULL);
   MediaPlayer* mediaplayer = MediaPlayer::GetInstance();
-  mediaplayer->EnqueueMediaURL(gurl, browser);
+  mediaplayer->EnqueueMediaFile(profile_, file_path, browser);
 #endif
 }
 
@@ -440,11 +438,9 @@ void ActiveDownloadsHandler::HandleIsAdvancedEnabled(const ListValue* args) {
 #if defined(OS_CHROMEOS)
   bool is_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableAdvancedFileSystem);
-  bool mp_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableMediaPlayer);
   DictionaryValue info_value;
   info_value.SetBoolean("enabled", is_enabled);
-  info_value.SetBoolean("mpEnabled", mp_enabled);
+  info_value.SetBoolean("mpEnabled", true);
   web_ui_->CallJavascriptFunction("enabledResult", info_value);
 
 #endif

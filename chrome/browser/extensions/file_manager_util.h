@@ -15,6 +15,10 @@ class Profile;
 // Helper class for wiring file browser component extension with the rest of UI.
 class FileManagerUtil {
  public:
+  // Converts |full_file_path| into external filesystem: url. Returns false
+  // if |full_file_path| is not managed by the external filesystem provider.
+  static bool ConvertFileToFileSystemUrl(Profile* profile,
+      const FilePath& full_file_path, const GURL& origin_url, GURL* url);
   // Gets base file browser url for.
   static GURL GetFileBrowserUrlWithParams(
       SelectFileDialog::Type type,

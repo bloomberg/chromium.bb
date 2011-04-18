@@ -18,6 +18,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
+#include "chrome/browser/extensions/file_manager_util.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
@@ -114,7 +115,7 @@ class MediaplayerHandler : public WebUIMessageHandler,
 
   void PlaybackMediaFile(const GURL& url);
 
-  void EnqueueMediaFile(const GURL& url);
+  void EnqueueMediaFileUrl(const GURL& url);
 
   void GetPlaylistValue(ListValue& args);
 
@@ -300,7 +301,7 @@ void MediaplayerHandler::SetCurrentPlaylist(
   FirePlaylistChanged(std::string(), false, current_offset_);
 }
 
-void MediaplayerHandler::EnqueueMediaFile(const GURL& url) {
+void MediaplayerHandler::EnqueueMediaFileUrl(const GURL& url) {
   current_playlist_.push_back(MediaplayerHandler::MediaUrl(url));
   FirePlaylistChanged(url.spec(), false, current_offset_);
   MediaPlayer::GetInstance()->NotifyPlaylistChanged();
@@ -357,37 +358,43 @@ MediaPlayer* MediaPlayer::GetInstance() {
   return Singleton<MediaPlayer>::get();
 }
 
-void MediaPlayer::EnqueueMediaURL(const GURL& url, Browser* creator) {
-  if (!Enabled()) {
-    return;
+void MediaPlayer::EnqueueMediaFile(Profile* profile, const FilePath& file_path,
+                                   Browser* creator) {
+  static GURL origin_url(kMediaplayerURL);
+  GURL url;
+  if (!FileManagerUtil::ConvertFileToFileSystemUrl(profile, file_path,
+                                                   origin_url, &url)) {
   }
+  EnqueueMediaFileUrl(url, creator);
+}
+
+void MediaPlayer::EnqueueMediaFileUrl(const GURL& url, Browser* creator) {
   if (handler_ == NULL) {
     unhandled_urls_.push_back(url);
     PopupMediaPlayer(creator);
   } else {
-    handler_->EnqueueMediaFile(url);
+    handler_->EnqueueMediaFileUrl(url);
   }
 }
 
-void MediaPlayer::ForcePlayMediaURL(const GURL& url, Browser* creator) {
-  if (!Enabled()) {
-    return;
+void MediaPlayer::ForcePlayMediaFile(Profile* profile,
+                                     const FilePath& file_path,
+                                     Browser* creator) {
+  static GURL origin_url(kMediaplayerURL);
+  GURL url;
+  if (!FileManagerUtil::ConvertFileToFileSystemUrl(profile, file_path,
+                                                   origin_url, &url)) {
   }
+  ForcePlayMediaURL(url, creator);
+}
+
+void MediaPlayer::ForcePlayMediaURL(const GURL& url, Browser* creator) {
   if (handler_ == NULL) {
     unhandled_urls_.push_back(url);
     PopupMediaPlayer(creator);
   } else {
     handler_->PlaybackMediaFile(url);
   }
-}
-
-bool MediaPlayer::Enabled() {
-#if defined(OS_CHROMEOS)
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableMediaPlayer);
-#else
-  return true;
-#endif
 }
 
 void MediaPlayer::TogglePlaylistWindowVisible() {
@@ -425,7 +432,7 @@ void MediaPlayer::SetNewHandler(MediaplayerHandler* handler,
   mediaplayer_tab_ = contents;
   RegisterListeners();
   for (size_t x = 0; x < unhandled_urls_.size(); x++) {
-    handler_->EnqueueMediaFile(unhandled_urls_[x]);
+    handler_->EnqueueMediaFileUrl(unhandled_urls_[x]);
   }
   unhandled_urls_.clear();
 }
@@ -569,7 +576,7 @@ net::URLRequestJob* MediaPlayer::MaybeInterceptResponse(
   if (supported_mime_types_.find(mime_type) != supported_mime_types_.end()) {
     if (request->referrer() != chrome::kChromeUIMediaplayerURL &&
         !request->referrer().empty()) {
-      EnqueueMediaURL(request->url(), NULL);
+      EnqueueMediaFileUrl(request->url(), NULL);
       request->Cancel();
     }
   }

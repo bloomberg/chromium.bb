@@ -329,7 +329,8 @@ function onLoadedProgress(e) {
 }
 
 function onMediaError(e) {
-  console.log('Got new error' + e);
+  console.log('Got new error');
+  console.log(e);
   chrome.send('playbackError', ['Error playing back',
       currentPlaylist[currentItem].path]);
   if (currentPlaylist.length == 1) {

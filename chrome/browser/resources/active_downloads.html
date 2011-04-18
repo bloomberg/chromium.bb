@@ -1327,13 +1327,11 @@ function clearPreviewPane() {
 }
 
 function playMediaFile(path) {
-  var newPath = 'file://' + path;
-  chrome.send('playMediaFile', [newPath]);
+  chrome.send('playMediaFile', [path]);
 }
 
 function enqueueMediaFile(path) {
-  var newPath = 'file://' + path;
-  chrome.send('enqueueMediaFile', [newPath]);
+  chrome.send('enqueueMediaFile', [path]);
 }
 
 function showImage(path) {

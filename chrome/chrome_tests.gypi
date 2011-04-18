@@ -2358,7 +2358,6 @@
         'browser/ui/views/dom_view_browsertest.cc',
         'browser/ui/views/html_dialog_view_browsertest.cc',
         'browser/ui/webui/chrome_url_data_manager_browsertest.cc',
-        'browser/ui/webui/file_browse_browsertest.cc',
         'browser/ui/webui/mediaplayer_browsertest.cc',
         'browser/ui/webui/settings_browsertest.cc',
         'renderer/autofill/autofill_browsertest.cc',
@@ -2409,7 +2408,6 @@
             ['exclude', '^browser/chromeos'],
           ],
           'sources!': [
-            'browser/ui/webui/file_browse_browsertest.cc',
             'browser/ui/webui/mediaplayer_browsertest.cc',
           ],
         }, { #else: OS == "chromeos"
