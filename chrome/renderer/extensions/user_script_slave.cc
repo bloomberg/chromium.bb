@@ -17,7 +17,7 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
-#include "chrome/renderer/extension_groups.h"
+#include "chrome/renderer/extensions/extension_groups.h"
 #include "googleurl/src/gurl.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
