@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_DOWNLOAD_IN_PROGRESS_DIALOG_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_DOWNLOAD_IN_PROGRESS_DIALOG_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_IN_PROGRESS_DIALOG_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_IN_PROGRESS_DIALOG_VIEW_H_
 #pragma once
 
 #include <string>
@@ -58,4 +58,4 @@ class DownloadInProgressDialogView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(DownloadInProgressDialogView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_DOWNLOAD_IN_PROGRESS_DIALOG_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_IN_PROGRESS_DIALOG_VIEW_H_

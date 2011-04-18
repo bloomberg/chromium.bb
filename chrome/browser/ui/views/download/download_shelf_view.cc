@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/download_shelf_view.h"
+#include "chrome/browser/ui/views/download/download_shelf_view.h"
 
 #include <algorithm>
 
@@ -14,7 +14,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/download_item_view.h"
+#include "chrome/browser/ui/views/download/download_item_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "grit/generated_resources.h"

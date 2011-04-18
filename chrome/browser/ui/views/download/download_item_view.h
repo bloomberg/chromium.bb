@@ -13,8 +13,8 @@
 // DownloadController that receives / writes data which lives in the
 // Renderer.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_DOWNLOAD_ITEM_VIEW_H__
-#define CHROME_BROWSER_UI_VIEWS_DOWNLOAD_ITEM_VIEW_H__
+#ifndef CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_ITEM_VIEW_H__
+#define CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_ITEM_VIEW_H__
 #pragma once
 
 #include <string>
@@ -29,8 +29,8 @@
 #include "content/browser/cancelable_request.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/gfx/font.h"
-#include "views/events/event.h"
 #include "views/controls/button/button.h"
+#include "views/events/event.h"
 #include "views/view.h"
 
 class BaseDownloadItemModel;
@@ -290,4 +290,4 @@ class DownloadItemView : public views::ButtonListener,
   DISALLOW_COPY_AND_ASSIGN(DownloadItemView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_DOWNLOAD_ITEM_VIEW_H__
+#endif  // CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_ITEM_VIEW_H__
