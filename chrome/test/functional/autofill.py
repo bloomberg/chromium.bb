@@ -185,11 +185,11 @@ class AutofillTest(pyauto.PyUITest):
     url = self.GetHttpURLForDataPath(
         os.path.join('autofill', 'autofill_creditcard_form.html'))
     for cc_info in credit_card_info:
-      cc_number = credit_card_info['CREDIT_CARD_NUMBER']
-      self.assertTrue(self._LuhnCreditCardNumberValidator(cc_number),
-                      msg='This test requires a valid credit card number.')
       self.NavigateToURL(url)
       for key, value in cc_info.iteritems():
+        cc_number = cc_info['CREDIT_CARD_NUMBER']
+        self.assertTrue(self._LuhnCreditCardNumberValidator(cc_number),
+                        msg='This test requires a valid credit card number.')
         script = ('document.getElementById("%s").value = "%s"; '
                   'window.domAutomationController.send("done");') % (key, value)
         self.ExecuteJavascript(script, 0, 0)
