@@ -1002,6 +1002,7 @@ struct LayoutMetrics {
 - (void)removeScrollTracking {
   if (scrollTrackingArea_.get()) {
     [[[self window] contentView] removeTrackingArea:scrollTrackingArea_.get()];
+    [scrollTrackingArea_.get() clearOwner];
   }
   scrollTrackingArea_.reset();
 }

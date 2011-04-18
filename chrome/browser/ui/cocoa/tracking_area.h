@@ -52,6 +52,7 @@ class ScopedCrTrackingArea {
   ~ScopedCrTrackingArea();
 
   // This will call |scoped_nsobject<>::reset()| to take ownership of the new
+  // tracking area.  Note that -clearOwner is NOT called on the existing
   // tracking area.
   void reset(CrTrackingArea* tracking_area = nil);
 
