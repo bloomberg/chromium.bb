@@ -81,11 +81,16 @@ int wl_display_add_socket(struct wl_display *display, const char *name);
 void wl_display_terminate(struct wl_display *display);
 void wl_display_run(struct wl_display *display);
 
-void wl_display_add_object(struct wl_display *display, struct wl_object *object);
+void wl_display_add_object(struct wl_display *display,
+			   struct wl_object *object);
 
-typedef void (*wl_client_connect_func_t)(struct wl_client *client, struct wl_object *global);
+typedef void (*wl_global_bind_func_t)(struct wl_client *client,
+				      struct wl_object *global,
+				      uint32_t version);
 
-int wl_display_add_global(struct wl_display *display, struct wl_object *object, wl_client_connect_func_t func);
+int wl_display_add_global(struct wl_display *display,
+			  struct wl_object *object,
+			  wl_global_bind_func_t func);
 
 struct wl_client *wl_client_create(struct wl_display *display, int fd);
 void wl_client_destroy(struct wl_client *client);

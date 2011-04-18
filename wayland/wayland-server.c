@@ -84,7 +84,7 @@ struct wl_frame_listener {
 
 struct wl_global {
 	struct wl_object *object;
-	wl_client_connect_func_t func;
+	wl_global_bind_func_t func;
 	struct wl_list link;
 };
 
@@ -476,7 +476,7 @@ display_bind(struct wl_client *client,
 
 	wl_list_for_each(global, &display->global_list, link)
 		if (global->object->id == id && global->func)
-			global->func(client, global->object);
+			global->func(client, global->object, version);
 }
 
 static void
@@ -603,7 +603,7 @@ wl_display_add_object(struct wl_display *display, struct wl_object *object)
 
 WL_EXPORT int
 wl_display_add_global(struct wl_display *display,
-		      struct wl_object *object, wl_client_connect_func_t func)
+		      struct wl_object *object, wl_global_bind_func_t func)
 {
 	struct wl_global *global;
 
@@ -615,7 +615,7 @@ wl_display_add_global(struct wl_display *display,
 	global->func = func;
 	wl_list_insert(display->global_list.prev, &global->link);
 
-	return 0;	
+	return 0;
 }
 
 WL_EXPORT void
