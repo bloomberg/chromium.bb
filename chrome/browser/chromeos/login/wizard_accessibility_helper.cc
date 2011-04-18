@@ -42,6 +42,17 @@ WizardAccessibilityHelper::WizardAccessibilityHelper() {
   registered_notifications_ = false;
 }
 
+void WizardAccessibilityHelper::Init() {
+  if (IsAccessibilityEnabled()) {
+    if (!registered_notifications_)
+      RegisterNotifications();
+    // SetAccessibilityEnabled(true) fully enables accessibility. Init() is
+    // necessary during startup when the global accessibility pref is set but
+    // the notifications are not registered.
+    SetAccessibilityEnabled(true);
+  }
+}
+
 void WizardAccessibilityHelper::RegisterNotifications() {
   registrar_.Add(accessibility_handler_.get(),
                  NotificationType::ACCESSIBILITY_CONTROL_FOCUSED,

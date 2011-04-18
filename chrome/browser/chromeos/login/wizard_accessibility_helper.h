@@ -43,6 +43,9 @@ class WizardAccessibilityHelper {
   // Toggles accessibility support.
   void ToggleAccessibility();
 
+  // Initialize accessibility
+  void Init();
+
  private:
   friend struct DefaultSingletonTraits<WizardAccessibilityHelper>;
 
