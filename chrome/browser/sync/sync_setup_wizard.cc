@@ -26,6 +26,22 @@
 
 namespace {
 
+const char* kInvalidPasswordHelpUrl =
+    "https://www.google.com/support/accounts/bin/answer.py?ctx=ch&answer=27444";
+const char* kCanNotAccessAccountUrl =
+    "https://www.google.com/support/accounts/bin/answer.py?answer=48598";
+#if defined(OS_CHROMEOS)
+const char* kEncryptionHelpUrl =
+    "https://www.google.com/support/chromeos/bin/answer.py?answer=1181035";
+#else
+const char* kEncryptionHelpUrl =
+    "https://www.google.com/support/chrome/bin/answer.py?answer=1181035";
+#endif
+const char* kCreateNewAccountUrl =
+    "https://www.google.com/accounts/NewAccount?service=chromiumsync";
+const char* kSyncHelpUrl =
+    "https://www.google.com/support/chrome/bin/answer.py?hl=en&answer=165139";
+
 // Utility method to keep dictionary population code streamlined.
 void AddString(DictionaryValue* dictionary,
                const std::string& key,
@@ -49,11 +65,6 @@ class SyncResourcesSource : public ChromeURLDataManager::DataSource {
     return "text/html";
   }
 
-  static const char* kInvalidPasswordHelpUrl;
-  static const char* kCanNotAccessAccountUrl;
-  static const char* kCreateNewAccountUrl;
-  static const char* kEncryptionHelpUrl;
-
  private:
   virtual ~SyncResourcesSource() {}
 
@@ -65,19 +76,7 @@ class SyncResourcesSource : public ChromeURLDataManager::DataSource {
   DISALLOW_COPY_AND_ASSIGN(SyncResourcesSource);
 };
 
-const char* SyncResourcesSource::kInvalidPasswordHelpUrl =
-    "https://www.google.com/support/accounts/bin/answer.py?ctx=ch&answer=27444";
-const char* SyncResourcesSource::kCanNotAccessAccountUrl =
-    "https://www.google.com/support/accounts/bin/answer.py?answer=48598";
-#if defined(OS_CHROMEOS)
-const char* SyncResourcesSource::kEncryptionHelpUrl =
-    "https://www.google.com/support/chromeos/bin/answer.py?answer=1181035";
-#else
-const char* SyncResourcesSource::kEncryptionHelpUrl =
-    "https://www.google.com/support/chrome/bin/answer.py?answer=1181035";
-#endif
-const char* SyncResourcesSource::kCreateNewAccountUrl =
-    "https://www.google.com/accounts/NewAccount?service=chromiumsync";
+
 
 void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
                                            bool is_incognito,
@@ -107,10 +106,9 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
                     GetLocalizedUrl(kCanNotAccessAccountUrl));
     dict->SetString("createnewaccounturl",
                     GetLocalizedUrl(kCreateNewAccountUrl));
+    dict->SetString("synchelpurl",
+                    GetLocalizedUrl(kSyncHelpUrl));
     AddString(dict, "settingupsync", IDS_SYNC_LOGIN_SETTING_UP_SYNC);
-    dict->SetString("introduction",
-        GetStringFUTF16(IDS_SYNC_LOGIN_INTRODUCTION,
-                        GetStringUTF16(IDS_PRODUCT_NAME)));
     AddString(dict, "signinprefix", IDS_SYNC_LOGIN_SIGNIN_PREFIX);
     AddString(dict, "signinsuffix", IDS_SYNC_LOGIN_SIGNIN_SUFFIX);
     AddString(dict, "cannotbeblank", IDS_SYNC_CANNOT_BE_BLANK);
@@ -135,6 +133,9 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
 
     AddString(dict, "dataTypes", IDS_SYNC_DATA_TYPES_TAB_NAME);
     AddString(dict, "encryption", IDS_SYNC_ENCRYPTION_TAB_NAME);
+    AddString(
+        dict, "confirmSyncPreferences", IDS_SYNC_CONFIRM_SYNC_PREFERENCES);
+    AddString(dict, "syncEverything", IDS_SYNC_SYNC_EVERYTHING);
 
     // Stuff for the choose data types localized.
     AddString(dict, "choosedatatypesheader", IDS_SYNC_CHOOSE_DATATYPES_HEADER);
@@ -160,11 +161,17 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
         GetStringFUTF16(IDS_SYNC_ENCRYPTION_INSTRUCTIONS,
                         GetStringUTF16(IDS_PRODUCT_NAME)));
     AddString(dict, "encryptAllLabel", IDS_SYNC_ENCRYPT_ALL_LABEL);
-
+    AddString(
+        dict, "passphraseSectionTitle", IDS_SYNC_PASSPHRASE_SECTION_TITLE);
     AddString(dict, "googleOption", IDS_SYNC_PASSPHRASE_OPT_GOOGLE);
     AddString(dict, "explicitOption", IDS_SYNC_PASSPHRASE_OPT_EXPLICIT);
     AddString(dict, "sectionGoogleMessage", IDS_SYNC_PASSPHRASE_MSG_GOOGLE);
-    AddString(dict, "sectionExplicitMessage", IDS_SYNC_PASSPHRASE_MSG_EXPLICIT);
+    AddString(dict,
+              "sectionExplicitMessagePrefix",
+              IDS_SYNC_PASSPHRASE_MSG_EXPLICIT_PREFIX);
+    AddString(dict,
+              "sectionExplicitMessagePostfix",
+              IDS_SYNC_PASSPHRASE_MSG_EXPLICIT_POSTFIX);
     AddString(dict, "passphraseLabel", IDS_SYNC_PASSPHRASE_LABEL);
     AddString(dict, "confirmLabel", IDS_SYNC_CONFIRM_PASSPHRASE_LABEL);
     AddString(dict, "emptyErrorMessage", IDS_SYNC_EMPTY_PASSPHRASE_ERROR);
@@ -179,6 +186,7 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
                     GetLocalizedUrl(kEncryptionHelpUrl));
 
     // Stuff for the footer.
+    AddString(dict, "customizelinklabel", IDS_SYNC_CUSTOMIZE_LINK_LABEL);
     AddString(dict, "ok", IDS_OK);
     AddString(dict, "cancel", IDS_CANCEL);
   } else if (path_raw == kSyncPassphrasePath) {

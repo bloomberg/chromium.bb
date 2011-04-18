@@ -38,6 +38,8 @@ input[type='submit'] {
 
 #gaia-account-text {
   font-weight: bold;
+  position: relative;
+  top: -7px;
 }
 
 #email-readonly {

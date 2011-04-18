@@ -7897,6 +7897,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Customize Sync Settings...
         </message>
       </if>
+      <message name="IDS_SYNC_CUSTOMIZE_LINK_LABEL" desc="The text to display on the link to customize the sync preferences.">
+        Customize
+      </message>
 
       <!-- SafeBrowsing -->
       <message name="IDS_SAFE_BROWSING_MALWARE_TITLE" desc="SafeBrowsing Malware HTML title">
@@ -8603,7 +8606,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Use my Google Account password
       </message>
       <message name="IDS_SYNC_PASSPHRASE_OPT_EXPLICIT" desc="Radio button label for using explicit passphrase.">
-        Choose my own sync passphrase
+        Choose my own passphrase
       </message>
       <message name="IDS_SYNC_PASSPHRASE_OPT_CANCEL" desc="Radio button label for not syncing encrypted types.">
         Do not sync my passwords
@@ -8612,7 +8615,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         You have chosen to encrypt data using your Google password; you can always change your mind later by changing your sync settings.
       </message>
       <message name="IDS_SYNC_PASSPHRASE_MSG_EXPLICIT" desc="Message when explicit passphrase is selected.">
-        Only someone with your passphrase can read your data. If you forget your passphrase, you will need to reset sync.
+        Only someone with your passphrase can read your encrypted data -- the passphrase is not sent to or stored by Google. If you forget your passphrase, you will need to reset sync.
+      </message>
+      <message name="IDS_SYNC_PASSPHRASE_MSG_EXPLICIT_PREFIX" desc="Message when explicit passphrase is selected.">
+        Only someone with your passphrase can read your encrypted data -- the passphrase is not sent to or stored by Google. If you forget your passphrase, you will need to
+      </message>
+      <message name="IDS_SYNC_PASSPHRASE_MSG_EXPLICIT_POSTFIX" desc="Postfix of the message show when explicit passphrase is selected.">
+        reset sync
       </message>
       <message name="IDS_SYNC_PASSPHRASE_MSG_CANCEL" desc="Message when not syncing passwords is selected.">
         You have chosen not to sync passwords; you can always change your mind later by changing your sync settings.
@@ -8693,6 +8702,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_ENCRYPTION_TAB_NAME" desc="The title of the Encryption tab in the customize sync dialog.">
         Encryption
       </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_CONFIRM_SYNC_PREFERENCES" desc="The title of the 'Confirm Sync Preferences' page of the customize sync dialog.">
+          Confirm sync preferences
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_CONFIRM_SYNC_PREFERENCES" desc="The title of the 'Confirm Sync Preferences' page of the customize sync dialog.">
+          Confirm Sync Preferences
+        </message>
+      </if>
+      <message name="IDS_SYNC_SYNC_EVERYTHING" desc="The text of the OK button of the 'Confirm Sync Preferences' page of the customize sync dialog.">
+        OK, sync everything
+      </message>
 
       <!-- Choose data types dialog strings -->
       <message name="IDS_CUSTOMIZE_SYNC_DESCRIPTION" desc="The first line of the Customize Sync dialog, explaining what this box does.">
@@ -8702,13 +8724,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Configure sync
       </message>
       <message name="IDS_SYNC_CHOOSE_DATATYPES_INSTRUCTIONS" desc="Text explaining the 'Choose Datatypes' dialog.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> syncs your data with your Google account securely. Keep everything synced or choose what data to sync from this computer.
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> securely syncs your data with your Google account. Keep everything synced or customize synced data types and encryption options.
       </message>
       <message name="IDS_SYNC_EVERYTHING" desc="A radio button for users who want to sync all data types.">
-        Keep everything synced
+        Sync everything
       </message>
       <message name="IDS_SYNC_CHOOSE_DATATYPES" desc="A radio button for users who want to select some datatypes to sync">
-        Choose what to sync:
+        Choose what to sync
       </message>
       <message name="IDS_SYNC_ZERO_DATA_TYPES_ERROR" desc="Error message if you try to sync, but uncheck all the data type choices.">
         You must select at least one data type to sync.
@@ -8742,6 +8764,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Encryption tab of the configure sync dialog -->
+      <message name="IDS_SYNC_PASSPHRASE_SECTION_TITLE" desc="Title of the section containing sync passphrase preferences.">
+        Encryption passphrase
+      </message>
       <message name="IDS_SYNC_ENCRYPTION_INSTRUCTIONS" desc="Instructions for the encryption settings tab.">
         <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> requires you to encrypt your data using either your Google password or your own passphrase.
       </message>
@@ -8769,10 +8794,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         The passphrase you entered can't be used because you already have data encrypted with a passphrase. Please enter your existing sync passphrase below.
       </message>
       <message name="IDS_SYNC_PASSPHRASE_LABEL" desc="Label for the passphrase field.">
-        Passphrase:
+        Passphrase
       </message>
       <message name="IDS_SYNC_CONFIRM_PASSPHRASE_LABEL" desc="Label for the confirm-passphrase field.">
-        Confirm passphrase:
+        Confirm passphrase
       </message>
       <message name="IDS_SYNC_EMPTY_PASSPHRASE_ERROR" desc="Error message when the passphrase is empty.">
         Empty passphrase is not allowed.

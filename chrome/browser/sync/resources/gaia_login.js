@@ -141,8 +141,8 @@ function load() {
     if (googleIsAtEndOfSentence == ltr) {
       // We're in ltr and in the translation the word 'Google' is AFTER the
       // word 'Account' OR we're in rtl and 'Google' is BEFORE 'Account'.
-      var logo_td = document.getElementById('gaia-logo');
-      logo_td.parentNode.appendChild(logo_td);
+      var logo_div = document.getElementById('gaia-logo');
+      logo_div.parentNode.appendChild(logo_div);
     }
     acct_text.textContent = translated_text.replace('Google','');
   }

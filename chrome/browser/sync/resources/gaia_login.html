@@ -7,9 +7,6 @@
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 <div>
   <div>
-    <div id="top-blurb">
-      <span i18n-content="introduction"></span>
-    </div>
     <div id="top-blurb-error">
       <span id="error-signing-in" i18n-content="errorsigningin"></span>
       <span id="error-custom"></span>
@@ -26,17 +23,19 @@
                     cellpadding="1" cellspacing="0">
                   <tr>
                     <td colspan="2" align="center">
-                      <table>
-                        <tr>
-                          <td id="gaia-logo" valign="top">
+                      <div>
+                        <div>
+                          <span class="gaia-le-lbl" i18n-content="signinprefix">
+                          </span>
+                        </div>
+                        <div>
+                          <span id="gaia-logo">
                             <img src="google_transparent.png" alt="Google">
-                          </td>
-                          <td valign="middle">
-                            <span id="gaia-account-text"
-                                i18n-content="signinsuffix"></span>
-                          </td>
-                        </tr>
-                      </table>
+                          </span>
+                          <span id="gaia-account-text"
+                              i18n-content="signinsuffix"></span>
+                        </div>
+                      </div>
                     </td>
                   </tr>
                   <tr>
