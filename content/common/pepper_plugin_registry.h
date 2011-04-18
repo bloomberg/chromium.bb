@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PEPPER_PLUGIN_REGISTRY_H_
-#define CHROME_COMMON_PEPPER_PLUGIN_REGISTRY_H_
+#ifndef CONTENT_COMMON_PEPPER_PLUGIN_REGISTRY_H_
+#define CONTENT_COMMON_PEPPER_PLUGIN_REGISTRY_H_
 #pragma once
 
 #include <list>
@@ -32,6 +32,9 @@ struct PepperPluginInfo {
   // True when this plugin should be run out of process. Defaults to false.
   bool is_out_of_process;
 
+  // Whether the plugin is enabled.  Defaults to true.
+  bool enabled;
+
   FilePath path;  // Internal plugins have "internal-[name]" as path.
   std::string name;
   std::string description;
@@ -41,14 +44,6 @@ struct PepperPluginInfo {
   // When is_internal is set, this contains the function pointers to the
   // entry points for the internal plugins.
   webkit::ppapi::PluginModule::EntryPoints internal_entry_points;
-};
-
-struct NaClModuleInfo {
-  NaClModuleInfo();
-  ~NaClModuleInfo();
-
-  GURL url;
-  std::string mime_type;
 };
 
 // This class holds references to all of the known pepper plugin modules.
@@ -61,8 +56,6 @@ class PepperPluginRegistry
       public pp::proxy::Dispatcher::Delegate {
  public:
   ~PepperPluginRegistry();
-
-  static const char* kPDFPluginName;
 
   static PepperPluginRegistry* GetInstance();
 
@@ -100,30 +93,13 @@ class PepperPluginRegistry
   // ModuleLifetime implementation.
   virtual void PluginModuleDead(webkit::ppapi::PluginModule* dead_module);
 
-  // We implement some Pepper plug-ins using NaCl to take advantage of NaCl's
-  // strong sandbox. Typically, these NaCl modules are stored in extensions
-  // and registered here. Not all NaCl modules need to register for a MIME
-  // type, just the ones that are responsible for rendering a particular MIME
-  // type, like application/pdf. Note: We only register NaCl modules in the
-  // browser process.
-  void RegisterNaClModule(const GURL& url, const std::string& mime_type);
-  void UnregisterNaClModule(const GURL& url);
-
-  // Call UpdatePluginListWithNaClModules() after registering or unregistering
-  // a NaCl module to see those changes reflected in the PluginList.
-  void UpdatePluginListWithNaClModules();
-
  private:
-  typedef std::list<NaClModuleInfo> NaClModuleInfoList;
-
   PepperPluginRegistry();
 
   // Dispatcher::Delegate implementation.
   virtual MessageLoop* GetIPCMessageLoop();
   virtual base::WaitableEvent* GetShutdownEvent();
   virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet();
-
-  NaClModuleInfoList::iterator FindNaClModule(const GURL& url);
 
   // All known pepper plugins.
   std::vector<PepperPluginInfo> plugin_list_;
@@ -143,9 +119,7 @@ class PepperPluginRegistry
   typedef std::map<FilePath, webkit::ppapi::PluginModule*> NonOwningModuleMap;
   NonOwningModuleMap live_modules_;
 
-  NaClModuleInfoList nacl_module_list_;
-
   DISALLOW_COPY_AND_ASSIGN(PepperPluginRegistry);
 };
 
-#endif  // CHROME_COMMON_PEPPER_PLUGIN_REGISTRY_H_
+#endif  // CONTENT_COMMON_PEPPER_PLUGIN_REGISTRY_H_

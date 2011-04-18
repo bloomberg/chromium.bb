@@ -202,8 +202,6 @@
         'common/libxml_utils.cc',
         'common/libxml_utils.h',
         'common/native_window_notification_source.h',
-        'common/pepper_plugin_registry.cc',
-        'common/pepper_plugin_registry.h',
         'common/persistent_pref_store.h',
         'common/pref_store.cc',
         'common/pref_store.h',

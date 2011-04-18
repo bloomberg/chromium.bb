@@ -11,8 +11,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/jstemplate_builder.h"
-#include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -105,7 +105,7 @@ class PDFEnableAdobeReaderConfirmInfoBarDelegate
     UserMetrics::RecordAction(
         UserMetricsAction("PDF_EnableReaderInfoBarOK"));
     webkit::npapi::PluginList::Singleton()->EnableGroup(
-        false, ASCIIToUTF16(PepperPluginRegistry::kPDFPluginName));
+        false, ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName));
     webkit::npapi::PluginList::Singleton()->EnableGroup(
         true, ASCIIToUTF16(webkit::npapi::PluginGroup::kAdobeReaderGroupName));
     return true;

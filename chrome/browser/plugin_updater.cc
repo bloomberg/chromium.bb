@@ -15,8 +15,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
@@ -141,7 +141,8 @@ void PluginUpdater::UpdatePluginGroupsStateFromPrefs(Profile* profile) {
 
   bool force_enable_internal_pdf = false;
   bool internal_pdf_enabled = false;
-  string16 pdf_group_name = ASCIIToUTF16(PepperPluginRegistry::kPDFPluginName);
+  string16 pdf_group_name =
+      ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName);
   FilePath pdf_path;
   PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
   FilePath::StringType pdf_path_str = pdf_path.value();

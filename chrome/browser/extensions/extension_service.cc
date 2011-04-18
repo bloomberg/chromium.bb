@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
+#include "base/path_service.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
@@ -53,6 +54,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/webui/shown_sections_handler.h"
 #include "chrome/common/child_process_logging.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -60,7 +62,6 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
@@ -69,6 +70,7 @@
 #include "content/common/json_value_serializer.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
+#include "content/common/pepper_plugin_registry.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/registry_controlled_domain.h"
 #include "webkit/database/database_tracker.h"
@@ -137,6 +139,12 @@ ExtensionService::ExtensionRuntimeData::ExtensionRuntimeData()
 }
 
 ExtensionService::ExtensionRuntimeData::~ExtensionRuntimeData() {
+}
+
+ExtensionService::NaClModuleInfo::NaClModuleInfo() {
+}
+
+ExtensionService::NaClModuleInfo::~NaClModuleInfo() {
 }
 
 // ExtensionService.
@@ -1061,13 +1069,12 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   bool nacl_modules_changed = false;
   for (size_t i = 0; i < extension->nacl_modules().size(); ++i) {
     const Extension::NaClModuleInfo& module = extension->nacl_modules()[i];
-    PepperPluginRegistry::GetInstance()->RegisterNaClModule(module.url,
-                                                            module.mime_type);
+    RegisterNaClModule(module.url, module.mime_type);
     nacl_modules_changed = true;
   }
 
   if (nacl_modules_changed)
-    PepperPluginRegistry::GetInstance()->UpdatePluginListWithNaClModules();
+    UpdatePluginListWithNaClModules();
 
   if (plugins_changed || nacl_modules_changed)
     PluginService::GetInstance()->PurgePluginListCache(false);
@@ -1113,12 +1120,12 @@ void ExtensionService::NotifyExtensionUnloaded(
   bool nacl_modules_changed = false;
   for (size_t i = 0; i < extension->nacl_modules().size(); ++i) {
     const Extension::NaClModuleInfo& module = extension->nacl_modules()[i];
-    PepperPluginRegistry::GetInstance()->UnregisterNaClModule(module.url);
+    UnregisterNaClModule(module.url);
     nacl_modules_changed = true;
   }
 
   if (nacl_modules_changed)
-    PepperPluginRegistry::GetInstance()->UpdatePluginListWithNaClModules();
+    UpdatePluginListWithNaClModules();
 
   if (plugins_changed || nacl_modules_changed)
     PluginService::GetInstance()->PurgePluginListCache(false);
@@ -1983,4 +1990,55 @@ void ExtensionService::SetBeingUpgraded(const Extension* extension,
 
 PropertyBag* ExtensionService::GetPropertyBag(const Extension* extension) {
   return &extension_runtime_data_[extension->id()].property_bag;
+}
+
+void ExtensionService::RegisterNaClModule(const GURL& url,
+                                          const std::string& mime_type) {
+  NaClModuleInfo info;
+  info.url = url;
+  info.mime_type = mime_type;
+
+  DCHECK(FindNaClModule(url) == nacl_module_list_.end());
+  nacl_module_list_.push_front(info);
+}
+
+void ExtensionService::UnregisterNaClModule(const GURL& url) {
+  NaClModuleInfoList::iterator iter = FindNaClModule(url);
+  DCHECK(iter != nacl_module_list_.end());
+  nacl_module_list_.erase(iter);
+}
+
+void ExtensionService::UpdatePluginListWithNaClModules() {
+  FilePath path;
+  PathService::Get(chrome::FILE_NACL_PLUGIN, &path);
+
+  webkit::npapi::PluginList::Singleton()->UnregisterInternalPlugin(path);
+
+  const PepperPluginInfo* pepper_info =
+      PepperPluginRegistry::GetInstance()->GetInfoForPlugin(path);
+  webkit::npapi::WebPluginInfo info = pepper_info->ToWebPluginInfo();
+
+  DCHECK(nacl_module_list_.size() <= 1);
+  for (NaClModuleInfoList::iterator iter = nacl_module_list_.begin();
+       iter != nacl_module_list_.end(); ++iter) {
+    webkit::npapi::WebPluginMimeType mime_type_info;
+    mime_type_info.mime_type = iter->mime_type;
+    mime_type_info.additional_param_names.push_back(UTF8ToUTF16("nacl"));
+    mime_type_info.additional_param_values.push_back(
+        UTF8ToUTF16(iter->url.spec()));
+    info.mime_types.push_back(mime_type_info);
+  }
+
+  webkit::npapi::PluginList::Singleton()->RefreshPlugins();
+  webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(info);
+}
+
+ExtensionService::NaClModuleInfoList::iterator
+    ExtensionService::FindNaClModule(const GURL& url) {
+  for (NaClModuleInfoList::iterator iter = nacl_module_list_.begin();
+       iter != nacl_module_list_.end(); ++iter) {
+    if (iter->url == url)
+      return iter;
+  }
+  return nacl_module_list_.end();
 }

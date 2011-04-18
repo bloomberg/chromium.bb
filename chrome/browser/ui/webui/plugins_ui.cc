@@ -20,9 +20,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
-#include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
@@ -253,7 +253,8 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
       // See http://crbug.com/50105 for background.
       string16 adobereader = ASCIIToUTF16(
           webkit::npapi::PluginGroup::kAdobeReaderGroupName);
-      string16 internalpdf = ASCIIToUTF16(PepperPluginRegistry::kPDFPluginName);
+      string16 internalpdf =
+          ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName);
       if (group_name == adobereader) {
         plugin_updater->EnablePluginGroup(false, internalpdf);
       } else if (group_name == internalpdf) {

@@ -473,6 +473,15 @@ class ExtensionService
   };
   typedef std::map<std::string, ExtensionRuntimeData> ExtensionRuntimeDataMap;
 
+  struct NaClModuleInfo {
+    NaClModuleInfo();
+    ~NaClModuleInfo();
+
+    GURL url;
+    std::string mime_type;
+  };
+  typedef std::list<NaClModuleInfo> NaClModuleInfoList;
+
   virtual ~ExtensionService();
 
   // Clear all persistent data that may have been stored by the extension.
@@ -501,6 +510,21 @@ class ExtensionService
 
   // Helper method. Loads extension from prefs.
   void LoadInstalledExtension(const ExtensionInfo& info, bool write_to_prefs);
+
+  // We implement some Pepper plug-ins using NaCl to take advantage of NaCl's
+  // strong sandbox. Typically, these NaCl modules are stored in extensions
+  // and registered here. Not all NaCl modules need to register for a MIME
+  // type, just the ones that are responsible for rendering a particular MIME
+  // type, like application/pdf. Note: We only register NaCl modules in the
+  // browser process.
+  void RegisterNaClModule(const GURL& url, const std::string& mime_type);
+  void UnregisterNaClModule(const GURL& url);
+
+  // Call UpdatePluginListWithNaClModules() after registering or unregistering
+  // a NaCl module to see those changes reflected in the PluginList.
+  void UpdatePluginListWithNaClModules();
+
+  NaClModuleInfoList::iterator FindNaClModule(const GURL& url);
 
   // The profile this ExtensionService is part of.
   Profile* profile_;
@@ -602,6 +626,8 @@ class ExtensionService
   // extension URL is found.  Used in CheckForExternalUpdates() to see
   // if an update check is needed to install pending extensions.
   bool external_extension_url_added_;
+
+  NaClModuleInfoList nacl_module_list_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            InstallAppsWithUnlimtedStorage);

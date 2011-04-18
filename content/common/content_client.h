@@ -6,10 +6,13 @@
 #define CONTENT_COMMON_CONTENT_CLIENT_H_
 #pragma once
 
+#include <vector>
+
 #include "base/basictypes.h"
 
 class GURL;
 struct GPUInfo;
+struct PepperPluginInfo;
 
 namespace content {
 
@@ -36,12 +39,14 @@ class ContentClient {
   ContentRendererClient* renderer() { return renderer_; }
   void set_renderer(ContentRendererClient* r) { renderer_ = r; }
 
-  // Sets the URL that is logged if the child process crashes. Use GURL() to
-  // clear the URL.
+  // Sets the currently active URL.  Use GURL() to clear the URL.
   virtual void SetActiveURL(const GURL& url) {}
 
   // Sets the data on the current gpu.
   virtual void SetGpuInfo(const GPUInfo& gpu_info) {}
+
+  // Gives the embedder a chance to register its own pepper plugins.
+  virtual void AddPepperPlugins(std::vector<PepperPluginInfo>* plugins) {}
 
  private:
   // The embedder API for participating in browser logic.
