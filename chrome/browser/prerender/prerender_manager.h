@@ -16,7 +16,6 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/prerender/prerender_contents.h"
-#include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
 class Profile;
@@ -39,9 +38,7 @@ namespace prerender {
 
 // PrerenderManager is responsible for initiating and keeping prerendered
 // views of webpages.
-class PrerenderManager
-    : public base::RefCountedThreadSafe<PrerenderManager,
-                                        BrowserThread::DeleteOnUIThread> {
+class PrerenderManager : public base::RefCountedThreadSafe<PrerenderManager> {
  public:
   // PrerenderManagerMode is used in a UMA_HISTOGRAM, so please do not
   // add in the middle.
@@ -55,10 +52,6 @@ class PrerenderManager
 
   // Owned by a Profile object for the lifetime of the profile.
   explicit PrerenderManager(Profile* profile);
-
-  // Destructor should no be called explicitly, but needs to be public
-  // for DeleteOnUIThread.
-  virtual ~PrerenderManager();
 
   // Preloads the URL supplied.  alias_urls indicates URLs that redirect
   // to the same URL to be preloaded. Returns true if the URL was added,
@@ -139,6 +132,8 @@ class PrerenderManager
 
  protected:
   struct PendingContentsData;
+
+  virtual ~PrerenderManager();
 
   void SetPrerenderContentsFactory(
       PrerenderContents::Factory* prerender_contents_factory);
