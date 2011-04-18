@@ -511,6 +511,57 @@ or verify this branch is set up to track another (via the --track argument to
       self.SetPatchset(0)
     self.has_issue = False
 
+  def RunHook(self, committing, upstream_branch, tbr, may_prompt, verbose):
+    """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
+    root = RunCommand(['git', 'rev-parse', '--show-cdup']).strip()
+    absroot = os.path.abspath(root or '.')
+
+    # We use the sha1 of HEAD as a name of this change.
+    name = RunCommand(['git', 'rev-parse', 'HEAD']).strip()
+    files = scm.GIT.CaptureStatus([absroot], upstream_branch)
+
+    issue = ConvertToInteger(self.GetIssue())
+    patchset = ConvertToInteger(self.GetPatchset())
+    if issue:
+      description = self.GetDescription()
+    else:
+      # If the change was never uploaded, use the log messages of all commits
+      # up to the branch point, as git cl upload will prefill the description
+      # with these log messages.
+      description = RunCommand(['git', 'log', '--pretty=format:%s%n%n%b',
+                                '%s...' % (upstream_branch)]).strip()
+    change = presubmit_support.GitChange(
+        name,
+        description,
+        absroot,
+        files,
+        issue,
+        patchset,
+        None)
+
+    # Apply watchlists on upload.
+    if not committing:
+      watchlist = watchlists.Watchlists(change.RepositoryRoot())
+      files = [f.LocalPath() for f in change.AffectedFiles()]
+      self.SetWatchers(watchlist.GetWatchersForPaths(files))
+
+    try:
+      output = presubmit_support.DoPresubmitChecks(change, committing,
+          verbose=verbose, output_stream=sys.stdout, input_stream=sys.stdin,
+          default_presubmit=None, may_prompt=may_prompt, tbr=tbr,
+          rietveld=self.RpcServer())
+    except presubmit_support.PresubmitFailure, e:
+      DieWithError(
+          ('%s\nMaybe your depot_tools is out of date?\n'
+           'If all fails, contact maruel@') % e)
+
+    # TODO(dpranke): We should propagate the error out instead of calling
+    # exit().
+    if not output.should_continue():
+      sys.exit(1)
+
+    return output
+
   def CloseIssue(self):
     rpc_server = self.RpcServer()
     # Newer versions of Rietveld require us to pass an XSRF token to POST, so
@@ -812,63 +863,6 @@ def ConvertToInteger(inputval):
     return None
 
 
-def RunHook(committing, upstream_branch, rietveld_server, tbr, may_prompt,
-    verbose):
-  """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
-  root = RunCommand(['git', 'rev-parse', '--show-cdup']).strip()
-  if not root:
-    root = '.'
-  absroot = os.path.abspath(root)
-  if not root:
-    raise Exception('Could not get root directory.')
-
-  # We use the sha1 of HEAD as a name of this change.
-  name = RunCommand(['git', 'rev-parse', 'HEAD']).strip()
-  files = scm.GIT.CaptureStatus([root], upstream_branch)
-
-  cl = Changelist()
-  issue = ConvertToInteger(cl.GetIssue())
-  patchset = ConvertToInteger(cl.GetPatchset())
-  if issue:
-    description = cl.GetDescription()
-  else:
-    # If the change was never uploaded, use the log messages of all commits
-    # up to the branch point, as git cl upload will prefill the description
-    # with these log messages.
-    description = RunCommand(['git', 'log', '--pretty=format:%s%n%n%b',
-                              '%s...' % (upstream_branch)]).strip()
-  change = presubmit_support.GitChange(
-      name,
-      description,
-      absroot,
-      files,
-      issue,
-      patchset,
-      None)
-
-  # Apply watchlists on upload.
-  if not committing:
-    watchlist = watchlists.Watchlists(change.RepositoryRoot())
-    files = [f.LocalPath() for f in change.AffectedFiles()]
-    cl.SetWatchers(watchlist.GetWatchersForPaths(files))
-
-  try:
-    output = presubmit_support.DoPresubmitChecks(change, committing,
-        verbose=verbose, output_stream=sys.stdout, input_stream=sys.stdin,
-        default_presubmit=None, may_prompt=may_prompt, tbr=tbr,
-        rietveld=cl.RpcServer())
-  except presubmit_support.PresubmitFailure, e:
-    DieWithError(
-        ('%s\nMaybe your depot_tools is out of date?\n'
-         'If all fails, contact maruel@') % e)
-
-  # TODO(dpranke): We should propagate the error out instead of calling exit().
-  if not output.should_continue():
-    sys.exit(1)
-
-  return output
-
-
 def CMDpresubmit(parser, args):
   """run presubmit tests on the current changelist"""
   parser.add_option('--upload', action='store_true',
@@ -889,9 +883,8 @@ def CMDpresubmit(parser, args):
     # Default to diffing against the "upstream" branch.
     base_branch = cl.GetUpstreamBranch()
 
-  RunHook(committing=not options.upload, upstream_branch=base_branch,
-          rietveld_server=cl.GetRietveldServer(), tbr=False,
-          may_prompt=False, verbose=options.verbose)
+  cl.RunHook(committing=not options.upload, upstream_branch=base_branch,
+             tbr=False, may_prompt=False, verbose=options.verbose)
   return 0
 
 
@@ -933,9 +926,9 @@ def CMDupload(parser, args):
     args = [base_branch + "..."]
 
   if not options.bypass_hooks and not options.force:
-    hook_results = RunHook(committing=False, upstream_branch=base_branch,
-                           rietveld_server=cl.GetRietveldServer(), tbr=False,
-                           may_prompt=True, verbose=options.verbose)
+    hook_results = cl.RunHook(committing=False, upstream_branch=base_branch,
+                              tbr=False, may_prompt=True,
+                              verbose=options.verbose)
     if not options.reviewers and hook_results.reviewers:
       options.reviewers = hook_results.reviewers
 
@@ -1086,9 +1079,8 @@ def SendUpstream(parser, args, cmd):
       return 1
 
   if not options.bypass_hooks and not options.force:
-    RunHook(committing=True, upstream_branch=base_branch,
-            rietveld_server=cl.GetRietveldServer(), tbr=options.tbr,
-            may_prompt=True, verbose=options.verbose)
+    cl.RunHook(committing=True, upstream_branch=base_branch,
+               tbr=options.tbr, may_prompt=True, verbose=options.verbose)
 
     if cmd == 'dcommit':
       # Check the tree status if the tree status URL is set.
