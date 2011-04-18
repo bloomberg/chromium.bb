@@ -1069,8 +1069,6 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
     (*keyboard_overlay_map)["m17n:th:kesmanee"] = "th";
     (*keyboard_overlay_map)["m17n:th:pattachote"] = "th";
     (*keyboard_overlay_map)["m17n:th:tis820"] = "th";
-    // TODO(yusukes): Remove chewing.
-    (*keyboard_overlay_map)["chewing"] = "zh_TW";
     (*keyboard_overlay_map)["mozc-chewing"] = "zh_TW";
     (*keyboard_overlay_map)["m17n:zh:cangjie"] = "zh_TW";
     (*keyboard_overlay_map)["m17n:zh:quick"] = "zh_TW";

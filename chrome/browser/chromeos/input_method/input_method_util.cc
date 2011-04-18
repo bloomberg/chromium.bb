@@ -140,14 +140,6 @@ const struct EnglishToResouceId {
   { "Simplfied/Traditional Chinese",
     IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_S_T_CHINESE },
 
-  // For ibus-chewing: third_party/ibus-chewing/files/src/IBusChewingEngine.gob.
-  // TODO(yusukes): Remove ibus-chewing support. We should also remove IDs from
-  //                chrome/app/generated_resources.grd.
-  { "Chi", IDS_STATUSBAR_IME_CHINESE_CHEWING_SWITCH_CHINESE_TO_ENGLISH },
-  { "Eng", IDS_STATUSBAR_IME_CHINESE_CHEWING_SWITCH_ENGLISH_TO_CHINESE },
-  { "Full", IDS_STATUSBAR_IME_CHINESE_CHEWING_SWITCH_FULL_TO_HALF },
-  { "Half", IDS_STATUSBAR_IME_CHINESE_CHEWING_SWITCH_HALF_TO_FULL },
-
   // For ibus-mozc-chewing.
   { "English",
     IDS_STATUSBAR_IME_CHINESE_MOZC_CHEWING_ENGLISH_MODE },
@@ -178,9 +170,6 @@ const struct EnglishToResouceId {
     IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_VIQR_INPUT_METHOD },
   { "vni (m17n)",
     IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_VNI_INPUT_METHOD },
-  { "Bopomofo", IDS_OPTIONS_SETTINGS_LANGUAGES_BOPOMOFO_INPUT_METHOD },
-  // TODO(yusukes): Remove Chewing.
-  { "Chewing", IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_INPUT_METHOD },
   { "Mozc Chewing (Chewing)",
     IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_INPUT_METHOD },
   { "Pinyin", IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_INPUT_METHOD },
@@ -461,11 +450,9 @@ std::string GetLanguageCodeFromDescriptor(
   if (descriptor.language_code == "zh") {
     if (descriptor.id == "pinyin") {
       return "zh-CN";
-    } else if (descriptor.id == "chewing" ||
-               descriptor.id == "mozc-chewing" ||
+    } else if (descriptor.id == "mozc-chewing" ||
                descriptor.id == "m17n:zh:cangjie" ||
                descriptor.id == "m17n:zh:quick") {
-      // TODO(yusukes): Remove chewing.
       return "zh-TW";
     }
   }

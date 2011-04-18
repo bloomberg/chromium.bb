@@ -10927,10 +10927,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The label for the Vietnamese input method">
         Vietnamese input method (VNI)
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_BOPOMOFO_INPUT_METHOD"
-               desc="The label for the Bopomofo (Zhuyin) traditional Chinese input method">
-        Bopomofo input method
-      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_INPUT_METHOD"
                desc="The label for the Chewing traditional Chinese input method">
         Chewing input method
@@ -11712,18 +11708,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_S_T_CHINESE" desc="In the language menu button, this shows the input mode.">
         Toggle Simplified/Traditional Chinese mode
-      </message>
-      <message name="IDS_STATUSBAR_IME_CHINESE_CHEWING_SWITCH_CHINESE_TO_ENGLISH" desc="In the language menu button, this shows the input mode.">
-        Switch to English mode
-      </message>
-      <message name="IDS_STATUSBAR_IME_CHINESE_CHEWING_SWITCH_ENGLISH_TO_CHINESE" desc="In the language menu button, this shows the input mode.">
-        Switch to Chinese mode
-      </message>
-      <message name="IDS_STATUSBAR_IME_CHINESE_CHEWING_SWITCH_FULL_TO_HALF" desc="In the language menu button, this shows the input mode.">
-        Switch to half width mode
-      </message>
-      <message name="IDS_STATUSBAR_IME_CHINESE_CHEWING_SWITCH_HALF_TO_FULL" desc="In the language menu button, this shows the input mode.">
-        Switch to full width mode
       </message>
 
       <message name="IDS_STATUSBAR_IME_CHINESE_MOZC_CHEWING_ENGLISH_MODE" desc="In the language menu button, this shows the input mode.">

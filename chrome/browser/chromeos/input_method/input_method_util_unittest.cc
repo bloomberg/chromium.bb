@@ -76,14 +76,14 @@ TEST_F(InputMethodUtilTest, NormalizeLanguageCode) {
 
 TEST_F(InputMethodUtilTest, IsKeyboardLayout) {
   EXPECT_TRUE(IsKeyboardLayout("xkb:us::eng"));
-  EXPECT_FALSE(IsKeyboardLayout("anthy"));
+  EXPECT_FALSE(IsKeyboardLayout("mozc"));
 }
 
 TEST_F(InputMethodUtilTest, GetLanguageCodeFromDescriptor) {
   EXPECT_EQ("ja", GetLanguageCodeFromDescriptor(
-      InputMethodDescriptor("anthy", "Anthy", "us", "ja")));
+      InputMethodDescriptor("mozc", "Mozc", "us", "ja")));
   EXPECT_EQ("zh-TW", GetLanguageCodeFromDescriptor(
-      InputMethodDescriptor("chewing", "Chewing", "us", "zh")));
+      InputMethodDescriptor("mozc-chewing", "Chewing", "us", "zh")));
   EXPECT_EQ("zh-TW", GetLanguageCodeFromDescriptor(
       InputMethodDescriptor("m17n:zh:cangjie", "Cangjie", "us", "zh")));
   EXPECT_EQ("zh-TW", GetLanguageCodeFromDescriptor(
