@@ -56,7 +56,6 @@ class CapturerMac : public Capturer {
   CGLContextObj cgl_context_;
   static const int kNumBuffers = 2;
   scoped_array<uint8> buffers_[kNumBuffers];
-  scoped_array<uint8> flip_buffer_;
 
   // A thread-safe list of invalid rectangles, and the size of the most
   // recently captured screen.
@@ -127,7 +126,6 @@ void CapturerMac::ScreenConfigurationChanged() {
   for (int i = 0; i < kNumBuffers; ++i) {
     buffers_[i].reset(new uint8[buffer_size]);
   }
-  flip_buffer_.reset(new uint8[buffer_size]);
   CGLPixelFormatAttribute attributes[] = {
     kCGLPFAFullScreen,
     kCGLPFADisplayMask,
@@ -181,23 +179,14 @@ void CapturerMac::CaptureInvalidRects(CaptureCompletedCallback* callback) {
   glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
 
   // Read a block of pixels from the frame buffer.
-  uint8* flip_buffer = flip_buffer_.get();
   uint8* current_buffer = buffers_[current_buffer_].get();
-  glReadPixels(0, 0, width_, height_, GL_BGRA, GL_UNSIGNED_BYTE, flip_buffer);
+  glReadPixels(0, 0, width_, height_, GL_BGRA, GL_UNSIGNED_BYTE,
+               current_buffer);
   glPopClientAttrib();
 
-  // OpenGL reads with a vertical flip, and sadly there is no optimized
-  // way to get it flipped automatically.
-  for (int y = 0; y < height_; ++y) {
-    uint8* flip_row = &(flip_buffer[y * bytes_per_row_]);
-    uint8* current_row =
-        &(current_buffer[(height_ - (y + 1)) * bytes_per_row_]);
-    memcpy(current_row, flip_row, bytes_per_row_);
-  }
-
   DataPlanes planes;
-  planes.data[0] = buffers_[current_buffer_].get();
-  planes.strides[0] = bytes_per_row_;
+  planes.data[0] = buffers_[current_buffer_].get() + height_ * bytes_per_row_;
+  planes.strides[0] = -bytes_per_row_;
 
   scoped_refptr<CaptureData> data(
       new CaptureData(planes, gfx::Size(width_, height_), pixel_format()));
