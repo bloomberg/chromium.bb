@@ -12,6 +12,7 @@
       'debug_stub.h',
       'debug_stub.cc',
       'event_common.cc',
+      'nacl_debug.cc',
       'platform_common.cc',
       'transport_common.cc',
     ],
@@ -40,6 +41,20 @@
       'target_base': 'none',
     },
     'target_conditions': [
+      ['OS=="linux" or OS=="mac"', {
+        'cflags': [
+          '-fexceptions',
+        ],
+        'cflags_cc' : [
+          '-frtti',
+        ]
+      }],
+      ['OS=="mac"', {
+        'xcode_settings': {
+          'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',      # -fexceptions
+          'GCC_ENABLE_CPP_RTTI': 'YES',            # -frtti
+        }
+      }],
       ['OS=="linux" or OS=="mac"', {
         'cflags': [
           '-Wno-long-long',

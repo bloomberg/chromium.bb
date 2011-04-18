@@ -23,8 +23,9 @@
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/debug_stub/debug_stub.h"
+#include "native_client/src/trusted/debug_stub/nacl_debug.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
-#include "native_client/src/trusted/service_runtime/nacl_debug.h"
+#include "native_client/src/trusted/service_runtime/nacl_debug_init.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 /* To enable debuggging */

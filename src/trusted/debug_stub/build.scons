@@ -35,3 +35,10 @@ else:
 
 
 env.DualLibrary('debug_stub', debug_sources)
+
+# nacl_debug.cc currently cannot be put in the 'debug_stub' library
+# because that creates a circular dependency between 'debug_stub' and
+# 'gdb_rsp', which fails when linking sel_ldr because Scons does not
+# use "-Wl,--start-group" for linking.  We work around this by putting
+# nacl_debug.cc in a separate library.
+env.DualLibrary('debug_stub_init', ['nacl_debug.cc'])

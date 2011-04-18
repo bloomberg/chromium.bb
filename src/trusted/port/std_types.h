@@ -7,7 +7,7 @@
 #ifndef NATIVE_CLIENT_PORT_STD_TYPES_H_
 #define NATIVE_CLIENT_PORT_STD_TYPES_H_
 
-#ifdef WIN32
+#if NACL_WINDOWS
 
 // Disable warning for Windows "safe" vsprintf_s, strcpy_s, etc...
 // since we use the same version for Linux/Mac.

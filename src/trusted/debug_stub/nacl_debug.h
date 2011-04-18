@@ -21,8 +21,8 @@
  * the main thread.
  */
 
-#ifndef NATIVE_CLIENT_SERVICE_RUNTIME_NACL_DEBUG_H_
-#define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_DEBUG_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_DEBUG_STUB_NACL_DEBUG_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_DEBUG_STUB_NACL_DEBUG_H_
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
@@ -106,10 +106,6 @@ int NaClDebugStart(void) NO_THROW;
  * message) of the App exit code.
  */
 void NaClDebugStop(int exitCode) NO_THROW;
-
-int NaClDebugInit(struct NaClApp *nap,
-                  int argc, char const *const argv[],
-                  int envc, char const *const envv[]);
 
 
 EXTERN_C_END

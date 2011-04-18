@@ -14,7 +14,7 @@ env.Append(CPPPATH=['${TARGET_ROOT}'])
 # this is needed for including gdb_utils files
 env.Append(CPPPATH=['${SOURCE_ROOT}/gdb_utils/src'])
 
-DEBUG_LIBS = ['gdb_rsp','debug_stub']
+DEBUG_LIBS = ['debug_stub_init', 'gdb_rsp', 'debug_stub']
 if env.Bit('windows'):
   env.Append(CPPDEFINES=['WIN32'])
   if env.Bit('target_x86_64'):
@@ -74,7 +74,6 @@ ldr_inputs = [
     'nacl_app_thread.c',
     'nacl_bottom_half.c',
     'nacl_closure.c',
-    'nacl_debug.cc',
     'nacl_desc_effector_ldr.c',
     'nacl_globals.c',
     'nacl_memory_object.c',
@@ -291,7 +290,7 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
                                      'gio_wrapped_desc',
                                      'platform',
                                      'gio',
-                                     ] + DEBUG_LIBS)
+                                     ])
   env.Requires(SEL_LDR_NODE, crt)
 
 env.EnsureRequiredBuildWarnings()
@@ -427,7 +426,7 @@ env_cleanser_test_exe = env.ComponentProgram('env_cleanser_test',
                                              ['env_cleanser_test.c'],
                                              EXTRA_LIBS=['env_cleanser',
                                                          'gio_wrapped_desc',
-                                                         ] + DEBUG_LIBS)
+                                                         ])
 node = env.CommandTest(
     'env_cleanser_test.out',
     command=[env_cleanser_test_exe])
@@ -444,7 +443,7 @@ if (not env.Bit('coverage_enabled') and
                                                      'gio_wrapped_desc',
                                                      'platform',
                                                      'gio',
-                                                     ] + DEBUG_LIBS)
+                                                     ])
   node = env.CommandTest('nacl_signal_unittest.out',
                          command=[nacl_signal_exe],
                          exit_status='trusted_sigsegv_or_equivalent')
@@ -459,7 +458,7 @@ if env.Bit('posix'):
                                                'gio_wrapped_desc',
                                                'platform',
                                                'gio',
-                                               ] + DEBUG_LIBS)
+                                               ])
   node = env.CommandTest('nacl_signal_frame_test.out',
                          command=[test_prog],
                          exit_status='trusted_segfault')
@@ -472,7 +471,7 @@ check_test_exe = env.ComponentProgram('nacl_check_test',
                                                   'gio_wrapped_desc',
                                                   'platform',
                                                   'gio',
-                                                  ] + DEBUG_LIBS)
+                                                  ])
 node = env.CommandTest(
     'check_test.out',
     command=[check_test_exe, '-C'])
