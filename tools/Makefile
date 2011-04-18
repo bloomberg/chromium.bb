@@ -628,17 +628,14 @@ NCVAL_STUBOUT=$(abspath $(BUILD_EXTRA_SDK)/opt-$(PLATFORM)-x86-$(LIB_BITS)/stagi
 stubout:
 	cd .. && ./$(SCONS) --mode=opt-$(PLATFORM) platform=x86-$(LIB_BITS) \
 	    $(SCONS_DESTINATIONS_NOLIB) ncval_stubout
-	set -e; find $(ARCH_DEST)/lib/ -type f -name '*.so*' \
-	  ! -name $$'*[\001-\037\177]*' | \
-	  while IFS="" read -r -d $$'\n' library; do \
-	    $(WINPATH) "$$library"; \
-	  done | \
-	  while IFS="" read -r -d $$'\n' library; do \
-	    if [ "$$(head -c 4 "$$library" | tail -c 3)" = 'ELF' ] ; then \
-	      echo $(NCVAL_STUBOUT) "$$library" -o "$$library"; \
-	      $(NCVAL_STUBOUT) "$$library" -o "$$library"; \
-	    fi \
-	  done
+	set -e; find $(ARCH_DEST)/lib/ -type f -name '*.so*' -print0 | \
+	    while IFS="" read -r -d "" library; do \
+	        winlibpath="$$($(WINPATH) "$$library")"; \
+	        if [ "$$(head -c 4 "$$library" | tail -c 3)" = 'ELF' ] ; then \
+	            echo "$(NCVAL_STUBOUT) $$winlibpath -o $$winlibpath"; \
+	            $(NCVAL_STUBOUT) "$$winlibpath" -o "$$winlibpath"; \
+	        fi \
+	    done
 
 
 ##################################################################
