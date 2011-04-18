@@ -35,7 +35,9 @@ function RPCWrapper() {
   function handleRPCFailure(name, message) {
     // This isn't treated as a testing error - the test can be run without a
     // web server that understands RPC.
-    this_.logLocal('RPC failure for ' + name + ': ' + message, 'red');
+    this_.logLocal('RPC failure for ' + name + ': ' + message + ' - If you ' +
+                   'are running this test manually, this is not a problem.',
+                   'gray');
     this_.disableRPC();
   }
 
@@ -43,8 +45,10 @@ function RPCWrapper() {
     if (req.status == 200) {
       // URL-encoded RPC always responds 'OK'.  If we get anything else, worry.
       if (req.responseText != 'OK') {
-        this_.logLocalError('Unexpected RPC response to ' + name +
-                            ': \'' + req.responseText + '\'');
+        this_.logLocal('Unexpected RPC response to ' + name + ': \'' +
+                       req.responseText + '\' - If you are running this test ' +
+                       'manually, this is not a problem.', 'gray');
+        this_.disableRPC();
       }
     } else {
       handleRPCFailure(name, req.status.toString());
@@ -93,7 +97,7 @@ function RPCWrapper() {
   this.disableRPC = function() {
     if (this.rpc_available) {
       this.rpc_available = false;
-      this.logLocal('Disabling RPC', 'red');
+      this.logLocal('Disabling RPC', 'gray');
     }
   }
 
