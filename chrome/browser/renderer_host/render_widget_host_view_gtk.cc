@@ -513,7 +513,7 @@ RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
       destroy_handler_id_(0),
       dragged_at_horizontal_edge_(0),
       dragged_at_vertical_edge_(0),
-      accelerated_surface_acquired_(false),
+      compositing_surface_(gfx::kNullPluginWindow),
       last_mouse_down_(NULL) {
   host_->set_view(this);
 }
@@ -770,11 +770,9 @@ void RenderWidgetHostViewGtk::RenderViewGone(base::TerminationStatus status,
 }
 
 void RenderWidgetHostViewGtk::Destroy() {
-  if (accelerated_surface_acquired_) {
+  if (compositing_surface_ != gfx::kNullPluginWindow) {
     GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
-    gfx::NativeViewId view_id = gfx::IdFromNativeView(GetNativeView());
-    gfx::PluginWindowHandle surface = manager->GetXIDForId(&surface, view_id);
-    manager->ReleasePermanentXID(surface);
+    manager->ReleasePermanentXID(compositing_surface_);
   }
 
   if (do_x_grab_) {
@@ -1128,24 +1126,16 @@ void RenderWidgetHostViewGtk::AcceleratedCompositingActivated(bool activated) {
   gtk_preserve_window_delegate_resize(widget, activated);
 }
 
-gfx::PluginWindowHandle RenderWidgetHostViewGtk::AcquireCompositingSurface() {
-  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
-  gfx::PluginWindowHandle surface = gfx::kNullPluginWindow;
-  gfx::NativeViewId view_id = gfx::IdFromNativeView(GetNativeView());
+gfx::PluginWindowHandle RenderWidgetHostViewGtk::GetCompositingSurface() {
+  if (compositing_surface_ == gfx::kNullPluginWindow) {
+    GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
+    gfx::NativeViewId view_id = gfx::IdFromNativeView(GetNativeView());
 
-  if (!manager->GetPermanentXIDForId(&surface, view_id)) {
-    DLOG(ERROR) << "Can't find XID for view id " << view_id;
-  } else {
-    accelerated_surface_acquired_ = true;
+    if (!manager->GetPermanentXIDForId(&compositing_surface_, view_id)) {
+      DLOG(ERROR) << "Can't find XID for view id " << view_id;
+    }
   }
-  return surface;
-}
-
-void RenderWidgetHostViewGtk::ReleaseCompositingSurface(
-    gfx::PluginWindowHandle surface) {
-  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
-  manager->ReleasePermanentXID(surface);
-  accelerated_surface_acquired_ = false;
+  return compositing_surface_;
 }
 
 void RenderWidgetHostViewGtk::ForwardKeyboardEvent(

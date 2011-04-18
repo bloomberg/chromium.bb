@@ -413,6 +413,10 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // This is used for various IPC messages, including plugins.
   gfx::NativeViewId GetNativeViewId();
 
+  // Retrieves an id for the surface that the renderer can draw to
+  // when accelerated compositing is enabled.
+  gfx::PluginWindowHandle GetCompositingSurface();
+
   // Called to handled a keyboard event before sending it to the renderer.
   // This is overridden by RenderView to send upwards to its delegate.
   // Returns true if the event was handled, and then the keyboard event will

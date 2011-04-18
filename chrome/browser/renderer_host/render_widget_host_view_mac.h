@@ -268,8 +268,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
       uint64 swap_buffers_count);
   virtual void GpuRenderingStateDidChange();
 
-  virtual gfx::PluginWindowHandle AcquireCompositingSurface();
-  virtual void ReleaseCompositingSurface(gfx::PluginWindowHandle surface);
+  virtual gfx::PluginWindowHandle GetCompositingSurface();
 
   void DrawAcceleratedSurfaceInstance(
       CGLContextObj context,
@@ -387,6 +386,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // hidden until the software backing store has been updated. This variable is
   // set when the gpu widget needs to be hidden once a paint is completed.
   bool needs_gpu_visibility_update_after_repaint_;
+
+  gfx::PluginWindowHandle compositing_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMac);
 };

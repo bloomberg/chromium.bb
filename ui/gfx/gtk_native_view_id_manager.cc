@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,6 +125,20 @@ bool GtkNativeViewManager::GetPermanentXIDForId(XID* output,
     DCHECK(ret.first->second.widget == widget);
     ret.first->second.ref_count++;
   }
+
+  return true;
+}
+
+bool GtkNativeViewManager::AddRefPermanentXID(XID xid) {
+  base::AutoLock locked(lock_);
+
+  std::map<XID, PermanentXIDInfo>::iterator i =
+    perm_xid_to_info_.find(xid);
+
+  if (i == perm_xid_to_info_.end())
+    return false;
+
+  i->second.ref_count++;
 
   return true;
 }

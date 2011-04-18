@@ -595,7 +595,8 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       is_loading_(false),
       is_hidden_(false),
       shutdown_factory_(this),
-      needs_gpu_visibility_update_after_repaint_(false) {
+      needs_gpu_visibility_update_after_repaint_(false),
+      compositing_surface_(gfx::kNullPluginWindow) {
   // |cocoa_view_| owns us and we will be deleted when |cocoa_view_| goes away.
   // Since we autorelease it, our caller must put |native_view()| into the view
   // hierarchy right after calling us.
@@ -1297,13 +1298,11 @@ void RenderWidgetHostViewMac::GpuRenderingStateDidChange() {
   }
 }
 
-gfx::PluginWindowHandle RenderWidgetHostViewMac::AcquireCompositingSurface() {
-  return AllocateFakePluginWindowHandle(/*opaque=*/true, /*root=*/true);
-}
-
-void RenderWidgetHostViewMac::ReleaseCompositingSurface(
-    gfx::PluginWindowHandle surface) {
-  DestroyFakePluginWindowHandle(surface);
+gfx::PluginWindowHandle RenderWidgetHostViewMac::GetCompositingSurface() {
+  if (compositing_surface_ == gfx::kNullPluginWindow)
+    compositing_surface_ = AllocateFakePluginWindowHandle(
+        /*opaque=*/true, /*root=*/true);
+  return compositing_surface_;
 }
 
 void RenderWidgetHostViewMac::DrawAcceleratedSurfaceInstance(
