@@ -1678,14 +1678,12 @@ static void NaClDefNops() {
    * parsed and accepted by the validator.
    *
    * 89 f6             mov %esi, %esi
-   * 8d742600          lea %esi, [%rsi] (wrong: should be: lea esi, ptr [esi])
-   * 8d7600            lea %esi, [%rsi] (wrong: should be: lea esi, ptr [esi])
-   * 8d b6 00 00 00 00 lea %esi, [%rsi] (wrong: should be: lea esi, ptr [esi])
+   * 8d742600          lea %esi, [%rsi]
+   * 8d7600            lea %esi, [%rsi]
+   * 8d b6 00 00 00 00 lea %esi, [%rsi]
    * 8d b4 26 00 00 00 00 lea %esi, [%rsi]
-   *                                    (wrong: should be: lea esi, ptr [esi])
    * 8d bc 27 00 00 00 00 lea %edi, [%rdi]
-   *                                    (wrong: should be: lea edi, ptr [edi])
-   * 8d bf 00 00 00 00 lea %edi, [%rdi] (wrong: should be: lea edi, ptr [edi])
+   * 8d bf 00 00 00 00 lea %edi, [%rdi]
    * 0f 1f 00                                     nop
    * 0f 1f 40 00                                  nop
    * 0f 1f 44 00 00                               nop
