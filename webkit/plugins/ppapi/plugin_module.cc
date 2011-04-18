@@ -431,7 +431,7 @@ bool PluginModule::InitAsInternalPlugin(const EntryPoints& entry_points) {
 }
 
 bool PluginModule::InitAsLibrary(const FilePath& path) {
-  base::NativeLibrary library = base::LoadNativeLibrary(path);
+  base::NativeLibrary library = base::LoadNativeLibrary(path, NULL);
   if (!library)
     return false;
 

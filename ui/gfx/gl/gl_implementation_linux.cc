@@ -27,6 +27,18 @@ void GL_BINDING_CALL MarshalDepthRangeToDepthRangef(GLclampd z_near,
   glDepthRangef(static_cast<GLclampf>(z_near), static_cast<GLclampf>(z_far));
 }
 
+// Load a library, printing an error message on failure.
+base::NativeLibrary LoadLibrary(const char* filename) {
+  std::string error;
+  base::NativeLibrary library = base::LoadNativeLibrary(FilePath(filename),
+                                                        &error);
+  if (!library) {
+    VLOG(1) << "Failed to load " << filename << ": " << error;
+    return NULL;
+  }
+  return library;
+}
+
 }  // namespace anonymous
 
 bool InitializeGLBindings(GLImplementation implementation) {
@@ -44,12 +56,9 @@ bool InitializeGLBindings(GLImplementation implementation) {
         return false;
       }
 
-      base::NativeLibrary library = base::LoadNativeLibrary(
-          module_path.Append("libosmesa.so"));
-      if (!library) {
-        VLOG(1) << "libosmesa.so not found";
+      base::NativeLibrary library = LoadLibrary("libosmesa.so");
+      if (!library)
         return false;
-      }
 
       GLGetProcAddressProc get_proc_address =
           reinterpret_cast<GLGetProcAddressProc>(
@@ -70,12 +79,9 @@ bool InitializeGLBindings(GLImplementation implementation) {
       break;
     }
     case kGLImplementationDesktopGL: {
-      base::NativeLibrary library = base::LoadNativeLibrary(
-          FilePath("libGL.so.1"));
-      if (!library) {
-        VLOG(1) << "libGL.so.1 not found.";
+      base::NativeLibrary library = LoadLibrary("libGL.so.1");
+      if (!library)
         return false;
-      }
 
       GLGetProcAddressProc get_proc_address =
           reinterpret_cast<GLGetProcAddressProc>(
@@ -96,20 +102,12 @@ bool InitializeGLBindings(GLImplementation implementation) {
       break;
     }
     case kGLImplementationEGLGLES2: {
-      base::NativeLibrary gles_library = base::LoadNativeLibrary(
-          FilePath("libGLESv2.so"));
-      if (!gles_library) {
-        VLOG(1) << "libGLESv2.so not found";
+      base::NativeLibrary gles_library = LoadLibrary("libGLESv2.so");
+      if (!gles_library)
         return false;
-      }
-
-      base::NativeLibrary egl_library = base::LoadNativeLibrary(
-          FilePath("libEGL.so"));
-      if (!egl_library) {
-        VLOG(1) << "libEGL.so not found";
-        base::UnloadNativeLibrary(gles_library);
+      base::NativeLibrary egl_library = LoadLibrary("libEGL.so");
+      if (!egl_library)
         return false;
-      }
 
       GLGetProcAddressProc get_proc_address =
           reinterpret_cast<GLGetProcAddressProc>(

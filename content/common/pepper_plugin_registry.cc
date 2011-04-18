@@ -129,9 +129,12 @@ void PepperPluginRegistry::PreloadModules() {
   ComputeList(&plugins);
   for (size_t i = 0; i < plugins.size(); ++i) {
     if (!plugins[i].is_internal) {
-      base::NativeLibrary library = base::LoadNativeLibrary(plugins[i].path);
+      std::string error;
+      base::NativeLibrary library = base::LoadNativeLibrary(plugins[i].path,
+                                                            &error);
       LOG_IF(WARNING, !library) << "Unable to load plugin "
-                                << plugins[i].path.value();
+                                << plugins[i].path.value() << " "
+                                << error;
     }
   }
 }

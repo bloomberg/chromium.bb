@@ -14,7 +14,7 @@ ScopedNativeLibrary::ScopedNativeLibrary(NativeLibrary library)
 }
 
 ScopedNativeLibrary::ScopedNativeLibrary(const FilePath& library_path) {
-  library_ = base::LoadNativeLibrary(library_path);
+  library_ = base::LoadNativeLibrary(library_path, NULL);
 }
 
 ScopedNativeLibrary::~ScopedNativeLibrary() {

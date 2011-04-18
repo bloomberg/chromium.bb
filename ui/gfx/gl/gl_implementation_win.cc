@@ -43,7 +43,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       }
 
       base::NativeLibrary library = base::LoadNativeLibrary(
-          module_path.Append(L"osmesa.dll"));
+          module_path.Append(L"osmesa.dll"), NULL);
       if (!library) {
         VLOG(1) << "osmesa.dll not found";
         return false;
@@ -76,7 +76,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       // the former and if there is another version of libglesv2.dll in the dll
       // search path, it will get loaded.
       base::NativeLibrary gles_library = base::LoadNativeLibrary(
-          module_path.Append(L"libglesv2.dll"));
+          module_path.Append(L"libglesv2.dll"), NULL);
       if (!gles_library) {
         VLOG(1) << "libglesv2.dll not found";
         return false;
@@ -85,7 +85,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       // When using EGL, first try eglGetProcAddress and then Windows
       // GetProcAddress on both the EGL and GLES2 DLLs.
       base::NativeLibrary egl_library = base::LoadNativeLibrary(
-          module_path.Append(L"libegl.dll"));
+          module_path.Append(L"libegl.dll"), NULL);
       if (!egl_library) {
         VLOG(1) << "libegl.dll not found.";
         base::UnloadNativeLibrary(gles_library);
@@ -121,7 +121,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       // When using Windows OpenGL, first try wglGetProcAddress and then
       // Windows GetProcAddress.
       base::NativeLibrary library = base::LoadNativeLibrary(
-          FilePath(L"opengl32.dll"));
+          FilePath(L"opengl32.dll"), NULL);
       if (!library) {
         VLOG(1) << "opengl32.dll not found";
         return false;

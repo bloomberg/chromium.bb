@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -180,6 +180,7 @@ bool PluginLib::Load() {
 
   bool rv = false;
   base::NativeLibrary library = 0;
+  std::string error;
 
   if (!internal_) {
 #if defined(OS_WIN)
@@ -193,14 +194,16 @@ bool PluginLib::Load() {
         std::wstring::npos) {
       library = base::LoadNativeLibraryDynamically(web_plugin_info_.path);
     } else {
-      library = base::LoadNativeLibrary(web_plugin_info_.path);
+      library = base::LoadNativeLibrary(web_plugin_info_.path, &error);
     }
-#else  // OS_WIN
-    library = base::LoadNativeLibrary(web_plugin_info_.path);
-#endif  // OS_WIN
-    if (library == 0) {
+#else
+    library = base::LoadNativeLibrary(web_plugin_info_.path, &error);
+#endif
+
+    if (!library) {
       LOG_IF(ERROR, PluginList::DebugPluginLoading())
-          << "Couldn't load plugin " << web_plugin_info_.path.value();
+          << "Couldn't load plugin " << web_plugin_info_.path.value() << " "
+          << error;
       return rv;
     }
 

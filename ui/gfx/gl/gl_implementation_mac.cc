@@ -33,7 +33,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
 
       // When using OSMesa, just use OSMesaGetProcAddress to find entry points.
       base::NativeLibrary library = base::LoadNativeLibrary(
-          module_path.Append("osmesa.so"));
+          module_path.Append("osmesa.so"), NULL);
       if (!library) {
         VLOG(1) << "osmesa.so not found";
         return false;
@@ -59,7 +59,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
     }
     case kGLImplementationDesktopGL: {
       base::NativeLibrary library = base::LoadNativeLibrary(
-          FilePath(kOpenGLFrameworkPath));
+          FilePath(kOpenGLFrameworkPath), NULL);
       if (!library) {
         LOG(ERROR) << "OpenGL framework not found";
         return false;

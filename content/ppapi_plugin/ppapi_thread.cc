@@ -71,7 +71,7 @@ std::set<PP_Instance>* PpapiThread::GetGloballySeenInstanceIDSet() {
 }
 
 void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
-  base::ScopedNativeLibrary library(base::LoadNativeLibrary(path));
+  base::ScopedNativeLibrary library(base::LoadNativeLibrary(path, NULL));
   if (!library.is_valid())
     return;
 

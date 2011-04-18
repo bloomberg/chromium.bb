@@ -81,7 +81,7 @@ void SetAppIdForWindow(const string16& app_id, HWND hwnd) {
   std::wstring shell32_filename(kShell32);
   FilePath shell32_filepath(shell32_filename);
   base::NativeLibrary shell32_library = base::LoadNativeLibrary(
-      shell32_filepath);
+      shell32_filepath, NULL);
 
   if (!shell32_library)
     return;

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,13 +116,15 @@ void UnwrapNSPluginWrapper(void **dl, FilePath* unwrapped_path) {
     return;
   }
 
-  void* newdl = base::LoadNativeLibrary(path);
+  std::string error;
+  void* newdl = base::LoadNativeLibrary(path, &error);
   if (!newdl) {
     // We couldn't load the unwrapped plugin for some reason, despite
     // being able to load the wrapped one.  Just use the wrapped one.
     LOG_IF(ERROR, PluginList::DebugPluginLoading())
         << "Could not use unwrapped nspluginwrapper plugin "
-        << unwrapped_path->value() << ", using the wrapped one.";
+        << unwrapped_path->value() << " (" << error << "), "
+        << "using the wrapped one.";
     return;
   }
 
@@ -150,11 +152,12 @@ bool PluginLib::ReadWebPluginInfo(const FilePath& filename,
     return false;
   }
 
-  void* dl = base::LoadNativeLibrary(filename);
+  std::string error;
+  void* dl = base::LoadNativeLibrary(filename, &error);
   if (!dl) {
     LOG_IF(ERROR, PluginList::DebugPluginLoading())
         << "While reading plugin info, unable to load library "
-        << filename.value() << ", skipping.";
+        << filename.value() << " (" << error << "), skipping.";
     return false;
   }
 

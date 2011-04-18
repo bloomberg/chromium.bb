@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,7 +74,7 @@ PluginThread::PluginThread()
   PatchNPNFunctions();
 
   // Preload the library to avoid loading, unloading then reloading
-  preloaded_plugin_module_ = base::LoadNativeLibrary(plugin_path_);
+  preloaded_plugin_module_ = base::LoadNativeLibrary(plugin_path_, NULL);
 
   scoped_refptr<webkit::npapi::PluginLib> plugin(
       webkit::npapi::PluginLib::CreatePluginLib(plugin_path_));
