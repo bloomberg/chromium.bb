@@ -8,7 +8,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_surface_osmesa.h"
 #include "ui/gfx/size.h"
 
 typedef struct osmesa_context *OSMesaContext;
@@ -16,13 +15,21 @@ typedef struct osmesa_context *OSMesaContext;
 namespace gfx {
 
 // Encapsulates an OSMesa OpenGL context that uses software rendering.
-class GLContextOSMesa : public GLContext {
+class OSMesaGLContext : public GLContext {
  public:
-  explicit GLContextOSMesa(GLSurfaceOSMesa* surface);
-  virtual ~GLContextOSMesa();
+  OSMesaGLContext();
+  virtual ~OSMesaGLContext();
 
-  // Initialize an OSMesa GL context.
+  // Initialize an OSMesa GL context with the default 1 x 1 initial size.
   bool Initialize(GLuint format, GLContext* shared_context);
+
+  // Resize the back buffer, preserving the old content. Does nothing if the
+  // size is unchanged.
+  void Resize(const gfx::Size& new_size);
+
+  const void* buffer() const {
+    return buffer_.get();
+  }
 
   // Implement GLContext.
   virtual void Destroy();
@@ -35,10 +42,11 @@ class GLContextOSMesa : public GLContext {
   virtual void SetSwapInterval(int interval);
 
  private:
-  scoped_ptr<GLSurfaceOSMesa> surface_;
+  gfx::Size size_;
+  scoped_array<int32> buffer_;
   OSMesaContext context_;
 
-  DISALLOW_COPY_AND_ASSIGN(GLContextOSMesa);
+  DISALLOW_COPY_AND_ASSIGN(OSMesaGLContext);
 };
 
 }  // namespace gfx

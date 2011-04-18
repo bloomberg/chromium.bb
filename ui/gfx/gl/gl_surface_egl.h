@@ -15,7 +15,7 @@ typedef void* EGLSurface;
 
 namespace gfx {
 
-// Interface for EGL surface.
+// Interface for EGL contexts.
 class GLSurfaceEGL : public GLSurface {
  public:
   GLSurfaceEGL();
@@ -35,7 +35,7 @@ class NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   explicit NativeViewGLSurfaceEGL(void* window);
   virtual ~NativeViewGLSurfaceEGL();
 
-  // Initialize an EGL surface.
+  // Initialize an EGL context.
   bool Initialize();
 
   // Implement GLSurface.
@@ -58,7 +58,7 @@ class PbufferGLSurfaceEGL : public GLSurfaceEGL {
   explicit PbufferGLSurfaceEGL(const gfx::Size& size);
   virtual ~PbufferGLSurfaceEGL();
 
-  // Initialize an EGL surface.
+  // Initialize an EGL context that shares a namespace with another.
   bool Initialize();
 
   // Implement GLSurface.
