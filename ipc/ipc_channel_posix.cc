@@ -116,7 +116,7 @@ class PipeMap {
   // mapping if one already exists for the given channel_id
   void Insert(const std::string& channel_id, int fd) {
     base::AutoLock locked(lock_);
-    DCHECK(fd != -1);
+    DCHECK_NE(-1, fd);
 
     ChannelToFDMap::const_iterator i = map_.find(channel_id);
     CHECK(i == map_.end()) << "Creating second IPC server (fd " << fd << ") "
@@ -556,7 +556,7 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
         if (cmsg->cmsg_level == SOL_SOCKET &&
             cmsg->cmsg_type == SCM_RIGHTS) {
           const unsigned payload_len = cmsg->cmsg_len - CMSG_LEN(0);
-          DCHECK(payload_len % sizeof(int) == 0);
+          DCHECK_EQ(0U, payload_len % sizeof(int));
           wire_fds = reinterpret_cast<int*>(CMSG_DATA(cmsg));
           num_wire_fds = payload_len / 4;
 
@@ -636,7 +636,7 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
                 if (cmsg->cmsg_level == SOL_SOCKET &&
                     cmsg->cmsg_type == SCM_RIGHTS) {
                   const unsigned payload_len = cmsg->cmsg_len - CMSG_LEN(0);
-                  DCHECK(payload_len % sizeof(int) == 0);
+                  DCHECK_EQ(0U, payload_len % sizeof(int));
                   wire_fds = reinterpret_cast<int*>(CMSG_DATA(cmsg));
                   num_wire_fds = payload_len / 4;
 
@@ -769,7 +769,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
     Message* msg = output_queue_.front();
 
     size_t amt_to_write = msg->size() - message_send_bytes_written_;
-    DCHECK(amt_to_write != 0);
+    DCHECK_NE(0U, amt_to_write);
     const char* out_bytes = reinterpret_cast<const char*>(msg->data()) +
         message_send_bytes_written_;
 
@@ -1057,7 +1057,7 @@ void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
 
 // Called by libevent when we can write to the pipe without blocking.
 void Channel::ChannelImpl::OnFileCanWriteWithoutBlocking(int fd) {
-  DCHECK(fd == pipe_);
+  DCHECK_EQ(pipe_, fd);
   is_blocked_on_write_ = false;
   if (!ProcessOutgoingMessages()) {
     ClosePipeOnError();
