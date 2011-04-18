@@ -203,11 +203,47 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
 
   PRINTDLG dialog_options = { sizeof(PRINTDLG) };
   dialog_options.Flags = PD_RETURNDC | PD_RETURNDEFAULT;
-  if (PrintDlg(&dialog_options) == 0) {
-    ResetSettings();
-    return FAILED;
+  if (PrintDlg(&dialog_options))
+    return ParseDialogResult(dialog_options);
+
+  // No default printer configured, do we have any printers at all?
+  DWORD bytes_needed = 0;
+  DWORD count_returned = 0;
+  (void)::EnumPrinters(PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS,
+                       NULL, 2, NULL, 0, &bytes_needed, &count_returned);
+  if (bytes_needed) {
+    DCHECK(bytes_needed >= count_returned * sizeof(PRINTER_INFO_2));
+    scoped_array<BYTE> printer_info_buffer(new BYTE[bytes_needed]);
+    BOOL ret = ::EnumPrinters(PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS,
+                              NULL, 2, printer_info_buffer.get(),
+                              bytes_needed, &bytes_needed,
+                              &count_returned);
+    if (ret && count_returned) {  // have printers
+      // Open the first successfully found printer.
+      for (DWORD count = 0; count < count_returned; count++) {
+        PRINTER_INFO_2* info_2;
+        info_2 = reinterpret_cast<PRINTER_INFO_2*>(
+            printer_info_buffer.get() + count * sizeof(PRINTER_INFO_2));
+        std::wstring printer_name = info_2->pPrinterName;
+        if (info_2->pDevMode == NULL || printer_name.length() == 0)
+          continue;
+        if (!AllocateContext(printer_name, info_2->pDevMode, &context_))
+          break;
+        if (InitializeSettings(*info_2->pDevMode, printer_name,
+                               NULL, 0, false))
+          break;
+        if (context_) {
+          ::DeleteDC(context_);
+          context_ = NULL;
+        }
+      }
+      if (context_)
+        return OK;
+    }
   }
-  return ParseDialogResult(dialog_options);
+
+  ResetSettings();
+  return FAILED;
 }
 
 PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
