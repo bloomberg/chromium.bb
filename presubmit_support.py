@@ -1035,72 +1035,80 @@ def DoPresubmitChecks(change,
     A PresubmitOutput object. Use output.should_continue() to figure out
     if there were errors or warnings and the caller should abort.
   """
-  output = PresubmitOutput(input_stream, output_stream)
-  if committing:
-    output.write("Running presubmit commit checks ...\n")
-  else:
-    output.write("Running presubmit upload checks ...\n")
-  start_time = time.time()
-  presubmit_files = ListRelevantPresubmitFiles(change.AbsoluteLocalPaths(True),
-                                               change.RepositoryRoot())
-  if not presubmit_files and verbose:
-    output.write("Warning, no presubmit.py found.\n")
-  results = []
-  executer = PresubmitExecuter(change, committing, tbr, rietveld, verbose)
-  if default_presubmit:
-    if verbose:
-      output.write("Running default presubmit script.\n")
-    fake_path = os.path.join(change.RepositoryRoot(), 'PRESUBMIT.py')
-    results += executer.ExecPresubmitScript(default_presubmit, fake_path)
-  for filename in presubmit_files:
-    filename = os.path.abspath(filename)
-    if verbose:
-      output.write("Running %s\n" % filename)
-    # Accept CRLF presubmit script.
-    presubmit_script = gclient_utils.FileRead(filename, 'rU')
-    results += executer.ExecPresubmitScript(presubmit_script, filename)
+  old_environ = os.environ
+  try:
+    # Make sure python subprocesses won't generate .pyc files.
+    os.environ = os.environ.copy()
+    os.environ['PYTHONDONTWRITEBYTECODE'] = '1'
 
-  errors = []
-  notifications = []
-  warnings = []
-  for result in results:
-    if result.fatal:
-      errors.append(result)
-    elif result.should_prompt:
-      warnings.append(result)
+    output = PresubmitOutput(input_stream, output_stream)
+    if committing:
+      output.write("Running presubmit commit checks ...\n")
     else:
-      notifications.append(result)
+      output.write("Running presubmit upload checks ...\n")
+    start_time = time.time()
+    presubmit_files = ListRelevantPresubmitFiles(
+        change.AbsoluteLocalPaths(True), change.RepositoryRoot())
+    if not presubmit_files and verbose:
+      output.write("Warning, no presubmit.py found.\n")
+    results = []
+    executer = PresubmitExecuter(change, committing, tbr, rietveld, verbose)
+    if default_presubmit:
+      if verbose:
+        output.write("Running default presubmit script.\n")
+      fake_path = os.path.join(change.RepositoryRoot(), 'PRESUBMIT.py')
+      results += executer.ExecPresubmitScript(default_presubmit, fake_path)
+    for filename in presubmit_files:
+      filename = os.path.abspath(filename)
+      if verbose:
+        output.write("Running %s\n" % filename)
+      # Accept CRLF presubmit script.
+      presubmit_script = gclient_utils.FileRead(filename, 'rU')
+      results += executer.ExecPresubmitScript(presubmit_script, filename)
 
-  output.write('\n')
-  for name, items in (('Messages', notifications),
-                      ('Warnings', warnings),
-                      ('ERRORS', errors)):
-    if items:
-      output.write('** Presubmit %s **\n' % name)
-      for item in items:
-        item.handle(output)
-        output.write('\n')
+    errors = []
+    notifications = []
+    warnings = []
+    for result in results:
+      if result.fatal:
+        errors.append(result)
+      elif result.should_prompt:
+        warnings.append(result)
+      else:
+        notifications.append(result)
 
-  total_time = time.time() - start_time
-  if total_time > 1.0:
-    output.write("Presubmit checks took %.1fs to calculate.\n\n" % total_time)
+    output.write('\n')
+    for name, items in (('Messages', notifications),
+                        ('Warnings', warnings),
+                        ('ERRORS', errors)):
+      if items:
+        output.write('** Presubmit %s **\n' % name)
+        for item in items:
+          item.handle(output)
+          output.write('\n')
 
-  if not errors:
-    if not warnings:
-      output.write('Presubmit checks passed.\n')
-    elif may_prompt:
-      output.prompt_yes_no('There were presubmit warnings. '
-                          'Are you sure you wish to continue? (y/N): ')
-    else:
-      output.fail()
+    total_time = time.time() - start_time
+    if total_time > 1.0:
+      output.write("Presubmit checks took %.1fs to calculate.\n\n" % total_time)
 
-  global _ASKED_FOR_FEEDBACK
-  # Ask for feedback one time out of 5.
-  if (len(results) and random.randint(0, 4) == 0 and not _ASKED_FOR_FEEDBACK):
-    output.write("Was the presubmit check useful? Please send feedback "
-                 "& hate mail to maruel@chromium.org!\n")
-    _ASKED_FOR_FEEDBACK = True
-  return output
+    if not errors:
+      if not warnings:
+        output.write('Presubmit checks passed.\n')
+      elif may_prompt:
+        output.prompt_yes_no('There were presubmit warnings. '
+                            'Are you sure you wish to continue? (y/N): ')
+      else:
+        output.fail()
+
+    global _ASKED_FOR_FEEDBACK
+    # Ask for feedback one time out of 5.
+    if (len(results) and random.randint(0, 4) == 0 and not _ASKED_FOR_FEEDBACK):
+      output.write("Was the presubmit check useful? Please send feedback "
+                  "& hate mail to maruel@chromium.org!\n")
+      _ASKED_FOR_FEEDBACK = True
+    return output
+  finally:
+    os.environ = old_environ
 
 
 def ScanSubDirs(mask, recursive):
