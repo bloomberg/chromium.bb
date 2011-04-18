@@ -40,3 +40,12 @@ for platform in arm x86-32 x86-64 ; do
   fi
 done
 
+# TODO(robertm): make this accessible by the utman script so that this get
+# http://code.google.com/p/nativeclient/issues/detail?id=1647
+echo @@@BUILD_STEP fake_shared_libs@@@
+pushd  tests/pnacl_ld_example/
+make -f Makefile.pnacl clean
+make -f Makefile.pnacl preparation
+make -f Makefile.pnacl run.x86-32
+make -f Makefile.pnacl run.arm
+popd
