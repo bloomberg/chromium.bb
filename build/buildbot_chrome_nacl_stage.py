@@ -133,6 +133,7 @@ def BuildAndTest(options):
 
   # Run nacl/chrome integration tests.
   cmd = scons + ['-k', 'platform=x86-%d' % bits,
+      'browser_headless=1',
       'disable_flaky_tests=1',
       'disable_dynamic_plugin_loading=1',
       'chrome_browser_path=' + chrome_filename,
