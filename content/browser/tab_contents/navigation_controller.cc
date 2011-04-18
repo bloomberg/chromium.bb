@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/child_process_security_policy.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/interstitial_page.h"
@@ -256,10 +257,25 @@ NavigationEntry* NavigationController::GetEntryWithPageID(
 }
 
 void NavigationController::LoadEntry(NavigationEntry* entry) {
+  // Don't navigate to URLs disabled by policy. This prevents showing the URL
+  // on the Omnibar when it is also going to be blocked by
+  // ChildProcessSecurityPolicy::CanRequestURL.
+  ChildProcessSecurityPolicy *policy =
+      ChildProcessSecurityPolicy::GetInstance();
+  if (policy->IsDisabledScheme(entry->url().scheme()) ||
+      policy->IsDisabledScheme(entry->virtual_url().scheme())) {
+    VLOG(1) << "URL not loaded because the scheme is blocked by policy: "
+            << entry->url();
+    delete entry;
+    return;
+  }
+
   // Handle non-navigational URLs that popup dialogs and such, these should not
   // actually navigate.
-  if (HandleNonNavigationAboutURL(entry->url()))
+  if (HandleNonNavigationAboutURL(entry->url())) {
+    delete entry;
     return;
+  }
 
   // When navigating to a new page, we don't know for sure if we will actually
   // end up leaving the current page.  The new page load could for example

@@ -203,6 +203,9 @@ class PrefService : public base::NonThreadSafe {
   void SetDouble(const char* path, double value);
   void SetString(const char* path, const std::string& value);
   void SetFilePath(const char* path, const FilePath& value);
+  // SetList() takes ownership of |value|. Pass a copy of the ListValue to
+  // keep ownership of the original list, if necessary.
+  void SetList(const char* path, ListValue* value);
 
   // Int64 helper methods that actually store the given value as a string.
   // Note that if obtaining the named value via GetDictionary or GetList, the

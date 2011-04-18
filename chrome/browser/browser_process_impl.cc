@@ -63,6 +63,7 @@
 #include "chrome/installer/util/google_update_constants.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/child_process_security_policy.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -631,6 +632,8 @@ void BrowserProcessImpl::Observe(NotificationType type,
     if (*pref == prefs::kDefaultBrowserSettingEnabled) {
       if (local_state_->GetBoolean(prefs::kDefaultBrowserSettingEnabled))
         ShellIntegration::SetAsDefaultBrowser();
+    } else if (*pref == prefs::kDisabledSchemes) {
+      ApplyDisabledSchemesPolicy();
     }
   } else {
     NOTREACHED();
@@ -869,6 +872,13 @@ void BrowserProcessImpl::CreateLocalState() {
   plugin_finder_disabled_pref_.Init(prefs::kDisablePluginFinder,
                                    local_state_.get(), NULL);
   plugin_finder_disabled_pref_.MoveToThread(BrowserThread::IO);
+
+  // Initialize the preference for the disabled schemes policy, and
+  // load the initial policy on startup.
+  local_state_->RegisterListPref(prefs::kDisabledSchemes);
+  disabled_schemes_pref_.Init(prefs::kDisabledSchemes, local_state_.get(),
+                              this);
+  ApplyDisabledSchemesPolicy();
 }
 
 void BrowserProcessImpl::CreateIconManager() {
@@ -949,6 +959,17 @@ bool BrowserProcessImpl::IsSafeBrowsingDetectionServiceEnabled() {
       resource_dispatcher_host()->safe_browsing_service() &&
       resource_dispatcher_host()->safe_browsing_service()->CanReportStats();
 #endif
+}
+
+void BrowserProcessImpl::ApplyDisabledSchemesPolicy() {
+  std::set<std::string> schemes;
+  for (ListValue::const_iterator iter = (*disabled_schemes_pref_)->begin();
+      iter != (*disabled_schemes_pref_)->end(); ++iter) {
+    std::string scheme;
+    if ((*iter)->GetAsString(&scheme))
+      schemes.insert(scheme);
+  }
+  ChildProcessSecurityPolicy::GetInstance()->RegisterDisabledSchemes(schemes);
 }
 
 // The BrowserProcess object must outlive the file thread so we use traits

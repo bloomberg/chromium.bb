@@ -521,6 +521,10 @@ void PrefService::SetFilePath(const char* path, const FilePath& value) {
   SetUserPrefValue(path, base::CreateFilePathValue(value));
 }
 
+void PrefService::SetList(const char* path, ListValue* value) {
+  SetUserPrefValue(path, value);
+}
+
 void PrefService::SetInt64(const char* path, int64 value) {
   SetUserPrefValue(path, Value::CreateStringValue(base::Int64ToString(value)));
 }

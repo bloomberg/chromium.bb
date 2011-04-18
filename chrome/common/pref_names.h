@@ -85,6 +85,7 @@ extern const char kDnsPrefetchingStartupList[];
 extern const char kDnsHostReferralList[];  // OBSOLETE
 extern const char kDnsPrefetchingHostReferralList[];
 extern const char kDisableSpdy[];
+extern const char kDisabledSchemes[];
 extern const char kInstantConfirmDialogShown[];
 extern const char kInstantEnabled[];
 extern const char kInstantEnabledOnce[];

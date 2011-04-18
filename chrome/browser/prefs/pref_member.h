@@ -244,5 +244,6 @@ typedef PrefMember<int> IntegerPrefMember;
 typedef PrefMember<double> DoublePrefMember;
 typedef PrefMember<std::string> StringPrefMember;
 typedef PrefMember<FilePath> FilePathPrefMember;
+typedef PrefMember<ListValue*> ListPrefMember;
 
 #endif  // CHROME_BROWSER_PREFS_PREF_MEMBER_H_

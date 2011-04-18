@@ -20,8 +20,8 @@ class FilePath;
 class GURL;
 
 // The ChildProcessSecurityPolicy class is used to grant and revoke security
-// capabilities for child porcesses.  For example, it restricts whether a child
-// process is permmitted to loaded file:// URLs based on whether the process
+// capabilities for child processes.  For example, it restricts whether a child
+// process is permitted to load file:// URLs based on whether the process
 // has ever been commanded to load file:// URLs by the browser.
 //
 // ChildProcessSecurityPolicy is a singleton that may be used on any thread.
@@ -52,6 +52,15 @@ class ChildProcessSecurityPolicy {
 
   // Returns true iff |scheme| has been registered as pseudo scheme.
   bool IsPseudoScheme(const std::string& scheme);
+
+  // Sets the list of disabled schemes.
+  // URLs using these schemes won't be loaded at all. The previous list of
+  // schemes is overwritten. An empty |schemes| disables this feature.
+  // Schemes listed as disabled take precedence over Web-safe schemes.
+  void RegisterDisabledSchemes(const std::set<std::string>& schemes);
+
+  // Returns true iff |scheme| is listed as a disabled scheme.
+  bool IsDisabledScheme(const std::string& scheme);
 
   // Upon creation, child processes should register themselves by calling this
   // this method exactly once.
@@ -159,6 +168,11 @@ class ChildProcessSecurityPolicy {
   // the the URLs in the "about" scheme are aliases to other URLs.  This set is
   // protected by |lock_|.
   SchemeSet pseudo_schemes_;
+
+  // These schemes are disabled by policy, and child processes are always
+  // denied permission to request them. This overrides |web_safe_schemes_|.
+  // This set is protected by |lock_|.
+  SchemeSet disabled_schemes_;
 
   // This map holds a SecurityState for each child process.  The key for the
   // map is the ID of the ChildProcessHost.  The SecurityState objects are

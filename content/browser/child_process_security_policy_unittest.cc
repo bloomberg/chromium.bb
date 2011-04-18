@@ -52,9 +52,25 @@ TEST_F(ChildProcessSecurityPolicyTest, IsPseudoSchemeTest) {
   EXPECT_TRUE(p->IsPseudoScheme(chrome::kJavaScriptScheme));
   EXPECT_TRUE(p->IsPseudoScheme(chrome::kViewSourceScheme));
 
-  EXPECT_FALSE(p->IsPseudoScheme("registered-psuedo-scheme"));
-  p->RegisterPseudoScheme("registered-psuedo-scheme");
-  EXPECT_TRUE(p->IsPseudoScheme("registered-psuedo-scheme"));
+  EXPECT_FALSE(p->IsPseudoScheme("registered-pseudo-scheme"));
+  p->RegisterPseudoScheme("registered-pseudo-scheme");
+  EXPECT_TRUE(p->IsPseudoScheme("registered-pseudo-scheme"));
+}
+
+TEST_F(ChildProcessSecurityPolicyTest, IsDisabledSchemeTest) {
+  ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
+
+  EXPECT_FALSE(p->IsDisabledScheme("evil-scheme"));
+  std::set<std::string> disabled_set;
+  disabled_set.insert("evil-scheme");
+  p->RegisterDisabledSchemes(disabled_set);
+  EXPECT_TRUE(p->IsDisabledScheme("evil-scheme"));
+  EXPECT_FALSE(p->IsDisabledScheme("good-scheme"));
+
+  disabled_set.clear();
+  p->RegisterDisabledSchemes(disabled_set);
+  EXPECT_FALSE(p->IsDisabledScheme("evil-scheme"));
+  EXPECT_FALSE(p->IsDisabledScheme("good-scheme"));
 }
 
 TEST_F(ChildProcessSecurityPolicyTest, StandardSchemesTest) {
@@ -160,6 +176,17 @@ TEST_F(ChildProcessSecurityPolicyTest, CanServiceCommandsTest) {
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("file:///etc/passwd")));
   p->GrantRequestURL(kRendererID, GURL("file:///etc/passwd"));
   EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("file:///etc/passwd")));
+
+  EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("evil-scheme:/path")));
+  std::set<std::string> disabled_set;
+  disabled_set.insert("evil-scheme");
+  p->RegisterDisabledSchemes(disabled_set);
+  EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("http://www.google.com")));
+  EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("evil-scheme:/path")));
+  disabled_set.clear();
+  p->RegisterDisabledSchemes(disabled_set);
+  EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("http://www.google.com")));
+  EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("evil-scheme:/path")));
 
   // We should forget our state if we repeat a renderer id.
   p->Remove(kRendererID);

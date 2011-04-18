@@ -94,7 +94,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 84
+#   For your editing convenience: highest ID currently used: 85
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -232,6 +232,19 @@
       'id': 8,
       'caption': '''Disable SPDY protocol''',
       'desc': '''Disables use of the SPDY protocol in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+    },
+    {
+      'name': 'DisabledSchemes',
+      'type': 'list',
+      'supported_on': ['chrome.*:12-', 'chrome_os:0.11-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': ['file', 'mailto'],
+      'id': 85,
+      'caption': '''Disable URL protocol schemes''',
+      'desc': '''Disables the listed protocol schemes in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      URLs using a scheme from this list will not load and can not be navigated to.''',
+      'label': '''List of disabled protocol schemes''',
     },
     {
       'name': 'JavascriptEnabled',

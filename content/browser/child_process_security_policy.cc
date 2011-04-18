@@ -136,7 +136,7 @@ ChildProcessSecurityPolicy::ChildProcessSecurityPolicy() {
   RegisterWebSafeScheme(chrome::kBlobScheme);
   RegisterWebSafeScheme(chrome::kFileSystemScheme);
 
-  // We know about the following psuedo schemes and treat them specially.
+  // We know about the following pseudo schemes and treat them specially.
   RegisterPseudoScheme(chrome::kAboutScheme);
   RegisterPseudoScheme(chrome::kJavaScriptScheme);
   RegisterPseudoScheme(chrome::kViewSourceScheme);
@@ -178,7 +178,7 @@ void ChildProcessSecurityPolicy::RegisterWebSafeScheme(
     const std::string& scheme) {
   base::AutoLock lock(lock_);
   DCHECK(web_safe_schemes_.count(scheme) == 0) << "Add schemes at most once.";
-  DCHECK(pseudo_schemes_.count(scheme) == 0) << "Web-safe implies not psuedo.";
+  DCHECK(pseudo_schemes_.count(scheme) == 0) << "Web-safe implies not pseudo.";
 
   web_safe_schemes_.insert(scheme);
 }
@@ -194,7 +194,7 @@ void ChildProcessSecurityPolicy::RegisterPseudoScheme(
   base::AutoLock lock(lock_);
   DCHECK(pseudo_schemes_.count(scheme) == 0) << "Add schemes at most once.";
   DCHECK(web_safe_schemes_.count(scheme) == 0) <<
-      "Psuedo implies not web-safe.";
+      "Pseudo implies not web-safe.";
 
   pseudo_schemes_.insert(scheme);
 }
@@ -203,6 +203,17 @@ bool ChildProcessSecurityPolicy::IsPseudoScheme(const std::string& scheme) {
   base::AutoLock lock(lock_);
 
   return (pseudo_schemes_.find(scheme) != pseudo_schemes_.end());
+}
+
+void ChildProcessSecurityPolicy::RegisterDisabledSchemes(
+    const std::set<std::string>& schemes) {
+  base::AutoLock lock(lock_);
+  disabled_schemes_ = schemes;
+}
+
+bool ChildProcessSecurityPolicy::IsDisabledScheme(const std::string& scheme) {
+  base::AutoLock lock(lock_);
+  return disabled_schemes_.find(scheme) != disabled_schemes_.end();
 }
 
 void ChildProcessSecurityPolicy::GrantRequestURL(
@@ -333,6 +344,9 @@ bool ChildProcessSecurityPolicy::CanRequestURL(
     int child_id, const GURL& url) {
   if (!url.is_valid())
     return false;  // Can't request invalid URLs.
+
+  if (IsDisabledScheme(url.scheme()))
+    return false; // The scheme is disabled by policy.
 
   if (IsWebSafeScheme(url.scheme()))
     return true;  // The scheme has been white-listed for every child process.

@@ -246,6 +246,9 @@ const char kDnsPrefetchingHostReferralList[] =
 // Disables the SPDY protocol.
 const char kDisableSpdy[] = "spdy.disabled";
 
+// Disables the listed protocol schemes.
+const char kDisabledSchemes[] = "protocol.disabled_schemes";
+
 // Boolean pref indicating whether the instant confirm dialog has been shown.
 const char kInstantConfirmDialogShown[] = "instant.confirm_dialog_shown";
 

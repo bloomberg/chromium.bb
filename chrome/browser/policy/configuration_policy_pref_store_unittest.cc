@@ -82,7 +82,9 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(kPolicyDisabledPluginsExceptions,
                     prefs::kPluginsDisabledPluginsExceptions),
         TypeAndName(kPolicyEnabledPlugins,
-                    prefs::kPluginsEnabledPlugins)));
+                    prefs::kPluginsEnabledPlugins),
+        TypeAndName(kPolicyDisabledSchemes,
+                    prefs::kDisabledSchemes)));
 
 // Test cases for string-valued policy settings.
 class ConfigurationPolicyPrefStoreStringTest

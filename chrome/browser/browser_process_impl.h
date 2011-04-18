@@ -116,7 +116,6 @@ class BrowserProcessImpl : public BrowserProcess,
   bool ShouldClearLocalState(FilePath* profile_path);
 
   void CreateResourceDispatcherHost();
-  void CreatePrefService();
   void CreateMetricsService();
 
   void CreateIOThread();
@@ -147,6 +146,8 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateSafeBrowsingDetectionService();
 
   bool IsSafeBrowsingDetectionServiceEnabled();
+
+  void ApplyDisabledSchemesPolicy();
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   void SetIPCLoggingEnabledForChildProcesses(bool enabled);
@@ -265,6 +266,9 @@ class BrowserProcessImpl : public BrowserProcess,
 
   // Monitors the state of the 'DisablePluginFinder' policy.
   BooleanPrefMember plugin_finder_disabled_pref_;
+
+  // Monitors the list of disabled schemes policy.
+  ListPrefMember disabled_schemes_pref_;
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   base::RepeatingTimer<BrowserProcessImpl> autoupdate_timer_;

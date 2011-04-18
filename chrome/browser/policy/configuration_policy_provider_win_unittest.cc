@@ -494,6 +494,9 @@ INSTANTIATE_TEST_CASE_P(
             key::kEditBookmarksEnabled),
         PolicyTestParams::ForBooleanPolicy(
             kPolicyAllowFileSelectionDialogs,
-            key::kAllowFileSelectionDialogs)));
+            key::kAllowFileSelectionDialogs),
+        PolicyTestParams::ForListPolicy(
+            kPolicyDisabledSchemes,
+            key::kDisabledSchemes)));
 
 }  // namespace policy

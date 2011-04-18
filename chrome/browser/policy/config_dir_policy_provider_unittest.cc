@@ -362,6 +362,9 @@ INSTANTIATE_TEST_CASE_P(
             key::kBookmarkBarEnabled),
         ValueTestParams::ForBooleanPolicy(
             kPolicyEditBookmarksEnabled,
-            key::kEditBookmarksEnabled)));
+            key::kEditBookmarksEnabled),
+        ValueTestParams::ForListPolicy(
+            kPolicyDisabledSchemes,
+            key::kDisabledSchemes)));
 
 }  // namespace policy

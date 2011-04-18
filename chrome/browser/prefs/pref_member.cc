@@ -163,3 +163,27 @@ bool PrefMember<FilePath>::Internal::UpdateValueInternal(const Value& value)
   return base::GetValueAsFilePath(value, &value_);
 }
 
+template <>
+void PrefMember<ListValue*>::UpdatePref(ListValue*const& value) {
+  // prefs takes ownership of the value passed, so make a copy.
+  prefs()->SetList(pref_name().c_str(), value->DeepCopy());
+}
+
+template <>
+bool PrefMember<ListValue*>::Internal::UpdateValueInternal(const Value& value)
+    const {
+  // Verify the type before doing the DeepCopy to avoid leaking the copy.
+  if (value.GetType() != Value::TYPE_LIST)
+    return false;
+
+  // ListPrefMember keeps a copy of the ListValue and of its contents.
+  // GetAsList() assigns its |this| (the DeepCopy) to |value_|.
+  delete value_;
+  return value.DeepCopy()->GetAsList(&value_);
+}
+
+template <>
+PrefMember<ListValue*>::Internal::~Internal() {
+  delete value_;
+}
+
