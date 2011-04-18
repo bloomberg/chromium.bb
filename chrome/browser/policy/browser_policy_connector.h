@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
+#include "chrome/browser/policy/enterprise_install_attributes.h"
 
 class PrefService;
 class TestingBrowserProcess;
@@ -54,6 +55,9 @@ class BrowserPolicyConnector {
   // a local owner).
   bool IsEnterpriseManaged();
 
+  // Locks the device to an enterprise domain.
+  EnterpriseInstallAttributes::LockResult LockDevice(const std::string& user);
+
   // Returns the enterprise domain if device is managed.
   std::string GetEnterpriseDomain();
 
@@ -82,6 +86,7 @@ class BrowserPolicyConnector {
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<DevicePolicyIdentityStrategy> identity_strategy_;
+  scoped_ptr<EnterpriseInstallAttributes> install_attributes_;
 #endif
   scoped_ptr<CloudPolicySubsystem> cloud_policy_subsystem_;
 

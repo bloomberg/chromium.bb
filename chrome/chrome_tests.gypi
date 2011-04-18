@@ -1444,6 +1444,7 @@
         'browser/policy/configuration_policy_store_interface_unittest.cc',
         'browser/policy/device_policy_cache_unittest.cc',
         'browser/policy/device_token_fetcher_unittest.cc',
+        'browser/policy/enterprise_install_attributes_unittest.cc',
         'browser/policy/file_based_policy_provider_unittest.cc',
         'browser/policy/device_management_backend_mock.cc',
         'browser/policy/device_management_backend_mock.h',
@@ -1939,6 +1940,7 @@
           'sources/': [
             ['exclude', '^browser/chromeos/'],
             ['exclude', '^browser/policy/device_policy_cache_unittest.cc'],
+            ['exclude', '^browser/policy/enterprise_install_attributes_unittest.cc' ],
             ['exclude', '^browser/ui/webui/chromeos/login'],
           ],
         }],

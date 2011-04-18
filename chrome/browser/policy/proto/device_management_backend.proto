@@ -106,7 +106,7 @@ message PolicyFetchRequest {
     SHA1_RSA = 1;
   }
   optional SignatureType signature_type = 3 [default = NONE];
-  
+
   // The version number of the public key that is currently stored
   // on the client. This should be the last number the server had
   // supplied as new_public_key_version in PolicyData.
@@ -148,16 +148,16 @@ message PolicyData {
   // |machine_name| in DeviceRegisterResponse but it might have
   // changed since then.
   optional string machine_name = 5;
-  
+
   // Version number of the server's current public key. (The key that
   // was used to sign this response. Numbering should start at 1 and be
   // increased by 1 at each key rotation.)
   optional int32 public_key_version = 6;
-  
+
   // The user this policy is intended for. In case of device policy, the name
   // of the owner (who registered the device).
   optional string username = 7;
-  
+
   // In this field the DMServer should echo back the "deviceid" HTTP parameter
   // from the request.
   optional string device_id = 8;

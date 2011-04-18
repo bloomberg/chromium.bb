@@ -23,8 +23,10 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/policy/device_policy_cache.h"
 #include "chrome/browser/policy/device_policy_identity_strategy.h"
+#include "chrome/browser/policy/enterprise_install_attributes.h"
 #endif
 
 namespace policy {
@@ -38,9 +40,12 @@ BrowserPolicyConnector::BrowserPolicyConnector()
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableDevicePolicy)) {
     identity_strategy_.reset(new DevicePolicyIdentityStrategy());
+    install_attributes_.reset(new EnterpriseInstallAttributes(
+        chromeos::CrosLibrary::Get()->GetCryptohomeLibrary()));
     cloud_policy_subsystem_.reset(new CloudPolicySubsystem(
         identity_strategy_.get(),
-        new DevicePolicyCache(identity_strategy_.get())));
+        new DevicePolicyCache(identity_strategy_.get(),
+                              install_attributes_.get())));
 
     // Initialize the subsystem once the message loops are spinning.
     MessageLoop::current()->PostTask(
@@ -149,22 +154,23 @@ bool BrowserPolicyConnector::IsEnterpriseManaged() {
 #endif
 }
 
-std::string BrowserPolicyConnector::GetEnterpriseDomain() {
-  std::string domain;
-
+EnterpriseInstallAttributes::LockResult
+    BrowserPolicyConnector::LockDevice(const std::string& user) {
 #if defined(OS_CHROMEOS)
-  // TODO(xiyuan): Find a better way to get enterprise domain.
-  std::string username;
-  std::string auth_token;
-  if (identity_strategy_.get() &&
-      identity_strategy_->GetCredentials(&username, &auth_token)) {
-    size_t pos = username.find('@');
-    if (pos != std::string::npos)
-      domain = username.substr(pos + 1);
-  }
+  if (install_attributes_.get())
+    return install_attributes_->LockDevice(user);
 #endif
 
-  return domain;
+  return EnterpriseInstallAttributes::LOCK_BACKEND_ERROR;
+}
+
+std::string BrowserPolicyConnector::GetEnterpriseDomain() {
+#if defined(OS_CHROMEOS)
+  if (install_attributes_.get())
+    return install_attributes_->GetDomain();
+#endif
+
+  return std::string();
 }
 
 void BrowserPolicyConnector::StopAutoRetry() {

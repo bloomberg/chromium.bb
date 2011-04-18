@@ -245,7 +245,8 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
 
 class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
  public:
-  CryptohomeLibraryStubImpl() {}
+  CryptohomeLibraryStubImpl()
+    : locked_(false) {}
   virtual ~CryptohomeLibraryStubImpl() {}
 
   bool CheckKey(const std::string& user_email, const std::string& passhash) {
@@ -399,7 +400,7 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   }
 
   bool InstallAttributesIsSecure() {
-    return locked_;
+    return false;
   }
 
   bool InstallAttributesIsInvalid() {
@@ -407,7 +408,7 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   }
 
   bool InstallAttributesIsFirstInstall() {
-    return false;
+    return !locked_;
   }
 
  private:

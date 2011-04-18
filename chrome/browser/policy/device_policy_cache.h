@@ -17,6 +17,7 @@
 namespace policy {
 
 class DevicePolicyIdentityStrategy;
+class EnterpriseInstallAttributes;
 class PolicyMap;
 
 namespace em = enterprise_management;
@@ -26,7 +27,8 @@ namespace em = enterprise_management;
 class DevicePolicyCache : public CloudPolicyCacheBase,
                           public chromeos::SignedSettingsHelper::Callback {
  public:
-  explicit DevicePolicyCache(DevicePolicyIdentityStrategy* identity_strategy);
+  explicit DevicePolicyCache(DevicePolicyIdentityStrategy* identity_strategy,
+                             EnterpriseInstallAttributes* install_attributes);
   virtual ~DevicePolicyCache();
 
   // CloudPolicyCacheBase implementation:
@@ -46,6 +48,7 @@ class DevicePolicyCache : public CloudPolicyCacheBase,
   // singleton.
   DevicePolicyCache(
       DevicePolicyIdentityStrategy* identity_strategy,
+      EnterpriseInstallAttributes* install_attributes,
       chromeos::SignedSettingsHelper* signed_settings_helper);
 
   // CloudPolicyCacheBase implementation:
@@ -55,11 +58,16 @@ class DevicePolicyCache : public CloudPolicyCacheBase,
 
   void PolicyStoreOpCompleted(chromeos::SignedSettings::ReturnCode code);
 
+  // Checks with immutable attributes whether this is an enterprise device and
+  // read the registration user if this is the case.
+  void CheckImmutableAttributes();
+
   static void DecodeDevicePolicy(const em::ChromeDeviceSettingsProto& policy,
                                  PolicyMap* mandatory,
                                  PolicyMap* recommended);
 
   DevicePolicyIdentityStrategy* identity_strategy_;
+  EnterpriseInstallAttributes* install_attributes_;
 
   chromeos::SignedSettingsHelper* signed_settings_helper_;
 

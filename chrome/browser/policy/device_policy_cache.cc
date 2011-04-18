@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/device_policy_identity_strategy.h"
+#include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
@@ -109,8 +110,10 @@ Value* DecodeIntegerValue(google::protobuf::int64 value) {
 namespace policy {
 
 DevicePolicyCache::DevicePolicyCache(
-    DevicePolicyIdentityStrategy* identity_strategy)
+    DevicePolicyIdentityStrategy* identity_strategy,
+    EnterpriseInstallAttributes* install_attributes)
     : identity_strategy_(identity_strategy),
+      install_attributes_(install_attributes),
       signed_settings_helper_(chromeos::SignedSettingsHelper::Get()),
       starting_up_(true),
       ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {
@@ -118,8 +121,10 @@ DevicePolicyCache::DevicePolicyCache(
 
 DevicePolicyCache::DevicePolicyCache(
     DevicePolicyIdentityStrategy* identity_strategy,
+    EnterpriseInstallAttributes* install_attributes,
     chromeos::SignedSettingsHelper* signed_settings_helper)
     : identity_strategy_(identity_strategy),
+      install_attributes_(install_attributes),
       signed_settings_helper_(signed_settings_helper),
       starting_up_(true),
       ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {
@@ -135,6 +140,33 @@ void DevicePolicyCache::Load() {
 
 void DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
   DCHECK(!starting_up_);
+
+  // Make sure we have an enterprise device.
+  std::string registration_user(install_attributes_->GetRegistrationUser());
+  if (registration_user.empty()) {
+    LOG(WARNING) << "Refusing to accept policy on non-enterprise device.";
+    InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
+                   CloudPolicySubsystem::POLICY_LOCAL_ERROR);
+    return;
+  }
+
+  // Check the user this policy is for against the device-locked name.
+  em::PolicyData policy_data;
+  if (!policy_data.ParseFromString(policy.policy_data())) {
+    LOG(WARNING) << "Invalid policy protobuf";
+    InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
+                   CloudPolicySubsystem::POLICY_LOCAL_ERROR);
+    return;
+  }
+
+  if (registration_user != policy_data.username()) {
+    LOG(WARNING) << "Refusing policy blob for " << policy_data.username()
+                 << " which doesn't match " << registration_user;
+    InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
+                   CloudPolicySubsystem::POLICY_LOCAL_ERROR);
+    return;
+  }
+
   set_last_policy_refresh_time(base::Time::NowFromSystemTime());
 
   // Start a store operation.

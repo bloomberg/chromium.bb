@@ -15,7 +15,7 @@
 namespace chromeos {
 
 // Retry for InstallAttrs initialization every 500ms.
-const int kLockboxRetryIntervalMs = 500;
+const int kLockRetryIntervalMs = 500;
 
 EnterpriseEnrollmentScreen::EnterpriseEnrollmentScreen(
     WizardScreenDelegate* delegate)
@@ -227,79 +227,33 @@ void EnterpriseEnrollmentScreen::WriteInstallAttributesData(
   if (!view())
     return;
 
-  chromeos::CryptohomeLibrary* cryptohome =
-      chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
-  if (!cryptohome) {
-    LOG(ERROR) << "Enrollment can not proceed because the InstallAttrs can not "
-               << "be accessed.";
-    view()->ShowFatalEnrollmentError();
-    return;
+  switch (g_browser_process->browser_policy_connector()->LockDevice(user_)) {
+    case policy::EnterpriseInstallAttributes::LOCK_SUCCESS:
+      // Proceed with register and policy fetch.
+      auth_fetcher_->StartIssueAuthToken(
+          result.sid, result.lsid, GaiaConstants::kDeviceManagementService);
+      return;
+    case policy::EnterpriseInstallAttributes::LOCK_NOT_READY:
+      // InstallAttributes not ready yet, retry later.
+      LOG(WARNING) << "Install Attributes not ready yet will retry in "
+                   << kLockRetryIntervalMs << "ms.";
+      MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          runnable_method_factory_.NewRunnableMethod(
+              &EnterpriseEnrollmentScreen::WriteInstallAttributesData, result),
+          kLockRetryIntervalMs);
+      return;
+    case policy::EnterpriseInstallAttributes::LOCK_BACKEND_ERROR:
+      view()->ShowFatalEnrollmentError();
+      return;
+    case policy::EnterpriseInstallAttributes::LOCK_WRONG_USER:
+      LOG(ERROR) << "Enrollment can not proceed because the InstallAttrs "
+                 << "has been locked already!";
+      view()->ShowFatalEnrollmentError();
+      return;
   }
 
-  if (!cryptohome->InstallAttributesIsReady()) {
-    // Lockbox is not ready yet, retry later.
-    LOG(WARNING) << "Lockbox is not ready yet will retry in "
-                 << kLockboxRetryIntervalMs << "ms.";
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        runnable_method_factory_.NewRunnableMethod(
-            &EnterpriseEnrollmentScreen::WriteInstallAttributesData, result),
-        kLockboxRetryIntervalMs);
-    return;
-  }
-
-  // Clearing the TPM password seems to be always a good deal.
-  if (cryptohome->TpmIsEnabled() &&
-      !cryptohome->TpmIsBeingOwned() &&
-      cryptohome->TpmIsOwned()) {
-    cryptohome->TpmClearStoredPassword();
-  }
-
-  // Make sure we really have a working InstallAttrs.
-  if (cryptohome->InstallAttributesIsInvalid()) {
-    LOG(ERROR) << "Enrollment can not proceed because the InstallAttrs "
-               << "is corrupt or failed to initialize!";
-    view()->ShowFatalEnrollmentError();
-    return;
-  }
-  if (!cryptohome->InstallAttributesIsFirstInstall()) {
-    std::string value;
-    if (cryptohome->InstallAttributesGet("enterprise.owned", &value) &&
-        value ==  "true") {
-      if (cryptohome->InstallAttributesGet("enterprise.user", &value)) {
-        if (value == user_) {
-          // If we landed here with a locked InstallAttrs this would mean we
-          // only want to reenroll with the DMServer so lock just continue.
-          auth_fetcher_->StartIssueAuthToken(
-              result.sid, result.lsid,
-              GaiaConstants::kDeviceManagementService);
-          return;
-        }
-      }
-    }
-
-    LOG(ERROR) << "Enrollment can not proceed because the InstallAttrs "
-               << "has been locked already!";
-    view()->ShowFatalEnrollmentError();
-    return;
-  }
-
-  // Set values in the InstallAttrs and lock it.
-  DCHECK(cryptohome->InstallAttributesIsFirstInstall());
-  cryptohome->InstallAttributesSet("enterprise.owned", "true");
-  cryptohome->InstallAttributesSet("enterprise.user", user_);
-  DCHECK(cryptohome->InstallAttributesCount() == 2);
-  cryptohome->InstallAttributesFinalize();
-  if (cryptohome->InstallAttributesIsFirstInstall()) {
-    LOG(ERROR) << "Enrollment can not proceed because the InstallAttrs "
-               << "can not be sealed!";
-    view()->ShowFatalEnrollmentError();
-    return;
-  }
-
-  // Proceed with register and policy fetch.
-  auth_fetcher_->StartIssueAuthToken(
-      result.sid, result.lsid, GaiaConstants::kDeviceManagementService);
+  NOTREACHED();
 }
 
 }  // namespace chromeos
