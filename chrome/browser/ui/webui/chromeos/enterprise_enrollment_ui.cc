@@ -184,12 +184,12 @@ void EnterpriseEnrollmentDataSource::StartDataRequest(const std::string& path,
     AddString(&strings, "loginHeader",
               IDS_ENTERPRISE_ENROLLMENT_LOGIN_HEADER),
     AddString(&strings, "loginExplain",
-              IDS_ENTERPRISE_ENROLLMENT_LOGIN_EXPLAIN),
+              IDS_ENTERPRISE_ENROLLMENT_LOGIN_EXPLAIN,
+              l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
     AddString(&strings, "cloudHeader",
               IDS_ENTERPRISE_ENROLLMENT_CLOUD_HEADER),
     AddString(&strings, "cloudExplain",
-              IDS_ENTERPRISE_ENROLLMENT_CLOUD_EXPLAIN,
-              l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+              IDS_ENTERPRISE_ENROLLMENT_CLOUD_EXPLAIN);
     AddString(&strings, "accesscontrolHeader",
               IDS_ENTERPRISE_ENROLLMENT_ACCESSCONTROL_HEADER),
     AddString(&strings, "accesscontrolExplain",
