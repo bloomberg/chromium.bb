@@ -2721,6 +2721,11 @@ NaClExpVector[0] = {
     Nop
 NaClExpVector[0] = {
 };
+0000000000000000: 66 66 90                                     nop
+  90                          386 
+    Nop
+NaClExpVector[0] = {
+};
 0000000000000000: 8d 76 00                                     lea %esi, [%rsi]
   8d                          386 ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Lea $Gv, $M
@@ -3661,4 +3666,30 @@ NaClExpVector[8] = {
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0, ExprSize8 },
+};
+0000000000000000: 8d bf 00 00 00 00                            lea %edi, [%rdi]
+  8d                          386 ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
+    Lea $Gv, $M
+      G_Operand               OpSet OperandZeroExtends_v
+      M_Operand               OpAddress
+NaClExpVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %edi, ExprSet | ExprSize32 },
+  { OperandReference[1] , 1, 0 },
+  { ExprMemOffset[4] , 0, ExprAddress | ExprSize64 },
+  { ExprRegister[0] , %rdi, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0x0, ExprSize32 | ExprSignedHex },
+};
+0000000000000000: eb 1d                                        jmp 0x1f
+  eb                          386 OpcodeHasImmed OperandSize_b
+    Jmp {%rip}, $Jb
+      RegRIP                  OpSet OpImplicit
+      J_Operand               OpUse OperandNear OperandRelative
+NaClExpVector[4] = {
+  { OperandReference[1] , 0, ExprImplicit },
+  { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
+  { OperandReference[1] , 1, 0 },
+  { ExprConstant[0] , 0x1f, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
 };

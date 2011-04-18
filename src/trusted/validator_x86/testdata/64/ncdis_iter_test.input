@@ -1,4 +1,7 @@
-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
 # This is a simple test file to see if we have things working.
 # When run in self documenting mode and command free lines,
 # are echoed to the output.
@@ -235,6 +238,7 @@
 -i=660f3a600001                          #0000000000000000: 66 0f 3a 60 00 01                            pcmpestrm %xmm0, [%rax], 0x1
 -i=90                                    #0000000000000000: 90                                           nop
 -i=6690                                  #0000000000000000: 66 90                                        nop
+-i=666690                                #0000000000000000: 66 66 90                                     nop
 -i=8d7600                                #0000000000000000: 8d 76 00                                     lea %esi, [%rsi]
 -i=8d742600                              #0000000000000000: 8d 74 26 00                                  lea %esi, [%rsi]
 -i=8db600000000                          #0000000000000000: 8d b6 00 00 00 00                            lea %esi, [%rsi]
@@ -319,3 +323,5 @@
 # 0f0f 3dnow example(s)
 -i=0f0f0000                              #0000000000000000: 0f 0f 00 00                                  invalid %mmx0, [%rax], 0x0
 -i=0f0f0090                              #0000000000000000: 0f 0f 00 90                                  pfcmpge %mmx0, [%rax]
+-i=8dbf00000000                          #0000000000000000: 8d bf 00 00 00 00                            lea %edi, [%rdi]
+-i=eb1d                                  #0000000000000000: eb 1d                                        jmp 0x1f

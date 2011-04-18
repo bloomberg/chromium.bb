@@ -1674,9 +1674,28 @@ static void NaClDefNopSeq(const char* sequence, uint8_t opcode) {
 }
 
 static void NaClDefNops() {
+  /* Note: The following could be recognized as nops, but are already
+   * parsed and accepted by the validator.
+   *
+   * 89 f6             mov %esi, %esi
+   * 8d742600          lea %esi, [%rsi] (wrong: should be: lea esi, ptr [esi])
+   * 8d7600            lea %esi, [%rsi] (wrong: should be: lea esi, ptr [esi])
+   * 8d b6 00 00 00 00 lea %esi, [%rsi] (wrong: should be: lea esi, ptr [esi])
+   * 8d b4 26 00 00 00 00 lea %esi, [%rsi]
+   *                                    (wrong: should be: lea esi, ptr [esi])
+   * 8d bc 27 00 00 00 00 lea %edi, [%rdi]
+   *                                    (wrong: should be: lea edi, ptr [edi])
+   * 8d bf 00 00 00 00 lea %edi, [%rdi] (wrong: should be: lea edi, ptr [edi])
+   * 0f 1f 00                                     nop
+   * 0f 1f 40 00                                  nop
+   * 0f 1f 44 00 00                               nop
+   * 0f 1f 80 00 00 00 00                         nop
+   * 0f 1f 84 00 00 00 00 00                      nop
+   */
   /* nop */
   NaClDefNopSeq("90", 0x90);
   NaClDefNopSeq("6690", 0x90);
+  NaClDefNopSeq("666690", 0x90);
   NaClDefNopLikeSeq("f390", 0x90, InstPause);
   /* nop [%[re]ax] */
   NaClDefNopSeq("0f1f00", 0x1f);
