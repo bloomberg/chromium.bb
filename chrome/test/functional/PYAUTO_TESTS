@@ -74,6 +74,14 @@
       'plugins',
       'plugins_check',
       'popups',
+      # Browser crash with popups - crbug.com/79777
+      '-browser.BrowserTest.testKillAndReloadSharedProcess',
+      '-browser.BrowserTest.testPopupSharesProcess',
+      '-popups.PopupsTest.testAllowPopupsFromExternalSite',
+      '-popups.PopupsTest.testLaunchBlockedPopup',
+      '-popups.PopupsTest.testLaunchBlockedPopupInIncognito',
+      '-popups.PopupsTest.testPopupsLaunchUponBrowserBackButton',
+      '-popups.PopupsTest.testPopupsLaunchWhenTabIsClosed',
       'prefs',
       'search_engines',
       # crbug.com/67628
