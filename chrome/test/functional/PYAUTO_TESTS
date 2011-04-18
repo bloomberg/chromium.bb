@@ -28,8 +28,10 @@
   'CONTINUOUS': {
     'all': [
       'autofill',
+      '-autofill.AutofillTest.testComparePhoneNumbers',
       # crbug.com/77969
       '-autofill.AutofillTest.testFillProfileCrazyCharacters',
+      '-autofill.AutofillTest.testNoAutofillForReadOnlyFields',
       'bookmark_bar',
       'bookmarks',
       'browser',
