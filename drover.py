@@ -64,14 +64,16 @@ def gclUpload(revision, author):
   return runGcl(command)
 
 def getSVNInfo(url, revision):
-  svn_info = subprocess2.check_output(
-      ['svn', 'info', '%s@%s' % (url, revision)]).splitlines()
   info = {}
-  for line in svn_info:
-    match = re.search(r"(.*?):(.*)", line)
-    if match:
-      info[match.group(1).strip()]=match.group(2).strip()
-
+  try:
+    svn_info = subprocess2.check_output(
+        ['svn', 'info', '%s@%s' % (url, revision)]).splitlines()
+    for line in svn_info:
+      match = re.search(r"(.*?):(.*)", line)
+      if match:
+        info[match.group(1).strip()] = match.group(2).strip()
+  except subprocess2.CalledProcessError:
+    pass
   return info
 
 def isSVNDirty():
