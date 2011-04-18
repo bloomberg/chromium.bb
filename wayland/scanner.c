@@ -281,7 +281,7 @@ emit_opcodes(struct wl_list *message_list, struct interface *interface)
 
 	opcode = 0;
 	wl_list_for_each(m, message_list, link)
-		printf("#define WL_%s_%s\t%d\n",
+		printf("#define %s_%s\t%d\n",
 		       interface->uppercase_name, m->uppercase_name, opcode++);
 
 	printf("\n");
@@ -304,7 +304,7 @@ emit_type(struct arg *a)
 		printf("const char *");
 		break;
 	case OBJECT:
-		printf("struct wl_%s *", a->interface_name);
+		printf("struct %s *", a->interface_name);
 		break;
 	case ARRAY:
 		printf("struct wl_array *");
@@ -320,13 +320,13 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 	int has_destructor, has_destroy;
 
 	/* We provide a hand written constructor for the display object */
-	if (strcmp(interface->name, "display") != 0)
-		printf("static inline struct wl_%s *\n"
-		       "wl_%s_create(struct wl_display *display, uint32_t id, uint32_t version)\n"
+	if (strcmp(interface->name, "wl_display") != 0)
+		printf("static inline struct %s *\n"
+		       "%s_create(struct wl_display *display, uint32_t id, uint32_t version)\n"
 		       "{\n"
 		       "\twl_display_bind(display, id, \"%s\", version);\n\n"
-		       "\treturn (struct wl_%s *)\n"
-		       "\t\twl_proxy_create_for_id(display, &wl_%s_interface, id);\n"
+		       "\treturn (struct %s *)\n"
+		       "\t\twl_proxy_create_for_id(display, &%s_interface, id);\n"
 		       "}\n\n",
 		       interface->name,
 		       interface->name,
@@ -335,7 +335,7 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 		       interface->name);
 
 	printf("static inline void\n"
-	       "wl_%s_set_user_data(struct wl_%s *%s, void *user_data)\n"
+	       "%s_set_user_data(struct %s *%s, void *user_data)\n"
 	       "{\n"
 	       "\twl_proxy_set_user_data((struct wl_proxy *) %s, user_data);\n"
 	       "}\n\n",
@@ -343,7 +343,7 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 	       interface->name);
 
 	printf("static inline void *\n"
-	       "wl_%s_get_user_data(struct wl_%s *%s)\n"
+	       "%s_get_user_data(struct %s *%s)\n"
 	       "{\n"
 	       "\treturn wl_proxy_get_user_data((struct wl_proxy *) %s);\n"
 	       "}\n\n",
@@ -367,9 +367,9 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 	}
 
 	/* And we have a hand-written display destructor */
-	if (!has_destructor && strcmp(interface->name, "display") != 0)
+	if (!has_destructor && strcmp(interface->name, "wl_display") != 0)
 		printf("static inline void\n"
-		       "wl_%s_destroy(struct wl_%s *%s)\n"
+		       "%s_destroy(struct %s *%s)\n"
 		       "{\n"
 		       "\twl_proxy_destroy("
 		       "(struct wl_proxy *) %s);\n"
@@ -388,12 +388,12 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 		}
 
 		if (ret)
-			printf("static inline struct wl_%s *\n",
+			printf("static inline struct %s *\n",
 			       ret->interface_name);
 		else
 			printf("static inline void\n");
 
-		printf("wl_%s_%s(struct wl_%s *%s",
+		printf("%s_%s(struct %s *%s",
 		       interface->name, m->name,
 		       interface->name, interface->name);
 
@@ -411,7 +411,7 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 			printf("\tstruct wl_proxy *%s;\n\n"
 			       "\t%s = wl_proxy_create("
 			       "(struct wl_proxy *) %s,\n"
-			       "\t\t\t     &wl_%s_interface);\n"
+			       "\t\t\t     &%s_interface);\n"
 			       "\tif (!%s)\n"
 			       "\t\treturn NULL;\n\n",
 			       ret->name,
@@ -420,7 +420,7 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 			       ret->name);
 
 		printf("\twl_proxy_marshal((struct wl_proxy *) %s,\n"
-		       "\t\t\t WL_%s_%s",
+		       "\t\t\t %s_%s",
 		       interface->name,
 		       interface->uppercase_name,
 		       m->uppercase_name);
@@ -437,7 +437,7 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 			       interface->name);
 
 		if (ret)
-			printf("\n\treturn (struct wl_%s *) %s;\n",
+			printf("\n\treturn (struct %s *) %s;\n",
 			       ret->interface_name, ret->name);
 
 		printf("}\n\n");
@@ -467,18 +467,18 @@ emit_enumerations(struct interface *interface)
 	struct entry *entry;
 
 	wl_list_for_each(e, &interface->enumeration_list, link) {
-		printf("#ifndef WL_%s_%s_ENUM\n",
+		printf("#ifndef %s_%s_ENUM\n",
 		       interface->uppercase_name, e->uppercase_name);
-		printf("#define WL_%s_%s_ENUM\n",
+		printf("#define %s_%s_ENUM\n",
 		       interface->uppercase_name, e->uppercase_name);
-		printf("enum wl_%s_%s {\n", interface->name, e->name);
+		printf("enum %s_%s {\n", interface->name, e->name);
 		wl_list_for_each(entry, &e->entry_list, link)
-			printf("\tWL_%s_%s_%s = %s,\n",
+			printf("\t%s_%s_%s = %s,\n",
 			       interface->uppercase_name,
 			       e->uppercase_name,
 			       entry->uppercase_name, entry->value);
 		printf("};\n");
-		printf("#endif /* WL_%s_%s_ENUM */\n\n",
+		printf("#endif /* %s_%s_ENUM */\n\n",
 		       interface->uppercase_name, e->uppercase_name);
 	}
 }
@@ -494,7 +494,7 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 		return;
 
 	is_interface = message_list == &interface->request_list;
-	printf("struct wl_%s_%s {\n", interface->name,
+	printf("struct %s_%s {\n", interface->name,
 	       is_interface ? "interface" : "listener");
 
 	wl_list_for_each(m, message_list, link) {
@@ -503,12 +503,12 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 		n = strlen(m->name) + 17;
 		if (is_interface) {
 			printf("struct wl_client *client,\n"
-			       "%sstruct wl_%s *%s",
+			       "%sstruct %s *%s",
 			       indent(n),
 			       interface->name, interface->name);
 		} else {
 			printf("void *data,\n"),
-			printf("%sstruct wl_%s *%s",
+			printf("%sstruct %s *%s",
 			       indent(n), interface->name, interface->name);
 		}
 
@@ -526,8 +526,8 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 
 	if (!is_interface) {
 	    printf("static inline int\n"
-		   "wl_%s_add_listener(struct wl_%s *%s,\n"
-		   "%sconst struct wl_%s_listener *listener, void *data)\n"
+		   "%s_add_listener(struct %s *%s,\n"
+		   "%sconst struct %s_listener *listener, void *data)\n"
 		   "{\n"
 		   "\treturn wl_proxy_add_listener((struct wl_proxy *) %s,\n"
 		   "%s(void (**)(void)) listener, data);\n"
@@ -564,12 +564,12 @@ emit_header(struct protocol *protocol, int server)
 	       protocol->uppercase_name, s);
 
 	wl_list_for_each(i, &protocol->interface_list, link)
-		printf("struct wl_%s;\n", i->name);
+		printf("struct %s;\n", i->name);
 	printf("\n");
 
 	wl_list_for_each(i, &protocol->interface_list, link) {
 		printf("extern const struct wl_interface "
-		       "wl_%s_interface;\n",
+		       "%s_interface;\n",
 		       i->name);
 	}
 	printf("\n");
@@ -660,7 +660,7 @@ emit_code(struct protocol *protocol)
 		emit_messages(&i->event_list, i, "events");
 
 		printf("WL_EXPORT const struct wl_interface "
-		       "wl_%s_interface = {\n"
+		       "%s_interface = {\n"
 		       "\t\"%s\", %d,\n",
 		       i->name, i->name, i->version);
 

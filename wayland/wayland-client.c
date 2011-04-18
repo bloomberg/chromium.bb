@@ -290,10 +290,10 @@ display_handle_global(void *data,
 	struct wl_global_listener *listener;
 	struct wl_global *global;
 
-	if (strcmp(interface, "display") == 0)
+	if (strcmp(interface, "wl_display") == 0)
 		wl_hash_table_insert(display->objects,
 				     id, &display->proxy.object);
-	else if (strcmp(interface, "visual") == 0)
+	else if (strcmp(interface, "wl_visual") == 0)
 		add_visual(display, id);
 
 	global = malloc(sizeof *global);
@@ -456,7 +456,7 @@ wl_display_connect(const char *name)
 		return NULL;
 	}
 
-	wl_display_bind(display, 1, "display", 1);
+	wl_display_bind(display, 1, "wl_display", 1);
 
 	return display;
 }

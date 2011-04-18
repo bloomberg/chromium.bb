@@ -3,7 +3,7 @@
 
   <!-- The core global object. This is a special singleton object.
        It is used for internal wayland protocol features. -->
-  <interface name="display" version="1">
+  <interface name="wl_display" version="1">
     <request name="bind">
       <arg name="id" type="uint"/>
       <arg name="interface" type="string"/>
@@ -24,7 +24,7 @@
          animations.  The notification will only be posted for one
          frame unless requested again. -->
     <request name="frame">
-      <arg name="surface" type="object" interface="surface"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="key" type="uint"/>
     </request>
 
@@ -51,7 +51,7 @@
          server will always announce an object before the object sends
          out events. -->
     <event name="global">
-      <arg name="id" type="new_id" interface="object"/>
+      <arg name="id" type="new_id" interface="wl_object"/>
       <arg name="name" type="string"/>
       <arg name="version" type="uint"/>
     </event>
@@ -80,17 +80,17 @@
   <!-- A compositor. This object is a global.  The compositor is in
        charge of combining the contents of multiple surfaces into one
        displayable output. -->
-  <interface name="compositor" version="1">
+  <interface name="wl_compositor" version="1">
     <!-- Factory request for a surface objects. A surface is akin to a
          window. -->
     <request name="create_surface">
-      <arg name="id" type="new_id" interface="surface"/>
+      <arg name="id" type="new_id" interface="wl_surface"/>
     </request>
   </interface>
 
 
   <!-- Shared memory support -->
-  <interface name="shm" version="1">
+  <interface name="wl_shm" version="1">
     <!-- Transfer a shm buffer to the server.  The allocated buffer
          would include at least stride * height bytes starting at the
          beginning of fd.  The file descriptor is transferred over the
@@ -98,12 +98,12 @@
          and visual describe the respective properties of the pixel
          data contained in the buffer. -->
     <request name="create_buffer">
-      <arg name="id" type="new_id" interface="buffer"/>
+      <arg name="id" type="new_id" interface="wl_buffer"/>
       <arg name="fd" type="fd"/>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
       <arg name="stride" type="uint"/>
-      <arg name="visual" type="object" interface="visual"/>
+      <arg name="visual" type="object" interface="wl_visual"/>
     </request>
   </interface>
 
@@ -111,15 +111,15 @@
   <!-- A pixel buffer. Created using the drm, shm or similar objects.
        It has a size, visual and contents, but not a location on the
        screen -->
-  <interface name="buffer" version="1">
+  <interface name="wl_buffer" version="1">
     <!-- Abandon a buffer.  This will invalidate the object id. -->
     <request name="destroy" type="destructor"/>
   </interface>
 
-  <interface name="shell" version="1">
+  <interface name="wl_shell" version="1">
     <request name="move">
-      <arg name="surface" type="object" interface="surface"/>
-      <arg name="input_device" type="object" interface="input_device"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="input_device" type="object" interface="wl_input_device"/>
       <arg name="time" type="uint"/>
     </request>
 
@@ -136,19 +136,19 @@
     </enum>
 
     <request name="resize">
-      <arg name="surface" type="object" interface="surface"/>
-      <arg name="input_device" type="object" interface="input_device"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="input_device" type="object" interface="wl_input_device"/>
       <arg name="time" type="uint"/>
       <!-- edges is an enum, need to get the values in here -->
       <arg name="edges" type="uint"/>
     </request>
 
     <request name="create_drag">
-      <arg name="id" type="new_id" interface="drag"/>
+      <arg name="id" type="new_id" interface="wl_drag"/>
     </request>
 
     <request name="create_selection">
-      <arg name="id" type="new_id" interface="selection"/>
+      <arg name="id" type="new_id" interface="wl_selection"/>
     </request>
 
     <!-- The configure event asks the client to resize its surface.
@@ -160,13 +160,13 @@
     <event name="configure">
       <arg name="time" type="uint"/>
       <arg name="edges" type="uint"/>
-      <arg name="surface" type="object" interface="surface"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
     </event>
   </interface>
 
-  <interface name="selection" version="1">
+  <interface name="wl_selection" version="1">
     <!-- Add an offered mime type.  Can be called several times to
          offer multiple types, but must be called before 'activate'. -->
     <request name="offer">
@@ -175,7 +175,7 @@
 
     <!-- Can the selection be activated for multiple devices? -->
     <request name="activate">
-      <arg name="input_device" type="object" interface="input_device"/>
+      <arg name="input_device" type="object" interface="wl_input_device"/>
       <arg name="time" type="uint"/>
     </request>
 
@@ -193,7 +193,7 @@
     <event name="cancelled"/>
   </interface>
 
-  <interface name="selection_offer" version="1">
+  <interface name="wl_selection_offer" version="1">
     <!-- Called to receive the selection data as the specified type.
          Sends the pipe fd to the compositor, which forwards it to the
          source in the 'send' event -->
@@ -210,11 +210,11 @@
     </event>
 
     <event name="keyboard_focus">
-      <arg name="input_device" type="object" interface="input_device"/>
+      <arg name="input_device" type="object" interface="wl_input_device"/>
     </event>
   </interface>
 
-  <interface name="drag" version="1">
+  <interface name="wl_drag" version="1">
     <!-- Add an offered mime type.  Can be called several times to
          offer multiple types, but must be called before 'activate'. -->
     <request name="offer">
@@ -222,8 +222,8 @@
     </request>
 
     <request name="activate">
-      <arg name="surface" type="object" interface="surface"/>
-      <arg name="input_device" type="object" interface="input_device"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="input_device" type="object" interface="wl_input_device"/>
       <arg name="time" type="uint"/>
     </request>
 
@@ -251,7 +251,7 @@
   </interface>
 
 
-  <interface name="drag_offer" version="1">
+  <interface name="wl_drag_offer" version="1">
     <!-- Call to accept the offer of the given type -->
     <request name="accept">
       <arg name="time" type="uint"/>
@@ -281,7 +281,7 @@
          drag object may no longer be valid. -->
     <event name="pointer_focus">
       <arg name="time" type="uint"/>
-      <arg name="surface" type="object" interface="surface"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
       <arg name="surface_x" type="int"/>
@@ -308,7 +308,7 @@
 
   <!-- A surface. This is an image that is displayed on the screen.
        It has a location, size and pixel contents. Similar to a window. -->
-  <interface name="surface" version="1">
+  <interface name="wl_surface" version="1">
     <!-- Deletes the surface and invalidates its object id. -->
     <request name="destroy" type="destructor"/>
 
@@ -316,7 +316,7 @@
          arguments specify the location of the new buffers upper left
          corner, relative to the old buffers upper left corner. -->
     <request name="attach">
-      <arg name="buffer" type="object" interface="buffer"/>
+      <arg name="buffer" type="object" interface="wl_buffer"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
     </request>
@@ -333,7 +333,7 @@
          determines the initial position or if the surface is locked
          to that relative position during moves. -->
     <request name="map_transient">
-      <arg name="parent" type="object" interface="surface"/>
+      <arg name="parent" type="object" interface="wl_surface"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
       <arg name="flags" type="uint"/>
@@ -369,13 +369,13 @@
        or when such a device is hot plugged.  A input_device group
        typically has a pointer and maintains a keyboard_focus and a
        pointer_focus.  -->
-  <interface name="input_device" version="1">
+  <interface name="wl_input_device" version="1">
     <!-- Set the pointer's image.  This request only takes effect if
          the pointer focus for this device is one of the requesting
          clients surfaces.  -->
     <request name="attach">
       <arg name="time" type="uint"/>
-      <arg name="buffer" type="object" interface="buffer"/>
+      <arg name="buffer" type="object" interface="wl_buffer"/>
       <arg name="hotspot_x" type="int"/>
       <arg name="hotspot_y" type="int"/>
     </request>
@@ -413,7 +413,7 @@
          this event by setting an apropriate pointer image. -->
     <event name="pointer_focus">
       <arg name="time" type="uint"/>
-      <arg name="surface" type="object" interface="surface"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
       <arg name="surface_x" type="int"/>
@@ -422,7 +422,7 @@
 
     <event name="keyboard_focus">
       <arg name="time" type="uint"/>
-      <arg name="surface" type="object" interface="surface"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="keys" type="array"/>
     </event>
   </interface>
@@ -435,7 +435,7 @@
        displays part of the compositor space.  This object is
        published as global during start up, or when a screen is hot
        plugged.  -->
-  <interface name="output" version="1">
+  <interface name="wl_output" version="1">
     <!-- Notification about the screen size. -->
     <event name="geometry">
       <arg name="x" type="int"/>
@@ -449,6 +449,6 @@
   <!-- A visual is the pixel format.  The different visuals are
        currently only identified by the order they are advertised by
        the 'global' events.  We need something better.  -->
-  <interface name="visual" version="1"/>
+  <interface name="wl_visual" version="1"/>
 
 </protocol>
