@@ -23,6 +23,7 @@
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
+#include "ppapi/cpp/var.h"
 
 // Due to a bug in nacl-newlib, this #include has to come last.
 // See http://code.google.com/p/nativeclient/issues/detail?id=1654
@@ -77,14 +78,31 @@ class MyInstance : public pp::Instance {
         amplitude_l_(1.0),
         amplitude_r_(1.0),
         duration_msec_(kDefaultDuration),
-        obtained_sample_frame_count_(0) {}
+        obtained_sample_frame_count_(0),
+        callback_count_(0) {}
 
   static void StopOutput(void* user_data, int32_t err) {
+    MyInstance* instance = static_cast<MyInstance*>(user_data);
+
+    const char* result = "unexpected failure";
     NaClLog(1, "example: StopOutput() invoked on main thread\n");
     if (PP_OK == err) {
-      MyInstance* instance = static_cast<MyInstance*>(user_data);
-      instance->audio_.StopPlayback();
+      if (instance->audio_.StopPlayback()) {
+        if (instance->callback_count_ >= 2) {
+          result = "pass";
+        } else {
+          result = "failure: too few callbacks occurred";
+        }
+      }
     }
+    // This Call() fails if exception is allowed to default to
+    // NULL.  That is probably a bug, but it doesn't really matter
+    // since this interface is deprecated.  This will need to be
+    // replaced with a postMessage() call when postMessage() is
+    // implemented.
+    pp::Var exception;
+    instance->GetWindowObject().Call("StopPlaybackCompleted",
+                                     pp::Var(result), &exception);
   }
 
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
@@ -176,6 +194,8 @@ class MyInstance : public pp::Instance {
     // Store current value to use as starting point for next callback.
     instance->audio_wave_l_ = wave_l;
     instance->audio_wave_r_ = wave_r;
+
+    ++instance->callback_count_;
   }
 
   // Audio resource. Allocated in Init(), freed on destruction.
@@ -194,6 +214,8 @@ class MyInstance : public pp::Instance {
 
   uint32_t duration_msec_;
   uint32_t obtained_sample_frame_count_;
+
+  int callback_count_;
 };
 
 class MyModule : public pp::Module {

@@ -18,13 +18,20 @@ nexe = env.ComponentProgram('ppapi_example_audio.nexe',
                                         'pthread',
                                         'm'])
 
-validate = env.CommandValidatorTestNacl('validate_ppapi_example_audio.out',
-                                        image=[nexe])
-# since we do not have an automated test - at least validate the image
-env.AddNodeToTestSuite(validate,
-                       ['validator_tests', 'small_tests'],
-                       'validate_ppapi_example_audio')
-
 # Note that the html is required to run this program.
 env.Publish('ppapi_example_audio.nexe', 'run',
             ['ppapi_example_audio.html' ])
+
+test = env.PPAPIBrowserTester('ppapi_example_audio_test.out',
+                              url='ppapi_audio_test.html',
+                              files=[nexe, env.File('ppapi_audio_test.html')])
+
+# Though this tests passes locally, it does not pass on the Windows
+# and Linux buildbots, which do not have audio devices.  Although
+# StartPlayback() and StopPlayback() succeed, the audio callback is
+# not called.  However, this does work on the Mac buildbots.
+is_broken = env.PPAPIBrowserTesterIsBroken() or not env.Bit('host_mac')
+env.AddNodeToTestSuite(test,
+                       ['chrome_browser_tests'],
+                       'run_ppapi_example_audio_test',
+                       is_broken=is_broken)
