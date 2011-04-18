@@ -21,7 +21,7 @@ import threading
 PIPE = subprocess.PIPE
 STDOUT = subprocess.STDOUT
 # Sends stdout or stderr to os.devnull.
-VOID = '/dev/null'
+VOID = object()
 # Error code when a process was killed because it timed out.
 TIMED_OUT = -2001
 
@@ -203,10 +203,14 @@ def call(args, timeout=None, **kwargs):
   """
   stdin = kwargs.pop('stdin', None)
   if stdin is not None:
-    assert stdin != PIPE
-    # When stdin is passed as an argument, use it as the actual input data and
-    # set the Popen() parameter accordingly.
-    kwargs['stdin'] = PIPE
+    if stdin is VOID:
+      kwargs['stdin'] = open(os.devnull, 'r')
+      stdin = None
+    else:
+      assert isinstance(stdin, str)
+      # When stdin is passed as an argument, use it as the actual input data and
+      # set the Popen() parameter accordingly.
+      kwargs['stdin'] = PIPE
 
   if not timeout:
     # Normal workflow.
