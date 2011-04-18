@@ -9,8 +9,9 @@
                  "featureStatus": {
                    "featureStatus":
                    [
-                     {"status":"enabled","name":"accelerated_2d_canvas"},
-                     {"status":"enabled","name":"accelerated_compositing"},
+                     {"status":"enabled","name":"2d_canvas"},
+                     {"status":"enabled","name":"3d_css"},
+                     {"status":"enabled","name":"compositing"},
                      {"status":"enabled","name":"webgl"},
                      {"status":"enabled","name":"multisampling"}
                    ],
@@ -42,10 +43,12 @@
                  "featureStatus": {
                    "featureStatus":
                    [
-                     {"status":"disabled","name":"accelerated_2d_canvas"},
-                     {"status":"enabled","name":"accelerated_compositing"},
-                     {"status":"software","name":"webgl"},
-                     {"status":"unavailable","name":"multisampling"}
+                     {"status":"disabled_off","name":"2d_canvas"},
+                     {"status":"unavailable_software","name":"3d_css"},
+                     {"status":"disabled_software","name":"compositing"},
+                     {"status":"software","name":"compositing"},
+                     {"status":"unavailable_off","name":"webgl"},
+                     {"status":"enabled","name":"multisampling"}
                    ],
                    "problems":[
                      {description: "Something wrong", crBugs: [], webkitBugs: []},

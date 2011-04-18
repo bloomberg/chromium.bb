@@ -29,14 +29,14 @@ found in the LICENSE file.
   text-align: top;
 }
 
-#info-view .feature-enabled {
+#info-view .feature-green {
   color: rgb(0, 128, 0);
 }
 
-#info-view .feature-software {
+#info-view .feature-yellow {
   color: rgb(128, 128, 0);
 }
 
-#info-view .feature-disabled {
+#info-view .feature-red {
   color: rgb(255, 0, 0);
 }

@@ -70,8 +70,16 @@ class GpuBlacklist {
   // Each entry in feature_status has:
   // {
   //    name:  "name of feature"
-  //    status: "enabled" | "unavailable" | "software" | "disabled";
+  //    status: "enabled" | "unavailable_software" | "unavailable_off" |
+  //            "software" | "disabled_off" | "disabled_softare";
   // }
+  //
+  // The features reported are not 1:1 with GpuFeatureType. Rather, they are:
+  //    '2d_canvas'
+  //    '3d_css'
+  //    'composting',
+  //    'webgl',
+  //    'multisampling'
   //
   // Each problems has:
   // {
@@ -269,6 +277,8 @@ class GpuBlacklist {
   static OsType GetOsType();
 
   void Clear();
+
+  bool IsFeatureBlacklisted(GpuFeatureFlags::GpuFeatureType feature) const;
 
   // Check if the entry is supported by the current version of browser.
   // By default, if there is no browser version information in the entry,

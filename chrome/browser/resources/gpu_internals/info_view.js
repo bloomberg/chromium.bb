@@ -59,11 +59,29 @@ cr.define('gpu', function() {
       }
 
       // Feature map
-      var featureNameMap = {
-        'accelerated_2d_canvas': 'Canvas',
-        'accelerated_compositing': '3D CSS',
+      var featureLabelMap = {
+        '2d_canvas': 'Canvas',
+        '3d_css': '3D CSS',
+        'compositing': 'Compositing',
         'webgl': 'WebGL',
         'multisampling': 'WebGL multisampling'
+      };
+      var statusLabelMap = {
+        'disabled_software': 'Software only. Hardware acceleration disabled.',
+        'disabled_off': 'Unavailable. Hardware acceleration disabled.',
+        'software': 'Software rendered. Hardware acceleration not enabled.',
+        'unavailable_off': 'Unavailable. Hardware acceleration unavailable',
+        'unavailable_software':
+            'Software only, hardware acceleration unavailable',
+        'enabled': 'Hardware accelerated'
+      };
+      var statusClassMap = {
+        'disabled_software': 'feature-yellow',
+        'disabled_off': 'feature-red',
+        'software': 'feature-yellow',
+        'unavailable_off': 'feature-red',
+        'unavailable_software': 'feature-yellow',
+        'enabled': 'feature-green'
       };
 
       // GPU info, basic
@@ -85,23 +103,18 @@ cr.define('gpu', function() {
             var featureEl = document.createElement('li');
 
             var nameEl = document.createElement('span');
-            nameEl.textContent = featureNameMap[feature.name] + ': ';
+            if (!featureLabelMap[feature.name])
+              console.log('Missing featureLabel for', feature.name);
+            nameEl.textContent = featureLabelMap[feature.name] + ': ';
             featureEl.appendChild(nameEl);
 
             var statusEl = document.createElement('span');
-            if (feature.status == 'enabled') {
-              statusEl.textContent = 'enabled';
-              statusEl.className = 'feature-enabled';
-            } else if (feature.status == 'software') {
-              statusEl.textContent = 'software only';
-              statusEl.className = 'feature-software';
-            } else if (feature.status == 'unavailable') {
-              statusEl.textContent = 'unavailable';
-              statusEl.className = 'feature-disabled';
-            } else { // disabled
-              statusEl.textContent = 'disabled';
-              statusEl.className = 'feature-disabled';
-            }
+            if (!statusLabelMap[feature.status])
+              console.log('Missing statusLabel for', feature.status);
+            if (!statusClassMap[feature.status])
+              console.log('Missing statusClass for', feature.status);
+            statusEl.textContent = statusLabelMap[feature.status];
+            statusEl.className = statusClassMap[feature.status];
             featureEl.appendChild(statusEl);
 
             featureStatusList.appendChild(featureEl);

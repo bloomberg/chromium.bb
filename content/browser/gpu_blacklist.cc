@@ -34,6 +34,14 @@ Version* GetDateFromString(const std::string& date_string) {
   return Version::GetVersionFromString(date_as_version_string);
 }
 
+Value* NewStatusValue(const char* name, const char* status)
+{
+  DictionaryValue* value = new DictionaryValue();
+  value->SetString("name", name);
+  value->SetString("status", status);
+  return value;
+}
+
 }  // namespace anonymous
 
 GpuBlacklist::VersionInfo::VersionInfo(const std::string& version_op,
@@ -693,6 +701,16 @@ void GpuBlacklist::GetGpuFeatureFlagEntries(
   }
 }
 
+bool GpuBlacklist::IsFeatureBlacklisted(
+    GpuFeatureFlags::GpuFeatureType feature) const
+{
+  for (size_t i = 0; i < active_entries_.size(); ++i) {
+    if (active_entries_[i]->GetGpuFeatureFlags().flags() & feature)
+      return true;
+  }
+  return false;
+}
+
 Value* GpuBlacklist::GetFeatureStatus(bool gpu_access_allowed,
                                       bool disable_accelerated_compositing,
                                       bool enable_accelerated_2D_canvas,
@@ -700,96 +718,89 @@ Value* GpuBlacklist::GetFeatureStatus(bool gpu_access_allowed,
                                       bool disable_multisampling) const {
   DictionaryValue* status = new DictionaryValue();
 
-  // build the feature_status field
+  // Build the feature_status field.
   {
     ListValue* feature_status_list = new ListValue();
-    // Iterate over all feature bits in kGpuFeatureAll and set feature status
-    // for each one.
-    for (size_t i = 0; i < sizeof(GpuFeatureFlags::GpuFeatureType) * 8; ++i) {
-      GpuFeatureFlags::GpuFeatureType feature =
-          static_cast<GpuFeatureFlags::GpuFeatureType>(1 << i);
-      if (!(feature & GpuFeatureFlags::kGpuFeatureAll))
-        continue;
 
-      DictionaryValue* feature_status = new DictionaryValue();
-
-      std::string feature_name(
-          GpuFeatureFlags::GpuFeatureTypeToString(feature));
-      feature_status->SetString("name", feature_name);
-
-      // figure out if the feature is on or off
-      bool blacklisted = false;
-      for (size_t i = 0; i < active_entries_.size(); ++i) {
-        if (active_entries_[i]->GetGpuFeatureFlags().flags() & feature)
-          blacklisted |= true;
-      }
-
-      // status is actually a function of blacklisting + enable/disable flags +
-      // global GPU state
-      const char* status;
-      if (!gpu_access_allowed) {
-        status = "unavailable";
-      } else {
-        switch(feature) {
-          case GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas: {
-            if (enable_accelerated_2D_canvas) {
-              if (blacklisted)
-                status = "unavailable";
-              else
-                status = "enabled";
-            } else {
-              status = "software";
-            }
-            break;
-          }
-          case GpuFeatureFlags::kGpuFeatureAcceleratedCompositing: {
-            if (disable_accelerated_compositing) {
-              status = "disabled";
-            } else {
-              if (blacklisted)
-                status = "unavailable";
-              else
-                status = "enabled";
-            }
-            break;
-          }
-          case GpuFeatureFlags::kGpuFeatureWebgl: {
-            if (disable_experimental_webgl) {
-              status = "disabled";
-            } else {
-              if (blacklisted)
-                status = "unavailable";
-              else
-                status = "enabled";
-            }
-            break;
-          }
-          case GpuFeatureFlags::kGpuFeatureMultisampling: {
-            if(disable_multisampling) {
-              status = "disabled";
-            } else {
-              if(blacklisted)
-                status = "unavailable";
-              else
-                status = "enabled";
-            }
-            break;
-          }
-          default: {
-            NOTREACHED();
-            status = "unavailable";
-            break;
-          }
-        }
-      }
-      feature_status->SetString("status", status);
-
-      feature_status_list->Append(feature_status);
+    // 2d_canvas.
+    if (!gpu_access_allowed) {
+      if(enable_accelerated_2D_canvas)
+        feature_status_list->Append(NewStatusValue("2d_canvas",
+                                                   "unavailable_software"));
+      else
+        feature_status_list->Append(NewStatusValue("2d_canvas",
+                                                   "software"));
+    } else if (enable_accelerated_2D_canvas) {
+      if (IsFeatureBlacklisted(
+              GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas))
+        feature_status_list->Append(NewStatusValue("2d_canvas",
+                                                   "unavailable_software"));
+      else
+        feature_status_list->Append(NewStatusValue("2d_canvas",
+                                                   "enabled"));
+    } else {
+      feature_status_list->Append(NewStatusValue("2d_canvas",
+                                                 "software"));
     }
+
+    // 3d css and compositing.
+    if (!gpu_access_allowed) {
+      feature_status_list->Append(NewStatusValue("3d_css",
+                                                 "unavailable_off"));
+      feature_status_list->Append(NewStatusValue("compositing",
+                                                 "unavailable_software"));
+    } else if (disable_accelerated_compositing) {
+      feature_status_list->Append(NewStatusValue("3d_css",
+                                                 "unavailable_off"));
+      feature_status_list->Append(NewStatusValue("compositing",
+                                                 "disabled_software"));
+    } else if (IsFeatureBlacklisted(
+        GpuFeatureFlags::kGpuFeatureAcceleratedCompositing)) {
+      feature_status_list->Append(NewStatusValue("3d_css",
+                                                 "unavailable_off"));
+      feature_status_list->Append(NewStatusValue("compositing",
+                                                 "disabled_software"));
+    } else {
+      feature_status_list->Append(NewStatusValue("3d_css",
+                                                 "enabled"));
+      feature_status_list->Append(NewStatusValue("compositing",
+                                                 "enabled"));
+    }
+
+    // webgl
+    if (!gpu_access_allowed)
+      feature_status_list->Append(NewStatusValue("webgl",
+                                                 "unavailable_off"));
+    else if (disable_experimental_webgl)
+      feature_status_list->Append(NewStatusValue("webgl",
+                                                 "disabled_off"));
+    else if (IsFeatureBlacklisted(
+        GpuFeatureFlags::kGpuFeatureWebgl))
+      feature_status_list->Append(NewStatusValue("webgl",
+                                                 "unavailable_off"));
+    else
+      feature_status_list->Append(NewStatusValue("webgl",
+                                                 "enabled"));
+
+    // multisampling
+    if (!gpu_access_allowed)
+      feature_status_list->Append(NewStatusValue("multisampling",
+                                                 "unavailable_off"));
+    else if(disable_multisampling)
+      feature_status_list->Append(NewStatusValue("multisampling",
+                                                 "disabled_off"));
+    else if (IsFeatureBlacklisted(
+        GpuFeatureFlags::kGpuFeatureMultisampling))
+      feature_status_list->Append(NewStatusValue("multisampling",
+                                                 "disabled_off"));
+    else
+      feature_status_list->Append(NewStatusValue("multisampling",
+                                                 "enabled"));
+
     status->Set("featureStatus", feature_status_list);
   }
 
-  // build the problems list
+  // Build the problems list.
   {
     ListValue* problem_list = new ListValue();
     if(!gpu_access_allowed) {
