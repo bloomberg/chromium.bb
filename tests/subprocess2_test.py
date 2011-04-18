@@ -22,8 +22,9 @@ import subprocess2
 class Subprocess2Test(unittest.TestCase):
   # Can be mocked in a test.
   TO_SAVE = {
-      subprocess2: ['Popen', 'call', 'check_call', 'capture', 'check_output'],
-      subprocess2.subprocess: ['Popen'],
+    subprocess2: [
+      'Popen', 'communicate', 'call', 'check_call', 'capture', 'check_output'],
+    subprocess2.subprocess: ['Popen'],
   }
 
   def setUp(self):
@@ -40,14 +41,14 @@ class Subprocess2Test(unittest.TestCase):
         setattr(module, name, value)
 
   @staticmethod
-  def _fake_call():
+  def _fake_communicate():
     results = {}
-    def fake_call(args, **kwargs):
+    def fake_communicate(args, **kwargs):
       assert not results
       results.update(kwargs)
       results['args'] = args
       return ['stdout', 'stderr'], 0
-    subprocess2.call = fake_call
+    subprocess2.communicate = fake_communicate
     return results
 
   @staticmethod
@@ -79,7 +80,7 @@ class Subprocess2Test(unittest.TestCase):
     return results
 
   def test_check_call_defaults(self):
-    results = self._fake_call()
+    results = self._fake_communicate()
     self.assertEquals(
         ['stdout', 'stderr'], subprocess2.check_call(['foo'], a=True))
     expected = {
@@ -88,9 +89,10 @@ class Subprocess2Test(unittest.TestCase):
     }
     self.assertEquals(expected, results)
 
-  def test_call_defaults(self):
+  def test_communicate_defaults(self):
     results = self._fake_Popen()
-    self.assertEquals(((None, None), -8), subprocess2.call(['foo'], a=True))
+    self.assertEquals(
+        ((None, None), -8), subprocess2.communicate(['foo'], a=True))
     expected = {
         'args': ['foo'],
         'a': True,
@@ -118,9 +120,9 @@ class Subprocess2Test(unittest.TestCase):
     self.assertEquals(expected, results)
 
   def test_check_output_defaults(self):
-    results = self._fake_call()
+    results = self._fake_communicate()
     # It's discarding 'stderr' because it assumes stderr=subprocess2.STDOUT but
-    # fake_call() doesn't 'implement' that.
+    # fake_communicate() doesn't 'implement' that.
     self.assertEquals('stdout', subprocess2.check_output(['foo'], a=True))
     expected = {
         'args': ['foo'],
@@ -133,7 +135,7 @@ class Subprocess2Test(unittest.TestCase):
 
   def test_timeout(self):
     # It'd be better to not discard stdout.
-    out, returncode = subprocess2.call(
+    out, returncode = subprocess2.communicate(
         self.exe + ['--sleep', '--stdout'],
         timeout=0.01,
         stdout=subprocess2.PIPE)

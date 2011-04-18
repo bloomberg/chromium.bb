@@ -192,7 +192,7 @@ def Popen(args, **kwargs):
     raise
 
 
-def call(args, timeout=None, **kwargs):
+def communicate(args, timeout=None, **kwargs):
   """Wraps subprocess.Popen().communicate().
 
   Returns ((stdout, stderr), returncode).
@@ -244,12 +244,24 @@ def call(args, timeout=None, **kwargs):
   return out, proc.returncode
 
 
+def call(args, **kwargs):
+  """Emulates subprocess.call().
+
+  Automatically convert stdout=PIPE or stderr=PIPE to VOID.
+  """
+  if kwargs.get('stdout') == PIPE:
+    kwargs['stdout'] = VOID
+  if kwargs.get('stderr') == PIPE:
+    kwargs['stderr'] = VOID
+  return communicate(args, **kwargs)[1]
+
+
 def check_call(args, **kwargs):
   """Improved version of subprocess.check_call().
 
   Returns (stdout, stderr), unlike subprocess.check_call().
   """
-  out, returncode = call(args, **kwargs)
+  out, returncode = communicate(args, **kwargs)
   if returncode:
     raise CalledProcessError(
         returncode, args, kwargs.get('cwd'), out[0], out[1])
@@ -271,7 +283,7 @@ def capture(args, **kwargs):
     kwargs['stdout'] = PIPE
   if kwargs.get('stderr') is None:
     kwargs['stderr'] = STDOUT
-  return call(args, **kwargs)[0][0]
+  return communicate(args, **kwargs)[0][0]
 
 
 def check_output(args, **kwargs):
