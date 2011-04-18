@@ -10,29 +10,52 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/thumbnail_score.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/renderer/about_handler.h"
+#include "chrome/renderer/automation/dom_automation_controller.h"
+#include "chrome/renderer/external_host_bindings.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/translate_helper.h"
+#include "content/common/bindings_policy.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/content_renderer_client.h"
-#include "content/renderer/render_view.h"
+#include "googleurl/src/gurl.h"
+#include "net/base/data_url.h"
 #include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/skbitmap_operations.h"
+#include "webkit/glue/dom_operations.h"
+#include "webkit/glue/image_decoder.h"
+#include "webkit/glue/image_resource_fetcher.h"
 #include "webkit/glue/webkit_glue.h"
+#include "v8/include/v8-testing.h"
 
+using WebKit::WebCString;
 using WebKit::WebDataSource;
 using WebKit::WebFrame;
+using WebKit::WebPageSerializer;
+using WebKit::WebPageSerializerClient;
 using WebKit::WebRect;
 using WebKit::WebSize;
+using WebKit::WebString;
+using WebKit::WebURL;
+using WebKit::WebURLRequest;
 using WebKit::WebView;
+using WebKit::WebVector;
+using webkit_glue::ImageResourceFetcher;
 
 // Delay in milliseconds that we'll wait before capturing the page contents
 // and thumbnail.
@@ -94,6 +117,12 @@ ChromeRenderViewObserver::ChromeRenderViewObserver(
       phishing_classifier_(phishing_classifier),
       last_indexed_page_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(page_info_method_factory_(this)) {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kDomAutomationController)) {
+    int old_bindings = render_view->enabled_bindings();
+    render_view->set_enabled_bindings(
+        old_bindings |= BindingsPolicy::DOM_AUTOMATION);
+  }
 }
 
 ChromeRenderViewObserver::~ChromeRenderViewObserver() {
@@ -103,6 +132,17 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderViewObserver, message)
     IPC_MESSAGE_HANDLER(ViewMsg_CaptureSnapshot, OnCaptureSnapshot)
+    IPC_MESSAGE_HANDLER(ViewMsg_HandleMessageFromExternalHost,
+                        OnHandleMessageFromExternalHost)
+    IPC_MESSAGE_HANDLER(ViewMsg_JavaScriptStressTestControl,
+                        OnJavaScriptStressTestControl)
+    IPC_MESSAGE_HANDLER(ViewMsg_GetAllSavableResourceLinksForCurrentPage,
+                        OnGetAllSavableResourceLinksForCurrentPage)
+    IPC_MESSAGE_HANDLER(
+        ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
+        OnGetSerializedHtmlDataForCurrentPageWithLocalLinks)
+    IPC_MESSAGE_HANDLER(ViewMsg_DownloadFavicon, OnDownloadFavicon)
+    IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -132,6 +172,115 @@ void ChromeRenderViewObserver::OnCaptureSnapshot() {
   Send(new ViewHostMsg_Snapshot(routing_id(), snapshot));
 }
 
+void ChromeRenderViewObserver::OnHandleMessageFromExternalHost(
+    const std::string& message,
+    const std::string& origin,
+    const std::string& target) {
+  if (message.empty())
+    return;
+  GetExternalHostBindings()->ForwardMessageFromExternalHost(message, origin,
+                                                            target);
+}
+
+void ChromeRenderViewObserver::OnJavaScriptStressTestControl(int cmd,
+                                                             int param) {
+  if (cmd == kJavaScriptStressTestSetStressRunType) {
+    v8::Testing::SetStressRunType(static_cast<v8::Testing::StressType>(param));
+  } else if (cmd == kJavaScriptStressTestPrepareStressRun) {
+    v8::Testing::PrepareStressRun(param);
+  }
+}
+
+void ChromeRenderViewObserver::OnGetAllSavableResourceLinksForCurrentPage(
+    const GURL& page_url) {
+  // Prepare list to storage all savable resource links.
+  std::vector<GURL> resources_list;
+  std::vector<GURL> referrers_list;
+  std::vector<GURL> frames_list;
+  webkit_glue::SavableResourcesResult result(&resources_list,
+                                             &referrers_list,
+                                             &frames_list);
+
+  if (!webkit_glue::GetAllSavableResourceLinksForCurrentPage(
+          render_view()->webview(),
+          page_url,
+          &result,
+          chrome::kSavableSchemes)) {
+    // If something is wrong when collecting all savable resource links,
+    // send empty list to embedder(browser) to tell it failed.
+    referrers_list.clear();
+    resources_list.clear();
+    frames_list.clear();
+  }
+
+  // Send result of all savable resource links to embedder.
+  Send(new ViewHostMsg_SendCurrentPageAllSavableResourceLinks(routing_id(),
+                                                              resources_list,
+                                                              referrers_list,
+                                                              frames_list));
+}
+
+void
+ChromeRenderViewObserver::OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
+    const std::vector<GURL>& links,
+    const std::vector<FilePath>& local_paths,
+    const FilePath& local_directory_name) {
+
+  // Convert std::vector of GURLs to WebVector<WebURL>
+  WebVector<WebURL> weburl_links(links);
+
+  // Convert std::vector of std::strings to WebVector<WebString>
+  WebVector<WebString> webstring_paths(local_paths.size());
+  for (size_t i = 0; i < local_paths.size(); i++)
+    webstring_paths[i] = webkit_glue::FilePathToWebString(local_paths[i]);
+
+  WebPageSerializer::serialize(render_view()->webview()->mainFrame(),
+                               true, this, weburl_links, webstring_paths,
+                               webkit_glue::FilePathToWebString(
+                                   local_directory_name));
+}
+
+void ChromeRenderViewObserver::OnDownloadFavicon(int id,
+                                                 const GURL& image_url,
+                                                 int image_size) {
+  bool data_image_failed = false;
+  if (image_url.SchemeIs("data")) {
+    SkBitmap data_image = ImageFromDataUrl(image_url);
+    data_image_failed = data_image.empty();
+    if (!data_image_failed) {
+      Send(new ViewHostMsg_DidDownloadFavicon(
+          routing_id(), id, image_url, false, data_image));
+    }
+  }
+
+  if (data_image_failed ||
+      !DownloadFavicon(id, image_url, image_size)) {
+    Send(new ViewHostMsg_DidDownloadFavicon(
+        routing_id(), id, image_url, true, SkBitmap()));
+  }
+}
+
+void ChromeRenderViewObserver::OnEnableViewSourceMode() {
+  if (!render_view()->webview())
+    return;
+  WebFrame* main_frame = render_view()->webview()->mainFrame();
+  if (!main_frame)
+    return;
+
+  main_frame->enableViewSourceMode(true);
+}
+
+void ChromeRenderViewObserver::didSerializeDataForFrame(
+    const WebURL& frame_url,
+    const WebCString& data,
+    WebPageSerializerClient::PageSerializationStatus status) {
+  Send(new ViewHostMsg_SendSerializedHtmlData(
+    routing_id(),
+    frame_url,
+    data.data(),
+    static_cast<int32>(status)));
+}
+
 void ChromeRenderViewObserver::OnNavigate(
     const ViewMsg_Navigate_Params& params) {
   AboutHandler::MaybeHandle(params.url);
@@ -144,6 +293,33 @@ void ChromeRenderViewObserver::DidStopLoading() {
           &ChromeRenderViewObserver::CapturePageInfo, render_view()->page_id(),
           false),
       render_view()->content_state_immediately() ? 0 : kDelayForCaptureMs);
+
+  GURL osd_url =
+      render_view()->webview()->mainFrame()->openSearchDescriptionURL();
+  if (!osd_url.is_empty()) {
+    Send(new ViewHostMsg_PageHasOSDD(
+        routing_id(), render_view()->page_id(), osd_url,
+        search_provider::AUTODETECTED_PROVIDER));
+  }
+
+  // TODO : Get both favicon and touch icon url, and send them to the browser.
+  GURL favicon_url(render_view()->webview()->mainFrame()->favIconURL());
+  if (!favicon_url.is_empty()) {
+    std::vector<FaviconURL> urls;
+    urls.push_back(FaviconURL(favicon_url, FAVICON));
+    Send(new ViewHostMsg_UpdateFaviconURL(
+        routing_id(), render_view()->page_id(), urls));
+  }
+}
+
+void ChromeRenderViewObserver::DidChangeIcons(WebFrame* frame) {
+  if (frame->parent())
+    return;
+
+  std::vector<FaviconURL> urls;
+  urls.push_back(FaviconURL(frame->favIconURL(), FAVICON));
+  Send(new ViewHostMsg_UpdateFaviconURL(
+      routing_id(), render_view()->page_id(), urls));
 }
 
 void ChromeRenderViewObserver::DidCommitProvisionalLoad(
@@ -157,6 +333,20 @@ void ChromeRenderViewObserver::DidCommitProvisionalLoad(
           &ChromeRenderViewObserver::CapturePageInfo, render_view()->page_id(),
           true),
       kDelayForForcedCaptureMs);
+}
+
+void ChromeRenderViewObserver::DidClearWindowObject(WebFrame* frame) {
+  if (BindingsPolicy::is_dom_automation_enabled(
+          render_view()->enabled_bindings())) {
+    BindDOMAutomationController(frame);
+  }
+
+  if (BindingsPolicy::is_external_host_enabled(
+          render_view()->enabled_bindings())) {
+    GetExternalHostBindings()->set_message_sender(render_view());
+    GetExternalHostBindings()->set_routing_id(routing_id());
+    GetExternalHostBindings()->BindToJavascript(frame, "externalHost");
+  }
 }
 
 void ChromeRenderViewObserver::CapturePageInfo(int load_id,
@@ -358,4 +548,70 @@ bool ChromeRenderViewObserver::CaptureSnapshot(WebView* view,
   HISTOGRAM_TIMES("Renderer4.Snapshot",
                   base::TimeTicks::Now() - beginning_time);
   return true;
+}
+
+void ChromeRenderViewObserver::BindDOMAutomationController(WebFrame* frame) {
+  if (!dom_automation_controller_.get()) {
+    dom_automation_controller_.reset(new DomAutomationController());
+  }
+  dom_automation_controller_->set_message_sender(this);
+  dom_automation_controller_->set_routing_id(routing_id());
+  dom_automation_controller_->BindToJavascript(frame,
+                                               "domAutomationController");
+}
+
+ExternalHostBindings* ChromeRenderViewObserver::GetExternalHostBindings() {
+  if (!external_host_bindings_.get())
+    external_host_bindings_.reset(new ExternalHostBindings());
+  return external_host_bindings_.get();
+}
+
+bool ChromeRenderViewObserver::DownloadFavicon(int id,
+                                               const GURL& image_url,
+                                               int image_size) {
+  // Make sure webview was not shut down.
+  if (!render_view()->webview())
+    return false;
+  // Create an image resource fetcher and assign it with a call back object.
+  image_fetchers_.push_back(linked_ptr<ImageResourceFetcher>(
+      new ImageResourceFetcher(
+          image_url, render_view()->webview()->mainFrame(), id, image_size,
+          WebURLRequest::TargetIsFavicon,
+          NewCallback(this, &ChromeRenderViewObserver::DidDownloadFavicon))));
+  return true;
+}
+
+void ChromeRenderViewObserver::DidDownloadFavicon(
+    ImageResourceFetcher* fetcher, const SkBitmap& image) {
+  // Notify requester of image download status.
+  Send(new ViewHostMsg_DidDownloadFavicon(routing_id(),
+                                          fetcher->id(),
+                                          fetcher->image_url(),
+                                          image.isNull(),
+                                          image));
+
+  // Remove the image fetcher from our pending list. We're in the callback from
+  // ImageResourceFetcher, best to delay deletion.
+  RenderView::ImageResourceFetcherList::iterator iter;
+  for (iter = image_fetchers_.begin(); iter != image_fetchers_.end(); ++iter) {
+    if (iter->get() == fetcher) {
+      iter->release();
+      image_fetchers_.erase(iter);
+      break;
+    }
+  }
+  MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
+}
+
+SkBitmap ChromeRenderViewObserver::ImageFromDataUrl(const GURL& url) const {
+  std::string mime_type, char_set, data;
+  if (net::DataURL::Parse(url, &mime_type, &char_set, &data) && !data.empty()) {
+    // Decode the favicon using WebKit's image decoder.
+    webkit_glue::ImageDecoder decoder(gfx::Size(kFaviconSize, kFaviconSize));
+    const unsigned char* src_data =
+        reinterpret_cast<const unsigned char*>(&data[0]);
+
+    return decoder.Decode(src_data, data.size());
+  }
+  return SkBitmap();
 }

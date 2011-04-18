@@ -27,6 +27,10 @@ const char kDisableAcceleratedCompositing[] = "disable-accelerated-compositing";
 
 // Disable the ApplicationCache.
 const char kDisableApplicationCache[]       = "disable-application-cache";
+//
+// TODO(scherkus): remove --disable-audio when we have a proper fallback
+// mechanism.
+const char kDisableAudio[]                  = "disable-audio";
 
 // Disable limits on the number of backing stores. Can prevent blinking for
 // users with many windows/tabs and lots of memory.
@@ -117,6 +121,9 @@ const char kDisableWebSockets[]             = "disable-web-sockets";
 // in build/features_override.gypi.
 const char kEnableAcceleratedDrawing[]      = "enable-accelerated-drawing";
 
+// Enables WebKit accessibility within the renderer process.
+const char kEnableAccessibility[]           = "enable-accessibility";
+
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 
@@ -135,6 +142,9 @@ const char kEnableLogging[]                 = "enable-logging";
 // assumed to be sRGB.
 const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 
+// Enable Pepper and JavaScript P2P API.
+const char kEnableP2PApi[]                  = "enable-p2papi";
+
 // Enable caching of pre-parsed JS script data.  See http://crbug.com/32407.
 const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";
 
@@ -147,6 +157,14 @@ const char kEnableSeccompSandbox[]          = "enable-seccomp-sandbox";
 
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";
+
+// Enables support for fullscreen video. Current implementation is
+// incomplete and this flag is used for development and testing.
+const char kEnableVideoFullscreen[]         = "enable-video-fullscreen";
+
+// Enables video logging where video elements log playback performance data to
+// the debug log.
+const char kEnableVideoLogging[]            = "enable-video-logging";
 
 // Enable web audio API.
 const char kEnableWebAudio[]                = "enable-webaudio";
@@ -306,6 +324,10 @@ const char kServiceProcess[]                = "service";
 // Visibly render a border around paint rects in the web page to help debug
 // and study painting behavior.
 const char kShowPaintRects[]                = "show-paint-rects";
+//
+// TODO(scherkus): remove --simple-data-source when our media resource loading
+// is cleaned up and playback testing completed.
+const char kSimpleDataSource[]              = "simple-data-source";
 
 // Runs the renderer and plugins in the same process as the browser
 const char kSingleProcess[]                 = "single-process";

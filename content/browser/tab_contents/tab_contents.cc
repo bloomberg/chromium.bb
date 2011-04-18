@@ -52,7 +52,6 @@
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/common/bindings_policy.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_restriction.h"
@@ -78,6 +77,7 @@
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/webui/web_ui_factory.h"
+#include "content/common/bindings_policy.h"
 #include "content/common/content_client.h"
 #include "content/common/navigation_types.h"
 #include "content/common/notification_service.h"
@@ -240,7 +240,6 @@ TabContents::TabContents(Profile* profile,
       received_page_title_(false),
       blocked_contents_(NULL),
       all_contents_blocked_(false),
-      dont_notify_render_view_(false),
       displayed_insecure_content_(false),
       capturing_contents_(false),
       is_being_destroyed_(false),
@@ -851,8 +850,6 @@ void TabContents::PopupNotificationVisibilityChanged(bool visible) {
   if (is_being_destroyed_)
     return;
   content_settings_delegate_->SetPopupsBlocked(visible);
-  if (!dont_notify_render_view_)
-    render_view_host()->AllowScriptToClose(!visible);
 }
 
 gfx::NativeView TabContents::GetContentNativeView() const {
@@ -1539,7 +1536,6 @@ void TabContents::DidNavigateMainFramePostCommit(
   if (!details.is_in_page) {
     // Close blocked popups.
     if (blocked_contents_) {
-      AutoReset<bool> auto_reset(&dont_notify_render_view_, true);
       blocked_contents_->Destroy();
       blocked_contents_ = NULL;
     }

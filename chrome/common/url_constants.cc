@@ -9,29 +9,9 @@
 
 namespace chrome {
 
-const char kAboutScheme[] = "about";
-const char kBlobScheme[] = "blob";
-const char kChromeDevToolsScheme[] = "chrome-devtools";
-const char kChromeInternalScheme[] = "chrome-internal";
-const char kChromeUIScheme[] = "chrome";
-const char kDataScheme[] = "data";
-const char kExtensionScheme[] = "chrome-extension";
-const char kFileScheme[] = "file";
-const char kFileSystemScheme[] = "filesystem";
-const char kFtpScheme[] = "ftp";
-const char kHttpScheme[] = "http";
-const char kHttpsScheme[] = "https";
-const char kJavaScriptScheme[] = "javascript";
-const char kMailToScheme[] = "mailto";
-const char kMetadataScheme[] = "metadata";
-const char kUserScriptScheme[] = "chrome-user-script";
-const char kViewSourceScheme[] = "view-source";
-
 #if defined(OS_CHROMEOS)
 const char kCrosScheme[] = "cros";
 #endif
-
-const char kStandardSchemeSeparator[] = "://";
 
 const char* kSavableSchemes[] = {
   kHttpScheme,
@@ -46,10 +26,8 @@ const char* kSavableSchemes[] = {
 
 const char kAboutAboutURL[] = "about:about";
 const char kAboutAppCacheInternalsURL[] = "about:appcache-internals";
-const char kAboutBlankURL[] = "about:blank";
 const char kAboutCacheURL[] = "about:cache";
 const char kAboutConflicts[] = "about:conflicts";
-const char kAboutCrashURL[] = "about:crash";
 const char kAboutKillURL[] = "about:kill";
 const char kAboutCreditsURL[] = "about:credits";
 const char kAboutDNSURL[] = "about:dns";
@@ -179,8 +157,6 @@ const char kChromeUIEnterpriseEnrollmentHost[] = "enterprise-enrollment";
 const char kChromeUILoginContainerHost[] = "login-container";
 const char kChromeUILoginHost[] = "login";
 #endif
-
-const char kUnreachableWebDataURL[] = "chrome://chromewebdata/";
 
 const char kAppCacheViewInternalsURL[] = "chrome://appcache-internals/";
 

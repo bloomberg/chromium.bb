@@ -1004,9 +1004,6 @@ class TabContents : public PageNavigator,
   // Should we block all child TabContents this attempts to spawn.
   bool all_contents_blocked_;
 
-  // TODO(pkasting): Hack to try and fix Linux browser tests.
-  bool dont_notify_render_view_;
-
   // True if this is a secure page which displayed insecure content.
   bool displayed_insecure_content_;
 

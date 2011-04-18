@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/extensions/url_pattern.h"
 #include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/navigation_state.h"

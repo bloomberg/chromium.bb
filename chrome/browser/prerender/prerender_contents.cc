@@ -108,7 +108,6 @@ void PrerenderContents::StartPrerendering() {
   // Hide the RVH, so that we will run at a lower CPU priority.
   // Once the RVH is being swapped into a tab, we will Restore it again.
   render_view_host_->WasHidden();
-  render_view_host_->AllowScriptToClose(true);
 
   // Register this with the ResourceDispatcherHost as a prerender
   // RenderViewHost. This must be done before the Navigate message to catch all
@@ -439,8 +438,8 @@ bool PrerenderContents::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartProvisionalLoadForFrame,
                         OnDidStartProvisionalLoadForFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MaybeCancelPrerender,
-                        OnMaybeCancelPrerender)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_MaybeCancelPrerenderForHTML5Media,
+                        OnMaybeCancelPrerenderForHTML5Media)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -479,16 +478,8 @@ void PrerenderContents::OnUpdateFaviconURL(
   }
 }
 
-void PrerenderContents::OnMaybeCancelPrerender(
-    PrerenderCancellationReason reason) {
-  switch (reason) {
-    case PRERENDER_CANCELLATION_REASON_HTML5_MEDIA:
-      Destroy(FINAL_STATUS_HTML5_MEDIA);
-      return;
-    default:
-      LOG(DFATAL) << "Invalid reason " << reason
-                  << " in OnMaybeCancelPrerender.";
-  }
+void PrerenderContents::OnMaybeCancelPrerenderForHTML5Media() {
+  Destroy(FINAL_STATUS_HTML5_MEDIA);
 }
 
 bool PrerenderContents::AddAliasURL(const GURL& url) {

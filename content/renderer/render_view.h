@@ -22,8 +22,6 @@
 #include "base/timer.h"
 #include "build/build_config.h"
 #include "chrome/common/content_settings.h"
-#include "chrome/common/search_provider.h"
-#include "chrome/common/view_types.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "content/common/edit_command.h"
 #include "content/common/navigation_gesture.h"
@@ -36,7 +34,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
@@ -54,8 +51,6 @@
 
 class AudioMessageFilter;
 class DeviceOrientationDispatcher;
-class DomAutomationController;
-class ExternalHostBindings;
 class ExternalPopupMenu;
 class FilePath;
 class GeolocationDispatcher;
@@ -170,7 +165,6 @@ typedef base::RefCountedData<int> SharedRenderViewCounter;
 class RenderView : public RenderWidget,
                    public WebKit::WebViewClient,
                    public WebKit::WebFrameClient,
-                   public WebKit::WebPageSerializerClient,
                    public webkit::npapi::WebPluginPageDelegate,
                    public base::SupportsWeakPtr<RenderView> {
  public:
@@ -204,17 +198,9 @@ class RenderView : public RenderWidget,
   // May return NULL when the view is closing.
   WebKit::WebView* webview() const;
 
-  int browser_window_id() const {
-    return browser_window_id_;
-  }
-
-  ViewType::Type view_type() const {
-    return view_type_;
-  }
-
-  int page_id() const {
-    return page_id_;
-  }
+  bool is_prerendering() const { return is_prerendering_; }
+  int page_id() const { return page_id_; }
+  PepperPluginDelegateImpl* pepper_delegate() { return &pepper_delegate_; }
 
   AudioMessageFilter* audio_message_filter() {
     return audio_message_filter_;
@@ -225,6 +211,8 @@ class RenderView : public RenderWidget,
   }
 
   bool content_state_immediately() { return send_content_state_immediately_; }
+  int enabled_bindings() const { return enabled_bindings_; }
+  void set_enabled_bindings(int b) { enabled_bindings_ = b; }
   void set_send_content_state_immediately(bool value) {
     send_content_state_immediately_ = value;
   }
@@ -248,16 +236,6 @@ class RenderView : public RenderWidget,
   void AddObserver(RenderViewObserver* observer);
   void RemoveObserver(RenderViewObserver* observer);
 
-  // Called from JavaScript window.external.AddSearchProvider() to add a
-  // keyword for a provider described in the given OpenSearch document.
-  void AddSearchProvider(const std::string& url,
-                         search_provider::OSDDType provider_type);
-
-  // Returns the install state for the given search provider url.
-  search_provider::InstallState GetSearchProviderInstallState(
-      WebKit::WebFrame* frame,
-      const std::string& url);
-
   // Evaluates a string of JavaScript in a particular frame.
   void EvaluateScript(const string16& frame_xpath,
                       const string16& jscript,
@@ -277,10 +255,6 @@ class RenderView : public RenderWidget,
   // allowPlugins().
   void SetContentSettings(const ContentSettings& settings);
 
-  // Notifies the browser that the given action has been performed. This is
-  // aggregated to the user metrics service.
-  void UserMetricsRecordAction(const std::string& action);
-
   // Sets whether  the renderer should report load progress to the browser.
   void SetReportLoadProgressEnabled(bool enabled);
 
@@ -290,6 +264,12 @@ class RenderView : public RenderWidget,
   // Returns true if the parameter node is a textfield, text area or a content
   // editable div.
   bool IsEditableNode(const WebKit::WebNode& node);
+
+  void LoadNavigationErrorPage(WebKit::WebFrame* frame,
+                               const WebKit::WebURLRequest& failed_request,
+                               const WebKit::WebURLError& error,
+                               const std::string& html,
+                               bool replace);
 
   // Plugin-related functions --------------------------------------------------
   // (See also WebPluginPageDelegate implementation.)
@@ -301,6 +281,19 @@ class RenderView : public RenderWidget,
   // plugin. See default_plugin_shared.h for possible values of |status|.
   void OnMissingPluginStatus(WebPluginDelegateProxy* delegate,
                              int status);
+
+  // Create a new NPAPI plugin.
+  WebKit::WebPlugin* CreateNPAPIPlugin(WebKit::WebFrame* frame,
+                                       const WebKit::WebPluginParams& params,
+                                       const FilePath& path,
+                                       const std::string& mime_type);
+
+  // Create a new Pepper plugin.
+  WebKit::WebPlugin* CreatePepperPlugin(
+      WebKit::WebFrame* frame,
+      const WebKit::WebPluginParams& params,
+      const FilePath& path,
+      webkit::ppapi::PluginModule* pepper_module);
 
   // Creates a fullscreen container for a pepper plugin instance.
   RenderWidgetFullscreenPepper* CreatePepperFullscreenContainer(
@@ -585,12 +578,6 @@ class RenderView : public RenderWidget,
       unsigned long long requested_size,
       WebKit::WebStorageQuotaCallbacks* callbacks);
 
-  // WebKit::WebPageSerializerClient implementation ----------------------------
-
-  virtual void didSerializeDataForFrame(const WebKit::WebURL& frame_url,
-                                        const WebKit::WebCString& data,
-                                        PageSerializationStatus status);
-
   // webkit_glue::WebPluginPageDelegate implementation -------------------------
 
   virtual webkit::npapi::WebPluginDelegate* CreatePluginDelegate(
@@ -723,11 +710,6 @@ class RenderView : public RenderWidget,
   // Sends a message and runs a nested message loop.
   bool SendAndRunNestedMessageLoop(IPC::SyncMessage* message);
 
-  // Adds search provider from the given OpenSearch description URL as a
-  // keyword search.
-  void AddGURLSearchProvider(const GURL& osd_url,
-                             search_provider::OSDDType provider_type);
-
   // Send queued accessibility notifications from the renderer to the browser.
   void SendPendingAccessibilityNotifications();
 
@@ -773,7 +755,6 @@ class RenderView : public RenderWidget,
   void OnDisableScrollbarsForSmallWindows(
       const gfx::Size& disable_scrollbars_size_limit);
   void OnDisassociateFromPopupCount();
-  void OnDownloadFavicon(int id, const GURL& image_url, int image_size);
   void OnDragSourceEndedOrMoved(const gfx::Point& client_point,
                                 const gfx::Point& screen_point,
                                 bool ended,
@@ -790,21 +771,12 @@ class RenderView : public RenderWidget,
                             const gfx::Point& screen_pt,
                             WebKit::WebDragOperationsMask operations_allowed);
   void OnEnablePreferredSizeChangedMode(int flags);
-  void OnEnableViewSourceMode();
   void OnEnumerateDirectoryResponse(int id, const std::vector<FilePath>& paths);
   void OnExecuteEditCommand(const std::string& name, const std::string& value);
   void OnFileChooserResponse(const std::vector<FilePath>& paths);
   void OnFind(int request_id, const string16&, const WebKit::WebFindOptions&);
   void OnFindReplyAck();
   void OnEnableAccessibility();
-  void OnGetAllSavableResourceLinksForCurrentPage(const GURL& page_url);
-  void OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
-      const std::vector<GURL>& links,
-      const std::vector<FilePath>& local_paths,
-      const FilePath& local_directory_name);
-  void OnHandleMessageFromExternalHost(const std::string& message,
-                                       const std::string& origin,
-                                       const std::string& target);
   void OnInstallMissingPlugin();
   void OnDisplayPrerenderedPage();
   void OnMediaPlayerActionAt(const gfx::Point& location,
@@ -812,7 +784,6 @@ class RenderView : public RenderWidget,
   void OnMoveOrResizeStarted();
   void OnNavigate(const ViewMsg_Navigate_Params& params);
   void OnNetworkStateChanged(bool online);
-  void OnNotifyRendererViewType(ViewType::Type view_type);
   void OnPaste();
 #if defined(OS_MACOSX)
   void OnPluginImeCompositionCompleted(const string16& text, int plugin_id);
@@ -850,7 +821,6 @@ class RenderView : public RenderWidget,
   void OnStopFinding(const ViewMsg_StopFinding_Params& params);
   void OnThemeChanged();
   void OnUndo();
-  void OnUpdateBrowserWindowId(int window_id);
   void OnUpdateTargetURLAck();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
 #if defined(OS_MACOSX)
@@ -859,7 +829,6 @@ class RenderView : public RenderWidget,
   void OnSelectPopupMenuItem(int selected_index);
 #endif
   void OnZoom(PageZoom::Function function);
-  void OnJavaScriptStressTestControl(int cmd, int param);
 
   // Adding a new message handler? Please add it in alphabetical order above
   // and put it in the same position in the .cc file.
@@ -874,10 +843,6 @@ class RenderView : public RenderWidget,
                             const WebKit::WebURLError& original_error,
                             const std::string& html);
 
-  // Exposes the DOMAutomationController object that allows JS to send
-  // information to the browser process.
-  void BindDOMAutomationController(WebKit::WebFrame* webframe);
-
   // Check whether the preferred size has changed. This is called periodically
   // by preferred_size_change_timer_.
   void CheckPreferredSize();
@@ -885,40 +850,12 @@ class RenderView : public RenderWidget,
   // Resets the |content_blocked_| array.
   void ClearBlockedContentSettings();
 
-  // Create a new NPAPI plugin.
-  WebKit::WebPlugin* CreateNPAPIPlugin(WebKit::WebFrame* frame,
-                                       const WebKit::WebPluginParams& params,
-                                       const FilePath& path,
-                                       const std::string& mime_type);
-
-  // Create a new Pepper plugin.
-  WebKit::WebPlugin* CreatePepperPlugin(
-      WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params,
-      const FilePath& path,
-      webkit::ppapi::PluginModule* pepper_module);
-
   // Sends an IPC notification that the specified content type was blocked.
   // If the content type requires it, |resource_identifier| names the specific
   // resource that was blocked (the plugin path in the case of plugins),
   // otherwise it's the empty string.
   void DidBlockContentType(ContentSettingsType settings_type,
                            const std::string& resource_identifier);
-
-  // This callback is triggered when DownloadFavicon completes, either
-  // succesfully or with a failure. See DownloadFavicon for more
-  // details.
-  void DidDownloadFavicon(webkit_glue::ImageResourceFetcher* fetcher,
-                          const SkBitmap& image);
-
-  // Requests to download a favicon image. When done, the RenderView
-  // is notified by way of DidDownloadFavicon. Returns true if the
-  // request was successfully started, false otherwise. id is used to
-  // uniquely identify the request and passed back to the
-  // DidDownloadFavicon method. If the image has multiple frames, the
-  // frame whose size is image_size is returned. If the image doesn't
-  // have a frame at the specified size, the first is returned.
-  bool DownloadFavicon(int id, const GURL& image_url, int image_size);
 
   GURL GetAlternateErrorPageURL(const GURL& failed_url,
                                 ErrorPageType error_type);
@@ -928,13 +865,8 @@ class RenderView : public RenderWidget,
 
   WebUIBindings* GetWebUIBindings();
 
-  ExternalHostBindings* GetExternalHostBindings();
-
   // Should only be called if this object wraps a PluginDocument.
   WebKit::WebPlugin* GetWebPluginFromPluginDocument();
-
-  // Decodes a data: URL image or returns an empty image in case of failure.
-  SkBitmap ImageFromDataUrl(const GURL&) const;
 
   // Inserts a string of CSS in a particular frame. |id| can be specified to
   // give the CSS style element an id, and (if specified) will replace the
@@ -947,12 +879,6 @@ class RenderView : public RenderWidget,
   bool IsNonLocalTopLevelNavigation(const GURL& url,
                                     WebKit::WebFrame* frame,
                                     WebKit::WebNavigationType type);
-
-  void LoadNavigationErrorPage(WebKit::WebFrame* frame,
-                               const WebKit::WebURLRequest& failed_request,
-                               const WebKit::WebURLError& error,
-                               const std::string& html,
-                               bool replace);
 
   bool MaybeLoadAlternateErrorPage(WebKit::WebFrame* frame,
                                    const WebKit::WebURLError& error,
@@ -1016,15 +942,6 @@ class RenderView : public RenderWidget,
   // because if the view grows beyond a size known to the browser, scroll bars
   // should be drawn.
   gfx::Size disable_scrollbars_size_limit_;
-
-  // We need to prevent windows from closing themselves with a window.close()
-  // call while a blocked popup notification is being displayed. We cannot
-  // synchronously query the Browser process. We cannot wait for the Browser
-  // process to send a message to us saying that a blocked popup notification
-  // is being displayed. We instead assume that when we create a window off
-  // this RenderView, that it is going to be blocked until we get a message
-  // from the Browser process telling us otherwise.
-  bool script_can_close_;
 
   // Loading state -------------------------------------------------------------
 
@@ -1134,13 +1051,6 @@ class RenderView : public RenderWidget,
 
   // View ----------------------------------------------------------------------
 
-  // Type of view attached with RenderView.  See view_types.h
-  ViewType::Type view_type_;
-
-  // Id number of browser window which RenderView is attached to. This is used
-  // for extensions.
-  int browser_window_id_;
-
   // Cache the preferred size of the page in order to prevent sending the IPC
   // when layout() recomputes but doesn't actually change sizes.
   gfx::Size preferred_size_;
@@ -1222,9 +1132,6 @@ class RenderView : public RenderWidget,
   std::map<int, WebKit::WebFileChooserCompletion*> enumeration_completions_;
   int enumeration_completion_id_;
 
-  // ImageResourceFetchers schedule via DownloadImage.
-  ImageResourceFetcherList image_fetchers_;
-
   // The SessionStorage namespace that we're assigned to has an ID, and that ID
   // is passed to us upon creation.  WebKit asks for this ID upon first use and
   // uses it whenever asking the browser process to allocate new storage areas.
@@ -1249,16 +1156,9 @@ class RenderView : public RenderWidget,
   // Shall be cleared as soon as the next key event is processed.
   EditCommands edit_commands_;
 
-  // Allows JS to access DOM automation. The JS object is only exposed when the
-  // DOM automation bindings are enabled.
-  scoped_ptr<DomAutomationController> dom_automation_controller_;
-
   // Allows Web UI pages (new tab page, etc.) to talk to the browser. The JS
   // object is only exposed when Web UI bindings are enabled.
   scoped_ptr<WebUIBindings> web_ui_bindings_;
-
-  // External host exposed through automation controller.
-  scoped_ptr<ExternalHostBindings> external_host_bindings_;
 
   // The external popup for the currently showing select popup.
   scoped_ptr<ExternalPopupMenu> external_popup_menu_;

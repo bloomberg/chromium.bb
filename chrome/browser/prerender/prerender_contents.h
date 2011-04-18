@@ -15,7 +15,6 @@
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "chrome/common/icon_messages.h"
-#include "chrome/common/prerender_constants.h"
 #include "chrome/common/view_types.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/common/notification_registrar.h"
@@ -208,10 +207,8 @@ class PrerenderContents : public RenderViewHostDelegate,
   void OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                          bool main_frame,
                                          const GURL& url);
-
   void OnUpdateFaviconURL(int32 page_id, const std::vector<FaviconURL>& urls);
-
-  void OnMaybeCancelPrerender(PrerenderCancellationReason reason);
+  void OnMaybeCancelPrerenderForHTML5Media();
 
   // Adds an alias URL, for one of the many redirections. Returns whether
   // the URL is valid.

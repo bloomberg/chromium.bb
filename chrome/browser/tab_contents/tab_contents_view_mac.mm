@@ -28,6 +28,7 @@
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
+#include "content/common/view_messages.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 

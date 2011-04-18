@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
@@ -47,7 +48,9 @@ ExtensionHelper::ExtensionHelper(RenderView* render_view,
     : RenderViewObserver(render_view),
       RenderViewObserverTracker<ExtensionHelper>(render_view),
       extension_dispatcher_(extension_dispatcher),
-      pending_app_icon_requests_(0) {
+      pending_app_icon_requests_(0),
+      view_type_(ViewType::INVALID),
+      browser_window_id_(-1) {
 }
 
 ExtensionHelper::~ExtensionHelper() {
@@ -106,6 +109,8 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
     IPC_MESSAGE_HANDLER(ExtensionMsg_ExecuteCode, OnExecuteCode)
     IPC_MESSAGE_HANDLER(ExtensionMsg_GetApplicationInfo, OnGetApplicationInfo)
+    IPC_MESSAGE_HANDLER(ViewMsg_UpdateBrowserWindowId, OnUpdateBrowserWindowId)
+    IPC_MESSAGE_HANDLER(ViewMsg_NotifyRenderViewType, OnNotifyRendererViewType)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -219,6 +224,14 @@ void ExtensionHelper::OnGetApplicationInfo(int page_id) {
 
   Send(new ExtensionHostMsg_DidGetApplicationInfo(
       routing_id(), page_id, app_info));
+}
+
+void ExtensionHelper::OnNotifyRendererViewType(ViewType::Type type) {
+  view_type_ = type;
+}
+
+void ExtensionHelper::OnUpdateBrowserWindowId(int window_id) {
+  browser_window_id_ = window_id;
 }
 
 void ExtensionHelper::DidDownloadApplicationDefinition(

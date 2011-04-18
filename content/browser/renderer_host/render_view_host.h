@@ -403,10 +403,6 @@ class RenderViewHost : public RenderWidgetHost {
   // as a popup.
   void DisassociateFromPopupCount();
 
-  // Tells the renderer whether it should allow window.close. This is initially
-  // set to false when creating a renderer-initiated window via window.open.
-  void AllowScriptToClose(bool visible);
-
   // Notifies the Renderer that a move or resize of its containing window has
   // started (this is used to hide the autocomplete popups if any).
   void WindowMoveOrResizeStarted();

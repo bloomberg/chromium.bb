@@ -33,6 +33,11 @@ WebKit::WebPlugin* ContentRendererClient::CreatePlugin(RenderView* render_view,
   return render_view->CreatePluginNoCheck(frame, params);
 }
 
+void ContentRendererClient::ShowErrorPage(RenderView* render_view,
+                                          WebKit::WebFrame* frame,
+                                          int http_status_code) {
+}
+
 std::string ContentRendererClient::GetNavigationErrorHtml(
     const WebKit::WebURLRequest& failed_request,
     const WebKit::WebURLError& error) {

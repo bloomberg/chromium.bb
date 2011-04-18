@@ -51,6 +51,11 @@ class ContentRendererClient {
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params);
 
+  // Give the embedder the ability to set an error page.
+  virtual void ShowErrorPage(RenderView* render_view,
+                             WebKit::WebFrame* frame,
+                             int http_status_code);
+
   // Returns the html to display when a navigation error occurs.
   virtual std::string GetNavigationErrorHtml(
       const WebKit::WebURLRequest& failed_request,

@@ -6,9 +6,18 @@
 #define CHROME_RENDERER_CHROME_RENDER_VIEW_OBSERVER_H_
 #pragma once
 
-#include "base/task.h"
-#include "content/renderer/render_view_observer.h"
+#include <vector>
 
+#include "base/task.h"
+#include "base/scoped_ptr.h"
+#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_observer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializerClient.h"
+
+class DomAutomationController;
+class ExternalHostBindings;
+class FilePath;
+class GURL;
 class SkBitmap;
 class TranslateHelper;
 struct ThumbnailScore;
@@ -22,9 +31,14 @@ namespace safe_browsing {
 class PhishingClassifierDelegate;
 }
 
+namespace webkit_glue {
+class ImageResourceFetcher;
+}
+
 // This class holds the Chrome specific parts of RenderView, and has the same
 // lifetime.
-class ChromeRenderViewObserver : public RenderViewObserver {
+class ChromeRenderViewObserver : public RenderViewObserver,
+                                 public WebKit::WebPageSerializerClient {
  public:
   // translate_helper and/or phishing_classifier can be NULL.
   ChromeRenderViewObserver(
@@ -37,10 +51,28 @@ class ChromeRenderViewObserver : public RenderViewObserver {
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
+  virtual void DidChangeIcons(WebKit::WebFrame* frame) OVERRIDE;
   virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
                                         bool is_new_navigation) OVERRIDE;
+  virtual void DidClearWindowObject(WebKit::WebFrame* frame) OVERRIDE;
+
+  // WebKit::WebPageSerializerClient implementation.
+  virtual void didSerializeDataForFrame(const WebKit::WebURL& frame_url,
+                                        const WebKit::WebCString& data,
+                                        PageSerializationStatus status);
 
   void OnCaptureSnapshot();
+  void OnHandleMessageFromExternalHost(const std::string& message,
+                                       const std::string& origin,
+                                       const std::string& target);
+  void OnJavaScriptStressTestControl(int cmd, int param);
+  void OnGetAllSavableResourceLinksForCurrentPage(const GURL& page_url);
+  void OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
+      const std::vector<GURL>& links,
+      const std::vector<FilePath>& local_paths,
+      const FilePath& local_directory_name);
+  void OnDownloadFavicon(int id, const GURL& image_url, int image_size);
+  void OnEnableViewSourceMode();
   void OnNavigate(const ViewMsg_Navigate_Params& params);
 
   // Captures the thumbnail and text contents for indexing for the given load
@@ -65,7 +97,31 @@ class ChromeRenderViewObserver : public RenderViewObserver {
   // to get a snapshot of a tab using chrome.tabs.captureVisibleTab().
   bool CaptureSnapshot(WebKit::WebView* view, SkBitmap* snapshot);
 
-  // Has the same lifetime as us.
+  // Exposes the DOMAutomationController object that allows JS to send
+  // information to the browser process.
+  void BindDOMAutomationController(WebKit::WebFrame* webframe);
+
+  ExternalHostBindings* GetExternalHostBindings();
+
+  // This callback is triggered when DownloadFavicon completes, either
+  // succesfully or with a failure. See DownloadFavicon for more
+  // details.
+  void DidDownloadFavicon(webkit_glue::ImageResourceFetcher* fetcher,
+                          const SkBitmap& image);
+
+  // Requests to download a favicon image. When done, the RenderView
+  // is notified by way of DidDownloadFavicon. Returns true if the
+  // request was successfully started, false otherwise. id is used to
+  // uniquely identify the request and passed back to the
+  // DidDownloadFavicon method. If the image has multiple frames, the
+  // frame whose size is image_size is returned. If the image doesn't
+  // have a frame at the specified size, the first is returned.
+  bool DownloadFavicon(int id, const GURL& image_url, int image_size);
+
+  // Decodes a data: URL image or returns an empty image in case of failure.
+  SkBitmap ImageFromDataUrl(const GURL&) const;
+
+  // Have the same lifetime as us.
   TranslateHelper* translate_helper_;
   safe_browsing::PhishingClassifierDelegate* phishing_classifier_;
 
@@ -73,8 +129,18 @@ class ChromeRenderViewObserver : public RenderViewObserver {
   // same page twice in a row.
   int32 last_indexed_page_id_;
 
+  // Allows JS to access DOM automation. The JS object is only exposed when the
+  // DOM automation bindings are enabled.
+  scoped_ptr<DomAutomationController> dom_automation_controller_;
+
+  // External host exposed through automation controller.
+  scoped_ptr<ExternalHostBindings> external_host_bindings_;
+
   ScopedRunnableMethodFactory<ChromeRenderViewObserver>
       page_info_method_factory_;
+
+  // ImageResourceFetchers schedule via DownloadImage.
+  RenderView::ImageResourceFetcherList image_fetchers_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderViewObserver);
 };

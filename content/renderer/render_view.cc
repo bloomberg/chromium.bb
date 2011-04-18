@@ -21,19 +21,13 @@
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/bindings_policy.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/url_constants.h"
-#include "chrome/renderer/automation/dom_automation_controller.h"
-#include "chrome/renderer/external_host_bindings.h"
-#include "chrome/renderer/localized_error.h"
 #include "content/common/appcache/appcache_dispatcher.h"
+#include "content/common/bindings_policy.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/content_constants.h"
+#include "content/common/content_switches.h"
 #include "content/common/database_messages.h"
 #include "content/common/drag_messages.h"
 #include "content/common/file_system/file_system_dispatcher.h"
@@ -43,6 +37,7 @@
 #include "content/common/pepper_messages.h"
 #include "content/common/quota_dispatcher.h"
 #include "content/common/renderer_preferences.h"
+#include "content/common/url_constants.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/audio_message_filter.h"
 #include "content/renderer/content_renderer_client.h"
@@ -72,7 +67,6 @@
 #include "media/base/filter_collection.h"
 #include "media/base/media_switches.h"
 #include "media/base/message_loop_factory_impl.h"
-#include "net/base/data_url.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
@@ -97,7 +91,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNetworkStateNotifier.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeList.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginDocument.h"
@@ -122,21 +115,16 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWindowFeatures.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/message_box_flags.h"
-#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
-#include "v8/include/v8-testing.h"
 #include "v8/include/v8.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/alt_error_page_resource_fetcher.h"
 #include "webkit/glue/context_menu.h"
-#include "webkit/glue/dom_operations.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/glue_serialize.h"
-#include "webkit/glue/image_decoder.h"
-#include "webkit/glue/image_resource_fetcher.h"
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/site_isolation_metrics.h"
@@ -202,8 +190,6 @@ using WebKit::WebNavigationPolicy;
 using WebKit::WebNavigationType;
 using WebKit::WebNetworkStateNotifier;
 using WebKit::WebNode;
-using WebKit::WebPageSerializer;
-using WebKit::WebPageSerializerClient;
 using WebKit::WebPlugin;
 using WebKit::WebPluginContainer;
 using WebKit::WebPluginDocument;
@@ -240,7 +226,6 @@ using base::Time;
 using base::TimeDelta;
 using webkit_glue::AltErrorPageResourceFetcher;
 using webkit_glue::FormField;
-using webkit_glue::ImageResourceFetcher;
 using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormDomManager;
 using webkit_glue::ResourceFetcher;
@@ -395,7 +380,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       send_content_state_immediately_(false),
       enabled_bindings_(0),
       send_preferred_size_changes_(false),
-      script_can_close_(true),
       is_loading_(false),
       navigation_gesture_(NavigationGestureUnknown),
       opened_by_user_gesture_(true),
@@ -407,8 +391,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       history_list_length_(0),
       has_unload_listener_(false),
       target_url_status_(TARGET_NONE),
-      view_type_(ViewType::INVALID),
-      browser_window_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(accessibility_method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
@@ -464,18 +446,14 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   host_window_ = parent_hwnd;
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kDomAutomationController))
-    enabled_bindings_ |= BindingsPolicy::DOM_AUTOMATION;
   if (command_line.HasSwitch(switches::kEnableAccessibility))
     WebAccessibilityCache::enableAccessibility();
 
   audio_message_filter_ = new AudioMessageFilter(routing_id_);
   render_thread_->AddFilter(audio_message_filter_);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableP2PApi)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableP2PApi))
     p2p_socket_dispatcher_ = new P2PSocketDispatcher(this);
-  }
 
   content::GetContentClient()->renderer()->RenderViewCreated(this);
 }
@@ -587,10 +565,6 @@ WebKit::WebView* RenderView::webview() const {
   return static_cast<WebKit::WebView*>(webwidget());
 }
 
-void RenderView::UserMetricsRecordAction(const std::string& action) {
-  Send(new ViewHostMsg_UserMetricsRecordAction(action));
-}
-
 void RenderView::SetReportLoadProgressEnabled(bool enabled) {
   if (!enabled) {
     load_progress_tracker_.reset(NULL);
@@ -689,7 +663,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetPageEncoding, OnSetPageEncoding)
     IPC_MESSAGE_HANDLER(ViewMsg_ResetPageEncodingToDefault,
                         OnResetPageEncodingToDefault)
-    IPC_MESSAGE_HANDLER(ViewMsg_DownloadFavicon, OnDownloadFavicon)
     IPC_MESSAGE_HANDLER(ViewMsg_ScriptEvalRequest, OnScriptEvalRequest)
     IPC_MESSAGE_HANDLER(ViewMsg_CSSInsertRequest, OnCSSInsertRequest)
     IPC_MESSAGE_HANDLER(ViewMsg_ReservePageIDRange, OnReservePageIDRange)
@@ -714,21 +687,11 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_EnumerateDirectoryResponse,
                         OnEnumerateDirectoryResponse)
     IPC_MESSAGE_HANDLER(ViewMsg_RunFileChooserResponse, OnFileChooserResponse)
-    IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
-    IPC_MESSAGE_HANDLER(ViewMsg_GetAllSavableResourceLinksForCurrentPage,
-                        OnGetAllSavableResourceLinksForCurrentPage)
-    IPC_MESSAGE_HANDLER(
-        ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
-        OnGetSerializedHtmlDataForCurrentPageWithLocalLinks)
     IPC_MESSAGE_HANDLER(ViewMsg_ShouldClose, OnShouldClose)
     IPC_MESSAGE_HANDLER(ViewMsg_ClosePage, OnClosePage)
     IPC_MESSAGE_HANDLER(ViewMsg_ThemeChanged, OnThemeChanged)
-    IPC_MESSAGE_HANDLER(ViewMsg_HandleMessageFromExternalHost,
-                        OnHandleMessageFromExternalHost)
     IPC_MESSAGE_HANDLER(ViewMsg_DisassociateFromPopupCount,
                         OnDisassociateFromPopupCount)
-    IPC_MESSAGE_HANDLER(ViewMsg_AllowScriptToClose,
-                        OnAllowScriptToClose)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
     IPC_MESSAGE_HANDLER(ViewMsg_ClearFocusedNode, OnClearFocusedNode)
     IPC_MESSAGE_HANDLER(ViewMsg_SetBackground, OnSetBackground)
@@ -737,10 +700,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_DisableScrollbarsForSmallWindows,
                         OnDisableScrollbarsForSmallWindows)
     IPC_MESSAGE_HANDLER(ViewMsg_SetRendererPrefs, OnSetRendererPrefs)
-    IPC_MESSAGE_HANDLER(ViewMsg_UpdateBrowserWindowId,
-                        OnUpdateBrowserWindowId)
-    IPC_MESSAGE_HANDLER(ViewMsg_NotifyRenderViewType,
-                        OnNotifyRendererViewType)
     IPC_MESSAGE_HANDLER(ViewMsg_MediaPlayerActionAt, OnMediaPlayerActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
 #if defined(OS_MACOSX)
@@ -765,8 +724,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
 #endif
-    IPC_MESSAGE_HANDLER(ViewMsg_JavaScriptStressTestControl,
-                        OnJavaScriptStressTestControl)
     IPC_MESSAGE_HANDLER(ViewMsg_ContextMenuClosed, OnContextMenuClosed)
     IPC_MESSAGE_HANDLER(ViewMsg_NetworkStateChanged, OnNetworkStateChanged)
     // TODO(viettrungluu): Move to a separate message filter.
@@ -925,7 +882,6 @@ void RenderView::OnUndo() {
     return;
 
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Undo"));
-  UserMetricsRecordAction("Undo");
 }
 
 void RenderView::OnRedo() {
@@ -933,7 +889,6 @@ void RenderView::OnRedo() {
     return;
 
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Redo"));
-  UserMetricsRecordAction("Redo");
 }
 
 void RenderView::OnCut() {
@@ -941,7 +896,6 @@ void RenderView::OnCut() {
     return;
 
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Cut"));
-  UserMetricsRecordAction("Cut");
 }
 
 void RenderView::OnCopy() {
@@ -949,7 +903,6 @@ void RenderView::OnCopy() {
     return;
 
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Copy"));
-  UserMetricsRecordAction("Copy");
 }
 
 #if defined(OS_MACOSX)
@@ -965,8 +918,6 @@ void RenderView::OnCopyToFindPboard() {
     RenderThread::current()->Send(
         new ClipboardHostMsg_FindPboardWriteStringAsync(selection));
   }
-
-  UserMetricsRecordAction("CopyToFindPboard");
 }
 #endif
 
@@ -975,7 +926,6 @@ void RenderView::OnPaste() {
     return;
 
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Paste"));
-  UserMetricsRecordAction("Paste");
 }
 
 void RenderView::OnReplace(const string16& text) {
@@ -993,7 +943,6 @@ void RenderView::OnDelete() {
     return;
 
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Delete"));
-  UserMetricsRecordAction("DeleteSelection");
 }
 
 void RenderView::OnSelectAll() {
@@ -1002,7 +951,6 @@ void RenderView::OnSelectAll() {
 
   webview()->focusedFrame()->executeCommand(
       WebString::fromUTF8("SelectAll"));
-  UserMetricsRecordAction("SelectAll");
 }
 
 void RenderView::OnSetInitialFocus(bool reverse) {
@@ -1231,8 +1179,8 @@ void RenderView::UpdateTitle(WebFrame* frame, const string16& title) {
     Send(new ViewHostMsg_UpdateTitle(
         routing_id_,
         page_id_,
-        UTF16ToWideHack(title.length() > chrome::kMaxTitleChars ?
-            title.substr(0, chrome::kMaxTitleChars) : title)));
+        UTF16ToWideHack(title.length() > content::kMaxTitleChars ?
+            title.substr(0, content::kMaxTitleChars) : title)));
   }
 }
 
@@ -1289,16 +1237,6 @@ void RenderView::LoadNavigationErrorPage(WebFrame* frame,
                         replace);
 }
 
-void RenderView::BindDOMAutomationController(WebFrame* frame) {
-  if (!dom_automation_controller_.get()) {
-    dom_automation_controller_.reset(new DomAutomationController());
-  }
-  dom_automation_controller_->set_message_sender(this);
-  dom_automation_controller_->set_routing_id(routing_id_);
-  dom_automation_controller_->BindToJavascript(frame,
-                                               "domAutomationController");
-}
-
 bool RenderView::RunJavaScriptMessage(int type,
                                       const std::wstring& message,
                                       const std::wstring& default_value,
@@ -1324,43 +1262,6 @@ bool RenderView::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
 
   message->EnableMessagePumping();  // Runs a nested message loop.
   return Send(message);
-}
-
-void RenderView::AddGURLSearchProvider(
-    const GURL& osd_url,
-    search_provider::OSDDType provider_type) {
-  if (!osd_url.is_empty())
-    Send(new ViewHostMsg_PageHasOSDD(routing_id_, page_id_, osd_url,
-                                     provider_type));
-}
-
-void RenderView::OnAllowScriptToClose(bool script_can_close) {
-  script_can_close_ = script_can_close;
-}
-
-void RenderView::AddSearchProvider(
-    const std::string& url,
-    search_provider::OSDDType provider_type) {
-  if (provider_type == search_provider::EXPLICIT_DEFAULT_PROVIDER &&
-      !webview()->mainFrame()->isProcessingUserGesture())
-    return;
-
-  AddGURLSearchProvider(GURL(url), provider_type);
-}
-
-search_provider::InstallState
-RenderView::GetSearchProviderInstallState(WebFrame* frame,
-                                          const std::string& url) {
-  GURL inquiry_url = GURL(url);
-  if (inquiry_url.is_empty())
-    return search_provider::DENIED;
-
-  search_provider::InstallState install;
-  Send(new ViewHostMsg_GetSearchProviderInstallState(routing_id_,
-                                                     frame->url(),
-                                                     inquiry_url,
-                                                     &install));
-  return install;
 }
 
 void RenderView::OnMissingPluginStatus(
@@ -1399,10 +1300,6 @@ WebView* RenderView::createView(
   // Check to make sure we aren't overloading on popups.
   if (shared_popup_counter_->data > kMaximumNumberOfUnacknowledgedPopups)
     return NULL;
-
-  // This window can't be closed from a window.close() call until we receive a
-  // message from the Browser process explicitly allowing it.
-  script_can_close_ = false;
 
   ViewHostMsg_CreateWindow_Params params;
   params.opener_id = routing_id_;
@@ -1562,18 +1459,6 @@ void RenderView::didStopLoading() {
   // displayed when done loading. Ideally we would send notification when
   // finished parsing the head, but webkit doesn't support that yet.
   // The feed discovery code would also benefit from access to the head.
-
-  // TODO : Get both favicon and touch icon url, and send them to the browser.
-  GURL favicon_url(webview()->mainFrame()->favIconURL());
-  if (!favicon_url.is_empty()) {
-    std::vector<FaviconURL> urls;
-    urls.push_back(FaviconURL(favicon_url, FAVICON));
-    Send(new ViewHostMsg_UpdateFaviconURL(routing_id_, page_id_, urls));
-  }
-
-  AddGURLSearchProvider(webview()->mainFrame()->openSearchDescriptionURL(),
-                        search_provider::AUTODETECTED_PROVIDER);
-
   Send(new ViewHostMsg_DidStopLoading(routing_id_));
 
   if (load_progress_tracker_ != NULL)
@@ -1635,7 +1520,7 @@ void RenderView::didExecuteCommand(const WebString& command_name) {
       StartsWithASCII(name, "Insert", true) ||
       StartsWithASCII(name, "Delete", true))
     return;
-  UserMetricsRecordAction(name);
+  webkit_glue::UserMetricsRecordAction(name);
 }
 
 void RenderView::SendPendingAccessibilityNotifications() {
@@ -2037,8 +1922,7 @@ WebMediaPlayer* RenderView::createMediaPlayer(
     WebFrame* frame, WebMediaPlayerClient* client) {
   // If this is a prerendering page, start the cancel of the prerender.
   if (is_prerendering_) {
-    Send(new ViewHostMsg_MaybeCancelPrerender(routing_id_,
-        prerender::PRERENDER_CANCELLATION_REASON_HTML5_MEDIA));
+    Send(new ViewHostMsg_MaybeCancelPrerenderForHTML5Media(routing_id_));
   }
 
   scoped_ptr<media::MessageLoopFactory> message_loop_factory(
@@ -2580,8 +2464,8 @@ void RenderView::didCommitProvisionalLoad(WebFrame* frame,
     // Advance our offset in session history, applying the length limit.  There
     // is now no forward history.
     history_list_offset_++;
-    if (history_list_offset_ >= chrome::kMaxSessionHistoryEntries)
-      history_list_offset_ = chrome::kMaxSessionHistoryEntries - 1;
+    if (history_list_offset_ >= content::kMaxSessionHistoryEntries)
+      history_list_offset_ = content::kMaxSessionHistoryEntries - 1;
     history_list_length_ = history_list_offset_ + 1;
   } else {
     // Inspect the navigation_state on this frame to see if the navigation
@@ -2626,8 +2510,9 @@ void RenderView::didCommitProvisionalLoad(WebFrame* frame,
 }
 
 void RenderView::didClearWindowObject(WebFrame* frame) {
-  if (BindingsPolicy::is_dom_automation_enabled(enabled_bindings_))
-    BindDOMAutomationController(frame);
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
+                    DidClearWindowObject(frame));
+
   GURL frame_url = frame->url();
   if (BindingsPolicy::is_web_ui_enabled(enabled_bindings_) &&
       (frame_url.SchemeIs(chrome::kChromeUIScheme) ||
@@ -2635,11 +2520,6 @@ void RenderView::didClearWindowObject(WebFrame* frame) {
     GetWebUIBindings()->set_message_sender(this);
     GetWebUIBindings()->set_routing_id(routing_id_);
     GetWebUIBindings()->BindToJavascript(frame, "chrome");
-  }
-  if (BindingsPolicy::is_external_host_enabled(enabled_bindings_)) {
-    GetExternalHostBindings()->set_message_sender(this);
-    GetExternalHostBindings()->set_routing_id(routing_id_);
-    GetExternalHostBindings()->BindToJavascript(frame, "externalHost");
   }
 }
 
@@ -2663,11 +2543,7 @@ void RenderView::didReceiveTitle(WebFrame* frame, const WebString& title) {
 }
 
 void RenderView::didChangeIcons(WebFrame* frame) {
-  if (!frame->parent()) {
-    std::vector<FaviconURL> urls;
-    urls.push_back(FaviconURL(frame->favIconURL(), FAVICON));
-    Send(new ViewHostMsg_UpdateFaviconURL(routing_id_, page_id_, urls));
-  }
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidChangeIcons(frame));
 }
 
 void RenderView::didFinishDocumentLoad(WebFrame* frame) {
@@ -2841,17 +2717,8 @@ void RenderView::didFinishResourceLoad(
     }
   }
 
-  // Use an internal error page, if we have one for the status code.
-  if (LocalizedError::HasStrings(LocalizedError::kHttpErrorDomain,
-                                 http_status_code)) {
-    WebURLError error;
-    error.unreachableURL = frame->url();
-    error.domain = WebString::fromUTF8(LocalizedError::kHttpErrorDomain);
-    error.reason = http_status_code;
-
-    LoadNavigationErrorPage(frame, frame->dataSource()->request(), error,
-                            std::string(), true);
-  }
+  content::GetContentClient()->renderer()->ShowErrorPage(
+      this, frame, http_status_code);
 }
 
 void RenderView::didFailResourceLoad(
@@ -3156,75 +3023,6 @@ void RenderView::SyncNavigationState() {
       routing_id_, page_id_, webkit_glue::HistoryItemToString(item)));
 }
 
-bool RenderView::DownloadFavicon(int id, const GURL& image_url,
-                                 int image_size) {
-  // Make sure webview was not shut down.
-  if (!webview())
-    return false;
-  // Create an image resource fetcher and assign it with a call back object.
-  image_fetchers_.push_back(linked_ptr<ImageResourceFetcher>(
-      new ImageResourceFetcher(
-          image_url, webview()->mainFrame(), id, image_size,
-          WebURLRequest::TargetIsFavicon,
-          NewCallback(this, &RenderView::DidDownloadFavicon))));
-  return true;
-}
-
-void RenderView::DidDownloadFavicon(ImageResourceFetcher* fetcher,
-                                    const SkBitmap& image) {
-  // Notify requester of image download status.
-  Send(new ViewHostMsg_DidDownloadFavicon(routing_id_,
-                                          fetcher->id(),
-                                          fetcher->image_url(),
-                                          image.isNull(),
-                                          image));
-
-  // Remove the image fetcher from our pending list. We're in the callback from
-  // ImageResourceFetcher, best to delay deletion.
-  for (ImageResourceFetcherList::iterator iter = image_fetchers_.begin();
-       iter != image_fetchers_.end(); ++iter) {
-    if (iter->get() == fetcher) {
-      iter->release();
-      image_fetchers_.erase(iter);
-      break;
-    }
-  }
-  MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
-}
-
-void RenderView::OnDownloadFavicon(int id,
-                                   const GURL& image_url,
-                                   int image_size) {
-  bool data_image_failed = false;
-  if (image_url.SchemeIs("data")) {
-    SkBitmap data_image = ImageFromDataUrl(image_url);
-    data_image_failed = data_image.empty();
-    if (!data_image_failed) {
-      Send(new ViewHostMsg_DidDownloadFavicon(routing_id_, id, image_url, false,
-                                              data_image));
-    }
-  }
-
-  if (data_image_failed ||
-      !DownloadFavicon(id, image_url, image_size)) {
-    Send(new ViewHostMsg_DidDownloadFavicon(routing_id_, id, image_url, true,
-                                            SkBitmap()));
-  }
-}
-
-SkBitmap RenderView::ImageFromDataUrl(const GURL& url) const {
-  std::string mime_type, char_set, data;
-  if (net::DataURL::Parse(url, &mime_type, &char_set, &data) && !data.empty()) {
-    // Decode the favicon using WebKit's image decoder.
-    webkit_glue::ImageDecoder decoder(gfx::Size(kFaviconSize, kFaviconSize));
-    const unsigned char* src_data =
-        reinterpret_cast<const unsigned char*>(&data[0]);
-
-    return decoder.Decode(src_data, data.size());
-  }
-  return SkBitmap();
-}
-
 GURL RenderView::GetAlternateErrorPageURL(const GURL& failed_url,
                                           ErrorPageType error_type) {
   if (failed_url.SchemeIsSecure()) {
@@ -3287,13 +3085,6 @@ WebUIBindings* RenderView::GetWebUIBindings() {
     web_ui_bindings_.reset(new WebUIBindings());
   }
   return web_ui_bindings_.get();
-}
-
-ExternalHostBindings* RenderView::GetExternalHostBindings() {
-  if (!external_host_bindings_.get()) {
-    external_host_bindings_.reset(new ExternalHostBindings());
-  }
-  return external_host_bindings_.get();
 }
 
 WebKit::WebPlugin* RenderView::GetWebPluginFromPluginDocument() {
@@ -3814,16 +3605,6 @@ void RenderView::OnFileChooserResponse(const std::vector<FilePath>& paths) {
   }
 }
 
-void RenderView::OnEnableViewSourceMode() {
-  if (!webview())
-    return;
-  WebFrame* main_frame = webview()->mainFrame();
-  if (!main_frame)
-    return;
-
-  main_frame->enableViewSourceMode(true);
-}
-
 void RenderView::OnEnablePreferredSizeChangedMode(int flags) {
   DCHECK(flags != kPreferredSizeNothing);
   if (send_preferred_size_changes_)
@@ -3879,14 +3660,6 @@ void RenderView::OnMediaPlayerActionAt(const gfx::Point& location,
     webview()->performMediaPlayerAction(action, location);
 }
 
-void RenderView::OnNotifyRendererViewType(ViewType::Type type) {
-  view_type_ = type;
-}
-
-void RenderView::OnUpdateBrowserWindowId(int window_id) {
-  browser_window_id_ = window_id;
-}
-
 void RenderView::OnEnableAccessibility() {
   if (WebAccessibilityCache::accessibilityEnabled())
     return;
@@ -3937,64 +3710,6 @@ void RenderView::OnAccessibilityNotificationsAck() {
   SendPendingAccessibilityNotifications();
 }
 
-void RenderView::OnGetAllSavableResourceLinksForCurrentPage(
-    const GURL& page_url) {
-  // Prepare list to storage all savable resource links.
-  std::vector<GURL> resources_list;
-  std::vector<GURL> referrers_list;
-  std::vector<GURL> frames_list;
-  webkit_glue::SavableResourcesResult result(&resources_list,
-                                             &referrers_list,
-                                             &frames_list);
-
-  if (!webkit_glue::GetAllSavableResourceLinksForCurrentPage(
-          webview(),
-          page_url,
-          &result,
-          chrome::kSavableSchemes)) {
-    // If something is wrong when collecting all savable resource links,
-    // send empty list to embedder(browser) to tell it failed.
-    referrers_list.clear();
-    resources_list.clear();
-    frames_list.clear();
-  }
-
-  // Send result of all savable resource links to embedder.
-  Send(new ViewHostMsg_SendCurrentPageAllSavableResourceLinks(routing_id_,
-                                                              resources_list,
-                                                              referrers_list,
-                                                              frames_list));
-}
-
-void RenderView::OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
-    const std::vector<GURL>& links,
-    const std::vector<FilePath>& local_paths,
-    const FilePath& local_directory_name) {
-
-  // Convert std::vector of GURLs to WebVector<WebURL>
-  WebVector<WebURL> weburl_links(links);
-
-  // Convert std::vector of std::strings to WebVector<WebString>
-  WebVector<WebString> webstring_paths(local_paths.size());
-  for (size_t i = 0; i < local_paths.size(); i++)
-    webstring_paths[i] = webkit_glue::FilePathToWebString(local_paths[i]);
-
-  WebPageSerializer::serialize(webview()->mainFrame(),
-                               true, this, weburl_links, webstring_paths,
-                               webkit_glue::FilePathToWebString(
-                                   local_directory_name));
-}
-
-void RenderView::didSerializeDataForFrame(const WebURL& frame_url,
-    const WebCString& data,
-    WebPageSerializerClient::PageSerializationStatus status) {
-  Send(new ViewHostMsg_SendSerializedHtmlData(
-    routing_id_,
-    frame_url,
-    data.data(),
-    static_cast<int32>(status)));
-}
-
 void RenderView::OnShouldClose() {
   bool should_close = webview()->dispatchBeforeUnloadEvent();
   Send(new ViewHostMsg_ShouldClose_ACK(routing_id_, should_close));
@@ -4023,15 +3738,6 @@ void RenderView::OnThemeChanged() {
   // TODO(port): we don't support theming on non-Windows platforms yet
   NOTIMPLEMENTED();
 #endif
-}
-
-void RenderView::OnHandleMessageFromExternalHost(const std::string& message,
-                                                 const std::string& origin,
-                                                 const std::string& target) {
-  if (message.empty())
-    return;
-  GetExternalHostBindings()->ForwardMessageFromExternalHost(message, origin,
-                                                            target);
 }
 
 void RenderView::OnDisassociateFromPopupCount() {
@@ -4605,14 +4311,6 @@ void RenderView::OnConnectTcpACK(
       remote_addr);
 }
 #endif
-
-void RenderView::OnJavaScriptStressTestControl(int cmd, int param) {
-  if (cmd == kJavaScriptStressTestSetStressRunType) {
-    v8::Testing::SetStressRunType(static_cast<v8::Testing::StressType>(param));
-  } else if (cmd == kJavaScriptStressTestPrepareStressRun) {
-    v8::Testing::PrepareStressRun(param);
-  }
-}
 
 void RenderView::OnContextMenuClosed(
     const webkit_glue::CustomContextMenuContext& custom_context) {

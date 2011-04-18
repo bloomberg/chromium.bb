@@ -26,6 +26,7 @@
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
@@ -122,7 +123,8 @@ class ExtensionViewAccumulator : public RenderViewVisitor {
   v8::Local<v8::Array> views() { return views_; }
 
   virtual bool Visit(RenderView* render_view) {
-    if (!ViewTypeMatches(render_view->view_type(), view_type_))
+    ExtensionHelper* helper = ExtensionHelper::Get(render_view);
+    if (!ViewTypeMatches(helper->view_type(), view_type_))
       return true;
 
     GURL url = render_view->webview()->mainFrame()->url();
@@ -133,7 +135,7 @@ class ExtensionViewAccumulator : public RenderViewVisitor {
       return true;
 
     if (browser_window_id_ != extension_misc::kUnknownWindowId &&
-        render_view->browser_window_id() != browser_window_id_) {
+        helper->browser_window_id() != browser_window_id_) {
       return true;
     }
 

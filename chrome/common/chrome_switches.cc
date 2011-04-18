@@ -164,10 +164,6 @@ const char kDisableAltWinstation[]          = "disable-winsta";
 // Replaces the audio IPC layer for <audio> and <video> with a mock audio
 // device, useful when using remote desktop or machines without sound cards.
 // This is temporary until we fix the underlying problem.
-//
-// TODO(scherkus): remove --disable-audio when we have a proper fallback
-// mechanism.
-const char kDisableAudio[]                  = "disable-audio";
 
 // Disable CNAME lookup of the host when generating the Kerberos SPN for a
 // Negotiate challenge. See HttpAuthHandlerNegotiate::CreateSPN
@@ -362,9 +358,6 @@ const char kEnableAccelerated2dCanvas[]     = "enable-accelerated-2d-canvas";
 // Enables the hardware acceleration of plugins.
 const char kEnableAcceleratedPlugins[]      = "enable-accelerated-plugins";
 
-// Enables WebKit accessibility within the renderer process.
-const char kEnableAccessibility[]           = "enable-accessibility";
-
 // Enables AeroPeek for each tab. (This switch only works on Windows 7).
 const char kEnableAeroPeekTabs[]            = "enable-aero-peek-tabs";
 
@@ -469,9 +462,6 @@ const char kEnableRemoting[]                = "enable-remoting";
 const char kEnableResourceContentSettings[] =
     "enable-resource-content-settings";
 
-// Enable Pepper and JavaScript P2P API.
-const char kEnableP2PApi[]                  = "enable-p2papi";
-
 // Enable panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                  = "enable-panels";
 
@@ -510,14 +500,6 @@ const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";
 // Enables the option to show tabs as a vertical stack down the side of the
 // browser window.
 const char kEnableVerticalTabs[]            = "enable-vertical-tabs";
-
-// Enables support for fullscreen video. Current implementation is
-// incomplete and this flag is used for development and testing.
-const char kEnableVideoFullscreen[]         = "enable-video-fullscreen";
-
-// Enables video logging where video elements log playback performance data to
-// the debug log.
-const char kEnableVideoLogging[]            = "enable-video-logging";
 
 // Spawn threads to watch for excessive delays in specified message loops.
 // User should set breakpoints on Alarm() to examine problematic thread.
@@ -909,10 +891,6 @@ const char kSilentDumpOnDCHECK[]            = "silent-dump-on-dcheck";
 
 // Replaces the buffered data source for <audio> and <video> with a simplified
 // resource loader that downloads the entire resource into memory.
-//
-// TODO(scherkus): remove --simple-data-source when our media resource loading
-// is cleaned up and playback testing completed.
-const char kSimpleDataSource[]              = "simple-data-source";
 
 // Start the browser maximized, regardless of any previous settings.
 const char kStartMaximized[]                = "start-maximized";

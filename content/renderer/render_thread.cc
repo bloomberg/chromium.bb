@@ -21,7 +21,6 @@
 #include "base/task.h"
 #include "base/threading/thread_local.h"
 #include "base/values.h"
-// DO NOT ADD ANY MORE INCLUDES TO "chrome/"!
 #include "content/common/appcache/appcache_dispatcher.h"
 #include "content/common/content_switches.h"
 #include "content/common/database_messages.h"

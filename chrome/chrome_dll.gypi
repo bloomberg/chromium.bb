@@ -610,6 +610,7 @@
             '../content/common/notification_service.cc',
             '../content/common/notification_source.cc',
             '../content/common/sandbox_init_wrapper_win.cc',
+            '../content/common/url_constants.cc',
           ],
           'msvs_settings': {
             'VCLinkerTool': {

@@ -34,6 +34,7 @@ class RenderViewObserver : public IPC::Channel::Listener,
   // These match the WebKit API notifications
   virtual void DidStartLoading() {}
   virtual void DidStopLoading() {}
+  virtual void DidChangeIcons(WebKit::WebFrame* frame) {}
   virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame) {}
   virtual void DidFailLoad(WebKit::WebFrame* frame,
                            const WebKit::WebURLError& error) {}
@@ -43,6 +44,7 @@ class RenderViewObserver : public IPC::Channel::Listener,
                                       const WebKit::WebURLError& error) {}
   virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
                                         bool is_new_navigation) {}
+  virtual void DidClearWindowObject(WebKit::WebFrame* frame) {}
   virtual void WillPerformClientRedirect(
       WebKit::WebFrame* frame, const WebKit::WebURL& from,
       const WebKit::WebURL& to, double interval, double fire_time) {}

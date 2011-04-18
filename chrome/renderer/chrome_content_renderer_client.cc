@@ -66,6 +66,7 @@
 #include "grit/renderer_resources.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
@@ -85,6 +86,7 @@ using autofill::AutofillAgent;
 using autofill::FormManager;
 using autofill::PasswordAutofillManager;
 using WebKit::WebCache;
+using WebKit::WebDataSource;
 using WebKit::WebFrame;
 using WebKit::WebPlugin;
 using WebKit::WebPluginParams;
@@ -398,7 +400,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       plugin_setting == CONTENT_SETTING_ALLOW ||
       host_setting == CONTENT_SETTING_ALLOW) {
     // Delay loading plugins if prerendering.
-    if (render_view->is_prerendering_) {
+    if (render_view->is_prerendering()) {
       return CreatePluginPlaceholder(
           render_view, frame, params, *group, IDR_CLICK_TO_PLAY_PLUGIN_HTML,
           IDS_PLUGIN_LOAD, true, true);
@@ -406,9 +408,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 
     bool pepper_plugin_was_registered = false;
     scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
-        render_view->pepper_delegate_.CreatePepperPlugin(
-            info.path,
-            &pepper_plugin_was_registered));
+        render_view->pepper_delegate()->CreatePepperPlugin(
+            info.path, &pepper_plugin_was_registered));
     if (pepper_plugin_was_registered) {
       if (pepper_module) {
         return render_view->CreatePepperPlugin(
@@ -459,6 +460,22 @@ WebPlugin* ChromeContentRendererClient::CreatePluginPlaceholder(
                         is_blocked_for_prerendering,
                         allow_loading);
   return blocked_plugin->plugin();
+}
+
+void ChromeContentRendererClient::ShowErrorPage(RenderView* render_view,
+                                                WebKit::WebFrame* frame,
+                                                int http_status_code) {
+  // Use an internal error page, if we have one for the status code.
+  if (LocalizedError::HasStrings(LocalizedError::kHttpErrorDomain,
+                                 http_status_code)) {
+    WebURLError error;
+    error.unreachableURL = frame->url();
+    error.domain = WebString::fromUTF8(LocalizedError::kHttpErrorDomain);
+    error.reason = http_status_code;
+
+    render_view->LoadNavigationErrorPage(
+        frame, frame->dataSource()->request(), error, std::string(), true);
+  }
 }
 
 std::string ChromeContentRendererClient::GetNavigationErrorHtml(

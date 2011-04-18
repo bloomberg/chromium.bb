@@ -7,6 +7,7 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -37,6 +38,16 @@ bool DesktopNotificationHandler::OnMessageReceived(
 
 void DesktopNotificationHandler::OnShow(
     const DesktopNotificationHostMsg_Show_Params& params) {
+  // Disallow HTML notifications from unwanted schemes.  javascript:
+  // in particular allows unwanted cross-domain access.
+  GURL url = params.contents_url;
+  if (!url.SchemeIs(chrome::kHttpScheme) &&
+      !url.SchemeIs(chrome::kHttpsScheme) &&
+      !url.SchemeIs(chrome::kExtensionScheme) &&
+      !url.SchemeIs(chrome::kDataScheme)) {
+    return;
+  }
+
   RenderProcessHost* process = render_view_host()->process();
   DesktopNotificationService* service =
       DesktopNotificationServiceFactory::GetForProfile(process->profile());

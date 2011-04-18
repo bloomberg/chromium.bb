@@ -23,6 +23,7 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/common/content_constants.h"
 #include "content/common/navigation_types.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
@@ -107,7 +108,7 @@ bool AreURLsInPageNavigation(const GURL& existing_url, const GURL& new_url) {
 
 // static
 size_t NavigationController::max_entry_count_ =
-    chrome::kMaxSessionHistoryEntries;
+    content::kMaxSessionHistoryEntries;
 
 // static
 bool NavigationController::check_for_repost_ = true;

@@ -74,10 +74,6 @@ extern const unsigned int kMaxRendererProcessCount;
 extern const int kStatsMaxThreads;
 extern const int kStatsMaxCounters;
 
-// The maximum number of characters of the document's title that we're willing
-// to accept in the browser process.
-extern const size_t kMaxTitleChars;
-
 extern const bool kRecordModeEnabled;
 
 // Most sequence numbers are used by a renderer when responding to a browser
@@ -86,9 +82,6 @@ extern const bool kRecordModeEnabled;
 // this reserved constant avoids any chance of confusion with a response having
 // a browser-supplied sequence number.
 extern const int kHistogramSynchronizerReservedSequenceNumber;
-
-// The maximum number of session history entries per tab.
-extern const int kMaxSessionHistoryEntries;
 
 // The language code used when the language of a page could not be detected.
 // (Matches what the CLD -Compact Language Detection- library reports.)

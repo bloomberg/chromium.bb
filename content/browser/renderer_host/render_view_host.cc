@@ -19,7 +19,6 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/bindings_policy.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -38,6 +37,8 @@
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/site_instance.h"
+#include "content/common/bindings_policy.h"
+#include "content/common/content_constants.h"
 #include "content/common/drag_messages.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/notification_details.h"
@@ -514,29 +515,35 @@ void RenderViewHost::InsertCSSInWebFrame(
 
 void RenderViewHost::Undo() {
   Send(new ViewMsg_Undo(routing_id()));
+  UserMetrics::RecordAction(UserMetricsAction("Undo"));
 }
 
 void RenderViewHost::Redo() {
   Send(new ViewMsg_Redo(routing_id()));
+  UserMetrics::RecordAction(UserMetricsAction("Redo"));
 }
 
 void RenderViewHost::Cut() {
   Send(new ViewMsg_Cut(routing_id()));
+  UserMetrics::RecordAction(UserMetricsAction("Cut"));
 }
 
 void RenderViewHost::Copy() {
   Send(new ViewMsg_Copy(routing_id()));
+  UserMetrics::RecordAction(UserMetricsAction("Copy"));
 }
 
 void RenderViewHost::CopyToFindPboard() {
 #if defined(OS_MACOSX)
   // Windows/Linux don't have the concept of a find pasteboard.
   Send(new ViewMsg_CopyToFindPboard(routing_id()));
+  UserMetrics::RecordAction(UserMetricsAction("CopyToFindPboard"));
 #endif
 }
 
 void RenderViewHost::Paste() {
   Send(new ViewMsg_Paste(routing_id()));
+  UserMetrics::RecordAction(UserMetricsAction("Paste"));
 }
 
 void RenderViewHost::ToggleSpellCheck() {
@@ -545,10 +552,12 @@ void RenderViewHost::ToggleSpellCheck() {
 
 void RenderViewHost::Delete() {
   Send(new ViewMsg_Delete(routing_id()));
+  UserMetrics::RecordAction(UserMetricsAction("DeleteSelection"));
 }
 
 void RenderViewHost::SelectAll() {
   Send(new ViewMsg_SelectAll(routing_id()));
+  UserMetrics::RecordAction(UserMetricsAction("SelectAll"));
 }
 
 void RenderViewHost::ToggleSpellPanel(bool is_currently_visible) {
@@ -991,7 +1000,7 @@ void RenderViewHost::OnMsgUpdateState(int32 page_id,
 
 void RenderViewHost::OnMsgUpdateTitle(int32 page_id,
                                       const std::wstring& title) {
-  if (title.length() > chrome::kMaxTitleChars) {
+  if (title.length() > content::kMaxTitleChars) {
     NOTREACHED() << "Renderer sent too many characters in title.";
     return;
   }
@@ -1147,10 +1156,6 @@ void RenderViewHost::OnMsgForwardMessageToExternalHost(
 
 void RenderViewHost::DisassociateFromPopupCount() {
   Send(new ViewMsg_DisassociateFromPopupCount(routing_id()));
-}
-
-void RenderViewHost::AllowScriptToClose(bool script_can_close) {
-  Send(new ViewMsg_AllowScriptToClose(routing_id(), script_can_close));
 }
 
 void RenderViewHost::OnMsgSetTooltipText(

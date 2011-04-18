@@ -6,8 +6,6 @@
 
 #include "base/string_util.h"
 #include "base/task.h"
-#include "chrome/common/url_constants.h"
-#include "chrome/common/render_messages.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread.h"
@@ -102,15 +100,6 @@ bool NotificationProvider::OnMessageReceived(const IPC::Message& message) {
 
 bool NotificationProvider::ShowHTML(const WebNotification& notification,
                                     int id) {
-  // Disallow HTML notifications from unwanted schemes.  javascript:
-  // in particular allows unwanted cross-domain access.
-  GURL url = notification.url();
-  if (!url.SchemeIs(chrome::kHttpScheme) &&
-      !url.SchemeIs(chrome::kHttpsScheme) &&
-      !url.SchemeIs(chrome::kExtensionScheme) &&
-      !url.SchemeIs(chrome::kDataScheme))
-    return false;
-
   DCHECK(notification.isHTML());
   DesktopNotificationHostMsg_Show_Params params;
   params.origin =

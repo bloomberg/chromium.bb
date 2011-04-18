@@ -12,6 +12,13 @@
 
 namespace content {
 
+// The maximum number of session history entries per tab.
+extern const int kMaxSessionHistoryEntries;
+
+// The maximum number of characters of the document's title that we're willing
+// to accept in the browser process.
+extern const size_t kMaxTitleChars;
+
 // The maximum number of characters in the URL that we're willing to accept
 // in the browser process. It is set low enough to avoid damage to the browser
 // but high enough that a web site can abuse location.hash for a little storage.

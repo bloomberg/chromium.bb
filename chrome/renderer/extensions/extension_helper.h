@@ -8,6 +8,7 @@
 
 #include <map>
 
+#include "chrome/common/view_types.h"
 #include "content/renderer/render_view.h"
 #include "content/renderer/render_view_observer.h"
 #include "content/renderer/render_view_observer_tracker.h"
@@ -37,6 +38,9 @@ class ExtensionHelper : public RenderViewObserver,
   bool InstallWebApplicationUsingDefinitionFile(WebKit::WebFrame* frame,
                                                 string16* error);
 
+  int browser_window_id() const { return browser_window_id_; }
+  ViewType::Type view_type() const { return view_type_; }
+
  private:
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
@@ -57,6 +61,8 @@ class ExtensionHelper : public RenderViewObserver,
                                 const GURL& event_url);
   void OnExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
   void OnGetApplicationInfo(int page_id);
+  void OnNotifyRendererViewType(ViewType::Type view_type);
+  void OnUpdateBrowserWindowId(int window_id);
 
   // Callback triggered when we finish downloading the application definition
   // file.
@@ -87,6 +93,12 @@ class ExtensionHelper : public RenderViewObserver,
   // The number of app icon requests outstanding. When this reaches zero, we're
   // done processing an app definition file.
   int pending_app_icon_requests_;
+
+  // Type of view attached with RenderView.
+  ViewType::Type view_type_;
+
+  // Id number of browser window which RenderView is attached to.
+  int browser_window_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHelper);
 };

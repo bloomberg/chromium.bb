@@ -31,7 +31,6 @@ BackgroundContents::BackgroundContents(SiteInstance* site_instance,
 
   // TODO(rafaelw): Implement correct session storage.
   render_view_host_ = new RenderViewHost(site_instance, this, routing_id, NULL);
-  render_view_host_->AllowScriptToClose(true);
 
   // Close ourselves when the application is shutting down.
   registrar_.Add(this, NotificationType::APP_TERMINATING,

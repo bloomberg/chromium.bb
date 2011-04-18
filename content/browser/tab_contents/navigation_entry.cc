@@ -11,6 +11,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/navigation_controller.h"
+#include "content/common/content_constants.h"
 #include "grit/app_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -102,7 +103,7 @@ const string16& NavigationEntry::GetTitleForDisplay(
       title = title.substr(slashpos + 1);
   }
 
-  ui::ElideString(title, chrome::kMaxTitleChars, &cached_display_title_);
+  ui::ElideString(title, content::kMaxTitleChars, &cached_display_title_);
   return cached_display_title_;
 }
 

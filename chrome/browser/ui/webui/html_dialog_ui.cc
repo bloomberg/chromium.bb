@@ -7,9 +7,9 @@
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/values.h"
-#include "chrome/common/bindings_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/bindings_policy.h"
 
 static base::LazyInstance<PropertyAccessor<HtmlDialogUIDelegate*> >
     g_html_dialog_ui_property_accessor(base::LINKER_INITIALIZED);

@@ -42,6 +42,9 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       RenderView* render_view,
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params);
+  virtual void ShowErrorPage(RenderView* render_view,
+                             WebKit::WebFrame* frame,
+                             int http_status_code);
   virtual std::string GetNavigationErrorHtml(
       const WebKit::WebURLRequest& failed_request,
       const WebKit::WebURLError& error);
