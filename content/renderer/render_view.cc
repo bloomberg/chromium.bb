@@ -752,6 +752,13 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
 
   NavigationState* navigation_state = pending_navigation_state_.get();
 
+  if (navigation_state) {
+    // New loads need to reset the error page fetcher. Otherwise if there is an
+    // outstanding error page fetcher it may complete and clobber the current
+    // page load.
+    navigation_state->set_alt_error_page_fetcher(NULL);
+  }
+
   // If we are reloading, then WebKit will use the history state of the current
   // page, so we should just ignore any given history state.  Otherwise, if we
   // have history state, then we need to navigate to it, which corresponds to a
