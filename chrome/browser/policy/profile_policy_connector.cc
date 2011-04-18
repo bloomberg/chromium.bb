@@ -108,12 +108,14 @@ MergingPolicyProvider::MergingPolicyProvider(
       profile_policy_provider_(profile_policy_provider),
       browser_registrar_(new ConfigurationPolicyObserverRegistrar()),
       profile_registrar_(new ConfigurationPolicyObserverRegistrar()) {
-  browser_registrar_->Init(browser_policy_provider_, this);
-  profile_registrar_->Init(profile_policy_provider_, this);
+  if (browser_policy_provider_)
+    browser_registrar_->Init(browser_policy_provider_, this);
+  if (profile_policy_provider_)
+    profile_registrar_->Init(profile_policy_provider_, this);
 }
 
 MergingPolicyProvider::~MergingPolicyProvider() {
-  if (browser_policy_provider_ && profile_policy_provider_) {
+  if (browser_policy_provider_ || profile_policy_provider_) {
     FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
                       observer_list_, OnProviderGoingAway());
   }
@@ -123,13 +125,18 @@ bool MergingPolicyProvider::Provide(ConfigurationPolicyStoreInterface* store) {
   // First, apply the profile policies and observe if interesting policies
   // have been applied.
   ObservingPolicyStoreInterface observe(store);
-  bool rv = profile_policy_provider_->Provide(&observe);
+  bool rv = true;
+  if (profile_policy_provider_)
+    rv = profile_policy_provider_->Provide(&observe);
 
   // Now apply policies from the browser provider, if they were not applied
   // by the profile provider.
   // Currently, these include only the proxy settings.
-  FilteringPolicyStoreInterface filter(store, !observe.IsProxyPolicyApplied());
-  rv = rv && browser_policy_provider_->Provide(&filter);
+  if (browser_policy_provider_) {
+    FilteringPolicyStoreInterface filter(store,
+                                         !observe.IsProxyPolicyApplied());
+    rv = rv && browser_policy_provider_->Provide(&filter);
+  }
 
   return rv;
 }
@@ -150,7 +157,7 @@ void MergingPolicyProvider::OnUpdatePolicy() {
 }
 
 void MergingPolicyProvider::OnProviderGoingAway() {
-  if (browser_policy_provider_ && profile_policy_provider_) {
+  if (browser_policy_provider_ || profile_policy_provider_) {
     FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
                       observer_list_, OnProviderGoingAway());
     browser_registrar_.reset();
