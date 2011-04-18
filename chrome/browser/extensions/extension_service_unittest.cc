@@ -2154,10 +2154,16 @@ TEST_F(ExtensionServiceTest, UpdatePendingTheme) {
   EXPECT_FALSE(service_->IsIncognitoEnabled(extension->id()));
 }
 
+#if defined(OS_CHROMEOS)
+// Always fails on ChromeOS: http://crbug.com/79737
+#define MAYBE_UpdatePendingExternalCrx FAILS_UpdatePendingExternalCrx
+#else
+#define MAYBE_UpdatePendingExternalCrx UpdatePendingExternalCrx
+#endif
 // Test updating a pending CRX as if the source is an external extension
 // with an update URL.  In this case we don't know if the CRX is a theme
 // or not.
-TEST_F(ExtensionServiceTest, UpdatePendingExternalCrx) {
+TEST_F(ExtensionServiceTest, MAYBE_UpdatePendingExternalCrx) {
   InitializeEmptyExtensionService();
   service_->pending_extension_manager()->AddFromExternalUpdateUrl(
       theme_crx, GURL(), Extension::EXTERNAL_PREF_DOWNLOAD);
