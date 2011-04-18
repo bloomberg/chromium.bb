@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSION_GROUPS_H_
-#define CHROME_RENDERER_EXTENSION_GROUPS_H_
+#ifndef CHROME_RENDERER_EXTENSIONS_EXTENSION_GROUPS_H_
+#define CHROME_RENDERER_EXTENSIONS_EXTENSION_GROUPS_H_
 #pragma once
 
 // A set of extension groups for use with WebKit::registerExtension and
@@ -15,4 +15,4 @@ enum ExtensionGroups {
 };
 
 
-#endif  // CHROME_RENDERER_EXTENSION_GROUPS_H_
+#endif  // CHROME_RENDERER_EXTENSIONS_EXTENSION_GROUPS_H_
