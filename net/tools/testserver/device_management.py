@@ -349,7 +349,13 @@ class RequestHandler(object):
           group_message.DESCRIPTOR.fields.
       field_value: The value to set.
     '''
-    if field.type == field.TYPE_BOOL:
+    if field.label == field.LABEL_REPEATED:
+      assert type(field_value) == list
+      entries = group_message.__getattribute__(field.name)
+      for list_item in field_value:
+        entries.append(list_item)
+      return
+    elif field.type == field.TYPE_BOOL:
       assert type(field_value) == bool
     elif field.type == field.TYPE_STRING:
       assert type(field_value) == str or type(field_value) == unicode
