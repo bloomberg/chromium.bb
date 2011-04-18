@@ -5941,7 +5941,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Go to the home page of the site:
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION" desc="When a page fails to load, sometimes we suggest checking the network connection.">
-        Check your internet connection. Reboot any routers, modems, or other
+        Check your Internet connection. Reboot any routers, modems, or other
         network devices you may be using.
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_DNS_CONFIG" desc="When a page fails to load, sometimes we suggest checking the DNS configuration.">
@@ -5958,6 +5958,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <ph name="ADVANCED_TITLE">&lt;span jscontent="advancedTitle"&gt;&lt;/span&gt;<ex>Under the Hood</ex></ph>
         <ph name="END_BOLD">&lt;/strong&gt;</ph>
         and deselect &quot;<ph name="NO_PREFETCH_DESCRIPTION">&lt;span jscontent="noNetworkPredictionTitle"&gt;&lt;/span&gt;<ex>Predict network actions to improve page load performance</ex></ph>.&quot;
+        If this does not resolve the issue, we recommend selecting this option
+        again for improved performance.
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_FIREWALL_CONFIG" desc="When a web page fails to load, in some cases we suggest reconfiguring the firewall.">
         Try adding
@@ -6069,8 +6071,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED" desc="Summary in the error page when a dns look up fails.">
         The server at <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;</ph>
         can't be found, because the DNS lookup failed.  DNS is the web service
-        that translates a website's name to its internet address.  This error is
-        most often caused by having no connection to the internet or a
+        that translates a website's name to its Internet address.  This error is
+        most often caused by having no connection to the Internet or a
         misconfigured network.  It can also be caused by an unresponsive DNS
         server or a firewall preventing
         <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
