@@ -4,6 +4,7 @@
 
 #if defined(ENABLE_GPU)
 
+#include "base/bind.h"
 #include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "build/build_config.h"
@@ -258,6 +259,8 @@ void GpuCommandBufferStub::OnInitialize(
                       &gpu::GpuScheduler::ProcessCommands));
       scheduler_->SetSwapBuffersCallback(
           NewCallback(this, &GpuCommandBufferStub::OnSwapBuffers));
+      scheduler_->SetLatchCallback(
+          base::Bind(&GpuChannel::OnLatchCallback, channel_, route_id_));
       if (watchdog_)
         scheduler_->SetCommandProcessedCallback(
             NewCallback(this, &GpuCommandBufferStub::OnCommandProcessed));

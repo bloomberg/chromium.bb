@@ -114,6 +114,13 @@ class GpuScheduler : public CommandBufferEngine {
 
   virtual void SetCommandProcessedCallback(Callback0::Type* callback);
 
+  // Sets a callback which is called after a Set/WaitLatch command is processed.
+  // The bool parameter will be true for SetLatch, and false for a WaitLatch
+  // that is blocked. An unblocked WaitLatch will not trigger a callback.
+  void SetLatchCallback(const base::Callback<void(bool)>& callback) {
+    decoder_->SetLatchCallback(callback);
+  }
+
   // Get the GLES2Decoder associated with this scheduler.
   gles2::GLES2Decoder* decoder() const { return decoder_.get(); }
 

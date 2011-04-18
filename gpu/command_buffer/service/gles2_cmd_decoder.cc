@@ -686,6 +686,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   virtual void SetResizeCallback(Callback1<gfx::Size>::Type* callback);
   virtual void SetSwapBuffersCallback(Callback0::Type* callback);
+  virtual void SetLatchCallback(const base::Callback<void(bool)>& callback);;
   virtual bool GetServiceTextureId(uint32 client_texture_id,
                                    uint32* service_texture_id);
 
@@ -1447,6 +1448,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   scoped_ptr<Callback1<gfx::Size>::Type> resize_callback_;
   scoped_ptr<Callback0::Type> swap_buffers_callback_;
+  base::Callback<void(bool)> latch_callback_;
 
   // The format of the back buffer_
   GLenum back_buffer_color_format_;
@@ -2456,6 +2458,11 @@ void GLES2DecoderImpl::SetResizeCallback(Callback1<gfx::Size>::Type* callback) {
 
 void GLES2DecoderImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
   swap_buffers_callback_.reset(callback);
+}
+
+void GLES2DecoderImpl::SetLatchCallback(
+    const base::Callback<void(bool)>& callback) {
+  latch_callback_ = callback;
 }
 
 bool GLES2DecoderImpl::GetServiceTextureId(uint32 client_texture_id,
@@ -6398,7 +6405,9 @@ error::Error GLES2DecoderImpl::HandleSetLatchCHROMIUM(
   if (!latch) {
     return error::kOutOfBounds;
   }
-  *latch = 1;
+  base::subtle::NoBarrier_Store(latch, 1);
+  if (!latch_callback_.is_null())
+    latch_callback_.Run(true);
   return error::kNoError;
 }
 
@@ -6419,7 +6428,13 @@ error::Error GLES2DecoderImpl::HandleWaitLatchCHROMIUM(
 
   base::subtle::Atomic32 old =
       base::subtle::NoBarrier_CompareAndSwap(latch, 1, 0);
-  return (old == 0) ? error::kWaiting : error::kNoError;
+  if (old == 0) {
+    if (!latch_callback_.is_null())
+      latch_callback_.Run(false);
+    return error::kWaiting;
+  } else {
+    return error::kNoError;
+  }
 }
 
 error::Error GLES2DecoderImpl::HandleCommandBufferEnableCHROMIUM(

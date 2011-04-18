@@ -166,9 +166,10 @@ void GpuScheduler::ProcessCommands() {
     throttle_fences_.pop();
   }
 
+  error::Error error = error::kNoError;
   int commands_processed = 0;
   while (commands_processed < commands_per_update_ && !parser_->IsEmpty()) {
-    error::Error error = parser_->ProcessCommand();
+    error = parser_->ProcessCommand();
     if (error == error::kWaiting) {
       break;
     }
@@ -201,7 +202,7 @@ void GpuScheduler::ProcessCommands() {
 
   command_buffer_->SetGetOffset(static_cast<int32>(parser_->get()));
 
-  if (!parser_->IsEmpty()) {
+  if (error != error::kWaiting && !parser_->IsEmpty()) {
     ScheduleProcessCommands();
   }
 }

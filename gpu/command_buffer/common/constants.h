@@ -23,9 +23,9 @@ namespace error {
     kLostContext,
     kGenericError,
 
-    // This is not an error. It is returned by commands that want to
-    // be called again until they return a different error. For
-    // example: WaitLatch.
+    // This is not an error. It is returned by WaitLatch when it is blocked.
+    // When blocked, the context will not reschedule itself until another
+    // context executes a SetLatch command.
     kWaiting,
 
     // This is not an error. It is returned by commands to mark a position
