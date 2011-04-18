@@ -161,3 +161,6 @@ NewTabUIProcessPerTabTest.NavBeforeNTPCommits
 
 # Fails with valgrind assertion, see http://crbug.com/75396
 ViewSourceTest.ViewSourceInMenuEnabledOnANormalPage
+
+# Fails, see http://crbug.com/79784
+PPAPITest.Transport
