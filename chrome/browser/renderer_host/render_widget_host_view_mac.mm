@@ -1458,12 +1458,14 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
 - (BOOL)shouldIgnoreMouseEvent:(NSEvent*)theEvent {
   NSWindow* window = [self window];
-  // If this is a background window, don't handle mouse events. This is
-  // the expected behavior on the Mac as evidenced by other applications.
+  // If this is a background window, don't handle mouse movement events. This
+  // is the expected behavior on the Mac as evidenced by other applications.
   // Do this only if the window level is NSNormalWindowLevel, as this
   // does not necessarily apply in other contexts (e.g. balloons).
-  if ([window level] == NSNormalWindowLevel && ![window isKeyWindow])
+  if ([theEvent type] == NSMouseMoved &&
+      [window level] == NSNormalWindowLevel && ![window isKeyWindow]) {
     return YES;
+  }
 
   // Use hitTest to check whether the mouse is over a nonWebContentView - in
   // which case the mouse event should not be handled by the render host.
