@@ -44,11 +44,25 @@ int32_t GetURLLoaderBufferedBytes(PP_Resource url_loader) {
   return loader->buffer_size();
 }
 
+void AddRefModule(PP_Module module) {
+  PluginModule* plugin_module = ResourceTracker::Get()->GetModule(module);
+  if (plugin_module)
+    plugin_module->AddRef();
+}
+
+void ReleaseModule(PP_Module module) {
+  PluginModule* plugin_module = ResourceTracker::Get()->GetModule(module);
+  if (plugin_module)
+    plugin_module->Release();
+}
+
 const PPB_Proxy_Private ppb_proxy = {
   &PluginCrashed,
   &GetInstanceForResource,
   &SetReserveInstanceIDCallback,
-  &GetURLLoaderBufferedBytes
+  &GetURLLoaderBufferedBytes,
+  &AddRefModule,
+  &ReleaseModule
 };
 
 }  // namespace

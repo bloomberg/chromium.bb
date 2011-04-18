@@ -240,6 +240,18 @@ InterfaceProxy* HostDispatcher::CreatePPBInterfaceProxy(
   return proxy;
 }
 
+// ScopedModuleReference -------------------------------------------------------
+
+ScopedModuleReference::ScopedModuleReference(Dispatcher* dispatcher) {
+  DCHECK(!dispatcher->IsPlugin());
+  dispatcher_ = static_cast<HostDispatcher*>(dispatcher);
+  dispatcher_->ppb_proxy()->AddRefModule(dispatcher_->pp_module());
+}
+
+ScopedModuleReference::~ScopedModuleReference() {
+  dispatcher_->ppb_proxy()->ReleaseModule(dispatcher_->pp_module());
+}
+
 }  // namespace proxy
 }  // namespace pp
 

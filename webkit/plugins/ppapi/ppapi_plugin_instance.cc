@@ -664,6 +664,8 @@ PP_Var PluginInstance::ExecuteScript(PP_Var script, PP_Var* exception) {
   NPVariant result;
   bool ok = WebBindings::evaluate(NULL, frame->windowObject(), &np_script,
                                   &result);
+  // DANGER! |this| could be deleted at this point if the script removed the
+  // plugin from the DOM.
   if (!ok) {
     // TODO(brettw) bug 54011: The TryCatch isn't working properly and
     // doesn't actually catch this exception.

@@ -38,6 +38,12 @@ struct PPB_Proxy_Private {
   // buffer. Returns 0 on failure or if the url loader doesn't have any data
   // now.
   int32_t (*GetURLLoaderBufferedBytes)(PP_Resource url_loader);
+
+  // Allows adding additional refcounts to the PluginModule that owns the
+  // proxy dispatcher (and all interface proxies). For every AddRef call
+  // there must be a corresponding release call.
+  void (*AddRefModule)(PP_Module module);
+  void (*ReleaseModule)(PP_Module module);
 };
 
 #endif  // PPAPI_C_PRIVATE_PROXY_PRIVATE_H_

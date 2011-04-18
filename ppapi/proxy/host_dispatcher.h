@@ -128,6 +128,23 @@ class HostDispatcher : public Dispatcher {
   DISALLOW_COPY_AND_ASSIGN(HostDispatcher);
 };
 
+// Create this object on the stack to prevent the module (and hence the
+// dispatcher) from being deleted out from under you. This is necessary when
+// calling some scripting functions that may delete the plugin.
+//
+// This may only be called in the host. The parameter is a plain Dispatcher
+// since that's what most callers have.
+class ScopedModuleReference {
+ public:
+  ScopedModuleReference(Dispatcher* dispatcher);
+  ~ScopedModuleReference();
+
+ private:
+  HostDispatcher* dispatcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedModuleReference);
+};
+
 }  // namespace proxy
 }  // namespace pp
 
