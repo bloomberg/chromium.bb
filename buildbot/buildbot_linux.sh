@@ -93,26 +93,25 @@ echo @@@BUILD_STEP large_tests${BITS}@@@
 
 if [[ "${INSIDE_TOOLCHAIN:-}" == "" ]]; then
 
-echo @@@BUILD_STEP begin_browser_testing@@@
-vncserver -kill :20 || true
-sleep 2 ; vncserver :20 -geometry 1500x1000 -depth 24 ; sleep 10
-
 echo @@@BUILD_STEP chrome_browser_tests@@@
-DISPLAY=localhost:20 XAUTHORITY=/home/chrome-bot/.Xauthority \
+# Although we could use the "browser_headless=1" Scons option, it runs
+# xvfb-run once per Chromium invocation.  This is good for isolating
+# the tests, but xvfb-run has a stupid fixed-period sleep, which would
+# slow down the tests unnecessarily.
+XVFB_PREFIX="xvfb-run --auto-servernum"
+
+$XVFB_PREFIX \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
     chrome_browser_tests ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
 echo @@@BUILD_STEP pyauto_tests${BITS}@@@
-DISPLAY=localhost:20 XAUTHORITY=/home/chrome-bot/.Xauthority \
+$XVFB_PREFIX \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
     pyauto_tests ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
-
-echo @@@BUILD_STEP end_browser_testing@@@
-vncserver -kill :20
 
 fi
 fi
