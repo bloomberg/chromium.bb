@@ -4,14 +4,7 @@
 
 #include "content/browser/renderer_host/p2p/socket_host.h"
 
-#include "build/build_config.h"
-
-#if defined(OS_WIN)
-#include <winsock2.h>  // for htonl
-#else
-#include <arpa/inet.h>
-#endif
-
+#include "net/base/sys_byteorder.h"
 #include "content/browser/renderer_host/p2p/socket_host_udp.h"
 
 namespace {
