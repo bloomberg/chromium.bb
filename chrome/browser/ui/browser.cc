@@ -89,6 +89,7 @@
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
+#include "chrome/browser/ui/webui/active_downloads_ui.h"
 #include "chrome/browser/ui/webui/bug_report_ui.h"
 #include "chrome/browser/ui/webui/filebrowse_ui.h"
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
@@ -2571,8 +2572,8 @@ void Browser::DuplicateContentsAt(int index) {
   } else {
     Browser* browser = NULL;
     if (type_ & TYPE_APP) {
-      CHECK((type_ & TYPE_POPUP) == 0);
-      CHECK(type_ != TYPE_APP_PANEL);
+      CHECK_EQ((type_ & TYPE_POPUP), 0);
+      CHECK_NE(type_, TYPE_APP_PANEL);
       browser = Browser::CreateForApp(app_name_, gfx::Size(), profile_,
                                       false);
     } else if (type_ == TYPE_POPUP) {
@@ -3168,14 +3169,8 @@ void Browser::OnStartDownload(DownloadItem* download, TabContents* tab) {
       return;
     }
   }
-
-  // skip the download shelf and just open the file browser in chromeos
-  std::string arg = download->full_path().DirName().value();
-  FileBrowseUI::OpenPopup(profile_,
-                          arg,
-                          FileBrowseUI::kPopupWidth,
-                          FileBrowseUI::kPopupHeight);
-
+  // Open the Active Downloads ui for chromeos.
+  ActiveDownloadsUI::OpenPopup(profile_, download);
 #else
   // GetDownloadShelf creates the download shelf if it was not yet created.
   window()->GetDownloadShelf()->AddDownload(new DownloadItemModel(download));
