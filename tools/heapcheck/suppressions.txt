@@ -1404,3 +1404,12 @@
    fun:browser_sync::s3::SyncerThread::FinishSyncSessionJob
    fun:browser_sync::s3::SyncerThread::DoSyncSessionJob
 }
+{
+   bug_79651
+   Heapcheck:Leak
+   ...
+   fun:SingleLoginAttempt
+   fun:notifier::Login::StartConnection
+   fun:sync_notifier::InvalidationNotifier::UpdateCredentials
+   fun:sync_notifier::::InvalidationNotifierTest_Basic_Test::TestBody
+}
