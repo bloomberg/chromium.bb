@@ -37,7 +37,7 @@ namespace {
 class DevToolsClientHostImpl : public DevToolsClientHost {
  public:
   DevToolsClientHostImpl(
-      HttpServer* server,
+      net::HttpServer* server,
       int connection_id)
       : server_(server),
         connection_id_(connection_id) {
@@ -50,7 +50,7 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
         BrowserThread::IO,
         FROM_HERE,
         NewRunnableMethod(server_,
-                          &HttpServer::Close,
+                          &net::HttpServer::Close,
                           connection_id_));
   }
 
@@ -75,13 +75,13 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
         BrowserThread::IO,
         FROM_HERE,
         NewRunnableMethod(server_,
-                          &HttpServer::SendOverWebSocket,
+                          &net::HttpServer::SendOverWebSocket,
                           connection_id_,
                           data));
   }
 
   virtual void FrameNavigating(const std::string& url) {}
-  HttpServer* server_;
+  net::HttpServer* server_;
   int connection_id_;
 };
 
@@ -119,7 +119,7 @@ void DevToolsHttpProtocolHandler::Stop() {
 
 void DevToolsHttpProtocolHandler::OnHttpRequest(
     int connection_id,
-    const HttpServerRequestInfo& info) {
+    const net::HttpServerRequestInfo& info) {
   if (info.path == "" || info.path == "/") {
     // Pages discovery request.
     BrowserThread::PostTask(
@@ -169,7 +169,7 @@ void DevToolsHttpProtocolHandler::OnHttpRequest(
 
 void DevToolsHttpProtocolHandler::OnWebSocketRequest(
     int connection_id,
-    const HttpServerRequestInfo& request) {
+    const net::HttpServerRequestInfo& request) {
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -231,7 +231,7 @@ typedef std::vector<PageInfo> PageList;
 static PageList GeneratePageList(
     DevToolsHttpProtocolHandler::TabContentsProvider* tab_contents_provider,
     int connection_id,
-    const HttpServerRequestInfo& info) {
+    const net::HttpServerRequestInfo& info) {
   typedef DevToolsHttpProtocolHandler::InspectableTabs Tabs;
   Tabs inspectable_tabs = tab_contents_provider->GetInspectableTabs();
 
@@ -262,7 +262,7 @@ static PageList GeneratePageList(
 
 void DevToolsHttpProtocolHandler::OnRootRequestUI(
     int connection_id,
-    const HttpServerRequestInfo& info) {
+    const net::HttpServerRequestInfo& info) {
   std::string host = info.headers["Host"];
   std::string response = "<html><body>";
   PageList page_list = GeneratePageList(tab_contents_provider_.get(),
@@ -294,7 +294,7 @@ void DevToolsHttpProtocolHandler::OnRootRequestUI(
 
 void DevToolsHttpProtocolHandler::OnJsonRequestUI(
     int connection_id,
-    const HttpServerRequestInfo& info) {
+    const net::HttpServerRequestInfo& info) {
   PageList page_list = GeneratePageList(tab_contents_provider_.get(),
                                         connection_id, info);
   ListValue json_pages_list;
@@ -327,7 +327,7 @@ void DevToolsHttpProtocolHandler::OnJsonRequestUI(
 
 void DevToolsHttpProtocolHandler::OnWebSocketRequestUI(
     int connection_id,
-    const HttpServerRequestInfo& request) {
+    const net::HttpServerRequestInfo& request) {
   std::string prefix = "/devtools/page/";
   size_t pos = request.path.find(prefix);
   if (pos != 0) {
@@ -464,7 +464,7 @@ DevToolsHttpProtocolHandler::DevToolsHttpProtocolHandler(
 }
 
 void DevToolsHttpProtocolHandler::Init() {
-  server_ = new HttpServer(ip_, port_, this);
+  server_ = new net::HttpServer(ip_, port_, this);
 }
 
 // Run on I/O thread
@@ -507,7 +507,7 @@ void DevToolsHttpProtocolHandler::Send200(int connection_id,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(server_.get(),
-                        &HttpServer::Send200,
+                        &net::HttpServer::Send200,
                         connection_id,
                         data,
                         mime_type));
@@ -517,7 +517,7 @@ void DevToolsHttpProtocolHandler::Send404(int connection_id) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(server_.get(),
-                        &HttpServer::Send404,
+                        &net::HttpServer::Send404,
                         connection_id));
 }
 
@@ -526,18 +526,18 @@ void DevToolsHttpProtocolHandler::Send500(int connection_id,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(server_.get(),
-                        &HttpServer::Send500,
+                        &net::HttpServer::Send500,
                         connection_id,
                         message));
 }
 
 void DevToolsHttpProtocolHandler::AcceptWebSocket(
     int connection_id,
-    const HttpServerRequestInfo& request) {
+    const net::HttpServerRequestInfo& request) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(server_.get(),
-                        &HttpServer::AcceptWebSocket,
+                        &net::HttpServer::AcceptWebSocket,
                         connection_id,
                         request));
 }
