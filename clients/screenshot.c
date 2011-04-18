@@ -39,10 +39,10 @@ static void
 handle_global(struct wl_display *display, uint32_t id,
 	      const char *interface, uint32_t version, void *data)
 {
-	struct wl_screenshooter **screenshooter = data;
+	struct screenshooter **screenshooter = data;
 
 	if (strcmp(interface, "screenshooter") == 0)
-		*screenshooter = wl_screenshooter_create(display, id, 1);
+		*screenshooter = screenshooter_create(display, id, 1);
 }
 
 int main(int argc, char *argv[])
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 	struct wl_display *display;
 	GMainLoop *loop;
 	GSource *source;
-	struct wl_screenshooter *screenshooter;
+	struct screenshooter *screenshooter;
 
 	display = wl_display_connect(NULL);
 	if (display == NULL) {
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 	source = wl_glib_source_new(display);
 	g_source_attach(source, NULL);
 
-	wl_screenshooter_shoot(screenshooter);
+	screenshooter_shoot(screenshooter);
 
 	g_idle_add((GSourceFunc) g_main_loop_quit, loop);
 	g_main_loop_run(loop);

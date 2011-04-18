@@ -23,13 +23,13 @@
 #include "compositor.h"
 #include "screenshooter-server-protocol.h"
 
-struct wl_screenshooter {
+struct screenshooter {
 	struct wl_object base;
 	struct wlsc_compositor *ec;
 };
 
 static void
-screenshooter_shoot(struct wl_client *client, struct wl_screenshooter *shooter)
+screenshooter_shoot(struct wl_client *client, struct screenshooter *shooter)
 {
 	struct wlsc_compositor *ec = shooter->ec;
 	struct wlsc_output *output;
@@ -65,20 +65,20 @@ screenshooter_shoot(struct wl_client *client, struct wl_screenshooter *shooter)
 	}
 }
 
-struct wl_screenshooter_interface screenshooter_implementation = {
+struct screenshooter_interface screenshooter_implementation = {
 	screenshooter_shoot
 };
 
 void
 screenshooter_create(struct wlsc_compositor *ec)
 {
-	struct wl_screenshooter *shooter;
+	struct screenshooter *shooter;
 
 	shooter = malloc(sizeof *shooter);
 	if (shooter == NULL)
 		return;
 
-	shooter->base.interface = &wl_screenshooter_interface;
+	shooter->base.interface = &screenshooter_interface;
 	shooter->base.implementation =
 		(void(**)(void)) &screenshooter_implementation;
 	shooter->ec = ec;
