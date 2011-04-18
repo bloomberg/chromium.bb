@@ -277,6 +277,27 @@ void DevicePolicyCache::DecodeDevicePolicy(
                      DecodeIntegerValue(container.policy_refresh_rate()));
     }
   }
+
+  if (policy.has_device_proxy_settings()) {
+    const em::DeviceProxySettingsProto container =
+        policy.device_proxy_settings();
+    if (container.has_proxy_mode()) {
+      recommended->Set(kPolicyProxyMode,
+                       Value::CreateStringValue(container.proxy_mode()));
+    }
+    if (container.has_proxy_server()) {
+      recommended->Set(kPolicyProxyServer,
+                       Value::CreateStringValue(container.proxy_server()));
+    }
+    if (container.has_proxy_pac_url()) {
+      recommended->Set(kPolicyProxyPacUrl,
+                       Value::CreateStringValue(container.proxy_pac_url()));
+    }
+    if (container.has_proxy_bypass_list()) {
+      recommended->Set(kPolicyProxyBypassList,
+                       Value::CreateStringValue(container.proxy_bypass_list()));
+    }
+  }
 }
 
 }  // namespace policy

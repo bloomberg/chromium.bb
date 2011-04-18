@@ -57,14 +57,38 @@ ACTION_P2(MockSignedSettingsHelperRetrievePolicy, status_code, policy) {
   arg0->OnRetrievePolicyCompleted(status_code, policy);
 }
 
-void CreatePolicy(em::PolicyFetchResponse* policy,
-                  const std::string& user,
-                  int refresh_rate) {
+void CreateRefreshRatePolicy(em::PolicyFetchResponse* policy,
+                             const std::string& user,
+                             int refresh_rate) {
   // This method omits a few fields which currently aren't needed by tests:
   // timestamp, machine_name, policy_type, public key info.
   em::PolicyData signed_response;
   em::ChromeDeviceSettingsProto settings;
   settings.mutable_policy_refresh_rate()->set_policy_refresh_rate(refresh_rate);
+  signed_response.set_username(user);
+  signed_response.set_request_token("dmtoken");
+  signed_response.set_device_id("deviceid");
+  EXPECT_TRUE(
+      settings.SerializeToString(signed_response.mutable_policy_value()));
+  std::string serialized_signed_response;
+  EXPECT_TRUE(signed_response.SerializeToString(&serialized_signed_response));
+  policy->set_policy_data(serialized_signed_response);
+}
+
+void CreateProxyPolicy(em::PolicyFetchResponse* policy,
+                       const std::string& user,
+                       const std::string& proxy_mode,
+                       const std::string& proxy_server,
+                       const std::string& proxy_pac_url,
+                       const std::string& proxy_bypass_list) {
+  em::PolicyData signed_response;
+  em::ChromeDeviceSettingsProto settings;
+  em::DeviceProxySettingsProto* proxy_settings =
+      settings.mutable_device_proxy_settings();
+  proxy_settings->set_proxy_mode(proxy_mode);
+  proxy_settings->set_proxy_server(proxy_server);
+  proxy_settings->set_proxy_pac_url(proxy_pac_url);
+  proxy_settings->set_proxy_bypass_list(proxy_bypass_list);
   signed_response.set_username(user);
   signed_response.set_request_token("dmtoken");
   signed_response.set_device_id("deviceid");
@@ -103,6 +127,10 @@ class DevicePolicyCacheTest : public testing::Test {
     return cache_->mandatory_policy_.Get(policy);
   }
 
+  const Value* GetRecommendedPolicy(ConfigurationPolicyType policy) {
+    return cache_->recommended_policy_.Get(policy);
+  }
+
   scoped_ptr<chromeos::CryptohomeLibrary> cryptohome_;
   EnterpriseInstallAttributes install_attributes_;
   DevicePolicyIdentityStrategy identity_strategy_;
@@ -115,7 +143,7 @@ class DevicePolicyCacheTest : public testing::Test {
 
 TEST_F(DevicePolicyCacheTest, Startup) {
   em::PolicyFetchResponse policy;
-  CreatePolicy(&policy, kTestUser, 120);
+  CreateRefreshRatePolicy(&policy, kTestUser, 120);
   EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_)).WillOnce(
       MockSignedSettingsHelperRetrievePolicy(SignedSettings::SUCCESS,
                                              policy));
@@ -133,7 +161,7 @@ TEST_F(DevicePolicyCacheTest, SetPolicy) {
 
   // Startup.
   em::PolicyFetchResponse policy;
-  CreatePolicy(&policy, kTestUser, 120);
+  CreateRefreshRatePolicy(&policy, kTestUser, 120);
   EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_)).WillOnce(
       MockSignedSettingsHelperRetrievePolicy(SignedSettings::SUCCESS,
                                              policy));
@@ -145,7 +173,7 @@ TEST_F(DevicePolicyCacheTest, SetPolicy) {
 
   // Set new policy information.
   em::PolicyFetchResponse new_policy;
-  CreatePolicy(&new_policy, kTestUser, 300);
+  CreateRefreshRatePolicy(&new_policy, kTestUser, 300);
   EXPECT_CALL(signed_settings_helper_, StartStorePolicyOp(_, _)).WillOnce(
       MockSignedSettingsHelperStorePolicy(chromeos::SignedSettings::SUCCESS));
   EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_)).WillOnce(
@@ -165,7 +193,7 @@ TEST_F(DevicePolicyCacheTest, SetPolicyWrongUser) {
 
   // Startup.
   em::PolicyFetchResponse policy;
-  CreatePolicy(&policy, kTestUser, 120);
+  CreateRefreshRatePolicy(&policy, kTestUser, 120);
   EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_)).WillOnce(
       MockSignedSettingsHelperRetrievePolicy(SignedSettings::SUCCESS,
                                              policy));
@@ -174,7 +202,7 @@ TEST_F(DevicePolicyCacheTest, SetPolicyWrongUser) {
 
   // Set new policy information. This should fail due to invalid user.
   em::PolicyFetchResponse new_policy;
-  CreatePolicy(&new_policy, "foreign_user@example.com", 300);
+  CreateRefreshRatePolicy(&new_policy, "foreign_user@example.com", 300);
   EXPECT_CALL(signed_settings_helper_, StartStorePolicyOp(_, _)).Times(0);
   cache_->SetPolicy(new_policy);
   testing::Mock::VerifyAndClearExpectations(&signed_settings_helper_);
@@ -189,7 +217,7 @@ TEST_F(DevicePolicyCacheTest, SetPolicyNonEnterpriseDevice) {
 
   // Startup.
   em::PolicyFetchResponse policy;
-  CreatePolicy(&policy, kTestUser, 120);
+  CreateRefreshRatePolicy(&policy, kTestUser, 120);
   EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_)).WillOnce(
       MockSignedSettingsHelperRetrievePolicy(SignedSettings::SUCCESS,
                                              policy));
@@ -198,7 +226,7 @@ TEST_F(DevicePolicyCacheTest, SetPolicyNonEnterpriseDevice) {
 
   // Set new policy information. This should fail due to invalid user.
   em::PolicyFetchResponse new_policy;
-  CreatePolicy(&new_policy, kTestUser, 120);
+  CreateRefreshRatePolicy(&new_policy, kTestUser, 120);
   EXPECT_CALL(signed_settings_helper_, StartStorePolicyOp(_, _)).Times(0);
   cache_->SetPolicy(new_policy);
   testing::Mock::VerifyAndClearExpectations(&signed_settings_helper_);
@@ -206,6 +234,34 @@ TEST_F(DevicePolicyCacheTest, SetPolicyNonEnterpriseDevice) {
   FundamentalValue expected(120);
   EXPECT_TRUE(Value::Equals(&expected,
                             GetMandatoryPolicy(kPolicyPolicyRefreshRate)));
+}
+
+TEST_F(DevicePolicyCacheTest, SetProxyPolicy) {
+  InSequence s;
+
+  MakeEnterpriseDevice(kTestUser);
+
+  // Startup.
+  em::PolicyFetchResponse policy;
+  CreateProxyPolicy(&policy, kTestUser, "direct", "http://proxy:8080",
+                    "http://proxy:8080/pac.js", "127.0.0.1,example.com");
+  EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_)).WillOnce(
+      MockSignedSettingsHelperRetrievePolicy(SignedSettings::SUCCESS,
+                                             policy));
+  cache_->Load();
+  testing::Mock::VerifyAndClearExpectations(&signed_settings_helper_);
+  StringValue expected_proxy_mode("direct");
+  StringValue expected_proxy_server("http://proxy:8080");
+  StringValue expected_proxy_pac_url("http://proxy:8080/pac.js");
+  StringValue expected_proxy_bypass_list("127.0.0.1,example.com");
+  EXPECT_TRUE(Value::Equals(&expected_proxy_mode,
+                            GetRecommendedPolicy(kPolicyProxyMode)));
+  EXPECT_TRUE(Value::Equals(&expected_proxy_server,
+                            GetRecommendedPolicy(kPolicyProxyServer)));
+  EXPECT_TRUE(Value::Equals(&expected_proxy_pac_url,
+                            GetRecommendedPolicy(kPolicyProxyPacUrl)));
+  EXPECT_TRUE(Value::Equals(&expected_proxy_bypass_list,
+                            GetRecommendedPolicy(kPolicyProxyBypassList)));
 }
 
 }  // namespace policy
