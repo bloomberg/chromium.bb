@@ -83,8 +83,7 @@ bool GetDefaultChromeExeDir(FilePath* browser_directory) {
         .Append(app_from_google));
   }
 #elif defined(OS_MACOSX)
-  locations.push_back(FilePath(
-      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"));
+  locations.push_back(FilePath("/Applications"));
 #elif defined(OS_LINUX)
   // Proxy launcher doesn't check for google-chrome, only chrome.
   FilePath chrome_sym_link("/usr/bin/google-chrome");
