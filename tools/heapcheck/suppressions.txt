@@ -1413,3 +1413,15 @@
    fun:sync_notifier::InvalidationNotifier::UpdateCredentials
    fun:sync_notifier::::InvalidationNotifierTest_Basic_Test::TestBody
 }
+{
+   bug_79794
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::string::_Rep::_S_create
+   fun:std::string::_Rep::_M_clone
+   fun:std::string::reserve
+   fun:std::string::append
+   fun:std::string::append
+   fun:std::operator+
+   fun:::LogTypeQualityMetric
+}
