@@ -1930,6 +1930,8 @@
         'browser/sync/glue/http_bridge.cc',
         'browser/sync/glue/http_bridge.h',
         'browser/sync/glue/model_associator.h',
+        'browser/sync/glue/non_frontend_data_type_controller.cc',
+        'browser/sync/glue/non_frontend_data_type_controller.h',
         'browser/sync/glue/password_change_processor.cc',
         'browser/sync/glue/password_change_processor.h',
         'browser/sync/glue/password_data_type_controller.cc',
