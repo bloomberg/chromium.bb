@@ -50,6 +50,50 @@ chrome.fileBrowserPrivate = {
     addListener: function(cb) { this.callbacks.push(cb) }
   },
 
+  getFileTasks: function(urlList, callback) {
+    if (urlList.length == 0)
+      return callback([]);
+
+    if (!callback)
+      throw new Error('Missing callback');
+
+    var tasks =
+    [ { taskId: 'upload-picasr',
+        title: 'Upload to Picasr',
+        regexp: /\.(jpe?g|gif|png|cr2?|tiff)$/i,
+        iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAYAAAAmL5yKAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sEEBcJA0AW6BUAAACdSURBVCjPzZExC4MwEIW/1L2U/gwHf1/3WrqIkz/PWVAoXdolRNLBJNhwiS6FPjguuZf3csnBL2HBLikNtSFmS3yIROUMWhKrHR2XNZiLa9tGkaqtDa4TjBX0yIf8+osLnT3BnKDIvddm/uCRE+fgDc7r4iBPJWAWDADQLh8Tt3neSAYKdAu8gc69L4rAN8v+Fk/3DrxcluD5mr/CB34jRiE3x1kcAAAAAElFTkSuQmCC',
+      },
+      { taskId: 'upload-orcbook',
+        title: 'Upload to OrcBook',
+        regexp: /\.(jpe?g|png|cr2?|tiff)$/i,
+        iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAYAAAAmL5yKAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sEEBcOAw9XftIAAADFSURBVCjPrZKxCsIwEIa/FHFwsvYxROjSQXAoqLiIL+xgBtvZ91A6uOnQc2hT0zRqkR4c3P25+/PfJTCwLU6wEpgBWkDXuInDPSwF5r7mJIeNQFTnIiCeONpVdYlLoK9wEUhNg8+B9FDVaZcgCKAovjTXfvPJFwGZtKW60pt8bOGBzfLouemnFY/MAs8wDeEI4NzaybewBu4AysKVgrK0gfe5iB9vjdAUqQ/S1Y/R3IX9Zc1zxc7zxe2/0Iskt7AsG0hhx14W8XV43FgV4gAAAABJRU5ErkJggg==',
+      },
+    ];
+
+    // Copy all tasks, then remove the ones that don't match.
+    var candidateTasks = [].concat(tasks);
+
+    for (var i = 0; i < urlList.length; i++) {
+      if (candidateTasks.length == 0)
+        return callback([]);
+
+      for (var taskIndex = candidateTasks.length - 1; taskIndex >= 0;
+           taskIndex--) {
+        if (candidateTasks[taskIndex].regexp.test(urlList[i]))
+          continue;
+
+        // This task doesn't match this url, remove the task.
+        candidateTasks.splice(taskIndex, 1);
+      }
+    }
+
+    callback(candidateTasks);
+  },
+
+  executeTask: function(taskId, urlList) {
+    console.log('executing task: ' + taskId + ': ' + urlList.length + ' urls');
+  },
+
   /**
    * Return localized strings.
    */

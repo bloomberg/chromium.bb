@@ -71,7 +71,8 @@
   </head>
   <body i18n-values=".style.fontFamily:BODY_FONT_FAMILY;
                      .style.fontSize:BODY_FONT_SIZE">
-    <div class=dialog-title>[TITLE]</div>
+    <div class=dialog-title visibleif='this.dialogType_ != "full-page"'
+         >[TITLE]</div>
     <div class=dialog-header>
       <div class=breadcrumbs></div>
       <!-- TODO(rginda): Detail/Thumbnail buttons. -->
@@ -91,10 +92,11 @@
         <div class=preview-filename></div>
         <center><img class=preview-img></center>
         <div class=vertical-spacer></div>
+        <div class=task-buttons></div>
         <div class=preview-summary></div>
       </div>
     </div>
-    <div class=dialog-footer>
+    <div class=dialog-footer visibleif='this.dialogType_ != "full-page"'>
       <div class=filename-label i18n-content=FILENAME_LABEL
            visibleif='this.dialogType_ == "saveas-file"'
            >[FILENAME]</div>

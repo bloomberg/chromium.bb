@@ -16,7 +16,7 @@
  * @param {Object} params A map of parameter names to values controlling the
  *     appearance of the FileManager.  Names are:
  *     - type: A value from FileManager.DialogType defining what kind of
- *       dialog to present.  Defaults to SELECT_OPEN_FILE.
+ *       dialog to present.  Defaults to FULL_PAGE.
  *     - title: The title for the dialog.  Defaults to a localized string based
  *       on the dialog type.
  *     - defaultPath: The default path for the dialog.  The default path should
@@ -32,7 +32,7 @@ function FileManager(dialogDom, rootEntries, params) {
 
   this.document_ = dialogDom.ownerDocument;
   this.dialogType_ =
-    this.params_.type || FileManager.DialogType.SELECT_OPEN_FILE;
+    this.params_.type || FileManager.DialogType.FULL_PAGE;
 
   this.defaultPath_ = this.params_.defaultPath || '/';
 
@@ -338,7 +338,8 @@ FileManager.prototype = {
   /**
    * List of dialog types.
    *
-   * Keep this in sync with FileManagerDialog::GetDialogTypeAsString.
+   * Keep this in sync with FileManagerDialog::GetDialogTypeAsString, except
+   * FULL_PAGE which is specific to this code.
    *
    * @enum {string}
    */
@@ -346,7 +347,8 @@ FileManager.prototype = {
     SELECT_FOLDER: 'folder',
     SELECT_SAVEAS_FILE: 'saveas-file',
     SELECT_OPEN_FILE: 'open-file',
-    SELECT_OPEN_MULTI_FILE: 'open-multi-file'
+    SELECT_OPEN_MULTI_FILE: 'open-multi-file',
+    FULL_PAGE: 'full-page'
   };
 
   /**
@@ -373,6 +375,7 @@ FileManager.prototype = {
     this.previewFilename_ = this.dialogDom_.querySelector('.preview-filename');
     this.previewSummary_ = this.dialogDom_.querySelector('.preview-summary');
     this.filenameInput_ = this.dialogDom_.querySelector('.filename-input');
+    this.taskButtons_ = this.dialogDom_.querySelector('.task-buttons');
     this.okButton_ = this.dialogDom_.querySelector('.ok');
     this.cancelButton_ = this.dialogDom_.querySelector('.cancel');
 
@@ -387,6 +390,9 @@ FileManager.prototype = {
 
     this.dialogDom_.querySelector('button.new-folder').addEventListener(
         'click', this.onNewFolderButtonClick_.bind(this));
+
+    this.dialogDom_.ownerDocument.defaultView.addEventListener(
+        'resize', this.onResize_.bind(this));
 
     var ary = this.dialogDom_.querySelectorAll('[visibleif]');
     for (var i = 0; i < ary.length; i++) {
@@ -421,10 +427,13 @@ FileManager.prototype = {
 
     this.table = this.dialogDom_.querySelector('.detail-table');
     cr.ui.Table.decorate(this.table);
+
     this.table.dataModel = dataModel;
     this.table.columnModel = new cr.ui.table.TableColumnModel(columns);
 
-    if (this.dialogType_ != FileManager.DialogType.SELECT_OPEN_MULTI_FILE) {
+    if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILE ||
+        this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FOLDER ||
+        this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
       this.table.selectionModel = new cr.ui.table.TableSingleSelectionModel();
     }
 
@@ -433,7 +442,15 @@ FileManager.prototype = {
     this.table.selectionModel.addEventListener(
         'change', this.onDetailSelectionChanged_.bind(this));
 
+    this.onResize_();
     this.dialogDom_.style.opacity = '1';
+  };
+
+  FileManager.prototype.onResize_ = function() {
+    // TODO(rginda): Remove this hack when cr.ui.List supports resizing.
+    this.table.list_.style.height =
+      (this.table.clientHeight - this.table.header_.clientHeight) + 'px';
+    this.table.redraw();
   };
 
   /**
@@ -491,6 +508,11 @@ FileManager.prototype = {
         defaultTarget = ary[2] || '';
         if (!defaultTarget)
           console.warn('Save-as should have provided a default filename.');
+        break;
+
+      case FileManager.DialogType.FULL_PAGE:
+        defaultFolder = ary[1] || '/';
+        defaultTarget = ary[2] || '';
         break;
 
       default:
@@ -665,6 +687,7 @@ FileManager.prototype = {
   FileManager.prototype.summarizeSelection_ = function() {
     var selection = this.selection = {
       entries: [],
+      uris: [],
       leadEntry: null,
       totalCount: 0,
       fileCount: 0,
@@ -674,6 +697,7 @@ FileManager.prototype = {
     };
 
     this.previewSummary_.textContent = str('COMPUTING_SELECTION');
+    this.taskButtons_.innerHTML = '';
 
     var selectedIndexes = this.table.selectionModel.selectedIndexes;
     if (!selectedIndexes.length) {
@@ -689,6 +713,7 @@ FileManager.prototype = {
       var entry = this.table.dataModel.item(selectedIndexes[i]);
 
       selection.entries.push(entry);
+      selection.uris.push(entry.toURI());
 
       if (selection.iconType == null) {
         selection.iconType = getIconType(entry);
@@ -742,8 +767,37 @@ FileManager.prototype = {
       }
     };
 
+    if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
+      chrome.fileBrowserPrivate.getFileTasks(selection.uris,
+                                             this.onTasksFound_.bind(this));
+    }
+
     cacheNextFile();
   };
+
+  FileManager.prototype.onTasksFound_ = function(tasksList) {
+    for (var i = 0; i < tasksList.length; i++) {
+      var task = tasksList[i];
+
+      var button = this.document_.createElement('button');
+      button.addEventListener('click', this.onTaskButtonClicked_.bind(this));
+      button.className = 'task-button';
+      button.task = task;
+
+      var img = this.document_.createElement('img');
+      img.src = task.iconUrl;
+
+      button.appendChild(img);
+      button.appendChild(this.document_.createTextNode(task.title));
+
+      this.taskButtons_.appendChild(button);
+    }
+  };
+
+  FileManager.prototype.onTaskButtonClicked_ = function(event) {
+    chrome.fileBrowserPrivate.executeTask(event.srcElement.task.taskId,
+                                          this.selection.uris);
+  }
 
   /**
    * Update the breadcrumb display to reflect the current directory.
@@ -941,6 +995,9 @@ FileManager.prototype = {
         this.filenameInput_.value = this.selection.leadEntry.name;
 
       selectable = !!this.filenameInput_.value;
+    } else if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
+      // No "select" buttons on the full page UI.
+      selectable = false;
     } else {
       throw new Error('Unknown dialog type');
     }
@@ -1198,7 +1255,7 @@ FileManager.prototype = {
     }
 
     // Multi-file selection has no other restrictions.
-    if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILES) {
+    if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_MULTI_FILE) {
       chrome.fileBrowserPrivate.selectFiles(ary);
       window.close();
       return;

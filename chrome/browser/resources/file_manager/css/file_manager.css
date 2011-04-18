@@ -175,7 +175,6 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   height: 24px;
-  width: 16px;
 }
 
 /* Icon for folders. */
@@ -221,6 +220,25 @@ body {
 .preview-img.transparent-background {
   /* ../images/preview-background.png */
   background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAAlwSFlzAAAOTQAADiYBwNzaZQAAAAd0SU1FB9sDExUSAaQ/5TMAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAQ0lEQVRYw+3VsQkAMQwDQOfJRt7r9/FQ3ilDuAiBUy84UKFVVX8M0t2TenxxOQAAAAAAAAB7+ueZaQIAAAAAAIC3AQceAAfi8EmRSgAAAABJRU5ErkJggg==);
+}
+
+/* The task buttons at the bottom of the preview pane. */
+.task-buttons {
+  padding: 4px;
+  overflow-y: auto;
+}
+
+.task-button {
+  display: block;
+  width: 100%;
+  text-align: left;
+}
+
+.task-button > img {
+  position: relative;
+  top: 2px;
+  padding-after: 5px;
+  padding-right: 5px;
 }
 
 /* The selection summary text at the bottom of the preview pane. */
