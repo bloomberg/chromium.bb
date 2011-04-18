@@ -1,7 +1,7 @@
 #!/bin/bash
-# Copyright 2011 The Native Client Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 #
 # Sets symbolic links to GCC libs from the GCC source tree (GMP, MPFR) if
 # correct versions of the libraries are not present in the system.
@@ -39,7 +39,7 @@ if [[ "$GNU_MP_MAJOR" -lt 4 ]] ||
      [[ "$GNU_MP_MINOR" -eq 3 ]] &&
      [[ "$GNU_MP_PATCHLEVEL" -lt 1 ]] ) ; then
   echo "symlinking GMP"
-  ln -sf gmp-${GMP_VERSION} "$SCRIPT_DIR_ABS/SRC/gcc/gmp"
+  ln -sfn gmp-${GMP_VERSION} "$SCRIPT_DIR_ABS/SRC/gcc/gmp"
 else
   echo "using GMP installed in the system"
   rm -f "$SCRIPT_DIR_ABS/SRC/gcc/gmp"
@@ -61,7 +61,7 @@ if [[ ! -e /usr/include/mpfr.h ]] ||
      [[ "$MPFR_VERSION_MINOR" -eq 4 ]] &&
      [[ "$MPFR_VERSION_PATCHLEVEL" -lt 1 ]] ) ; then
   echo "symlinking MPFR"
-  ln -sf mpfr-${MPFR_VERSION} "$SCRIPT_DIR_ABS/SRC/gcc/mpfr"
+  ln -sfn mpfr-${MPFR_VERSION} "$SCRIPT_DIR_ABS/SRC/gcc/mpfr"
 else
   echo "using MPFR installed in the system"
   rm -f "$SCRIPT_DIR_ABS/SRC/gcc/mpfr"
