@@ -345,7 +345,6 @@ struct RenderView::PendingFileChooser {
 
 RenderView::RenderView(RenderThreadBase* render_thread,
                        gfx::NativeViewId parent_hwnd,
-                       gfx::PluginWindowHandle compositing_surface,
                        int32 opener_id,
                        const RendererPreferences& renderer_prefs,
                        const WebPreferences& webkit_prefs,
@@ -415,7 +414,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   // completing initialization.  Otherwise, we can finish it now.
   if (opener_id == MSG_ROUTING_NONE) {
     did_show_ = true;
-    CompleteInit(parent_hwnd, compositing_surface);
+    CompleteInit(parent_hwnd);
   }
 
   host_window_ = parent_hwnd;
@@ -489,7 +488,6 @@ RenderView* RenderView::FromWebView(WebView* webview) {
 RenderView* RenderView::Create(
     RenderThreadBase* render_thread,
     gfx::NativeViewId parent_hwnd,
-    gfx::PluginWindowHandle compositing_surface,
     int32 opener_id,
     const RendererPreferences& renderer_prefs,
     const WebPreferences& webkit_prefs,
@@ -501,7 +499,6 @@ RenderView* RenderView::Create(
   return new RenderView(
       render_thread,
       parent_hwnd,
-      compositing_surface,
       opener_id,
       renderer_prefs,
       webkit_prefs,
@@ -1271,7 +1268,6 @@ WebView* RenderView::createView(
 
   RenderView* view = RenderView::Create(render_thread_,
                                         0,
-                                        gfx::kNullPluginWindow,
                                         routing_id_,
                                         renderer_preferences_,
                                         webkit_preferences_,

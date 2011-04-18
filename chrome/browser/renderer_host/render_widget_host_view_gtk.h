@@ -94,7 +94,8 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
 
   virtual void AcceleratedCompositingActivated(bool activated);
-  virtual gfx::PluginWindowHandle GetCompositingSurface();
+  virtual gfx::PluginWindowHandle AcquireCompositingSurface();
+  virtual void ReleaseCompositingSurface(gfx::PluginWindowHandle surface);
 
   // ui::AnimationDelegate implementation.
   virtual void AnimationEnded(const ui::Animation* animation);
@@ -247,7 +248,7 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
   // indicate the top edge, positive the bottom.
   int dragged_at_vertical_edge_;
 
-  gfx::PluginWindowHandle compositing_surface_;
+  bool accelerated_surface_acquired_;
 
   // The event for the last mouse down we handled. We need this for context
   // menus and drags.

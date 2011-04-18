@@ -161,7 +161,8 @@ class RenderWidgetHostViewWin
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
   virtual void SetVisuallyDeemphasized(const SkColor* color, bool animate);
 
-  virtual gfx::PluginWindowHandle GetCompositingSurface();
+  virtual gfx::PluginWindowHandle AcquireCompositingSurface();
+  virtual void ReleaseCompositingSurface(gfx::PluginWindowHandle surface);
   virtual void ShowCompositorHostWindow(bool show);
 
   virtual void OnAccessibilityNotifications(

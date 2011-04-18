@@ -167,7 +167,6 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
 
   ViewMsg_New_Params params;
   params.parent_window = GetNativeViewId();
-  params.compositing_surface = GetCompositingSurface();
   params.renderer_preferences =
       delegate_->GetRendererPrefs(process()->profile());
   params.web_preferences = delegate_->GetWebkitPrefs();

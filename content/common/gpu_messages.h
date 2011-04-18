@@ -152,7 +152,7 @@ IPC_MESSAGE_CONTROL3(GpuMsg_VisibilityChanged,
 // Tells the GPU process to create a new command buffer that renders directly
 // to a native view. A corresponding GpuCommandBufferStub is created.
 IPC_MESSAGE_CONTROL4(GpuMsg_CreateViewCommandBuffer,
-                     gfx::PluginWindowHandle, /* compositing_surface */
+                     gfx::PluginWindowHandle, /* view */
                      int32, /* render_view_id */
                      int32, /* renderer_id */
                      GPUCreateCommandBufferConfig /* init_params */)
@@ -210,8 +210,7 @@ IPC_SYNC_MESSAGE_CONTROL0_0(GpuHostMsg_SynchronizeGpu)
 
 // A renderer sends this to the browser process when it wants to
 // create a GL context associated with the given view_id.
-IPC_SYNC_MESSAGE_CONTROL3_1(GpuHostMsg_CreateViewCommandBuffer,
-                            gfx::PluginWindowHandle, /* view */
+IPC_SYNC_MESSAGE_CONTROL2_1(GpuHostMsg_CreateViewCommandBuffer,
                             int32, /* render_view_id */
                             GPUCreateCommandBufferConfig, /* init_params */
                             int32 /* route_id */)

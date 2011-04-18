@@ -205,7 +205,6 @@ void GpuMessageFilter::OnSynchronizeGpu(IPC::Message* reply) {
 }
 
 void GpuMessageFilter::OnCreateViewCommandBuffer(
-    gfx::PluginWindowHandle compositing_surface,
     int32 render_view_id,
     const GPUCreateCommandBufferConfig& init_params,
     IPC::Message* reply) {
@@ -220,7 +219,6 @@ void GpuMessageFilter::OnCreateViewCommandBuffer(
   }
 
   ui_shim->CreateViewCommandBuffer(
-      compositing_surface,
       render_view_id,
       render_process_id_,
       init_params,

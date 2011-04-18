@@ -242,7 +242,7 @@ void TestRenderWidgetHostView::ShowCompositorHostWindow(bool show) {
 }
 #endif
 
-gfx::PluginWindowHandle TestRenderWidgetHostView::GetCompositingSurface() {
+gfx::PluginWindowHandle TestRenderWidgetHostView::AcquireCompositingSurface() {
   return gfx::kNullPluginWindow;
 }
 

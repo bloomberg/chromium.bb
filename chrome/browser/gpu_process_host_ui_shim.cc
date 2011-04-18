@@ -112,33 +112,52 @@ void RouteToGpuProcessHostUIShimTask::Run() {
     ui_shim->OnMessageReceived(msg_);
 }
 
-#if defined(OS_LINUX)
-// Used to put a lock on surfaces so that the window to which the GPU
-// process is drawing to doesn't disappear while it is drawing when
-// a tab is closed.
-class GpuProcessHostUIShim::SurfaceRef {
+class GpuProcessHostUIShim::ViewSurface {
  public:
-  explicit SurfaceRef(gfx::PluginWindowHandle surface);
-  ~SurfaceRef();
+  explicit ViewSurface(ViewID view_id);
+  ~ViewSurface();
+  gfx::PluginWindowHandle surface() { return surface_; }
  private:
+  RenderWidgetHostView* GetRenderWidgetHostView();
+  ViewID view_id_;
   gfx::PluginWindowHandle surface_;
 };
 
-GpuProcessHostUIShim::SurfaceRef::SurfaceRef(gfx::PluginWindowHandle surface)
-    : surface_(surface) {
-  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
-  if (!manager->AddRefPermanentXID(surface_)) {
-    LOG(ERROR) << "Surface " << surface << " cannot be referenced.";
-  }
+GpuProcessHostUIShim::ViewSurface::ViewSurface(ViewID view_id)
+    : view_id_(view_id), surface_(gfx::kNullPluginWindow) {
+  RenderWidgetHostView* view = GetRenderWidgetHostView();
+  if (view)
+    surface_ = view->AcquireCompositingSurface();
 }
 
-GpuProcessHostUIShim::SurfaceRef::~SurfaceRef() {
-  // TODO(backer): ReleasePermanentXID has to be done on the UI thread.
-  // Post task to release once we move this code to the IO thread.
-  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
-  manager->ReleasePermanentXID(surface_);
+GpuProcessHostUIShim::ViewSurface::~ViewSurface() {
+  if (!surface_)
+    return;
+
+  RenderWidgetHostView* view = GetRenderWidgetHostView();
+  if (view)
+    view->ReleaseCompositingSurface(surface_);
 }
-#endif  // defined(OS_LINUX)
+
+// We do separate lookups for the RenderWidgetHostView when acquiring
+// and releasing surfaces (rather than caching) because the
+// RenderWidgetHostView could die without warning. In such a case,
+// it's the RenderWidgetHostView's responsibility to cleanup.
+RenderWidgetHostView* GpuProcessHostUIShim::ViewSurface::
+    GetRenderWidgetHostView() {
+  RenderProcessHost* process = RenderProcessHost::FromID(view_id_.first);
+  RenderWidgetHost* host = NULL;
+  if (process) {
+    host = static_cast<RenderWidgetHost*>(
+        process->GetListenerByID(view_id_.second));
+  }
+
+  RenderWidgetHostView* view = NULL;
+  if (host)
+    view = host->view();
+
+  return view;
+}
 
 GpuProcessHostUIShim::GpuProcessHostUIShim(int host_id,
     content::CauseForGpuLaunch cause_for_gpu_launch)
@@ -399,37 +418,31 @@ void GpuProcessHostUIShim::Synchronize(SynchronizeCallback* callback) {
 }
 
 void GpuProcessHostUIShim::CreateViewCommandBuffer(
-    gfx::PluginWindowHandle compositing_surface,
     int32 render_view_id,
     int32 renderer_id,
     const GPUCreateCommandBufferConfig& init_params,
     CreateCommandBufferCallback* callback) {
   DCHECK(CalledOnValidThread());
   linked_ptr<CreateCommandBufferCallback> wrapped_callback(callback);
-
-#if defined(OS_LINUX)
   ViewID view_id(renderer_id, render_view_id);
 
   // There should only be one such command buffer (for the compositor).  In
   // practice, if the GPU process lost a context, GraphicsContext3D with
   // associated command buffer and view surface will not be gone until new
   // one is in place and all layers are reattached.
-  linked_ptr<SurfaceRef> surface_ref;
-  SurfaceRefMap::iterator it = surface_refs_.find(view_id);
-  if (it != surface_refs_.end())
-    surface_ref = (*it).second;
+  linked_ptr<ViewSurface> view_surface;
+  ViewSurfaceMap::iterator it = acquired_surfaces_.find(view_id);
+  if (it != acquired_surfaces_.end())
+    view_surface = (*it).second;
   else
-    surface_ref.reset(new SurfaceRef(compositing_surface));
-#endif  // defined(OS_LINUX)
+    view_surface.reset(new ViewSurface(view_id));
 
-  if (compositing_surface != gfx::kNullPluginWindow &&
+  if (view_surface->surface() != gfx::kNullPluginWindow &&
       Send(new GpuMsg_CreateViewCommandBuffer(
-          compositing_surface, render_view_id, renderer_id, init_params))) {
+          view_surface->surface(), render_view_id, renderer_id, init_params))) {
     create_command_buffer_requests_.push(wrapped_callback);
-#if defined(OS_LINUX)
-    surface_refs_.insert(std::pair<ViewID, linked_ptr<SurfaceRef> >(
-        view_id, surface_ref));
-#endif  // defined(OS_LINUX)
+    acquired_surfaces_.insert(std::pair<ViewID, linked_ptr<ViewSurface> >(
+        view_id, view_surface));
   } else {
     CreateCommandBufferError(wrapped_callback.release(), MSG_ROUTING_NONE);
   }
@@ -581,12 +594,10 @@ void GpuProcessHostUIShim::OnCommandBufferCreated(const int32 route_id) {
 void GpuProcessHostUIShim::OnDestroyCommandBuffer(
     gfx::PluginWindowHandle window, int32 renderer_id,
     int32 render_view_id) {
-#if defined(OS_LINUX)
   ViewID view_id(renderer_id, render_view_id);
-  SurfaceRefMap::iterator it = surface_refs_.find(view_id);
-  if (it != surface_refs_.end())
-    surface_refs_.erase(it);
-#endif  // defined(OS_LINUX)
+  ViewSurfaceMap::iterator it = acquired_surfaces_.find(view_id);
+  if (it != acquired_surfaces_.end())
+    acquired_surfaces_.erase(it);
 }
 
 void GpuProcessHostUIShim::OnGraphicsInfoCollected(const GPUInfo& gpu_info) {

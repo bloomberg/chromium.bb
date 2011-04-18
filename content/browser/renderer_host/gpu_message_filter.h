@@ -8,7 +8,6 @@
 
 #include "content/browser/browser_message_filter.h"
 #include "content/common/gpu_process_launch_causes.h"
-#include "ui/gfx/native_widget_types.h"
 
 class GpuProcessHost;
 class GpuProcessHostUIShim;
@@ -43,7 +42,6 @@ class GpuMessageFilter : public BrowserMessageFilter,
   void OnEstablishGpuChannel(content::CauseForGpuLaunch);
   void OnSynchronizeGpu(IPC::Message* reply);
   void OnCreateViewCommandBuffer(
-      gfx::PluginWindowHandle compositing_surface,
       int32 render_view_id,
       const GPUCreateCommandBufferConfig& init_params,
       IPC::Message* reply);

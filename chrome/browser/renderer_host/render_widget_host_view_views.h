@@ -80,7 +80,9 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
                                        bool animate) OVERRIDE;
   virtual bool ContainsNativeView(gfx::NativeView native_view) const OVERRIDE;
   virtual void AcceleratedCompositingActivated(bool activated) OVERRIDE;
-  virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
+  virtual gfx::PluginWindowHandle AcquireCompositingSurface() OVERRIDE;
+  virtual void ReleaseCompositingSurface(
+      gfx::PluginWindowHandle surface) OVERRIDE;
 
   // On some systems, there can be two native views, where an outer native view
   // contains the inner native view (e.g. when using GTK+). This returns the

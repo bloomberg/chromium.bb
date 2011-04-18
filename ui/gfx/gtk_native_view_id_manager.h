@@ -72,11 +72,6 @@ class GtkNativeViewManager {
   // returns: true if |id| is a valid id, false otherwise.
   bool GetPermanentXIDForId(XID* xid, gfx::NativeViewId id);
 
-  // Can be called from any thread.
-  // Will return false if the given XID isn't permanent or has already been
-  // released.
-  bool AddRefPermanentXID(XID xid);
-
   // Must be called from the UI thread because we may need to access a
   // GtkWidget or destroy a GdkWindow.
   //
