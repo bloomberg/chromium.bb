@@ -22,6 +22,7 @@ extern "C" {
 #include "ui/gfx/gl/gl_context_stub.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface_egl.h"
+#include "ui/gfx/gl/gl_surface_osmesa.h"
 
 namespace {
 
@@ -77,29 +78,20 @@ class ViewGLContext : public GLContext {
   DISALLOW_COPY_AND_ASSIGN(ViewGLContext);
 };
 
-// This class is a wrapper around a GL context that uses OSMesa to render
-// to an offscreen buffer and then blits it to a window.
-class OSMesaViewGLContext : public GLContext {
+// This OSMesa GL surface can use XLib to swap the contents of the buffer to a
+// view.
+class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
  public:
-  explicit OSMesaViewGLContext(gfx::PluginWindowHandle window)
-      : window_graphics_context_(0),
-        window_(window),
-        pixmap_graphics_context_(0),
-        pixmap_(0) {
-    DCHECK(window);
-  }
+  explicit NativeViewGLSurfaceOSMesa(gfx::PluginWindowHandle window);
+  virtual ~NativeViewGLSurfaceOSMesa();
 
   // Initializes the GL context.
   bool Initialize();
 
+  // Implement a subset of GLSurface.
   virtual void Destroy();
-  virtual bool MakeCurrent();
-  virtual bool IsCurrent();
   virtual bool IsOffscreen();
   virtual bool SwapBuffers();
-  virtual gfx::Size GetSize();
-  virtual void* GetHandle();
-  virtual void SetSwapInterval(int interval);
 
  private:
   bool UpdateSize();
@@ -108,9 +100,8 @@ class OSMesaViewGLContext : public GLContext {
   gfx::PluginWindowHandle window_;
   GC pixmap_graphics_context_;
   Pixmap pixmap_;
-  OSMesaGLContext osmesa_context_;
 
-  DISALLOW_COPY_AND_ASSIGN(OSMesaViewGLContext);
+  DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceOSMesa);
 };
 
 // This class is a wrapper around a GL context used for offscreen rendering.
@@ -348,13 +339,20 @@ void ViewGLContext::SetSwapInterval(int interval) {
   }
 }
 
-bool OSMesaViewGLContext::Initialize() {
-  if (!osmesa_context_.Initialize(OSMESA_BGRA, NULL)) {
-    LOG(ERROR) << "OSMesaGLContext::Initialize failed.";
-    Destroy();
-    return false;
-  }
+NativeViewGLSurfaceOSMesa::NativeViewGLSurfaceOSMesa(
+    gfx::PluginWindowHandle window)
+  : window_graphics_context_(0),
+    window_(window),
+    pixmap_graphics_context_(0),
+    pixmap_(0) {
+  DCHECK(window);
+}
 
+NativeViewGLSurfaceOSMesa::~NativeViewGLSurfaceOSMesa() {
+  Destroy();
+}
+
+bool NativeViewGLSurfaceOSMesa::Initialize() {
   window_graphics_context_ = XCreateGC(GetXDisplayHelper(),
                                        window_,
                                        0,
@@ -370,9 +368,7 @@ bool OSMesaViewGLContext::Initialize() {
   return true;
 }
 
-void OSMesaViewGLContext::Destroy() {
-  osmesa_context_.Destroy();
-
+void NativeViewGLSurfaceOSMesa::Destroy() {
   Display* display = GetXDisplayHelper();
 
   if (pixmap_graphics_context_) {
@@ -391,31 +387,19 @@ void OSMesaViewGLContext::Destroy() {
   }
 }
 
-bool OSMesaViewGLContext::MakeCurrent() {
-  // TODO(apatrick): This is a bit of a hack. The window might have had zero
-  // size when the context was initialized. Assume it has a valid size when
-  // MakeCurrent is called and resize the back buffer if necessary.
-  UpdateSize();
-  return osmesa_context_.MakeCurrent();
-}
-
-bool OSMesaViewGLContext::IsCurrent() {
-  return osmesa_context_.IsCurrent();
-}
-
-bool OSMesaViewGLContext::IsOffscreen() {
+bool NativeViewGLSurfaceOSMesa::IsOffscreen() {
   return false;
 }
 
-bool OSMesaViewGLContext::SwapBuffers() {
+bool NativeViewGLSurfaceOSMesa::SwapBuffers() {
   // Update the size before blitting so that the blit size is exactly the same
   // as the window.
   if (!UpdateSize()) {
-    LOG(ERROR) << "Failed to update size of OSMesaGLContext.";
+    LOG(ERROR) << "Failed to update size of GLContextOSMesa.";
     return false;
   }
 
-  gfx::Size size = osmesa_context_.GetSize();
+  gfx::Size size = GetSize();
 
   Display* display = GetXDisplayHelper();
 
@@ -427,7 +411,7 @@ bool OSMesaViewGLContext::SwapBuffers() {
                    attributes.depth,
                    pixmap_,
                    pixmap_graphics_context_,
-                   static_cast<const uint8*>(osmesa_context_.buffer()),
+                   static_cast<const uint8*>(GetHandle()),
                    size.width(),
                    size.height());
 
@@ -443,21 +427,7 @@ bool OSMesaViewGLContext::SwapBuffers() {
   return true;
 }
 
-gfx::Size OSMesaViewGLContext::GetSize() {
-  return osmesa_context_.GetSize();
-}
-
-void* OSMesaViewGLContext::GetHandle() {
-  return osmesa_context_.GetHandle();
-}
-
-void OSMesaViewGLContext::SetSwapInterval(int interval) {
-  DCHECK(IsCurrent());
-  // Fail silently. It is legitimate to set the swap interval on a view context
-  // but XLib does not have those semantics.
-}
-
-bool OSMesaViewGLContext::UpdateSize() {
+bool NativeViewGLSurfaceOSMesa::UpdateSize() {
   // Get the window size.
   XWindowAttributes attributes;
   Display* display = GetXDisplayHelper();
@@ -466,12 +436,12 @@ bool OSMesaViewGLContext::UpdateSize() {
                                     std::max(1, attributes.height));
 
   // Early out if the size has not changed.
-  gfx::Size osmesa_size = osmesa_context_.GetSize();
+  gfx::Size osmesa_size = GetSize();
   if (pixmap_graphics_context_ && pixmap_ && window_size == osmesa_size)
     return true;
 
   // Change osmesa surface size to that of window.
-  osmesa_context_.Resize(window_size);
+  Resize(window_size);
 
   // Destroy the previous pixmap and graphics context.
   if (pixmap_graphics_context_) {
@@ -529,9 +499,14 @@ GLContext* GLContext::CreateViewGLContext(gfx::PluginWindowHandle window,
       return context.release();
     }
     case kGLImplementationOSMesaGL: {
-      scoped_ptr<OSMesaViewGLContext> context(new OSMesaViewGLContext(window));
+      scoped_ptr<NativeViewGLSurfaceOSMesa> surface(
+          new NativeViewGLSurfaceOSMesa(window));
+      if (!surface->Initialize())
+        return NULL;
 
-      if (!context->Initialize())
+      scoped_ptr<GLContextOSMesa> context(
+          new GLContextOSMesa(surface.release()));
+      if (!context->Initialize(OSMESA_BGRA, NULL))
         return NULL;
 
       return context.release();
@@ -823,8 +798,12 @@ GLContext* GLContext::CreateOffscreenGLContext(GLContext* shared_context) {
       return context.release();
     }
     case kGLImplementationOSMesaGL: {
-      scoped_ptr<OSMesaGLContext> context(new OSMesaGLContext);
-      if (!context->Initialize(OSMESA_RGBA, shared_context))
+      scoped_ptr<GLSurfaceOSMesa> surface(new GLSurfaceOSMesa());
+      surface->Resize(gfx::Size(1, 1));
+
+      scoped_ptr<GLContextOSMesa> context(
+          new GLContextOSMesa(surface.release()));
+      if (!context->Initialize(OSMESA_BGRA, shared_context))
         return NULL;
 
       return context.release();

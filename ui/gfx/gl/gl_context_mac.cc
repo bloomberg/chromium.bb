@@ -192,7 +192,11 @@ GLContext* GLContext::CreateOffscreenGLContext(GLContext* shared_context) {
       return context.release();
     }
     case kGLImplementationOSMesaGL: {
-      scoped_ptr<OSMesaGLContext> context(new OSMesaGLContext);
+      scoped_ptr<GLSurfaceOSMesa> surface(new GLSurfaceOSMesa());
+      surface->Resize(gfx::Size(1, 1));
+
+      scoped_ptr<GLContextOSMesa> context(
+          new GLContextOSMesa(surface.release()));
       if (!context->Initialize(OSMESA_RGBA, shared_context))
         return NULL;
 

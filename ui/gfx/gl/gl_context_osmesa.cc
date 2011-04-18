@@ -12,18 +12,17 @@
 
 namespace gfx {
 
-OSMesaGLContext::OSMesaGLContext() : context_(NULL)
+GLContextOSMesa::GLContextOSMesa(GLSurfaceOSMesa* surface)
+    : surface_(surface),
+      context_(NULL)
 {
 }
 
-OSMesaGLContext::~OSMesaGLContext() {
+GLContextOSMesa::~GLContextOSMesa() {
 }
 
-bool OSMesaGLContext::Initialize(GLuint format, GLContext* shared_context) {
+bool GLContextOSMesa::Initialize(GLuint format, GLContext* shared_context) {
   DCHECK(!context_);
-
-  size_ = gfx::Size(1, 1);
-  buffer_.reset(new int32[1]);
 
   OSMesaContext shared_handle = NULL;
   if (shared_context)
@@ -39,93 +38,64 @@ bool OSMesaGLContext::Initialize(GLuint format, GLContext* shared_context) {
     return false;
   }
 
-  if (!MakeCurrent()) {
-    LOG(ERROR) << "MakeCurrent failed.";
-    Destroy();
+  return true;
+}
+
+void GLContextOSMesa::Destroy() {
+  if (context_) {
+    OSMesaDestroyContext(static_cast<OSMesaContext>(context_));
+    context_ = NULL;
+  }
+
+  surface_->Destroy();
+  surface_.reset();
+}
+
+bool GLContextOSMesa::MakeCurrent() {
+  DCHECK(context_);
+
+  gfx::Size size = surface_->GetSize();
+
+  if (!OSMesaMakeCurrent(static_cast<OSMesaContext>(context_),
+                         surface_->GetHandle(),
+                         GL_UNSIGNED_BYTE,
+                         size.width(), size.height())) {
     return false;
   }
 
   // Row 0 is at the top.
   OSMesaPixelStore(OSMESA_Y_UP, 0);
 
-  if (!InitializeCommon()) {
-    LOG(ERROR) << "GLContext::InitializeCommon failed.";
-    Destroy();
-    return false;
-  }
-
   return true;
 }
 
-void OSMesaGLContext::Resize(const gfx::Size& new_size) {
-  if (new_size == size_)
-    return;
-
-  // Allocate a new back buffer.
-  scoped_array<int32> new_buffer(new int32[new_size.GetArea()]);
-  memset(new_buffer.get(), 0, new_size.GetArea() * sizeof(new_buffer[0]));
-
-  // Copy the current back buffer into the new buffer.
-  int copy_width = std::min(size_.width(), new_size.width());
-  int copy_height = std::min(size_.height(), new_size.height());
-  for (int y = 0; y < copy_height; ++y) {
-    for (int x = 0; x < copy_width; ++x) {
-      new_buffer[y * new_size.width() + x] = buffer_[y * size_.width() + x];
-    }
-  }
-
-  buffer_.reset(new_buffer.release());
-  size_ = new_size;
-
-  // If this context is current, need to call MakeCurrent again so OSMesa uses
-  // the new buffer.
-  if (IsCurrent())
-    MakeCurrent();
-}
-
-void OSMesaGLContext::Destroy() {
-  if (context_) {
-    OSMesaDestroyContext(static_cast<OSMesaContext>(context_));
-    context_ = NULL;
-  }
-  buffer_.reset();
-  size_ = gfx::Size();
-}
-
-bool OSMesaGLContext::MakeCurrent() {
-  DCHECK(context_);
-  return OSMesaMakeCurrent(static_cast<OSMesaContext>(context_),
-                           buffer_.get(),
-                           GL_UNSIGNED_BYTE,
-                           size_.width(), size_.height()) == GL_TRUE;
-  return true;
-}
-
-bool OSMesaGLContext::IsCurrent() {
+bool GLContextOSMesa::IsCurrent() {
   DCHECK(context_);
   return context_ == OSMesaGetCurrentContext();
 }
 
-bool OSMesaGLContext::IsOffscreen() {
-  return true;
+bool GLContextOSMesa::IsOffscreen() {
+  // TODO(apatrick): remove this from GLContext interface.
+  return surface_->IsOffscreen();
 }
 
-bool OSMesaGLContext::SwapBuffers() {
-  NOTREACHED() << "Should not call SwapBuffers on an OSMesaGLContext.";
-  return false;
+bool GLContextOSMesa::SwapBuffers() {
+  // TODO(apatrick): remove this from GLContext interface.
+  return surface_->SwapBuffers();
 }
 
-gfx::Size OSMesaGLContext::GetSize() {
-  return size_;
+gfx::Size GLContextOSMesa::GetSize() {
+  // TODO(apatrick): remove this from GLContext interface.
+  return surface_->GetSize();
 }
 
-void* OSMesaGLContext::GetHandle() {
+void* GLContextOSMesa::GetHandle() {
   return context_;
 }
 
-void OSMesaGLContext::SetSwapInterval(int interval) {
+void GLContextOSMesa::SetSwapInterval(int interval) {
   DCHECK(IsCurrent());
-  NOTREACHED() << "Attempt to call SetSwapInterval on an OSMesaGLContext.";
+  NOTREACHED() << "Attempt to call SetSwapInterval on an GLContextOSMesa.";
 }
 
 }  // namespace gfx
