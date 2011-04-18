@@ -10,6 +10,7 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/first_run/first_run_dialog.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/process_singleton.h"
@@ -89,6 +90,15 @@ void SetWelcomePosition(GtkFloatingContainer* container,
 }
 
 }  // namespace
+
+namespace first_run {
+
+void ShowFirstRunDialog(Profile* profile,
+                        bool randomize_search_engine_order) {
+  FirstRunDialog::Show(profile, randomize_search_engine_order);
+}
+
+}  // namespace first_run
 
 // static
 bool FirstRunDialog::Show(Profile* profile,

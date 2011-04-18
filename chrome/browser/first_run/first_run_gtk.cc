@@ -14,7 +14,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/ui/gtk/first_run_dialog.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/common/result_codes.h"
@@ -43,12 +42,6 @@ bool FirstRun::ImportBookmarks(const FilePath& import_bookmarks_path) {
   // Time to launch the process that is going to do the import. We'll wait
   // for the process to return.
   return base::LaunchApp(import_cmd, true, false, NULL);
-}
-
-// static
-void FirstRun::ShowFirstRunDialog(Profile* profile,
-                                  bool randomize_search_engine_experiment) {
-  FirstRunDialog::Show(profile, randomize_search_engine_experiment);
 }
 
 // static

@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/first_run/first_run_dialog.h"
 #include "chrome/browser/first_run/first_run_import_observer.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/importer_host.h"
@@ -552,7 +553,7 @@ void FirstRun::AutoImport(
     // The home page string may be set in the preferences, but the user should
     // initially use Chrome with the NTP as home page in organic builds.
     profile->GetPrefs()->SetBoolean(prefs::kHomePageIsNewTabPage, true);
-    ShowFirstRunDialog(profile, randomize_search_engine_experiment);
+    first_run::ShowFirstRunDialog(profile, randomize_search_engine_experiment);
   }
 
   if (make_chrome_default)

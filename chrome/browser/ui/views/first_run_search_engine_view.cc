@@ -12,6 +12,7 @@
 #include "base/rand_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/first_run/first_run_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -31,12 +32,11 @@
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/separator.h"
+#include "views/focus/accelerator_handler.h"
 #include "views/layout/layout_constants.h"
 #include "views/view_text_utils.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
-
-using base::Time;
 
 namespace {
 
@@ -50,6 +50,31 @@ const int kSmallLogoHeight = 88;
 const int kLabelPadding = 25;
 
 }  // namespace
+
+namespace first_run {
+
+void ShowFirstRunDialog(Profile* profile,
+                        bool randomize_search_engine_experiment) {
+  // If the default search is managed via policy, we don't ask the user to
+  // choose.
+  TemplateURLModel* model = profile->GetTemplateURLModel();
+  if (NULL == model || model->is_default_search_managed())
+    return;
+
+  views::Window* window = views::Window::CreateChromeWindow(
+      NULL,
+      gfx::Rect(),
+      new FirstRunSearchEngineView(
+          profile, randomize_search_engine_experiment));
+  DCHECK(window);
+
+  window->Show();
+  views::AcceleratorHandler accelerator_handler;
+  MessageLoopForUI::current()->Run(&accelerator_handler);
+  window->CloseWindow();
+}
+
+}  // namespace first_run
 
 SearchEngineChoice::SearchEngineChoice(views::ButtonListener* listener,
                                        const TemplateURL* search_engine,

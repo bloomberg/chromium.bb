@@ -88,11 +88,6 @@ class FirstRun {
   // Returns whether the first run should be "organic".
   static bool IsOrganicFirstRun();
 
-  // Shows the search engine choice dialog, and any other platform dialogs.
-  // Only called if IsOrganicFirstRun is true.
-  static void ShowFirstRunDialog(Profile* profile,
-                                 bool randomize_search_engine_experiment);
-
   // The master preferences is a JSON file with the same entries as the
   // 'Default\Preferences' file. This function locates this file from a standard
   // location and processes it so it becomes the default preferences in the

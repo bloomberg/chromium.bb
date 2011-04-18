@@ -12,10 +12,10 @@
 
 #include "base/environment.h"
 #include "base/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/object_watcher.h"
 #include "base/win/windows_version.h"
@@ -26,11 +26,7 @@
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/importer_progress_dialog.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/ui/views/first_run_search_engine_view.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/worker_thread_ticker.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -46,11 +42,8 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
-#include "views/focus/accelerator_handler.h"
-#include "views/window/window.h"
 
 namespace {
 
@@ -255,8 +248,8 @@ std::string EncodeImportParams(int importer_type,
                                int options,
                                int skip_first_run_ui,
                                HWND window) {
-  return StringPrintf("%d@%d@%d@%d", importer_type, options, skip_first_run_ui,
-                      window);
+  return base::StringPrintf(
+      "%d@%d@%d@%d", importer_type, options, skip_first_run_ui, window);
 }
 
 bool DecodeImportParams(const std::string& encoded,
@@ -299,28 +292,6 @@ bool FirstRun::IsOrganicFirstRun() {
   std::wstring brand;
   GoogleUpdateSettings::GetBrand(&brand);
   return GoogleUpdateSettings::IsOrganicFirstRun(brand);
-}
-
-// static
-void FirstRun::ShowFirstRunDialog(Profile* profile,
-                                  bool randomize_search_engine_experiment) {
-  // If the default search is managed via policy, we don't ask the user to
-  // choose.
-  TemplateURLModel* model = profile->GetTemplateURLModel();
-  if (NULL == model || model->is_default_search_managed())
-    return;
-
-  views::Window* search_engine_dialog = views::Window::CreateChromeWindow(
-      NULL,
-      gfx::Rect(),
-      new FirstRunSearchEngineView(profile,
-      randomize_search_engine_experiment));
-  DCHECK(search_engine_dialog);
-
-  search_engine_dialog->Show();
-  views::AcceleratorHandler accelerator_handler;
-  MessageLoopForUI::current()->Run(&accelerator_handler);
-  search_engine_dialog->CloseWindow();
 }
 
 // static
