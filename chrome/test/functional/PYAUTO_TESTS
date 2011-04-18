@@ -247,6 +247,7 @@
       '-ntp.NTPTest.testGetAppsInNewProfile',
       '-ntp.NTPTest.testGetMenuModeInNewProfile',
       '-ntp.NTPTest.testGetThumbnailModeInNewProfile',
+      '-ntp.NTPTest.testLaunchAppFullScreen',
       '-ntp.NTPTest.testSetMenuModeOn',
       '-ntp.NTPTest.testSetThumbnailModeOff',
       '-ntp.NTPTest.testUninstallApp',
