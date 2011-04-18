@@ -148,13 +148,16 @@
         'chrome/browser/net/sqlite_persistent_cookie_store.*',
     },
     'autofill': {
-      'filepath': 'chrome/app/nibs/AutoFill.*|'\
-        'chrome/browser/autofill/.*|'\
+      'filepath': 'chrome/browser/autofill/.*|'\
         'chrome/browser/resources/options/autofill_.*|'\
         'chrome/browser/sync/glue/autofill_.*|'\
-        'chrome/browser/ui/views/autofill_.*|'\
-        'chrome/browser/webui/options/autofill_.*|'\
-        'chrome/renderer/autofill/.*',
+        'chrome/browser/ui/webui/options/autofill_.*|'\
+        'chrome/renderer/autofill/.*|'\
+        'chrome/test/data/autofill/.*|'\
+        'chrome/test/data/autofill/heuristics/input/.*|'\
+        'chrome/test/data/autofill/heuristics/output/.*|'\
+        'chrome/test/data/autofill/merge/input/.*|'\
+        'chrome/test/data/autofill/merge/output/.*',
     },
     'webdata': {
       'filepath': 'chrome/browser/webdata/.*',
