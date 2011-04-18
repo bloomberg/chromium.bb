@@ -35,7 +35,7 @@ BOT_ASSIGNMENT = {
     'hardy64-marm-narm-opt': 'bash buildbot/buildbot_arm.sh opt',
     'arm-marm-narm-test-dbg': 'bash buildbot/buildbot_arm_hw.sh dbg',
     'arm-marm-narm-test-opt': 'bash buildbot/buildbot_arm_hw.sh opt',
-    'lucid64-pnacl1': 'bash buildbot/buildbot_linux.sh opt 64 newlib',
+    'lucid64-pnacl1': 'bash buildbot/buildbot_linux.sh mode-buildbot',
     'lucid64-pnacl2': 'bash buildbot/buildbot_linux.sh opt 64 newlib',
     'karmic64-valgrind': 'bash buildbot/buildbot_valgrind.sh',
     # Coverage.
@@ -65,7 +65,7 @@ BOT_ASSIGNMENT = {
     'nacl-lucid64_newlib_opt': 'bash buildbot/buildbot_linux.sh opt 64 newlib',
     'nacl-lucid64_glibc_opt': 'bash buildbot/buildbot_linux.sh opt 64 glibc',
     'nacl-arm_opt': 'bash buildbot/buildbot_arm.sh opt',
-    'nacl-lucid64-pnacl1': 'bash buildbot/buildbot_pnacl1.sh',
+    'nacl-lucid64-pnacl1': 'bash buildbot/buildbot_pnacl1.sh mode-trybot',
     'nacl-lucid64-pnacl2': 'bash buildbot/buildbot_pnacl2.sh',
 
     # Toolchain glibc.
