@@ -21,19 +21,14 @@
 #include "base/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_counters.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/logging_chrome.h"
-#include "chrome/common/net/net_resource_provider.h"
-#include "chrome/renderer/renderer_main_platform_delegate.h"
+#include "content/common/content_counters.h"
+#include "content/common/content_switches.h"
 #include "content/common/main_function_params.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread.h"
-#include "grit/generated_resources.h"
-#include "net/base/net_module.h"
+#include "content/renderer/renderer_main_platform_delegate.h"
 #include "ui/base/system_monitor/system_monitor.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -279,9 +274,6 @@ int RendererMain(const MainFunctionParams& parameters) {
   }
 #endif
 
-  // Configure modules that need access to resources.
-  net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
-
   // This function allows pausing execution using the --renderer-startup-dialog
   // flag allowing us to attach a debugger.
   // Do not move this function down since that would mean we can't easily debug
@@ -291,7 +283,7 @@ int RendererMain(const MainFunctionParams& parameters) {
   RendererMainPlatformDelegate platform(parameters);
 
   base::StatsScope<base::StatsCounterTimer>
-      startup_timer(chrome::Counters::renderer_main());
+      startup_timer(content::Counters::renderer_main());
 
   RendererMessageLoopObserver task_observer;
 #if defined(OS_MACOSX)

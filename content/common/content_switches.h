@@ -62,6 +62,7 @@ extern const char kExperimentalLocationFeatures[];
 // TODO(jam): this doesn't belong in content.
 extern const char kExtensionProcess[];
 extern const char kExtraPluginDir[];
+extern const char kForceFieldTestNameAndValue[];
 extern const char kGpuLauncher[];
 extern const char kGpuProcess[];
 extern const char kGpuStartupDialog[];
@@ -97,6 +98,7 @@ extern const char kProcessType[];
 extern const char kProfileImportProcess[];
 extern const char kRecordMode[];
 extern const char kRegisterPepperPlugins[];
+extern const char kRendererAssertTest[];
 extern const char kRendererCmdPrefix[];
 extern const char kRendererCrashTest[];
 extern const char kRendererProcess[];
@@ -120,6 +122,10 @@ extern const char kWebWorkerShareProcesses[];
 extern const char kWorkerProcess[];
 extern const char kZygoteCmdPrefix[];
 extern const char kZygoteProcess[];
+
+#if !defined(OFFICIAL_BUILD)
+extern const char kRendererCheckFalseTest[];
+#endif
 
 }  // namespace switches
 

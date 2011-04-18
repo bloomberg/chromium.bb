@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/renderer_main_platform_delegate.h"
+#include "content/renderer/renderer_main_platform_delegate.h"
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
 #import "content/common/chrome_application_mac.h"
+#include "content/common/content_switches.h"
 #include "content/common/sandbox_mac.h"
 #include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 

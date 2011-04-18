@@ -11,6 +11,7 @@
 #include "base/process_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "content/common/view_messages.h"
@@ -18,6 +19,7 @@
 #include "content/renderer/render_view.h"
 #include "content/renderer/render_view_visitor.h"
 #include "crypto/nss_util.h"
+#include "net/base/net_module.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
@@ -26,7 +28,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
-
 #if defined(OS_WIN)
 #include "app/win/iat_patch_function.h"
 #endif
@@ -112,6 +113,9 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver() {
   if (command_line.HasSwitch(switches::kDumpHistogramsOnExit)) {
     base::StatisticsRecorder::set_dump_on_exit(true);
   }
+
+  // Configure modules that need access to resources.
+  net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
 
 #if defined(OS_WIN)
   // Need to patch a few functions for font loading to work correctly.

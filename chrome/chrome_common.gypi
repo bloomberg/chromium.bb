@@ -35,8 +35,6 @@
           'common/child_process_logging_linux.cc',
           'common/child_process_logging_mac.mm',
           'common/child_process_logging_win.cc',
-          'common/chrome_counters.cc',
-          'common/chrome_counters.h',
           'common/chrome_version_info.cc',
           'common/chrome_version_info.h',
           'common/content_restriction.h',

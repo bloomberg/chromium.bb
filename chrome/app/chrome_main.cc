@@ -26,7 +26,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_content_plugin_client.h"
-#include "chrome/common/chrome_counters.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
@@ -37,6 +36,7 @@
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/content_client.h"
+#include "content/common/content_counters.h"
 #include "content/common/content_paths.h"
 #include "content/common/main_function_params.h"
 #include "content/common/sandbox_init_wrapper.h"
@@ -685,7 +685,7 @@ int ChromeMain(int argc, char** argv) {
   InitializeStatsTable(browser_pid, command_line);
 
   base::StatsScope<base::StatsCounterTimer>
-      startup_timer(chrome::Counters::chrome_main());
+      startup_timer(content::Counters::chrome_main());
 
   // Enable the heap profiler as early as possible!
   EnableHeapProfiler(command_line);

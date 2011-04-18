@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/renderer_main_platform_delegate.h"
+#include "content/renderer/renderer_main_platform_delegate.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
+#include "content/common/content_switches.h"
 #include "content/common/injection_test_dll.h"
 #include "sandbox/src/sandbox.h"
 #include "unicode/timezone.h"

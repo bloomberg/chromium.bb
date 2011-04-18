@@ -54,6 +54,8 @@
         'common/content_client.h',
         'common/content_constants.cc',
         'common/content_constants.h',
+        'common/content_counters.cc',
+        'common/content_counters.h',
         'common/content_paths.cc',
         'common/content_paths.h',
         'common/content_switches.cc',

@@ -1,12 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/chrome_counters.h"
+#include "content/common/content_counters.h"
 
 #include "base/metrics/stats_counters.h"
 
-namespace chrome {
+namespace content {
 
 using base::StatsCounterTimer;
 using base::StatsRate;
@@ -32,14 +32,4 @@ StatsCounterTimer& Counters::renderer_main() {
   return *ctr;
 }
 
-StatsCounterTimer& Counters::spellcheck_init() {
-  static StatsCounterTimer* ctr = new StatsCounterTimer("SpellCheck.Init");
-  return *ctr;
-}
-
-StatsRate& Counters::spellcheck_lookup() {
-  static StatsRate* ctr = new StatsRate("SpellCheck.Lookup");
-  return *ctr;
-}
-
-}  // namespace chrome
+}  // namespace content

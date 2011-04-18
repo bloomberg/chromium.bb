@@ -1,11 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Counters used within the browser.
 
-#ifndef CHROME_COMMON_CHROME_COUNTERS_H_
-#define CHROME_COMMON_CHROME_COUNTERS_H_
+#ifndef CONTENT_COMMON_CONTENT_COUNTERS_H_
+#define CONTENT_COMMON_CONTENT_COUNTERS_H_
 #pragma once
 
 namespace base {
@@ -14,7 +14,7 @@ class StatsCounterTimer;
 class StatsRate;
 }
 
-namespace chrome {
+namespace content {
 
 class Counters {
  public:
@@ -23,14 +23,8 @@ class Counters {
 
   // The amount of time spent in renderer initialization.
   static base::StatsCounterTimer& renderer_main();
-
-  // Time spent in spellchecker initialization.
-  static base::StatsCounterTimer& spellcheck_init();
-
-  // Time/Count of spellcheck lookups.
-  static base::StatsRate& spellcheck_lookup();
 };
 
-}  // namespace chrome
+}  // namespace content
 
-#endif  // CHROME_COMMON_CHROME_COUNTERS_H_
+#endif  // CONTENT_COMMON_CONTENT_COUNTERS_H_

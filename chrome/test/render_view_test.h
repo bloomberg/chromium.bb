@@ -14,7 +14,6 @@
 #include "chrome/renderer/autofill/autofill_agent.h"
 #include "chrome/renderer/mock_keyboard.h"
 #include "chrome/renderer/mock_render_thread.h"
-#include "chrome/renderer/renderer_main_platform_delegate.h"
 #include "content/common/main_function_params.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/sandbox_init_wrapper.h"
@@ -31,6 +30,7 @@ class PasswordAutofillManager;
 
 class ExtensionDispatcher;
 class MockRenderProcess;
+class RendererMainPlatformDelegate;
 
 class RenderViewTest : public testing::Test {
  public:

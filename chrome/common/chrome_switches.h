@@ -163,7 +163,6 @@ extern const char kFocusExistingTabOnOpen[];
 extern const char kFirstRun[];
 extern const char kForceAppsPromoVisible[];
 extern const char kForceCompositingMode[];
-extern const char kForceFieldTestNameAndValue[];
 extern const char kForceRendererAccessibility[];
 extern const char kForceStubLibcros[];
 extern const char kGSSAPILibraryName[];
@@ -230,7 +229,6 @@ extern const char kPurgeMemoryButton[];
 extern const char kReloadKilledTabs[];
 extern const char kRemoteDebuggingPort[];
 extern const char kRemoteShellPort[];
-extern const char kRendererAssertTest[];
 extern const char kRestoreLastSession[];
 extern const char kSbInfoURLPrefix[];
 extern const char kSbMacKeyURLPrefix[];
@@ -339,10 +337,6 @@ extern const char kClearTokenService[];
 extern const char kSetToken[];
 extern const char kWebSocketLiveExperimentHost[];
 extern const char kExposePrivateExtensionApi[];
-#endif
-
-#if !defined(OFFICIAL_BUILD)
-extern const char kRendererCheckFalseTest[];
 #endif
 
 #if defined(HAVE_XINPUT2)

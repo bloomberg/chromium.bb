@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/renderer_main_platform_delegate.h"
+#include "content/renderer/renderer_main_platform_delegate.h"
 
 #include "base/command_line.h"
+#include "content/common/content_switches.h"
 #include "seccompsandbox/sandbox.h"
-
-#include "chrome/common/chrome_switches.h"
 
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(
     const MainFunctionParams& parameters)

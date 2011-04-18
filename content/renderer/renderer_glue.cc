@@ -15,12 +15,9 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/common/clipboard_messages.h"
+#include "content/common/content_switches.h"
 #include "content/common/socket_stream_dispatcher.h"
 #include "content/common/view_messages.h"
 #include "content/plugin/npobject_util.h"
@@ -35,11 +32,6 @@
 #include "webkit/glue/scoped_clipboard_writer_glue.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/websocketstreamhandle_bridge.h"
-
-#if !defined(DISABLE_NACL)
-#include "native_client/src/shared/imc/nacl_imc.h"
-#include "native_client/src/trusted/plugin/nacl_entry_points.h"
-#endif
 
 #if defined(OS_LINUX)
 #include "content/renderer/renderer_sandbox_support_linux.h"
@@ -250,14 +242,6 @@ void ClearPredictorCache() {
   RenderThread::current()->ClearPredictorCache();
 }
 
-std::string GetProductVersion() {
-  chrome::VersionInfo version_info;
-  std::string product("Chrome/");
-  product += version_info.is_valid() ? version_info.Version()
-                                     : "0.0.0.0";
-  return product;
-}
-
 bool IsSingleProcess() {
   return CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
 }
@@ -265,35 +249,6 @@ bool IsSingleProcess() {
 void EnableSpdy(bool enable) {
   RenderThread::current()->EnableSpdy(enable);
 }
-
-void UserMetricsRecordAction(const std::string& action) {
-  RenderThread::current()->Send(
-      new ViewHostMsg_UserMetricsRecordAction(action));
-}
-
-#if !defined(DISABLE_NACL)
-bool LaunchSelLdr(const char* alleged_url, int socket_count, void* imc_handles,
-                  void* nacl_process_handle, int* nacl_process_id) {
-  std::vector<nacl::FileDescriptor> sockets;
-  base::ProcessHandle nacl_process;
-  if (!RenderThread::current()->Send(
-    new ViewHostMsg_LaunchNaCl(
-        ASCIIToWide(alleged_url),
-        socket_count,
-        &sockets,
-        &nacl_process,
-        reinterpret_cast<base::ProcessId*>(nacl_process_id)))) {
-    return false;
-  }
-  CHECK(static_cast<int>(sockets.size()) == socket_count);
-  for (int i = 0; i < socket_count; i++) {
-    static_cast<nacl::Handle*>(imc_handles)[i] =
-        nacl::ToNativeHandle(sockets[i]);
-  }
-  *static_cast<nacl::Handle*>(nacl_process_handle) = nacl_process;
-  return true;
-}
-#endif
 
 #if defined(OS_LINUX)
 int MatchFontWithFallback(const std::string& face, bool bold,
