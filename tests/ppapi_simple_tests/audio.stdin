@@ -26,8 +26,8 @@ rpc PPP_InitializeModule hide-results i(0) ${MODULE} h(pepper_desc) s("${service
 
 echo
 echo "*** INIT INSTANCE"
-set_variable TAGS C(23,id\000name\000src\000style\000type\000)
-set_variable VALUES C(74,naclModule\000naclModule\000ppapi.nexe\000background-color:gray\000application/x-nacl\000)
+set_variable TAGS C(10,frequency\000)
+set_variable VALUES C(4,800\000)
 # The PPB_xxx replays below will be triggered as a reaction to
 # PPP_Instance_DidCreate in roughly the order shown
 replay 1 PPB_GetInterface:s:i s("PPB_AudioConfig;0.5") * i(1)
@@ -48,7 +48,7 @@ replay 1 PPB_AudioConfig_GetSampleRate:i:i  ${HANDLE_CFG} * i(44100)
 replay 1 PPB_AudioConfig_GetSampleFrameCount:i:i  ${HANDLE_CFG} * i(${NUM_FRAMES})
 replay 1 PPB_Audio_StartPlayback:i:i ${HANDLE_AUDIO} * i(1)
 replay 1 PPB_Core_CallOnMainThread:iii: i(10000) i(1) i(0) *
-rpc PPP_Instance_DidCreate ${INSTANCE} i(5) ${TAGS} ${VALUES} * i(0)
+rpc PPP_Instance_DidCreate ${INSTANCE} i(1) ${TAGS} ${VALUES} * i(0)
 
 echo
 echo "*** TRIGGER REPAINT"

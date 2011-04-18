@@ -2302,6 +2302,7 @@ nacl_env.Append(
     'tests/ppapi_geturl/nacl.scons',
     'tests/ppapi_gles_book/nacl.scons',
     'tests/ppapi_proxy/nacl.scons',
+    'tests/ppapi_simple_tests/nacl.scons',
     'tests/ppapi_test_example/nacl.scons',
     'tests/ppapi_test_lib/nacl.scons',
     # uncomment this test once issue

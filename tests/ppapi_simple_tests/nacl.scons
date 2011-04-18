@@ -1,0 +1,40 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+
+Import('env')
+
+env.Prepend(CPPDEFINES=['XP_UNIX'])
+
+TESTS = ['audio',
+         ]
+
+for test in TESTS:
+  base = 'ppapi_simple_' + test
+  nexe = env.ComponentProgram(base +'.nexe',
+                              [test + '.cc'],
+                              EXTRA_LIBS=['${PPAPI_LIBS}',
+                                          'ppapi_cpp',
+                                          'platform',
+                                          'gio',
+                                          'pthread',
+                                          'm',
+                                          ])
+
+  node = env.SelUniversalTest(
+     base + '.out',
+     sel_universal_flags=['--silence_nexe',
+                          '--command_file',
+                          env.File('sel_universal_ppapi_replay_prolog.stdin'),
+                          '--command_file',
+                          env.File(test +'.stdin'),
+                          ],
+     command=[nexe],
+     stdout_golden=env.File(test + '.stdout'),
+     )
+
+  env.AddNodeToTestSuite(node,
+                         ['small_tests', 'sel_ldr_tests'],
+                         'run_' + base + '_test')

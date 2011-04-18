@@ -28,19 +28,3 @@ env.AddNodeToTestSuite(validate,
 # Note that the html is required to run this program.
 env.Publish('ppapi_example_audio.nexe', 'run',
             ['ppapi_example_audio.html' ])
-
-test = env.SelUniversalTest(
-    'ppapi_example_audio.out',
-     sel_universal_flags=['--command_file',
-                          env.File('${SCONSTRUCT_DIR}/tests/ppapi_proxy'
-                                   '/sel_universal_ppapi_replay_prolog.stdin'),
-                          '--command_file',
-                          env.File('ppapi_example_audio.stdin'),
-                          ],
-    command=[nexe],
-    stdout_golden=env.File('ppapi_example_audio.stdout'),
-    )
-
-env.AddNodeToTestSuite(test,
-                       ['small_tests', 'sel_ldr_tests'],
-                       'run_ppapi_example_audio_test')
