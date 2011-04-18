@@ -167,28 +167,29 @@ bool GetProxyRulesStringFromExtensionPref(const DictionaryValue* proxy_config,
     return true;
 
   // Local data into which the parameters will be parsed. has_proxy describes
-  // whether a setting was found for the scheme; proxy_dict holds the
-  // DictionaryValues which in turn contain proxy server descriptions, and
-  // proxy_server holds ProxyServer structs containing those descriptions.
+  // whether a setting was found for the scheme; proxy_server holds the
+  // respective ProxyServer objects containing those descriptions.
   bool has_proxy[keys::SCHEME_MAX + 1];
-  DictionaryValue* proxy_dict[keys::SCHEME_MAX + 1];
   net::ProxyServer proxy_server[keys::SCHEME_MAX + 1];
 
   // Looking for all possible proxy types is inefficient if we have a
   // singleProxy that will supersede per-URL proxies, but it's worth it to keep
   // the code simple and extensible.
   for (size_t i = 0; i <= keys::SCHEME_MAX; ++i) {
+    DictionaryValue* proxy_dict = NULL;
     has_proxy[i] = proxy_rules->GetDictionary(keys::field_name[i],
-                                              &proxy_dict[i]);
+                                              &proxy_dict);
     if (has_proxy[i]) {
       net::ProxyServer::Scheme default_scheme = net::ProxyServer::SCHEME_HTTP;
-      if (!GetProxyServer(proxy_dict[i], default_scheme,
+      if (!GetProxyServer(proxy_dict, default_scheme,
                           &proxy_server[i], error)) {
         // Don't set |error| here, as GetProxyServer takes care of that.
         return false;
       }
     }
   }
+
+  COMPILE_ASSERT(keys::SCHEME_ALL == 0, singleProxy_must_be_first_option);
 
   // Handle case that only singleProxy is specified.
   if (has_proxy[keys::SCHEME_ALL]) {
@@ -364,6 +365,9 @@ DictionaryValue* CreateProxyRulesDict(
       }
       break;
   }
+
+  // If we add a new scheme some time, we need to also store a new dictionary
+  // representing this scheme in the code above.
   COMPILE_ASSERT(keys::SCHEME_MAX == 4, SCHEME_FORGOTTEN);
 
   if (proxy_config.HasBypassList()) {
