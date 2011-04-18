@@ -1446,8 +1446,8 @@ void AnimateCALayerOpacityFromTo(
 
   // Select chosen tab.
   if (tileSet_->selected_index() < tabStripModel_->count()) {
-    tabStripModel_->SelectTabContentsAt(tileSet_->selected_index(),
-                                        /*user_gesture=*/true);
+    tabStripModel_->ActivateTabAt(tileSet_->selected_index(),
+                                  /*user_gesture=*/true);
   } else {
     DCHECK_EQ(tileSet_->selected_index(), 0);
   }

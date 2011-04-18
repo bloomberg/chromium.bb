@@ -740,7 +740,7 @@ bool CreateTabFunction::RunImpl() {
 
   index = std::min(std::max(index, -1), tab_strip->count());
 
-  int add_types = selected ? TabStripModel::ADD_SELECTED :
+  int add_types = selected ? TabStripModel::ADD_ACTIVE :
                              TabStripModel::ADD_NONE;
   add_types |= TabStripModel::ADD_FORCE_INDEX;
   if (pinned)
@@ -881,7 +881,7 @@ bool UpdateTabFunction::RunImpl() {
         &selected));
     if (selected) {
       if (tab_strip->active_index() != tab_index) {
-        tab_strip->SelectTabContentsAt(tab_index, false);
+        tab_strip->ActivateTabAt(tab_index, false);
         DCHECK_EQ(contents, tab_strip->GetSelectedTabContents());
       }
       contents->tab_contents()->Focus();

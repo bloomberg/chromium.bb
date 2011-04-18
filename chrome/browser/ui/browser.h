@@ -353,7 +353,7 @@ class Browser : public TabHandlerDelegate,
   // this differs from the TabStripModel because it has far fewer clients.
   TabContents* GetSelectedTabContents() const;
   TabContents* GetTabContentsAt(int index) const;
-  void SelectTabContentsAt(int index, bool user_gesture);
+  void ActivateTabAt(int index, bool user_gesture);
   bool IsTabPinned(int index) const;
   void CloseAllTabs();
 

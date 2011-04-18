@@ -637,7 +637,7 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
       extensions_service->extension_prefs()->GetLaunchType(
           extension->id(), ExtensionPrefs::LAUNCH_DEFAULT);
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppTabLaunchType", launch_type, 100);
-  int add_type = TabStripModel::ADD_SELECTED;
+  int add_type = TabStripModel::ADD_ACTIVE;
   if (launch_type == ExtensionPrefs::LAUNCH_PINNED)
     add_type |= TabStripModel::ADD_PINNED;
 
@@ -666,8 +666,8 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
       model->SetTabPinned(tab_index, true);
       tab_index = model->GetWrapperIndex(existing_tab);
     }
-    if (params.tabstrip_add_types & TabStripModel::ADD_SELECTED)
-      model->SelectTabContentsAt(tab_index, true);
+    if (params.tabstrip_add_types & TabStripModel::ADD_ACTIVE)
+      model->ActivateTabAt(tab_index, true);
 
     contents = existing_tab;
   } else {
@@ -987,8 +987,8 @@ TabContents* Browser::GetTabContentsAt(int index) const {
   return NULL;
 }
 
-void Browser::SelectTabContentsAt(int index, bool user_gesture) {
-  tab_handler_->GetTabStripModel()->SelectTabContentsAt(index, user_gesture);
+void Browser::ActivateTabAt(int index, bool user_gesture) {
+  tab_handler_->GetTabStripModel()->ActivateTabAt(index, user_gesture);
 }
 
 bool Browser::IsTabPinned(int index) const {
@@ -1022,7 +1022,7 @@ TabContentsWrapper* Browser::AddSelectedTabWithURL(const GURL& url,
 TabContents* Browser::AddTab(TabContentsWrapper* tab_contents,
                              PageTransition::Type type) {
   tab_handler_->GetTabStripModel()->AddTabContents(
-      tab_contents, -1, type, TabStripModel::ADD_SELECTED);
+      tab_contents, -1, type, TabStripModel::ADD_ACTIVE);
   return tab_contents->tab_contents();
 }
 
@@ -1068,7 +1068,7 @@ TabContents* Browser::AddRestoredTab(
   new_tab->controller().RestoreFromState(navigations, selected_navigation,
                                          from_last_session);
 
-  int add_types = select ? TabStripModel::ADD_SELECTED :
+  int add_types = select ? TabStripModel::ADD_ACTIVE :
       TabStripModel::ADD_NONE;
   if (pin) {
     tab_index = std::min(tab_index, tabstrip_model()->IndexOfFirstNonMiniTab());
@@ -1211,7 +1211,7 @@ TabContents* Browser::GetOrCloneTabForDisposition(
     current_tab = current_tab->Clone();
     tab_handler_->GetTabStripModel()->AddTabContents(
         current_tab, -1, PageTransition::LINK,
-        disposition == NEW_FOREGROUND_TAB ? TabStripModel::ADD_SELECTED :
+        disposition == NEW_FOREGROUND_TAB ? TabStripModel::ADD_ACTIVE :
                                             TabStripModel::ADD_NONE);
   }
   return current_tab->tab_contents();
@@ -1470,7 +1470,7 @@ void Browser::SelectNumberedTab(int index) {
   if (index < tab_count()) {
     UserMetrics::RecordAction(UserMetricsAction("SelectNumberedTab"),
                               profile_);
-    tab_handler_->GetTabStripModel()->SelectTabContentsAt(index, true);
+    tab_handler_->GetTabStripModel()->ActivateTabAt(index, true);
   }
 }
 
@@ -2562,7 +2562,7 @@ void Browser::DuplicateContentsAt(int index) {
     int index = tab_handler_->GetTabStripModel()->
         GetIndexOfTabContents(contents);
     pinned = tab_handler_->GetTabStripModel()->IsTabPinned(index);
-    int add_types = TabStripModel::ADD_SELECTED |
+    int add_types = TabStripModel::ADD_ACTIVE |
         TabStripModel::ADD_INHERIT_GROUP |
         (pinned ? TabStripModel::ADD_PINNED : 0);
     tab_handler_->GetTabStripModel()->InsertTabContentsAt(index + 1,
@@ -2932,7 +2932,7 @@ void Browser::AddNewContents(TabContents* source,
 }
 
 void Browser::ActivateContents(TabContents* contents) {
-  tab_handler_->GetTabStripModel()->SelectTabContentsAt(
+  tab_handler_->GetTabStripModel()->ActivateTabAt(
       tab_handler_->GetTabStripModel()->GetWrapperIndex(contents), false);
   window_->Activate();
 }
@@ -4336,7 +4336,7 @@ bool Browser::OpenInstant(WindowOpenDisposition disposition) {
         preview_contents,
         -1,
         instant()->last_transition_type(),
-        TabStripModel::ADD_SELECTED);
+        TabStripModel::ADD_ACTIVE);
     instant()->CompleteRelease(preview_contents->tab_contents());
     return true;
   }
@@ -4395,7 +4395,7 @@ void Browser::ViewSource(TabContentsWrapper* contents,
     // window next to the tab being duplicated.
     int index = tab_handler_->GetTabStripModel()->
         GetIndexOfTabContents(contents);
-    int add_types = TabStripModel::ADD_SELECTED |
+    int add_types = TabStripModel::ADD_ACTIVE |
         TabStripModel::ADD_INHERIT_GROUP;
     tab_handler_->GetTabStripModel()->InsertTabContentsAt(index + 1,
                                                           view_source_contents,

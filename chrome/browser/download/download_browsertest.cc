@@ -614,7 +614,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, PerWindowShelf) {
   EXPECT_FALSE(IsDownloadUIVisible(browser()));
 
   // Go to the first tab.
-  browser()->SelectTabContentsAt(0, true);
+  browser()->ActivateTabAt(0, true);
   EXPECT_EQ(2, browser()->tab_count());
 
   // The download shelf should not be visible.

@@ -1077,7 +1077,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     browser()->NewTab();
 
     // Switch back to the first tab.
-    browser()->SelectTabContentsAt(0, true);
+    browser()->ActivateTabAt(0, true);
 
     // Make sure we're still in keyword mode.
     ASSERT_EQ(kSearchKeyword, UTF16ToUTF8(edit_view->model()->keyword()));

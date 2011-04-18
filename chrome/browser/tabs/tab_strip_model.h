@@ -88,8 +88,8 @@ class TabStripModel : public NotificationObserver {
     // tab.
     ADD_NONE          = 0,
 
-    // The tab should be selected.
-    ADD_SELECTED      = 1 << 0,
+    // The tab should be active.
+    ADD_ACTIVE        = 1 << 0,
 
     // The tab should be pinned.
     ADD_PINNED        = 1 << 1,
@@ -104,9 +104,8 @@ class TabStripModel : public NotificationObserver {
     // certain situations.
     ADD_INHERIT_GROUP = 1 << 3,
 
-    // If set the newly inserted tab's opener is set to the currently selected
-    // tab. If not set the tab may still inherit the group/opener under certain
-    // situations.
+    // If set the newly inserted tab's opener is set to the active tab. If not
+    // set the tab may still inherit the group/opener under certain situations.
     // NOTE: this is ignored if ADD_INHERIT_GROUP is set.
     ADD_INHERIT_OPENER = 1 << 4,
   };
@@ -160,7 +159,7 @@ class TabStripModel : public NotificationObserver {
   bool ContainsIndex(int index) const;
 
   // Adds the specified TabContents in the default location. Tabs opened in the
-  // foreground inherit the group of the previously selected tab.
+  // foreground inherit the group of the previously active tab.
   void AppendTabContents(TabContentsWrapper* contents, bool foreground);
 
   // Adds the specified TabContents at the specified location. |add_types| is a
@@ -208,11 +207,11 @@ class TabStripModel : public NotificationObserver {
   // strip).
   TabContentsWrapper* DetachTabContentsAt(int index);
 
-  // Select the TabContents at the specified index. |user_gesture| is true if
-  // the user actually clicked on the tab or navigated to it using a keyboard
-  // command, false if the tab was selected as a by-product of some other
+  // Makes the tab at the specified index the active tab. |user_gesture| is true
+  // if the user actually clicked on the tab or navigated to it using a keyboard
+  // command, false if the tab was activated as a by-product of some other
   // action.
-  void SelectTabContentsAt(int index, bool user_gesture);
+  void ActivateTabAt(int index, bool user_gesture);
 
   // Move the TabContents at the specified index to another index. This method
   // does NOT send Detached/Attached notifications, rather it moves the

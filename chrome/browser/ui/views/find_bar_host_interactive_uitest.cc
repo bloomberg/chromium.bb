@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,7 +58,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
                                            VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
   // Select tab A.
-  browser()->SelectTabContentsAt(0, true);
+  browser()->ActivateTabAt(0, true);
 
   // Close tab B.
   browser()->CloseTabContents(browser()->GetTabContentsAt(1));
@@ -158,13 +158,13 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestoreOnTabSwitch) {
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_LOCATION_BAR));
 
   // Select tab A. Find bar should get focus.
-  browser()->SelectTabContentsAt(0, true);
+  browser()->ActivateTabAt(0, true);
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
                                            VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
   EXPECT_TRUE(ASCIIToUTF16("a") == find_bar->GetFindSelectedText());
 
   // Select tab B. Location bar should get focus.
-  browser()->SelectTabContentsAt(1, true);
+  browser()->ActivateTabAt(1, true);
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_LOCATION_BAR));
 }
 

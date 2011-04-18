@@ -235,10 +235,10 @@ void NormalizeDisposition(browser::NavigateParams* params) {
 
   switch (params->disposition) {
     case NEW_BACKGROUND_TAB:
-      // Disposition trumps add types. ADD_SELECTED is a default, so we need to
+      // Disposition trumps add types. ADD_ACTIVE is a default, so we need to
       // remove it if disposition implies the tab is going to open in the
       // background.
-      params->tabstrip_add_types &= ~TabStripModel::ADD_SELECTED;
+      params->tabstrip_add_types &= ~TabStripModel::ADD_ACTIVE;
       break;
 
     case NEW_WINDOW:
@@ -250,7 +250,7 @@ void NormalizeDisposition(browser::NavigateParams* params) {
       // Fall-through.
     case NEW_FOREGROUND_TAB:
     case SINGLETON_TAB:
-      params->tabstrip_add_types |= TabStripModel::ADD_SELECTED;
+      params->tabstrip_add_types |= TabStripModel::ADD_ACTIVE;
       break;
 
     default:
@@ -344,7 +344,7 @@ NavigateParams::NavigateParams(
       disposition(CURRENT_TAB),
       transition(a_transition),
       tabstrip_index(-1),
-      tabstrip_add_types(TabStripModel::ADD_SELECTED),
+      tabstrip_add_types(TabStripModel::ADD_ACTIVE),
       window_action(NO_ACTION),
       path_behavior(RESPECT),
       browser(a_browser),
@@ -358,7 +358,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
       disposition(CURRENT_TAB),
       transition(PageTransition::LINK),
       tabstrip_index(-1),
-      tabstrip_add_types(TabStripModel::ADD_SELECTED),
+      tabstrip_add_types(TabStripModel::ADD_ACTIVE),
       window_action(NO_ACTION),
       path_behavior(RESPECT),
       browser(a_browser),
@@ -435,7 +435,7 @@ void Navigate(NavigateParams* params) {
       // failures in startup tests.
       // By default, content believes it is not hidden.  When adding contents
       // in the background, tell it that it's hidden.
-      if ((params->tabstrip_add_types & TabStripModel::ADD_SELECTED) == 0) {
+      if ((params->tabstrip_add_types & TabStripModel::ADD_ACTIVE) == 0) {
         // TabStripModel::AddTabContents invokes HideContents if not foreground.
         params->target_contents->tab_contents()->WasHidden();
       }
@@ -494,7 +494,7 @@ void Navigate(NavigateParams* params) {
 
     // If the singleton tab isn't already selected, select it.
     if (params->source_contents != params->target_contents)
-      params->browser->SelectTabContentsAt(singleton_index, user_initiated);
+      params->browser->ActivateTabAt(singleton_index, user_initiated);
   }
 }
 

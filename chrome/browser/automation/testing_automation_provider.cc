@@ -447,7 +447,7 @@ void TestingAutomationProvider::ActivateTab(int handle,
   if (browser_tracker_->ContainsHandle(handle) && at_index > -1) {
     Browser* browser = browser_tracker_->GetResource(handle);
     if (at_index >= 0 && at_index < browser->tab_count()) {
-      browser->SelectTabContentsAt(at_index, true);
+      browser->ActivateTabAt(at_index, true);
       *status = 0;
     }
   }
@@ -4747,7 +4747,7 @@ void TestingAutomationProvider::SendOSLevelKeyEventToTab(
   }
   // The key events will be sent to the browser window, we need the current tab
   // containing the element we send the text in to be shown.
-  browser->SelectTabContentsAt(
+  browser->ActivateTabAt(
       browser->GetIndexOfController(&tab_contents->controller()), true);
 
   BrowserWindow* browser_window = browser->window();
@@ -5333,7 +5333,7 @@ void TestingAutomationProvider::ActivateTabJSON(
     reply.SendError(error);
     return;
   }
-  browser->SelectTabContentsAt(
+  browser->ActivateTabAt(
       browser->GetIndexOfController(&tab_contents->controller()), true);
   reply.SendSuccess(NULL);
 }

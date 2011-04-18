@@ -26,7 +26,7 @@ TEST_F(BrowserCommandsTest, TabNavigationAccelerators) {
   AddTab(browser(), about_blank);
 
   // Select the second tab.
-  browser()->SelectTabContentsAt(1, false);
+  browser()->ActivateTabAt(1, false);
 
   // Navigate to the first tab using an accelerator.
   browser()->ExecuteCommand(IDC_SELECT_TAB_0);
@@ -128,7 +128,7 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
   EXPECT_TRUE(first->controller().CanGoForward());
 
   // Select the second tab and make it go forward in a new background tab.
-  browser()->SelectTabContentsAt(1, true);
+  browser()->ActivateTabAt(1, true);
   // TODO(brettw) bug 11055: It should not be necessary to commit the load here,
   // but because of this bug, it will assert later if we don't. When the bug is
   // fixed, one of the three commits here related to this bug should be removed
@@ -152,7 +152,7 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
 
   // Now do back in a new foreground tab. Don't bother re-checking every sngle
   // thing above, just validate that it's opening properly.
-  browser()->SelectTabContentsAt(2, true);
+  browser()->ActivateTabAt(2, true);
   // TODO(brettw) bug 11055: see the comment above about why we need this.
   CommitPendingLoad(&second->controller());
   browser()->GoBack(NEW_FOREGROUND_TAB);

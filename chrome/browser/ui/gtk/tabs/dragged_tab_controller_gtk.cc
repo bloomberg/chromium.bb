@@ -393,7 +393,7 @@ void DraggedTabControllerGtk::Attach(TabStripGtk* attached_tabstrip,
     int index = GetInsertionIndexForDraggedBounds(bounds, false);
     attached_tabstrip_->model()->InsertTabContentsAt(
         index, dragged_contents_,
-        TabStripModel::ADD_SELECTED |
+        TabStripModel::ADD_ACTIVE |
             (pinned_ ? TabStripModel::ADD_PINNED : 0));
 
     tab = GetTabMatchingDraggedContents(attached_tabstrip_);
@@ -624,7 +624,7 @@ void DraggedTabControllerGtk::RevertDrag() {
       attached_tabstrip_ = source_tabstrip_;
       source_tabstrip_->model()->InsertTabContentsAt(
           source_model_index_, dragged_contents_,
-          TabStripModel::ADD_SELECTED |
+          TabStripModel::ADD_ACTIVE |
               (pinned_ ? TabStripModel::ADD_PINNED : 0));
     } else {
       // The tab was moved within the tabstrip where the drag was initiated.
@@ -641,7 +641,7 @@ void DraggedTabControllerGtk::RevertDrag() {
     // source tabstrip.
     source_tabstrip_->model()->InsertTabContentsAt(
         source_model_index_, dragged_contents_,
-        TabStripModel::ADD_SELECTED |
+        TabStripModel::ADD_ACTIVE |
             (pinned_ ? TabStripModel::ADD_PINNED : 0));
   }
 

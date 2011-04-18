@@ -116,7 +116,7 @@
   // Note: applescript is 1-based, that is lists begin with index 1.
   int atIndex = [anActiveTabIndex intValue] - 1;
   if (atIndex >= 0 && atIndex < browser_->tab_count())
-    browser_->SelectTabContentsAt(atIndex, true);
+    browser_->ActivateTabAt(atIndex, true);
   else
     AppleScript::SetError(AppleScript::errInvalidTabIndex);
 }

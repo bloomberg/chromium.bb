@@ -304,7 +304,7 @@ int BrowserListener::ConfigureNextUnconfiguredSnapshot(int start_from) {
 
 void BrowserListener::RestoreOriginalSelectedTab() {
   if (original_selected_tab_ >= 0) {
-    browser_->SelectTabContentsAt(original_selected_tab_, false);
+    browser_->ActivateTabAt(original_selected_tab_, false);
     UpdateSelectedIndex(browser_->active_index());
   }
 }
@@ -330,7 +330,7 @@ void BrowserListener::SelectTab(int index, uint32 timestamp) {
 
   uint32 old_value = select_tab_timestamp_;
   select_tab_timestamp_ = timestamp;
-  browser_->SelectTabContentsAt(index, true);
+  browser_->ActivateTabAt(index, true);
   select_tab_timestamp_ = old_value;
 }
 

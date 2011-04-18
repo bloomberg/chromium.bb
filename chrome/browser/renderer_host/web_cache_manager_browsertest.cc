@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,21 +36,21 @@ IN_PROC_BROWSER_TEST_F(WebCacheManagerBrowserTest, DISABLED_CrashOnceOnly) {
   base::KillProcess(tab->GetRenderProcessHost()->GetHandle(),
                     ResultCodes::KILLED, true);
 
-  browser()->SelectTabContentsAt(0, true);
+  browser()->ActivateTabAt(0, true);
   browser()->NewTab();
   ui_test_utils::NavigateToURL(browser(), url);
 
-  browser()->SelectTabContentsAt(0, true);
+  browser()->ActivateTabAt(0, true);
   browser()->NewTab();
   ui_test_utils::NavigateToURL(browser(), url);
 
   // We would have crashed at the above line with the bug.
 
-  browser()->SelectTabContentsAt(0, true);
+  browser()->ActivateTabAt(0, true);
   browser()->CloseTab();
-  browser()->SelectTabContentsAt(0, true);
+  browser()->ActivateTabAt(0, true);
   browser()->CloseTab();
-  browser()->SelectTabContentsAt(0, true);
+  browser()->ActivateTabAt(0, true);
   browser()->CloseTab();
 
   ui_test_utils::NavigateToURL(browser(), url);

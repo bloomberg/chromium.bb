@@ -843,7 +843,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
   params.disposition = NEW_BACKGROUND_TAB;
   params.tabstrip_add_types = TabStripModel::ADD_NONE;
   browser::Navigate(&params);
-  browser()->SelectTabContentsAt(1, false);
+  browser()->ActivateTabAt(1, false);
   TabContentsWrapper* tab2 = browser()->GetSelectedTabContentsWrapper();
   EXPECT_NE(tab1, tab2);
 
@@ -851,7 +851,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
   FindInPageWchar(tab2, L"given", kFwd, kIgnoreCase, &ordinal);
 
   // Switch back to first tab.
-  browser()->SelectTabContentsAt(0, false);
+  browser()->ActivateTabAt(0, false);
   browser()->GetFindBarController()->EndFindSession(
       FindBarController::kKeepSelection);
   // Simulate F3.
@@ -967,7 +967,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
   params.disposition = NEW_BACKGROUND_TAB;
   params.tabstrip_add_types = TabStripModel::ADD_NONE;
   browser::Navigate(&params);
-  browser()->SelectTabContentsAt(1, false);
+  browser()->ActivateTabAt(1, false);
   TabContentsWrapper* tab2 = browser()->GetSelectedTabContentsWrapper();
   EXPECT_NE(tab1, tab2);
 
@@ -976,7 +976,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
 
   // Go back to the first tab and make sure we have NOT switched the prepopulate
   // text to "text".
-  browser()->SelectTabContentsAt(0, false);
+  browser()->ActivateTabAt(0, false);
 
   // Open the Find box.
   EnsureFindBoxOpen();

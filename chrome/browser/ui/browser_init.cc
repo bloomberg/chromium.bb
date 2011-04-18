@@ -1004,7 +1004,7 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
     if (!process_startup && !net::URLRequest::IsHandledURL(tabs[i].url))
       continue;
 
-    int add_types = first_tab ? TabStripModel::ADD_SELECTED :
+    int add_types = first_tab ? TabStripModel::ADD_ACTIVE :
                                 TabStripModel::ADD_NONE;
     add_types |= TabStripModel::ADD_FORCE_INDEX;
     if (tabs[i].is_pinned)

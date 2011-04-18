@@ -83,10 +83,10 @@ struct NavigateParams {
   // CURRENT_TAB          "     "     "                     NEW_FOREGROUND_TAB
   // OFF_THE_RECORD       target browser profile is incog.  NEW_FOREGROUND_TAB
   //
-  // If disposition is NEW_BACKGROUND_TAB, TabStripModel::ADD_SELECTED is
+  // If disposition is NEW_BACKGROUND_TAB, TabStripModel::ADD_ACTIVE is
   // removed from |tabstrip_add_types| automatically.
   // If disposition is one of NEW_WINDOW, NEW_POPUP, NEW_FOREGROUND_TAB or
-  // SINGLETON_TAB, then TabStripModel::ADD_SELECTED is automatically added to
+  // SINGLETON_TAB, then TabStripModel::ADD_ACTIVE is automatically added to
   // |tabstrip_add_types|.
   WindowOpenDisposition disposition;
 
@@ -102,7 +102,7 @@ struct NavigateParams {
 
   // A bitmask of values defined in TabStripModel::AddTabTypes. Helps
   // determine where to insert a new tab and whether or not it should be
-  // selected, among other properties. Default is ADD_SELECTED.
+  // selected, among other properties. Default is ADD_ACTIVE.
   int tabstrip_add_types;
 
   // If non-empty, the new tab is an app tab.

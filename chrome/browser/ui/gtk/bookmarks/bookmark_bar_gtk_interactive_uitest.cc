@@ -39,7 +39,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBarGtkInteractiveUITest, FindBarTest) {
   browser()->AddSelectedTabWithURL(url, PageTransition::TYPED);
 
   // Switch back to the NTP with the active findbar.
-  browser()->SelectTabContentsAt(1, false);
+  browser()->ActivateTabAt(1, false);
 
   // Wait for the findbar to show.
   MessageLoop::current()->RunAllPending();

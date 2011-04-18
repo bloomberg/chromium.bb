@@ -76,7 +76,7 @@ void ShowAppInstalledAnimation(Browser* browser, const std::string& app_id) {
     TabContents* tab_contents = browser->GetTabContentsAt(i);
     GURL url = tab_contents->GetURL();
     if (StartsWithASCII(url.spec(), chrome::kChromeUINewTabURL, false)) {
-      browser->SelectTabContentsAt(i, false);
+      browser->ActivateTabAt(i, false);
       return;
     }
   }

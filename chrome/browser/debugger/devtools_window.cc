@@ -148,7 +148,7 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
       tab_contents_->view()->SetInitialFocus();
       inspected_window->Show();
       TabStripModel* tabstrip_model = inspected_browser->tabstrip_model();
-      tabstrip_model->SelectTabContentsAt(inspected_tab_index, true);
+      tabstrip_model->ActivateTabAt(inspected_tab_index, true);
       ScheduleAction(action);
       return;
     } else {
@@ -242,8 +242,7 @@ void DevToolsWindow::CreateDevToolsBrowser() {
 
   browser_ = Browser::CreateForDevTools(profile_);
   browser_->tabstrip_model()->AddTabContents(
-      tab_contents_, -1, PageTransition::START_PAGE,
-      TabStripModel::ADD_SELECTED);
+      tab_contents_, -1, PageTransition::START_PAGE, TabStripModel::ADD_ACTIVE);
 }
 
 bool DevToolsWindow::FindInspectedBrowserAndTabIndex(Browser** browser,

@@ -692,13 +692,13 @@ class SessionRestoreImpl : public NotificationObserver {
                    int initial_tab_count,
                    int selected_session_index) {
     if (browser_ == browser) {
-      browser->SelectTabContentsAt(browser->tab_count() - 1, true);
+      browser->ActivateTabAt(browser->tab_count() - 1, true);
       return;
     }
 
     DCHECK(browser);
     DCHECK(browser->tab_count());
-    browser->SelectTabContentsAt(
+    browser->ActivateTabAt(
         std::min(initial_tab_count + std::max(0, selected_session_index),
                  browser->tab_count() - 1), true);
     browser->window()->Show();
@@ -713,7 +713,7 @@ class SessionRestoreImpl : public NotificationObserver {
     for (size_t i = 0; i < urls.size(); ++i) {
       int add_types = TabStripModel::ADD_FORCE_INDEX;
       if (i == 0)
-        add_types |= TabStripModel::ADD_SELECTED;
+        add_types |= TabStripModel::ADD_ACTIVE;
       int index = browser->GetIndexForInsertionDuringRestore(i);
       browser::NavigateParams params(browser, urls[i],
                                      PageTransition::START_PAGE);

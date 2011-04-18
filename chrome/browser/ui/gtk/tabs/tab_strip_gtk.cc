@@ -1121,7 +1121,7 @@ bool TabStripGtk::IsTabPinned(const TabGtk* tab) const {
 void TabStripGtk::SelectTab(TabGtk* tab) {
   int index = GetIndexOfTab(tab);
   if (model_->ContainsIndex(index))
-    model_->SelectTabContentsAt(index, true);
+    model_->ActivateTabAt(index, true);
 }
 
 void TabStripGtk::CloseTab(TabGtk* tab) {

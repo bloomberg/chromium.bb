@@ -109,14 +109,14 @@ void TabStripModel::AppendTabContents(TabContentsWrapper* contents,
                                       bool foreground) {
   int index = order_controller_->DetermineInsertionIndexForAppending();
   InsertTabContentsAt(index, contents,
-                      foreground ? (ADD_INHERIT_GROUP | ADD_SELECTED) :
+                      foreground ? (ADD_INHERIT_GROUP | ADD_ACTIVE) :
                                    ADD_NONE);
 }
 
 void TabStripModel::InsertTabContentsAt(int index,
                                         TabContentsWrapper* contents,
                                         int add_types) {
-  bool foreground = add_types & ADD_SELECTED;
+  bool active = add_types & ADD_ACTIVE;
   // Force app tabs to be pinned.
   bool pin =
       contents->extension_tab_helper()->is_app() || add_types & ADD_PINNED;
@@ -135,7 +135,7 @@ void TabStripModel::InsertTabContentsAt(int index,
   TabContentsData* data = new TabContentsData(contents);
   data->pinned = pin;
   if ((add_types & ADD_INHERIT_GROUP) && selected_contents) {
-    if (foreground) {
+    if (active) {
       // Forget any existing relationships, we don't want to make things too
       // confusing by having multiple groups active at the same time.
       ForgetAllOpeners();
@@ -143,7 +143,7 @@ void TabStripModel::InsertTabContentsAt(int index,
     // Anything opened by a link we deem to have an opener.
     data->SetGroup(&selected_contents->controller());
   } else if ((add_types & ADD_INHERIT_OPENER) && selected_contents) {
-    if (foreground) {
+    if (active) {
       // Forget any existing relationships, we don't want to make things too
       // confusing by having multiple groups active at the same time.
       ForgetAllOpeners();
@@ -156,9 +156,9 @@ void TabStripModel::InsertTabContentsAt(int index,
   selection_model_.IncrementFrom(index);
 
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                    TabInsertedAt(contents, index, foreground));
+                    TabInsertedAt(contents, index, active));
 
-  if (foreground) {
+  if (active) {
     selection_model_.SetSelectedIndex(index);
     NotifyTabSelectedIfChanged(selected_contents, index, false);
   }
@@ -193,9 +193,7 @@ void TabStripModel::ReplaceNavigationControllerAt(
   // This appears to be OK with no flicker since no redraw event
   // occurs between the call to add an aditional tab and one to close
   // the previous tab.
-  InsertTabContentsAt(
-      index + 1, contents,
-      ADD_SELECTED | ADD_INHERIT_GROUP);
+  InsertTabContentsAt(index + 1, contents, ADD_ACTIVE | ADD_INHERIT_GROUP);
   std::vector<int> closing_tabs;
   closing_tabs.push_back(index);
   InternalCloseTabs(closing_tabs, CLOSE_NONE);
@@ -242,7 +240,7 @@ TabContentsWrapper* TabStripModel::DetachTabContentsAt(int index) {
   return removed_contents;
 }
 
-void TabStripModel::SelectTabContentsAt(int index, bool user_gesture) {
+void TabStripModel::ActivateTabAt(int index, bool user_gesture) {
   DCHECK(ContainsIndex(index));
   bool had_multi = selection_model_.selected_indices().size() > 1;
   TabContentsWrapper* old_contents =
@@ -634,7 +632,7 @@ void TabStripModel::AddTabContents(TabContentsWrapper* contents,
     // link clicks, they just want to score the navigation like a link click in
     // the history backend, so we don't inherit the group in this case.
     index = order_controller_->DetermineInsertionIndex(
-        contents, transition, add_types & ADD_SELECTED);
+        contents, transition, add_types & ADD_ACTIVE);
     inherit_group = true;
   } else {
     // For all other types, respect what was passed to us, normalizing -1s and
@@ -672,7 +670,7 @@ void TabStripModel::AddTabContents(TabContentsWrapper* contents,
   // layout is performed with sane view dimensions even when we're opening a
   // new background tab.
   if (TabContentsWrapper* old_contents = GetSelectedTabContents()) {
-    if ((add_types & ADD_SELECTED) == 0) {
+    if ((add_types & ADD_ACTIVE) == 0) {
       contents->tab_contents()->view()->
           SizeContents(old_contents->tab_contents()->
                           view()->GetContainerSize());
@@ -698,7 +696,7 @@ void TabStripModel::SelectPreviousTab() {
 }
 
 void TabStripModel::SelectLastTab() {
-  SelectTabContentsAt(count() - 1, true);
+  ActivateTabAt(count() - 1, true);
 }
 
 void TabStripModel::MoveTabNext() {
@@ -1245,7 +1243,7 @@ void TabStripModel::SelectRelativeTab(bool next) {
   int index = active_index();
   int delta = next ? 1 : -1;
   index = (index + count() + delta) % count();
-  SelectTabContentsAt(index, true);
+  ActivateTabAt(index, true);
 }
 
 void TabStripModel::MoveTabContentsAtImpl(int index,

@@ -698,7 +698,7 @@ class NotificationBridge : public NotificationObserver {
   DCHECK([sender isKindOfClass:[NSView class]]);
   int index = [self modelIndexForTabView:sender];
   if (tabStripModel_->ContainsIndex(index))
-    tabStripModel_->SelectTabContentsAt(index, true);
+    tabStripModel_->ActivateTabAt(index, true);
 }
 
 // Called when the user closes a tab. Asks the model to close the tab. |sender|
@@ -1606,7 +1606,7 @@ class NotificationBridge : public NotificationObserver {
   // inherit the current tab's group.
   tabStripModel_->InsertTabContentsAt(
       modelIndex, contents,
-      TabStripModel::ADD_SELECTED | (pinned ? TabStripModel::ADD_PINNED : 0));
+      TabStripModel::ADD_ACTIVE | (pinned ? TabStripModel::ADD_PINNED : 0));
 }
 
 // Called when the tab strip view changes size. As we only registered for
@@ -1852,7 +1852,7 @@ class NotificationBridge : public NotificationObserver {
       params.disposition = disposition;
       params.tabstrip_index = index;
       params.tabstrip_add_types =
-          TabStripModel::ADD_SELECTED | TabStripModel::ADD_FORCE_INDEX;
+          TabStripModel::ADD_ACTIVE | TabStripModel::ADD_FORCE_INDEX;
       browser::Navigate(&params);
       break;
     }
@@ -1862,7 +1862,7 @@ class NotificationBridge : public NotificationObserver {
       tabStripModel_->GetTabContentsAt(index)
           ->tab_contents()->OpenURL(*url, GURL(), CURRENT_TAB,
                                     PageTransition::TYPED);
-      tabStripModel_->SelectTabContentsAt(index, true);
+      tabStripModel_->ActivateTabAt(index, true);
       break;
     default:
       NOTIMPLEMENTED();
@@ -1995,7 +1995,7 @@ class NotificationBridge : public NotificationObserver {
   NSInteger index = [self modelIndexForContentsView:view];
   DCHECK(index >= 0);
   if (index >= 0)
-    tabStripModel_->SelectTabContentsAt(index, false /* not a user gesture */);
+    tabStripModel_->ActivateTabAt(index, false /* not a user gesture */);
 }
 
 - (void)attachConstrainedWindow:(ConstrainedWindowMac*)window {

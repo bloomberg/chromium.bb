@@ -215,7 +215,7 @@ bool BrowserTabStripController::IsNewTabPage(int model_index) const {
 }
 
 void BrowserTabStripController::SelectTab(int model_index) {
-  model_->SelectTabContentsAt(model_index, true);
+  model_->ActivateTabAt(model_index, true);
 }
 
 void BrowserTabStripController::ExtendSelectionTo(int model_index) {
@@ -274,14 +274,14 @@ void BrowserTabStripController::PerformDrop(bool drop_before,
     TabContentsWrapper* contents = model_->delegate()->CreateTabContentsForURL(
         url, GURL(), model_->profile(), PageTransition::TYPED, false, NULL);
     model_->AddTabContents(contents, index, PageTransition::GENERATED,
-                           TabStripModel::ADD_SELECTED);
+                           TabStripModel::ADD_ACTIVE);
   } else {
     UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLOnTab"),
                               model_->profile());
 
     model_->GetTabContentsAt(index)->controller().LoadURL(
         url, GURL(), PageTransition::GENERATED);
-    model_->SelectTabContentsAt(index, true);
+    model_->ActivateTabAt(index, true);
   }
 }
 
