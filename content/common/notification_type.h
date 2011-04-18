@@ -165,6 +165,13 @@ class NotificationType {
     // change.  There are no details.
     SSL_INTERNAL_STATE_CHANGED,
 
+    // The user accepted or dismissed a SSL client authentication request.
+    // The source is a Source<SSLClientAuthHandler>.  Details is a
+    // SSLClientAuthNotificationDetails which records specifies which
+    // SSLCertRequestInfo the request was for and which X509Certificate was
+    // selected (if any).
+    SSL_CLIENT_AUTH_CERT_SELECTED,
+
     // Views -------------------------------------------------------------------
 
     // Notification that a view was removed from a view hierarchy.  The source

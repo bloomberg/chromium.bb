@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/common/net/x509_certificate_model.h"
+#include "content/browser/browser_thread.h"
 #include "content/browser/certificate_viewer.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
@@ -35,7 +36,8 @@ enum {
 ///////////////////////////////////////////////////////////////////////////////
 // SSLClientCertificateSelector
 
-class SSLClientCertificateSelector : public ConstrainedDialogDelegate {
+class SSLClientCertificateSelector : public SSLClientAuthObserver,
+                                     public ConstrainedDialogDelegate {
  public:
   explicit SSLClientCertificateSelector(
       TabContents* parent,
@@ -44,6 +46,9 @@ class SSLClientCertificateSelector : public ConstrainedDialogDelegate {
   ~SSLClientCertificateSelector();
 
   void Show();
+
+  // SSLClientAuthObserver implementation:
+  virtual void OnCertSelectedByNotification();
 
   // ConstrainedDialogDelegate implementation:
   virtual GtkWidget* GetWidgetRoot() { return root_widget_.get(); }
@@ -94,7 +99,8 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
     TabContents* parent,
     net::SSLCertRequestInfo* cert_request_info,
     SSLClientAuthHandler* delegate)
-    : cert_request_info_(cert_request_info),
+    : SSLClientAuthObserver(cert_request_info, delegate),
+      cert_request_info_(cert_request_info),
       delegate_(delegate),
       parent_(parent),
       window_(NULL) {
@@ -179,6 +185,8 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
   PopulateCerts();
 
   gtk_widget_show_all(root_widget_.get());
+
+  StartObserving();
 }
 
 SSLClientCertificateSelector::~SSLClientCertificateSelector() {
@@ -190,6 +198,12 @@ void SSLClientCertificateSelector::Show() {
   window_ = parent_->CreateConstrainedDialog(this);
 }
 
+void SSLClientCertificateSelector::OnCertSelectedByNotification() {
+  delegate_ = NULL;
+  DCHECK(window_);
+  window_->CloseConstrainedWindow();
+}
+
 GtkWidget* SSLClientCertificateSelector::GetFocusWidget() {
   return select_button_;
 }
@@ -197,6 +211,7 @@ GtkWidget* SSLClientCertificateSelector::GetFocusWidget() {
 void SSLClientCertificateSelector::DeleteDelegate() {
   if (delegate_) {
     // The dialog was closed by escape key.
+    StopObserving();
     delegate_->CertificateSelected(NULL);
   }
   delete this;
@@ -337,6 +352,7 @@ void SSLClientCertificateSelector::OnViewClicked(GtkWidget* button) {
 }
 
 void SSLClientCertificateSelector::OnCancelClicked(GtkWidget* button) {
+  StopObserving();
   delegate_->CertificateSelected(NULL);
   delegate_ = NULL;
   DCHECK(window_);
@@ -345,6 +361,11 @@ void SSLClientCertificateSelector::OnCancelClicked(GtkWidget* button) {
 
 void SSLClientCertificateSelector::OnOkClicked(GtkWidget* button) {
   net::X509Certificate* cert = GetSelectedCert();
+
+  // Remove the observer before we try unlocking, otherwise we might act on a
+  // notification while waiting for the unlock dialog, causing us to delete
+  // ourself before the Unlocked callback gets called.
+  StopObserving();
 
   browser::UnlockCertSlotIfNecessary(
       cert,
@@ -373,6 +394,7 @@ void ShowSSLClientCertificateSelector(
     TabContents* parent,
     net::SSLCertRequestInfo* cert_request_info,
     SSLClientAuthHandler* delegate) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   (new SSLClientCertificateSelector(parent,
                                     cert_request_info,
                                     delegate))->Show();
