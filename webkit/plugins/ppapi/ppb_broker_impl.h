@@ -33,7 +33,7 @@ class PPB_Broker_Impl : public Resource {
   // Resource override.
   virtual PPB_Broker_Impl* AsPPB_Broker_Impl();
 
-  virtual void BrokerConnected(int32_t handle);
+  void BrokerConnected(int32_t handle, int32_t result);
 
  private:
   // PluginDelegate ppapi broker object.

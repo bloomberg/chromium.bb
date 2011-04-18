@@ -14,7 +14,8 @@
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "ipc/ipc_channel_handle.h"
+#include "ppapi/proxy/broker_dispatcher.h"
+#include "ppapi/proxy/proxy_channel.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppb_broker_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_menu_impl.h"
@@ -25,6 +26,10 @@ class RenderView;
 namespace gfx {
 class Point;
 class Rect;
+}
+
+namespace IPC {
+struct ChannelHandle;
 }
 
 namespace webkit {
@@ -46,6 +51,21 @@ struct CustomContextMenuContext;
 
 class TransportDIB;
 
+class BrokerDispatcherWrapper {
+ public:
+  BrokerDispatcherWrapper();
+  ~BrokerDispatcherWrapper();
+
+  bool Init(base::ProcessHandle plugin_process_handle,
+            const IPC::ChannelHandle& channel_handle);
+
+  int32_t SendHandleToBroker(PP_Instance instance,
+                             base::SyncSocket::Handle handle);
+
+ private:
+  scoped_ptr<pp::proxy::BrokerDispatcher> dispatcher_;
+};
+
 class PpapiBrokerImpl : public webkit::ppapi::PluginDelegate::PpapiBroker {
  public:
   PpapiBrokerImpl();
@@ -55,14 +75,19 @@ class PpapiBrokerImpl : public webkit::ppapi::PluginDelegate::PpapiBroker {
   virtual void Disconnect(webkit::ppapi::PPB_Broker_Impl* client);
 
   // Called when the channel to the broker has been established.
-  void OnBrokerChannelConnected(const IPC::ChannelHandle& channel_handle);
+  void OnBrokerChannelConnected(base::ProcessHandle broker_process_handle,
+                                const IPC::ChannelHandle& channel_handle);
 
-  // Asynchronously requests a pipe for this instance from the broker.
-  void RequestPpapiBrokerPipe(webkit::ppapi::PPB_Broker_Impl* client);
+  // Connects the plugin to the broker via a pipe.
+  void ConnectPluginToBroker(webkit::ppapi::PPB_Broker_Impl* client);
+
+  // Asynchronously sends a pipe to the broker.
+  int32_t SendHandleToBroker(PP_Instance instance,
+                             base::SyncSocket::Handle handle);
 
  protected:
   virtual ~PpapiBrokerImpl();
-  IPC::ChannelHandle channel_handle_;
+  scoped_ptr<BrokerDispatcherWrapper> dispatcher_;
 
   std::vector<scoped_refptr<webkit::ppapi::PPB_Broker_Impl> > pending_connects_;
   std::vector<scoped_refptr<webkit::ppapi::PPB_Broker_Impl> > pending_pipes_;
@@ -111,6 +136,7 @@ class PepperPluginDelegateImpl
 
   // Called by RenderView when ViewMsg_PpapiBrokerChannelCreated.
   void OnPpapiBrokerChannelCreated(int request_id,
+                                   base::ProcessHandle broker_process_handle,
                                    const IPC::ChannelHandle& handle);
 
   // Notification that the render view has been focused or defocused. This

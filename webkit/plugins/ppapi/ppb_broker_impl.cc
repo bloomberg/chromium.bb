@@ -128,8 +128,10 @@ PPB_Broker_Impl* PPB_Broker_Impl::AsPPB_Broker_Impl() {
 }
 
 // Transfers ownership of the handle to the plugin.
-void PPB_Broker_Impl::BrokerConnected(int32_t handle) {
-  DCHECK(handle);
+void PPB_Broker_Impl::BrokerConnected(int32_t handle, int32_t result) {
+  DCHECK(result == PP_OK ||
+         handle == PlatformFileToInt(base::kInvalidPlatformFileValue));
+
   pipe_handle_ = handle;
 
   // Synchronous calls are not supported.
@@ -137,7 +139,7 @@ void PPB_Broker_Impl::BrokerConnected(int32_t handle) {
 
   scoped_refptr<TrackedCompletionCallback> callback;
   callback.swap(connect_callback_);
-  callback->Run(PP_OK);  // Will complete abortively if necessary.
+  callback->Run(result);  // Will complete abortively if necessary.
 }
 
 }  // namespace ppapi

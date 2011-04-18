@@ -37,14 +37,16 @@ extern "C" {
 
 /**
  * PP_ConnectInstance_Func defines the signature that you implement to
- * receive notifications when a new instance connects to the broker.
+ * receive notifications when a plugin instance connects to the broker.
+ * The broker should listen on the socket before returning.
  *
  * @param[in] instance The plugin instance connecting to the broker.
- * @param[in] socket Handle to a socket the broker can use to communicate with
- * the instance.
+ * @param[in] handle Handle to a socket the broker can use to communicate with
+ * the plugin.
  * @return PP_OK on success. Any other value on failure.
  */
-typedef int32_t (*PP_ConnectInstance_Func)(PP_Instance instance, int socket);
+typedef int32_t (*PP_ConnectInstance_Func)(PP_Instance instance,
+                                           int32_t handle);
 /**
  * @}
  */

@@ -199,12 +199,12 @@ class OpenChannelToPpapiBrokerCallback : public PpapiBrokerProcessHost::Client {
     *renderer_id = filter_->render_process_id();
   }
 
-  virtual void OnChannelOpened(base::ProcessHandle plugin_process_handle,
+  virtual void OnChannelOpened(base::ProcessHandle broker_process_handle,
                                const IPC::ChannelHandle& channel_handle) {
-    filter_->Send(
-        new ViewMsg_PpapiBrokerChannelCreated(routing_id_,
-                                              request_id_,
-                                              channel_handle));
+    filter_->Send(new ViewMsg_PpapiBrokerChannelCreated(routing_id_,
+                                                        request_id_,
+                                                        broker_process_handle,
+                                                        channel_handle));
     delete this;
   }
 

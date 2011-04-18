@@ -1160,8 +1160,9 @@ IPC_MESSAGE_ROUTED0(ViewMsg_AccessibilityNotifications_ACK)
 
 // Reply to ViewHostMsg_OpenChannelToPpapiBroker
 // Tells the renderer that the channel to the broker has been created.
-IPC_MESSAGE_ROUTED2(ViewMsg_PpapiBrokerChannelCreated,
+IPC_MESSAGE_ROUTED3(ViewMsg_PpapiBrokerChannelCreated,
                     int /* request_id */,
+                    base::ProcessHandle /* broker_process_handle */,
                     IPC::ChannelHandle /* handle */)
 
 // Tells the renderer to empty its plugin list cache, optional reloading

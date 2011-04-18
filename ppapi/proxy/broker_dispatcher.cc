@@ -4,15 +4,31 @@
 
 #include "ppapi/proxy/broker_dispatcher.h"
 
+#include "base/sync_socket.h"
+#include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
 namespace pp {
 namespace proxy {
 
+namespace {
+
+int32_t PlatformFileToInt(base::PlatformFile handle) {
+#if defined(OS_WIN)
+  return static_cast<int32_t>(reinterpret_cast<intptr_t>(handle));
+#elif defined(OS_POSIX)
+  return handle;
+#else
+  #error Not implemented.
+#endif
+}
+
+}  // namespace
+
 BrokerDispatcher::BrokerDispatcher(base::ProcessHandle remote_process_handle,
                                    PP_ConnectInstance_Func connect_instance)
-    : ProxyChannel(remote_process_handle) {
-  // TODO(ddorwin): Do something with connect_instance.
+    : ProxyChannel(remote_process_handle),
+      connect_instance_(connect_instance) {
 }
 
 BrokerDispatcher::~BrokerDispatcher() {
@@ -29,16 +45,43 @@ bool BrokerDispatcher::OnMessageReceived(const IPC::Message& msg) {
   // Control messages.
   if (msg.routing_id() == MSG_ROUTING_CONTROL) {
     bool handled = true;
-    // TODO(ddorwin): Implement. Don't build empty block - fails on Windows.
-#if 0
     IPC_BEGIN_MESSAGE_MAP(BrokerDispatcher, msg)
-      // IPC_MESSAGE_FORWARD(PpapiMsg_ConnectToInstance)
+      IPC_MESSAGE_HANDLER(PpapiMsg_ConnectToPlugin, OnMsgConnectToPlugin)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
-#endif
     return handled;
   }
   return false;
+}
+
+// Transfers ownership of the handle to the broker module.
+void BrokerDispatcher::OnMsgConnectToPlugin(
+    PP_Instance instance,
+    IPC::PlatformFileForTransit handle) {
+  int32_t result = PP_OK;
+  if (handle == IPC::InvalidPlatformFileForTransit()) {
+    result = PP_ERROR_FAILED;
+  } else {
+    base::SyncSocket::Handle socket_handle =
+        IPC::PlatformFileForTransitToPlatformFile(handle);
+
+    if (connect_instance_) {
+      result = connect_instance_(instance, PlatformFileToInt(socket_handle));
+    } else {
+      result = PP_ERROR_FAILED;
+      // Close the handle since there is no other owner.
+      // The easiest way to clean it up is to just put it in an object
+      // and then close them. This failure case is not performance critical.
+      base::SyncSocket temp_socket(socket_handle);
+    }
+  }
+
+  // TODO(ddorwin): Report result via IPC.
+}
+
+BrokerHostDispatcher::BrokerHostDispatcher(
+    base::ProcessHandle remote_process_handle)
+    : BrokerDispatcher(remote_process_handle, NULL) {
 }
 
 }  // namespace proxy

@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_split.h"
+#include "base/sync_socket.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/common/pepper_plugin_registry.h"
@@ -35,11 +36,13 @@
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
+#include "ipc/ipc_channel_handle.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/proxy/host_dispatcher.h"
+#include "ppapi/proxy/ppapi_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
@@ -63,6 +66,39 @@ using WebKit::WebView;
 namespace {
 
 const int32 kDefaultCommandBufferSize = 1024 * 1024;
+
+int32_t PlatformFileToInt(base::PlatformFile handle) {
+#if defined(OS_WIN)
+  return static_cast<int32_t>(reinterpret_cast<intptr_t>(handle));
+#elif defined(OS_POSIX)
+  return handle;
+#else
+  #error Not implemented.
+#endif
+}
+
+base::SyncSocket::Handle DuplicateHandle(base::SyncSocket::Handle handle) {
+  base::SyncSocket::Handle out_handle = base::kInvalidPlatformFileValue;
+#if defined(OS_WIN)
+  DWORD options = DUPLICATE_SAME_ACCESS;
+  if (!::DuplicateHandle(::GetCurrentProcess(),
+                         handle,
+                         ::GetCurrentProcess(),
+                         &out_handle,
+                         0,
+                         FALSE,
+                         options)) {
+    out_handle = base::kInvalidPlatformFileValue;
+  }
+#elif defined(OS_POSIX)
+  // If asked to close the source, we can simply re-use the source fd instead of
+  // dup()ing and close()ing.
+  out_handle = ::dup(handle);
+#else
+  #error Not implemented.
+#endif
+  return out_handle;
+}
 
 // Implements the Image2D using a TransportDIB.
 class PlatformImage2DImpl
@@ -310,6 +346,8 @@ class DispatcherWrapper
   scoped_ptr<pp::proxy::HostDispatcher> dispatcher_;
 };
 
+}  // namespace
+
 bool DispatcherWrapper::Init(
     base::ProcessHandle plugin_process_handle,
     const IPC::ChannelHandle& channel_handle,
@@ -327,7 +365,50 @@ bool DispatcherWrapper::Init(
   return true;
 }
 
-}  // namespace
+BrokerDispatcherWrapper::BrokerDispatcherWrapper() {
+}
+
+BrokerDispatcherWrapper::~BrokerDispatcherWrapper() {
+}
+
+bool BrokerDispatcherWrapper::Init(
+    base::ProcessHandle plugin_process_handle,
+    const IPC::ChannelHandle& channel_handle) {
+  dispatcher_.reset(
+      new pp::proxy::BrokerHostDispatcher(plugin_process_handle));
+
+  if (!dispatcher_->InitBrokerWithChannel(PepperPluginRegistry::GetInstance(),
+                                          channel_handle,
+                                          true)) {
+    dispatcher_.reset();
+    return false;
+  }
+  dispatcher_->channel()->SetRestrictDispatchToSameChannel(true);
+  return true;
+}
+
+// Does not take ownership of the local pipe.
+int32_t BrokerDispatcherWrapper::SendHandleToBroker(
+    PP_Instance instance,
+    base::SyncSocket::Handle handle) {
+  IPC::PlatformFileForTransit foreign_socket_handle =
+      dispatcher_->ShareHandleWithRemote(handle, false);
+  if (foreign_socket_handle == IPC::InvalidPlatformFileForTransit())
+    return PP_ERROR_FAILED;
+
+  if (!dispatcher_->Send(
+      new PpapiMsg_ConnectToPlugin(instance, foreign_socket_handle))) {
+    // The plugin did not receive the handle, so it must be closed.
+    // The easiest way to clean it up is to just put it in an object
+    // and then close it. This failure case is not performance critical.
+    // The handle could still leak if Send succeeded but the IPC later failed.
+    base::SyncSocket temp_socket(
+        IPC::PlatformFileForTransitToPlatformFile(foreign_socket_handle));
+    return PP_ERROR_FAILED;
+  }
+
+  return PP_OK;
+}
 
 PpapiBrokerImpl::PpapiBrokerImpl() {
 }
@@ -337,38 +418,69 @@ PpapiBrokerImpl::~PpapiBrokerImpl() {
 
 // If the channel is not ready, queue the connection.
 void PpapiBrokerImpl::Connect(webkit::ppapi::PPB_Broker_Impl* client) {
-  if (channel_handle_.name.empty()) {
+  if (!dispatcher_.get()) {
     pending_connects_.push_back(client);
     return;
   }
   DCHECK(pending_connects_.empty());
 
-  RequestPpapiBrokerPipe(client);
+  ConnectPluginToBroker(client);
 }
 
 void PpapiBrokerImpl::Disconnect(webkit::ppapi::PPB_Broker_Impl* client) {
-  // TODO(ddorwin): Send message using channel_handle_ and clean up any pending
+  // TODO(ddorwin): Send message using dispatcher_ and clean up any pending
   // connects or pipes.
 }
 
 void PpapiBrokerImpl::OnBrokerChannelConnected(
+    base::ProcessHandle broker_process_handle,
     const IPC::ChannelHandle& channel_handle) {
-  channel_handle_ = channel_handle;
+  scoped_ptr<BrokerDispatcherWrapper> dispatcher(new BrokerDispatcherWrapper);
+  if (dispatcher->Init(broker_process_handle, channel_handle)) {
+    dispatcher_.reset(dispatcher.release());
 
-  // Process all pending channel requests from the renderers.
-  for (size_t i = 0; i < pending_connects_.size(); i++)
-    RequestPpapiBrokerPipe(pending_connects_[i]);
+    // Process all pending channel requests from the renderers.
+    for (size_t i = 0; i < pending_connects_.size(); i++)
+      ConnectPluginToBroker(pending_connects_[i]);
+  } else {
+    // Report failure to all clients.
+    for (size_t i = 0; i < pending_connects_.size(); i++) {
+      pending_connects_[i]->BrokerConnected(
+          PlatformFileToInt(base::kInvalidPlatformFileValue), PP_ERROR_FAILED);
+    }
+  }
   pending_connects_.clear();
 }
 
-void PpapiBrokerImpl::RequestPpapiBrokerPipe(
+void PpapiBrokerImpl::ConnectPluginToBroker(
     webkit::ppapi::PPB_Broker_Impl* client) {
-  // TOOD(ddorwin): Send an asynchronous message to the broker using
-  // channel_handle_, queue the client with an ID, then return.
-  // The broker will create the pipe, which will be provided in a message.
-  // That message handler will call then client->BrokerConnected().
+  base::SyncSocket::Handle plugin_handle = base::kInvalidPlatformFileValue;
+  int32_t result = PP_OK;
+
+  base::SyncSocket* sockets[2] = {0};
+  if (base::SyncSocket::CreatePair(sockets)) {
+    // The socket objects will be deleted when this function exits, closing the
+    // handles. Any uses of the socket must duplicate them.
+    scoped_ptr<base::SyncSocket> broker_socket(sockets[0]);
+    scoped_ptr<base::SyncSocket> plugin_socket(sockets[1]);
+
+    result = dispatcher_->SendHandleToBroker(client->instance()->pp_instance(),
+                                             broker_socket->handle());
+
+    // If the broker has its pipe handle, duplicate the plugin's handle.
+    // Otherwise, the plugin's handle will be automatically closed.
+    if (result == PP_OK)
+      plugin_handle = DuplicateHandle(plugin_socket->handle());
+  } else {
+    result = PP_ERROR_FAILED;
+  }
+
+  // TOOD(ddorwin): Change the IPC to asynchronous: Queue an object containing
+  // client and plugin_socket.release(), then return.
+  // That message handler will then call client->BrokerConnected() with the
+  // saved pipe handle.
   // Temporarily, just call back.
-  client->BrokerConnected(1);
+  client->BrokerConnected(PlatformFileToInt(plugin_handle), result);
 }
 
 PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderView* render_view)
@@ -463,12 +575,13 @@ PepperPluginDelegateImpl::CreatePpapiBroker(
 
 void PepperPluginDelegateImpl::OnPpapiBrokerChannelCreated(
     int request_id,
+    base::ProcessHandle broker_process_handle,
     const IPC::ChannelHandle& handle) {
   scoped_refptr<PpapiBrokerImpl> broker =
       *pending_connect_broker_.Lookup(request_id);
   pending_connect_broker_.Remove(request_id);
 
-  broker->OnBrokerChannelConnected(handle);
+  broker->OnBrokerChannelConnected(broker_process_handle, handle);
 }
 
 void PepperPluginDelegateImpl::ViewInitiatedPaint() {

@@ -67,6 +67,12 @@ IPC_MESSAGE_CONTROL2(PpapiMsg_ExecuteCallback,
                      uint32 /* serialized_callback */,
                      int32 /* param */)
 
+// Broker Process.
+
+IPC_SYNC_MESSAGE_CONTROL2_0(PpapiMsg_ConnectToPlugin,
+                            PP_Instance /* instance */,
+                            IPC::PlatformFileForTransit /* handle */)
+
 // PPB_Audio.
 
 // Notifies the result of the audio stream create call. This is called in

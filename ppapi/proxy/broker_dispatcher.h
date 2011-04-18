@@ -22,11 +22,6 @@ class BrokerDispatcher : public ProxyChannel {
                                      const IPC::ChannelHandle& channel_handle,
                                      bool is_client);
 
-  // Returns true if the dispatcher is on the broker side, or false if it's the
-  // browser side.
-  // TODO(ddorwin): Implement.
-  // virtual bool IsBroker() const = 0;
-
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
@@ -35,8 +30,19 @@ class BrokerDispatcher : public ProxyChannel {
   BrokerDispatcher(base::ProcessHandle remote_process_handle,
                    PP_ConnectInstance_Func connect_instance);
 
+  void OnMsgConnectToPlugin(PP_Instance instance,
+                            IPC::PlatformFileForTransit handle);
+
+  PP_ConnectInstance_Func connect_instance_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BrokerDispatcher);
+};
+
+// A simple class for broker hosts.
+class BrokerHostDispatcher : public BrokerDispatcher {
+ public:
+  BrokerHostDispatcher(base::ProcessHandle remote_process_handle);
 };
 
 }  // namespace proxy
