@@ -43,9 +43,12 @@ LocaleChangeGuard::LocaleChangeGuard(Profile* profile)
       note_(NULL),
       reverted_(false) {
   DCHECK(profile_);
-  registrar_.Add(this, NotificationType::LOAD_COMPLETED_MAIN_FRAME,
-                 NotificationService::AllSources());
   registrar_.Add(this, NotificationType::OWNERSHIP_CHECKED,
+                 NotificationService::AllSources());
+}
+
+void LocaleChangeGuard::OnLogin() {
+  registrar_.Add(this, NotificationType::LOAD_COMPLETED_MAIN_FRAME,
                  NotificationService::AllSources());
 }
 
@@ -77,13 +80,14 @@ void LocaleChangeGuard::Observe(NotificationType type,
     return;
   }
   switch (type.value) {
-    case NotificationType::LOAD_COMPLETED_MAIN_FRAME:
+    case NotificationType::LOAD_COMPLETED_MAIN_FRAME: {
       // We need to perform locale change check only once, so unsubscribe.
       registrar_.Remove(this, NotificationType::LOAD_COMPLETED_MAIN_FRAME,
                         NotificationService::AllSources());
       Check();
       break;
-    case NotificationType::OWNERSHIP_CHECKED:
+    }
+    case NotificationType::OWNERSHIP_CHECKED: {
       if (UserManager::Get()->current_user_is_owner()) {
         PrefService* local_state = g_browser_process->local_state();
         if (local_state) {
@@ -101,14 +105,16 @@ void LocaleChangeGuard::Observe(NotificationType type,
         }
       }
       break;
-    default:
+    }
+    default: {
       NOTREACHED();
       break;
+    }
   }
 }
 
 void LocaleChangeGuard::Check() {
-  if (note_ != NULL || !from_locale_.empty() || !to_locale_.empty()) {
+  if (note_ != NULL) {
     // Somehow we are invoked more than once. Once is enough.
     return;
   }
@@ -141,21 +147,19 @@ void LocaleChangeGuard::Check() {
     return;  // Already accepted.
 
   // Locale change detected, showing notification.
-  from_locale_ = from_locale;
-  to_locale_ = to_locale;
+  if (from_locale_ != from_locale || to_locale_ != to_locale) {
+    // Falling back to showing message in current locale.
+    LOG(ERROR) <<
+        "Showing locale change notification in current (not previous) language";
+    PrepareChangingLocale(from_locale, to_locale);
+  }
   note_.reset(new chromeos::SystemNotification(
       profile_,
       new Delegate(this),
       IDR_NOTIFICATION_LOCALE_CHANGE,
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE)));
-  string16 from =
-      l10n_util::GetDisplayNameForLocale(from_locale_, to_locale_, true);
-  string16 to =
-      l10n_util::GetDisplayNameForLocale(to_locale_, to_locale_, true);
+      title_text_));
   note_->Show(
-      l10n_util::GetStringFUTF16(IDS_LOCALE_CHANGE_MESSAGE, from, to),
-      l10n_util::GetStringFUTF16(IDS_LOCALE_CHANGE_REVERT_MESSAGE, from),
+      message_text_, revert_link_text_,
       NewCallback(this, &LocaleChangeGuard::RevertLocaleChange),
       true,  // urgent
       false);  // non-sticky
@@ -185,6 +189,29 @@ void LocaleChangeGuard::AcceptLocaleChange() {
   prefs->SetString(prefs::kApplicationLocaleBackup, to_locale_);
   prefs->SetString(prefs::kApplicationLocaleAccepted, to_locale_);
   prefs->ScheduleSavePersistentPrefs();
+}
+
+void LocaleChangeGuard::PrepareChangingLocale(
+    const std::string& from_locale, const std::string& to_locale) {
+  std::string cur_locale = g_browser_process->GetApplicationLocale();
+  if (!from_locale.empty())
+    from_locale_ = from_locale;
+  if (!to_locale.empty())
+    to_locale_ = to_locale;
+
+  if (!from_locale_.empty() && !to_locale_.empty()) {
+    string16 from = l10n_util::GetDisplayNameForLocale(
+        from_locale_, cur_locale, true);
+    string16 to = l10n_util::GetDisplayNameForLocale(
+        to_locale_, cur_locale, true);
+
+    title_text_ = l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE);
+    message_text_ = l10n_util::GetStringFUTF16(
+        IDS_LOCALE_CHANGE_MESSAGE, from, to);
+    revert_link_text_ = l10n_util::GetStringFUTF16(
+        IDS_LOCALE_CHANGE_REVERT_MESSAGE, from);
+  }
 }
 
 void LocaleChangeGuard::Delegate::Close(bool by_user) {

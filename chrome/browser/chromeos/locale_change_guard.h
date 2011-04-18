@@ -29,6 +29,13 @@ class LocaleChangeGuard : public NotificationObserver {
  public:
   explicit LocaleChangeGuard(Profile* profile);
 
+  // Called just before changing locale.
+  void PrepareChangingLocale(
+      const std::string& from_locale, const std::string& to_locale);
+
+  // Called after login.
+  void OnLogin();
+
  private:
   class Delegate;
 
@@ -47,6 +54,13 @@ class LocaleChangeGuard : public NotificationObserver {
   scoped_ptr<chromeos::SystemNotification> note_;
   bool reverted_;
   NotificationRegistrar registrar_;
+
+  // We want to show locale change notification in previous language however
+  // we cannot directly load strings for non-current locale.  So we cache
+  // messages before locale change.
+  string16 title_text_;
+  string16 message_text_;
+  string16 revert_link_text_;
 };
 
 }  // namespace chromeos

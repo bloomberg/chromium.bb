@@ -1425,8 +1425,11 @@ void ProfileImpl::ChangeAppLocale(
           GetPrefs()->SetString(prefs::kApplicationLocaleBackup, new_locale);
         } else {
           // Back up locale of login screen.
-          GetPrefs()->SetString(prefs::kApplicationLocaleBackup,
-                                g_browser_process->GetApplicationLocale());
+          std::string cur_locale = g_browser_process->GetApplicationLocale();
+          GetPrefs()->SetString(prefs::kApplicationLocaleBackup, cur_locale);
+          if (locale_change_guard_ == NULL)
+            locale_change_guard_.reset(new chromeos::LocaleChangeGuard(this));
+          locale_change_guard_->PrepareChangingLocale(cur_locale, new_locale);
         }
       } else {
         std::string cur_locale = g_browser_process->GetApplicationLocale();
@@ -1462,7 +1465,9 @@ void ProfileImpl::ChangeAppLocale(
 }
 
 void ProfileImpl::OnLogin() {
-  locale_change_guard_.reset(new chromeos::LocaleChangeGuard(this));
+  if (locale_change_guard_ == NULL)
+    locale_change_guard_.reset(new chromeos::LocaleChangeGuard(this));
+  locale_change_guard_->OnLogin();
 }
 
 void ProfileImpl::SetupChromeOSEnterpriseExtensionObserver() {
