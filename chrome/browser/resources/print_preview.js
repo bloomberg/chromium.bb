@@ -6,7 +6,6 @@ var localStrings = new LocalStrings();
 var hasPDFPlugin = true;
 var expectedPageCount = 0;
 var pageRangesInfo = [];
-var printJobTitle = '';
 
 /**
  * Window onload handler, sets up the page.
@@ -281,9 +280,6 @@ function onPDFLoad() {
 function updatePrintPreview(pageCount, jobTitle) {
   // Set the expected page count.
   expectedPageCount = pageCount;
-
-  // Set the print job title.
-  printJobTitle = jobTitle;
 
   // Update the current tab title.
   document.title = localStrings.getStringF('printPreviewTitleFormat', jobTitle);
