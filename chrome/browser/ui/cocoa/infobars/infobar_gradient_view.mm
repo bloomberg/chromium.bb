@@ -58,8 +58,7 @@ const double kBackgroundColorBottom[3] =
   // Around the bounds of the infobar, continue drawing the path into which the
   // gradient will be drawn.
   NSBezierPath* infoBarPath = [NSBezierPath bezierPath];
-  [infoBarPath moveToPoint:NSMakePoint(NSMinX(bounds), NSMinY(bounds))];
-  [infoBarPath lineToPoint:NSMakePoint(NSMinX(bounds), NSMaxY(bounds))];
+  [infoBarPath moveToPoint:NSMakePoint(NSMinX(bounds), NSMaxY(bounds))];
   [infoBarPath lineToPoint:NSMakePoint(NSMaxX(bounds), NSMaxY(bounds))];
   scoped_nsobject<NSBezierPath> topPath([infoBarPath copy]);
 
