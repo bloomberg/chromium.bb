@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -158,16 +158,8 @@ ServerConnectionManager::~ServerConnectionManager() {
 }
 
 void ServerConnectionManager::NotifyStatusChanged() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kNewSyncerThread)) {
-    listeners_->Notify(&ServerConnectionEventListener::OnServerConnectionEvent,
-        ServerConnectionEvent2(server_status_, server_reachable_));
-  }  else {
-    ServerConnectionEvent event = { ServerConnectionEvent::STATUS_CHANGED,
-                                    server_status_,
-                                    server_reachable_ };
-    channel_->NotifyListeners(event);
-  }
+  listeners_->Notify(&ServerConnectionEventListener::OnServerConnectionEvent,
+      ServerConnectionEvent2(server_status_, server_reachable_));
 }
 
 bool ServerConnectionManager::PostBufferWithCachedAuth(

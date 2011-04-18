@@ -1108,11 +1108,8 @@ class NotificationType {
 
     // Sync --------------------------------------------------------------------
 
-    // Sent when the sync backend has been paused.
-    SYNC_PAUSED,
-
-    // Sent when the sync backend has been resumed.
-    SYNC_RESUMED,
+    // Sent when the syncer is blocked configuring.
+    SYNC_CONFIGURE_BLOCKED,
 
     // The sync service has started the configuration process.
     SYNC_CONFIGURE_START,

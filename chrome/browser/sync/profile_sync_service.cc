@@ -598,6 +598,13 @@ void ProfileSyncService::OnClearServerDataSucceeded() {
 void ProfileSyncService::OnPassphraseRequired(bool for_decryption) {
   DCHECK(backend_.get());
   DCHECK(backend_->IsNigoriEnabled());
+
+  // TODO(lipalani) : add this check to other locations as well.
+  if (unrecoverable_error_detected_) {
+    // When unrecoverable error is detected we post a task to shutdown the
+    // backend. The task might not have executed yet.
+    return;
+  }
   observed_passphrase_required_ = true;
   passphrase_required_for_decryption_ = for_decryption;
 

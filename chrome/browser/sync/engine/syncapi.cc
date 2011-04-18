@@ -23,17 +23,17 @@
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/task.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sync/engine/all_status.h"
 #include "chrome/browser/sync/engine/change_reorder_buffer.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
+#include "chrome/browser/sync/engine/nudge_source.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/net/syncapi_server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_thread.h"
-#include "chrome/browser/sync/engine/syncer_thread2.h"
-#include "chrome/browser/sync/engine/syncer_thread_adapter.h"
 #include "chrome/browser/sync/engine/http_post_provider_factory.h"
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/js_backend.h"
@@ -57,6 +57,7 @@
 #include "chrome/browser/sync/syncable/autofill_migration.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/nigori_util.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/crypto_helpers.h"
@@ -66,6 +67,7 @@
 #include "content/browser/browser_thread.h"
 #include "net/base/network_change_notifier.h"
 
+using base::TimeDelta;
 using browser_sync::AllStatus;
 using browser_sync::Cryptographer;
 using browser_sync::KeyParams;
@@ -79,7 +81,6 @@ using browser_sync::SyncEngineEvent;
 using browser_sync::SyncEngineEventListener;
 using browser_sync::Syncer;
 using browser_sync::SyncerThread;
-using browser_sync::SyncerThreadAdapter;
 using browser_sync::kNigoriTag;
 using browser_sync::sessions::SyncSessionContext;
 using std::list;
@@ -89,6 +90,7 @@ using std::vector;
 using syncable::Directory;
 using syncable::DirectoryManager;
 using syncable::Entry;
+using syncable::ModelTypeBitSet;
 using syncable::SPECIFICS;
 using sync_pb::AutofillProfileSpecifics;
 
@@ -1269,7 +1271,7 @@ class SyncManager::SyncInternal
   SyncAPIServerConnectionManager* connection_manager() {
     return connection_manager_.get();
   }
-  SyncerThreadAdapter* syncer_thread() { return syncer_thread_.get(); }
+  SyncerThread* syncer_thread() { return syncer_thread_.get(); }
   UserShare* GetUserShare() { return &share_; }
 
   // Return the currently active (validated) username for use with syncable
@@ -1516,7 +1518,7 @@ class SyncManager::SyncInternal
   scoped_ptr<SyncAPIServerConnectionManager> connection_manager_;
 
   // The thread that runs the Syncer. Needs to be explicitly Start()ed.
-  scoped_ptr<SyncerThreadAdapter> syncer_thread_;
+  scoped_ptr<SyncerThread> syncer_thread_;
 
   // The SyncNotifier which notifies us when updates need to be downloaded.
   sync_notifier::SyncNotifier* sync_notifier_;
@@ -1664,44 +1666,30 @@ bool SyncManager::IsUsingExplicitPassphrase() {
   return data_ && data_->IsUsingExplicitPassphrase();
 }
 
-bool SyncManager::RequestPause() {
-  if (data_->syncer_thread())
-    return data_->syncer_thread()->RequestPause();
-  return false;
-}
-
-bool SyncManager::RequestResume() {
-  if (data_->syncer_thread())
-    return data_->syncer_thread()->RequestResume();
-  return false;
-}
-
 void SyncManager::RequestNudge(const tracked_objects::Location& location) {
   if (data_->syncer_thread())
-    data_->syncer_thread()->NudgeSyncer(0, SyncerThread::kLocal, location);
+    data_->syncer_thread()->ScheduleNudge(
+        TimeDelta::FromMilliseconds(0), browser_sync::NUDGE_SOURCE_LOCAL,
+        ModelTypeBitSet(), location);
 }
 
 void SyncManager::RequestClearServerData() {
   if (data_->syncer_thread())
-    data_->syncer_thread()->NudgeSyncer(0, SyncerThread::kClearPrivateData,
-        FROM_HERE);
+    data_->syncer_thread()->ScheduleClearUserData();
 }
 
 void SyncManager::RequestConfig(const syncable::ModelTypeBitSet& types) {
   if (!data_->syncer_thread())
     return;
-  // It is an error for this to be called if new_impl is null.
   StartConfigurationMode(NULL);
-  data_->syncer_thread()->new_impl()->ScheduleConfig(types);
+  data_->syncer_thread()->ScheduleConfig(types);
 }
 
 void SyncManager::StartConfigurationMode(ModeChangeCallback* callback) {
   if (!data_->syncer_thread())
     return;
-  if (!data_->syncer_thread()->new_impl())
-    return;
-  data_->syncer_thread()->new_impl()->Start(
-      browser_sync::s3::SyncerThread::CONFIGURATION_MODE, callback);
+  data_->syncer_thread()->Start(
+      browser_sync::SyncerThread::CONFIGURATION_MODE, callback);
 }
 
 const std::string& SyncManager::GetAuthenticatedUsername() {
@@ -1739,16 +1727,7 @@ bool SyncManager::SyncInternal::Init(
 
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
 
-  bool new_syncer_thread = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kNewSyncerThread);
-
-  if (new_syncer_thread) {
-    connection_manager()->AddListener(this);
-  } else {
-    connection_manager_hookup_.reset(
-        NewEventListenerHookup(connection_manager()->channel(), this,
-            &SyncManager::SyncInternal::HandleServerConnectionEvent));
-  }
+  connection_manager()->AddListener(this);
 
   // TODO(akalin): CheckServerReachable() can block, which may cause jank if we
   // try to shut down sync.  Fix this.
@@ -1769,8 +1748,7 @@ bool SyncManager::SyncInternal::Init(
         listeners);
     context->set_account_name(credentials.email);
     // The SyncerThread takes ownership of |context|.
-    syncer_thread_.reset(new SyncerThreadAdapter(context,
-        new_syncer_thread));
+    syncer_thread_.reset(new SyncerThread(context, new Syncer()));
   }
 
   bool signed_in = SignIn(credentials);
@@ -1825,11 +1803,12 @@ void SyncManager::SyncInternal::BootstrapEncryption(
 }
 
 void SyncManager::SyncInternal::StartSyncing() {
+   // Start the syncer thread. This won't actually
+   // result in any syncing until at least the
+   // DirectoryManager broadcasts the OPENED event,
+   // and a valid server connection is detected.
   if (syncer_thread())  // NULL during certain unittests.
-    syncer_thread()->Start();  // Start the syncer thread. This won't actually
-                               // result in any syncing until at least the
-                               // DirectoryManager broadcasts the OPENED event,
-                               // and a valid server connection is detected.
+    syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
 }
 
 void SyncManager::SyncInternal::MarkAndNotifyInitializationComplete() {
@@ -1881,9 +1860,6 @@ bool SyncManager::SyncInternal::OpenDirectory() {
   }
 
   connection_manager()->set_client_id(lookup->cache_guid());
-
-  if (syncer_thread())
-    syncer_thread()->CreateSyncer(username_for_share());
 
   MarkAndNotifyInitializationComplete();
   dir_change_hookup_.reset(lookup->AddChangeObserver(this));
@@ -2210,9 +2186,7 @@ void SyncManager::SyncInternal::Shutdown() {
   method_factory_.RevokeAll();
 
   if (syncer_thread()) {
-    if (!syncer_thread()->Stop(kThreadExitTimeoutMsec)) {
-      LOG(FATAL) << "Unable to stop the syncer, it won't be happy...";
-    }
+    syncer_thread()->Stop();
     syncer_thread_.reset();
   }
 
@@ -2417,9 +2391,9 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
   if (exists_unsynced_items && syncer_thread()) {
     int nudge_delay = only_preference_changes ?
         kPreferencesNudgeDelayMilliseconds : kDefaultNudgeDelayMilliseconds;
-    syncer_thread()->NudgeSyncerWithDataTypes(
-        nudge_delay,
-        SyncerThread::kLocal,
+    syncer_thread()->ScheduleNudge(
+        TimeDelta::FromMilliseconds(nudge_delay),
+        browser_sync::NUDGE_SOURCE_LOCAL,
         model_types,
         FROM_HERE);
   }
@@ -2573,18 +2547,6 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
               this,
               &SyncManager::SyncInternal::SendNotification));
     }
-  }
-
-  if (event.what_happened == SyncEngineEvent::SYNCER_THREAD_PAUSED) {
-    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                      OnPaused());
-    return;
-  }
-
-  if (event.what_happened == SyncEngineEvent::SYNCER_THREAD_RESUMED) {
-    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                      OnResumed());
-    return;
   }
 
   if (event.what_happened == SyncEngineEvent::STOP_SYNCING_PERMANENTLY) {
@@ -2743,7 +2705,7 @@ void SyncManager::SyncInternal::OnNotificationStateChange(
           << (notifications_enabled ? "true" : "false");
   allstatus_.SetNotificationsEnabled(notifications_enabled);
   if (syncer_thread()) {
-    syncer_thread()->SetNotificationsEnabled(notifications_enabled);
+    syncer_thread()->set_notifications_enabled(notifications_enabled);
   }
   if (parent_router_) {
     ListValue args;
@@ -2768,9 +2730,9 @@ void SyncManager::SyncInternal::OnIncomingNotification(
     const syncable::ModelTypePayloadMap& type_payloads) {
   if (!type_payloads.empty()) {
     if (syncer_thread()) {
-      syncer_thread()->NudgeSyncerWithPayloads(
-          kSyncerThreadDelayMsec,
-          SyncerThread::kNotification,
+      syncer_thread()->ScheduleNudgeWithPayloads(
+          TimeDelta::FromMilliseconds(kSyncerThreadDelayMsec),
+          browser_sync::NUDGE_SOURCE_NOTIFICATION,
           type_payloads, FROM_HERE);
     }
     allstatus_.IncrementNotificationsReceived();

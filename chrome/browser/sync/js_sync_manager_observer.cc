@@ -103,14 +103,6 @@ void JsSyncManagerObserver::OnInitializationComplete() {
                                JsArgList(), NULL);
 }
 
-void JsSyncManagerObserver::OnPaused() {
-  parent_router_->RouteJsEvent("onPaused", JsArgList(), NULL);
-}
-
-void JsSyncManagerObserver::OnResumed() {
-  parent_router_->RouteJsEvent("onResumed", JsArgList(), NULL);
-}
-
 void JsSyncManagerObserver::OnStopSyncingPermanently() {
   parent_router_->RouteJsEvent("onStopSyncingPermanently",
                                JsArgList(), NULL);

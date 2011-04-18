@@ -153,7 +153,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
         NotificationType::SYNC_CONFIGURE_DONE,
         NotificationService::AllSources());
     registrar_.Add(&observer_,
-        NotificationType::SYNC_PAUSED,
+        NotificationType::SYNC_CONFIGURE_BLOCKED,
         NotificationService::AllSources());
   }
 
@@ -218,7 +218,8 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
               NotificationType(NotificationType::SYNC_CONFIGURE_DONE),_,_));
       EXPECT_CALL(observer_,
           Observe(
-              NotificationType(NotificationType::SYNC_PAUSED),_,_))
+              NotificationType(
+              NotificationType::SYNC_CONFIGURE_BLOCKED),_,_))
           .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
 
       service_->RegisterDataTypeController(data_type_controller);

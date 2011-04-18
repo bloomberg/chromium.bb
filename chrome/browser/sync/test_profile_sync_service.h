@@ -40,8 +40,6 @@ class SyncBackendHostForProfileSyncTest
       bool synchronous_init);
   virtual ~SyncBackendHostForProfileSyncTest();
 
-  MOCK_METHOD0(RequestPause, bool());
-  MOCK_METHOD0(RequestResume, bool());
   MOCK_METHOD1(RequestNudge, void(const tracked_objects::Location&));
 
   virtual void ConfigureDataTypes(
