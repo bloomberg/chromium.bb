@@ -21,7 +21,6 @@
 #include "base/observer_list.h"
 #include "base/timer.h"
 #include "build/build_config.h"
-#include "chrome/common/content_settings.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "content/common/edit_command.h"
 #include "content/common/navigation_gesture.h"
@@ -251,10 +250,6 @@ class RenderView : public RenderWidget,
   bool ScheduleFileChooser(const ViewHostMsg_RunFileChooser_Params& params,
                            WebKit::WebFileChooserCompletion* completion);
 
-  // Sets the content settings that back allowScripts(), allowImages(), and
-  // allowPlugins().
-  void SetContentSettings(const ContentSettings& settings);
-
   // Sets whether  the renderer should report load progress to the browser.
   void SetReportLoadProgressEnabled(bool enabled);
 
@@ -446,8 +441,6 @@ class RenderView : public RenderWidget,
   virtual WebKit::WebCookieJar* cookieJar(WebKit::WebFrame* frame);
   virtual void frameDetached(WebKit::WebFrame* frame);
   virtual void willClose(WebKit::WebFrame* frame);
-  virtual bool allowImages(WebKit::WebFrame* frame, bool enabled_per_settings);
-  virtual bool allowPlugins(WebKit::WebFrame* frame, bool enabled_per_settings);
   virtual void loadURLExternally(WebKit::WebFrame* frame,
                                  const WebKit::WebURLRequest& request,
                                  WebKit::WebNavigationPolicy policy);
@@ -531,6 +524,8 @@ class RenderView : public RenderWidget,
       const WebKit::WebSecurityOrigin& origin,
       const WebKit::WebURL& target);
 
+  virtual bool allowImages(WebKit::WebFrame* frame, bool enabled_per_settings);
+  virtual bool allowPlugins(WebKit::WebFrame* frame, bool enabled_per_settings);
   virtual bool allowScript(WebKit::WebFrame* frame, bool enabled_per_settings);
   virtual bool allowDatabase(WebKit::WebFrame* frame,
                              const WebKit::WebString& name,
@@ -644,7 +639,6 @@ class RenderView : public RenderWidget,
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, MacTestCmdUp);
 #endif
 
-  typedef std::map<GURL, ContentSettings> HostContentSettings;
   typedef std::map<GURL, double> HostZoomLevels;
 
   // Identifies an accessibility notification from webkit.
@@ -803,9 +797,6 @@ class RenderView : public RenderWidget,
   void OnSetActive(bool active);
   void OnSetAltErrorPageURL(const GURL& gurl);
   void OnSetBackground(const SkBitmap& background);
-  void OnSetContentSettingsForLoadingURL(
-      const GURL& url,
-      const ContentSettings& content_settings);
   void OnSetWebUIProperty(const std::string& name, const std::string& value);
   void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
   void OnSetInitialFocus(bool reverse);
@@ -836,10 +827,6 @@ class RenderView : public RenderWidget,
 
   // Misc private functions ----------------------------------------------------
 
-  // Helper method that returns if the user wants to block content of type
-  // |content_type|.
-  bool AllowContentType(ContentSettingsType settings_type);
-
   void AltErrorPageFinished(WebKit::WebFrame* frame,
                             const WebKit::WebURLError& original_error,
                             const std::string& html);
@@ -848,15 +835,20 @@ class RenderView : public RenderWidget,
   // by preferred_size_change_timer_.
   void CheckPreferredSize();
 
-  // Resets the |content_blocked_| array.
-  void ClearBlockedContentSettings();
+  // This callback is triggered when DownloadFavicon completes, either
+  // succesfully or with a failure. See DownloadFavicon for more
+  // details.
+  void DidDownloadFavicon(webkit_glue::ImageResourceFetcher* fetcher,
+                          const SkBitmap& image);
 
-  // Sends an IPC notification that the specified content type was blocked.
-  // If the content type requires it, |resource_identifier| names the specific
-  // resource that was blocked (the plugin path in the case of plugins),
-  // otherwise it's the empty string.
-  void DidBlockContentType(ContentSettingsType settings_type,
-                           const std::string& resource_identifier);
+  // Requests to download a favicon image. When done, the RenderView
+  // is notified by way of DidDownloadFavicon. Returns true if the
+  // request was successfully started, false otherwise. id is used to
+  // uniquely identify the request and passed back to the
+  // DidDownloadFavicon method. If the image has multiple frames, the
+  // frame whose size is image_size is returned. If the image doesn't
+  // have a frame at the specified size, the first is returned.
+  bool DownloadFavicon(int id, const GURL& image_url, int image_size);
 
   GURL GetAlternateErrorPageURL(const GURL& failed_url,
                                 ErrorPageType error_type);
@@ -912,16 +904,12 @@ class RenderView : public RenderWidget,
   WebPreferences webkit_preferences_;
   RendererPreferences renderer_preferences_;
 
-  HostContentSettings host_content_settings_;
   HostZoomLevels host_zoom_levels_;
 
   // Whether content state (such as form state, scroll position and page
   // contents) should be sent to the browser immediately. This is normally
   // false, but set to true by some tests.
   bool send_content_state_immediately_;
-
-  // Stores if loading of images, scripts, and plugins is allowed.
-  ContentSettings current_content_settings_;
 
   // Bitwise-ORed set of extra bindings that have been enabled.  See
   // BindingsPolicy for details.
@@ -966,9 +954,6 @@ class RenderView : public RenderWidget,
   // is used to determine if that load originated from a client-side redirect.
   // It is empty if there is no top-level client-side redirect.
   GURL completed_client_redirect_src_;
-
-  // Stores if images, scripts, and plugins have actually been blocked.
-  bool content_blocked_[CONTENT_SETTINGS_NUM_TYPES];
 
   // Holds state pertaining to a navigation that we initiated.  This is held by
   // the WebDataSource::ExtraData attribute.  We use pending_navigation_state_

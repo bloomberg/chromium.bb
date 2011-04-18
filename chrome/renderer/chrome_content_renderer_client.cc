@@ -30,6 +30,7 @@
 #include "chrome/renderer/blocked_plugin.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/chrome_render_view_observer.h"
+#include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/devtools_agent.h"
 #include "chrome/renderer/devtools_agent_filter.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
@@ -281,6 +282,7 @@ void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
   }
 #endif
 
+  new ContentSettingsObserver(render_view);
   new DevToolsAgent(render_view);
   new ExtensionHelper(render_view, extension_dispatcher_.get());
   new PageLoadHistograms(render_view, histogram_snapshots_.get());
@@ -381,8 +383,9 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     }
   }
 
-  ContentSetting host_setting = render_view->current_content_settings_.
-      settings[CONTENT_SETTINGS_TYPE_PLUGINS];
+  ContentSettingsObserver* observer = ContentSettingsObserver::Get(render_view);
+  ContentSetting host_setting =
+      observer->GetContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
 
   if (group->RequiresAuthorization() &&
       !cmd->HasSwitch(switches::kAlwaysAuthorizePlugins) &&
@@ -425,7 +428,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   std::string resource;
   if (cmd->HasSwitch(switches::kEnableResourceContentSettings))
     resource = group->identifier();
-  render_view->DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, resource);
+  observer->DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, resource);
   if (plugin_setting == CONTENT_SETTING_ASK) {
     return CreatePluginPlaceholder(
         render_view, frame, params, *group, IDR_CLICK_TO_PLAY_PLUGIN_HTML,

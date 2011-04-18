@@ -261,29 +261,6 @@ static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
     result->push_back(urls[i]);
 }
 
-// True if |frame| contains content that is white-listed for content settings.
-static bool IsWhitelistedForContentSettings(WebFrame* frame) {
-  WebSecurityOrigin origin = frame->securityOrigin();
-  if (origin.isEmpty())
-    return false;  // Uninitialized document?
-
-  if (EqualsASCII(origin.protocol(), chrome::kChromeUIScheme))
-    return true;  // Browser UI elements should still work.
-
-  // If the scheme is ftp: or file:, an empty file name indicates a directory
-  // listing, which requires JavaScript to function properly.
-  GURL frame_url = frame->url();
-  const char* kDirProtocols[] = { "ftp", "file" };
-  for (size_t i = 0; i < arraysize(kDirProtocols); ++i) {
-    if (EqualsASCII(origin.protocol(), kDirProtocols[i])) {
-      return frame_url.SchemeIs(kDirProtocols[i]) &&
-             frame_url.ExtractFileName().empty();
-    }
-  }
-
-  return false;
-}
-
 static bool WebAccessibilityNotificationToViewHostMsg(
     WebAccessibilityNotification notification,
     ViewHostMsg_AccessibilityNotification_Type::Value* type) {
@@ -400,9 +377,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       accessibility_ack_pending_(false),
       p2p_socket_dispatcher_(NULL),
       session_storage_namespace_id_(session_storage_namespace_id) {
-
-  ClearBlockedContentSettings();
-
   routing_id_ = routing_id;
   if (opener_id != MSG_ROUTING_NONE)
     opener_id_ = opener_id;
@@ -655,8 +629,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_StopFinding, OnStopFinding)
     IPC_MESSAGE_HANDLER(ViewMsg_FindReplyACK, OnFindReplyAck)
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetContentSettingsForLoadingURL,
-                        OnSetContentSettingsForLoadingURL)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevel, OnSetZoomLevel)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForLoadingURL,
                         OnSetZoomLevelForLoadingURL)
@@ -971,10 +943,6 @@ void RenderView::OnScrollFocusedEditableNodeIntoView() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void RenderView::SetContentSettings(const ContentSettings& settings) {
-  current_content_settings_ = settings;
-}
-
 // Tell the embedding application that the URL of the active page has changed
 void RenderView::UpdateURL(WebFrame* frame) {
   WebDataSource* ds = frame->dataSource();
@@ -1042,32 +1010,6 @@ void RenderView::UpdateURL(WebFrame* frame) {
 
   if (!frame->parent()) {
     // Top-level navigation.
-
-    // Clear "block" flags for the new page. This needs to happen before any of
-    // allowScripts(), allowImages(), allowPlugins() is called for the new page
-    // so that these functions can correctly detect that a piece of content
-    // flipped from "not blocked" to "blocked".
-    ClearBlockedContentSettings();
-
-    // Set content settings. Default them from the parent window if one exists.
-    // This makes sure about:blank windows work as expected.
-    HostContentSettings::iterator host_content_settings =
-        host_content_settings_.find(GURL(request.url()));
-    if (host_content_settings != host_content_settings_.end()) {
-      SetContentSettings(host_content_settings->second);
-
-      // These content settings were merely recorded transiently for this load.
-      // We can erase them now.  If at some point we reload this page, the
-      // browser will send us new, up-to-date content settings.
-      host_content_settings_.erase(host_content_settings);
-    } else if (frame->opener()) {
-      // The opener's view is not guaranteed to be non-null (it could be
-      // detached from its page but not yet destructed).
-      if (WebView* opener_view = frame->opener()->view()) {
-        RenderView* opener = FromWebView(opener_view);
-        SetContentSettings(opener->current_content_settings_);
-      }
-    }
 
     // Set zoom level, but don't do it for full-page plugin since they don't use
     // the same zoom settings.
@@ -1992,22 +1934,6 @@ void RenderView::willClose(WebFrame* frame) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, FrameWillClose(frame));
 }
 
-bool RenderView::allowImages(WebFrame* frame, bool enabled_per_settings) {
-  if (enabled_per_settings &&
-      AllowContentType(CONTENT_SETTINGS_TYPE_IMAGES))
-    return true;
-
-  if (IsWhitelistedForContentSettings(frame))
-    return true;
-
-  DidBlockContentType(CONTENT_SETTINGS_TYPE_IMAGES, std::string());
-  return false;  // Other protocols fall through here.
-}
-
-bool RenderView::allowPlugins(WebFrame* frame, bool enabled_per_settings) {
-  return WebFrameClient::allowPlugins(frame, enabled_per_settings);
-}
-
 void RenderView::loadURLExternally(
     WebFrame* frame, const WebURLRequest& request,
     WebNavigationPolicy policy) {
@@ -2749,15 +2675,34 @@ void RenderView::didRunInsecureContent(
       target));
 }
 
+bool RenderView::allowImages(WebFrame* frame, bool enabled_per_settings) {
+  ObserverListBase<RenderViewObserver>::Iterator it(observers_);
+  RenderViewObserver* observer;
+  while ((observer = it.GetNext()) != NULL)
+    if (!observer->AllowImages(frame, enabled_per_settings))
+      return false;
+
+  return true;
+}
+
+bool RenderView::allowPlugins(WebFrame* frame, bool enabled_per_settings) {
+  ObserverListBase<RenderViewObserver>::Iterator it(observers_);
+  RenderViewObserver* observer;
+  while ((observer = it.GetNext()) != NULL)
+    if (!observer->AllowPlugins(frame, enabled_per_settings))
+      return false;
+
+  return true;
+}
+
 bool RenderView::allowScript(WebFrame* frame, bool enabled_per_settings) {
-  if (enabled_per_settings &&
-      AllowContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT))
-    return true;
+  ObserverListBase<RenderViewObserver>::Iterator it(observers_);
+  RenderViewObserver* observer;
+  while ((observer = it.GetNext()) != NULL)
+    if (!observer->AllowScript(frame, enabled_per_settings))
+      return false;
 
-  if (IsWhitelistedForContentSettings(frame))
-    return true;
-
-  return false;  // Other protocols fall through here.
+  return true;
 }
 
 bool RenderView::allowDatabase(
@@ -2780,11 +2725,11 @@ bool RenderView::allowDatabase(
   return result;
 }
 void RenderView::didNotAllowScript(WebKit::WebFrame* frame) {
-  DidBlockContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string());
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidNotAllowScript(frame));
 }
 
 void RenderView::didNotAllowPlugins(WebKit::WebFrame* frame) {
-  DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, std::string());
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidNotAllowPlugins(frame));
 }
 
 void RenderView::didExhaustMemoryAvailableForScript(WebFrame* frame) {
@@ -3260,26 +3205,6 @@ void RenderView::OnFindReplyAck() {
   }
 }
 
-bool RenderView::AllowContentType(ContentSettingsType settings_type) {
-  // CONTENT_SETTING_ASK is only valid for cookies.
-  return current_content_settings_.settings[settings_type] !=
-    CONTENT_SETTING_BLOCK;
-}
-
-void RenderView::DidBlockContentType(ContentSettingsType settings_type,
-                                     const std::string& resource_identifier) {
-  if (!content_blocked_[settings_type]) {
-    content_blocked_[settings_type] = true;
-    Send(new ViewHostMsg_ContentBlocked(routing_id_, settings_type,
-                                        resource_identifier));
-  }
-}
-
-void RenderView::ClearBlockedContentSettings() {
-  for (size_t i = 0; i < arraysize(content_blocked_); ++i)
-    content_blocked_[i] = false;
-}
-
 WebPlugin* RenderView::CreatePepperPlugin(
     WebFrame* frame,
     const WebPluginParams& params,
@@ -3338,12 +3263,6 @@ void RenderView::OnSetZoomLevel(double zoom_level) {
   webview()->hidePopups();
   webview()->setZoomLevel(false, zoom_level);
   zoomLevelChanged();
-}
-
-void RenderView::OnSetContentSettingsForLoadingURL(
-    const GURL& url,
-    const ContentSettings& content_settings) {
-  host_content_settings_[url] = content_settings;
 }
 
 void RenderView::OnSetZoomLevelForLoadingURL(const GURL& url,

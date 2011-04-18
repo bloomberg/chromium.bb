@@ -66,6 +66,12 @@ class RenderViewObserver : public IPC::Channel::Listener,
       const WebKit::WebString& property_name,
       unsigned long long event_id) {}
   virtual void FocusedNodeChanged(const WebKit::WebNode& node) {}
+  // If any observer returns false, then the request will be denied.
+  virtual bool AllowImages(WebKit::WebFrame* frame, bool enabled_per_settings);
+  virtual bool AllowPlugins(WebKit::WebFrame* frame, bool enabled_per_settings);
+  virtual bool AllowScript(WebKit::WebFrame* frame, bool enabled_per_settings);
+  virtual void DidNotAllowPlugins(WebKit::WebFrame* frame) {}
+  virtual void DidNotAllowScript(WebKit::WebFrame* frame) {}
 
   // These match the RenderView methods.
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {}

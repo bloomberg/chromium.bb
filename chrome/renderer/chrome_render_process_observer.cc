@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/renderer/content_settings_observer.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
@@ -83,8 +84,10 @@ class RenderViewContentSettingsSetter : public RenderViewVisitor {
   }
 
   virtual bool Visit(RenderView* render_view) {
-    if (GURL(render_view->webview()->mainFrame()->url()) == url_)
-      render_view->SetContentSettings(content_settings_);
+    if (GURL(render_view->webview()->mainFrame()->url()) == url_) {
+      ContentSettingsObserver::Get(render_view)->SetContentSettings(
+          content_settings_);
+    }
     return true;
   }
 

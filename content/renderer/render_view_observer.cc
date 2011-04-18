@@ -6,6 +6,8 @@
 
 #include "content/renderer/render_view.h"
 
+using WebKit::WebFrame;
+
 RenderViewObserver::RenderViewObserver(RenderView* render_view)
     : render_view_(render_view),
       routing_id_(render_view ? render_view->routing_id() : 0) {
@@ -33,4 +35,19 @@ bool RenderViewObserver::Send(IPC::Message* message) {
 
   delete message;
   return false;
+}
+
+bool RenderViewObserver::AllowImages(WebFrame* frame,
+                                     bool enabled_per_settings) {
+  return true;
+}
+
+bool RenderViewObserver::AllowPlugins(WebFrame* frame,
+                                      bool enabled_per_settings) {
+  return true;
+}
+
+bool RenderViewObserver::AllowScript(WebFrame* frame,
+                                     bool enabled_per_settings) {
+  return true;
 }
