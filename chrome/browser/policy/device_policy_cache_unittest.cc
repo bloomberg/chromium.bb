@@ -80,7 +80,8 @@ void CreatePolicy(em::PolicyFetchResponse* policy,
 class DevicePolicyCacheTest : public testing::Test {
  protected:
   DevicePolicyCacheTest()
-      : install_attributes_(chromeos::CryptohomeLibrary::GetImpl(true)) {}
+      : cryptohome_(chromeos::CryptohomeLibrary::GetImpl(true)),
+        install_attributes_(cryptohome_.get()) {}
 
   virtual void SetUp() {
     cache_.reset(new DevicePolicyCache(&identity_strategy_,
@@ -102,10 +103,11 @@ class DevicePolicyCacheTest : public testing::Test {
     return cache_->mandatory_policy_.Get(policy);
   }
 
-  scoped_ptr<DevicePolicyCache> cache_;
+  scoped_ptr<chromeos::CryptohomeLibrary> cryptohome_;
   EnterpriseInstallAttributes install_attributes_;
   DevicePolicyIdentityStrategy identity_strategy_;
   MockSignedSettingsHelper signed_settings_helper_;
+  scoped_ptr<DevicePolicyCache> cache_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DevicePolicyCacheTest);
