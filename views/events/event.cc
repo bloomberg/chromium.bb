@@ -189,27 +189,38 @@ MouseEvent::MouseEvent(const MouseEvent& model, View* source, View* target)
 // TouchEvent, public:
 
 #if defined(TOUCH_UI)
-TouchEvent::TouchEvent(ui::EventType type, int x, int y, int flags,
-                       int touch_id)
-      : LocatedEvent(type, gfx::Point(x, y), flags),
-        touch_id_(touch_id) {
-}
-
-
 TouchEvent::TouchEvent(ui::EventType type,
-                       View* source,
-                       View* target,
-                       const gfx::Point& l,
+                       int x,
+                       int y,
                        int flags,
-                       int touch_id)
-    : LocatedEvent(TouchEvent(type, l.x(), l.y(), flags, touch_id), source,
-                              target),
-      touch_id_(touch_id) {
+                       int touch_id,
+                       float radius,
+                       float angle,
+                       float ratio)
+      : LocatedEvent(type, gfx::Point(x, y), flags),
+        touch_id_(touch_id),
+        radius_(radius),
+        angle_(angle),
+        ratio_(ratio) {
 }
 
 TouchEvent::TouchEvent(const TouchEvent& model, View* source, View* target)
     : LocatedEvent(model, source, target),
-      touch_id_(model.touch_id_) {
+      touch_id_(model.touch_id_),
+      radius_(model.radius_),
+      angle_(model.angle_),
+      ratio_(model.ratio_) {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TouchEvent, private:
+
+TouchEvent::TouchEvent(const TouchEvent& model, RootView* root)
+    : LocatedEvent(model, root),
+      touch_id_(model.touch_id_),
+      radius_(model.radius_),
+      angle_(model.angle_),
+      ratio_(model.ratio_) {
 }
 #endif
 

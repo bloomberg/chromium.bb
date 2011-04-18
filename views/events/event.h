@@ -240,17 +240,14 @@ class TouchEvent : public LocatedEvent {
   TouchEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native);
 
   // Create a new touch event.
-  TouchEvent(ui::EventType type, int x, int y, int flags, int touch_id);
-
-  // Create a new touch event from a type and a point. If from / to views
-  // are provided, the point will be converted from 'source' coordinate system
-  // to 'target' coordinate system.
   TouchEvent(ui::EventType type,
-             View* source,
-             View* target,
-             const gfx::Point& l,
+             int x,
+             int y,
              int flags,
-             int touch_id);
+             int touch_id,
+             float radius,
+             float angle,
+             float ratio);
 
   // Create a new TouchEvent which is identical to the provided model.
   // If source / target views are provided, the model location will be converted
@@ -259,17 +256,28 @@ class TouchEvent : public LocatedEvent {
 
   int identity() const { return touch_id_; }
 
+  float radius() const { return radius_; }
+  float angle() const { return angle_; }
+  float ratio() const { return ratio_; }
+
  private:
   friend class RootView;
 
-  TouchEvent(const TouchEvent& model, RootView* root)
-      : LocatedEvent(model, root),
-        touch_id_(model.touch_id_) {
-  }
+  TouchEvent(const TouchEvent& model, RootView* root);
 
   // The identity (typically finger) of the touch starting at 0 and incrementing
   // for each separable additional touch that the hardware can detect.
   const int touch_id_;
+
+  // Half length of the major axis of the touch ellipse. Default 0.0.
+  const float radius_;
+
+  // Angle of the major axis away from the X axis. Default 0.0.
+  const float angle_;
+
+  // Length ratio between major axis and minor axis of the touch ellipse. 1.0
+  // if only the major axis is available, prentending the touch is a circle.
+  const float ratio_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEvent);
 };

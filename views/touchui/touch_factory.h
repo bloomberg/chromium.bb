@@ -15,12 +15,21 @@
 typedef unsigned long Cursor;
 typedef unsigned long Window;
 typedef struct _XDisplay Display;
+typedef union _XEvent XEvent;
 
 namespace views {
 
 // Functions related to determining touch devices.
 class TouchFactory {
  public:
+  // Define the touch params following the Multi-touch Protocol.
+  enum TouchParam {
+    TP_TOUCH_MAJOR = 0,
+    TP_TOUCH_MINOR,
+    TP_ORIENTATION,
+    TP_LAST_ENTRY
+  };
+
   // Returns the TouchFactory singleton.
   static TouchFactory* GetInstance();
 
@@ -50,6 +59,11 @@ class TouchFactory {
     return is_cursor_visible_;
   }
 
+  // Extract the TouchParam from the XEvent. Return true and the value is set
+  // if the TouchParam is found, false and value unchanged if the TouchParam
+  // is not found.
+  bool ExtractTouchParam(const XEvent& xev, TouchParam tp, float* value);
+
  private:
   TouchFactory();
 
@@ -58,6 +72,10 @@ class TouchFactory {
   void HideCursorForInactivity() {
     SetCursorVisible(false, false);
   }
+
+  // Setup the internal bookkeeping of the touch params valuator information for
+  // touch devices
+  void SetupValuator();
 
   // Requirement for Signleton
   friend struct DefaultSingletonTraits<TouchFactory>;
@@ -84,11 +102,20 @@ class TouchFactory {
   // identifier for the touch device. This can be completed after enough testing
   // on real touch devices.
 
+  static const int kMaxDeviceNum = 128;
+
   // A quick lookup table for determining if a device is a touch device.
-  std::bitset<128> touch_device_lookup_;
+  std::bitset<kMaxDeviceNum> touch_device_lookup_;
 
   // The list of touch devices.
   std::vector<int> touch_device_list_;
+
+  // Index table to find the valuator for the TouchParam on the specific device
+  // by valuator_lookup_[device_id][touch_params]. Use 2-D array to get fast
+  // index at the expense of space. If the kMaxDeviceNum grows larger that the
+  // space waste becomes a concern, the 2D lookup table can be replaced by a
+  // hash map.
+  char valuator_lookup_[kMaxDeviceNum][TP_LAST_ENTRY];
 
   DISALLOW_COPY_AND_ASSIGN(TouchFactory);
 };

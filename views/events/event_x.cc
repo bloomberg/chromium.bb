@@ -16,6 +16,10 @@
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
 
+#if defined(HAVE_XINPUT2)
+#include "views/touchui/touch_factory.h"
+#endif
+
 namespace views {
 
 namespace {
@@ -226,6 +230,55 @@ uint16 GetCharacterFromXKeyEvent(XKeyEvent* key) {
           result.length() == 1) ? result[0] : 0;
 }
 
+float GetTouchRadiusFromXEvent(XEvent* xev) {
+  float diameter = 0.0;
+
+#if defined(HAVE_XINPUT2)
+  TouchFactory* touch_factory = TouchFactory::GetInstance();
+  touch_factory->ExtractTouchParam(*xev, TouchFactory::TP_TOUCH_MAJOR,
+                                   &diameter);
+#endif
+
+  return diameter / 2.0;
+}
+
+float GetTouchAngleFromXEvent(XEvent* xev) {
+  float angle = 0.0;
+
+#if defined(HAVE_XINPUT2)
+  TouchFactory* touch_factory = TouchFactory::GetInstance();
+  touch_factory->ExtractTouchParam(*xev, TouchFactory::TP_ORIENTATION,
+                                   &angle);
+#endif
+
+  return angle;
+}
+
+
+float GetTouchRatioFromXEvent(XEvent* xev) {
+  float ratio = 1.0;
+
+#if defined(HAVE_XINPUT2)
+  TouchFactory* touch_factory = TouchFactory::GetInstance();
+  float major_v = -1.0;
+  float minor_v = -1.0;
+
+  if (!touch_factory->ExtractTouchParam(*xev,
+                                        TouchFactory::TP_TOUCH_MAJOR,
+                                        &major_v) ||
+      !touch_factory->ExtractTouchParam(*xev,
+                                        TouchFactory::TP_TOUCH_MINOR,
+                                        &minor_v))
+    return ratio;
+
+  // In case minor axis exists but is zero.
+  if (minor_v > 0.0)
+    ratio = major_v / minor_v;
+#endif
+
+  return ratio;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -318,7 +371,10 @@ TouchEvent::TouchEvent(NativeEvent2 native_event_2,
     : LocatedEvent(GetTouchEventType(native_event_2),
                    GetEventLocation(native_event_2),
                    GetLocatedEventFlags(native_event_2, true)),
-      touch_id_(GetTouchIDFromXEvent(native_event_2)) {
+      touch_id_(GetTouchIDFromXEvent(native_event_2)),
+      radius_(GetTouchRadiusFromXEvent(native_event_2)),
+      angle_(GetTouchAngleFromXEvent(native_event_2)),
+      ratio_(GetTouchRatioFromXEvent(native_event_2)) {
 }
 #endif
 
