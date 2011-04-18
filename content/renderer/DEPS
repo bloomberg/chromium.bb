@@ -1,11 +1,6 @@
 include_rules = [
-  # The following directories have been refactored, so no new dependencies
-  # should be added from these directories.
-  "-chrome/renderer/autofill",
-  "-chrome/renderer/extensions",
-  "-chrome/renderer/safe_browsing",
-  "-chrome/renderer/spellchecker",
-
+  "-chrome",
+  "+chrome/test",
   "+content/plugin",  # For shared npruntime proxying code.
   "+third_party/mach_override",
   "+third_party/tcmalloc",

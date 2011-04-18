@@ -35,9 +35,7 @@
 #if defined(OS_MACOSX)
 #include <Carbon/Carbon.h>  // TISCreateInputSourceList
 
-#include "base/eintr_wrapper.h"
 #include "base/sys_info.h"
-#include "chrome/app/breakpad_mac.h"
 #include "third_party/mach_override/mach_override.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #endif  // OS_MACOSX
@@ -72,105 +70,6 @@ void InstallFrameworkHacks() {
     CHECK_EQ(err_none, err);
   }
 }
-
-// TODO(viettrungluu): crbug.com/28547: The following signal handling is needed,
-// as a stopgap, to avoid leaking due to not releasing Breakpad properly.
-// Without this problem, this could all be eliminated. Remove when Breakpad is
-// fixed?
-// TODO(viettrungluu): Code taken from browser_main.cc (with a bit of editing).
-// The code should be properly shared (or this code should be eliminated).
-int g_shutdown_pipe_write_fd = -1;
-
-void SIGTERMHandler(int signal) {
-  RAW_CHECK(signal == SIGTERM);
-  RAW_LOG(INFO, "Handling SIGTERM in renderer.");
-
-  // Reinstall the default handler.  We had one shot at graceful shutdown.
-  struct sigaction action;
-  memset(&action, 0, sizeof(action));
-  action.sa_handler = SIG_DFL;
-  CHECK(sigaction(signal, &action, NULL) == 0);
-
-  RAW_CHECK(g_shutdown_pipe_write_fd != -1);
-  size_t bytes_written = 0;
-  do {
-    int rv = HANDLE_EINTR(
-        write(g_shutdown_pipe_write_fd,
-              reinterpret_cast<const char*>(&signal) + bytes_written,
-              sizeof(signal) - bytes_written));
-    RAW_CHECK(rv >= 0);
-    bytes_written += rv;
-  } while (bytes_written < sizeof(signal));
-
-  RAW_LOG(INFO, "Wrote signal to shutdown pipe.");
-}
-
-class ShutdownDetector : public base::PlatformThread::Delegate {
- public:
-  explicit ShutdownDetector(int shutdown_fd) : shutdown_fd_(shutdown_fd) {
-    CHECK(shutdown_fd_ != -1);
-  }
-
-  virtual void ThreadMain() {
-    int signal;
-    size_t bytes_read = 0;
-    ssize_t ret;
-    do {
-      ret = HANDLE_EINTR(
-          read(shutdown_fd_,
-               reinterpret_cast<char*>(&signal) + bytes_read,
-               sizeof(signal) - bytes_read));
-      if (ret < 0) {
-        NOTREACHED() << "Unexpected error: " << strerror(errno);
-        break;
-      } else if (ret == 0) {
-        NOTREACHED() << "Unexpected closure of shutdown pipe.";
-        break;
-      }
-      bytes_read += ret;
-    } while (bytes_read < sizeof(signal));
-
-    if (bytes_read == sizeof(signal))
-      VLOG(1) << "Handling shutdown for signal " << signal << ".";
-    else
-      VLOG(1) << "Handling shutdown for unknown signal.";
-
-    // Clean up Breakpad if necessary.
-    if (IsCrashReporterEnabled()) {
-      VLOG(1) << "Cleaning up Breakpad.";
-      DestructCrashReporter();
-    } else {
-      VLOG(1) << "Breakpad not enabled; no clean-up needed.";
-    }
-
-    // Something went seriously wrong, so get out.
-    if (bytes_read != sizeof(signal)) {
-      LOG(WARNING) << "Failed to get signal. Quitting ungracefully.";
-      _exit(1);
-    }
-
-    // Re-raise the signal.
-    kill(getpid(), signal);
-
-    // The signal may be handled on another thread. Give that a chance to
-    // happen.
-    sleep(3);
-
-    // We really should be dead by now.  For whatever reason, we're not. Exit
-    // immediately, with the exit status set to the signal number with bit 8
-    // set.  On the systems that we care about, this exit status is what is
-    // normally used to indicate an exit by this signal's default handler.
-    // This mechanism isn't a de jure standard, but even in the worst case, it
-    // should at least result in an immediate exit.
-    LOG(WARNING) << "Still here, exiting really ungracefully.";
-    _exit(signal | (1 << 7));
-  }
-
- private:
-  const int shutdown_fd_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShutdownDetector);
-};
 
 }  // namespace
 #endif  // OS_MACOSX
@@ -236,29 +135,6 @@ int RendererMain(const MainFunctionParams& parameters) {
   base::mac::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool_;
 
 #if defined(OS_MACOSX)
-  // TODO(viettrungluu): Code taken from browser_main.cc.
-  int pipefd[2];
-  int ret = pipe(pipefd);
-  if (ret < 0) {
-    PLOG(DFATAL) << "Failed to create pipe";
-  } else {
-    int shutdown_pipe_read_fd = pipefd[0];
-    g_shutdown_pipe_write_fd = pipefd[1];
-    const size_t kShutdownDetectorThreadStackSize = 4096;
-    if (!base::PlatformThread::CreateNonJoinable(
-            kShutdownDetectorThreadStackSize,
-            new ShutdownDetector(shutdown_pipe_read_fd))) {
-      LOG(DFATAL) << "Failed to create shutdown detector task.";
-    }
-  }
-
-  // crbug.com/28547: When Breakpad is in use, handle SIGTERM to avoid leaking
-  // Mach ports.
-  struct sigaction action;
-  memset(&action, 0, sizeof(action));
-  action.sa_handler = SIGTERMHandler;
-  CHECK(sigaction(SIGTERM, &action, NULL) == 0);
-
   InstallFrameworkHacks();
 #endif  // OS_MACOSX
 

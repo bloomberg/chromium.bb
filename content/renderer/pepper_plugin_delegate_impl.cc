@@ -15,7 +15,6 @@
 #include "base/sync_socket.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "chrome/common/render_messages.h"
 #include "content/common/audio_messages.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/child_thread.h"

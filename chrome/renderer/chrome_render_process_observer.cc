@@ -9,16 +9,21 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_localization_peer.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/content_settings_observer.h"
+#include "chrome/renderer/security_filter_peer.h"
+#include "content/common/resource_dispatcher.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "content/renderer/render_view_visitor.h"
 #include "crypto/nss_util.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_module.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
@@ -28,8 +33,14 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
+
 #if defined(OS_WIN)
 #include "app/win/iat_patch_function.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "base/eintr_wrapper.h"
+#include "chrome/app/breakpad_mac.h"
 #endif
 
 using WebKit::WebCache;
@@ -38,8 +49,82 @@ using WebKit::WebFontCache;
 
 namespace {
 
-#if defined(OS_WIN)
+static const unsigned int kCacheStatsDelayMS = 2000 /* milliseconds */;
 
+class RenderResourceObserver : public ResourceDispatcher::Observer {
+ public:
+  RenderResourceObserver()
+      : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+  }
+
+  virtual webkit_glue::ResourceLoaderBridge::Peer* OnRequestComplete(
+      webkit_glue::ResourceLoaderBridge::Peer* current_peer,
+      ResourceType::Type resource_type,
+      const net::URLRequestStatus& status) {
+    // Update the browser about our cache.
+    // Rate limit informing the host of our cache stats.
+    if (method_factory_.empty()) {
+      MessageLoop::current()->PostDelayedTask(
+         FROM_HERE,
+         method_factory_.NewRunnableMethod(
+             &RenderResourceObserver::InformHostOfCacheStats),
+         kCacheStatsDelayMS);
+    }
+
+    if (status.status() != net::URLRequestStatus::CANCELED ||
+        status.os_error() == net::ERR_ABORTED) {
+      return NULL;
+    }
+
+    // Resource canceled with a specific error are filtered.
+    return SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
+        resource_type, current_peer, status.os_error());
+  }
+
+  virtual webkit_glue::ResourceLoaderBridge::Peer* OnReceivedResponse(
+      webkit_glue::ResourceLoaderBridge::Peer* current_peer,
+      const std::string& mime_type,
+      const GURL& url) {
+    return ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
+        current_peer, RenderThread::current(), mime_type, url);
+  }
+
+ private:
+  void InformHostOfCacheStats() {
+    WebCache::UsageStats stats;
+    WebCache::getUsageStats(&stats);
+    RenderThread::current()->Send(new ViewHostMsg_UpdatedCacheStats(stats));
+  }
+
+  ScopedRunnableMethodFactory<RenderResourceObserver> method_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderResourceObserver);
+};
+
+class RenderViewContentSettingsSetter : public RenderViewVisitor {
+ public:
+  RenderViewContentSettingsSetter(const GURL& url,
+                                  const ContentSettings& content_settings)
+      : url_(url),
+        content_settings_(content_settings) {
+  }
+
+  virtual bool Visit(RenderView* render_view) {
+    if (GURL(render_view->webview()->mainFrame()->url()) == url_) {
+      ContentSettingsObserver::Get(render_view)->SetContentSettings(
+          content_settings_);
+    }
+    return true;
+  }
+
+ private:
+  GURL url_;
+  ContentSettings content_settings_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderViewContentSettingsSetter);
+};
+
+#if defined(OS_WIN)
 static app::win::IATPatchFunction g_iat_patch_createdca;
 HDC WINAPI CreateDCAPatch(LPCSTR driver_name,
                           LPCSTR device_name,
@@ -73,31 +158,143 @@ DWORD WINAPI GetFontDataPatch(HDC hdc,
   }
   return rv;
 }
+#endif  // OS_WIN
 
-#endif
+#if defined(OS_POSIX)
+class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
+  void OnChannelError() {
+    // On POSIX, at least, one can install an unload handler which loops
+    // forever and leave behind a renderer process which eats 100% CPU forever.
+    //
+    // This is because the terminate signals (ViewMsg_ShouldClose and the error
+    // from the IPC channel) are routed to the main message loop but never
+    // processed (because that message loop is stuck in V8).
+    //
+    // One could make the browser SIGKILL the renderers, but that leaves open a
+    // large window where a browser failure (or a user, manually terminating
+    // the browser because "it's stuck") will leave behind a process eating all
+    // the CPU.
+    //
+    // So, we install a filter on the channel so that we can process this event
+    // here and kill the process.
 
-class RenderViewContentSettingsSetter : public RenderViewVisitor {
+#if defined(OS_MACOSX)
+    // TODO(viettrungluu): crbug.com/28547: The following is needed, as a
+    // stopgap, to avoid leaking due to not releasing Breakpad properly.
+    // TODO(viettrungluu): Investigate why this is being called.
+    if (IsCrashReporterEnabled()) {
+      VLOG(1) << "Cleaning up Breakpad.";
+      DestructCrashReporter();
+    } else {
+      VLOG(1) << "Breakpad not enabled; no clean-up needed.";
+    }
+#endif  // OS_MACOSX
+
+    _exit(0);
+  }
+};
+#endif  // OS_POSIX
+
+#if defined(OS_MACOSX)
+// TODO(viettrungluu): crbug.com/28547: The following signal handling is needed,
+// as a stopgap, to avoid leaking due to not releasing Breakpad properly.
+// Without this problem, this could all be eliminated. Remove when Breakpad is
+// fixed?
+// TODO(viettrungluu): Code taken from browser_main.cc (with a bit of editing).
+// The code should be properly shared (or this code should be eliminated).
+int g_shutdown_pipe_write_fd = -1;
+
+void SIGTERMHandler(int signal) {
+  RAW_CHECK(signal == SIGTERM);
+  RAW_LOG(INFO, "Handling SIGTERM in renderer.");
+
+  // Reinstall the default handler.  We had one shot at graceful shutdown.
+  struct sigaction action;
+  memset(&action, 0, sizeof(action));
+  action.sa_handler = SIG_DFL;
+  CHECK(sigaction(signal, &action, NULL) == 0);
+
+  RAW_CHECK(g_shutdown_pipe_write_fd != -1);
+  size_t bytes_written = 0;
+  do {
+    int rv = HANDLE_EINTR(
+        write(g_shutdown_pipe_write_fd,
+              reinterpret_cast<const char*>(&signal) + bytes_written,
+              sizeof(signal) - bytes_written));
+    RAW_CHECK(rv >= 0);
+    bytes_written += rv;
+  } while (bytes_written < sizeof(signal));
+
+  RAW_LOG(INFO, "Wrote signal to shutdown pipe.");
+}
+
+class ShutdownDetector : public base::PlatformThread::Delegate {
  public:
-  RenderViewContentSettingsSetter(const GURL& url,
-                                  const ContentSettings& content_settings)
-      : url_(url),
-        content_settings_(content_settings) {
+  explicit ShutdownDetector(int shutdown_fd) : shutdown_fd_(shutdown_fd) {
+    CHECK(shutdown_fd_ != -1);
   }
 
-  virtual bool Visit(RenderView* render_view) {
-    if (GURL(render_view->webview()->mainFrame()->url()) == url_) {
-      ContentSettingsObserver::Get(render_view)->SetContentSettings(
-          content_settings_);
+  virtual void ThreadMain() {
+    int signal;
+    size_t bytes_read = 0;
+    ssize_t ret;
+    do {
+      ret = HANDLE_EINTR(
+          read(shutdown_fd_,
+               reinterpret_cast<char*>(&signal) + bytes_read,
+               sizeof(signal) - bytes_read));
+      if (ret < 0) {
+        NOTREACHED() << "Unexpected error: " << strerror(errno);
+        break;
+      } else if (ret == 0) {
+        NOTREACHED() << "Unexpected closure of shutdown pipe.";
+        break;
+      }
+      bytes_read += ret;
+    } while (bytes_read < sizeof(signal));
+
+    if (bytes_read == sizeof(signal))
+      VLOG(1) << "Handling shutdown for signal " << signal << ".";
+    else
+      VLOG(1) << "Handling shutdown for unknown signal.";
+
+    // Clean up Breakpad if necessary.
+    if (IsCrashReporterEnabled()) {
+      VLOG(1) << "Cleaning up Breakpad.";
+      DestructCrashReporter();
+    } else {
+      VLOG(1) << "Breakpad not enabled; no clean-up needed.";
     }
-    return true;
+
+    // Something went seriously wrong, so get out.
+    if (bytes_read != sizeof(signal)) {
+      LOG(WARNING) << "Failed to get signal. Quitting ungracefully.";
+      _exit(1);
+    }
+
+    // Re-raise the signal.
+    kill(getpid(), signal);
+
+    // The signal may be handled on another thread. Give that a chance to
+    // happen.
+    sleep(3);
+
+    // We really should be dead by now.  For whatever reason, we're not. Exit
+    // immediately, with the exit status set to the signal number with bit 8
+    // set.  On the systems that we care about, this exit status is what is
+    // normally used to indicate an exit by this signal's default handler.
+    // This mechanism isn't a de jure standard, but even in the worst case, it
+    // should at least result in an immediate exit.
+    LOG(WARNING) << "Still here, exiting really ungracefully.";
+    _exit(signal | (1 << 7));
   }
 
  private:
-  GURL url_;
-  ContentSettings content_settings_;
+  const int shutdown_fd_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderViewContentSettingsSetter);
+  DISALLOW_COPY_AND_ASSIGN(ShutdownDetector);
 };
+#endif  // OS_MACOSX
 
 }  // namespace
 
@@ -105,7 +302,6 @@ bool ChromeRenderProcessObserver::is_incognito_process_ = false;
 
 ChromeRenderProcessObserver::ChromeRenderProcessObserver() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
   if (command_line.HasSwitch(switches::kEnableWatchdog)) {
     // TODO(JAR): Need to implement renderer IO msgloop watchdog.
   }
@@ -113,6 +309,38 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver() {
   if (command_line.HasSwitch(switches::kDumpHistogramsOnExit)) {
     base::StatisticsRecorder::set_dump_on_exit(true);
   }
+
+  RenderThread* thread = RenderThread::current();
+  thread->resource_dispatcher()->set_observer(new RenderResourceObserver());
+
+#if defined(OS_POSIX)
+  thread->AddFilter(new SuicideOnChannelErrorFilter());
+#endif
+
+#if defined(OS_MACOSX)
+  // TODO(viettrungluu): Code taken from browser_main.cc.
+  int pipefd[2];
+  int ret = pipe(pipefd);
+  if (ret < 0) {
+    PLOG(DFATAL) << "Failed to create pipe";
+  } else {
+    int shutdown_pipe_read_fd = pipefd[0];
+    g_shutdown_pipe_write_fd = pipefd[1];
+    const size_t kShutdownDetectorThreadStackSize = 4096;
+    if (!base::PlatformThread::CreateNonJoinable(
+            kShutdownDetectorThreadStackSize,
+            new ShutdownDetector(shutdown_pipe_read_fd))) {
+      LOG(DFATAL) << "Failed to create shutdown detector task.";
+    }
+  }
+
+  // crbug.com/28547: When Breakpad is in use, handle SIGTERM to avoid leaking
+  // Mach ports.
+  struct sigaction action;
+  memset(&action, 0, sizeof(action));
+  action.sa_handler = SIGTERMHandler;
+  CHECK(sigaction(SIGTERM, &action, NULL) == 0);
+#endif
 
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);

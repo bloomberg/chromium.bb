@@ -17,7 +17,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_localization_peer.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/render_messages.h"
@@ -53,12 +52,10 @@
 #include "chrome/renderer/search_extension.h"
 #include "chrome/renderer/searchbox.h"
 #include "chrome/renderer/searchbox_extension.h"
-#include "chrome/renderer/security_filter_peer.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "chrome/renderer/translate_helper.h"
 #include "chrome/renderer/visitedlink_slave.h"
-#include "content/common/resource_dispatcher.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
@@ -79,10 +76,6 @@
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 
-#if defined(OS_MACOSX)
-#include "chrome/app/breakpad_mac.h"
-#endif
-
 using autofill::AutofillAgent;
 using autofill::FormManager;
 using autofill::PasswordAutofillManager;
@@ -99,93 +92,6 @@ using WebKit::WebURLResponse;
 using WebKit::WebVector;
 
 namespace {
-
-static const unsigned int kCacheStatsDelayMS = 2000 /* milliseconds */;
-
-#if defined(OS_POSIX)
-class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
-  void OnChannelError() {
-    // On POSIX, at least, one can install an unload handler which loops
-    // forever and leave behind a renderer process which eats 100% CPU forever.
-    //
-    // This is because the terminate signals (ViewMsg_ShouldClose and the error
-    // from the IPC channel) are routed to the main message loop but never
-    // processed (because that message loop is stuck in V8).
-    //
-    // One could make the browser SIGKILL the renderers, but that leaves open a
-    // large window where a browser failure (or a user, manually terminating
-    // the browser because "it's stuck") will leave behind a process eating all
-    // the CPU.
-    //
-    // So, we install a filter on the channel so that we can process this event
-    // here and kill the process.
-
-#if defined(OS_MACOSX)
-    // TODO(viettrungluu): crbug.com/28547: The following is needed, as a
-    // stopgap, to avoid leaking due to not releasing Breakpad properly.
-    // TODO(viettrungluu): Investigate why this is being called.
-    if (IsCrashReporterEnabled()) {
-      VLOG(1) << "Cleaning up Breakpad.";
-      DestructCrashReporter();
-    } else {
-      VLOG(1) << "Breakpad not enabled; no clean-up needed.";
-    }
-#endif  // OS_MACOSX
-
-    _exit(0);
-  }
-};
-#endif
-
-class RenderResourceObserver : public ResourceDispatcher::Observer {
- public:
-  RenderResourceObserver()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
-  }
-
-  virtual webkit_glue::ResourceLoaderBridge::Peer* OnRequestComplete(
-      webkit_glue::ResourceLoaderBridge::Peer* current_peer,
-      ResourceType::Type resource_type,
-      const net::URLRequestStatus& status) {
-    // Update the browser about our cache.
-    // Rate limit informing the host of our cache stats.
-    if (method_factory_.empty()) {
-      MessageLoop::current()->PostDelayedTask(
-         FROM_HERE,
-         method_factory_.NewRunnableMethod(
-             &RenderResourceObserver::InformHostOfCacheStats),
-         kCacheStatsDelayMS);
-    }
-
-    if (status.status() != net::URLRequestStatus::CANCELED ||
-        status.os_error() == net::ERR_ABORTED) {
-      return NULL;
-    }
-
-    // Resource canceled with a specific error are filtered.
-    return SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
-        resource_type, current_peer, status.os_error());
-  }
-
-  virtual webkit_glue::ResourceLoaderBridge::Peer* OnReceivedResponse(
-      webkit_glue::ResourceLoaderBridge::Peer* current_peer,
-      const std::string& mime_type,
-      const GURL& url) {
-    return ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
-        current_peer, RenderThread::current(), mime_type, url);
-  }
-
- private:
-  void InformHostOfCacheStats() {
-    WebCache::UsageStats stats;
-    WebCache::getUsageStats(&stats);
-    RenderThread::current()->Send(new ViewHostMsg_UpdatedCacheStats(stats));
-  }
-
-  ScopedRunnableMethodFactory<RenderResourceObserver> method_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderResourceObserver);
-};
 
 static void AppendParams(const std::vector<string16>& additional_names,
                          const std::vector<string16>& additional_values,
@@ -235,9 +141,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   RenderThread* thread = RenderThread::current();
   thread->AddFilter(new DevToolsAgentFilter());
-#if defined(OS_POSIX)
-  thread->AddFilter(new SuicideOnChannelErrorFilter());
-#endif
 
   thread->AddObserver(chrome_observer_.get());
   thread->AddObserver(extension_dispatcher_.get());
@@ -258,8 +161,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
           switches::kDomAutomationController)) {
     thread->RegisterExtension(DomAutomationV8Extension::Get());
   }
-
-  thread->resource_dispatcher()->set_observer(new RenderResourceObserver());
 
   // chrome: pages should not be accessible by normal content, and should
   // also be unable to script anything but themselves (to help limit the damage

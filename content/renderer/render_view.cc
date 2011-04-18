@@ -21,7 +21,6 @@
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/render_messages.h"
 #include "content/common/appcache/appcache_dispatcher.h"
 #include "content/common/bindings_policy.h"
 #include "content/common/clipboard_messages.h"
