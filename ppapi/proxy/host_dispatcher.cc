@@ -176,7 +176,7 @@ bool HostDispatcher::OnMessageReceived(const IPC::Message& msg) {
 void HostDispatcher::OnChannelError() {
   Dispatcher::OnChannelError();  // Stop using the channel.
 
-  // Tell the host about the crash so it can clean up.
+  // Tell the host about the crash so it can clean up and display notification.
   ppb_proxy_->PluginCrashed(pp_module());
 }
 

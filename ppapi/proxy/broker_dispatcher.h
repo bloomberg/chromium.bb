@@ -39,10 +39,23 @@ class BrokerDispatcher : public ProxyChannel {
   DISALLOW_COPY_AND_ASSIGN(BrokerDispatcher);
 };
 
-// A simple class for broker hosts.
+// The dispatcher for the browser side of the broker channel.
 class BrokerHostDispatcher : public BrokerDispatcher {
  public:
   BrokerHostDispatcher(base::ProcessHandle remote_process_handle);
+
+  // IPC::Channel::Listener implementation.
+  virtual void OnChannelError();
+};
+
+// The dispatcher for the broker side of the broker channel.
+class BrokerSideDispatcher : public BrokerDispatcher {
+ public:
+  BrokerSideDispatcher(base::ProcessHandle remote_process_handle,
+                       PP_ConnectInstance_Func connect_instance);
+
+  // IPC::Channel::Listener implementation.
+  virtual void OnChannelError();
 };
 
 }  // namespace proxy

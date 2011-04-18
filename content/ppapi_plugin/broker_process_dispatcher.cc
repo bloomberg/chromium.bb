@@ -23,7 +23,7 @@ const int kPluginReleaseTimeMs = 30 * 1000;  // 30 seconds.
 BrokerProcessDispatcher::BrokerProcessDispatcher(
     base::ProcessHandle remote_process_handle,
     PP_ConnectInstance_Func connect_instance)
-    : pp::proxy::BrokerDispatcher(remote_process_handle, connect_instance) {
+    : pp::proxy::BrokerSideDispatcher(remote_process_handle, connect_instance) {
   ChildProcess::current()->AddRefProcess();
 }
 

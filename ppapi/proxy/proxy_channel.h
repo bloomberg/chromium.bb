@@ -44,7 +44,7 @@ class ProxyChannel : public IPC::Channel::Listener,
   virtual ~ProxyChannel();
 
   // Alternative to InitWithChannel() for unit tests that want to send all
-  // messages sent via this dispatcher to the given test sink. The test sink
+  // messages sent via this channel to the given test sink. The test sink
   // must outlive this class.
   void InitWithTestSink(IPC::TestSink* test_sink);
 

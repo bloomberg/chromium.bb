@@ -84,5 +84,30 @@ BrokerHostDispatcher::BrokerHostDispatcher(
     : BrokerDispatcher(remote_process_handle, NULL) {
 }
 
+void BrokerHostDispatcher::OnChannelError() {
+  BrokerDispatcher::OnChannelError();  // Stop using the channel.
+
+  // Tell the host about the crash so it can clean up and display notification.
+  // TODO(ddorwin): Add BrokerCrashed() to PPB_Proxy_Private and call it.
+  // ppb_proxy_->BrokerCrashed(pp_module());
+}
+
+BrokerSideDispatcher::BrokerSideDispatcher(
+    base::ProcessHandle remote_process_handle,
+    PP_ConnectInstance_Func connect_instance)
+    : BrokerDispatcher(remote_process_handle, connect_instance) {
+}
+
+void BrokerSideDispatcher::OnChannelError() {
+  BrokerDispatcher::OnChannelError();
+
+  // The renderer has crashed or exited. This channel and all instances
+  // associated with it are no longer valid.
+  // TODO(ddorwin): This causes the broker process to exit, which may not be
+  // desirable in some use cases.
+  delete this;
+}
+
+
 }  // namespace proxy
 }  // namespace pp

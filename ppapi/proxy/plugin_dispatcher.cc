@@ -151,8 +151,8 @@ bool PluginDispatcher::OnMessageReceived(const IPC::Message& msg) {
 void PluginDispatcher::OnChannelError() {
   Dispatcher::OnChannelError();
 
-  // The renderer has crashed. This channel and all instances associated with
-  // it are no longer valid.
+  // The renderer has crashed or exited. This channel and all instances
+  // associated with it are no longer valid.
   ForceFreeAllInstances();
   // TODO(brettw) free resources too!
   delete this;

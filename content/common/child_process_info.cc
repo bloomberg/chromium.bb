@@ -77,7 +77,7 @@ std::string ChildProcessInfo::GetTypeNameInEnglish(
     case PPAPI_PLUGIN_PROCESS:
       return "Pepper Plugin";
     case PPAPI_BROKER_PROCESS:
-      return "Pepper Broker";
+      return "Pepper Plugin Broker";
     case UNKNOWN_PROCESS:
     default:
       DCHECK(false) << "Unknown child process type!";

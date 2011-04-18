@@ -268,9 +268,9 @@ void PPB_Broker_Proxy::ConnectCompleteInHost(int32_t result,
          foreign_socket_handle == IPC::InvalidPlatformFileForTransit());
 
   bool success = dispatcher()->Send(new PpapiMsg_PPBBroker_ConnectComplete(
-      INTERFACE_ID_PPB_FILE_SYSTEM, broker, foreign_socket_handle, result));
+      INTERFACE_ID_PPB_BROKER, broker, foreign_socket_handle, result));
 
-  if (!success || result == PP_OK) {
+  if (!success || result != PP_OK) {
       // The plugin did not receive the handle, so it must be closed.
       // The easiest way to clean it up is to just put it in an object
       // and then close it. This failure case is not performance critical.
