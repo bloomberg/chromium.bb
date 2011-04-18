@@ -164,3 +164,6 @@ ViewSourceTest.ViewSourceInMenuEnabledOnANormalPage
 
 # Fails, see http://crbug.com/79784
 PPAPITest.Transport
+
+# Fails, see http://crbug.com/79803
+RepostFormWarningTest.TestLoginAfterRepost
