@@ -714,6 +714,16 @@ cr.define('options', function() {
     }
   };
 
+  OptionsPage.setClearPluginLSODataEnabled = function(enabled) {
+    if (enabled) {
+      document.documentElement.setAttribute(
+          'flashPluginSupportsClearSiteData', '');
+    } else {
+      document.documentElement.removeAttribute(
+          'flashPluginSupportsClearSiteData');
+    }
+  };
+
   /**
    * Re-initializes the C++ handlers if necessary. This is called if the
    * handlers are torn down and recreated but the DOM may not have been (in

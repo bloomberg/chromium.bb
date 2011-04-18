@@ -208,6 +208,8 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "cookies_ask", IDS_COOKIES_ASK_EVERY_TIME_RADIO },
     { "cookies_block", IDS_COOKIES_BLOCK_RADIO },
     { "cookies_block_3rd_party", IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX },
+    { "cookies_clear_when_close", IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX },
+    { "cookies_lso_clear_when_close", IDS_COOKIES_LSO_CLEAR_WHEN_CLOSE_CHKBOX },
     { "cookies_show_cookies", IDS_COOKIES_SHOW_COOKIES_BUTTON },
     { "flash_storage_settings", IDS_FLASH_STORAGE_SETTINGS },
     { "flash_storage_url", IDS_FLASH_STORAGE_URL },
@@ -261,11 +263,6 @@ void ContentSettingsHandler::Initialize() {
       settings_map->BlockThirdPartyCookies()));
   web_ui_->CallJavascriptFunction("ContentSettings.setBlockThirdPartyCookies",
                                   *block_3rd_party.get());
-
-  clear_plugin_lso_data_enabled_.Init(prefs::kClearPluginLSODataEnabled,
-                                      g_browser_process->local_state(),
-                                      this);
-  UpdateClearPluginLSOData();
 
   notification_registrar_.Add(
       this, NotificationType::OTR_PROFILE_CREATED,
@@ -327,8 +324,6 @@ void ContentSettingsHandler::Observe(NotificationType type,
         UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_GEOLOCATION);
       else if (pref_name == prefs::kGeolocationContentSettings)
         UpdateGeolocationExceptionsView();
-      else if (pref_name == prefs::kClearPluginLSODataEnabled)
-        UpdateClearPluginLSOData();
       break;
     }
 
@@ -345,16 +340,6 @@ void ContentSettingsHandler::Observe(NotificationType type,
     default:
       OptionsPageUIHandler::Observe(type, source, details);
   }
-}
-
-void ContentSettingsHandler::UpdateClearPluginLSOData() {
-  int label_id = clear_plugin_lso_data_enabled_.GetValue() ?
-      IDS_COOKIES_LSO_CLEAR_WHEN_CLOSE_CHKBOX :
-      IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX;
-  scoped_ptr<Value> label(
-      Value::CreateStringValue(l10n_util::GetStringUTF16(label_id)));
-  web_ui_->CallJavascriptFunction(
-      "ContentSettings.setClearLocalDataOnShutdownLabel", *label);
 }
 
 void ContentSettingsHandler::UpdateSettingDefaultFromModel(

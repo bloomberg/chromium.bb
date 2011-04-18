@@ -10,10 +10,12 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_type.h"
@@ -29,6 +31,13 @@ CoreOptionsHandler::CoreOptionsHandler()
 }
 
 CoreOptionsHandler::~CoreOptionsHandler() {}
+
+void CoreOptionsHandler::Initialize() {
+  clear_plugin_lso_data_enabled_.Init(prefs::kClearPluginLSODataEnabled,
+                                      g_browser_process->local_state(),
+                                      this);
+  UpdateClearPluginLSOData();
+}
 
 void CoreOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
@@ -341,7 +350,20 @@ void CoreOptionsHandler::HandleUserMetricsAction(const ListValue* args) {
     UserMetricsRecordAction(UserMetricsAction(metric.c_str()));
 }
 
+void CoreOptionsHandler::UpdateClearPluginLSOData() {
+  scoped_ptr<Value> enabled(
+      Value::CreateBooleanValue(clear_plugin_lso_data_enabled_.GetValue()));
+  web_ui_->CallJavascriptFunction(
+      "OptionsPage.setClearPluginLSODataEnabled", *enabled);
+}
+
 void CoreOptionsHandler::NotifyPrefChanged(const std::string* pref_name) {
+  if (*pref_name == prefs::kClearPluginLSODataEnabled) {
+    // This preference is stored in Local State, not in the user preferences.
+    UpdateClearPluginLSOData();
+    return;
+  }
+
   PrefService* pref_service = web_ui_->GetProfile()->GetPrefs();
   const PrefService::Preference* pref =
       pref_service->FindPreference(pref_name->c_str());

@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/values.h"
+#include "chrome/browser/plugin_data_remover_helper.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
@@ -21,6 +22,7 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   virtual ~CoreOptionsHandler();
 
   // OptionsPageUIHandler implementation.
+  virtual void Initialize();
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
   virtual void Uninitialize();
 
@@ -102,10 +104,16 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   // is an array that contains a single item, the name of the metric identifier.
   void HandleUserMetricsAction(const ListValue* args);
 
+  void UpdateClearPluginLSOData();
+
   void NotifyPrefChanged(const std::string* pref_name);
 
   OptionsPageUIHandlerHost* handlers_host_;
   PrefChangeRegistrar registrar_;
+
+  // Used for asynchronously updating the preference stating whether clearing
+  // LSO data is supported.
+  PluginDataRemoverHelper clear_plugin_lso_data_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreOptionsHandler);
 };

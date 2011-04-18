@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/browsing_data_remover.h"
-#include "chrome/browser/plugin_data_remover_helper.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
 // Clear browser data handler page UI handler.
@@ -25,17 +25,9 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
-  // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
  private:
   // Javascript callback to start clearing data.
   void HandleClearBrowserData(const ListValue* value);
-
-  // Updates the UI to reflect whether clearing LSO data is supported.
-  void UpdateClearPluginLSOData();
 
   // Callback from BrowsingDataRemover. Closes the dialog.
   virtual void OnBrowsingDataRemoverDone();
@@ -44,9 +36,8 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   // of deleting itself when done.
   BrowsingDataRemover* remover_;
 
-  // Used for asynchronously updating the preference stating whether clearing
-  // LSO data is supported.
-  PluginDataRemoverHelper clear_plugin_lso_data_enabled_;
+  // Keeps track of whether clearing LSO data is supported.
+  BooleanPrefMember clear_plugin_lso_data_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ClearBrowserDataHandler);
 };

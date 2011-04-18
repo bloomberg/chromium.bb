@@ -89,10 +89,6 @@ cr.define('options', function() {
       ClearBrowserDataOverlay.getInstance().updateCommitButtonState_();
   };
 
-  ClearBrowserDataOverlay.setClearLocalDataLabel = function(label) {
-    $('deleteCookiesLabel').innerText = label;
-  };
-
   ClearBrowserDataOverlay.doneClearing = function() {
     // The delay gives the user some feedback that the clearing
     // actually worked. Otherwise the dialog just vanishes instantly in most

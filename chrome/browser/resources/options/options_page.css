@@ -763,6 +763,12 @@ list.autocomplete-suggestions:not([hasElementFocus]) > [lead][selected] {
   background-color: #bbcee9;
 }
 
-html:not([hasFlashPlugin]) .flash-plugin-area {
+html:not([hasFlashPlugin]) .flash-plugin-area,
+/* If the Flash plug-in supports the NPP_ClearSiteData API, we don't need to
+ * show the link to the Flash storage settings manager:
+ */
+html[flashPluginSupportsClearSiteData] .flash-plugin-area,
+html:not([flashPluginSupportsClearSiteData]) .clear-plugin-lso-data-enabled,
+html[flashPluginSupportsClearSiteData] .clear-plugin-lso-data-disabled {
   display: none;
 }

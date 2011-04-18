@@ -128,10 +128,6 @@ cr.define('options', function() {
     exceptionsList.patternValidityCheckComplete(pattern, valid);
   };
 
-  ContentSettings.setClearLocalDataOnShutdownLabel = function(label) {
-    $('clear-cookies-on-exit-label').innerText = label;
-  };
-
   // Export
   return {
     ContentSettings: ContentSettings

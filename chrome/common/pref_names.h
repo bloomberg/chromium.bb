@@ -173,7 +173,6 @@ extern const char kDeleteCache[];
 extern const char kDeleteCookies[];
 extern const char kDeletePasswords[];
 extern const char kDeleteFormData[];
-extern const char kClearPluginLSODataEnabled[];
 extern const char kEnableSpellCheck[];
 extern const char kEnabledLabsExperiments[];
 extern const char kEnableAutoSpellCorrect[];
@@ -474,6 +473,8 @@ extern const char kManagedPopupsBlockedForUrls[];
 extern const char kSignedSettingsTempStorage[];
 extern const char kHardwareKeyboardLayout[];
 #endif
+
+extern const char kClearPluginLSODataEnabled[];
 
 extern const char kRegisteredBackgroundContents[];
 

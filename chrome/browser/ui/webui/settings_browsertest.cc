@@ -71,11 +71,19 @@ class SettingsWebUITest : public WebUIBrowserTest {
     AddLibrary(FILE_PATH_LITERAL("settings.js"));
   }
 
-  virtual WebUIMessageHandler* GetMockMessageHandler() {
-    return &mock_core_options_handler_;
+  virtual void SetUpOnMainThread() {
+    mock_core_options_handler_.reset(new StrictMock<MockCoreOptionsHandler>());
   }
 
-  StrictMock<MockCoreOptionsHandler> mock_core_options_handler_;
+  virtual void CleanUpOnMainThread() {
+    mock_core_options_handler_.reset();
+  }
+
+  virtual WebUIMessageHandler* GetMockMessageHandler() {
+    return mock_core_options_handler_.get();
+  }
+
+  scoped_ptr<StrictMock<MockCoreOptionsHandler> > mock_core_options_handler_;
 };
 
 // Test the end to end js to WebUI handler code path for
@@ -96,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(SettingsWebUITest, MAYBE_TestSetBooleanPrefTriggers) {
   true_list_value.Append(
       Value::CreateStringValue("Options_Homepage_HomeButton"));
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUISettingsURL));
-  EXPECT_CALL(mock_core_options_handler_,
+  EXPECT_CALL(*mock_core_options_handler_,
       HandleSetBooleanPref(Eq_ListValue(&true_list_value)));
   ASSERT_TRUE(RunJavascriptTest("testSetBooleanPrefTriggers"));
 }

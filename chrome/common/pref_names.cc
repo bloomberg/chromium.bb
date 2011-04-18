@@ -496,9 +496,6 @@ const char kDeletePasswords[] = "browser.clear_data.passwords";
 const char kDeleteFormData[] = "browser.clear_data.form_data";
 const char kDeleteTimePeriod[] = "browser.clear_data.time_period";
 
-// Whether there is a Flash version installed that supports clearing LSO data.
-const char kClearPluginLSODataEnabled[] = "browser.clear_lso_data_enabled";
-
 // Boolean pref to define the default values for using spellchecker.
 const char kEnableSpellCheck[] = "browser.enable_spellchecking";
 
@@ -1250,6 +1247,9 @@ const char kSignedSettingsTempStorage[] = "signed_settings_temp_storage";
 // "xkb:us::eng".
 const char kHardwareKeyboardLayout[] = "intl.hardware_keyboard";
 #endif
+
+// Whether there is a Flash version installed that supports clearing LSO data.
+const char kClearPluginLSODataEnabled[] = "browser.clear_lso_data_enabled";
 
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.
