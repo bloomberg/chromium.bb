@@ -14,7 +14,6 @@
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
-#include "chrome/common/icon_messages.h"
 #include "chrome/common/view_types.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/common/notification_registrar.h"
@@ -22,6 +21,7 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class TabContents;
+struct FaviconURL;
 struct WebPreferences;
 struct ViewHostMsg_FrameNavigate_Params;
 

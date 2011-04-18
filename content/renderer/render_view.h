@@ -615,9 +615,6 @@ class RenderView : public RenderWidget,
   virtual void OnWasRestored(bool needs_repainting);
 
  private:
-  // TODO(jam): temporary friend class to ease with the file move.  Remove soon.
-  friend class chrome::ChromeContentRendererClient;
-
   // For unit tests.
   friend class ExternalPopupMenuTest;
   friend class PepperDeviceTest;

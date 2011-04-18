@@ -18,7 +18,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/common_param_traits.h"
-#include "chrome/common/icon_messages.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/search_provider.h"
@@ -194,15 +193,6 @@ IPC_MESSAGE_ROUTED3(ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
                     std::vector<FilePath> /* paths of local copy */,
                     FilePath /* local directory path */)
 
-// Requests the renderer to download the specified favicon image encode it as
-// PNG and send the PNG data back ala ViewHostMsg_DidDownloadFavicon.
-IPC_MESSAGE_ROUTED3(ViewMsg_DownloadFavicon,
-                    int /* identifier for the request */,
-                    GURL /* URL of the image */,
-                    int /* Size of the image. Normally 0, but set if you have
-                           a preferred image size to request, such as when
-                           downloading the favicon */)
-
 // Asks the renderer to send back stats on the WebCore cache broken down by
 // resource types.
 IPC_MESSAGE_CONTROL0(ViewMsg_GetCacheResourceStats)
@@ -305,11 +295,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_Thumbnail,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_Snapshot,
                     SkBitmap /* bitmap */)
 
-// Notification that the urls for the favicon of a site has been determined.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateFaviconURL,
-                    int32 /* page_id */,
-                    std::vector<FaviconURL> /* urls of the favicon */)
-
 // Following message is used to communicate the values received by the
 // callback binding the JS to Cpp.
 // An instance of browser that has an automation host listening to it can
@@ -398,12 +383,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_SendSerializedHtmlData,
                     GURL /* frame's url */,
                     std::string /* data buffer */,
                     int32 /* complete status */)
-
-IPC_MESSAGE_ROUTED4(ViewHostMsg_DidDownloadFavicon,
-                    int /* Identifier of the request */,
-                    GURL /* URL of the image */,
-                    bool /* true if there was a network error */,
-                    SkBitmap /* image_data */)
 
 // Provide the browser process with information about the WebCore resource
 // cache.

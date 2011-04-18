@@ -88,6 +88,7 @@ enum IPCMessageStart {
   ExtensionMsgStart,
   VideoCaptureMsgStart,
   QuotaMsgStart,
+  IconMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 

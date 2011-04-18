@@ -3,55 +3,43 @@
 // found in the LICENSE file.
 
 // Multiply-included message file, no traditional include guard.
-#include "googleurl/src/gurl.h"
+#include <vector>
+
+#include "chrome/common/favicon_url.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
-// TODO : Pull ViewHostMsg_UpdateFaviconURL into this file
+#define IPC_MESSAGE_START IconMsgStart
 
-#ifndef CHROME_COMMON_ICON_MESSAGES_H__
-#define CHROME_COMMON_ICON_MESSAGES_H__
+IPC_ENUM_TRAITS(FaviconURL::IconType)
 
-// The icon type in a page. The definition must be same as history::IconType.
-enum IconType {
-  INVALID_ICON = 0x0,
-  FAVICON = 1 << 0,
-  TOUCH_ICON = 1 << 1,
-  TOUCH_PRECOMPOSED_ICON = 1 << 2
-};
+IPC_STRUCT_TRAITS_BEGIN(FaviconURL)
+  IPC_STRUCT_TRAITS_MEMBER(icon_url)
+  IPC_STRUCT_TRAITS_MEMBER(icon_type)
+IPC_STRUCT_TRAITS_END()
 
-// The favicon url from the render.
-struct FaviconURL {
-  FaviconURL();
-  FaviconURL(const GURL& url, IconType type);
-  ~FaviconURL();
+// Messages sent from the browser to the renderer.
 
-  // The url of the icon.
-  GURL icon_url;
+// Requests the renderer to download the specified favicon image encode it as
+// PNG and send the PNG data back ala IconHostMsg_DidDownloadFavicon.
+IPC_MESSAGE_ROUTED3(IconMsg_DownloadFavicon,
+                    int /* identifier for the request */,
+                    GURL /* URL of the image */,
+                    int /* Size of the image. Normally 0, but set if you have
+                           a preferred image size to request, such as when
+                           downloading the favicon */)
 
-  // The type of the icon
-  IconType icon_type;
-};
+// Messages sent from the renderer to the browser.
 
-namespace IPC {
+// Notification that the urls for the favicon of a site has been determined.
+IPC_MESSAGE_ROUTED2(IconHostMsg_UpdateFaviconURL,
+                    int32 /* page_id */,
+                    std::vector<FaviconURL> /* urls of the favicon */)
 
-template <>
-struct ParamTraits<IconType> {
-  typedef IconType param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<FaviconURL> {
-  typedef FaviconURL param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-}  // namespace IPC
-
-#endif  // CHROME_COMMON_ICON_MESSAGES_H__
+IPC_MESSAGE_ROUTED4(IconHostMsg_DidDownloadFavicon,
+                    int /* Identifier of the request */,
+                    GURL /* URL of the image */,
+                    bool /* true if there was a network error */,
+                    SkBitmap /* image_data */)

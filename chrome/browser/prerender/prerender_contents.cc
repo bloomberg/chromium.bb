@@ -15,6 +15,7 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/icon_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
@@ -437,7 +438,7 @@ bool PrerenderContents::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP_EX(PrerenderContents, message, message_is_ok)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartProvisionalLoadForFrame,
                         OnDidStartProvisionalLoadForFrame)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
+    IPC_MESSAGE_HANDLER(IconHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MaybeCancelPrerenderForHTML5Media,
                         OnMaybeCancelPrerenderForHTML5Media)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -470,7 +471,7 @@ void PrerenderContents::OnUpdateFaviconURL(
   LOG(INFO) << "PrerenderContents::OnUpdateFaviconURL" << icon_url_;
   for (std::vector<FaviconURL>::const_iterator i = urls.begin();
        i != urls.end(); ++i) {
-    if (i->icon_type == FAVICON) {
+    if (i->icon_type == FaviconURL::FAVICON) {
       icon_url_ = i->icon_url;
       LOG(INFO) << icon_url_;
       return;

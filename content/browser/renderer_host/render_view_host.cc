@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/icon_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "chrome/common/spellcheck_messages.h"
@@ -571,7 +572,7 @@ int RenderViewHost::DownloadFavicon(const GURL& url, int image_size) {
   }
   static int next_id = 1;
   int id = next_id++;
-  Send(new ViewMsg_DownloadFavicon(routing_id(), id, url, image_size));
+  Send(new IconMsg_DownloadFavicon(routing_id(), id, url, image_size));
   return id;
 }
 

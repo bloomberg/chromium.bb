@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/favicon_service.h"
-#include "chrome/common/icon_messages.h"
+#include "chrome/common/favicon_url.h"
 #include "chrome/common/ref_counted_util.h"
 #include "content/browser/cancelable_request.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
@@ -155,16 +155,6 @@ class FaviconHelper : public TabContentsObserver {
     ImageDownloadCallback* callback;
     history::IconType icon_type;
   };
-
-  static bool do_url_and_icon_match(const FaviconURL& favicon_url,
-                                    const GURL& url,
-                                    history::IconType icon_type) {
-    return favicon_url.icon_url == url &&
-        favicon_url.icon_type == static_cast<IconType>(icon_type);
-  }
-
-  // Returns history::IconType the given icon_type corresponds to.
-  static history::IconType ToHistoryIconType(IconType icon_type);
 
   // TabContentsObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

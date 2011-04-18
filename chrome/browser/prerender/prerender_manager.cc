@@ -346,7 +346,7 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
   if (!icon_url.is_empty()) {
     LOG(INFO) << "MaybeUsePreloadedPage";
     std::vector<FaviconURL> urls;
-    urls.push_back(FaviconURL(icon_url, FAVICON));
+    urls.push_back(FaviconURL(icon_url, FaviconURL::FAVICON));
     tc->favicon_helper().OnUpdateFaviconURL(pc->page_id(), urls);
   }
 

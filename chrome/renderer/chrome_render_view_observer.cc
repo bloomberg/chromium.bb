@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/icon_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
@@ -141,7 +142,7 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(
         ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
         OnGetSerializedHtmlDataForCurrentPageWithLocalLinks)
-    IPC_MESSAGE_HANDLER(ViewMsg_DownloadFavicon, OnDownloadFavicon)
+    IPC_MESSAGE_HANDLER(IconMsg_DownloadFavicon, OnDownloadFavicon)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -248,14 +249,14 @@ void ChromeRenderViewObserver::OnDownloadFavicon(int id,
     SkBitmap data_image = ImageFromDataUrl(image_url);
     data_image_failed = data_image.empty();
     if (!data_image_failed) {
-      Send(new ViewHostMsg_DidDownloadFavicon(
+      Send(new IconHostMsg_DidDownloadFavicon(
           routing_id(), id, image_url, false, data_image));
     }
   }
 
   if (data_image_failed ||
       !DownloadFavicon(id, image_url, image_size)) {
-    Send(new ViewHostMsg_DidDownloadFavicon(
+    Send(new IconHostMsg_DidDownloadFavicon(
         routing_id(), id, image_url, true, SkBitmap()));
   }
 }
@@ -306,8 +307,8 @@ void ChromeRenderViewObserver::DidStopLoading() {
   GURL favicon_url(render_view()->webview()->mainFrame()->favIconURL());
   if (!favicon_url.is_empty()) {
     std::vector<FaviconURL> urls;
-    urls.push_back(FaviconURL(favicon_url, FAVICON));
-    Send(new ViewHostMsg_UpdateFaviconURL(
+    urls.push_back(FaviconURL(favicon_url, FaviconURL::FAVICON));
+    Send(new IconHostMsg_UpdateFaviconURL(
         routing_id(), render_view()->page_id(), urls));
   }
 }
@@ -317,8 +318,8 @@ void ChromeRenderViewObserver::DidChangeIcons(WebFrame* frame) {
     return;
 
   std::vector<FaviconURL> urls;
-  urls.push_back(FaviconURL(frame->favIconURL(), FAVICON));
-  Send(new ViewHostMsg_UpdateFaviconURL(
+  urls.push_back(FaviconURL(frame->favIconURL(), FaviconURL::FAVICON));
+  Send(new IconHostMsg_UpdateFaviconURL(
       routing_id(), render_view()->page_id(), urls));
 }
 
@@ -584,7 +585,7 @@ bool ChromeRenderViewObserver::DownloadFavicon(int id,
 void ChromeRenderViewObserver::DidDownloadFavicon(
     ImageResourceFetcher* fetcher, const SkBitmap& image) {
   // Notify requester of image download status.
-  Send(new ViewHostMsg_DidDownloadFavicon(routing_id(),
+  Send(new IconHostMsg_DidDownloadFavicon(routing_id(),
                                           fetcher->id(),
                                           fetcher->image_url(),
                                           image.isNull(),
