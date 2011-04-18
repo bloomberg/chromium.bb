@@ -3643,7 +3643,12 @@ class ExtensionSourcePriorityTest : public ExtensionServiceTest {
 
 // Test that a pending install of an external CRX file from disk overrides
 // a pending install of the same extension from sync.
-TEST_F(ExtensionSourcePriorityTest, PendingExternalFileOverSync) {
+#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+#define MAYBE_PendingExternalFileOverSync DISABLED_PendingExternalFileOverSync
+#else
+#define MAYBE_PendingExternalFileOverSync PendingExternalFileOverSync
+#endif
+TEST_F(ExtensionSourcePriorityTest, MAYBE_PendingExternalFileOverSync) {
   InitializeEmptyExtensionService();
 
   ASSERT_FALSE(IsCrxInstalled());

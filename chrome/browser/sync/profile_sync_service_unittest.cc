@@ -145,8 +145,12 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
   service_->Initialize();
   service_.reset();
 }
-
-TEST_F(ProfileSyncServiceTest, JsFrontendHandlersBasic) {
+#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+#define MAYBE_JsFrontendHandlersBasic DISABLED_JsFrontendHandlersBasic
+#else
+#define MAYBE_JsFrontendHandlersBasic JsFrontendHandlersBasic
+#endif
+TEST_F(ProfileSyncServiceTest, MAYBE_JsFrontendHandlersBasic) {
   StartSyncService();
 
   StrictMock<MockJsEventHandler> event_handler;
