@@ -34,14 +34,10 @@ ExtensionDevToolsBridge::ExtensionDevToolsBridge(int tab_id,
 ExtensionDevToolsBridge::~ExtensionDevToolsBridge() {
 }
 
-static std::string FormatDevToolsMessage(int id,
-                                         const std::string& method,
-                                         DictionaryValue* params) {
-
+static std::string FormatDevToolsMessage(int id, const std::string& method) {
   DictionaryValue message;
   message.SetInteger("id", id);
   message.SetString("method", method);
-  message.Set("params", params);
 
   std::string json;
   base::JSONWriter::Write(&message, false, &json);
@@ -78,9 +74,14 @@ bool ExtensionDevToolsBridge::RegisterAsDevToolsClientHost() {
     devtools_manager->ForwardToDevToolsAgent(
         this,
         DevToolsAgentMsg_DispatchOnInspectorBackend(
-            FormatDevToolsMessage(2,
-                                  "Timeline.start",
-                                  new DictionaryValue())));
+            FormatDevToolsMessage(2, "Timeline.start")));
+
+    // 3. Enable network resource tracking.
+    devtools_manager->ForwardToDevToolsAgent(
+        this,
+        DevToolsAgentMsg_DispatchOnInspectorBackend(
+            FormatDevToolsMessage(3, "Network.enable")));
+
     return true;
   }
   return false;
