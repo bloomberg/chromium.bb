@@ -456,12 +456,18 @@ class RequestHandler(object):
                                         self._server.policy[msg.policy_type])
         policy_value = settings.SerializeToString()
 
-    # Figure out the key we want to use.
-    key = None
-    if (msg.signature_type == dm.PolicyFetchRequest.SHA1_RSA and
-        len(self._server.keys)):
-      key_version = min(max(1, msg.public_key_version), len(self._server.keys))
-      key = self._server.keys[key_version - 1]
+    # Figure out the key we want to use. If multiple keys are configured, the
+    # server will rotate through them in a round-robin fashion.
+    signing_key = None
+    req_key = None
+    key_version = 1
+    nkeys = len(self._server.keys)
+    if msg.signature_type == dm.PolicyFetchRequest.SHA1_RSA and nkeys > 0:
+      if msg.public_key_version in range(1, nkeys + 1):
+        # requested key exists, use for signing and rotate.
+        req_key = self._server.keys[msg.public_key_version - 1]['private_key']
+        key_version = (msg.public_key_version % nkeys) + 1
+      signing_key = self._server.keys[key_version - 1]
 
     # Fill the policy data protobuf.
     policy_data = dm.PolicyData()
@@ -470,7 +476,7 @@ class RequestHandler(object):
     policy_data.request_token = token_info['device_token'];
     policy_data.policy_value = policy_value
     policy_data.machine_name = token_info['machine_name']
-    if key:
+    if signing_key:
       policy_data.public_key_version = key_version
     policy_data.username = self._server.username
     policy_data.device_id = token_info['device_id']
@@ -480,11 +486,14 @@ class RequestHandler(object):
     response.error = dm.DeviceManagementResponse.SUCCESS
     fetch_response = response.policy_response.response.add()
     fetch_response.policy_data = signed_data
-    if key:
+    if signing_key:
       fetch_response.policy_data_signature = (
-          key['private_key'].hashAndSign(signed_data).tostring())
+          signing_key['private_key'].hashAndSign(signed_data).tostring())
       if msg.public_key_version != key_version:
-        fetch_response.new_public_key = key['public_key']
+        fetch_response.new_public_key = signing_key['public_key']
+        if req_key:
+          fetch_response.new_public_key_signature = (
+              req_key.hashAndSign(fetch_response.new_public_key).tostring())
 
     self.DumpMessage('Response', response)
 
