@@ -4100,13 +4100,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enables 3D CSS and higher performance compositing of web pages using Graphics Processor Unit (GPU) hardware.
       </message>
       <message name="IDS_FLAGS_COMPOSITED_LAYER_BORDERS" desc="Name of the 'Composited layer borders' lab.">
-        Composited render layer borders.
+        Composited render layer borders
       </message>
       <message name="IDS_FLAGS_COMPOSITED_LAYER_BORDERS_DESCRIPTION" desc="Description of the 'Composited layer borders' lab.">
         Renders a border around composited Render Layers to help debug and study layer compositing.
       </message>
       <message name="IDS_FLAGS_SHOW_FPS_COUNTER" desc="Name of the 'Show FPS counter' lab.">
-        FPS counter.
+        FPS counter
       </message>
       <message name="IDS_FLAGS_SHOW_FPS_COUNTER_DESCRIPTION" desc="Description of the 'Show FPS counter' lab.">
         Shows a page's actual frame rate, in frames per second, when hardware acceleration is active.
@@ -4224,6 +4224,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_ENABLE_VPN_DESCRIPTION" desc="Description for the flag to enable VPN support">
         Show Private networks in the Network menu to enable conencting to a VPN.
+      </message>
+      <message name="IDS_FLAGS_MULTI_PROFILES_NAME" desc="Title for the flag to enable multiprofile support">
+        Multiple Profiles
+      </message>
+      <message name="IDS_FLAGS_MULTI_PROFILES_DESCRIPTION" desc="Description for the flag to enable multiprofile support">
+        Associates every browser window with a profile, and adds a profile switcher in the upper right corner. Every profile has its own bookmarks, extensions, apps, etc.
       </message>
 
       <!-- Crashes -->

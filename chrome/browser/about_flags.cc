@@ -174,15 +174,6 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableAccelerated2dCanvas)
   },
-  // FIXME(scheib): Add Flags entry for WebGL,
-  // or pull it and the strings in generated_resources.grd by Dec 2010
-  // {
-  //   "webgl",
-  //   IDS_FLAGS_WEBGL_NAME,
-  //   IDS_FLAGS_WEBGL_DESCRIPTION,
-  //   kOsAll,
-  //   SINGLE_VALUE_TYPE(switches::kDisableExperimentalWebGL)
-  // }
   {
     "print-preview",  // FLAGS:RECORD_UMA
     IDS_FLAGS_PRINT_PREVIEW_NAME,
@@ -320,6 +311,13 @@ const Experiment kExperiments[] = {
 #else
     SINGLE_VALUE_TYPE("")
 #endif
+  },
+  {
+    "multi-profiles",
+    IDS_FLAGS_MULTI_PROFILES_NAME,
+    IDS_FLAGS_MULTI_PROFILES_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kMultiProfiles)
   },
 };
 
