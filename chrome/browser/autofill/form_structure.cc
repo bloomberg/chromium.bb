@@ -360,6 +360,29 @@ void FormStructure::LogQualityMetrics(
     if (field_types.count(EMPTY_TYPE) || field_types.count(UNKNOWN_TYPE))
       continue;
 
+    // Collapse field types that Chrome treats as identical, e.g. home and
+    // billing address fields.
+    FieldTypeSet collapsed_field_types;
+    for (FieldTypeSet::const_iterator it = field_types.begin();
+         it != field_types.end();
+         ++it) {
+      // Since we currently only support US phone numbers, the (city code + main
+      // digits) number is almost always identical to the whole phone number.
+      // TODO(isherman): Improve this logic once we add support for
+      // international numbers.
+      if (*it == PHONE_HOME_CITY_AND_NUMBER)
+        collapsed_field_types.insert(PHONE_HOME_WHOLE_NUMBER);
+      else if (*it == PHONE_FAX_CITY_AND_NUMBER)
+        collapsed_field_types.insert(PHONE_FAX_WHOLE_NUMBER);
+      else
+        collapsed_field_types.insert(AutofillType::GetEquivalentFieldType(*it));
+    }
+
+    // Capture the field's type, if it is unambiguous.
+    AutofillFieldType field_type = UNKNOWN_TYPE;
+    if (collapsed_field_types.size() == 1)
+      field_type = *collapsed_field_types.begin();
+
     AutofillFieldType heuristic_type = field->heuristic_type();
     AutofillFieldType server_type = field->server_type();
     AutofillFieldType predicted_type = field->type();
@@ -367,28 +390,36 @@ void FormStructure::LogQualityMetrics(
     // Log heuristic, server, and overall type quality metrics, independently of
     // whether the field was autofilled.
     if (heuristic_type == UNKNOWN_TYPE) {
-      metric_logger.Log(AutofillMetrics::HEURISTIC_TYPE_UNKNOWN, experiment_id);
+      metric_logger.Log(AutofillMetrics::HEURISTIC_TYPE_UNKNOWN,
+                        field_type, experiment_id);
     } else if (field_types.count(heuristic_type)) {
-      metric_logger.Log(AutofillMetrics::HEURISTIC_TYPE_MATCH, experiment_id);
+      metric_logger.Log(AutofillMetrics::HEURISTIC_TYPE_MATCH,
+                        field_type, experiment_id);
     } else {
       metric_logger.Log(AutofillMetrics::HEURISTIC_TYPE_MISMATCH,
-                        experiment_id);
+                        field_type, experiment_id);
     }
 
-    if (server_type == NO_SERVER_DATA)
-      metric_logger.Log(AutofillMetrics::SERVER_TYPE_UNKNOWN, experiment_id);
-    else if (field_types.count(server_type))
-      metric_logger.Log(AutofillMetrics::SERVER_TYPE_MATCH, experiment_id);
-    else
-      metric_logger.Log(AutofillMetrics::SERVER_TYPE_MISMATCH, experiment_id);
+    if (server_type == NO_SERVER_DATA) {
+      metric_logger.Log(AutofillMetrics::SERVER_TYPE_UNKNOWN,
+                        field_type, experiment_id);
+    } else if (field_types.count(server_type)) {
+      metric_logger.Log(AutofillMetrics::SERVER_TYPE_MATCH,
+                        field_type, experiment_id);
+    } else {
+      metric_logger.Log(AutofillMetrics::SERVER_TYPE_MISMATCH,
+                        field_type, experiment_id);
+    }
 
     if (predicted_type == UNKNOWN_TYPE) {
-      metric_logger.Log(AutofillMetrics::PREDICTED_TYPE_UNKNOWN, experiment_id);
+      metric_logger.Log(AutofillMetrics::PREDICTED_TYPE_UNKNOWN,
+                        field_type, experiment_id);
     } else if (field_types.count(predicted_type)) {
-      metric_logger.Log(AutofillMetrics::PREDICTED_TYPE_MATCH, experiment_id);
+      metric_logger.Log(AutofillMetrics::PREDICTED_TYPE_MATCH,
+                        field_type, experiment_id);
     } else {
       metric_logger.Log(AutofillMetrics::PREDICTED_TYPE_MISMATCH,
-                        experiment_id);
+                        field_type, experiment_id);
     }
 
     // TODO(isherman): <select> fields don't support |is_autofilled()|, so we

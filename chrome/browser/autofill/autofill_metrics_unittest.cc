@@ -30,14 +30,17 @@ class MockAutofillMetrics : public AutofillMetrics {
  public:
   MockAutofillMetrics() {}
   MOCK_CONST_METHOD1(Log, void(CreditCardInfoBarMetric metric));
-  MOCK_CONST_METHOD2(Log, void(HeuristicTypeQualityMetric metric,
+  MOCK_CONST_METHOD3(Log, void(HeuristicTypeQualityMetric metric,
+                               AutofillFieldType field_type,
+                               const std::string& experiment_id));
+  MOCK_CONST_METHOD3(Log, void(PredictedTypeQualityMetric metric,
+                               AutofillFieldType field_type,
                                const std::string& experiment_id));
   MOCK_CONST_METHOD2(Log, void(QualityMetric metric,
                                const std::string& experiment_id));
   MOCK_CONST_METHOD1(Log, void(ServerQueryMetric metric));
-  MOCK_CONST_METHOD2(Log, void(ServerTypeQualityMetric metric,
-                               const std::string& experiment_id));
-  MOCK_CONST_METHOD2(Log, void(PredictedTypeQualityMetric metric,
+  MOCK_CONST_METHOD3(Log, void(ServerTypeQualityMetric metric,
+                               AutofillFieldType field_type,
                                const std::string& experiment_id));
   MOCK_CONST_METHOD1(LogIsAutofillEnabledAtPageLoad, void(bool enabled));
   MOCK_CONST_METHOD1(LogIsAutofillEnabledAtStartup, void(bool enabled));
@@ -104,7 +107,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     autofill_test::SetProfileInfo(profile, "Charles", "Hardin",
                                   "Holley", "buddy@gmail.com", "Decca",
                                   "123 Apple St.", "unit 6", "Lubbock",
-                                  "Texas", "79401", "USA", "23456789012",
+                                  "Texas", "79401", "USA", "2345678901",
                                   "");
     profile->set_guid("00000000-0000-0000-0000-000000000002");
     profiles->push_back(profile);
@@ -249,6 +252,13 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
   heuristic_types.push_back(UNKNOWN_TYPE);
   server_types.push_back(NO_SERVER_DATA);
 
+  autofill_test::CreateTestFormField(
+      "Phone", "phone", "2345678901", "tel", &field);
+  field.is_autofilled = true;
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  server_types.push_back(PHONE_HOME_WHOLE_NUMBER);
+
   // Simulate having seen this form on page load.
   // |form_structure| will be owned by |autofill_manager_|.
   TestFormStructure* form_structure = new TestFormStructure(form);
@@ -261,22 +271,28 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_SUBMITTED, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::HEURISTIC_TYPE_MATCH, std::string()));
+              Log(AutofillMetrics::HEURISTIC_TYPE_MATCH,
+                  UNKNOWN_TYPE, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::SERVER_TYPE_MISMATCH, std::string()));
+              Log(AutofillMetrics::SERVER_TYPE_MISMATCH,
+                  UNKNOWN_TYPE, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::PREDICTED_TYPE_MISMATCH, std::string()));
+              Log(AutofillMetrics::PREDICTED_TYPE_MISMATCH,
+                  UNKNOWN_TYPE, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_AUTOFILLED, std::string()));
   // Non-autofilled field for which we had data
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_SUBMITTED, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::HEURISTIC_TYPE_MISMATCH, std::string()));
+              Log(AutofillMetrics::HEURISTIC_TYPE_MISMATCH,
+                  EMAIL_ADDRESS, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::SERVER_TYPE_MATCH, std::string()));
+              Log(AutofillMetrics::SERVER_TYPE_MATCH,
+                  EMAIL_ADDRESS, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::PREDICTED_TYPE_MATCH, std::string()));
+              Log(AutofillMetrics::PREDICTED_TYPE_MATCH,
+                  EMAIL_ADDRESS, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_NOT_AUTOFILLED, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
@@ -295,11 +311,28 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_SUBMITTED, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::HEURISTIC_TYPE_UNKNOWN, std::string()));
+              Log(AutofillMetrics::HEURISTIC_TYPE_UNKNOWN,
+                  ADDRESS_HOME_COUNTRY, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::SERVER_TYPE_UNKNOWN, std::string()));
+              Log(AutofillMetrics::SERVER_TYPE_UNKNOWN,
+                  ADDRESS_HOME_COUNTRY, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::PREDICTED_TYPE_UNKNOWN, std::string()));
+              Log(AutofillMetrics::PREDICTED_TYPE_UNKNOWN,
+                  ADDRESS_HOME_COUNTRY, std::string()));
+  // Phone field
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              Log(AutofillMetrics::FIELD_SUBMITTED, std::string()));
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              Log(AutofillMetrics::HEURISTIC_TYPE_MATCH,
+                  PHONE_HOME_WHOLE_NUMBER, std::string()));
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              Log(AutofillMetrics::SERVER_TYPE_MATCH,
+                  PHONE_HOME_WHOLE_NUMBER, std::string()));
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              Log(AutofillMetrics::PREDICTED_TYPE_MATCH,
+                  PHONE_HOME_WHOLE_NUMBER, std::string()));
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              Log(AutofillMetrics::FIELD_AUTOFILLED, std::string()));
 
   // Simulate form submission.
   EXPECT_NO_FATAL_FAILURE(autofill_manager_->OnFormSubmitted(form));
@@ -475,11 +508,14 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_SUBMITTED, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::HEURISTIC_TYPE_UNKNOWN, std::string()));
+              Log(AutofillMetrics::HEURISTIC_TYPE_UNKNOWN,
+                  ADDRESS_HOME_STATE, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::SERVER_TYPE_UNKNOWN, std::string()));
+              Log(AutofillMetrics::SERVER_TYPE_UNKNOWN,
+                  ADDRESS_HOME_STATE, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::PREDICTED_TYPE_UNKNOWN, std::string()));
+              Log(AutofillMetrics::PREDICTED_TYPE_UNKNOWN,
+                  ADDRESS_HOME_STATE, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_NOT_AUTOFILLED, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
@@ -492,11 +528,14 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_SUBMITTED, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::HEURISTIC_TYPE_MATCH, std::string()));
+              Log(AutofillMetrics::HEURISTIC_TYPE_MATCH,
+                  ADDRESS_HOME_CITY, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::SERVER_TYPE_MISMATCH, std::string()));
+              Log(AutofillMetrics::SERVER_TYPE_MISMATCH,
+                  ADDRESS_HOME_CITY, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::PREDICTED_TYPE_MISMATCH, std::string()));
+              Log(AutofillMetrics::PREDICTED_TYPE_MISMATCH,
+                  ADDRESS_HOME_CITY, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_NOT_AUTOFILLED, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
@@ -509,11 +548,14 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_SUBMITTED, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::HEURISTIC_TYPE_MISMATCH, std::string()));
+              Log(AutofillMetrics::HEURISTIC_TYPE_MISMATCH,
+                  EMAIL_ADDRESS, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::SERVER_TYPE_MISMATCH, std::string()));
+              Log(AutofillMetrics::SERVER_TYPE_MISMATCH,
+                  EMAIL_ADDRESS, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::PREDICTED_TYPE_MISMATCH, std::string()));
+              Log(AutofillMetrics::PREDICTED_TYPE_MISMATCH,
+                  EMAIL_ADDRESS, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_NOT_AUTOFILLED, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
@@ -529,11 +571,14 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_SUBMITTED, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::HEURISTIC_TYPE_MATCH, std::string()));
+              Log(AutofillMetrics::HEURISTIC_TYPE_MATCH,
+                  UNKNOWN_TYPE, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::SERVER_TYPE_MATCH, std::string()));
+              Log(AutofillMetrics::SERVER_TYPE_MATCH,
+                  UNKNOWN_TYPE, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::PREDICTED_TYPE_MATCH, std::string()));
+              Log(AutofillMetrics::PREDICTED_TYPE_MATCH,
+                  UNKNOWN_TYPE, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_AUTOFILLED, std::string()));
 
@@ -636,22 +681,28 @@ TEST_F(AutofillMetricsTest, QualityMetricsWithExperimentId) {
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_SUBMITTED, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::HEURISTIC_TYPE_MATCH, experiment_id));
+              Log(AutofillMetrics::HEURISTIC_TYPE_MATCH,
+                  UNKNOWN_TYPE, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::SERVER_TYPE_MISMATCH, experiment_id));
+              Log(AutofillMetrics::SERVER_TYPE_MISMATCH,
+                  UNKNOWN_TYPE, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::PREDICTED_TYPE_MISMATCH, experiment_id));
+              Log(AutofillMetrics::PREDICTED_TYPE_MISMATCH,
+                  UNKNOWN_TYPE, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_AUTOFILLED, experiment_id));
   // Non-autofilled field for which we had data
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_SUBMITTED, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::HEURISTIC_TYPE_MISMATCH, experiment_id));
+              Log(AutofillMetrics::HEURISTIC_TYPE_MISMATCH,
+                  EMAIL_ADDRESS, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::SERVER_TYPE_MATCH, experiment_id));
+              Log(AutofillMetrics::SERVER_TYPE_MATCH,
+                  EMAIL_ADDRESS, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::PREDICTED_TYPE_MATCH, experiment_id));
+              Log(AutofillMetrics::PREDICTED_TYPE_MATCH,
+                  EMAIL_ADDRESS, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_NOT_AUTOFILLED, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
@@ -670,11 +721,14 @@ TEST_F(AutofillMetricsTest, QualityMetricsWithExperimentId) {
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutofillMetrics::FIELD_SUBMITTED, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::HEURISTIC_TYPE_UNKNOWN, experiment_id));
+              Log(AutofillMetrics::HEURISTIC_TYPE_UNKNOWN,
+                  ADDRESS_HOME_COUNTRY, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::SERVER_TYPE_UNKNOWN, experiment_id));
+              Log(AutofillMetrics::SERVER_TYPE_UNKNOWN,
+                  ADDRESS_HOME_COUNTRY, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
-              Log(AutofillMetrics::PREDICTED_TYPE_UNKNOWN, experiment_id));
+              Log(AutofillMetrics::PREDICTED_TYPE_UNKNOWN,
+                  ADDRESS_HOME_COUNTRY, experiment_id));
 
   // Simulate form submission.
   EXPECT_NO_FATAL_FAILURE(autofill_manager_->OnFormSubmitted(form));

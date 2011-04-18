@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,28 +95,34 @@ TEST(PhoneNumberTest, Parser) {
 }
 
 TEST(PhoneNumberTest, Matcher) {
+  // Set phone number so country_code == 12, city_code = 123, number = 1234567.
   string16 phone(ASCIIToUTF16("121231234567"));
   HomePhoneNumber phone_number;
   phone_number.set_whole_number(phone);
-  // Phone number is now country_code == 12, city_code = 123, number = 1234567.
-  char test_number[] = "1234567890";
-  for (int i = arraysize(test_number) - 1; i >= 0; --i) {
-    test_number[i] = 0;  // Cut the string.
-    if (i > 7) {
-      EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16(test_number)));
-    } else {
-      EXPECT_TRUE(phone_number.IsNumber(ASCIIToUTF16(test_number)));
-    }
-    if (i > 3) {
-      EXPECT_FALSE(phone_number.IsCityCode(ASCIIToUTF16(test_number)));
-    } else {
-      EXPECT_TRUE(phone_number.IsCityCode(ASCIIToUTF16(test_number)));
-    }
-    if (i > 2) {
-      EXPECT_FALSE(phone_number.IsCountryCode(ASCIIToUTF16(test_number)));
-    } else {
-      EXPECT_TRUE(phone_number.IsCountryCode(ASCIIToUTF16(test_number)));
-    }
-  }
-}
 
+  EXPECT_FALSE(phone_number.IsCountryCode(ASCIIToUTF16("")));
+  EXPECT_FALSE(phone_number.IsCountryCode(ASCIIToUTF16("1")));
+  EXPECT_TRUE(phone_number.IsCountryCode(ASCIIToUTF16("12")));
+  EXPECT_FALSE(phone_number.IsCountryCode(ASCIIToUTF16("123")));
+
+  EXPECT_FALSE(phone_number.IsCityCode(ASCIIToUTF16("")));
+  EXPECT_FALSE(phone_number.IsCityCode(ASCIIToUTF16("1")));
+  EXPECT_FALSE(phone_number.IsCityCode(ASCIIToUTF16("12")));
+  EXPECT_TRUE(phone_number.IsCityCode(ASCIIToUTF16("123")));
+  EXPECT_FALSE(phone_number.IsCityCode(ASCIIToUTF16("1234")));
+
+  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("")));
+  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("1")));
+  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("12")));
+  EXPECT_TRUE(phone_number.IsNumber(ASCIIToUTF16("123")));
+  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("1234")));
+  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("12345")));
+  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("123456")));
+  EXPECT_TRUE(phone_number.IsNumber(ASCIIToUTF16("1234567")));
+  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("234567")));
+  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("34567")));
+  EXPECT_TRUE(phone_number.IsNumber(ASCIIToUTF16("4567")));
+  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("567")));
+  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("67")));
+  EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16("7")));
+}

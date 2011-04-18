@@ -201,40 +201,32 @@ void PhoneNumber::set_whole_number(const string16& whole_number) {
 }
 
 bool PhoneNumber::IsNumber(const string16& text) const {
-  if (text.length() > number_.length())
-    return false;
-
-  return StartsWith(number_, text, false);
+  // TODO(isherman): This will need to be updated once we add support for
+  // international phone numbers.
+  const size_t kPhoneNumberPrefixLength = 3;
+  const size_t kPhoneNumberSuffixLength = 4;
+  return
+      (text == number_) ||
+      (text.length() == kPhoneNumberPrefixLength &&
+       StartsWith(number_, text, true)) ||
+      (text.length() == kPhoneNumberSuffixLength &&
+       EndsWith(number_, text, true));
 }
 
 bool PhoneNumber::IsCityCode(const string16& text) const {
-  if (text.length() > city_code_.length())
-    return false;
-
-  return StartsWith(city_code_, text, false);
+  return text == city_code_;
 }
 
 bool PhoneNumber::IsCountryCode(const string16& text) const {
-  if (text.length() > country_code_.length())
-    return false;
-
-  return StartsWith(country_code_, text, false);
+  return text == country_code_;
 }
 
 bool PhoneNumber::IsCityAndNumber(const string16& text) const {
-  string16 city_and_number(CityAndNumber());
-  if (text.length() > city_and_number.length())
-    return false;
-
-  return StartsWith(city_and_number, text, false);
+  return text == CityAndNumber();
 }
 
 bool PhoneNumber::IsWholeNumber(const string16& text) const {
-  string16 whole_number(WholeNumber());
-  if (text.length() > whole_number.length())
-    return false;
-
-  return StartsWith(whole_number, text, false);
+  return text == WholeNumber();
 }
 
 bool PhoneNumber::Validate(const string16& number) const {

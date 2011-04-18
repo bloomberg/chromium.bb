@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/browser/autofill/field_types.h"
 
 class AutofillMetrics {
  public:
@@ -94,13 +95,16 @@ class AutofillMetrics {
 
   virtual void Log(CreditCardInfoBarMetric metric) const;
   virtual void Log(HeuristicTypeQualityMetric metric,
+                   AutofillFieldType field_type,
                    const std::string& experiment_id) const;
   virtual void Log(PredictedTypeQualityMetric metric,
+                   AutofillFieldType field_type,
                    const std::string& experiment_id) const;
   virtual void Log(QualityMetric metric,
                    const std::string& experiment_id) const;
   virtual void Log(ServerQueryMetric metric) const;
   virtual void Log(ServerTypeQualityMetric metric,
+                   AutofillFieldType field_type,
                    const std::string& experiment_id) const;
 
   // This should be called each time a page containing forms is loaded.
