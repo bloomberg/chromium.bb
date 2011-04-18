@@ -157,7 +157,7 @@ typedef struct NCInstBytes {
 /* Associate memory with the corresponding instruction bytes. */
 void NCInstBytesInitMemory(NCInstBytes* bytes, NCRemainingMemory* memory);
 
-/* Resets bytes back to the beginning of the current instruciton. */
+/* Resets bytes back to the beginning of the current instruction. */
 void NCInstBytesReset(NCInstBytes* bytes);
 
 /* Initializes the instruction buffer as the empty buffer, and

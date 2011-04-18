@@ -539,7 +539,8 @@ gtest_env.FilterOut(
 gtest_env.Prepend(CPPPATH=['${SOURCE_ROOT}/testing/gtest/include'])
 
 # List of (unit) test file prefixes to run unit tests on.
-gtest_sources = ['NCRemainingMemory']
+gtest_sources = ['NCRemainingMemory',
+                 'NCInstBytes']
 
 for source in gtest_sources:
   test_exe = gtest_env.ComponentProgram(
