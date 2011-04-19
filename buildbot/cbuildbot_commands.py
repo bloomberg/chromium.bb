@@ -185,7 +185,10 @@ def Build(buildroot, emptytree, build_autotest=True, usepkg=True,
   """Wrapper around build_packages."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./build_packages']
-  env = extra_env.copy()
+  if extra_env is None:
+    env = {}
+  else:
+    env = extra_env.copy()
   if not build_autotest: cmd.append('--nowithautotest')
   if not usepkg: cmd.append('--nousepkg')
   if emptytree:
