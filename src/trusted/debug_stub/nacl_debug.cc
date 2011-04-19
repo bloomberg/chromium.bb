@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -82,14 +82,6 @@ extern "C" {
 struct NaClDebugState {
   NaClDebugState() : target_(NULL), app_(NULL), break_(false),
                      errCode_(0), status_(NDS_DISABLED) {
-#ifdef _DEBUG
-    /*
-     * When compiling DEBUG we allow an environment variable to enable
-     * debugging, otherwise debugging could be allowed on a release
-     * build by modifying nacl_debug_allowed.
-     */
-    if (NULL != getenv("NACL_DEBUG_ENABLE")) nacl_debug_allowed = 1;
-#endif
     status_ = nacl_debug_allowed ? NDS_ENABLED : NDS_DISABLED;
 
     /* Initialize the stub if and only if debugging is enabled. */
