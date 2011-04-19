@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/time.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_resource.h"
@@ -127,6 +128,22 @@ void QuitMessageLoop(PP_Instance instance) {
         INTERFACE_ID_PPB_FLASH, instance));
 }
 
+double GetLocalTimeZoneOffset(PP_Time t) {
+  // Somewhat horrible: Explode it to local time and then unexplode it as if
+  // it were UTC. Also explode it to UTC and unexplode it (this avoids
+  // mismatching rounding or lack thereof). The time zone offset is their
+  // difference.
+  //
+  // TODO(brettw) this is duplicated in ppb_flash_impl.cc, unify these!
+  base::Time cur = base::Time::FromDoubleT(t);
+  base::Time::Exploded exploded;
+  cur.LocalExplode(&exploded);
+  base::Time adj_time = base::Time::FromUTCExploded(exploded);
+  cur.UTCExplode(&exploded);
+  cur = base::Time::FromUTCExploded(exploded);
+  return (adj_time - cur).InSecondsF();
+}
+
 const PPB_Flash flash_interface = {
   &SetInstanceAlwaysOnTop,
   &DrawGlyphs,
@@ -134,6 +151,7 @@ const PPB_Flash flash_interface = {
   &Navigate,
   &RunMessageLoop,
   &QuitMessageLoop,
+  &GetLocalTimeZoneOffset
 };
 
 InterfaceProxy* CreateFlashProxy(Dispatcher* dispatcher,

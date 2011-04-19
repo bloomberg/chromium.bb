@@ -10,9 +10,10 @@
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_time.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_FLASH_INTERFACE "PPB_Flash;8"
+#define PPB_FLASH_INTERFACE "PPB_Flash;9"
 
 struct PPB_Flash {
   // Sets or clears the rendering hint that the given plugin instance is always
@@ -51,6 +52,9 @@ struct PPB_Flash {
   // Posts a quit message for the outermost nested message loop. Use this to
   // exit and return back to the caller after you call RunMessageLoop.
   void (*QuitMessageLoop)(PP_Instance instance);
+
+  // Retrieves the local time zone offset from GM time for the given UTC time.
+  double (*GetLocalTimeZoneOffset)(PP_Time t);
 };
 
 #endif  // PPAPI_C_PRIVATE_PPB_FLASH_H_
