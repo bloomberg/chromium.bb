@@ -381,11 +381,11 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 {
 	struct x11_compositor *c = data;
 	struct x11_output *output;
-        xcb_generic_event_t *event;
+	xcb_generic_event_t *event, *prev;
 	xcb_client_message_event_t *client_message;
 	xcb_motion_notify_event_t *motion_notify;
 	xcb_enter_notify_event_t *enter_notify;
-	xcb_key_press_event_t *key_press, *prev_release;
+	xcb_key_press_event_t *key_press, *key_release;
 	xcb_button_press_event_t *button_press;
 	xcb_keymap_notify_event_t *keymap_notify;
 	xcb_focus_in_event_t *focus_in;
@@ -393,24 +393,35 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	uint32_t *k;
 	int i, set;
 
-	prev_release = NULL;
-        while (event = xcb_poll_for_event (c->conn), event != NULL) {
-		key_press = (xcb_key_press_event_t *) event;
-		if (prev_release &&
-		    (event->response_type & ~0x80) == XCB_KEY_PRESS &&
-		    prev_release->time == key_press->time) {
-			free(prev_release);
-			free(event);
-			prev_release = NULL;
-			continue;
-		} else if (prev_release) {
-			notify_key(c->base.input_device,
-				   prev_release->time,
-				   prev_release->detail - 8, 0);
-			free(prev_release);
-			prev_release = NULL;
+	prev = NULL;
+	while (event = xcb_poll_for_event (c->conn), event != NULL) {
+		switch (prev ? prev->response_type & ~0x80 : 0x80) {
+		case XCB_KEY_RELEASE:
+			key_release = (xcb_key_press_event_t *) prev;
+			key_press = (xcb_key_press_event_t *) event;
+			if ((event->response_type & ~0x80) == XCB_KEY_PRESS &&
+			    key_release->time == key_press->time) {
+				/* Don't deliver the held key release
+				 * event or the new key press event. */
+				free(event);
+				free(prev);
+				prev = NULL;
+				continue;
+			} else {
+				/* Deliver the held key release now
+				 * and fall through and handle the new
+				 * key press below. */
+				notify_key(c->base.input_device,
+					   key_release->time,
+					   key_release->detail - 8, 0);
+				free(prev);
+				prev = NULL;
+				break;
+			}
+		default:
+			/* No previous event held */
+			break;
 		}
-
 
 		switch (event->response_type & ~0x80) {
 
@@ -420,7 +431,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 				   key_press->time, key_press->detail - 8, 1);
 			break;
 		case XCB_KEY_RELEASE:
-			prev_release = (xcb_key_press_event_t *) event;
+			prev = event;
 			break;
 		case XCB_BUTTON_PRESS:
 			button_press = (xcb_button_press_event_t *) event;
@@ -515,16 +526,20 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			break;
 		}
 
-		if ((xcb_generic_event_t *) prev_release != event)
+		if (prev != event)
 			free (event);
 	}
 
-	if (prev_release) {
-		key_press = (xcb_key_press_event_t *) prev_release;
+	switch (prev ? prev->response_type & ~0x80 : 0x80) {
+	case XCB_KEY_RELEASE:
+		key_release = (xcb_key_press_event_t *) prev;
 		notify_key(c->base.input_device,
-			   prev_release->time, prev_release->detail - 8, 0);
-		free(prev_release);
-		prev_release = NULL;
+			   key_release->time, key_release->detail - 8, 0);
+		free(prev);
+		prev = NULL;
+		break;
+	default:
+		break;
 	}
 }
 
