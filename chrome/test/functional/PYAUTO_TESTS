@@ -69,6 +69,10 @@
       # crbug.com/66072
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
       '-notifications.NotificationsTest.testKillNotificationProcess',
+      # crbug.com/79826
+      '-notifications.NotificationsTest.testCreateSimpleNotification',
+      '-notifications.NotificationsTest.testNotificationReplacement',
+      '-notifications.NotificationsTest.testNotificationWithPropertyMissing',
       'ntp',
       'omnibox',
       '-omnibox.OmniboxTest.testHistoryResult',  # crbug.com/71715
