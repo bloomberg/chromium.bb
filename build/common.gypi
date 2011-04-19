@@ -29,6 +29,11 @@
     # Currently ignored on Windows.
     'coverage%': 0,
 
+    # The version number of the Mac OS X SDK to use. This is named the
+    # same as the variable in Chromium's common.gypi so that NaCl's
+    # setting can be overridden with Chromium's, if desired.
+    'mac_sdk%': '10.5',
+
     # TODO(sgk): eliminate this if possible.
     # It would be nicer to support this via a setting in 'target_defaults'
     # in chrome/app/locales/locales.gypi overriding the setting in the
@@ -71,7 +76,7 @@
       # Compute the architecture that we're building for. Default to the
       # architecture that we're building on.
       'conditions': [
-        [ 'OS=="linux" and nacl_standalone==0', {
+        ['OS=="linux" and nacl_standalone==0', {
           # This handles the Linux platforms we generally deal with. Anything
           # else gets passed through, which probably won't work very well; such
           # hosts should pass an explicit target_arch to gyp.
@@ -596,7 +601,7 @@
           'GCC_VERSION': '4.2',
           'GCC_WARN_ABOUT_MISSING_NEWLINE': 'YES',  # -Wnewline-eof
           'PREBINDING': 'NO',                       # No -Wl,-prebind
-          'SDKROOT': 'macosx10.5',                  # -isysroot
+          'SDKROOT': 'macosx<(mac_sdk)',            # -isysroot
           'USE_HEADERMAP': 'NO',
           # TODO(bradnelson): -Werror ?!?
           'WARNING_CFLAGS': ['-Wall', '-Wendif-labels', '-Wno-long-long'],
