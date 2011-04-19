@@ -964,11 +964,13 @@
 0x7e7073691a152241	OutdatedPluginInfobar.Update
 0x016839db155e0468	Outdent
 0x69fae31849862d21	OverrideEncoding
-0xdcb4676e49e95259	PDF.FitToHeightButton
+0xac15a659a088ccc5	PDF.FitToPageButton
 0x5f58a2db6428c1a0	PDF.FitToWidthButton
 0xc3c876c4e5846f66	PDF.LoadFailure
 0x9c67afdea49aa8c1	PDF.LoadSuccess
+0x715bc13f0a521ab7	PDF.PrintButton
 0x95be082d470e41c9	PDF.PrintPage
+0x5b2d6203fcccbfa9	PDF.SaveButton
 0xf7d4dd6244747179	PDF.SavePage
 0x99ed44568e5ff51a	PDF.ZoomFromBrowser
 0x1d57434947820665	PDF.ZoomInButton
