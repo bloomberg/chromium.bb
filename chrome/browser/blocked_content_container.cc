@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,8 +67,10 @@ void BlockedContentContainer::LaunchForContents(TabContents* tab_contents) {
       tab_contents->set_delegate(NULL);
       // We needn't call WasRestored to change its status because the
       // TabContents::AddNewContents will do it.
-      owner_->AddNewContents(tab_contents, content.disposition, content.bounds,
-                             content.user_gesture);
+      owner_->AddOrBlockNewContents(tab_contents,
+                                    content.disposition,
+                                    content.bounds,
+                                    content.user_gesture);
       break;
     }
   }
@@ -115,8 +117,8 @@ void BlockedContentContainer::AddNewContents(TabContents* source,
                                              WindowOpenDisposition disposition,
                                              const gfx::Rect& initial_position,
                                              bool user_gesture) {
-  owner_->AddNewContents(new_contents, disposition, initial_position,
-                         user_gesture);
+  owner_->AddOrBlockNewContents(
+      new_contents, disposition, initial_position, user_gesture);
 }
 
 void BlockedContentContainer::CloseContents(TabContents* source) {

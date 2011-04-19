@@ -347,11 +347,13 @@ class TabContents : public PageNavigator,
   ConstrainedWindow* CreateConstrainedDialog(
       ConstrainedWindowDelegate* delegate);
 
-  // Adds a new tab or window with the given already-created contents
-  void AddNewContents(TabContents* new_contents,
-                      WindowOpenDisposition disposition,
-                      const gfx::Rect& initial_pos,
-                      bool user_gesture);
+  // Adds a new tab or window with the given already-created contents.
+  // If disposition is NEW_POPUP and user_gesture is false, contents may
+  // be blocked.
+  void AddOrBlockNewContents(TabContents* new_contents,
+                             WindowOpenDisposition disposition,
+                             const gfx::Rect& initial_pos,
+                             bool user_gesture);
 
   // Called when the blocked popup notification is shown or hidden.
   virtual void PopupNotificationVisibilityChanged(bool visible);
@@ -691,6 +693,13 @@ class TabContents : public PageNavigator,
   // (but can be null if not applicable). Can be overridden.
   void SetIsLoading(bool is_loading,
                     LoadNotificationDetails* details);
+
+  // Adds a new tab or window with the given already-created contents.
+  // Called from AddOrBlockNewContents or AddPopup.
+  void AddNewContents(TabContents* new_contents,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_pos,
+                      bool user_gesture);
 
   // Adds the incoming |new_contents| to the |blocked_contents_| container.
   void AddPopup(TabContents* new_contents,

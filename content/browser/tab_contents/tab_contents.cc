@@ -811,10 +811,11 @@ void TabContents::BlockTabContent(bool blocked) {
     delegate_->SetTabContentBlocked(this, blocked);
 }
 
-void TabContents::AddNewContents(TabContents* new_contents,
-                                 WindowOpenDisposition disposition,
-                                 const gfx::Rect& initial_pos,
-                                 bool user_gesture) {
+
+void TabContents::AddOrBlockNewContents(TabContents* new_contents,
+                                        WindowOpenDisposition disposition,
+                                        const gfx::Rect& initial_pos,
+                                        bool user_gesture) {
   if (all_contents_blocked_) {
     if (!blocked_contents_)
       blocked_contents_ = new BlockedContentContainer(this);
@@ -834,13 +835,7 @@ void TabContents::AddNewContents(TabContents* new_contents,
     delegate_->GetConstrainingContents(this)->AddPopup(
         new_contents, initial_pos, user_gesture);
   } else {
-    new_contents->DisassociateFromPopupCount();
-    delegate_->AddNewContents(this, new_contents, disposition, initial_pos,
-                              user_gesture);
-    NotificationService::current()->Notify(
-        NotificationType::TAB_ADDED,
-        Source<TabContentsDelegate>(delegate_),
-        Details<TabContents>(this));
+    AddNewContents(new_contents, disposition, initial_pos, user_gesture);
   }
 
   // TODO(pkasting): Why is this necessary?
@@ -1405,6 +1400,19 @@ void TabContents::SetIsLoading(bool is_loading,
       det);
 }
 
+void TabContents::AddNewContents(TabContents* new_contents,
+                                 WindowOpenDisposition disposition,
+                                 const gfx::Rect& initial_pos,
+                                 bool user_gesture) {
+    new_contents->DisassociateFromPopupCount();
+    delegate_->AddNewContents(this, new_contents, disposition, initial_pos,
+                              user_gesture);
+    NotificationService::current()->Notify(
+        NotificationType::TAB_ADDED,
+        Source<TabContentsDelegate>(delegate_),
+        Details<TabContents>(this));
+}
+
 void TabContents::AddPopup(TabContents* new_contents,
                            const gfx::Rect& initial_pos,
                            bool user_gesture) {
@@ -1425,8 +1433,14 @@ void TabContents::AddPopup(TabContents* new_contents,
   } else {
     if (!blocked_contents_)
       blocked_contents_ = new BlockedContentContainer(this);
-    blocked_contents_->AddTabContents(new_contents, NEW_POPUP, initial_pos,
-                                      user_gesture);
+    // Call blocked_contents_->AddTabContents with user_gesture == true
+    // so that the contents will not get blocked again.
+    // TODO(stevenjb): Remove user_gesture parameter from
+    // BlockedContentContainer::AddTabContents()?
+    blocked_contents_->AddTabContents(new_contents,
+                                      NEW_POPUP,
+                                      initial_pos,
+                                      true);  // user gesture
     content_settings_delegate_->OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS,
                                                  std::string());
   }
