@@ -150,6 +150,10 @@ NSColor* GetBlackWithAlpha(CGFloat alpha) {
 }
 
 - (NSView*)hitTest:(NSPoint)aPoint {
+  NSView* probe = [super hitTest:aPoint];
+  if (probe != self)
+    return probe;
+
   NSPoint viewPoint = [self convertPoint:aPoint fromView:[self superview]];
   BOOL isFlipped = [self isFlipped];
   if (NSMouseInRect(viewPoint, [self tabRect], isFlipped))
