@@ -1,12 +1,13 @@
 #!/usr/bin/python
 #
-# Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import errno
 import os
 import shutil
+import shlex
 import signal
 import subprocess
 import tempfile
@@ -103,8 +104,8 @@ class TestRunCommand(unittest.TestCase):
     """
     self.proc_mock.returncode = 0
     cmd_list = ['foo', 'bar', 'roger']
-    self._TestCmd(cmd_list, cmd_list, rc_kv=dict(exit_code=True,
-                                                 ignore_sigint=ignore_sigint))
+    self._TestCmd(cmd_list, cmd_list,
+                  rc_kv=dict(exit_code=True, ignore_sigint=ignore_sigint))
 
   def testSignalRestoreNormalCase(self):
     """Test RunCommand() properly sets/restores sigint.  Normal case."""
@@ -122,7 +123,39 @@ class TestRunCommand(unittest.TestCase):
     """Raise error when proc.communicate() returns non-zero."""
     self.proc_mock.returncode = 1
     cmd = 'test cmd'
-    self._TestCmd(cmd, cmd, rc_kv=dict(error_ok=True))
+    real_cmd = [ '/bin/sh', '-c', cmd ]
+    self._TestCmd(cmd, real_cmd,
+                  rc_kv=dict(error_ok=True, shell=True))
+
+  def testCommandFailureRaisesError(self, ignore_sigint=False):
+    """Verify error raised by communicate() is caught.
+
+    Parameterized so this can also be used by some other tests w/ alternate
+    params to RunCommand().
+
+    Args:
+      ignore_sigint: If True, we'll tell RunCommand to ignore sigint.
+    """
+    cmd = 'test cmd'
+
+    # If requested, RunCommand will ignore sigints; record that.
+    if ignore_sigint:
+      signal.signal(signal.SIGINT, signal.SIG_IGN).AndReturn(self._old_sigint)
+
+    subprocess.Popen(['/bin/sh', '-c', cmd ], cwd=None, env=None,
+                     stdin=None, stdout=None, stderr=None,
+                     shell=False).AndReturn(self.proc_mock)
+    self.proc_mock.communicate(None).AndReturn((self.output, self.error))
+
+    # If it ignored them, RunCommand will restore sigints; record that.
+    if ignore_sigint:
+      signal.signal(signal.SIGINT, self._old_sigint).AndReturn(signal.SIG_IGN)
+
+    self.mox.ReplayAll()
+    self.assertRaises(cros_build_lib.RunCommandError,
+                      cros_build_lib.RunCommand, cmd, shell=True,
+                      ignore_sigint=ignore_sigint, error_ok=False)
+    self.mox.VerifyAll()
 
   def testSubprocessCommunicateExceptionRaisesError(self, ignore_sigint=False):
     """Verify error raised by communicate() is caught.
@@ -133,7 +166,7 @@ class TestRunCommand(unittest.TestCase):
     Args:
       ignore_sigint: If True, we'll tell RunCommand to ignore sigint.
     """
-    cmd = 'test cmd'
+    cmd = ['test', 'cmd']
 
     # If requested, RunCommand will ignore sigints; record that.
     if ignore_sigint:
@@ -159,8 +192,8 @@ class TestRunCommand(unittest.TestCase):
 
   def testSubprocessCommunicateExceptionNotRaisesError(self):
     """Don't re-raise error from communicate() when --error_ok=True."""
-    cmd = 'test cmd'
-    real_cmd = './enter_chroot.sh -- %s' % cmd
+    cmd = ['test', 'cmd']
+    real_cmd = ['./enter_chroot.sh', '--'] + cmd
     expected_result = cros_build_lib.CommandResult()
     expected_result.cmd = real_cmd
 
@@ -191,6 +224,45 @@ class TestRunCommand(unittest.TestCase):
     self._TestCmd(cmd_list, cmd_list,
                   sp_kv=dict(env=env),
                   rc_kv=dict(env=env, exit_code=True))
+
+  def testExtraEnvOnlyWorks(self):
+    """Test RunCommand(..., extra_env=xyz) works."""
+    # We'll put this bogus environment together, just to make sure
+    # subprocess.Popen gets passed it.
+    extra_env = {'Pinky' : 'Brain'}
+    ## This is a little bit circular, since the same logic is used to compute
+    ## the value inside, but at least it checks that this happens.
+    total_env = os.environ.copy()
+    total_env.update(extra_env)
+
+    # This is a simple case, copied from testReturnCodeZeroWithArrayCmd()
+    self.proc_mock.returncode = 0
+    cmd_list = ['foo', 'bar', 'roger']
+
+    # Run.  We expect the env= to be passed through from sp (subprocess.Popen)
+    # to rc (RunCommand).
+    self._TestCmd(cmd_list, cmd_list,
+                  sp_kv=dict(env=total_env),
+                  rc_kv=dict(extra_env=extra_env, exit_code=True))
+
+  def testExtraEnvTooWorks(self):
+    """Test RunCommand(..., env=xy, extra_env=z) works."""
+    # We'll put this bogus environment together, just to make sure
+    # subprocess.Popen gets passed it.
+    env = {'Tom': 'Jerry', 'Itchy': 'Scratchy'}
+    extra_env = {'Pinky': 'Brain'}
+    total_env = {'Tom': 'Jerry', 'Itchy': 'Scratchy', 'Pinky': 'Brain'}
+
+    # This is a simple case, copied from testReturnCodeZeroWithArrayCmd()
+    self.proc_mock.returncode = 0
+    cmd_list = ['foo', 'bar', 'roger']
+
+    # Run.  We expect the env= to be passed through from sp (subprocess.Popen)
+    # to rc (RunCommand).
+    self._TestCmd(cmd_list, cmd_list,
+                  sp_kv=dict(env=total_env),
+                  rc_kv=dict(env=env, extra_env=extra_env, exit_code=True))
+
 
 
   def testExceptionEquality(self):

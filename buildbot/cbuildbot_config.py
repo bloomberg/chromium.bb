@@ -46,6 +46,8 @@ test_mod -- Create a test mod image for archival.
 factory_install_mod -- Create a factory install image for archival.
 factory_test_mod -- Create a factory test image for archival.
 
+useflags -- Generic build modifying USE flags, passed as an array, or missing.
+
 git_url -- git repository URL for our manifests.
            External: http://git.chromium.org/git/manifest
            Internal: ssh://git@gitrw.chromium.org:9222/manifest-internal
@@ -54,9 +56,6 @@ manifest_version -- URL to git repo to store per-build manifest.
                     Usually None or
                     ssh://git@gitrw.chromium.org:9222/manifest-versions
 """
-
-# TODO(dgarrett) Make test_mod, factory_install_mod, factory_test_mod options
-# go away when these options work for arm.
 
 default = {
   # 'board' No default value
@@ -99,6 +98,7 @@ arm = {
   # These images don't work for arm.
   'factory_install_mod' : False,
   'factory_test_mod' : False,
+  'useflags' : None,
 }
 
 full = {

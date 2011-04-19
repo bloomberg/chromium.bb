@@ -142,8 +142,8 @@ def RevGitPushWithRetry(retries=5):
   """
   for retry in range(1, retries + 1):
     try:
-      cros_build_lib.RunCommand('repo sync .', shell=True)
-      cros_build_lib.RunCommand('git push', shell=True)
+      cros_build_lib.RunCommand(['repo', 'sync', '.'])
+      cros_build_lib.RunCommand(['git', 'push'])
       break
     except cros_build_lib.RunCommandError:
       if retry < retries:
@@ -168,24 +168,26 @@ def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST'):
   old_cwd = os.getcwd()
   os.chdir(os.path.dirname(filename))
 
-  commit = cros_build_lib.RunCommand('git rev-parse HEAD', shell=True,
+  commit = cros_build_lib.RunCommand(['git', 'rev-parse', 'HEAD'],
                                      redirect_stdout=True).output
-  cros_build_lib.RunCommand('git remote update', shell=True)
-  cros_build_lib.RunCommand('repo start %s .' % prebuilt_branch, shell=True)
-  git_ssh_config_cmd = (
-    'git config url.ssh://git@gitrw.chromium.org:9222.pushinsteadof '
-    'http://git.chromium.org/git')
-  cros_build_lib.RunCommand(git_ssh_config_cmd, shell=True)
+  cros_build_lib.RunCommand(['git', 'remote', 'update'])
+  cros_build_lib.RunCommand(['repo', 'start', prebuilt_branch, '.'])
+  git_ssh_config_cmd = [
+      'git',
+      'config',
+      'url.ssh://git@gitrw.chromium.org:9222.pushinsteadof',
+      'http://git.chromium.org/git' ]
+  cros_build_lib.RunCommand(git_ssh_config_cmd)
   description = 'Update %s="%s" in %s' % (key, value, filename)
   print description
   try:
     UpdateLocalFile(filename, value, key)
-    cros_build_lib.RunCommand('git config push.default tracking', shell=True)
-    cros_build_lib.RunCommand('git commit -am "%s"' % description, shell=True)
+    cros_build_lib.RunCommand(['git', 'config', 'push.default', 'tracking'])
+    cros_build_lib.RunCommand(['git', 'commit', '-am', description])
     RevGitPushWithRetry(retries)
   finally:
-    cros_build_lib.RunCommand('repo abandon %s .' % prebuilt_branch, shell=True)
-    cros_build_lib.RunCommand('git checkout %s' % commit, shell=True)
+    cros_build_lib.RunCommand(['repo', 'abandon', 'prebuilt_branch', '.'])
+    cros_build_lib.RunCommand(['git', 'checkout', commit])
     os.chdir(old_cwd)
 
 
@@ -240,7 +242,7 @@ def ShouldFilterPackage(file_path):
   return False
 
 
-def _RetryRun(cmd, print_cmd=True, shell=False, cwd=None):
+def _RetryRun(cmd, print_cmd=True, cwd=None):
   """Run the specified command, retrying if necessary.
 
   Args:
@@ -257,13 +259,13 @@ def _RetryRun(cmd, print_cmd=True, shell=False, cwd=None):
   # cros_build_lib.
   for attempt in range(_RETRIES):
     try:
-      output = cros_build_lib.RunCommand(cmd, print_cmd=print_cmd, shell=shell,
+      output = cros_build_lib.RunCommand(cmd, print_cmd=print_cmd,
                                          cwd=cwd)
       return True
     except cros_build_lib.RunCommandError:
-      print 'Failed to run %s' % cmd
+      print 'Failed to run %r' % cmd
   else:
-    print 'Retry failed run %s, giving up' % cmd
+    print 'Retry failed run %r, giving up' % cmd
     return False
 
 
@@ -283,11 +285,11 @@ def _GsUpload(args):
                  'public-read-write']
   acl_cmd = None
   if acl in CANNED_ACLS:
-    cmd = '%s cp -a %s %s %s' % (_GSUTIL_BIN, acl, local_file, remote_file)
+    cmd = [_GSUTIL_BIN, 'cp', '-a', acl, local_file, remote_file]
   else:
     # For private uploads we assume that the overlay board is set up properly
     # and a googlestore_acl.xml is present, if not this script errors
-    cmd = '%s cp -a private %s %s' % (_GSUTIL_BIN, local_file, remote_file)
+    cmd = [_GSUTIL_BIN, 'cp', '-a', 'private', local_file, remote_file]
     if not os.path.exists(acl):
       print >> sys.stderr, ('You are specifying either a file that does not '
                             'exist or an unknown canned acl: %s. Aborting '
@@ -295,14 +297,14 @@ def _GsUpload(args):
       # emulate the failing of an upload since we are not uploading the file
       return (local_file, remote_file)
 
-    acl_cmd = '%s setacl %s %s' % (_GSUTIL_BIN, acl, remote_file)
+    acl_cmd = [_GSUTIL_BIN, 'setacl', acl, remote_file]
 
-  if not _RetryRun(cmd, print_cmd=False, shell=True):
+  if not _RetryRun(cmd, print_cmd=False):
     return (local_file, remote_file)
 
   if acl_cmd:
     # Apply the passed in ACL xml file to the uploaded object.
-    _RetryRun(acl_cmd, print_cmd=False, shell=True)
+    _RetryRun(acl_cmd, print_cmd=False)
 
 
 def RemoteUpload(acl, files, pool=10):
@@ -422,10 +424,9 @@ def UpdateBinhostConfFile(path, key, value):
     config_file = file(path, 'w')
     config_file.close()
   UpdateLocalFile(path, value, key)
-  cros_build_lib.RunCommand('git add %s' % filename, cwd=cwd, shell=True)
+  cros_build_lib.RunCommand(['git', 'add', filename],  cwd=cwd)
   description = 'Update %s=%s in %s' % (key, value, filename)
-  cros_build_lib.RunCommand('git commit -m "%s"' % description, cwd=cwd,
-      shell=True)
+  cros_build_lib.RunCommand(['git', 'commit', '-m', description], cwd=cwd)
 
 
 def _GrabAllRemotePackageIndexes(binhost_urls):
@@ -499,21 +500,19 @@ class PrebuiltUploader(object):
         error_msg = ['%s -> %s\n' % args for args in failed_uploads if args]
         raise UploadFailed('Error uploading:\n%s' % error_msg)
     else:
-      pkgs = ' '.join(p['CPV'] + '.tbz2' for p in uploads)
+      pkgs = [p['CPV'] + '.tbz2' for p in uploads]
       ssh_server, remote_path = remote_location.split(':', 1)
-      d = { 'pkg_index': tmp_packages_file.name,
-            'pkgs': pkgs,
-            'remote_packages': '%s/Packages' % remote_location.rstrip('/'),
-            'remote_path': remote_path.rstrip('/'),
-            'remote_location': remote_location.rstrip('/'),
-            'ssh_server': ssh_server }
-      cmds = ['ssh %(ssh_server)s mkdir -p %(remote_path)s' % d,
-              'rsync -av --chmod=a+r %(pkg_index)s %(remote_packages)s' % d]
+      remote_path = remote_path.rstrip('/')
+      pkg_index = tmp_packages_file.name
+      remote_location = remote_location.rstrip('/')
+      remote_packages = '%s/Packages' % remote_location
+      cmds = [['ssh', ssh_server, 'mkdir', '-p', remote_path],
+              ['rsync', '-av', '--chmod=a+r', pkg_index, remote_packages]]
       if pkgs:
-        cmds.append('rsync -Rav %(pkgs)s %(remote_location)s/' % d)
+        cmds.append(['rsync', '-Rav'] + pkgs + [remote_location + '/'])
       for cmd in cmds:
-        if not _RetryRun(cmd, shell=True, cwd=package_path):
-          raise UploadFailed('Could not run %s' % cmd)
+        if not _RetryRun(cmd, cwd=package_path):
+          raise UploadFailed('Could not run %r' % cmd)
 
   def _UploadBoardTarball(self, board_path, url_suffix):
     """Upload a tarball of the board at the specified path to Google Storage.

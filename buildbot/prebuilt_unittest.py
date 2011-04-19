@@ -398,11 +398,12 @@ class TestUploadPrebuilt(unittest.TestCase):
     self.mox.StubOutWithMock(prebuilt, '_RetryRun')
     remote_path = '/dir/%s' % suffix.rstrip('/')
     full_remote_path = 'chromeos-prebuilt:%s' % remote_path
-    cmds = ['ssh chromeos-prebuilt mkdir -p %s' % remote_path,
-            'rsync -av --chmod=a+r fake %s/Packages' % full_remote_path,
-            'rsync -Rav private.tbz2 %s/' % full_remote_path]
+    cmds = [['ssh', 'chromeos-prebuilt', 'mkdir', '-p',remote_path],
+            ['rsync', '-av', '--chmod=a+r', 'fake',
+             full_remote_path + '/Packages'],
+            ['rsync', '-Rav', 'private.tbz2', full_remote_path + '/']]
     for cmd in cmds:
-      prebuilt._RetryRun(cmd, shell=True, cwd='/packages').AndReturn(True)
+      prebuilt._RetryRun(cmd, cwd='/packages').AndReturn(True)
     self.mox.ReplayAll()
     uri = self.pkgindex.header['URI']
     uploader = prebuilt.PrebuiltUploader('chromeos-prebuilt:/dir',
@@ -442,8 +443,8 @@ class TestSyncPrebuilts(unittest.TestCase):
     self.version = '1'
     self.binhost = 'http://prebuilt/'
     self.key = 'PORTAGE_BINHOST'
-    self.uploader = prebuilt.PrebuiltUploader(self.upload_location,
-        'public-read', self.binhost, [])
+    self.uploader = prebuilt.PrebuiltUploader(
+        self.upload_location, 'public-read', self.binhost, [])
     self.mox.StubOutWithMock(self.uploader, '_UploadPrebuilt')
 
   def tearDown(self):

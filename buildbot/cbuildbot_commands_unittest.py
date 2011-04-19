@@ -24,6 +24,7 @@ class CBuildBotTest(mox.MoxTestBase):
     mox.MoxTestBase.setUp(self)
     # Always stub RunCommmand out as we use it in every method.
     self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
+    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
     self.tracking_branch = 'cros/master'
     self._test_repos = [['kernel', 'third_party/kernel/files'],
                         ['login_manager', 'platform/login_manager']
@@ -161,6 +162,37 @@ class CBuildBotTest(mox.MoxTestBase):
     self.mox.ReplayAll()
     commands._RepoSync(self._buildroot, retries=2)
     self.mox.VerifyAll()
+
+  def testBuildIncremental(self):
+    """Base case where Build is called."""
+    buildroot = '/bob/'
+    cros_lib.RunCommand(mox.IgnoreArg(), cwd=mox.StrContains(buildroot),
+        enter_chroot=True, extra_env=mox.IgnoreArg())
+    self.mox.ReplayAll()
+    commands.Build(buildroot, False)
+    self.mox.VerifyAll()
+
+  def testBuildClobber(self):
+    """Base case where Build with emptytree is called."""
+    buildroot = '/bob/'
+    cros_lib.RunCommand(mox.IgnoreArg(), cwd=mox.StrContains(buildroot),
+        enter_chroot=True,
+        extra_env=mox.ContainsKeyValue('EXTRA_BOARD_FLAGS','--emptytree'))
+    self.mox.ReplayAll()
+    commands.Build(buildroot, True)
+    self.mox.VerifyAll()
+
+  def testBuildWithEnv(self):
+    """Case where Build is called with a custom environment."""
+    buildroot = '/bob/'
+    extra = {'A' :'Av', 'B' : 'Bv'}
+    cros_lib.RunCommand( mox.IgnoreArg(), cwd=mox.StrContains(buildroot),
+        enter_chroot=True,extra_env=mox.And(
+        mox.ContainsKeyValue('A','Av'), mox.ContainsKeyValue('B','Bv')))
+    self.mox.ReplayAll()
+    commands.Build(buildroot, True, extra_env=extra)
+    self.mox.VerifyAll()
+
 
 
 if __name__ == '__main__':
