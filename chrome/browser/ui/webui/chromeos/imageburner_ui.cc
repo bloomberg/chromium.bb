@@ -244,19 +244,18 @@ void ImageBurnHandler::ProgressUpdated(chromeos::BurnLibrary* object,
 }
 
 void ImageBurnHandler::OnDownloadUpdated(DownloadItem* download) {
-  if (download->IsPartialDownload()) {
-    scoped_ptr<DictionaryValue> result_value(
-        download_util::CreateDownloadItemValue(download, 0));
-    web_ui_->CallJavascriptFunction("downloadUpdated", *result_value);
+  if (download->IsCancelled()) {
+    DownloadCompleted(false);  // Should stop observation.
+    DCHECK(!download_item_observer_added_);
+  } else if (download->IsComplete()) {
+    zip_image_file_path_ = download->full_path();
+    DownloadCompleted(true);  // Should stop observation.
+    DCHECK(!download_item_observer_added_);
+  } else if (download->IsPartialDownload()) {
+      scoped_ptr<DictionaryValue> result_value(
+          download_util::CreateDownloadItemValue(download, 0));
+      web_ui_->CallJavascriptFunction("downloadUpdated", *result_value);
   }
-  if (download->IsCancelled())
-    DownloadCompleted(false);
-}
-
-void ImageBurnHandler::OnDownloadFileCompleted(DownloadItem* download) {
-  DCHECK(download->IsComplete());
-  zip_image_file_path_ = download->full_path();
-  DownloadCompleted(true);
 }
 
 void ImageBurnHandler::OnDownloadOpened(DownloadItem* download) {
@@ -590,18 +589,19 @@ void ImageBurnResourceManager::OnDownloadUpdated(DownloadItem* download) {
   if (download->IsCancelled()) {
     image_url_.reset();
     ConfigFileFetched(false);
-  }
-}
 
-void ImageBurnResourceManager::OnDownloadFileCompleted(DownloadItem* download) {
-  DCHECK(download->IsComplete());
-  std::string image_url;
-  if (file_util::ReadFileToString(config_file_path_, &image_url)) {
-    image_url_.reset(new GURL(std::string(kImageBaseURL) + image_url));
-    ConfigFileFetched(true);
-  } else {
-    image_url_.reset();
-    ConfigFileFetched(false);
+    // ConfigFileFetched should remove observer.
+    DCHECK(!download_item_observer_added_);
+    DCHECK(active_download_item_ == NULL);
+  } else if (download->IsComplete()) {
+    std::string image_url;
+    if (file_util::ReadFileToString(config_file_path_, &image_url)) {
+      image_url_.reset(new GURL(std::string(kImageBaseURL) + image_url));
+      ConfigFileFetched(true);
+    } else {
+      image_url_.reset();
+      ConfigFileFetched(false);
+    }
   }
 }
 

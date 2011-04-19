@@ -176,7 +176,8 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
       complete_animation_(this),
       icon_small_(NULL),
       icon_large_(NULL),
-      creation_time_(base::Time::Now()) {
+      creation_time_(base::Time::Now()),
+      download_complete_(false) {
   LoadIcon();
 
   body_.Own(gtk_button_new());
@@ -393,6 +394,11 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
       complete_animation_.Show();
       break;
     case DownloadItem::COMPLETE:
+      if (download_complete_)
+        // We've already handled the completion specific actions; skip
+        // doing them again.
+        break;
+
       if (download->auto_opened()) {
         parent_shelf_->RemoveDownloadItem(this);  // This will delete us!
         return;
@@ -403,6 +409,7 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
       DownloadItemDrag::SetSource(body_.get(), get_download(), icon_large_);
 
       complete_animation_.Show();
+      download_complete_ = true;
       break;
     case DownloadItem::IN_PROGRESS:
       get_download()->is_paused() ?

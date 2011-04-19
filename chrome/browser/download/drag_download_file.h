@@ -56,7 +56,6 @@ class DragDownloadFile : public ui::DownloadFileProvider,
   // DownloadItem::Observer methods.
   // Called on UI thread.
   virtual void OnDownloadUpdated(DownloadItem* download);
-  virtual void OnDownloadFileCompleted(DownloadItem* download);
   virtual void OnDownloadOpened(DownloadItem* download) { }
 
  private:

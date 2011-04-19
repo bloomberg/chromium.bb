@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -324,12 +324,13 @@ void DownloadFileManager::RenameInProgressDownloadFile(
 }
 
 // The DownloadManager in the UI thread has provided a final name for the
-// download specified by 'id'. Rename the completed download.
+// download specified by 'id'. Rename the download that's in the process
+// of completing.
 //
 // There are 2 possible rename cases where this method can be called:
 // 1. foo.crdownload -> foo (final, safe)
 // 2. Unconfirmed.xxx.crdownload -> xxx (final, validated)
-void DownloadFileManager::RenameFinishedDownloadFile(
+void DownloadFileManager::RenameCompletingDownloadFile(
     int id, const FilePath& full_path, bool overwrite_existing_file) {
   VLOG(20) << __FUNCTION__ << "()" << " id = " << id
            << " overwrite_existing_file = " << overwrite_existing_file
@@ -382,8 +383,8 @@ void DownloadFileManager::RenameFinishedDownloadFile(
           new_path, uniquifier));
 }
 
-// Called only from RenameInProgressDownloadFile and RenameFinishedDownloadFile
-// on the FILE thread.
+// Called only from RenameInProgressDownloadFile and
+// RenameCompletingDownloadFile on the FILE thread.
 void DownloadFileManager::CancelDownloadOnRename(int id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 

@@ -99,7 +99,6 @@ class ImageBurnResourceManager
 
   // DownloadItem::Observer interface
   virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadFileCompleted(DownloadItem* download) OVERRIDE;
   virtual void OnDownloadOpened(DownloadItem* download) OVERRIDE {}
 
   // DownloadManager::Observer interface
@@ -192,7 +191,6 @@ class ImageBurnHandler : public WebUIMessageHandler,
 
   // DownloadItem::Observer interface.
   virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadFileCompleted(DownloadItem* download) OVERRIDE;
   virtual void OnDownloadOpened(DownloadItem* download) OVERRIDE;
 
   // DownloadManager::Observer interface.

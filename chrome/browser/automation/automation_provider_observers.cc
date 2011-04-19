@@ -1452,11 +1452,9 @@ void AutomationProviderDownloadItemObserver::OnDownloadUpdated(
     download->Cancel(true);
     RemoveAndCleanupOnLastEntry(download);
   }
-}
 
-void AutomationProviderDownloadItemObserver::OnDownloadFileCompleted(
-      DownloadItem* download) {
-  RemoveAndCleanupOnLastEntry(download);
+  if (download->IsComplete())
+    RemoveAndCleanupOnLastEntry(download);
 }
 
 // We don't want to send multiple messages, as the behavior is undefined.
@@ -1526,10 +1524,6 @@ void AutomationProviderDownloadUpdatedObserver::OnDownloadOpened(
         return_value.get());
   }
   delete this;
-}
-
-void AutomationProviderDownloadUpdatedObserver::OnDownloadFileCompleted(
-    DownloadItem* download) {
 }
 
 AutomationProviderDownloadModelChangedObserver::

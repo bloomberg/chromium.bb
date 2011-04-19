@@ -167,23 +167,17 @@ void DragDownloadFile::ModelChanged() {
 
 void DragDownloadFile::OnDownloadUpdated(DownloadItem* download) {
   AssertCurrentlyOnUIThread();
-
   if (download->IsCancelled()) {
     download->RemoveObserver(this);
     download_manager_->RemoveObserver(this);
 
     DownloadCompleted(false);
+  } else if (download->IsComplete()) {
+    download->RemoveObserver(this);
+    download_manager_->RemoveObserver(this);
+    DownloadCompleted(true);
   }
-}
-
-void DragDownloadFile::OnDownloadFileCompleted(DownloadItem* download) {
-  AssertCurrentlyOnUIThread();
-  DCHECK(download->IsComplete());
-
-  download->RemoveObserver(this);
-  download_manager_->RemoveObserver(this);
-
-  DownloadCompleted(true);
+  // Ignore other states.
 }
 
 void DragDownloadFile::AssertCurrentlyOnDragThread() {

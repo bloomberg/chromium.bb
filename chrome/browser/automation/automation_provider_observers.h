@@ -888,7 +888,6 @@ class AutomationProviderDownloadItemObserver : public DownloadItem::Observer {
   virtual ~AutomationProviderDownloadItemObserver();
 
   virtual void OnDownloadUpdated(DownloadItem* download);
-  virtual void OnDownloadFileCompleted(DownloadItem* download);
   virtual void OnDownloadOpened(DownloadItem* download);
 
  private:
@@ -915,7 +914,6 @@ class AutomationProviderDownloadUpdatedObserver
 
   virtual void OnDownloadUpdated(DownloadItem* download);
   virtual void OnDownloadOpened(DownloadItem* download);
-  virtual void OnDownloadFileCompleted(DownloadItem* download);
 
  private:
   base::WeakPtr<AutomationProvider> provider_;

@@ -115,7 +115,6 @@ class ActiveDownloadsHandler
 
   // DownloadItem::Observer interface.
   virtual void OnDownloadUpdated(DownloadItem* item);
-  virtual void OnDownloadFileCompleted(DownloadItem* item);
   virtual void OnDownloadOpened(DownloadItem* item) { }
 
   // DownloadManager::Observer interface.
@@ -702,10 +701,6 @@ void ActiveDownloadsHandler::OnDownloadUpdated(DownloadItem* item) {
   const size_t id = it - active_download_items_.begin();
   web_ui_->CallJavascriptFunction("downloadUpdated",
       *download_util::CreateDownloadItemValue(item, id));
-}
-
-void ActiveDownloadsHandler::OnDownloadFileCompleted(DownloadItem* item) {
-  OnDownloadUpdated(item);
 }
 
 void ActiveDownloadsHandler::DeleteFile(const FilePath& path, TaskProxy* task) {

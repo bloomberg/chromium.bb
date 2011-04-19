@@ -99,12 +99,12 @@ class DownloadManager
                              std::vector<DownloadItem*>* result);
 
   // Return all non-temporary downloads in the specified directory that are
-  // are in progress or have finished.
+  // are in progress or have completed.
   void GetAllDownloads(const FilePath& dir_path,
                        std::vector<DownloadItem*>* result);
 
   // Return all non-temporary downloads in the specified directory that are
-  // either in-progress or finished but still waiting for user confirmation.
+  // in-progress (including dangerous downloads waiting for user confirmation).
   void GetCurrentDownloads(const FilePath& dir_path,
                            std::vector<DownloadItem*>* result);
 
@@ -130,7 +130,7 @@ class DownloadManager
   void RemoveDownload(int64 download_handle);
 
   // Determine if the download is ready for completion, i.e. has had
-  // all data received, and completed the filename determination and
+  // all data saved, and completed the filename determination and
   // history insertion.
   bool IsDownloadReadyForCompletion(DownloadItem* download);
 
@@ -347,13 +347,14 @@ class DownloadManager
   //
   // When a download is created through a user action, the corresponding
   // DownloadItem* is placed in |active_downloads_| and remains there until the
-  // download has finished.  It is also placed in |in_progress_| and remains
-  // there until it has received a valid handle from the history system. Once
-  // it has a valid handle, the DownloadItem* is placed in the
-  // |history_downloads_| map.  When the download is complete, it is removed
-  // from |in_progress_|.  Downloads from past sessions read from a
-  // persisted state from the history system are placed directly into
-  // |history_downloads_| since they have valid handles in the history system.
+  // download is in a terminal state (COMPLETE or CANCELLED).  It is also
+  // placed in |in_progress_| and remains there until it has received a
+  // valid handle from the history system. Once it has a valid handle, the
+  // DownloadItem* is placed in the |history_downloads_| map.  When the
+  // download reaches a terminal state, it is removed from |in_progress_|.
+  // Downloads from past sessions read from a persisted state from the
+  // history system are placed directly into |history_downloads_| since
+  // they have valid handles in the history system.
   typedef std::set<DownloadItem*> DownloadSet;
   typedef base::hash_map<int64, DownloadItem*> DownloadMap;
 

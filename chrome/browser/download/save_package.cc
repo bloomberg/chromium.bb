@@ -744,9 +744,6 @@ void SavePackage::Finish() {
 
   download_->OnAllDataSaved(all_save_items_count_);
   download_->MarkAsComplete();
-  // Notify download observers that we are complete (the call
-  // to OnReadyToFinish() set the state to complete but did not notify).
-  download_->UpdateObservers();
 
   NotificationService::current()->Notify(
       NotificationType::SAVE_PACKAGE_SUCCESSFULLY_FINISHED,

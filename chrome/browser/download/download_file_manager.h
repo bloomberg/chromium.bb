@@ -110,9 +110,15 @@ class DownloadFileManager
   // |overwrite_existing_file| prevents uniquification, and is used for SAFE
   // downloads, as the user may have decided to overwrite the file.
   // Sent from the UI thread and run on the FILE thread.
-  void RenameFinishedDownloadFile(int id,
-                                  const FilePath& full_path,
-                                  bool overwrite_existing_file);
+  void RenameCompletingDownloadFile(int id,
+                                    const FilePath& full_path,
+                                    bool overwrite_existing_file);
+
+  // The number of downloads currently active on the DownloadFileManager.
+  // Primarily for testing.
+  int NumberOfActiveDownloads() const {
+    return downloads_.size();
+  }
 
  private:
   friend class base::RefCountedThreadSafe<DownloadFileManager>;
@@ -143,7 +149,7 @@ class DownloadFileManager
   DownloadFile* GetDownloadFile(int id);
 
   // Called only from RenameInProgressDownloadFile and
-  // RenameFinishedDownloadFile on the FILE thread.
+  // RenameCompletingDownloadFile on the FILE thread.
   void CancelDownloadOnRename(int id);
 
   // Erases the download file with the given the download |id| and removes

@@ -49,7 +49,6 @@ class DownloadItemGtk : public DownloadItem::Observer,
 
   // DownloadItem::Observer implementation.
   virtual void OnDownloadUpdated(DownloadItem* download);
-  virtual void OnDownloadFileCompleted(DownloadItem* download) { }
   virtual void OnDownloadOpened(DownloadItem* download) { }
 
   // ui::AnimationDelegate implementation.
@@ -233,6 +232,10 @@ class DownloadItemGtk : public DownloadItem::Observer,
 
   // For canceling an in progress icon request.
   CancelableRequestConsumerT<int, 0> icon_consumer_;
+
+  // Indicates when the download has completed, so we don't redo
+  // on-completion actions.
+  bool download_complete_;
 };
 
 #endif  // CHROME_BROWSER_UI_GTK_DOWNLOAD_DOWNLOAD_ITEM_GTK_H_

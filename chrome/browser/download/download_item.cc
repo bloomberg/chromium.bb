@@ -33,7 +33,7 @@
 //        destination file has been determined.
 //      * Entered into the history database.
 //      * Made visible in the download shelf.
-//      * All data is received.  Note that the actual data download occurs
+//      * All data is saved.  Note that the actual data download occurs
 //        in parallel with the above steps, but until those steps are
 //        complete, completion of the data download will be ignored.
 //      * Download file is renamed to its final name, and possibly
@@ -246,10 +246,6 @@ void DownloadItem::UpdateObservers() {
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadUpdated(this));
 }
 
-void DownloadItem::NotifyObserversDownloadFileCompleted() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadFileCompleted(this));
-}
-
 bool DownloadItem::CanOpenDownload() {
   return !Extension::IsExtension(target_name_);
 }
@@ -357,6 +353,7 @@ void DownloadItem::Cancel(bool update_history) {
 void DownloadItem::MarkAsComplete() {
   DCHECK(all_data_saved_);
   state_ = COMPLETE;
+  UpdateObservers();
 }
 
 void DownloadItem::OnAllDataSaved(int64 size) {
@@ -366,7 +363,7 @@ void DownloadItem::OnAllDataSaved(int64 size) {
   StopProgressTimer();
 }
 
-void DownloadItem::Finished() {
+void DownloadItem::Completed() {
   VLOG(20) << " " << __FUNCTION__ << "() "
            << DebugString(false);
 
@@ -390,16 +387,13 @@ void DownloadItem::Finished() {
     auto_opened_ = true;
   }
 
-  // Notify our observers that we are complete (the call to MarkAsComplete()
-  // set the state to complete but did not notify).
-  UpdateObservers();
-
   // The download file is meant to be completed if both the filename is
   // finalized and the file data is downloaded. The ordering of these two
   // actions is indeterministic. Thus, if the filename is not finalized yet,
   // delay the notification.
   if (name_finalized()) {
-    NotifyObserversDownloadFileCompleted();
+    state_ = COMPLETE;
+    UpdateObservers();
     download_manager_->RemoveFromActiveList(id());
   }
 }
@@ -474,17 +468,15 @@ void DownloadItem::OnNameFinalized() {
            << DebugString(true);
   name_finalized_ = true;
 
-  // The download file is meant to be completed if both the filename is
-  // finalized and the file data is downloaded. The ordering of these two
-  // actions is indeterministic. Thus, if we are still in downloading the
-  // file, delay the notification.
-  if (IsComplete()) {
-    NotifyObserversDownloadFileCompleted();
-    download_manager_->RemoveFromActiveList(id());
-  }
+  // We can't reach this point in the code without having received all the
+  // data, so it's safe to move to the COMPLETE state.
+  DCHECK(all_data_saved_);
+  state_ = COMPLETE;
+  UpdateObservers();
+  download_manager_->RemoveFromActiveList(id());
 }
 
-void DownloadItem::OnDownloadFinished(DownloadFileManager* file_manager) {
+void DownloadItem::OnDownloadCompleting(DownloadFileManager* file_manager) {
   VLOG(20) << " " << __FUNCTION__ << "() "
            << " needs rename = " << NeedsRename()
            << " " << DebugString(true);
@@ -495,12 +487,14 @@ void DownloadItem::OnDownloadFinished(DownloadFileManager* file_manager) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(
-            file_manager, &DownloadFileManager::RenameFinishedDownloadFile,
+            file_manager, &DownloadFileManager::RenameCompletingDownloadFile,
             id(), GetTargetFilePath(), safety_state() == SAFE));
     return;
+  } else {
+    name_finalized_ = true;
   }
 
-  Finished();
+  Completed();
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -518,9 +512,7 @@ void DownloadItem::OnDownloadRenamedToFinalName(const FilePath& full_path) {
   Rename(full_path);
   OnNameFinalized();
 
-  // This was called from OnDownloadFinished; continue to call
-  // DownloadFinished.
-  Finished();
+  Completed();
 }
 
 bool DownloadItem::MatchesQuery(const string16& query) const {

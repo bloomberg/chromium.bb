@@ -91,7 +91,7 @@ void DownloadManager::Shutdown() {
     it++;
 
     if (download->safety_state() == DownloadItem::DANGEROUS &&
-        (download->IsPartialDownload() || download->IsComplete())) {
+        download->IsPartialDownload()) {
       // The user hasn't accepted it, so we need to remove it
       // from the disk.  This may or may not result in it being
       // removed from the DownloadManager queues and deleted
@@ -505,7 +505,7 @@ void DownloadManager::AttachDownloadItem(DownloadCreateInfo* info) {
     // The download is a safe download.  We need to
     // rename it to its intermediate '.crdownload' path.  The final
     // name after user confirmation will be set from
-    // DownloadItem::OnDownloadFinished.
+    // DownloadItem::OnDownloadCompleting.
     download_path = download_util::GetCrDownloadPath(info->path);
   }
 
@@ -644,11 +644,10 @@ void DownloadManager::MaybeCompleteDownload(DownloadItem* download) {
   UpdateAppIcon();  // Reflect removal from in_progress_.
 
   // Final update of download item and history.
-  download->MarkAsComplete();
   download_history_->UpdateEntry(download);
 
   // Finish the download.
-  download->OnDownloadFinished(file_manager_);
+  download->OnDownloadCompleting(file_manager_);
 }
 
 void DownloadManager::RemoveFromActiveList(int32 download_id) {

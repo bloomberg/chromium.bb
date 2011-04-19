@@ -253,7 +253,7 @@ class ItemObserver : public DownloadItem::Observer {
  public:
   explicit ItemObserver(DownloadItem* tracked)
       : tracked_(tracked), states_hit_(0),
-        was_updated_(false), was_completed_(false), was_opened_(false) {
+        was_updated_(false), was_opened_(false) {
     DCHECK(tracked_);
     tracked_->AddObserver(this);
     // Record the initial state.
@@ -267,7 +267,6 @@ class ItemObserver : public DownloadItem::Observer {
     return (1 << state) & states_hit_;
   }
   bool was_updated() const { return was_updated_; }
-  bool was_completed() const { return was_completed_; }
   bool was_opened() const { return was_opened_; }
 
  private:
@@ -276,11 +275,6 @@ class ItemObserver : public DownloadItem::Observer {
     DCHECK_EQ(tracked_, download);
     states_hit_ |= (1 << download->state());
     was_updated_ = true;
-  }
-  virtual void OnDownloadFileCompleted(DownloadItem* download) {
-    DCHECK_EQ(tracked_, download);
-    states_hit_ |= (1 << download->state());
-    was_completed_ = true;
   }
   virtual void OnDownloadOpened(DownloadItem* download) {
     DCHECK_EQ(tracked_, download);
@@ -291,7 +285,6 @@ class ItemObserver : public DownloadItem::Observer {
   DownloadItem* tracked_;
   int states_hit_;
   bool was_updated_;
-  bool was_completed_;
   bool was_opened_;
 };
 
@@ -450,7 +443,6 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   EXPECT_FALSE(observer->hit_state(DownloadItem::CANCELLED));
   EXPECT_FALSE(observer->hit_state(DownloadItem::REMOVING));
   EXPECT_TRUE(observer->was_updated());
-  EXPECT_FALSE(observer->was_completed());
   EXPECT_FALSE(observer->was_opened());
 
   download->Cancel(true);
@@ -462,7 +454,6 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   EXPECT_FALSE(observer->hit_state(DownloadItem::CANCELLED));
   EXPECT_FALSE(observer->hit_state(DownloadItem::REMOVING));
   EXPECT_TRUE(observer->was_updated());
-  EXPECT_FALSE(observer->was_completed());
   EXPECT_FALSE(observer->was_opened());
 }
 
@@ -516,7 +507,6 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   EXPECT_FALSE(observer->hit_state(DownloadItem::COMPLETE));
   EXPECT_FALSE(observer->hit_state(DownloadItem::REMOVING));
   EXPECT_TRUE(observer->was_updated());
-  EXPECT_FALSE(observer->was_completed());
   EXPECT_FALSE(observer->was_opened());
 
   EXPECT_FALSE(file_util::PathExists(new_path));
@@ -597,7 +587,6 @@ TEST_F(DownloadManagerTest, DownloadOverwriteTest) {
   EXPECT_TRUE(observer->hit_state(DownloadItem::COMPLETE));
   EXPECT_FALSE(observer->hit_state(DownloadItem::REMOVING));
   EXPECT_TRUE(observer->was_updated());
-  EXPECT_TRUE(observer->was_completed());
   EXPECT_FALSE(observer->was_opened());
   EXPECT_EQ(DownloadItem::COMPLETE, download->state());
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -39,16 +39,13 @@ struct DownloadCreateInfo;
 class DownloadItem {
  public:
   enum DownloadState {
+    // Download is actively progressing.
     IN_PROGRESS,
 
-    // Note that COMPLETE indicates that the download has gotten all of its
-    // data, has figured out its final destination file, has been entered
-    // into the history store, and has been shown in the UI.  The only
-    // operations remaining are acceptance by the user of
-    // a dangerous download (if dangerous), renaming the file
-    // to the final name, and auto-opening it (if it auto-opens).
+    // Download is completely finished.
     COMPLETE,
 
+    // Download has been cancelled.
     CANCELLED,
 
     // This state indicates that the download item is about to be destroyed,
@@ -82,9 +79,6 @@ class DownloadItem {
    public:
     virtual void OnDownloadUpdated(DownloadItem* download) = 0;
 
-    // Called when a downloaded file has been completed.
-    virtual void OnDownloadFileCompleted(DownloadItem* download) = 0;
-
     // Called when a downloaded file has been opened.
     virtual void OnDownloadOpened(DownloadItem* download) = 0;
 
@@ -114,9 +108,6 @@ class DownloadItem {
 
   // Notifies our observers periodically.
   void UpdateObservers();
-
-  // Notifies our observers the downloaded file has been completed.
-  void NotifyObserversDownloadFileCompleted();
 
   // Whether it is OK to open this download.
   bool CanOpenDownload();
@@ -156,13 +147,9 @@ class DownloadItem {
   // Called when all data has been saved.  Only has display effects.
   void OnAllDataSaved(int64 size);
 
-  // Called when ready to consider the data received and move on to the
-  // next stage.
+  // Called by external code (SavePackage) using the DownloadItem interface
+  // to display progress when the DownloadItem should be considered complete.
   void MarkAsComplete();
-
-  // Called when the entire download operation (including renaming etc)
-  // is finished.
-  void Finished();
 
   // Download operation had an error.
   // |size| is the amount of data received so far, and |os_error| is the error
@@ -210,10 +197,10 @@ class DownloadItem {
   // Called when the name of the download is finalized.
   void OnNameFinalized();
 
-  // Called when the download is finished.
+  // Called when the download is ready to complete.
   // This may perform final rename if necessary and will eventually call
-  // DownloadManager::DownloadFinished().
-  void OnDownloadFinished(DownloadFileManager* file_manager);
+  // DownloadItem::Completed().
+  void OnDownloadCompleting(DownloadFileManager* file_manager);
 
   // Called when the file name for the download is renamed to its final name.
   void OnDownloadRenamedToFinalName(const FilePath& full_path);
@@ -296,6 +283,10 @@ class DownloadItem {
 
   // Internal helper for maintaining consistent received and total sizes.
   void UpdateSize(int64 size);
+
+  // Called when the entire download operation (including renaming etc)
+  // is completed.
+  void Completed();
 
   // Start/stop sending periodic updates to our observers
   void StartProgressTimer();
