@@ -55,6 +55,10 @@ int StreamSocketAdapter::GetPeerAddress(net::AddressList* address) const {
   return net::OK;
 }
 
+int StreamSocketAdapter::GetLocalAddress(net::IPEndPoint* address) const {
+  return net::ERR_UNEXPECTED;
+}
+
 const net::BoundNetLog& StreamSocketAdapter::NetLog() const {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   return net_log_;

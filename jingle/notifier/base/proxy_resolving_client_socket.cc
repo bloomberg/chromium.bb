@@ -293,6 +293,14 @@ int ProxyResolvingClientSocket::GetPeerAddress(
   return net::ERR_SOCKET_NOT_CONNECTED;
 }
 
+int ProxyResolvingClientSocket::GetLocalAddress(
+    net::IPEndPoint* address) const {
+  if (transport_.get() && transport_->socket())
+    return transport_->socket()->GetLocalAddress(address);
+  NOTREACHED();
+  return net::ERR_SOCKET_NOT_CONNECTED;
+}
+
 const net::BoundNetLog& ProxyResolvingClientSocket::NetLog() const {
   if (transport_.get() && transport_->socket())
     return transport_->socket()->NetLog();

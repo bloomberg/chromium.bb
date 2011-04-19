@@ -312,6 +312,10 @@ int FakeSSLClientSocket::GetPeerAddress(net::AddressList* address) const {
   return transport_socket_->GetPeerAddress(address);
 }
 
+int FakeSSLClientSocket::GetLocalAddress(net::IPEndPoint* address) const {
+  return transport_socket_->GetLocalAddress(address);
+}
+
 const net::BoundNetLog& FakeSSLClientSocket::NetLog() const {
   return transport_socket_->NetLog();
 }

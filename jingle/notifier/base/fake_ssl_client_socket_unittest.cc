@@ -56,6 +56,7 @@ class MockClientSocket : public net::ClientSocket {
   MOCK_CONST_METHOD0(IsConnected, bool());
   MOCK_CONST_METHOD0(IsConnectedAndIdle, bool());
   MOCK_CONST_METHOD1(GetPeerAddress, int(net::AddressList*));
+  MOCK_CONST_METHOD1(GetLocalAddress, int(net::IPEndPoint*));
   MOCK_CONST_METHOD0(NetLog, const net::BoundNetLog&());
   MOCK_METHOD0(SetSubresourceSpeculation, void());
   MOCK_METHOD0(SetOmniboxSpeculation, void());

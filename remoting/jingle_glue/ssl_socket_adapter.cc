@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "jingle/glue/utils.h"
 #include "net/base/address_list.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/host_port_pair.h"
@@ -274,6 +275,15 @@ int TransportSocket::GetPeerAddress(net::AddressList* address) const {
 
   address->Copy(&ai, false);
   return net::OK;
+}
+
+int TransportSocket::GetLocalAddress(net::IPEndPoint* address) const {
+  talk_base::SocketAddress socket_address = socket_->GetLocalAddress();
+  if (jingle_glue::SocketAddressToIPEndPoint(socket_address, address)) {
+    return net::OK;
+  } else {
+    return net::ERR_FAILED;
+  }
 }
 
 const net::BoundNetLog& TransportSocket::NetLog() const {

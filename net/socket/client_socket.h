@@ -12,6 +12,7 @@
 namespace net {
 
 class AddressList;
+class IPEndPoint;
 
 class ClientSocket : public Socket {
  public:
@@ -53,7 +54,12 @@ class ClientSocket : public Socket {
 
   // Copies the peer address to |address| and returns a network error code.
   // ERR_SOCKET_NOT_CONNECTED will be returned if the socket is not connected.
+  // TODO(sergeyu): Use IPEndPoint instead of AddressList.
   virtual int GetPeerAddress(AddressList* address) const = 0;
+
+  // Copies the local address to |address| and returns a network error code.
+  // ERR_SOCKET_NOT_CONNECTED will be returned if the socket is not connected.
+  virtual int GetLocalAddress(IPEndPoint* address) const = 0;
 
   // Gets the NetLog for this socket.
   virtual const BoundNetLog& NetLog() const = 0;

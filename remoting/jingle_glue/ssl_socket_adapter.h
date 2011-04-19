@@ -46,6 +46,7 @@ class TransportSocket : public net::ClientSocket, public sigslot::has_slots<> {
   virtual bool IsConnected() const;
   virtual bool IsConnectedAndIdle() const;
   virtual int GetPeerAddress(net::AddressList* address) const;
+  virtual int GetLocalAddress(net::IPEndPoint* address) const;
   virtual const net::BoundNetLog& NetLog() const;
   virtual void SetSubresourceSpeculation();
   virtual void SetOmniboxSpeculation();

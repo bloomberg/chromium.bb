@@ -86,22 +86,17 @@ void P2PSocketHostTcp::OnConnected(int result) {
   }
 
   net::IPEndPoint address;
-  // TODO(sergeyu): Add GetLocalAddress() in TCPClientSocket.
-  //
-  // result = socket_->GetLocalAddress(&address);
-  // if (result < 0) {
-  //   LOG(ERROR) << "P2PSocket::Init(): unable to get local address: "
-  //              << result;
-  //   OnError();
-  //   return false;
-  // }
+  result = socket_->GetLocalAddress(&address);
+  if (result < 0) {
+    LOG(ERROR) << "P2PSocket::Init(): unable to get local address: "
+               << result;
+    OnError();
+    return;
+  }
 
   VLOG(1) << "Local address: " << address.ToString();
-
   state_ = STATE_OPEN;
-
   message_sender_->Send(new P2PMsg_OnSocketCreated(routing_id_, id_, address));
-
   DoRead();
 }
 
