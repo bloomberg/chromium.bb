@@ -178,23 +178,6 @@ void CancelTerminate() {
 
 namespace {
 
-// Helper to make it easy to get crash keys right.
-// TODO(shess): Find a better home for this.  app/breakpad_mac.h
-// doesn't work.
-class ScopedCrashKey {
- public:
-  ScopedCrashKey(NSString* key, NSString* value)
-      : crash_key_([key retain]) {
-    SetCrashKeyValue(crash_key_.get(), value);
-  }
-  ~ScopedCrashKey() {
-    ClearCrashKeyValue(crash_key_.get());
-  }
-
- private:
-  scoped_nsobject<NSString> crash_key_;
-};
-
 // Do-nothing wrapper so that we can arrange to only swizzle
 // -[NSException raise] when DCHECK() is turned on (as opposed to
 // replicating the preprocess logic which turns DCHECK() on).

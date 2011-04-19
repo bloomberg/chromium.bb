@@ -203,3 +203,13 @@ void ClearCrashKeyValue(NSString* key) {
 
   BreakpadRemoveUploadParameter(gBreakpadRef, key);
 }
+
+// NOTE(shess): These also exist in breakpad_mac_stubs.mm.
+ScopedCrashKey::ScopedCrashKey(NSString* key, NSString* value)
+    : crash_key_([key retain]) {
+  SetCrashKeyValue(crash_key_.get(), value);
+}
+
+ScopedCrashKey::~ScopedCrashKey() {
+  ClearCrashKeyValue(crash_key_.get());
+}

@@ -4,6 +4,8 @@
 
 #import "chrome/app/breakpad_mac.h"
 
+#import <Foundation/Foundation.h>
+
 // Stubbed out versions of breakpad integration functions so we can compile
 // without linking in Breakpad.
 
@@ -24,4 +26,17 @@ void SetCrashKeyValue(NSString* key, NSString* value) {
 }
 
 void ClearCrashKeyValue(NSString* key) {
+}
+
+// NOTE(shess): These functions could clearly be replaced by stubs,
+// but since they are seldom-used helpers, it seemed more reasonable
+// to duplicate them from the primary implementation in
+// breakpad_mac.mm.
+ScopedCrashKey::ScopedCrashKey(NSString* key, NSString* value)
+    : crash_key_([key retain]) {
+  SetCrashKeyValue(crash_key_.get(), value);
+}
+
+ScopedCrashKey::~ScopedCrashKey() {
+  ClearCrashKeyValue(crash_key_.get());
 }

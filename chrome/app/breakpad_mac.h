@@ -24,6 +24,8 @@ void DestructCrashReporter();
 
 #ifdef __OBJC__
 
+#include "base/memory/scoped_nsobject.h"
+
 @class NSString;
 
 // Set and clear meta information for Minidump.
@@ -32,6 +34,15 @@ void DestructCrashReporter();
 // that if you look at the minidump file locally you won't see them!
 void SetCrashKeyValue(NSString* key, NSString* value);
 void ClearCrashKeyValue(NSString* key);
+
+class ScopedCrashKey {
+ public:
+  ScopedCrashKey(NSString* key, NSString* value);
+  ~ScopedCrashKey();
+
+ private:
+  scoped_nsobject<NSString> crash_key_;
+};
 
 #endif  // __OBJC__
 
