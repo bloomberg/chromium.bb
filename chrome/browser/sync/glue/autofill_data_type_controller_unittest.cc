@@ -87,14 +87,13 @@ class AutofillDataTypeControllerTest : public testing::Test {
         db_thread_(BrowserThread::DB) {}
 
   virtual void SetUp() {
-    EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
-        Return(&service_));
     db_thread_.Start();
     web_data_service_ = new WebDataServiceFake(true);
     personal_data_manager_ = new PersonalDataManagerMock();
     autofill_dtc_ =
         new AutofillDataTypeController(&profile_sync_factory_,
-                                       &profile_);
+                                       &profile_,
+                                       &service_);
   }
 
   virtual void TearDown() {

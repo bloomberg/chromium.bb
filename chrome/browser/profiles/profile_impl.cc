@@ -1385,7 +1385,6 @@ void ProfileImpl::InitSyncService(const std::string& cros_user) {
       new ProfileSyncFactoryImpl(this, CommandLine::ForCurrentProcess()));
   sync_service_.reset(
       profile_sync_factory_->CreateProfileSyncService(cros_user));
-  profile_sync_factory_->RegisterDataTypes(sync_service_.get());
   sync_service_->Initialize();
 }
 

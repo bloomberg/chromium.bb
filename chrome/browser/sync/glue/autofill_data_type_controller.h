@@ -8,30 +8,52 @@
 
 #include <string>
 
-#include "base/memory/ref_counted.h"
+#include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
-#include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/glue/data_type_controller.h"
 
-class NotificationDetails;
-class NotificationType;
-class NotificationSource;
+class Profile;
+class ProfileSyncFactory;
+class ProfileSyncService;
 
 namespace browser_sync {
 
+class AssociatorInterface;
+class ChangeProcessor;
+
 // A class that manages the startup and shutdown of autofill sync.
-class AutofillDataTypeController : public NonFrontendDataTypeController,
+class AutofillDataTypeController : public DataTypeController,
                                    public NotificationObserver,
                                    public PersonalDataManager::Observer {
  public:
-  AutofillDataTypeController(ProfileSyncFactory* profile_sync_factory,
-                             Profile* profile);
+  AutofillDataTypeController(
+      ProfileSyncFactory* profile_sync_factory,
+      Profile* profile,
+      ProfileSyncService* sync_service);
   virtual ~AutofillDataTypeController();
 
-  // NonFrontendDataTypeController implementation
+  // DataTypeController implementation
+  virtual void Start(StartCallback* start_callback);
+
+  virtual void Stop();
+
+  virtual bool enabled();
+
   virtual syncable::ModelType type() const;
+
   virtual browser_sync::ModelSafeGroup model_safe_group() const;
+
+  virtual std::string name() const;
+
+  virtual State state() const;
+
+  // UnrecoverableHandler implementation
+  virtual void OnUnrecoverableError(const tracked_objects::Location& from_here,
+                                    const std::string& message);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
@@ -42,25 +64,51 @@ class AutofillDataTypeController : public NonFrontendDataTypeController,
   virtual void OnPersonalDataLoaded();
 
  protected:
-   // NonFrontendDataTypeController interface.
-   virtual bool StartModels();
-   virtual bool StartAssociationAsync();
-   virtual void CreateSyncComponents();
-   virtual void StopModels();
-   virtual bool StopAssociationAsync();
-   virtual void RecordUnrecoverableError(
-       const tracked_objects::Location& from_here,
-       const std::string& message);
-   virtual void RecordAssociationTime(base::TimeDelta time);
-   virtual void RecordStartFailure(StartResult result);
+  virtual ProfileSyncFactory::SyncComponents CreateSyncComponents(
+      ProfileSyncService* profile_sync_service,
+      WebDatabase* web_database,
+      PersonalDataManager* personal_data,
+      browser_sync::UnrecoverableErrorHandler* error_handler);
+  ProfileSyncFactory* profile_sync_factory_;
 
-   // Getters and setters
-   PersonalDataManager* personal_data() const;
-   WebDataService* web_data_service() const;
  private:
+  void StartImpl();
+  void StartDone(StartResult result, State state);
+  void StartDoneImpl(StartResult result, State state,
+      const tracked_objects::Location& location);
+  void StopImpl();
+  void StartFailed(StartResult result);
+  void OnUnrecoverableErrorImpl(const tracked_objects::Location& from_here,
+                                const std::string& message);
+
+  // Second-half of "Start" implementation, called once personal data has
+  // loaded.
+  void ContinueStartAfterPersonalDataLoaded();
+
+  void set_state(State state) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    state_ = state;
+  }
+
+  Profile* profile_;
+  ProfileSyncService* sync_service_;
+  State state_;
+
   PersonalDataManager* personal_data_;
   scoped_refptr<WebDataService> web_data_service_;
+  scoped_ptr<AssociatorInterface> model_associator_;
+  scoped_ptr<ChangeProcessor> change_processor_;
+  scoped_ptr<StartCallback> start_callback_;
+
   NotificationRegistrar notification_registrar_;
+
+  base::Lock abort_association_lock_;
+  bool abort_association_;
+  base::WaitableEvent abort_association_complete_;
+
+  // Barrier to ensure that the datatype has been stopped on the DB thread
+  // from the UI thread.
+  base::WaitableEvent datatype_stopped_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDataTypeController);
 };

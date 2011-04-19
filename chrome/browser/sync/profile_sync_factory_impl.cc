@@ -88,10 +88,7 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService(
 
   ProfileSyncService* pss = new ProfileSyncService(
       this, profile_, cros_user);
-  return pss;
-}
 
-void ProfileSyncFactoryImpl::RegisterDataTypes(ProfileSyncService* pss) {
   // App sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!command_line_->HasSwitch(switches::kDisableSyncApps)) {
@@ -103,7 +100,7 @@ void ProfileSyncFactoryImpl::RegisterDataTypes(ProfileSyncService* pss) {
   // disabled.
   if (!command_line_->HasSwitch(switches::kDisableSyncAutofill)) {
     pss->RegisterDataTypeController(
-        new AutofillDataTypeController(this, profile_));
+        new AutofillDataTypeController(this, profile_, pss));
   }
 
   // Bookmark sync is enabled by default.  Register unless explicitly
@@ -124,7 +121,7 @@ void ProfileSyncFactoryImpl::RegisterDataTypes(ProfileSyncService* pss) {
   // disabled.
   if (!command_line_->HasSwitch(switches::kDisableSyncPasswords)) {
     pss->RegisterDataTypeController(
-        new PasswordDataTypeController(this, profile_));
+        new PasswordDataTypeController(this, profile_, pss));
   }
 
   // Preference sync is enabled by default.  Register unless explicitly
@@ -144,7 +141,7 @@ void ProfileSyncFactoryImpl::RegisterDataTypes(ProfileSyncService* pss) {
   // explicitly enabled.
   if (command_line_->HasSwitch(switches::kEnableSyncTypedUrls)) {
     pss->RegisterDataTypeController(
-        new TypedUrlDataTypeController(this, profile_));
+        new TypedUrlDataTypeController(this, profile_, pss));
   }
 
   // Session sync is disabled by default.  Register only if explicitly
@@ -155,9 +152,10 @@ void ProfileSyncFactoryImpl::RegisterDataTypes(ProfileSyncService* pss) {
   }
 
   if (!command_line_->HasSwitch(switches::kDisableSyncAutofillProfile)) {
-    pss->RegisterDataTypeController(
-        new AutofillProfileDataTypeController(this, profile_));
+    pss->RegisterDataTypeController(new AutofillProfileDataTypeController(
+        this, profile_, pss));
   }
+  return pss;
 }
 
 DataTypeManager* ProfileSyncFactoryImpl::CreateDataTypeManager(

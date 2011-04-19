@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,14 +47,11 @@ class ProfileSyncFactory {
 
   virtual ~ProfileSyncFactory() {}
 
-  // Instantiates a new ProfileSyncService. The return pointer is owned by the
-  // caller.
+  // Instantiates and initializes a new ProfileSyncService.  Enabled
+  // data types are registered with the service.  The return pointer
+  // is owned by the caller.
   virtual ProfileSyncService* CreateProfileSyncService(
       const std::string& cros_user) = 0;
-
-  // Creates and registers enabled datatypes with the provided
-  // ProfileSyncService.
-  virtual void RegisterDataTypes(ProfileSyncService* pss) = 0;
 
   // Instantiates a new DataTypeManager with a SyncBackendHost and a
   // list of data type controllers.  The return pointer is owned by
