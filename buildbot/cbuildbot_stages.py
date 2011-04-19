@@ -403,9 +403,6 @@ class BuildTargetStage(BuilderStage):
 
     commands.BuildImage(self._build_root)
 
-    if self._build_config['vm_tests']:
-      commands.BuildVMImageForTesting(self._build_root)
-
 
 class TestStage(BuilderStage):
   """Stage that performs testing steps."""
@@ -431,13 +428,11 @@ class TestStage(BuilderStage):
     if self._build_config['vm_tests']:
       test_results_dir = self._CreateTestRoot()
       try:
-        commands.RunSmokeSuite(self._build_root, os.path.join(test_results_dir,
-                                                              'smoke_results'))
-        commands.RunAUTestSuite(self._build_root,
-                                self._build_config['board'],
-                                os.path.join(test_results_dir,
-                                             'au_test_harness'),
-                                full=(not self._build_config['quick_vm']))
+        commands.RunTestSuite(self._build_root,
+                              self._build_config['board'],
+                              os.path.join(test_results_dir,
+                                           'test_harness'),
+                              full=(not self._build_config['quick_vm']))
 
         if self._build_config['chrome_tests']:
           commands.RunChromeSuite(self._build_root,

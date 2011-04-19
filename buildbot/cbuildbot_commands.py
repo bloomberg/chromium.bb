@@ -134,7 +134,7 @@ def ManifestCheckout(buildroot, tracking_branch, next_version,
   branch = tracking_branch.split('/');
   next_version_subdir = next_version.split('.');
 
-  manifest =  os.path.join(
+  manifest = os.path.join(
      'buildspecs',
      next_version_subdir[0] + '.' + next_version_subdir[1],
      next_version + '.xml')
@@ -226,20 +226,6 @@ def RunUnitTests(buildroot, full):
   cros_lib.OldRunCommand(cmd, cwd=cwd, enter_chroot=True)
 
 
-def RunSmokeSuite(buildroot, results_dir):
-  results_dir_in_chroot = os.path.join(buildroot, 'chroot',
-                                       results_dir.lstrip('/'))
-  if os.path.exists(results_dir_in_chroot):
-    shutil.rmtree(results_dir_in_chroot)
-
-  cwd = os.path.join(buildroot, 'src', 'scripts')
-  cros_lib.OldRunCommand(['bin/cros_run_vm_test',
-                          '--no_graphics',
-                          '--results_dir_root=%s' % results_dir,
-                          'suite_Smoke',
-                         ], cwd=cwd, error_ok=False, enter_chroot=False)
-
-
 def RunChromeSuite(buildroot, results_dir):
   results_dir_in_chroot = os.path.join(buildroot, 'chroot',
                                        results_dir.lstrip('/'))
@@ -258,8 +244,8 @@ def RunChromeSuite(buildroot, results_dir):
                          ], cwd=cwd, error_ok=True, enter_chroot=False)
 
 
-def RunAUTestSuite(buildroot, board, results_dir, full=True):
-  """Runs the au test harness suite."""
+def RunTestSuite(buildroot, board, results_dir, full=True):
+  """Runs the test harness suite."""
   results_dir_in_chroot = os.path.join(buildroot, 'chroot',
                                        results_dir.lstrip('/'))
   if os.path.exists(results_dir_in_chroot):
@@ -304,11 +290,16 @@ def ArchiveTestResults(buildroot, test_results_dir):
   try:
     test_results_dir = test_results_dir.lstrip('/')
     results_path = os.path.join(buildroot, 'chroot', test_results_dir)
-    cros_lib.OldRunCommand(['sudo', 'chmod', '-R', 'a+rw', results_path])
+    cros_lib.OldRunCommand(['sudo', 'chmod', '-R', 'a+rw', results_path],
+                           print_cmd=False)
 
     archive_tarball = os.path.join(buildroot, 'test_results.tgz')
     if os.path.exists(archive_tarball): os.remove(archive_tarball)
-    cros_lib.OldRunCommand(['tar', 'czf', archive_tarball, results_path])
+    cros_lib.OldRunCommand(['tar',
+                            'czf',
+                            archive_tarball,
+                            '--directory=%s' % results_path,
+                            '.'])
     shutil.rmtree(results_path)
     return archive_tarball
   except Exception, e:

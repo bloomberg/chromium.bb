@@ -434,7 +434,7 @@ class BuildBoardTest(AbstractStageTest):
     self.mox.VerifyAll()
 
 
-class BuildTestsTest(AbstractStageTest):
+class TestStageTest(AbstractStageTest):
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
@@ -454,21 +454,18 @@ class BuildTestsTest(AbstractStageTest):
     self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
 
     self.mox.StubOutWithMock(commands, 'RunUnitTests')
-    self.mox.StubOutWithMock(commands, 'RunSmokeSuite')
-    self.mox.StubOutWithMock(commands, 'RunAUTestSuite')
+    self.mox.StubOutWithMock(commands, 'RunTestSuite')
     self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
     self.mox.StubOutWithMock(stages.TestStage, '_CreateTestRoot')
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     stages.TestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
     commands.RunUnitTests(self.build_root, full=True)
-    commands.RunSmokeSuite(self.build_root, os.path.join(self.fake_results_dir,
-                                                         'smoke_results'))
-    commands.RunAUTestSuite(self.build_root,
-                            self.build_config['board'],
-                            os.path.join(self.fake_results_dir,
-                                         'au_test_harness'),
-                            full=True)
+    commands.RunTestSuite(self.build_root,
+                          self.build_config['board'],
+                          os.path.join(self.fake_results_dir,
+                                       'test_harness'),
+                          full=True)
     commands.ArchiveTestResults(self.build_root, self.fake_results_dir)
 
     self.mox.ReplayAll()
@@ -483,20 +480,17 @@ class BuildTestsTest(AbstractStageTest):
     self.build_config['quick_vm'] = True
 
     self.mox.StubOutWithMock(commands, 'RunUnitTests')
-    self.mox.StubOutWithMock(commands, 'RunSmokeSuite')
-    self.mox.StubOutWithMock(commands, 'RunAUTestSuite')
+    self.mox.StubOutWithMock(commands, 'RunTestSuite')
     self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
     self.mox.StubOutWithMock(stages.TestStage, '_CreateTestRoot')
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     stages.TestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
     commands.RunUnitTests(self.build_root, full=False)
-    commands.RunSmokeSuite(self.build_root, os.path.join(self.fake_results_dir,
-                                                         'smoke_results'))
-    commands.RunAUTestSuite(self.build_root,
+    commands.RunTestSuite(self.build_root,
                             self.build_config['board'],
                             os.path.join(self.fake_results_dir,
-                                         'au_test_harness'),
+                                         'test_harness'),
                             full=False)
     commands.ArchiveTestResults(self.build_root, self.fake_results_dir)
 
@@ -636,7 +630,6 @@ class BuildTargetStageTest(AbstractStageTest):
         self.build_config['build_type'], False)
 
     commands.BuildImage(self.build_root)
-    commands.BuildVMImageForTesting(self.build_root)
 
     self.mox.ReplayAll()
     self.RunStage()
