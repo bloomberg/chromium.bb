@@ -11,8 +11,8 @@
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "content/browser/webui/web_ui.h"
 
-class EnumeratePrintersTaskProxy;
 class FilePath;
+class PrintSystemTaskProxy;
 class FundamentalValue;
 
 namespace printing {
@@ -37,7 +37,7 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   void SelectFile(const FilePath& default_path);
 
  private:
-  friend class EnumeratePrintersTaskProxy;
+  friend class PrintSystemTaskProxy;
 
   // Get the list of printers. |args| is unused.
   void HandleGetPrinters(const ListValue* args);
@@ -49,6 +49,14 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // Get the job settings from Web UI and initiate printing.
   // First element of |args| is a job settings JSON string.
   void HandlePrint(const ListValue* args);
+
+  // Get the printer capabilities.
+  // First element of |args| is the printer name.
+  void HandleGetPrinterCapabilities(const ListValue* args);
+
+  // Send the printer capabilities to the Web UI.
+  // |settings_info| contains printer capabilities information.
+  void SendPrinterCapabilities(const DictionaryValue& settings_info);
 
   // Send the list of printers to the Web UI.
   void SendPrinterList(const ListValue& printers,

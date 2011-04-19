@@ -648,3 +648,7 @@ body > .scrollbar {
 .hidden {
   display: none;
 }
+
+.disabled-label-text {
+  color: gray;
+}

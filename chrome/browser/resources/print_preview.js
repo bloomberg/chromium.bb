@@ -28,9 +28,66 @@ function onLoad() {
   $('portrait').onclick = onLayoutModeToggle;
   $('color').onclick = getPreview;
   $('bw').onclick = getPreview;
+  $('printer-list').onchange = updateControlsWithSelectedPrinterCapabilities;
 
   chrome.send('getPrinters');
 };
+
+/**
+ * Gets the selected printer capabilities and updates the controls accordingly.
+ */
+function updateControlsWithSelectedPrinterCapabilities() {
+  var printerList = $('printer-list');
+  var selectedPrinter = printerList.selectedIndex;
+  if (selectedPrinter < 0)
+    return;
+
+  var printerName = printerList.options[selectedPrinter].textContent;
+  if (printerName == localStrings.getString('printToPDF')) {
+    updateWithPrinterCapabilities({'disableColorOption': true,
+                                   'setColorAsDefault': true});
+  } else {
+    // This message will call back to 'updateWithPrinterCapabilities'
+    // function.
+    chrome.send('getPrinterCapabilities', [printerName]);
+  }
+}
+
+/**
+ * Updates the controls with printer capabilities information.
+ * @param {Object} settingInfo printer setting information.
+ */
+function updateWithPrinterCapabilities(settingInfo) {
+  var disableColorOption = settingInfo.disableColorOption;
+  var setColorAsDefault = settingInfo.setColorAsDefault;
+  var colorOption = $('color');
+  var bwOption = $('bw');
+
+  if (disableColorOption != colorOption.disabled) {
+    setControlAndLabelDisabled(colorOption, disableColorOption);
+    setControlAndLabelDisabled(bwOption, disableColorOption);
+  }
+
+  if (colorOption.checked != setColorAsDefault) {
+    colorOption.checked = setColorAsDefault;
+    bwOption.checked = !setColorAsDefault;
+    getPreview();
+  }
+}
+
+/**
+ * Disables the input control element and its associated label.
+ * @param {HTMLElement} controlElm An input control element.
+ * @param {boolean} disable set to true to disable element and label.
+ */
+function setControlAndLabelDisabled(controlElm, disable) {
+  controlElm.disabled = disable;
+  var label = $(controlElm.getAttribute('label'));
+  if (disable)
+    label.classList.add('disabled-label-text');
+  else
+    label.classList.remove('disabled-label-text');
+}
 
 /**
  * Parses the copies field text for validation and updates the state of print
@@ -236,6 +293,8 @@ function setPrinters(printers, defaultPrinterIndex) {
   option.textContent = localStrings.getString('printToPDF');
   printerList.add(option);
   printerList.disabled = false;
+
+  updateControlsWithSelectedPrinterCapabilities();
 
   // Once the printer list is populated, generate the initial preview.
   getPreview();

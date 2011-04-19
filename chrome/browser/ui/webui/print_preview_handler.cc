@@ -28,10 +28,23 @@
 #include "printing/metafile_impl.h"
 #include "printing/print_job_constants.h"
 
+#if defined(OS_POSIX) && !defined(OS_CHROMEOS)
+#include <cups/cups.h>
+
+#include "base/file_util.h"
+#endif
+
 namespace {
 
 const bool kColorDefaultValue = false;
 const bool kLandscapeDefaultValue = false;
+
+const char kDisableColorOption[] = "disableColorOption";
+const char kSetColorAsDefault[] = "setColorAsDefault";
+
+#if defined(OS_POSIX) && !defined(OS_CHROMEOS)
+const char kColorDevice[] = "ColorDevice";
+#endif
 
 TabContents* GetInitiatorTab(TabContents* preview_tab) {
   printing::PrintPreviewTabController* tab_controller =
@@ -70,11 +83,11 @@ DictionaryValue* GetSettingsDictionary(const ListValue* args) {
 
 }  // namespace
 
-class EnumeratePrintersTaskProxy
-    : public base::RefCountedThreadSafe<EnumeratePrintersTaskProxy,
+class PrintSystemTaskProxy
+    : public base::RefCountedThreadSafe<PrintSystemTaskProxy,
                                         BrowserThread::DeleteOnUIThread> {
  public:
-  EnumeratePrintersTaskProxy(const base::WeakPtr<PrintPreviewHandler>& handler,
+  PrintSystemTaskProxy(const base::WeakPtr<PrintPreviewHandler>& handler,
                              printing::PrintBackend* print_backend)
       : handler_(handler),
         print_backend_(print_backend) {
@@ -97,7 +110,7 @@ class EnumeratePrintersTaskProxy
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
-                          &EnumeratePrintersTaskProxy::SendPrinterList,
+                          &PrintSystemTaskProxy::SendPrinterList,
                           printers,
                           new FundamentalValue(default_printer_index)));
   }
@@ -110,17 +123,67 @@ class EnumeratePrintersTaskProxy
     delete default_printer_index;
   }
 
+  void GetPrinterCapabilities(const std::string& printer_name) {
+    printing::PrinterCapsAndDefaults printer_info;
+    bool supports_color = true;
+    if (!print_backend_->GetPrinterCapsAndDefaults(printer_name,
+                                                   &printer_info)) {
+      return;
+    }
+
+  #if defined(OS_POSIX) && !defined(OS_CHROMEOS)
+    FilePath ppd_file_path;
+    if (!file_util::CreateTemporaryFile(&ppd_file_path))
+      return;
+
+    int data_size = printer_info.printer_capabilities.length();
+    if (data_size != file_util::WriteFile(
+                         ppd_file_path,
+                         printer_info.printer_capabilities.data(),
+                         data_size)) {
+      file_util::Delete(ppd_file_path, false);
+      return;
+    }
+
+    ppd_file_t* ppd = ppdOpenFile(ppd_file_path.value().c_str());
+    if (ppd) {
+      ppd_attr_t* attr = ppdFindAttr(ppd, kColorDevice, NULL);
+      if (attr && attr->value)
+        supports_color = ppd->color_device;
+      ppdClose(ppd);
+    }
+    file_util::Delete(ppd_file_path, false);
+  #elif defined(OS_WIN) || defined(OS_CHROMEOS)
+    NOTIMPLEMENTED();
+  #endif
+
+    DictionaryValue settings_info;
+    settings_info.SetBoolean(kDisableColorOption, !supports_color);
+    settings_info.SetBoolean(kSetColorAsDefault, false);
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+                          &PrintSystemTaskProxy::SendPrinterCapabilities,
+                          settings_info.DeepCopy()));
+  }
+
+  void SendPrinterCapabilities(DictionaryValue* settings_info) {
+    if (handler_)
+      handler_->SendPrinterCapabilities(*settings_info);
+    delete settings_info;
+  }
+
  private:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
-  friend class DeleteTask<EnumeratePrintersTaskProxy>;
+  friend class DeleteTask<PrintSystemTaskProxy>;
 
-  ~EnumeratePrintersTaskProxy() {}
+  ~PrintSystemTaskProxy() {}
 
   base::WeakPtr<PrintPreviewHandler> handler_;
 
   scoped_refptr<printing::PrintBackend> print_backend_;
 
-  DISALLOW_COPY_AND_ASSIGN(EnumeratePrintersTaskProxy);
+  DISALLOW_COPY_AND_ASSIGN(PrintSystemTaskProxy);
 };
 
 // A Task implementation that stores a PDF file on disk.
@@ -168,15 +231,17 @@ void PrintPreviewHandler::RegisterMessages() {
       NewCallback(this, &PrintPreviewHandler::HandleGetPreview));
   web_ui_->RegisterMessageCallback("print",
       NewCallback(this, &PrintPreviewHandler::HandlePrint));
+  web_ui_->RegisterMessageCallback("getPrinterCapabilities",
+      NewCallback(this, &PrintPreviewHandler::HandleGetPrinterCapabilities));
 }
 
 void PrintPreviewHandler::HandleGetPrinters(const ListValue*) {
-  scoped_refptr<EnumeratePrintersTaskProxy> task =
-      new EnumeratePrintersTaskProxy(AsWeakPtr(), print_backend_.get());
+  scoped_refptr<PrintSystemTaskProxy> task =
+      new PrintSystemTaskProxy(AsWeakPtr(), print_backend_.get());
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(task.get(),
-                        &EnumeratePrintersTaskProxy::EnumeratePrinters));
+                        &PrintSystemTaskProxy::EnumeratePrinters));
 }
 
 void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
@@ -239,6 +304,29 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     RenderViewHost* rvh = web_ui_->GetRenderViewHost();
     rvh->Send(new PrintMsg_PrintForPrintPreview(rvh->routing_id(), *settings));
   }
+}
+
+void PrintPreviewHandler::HandleGetPrinterCapabilities(
+    const ListValue* args) {
+  std::string printer_name;
+  bool ret = args->GetString(0, &printer_name);
+  if (!ret || printer_name.empty())
+    return;
+
+  scoped_refptr<PrintSystemTaskProxy> task =
+      new PrintSystemTaskProxy(AsWeakPtr(), print_backend_.get());
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(task.get(),
+                        &PrintSystemTaskProxy::GetPrinterCapabilities,
+                        printer_name));
+}
+
+void PrintPreviewHandler::SendPrinterCapabilities(
+    const DictionaryValue& settings_info) {
+  web_ui_->CallJavascriptFunction("updateWithPrinterCapabilities",
+                                  settings_info);
 }
 
 void PrintPreviewHandler::SendPrinterList(
