@@ -4323,6 +4323,22 @@
    fun:_ZN8chromeos11BrowserView4ShowEv
    fun:_ZN25TestingAutomationProvider26OpenNewBrowserWindowOfTypeEibPN3IPC7MessageE
 }
+{
+   bug_79865a
+   Memcheck:Leak
+   ...
+   fun:_Znw*
+   fun:_ZN14TestingProfile20CreateRequestContextEv
+   fun:_ZN33MalwareDetailsTest_HTTPCache_Test8TestBodyEv
+}
+{
+   bug_79865b
+   Memcheck:Leak
+   ...
+   fun:_Znw*
+   fun:_ZN14TestingProfile20CreateRequestContextEv
+   fun:_ZN42MalwareDetailsTest_HTTPCacheNoEntries_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
