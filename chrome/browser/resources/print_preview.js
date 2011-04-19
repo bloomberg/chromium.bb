@@ -14,8 +14,6 @@ var pageRangesInfo = [];
 function onLoad() {
   initializeAnimation();
 
-  updateSummary();
-
   $('printer-list').disabled = true;
   $('print-button').disabled = true;
   $('print-button').addEventListener('click', printFile);
@@ -115,7 +113,7 @@ function checkAndSetPageRangesField() {
     return;
   }
 
-  for (var i = 0; i < pageRanges.length; i++) {
+  for (var i = 0; i < pageRanges.length; ++i) {
     if (pageRanges[i].from == pageRanges[i].to)
       parsedPageRanges += pageRanges[i].from;
     else
@@ -224,25 +222,20 @@ function getPreview() {
  * @param {number} defaultPrinterIndex The index of the default printer.
  */
 function setPrinters(printers, defaultPrinterIndex) {
-  if (printers.length > 0) {
-    for (var i = 0; i < printers.length; ++i) {
-      var option = document.createElement('option');
-      option.textContent = printers[i];
-      $('printer-list').add(option);
-      if (i == defaultPrinterIndex)
-        option.selected = true;
-    }
-  } else {
+  var printerList = $('printer-list');
+  for (var i = 0; i < printers.length; ++i) {
     var option = document.createElement('option');
-    option.textContent = localStrings.getString('noPrinter');
-    $('printer-list').add(option);
+    option.textContent = printers[i];
+    printerList.add(option);
+    if (i == defaultPrinterIndex)
+      option.selected = true;
   }
 
   // Adding option for saving PDF to disk.
   var option = document.createElement('option');
   option.textContent = localStrings.getString('printToPDF');
-  $('printer-list').add(option);
-  $('printer-list').disabled = false;
+  printerList.add(option);
+  printerList.disabled = false;
 
   // Once the printer list is populated, generate the initial preview.
   getPreview();
@@ -459,7 +452,7 @@ function getPageList() {
   var pageList = [];
   var parts = pageText.split(/,/);
 
-  for (var i = 0; i < parts.length; i++) {
+  for (var i = 0; i < parts.length; ++i) {
     var part = parts[i];
     var match = part.match(/([0-9]+)-([0-9]+)/);
 
@@ -468,7 +461,7 @@ function getPageList() {
       var to = parseInt(match[2], 10);
 
       if (from && to) {
-        for (var j = from; j <= to; j++)
+        for (var j = from; j <= to; ++j)
           if (j <= expectedPageCount)
             pageList.push(j);
       }
@@ -490,10 +483,10 @@ function getPageList() {
 function getPageRanges() {
   var pageList = getPageList();
   var pageRanges = [];
-  for (var i = 0; i < pageList.length; i++) {
+  for (var i = 0; i < pageList.length; ++i) {
     tempFrom = pageList[i];
     while (i + 1 < pageList.length && pageList[i + 1] == pageList[i] + 1)
-      i++;
+      ++i;
     tempTo = pageList[i];
     pageRanges.push({'from': tempFrom, 'to': tempTo});
   }

@@ -5501,9 +5501,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PRINT_PREVIEW_NO_PLUGIN" desc="Message to display when the PDF viewer is missing.">
         PDF viewer is not available.
       </message>
-      <message name="IDS_PRINT_PREVIEW_NO_PRINTER" desc="Select box entry when there is no printer.">
-        No printers found
-      </message>
       <message name="IDS_PRINT_PREVIEW_PRINT_BUTTON" desc="Print button.">
         Print
       </message>
