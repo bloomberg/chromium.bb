@@ -38,7 +38,8 @@ NaClSandboxTest::NaClSandboxTest() {
 NaClSandboxTest::~NaClSandboxTest() {
 }
 
-TEST_F(NaClSandboxTest, NaClOuterSBTest) {
+// TODO(bradnelson): re-enable after finding a way to inject env variables.
+TEST_F(NaClSandboxTest, DISABLED_NaClOuterSBTest) {
   // Load a helloworld .nexe to trigger the nacl loader test.
   FilePath test_file(kANaClHtmlFile);
   RunTest(test_file, TestTimeouts::action_max_timeout_ms());
