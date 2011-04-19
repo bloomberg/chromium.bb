@@ -28,15 +28,19 @@ void GL_BINDING_CALL MarshalDepthRangeToDepthRangef(GLclampd z_near,
 }
 
 // Load a library, printing an error message on failure.
-base::NativeLibrary LoadLibrary(const char* filename) {
+base::NativeLibrary LoadLibrary(const FilePath& filename) {
   std::string error;
-  base::NativeLibrary library = base::LoadNativeLibrary(FilePath(filename),
+  base::NativeLibrary library = base::LoadNativeLibrary(filename,
                                                         &error);
   if (!library) {
-    VLOG(1) << "Failed to load " << filename << ": " << error;
+    VLOG(1) << "Failed to load " << filename.MaybeAsASCII() << ": " << error;
     return NULL;
   }
   return library;
+}
+
+base::NativeLibrary LoadLibrary(const char* filename) {
+  return LoadLibrary(FilePath(filename));
 }
 
 }  // namespace anonymous
@@ -56,7 +60,8 @@ bool InitializeGLBindings(GLImplementation implementation) {
         return false;
       }
 
-      base::NativeLibrary library = LoadLibrary("libosmesa.so");
+      base::NativeLibrary library = LoadLibrary(
+          module_path.Append("libosmesa.so"));
       if (!library)
         return false;
 
