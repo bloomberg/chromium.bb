@@ -173,3 +173,8 @@ PPAPITest.Transport
 
 # Fails, see http://crbug.com/79803
 RepostFormWarningTest.TestLoginAfterRepost
+
+# Fails, see http://crbug.com/79831
+WorkerFileSystemTest.SyncOperations
+WorkerFileSystemTest.FileWriterSyncWriteOverlapped
+WorkerFileSystemTest.AsyncOperations
