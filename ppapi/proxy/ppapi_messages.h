@@ -716,8 +716,9 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLUtil_GetPluginInstanceURL,
                            pp::proxy::SerializedVar /* result */)
 
 // PPB_Var.
-IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBVar_AddRefObject,
-                    int64 /* object_id */)
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBVar_AddRefObject,
+                           int64 /* object_id */,
+                           int /* unused - need a return value for sync msgs */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBVar_ReleaseObject,
                     int64 /* object_id */)
 IPC_SYNC_MESSAGE_ROUTED3_2(PpapiHostMsg_PPBVar_ConvertType,

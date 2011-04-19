@@ -120,6 +120,9 @@ void PluginVarTracker::AddRef(const PP_Var& var) {
       // Got an AddRef for an object we have no existing reference for.
       // We need to tell the browser we've taken a ref. This comes up when the
       // browser passes an object as an input param and holds a ref for us.
+      // This must be a sync message since otherwise the "addref" will actually
+      // occur after the return to the browser of the sync function that
+      // presumably sent the object.
       SendAddRefObjectMsg(info.host_var);
     }
     info.ref_count++;
@@ -280,8 +283,9 @@ int PluginVarTracker::GetTrackedWithNoReferenceCountForObject(
 }
 
 void PluginVarTracker::SendAddRefObjectMsg(const HostVar& host_var) {
+  int unused;
   host_var.dispatcher->Send(new PpapiHostMsg_PPBVar_AddRefObject(
-      INTERFACE_ID_PPB_VAR_DEPRECATED, host_var.host_object_id));
+      INTERFACE_ID_PPB_VAR_DEPRECATED, host_var.host_object_id, &unused));
 }
 
 void PluginVarTracker::SendReleaseObjectMsg(const HostVar& host_var) {

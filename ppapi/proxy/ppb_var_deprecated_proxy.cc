@@ -324,6 +324,8 @@ bool PPB_Var_Deprecated_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Var_Deprecated_Proxy, msg)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBVar_AddRefObject, OnMsgAddRefObject)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBVar_ReleaseObject, OnMsgReleaseObject)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBVar_HasProperty,
                         OnMsgHasProperty)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBVar_HasMethodDeprecated,
@@ -348,6 +350,21 @@ bool PPB_Var_Deprecated_Proxy::OnMessageReceived(const IPC::Message& msg) {
   IPC_END_MESSAGE_MAP()
   // TODO(brettw) handle bad messages!
   return handled;
+}
+
+void PPB_Var_Deprecated_Proxy::OnMsgAddRefObject(int64 object_id,
+                                                 int* /* unused */) {
+  PP_Var var;
+  var.type = PP_VARTYPE_OBJECT;
+  var.value.as_id = object_id;
+  ppb_var_target()->AddRef(var);
+}
+
+void PPB_Var_Deprecated_Proxy::OnMsgReleaseObject(int64 object_id) {
+  PP_Var var;
+  var.type = PP_VARTYPE_OBJECT;
+  var.value.as_id = object_id;
+  ppb_var_target()->Release(var);
 }
 
 void PPB_Var_Deprecated_Proxy::OnMsgHasProperty(

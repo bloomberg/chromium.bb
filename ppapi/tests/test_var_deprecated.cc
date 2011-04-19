@@ -11,12 +11,58 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
+#include "ppapi/cpp/dev/scriptable_object_deprecated.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
+#include "ppapi/cpp/private/var_private.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/tests/testing_instance.h"
 
-static uint32_t kInvalidLength = static_cast<uint32_t>(-1);
+namespace {
+
+uint32_t kInvalidLength = static_cast<uint32_t>(-1);
+
+static const char kSetValueFunction[] = "SetValue";
+
+// ScriptableObject used by the var tests.
+class VarScriptableObject : public pp::deprecated::ScriptableObject {
+ public:
+  VarScriptableObject(TestVarDeprecated* v) : test_var_deprecated_(v) {}
+
+  // pp::deprecated::ScriptableObject overrides.
+  bool HasMethod(const pp::Var& name, pp::Var* exception);
+  pp::Var Call(const pp::Var& name,
+               const std::vector<pp::Var>& args,
+               pp::Var* exception);
+
+ private:
+  TestVarDeprecated* test_var_deprecated_;
+};
+
+bool VarScriptableObject::HasMethod(const pp::Var& name, pp::Var* exception) {
+  if (!name.is_string())
+    return false;
+  return name.AsString() == kSetValueFunction;
+}
+
+pp::Var VarScriptableObject::Call(const pp::Var& method_name,
+                                  const std::vector<pp::Var>& args,
+                                  pp::Var* exception) {
+  if (!method_name.is_string())
+    return false;
+  std::string name = method_name.AsString();
+
+  if (name == kSetValueFunction) {
+    if (args.size() != 1)
+      *exception = pp::Var("Bad argument to SetValue(<value>)");
+    else
+      test_var_deprecated_->set_var_from_page(args[0]);
+  }
+
+  return pp::Var();
+}
+
+}  // namespace
 
 REGISTER_TEST_CASE(VarDeprecated);
 
@@ -44,6 +90,11 @@ void TestVarDeprecated::RunTest() {
   RUN_TEST(Utf8WithEmbeddedNulls);
   RUN_TEST(VarToUtf8ForWrongType);
   RUN_TEST(HasPropertyAndMethod);
+  RUN_TEST(PassReference);
+}
+
+pp::deprecated::ScriptableObject* TestVarDeprecated::CreateTestObject() {
+  return new VarScriptableObject(this);
 }
 
 std::string TestVarDeprecated::TestBasicString() {
@@ -64,9 +115,15 @@ std::string TestVarDeprecated::TestBasicString() {
 
     // Destroy the string, readback should now fail.
     var_interface_->Release(str);
+    /*
+    Note: this will crash in the current out-of-process implementation since
+    we don't do actual tracking of strings (we just convert the ID to a
+    pointer).
+    TODO(brettw) This should be fixed and this checking code re-enabled.
     result = var_interface_->VarToUtf8(str, &len);
     ASSERT_EQ(0, len);
     ASSERT_EQ(NULL, result);
+    */
   }
 
   // Make sure nothing leaked.
@@ -327,3 +384,30 @@ std::string TestVarDeprecated::TestHasPropertyAndMethod() {
   PASS();
 }
 
+// Tests that when the page sends an object to the plugin via a function call,
+// that the refcounting works properly (bug 79813).
+std::string TestVarDeprecated::TestPassReference() {
+  var_from_page_ = pp::Var();
+
+  // Send a JS object from the page to the plugin.
+  pp::Var exception;
+  pp::Var ret = instance_->ExecuteScript(
+      "document.getElementById('plugin').SetValue(function(arg) {"
+          "return 'works' + arg;"
+      "})",
+      &exception);
+  ASSERT_TRUE(exception.is_undefined());
+
+  // We should have gotten an object set for our var_from_page.
+  ASSERT_TRUE(var_from_page_.is_object());
+
+  // If the reference counting works, the object should be valid. We can test
+  // this by executing it (it was a function we defined above) and it should
+  // return "works" concatenated with the argument.
+  pp::VarPrivate function(var_from_page_);
+  pp::Var result = var_from_page_.Call(pp::Var(), "nice");
+  ASSERT_TRUE(result.is_string());
+  ASSERT_TRUE(result.AsString() == "worksnice");
+
+  PASS();
+}

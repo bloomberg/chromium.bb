@@ -40,6 +40,8 @@ class PPB_Var_Deprecated_Proxy : public InterfaceProxy {
 
  private:
   // Message handlers.
+  void OnMsgAddRefObject(int64 object_id, int* unused);
+  void OnMsgReleaseObject(int64 object_id);
   void OnMsgHasProperty(SerializedVarReceiveInput var,
                         SerializedVarReceiveInput name,
                         SerializedVarOutParam exception,

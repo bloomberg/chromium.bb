@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "ppapi/cpp/var.h"
 #include "ppapi/tests/test_case.h"
 
 struct PPB_Testing_Dev;
@@ -20,6 +21,12 @@ class TestVarDeprecated : public TestCase {
   virtual bool Init();
   virtual void RunTest();
 
+  void set_var_from_page(const pp::Var& v) { var_from_page_ = v; }
+
+ protected:
+  // Test case protected overrides.
+  virtual pp::deprecated::ScriptableObject* CreateTestObject();
+
  private:
   std::string TestBasicString();
   std::string TestInvalidAndEmpty();
@@ -29,10 +36,14 @@ class TestVarDeprecated : public TestCase {
   std::string TestUtf8WithEmbeddedNulls();
   std::string TestVarToUtf8ForWrongType();
   std::string TestHasPropertyAndMethod();
+  std::string TestPassReference();
 
   // Used by the tests that access the C API directly.
   const PPB_Var_Deprecated* var_interface_;
   const PPB_Testing_Dev* testing_interface_;
+
+  // Saves the var from when a value is set on the test from the page.
+  pp::Var var_from_page_;
 };
 
 #endif  // PPAPI_TEST_TEST_VAR_DEPRECATED_H_
