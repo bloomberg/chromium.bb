@@ -8,13 +8,9 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/chrome_cookie_policy.h"
-#include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
-#include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -70,8 +66,6 @@ void ProfileImplIOData::Handle::Init(const FilePath& cookie_path,
   lazy_params->media_cache_path = media_cache_path;
   lazy_params->media_cache_max_size = media_cache_max_size;
   lazy_params->extensions_cookie_path = extensions_cookie_path;
-
-  lazy_params->io_thread = g_browser_process->io_thread();
 
   io_data_->lazy_params_.reset(lazy_params);
 
@@ -154,8 +148,7 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
 
 ProfileImplIOData::LazyParams::LazyParams()
     : cache_max_size(0),
-      media_cache_max_size(0),
-      io_thread(NULL) {}
+      media_cache_max_size(0) {}
 ProfileImplIOData::LazyParams::~LazyParams() {}
 
 ProfileImplIOData::ProfileImplIOData()
@@ -170,11 +163,11 @@ void ProfileImplIOData::LazyInitializeInternal(
   // Keep track of clear_local_state_on_exit for isolated apps.
   clear_local_state_on_exit_ = profile_params->clear_local_state_on_exit;
 
-  main_request_context_ = new RequestContext;
+  ChromeURLRequestContext* main_context = main_request_context();
+  ChromeURLRequestContext* extensions_context = extensions_request_context();
   media_request_context_ = new RequestContext;
-  extensions_request_context_ = new RequestContext;
 
-  IOThread* const io_thread = lazy_params_->io_thread;
+  IOThread* const io_thread = profile_params->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   bool record_mode = chrome::kRecordModeEnabled &&
@@ -183,60 +176,43 @@ void ProfileImplIOData::LazyInitializeInternal(
 
   // Initialize context members.
 
-  ApplyProfileParamsToContext(main_request_context_);
+  ApplyProfileParamsToContext(main_context);
   ApplyProfileParamsToContext(media_request_context_);
-  ApplyProfileParamsToContext(extensions_request_context_);
-  profile_params->appcache_service->set_request_context(main_request_context_);
+  ApplyProfileParamsToContext(extensions_context);
 
-  cookie_policy_.reset(
-      new ChromeCookiePolicy(profile_params->host_content_settings_map));
-  main_request_context_->set_cookie_policy(cookie_policy_.get());
-  media_request_context_->set_cookie_policy(cookie_policy_.get());
-  extensions_request_context_->set_cookie_policy(cookie_policy_.get());
+  main_context->set_cookie_policy(cookie_policy());
+  media_request_context_->set_cookie_policy(cookie_policy());
+  extensions_context->set_cookie_policy(cookie_policy());
 
-  main_request_context_->set_net_log(lazy_params_->io_thread->net_log());
-  media_request_context_->set_net_log(lazy_params_->io_thread->net_log());
-  extensions_request_context_->set_net_log(lazy_params_->io_thread->net_log());
+  main_context->set_net_log(io_thread->net_log());
+  media_request_context_->set_net_log(io_thread->net_log());
+  extensions_context->set_net_log(io_thread->net_log());
 
-  network_delegate_.reset(new ChromeNetworkDelegate(
-        io_thread_globals->extension_event_router_forwarder.get(),
-        profile_params->profile_id,
-        enable_referrers(),
-        profile_params->protocol_handler_registry));
-  main_request_context_->set_network_delegate(network_delegate_.get());
-  media_request_context_->set_network_delegate(network_delegate_.get());
+  main_context->set_network_delegate(network_delegate());
+  media_request_context_->set_network_delegate(network_delegate());
 
-  main_request_context_->set_host_resolver(
+  main_context->set_host_resolver(
       io_thread_globals->host_resolver.get());
   media_request_context_->set_host_resolver(
       io_thread_globals->host_resolver.get());
-  main_request_context_->set_cert_verifier(
+  main_context->set_cert_verifier(
       io_thread_globals->cert_verifier.get());
   media_request_context_->set_cert_verifier(
       io_thread_globals->cert_verifier.get());
-  main_request_context_->set_dnsrr_resolver(
+  main_context->set_dnsrr_resolver(
       io_thread_globals->dnsrr_resolver.get());
   media_request_context_->set_dnsrr_resolver(
       io_thread_globals->dnsrr_resolver.get());
-  main_request_context_->set_http_auth_handler_factory(
+  main_context->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());
   media_request_context_->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());
 
-  dns_cert_checker_.reset(
-      CreateDnsCertProvenanceChecker(io_thread_globals->dnsrr_resolver.get(),
-                                     main_request_context_));
-  main_request_context_->set_dns_cert_checker(dns_cert_checker_.get());
-  media_request_context_->set_dns_cert_checker(dns_cert_checker_.get());
+  main_context->set_dns_cert_checker(dns_cert_checker());
+  media_request_context_->set_dns_cert_checker(dns_cert_checker());
 
-  net::ProxyService* proxy_service =
-      ProxyServiceFactory::CreateProxyService(
-          io_thread->net_log(),
-          io_thread_globals->proxy_script_fetcher_context.get(),
-          profile_params->proxy_config_service.release(),
-          command_line);
-  main_request_context_->set_proxy_service(proxy_service);
-  media_request_context_->set_proxy_service(proxy_service);
+  main_context->set_proxy_service(proxy_service());
+  media_request_context_->set_proxy_service(proxy_service());
 
   net::HttpCache::DefaultBackend* main_backend =
       new net::HttpCache::DefaultBackend(
@@ -245,15 +221,15 @@ void ProfileImplIOData::LazyInitializeInternal(
           lazy_params_->cache_max_size,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
   net::HttpCache* main_cache = new net::HttpCache(
-      main_request_context_->host_resolver(),
-      main_request_context_->cert_verifier(),
-      main_request_context_->dnsrr_resolver(),
-      main_request_context_->dns_cert_checker(),
-      main_request_context_->proxy_service(),
-      main_request_context_->ssl_config_service(),
-      main_request_context_->http_auth_handler_factory(),
-      main_request_context_->network_delegate(),
-      main_request_context_->net_log(),
+      main_context->host_resolver(),
+      main_context->cert_verifier(),
+      main_context->dnsrr_resolver(),
+      main_context->dns_cert_checker(),
+      main_context->proxy_service(),
+      main_context->ssl_config_service(),
+      main_context->http_auth_handler_factory(),
+      main_context->network_delegate(),
+      main_context->net_log(),
       main_backend);
 
   net::HttpCache::DefaultBackend* media_backend =
@@ -296,17 +272,17 @@ void ProfileImplIOData::LazyInitializeInternal(
                            chrome::kExtensionScheme};
   extensions_cookie_store->SetCookieableSchemes(schemes, 2);
 
-  main_request_context_->set_cookie_store(cookie_store);
+  main_context->set_cookie_store(cookie_store);
   media_request_context_->set_cookie_store(cookie_store);
-  extensions_request_context_->set_cookie_store(
+  extensions_context->set_cookie_store(
       extensions_cookie_store);
 
   main_http_factory_.reset(main_cache);
   media_http_factory_.reset(media_cache);
-  main_request_context_->set_http_transaction_factory(main_cache);
+  main_context->set_http_transaction_factory(main_cache);
   media_request_context_->set_http_transaction_factory(media_cache);
 
-  main_request_context_->set_ftp_transaction_factory(
+  main_context->set_ftp_transaction_factory(
       new net::FtpNetworkLayer(io_thread_globals->host_resolver.get()));
 
   lazy_params_.reset();
@@ -379,29 +355,11 @@ ProfileImplIOData::InitializeAppRequestContext(
 }
 
 scoped_refptr<ChromeURLRequestContext>
-ProfileImplIOData::AcquireMainRequestContext() const {
-  DCHECK(main_request_context_);
-  scoped_refptr<ChromeURLRequestContext> context = main_request_context_;
-  main_request_context_->set_profile_io_data(this);
-  main_request_context_ = NULL;
-  return context;
-}
-
-scoped_refptr<ChromeURLRequestContext>
 ProfileImplIOData::AcquireMediaRequestContext() const {
   DCHECK(media_request_context_);
   scoped_refptr<ChromeURLRequestContext> context = media_request_context_;
   media_request_context_->set_profile_io_data(this);
   media_request_context_ = NULL;
-  return context;
-}
-
-scoped_refptr<ChromeURLRequestContext>
-ProfileImplIOData::AcquireExtensionsRequestContext() const {
-  DCHECK(extensions_request_context_);
-  scoped_refptr<ChromeURLRequestContext> context = extensions_request_context_;
-  extensions_request_context_->set_profile_io_data(this);
-  extensions_request_context_ = NULL;
   return context;
 }
 

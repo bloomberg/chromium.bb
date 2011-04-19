@@ -15,7 +15,6 @@
 
 class ChromeURLRequestContext;
 class ChromeURLRequestContextGetter;
-class IOThread;
 class Profile;
 
 // OffTheRecordProfile owns a OffTheRecordProfileIOData::Handle, which holds a
@@ -82,48 +81,23 @@ class OffTheRecordProfileIOData : public ProfileIOData {
  private:
   friend class base::RefCountedThreadSafe<OffTheRecordProfileIOData>;
 
-  struct LazyParams {
-    LazyParams();
-    ~LazyParams();
-
-    IOThread* io_thread;
-  };
-
   typedef base::hash_map<std::string, net::HttpTransactionFactory* >
       HttpTransactionFactoryMap;
 
   OffTheRecordProfileIOData();
   ~OffTheRecordProfileIOData();
 
-  // Lazily initializes ProfileIOData.
   virtual void LazyInitializeInternal(ProfileParams* profile_params) const;
   virtual scoped_refptr<RequestContext> InitializeAppRequestContext(
       scoped_refptr<ChromeURLRequestContext> main_context,
       const std::string& app_id) const;
   virtual scoped_refptr<ChromeURLRequestContext>
-      AcquireMainRequestContext() const;
-  virtual scoped_refptr<ChromeURLRequestContext>
       AcquireMediaRequestContext() const;
-  virtual scoped_refptr<ChromeURLRequestContext>
-      AcquireExtensionsRequestContext() const;
   virtual scoped_refptr<ChromeURLRequestContext>
       AcquireIsolatedAppRequestContext(
           scoped_refptr<ChromeURLRequestContext> main_context,
           const std::string& app_id) const;
 
-  // Lazy initialization params.
-  mutable scoped_ptr<LazyParams> lazy_params_;
-
-  mutable bool initialized_;
-  mutable scoped_refptr<RequestContext> main_request_context_;
-  // NOTE: |media_request_context_| just points to the same context that
-  // |main_request_context_| points to.
-  mutable scoped_refptr<RequestContext> media_request_context_;
-  mutable scoped_refptr<RequestContext> extensions_request_context_;
-
-  mutable scoped_ptr<net::NetworkDelegate> network_delegate_;
-  mutable scoped_ptr<net::DnsCertProvenanceChecker> dns_cert_checker_;
-  mutable scoped_ptr<net::CookiePolicy> cookie_policy_;
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
 
   // One HttpTransactionFactory per isolated app.

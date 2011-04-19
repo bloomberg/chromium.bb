@@ -98,7 +98,6 @@ class ProfileImplIOData : public ProfileIOData {
     FilePath media_cache_path;
     int media_cache_max_size;
     FilePath extensions_cookie_path;
-    IOThread* io_thread;
   };
 
   typedef base::hash_map<std::string, net::HttpTransactionFactory* >
@@ -107,17 +106,12 @@ class ProfileImplIOData : public ProfileIOData {
   ProfileImplIOData();
   virtual ~ProfileImplIOData();
 
-  // Lazily initializes ProfileImplIOData.
   virtual void LazyInitializeInternal(ProfileParams* profile_params) const;
   virtual scoped_refptr<RequestContext> InitializeAppRequestContext(
       scoped_refptr<ChromeURLRequestContext> main_context,
       const std::string& app_id) const;
   virtual scoped_refptr<ChromeURLRequestContext>
-      AcquireMainRequestContext() const;
-  virtual scoped_refptr<ChromeURLRequestContext>
       AcquireMediaRequestContext() const;
-  virtual scoped_refptr<ChromeURLRequestContext>
-      AcquireExtensionsRequestContext() const;
   virtual scoped_refptr<ChromeURLRequestContext>
       AcquireIsolatedAppRequestContext(
           scoped_refptr<ChromeURLRequestContext> main_context,
@@ -126,13 +120,8 @@ class ProfileImplIOData : public ProfileIOData {
   // Lazy initialization params.
   mutable scoped_ptr<LazyParams> lazy_params_;
 
-  mutable scoped_refptr<RequestContext> main_request_context_;
   mutable scoped_refptr<RequestContext> media_request_context_;
-  mutable scoped_refptr<RequestContext> extensions_request_context_;
 
-  mutable scoped_ptr<net::NetworkDelegate> network_delegate_;
-  mutable scoped_ptr<net::DnsCertProvenanceChecker> dns_cert_checker_;
-  mutable scoped_ptr<net::CookiePolicy> cookie_policy_;
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
   mutable scoped_ptr<net::HttpTransactionFactory> media_http_factory_;
 

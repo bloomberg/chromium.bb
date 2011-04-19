@@ -4,18 +4,14 @@
 
 #include "chrome/browser/profiles/off_the_record_profile_io_data.h"
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/chrome_cookie_policy.h"
-#include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
@@ -30,10 +26,6 @@ OffTheRecordProfileIOData::Handle::Handle(Profile* profile)
       initialized_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile);
-  DCHECK(!io_data_->lazy_params_.get());
-  LazyParams* lazy_params = new LazyParams;
-  lazy_params->io_thread = g_browser_process->io_thread();
-  io_data_->lazy_params_.reset(lazy_params);
 }
 
 OffTheRecordProfileIOData::Handle::~Handle() {
@@ -118,66 +110,43 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
   }
 }
 
-OffTheRecordProfileIOData::LazyParams::LazyParams() : io_thread(NULL) {}
-OffTheRecordProfileIOData::LazyParams::~LazyParams() {}
-
 OffTheRecordProfileIOData::OffTheRecordProfileIOData()
-    : ProfileIOData(true),
-      initialized_(false) {}
+    : ProfileIOData(true) {}
 OffTheRecordProfileIOData::~OffTheRecordProfileIOData() {
   STLDeleteValues(&app_http_factory_map_);
 }
 
 void OffTheRecordProfileIOData::LazyInitializeInternal(
     ProfileParams* profile_params) const {
-  main_request_context_ = new RequestContext;
-  extensions_request_context_ = new RequestContext;
+  ChromeURLRequestContext* main_context = main_request_context();
+  ChromeURLRequestContext* extensions_context = extensions_request_context();
 
-  IOThread* const io_thread = lazy_params_->io_thread;
+  IOThread* const io_thread = profile_params->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  ApplyProfileParamsToContext(main_request_context_);
-  ApplyProfileParamsToContext(extensions_request_context_);
-  profile_params->appcache_service->set_request_context(main_request_context_);
+  ApplyProfileParamsToContext(main_context);
+  ApplyProfileParamsToContext(extensions_context);
 
-  cookie_policy_.reset(
-      new ChromeCookiePolicy(profile_params->host_content_settings_map));
-  main_request_context_->set_cookie_policy(cookie_policy_.get());
-  extensions_request_context_->set_cookie_policy(cookie_policy_.get());
+  main_context->set_cookie_policy(cookie_policy());
+  extensions_context->set_cookie_policy(cookie_policy());
 
-  main_request_context_->set_net_log(lazy_params_->io_thread->net_log());
-  extensions_request_context_->set_net_log(lazy_params_->io_thread->net_log());
+  main_context->set_net_log(io_thread->net_log());
+  extensions_context->set_net_log(io_thread->net_log());
 
-  network_delegate_.reset(new ChromeNetworkDelegate(
-      io_thread_globals->extension_event_router_forwarder.get(),
-      profile_params->profile_id,
-      enable_referrers(),
-      profile_params->protocol_handler_registry));
-  main_request_context_->set_network_delegate(network_delegate_.get());
+  main_context->set_network_delegate(network_delegate());
 
-  main_request_context_->set_host_resolver(
+  main_context->set_host_resolver(
       io_thread_globals->host_resolver.get());
-  main_request_context_->set_cert_verifier(
+  main_context->set_cert_verifier(
       io_thread_globals->cert_verifier.get());
-  main_request_context_->set_dnsrr_resolver(
+  main_context->set_dnsrr_resolver(
       io_thread_globals->dnsrr_resolver.get());
-  main_request_context_->set_http_auth_handler_factory(
+  main_context->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());
+  main_context->set_dns_cert_checker(dns_cert_checker());
+  main_context->set_proxy_service(proxy_service());
 
-  dns_cert_checker_.reset(
-      CreateDnsCertProvenanceChecker(io_thread_globals->dnsrr_resolver.get(),
-                                     main_request_context_));
-  main_request_context_->set_dns_cert_checker(dns_cert_checker_.get());
-
-  main_request_context_->set_proxy_service(
-      ProxyServiceFactory::CreateProxyService(
-          io_thread->net_log(),
-          io_thread_globals->proxy_script_fetcher_context.get(),
-          profile_params->proxy_config_service.release(),
-          command_line));
-
-  main_request_context_->set_cookie_store(
+  main_context->set_cookie_store(
       new net::CookieMonster(NULL, profile_params->cookie_monster_delegate));
   // All we care about for extensions is the cookie store. For incognito, we
   // use a non-persistent cookie store.
@@ -189,27 +158,27 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
                            chrome::kExtensionScheme};
   extensions_cookie_store->SetCookieableSchemes(schemes, 2);
 
-  extensions_request_context_->set_cookie_store(
+  extensions_context->set_cookie_store(
       new net::CookieMonster(NULL, NULL));
 
   net::HttpCache::BackendFactory* main_backend =
       net::HttpCache::DefaultBackend::InMemory(0);
   net::HttpCache* cache =
-      new net::HttpCache(main_request_context_->host_resolver(),
-                         main_request_context_->cert_verifier(),
-                         main_request_context_->dnsrr_resolver(),
-                         main_request_context_->dns_cert_checker(),
-                         main_request_context_->proxy_service(),
-                         main_request_context_->ssl_config_service(),
-                         main_request_context_->http_auth_handler_factory(),
-                         main_request_context_->network_delegate(),
-                         main_request_context_->net_log(),
+      new net::HttpCache(main_context->host_resolver(),
+                         main_context->cert_verifier(),
+                         main_context->dnsrr_resolver(),
+                         main_context->dns_cert_checker(),
+                         main_context->proxy_service(),
+                         main_context->ssl_config_service(),
+                         main_context->http_auth_handler_factory(),
+                         main_context->network_delegate(),
+                         main_context->net_log(),
                          main_backend);
 
   main_http_factory_.reset(cache);
-  main_request_context_->set_http_transaction_factory(cache);
-  main_request_context_->set_ftp_transaction_factory(
-      new net::FtpNetworkLayer(main_request_context_->host_resolver()));
+  main_context->set_http_transaction_factory(cache);
+  main_context->set_ftp_transaction_factory(
+      new net::FtpNetworkLayer(main_context->host_resolver()));
 }
 
 scoped_refptr<ProfileIOData::RequestContext>
@@ -244,27 +213,9 @@ OffTheRecordProfileIOData::InitializeAppRequestContext(
 }
 
 scoped_refptr<ChromeURLRequestContext>
-OffTheRecordProfileIOData::AcquireMainRequestContext() const {
-  DCHECK(main_request_context_);
-  scoped_refptr<ChromeURLRequestContext> context = main_request_context_;
-  main_request_context_->set_profile_io_data(this);
-  main_request_context_ = NULL;
-  return context;
-}
-
-scoped_refptr<ChromeURLRequestContext>
 OffTheRecordProfileIOData::AcquireMediaRequestContext() const {
   NOTREACHED();
   return NULL;
-}
-
-scoped_refptr<ChromeURLRequestContext>
-OffTheRecordProfileIOData::AcquireExtensionsRequestContext() const {
-  DCHECK(extensions_request_context_);
-  scoped_refptr<ChromeURLRequestContext> context = extensions_request_context_;
-  extensions_request_context_->set_profile_io_data(this);
-  extensions_request_context_ = NULL;
-  return context;
 }
 
 scoped_refptr<ChromeURLRequestContext>

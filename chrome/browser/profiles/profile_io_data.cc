@@ -17,9 +17,12 @@
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
+#include "chrome/browser/net/chrome_cookie_policy.h"
+#include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
+#include "chrome/browser/net/chrome_net_log.h"
+#include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/net/proxy_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -157,6 +160,8 @@ void ProfileIOData::InitializeProfileParams(Profile* profile) {
   // net_util::GetSuggestedFilename is unlikely to be taken.
   params->referrer_charset = default_charset;
 
+  params->io_thread = g_browser_process->io_thread();
+
   params->host_content_settings_map = profile->GetHostContentSettingsMap();
   params->host_zoom_map = profile->GetHostZoomMap();
   params->transport_security_state = profile->GetTransportSecurityState();
@@ -212,9 +217,9 @@ ProfileIOData::~ProfileIOData() {
 scoped_refptr<ChromeURLRequestContext>
 ProfileIOData::GetMainRequestContext() const {
   LazyInitialize();
-  scoped_refptr<ChromeURLRequestContext> context =
-      AcquireMainRequestContext();
-  DCHECK(context);
+  scoped_refptr<RequestContext> context = main_request_context_;
+  context->set_profile_io_data(this);
+  main_request_context_ = NULL;
   return context;
 }
 
@@ -230,9 +235,10 @@ ProfileIOData::GetMediaRequestContext() const {
 scoped_refptr<ChromeURLRequestContext>
 ProfileIOData::GetExtensionsRequestContext() const {
   LazyInitialize();
-  scoped_refptr<ChromeURLRequestContext> context =
-      AcquireExtensionsRequestContext();
-  DCHECK(context);
+  scoped_refptr<RequestContext> context =
+      extensions_request_context_;
+  context->set_profile_io_data(this);
+  extensions_request_context_ = NULL;
   return context;
 }
 
@@ -268,6 +274,37 @@ void ProfileIOData::LazyInitialize() const {
     return;
   DCHECK(profile_params_.get());
 
+  IOThread* const io_thread = profile_params_->io_thread;
+  IOThread::Globals* const io_thread_globals = io_thread->globals();
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  // Create the common request contexts.
+  main_request_context_ = new RequestContext;
+  extensions_request_context_ = new RequestContext;
+
+  profile_params_->appcache_service->set_request_context(main_request_context_);
+
+  // Create objects pointed to by URLRequestContext.
+  cookie_policy_.reset(
+      new ChromeCookiePolicy(profile_params_->host_content_settings_map));
+
+  network_delegate_.reset(new ChromeNetworkDelegate(
+        io_thread_globals->extension_event_router_forwarder.get(),
+        profile_params_->profile_id,
+        &enable_referrers_,
+        profile_params_->protocol_handler_registry));
+
+  dns_cert_checker_.reset(
+      CreateDnsCertProvenanceChecker(io_thread_globals->dnsrr_resolver.get(),
+                                     main_request_context_));
+
+  proxy_service_ =
+      ProxyServiceFactory::CreateProxyService(
+          io_thread->net_log(),
+          io_thread_globals->proxy_script_fetcher_context.get(),
+          profile_params_->proxy_config_service.release(),
+          command_line);
+
   // Take ownership over these parameters.
   database_tracker_ = profile_params_->database_tracker;
   appcache_service_ = profile_params_->appcache_service;
@@ -280,6 +317,7 @@ void ProfileIOData::LazyInitialize() const {
   resource_context_.set_file_system_context(file_system_context_);
 
   LazyInitializeInternal(profile_params_.get());
+
   profile_params_.reset();
   initialized_ = true;
 }
