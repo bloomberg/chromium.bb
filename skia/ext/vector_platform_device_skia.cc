@@ -81,8 +81,13 @@ PlatformDevice::PlatformSurface VectorPlatformDeviceSkia::BeginPlatformPaint() {
 void VectorPlatformDeviceSkia::EndPlatformPaint() {
   DCHECK(raster_surface_ != NULL);
   SkPaint paint;
-  pdf_device_->drawSprite(SkDraw(), raster_surface_->accessBitmap(false),
-                          0, 0, paint);
+  // SkPDFDevice checks the passed SkDraw for an empty clip (only).  Fake
+  // it out by setting a non-empty clip.
+  SkDraw draw;
+  SkRegion clip(SkIRect::MakeWH(pdf_device_->width(), pdf_device_->height()));
+  draw.fClip=&clip;
+  pdf_device_->drawSprite(draw, raster_surface_->accessBitmap(false), 0, 0,
+                          paint);
   raster_surface_ = NULL;
 }
 
