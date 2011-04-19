@@ -22,7 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/sim_unlock_dialog_delegate.h"
+#include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -275,24 +275,6 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("changePinButton",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_BUTTON));
-  localized_strings->SetString("changePinTitle",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_TITLE));
-  localized_strings->SetString("changePinMessage",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_MESSAGE));
-  localized_strings->SetString("incorrectPin",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_INCORRECT_ERROR));
-  localized_strings->SetString("oldPin",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_OLD_PIN));
-  localized_strings->SetString("newPin",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_NEW_PIN));
-  localized_strings->SetString("retypeNewPin",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_RETYPE_PIN));
 
   localized_strings->SetString("planName",
       l10n_util::GetStringUTF16(
@@ -466,12 +448,17 @@ void InternetOptionsHandler::SetSimCardLockCallback(const ListValue* args) {
   // 3. If card is locked it will first call PIN unlock operation
   // 4. Then it will call Set RequirePin, passing the same PIN.
   // 5. We'll get notified by REQUIRE_PIN_SETTING_CHANGE_ENDED notification.
-  chromeos::SimUnlockDialogDelegate::ShowDialog(GetNativeWindow(),
-                                                require_pin_new_value);
+  chromeos::SimDialogDelegate::SimDialogMode mode;
+  if (require_pin_new_value)
+    mode = chromeos::SimDialogDelegate::SIM_DIALOG_SET_LOCK_ON;
+  else
+    mode = chromeos::SimDialogDelegate::SIM_DIALOG_SET_LOCK_OFF;
+  chromeos::SimDialogDelegate::ShowDialog(GetNativeWindow(), mode);
 }
 
 void InternetOptionsHandler::ChangePinCallback(const ListValue* args) {
-  // TODO(nkostylev): Check OLD pin, compare new PIN inputs, change PIN if ok.
+  chromeos::SimDialogDelegate::ShowDialog(GetNativeWindow(),
+      chromeos::SimDialogDelegate::SIM_DIALOG_CHANGE_PIN);
 }
 
 void InternetOptionsHandler::RefreshNetworkData(

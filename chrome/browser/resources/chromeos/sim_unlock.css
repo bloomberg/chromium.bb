@@ -12,6 +12,11 @@
   overflow: auto;
 }
 
+.change-pin-content-area {
+  max-height: 156px;
+  overflow: auto;
+}
+
 .input-area {
   margin: 10px auto 25px auto;
   width: 125px;

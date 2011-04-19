@@ -12,7 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/sim_unlock_dialog_delegate.h"
+#include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/window.h"
@@ -220,7 +220,8 @@ void NetworkMenuModel::ActivatedAt(int index) {
           cellular->sim_lock_state() == SIM_UNKNOWN) {
         cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
       } else {
-        SimUnlockDialogDelegate::ShowDialog(owner_->GetNativeWindow());
+        SimDialogDelegate::ShowDialog(owner_->GetNativeWindow(),
+            SimDialogDelegate::SIM_DIALOG_UNLOCK);
       }
     }
   } else if (flags & FLAG_TOGGLE_OFFLINE) {

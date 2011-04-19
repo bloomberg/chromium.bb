@@ -105,7 +105,7 @@ cr.define('options', function() {
         chrome.send('setSimCardLock', [newValue]);
       });
       $('change-pin').addEventListener('click', function(event) {
-        // TODO(nkostylev): Display change PIN dialog.
+        chrome.send('changePin');
       });
       this.showNetworkDetails_();
     },
