@@ -1754,6 +1754,8 @@
         'browser/safe_browsing/client_side_detection_service.h',
         'browser/safe_browsing/malware_details.cc',
         'browser/safe_browsing/malware_details.h',
+        'browser/safe_browsing/malware_details_cache.cc',
+        'browser/safe_browsing/malware_details_cache.h',
         'browser/safe_browsing/prefix_set.cc',
         'browser/safe_browsing/prefix_set.h',
         'browser/safe_browsing/protocol_manager.cc',

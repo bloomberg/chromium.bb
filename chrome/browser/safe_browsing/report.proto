@@ -87,4 +87,7 @@ message ClientMalwareReportRequest {
 
   optional string referrer_url = 3;
   repeated Resource resources = 4;
+
+  // Whether the report has HTTP Responses.
+  optional bool complete = 5;
 }

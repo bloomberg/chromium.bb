@@ -38,15 +38,16 @@ class TestSafeBrowsingBlockingPage :  public SafeBrowsingBlockingPage {
 class TestSafeBrowsingService: public SafeBrowsingService {
  public:
   virtual ~TestSafeBrowsingService() {}
-  virtual void ReportMalwareDetails(scoped_refptr<MalwareDetails> details) {
-    details_.push_back(details);
+
+  virtual void SendSerializedMalwareDetails(const std::string& serialized) {
+    details_.push_back(serialized);
   }
 
-  std::list<scoped_refptr<MalwareDetails> >* GetDetails() {
+  std::list<std::string>* GetDetails() {
     return &details_;
   }
 
-  std::list<scoped_refptr<MalwareDetails> > details_;
+  std::list<std::string> details_;
 };
 
 class TestSafeBrowsingBlockingPageFactory

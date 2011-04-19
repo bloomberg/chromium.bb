@@ -147,7 +147,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
       malware_details_ == NULL &&
       CanShowMalwareDetailsOption()) {
     malware_details_ = MalwareDetails::NewMalwareDetails(
-        tab(), unsafe_resources[0]);
+        sb_service_, tab(), unsafe_resources[0]);
   }
 }
 
@@ -605,12 +605,11 @@ void SafeBrowsingBlockingPage::FinishMalwareDetails() {
 
   bool value;
   if (pref && pref->GetValue()->GetAsBoolean(&value) && value) {
-    // Give the details object to the service class, so it can send it.
+    // Finish the malware details collection, send it over.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(
-            sb_service_, &SafeBrowsingService::ReportMalwareDetails,
-            malware_details_));
+            malware_details_.get(), &MalwareDetails::FinishCollection));
   }
 }
 

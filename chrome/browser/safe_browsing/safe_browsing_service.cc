@@ -1066,14 +1066,13 @@ void SafeBrowsingService::ReportSafeBrowsingHitOnIOThread(
 }
 
 // If the user had opted-in to send MalwareDetails, this gets called
-// at the time that the blocking page is going away.
-void SafeBrowsingService::ReportMalwareDetails(
-    scoped_refptr<MalwareDetails> details) {
+// when the report is ready.
+void SafeBrowsingService::SendSerializedMalwareDetails(
+    const std::string& serialized) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  scoped_ptr<const std::string> serialized(details->GetSerializedReport());
-  if (!serialized->empty()) {
+  if (!serialized.empty()) {
     DVLOG(1) << "Sending serialized malware details.";
-    protocol_manager_->ReportMalwareDetails(*serialized);
+    protocol_manager_->ReportMalwareDetails(serialized);
   }
 }
 

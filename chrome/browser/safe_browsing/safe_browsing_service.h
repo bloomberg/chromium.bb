@@ -239,9 +239,9 @@ class SafeBrowsingService
   // the current page is 'safe'.
   void LogPauseDelay(base::TimeDelta time);
 
-  // When a safebrowsing blocking page goes away, it calls this method
-  // so the service can serialize and send MalwareDetails.
-  virtual void ReportMalwareDetails(scoped_refptr<MalwareDetails> details);
+  // Called on the IO thread by the MalwareDetails with the serialized
+  // protocol buffer, so the service can send it over.
+  virtual void SendSerializedMalwareDetails(const std::string& serialized);
 
   // Report hits to the unsafe contents (malware, phishing, unsafe download URL)
   // to the server. Can only be called on UI thread.
