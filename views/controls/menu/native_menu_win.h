@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/task.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "views/controls/menu/menu_wrapper.h"
 
@@ -87,6 +88,9 @@ class NativeMenuWin : public MenuWrapper {
   // Creates the host window that receives notifications from the menu.
   void CreateHostWindow();
 
+  // Callback from task to notify menu it was selected.
+  void DelayedSelect();
+
   // Given a menu that's currently popped-up, find the currently highlighted
   // item. Returns true if a highlighted item was found.
   static bool GetHighlightedMenuItemInfo(HMENU menu,
@@ -132,12 +136,18 @@ class NativeMenuWin : public MenuWrapper {
   // once.
   bool listeners_called_;
 
-  // See comment in MenuMessageHook for details on this.
+  // See comment in MenuMessageHook for details on these.
   NativeMenuWin* menu_to_select_;
   int position_to_select_;
+  ScopedRunnableMethodFactory<NativeMenuWin> menu_to_select_factory_;
 
   // If we're a submenu, this is our parent.
   NativeMenuWin* parent_;
+
+  // If non-null the destructor sets this to true. This is set to non-null while
+  // the menu is showing. It is used to detect if the menu was deleted while
+  // running.
+  bool* destroyed_flag_;
 
   // Ugly: a static pointer to the instance of this class that currently
   // has a menu open, because our hook function that receives keyboard

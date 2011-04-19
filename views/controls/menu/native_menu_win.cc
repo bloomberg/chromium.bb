@@ -7,6 +7,7 @@
 #include <Windowsx.h>
 
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/win/wrapped_window_proc.h"
@@ -339,10 +340,14 @@ NativeMenuWin::NativeMenuWin(ui::MenuModel* model, HWND system_menu_for)
       menu_action_(MENU_ACTION_NONE),
       menu_to_select_(NULL),
       position_to_select_(-1),
-      parent_(NULL) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(menu_to_select_factory_(this)),
+      parent_(NULL),
+      destroyed_flag_(NULL) {
 }
 
 NativeMenuWin::~NativeMenuWin() {
+  if (destroyed_flag_)
+    *destroyed_flag_ = true;
   STLDeleteContainerPointers(items_.begin(), items_.end());
   DestroyMenu(menu_);
 }
@@ -374,15 +379,27 @@ void NativeMenuWin::RunMenuAt(const gfx::Point& point, int alignment) {
   HWND hwnd = host_window_->hwnd();
   menu_to_select_ = NULL;
   position_to_select_ = -1;
+  menu_to_select_factory_.RevokeAll();
+  bool destroyed = false;
+  destroyed_flag_ = &destroyed;
   TrackPopupMenu(menu_, flags, point.x(), point.y(), 0, host_window_->hwnd(),
-                   NULL);
-
+                 NULL);
   UnhookWindowsHookEx(hhook);
   open_native_menu_win_ = NULL;
-
+  if (destroyed)
+    return;
+  destroyed_flag_ = NULL;
   if (menu_to_select_) {
+    // Folks aren't too happy if we notify immediately. In particular, notifying
+    // the delegate can cause destruction leaving the stack in a weird
+    // state. Instead post a task, then notify. This mirrors what WM_MENUCOMMAND
+    // does.
+    menu_to_select_factory_.RevokeAll();
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        menu_to_select_factory_.NewRunnableMethod(
+            &NativeMenuWin::DelayedSelect));
     menu_action_ = MENU_ACTION_SELECTED;
-    menu_to_select_->model_->ActivatedAt(position_to_select_);
   }
 }
 
@@ -458,6 +475,11 @@ void NativeMenuWin::SetMinimumWidth(int width) {
 // static
 NativeMenuWin* NativeMenuWin::open_native_menu_win_ = NULL;
 
+void NativeMenuWin::DelayedSelect() {
+  if (menu_to_select_)
+    menu_to_select_->model_->ActivatedAt(position_to_select_);
+}
+
 // static
 bool NativeMenuWin::GetHighlightedMenuItemInfo(
     HMENU menu,
@@ -487,6 +509,9 @@ LRESULT CALLBACK NativeMenuWin::MenuMessageHook(
   LRESULT result = CallNextHookEx(NULL, n_code, w_param, l_param);
 
   NativeMenuWin* this_ptr = open_native_menu_win_;
+  if (!this_ptr)
+    return result;
+
   // The first time this hook is called, that means the menu has successfully
   // opened, so call the callback function on all of our listeners.
   if (!this_ptr->listeners_called_) {
@@ -506,8 +531,9 @@ LRESULT CALLBACK NativeMenuWin::MenuMessageHook(
       // items trigger painting of the tabstrip on mouse over) we have this
       // workaround. When the mouse is released on a menu item we remember the
       // menu item and end the menu. When the nested message loop returns we
-      // notify the model. It's still possible to get a WM_MENUCOMMAND, so we
-      // have to be careful that we don't notify the model twice.
+      // schedule a task to notify the model. It's still possible to get a
+      // WM_MENUCOMMAND, so we have to be careful that we don't notify the model
+      // twice.
       this_ptr->menu_to_select_ = info.menu;
       this_ptr->position_to_select_ = info.position;
       EndMenu();
