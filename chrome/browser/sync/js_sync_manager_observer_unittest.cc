@@ -39,7 +39,12 @@ TEST_F(JsSyncManagerObserverTest, NoArgNotifiations) {
   EXPECT_CALL(mock_router_,
               RouteJsEvent("onPassphraseFailed",
                            HasArgs(JsArgList()), NULL));
-
+  EXPECT_CALL(mock_router_,
+              RouteJsEvent("onPaused",
+                           HasArgs(JsArgList()), NULL));
+  EXPECT_CALL(mock_router_,
+              RouteJsEvent("onResumed",
+                           HasArgs(JsArgList()), NULL));
   EXPECT_CALL(mock_router_,
               RouteJsEvent("onStopSyncingPermanently",
                            HasArgs(JsArgList()), NULL));
@@ -52,6 +57,8 @@ TEST_F(JsSyncManagerObserverTest, NoArgNotifiations) {
 
   sync_manager_observer_.OnInitializationComplete();
   sync_manager_observer_.OnPassphraseFailed();
+  sync_manager_observer_.OnPaused();
+  sync_manager_observer_.OnResumed();
   sync_manager_observer_.OnStopSyncingPermanently();
   sync_manager_observer_.OnClearServerDataSucceeded();
   sync_manager_observer_.OnClearServerDataFailed();

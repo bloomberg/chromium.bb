@@ -92,6 +92,13 @@ class SyncSessionContext {
     previous_session_routing_info_ = info;
   }
 
+  // TODO(tim): Deprecated.  Bug 26339.
+  sessions::SyncSessionSnapshot* previous_session_snapshot() {
+    return previous_session_snapshot_.get();
+  }
+
+  void set_last_snapshot(const SyncSessionSnapshot& snapshot);
+
   void NotifyListeners(const SyncEngineEvent& event) {
     FOR_EACH_OBSERVER(SyncEngineEventListener, listeners_,
                       OnSyncEngineEvent(event));

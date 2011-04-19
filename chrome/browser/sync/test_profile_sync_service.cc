@@ -24,6 +24,14 @@ using syncable::ModelType;
 using syncable::ScopedDirLookup;
 using sync_api::UserShare;
 
+ACTION_P(CallOnPaused, core) {
+  core->OnPaused();
+};
+
+ACTION_P(CallOnResumed, core) {
+  core->OnResumed();
+}
+
 namespace browser_sync {
 
 using ::testing::_;
@@ -33,10 +41,21 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     bool synchronous_init)
     : browser_sync::SyncBackendHost(profile),
       synchronous_init_(synchronous_init) {
+  // By default, the RequestPause and RequestResume methods will
+  // send the confirmation notification and return true.
+  ON_CALL(*this, RequestPause()).
+      WillByDefault(testing::DoAll(CallOnPaused(core_),
+                                   testing::Return(true)));
+  ON_CALL(*this, RequestResume()).
+      WillByDefault(testing::DoAll(CallOnResumed(core_),
+                                   testing::Return(true)));
   ON_CALL(*this, RequestNudge(_)).WillByDefault(
       testing::Invoke(this,
                       &SyncBackendHostForProfileSyncTest::
                       SimulateSyncCycleCompletedInitialSyncEnded));
+
+  EXPECT_CALL(*this, RequestPause()).Times(testing::AnyNumber());
+  EXPECT_CALL(*this, RequestResume()).Times(testing::AnyNumber());
   EXPECT_CALL(*this, RequestNudge(_)).Times(testing::AnyNumber());
 }
 
