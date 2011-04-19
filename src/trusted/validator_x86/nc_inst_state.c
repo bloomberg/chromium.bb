@@ -53,6 +53,16 @@ static void NaClInstStateInit(NaClInstIter* iter, NaClInstState* state) {
   state->num_prefix_bytes = 0;
   state->rexprefix = 0;
   state->num_rex_prefixes = 0;
+  state->modrm = 0;
+  state->has_prefix_duplicates = FALSE;
+  state->has_ambig_segment_prefixes = FALSE;
+  state->has_sib = FALSE;
+  state->sib = 0;
+  state->num_disp_bytes = 0;
+  state->first_disp_byte = 0;
+  state->num_imm_bytes = 0;
+  state->first_imm_byte = 0;
+  state->num_imm2_bytes = 0;
   state->prefix_mask = 0;
   state->inst = NULL;
   state->nodes.is_defined = FALSE;
@@ -102,6 +112,13 @@ static int NaClExtractAddressSize(NaClInstState* state) {
 static const int kNaClMaximumPrefixBytes =
     NACL_MAX_BYTES_PER_X86_INSTRUCTION - 1;
 
+/* Captures ambiguous segment prefix forms. Used to make
+ * detection of multiple prefix segment bytes.
+ */
+static const uint32_t segment_prefix_forms =
+    kPrefixSEGCS | kPrefixSEGSS | kPrefixSEGFS |
+    kPrefixSEGGS | kPrefixSEGES | kPrefixSEGDS;
+
 /* Match any prefix bytes that can be associated with the instruction
  * currently being matched.
  */
@@ -124,6 +141,20 @@ static Bool NaClConsumePrefixBytes(NaClInstState* state) {
     DEBUG(NaClLog(LOG_INFO,
                   "Consume prefix[%d]: %02"NACL_PRIx8" => %"NACL_PRIx32"\n",
                   i, next_byte, prefix_form));
+    /* Before updating prefix mask, determine if the prefix byte is
+     * a duplicate.
+     */
+    if ((state->prefix_mask & prefix_form)) {
+      state->has_prefix_duplicates = TRUE;
+      DEBUG(NaClLog(LOG_INFO,
+                    "duplicate prefix %02"NACL_PRIx8" detected.\n", next_byte));
+    } else if ((prefix_form & segment_prefix_forms) &&
+               (state->prefix_mask & segment_prefix_forms)) {
+      state->has_ambig_segment_prefixes = TRUE;
+      DEBUG(NaClLog(LOG_INFO,
+                    "ambiguos segment prefix %02"NACL_PRIx8" detected.\n",
+                    next_byte));
+    }
     state->prefix_mask |= prefix_form;
     ++state->num_prefix_bytes;
     DEBUG(NaClLog(LOG_INFO,

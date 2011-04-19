@@ -43,6 +43,10 @@ struct NaClInstState {
   uint8_t num_rex_prefixes;
   /* If Mod/RM byte defined, its value. Otherwise zero. */
   uint8_t modrm;
+  /* True if prefix bytes are duplicated prefix bytes. */
+  Bool has_prefix_duplicates;
+  /* True if prefix has ambiguous segment prefix bytes. */
+  Bool has_ambig_segment_prefixes;
   /* True only if the instruction has an SIB byte. */
   Bool has_sib;
   /* If a SIB byte is defined, its value. Otherwise zero. */

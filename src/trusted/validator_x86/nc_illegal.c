@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /* Validator to check that instructions are in the legal subset. */
@@ -60,6 +60,13 @@ static const char* NaClReasonWhyDisallowed(NaClDisallowsFlag flag) {
       return
           "Use of DATA16 (66) prefix for instruction not allowed by "
           "Native Client";
+    case NaClHasDuplicatePrefix:
+      return
+          "Duplicating a prefix byte is not allowed by Native Client";
+    case NaClHasAmbigSegmentPrefixes:
+      return
+          "Specifying different segment registers using prefix bytes "
+          "is not allowed by Native Client";
     default:
       return NULL;
   }
@@ -197,6 +204,34 @@ static void NaClCheckForPrefixIssues(NaClValidatorState* state,
     }
   }
 
+  /* Don't allow ambiguous prefix forms. */
+  if (inst_state->has_ambig_segment_prefixes) {
+    *is_legal = FALSE;
+    *disallows_flags |= NACL_DISALLOWS_FLAG(NaClHasAmbigSegmentPrefixes);
+    DEBUG(NaClLog(LOG_INFO, "%s\n",
+                  NaClGetReasonWhyDisallowed(NaClHasAmbigSegmentPrefixes)));
+  }
+
+  /* Don't allow duplicated prefixes. Note: Don't report if multiple
+   * REX prefixes has been reported, since we don't know what duplicates
+   * caused the problem, and an error has already been reported.
+   */
+  if (inst_state->has_prefix_duplicates &&
+      (NACL_EMPTY_DISALLOWS_FLAGS ==
+       (*disallows_flags & NACL_DISALLOWS_FLAG(NaClMultipleRexPrefix)))) {
+    /* NOTE: does not apply to NOP, since they are parsed using
+     * special handling (i.e. explicit byte sequence matches) that
+     * doesn't explicitly define prefix bytes.
+     *
+     * NOTE: We don't disallow this while decoding, since xed doesn't
+     * disallow this, and we want to be able to compare our tool
+     * to xed.
+     */
+    *is_legal = FALSE;
+    *disallows_flags |= NACL_DISALLOWS_FLAG(NaClHasDuplicatePrefix);
+    DEBUG(NaClLog(LOG_INFO, "%s\n",
+                  NaClGetReasonWhyDisallowed(NaClHasDuplicatePrefix)));
+  }
 }
 
 /* Checks instruction details of the current instruction to see if there
