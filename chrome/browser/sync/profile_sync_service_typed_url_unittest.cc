@@ -163,10 +163,11 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       service_.reset(
           new TestProfileSyncService(&factory_, &profile_, "test", false,
                                      task));
+      EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
+          Return(service_.get()));
       TypedUrlDataTypeController* data_type_controller =
           new TypedUrlDataTypeController(&factory_,
-                                         &profile_,
-                                         service_.get());
+                                         &profile_);
 
       EXPECT_CALL(factory_, CreateTypedUrlSyncComponents(_, _, _)).
           WillOnce(MakeTypedUrlSyncComponents(service_.get(),
