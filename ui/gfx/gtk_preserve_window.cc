@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,6 +82,12 @@ static void gtk_preserve_window_realize(GtkWidget* widget) {
                         gtk_widget_get_parent_window(widget),
                         widget->allocation.x,
                         widget->allocation.y);
+    GtkPreserveWindowPrivate* priv = GTK_PRESERVE_WINDOW_GET_PRIVATE(widget);
+    if (!priv->delegate_resize) {
+      gdk_window_resize(widget->window,
+                        widget->allocation.width,
+                        widget->allocation.height);
+    }
     widget->style = gtk_style_attach(widget->style, widget->window);
     gtk_style_set_background(widget->style, widget->window, GTK_STATE_NORMAL);
 

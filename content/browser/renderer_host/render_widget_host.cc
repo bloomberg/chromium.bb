@@ -122,6 +122,12 @@ gfx::NativeViewId RenderWidgetHost::GetNativeViewId() {
   return 0;
 }
 
+gfx::PluginWindowHandle RenderWidgetHost::GetCompositingSurface() {
+  if (view_)
+    return view_->GetCompositingSurface();
+  return gfx::kNullPluginWindow;
+}
+
 bool RenderWidgetHost::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event,
     bool* is_keyboard_shortcut) {
@@ -134,7 +140,8 @@ void RenderWidgetHost::Init() {
   renderer_initialized_ = true;
 
   // Send the ack along with the information on placement.
-  Send(new ViewMsg_CreatingNew_ACK(routing_id_, GetNativeViewId()));
+  Send(new ViewMsg_CreatingNew_ACK(
+      routing_id_, GetNativeViewId(), GetCompositingSurface()));
   WasResized();
 }
 

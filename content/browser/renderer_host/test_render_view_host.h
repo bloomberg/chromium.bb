@@ -141,8 +141,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void AcceleratedCompositingActivated(bool activated) { }
 #endif
 
-  virtual gfx::PluginWindowHandle AcquireCompositingSurface();
-  virtual void ReleaseCompositingSurface(gfx::PluginWindowHandle surface) { }
+  virtual gfx::PluginWindowHandle GetCompositingSurface();
 
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
 

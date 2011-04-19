@@ -415,7 +415,7 @@ void RenderWidgetHostViewViews::AcceleratedCompositingActivated(
     NOTIMPLEMENTED();
 }
 
-gfx::PluginWindowHandle RenderWidgetHostViewViews::AcquireCompositingSurface() {
+gfx::PluginWindowHandle RenderWidgetHostViewViews::GetCompositingSurface() {
   GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
   gfx::PluginWindowHandle surface = gfx::kNullPluginWindow;
   gfx::NativeViewId view_id = gfx::IdFromNativeView(GetInnerNativeView());
@@ -424,10 +424,6 @@ gfx::PluginWindowHandle RenderWidgetHostViewViews::AcquireCompositingSurface() {
     DLOG(ERROR) << "Can't find XID for view id " << view_id;
   }
   return surface;
-}
-
-void RenderWidgetHostViewViews::ReleaseCompositingSurface(
-    gfx::PluginWindowHandle surface) {
 }
 
 gfx::NativeView RenderWidgetHostViewViews::GetInnerNativeView() const {

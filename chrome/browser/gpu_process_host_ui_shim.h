@@ -122,6 +122,7 @@ class GpuProcessHostUIShim
   // Tells the GPU process to create a new command buffer that draws into the
   // window associated with the given renderer.
   void CreateViewCommandBuffer(
+      gfx::PluginWindowHandle compositing_surface,
       int32 render_view_id,
       int32 renderer_id,
       const GPUCreateCommandBufferConfig& init_params,
@@ -197,16 +198,21 @@ class GpuProcessHostUIShim
   std::queue<linked_ptr<CreateCommandBufferCallback> >
       create_command_buffer_requests_;
 
+#if defined(OS_LINUX)
   typedef std::pair<int32 /* renderer_id */,
                     int32 /* render_view_id */> ViewID;
 
-  // Encapsulates surfaces that we acquire when creating view command buffers.
-  // We assume that a render view has at most 1 such surface associated
-  // with it.  Multimap is used to simulate reference counting, see comment in
+  // Encapsulates surfaces that we lock when creating view command buffers.
+  // We release this lock once the command buffer (or associated GPU process)
+  // is destroyed. This prevents the browser from destroying the surface
+  // while the GPU process is drawing to it.
+
+  // Multimap is used to simulate reference counting, see comment in
   // GpuProcessHostUIShim::CreateViewCommandBuffer.
-  class ViewSurface;
-  typedef std::multimap<ViewID, linked_ptr<ViewSurface> > ViewSurfaceMap;
-  ViewSurfaceMap acquired_surfaces_;
+  class SurfaceRef;
+  typedef std::multimap<ViewID, linked_ptr<SurfaceRef> > SurfaceRefMap;
+  SurfaceRefMap surface_refs_;
+#endif
 
   // In single process and in process GPU mode, this references the
   // GpuChannelManager or null otherwise. It must be called and deleted on the
