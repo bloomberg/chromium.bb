@@ -11,6 +11,7 @@
  */
 
 #include "native_client/src/trusted/validator_x86/ncvalidate.h"
+#include "native_client/src/include/portability.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,11 +73,12 @@ static void ValidatePrintError(const NaClPcAddress addr, const char *msg,
   }
 }
 
-static void BadInstructionError(const struct NCDecoderState *mstate,
+static void BadInstructionError(const NCDecoderInst *dinst,
                                 const char *msg) {
-  ValidatePrintError(mstate->inst.vaddr, msg, mstate->vstate);
-  if (mstate->vstate->do_stub_out) {
-    memset(mstate->memory->mpc, kNaClFullStop, mstate->memory->read_length);
+  ValidatePrintError(dinst->vpc, msg, dinst->dstate->vstate);
+  if (dinst->dstate->vstate->do_stub_out) {
+    memset(dinst->dstate->memory.mpc, kNaClFullStop,
+           dinst->dstate->memory.read_length);
   }
 }
 
@@ -95,7 +97,7 @@ void NCValidateSetCPUFeatures(CPUFeatures *new_features) {
 
 /* opcode histogram */
 #if VERBOSE == 1
-static void OpcodeHisto(const uint8_t byte1, struct NCValidatorState *vstate) {
+void OpcodeHisto(const uint8_t byte1, struct NCValidatorState *vstate) {
   vstate->opcodehisto[byte1] += 1;
 }
 
@@ -263,9 +265,9 @@ static const uint8_t iadrmasks[8] = {0x01, 0x02, 0x04, 0x08,
   ((__TABLE)[IATOffset(__IOFF)] & IATMask(__IOFF))
 
 /* forward declarations, needed for registration */
-void ValidateInst(const struct NCDecoderState *mstate);
-void ValidateInstReplacement(const struct NCDecoderState *mstate_old,
-                             const struct NCDecoderState *mstate_new);
+void ValidateInst(const NCDecoderInst *dinst);
+void ValidateInstReplacement(const NCDecoderInst *dinst_old,
+                             const NCDecoderInst *dinst_new);
 
 /*
  * NCValidateInit: Initialize NaCl validator internal state
@@ -303,8 +305,6 @@ struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
     if (vstate->vttable == NULL || vstate->kttable == NULL) break;
     dprint(("  allocated tables\n"));
     Stats_Init(vstate);
-    NCDecodeRegisterCallbacks(ValidateInst, Stats_NewSegment,
-                              Stats_SegFault, Stats_InternalError);
     if (NULL == nc_validator_features) {
       NaClCPUData cpu_data;
       NaClCPUDataGet(&cpu_data);
@@ -333,6 +333,11 @@ void NCValidateSetStubOutMode(struct NCValidatorState *vstate,
   if (do_stub_out) {
     NCValidateSetNumDiagnostics(vstate, 0);
   }
+}
+
+void NCValidatorStateSetCPUFeatures(struct NCValidatorState* vstate,
+                                    const CPUFeatures* features) {
+  NaClCopyCPUFeatures(&vstate->cpufeatures, features);
 }
 
 void NCValidateSetNumDiagnostics(struct NCValidatorState* vstate,
@@ -393,6 +398,10 @@ int NCValidateFinish(struct NCValidatorState *vstate) {
     /* non-zero indicates failure */
     return 1;
   }
+  /* If we are stubbing out code, the following checks don't provide any
+   * usefull information, so quit early.
+   */
+  if (vstate->do_stub_out) return vstate->stats.sawfailure;
   dprint(("CheckTargets: %"NACL_PRIxNaClPcAddress"-%"NACL_PRIxNaClPcAddress"\n",
           vstate->iadrbase, vstate->iadrlimit));
   for (offset = 0;
@@ -440,81 +449,83 @@ void NCValidateFreeState(struct NCValidatorState **vstate) {
 
 /* ValidateSFenceClFlush is called for the sfence/clflush opcode 0f ae /7 */
 /* It returns 0 if the current instruction is implemented, and 1 if not.  */
-static int ValidateSFenceClFlush(const struct NCDecoderState *mstate) {
-  uint8_t mrm = NCInstBytesByte(&mstate->inst_bytes, 2);
+static int ValidateSFenceClFlush(const NCDecoderInst *dinst) {
+  uint8_t mrm = NCInstBytesByte(&dinst->inst_bytes, 2);
 
   if (modrm_mod(mrm) == 3) {
     /* this is an sfence */
-    if (mstate->vstate->cpufeatures.f_FXSR) return 0;
+    if (dinst->dstate->vstate->cpufeatures.f_FXSR) return 0;
     return 1;
   } else {
     /* this is an clflush */
-    if (mstate->vstate->cpufeatures.f_CLFLUSH) return 0;
+    if (dinst->dstate->vstate->cpufeatures.f_CLFLUSH) return 0;
     return 1;
   }
 }
 
-static void ValidateCallAlignment(const struct NCDecoderState *mstate) {
-  NaClPcAddress fallthru = mstate->inst.vaddr + mstate->inst.bytes.length;
-  if (fallthru & mstate->vstate->alignmask) {
-    ValidatePrintError(mstate->inst.vaddr, "Bad call alignment",
-                       mstate->vstate);
+static void ValidateCallAlignment(const NCDecoderInst *dinst) {
+  NaClPcAddress fallthru = dinst->vpc + dinst->inst.bytes.length;
+  struct NCValidatorState* vstate = dinst->dstate->vstate;
+  if (fallthru & vstate->alignmask) {
+    ValidatePrintError(dinst->vpc, "Bad call alignment", vstate);
     /* This makes bad call alignment a fatal error. */
-    Stats_BadAlignment(mstate->vstate);
+    Stats_BadAlignment(vstate);
   }
 }
 
-static void ValidateJmp8(const struct NCDecoderState *mstate) {
-  uint8_t opcode = NCInstBytesByte(&mstate->inst_bytes,
-                                   mstate->inst.prefixbytes);
-  int8_t offset = NCInstBytesByte(&mstate->inst_bytes,
-                                  mstate->inst.prefixbytes+1);
+static void ValidateJmp8(const NCDecoderInst *dinst) {
+  uint8_t opcode = NCInstBytesByte(&dinst->inst_bytes,
+                                   dinst->inst.prefixbytes);
+  int8_t offset = NCInstBytesByte(&dinst->inst_bytes,
+                                  dinst->inst.prefixbytes+1);
+  struct NCValidatorState* vstate = dinst->dstate->vstate;
   NaClPcAddress target =
-      mstate->inst.vaddr + mstate->inst.bytes.length + offset;
-  Stats_CheckTarget(mstate->vstate);
+      dinst->vpc + dinst->inst.bytes.length + offset;
+  Stats_CheckTarget(vstate);
   if ((opcode & 0xf0) == 0x70 || opcode == 0xeb ||
       opcode == 0xe0 || opcode == 0xe1 || opcode == 0xe2 || opcode == 0xe3) {
-    RememberTP(mstate->inst.vaddr, target, mstate->vstate);
+    RememberTP(dinst->vpc, target, vstate);
   } else {
     /* If this ever happens, it's probably a decoder bug. */
     vprint(("ERROR: JMP8 %"NACL_PRIxNaClPcAddress": %x\n",
-            mstate->inst.vaddr, opcode));
-    Stats_InternalError(mstate->vstate);
+            dinst->vpc, opcode));
+    Stats_InternalError(vstate);
   }
 }
 
-static void ValidateJmpz(const struct NCDecoderState *mstate) {
+static void ValidateJmpz(const NCDecoderInst *dinst) {
   NCInstBytesPtr opcode;
   uint8_t opcode0;
   int32_t offset;
   NaClPcAddress target;
-  NCInstBytesPtrInitInc(&opcode, &mstate->inst_bytes,
-                        mstate->inst.prefixbytes);
+  NCValidatorState* vstate = dinst->dstate->vstate;
+  NCInstBytesPtrInitInc(&opcode, &dinst->inst_bytes,
+                        dinst->inst.prefixbytes);
   opcode0 = NCInstBytesByte(&opcode, 0);
-  Stats_CheckTarget(mstate->vstate);
+  Stats_CheckTarget(vstate);
   if (opcode0 == 0xe8 || opcode0 == 0xe9) {
     NCInstBytesPtr opcode_1;
     NCInstBytesPtrInitInc(&opcode_1, &opcode, 1);
     offset = NCInstBytesInt32(&opcode_1);
-    target = mstate->inst.vaddr + mstate->inst.bytes.length + offset;
-    RememberTP(mstate->inst.vaddr, target, mstate->vstate);
+    target = dinst->vpc + dinst->inst.bytes.length + offset;
+    RememberTP(dinst->vpc, target, vstate);
     /* as a courtesy, check call alignment correctness */
-    if (opcode0 == 0xe8) ValidateCallAlignment(mstate);
+    if (opcode0 == 0xe8) ValidateCallAlignment(dinst);
   } else if (opcode0 == 0x0f) {
     uint8_t opcode1 = NCInstBytesByte(&opcode, 1);
     if ((opcode1 & 0xf0) == 0x80) {
       NCInstBytesPtr opcode_2;
       NCInstBytesPtrInitInc(&opcode_2, &opcode, 2);
       offset = NCInstBytesInt32(&opcode_2);
-      target = mstate->inst.vaddr + mstate->inst.bytes.length + offset;
-      RememberTP(mstate->inst.vaddr, target, mstate->vstate);
+      target = dinst->vpc + dinst->inst.bytes.length + offset;
+      RememberTP(dinst->vpc, target, vstate);
     }
   } else {
     /* If this ever happens, it's probably a decoder bug. */
     uint8_t opcode1 = NCInstBytesByte(&opcode, 1);
     vprint(("ERROR: JMPZ %"NACL_PRIxNaClPcAddress": %x %x\n",
-             mstate->inst.vaddr, opcode0, opcode1));
-    Stats_InternalError(mstate->vstate);
+             dinst->vpc, opcode0, opcode1));
+    Stats_InternalError(vstate);
   }
 }
 
@@ -527,34 +538,35 @@ static void ValidateJmpz(const struct NCDecoderState *mstate) {
  * sequence.
  * TODO(brad): validate or write the masks.
  */
-static void ValidateIndirect5(const struct NCDecoderState *mstate) {
+static void ValidateIndirect5(const NCDecoderInst *dinst) {
   NCInstBytesPtr jmpopcode;
   NCInstBytesPtr andopcode;
   uint8_t               mrm;
   uint8_t               targetreg;
   const uint8_t         kReg_ESP = 4;
+  NCValidatorState* vstate = dinst->dstate->vstate;
 
-  struct NCDecoderState *andinst = PreviousInst(mstate, -1);
+  struct NCDecoderInst *andinst = PreviousInst(dinst, -1);
   assert(andinst != NULL);
   if (andinst->inst.bytes.length == 0) {
-    BadInstructionError(mstate, "Unsafe indirect jump");
-    Stats_UnsafeIndirect(mstate->vstate);
+    BadInstructionError(dinst, "Unsafe indirect jump");
+    Stats_UnsafeIndirect(vstate);
     return;
   }
   /* note: no prefixbytes allowed */
-  NCInstBytesPtrInitInc(&jmpopcode, &mstate->inst_bytes, 0);
+  NCInstBytesPtrInitInc(&jmpopcode, &dinst->inst_bytes, 0);
   /* note: no prefixbytes allowed */
   NCInstBytesPtrInitInc(&andopcode, &andinst->inst_bytes, 0);
   mrm = NCInstBytesByte(&jmpopcode, 1);
   targetreg = modrm_rm(mrm);  /* Note that the modrm_rm field holds the   */
                               /* target addr the modrm_reg is the opcode. */
 
-  Stats_CheckTarget(mstate->vstate);
-  Stats_TargetIndirect(mstate->vstate);
+  Stats_CheckTarget(vstate);
+  Stats_TargetIndirect(vstate);
   do {
     /* no prefix bytes allowed */
-    if (mstate->inst.prefixbytes != 0) break;
-    if (andinst->inst.prefixbytes != 0) break;
+    if (dinst->inst.prefixbytes != 0) break;
+    if (dinst->inst.prefixbytes != 0) break;
     /* Check all the opcodes. */
     /* In GROUP5, 2 => call, 4 => jmp */
     if (NCInstBytesByte(&jmpopcode, 0) != 0xff) break;
@@ -569,15 +581,15 @@ static void ValidateIndirect5(const struct NCDecoderState *mstate) {
     if (NCInstBytesByte(&andopcode, 1) != (0xe0 | targetreg)) break;
     /* check mask */
     if (NCInstBytesByte(&andopcode, 2) !=
-        (0x0ff & ~mstate->vstate->alignmask)) break;
+        (0x0ff & ~vstate->alignmask)) break;
     /* All checks look good. Make the sequence 'atomic.' */
-    ForgetIP(mstate->inst.vaddr, mstate->vstate);
+    ForgetIP(dinst->vpc, vstate);
     /* as a courtesy, check call alignment correctness */
-    if (modrm_reg(mrm) == 2) ValidateCallAlignment(mstate);
+    if (modrm_reg(mrm) == 2) ValidateCallAlignment(dinst);
     return;
   } while (0);
-  BadInstructionError(mstate, "Unsafe indirect jump");
-  Stats_UnsafeIndirect(mstate->vstate);
+  BadInstructionError(dinst, "Unsafe indirect jump");
+  Stats_UnsafeIndirect(vstate);
 }
 
 /* NaCl allows at most 1 prefix byte per instruction. */
@@ -586,50 +598,51 @@ static void ValidateIndirect5(const struct NCDecoderState *mstate) {
 static const size_t kMaxValidPrefixBytes = 1;
 static const size_t kMaxValidInstLength = 11;
 
-void ValidateInst(const struct NCDecoderState *mstate) {
+void ValidateInst(const NCDecoderInst *dinst) {
   CPUFeatures *cpufeatures;
   int squashme = 0;
+  NCValidatorState* vstate = dinst->dstate->vstate;
 
-  /*  dprint(("ValidateInst(%x, %x) at %x\n",
-      (uint32_t)mstate, (uint32_t)mstate->vstate, mstate->inst.vaddr)); */
-  if (mstate == NULL) return;
-  if (mstate->vstate == NULL) return;
-  OpcodeHisto(NCInstBytesByte(&mstate->inst_bytes, mstate->inst.prefixbytes),
-              mstate->vstate);
-  RememberIP(mstate->inst.vaddr, mstate->vstate);
-  cpufeatures = &(mstate->vstate->cpufeatures);
+ /*  dprint(("ValidateInst(%x, %x) at %x\n",
+      (uint32_t)dinst, (uint32_t)vstate, dinst->vpc)); */
+  if (dinst == NULL) return;
+  if (vstate == NULL) return;
+  OpcodeHisto(NCInstBytesByte(&dinst->inst_bytes, dinst->inst.prefixbytes),
+              vstate);
+  RememberIP(dinst->vpc, vstate);
+  cpufeatures = &(vstate->cpufeatures);
   do {
-    if (mstate->inst.prefixbytes == 0) break;
-    if (mstate->inst.prefixbytes <= kMaxValidPrefixBytes) {
-      if (mstate->inst.num_opbytes >= 2) {
-        if (mstate->inst.prefixmask & kPrefixLOCK) {
+    if (dinst->inst.prefixbytes == 0) break;
+    if (dinst->inst.prefixbytes <= kMaxValidPrefixBytes) {
+      if (dinst->inst.num_opbytes >= 2) {
+        if (dinst->inst.prefixmask & kPrefixLOCK) {
           /* For two byte opcodes, check for use of the lock prefix.   */
-          if (mstate->opinfo->insttype == NACLi_386L) break;
-          if (mstate->opinfo->insttype == NACLi_CMPXCHG8B) break;
+          if (dinst->opinfo->insttype == NACLi_386L) break;
+          if (dinst->opinfo->insttype == NACLi_CMPXCHG8B) break;
         } else {
           /* Other prefixes checks are encoded in the two-byte tables. */
           break;
         }
       } else {
         /* one byte opcode */
-        if ((mstate->inst.prefixmask &
-             BadPrefixMask[mstate->opinfo->insttype]) == 0) break;
+        if ((dinst->inst.prefixmask &
+             BadPrefixMask[dinst->opinfo->insttype]) == 0) break;
       }
-    } else if ((mstate->inst.prefixbytes == 2) &&
-               (mstate->inst.prefixmask == (kPrefixLOCK | kPrefixDATA16))) {
+    } else if ((dinst->inst.prefixbytes == 2) &&
+               (dinst->inst.prefixmask == (kPrefixLOCK | kPrefixDATA16))) {
       /* Special case of lock on short integer, if instruction allows lock. */
-      if (mstate->opinfo->insttype == NACLi_386L) break;
+      if (dinst->opinfo->insttype == NACLi_386L) break;
     }
-    BadInstructionError(mstate, "Bad prefix usage");
-    Stats_BadPrefix(mstate->vstate);
+    BadInstructionError(dinst, "Bad prefix usage");
+    Stats_BadPrefix(vstate);
   } while (0);
-  if ((mstate->opinfo->insttype != NACLi_NOP) &&
-      ((size_t) (mstate->inst.bytes.length - mstate->inst.prefixbytes)
+  if ((dinst->opinfo->insttype != NACLi_NOP) &&
+      ((size_t) (dinst->inst.bytes.length - dinst->inst.prefixbytes)
        > kMaxValidInstLength)) {
-    BadInstructionError(mstate, "Instruction too long");
-    Stats_BadInstLength(mstate->vstate);
+    BadInstructionError(dinst, "Instruction too long");
+    Stats_BadInstLength(vstate);
   }
-  switch (mstate->opinfo->insttype) {
+  switch (dinst->opinfo->insttype) {
     case NACLi_NOP:
     case NACLi_386:
     case NACLi_386L:
@@ -637,19 +650,19 @@ void ValidateInst(const struct NCDecoderState *mstate) {
     case NACLi_386RE:
       break;
     case NACLi_JMP8:
-      ValidateJmp8(mstate);
+      ValidateJmp8(dinst);
       break;
     case NACLi_JMPZ:
-      ValidateJmpz(mstate);
+      ValidateJmpz(dinst);
       break;
     case NACLi_INDIRECT:
-      ValidateIndirect5(mstate);
+      ValidateIndirect5(dinst);
       break;
     case NACLi_X87:
       squashme = (!cpufeatures->f_x87);
       break;
     case NACLi_SFENCE_CLFLUSH:
-      squashme = ValidateSFenceClFlush(mstate);
+      squashme = ValidateSFenceClFlush(dinst);
       break;
     case NACLi_CMPXCHG8B:
       squashme = (!cpufeatures->f_CX8);
@@ -710,16 +723,16 @@ void ValidateInst(const struct NCDecoderState *mstate) {
     case NACLi_SSE2x:
       /* This case requires CPUID checking code */
       /* DATA16 prefix required */
-      if (!(mstate->inst.prefixmask & kPrefixDATA16)) {
-        BadInstructionError(mstate, "Bad prefix usage");
-        Stats_BadPrefix(mstate->vstate);
+      if (!(dinst->inst.prefixmask & kPrefixDATA16)) {
+        BadInstructionError(dinst, "Bad prefix usage");
+        Stats_BadPrefix(vstate);
       }
       squashme = (!cpufeatures->f_SSE2);
       break;
 
     case NACLi_RETURN:
-      BadInstructionError(mstate, "ret instruction (not allowed)");
-      Stats_Return(mstate->vstate);
+      BadInstructionError(dinst, "ret instruction (not allowed)");
+      Stats_Return(vstate);
       /* ... and fall through to illegal instruction code */
     case NACLi_EMMX:
       /* EMMX needs to be supported someday but isn't ready yet. */
@@ -735,23 +748,23 @@ void ValidateInst(const struct NCDecoderState *mstate) {
     case NACLi_OPINMRM:
     case NACLi_3BYTE:
     case NACLi_CMPXCHG16B: {
-        BadInstructionError(mstate, "Illegal instruction");
-        Stats_IllegalInst(mstate->vstate);
+        BadInstructionError(dinst, "Illegal instruction");
+        Stats_IllegalInst(vstate);
         break;
       }
     case NACLi_UNDEFINED: {
-        BadInstructionError(mstate, "Undefined instruction");
-        Stats_IllegalInst(mstate->vstate);
-        Stats_InternalError(mstate->vstate);
+        BadInstructionError(dinst, "Undefined instruction");
+        Stats_IllegalInst(vstate);
+        Stats_InternalError(vstate);
         break;
       }
     default:
-      BadInstructionError(mstate, "Undefined instruction type");
-      Stats_InternalError(mstate->vstate);
+      BadInstructionError(dinst, "Undefined instruction type");
+      Stats_InternalError(vstate);
       break;
   }
-  if (squashme) memset(mstate->memory->mpc, kNaClFullStop,
-                       mstate->memory->read_length);
+  if (squashme) memset(dinst->dstate->memory.mpc, kNaClFullStop,
+                       dinst->dstate->memory.read_length);
 }
 
 /*
@@ -759,61 +772,61 @@ void ValidateInst(const struct NCDecoderState *mstate) {
  * one of the individual jumps must be validated in isolation with
  * ValidateIndirect5() before this is called.
  */
-void ValidateIndirect5Replacement(const struct NCDecoderState *mstate_old,
-                                  const struct NCDecoderState *mstate_new) {
+void ValidateIndirect5Replacement(const struct NCDecoderInst *dinst_old,
+                                  const struct NCDecoderInst *dinst_new) {
   do {
     /* check that the and-guard is 3 bytes and bit-for-bit identical */
-    struct NCDecoderState *andinst_old = PreviousInst(mstate_old, -1);
-    struct NCDecoderState *andinst_new = PreviousInst(mstate_new, -1);
+    NCDecoderInst *andinst_old = PreviousInst(dinst_old, -1);
+    NCDecoderInst *andinst_new = PreviousInst(dinst_new, -1);
     if (andinst_old->inst.bytes.length != 3) break;
     if (andinst_new->inst.bytes.length != 3) break;
     if (memcmp(andinst_old->inst.bytes.byte,
                andinst_new->inst.bytes.byte, 3) != 0) break;
 
     /* check that the indirect-jmp is 2 bytes and bit-for-bit identical */
-    if (mstate_old->inst.bytes.length != 2) break;
-    if (mstate_new->inst.bytes.length != 2) break;
-    if (memcmp(mstate_old->inst.bytes.byte,
-               mstate_new->inst.bytes.byte, 2) != 0) break;
+    if (dinst_old->inst.bytes.length != 2) break;
+    if (dinst_new->inst.bytes.length != 2) break;
+    if (memcmp(dinst_old->inst.bytes.byte,
+               dinst_new->inst.bytes.byte, 2) != 0) break;
 
     return;
   } while (0);
-  BadInstructionError(mstate_new,
+  BadInstructionError(dinst_new,
                       "Replacement indirect jump must match original");
-  Stats_UnsafeIndirect(mstate_new->vstate);
+  Stats_UnsafeIndirect(dinst_new->dstate->vstate);
 }
 
 /*
  * Check that mstate_new is a valid replacement instruction for mstate_old.
  * Note that mstate_old was validated when it was inserted originally.
  */
-void ValidateInstReplacement(const struct NCDecoderState *mstate_old,
-                             const struct NCDecoderState *mstate_new) {
+void ValidateInstReplacement(const NCDecoderInst *dinst_old,
+                             const NCDecoderInst *dinst_new) {
   /* Location/length must match */
-  if (mstate_old->inst.bytes.length != mstate_new->inst.bytes.length
-    || mstate_old->vpc != mstate_new->vpc) {
-    BadInstructionError(mstate_new,
+  if (dinst_old->inst.bytes.length != dinst_new->inst.bytes.length
+    || dinst_old->vpc != dinst_new->vpc) {
+    BadInstructionError(dinst_new,
                         "New instruction does not match old instruction size");
-    Stats_BadInstLength(mstate_new->vstate);
+    Stats_BadInstLength(dinst_new->dstate->vstate);
   }
 
   /* Only validate individual instructions that have changed. */
-  if (memcmp(mstate_old->inst.bytes.byte,
-             mstate_new->inst.bytes.byte,
-             mstate_new->inst.bytes.length)) {
+  if (memcmp(dinst_old->inst.bytes.byte,
+             dinst_new->inst.bytes.byte,
+             dinst_new->inst.bytes.length)) {
     /* Call single instruction validator first, will call ValidateIndirect5() */
-    ValidateInst(mstate_new);
+    ValidateInst(dinst_new);
   } else {
     /* Still need to record there is an intruction here for NCValidateFinish()
      * to verify basic block alignment.
      */
-    RememberIP(mstate_new->inst.vaddr, mstate_new->vstate);
+    RememberIP(dinst_new->vpc, dinst_new->dstate->vstate);
   }
 
-  if (mstate_old->opinfo->insttype == NACLi_INDIRECT
-    || mstate_new->opinfo->insttype == NACLi_INDIRECT) {
+  if (dinst_old->opinfo->insttype == NACLi_INDIRECT
+    || dinst_new->opinfo->insttype == NACLi_INDIRECT) {
     /* Verify that nacljmps never change */
-    ValidateIndirect5Replacement(mstate_old, mstate_new);
+    ValidateIndirect5Replacement(dinst_old, dinst_new);
   }
 }
 
@@ -824,7 +837,8 @@ void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, size_t sz,
     Stats_SegFault(vstate);
     return;
   }
-  NCDecodeSegment(mbase, vbase, sz, vstate);
+  NCDecodeSegmentUsing(mbase, vbase, sz, vstate, &vstate->dstate, ValidateInst,
+                       Stats_NewSegment, Stats_SegFault, Stats_InternalError);
 }
 
 /*
@@ -834,11 +848,15 @@ void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, size_t sz,
 void NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
                            NaClPcAddress vbase, size_t sz,
                            struct NCValidatorState *vstate) {
+  NCDecoderState dstate_old;
   if (sz == 0) {
     ValidatePrintError(0, "Bad text segment (zero size)", vstate);
     Stats_SegFault(vstate);
     return;
   }
-  NCDecodeSegmentPair(mbase_old, mbase_new, vbase, sz,
-                      vstate, ValidateInstReplacement);
+  NCDecodeSegmentPairUsing(mbase_old, mbase_new, vbase, sz,
+                           vstate, &dstate_old, &vstate->dstate,
+                           ValidateInstReplacement,
+                           Stats_NewSegment,
+                           Stats_SegFault, Stats_InternalError);
 }

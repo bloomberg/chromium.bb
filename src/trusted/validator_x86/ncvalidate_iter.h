@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_ITER_H__
@@ -114,6 +114,10 @@ int NaClValidatorStateGetMaxReportedErrors(NaClValidatorState* state);
  */
 void NaClValidatorStateSetMaxReportedErrors(NaClValidatorState* state,
                                             int max_reported_errors);
+
+/* Changes the set of cpu features to use to the given featers. */
+void NaClValidatorStateSetCPUFeatures(NaClValidatorState* state,
+                                     const CPUFeatures* features);
 
 /* Returns true if an opcode histogram should be printed by the validator.
  * Note: Defaults to NACL_FLAGS_opcode_histogram.

@@ -102,6 +102,9 @@ void NaClSetAllCPUFeatures(CPUFeatures *features);
 /* Clear cpu check state fields (i.e. set all fields to false). */
 void NaClClearCPUFeatures(CPUFeatures *features);
 
+/* Copy a set of cpu features. */
+void NaClCopyCPUFeatures(CPUFeatures* target, const CPUFeatures* source);
+
 /* Fills in cpuf with feature vector for this CPU. */
 extern void GetCPUFeatures(NaClCPUData* data, CPUFeatures *cpuf);
 

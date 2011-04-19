@@ -12,9 +12,10 @@
  *
  */
 #include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
+#include "native_client/src/trusted/validator_x86/ncdecode.h"
 
 /* statistics */
-struct SummaryStats {
+typedef struct SummaryStats {
   /* these are just information */
   uint32_t instructions;
   uint32_t checktarget;
@@ -31,21 +32,26 @@ struct SummaryStats {
   uint32_t badinstlength;
   uint32_t internalerrors;
   int sawfailure;          /* boolean */
-};
+} SummaryStats;
 
 /* put all formerly global data into a struct */
-struct NCValidatorState {
+typedef struct NCValidatorState {
+  /* NOTE: Decoder state (dstate) must appear first so that we can use it like
+   * C++ inheritance, where a pointer to a validator state will be the
+   * same as a pointer to a decoder state.
+   */
+  NCDecoderState dstate;
   CPUFeatures cpufeatures;  /* from CPUID bit masks; see nacl_cpuid.c */
   NaClPcAddress iadrbase;
   NaClPcAddress iadrlimit;
   uint8_t alignment;
   uint32_t alignmask;
-  struct SummaryStats stats;
+  SummaryStats stats;
   uint32_t opcodehisto[256];
   uint8_t *vttable;
   uint8_t *kttable;
   int do_stub_out;  /* boolean */
   int num_diagnostics; /* How many error messages to print. */
-};
+} NCValidatorState;
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_INTERNALTYPES_H_*/

@@ -25,6 +25,7 @@
  *   if rc != 0 fail
  *   Optional reporting routines
  *   Stats_Print()
+ *   NCValidateFreeState(&vstate);
  *
  * See the README file in this directory for more info on the general
  * structure of the validator.
@@ -73,6 +74,19 @@ struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
  */
 void NCValidateSetStubOutMode(struct NCValidatorState *vstate,
                               int do_stub_out);
+
+/*
+ * Set the maximum number of diagnostic errors to be reported to the
+ * given value (-1 implies all error messages).
+ */
+void NCValidateSetNumDiagnostics(struct NCValidatorState* vstate,
+                                 int num_diagnostics);
+
+/* Set the set of CPU features to use for this validation to
+ * the given set of features.
+ */
+void NCValidatorStateSetCPUFeatures(struct NCValidatorState* vstate,
+                                    const CPUFeatures* features);
 
 /* Validate a segment */
 /* This routine will raise an segmentation exception if you ask

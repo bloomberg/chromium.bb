@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -19,34 +19,32 @@
 
 #include "native_client/src/include/elf.h"
 #include "native_client/src/shared/platform/nacl_check.h"
-
+#include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 
 #if NACL_TARGET_SUBARCH == 32
 
 # include "native_client/src/trusted/validator_x86/ncdecode.h"
 # include "native_client/src/trusted/validator_x86/ncvalidate.h"
-# include "native_client/src/trusted/validator_x86/ncvalidate_internaltypes.h"
 
 static void FixUpSection(uintptr_t load_address,
                          unsigned char *code,
                          size_t code_size) {
   struct NCValidatorState *vstate;
   int bundle_size = 32;
+  CPUFeatures features;
   vstate = NCValidateInit(load_address, load_address + code_size, bundle_size);
   CHECK(vstate != NULL);
-  vstate->do_stub_out = 1;
+
+  NCValidateSetStubOutMode(vstate, 1);
 
   /*
    * We should not stub out any instructions based on the features
    * of the CPU we are executing on now.
    */
-  memset(&vstate->cpufeatures, 0xff, sizeof(vstate->cpufeatures));
-
-  NCDecodeSegment(code, load_address, code_size, vstate);
-  /*
-   * We do not need to call NCValidateFinish() because it is
-   * normal for validation to fail.
-   */
+  NaClSetAllCPUFeatures(&features);
+  NCValidatorStateSetCPUFeatures(vstate, &features);
+  NCValidateSegment(code, load_address, code_size, vstate);
+  NCValidateFinish(vstate);
   NCValidateFreeState(&vstate);
 }
 
@@ -59,10 +57,18 @@ static void FixUpSection(uintptr_t load_address,
                          size_t code_size) {
   struct NaClValidatorState *vstate;
   int bundle_size = 32;
+  CPUFeatures features;
   vstate = NaClValidatorStateCreate(load_address, code_size, bundle_size,
                                     RegR15);
   CHECK(vstate != NULL);
   NaClValidatorStateSetDoStubOut(vstate, TRUE);
+
+  /*
+   * We should not stub out any instructions based on the features
+   * of the CPU we are executing on now.
+   */
+  NaClSetAllCPUFeatures(&features);
+  NaClValidatorStateSetCPUFeatures(vstate, &features);
   NaClValidateSegment(code, load_address, code_size, vstate);
   NaClValidatorStateDestroy(vstate);
 }

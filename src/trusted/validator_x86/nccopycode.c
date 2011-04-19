@@ -228,13 +228,15 @@ void CopyInstructionInternal(uint8_t *dst,
  * Copy a single instruction, avoiding the possibility of other threads
  * executing a partially changed instruction.
  */
-void CopyInstruction(const struct NCDecoderState *mstate_old,
-                     const struct NCDecoderState *mstate_new) {
-  CHECK(mstate_new->memory->read_length == mstate_old->memory->read_length);
+void CopyInstruction(const NCDecoderInst *dinst_old,
+                     const NCDecoderInst *dinst_new) {
+  NCRemainingMemory* mem_old = &dinst_old->dstate->memory;
+  NCRemainingMemory* mem_new = &dinst_new->dstate->memory;
+  CHECK(mem_old->read_length == mem_new->read_length);
 
-  CopyInstructionInternal(mstate_old->memory->mpc,
-                          mstate_new->memory->mpc,
-                          mstate_old->memory->read_length);
+  CopyInstructionInternal(mem_old->mpc,
+                          mem_new->mpc,
+                          mem_old->read_length);
 }
 
 int NCCopyCode(uint8_t *dst, uint8_t *src, NaClPcAddress vbase,

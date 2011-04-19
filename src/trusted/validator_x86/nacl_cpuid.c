@@ -17,9 +17,8 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include "native_client/src/include/portability.h"
-#include "native_client/src/include/portability_io.h"
 #include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
+#include "native_client/src/include/portability_io.h"
 
 
 /*
@@ -362,6 +361,10 @@ void NaClSetAllCPUFeatures(CPUFeatures *features) {
 
 void NaClClearCPUFeatures(CPUFeatures *features) {
   memset(features, 0, sizeof(*features));
+}
+
+void NaClCopyCPUFeatures(CPUFeatures* target, const CPUFeatures* source) {
+  memcpy(target, source, sizeof(CPUFeatures));
 }
 
 /* WARNING: This routine and subroutines it uses are not threadsafe.

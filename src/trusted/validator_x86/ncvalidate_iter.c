@@ -132,6 +132,11 @@ void NaClValidatorStateSetDoStubOut(NaClValidatorState *state,
   }
 }
 
+void NaClValidatorStateSetCPUFeatures(NaClValidatorState* state,
+                                      const CPUFeatures* features) {
+  NaClCopyCPUFeatures(&state->cpu_features, features);
+}
+
 /* Returns true if an error message should be printed for the given level, in
  * the current validator state.
  * Parameters:
