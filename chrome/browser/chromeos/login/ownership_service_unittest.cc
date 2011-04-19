@@ -53,7 +53,7 @@ class OwnershipServiceTest : public ::testing::Test {
     file_thread_.Start();
     OwnerKeyUtils::set_factory(&injector_);
     service_.reset(new OwnershipService);  // must happen AFTER set_factory().
-
+    service_->Prewarm();
   }
 
   virtual void TearDown() {

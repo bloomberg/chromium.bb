@@ -39,6 +39,10 @@ class OwnershipService : public NotificationObserver {
   static OwnershipService* GetSharedInstance();
   virtual ~OwnershipService();
 
+  // Called after FILE thread is created to prefetch ownership status and avoid
+  // blocking on UI thread.
+  void Prewarm();
+
   // Owner settings are being re-implemented as a single, signed protobuf
   // that is stored by the session manager.  Thus, to write a setting, you
   // need to have the existing policy, update it, re-sign it, and then have
@@ -135,7 +139,7 @@ class OwnershipService : public NotificationObserver {
   scoped_refptr<OwnerKeyUtils> utils_;
   scoped_ptr<em::PolicyData> policy_;
   NotificationRegistrar notification_registrar_;
-  Status ownership_status_;
+  volatile Status ownership_status_;
   base::Lock ownership_status_lock_;
 };
 

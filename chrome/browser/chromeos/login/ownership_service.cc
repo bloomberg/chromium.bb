@@ -34,6 +34,13 @@ OwnershipService::OwnershipService()
       this,
       NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
       NotificationService::AllSources());
+}
+
+OwnershipService::~OwnershipService() {}
+
+void OwnershipService::Prewarm() {
+  // Note that we cannot prewarm in constructor because in current codebase
+  // object is created before spawning threads.
   if (g_ownership_service == this) {
     // Start getting ownership status.
     BrowserThread::PostTask(
@@ -48,8 +55,6 @@ OwnershipService::OwnershipService()
     // circumstances in order to avoid accessing already deleted object.
   }
 }
-
-OwnershipService::~OwnershipService() {}
 
 void OwnershipService::set_cached_policy(const em::PolicyData& pol) {
   policy_.reset(pol.New());

@@ -1362,7 +1362,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
     gtk_rc_parse_string(gtkrc.c_str());
 
   // Trigger prefetching of ownership status.
-  chromeos::OwnershipService::GetSharedInstance();
+  chromeos::OwnershipService::GetSharedInstance()->Prewarm();
 #endif
 
   // Record last shutdown time into a histogram.
