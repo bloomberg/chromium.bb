@@ -111,12 +111,9 @@ void PrintWebViewHelper::PrintPageInternal(
                                    &(page_params.metafile_data_handle))) {
     page_params.data_size = 0;
   }
-  if (!Send(new PrintHostMsg_DuplicateSection(
-          routing_id(),
-          page_params.metafile_data_handle,
-          &page_params.metafile_data_handle))) {
-    NOTREACHED() << "Send message failed.";
-  }
+  Send(new PrintHostMsg_DuplicateSection(routing_id(),
+                                         page_params.metafile_data_handle,
+                                         &page_params.metafile_data_handle));
   Send(new PrintHostMsg_DidPrintPage(routing_id(), page_params));
 }
 
@@ -172,12 +169,9 @@ void PrintWebViewHelper::CreatePreviewDocument(
     preview_params.data_size = 0;
     preview_params.expected_pages_count = 0;
   }
-  if (!Send(new PrintHostMsg_DuplicateSection(
-          routing_id(),
-          preview_params.metafile_data_handle,
-          &preview_params.metafile_data_handle))) {
-    NOTREACHED() << "Send message failed.";
-  }
+  Send(new PrintHostMsg_DuplicateSection(routing_id(),
+                                         preview_params.metafile_data_handle,
+                                         &preview_params.metafile_data_handle));
   Send(new PrintHostMsg_PagesReadyForPreview(routing_id(), preview_params));
 }
 

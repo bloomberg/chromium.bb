@@ -136,11 +136,7 @@ void PrintWebViewHelper::PrintPage(WebKit::WebFrame* frame) {
 
   if (is_preview_) {
     script_initiated_preview_frame_ = frame;
-    if (!render_view()->Send(new PrintHostMsg_ScriptInitiatedPrintPreview(
-        render_view()->routing_id()))) {
-      NOTREACHED();
-      return;
-    }
+    Send(new PrintHostMsg_ScriptInitiatedPrintPreview(routing_id()));
   } else {
     Print(frame, NULL);
   }
@@ -261,11 +257,7 @@ void PrintWebViewHelper::OnPrintNodeUnderContextMenu() {
   // its |context_menu_node_|.
   if (is_preview_) {
     context_menu_preview_node_.reset(new WebNode(context_menu_node));
-    if (!render_view()->Send(new PrintHostMsg_PrintPreviewNodeUnderContextMenu(
-        render_view()->routing_id()))) {
-      NOTREACHED();
-      return;
-    }
+    Send(new PrintHostMsg_PrintPreviewNodeUnderContextMenu(routing_id()));
   } else {
     WebNode duplicate_node(context_menu_node);
     Print(duplicate_node.document().frame(), &duplicate_node);
@@ -390,8 +382,9 @@ void PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
                                               frame->view());
   int page_count = prep_frame_view.GetExpectedPageCount();
 
-  render_view()->Send(new PrintHostMsg_DidGetPrintedPagesCount(
-      render_view()->routing_id(), printParams.document_cookie, page_count));
+  Send(new PrintHostMsg_DidGetPrintedPagesCount(routing_id(),
+                                                printParams.document_cookie,
+                                                page_count));
   if (!page_count)
     return;
 
@@ -539,11 +532,8 @@ bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
                                            WebKit::WebNode* node) {
   PrintMsg_PrintPages_Params settings;
 
-  if (!render_view()->Send(new PrintHostMsg_GetDefaultPrintSettings(
-          render_view()->routing_id(), &settings.params))) {
-    NOTREACHED();
-    return false;
-  }
+  Send(new PrintHostMsg_GetDefaultPrintSettings(routing_id(),
+                                                &settings.params));
   // Check if the printer returned any settings, if the settings is empty, we
   // can safely assume there are no printer drivers configured. So we safely
   // terminate.
@@ -567,13 +557,8 @@ bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
 bool PrintWebViewHelper::UpdatePrintSettings(
     const DictionaryValue& job_settings) {
   PrintMsg_PrintPages_Params settings;
-  if (!render_view()->Send(new PrintHostMsg_UpdatePrintSettings(
-          render_view()->routing_id(),
-          print_pages_params_->params.document_cookie,
-          job_settings, &settings))) {
-    NOTREACHED();
-    return false;
-  }
+  Send(new PrintHostMsg_UpdatePrintSettings(routing_id(),
+      print_pages_params_->params.document_cookie, job_settings, &settings));
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
   return true;
 }
@@ -598,16 +583,11 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(WebKit::WebFrame* frame,
   params.use_overlays = use_browser_overlays;
 
   print_pages_params_.reset();
-  IPC::SyncMessage* msg = new PrintHostMsg_ScriptedPrint(
-      render_view()->routing_id(), params, &print_settings);
+  IPC::SyncMessage* msg =
+      new PrintHostMsg_ScriptedPrint(routing_id(), params, &print_settings);
   msg->EnableMessagePumping();
-  if (render_view()->Send(msg)) {
-    print_pages_params_.reset(new PrintMsg_PrintPages_Params(print_settings));
-  } else {
-    // Send() failed.
-    NOTREACHED();
-    return false;
-  }
+  Send(msg);
+  print_pages_params_.reset(new PrintMsg_PrintPages_Params(print_settings));
   return (print_settings.params.dpi && print_settings.params.document_cookie);
 }
 
@@ -637,16 +617,14 @@ bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
     base::SharedMemoryHandle* shared_mem_handle) {
   uint32 buf_size = metafile->GetDataSize();
   base::SharedMemoryHandle mem_handle;
-  if (render_view()->Send(
-          new ViewHostMsg_AllocateSharedMemoryBuffer(buf_size, &mem_handle))) {
-    if (base::SharedMemory::IsHandleValid(mem_handle)) {
-      base::SharedMemory shared_buf(mem_handle, false);
-      if (shared_buf.Map(buf_size)) {
-        metafile->GetData(shared_buf.memory(), buf_size);
-        shared_buf.GiveToProcess(base::GetCurrentProcessHandle(),
-                                 shared_mem_handle);
-        return true;
-      }
+  Send(new ViewHostMsg_AllocateSharedMemoryBuffer(buf_size, &mem_handle));
+  if (base::SharedMemory::IsHandleValid(mem_handle)) {
+    base::SharedMemory shared_buf(mem_handle, false);
+    if (shared_buf.Map(buf_size)) {
+      metafile->GetData(shared_buf.memory(), buf_size);
+      shared_buf.GiveToProcess(base::GetCurrentProcessHandle(),
+                               shared_mem_handle);
+      return true;
     }
   }
   NOTREACHED();

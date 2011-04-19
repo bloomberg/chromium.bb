@@ -80,10 +80,7 @@ void PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
   base::FileDescriptor fd;
 
   // Ask the browser to open a file for us.
-  if (!Send(new PrintHostMsg_AllocateTempFileForPrinting(&fd,
-                                                         &sequence_number))) {
-    return;
-  }
+  Send(new PrintHostMsg_AllocateTempFileForPrinting(&fd, &sequence_number));
   if (!metafile.SaveToFD(fd))
     return;
 
@@ -95,11 +92,8 @@ void PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
   printed_page_params.document_cookie = params.params.document_cookie;
 
   base::SharedMemoryHandle shared_mem_handle;
-  if (!Send(new ViewHostMsg_AllocateSharedMemoryBuffer(buf_size,
-                                                       &shared_mem_handle))) {
-    NOTREACHED() << "AllocateSharedMemoryBuffer failed";
-    return;
-  }
+  Send(new ViewHostMsg_AllocateSharedMemoryBuffer(buf_size,
+                                                  &shared_mem_handle));
   if (!base::SharedMemory::IsHandleValid(shared_mem_handle)) {
     NOTREACHED() << "AllocateSharedMemoryBuffer returned bad handle";
     return;
