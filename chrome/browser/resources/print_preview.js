@@ -8,9 +8,10 @@ var expectedPageCount = 0;
 var pageRangesInfo = [];
 
 /**
- * Window onload handler, sets up the page.
+ * Window onload handler, sets up the page and starts print preview by getting
+ * the printer list.
  */
-function load() {
+function onLoad() {
   initializeAnimation();
 
   updateSummary();
@@ -65,13 +66,6 @@ function handlePageRangesFieldBlur() {
 }
 
 /**
- * Depending on 'copies' value, shows/hides the collate checkbox.
- */
-function updateCollateCheckboxState() {
-  $('collate-option').hidden = getCopies() <= 1;
-}
-
-/**
  * Validates the copies text field value.
  * NOTE: An empty copies field text is considered valid because the blur event
  * listener of this field will set it back to a default value.
@@ -116,7 +110,7 @@ function checkAndSetPageRangesField() {
   var individualPagesField = $('individual-pages');
 
   if (pageRanges.length == 1 && pageRanges[0].from == 1 &&
-          pageRanges[0].to == expectedPageCount) {
+      pageRanges[0].to == expectedPageCount) {
     individualPagesField.value = parsedPageRanges;
     return;
   }
@@ -190,10 +184,11 @@ function isTwoSided() {
  * @return {string} JSON string with print job settings.
  */
 function getSettingsJSON() {
-  var selectedPrinter = $('printer-list').selectedIndex;
+  var printerList = $('printer-list')
+  var selectedPrinter = printerList.selectedIndex;
   var printerName = '';
   if (selectedPrinter >= 0)
-    printerName = $('printer-list').options[selectedPrinter].textContent;
+    printerName = printerList.options[selectedPrinter].textContent;
   var printAll = $('all-pages').checked;
   var printToPDF = (printerName == localStrings.getString('printToPDF'));
 
@@ -224,6 +219,7 @@ function getPreview() {
 
 /**
  * Fill the printer list drop down.
+ * Called from PrintPreviewHandler::SendPrinterList().
  * @param {Array} printers Array of printer names.
  * @param {number} defaultPrinterIndex The index of the default printer.
  */
@@ -254,6 +250,7 @@ function setPrinters(printers, defaultPrinterIndex) {
 
 /**
  * Sets the color mode for the PDF plugin.
+ * Called from PrintPreviewHandler::ProcessColorSetting().
  * @param {boolean} color is true if the PDF plugin should display in color.
  */
 function setColor(color) {
@@ -263,6 +260,9 @@ function setColor(color) {
   $('pdf-viewer').grayscale(!color);
 }
 
+/**
+ * Called when the PDF plugin loads its document.
+ */
 function onPDFLoad() {
   if (isLandscape())
     $('pdf-viewer').fitToWidth();
@@ -273,6 +273,7 @@ function onPDFLoad() {
 /**
  * Update the print preview when new preview data is available.
  * Create the PDF plugin as needed.
+ * Called from PrintPreviewUI::PreviewDataIsAvailable().
  * @param {number} pageCount The expected total pages count.
  * @param {string} jobTitle The print job title.
  *
@@ -302,9 +303,10 @@ function createPDFPlugin() {
     $('print-button').disabled = false;
   }
 
-  if ($('pdf-viewer')) {
-    $('pdf-viewer').reload();
-    $('pdf-viewer').grayscale(!isColor());
+  var pdfViewer = $('pdf-viewer');
+  if (pdfViewer) {
+    pdfViewer.reload();
+    pdfViewer.grayscale(!isColor());
     return;
   }
 
@@ -342,14 +344,14 @@ function updatePrintButtonState() {
                                 !$('copies').checkValidity());
 }
 
-window.addEventListener('DOMContentLoaded', load);
+window.addEventListener('DOMContentLoaded', onLoad);
 
 /**
  * Listener function that executes whenever any of the available settings
  * is changed.
  */
 function printSettingChanged() {
-  updateCollateCheckboxState();
+  $('collate-option').hidden = getCopies() <= 1;
   updateSummary();
 }
 
@@ -358,21 +360,20 @@ function printSettingChanged() {
  *
  */
 function updateSummary() {
-  var html = '';
-  var pageList = getPageList();
   var copies = getCopies();
   var printButton = $('print-button');
   var printSummary = $('print-summary');
 
   if (isNaN($('copies').value)) {
-    html = localStrings.getString('invalidNumberOfCopiesTitleToolTip');
-    printSummary.innerHTML = html;
+    printSummary.innerHTML =
+        localStrings.getString('invalidNumberOfCopiesTitleToolTip');
     return;
   }
 
+  var pageList = getPageList();
   if (pageList.length <= 0) {
-    html = localStrings.getString('pageRangeInvalidTitleToolTip');
-    printSummary.innerHTML = html;
+    printSummary.innerHTML =
+        localStrings.getString('pageRangeInvalidTitleToolTip');
     printButton.disabled = true;
     return;
   }
@@ -411,11 +412,12 @@ function updateSummary() {
     sheetsLabel = localStrings.getString('printPreviewSheetsLabel');
   }
 
-  html = localStrings.getStringF('printPreviewSummaryFormat', pageList.length,
-                                  pagesLabel, twoSidedLabel, timesSign,
-                                  numOfCopies, copiesLabel, equalSign,
-                                  '<strong>'+numOfSheets+'</strong>',
-                                  '<strong>'+sheetsLabel+'</strong>');
+  var html = localStrings.getStringF('printPreviewSummaryFormat',
+                                     pageList.length, pagesLabel,
+                                     twoSidedLabel, timesSign, numOfCopies,
+                                     copiesLabel, equalSign,
+                                     '<strong>' + numOfSheets + '</strong>',
+                                     '<strong>' + sheetsLabel + '</strong>');
 
   // Removing extra spaces from within the string.
   html.replace(/\s{2,}/g, ' ');
@@ -426,8 +428,7 @@ function updateSummary() {
  * Handles a click event on the two-sided option.
  */
 function handleTwoSidedClick(event) {
-  var el = $('binding');
-  handleZippyClickEl(el);
+  handleZippyClickEl($('binding'));
   printSettingChanged(event);
 }
 
