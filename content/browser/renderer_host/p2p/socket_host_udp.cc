@@ -19,7 +19,6 @@ const int kReadBufferSize = 65536;
 P2PSocketHostUdp::P2PSocketHostUdp(IPC::Message::Sender* message_sender,
                                    int routing_id, int id)
     : P2PSocketHost(message_sender, routing_id, id),
-      state_(STATE_UNINITIALIZED),
       socket_(new net::UDPServerSocket(NULL, net::NetLog::Source())),
       send_pending_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -35,7 +34,8 @@ P2PSocketHostUdp::~P2PSocketHostUdp() {
   }
 }
 
-bool P2PSocketHostUdp::Init(const net::IPEndPoint& local_address) {
+bool P2PSocketHostUdp::Init(const net::IPEndPoint& local_address,
+                            const net::IPEndPoint& remote_address) {
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
 
   int result = socket_->Listen(local_address);
@@ -48,7 +48,7 @@ bool P2PSocketHostUdp::Init(const net::IPEndPoint& local_address) {
   net::IPEndPoint address;
   result = socket_->GetLocalAddress(&address);
   if (result < 0) {
-    LOG(ERROR) << "P2PSocket::Init(): unable to get local address: "
+    LOG(ERROR) << "P2PSocketHostUdp::Init(): unable to get local address: "
                << result;
     OnError();
     return false;
@@ -58,10 +58,10 @@ bool P2PSocketHostUdp::Init(const net::IPEndPoint& local_address) {
 
   state_ = STATE_OPEN;
 
+  message_sender_->Send(new P2PMsg_OnSocketCreated(routing_id_, id_, address));
+
   recv_buffer_ = new net::IOBuffer(kReadBufferSize);
   DoRead();
-
-  message_sender_->Send(new P2PMsg_OnSocketCreated(routing_id_, id_, address));
 
   return true;
 }
@@ -145,7 +145,7 @@ void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
   }
 
   scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(data.size());
-  memcpy(buffer->data(), &data.begin()[0], data.size());
+  memcpy(buffer->data(), &data[0], data.size());
   int result = socket_->SendTo(buffer, data.size(), to, &send_callback_);
   if (result == net::ERR_IO_PENDING) {
     send_pending_ = true;
@@ -162,4 +162,11 @@ void P2PSocketHostUdp::OnSend(int result) {
   send_pending_ = false;
   if (result < 0)
     OnError();
+}
+
+P2PSocketHost* P2PSocketHostUdp::AcceptIncomingTcpConnection(
+    const net::IPEndPoint& remote_address, int id) {
+  NOTREACHED();
+  OnError();
+  return NULL;
 }

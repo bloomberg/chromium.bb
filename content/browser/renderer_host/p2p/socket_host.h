@@ -20,11 +20,15 @@ class P2PSocketHost {
   virtual ~P2PSocketHost();
 
   // Initalizes the socket. Returns false when initiazations fails.
-  virtual bool Init(const net::IPEndPoint& local_address) = 0;
+  virtual bool Init(const net::IPEndPoint& local_address,
+                    const net::IPEndPoint& remote_address) = 0;
 
   // Sends |data| on the socket to |to|.
   virtual void Send(const net::IPEndPoint& to,
                     const std::vector<char>& data) = 0;
+
+  virtual P2PSocketHost* AcceptIncomingTcpConnection(
+      const net::IPEndPoint& remote_address, int id) = 0;
 
  protected:
   enum StunMessageType {
@@ -43,16 +47,24 @@ class P2PSocketHost {
     STUN_DATA_INDICATION = 0x0115
   };
 
+  enum State {
+    STATE_UNINITIALIZED,
+    STATE_CONNECTING,
+    STATE_OPEN,
+    STATE_ERROR,
+  };
+
   P2PSocketHost(IPC::Message::Sender* message_sender, int routing_id, int id);
 
   // Verifies that the packet |data| has a valid STUN header. In case
   // of success stores type of the message in |type|.
-  bool GetStunPacketType(const char* data, int data_size,
-                         StunMessageType* type);
+  static bool GetStunPacketType(const char* data, int data_size,
+                                StunMessageType* type);
 
   IPC::Message::Sender* message_sender_;
   int routing_id_;
   int id_;
+  State state_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketHost);
 };

@@ -5,6 +5,8 @@
 #include "content/browser/renderer_host/p2p/socket_host.h"
 
 #include "net/base/sys_byteorder.h"
+#include "content/browser/renderer_host/p2p/socket_host_tcp.h"
+#include "content/browser/renderer_host/p2p/socket_host_tcp_server.h"
 #include "content/browser/renderer_host/p2p/socket_host_udp.h"
 
 namespace {
@@ -14,12 +16,16 @@ const uint32 kStunMagicCookie = 0x2112A442;
 
 P2PSocketHost::P2PSocketHost(IPC::Message::Sender* message_sender,
                              int routing_id, int id)
-    : message_sender_(message_sender), routing_id_(routing_id), id_(id) {
+    : message_sender_(message_sender),
+      routing_id_(routing_id),
+      id_(id),
+      state_(STATE_UNINITIALIZED) {
 }
 
 P2PSocketHost::~P2PSocketHost() { }
 
 // Verifies that the packet |data| has a valid STUN header.
+// static
 bool P2PSocketHost::GetStunPacketType(
     const char* data, int data_size, StunMessageType* type) {
 
@@ -71,13 +77,10 @@ P2PSocketHost* P2PSocketHost::Create(
       return new P2PSocketHostUdp(message_sender, routing_id, id);
 
     case P2P_SOCKET_TCP_SERVER:
-      // TODO(sergeyu): Implement TCP sockets support.
-      NOTIMPLEMENTED();
-      return NULL;
+      return new P2PSocketHostTcpServer(message_sender, routing_id, id);
 
     case P2P_SOCKET_TCP_CLIENT:
-      NOTIMPLEMENTED();
-      return NULL;
+      return new P2PSocketHostTcp(message_sender, routing_id, id);
   }
 
   NOTREACHED();

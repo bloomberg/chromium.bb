@@ -22,6 +22,10 @@ IPC_MESSAGE_ROUTED2(P2PMsg_OnSocketCreated,
 IPC_MESSAGE_ROUTED1(P2PMsg_OnError,
                     int /* socket_id */)
 
+IPC_MESSAGE_ROUTED2(P2PMsg_OnIncomingTcpConnection,
+                    int /* socket_id */,
+                    net::IPEndPoint /* socket_address */)
+
 IPC_MESSAGE_ROUTED3(P2PMsg_OnDataReceived,
                     int /* socket_id */,
                     net::IPEndPoint /* socket_address */,
@@ -33,6 +37,11 @@ IPC_MESSAGE_ROUTED3(P2PHostMsg_CreateSocket,
                     P2PSocketType /* type */,
                     int /* socket_id */,
                     net::IPEndPoint /* remote_address */)
+
+IPC_MESSAGE_ROUTED3(P2PHostMsg_AcceptIncomingTcpConnection,
+                    int /* listen_socket_id */,
+                    net::IPEndPoint /* remote_address */,
+                    int /* connected_socket_id */)
 
 // TODO(sergeyu): Use shared memory to pass the data.
 IPC_MESSAGE_ROUTED3(P2PHostMsg_Send,

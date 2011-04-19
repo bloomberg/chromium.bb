@@ -18,14 +18,18 @@ class P2PSocketDispatcherHost : public BrowserMessageFilter {
   virtual ~P2PSocketDispatcherHost();
 
   // BrowserMessageFilter overrides.
-  virtual void OnChannelClosing();
-  virtual void OnDestruct() const;
+  virtual void OnChannelClosing() OVERRIDE;
+  virtual void OnDestruct() const OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok);
+                                 bool* message_was_ok) OVERRIDE;
 
  private:
+  // Handlers for the messages coming from the renderer.
   void OnCreateSocket(const IPC::Message& msg, P2PSocketType type,
                       int socket_id, const net::IPEndPoint& remote_address);
+  void OnAcceptIncomingTcpConnection(int listen_socket_id,
+                                     net::IPEndPoint remote_address,
+                                     int connected_socket_id);
   void OnSend(const IPC::Message& msg, int socket_id,
               const net::IPEndPoint& socket_address,
               const std::vector<char>& data);

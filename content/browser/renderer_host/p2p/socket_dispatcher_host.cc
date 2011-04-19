@@ -60,6 +60,8 @@ bool P2PSocketDispatcherHost::OnMessageReceived(const IPC::Message& message,
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(P2PSocketDispatcherHost, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(P2PHostMsg_CreateSocket, OnCreateSocket)
+    IPC_MESSAGE_HANDLER(P2PHostMsg_AcceptIncomingTcpConnection,
+                        OnAcceptIncomingTcpConnection)
     IPC_MESSAGE_HANDLER(P2PHostMsg_Send, OnSend)
     IPC_MESSAGE_HANDLER(P2PHostMsg_DestroySocket, OnDestroySocket)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -122,8 +124,24 @@ void P2PSocketDispatcherHost::FinishCreateSocket(
     return;
   }
 
-  if (socket->Init(local_address)) {
+  if (socket->Init(local_address, remote_address)) {
     sockets_.AddWithID(socket.release(), socket_id);
+  }
+}
+
+void P2PSocketDispatcherHost::OnAcceptIncomingTcpConnection(
+    int listen_socket_id, net::IPEndPoint remote_address,
+    int connected_socket_id) {
+  P2PSocketHost* socket = sockets_.Lookup(listen_socket_id);
+  if (!socket) {
+    LOG(ERROR) << "Received P2PHostMsg_AcceptIncomingTcpConnection "
+        "for invalid socket_id.";
+    return;
+  }
+  P2PSocketHost* accepted_connection =
+      socket->AcceptIncomingTcpConnection(remote_address, connected_socket_id);
+  if (accepted_connection) {
+    sockets_.AddWithID(accepted_connection, connected_socket_id);
   }
 }
 

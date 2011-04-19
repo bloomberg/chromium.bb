@@ -7,7 +7,10 @@
 
 #include <set>
 
+#include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
+#include "base/scoped_ptr.h"
 #include "content/browser/renderer_host/p2p/socket_host.h"
 #include "content/common/p2p_sockets.h"
 #include "net/base/ip_endpoint.h"
@@ -20,18 +23,15 @@ class P2PSocketHostUdp : public P2PSocketHost {
   virtual ~P2PSocketHostUdp();
 
   // P2PSocketHost overrides.
-  virtual bool Init(const net::IPEndPoint& local_address) OVERRIDE;
+  virtual bool Init(const net::IPEndPoint& local_address,
+                    const net::IPEndPoint& remote_address) OVERRIDE;
   virtual void Send(const net::IPEndPoint& to,
                     const std::vector<char>& data) OVERRIDE;
+  virtual P2PSocketHost* AcceptIncomingTcpConnection(
+      const net::IPEndPoint& remote_address, int id) OVERRIDE;
 
  private:
   friend class P2PSocketHostUdpTest;
-
-  enum State {
-    STATE_UNINITIALIZED,
-    STATE_OPEN,
-    STATE_ERROR,
-  };
 
   typedef std::set<net::IPEndPoint> AuthorizedPeerSet;
 
@@ -43,7 +43,6 @@ class P2PSocketHostUdp : public P2PSocketHost {
   void OnRecv(int result);
   void OnSend(int result);
 
-  State state_;
   scoped_ptr<net::DatagramServerSocket> socket_;
   scoped_refptr<net::IOBuffer> recv_buffer_;
   net::IPEndPoint recv_address_;

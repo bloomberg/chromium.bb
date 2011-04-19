@@ -149,7 +149,7 @@ class P2PSocketHostUdpTest : public testing::Test {
     net::IPAddressNumber local_ip;
     ASSERT_TRUE(net::ParseIPLiteralToNumber(kTestLocalIpAddress, &local_ip));
     local_address_ = net::IPEndPoint(local_ip, kTestPort1);
-    socket_host_->Init(local_address_);
+    socket_host_->Init(local_address_, net::IPEndPoint());
 
     net::IPAddressNumber ip1;
     ASSERT_TRUE(net::ParseIPLiteralToNumber(kTestIpAddress1, &ip1));
