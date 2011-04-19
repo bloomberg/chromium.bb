@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/user_view.h"
 #include "chrome/browser/chromeos/login/username_view.h"
+#include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "grit/generated_resources.h"
@@ -266,6 +267,14 @@ void UserController::UpdateUserCount(int index, int total_user_count) {
       border_window_->GetNativeView(),
       WM_IPC_WINDOW_LOGIN_BORDER,
       &params);
+}
+
+std::string UserController::GetAccessibleUserLabel() {
+  if (is_new_user_)
+    return l10n_util::GetStringUTF8(IDS_ADD_USER);
+  if (is_guest_)
+    return l10n_util::GetStringUTF8(IDS_GUEST);
+  return user_.email();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -108,6 +108,10 @@ class UserController : public views::WidgetDelegate,
   // |index| of this user and |total_user_count| of users.
   void UpdateUserCount(int index, int total_user_count);
 
+  // Returns the label for the user which should be spoken when accessibility is
+  // enabled.
+  std::string GetAccessibleUserLabel();
+
   // views::WidgetDelegate implementation:
   virtual void OnWidgetActivated(bool active) OVERRIDE;
 

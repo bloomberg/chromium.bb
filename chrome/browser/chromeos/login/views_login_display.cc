@@ -276,6 +276,8 @@ void ViewsLoginDisplay::OnUserSelected(UserController* source) {
     delegate()->OnUserSelected(source->user().email());
   }
   selected_view_index_ = new_selected_index;
+  WizardAccessibilityHelper::GetInstance()->MaybeSpeak(
+      source->GetAccessibleUserLabel().c_str(), false, true);
 }
 
 void ViewsLoginDisplay::RemoveUser(UserController* source) {
