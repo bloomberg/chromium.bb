@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2008 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 import platform
 
@@ -9,90 +9,77 @@ Import('env')
 
 
 ######################################################################
-# Simple RPC basic methods tests
+# Publish nexes and corresponding html to scons-out/.../staging/
 ######################################################################
-srpc_test_nexe = env.ComponentProgram('srpc_test.nexe', 'srpc_test.c',
-                                      EXTRA_LIBS=['srpc', 'm', 'pthread'])
-env.Publish('srpc_test.nexe', 'run',
-            ['srpc_basic.html', 'srpc_perf.html', 'srpc_shm.html',
-             'srpc_plugin.html',
-             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
-env.Publish('srpc_test.nexe', 'run',
-            ['srpc_basic_ppapi.html', 'srpc_perf_ppapi.html',
-             'srpc_shm_ppapi.html', 'srpc_plugin_ppapi.html',
-             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 
+# TODO(polina): do not depend on examples.html here; it belongs in ../
+# TODO(polina): make nacl_js_lib.js available by default
+
+srpc_test_nexe = env.ComponentProgram(
+    'srpc_test.nexe', 'srpc_test.c',
+    EXTRA_LIBS=['srpc', 'm', 'pthread'])
+env.Publish(
+    'srpc_test.nexe', 'run',
+    ['srpc_basic.html', 'srpc_perf.html', 'srpc_shm.html', 'srpc_plugin.html',
+     'examples.html', env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 env.AddPrebuiltBinaryToRepository(srpc_test_nexe)
 
 
-
 srpc_shm_nexe = env.ComponentProgram(
-    'srpc_shm.nexe',
-    'srpc_shm.c',
+    'srpc_shm.nexe', 'srpc_shm.c',
     EXTRA_LIBS=['srpc', 'platform', 'gio', 'm', 'pthread'])
-
-env.Publish('srpc_shm.nexe', 'run',
-            [ 'srpc_shm.html',
-              env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
-env.Publish('srpc_shm.nexe', 'run',
-            [ 'srpc_shm_ppapi.html',
-              env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
-
+env.Publish(
+    'srpc_shm.nexe', 'run',
+    [ 'srpc_shm.html',
+      'examples.html', env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 env.AddPrebuiltBinaryToRepository(srpc_shm_nexe)
 
 
-
-srpc_nrd_server_nexe = env.ComponentProgram('srpc_nrd_server.nexe',
-                                            'srpc_nrd_server.c',
-                                            EXTRA_LIBS=['srpc', 'm',
-                                                        'pthread'])
-env.Publish('srpc_nrd_server.nexe', 'run',
-            ['examples.html', '_README.txt', 'srpc_sockaddr.html',
-             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
-env.Publish('srpc_nrd_server.nexe', 'run',
-            ['examples_ppapi.html', '_README.txt', 'srpc_sockaddr_ppapi.html',
-             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
-
+srpc_nrd_server_nexe = env.ComponentProgram(
+    'srpc_nrd_server.nexe', 'srpc_nrd_server.c',
+    EXTRA_LIBS=['srpc', 'm', 'pthread'])
+env.Publish(
+    'srpc_nrd_server.nexe', 'run',
+    ['srpc_sockaddr.html',
+     'examples.html', env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 env.AddPrebuiltBinaryToRepository(srpc_nrd_server_nexe)
 
 
-
-srpc_nrd_client_nexe = env.ComponentProgram('srpc_nrd_client.nexe',
-                                            'srpc_nrd_client.c',
-                                            EXTRA_LIBS=['srpc', 'm', 'pthread'])
-env.Publish('srpc_nrd_client.nexe', 'run',
-            ['srpc_nrd_xfer.html',
-             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
-env.Publish('srpc_nrd_client.nexe', 'run',
-            ['srpc_nrd_xfer_ppapi.html',
-             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
-
+srpc_nrd_client_nexe = env.ComponentProgram(
+    'srpc_nrd_client.nexe', 'srpc_nrd_client.c',
+    EXTRA_LIBS=['srpc', 'm', 'pthread'])
+env.Publish(
+    'srpc_nrd_client.nexe', 'run',
+    ['srpc_nrd_xfer.html',
+     'examples.html', env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 env.AddPrebuiltBinaryToRepository(srpc_nrd_client_nexe)
 
 
 cat_nexe = env.ComponentProgram(
-    'cat.nexe', 'cat.c', EXTRA_LIBS=['srpc', 'platform', 'gio', 'm', 'pthread'])
+    'cat.nexe', 'cat.c',
+    EXTRA_LIBS=['srpc', 'platform', 'gio', 'm', 'pthread'])
+env.Publish(
+    'cat.nexe', 'run',
+    ['srpc_url_as_nacl_desc.html', 'srpc_url_as_nacl_desc_success.html',
+     'examples.html', env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 
-env.Publish('cat.nexe', 'run',
-            ['srpc_url_as_nacl_desc.html',
-             'srpc_url_as_nacl_desc_success.html',
-             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
-env.Publish('cat.nexe', 'run',
-            ['srpc_url_as_nacl_desc_ppapi.html',
-             'srpc_url_as_nacl_desc_success.html',
-             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 
-env.ComponentProgram('srpc_bidir.nexe', 'srpc_bidir.c',
-                     EXTRA_LIBS=['srpc', 'm', 'pthread'])
-env.Publish('srpc_bidir.nexe', 'run', ['srpc_bidir.html'])
+srpc_bidir_nexe = env.ComponentProgram(
+    'srpc_bidir.nexe', 'srpc_bidir.c',
+    EXTRA_LIBS=['srpc', 'm', 'pthread'])
+env.Publish('srpc_bidir.nexe', 'run', [])
 
 
 # NOTE: at least for ARM the EXTRA_LIBS list should include 'srpc'
 #       but this somehow make the x86 version fragile
-env.ComponentProgram('srpc_bad_service.nexe', 'srpc_bad_service.c',
-                     EXTRA_LIBS=['m', 'pthread'])
+srpc_bad_service_nexe = env.ComponentProgram(
+    'srpc_bad_service.nexe', 'srpc_bad_service.c',
+    EXTRA_LIBS=['m', 'pthread'])
 env.Publish('srpc_bad_service.nexe', 'run', [])
 
+######################################################################
+## Automated testing using sel_universal
+######################################################################
 
 node = env.SelUniversalTest(
     'srpc_basic_test.out',
@@ -125,157 +112,13 @@ env.AddNodeToTestSuite(node,
                        'run_srpc_bad_service_test')
 
 ######################################################################
-## NPAPI Browser Tests
+## Automated testing using chrome
 ######################################################################
-node = env.BrowserTester(
-    'srpc_basic_browser_test.out',
-     url='srpc_basic.html',
-     files=[srpc_test_nexe,
-            env.File('srpc_basic.html'),
-            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
-            ],
-     )
-env.AddNodeToTestSuite(node, ['browser_tests'], 'run_srpc_basic_browser_test')
-
-node = env.BrowserTester(
-    'srpc_plugin_browser_test.out',
-     url='srpc_plugin.html',
-     files=[srpc_test_nexe,
-            srpc_nrd_client_nexe,
-            env.File('srpc_plugin.html'),
-            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
-            ],
-     )
-env.AddNodeToTestSuite(node, ['browser_tests'], 'run_srpc_plugin_browser_test')
-
-node = env.BrowserTester(
-    'srpc_sockaddr_browser_test.out',
-     url='srpc_sockaddr.html',
-     files=[srpc_nrd_server_nexe,
-            env.File('srpc_sockaddr.html'),
-            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
-            ],
-     )
-env.AddNodeToTestSuite(node,
-                       ['browser_tests'],
-                       'run_srpc_sockaddr_browser_test')
-
-node = env.BrowserTester(
-    'srpc_shm_browser_test.out',
-     url='srpc_shm.html',
-     files=[srpc_shm_nexe,
-            env.File('srpc_shm.html'),
-            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
-            ],
-     )
-env.AddNodeToTestSuite(node, ['browser_tests'], 'run_srpc_shm_browser_test')
-
-# TODO: This test currently fails on lucid + firefox 3.6 for x86-32.
-#     Disabling in that case. Renable when fixed.
-#     See http://code.google.com/p/nativeclient/issues/detail?id=364
-# NOTE:  This started failing on hardy as well for the new bots
-# So this is now disabled for all platforms
-if 0:
-  node = env.BrowserTester(
-      'srpc_nrd_xfer_browser_test.out',
-       url='srpc_nrd_xfer.html',
-       files=[srpc_nrd_client_nexe,
-              srpc_nrd_server_nexe,
-              env.File('srpc_nrd_xfer.html'),
-              env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
-              ],
-       )
-  env.AddNodeToTestSuite(node,
-                         ['browser_tests'],
-                         'run_srpc_nrd_xfer_browser_test')
-
-node = env.BrowserTester(
-    'srpc_url_as_nacl_desc_test.out',
-     url='srpc_url_as_nacl_desc.html',
-     files=[cat_nexe,
-            env.File('srpc_url_as_nacl_desc.html'),
-            env.File('srpc_url_as_nacl_desc_success.html'),
-            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
-            ],
-     )
-env.AddNodeToTestSuite(node, ['browser_tests'],
-                       'run_srpc_url_as_nacl_desc_browser_test')
-
-node = env.SelUniversalTest(
-    'srpc_rofile.out',
-    command=[env.File('cat.nexe')],
-    sel_universal_flags=['--command_file',
-                         env.File('srpc_ro_file.stdin'),
-                         '--var', 'myfile',
-                         env.File('dummy.txt')],
-    stdout_golden=env.File('srpc_ro_file.stdout'),
-    filter_regex="'CatFile'",
-    filter_inverse='true',
-    )
-env.AddNodeToTestSuite(node,
-                       ['sel_ldr_tests', 'small_tests'],
-                       'run_srpc_ro_file_test')
-
-######################################################################
-## PPAPI Browser Tests
-######################################################################
-node = env.BrowserTester(
-    'srpc_basic_ppapi_browser_test.out',
-     url='srpc_basic_ppapi.html',
-     files=[srpc_test_nexe,
-            env.File('srpc_basic_ppapi.html'),
-            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
-            ],
-     )
-env.AddNodeToTestSuite(node,
-                       ['pepper_browser_tests'],
-                       'run_srpc_basic_ppapi_browser_test')
-
-node = env.BrowserTester(
-    'srpc_plugin_ppapi_browser_test.out',
-     url='srpc_plugin_ppapi.html',
-     files=[srpc_test_nexe,
-            srpc_nrd_client_nexe,
-            env.File('srpc_plugin_ppapi.html'),
-            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
-            ],
-     )
-env.AddNodeToTestSuite(node,
-                       ['pepper_browser_tests'],
-                       'run_srpc_plugin_ppapi_browser_test')
-
-node = env.BrowserTester(
-    'srpc_sockaddr_ppapi_browser_test.out',
-     url='srpc_sockaddr_ppapi.html',
-     files=[srpc_nrd_server_nexe,
-            env.File('srpc_sockaddr_ppapi.html'),
-            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
-            ],
-     )
-env.AddNodeToTestSuite(node,
-                       ['pepper_browser_tests'],
-                       'run_srpc_sockaddr_ppapi_browser_test')
-
-node = env.BrowserTester(
-    'srpc_shm_browser_ppapi_test.out',
-     url='srpc_shm_ppapi.html',
-     files=[srpc_shm_nexe,
-            env.File('srpc_shm_ppapi.html'),
-            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
-            ],
-     )
-env.AddNodeToTestSuite(node,
-                       ['pepper_browser_tests'],
-                       'run_srpc_shm_ppapi_browser_test')
-
-
-# chrome_browser_tests
 
 node = env.PPAPIBrowserTester(
     'srpc_basic_chrome_browser_test.out',
     url='srpc_basic_port.html',
     files=[srpc_test_nexe, env.File('srpc_basic_port.html')])
-
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_srpc_basic_chrome_browser_test',
