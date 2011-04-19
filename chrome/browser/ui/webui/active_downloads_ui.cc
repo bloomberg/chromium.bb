@@ -489,7 +489,7 @@ void ActiveDownloadsHandler::HandleCancelDownload(const ListValue* args) {
   FilePath path = item->full_path();
   item->Cancel(true);
   FilePath dir_path = path.DirName();
-  item->Remove(true);
+  item->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
   GetChildrenForPath(dir_path, true);
 #endif
 }
@@ -744,7 +744,8 @@ void ActiveDownloadsHandler::HandleDeleteFile(const ListValue* args) {
     FilePath item = active_download_items_[x]->full_path();
     if (item == currentpath) {
       active_download_items_[x]->Cancel(true);
-      active_download_items_[x]->Remove(true);
+      active_download_items_[x]->Delete(
+          DownloadItem::DELETE_DUE_TO_USER_DISCARD);
       FilePath dir_path = item.DirName();
       GetChildrenForPath(dir_path, true);
       return;

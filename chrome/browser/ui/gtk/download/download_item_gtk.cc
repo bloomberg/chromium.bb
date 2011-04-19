@@ -935,5 +935,5 @@ void DownloadItemGtk::OnDangerousDecline(GtkWidget* button) {
                            base::Time::Now() - creation_time_);
   if (get_download()->IsPartialDownload())
     get_download()->Cancel(true);
-  get_download()->Remove(true);
+  get_download()->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
 }

@@ -62,6 +62,8 @@ class DownloadItem {
     DANGEROUS_BUT_VALIDATED  // Dangerous but the user confirmed the download.
   };
 
+  // This enum is used by histograms.  Do not change the ordering or remove
+  // items.
   enum DangerType {
     NOT_DANGEROUS = 0,
 
@@ -70,7 +72,17 @@ class DownloadItem {
     DANGEROUS_FILE,
 
     // Safebrowsing service shows this URL leads to malicious file download.
-    DANGEROUS_URL
+    DANGEROUS_URL,
+
+    // Memory space for histograms is determined by the max.
+    // ALWAYS ADD NEW VALUES BEFORE THIS ONE.
+    DANGEROUS_TYPE_MAX
+  };
+
+  // Reason for deleting the download.  Passed to Delete().
+  enum DeleteReason {
+    DELETE_DUE_TO_BROWSER_SHUTDOWN = 0,
+    DELETE_DUE_TO_USER_DISCARD
   };
 
   // Interface that observers of a particular download must implement in order
@@ -156,9 +168,14 @@ class DownloadItem {
   // code that the operation received.
   void Interrupted(int64 size, int os_error);
 
-  // The user wants to remove the download from the views and history. If
-  // |delete_file| is true, the file is deleted on the disk.
-  void Remove(bool delete_file);
+  // Deletes the file from disk and removes the download from the views and
+  // history.  |user| should be true if this is the result of the user clicking
+  // the discard button, and false if it is being deleted for other reasons like
+  // browser shutdown.
+  void Delete(DeleteReason reason);
+
+  // Removes the download from the views and history.
+  void Remove();
 
   // Simple calculation of the amount of time remaining to completion. Fills
   // |*remaining| with the amount of time remaining if successful. Fails and

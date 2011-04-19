@@ -696,7 +696,7 @@ void DownloadItemView::ButtonPressed(
                              base::Time::Now() - creation_time_);
     if (download_->IsPartialDownload())
       download_->Cancel(true);
-    download_->Remove(true);
+    download_->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
     // WARNING: we are deleted at this point.  Don't access 'this'.
   } else if (sender == save_button_) {
     // The user has confirmed a dangerous download.  We'd record how quickly the

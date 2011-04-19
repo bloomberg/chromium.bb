@@ -1172,7 +1172,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCancelled) {
   EXPECT_TRUE(IsDownloadUIVisible(browser()));
 
   // Cancel the download and wait for download system quiesce.
-  downloads[0]->Remove(/* delete_on_disk = */ true);
+  downloads[0]->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
   scoped_refptr<DownloadsFlushObserver> flush_observer(
       new DownloadsFlushObserver(browser()->profile()->GetDownloadManager()));
   flush_observer->WaitForFlush();

@@ -100,7 +100,7 @@ void DownloadManager::Shutdown() {
       // so the only thing we know after calling this function is that
       // the download was deleted if-and-only-if it was removed
       // from all queues.
-      download->Remove(true);
+      download->Delete(DownloadItem::DELETE_DUE_TO_BROWSER_SHUTDOWN);
     } else if (download->IsPartialDownload()) {
       download->Cancel(false);
       download_history_->UpdateEntry(download);

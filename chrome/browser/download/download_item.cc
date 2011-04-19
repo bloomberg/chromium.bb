@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
@@ -299,6 +300,9 @@ void DownloadItem::ShowDownloadInShell() {
 }
 
 void DownloadItem::DangerousDownloadValidated() {
+  UMA_HISTOGRAM_ENUMERATION("Download.DangerousDownloadValidated",
+                            danger_type_,
+                            DANGEROUS_TYPE_MAX);
   download_manager_->DangerousDownloadValidated(this);
 }
 
@@ -408,14 +412,32 @@ void DownloadItem::Interrupted(int64 size, int os_error) {
   UpdateObservers();
 }
 
-void DownloadItem::Remove(bool delete_on_disk) {
+void DownloadItem::Delete(DeleteReason reason) {
+  switch (reason) {
+    case DELETE_DUE_TO_USER_DISCARD:
+      UMA_HISTOGRAM_ENUMERATION("Download.UserDiscard",
+                                danger_type_,
+                                DANGEROUS_TYPE_MAX);
+      break;
+    case DELETE_DUE_TO_BROWSER_SHUTDOWN:
+      UMA_HISTOGRAM_ENUMERATION("Download.Discard",
+                                danger_type_,
+                                DANGEROUS_TYPE_MAX);
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableFunction(&DeleteDownloadedFile, full_path_));
+  Remove();
+  // We have now been deleted.
+}
+
+void DownloadItem::Remove() {
   Cancel(true);
   state_ = REMOVING;
-  if (delete_on_disk) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        NewRunnableFunction(&DeleteDownloadedFile, full_path_));
-  }
   download_manager_->RemoveDownload(db_handle_);
   // We have now been deleted.
 }

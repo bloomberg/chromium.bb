@@ -2831,13 +2831,12 @@ void TestingAutomationProvider::PerformActionOnDownload(
     download_manager->AddObserver(
         new AutomationProviderDownloadModelChangedObserver(
             this, reply_message, download_manager));
-    selected_item->Remove(false);
+    selected_item->Remove();
   } else if (action == "decline_dangerous_download") {
-    // This is the same as removing the file with delete_file=true.
     download_manager->AddObserver(
         new AutomationProviderDownloadModelChangedObserver(
             this, reply_message, download_manager));
-    selected_item->Remove(true);
+    selected_item->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
   } else if (action == "save_dangerous_download") {
     selected_item->AddObserver(new AutomationProviderDownloadUpdatedObserver(
         this, reply_message, false));

@@ -174,7 +174,7 @@ void DownloadsDOMHandler::HandleSaveDangerous(const ListValue* args) {
 void DownloadsDOMHandler::HandleDiscardDangerous(const ListValue* args) {
   DownloadItem* file = GetDownloadByValue(args);
   if (file)
-    file->Remove(true);
+    file->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
 }
 
 void DownloadsDOMHandler::HandleShow(const ListValue* args) {
@@ -192,7 +192,7 @@ void DownloadsDOMHandler::HandlePause(const ListValue* args) {
 void DownloadsDOMHandler::HandleRemove(const ListValue* args) {
   DownloadItem* file = GetDownloadByValue(args);
   if (file)
-    file->Remove(false);
+    file->Remove();
 }
 
 void DownloadsDOMHandler::HandleCancel(const ListValue* args) {
