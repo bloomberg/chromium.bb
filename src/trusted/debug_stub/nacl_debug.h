@@ -1,8 +1,9 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
+
 
 /*
  * This module provides a 'C' style interface to the NaCl debugging
@@ -41,12 +42,6 @@ struct NaClAppThread;
 void NaClDebugSetAllow(int val) NO_THROW;
 
 /*
- * If debugging is enabled, setting this to true will cause the NEXE
- * to break immediately to allow a debugger to attach.
- */
-void NaClDebugSetStartBroken(int val) NO_THROW;
-
-/*
  * Returns non-zero if debugging is allowed.  This check is done via the
  * NACL_DEBUG_ENABLE environment variable.
  */
@@ -58,7 +53,6 @@ int NaClDebugIsEnabled(void) NO_THROW;
  * information about the App (NEXE) that is running.  These functions are
  * safe to call even if debugging has not been enabled.
  */
-void NaClDebugSetAppPath(const char *path) NO_THROW;
 void NaClDebugSetAppInfo(struct NaClApp *app) NO_THROW;
 void NaClDebugSetAppEnvironment(int argc, char const * const argv[],
                                 int envc, char const * const envv[]) NO_THROW;

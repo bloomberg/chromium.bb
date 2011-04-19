@@ -80,7 +80,7 @@ extern "C" {
 }
 
 struct NaClDebugState {
-  NaClDebugState() : target_(NULL), app_(NULL), break_(false),
+  NaClDebugState() : target_(NULL), app_(NULL),
                      errCode_(0), status_(NDS_DISABLED) {
     status_ = nacl_debug_allowed ? NDS_ENABLED : NDS_DISABLED;
 
@@ -100,7 +100,6 @@ struct NaClDebugState {
 
   Target* target_;
   struct NaClApp *app_;
-  bool break_;
   volatile int errCode_;
   NaClDebugStatus status_;
   nacl::string path_;
@@ -124,17 +123,6 @@ void NaClDebugSetAllow(int enable) throw() {
   UNREFERENCED_PARAMETER(enable);
 #endif
 }
-
-void NaClDebugSetStartBroken(int enable) throw() {
-#ifdef NACL_DEBUG_STUB
-  NaClDebugState* state = NaClDebugGetState();
-  state->break_ = enable ? true : false;
-#else
-  UNREFERENCED_PARAMETER(enable);
-#endif
-}
-
-
 
 void WINAPI NaClStubThread(void *ptr) {
 #ifdef NACL_DEBUG_STUB
@@ -190,13 +178,6 @@ int NaClDebugIsEnabled(void) throw() {
 
   return false;
 }
-
-void NaClDebugSetAppPath(const char *path) throw() {
-  try {
-    if (NaClDebugIsEnabled()) NaClDebugGetState()->path_ = path;
-  } DBG_CATCH_ALL
-}
-
 
 void NaClDebugSetAppInfo(struct NaClApp *app) throw() {
 #ifdef NACL_DEBUG_STUB
