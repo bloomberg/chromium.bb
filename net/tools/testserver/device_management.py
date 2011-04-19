@@ -177,7 +177,6 @@ class RequestHandler(object):
 
     # Send back the reply.
     response = dm.DeviceManagementResponse()
-    response.error = dm.DeviceManagementResponse.SUCCESS
     response.register_response.device_management_token = (
         token_info['device_token'])
     response.register_response.machine_name = token_info['machine_name']
@@ -208,7 +207,6 @@ class RequestHandler(object):
 
     # Prepare and send the response.
     response = dm.DeviceManagementResponse()
-    response.error = dm.DeviceManagementResponse.SUCCESS
     response.unregister_response.CopyFrom(dm.DeviceUnregisterResponse())
 
     self.DumpMessage('Response', response)
@@ -247,7 +245,6 @@ class RequestHandler(object):
 
     # Prepare and send the response.
     response = dm.DeviceManagementResponse()
-    response.error = dm.DeviceManagementResponse.SUCCESS
     fetch_response = response.policy_response.response.add()
     fetch_response.policy_data = (
         policy_data.SerializeToString())
@@ -277,7 +274,6 @@ class RequestHandler(object):
 
     # Stuff the policy dictionary into a response message and send it back.
     response = dm.DeviceManagementResponse()
-    response.error = dm.DeviceManagementResponse.SUCCESS
     response.policy_response.CopyFrom(dm.DevicePolicyResponse())
 
     # Respond only if the client requested policy for the cros/device scope,
@@ -489,7 +485,6 @@ class RequestHandler(object):
     signed_data = policy_data.SerializeToString()
 
     response = dm.DeviceManagementResponse()
-    response.error = dm.DeviceManagementResponse.SUCCESS
     fetch_response = response.policy_response.response.add()
     fetch_response.policy_data = signed_data
     if signing_key:

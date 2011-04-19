@@ -309,7 +309,6 @@ TEST_F(DeviceManagementServiceTest, RegisterRequest) {
   // Generate the response.
   std::string response_data;
   em::DeviceManagementResponse response_wrapper;
-  response_wrapper.set_error(em::DeviceManagementResponse::SUCCESS);
   response_wrapper.mutable_register_response()->CopyFrom(expected_response);
   ASSERT_TRUE(response_wrapper.SerializeToString(&response_data));
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
@@ -352,7 +351,6 @@ TEST_F(DeviceManagementServiceTest, UnregisterRequest) {
   // Generate the response.
   std::string response_data;
   em::DeviceManagementResponse response_wrapper;
-  response_wrapper.set_error(em::DeviceManagementResponse::SUCCESS);
   response_wrapper.mutable_unregister_response()->CopyFrom(expected_response);
   ASSERT_TRUE(response_wrapper.SerializeToString(&response_data));
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
@@ -428,7 +426,6 @@ TEST_F(DeviceManagementServiceTest, JobQueueing) {
   // Check that the request is processed as expected.
   std::string response_data;
   em::DeviceManagementResponse response_wrapper;
-  response_wrapper.set_error(em::DeviceManagementResponse::SUCCESS);
   response_wrapper.mutable_register_response()->CopyFrom(expected_response);
   ASSERT_TRUE(response_wrapper.SerializeToString(&response_data));
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);

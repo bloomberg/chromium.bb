@@ -220,7 +220,7 @@ message DevicePolicyResponse {
 //   * request: MUST BE one of register/unregister/policy/ping
 //   * devicetype: MUST BE "1" for Android or "2" for Chrome OS.
 //   * apptype: MUST BE Android or Chrome.
-//   * deviceid: MUST BE no more than 64-char in [\x20-\x7E].
+//   * deviceid: MUST BE no more than 64-char in [\x21-\x7E].
 //   * agent: MUST BE no more than 64-char long.
 // * HTTP Authorization header MUST be in the following formats:
 //   * For register and ping requests
@@ -242,27 +242,21 @@ message DeviceManagementRequest {
 }
 
 // Response from server to device.
+//
+// The server uses the following numbers as HTTP status codes
+// to report top-level errors.
+//
+// 200 OK: valid response is returned to client.
+// 400 Bad Request: invalid argument.
+// 401 Unauthorized: invalid auth cookie or DM token.
+// 403 Forbidden: device management is not allowed.
+// 404 Not Found: the request URL is invalid.
+// 491 Request Pending: the request is pending approval.
+// 500 Internal Server Error: most likely a bug in DM server.
+// 503 Service Unavailable: most likely a backend error.
+// 901 Device Not Found: the device id is not found.
+// 902 Policy Not Found: the policy is not found.
 message DeviceManagementResponse {
-  // Error code to client.
-  enum ErrorCode {
-    SUCCESS = 0;
-    // Returned for register request when device management is not supported
-    // for the domain.
-    DEVICE_MANAGEMENT_NOT_SUPPORTED = 1;
-    // Returned when the device is not found.
-    DEVICE_NOT_FOUND  = 2;
-    // Returned when passed in device management token doesn't match the token
-    // on server side.
-    DEVICE_MANAGEMENT_TOKEN_INVALID  = 3;
-    // Returned when device registration is pending approval (if required).
-    ACTIVATION_PENDING = 4;
-    // Returned when the policy is not found.
-    POLICY_NOT_FOUND  = 5;
-  }
-
-  // Error code for this request.
-  required ErrorCode error = 1;
-
   // Error message.
   optional string error_message = 2;
 

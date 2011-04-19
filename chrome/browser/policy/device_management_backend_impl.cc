@@ -208,11 +208,6 @@ void DeviceManagementJobBase::HandleResponse(
         OnError(DeviceManagementBackend::kErrorResponseDecoding);
         return;
       }
-      if (response.has_error() &&
-          response.error() != em::DeviceManagementResponse_ErrorCode_SUCCESS) {
-        // TODO(pastarmovj): If we want to support legacy error codes in the
-        // protobuf this is the place to do so.
-      }
       OnResponse(response);
       return;
     }
