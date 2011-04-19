@@ -1378,6 +1378,17 @@ WebKit::WebNotificationPresenter* RenderView::notificationPresenter() {
   return notification_provider_;
 }
 
+bool RenderView::enumerateChosenDirectory(
+    const WebString& path,
+    WebFileChooserCompletion* chooser_completion) {
+  int id = enumeration_completion_id_++;
+  enumeration_completions_[id] = chooser_completion;
+  return Send(new ViewHostMsg_EnumerateDirectory(
+      routing_id_,
+      id,
+      webkit_glue::WebStringToFilePath(path)));
+}
+
 void RenderView::didStartLoading() {
   if (is_loading_) {
     DLOG(WARNING) << "didStartLoading called while loading";
@@ -1543,17 +1554,6 @@ bool RenderView::runFileChooser(
   ipc_params.accept_types = params.acceptTypes;
 
   return ScheduleFileChooser(ipc_params, chooser_completion);
-}
-
-bool RenderView::enumerateDirectory(
-    const WebString& path,
-    WebFileChooserCompletion* chooser_completion) {
-  int id = enumeration_completion_id_++;
-  enumeration_completions_[id] = chooser_completion;
-  return Send(new ViewHostMsg_EnumerateDirectory(
-      routing_id_,
-      id,
-      webkit_glue::WebStringToFilePath(path)));
 }
 
 void RenderView::runModalAlertDialog(

@@ -360,6 +360,9 @@ class RenderView : public RenderWidget,
       unsigned source_line);
   virtual void printPage(WebKit::WebFrame* frame);
   virtual WebKit::WebNotificationPresenter* notificationPresenter();
+  virtual bool enumerateChosenDirectory(
+      const WebKit::WebString& path,
+      WebKit::WebFileChooserCompletion* chooser_completion);
   virtual void didStartLoading();
   virtual void didStopLoading();
   virtual void didChangeLoadProgress(WebKit::WebFrame* frame,
@@ -371,9 +374,6 @@ class RenderView : public RenderWidget,
   virtual bool handleCurrentKeyboardEvent();
   virtual bool runFileChooser(
       const WebKit::WebFileChooserParams& params,
-      WebKit::WebFileChooserCompletion* chooser_completion);
-  virtual bool enumerateDirectory(
-      const WebKit::WebString& path,
       WebKit::WebFileChooserCompletion* chooser_completion);
   virtual void runModalAlertDialog(WebKit::WebFrame* frame,
                                    const WebKit::WebString& message);
