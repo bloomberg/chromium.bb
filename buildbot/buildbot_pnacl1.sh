@@ -7,27 +7,28 @@ set -o xtrace
 set -o nounset
 set -o errexit
 
-
-# This is the first thing you want to run on the bots to install the toolchains
-toolchain-setup() {
-  echo @@@BUILD_STEP clobber@@@
+clobber() {
+  echo "@@@BUILD_STEP clobber@@@"
   rm -rf scons-out toolchain compiler hg ../xcodebuild ../sconsbuild ../out \
     src/third_party/nacl_sdk/arm-newlib
+}
 
-  echo @@@BUILD_STEP gclient_runhooks@@@
+# This is the first thing you want to run on the bots to install the toolchains
+install-lkgr-toolchains() {
+  echo "@@@BUILD_STEP gclient_runhooks@@@"
   gclient runhooks --force
 }
 
 # We usually do not trust the TC to provide the latest (extra) SDK
 # so we rebuild them here
 partial-sdk() {
-  echo @@@BUILD_STEP partial_sdk@@@
+  echo "@@@BUILD_STEP partial_sdk@@@"
   UTMAN_BUILDBOT=true tools/llvm/utman.sh extrasdk-make-install
 }
 
 # These tars up the executable to be shipped to the arm HW bots
 archive-for-hw-bots() {
-  echo @@@BUILD_STEP archive_build@@@
+  echo "@@@BUILD_STEP archive_build@@@"
   tar cvfz arm.tgz scons-out/
   # TODO(bradnelson): explain this mechanism
   if [[ $BUILDBOT_BUILDERNAME == nacl-* ]]; then
@@ -59,10 +60,10 @@ gyp-arm-build() {
     linux_use_tcmalloc=0 armv7=1 arm_thumb=1"
   export GYP_GENERATOR=make
 
-  echo @@@BUILD_STEP gyp_compile@@@
+  echo "@@@BUILD_STEP gyp_compile@@@"
   make -C .. -k -j8 V=1 BUILDTYPE=${gypmode}
 
-  echo @@@BUILD_STEP gyp_tests@@@
+  echo "@@@BUILD_STEP gyp_tests@@@"
   python trusted_test.py --config ${gypmode}
 }
 
@@ -70,7 +71,7 @@ gyp-arm-build() {
 ad-hoc-shared-lib-tests() {
   # TODO(robertm): make this accessible by the utman script so that this get
   # http://code.google.com/p/nativeclient/issues/detail?id=1647
-  echo @@@BUILD_STEP fake_shared_libs@@@
+  echo "@@@BUILD_STEP fake_shared_libs@@@"
   pushd  tests/pnacl_ld_example/
   make -f Makefile.pnacl clean
   make -f Makefile.pnacl preparation
@@ -110,26 +111,40 @@ scons-tests() {
 
 ######################################################################
 mode-trybot() {
-  toolchain-setup
+  clobber
+  install-lkgr-toolchains
   partial-sdk
   scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl" "smoke_tests"
   ad-hoc-shared-lib-tests
 }
 
-mode-buildbot() {
-  toolchain-setup
+mode-buildbot-x8632() {
+  clobber
+  install-lkgr-toolchains
   partial-sdk
   # First build everything
-  scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl" ""
+  scons-tests "x86-32" "--mode=opt-host,nacl" ""
   # Then test (not all nexes which are build are also tested)
-  scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl" "smoke_tests"
+  scons-tests "x86-32" "--mode=opt-host,nacl" "smoke_tests"
+  ad-hoc-shared-lib-tests
+}
+
+mode-buildbot-x8664() {
+  clobber
+  install-lkgr-toolchains
+  partial-sdk
+  # First build everything
+  scons-tests "x86-64" "--mode=opt-host,nacl" ""
+  # Then test (not all nexes which are build are also tested)
+  scons-tests "x86-64" "--mode=opt-host,nacl" "smoke_tests"
   ad-hoc-shared-lib-tests
 }
 
 # NOTE: not tested yet, for reference only to illustrate future plans
 # TOOD(robertm): see whether it really makes sense to merge dbg/opt
 mode-buildbot-arm() {
-  toolchain-setup
+  clobber
+  install-lkgr-toolchains
   partial-sdk
   # gyp tests for both opt and dbg
   gyp-arm-build opt
