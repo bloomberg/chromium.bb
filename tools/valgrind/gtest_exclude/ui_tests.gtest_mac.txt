@@ -152,6 +152,8 @@ AutomationProxyTest.AcceleratorNewTab
 HistoryTester.VerifyHistoryLength2
 RedirectTest.ClientServerServer
 DomCheckerTest.File
+ResourceDispatcherTest.CrossSiteNavigationNonBuffered
+ResourceDispatcherTest.CrossSiteNoUnloadOn204
 ResourceDispatcherTest.CrossSiteOnunloadCookie
 ResourceDispatcherTest.SniffHTMLWithNoContentType
 
