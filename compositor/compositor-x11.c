@@ -410,7 +410,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			} else {
 				/* Deliver the held key release now
 				 * and fall through and handle the new
-				 * key press below. */
+				 * event below. */
 				notify_key(c->base.input_device,
 					   key_release->time,
 					   key_release->detail - 8, 0);
@@ -418,6 +418,39 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 				prev = NULL;
 				break;
 			}
+
+		case XCB_FOCUS_IN:
+			/* FIXME: There's a bug somewhere in xcb (I
+			 * think) where we don't get all the events in
+			 * the input buffer when calling
+			 * xcb_poll_for_event().  What happens is we
+			 * alt-tab to the compositor window, and get
+			 * the focus_in(mode=while_grabbed), but not
+			 * the following focus_in(mode=ungrab) which
+			 * is the one we care about. */
+
+			/* assert event is keymap_notify */
+			focus_in = (xcb_focus_in_event_t *) prev;
+			keymap_notify = (xcb_keymap_notify_event_t *) event;
+			c->keys.size = 0;
+			for (i = 0; i < ARRAY_LENGTH(keymap_notify->keys) * 8; i++) {
+				set = keymap_notify->keys[i >> 3] &
+					(1 << (i & 7));
+				if (set) {
+					k = wl_array_add(&c->keys, sizeof *k);
+					*k = i;
+				}
+			}
+
+			output = x11_compositor_find_output(c, focus_in->event);
+			notify_keyboard_focus(c->base.input_device,
+					      get_time(),
+					      &output->base, &c->keys);
+
+			free(prev);
+			prev = NULL;
+			break;
+
 		default:
 			/* No previous event held */
 			break;
@@ -496,10 +529,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			if (focus_in->mode == XCB_NOTIFY_MODE_WHILE_GRABBED)
 				break;
 
-			output = x11_compositor_find_output(c, focus_in->event);
-			notify_keyboard_focus(c->base.input_device,
-					      get_time(),
-					      &output->base, &c->keys);
+			prev = event;
 			break;
 
 		case XCB_FOCUS_OUT:
@@ -510,18 +540,6 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 					      get_time(), NULL, NULL);
 			break;
 
-		case XCB_KEYMAP_NOTIFY:
-			keymap_notify = (xcb_keymap_notify_event_t *) event;
-			c->keys.size = 0;
-			for (i = 0; i < ARRAY_LENGTH(keymap_notify->keys) * 8; i++) {
-				set = keymap_notify->keys[i >> 3] &
-					(1 << (i & 7));
-				if (set) {
-					k = wl_array_add(&c->keys, sizeof *k);
-					*k = i;
-				}
-			}
-			break;
 		default:
 			break;
 		}
