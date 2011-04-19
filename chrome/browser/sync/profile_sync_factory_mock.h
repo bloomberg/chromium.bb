@@ -26,7 +26,6 @@ class ProfileSyncFactoryMock : public ProfileSyncFactory {
 
   MOCK_METHOD1(CreateProfileSyncService,
                ProfileSyncService*(const std::string&));
-  MOCK_METHOD1(RegisterDataTypes, void(ProfileSyncService*));
   MOCK_METHOD2(CreateDataTypeManager,
                browser_sync::DataTypeManager*(
                    browser_sync::SyncBackendHost*,

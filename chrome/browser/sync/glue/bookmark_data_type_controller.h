@@ -39,7 +39,7 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
  private:
   // FrontendDataTypeController interface.
   virtual bool StartModels();
-  virtual void CleanUpState();
+  virtual void CleanupState();
   virtual void CreateSyncComponents();
   virtual void RecordUnrecoverableError(
       const tracked_objects::Location& from_here,

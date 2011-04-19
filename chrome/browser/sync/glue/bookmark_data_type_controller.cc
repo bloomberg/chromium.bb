@@ -43,7 +43,7 @@ bool BookmarkDataTypeController::StartModels() {
 }
 
 // Cleanup for our extra registrar usage.
-void BookmarkDataTypeController::CleanUpState() {
+void BookmarkDataTypeController::CleanupState() {
   registrar_.RemoveAll();
 }
 

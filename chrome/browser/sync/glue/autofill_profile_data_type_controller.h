@@ -15,18 +15,20 @@ class AutofillProfileDataTypeController : public AutofillDataTypeController {
  public:
   AutofillProfileDataTypeController(
       ProfileSyncFactory* profile_sync_factory,
-      Profile* profile);
+      Profile* profile,
+      ProfileSyncService* sync_service);
   virtual ~AutofillProfileDataTypeController();
 
   virtual syncable::ModelType type() const;
 
+  virtual std::string name() const;
+
  protected:
-   virtual void CreateSyncComponents();
-   virtual void RecordUnrecoverableError(
-       const tracked_objects::Location& from_here,
-       const std::string& message);
-   virtual void RecordAssociationTime(base::TimeDelta time);
-   virtual void RecordStartFailure(StartResult result);
+  virtual ProfileSyncFactory::SyncComponents CreateSyncComponents(
+      ProfileSyncService* profile_sync_service,
+      WebDatabase* web_database,
+      PersonalDataManager* personal_data,
+      browser_sync::UnrecoverableErrorHandler* error_handler);
 };
 
 }  // namespace browser_sync

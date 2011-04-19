@@ -63,8 +63,8 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
   virtual bool StartModels() {
     return mock_->StartModels();
   }
-  virtual void CleanUpState() {
-    mock_->CleanUpState();
+  virtual void CleanupState() {
+    mock_->CleanupState();
   }
   virtual void RecordUnrecoverableError(
       const tracked_objects::Location& from_here,
@@ -122,13 +122,13 @@ class FrontendDataTypeControllerTest : public testing::Test {
   }
 
   void SetStopExpectations() {
-    EXPECT_CALL(*dtc_mock_, CleanUpState());
+    EXPECT_CALL(*dtc_mock_, CleanupState());
     EXPECT_CALL(service_, DeactivateDataType(_, _));
     EXPECT_CALL(*model_associator_, DisassociateModels());
   }
 
   void SetStartFailExpectations(DataTypeController::StartResult result) {
-    EXPECT_CALL(*dtc_mock_, CleanUpState());
+    EXPECT_CALL(*dtc_mock_, CleanupState());
     EXPECT_CALL(*dtc_mock_, RecordStartFailure(result));
     EXPECT_CALL(start_callback_, Run(result,_));
   }
@@ -167,16 +167,6 @@ TEST_F(FrontendDataTypeControllerTest, StartFirstRun) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
   frontend_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   EXPECT_EQ(DataTypeController::RUNNING, frontend_dtc_->state());
-}
-
-TEST_F(FrontendDataTypeControllerTest, AbortDuringStartModels) {
-  EXPECT_CALL(*dtc_mock_, StartModels()).WillOnce(Return(false));
-  SetStartFailExpectations(DataTypeController::ABORTED);
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
-  frontend_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
-  EXPECT_EQ(DataTypeController::MODEL_STARTING, frontend_dtc_->state());
-  frontend_dtc_->Stop();
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
 }
 
 TEST_F(FrontendDataTypeControllerTest, StartAssociationFailed) {
@@ -225,6 +215,7 @@ TEST_F(FrontendDataTypeControllerTest, Stop) {
   SetAssociateExpectations();
   SetActivateExpectations(DataTypeController::OK);
   SetStopExpectations();
+
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
   frontend_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   EXPECT_EQ(DataTypeController::RUNNING, frontend_dtc_->state());
@@ -241,6 +232,7 @@ TEST_F(FrontendDataTypeControllerTest, OnUnrecoverableError) {
       WillOnce(InvokeWithoutArgs(frontend_dtc_.get(),
                                  &FrontendDataTypeController::Stop));
   SetStopExpectations();
+
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
   frontend_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   EXPECT_EQ(DataTypeController::RUNNING, frontend_dtc_->state());
