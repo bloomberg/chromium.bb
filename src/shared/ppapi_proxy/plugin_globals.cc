@@ -17,15 +17,16 @@
 
 #define NACL_SEND_FD 6
 
-namespace ppapi_proxy {
-
 namespace {
 
 NaClSrpcChannel* main_srpc_channel;
 NaClSrpcChannel* upcall_srpc_channel;
 PP_Module module_id_for_plugin;
+struct PP_ThreadFunctions thread_funcs;
 
 }  // namespace;
+
+namespace ppapi_proxy {
 
 const PP_Resource kInvalidResourceId = 0;
 
@@ -76,7 +77,16 @@ const PPB_Var_Deprecated* PPBVarInterface() {
       GetBrowserInterfaceSafe(PPB_VAR_DEPRECATED_INTERFACE));
 }
 
+const struct PP_ThreadFunctions* GetThreadCreator() {
+  return &thread_funcs;
+}
+
 }  // namespace ppapi_proxy
+
+void PpapiPluginRegisterThreadCreator(
+    const struct PP_ThreadFunctions* new_funcs) {
+  thread_funcs = *new_funcs;
+}
 
 int PpapiPluginMain() {
   if (getenv("NACL_LD_ACCEPTS_PLUGIN_CONNECTION") != NULL) {
@@ -101,6 +111,7 @@ int PpapiPluginMain() {
     return 1;
   }
   NaClLogModuleInit();  // Enable NaClLog'ing used by CHECK().
+  PpapiPluginRegisterDefaultThreadCreator();
   // Designate this as the main thread for PPB_Core::IsMainThread().
   ppapi_proxy::PluginCore::MarkMainThread();
   if (!NaClSrpcAcceptClientConnection(PppRpcs::srpc_methods)) {

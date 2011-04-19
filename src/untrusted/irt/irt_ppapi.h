@@ -16,6 +16,23 @@ struct PP_StartFunctions {
   const void *(*PPP_GetInterface)(const char *interface_name);
 };
 
+struct PP_ThreadFunctions {
+  /*
+   * This is a cut-down version of pthread_create()/pthread_join().
+   * We omit thread creation attributes and the thread's return value.
+   *
+   * We use uintptr_t as the thread ID type because pthread_t is not
+   * part of the stable ABI; a user thread library might choose an
+   * arbitrary size for its own pthread_t.
+   */
+  int (*thread_create)(uintptr_t *tid,
+                       void (*func)(void *thread_argument),
+                       void *thread_argument);
+  int (*thread_join)(uintptr_t tid);
+};
+
+typedef void *(*NaClGetInterfaceFunc)(const char *interface_name);
 typedef void (*PP_StartFunc)(const struct PP_StartFunctions *funcs);
+typedef void (*PP_RegisterThreadFuncs)(const struct PP_ThreadFunctions *funcs);
 
 #endif

@@ -230,6 +230,7 @@ namespace pp {
 
 // Factory function for your specialization of the Module object.
 Module* CreateModule() {
+  NaClLogModuleInit();
   return new MyModule();
 }
 

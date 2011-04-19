@@ -2172,7 +2172,7 @@ nacl_env = pre_base_env.Clone(
 if nacl_env.Bit('irt'):
   nacl_env.Append(LINKFLAGS='-Wl,--section-start,.rodata='
                   '${IRT_DATA_REGION_START}')
-  nacl_env.Replace(PPAPI_LIBS=['ppapi_stub'])
+  nacl_env.Replace(PPAPI_LIBS=['ppapi_stub', 'pthread'])
 else:
   # TODO(mseaborn): This will go away when we only support using PPAPI
   # via the IRT library, so users of this dependency should not rely

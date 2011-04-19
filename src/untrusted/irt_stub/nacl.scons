@@ -9,5 +9,5 @@ obj=env.ComponentObject('irt_stub',
                         '${SCONSTRUCT_DIR}/src/untrusted/irt/irt_elf_utils.c')
 
 env.ComponentLibrary('libppapi_stub',
-                     ['plugin_main_irt.c', obj])
+                     ['plugin_main_irt.c', 'thread_creator.c', obj])
 env.AddLibraryToSdk(['libppapi_stub'])

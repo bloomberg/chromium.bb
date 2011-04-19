@@ -5,6 +5,7 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_GLOBALS_H_
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_GLOBALS_H_
 
+#include "native_client/src/untrusted/irt/irt_ppapi.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb.h"
@@ -39,6 +40,9 @@ const void* GetBrowserInterfaceSafe(const char* interface_name);
 // under both trusted and untrusted compilation.
 const PPB_Core* PPBCoreInterface();  // shared
 const PPB_Var_Deprecated* PPBVarInterface();  // shared
+
+// Get thread creation/join functions.
+const struct PP_ThreadFunctions* GetThreadCreator();
 
 // PPAPI constants used in the proxy.
 extern const PP_Resource kInvalidResourceId;

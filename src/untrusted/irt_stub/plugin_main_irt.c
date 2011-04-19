@@ -11,6 +11,7 @@
 #include "native_client/src/include/elf_auxv.h"
 #include "native_client/src/untrusted/irt/irt_elf_utils.h"
 #include "native_client/src/untrusted/irt/irt_ppapi.h"
+#include "native_client/src/untrusted/irt_stub/thread_creator.h"
 
 
 static void fatal_error(const char *message) {
@@ -32,7 +33,12 @@ int main(int argc, char **argv) {
     fatal_error("plugin_main_irt: No AT_SYSINFO item found in auxv, "
                 "so cannot start PPAPI.  Is the IRT library not present?\n");
   }
-  PP_StartFunc pp_start = (PP_StartFunc) entry->a_val;
+  NaClGetInterfaceFunc query_func = (NaClGetInterfaceFunc) entry->a_val;
+  PP_StartFunc pp_start = (PP_StartFunc) (uintptr_t) query_func("ppapi_start");
+  if (pp_start == NULL) {
+    fatal_error("plugin_main_irt: ppapi_start function not found\n");
+  }
+  __nacl_register_thread_creator(query_func);
   pp_start(&funcs);
   return 1;
 }

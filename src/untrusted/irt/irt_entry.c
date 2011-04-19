@@ -56,6 +56,25 @@ const void *PPP_GetInterface(const char *interface_name) {
   return g_pp_functions.PPP_GetInterface(interface_name);
 }
 
+/*
+ * This overrides the definition in ppapi_proxy/plugin_threading.cc.
+ * TODO(mseaborn): Remove this when PPAPI is only supported via the IRT.
+ * See http://code.google.com/p/nativeclient/issues/detail?id=1691
+ */
+void PpapiPluginRegisterDefaultThreadCreator() {
+}
+
+
+static void *query_interface(const char *interface_name) {
+  if (strcmp(interface_name, "ppapi_start") == 0) {
+    return (void *) (uintptr_t) ppapi_start;
+  }
+  if (strcmp(interface_name, "ppapi_register_thread_creator") == 0) {
+    return (void *) (uintptr_t) PpapiPluginRegisterThreadCreator;
+  }
+  return NULL;
+}
+
 
 int main(int argc, char **argv) {
   struct auxv_entry *auxv = __find_auxv(argc, argv);
@@ -71,7 +90,7 @@ int main(int argc, char **argv) {
    * Reuse the auxv slot and overwrite it with the PPAPI entry point.
    */
   entry->a_type = AT_SYSINFO;
-  entry->a_val = (uintptr_t) ppapi_start;
+  entry->a_val = (uintptr_t) query_interface;
 
   void *stack_pointer = (char *) argv - sizeof(argc_type);
   jump_to_elf_start(stack_pointer, entry_point, 0);

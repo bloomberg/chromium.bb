@@ -99,7 +99,7 @@ bool PluginAudio::InitFromBrowserResource(PP_Resource resource) {
   return true;
 }
 
-void* PluginAudio::AudioThread(void* self) {
+void PluginAudio::AudioThread(void* self) {
   PluginAudio* audio = static_cast<PluginAudio*>(self);
   DebugPrintf("PluginAudio::AudioThread: self=%p\n", self);
   while (true) {
@@ -115,7 +115,6 @@ void* PluginAudio::AudioThread(void* self) {
                           audio->shm_size_,
                           audio->user_data_);
   }
-  return NULL;
 }
 
 void PluginAudio::StreamCreated(NaClSrpcImcDescType socket,
@@ -146,7 +145,12 @@ bool PluginAudio::StartAudioThread() {
   // clear contents of shm buffer before spinning up audio thread
   DebugPrintf("PluginAudio::StartAudioThread\n");
   memset(shm_buffer_, 0, shm_size_);
-  int ret = pthread_create(&thread_id_, NULL, AudioThread, this);
+  const struct PP_ThreadFunctions* thread_funcs = GetThreadCreator();
+  if (NULL == thread_funcs->thread_create ||
+      NULL == thread_funcs->thread_join) {
+    return false;
+  }
+  int ret = thread_funcs->thread_create(&thread_id_, AudioThread, this);
   if (0 == ret) {
     thread_active_ = true;
     set_state(AUDIO_PLAYING);
@@ -158,7 +162,7 @@ bool PluginAudio::StartAudioThread() {
 bool PluginAudio::StopAudioThread() {
   DebugPrintf("PluginAudio::StopAudioThread\n");
   if (thread_active_) {
-    int ret = pthread_join(thread_id_, NULL);
+    int ret = GetThreadCreator()->thread_join(thread_id_);
     if (0 == ret) {
       thread_active_ = false;
       set_state(AUDIO_READY);

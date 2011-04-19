@@ -6,11 +6,17 @@
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PPRUNTIME_H_
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/untrusted/irt/irt_ppapi.h"
 
 EXTERN_C_BEGIN
 
 // The entry point for the main thread of the PPAPI plugin process.
 int PpapiPluginMain();
+
+void PpapiPluginRegisterThreadCreator(
+    const struct PP_ThreadFunctions* new_funcs);
+
+void PpapiPluginRegisterDefaultThreadCreator();
 
 EXTERN_C_END
 

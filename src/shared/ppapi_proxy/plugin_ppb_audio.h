@@ -42,7 +42,7 @@ class PluginAudio : public PluginResource {
   PluginAudioState state() { return state_; }
   bool StartAudioThread();
   bool StopAudioThread();
-  static void* AudioThread(void* self);
+  static void AudioThread(void* self);
   static const PPB_Audio* GetInterface();
   virtual bool InitFromBrowserResource(PP_Resource resource);
  private:
@@ -51,7 +51,7 @@ class PluginAudio : public PluginResource {
   size_t shm_size_;
   void *shm_buffer_;
   PluginAudioState state_;
-  pthread_t thread_id_;
+  uintptr_t thread_id_;
   bool thread_active_;
   PPB_Audio_Callback user_callback_;
   void* user_data_;
