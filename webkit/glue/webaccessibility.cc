@@ -4,8 +4,6 @@
 
 #include "webkit/glue/webaccessibility.h"
 
-#include <set>
-
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -389,10 +387,8 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
   if (include_children) {
     // Recursively create children.
     int child_count = src.childCount();
-    std::set<int32> child_ids;
     for (int i = 0; i < child_count; i++) {
       WebAccessibilityObject child = src.childAt(i);
-      int32 child_id = cache->addOrGetId(child);
 
       // The child may be invalid due to issues in webkit accessibility code.
       // Don't add children that are invalid thus preventing a crash.
@@ -400,13 +396,6 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
       // TODO(ctguil): We may want to remove this check as webkit stabilizes.
       if (!child.isValid())
         continue;
-
-      // Children may duplicated in the webkit accessibility tree. Only add a
-      // child once for the web accessibility tree.
-      // TODO(ctguil): File webkit bug to track this issue.
-      if (child_ids.find(child_id) != child_ids.end())
-        continue;
-      child_ids.insert(child_id);
 
       // Some nodes appear in the tree in more than one place: for example,
       // a cell in a table appears as a child of both a row and a column.
@@ -419,7 +408,7 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
       if (is_iframe || IsParentUnignoredOf(src, child)) {
         children.push_back(WebAccessibility(child, cache, include_children));
       } else {
-        indirect_child_ids.push_back(child_id);
+        indirect_child_ids.push_back(cache->addOrGetId(child));
       }
     }
   }
