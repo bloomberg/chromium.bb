@@ -27,6 +27,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
@@ -36,6 +37,7 @@
 #include "content/browser/gpu_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/trace_controller.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -67,6 +69,7 @@ class GpuHTMLSource : public ChromeURLDataManager::DataSource {
 // this class's methods are expected to run on the UI thread.
 class GpuMessageHandler
     : public WebUIMessageHandler,
+      public SelectFileDialog::Listener,
       public base::SupportsWeakPtr<GpuMessageHandler>,
       public TraceSubscriber {
  public:
@@ -82,13 +85,21 @@ class GpuMessageHandler
   void OnEndTracingAsync(const ListValue* list);
   void OnBrowserBridgeInitialized(const ListValue* list);
   void OnCallAsync(const ListValue* list);
+  void OnLoadTraceFile(const ListValue* list);
+  void OnSaveTraceFile(const ListValue* list);
 
   // Submessages dispatched from OnCallAsync
   Value* OnRequestClientInfo(const ListValue* list);
   Value* OnRequestLogMessages(const ListValue* list);
 
+  // SelectFileDialog::Listener implementation
+  virtual void FileSelected(const FilePath& path, int index, void* params);
+  virtual void FileSelectionCanceled(void* params);
+
   // Callbacks.
   void OnGpuInfoUpdate();
+  void LoadTraceFileComplete(std::string* file_contents);
+  void SaveTraceFileComplete();
 
   // TraceSubscriber implementation.
   virtual void OnEndTracingComplete();
@@ -107,7 +118,32 @@ class GpuMessageHandler
 
   Callback0::Type* gpu_info_update_callback_;
 
+  scoped_refptr<SelectFileDialog> select_trace_file_dialog_;
+  SelectFileDialog::Type select_trace_file_dialog_type_;
+  scoped_ptr<std::string> trace_data_to_save_;
+
   bool trace_enabled_;
+};
+
+class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
+ public:
+  explicit TaskProxy(const base::WeakPtr<GpuMessageHandler>& handler)
+      : handler_(handler) {}
+  void LoadTraceFileCompleteProxy(std::string* file_contents) {
+    if (handler_)
+      handler_->LoadTraceFileComplete(file_contents);
+    delete file_contents;
+  }
+
+  void SaveTraceFileCompleteProxy() {
+    if (handler_)
+      handler_->SaveTraceFileComplete();
+  }
+
+ private:
+  base::WeakPtr<GpuMessageHandler> handler_;
+  friend class base::RefCountedThreadSafe<TaskProxy>;
+  DISALLOW_COPY_AND_ASSIGN(TaskProxy);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -166,6 +202,9 @@ GpuMessageHandler::~GpuMessageHandler() {
     delete gpu_info_update_callback_;
   }
 
+  if (select_trace_file_dialog_)
+    select_trace_file_dialog_->ListenerDestroyed();
+
   // If we are the current subscriber, this will result in ending tracing.
   TraceController::GetInstance()->CancelSubscriber(this);
 }
@@ -192,6 +231,12 @@ void GpuMessageHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       "callAsync",
       NewCallback(this, &GpuMessageHandler::OnCallAsync));
+  web_ui_->RegisterMessageCallback(
+      "loadTraceFile",
+      NewCallback(this, &GpuMessageHandler::OnLoadTraceFile));
+  web_ui_->RegisterMessageCallback(
+      "saveTraceFile",
+      NewCallback(this, &GpuMessageHandler::OnSaveTraceFile));
 }
 
 void GpuMessageHandler::OnCallAsync(const ListValue* args) {
@@ -239,6 +284,136 @@ void GpuMessageHandler::OnCallAsync(const ListValue* args) {
     web_ui_->CallJavascriptFunction("browserBridge.onCallAsyncReply",
         *requestId);
   }
+}
+
+class ReadTraceFileTask : public Task {
+ public:
+  ReadTraceFileTask(TaskProxy* proxy, const FilePath& path)
+      : proxy_(proxy)
+      , path_(path) {}
+
+  virtual void Run() {
+    std::string* file_contents = new std::string();
+    if (!file_util::ReadFileToString(path_, file_contents))
+      return;
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(proxy_.get(),
+                          &TaskProxy::LoadTraceFileCompleteProxy,
+                          file_contents));
+  }
+
+ private:
+  scoped_refptr<TaskProxy> proxy_;
+
+  // Path of the file to open.
+  const FilePath path_;
+};
+
+class WriteTraceFileTask : public Task {
+ public:
+  WriteTraceFileTask(TaskProxy* proxy,
+                     const FilePath& path,
+                     std::string* contents)
+      : proxy_(proxy)
+      , path_(path)
+      , contents_(contents) {}
+
+  virtual void Run() {
+    if (!file_util::WriteFile(path_, contents_->c_str(), contents_->size()))
+      return;
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(proxy_.get(),
+                          &TaskProxy::SaveTraceFileCompleteProxy));
+  }
+
+ private:
+  scoped_refptr<TaskProxy> proxy_;
+
+  // Path of the file to save.
+  const FilePath path_;
+
+  // What to save
+  scoped_ptr<std::string> contents_;
+};
+
+void GpuMessageHandler::FileSelected(
+    const FilePath& path, int index, void* params) {
+  if(select_trace_file_dialog_type_ == SelectFileDialog::SELECT_OPEN_FILE)
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        new ReadTraceFileTask(new TaskProxy(AsWeakPtr()), path));
+  else
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        new WriteTraceFileTask(new TaskProxy(AsWeakPtr()), path,
+                               trace_data_to_save_.release()));
+  select_trace_file_dialog_.release();
+}
+
+void GpuMessageHandler::FileSelectionCanceled(void* params) {
+  select_trace_file_dialog_.release();
+  if(select_trace_file_dialog_type_ == SelectFileDialog::SELECT_OPEN_FILE)
+    web_ui_->CallJavascriptFunction("tracingController.onLoadTraceFileCanceled");
+  else
+    web_ui_->CallJavascriptFunction("tracingController.onSaveTraceFileCanceled");
+}
+
+void GpuMessageHandler::OnLoadTraceFile(const ListValue* list) {
+  // Only allow a single dialog at a time.
+  if (select_trace_file_dialog_.get())
+    return;
+  select_trace_file_dialog_type_ = SelectFileDialog::SELECT_OPEN_FILE;
+  select_trace_file_dialog_ = SelectFileDialog::Create(this);
+  select_trace_file_dialog_->SelectFile(
+      SelectFileDialog::SELECT_OPEN_FILE,
+      string16(),
+      FilePath(),
+      NULL, 0, FILE_PATH_LITERAL(""), web_ui_->tab_contents(),
+      web_ui_->tab_contents()->view()->GetTopLevelNativeWindow(), NULL);
+}
+
+void GpuMessageHandler::LoadTraceFileComplete(std::string* file_contents) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  std::wstring javascript;
+  javascript += L"tracingController.onLoadTraceFileComplete(";
+  javascript += UTF8ToWide(*file_contents);
+  javascript += L");";
+
+  web_ui_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(string16(),
+      WideToUTF16Hack(javascript));
+}
+
+void GpuMessageHandler::OnSaveTraceFile(const ListValue* list) {
+  // Only allow a single dialog at a time.
+  if (select_trace_file_dialog_.get())
+    return;
+
+  DCHECK(list->GetSize() == 1);
+
+  Value* tmp;
+  list->Get(0, &tmp);
+
+  std::string* trace_data = new std::string();
+  bool ok = list->GetString(0, trace_data);
+  DCHECK(ok);
+  trace_data_to_save_.reset(trace_data);
+
+  select_trace_file_dialog_type_ = SelectFileDialog::SELECT_SAVEAS_FILE;
+  select_trace_file_dialog_ = SelectFileDialog::Create(this);
+  select_trace_file_dialog_->SelectFile(
+      SelectFileDialog::SELECT_SAVEAS_FILE,
+      string16(),
+      FilePath(),
+      NULL, 0, FILE_PATH_LITERAL(""), web_ui_->tab_contents(),
+      web_ui_->tab_contents()->view()->GetTopLevelNativeWindow(), NULL);
+}
+
+void GpuMessageHandler::SaveTraceFileComplete() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  std::wstring javascript;
+  web_ui_->CallJavascriptFunction("tracingController.onSaveTraceFileComplete");
 }
 
 void GpuMessageHandler::OnBrowserBridgeInitialized(const ListValue* args) {

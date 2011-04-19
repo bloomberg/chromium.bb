@@ -3,27 +3,24 @@ Copyright (c) 2011 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 */
-#timeline-view {
+.timeline-view {
   padding: 0px;
   -webkit-box-orient: vertical;
   -webkit-box-flex: 1;
-}
-
-#timeline-view[selected] {
   display: -webkit-box;
 }
 
-#timeline-view-timeline-container {
+.timeline-view > .timeline {
   display: -webkit-box;
   -webkit-box-flex: 1;
   overflow: auto;
 }
 
-#timeline-view-timeline-container > .timeline {
+.timeline-view > .timeline > .timeline {
   -webkit-box-flex: 1;
 }
 
-#timeline-selection-summary-container {
+.timeline-view .summary-container {
   border-top: 1px solid black;
   max-height: 250px;
   min-height: 250px;
@@ -31,10 +28,10 @@ found in the LICENSE file.
   overflow: auto;
 }
 
-#timeline-selection-summary {
+.timeline-view .selection {
   margin: 2px;
 }
 
-#timeline-selection-summary ul {
+.timeline-view .selection ul {
   margin: 0px;
 }

@@ -37,65 +37,47 @@ cr.define('gpu', function() {
   /**
    * TimelineView
    * @constructor
-   * @extends {gpu.Tab}
+   * @extends {HTMLDivElement}
    */
-  TimelineView = cr.ui.define(gpu.Tab);
+  TimelineView = cr.ui.define('div');
 
   TimelineView.prototype = {
-    __proto__: gpu.Tab.prototype,
+    __proto__: HTMLDivElement.prototype,
 
     decorate: function() {
-      tracingController.addEventListener('traceBegun',
-                                         this.setNeedsRefresh_.bind(this));
-      tracingController.addEventListener('traceEnded',
-                                         this.setNeedsRefresh_.bind(this));
-      this.addEventListener('selectedChange', this.onViewSelectedChange_);
+      this.className = 'timeline-view';
 
-      this.setNeedsRefresh_();
+      this.timelineContainer_ = document.createElement('div');
+      this.timelineContainer_.className = 'timeline-container';
+
+      var summaryContainer_ = document.createElement('div');
+      summaryContainer_.className = 'summary-container';
+
+      this.summary_ = document.createElement('pre');
+      this.summary_.className = 'summary';
+
+      summaryContainer_.appendChild(this.summary_);
+      this.appendChild(this.timelineContainer_);
+      this.appendChild(summaryContainer_);
+
+      this.onSelectionChangedBoundToThis_ = this.onSelectionChanged_.bind(this);
     },
 
-    onViewSelectedChange_: function() {
-      if (this.selected) {
-        if (!tracingController.traceEvents.length) {
-          tracingController.beginTracing();
-        }
-        if (this.needsRefreshOnShow_) {
-          this.refresh();
-        }
-      }
-    },
-
-    setNeedsRefresh_: function() {
-      if (!this.selected) {
-        this.needsRefreshOnShow_ = true;
-        return;
-      } else {
-        this.refresh();
-      }
-    },
-
-    /**
-     * Updates the view based on its currently known data
-     */
-    refresh: function() {
-      this.needsRefreshOnShow_ = false;
-
+    set traceEvents(traceEvents) {
       console.log('TimelineView.refresh');
-      var events = tracingController.traceEvents;
-      this.timelineModel_ = new gpu.TimelineModel(events);
+      this.timelineModel_ = new gpu.TimelineModel(traceEvents);
 
       // remove old timeline
-      var timelineContainer = $('timeline-view-timeline-container');
-      timelineContainer.textContent = '';
+      this.timelineContainer_.textContent = '';
 
       // create new timeline if needed
-      if (events.length) {
+      if (traceEvents.length) {
         this.timeline_ = new gpu.Timeline();
         this.timeline_.model = this.timelineModel_;
-        timelineContainer.appendChild(this.timeline_);
+        this.timelineContainer_.appendChild(this.timeline_);
         this.timeline_.onResize();
         this.timeline_.addEventListener('selectionChange',
-                                        this.onSelectionChanged_.bind(this));
+                                        this.onSelectionChangedBoundToThis_);
         this.onSelectionChanged_();
       } else {
         this.timeline_ = null;
@@ -106,8 +88,8 @@ cr.define('gpu', function() {
       console.log('selection changed');
       var timeline = this.timeline_;
       var selection = timeline.selection;
+      var outputDiv = this.summary_;
       if (!selection.length) {
-        var outputDiv = $('timeline-selection-summary');
         outputDiv.textContent = timeline.keyHelp;
         return;
       }
@@ -187,8 +169,7 @@ cr.define('gpu', function() {
       }
 
       // done
-      var outputDiv = $('timeline-selection-summary');
-      outputDiv.innerHTML = text;
+      outputDiv.textContent = text;
     }
   };
 

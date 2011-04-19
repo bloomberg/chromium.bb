@@ -34,11 +34,11 @@ body {
 </style>
 <link rel="stylesheet" href="gpu_internals/info_view.css">
 <link rel="stylesheet" href="gpu_internals/overlay.css">
+<link rel="stylesheet" href="gpu_internals/profiling_view.css">
 <link rel="stylesheet" href="gpu_internals/tab_control.css">
 <link rel="stylesheet" href="gpu_internals/timeline_view.css">
 <link rel="stylesheet" href="gpu_internals/timeline.css">
 <link rel="stylesheet" href="gpu_internals/tracing_controller.css">
-<link rel="stylesheet" href="gpu_internals/raw_events_view.css">
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/cr/event_target.js"></script>
 <script src="chrome://resources/js/cr/ui.js"></script>
@@ -53,13 +53,14 @@ body {
 <script src="gpu_internals/timeline.js"></script>
 <script src="gpu_internals/timeline_track.js"></script>
 <script src="gpu_internals/fast_rect_renderer.js"></script>
+<script src="gpu_internals/profiling_view.js"></script>
 <script src="gpu_internals/timeline_view.js"></script>
-<script src="gpu_internals/raw_events_view.js"></script>
 
 <script>
 var browserBridge;
 var tracingController;
 var timelineView; // made global for debugging purposes only
+var profilingView; // made global for debugging purposes only
 
 /**
  * Main entry point. called once the page has loaded.
@@ -71,11 +72,8 @@ function onLoad() {
   // Create the views.
   cr.ui.decorate('#info-view', gpu.InfoView);
 
-  var rawEventsView = $('raw-events-view');
-  cr.ui.decorate('#raw-events-view', gpu.RawEventsView);
-
-  timelineView = $('timeline-view');
-  cr.ui.decorate(timelineView, gpu.TimelineView);
+  profilingView = $('profiling-view');
+  cr.ui.decorate(profilingView, gpu.ProfilingView);
 
   // Create the main tab control
   var tabs = $('main-tabs');
@@ -111,8 +109,7 @@ document.addEventListener('DOMContentLoaded', onLoad);
   <!-- Tabs -->
   <div id="main-tabs">
     <include src="gpu_internals/info_view.html">
-    <include src="gpu_internals/raw_events_view.html">
-    <include src="gpu_internals/timeline_view.html">
+    <div id="profiling-view" label="Profiling"></div>
   </div>
 </body>
 </html>

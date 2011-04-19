@@ -12,50 +12,50 @@ var allTracingControllerTestDataSets;
      {
        name: "simple_trace",
        events: [
-         {'cat':'PERF','pid':22630,'tid':22630,'ts':826,'ph':'B','name':'A','args':{}},
-         {'cat':'PERF','pid':22630,'tid':22630,'ts':827,'ph':'B','name':'Asub','args':{}},
-         {'cat':'PERF','pid':22630,'tid':22630,'ts':828,'ph':'E','name':'Asub','args':{}},
-         {'cat':'PERF','pid':22630,'tid':22630,'ts':829,'ph':'B','name':'Asub','args':{}},
-         {'cat':'PERF','pid':22630,'tid':22630,'ts':832,'ph':'E','name':'Asub','args':{}},
-         {'cat':'PERF','pid':22630,'tid':22630,'ts':833,'ph':'E','name':'','args':{}},
+         {"cat":"PERF","pid":22630,"tid":22630,"ts":826,"ph":"B","name":"A","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22630,"ts":827,"ph":"B","name":"Asub","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22630,"ts":828,"ph":"E","name":"Asub","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22630,"ts":829,"ph":"B","name":"Asub","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22630,"ts":832,"ph":"E","name":"Asub","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22630,"ts":833,"ph":"E","name":"","args":{}},
 
-         {'cat':'PERF','pid':22630,'tid':22630,'ts':840,'ph':'B','name':'A','args':{}},
-         {'cat':'PERF','pid':22630,'tid':22630,'ts':848,'ph':'E','name':'A','args':{}},
+         {"cat":"PERF","pid":22630,"tid":22630,"ts":840,"ph":"B","name":"A","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22630,"ts":848,"ph":"E","name":"A","args":{}},
 
-         {'cat':'PERF','pid':22630,'tid':22630,'ts':850,'ph':'B','name':'B','args':{}},
-         {'cat':'PERF','pid':22630,'tid':22630,'ts':854,'ph':'E','name':'B','args':{}},
+         {"cat":"PERF","pid":22630,"tid":22630,"ts":850,"ph":"B","name":"B","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22630,"ts":854,"ph":"E","name":"B","args":{}},
 
-         {'cat':'PERF','pid':22630,'tid':22631,'ts':827,'ph':'B','name':'A','args':{}},
-         {'cat':'PERF','pid':22630,'tid':22631,'ts':854,'ph':'E','name':'A','args':{}}
+         {"cat":"PERF","pid":22630,"tid":22631,"ts":827,"ph":"B","name":"A","args":{}},
+         {"cat":"PERF","pid":22630,"tid":22631,"ts":854,"ph":"E","name":"A","args":{}}
        ]
      }
    ];
    allTracingControllerTestDataSets = dataSets;
-   var selectEl = document.createElement('select');
+   var selectEl = document.createElement("select");
    for(var i = 0; i < dataSets.length; ++i) {
-     var optionEl = document.createElement('option');
+     var optionEl = document.createElement("option");
      optionEl.textContent = dataSets[i].name;
      optionEl.dataSet = dataSets[i];
      selectEl.add(optionEl);
    }
-   selectEl.addEventListener('change', function() {
+   selectEl.addEventListener("change", function() {
      tracingControllerTestEvents = dataSets[selectEl.selectedIndex].events;
      tracingController.beginTracing();
    });
-   selectEl.addEventListener('keydown', function() {
+   selectEl.addEventListener("keydown", function() {
      window.setTimeout(function() {
        tracingControllerTestEvents = dataSets[selectEl.selectedIndex].events;
        tracingController.beginTracing();
      }, 0);
    });
 
-   var controlEl = document.createElement('div');
-   var textEl = document.createElement('span');
-   textEl.textContent = 'Trace:';
+   var controlEl = document.createElement("div");
+   var textEl = document.createElement("span");
+   textEl.textContent = "Trace:";
    controlEl.appendChild(textEl);
    controlEl.appendChild(selectEl);
 
-   document.querySelector('#debug-div').appendChild(controlEl, document.body.firstChild);
+   document.querySelector("#debug-div").appendChild(controlEl, document.body.firstChild);
 
    tracingControllerTestEvents = dataSets[0].events;
 })();

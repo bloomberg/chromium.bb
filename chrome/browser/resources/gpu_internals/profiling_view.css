@@ -1,0 +1,42 @@
+/*
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+#profiling-view {
+  padding: 0px;
+  -webkit-box-orient: vertical;
+  -webkit-box-flex: 1;
+}
+
+#profiling-view[selected] {
+  display: -webkit-box;
+}
+
+#profiling-view > .control {
+  display: -webkit-box;
+  overflow: auto;
+}
+
+#profiling-view > .container {
+  display: -webkit-box;
+  -webkit-box-flex: 1;
+  overflow: auto;
+}
+
+.profiling-overlay {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  text-align: center;
+}
+
+.profiling-overlay .raw-text {
+  overflow: auto;
+  -webkit-box-flex: 1;
+  wrap: none;
+}
+
+.profiling-overlay .error {
+  border: 1px solid red;
+  text-align: center;
+}

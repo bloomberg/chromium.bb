@@ -9,25 +9,18 @@
 cr.define('gpu', function() {
 
   function TracingController() {
-    this.startButton_ = document.createElement('div');
-    this.startButton_.className = 'gpu-tracing-start-button';
-    this.startButton_.textContent = 'Start tracing';
-    this.startButton_.onclick = this.beginTracing.bind(this);
-    document.body.appendChild(this.startButton_);
-
     this.overlay_ = document.createElement('div');
     this.overlay_.className = 'gpu-tracing-overlay';
 
     cr.ui.decorate(this.overlay_, gpu.Overlay);
 
-    var statusDiv = document.createElement('div');
-    statusDiv.textContent = 'Tracing active.';
-    this.overlay_.appendChild(statusDiv);
+    this.statusDiv_ = document.createElement('div');
+    this.overlay_.appendChild(this.statusDiv_);
 
-    var stopButton = document.createElement('button');
-    stopButton.onclick = this.endTracing.bind(this);
-    stopButton.innerText = 'Stop tracing';
-    this.overlay_.appendChild(stopButton);
+    this.stopButton_ = document.createElement('button');
+    this.stopButton_.onclick = this.endTracing.bind(this);
+    this.stopButton_.innerText = 'Stop tracing';
+    this.overlay_.appendChild(this.stopButton_);
 
     this.traceEvents_ = [];
 
@@ -54,6 +47,8 @@ cr.define('gpu', function() {
       if (this.tracingEnabled_)
         throw Error('Tracing already begun.');
 
+      this.stopButton_.hidden = false;
+      this.statusDiv_.textContent = 'Tracing active.';
       this.overlay_.visible = true;
 
       this.tracingEnabled_ = true;
@@ -124,8 +119,14 @@ cr.define('gpu', function() {
       window.removeEventListener('keypress', this.onKeypressBoundToThis_);
 
       console.log('Finishing trace');
+      this.statusDiv_.textContent = 'Downloading trace data...';
+      this.stopButton_.hidden = true;
       if (!browserBridge.debugMode) {
-        chrome.send('endTracingAsync');
+        // delay sending endTracingAsync until we get a chance to
+        // update the screen...
+        window.setTimeout(function() {
+          chrome.send('endTracingAsync');
+        }, 100);
       } else {
         var events = tracingControllerTestEvents;
         this.onTraceDataCollected(events);
@@ -145,6 +146,63 @@ cr.define('gpu', function() {
       var e = new cr.Event('traceEnded');
       e.events = this.traceEvents_;
       this.dispatchEvent(e);
+    },
+
+    /**
+     * Tells browser to put up a load dialog and load the trace file
+     */
+    beginLoadTraceFile: function() {
+      chrome.send('loadTraceFile');
+    },
+
+    /**
+     * Called by the browser when a trace file is loaded.
+     */
+    onLoadTraceFileComplete: function(data) {
+      if (data.traceEvents) {
+        this.traceEvents_ = data.traceEvents;
+      } else { // path for loading traces saved without metadata
+        if (!data.length)
+          console.log('Expected an array when loading the trace file');
+        else
+          this.traceEvents_ = data;
+      }
+      var e = new cr.Event('loadTraceFileComplete');
+      e.events = this.traceEvents_;
+      this.dispatchEvent(e);
+    },
+
+    /**
+     * Called by the browser when loading a trace file was canceled.
+     */
+    onLoadTraceFileCanceled: function() {
+      cr.dispatchSimpleEvent(this, 'loadTraceFileCanceled');
+    },
+
+    /**
+     * Tells browser to put up a save dialog and save the trace file
+     */
+    beginSaveTraceFile: function(traceEvents) {
+      var data = {
+        traceEvents: traceEvents,
+        clientInfo: browserBridge.clientInfo,
+        gpuInfo: browserBridge.gpuInfo
+      };
+      chrome.send('saveTraceFile', [JSON.stringify(data)]);
+    },
+
+    /**
+     * Called by the browser when a trace file is saveed.
+     */
+    onSaveTraceFileComplete: function() {
+      cr.dispatchSimpleEvent(this, 'saveTraceFileComplete');
+    },
+
+    /**
+     * Called by the browser when saving a trace file was canceled.
+     */
+    onSaveTraceFileCanceled: function() {
+      cr.dispatchSimpleEvent(this, 'saveTraceFileCanceled');
     },
 
     selfTest: function() {
