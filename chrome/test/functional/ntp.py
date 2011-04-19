@@ -13,11 +13,12 @@ import test_utils
 class NTPTest(pyauto.PyUITest):
   """Test of the NTP."""
 
+  # Default apps are registered in ProfileImpl::RegisterComponentExtensions().
   _EXPECTED_DEFAULT_APPS = [
-    {
-      u'name': u'Chrome Web Store'
-    }
+    {u'name': u'Chrome Web Store'}
   ]
+  if pyauto.PyUITest.IsChromeOS():
+    _EXPECTED_DEFAULT_APPS.append({u'name': u'Get Started'})
 
   def Debug(self):
     """Test method for experimentation.
