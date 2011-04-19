@@ -51,7 +51,13 @@ TEST_F(ErrorPageTest, DNSError_GoBack1) {
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
 }
 
-TEST_F(ErrorPageTest, DNSError_GoBack2) {
+// Flaky on Linux, see http://crbug.com/19361
+#if defined(OS_LINUX)
+#define MAYBE_DNSError_GoBack2 FLAKY_DNSError_GoBack2
+#else
+#define MAYBE_DNSError_GoBack2 DNSError_GoBack2
+#endif
+TEST_F(ErrorPageTest, MAYBE_DNSError_GoBack2) {
   // Test that a DNS error occuring in the main frame does not result in an
   // additional session history entry.
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
@@ -74,7 +80,13 @@ TEST_F(ErrorPageTest, DNSError_GoBack2) {
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
 }
 
-TEST_F(ErrorPageTest, DNSError_GoBack2AndForward) {
+// Flaky on Linux, see http://crbug.com/19361
+#if defined(OS_LINUX)
+#define MAYBE_DNSError_GoBack2AndForwar FLAKY_DNSError_GoBack2AndForwar
+#else
+#define MAYBE_DNSError_GoBack2AndForwar DNSError_GoBack2AndForwar
+#endif
+TEST_F(ErrorPageTest, MAYBE_DNSError_GoBack2AndForward) {
   // Test that a DNS error occuring in the main frame does not result in an
   // additional session history entry.
 
@@ -101,13 +113,13 @@ TEST_F(ErrorPageTest, DNSError_GoBack2AndForward) {
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
 }
 
-// Flaky on Linux x64, see http://crbug.com/79412
-#if defined(OS_LINUX) && defined(ARCH_CPU_64_BITS)
+// Flaky on Linux, see http://crbug.com/19361
+#if defined(OS_LINUX)
 #define MAYBE_DNSError_GoBack2Forward2 FLAKY_DNSError_GoBack2Forward2
 #else
 #define MAYBE_DNSError_GoBack2Forward2 DNSError_GoBack2Forward2
 #endif
-TEST_F(ErrorPageTest, DNSError_GoBack2Forward2) {
+TEST_F(ErrorPageTest, MAYBE_DNSError_GoBack2Forward2) {
   // Test that a DNS error occuring in the main frame does not result in an
   // additional session history entry.
 
