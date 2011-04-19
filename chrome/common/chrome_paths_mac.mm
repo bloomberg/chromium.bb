@@ -5,11 +5,15 @@
 #include "chrome/common/chrome_paths_internal.h"
 
 #import <Foundation/Foundation.h>
+#include <string.h>
+
+#include <string>
 
 #include "base/base_paths.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/mac_util.h"
+#import "base/mac/scoped_nsautorelease_pool.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_constants.h"
 
@@ -38,6 +42,8 @@ NSBundle* OuterAppBundle() {
 }
 
 const char* ProductDirNameInternal() {
+  base::mac::ScopedNSAutoreleasePool pool;
+
   // Use OuterAppBundle() to get the main app's bundle. This key needs to live
   // in the main app's bundle because it will be set differently on the canary
   // channel, and the autoupdate system dictates that there can be no
@@ -60,7 +66,9 @@ const char* ProductDirNameInternal() {
 #endif
   }
 
-  return product_dir_name;
+  // Leaked, but the only caller initializes a static with this result, so it
+  // only happens once, and that's OK.
+  return strdup(product_dir_name);
 }
 
 // ProductDirName returns the name of the directory inside
