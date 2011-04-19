@@ -4159,7 +4159,11 @@ void TestingAutomationProvider::AwaitSyncCycleCompletion(
     return_value->SetBoolean("success", true);
     reply.SendSuccess(return_value.get());
   } else {
-    reply.SendError("Wait for sync cycle was unsuccessful");
+    std::string error_msg = "Wait for sync cycle was unsuccessful. "
+                            "Sync status: ";
+    error_msg.append(
+        ProfileSyncService::BuildSyncStatusSummaryText(status.summary));
+    reply.SendError(error_msg);
   }
 }
 

@@ -15,6 +15,8 @@ class SyncTest(pyauto.PyUITest):
     creds = self.GetPrivateInfo()['test_google_account']
     username = creds['username']
     password = creds['password']
+    new_timeout = pyauto.PyUITest.ActionTimeoutChanger(self,
+                                                       60 * 1000)  # 1 min.
     self.assertTrue(self.GetSyncInfo()['summary'] == 'OFFLINE_UNUSABLE')
     self.assertTrue(self.GetSyncInfo()['last synced'] == 'Never')
     self.assertTrue(self.SignInToSync(username, password))
@@ -26,6 +28,8 @@ class SyncTest(pyauto.PyUITest):
     creds = self.GetPrivateInfo()['test_google_account']
     username = creds['username']
     password = creds['password']
+    new_timeout = pyauto.PyUITest.ActionTimeoutChanger(self,
+                                                       2 * 60 * 1000)  # 2 min.
     self.assertTrue(self.SignInToSync(username, password))
     self.assertTrue(self.GetSyncInfo()['summary'] == 'READY')
     self.assertTrue(self.GetSyncInfo()['last synced'] == 'Just now')
@@ -39,6 +43,8 @@ class SyncTest(pyauto.PyUITest):
     creds = self.GetPrivateInfo()['test_google_account']
     username = creds['username']
     password = creds['password']
+    new_timeout = pyauto.PyUITest.ActionTimeoutChanger(self,
+                                                       2 * 60 * 1000)  # 2 min.
     self.assertTrue(self.SignInToSync(username, password))
     self.assertTrue(self.GetSyncInfo()['summary'] == 'READY')
     self.assertTrue(self.GetSyncInfo()['last synced'] == 'Just now')
