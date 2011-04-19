@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ void SyncerEndCommand::ExecuteImpl(sessions::SyncSession* session) {
   sessions::SyncSessionSnapshot snapshot(session->TakeSnapshot());
   event.snapshot = &snapshot;
   session->context()->NotifyListeners(event);
-  VLOG(1) << this << " sent sync end snapshot";
+  session->context()->set_last_snapshot(session->TakeSnapshot());
 }
 
 }  // namespace browser_sync

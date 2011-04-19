@@ -4,7 +4,7 @@
 
 #include "base/time.h"
 #include "chrome/browser/sync/engine/mock_model_safe_workers.h"
-#include "chrome/browser/sync/engine/syncer_thread.h"
+#include "chrome/browser/sync/engine/syncer_thread2.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/browser/sync/sessions/test_util.h"
 #include "chrome/test/sync/engine/mock_connection_manager.h"
@@ -18,6 +18,8 @@ using base::TimeTicks;
 namespace browser_sync {
 using sessions::SyncSessionContext;
 using browser_sync::Syncer;
+
+namespace s3 {
 
 class SyncerThread2WhiteboxTest : public testing::Test {
  public:
@@ -224,8 +226,10 @@ TEST_F(SyncerThread2WhiteboxTest, ContinueCanaryJobConfig) {
   EXPECT_EQ(decision, SyncerThread::CONTINUE);
 }
 
+
+}  // namespace s3
 }  // namespace browser_sync
 
 // SyncerThread won't outlive the test!
 DISABLE_RUNNABLE_METHOD_REFCOUNT(
-    browser_sync::SyncerThread2WhiteboxTest);
+    browser_sync::s3::SyncerThread2WhiteboxTest);

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_MANAGER_IMPL_H__
-#define CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_MANAGER_IMPL_H__
+#ifndef CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_MANAGER_IMPL2_H__
+#define CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_MANAGER_IMPL2_H__
 #pragma once
 
 #include "chrome/browser/sync/glue/data_type_manager.h"
@@ -13,38 +13,23 @@
 
 #include "base/basictypes.h"
 #include "base/task.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_type.h"
-
-class NotificationSource;
-class NotificationDetails;
 
 namespace browser_sync {
 
 class DataTypeController;
 class SyncBackendHost;
 
-class DataTypeManagerImpl : public DataTypeManager,
-                            public NotificationObserver {
+class DataTypeManagerImpl2 : public DataTypeManager {
  public:
-  DataTypeManagerImpl(SyncBackendHost* backend,
-                      const DataTypeController::TypeMap& controllers);
-  virtual ~DataTypeManagerImpl();
+  DataTypeManagerImpl2(SyncBackendHost* backend,
+                       const DataTypeController::TypeMap& controllers);
+  virtual ~DataTypeManagerImpl2();
 
   // DataTypeManager interface.
   virtual void Configure(const TypeSet& desired_types);
-
   virtual void Stop();
-
   virtual const DataTypeController::TypeMap& controllers();
-
   virtual State state();
-
-  // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
 
  private:
   // Starts the next data type in the kStartOrder list, indicated by
@@ -54,12 +39,12 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   // Callback passed to each data type controller on startup.
   void TypeStartCallback(DataTypeController::StartResult result,
-      const tracked_objects::Location& location);
+      const tracked_objects::Location& from_here);
 
   // Stops all data types.
   void FinishStop();
   void FinishStopAndNotify(ConfigureResult result,
-      const tracked_objects::Location& location);
+       const tracked_objects::Location& location);
 
   // Returns true if any last_requested_types_ currently needs to start model
   // association.  If non-null, fills |needs_start| with all such controllers.
@@ -68,13 +53,9 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   void Restart();
   void DownloadReady();
-  void AddObserver(NotificationType type);
-  void RemoveObserver(NotificationType type);
   void NotifyStart();
   void NotifyDone(ConfigureResult result,
-       const tracked_objects::Location& location);
-  void ResumeSyncer();
-  void PauseSyncer();
+      const tracked_objects::Location& location);
 
   SyncBackendHost* backend_;
   // Map of all data type controllers that are available for sync.
@@ -86,19 +67,15 @@ class DataTypeManagerImpl : public DataTypeManager,
   std::vector<DataTypeController*> needs_start_;
   std::vector<DataTypeController*> needs_stop_;
 
-  // Whether we've observed a SYNC_PAUSED but not SYNC_RESUMED.
-  bool syncer_paused_;
-
   // Whether an attempt to reconfigure was made while we were busy configuring.
   // The |last_requested_types_| will reflect the newest set of requested types.
   bool needs_reconfigure_;
 
-  NotificationRegistrar notification_registrar_;
-  ScopedRunnableMethodFactory<DataTypeManagerImpl> method_factory_;
+  ScopedRunnableMethodFactory<DataTypeManagerImpl2> method_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DataTypeManagerImpl);
+  DISALLOW_COPY_AND_ASSIGN(DataTypeManagerImpl2);
 };
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_MANAGER_IMPL_H__
+#endif  // CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_MANAGER_IMPL2_H__

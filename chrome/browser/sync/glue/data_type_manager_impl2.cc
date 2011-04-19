@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/sync/glue/data_type_manager_impl2.h"
+
 #include <algorithm>
 #include <functional>
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
-#include "base/task.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
-#include "chrome/browser/sync/glue/data_type_manager_impl.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_details.h"
@@ -21,15 +21,22 @@ namespace browser_sync {
 namespace {
 
 static const syncable::ModelType kStartOrder[] = {
+  syncable::NIGORI,  //  Listed for completeness.
   syncable::BOOKMARKS,
   syncable::PREFERENCES,
   syncable::AUTOFILL,
   syncable::AUTOFILL_PROFILE,
+  syncable::EXTENSIONS,
+  syncable::APPS,
   syncable::THEMES,
   syncable::TYPED_URLS,
   syncable::PASSWORDS,
   syncable::SESSIONS,
 };
+
+COMPILE_ASSERT(arraysize(kStartOrder) ==
+               syncable::MODEL_TYPE_COUNT - syncable::FIRST_REAL_MODEL_TYPE,
+               kStartOrder_IncorrectSize);
 
 // Comparator used when sorting data type controllers.
 class SortComparator : public std::binary_function<DataTypeController*,
@@ -50,18 +57,14 @@ class SortComparator : public std::binary_function<DataTypeController*,
 
 }  // namespace
 
-DataTypeManagerImpl::DataTypeManagerImpl(
-    SyncBackendHost* backend,
+DataTypeManagerImpl2::DataTypeManagerImpl2(SyncBackendHost* backend,
     const DataTypeController::TypeMap& controllers)
     : backend_(backend),
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
-      syncer_paused_(false),
       needs_reconfigure_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+      method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(backend_);
-  DCHECK_GT(arraysize(kStartOrder), 0U);
   // Ensure all data type controllers are stopped.
   for (DataTypeController::TypeMap::const_iterator it = controllers_.begin();
        it != controllers_.end(); ++it) {
@@ -73,10 +76,9 @@ DataTypeManagerImpl::DataTypeManagerImpl(
     start_order_[kStartOrder[i]] = i;
 }
 
-DataTypeManagerImpl::~DataTypeManagerImpl() {
-}
+DataTypeManagerImpl2::~DataTypeManagerImpl2() {}
 
-bool DataTypeManagerImpl::GetControllersNeedingStart(
+bool DataTypeManagerImpl2::GetControllersNeedingStart(
     std::vector<DataTypeController*>* needs_start) {
   // Add any data type controllers into the needs_start_ list that are
   // currently NOT_RUNNING or STOPPING.
@@ -95,7 +97,7 @@ bool DataTypeManagerImpl::GetControllersNeedingStart(
   return found_any;
 }
 
-void DataTypeManagerImpl::Configure(const TypeSet& desired_types) {
+void DataTypeManagerImpl2::Configure(const TypeSet& desired_types) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (state_ == STOPPING) {
     // You can not set a configuration while stopping.
@@ -146,8 +148,7 @@ void DataTypeManagerImpl::Configure(const TypeSet& desired_types) {
   Restart();
 }
 
-void DataTypeManagerImpl::Restart() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+void DataTypeManagerImpl2::Restart() {
   VLOG(1) << "Restarting...";
 
   DCHECK(state_ == STOPPED || state_ == CONFIGURED || state_ == BLOCKED);
@@ -170,60 +171,23 @@ void DataTypeManagerImpl::Restart() {
   backend_->ConfigureDataTypes(
       controllers_,
       last_requested_types_,
-      method_factory_.NewRunnableMethod(&DataTypeManagerImpl::DownloadReady));
-
-  // If there were new types needing download, a nudge will have been sent and
-  // we should be in DOWNLOAD_PENDING.  In that case we start the syncer thread
-  // (which is idempotent) to fetch these updates.
-  // However, we could actually be in PAUSE_PENDING here as if no new types
-  // were needed, our DownloadReady callback will have fired and we will have
-  // requested a pause already (so starting the syncer thread will still not
-  // let it make forward progress as the pause needs to be resumed by us).
-  // Because both the pause and start syncing commands are posted FCFS to the
-  // core thread, there is no race between the pause and the start; the pause
-  // will always win, so we will always start paused if we don't need to
-  // download new types.  Thus, in almost all cases, the syncer thread DOES NOT
-  // start before model association. But...
-  //
-  // TODO(tim): Bug 47957. There is still subtle badness here. If we just
-  // restarted the browser and were upgraded in between, we may be in a state
-  // where a bunch of data types do have initial sync ended, but a new guy
-  // does not.  In this case, what we really want is to _only_ download updates
-  // for that new type and not the ones that have already finished and we've
-  // presumably associated before.  What happens now is the syncer is nudged
-  // and it does a sync from timestamp 0 for only the new types, and sends the
-  // OnSyncCycleCompleted event, which is how we get the DownloadReady call.
-  // We request a pause at this point, but it is done asynchronously. So in
-  // theory, the syncer could charge forward with another sync (for _all_
-  // types) before the pause is serviced, which could be bad for associating
-  // models as we'll merge the present cloud with the immediate past, which
-  // opens the door to bugs like "bookmark came back from dead".  A lot more
-  // stars have to align now for this to happen, but it's still there.
-  backend_->StartSyncingWithServer();
+      method_factory_.NewRunnableMethod(&DataTypeManagerImpl2::DownloadReady));
 }
 
-void DataTypeManagerImpl::DownloadReady() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+void DataTypeManagerImpl2::DownloadReady() {
   DCHECK(state_ == DOWNLOAD_PENDING);
 
-  if (syncer_paused_) {
-    state_ = CONFIGURING;
-    StartNextType();
-    return;
-  }
-
-  // Pause the sync backend before starting the data types.
-  state_ = PAUSE_PENDING;
-  PauseSyncer();
+  state_ = CONFIGURING;
+  StartNextType();
 }
 
-void DataTypeManagerImpl::StartNextType() {
+void DataTypeManagerImpl2::StartNextType() {
   // If there are any data types left to start, start the one at the
   // front of the list.
   if (!needs_start_.empty()) {
     VLOG(1) << "Starting " << needs_start_[0]->name();
     needs_start_[0]->Start(
-        NewCallback(this, &DataTypeManagerImpl::TypeStartCallback));
+        NewCallback(this, &DataTypeManagerImpl2::TypeStartCallback));
     return;
   }
 
@@ -252,18 +216,31 @@ void DataTypeManagerImpl::StartNextType() {
     return;
   }
 
-  // If no more data types need starting, we're done.  Resume the sync backend
-  // to finish.
-  state_ = RESUME_PENDING;
-  ResumeSyncer();
+  // If no more data types need starting, we're done.
+  state_ = CONFIGURED;
+  NotifyDone(OK, FROM_HERE);
 }
 
-void DataTypeManagerImpl::TypeStartCallback(
+void DataTypeManagerImpl2::TypeStartCallback(
     DataTypeController::StartResult result,
     const tracked_objects::Location& location) {
   // When the data type controller invokes this callback, it must be
   // on the UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (state_ == STOPPING) {
+    // If we reach this callback while stopping, this means that
+    // DataTypeManager::Stop() was called while the current data type
+    // was starting.  Now that it has finished starting, we can finish
+    // stopping the DataTypeManager.  This is considered an ABORT.
+    FinishStopAndNotify(ABORTED, FROM_HERE);
+    return;
+  } else if (state_ == STOPPED) {
+    // If our state_ is STOPPED, we have already stopped all of the data
+    // types.  We should not be getting callbacks from stopped data types.
+    LOG(ERROR) << "Start callback called by stopped data type!";
+    return;
+  }
 
   // We're done with the data type at the head of the list -- remove it.
   DataTypeController* started_dtc = needs_start_[0];
@@ -271,34 +248,12 @@ void DataTypeManagerImpl::TypeStartCallback(
   DCHECK_EQ(needs_start_[0], started_dtc);
   needs_start_.erase(needs_start_.begin());
 
-  // If we reach this callback while stopping, this means that
-  // DataTypeManager::Stop() was called while the current data type
-  // was starting.  Now that it has finished starting, we can finish
-  // stopping the DataTypeManager.  This is considered an ABORT.
-  if (state_ == STOPPING) {
-    FinishStopAndNotify(ABORTED, FROM_HERE);
-    return;
-  }
-
-  // If our state_ is STOPPED, we have already stopped all of the data
-  // types.  We should not be getting callbacks from stopped data types.
-  if (state_ == STOPPED) {
-    LOG(ERROR) << "Start callback called by stopped data type!";
-    return;
-  }
-
+  // If the type started normally, continue to the next type.
   // If the type is waiting for the cryptographer, continue to the next type.
   // Once the cryptographer is ready, we'll attempt to restart this type.
-  if (result == DataTypeController::NEEDS_CRYPTO) {
-    VLOG(1) << "Waiting for crypto " << started_dtc->name();
-    StartNextType();
-    return;
-  }
-
-  // If the type started normally, continue to the next type.
-  if (result == DataTypeController::OK ||
+  if (result == DataTypeController::NEEDS_CRYPTO ||
+      result == DataTypeController::OK ||
       result == DataTypeController::OK_FIRST_RUN) {
-    VLOG(1) << "Started " << started_dtc->name();
     StartNextType();
     return;
   }
@@ -325,7 +280,7 @@ void DataTypeManagerImpl::TypeStartCallback(
   FinishStopAndNotify(configure_result, location);
 }
 
-void DataTypeManagerImpl::Stop() {
+void DataTypeManagerImpl2::Stop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (state_ == STOPPED)
     return;
@@ -347,49 +302,21 @@ void DataTypeManagerImpl::Stop() {
     return;
   }
 
-  // If Stop() is called while waiting for pause or resume, we no
-  // longer care about this.
-  bool aborted = false;
-  if (state_ == PAUSE_PENDING) {
-    RemoveObserver(NotificationType::SYNC_PAUSED);
-    aborted = true;
-  }
-  if (state_ == RESUME_PENDING) {
-    RemoveObserver(NotificationType::SYNC_RESUMED);
-    aborted = true;
-  }
-
-  // If Stop() is called while waiting for download, cancel all
-  // outstanding tasks.
-  if (state_ == DOWNLOAD_PENDING) {
-    method_factory_.RevokeAll();
-    aborted = true;
-  }
-
+  const bool download_pending = state_ == DOWNLOAD_PENDING;
   state_ = STOPPING;
-  if (aborted)
+  if (download_pending) {
+    // If Stop() is called while waiting for download, cancel all
+    // outstanding tasks.
+    method_factory_.RevokeAll();
     FinishStopAndNotify(ABORTED, FROM_HERE);
-  else
-    FinishStop();
+    return;
+  }
+
+  FinishStop();
 }
 
-const DataTypeController::TypeMap& DataTypeManagerImpl::controllers() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return controllers_;
-}
-
-DataTypeManager::State DataTypeManagerImpl::state() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return state_;
-}
-
-void DataTypeManagerImpl::FinishStop() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(state_== CONFIGURING ||
-         state_ == STOPPING ||
-         state_ == PAUSE_PENDING ||
-         state_ == RESUME_PENDING ||
-         state_ == BLOCKED);
+void DataTypeManagerImpl2::FinishStop() {
+  DCHECK(state_== CONFIGURING || state_ == STOPPING || state_ == BLOCKED);
   // Simply call the Stop() method on all running data types.
   for (DataTypeController::TypeMap::const_iterator it = controllers_.begin();
        it != controllers_.end(); ++it) {
@@ -403,81 +330,21 @@ void DataTypeManagerImpl::FinishStop() {
   state_ = STOPPED;
 }
 
-void DataTypeManagerImpl::FinishStopAndNotify(ConfigureResult result,
+void DataTypeManagerImpl2::FinishStopAndNotify(ConfigureResult result,
     const tracked_objects::Location& location) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FinishStop();
   NotifyDone(result, location);
 }
 
-void DataTypeManagerImpl::Observe(NotificationType type,
-                                  const NotificationSource& source,
-                                  const NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  switch (type.value) {
-    case NotificationType::SYNC_PAUSED:
-      DCHECK(state_ == PAUSE_PENDING);
-      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-      syncer_paused_ = true;
-      RemoveObserver(NotificationType::SYNC_PAUSED);
-
-      state_ = CONFIGURING;
-      StartNextType();
-      break;
-    case NotificationType::SYNC_RESUMED:
-      DCHECK(state_ == RESUME_PENDING);
-      RemoveObserver(NotificationType::SYNC_RESUMED);
-      syncer_paused_ = false;
-
-      if (needs_reconfigure_) {
-        // An attempt was made to reconfigure while we were already configuring.
-        // This can be because a passphrase was accepted or the user changed the
-        // set of desired types. Either way, |last_requested_types_| will
-        // contain the most recent set of desired types, so we just call
-        // configure.
-        // Note: we do this whether or not GetControllersNeedingStart is true,
-        // because we may need to stop datatypes.
-        state_ = BLOCKED;
-        needs_reconfigure_ = false;
-        VLOG(1) << "Reconfiguring due to previous configure attempt occuring "
-                << " while busy.";
-        Configure(last_requested_types_);
-        return;
-      }
-
-      state_ = CONFIGURED;
-      NotifyDone(OK, FROM_HERE);
-      break;
-    default:
-      NOTREACHED();
-  }
-}
-
-void DataTypeManagerImpl::AddObserver(NotificationType type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  notification_registrar_.Add(this,
-                              type,
-                              NotificationService::AllSources());
-}
-
-void DataTypeManagerImpl::RemoveObserver(NotificationType type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  notification_registrar_.Remove(this,
-                                 type,
-                                 NotificationService::AllSources());
-}
-
-void DataTypeManagerImpl::NotifyStart() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+void DataTypeManagerImpl2::NotifyStart() {
   NotificationService::current()->Notify(
       NotificationType::SYNC_CONFIGURE_START,
       Source<DataTypeManager>(this),
       NotificationService::NoDetails());
 }
 
-void DataTypeManagerImpl::NotifyDone(ConfigureResult result,
+void DataTypeManagerImpl2::NotifyDone(ConfigureResult result,
     const tracked_objects::Location& location) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ConfigureResultWithErrorLocation result_with_location(result, location);
   NotificationService::current()->Notify(
       NotificationType::SYNC_CONFIGURE_DONE,
@@ -485,22 +352,12 @@ void DataTypeManagerImpl::NotifyDone(ConfigureResult result,
       Details<ConfigureResultWithErrorLocation>(&result_with_location));
 }
 
-void DataTypeManagerImpl::ResumeSyncer() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  AddObserver(NotificationType::SYNC_RESUMED);
-  if (!backend_->RequestResume()) {
-    RemoveObserver(NotificationType::SYNC_RESUMED);
-    FinishStopAndNotify(UNRECOVERABLE_ERROR, FROM_HERE);
-  }
+const DataTypeController::TypeMap& DataTypeManagerImpl2::controllers() {
+  return controllers_;
 }
 
-void DataTypeManagerImpl::PauseSyncer() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  AddObserver(NotificationType::SYNC_PAUSED);
-  if (!backend_->RequestPause()) {
-    RemoveObserver(NotificationType::SYNC_PAUSED);
-    FinishStopAndNotify(UNRECOVERABLE_ERROR, FROM_HERE);
-  }
+DataTypeManager::State DataTypeManagerImpl2::state() {
+  return state_;
 }
 
 }  // namespace browser_sync

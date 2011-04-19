@@ -25,9 +25,14 @@ class DataTypeManager {
                        // complete the initial download of new data
                        // types.
 
+    // TODO(tim): Deprecated. Bug 26339.
+    PAUSE_PENDING,     // Waiting for the sync backend to pause.
     CONFIGURING,       // Data types are being started.
     BLOCKED,           // We can't move forward with configuration because some
                        // external action must take place (i.e. passphrase).
+
+    // TODO(tim): Deprecated. Bug 26339.
+    RESUME_PENDING,    // Waiting for the sync backend to resume.
 
     CONFIGURED,        // All enabled data types are running.
     STOPPING           // Data types are being stopped.

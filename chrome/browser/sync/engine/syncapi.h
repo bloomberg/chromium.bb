@@ -808,6 +808,12 @@ class SyncManager {
     // message, unless otherwise specified, produces undefined behavior.
     virtual void OnInitializationComplete() = 0;
 
+    // The syncer thread has been paused.
+    virtual void OnPaused() = 0;
+
+    // The syncer thread has been resumed.
+    virtual void OnResumed() = 0;
+
     // We are no longer permitted to communicate with the server. Sync should
     // be disabled and state cleaned up at once.  This can happen for a number
     // of reasons, e.g. swapping from a test instance to production, or a
@@ -910,6 +916,20 @@ class SyncManager {
   // Note: |encrypted_types| will be unioned with the current set of encrypted
   // types, as we do not currently support decrypting datatypes.
   void EncryptDataTypes(const syncable::ModelTypeSet& encrypted_types);
+
+  // Requests the syncer thread to pause.  The observer's OnPause
+  // method will be called when the syncer thread is paused.  Returns
+  // false if the syncer thread can not be paused (e.g. if it is not
+  // started).
+  // TODO(tim): Deprecated.
+  bool RequestPause();
+
+  // Requests the syncer thread to resume.  The observer's OnResume
+  // method will be called when the syncer thread is resumed.  Returns
+  // false if the syncer thread can not be resumed (e.g. if it is not
+  // paused).
+  // TODO(tim): Deprecated.
+  bool RequestResume();
 
   // Puts the SyncerThread into a mode where no normal nudge or poll traffic
   // will occur, but calls to RequestConfig will be supported.  If |callback|

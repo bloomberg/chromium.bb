@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/data_type_manager_impl.h"
+#include "chrome/browser/sync/glue/data_type_manager_impl2.h"
 
 #include <set>
 
@@ -25,7 +25,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::DataTypeManager;
-using browser_sync::DataTypeManagerImpl;
+using browser_sync::DataTypeManagerImpl2;
 using browser_sync::DataTypeController;
 using browser_sync::DataTypeControllerMock;
 using browser_sync::SyncBackendHostMock;
@@ -163,7 +163,7 @@ class DataTypeManagerImpl2Test : public testing::Test {
 };
 
 TEST_F(DataTypeManagerImpl2Test, NoControllers) {
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl2 dtm(&backend_, controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
   dtm.Configure(types_);
@@ -177,7 +177,7 @@ TEST_F(DataTypeManagerImpl2Test, ConfigureOne) {
   SetStartStopExpectations(bookmark_dtc);
   controllers_[syncable::BOOKMARKS] = bookmark_dtc;
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _)).Times(1);
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl2 dtm(&backend_, controllers_);
   types_.insert(syncable::BOOKMARKS);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
@@ -193,7 +193,7 @@ TEST_F(DataTypeManagerImpl2Test, ConfigureOneStopWhileStarting) {
                                DataTypeController::MODEL_STARTING);
   controllers_[syncable::BOOKMARKS] = bookmark_dtc;
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _)).Times(1);
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl2 dtm(&backend_, controllers_);
   types_.insert(syncable::BOOKMARKS);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
@@ -208,7 +208,7 @@ TEST_F(DataTypeManagerImpl2Test, ConfigureOneStopWhileAssociating) {
   SetBusyStartStopExpectations(bookmark_dtc, DataTypeController::ASSOCIATING);
   controllers_[syncable::BOOKMARKS] = bookmark_dtc;
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _)).Times(1);
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl2 dtm(&backend_, controllers_);
   types_.insert(syncable::BOOKMARKS);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
@@ -228,7 +228,7 @@ TEST_F(DataTypeManagerImpl2Test, OneWaitingForCrypto) {
   controllers_[syncable::PASSWORDS] = password_dtc;
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _)).Times(1);
 
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl2 dtm(&backend_, controllers_);
   types_.insert(syncable::PASSWORDS);
   SetConfigureStartExpectation();
 
@@ -264,7 +264,7 @@ TEST_F(DataTypeManagerImpl2Test, ConfigureOneThenAnother) {
   controllers_[syncable::PREFERENCES] = preference_dtc;
 
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _)).Times(2);
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl2 dtm(&backend_, controllers_);
   types_.insert(syncable::BOOKMARKS);
 
   SetConfigureStartExpectation();
@@ -291,7 +291,7 @@ TEST_F(DataTypeManagerImpl2Test, ConfigureOneThenSwitch) {
   controllers_[syncable::PREFERENCES] = preference_dtc;
 
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _)).Times(2);
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl2 dtm(&backend_, controllers_);
   types_.insert(syncable::BOOKMARKS);
 
   SetConfigureStartExpectation();
@@ -333,7 +333,7 @@ TEST_F(DataTypeManagerImpl2Test, ConfigureWhileOneInFlight) {
   controllers_[syncable::PREFERENCES] = preference_dtc;
 
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _)).Times(2);
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl2 dtm(&backend_, controllers_);
   types_.insert(syncable::BOOKMARKS);
 
   SetConfigureStartExpectation();
@@ -362,7 +362,7 @@ TEST_F(DataTypeManagerImpl2Test, OneFailingController) {
       WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
   controllers_[syncable::BOOKMARKS] = bookmark_dtc;
 
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl2 dtm(&backend_, controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::ASSOCIATION_FAILED);
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _)).Times(1);
@@ -386,7 +386,7 @@ TEST_F(DataTypeManagerImpl2Test, StopWhileInFlight) {
       WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
   controllers_[syncable::PREFERENCES] = preference_dtc;
 
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl2 dtm(&backend_, controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::ABORTED);
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _)).Times(1);
@@ -418,7 +418,7 @@ TEST_F(DataTypeManagerImpl2Test, SecondControllerFails) {
       WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
   controllers_[syncable::PREFERENCES] = preference_dtc;
 
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl2 dtm(&backend_, controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::ASSOCIATION_FAILED);
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _)).Times(1);
@@ -438,7 +438,7 @@ TEST_F(DataTypeManagerImpl2Test, ConfigureWhileDownloadPending) {
   SetStartStopExpectations(preference_dtc);
   controllers_[syncable::PREFERENCES] = preference_dtc;
 
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl2 dtm(&backend_, controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
   CancelableTask* task;
@@ -473,7 +473,7 @@ TEST_F(DataTypeManagerImpl2Test, StopWhileDownloadPending) {
   SetNotUsedExpectations(bookmark_dtc);
   controllers_[syncable::BOOKMARKS] = bookmark_dtc;
 
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl2 dtm(&backend_, controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::ABORTED);
   CancelableTask* task;

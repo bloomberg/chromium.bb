@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,6 +81,33 @@ struct SyncEngineEvent {
     // Check the SyncerSession for information like whether we need to continue
     // syncing (SyncerSession::HasMoreToSync).
     SYNC_CYCLE_ENDED,
+
+    ////////////////////////////////////////////////////////////////
+    // SyncerThread generated events.
+
+    // This event is sent when the thread is paused in response to a
+    // pause request.
+    // TODO(tim): Deprecated.
+    SYNCER_THREAD_PAUSED,
+
+    // This event is sent when the thread is resumed in response to a
+    // resume request.
+    // TODO(tim): Deprecated.
+    SYNCER_THREAD_RESUMED,
+
+    // This event is sent when the thread is waiting for a connection
+    // to be established.
+    // TODO(tim): Deprecated.
+    SYNCER_THREAD_WAITING_FOR_CONNECTION,
+
+    // This event is sent when a connection has been established and
+    // the thread continues.
+    // TODO(tim): Deprecated.
+    SYNCER_THREAD_CONNECTED,
+
+    // Sent when the main syncer loop finishes.
+    // TODO(tim): Deprecated.
+    SYNCER_THREAD_EXITING,
 
     ////////////////////////////////////////////////////////////////
     // Generated in response to specific protocol actions or events.
