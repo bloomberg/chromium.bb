@@ -10,7 +10,7 @@
 
 // Use an anonymous function to enable strict mode just for this file (which
 // will be concatenated with other files when embedded in Chrome
-var ntp = (function() {
+cr.define('ntp4', function() {
   'use strict';
 
   /**
@@ -36,6 +36,12 @@ var ntp = (function() {
    * @type {!NodeList|undefined}
    */
   var tilePages;
+
+  /**
+   * The Most Visited page.
+   * @type {!Element|undefined}
+   */
+  var mostVisitedPage;
 
   /**
    * A list of all 'apps-page' elements.
@@ -166,8 +172,9 @@ var ntp = (function() {
     cr.ui.decorate($('recently-closed-menu-button'), ntp4.RecentMenuButton);
     chrome.send('getRecentlyClosedTabs');
 
-    // TODO(estade): populate most visited pages.
-    appendTilePage(new ntp4.MostVisitedPage('Most Visited'));
+    mostVisitedPage = new ntp4.MostVisitedPage('Most Visited');
+    appendTilePage(mostVisitedPage);
+    chrome.send('getMostVisited');
   }
 
   /**
@@ -675,6 +682,10 @@ var ntp = (function() {
     $('recently-closed-menu-button').dataItems = dataItems;
   }
 
+  function setMostVisitedPages(data, firstRun, hasBlacklistedUrls) {
+    mostVisitedPage.data = data;
+  }
+
   // Return an object with all the exports
   return {
     assert: assert,
@@ -683,16 +694,18 @@ var ntp = (function() {
     initialize: initialize,
     themeChanged: themeChanged,
     setRecentlyClosedTabs: setRecentlyClosedTabs,
+    setMostVisitedPages: setMostVisitedPages,
   };
-})();
+});
 
 // publish ntp globals
 // TODO(estade): update the content handlers to use ntp namespace instead of
 // making these global.
-var assert = ntp.assert;
-var getAppsCallback = ntp.getAppsCallback;
-var appsPrefChangeCallback = ntp.appsPrefChangeCallback;
-var themeChanged = ntp.themeChanged;
-var recentlyClosedTabs = ntp.setRecentlyClosedTabs;
+var assert = ntp4.assert;
+var getAppsCallback = ntp4.getAppsCallback;
+var appsPrefChangeCallback = ntp4.appsPrefChangeCallback;
+var themeChanged = ntp4.themeChanged;
+var recentlyClosedTabs = ntp4.setRecentlyClosedTabs;
+var mostVisitedPages = ntp4.setMostVisitedPages;
 
-document.addEventListener('DOMContentLoaded', ntp.initialize);
+document.addEventListener('DOMContentLoaded', ntp4.initialize);

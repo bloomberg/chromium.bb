@@ -24,20 +24,49 @@ cr.define('ntp4', function() {
     __proto__: HTMLAnchorElement.prototype,
 
     initialize: function() {
+      this.reset();
+    },
+
+    /**
+     * Clears the DOM hierarchy for this node, setting it back to the default
+     * for a blank thumbnail.
+     */
+    reset: function() {
       this.className = 'most-visited filler';
       // TODO(estade): why do we need edit-mode-border?
       this.innerHTML =
-          '<div class="edit-mode-border">' +
-            '<div class="edit-bar">' +
-              '<div class="pin"></div>' +
-              '<div class="spacer"></div>' +
-              '<div class="remove"></div>' +
+          '<div class="edit-mode-border fills-parent">' +
+            '<div class="edit-bar-wrapper">' +
+              '<div class="edit-bar">' +
+                '<div class="pin"></div>' +
+                '<div class="spacer"></div>' +
+                '<div class="remove"></div>' +
+              '</div>' +
             '</div>' +
-            '<span class="thumbnail-wrapper">' +
-              '<span class="thumbnail"></span>' +
+            '<span class="thumbnail-wrapper fills-parent">' +
+              '<span class="thumbnail fills-parent"></span>' +
             '</span>' +
-          '</div>' +
-          '<span class="title"></span>';
+            '<span class="title"></span>' +
+          '</div>';
+
+      this.tabIndex = -1;
+    },
+
+    /**
+     * Update the appearance of this tile according to |data|.
+     * @param {Object} data A dictionary of relevant data for the page.
+     */
+    updateForData: function(data) {
+      if (data.filler) {
+        this.reset();
+        return;
+      }
+
+      this.tabIndex = 0;
+      this.classList.remove('filler');
+      var thumbnailUrl = data.thumbnailUrl || 'chrome://thumb/' + data.url;
+      this.querySelector('.thumbnail').style.backgroundImage =
+          url(thumbnailUrl);
     },
 
     /**
@@ -68,6 +97,8 @@ cr.define('ntp4', function() {
   };
   TilePage.initGridValues(mostVisitedPageGridValues);
 
+  var THUMBNAIL_COUNT = 8;
+
   /**
    * Creates a new MostVisitedPage object.
    * @param {string} name The display name for the page.
@@ -88,9 +119,8 @@ cr.define('ntp4', function() {
     initialize: function() {
       this.classList.add('most-visited-page');
 
-      // We must let the CSS changes take effect before we add tiles so that
-      // they will position correctly.
-      window.setTimeout(this.createTiles_.bind(this), 0);
+      this.data_ = null;
+      this.mostVisitedTiles_ = this.getElementsByClassName('most-visited');
     },
 
     /**
@@ -98,9 +128,42 @@ cr.define('ntp4', function() {
      * @private
      */
     createTiles_: function() {
-      for (var i = 0; i < 8; i++) {
+      for (var i = 0; i < THUMBNAIL_COUNT; i++) {
         this.appendTile(new MostVisited());
       }
+    },
+
+    /**
+     * Update the tiles after a change to |data_|.
+     */
+    updateTiles_: function() {
+      for (var i = 0; i < THUMBNAIL_COUNT; i++) {
+        var page = this.data_[i];
+        var tile = this.mostVisitedTiles_[i];
+
+        if (i >= this.data_.length)
+          tile.reset();
+        else
+          tile.updateForData(page);
+      }
+    },
+
+    /**
+     * Array of most visited data objects.
+     * @type {Array}
+     */
+    get data() {
+      return this.data_;
+    },
+    set data(data) {
+      // The first time data is set, create the tiles.
+      if (!this.data_)
+        this.createTiles_();
+
+      // We append the class name with the "filler" so that we can style fillers
+      // differently.
+      this.data_ = data.slice(0, THUMBNAIL_COUNT);
+      this.updateTiles_();
     },
   };
 

@@ -35,55 +35,6 @@ body {
   color: $9; /* COLOR_NTP_LINK */
 }
 
-.most-visited > .thumbnail {
-  border-color: $$1; /* COLOR_NTP_SECTION */
-}
-
-.most-visited,
-.most-visited > .title {
-  color: $8; /* COLOR_NTP_TEXT */
-}
-
-.most-visited:focus .thumbnail,
-.most-visited:hover .thumbnail {
-  border-color: $6; /* COLOR_NTP_HEADER */
-}
-
-.most-visited:focus .edit-bar,
-.most-visited:hover .edit-bar {
-  background-color: $6; /* COLOR_NTP_HEADER */
-  background-image: -webkit-linear-gradient(
-                        $7, /* COLOR_HEADER_GRADIENT_LIGHT */
-                        $6); /* COLOR_NTP_HEADER */
-}
-.most-visited:hover > .edit-mode-border {
-  background-color: $6; /* COLOR_NTP_HEADER */
-}
-
-.filler .thumbnail-wrapper {
-  border: 3px solid $$1; /* COLOR_NTP_SECTION */
-  background-color: $2; /* COLOR_NTP_BACKGROUND */
-}
-
-.filler .thumbnail {
-  border: 1px solid $2; /* COLOR_NTP_BACKGROUND */
-  background-color: $$1; /* COLOR_NTP_SECTION */
-}
-
-.miniview {
-  color: $8; /* COLOR_NTP_TEXT */
-}
-
-.miniview > span {
-  color: $$5; /* COLOR_NTP_LINK_UNDERLINE */
-  text-decoration: underline;
-}
-
-.miniview > span > .item {
-  color: $9; /* COLOR_NTP_LINK */
-  text-decoration: none;
-}
-
 #attribution {
   color: $9; /* COLOR_NTP_LINK */
 }
@@ -146,4 +97,31 @@ body {
 
 #apps-promo-text2 {
   color: $$$3; /* COLOR_NTP_TEXT_LIGHT */
+}
+
+/* Most Visited ***************************************************************/
+
+.most-visited,
+.most-visited > .title {
+  color: $8; /* COLOR_NTP_TEXT */
+}
+
+.most-visited:focus .thumbnail-wrapper,
+.most-visited:hover .thumbnail-wrapper {
+  background-color: $6; /* COLOR_NTP_HEADER */
+}
+
+.edit-bar {
+  background-image: -webkit-linear-gradient(
+                        $7, /* COLOR_HEADER_GRADIENT_LIGHT */
+                        $6); /* COLOR_NTP_HEADER */
+}
+
+.thumbnail-wrapper {
+  /* This shows through at the (rounded) thumbnail's corners. */
+  background-color: $$2; /* COLOR_NTP_SECTION */
+}
+
+.filler .thumbnail {
+  border-color: $2; /* COLOR_NTP_BACKGROUND */
 }

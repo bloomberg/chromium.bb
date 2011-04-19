@@ -44,6 +44,7 @@ cr.define('ntp4', function() {
 
       var appSpan = this.ownerDocument.createElement('span');
       appSpan.textContent = this.appData.name;
+      this.appendChild(appSpan);
 
       /* TODO(estade): grabber */
     },
