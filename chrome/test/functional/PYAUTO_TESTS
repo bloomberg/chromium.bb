@@ -32,6 +32,8 @@
       # crbug.com/77969
       '-autofill.AutofillTest.testFillProfileCrazyCharacters',
       '-autofill.AutofillTest.testNoAutofillForReadOnlyFields',
+      # crbug.com/79802
+      '-autofill.AutofillTest.testWhitespacesAndSeparatorCharsStrippedForValidCCNums',
       'bookmark_bar',
       'bookmarks',
       'browser',
