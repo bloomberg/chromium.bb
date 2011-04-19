@@ -106,6 +106,15 @@ $XVFB_PREFIX \
     chrome_browser_tests ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
+# TODO(mseaborn): Drop support for non-IRT builds so that this is the
+# default.  See http://code.google.com/p/nativeclient/issues/detail?id=1691
+echo @@@BUILD_STEP chrome_browser_tests using IRT@@@
+$XVFB_PREFIX \
+    ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
+    chrome_browser_tests irt=1 ||
+    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+
 echo @@@BUILD_STEP pyauto_tests${BITS}@@@
 $XVFB_PREFIX \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \

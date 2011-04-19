@@ -46,10 +46,6 @@
  * at the very beginning of the dynamic code region.
  */
 #define DYNAMIC_CODE_SEGMENT_START 0x80000
-/* TODO(mseaborn): Add a symbol to the linker script for finding the
-   end of the dynamic code region.  The value below is duplicated in
-   nacl.scons, passed via --section-start. */
-#define DYNAMIC_CODE_SEGMENT_END 0x1000000
 
 
 int nacl_load_code(void *dest, void *src, int size) {

@@ -95,6 +95,17 @@ ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
     chrome_browser_tests ||
     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
 
+# TODO(mseaborn): Drop support for non-IRT builds so that this is the
+# default.  See http://code.google.com/p/nativeclient/issues/detail?id=1691
+echo @@@BUILD_STEP chrome_browser_tests using IRT@@@
+ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
+    $XVFB_PREFIX \
+    ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    --mode=${MODE}-linux,nacl SILENT=1 platform=arm bitcode=1 sdl=none \
+    built_elsewhere=1 naclsdk_mode=manual naclsdk_validate=0 \
+    chrome_browser_tests irt=1 ||
+    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+
 echo @@@BUILD_STEP pyauto_tests@@@
 ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
     $XVFB_PREFIX \

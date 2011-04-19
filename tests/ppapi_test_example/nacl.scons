@@ -26,6 +26,8 @@ ppapi_test_example_nexe = env.ComponentProgram(
     EXTRA_LIBS=['${PPAPI_LIBS}',
                  'ppapi_test_lib',
                  'platform',  # for CHECK
+                 'pthread',
+                 'gio',
                  ])
 
 dest_copy = env.Replicate('$STAGING_DIR',
