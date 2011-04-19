@@ -25,6 +25,12 @@ namespace {
 static const int kActionDelayMs = 500;
 static const char kSimplePage[] = "files/find_in_page/simple.html";
 
+void Checkpoint(const char* message, const base::TimeTicks& start_time) {
+  LOG(INFO) << message << " : "
+    << (base::TimeTicks::Now() - start_time).InMilliseconds()
+    << " ms" << std::flush;
+}
+
 class FindInPageTest : public InProcessBrowserTest {
  public:
   FindInPageTest() {
@@ -171,12 +177,13 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestoreOnTabSwitch) {
 // This tests that whenever you clear values from the Find box and close it that
 // it respects that and doesn't show you the last search, as reported in bug:
 // http://crbug.com/40121.
-// Crashy, http://crbug.com/69882.
-IN_PROC_BROWSER_TEST_F(FindInPageTest, DISABLED_PrepopulateRespectBlank) {
+IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
 #if defined(OS_MACOSX)
   // FindInPage on Mac doesn't use prepopulated values. Search there is global.
   return;
 #endif
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  Checkpoint("Test starting", start_time);
 
   ASSERT_TRUE(test_server()->Start());
 
@@ -184,12 +191,18 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, DISABLED_PrepopulateRespectBlank) {
   // won't do anything and the test will hang.
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
+  Checkpoint("Navigate", start_time);
+
   // First we navigate to any page.
   GURL url = test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
+  Checkpoint("Show Find bar", start_time);
+
   // Show the Find bar.
   browser()->GetFindBarController()->Show();
+
+  Checkpoint("Search for 'a'", start_time);
 
   // Search for "a".
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
@@ -198,6 +211,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, DISABLED_PrepopulateRespectBlank) {
   // We should find "a" here.
   EXPECT_EQ(ASCIIToUTF16("a"), GetFindBarText());
 
+  Checkpoint("Delete 'a'", start_time);
+
   // Delete "a".
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_BACK, false, false, false, false));
@@ -205,26 +220,40 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, DISABLED_PrepopulateRespectBlank) {
   // Validate we have cleared the text.
   EXPECT_EQ(string16(), GetFindBarText());
 
+  Checkpoint("Close find bar", start_time);
+
   // Close the Find box.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_ESCAPE, false, false, false, false));
 
+  Checkpoint("Show Find bar", start_time);
+
   // Show the Find bar.
   browser()->GetFindBarController()->Show();
+
+  Checkpoint("Validate text", start_time);
 
   // After the Find box has been reopened, it should not have been prepopulated
   // with "a" again.
   EXPECT_EQ(string16(), GetFindBarText());
 
+  Checkpoint("Close Find bar", start_time);
+
   // Close the Find box.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_ESCAPE, false, false, false, false));
+
+  Checkpoint("FindNext", start_time);
 
   // Press F3 to trigger FindNext.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_F3, false, false, false, false));
 
+  Checkpoint("Validate", start_time);
+
   // After the Find box has been reopened, it should still have no prepopulate
   // value.
   EXPECT_EQ(string16(), GetFindBarText());
+
+  Checkpoint("Test done", start_time);
 }

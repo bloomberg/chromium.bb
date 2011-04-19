@@ -15,16 +15,6 @@ const std::string kAllUrlsTarget =
 
 typedef ExtensionApiTest AllUrlsApiTest;
 
-namespace {
-
-void Checkpoint(const char* message, const base::TimeTicks& start_time) {
-  LOG(INFO) << message << " : "
-            << (base::TimeTicks::Now() - start_time).InMilliseconds()
-            << " ms" << std::flush;
-}
-
-}  // namespace
-
 IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
   // First setup the two extensions.
   FilePath extension_dir1 = test_data_dir_.AppendASCII("all_urls")
@@ -93,16 +83,12 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
 // Test that an extension NOT whitelisted for scripting can ask for <all_urls>
 // and run scripts on non-restricted all pages.
 IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, RegularExtensions) {
-  base::TimeTicks start_time = base::TimeTicks::Now();
-  Checkpoint("Test starting", start_time);
-
   // First load the two extension.
   FilePath extension_dir1 = test_data_dir_.AppendASCII("all_urls")
                                           .AppendASCII("content_script");
   FilePath extension_dir2 = test_data_dir_.AppendASCII("all_urls")
                                           .AppendASCII("execute_script");
 
-  Checkpoint("Loading extensions", start_time);
 
   ExtensionService* service = browser()->profile()->GetExtensionService();
   const size_t size_before = service->extensions()->size();
@@ -110,17 +96,13 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, RegularExtensions) {
   ASSERT_TRUE(LoadExtension(extension_dir2));
   EXPECT_EQ(size_before + 2, service->extensions()->size());
 
-  Checkpoint("Starting server", start_time);
-
   // Now verify we can script a regular http page.
   ASSERT_TRUE(test_server()->Start());
   GURL page_url = test_server()->GetURL(kAllUrlsTarget);
   ExtensionTestMessageListener listener1a("content script: " + page_url.spec(),
                                           false);
   ExtensionTestMessageListener listener1b("execute: " + page_url.spec(), false);
-  Checkpoint("Navigate to URL", start_time);
   ui_test_utils::NavigateToURL(browser(), page_url);
   ASSERT_TRUE(listener1a.WaitUntilSatisfied());
   ASSERT_TRUE(listener1b.WaitUntilSatisfied());
-  Checkpoint("Test ending", start_time);
 }
