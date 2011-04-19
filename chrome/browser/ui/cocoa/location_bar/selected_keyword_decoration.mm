@@ -9,6 +9,7 @@
 #import "chrome/browser/ui/cocoa/image_utils.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 

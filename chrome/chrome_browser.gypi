@@ -24,6 +24,8 @@
         'safe_browsing_report_proto',
         'syncapi',
         'theme_resources',
+        'theme_resources_large',
+        'theme_resources_standard',
         'userfeedback_proto',
         '../app/app.gyp:app_resources',
         '../build/temp_gyp/googleurl.gyp:googleurl',
@@ -3416,6 +3418,8 @@
         '<(grit_out_dir)/grit/devtools_resources_map.cc',
         '<(grit_out_dir)/grit/shared_resources_map.cc',
         '<(grit_out_dir)/grit/theme_resources_map.cc',
+        '<(grit_out_dir)/grit/theme_resources_large_map.cc',
+        '<(grit_out_dir)/grit/theme_resources_standard_map.cc',
       ],
       'conditions': [
         ['javascript_engine=="v8"', {

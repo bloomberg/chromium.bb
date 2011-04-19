@@ -9,7 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image.h"
-#include "ui/gfx/image_unittest.h"
+#include "ui/gfx/image_unittest_util.h"
 
 namespace {
 
@@ -17,7 +17,7 @@ class UiGfxImageTest : public CocoaTest {
 };
 
 TEST_F(UiGfxImageTest, CheckColor) {
-  gfx::Image image(gfx::test::CreateBitmap());
+  gfx::Image image(gfx::test::CreateBitmap(25, 25));
   [image lockFocus];
   NSColor* color = NSReadPixel(NSMakePoint(10, 10));
   [image unlockFocus];
@@ -42,7 +42,7 @@ TEST_F(UiGfxImageTest, ImageView) {
   [[test_window() contentView] addSubview:image_view];
   [test_window() orderFront:nil];
 
-  gfx::Image image(gfx::test::CreateBitmap());
+  gfx::Image image(gfx::test::CreateBitmap(25, 25));
   [image_view setImage:image];
 }
 

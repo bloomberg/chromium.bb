@@ -240,6 +240,34 @@
       'includes': [ '../build/grit_target.gypi' ],
     },
     {
+      'target_name': 'theme_resources_large',
+      'type': 'none',
+      'actions': [
+        {
+          'action_name': 'theme_resources_large',
+          'variables': {
+            'grit_grd_file': 'app/theme/theme_resources_large.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+      ],
+      'includes': [ '../build/grit_target.gypi' ],
+    },
+    {
+      'target_name': 'theme_resources_standard',
+      'type': 'none',
+      'actions': [
+        {
+          'action_name': 'theme_resources_standard',
+          'variables': {
+            'grit_grd_file': 'app/theme/theme_resources_standard.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+      ],
+      'includes': [ '../build/grit_target.gypi' ],
+    },
+    {
       'target_name': 'platform_locale_settings',
       'type': 'none',
       'actions': [
@@ -355,6 +383,7 @@
         'chrome_strings',
         '../net/net.gyp:http_server',
         'theme_resources',
+        'theme_resources_standard',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
@@ -1407,6 +1436,7 @@
           'msvs_guid': '1556EF78-C7E6-43C8-951F-F6B43AC0DD12',
           'dependencies': [
             'theme_resources',
+            'theme_resources_standard',
             '../base/base.gyp:test_support_base',
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
@@ -1494,6 +1524,17 @@
                 '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
                 '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.pak',
                 '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
+              ],
+              'conditions': [
+                ['touchui==0', {
+                  'pak_inputs': [
+                    '<(grit_out_dir)/theme_resources_standard.pak',
+                  ],
+                }, {  # else: touchui!=0
+                  'pak_inputs': [
+                    '<(grit_out_dir)/theme_resources_large.pak',
+                  ],
+                }],
               ],
             },
             'inputs': [

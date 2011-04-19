@@ -5,6 +5,7 @@
 #include "chrome/browser/resources_util.h"
 
 #include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

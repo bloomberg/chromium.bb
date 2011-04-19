@@ -32,6 +32,7 @@
 #include "content/common/renderer_preferences.h"
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
