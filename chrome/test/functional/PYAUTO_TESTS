@@ -246,6 +246,7 @@
       '-bookmarks.BookmarksTest.testBookmarksPersistence',
       '-browser.BrowserTest.testKillAndReloadSharedProcess',
       '-browser.BrowserTest.testPopupSharesProcess',
+      '-browsing_data.BrowsingDataTest.testClearHistoryAndDownloads',
       '-content.ContentTest.testHttpsPage',
       '-cookies.CookiesTest.testAllowCookiesForASessionUsingExceptions',
       '-cookies.CookiesTest.testAllowCookiesUsingExceptions',
