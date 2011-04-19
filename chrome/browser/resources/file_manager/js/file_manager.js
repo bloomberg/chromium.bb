@@ -30,6 +30,8 @@ function FileManager(dialogDom, rootEntries, params) {
   this.filesystem_ = rootEntries[0].filesystem;
   this.params_ = params || {};
 
+  this.listType_ = null;
+
   this.document_ = dialogDom.ownerDocument;
   this.dialogType_ =
     this.params_.type || FileManager.DialogType.FULL_PAGE;
@@ -52,7 +54,9 @@ function FileManager(dialogDom, rootEntries, params) {
   chrome.fileBrowserPrivate.onDiskChanged.addListener(
       this.onDiskChanged_.bind(this));
 
-  this.table.querySelector('.list').focus();
+  // TODO(rginda) Add a focus() method to the various list classes to take care
+  // of this.
+  // this.currentList_.list_.focus();
 }
 
 FileManager.prototype = {
@@ -146,29 +150,40 @@ FileManager.prototype = {
    *     'unknown'.
    */
   function getIconType(entry) {
-    if (entry.isDirectory)
-      return 'folder';
+    if (entry.cachedIconType_)
+      return entry.cachedIconType_;
 
-    for (var name in iconTypes) {
-      var value = iconTypes[name];
+    var rv = 'unknown';
 
-      if (value instanceof RegExp) {
-        if (value.test(entry.name))
-          return name;
-      } else if (typeof value == 'function') {
-        try {
-          if (value(entry))
-            return name;
-        } catch (ex) {
-          console.error('Caught exception while evaluating iconType: ' +
-                        name, ex);
+    if (entry.isDirectory) {
+      rv = 'folder';
+    } else {
+      for (var name in iconTypes) {
+        var value = iconTypes[name];
+
+        if (value instanceof RegExp) {
+          if (value.test(entry.name))  {
+            rv = name;
+            break;
+          }
+        } else if (typeof value == 'function') {
+          try {
+            if (value(entry)) {
+              rv = name;
+              break;
+            }
+          } catch (ex) {
+            console.error('Caught exception while evaluating iconType: ' +
+                          name, ex);
+          }
+        } else {
+          console.log('Unexpected value in iconTypes[' + name + ']: ' + value);
         }
-      } else {
-        console.log('Unexpected value in iconTypes[' + name + ']: ' + value);
       }
     }
 
-    return 'unknown';
+    entry.cachedIconType_ = rv;
+    return rv;
   }
 
   /**
@@ -328,7 +343,7 @@ FileManager.prototype = {
    *     icon type is known.
    */
   function cacheEntryIconType(entry, successCallback) {
-    entry.cachedIconType_ = getIconType(entry);
+    getIconType(entry);
     if (successCallback)
       setTimeout(function() { successCallback(entry) }, 0);
   }
@@ -349,6 +364,11 @@ FileManager.prototype = {
     SELECT_OPEN_FILE: 'open-file',
     SELECT_OPEN_MULTI_FILE: 'open-multi-file',
     FULL_PAGE: 'full-page'
+  };
+
+  FileManager.ListType = {
+    DETAIL: 'detail',
+    THUMBNAIL: 'thumb'
   };
 
   /**
@@ -390,6 +410,10 @@ FileManager.prototype = {
 
     this.dialogDom_.querySelector('button.new-folder').addEventListener(
         'click', this.onNewFolderButtonClick_.bind(this));
+    this.dialogDom_.querySelector('button.detail-view').addEventListener(
+        'click', this.onDetailViewButtonClick_.bind(this));
+    this.dialogDom_.querySelector('button.thumbnail-view').addEventListener(
+        'click', this.onThumbnailViewButtonClick_.bind(this));
 
     this.dialogDom_.ownerDocument.defaultView.addEventListener(
         'resize', this.onResize_.bind(this));
@@ -404,13 +428,79 @@ FileManager.prototype = {
     // Populate the static localized strings.
     i18nTemplate.process(this.document_, localStrings.templateData);
 
-    // Set up the detail table.
-    var dataModel = new cr.ui.table.TableDataModel([]);
-    dataModel.sort('name');
-    dataModel.addEventListener('sorted',
-                               this.onDataModelSorted_.bind(this));
-    dataModel.prepareSort = this.prepareSort_.bind(this);
+    this.dataModel_ = new cr.ui.table.TableDataModel([]);
+    this.dataModel_.sort('name');
+    this.dataModel_.addEventListener('sorted',
+                                this.onDataModelSorted_.bind(this));
+    this.dataModel_.prepareSort = this.prepareSort_.bind(this);
 
+    if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILE ||
+        this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FOLDER ||
+        this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
+      this.selectionModel_ = new cr.ui.table.TableSingleSelectionModel();
+    } else {
+      this.selectionModel_ = new cr.ui.table.TableSelectionModel();
+    }
+
+    this.initTable_();
+    this.initGrid_();
+
+    this.setListType(FileManager.ListType.DETAIL);
+
+    this.onResize_();
+    this.dialogDom_.style.opacity = '1';
+  };
+
+
+  FileManager.prototype.setListType = function(type) {
+    if (type && type == this.listType_)
+      return;
+
+    if (type == FileManager.ListType.DETAIL) {
+      this.table_.style.display = '';
+      this.grid_.style.display = 'none';
+      this.currentList_ = this.table_;
+      this.dialogDom_.querySelector('button.detail-view').disabled = true;
+      this.dialogDom_.querySelector('button.thumbnail-view').disabled = false;
+    } else if (type == FileManager.ListType.THUMBNAIL) {
+      this.grid_.style.display = '';
+      this.table_.style.display = 'none';
+      this.currentList_ = this.grid_;
+      this.dialogDom_.querySelector('button.thumbnail-view').disabled = true;
+      this.dialogDom_.querySelector('button.detail-view').disabled = false;
+    } else {
+      throw new Error('Unknown list type: ' + type);
+    }
+
+    this.listType_ = type;
+    this.onResize_();
+    this.currentList_.redraw();
+  };
+
+  /**
+   * Initialize the file thumbnail grid.
+   */
+  FileManager.prototype.initGrid_ = function() {
+    this.grid_ = this.dialogDom_.querySelector('.thumbnail-grid');
+    cr.ui.Grid.decorate(this.grid_);
+    this.grid_.dataModel = this.dataModel_;
+    this.grid_.selectionModel = this.selectionModel_;
+
+    var self = this;
+    this.grid_.itemConstructor = function(entry) {
+      return self.renderThumbnail_(entry);
+    };
+
+    this.grid_.addEventListener(
+        'dblclick', this.onDetailDoubleClick_.bind(this));
+    this.grid_.selectionModel.addEventListener(
+        'change', this.onDetailSelectionChanged_.bind(this));
+  };
+
+  /**
+   * Initialize the file list table.
+   */
+  FileManager.prototype.initTable_ = function() {
     var columns = [
         new cr.ui.table.TableColumn('cachedIconType_', '', 5.4),
         new cr.ui.table.TableColumn('name', str('NAME_COLUMN_LABEL'), 64),
@@ -425,32 +515,35 @@ FileManager.prototype = {
     columns[2].renderFunction = this.renderSize_.bind(this);
     columns[3].renderFunction = this.renderDate_.bind(this);
 
-    this.table = this.dialogDom_.querySelector('.detail-table');
-    cr.ui.Table.decorate(this.table);
+    this.table_ = this.dialogDom_.querySelector('.detail-table');
+    cr.ui.Table.decorate(this.table_);
 
-    this.table.dataModel = dataModel;
-    this.table.columnModel = new cr.ui.table.TableColumnModel(columns);
+    this.table_.dataModel = this.dataModel_;
+    this.table_.selectionModel = this.selectionModel_;
+    this.table_.columnModel = new cr.ui.table.TableColumnModel(columns);
 
-    if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILE ||
-        this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FOLDER ||
-        this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
-      this.table.selectionModel = new cr.ui.table.TableSingleSelectionModel();
-    }
-
-    this.table.addEventListener(
+    this.table_.addEventListener(
         'dblclick', this.onDetailDoubleClick_.bind(this));
-    this.table.selectionModel.addEventListener(
+    this.table_.selectionModel.addEventListener(
         'change', this.onDetailSelectionChanged_.bind(this));
-
-    this.onResize_();
-    this.dialogDom_.style.opacity = '1';
   };
 
   FileManager.prototype.onResize_ = function() {
-    // TODO(rginda): Remove this hack when cr.ui.List supports resizing.
-    this.table.list_.style.height =
-      (this.table.clientHeight - this.table.header_.clientHeight) + 'px';
-    this.table.redraw();
+    this.table_.style.height = this.grid_.style.height =
+      this.grid_.parentNode.clientHeight + 'px';
+    this.table_.style.width = this.grid_.style.width =
+      this.grid_.parentNode.clientWidth + 'px';
+
+    this.table_.list_.style.width = this.table_.parentNode.clientWidth + 'px';
+    this.table_.list_.style.height = (this.table_.clientHeight - 1 -
+                                      this.table_.header_.clientHeight) + 'px';
+
+    if (this.listType_ == FileManager.ListType.THUMBNAIL) {
+      var self = this;
+      setTimeout(function () { self.grid_.columns = 0 }, 0);
+    } else {
+      this.currentList_.redraw();
+    }
   };
 
   /**
@@ -566,7 +659,7 @@ FileManager.prototype = {
       }
     }
 
-    var dataModel = this.table.dataModel;
+    var dataModel = this.dataModel_;
     var uncachedCount = dataModel.length;
 
     for (var i = uncachedCount - 1; i >= 0 ; i--) {
@@ -582,6 +675,24 @@ FileManager.prototype = {
     }
 
     checkCount();
+  }
+
+  FileManager.prototype.renderThumbnail_ = function(entry) {
+    var li = this.document_.createElement('li');
+    li.className = 'thumbnail-item';
+
+    var img = this.document_.createElement('img');
+    this.setIconSrc(entry, img);
+    li.appendChild(img);
+
+    var div = this.document_.createElement('div');
+    div.textContent = entry.name;
+    li.appendChild(div);
+
+    cr.defineProperty(li, 'lead', cr.PropertyKind.BOOL_ATTR);
+    cr.defineProperty(li, 'selected', cr.PropertyKind.BOOL_ATTR);
+
+    return li;
   }
 
   /**
@@ -687,7 +798,7 @@ FileManager.prototype = {
   FileManager.prototype.summarizeSelection_ = function() {
     var selection = this.selection = {
       entries: [],
-      uris: [],
+      urls: [],
       leadEntry: null,
       totalCount: 0,
       fileCount: 0,
@@ -699,7 +810,7 @@ FileManager.prototype = {
     this.previewSummary_.textContent = str('COMPUTING_SELECTION');
     this.taskButtons_.innerHTML = '';
 
-    var selectedIndexes = this.table.selectionModel.selectedIndexes;
+    var selectedIndexes = this.currentList_.selectionModel.selectedIndexes;
     if (!selectedIndexes.length) {
       cr.dispatchSimpleEvent(this, 'selection-summarized');
       return;
@@ -710,10 +821,10 @@ FileManager.prototype = {
     var pendingFiles = [];
 
     for (var i = 0; i < selectedIndexes.length; i++) {
-      var entry = this.table.dataModel.item(selectedIndexes[i]);
+      var entry = this.dataModel_.item(selectedIndexes[i]);
 
       selection.entries.push(entry);
-      selection.uris.push(entry.toURL());
+      selection.urls.push(entry.toURL());
 
       if (selection.iconType == null) {
         selection.iconType = getIconType(entry);
@@ -743,9 +854,9 @@ FileManager.prototype = {
       }
     }
 
-    var leadIndex = this.table.selectionModel.leadIndex;
+    var leadIndex = this.currentList_.selectionModel.leadIndex;
     if (leadIndex > -1) {
-      selection.leadEntry = this.table.dataModel.item(leadIndex);
+      selection.leadEntry = this.dataModel_.item(leadIndex);
     } else {
       selection.leadEntry = selection.entries[0];
     }
@@ -768,7 +879,7 @@ FileManager.prototype = {
     };
 
     if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
-      chrome.fileBrowserPrivate.getFileTasks(selection.uris,
+      chrome.fileBrowserPrivate.getFileTasks(selection.urls,
                                              this.onTasksFound_.bind(this));
     }
 
@@ -796,7 +907,7 @@ FileManager.prototype = {
 
   FileManager.prototype.onTaskButtonClicked_ = function(event) {
     chrome.fileBrowserPrivate.executeTask(event.srcElement.task.taskId,
-                                          this.selection.uris);
+                                          this.selection.urls);
   }
 
   /**
@@ -867,30 +978,29 @@ FileManager.prototype = {
 
     this.previewFilename_.textContent = previewName;
 
-    var entry = this.selection.leadEntry;
+    var iconType = getIconType(this.selection.leadEntry);
+    if (iconType == 'image') {
+      this.previewImage_.classList.add('transparent-background');
+      if (fileManager.selection.totalCount > 1)
+        this.previewImage_.classList.add('multiple-selected');
+    }
+
+    this.setIconSrc(this.selection.leadEntry, this.previewImage_);
+
+  };
+
+  FileManager.prototype.setIconSrc = function(entry, img, callback) {
     var iconType = getIconType(entry);
     if (iconType != 'image') {
       // Not an image, display a canned clip-art graphic.
-      this.previewImage_.src = previewArt[iconType];
+      img.src = previewArt[iconType];
     } else {
       // File is an image, fetch the thumbnail.
 
-      var fileManager = this;
-
-      batchAsyncCall(entry, 'file', function(file) {
-        var reader = new FileReader();
-
-        reader.onerror = util.ferr('Error reading preview: ' + entry.fullPath);
-        reader.onloadend = function(e) {
-          fileManager.previewImage_.src = this.result;
-          fileManager.previewImage_.classList.add('transparent-background');
-          if (fileManager.selection.totalCount > 1)
-            fileManager.previewImage_.classList.add('multiple-selected');
-        };
-
-        reader.readAsDataURL(file);
-      });
+      img.src = entry.toURL();
     }
+    if (callback)
+      callback();
   };
 
   /**
@@ -939,8 +1049,8 @@ FileManager.prototype = {
    * We use this hook to make sure selected files stay visible after a sort.
    */
   FileManager.prototype.onDataModelSorted_ = function() {
-    var i = this.table.selectionModel.leadIndex;
-    this.table.scrollIntoView(i);
+    var i = this.currentList_.selectionModel.leadIndex;
+    this.currentList_.scrollIntoView(i);
   }
 
   /**
@@ -1012,8 +1122,8 @@ FileManager.prototype = {
    * @param {Event} event The click event.
    */
   FileManager.prototype.onDetailDoubleClick_ = function(event) {
-    var i = this.table.selectionModel.leadIndex;
-    var entry = this.table.dataModel.item(i);
+    var i = this.currentList_.selectionModel.leadIndex;
+    var entry = this.dataModel_.item(i);
 
     if (entry.isDirectory)
       return this.changeDirectory(entry.fullPath);
@@ -1053,8 +1163,8 @@ FileManager.prototype = {
 
     function onReadSome(entries) {
       if (entries.length == 0) {
-        if (self.table.dataModel.sortStatus.field != 'name')
-          self.table.dataModel.updateIndex(0);
+        if (self.dataModel_.sortStatus.field != 'name')
+          self.dataModel_.updateIndex(0);
 
         if (opt_callback)
           opt_callback();
@@ -1073,14 +1183,14 @@ FileManager.prototype = {
       });
 
       spliceArgs.unshift(0, 0);  // index, deleteCount
-      self.table.dataModel.splice.apply(self.table.dataModel, spliceArgs);
+      self.dataModel_.splice.apply(self.dataModel_, spliceArgs);
 
       // Keep reading until entries.length is 0.
       reader.readEntries(onReadSome);
     };
 
     // Clear the table first.
-    this.table.dataModel.splice(0, this.table.dataModel.length);
+    this.dataModel_.splice(0, this.dataModel_.length);
 
     this.updateBreadcrumbs_();
 
@@ -1096,8 +1206,8 @@ FileManager.prototype = {
     // harness) can't be enumerated yet.
     var spliceArgs = [].slice.call(this.rootEntries_);
     spliceArgs.unshift(0, 0);  // index, deleteCount
-    self.table.dataModel.splice.apply(self.table.dataModel, spliceArgs);
-    self.table.dataModel.updateIndex(0);
+    self.dataModel_.splice.apply(self.dataModel_, spliceArgs);
+    self.dataModel_.updateIndex(0);
 
     if (opt_callback)
       opt_callback();
@@ -1145,11 +1255,11 @@ FileManager.prototype = {
 
     function onSuccess(dirEntry) {
       self.rescanDirectory_(function () {
-        for (var i = 0; i < self.table.dataModel.length; i++) {
-          if (self.table.dataModel.item(i).name == dirEntry.name) {
-            self.table.selectionModel.selectedIndex = i;
-            self.table.scrollIndexIntoView(i);
-            self.table.focus();
+        for (var i = 0; i < self.dataModel_.length; i++) {
+          if (self.dataModel_.item(i).name == dirEntry.name) {
+            self.currentList_.selectionModel.selectedIndex = i;
+            self.currentList_.scrollIndexIntoView(i);
+            self.currentList_.focus();
             return;
           }
         };
@@ -1163,6 +1273,14 @@ FileManager.prototype = {
 
     this.currentDirEntry_.getDirectory(name, {create: true, exclusive: true},
                                        onSuccess, onError);
+  };
+
+  FileManager.prototype.onDetailViewButtonClick_ = function(event) {
+    this.setListType(FileManager.ListType.DETAIL);
+  };
+
+  FileManager.prototype.onThumbnailViewButtonClick_ = function(event) {
+    this.setListType(FileManager.ListType.THUMBNAIL);
   };
 
   FileManager.prototype.onKeyDown_ = function(event) {
@@ -1238,7 +1356,7 @@ FileManager.prototype = {
     }
 
     var ary = [];
-    var selectedIndexes = this.table.selectionModel.selectedIndexes;
+    var selectedIndexes = this.currentList_.selectionModel.selectedIndexes;
 
     // All other dialog types require at least one selected list item.
     // The logic to control whether or not the ok button is enabled should
@@ -1247,7 +1365,7 @@ FileManager.prototype = {
       throw new Error('Nothing selected!');
 
     for (var i = 0; i < selectedIndexes.length; i++) {
-      var entry = this.table.dataModel.item(selectedIndexes[i]);
+      var entry = this.dataModel_.item(selectedIndexes[i]);
       if (!entry) {
         console.log('Error locating selected file at index: ' + i);
         continue;

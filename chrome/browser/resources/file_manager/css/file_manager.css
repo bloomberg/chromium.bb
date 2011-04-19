@@ -95,20 +95,55 @@ body {
   font-size: 12px;
 }
 
-/* The cr.ui.Table representing the detailed file list. */
-.detail-table {
+button.detail-view {
+  margin-right: 0;
+}
+
+button.thumbnail-view {
+  margin-left: 0;
+}
+
+.list-container {
   -webkit-box-orient: vertical;
   -webkit-box-flex: 1;
   display: -webkit-box;
+  position: relative;
+}
+
+/* The cr.ui.Grid representing the detailed file list. */
+.thumbnail-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
   border: 0;
 }
 
-/* The actual element containing the list items. */
-.detail-table > .list {
-  /* TODO(rginda): The list is not able to adjust to the available height,
-   * so we have to hardcode it for now.
-   */
-  height: 417px;
+/* An item in the thumbnail view. */
+.thumbnail-item {
+  margin: 10px;
+  width: 120px;
+  height: 120px;
+  text-align: center;
+}
+
+.thumbnail-item > img {
+  padding-top: 8px;
+  max-width: 100px;
+  max-height: 85px;
+}
+
+.thumbnail-item > div {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The cr.ui.Table representing the detailed file list. */
+.detail-table {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 0;
 }
 
 /* The right-column 'Preview' column container. */

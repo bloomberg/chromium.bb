@@ -38,6 +38,8 @@
        'cr/ui/table/table_header.js',
        'cr/ui/table/table_list.js',
        'cr/ui/table.js',
+
+       'cr/ui/grid.js',
       ];
 
       (function() {
@@ -75,13 +77,18 @@
          >[TITLE]</div>
     <div class=dialog-header>
       <div class=breadcrumbs></div>
-      <!-- TODO(rginda): Detail/Thumbnail buttons. -->
+      <!-- TODO(rginda): Add icons instead of unicode glyphs -->
+      <button class=detail-view>&#x1D306;</button
+      ><button class=thumbnail-view>&#x283F;</button>
       <button i18n-content=NEW_FOLDER_BUTTON_LABEL class='new-folder'
               visibleif='this.dialogType_ == "saveas-file"'
               ></button>
     </div>
     <div class=dialog-body>
-      <div class=detail-table></div>
+      <div class=list-container>
+        <grid class=thumbnail-grid></grid>
+        <div class=detail-table></div>
+      </div>
       <div class=preview-container>
         <div class=table-header style='width:100%'>
           <div class=table-header-cell>

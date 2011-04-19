@@ -688,7 +688,8 @@ cr.define('cr.ui', function() {
     createItem: function(value) {
       var item = new this.itemConstructor_(value);
       item.label = value;
-      item.decorate();
+      if (typeof item.decorate == 'function')
+        item.decorate();
       return item;
     },
 
