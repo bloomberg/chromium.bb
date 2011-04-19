@@ -146,6 +146,7 @@
       '-downloads.DownloadsTest.testOpenWhenDone',
       '-downloads.DownloadsTest.testAlwaysOpenFileType',
       '-instant.InstantTest.testInstantNavigation',  # crbug.com/69090
+      '-ntp.NTPTest.testLaunchAppNewWindow',  # crbug.com/79812
       # crbug.com/70437
       '-omnibox.OmniboxTest.testHistoryResult',
       # crbug.com/79263
