@@ -92,6 +92,15 @@ const int kRecentPlanPaymentHours = 6;
 // If cellular device doesn't have SIM card, then retries are never used.
 const int kDefaultSimUnlockRetriesCount = 999;
 
+// Type of a pending SIM operation.
+enum SimOperationType {
+  SIM_OPERATION_NONE               = 0,
+  SIM_OPERATION_CHANGE_PIN         = 1,
+  SIM_OPERATION_CHANGE_REQUIRE_PIN = 2,
+  SIM_OPERATION_ENTER_PIN          = 3,
+  SIM_OPERATION_UNBLOCK_PIN        = 4,
+};
+
 // D-Bus interface string constants.
 
 // Flimflam property names.
@@ -290,6 +299,7 @@ const char* kErrorAaaFailed = "aaa-failed";
 const char* kErrorPassphraseRequiredMsg = "Passphrase required";
 const char* kErrorIncorrectPinMsg = "org.chromium.flimflam.Device.IncorrectPin";
 const char* kErrorPinBlockedMsg = "org.chromium.flimflam.Device.PinBlocked";
+const char* kErrorPinRequiredMsg = "org.chromium.flimflam.Device.PinRequired";
 
 const char* kUnknownString = "UNKNOWN";
 
@@ -792,6 +802,7 @@ NetworkDevice::NetworkDevice(const std::string& device_path)
       scanning_(false),
       sim_lock_state_(SIM_UNKNOWN),
       sim_retries_left_(kDefaultSimUnlockRetriesCount),
+      sim_pin_required_(SIM_PIN_REQUIRE_UNKNOWN),
       PRL_version_(0) {
 }
 
@@ -831,10 +842,21 @@ bool NetworkDevice::ParseValue(int index, const Value* value) {
       return value->GetAsString(&manufacturer_);
     case PROPERTY_INDEX_SIM_LOCK:
       if (value->IsType(Value::TYPE_DICTIONARY)) {
-        return ParseSimLockStateFromDictionary(
+        bool result = ParseSimLockStateFromDictionary(
             static_cast<const DictionaryValue*>(value),
             &sim_lock_state_,
             &sim_retries_left_);
+        // Initialize PinRequired value only once.
+        // See SIMPinRequire enum comments.
+        if (sim_pin_required_ == SIM_PIN_REQUIRE_UNKNOWN) {
+          if (sim_lock_state_ == SIM_UNLOCKED) {
+            sim_pin_required_ = SIM_PIN_NOT_REQUIRED;
+          } else if (sim_lock_state_ == SIM_LOCKED_PIN ||
+                     sim_lock_state_ == SIM_LOCKED_PUK) {
+            sim_pin_required_ = SIM_PIN_REQUIRED;
+          }
+        }
+        return result;
       }
     case PROPERTY_INDEX_FIRMWARE_REVISION:
       return value->GetAsString(&firmware_revision_);
@@ -1861,6 +1883,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         wifi_scanning_(false),
         offline_mode_(false),
         is_locked_(false),
+        sim_operation_(SIM_OPERATION_NONE),
         notify_task_(NULL) {
     if (EnsureCrosLoaded()) {
       Init();
@@ -2182,6 +2205,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       NOTREACHED() << "Calling ChangePin method w/o cellular device.";
       return;
     }
+    sim_operation_ = SIM_OPERATION_CHANGE_PIN;
     chromeos::RequestChangePin(cellular->device_path().c_str(),
                                old_pin.c_str(), new_pin.c_str(),
                                PinOperationCallback, this);
@@ -2189,11 +2213,14 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   virtual void ChangeRequirePin(bool require_pin,
                                 const std::string& pin) {
+    VLOG(1) << "ChangeRequirePin require_pin: " << require_pin
+            << " pin: " << pin;
     const NetworkDevice* cellular = FindCellularDevice();
     if (!cellular) {
       NOTREACHED() << "Calling ChangeRequirePin method w/o cellular device.";
       return;
     }
+    sim_operation_ = SIM_OPERATION_CHANGE_REQUIRE_PIN;
     chromeos::RequestRequirePin(cellular->device_path().c_str(),
                                 pin.c_str(), require_pin,
                                 PinOperationCallback, this);
@@ -2205,6 +2232,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       NOTREACHED() << "Calling EnterPin method w/o cellular device.";
       return;
     }
+    sim_operation_ = SIM_OPERATION_ENTER_PIN;
     chromeos::RequestEnterPin(cellular->device_path().c_str(),
                               pin.c_str(),
                               PinOperationCallback, this);
@@ -2217,6 +2245,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       NOTREACHED() << "Calling UnblockPin method w/o cellular device.";
       return;
     }
+    sim_operation_ = SIM_OPERATION_UNBLOCK_PIN;
     chromeos::RequestUnblockPin(cellular->device_path().c_str(),
                                 puk.c_str(), new_pin.c_str(),
                                 PinOperationCallback, this);
@@ -2234,9 +2263,14 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     if (error == chromeos::NETWORK_METHOD_ERROR_NONE) {
       pin_error = PIN_ERROR_NONE;
       VLOG(1) << "Pin operation completed successfuly";
+      // TODO(nkostylev): Might be cleaned up and exposed in flimflam API.
+      // http://crosbug.com/14253
+      // Since this option state is not exposed we have to update it manually.
+      networklib->FlipSimPinRequiredStateIfNeeded();
     } else {
       if (error_message &&
-          strcmp(error_message, kErrorIncorrectPinMsg) == 0) {
+            (strcmp(error_message, kErrorIncorrectPinMsg) == 0 ||
+             strcmp(error_message, kErrorPinRequiredMsg) == 0)) {
         pin_error = PIN_ERROR_INCORRECT_CODE;
       } else if (error_message &&
                  strcmp(error_message, kErrorPinBlockedMsg) == 0) {
@@ -3481,6 +3515,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     FOR_EACH_OBSERVER(PinOperationObserver,
                       pin_operation_observers_,
                       OnPinOperationCompleted(this, error));
+    sim_operation_ = SIM_OPERATION_NONE;
   }
 
   void NotifyUserConnectionInitiated(const Network* network) {
@@ -3491,6 +3526,20 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   ////////////////////////////////////////////////////////////////////////////
   // Device updates.
+
+  void FlipSimPinRequiredStateIfNeeded() {
+    if (sim_operation_ != SIM_OPERATION_CHANGE_REQUIRE_PIN)
+      return;
+
+    const NetworkDevice* cellular = FindCellularDevice();
+    if (cellular) {
+      NetworkDevice* device = GetNetworkDeviceByPath(cellular->device_path());
+      if (device->sim_pin_required() == SIM_PIN_NOT_REQUIRED)
+        device->sim_pin_required_ = SIM_PIN_REQUIRED;
+      else if (device->sim_pin_required() == SIM_PIN_REQUIRED)
+        device->sim_pin_required_ = SIM_PIN_NOT_REQUIRED;
+    }
+  }
 
   void UpdateNetworkDeviceStatus(const char* path,
                                  const char* key,
@@ -3848,6 +3897,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   // True if access network library is locked.
   bool is_locked_;
+
+  // Type of pending SIM operation, SIM_OPERATION_NONE otherwise.
+  SimOperationType sim_operation_;
 
   // Delayed task to notify a network change.
   CancelableTask* notify_task_;

@@ -723,10 +723,8 @@ void InternetOptionsHandler::PopulateCellularDetails(
     dictionary->SetString("imsi", device->imsi());
     dictionary->SetString("esn", device->esn());
     dictionary->SetString("min", device->min());
-
-    // TODO(nkostylev): Populate real status for SIM card locked state.
-    // dictionary->SetBoolean("simCardLocked", true);
-    // dictionary->SetBoolean("simCardLockEnabled", true);
+    dictionary->SetBoolean("simCardLockEnabled",
+        device->sim_pin_required() == chromeos::SIM_PIN_REQUIRED);
   }
 
   SetActivationButtonVisibility(cellular, dictionary);

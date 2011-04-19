@@ -10306,14 +10306,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SIM_UNLOCK_ENTER_PIN_TITLE" desc="Title of the SIM card unlock dialog in chrome:sim-unlock.">
         Enter SIM Card PIN
       </message>
-      <message name="IDS_SIM_UNLOCK_ENTER_PIN_MESSAGE" desc="Message on the the SIM card unlock dialog asking to enter PIN in chrome:sim-unlock.">
-        SIM card is locked, please enter PIN.
+      <message name="IDS_SIM_ENTER_PIN_MESSAGE" desc="Message on the the SIM card dialog asking to enter PIN in chrome:sim-unlock.">
+        Please enter PIN.
       </message>
       <message name="IDS_SIM_UNLOCK_ENTER_PIN_TRIES_MESSAGE" desc="Message on the the SIM card unlock dialog asking to enter PIN in chrome:sim-unlock.">
         SIM card is locked, please enter PIN. Tries left: <ph name="TRIES_COUNT">$1<ex>42</ex></ph>
-      </message>
-      <message name="IDS_SIM_UNLOCK_INCORRECT_PIN_MESSAGE" desc="Incorrect PIN message shown on SIM card unlock dialog in chrome:sim-unlock.">
-        Incorrect PIN, please try again.
       </message>
       <message name="IDS_SIM_UNLOCK_INCORRECT_PIN_TRIES_MESSAGE" desc="Incorrect PIN message with the number of tries left shown on SIM card unlock dialog in chrome:sim-unlock.">
         Incorrect PIN, please try again. Tries left: <ph name="TRIES_COUNT">$1<ex>42</ex></ph>

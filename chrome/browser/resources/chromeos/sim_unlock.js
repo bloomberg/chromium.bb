@@ -36,6 +36,7 @@ cr.define('mobile', function() {
       var newState = simInfo.state;
       var error = simInfo.error;
       var tries = simInfo.tries;
+      var pinMessage;
       this.hideAll_();
       switch(newState) {
         case SimUnlock.SIM_UNLOCK_LOADING:
@@ -44,22 +45,31 @@ cr.define('mobile', function() {
           SimUnlock.close();
           break;
         case SimUnlock.SIM_LOCKED_PIN:
-          var pinMessage;
           if (error == SimUnlock.ERROR_OK) {
             pinMessage = SimUnlock.localStrings_.getStringF(
                 'enterPinTriesMessage', tries);
             $('pin-error-msg').classList.remove('error');
           } else if (error == SimUnlock.ERROR_PIN) {
-            if (tries && tries >= 0) {
               pinMessage = SimUnlock.localStrings_.getStringF(
                   'incorrectPinTriesMessage', tries);
-            } else {
-              pinMessage = SimUnlock.localStrings_.getString('enterPinMessage');
-            }
             $('pin-error-msg').classList.add('error');
           }
           $('pin-error-msg').textContent = pinMessage;
+          $('pin-input').value = '';
+          SimUnlock.enablePinDialog(true);
+          $('locked-pin-overlay').hidden = false;
+          $('pin-input').focus();
+          break;
         case SimUnlock.SIM_NOT_LOCKED_ASK_PIN:
+          if (error == SimUnlock.ERROR_OK) {
+            pinMessage = SimUnlock.localStrings_.getString('enterPinMessage');
+            $('pin-error-msg').classList.remove('error');
+          } else if (error == SimUnlock.ERROR_PIN) {
+              pinMessage = SimUnlock.localStrings_.getStringF(
+                  'incorrectPinTriesMessage', tries);
+            $('pin-error-msg').classList.add('error');
+          }
+          $('pin-error-msg').textContent = pinMessage;
           $('pin-input').value = '';
           SimUnlock.enablePinDialog(true);
           $('locked-pin-overlay').hidden = false;

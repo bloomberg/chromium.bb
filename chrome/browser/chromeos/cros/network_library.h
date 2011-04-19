@@ -103,6 +103,21 @@ enum SIMLockState {
   SIM_LOCKED_PUK = 3,  // also when SIM is blocked, then retries = 0.
 };
 
+// SIM PinRequire states. Since PinRequire current state is not exposed as a
+// cellular property, we initialize it's value based on the SIMLockState
+// initial value.
+// SIM_PIN_REQUIRE_UNKNOWN - SIM card is absent or SIMLockState initial value
+//                           hasn't been received yet.
+// SIM_PIN_REQUIRED - SIM card is locked when booted/wake from sleep and
+//                    requires user to enter PIN.
+// SIM_PIN_NOT_REQUIRED - SIM card is unlocked all the time and requires PIN
+// only on certain operations, such as ChangeRequirePin, ChangePin, EnterPin.
+enum SIMPinRequire {
+  SIM_PIN_REQUIRE_UNKNOWN = 0,
+  SIM_PIN_NOT_REQUIRED    = 1,
+  SIM_PIN_REQUIRED        = 2,
+};
+
 // Any PIN operation result (EnterPin, UnblockPin etc.).
 enum PinOperationError {
   PIN_ERROR_NONE           = 0,
@@ -179,6 +194,7 @@ class NetworkDevice {
   const std::string& manufacturer() const { return manufacturer_; }
   SIMLockState sim_lock_state() const { return sim_lock_state_; }
   const int sim_retries_left() const { return sim_retries_left_; }
+  SIMPinRequire sim_pin_required() const { return sim_pin_required_; }
   const std::string& firmware_revision() const { return firmware_revision_; }
   const std::string& hardware_revision() const { return hardware_revision_; }
   const std::string& last_update() const { return last_update_; }
@@ -207,6 +223,7 @@ class NetworkDevice {
   std::string manufacturer_;
   SIMLockState sim_lock_state_;
   int sim_retries_left_;
+  SIMPinRequire sim_pin_required_;
   std::string firmware_revision_;
   std::string hardware_revision_;
   std::string last_update_;

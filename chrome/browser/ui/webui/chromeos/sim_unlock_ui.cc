@@ -235,13 +235,11 @@ void SimUnlockUIHTMLSource::StartDataRequest(const std::string& path,
   strings.SetString("enterPinTitle",
       l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_ENTER_PIN_TITLE));
   strings.SetString("enterPinMessage",
-      l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_ENTER_PIN_MESSAGE));
+      l10n_util::GetStringUTF16(IDS_SIM_ENTER_PIN_MESSAGE));
   strings.SetString("enterPinTriesMessage",
       l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_ENTER_PIN_TRIES_MESSAGE));
   strings.SetString("incorrectPinTriesMessage",
       l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_INCORRECT_PIN_TRIES_MESSAGE));
-  strings.SetString("incorrectPinMessage",
-      l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_INCORRECT_PIN_MESSAGE));
   strings.SetString("incorrectPinTitle",
       l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_INCORRECT_PIN_TITLE));
   // TODO(nkostylev): Pass carrier name if we know that.
