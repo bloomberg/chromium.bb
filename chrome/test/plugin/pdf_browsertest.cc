@@ -192,16 +192,28 @@ class PDFBrowserTest : public InProcessBrowserTest,
   scoped_ptr<net::TestServer> pdf_test_server_;
 };
 
+#if defined(OS_CHROMEOS)
+// TODO(sanjeevr): http://crbug.com/79837
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
 // Tests basic PDF rendering.  This can be broken depending on bad merges with
 // the vendor, so it's important that we have basic sanity checking.
-IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Basic) {
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Basic) {
   ASSERT_NO_FATAL_FAILURE(Load());
   ASSERT_NO_FATAL_FAILURE(WaitForResponse());
   ASSERT_NO_FATAL_FAILURE(VerifySnapshot("pdf_browsertest.png"));
 }
 
+#if defined(OS_CHROMEOS)
+// TODO(sanjeevr): http://crbug.com/79837
+#define MAYBE_Scroll DISABLED_Scroll
+#else
+#define MAYBE_Scroll Scroll
+#endif
 // Tests that scrolling works.
-IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Scroll) {
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Scroll) {
   ASSERT_NO_FATAL_FAILURE(Load());
 
   // We use wheel mouse event since that's the only one we can easily push to
@@ -224,7 +236,13 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Scroll) {
   ASSERT_GT(y_offset, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FindAndCopy) {
+#if defined(OS_CHROMEOS)
+// TODO(sanjeevr): http://crbug.com/79837
+#define MAYBE_FindAndCopy DISABLED_FindAndCopy
+#else
+#define MAYBE_FindAndCopy FindAndCopy
+#endif
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
   ASSERT_NO_FATAL_FAILURE(Load());
   // Verifies that find in page works.
   ASSERT_EQ(3, ui_test_utils::FindInPage(

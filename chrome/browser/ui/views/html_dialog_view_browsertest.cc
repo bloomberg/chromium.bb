@@ -113,13 +113,14 @@ class HtmlDialogBrowserTest : public InProcessBrowserTest {
 #endif
 };
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #define MAYBE_SizeWindow SizeWindow
 #else
 // http://code.google.com/p/chromium/issues/detail?id=52602
 // Windows has some issues resizing windows- an off by one problem,
 // and a minimum size that seems too big.  This file isn't included in
-// Mac builds yet.
+// Mac builds yet. On Chrome OS, this test doesn't apply since ChromeOS
+// doesn't allow resizing of windows.
 #define MAYBE_SizeWindow DISABLED_SizeWindow
 #endif
 
