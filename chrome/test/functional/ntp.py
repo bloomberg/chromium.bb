@@ -20,6 +20,29 @@ class NTPTest(pyauto.PyUITest):
   if pyauto.PyUITest.IsChromeOS():
     _EXPECTED_DEFAULT_APPS.append({u'name': u'Get Started'})
 
+  # Default menu and thumbnail mode preferences are set in
+  # ShownSectionsHandler::RegisterUserPrefs.
+  if pyauto.PyUITest.IsChromeOS():
+    _EXPECTED_DEFAULT_THUMB_INFO = {
+      u'apps': True,
+      u'most_visited': False
+    }
+    _EXPECTED_DEFAULT_MENU_INFO = {
+      u'apps': False,
+      u'most_visited': True,
+      u'recently_closed': True
+    }
+  else:
+    _EXPECTED_DEFAULT_THUMB_INFO = {
+      u'apps': False,
+      u'most_visited': True
+    }
+    _EXPECTED_DEFAULT_MENU_INFO = {
+      u'apps': False,
+      u'most_visited': False,
+      u'recently_closed': False
+    }
+
   def Debug(self):
     """Test method for experimentation.
 
@@ -527,18 +550,14 @@ class NTPTest(pyauto.PyUITest):
   def testGetThumbnailModeInNewProfile(self):
     """Ensures only the most visited thumbnails are present in a new profile."""
     thumb_info = self.GetNTPThumbnailMode()
-    expected_thumb_info = {
-      u'apps': False,
-      u'most_visited': True
-    }
-    self._VerifyThumbnailOrMenuMode(thumb_info, expected_thumb_info)
+    self._VerifyThumbnailOrMenuMode(thumb_info,
+                                    self._EXPECTED_DEFAULT_THUMB_INFO)
 
   def testSetThumbnailModeOn(self):
     """Ensures that we can turn on thumbnail mode properly."""
-    # Initially, only the Most Visited section should be in thumbnail mode.
     # Turn on thumbnail mode for the Apps section and verify that only this
-    # section is in thumbnail mode (thumbnail mode for the Most Visited section
-    # should be turned off).
+    # section is in thumbnail mode (since at most one section can be in
+    # thumbnail mode at any given time).
     self.SetNTPThumbnailMode('apps', True)
     thumb_info = self.GetNTPThumbnailMode()
     expected_thumb_info = {
@@ -570,8 +589,8 @@ class NTPTest(pyauto.PyUITest):
 
   def testSetThumbnailModeOff(self):
     """Ensures that we can turn off thumbnail mode properly."""
-    # Initially, only the Most Visited section should be in thumbnail mode.
-    # Verify this.
+    # First, ensure that only the Most Visited section is in thumbnail mode.
+    self.SetNTPThumbnailMode('most_visited', True)
     thumb_info = self.GetNTPThumbnailMode()
     expected_thumb_info = {
       u'apps': False,
@@ -592,33 +611,20 @@ class NTPTest(pyauto.PyUITest):
     # remains off.
     self.SetNTPThumbnailMode('most_visited', False)
     thumb_info = self.GetNTPThumbnailMode()
-    expected_thumb_info = {
-      u'apps': False,
-      u'most_visited': False
-    }
     self._VerifyThumbnailOrMenuMode(thumb_info, expected_thumb_info)
 
   def testGetMenuModeInNewProfile(self):
     """Ensures that all NTP sections are not in menu mode in a fresh profile."""
     menu_info = self.GetNTPMenuMode()
-    expected_menu_info = {
-      u'apps': False,
-      u'most_visited': False,
-      u'recently_closed': False
-    }
-    self._VerifyThumbnailOrMenuMode(menu_info, expected_menu_info)
+    self._VerifyThumbnailOrMenuMode(menu_info, self._EXPECTED_DEFAULT_MENU_INFO)
 
   def testSetMenuModeOn(self):
     """Ensures that we can turn on menu mode properly."""
-    # Initially, all NTP sections have menu mode turned off.
     # Turn on menu mode for the Apps section and verify that it's turned on.
     self.SetNTPMenuMode('apps', True)
     menu_info = self.GetNTPMenuMode()
-    expected_menu_info = {
-      u'apps': True,
-      u'most_visited': False,
-      u'recently_closed': False
-    }
+    expected_menu_info = self._EXPECTED_DEFAULT_MENU_INFO
+    expected_menu_info[u'apps'] = True
     self._VerifyThumbnailOrMenuMode(menu_info, expected_menu_info)
 
     # Turn on menu mode for the remaining sections and verify that they're all
@@ -626,11 +632,8 @@ class NTPTest(pyauto.PyUITest):
     self.SetNTPMenuMode('most_visited', True)
     self.SetNTPMenuMode('recently_closed', True)
     menu_info = self.GetNTPMenuMode()
-    expected_menu_info = {
-      u'apps': True,
-      u'most_visited': True,
-      u'recently_closed': True
-    }
+    expected_menu_info[u'most_visited'] = True
+    expected_menu_info[u'recently_closed'] = True
     self._VerifyThumbnailOrMenuMode(menu_info, expected_menu_info)
 
   def testSetMenuModeOff(self):
@@ -652,22 +655,14 @@ class NTPTest(pyauto.PyUITest):
     self.SetNTPMenuMode('most_visited', False)
     self.SetNTPMenuMode('recently_closed', False)
     menu_info = self.GetNTPMenuMode()
-    expected_menu_info = {
-      u'apps': False,
-      u'most_visited': False,
-      u'recently_closed': False
-    }
+    expected_menu_info[u'most_visited'] = False
+    expected_menu_info[u'recently_closed'] = False
     self._VerifyThumbnailOrMenuMode(menu_info, expected_menu_info)
 
     # Turn off menu mode for the Apps section again, and verify that it
     # remains off.
     self.SetNTPMenuMode('apps', False)
     menu_info = self.GetNTPMenuMode()
-    expected_menu_info = {
-      u'apps': False,
-      u'most_visited': False,
-      u'recently_closed': False
-    }
     self._VerifyThumbnailOrMenuMode(menu_info, expected_menu_info)
 
   def testSetThumbnailModeDoesNotAffectMenuModeAndViceVersa(self):
