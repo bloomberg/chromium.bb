@@ -24,11 +24,13 @@ cr.define('ntp4', function() {
    */
   function tileValuesForGrid(width, numRowTiles) {
     var tileWidth = width / tileWidthFraction(numRowTiles);
-    var offset = tileWidth * (1 + TILE_SPACING_FRACTION);
+    var offsetX = tileWidth * (1 + TILE_SPACING_FRACTION);
+    var interTileSpacing = offsetX - tileWidth;
 
     return {
       tileWidth: tileWidth,
-      offset: offset,
+      offsetX: offsetX,
+      interTileSpacing: interTileSpacing,
     };
   }
 
@@ -149,8 +151,9 @@ cr.define('ntp4', function() {
       var numRowTiles = wide ? grid.maxColCount : grid.minColCount;
       var col = index % numRowTiles;
       var row = Math.floor(index / numRowTiles);
-      var animatedX = col * animatedTileValues.offset + animatedLeftMargin;
-      var animatedY = row * animatedTileValues.offset;
+      var animatedX = col * animatedTileValues.offsetX + animatedLeftMargin;
+      var animatedY = row * (this.heightForWidth(animatedTileValues.tileWidth) +
+                             animatedTileValues.interTileSpacing);
 
       // Calculate the final on-screen position for the tile.
       var effectiveGridWidth = wide ?
@@ -163,8 +166,9 @@ cr.define('ntp4', function() {
       var leftMargin =
           Math.max(minMargin,
                    (this.tileGrid_.clientWidth - effectiveGridWidth) / 2);
-      var realX = col * realTileValues.offset + leftMargin;
-      var realY = row * realTileValues.offset;
+      var realX = col * realTileValues.offsetX + leftMargin;
+      var realY = row * (this.heightForWidth(realTileValues.tileWidth) +
+                         realTileValues.interTileSpacing);
 
       var tileWrapper = this.tileElements_[index];
       tileWrapper.style.left = animatedX + 'px';
@@ -188,6 +192,16 @@ cr.define('ntp4', function() {
       for (var i = 0; i < this.tileElements_.length; i++) {
         this.positionTile_(i);
       }
+    },
+
+    /**
+     * Get the height for a tile of a certain width. Override this function to
+     * get non-square tiles.
+     * @param {number} width The pixel width of a tile.
+     * @return {number} The height for |width|.
+     */
+    heightForWidth: function(width) {
+      return width;
     },
   };
 

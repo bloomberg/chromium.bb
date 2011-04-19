@@ -106,7 +106,7 @@ body {
   color: $8; /* COLOR_NTP_TEXT */
 }
 
-.most-visited:focus .thumbnail-wrapper,
+.most-visited:focus:not(.filler) .thumbnail-wrapper,
 .most-visited:hover .thumbnail-wrapper {
   background-color: $6; /* COLOR_NTP_HEADER */
 }
@@ -124,4 +124,10 @@ body {
 
 .filler .thumbnail {
   border-color: $2; /* COLOR_NTP_BACKGROUND */
+}
+
+.thumbnail-shield {
+  background-image:
+      -webkit-linear-gradient(transparent, transparent 50%,
+                              $2); /* COLOR_NTP_BACKGROUND */
 }

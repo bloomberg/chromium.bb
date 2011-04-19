@@ -18,17 +18,6 @@
   outline: none;
 }
 
-.most-visited > .title {
-  font-size: 100%;
-  font-weight: normal;
-  height: 16px;
-  line-height: 16px;
-  margin: 0;
-  margin-top: 4px;
-  opacity: 1;
-  padding: 0 3px;
-}
-
 .edit-mode-border {
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -145,25 +134,33 @@
   background-image: url('../ntp/ntp_close_p.png');
 }
 
-.most-visited > .title {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.most-visited .title {
   background: no-repeat 0 50%;
   background-size: 16px;
-  /* We cannot use -webkit-padding-start here because even if we set the
-     direction we always want the icon on the same side. */
-  padding-left: 20px;
-  padding-right: 0;
+  bottom: 5px;
+  display: block;
+  left: 0;
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  -webkit-margin-start: 5px;
+  -webkit-padding-end: 0;
+  -webkit-padding-start: 20px;
 }
 
 .thumbnail {
   background: no-repeat;
-  background-size: 100%;
+  /* The extra 2% hides the scrollbar in the screenshot. */
+  background-size: 102%;
   border-radius: 5px;
 }
 
 .filler .thumbnail {
+  /* TODO(estade): there seems to be a webkit bug where this border is not
+   * always removed when it should be. Investigate. */
   border: 1px solid;
   visibility: visible;
 }
@@ -187,7 +184,8 @@
   visibility: visible;
 }
 
-.most-visited:focus .thumbnail-wrapper,
+/* Filler tiles can't get focused, but focused tiles can become filler. */
+.most-visited:focus:not(.filler) .thumbnail-wrapper,
 .most-visited:hover .thumbnail-wrapper {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
