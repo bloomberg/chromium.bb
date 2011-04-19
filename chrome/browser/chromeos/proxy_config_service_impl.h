@@ -89,25 +89,17 @@ class ProxyConfigServiceImpl
     struct Setting {
       Setting() : source(SOURCE_NONE) {}
       bool CanBeWrittenByUser(bool user_is_owner);
-      virtual DictionaryValue* Encode() const;
-      bool Decode(DictionaryValue* dict);
 
       Source source;
     };
 
     // Proxy setting for mode = direct or auto-detect or using pac script.
     struct AutomaticProxy : public Setting {
-      virtual DictionaryValue* Encode() const;
-      bool Decode(DictionaryValue* dict, Mode mode);
-
       GURL    pac_url;  // Set if proxy is using pac script.
     };
 
     // Proxy setting for mode = single-proxy or proxy-per-scheme.
     struct ManualProxy : public Setting {
-      virtual DictionaryValue* Encode() const;
-      bool Decode(DictionaryValue* dict, net::ProxyServer::Scheme scheme);
-
       net::ProxyServer  server;
     };
 
@@ -154,15 +146,10 @@ class ProxyConfigServiceImpl
     net::ProxyBypassRules  bypass_rules;
 
    private:
-    // Encodes |manual_proxy| and adds it as value into |key_name| of |dict|.
-    void EncodeManualProxy(const ManualProxy& manual_proxy,
-        DictionaryValue* dict, const char* key_name);
-    // Decodes value of |key_name| in |dict| into |manual_proxy| with |scheme|;
-    // if |ok_if_absent| is true, function returns true if |key_name| doesn't
-    // exist in |dict|.
-    bool DecodeManualProxy(DictionaryValue* dict, const char* key_name,
-        bool ok_if_absent, net::ProxyServer::Scheme scheme,
-        ManualProxy* manual_proxy);
+    // Encodes the proxy server as "<url-scheme>=<proxy-scheme>://<proxy>"
+    static void EncodeAndAppendProxyServer(const std::string& scheme,
+                                           const net::ProxyServer& server,
+                                           std::string* spec);
   };
 
   // Usual constructor.

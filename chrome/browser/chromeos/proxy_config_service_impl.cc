@@ -11,8 +11,11 @@
 #include "base/task.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
+#include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
+#include "chrome/browser/prefs/proxy_prefs.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/json_value_serializer.h"
+
+namespace em = enterprise_management;
 
 namespace chromeos {
 
@@ -93,21 +96,6 @@ std::string ProxyConfigToString(
   return stream.str();
 }
 
-// Names used for dictionary values to serialize chromeos::ProxyConfig.
-const char* kMode = "mode";
-const char* kSource = "src";
-const char* kAutomaticProxy = "auto";
-const char* kSingleProxy = "single";
-const char* kHttpProxy = "http";
-const char* kHttpsProxy = "https";
-const char* kFtpProxy = "ftp";
-const char* kSocksProxy = "socks";
-const char* kPACUrl = "pac";
-const char* kServer = "server";
-const char* kBypassRules = "bypass_rules";
-const char* kRulesNum = "num";
-const char* kRulesList = "list";
-
 }  // namespace
 
 //---------- ProxyConfigServiceImpl::ProxyConfig::Setting methods --------------
@@ -117,64 +105,6 @@ bool ProxyConfigServiceImpl::ProxyConfig::Setting::CanBeWrittenByUser(
   // Setting can only be written by user if user is owner and setting is not
   // from policy.
   return user_is_owner && source != ProxyConfig::SOURCE_POLICY;
-}
-
-DictionaryValue* ProxyConfigServiceImpl::ProxyConfig::Setting::Encode() const {
-  DictionaryValue* dict = new DictionaryValue;
-  dict->SetInteger(kSource, source);
-  return dict;
-}
-
-bool ProxyConfigServiceImpl::ProxyConfig::Setting::Decode(
-    DictionaryValue* dict) {
-  int int_source;
-  if (!dict->GetInteger(kSource, &int_source))
-    return false;
-  source = static_cast<Source>(int_source);
-  return true;
-}
-
-//------- ProxyConfigServiceImpl::ProxyConfig::AutomaticProxy methods ----------
-
-DictionaryValue*
-    ProxyConfigServiceImpl::ProxyConfig::AutomaticProxy::Encode() const {
-  DictionaryValue* dict = Setting::Encode();
-  if (!pac_url.is_empty())
-    dict->SetString(kPACUrl, pac_url.spec());
-  return dict;
-}
-
-bool ProxyConfigServiceImpl::ProxyConfig::AutomaticProxy::Decode(
-    DictionaryValue* dict, Mode mode) {
-  if (!Setting::Decode(dict))
-    return false;
-  if (mode == MODE_PAC_SCRIPT) {
-    std::string value;
-    if (!dict->GetString(kPACUrl, &value))
-      return false;
-    pac_url = GURL(value);
-  }
-  return true;
-}
-
-//--------- ProxyConfigServiceImpl::ProxyConfig::ManualProxy methods -----------
-
-DictionaryValue*
-    ProxyConfigServiceImpl::ProxyConfig::ManualProxy::Encode() const {
-  DictionaryValue* dict = Setting::Encode();
-  dict->SetString(kServer, server.ToURI());
-  return dict;
-}
-
-bool ProxyConfigServiceImpl::ProxyConfig::ManualProxy::Decode(
-    DictionaryValue* dict, net::ProxyServer::Scheme scheme) {
-  if (!Setting::Decode(dict))
-    return false;
-  std::string value;
-  if (!dict->GetString(kServer, &value))
-    return false;
-  server = net::ProxyServer::FromURI(value, scheme);
-  return true;
 }
 
 //----------- ProxyConfigServiceImpl::ProxyConfig: public methods --------------
@@ -258,106 +188,102 @@ ProxyConfigServiceImpl::ProxyConfig::ManualProxy*
 }
 
 bool ProxyConfigServiceImpl::ProxyConfig::Serialize(std::string* output) {
-  scoped_ptr<DictionaryValue> dict(new DictionaryValue);
-  dict->SetInteger(kMode, mode);
-  DictionaryValue* proxy_dict;
+  em::DeviceProxySettingsProto proxy_proto;
   switch (mode) {
-    case MODE_DIRECT:
-    case MODE_AUTO_DETECT:
-    case MODE_PAC_SCRIPT:
-      proxy_dict = automatic_proxy.Encode();
-      dict->Set(kAutomaticProxy, proxy_dict);
+    case MODE_DIRECT: {
+      proxy_proto.set_proxy_mode(ProxyPrefs::kDirectProxyModeName);
       break;
-    case MODE_SINGLE_PROXY:
-      EncodeManualProxy(single_proxy, dict.get(), kSingleProxy);
+    }
+    case MODE_AUTO_DETECT: {
+      proxy_proto.set_proxy_mode(ProxyPrefs::kAutoDetectProxyModeName);
       break;
-    case MODE_PROXY_PER_SCHEME:
-      EncodeManualProxy(http_proxy, dict.get(), kHttpProxy);
-      EncodeManualProxy(https_proxy, dict.get(), kHttpsProxy);
-      EncodeManualProxy(ftp_proxy, dict.get(), kFtpProxy);
-      EncodeManualProxy(socks_proxy, dict.get(), kSocksProxy);
+    }
+    case MODE_PAC_SCRIPT: {
+      proxy_proto.set_proxy_mode(ProxyPrefs::kPacScriptProxyModeName);
+      if (!automatic_proxy.pac_url.is_empty())
+        proxy_proto.set_proxy_pac_url(automatic_proxy.pac_url.spec());
       break;
-    default:
+    }
+    case MODE_SINGLE_PROXY: {
+      proxy_proto.set_proxy_mode(ProxyPrefs::kFixedServersProxyModeName);
+      if (single_proxy.server.is_valid())
+        proxy_proto.set_proxy_server(single_proxy.server.ToURI());
+      break;
+    }
+    case MODE_PROXY_PER_SCHEME: {
+      proxy_proto.set_proxy_mode(ProxyPrefs::kFixedServersProxyModeName);
+      std::string spec;
+      EncodeAndAppendProxyServer("http", http_proxy.server, &spec);
+      EncodeAndAppendProxyServer("https", https_proxy.server, &spec);
+      EncodeAndAppendProxyServer("ftp", ftp_proxy.server, &spec);
+      EncodeAndAppendProxyServer("socks", socks_proxy.server, &spec);
+      if (!spec.empty())
+        proxy_proto.set_proxy_server(spec);
+      break;
+    }
+    default: {
       NOTREACHED() << "Unrecognized proxy config mode";
       break;
-  }
-  net::ProxyBypassRules::RuleList rules = bypass_rules.rules();
-  if (!rules.empty()) {
-    DictionaryValue* bypass_dict = new DictionaryValue;
-    bypass_dict->SetInteger(kRulesNum, rules.size());
-    ListValue* list = new ListValue;
-    for (size_t i = 0; i < rules.size(); ++i) {
-      list->Append(Value::CreateStringValue(rules[i]->ToString()));
     }
-    bypass_dict->Set(kRulesList, list);
-    dict->Set(kBypassRules, bypass_dict);
   }
-  JSONStringValueSerializer serializer(output);
-  return serializer.Serialize(*dict.get());
+  proxy_proto.set_proxy_bypass_list(bypass_rules.ToString());
+  return proxy_proto.SerializeToString(output);
 }
 
 bool ProxyConfigServiceImpl::ProxyConfig::Deserialize(
     const std::string& input) {
-  JSONStringValueSerializer serializer(input);
-  scoped_ptr<Value> value(serializer.Deserialize(NULL, NULL));
-  if (!value.get() || value->GetType() != Value::TYPE_DICTIONARY)
+  em::DeviceProxySettingsProto proxy_proto;
+  if (!proxy_proto.ParseFromString(input))
     return false;
-  DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
-  int int_mode;
-  if (!dict->GetInteger(kMode, &int_mode))
-    return false;
-  mode = static_cast<Mode>(int_mode);
-  DictionaryValue* proxy_dict = NULL;
-  switch (mode) {
-    case MODE_DIRECT:
-    case MODE_AUTO_DETECT:
-    case MODE_PAC_SCRIPT:
-      if (!dict->GetDictionary(kAutomaticProxy, &proxy_dict) ||
-          !automatic_proxy.Decode(proxy_dict, mode))
+
+  const std::string& mode_string(proxy_proto.proxy_mode());
+  if (mode_string == ProxyPrefs::kDirectProxyModeName) {
+    mode = MODE_DIRECT;
+  } else if (mode_string == ProxyPrefs::kAutoDetectProxyModeName) {
+    mode = MODE_AUTO_DETECT;
+  } else if (mode_string == ProxyPrefs::kPacScriptProxyModeName) {
+    mode = MODE_PAC_SCRIPT;
+    if (proxy_proto.has_proxy_pac_url())
+      automatic_proxy.pac_url = GURL(proxy_proto.proxy_pac_url());
+  } else if (mode_string == ProxyPrefs::kFixedServersProxyModeName) {
+    net::ProxyConfig::ProxyRules rules;
+    rules.ParseFromString(proxy_proto.proxy_server());
+    switch (rules.type) {
+      case net::ProxyConfig::ProxyRules::TYPE_NO_RULES:
         return false;
-      break;
-    case MODE_SINGLE_PROXY:
-      if (!DecodeManualProxy(dict, kSingleProxy, false,
-                             net::ProxyServer::SCHEME_HTTP, &single_proxy))
-        return false;
-      break;
-    case MODE_PROXY_PER_SCHEME:
-      if (!DecodeManualProxy(dict, kHttpProxy, true,
-                             net::ProxyServer::SCHEME_HTTP, &http_proxy))
-        return false;
-      if (!DecodeManualProxy(dict, kHttpsProxy, true,
-                             net::ProxyServer::SCHEME_HTTP, &https_proxy))
-        return false;
-      if (!DecodeManualProxy(dict, kFtpProxy, true,
-                             net::ProxyServer::SCHEME_HTTP, &ftp_proxy))
-        return false;
-      if (!DecodeManualProxy(dict, kSocksProxy, true,
-                             net::ProxyServer::SCHEME_SOCKS5, &socks_proxy))
-        return false;
-      // Make sure we have valid server for at least one of the protocols.
-      if (!(http_proxy.server.is_valid() || https_proxy.server.is_valid() ||
-            ftp_proxy.server.is_valid() || socks_proxy.server.is_valid()))
-        return false;
-      break;
-    default:
-      NOTREACHED() << "Unrecognized proxy config mode";
-      break;
-  }
-  DictionaryValue* bypass_dict = NULL;
-  if (dict->GetDictionary(kBypassRules, &bypass_dict)) {
-    int num_rules = 0;
-    if (bypass_dict->GetInteger(kRulesNum, &num_rules) && num_rules > 0) {
-      ListValue* list;
-      if (!bypass_dict->GetList(kRulesList, &list))
-        return false;
-      for (size_t i = 0; i < list->GetSize(); ++i) {
-        std::string rule;
-        if (!list->GetString(i, &rule))
+      case net::ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY:
+        if (!rules.single_proxy.is_valid())
           return false;
-        bypass_rules.AddRuleFromString(rule);
-      }
+        mode = MODE_SINGLE_PROXY;
+        single_proxy.server = rules.single_proxy;
+        break;
+      case net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME:
+        // Make sure we have valid server for at least one of the protocols.
+        if (!rules.proxy_for_http.is_valid() &&
+            !rules.proxy_for_https.is_valid() &&
+            !rules.proxy_for_ftp.is_valid() &&
+            !rules.fallback_proxy.is_valid()) {
+          return false;
+        }
+        mode = MODE_PROXY_PER_SCHEME;
+        if (rules.proxy_for_http.is_valid())
+          http_proxy.server = rules.proxy_for_http;
+        if (rules.proxy_for_https.is_valid())
+          https_proxy.server = rules.proxy_for_https;
+        if (rules.proxy_for_ftp.is_valid())
+          ftp_proxy.server = rules.proxy_for_ftp;
+        if (rules.fallback_proxy.is_valid())
+          socks_proxy.server = rules.fallback_proxy;
+        break;
     }
+  } else {
+    NOTREACHED() << "Unrecognized proxy config mode";
+    return false;
   }
+
+  if (proxy_proto.has_proxy_bypass_list())
+    bypass_rules.ParseFromString(proxy_proto.proxy_bypass_list());
+
   return true;
 }
 
@@ -367,22 +293,22 @@ std::string ProxyConfigServiceImpl::ProxyConfig::ToString() const {
 
 //----------- ProxyConfigServiceImpl::ProxyConfig: private methods -------------
 
-void ProxyConfigServiceImpl::ProxyConfig::EncodeManualProxy(
-    const ManualProxy& manual_proxy, DictionaryValue* dict,
-    const char* key_name) {
-  if (!manual_proxy.server.is_valid())
+// static
+void ProxyConfigServiceImpl::ProxyConfig::EncodeAndAppendProxyServer(
+    const std::string& scheme,
+    const net::ProxyServer& server,
+    std::string* spec) {
+  if (!server.is_valid())
     return;
-  DictionaryValue* proxy_dict = manual_proxy.Encode();
-  dict->Set(key_name, proxy_dict);
-}
 
-bool ProxyConfigServiceImpl::ProxyConfig::DecodeManualProxy(
-    DictionaryValue* dict, const char* key_name, bool ok_if_absent,
-    net::ProxyServer::Scheme scheme, ManualProxy* manual_proxy) {
-  DictionaryValue* proxy_dict;
-  if (!dict->GetDictionary(key_name, &proxy_dict))
-    return ok_if_absent;
-  return manual_proxy->Decode(proxy_dict, scheme);
+  if (!spec->empty())
+    *spec += ';';
+
+  if (!scheme.empty()) {
+    *spec += scheme;
+    *spec += "=";
+  }
+  *spec += server.ToURI();
 }
 
 //------------------- ProxyConfigServiceImpl: public methods -------------------

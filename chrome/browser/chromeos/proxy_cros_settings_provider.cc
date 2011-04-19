@@ -282,7 +282,9 @@ net::ProxyServer ProxyCrosSettingsProvider::CreateProxyServerFromHost(
     const std::string& host,
     const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
     net::ProxyServer::Scheme scheme) const {
-  uint16 port = proxy.server.host_port_pair().port();
+  uint16 port = 0;
+  if (proxy.server.is_valid())
+    port = proxy.server.host_port_pair().port();
   if (host.length() == 0 && port == 0)
     return net::ProxyServer();
   net::HostPortPair host_port_pair(host, port);
@@ -293,7 +295,9 @@ net::ProxyServer ProxyCrosSettingsProvider::CreateProxyServerFromPort(
     uint16 port,
     const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
     net::ProxyServer::Scheme scheme) const {
-  std::string host = proxy.server.host_port_pair().host();
+  std::string host;
+  if (proxy.server.is_valid())
+    host = proxy.server.host_port_pair().host();
   if (host.length() == 0 && port == 0)
     return net::ProxyServer();
   net::HostPortPair host_port_pair(host, port);
