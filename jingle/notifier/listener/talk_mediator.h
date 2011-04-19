@@ -50,7 +50,7 @@ class TalkMediator {
 
   // Method for the owner of this object to notify peers that an update has
   // occurred.
-  virtual bool SendNotification(const Notification& data) = 0;
+  virtual void SendNotification(const Notification& data) = 0;
 
   // Add a subscription to subscribe to.
   virtual void AddSubscription(const Subscription& subscription) = 0;

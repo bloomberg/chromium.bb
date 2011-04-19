@@ -61,13 +61,16 @@ class MediatorThreadImpl::Core
  private:
   friend class base::RefCountedThreadSafe<MediatorThreadImpl::Core>;
   // Invoked on either the caller thread or the I/O thread.
-  ~Core();
+  virtual ~Core();
   scoped_refptr<ObserverListThreadSafe<Observer> > observers_;
   base::WeakPtr<talk_base::Task> base_task_;
 
   const NotifierOptions notifier_options_;
 
   scoped_ptr<notifier::Login> login_;
+
+  std::vector<Notification> pending_notifications_to_send_;
+
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
@@ -158,6 +161,9 @@ void MediatorThreadImpl::Core::SendNotification(const Notification& data) {
   DCHECK(notifier_options_.request_context_getter->GetIOMessageLoopProxy()->
       BelongsToCurrentThread());
   if (!base_task_.get()) {
+    VLOG(1) << "P2P: Cannot send notification " << data.ToString()
+            << "; sending later";
+    pending_notifications_to_send_.push_back(data);
     return;
   }
   // Owned by |base_task_|.
@@ -186,6 +192,14 @@ void MediatorThreadImpl::Core::OnConnect(
       BelongsToCurrentThread());
   base_task_ = base_task;
   observers_->Notify(&Observer::OnConnectionStateChange, true);
+  std::vector<Notification> notifications_to_send;
+  notifications_to_send.swap(pending_notifications_to_send_);
+  for (std::vector<Notification>::const_iterator it =
+           notifications_to_send.begin();
+       it != notifications_to_send.end(); ++it) {
+    VLOG(1) << "P2P: Sending pending notification " << it->ToString();
+    SendNotification(*it);
+  }
 }
 
 void MediatorThreadImpl::Core::OnDisconnect() {
@@ -274,6 +288,16 @@ void MediatorThreadImpl::UpdateXmppSettings(
       NewRunnableMethod(core_.get(),
                         &MediatorThreadImpl::Core::UpdateXmppSettings,
                         settings));
+}
+
+void MediatorThreadImpl::TriggerOnConnectForTest(
+    base::WeakPtr<talk_base::Task> base_task) {
+  CheckOrSetValidThread();
+  io_message_loop_proxy_->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(core_.get(),
+                        &MediatorThreadImpl::Core::OnConnect,
+                        base_task));
 }
 
 void MediatorThreadImpl::LogoutImpl() {

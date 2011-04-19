@@ -26,6 +26,8 @@ struct Notification {
   std::string channel;
   // The notification data payload.
   std::string data;
+
+  std::string ToString() const;
 };
 
 }  // namespace notifier

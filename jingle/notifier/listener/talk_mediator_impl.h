@@ -52,7 +52,7 @@ class TalkMediatorImpl
   // Users must call Logout once Login is called.
   virtual bool Logout();
 
-  virtual bool SendNotification(const Notification& data);
+  virtual void SendNotification(const Notification& data);
 
   virtual void AddSubscription(const Subscription& subscription);
 
@@ -69,8 +69,7 @@ class TalkMediatorImpl
  private:
   struct TalkMediatorState {
     TalkMediatorState()
-        : started(0), initialized(0), logging_in(0),
-          logged_in(0), subscribed(0) {
+        : started(0), initialized(0), logging_in(0), logged_in(0) {
     }
 
     unsigned int started : 1;      // Background thread has started.
@@ -78,7 +77,6 @@ class TalkMediatorImpl
     unsigned int logging_in : 1;   // Logging in to the mediator's
                                    // authenticator.
     unsigned int logged_in : 1;    // Logged in the mediator's authenticator.
-    unsigned int subscribed : 1;   // Subscribed to the xmpp receiving channel.
   };
 
   void CheckOrSetValidThread();

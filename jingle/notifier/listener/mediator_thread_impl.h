@@ -25,6 +25,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/mediator_thread.h"
@@ -36,6 +37,10 @@ class MessageLoopProxy;
 namespace buzz {
 class XmppClientSettings;
 }  // namespace buzz
+
+namespace talk_base {
+class Task;
+}  // namespace talk_base
 
 namespace notifier {
 
@@ -58,6 +63,11 @@ class MediatorThreadImpl : public MediatorThread {
   virtual void SubscribeForUpdates(const SubscriptionList& subscriptions);
   virtual void SendNotification(const Notification& data);
   virtual void UpdateXmppSettings(const buzz::XmppClientSettings& settings);
+
+  // Used by unit tests.  Make sure that tests that use this have the
+  // IO message loop proxy passed in via |notifier_options| pointing
+  // to the current thread.
+  void TriggerOnConnectForTest(base::WeakPtr<talk_base::Task> base_task);
 
  private:
   void CheckOrSetValidThread();

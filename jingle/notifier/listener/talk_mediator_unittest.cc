@@ -110,29 +110,25 @@ TEST_F(TalkMediatorImplTest, SendNotification) {
   MockMediatorThread* mock = new MockMediatorThread();
   scoped_ptr<TalkMediatorImpl> talk1(NewMockedTalkMediator(mock));
 
-  // Failure due to not being logged in.
   Notification data;
-  EXPECT_FALSE(talk1->SendNotification(data));
-  EXPECT_EQ(0, mock->send_calls);
+  talk1->SendNotification(data);
+  EXPECT_EQ(1, mock->send_calls);
 
   talk1->SetAuthToken("chromium@gmail.com", "token", "fake_service");
   EXPECT_TRUE(talk1->Login());
   talk1->OnConnectionStateChange(true);
   EXPECT_EQ(1, mock->login_calls);
 
-  // Should be subscribed now.
-  EXPECT_TRUE(talk1->state_.subscribed);
-  EXPECT_TRUE(talk1->SendNotification(data));
-  EXPECT_EQ(1, mock->send_calls);
-  EXPECT_TRUE(talk1->SendNotification(data));
+  talk1->SendNotification(data);
   EXPECT_EQ(2, mock->send_calls);
+  talk1->SendNotification(data);
+  EXPECT_EQ(3, mock->send_calls);
 
   EXPECT_TRUE(talk1->Logout());
   EXPECT_EQ(1, mock->logout_calls);
 
-  // Failure due to being logged out.
-  EXPECT_FALSE(talk1->SendNotification(data));
-  EXPECT_EQ(2, mock->send_calls);
+  talk1->SendNotification(data);
+  EXPECT_EQ(4, mock->send_calls);
 }
 
 TEST_F(TalkMediatorImplTest, MediatorThreadCallbacks) {
@@ -154,12 +150,11 @@ TEST_F(TalkMediatorImplTest, MediatorThreadCallbacks) {
   // The message triggers calls to listen and subscribe.
   EXPECT_EQ(1, mock->listen_calls);
   EXPECT_EQ(1, mock->subscribe_calls);
-  EXPECT_TRUE(talk1->state_.subscribed);
 
   // After subscription success is receieved, the talk mediator will allow
   // sending of notifications.
   Notification outgoing_data;
-  EXPECT_TRUE(talk1->SendNotification(outgoing_data));
+  talk1->SendNotification(outgoing_data);
   EXPECT_EQ(1, mock->send_calls);
 
   Notification incoming_data;

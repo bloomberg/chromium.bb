@@ -45,7 +45,6 @@ bool TalkMediatorImpl::Logout() {
     state_.started = 0;
     state_.logging_in = 0;
     state_.logged_in = 0;
-    state_.subscribed = 0;
     // We do not want to be called back during logout since we may be
     // closing.
     mediator_thread_->RemoveObserver(this);
@@ -55,13 +54,9 @@ bool TalkMediatorImpl::Logout() {
   return false;
 }
 
-bool TalkMediatorImpl::SendNotification(const Notification& data) {
+void TalkMediatorImpl::SendNotification(const Notification& data) {
   CheckOrSetValidThread();
-  if (state_.logged_in && state_.subscribed) {
-    mediator_thread_->SendNotification(data);
-    return true;
-  }
-  return false;
+  mediator_thread_->SendNotification(data);
 }
 
 void TalkMediatorImpl::SetDelegate(TalkMediator::Delegate* delegate) {
@@ -116,7 +111,6 @@ void TalkMediatorImpl::OnConnectionStateChange(bool logged_in) {
 
 void TalkMediatorImpl::OnSubscriptionStateChange(bool subscribed) {
   CheckOrSetValidThread();
-  state_.subscribed = subscribed;
   VLOG(1) << "P2P: " << (subscribed ? "subscribed" : "unsubscribed");
   if (delegate_)
     delegate_->OnNotificationStateChange(subscribed);

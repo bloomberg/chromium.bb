@@ -94,12 +94,7 @@ void P2PNotifier::SendNotification() {
   notifier::Notification notification;
   notification.channel = kSyncNotificationChannel;
   notification.data = kSyncNotificationData;
-  bool success = talk_mediator_->SendNotification(notification);
-  if (success) {
-    VLOG(1) << "Sent XMPP notification";
-  } else {
-    VLOG(1) << "Could not send XMPP notification";
-  }
+  talk_mediator_->SendNotification(notification);
 }
 
 void P2PNotifier::OnNotificationStateChange(bool notifications_enabled) {
@@ -115,7 +110,7 @@ void P2PNotifier::OnIncomingNotification(
   CheckOrSetValidThread();
   VLOG(1) << "Sync received P2P notification.";
   if (notification.channel != kSyncNotificationChannel) {
-    LOG(WARNING) << "Notification fron unexpected source: "
+    LOG(WARNING) << "Notification from unexpected source: "
                  << notification.channel;
   }
   MaybeEmitNotification();
