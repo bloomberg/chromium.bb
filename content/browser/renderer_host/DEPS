@@ -1,4 +1,5 @@
 include_rules = [
   "+content/renderer",  # For single-process mode.
+  "+third_party/zlib",
   "+chrome/browser/extensions",  # temporarily, for BrowserRenderProcessHost
 ]

@@ -14,6 +14,8 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/size.h"
 
 namespace ui {
@@ -240,26 +242,30 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
     src_url->clear();
 }
 
-void Clipboard::ReadImage(Buffer buffer, std::string* data) const {
+SkBitmap Clipboard::ReadImage(Buffer buffer) const {
   DCHECK_EQ(buffer, BUFFER_STANDARD);
-  if (!data) {
-    NOTREACHED();
-    return;
-  }
 
   scoped_nsobject<NSImage> image(
       [[NSImage alloc] initWithPasteboard:GetPasteboard()]);
   if (image.get()) {
-    NSArray* reps = [image representations];
-    NSData* png_data = [NSBitmapImageRep
-        representationOfImageRepsInArray:reps
-                               usingType:NSPNGFileType
-                              properties:[NSDictionary dictionary]];
-    if (png_data) {
-      data->assign(static_cast<const char*>([png_data bytes]),
-                   [png_data length]);
-    }
+    [image setFlipped:YES];
+    int width = [image size].width;
+    int height = [image size].height;
+
+    gfx::CanvasSkia canvas(width, height, false);
+    CGContextRef gc = canvas.beginPlatformPaint();
+    NSGraphicsContext* cocoa_gc =
+        [NSGraphicsContext graphicsContextWithGraphicsPort:gc flipped:NO];
+    [NSGraphicsContext setCurrentContext:cocoa_gc];
+    [image drawInRect:NSMakeRect(0, 0, width, height)
+             fromRect:NSZeroRect
+            operation:NSCompositeCopy
+             fraction:1.0];
+    [NSGraphicsContext restoreGraphicsState];
+    canvas.endPlatformPaint();
+    return canvas.ExtractBitmap();
   }
+  return SkBitmap();
 }
 
 void Clipboard::ReadBookmark(string16* title, std::string* url) const {

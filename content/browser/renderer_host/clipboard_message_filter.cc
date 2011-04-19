@@ -4,11 +4,16 @@
 
 #include "content/browser/renderer_host/clipboard_message_filter.h"
 
+#include "base/stl_util-inl.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/clipboard_dispatcher.h"
 #include "content/common/clipboard_messages.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/zlib/zlib.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/size.h"
 
 namespace {
 
@@ -140,7 +145,24 @@ void ClipboardMessageFilter::OnReadHTML(
 
 void ClipboardMessageFilter::OnReadImage(
     ui::Clipboard::Buffer buffer, std::string* data) {
-  GetClipboard()->ReadImage(buffer, data);
+  SkBitmap bitmap = GetClipboard()->ReadImage(buffer);
+  if (bitmap.isNull())
+    return;
+
+  std::vector<unsigned char> png_data;
+  SkAutoLockPixels lock(bitmap);
+  if (gfx::PNGCodec::EncodeWithCompressionLevel(
+          static_cast<const unsigned char*>(bitmap.getPixels()),
+          gfx::PNGCodec::FORMAT_BGRA,
+          gfx::Size(bitmap.width(), bitmap.height()),
+          bitmap.rowBytes(),
+          false,
+          std::vector<gfx::PNGCodec::Comment>(),
+          Z_BEST_SPEED,
+          &png_data)) {
+    data->assign(reinterpret_cast<char*>(vector_as_array(&png_data)),
+                 png_data.size());
+  }
 }
 
 void ClipboardMessageFilter::OnReadAvailableTypes(

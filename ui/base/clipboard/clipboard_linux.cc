@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/size.h"
 
@@ -375,13 +376,10 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
   gtk_selection_data_free(data);
 }
 
-void Clipboard::ReadImage(Buffer buffer, std::string* data) const {
+SkBitmap Clipboard::ReadImage(Buffer buffer) const {
   // TODO(dcheng): implement this.
   NOTIMPLEMENTED();
-  if (!data) {
-    NOTREACHED();
-    return;
-  }
+  return SkBitmap();
 }
 
 void Clipboard::ReadBookmark(string16* title, std::string* url) const {
