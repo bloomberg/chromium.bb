@@ -1,19 +1,80 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/common/chrome_paths_internal.h"
 
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
 
 #include "base/base_paths.h"
 #include "base/logging.h"
-#include "base/mac/mac_util.h"
+#import "base/mac/foundation_util.h"
+#import "base/mac/mac_util.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_constants.h"
 
 namespace {
+
 const FilePath* g_override_versioned_directory = NULL;
+
+NSBundle* OuterAppBundle() {
+  if (!base::mac::AmIBundled()) {
+    // If unbundled (as in a test), there's no app bundle.
+    return nil;
+  }
+
+  if (!base::mac::IsBackgroundOnlyProcess()) {
+    // Shortcut: in the browser process, just return the main app bundle.
+    return [NSBundle mainBundle];
+  }
+
+  // From C.app/Contents/Versions/1.2.3.4, go up three steps to get to C.app.
+  FilePath versioned_dir = chrome::GetVersionedDirectory();
+  FilePath outer_app_dir = versioned_dir.DirName().DirName().DirName();
+  const char* outer_app_dir_c = outer_app_dir.value().c_str();
+  NSString* outer_app_dir_ns = [NSString stringWithUTF8String:outer_app_dir_c];
+
+  return [NSBundle bundleWithPath:outer_app_dir_ns];
+}
+
+const char* ProductDirNameInternal() {
+  // Use OuterAppBundle() to get the main app's bundle. This key needs to live
+  // in the main app's bundle because it will be set differently on the canary
+  // channel, and the autoupdate system dictates that there can be no
+  // differences between channels within the versioned directory. This would
+  // normally use base::mac::MainAppBundle(), but that references the
+  // framework bundle within the versioned directory. Ordinarily, the profile
+  // should not be accessed from non-browser processes, but those processes do
+  // attempt to get the profile directory, so direct them to look in the outer
+  // browser .app's Info.plist for the CrProductDirName key.
+  NSBundle* bundle = OuterAppBundle();
+  NSString* product_dir_name_ns =
+      [bundle objectForInfoDictionaryKey:@"CrProductDirName"];
+  const char* product_dir_name = [product_dir_name_ns fileSystemRepresentation];
+
+  if (!product_dir_name) {
+#if defined(GOOGLE_CHROME_BUILD)
+    product_dir_name = "Google/Chrome";
+#else
+    product_dir_name = "Chromium";
+#endif
+  }
+
+  return product_dir_name;
+}
+
+// ProductDirName returns the name of the directory inside
+// ~/Library/Application Support that should hold the product application
+// data. This can be overridden by setting the CrProductDirName key in the
+// outer browser .app's Info.plist. The default is "Google/Chrome" for
+// officially-branded builds, and "Chromium" for unbranded builds. For the
+// official canary channel, the Info.plist will have CrProductDirName set
+// to "Google/Chrome Canary".
+std::string ProductDirName() {
+  static const char* product_dir_name = ProductDirNameInternal();
+  return std::string(product_dir_name);
+}
+
 }  // namespace
 
 namespace chrome {
@@ -21,24 +82,7 @@ namespace chrome {
 bool GetDefaultUserDataDirectory(FilePath* result) {
   bool success = false;
   if (result && PathService::Get(base::DIR_APP_DATA, result)) {
-#if defined(GOOGLE_CHROME_BUILD)
-    *result = result->Append("Google").Append("Chrome");
-#else
-    *result = result->Append("Chromium");
-#endif
-    success = true;
-  }
-  return success;
-}
-
-bool GetChromeFrameUserDataDirectory(FilePath* result) {
-  bool success = false;
-  if (result && PathService::Get(base::DIR_APP_DATA, result)) {
-#if defined(GOOGLE_CHROME_BUILD)
-    *result = result->Append("Google").Append("Chrome Frame");
-#else
-    *result = result->Append("Chrome Frame");
-#endif
+    *result = result->Append(ProductDirName());
     success = true;
   }
   return success;
