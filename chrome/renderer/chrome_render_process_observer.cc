@@ -206,7 +206,6 @@ int g_shutdown_pipe_write_fd = -1;
 
 void SIGTERMHandler(int signal) {
   RAW_CHECK(signal == SIGTERM);
-  RAW_LOG(INFO, "Handling SIGTERM in renderer.");
 
   // Reinstall the default handler.  We had one shot at graceful shutdown.
   struct sigaction action;
@@ -224,8 +223,6 @@ void SIGTERMHandler(int signal) {
     RAW_CHECK(rv >= 0);
     bytes_written += rv;
   } while (bytes_written < sizeof(signal));
-
-  RAW_LOG(INFO, "Wrote signal to shutdown pipe.");
 }
 
 class ShutdownDetector : public base::PlatformThread::Delegate {

@@ -52,29 +52,23 @@ void GracefulShutdownHandler(int signal) {
     RAW_CHECK(rv >= 0);
     bytes_written += rv;
   } while (bytes_written < sizeof(signal));
-
-  RAW_LOG(INFO,
-          "Successfully wrote to shutdown pipe, resetting signal handler.");
 }
 
 // See comment in |PreEarlyInitialization()|, where sigaction is called.
 void SIGHUPHandler(int signal) {
   RAW_CHECK(signal == SIGHUP);
-  RAW_LOG(INFO, "Handling SIGHUP.");
   GracefulShutdownHandler(signal);
 }
 
 // See comment in |PreEarlyInitialization()|, where sigaction is called.
 void SIGINTHandler(int signal) {
   RAW_CHECK(signal == SIGINT);
-  RAW_LOG(INFO, "Handling SIGINT.");
   GracefulShutdownHandler(signal);
 }
 
 // See comment in |PreEarlyInitialization()|, where sigaction is called.
 void SIGTERMHandler(int signal) {
   RAW_CHECK(signal == SIGTERM);
-  RAW_LOG(INFO, "Handling SIGTERM.");
   GracefulShutdownHandler(signal);
 }
 
