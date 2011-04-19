@@ -4,7 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# usage: dmgdiffer.sh old_dmg new_dmg patch_dmg
+# usage: dmgdiffer.sh product_name old_dmg new_dmg patch_dmg
 #
 # dmgdiffer creates a disk image containing a binary update able to patch
 # a product originally distributed in old_dmg to the version in new_dmg. Much
@@ -133,22 +133,26 @@ mount_dmg() {
 # uniqueness is not important and users will never interact directly with
 # them.
 make_patch_fs() {
-  local old_fs="${1}"
-  local new_fs="${2}"
-  local patch_fs="${3}"
+  local product_name="${1}"
+  local old_fs="${2}"
+  local new_fs="${3}"
+  local patch_fs="${4}"
 
-  readonly PRODUCT_NAME="Google Chrome"
-  readonly APP_NAME="${PRODUCT_NAME}.app"
-  readonly APP_NAME_RE="${PRODUCT_NAME}\\.app"
+  readonly APP_NAME="${product_name}.app"
+  readonly APP_NAME_RE="${product_name}\\.app"
   readonly APP_PLIST="Contents/Info"
   readonly APP_VERSION_KEY="CFBundleShortVersionString"
   readonly KS_VERSION_KEY="KSVersion"
   readonly KS_PRODUCT_KEY="KSProductID"
   readonly KS_CHANNEL_KEY="KSChannelID"
   readonly VERSIONS_DIR="Contents/Versions"
-  readonly PRODUCT_URL="http://www.google.com/chrome/"
   readonly BUILD_RE="^[0-9]+\\.[0-9]+\\.([0-9]+)\\.[0-9]+\$"
   readonly MIN_BUILD=434
+
+  local product_url="http://www.google.com/chrome/"
+  if [[ "${product_name}" = "Google Chrome Canary" ]]; then
+    product_url="http://tools.google.com/dlpage/chromesxs"
+  fi
 
   local old_app_path="${old_fs}/${APP_NAME}"
   local old_app_plist="${old_app_path}/${APP_PLIST}"
@@ -216,6 +220,8 @@ make_patch_fs() {
     name_extra=" Beta"
   elif [[ "${new_ks_channel}" = "dev" ]]; then
     name_extra=" Dev"
+  elif [[ "${new_ks_channel}" = "canary" ]]; then
+    name_extra=
   elif [[ -n "${new_ks_channel}" ]]; then
     name_extra=" ${new_ks_channel}"
   fi
@@ -271,12 +277,13 @@ make_patch_fs() {
   cat > "${patch_fs}/README.txt" << __EOF__ || \
       (err "could not write README.txt" && exit 13)
 This disk image contains a differential updater that can update
-${PRODUCT_NAME} from version ${old_app_version} to ${new_app_version_extra}.
+${product_name} from version ${old_app_version} to ${new_app_version_extra}.
 
 This image is part of the auto-update system and is not independently
 useful.
 
-To install ${PRODUCT_NAME}, please visit <${PRODUCT_URL}>.
+To install ${product_name}, please visit
+<${product_url}>.
 __EOF__
 
   local patch_versioned_dir="\
@@ -299,7 +306,7 @@ ${patch_dotpatch_dir}/version_${old_app_version}_${new_app_version}.dirpatch"
   # Keystone channel and brand tagging and subsequent code signing.
   export DIRDIFFER_NO_DIFF="\
 /${APP_NAME_RE}/Contents/\
-(CodeResources|Info\\.plist|MacOS/${PRODUCT_NAME}|_CodeSignature/.*)$"
+(CodeResources|Info\\.plist|MacOS/${product_name}|_CodeSignature/.*)$"
 
   local patch_app_dir="${patch_dotpatch_dir}/application.dirpatch"
 
@@ -313,7 +320,7 @@ ${patch_dotpatch_dir}/version_${old_app_version}_${new_app_version}.dirpatch"
 
   unset DIRDIFFER_EXCLUDE DIRDIFFER_NO_DIFF
 
-  echo "${PRODUCT_NAME} ${old_app_version}-${new_app_version_extra} Update"
+  echo "${product_name} ${old_app_version}-${new_app_version_extra} Update"
 }
 
 # package_patch_dmg creates a disk image at patch_dmg with the contents of
@@ -346,9 +353,10 @@ package_patch_dmg() {
 # a patch filesystem, and then hands the patch filesystem to package_patch_dmg
 # to create patch_dmg.
 make_patch_dmg() {
-  local old_dmg="${1}"
-  local new_dmg="${2}"
-  local patch_dmg="${3}"
+  local product_name="${1}"
+  local old_dmg="${2}"
+  local new_dmg="${3}"
+  local patch_dmg="${4}"
 
   local temp_dir
   temp_dir="$(mktemp -d -t "${ME}")"
@@ -375,7 +383,8 @@ make_patch_dmg() {
   fi
 
   local volume_name
-  volume_name="$(make_patch_fs "${old_mount_point}" \
+  volume_name="$(make_patch_fs "${product_name}" \
+                               "${old_mount_point}" \
                                "${new_mount_point}" \
                                "${patch_fs}")"
 
@@ -408,10 +417,11 @@ usage() {
 }
 
 main() {
-  local old_dmg new_dmg patch_dmg
-  old_dmg="$(shell_safe_path "${1}")"
-  new_dmg="$(shell_safe_path "${2}")"
-  patch_dmg="$(shell_safe_path "${3}")"
+  local product_name old_dmg new_dmg patch_dmg
+  product_name="${1}"
+  old_dmg="$(shell_safe_path "${2}")"
+  new_dmg="$(shell_safe_path "${3}")"
+  patch_dmg="$(shell_safe_path "${4}")"
 
   trap cleanup EXIT HUP INT QUIT TERM
 
@@ -435,12 +445,12 @@ main() {
     exit 5
   fi
 
-  make_patch_dmg "${old_dmg}" "${new_dmg}" "${patch_dmg}"
+  make_patch_dmg "${product_name}" "${old_dmg}" "${new_dmg}" "${patch_dmg}"
 
   trap - EXIT
 }
 
-if [[ ${#} -ne 3 ]]; then
+if [[ ${#} -ne 4 ]]; then
   usage
   exit 2
 fi
