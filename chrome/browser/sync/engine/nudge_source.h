@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,6 @@
 #pragma once
 
 namespace browser_sync {
-
-namespace s3 {
 
 enum NudgeSource {
   NUDGE_SOURCE_UNKNOWN = 0,
@@ -20,7 +18,6 @@ enum NudgeSource {
   NUDGE_SOURCE_CONTINUATION,
 };
 
-}  // namespace s3
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_ENGINE_NUDGE_SOURCE_H_

@@ -66,9 +66,6 @@ SyncBackendHost::SyncBackendHost(Profile* profile)
       sync_data_folder_path_(
           profile_->GetPath().Append(kSyncDataFolderName)),
       last_auth_error_(AuthError::None()),
-      using_new_syncer_thread_(
-          CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kNewSyncerThread)),
       syncapi_initialized_(false) {
 }
 
@@ -78,9 +75,6 @@ SyncBackendHost::SyncBackendHost()
       profile_(NULL),
       frontend_(NULL),
       last_auth_error_(AuthError::None()),
-      using_new_syncer_thread_(
-          CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kNewSyncerThread)),
       syncapi_initialized_(false) {
 }
 
@@ -409,16 +403,7 @@ void SyncBackendHost::ConfigureDataTypes(
                                    &registrar_.routing_info));
   }
 
-  // If we're doing the first configure (at startup) this is redundant as the
-  // syncer thread always must start in config mode.
-  if (using_new_syncer_thread_) {
-    core_thread_.message_loop()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(core_.get(),
-        &SyncBackendHost::Core::DoStartConfigurationMode));
-  } else {
-    FinishConfigureDataTypesOnFrontendLoop();
-  }
+  FinishConfigureDataTypesOnFrontendLoop();
 }
 
 void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
@@ -433,15 +418,11 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
   // downloading updates for newly added data types.  Once this is
   // complete, the configure_state_.ready_task_ is run via an
   // OnInitializationComplete notification.
-  bool request_nudge = false;
+
   if (pending_config_mode_state_->deleted_type) {
-    if (using_new_syncer_thread_) {
-      core_thread_.message_loop()->PostTask(FROM_HERE,
-          NewRunnableMethod(core_.get(),
-          &SyncBackendHost::Core::DeferNudgeForCleanup));
-    } else {
-      request_nudge = true;
-    }
+    core_thread_.message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(core_.get(),
+        &SyncBackendHost::Core::DeferNudgeForCleanup));
   }
 
   if (pending_config_mode_state_->added_types.none() &&
@@ -464,17 +445,14 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
     pending_config_mode_state_->ready_task->Run();
   } else {
     pending_download_state_.reset(pending_config_mode_state_.release());
-    if (using_new_syncer_thread_) {
-      RequestConfig(pending_download_state_->added_types);
-    } else {
-      request_nudge = true;
-    }
-  }
 
-  // TODO(tim): Remove this when we get rid of the old syncer thread.
-  if (request_nudge) {
-    CHECK(!using_new_syncer_thread_);
-    RequestNudge(FROM_HERE);
+    syncable::ModelTypeBitSet types_copy(pending_download_state_->added_types);
+    if (IsNigoriEnabled())
+      types_copy.set(syncable::NIGORI);
+    core_thread_.message_loop()->PostTask(FROM_HERE,
+         NewRunnableMethod(core_.get(),
+                           &SyncBackendHost::Core::DoRequestConfig,
+                           types_copy));
   }
 
   pending_config_mode_state_.reset();
@@ -497,17 +475,6 @@ void SyncBackendHost::RequestNudge(const tracked_objects::Location& location) {
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoRequestNudge,
                         location));
-}
-
-void SyncBackendHost::RequestConfig(
-    const syncable::ModelTypeBitSet& added_types) {
-  DCHECK(core_->syncapi());
-
-  syncable::ModelTypeBitSet types_copy(added_types);
-  if (IsNigoriEnabled())
-    types_copy.set(syncable::NIGORI);
-
-  core_->syncapi()->RequestConfig(types_copy);
 }
 
 void SyncBackendHost::ActivateDataType(
@@ -541,20 +508,6 @@ void SyncBackendHost::DeactivateDataType(
   DCHECK_EQ(erased, 1U);
 }
 
-bool SyncBackendHost::RequestPause() {
-  DCHECK(!using_new_syncer_thread_);
-  core_thread_.message_loop()->PostTask(FROM_HERE,
-     NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoRequestPause));
-  return true;
-}
-
-bool SyncBackendHost::RequestResume() {
-  DCHECK(!using_new_syncer_thread_);
-  core_thread_.message_loop()->PostTask(FROM_HERE,
-     NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoRequestResume));
-  return true;
-}
-
 bool SyncBackendHost::RequestClearServerData() {
   core_thread_.message_loop()->PostTask(FROM_HERE,
      NewRunnableMethod(core_.get(),
@@ -563,20 +516,6 @@ bool SyncBackendHost::RequestClearServerData() {
 }
 
 SyncBackendHost::Core::~Core() {
-}
-
-void SyncBackendHost::Core::NotifyPaused() {
-  DCHECK(!host_ || !host_->using_new_syncer_thread_);
-  NotificationService::current()->Notify(NotificationType::SYNC_PAUSED,
-                                         NotificationService::AllSources(),
-                                         NotificationService::NoDetails());
-}
-
-void SyncBackendHost::Core::NotifyResumed() {
-  DCHECK(!host_ || !host_->using_new_syncer_thread_);
-  NotificationService::current()->Notify(NotificationType::SYNC_RESUMED,
-                                         NotificationService::AllSources(),
-                                         NotificationService::NoDetails());
 }
 
 void SyncBackendHost::Core::NotifyPassphraseRequired(bool for_decryption) {
@@ -832,6 +771,11 @@ void SyncBackendHost::Core::DoEncryptDataTypes(
   syncapi_->EncryptDataTypes(encrypted_types);
 }
 
+void SyncBackendHost::Core::DoRequestConfig(
+    const syncable::ModelTypeBitSet& added_types) {
+  syncapi_->RequestConfig(added_types);
+}
+
 UIModelWorker* SyncBackendHost::ui_worker() {
   ModelSafeWorker* w = registrar_.workers[GROUP_UI];
   if (w == NULL)
@@ -949,7 +893,6 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
     }
     if (!found_all_added) {
       CHECK(false);
-      DCHECK(!host_->using_new_syncer_thread_);
     } else {
       host_->pending_download_state_->ready_task->Run();
       host_->pending_download_state_.reset();
@@ -1025,18 +968,6 @@ void SyncBackendHost::Core::OnPassphraseAccepted(
   host_->frontend_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &Core::NotifyPassphraseAccepted,
           bootstrap_token));
-}
-
-void SyncBackendHost::Core::OnPaused() {
-  host_->frontend_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &Core::NotifyPaused));
-}
-
-void SyncBackendHost::Core::OnResumed() {
-  host_->frontend_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &Core::NotifyResumed));
 }
 
 void SyncBackendHost::Core::OnStopSyncingPermanently() {
@@ -1130,14 +1061,6 @@ void SyncBackendHost::Core::DoRequestClearServerData() {
   syncapi_->RequestClearServerData();
 }
 
-void SyncBackendHost::Core::DoRequestResume() {
-  syncapi_->RequestResume();
-}
-
-void SyncBackendHost::Core::DoRequestPause() {
-  syncapi()->RequestPause();
-}
-
 void SyncBackendHost::Core::SaveChanges() {
   syncapi_->SaveChanges();
 }
@@ -1211,11 +1134,6 @@ void SyncBackendHost::Core::DoProcessMessage(
     const JsEventHandler* sender) {
   DCHECK_EQ(MessageLoop::current(), host_->core_thread_.message_loop());
   syncapi_->GetJsBackend()->ProcessMessage(name, args, sender);
-}
-
-void SyncBackendHost::Core::DoStartConfigurationMode() {
-  syncapi_->StartConfigurationMode(NewCallback(this,
-        &SyncBackendHost::Core::FinishConfigureDataTypes));
 }
 
 void SyncBackendHost::Core::DeferNudgeForCleanup() {

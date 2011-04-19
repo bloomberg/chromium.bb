@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,12 +106,7 @@ void AllStatus::OnSyncEngineEvent(const SyncEngineEvent& event) {
     case SyncEngineEvent::STATUS_CHANGED:
       status_ = CalcSyncing(event);
       break;
-    case SyncEngineEvent::SYNCER_THREAD_PAUSED:
-    case SyncEngineEvent::SYNCER_THREAD_RESUMED:
-    case SyncEngineEvent::SYNCER_THREAD_WAITING_FOR_CONNECTION:
-    case SyncEngineEvent::SYNCER_THREAD_CONNECTED:
     case SyncEngineEvent::STOP_SYNCING_PERMANENTLY:
-    case SyncEngineEvent::SYNCER_THREAD_EXITING:
        break;
     default:
       LOG(ERROR) << "Unrecognized Syncer Event: " << event.what_happened;
