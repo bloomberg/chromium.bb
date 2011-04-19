@@ -539,12 +539,12 @@ class CookieMonster::CanonicalCookie {
                   const std::string& value,
                   const std::string& domain,
                   const std::string& path,
+                  const base::Time& creation,
+                  const base::Time& expiration,
+                  const base::Time& last_access,
                   bool secure,
                   bool httponly,
-                  const base::Time& creation,
-                  const base::Time& last_access,
-                  bool has_expires,
-                  const base::Time& expires);
+                  bool has_expires);
 
   // This constructor does canonicalization but not validation.
   // The result of this constructor should not be relied on in contexts
@@ -558,11 +558,15 @@ class CookieMonster::CanonicalCookie {
   // Creates a canonical cookie from unparsed attribute values.
   // Canonicalizes and validates inputs.  May return NULL if an attribute
   // value is invalid.
-  static CanonicalCookie* Create(
-      const GURL& url, const std::string& name, const std::string& value,
-      const std::string& domain, const std::string& path,
-      const base::Time& creation_time, const base::Time& expiration_time,
-      bool secure, bool http_only);
+  static CanonicalCookie* Create(const GURL& url,
+                                 const std::string& name,
+                                 const std::string& value,
+                                 const std::string& domain,
+                                 const std::string& path,
+                                 const base::Time& creation,
+                                 const base::Time& expiration,
+                                 bool secure,
+                                 bool http_only);
 
   const std::string& Source() const { return source_; }
   const std::string& Name() const { return name_; }
@@ -626,11 +630,11 @@ class CookieMonster::CanonicalCookie {
   std::string domain_;
   std::string path_;
   base::Time creation_date_;
-  base::Time last_access_date_;
   base::Time expiry_date_;
-  bool has_expires_;
+  base::Time last_access_date_;
   bool secure_;
   bool httponly_;
+  bool has_expires_;
 };
 
 class CookieMonster::Delegate

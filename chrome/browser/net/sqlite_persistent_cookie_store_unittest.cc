@@ -35,10 +35,10 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
     // Make sure the store gets written at least once.
     store_->AddCookie(
         net::CookieMonster::CanonicalCookie(GURL(), "A", "B", "http://foo.bar",
-                                            "/", false, false,
+                                            "/", base::Time::Now(),
                                             base::Time::Now(),
                                             base::Time::Now(),
-                                            true, base::Time::Now()));
+                                            false, false, true));
   }
 
   BrowserThread ui_thread_;
@@ -129,8 +129,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestFlush) {
     std::string value(1000, c);
     store_->AddCookie(
         net::CookieMonster::CanonicalCookie(GURL(), name, value,
-                                            "http://foo.bar", "/", false, false,
-                                            t, t, true, t));
+                                            "http://foo.bar", "/", t, t, t,
+                                            false, false, true));
   }
 
   // Call Flush() and wait until the DB thread is idle.

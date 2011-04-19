@@ -95,10 +95,9 @@ void AddCookieToList(
   scoped_ptr<CookieMonster::CanonicalCookie> cookie(
       new CookieMonster::CanonicalCookie(
           GURL(), pc.Name(), pc.Value(), key, cookie_path,
+          creation_time, creation_time, cookie_expires,
           pc.IsSecure(), pc.IsHttpOnly(),
-          creation_time, creation_time,
-          !cookie_expires.is_null(),
-          cookie_expires));
+          !cookie_expires.is_null()));
 
   out_list->push_back(cookie.release());
 }
@@ -156,19 +155,18 @@ CookieMonster* CreateMonsterFromStoreForGC(
   scoped_refptr<MockSimplePersistentCookieStore> store(
       new MockSimplePersistentCookieStore);
   // Must expire to be persistent
-  for (int i = 0; i < num_old_cookies; i++) {
+  for (int i = 0; i < num_cookies; i++) {
+    base::Time creation_time =
+        past_creation + base::TimeDelta::FromMicroseconds(i);
+    base::Time expiration_time = current + base::TimeDelta::FromDays(30);
+    base::Time last_access_time =
+        (i < num_old_cookies) ? current - base::TimeDelta::FromDays(days_old) :
+                                current;
+
     CookieMonster::CanonicalCookie cc(
-        GURL(), "a", "1", base::StringPrintf("h%05d.izzle", i), "/path", false,
-        false, past_creation + base::TimeDelta::FromMicroseconds(i),
-        current - base::TimeDelta::FromDays(days_old),
-        true, current + base::TimeDelta::FromDays(30));
-    store->AddCookie(cc);
-  }
-  for (int i = num_old_cookies; i < num_cookies; i++) {
-    CookieMonster::CanonicalCookie cc(
-        GURL(), "a", "1", base::StringPrintf("h%05d.izzle", i), "/path", false,
-        false, past_creation + base::TimeDelta::FromMicroseconds(i), current,
-        true, current + base::TimeDelta::FromDays(30));
+        GURL(), "a", "1", base::StringPrintf("h%05d.izzle", i), "/path",
+        creation_time, expiration_time, last_access_time,
+        false, false, true);
     store->AddCookie(cc);
   }
 

@@ -1215,11 +1215,10 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
   scoped_ptr<CanonicalCookie> cc;
   Time cookie_expires = CanonExpiration(pc, creation_time, options);
 
-  cc.reset(new CanonicalCookie(url, pc.Name(),
-                               pc.Value(), cookie_domain, cookie_path,
-                               pc.IsSecure(), pc.IsHttpOnly(), creation_time,
-                               creation_time, !cookie_expires.is_null(),
-                               cookie_expires));
+  cc.reset(new CanonicalCookie(url, pc.Name(), pc.Value(), cookie_domain,
+                               cookie_path, creation_time, cookie_expires,
+                               creation_time, pc.IsSecure(), pc.IsHttpOnly(),
+                               !cookie_expires.is_null()));
 
   if (!cc.get()) {
     VLOG(kVlogSetCookies) << "WARNING: Failed to allocate CanonicalCookie";
@@ -1910,9 +1909,9 @@ void CookieMonster::ParsedCookie::SetupAttributes() {
 }
 
 CookieMonster::CanonicalCookie::CanonicalCookie()
-    : has_expires_(false),
-      secure_(false),
-      httponly_(false) {
+    : secure_(false),
+      httponly_(false),
+      has_expires_(false) {
 }
 
 CookieMonster::CanonicalCookie::CanonicalCookie(const GURL& url,
@@ -1920,23 +1919,23 @@ CookieMonster::CanonicalCookie::CanonicalCookie(const GURL& url,
                                                 const std::string& value,
                                                 const std::string& domain,
                                                 const std::string& path,
+                                                const base::Time& creation,
+                                                const base::Time& expiration,
+                                                const base::Time& last_access,
                                                 bool secure,
                                                 bool httponly,
-                                                const base::Time& creation,
-                                                const base::Time& last_access,
-                                                bool has_expires,
-                                                const base::Time& expires)
+                                                bool has_expires)
     : source_(GetCookieSourceFromURL(url)),
       name_(name),
       value_(value),
       domain_(domain),
       path_(path),
       creation_date_(creation),
+      expiry_date_(expiration),
       last_access_date_(last_access),
-      expiry_date_(expires),
-      has_expires_(has_expires),
       secure_(secure),
-      httponly_(httponly) {
+      httponly_(httponly),
+      has_expires_(has_expires) {
 }
 
 CookieMonster::CanonicalCookie::CanonicalCookie(const GURL& url,
@@ -1947,9 +1946,9 @@ CookieMonster::CanonicalCookie::CanonicalCookie(const GURL& url,
       path_(CanonPath(url, pc)),
       creation_date_(Time::Now()),
       last_access_date_(Time()),
-      has_expires_(pc.HasExpires()),
       secure_(pc.IsSecure()),
-      httponly_(pc.IsHttpOnly()) {
+      httponly_(pc.IsHttpOnly()),
+      has_expires_(pc.HasExpires()) {
   if (has_expires_)
     expiry_date_ = CanonExpiration(pc, creation_date_, CookieOptions());
 
@@ -1984,10 +1983,15 @@ std::string CookieMonster::CanonicalCookie::GetCookieSourceFromURL(
 }
 
 CookieMonster::CanonicalCookie* CookieMonster::CanonicalCookie::Create(
-      const GURL& url, const std::string& name, const std::string& value,
-      const std::string& domain, const std::string& path,
-      const base::Time& creation_time, const base::Time& expiration_time,
-      bool secure, bool http_only) {
+      const GURL& url,
+      const std::string& name,
+      const std::string& value,
+      const std::string& domain,
+      const std::string& path,
+      const base::Time& creation,
+      const base::Time& expiration,
+      bool secure,
+      bool http_only) {
   // Expect valid attribute tokens and values, as defined by the ParsedCookie
   // logic, otherwise don't create the cookie.
   std::string parsed_name = ParsedCookie::ParseTokenString(name);
@@ -2021,10 +2025,9 @@ CookieMonster::CanonicalCookie* CookieMonster::CanonicalCookie::Create(
   cookie_path = std::string(canon_path.data() + canon_path_component.begin,
                             canon_path_component.len);
 
-  return new CanonicalCookie(url, parsed_name,
-                             parsed_value, cookie_domain, cookie_path, secure,
-                             http_only, creation_time, creation_time,
-                             !expiration_time.is_null(), expiration_time);
+  return new CanonicalCookie(url, parsed_name, parsed_value, cookie_domain,
+                             cookie_path, creation, expiration, creation,
+                             secure, http_only, !expiration.is_null());
 }
 
 bool CookieMonster::CanonicalCookie::IsOnPath(
