@@ -209,4 +209,8 @@ std::string GetVersionStringModifier() {
 #endif
 }
 
+bool CanSetAsDefaultBrowser() {
+  return GetVersionStringModifier().compare("canary") != 0;
+}
+
 }  // namespace platform_util

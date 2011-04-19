@@ -1,15 +1,19 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/shell_integration.h"
 
 #include "base/mac/mac_util.h"
+#include "chrome/browser/platform_util.h"
 #import "third_party/mozilla/NSWorkspace+Utils.h"
 
 // Sets Chromium as default browser (only for current user). Returns false if
-// this operation fails (which we can't check for).
+// this operation fails.
 bool ShellIntegration::SetAsDefaultBrowser() {
+  if (!platform_util::CanSetAsDefaultBrowser())
+    return false;
+
   // We really do want the main bundle here, not base::mac::MainAppBundle(),
   // which is the bundle for the framework.
   NSString* identifier = [[NSBundle mainBundle] bundleIdentifier];

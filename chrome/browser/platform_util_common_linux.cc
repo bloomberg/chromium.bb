@@ -134,4 +134,8 @@ std::string GetVersionStringModifier() {
   return modifier;
 }
 
+bool CanSetAsDefaultBrowser() {
+  return true;
+}
+
 }  // namespace platform_util

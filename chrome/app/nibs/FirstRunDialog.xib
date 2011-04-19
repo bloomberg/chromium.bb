@@ -2,17 +2,16 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10F2108</string>
-		<string key="IBDocument.InterfaceBuilderVersion">823</string>
-		<string key="IBDocument.AppKitVersion">1038.29</string>
+		<string key="IBDocument.SystemVersion">10J869</string>
+		<string key="IBDocument.InterfaceBuilderVersion">851</string>
+		<string key="IBDocument.AppKitVersion">1038.35</string>
 		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">823</string>
+			<string key="NS.object.0">851</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="2"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -46,7 +45,7 @@
 				<string key="NSWindowTitle">^IDS_FIRSTRUN_DLG_MAC_WINDOW_TITLE$IDS_PRODUCT_NAME</string>
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
+				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<object class="NSView" key="NSWindowView" id="1006">
 					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">274</int>
@@ -57,6 +56,7 @@
 							<int key="NSvFlags">268</int>
 							<string key="NSFrame">{{45, 128}, {389, 18}}</string>
 							<reference key="NSSuperview" ref="1006"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="1019469145">
 								<int key="NSCellFlags">67239424</int>
@@ -98,6 +98,7 @@
 											<int key="NSvFlags">268</int>
 											<string key="NSFrame">{{13, 25}, {390, 17}}</string>
 											<reference key="NSSuperview" ref="892364686"/>
+											<reference key="NSWindow"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSTextFieldCell" key="NSCell" id="737321925">
 												<int key="NSCellFlags">68288064</int>
@@ -111,7 +112,7 @@
 													<string key="NSColorName">controlColor</string>
 													<object class="NSColor" key="NSColor">
 														<int key="NSColorSpace">3</int>
-														<bytes key="NSWhite">MC42NjY2NjY2NjY3AA</bytes>
+														<bytes key="NSWhite">MC42NjY2NjY2ODY1AA</bytes>
 													</object>
 												</object>
 												<object class="NSColor" key="NSTextColor" id="791758296">
@@ -142,6 +143,7 @@
 											</object>
 											<string key="NSFrame">{{408, -25}, {96, 96}}</string>
 											<reference key="NSSuperview" ref="892364686"/>
+											<reference key="NSWindow"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSImageCell" key="NSCell" id="80479895">
 												<int key="NSCellFlags">130560</int>
@@ -160,10 +162,12 @@
 									</object>
 									<string key="NSFrameSize">{480, 55}</string>
 									<reference key="NSSuperview" ref="728826967"/>
+									<reference key="NSWindow"/>
 								</object>
 							</object>
 							<string key="NSFrame">{{0, 197}, {480, 55}}</string>
 							<reference key="NSSuperview" ref="1006"/>
+							<reference key="NSWindow"/>
 							<string key="NSOffsets">{0, 0}</string>
 							<object class="NSTextFieldCell" key="NSTitleCell">
 								<int key="NSCellFlags">67239424</int>
@@ -185,7 +189,7 @@
 								</object>
 								<object class="NSColor" key="NSTextColor">
 									<int key="NSColorSpace">3</int>
-									<bytes key="NSWhite">MCAwLjgwMDAwMDAxAA</bytes>
+									<bytes key="NSWhite">MCAwLjgwMDAwMDAxMTkAA</bytes>
 								</object>
 							</object>
 							<reference key="NSContentView" ref="892364686"/>
@@ -200,6 +204,7 @@
 							<int key="NSvFlags">10</int>
 							<string key="NSFrame">{{0, 194}, {480, 5}}</string>
 							<reference key="NSSuperview" ref="1006"/>
+							<reference key="NSWindow"/>
 							<string key="NSOffsets">{0, 0}</string>
 							<object class="NSTextFieldCell" key="NSTitleCell">
 								<int key="NSCellFlags">67239424</int>
@@ -209,7 +214,7 @@
 								<reference key="NSBackgroundColor" ref="469450765"/>
 								<object class="NSColor" key="NSTextColor">
 									<int key="NSColorSpace">3</int>
-									<bytes key="NSWhite">MCAwLjgwMDAwMDAxAA</bytes>
+									<bytes key="NSWhite">MCAwLjgwMDAwMDAxMTkAA</bytes>
 								</object>
 							</object>
 							<int key="NSBorderType">3</int>
@@ -222,6 +227,7 @@
 							<int key="NSvFlags">268</int>
 							<string key="NSFrame">{{28, 152}, {435, 17}}</string>
 							<reference key="NSSuperview" ref="1006"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="186162046">
 								<int key="NSCellFlags">68288064</int>
@@ -238,6 +244,7 @@
 							<int key="NSvFlags">10</int>
 							<string key="NSFrame">{{-1, 57}, {480, 5}}</string>
 							<reference key="NSSuperview" ref="1006"/>
+							<reference key="NSWindow"/>
 							<string key="NSOffsets">{0, 0}</string>
 							<object class="NSTextFieldCell" key="NSTitleCell">
 								<int key="NSCellFlags">67239424</int>
@@ -247,7 +254,7 @@
 								<reference key="NSBackgroundColor" ref="469450765"/>
 								<object class="NSColor" key="NSTextColor">
 									<int key="NSColorSpace">3</int>
-									<bytes key="NSWhite">MCAwLjgwMDAwMDAxAA</bytes>
+									<bytes key="NSWhite">MCAwLjgwMDAwMDAxMTkAA</bytes>
 								</object>
 							</object>
 							<int key="NSBorderType">3</int>
@@ -260,6 +267,7 @@
 							<int key="NSvFlags">266</int>
 							<string key="NSFrame">{{45, 103}, {389, 19}}</string>
 							<reference key="NSSuperview" ref="1006"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="645476742">
 								<int key="NSCellFlags">-2080244224</int>
@@ -287,6 +295,7 @@
 									<int key="NSvFlags">289</int>
 									<string key="NSFrame">{{14, 12}, {306, 32}}</string>
 									<reference key="NSSuperview" ref="913870182"/>
+									<reference key="NSWindow"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSButtonCell" key="NSCell" id="685620085">
 										<int key="NSCellFlags">67239424</int>
@@ -305,6 +314,7 @@
 							</object>
 							<string key="NSFrame">{{146, 0}, {334, 52}}</string>
 							<reference key="NSSuperview" ref="1006"/>
+							<reference key="NSWindow"/>
 							<string key="NSClassName">GTMWidthBasedTweaker</string>
 						</object>
 						<object class="NSButton" id="575991284">
@@ -312,6 +322,7 @@
 							<int key="NSvFlags">268</int>
 							<string key="NSFrame">{{63, 80}, {359, 19}}</string>
 							<reference key="NSSuperview" ref="1006"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="955346791">
 								<int key="NSCellFlags">-2080244224</int>
@@ -329,9 +340,10 @@
 					</object>
 					<string key="NSFrameSize">{480, 248}</string>
 					<reference key="NSSuperview"/>
+					<reference key="NSWindow"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
-				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
+				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
 			</object>
 			<object class="NSCustomObject" id="689012122">
 				<string key="NSClassName">ChromeUILocalizer</string>
@@ -462,6 +474,14 @@
 						<reference key="destination" ref="80642245"/>
 					</object>
 					<int key="connectionID">130</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">setAsDefaultCheckbox_</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="328877840"/>
+					</object>
+					<int key="connectionID">131</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -737,7 +757,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">130</int>
+			<int key="maxID">131</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -790,11 +810,13 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>objectsToSize_</string>
+							<string>setAsDefaultCheckbox_</string>
 							<string>statsCheckbox_</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>NSArray</string>
+							<string>NSButton</string>
 							<string>NSButton</string>
 						</object>
 					</object>
@@ -803,6 +825,7 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>objectsToSize_</string>
+							<string>setAsDefaultCheckbox_</string>
 							<string>statsCheckbox_</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -810,6 +833,10 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">objectsToSize_</string>
 								<string key="candidateClassName">NSArray</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">setAsDefaultCheckbox_</string>
+								<string key="candidateClassName">NSButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">statsCheckbox_</string>
@@ -1011,6 +1038,13 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/ui/cocoa/nsview_additions.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

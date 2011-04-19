@@ -12,6 +12,7 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/first_run_dialog.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #import "chrome/browser/ui/cocoa/search_engine_dialog_controller.h"
@@ -186,6 +187,11 @@ void ShowFirstRunDialog(Profile* profile,
 
 - (void)show {
   NSWindow* win = [self window];
+
+  if (!platform_util::CanSetAsDefaultBrowser()) {
+    [setAsDefaultCheckbox_ setHidden:YES];
+    makeDefaultBrowser_ = NO;
+  }
 
   // Only support the sizing the window once.
   DCHECK(!beenSized_) << "ShowWindow was called twice?";

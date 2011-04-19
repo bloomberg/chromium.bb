@@ -19,6 +19,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
@@ -209,6 +210,10 @@ std::string GetVersionStringModifier() {
 #else
   return std::string();
 #endif
+}
+
+bool CanSetAsDefaultBrowser() {
+  return BrowserDistribution::GetDistribution()->CanSetAsDefault();
 }
 
 }  // namespace platform_util

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,6 +59,9 @@ bool SimpleYesNoBox(gfx::NativeWindow parent,
 // branded Chrome (not Chromium), this modifier is the channel (dev,
 // beta, but "" for stable).
 std::string GetVersionStringModifier();
+
+// Returns true if the running browser can be set as the default browser.
+bool CanSetAsDefaultBrowser();
 
 }
 
