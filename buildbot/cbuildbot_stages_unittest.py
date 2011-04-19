@@ -630,6 +630,7 @@ class BuildTargetStageTest(AbstractStageTest):
         self.build_config['build_type'], False)
 
     commands.BuildImage(self.build_root)
+    commands.BuildVMImageForTesting(self.build_root)
 
     self.mox.ReplayAll()
     self.RunStage()

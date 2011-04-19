@@ -403,6 +403,9 @@ class BuildTargetStage(BuilderStage):
 
     commands.BuildImage(self._build_root)
 
+    if self._build_config['vm_tests']:
+      commands.BuildVMImageForTesting(self._build_root)
+
 
 class TestStage(BuilderStage):
   """Stage that performs testing steps."""
