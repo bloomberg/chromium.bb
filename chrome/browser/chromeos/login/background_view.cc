@@ -454,9 +454,16 @@ void BackgroundView::UpdateVersionLabel() {
 
   if (!enterprise_domain_text_.empty()) {
     label_text += ' ';
-    label_text += l10n_util::GetStringFUTF8(
-        IDS_LOGIN_MANAGED_BY_LABEL_FORMAT,
-        UTF8ToUTF16(enterprise_domain_text_));
+    if (enterprise_status_text_.empty()) {
+      label_text += l10n_util::GetStringFUTF8(
+          IDS_LOGIN_MANAGED_BY_LABEL_FORMAT,
+          UTF8ToUTF16(enterprise_domain_text_));
+    } else {
+      label_text += l10n_util::GetStringFUTF8(
+          IDS_LOGIN_MANAGED_BY_WITH_STATUS_LABEL_FORMAT,
+          UTF8ToUTF16(enterprise_domain_text_),
+          UTF8ToUTF16(enterprise_status_text_));
+    }
   }
 
   // Workaround over incorrect width calculation in old fonts.
@@ -469,20 +476,40 @@ void BackgroundView::UpdateVersionLabel() {
 void BackgroundView::UpdateEnterpriseInfo() {
   policy::BrowserPolicyConnector* policy_connector =
       g_browser_process->browser_policy_connector();
-  if (!policy_connector->cloud_policy_subsystem() ||
-      !policy_connector->IsEnterpriseManaged()) {
-    // No enterprise domain if there is no cloud policy or device is not
-    // enterprise managed.
-    SetEnterpriseDomain("");
-    return;
+
+  std::string status_text;
+  policy::CloudPolicySubsystem* cloud_policy_subsystem =
+      policy_connector->cloud_policy_subsystem();
+  if (cloud_policy_subsystem) {
+    switch (cloud_policy_subsystem->state()) {
+      case policy::CloudPolicySubsystem::UNENROLLED:
+        status_text = l10n_util::GetStringUTF8(
+            IDS_LOGIN_MANAGED_BY_STATUS_PENDING);
+        break;
+      case policy::CloudPolicySubsystem::UNMANAGED:
+      case policy::CloudPolicySubsystem::BAD_GAIA_TOKEN:
+      case policy::CloudPolicySubsystem::LOCAL_ERROR:
+        status_text = l10n_util::GetStringUTF8(
+            IDS_LOGIN_MANAGED_BY_STATUS_LOST_CONNECTION);
+        break;
+      case policy::CloudPolicySubsystem::NETWORK_ERROR:
+        status_text = l10n_util::GetStringUTF8(
+            IDS_LOGIN_MANAGED_BY_STATUS_NETWORK_ERROR);
+        break;
+      case policy::CloudPolicySubsystem::SUCCESS:
+        break;
+    }
   }
 
-  SetEnterpriseDomain(policy_connector->GetEnterpriseDomain());
+  SetEnterpriseInfo(policy_connector->GetEnterpriseDomain(), status_text);
 }
 
-void BackgroundView::SetEnterpriseDomain(const std::string& domain_name) {
-  if (domain_name != enterprise_domain_text_) {
+void BackgroundView::SetEnterpriseInfo(const std::string& domain_name,
+                                       const std::string& status_text) {
+  if (domain_name != enterprise_domain_text_ ||
+      status_text != enterprise_status_text_) {
     enterprise_domain_text_ = domain_name;
+    enterprise_status_text_ = status_text;
     UpdateVersionLabel();
   }
 }

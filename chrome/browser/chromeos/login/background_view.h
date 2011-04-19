@@ -137,7 +137,8 @@ class BackgroundView : public views::View,
   void UpdateEnterpriseInfo();
 
   // Set enterprise domain name.
-  void SetEnterpriseDomain(const std::string& domain_name);
+  void SetEnterpriseInfo(const std::string& domain_name,
+                         const std::string& status_text);
 
   // Callback from chromeos::VersionLoader giving the version.
   void OnVersion(VersionLoader::Handle handle, std::string version);
@@ -181,6 +182,7 @@ class BackgroundView : public views::View,
   // Information pieces for version label.
   std::string version_text_;
   std::string enterprise_domain_text_;
+  std::string enterprise_status_text_;
 
   // Proxy settings dialog that can be invoked from network menu.
   scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;

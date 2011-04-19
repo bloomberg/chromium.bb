@@ -147,8 +147,7 @@ void BrowserPolicyConnector::SetCredentials(const std::string& owner_email,
 
 bool BrowserPolicyConnector::IsEnterpriseManaged() {
 #if defined(OS_CHROMEOS)
-  return (identity_strategy_.get() &&
-          !identity_strategy_->GetDeviceToken().empty());
+  return install_attributes_.get() && install_attributes_->IsEnterpriseDevice();
 #else
   return false;
 #endif
