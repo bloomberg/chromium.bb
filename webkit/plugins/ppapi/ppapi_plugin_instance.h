@@ -355,8 +355,8 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   const PPP_Find_Dev* plugin_find_interface_;
   const PPP_Messaging* plugin_messaging_interface_;
   const PPP_Pdf* plugin_pdf_interface_;
-  const PPP_Selection_Dev* plugin_selection_interface_;
   const PPP_Instance_Private* plugin_private_interface_;
+  const PPP_Selection_Dev* plugin_selection_interface_;
   const PPP_Zoom_Dev* plugin_zoom_interface_;
 
   // A flag to indicate whether we have asked this plugin instance for its

@@ -349,6 +349,7 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
       plugin_find_interface_(NULL),
       plugin_messaging_interface_(NULL),
       plugin_pdf_interface_(NULL),
+      plugin_private_interface_(NULL),
       plugin_selection_interface_(NULL),
       plugin_zoom_interface_(NULL),
       checked_for_plugin_messaging_interface_(false),
@@ -754,6 +755,9 @@ void PluginInstance::HandleMessage(PP_Var message) {
 }
 
 PP_Var PluginInstance::GetInstanceObject() {
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PluginInstance> ref(this);
+
   // Try the private interface first.  If it is not supported, we fall back to
   // the primary PPP_Instance interface.
   // TODO(dmichael): Remove support for PPP_Instance.GetInstanceObject
