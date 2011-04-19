@@ -230,10 +230,6 @@
       '-downloads.DownloadsTest.testZip',
       '-downloads.DownloadsTest.testZipInIncognito',
 
-      # Setting theme automation broken.  crosbug.com/12655
-      '-downloads.DownloadsTest.testDownloadTheme',
-      '-themes',
-
       # Session restore not working with PyAuto.  crosbug.com/12648
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
       '-prefs.PrefsTest.testSessionRestoreURLs',
