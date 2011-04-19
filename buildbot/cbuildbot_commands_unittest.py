@@ -57,8 +57,13 @@ class CBuildBotTest(mox.MoxTestBase):
     # Convenience variables to make archive easier to understand.
     path_to_results = os.path.join(buildroot, 'chroot', test_results_dir)
 
-    cros_lib.OldRunCommand(['sudo', 'chmod', '-R', 'a+rw', path_to_results])
-    cros_lib.OldRunCommand(['tar', 'czf', archive_tarball, path_to_results])
+    cros_lib.OldRunCommand(['sudo', 'chmod', '-R', 'a+rw', path_to_results],
+                           print_cmd=False)
+    cros_lib.OldRunCommand(['tar',
+                            'czf',
+                            archive_tarball,
+                            '--directory=%s' % path_to_results,
+                            '.'])
     shutil.rmtree(path_to_results)
     self.mox.ReplayAll()
     return_ball = commands.ArchiveTestResults(buildroot, test_results_dir)
