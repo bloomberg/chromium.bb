@@ -30,6 +30,14 @@ using bookmarks::kBookmarkBarMenuCornerRadius;
   return self;
 }
 
+- (BOOL)canBecomeKeyWindow {
+  return YES;
+}
+
+- (BOOL)canBecomeMainWindow {
+  return NO;
+}
+
 @end
 
 

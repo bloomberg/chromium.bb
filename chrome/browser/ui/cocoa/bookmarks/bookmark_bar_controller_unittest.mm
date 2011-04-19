@@ -1463,7 +1463,7 @@ TEST_F(BookmarkBarControllerTest, EventToExitCheck) {
         charactersIgnoringModifiers:@"x"
                           isARepeat:NO
                             keyCode:87];
-  EXPECT_TRUE([bar_ isEventAnExitEvent:event]);
+  EXPECT_FALSE([bar_ isEventAnExitEvent:event]);
 
   [[[bar_ view] window] removeChildWindow:folderWindow];
 }

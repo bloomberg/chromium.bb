@@ -245,6 +245,7 @@ struct LayoutMetrics {
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
     parentButton_.reset([button retain]);
+    selectedIndex_ = -1;
 
     // We want the button to remain bordered as part of the menu path.
     [button forceButtonBorderToStayOnAlways:YES];
@@ -265,6 +266,8 @@ struct LayoutMetrics {
 }
 
 - (void)dealloc {
+  [self clearInputText];
+
   // The button is no longer part of the menu path.
   [parentButton_ forceButtonBorderToStayOnAlways:NO];
   [parentButton_ setNeedsDisplay];
@@ -299,6 +302,10 @@ struct LayoutMetrics {
 - (void)showWindow:(id)sender {
   [barController_ childFolderWillShow:self];
   [super showWindow:sender];
+}
+
+- (int)buttonCount {
+  return [[self buttons] count];
 }
 
 - (BookmarkButton*)parentButton {
@@ -860,6 +867,8 @@ struct LayoutMetrics {
 
 // Perform a single scroll of the specified amount.
 - (void)performOneScroll:(CGFloat)delta {
+  if (delta == 0.0)
+    return;
   CGFloat finalDelta = [self determineFinalScrollDelta:delta];
   if (finalDelta > 0.0 || finalDelta < 0.0) {
     if (buttonThatMouseIsIn_)
@@ -1259,6 +1268,20 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [self autorelease];
 }
 
+- (int)indexOfButton:(BookmarkButton*)button {
+  int btnCount = [self buttonCount];
+  for (int i = 0 ; i < btnCount ; ++i)
+    if ([buttons_ objectAtIndex:i] == button)
+      return i;
+  return -1;
+}
+
+- (BookmarkButton*)buttonAtIndex:(int)which {
+  if (which < 0 || which >= [self buttonCount])
+    return nil;
+  return [buttons_ objectAtIndex:which];
+}
+
 #pragma mark BookmarkButtonDelegate Protocol
 
 - (void)fillPasteboard:(NSPasteboard*)pboard
@@ -1275,6 +1298,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [[NSCursor arrowCursor] set];
 
   buttonThatMouseIsIn_ = sender;
+  [self setSelectedButtonByIndex:[self indexOfButton:sender]];
 
   // Cancel a previous hover if needed.
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
@@ -1440,6 +1464,184 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // http://crbug.com/35966
 - (BOOL)shouldShowIndicatorShownForPoint:(NSPoint)point {
   return ![self buttonForDroppingOnAtPoint:point];
+}
+
+// Button selection change code to support type to select and arrow key events.
+#pragma mark Keyboard Support
+
+// Scroll the menu to show the selected button, if it's not already visible.
+- (void)showSelectedButton {
+  int bMaxIndex = [self buttonCount] - 1; // Max array index in button array.
+
+  // Is there a valid selected button?
+  if (bMaxIndex < 0 || selectedIndex_ < 0 || selectedIndex_ > bMaxIndex)
+    return;
+
+  // Is the menu scrollable anyway?
+  if (![self canScrollUp] && ![self canScrollDown])
+    return;
+
+  // Now check to see if we need to scroll, which way, and how far.
+  CGFloat delta = 0.0;
+  NSPoint scrollPoint = [scrollView_ documentVisibleRect].origin;
+  CGFloat itemBottom = (bMaxIndex - selectedIndex_) *
+      bookmarks::kBookmarkFolderButtonHeight;
+  CGFloat itemTop = itemBottom + bookmarks::kBookmarkFolderButtonHeight;
+  CGFloat viewHeight = NSHeight([scrollView_  frame]);
+
+  if (scrollPoint.y > itemBottom) { // Need to scroll down.
+    delta = scrollPoint.y - itemBottom;
+  } else if ((scrollPoint.y + viewHeight) < itemTop) { // Need to scroll up.
+    delta = -(itemTop - (scrollPoint.y + viewHeight));
+  } else { // No need to scroll.
+    return;
+  }
+
+  [self performOneScroll:delta];
+}
+
+// All changes to selectedness of buttons (aka fake menu items) ends up
+// calling this method to actually flip the state of items.
+// Needs to handle -1 as the invalid index (when nothing is selected) and
+// greater than range values too.
+- (void)setStateOfButtonByIndex:(int)index
+                          state:(bool)state {
+ if (index < 0 || index > ([self buttonCount] -1))
+   return;
+
+  [[buttons_ objectAtIndex:index] highlight:state];
+}
+
+// Selects the required button and deselects the previously selected one.
+// An index of -1 means no selection.
+- (void)setSelectedButtonByIndex:(int)index {
+  if (index == selectedIndex_)
+    return;
+
+  [self setStateOfButtonByIndex:selectedIndex_ state:NO];
+  [self setStateOfButtonByIndex:index state:YES];
+  selectedIndex_ = index;
+
+  [self showSelectedButton];
+}
+
+- (void)clearInputText {
+  [typedPrefix_ release];
+  typedPrefix_ = nil;
+}
+
+// Find the earliest item in the folder which has the target prefix.
+// Returns nil if there is no prefix or there are no matches.
+// These are in no particular order, and not particularly numerous, so linear
+// search should be OK.
+// -1 means no match.
+- (int)earliestBookmarkIndexWithPrefix:(NSString*)prefix {
+  if ([prefix length] == 0) // Also handles nil.
+    return -1;
+  int maxButtons = [buttons_ count];
+  NSString *lowercasePrefix = [prefix lowercaseString];
+  for (int i = 0 ; i < maxButtons ; ++i) {
+    BookmarkButton* button = [buttons_ objectAtIndex:i];
+    if ([[[button title] lowercaseString] hasPrefix:lowercasePrefix])
+      return i;
+  }
+  return -1;
+}
+
+- (void)setSelectedButtonByPrefix:(NSString*)prefix {
+  [self setSelectedButtonByIndex:[self earliestBookmarkIndexWithPrefix:prefix]];
+}
+
+- (void)selectPrevious {
+  int newIndex;
+  if (selectedIndex_ == 0)
+    return;
+  if (selectedIndex_ < 0)
+    newIndex = [self buttonCount] -1;
+  else
+    newIndex = std::max(selectedIndex_ - 1, 0);
+  [self setSelectedButtonByIndex:newIndex];
+}
+
+- (void) selectNext {
+  if (selectedIndex_ + 1 < [self buttonCount])
+    [self setSelectedButtonByIndex:selectedIndex_ + 1];
+}
+
+- (BOOL)handleInputText:(NSString*)newText {
+  const unichar kUnicodeEscape = 0x001B;
+  const unichar kUnicodeSpace = 0x0020;
+
+  // Event goes to the deepest nested open submenu.
+  if (folderController_)
+    return [folderController_ handleInputText:newText];
+
+  // Look for arrow keys or other function keys.
+  if ([newText length] == 1) {
+    // Get the 16-bit unicode char.
+    unichar theChar = [newText characterAtIndex:0];
+    switch (theChar) {
+
+      // Keys that trigger opening of the selection.
+      case kUnicodeSpace: // Space.
+      case NSNewlineCharacter:
+      case NSCarriageReturnCharacter:
+      case NSEnterCharacter:
+        if (selectedIndex_ >= 0 && selectedIndex_ < [self buttonCount]) {
+          [self openBookmark:[buttons_ objectAtIndex:selectedIndex_]];
+          return NO; // NO because the selection-handling code will close later.
+        } else {
+          return YES; // Triggering with no selection closes the menu.
+        }
+      // Keys that cancel and close the menu.
+      case kUnicodeEscape:
+      case NSDeleteCharacter:
+      case NSBackspaceCharacter:
+        [self clearInputText];
+        return YES;
+      // Keys that change selection directionally.
+      case NSUpArrowFunctionKey:
+        [self clearInputText];
+        [self selectPrevious];
+        return NO;
+      case NSDownArrowFunctionKey:
+        [self clearInputText];
+        [self selectNext];
+        return NO;
+      // Keys that open and close submenus.
+      case NSRightArrowFunctionKey: {
+        BookmarkButton* btn = [self buttonAtIndex:selectedIndex_];
+        if (btn && [btn isFolder]) {
+          [self openBookmarkFolderFromButtonAndCloseOldOne:btn];
+          [folderController_ selectNext];
+        }
+        [self clearInputText];
+        return NO;
+      }
+      case NSLeftArrowFunctionKey:
+        [self clearInputText];
+        [parentController_ closeBookmarkFolder:self];
+        return NO;
+
+      // Check for other keys that should close the menu.
+      default: {
+        if (theChar > NSUpArrowFunctionKey &&
+            theChar <= NSModeSwitchFunctionKey) {
+          [self clearInputText];
+          return YES;
+        }
+        break;
+      }
+    }
+  }
+
+  // It is a char or string worth adding to the type-select buffer.
+  NSString *newString = (!typedPrefix_) ?
+      newText : [typedPrefix_ stringByAppendingString:newText];
+  [typedPrefix_ release];
+  typedPrefix_ = [newString retain];
+  [self setSelectedButtonByPrefix:typedPrefix_];
+  return NO;
 }
 
 // Return the y position for a drop indicator.

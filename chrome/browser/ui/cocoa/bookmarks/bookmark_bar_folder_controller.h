@@ -141,6 +141,9 @@
   // Set to YES to prevent any node animations. Useful for unit testing so that
   // incomplete animations do not cause valgrind complaints.
   BOOL ignoreAnimations_;
+
+  int selectedIndex_;
+  NSString* typedPrefix_;
 }
 
 // Designated initializer.
@@ -151,9 +154,19 @@
 // Return the parent button that owns the bookmark folder we represent.
 - (BookmarkButton*)parentButton;
 
+// Text typed by user, for type-select and arrow key support.
+// Returns YES if the menu should be closed now.
+- (BOOL)handleInputText:(NSString*)newText;
+
+// If you wanted to clear the type-select buffer. Currently only used
+// internally.
+- (void)clearInputText;
+
 // Gets notified when a fav icon asynchronously loads, so we can now use the
 // real icon instead of a generic placeholder.
 - (void)faviconLoadedForNode:(const BookmarkNode*)node;
+
+- (void)setSelectedButtonByIndex:(int)index;
 
 // Offset our folder menu window. This is usually needed in response to a
 // parent folder menu window or the bookmark bar changing position due to

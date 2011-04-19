@@ -405,8 +405,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
                         name:NSWindowWillCloseNotification
                       object:[[self view] window]];
   [defaultCenter addObserver:self
-                    selector:@selector(parentWindowDidResignKey:)
-                        name:NSWindowDidResignKeyNotification
+                    selector:@selector(parentWindowDidResignMain:)
+                        name:NSWindowDidResignMainNotification
                       object:[[self view] window]];
 }
 
@@ -433,7 +433,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 }
 
 // NSNotificationCenter callback.
-- (void)parentWindowDidResignKey:(NSNotification*)notification {
+- (void)parentWindowDidResignMain:(NSNotification*)notification {
   [self closeFolderAndStopTrackingMenus];
 }
 
@@ -1783,10 +1783,23 @@ void RecordAppLaunch(Profile* profile, GURL url) {
         return YES;
       }
       break;
-    case NSKeyDown:
+    case NSKeyDown: {
+      bool result = NO;
+      // Event hooks often see the same keydown event twice due to the way key
+      // events get dispatched and redispatched, so ignore if this keydown
+      // event has the EXACT same timestamp as the previous keydown.
+      static NSTimeInterval lastKeyDownEventTime;
+      NSTimeInterval thisTime = [event timestamp];
+      if (lastKeyDownEventTime != thisTime) {
+        lastKeyDownEventTime = thisTime;
+        if (folderController_) {
+          result = [folderController_ handleInputText:[event characters]];
+        }
+      }
+      return result;
+    }
     case NSKeyUp:
-      // Any key press ends things.
-      return YES;
+      return NO;
     case NSLeftMouseDragged:
       // We can get here with the following sequence:
       // - open a bookmark folder
