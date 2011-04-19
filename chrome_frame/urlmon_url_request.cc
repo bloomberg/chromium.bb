@@ -442,6 +442,9 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
 
   *bind_flags = BINDF_ASYNCHRONOUS | BINDF_ASYNCSTORAGE | BINDF_PULLDATA;
 
+  bind_info->dwOptionsFlags = INTERNET_FLAG_NO_AUTO_REDIRECT;
+  bind_info->dwOptions = BINDINFO_OPTIONS_WININETFLAG;
+
   // TODO(ananta)
   // Look into whether the other load flags need to be supported in chrome
   // frame.
