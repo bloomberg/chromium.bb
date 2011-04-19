@@ -74,6 +74,14 @@ void PersonalOptionsHandler::GetLocalizedValues(
   RegisterTitle(localized_strings, "personalPage",
                 IDS_OPTIONS_CONTENT_TAB_LABEL);
 
+
+  localized_strings->SetString(
+      "syncOverview",
+      l10n_util::GetStringFUTF16(IDS_SYNC_OVERVIEW,
+                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  localized_strings->SetString(
+      "syncFurtherOverview",
+      l10n_util::GetStringUTF16(IDS_SYNC_FURTHER_OVERVIEW));
   localized_strings->SetString("syncSection",
       multiprofile_ ?
           l10n_util::GetStringUTF16(IDS_PROFILES_OPTIONS_GROUP_NAME) :
@@ -409,7 +417,7 @@ void PersonalOptionsHandler::ShowSyncLoginDialog(const ListValue* args) {
 void PersonalOptionsHandler::ShowCustomizeSyncDialog(const ListValue* args) {
   ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
   DCHECK(service);
-  service->ShowConfigure(NULL);
+  service->ShowConfigure(NULL, false);
 }
 
 void PersonalOptionsHandler::ThemesReset(const ListValue* args) {

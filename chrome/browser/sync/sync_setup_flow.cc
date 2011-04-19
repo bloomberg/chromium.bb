@@ -457,6 +457,7 @@ void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
       OnPassphraseCancel();
       // FALL_THROUGH to tell the sync service that we've cancelled during
       // the configure step.
+    case SyncSetupWizard::SYNC_EVERYTHING:
     case SyncSetupWizard::CONFIGURE:
     case SyncSetupWizard::SETTING_UP:
       ProfileSyncService::SyncEvent(
@@ -479,7 +480,7 @@ void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
 
 std::wstring SyncSetupFlow::GetDialogTitle() const {
   return UTF16ToWideHack(
-      l10n_util::GetStringUTF16(IDS_SYNC_MY_BOOKMARKS_LABEL));
+      l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_SIGNIN));
 }
 
 bool SyncSetupFlow::IsDialogModal() const {
@@ -530,8 +531,8 @@ void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
                                         DictionaryValue* args) {
   args->SetString("iframeToShow", "configure");
 
-  // By default start on the data types tab.
-  args->SetString("initialTab", "data-type");
+  // The SYNC_EVERYTHING case will set this to true.
+  args->SetBoolean("syncEverything", false);
 
   args->SetBoolean("keepEverythingSynced",
       service->profile()->GetPrefs()->GetBoolean(prefs::kKeepEverythingSynced));
@@ -592,17 +593,21 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
              current_state_ == SyncSetupWizard::SETTING_UP;
     case SyncSetupWizard::GAIA_SUCCESS:
       return current_state_ == SyncSetupWizard::GAIA_LOGIN;
+    case SyncSetupWizard::SYNC_EVERYTHING:
     case SyncSetupWizard::CONFIGURE:
       return current_state_ == SyncSetupWizard::GAIA_SUCCESS;
     case SyncSetupWizard::ENTER_PASSPHRASE:
-      return current_state_ == SyncSetupWizard::CONFIGURE ||
+      return current_state_ == SyncSetupWizard::SYNC_EVERYTHING ||
+             current_state_ == SyncSetupWizard::CONFIGURE ||
              current_state_ == SyncSetupWizard::SETTING_UP;
     case SyncSetupWizard::PASSPHRASE_MIGRATION:
       return current_state_ == SyncSetupWizard::GAIA_LOGIN;
     case SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR:
-      return current_state_ == SyncSetupWizard::CONFIGURE;
+      return current_state_ == SyncSetupWizard::SYNC_EVERYTHING ||
+             current_state_ == SyncSetupWizard::CONFIGURE;
     case SyncSetupWizard::SETTING_UP:
-      return current_state_ == SyncSetupWizard::CONFIGURE ||
+      return current_state_ == SyncSetupWizard::SYNC_EVERYTHING ||
+             current_state_ == SyncSetupWizard::CONFIGURE ||
              current_state_ == SyncSetupWizard::ENTER_PASSPHRASE ||
              current_state_ == SyncSetupWizard::PASSPHRASE_MIGRATION;
     case SyncSetupWizard::FATAL_ERROR:
@@ -636,12 +641,18 @@ void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
         flow_handler_->ShowGaiaSuccessAndClose();
         break;
       }
-      advance_state = SyncSetupWizard::CONFIGURE;
+      advance_state = SyncSetupWizard::SYNC_EVERYTHING;
       //  Fall through.
+    case SyncSetupWizard::SYNC_EVERYTHING: {
+      DictionaryValue args;
+      SyncSetupFlow::GetArgsForConfigure(service_, &args);
+      args.SetBoolean("syncEverything", true);
+      flow_handler_->ShowConfigure(args);
+      break;
+    }
     case SyncSetupWizard::CONFIGURE: {
       DictionaryValue args;
       SyncSetupFlow::GetArgsForConfigure(service_, &args);
-      args.SetString("initialTab", "data-type");
       flow_handler_->ShowConfigure(args);
       break;
     }

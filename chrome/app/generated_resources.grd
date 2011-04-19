@@ -7856,9 +7856,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PROFILES_CREATE_NEW_PROFILE_OPTION" desc="Create new profile menu item and button title.">
         Create a new profile...
       </message>
-      <message name="IDS_PROFILES_NOT_SET_UP_INFO" desc="The message that appears in the options dialog when the user has not connected a Google Account to their profile.">
-        You can use a Google Account to sync your bookmarks and other settings and access the Chrome Web Store.
-      </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_PROFILES_CONNECT_BUTTON_LABEL" desc="The label that appears on the profile connect button in the options dialog when the user has not connected a Google Account to their profile.">
           Enable these features...
@@ -7911,6 +7908,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
       <message name="IDS_SYNC_CUSTOMIZE_LINK_LABEL" desc="The text to display on the link to customize the sync preferences.">
         Customize
+      </message>
+      <message name="IDS_SYNC_USE_DEFAULT_SETTINGS" desc="The text to display on the link to go back to the default sync preferences.">
+        Use default settings
       </message>
 
       <!-- SafeBrowsing -->
@@ -8546,8 +8546,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_OPTIONS_SELECT_EVERYTHING" desc="The select option that selects all features to be synced.">
         Everything
       </message>
-      <message name="IDS_SYNC_NOT_SET_UP_INFO" desc="The message that appears in the options dialog when sync has not been set up by the user.">
-        You are not set up to sync your <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data with your other computers.
+      <message name="IDS_SYNC_OVERVIEW" desc="The message that appears in the options dialog when sync has not been set up by the user.">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> securely syncs your data with your Google account.
+      </message>
+      <message name="IDS_SYNC_FURTHER_OVERVIEW" desc="The second message that appears in the options dialog when sync has not been set up by the user.">
+        Keep everything synced or choose what data to sync from this computer.
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_START_SYNC_BUTTON_LABEL" desc="The label that appears on the sync button in the options dialog when sync has not been set up by the user.">
@@ -8838,12 +8841,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Login dialog strings -->
-      <message name="IDS_SYNC_MY_BOOKMARKS_LABEL" desc="Title of the sync login dialog.">
-        Set up sync
-      </message>
       <message name="IDS_SYNC_LOGIN_INTRODUCTION" desc="The message to display at the top of the login dialog">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> sync makes it easy to share your data (such as bookmarks and preferences) between your computers.
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> synchronizes your data by storing it online with Google when you sign in with your Google Account.
+      </message>
+      <message name="IDS_SYNC_LOGIN_SIGNIN" desc="The title of the sync setup dialog.">
+        Sign in with your Google Account
       </message>
       <message name="IDS_SYNC_LOGIN_SIGNIN_PREFIX" desc="The first part of the sentence that is displayed after the login info">
         Sign in with your

@@ -51,7 +51,7 @@ form {
   margin-top: 10px;
 }
 
-#customize-link-container {
+.action-area-link-container {
   -webkit-box-flex: 1;
 }
 
@@ -258,17 +258,42 @@ html[os='mac'] input[type='submit'] {
     if (args) {
       setCheckboxesAndErrors(args);
 
-      var keepEverythingSynced = args['keepEverythingSynced'];
+      // Whether to display the 'Sync everything' confirmation screen or the
+      // customize data types screen.
+      // TODO(jhawkins): Rename |keepEverythingSynced| to |syncAllDataTypes|.
+      var syncEverything = args['syncEverything'];
+      var syncAllDataTypes = args['keepEverythingSynced'];
       var usePassphrase = args['usePassphrase'];
-      if (keepEverythingSynced !== true  || usePassphrase) {
+      if (syncEverything == false || syncAllDataTypes == false ||
+          usePassphrase) {
         showCustomizePage();
       }
     }
   }
 
-  function showCustomizePage() {
+  function showCustomizePage(chooseDataTypes) {
     document.getElementById('confirm-sync-preferences').hidden = true;
     document.getElementById('customize-sync-preferences').hidden = false;
+
+    // If the user clicked on the 'Customize' link on the 'Sync Everything'
+    // page, he most likely intends to change the data types. Select the 'Choose
+    // data types' select option in this case.
+    if (chooseDataTypes) {
+      document.getElementById('sync-select-datatypes').selectedIndex = 1;
+      document.getElementById('chooseDataTypesBody').hidden = false;
+      setDataTypeCheckboxesEnabled(true);
+      checkAllDataTypeCheckboxes();
+    }
+  }
+
+  function showSyncEverythingPage() {
+    document.getElementById('confirm-sync-preferences').hidden = false;
+    document.getElementById('customize-sync-preferences').hidden = true;
+
+    // The default state is to sync everything and to not use a custom
+    // passphrase.
+    setCheckboxesToKeepEverythingSynced(true);
+    document.getElementById("google-option").checked = true;
   }
 
   function setCheckboxesAndErrors(args) {
@@ -304,7 +329,8 @@ html[os='mac'] input[type='submit'] {
 
     var datatypeSelect = document.getElementById('sync-select-datatypes');
     datatypeSelect.selectedIndex = args.keepEverythingSynced ? 0 : 1;
-    chooseDataTypesBody.hidden = args.keepEverythingSynced;
+    document.getElementById('chooseDataTypesBody').hidden =
+        args.keepEverythingSynced;
 
     document.getElementById("bookmarksCheckbox").checked = args.syncBookmarks;
     document.getElementById("preferencesCheckbox").checked =
@@ -509,9 +535,9 @@ html[os='mac'] input[type='submit'] {
   </div>
   <div>
     <div class="action-area">
-      <div id="customize-link-container">
+      <div class="action-area-link-container">
         <a id="customize-link" href="#" i18n-content="customizelinklabel"
-            onclick="showCustomizePage();"></a>
+            onclick="showCustomizePage(true);"></a>
       </div> 
       <input id="okButton" type="button" i18n-values="value:syncEverything"
           onclick="sendConfiguration();">
@@ -527,8 +553,8 @@ html[os='mac'] input[type='submit'] {
     <div id="sync-configure-content" class="content-area">
       <div id="sync-select-container">
         <select id="sync-select-datatypes">
-          <option i18n-content="keepeverythingsynced" selected></option>
-          <option i18n-content="choosedatatypes"></option>
+          <option i18n-content="keepeverythingsynced"></option>
+          <option i18n-content="choosedatatypes" selected></option>
         </select>
         <div id="chooseDataTypesBody" hidden>
           <div>
@@ -621,7 +647,7 @@ html[os='mac'] input[type='submit'] {
         <div id="sync-custom-passphrase" hidden>
           <div id="sync-passphrase-message">
             <span i18n-content="sectionExplicitMessagePrefix"></span>
-            <a href="https://google.com/dashboard" target="_blank"
+            <a href="http://google.com/dashboard" target="_blank"
                 i18n-content="sectionExplicitMessagePostfix"></a>
             <span>.</span>
           </div>
@@ -640,6 +666,10 @@ html[os='mac'] input[type='submit'] {
         </div>
       </div>
       <div class="action-area">
+        <div class="action-area-link-container">
+          <a id="use-default-link" href="#" i18n-content="useDefaultSettings"
+              onclick="showSyncEverythingPage();"></a>
+        </div>
         <input id="okButton" type="submit" i18n-values="value:ok" />
         <input id="cancelButton" type="button" i18n-values="value:cancel"
                onclick='chrome.send("DialogClose", [""])' />

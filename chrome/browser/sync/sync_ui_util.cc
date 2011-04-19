@@ -174,16 +174,6 @@ MessageType GetStatusInfo(ProfileSyncService* service,
       if (status_label) {
         status_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_SETUP_ERROR));
       }
-    } else {
-      if (status_label) {
-        const CommandLine& browser_command_line =
-            *CommandLine::ForCurrentProcess();
-        status_label->assign(
-            browser_command_line.HasSwitch(switches::kMultiProfiles) ?
-                l10n_util::GetStringUTF16(IDS_PROFILES_NOT_SET_UP_INFO) :
-                l10n_util::GetStringFUTF16(IDS_SYNC_NOT_SET_UP_INFO,
-                    l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-      }
     }
   }
   return result_type;

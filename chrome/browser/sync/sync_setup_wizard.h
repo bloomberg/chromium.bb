@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,8 @@ class SyncSetupWizard {
     // A login attempt succeeded.  This will wait for an explicit transition
     // (via Step) to the next state.
     GAIA_SUCCESS,
+    // Show the screen that confirms everything will be synced.
+    SYNC_EVERYTHING,
     // Show the screen that lets you configure sync.
     // There are two tabs:
     //  Data Types --

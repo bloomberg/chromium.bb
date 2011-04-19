@@ -509,7 +509,7 @@ void ProfileSyncService::OnBackendInitialized() {
 
   if (!cros_user_.empty()) {
     if (profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart)) {
-      ShowConfigure(NULL);
+      ShowConfigure(NULL, true);
     } else {
       SetSyncSetupCompleted();
     }
@@ -703,13 +703,18 @@ void ProfileSyncService::ShowErrorUI(gfx::NativeWindow parent_window) {
 }
 
 
-void ProfileSyncService::ShowConfigure(gfx::NativeWindow parent_window) {
+void ProfileSyncService::ShowConfigure(
+    gfx::NativeWindow parent_window, bool sync_everything) {
   if (WizardIsVisible()) {
     wizard_.Focus();
     return;
   }
   wizard_.SetParent(parent_window);
-  wizard_.Step(SyncSetupWizard::CONFIGURE);
+
+  if (sync_everything)
+    wizard_.Step(SyncSetupWizard::SYNC_EVERYTHING);
+  else
+    wizard_.Step(SyncSetupWizard::CONFIGURE);
 }
 
 void ProfileSyncService::PromptForExistingPassphrase(

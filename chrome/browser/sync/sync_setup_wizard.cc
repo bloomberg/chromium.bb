@@ -187,6 +187,7 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
 
     // Stuff for the footer.
     AddString(dict, "customizelinklabel", IDS_SYNC_CUSTOMIZE_LINK_LABEL);
+    AddString(dict, "useDefaultSettings", IDS_SYNC_USE_DEFAULT_SETTINGS);
     AddString(dict, "ok", IDS_OK);
     AddString(dict, "cancel", IDS_CANCEL);
   } else if (path_raw == kSyncPassphrasePath) {
@@ -346,6 +347,7 @@ SyncSetupWizard::State SyncSetupWizard::GetEndStateForDiscreteRun(
   if (start_state == GAIA_LOGIN) {
     result = GAIA_SUCCESS;
   } else if (start_state == ENTER_PASSPHRASE ||
+             start_state == SYNC_EVERYTHING ||
              start_state == CONFIGURE ||
              start_state == PASSPHRASE_MIGRATION) {
     result = DONE;

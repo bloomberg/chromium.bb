@@ -295,8 +295,8 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   EXPECT_TRUE(wizard_->IsVisible());
   EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
   // In a non-discrete run, GAIA_SUCCESS immediately transitions you to
-  // CONFIGURE.
-  EXPECT_EQ(SyncSetupWizard::CONFIGURE,
+  // SYNC_EVERYTHING.
+  EXPECT_EQ(SyncSetupWizard::SYNC_EVERYTHING,
             test_window_->flow()->current_state_);
 
   // That's all we're testing here, just move on to DONE.  We'll test the
@@ -424,7 +424,7 @@ TEST_F(SyncSetupWizardTest, InvalidTransitions) {
             test_window_->flow()->current_state_);
 
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
-  EXPECT_EQ(SyncSetupWizard::CONFIGURE,
+  EXPECT_EQ(SyncSetupWizard::SYNC_EVERYTHING,
             test_window_->flow()->current_state_);
 
   wizard_->Step(SyncSetupWizard::FATAL_ERROR);

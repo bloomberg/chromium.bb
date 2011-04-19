@@ -231,7 +231,12 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // dialog for the error condition (relogin / enter passphrase).
   virtual void ShowErrorUI(gfx::NativeWindow parent_window);
 
-  void ShowConfigure(gfx::NativeWindow parent_window);
+  // Shows the configure screen of the Sync setup wizard. If |sync_everything|
+  // is true, shows the corresponding page in the customize screen; otherwise,
+  // displays the page that gives the user the ability to select which data
+  // types to sync.
+  void ShowConfigure(gfx::NativeWindow parent_window, bool sync_everything);
+
   void PromptForExistingPassphrase(gfx::NativeWindow parent_window);
   void SigninForPassphraseMigration(gfx::NativeWindow parent_window);
 
