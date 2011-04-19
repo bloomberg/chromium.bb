@@ -120,17 +120,21 @@ function getModifiers(e) {
   if (!e) {
     return [];
   }
-  var modifiers = [];
-  if (e.keyCode == 16 || e.shiftKey) {
-    modifiers.push('SHIFT');
+  var isKeyDown = (e.type == 'keydown');
+  var keyCodeToModifier = {16: 'SHIFT', 17: 'CTRL', 18: 'ALT'};
+  var modifierWithKeyCode = keyCodeToModifier[e.keyCode];
+  var isPressed = {'SHIFT': e.shiftKey, 'CTRL': e.ctrlKey, 'ALT': e.altKey};
+  // if e.keyCode is one of Shift, Ctrl and Alt, isPressed should
+  // be changed because the key currently pressed
+  // does not affect the values of e.shiftKey, e.ctrlKey and e.altKey
+  if(modifierWithKeyCode){
+    isPressed[modifierWithKeyCode] = isKeyDown;
   }
-  if (e.keyCode == 17 || e.ctrlKey) {
-    modifiers.push('CTRL');
-  }
-  if (e.keyCode == 18 || e.altKey) {
-    modifiers.push('ALT');
-  }
-  return modifiers.sort();
+  // make the result array
+  return ['SHIFT', 'CTRL', 'ALT'].filter(
+      function(modifier) {
+        return isPressed[modifier];
+      }).sort();
 }
 
 /**
@@ -265,8 +269,7 @@ function getKeyTextValue(keyData) {
 /**
  * Updates the whole keyboard.
  */
-function update(e) {
-  var modifiers = getModifiers(e);
+function update(modifiers) {
   var instructions = document.getElementById('instructions');
   if (modifiers.length == 0) {
     instructions.style.visibility = 'visible';
@@ -322,23 +325,14 @@ function update(e) {
 }
 
 /**
- * A callback furnction for the onkeydown event.
+ * A callback function for onkeydown and onkeyup events.
  */
-function keydown(e) {
+function handleKeyEvent(e){
+  var modifiers = getModifiers(e);
   if (!getKeyboardOverlayId()) {
     return;
   }
-  update(e);
-}
-
-/**
- * A callback furnction for the onkeyup event.
- */
-function keyup(e) {
-  if (!getKeyboardOverlayId()) {
-    return;
-  }
-  update();
+  update(modifiers);
 }
 
 /**
@@ -424,8 +418,8 @@ function initLayout() {
  * A callback function for the onload event of the body element.
  */
 function init() {
-  document.addEventListener('keydown', keydown);
-  document.addEventListener('keyup', keyup);
+  document.addEventListener('keydown', handleKeyEvent);
+  document.addEventListener('keyup', handleKeyEvent);
   chrome.send('getKeyboardOverlayId');
 }
 
