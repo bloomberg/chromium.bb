@@ -47,7 +47,8 @@ SocketStreamHost::~SocketStreamHost() {
 void SocketStreamHost::Connect(const GURL& url,
                                net::URLRequestContext* request_context) {
   VLOG(1) << "SocketStreamHost::Connect url=" << url;
-  socket_ = net::SocketStreamJob::CreateSocketStreamJob(url, delegate_);
+  socket_ = net::SocketStreamJob::CreateSocketStreamJob(
+      url, delegate_, *request_context);
   socket_->set_context(request_context);
   socket_->SetUserData(kSocketIdKey, new SocketStreamId(socket_id_));
   socket_->Connect();

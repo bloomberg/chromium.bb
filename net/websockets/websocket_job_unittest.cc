@@ -13,6 +13,7 @@
 #include "net/base/cookie_store.h"
 #include "net/base/net_errors.h"
 #include "net/base/sys_addrinfo.h"
+#include "net/base/transport_security_state.h"
 #include "net/socket_stream/socket_stream.h"
 #include "net/url_request/url_request_context.h"
 #include "net/websockets/websocket_job.h"
@@ -156,11 +157,18 @@ class MockURLRequestContext : public URLRequestContext {
                         CookiePolicy* cookie_policy) {
     set_cookie_store(cookie_store);
     set_cookie_policy(cookie_policy);
+    transport_security_state_ = new TransportSecurityState();
+    set_transport_security_state(transport_security_state_.get());
+    TransportSecurityState::DomainState state;
+    state.expiry = base::Time::Now() + base::TimeDelta::FromSeconds(1000);
+    transport_security_state_->EnableHost("upgrademe.com", state);
   }
 
  private:
   friend class base::RefCountedThreadSafe<MockURLRequestContext>;
   virtual ~MockURLRequestContext() {}
+
+  scoped_refptr<TransportSecurityState> transport_security_state_;
 };
 
 class WebSocketJobTest : public PlatformTest {
@@ -208,6 +216,9 @@ class WebSocketJobTest : public PlatformTest {
     websocket_->state_ = WebSocketJob::CLOSED;
     websocket_->delegate_ = NULL;
     websocket_->socket_ = NULL;
+  }
+  SocketStream* GetSocket(SocketStreamJob* job) {
+    return job->socket_.get();
   }
 
   scoped_refptr<MockCookieStore> cookie_store_;
@@ -492,6 +503,21 @@ TEST_F(WebSocketJobTest, HandshakeWithCookieButNotAllowed) {
   EXPECT_EQ("CR-test-httponly=1", cookie_store_->entries()[1].cookie_line);
 
   CloseWebSocketJob();
+}
+
+TEST_F(WebSocketJobTest, HSTSUpgrade) {
+  GURL url("ws://upgrademe.com/");
+  MockSocketStreamDelegate delegate;
+  scoped_refptr<SocketStreamJob> job = SocketStreamJob::CreateSocketStreamJob(
+      url, &delegate, *context_.get());
+  EXPECT_TRUE(GetSocket(job.get())->is_secure());
+  job->DetachDelegate();
+
+  url = GURL("ws://donotupgrademe.com/");
+  job = SocketStreamJob::CreateSocketStreamJob(
+      url, &delegate, *context_.get());
+  EXPECT_FALSE(GetSocket(job.get())->is_secure());
+  job->DetachDelegate();
 }
 
 }  // namespace net
