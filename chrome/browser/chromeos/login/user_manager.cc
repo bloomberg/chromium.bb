@@ -553,6 +553,34 @@ FilePath UserManager::GetImagePathForUser(const std::string& username) {
   return user_data_dir.AppendASCII(filename);
 }
 
+class RealTPMTokenInfoDelegate : public crypto::TPMTokenInfoDelegate {
+ public:
+  RealTPMTokenInfoDelegate();
+  virtual ~RealTPMTokenInfoDelegate();
+  virtual bool IsTokenReady() const;
+  virtual void GetTokenInfo(std::string* token_name,
+                            std::string* user_pin) const;
+};
+
+RealTPMTokenInfoDelegate::RealTPMTokenInfoDelegate() {}
+RealTPMTokenInfoDelegate::~RealTPMTokenInfoDelegate() {}
+
+bool RealTPMTokenInfoDelegate::IsTokenReady() const {
+  return CrosLibrary::Get()->GetCryptohomeLibrary()->Pkcs11IsTpmTokenReady();
+}
+
+void RealTPMTokenInfoDelegate::GetTokenInfo(std::string* token_name,
+                                            std::string* user_pin) const {
+  std::string local_token_name;
+  std::string local_user_pin;
+  CrosLibrary::Get()->GetCryptohomeLibrary()->Pkcs11GetTpmTokenInfo(
+      &local_token_name, &local_user_pin);
+  if (token_name)
+    *token_name = local_token_name;
+  if (user_pin)
+    *user_pin = local_user_pin;
+}
+
 void UserManager::NotifyOnLogin() {
   NotificationService::current()->Notify(
       NotificationType::LOGIN_USER_CHANGED,
@@ -574,7 +602,7 @@ void UserManager::NotifyOnLogin() {
   // http://crosbug.com/12295 and http://crosbug.com/12304
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kLoadOpencryptoki)) {
-    crypto::EnableTPMForNSS();
+    crypto::EnableTPMTokenForNSS(new RealTPMTokenInfoDelegate());
   }
 
   // Schedules current user ownership check on file thread.

@@ -202,6 +202,14 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
     return chromeos::CryptohomeInstallAttributesIsFirstInstall();
   }
 
+  void Pkcs11GetTpmTokenInfo(std::string* label, std::string* user_pin) {
+    chromeos::CryptohomePkcs11GetTpmTokenInfo(label, user_pin);
+  }
+
+  bool Pkcs11IsTpmTokenReady() {
+    return chromeos::CryptohomePkcs11IsTpmTokenReady();
+  }
+
  private:
   static void Handler(const chromeos::CryptohomeAsyncCallStatus& event,
                       void* cryptohome_library) {
@@ -411,6 +419,14 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
     return !locked_;
   }
 
+  void Pkcs11GetTpmTokenInfo(std::string* label,
+                             std::string* user_pin) {
+    *label = "Stub TPM Token";
+    *user_pin = "012345";
+  }
+
+  bool Pkcs11IsTpmTokenReady() { return true; }
+
  private:
   static void DoStubCallback(Delegate* callback) {
     if (callback)
@@ -421,6 +437,9 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   bool locked_;
   DISALLOW_COPY_AND_ASSIGN(CryptohomeLibraryStubImpl);
 };
+
+CryptohomeLibrary::CryptohomeLibrary() {}
+CryptohomeLibrary::~CryptohomeLibrary() {}
 
 // static
 CryptohomeLibrary* CryptohomeLibrary::GetImpl(bool stub) {

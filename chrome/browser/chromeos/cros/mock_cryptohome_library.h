@@ -79,6 +79,8 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
   MOCK_METHOD1(TpmGetPassword, bool(std::string* password));
   MOCK_METHOD0(TpmCanAttemptOwnership, void(void));
   MOCK_METHOD0(TpmClearStoredPassword, void(void));
+  MOCK_METHOD0(Pkcs11IsTpmTokenReady, bool(void));
+  MOCK_METHOD2(Pkcs11GetTpmTokenInfo, void(std::string*, std::string*));
 
   MOCK_METHOD2(InstallAttributesGet, bool(const std::string&, std::string*));
   MOCK_METHOD2(InstallAttributesSet, bool(const std::string&,

@@ -66,12 +66,17 @@ void SlotUnlocker::Start() {
   for (; current_ < modules_.size(); ++current_) {
     if (ShouldShowDialog(modules_[current_].get())) {
 #if defined(OS_CHROMEOS)
-      if (modules_[current_]->GetTokenName() == crypto::GetTPMTokenName()) {
-        // The user PIN is a well known secret on this machine, and
-        // the user didn't set it, so we need to fetch the value and
-        // supply it for them here.
-        GotPassword(crypto::GetTPMUserPIN().c_str());
-        return;
+      if (crypto::IsTPMTokenReady()) {
+        std::string token_name;
+        std::string user_pin;
+        crypto::GetTPMTokenInfo(&token_name, &user_pin);
+        if (modules_[current_]->GetTokenName() == token_name) {
+          // The user PIN is a well known secret on this machine, and
+          // the user didn't set it, so we need to fetch the value and
+          // supply it for them here.
+          GotPassword(user_pin.c_str());
+          return;
+        }
       }
 #endif
       ShowCryptoModulePasswordDialog(
