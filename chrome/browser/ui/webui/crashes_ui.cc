@@ -13,6 +13,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -177,7 +178,11 @@ void CrashesDOMHandler::UpdateUI() {
 
   FundamentalValue enabled(crash_reporting_enabled);
 
-  web_ui_->CallJavascriptFunction("updateCrashList", enabled, crash_list);
+  const chrome::VersionInfo version_info;
+  StringValue version(version_info.Version());
+
+  web_ui_->CallJavascriptFunction("updateCrashList", enabled, crash_list,
+                                  version);
 }
 
 bool CrashesDOMHandler::CrashReportingEnabled() const {
