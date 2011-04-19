@@ -72,6 +72,7 @@ class MockNetworkLibrary : public NetworkLibrary {
                      CellularNetwork*(const std::string&));
   MOCK_CONST_METHOD1(FindVirtualNetworkByPath,
                      VirtualNetwork*(const std::string&));
+  MOCK_CONST_METHOD1(FindNetworkFromRemembered,Network*(const Network*));
   MOCK_CONST_METHOD1(GetDataPlans,
                      CellularDataPlanVector*(const std::string&));
   MOCK_CONST_METHOD1(GetSignificantDataPlan,

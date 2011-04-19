@@ -46,6 +46,7 @@ enum ConnectionSecurity {
   SECURITY_WPA     = 3,
   SECURITY_RSN     = 4,
   SECURITY_8021X   = 5,
+  SECURITY_PSK     = 6,
 };
 
 enum ConnectionState {
@@ -267,6 +268,8 @@ class Network {
   ConnectivityState connectivity_state() const { return connectivity_state_; }
   bool added() const { return added_; }
 
+  const std::string& unique_id() const { return unique_id_; }
+
   // We don't have a setter for |favorite_| because to unfavorite a network is
   // equivalent to forget a network, so we call forget network on cros for
   // that.  See ForgetWifiNetwork().
@@ -326,6 +329,9 @@ class Network {
   bool favorite_;
   bool auto_connect_;
   ConnectivityState connectivity_state_;
+
+  // Unique identifier, set the first time the network is parsed.
+  std::string unique_id_;
 
  private:
   void set_name(const std::string& name) { name_ = name; }
@@ -623,6 +629,7 @@ class WifiNetwork : public WirelessNetwork {
   const std::string& passphrase() const { return passphrase_; }
   const std::string& identity() const { return identity_; }
   const std::string& cert_path() const { return cert_path_; }
+  bool passphrase_required() const { return passphrase_required_; }
 
   EAPMethod eap_method() const { return eap_method_; }
   EAPPhase2Auth eap_phase_2_auth() const { return eap_phase_2_auth_; }
@@ -667,11 +674,13 @@ class WifiNetwork : public WirelessNetwork {
   // Return true if cert_path_ indicates that we have loaded the certificate.
   bool IsCertificateLoaded() const;
 
- protected:
+ private:
   // WirelessNetwork overrides.
   virtual bool ParseValue(int index, const Value* value);
+  virtual void ParseInfo(const DictionaryValue* info);
 
- private:
+  void CalculateUniqueId();
+
   void set_encryption(ConnectionSecurity encryption) {
     encryption_ = encryption;
   }
@@ -969,6 +978,11 @@ class NetworkLibrary {
       const std::string& path) const = 0;
   virtual VirtualNetwork* FindVirtualNetworkByPath(
       const std::string& path) const = 0;
+
+  // Returns the visible wifi network corresponding to the remembered
+  // wifi network, or NULL if the remembered network is not visible.
+  virtual Network* FindNetworkFromRemembered(
+      const Network* remembered) const = 0;
 
   // Retrieves the data plans associated with |path|, NULL if there are no
   // associated plans.

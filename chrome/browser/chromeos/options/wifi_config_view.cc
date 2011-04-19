@@ -366,14 +366,23 @@ void WifiConfigView::UpdateErrorLabel() {
     NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
     const WifiNetwork* wifi = cros->FindWifiNetworkByPath(service_path_);
     if (wifi && wifi->failed()) {
-      if (wifi->error() == ERROR_BAD_PASSPHRASE) {
-        error_msg = l10n_util::GetStringUTF8(
-            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_PASSPHRASE);
-      } else if (wifi->error() == ERROR_BAD_WEPKEY) {
-        error_msg = l10n_util::GetStringUTF8(
-            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_WEPKEY);
-      } else {
-        error_msg = wifi->GetErrorString();
+      bool passphrase_empty = wifi->GetPassphrase().empty();
+      switch (wifi->error()) {
+        case ERROR_BAD_PASSPHRASE:
+          if (!passphrase_empty) {
+            error_msg = l10n_util::GetStringUTF8(
+                IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_PASSPHRASE);
+          }
+          break;
+        case ERROR_BAD_WEPKEY:
+          if (!passphrase_empty) {
+            error_msg = l10n_util::GetStringUTF8(
+                IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_WEPKEY);
+          }
+          break;
+        default:
+          error_msg = wifi->GetErrorString();
+          break;
       }
     }
   }

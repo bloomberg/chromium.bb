@@ -1146,10 +1146,6 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   return list;
 }
 
-std::string GetWifiUniqueIdentifier(const chromeos::WifiNetwork* wifi) {
-  return wifi->encryption() + "|" + wifi->name();
-}
-
 ListValue* InternetOptionsHandler::GetRememberedList() {
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
@@ -1158,52 +1154,35 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
 
   const chromeos::WifiNetworkVector& remembered_wifi_networks =
       cros->remembered_wifi_networks();
-  const chromeos::WifiNetworkVector& wifi_networks =
-      cros->wifi_networks();
   const chromeos::Network* active_network = cros->active_network();
   bool vpn_on_wireless = active_network && cros->virtual_network() &&
                          active_network->type() == chromeos::TYPE_WIFI;
 
-  // The remembered networks from libcros/flimflam don't include the signal
-  // strength, so fall back to the detected networks for this data.  We
-  // consider networks to be the same if they have the same name and encryption
-  // type, so create a map of detected networks indexed by name + encryption.
-  std::map<std::string, chromeos::WifiNetwork*> wifi_map;
-  for (chromeos::WifiNetworkVector::const_iterator it = wifi_networks.begin();
-       it != wifi_networks.end(); ++it) {
-    wifi_map[GetWifiUniqueIdentifier(*it)] = *it;
-  }
-
   for (chromeos::WifiNetworkVector::const_iterator rit =
            remembered_wifi_networks.begin();
        rit != remembered_wifi_networks.end(); ++rit) {
-    chromeos::WifiNetwork* wifi = *rit;
-    // Check if this remembered network has a matching detected network.
-    std::map<std::string, chromeos::WifiNetwork*>::const_iterator it =
-        wifi_map.find(GetWifiUniqueIdentifier(wifi));
-    bool found = it != wifi_map.end();
+    chromeos::WifiNetwork* remembered = *rit;
+    chromeos::Network* network = cros->FindNetworkFromRemembered(remembered);
 
-    // Don't show the active network in the remembered list.
-    if (found && (it->second)->connected())
-      continue;
-    const SkBitmap* icon = found ?
-        chromeos::NetworkMenu::IconForNetworkStrength(it->second, true) :
+    const SkBitmap* icon = network ?
+        chromeos::NetworkMenu::IconForNetworkStrength(
+            static_cast<chromeos::WifiNetwork*>(network), true) :
         rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK);
     // Place the secure badge on the icon if the remembered network is
     // encrypted (the matching detected network, if any, will have the same
     // encrypted property by definition).
-    const SkBitmap* bottom_right_badge = wifi->encrypted() ?
+    const SkBitmap* bottom_right_badge = remembered->encrypted() ?
         rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE) : NULL;
     const SkBitmap* bottom_left_badge =
-        vpn_on_wireless && active_network == wifi ?
+        vpn_on_wireless && active_network == network ?
         chromeos::NetworkMenu::BadgeForPrivateNetworkStatus(NULL) : NULL;
     list->Append(GetNetwork(
-        wifi->service_path(),
+        remembered->service_path(),
         chromeos::NetworkMenu::IconForDisplay(icon, bottom_right_badge, NULL,
                                               bottom_left_badge),
-        wifi->name(),
-        wifi->connecting(),
-        wifi->connected(),
+        remembered->name(),
+        network ? network->connecting() : false,
+        network ? network->connected() : false,
         true,
         chromeos::TYPE_WIFI,
         true,
