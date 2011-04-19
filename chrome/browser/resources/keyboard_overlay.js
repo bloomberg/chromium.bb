@@ -121,7 +121,13 @@ function getModifiers(e) {
     return [];
   }
   var isKeyDown = (e.type == 'keydown');
-  var keyCodeToModifier = {16: 'SHIFT', 17: 'CTRL', 18: 'ALT'};
+  var keyCodeToModifier = {
+    16: 'SHIFT',
+    17: 'CTRL',
+    18: 'ALT',
+    91: 'ALT', // left ALT pressed with SHIFT
+    92: 'ALT', // right ALT pressed with SHIFT
+  };
   var modifierWithKeyCode = keyCodeToModifier[e.keyCode];
   var isPressed = {'SHIFT': e.shiftKey, 'CTRL': e.ctrlKey, 'ALT': e.altKey};
   // if e.keyCode is one of Shift, Ctrl and Alt, isPressed should
