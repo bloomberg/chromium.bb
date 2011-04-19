@@ -56,7 +56,7 @@ void InfoBarContainer::ChangeTabContents(TabContents* contents) {
   }
 
   // Now that everything is up to date, signal the delegate to re-layout.
-  OnInfoBarHeightChanged(true);
+  OnInfoBarHeightChanged(false);
 }
 
 int InfoBarContainer::GetVerticalOverlap(int* total_height) {
