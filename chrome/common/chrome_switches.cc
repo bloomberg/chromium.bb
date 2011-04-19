@@ -901,9 +901,6 @@ const char kSyncServiceURL[]                = "sync-url";
 // Try to connect to XMPP using SSLTCP first (for testing).
 const char kSyncTrySsltcpFirstForXmpp[]     = "sync-try-ssltcp-first-for-xmpp";
 
-// Use new experimental SyncerThread implementation and friends.
-const char kNewSyncerThread[]               = "new-syncer-thread";
-
 // Pass the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";
 

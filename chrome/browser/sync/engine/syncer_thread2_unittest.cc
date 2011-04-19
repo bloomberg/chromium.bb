@@ -6,7 +6,7 @@
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/sync/engine/mock_model_safe_workers.h"
 #include "chrome/browser/sync/engine/syncer.h"
-#include "chrome/browser/sync/engine/syncer_thread2.h"
+#include "chrome/browser/sync/engine/syncer_thread.h"
 #include "chrome/browser/sync/sessions/test_util.h"
 #include "chrome/test/sync/engine/mock_connection_manager.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
@@ -36,8 +36,6 @@ class MockSyncer : public Syncer {
   MOCK_METHOD3(SyncShare, void(sessions::SyncSession*, SyncerStep,
                                SyncerStep));
 };
-
-namespace s3 {
 
 // Used when tests want to record syncing activity to examine later.
 struct SyncShareRecords {
@@ -929,8 +927,7 @@ TEST_F(SyncerThread2Test, SetsPreviousRoutingInfo) {
   EXPECT_TRUE(expected == context()->previous_session_routing_info());
 }
 
-}  // namespace s3
 }  // namespace browser_sync
 
 // SyncerThread won't outlive the test!
-DISABLE_RUNNABLE_METHOD_REFCOUNT(browser_sync::s3::SyncerThread2Test);
+DISABLE_RUNNABLE_METHOD_REFCOUNT(browser_sync::SyncerThread2Test);

@@ -195,16 +195,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   void DeactivateDataType(DataTypeController* data_type_controller,
                           ChangeProcessor* change_processor);
 
-  // Requests the backend to pause.  Returns true if the request is
-  // sent sucessfully.  When the backend does pause, a SYNC_PAUSED
-  // notification is sent to the notification service.
-  virtual bool RequestPause();
-
-  // Requests the backend to resume.  Returns true if the request is
-  // sent sucessfully.  When the backend does resume, a SYNC_RESUMED
-  // notification is sent to the notification service.
-  virtual bool RequestResume();
-
   // Asks the server to clear all data associated with ChromeSync.
   virtual bool RequestClearServerData();
 
@@ -282,8 +272,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     virtual void OnPassphraseRequired(bool for_decryption);
     virtual void OnPassphraseFailed();
     virtual void OnPassphraseAccepted(const std::string& bootstrap_token);
-    virtual void OnPaused();
-    virtual void OnResumed();
     virtual void OnStopSyncingPermanently();
     virtual void OnUpdatedToken(const std::string& token);
     virtual void OnClearServerDataFailed();
@@ -350,8 +338,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // Called on the SyncBackendHost core_thread_ to nudge/pause/resume the
     // syncer.
     void DoRequestNudge(const tracked_objects::Location& location);
-    void DoRequestPause();
-    void DoRequestResume();
     void DoRequestClearServerData();
 
     // Sets |deferred_nudge_for_cleanup_requested_| to true. See comment below.
@@ -382,6 +368,9 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     //    because the thread that was using them has exited (in step 2).
     void DoShutdown(bool stopping_sync);
 
+    // Posts a config request on the core thread.
+    virtual void DoRequestConfig(const syncable::ModelTypeBitSet& added_types);
+
     // Set the base request context to use when making HTTP calls.
     // This method will add a reference to the context to persist it
     // on the IO thread. Must be removed from IO thread.
@@ -400,8 +389,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     void DoProcessMessage(
         const std::string& name, const JsArgList& args,
         const JsEventHandler* sender);
-
-    void DoStartConfigurationMode();
 
     // A callback from the SyncerThread when it is safe to continue config.
     void FinishConfigureDataTypes();
@@ -431,15 +418,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
     // Return change processor for a particular model (return NULL on failure).
     ChangeProcessor* GetProcessor(syncable::ModelType modeltype);
-
-
-    // Sends a SYNC_PAUSED notification to the notification service on
-    // the UI thread.
-    void NotifyPaused();
-
-    // Sends a SYNC_RESUMED notification to the notification service
-    // on the UI thread.
-    void NotifyResumed();
 
     // Invoked when initialization of syncapi is complete and we can start
     // our timer.
@@ -540,9 +518,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
   // Posts a nudge request on the core thread.
   virtual void RequestNudge(const tracked_objects::Location& location);
-
-  // Posts a config request on the core thread.
-  virtual void RequestConfig(const syncable::ModelTypeBitSet& added_types);
 
   // Called to finish the job of ConfigureDataTypes once the syncer is in
   // configuration mode.
@@ -656,9 +631,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
   // UI-thread cache of the last SyncSessionSnapshot received from syncapi.
   scoped_ptr<sessions::SyncSessionSnapshot> last_snapshot_;
-
-  // While two impls are in flight, using this for sanity checking. Bug 26339.
-  const bool using_new_syncer_thread_;
 
   // Whether we've processed the initialization complete callback.
   bool syncapi_initialized_;
