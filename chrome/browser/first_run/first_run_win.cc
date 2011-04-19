@@ -92,6 +92,38 @@ class FirstRunDelayedTasks : public NotificationObserver {
   NotificationRegistrar registrar_;
 };
 
+// Creates the desktop shortcut to chrome for the current user. Returns
+// false if it fails. It will overwrite the shortcut if it exists.
+bool CreateChromeDesktopShortcut() {
+  FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe))
+    return false;
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  if (!dist)
+    return false;
+  return ShellUtil::CreateChromeDesktopShortcut(
+      dist,
+      chrome_exe.value(),
+      dist->GetAppDescription(),
+      ShellUtil::CURRENT_USER,
+      false,
+      true);  // create if doesn't exist.
+}
+
+// Creates the quick launch shortcut to chrome for the current user. Returns
+// false if it fails. It will overwrite the shortcut if it exists.
+bool CreateChromeQuickLaunchShortcut() {
+  FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe))
+    return false;
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  return ShellUtil::CreateChromeQuickLaunchShortcut(
+      dist,
+      chrome_exe.value(),
+      ShellUtil::CURRENT_USER,  // create only for current user.
+      true);  // create if doesn't exist.
+}
+
 }  // namespace
 
 bool FirstRun::LaunchSetupWithParam(const std::string& param,
@@ -134,28 +166,6 @@ bool FirstRun::WriteEULAtoTempFile(FilePath* eula_path) {
 
 void FirstRun::DoDelayedInstallExtensions() {
   new FirstRunDelayedTasks(FirstRunDelayedTasks::INSTALL_EXTENSIONS);
-}
-
-bool FirstRun::CreateChromeDesktopShortcut() {
-  FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe))
-    return false;
-  BrowserDistribution *dist = BrowserDistribution::GetDistribution();
-  if (!dist)
-    return false;
-  return ShellUtil::CreateChromeDesktopShortcut(dist, chrome_exe.value(),
-      dist->GetAppDescription(), ShellUtil::CURRENT_USER,
-      false, true);  // create if doesn't exist.
-}
-
-bool FirstRun::CreateChromeQuickLaunchShortcut() {
-  FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe))
-    return false;
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  return ShellUtil::CreateChromeQuickLaunchShortcut(dist, chrome_exe.value(),
-      ShellUtil::CURRENT_USER,  // create only for current user.
-      true);  // create if doesn't exist.
 }
 
 namespace {
@@ -281,7 +291,7 @@ bool DecodeImportParams(const std::string& encoded,
 
 // static
 void FirstRun::PlatformSetup() {
-  FirstRun::CreateChromeDesktopShortcut();
+  CreateChromeDesktopShortcut();
   // Windows 7 has deprecated the quick launch bar.
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     CreateChromeQuickLaunchShortcut();
@@ -398,4 +408,3 @@ int FirstRun::ImportFromBrowser(Profile* profile,
   importer_observer.RunLoop();
   return importer_observer.import_result();
 }
-

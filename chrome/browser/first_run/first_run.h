@@ -56,14 +56,6 @@ class FirstRun {
     std::vector<GURL> bookmarks;
   };
 
-#if defined(OS_WIN)
-  // Creates the desktop shortcut to chrome for the current user. Returns
-  // false if it fails. It will overwrite the shortcut if it exists.
-  static bool CreateChromeDesktopShortcut();
-  // Creates the quick launch shortcut to chrome for the current user. Returns
-  // false if it fails. It will overwrite the shortcut if it exists.
-  static bool CreateChromeQuickLaunchShortcut();
-#endif  // OS_WIN
   // Import bookmarks and/or browser items (depending on platform support)
   // in this process. This function is paired with FirstRun::ImportSettings().
   // This function might or might not show a visible UI depending on the
