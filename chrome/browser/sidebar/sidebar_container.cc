@@ -6,11 +6,11 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/extension_sidebar_defaults.h"
 #include "chrome/common/extensions/extension_sidebar_utils.h"
+#include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"

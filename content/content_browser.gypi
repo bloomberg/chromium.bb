@@ -201,6 +201,8 @@
         'browser/renderer_host/backing_store_x.h',
         'browser/renderer_host/blob_message_filter.cc',
         'browser/renderer_host/blob_message_filter.h',
+        'browser/renderer_host/browser_render_process_host.cc',
+        'browser/renderer_host/browser_render_process_host.h',
         'browser/renderer_host/buffered_resource_handler.cc',
         'browser/renderer_host/buffered_resource_handler.h',
         'browser/renderer_host/clipboard_message_filter.cc',

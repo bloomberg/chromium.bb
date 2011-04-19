@@ -5,7 +5,7 @@
 // Represents the browser side of the browser <--> renderer communication
 // channel. There will be one RenderProcessHost per renderer process.
 
-#include "chrome/browser/renderer_host/browser_render_process_host.h"
+#include "content/browser/renderer_host/browser_render_process_host.h"
 
 #include <algorithm>
 #include <limits>
@@ -38,14 +38,10 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/printing/printing_message_filter.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
-#include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
 #include "chrome/browser/spellcheck_host.h"
-#include "chrome/browser/spellcheck_message_filter.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
 #include "chrome/common/chrome_paths.h"
@@ -61,6 +57,7 @@
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/child_process_security_policy.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/device_orientation/message_filter.h"
 #include "content/browser/geolocation/geolocation_dispatcher_host.h"
 #include "content/browser/gpu_process_host.h"
@@ -100,7 +97,6 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread.h"
-#include "grit/generated_resources.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_switches.h"
@@ -395,6 +391,8 @@ bool BrowserRenderProcessHost::Init(
 
   CreateMessageFilters();
 
+  content::GetContentClient()->browser()->BrowserRenderProcessHostCreated(this);
+
   if (run_renderer_in_process()) {
     // Crank up a thread and run the initialization there.  With the way that
     // messages flow between the browser and renderer, this thread is required
@@ -431,7 +429,7 @@ bool BrowserRenderProcessHost::Init(
     child_process_.reset(new ChildProcessLauncher(
 #if defined(OS_WIN)
         FilePath(),
-#elif defined(POSIX)
+#elif defined(OS_POSIX)
         renderer_prefix.empty(),
         base::environment_vector(),
         channel_->GetClientFileDescriptor(),
@@ -454,11 +452,6 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
                                   installed_app_),
                               widget_helper_));
   channel_->AddFilter(render_message_filter);
-
-  channel_->AddFilter(new ChromeRenderMessageFilter(
-      id(),
-      profile(),
-      profile()->GetRequestContextForPossibleApp(installed_app_)));
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
       id(), ChildProcessInfo::RENDER_PROCESS,
@@ -484,10 +477,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
   channel_->AddFilter(new GpuMessageFilter(id()));
   channel_->AddFilter(new PepperFileMessageFilter(id(), profile()));
   channel_->AddFilter(new PepperMessageFilter(profile()));
-  channel_->AddFilter(new PrintingMessageFilter());
   channel_->AddFilter(new speech_input::SpeechInputDispatcherHost(id()));
-  channel_->AddFilter(
-      new SearchProviderInstallStateMessageFilter(id(), profile()));
   channel_->AddFilter(new FileSystemDispatcherHost(profile()));
   channel_->AddFilter(new device_orientation::MessageFilter());
   channel_->AddFilter(
@@ -502,7 +492,6 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
           new RendererURLRequestContextSelector(profile(), installed_app_));
   channel_->AddFilter(socket_stream_dispatcher_host);
 
-  channel_->AddFilter(new SpellCheckMessageFilter());
   channel_->AddFilter(
       new WorkerMessageFilter(
           id(),

@@ -8,6 +8,7 @@
 
 #include "content/common/content_client.h"
 
+class BrowserRenderProcessHost;
 class GURL;
 class Profile;
 class RenderViewHost;
@@ -26,6 +27,9 @@ class ContentBrowserClient {
   virtual void PreCreateRenderView(RenderViewHost* render_view_host,
                                    Profile* profile,
                                    const GURL& url);
+
+  // Notifies that a BrowserRenderProcessHost has been created.
+  virtual void BrowserRenderProcessHostCreated(BrowserRenderProcessHost* host);
 
   // Gets the WebUIFactory which will be responsible for generating WebUIs.
   virtual WebUIFactory* GetWebUIFactory();

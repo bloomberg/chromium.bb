@@ -6,11 +6,15 @@
 
 #include "chrome/browser/debugger/devtools_handler.h"
 #include "chrome/browser/desktop_notification_handler.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/extensions/extension_message_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/renderer_host/browser_render_process_host.h"
+#include "chrome/browser/printing/printing_message_filter.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/chrome_render_message_filter.h"
+#include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
+#include "chrome/browser/spellcheck_message_filter.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
+#include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 
 namespace chrome {
@@ -36,6 +40,19 @@ void ChromeContentBrowserClient::PreCreateRenderView(
     static_cast<BrowserRenderProcessHost*>(render_view_host->process())->
         set_installed_app(installed_app);
   }
+}
+
+void ChromeContentBrowserClient::BrowserRenderProcessHostCreated(
+    BrowserRenderProcessHost* host) {
+  host->channel()->AddFilter(new ChromeRenderMessageFilter(
+      host->id(),
+      host->profile(),
+      host->profile()->GetRequestContextForPossibleApp(
+          host->installed_app())));
+  host->channel()->AddFilter(new PrintingMessageFilter());
+  host->channel()->AddFilter(
+      new SearchProviderInstallStateMessageFilter(host->id(), host->profile()));
+  host->channel()->AddFilter(new SpellCheckMessageFilter());
 }
 
 content::WebUIFactory* ChromeContentBrowserClient::GetWebUIFactory() {

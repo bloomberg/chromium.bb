@@ -114,6 +114,8 @@ class RenderProcessHost : public IPC::Channel::Sender,
     return listeners_.Lookup(routing_id);
   }
 
+  IPC::SyncChannel* channel() { return channel_.get(); }
+
   // Called to inform the render process host of a new "max page id" for a
   // render view host.  The render process host computes the largest page id
   // across all render view hosts and uses the value when it needs to

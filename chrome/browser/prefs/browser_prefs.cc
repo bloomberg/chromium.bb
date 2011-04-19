@@ -37,7 +37,6 @@
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile_impl.h"
-#include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -57,6 +56,7 @@
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/host_zoom_map.h"
+#include "content/browser/renderer_host/browser_render_process_host.h"
 
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
 #include "chrome/browser/ui/views/browser_actions_container.h"
