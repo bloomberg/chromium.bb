@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -64,10 +64,12 @@ int32_t NaClAbiStatHostDescStatXlateCtor(struct nacl_abi_stat    *dst,
       break;
 #endif
     default:
-      NaClLog(LOG_ERROR,
-              ("NaClAbiStatHostDescStatXlateCtor: how did NaCl app open a file"
-               " with st_mode = 0%o?\n"),
-              src->st_mode);
+      NaClLog(LOG_INFO,
+              ("NaClAbiStatHostDescStatXlateCtor:"
+               " Unusual NaCl descriptor type (not constructible)."
+               " The NaCl app has a file with st_mode = 0%o."
+               " (This is normal for std{in,out,err}, or other"
+               " inherited/injected files.)\n"));
       m = NACL_ABI_S_UNSUP;
   }
   if (0 != (src->st_mode & S_IRUSR)) {
