@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/bubble/bubble.h"
+#include "chrome/browser/ui/views/bubble/border_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef testing::Test BubbleTest;
+typedef testing::Test BorderContentsTest;
 
 class TestBorderContents : public BorderContents {
  public:
@@ -30,7 +30,7 @@ class TestBorderContents : public BorderContents {
 
 // Tests that the arrow is moved appropriately when the info-bubble does not fit
 // the screen.
-TEST_F(BubbleTest, BorderContentsSizeAndGetBounds) {
+TEST_F(BorderContentsTest, BorderContentsSizeAndGetBounds) {
   TestBorderContents border_contents;
   border_contents.Init();
 
@@ -187,7 +187,7 @@ TEST_F(BubbleTest, BorderContentsSizeAndGetBounds) {
 
 // Tests that the arrow is not moved when the info-bubble does not fit the
 // screen but moving it would make matter worse.
-TEST_F(BubbleTest, BorderContentsSizeAndGetBoundsDontMoveArrow) {
+TEST_F(BorderContentsTest, BorderContentsSizeAndGetBoundsDontMoveArrow) {
   TestBorderContents border_contents;
   border_contents.Init();
   gfx::Rect contents_bounds;
@@ -210,7 +210,7 @@ TEST_F(BubbleTest, BorderContentsSizeAndGetBoundsDontMoveArrow) {
 }
 
 // Test that the 'allow offscreen' prevents the bubble from moving.
-TEST_F(BubbleTest, BorderContentsSizeAndGetBoundsAllowOffscreen) {
+TEST_F(BorderContentsTest, BorderContentsSizeAndGetBoundsAllowOffscreen) {
   TestBorderContents border_contents;
   border_contents.Init();
   gfx::Rect contents_bounds;

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PINNED_CONTENTS_INFO_BUBBLE_H_
 #pragma once
 
+#include "chrome/browser/ui/views/bubble/border_contents.h"
 #include "chrome/browser/ui/views/bubble/bubble.h"
 
 // This is a specialization of BorderContents, used to draw a border around

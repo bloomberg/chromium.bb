@@ -30,16 +30,24 @@ BrowserBubbleHost* GetBubbleHostFromFrame(views::Widget* frame) {
 
 }  // namespace
 
-BrowserBubble::BrowserBubble(views::View* view, views::Widget* frame,
-                             const gfx::Point& origin)
+BrowserBubble::BrowserBubble(views::View* view,
+                             views::Widget* frame,
+                             const gfx::Rect& relative_to,
+                             BubbleBorder::ArrowLocation arrow_location)
     : frame_(frame),
       view_(view),
+      relative_to_(relative_to),
+      arrow_location_(arrow_location),
       visible_(false),
       delegate_(NULL),
       attached_(false),
       bubble_host_(GetBubbleHostFromFrame(frame)) {
-  gfx::Size size = view->GetPreferredSize();
-  bounds_.SetRect(origin.x(), origin.y(), size.width(), size.height());
+  // Keep relative_to_ in frame-relative coordinates to aid in drag
+  // positioning.
+  gfx::Point origin = relative_to_.origin();
+  views::View::ConvertPointToView(NULL, frame_->GetRootView(), &origin);
+  relative_to_.set_origin(origin);
+
   InitPopup();
 }
 
@@ -112,6 +120,22 @@ void BrowserBubble::Reposition() {
             bounds_.height());
 }
 
-void BrowserBubble::ResizeToView() {
-  SetBounds(bounds_.x(), bounds_.y(), view_->width(), view_->height());
+gfx::Rect BrowserBubble::GetAbsoluteRelativeTo() {
+  // |relative_to_| is in browser-relative coordinates, so convert it to
+  // screen coordinates for use in placing the popup widgets.
+  gfx::Rect relative_rect = relative_to_;
+  gfx::Point relative_origin = relative_rect.origin();
+  views::View::ConvertPointToScreen(frame_->GetRootView(), &relative_origin);
+  relative_rect.set_origin(relative_origin);
+
+  return relative_rect;
+}
+
+void BrowserBubble::SetAbsoluteBounds(const gfx::Rect& window_bounds) {
+  // Convert screen coordinates to frame relative.
+  gfx::Point relative_origin = window_bounds.origin();
+  views::View::ConvertPointToView(NULL, frame_->GetRootView(),
+                                  &relative_origin);
+  SetBounds(relative_origin.x(), relative_origin.y(),
+            window_bounds.width(), window_bounds.height());
 }

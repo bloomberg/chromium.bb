@@ -1760,7 +1760,7 @@
         'browser/ui/views/bookmarks/bookmark_bar_view_unittest.cc',
         'browser/ui/views/bookmarks/bookmark_context_menu_test.cc',
         'browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc',
-        'browser/ui/views/bubble/bubble_unittest.cc',
+        'browser/ui/views/bubble/border_contents_unittest.cc',
         'browser/ui/views/extensions/browser_action_drag_data_unittest.cc',
         'browser/ui/views/generic_info_view_unittest.cc',
         'browser/ui/views/reload_button_unittest.cc',

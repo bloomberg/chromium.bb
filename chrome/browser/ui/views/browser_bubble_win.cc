@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/browser_bubble.h"
 
+#include "chrome/browser/ui/views/bubble/border_contents.h"
+#include "chrome/browser/ui/views/bubble/border_widget_win.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_win.h"
@@ -12,12 +14,15 @@
 class BubbleWidget : public views::WidgetWin {
  public:
   explicit BubbleWidget(BrowserBubble* bubble)
-      : bubble_(bubble) {
+      : bubble_(bubble),
+        border_widget_(new BorderWidgetWin) {
     set_window_style(WS_POPUP | WS_CLIPCHILDREN);
     set_window_ex_style(WS_EX_TOOLWINDOW);
   }
 
   void ShowAndActivate(bool activate) {
+    // Show the border first, then the popup overlaid on top.
+    border_widget_->Show();
     if (activate)
       ShowWindow(SW_SHOW);
     else
@@ -32,6 +37,7 @@ class BubbleWidget : public views::WidgetWin {
       if (delegate)
         delegate->BubbleLostFocus(bubble_, NULL);
     }
+    border_widget_->Close();
     views::WidgetWin::Close();
     bubble_ = NULL;
   }
@@ -43,6 +49,7 @@ class BubbleWidget : public views::WidgetWin {
         delegate->BubbleLostFocus(bubble_, NULL);
     }
     views::WidgetWin::Hide();
+    border_widget_->Hide();
   }
 
   void OnActivate(UINT action, BOOL minimized, HWND window) {
@@ -87,8 +94,13 @@ class BubbleWidget : public views::WidgetWin {
       bubble_->delegate()->BubbleGotFocus(bubble_);
   }
 
+  BorderWidgetWin* border_widget() {
+    return border_widget_;
+  }
+
  private:
   BrowserBubble* bubble_;
+  BorderWidgetWin* border_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleWidget);
 };
@@ -96,12 +108,19 @@ class BubbleWidget : public views::WidgetWin {
 void BrowserBubble::InitPopup() {
   // popup_ is a Widget, but we need to do some WidgetWin stuff first, then
   // we'll assign it into popup_.
-  views::WidgetWin* pop = new BubbleWidget(this);
+  BubbleWidget* pop = new BubbleWidget(this);
 
-  pop->Init(frame_->GetNativeView(), bounds_);
+  BorderWidgetWin* border_widget = pop->border_widget();
+  border_widget->Init(new BorderContents, frame_->GetNativeView());
+
+  // We make the BorderWidgetWin the owner of the Bubble HWND, so that the
+  // latter is displayed on top of the former.
+  pop->Init(border_widget->GetNativeView(), gfx::Rect());
   pop->SetContentsView(view_);
 
   popup_ = pop;
+
+  ResizeToView();
   Reposition();
   AttachToBrowser();
 }
@@ -125,4 +144,15 @@ void BrowserBubble::Hide() {
   views::WidgetWin* pop = static_cast<views::WidgetWin*>(popup_);
   pop->Hide();
   visible_ = false;
+}
+
+void BrowserBubble::ResizeToView() {
+  BorderWidgetWin* border_widget =
+      static_cast<BubbleWidget*>(popup_)->border_widget();
+
+  gfx::Rect window_bounds;
+  window_bounds = border_widget->SizeAndGetBounds(GetAbsoluteRelativeTo(),
+      arrow_location_, view_->size());
+
+  SetAbsoluteBounds(window_bounds);
 }

@@ -43,15 +43,6 @@ const int ExtensionPopup::kMinHeight = 25;
 const int ExtensionPopup::kMaxWidth = 800;
 const int ExtensionPopup::kMaxHeight = 600;
 
-namespace {
-
-// The width, in pixels, of the black-border on a popup.
-const int kPopupBorderWidth = 1;
-
-const int kPopupBubbleCornerRadius = BubbleBorder::GetCornerRadius() / 2;
-
-}  // namespace
-
 ExtensionPopup::ExtensionPopup(ExtensionHost* host,
                                views::Widget* frame,
                                const gfx::Rect& relative_to,
@@ -60,15 +51,13 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
                                Observer* observer)
     : BrowserBubble(host->view(),
                     frame,
-                    gfx::Point()),
+                    relative_to,
+                    arrow_location),
       relative_to_(relative_to),
       extension_host_(host),
       inspect_with_devtools_(inspect_with_devtools),
       close_on_lost_focus_(true),
       closing_(false),
-      border_widget_(NULL),
-      border_(NULL),
-      border_view_(NULL),
       observer_(observer) {
   AddRef();  // Balanced in Close();
   set_delegate(this);
@@ -82,54 +71,9 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
   // Listen for the containing view calling window.close();
   registrar_.Add(this, NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  Source<Profile>(host->profile()));
-
-  // TODO(erikkay) Some of this border code is derived from InfoBubble.
-  // We should see if we can unify these classes.
-
-  // Keep relative_to_ in frame-relative coordinates to aid in drag
-  // positioning.
-  gfx::Point origin = relative_to_.origin();
-  views::View::ConvertPointToView(NULL, frame_->GetRootView(), &origin);
-  relative_to_.set_origin(origin);
-
-  // The bubble chrome requires a separate window, so construct it here.
-  Widget::CreateParams params(Widget::CreateParams::TYPE_POPUP);
-  params.transparent = true;
-  params.accept_events = false;
-  border_widget_ = Widget::CreateWidget(params);
-#if defined(OS_LINUX)
-  static_cast<views::WidgetGtk*>(border_widget_)->make_transient_to_parent();
-#endif
-  border_widget_->Init(frame->GetNativeView(), bounds());
-#if defined(OS_CHROMEOS)
-  {
-    vector<int> params;
-    params.push_back(0);  // don't show while screen is locked
-    chromeos::WmIpc::instance()->SetWindowType(
-        border_widget_->GetNativeView(),
-        chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
-        &params);
-  }
-#endif
-  border_ = new BubbleBorder(arrow_location);
-  border_view_ = new views::View;
-  border_view_->set_background(new BubbleBackground(border_));
-
-  border_view_->set_border(border_);
-  border_widget_->SetContentsView(border_view_);
-  // Ensure that the popup contents are always displayed ontop of the border
-  // widget.
-  border_widget_->MoveAboveWidget(popup_);
 }
 
 ExtensionPopup::~ExtensionPopup() {
-  // The widget is set to delete on destroy, so no leak here.
-  border_widget_->Close();
-}
-
-void ExtensionPopup::Hide() {
-  BrowserBubble::Hide();
-  border_widget_->Hide();
 }
 
 void ExtensionPopup::Show(bool activate) {
@@ -141,46 +85,7 @@ void ExtensionPopup::Show(bool activate) {
 #endif
 
   ResizeToView();
-
-  // Show the border first, then the popup overlaid on top.
-  border_widget_->Show();
   BrowserBubble::Show(activate);
-}
-
-void ExtensionPopup::ResizeToView() {
-  // We'll be sizing ourselves to this size shortly, but wait until we
-  // know our position to do it.
-  gfx::Size new_size = view()->size();
-
-  // |relative_to_| is in browser-relative coordinates, so convert it to
-  // screen coordinates for use in placing the popup widgets.
-  gfx::Rect relative_rect = relative_to_;
-  gfx::Point relative_origin = relative_rect.origin();
-  views::View::ConvertPointToScreen(frame_->GetRootView(), &relative_origin);
-  relative_rect.set_origin(relative_origin);
-
-  // The rounded corners cut off more of the view than the border insets claim.
-  // Since we can't clip the ExtensionView's corners, we need to increase the
-  // inset by half the corner radius as well as lying about the size of the
-  // contents size to compensate.
-  int corner_inset = BubbleBorder::GetCornerRadius() / 2;
-  gfx::Size adjusted_size = new_size;
-  adjusted_size.Enlarge(2 * corner_inset, 2 * corner_inset);
-  gfx::Rect rect = border_->GetBounds(relative_rect, adjusted_size);
-  border_widget_->SetBounds(rect);
-
-  // Now calculate the inner bounds.  This is a bit more convoluted than
-  // it should be because BrowserBubble coordinates are in Browser coordinates
-  // while |rect| is in screen coordinates.
-  gfx::Insets border_insets;
-  border_->GetInsets(&border_insets);
-  gfx::Point origin = rect.origin();
-  views::View::ConvertPointToView(NULL, frame_->GetRootView(), &origin);
-
-  origin.set_x(origin.x() + border_insets.left() + corner_inset);
-  origin.set_y(origin.y() + border_insets.top() + corner_inset);
-
-  SetBounds(origin.x(), origin.y(), new_size.width(), new_size.height());
 }
 
 void ExtensionPopup::BubbleBrowserWindowMoved(BrowserBubble* bubble) {

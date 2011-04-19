@@ -72,9 +72,7 @@ class ExtensionPopup : public BrowserBubble,
   ExtensionHost* host() const { return extension_host_.get(); }
 
   // BrowserBubble overrides.
-  virtual void Hide();
   virtual void Show(bool activate);
-  virtual void ResizeToView();
 
   // BrowserBubble::Delegate methods.
   virtual void BubbleBrowserWindowMoved(BrowserBubble* bubble);
@@ -124,14 +122,6 @@ class ExtensionPopup : public BrowserBubble,
   bool closing_;
 
   NotificationRegistrar registrar_;
-
-  // A separate widget and associated pieces to draw a border behind the
-  // popup.  This has to be a separate window in order to support transparency.
-  // Layered windows can't contain native child windows, so we wouldn't be
-  // able to have the ExtensionView child.
-  views::Widget* border_widget_;
-  BubbleBorder* border_;
-  views::View* border_view_;
 
   // The observer of this popup.
   Observer* observer_;

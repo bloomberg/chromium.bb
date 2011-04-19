@@ -7,7 +7,6 @@
 #pragma once
 
 #include "chrome/browser/ui/views/bubble/bubble_border.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "views/accelerator.h"
 #include "views/view.h"
@@ -27,8 +26,9 @@
 // insets the contents for you, so the contents typically shouldn't have any
 // additional margins.
 
+class BorderContents;
 #if defined(OS_WIN)
-class BorderWidget;
+class BorderWidgetWin;
 #endif
 class Bubble;
 
@@ -43,113 +43,6 @@ class SlideAnimation;
 namespace views {
 class Widget;
 }
-
-// This is used to paint the border of the Bubble. Windows uses this via
-// BorderWidget (see below), while others can use it directly in the bubble.
-class BorderContents : public views::View {
- public:
-  BorderContents() : bubble_border_(NULL) { }
-
-  // Must be called before this object can be used.
-  void Init();
-
-  // Given the size of the contents and the rect to point at, returns the bounds
-  // of both the border and the contents inside the bubble.
-  // |arrow_location| specifies the preferred location for the arrow
-  // anchor. If the bubble does not fit on the monitor and
-  // |allow_bubble_offscreen| is false, the arrow location may change so the
-  // bubble shows entirely.
-  virtual void SizeAndGetBounds(
-      const gfx::Rect& position_relative_to,  // In screen coordinates
-      BubbleBorder::ArrowLocation arrow_location,
-      bool allow_bubble_offscreen,
-      const gfx::Size& contents_size,
-      gfx::Rect* contents_bounds,             // Returned in window coordinates
-      gfx::Rect* window_bounds);              // Returned in screen coordinates
-
- protected:
-  virtual ~BorderContents() { }
-
-  // Returns the bounds for the monitor showing the specified |rect|.
-  // Overridden in unit-tests.
-  virtual gfx::Rect GetMonitorBounds(const gfx::Rect& rect);
-
-  // Margins between the contents and the inside of the border, in pixels.
-  static const int kLeftMargin = 6;
-  static const int kTopMargin = 6;
-  static const int kRightMargin = 6;
-  static const int kBottomMargin = 9;
-
-  BubbleBorder* bubble_border_;
-
- private:
-  // Overridden from View:
-  virtual void OnPaint(gfx::Canvas* canvas);
-
-  // Changes |arrow_location| to its mirrored version, vertically if |vertical|
-  // is true, horizontally otherwise, if |window_bounds| don't fit in
-  // |monitor_bounds|.
-  void MirrorArrowIfOffScreen(bool vertical,
-                              const gfx::Rect& position_relative_to,
-                              const gfx::Rect& monitor_bounds,
-                              const gfx::Size& local_contents_size,
-                              BubbleBorder::ArrowLocation* arrow_location,
-                              gfx::Rect* window_bounds);
-
-  // Computes how much |window_bounds| is off-screen of the monitor bounds
-  // |monitor_bounds| and puts the values in |offscreen_insets|.
-  // Returns false if |window_bounds| is actually contained in |monitor_bounds|,
-  // in which case |offscreen_insets| is not modified.
-  static bool ComputeOffScreenInsets(const gfx::Rect& monitor_bounds,
-                                     const gfx::Rect& window_bounds,
-                                     gfx::Insets* offscreen_insets);
-
-  // Convenience methods that returns the height of |insets| if |vertical| is
-  // true, its width otherwise.
-  static int GetInsetsLength(const gfx::Insets& insets, bool vertical);
-
-  DISALLOW_COPY_AND_ASSIGN(BorderContents);
-};
-
-#if defined(OS_WIN)
-// This is a window that surrounds the info bubble and paints the margin and
-// border.  It is a separate window so that it can be a layered window, so that
-// we can use >1-bit alpha shadow images on the borders, which look nicer than
-// the Windows CS_DROPSHADOW shadows.  The info bubble window itself cannot be a
-// layered window because that prevents it from hosting native child controls.
-class BorderWidget : public views::WidgetWin {
- public:
-  BorderWidget();
-  virtual ~BorderWidget() { }
-
-  // Initializes the BrowserWidget making |owner| its owning window.
-  void Init(BorderContents* border_contents, HWND owner);
-
-  // Given the size of the contained contents (without margins), and the rect
-  // (in screen coordinates) to point to, sets the border window positions and
-  // sizes the border window and returns the bounds (in screen coordinates) the
-  // contents should use. |arrow_location| is prefered arrow location,
-  // the function tries to preserve the location and direction, in case of RTL
-  // arrow location is mirrored.
-  virtual gfx::Rect SizeAndGetBounds(const gfx::Rect& position_relative_to,
-                                     BubbleBorder::ArrowLocation arrow_location,
-                                     const gfx::Size& contents_size);
-
-  // Simple accessors.
-  BorderContents* border_contents() { return border_contents_; }
-
- protected:
-  BorderContents* border_contents_;
-
- private:
-  // Overridden from WidgetWin:
-  virtual LRESULT OnMouseActivate(UINT message,
-                                  WPARAM w_param,
-                                  LPARAM l_param) OVERRIDE;
-
-  DISALLOW_COPY_AND_ASSIGN(BorderWidget);
-};
-#endif
 
 class BubbleDelegate {
  public:
@@ -267,7 +160,7 @@ class Bubble
 
 #if defined(OS_WIN)
   // The window used to render the padding, border and arrow.
-  BorderWidget* border_;
+  BorderWidgetWin* border_;
 #elif defined(OS_LINUX)
   // The view displaying the border.
   BorderContents* border_contents_;
