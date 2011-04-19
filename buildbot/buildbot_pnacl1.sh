@@ -15,30 +15,36 @@ clobber() {
 
 # This is the first thing you want to run on the bots to install the toolchains
 install-lkgr-toolchains() {
-  echo "@@@BUILD_STEP gclient_runhooks@@@"
+  echo "@@@BUILD_STEP install_toolchains@@@"
   gclient runhooks --force
 }
 
 # We usually do not trust the TC to provide the latest (extra) SDK
 # so we rebuild them here
+# NOTE: we split this in two stages so that we can use -j8 for the second
 partial-sdk() {
+  local platforms=$1
+  # TODO(robertm): teach utman to only build the sdk for those platforms
+  #                we care about
   echo "@@@BUILD_STEP partial_sdk@@@"
   UTMAN_BUILDBOT=true tools/llvm/utman.sh extrasdk-make-install
 }
 
+# copy data to well known archive server
+push-data-to-archive-server() {
+  /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+    $1 \
+    gs://nativeclient-archive2/$2
+}
+
 # These tars up the executable to be shipped to the arm HW bots
 archive-for-hw-bots() {
-  echo "@@@BUILD_STEP archive_build@@@"
+  local target=$1
+  echo "@@@BUILD_STEP tar_generated_binaries@@@"
   tar cvfz arm.tgz scons-out/
-  # TODO(bradnelson): explain this mechanism
-  if [[ $BUILDBOT_BUILDERNAME == nacl-* ]]; then
-    VERSION=None
-  else
-    VERSION=rev_${BUILDBOT_GOT_REVISION}
-  fi
-  /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
-    arm.tgz gs://nativeclient-archive2/between_builders/\
-${BUILDBOT_BUILDERNAME}/${VERSION}/build.tgz
+
+  echo "@@@BUILD_STEP archive_binaries@@@"
+  push-data-to-archive-server arm.tgz ${target}
 }
 
 # Build with gyp - this only exercises the trusted TC and hence this only
@@ -60,10 +66,19 @@ gyp-arm-build() {
     linux_use_tcmalloc=0 armv7=1 arm_thumb=1"
   export GYP_GENERATOR=make
 
-  echo "@@@BUILD_STEP gyp_compile@@@"
+  # NOTE: this step is also run implicitly as part of
+  #        gclient runhooks --force
+  #       it uses the exported env vars so we have to run it again
+  #
+  echo "@@@BUILD_STEP gyp_configure [${gypmode}]@@@"
+  cd ..
+  native_client/build/gyp_nacl native_client/build/all.gyp
+  cd native_client
+
+  echo "@@@BUILD_STEP gyp_compile [${gypmode}]@@@"
   make -C .. -k -j8 V=1 BUILDTYPE=${gypmode}
 
-  echo "@@@BUILD_STEP gyp_tests@@@"
+  echo "@@@BUILD_STEP gyp_tests [${gypmode}]@@@"
   python trusted_test.py --config ${gypmode}
 }
 
@@ -113,7 +128,7 @@ scons-tests() {
 mode-trybot() {
   clobber
   install-lkgr-toolchains
-  partial-sdk
+  partial-sdk "arm x86-32 x86-64"
   scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl" "smoke_tests"
   ad-hoc-shared-lib-tests
 }
@@ -121,42 +136,57 @@ mode-trybot() {
 mode-buildbot-x8632() {
   clobber
   install-lkgr-toolchains
-  partial-sdk
+  partial-sdk "x86-32"
   # First build everything
   scons-tests "x86-32" "--mode=opt-host,nacl" ""
   # Then test (not all nexes which are build are also tested)
   scons-tests "x86-32" "--mode=opt-host,nacl" "smoke_tests"
+  # this really tests arm and x86-32
   ad-hoc-shared-lib-tests
 }
 
 mode-buildbot-x8664() {
   clobber
   install-lkgr-toolchains
-  partial-sdk
+  partial-sdk "x86-64"
   # First build everything
   scons-tests "x86-64" "--mode=opt-host,nacl" ""
   # Then test (not all nexes which are build are also tested)
   scons-tests "x86-64" "--mode=opt-host,nacl" "smoke_tests"
-  ad-hoc-shared-lib-tests
 }
 
-# NOTE: not tested yet, for reference only to illustrate future plans
-# TOOD(robertm): see whether it really makes sense to merge dbg/opt
-mode-buildbot-arm() {
+# For arm we also test the trusted cross toolchain, hence we
+# we use opt and dbg flavors and run gyp tests.
+# NOTE: that those do not affect the nexe's
+mode-buildbot-arm-opt() {
   clobber
   install-lkgr-toolchains
-  partial-sdk
-  # gyp tests for both opt and dbg
-  gyp-arm-build opt
-  gyp-arm-build dbg
-  # note we build both opt and dbg trusted components
-  scons-tests "arm" "--mode=dbg-host,nacl" ""
+  partial-sdk "arm"
+
+  gyp-arm-build Release
+
   scons-tests "arm" "--mode=opt-host,nacl" ""
-  # the testing is done only with opt components
   scons-tests "arm" "--mode=opt-host,nacl" "small_tests"
   scons-tests "arm" "--mode=opt-host,nacl" "medium_tests"
   scons-tests "arm" "--mode=opt-host,nacl" "large_tests"
-  archive-for-hw-bots
+  archive-for-hw-bots \
+    between_builders/${BUILDBOT_BUILDERNAME}/rev_${BUILDBOT_GOT_REVISION}/build.tgz
+}
+
+mode-buildbot-arm-dbg() {
+  clobber
+  install-lkgr-toolchains
+  partial-sdk "arm"
+
+  gyp-arm-build Debug
+
+  scons-tests "arm" "--mode=dbg-host,nacl" ""
+  scons-tests "arm" "--mode=dbg-host,nacl" "small_tests"
+  scons-tests "arm" "--mode=dbg-host,nacl" "medium_tests"
+  scons-tests "arm" "--mode=dbg-host,nacl" "large_tests"
+  archive-for-hw-bots \
+    between_builders/${BUILDBOT_BUILDERNAME}/rev_${BUILDBOT_GOT_REVISION}/build.tgz
+
 }
 
 # NOTE: clobber and toolchain setup to be done manually

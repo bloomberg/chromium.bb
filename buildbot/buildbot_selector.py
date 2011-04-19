@@ -31,8 +31,10 @@ BOT_ASSIGNMENT = {
     'lucid64-m64-n64-opt': 'bash buildbot/buildbot_linux.sh opt 64 newlib',
     'lucid32-bare-m32-n32-opt': 'bash buildbot/buildbot_linux.sh opt 32 newlib',
     'lucid64-bare-m64-n64-opt': 'bash buildbot/buildbot_linux.sh opt 64 newlib',
-    'hardy64-marm-narm-dbg': 'bash buildbot/buildbot_arm.sh dbg',
-    'hardy64-marm-narm-opt': 'bash buildbot/buildbot_arm.sh opt',
+    'hardy64-marm-narm-dbg':
+        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-dbg',
+    'hardy64-marm-narm-opt':
+        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-opt',
     'arm-marm-narm-test-dbg': 'bash buildbot/buildbot_arm_hw.sh dbg',
     'arm-marm-narm-test-opt': 'bash buildbot/buildbot_arm_hw.sh opt',
     'lucid64-pnacl1': 'bash buildbot/buildbot_pnacl1.sh mode-buildbot-x8632',
