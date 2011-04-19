@@ -18,8 +18,6 @@ BUGCASEQ WIN : svg/css/shadow-changes.svg = IMAGE
 BUGCASEQ WIN : svg/css/text-shadow-multiple.xhtml = IMAGE
 BUGCASEQ WIN : transitions/svg-text-shadow-transition.html = IMAGE
 BUGCASEQ : svg/css/composite-shadow-text.svg = IMAGE
-// new tests, need rebaseline
-BUGCASEQ LINUX WIN : fast/frames/iframe-outline.html = IMAGE
 
 BUGCASEQ MAC : svg/dynamic-updates/SVGFEDiffuseLightingElement-inherit-lighting-color-css-prop.html = IMAGE
 BUGCASEQ MAC : svg/dynamic-updates/SVGFEFloodElement-inherit-flood-color.html = IMAGE
@@ -28,3 +26,25 @@ BUGCASEQ MAC : svg/dynamic-updates/SVGFESpecularLightingElement-lighting-color-c
 BUGCASEQ WIN LINUX : editing/selection/select-from-textfield-outwards.html = IMAGE+TEXT
 BUGCASEQ WIN LINUX : fast/forms/input-text-drag-down.html = IMAGE+TEXT
 BUGCASEQ MAC : fast/canvas/image-object-in-canvas.html = IMAGE
+
+// Crashers caused by http://code.google.com/p/chromium/issues/detail?id=79792
+BUGCR79792 MAC WIN LINUX : fast/canvas/webgl/bad-arguments-test.html = TEXT CRASH
+BUGCR79792 MAC WIN LINUX : fast/canvas/webgl/buffer-bind-test.html = TEXT CRASH
+BUGCR79792 MAC WIN LINUX : fast/canvas/webgl/buffer-data-array-buffer.html = TEXT CRASH
+BUGCR79792 MAC WIN LINUX : fast/canvas/webgl/canvas-test.html = TEXT CRASH
+BUGCR79792 MAC WIN LINUX : fast/canvas/webgl/constants.html = TEXT CRASH
+BUGCR79792 MAC WIN LINUX : fast/canvas/webgl/context-attributes-alpha-depth-stencil-antialias.html = TEXT CRASH TIMEOUT
+BUGCR79792 MAC WIN LINUX : fast/canvas/webgl/context-destroyed-crash.html = TEXT CRASH
+BUGCR79792 MAC WIN LINUX : fast/canvas/webgl/context-lost-restored.html = TEXT CRASH
+BUGCR79792 MAC WIN LINUX : fast/canvas/webgl/context-lost.html = TEXT CRASH
+BUGCR79792 MAC WIN LINUX : fast/canvas/webgl/copy-tex-image-and-sub-image-2d.html = TIMEOUT CRASH
+BUGCR79792 MAC WIN LINUX : fast/canvas/webgl/css-webkit-canvas-repaint.html = IMAGE+TEXT CRASH
+BUGCR79792 MAC WIN LINUX : fast/canvas/webgl/css-webkit-canvas.html = TEXT CRASH
+BUGCR79792 MAC WIN LINUX : fast/canvas/webgl/draw-arrays-out-of-bounds.html = TEXT CRASH
+BUGCR79792 MAC WIN LINUX : fast/canvas/webgl/draw-elements-out-of-bounds.html = TEXT CRASH
+BUGCR79792 MAC WIN LINUX : fast/canvas/webgl/error-reporting.html = TEXT CRASH
+BUGCR79792 MAC WIN LINUX : fast/canvas/webgl/framebuffer-object-attachment.html = TEXT CRASH
+BUGCR79792 MAC WIN LINUX : fast/canvas/webgl/framebuffer-test.html = TEXT CRASH
+BUGCR79792 MAC WIN LINUX : fast/canvas/webgl/get-active-test.html = TEXT CRASH
+BUGCR79792 MAC WIN LINUX : fast/canvas/webgl/gl-bind-attrib-location-test.html = TEXT CRASH
+BUGCR79792 MAC WIN LINUX : fast/canvas/webgl/gl-enable-enum-test.html = TEXT CRASH
