@@ -364,7 +364,7 @@ void BeginInstallWithManifestFunction::OnParseSuccess(
                              this,
                              dummy_extension_.get(),
                              &icon_,
-                             dummy_extension_->GetPermissionMessages(),
+                             dummy_extension_->GetPermissionMessageStrings(),
                              ExtensionInstallUI::INSTALL_PROMPT);
 
   // Control flow finishes up in InstallUIProceed or InstallUIAbort.

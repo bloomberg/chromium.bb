@@ -1034,13 +1034,18 @@ TEST(ExtensionTest, PermissionMessages) {
   skip.insert(Extension::kFileBrowserPrivatePermission);
   skip.insert(Extension::kChromeosInfoPrivatePermissions);
 
+  const Extension::PermissionMessage::MessageId ID_NONE =
+      Extension::PermissionMessage::ID_NONE;
+
   for (size_t i = 0; i < Extension::kNumPermissions; ++i) {
-    int message_id = Extension::kPermissions[i].message_id;
-    std::string name = Extension::kPermissions[i].name;
-    if (skip.count(name))
-      EXPECT_EQ(0, message_id) << "unexpected message_id for " << name;
-    else
-      EXPECT_NE(0, message_id) << "missing message_id for " << name;
+    Extension::Permission permission = Extension::kPermissions[i];
+    if (skip.count(permission.name)) {
+      EXPECT_EQ(ID_NONE, permission.message_id)
+          << "unexpected message_id for " << permission.name;
+    } else {
+      EXPECT_NE(ID_NONE, permission.message_id)
+          << "missing message_id for " << permission.name;
+    }
   }
 }
 
@@ -1204,7 +1209,7 @@ TEST(ExtensionTest, ApiPermissions) {
 TEST(ExtensionTest, GetHostPermissionMessages_ManyHosts) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "many-hosts.json");
-  std::vector<string16> warnings = extension->GetPermissionMessages();
+  std::vector<string16> warnings = extension->GetPermissionMessageStrings();
   ASSERT_EQ(1u, warnings.size());
   EXPECT_EQ("Your data on www.google.com and encrypted.google.com",
             UTF16ToUTF8(warnings[0]));

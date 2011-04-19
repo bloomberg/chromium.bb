@@ -585,6 +585,11 @@ void AppLauncherHandler::ExtensionDialogAccepted() {
 }
 
 void AppLauncherHandler::ExtensionDialogCanceled() {
+  const Extension* extension =
+      extensions_service_->GetExtensionById(extension_id_prompting_, true);
+  ExtensionService::RecordPermissionMessagesHistogram(
+      extension, "Extensions.Permissions_ReEnableCancel");
+
   extension_id_prompting_ = "";
 }
 

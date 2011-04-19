@@ -671,6 +671,8 @@ bool ExtensionService::UninstallExtension(const std::string& extension_id,
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.UninstallType",
                             extension->GetType(), 100);
+  RecordPermissionMessagesHistogram(
+      extension, "Extensions.Permissions_Uninstall");
 
   // Also copy the extension identifier since the reference might have been
   // obtained via Extension::id().
@@ -800,6 +802,8 @@ void ExtensionService::GrantPermissions(const Extension* extension) {
 void ExtensionService::GrantPermissionsAndEnableExtension(
     const Extension* extension) {
   CHECK(extension);
+  RecordPermissionMessagesHistogram(
+      extension, "Extensions.Permissions_ReEnable");
   GrantPermissions(extension);
   extension_prefs_->SetDidExtensionEscalatePermissions(extension, false);
   EnableExtension(extension->id());
@@ -985,6 +989,9 @@ void ExtensionService::LoadAllExtensions() {
       ++page_action_count;
     if ((*ex)->browser_action() != NULL)
       ++browser_action_count;
+
+    RecordPermissionMessagesHistogram(
+        ex->get(), "Extensions.Permissions_Load");
   }
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadApp", app_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadHostedApp", hosted_app_count);
@@ -996,6 +1003,29 @@ void ExtensionService::LoadAllExtensions() {
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadPageAction", page_action_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadBrowserAction",
                            browser_action_count);
+}
+
+// static
+void ExtensionService::RecordPermissionMessagesHistogram(
+    const Extension* e, const char* histogram) {
+  // Since this is called from multiple sources, and since the Histogram macros
+  // use statics, we need to manually lookup the Histogram ourselves.
+  base::Histogram* counter = base::LinearHistogram::FactoryGet(
+      histogram,
+      1,
+      Extension::PermissionMessage::ID_ENUM_BOUNDARY,
+      Extension::PermissionMessage::ID_ENUM_BOUNDARY + 1,
+      base::Histogram::kUmaTargetedHistogramFlag);
+
+  std::vector<Extension::PermissionMessage> permissions =
+      e->GetPermissionMessages();
+  if (permissions.empty()) {
+    counter->Add(Extension::PermissionMessage::ID_NONE);
+  } else {
+    std::vector<Extension::PermissionMessage>::iterator it;
+    for (it = permissions.begin(); it != permissions.end(); ++it)
+      counter->Add(it->message_id());
+  }
 }
 
 void ExtensionService::LoadInstalledExtension(const ExtensionInfo& info,
@@ -1651,6 +1681,10 @@ void ExtensionService::DisableIfPrivilegeIncrease(const Extension* extension) {
   // Extension has changed permissions significantly. Disable it. A
   // notification should be sent by the caller.
   if (is_privilege_increase) {
+    if (!extension_prefs_->DidExtensionEscalatePermissions(extension->id())) {
+      RecordPermissionMessagesHistogram(
+          extension, "Extensions.Permissions_AutoDisable");
+    }
     extension_prefs_->SetExtensionState(extension, Extension::DISABLED);
     extension_prefs_->SetDidExtensionEscalatePermissions(extension, true);
   }
@@ -1722,6 +1756,8 @@ void ExtensionService::OnExtensionInstalled(const Extension* extension) {
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.InstallType",
                             extension->GetType(), 100);
+  RecordPermissionMessagesHistogram(
+      extension, "Extensions.Permissions_Install");
   ShownSectionsHandler::OnExtensionInstalled(profile_->GetPrefs(), extension);
   extension_prefs_->OnExtensionInstalled(
       extension, initial_enable ? Extension::ENABLED : Extension::DISABLED,

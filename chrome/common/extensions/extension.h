@@ -118,11 +118,77 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     std::string gender;
   };
 
+  // When prompting the user to install or approve permissions, we display
+  // messages describing the effects of the permissions and not the permissions
+  // themselves. Each PermissionMessage represents one of the messages that is
+  // shown to the user.
+  class PermissionMessage {
+   public:
+    // Do not reorder or add new enumerations in this list. If you need to add a
+    // new enum, add it just prior to ID_ENUM_BOUNDARY and enter its l10n
+    // message in kMessageIds.
+    enum MessageId {
+      ID_UNKNOWN,
+      ID_NONE,
+      ID_BOOKMARKS,
+      ID_GEOLOCATION,
+      ID_BROWSING_HISTORY,
+      ID_TABS,
+      ID_MANAGEMENT,
+      ID_DEBUGGER,
+      ID_HOSTS_1,
+      ID_HOSTS_2,
+      ID_HOSTS_3,
+      ID_HOSTS_4_OR_MORE,
+      ID_HOSTS_ALL,
+      ID_FULL_ACCESS,
+      ID_ENUM_BOUNDARY
+    };
+
+    // Creates a permission message with the given |message_id| and initializes
+    // its message to the appropriate value.
+    static PermissionMessage CreateFromMessageId(MessageId message_id);
+
+    // Creates the corresponding permission message for a list of hosts. This
+    // method exists because the hosts are presented as one message that depends
+    // on what and how many hosts there are.
+    static PermissionMessage CreateFromHostList(
+        const std::vector<std::string> hosts);
+
+    // Gets the id of the permission message, which can be used in UMA
+    // histograms.
+    MessageId message_id() const { return message_id_; }
+
+    // Gets a localized message describing this permission. Please note that
+    // the message will be empty for message types TYPE_NONE and TYPE_UNKNOWN.
+    const string16& message() const { return message_; }
+
+    // Comparator to work with std::set.
+    bool operator<(const PermissionMessage& that) const {
+      return message_id_ < that.message_id_;
+    }
+
+   private:
+    PermissionMessage(MessageId message_id, string16 message_);
+
+    // The index of the id in the array is its enum value. The first two values
+    // are non-existent message ids to act as placeholders for "unknown" and
+    // "none".
+    // Note: Do not change the order of the items in this list since they
+    // are used in a histogram. The order must match the MessageId order.
+    static const int kMessageIds[];
+
+    MessageId message_id_;
+    string16 message_;
+  };
+
+  typedef std::vector<PermissionMessage> PermissionMessages;
+
   // A permission is defined by its |name| (what is used in the manifest),
   // and the |message_id| that's used by install/update UI.
   struct Permission {
     const char* const name;
-    const int message_id;
+    const PermissionMessage::MessageId message_id;
   };
 
   enum InitFromValueFlags {
@@ -160,17 +226,24 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Return the update url used by gallery/webstore extensions.
   static GURL GalleryUpdateUrl(bool secure);
 
-  // The install message id for |permission|.  Returns 0 if none exists.
-  static int GetPermissionMessageId(const std::string& permission);
-
   // Given two install sources, return the one which should take priority
   // over the other. If an extension is installed from two sources A and B,
   // its install source should be set to GetHigherPriorityLocation(A, B).
   static Location GetHigherPriorityLocation(Location loc1, Location loc2);
 
+  // Get's the install message id for |permission|.  Returns
+  // MessageId::TYPE_NONE if none exists.
+  static PermissionMessage::MessageId GetPermissionMessageId(
+      const std::string& permission);
+
   // Returns the full list of permission messages that this extension
   // should display at install time.
-  std::vector<string16> GetPermissionMessages() const;
+  PermissionMessages GetPermissionMessages() const;
+
+  // Returns the full list of permission messages that this extension
+  // should display at install time. The messages are returned as strings
+  // for convenience.
+  std::vector<string16> GetPermissionMessageStrings() const;
 
   // Returns the distinct hosts that should be displayed in the install UI
   // for the URL patterns |list|. This discards some of the detail that is
@@ -680,11 +753,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // NOTE: This only includes messages related to permissions declared in the
   // "permissions" key in the manifest.  Permissions implied from other features
   // of the manifest, like plugins and content scripts are not included.
-  std::set<string16> GetSimplePermissionMessages() const;
-
-  // The permission message displayed related to the host permissions for
-  // this extension.
-  string16 GetHostPermissionMessage() const;
+  std::set<PermissionMessage> GetSimplePermissionMessages() const;
 
   // Cached images for this extension. This should only be touched on the UI
   // thread.

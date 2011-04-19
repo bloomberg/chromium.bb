@@ -54,7 +54,7 @@ ExtensionDisabledDialogDelegate::ExtensionDisabledDialogDelegate(
   AddRef();  // Balanced in Proceed or Abort.
 
   install_ui_.reset(new ExtensionInstallUI(profile));
-  install_ui_->ConfirmInstall(this, extension_);
+  install_ui_->ConfirmReEnable(this, extension_);
 }
 
 ExtensionDisabledDialogDelegate::~ExtensionDisabledDialogDelegate() {
@@ -66,6 +66,9 @@ void ExtensionDisabledDialogDelegate::InstallUIProceed() {
 }
 
 void ExtensionDisabledDialogDelegate::InstallUIAbort() {
+  ExtensionService::RecordPermissionMessagesHistogram(
+      extension_, "Extensions.Permissions_ReEnableCancel");
+
   // Do nothing. The extension will remain disabled.
   Release();
 }

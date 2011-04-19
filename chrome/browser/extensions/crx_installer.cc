@@ -400,6 +400,11 @@ void CrxInstaller::InstallUIProceed() {
 }
 
 void CrxInstaller::InstallUIAbort() {
+  // Technically, this can be called for other reasons than the user hitting
+  // cancel, but they're rare.
+  ExtensionService::RecordPermissionMessagesHistogram(
+      extension_, "Extensions.Permissions_InstallCancel");
+
   // Kill the theme loading bubble.
   NotificationService* service = NotificationService::current();
   service->Notify(NotificationType::NO_THEME_DETECTED,

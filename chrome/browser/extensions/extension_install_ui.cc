@@ -203,7 +203,8 @@ void ExtensionInstallUI::OnImageLoaded(
           Source<ExtensionInstallUI>(this),
           NotificationService::NoDetails());
 
-      std::vector<string16> warnings = extension_->GetPermissionMessages();
+      std::vector<string16> warnings =
+          extension_->GetPermissionMessageStrings();
       ShowExtensionInstallDialog(
           profile_, delegate_, extension_, &icon_, warnings, prompt_type_);
       break;

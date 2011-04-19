@@ -452,6 +452,13 @@ class ExtensionService
   // Gets the set of loaded app ids. Component apps are not included.
   ExtensionIdSet GetAppIds() const;
 
+  // Record a histogram using the PermissionMessage enum values for each
+  // permission in |e|.
+  // NOTE: If this is ever called with high frequency, the implementation may
+  // need to be made more efficient.
+  static void RecordPermissionMessagesHistogram(
+      const Extension* e, const char* histogram);
+
  private:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class DeleteTask<ExtensionService>;

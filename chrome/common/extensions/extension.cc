@@ -98,6 +98,9 @@ bool IsBaseCrxKey(const std::string& key) {
   return false;
 }
 
+// Constant used to represent an undefined l10n message id.
+const int kUndefinedMessageId = -1;
+
 // Names of API modules that do not require a permission.
 const char kBrowserActionModuleName[] = "browserAction";
 const char kBrowserActionsModuleName[] = "browserActions";
@@ -142,7 +145,8 @@ class ExtensionConfig {
     return Singleton<ExtensionConfig>::get();
   }
 
-  int GetPermissionMessageId(const std::string& permission) {
+  Extension::PermissionMessage::MessageId GetPermissionMessageId(
+      const std::string& permission) {
     return Extension::kPermissions[permission_map_[permission]].message_id;
   }
 
@@ -281,25 +285,25 @@ const char Extension::kWebstorePrivatePermission[] = "webstorePrivate";
 // See ExtensionsTest.PermissionMessages for an explanation of each
 // exception.
 const Extension::Permission Extension::kPermissions[] = {
-  { kBackgroundPermission, 0 },
-  { kBookmarkPermission, IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS },
-  { kChromeosInfoPrivatePermissions, 0},
-  { kContentSettingsPermission, 0 },
-  { kContextMenusPermission, 0 },
-  { kCookiePermission, 0 },
-  { kDebuggerPermission, IDS_EXTENSION_PROMPT_WARNING_DEBUGGER },
-  { kExperimentalPermission, 0 },
-  { kFileBrowserHandlerPermission, 0 },
-  { kFileBrowserPrivatePermission, 0 },
-  { kGeolocationPermission, IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION },
-  { kIdlePermission, 0 },
-  { kHistoryPermission, IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY },
-  { kManagementPermission, IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT },
-  { kNotificationPermission, 0 },
-  { kProxyPermission, 0 },
-  { kTabPermission, IDS_EXTENSION_PROMPT_WARNING_TABS },
-  { kUnlimitedStoragePermission, 0 },
-  { kWebstorePrivatePermission, 0 },
+  { kBackgroundPermission,           PermissionMessage::ID_NONE },
+  { kBookmarkPermission,             PermissionMessage::ID_BOOKMARKS },
+  { kChromeosInfoPrivatePermissions, PermissionMessage::ID_NONE },
+  { kContentSettingsPermission,      PermissionMessage::ID_NONE },
+  { kContextMenusPermission,         PermissionMessage::ID_NONE },
+  { kCookiePermission,               PermissionMessage::ID_NONE },
+  { kDebuggerPermission,             PermissionMessage::ID_DEBUGGER },
+  { kExperimentalPermission,         PermissionMessage::ID_NONE },
+  { kFileBrowserHandlerPermission,   PermissionMessage::ID_NONE },
+  { kFileBrowserPrivatePermission,   PermissionMessage::ID_NONE },
+  { kGeolocationPermission,          PermissionMessage::ID_GEOLOCATION },
+  { kIdlePermission,                 PermissionMessage::ID_NONE },
+  { kHistoryPermission,              PermissionMessage::ID_BROWSING_HISTORY },
+  { kManagementPermission,           PermissionMessage::ID_MANAGEMENT },
+  { kNotificationPermission,         PermissionMessage::ID_NONE },
+  { kProxyPermission,                PermissionMessage::ID_NONE },
+  { kTabPermission,                  PermissionMessage::ID_TABS },
+  { kUnlimitedStoragePermission,     PermissionMessage::ID_NONE },
+  { kWebstorePrivatePermission,      PermissionMessage::ID_NONE }
 };
 const size_t Extension::kNumPermissions =
     arraysize(Extension::kPermissions);
@@ -330,6 +334,83 @@ const int Extension::kValidWebExtentSchemes =
 
 const int Extension::kValidHostPermissionSchemes =
     UserScript::kValidUserScriptSchemes | URLPattern::SCHEME_CHROMEUI;
+
+//
+// PermissionMessage
+//
+
+// static
+Extension::PermissionMessage Extension::PermissionMessage::CreateFromMessageId(
+    Extension::PermissionMessage::MessageId message_id) {
+  DCHECK_GT(PermissionMessage::ID_NONE, PermissionMessage::ID_UNKNOWN);
+  if (message_id <= ID_NONE)
+    return PermissionMessage(message_id, string16());
+
+  string16 message = l10n_util::GetStringUTF16(kMessageIds[message_id]);
+  return PermissionMessage(message_id, message);
+}
+
+// static
+Extension::PermissionMessage Extension::PermissionMessage::CreateFromHostList(
+    const std::vector<std::string> hosts) {
+  CHECK(hosts.size() > 0);
+
+  MessageId message_id;
+  string16 message;
+  switch (hosts.size()) {
+    case 1:
+      message_id = ID_HOSTS_1;
+      message = l10n_util::GetStringFUTF16(kMessageIds[message_id],
+                                           UTF8ToUTF16(hosts[0]));
+      break;
+    case 2:
+      message_id = ID_HOSTS_2;
+      message = l10n_util::GetStringFUTF16(kMessageIds[message_id],
+                                           UTF8ToUTF16(hosts[0]),
+                                           UTF8ToUTF16(hosts[1]));
+      break;
+    case 3:
+      message_id = ID_HOSTS_3;
+      message = l10n_util::GetStringFUTF16(kMessageIds[message_id],
+                                           UTF8ToUTF16(hosts[0]),
+                                           UTF8ToUTF16(hosts[1]),
+                                           UTF8ToUTF16(hosts[2]));
+      break;
+    default:
+      message_id = ID_HOSTS_4_OR_MORE;
+      message = l10n_util::GetStringFUTF16(
+          kMessageIds[message_id],
+          UTF8ToUTF16(hosts[0]),
+          UTF8ToUTF16(hosts[1]),
+          base::IntToString16(hosts.size() - 2));
+      break;
+  }
+
+  return PermissionMessage(message_id, message);
+}
+
+Extension::PermissionMessage::PermissionMessage(
+    Extension::PermissionMessage::MessageId message_id, string16 message)
+    : message_id_(message_id),
+      message_(message) {
+}
+
+const int Extension::PermissionMessage::kMessageIds[] = {
+  kUndefinedMessageId,  // "unknown"
+  kUndefinedMessageId,  // "none"
+  IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS,
+  IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION,
+  IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY,
+  IDS_EXTENSION_PROMPT_WARNING_TABS,
+  IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT,
+  IDS_EXTENSION_PROMPT_WARNING_DEBUGGER,
+  IDS_EXTENSION_PROMPT_WARNING_1_HOST,
+  IDS_EXTENSION_PROMPT_WARNING_2_HOSTS,
+  IDS_EXTENSION_PROMPT_WARNING_3_HOSTS,
+  IDS_EXTENSION_PROMPT_WARNING_4_OR_MORE_HOSTS,
+  IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS,
+  IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS
+};
 
 //
 // Extension
@@ -365,11 +446,6 @@ GURL Extension::GalleryUpdateUrl(bool secure) {
 }
 
 // static
-int Extension::GetPermissionMessageId(const std::string& permission) {
-  return ExtensionConfig::GetInstance()->GetPermissionMessageId(permission);
-}
-
-// static
 Extension::Location Extension::GetHigherPriorityLocation(
     Extension::Location loc1, Extension::Location loc2) {
   if (loc1 == loc2)
@@ -386,31 +462,54 @@ Extension::Location Extension::GetHigherPriorityLocation(
   return (loc1_rank > loc2_rank ? loc1 : loc2 );
 }
 
-std::vector<string16> Extension::GetPermissionMessages() const {
-  std::vector<string16> messages;
+// static
+Extension::PermissionMessage::MessageId Extension::GetPermissionMessageId(
+    const std::string& permission) {
+  return ExtensionConfig::GetInstance()->GetPermissionMessageId(permission);
+}
+
+Extension::PermissionMessages Extension::GetPermissionMessages() const {
+  PermissionMessages messages;
   if (!plugins().empty()) {
-    messages.push_back(
-        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS));
+    messages.push_back(PermissionMessage::CreateFromMessageId(
+        PermissionMessage::ID_FULL_ACCESS));
     return messages;
   }
 
-  string16 host_msg = GetHostPermissionMessage();
-  if (!host_msg.empty())
-    messages.push_back(host_msg);
+  if (HasEffectiveAccessToAllHosts()) {
+    messages.push_back(PermissionMessage::CreateFromMessageId(
+        PermissionMessage::ID_HOSTS_ALL));
+  } else {
+    std::vector<std::string> hosts = GetDistinctHostsForDisplay(
+        GetEffectiveHostPermissions().patterns());
+    if (!hosts.empty())
+      messages.push_back(PermissionMessage::CreateFromHostList(hosts));
+  }
 
-  std::set<string16> simple_msgs = GetSimplePermissionMessages();
+  std::set<PermissionMessage> simple_msgs = GetSimplePermissionMessages();
   messages.insert(messages.end(), simple_msgs.begin(), simple_msgs.end());
 
   return messages;
 }
 
-std::set<string16> Extension::GetSimplePermissionMessages() const {
-  std::set<string16> messages;
+std::vector<string16> Extension::GetPermissionMessageStrings() const {
+  std::vector<string16> messages;
+  PermissionMessages permissions = GetPermissionMessages();
+  for (PermissionMessages::const_iterator i = permissions.begin();
+       i != permissions.end(); ++i)
+    messages.push_back(i->message());
+  return messages;
+}
+
+std::set<Extension::PermissionMessage>
+    Extension::GetSimplePermissionMessages() const {
+  std::set<PermissionMessage> messages;
   std::set<std::string>::const_iterator i;
   for (i = api_permissions().begin(); i != api_permissions().end(); ++i) {
-    int message_id = GetPermissionMessageId(*i);
-    if (message_id)
-      messages.insert(l10n_util::GetStringUTF16(message_id));
+    PermissionMessage::MessageId message_id = GetPermissionMessageId(*i);
+    DCHECK_GT(PermissionMessage::ID_NONE, PermissionMessage::ID_UNKNOWN);
+    if (message_id > PermissionMessage::ID_NONE)
+      messages.insert(PermissionMessage::CreateFromMessageId(message_id));
   }
   return messages;
 }
@@ -501,36 +600,6 @@ std::vector<std::string> Extension::GetDistinctHosts(
        it != hosts_best_rcd.end(); ++it)
     distinct_hosts.push_back(it->first + it->second);
   return distinct_hosts;
-}
-
-string16 Extension::GetHostPermissionMessage() const {
-  if (HasEffectiveAccessToAllHosts())
-    return l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS);
-
-  std::vector<std::string> hosts = GetDistinctHostsForDisplay(
-      GetEffectiveHostPermissions().patterns());
-
-  if (hosts.size() == 1) {
-    return l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_WARNING_1_HOST,
-                                      UTF8ToUTF16(hosts[0]));
-  } else if (hosts.size() == 2) {
-    return l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_WARNING_2_HOSTS,
-                                      UTF8ToUTF16(hosts[0]),
-                                      UTF8ToUTF16(hosts[1]));
-  } else if (hosts.size() == 3) {
-    return l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_WARNING_3_HOSTS,
-                                      UTF8ToUTF16(hosts[0]),
-                                      UTF8ToUTF16(hosts[1]),
-                                      UTF8ToUTF16(hosts[2]));
-  } else if (hosts.size() >= 4) {
-    return l10n_util::GetStringFUTF16(
-        IDS_EXTENSION_PROMPT_WARNING_4_OR_MORE_HOSTS,
-        UTF8ToUTF16(hosts[0]),
-        UTF8ToUTF16(hosts[1]),
-        base::IntToString16(hosts.size() - 2));
-  }
-
-  return string16();
 }
 
 FilePath Extension::MaybeNormalizePath(const FilePath& path) {
@@ -1522,7 +1591,8 @@ bool Extension::IsPrivilegeIncrease(const bool granted_full_access,
   size_t new_api_count = 0;
   for (std::set<std::string>::iterator i = new_apis_only.begin();
        i != new_apis_only.end(); ++i) {
-    if (GetPermissionMessageId(*i))
+    DCHECK_GT(PermissionMessage::ID_NONE, PermissionMessage::ID_UNKNOWN);
+    if (GetPermissionMessageId(*i) > PermissionMessage::ID_NONE)
       new_api_count++;
   }
 
