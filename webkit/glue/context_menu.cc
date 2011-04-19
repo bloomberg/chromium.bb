@@ -43,6 +43,9 @@ ContextMenuParams::ContextMenuParams(const WebKit::WebContextMenuData& data)
       edit_flags(data.editFlags),
       security_info(data.securityInfo),
       frame_charset(data.frameEncoding.utf8()) {
+  for (size_t i = 0; i < data.dictionarySuggestions.size(); ++i)
+    dictionary_suggestions.push_back(data.dictionarySuggestions[i]);
+
   custom_context.is_pepper_menu = false;
   for (size_t i = 0; i < data.customItems.size(); ++i)
     custom_items.push_back(WebMenuItem(data.customItems[i]));
