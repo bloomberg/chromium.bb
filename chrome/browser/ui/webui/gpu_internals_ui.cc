@@ -14,6 +14,7 @@
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
@@ -85,6 +86,7 @@ class GpuMessageHandler
   void OnEndTracingAsync(const ListValue* list);
   void OnBrowserBridgeInitialized(const ListValue* list);
   void OnCallAsync(const ListValue* list);
+  void OnBeginRequestBufferPercentFull(const ListValue* list);
   void OnLoadTraceFile(const ListValue* list);
   void OnSaveTraceFile(const ListValue* list);
 
@@ -104,6 +106,7 @@ class GpuMessageHandler
   // TraceSubscriber implementation.
   virtual void OnEndTracingComplete();
   virtual void OnTraceDataCollected(const std::string& json_events);
+  virtual void OnTraceBufferPercentFullReply(float percent_full);
 
   // Executes the javascript function |function_name| in the renderer, passing
   // it the argument |value|.
@@ -232,6 +235,9 @@ void GpuMessageHandler::RegisterMessages() {
       "callAsync",
       NewCallback(this, &GpuMessageHandler::OnCallAsync));
   web_ui_->RegisterMessageCallback(
+      "beginRequestBufferPercentFull",
+      NewCallback(this, &GpuMessageHandler::OnBeginRequestBufferPercentFull));
+  web_ui_->RegisterMessageCallback(
       "loadTraceFile",
       NewCallback(this, &GpuMessageHandler::OnLoadTraceFile));
   web_ui_->RegisterMessageCallback(
@@ -284,6 +290,10 @@ void GpuMessageHandler::OnCallAsync(const ListValue* args) {
     web_ui_->CallJavascriptFunction("browserBridge.onCallAsyncReply",
         *requestId);
   }
+}
+
+void GpuMessageHandler::OnBeginRequestBufferPercentFull(const ListValue* list) {
+  TraceController::GetInstance()->GetTraceBufferPercentFullAsync(this);
 }
 
 class ReadTraceFileTask : public Task {
@@ -608,6 +618,13 @@ void GpuMessageHandler::OnTraceDataCollected(const std::string& json_events) {
 
   web_ui_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(string16(),
       WideToUTF16Hack(javascript));
+}
+
+void GpuMessageHandler::OnTraceBufferPercentFullReply(float percent_full) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  web_ui_->CallJavascriptFunction(
+      "tracingController.onRequestBufferPercentFullComplete",
+      *scoped_ptr<Value>(Value::CreateDoubleValue(percent_full)));
 }
 
 }  // namespace

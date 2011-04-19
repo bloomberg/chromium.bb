@@ -17,6 +17,9 @@ cr.define('gpu', function() {
     this.statusDiv_ = document.createElement('div');
     this.overlay_.appendChild(this.statusDiv_);
 
+    this.bufferPercentDiv_ = document.createElement('div');
+    this.overlay_.appendChild(this.bufferPercentDiv_);
+
     this.stopButton_ = document.createElement('button');
     this.stopButton_.onclick = this.endTracing.bind(this);
     this.stopButton_.innerText = 'Stop tracing';
@@ -39,6 +42,24 @@ cr.define('gpu', function() {
     __proto__: cr.EventTarget.prototype,
 
     tracingEnabled_: false,
+    tracingEnding_: false,
+
+    onRequestBufferPercentFullComplete: function(percent_full) {
+      if (!this.overlay_.visible)
+        return;
+
+      window.setTimeout(this.beginRequestBufferPercentFull_.bind(this), 250);
+
+      this.bufferPercentDiv_.textContent = 'Buffer usage: ' +
+          Math.round(100 * percent_full) + '%';
+    },
+
+    /**
+     * Begin requesting the buffer fullness
+     */
+    beginRequestBufferPercentFull_: function() {
+      chrome.send('beginRequestBufferPercentFull');
+    },
 
     /**
      * Called by info_view to empty the trace buffer
@@ -53,10 +74,13 @@ cr.define('gpu', function() {
 
       this.tracingEnabled_ = true;
       console.log('Beginning to trace...');
+      this.statusDiv_.textContent = 'Tracing active.';
 
       this.traceEvents_ = [];
-      if (!browserBridge.debugMode)
+      if (!browserBridge.debugMode) {
         chrome.send('beginTracing');
+        this.beginRequestBufferPercentFull_();
+      }
 
       this.tracingEnabled_ = true;
 
@@ -106,6 +130,7 @@ cr.define('gpu', function() {
      * Callbed by gpu c++ code when new GPU trace data arrives.
      */
     onTraceDataCollected: function(events) {
+      this.statusDiv_.textContent = 'Processing trace...';
       this.traceEvents_.push.apply(this.traceEvents_, events);
     },
 
@@ -114,10 +139,10 @@ cr.define('gpu', function() {
      */
     endTracing: function() {
       if (!this.tracingEnabled_) throw new Error('Tracing not begun.');
+      if (this.tracingEnding_) return;
+      this.tracingEnding_ = true;
 
-      window.removeEventListener('keydown', this.onKeydownBoundToThis_);
-      window.removeEventListener('keypress', this.onKeypressBoundToThis_);
-
+      this.statusDiv_.textContent = 'Ending trace...';
       console.log('Finishing trace');
       this.statusDiv_.textContent = 'Downloading trace data...';
       this.stopButton_.hidden = true;
@@ -139,8 +164,11 @@ cr.define('gpu', function() {
      * Called by the browser when all processes complete tracing.
      */
     onEndTracingComplete: function() {
+      window.removeEventListener('keydown', this.onKeydownBoundToThis_);
+      window.removeEventListener('keypress', this.onKeypressBoundToThis_);
       this.overlay_.visible = false;
       this.tracingEnabled_ = false;
+      this.tracingEnding_ = false;
       console.log('onEndTracingComplete p1 with ' +
                   this.traceEvents_.length + ' events.');
       var e = new cr.Event('traceEnded');

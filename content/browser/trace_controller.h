@@ -21,6 +21,7 @@ class TraceSubscriber {
  public:
   virtual void OnEndTracingComplete() = 0;
   virtual void OnTraceDataCollected(const std::string& json_events) = 0;
+  virtual void OnTraceBufferPercentFullReply(float percent_full) {}
 };
 
 // TraceController is used on the browser processes to enable/disable
@@ -59,6 +60,17 @@ class TraceController {
   //   EndTracingAsync will return false meaning it failed.
   bool EndTracingAsync(TraceSubscriber* subscriber);
 
+  // Get the maximum across processes of trace buffer percent full state.
+  // When the TraceBufferPercentFull value is determined,
+  // subscriber->OnTraceBufferPercentFullReply is called.
+  // When any child process reaches 100% full, the TraceController will end
+  // tracing, and call TraceSubscriber::OnEndTracingComplete.
+  // GetTraceBufferPercentFullAsync fails in the following conditions:
+  //   trace is ending or disabled;
+  //   a previous call to GetTraceBufferPercentFullAsync is pending; or
+  //   the caller is not the current subscriber.
+  bool GetTraceBufferPercentFullAsync(TraceSubscriber* subscriber);
+
   // Cancel the subscriber so that it will not be called when EndTracingAsync is
   // acked by all child processes. This will also call EndTracingAsync
   // internally if necessary.
@@ -79,7 +91,14 @@ class TraceController {
   }
 
   bool can_end_tracing() const {
-    return is_tracing_ && pending_ack_count_ == 0;
+    return is_tracing_ && pending_end_ack_count_ == 0;
+  }
+
+  // Can get Buffer Percent Full
+  bool can_get_buffer_percent_full() const {
+    return is_tracing_ &&
+        pending_end_ack_count_ == 0 &&
+        pending_bpf_ack_count_ == 0;
   }
 
   bool can_begin_tracing() const { return !is_tracing_; }
@@ -92,11 +111,17 @@ class TraceController {
   void RemoveFilter(TraceMessageFilter* filter);
   void OnEndTracingAck();
   void OnTraceDataCollected(const std::string& data);
+  void OnTraceBufferFull();
+  void OnTraceBufferPercentFullReply(float percent_full);
 
   FilterMap filters_;
-  int pending_ack_count_;
-  bool is_tracing_;
   TraceSubscriber* subscriber_;
+  // Pending acks for EndTracingAsync:
+  int pending_end_ack_count_;
+  // Pending acks for GetTraceBufferPercentFullAsync:
+  int pending_bpf_ack_count_;
+  float maximum_bpf_;
+  bool is_tracing_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceController);
 };

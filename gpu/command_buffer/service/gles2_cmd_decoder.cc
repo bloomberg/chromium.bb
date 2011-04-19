@@ -34,6 +34,7 @@
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/common/gpu_trace_event.h"
 #include "gpu/GLES2/gles2_command_buffer.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
@@ -6387,6 +6388,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
 
 error::Error GLES2DecoderImpl::HandleSetLatchCHROMIUM(
     uint32 immediate_data_size, const gles2::SetLatchCHROMIUM& c) {
+  GPU_TRACE_EVENT0("gpu", "SetLatch");
   // Ensure the side effects of previous commands are visible to other contexts.
   // There is no need to do this for ANGLE because it uses a
   // single D3D device for all contexts.
@@ -6413,6 +6415,7 @@ error::Error GLES2DecoderImpl::HandleSetLatchCHROMIUM(
 
 error::Error GLES2DecoderImpl::HandleWaitLatchCHROMIUM(
     uint32 immediate_data_size, const gles2::WaitLatchCHROMIUM& c) {
+  GPU_TRACE_EVENT0("gpu", "WaitLatch");
   int32 shm_id = gpu::kLatchSharedMemoryId;
   uint32 latch_id = c.latch_id;
   uint32 shm_offset = 0;

@@ -9,7 +9,8 @@
 
 
 TraceMessageFilter::TraceMessageFilter() :
-    is_awaiting_ack_(false) {
+    is_awaiting_end_ack_(false),
+    is_awaiting_bpf_ack_(false) {
 }
 
 TraceMessageFilter::~TraceMessageFilter() {
@@ -26,8 +27,11 @@ void TraceMessageFilter::OnChannelClosing() {
   // Always on IO thread (BrowserMessageFilter guarantee).
   BrowserMessageFilter::OnChannelClosing();
 
-  if (is_awaiting_ack_)
+  if (is_awaiting_bpf_ack_)
     OnEndTracingAck();
+
+  if (is_awaiting_end_ack_)
+    OnTraceBufferPercentFullReply(0.0f);
 
   TraceController::GetInstance()->RemoveFilter(this);
 }
@@ -40,6 +44,10 @@ bool TraceMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_EndTracingAck, OnEndTracingAck)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_TraceDataCollected,
                         OnTraceDataCollected)
+    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_TraceBufferFull,
+                        OnTraceBufferFull)
+    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_TraceBufferPercentFullReply,
+                        OnTraceBufferPercentFullReply)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -52,21 +60,40 @@ void TraceMessageFilter::SendBeginTracing() {
 
 void TraceMessageFilter::SendEndTracing() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!is_awaiting_ack_);
-  is_awaiting_ack_ = true;
+  DCHECK(!is_awaiting_end_ack_);
+  is_awaiting_end_ack_ = true;
   Send(new ChildProcessMsg_EndTracing);
 }
 
+void TraceMessageFilter::SendGetTraceBufferPercentFull() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!is_awaiting_bpf_ack_);
+  is_awaiting_bpf_ack_ = true;
+  Send(new ChildProcessMsg_GetTraceBufferPercentFull);
+}
+
 void TraceMessageFilter::OnEndTracingAck() {
-  // is_awaiting_ack_ should always be true here, but check in case the child
-  // process is compromised.
-  if (is_awaiting_ack_) {
-    is_awaiting_ack_ = false;
+  // is_awaiting_end_ack_ should always be true here, but check in case the
+  // child process is compromised.
+  if (is_awaiting_end_ack_) {
+    is_awaiting_end_ack_ = false;
     TraceController::GetInstance()->OnEndTracingAck();
   }
 }
 
 void TraceMessageFilter::OnTraceDataCollected(const std::string& data) {
   TraceController::GetInstance()->OnTraceDataCollected(data);
+}
+
+void TraceMessageFilter::OnTraceBufferFull() {
+  TraceController::GetInstance()->OnTraceBufferFull();
+}
+
+void TraceMessageFilter::OnTraceBufferPercentFullReply(float percent_full) {
+  if (is_awaiting_bpf_ack_) {
+    is_awaiting_bpf_ack_ = false;
+    TraceController::GetInstance()->OnTraceBufferPercentFullReply(
+        percent_full);
+  }
 }
 

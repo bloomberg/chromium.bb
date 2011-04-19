@@ -62,6 +62,7 @@ void CommandBufferHelper::Flush() {
 // Calls Flush() and then waits until the buffer is empty. Break early if the
 // error is set.
 bool CommandBufferHelper::Finish() {
+  GPU_TRACE_EVENT0("gpu", "CommandBufferHelper::Finish");
   do {
     // Do not loop forever if the flush fails, meaning the command buffer reader
     // has shutdown.
@@ -83,6 +84,7 @@ int32 CommandBufferHelper::InsertToken() {
   cmd::SetToken& cmd = GetCmdSpace<cmd::SetToken>();
   cmd.Init(token_);
   if (token_ == 0) {
+    GPU_TRACE_EVENT0("gpu", "CommandBufferHelper::InsertToken(wrapped)");
     // we wrapped
     Finish();
     GPU_DCHECK_EQ(token_, last_token_read_);
@@ -93,6 +95,7 @@ int32 CommandBufferHelper::InsertToken() {
 // Waits until the current token value is greater or equal to the value passed
 // in argument.
 void CommandBufferHelper::WaitForToken(int32 token) {
+  GPU_TRACE_EVENT0("gpu", "CommandBufferHelper::WaitForToken");
   // Return immediately if corresponding InsertToken failed.
   if (token < 0)
     return;

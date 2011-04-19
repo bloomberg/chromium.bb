@@ -306,6 +306,7 @@ void GpuCommandBufferStub::OnAsyncGetState() {
 
 void GpuCommandBufferStub::OnFlush(int32 put_offset,
                                    gpu::CommandBuffer::State* state) {
+  GPU_TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnFlush");
   *state = command_buffer_->FlushSync(put_offset);
   if (state->error == gpu::error::kLostContext &&
       gfx::GLContext::LosesAllContextsOnContextLost())
@@ -313,6 +314,7 @@ void GpuCommandBufferStub::OnFlush(int32 put_offset,
 }
 
 void GpuCommandBufferStub::OnAsyncFlush(int32 put_offset) {
+  GPU_TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnAsyncFlush");
   gpu::CommandBuffer::State state = command_buffer_->FlushSync(put_offset);
   if (state.error == gpu::error::kLostContext &&
       gfx::GLContext::LosesAllContextsOnContextLost())

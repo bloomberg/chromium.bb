@@ -214,11 +214,19 @@ class TraceLog {
   // implicitly controls the global logging state.
   void SetEnabled(bool enabled);
 
+  float GetBufferPercentFull() const;
+
   // When enough events are collected, they are handed (in bulk) to
   // the output callback. If no callback is set, the output will be
   // silently dropped.
   typedef Callback1<const std::string& /* json_events */>::Type OutputCallback;
   void SetOutputCallback(OutputCallback* cb);
+
+  // The trace buffer does not flush dynamically, so when it fills up,
+  // subsequent trace events will be dropped. This callback is generated when
+  // the trace buffer is full.
+  typedef Callback0::Type BufferFullCallback;
+  void SetBufferFullCallback(BufferFullCallback* cb);
 
   // Forwards data collected by a child process to the registered
   //  output callback.
@@ -253,6 +261,7 @@ class TraceLog {
   bool enabled_;
   ScopedVector<TraceCategory> categories_;
   scoped_ptr<OutputCallback> output_callback_;
+  scoped_ptr<BufferFullCallback> buffer_full_callback_;
   std::vector<TraceEvent> logged_events_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceLog);

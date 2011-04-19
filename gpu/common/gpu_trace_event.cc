@@ -169,12 +169,21 @@ void TraceLog::SetEnabled(bool enabled) {
   }
 }
 
+float TraceLog::GetBufferPercentFull() const {
+  return (float)((double)logged_events_.size()/(double)TRACE_EVENT_BUFFER_SIZE);
+}
+
 void TraceLog::SetOutputCallback(TraceLog::OutputCallback* cb) {
   AutoLock lock(lock_);
   if (enabled_) {
     FlushWithLockAlreadyHeld();
   }
   output_callback_.reset(cb);
+}
+
+void TraceLog::SetBufferFullCallback(TraceLog::BufferFullCallback* cb) {
+  AutoLock lock(lock_);
+  buffer_full_callback_.reset(cb);
 }
 
 void TraceLog::AddRemotelyCollectedData(const std::string& json_events) {
@@ -229,6 +238,9 @@ void TraceLog::AddTraceEvent(TraceEventPhase phase,
   event.argNames[1] = arg2name;
   event.argValues[1] = arg2name ? arg2val : "";
   COMPILE_ASSERT(TRACE_MAX_NUM_ARGS == 2, TraceEvent_arc_count_out_of_sync);
+  if (logged_events_.size() == TRACE_EVENT_BUFFER_SIZE &&
+      buffer_full_callback_.get())
+    buffer_full_callback_->Run();
 }
 
 }  // namespace gpu

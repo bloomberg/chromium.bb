@@ -31,6 +31,9 @@ IPC_MESSAGE_CONTROL0(ChildProcessMsg_BeginTracing)
 // Sent to all child processes to disable trace event recording.
 IPC_MESSAGE_CONTROL0(ChildProcessMsg_EndTracing)
 
+// Sent to all child processes to get trace buffer fullness.
+IPC_MESSAGE_CONTROL0(ChildProcessMsg_GetTraceBufferPercentFull)
+
 ////////////////////////////////////////////////////////////////////////////////
 // Messages sent from the child process to the browser.
 
@@ -39,9 +42,16 @@ IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ShutdownRequest)
 // Reply from child processes acking ChildProcessMsg_TraceChangeStatus(false).
 IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_EndTracingAck)
 
+// Sent if the trace buffer becomes full.
+IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_TraceBufferFull)
+
 // Child processes send trace data back in JSON chunks.
 IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TraceDataCollected,
                      std::string /*json trace data*/)
+
+// Reply to ChildProcessMsg_GetTraceBufferPercentFull.
+IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TraceBufferPercentFullReply,
+                     float /*trace buffer percent full*/)
 
 // NaCl's 64 bit Windows build only links with a bare-minimum number of
 // libraries, and GURL isn't one of them.
