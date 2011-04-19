@@ -36,7 +36,8 @@ class NetPrefObserver;
 // The default profile implementation.
 class ProfileImpl : public Profile,
                     public SpellCheckHostObserver,
-                    public NotificationObserver {
+                    public NotificationObserver,
+                    public PrefService::Delegate {
  public:
   virtual ~ProfileImpl();
 
@@ -154,7 +155,15 @@ class ProfileImpl : public Profile,
  private:
   friend class Profile;
 
-  explicit ProfileImpl(const FilePath& path);
+  ProfileImpl(const FilePath& path,
+              Profile::Delegate* delegate);
+
+  // Does final initialization. Should be called after prefs were loaded.
+  void DoFinalInit();
+
+  // PrefService::Delegate implementation. Does final prefs initialization and
+  // calls Init().
+  virtual void OnPrefsLoaded(PrefService* prefs, bool success);
 
   void CreateWebDataService();
   FilePath GetPrefFilePath();
@@ -302,6 +311,8 @@ class ProfileImpl : public Profile,
   scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
   scoped_ptr<ChromeURLDataManager> chrome_url_data_manager_;
+
+  Profile::Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
 };

@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
-#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/views_login_display.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -304,6 +303,14 @@ void ExistingUserController::OnLoginSuccess(
     const std::string& password,
     const GaiaAuthConsumer::ClientLoginResult& credentials,
     bool pending_requests) {
+  bool known_user = UserManager::Get()->IsKnownUser(username);
+  bool login_only =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kLoginScreen) == WizardController::kLoginScreenName;
+  ready_for_browser_launch_ = known_user || login_only;
+
+  two_factor_credentials_ = credentials.two_factor;
+
   // LoginPerformer instance will delete itself once online auth result is OK.
   // In case of failure it'll bring up ScreenLock and ask for
   // correct password/display error message.
@@ -312,12 +319,19 @@ void ExistingUserController::OnLoginSuccess(
   login_performer_->set_delegate(NULL);
   LoginPerformer* performer = login_performer_.release();
   performer = NULL;
-  bool known_user = UserManager::Get()->IsKnownUser(username);
-  bool login_only =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kLoginScreen) == WizardController::kLoginScreenName;
+
+  // Will call OnProfilePrepared() in the end.
+  LoginUtils::Get()->PrepareProfile(username,
+                                    password,
+                                    credentials,
+                                    pending_requests,
+                                    this);
+
+}
+
+void ExistingUserController::OnProfilePrepared(Profile* profile) {
   // TODO(nkostylev): May add login UI implementation callback call.
-  if (!known_user && !login_only) {
+  if (!ready_for_browser_launch_) {
 #if defined(OFFICIAL_BUILD)
     CommandLine::ForCurrentProcess()->AppendArg(kGetStartedURL);
 #endif  // OFFICIAL_BUILD
@@ -328,29 +342,18 @@ void ExistingUserController::OnLoginSuccess(
       CommandLine::ForCurrentProcess()->AppendArg(initial_start_page_);
     }
 
-    if (credentials.two_factor) {
+    if (two_factor_credentials_) {
       // If we have a two factor error and and this is a new user,
       // load the personal settings page.
       // TODO(stevenjb): direct the user to a lightweight sync login page.
       CommandLine::ForCurrentProcess()->AppendArg(kSettingsSyncLoginURL);
     }
 
-    // For new user login don't launch browser until we pass image screen.
-    LoginUtils::Get()->EnableBrowserLaunch(false);
-    LoginUtils::Get()->CompleteLogin(username,
-                                     password,
-                                     credentials,
-                                     pending_requests);
-
     ActivateWizard(WizardController::IsDeviceRegistered() ?
         WizardController::kUserImageScreenName :
         WizardController::kRegistrationScreenName);
   } else {
-    LoginUtils::Get()->CompleteLogin(username,
-                                     password,
-                                     credentials,
-                                     pending_requests);
-
+    LoginUtils::DoBrowserLaunch(profile);
     // Delay deletion as we're on the stack.
     host_->OnSessionStart();
   }

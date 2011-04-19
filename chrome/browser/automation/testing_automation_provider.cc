@@ -2570,10 +2570,10 @@ void TestingAutomationProvider::GetBrowserInfo(
   // item per extension process.
   ListValue* extension_processes = new ListValue;
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  for (ProfileManager::const_iterator it = profile_manager->begin();
-       it != profile_manager->end(); ++it) {
+  std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
+  for (size_t i = 0; i < profiles.size(); ++i) {
     ExtensionProcessManager* process_manager =
-        (*it)->GetExtensionProcessManager();
+        profiles[i]->GetExtensionProcessManager();
     if (!process_manager)
       continue;
     ExtensionProcessManager::const_iterator jt;

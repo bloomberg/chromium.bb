@@ -15,6 +15,7 @@
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/i18n/icu_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -101,6 +102,22 @@ bool SetFocusToAccessibleWindow(HWND hwnd) {
   }
   return ret;
 }
+
+// Same as BrowserProcessImpl, but uses custom profile manager.
+class FakeBrowserProcessImpl : public BrowserProcessImpl {
+ public:
+  explicit FakeBrowserProcessImpl(const CommandLine& command_line)
+      : BrowserProcessImpl(command_line) {}
+
+  virtual ProfileManager* profile_manager() {
+    if (!profile_manager_.get())
+      profile_manager_.reset(new ProfileManagerWithoutInit);
+    return profile_manager_.get();
+  }
+
+ private:
+  scoped_ptr<ProfileManager> profile_manager_;
+};
 
 }  // namespace
 
@@ -213,7 +230,7 @@ void FakeExternalTab::Initialize() {
   cmd->AppendSwitch(switches::kDisableWebResources);
   cmd->AppendSwitch(switches::kSingleProcess);
 
-  browser_process_.reset(new BrowserProcessImpl(*cmd));
+  browser_process_.reset(new FakeBrowserProcessImpl(*cmd));
   // BrowserProcessImpl's constructor should set g_browser_process.
   DCHECK(g_browser_process);
   g_browser_process->SetApplicationLocale("en-US");
@@ -222,8 +239,9 @@ void FakeExternalTab::Initialize() {
   browser::RegisterLocalState(browser_process_->local_state());
 
   FilePath profile_path(ProfileManager::GetDefaultProfileDir(user_data()));
-  Profile* profile = g_browser_process->profile_manager()->GetProfile(
-      profile_path);
+
+  Profile* profile =
+      g_browser_process->profile_manager()->GetProfile(profile_path);
   // Create the child threads.
   g_browser_process->db_thread();
   g_browser_process->file_thread();

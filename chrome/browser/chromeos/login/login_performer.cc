@@ -135,29 +135,37 @@ void LoginPerformer::OnLoginSuccess(
                               pending_requests);
     return;
   } else {
+    // Online login has succeeded.
     DCHECK(!pending_requests)
         << "Pending request w/o delegate_ should not happen!";
-    // Online login has succeeded.
-    Profile* profile =
-        g_browser_process->profile_manager()->GetDefaultProfile();
-    LoginUtils::Get()->FetchCookies(profile, credentials);
-    LoginUtils::Get()->FetchTokens(profile, credentials);
-
-    // Don't unlock screen if it was locked while we're waiting
-    // for initial online auth.
-    if (ScreenLocker::default_screen_locker() &&
-        !initial_online_auth_pending_) {
-      DVLOG(1) << "Online login OK - unlocking screen.";
-      RequestScreenUnlock();
-      // Do not delete itself just yet, wait for unlock.
-      // See ResolveScreenUnlocked().
-      return;
-    }
-    initial_online_auth_pending_ = false;
-    // There's nothing else that's holding LP from deleting itself -
-    // no ScreenLock, no pending requests.
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    // It is not guaranted, that profile creation has been finished yet. So use
+    // async version here.
+    credentials_ = credentials;
+    ProfileManager::CreateDefaultProfileAsync(this);
   }
+}
+
+void LoginPerformer::OnProfileCreated(Profile* profile) {
+  CHECK(profile);
+
+  LoginUtils::Get()->FetchCookies(profile, credentials_);
+  LoginUtils::Get()->FetchTokens(profile, credentials_);
+  credentials_ = GaiaAuthConsumer::ClientLoginResult();
+
+  // Don't unlock screen if it was locked while we're waiting
+  // for initial online auth.
+  if (ScreenLocker::default_screen_locker() &&
+      !initial_online_auth_pending_) {
+    DVLOG(1) << "Online login OK - unlocking screen.";
+    RequestScreenUnlock();
+    // Do not delete itself just yet, wait for unlock.
+    // See ResolveScreenUnlocked().
+    return;
+  }
+  initial_online_auth_pending_ = false;
+  // There's nothing else that's holding LP from deleting itself -
+  // no ScreenLock, no pending requests.
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void LoginPerformer::OnOffTheRecordLoginSuccess() {
