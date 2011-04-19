@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_view.h"
 
+#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
@@ -20,9 +21,12 @@ CGFloat kCurveSize = 8;
 }
 
 - (void)drawRect:(NSRect)rect {
+  const CGFloat lineWidth = [self cr_lineWidth];
+  const CGFloat halfLineWidth = lineWidth / 2.0;
+
   // TODO(rohitrao): Make this prettier.
-  rect = NSInsetRect([self bounds], 0.5, 0.5);
-  rect = NSOffsetRect(rect, 0, 1.0);
+  rect = NSInsetRect([self bounds], halfLineWidth, halfLineWidth);
+  rect = NSOffsetRect(rect, 0, lineWidth);
 
   NSPoint topLeft = NSMakePoint(NSMinX(rect), NSMaxY(rect));
   NSPoint topRight = NSMakePoint(NSMaxX(rect), NSMaxY(rect));
@@ -69,6 +73,7 @@ CGFloat kCurveSize = 8;
   [context restoreGraphicsState];
 
   [[self strokeColor] set];
+  [path setLineWidth:lineWidth];
   [path stroke];
 }
 

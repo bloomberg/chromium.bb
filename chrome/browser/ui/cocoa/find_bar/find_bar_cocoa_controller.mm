@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/find_pasteboard.h"
 #import "chrome/browser/ui/cocoa/focus_tracker.h"
+#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -136,7 +137,7 @@ const float kRightEdgeOffset = 25;
   CGFloat containerWidth = NSWidth([containerView frame]);
 
   // Adjust where we'll actually place the find bar.
-  maxY += 1;
+  maxY += [containerView cr_lineWidth];
   maxY_ = maxY;
   CGFloat x = [self findBarHorizontalPosition];
   NSRect newFrame = NSMakeRect(x, maxY - containerHeight,
