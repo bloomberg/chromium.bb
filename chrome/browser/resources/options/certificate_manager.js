@@ -143,6 +143,26 @@ cr.define('options', function() {
 
   }
 
+  // TODO(xiyuan): Use notification from backend instead of polling.
+  // TPM token check polling timer.
+  var tpmPollingTimer;
+
+  // Initiate tpm token check if needed.
+  function checkTpmToken() {
+    var importAndBindButton = $('personalCertsTab-import-and-bind');
+
+    if (importAndBindButton && importAndBindButton.disabled)
+      chrome.send('checkTpmTokenReady');
+  }
+
+  // Stop tpm polling timer.
+  function stopTpmTokenCheckPolling() {
+    if (tpmPollingTimer) {
+      window.clearTimeout(tpmPollingTimer);
+      tpmPollingTimer = undefined;
+    }
+  }
+
   /////////////////////////////////////////////////////////////////////////////
   // CertificateManager class:
 
@@ -184,6 +204,14 @@ cr.define('options', function() {
         this.initalized_ = true;
         chrome.send('populateCertificateManager');
       }
+
+      if (cr.isChromeOS) {
+        // Ensure TPM token check on visible and stop polling when hidden.
+        if (this.visible)
+          checkTpmToken();
+        else
+          stopTpmTokenCheckPolling();
+      }
     }
   };
 
@@ -198,6 +226,18 @@ cr.define('options', function() {
 
   CertificateManager.importPersonalAskPassword = function(args) {
     CertificateRestoreOverlay.show();
+  };
+
+  CertificateManager.onCheckTpmTokenReady = function(ready) {
+    var importAndBindButton = $('personalCertsTab-import-and-bind');
+    if (importAndBindButton) {
+      importAndBindButton.disabled = !ready;
+
+      // Check again after 5 seconds if Tpm is not ready and certificate manager
+      // is still visible.
+      if (!ready && CertificateManager.getInstance().visible)
+        tpmPollingTimer = window.setTimeout(checkTpmToken, 5000);
+    }
   };
 
   // Export

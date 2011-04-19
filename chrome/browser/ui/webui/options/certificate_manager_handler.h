@@ -136,6 +136,11 @@ class CertificateManagerHandler : public OptionsPageUIHandler,
       const std::string& title,
       const net::CertDatabase::ImportCertFailureList& not_imported) const;
 
+#if defined(OS_CHROMEOS)
+  // Check whether Tpm token is ready and notifiy JS side.
+  void CheckTpmTokenReady(const ListValue* args);
+#endif
+
   gfx::NativeWindow GetParentWindow() const;
 
   // The Certificates Manager model

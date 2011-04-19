@@ -22,6 +22,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/cryptohome_library.h"
+#endif
+
 namespace {
 
 static const char kKeyId[] = "id";
@@ -397,6 +402,11 @@ void CertificateManagerHandler::RegisterMessages() {
 
   web_ui_->RegisterMessageCallback("populateCertificateManager",
       NewCallback(this, &CertificateManagerHandler::Populate));
+
+#if defined(OS_CHROMEOS)
+  web_ui_->RegisterMessageCallback("checkTpmTokenReady",
+      NewCallback(this, &CertificateManagerHandler::CheckTpmTokenReady));
+#endif
 }
 
 void CertificateManagerHandler::CertificatesRefreshed() {
@@ -962,6 +972,18 @@ void CertificateManagerHandler::ShowImportErrors(
                                   error_value,
                                   cert_error_list);
 }
+
+#if defined(OS_CHROMEOS)
+void CertificateManagerHandler::CheckTpmTokenReady(const ListValue* args) {
+  chromeos::CryptohomeLibrary* cryptohome =
+      chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
+
+  // TODO(xiyuan): Use async way when underlying supports it.
+  FundamentalValue ready(cryptohome->Pkcs11IsTpmTokenReady());
+  web_ui_->CallJavascriptFunction("CertificateManager.onCheckTpmTokenReady",
+                                  ready);
+}
+#endif
 
 gfx::NativeWindow CertificateManagerHandler::GetParentWindow() const {
   return web_ui_->tab_contents()->view()->GetTopLevelNativeWindow();
