@@ -44,7 +44,8 @@ function test_git_svn {
 
 # Get the current SVN revision.
 get_svn_revision() {
-  echo `svn info "$base_dir" | awk '{ if ($1 == "Revision:") { print $2 }}'`
+  LANGUAGE=C svn info "$base_dir" | \
+      awk -F': ' '{ if ($1 == "Last Changed Rev") { print $2 }}'
 }
 
 # Update git checkouts.
