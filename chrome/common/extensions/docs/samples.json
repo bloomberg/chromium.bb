@@ -599,6 +599,30 @@
       "zip_path": "examples/extensions/email_this_page.zip"
     },
     {
+      "api_calls": [
+        "chrome.extension.isAllowedIncognitoAccess"
+      ],
+      "description": "Sample extension which demonstrates how to access a preference.",
+      "features": [
+        "browser_action",
+        "contentSettings",
+        "experimental",
+        "popup"
+      ],
+      "icon": null,
+      "id": "0bf0930a32829dfb77170535ecb27adc2de3998a",
+      "name": "Enable/disable referrers API example extension",
+      "path": "examples/api/preferences/enableReferrer/",
+      "protocols": [],
+      "search_string": "ENABLE/DISABLE REFERRERS API EXAMPLE EXTENSION SAMPLE EXTENSION WHICH DEMONSTRATES HOW TO ACCESS A PREFERENCE. BROWSER_ACTION CONTENTSETTINGS EXPERIMENTAL POPUP CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
+      "source_files": [
+        "manifest.json",
+        "popup.html"
+      ],
+      "source_hash": "df2a19be905672c2ced4e7108e05170175847d6b",
+      "zip_path": "examples/api/preferences/enableReferrer.zip"
+    },
+    {
       "api_calls": [],
       "description": "A sample extension which uses Google Analytics to track usage.",
       "features": [
