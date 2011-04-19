@@ -3465,7 +3465,7 @@
    fun:_ZN19extension_file_util13LoadExtensionERK8FilePathN9Extension8LocationEbPSs
    fun:_ZN23ExtensionServiceBackend19LoadSingleExtensionERK8FilePath13scoped_refptrI16ExtensionServiceE
 }
-{   
+{
    bug_67676_b
    Memcheck:Leak
    fun:_Znw*
@@ -3640,6 +3640,7 @@
    bug_71152
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN14SessionService20OnGotSessionCommandsEi13scoped_refptrIN18BaseSessionService26InternalGetCommandsRequestEE
    fun:_Z16DispatchToMethodI14SessionServiceMS0_Fvi13scoped_refptrIN18BaseSessionService26InternalGetCommandsRequestEEEiS4_EvPT_T0_RK6Tuple2IT1_T2_E
    fun:_ZN12CallbackImplI14SessionServiceMS0_Fvi13scoped_refptrIN18BaseSessionService26InternalGetCommandsRequestEEE6Tuple2IiS4_EE13RunWithParamsERKS8_
