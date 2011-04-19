@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/options/chromeos/language_hangul_options_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/language_hangul_handler.h"
 
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -12,13 +12,13 @@
 
 namespace chromeos {
 
-LanguageHangulOptionsHandler::LanguageHangulOptionsHandler() {
+LanguageHangulHandler::LanguageHangulHandler() {
 }
 
-LanguageHangulOptionsHandler::~LanguageHangulOptionsHandler() {
+LanguageHangulHandler::~LanguageHangulHandler() {
 }
 
-void LanguageHangulOptionsHandler::GetLocalizedValues(
+void LanguageHangulHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
@@ -31,7 +31,7 @@ void LanguageHangulOptionsHandler::GetLocalizedValues(
   localized_strings->Set("HangulkeyboardLayoutList", GetKeyboardLayoutList());
 }
 
-ListValue* LanguageHangulOptionsHandler::GetKeyboardLayoutList() {
+ListValue* LanguageHangulHandler::GetKeyboardLayoutList() {
   ListValue* keyboard_layout_list = new ListValue();
   for (size_t i = 0; i < language_prefs::kNumHangulKeyboardNameIDPairs; ++i) {
     ListValue* option = new ListValue();

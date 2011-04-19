@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/options/chromeos/language_mozc_options_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/language_mozc_handler.h"
 
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -18,13 +18,13 @@ const char kI18nPrefix[] = "mozc_";
 
 namespace chromeos {
 
-LanguageMozcOptionsHandler::LanguageMozcOptionsHandler() {
+LanguageMozcHandler::LanguageMozcHandler() {
 }
 
-LanguageMozcOptionsHandler::~LanguageMozcOptionsHandler() {
+LanguageMozcHandler::~LanguageMozcHandler() {
 }
 
-void LanguageMozcOptionsHandler::GetLocalizedValues(
+void LanguageMozcHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/options/chromeos/language_pinyin_options_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/language_pinyin_handler.h"
 
 #include "base/values.h"
 #include "chrome/browser/chromeos/language_preferences.h"
@@ -16,13 +16,13 @@ const char kI18nPrefix[] = "Pinyin";
 
 namespace chromeos {
 
-LanguagePinyinOptionsHandler::LanguagePinyinOptionsHandler() {
+LanguagePinyinHandler::LanguagePinyinHandler() {
 }
 
-LanguagePinyinOptionsHandler::~LanguagePinyinOptionsHandler() {
+LanguagePinyinHandler::~LanguagePinyinHandler() {
 }
 
-void LanguagePinyinOptionsHandler::GetLocalizedValues(
+void LanguagePinyinHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 

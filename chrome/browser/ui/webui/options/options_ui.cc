@@ -57,11 +57,11 @@
 #include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/internet_options_handler.h"
-#include "chrome/browser/ui/webui/options/chromeos/language_chewing_options_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/language_chewing_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/language_customize_modifier_keys_handler.h"
-#include "chrome/browser/ui/webui/options/chromeos/language_hangul_options_handler.h"
-#include "chrome/browser/ui/webui/options/chromeos/language_mozc_options_handler.h"
-#include "chrome/browser/ui/webui/options/chromeos/language_pinyin_options_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/language_hangul_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/language_mozc_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/language_pinyin_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/proxy_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/stats_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/system_options_handler.h"
@@ -214,15 +214,15 @@ OptionsUI::OptionsUI(TabContents* contents)
                           new chromeos::AccountsOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new InternetOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::LanguageChewingOptionsHandler());
+                          new chromeos::LanguageChewingHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::LanguageCustomizeModifierKeysHandler());
   AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::LanguageHangulOptionsHandler());
+                          new chromeos::LanguageHangulHandler());
   AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::LanguageMozcOptionsHandler());
+                          new chromeos::LanguageMozcHandler());
   AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::LanguagePinyinOptionsHandler());
+                          new chromeos::LanguagePinyinHandler());
   AddOptionsPageUIHandler(localized_strings, new chromeos::ProxyHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::ChangePictureOptionsHandler());

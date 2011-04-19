@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/options/chromeos/language_chewing_options_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/language_chewing_handler.h"
 
 #include <limits>
 
@@ -21,13 +21,13 @@ const char kI18nPrefix[] = "Chewing_";
 
 namespace chromeos {
 
-LanguageChewingOptionsHandler::LanguageChewingOptionsHandler() {
+LanguageChewingHandler::LanguageChewingHandler() {
 }
 
-LanguageChewingOptionsHandler::~LanguageChewingOptionsHandler() {
+LanguageChewingHandler::~LanguageChewingHandler() {
 }
 
-void LanguageChewingOptionsHandler::GetLocalizedValues(
+void LanguageChewingHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
