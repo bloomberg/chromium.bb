@@ -9,6 +9,7 @@
 #include "../client/mapped_memory.h"
 #include "../common/gles2_cmd_utils.h"
 #include "../common/id_allocator.h"
+#include "gpu/common/gpu_trace_event.h"
 
 #if defined(__native_client__) && !defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
 #define GLES2_SUPPORT_CLIENT_SIDE_ARRAYS
@@ -490,6 +491,7 @@ GLES2Implementation::~GLES2Implementation() {
 }
 
 void GLES2Implementation::WaitForCmd() {
+  GPU_TRACE_EVENT0("gpu", "GLES2::WaitForCmd");
   helper_->CommandBufferHelper::Finish();
 }
 
@@ -498,6 +500,7 @@ GLenum GLES2Implementation::GetError() {
 }
 
 GLenum GLES2Implementation::GetGLError() {
+  GPU_TRACE_EVENT0("gpu", "GLES2::GetGLError");
   // Check the GL error first, then our wrapped error.
   typedef gles2::GetError::Result Result;
   Result* result = GetResultAs<Result*>();
@@ -530,6 +533,7 @@ void GLES2Implementation::SetGLError(GLenum error, const char* msg) {
 
 void GLES2Implementation::GetBucketContents(uint32 bucket_id,
                                             std::vector<int8>* data) {
+  GPU_TRACE_EVENT0("gpu", "GLES2::GetBucketContents");
   GPU_DCHECK(data);
   typedef cmd::GetBucketSize::Result Result;
   Result* result = GetResultAs<Result*>();
@@ -670,6 +674,7 @@ void GLES2Implementation::Flush() {
 }
 
 void GLES2Implementation::Finish() {
+  GPU_TRACE_EVENT0("gpu", "GLES2::Finish");
   // Insert the cmd to call glFinish
   helper_->Finish();
   // Finish our command buffer
@@ -704,6 +709,7 @@ void GLES2Implementation::CopyTextureToParentTextureCHROMIUM(
 
 void GLES2Implementation::GenSharedIdsCHROMIUM(
   GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids) {
+  GPU_TRACE_EVENT0("gpu", "GLES2::GenSharedIdsCHROMIUM");
   GLint* id_buffer = transfer_buffer_.AllocTyped<GLint>(n);
   helper_->GenSharedIdsCHROMIUM(namespace_id, id_offset, n,
                         transfer_buffer_id_,
@@ -715,6 +721,7 @@ void GLES2Implementation::GenSharedIdsCHROMIUM(
 
 void GLES2Implementation::DeleteSharedIdsCHROMIUM(
     GLuint namespace_id, GLsizei n, const GLuint* ids) {
+  GPU_TRACE_EVENT0("gpu", "GLES2::DeleteSharedIdsCHROMIUM");
   GLint* id_buffer = transfer_buffer_.AllocTyped<GLint>(n);
   memcpy(id_buffer, ids, sizeof(*ids) * n);
   helper_->DeleteSharedIdsCHROMIUM(namespace_id, n,
@@ -726,6 +733,7 @@ void GLES2Implementation::DeleteSharedIdsCHROMIUM(
 
 void GLES2Implementation::RegisterSharedIdsCHROMIUM(
     GLuint namespace_id, GLsizei n, const GLuint* ids) {
+  GPU_TRACE_EVENT0("gpu", "GLES2::RegisterSharedIdsCHROMIUM");
   GLint* id_buffer = transfer_buffer_.AllocTyped<GLint>(n);
   memcpy(id_buffer, ids, sizeof(*ids) * n);
   helper_->RegisterSharedIdsCHROMIUM(namespace_id, n,
@@ -751,6 +759,7 @@ void GLES2Implementation::GetVertexAttribPointerv(
   }
 #endif  // defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
 
+  GPU_TRACE_EVENT0("gpu", "GLES2::GetVertexAttribPointerv");
   typedef gles2::GetVertexAttribPointerv::Result Result;
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
@@ -762,6 +771,7 @@ void GLES2Implementation::GetVertexAttribPointerv(
 
 GLint GLES2Implementation::GetAttribLocation(
     GLuint program, const char* name) {
+  GPU_TRACE_EVENT0("gpu", "GLES2::GetAttribLocation");
   typedef GetAttribLocationBucket::Result Result;
   Result* result = GetResultAs<Result*>();
   *result = -1;
@@ -775,6 +785,7 @@ GLint GLES2Implementation::GetAttribLocation(
 
 GLint GLES2Implementation::GetUniformLocation(
     GLuint program, const char* name) {
+  GPU_TRACE_EVENT0("gpu", "GLES2::GetUniformLocation");
   typedef GetUniformLocationBucket::Result Result;
   Result* result = GetResultAs<Result*>();
   *result = -1;
@@ -1085,6 +1096,7 @@ void GLES2Implementation::GetActiveAttrib(
     SetGLError(GL_INVALID_VALUE, "glGetActiveAttrib: bufsize < 0");
     return;
   }
+  GPU_TRACE_EVENT0("gpu", "GLES2::GetActiveAttrib");
   // Clear the bucket so if we the command fails nothing will be in it.
   helper_->SetBucketSize(kResultBucketId, 0);
   typedef gles2::GetActiveAttrib::Result Result;
@@ -1125,6 +1137,7 @@ void GLES2Implementation::GetActiveUniform(
     SetGLError(GL_INVALID_VALUE, "glGetActiveUniform: bufsize < 0");
     return;
   }
+  GPU_TRACE_EVENT0("gpu", "GLES2::GetActiveUniform");
   // Clear the bucket so if we the command fails nothing will be in it.
   helper_->SetBucketSize(kResultBucketId, 0);
   typedef gles2::GetActiveUniform::Result Result;
@@ -1164,6 +1177,7 @@ void GLES2Implementation::GetAttachedShaders(
     SetGLError(GL_INVALID_VALUE, "glGetAttachedShaders: maxcount < 0");
     return;
   }
+  GPU_TRACE_EVENT0("gpu", "GLES2::GetAttachedShaders");
   typedef gles2::GetAttachedShaders::Result Result;
   uint32 size = Result::ComputeSize(maxcount);
   Result* result = transfer_buffer_.AllocTyped<Result>(size);
@@ -1184,6 +1198,7 @@ void GLES2Implementation::GetAttachedShaders(
 
 void GLES2Implementation::GetShaderPrecisionFormat(
     GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision) {
+  GPU_TRACE_EVENT0("gpu", "GLES2::GetShaderPrecisionFormat");
   typedef gles2::GetShaderPrecisionFormat::Result Result;
   Result* result = static_cast<Result*>(result_buffer_);
   result->success = false;
@@ -1235,6 +1250,7 @@ const GLubyte* GLES2Implementation::GetString(GLenum name) {
 
 void GLES2Implementation::GetUniformfv(
     GLuint program, GLint location, GLfloat* params) {
+  GPU_TRACE_EVENT0("gpu", "GLES2::GetUniformfv");
   typedef gles2::GetUniformfv::Result Result;
   Result* result = static_cast<Result*>(result_buffer_);
   result->SetNumResults(0);
@@ -1246,6 +1262,7 @@ void GLES2Implementation::GetUniformfv(
 
 void GLES2Implementation::GetUniformiv(
     GLuint program, GLint location, GLint* params) {
+  GPU_TRACE_EVENT0("gpu", "GLES2::GetUniformiv");
   typedef gles2::GetUniformiv::Result Result;
   Result* result = static_cast<Result*>(result_buffer_);
   result->SetNumResults(0);
@@ -1272,6 +1289,7 @@ void GLES2Implementation::ReadPixels(
   // and that when we copy the results to the user's buffer we need to not
   // write those padding bytes but leave them as they are.
 
+  GPU_TRACE_EVENT0("gpu", "GLES2::ReadPixels");
   typedef gles2::ReadPixels::Result Result;
   Result* result = static_cast<Result*>(result_buffer_);
   int8* dest = reinterpret_cast<int8*>(pixels);
@@ -1511,6 +1529,7 @@ void GLES2Implementation::GetVertexAttribfv(
     return;
   }
 #endif
+  GPU_TRACE_EVENT0("gpu", "GLES2::GetVertexAttribfv");
   typedef GetVertexAttribfv::Result Result;
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
@@ -1529,6 +1548,7 @@ void GLES2Implementation::GetVertexAttribiv(
     return;
   }
 #endif
+  GPU_TRACE_EVENT0("gpu", "GLES2::GetVertexAttribiv");
   typedef GetVertexAttribiv::Result Result;
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
@@ -1540,6 +1560,7 @@ void GLES2Implementation::GetVertexAttribiv(
 
 GLboolean GLES2Implementation::CommandBufferEnableCHROMIUM(
     const char* feature) {
+  GPU_TRACE_EVENT0("gpu", "GLES2::CommandBufferEnableCHROMIUM");
   typedef CommandBufferEnableCHROMIUM::Result Result;
   Result* result = GetResultAs<Result*>();
   *result = 0;
