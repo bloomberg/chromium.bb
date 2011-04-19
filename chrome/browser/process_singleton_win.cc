@@ -194,8 +194,7 @@ bool ProcessSingleton::Create() {
   window_ = CreateWindow(chrome::kMessageWindowClass,
                          user_data_dir.value().c_str(),
                          0, 0, 0, 0, 0, HWND_MESSAGE, 0, hinst, 0);
-  DCHECK(window_);
-
+  ui::CheckWindowCreated(window_);
   ui::SetWindowUserData(window_, this);
   return true;
 }

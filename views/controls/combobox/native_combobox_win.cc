@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/native_theme_win.h"
 #include "views/controls/combobox/combobox.h"
@@ -167,6 +168,7 @@ void NativeComboboxWin::CreateNativeControl() {
                                        flags, 0, 0, width(), height(),
                                        GetWidget()->GetNativeView(), NULL, NULL,
                                        NULL);
+  ui::CheckWindowCreated(control_hwnd);
   NativeControlCreated(control_hwnd);
 }
 

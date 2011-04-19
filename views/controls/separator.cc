@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,12 +6,14 @@
 
 #include "base/logging.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "views/widget/widget.h"
+
 #if defined(OS_LINUX)
 #include "views/controls/native_control_gtk.h"
 #elif defined(OS_WIN)
+#include "ui/base/win/hwnd_util.h"
 #include "views/controls/native_control_win.h"
 #endif
-#include "views/widget/widget.h"
 
 namespace views {
 
@@ -28,6 +30,7 @@ class NativeSeparatorWin : public NativeControlWin {
                                        0, 0, width(), height(),
                                        separator_->GetWidget()->GetNativeView(),
                                        NULL, NULL, NULL);
+    ui::CheckWindowCreated(control_hwnd);
     NativeControlCreated(control_hwnd);
   }
 

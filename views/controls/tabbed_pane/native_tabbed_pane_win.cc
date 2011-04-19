@@ -10,6 +10,7 @@
 #include "base/stl_util-inl.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/native_theme_win.h"
@@ -283,6 +284,7 @@ void NativeTabbedPaneWin::CreateNativeControl() {
                                       0, 0, width(), height(),
                                       GetWidget()->GetNativeView(), NULL, NULL,
                                       NULL);
+  ui::CheckWindowCreated(tab_control);
 
   HFONT font = ResourceBundle::GetSharedInstance().
       GetFont(ResourceBundle::BaseFont).GetNativeFont();

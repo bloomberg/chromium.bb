@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -367,6 +367,7 @@ void NativeTableWin::CreateNativeControl() {
                                0, 0, width(), height(),
                                table_->GetWidget()->GetNativeView(),
                                NULL, NULL, NULL);
+  ui::CheckWindowCreated(hwnd);
 
   // Reduce overdraw/flicker artifacts by double buffering.  Support tooltips
   // and display elided items completely on hover (see comments in OnNotify()

@@ -148,22 +148,7 @@ void WindowImpl::Init(HWND parent, const gfx::Rect& bounds) {
   hwnd_ = CreateWindowEx(window_ex_style_, name.c_str(), NULL,
                          window_style_, x, y, width, height,
                          parent, NULL, NULL, this);
-  if (!hwnd_) {
-    LPWSTR error_string = NULL;
-    DWORD last_error = GetLastError();
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                  FORMAT_MESSAGE_FROM_SYSTEM,
-                  0,  // Use the internal message table.
-                  last_error,
-                  0,  // Use default language.
-                  reinterpret_cast<LPWSTR>(&error_string),
-                  0,  // Buffer size.
-                  0);  // Arguments (unused).
-    // Typical reason for failure is ERROR_NOT_ENOUGH_MEMORY (8).
-    CHECK(false) << "Create failed error=" << last_error <<
-        " message=" << error_string << " name=" << name << " style=" <<
-        window_style_ << " ex_style=" << window_ex_style_;
-  }
+  CheckWindowCreated(hwnd_);
 
   // The window procedure should have set the data for us.
   CHECK_EQ(this, ui::GetWindowUserData(hwnd_));
@@ -227,7 +212,7 @@ std::wstring WindowImpl::GetWindowClassName() {
   class_ex.lpszClassName = name.c_str();
   class_ex.hIconSm = class_ex.hIcon;
   ATOM atom = RegisterClassEx(&class_ex);
-  DCHECK(atom);
+  CHECK(atom) << GetLastError();
 
   ClassRegistrar::GetInstance()->RegisterClass(class_info, name, atom);
 

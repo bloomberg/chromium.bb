@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/font.h"
 #include "views/controls/listbox/listbox.h"
 #include "views/widget/widget.h"
@@ -103,6 +104,7 @@ void NativeListboxWin::CreateNativeControl() {
                                0, 0, width(), height(),
                                listbox_->GetWidget()->GetNativeView(),
                                NULL, NULL, NULL);
+  ui::CheckWindowCreated(hwnd);
   HFONT font = ResourceBundle::GetSharedInstance().
       GetFont(ResourceBundle::BaseFont).GetNativeFont();
   SendMessage(hwnd, WM_SETFONT, reinterpret_cast<WPARAM>(font), FALSE);

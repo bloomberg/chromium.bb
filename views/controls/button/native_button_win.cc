@@ -12,6 +12,7 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/win/hwnd_util.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/button/radio_button.h"
@@ -150,6 +151,7 @@ void NativeButtonWin::CreateNativeControl() {
                                      flags, 0, 0, width(), height(),
                                      GetWidget()->GetNativeView(), NULL, NULL,
                                      NULL);
+  ui::CheckWindowCreated(control_hwnd);
   NativeControlCreated(control_hwnd);
 }
 
@@ -228,6 +230,7 @@ void NativeCheckboxWin::CreateNativeControl() {
       GetAdditionalExStyle(), L"BUTTON", L"",
       WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_CHECKBOX,
       0, 0, width(), height(), GetWidget()->GetNativeView(), NULL, NULL, NULL);
+  ui::CheckWindowCreated(control_hwnd);
   NativeControlCreated(control_hwnd);
 }
 
@@ -254,6 +257,7 @@ void NativeRadioButtonWin::CreateNativeControl() {
       GetAdditionalExStyle(), L"BUTTON",
       L"", WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_RADIOBUTTON,
       0, 0, width(), height(), GetWidget()->GetNativeView(), NULL, NULL, NULL);
+  ui::CheckWindowCreated(control_hwnd);
   NativeControlCreated(control_hwnd);
 }
 

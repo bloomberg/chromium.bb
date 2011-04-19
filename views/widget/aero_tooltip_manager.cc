@@ -10,6 +10,7 @@
 
 #include "base/message_loop.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/point.h"
 
 namespace views {
@@ -77,6 +78,7 @@ void AeroTooltipManager::Init() {
       WS_EX_TRANSPARENT | l10n_util::GetExtendedTooltipStyles(),
       TOOLTIPS_CLASS, NULL, TTS_NOPREFIX, 0, 0, 0, 0,
       GetParent(), NULL, NULL, NULL);
+  ui::CheckWindowCreated(tooltip_hwnd_);
 
   l10n_util::AdjustUIFontForWindow(tooltip_hwnd_);
 

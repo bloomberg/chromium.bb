@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/font.h"
 #include "views/screen.h"
 #include "views/view.h"
@@ -36,6 +37,7 @@ static gfx::Font DetermineDefaultFont() {
   HWND window = CreateWindowEx(
       WS_EX_TRANSPARENT | l10n_util::GetExtendedTooltipStyles(),
       TOOLTIPS_CLASS, NULL, 0 , 0, 0, 0, 0, NULL, NULL, NULL, NULL);
+  ui::CheckWindowCreated(window);
   HFONT hfont = reinterpret_cast<HFONT>(SendMessage(window, WM_GETFONT, 0, 0));
   gfx::Font font = hfont ? gfx::Font(hfont) : gfx::Font();
   DestroyWindow(window);
@@ -95,6 +97,7 @@ void TooltipManagerWin::Init() {
       WS_EX_TRANSPARENT | l10n_util::GetExtendedTooltipStyles(),
       TOOLTIPS_CLASS, NULL, TTS_NOPREFIX, 0, 0, 0, 0,
       GetParent(), NULL, NULL, NULL);
+  ui::CheckWindowCreated(tooltip_hwnd_);
 
   l10n_util::AdjustUIFontForWindow(tooltip_hwnd_);
 
@@ -333,6 +336,7 @@ void TooltipManagerWin::ShowKeyboardTooltip(View* focused_view) {
   keyboard_tooltip_hwnd_ = CreateWindowEx(
       WS_EX_TRANSPARENT | l10n_util::GetExtendedTooltipStyles(),
       TOOLTIPS_CLASS, NULL, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
+  ui::CheckWindowCreated(keyboard_tooltip_hwnd_);
   SendMessage(keyboard_tooltip_hwnd_, TTM_SETMAXTIPWIDTH, 0,
               std::numeric_limits<short>::max());
   int tooltip_width;

@@ -33,6 +33,7 @@ StatusTrayWin::StatusTrayWin()
   // "TaskbarCreated".
   window_ = CreateWindow(chrome::kStatusTrayWindowClass,
                          0, WS_POPUP, 0, 0, 0, 0, 0, 0, hinst, 0);
+  ui::CheckWindowCreated(window_);
   ui::SetWindowUserData(window_, this);
 }
 

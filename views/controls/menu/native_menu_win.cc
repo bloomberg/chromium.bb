@@ -70,6 +70,7 @@ class NativeMenuWin::MenuHostWindow {
     RegisterClass();
     hwnd_ = CreateWindowEx(l10n_util::GetExtendedStyles(), kWindowClassName,
                            L"", 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
+    ui::CheckWindowCreated(hwnd_);
     ui::SetWindowUserData(hwnd_, this);
   }
 

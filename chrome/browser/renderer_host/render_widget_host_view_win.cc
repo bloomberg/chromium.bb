@@ -444,7 +444,7 @@ HWND RenderWidgetHostViewWin::ReparentWindow(HWND window) {
       MAKEINTATOM(window_class), 0,
       WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
       0, 0, 0, 0, ::GetParent(window), 0, GetModuleHandle(NULL), 0);
-  DCHECK(parent);
+  ui::CheckWindowCreated(parent);
   ::SetParent(window, parent);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -1549,7 +1549,7 @@ gfx::PluginWindowHandle RenderWidgetHostViewWin::AcquireCompositingSurface() {
     MAKEINTATOM(window_class), 0,
     WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_DISABLED,
     0, 0, width, height, m_hWnd, 0, GetModuleHandle(NULL), 0);
-  DCHECK(compositor_host_window_);
+  ui::CheckWindowCreated(compositor_host_window_);
 
   return static_cast<gfx::PluginWindowHandle>(compositor_host_window_);
 }
@@ -1742,6 +1742,7 @@ void RenderWidgetHostViewWin::EnsureTooltip() {
         WS_EX_TRANSPARENT | l10n_util::GetExtendedTooltipStyles(),
         TOOLTIPS_CLASS, NULL, TTS_NOPREFIX, 0, 0, 0, 0, m_hWnd, NULL,
         NULL, NULL);
+    ui::CheckWindowCreated(tooltip_hwnd_);
     ti.uFlags = TTF_TRANSPARENT;
     ti.lpszText = LPSTR_TEXTCALLBACK;
   }

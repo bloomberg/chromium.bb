@@ -40,6 +40,10 @@ void CenterAndSizeWindow(HWND parent,
                          const gfx::Size& pref,
                          bool pref_is_client);
 
+// If |hwnd| is NULL logs various thing and CHECKs. Invoke right after calling
+// CreateWindow.
+void CheckWindowCreated(HWND hwnd);
+
 }  // namespace ui
 
 #endif  // UI_BASE_WIN_HWND_UTIL_H_
