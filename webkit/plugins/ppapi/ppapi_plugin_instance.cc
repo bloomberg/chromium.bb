@@ -25,6 +25,8 @@
 #include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
+#include "ppapi/c/private/ppb_instance_private.h"
+#include "ppapi/c/private/ppp_instance_private.h"
 #include "printing/units.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
@@ -211,6 +213,12 @@ const PPB_Instance ppb_instance = {
   &BindGraphics,
   &IsFullFrame,
   &ExecuteScript,
+};
+
+const PPB_Instance_Private ppb_instance_private = {
+  &GetWindowObject,
+  &GetOwnerElementObject,
+  &ExecuteScript
 };
 
 void NumberOfFindResultsChanged(PP_Instance instance_id,
@@ -402,6 +410,11 @@ const PPB_Fullscreen_Dev* PluginInstance::GetFullscreenInterface() {
 // static
 const PPB_Messaging* PluginInstance::GetMessagingInterface() {
   return &ppb_messaging;
+}
+
+// static
+const PPB_Instance_Private* PluginInstance::GetPrivateInterface() {
+  return &ppb_instance_private;
 }
 
 // static
@@ -741,6 +754,12 @@ void PluginInstance::HandleMessage(PP_Var message) {
 }
 
 PP_Var PluginInstance::GetInstanceObject() {
+  // Try the private interface first.  If it is not supported, we fall back to
+  // the primary PPP_Instance interface.
+  // TODO(dmichael): Remove support for PPP_Instance.GetInstanceObject
+  if (LoadPrivateInterface()) {
+    return plugin_private_interface_->GetInstanceObject(pp_instance());
+  }
   return instance_interface_->GetInstanceObject(pp_instance());
 }
 
@@ -909,7 +928,7 @@ void PluginInstance::StopFind() {
 bool PluginInstance::LoadFindInterface() {
   if (!plugin_find_interface_) {
     plugin_find_interface_ =
-        reinterpret_cast<const PPP_Find_Dev*>(module_->GetPluginInterface(
+        static_cast<const PPP_Find_Dev*>(module_->GetPluginInterface(
             PPP_FIND_DEV_INTERFACE));
   }
 
@@ -920,7 +939,7 @@ bool PluginInstance::LoadMessagingInterface() {
   if (!checked_for_plugin_messaging_interface_) {
     checked_for_plugin_messaging_interface_ = true;
     plugin_messaging_interface_ =
-        reinterpret_cast<const PPP_Messaging*>(module_->GetPluginInterface(
+        static_cast<const PPP_Messaging*>(module_->GetPluginInterface(
             PPP_MESSAGING_INTERFACE));
   }
 
@@ -930,7 +949,7 @@ bool PluginInstance::LoadMessagingInterface() {
 bool PluginInstance::LoadPdfInterface() {
   if (!plugin_pdf_interface_) {
     plugin_pdf_interface_ =
-        reinterpret_cast<const PPP_Pdf*>(module_->GetPluginInterface(
+        static_cast<const PPP_Pdf*>(module_->GetPluginInterface(
             PPP_PDF_INTERFACE));
   }
 
@@ -940,17 +959,26 @@ bool PluginInstance::LoadPdfInterface() {
 bool PluginInstance::LoadSelectionInterface() {
   if (!plugin_selection_interface_) {
     plugin_selection_interface_ =
-        reinterpret_cast<const PPP_Selection_Dev*>(module_->GetPluginInterface(
+        static_cast<const PPP_Selection_Dev*>(module_->GetPluginInterface(
             PPP_SELECTION_DEV_INTERFACE));
   }
 
   return !!plugin_selection_interface_;
 }
 
+bool PluginInstance::LoadPrivateInterface() {
+  if (!plugin_private_interface_) {
+    plugin_private_interface_ = static_cast<const PPP_Instance_Private*>(
+            module_->GetPluginInterface(PPP_INSTANCE_PRIVATE_INTERFACE));
+  }
+
+  return !!plugin_private_interface_;
+}
+
 bool PluginInstance::LoadZoomInterface() {
   if (!plugin_zoom_interface_) {
     plugin_zoom_interface_ =
-        reinterpret_cast<const PPP_Zoom_Dev*>(module_->GetPluginInterface(
+        static_cast<const PPP_Zoom_Dev*>(module_->GetPluginInterface(
             PPP_ZOOM_DEV_INTERFACE));
   }
 
@@ -975,7 +1003,7 @@ bool PluginInstance::GetPreferredPrintOutputFormat(
   scoped_refptr<PluginInstance> ref(this);
   if (!plugin_print_interface_) {
     plugin_print_interface_ =
-        reinterpret_cast<const PPP_Printing_Dev*>(module_->GetPluginInterface(
+        static_cast<const PPP_Printing_Dev*>(module_->GetPluginInterface(
             PPP_PRINTING_DEV_INTERFACE));
   }
   if (!plugin_print_interface_)

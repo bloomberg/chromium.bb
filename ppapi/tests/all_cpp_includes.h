@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -46,6 +46,8 @@
 #include "ppapi/cpp/non_thread_safe_ref_count.h"
 #include "ppapi/cpp/paint_aggregator.h"
 #include "ppapi/cpp/paint_manager.h"
+#include "ppapi/cpp/private/instance_private.cc"
+#include "ppapi/cpp/private/instance_private.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/resource.h"

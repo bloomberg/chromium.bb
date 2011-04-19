@@ -5,7 +5,7 @@
 #include "ppapi/cpp/private/var_private.h"
 
 #include "ppapi/c/dev/ppb_var_deprecated.h"
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/private/instance_private.h"
 #include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
@@ -22,7 +22,7 @@ template <> const char* interface_name<PPB_Var_Deprecated>() {
 
 using namespace deprecated;
 
-VarPrivate::VarPrivate(Instance* instance, ScriptableObject* object) {
+VarPrivate::VarPrivate(InstancePrivate* instance, ScriptableObject* object) {
   if (has_interface<PPB_Var_Deprecated>()) {
     var_ = get_interface<PPB_Var_Deprecated>()->CreateObject(
         instance->pp_instance(), object->GetClass(), object);

@@ -80,13 +80,13 @@
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/private/ppb_flash_menu.h"
+#include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
+#include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
-#include "ppapi/c/trusted/ppb_instance_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
-#include "ppapi/c/trusted/ppp_instance_trusted.h"
 
 #endif  /* PPAPI_TESTS_ALL_C_INCLUDES_H_ */
 

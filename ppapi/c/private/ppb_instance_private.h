@@ -2,17 +2,17 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#ifndef PPAPI_C_TRUSTED_PPB_INSTANCE_TRUSTED_H_
-#define PPAPI_C_TRUSTED_PPB_INSTANCE_TRUSTED_H_
+#ifndef PPAPI_C_PRIVATE_PPB_INSTANCE_PRIVATE_H_
+#define PPAPI_C_PRIVATE_PPB_INSTANCE_PRIVATE_H_
 
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_INSTANCE_TRUSTED_INTERFACE "PPB_Instance_Trusted;0.1"
+#define PPB_INSTANCE_PRIVATE_INTERFACE "PPB_Instance_Private;0.1"
 
 /**
  * @file
- * This file defines the PPB_Instance_Trusted interface implemented by the
+ * This file defines the PPB_Instance_Private interface implemented by the
  * browser and containing pointers to functions available only to trusted plugin
  * instances.
  *
@@ -21,11 +21,11 @@
  */
 
 /**
- * The PPB_Instance_Trusted interface contains functions available only to
+ * The PPB_Instance_Private interface contains functions available only to
  * trusted plugin instances.
  *
  */
-struct PPB_Instance_Trusted {
+struct PPB_Instance_Private {
   /**
    * GetWindowObject is a pointer to a function that determines
    * the DOM window containing this module instance.
@@ -70,5 +70,5 @@ struct PPB_Instance_Trusted {
  * @}
  */
 
-#endif  /* PPAPI_C_TRUSTED_PPB_INSTANCE_TRUSTED_H_ */
+#endif  /* PPAPI_C_PRIVATE_PPB_INSTANCE_PRIVATE_H_ */
 

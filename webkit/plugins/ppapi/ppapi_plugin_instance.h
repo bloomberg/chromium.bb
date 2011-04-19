@@ -28,12 +28,14 @@
 typedef struct NPObject NPObject;
 struct PP_Var;
 struct PPB_Instance;
+struct PPB_Instance_Private;
 struct PPB_Find_Dev;
 struct PPB_Fullscreen_Dev;
 struct PPB_Messaging;
 struct PPB_Zoom_Dev;
 struct PPP_Find_Dev;
 struct PPP_Instance;
+struct PPP_Instance_Private;
 struct PPP_Messaging;
 struct PPP_Pdf;
 struct PPP_Selection_Dev;
@@ -82,6 +84,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   ~PluginInstance();
 
   static const PPB_Instance* GetInterface();
+  static const PPB_Instance_Private* GetPrivateInterface();
 
   // Returns a pointer to the interface implementing PPB_Find that is
   // exposed to the plugin.
@@ -140,7 +143,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // Called when the out-of-process plugin implementing this instance crashed.
   void InstanceCrashed();
 
-  // PPB_Instance implementation.
+  // PPB_Instance and PPB_Instance_Private implementation.
   PP_Var GetWindowObject();
   PP_Var GetOwnerElementObject();
   bool BindGraphics(PP_Resource graphics_id);
@@ -153,7 +156,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
                  const PP_Point* hot_spot);
   PP_Var ExecuteScript(PP_Var script, PP_Var* exception);
 
-  // PPP_Instance pass-through.
+  // PPP_Instance and PPP_Instance_Private pass-through.
   bool Initialize(WebKit::WebPluginContainer* container,
                   const std::vector<std::string>& arg_names,
                   const std::vector<std::string>& arg_values,
@@ -263,6 +266,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   bool LoadMessagingInterface();
   bool LoadPdfInterface();
   bool LoadSelectionInterface();
+  bool LoadPrivateInterface();
   bool LoadZoomInterface();
 
   // Determines if we think the plugin has focus, both content area and webkit
@@ -352,6 +356,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   const PPP_Messaging* plugin_messaging_interface_;
   const PPP_Pdf* plugin_pdf_interface_;
   const PPP_Selection_Dev* plugin_selection_interface_;
+  const PPP_Instance_Private* plugin_private_interface_;
   const PPP_Zoom_Dev* plugin_zoom_interface_;
 
   // A flag to indicate whether we have asked this plugin instance for its

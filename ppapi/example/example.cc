@@ -23,7 +23,7 @@
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/private/instance_private.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/private/var_private.h"
 #include "ppapi/cpp/rect.h"
@@ -48,7 +48,8 @@ void FillRect(pp::ImageData* image, int left, int top, int width, int height,
 
 class MyScriptableObject : public pp::deprecated::ScriptableObject {
  public:
-  explicit MyScriptableObject(pp::Instance* instance) : instance_(instance) {}
+  explicit MyScriptableObject(pp::InstancePrivate* instance)
+      : instance_(instance) {}
 
   virtual bool HasMethod(const pp::Var& method, pp::Var* exception) {
     return method.AsString() == "toString";
@@ -80,7 +81,7 @@ class MyScriptableObject : public pp::deprecated::ScriptableObject {
   }
 
  private:
-  pp::Instance* instance_;
+  pp::InstancePrivate* instance_;
 };
 
 class MyFetcherClient {
@@ -94,7 +95,7 @@ class MyFetcher {
     callback_factory_.Initialize(this);
   }
 
-  void Start(const pp::Instance& instance,
+  void Start(const pp::InstancePrivate& instance,
              const pp::Var& url,
              MyFetcherClient* client) {
     pp::URLRequestInfo request;
@@ -157,10 +158,10 @@ class MyFetcher {
   std::string data_;
 };
 
-class MyInstance : public pp::Instance, public MyFetcherClient {
+class MyInstance : public pp::InstancePrivate, public MyFetcherClient {
  public:
   MyInstance(PP_Instance instance)
-      : pp::Instance(instance),
+      : pp::InstancePrivate(instance),
         time_at_last_check_(0.0),
         fetcher_(NULL),
         width_(0),

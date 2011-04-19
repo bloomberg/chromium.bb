@@ -2,18 +2,18 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#ifndef PPAPI_C_TRUSTED_PPP_INSTANCE_TRUSTED_H_
-#define PPAPI_C_TRUSTED_PPP_INSTANCE_TRUSTED_H_
+#ifndef PPAPI_C_PRIVATE_PPP_INSTANCE_PRIVATE_H_
+#define PPAPI_C_PRIVATE_PPP_INSTANCE_PRIVATE_H_
 
 #include "ppapi/c/pp_instance.h"
 
 struct PP_Var;
 
-#define PPP_INSTANCE_TRUSTED_INTERFACE "PPP_Instance_Trusted;0.1"
+#define PPP_INSTANCE_PRIVATE_INTERFACE "PPP_Instance_Private;0.1"
 
 /**
  * @file
- * This file defines the PPP_InstanceTrusted structure; a series of functions
+ * This file defines the PPP_InstancePrivate structure; a series of functions
  * that a trusted plugin may implement to provide capabilities only available
  * to trusted plugins.
  *
@@ -24,12 +24,12 @@ struct PP_Var;
  */
 
 /**
- * The PPP_Instance_Trusted interface contains pointers to a series of
+ * The PPP_Instance_Private interface contains pointers to a series of
  * functions that may be implemented in a trusted plugin to provide capabilities
  * that aren't possible in untrusted modules.
  */
 
-struct PPP_Instance_Trusted {
+struct PPP_Instance_Private {
   /**
    * GetInstanceObject returns a PP_Var representing the scriptable object for
    * the given instance. Normally this will be a PPP_Class_Deprecated object
@@ -50,5 +50,5 @@ struct PPP_Instance_Trusted {
  * @}
  */
 
-#endif  /* PPAPI_C_TRUSTED_PPP_INSTANCE_TRUSTED_H_ */
+#endif  /* PPAPI_C_PRIVATE_PPP_INSTANCE_PRIVATE_H_ */
 

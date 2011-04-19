@@ -55,6 +55,7 @@
 #include "ppapi/c/private/ppb_flash_file.h"
 #include "ppapi/c/private/ppb_flash_menu.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
+#include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppb_proxy_private.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
@@ -280,6 +281,8 @@ const void* GetInterface(const char* name) {
     return PPB_ImageData_Impl::GetTrustedInterface();
   if (strcmp(name, PPB_INSTANCE_INTERFACE) == 0)
     return PluginInstance::GetInterface();
+  if (strcmp(name, PPB_INSTANCE_PRIVATE_INTERFACE) == 0)
+    return PluginInstance::GetPrivateInterface();
   if (strcmp(name, PPB_MESSAGING_INTERFACE) == 0)
     return PluginInstance::GetMessagingInterface();
   if (strcmp(name, PPB_PDF_INTERFACE) == 0)

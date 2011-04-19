@@ -90,9 +90,11 @@
         'c/private/ppb_flash_file.h',
         'c/private/ppb_flash_menu.h',
         'c/private/ppb_flash_net_connector.h',
+        'c/private/ppb_instance_private.h',
         'c/private/ppb_nacl_private.h',
         'c/private/ppb_pdf.h',
         'c/private/ppb_proxy_private.h',
+        'c/private/ppp_instance_private.h',
 
         # Deprecated interfaces.
         'c/dev/deprecated_bool.h',
@@ -103,10 +105,8 @@
         'c/trusted/ppb_audio_trusted.h',
         'c/trusted/ppb_image_data_trusted.h',
         'c/trusted/ppb_broker_trusted.h',
-        'c/trusted/ppb_instance_trusted.h',
         'c/trusted/ppb_url_loader_trusted.h',
         'c/trusted/ppp_broker.h',
-        'c/trusted/ppp_instance_trusted.h',
       ],
     },
     {
@@ -210,6 +210,8 @@
         'cpp/dev/scriptable_object_deprecated.cc',
 
         # Private interfaces.
+        'cpp/private/instance_private.cc',
+        'cpp/private/instance_private.h',
         'cpp/private/var_private.cc',
         'cpp/private/var_private.h',
       ],
