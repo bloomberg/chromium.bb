@@ -29,24 +29,6 @@ TouchAutocompleteResultView::TouchAutocompleteResultView(
 TouchAutocompleteResultView::~TouchAutocompleteResultView() {
 }
 
-void TouchAutocompleteResultView::Layout() {
-  AutocompleteResultView::Layout();
-
-  // In touch version of autocomplete popup, the text is displayed in two lines:
-  // First line is the title of the suggestion and second is the description.
-  // Hence, the total text height is 2 times the height of one line.
-  int text_height = 2 * GetFontHeight();
-  set_text_bounds(gfx::Rect(text_bounds().x(),
-                            std::max(0, (height() - text_height) / 2),
-                            text_bounds().width(), text_height));
-}
-
-gfx::Size TouchAutocompleteResultView::GetPreferredSize() {
-  return gfx::Size(0, std::max(
-      AutocompleteResultView::icon_size() + (icon_vertical_padding_ * 2),
-      2 * (GetFontHeight() + text_vertical_padding_)));
-}
-
 void TouchAutocompleteResultView::PaintMatch(gfx::Canvas* canvas,
                                              const AutocompleteMatch& match,
                                              int x) {
@@ -60,7 +42,10 @@ void TouchAutocompleteResultView::PaintMatch(gfx::Canvas* canvas,
 }
 
 int TouchAutocompleteResultView::GetFontHeight() const {
-  return std::max(normal_font().GetHeight(), bold_font().GetHeight());
+  // In touch version of autocomplete popup, the text is displayed in two lines:
+  // First line is the title of the suggestion and second is the description.
+  // Hence, the total text height is 2 times the height of one line.
+  return AutocompleteResultView::GetFontHeight() * 2;
 }
 
 

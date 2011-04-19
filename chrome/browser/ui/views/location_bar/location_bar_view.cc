@@ -69,7 +69,7 @@ TabContents* GetTabContentsFromDelegate(LocationBarView::Delegate* delegate) {
 const int LocationBarView::kNormalHorizontalEdgeThickness = 1;
 const int LocationBarView::kVerticalEdgeThickness = 2;
 const int LocationBarView::kItemPadding = 3;
-const int LocationBarView::kExtensionItemPadding = 5;
+const int LocationBarView::kIconInternalPadding = 2;
 const int LocationBarView::kEdgeItemPadding = kItemPadding;
 const int LocationBarView::kBubbleHorizontalPadding = 1;
 const char LocationBarView::kViewClassName[] =
@@ -546,11 +546,11 @@ void LocationBarView::Layout() {
         const SkBitmap& bitmap = profile_->GetExtensionService()->
             GetOmniboxIcon(template_url->GetExtensionId());
         selected_keyword_view_->SetImage(bitmap);
-        selected_keyword_view_->SetItemPadding(kExtensionItemPadding);
+        selected_keyword_view_->set_is_extension_icon(true);
       } else {
         selected_keyword_view_->SetImage(*ResourceBundle::GetSharedInstance().
             GetBitmapNamed(IDR_OMNIBOX_SEARCH));
-        selected_keyword_view_->SetItemPadding(kItemPadding);
+        selected_keyword_view_->set_is_extension_icon(false);
       }
     }
   } else if (show_keyword_hint) {

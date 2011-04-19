@@ -40,30 +40,18 @@ class AutocompleteResultView : public views::View {
                          const gfx::Font& bold_font);
   virtual ~AutocompleteResultView();
 
+  static SkColor GetColor(ResultViewState state, ColorKind kind);
+
   // Updates the match used to paint the contents of this result view. We copy
   // the match so that we can continue to paint the last result even after the
   // model has changed.
-  void set_match(const AutocompleteMatch& match) { match_ = match; }
-  const gfx::Font& normal_font() const { return normal_font_; }
-  const gfx::Font& bold_font() const { return bold_font_; }
-  const gfx::Rect& text_bounds() const { return text_bounds_; }
-  void set_text_bounds(const gfx::Rect& tb) { text_bounds_ = tb; }
-
-  // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas);
-  virtual void Layout();
-  virtual gfx::Size GetPreferredSize();
-
-  // Returns the preferred height for a single row.
-  int GetPreferredHeight(const gfx::Font& font,
-                         const gfx::Font& bold_font);
-  static SkColor GetColor(ResultViewState state, ColorKind kind);
-  static int icon_size() { return icon_size_; }
+  void SetMatch(const AutocompleteMatch& match);
 
  protected:
   virtual void PaintMatch(gfx::Canvas* canvas,
                           const AutocompleteMatch& match,
                           int x);
+  virtual int GetFontHeight() const;
 
   // Draws the specified |text| into the canvas, using highlighting provided by
   // |classifications|. If |force_dim| is true, ACMatchClassification::DIM is
@@ -76,8 +64,7 @@ class AutocompleteResultView : public views::View {
                  int x,
                  int y);
 
-  int icon_vertical_padding_;
-  int text_vertical_padding_;
+  const gfx::Rect& text_bounds() const { return text_bounds_; }
 
  private:
   struct ClassificationData;
@@ -90,10 +77,7 @@ class AutocompleteResultView : public views::View {
   static bool SortRunsLogically(const RunData& lhs, const RunData& rhs);
   static bool SortRunsVisually(const RunData& lhs, const RunData& rhs);
 
-  static int icon_size_;
-
   ResultViewState GetState() const;
-
   const SkBitmap* GetIcon() const;
 
   // Elides |runs| to fit in |remaining_width|.  The runs in |runs| should be in
@@ -112,6 +96,13 @@ class AutocompleteResultView : public views::View {
   //     LTR_STRING RTS_LTR...
   void Elide(Runs* runs, int remaining_width) const;
 
+  // views::View:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+
+  static int default_icon_size_;
+
   // This row's model and model index.
   AutocompleteResultViewModel* model_;
   size_t model_index_;
@@ -126,11 +117,10 @@ class AutocompleteResultView : public views::View {
   class MirroringContext;
   scoped_ptr<MirroringContext> mirroring_context_;
 
-  // Layout rects for various sub-components of the view.
-  gfx::Rect icon_bounds_;
-  gfx::Rect text_bounds_;
-
   AutocompleteMatch match_;
+
+  gfx::Rect text_bounds_;
+  gfx::Rect icon_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteResultView);
 };

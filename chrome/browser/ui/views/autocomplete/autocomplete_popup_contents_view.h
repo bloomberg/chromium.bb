@@ -64,7 +64,7 @@ class AutocompletePopupContentsView : public views::View,
   // Overridden from AutocompleteResultViewModel:
   virtual bool IsSelectedIndex(size_t index) const OVERRIDE;
   virtual bool IsHoveredIndex(size_t index) const OVERRIDE;
-  virtual const SkBitmap* GetSpecialIcon(size_t index) const OVERRIDE;
+  virtual const SkBitmap* GetIconIfExtensionMatch(size_t index) const OVERRIDE;
 
   // Overridden from ui::AnimationDelegate:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;

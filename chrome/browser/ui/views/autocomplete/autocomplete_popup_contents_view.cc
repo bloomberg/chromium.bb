@@ -301,7 +301,7 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
       result_view = static_cast<AutocompleteResultView*>(GetChildViewAt(i));
       result_view->SetVisible(true);
     }
-    result_view->set_match(GetMatchAtIndex(i));
+    result_view->SetMatch(GetMatchAtIndex(i));
   }
   for (size_t i = model_->result().size(); i < child_rv_count; ++i)
     GetChildViewAt(i)->SetVisible(false);
@@ -375,11 +375,11 @@ bool AutocompletePopupContentsView::IsHoveredIndex(size_t index) const {
   return HasMatchAt(index) ? index == model_->hovered_line() : false;
 }
 
-const SkBitmap* AutocompletePopupContentsView::GetSpecialIcon(
+const SkBitmap* AutocompletePopupContentsView::GetIconIfExtensionMatch(
     size_t index) const {
   if (!HasMatchAt(index))
     return NULL;
-  return model_->GetSpecialIconForMatch(GetMatchAtIndex(index));
+  return model_->GetIconIfExtensionMatch(GetMatchAtIndex(index));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

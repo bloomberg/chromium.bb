@@ -94,9 +94,9 @@ class AutocompletePopupModel {
   // can be removed from history, and if so, remove it and update the popup.
   void TryDeletingCurrentItem();
 
-  // Returns the special icon to use for a given match, or NULL if we should
-  // use a standard style icon.
-  const SkBitmap* GetSpecialIconForMatch(const AutocompleteMatch& match) const;
+  // If |match| is from an extension, returns the extension icon; otherwise
+  // returns NULL.
+  const SkBitmap* GetIconIfExtensionMatch(const AutocompleteMatch& match) const;
 
   // The match the user has manually chosen, if any.
   const AutocompleteResult::Selection& manually_selected_match() const {

@@ -222,7 +222,7 @@ void AutocompletePopupModel::TryDeletingCurrentItem() {
   }
 }
 
-const SkBitmap* AutocompletePopupModel::GetSpecialIconForMatch(
+const SkBitmap* AutocompletePopupModel::GetIconIfExtensionMatch(
     const AutocompleteMatch& match) const {
   if (!match.template_url || !match.template_url->IsExtensionKeyword())
     return NULL;

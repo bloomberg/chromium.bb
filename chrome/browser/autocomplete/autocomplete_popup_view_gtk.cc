@@ -484,8 +484,9 @@ void AutocompletePopupViewGtk::AcceptLine(size_t line,
 }
 
 GdkPixbuf* AutocompletePopupViewGtk::IconForMatch(
-    const AutocompleteMatch& match, bool selected) {
-  const SkBitmap* bitmap = model_->GetSpecialIconForMatch(match);
+    const AutocompleteMatch& match,
+    bool selected) {
+  const SkBitmap* bitmap = model_->GetIconIfExtensionMatch(match);
   if (bitmap) {
     if (!ContainsKey(pixbufs_, bitmap))
       pixbufs_[bitmap] = gfx::GdkPixbufFromSkBitmap(bitmap);

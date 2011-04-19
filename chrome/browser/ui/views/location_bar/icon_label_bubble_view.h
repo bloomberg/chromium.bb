@@ -36,7 +36,9 @@ class IconLabelBubbleView : public views::View {
   void SetFont(const gfx::Font& font);
   void SetLabel(const std::wstring& label);
   void SetImage(const SkBitmap& bitmap);
-  void SetItemPadding(int padding) { item_padding_ = padding; }
+  void set_is_extension_icon(bool is_extension_icon) {
+    is_extension_icon_ = is_extension_icon;
+  }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -44,10 +46,11 @@ class IconLabelBubbleView : public views::View {
 
  protected:
   void SetElideInMiddle(bool elide_in_middle);
-  gfx::Size GetNonLabelSize();
+  gfx::Size GetNonLabelSize() const;
 
  private:
-  int GetNonLabelWidth();
+  int GetPreLabelWidth() const;
+  int GetNonLabelWidth() const;
 
   // For painting the background.
   views::HorizontalPainter background_painter_;
@@ -56,7 +59,7 @@ class IconLabelBubbleView : public views::View {
   views::ImageView* image_;
   views::Label* label_;
 
-  int item_padding_;
+  bool is_extension_icon_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(IconLabelBubbleView);
 };

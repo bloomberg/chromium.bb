@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -415,7 +415,7 @@ void AutocompletePopupViewMac::PositionPopup(const CGFloat matrixHeight) {
 
 NSImage* AutocompletePopupViewMac::ImageForMatch(
     const AutocompleteMatch& match) {
-  const SkBitmap* bitmap = model_->GetSpecialIconForMatch(match);
+  const SkBitmap* bitmap = model_->GetIconIfExtensionMatch(match);
   if (bitmap)
     return gfx::SkBitmapToNSImage(*bitmap);
 

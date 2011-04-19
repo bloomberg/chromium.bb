@@ -111,9 +111,7 @@ AutocompleteResultView::AutocompleteResultView(
     int model_index,
     const gfx::Font& font,
     const gfx::Font& bold_font)
-    : icon_vertical_padding_(kMinimumIconVerticalPadding),
-      text_vertical_padding_(kMinimumTextVerticalPadding),
-      model_(model),
+    : model_(model),
       model_index_(model_index),
       normal_font_(font),
       bold_font_(bold_font),
@@ -121,52 +119,14 @@ AutocompleteResultView::AutocompleteResultView(
       mirroring_context_(new MirroringContext()),
       match_(NULL, 0, false, AutocompleteMatch::URL_WHAT_YOU_TYPED) {
   CHECK_GE(model_index, 0);
-  if (icon_size_ == 0) {
-    icon_size_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+  if (default_icon_size_ == 0) {
+    default_icon_size_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
         AutocompleteMatch::TypeToIcon(AutocompleteMatch::URL_WHAT_YOU_TYPED))->
         width();
   }
 }
 
 AutocompleteResultView::~AutocompleteResultView() {
-}
-
-void AutocompleteResultView::OnPaint(gfx::Canvas* canvas) {
-  const ResultViewState state = GetState();
-  if (state != NORMAL)
-    canvas->AsCanvasSkia()->drawColor(GetColor(state, BACKGROUND));
-
-  // Paint the icon.
-  canvas->DrawBitmapInt(*GetIcon(), GetMirroredXForRect(icon_bounds_),
-                        icon_bounds_.y());
-
-  // Paint the text.
-  int x = GetMirroredXForRect(text_bounds_);
-  mirroring_context_->Initialize(x, text_bounds_.width());
-  PaintMatch(canvas, match_, x);
-}
-
-void AutocompleteResultView::Layout() {
-  icon_bounds_.SetRect(LocationBarView::kEdgeItemPadding,
-                       (height() - icon_size_) / 2, icon_size_, icon_size_);
-  int text_x = icon_bounds_.right() + LocationBarView::kItemPadding;
-  int font_height = std::max(normal_font_.GetHeight(), bold_font_.GetHeight());
-  text_bounds_.SetRect(text_x, std::max(0, (height() - font_height) / 2),
-      std::max(bounds().width() - text_x - LocationBarView::kEdgeItemPadding,
-      0), font_height);
-}
-
-gfx::Size AutocompleteResultView::GetPreferredSize() {
-  return gfx::Size(0, GetPreferredHeight(normal_font_, bold_font_));
-}
-
-int AutocompleteResultView::GetPreferredHeight(
-    const gfx::Font& font,
-    const gfx::Font& bold_font) {
-  int text_height = std::max(font.GetHeight(), bold_font.GetHeight()) +
-      (text_vertical_padding_ * 2);
-  int icon_height = icon_size_ + (icon_vertical_padding_ * 2);
-  return std::max(icon_height, text_height);
 }
 
 // static
@@ -211,6 +171,11 @@ SkColor AutocompleteResultView::GetColor(ResultViewState state,
   return colors[state][kind];
 }
 
+void AutocompleteResultView::SetMatch(const AutocompleteMatch& match) {
+  match_ = match;
+  Layout();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompleteResultView, protected:
 
@@ -240,6 +205,10 @@ void AutocompleteResultView::PaintMatch(gfx::Canvas* canvas,
   }
 }
 
+int AutocompleteResultView::GetFontHeight() const {
+  return std::max(normal_font_.GetHeight(), bold_font_.GetHeight());
+}
+
 // static
 bool AutocompleteResultView::SortRunsLogically(const RunData& lhs,
                                                const RunData& rhs) {
@@ -253,7 +222,7 @@ bool AutocompleteResultView::SortRunsVisually(const RunData& lhs,
 }
 
 // static
-int AutocompleteResultView::icon_size_ = 0;
+int AutocompleteResultView::default_icon_size_ = 0;
 
 AutocompleteResultView::ResultViewState
     AutocompleteResultView::GetState() const {
@@ -263,7 +232,7 @@ AutocompleteResultView::ResultViewState
 }
 
 const SkBitmap* AutocompleteResultView::GetIcon() const {
-  const SkBitmap* bitmap = model_->GetSpecialIcon(model_index_);
+  const SkBitmap* bitmap = model_->GetIconIfExtensionMatch(model_index_);
   if (bitmap)
     return bitmap;
 
@@ -522,4 +491,40 @@ void AutocompleteResultView::Elide(Runs* runs, int remaining_width) const {
 
   // We couldn't draw anything.
   runs->clear();
+}
+
+gfx::Size AutocompleteResultView::GetPreferredSize() {
+  return gfx::Size(0, std::max(
+      default_icon_size_ + (kMinimumIconVerticalPadding * 2),
+      GetFontHeight() + (kMinimumTextVerticalPadding * 2)));
+}
+
+void AutocompleteResultView::Layout() {
+  const SkBitmap* icon = GetIcon();
+  icon_bounds_.SetRect(LocationBarView::kEdgeItemPadding +
+      ((icon->width() == default_icon_size_) ?
+          0 : LocationBarView::kIconInternalPadding),
+      (height() - icon->height()) / 2, icon->width(), icon->height());
+
+  int text_x = LocationBarView::kEdgeItemPadding + default_icon_size_ +
+      LocationBarView::kItemPadding;
+  int font_height = GetFontHeight();
+  text_bounds_.SetRect(text_x, std::max(0, (height() - font_height) / 2),
+      std::max(bounds().width() - text_x - LocationBarView::kEdgeItemPadding,
+      0), font_height);
+}
+
+void AutocompleteResultView::OnPaint(gfx::Canvas* canvas) {
+  const ResultViewState state = GetState();
+  if (state != NORMAL)
+    canvas->AsCanvasSkia()->drawColor(GetColor(state, BACKGROUND));
+
+  // Paint the icon.
+  canvas->DrawBitmapInt(*GetIcon(), GetMirroredXForRect(icon_bounds_),
+                        icon_bounds_.y());
+
+  // Paint the text.
+  int x = GetMirroredXForRect(text_bounds_);
+  mirroring_context_->Initialize(x, text_bounds_.width());
+  PaintMatch(canvas, match_, x);
 }
