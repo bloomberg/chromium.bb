@@ -8,9 +8,11 @@
 #include <atlmisc.h>
 #include <iepmapi.h>
 #include <sddl.h>
+#include <shlobj.h>
 
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
@@ -233,6 +235,10 @@ base::ProcessHandle LaunchIEOnVista(const std::wstring& url) {
 }
 
 base::ProcessHandle LaunchIE(const std::wstring& url) {
+  if (GetInstalledIEVersion() >= IE_8) {
+    chrome_frame_test::ClearIESessionHistory();
+  }
+
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     return LaunchIEOnVista(url);
   }
@@ -369,6 +375,10 @@ bool LowIntegrityToken::IsImpersonated() {
 HRESULT LaunchIEAsComServer(IWebBrowser2** web_browser) {
   if (!web_browser)
     return E_INVALIDARG;
+
+  if (GetInstalledIEVersion() >= IE_8) {
+    chrome_frame_test::ClearIESessionHistory();
+  }
 
   AllowSetForegroundWindow(ASFW_ANY);
 
@@ -679,6 +689,16 @@ ScopedChromeFrameRegistrar::RegistrationType GetTestBedType() {
   } else {
     return ScopedChromeFrameRegistrar::SYSTEM_LEVEL;
   }
+}
+
+void ClearIESessionHistory() {
+  wchar_t local_app_data_path[MAX_PATH + 1] = {0};
+  SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_CURRENT,
+                  local_app_data_path);
+
+  std::wstring session_history_path = local_app_data_path;
+  session_history_path += L"\\Microsoft\\Internet Explorer\\Recovery";
+  file_util::Delete(session_history_path, true);
 }
 
 }  // namespace chrome_frame_test

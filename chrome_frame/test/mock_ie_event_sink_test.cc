@@ -197,6 +197,9 @@ void MockIEEventSinkTest::LaunchIEAndNavigate(const std::wstring& url) {
 
 void MockIEEventSinkTest::LaunchIENavigateAndLoop(const std::wstring& url,
                                                   int timeout) {
+  if (GetInstalledIEVersion() >= IE_8) {
+    chrome_frame_test::ClearIESessionHistory();
+  }
   hung_call_detector_ = HungCOMCallDetector::Setup(timeout);
   EXPECT_TRUE(hung_call_detector_ != NULL);
 
