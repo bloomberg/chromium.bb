@@ -130,7 +130,6 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
   DCHECK(expected_loop_ == MessageLoop::current());
   if (!running())
     return;
-  StopObserving();
 
   sync_api::ReadNode password_root(trans);
   if (!password_root.InitByTagLookup(kPasswordTag)) {
@@ -139,9 +138,8 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
     return;
   }
 
-  PasswordModelAssociator::PasswordVector new_passwords;
-  PasswordModelAssociator::PasswordVector updated_passwords;
-  PasswordModelAssociator::PasswordVector deleted_passwords;
+  DCHECK(deleted_passwords_.empty() && new_passwords_.empty() &&
+         updated_passwords_.empty());
 
   for (int i = 0; i < change_count; ++i) {
     if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
@@ -154,7 +152,7 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
       const sync_pb::PasswordSpecificsData& password = extra->unencrypted();
       webkit_glue::PasswordForm form;
       PasswordModelAssociator::CopyPassword(password, &form);
-      deleted_passwords.push_back(form);
+      deleted_passwords_.push_back(form);
       model_associator_->Disassociate(changes[i].id);
       continue;
     }
@@ -178,20 +176,31 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
     if (sync_api::SyncManager::ChangeRecord::ACTION_ADD == changes[i].action) {
       std::string tag(PasswordModelAssociator::MakeTag(password));
       model_associator_->Associate(&tag, sync_node.GetId());
-      new_passwords.push_back(password);
+      new_passwords_.push_back(password);
     } else {
       DCHECK(sync_api::SyncManager::ChangeRecord::ACTION_UPDATE ==
              changes[i].action);
-      updated_passwords.push_back(password);
+      updated_passwords_.push_back(password);
     }
   }
+}
 
-  if (!model_associator_->WriteToPasswordStore(&new_passwords,
-                                               &updated_passwords,
-                                               &deleted_passwords)) {
+void PasswordChangeProcessor::CommitChangesFromSyncModel() {
+  DCHECK(expected_loop_ == MessageLoop::current());
+  if (!running())
+    return;
+  StopObserving();
+
+  if (!model_associator_->WriteToPasswordStore(&new_passwords_,
+                                               &updated_passwords_,
+                                               &deleted_passwords_)) {
     error_handler()->OnUnrecoverableError(FROM_HERE, "Error writing passwords");
     return;
   }
+
+  deleted_passwords_.clear();
+  new_passwords_.clear();
+  updated_passwords_.clear();
 
   StartObserving();
 }

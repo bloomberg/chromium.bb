@@ -9,6 +9,8 @@
 #include "chrome/browser/sync/glue/change_processor.h"
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "chrome/browser/sync/glue/password_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -20,7 +22,6 @@ class NotificationService;
 
 namespace browser_sync {
 
-class PasswordModelAssociator;
 class UnrecoverableErrorHandler;
 
 // This class is responsible for taking changes from the password backend and
@@ -39,17 +40,23 @@ class PasswordChangeProcessor : public ChangeProcessor,
   // Passwords -> sync_api model change application.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // sync_api model -> WebDataService change application.
   virtual void ApplyChangesFromSyncModel(
       const sync_api::BaseTransaction* trans,
       const sync_api::SyncManager::ChangeRecord* changes,
-      int change_count);
+      int change_count) OVERRIDE;
+
+  // Commit changes buffered during ApplyChanges. We must commit them to the
+  // password store only after the sync_api transaction is released, else there
+  // is risk of deadlock due to the password store posting tasks to the UI
+  // thread (http://crbug.com/70658).
+  virtual void CommitChangesFromSyncModel() OVERRIDE;
 
  protected:
-  virtual void StartImpl(Profile* profile);
-  virtual void StopImpl();
+  virtual void StartImpl(Profile* profile) OVERRIDE;
+  virtual void StopImpl() OVERRIDE;
 
  private:
   void StartObserving();
@@ -62,6 +69,12 @@ class PasswordChangeProcessor : public ChangeProcessor,
   // WebDataService which is kept alive by our data type controller
   // holding a reference.
   PasswordStore* password_store_;
+
+  // Buffers used between ApplyChangesFromSyncModel and
+  // CommitChangesFromSyncModel.
+  PasswordModelAssociator::PasswordVector new_passwords_;
+  PasswordModelAssociator::PasswordVector updated_passwords_;
+  PasswordModelAssociator::PasswordVector deleted_passwords_;
 
   NotificationRegistrar notification_registrar_;
 

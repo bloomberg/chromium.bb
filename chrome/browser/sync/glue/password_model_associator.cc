@@ -45,14 +45,9 @@ bool PasswordModelAssociator::AssociateModels() {
     abort_association_pending_ = false;
   }
 
-  sync_api::WriteTransaction trans(sync_service_->GetUserShare());
-  sync_api::ReadNode password_root(&trans);
-  if (!password_root.InitByTagLookup(kPasswordTag)) {
-    LOG(ERROR) << "Server did not create the top-level password node. We "
-               << "might be running against an out-of-date server.";
-    return false;
-  }
-
+  // We must not be holding a transaction when we interact with the password
+  // store, as it can post tasks to the UI thread which can itself be blocked
+  // on our transaction, resulting in deadlock. (http://crbug.com/70658)
   std::vector<webkit_glue::PasswordForm*> passwords;
   if (!password_store_->FillAutofillableLogins(&passwords) ||
       !password_store_->FillBlacklistLogins(&passwords)) {
@@ -64,76 +59,89 @@ bool PasswordModelAssociator::AssociateModels() {
   std::set<std::string> current_passwords;
   PasswordVector new_passwords;
   PasswordVector updated_passwords;
-
-  for (std::vector<webkit_glue::PasswordForm*>::iterator ix = passwords.begin();
-       ix != passwords.end(); ++ix) {
-    if (IsAbortPending())
+  {
+    sync_api::WriteTransaction trans(sync_service_->GetUserShare());
+    sync_api::ReadNode password_root(&trans);
+    if (!password_root.InitByTagLookup(kPasswordTag)) {
+      LOG(ERROR) << "Server did not create the top-level password node. We "
+                 << "might be running against an out-of-date server.";
       return false;
-    std::string tag = MakeTag(**ix);
+    }
 
-    sync_api::ReadNode node(&trans);
-    if (node.InitByClientTagLookup(syncable::PASSWORDS, tag)) {
-      const sync_pb::PasswordSpecificsData& password =
-          node.GetPasswordSpecifics();
-      DCHECK_EQ(tag, MakeTag(password));
+    for (std::vector<webkit_glue::PasswordForm*>::iterator ix =
+             passwords.begin();
+         ix != passwords.end(); ++ix) {
+      if (IsAbortPending())
+        return false;
+      std::string tag = MakeTag(**ix);
 
-      webkit_glue::PasswordForm new_password;
+      sync_api::ReadNode node(&trans);
+      if (node.InitByClientTagLookup(syncable::PASSWORDS, tag)) {
+        const sync_pb::PasswordSpecificsData& password =
+            node.GetPasswordSpecifics();
+        DCHECK_EQ(tag, MakeTag(password));
 
-      if (MergePasswords(password, **ix, &new_password)) {
-        sync_api::WriteNode write_node(&trans);
-        if (!write_node.InitByClientTagLookup(syncable::PASSWORDS, tag)) {
+        webkit_glue::PasswordForm new_password;
+
+        if (MergePasswords(password, **ix, &new_password)) {
+          sync_api::WriteNode write_node(&trans);
+          if (!write_node.InitByClientTagLookup(syncable::PASSWORDS, tag)) {
+            STLDeleteElements(&passwords);
+            LOG(ERROR) << "Failed to edit password sync node.";
+            return false;
+          }
+          WriteToSyncNode(new_password, &write_node);
+          updated_passwords.push_back(new_password);
+        }
+
+        Associate(&tag, node.GetId());
+      } else {
+        sync_api::WriteNode node(&trans);
+        if (!node.InitUniqueByCreation(syncable::PASSWORDS,
+                                       password_root, tag)) {
           STLDeleteElements(&passwords);
-          LOG(ERROR) << "Failed to edit password sync node.";
+          LOG(ERROR) << "Failed to create password sync node.";
           return false;
         }
-        WriteToSyncNode(new_password, &write_node);
-        updated_passwords.push_back(new_password);
+
+        WriteToSyncNode(**ix, &node);
+
+        Associate(&tag, node.GetId());
       }
 
-      Associate(&tag, node.GetId());
-    } else {
-      sync_api::WriteNode node(&trans);
-      if (!node.InitUniqueByCreation(syncable::PASSWORDS,
-                                     password_root, tag)) {
-        STLDeleteElements(&passwords);
-        LOG(ERROR) << "Failed to create password sync node.";
+      current_passwords.insert(tag);
+    }
+
+    STLDeleteElements(&passwords);
+
+    int64 sync_child_id = password_root.GetFirstChildId();
+    while (sync_child_id != sync_api::kInvalidId) {
+      sync_api::ReadNode sync_child_node(&trans);
+      if (!sync_child_node.InitByIdLookup(sync_child_id)) {
+        LOG(ERROR) << "Failed to fetch child node.";
         return false;
       }
+      const sync_pb::PasswordSpecificsData& password =
+          sync_child_node.GetPasswordSpecifics();
+      std::string tag = MakeTag(password);
 
-      WriteToSyncNode(**ix, &node);
+      // The password only exists on the server.  Add it to the local
+      // model.
+      if (current_passwords.find(tag) == current_passwords.end()) {
+        webkit_glue::PasswordForm new_password;
 
-      Associate(&tag, node.GetId());
+        CopyPassword(password, &new_password);
+        Associate(&tag, sync_child_node.GetId());
+        new_passwords.push_back(new_password);
+      }
+
+      sync_child_id = sync_child_node.GetSuccessorId();
     }
-
-    current_passwords.insert(tag);
   }
 
-  STLDeleteElements(&passwords);
-
-  int64 sync_child_id = password_root.GetFirstChildId();
-  while (sync_child_id != sync_api::kInvalidId) {
-    sync_api::ReadNode sync_child_node(&trans);
-    if (!sync_child_node.InitByIdLookup(sync_child_id)) {
-      LOG(ERROR) << "Failed to fetch child node.";
-      return false;
-    }
-    const sync_pb::PasswordSpecificsData& password =
-        sync_child_node.GetPasswordSpecifics();
-    std::string tag = MakeTag(password);
-
-    // The password only exists on the server.  Add it to the local
-    // model.
-    if (current_passwords.find(tag) == current_passwords.end()) {
-      webkit_glue::PasswordForm new_password;
-
-      CopyPassword(password, &new_password);
-      Associate(&tag, sync_child_node.GetId());
-      new_passwords.push_back(new_password);
-    }
-
-    sync_child_id = sync_child_node.GetSuccessorId();
-  }
-
+  // We must not be holding a transaction when we interact with the password
+  // store, as it can post tasks to the UI thread which can itself be blocked
+  // on our transaction, resulting in deadlock. (http://crbug.com/70658)
   if (!WriteToPasswordStore(&new_passwords, &updated_passwords, NULL)) {
     LOG(ERROR) << "Failed to write passwords.";
     return false;

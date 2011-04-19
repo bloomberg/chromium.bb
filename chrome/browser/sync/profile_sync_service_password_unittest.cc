@@ -83,6 +83,13 @@ ACTION_P3(MakePasswordSyncComponents, service, ps, dtc) {
                                             change_processor);
 }
 
+ACTION_P(AcquireSyncTransaction, password_test_service) {
+  // Check to make sure we can aquire a transaction (will crash if a transaction
+  // is already held by this thread, deadlock if held by another thread).
+  sync_api::WriteTransaction trans(password_test_service->GetUserShare());
+  VLOG(1) << "Sync transaction acquired.";
+}
+
 static void QuitMessageLoop() {
   MessageLoop::current()->Quit();
 }
@@ -137,6 +144,10 @@ class PasswordTestProfileSyncService : public TestProfileSyncService {
 };
 
 class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
+ public:
+  sync_api::UserShare* GetUserShare() {
+    return service_->GetUserShare();
+  }
  protected:
   ProfileSyncServicePasswordTest()
       : db_thread_(BrowserThread::DB) {
@@ -463,6 +474,71 @@ TEST_F(ProfileSyncServicePasswordTest, HasNativeHasSyncNoMerge) {
       .WillOnce(DoAll(SetArgumentPointee<0>(native_forms), Return(true)));
   EXPECT_CALL(*password_store_, FillBlacklistLogins(_)).WillOnce(Return(true));
   EXPECT_CALL(*password_store_, AddLoginImpl(_)).Times(1);
+
+  CreateRootTask root_task(this, syncable::PASSWORDS);
+  AddPasswordEntriesTask node_task(this, sync_forms);
+  StartSyncService(&root_task, &node_task);
+
+  std::vector<PasswordForm> new_sync_forms;
+  GetPasswordEntriesFromSyncDB(&new_sync_forms);
+
+  EXPECT_EQ(2U, new_sync_forms.size());
+  EXPECT_TRUE(ComparePasswords(expected_forms[0], new_sync_forms[0]));
+  EXPECT_TRUE(ComparePasswords(expected_forms[1], new_sync_forms[1]));
+}
+
+// Same as HasNativeHasEmptyNoMerge, but we attempt to aquire a sync transaction
+// every time the password store is accessed.
+TEST_F(ProfileSyncServicePasswordTest, EnsureNoTransactions) {
+  std::vector<PasswordForm*> native_forms;
+  std::vector<PasswordForm> sync_forms;
+  std::vector<PasswordForm> expected_forms;
+  {
+    PasswordForm* new_form = new PasswordForm;
+    new_form->scheme = PasswordForm::SCHEME_HTML;
+    new_form->signon_realm = "pie";
+    new_form->origin = GURL("http://pie.com");
+    new_form->action = GURL("http://pie.com/submit");
+    new_form->username_element = UTF8ToUTF16("name");
+    new_form->username_value = UTF8ToUTF16("tom");
+    new_form->password_element = UTF8ToUTF16("cork");
+    new_form->password_value = UTF8ToUTF16("password1");
+    new_form->ssl_valid = true;
+    new_form->preferred = false;
+    new_form->date_created = base::Time::FromInternalValue(1234);
+    new_form->blacklisted_by_user = false;
+
+    native_forms.push_back(new_form);
+    expected_forms.push_back(*new_form);
+  }
+
+  {
+    PasswordForm new_form;
+    new_form.scheme = PasswordForm::SCHEME_HTML;
+    new_form.signon_realm = "pie2";
+    new_form.origin = GURL("http://pie2.com");
+    new_form.action = GURL("http://pie2.com/submit");
+    new_form.username_element = UTF8ToUTF16("name2");
+    new_form.username_value = UTF8ToUTF16("tom2");
+    new_form.password_element = UTF8ToUTF16("cork2");
+    new_form.password_value = UTF8ToUTF16("password12");
+    new_form.ssl_valid = false;
+    new_form.preferred = true;
+    new_form.date_created = base::Time::FromInternalValue(12345);
+    new_form.blacklisted_by_user = false;
+    sync_forms.push_back(new_form);
+    expected_forms.push_back(new_form);
+  }
+
+  EXPECT_CALL(*password_store_, FillAutofillableLogins(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(native_forms),
+                      AcquireSyncTransaction(this),
+                      Return(true)));
+  EXPECT_CALL(*password_store_, FillBlacklistLogins(_))
+      .WillOnce(DoAll(AcquireSyncTransaction(this),
+                      Return(true)));
+  EXPECT_CALL(*password_store_, AddLoginImpl(_))
+      .WillOnce(AcquireSyncTransaction(this));
 
   CreateRootTask root_task(this, syncable::PASSWORDS);
   AddPasswordEntriesTask node_task(this, sync_forms);
