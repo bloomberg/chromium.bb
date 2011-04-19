@@ -6,36 +6,35 @@
 #define CHROME_TEST_LIVE_SYNC_LIVE_EXTENSIONS_SYNC_TEST_H_
 #pragma once
 
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_temp_dir.h"
-#include "chrome/test/live_sync/live_extensions_sync_test_base.h"
+#include "chrome/test/live_sync/live_sync_extension_helper.h"
+#include "chrome/test/live_sync/live_sync_test.h"
 
-class Extension;
 class Profile;
 
-class LiveExtensionsSyncTest : public LiveExtensionsSyncTestBase {
+class LiveExtensionsSyncTest : public LiveSyncTest {
  public:
   explicit LiveExtensionsSyncTest(TestType test_type);
   virtual ~LiveExtensionsSyncTest();
 
  protected:
-  // Returns true iff the given profile has the same extensions as the
-  // verifier.
-  bool HasSameExtensionsAsVerifier(int profile) WARN_UNUSED_RESULT;
+  // Like LiveSyncTest::SetupClients(), but also sets up
+  // |extension_helper_|.
+  virtual bool SetupClients() OVERRIDE WARN_UNUSED_RESULT;
 
   // Returns true iff all existing profiles have the same extensions
   // as the verifier.
   bool AllProfilesHaveSameExtensionsAsVerifier() WARN_UNUSED_RESULT;
 
+  // Installs the extension for the given index to |profile|.
+  void InstallExtension(Profile* profile, int index);
+
+  // Installs all pending synced extensions for |profile|.
+  void InstallExtensionsPendingForSync(Profile* profile);
+
  private:
-  // Returns true iff the given two profiles have the same set of
-  // enabled, disabled, and pending extensions.
-  static bool HasSameExtensionsHelper(
-      Profile* profile1, Profile* profile2) WARN_UNUSED_RESULT;
+  LiveSyncExtensionHelper extension_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(LiveExtensionsSyncTest);
 };

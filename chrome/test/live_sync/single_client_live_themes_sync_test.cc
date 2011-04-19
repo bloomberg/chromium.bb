@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/test/live_sync/live_themes_sync_test.h"
 
 class SingleClientLiveThemesSyncTest : public LiveThemesSyncTest {
@@ -24,34 +22,34 @@ class SingleClientLiveThemesSyncTest : public LiveThemesSyncTest {
 IN_PROC_BROWSER_TEST_F(SingleClientLiveThemesSyncTest, CustomTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  ASSERT_EQ(NULL, GetCustomTheme(GetProfile(0)));
-  ASSERT_EQ(NULL, GetCustomTheme(verifier()));
+  ASSERT_FALSE(UsingCustomTheme(GetProfile(0)));
+  ASSERT_FALSE(UsingCustomTheme(verifier()));
 
-  SetTheme(GetProfile(0), GetTheme(0));
-  SetTheme(verifier(), GetTheme(0));
-  ASSERT_EQ(GetTheme(0), GetCustomTheme(GetProfile(0)));
-  ASSERT_EQ(GetTheme(0), GetCustomTheme(verifier()));
+  UseCustomTheme(GetProfile(0), 0);
+  UseCustomTheme(verifier(), 0);
+  ASSERT_EQ(GetCustomTheme(0), GetThemeID(GetProfile(0)));
+  ASSERT_EQ(GetCustomTheme(0), GetThemeID(verifier()));
 
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
       "Waiting for custom themes change."));
 
-  ASSERT_EQ(GetTheme(0), GetCustomTheme(GetProfile(0)));
-  ASSERT_EQ(GetTheme(0), GetCustomTheme(verifier()));
+  ASSERT_EQ(GetCustomTheme(0), GetThemeID(GetProfile(0)));
+  ASSERT_EQ(GetCustomTheme(0), GetThemeID(verifier()));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientLiveThemesSyncTest, NativeTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  SetTheme(GetProfile(0), GetTheme(0));
-  SetTheme(verifier(), GetTheme(0));
+  UseCustomTheme(GetProfile(0), 0);
+  UseCustomTheme(verifier(), 0);
   ASSERT_FALSE(UsingNativeTheme(GetProfile(0)));
   ASSERT_FALSE(UsingNativeTheme(verifier()));
 
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
       "Waiting for custom themes change."));
 
-  SetNativeTheme(GetProfile(0));
-  SetNativeTheme(verifier());
+  UseNativeTheme(GetProfile(0));
+  UseNativeTheme(verifier());
   ASSERT_TRUE(UsingNativeTheme(GetProfile(0)));
   ASSERT_TRUE(UsingNativeTheme(verifier()));
 
@@ -65,8 +63,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveThemesSyncTest, NativeTheme) {
 IN_PROC_BROWSER_TEST_F(SingleClientLiveThemesSyncTest, DefaultTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  SetTheme(GetProfile(0), GetTheme(0));
-  SetTheme(verifier(), GetTheme(0));
+  UseCustomTheme(GetProfile(0), 0);
+  UseCustomTheme(verifier(), 0);
   ASSERT_FALSE(UsingDefaultTheme(GetProfile(0)));
   ASSERT_FALSE(UsingDefaultTheme(verifier()));
 

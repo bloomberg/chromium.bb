@@ -1,12 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/live_sync/live_extensions_sync_test.h"
-
 #include "base/basictypes.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/extension.h"
+#include "chrome/test/live_sync/live_extensions_sync_test.h"
 
 class TwoClientLiveExtensionsSyncTest : public LiveExtensionsSyncTest {
  public:
@@ -26,16 +23,15 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }
 
-// TODO(rsimha): Enable after http://crbug.com/70028 is fixed.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
-                       DISABLED_StartWithSameExtensions) {
+                       StartWithSameExtensions) {
   ASSERT_TRUE(SetupClients());
 
   const int kNumExtensions = 5;
   for (int i = 0; i < kNumExtensions; ++i) {
-    InstallExtension(GetProfile(0), GetExtension(i));
-    InstallExtension(GetProfile(1), GetExtension(i));
-    InstallExtension(verifier(), GetExtension(i));
+    InstallExtension(GetProfile(0), i);
+    InstallExtension(GetProfile(1), i);
+    InstallExtension(verifier(), i);
   }
 
   ASSERT_TRUE(SetupSync());
@@ -45,54 +41,52 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }
 
-// TODO(rsimha): Remove DISABLED_ prefix after http://crbug.com/66925 is fixed.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
-                       DISABLED_StartWithDifferentExtensions) {
+                       StartWithDifferentExtensions) {
   ASSERT_TRUE(SetupClients());
 
   int i = 0;
 
   const int kNumCommonExtensions = 5;
   for (int j = 0; j < kNumCommonExtensions; ++i, ++j) {
-    InstallExtension(GetProfile(0), GetExtension(i));
-    InstallExtension(GetProfile(1), GetExtension(i));
-    InstallExtension(verifier(), GetExtension(i));
+    InstallExtension(GetProfile(0), i);
+    InstallExtension(GetProfile(1), i);
+    InstallExtension(verifier(), i);
   }
 
   const int kNumProfile0Extensions = 10;
   for (int j = 0; j < kNumProfile0Extensions; ++i, ++j) {
-    InstallExtension(GetProfile(0), GetExtension(i));
-    InstallExtension(verifier(), GetExtension(i));
+    InstallExtension(GetProfile(0), i);
+    InstallExtension(verifier(), i);
   }
 
   const int kNumProfile1Extensions = 10;
   for (int j = 0; j < kNumProfile1Extensions; ++i, ++j) {
-    InstallExtension(GetProfile(1), GetExtension(i));
-    InstallExtension(verifier(), GetExtension(i));
+    InstallExtension(GetProfile(1), i);
+    InstallExtension(verifier(), i);
   }
 
   ASSERT_TRUE(SetupSync());
 
   ASSERT_TRUE(AwaitQuiescence());
 
-  InstallAllPendingExtensions(GetProfile(0));
-  InstallAllPendingExtensions(GetProfile(1));
+  InstallExtensionsPendingForSync(GetProfile(0));
+  InstallExtensionsPendingForSync(GetProfile(1));
 
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }
 
-// TODO(rsimha): Remove DISABLED_ prefix after http://crbug.com/66925 is fixed.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
-                       DISABLED_InstallDifferentExtensions) {
+                       InstallDifferentExtensions) {
   ASSERT_TRUE(SetupClients());
 
   int i = 0;
 
   const int kNumCommonExtensions = 5;
   for (int j = 0; j < kNumCommonExtensions; ++i, ++j) {
-    InstallExtension(GetProfile(0), GetExtension(i));
-    InstallExtension(GetProfile(1), GetExtension(i));
-    InstallExtension(verifier(), GetExtension(i));
+    InstallExtension(GetProfile(0), i);
+    InstallExtension(GetProfile(1), i);
+    InstallExtension(verifier(), i);
   }
 
   ASSERT_TRUE(SetupSync());
@@ -101,20 +95,20 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
 
   const int kNumProfile0Extensions = 10;
   for (int j = 0; j < kNumProfile0Extensions; ++i, ++j) {
-    InstallExtension(GetProfile(0), GetExtension(i));
-    InstallExtension(verifier(), GetExtension(i));
+    InstallExtension(GetProfile(0), i);
+    InstallExtension(verifier(), i);
   }
 
   const int kNumProfile1Extensions = 10;
   for (int j = 0; j < kNumProfile1Extensions; ++i, ++j) {
-    InstallExtension(GetProfile(1), GetExtension(i));
-    InstallExtension(verifier(), GetExtension(i));
+    InstallExtension(GetProfile(1), i);
+    InstallExtension(verifier(), i);
   }
 
   ASSERT_TRUE(AwaitQuiescence());
 
-  InstallAllPendingExtensions(GetProfile(0));
-  InstallAllPendingExtensions(GetProfile(1));
+  InstallExtensionsPendingForSync(GetProfile(0));
+  InstallExtensionsPendingForSync(GetProfile(1));
 
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }

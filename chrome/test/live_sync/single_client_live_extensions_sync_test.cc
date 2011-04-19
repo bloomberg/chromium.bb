@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/test/live_sync/live_extensions_sync_test.h"
 
 class SingleClientLiveExtensionsSyncTest : public LiveExtensionsSyncTest {
@@ -26,15 +24,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveExtensionsSyncTest,
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }
 
-// TODO(rsimha): Enable after http://crbug.com/70028 is fixed.
 IN_PROC_BROWSER_TEST_F(SingleClientLiveExtensionsSyncTest,
-                       DISABLED_StartWithSomeExtensions) {
+                       StartWithSomeExtensions) {
   ASSERT_TRUE(SetupClients());
 
   const int kNumExtensions = 5;
   for (int i = 0; i < kNumExtensions; ++i) {
-    InstallExtension(GetProfile(0), GetExtension(i));
-    InstallExtension(verifier(), GetExtension(i));
+    InstallExtension(GetProfile(0), i);
+    InstallExtension(verifier(), i);
   }
 
   ASSERT_TRUE(SetupSync());
@@ -48,8 +45,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveExtensionsSyncTest,
 
   const int kNumExtensions = 5;
   for (int i = 0; i < kNumExtensions; ++i) {
-    InstallExtension(GetProfile(0), GetExtension(i));
-    InstallExtension(verifier(), GetExtension(i));
+    InstallExtension(GetProfile(0), i);
+    InstallExtension(verifier(), i);
   }
 
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(

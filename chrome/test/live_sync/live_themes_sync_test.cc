@@ -4,69 +4,89 @@
 
 #include "chrome/test/live_sync/live_themes_sync_test.h"
 
-#include <string>
-
 #include "base/logging.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/profiles/profile.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/extensions/extension.h"
 
+namespace {
+
+// Make a name to pass to an extension helper.
+std::string MakeName(int index) {
+  return "faketheme" + base::IntToString(index);
+}
+
+ThemeService* GetThemeService(Profile* profile) {
+  return ThemeServiceFactory::GetForProfile(profile);
+}
+
+}  // namespace
+
 LiveThemesSyncTest::LiveThemesSyncTest(TestType test_type)
-    : LiveExtensionsSyncTestBase(test_type) {}
+    : LiveSyncTest(test_type) {}
 
 LiveThemesSyncTest::~LiveThemesSyncTest() {}
 
-void LiveThemesSyncTest::SetTheme(
-    Profile* profile, scoped_refptr<Extension> theme) {
-  CHECK(theme->is_theme());
-  InstallExtension(profile, theme);
+bool LiveThemesSyncTest::SetupClients() {
+  if (!LiveSyncTest::SetupClients())
+    return false;
+
+  extension_helper_.Setup(this);
+  return true;
 }
 
-void LiveThemesSyncTest::SetNativeTheme(Profile* profile) {
-  ThemeServiceFactory::GetForProfile(profile)->SetNativeTheme();
+std::string LiveThemesSyncTest::GetCustomTheme(int index) const {
+  return extension_helper_.NameToId(MakeName(index));
 }
 
-void LiveThemesSyncTest::UseDefaultTheme(Profile* profile) {
-  ThemeServiceFactory::GetForProfile(profile)->UseDefaultTheme();
+std::string LiveThemesSyncTest::GetThemeID(Profile* profile) const {
+  return GetThemeService(profile)->GetThemeID();
 }
 
-const Extension* LiveThemesSyncTest::GetCustomTheme(
-    Profile* profile) {
-  return ThemeServiceFactory::GetThemeForProfile(profile);
+bool LiveThemesSyncTest::UsingCustomTheme(Profile* profile) const {
+  return GetThemeID(profile) != ThemeService::kDefaultThemeID;
 }
 
-bool LiveThemesSyncTest::UsingDefaultTheme(Profile* profile) {
-  return !ThemeServiceFactory::GetThemeForProfile(profile) &&
-      ThemeServiceFactory::GetForProfile(profile)->UsingDefaultTheme();
+bool LiveThemesSyncTest::UsingDefaultTheme(Profile* profile) const {
+  return GetThemeService(profile)->UsingDefaultTheme();
 }
 
-bool LiveThemesSyncTest::UsingNativeTheme(Profile* profile) {
+// TODO(akalin): Move this logic into ThemeService.
+bool LiveThemesSyncTest::UsingNativeTheme(Profile* profile) const {
 #if defined(TOOLKIT_USES_GTK)
   const bool kHasDistinctNativeTheme = true;
 #else
   const bool kHasDistinctNativeTheme = false;
 #endif
 
-  // Return true if we're not using a custom theme and we don't make a
-  // distinction between the default and the system theme, or we do
-  // and we're not using the default theme.
-  return !ThemeServiceFactory::GetThemeForProfile(profile) &&
-      (!kHasDistinctNativeTheme ||
-       !ThemeServiceFactory::GetForProfile(profile)->UsingDefaultTheme());
+  if (!kHasDistinctNativeTheme) {
+    return UsingDefaultTheme(profile);
+  }
+
+  return !UsingCustomTheme(profile) && !UsingDefaultTheme(profile);
 }
 
-bool LiveThemesSyncTest::ExtensionIsPendingInstall(
-    Profile* profile, const Extension* extension) {
-  const PendingExtensionManager* pending_extension_manager =
-      profile->GetExtensionService()->pending_extension_manager();
-  return pending_extension_manager->IsIdPending(extension->id());
+bool LiveThemesSyncTest::ThemeIsPendingInstall(
+    Profile* profile, const std::string& id) const {
+  return extension_helper_.IsExtensionPendingInstallForSync(profile, id);
 }
 
 bool LiveThemesSyncTest::HasOrWillHaveCustomTheme(
-    Profile* profile, const Extension* theme) {
-  return
-      (GetCustomTheme(profile) == theme) ||
-      ExtensionIsPendingInstall(profile, theme);
+    Profile* profile, const std::string& id) const {
+  return (GetThemeID(profile) == id) || ThemeIsPendingInstall(profile, id);
+}
+
+void LiveThemesSyncTest::UseCustomTheme(Profile* profile, int index) {
+  extension_helper_.InstallExtension(
+      profile, MakeName(index), Extension::TYPE_THEME);
+}
+
+void LiveThemesSyncTest::UseDefaultTheme(Profile* profile) {
+  GetThemeService(profile)->UseDefaultTheme();
+}
+
+void LiveThemesSyncTest::UseNativeTheme(Profile* profile) {
+  // TODO(akalin): Fix this inconsistent naming in the theme service.
+  GetThemeService(profile)->SetNativeTheme();
 }
