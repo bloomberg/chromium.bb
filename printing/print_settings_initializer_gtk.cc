@@ -33,9 +33,6 @@ void PrintSettingsInitializerGtk::InitPrintSettings(
   print_settings->ranges = new_ranges;
   print_settings->selection_only = print_selection_only;
 
-  GtkPageOrientation orientation = gtk_print_settings_get_orientation(settings);
-  print_settings->set_landscape(orientation == GTK_PAGE_ORIENTATION_LANDSCAPE);
-
   gfx::Size physical_size_device_units;
   gfx::Rect printable_area_device_units;
   int dpi = gtk_print_settings_get_resolution(settings);
@@ -68,6 +65,16 @@ void PrintSettingsInitializerGtk::InitPrintSettings(
   print_settings->SetPrinterPrintableArea(physical_size_device_units,
                                           printable_area_device_units,
                                           dpi);
+
+  // Note: With the normal GTK print dialog, when the user selects the landscape
+  // orientation, all that does is change the paper size. Which seems to be
+  // enough to render the right output and send it to the printer.
+  // The orientation value stays as portrait and does not actually affect
+  // printing.
+  // Thus this is only useful in print preview mode, where we manually set the
+  // orientation and change the paper size ourselves.
+  GtkPageOrientation orientation = gtk_print_settings_get_orientation(settings);
+  print_settings->SetOrientation(orientation == GTK_PAGE_ORIENTATION_LANDSCAPE);
 }
 
 const double PrintSettingsInitializerGtk::kTopMarginInInch = 0.25;

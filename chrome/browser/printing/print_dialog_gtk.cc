@@ -10,6 +10,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <string>
+#include <vector>
+
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
 #include "base/logging.h"
@@ -18,7 +21,63 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "printing/metafile.h"
+#include "printing/print_job_constants.h"
 #include "printing/print_settings_initializer_gtk.h"
+
+using printing::PageRanges;
+using printing::PrintSettings;
+
+namespace {
+
+// Helper class to track GTK printers.
+class GtkPrinterList {
+ public:
+  GtkPrinterList() : default_printer_(NULL) {
+    gtk_enumerate_printers((GtkPrinterFunc)SetPrinter, this, NULL, TRUE);
+  }
+
+  ~GtkPrinterList() {
+    for (std::vector<GtkPrinter*>::iterator it = printers_.begin();
+         it < printers_.end(); ++it) {
+      g_object_unref(*it);
+    }
+  }
+
+  GtkPrinter* default_printer() {
+    return default_printer_;
+  }
+
+  GtkPrinter* GetPrinterWithName(const char* name) {
+    if (!name || !*name)
+      return NULL;
+
+    for (std::vector<GtkPrinter*>::iterator it = printers_.begin();
+         it < printers_.end(); ++it) {
+      if (strcmp(name, gtk_printer_get_name(*it)) == 0) {
+        return *it;
+      }
+    }
+
+    return NULL;
+  }
+
+ private:
+  // Callback function used by gtk_enumerate_printers() to get all printer.
+  static bool SetPrinter(GtkPrinter* printer, GtkPrinterList* printer_list) {
+    if (gtk_printer_is_default(printer))
+      printer_list->default_printer_ = printer;
+
+    g_object_ref(printer);
+    printer_list->printers_.push_back(printer);
+
+    return false;
+  }
+
+  std::vector<GtkPrinter*> printers_;
+  GtkPrinter* default_printer_;
+};
+
+}  // namespace
 
 // static
 printing::PrintDialogGtkInterface* PrintDialogGtk::CreatePrintDialog(
@@ -34,17 +93,15 @@ PrintDialogGtk::PrintDialogGtk(PrintingContextCairo* context)
       gtk_settings_(NULL),
       page_setup_(NULL),
       printer_(NULL) {
-  GtkWindow* parent = BrowserList::GetLastActive()->window()->GetNativeHandle();
-
-  // TODO(estade): We need a window title here.
-  dialog_ = gtk_print_unix_dialog_new(NULL, parent);
 }
 
 PrintDialogGtk::~PrintDialogGtk() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  gtk_widget_destroy(dialog_);
-  dialog_ = NULL;
+  if (dialog_) {
+    gtk_widget_destroy(dialog_);
+    dialog_ = NULL;
+  }
   if (gtk_settings_) {
     g_object_unref(gtk_settings_);
     gtk_settings_ = NULL;
@@ -59,11 +116,80 @@ PrintDialogGtk::~PrintDialogGtk() {
   }
 }
 
+void PrintDialogGtk::UseDefaultSettings() {
+  DCHECK(!save_document_event_.get());
+  DCHECK(!page_setup_);
+
+  // |gtk_settings_| is a new object.
+  gtk_settings_ = gtk_print_settings_new();
+
+  scoped_ptr<GtkPrinterList> printer_list(new GtkPrinterList);
+  printer_ = printer_list->default_printer();
+  if (printer_) {
+    g_object_ref(printer_);
+    gtk_print_settings_set_printer(gtk_settings_,
+                                   gtk_printer_get_name(printer_));
+#if GTK_CHECK_VERSION(2, 14, 0)
+    page_setup_ = gtk_printer_get_default_page_size(printer_);
+#endif
+  }
+
+  if (!page_setup_)
+    page_setup_ = gtk_page_setup_new();
+
+  // No page range to initialize for default settings.
+  PageRanges ranges_vector;
+  InitPrintSettings(ranges_vector);
+}
+
+bool PrintDialogGtk::UpdateSettings(const DictionaryValue& settings,
+                                    const printing::PageRanges& ranges) {
+  std::string printer_name;
+  settings.GetString(printing::kSettingPrinterName, &printer_name);
+
+  scoped_ptr<GtkPrinterList> printer_list(new GtkPrinterList);
+  printer_ = printer_list->GetPrinterWithName(printer_name.c_str());
+  if (!printer_)
+    return false;
+  g_object_ref(printer_);
+  gtk_print_settings_set_printer(gtk_settings_,
+                                 gtk_printer_get_name(printer_));
+
+  bool landscape;
+  if (!settings.GetBoolean(printing::kSettingLandscape, &landscape))
+    return false;
+
+  gtk_print_settings_set_orientation(
+      gtk_settings_,
+      landscape ? GTK_PAGE_ORIENTATION_LANDSCAPE :
+                  GTK_PAGE_ORIENTATION_PORTRAIT);
+
+  int copies;
+  if (!settings.GetInteger(printing::kSettingCopies, &copies))
+    return false;
+  gtk_print_settings_set_n_copies(gtk_settings_, copies);
+
+  bool collate;
+  if (!settings.GetBoolean(printing::kSettingCollate, &collate))
+    return false;
+  gtk_print_settings_set_collate(gtk_settings_, collate);
+
+  // TODO(thestig) Color: gtk_print_settings_set_color() does not work.
+  // TODO(thestig) Duplex: gtk_print_settings_set_duplex() does not work.
+
+  InitPrintSettings(ranges);
+  return true;
+}
+
 void PrintDialogGtk::ShowDialog(
     PrintingContextCairo::PrintSettingsCallback* callback) {
   DCHECK(!save_document_event_.get());
 
   callback_ = callback;
+
+  GtkWindow* parent = BrowserList::GetLastActive()->window()->GetNativeHandle();
+  // TODO(estade): We need a window title here.
+  dialog_ = gtk_print_unix_dialog_new(NULL, parent);
 
   // Set modal so user cannot focus the same tab and press print again.
   gtk_window_set_modal(GTK_WINDOW(dialog_), TRUE);
@@ -120,17 +246,25 @@ void PrintDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
 
   switch (response_id) {
     case GTK_RESPONSE_OK: {
+      if (gtk_settings_)
+        g_object_unref(gtk_settings_);
       gtk_settings_ = gtk_print_unix_dialog_get_settings(
           GTK_PRINT_UNIX_DIALOG(dialog_));
+
+      if (printer_)
+        g_object_unref(printer_);
       printer_ = gtk_print_unix_dialog_get_selected_printer(
           GTK_PRINT_UNIX_DIALOG(dialog_));
       g_object_ref(printer_);
+
+      if (page_setup_)
+        g_object_unref(page_setup_);
       page_setup_ = gtk_print_unix_dialog_get_page_setup(
           GTK_PRINT_UNIX_DIALOG(dialog_));
       g_object_ref(page_setup_);
 
       // Handle page ranges.
-      printing::PageRanges ranges_vector;
+      PageRanges ranges_vector;
       gint num_ranges;
       GtkPageRange* gtk_range =
           gtk_print_settings_get_page_ranges(gtk_settings_, &num_ranges);
@@ -144,7 +278,7 @@ void PrintDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
         g_free(gtk_range);
       }
 
-      printing::PrintSettings settings;
+      PrintSettings settings;
       printing::PrintSettingsInitializerGtk::InitPrintSettings(
           gtk_settings_, page_setup_, ranges_vector, false, &settings);
       context_->InitWithSettings(settings);
@@ -199,6 +333,15 @@ void PrintDialogGtk::SaveDocumentToDisk(const printing::Metafile* metafile,
 
 void PrintDialogGtk::SendDocumentToPrinter(const string16& document_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // If |printer_| is NULL then somehow the GTK printer list changed out under
+  // us. In which case, just bail out.
+  if (!printer_) {
+    // Matches AddRef() in PrintDocument();
+    Release();
+    return;
+  }
+
   GtkPrintJob* print_job = gtk_print_job_new(
       UTF16ToUTF8(document_name).c_str(),
       printer_,
@@ -227,4 +370,11 @@ void PrintDialogGtk::OnJobCompleted(GtkPrintJob* print_job, GError* error) {
       NULL);
   // Printing finished. Matches AddRef() in PrintDocument();
   Release();
+}
+
+void PrintDialogGtk::InitPrintSettings(const PageRanges& page_ranges) {
+  PrintSettings settings;
+  printing::PrintSettingsInitializerGtk::InitPrintSettings(
+      gtk_settings_, page_setup_, page_ranges, false, &settings);
+  context_->InitWithSettings(settings);
 }

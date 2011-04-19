@@ -8,11 +8,11 @@
 #include "base/values.h"
 #include "printing/metafile.h"
 #include "printing/print_job_constants.h"
-#include "printing/print_settings_initializer_gtk.h"
 #include "printing/units.h"
 
 #if defined(OS_CHROMEOS)
 #include <unicode/ulocdata.h>
+#include "printing/print_settings_initializer_gtk.h"
 #else
 #include <gtk/gtk.h>
 #include <gtk/gtkprintunixdialog.h>
@@ -78,8 +78,6 @@ void PrintingContextCairo::AskUserForSettings(
 #if defined(OS_CHROMEOS)
   callback->Run(OK);
 #else
-  print_dialog_ = create_dialog_func_(this);
-  print_dialog_->AddRefToDialog();
   print_dialog_->ShowDialog(callback);
 #endif  // defined(OS_CHROMEOS)
 }
@@ -128,20 +126,12 @@ PrintingContext::Result PrintingContextCairo::UseDefaultSettings() {
   settings_.SetPrinterPrintableArea(physical_size_device_units,
                                     printable_area_device_units,
                                     dpi);
-#else  // defined(OS_CHROMEOS)
-  GtkWidget* dialog = gtk_print_unix_dialog_new(NULL, NULL);
-  GtkPrintSettings* settings =
-      gtk_print_unix_dialog_get_settings(GTK_PRINT_UNIX_DIALOG(dialog));
-  GtkPageSetup* page_setup =
-      gtk_print_unix_dialog_get_page_setup(GTK_PRINT_UNIX_DIALOG(dialog));
-
-  PageRanges ranges_vector;  // Nothing to initialize for default settings.
-  PrintSettingsInitializerGtk::InitPrintSettings(
-          settings, page_setup, ranges_vector, false, &settings_);
-
-  g_object_unref(settings);
-  // |page_setup| is owned by dialog, so it does not need to be unref'ed.
-  gtk_widget_destroy(dialog);
+#else
+  if (!print_dialog_) {
+    print_dialog_ = create_dialog_func_(this);
+    print_dialog_->AddRefToDialog();
+  }
+  print_dialog_->UseDefaultSettings();
 #endif  // defined(OS_CHROMEOS)
 
   return OK;
@@ -149,19 +139,17 @@ PrintingContext::Result PrintingContextCairo::UseDefaultSettings() {
 
 PrintingContext::Result PrintingContextCairo::UpdatePrintSettings(
     const DictionaryValue& job_settings, const PageRanges& ranges) {
+#if defined(OS_CHROMEOS)
+  NOTIMPLEMENTED();
+  return OK;
+#else
   DCHECK(!in_print_job_);
 
-  bool landscape;
-  if (!job_settings.GetBoolean(kSettingLandscape, &landscape))
+  if (!print_dialog_->UpdateSettings(job_settings, ranges))
     return OnError();
 
-  settings_.SetOrientation(landscape);
-  settings_.ranges = ranges;
-
-  // TODO(kmadhusu): Update other print settings such as number of copies,
-  // collate, duplex printing, etc.,
-
   return OK;
+#endif
 }
 
 PrintingContext::Result PrintingContextCairo::InitWithSettings(

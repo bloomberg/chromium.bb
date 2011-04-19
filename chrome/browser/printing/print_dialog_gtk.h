@@ -38,6 +38,9 @@ class PrintDialogGtk
       PrintingContextCairo* context);
 
   // printing::PrintDialogGtkInterface implementation.
+  virtual void UseDefaultSettings();
+  virtual bool UpdateSettings(const DictionaryValue& settings,
+                              const printing::PageRanges& ranges);
   virtual void ShowDialog(
       PrintingContextCairo::PrintSettingsCallback* callback);
   virtual void PrintDocument(const printing::Metafile* metafile,
@@ -67,6 +70,10 @@ class PrintDialogGtk
                                   gpointer user_data,
                                   GError* error);
   void OnJobCompleted(GtkPrintJob* print_job, GError* error);
+
+  // Helper function for initializing |context_|'s PrintSettings with a given
+  // set of |page_ranges|.
+  void InitPrintSettings(const printing::PageRanges& page_ranges);
 
   // Printing dialog callback.
   PrintingContextCairo::PrintSettingsCallback* callback_;

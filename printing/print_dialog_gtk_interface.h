@@ -17,7 +17,18 @@ class Metafile;
 // correct without exposing those requirements to printing/.
 class PrintDialogGtkInterface {
  public:
-  // Shows the dialog and handles the response with |callback|.
+  // Tell the dialog to use the default print setting.
+  virtual void UseDefaultSettings() = 0;
+
+  // Update the dialog to use |settings| and |ranges|, where |settings| is a
+  // dictionary of settings with possible keys from
+  // printing/print_job_constants.h. Only used when printing without the system
+  // print dialog. E.g. for Print Preview. Returns false on error.
+  virtual bool UpdateSettings(const DictionaryValue& settings,
+                              const PageRanges& ranges) = 0;
+
+  // Shows the dialog and handles the response with |callback|. Only used when
+  // printing with the native print dialog.
   virtual void ShowDialog(
       PrintingContextCairo::PrintSettingsCallback* callback) = 0;
 
