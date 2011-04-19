@@ -74,3 +74,8 @@ void KeyboardOverlayDelegate::OnCloseContents(TabContents* source,
 bool KeyboardOverlayDelegate::ShouldShowDialogTitle() const {
   return false;
 }
+
+bool KeyboardOverlayDelegate::HandleContextMenu(
+    const ContextMenuParams& params) {
+  return true;
+}

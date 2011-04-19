@@ -506,6 +506,11 @@ bool CloudPrintHtmlDialogDelegate::ShouldShowDialogTitle() const {
   return false;
 }
 
+bool CloudPrintHtmlDialogDelegate::HandleContextMenu(
+    const ContextMenuParams& params) {
+  return true;
+}
+
 // Called from the UI thread, starts up the dialog.
 void CreateDialogImpl(const FilePath& path_to_file,
                       const string16& print_job_title,

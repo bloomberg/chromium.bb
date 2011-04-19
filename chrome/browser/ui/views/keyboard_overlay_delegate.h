@@ -36,6 +36,7 @@ class KeyboardOverlayDelegate : public HtmlDialogUIDelegate {
   virtual void OnDialogClosed(const std::string& json_retval);
   virtual void OnCloseContents(TabContents* source, bool* out_close_dialog);
   virtual bool ShouldShowDialogTitle() const;
+  virtual bool HandleContextMenu(const ContextMenuParams& params);
 
   // The dialog title.
   std::wstring title_;
