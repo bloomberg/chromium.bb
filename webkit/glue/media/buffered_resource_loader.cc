@@ -53,7 +53,7 @@ BufferedResourceLoader::BufferedResourceLoader(
       defer_strategy_(kReadThenDefer),
       completed_(false),
       range_requested_(false),
-      partial_response_(false),
+      range_supported_(false),
       url_(url),
       first_byte_position_(first_byte_position),
       last_byte_position_(last_byte_position),
@@ -90,7 +90,6 @@ void BufferedResourceLoader::Start(net::CompletionCallback* start_callback,
   event_callback_.reset(event_callback);
 
   if (first_byte_position_ != kPositionNotSpecified) {
-    range_requested_ = true;
     // TODO(hclam): server may not support range request so |offset_| may not
     // equal to |first_byte_position_|.
     offset_ = first_byte_position_;
@@ -103,10 +102,14 @@ void BufferedResourceLoader::Start(net::CompletionCallback* start_callback,
   // Prepare the request.
   WebURLRequest request(url_);
   request.setTargetType(WebURLRequest::TargetIsMedia);
-  request.setHTTPHeaderField(WebString::fromUTF8("Range"),
-                             WebString::fromUTF8(GenerateHeaders(
-                                                 first_byte_position_,
-                                                 last_byte_position_)));
+
+  if (!IsWholeFileRange()) {
+    range_requested_ = true;
+    request.setHTTPHeaderField(WebString::fromUTF8("Range"),
+                               WebString::fromUTF8(GenerateHeaders(
+                                   first_byte_position_,
+                                   last_byte_position_)));
+  }
   frame->setReferrerForRequest(request, WebKit::WebURL());
 
   // This flag is for unittests as we don't want to reset |url_loader|
@@ -212,8 +215,8 @@ int64 BufferedResourceLoader::instance_size() {
   return instance_size_;
 }
 
-bool BufferedResourceLoader::partial_response() {
-  return partial_response_;
+bool BufferedResourceLoader::range_supported() {
+  return range_supported_;
 }
 
 bool BufferedResourceLoader::network_activity() {
@@ -274,6 +277,8 @@ void BufferedResourceLoader::didReceiveResponse(
   if (!start_callback_.get())
     return;
 
+  bool partial_response = false;
+
   // We make a strong assumption that when we reach here we have either
   // received a response from HTTP/HTTPS protocol or the request was
   // successful (in particular range request). So we only verify the partial
@@ -281,13 +286,17 @@ void BufferedResourceLoader::didReceiveResponse(
   if (url_.SchemeIs(kHttpScheme) || url_.SchemeIs(kHttpsScheme)) {
     int error = net::OK;
 
-    if (response.httpStatusCode() == kHttpPartialContent)
-      partial_response_ = true;
+    // Check to see whether the server supports byte ranges.
+    std::string accept_ranges =
+        response.httpHeaderField("Accept-Ranges").utf8();
+    range_supported_ = (accept_ranges.find("bytes") != std::string::npos);
 
-    if (range_requested_ && partial_response_) {
+    partial_response = (response.httpStatusCode() == kHttpPartialContent);
+
+    if (range_requested_) {
       // If we have verified the partial response and it is correct, we will
       // return net::OK.
-      if (!VerifyPartialResponse(response))
+      if (!partial_response || !VerifyPartialResponse(response))
         error = net::ERR_INVALID_RESPONSE;
     } else if (response.httpStatusCode() != kHttpOK) {
       // We didn't request a range but server didn't reply with "200 OK".
@@ -302,7 +311,7 @@ void BufferedResourceLoader::didReceiveResponse(
   } else {
     // For any protocol other than HTTP and HTTPS, assume range request is
     // always fulfilled.
-    partial_response_ = range_requested_;
+    partial_response = range_requested_;
   }
 
   // Expected content length can be |kPositionNotSpecified|, in that case
@@ -311,7 +320,7 @@ void BufferedResourceLoader::didReceiveResponse(
 
   // If we have not requested a range, then the size of the instance is equal
   // to the content length.
-  if (!partial_response_)
+  if (!partial_response)
     instance_size_ = content_length_;
 
   // Calls with a successful response.
@@ -371,6 +380,11 @@ void BufferedResourceLoader::didFinishLoading(
     double finishTime) {
   DCHECK(!completed_);
   completed_ = true;
+
+  // If we didn't know the |instance_size_| we do now.
+  if (instance_size_ == kPositionNotSpecified) {
+    instance_size_ = offset_ + buffer_->forward_bytes();
+  }
 
   // If there is a start callback, calls it.
   if (start_callback_.get()) {
@@ -627,6 +641,12 @@ void BufferedResourceLoader::DoneStart(int error) {
 void BufferedResourceLoader::NotifyNetworkEvent() {
   if (event_callback_.get())
     event_callback_->Run();
+}
+
+bool BufferedResourceLoader::IsWholeFileRange() const {
+  return ((first_byte_position_ == kPositionNotSpecified ||
+           first_byte_position_ == 0) &&
+          last_byte_position_ == kPositionNotSpecified);
 }
 
 }  // namespace webkit_glue

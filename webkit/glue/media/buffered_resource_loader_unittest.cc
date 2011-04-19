@@ -103,7 +103,15 @@ class BufferedResourceLoaderTest : public testing::Test {
   }
 
   void FullResponse(int64 instance_size) {
-    EXPECT_CALL(*this, StartCallback(net::OK));
+    FullResponse(instance_size, net::OK);
+  }
+
+  void FullResponse(int64 instance_size, int status) {
+    EXPECT_CALL(*this, StartCallback(status));
+    if (status != net::OK) {
+      EXPECT_CALL(*url_loader_, cancel())
+          .WillOnce(RequestCanceled(loader_));
+    }
 
     WebURLResponse response(gurl_);
     response.setHTTPHeaderField(WebString::fromUTF8("Content-Length"),
@@ -112,9 +120,13 @@ class BufferedResourceLoaderTest : public testing::Test {
     response.setExpectedContentLength(instance_size);
     response.setHTTPStatusCode(kHttpOK);
     loader_->didReceiveResponse(url_loader_, response);
-    EXPECT_EQ(instance_size, loader_->content_length());
-    EXPECT_EQ(instance_size, loader_->instance_size());
-    EXPECT_FALSE(loader_->partial_response());
+
+    if (status == net::OK) {
+      EXPECT_EQ(instance_size, loader_->content_length());
+      EXPECT_EQ(instance_size, loader_->instance_size());
+    }
+
+    EXPECT_FALSE(loader_->range_supported());
   }
 
   void PartialResponse(int64 first_position, int64 last_position,
@@ -123,6 +135,8 @@ class BufferedResourceLoaderTest : public testing::Test {
     int64 content_length = last_position - first_position + 1;
 
     WebURLResponse response(gurl_);
+    response.setHTTPHeaderField(WebString::fromUTF8("Accept-Ranges"),
+                                WebString::fromUTF8("bytes"));
     response.setHTTPHeaderField(WebString::fromUTF8("Content-Range"),
                                 WebString::fromUTF8(base::StringPrintf("bytes "
                                             "%" PRId64 "-%" PRId64 "/%" PRId64,
@@ -134,7 +148,7 @@ class BufferedResourceLoaderTest : public testing::Test {
     loader_->didReceiveResponse(url_loader_, response);
     EXPECT_EQ(content_length, loader_->content_length());
     EXPECT_EQ(instance_size, loader_->instance_size());
-    EXPECT_TRUE(loader_->partial_response());
+    EXPECT_TRUE(loader_->range_supported());
   }
 
   void Redirect(const char* url) {
@@ -224,8 +238,7 @@ TEST_F(BufferedResourceLoaderTest, BadHttpResponse) {
 TEST_F(BufferedResourceLoaderTest, NotPartialResponse) {
   Initialize(kHttpUrl, 100, -1);
   Start();
-  FullResponse(1024);
-  StopWhenLoad();
+  FullResponse(1024, net::ERR_INVALID_RESPONSE);
 }
 
 // Tests that a 200 response is received.

@@ -76,7 +76,7 @@ class MockBufferedResourceLoader : public BufferedResourceLoader {
                           net::CompletionCallback* callback));
   MOCK_METHOD0(content_length, int64());
   MOCK_METHOD0(instance_size, int64());
-  MOCK_METHOD0(partial_response, bool());
+  MOCK_METHOD0(range_supported, bool());
   MOCK_METHOD0(network_activity, bool());
   MOCK_METHOD0(url, const GURL&());
   MOCK_METHOD0(GetBufferedFirstBytePosition, int64());
@@ -164,8 +164,11 @@ class BufferedDataSourceTest : public testing::Test {
 
     ON_CALL(*loader_, instance_size())
         .WillByDefault(Return(instance_size));
-    ON_CALL(*loader_, partial_response())
+
+    // range_supported() return true if we expect to get a partial response.
+    ON_CALL(*loader_, range_supported())
         .WillByDefault(Return(partial_response));
+
     ON_CALL(*loader_, url())
         .WillByDefault(ReturnRef(gurl_));
     media::PipelineStatus expected_init_status = media::PIPELINE_OK;
@@ -277,7 +280,7 @@ class BufferedDataSourceTest : public testing::Test {
     loader_ = NULL;
   }
 
-  void ReadDataSourceMiss(int64 position, int size) {
+  void ReadDataSourceMiss(int64 position, int size, int start_error) {
     EXPECT_TRUE(loader_);
 
     // 1. Reply with a cache miss for the read.
@@ -298,19 +301,26 @@ class BufferedDataSourceTest : public testing::Test {
 
     // 3. Then the new loader will be started.
     EXPECT_CALL(*new_loader, Start(NotNull(), NotNull(), NotNull()))
-        .WillOnce(DoAll(Assign(&error_, net::OK),
+        .WillOnce(DoAll(Assign(&error_, start_error),
                         Invoke(this,
                                &BufferedDataSourceTest::InvokeStartCallback)));
-    EXPECT_CALL(*new_loader, partial_response())
-        .WillRepeatedly(Return(loader_->partial_response()));
 
-    // 4. Then again a read request is made to the new loader.
-    EXPECT_CALL(*new_loader, Read(position, size, NotNull(), NotNull()))
-        .WillOnce(DoAll(Assign(&error_, size),
-                        Invoke(this,
-                               &BufferedDataSourceTest::InvokeReadCallback)));
+    if (start_error == net::OK) {
+      EXPECT_CALL(*new_loader, range_supported())
+          .WillRepeatedly(Return(loader_->range_supported()));
 
-    EXPECT_CALL(*this, ReadCallback(size));
+      // 4a. Then again a read request is made to the new loader.
+      EXPECT_CALL(*new_loader, Read(position, size, NotNull(), NotNull()))
+          .WillOnce(DoAll(Assign(&error_, size),
+                          Invoke(this,
+                                 &BufferedDataSourceTest::InvokeReadCallback)));
+
+      EXPECT_CALL(*this, ReadCallback(size));
+    } else {
+      // 4b. The read callback is called with an error because Start() on the
+      // new loader returned an error.
+      EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
+    }
 
     data_source_->Read(
         position, size, buffer_,
@@ -318,7 +328,8 @@ class BufferedDataSourceTest : public testing::Test {
     message_loop_->RunAllPending();
 
     // Make sure data is correct.
-    EXPECT_EQ(0, memcmp(buffer_, data_ + static_cast<int>(position), size));
+    if (start_error == net::OK)
+      EXPECT_EQ(0, memcmp(buffer_, data_ + static_cast<int>(position), size));
 
     loader_ = new_loader;
   }
@@ -367,8 +378,8 @@ class BufferedDataSourceTest : public testing::Test {
         .WillOnce(DoAll(Assign(&error_, net::OK),
                         Invoke(this,
                                &BufferedDataSourceTest::InvokeStartCallback)));
-    EXPECT_CALL(*new_loader, partial_response())
-        .WillRepeatedly(Return(loader_->partial_response()));
+    EXPECT_CALL(*new_loader, range_supported())
+        .WillRepeatedly(Return(loader_->range_supported()));
 
     // 4. Then again a read request is made to the new loader.
     EXPECT_CALL(*new_loader, Read(position, size, NotNull(), NotNull()))
@@ -459,8 +470,17 @@ TEST_F(BufferedDataSourceTest, ReadCacheHit) {
 
 TEST_F(BufferedDataSourceTest, ReadCacheMiss) {
   InitializeDataSource(kHttpUrl, net::OK, true, 1024, LOADING);
-  ReadDataSourceMiss(1000, 10);
-  ReadDataSourceMiss(20, 10);
+  ReadDataSourceMiss(1000, 10, net::OK);
+  ReadDataSourceMiss(20, 10, net::OK);
+  StopDataSource();
+}
+
+// Test the case where the initial response from the server indicates that
+// Range requests are supported, but a later request prove otherwise.
+TEST_F(BufferedDataSourceTest, ServerLiesAboutRangeSupport) {
+  InitializeDataSource(kHttpUrl, net::OK, true, 1024, LOADING);
+  ReadDataSourceHit(10, 10, 10);
+  ReadDataSourceMiss(1000, 10, net::ERR_INVALID_RESPONSE);
   StopDataSource();
 }
 

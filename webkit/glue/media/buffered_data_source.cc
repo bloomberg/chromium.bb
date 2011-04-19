@@ -458,7 +458,6 @@ void BufferedDataSource::HttpInitialStartCallback(int error) {
   DCHECK(loader_.get());
 
   int64 instance_size = loader_->instance_size();
-  bool partial_response = loader_->partial_response();
   bool success = error == net::OK;
 
   if (!initialize_callback_.get()) {
@@ -471,7 +470,8 @@ void BufferedDataSource::HttpInitialStartCallback(int error) {
     // request or their partial response is not complete.
     total_bytes_ = instance_size;
     loaded_ = false;
-    streaming_ = (instance_size == kPositionNotSpecified) || !partial_response;
+    streaming_ = (instance_size == kPositionNotSpecified) ||
+        !loader_->range_supported();
   } else {
     // TODO(hclam): In case of failure, we can retry several times.
     loader_->Stop();
@@ -572,11 +572,8 @@ void BufferedDataSource::PartialReadStartCallback(int error) {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(loader_.get());
 
-  // This callback method is invoked after we have verified the server has
-  // range request capability, so as a safety guard verify again the response
-  // is partial.
-  if (error == net::OK && loader_->partial_response()) {
-    // Once the range request has started successfully, we can proceed with
+  if (error == net::OK) {
+    // Once the request has started successfully, we can proceed with
     // reading from it.
     ReadInternal();
     return;
@@ -631,6 +628,14 @@ void BufferedDataSource::ReadCallback(int error) {
     // If a position error code is received, read was successful. So copy
     // from intermediate read buffer to the target read buffer.
     memcpy(read_buffer_, intermediate_read_buffer_.get(), error);
+  } else if (error == 0 && total_bytes_ == kPositionNotSpecified) {
+    // We've reached the end of the file and we didn't know the total size
+    // before. Update the total size so Read()s past the end of the file will
+    // fail like they would if we had known the file size at the beginning.
+    total_bytes_ = loader_->instance_size();
+
+    if (host() && total_bytes_ != kPositionNotSpecified)
+      host()->SetTotalBytes(total_bytes_);
   }
   DoneRead_Locked(error);
 }

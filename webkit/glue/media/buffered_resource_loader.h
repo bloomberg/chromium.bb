@@ -103,9 +103,8 @@ class BufferedResourceLoader :
   // |kPositionNotSpecified|, then the size is unknown.
   virtual int64 instance_size();
 
-  // Returns true if the response for this loader is a partial response.
-  // It means a 206 response in HTTP/HTTPS protocol.
-  virtual bool partial_response();
+  // Returns true if the server supports byte range requests.
+  virtual bool range_supported();
 
   // Returns true if network is currently active.
   virtual bool network_activity();
@@ -208,6 +207,10 @@ class BufferedResourceLoader :
 
   bool HasPendingRead() { return read_callback_.get() != NULL; }
 
+  // Helper function that returns true if a range is not provided
+  // or a 0- range is specified.
+  bool IsWholeFileRange() const;
+
   // A sliding window of buffer.
   scoped_ptr<media::SeekableBuffer> buffer_;
 
@@ -223,8 +226,8 @@ class BufferedResourceLoader :
   // True if a range request was made.
   bool range_requested_;
 
-  // True if response data received is a partial range.
-  bool partial_response_;
+  // True if Range header is supported.
+  bool range_supported_;
 
   // Does the work of loading and sends data back to this client.
   scoped_ptr<WebKit::WebURLLoader> url_loader_;
