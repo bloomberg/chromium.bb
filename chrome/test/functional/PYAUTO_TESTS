@@ -99,7 +99,6 @@
       'test_basic',
       'themes',
       'sync',
-      '-sync',  # crbug.com/79171
     ],
 
     'win': [
