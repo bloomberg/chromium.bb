@@ -9,6 +9,7 @@ Import('env')
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
 TESTS = ['audio',
+         'graphics2d',
          ]
 
 for test in TESTS:

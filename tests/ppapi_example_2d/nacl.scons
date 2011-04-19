@@ -16,20 +16,3 @@ ppapi_example_2d_nexe = env.ComponentProgram('ppapi_example_2d.nexe',
 # Note that the html is required to run this program.
 env.Publish('ppapi_example_2d.nexe', 'run',
             ['ppapi_example_2d.html' ])
-
-node = env.SelUniversalTest(
-    'ppapi_example_2d.out',
-    sel_universal_flags=['--silence_nexe',
-                         '--command_file',
-                         env.File('${SCONSTRUCT_DIR}/tests/ppapi_proxy'
-                                   '/sel_universal_ppapi_replay_prolog.stdin'),
-                         '--command_file',
-                         env.File('ppapi_example_2d.stdin'),
-                         ],
-    command=[env.File('ppapi_example_2d.nexe')],
-    stdout_golden=env.File('ppapi_example_2d.stdout'),
-    )
-
-env.AddNodeToTestSuite(node,
-                       ['small_tests', 'sel_ldr_tests'],
-                       'run_ppapi_example_2d_test')
