@@ -14,12 +14,42 @@
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_paths.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/window/window.h"
 
 namespace chromeos {
 
 namespace {
+
+// Resource IDs of default user images.
+const int kDefaultImageResources[] = {
+    IDR_LOGIN_DEFAULT_USER,
+    IDR_LOGIN_DEFAULT_USER_1,
+    IDR_LOGIN_DEFAULT_USER_2,
+    IDR_LOGIN_DEFAULT_USER_3,
+    IDR_LOGIN_DEFAULT_USER_4
+};
+
+const char* kDefaultImagePaths[] = {
+    "chrome://theme/IDR_LOGIN_DEFAULT_USER",
+    "chrome://theme/IDR_LOGIN_DEFAULT_USER_1",
+    "chrome://theme/IDR_LOGIN_DEFAULT_USER_2",
+    "chrome://theme/IDR_LOGIN_DEFAULT_USER_3",
+    "chrome://theme/IDR_LOGIN_DEFAULT_USER_4"
+};
+
+SkBitmap* GetUserImageFromURL(const std::string& url) {
+  for (size_t i = 0; i < arraysize(kDefaultImagePaths); ++i) {
+    if (url == kDefaultImagePaths[i]) {
+      return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          kDefaultImageResources[i]);
+    }
+  }
+  return NULL;
+}
 
 // Returns info about extensions for files we support as user images.
 SelectFileDialog::FileTypeInfo GetUserImageFileTypeInfo() {
@@ -65,15 +95,23 @@ void ChangePictureOptionsHandler::GetLocalizedValues(
 }
 
 void ChangePictureOptionsHandler::RegisterMessages() {
+  DCHECK(web_ui_);
   web_ui_->RegisterMessageCallback(
       "chooseFile",
       NewCallback(this, &ChangePictureOptionsHandler::ChooseFile));
   web_ui_->RegisterMessageCallback(
       "takePhoto",
       NewCallback(this, &ChangePictureOptionsHandler::TakePhoto));
+  web_ui_->RegisterMessageCallback(
+      "getAvailableImages",
+      NewCallback(this, &ChangePictureOptionsHandler::GetAvailableImages));
+  web_ui_->RegisterMessageCallback(
+      "selectImage",
+      NewCallback(this, &ChangePictureOptionsHandler::SelectImage));
 }
 
 void ChangePictureOptionsHandler::ChooseFile(const ListValue* args) {
+  DCHECK(args && args->empty());
   if (!select_file_dialog_.get())
     select_file_dialog_ = SelectFileDialog::Create(this);
 
@@ -100,6 +138,7 @@ void ChangePictureOptionsHandler::ChooseFile(const ListValue* args) {
 }
 
 void ChangePictureOptionsHandler::TakePhoto(const ListValue* args) {
+  DCHECK(args && args->empty());
   Browser* browser = BrowserList::FindBrowserWithProfile(web_ui_->GetProfile());
   views::Window* window = browser::CreateViewsWindow(
       browser->window()->GetNativeHandle(),
@@ -107,6 +146,29 @@ void ChangePictureOptionsHandler::TakePhoto(const ListValue* args) {
       new TakePhotoDialog());
   window->SetIsAlwaysOnTop(true);
   window->Show();
+}
+
+void ChangePictureOptionsHandler::GetAvailableImages(const ListValue* args) {
+  DCHECK(args && args->empty());
+  ListValue image_urls;
+  for (size_t i = 0; i < arraysize(kDefaultImagePaths); ++i) {
+    image_urls.Append(new StringValue(kDefaultImagePaths[i]));
+  }
+  web_ui_->CallJavascriptFunction("ChangePictureOptions.addUserImages",
+                                  image_urls);
+}
+
+void ChangePictureOptionsHandler::SelectImage(const ListValue* args) {
+  std::string image_url;
+  if (!args ||
+      args->GetSize() != 1 ||
+      !args->GetString(0, &image_url)) {
+    NOTREACHED();
+    return;
+  }
+  const SkBitmap* image = GetUserImageFromURL(image_url);
+  if (image)
+    UserManager::Get()->SetLoggedInUserImage(*image);
 }
 
 void ChangePictureOptionsHandler::FileSelected(const FilePath& path,

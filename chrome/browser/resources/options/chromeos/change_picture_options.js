@@ -34,12 +34,13 @@ cr.define('options', function() {
       // Call base class implementation to starts preference initialization.
       OptionsPage.prototype.initializePage.call(this);
 
-      $('take-photo').addEventListener('click',
-                                       this.handleTakePhoto__,
-                                       false);
-      $('choose-file').addEventListener('click',
-                                        this.handleChooseFile__,
-                                        false);
+      $('take-photo-button').addEventListener('click',
+                                              this.handleTakePhoto_,
+                                              false);
+      $('choose-file-button').addEventListener('click',
+                                               this.handleChooseFile_,
+                                               false);
+      chrome.send('getAvailableImages');
     },
 
     /**
@@ -47,8 +48,9 @@ cr.define('options', function() {
      * @private
      * @param {Event} e Click Event.
      */
-    handleTakePhoto__: function(e) {
+    handleTakePhoto_: function(e) {
       chrome.send('takePhoto');
+      OptionsPage.navigateToPage('personal');
     },
 
     /**
@@ -56,11 +58,59 @@ cr.define('options', function() {
      * @private
      * @param {Event} e Click Event.
      */
-    handleChooseFile__: function(e) {
+    handleChooseFile_: function(e) {
       chrome.send('chooseFile');
+      OptionsPage.navigateToPage('personal');
     },
 
+    /**
+     * Handler for when the user clicks on any available user image.
+     * @private
+     * @param {Event} e Click Event.
+     */
+    handleImageClick_: function(e) {
+      chrome.send('selectImage', [e.target.src]);
+      OptionsPage.navigateToPage('personal');
+    },
+
+    /**
+     * Inserts new image before "Choose file" button.
+     * @param {string} src A url for the user image.
+     * @private
+     */
+    addUserImage_: function(src) {
+      var imageElement = document.createElement('img');
+      imageElement.src = src;
+      imageElement.addEventListener('click',
+                                    this.handleImageClick_,
+                                    false);
+      var divElement = document.createElement('div');
+      divElement.classList.add('list-element');
+      divElement.appendChild(imageElement);
+      $('images-list').insertBefore(divElement, $('choose-file-item'));
+    },
+
+    /**
+     * Inserts received images before "Choose file" button.
+     * @param {List} images A list of urls to user images.
+     * @private
+     */
+    addUserImages_: function(images) {
+      for (var i = 0; i < images.length; i++) {
+        var imageUrl = images[i];
+        this.addUserImage_(imageUrl);
+      }
+    },
   };
+
+  // Forward public APIs to private implementations.
+  [
+    'addUserImages',
+  ].forEach(function(name) {
+    ChangePictureOptions[name] = function(value) {
+      ChangePictureOptions.getInstance()[name + '_'](value);
+    };
+  });
 
   // Export
   return {
