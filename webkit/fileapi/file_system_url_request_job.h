@@ -40,12 +40,11 @@ class FileSystemURLRequestJob : public net::URLRequestJob {
   virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read);
   virtual bool IsRedirectResponse(GURL* location, int* http_status_code);
   virtual void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers);
+  virtual void GetResponseInfo(net::HttpResponseInfo* info);
+  virtual int GetResponseCode() const;
 
   // FilterContext methods (via URLRequestJob):
   virtual bool GetMimeType(std::string* mime_type) const;
-
-  // TODO(adamk): Implement GetResponseInfo and GetResponseCode to simulate
-  // an HTTP response.
 
  private:
   virtual ~FileSystemURLRequestJob();
@@ -68,6 +67,7 @@ class FileSystemURLRequestJob : public net::URLRequestJob {
   net::CompletionCallbackImpl<FileSystemURLRequestJob> io_callback_;
   scoped_ptr<net::FileStream> stream_;
   bool is_directory_;
+  scoped_ptr<net::HttpResponseInfo> response_info_;
 
   net::HttpByteRange byte_range_;
   int64 remaining_bytes_;

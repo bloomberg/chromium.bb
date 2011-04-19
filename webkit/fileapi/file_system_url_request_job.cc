@@ -16,6 +16,8 @@
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "webkit/fileapi/file_system_path_manager.h"
@@ -30,6 +32,22 @@ namespace fileapi {
 static const int kFileFlags = base::PLATFORM_FILE_OPEN |
                               base::PLATFORM_FILE_READ |
                               base::PLATFORM_FILE_ASYNC;
+
+static net::HttpResponseHeaders* CreateHttpResponseHeaders() {
+  // HttpResponseHeaders expects its input string to be terminated by two NULs.
+  static const char kStatus[] = "HTTP/1.1 200 OK\0";
+  static const size_t kStatusLen = arraysize(kStatus);
+
+  net::HttpResponseHeaders* headers =
+      new net::HttpResponseHeaders(std::string(kStatus, kStatusLen));
+
+  // Tell WebKit never to cache this content.
+  std::string cache_control(net::HttpRequestHeaders::kCacheControl);
+  cache_control.append(": no-cache");
+  headers->AddHeader(cache_control);
+
+  return headers;
+}
 
 FileSystemURLRequestJob::FileSystemURLRequestJob(
     URLRequest* request, FileSystemPathManager* path_manager,
@@ -130,6 +148,17 @@ void FileSystemURLRequestJob::SetExtraRequestHeaders(
   }
 }
 
+void FileSystemURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
+  if (response_info_.get())
+    *info = *response_info_;
+}
+
+int FileSystemURLRequestJob::GetResponseCode() const {
+  if (response_info_.get())
+    return 200;
+  return URLRequestJob::GetResponseCode();
+}
+
 void FileSystemURLRequestJob::StartAsync() {
   GURL origin_url;
   FileSystemType type;
@@ -212,6 +241,9 @@ void FileSystemURLRequestJob::DidOpen(base::PlatformFileError error_code,
   }
 
   set_expected_content_size(remaining_bytes_);
+  response_info_.reset(new net::HttpResponseInfo());
+  response_info_->headers = CreateHttpResponseHeaders();
+
   NotifyHeadersComplete();
 }
 

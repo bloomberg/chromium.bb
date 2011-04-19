@@ -157,6 +157,10 @@ TEST_F(FileSystemURLRequestJobTest, FileTest) {
   EXPECT_EQ(1, delegate_->response_started_count());
   EXPECT_FALSE(delegate_->received_data_before_response());
   EXPECT_EQ(kTestFileData, delegate_->data_received());
+  EXPECT_EQ(200, request_->GetResponseCode());
+  std::string cache_control;
+  request_->GetResponseHeaderByName("cache-control", &cache_control);
+  EXPECT_EQ("no-cache", cache_control);
 }
 
 TEST_F(FileSystemURLRequestJobTest, FileTestFullSpecifiedRange) {
