@@ -82,9 +82,9 @@ TEST_F(ErrorPageTest, MAYBE_DNSError_GoBack2) {
 
 // Flaky on Linux, see http://crbug.com/19361
 #if defined(OS_LINUX)
-#define MAYBE_DNSError_GoBack2AndForwar FLAKY_DNSError_GoBack2AndForwar
+#define MAYBE_DNSError_GoBack2AndForwar FLAKY_DNSError_GoBack2AndForward
 #else
-#define MAYBE_DNSError_GoBack2AndForwar DNSError_GoBack2AndForwar
+#define MAYBE_DNSError_GoBack2AndForwar DNSError_GoBack2AndForward
 #endif
 TEST_F(ErrorPageTest, MAYBE_DNSError_GoBack2AndForward) {
   // Test that a DNS error occuring in the main frame does not result in an
