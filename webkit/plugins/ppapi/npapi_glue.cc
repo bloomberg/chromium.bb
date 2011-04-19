@@ -51,7 +51,9 @@ bool PPVarToNPVariant(PP_Var var, NPVariant* result) {
         return false;
       }
       const std::string& value = string->value();
-      STRINGN_TO_NPVARIANT(base::strdup(value.c_str()), value.size(), *result);
+      char* c_string = static_cast<char*>(malloc(value.size()));
+      memcpy(c_string, value.data(), value.size());
+      STRINGN_TO_NPVARIANT(c_string, value.size(), *result);
       break;
     }
     case PP_VARTYPE_OBJECT: {
