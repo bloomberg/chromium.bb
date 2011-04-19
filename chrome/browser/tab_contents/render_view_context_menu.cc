@@ -1033,8 +1033,13 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return !params_.misspelled_word.empty();
 
     case IDC_PRINT:
+      if (g_browser_process->local_state() &&
+          !g_browser_process->local_state()->GetBoolean(
+              prefs::kPrintingEnabled)) {
+        return false;
+      }
       return params_.media_type == WebContextMenuData::MediaTypeNone ||
-        params_.media_flags & WebContextMenuData::MediaCanPrint;
+             params_.media_flags & WebContextMenuData::MediaCanPrint;
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
     case IDC_CONTENT_CONTEXT_GOTOURL:
