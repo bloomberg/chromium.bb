@@ -8,6 +8,10 @@ set MODE=%1
 set BITS=%2
 set TOOLCHAIN=%3
 
+:: Picking out drive letter on which the build is happening so we can use it
+:: for the temp directory.
+set BUILD_DRIVE=%PATH:~0,1%
+
 call buildbot\msvs_env.bat %BITS%
 
 set RETCODE=0
@@ -20,6 +24,18 @@ if "%TOOLCHAIN%" equ "glibc" (set GLIBCOPTS=--nacl_glibc) else (set GLIBCOPTS=)
 :: build as the toolchain takes care or the clobber, hooks aren't needed, and
 :: partial_sdk really shouldn't be needed.
 if "%INSIDE_TOOLCHAIN%" neq "" goto SkipSync
+
+echo @@@BUILD_STEP cleanup_temp@@@
+:: Selecting a temp directory on the same drive as the build.
+:: Many of our bots have tightly packed C: drives, but plentiful E: drives.
+set OLD_TEMP=%TEMP%
+set TEMP=%BUILD_DRIVE%:\temp
+set TMP=%TEMP%
+mkdir %TEMP%
+:: Cleaning old temp directory to clear up all the nearly full bots out there.
+rmdir /s /q %OLD_TEMP%\*
+:: Cleaning new temp directory so we don't overflow in the future.
+rmdir /s /q %TEMP%\*
 
 echo @@@BUILD_STEP gclient_runhooks@@@
 cmd /c gclient runhooks
