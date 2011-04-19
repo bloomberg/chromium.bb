@@ -272,17 +272,22 @@ void ResourceBundle::LoadedDataPack::Load() {
   data_pack_.reset(new ui::DataPack);
   bool success = data_pack_->Load(path_);
   LOG_IF(ERROR, !success) << "Failed to load " << path_.value()
-      << "\nYou will not be able to use the Bookmarks Manager or "
-      << "about:net-internals.";
+      << "\nSome features may not be available.";
+  if (!success)
+    data_pack_.reset();
 }
 
 bool ResourceBundle::LoadedDataPack::GetStringPiece(
     int resource_id, base::StringPiece* data) const {
+  if (!data_pack_.get())
+    return false;
   return data_pack_->GetStringPiece(static_cast<uint32>(resource_id), data);
 }
 
 RefCountedStaticMemory* ResourceBundle::LoadedDataPack::GetStaticMemory(
     int resource_id) const {
+  if (!data_pack_.get())
+    return NULL;
   return data_pack_->GetStaticMemory(resource_id);
 }
 

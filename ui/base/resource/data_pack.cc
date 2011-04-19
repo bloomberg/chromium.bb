@@ -73,6 +73,7 @@ bool DataPack::Load(const FilePath& path) {
     DLOG(ERROR) << "Failed to mmap datapack";
     UMA_HISTOGRAM_ENUMERATION("DataPack.Load", INIT_FAILED,
                               LOAD_ERRORS_COUNT);
+    mmap_.reset();
     return false;
   }
 

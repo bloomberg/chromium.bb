@@ -69,8 +69,8 @@ std::string ResourceBundle::LoadLocaleResources(
 }
 
 void ResourceBundle::LoadTestResources(const FilePath& path) {
-  // ResourceBundle with test resources is only used on Linux test_sheel/DRT.
-  NOTREACHED();
+  // On Windows, the test resources are normally compiled into the binary
+  // itself.
 }
 
 void ResourceBundle::UnloadLocaleResources() {
