@@ -4,6 +4,6 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FAILS_FileAPI) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_FileAPI) {
   ASSERT_TRUE(RunExtensionTest("fileapi")) << message_;
 }
