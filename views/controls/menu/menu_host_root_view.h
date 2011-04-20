@@ -22,6 +22,7 @@ class SubmenuView;
 class MenuHostRootView : public RootView {
  public:
   MenuHostRootView(Widget* widget, SubmenuView* submenu);
+  ~MenuHostRootView();
 
   // Overridden from View:
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
@@ -39,6 +40,11 @@ class MenuHostRootView : public RootView {
 
   // Whether mouse dragged/released should be forwarded to the MenuController.
   bool forward_drag_to_menu_controller_;
+
+  // TODO(msw): Resolve crasher crbug.com/78792.
+  // If non-null the destructor sets this to true. This is set to non-null
+  // during RootView::OnMousePressed to detect unplanned destruction.
+  bool* destroyed_flag_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuHostRootView);
 };

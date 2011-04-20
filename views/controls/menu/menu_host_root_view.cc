@@ -16,11 +16,19 @@ MenuHostRootView::MenuHostRootView(Widget* widget,
       forward_drag_to_menu_controller_(true) {
 }
 
+MenuHostRootView::~MenuHostRootView() {
+  if(destroyed_flag_)
+    *destroyed_flag_ = true;
+}
+
 bool MenuHostRootView::OnMousePressed(const MouseEvent& event) {
+  bool destroyed = false;
+  destroyed_flag_ = &destroyed;
   forward_drag_to_menu_controller_ =
-      ((event.x() < 0 || event.y() < 0 || event.x() >= width() ||
-        event.y() >= height()) ||
-       !RootView::OnMousePressed(event));
+      !GetLocalBounds().Contains(event.location()) ||
+      !RootView::OnMousePressed(event);
+  CHECK(!destroyed);
+  destroyed_flag_ = NULL;
   if (forward_drag_to_menu_controller_ && GetMenuController())
     GetMenuController()->OnMousePressed(submenu_, event);
   return true;
