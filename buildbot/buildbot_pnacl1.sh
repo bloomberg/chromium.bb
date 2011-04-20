@@ -48,6 +48,11 @@ pull-data-from-archive-server() {
 archive-for-hw-bots() {
   local target=$1
   echo "@@@BUILD_STEP tar_generated_binaries@@@"
+  # clean out a bunch of files that are not needed
+  find scons-out/ \
+    \( -name '*.[so]' -o -name '*.bc' -o -name '*.pexe' -o -name '*.ll' \) \
+    -print0 | xargs -0 rm -f
+
   tar cvfz arm.tgz scons-out/
 
   echo "@@@BUILD_STEP archive_binaries@@@"
