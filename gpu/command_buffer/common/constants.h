@@ -26,14 +26,13 @@ namespace error {
     // This is not an error. It is returned by WaitLatch when it is blocked.
     // When blocked, the context will not reschedule itself until another
     // context executes a SetLatch command.
-    kWaiting,
-
-    // This is not an error. It is returned by commands to mark a position
-    // in the command buffer that should not be issued to the the GL backend
-    // until no more than a fixed number of such positions have already been
-    // issued.
-    kThrottle
+    kWaiting
   };
+
+  // Return true if the given error code is an actual error.
+  inline bool IsError(Error error) {
+    return (error != kNoError && error != kWaiting);
+  }
 }
 
 // Invalid shared memory Id, returned by RegisterSharedMemory in case of

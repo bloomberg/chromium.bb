@@ -13,15 +13,12 @@
 
 using ::base::SharedMemory;
 
-static size_t kNumThrottleFences = 1;
-
 namespace gpu {
 
 GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
                            gles2::ContextGroup* group)
     : command_buffer_(command_buffer),
       commands_per_update_(100),
-      num_throttle_fences_(0),
 #if defined(OS_MACOSX)
       swap_buffers_count_(0),
       acknowledged_swap_buffers_count_(0),
@@ -38,7 +35,6 @@ GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
                            int commands_per_update)
     : command_buffer_(command_buffer),
       commands_per_update_(commands_per_update),
-      num_throttle_fences_(0),
 #if defined(OS_MACOSX)
       swap_buffers_count_(0),
       acknowledged_swap_buffers_count_(0),
@@ -65,11 +61,6 @@ bool GpuScheduler::InitializeCommon(
 
   if (!context->MakeCurrent())
     return false;
-
-  // If the NV_fence extension is present, use fences to defer the issue of
-  // commands once a certain fixed number of frames have been rendered.
-  num_throttle_fences_ =
-      context->HasExtension("GL_NV_fence") ? kNumThrottleFences : 0;
 
   // Do not limit to a certain number of commands before scheduling another
   // update when rendering onscreen.
@@ -153,19 +144,6 @@ void GpuScheduler::ProcessCommands() {
   }
 #endif
 
-  // Defer this command until the fence queue is not full.
-  while (num_throttle_fences_ > 0 &&
-      throttle_fences_.size() >= num_throttle_fences_) {
-    GLuint fence = throttle_fences_.front();
-    if (!glTestFenceNV(fence)) {
-      ScheduleProcessCommands();
-      return;
-    }
-
-    glDeleteFencesNV(1, &fence);
-    throttle_fences_.pop();
-  }
-
   error::Error error = error::kNoError;
   int commands_processed = 0;
   while (commands_processed < commands_per_update_ && !parser_->IsEmpty()) {
@@ -174,23 +152,7 @@ void GpuScheduler::ProcessCommands() {
       break;
     }
 
-    // If the command indicated it should be throttled, insert a new fence into
-    // the fence queue.
-    if (error == error::kThrottle) {
-      if (num_throttle_fences_ > 0 &&
-          throttle_fences_.size() < num_throttle_fences_) {
-        GLuint fence;
-        glGenFencesNV(1, &fence);
-        glSetFenceNV(fence, GL_ALL_COMPLETED_NV);
-        throttle_fences_.push(fence);
-
-        // Neither glTestFenceNV or glSetFenceNV are guaranteed to flush.
-        // Without an explicit flush, the glTestFenceNV loop might never
-        // make progress.
-        glFlush();
-        break;
-      }
-    } else if (error != error::kNoError) {
+    if (error::IsError(error)) {
       command_buffer_->SetParseError(error);
       return;
     }

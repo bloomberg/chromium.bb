@@ -151,9 +151,6 @@ class GpuScheduler : public CommandBufferEngine {
   scoped_ptr<gles2::GLES2Decoder> decoder_;
   scoped_ptr<CommandParser> parser_;
 
-  size_t num_throttle_fences_;
-  std::queue<unsigned> throttle_fences_;
-
 #if defined(OS_MACOSX)
   scoped_ptr<AcceleratedSurface> surface_;
   uint64 swap_buffers_count_;

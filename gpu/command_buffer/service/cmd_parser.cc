@@ -59,9 +59,7 @@ error::Error CommandParser::ProcessCommand() {
   // TODO(gman): If you want to log errors this is the best place to catch them.
   //     It seems like we need an official way to turn on a debug mode and
   //     get these errors.
-  if (result != error::kNoError &&
-      result != error::kThrottle &&
-      result != error::kWaiting) {
+  if (error::IsError(result)) {
     ReportError(header.command, result);
   }
 
