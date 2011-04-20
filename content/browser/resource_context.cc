@@ -11,7 +11,9 @@
 namespace content {
 
 ResourceContext::ResourceContext()
-    : appcache_service_(NULL),
+    : host_resolver_(NULL),
+      request_context_(NULL),
+      appcache_service_(NULL),
       database_tracker_(NULL),
       file_system_context_(NULL),
       blob_storage_context_(NULL) {
@@ -19,6 +21,30 @@ ResourceContext::ResourceContext()
 }
 
 ResourceContext::~ResourceContext() {}
+
+net::HostResolver* ResourceContext::host_resolver() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
+  return host_resolver_;
+}
+
+void ResourceContext::set_host_resolver(
+    net::HostResolver* host_resolver) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  host_resolver_ = host_resolver;
+}
+
+net::URLRequestContext* ResourceContext::request_context() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
+  return request_context_;
+}
+
+void ResourceContext::set_request_context(
+    net::URLRequestContext* request_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  request_context_ = request_context;
+}
 
 ChromeAppCacheService* ResourceContext::appcache_service() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

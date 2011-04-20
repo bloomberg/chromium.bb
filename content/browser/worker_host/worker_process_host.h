@@ -43,7 +43,6 @@ class WorkerProcessHost : public BrowserChildProcessHost {
                    int parent_process_id,
                    int parent_appcache_host_id,
                    int64 main_resource_appcache_id,
-                   net::URLRequestContextGetter* request_context_getter,
                    const content::ResourceContext& resource_context);
     // Used for pending instances. Rest of the parameters are ignored.
     WorkerInstance(const GURL& url,
@@ -97,9 +96,6 @@ class WorkerProcessHost : public BrowserChildProcessHost {
     WorkerDocumentSet* worker_document_set() const {
       return worker_document_set_;
     }
-    net::URLRequestContextGetter* request_context_getter() const {
-      return request_context_getter_;
-    }
     const content::ResourceContext& resource_context() const {
       return *resource_context_;
     }
@@ -115,14 +111,12 @@ class WorkerProcessHost : public BrowserChildProcessHost {
     int parent_process_id_;
     int parent_appcache_host_id_;
     int64 main_resource_appcache_id_;
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
     FilterList filters_;
     scoped_refptr<WorkerDocumentSet> worker_document_set_;
     const content::ResourceContext* const resource_context_;
   };
 
   WorkerProcessHost(
-      net::URLRequestContextGetter* request_context_getter,
       const content::ResourceContext* resource_context,
       ResourceDispatcherHost* resource_dispatcher_host);
   ~WorkerProcessHost();
@@ -186,8 +180,6 @@ class WorkerProcessHost : public BrowserChildProcessHost {
   ChromeURLRequestContext* GetChromeURLRequestContext();
 
   Instances instances_;
-
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   const content::ResourceContext* const resource_context_;
 

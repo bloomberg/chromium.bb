@@ -463,7 +463,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
   channel_->AddFilter(new AudioInputRendererHost());
   channel_->AddFilter(new AudioRendererHost());
   channel_->AddFilter(
-      new AppCacheDispatcherHost(profile()->GetRequestContext(), id()));
+      new AppCacheDispatcherHost(&profile()->GetResourceContext(), id()));
   channel_->AddFilter(new ClipboardMessageFilter());
   channel_->AddFilter(
       new DOMStorageMessageFilter(id(), profile()->GetWebKitContext(),
@@ -476,9 +476,12 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
           id(), profile()->GetGeolocationPermissionContext()));
   channel_->AddFilter(new GpuMessageFilter(id()));
   channel_->AddFilter(new PepperFileMessageFilter(id(), profile()));
-  channel_->AddFilter(new PepperMessageFilter(profile()));
+  channel_->AddFilter(
+      new PepperMessageFilter(&profile()->GetResourceContext()));
   channel_->AddFilter(new speech_input::SpeechInputDispatcherHost(id()));
-  channel_->AddFilter(new FileSystemDispatcherHost(profile()));
+  channel_->AddFilter(
+      new FileSystemDispatcherHost(&profile()->GetResourceContext(),
+                                   profile()->GetHostContentSettingsMap()));
   channel_->AddFilter(new device_orientation::MessageFilter());
   channel_->AddFilter(
       new BlobMessageFilter(id(), profile()->GetBlobStorageContext()));
@@ -495,7 +498,6 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
   channel_->AddFilter(
       new WorkerMessageFilter(
           id(),
-          profile()->GetRequestContext(),
           &profile()->GetResourceContext(),
           g_browser_process->resource_dispatcher_host(),
           NewCallbackWithReturnValue(

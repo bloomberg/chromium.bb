@@ -85,16 +85,13 @@ class WorkerCrashTask : public Task {
 };
 
 WorkerProcessHost::WorkerProcessHost(
-    net::URLRequestContextGetter* request_context_getter,
     const content::ResourceContext* resource_context,
     ResourceDispatcherHost* resource_dispatcher_host)
     : BrowserChildProcessHost(WORKER_PROCESS),
-      request_context_getter_(request_context_getter),
       resource_context_(resource_context),
       resource_dispatcher_host_(resource_dispatcher_host) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(resource_context);
-  DCHECK(request_context_getter);
 }
 
 WorkerProcessHost::~WorkerProcessHost() {
@@ -219,13 +216,12 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
 
   worker_message_filter_ = new WorkerMessageFilter(
       render_process_id,
-      request_context_getter_,
       resource_context_,
       resource_dispatcher_host_,
       NewCallbackWithReturnValue(
           WorkerService::GetInstance(), &WorkerService::next_worker_route_id));
   AddFilter(worker_message_filter_);
-  AddFilter(new AppCacheDispatcherHost(chrome_url_context, id()));
+  AddFilter(new AppCacheDispatcherHost(resource_context_, id()));
   AddFilter(new FileSystemDispatcherHost(
       chrome_url_context, resource_context_->file_system_context()));
   AddFilter(new FileUtilitiesMessageFilter(id()));
@@ -488,7 +484,7 @@ void WorkerProcessHost::UpdateTitle() {
 
 ChromeURLRequestContext* WorkerProcessHost::GetChromeURLRequestContext() {
   return static_cast<ChromeURLRequestContext*>(
-      request_context_getter_->GetURLRequestContext());
+      resource_context_->request_context());
 }
 
 void WorkerProcessHost::DocumentDetached(WorkerMessageFilter* filter,
@@ -519,7 +515,6 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(
     int parent_process_id,
     int parent_appcache_host_id,
     int64 main_resource_appcache_id,
-    net::URLRequestContextGetter* request_context_getter,
     const content::ResourceContext& resource_context)
     : url_(url),
       shared_(shared),
@@ -530,10 +525,8 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(
       parent_process_id_(parent_process_id),
       parent_appcache_host_id_(parent_appcache_host_id),
       main_resource_appcache_id_(main_resource_appcache_id),
-      request_context_getter_(request_context_getter),
       worker_document_set_(new WorkerDocumentSet()),
       resource_context_(&resource_context) {
-  DCHECK(request_context_getter_);
   DCHECK(resource_context_);
 }
 
@@ -551,7 +544,6 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(
       parent_process_id_(0),
       parent_appcache_host_id_(0),
       main_resource_appcache_id_(0),
-      request_context_getter_(NULL),
       worker_document_set_(new WorkerDocumentSet()),
       resource_context_(NULL) {
 }

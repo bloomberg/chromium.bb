@@ -13,16 +13,18 @@
 #include "content/browser/browser_message_filter.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 
-class Profile;
+namespace content {
+class ResourceContext;
+}
 
 namespace net {
 class AddressList;
-class URLRequestContextGetter;
 }
 
 class PepperMessageFilter : public BrowserMessageFilter {
  public:
-  explicit PepperMessageFilter(Profile* profile);
+  explicit PepperMessageFilter(
+      const content::ResourceContext* resource_context);
   virtual ~PepperMessageFilter();
 
  private:
@@ -62,8 +64,7 @@ class PepperMessageFilter : public BrowserMessageFilter {
                                        PP_Flash_NetAddress addr);
 #endif  // ENABLE_FLAPPER_HACKS
 
-  Profile* profile_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  const content::ResourceContext* const resource_context_;
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_PEPPER_MESSAGE_FILTER_H_

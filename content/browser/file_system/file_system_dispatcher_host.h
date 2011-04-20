@@ -12,10 +12,6 @@
 #include "content/browser/browser_message_filter.h"
 #include "webkit/fileapi/file_system_types.h"
 
-namespace base {
-class Time;
-}
-
 class ChromeURLRequestContext;
 class GURL;
 class HostContentSettingsMap;
@@ -23,20 +19,30 @@ class Profile;
 class Receiver;
 class RenderMessageFilter;
 
-namespace net {
-class URLRequestContext;
-class URLRequestContextGetter;
-}  // namespace net
+namespace base {
+class Time;
+}
+
+namespace content {
+class ResourceContext;
+}
 
 namespace fileapi {
 class FileSystemContext;
 class FileSystemOperation;
 }
 
+namespace net {
+class URLRequestContext;
+class URLRequestContextGetter;
+}  // namespace net
+
 class FileSystemDispatcherHost : public BrowserMessageFilter {
  public:
   // Used by the renderer.
-  explicit FileSystemDispatcherHost(Profile* profile);
+  FileSystemDispatcherHost(
+      const content::ResourceContext* resource_context,
+      HostContentSettingsMap* host_content_settings_map);
   // Used by the worker, since it has the context handy already.
   FileSystemDispatcherHost(ChromeURLRequestContext* request_context,
                            fileapi::FileSystemContext* file_system_context);
@@ -85,7 +91,7 @@ class FileSystemDispatcherHost : public BrowserMessageFilter {
   // Creates a new FileSystemOperation.
   fileapi::FileSystemOperation* GetNewOperation(int request_id);
 
-  scoped_refptr<fileapi::FileSystemContext> context_;
+  fileapi::FileSystemContext* context_;
 
   // Used to look up permissions.
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
@@ -94,10 +100,10 @@ class FileSystemDispatcherHost : public BrowserMessageFilter {
   typedef IDMap<fileapi::FileSystemOperation> OperationsMap;
   OperationsMap operations_;
 
-  // This holds the URLRequestContextGetter until Init() can be called from the
+  // This holds the ResourceContext until Init() can be called from the
   // IO thread, which will extract the net::URLRequestContext from it.
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-  scoped_refptr<net::URLRequestContext> request_context_;
+  const content::ResourceContext* resource_context_;
+  net::URLRequestContext* request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemDispatcherHost);
 };

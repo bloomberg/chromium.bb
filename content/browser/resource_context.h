@@ -13,6 +13,10 @@ class ChromeBlobStorageContext;
 namespace fileapi {
 class FileSystemContext;
 }  // namespace fileapi
+namespace net {
+class HostResolver;
+class URLRequestContext;
+}  // namespace net
 namespace webkit_database {
 class DatabaseTracker;
 }  // namespace webkit_database
@@ -26,6 +30,12 @@ namespace content {
 class ResourceContext {
  public:
   virtual ~ResourceContext();
+
+  net::HostResolver* host_resolver() const;
+  void set_host_resolver(net::HostResolver* host_resolver);
+
+  net::URLRequestContext* request_context() const;
+  void set_request_context(net::URLRequestContext* request_context);
 
   ChromeAppCacheService* appcache_service() const;
   void set_appcache_service(ChromeAppCacheService* service);
@@ -45,6 +55,8 @@ class ResourceContext {
  private:
   virtual void EnsureInitialized() const = 0;
 
+  net::HostResolver* host_resolver_;
+  net::URLRequestContext* request_context_;
   ChromeAppCacheService* appcache_service_;
   webkit_database::DatabaseTracker* database_tracker_;
   fileapi::FileSystemContext* file_system_context_;

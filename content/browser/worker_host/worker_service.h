@@ -30,7 +30,6 @@ class WorkerService {
   void CreateWorker(const ViewHostMsg_CreateWorker_Params& params,
                     int route_id,
                     WorkerMessageFilter* filter,
-                    net::URLRequestContextGetter* request_context_getter,
                     const content::ResourceContext& resource_context);
   void LookupSharedWorker(const ViewHostMsg_CreateWorker_Params& params,
                           int route_id,

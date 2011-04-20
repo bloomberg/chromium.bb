@@ -14,6 +14,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/browser/resource_context.h"
 #include "content/common/file_system_messages.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_platform_file.h"
@@ -100,10 +101,15 @@ class BrowserFileSystemCallbackDispatcher
   int request_id_;
 };
 
-FileSystemDispatcherHost::FileSystemDispatcherHost(Profile* profile)
-    : context_(profile->GetFileSystemContext()),
-      host_content_settings_map_(profile->GetHostContentSettingsMap()),
-      request_context_getter_(profile->GetRequestContext()) {
+FileSystemDispatcherHost::FileSystemDispatcherHost(
+    const content::ResourceContext* resource_context,
+    HostContentSettingsMap* host_content_settings_map)
+    : context_(NULL),
+      host_content_settings_map_(host_content_settings_map),
+      resource_context_(resource_context),
+      request_context_(NULL) {
+  DCHECK(resource_context_);
+  DCHECK(host_content_settings_map_);
 }
 
 FileSystemDispatcherHost::FileSystemDispatcherHost(
@@ -111,7 +117,11 @@ FileSystemDispatcherHost::FileSystemDispatcherHost(
     fileapi::FileSystemContext* file_system_context)
     : context_(file_system_context),
       host_content_settings_map_(request_context->host_content_settings_map()),
+      resource_context_(NULL),
       request_context_(request_context) {
+  DCHECK(request_context_);
+  DCHECK(host_content_settings_map_);
+  DCHECK(context_);
 }
 
 FileSystemDispatcherHost::~FileSystemDispatcherHost() {
@@ -120,11 +130,15 @@ FileSystemDispatcherHost::~FileSystemDispatcherHost() {
 void FileSystemDispatcherHost::OnChannelConnected(int32 peer_pid) {
   BrowserMessageFilter::OnChannelConnected(peer_pid);
 
-  if (request_context_getter_.get()) {
-    DCHECK(!request_context_.get());
-    request_context_ = request_context_getter_->GetURLRequestContext();
+  if (resource_context_) {
+    DCHECK(!request_context_);
+    request_context_ = resource_context_->request_context();
+    DCHECK(!context_);
+    context_ = resource_context_->file_system_context();
+    resource_context_ = NULL;
   }
-  DCHECK(request_context_.get());
+  DCHECK(request_context_);
+  DCHECK(context_);
 }
 
 bool FileSystemDispatcherHost::OnMessageReceived(

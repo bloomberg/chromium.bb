@@ -11,6 +11,7 @@
 #include "base/sys_info.h"
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/browser/resource_context.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/common/view_messages.h"
@@ -73,11 +74,10 @@ void WorkerService::CreateWorker(
     const ViewHostMsg_CreateWorker_Params& params,
     int route_id,
     WorkerMessageFilter* filter,
-    net::URLRequestContextGetter* request_context_getter,
     const content::ResourceContext& resource_context) {
   // TODO(willchan): Eliminate the need for this downcast.
-  ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
-      request_context_getter->GetURLRequestContext());
+  bool is_incognito = static_cast<ChromeURLRequestContext*>(
+      resource_context.request_context())->is_incognito();
 
   // Generate a unique route id for the browser-worker communication that's
   // unique among all worker processes.  That way when the worker process sends
@@ -86,13 +86,12 @@ void WorkerService::CreateWorker(
   WorkerProcessHost::WorkerInstance instance(
       params.url,
       params.is_shared,
-      context->is_incognito(),
+      is_incognito,
       params.name,
       next_worker_route_id(),
       params.is_shared ? 0 : filter->render_process_id(),
       params.is_shared ? 0 : params.parent_appcache_host_id,
       params.is_shared ? params.script_resource_appcache_id : 0,
-      request_context_getter,
       resource_context);
   instance.AddFilter(filter, route_id);
   instance.worker_document_set()->Add(
@@ -312,7 +311,6 @@ bool WorkerService::CreateWorkerFromInstance(
   if (!worker) {
     WorkerMessageFilter* first_filter = instance.filters().begin()->first;
     worker = new WorkerProcessHost(
-        instance.request_context_getter(),
         &instance.resource_context(),
         first_filter->resource_dispatcher_host());
     // TODO(atwilson): This won't work if the message is from a worker process.

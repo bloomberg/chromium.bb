@@ -311,6 +311,8 @@ void ProfileIOData::LazyInitialize() const {
   blob_storage_context_ = profile_params_->blob_storage_context;
   file_system_context_ = profile_params_->file_system_context;
 
+  resource_context_.set_host_resolver(io_thread_globals->host_resolver.get());
+  resource_context_.set_request_context(main_request_context_);
   resource_context_.set_database_tracker(database_tracker_);
   resource_context_.set_appcache_service(appcache_service_);
   resource_context_.set_blob_storage_context(blob_storage_context_);

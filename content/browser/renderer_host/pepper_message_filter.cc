@@ -8,9 +8,9 @@
 #include "base/process_util.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
+#include "content/browser/resource_context.h"
 #include "content/common/pepper_messages.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
@@ -34,9 +34,10 @@ COMPILE_ASSERT(sizeof(reinterpret_cast<PP_Flash_NetAddress*>(0)->data) >=
 
 const PP_Flash_NetAddress kInvalidNetAddress = { 0 };
 
-PepperMessageFilter::PepperMessageFilter(Profile* profile)
-    : profile_(profile),
-      request_context_(profile_->GetRequestContext()) {
+PepperMessageFilter::PepperMessageFilter(
+    const content::ResourceContext* resource_context)
+    : resource_context_(resource_context) {
+  DCHECK(resource_context_);
 }
 
 PepperMessageFilter::~PepperMessageFilter() {}
@@ -173,13 +174,11 @@ void PepperMessageFilter::OnConnectTcp(int routing_id,
                                        uint16 port) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  net::URLRequestContext* req_context =
-      request_context_->GetURLRequestContext();
   net::HostResolver::RequestInfo request_info(net::HostPortPair(host, port));
 
   // The lookup request will delete itself on completion.
   LookupRequest* lookup_request =
-      new LookupRequest(this, req_context->host_resolver(),
+      new LookupRequest(this, resource_context_->host_resolver(),
                         routing_id, request_id, request_info);
   lookup_request->Start();
 }

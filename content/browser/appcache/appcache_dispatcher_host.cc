@@ -8,24 +8,16 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/resource_context.h"
 #include "content/common/appcache_messages.h"
 
 AppCacheDispatcherHost::AppCacheDispatcherHost(
-    net::URLRequestContext* request_context,
+    const content::ResourceContext* resource_context,
     int process_id)
     : ALLOW_THIS_IN_INITIALIZER_LIST(frontend_proxy_(this)),
-      request_context_(request_context),
+      resource_context_(resource_context),
       process_id_(process_id) {
-  DCHECK(request_context_.get());
-}
-
-AppCacheDispatcherHost::AppCacheDispatcherHost(
-    net::URLRequestContextGetter* request_context_getter,
-    int process_id)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(frontend_proxy_(this)),
-      request_context_getter_(request_context_getter),
-      process_id_(process_id) {
-  DCHECK(request_context_getter_.get());
+  DCHECK(resource_context_);
 }
 
 AppCacheDispatcherHost::~AppCacheDispatcherHost() {}
@@ -33,16 +25,9 @@ AppCacheDispatcherHost::~AppCacheDispatcherHost() {}
 void AppCacheDispatcherHost::OnChannelConnected(int32 peer_pid) {
   BrowserMessageFilter::OnChannelConnected(peer_pid);
 
-  DCHECK(request_context_.get() || request_context_getter_.get());
-
   // Get the AppCacheService (it can only be accessed from IO thread).
-  net::URLRequestContext* context = request_context_.get();
-  if (!context)
-    context = request_context_getter_->GetURLRequestContext();
-  appcache_service_ =
-      static_cast<ChromeURLRequestContext*>(context)->appcache_service();
-  request_context_ = NULL;
-  request_context_getter_ = NULL;
+  appcache_service_ = resource_context_->appcache_service();
+  resource_context_ = NULL;
 
   if (appcache_service_.get()) {
     backend_impl_.Initialize(
