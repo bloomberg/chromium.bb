@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_KEYCHAIN_MOCK_MAC_H_
-#define CHROME_BROWSER_KEYCHAIN_MOCK_MAC_H_
+#ifndef CHROME_BROWSER_MOCK_KEYCHAIN_MAC_H_
+#define CHROME_BROWSER_MOCK_KEYCHAIN_MAC_H_
 #pragma once
 
 #include <set>
@@ -190,4 +190,4 @@ class MockKeychain : public MacKeychain {
   mutable std::string add_generic_password_;
 };
 
-#endif  // CHROME_BROWSER_KEYCHAIN_MOCK_MAC_H_
+#endif  // CHROME_BROWSER_MOCK_KEYCHAIN_MAC_H_

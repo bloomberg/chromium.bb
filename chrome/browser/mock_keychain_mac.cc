@@ -1,10 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/logging.h"
 #include "base/time.h"
-#include "chrome/browser/keychain_mock_mac.h"
+#include "chrome/browser/mock_keychain_mac.h"
 
 MockKeychain::MockKeychain(unsigned int item_capacity)
     : item_capacity_(item_capacity), item_count_(0), search_copy_count_(0),
