@@ -211,17 +211,17 @@ class PluginDelegate {
   };
 
   // Provides access to the ppapi broker.
-  class PpapiBroker : public base::RefCountedThreadSafe<PpapiBroker> {
+  class PpapiBroker {
    public:
     virtual void Connect(webkit::ppapi::PPB_Broker_Impl* client) = 0;
 
     // Decrements the references to the broker.
     // When there are no more references, this renderer's dispatcher is
     // destroyed, allowing the broker to shutdown if appropriate.
+    // Callers should not reference this object after calling Disconnect.
     virtual void Disconnect(webkit::ppapi::PPB_Broker_Impl* client) = 0;
 
    protected:
-    friend class base::RefCountedThreadSafe<PpapiBroker>;
     virtual ~PpapiBroker() {}
   };
 

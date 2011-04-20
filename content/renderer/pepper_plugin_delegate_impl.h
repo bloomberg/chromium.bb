@@ -7,8 +7,8 @@
 #pragma once
 
 #include <set>
+#include <map>
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
@@ -51,6 +51,7 @@ struct CustomContextMenuContext;
 
 class TransportDIB;
 
+// This object is NOT thread-safe.
 class BrokerDispatcherWrapper {
  public:
   BrokerDispatcherWrapper();
@@ -66,9 +67,11 @@ class BrokerDispatcherWrapper {
   scoped_ptr<pp::proxy::BrokerDispatcher> dispatcher_;
 };
 
-class PpapiBrokerImpl : public webkit::ppapi::PluginDelegate::PpapiBroker {
+// This object is NOT thread-safe.
+class PpapiBrokerImpl : public webkit::ppapi::PluginDelegate::PpapiBroker,
+                        public base::RefCountedThreadSafe<PpapiBrokerImpl>{
  public:
-  PpapiBrokerImpl();
+  explicit PpapiBrokerImpl(webkit::ppapi::PluginModule* plugin_module);
 
   // PpapiBroker implementation.
   virtual void Connect(webkit::ppapi::PPB_Broker_Impl* client);
@@ -86,11 +89,20 @@ class PpapiBrokerImpl : public webkit::ppapi::PluginDelegate::PpapiBroker {
                              base::SyncSocket::Handle handle);
 
  protected:
+  friend class base::RefCountedThreadSafe<PpapiBrokerImpl>;
   virtual ~PpapiBrokerImpl();
   scoped_ptr<BrokerDispatcherWrapper> dispatcher_;
 
-  std::vector<scoped_refptr<webkit::ppapi::PPB_Broker_Impl> > pending_connects_;
-  std::vector<scoped_refptr<webkit::ppapi::PPB_Broker_Impl> > pending_pipes_;
+  // A map of pointers to objects that have requested a connection to the weak
+  // pointer we can use to reference them. The mapping is needed so we can clean
+  // up entries for objects that may have been deleted.
+  typedef std::map<webkit::ppapi::PPB_Broker_Impl*,
+                   base::WeakPtr<webkit::ppapi::PPB_Broker_Impl> > ClientMap;
+  ClientMap pending_connects_;
+
+  // Pointer to the associated plugin module.
+  // Always set and cleared at the same time as the module's pointer to this.
+  webkit::ppapi::PluginModule* plugin_module_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiBrokerImpl);
 };
@@ -255,7 +267,7 @@ class PepperPluginDelegateImpl
 
  private:
   // Asynchronously attempts to create a PPAPI broker for the given plugin.
-  scoped_refptr<webkit::ppapi::PluginDelegate::PpapiBroker> CreatePpapiBroker(
+  scoped_refptr<PpapiBrokerImpl> CreatePpapiBroker(
       webkit::ppapi::PluginModule* plugin_module);
 
   // Pointer to the RenderView that owns us.

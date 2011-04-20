@@ -541,13 +541,12 @@ bool PluginModule::ReserveInstanceID(PP_Instance instance) {
   return true;  // Instance ID is usable.
 }
 
-void PluginModule::SetBroker(
-    scoped_refptr<PluginDelegate::PpapiBroker> broker) {
-  DCHECK(!broker_.get());
+void PluginModule::SetBroker(PluginDelegate::PpapiBroker* broker) {
+  DCHECK(!broker_ || !broker);
   broker_ = broker;
 }
 
-scoped_refptr<PluginDelegate::PpapiBroker> PluginModule::GetBroker(){
+PluginDelegate::PpapiBroker* PluginModule::GetBroker(){
   return broker_;
 }
 

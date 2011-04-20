@@ -409,16 +409,43 @@ int32_t BrokerDispatcherWrapper::SendHandleToBroker(
   return PP_OK;
 }
 
-PpapiBrokerImpl::PpapiBrokerImpl() {
+PpapiBrokerImpl::PpapiBrokerImpl(webkit::ppapi::PluginModule* plugin_module)
+    : plugin_module_(plugin_module) {
+  plugin_module->SetBroker(this);
 }
 
 PpapiBrokerImpl::~PpapiBrokerImpl() {
+  // Report failure to all clients that had pending operations.
+  for (ClientMap::iterator i = pending_connects_.begin();
+       i != pending_connects_.end(); ++i) {
+    base::WeakPtr<webkit::ppapi::PPB_Broker_Impl>& weak_ptr = i->second;
+    if (weak_ptr) {
+      weak_ptr->BrokerConnected(
+          PlatformFileToInt(base::kInvalidPlatformFileValue), PP_ERROR_ABORTED);
+    }
+  }
+  pending_connects_.clear();
+
+  plugin_module_->SetBroker(NULL);
+  plugin_module_ = NULL;
 }
 
 // If the channel is not ready, queue the connection.
 void PpapiBrokerImpl::Connect(webkit::ppapi::PPB_Broker_Impl* client) {
+  DCHECK(pending_connects_.find(client) == pending_connects_.end())
+      << "Connect was already called for this client";
+
+  // Ensure this object and the associated broker exist as long as the
+  // client exists. There is a corresponding Release() call in Disconnect(),
+  // which is called when the PPB_Broker_Impl is destroyed. The only other
+  // possible reference is in pending_connect_broker_, which only holds a
+  // transient reference. This ensures the broker is available as long as the
+  // plugin needs it and allows the plugin to release the broker when it is no
+  // longer using it.
+  AddRef();
+
   if (!dispatcher_.get()) {
-    pending_connects_.push_back(client);
+    pending_connects_[client] = client->AsWeakPtr();
     return;
   }
   DCHECK(pending_connects_.empty());
@@ -427,8 +454,15 @@ void PpapiBrokerImpl::Connect(webkit::ppapi::PPB_Broker_Impl* client) {
 }
 
 void PpapiBrokerImpl::Disconnect(webkit::ppapi::PPB_Broker_Impl* client) {
+  // Remove the pending connect if one exists. This class will not call client's
+  // callback.
+  pending_connects_.erase(client);
+
   // TODO(ddorwin): Send message using dispatcher_ and clean up any pending
   // connects or pipes.
+
+  // Release the reference added in Connect().
+  Release();
 }
 
 void PpapiBrokerImpl::OnBrokerChannelConnected(
@@ -439,13 +473,22 @@ void PpapiBrokerImpl::OnBrokerChannelConnected(
     dispatcher_.reset(dispatcher.release());
 
     // Process all pending channel requests from the renderers.
-    for (size_t i = 0; i < pending_connects_.size(); i++)
-      ConnectPluginToBroker(pending_connects_[i]);
+    for (ClientMap::iterator i = pending_connects_.begin();
+         i != pending_connects_.end(); ++i) {
+      base::WeakPtr<webkit::ppapi::PPB_Broker_Impl>& weak_ptr = i->second;
+      if (weak_ptr)
+        ConnectPluginToBroker(weak_ptr);
+    }
   } else {
     // Report failure to all clients.
-    for (size_t i = 0; i < pending_connects_.size(); i++) {
-      pending_connects_[i]->BrokerConnected(
-          PlatformFileToInt(base::kInvalidPlatformFileValue), PP_ERROR_FAILED);
+    for (ClientMap::iterator i = pending_connects_.begin();
+         i != pending_connects_.end(); ++i) {
+      base::WeakPtr<webkit::ppapi::PPB_Broker_Impl>& weak_ptr = i->second;
+      if (weak_ptr) {
+        weak_ptr->BrokerConnected(
+            PlatformFileToInt(base::kInvalidPlatformFileValue),
+            PP_ERROR_FAILED);
+      }
     }
   }
   pending_connects_.clear();
@@ -543,8 +586,12 @@ PepperPluginDelegateImpl::CreatePepperPlugin(
   return module;
 }
 
-scoped_refptr<webkit::ppapi::PluginDelegate::PpapiBroker>
-PepperPluginDelegateImpl::CreatePpapiBroker(
+// If the IPC response never comes and OnPpapiBrokerChannelCreated is not called
+// the broker will not be deleted even if there are no more clients because
+// pending_connect_broker_ will still hold a reference.
+// TODO(ddorwin): Consider fixing this by cleaning up pending_connect_broker_
+// on the last Disconnect.
+scoped_refptr<PpapiBrokerImpl> PepperPluginDelegateImpl::CreatePpapiBroker(
     webkit::ppapi::PluginModule* plugin_module) {
   DCHECK(plugin_module);
   DCHECK(!plugin_module->GetBroker());
@@ -552,8 +599,7 @@ PepperPluginDelegateImpl::CreatePpapiBroker(
   // The broker path is the same as the plugin.
   const FilePath& broker_path = plugin_module->path();
 
-  scoped_refptr<PpapiBrokerImpl> broker = new PpapiBrokerImpl;
-  plugin_module->SetBroker(broker);
+  scoped_refptr<PpapiBrokerImpl> broker = new PpapiBrokerImpl(plugin_module);
 
   int request_id =
       pending_connect_broker_.Add(new scoped_refptr<PpapiBrokerImpl>(broker));
@@ -566,7 +612,7 @@ PepperPluginDelegateImpl::CreatePpapiBroker(
                                                broker_path);
   if (!render_view_->Send(msg)) {
     pending_connect_broker_.Remove(request_id);
-    return scoped_refptr<webkit::ppapi::PluginDelegate::PpapiBroker>();
+    return scoped_refptr<PpapiBrokerImpl>();
   }
 
   return broker;
@@ -758,15 +804,21 @@ PepperPluginDelegateImpl::ConnectToPpapiBroker(
     webkit::ppapi::PPB_Broker_Impl* client) {
   CHECK(client);
 
+  // If a broker needs to be created, this will ensure it does not get deleted
+  // before Connect() adds a reference.
+  scoped_refptr<PpapiBrokerImpl> broker_impl;
+
   webkit::ppapi::PluginModule* plugin_module = client->instance()->module();
-  scoped_refptr<webkit::ppapi::PluginDelegate::PpapiBroker> broker =
+  PpapiBroker* broker =
       plugin_module->GetBroker();
   if (!broker) {
-    broker = CreatePpapiBroker(plugin_module);
-    if (!broker)
+    broker_impl = CreatePpapiBroker(plugin_module);
+    if (!broker_impl.get())
       return NULL;
+    broker = broker_impl;
   }
 
+  // Adds a reference, ensuring not deleted when broker_impl goes out of scope.
   broker->Connect(client);
   return broker;
 }
