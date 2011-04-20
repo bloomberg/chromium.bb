@@ -492,7 +492,7 @@ global_handler(struct display *display,
 	struct wl_drag_offer *offer;
 	struct dnd_offer *dnd_offer;
 
-	if (strcmp(interface, "drag_offer") != 0)
+	if (strcmp(interface, "wl_drag_offer") != 0)
 		return;
 
 	offer = wl_drag_offer_create(display_get_display(display), id, 1);

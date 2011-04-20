@@ -276,7 +276,7 @@ display_handle_global(struct wl_display *display, uint32_t id,
 {
 	struct display *d = data;
 
-	if (strcmp(interface, "compositor") == 0)
+	if (strcmp(interface, "wl_compositor") == 0)
 		d->compositor = wl_compositor_create(display, id, 1);
 }
 
