@@ -10,6 +10,7 @@
 
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
@@ -79,10 +80,10 @@ class CrxInstaller
   static bool ClearWhitelistedInstallId(const std::string& id);
 
   // Constructor.  Extensions will be installed into
-  // frontend->install_directory() then registered with |frontend|. Any install
-  // UI will be displayed using |client|. Pass NULL for |client| for silent
-  // install.
-  CrxInstaller(ExtensionService* frontend,
+  // frontend_weak->install_directory() then registered with
+  // |frontend_weak|. Any install UI will be displayed using
+  // |client|. Pass NULL for |client| for silent install.
+  CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
                ExtensionInstallUI* client);
 
   // Install the crx in |source_file|.
@@ -228,7 +229,7 @@ class CrxInstaller
   FilePath temp_dir_;
 
   // The frontend we will report results back to.
-  scoped_refptr<ExtensionService> frontend_;
+  base::WeakPtr<ExtensionService> frontend_weak_;
 
   // The client we will work with to do the installation. This can be NULL, in
   // which case the install is silent.

@@ -123,8 +123,9 @@ class AppLauncherHandler : public WebUIMessageHandler,
   // Helper that uninstalls all the default apps.
   void UninstallDefaultApps();
 
-  // The apps are represented in the extensions model.
-  scoped_refptr<ExtensionService> extensions_service_;
+  // The apps are represented in the extensions model, which
+  // outlives us since its owned by our containing profile.
+  ExtensionService* const extensions_service_;
 
   // We monitor changes to the extension system so that we can reload the apps
   // when necessary.

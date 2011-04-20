@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
     MockInstallUI* mock_install_ui = new MockInstallUI(browser()->profile());
 
     scoped_refptr<CrxInstaller> installer(
-        new CrxInstaller(service, mock_install_ui /* ownership transferred */));
+        service->MakeCrxInstaller(mock_install_ui /* ownership transferred */));
 
     installer->set_allow_silent_install(true);
     installer->set_is_gallery_install(true);

@@ -16,10 +16,10 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "base/tuple.h"
-#include "base/version.h"
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"
@@ -37,7 +37,9 @@
 #include "content/common/notification_registrar.h"
 #include "content/common/property_bag.h"
 
+class CrxInstaller;
 class ExtensionBrowserEventRouter;
+class ExtensionInstallUI;
 class ExtensionPreferenceEventRouter;
 class ExtensionServiceBackend;
 struct ExtensionSyncData;
@@ -109,9 +111,7 @@ class ExtensionServiceInterface {
 
 // Manages installed and running Chromium extensions.
 class ExtensionService
-    : public base::RefCountedThreadSafe<ExtensionService,
-                                        BrowserThread::DeleteOnUIThread>,
-      public ExtensionServiceInterface,
+    : public ExtensionServiceInterface,
       public ExternalExtensionProviderInterface::VisitorInterface,
       public NotificationObserver {
  public:
@@ -170,6 +170,8 @@ class ExtensionService
                    ExtensionPrefs* extension_prefs,
                    bool autoupdate_enabled,
                    bool extensions_enabled);
+
+  virtual ~ExtensionService();
 
   // Gets the list of currently installed extensions.
   virtual const ExtensionList* extensions() const;
@@ -459,10 +461,10 @@ class ExtensionService
   static void RecordPermissionMessagesHistogram(
       const Extension* e, const char* histogram);
 
- private:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
-  friend class DeleteTask<ExtensionService>;
+  // |client| can be NULL for a silent install.
+  scoped_refptr<CrxInstaller> MakeCrxInstaller(ExtensionInstallUI* client);
 
+ private:
   // Contains Extension data that can change during the life of the process,
   // but does not persist across restarts.
   struct ExtensionRuntimeData {
@@ -488,8 +490,6 @@ class ExtensionService
     std::string mime_type;
   };
   typedef std::list<NaClModuleInfo> NaClModuleInfoList;
-
-  virtual ~ExtensionService();
 
   // Clear all persistent data that may have been stored by the extension.
   void ClearExtensionData(const GURL& extension_url);
@@ -532,6 +532,10 @@ class ExtensionService
   void UpdatePluginListWithNaClModules();
 
   NaClModuleInfoList::iterator FindNaClModule(const GURL& url);
+
+  base::WeakPtrFactory<ExtensionService> weak_ptr_factory_;
+
+  ScopedRunnableMethodFactory<ExtensionService> method_factory_;
 
   // The profile this ExtensionService is part of.
   Profile* profile_;

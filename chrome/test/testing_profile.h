@@ -384,9 +384,7 @@ class TestingProfile : public Profile {
   // invoked.
   scoped_ptr<ExtensionPrefs> extension_prefs_;
 
-  // For properly notifying the ExtensionService when the profile
-  // is disposed.
-  scoped_refptr<ExtensionService> extensions_service_;
+  scoped_ptr<ExtensionService> extension_service_;
 
   scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
 

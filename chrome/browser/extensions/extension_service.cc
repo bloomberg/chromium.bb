@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/stl_util-inl.h"
@@ -158,7 +159,9 @@ class ExtensionServiceBackend
     : public base::RefCountedThreadSafe<ExtensionServiceBackend> {
  public:
   // |install_directory| is a path where to look for extensions to load.
-  explicit ExtensionServiceBackend(const FilePath& install_directory);
+  ExtensionServiceBackend(
+      base::WeakPtr<ExtensionService> frontend,
+      const FilePath& install_directory);
 
   // Loads a single extension from |path| where |path| is the top directory of
   // a specific extension where its manifest file lives.
@@ -166,8 +169,7 @@ class ExtensionServiceBackend
   // AddExtension() is called.
   // TODO(erikkay): It might be useful to be able to load a packed extension
   // (presumably into memory) without installing it.
-  void LoadSingleExtension(const FilePath &path,
-                           scoped_refptr<ExtensionService> frontend);
+  void LoadSingleExtension(const FilePath &path);
 
  private:
   friend class base::RefCountedThreadSafe<ExtensionServiceBackend>;
@@ -190,37 +192,32 @@ class ExtensionServiceBackend
   void ReportExtensionLoadError(const FilePath& extension_path,
                                 const std::string& error);
 
-  // This is a naked pointer which is set by each entry point.
-  // The entry point is responsible for ensuring lifetime.
-  ExtensionService* frontend_;
+  // Notify the frontend that an extension was installed.
+  void OnExtensionInstalled(const scoped_refptr<const Extension>& extension);
+
+  base::WeakPtr<ExtensionService> frontend_;
 
   // The top-level extensions directory being installed to.
   FilePath install_directory_;
-
-  // Whether errors result in noisy alerts.
-  bool alert_on_error_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionServiceBackend);
 };
 
 ExtensionServiceBackend::ExtensionServiceBackend(
+    base::WeakPtr<ExtensionService> frontend,
     const FilePath& install_directory)
-        : frontend_(NULL),
-          install_directory_(install_directory),
-          alert_on_error_(false) {
+        : frontend_(frontend),
+          install_directory_(install_directory) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 ExtensionServiceBackend::~ExtensionServiceBackend() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+        BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
-void ExtensionServiceBackend::LoadSingleExtension(
-    const FilePath& path_in, scoped_refptr<ExtensionService> frontend) {
+void ExtensionServiceBackend::LoadSingleExtension(const FilePath& path_in) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  frontend_ = frontend;
-
-  // Explicit UI loads are always noisy.
-  alert_on_error_ = true;
 
   FilePath extension_path = path_in;
   file_util::AbsolutePath(&extension_path);
@@ -237,28 +234,41 @@ void ExtensionServiceBackend::LoadSingleExtension(
       &error));
 
   if (!extension) {
-    ReportExtensionLoadError(extension_path, error);
+    if (!BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE,
+            NewRunnableMethod(
+                this,
+                &ExtensionServiceBackend::ReportExtensionLoadError,
+                extension_path, error)))
+      NOTREACHED() << error;
     return;
   }
 
   // Report this as an installed extension so that it gets remembered in the
   // prefs.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(frontend_,
-                        &ExtensionService::OnExtensionInstalled,
-                        extension));
+  if (!BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          NewRunnableMethod(
+              this,
+              &ExtensionServiceBackend::OnExtensionInstalled,
+              extension)))
+    NOTREACHED();
 }
 
 void ExtensionServiceBackend::ReportExtensionLoadError(
     const FilePath& extension_path, const std::string &error) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          frontend_,
-          &ExtensionService::ReportExtensionLoadError, extension_path,
-          error, NotificationType::EXTENSION_INSTALL_ERROR, alert_on_error_));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (frontend_.get())
+    frontend_->ReportExtensionLoadError(
+        extension_path, error, NotificationType::EXTENSION_INSTALL_ERROR,
+        true /* alert_on_error */);
+}
+
+void ExtensionServiceBackend::OnExtensionInstalled(
+    const scoped_refptr<const Extension>& extension) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (frontend_.get())
+    frontend_->OnExtensionInstalled(extension);
 }
 
 void ExtensionService::CheckExternalUninstall(const std::string& id) {
@@ -415,14 +425,16 @@ ExtensionService::ExtensionService(Profile* profile,
                                    ExtensionPrefs* extension_prefs,
                                    bool autoupdate_enabled,
                                    bool extensions_enabled)
-    : profile_(profile),
+    : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      profile_(profile),
       extension_prefs_(extension_prefs),
-      ALLOW_THIS_IN_INITIALIZER_LIST(pending_extension_manager_(*this)),
+      pending_extension_manager_(*ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       install_directory_(install_directory),
       extensions_enabled_(extensions_enabled),
       show_extensions_prompts_(true),
       ready_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(toolbar_model_(this)),
+      toolbar_model_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       apps_promo_(profile->GetPrefs()),
       event_routers_initialized_(false) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -455,7 +467,9 @@ ExtensionService::ExtensionService(Profile* profile,
                                         update_frequency));
   }
 
-  backend_ = new ExtensionServiceBackend(install_directory_);
+  backend_ =
+      new ExtensionServiceBackend(weak_ptr_factory_.GetWeakPtr(),
+                                  install_directory_);
 
   if (extensions_enabled_) {
     ExternalExtensionProviderImpl::CreateExternalProviders(
@@ -486,7 +500,7 @@ PendingExtensionManager* ExtensionService::pending_extension_manager() {
 }
 
 ExtensionService::~ExtensionService() {
-  DCHECK(!profile_);  // Profile should have told us it's going away.
+  CHECK(!profile_);  // Profile should have told us it's going away.
   UnloadAllExtensions();
 
   ProviderCollection::const_iterator i;
@@ -566,10 +580,11 @@ void ExtensionService::UpdateExtension(const std::string& id,
                  << " because it is not installed or pending";
     // Delete extension_path since we're not creating a CrxInstaller
     // that would do it for us.
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        NewRunnableFunction(
-            extension_file_util::DeleteFile, extension_path, false));
+    if (!BrowserThread::PostTask(
+            BrowserThread::FILE, FROM_HERE,
+            NewRunnableFunction(
+                extension_file_util::DeleteFile, extension_path, false)))
+      NOTREACHED();
     return;
   }
 
@@ -579,9 +594,7 @@ void ExtensionService::UpdateExtension(const std::string& id,
       (!is_pending_extension || pending_extension_info.install_silently()) ?
       NULL : new ExtensionInstallUI(profile_);
 
-  scoped_refptr<CrxInstaller> installer(
-      new CrxInstaller(this,  // frontend
-                       client));
+  scoped_refptr<CrxInstaller> installer(MakeCrxInstaller(client));
   installer->set_expected_id(id);
   if (is_pending_extension)
     installer->set_install_source(pending_extension_info.install_source());
@@ -690,12 +703,13 @@ bool ExtensionService::UninstallExtension(const std::string& extension_id,
 
   // Tell the backend to start deleting installed extensions on the file thread.
   if (Extension::LOAD != location) {
-    BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(
-          &extension_file_util::UninstallExtension,
-          install_directory_,
-          extension_id_copy));
+    if (!BrowserThread::PostTask(
+            BrowserThread::FILE, FROM_HERE,
+            NewRunnableFunction(
+                &extension_file_util::UninstallExtension,
+                install_directory_,
+                extension_id_copy)))
+      NOTREACHED();
   }
 
   ClearExtensionData(extension_url);
@@ -810,12 +824,13 @@ void ExtensionService::GrantPermissionsAndEnableExtension(
 }
 
 void ExtensionService::LoadExtension(const FilePath& extension_path) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          backend_.get(),
-          &ExtensionServiceBackend::LoadSingleExtension,
-          extension_path, scoped_refptr<ExtensionService>(this)));
+  if (!BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          NewRunnableMethod(
+              backend_.get(),
+              &ExtensionServiceBackend::LoadSingleExtension,
+              extension_path)))
+    NOTREACHED();
 }
 
 void ExtensionService::LoadComponentExtensions() {
@@ -1136,9 +1151,10 @@ void ExtensionService::NotifyExtensionUnloaded(
   bool plugins_changed = false;
   for (size_t i = 0; i < extension->plugins().size(); ++i) {
     const Extension::PluginInfo& plugin = extension->plugins()[i];
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            NewRunnableFunction(&ForceShutdownPlugin,
-                                                plugin.path));
+    if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                                 NewRunnableFunction(&ForceShutdownPlugin,
+                                                     plugin.path)))
+      NOTREACHED();
     webkit::npapi::PluginList::Singleton()->RefreshPlugins();
     webkit::npapi::PluginList::Singleton()->RemoveExtraPluginPath(
         plugin.path);
@@ -1201,6 +1217,8 @@ void ExtensionService::DestroyingProfile() {
   pref_change_registrar_.RemoveAll();
   profile_ = NULL;
   toolbar_model_.DestroyingProfile();
+  method_factory_.RevokeAll();
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 ExtensionPrefs* ExtensionService::extension_prefs() {
@@ -1515,11 +1533,13 @@ void ExtensionService::GarbageCollectExtensions() {
   for (size_t i = 0; i < info->size(); ++i)
     extension_paths[info->at(i)->extension_id] = info->at(i)->extension_path;
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(
-          &extension_file_util::GarbageCollectExtensions, install_directory_,
-          extension_paths));
+  if (!BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          NewRunnableFunction(
+              &extension_file_util::GarbageCollectExtensions,
+              install_directory_,
+              extension_paths)))
+    NOTREACHED();
 
   // Also garbage-collect themes.  We check |profile_| to be
   // defensive; in the future, we may call GarbageCollectExtensions()
@@ -1728,10 +1748,11 @@ void ExtensionService::OnExtensionInstalled(const Extension* extension) {
 
       // Delete the extension directory since we're not going to
       // load it.
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          NewRunnableFunction(&extension_file_util::DeleteFile,
-                              extension->path(), true));
+      if (!BrowserThread::PostTask(
+              BrowserThread::FILE, FROM_HERE,
+              NewRunnableFunction(&extension_file_util::DeleteFile,
+                                  extension->path(), true)))
+        NOTREACHED();
       return;
     }
 
@@ -1909,9 +1930,8 @@ void ExtensionService::OnExternalExtensionFileFound(
 
   pending_extension_manager()->AddFromExternalFile(id, location);
 
-  scoped_refptr<CrxInstaller> installer(
-      new CrxInstaller(this,  // frontend
-                       NULL));  // no client (silent install)
+  // no client (silent install)
+  scoped_refptr<CrxInstaller> installer(MakeCrxInstaller(NULL));
   installer->set_install_source(location);
   installer->set_expected_id(id);
   installer->set_expected_version(*version),
@@ -1962,11 +1982,12 @@ void ExtensionService::Observe(NotificationType type,
       // either fully working or not loaded at all, but never half-crashed.
       // We do it in a PostTask so that other handlers of this notification will
       // still have access to the Extension and ExtensionHost.
-      MessageLoop::current()->PostTask(FROM_HERE,
-          NewRunnableMethod(this,
-                            &ExtensionService::UnloadExtension,
-                            host->extension()->id(),
-                            UnloadedExtensionInfo::DISABLE));
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          method_factory_.NewRunnableMethod(
+              &ExtensionService::UnloadExtension,
+              host->extension()->id(),
+              UnloadedExtensionInfo::DISABLE));
       break;
     }
 
@@ -1999,6 +2020,11 @@ ExtensionIdSet ExtensionService::GetAppIds() const {
   }
 
   return result;
+}
+
+scoped_refptr<CrxInstaller> ExtensionService::MakeCrxInstaller(
+    ExtensionInstallUI* client) {
+  return new CrxInstaller(weak_ptr_factory_.GetWeakPtr(), client);
 }
 
 bool ExtensionService::IsBackgroundPageReady(const Extension* extension) {

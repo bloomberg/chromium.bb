@@ -324,7 +324,7 @@ void OpenChromeExtension(Profile* profile,
                    Details<GURL>(&nonconst_download_url));
 
   scoped_refptr<CrxInstaller> installer(
-      new CrxInstaller(service, new ExtensionInstallUI(profile)));
+      service->MakeCrxInstaller(new ExtensionInstallUI(profile)));
   installer->set_delete_source(true);
 
   if (UserScript::IsURLUserScript(download_item.url(),

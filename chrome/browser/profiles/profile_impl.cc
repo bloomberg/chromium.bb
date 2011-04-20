@@ -402,7 +402,7 @@ void ProfileImpl::DoFinalInit() {
 }
 
 void ProfileImpl::InitExtensions(bool extensions_enabled) {
-  if (user_script_master_ || extensions_service_)
+  if (user_script_master_ || extension_service_.get())
     return;  // Already initialized.
 
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -429,23 +429,23 @@ void ProfileImpl::InitExtensions(bool extensions_enabled) {
   else
     autoupdate_enabled = !command_line->HasSwitch(switches::kGuestSession);
 #endif
-  extensions_service_ = new ExtensionService(
+  extension_service_.reset(new ExtensionService(
       this,
       CommandLine::ForCurrentProcess(),
       GetPath().AppendASCII(ExtensionService::kInstallDirectoryName),
       extension_prefs_.get(),
       autoupdate_enabled,
-      extensions_enabled);
+      extensions_enabled));
 
   RegisterComponentExtensions();
-  extensions_service_->Init();
+  extension_service_->Init();
 
   if (extensions_enabled) {
     // Load any extensions specified with --load-extension.
     if (command_line->HasSwitch(switches::kLoadExtension)) {
       FilePath path = command_line->GetSwitchValuePath(
           switches::kLoadExtension);
-      extensions_service_->LoadExtension(path);
+      extension_service_->LoadExtension(path);
     }
   }
 
@@ -520,7 +520,7 @@ void ProfileImpl::RegisterComponentExtensions() {
     std::string manifest =
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             iter->second).as_string();
-    extensions_service_->register_component_extension(
+    extension_service_->register_component_extension(
         ExtensionService::ComponentExtensionInfo(manifest, path));
   }
 
@@ -533,7 +533,7 @@ void ProfileImpl::RegisterComponentExtensions() {
     std::string manifest =
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_CHROMEVOX_MANIFEST).as_string();
-    extensions_service_->register_component_extension(
+    extension_service_->register_component_extension(
         ExtensionService::ComponentExtensionInfo(manifest, path));
   }
 #endif
@@ -641,8 +641,8 @@ ProfileImpl::~ProfileImpl() {
   if (extension_message_service_)
     extension_message_service_->DestroyingProfile();
 
-  if (extensions_service_)
-    extensions_service_->DestroyingProfile();
+  if (extension_service_.get())
+    extension_service_->DestroyingProfile();
 
   if (pref_proxy_config_tracker_)
     pref_proxy_config_tracker_->DetachFromPrefService();
@@ -726,7 +726,7 @@ VisitedLinkMaster* ProfileImpl::GetVisitedLinkMaster() {
 }
 
 ExtensionService* ProfileImpl::GetExtensionService() {
-  return extensions_service_.get();
+  return extension_service_.get();
 }
 
 StatusTray* ProfileImpl::GetStatusTray() {

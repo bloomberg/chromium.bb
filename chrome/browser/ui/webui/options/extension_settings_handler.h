@@ -223,8 +223,8 @@ class ExtensionsDOMHandler : public WebUIMessageHandler,
   // needed.
   ExtensionUninstallDialog* GetExtensionUninstallDialog();
 
-  // Our model.
-  scoped_refptr<ExtensionService> extensions_service_;
+  // Our model.  Outlives us since it's owned by our containing profile.
+  ExtensionService* const extension_service_;
 
   // Used to pick the directory when loading an extension.
   scoped_refptr<SelectFileDialog> load_extension_dialog_;

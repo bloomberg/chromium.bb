@@ -16,6 +16,7 @@
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
@@ -33,46 +34,17 @@ FilePath bogus_file_path() {
   return FilePath(FILE_PATH_LITERAL("//foobar_nonexistent"));
 }
 
-class BackgroundApplicationListModelTest : public testing::Test {
+class BackgroundApplicationListModelTest : public ExtensionServiceTestBase {
  public:
-  BackgroundApplicationListModelTest();
-  ~BackgroundApplicationListModelTest();
-
-  virtual void InitializeEmptyExtensionService();
+  BackgroundApplicationListModelTest() {}
+  virtual ~BackgroundApplicationListModelTest() {}
 
  protected:
-  scoped_ptr<Profile> profile_;
-  scoped_refptr<ExtensionService> service_;
-  MessageLoop loop_;
-  BrowserThread ui_thread_;
+  void InitializeAndLoadEmptyExtensionService() {
+    InitializeEmptyExtensionService();
+    service_->OnLoadedInstalledExtensions(); /* Sends EXTENSIONS_READY */
+  }
 };
-
-// The message loop may be used in tests which require it to be an IO loop.
-BackgroundApplicationListModelTest::BackgroundApplicationListModelTest()
-    : loop_(MessageLoop::TYPE_IO),
-      ui_thread_(BrowserThread::UI, &loop_) {
-}
-
-BackgroundApplicationListModelTest::~BackgroundApplicationListModelTest() {
-  // Drop reference to ExtensionService and TestingProfile, so that they can be
-  // destroyed while BrowserThreads and MessageLoop are still around.  They
-  // are used in the destruction process.
-  service_ = NULL;
-  profile_.reset(NULL);
-  MessageLoop::current()->RunAllPending();
-}
-
-// This is modeled on a similar routine in ExtensionServiceTestBase.
-void BackgroundApplicationListModelTest::InitializeEmptyExtensionService() {
-  TestingProfile* profile = new TestingProfile();
-  profile_.reset(profile);
-  service_ = profile->CreateExtensionService(
-      CommandLine::ForCurrentProcess(),
-      bogus_file_path(), false);
-  service_->set_extensions_enabled(true);
-  service_->set_show_extensions_prompts(false);
-  service_->OnLoadedInstalledExtensions(); /* Sends EXTENSIONS_READY */
-}
 
 // Returns a barebones test Extension object with the specified |name|.  The
 // returned extension will include background permission iff
@@ -100,7 +72,7 @@ static scoped_refptr<Extension> CreateExtension(const std::string& name,
 // With minimal test logic, verifies behavior over an explicit set of
 // extensions, of which some are Background Apps and others are not.
 TEST_F(BackgroundApplicationListModelTest, LoadExplicitExtensions) {
-  InitializeEmptyExtensionService();
+  InitializeAndLoadEmptyExtensionService();
   ExtensionService* service = profile_->GetExtensionService();
   ASSERT_TRUE(service);
   ASSERT_TRUE(service->is_ready());
@@ -177,7 +149,7 @@ std::string GenerateUniqueExtensionName() {
 // Verifies behavior with a pseudo-randomly generated set of actions: Adding and
 // removing extensions, of which some are Background Apps and others are not.
 TEST_F(BackgroundApplicationListModelTest, LoadRandomExtension) {
-  InitializeEmptyExtensionService();
+  InitializeAndLoadEmptyExtensionService();
   ExtensionService* service = profile_->GetExtensionService();
   ASSERT_TRUE(service);
   ASSERT_TRUE(service->is_ready());

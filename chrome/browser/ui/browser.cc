@@ -630,11 +630,11 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
     return contents;
 
   // Check the prefs for overridden mode.
-  ExtensionService* extensions_service = profile->GetExtensionService();
-  DCHECK(extensions_service);
+  ExtensionService* extension_service = profile->GetExtensionService();
+  DCHECK(extension_service);
 
   ExtensionPrefs::LaunchType launch_type =
-      extensions_service->extension_prefs()->GetLaunchType(
+      extension_service->extension_prefs()->GetLaunchType(
           extension->id(), ExtensionPrefs::LAUNCH_DEFAULT);
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppTabLaunchType", launch_type, 100);
   int add_type = TabStripModel::ADD_ACTIVE;
@@ -3299,14 +3299,13 @@ void Browser::OnDidGetApplicationInfo(TabContentsWrapper* source,
 
 void Browser::OnInstallApplication(TabContentsWrapper* source,
                                    const WebApplicationInfo& web_app) {
-  ExtensionService* extensions_service = profile()->GetExtensionService();
-  if (!extensions_service)
+  ExtensionService* extension_service = profile()->GetExtensionService();
+  if (!extension_service)
     return;
 
-  scoped_refptr<CrxInstaller> installer(
-      new CrxInstaller(extensions_service,
-                       extensions_service->show_extensions_prompts() ?
-                       new ExtensionInstallUI(profile()) : NULL));
+  scoped_refptr<CrxInstaller> installer(extension_service->MakeCrxInstaller(
+      extension_service->show_extensions_prompts() ?
+      new ExtensionInstallUI(profile()) : NULL));
   installer->InstallWebApp(web_app);
 }
 
@@ -3626,9 +3625,9 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_INTERNET_OPTIONS, true);
 #endif
 
-  ExtensionService* extensions_service = profile()->GetExtensionService();
+  ExtensionService* extension_service = profile()->GetExtensionService();
   bool enable_extensions =
-      extensions_service && extensions_service->extensions_enabled();
+      extension_service && extension_service->extensions_enabled();
   command_updater_.UpdateCommandEnabled(IDC_MANAGE_EXTENSIONS,
                                         enable_extensions);
 

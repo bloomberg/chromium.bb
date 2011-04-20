@@ -236,7 +236,7 @@ bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
       return false;
 
     scoped_refptr<CrxInstaller> installer(
-        new CrxInstaller(service, install_ui));
+        service->MakeCrxInstaller(install_ui));
     installer->set_expected_id(id);
     installer->InstallCrx(crx_path);
 

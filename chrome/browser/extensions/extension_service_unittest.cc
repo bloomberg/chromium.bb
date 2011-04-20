@@ -345,16 +345,17 @@ class ExtensionTestingProfile : public TestingProfile {
   virtual ChromeAppCacheService* GetAppCacheService() {
     if (!appcache_service_) {
       appcache_service_ = new ChromeAppCacheService;
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              appcache_service_.get(),
-              &ChromeAppCacheService::InitializeOnIOThread,
-              IsOffTheRecord()
+      if (!BrowserThread::PostTask(
+              BrowserThread::IO, FROM_HERE,
+              NewRunnableMethod(
+                  appcache_service_.get(),
+                  &ChromeAppCacheService::InitializeOnIOThread,
+                  IsOffTheRecord()
                   ? FilePath() : GetPath().Append(chrome::kAppCacheDirname),
-              make_scoped_refptr(GetHostContentSettingsMap()),
-              make_scoped_refptr(GetExtensionSpecialStoragePolicy()),
-              false));
+                  make_scoped_refptr(GetHostContentSettingsMap()),
+                  make_scoped_refptr(GetExtensionSpecialStoragePolicy()),
+                  false)))
+        NOTREACHED();
     }
     return appcache_service_;
   }
@@ -374,7 +375,8 @@ class ExtensionTestingProfile : public TestingProfile {
 
 // Our message loop may be used in tests which require it to be an IO loop.
 ExtensionServiceTestBase::ExtensionServiceTestBase()
-    : total_successes_(0),
+    : service_(NULL),
+      total_successes_(0),
       loop_(MessageLoop::TYPE_IO),
       ui_thread_(BrowserThread::UI, &loop_),
       db_thread_(BrowserThread::DB, &loop_),
@@ -417,7 +419,7 @@ void ExtensionServiceTestBase::InitializeExtensionService(
       autoupdate_enabled);
   service_->set_extensions_enabled(true);
   service_->set_show_extensions_prompts(false);
-  profile->set_extensions_service(service_.get());
+  profile->set_extensions_service(service_);
 
   // When we start up, we want to make sure there is no external provider,
   // since the ExtensionService on Windows will use the Registry as a default
@@ -578,9 +580,8 @@ class ExtensionServiceTest
   void StartCrxInstall(const FilePath& crx_path) {
     ASSERT_TRUE(file_util::PathExists(crx_path))
         << "Path does not exist: "<< crx_path.value().c_str();
-    scoped_refptr<CrxInstaller> installer(
-        new CrxInstaller(service_,  // frontend
-                         NULL));  // no client (silent install)
+    // no client (silent install)
+    scoped_refptr<CrxInstaller> installer(service_->MakeCrxInstaller(NULL));
     installer->InstallCrx(crx_path);
   }
 
@@ -595,9 +596,8 @@ class ExtensionServiceTest
                               bool should_succeed) {
     ASSERT_TRUE(file_util::PathExists(crx_path))
         << "Path does not exist: "<< crx_path.value().c_str();
-    scoped_refptr<CrxInstaller> installer(
-        new CrxInstaller(service_,  // frontend
-                         NULL));  // no client (silent install)
+    // no client (silent install)
+    scoped_refptr<CrxInstaller> installer(service_->MakeCrxInstaller(NULL));
 
     installer->set_install_source(install_location);
     installer->InstallCrx(crx_path);
@@ -1252,8 +1252,8 @@ TEST_F(ExtensionServiceTest, InstallUserScript) {
              .AppendASCII("user_script_basic.user.js");
 
   ASSERT_TRUE(file_util::PathExists(path));
-  scoped_refptr<CrxInstaller> installer(
-      new CrxInstaller(service_, NULL));  // silent install
+  // Pass NULL to install silently.
+  scoped_refptr<CrxInstaller> installer(service_->MakeCrxInstaller(NULL));
   installer->InstallUserScript(
       path,
       GURL("http://www.aaronboodman.com/scripts/user_script_basic.user.js"));
@@ -2957,7 +2957,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallRegistry) {
 
   // Now add providers. Extension system takes ownership of the objects.
   MockExtensionProvider* reg_provider =
-      new MockExtensionProvider(service_.get(), Extension::EXTERNAL_REGISTRY);
+      new MockExtensionProvider(service_, Extension::EXTERNAL_REGISTRY);
   AddMockExternalProvider(reg_provider);
   TestExternalProvider(reg_provider, Extension::EXTERNAL_REGISTRY);
 }
@@ -2968,7 +2968,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallPref) {
 
   // Now add providers. Extension system takes ownership of the objects.
   MockExtensionProvider* pref_provider =
-      new MockExtensionProvider(service_.get(), Extension::EXTERNAL_PREF);
+      new MockExtensionProvider(service_, Extension::EXTERNAL_PREF);
 
   AddMockExternalProvider(pref_provider);
   TestExternalProvider(pref_provider, Extension::EXTERNAL_PREF);
@@ -2987,7 +2987,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallPrefUpdateUrl) {
   // what the visitor does results in an extension being downloaded and
   // installed.
   MockExtensionProvider* pref_provider =
-      new MockExtensionProvider(service_.get(),
+      new MockExtensionProvider(service_,
                                 Extension::EXTERNAL_PREF_DOWNLOAD);
   AddMockExternalProvider(pref_provider);
   TestExternalProvider(pref_provider, Extension::EXTERNAL_PREF_DOWNLOAD);
@@ -3006,7 +3006,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallPolicyUpdateUrl) {
   // what the visitor does results in an extension being downloaded and
   // installed.
   MockExtensionProvider* pref_provider =
-      new MockExtensionProvider(service_.get(),
+      new MockExtensionProvider(service_,
                                 Extension::EXTERNAL_POLICY_DOWNLOAD);
   AddMockExternalProvider(pref_provider);
   TestExternalProvider(pref_provider, Extension::EXTERNAL_POLICY_DOWNLOAD);
@@ -3048,7 +3048,7 @@ TEST_F(ExtensionServiceTest, MultipleExternalUpdateCheck) {
   InitializeEmptyExtensionService();
 
   MockExtensionProvider* provider =
-      new MockExtensionProvider(service_.get(), Extension::EXTERNAL_PREF);
+      new MockExtensionProvider(service_, Extension::EXTERNAL_PREF);
   AddMockExternalProvider(provider);
 
   // Verify that starting with no providers loads no extensions.
@@ -3272,15 +3272,16 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   BrowserThread ui_thread(BrowserThread::UI, &loop);
   BrowserThread file_thread(BrowserThread::FILE, &loop);
   scoped_ptr<CommandLine> command_line;
-  scoped_refptr<ExtensionService> service;
   FilePath install_dir = profile->GetPath()
       .AppendASCII(ExtensionService::kInstallDirectoryName);
 
   // By default, we are enabled.
   command_line.reset(new CommandLine(CommandLine::NO_PROGRAM));
-  service = profile->CreateExtensionService(command_line.get(),
-                                            install_dir,
-                                            false);
+  // Owned by |profile|.
+  ExtensionService* service =
+      profile->CreateExtensionService(command_line.get(),
+                                      install_dir,
+                                      false);
   EXPECT_TRUE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();

@@ -106,15 +106,15 @@ bool CrxInstaller::ClearWhitelistedInstallId(const std::string& id) {
   return false;
 }
 
-CrxInstaller::CrxInstaller(ExtensionService* frontend,
+CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
                            ExtensionInstallUI* client)
-    : install_directory_(frontend->install_directory()),
+    : install_directory_(frontend_weak->install_directory()),
       install_source_(Extension::INTERNAL),
-      extensions_enabled_(frontend->extensions_enabled()),
+      extensions_enabled_(frontend_weak->extensions_enabled()),
       delete_source_(false),
       is_gallery_install_(false),
       create_app_shortcut_(false),
-      frontend_(frontend),
+      frontend_weak_(frontend_weak),
       client_(client),
       apps_require_extension_mime_type_(false),
       allow_silent_install_(false) {
@@ -125,17 +125,19 @@ CrxInstaller::~CrxInstaller() {
   // destructor might be called on any thread, so we post a task to the file
   // thread to make sure the delete happens there.
   if (!temp_dir_.value().empty()) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        NewRunnableFunction(
-            &extension_file_util::DeleteFile, temp_dir_, true));
+    if (!BrowserThread::PostTask(
+            BrowserThread::FILE, FROM_HERE,
+            NewRunnableFunction(
+                &extension_file_util::DeleteFile, temp_dir_, true)))
+      NOTREACHED();
   }
 
   if (delete_source_) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        NewRunnableFunction(
-            &extension_file_util::DeleteFile, source_file_, false));
+    if (!BrowserThread::PostTask(
+            BrowserThread::FILE, FROM_HERE,
+            NewRunnableFunction(
+                &extension_file_util::DeleteFile, source_file_, false)))
+      NOTREACHED();
   }
 
   // Make sure the UI is deleted on the ui thread.
@@ -152,10 +154,11 @@ void CrxInstaller::InstallCrx(const FilePath& source_file) {
           g_browser_process->resource_dispatcher_host(),
           this));
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          unpacker.get(), &SandboxedExtensionUnpacker::Start));
+  if (!BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          NewRunnableMethod(
+              unpacker.get(), &SandboxedExtensionUnpacker::Start)))
+    NOTREACHED();
 }
 
 void CrxInstaller::InstallUserScript(const FilePath& source_file,
@@ -165,9 +168,11 @@ void CrxInstaller::InstallUserScript(const FilePath& source_file,
   source_file_ = source_file;
   original_url_ = original_url;
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &CrxInstaller::ConvertUserScriptOnFileThread));
+  if (!BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          NewRunnableMethod(this,
+                            &CrxInstaller::ConvertUserScriptOnFileThread)))
+    NOTREACHED();
 }
 
 void CrxInstaller::ConvertUserScriptOnFileThread() {
@@ -183,10 +188,11 @@ void CrxInstaller::ConvertUserScriptOnFileThread() {
 }
 
 void CrxInstaller::InstallWebApp(const WebApplicationInfo& web_app) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &CrxInstaller::ConvertWebAppOnFileThread,
-                        web_app));
+  if (!BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          NewRunnableMethod(this, &CrxInstaller::ConvertWebAppOnFileThread,
+                            web_app)))
+    NOTREACHED();
 }
 
 void CrxInstaller::ConvertWebAppOnFileThread(
@@ -317,9 +323,10 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
                           &install_icon_);
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &CrxInstaller::ConfirmInstall));
+  if (!BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          NewRunnableMethod(this, &CrxInstaller::ConfirmInstall)))
+    NOTREACHED();
 }
 
 // Helper method to let us compare a whitelisted manifest with the actual
@@ -335,14 +342,18 @@ static bool EqualsIgnoringPublicKey(
 
 void CrxInstaller::ConfirmInstall() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (frontend_->extension_prefs()->IsExtensionBlacklisted(extension_->id())) {
+  if (!frontend_weak_.get())
+    return;
+
+  if (frontend_weak_->extension_prefs()
+      ->IsExtensionBlacklisted(extension_->id())) {
     VLOG(1) << "This extension: " << extension_->id()
             << " is blacklisted. Install failed.";
     ReportFailureFromUIThread("This extension is blacklisted.");
     return;
   }
 
-  if (!frontend_->extension_prefs()->IsExtensionAllowedByPolicy(
+  if (!frontend_weak_->extension_prefs()->IsExtensionAllowedByPolicy(
       extension_->id())) {
     ReportFailureFromUIThread("This extension is blacklisted by admin policy.");
     return;
@@ -350,7 +361,8 @@ void CrxInstaller::ConfirmInstall() {
 
   GURL overlapping_url;
   const Extension* overlapping_extension =
-      frontend_->GetExtensionByOverlappingWebExtent(extension_->web_extent());
+      frontend_weak_->
+      GetExtensionByOverlappingWebExtent(extension_->web_extent());
   if (overlapping_extension &&
       overlapping_extension->id() != extension_->id()) {
     ReportFailureFromUIThread(l10n_util::GetStringFUTF8(
@@ -360,7 +372,7 @@ void CrxInstaller::ConfirmInstall() {
   }
 
   current_version_ =
-      frontend_->extension_prefs()->GetVersionString(extension_->id());
+      frontend_weak_->extension_prefs()->GetVersionString(extension_->id());
 
   // First see if it's whitelisted by id (the old mechanism).
   bool whitelisted = ClearWhitelistedInstallId(extension_->id()) &&
@@ -384,17 +396,19 @@ void CrxInstaller::ConfirmInstall() {
     AddRef();  // Balanced in Proceed() and Abort().
     client_->ConfirmInstall(this, extension_.get());
   } else {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(this, &CrxInstaller::CompleteInstall));
+    if (!BrowserThread::PostTask(
+            BrowserThread::FILE, FROM_HERE,
+            NewRunnableMethod(this, &CrxInstaller::CompleteInstall)))
+      NOTREACHED();
   }
   return;
 }
 
 void CrxInstaller::InstallUIProceed() {
-  BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(this, &CrxInstaller::CompleteInstall));
+  if (!BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          NewRunnableMethod(this, &CrxInstaller::CompleteInstall)))
+    NOTREACHED();
 
   Release();  // balanced in ConfirmInstall().
 }
@@ -465,9 +479,12 @@ void CrxInstaller::CompleteInstall() {
 
 void CrxInstaller::ReportFailureFromFileThread(const std::string& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &CrxInstaller::ReportFailureFromUIThread, error));
+  if (!BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          NewRunnableMethod(this,
+                            &CrxInstaller::ReportFailureFromUIThread,
+                            error)))
+    NOTREACHED();
 }
 
 void CrxInstaller::ReportFailureFromUIThread(const std::string& error) {
@@ -491,13 +508,18 @@ void CrxInstaller::ReportFailureFromUIThread(const std::string& error) {
 
 void CrxInstaller::ReportSuccessFromFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &CrxInstaller::ReportSuccessFromUIThread));
+  if (!BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          NewRunnableMethod(this,
+                            &CrxInstaller::ReportSuccessFromUIThread)))
+    NOTREACHED();
 }
 
 void CrxInstaller::ReportSuccessFromUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!frontend_weak_.get())
+    return;
 
   // If there is a client, tell the client about installation.
   if (client_)
@@ -505,7 +527,7 @@ void CrxInstaller::ReportSuccessFromUIThread() {
 
   // Tell the frontend about the installation and hand off ownership of
   // extension_ to it.
-  frontend_->OnExtensionInstalled(extension_);
+  frontend_weak_->OnExtensionInstalled(extension_);
   extension_ = NULL;
 
   // We're done. We don't post any more tasks to ourselves so we are deleted

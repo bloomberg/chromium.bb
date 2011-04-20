@@ -32,12 +32,12 @@ class ExtensionTestingProfile : public TestingProfile {
     extension_prefs_.reset(new ExtensionPrefs(GetPrefs(),
                                               GetExtensionsInstallDir(),
                                               extension_pref_value_map_.get()));
-    service_ = new ExtensionService(this,
-                                     CommandLine::ForCurrentProcess(),
-                                     GetExtensionsInstallDir(),
-                                     extension_prefs_.get(),
-                                     false,
-                                     true);
+    service_.reset(new ExtensionService(this,
+                                        CommandLine::ForCurrentProcess(),
+                                        GetExtensionsInstallDir(),
+                                        extension_prefs_.get(),
+                                        false,
+                                        true));
     service_->set_extensions_enabled(true);
     service_->set_show_extensions_prompts(false);
     service_->ClearProvidersForTesting();
@@ -46,7 +46,7 @@ class ExtensionTestingProfile : public TestingProfile {
 
   void ShutdownExtensionProfile() {
     manager_.reset();
-    service_ = NULL;
+    service_.reset();
     extension_prefs_.reset();
   }
 
@@ -61,7 +61,7 @@ class ExtensionTestingProfile : public TestingProfile {
  private:
   scoped_ptr<ExtensionProcessManager> manager_;
   scoped_ptr<ExtensionPrefs> extension_prefs_;
-  scoped_refptr<ExtensionService> service_;
+  scoped_ptr<ExtensionService> service_;
   scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionTestingProfile);

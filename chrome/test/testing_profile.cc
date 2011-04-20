@@ -202,9 +202,9 @@ TestingProfile::~TestingProfile() {
   // FaviconService depends on HistoryServce so destroying it later.
   DestroyFaviconService();
   DestroyWebDataService();
-  if (extensions_service_.get()) {
-    extensions_service_->DestroyingProfile();
-    extensions_service_ = NULL;
+  if (extension_service_.get()) {
+    extension_service_->DestroyingProfile();
+    extension_service_.reset();
   }
   if (pref_proxy_config_tracker_.get())
     pref_proxy_config_tracker_->DetachFromPrefService();
@@ -358,13 +358,13 @@ ExtensionService* TestingProfile::CreateExtensionService(
       new ExtensionPrefs(GetPrefs(),
                          install_directory,
                          extension_pref_value_map_.get()));
-  extensions_service_ = new ExtensionService(this,
-                                             command_line,
-                                             install_directory,
-                                             extension_prefs_.get(),
-                                             autoupdate_enabled,
-                                             true);
-  return extensions_service_;
+  extension_service_.reset(new ExtensionService(this,
+                                                command_line,
+                                                install_directory,
+                                                extension_prefs_.get(),
+                                                autoupdate_enabled,
+                                                true));
+  return extension_service_.get();
 }
 
 FilePath TestingProfile::GetPath() {
@@ -420,7 +420,7 @@ VisitedLinkMaster* TestingProfile::GetVisitedLinkMaster() {
 }
 
 ExtensionService* TestingProfile::GetExtensionService() {
-  return extensions_service_.get();
+  return extension_service_.get();
 }
 
 UserScriptMaster* TestingProfile::GetUserScriptMaster() {

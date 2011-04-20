@@ -204,7 +204,7 @@ std::string ExtensionsUIHTMLSource::GetMimeType(const std::string&) const {
 ///////////////////////////////////////////////////////////////////////////////
 
 ExtensionsDOMHandler::ExtensionsDOMHandler(ExtensionService* extension_service)
-    : extensions_service_(extension_service),
+    : extension_service_(extension_service),
       ignore_notifications_(false),
       deleting_rvh_(NULL) {
   RegisterForNotifications();
@@ -247,35 +247,35 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const ListValue* args) {
   // Add the extensions to the results structure.
   ListValue* extensions_list = new ListValue();
 
-  const ExtensionList* extensions = extensions_service_->extensions();
+  const ExtensionList* extensions = extension_service_->extensions();
   for (ExtensionList::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
     if (ShouldShowExtension(*extension)) {
       extensions_list->Append(CreateExtensionDetailValue(
-          extensions_service_.get(),
+          extension_service_,
           *extension,
           GetActivePagesForExtension(*extension),
           true, false));  // enabled, terminated
     }
   }
-  extensions = extensions_service_->disabled_extensions();
+  extensions = extension_service_->disabled_extensions();
   for (ExtensionList::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
     if (ShouldShowExtension(*extension)) {
       extensions_list->Append(CreateExtensionDetailValue(
-          extensions_service_.get(),
+          extension_service_,
           *extension,
           GetActivePagesForExtension(*extension),
           false, false));  // enabled, terminated
     }
   }
-  extensions = extensions_service_->terminated_extensions();
+  extensions = extension_service_->terminated_extensions();
   std::vector<ExtensionPage> empty_pages;
   for (ExtensionList::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
     if (ShouldShowExtension(*extension)) {
       extensions_list->Append(CreateExtensionDetailValue(
-          extensions_service_.get(),
+          extension_service_,
           *extension,
           empty_pages,  // Terminated process has no active pages.
           false, true));  // enabled, terminated
@@ -360,7 +360,7 @@ void ExtensionsDOMHandler::HandleInspectMessage(const ListValue* args) {
 void ExtensionsDOMHandler::HandleReloadMessage(const ListValue* args) {
   std::string extension_id = UTF16ToASCII(ExtractStringValue(args));
   CHECK(!extension_id.empty());
-  extensions_service_->ReloadExtension(extension_id);
+  extension_service_->ReloadExtension(extension_id);
 }
 
 void ExtensionsDOMHandler::HandleEnableMessage(const ListValue* args) {
@@ -369,7 +369,7 @@ void ExtensionsDOMHandler::HandleEnableMessage(const ListValue* args) {
   CHECK(args->GetString(0, &extension_id));
   CHECK(args->GetString(1, &enable_str));
   const Extension* extension =
-      extensions_service_->GetExtensionById(extension_id, true);
+      extension_service_->GetExtensionById(extension_id, true);
   DCHECK(extension);
   if (!Extension::UserMayDisable(extension->location())) {
     LOG(ERROR) << "Attempt to enable an extension that is non-usermanagable was"
@@ -378,15 +378,15 @@ void ExtensionsDOMHandler::HandleEnableMessage(const ListValue* args) {
   }
 
   if (enable_str == "true") {
-    ExtensionPrefs* prefs = extensions_service_->extension_prefs();
+    ExtensionPrefs* prefs = extension_service_->extension_prefs();
     if (prefs->DidExtensionEscalatePermissions(extension_id)) {
-      ShowExtensionDisabledDialog(extensions_service_,
+      ShowExtensionDisabledDialog(extension_service_,
                                   web_ui_->GetProfile(), extension);
     } else {
-      extensions_service_->EnableExtension(extension_id);
+      extension_service_->EnableExtension(extension_id);
     }
   } else {
-    extensions_service_->DisableExtension(extension_id);
+    extension_service_->DisableExtension(extension_id);
   }
 }
 
@@ -396,7 +396,7 @@ void ExtensionsDOMHandler::HandleEnableIncognitoMessage(const ListValue* args) {
   CHECK(args->GetString(0, &extension_id));
   CHECK(args->GetString(1, &enable_str));
   const Extension* extension =
-      extensions_service_->GetExtensionById(extension_id, true);
+      extension_service_->GetExtensionById(extension_id, true);
   DCHECK(extension);
 
   // Flipping the incognito bit will generate unload/load notifications for the
@@ -411,8 +411,8 @@ void ExtensionsDOMHandler::HandleEnableIncognitoMessage(const ListValue* args) {
   //
   // Bug: http://crbug.com/41384
   ignore_notifications_ = true;
-  extensions_service_->SetIsIncognitoEnabled(extension_id,
-                                             enable_str == "true");
+  extension_service_->SetIsIncognitoEnabled(extension_id,
+                                            enable_str == "true");
   ignore_notifications_ = false;
 }
 
@@ -422,7 +422,7 @@ void ExtensionsDOMHandler::HandleAllowFileAccessMessage(const ListValue* args) {
   CHECK(args->GetString(0, &extension_id));
   CHECK(args->GetString(1, &allow_str));
   const Extension* extension =
-      extensions_service_->GetExtensionById(extension_id, true);
+      extension_service_->GetExtensionById(extension_id, true);
   DCHECK(extension);
   if (!Extension::UserMayDisable(extension->location())) {
     LOG(ERROR) << "Attempt to change allow file access of an extension that is "
@@ -431,16 +431,16 @@ void ExtensionsDOMHandler::HandleAllowFileAccessMessage(const ListValue* args) {
     return;
   }
 
-  extensions_service_->SetAllowFileAccess(extension, allow_str == "true");
+  extension_service_->SetAllowFileAccess(extension, allow_str == "true");
 }
 
 void ExtensionsDOMHandler::HandleUninstallMessage(const ListValue* args) {
   std::string extension_id = UTF16ToASCII(ExtractStringValue(args));
   CHECK(!extension_id.empty());
   const Extension* extension =
-      extensions_service_->GetExtensionById(extension_id, true);
+      extension_service_->GetExtensionById(extension_id, true);
   if (!extension)
-    extension = extensions_service_->GetTerminatedExtension(extension_id);
+    extension = extension_service_->GetTerminatedExtension(extension_id);
   if (!extension)
     return;
 
@@ -466,17 +466,17 @@ void ExtensionsDOMHandler::ExtensionDialogAccepted() {
   // The extension can be uninstalled in another window while the UI was
   // showing. Do nothing in that case.
   const Extension* extension =
-      extensions_service_->GetExtensionById(extension_id_prompting_, true);
+      extension_service_->GetExtensionById(extension_id_prompting_, true);
   if (!extension) {
-    extension = extensions_service_->GetTerminatedExtension(
+    extension = extension_service_->GetTerminatedExtension(
         extension_id_prompting_);
     was_terminated = true;
   }
   if (!extension)
     return;
 
-  extensions_service_->UninstallExtension(extension_id_prompting_,
-                                          false /* external_uninstall */, NULL);
+  extension_service_->UninstallExtension(extension_id_prompting_,
+                                         false /* external_uninstall */, NULL);
   extension_id_prompting_ = "";
 
   // There will be no EXTENSION_UNLOADED notification for terminated
@@ -499,14 +499,14 @@ void ExtensionsDOMHandler::HandleOptionsMessage(const ListValue* args) {
 
 void ExtensionsDOMHandler::HandleShowButtonMessage(const ListValue* args) {
   const Extension* extension = GetExtension(args);
-  extensions_service_->SetBrowserActionVisibility(extension, true);
+  extension_service_->SetBrowserActionVisibility(extension, true);
 }
 
 void ExtensionsDOMHandler::HandleLoadMessage(const ListValue* args) {
   FilePath::StringType string_path;
   CHECK(args->GetSize() == 1) << args->GetSize();
   CHECK(args->GetString(0, &string_path));
-  extensions_service_->LoadExtension(FilePath(string_path));
+  extension_service_->LoadExtension(FilePath(string_path));
 }
 
 void ExtensionsDOMHandler::ShowAlert(const std::string& message) {
@@ -562,7 +562,7 @@ void ExtensionsDOMHandler::OnPackFailure(const std::string& error) {
 }
 
 void ExtensionsDOMHandler::HandleAutoUpdateMessage(const ListValue* args) {
-  ExtensionUpdater* updater = extensions_service_->updater();
+  ExtensionUpdater* updater = extension_service_->updater();
   if (updater)
     updater->CheckNow();
 }
@@ -664,7 +664,7 @@ void ExtensionsDOMHandler::Observe(NotificationType type,
 const Extension* ExtensionsDOMHandler::GetExtension(const ListValue* args) {
   std::string extension_id = UTF16ToASCII(ExtractStringValue(args));
   CHECK(!extension_id.empty());
-  return extensions_service_->GetExtensionById(extension_id, true);
+  return extension_service_->GetExtensionById(extension_id, true);
 }
 
 void ExtensionsDOMHandler::MaybeUpdateAfterNotification() {
@@ -752,16 +752,16 @@ std::vector<ExtensionPage> ExtensionsDOMHandler::GetActivePagesForExtension(
 
   // Get the extension process's active views.
   ExtensionProcessManager* process_manager =
-      extensions_service_->profile()->GetExtensionProcessManager();
+      extension_service_->profile()->GetExtensionProcessManager();
   GetActivePagesForExtensionProcess(
       process_manager->GetExtensionProcess(extension->url()),
       extension, &result);
 
   // Repeat for the incognito process, if applicable.
-  if (extensions_service_->profile()->HasOffTheRecordProfile() &&
+  if (extension_service_->profile()->HasOffTheRecordProfile() &&
       extension->incognito_split_mode()) {
     ExtensionProcessManager* process_manager =
-        extensions_service_->profile()->GetOffTheRecordProfile()->
+        extension_service_->profile()->GetOffTheRecordProfile()->
             GetExtensionProcessManager();
     GetActivePagesForExtensionProcess(
         process_manager->GetExtensionProcess(extension->url()),
