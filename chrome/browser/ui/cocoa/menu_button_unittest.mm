@@ -44,7 +44,7 @@
                                              nil];
   [menu performSelector:@selector(cancelTracking)
              withObject:nil
-             afterDelay:1.5
+             afterDelay:0.1
                 inModes:modes];
 }
 
