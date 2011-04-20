@@ -161,8 +161,14 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
   if (render_directly_to_web_view)
     attributes_.antialias = false;
 
+  if (!gl_context_->MakeCurrent()) {
+    gl_context_.reset();
+    return false;
+  }
+
   const char* extensions =
       reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+  DCHECK(extensions);
   have_ext_framebuffer_object_ =
       strstr(extensions, "GL_EXT_framebuffer_object") != NULL;
   have_ext_framebuffer_multisample_ =
