@@ -379,3 +379,8 @@ bool BackgroundModeManager::IsBackgroundModeEnabled(
   return background_mode_enabled;
 #endif
 }
+
+// static
+void BackgroundModeManager::RegisterPrefs(PrefService* prefs) {
+  prefs->RegisterBooleanPref(prefs::kUserCreatedLoginItem, false);
+}

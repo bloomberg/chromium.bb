@@ -102,6 +102,7 @@ void RegisterLocalState(PrefService* local_state) {
   TaskManager::RegisterPrefs(local_state);
   geolocation::RegisterPrefs(local_state);
   AutofillManager::RegisterBrowserPrefs(local_state);
+  BackgroundModeManager::RegisterPrefs(local_state);
   BackgroundPageTracker::RegisterPrefs(local_state);
   NotificationUIManager::RegisterPrefs(local_state);
   PrefProxyConfigService::RegisterPrefs(local_state);

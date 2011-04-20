@@ -1323,4 +1323,9 @@ const char kKnownBackgroundPages[] = "background_pages.known";
 
 // Dictionary that maps URL schemes (protocols) to URL handlers.
 const char kRegisteredProtocolHandlers[] = "registered_protocol_handlers";
+
+// Set to true if the user created a login item so we should not modify it when
+// uninstalling background apps.
+const char kUserCreatedLoginItem[] = "background_mode.user_created_login_item";
+
 }  // namespace prefs

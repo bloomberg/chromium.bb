@@ -489,6 +489,8 @@ extern const char kKnownBackgroundPages[];
 
 extern const char kRegisteredProtocolHandlers[];
 
+extern const char kUserCreatedLoginItem[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_
