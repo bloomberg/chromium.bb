@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <assert.h>
@@ -88,7 +88,10 @@ static uint8_t BPCodeX86[] = { 0xCC };
 
 static Abi::BPDef BPX86 = BPDEF(BPCodeX86);
 
-static AbiMap_t s_Abis;
+static AbiMap_t *GetAbis() {
+  static AbiMap_t *_abis = new AbiMap_t();
+  return _abis;
+}
 
 // AbiInit & AbiIsAvailable
 //   This pair of functions work together as singleton to
@@ -135,7 +138,8 @@ void Abi::Register(const char *name, RegDef *regs,
   abi->ctxSize_ = offs;
   abi->bpDef_ = bp;
 
-  s_Abis[name] = abi;
+  AbiMap_t *abis = GetAbis();
+  (*abis)[name] = abi;
 }
 
 const Abi* Abi::Find(const char *name) {
@@ -144,8 +148,8 @@ const Abi* Abi::Find(const char *name) {
     return NULL;
   }
 
-  AbiMap_t::const_iterator itr = s_Abis.find(name);
-  if (itr == s_Abis.end()) return NULL;
+  AbiMap_t::const_iterator itr = GetAbis()->find(name);
+  if (itr == GetAbis()->end()) return NULL;
 
   return itr->second;
 }
@@ -206,4 +210,3 @@ const Abi::RegDef *Abi::GetRegisterType(RegType rtype, uint32_t nth) const {
 }
 
 }  // namespace gdb_rsp
-
