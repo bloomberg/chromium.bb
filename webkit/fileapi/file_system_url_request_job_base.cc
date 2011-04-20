@@ -75,6 +75,9 @@ FileSystemURLRequestJobBase::FileSystemURLRequestJobBase(
       file_thread_proxy_(file_thread_proxy) {
 }
 
+FileSystemURLRequestJobBase::~FileSystemURLRequestJobBase() {
+}
+
 FileSystemOperation* FileSystemURLRequestJobBase::GetNewOperation() {
   LocalPathCallbackDispatcher* dispatcher =
       new LocalPathCallbackDispatcher(this);
