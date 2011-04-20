@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #if NACL_OSX
@@ -140,11 +140,12 @@ int NaClTlsInit() {
   errnum = pthread_key_create(&nacl_thread_info_key, (void (*)(void *)) 0);
   if (0 != errnum) {
     NaClLog(LOG_WARNING,
-            "NaClTlsInit: pthread_key_create failed, %d\n",
+            "NaClTlsInit: pthread_key_create failed for thread info key, %d\n",
             errnum);
     return 0;
   }
   nacl_thread_index_tls_offset = pthread_tsd_offset + 8 * nacl_thread_info_key;
+
   return 1;
 }
 
@@ -153,7 +154,7 @@ void NaClTlsFini() {
   int errnum = pthread_key_delete(nacl_thread_info_key);
   if (0 != errnum) {
     NaClLog(LOG_FATAL,
-            "NaClTlsInit: pthread_key_delete failed, %d\n",
+            "NaClTlsInit: pthread_key_delete failed for thred info key, %d\n",
             errnum);
   }
   NaClThreadIdxFini();

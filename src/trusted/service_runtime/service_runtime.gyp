@@ -46,6 +46,7 @@
           'nacl_simple_ltd_service.c',
           'nacl_simple_service.c',
           'nacl_signal_common.c',
+          'nacl_stack_safety.c',
           'nacl_sync_queue.c',
           'nacl_syscall_common.c',
           'nacl_syscall_hook.c',

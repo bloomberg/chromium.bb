@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -13,6 +13,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
+#include "native_client/src/trusted/service_runtime/nacl_stack_safety.h"
 
 
 void WINAPI NaClThreadLauncher(void *state) {
@@ -37,6 +38,8 @@ void WINAPI NaClThreadLauncher(void *state) {
   NaClXMutexLock(&natp->nap->threads_mu);
   natp->thread_num = NaClAddThreadMu(natp->nap, natp);
   NaClXMutexUnlock(&natp->nap->threads_mu);
+
+  NaClStackSafetyNowOnUntrustedStack();  /* real soon now! */
 
   /*
    * Notify the debug stub, that a new thread is availible.

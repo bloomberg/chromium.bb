@@ -27,6 +27,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
+#include "native_client/src/trusted/service_runtime/nacl_stack_safety.h"
 
 int NaClArtificialDelay = -1;
 
@@ -123,6 +124,7 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
   sp_user += NACL_SYSCALLRET_FIX;
   NaClSetThreadCtxSp(user, sp_user);
 
+  NaClStackSafetyNowOnTrustedStack();
   if (sysnum >= NACL_MAX_SYSCALLS) {
     NaClLog(2, "INVALID system call %"NACL_PRIdS"\n", sysnum);
     natp->sysret = -NACL_ABI_EINVAL;
@@ -171,6 +173,7 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
    * user_ret is properly sandboxed.
    */
   user_ret = (nacl_reg_t) NaClSandboxCodeAddr(nap, (uintptr_t)user_ret);
+  NaClStackSafetyNowOnUntrustedStack();
 
   NaClSwitchToApp(natp, user_ret);
   /* NOTREACHED */

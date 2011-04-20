@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef SERVICE_RUNTIME_NACL_THREAD_H__
@@ -82,6 +82,16 @@ uint32_t NaClTlsChange(struct NaClAppThread *natp,
  * number of internal structures, e.g.nacl_thread[], nacl_user[], nacl_sys[]
  */
 uint32_t NaClGetThreadIdx(struct NaClAppThread *natp);
+
+
+#if NACL_OSX
+/*
+ * OSX does not have TLS and we emulate it on the trusted side using TSD.
+ */
+extern pthread_key_t nacl_thread_info_key;
+extern uint32_t nacl_thread_index_tls_offset;
+
+#endif
 
 
 #endif /* SERVICE_RUNTIME_NACL_THREAD_H__ */
