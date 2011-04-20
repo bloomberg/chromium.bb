@@ -303,7 +303,7 @@
    Memcheck:Leak
    fun:malloc_zone_calloc
    fun:_internal_class_createInstanceFromZone
-   fun:+[NSObject allocWithZone:]
+   fun:+[NSObject* allocWithZone:]
    ...
    fun:-[NSCustomObject nibInstantiate]
    fun:-[NSIBObjectData instantiateObject:]
@@ -656,7 +656,7 @@
    fun:_ZN9HALSystem15InitializeShellEv
    fun:_ZN9HALSystem16CheckOutInstanceEv
    fun:AudioObjectGetPropertyData
-   fun:_ZN12_GLOBAL__N_116HasAudioHardwareEm
+   fun:*16HasAudioHardwareEm
    fun:_ZN15AudioManagerMac21HasAudioOutputDevicesEv
    fun:_ZN5mediaL21HasAudioOutputDevicesEv
    fun:_ZN5media45AudioOutputControllerTest_CreateAndClose_Test8TestBodyEv
@@ -669,7 +669,7 @@
    fun:_ZN9HALSystem15InitializeShellEv
    fun:_ZN9HALSystem16CheckOutInstanceEv
    fun:AudioObjectGetPropertyData
-   fun:_ZN12_GLOBAL__N_116HasAudioHardwareEm
+   fun:*16HasAudioHardwareEm
    fun:_ZN15AudioManagerMac21HasAudioOutputDevicesEv
    fun:_ZN5mediaL21HasAudioOutputDevicesEv
    fun:_ZN5media45AudioOutputControllerTest_CreateAndClose_Test8TestBodyEv
@@ -1250,15 +1250,12 @@
    Memcheck:Leak
    fun:malloc_zone_malloc
    fun:_CFRuntimeCreateInstance
-   fun:__CFDictionaryInit
+   ...
    fun:utDeactivateAllSelectedIMInDoc
    fun:MyDeactivateTSMDocument
-   fun:_ReactivateTSMDocumentAfterMenuTracking
-   fun:_Z20TearDownMenuTrackingR14MenuSelectData
-   fun:_Z19PopUpMenuSelectCoreP8MenuData5PointdS1_tjPK4RecttmS4_S4_PK10__CFStringPP13OpaqueMenuRefPt
+   ...
    fun:_HandlePopUpMenuSelection7
-   fun:_NSPopUpCarbonMenu3
-   fun:-[NSCarbonMenuImpl popUpMenu:atLocation:width:forView:withSelectedItem:withFont:withFlags:withOptions:]
+   ...
    fun:-[NSPopUpButtonCell trackMouse:inRect:ofView:untilMouseUp:]
    fun:-[NSPopUpButtonCell performClickWithFrame:inView:]
    fun:-[MenuButton(Private) showMenu:]
