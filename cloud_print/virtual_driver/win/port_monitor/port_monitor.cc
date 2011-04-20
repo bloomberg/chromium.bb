@@ -630,6 +630,7 @@ MONITORUI* WINAPI InitializePrintMonitorUI(void) {
 }
 
 HRESULT WINAPI DllRegisterServer(void) {
+  base::AtExitManager at_exit_manager;
   if (!cloud_print::CanRegister()) {
     return E_ACCESSDENIED;
   }
@@ -646,6 +647,7 @@ HRESULT WINAPI DllRegisterServer(void) {
 }
 
 HRESULT WINAPI DllUnregisterServer(void) {
+  base::AtExitManager at_exit_manager;
   if (!cloud_print::CanRegister()) {
     return E_ACCESSDENIED;
   }
