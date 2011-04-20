@@ -27,7 +27,7 @@ BUGCASEQ WIN LINUX : editing/selection/select-from-textfield-outwards.html = IMA
 BUGCASEQ WIN LINUX : fast/forms/input-text-drag-down.html = IMAGE+TEXT
 BUGCASEQ MAC : fast/canvas/image-object-in-canvas.html = IMAGE
 
-BUGDPRANKE : fast/backgrounds/background-leakage.html = IMAGE+TEXT
+BUGDPRANKE : fast/backgrounds/background-leakage.html = IMAGE+TEXT IMAGE
 BUGDPRANKE : media/video-layer-crash.html = IMAGE
 BUGDPRANKE : media/video-transformed.html = IMAGE
 BUGDPRANKE : plugins/embed-attributes-style.html = IMAGE
@@ -46,3 +46,7 @@ BUGDPRANKE LINUX DEBUG : perf/array-nested-loop.html = TEXT TIMEOUT PASS
 BUGDPRANKE LINUX DEBUG : fast/dom/Node/mutation-blur.html = CRASH
 BUGDPRANKE MAC : svg/dom/SVGScriptElement/script-set-href.svg = TEXT PASS
 BUGDPRANKE WIN : media/video-zoom.html = IMAGE
+BUGDPRANKE WIN DEBUG : svg/custom/font-platformDestroy-crash.svg = CRASH
+BUGDPRANKE WIN DEBUG : http/tests/navigation/forward-to-fragment-fires-onload.html = TIMEOUT PASS
+BUGDPRANKE WIN DEBUG : perf/mouse-event.html = TEXT TIMEOUT PASS
+
