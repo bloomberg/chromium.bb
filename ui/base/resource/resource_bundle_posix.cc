@@ -98,14 +98,6 @@ void ResourceBundle::LoadCommonResources() {
   CHECK(!resources_file_path.empty()) << "chrome.pak not found";
   resources_data_ = LoadResourcesDataPak(resources_file_path);
   CHECK(resources_data_) << "failed to load chrome.pak";
-
-  FilePath large_icon_resources_file_path = GetLargeIconResourcesFilePath();
-  if (!large_icon_resources_file_path.empty()) {
-    large_icon_resources_data_ =
-        LoadResourcesDataPak(large_icon_resources_file_path);
-    CHECK(large_icon_resources_data_) <<
-        "failed to load theme_resources_large.pak";
-  }
 }
 
 std::string ResourceBundle::LoadLocaleResources(

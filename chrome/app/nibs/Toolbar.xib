@@ -2,7 +2,7 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10F2521</string>
+		<string key="IBDocument.SystemVersion">10F569</string>
 		<string key="IBDocument.InterfaceBuilderVersion">823</string>
 		<string key="IBDocument.AppKitVersion">1038.29</string>
 		<string key="IBDocument.HIToolboxVersion">461.00</string>
@@ -12,9 +12,9 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="211"/>
 			<integer value="208"/>
 			<integer value="1"/>
+			<integer value="211"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -109,6 +109,10 @@
 							<reference key="NSControlView" ref="368496192"/>
 							<int key="NSButtonFlags">-2039201537</int>
 							<int key="NSButtonFlags2">6</int>
+							<object class="NSCustomResource" key="NSNormalImage">
+								<string key="NSClassName">NSImage</string>
+								<string key="NSResourceName">home_Template</string>
+							</object>
 							<string key="NSAlternateContents"/>
 							<string key="NSKeyEquivalent"/>
 							<int key="NSPeriodicDelay">400</int>
@@ -128,8 +132,12 @@
 							<string key="NSContents"/>
 							<reference key="NSSupport" ref="64724822"/>
 							<reference key="NSControlView" ref="458854861"/>
-							<int key="NSButtonFlags">-2041822977</int>
+							<int key="NSButtonFlags">-2042347265</int>
 							<int key="NSButtonFlags2">6</int>
+							<object class="NSCustomResource" key="NSNormalImage">
+								<string key="NSClassName">NSImage</string>
+								<string key="NSResourceName">reload_Template</string>
+							</object>
 							<string key="NSAlternateContents"/>
 							<string key="NSKeyEquivalent"/>
 							<int key="NSPeriodicDelay">400</int>
@@ -151,6 +159,10 @@
 							<reference key="NSControlView" ref="781044416"/>
 							<int key="NSButtonFlags">-2040250113</int>
 							<int key="NSButtonFlags2">6</int>
+							<object class="NSCustomResource" key="NSNormalImage">
+								<string key="NSClassName">NSImage</string>
+								<string key="NSResourceName">forward_Template</string>
+							</object>
 							<string key="NSAlternateContents"/>
 							<string key="NSKeyEquivalent"/>
 							<int key="NSPeriodicDelay">400</int>
@@ -172,6 +184,10 @@
 							<reference key="NSControlView" ref="634265909"/>
 							<int key="NSButtonFlags">-2039201537</int>
 							<int key="NSButtonFlags2">6</int>
+							<object class="NSCustomResource" key="NSNormalImage">
+								<string key="NSClassName">NSImage</string>
+								<string key="NSResourceName">back_Template</string>
+							</object>
 							<string key="NSAlternateContents"/>
 							<string key="NSKeyEquivalent"/>
 							<int key="NSPeriodicDelay">400</int>
@@ -192,6 +208,10 @@
 							<reference key="NSControlView" ref="602421009"/>
 							<int key="NSButtonFlags">140787967</int>
 							<int key="NSButtonFlags2">6</int>
+							<object class="NSCustomResource" key="NSNormalImage">
+								<string key="NSClassName">NSImage</string>
+								<string key="NSResourceName">NSActionTemplate</string>
+							</object>
 							<string key="NSAlternateContents"/>
 							<string key="NSKeyEquivalent"/>
 							<int key="NSPeriodicDelay">400</int>
@@ -809,13 +829,13 @@
 						<reference key="object" ref="928520650"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="634265909"/>
 							<reference ref="458854861"/>
 							<reference ref="535508469"/>
-							<reference ref="421615633"/>
-							<reference ref="602421009"/>
-							<reference ref="634265909"/>
 							<reference ref="781044416"/>
 							<reference ref="368496192"/>
+							<reference ref="421615633"/>
+							<reference ref="602421009"/>
 						</object>
 						<reference key="parent" ref="0"/>
 					</object>
@@ -1163,7 +1183,6 @@
 					<string>2.CustomClassName</string>
 					<string>2.IBAttributePlaceholdersKey</string>
 					<string>2.IBPluginDependency</string>
-					<string>2.IBViewBoundsToFrameTransform</string>
 					<string>211.IBPluginDependency</string>
 					<string>212.CustomClassName</string>
 					<string>212.IBPluginDependency</string>
@@ -1190,11 +1209,9 @@
 					<string>7.CustomClassName</string>
 					<string>7.IBAttributePlaceholdersKey</string>
 					<string>7.IBPluginDependency</string>
-					<string>7.IBViewBoundsToFrameTransform</string>
 					<string>8.CustomClassName</string>
 					<string>8.IBAttributePlaceholdersKey</string>
 					<string>8.IBPluginDependency</string>
-					<string>8.IBViewBoundsToFrameTransform</string>
 					<string>9.CustomClassName</string>
 					<string>9.IBPluginDependency</string>
 				</object>
@@ -1203,7 +1220,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{534, 631}, {608, 34}}</string>
+					<string>{{357, 437}, {608, 34}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="YES"/>
 					<string>ClickHoldButtonCell</string>
@@ -1212,14 +1229,14 @@
 					<string>AutocompleteTextFieldCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>ImageButtonCell</string>
+					<string>GradientButtonCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>ClickHoldButtonCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{676, 782}, {275, 20}}</string>
+					<string>{{654, 736}, {275, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{985, 896}, {275, 20}}</string>
+					<string>{{644, 640}, {275, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>MenuTrackedButton</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1251,9 +1268,6 @@
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<object class="NSAffineTransform">
-						<bytes key="NSTransformStruct">P4AAAL+AAABAQAAAwfAAAA</bytes>
-					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>MenuTrackedButton</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1301,9 +1315,6 @@
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<object class="NSAffineTransform">
-						<bytes key="NSTransformStruct">P4AAAL+AAABB+AAAwfAAAA</bytes>
-					</object>
 					<string>ToolbarButton</string>
 					<object class="NSMutableDictionary">
 						<string key="NS.key.0">ToolTip</string>
@@ -1314,10 +1325,7 @@
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<object class="NSAffineTransform">
-						<bytes key="NSTransformStruct">P4AAAL+AAABCrgAAwfAAAA</bytes>
-					</object>
-					<string>ImageButtonCell</string>
+					<string>GradientButtonCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
@@ -1384,7 +1392,7 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">ClickHoldButtonCell</string>
-					<string key="superclassName">ImageButtonCell</string>
+					<string key="superclassName">GradientButtonCell</string>
 					<object class="NSMutableDictionary" key="outlets">
 						<string key="NS.key.0">clickHoldTarget_</string>
 						<string key="NS.object.0">id</string>
@@ -1536,8 +1544,24 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">GradientButtonCell</string>
+					<string key="superclassName">NSButtonCell</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/ui/cocoa/gradient_button_cell.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">ToolbarButton</string>
+					<string key="superclassName">NSButton</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/ui/cocoa/toolbar/toolbar_button.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">MenuButton</string>
-					<string key="superclassName">ToolbarButton</string>
+					<string key="superclassName">NSButton</string>
 					<object class="NSMutableDictionary" key="outlets">
 						<string key="NS.key.0">attachedMenu</string>
 						<string key="NS.object.0">NSMenu</string>
@@ -1610,19 +1634,12 @@
 					<string key="className">NSView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/ui/cocoa/nsview_additions.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">NSView</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/ui/cocoa/view_id_util.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">ReloadButton</string>
-					<string key="superclassName">ToolbarButton</string>
+					<string key="superclassName">NSButton</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/ui/cocoa/toolbar/reload_button.h</string>
@@ -1642,14 +1659,6 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/ui/cocoa/styled_text_field_cell.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">ToolbarButton</string>
-					<string key="superclassName">NSButton</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/ui/cocoa/toolbar/toolbar_button.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -1674,7 +1683,7 @@
 							<string>MenuButton</string>
 							<string>BrowserActionsContainerView</string>
 							<string>MenuButton</string>
-							<string>ToolbarButton</string>
+							<string>NSButton</string>
 							<string>AutocompleteTextField</string>
 							<string>ReloadButton</string>
 							<string>id</string>
@@ -1863,17 +1872,6 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/ui/cocoa/wrench_menu/wrench_menu_controller.h</string>
-					</object>
-				</object>
-			</object>
-			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.1+">
-				<bool key="EncodedWithXMLCoder">YES</bool>
-				<object class="IBPartialClassDescription">
-					<string key="className">ImageButtonCell</string>
-					<string key="superclassName">NSButtonCell</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBDocumentRelativeSource</string>
-						<string key="minorKey">../../browser/ui/cocoa/image_button_cell.h</string>
 					</object>
 				</object>
 			</object>
@@ -2582,15 +2580,25 @@
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<object class="NSArray" key="dict.sortedKeys">
 				<bool key="EncodedWithXMLCoder">YES</bool>
+				<string>NSActionTemplate</string>
 				<string>NSAddTemplate</string>
 				<string>NSEnterFullScreenTemplate</string>
 				<string>NSRemoveTemplate</string>
+				<string>back_Template</string>
+				<string>forward_Template</string>
+				<string>home_Template</string>
+				<string>reload_Template</string>
 			</object>
 			<object class="NSMutableArray" key="dict.values">
 				<bool key="EncodedWithXMLCoder">YES</bool>
+				<string>{15, 15}</string>
 				<string>{8, 8}</string>
 				<string>{16, 15}</string>
 				<string>{8, 8}</string>
+				<string>{19, 19}</string>
+				<string>{19, 19}</string>
+				<string>{19, 19}</string>
+				<string>{19, 19}</string>
 			</object>
 		</object>
 	</data>

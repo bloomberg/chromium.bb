@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"

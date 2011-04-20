@@ -13,7 +13,6 @@
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 
 static const CGFloat kBrowserFrameViewPaintHeight = 60.0;
 static const NSPoint kBrowserFrameViewPatternPhaseOffset = { -5, 3 };

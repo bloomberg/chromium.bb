@@ -7,14 +7,15 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "app/mac/nsimage_cache.h"
 #include "chrome/app/chrome_command_ids.h"
-#import "chrome/browser/ui/cocoa/image_button_cell.h"
+#import "chrome/browser/ui/cocoa/gradient_button_cell.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
+
+NSString* const kReloadImageName = @"reload_Template.pdf";
+NSString* const kStopImageName = @"stop_Template.pdf";
 
 // Constant matches Windows.
 NSTimeInterval kPendingReloadTimeout = 1.35;
@@ -22,10 +23,6 @@ NSTimeInterval kPendingReloadTimeout = 1.35;
 }  // namespace
 
 @implementation ReloadButton
-
-+ (Class)cellClass {
-  return [ImageButtonCell class];
-}
 
 - (void)dealloc {
   if (trackingArea_) {
@@ -72,26 +69,10 @@ NSTimeInterval kPendingReloadTimeout = 1.35;
 
   [self setTag:anInt];
   if (anInt == IDC_RELOAD) {
-    [[self cell] setImageID:IDR_RELOAD
-             forButtonState:image_button_cell::kDefaultState];
-    [[self cell] setImageID:IDR_RELOAD_H
-             forButtonState:image_button_cell::kHoverState];
-    [[self cell] setImageID:IDR_RELOAD_P
-             forButtonState:image_button_cell::kPressedState];
-    // The stop button has a disabled image but the reload button doesn't. To
-    // unset it we have to explicilty change the image ID to 0.
-    [[self cell] setImageID:0
-             forButtonState:image_button_cell::kDisabledState];
+    [self setImage:app::mac::GetCachedImageWithName(kReloadImageName)];
     [self setToolTip:l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_RELOAD)];
   } else if (anInt == IDC_STOP) {
-    [[self cell] setImageID:IDR_STOP
-             forButtonState:image_button_cell::kDefaultState];
-    [[self cell] setImageID:IDR_STOP_H
-             forButtonState:image_button_cell::kHoverState];
-    [[self cell] setImageID:IDR_STOP_P
-             forButtonState:image_button_cell::kPressedState];
-    [[self cell] setImageID:IDR_STOP_D
-             forButtonState:image_button_cell::kDisabledState];
+    [self setImage:app::mac::GetCachedImageWithName(kStopImageName)];
     [self setToolTip:l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_STOP)];
   } else {
     NOTREACHED();
@@ -115,8 +96,8 @@ NSTimeInterval kPendingReloadTimeout = 1.35;
     // sure the cell's sense of mouse-inside matches the local sense, to prevent
     // drawing artifacts.
     id cell = [self cell];
-    if ([cell respondsToSelector:@selector(setIsMouseInside:)])
-      [cell setIsMouseInside:[self isMouseInside]];
+    if ([cell respondsToSelector:@selector(setMouseInside:animate:)])
+      [cell setMouseInside:[self isMouseInside] animate:NO];
     [self setEnabled:YES];
   } else if ([self tag] == IDC_STOP && !pendingReloadTimer_) {
     [self setEnabled:NO];

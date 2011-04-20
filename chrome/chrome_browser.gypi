@@ -24,8 +24,6 @@
         'safe_browsing_report_proto',
         'syncapi',
         'theme_resources',
-        'theme_resources_large',
-        'theme_resources_standard',
         'userfeedback_proto',
         '../app/app.gyp:app_resources',
         '../build/temp_gyp/googleurl.gyp:googleurl',
@@ -2336,8 +2334,6 @@
         'browser/ui/cocoa/hung_renderer_controller.mm',
         'browser/ui/cocoa/hyperlink_button_cell.h',
         'browser/ui/cocoa/hyperlink_button_cell.mm',
-        'browser/ui/cocoa/image_button_cell.h',
-        'browser/ui/cocoa/image_button_cell.mm',
         'browser/ui/cocoa/image_utils.h',
         'browser/ui/cocoa/image_utils.mm',
         'browser/ui/cocoa/importer/import_lock_dialog_cocoa.mm',
@@ -3426,8 +3422,6 @@
         '<(grit_out_dir)/grit/devtools_resources_map.cc',
         '<(grit_out_dir)/grit/shared_resources_map.cc',
         '<(grit_out_dir)/grit/theme_resources_map.cc',
-        '<(grit_out_dir)/grit/theme_resources_large_map.cc',
-        '<(grit_out_dir)/grit/theme_resources_standard_map.cc',
       ],
       'conditions': [
         ['javascript_engine=="v8"', {

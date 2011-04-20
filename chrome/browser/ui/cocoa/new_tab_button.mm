@@ -3,13 +3,8 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
-#import "chrome/browser/ui/cocoa/image_button_cell.h"
 
 @implementation NewTabButton
-
-+ (Class)cellClass {
-  return [ImageButtonCell class];
-}
 
 // Approximate the shape. It doesn't need to be perfect. This will need to be
 // updated if the size or shape of the icon ever changes.

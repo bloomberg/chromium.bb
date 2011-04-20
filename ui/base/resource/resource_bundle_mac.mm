@@ -46,11 +46,6 @@ FilePath ResourceBundle::GetResourcesFilePath() {
 }
 
 // static
-FilePath ResourceBundle::GetLargeIconResourcesFilePath() {
-  return FilePath();
-}
-
-// static
 FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
   NSString* mac_locale = base::SysUTF8ToNSString(app_locale);
 
@@ -94,21 +89,6 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
 
   // Cache the converted image.
   if (ns_image.get()) {
-    // Load a high resolution version of the icon if available.
-    if (large_icon_resources_data_) {
-      scoped_refptr<RefCountedStaticMemory> large_data(
-          LoadResourceBytes(large_icon_resources_data_, resource_id));
-      if (large_data.get()) {
-        scoped_nsobject<NSData> ns_large_data(
-            [[NSData alloc] initWithBytes:large_data->front()
-                                   length:large_data->size()]);
-        NSImageRep* image_rep =
-            [NSBitmapImageRep imageRepWithData:ns_large_data];
-        if (image_rep)
-          [ns_image addRepresentation:image_rep];
-      }
-    }
-
     base::AutoLock lock(*lock_);
 
     // Another thread raced the load and has already cached the image.

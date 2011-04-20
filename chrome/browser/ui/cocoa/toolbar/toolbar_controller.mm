@@ -29,7 +29,6 @@
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/gradient_button_cell.h"
-#import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
@@ -52,7 +51,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/models/accelerator_cocoa.h"
@@ -62,6 +60,14 @@
 #include "ui/gfx/rect.h"
 
 namespace {
+
+// Names of images in the bundle for buttons.
+NSString* const kBackButtonImageName = @"back_Template.pdf";
+NSString* const kForwardButtonImageName = @"forward_Template.pdf";
+NSString* const kReloadButtonReloadImageName = @"reload_Template.pdf";
+NSString* const kReloadButtonStopImageName = @"stop_Template.pdf";
+NSString* const kHomeButtonImageName = @"home_Template.pdf";
+NSString* const kWrenchButtonImageName = @"tools_Template.pdf";
 
 // Height of the toolbar in pixels when the bookmark bar is closed.
 const CGFloat kBaseToolbarHeight = 35.0;
@@ -221,48 +227,28 @@ class NotificationBridge : public NotificationObserver {
 // Now we can hook up bridges that rely on UI objects such as the location
 // bar and button state.
 - (void)awakeFromNib {
-  [[backButton_ cell] setImageID:IDR_BACK
-                  forButtonState:image_button_cell::kDefaultState];
-  [[backButton_ cell] setImageID:IDR_BACK_H
-                  forButtonState:image_button_cell::kHoverState];
-  [[backButton_ cell] setImageID:IDR_BACK_P
-                  forButtonState:image_button_cell::kPressedState];
-  [[backButton_ cell] setImageID:IDR_BACK_D
-                  forButtonState:image_button_cell::kDisabledState];
-
-  [[forwardButton_ cell] setImageID:IDR_FORWARD
-                     forButtonState:image_button_cell::kDefaultState];
-  [[forwardButton_ cell] setImageID:IDR_FORWARD_H
-                     forButtonState:image_button_cell::kHoverState];
-  [[forwardButton_ cell] setImageID:IDR_FORWARD_P
-                     forButtonState:image_button_cell::kPressedState];
-  [[forwardButton_ cell] setImageID:IDR_FORWARD_D
-                     forButtonState:image_button_cell::kDisabledState];
-
-  [[reloadButton_ cell] setImageID:IDR_RELOAD
-                    forButtonState:image_button_cell::kDefaultState];
-  [[reloadButton_ cell] setImageID:IDR_RELOAD_H
-                    forButtonState:image_button_cell::kHoverState];
-  [[reloadButton_ cell] setImageID:IDR_RELOAD_P
-                    forButtonState:image_button_cell::kPressedState];
-
-  [[homeButton_ cell] setImageID:IDR_HOME
-                  forButtonState:image_button_cell::kDefaultState];
-  [[homeButton_ cell] setImageID:IDR_HOME_H
-                  forButtonState:image_button_cell::kHoverState];
-  [[homeButton_ cell] setImageID:IDR_HOME_P
-                  forButtonState:image_button_cell::kPressedState];
-
-  [[wrenchButton_ cell] setImageID:IDR_TOOLS
-                    forButtonState:image_button_cell::kDefaultState];
-  [[wrenchButton_ cell] setImageID:IDR_TOOLS_H
-                    forButtonState:image_button_cell::kHoverState];
-  [[wrenchButton_ cell] setImageID:IDR_TOOLS_P
-                    forButtonState:image_button_cell::kPressedState];
-
+  // A bug in AppKit (<rdar://7298597>, <http://openradar.me/7298597>) causes
+  // images loaded directly from nibs in a framework to not get their "template"
+  // flags set properly. Thus, despite the images being set on the buttons in
+  // the xib, we must set them in code.
+  [backButton_ setImage:app::mac::GetCachedImageWithName(kBackButtonImageName)];
+  [forwardButton_ setImage:
+      app::mac::GetCachedImageWithName(kForwardButtonImageName)];
+  [reloadButton_ setImage:
+      app::mac::GetCachedImageWithName(kReloadButtonReloadImageName)];
+  [homeButton_ setImage:
+      app::mac::GetCachedImageWithName(kHomeButtonImageName)];
+  [wrenchButton_ setImage:
+      app::mac::GetCachedImageWithName(kWrenchButtonImageName)];
   [self badgeWrenchMenuIfNeeded];
 
   [wrenchButton_ setOpenMenuOnClick:YES];
+
+  [backButton_ setShowsBorderOnlyWhileMouseInside:YES];
+  [forwardButton_ setShowsBorderOnlyWhileMouseInside:YES];
+  [reloadButton_ setShowsBorderOnlyWhileMouseInside:YES];
+  [homeButton_ setShowsBorderOnlyWhileMouseInside:YES];
+  [wrenchButton_ setShowsBorderOnlyWhileMouseInside:YES];
 
   [backButton_ setHandleMiddleClick:YES];
   [forwardButton_ setHandleMiddleClick:YES];
@@ -555,10 +541,40 @@ class NotificationBridge : public NotificationObserver {
 }
 
 - (void)badgeWrenchMenuIfNeeded {
-  if (UpgradeDetector::GetInstance()->notify_upgrade())
-    [[wrenchButton_ cell] setOverlayImageID:IDR_UPDATE_BADGE];
-  else
-    [[wrenchButton_ cell] setOverlayImageID:0];
+
+  int badgeResource = 0;
+  if (UpgradeDetector::GetInstance()->notify_upgrade()) {
+    badgeResource = IDR_UPDATE_BADGE;
+  } else {
+    // No badge - clear the badge if one is already set.
+    if ([[wrenchButton_ cell] overlayImage])
+      [[wrenchButton_ cell] setOverlayImage:nil];
+    return;
+  }
+
+  NSImage* badge =
+      ResourceBundle::GetSharedInstance().GetNativeImageNamed(badgeResource);
+  NSImage* wrenchImage =
+      app::mac::GetCachedImageWithName(kWrenchButtonImageName);
+  NSSize wrenchImageSize = [wrenchImage size];
+  NSSize badgeSize = [badge size];
+
+  scoped_nsobject<NSImage> overlayImage(
+      [[NSImage alloc] initWithSize:wrenchImageSize]);
+
+  // Draw badge in the upper right corner of the button.
+  NSPoint overlayPosition =
+      NSMakePoint(wrenchImageSize.width - badgeSize.width,
+                  wrenchImageSize.height - badgeSize.height);
+
+  [overlayImage lockFocus];
+  [badge drawAtPoint:overlayPosition
+            fromRect:NSZeroRect
+           operation:NSCompositeSourceOver
+            fraction:1.0];
+  [overlayImage unlockFocus];
+
+  [[wrenchButton_ cell] setOverlayImage:overlayImage];
 }
 
 - (void)prefChanged:(std::string*)prefName {

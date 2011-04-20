@@ -34,6 +34,7 @@ TEST_F(ChevronMenuButtonTest, CellSubclass) {
 // Test both hovered and non-hovered display.
 TEST_F(ChevronMenuButtonTest, HoverAndNonHoverDisplay) {
   ChevronMenuButtonCell* cell = [button_ cell];
+  EXPECT_FALSE([cell showsBorderOnlyWhileMouseInside]);
   EXPECT_FALSE([cell isMouseInside]);
 
   [cell setShowsBorderOnlyWhileMouseInside:YES];

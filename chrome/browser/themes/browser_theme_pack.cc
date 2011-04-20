@@ -13,7 +13,6 @@
 #include "content/browser/browser_thread.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 #include "third_party/skia/include/core/SkCanvas.h"

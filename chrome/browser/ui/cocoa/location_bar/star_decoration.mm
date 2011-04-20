@@ -9,7 +9,6 @@
 #include "chrome/browser/command_updater.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 namespace {

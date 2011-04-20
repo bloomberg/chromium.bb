@@ -15,7 +15,6 @@
 #include "content/browser/browser_thread.h"
 #include "content/common/json_value_serializer.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/color_utils.h"
 

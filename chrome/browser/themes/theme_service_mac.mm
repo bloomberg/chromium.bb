@@ -10,9 +10,7 @@
 #include "chrome/browser/themes/browser_theme_pack.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/image.h"
 
 NSString* const kBrowserThemeDidChangeNotification =
     @"BrowserThemeDidChangeNotification";
@@ -46,16 +44,8 @@ NSImage* ThemeService::GetNSImageNamed(int id, bool allow_default) const {
   // SkBitmap > native conversion?
   // - For consistency with other platforms.
   // - To get the generated tinted images.
-  NSImage* nsimage = nil;
-  if (theme_pack_.get()) {
-    SkBitmap* bitmap = theme_pack_->GetBitmapNamed(id);
-    if (bitmap)
-      nsimage = gfx::SkBitmapToNSImage(*bitmap);
-  }
-
-  if (!nsimage) {
-    nsimage = rb_.GetNativeImageNamed(id);
-  }
+  SkBitmap* bitmap = GetBitmapNamed(id);
+  NSImage* nsimage = gfx::SkBitmapToNSImage(*bitmap);
 
   // We loaded successfully.  Cache the image.
   if (nsimage) {

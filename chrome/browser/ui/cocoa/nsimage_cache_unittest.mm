@@ -32,13 +32,13 @@ class NSImageCacheTest : public PlatformTest {
 };
 
 TEST_F(NSImageCacheTest, LookupFound) {
-  EXPECT_TRUE(app::mac::GetCachedImageWithName(@"product_logo_32.png") != nil)
+  EXPECT_TRUE(app::mac::GetCachedImageWithName(@"back_Template.pdf") != nil)
       << "Failed to find the toolbar image?";
 }
 
 TEST_F(NSImageCacheTest, LookupCached) {
-  EXPECT_EQ(app::mac::GetCachedImageWithName(@"product_logo_32.png"),
-            app::mac::GetCachedImageWithName(@"product_logo_32.png"))
+  EXPECT_EQ(app::mac::GetCachedImageWithName(@"back_Template.pdf"),
+            app::mac::GetCachedImageWithName(@"back_Template.pdf"))
     << "Didn't get the same NSImage back?";
 }
 
@@ -48,14 +48,14 @@ TEST_F(NSImageCacheTest, LookupMiss) {
 }
 
 TEST_F(NSImageCacheTest, LookupFoundAndClear) {
-  NSImage *first = app::mac::GetCachedImageWithName(@"product_logo_32.png");
+  NSImage *first = app::mac::GetCachedImageWithName(@"back_Template.pdf");
   // Hang on to the first image so that the second one doesn't get allocated
   // in the same location by (bad) luck.
   [[first retain] autorelease];
   EXPECT_TRUE(first != nil)
       << "Failed to find the toolbar image?";
   app::mac::ClearCachedImages();
-  NSImage *second = app::mac::GetCachedImageWithName(@"product_logo_32.png");
+  NSImage *second = app::mac::GetCachedImageWithName(@"back_Template.pdf");
   EXPECT_TRUE(second != nil)
       << "Failed to find the toolbar image...again?";
   EXPECT_NE(second, first)
@@ -64,7 +64,7 @@ TEST_F(NSImageCacheTest, LookupFoundAndClear) {
 
 TEST_F(NSImageCacheTest, AutoTemplating) {
   NSImage *templateImage =
-      app::mac::GetCachedImageWithName(@"find_next_Template.pdf");
+      app::mac::GetCachedImageWithName(@"back_Template.pdf");
   EXPECT_TRUE([templateImage isTemplate] == YES)
       << "Image ending in 'Template' should be marked as being a template";
   NSImage *nonTemplateImage =
