@@ -57,3 +57,14 @@ BUGDPRANKE LINUX DEBUG : http/tests/security/contentSecurityPolicy/media-src-all
 BUGDPRANKE WIN DEBUG : perf/typing-at-end-of-line.html = TEXT TIMEOUT PASS
 BUGDPRANKE MAC DEBUG : fast/notifications/notifications-display-close-events.html = TIMEOUT PASS
 BUGDPRANKE MAC DEBUG : fast/css-generated-content/table-row-group-to-inline.html = IMAGE+TEXT PASS
+
+// Green on canary
+BUGJKNOTTEN MAC : fast/borders/borderRadiusDashed01.html = IMAGE PASS
+BUGJKNOTTEN MAC : fast/forms/menulist-clip.html = IMAGE PASS
+BUGJKNOTTEN MAC : fast/forms/menulist-narrow-width.html = IMAGE PASS
+BUGJKNOTTEN MAC : fast/forms/menulist-option-wrap.html = IMAGE PASS
+BUGJKNOTTEN MAC : fast/forms/menulist-restrict-line-height.html = IMAGE PASS
+BUGJKNOTTEN MAC : fast/forms/menulist-separator-painting.html = IMAGE PASS
+BUGJKNOTTEN MAC : fast/forms/menulist-style-color.html = IMAGE PASS
+BUGJKNOTTEN MAC : fast/forms/select-baseline.html = IMAGE PASS
+BUGJKNOTTEN MAC : fast/forms/select-empty-option-height.html = IMAGE PASS
