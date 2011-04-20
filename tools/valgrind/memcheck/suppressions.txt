@@ -4370,9 +4370,6 @@
    fun:_ZN11TabContents15NavigateToEntryERK15NavigationEntryN20NavigationController10ReloadTypeE
    fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
    fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
-   fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
-   fun:_ZN20NavigationController7LoadURLERK4GURLS2_j
-   fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
 }
 {
    bug_79966b
