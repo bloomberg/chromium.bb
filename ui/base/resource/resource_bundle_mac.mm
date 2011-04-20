@@ -47,7 +47,7 @@ FilePath ResourceBundle::GetResourcesFilePath() {
 
 // static
 FilePath ResourceBundle::GetLargeIconResourcesFilePath() {
-  return GetResourcesPakFilePath(@"theme_resources_large", nil);
+  return FilePath();
 }
 
 // static
