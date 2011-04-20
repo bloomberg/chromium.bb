@@ -317,4 +317,21 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
   EXPECT_STREQ("Button 3", UTF16ToUTF8(button3.name).c_str());
 }
 
+IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
+                       CrossPlatformDuplicateChildrenAccessibility) {
+  // Here's another html snippet where WebKit has a parent node containing
+  // two duplicate child nodes. Instead of checking the exact output, just
+  // make sure that no id is reused in the resulting tree.
+  const char url_str[] =
+      "data:text/html,"
+      "<!doctype html>"
+      "<em><code ><h4 ></em>";
+  GURL url(url_str);
+  browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+
+  const WebAccessibility& tree = GetWebAccessibilityTree();
+  base::hash_set<int> ids;
+  RecursiveAssertUniqueIds(tree, &ids);
+}
+
 }  // namespace
