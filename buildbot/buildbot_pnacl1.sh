@@ -37,7 +37,14 @@ push-data-to-archive-server() {
     gs://nativeclient-archive2/$2
 }
 
-# These tars up the executable to be shipped to the arm HW bots
+# copy data from well known archive server
+pull-data-from-archive-server() {
+  curl -L \
+     http://commondatastorage.googleapis.com/nativeclient-archive2/$1\
+     -o $2
+}
+
+# Tar up the executables which are shipped to the arm HW bots
 archive-for-hw-bots() {
   local target=$1
   echo "@@@BUILD_STEP tar_generated_binaries@@@"
@@ -45,6 +52,18 @@ archive-for-hw-bots() {
 
   echo "@@@BUILD_STEP archive_binaries@@@"
   push-data-to-archive-server arm.tgz ${target}
+}
+
+# Untar archived executables for HW bots
+unarchive-for-hw-bots() {
+  local source=$1
+
+  echo "@@@BUILD_STEP fetch_binaries@@@"
+  pull-data-from-archive-server ${source} arm.tgz
+
+  echo "@@@BUILD_STEP untar_binaries@@@"
+  rm -rf scons-out/
+  tar xvfz arm.tgz --no-same-owner
 }
 
 # Build with gyp - this only exercises the trusted TC and hence this only
@@ -155,38 +174,64 @@ mode-buildbot-x8664() {
   scons-tests "x86-64" "--mode=opt-host,nacl" "smoke_tests"
 }
 
-# For arm we also test the trusted cross toolchain, hence we
-# we use opt and dbg flavors and run gyp tests.
-# NOTE: that those do not affect the nexe's
-mode-buildbot-arm-opt() {
+# These names were originally botnames
+# TOOD(robertm): describe what needs to done when those change
+readonly NAME_ARM_OPT="hardy64-marm-narm-opt/rev_${BUILDBOT_GOT_REVISION}"
+readonly NAME_ARM_DBG="hardy64-marm-narm-dbg/rev_${BUILDBOT_GOT_REVISION}"
+readonly NAME_ARM_TRY="nacl-arm_opt/None"
+
+mode-buildbot-arm() {
+  local mode=$1
+
   clobber
   install-lkgr-toolchains
   partial-sdk "arm"
 
   gyp-arm-build Release
 
-  scons-tests "arm" "--mode=opt-host,nacl" ""
-  scons-tests "arm" "--mode=opt-host,nacl" "small_tests"
-  scons-tests "arm" "--mode=opt-host,nacl" "medium_tests"
-  scons-tests "arm" "--mode=opt-host,nacl" "large_tests"
-  archive-for-hw-bots \
-    between_builders/${BUILDBOT_BUILDERNAME}/rev_${BUILDBOT_GOT_REVISION}/build.tgz
+  scons-tests "arm" "${mode}" ""
+  scons-tests "arm" "${mode}" "small_tests"
+  scons-tests "arm" "${mode}" "medium_tests"
+  scons-tests "arm" "${mode}" "large_tests"
 }
 
 mode-buildbot-arm-dbg() {
-  clobber
-  install-lkgr-toolchains
-  partial-sdk "arm"
+  mode-buildbot-arm "--mode=dbg-host,nacl"
+  archive-for-hw-bots between_builders/${NAME_ARM_DBG}/build.tgz
+}
 
-  gyp-arm-build Debug
+mode-buildbot-arm-opt() {
+  mode-buildbot-arm "--mode=opt-host,nacl"
+  archive-for-hw-bots between_builders/${NAME_ARM_OPT}/build.tgz
+}
 
-  scons-tests "arm" "--mode=dbg-host,nacl" ""
-  scons-tests "arm" "--mode=dbg-host,nacl" "small_tests"
-  scons-tests "arm" "--mode=dbg-host,nacl" "medium_tests"
-  scons-tests "arm" "--mode=dbg-host,nacl" "large_tests"
-  archive-for-hw-bots \
-    between_builders/${BUILDBOT_BUILDERNAME}/rev_${BUILDBOT_GOT_REVISION}/build.tgz
+mode-buildbot-arm-try() {
+  mode-buildbot-arm "--mode=opt-host,nacl"
+  archive-for-hw-bots between_builders/${NAME_ARM_TRY}/build.tgz
+}
 
+mode-buildbot-arm-hw() {
+  local flags="naclsdk_validate=0 built_elsewhere=1 $1"
+  scons-tests "arm" "${flags}" "small_tests"
+  scons-tests "arm" "${flags}" "medium_tests"
+  scons-tests "arm" "${flags}" "large_tests"
+}
+
+# NOTE: the hw bots are too slow to build stuff on so we just
+#       use pre-built executables
+mode-buildbot-arm-hw-dbg() {
+  unarchive-for-hw-bots between_builders/${NAME_ARM_DBG}/build.tgz
+  mode-buildbot-arm-hw "--mode=dbg-host,nacl"
+}
+
+mode-buildbot-arm-hw-opt() {
+  unarchive-for-hw-bots between_builders/${NAME_ARM_OPT}/build.tgz
+  mode-buildbot-arm-hw "--mode=opt-host,nacl"
+}
+
+mode-buildbot-arm-hw-try() {
+  unarchive-for-hw-bots between_builders/${NAME_ARM_TRY}/build.tgz
+  mode-buildbot-arm-hw "--mode=opt-host,nacl"
 }
 
 # NOTE: clobber and toolchain setup to be done manually

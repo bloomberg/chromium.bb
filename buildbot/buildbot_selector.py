@@ -9,7 +9,9 @@ import sys
 
 
 BOT_ASSIGNMENT = {
+    ######################################################################
     # Buildbots.
+    ######################################################################
     'xp-m32-n32-opt': 'buildbot\\buildbot_win.bat opt 32 newlib',
     'vista64-m64-n64-dbg': 'buildbot\\buildbot_win.bat dbg 64 newlib',
     'vista64-m64-n64-opt': 'buildbot\\buildbot_win.bat opt 64 newlib',
@@ -31,14 +33,22 @@ BOT_ASSIGNMENT = {
     'lucid64-m64-n64-opt': 'bash buildbot/buildbot_linux.sh opt 64 newlib',
     'lucid32-bare-m32-n32-opt': 'bash buildbot/buildbot_linux.sh opt 32 newlib',
     'lucid64-bare-m64-n64-opt': 'bash buildbot/buildbot_linux.sh opt 64 newlib',
+     # pnacl bots.
     'hardy64-marm-narm-dbg':
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-dbg',
     'hardy64-marm-narm-opt':
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-opt',
-    'arm-marm-narm-test-dbg': 'bash buildbot/buildbot_arm_hw.sh dbg',
-    'arm-marm-narm-test-opt': 'bash buildbot/buildbot_arm_hw.sh opt',
-    'lucid64-pnacl1': 'bash buildbot/buildbot_pnacl1.sh mode-buildbot-x8632',
-    'lucid64-pnacl2': 'bash buildbot/buildbot_pnacl1.sh mode-buildbot-x8664',
+    'arm-marm-narm-test-dbg':
+        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-hw-dbg',
+    'arm-marm-narm-test-opt':
+        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-hw-opt',
+    'lucid64-pnacl1':
+        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-x8632',
+    'lucid64-pnacl2':
+        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-x8664',
+    # Pnacl spec2k bots.
+    # TODO(robertm,bradnelson,jvoung): add these here
+    # Valgrind bots.
     'karmic64-valgrind': 'bash buildbot/buildbot_valgrind.sh',
     # Coverage.
     'mac-m32-n32-coverage': 'bash buildbot/buildbot_coverage_mac.sh',
@@ -47,8 +57,9 @@ BOT_ASSIGNMENT = {
     'hardy64-marm-narm-coverage': 'bash buildbot/buildbot_coverage_arm.sh',
     'xp-m32-n32-coverage': 'buildbot\\buildbot_coverage_win.bat',
 
+    ######################################################################
     # Trybots.
-    'nacl-arm_hw_opt': 'bash buildbot/buildbot_arm_hw.sh opt',
+    ######################################################################
     'nacl-win32_newlib_opt': 'buildbot\\buildbot_win.bat opt 32 newlib',
     'nacl-win32_glibc_opt': 'buildbot\\buildbot_win.bat opt 32 glibc',
     'nacl-win64_newlib_dbg': 'buildbot\\buildbot_win.bat dbg 64 newlib',
@@ -66,8 +77,14 @@ BOT_ASSIGNMENT = {
     'nacl-lucid64_newlib_dbg': 'bash buildbot/buildbot_linux.sh dbg 64 newlib',
     'nacl-lucid64_newlib_opt': 'bash buildbot/buildbot_linux.sh opt 64 newlib',
     'nacl-lucid64_glibc_opt': 'bash buildbot/buildbot_linux.sh opt 64 glibc',
-    'nacl-arm_opt': 'bash buildbot/buildbot_arm.sh opt',
-    'nacl-lucid64-pnacl1': 'bash buildbot/buildbot_pnacl1.sh mode-trybot',
+    # Pnacl scons trybots
+    'nacl-arm_opt':
+        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-try',
+    'nacl-arm_hw_opt':
+        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-hw-try',
+    'nacl-lucid64-pnacl1':
+        'bash buildbot/buildbot_pnacl1.sh mode-trybot',
+    # Pnacl spec2k trybots
     'nacl-lucid64-pnacl2': 'bash buildbot/buildbot_pnacl2.sh',
 
     # Toolchain glibc.
@@ -78,7 +95,7 @@ BOT_ASSIGNMENT = {
     'win7-toolchain_x86': 'buildbot\\buildbot_toolchain_win.bat',
     'mac-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh mac',
     'hardy32-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh linux',
-    # Toolchain pnacl.
+    # Pnacl toolchain trybots.
     'hardy32-toolchain_arm-trusted':
         'bash buildbot/buildbot_toolchain_arm_trusted.sh',
     'hardy64-toolchain_arm-untrusted':
