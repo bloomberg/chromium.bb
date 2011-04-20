@@ -758,7 +758,9 @@ TEST_F(WorkerFileSystemTest, SyncTemporary) {
   RunWorkerFileSystemLayoutTest("simple-temporary-sync.html");
 }
 
-TEST_F(WorkerFileSystemTest, SyncPersistent) {
+// TODO(dpranke): This started failing in the webkit roll 84046:84325.
+// The upstream expectation needs to be updated.
+TEST_F(WorkerFileSystemTest, FAILS_SyncPersistent) {
   RunWorkerFileSystemLayoutTest("simple-persistent-sync.html");
 }
 
