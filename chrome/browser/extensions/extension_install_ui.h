@@ -74,17 +74,14 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   virtual void OnImageLoaded(
       SkBitmap* image, const ExtensionResource& resource, int index);
 
+ private:
   // Show an infobar for a newly-installed theme.  previous_theme_id
   // should be empty if the previous theme was the system/default
   // theme.
-  //
-  // TODO(akalin): Find a better home for this (and
-  // GetNewThemeInstalledInfoBarDelegate()).
   static void ShowThemeInfoBar(
       const std::string& previous_theme_id, bool previous_use_system_theme,
       const Extension* new_theme, Profile* profile);
 
- private:
   // Sets the icon that will be used in any UI. If |icon| is NULL, or contains
   // an empty bitmap, then a default icon will be used instead.
   void SetIcon(SkBitmap* icon);

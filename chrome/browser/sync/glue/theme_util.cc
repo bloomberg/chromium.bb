@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #if defined(TOOLKIT_USES_GTK)
@@ -106,32 +105,14 @@ void SetCurrentThemeFromThemeSpecifics(
         VLOG(1) << "Theme " << id << " is not enabled; aborting";
         return;
       }
-      // Get previous theme info before we set the new theme.
-      std::string previous_theme_id;
-      {
-        const Extension* current_theme =
-            ThemeServiceFactory::GetThemeForProfile(profile);
-        if (current_theme) {
-          DCHECK(current_theme->is_theme());
-          previous_theme_id = current_theme->id();
-        }
-      }
-      bool previous_use_system_theme = UseSystemTheme(profile);
       // An enabled theme extension with the given id was found, so
       // just set the current theme to it.
       ThemeServiceFactory::GetForProfile(profile)->SetTheme(extension);
-      // Pretend the theme was just installed.
-      ExtensionInstallUI::ShowThemeInfoBar(
-          previous_theme_id, previous_use_system_theme,
-          extension, profile);
     } else {
       // No extension with this id exists -- we must install it; we do
       // so by adding it as a pending extension and then triggering an
       // auto-update cycle.
-      // Themes don't need to install silently as they just pop up an
-      // informational dialog after installation instead of a
-      // confirmation dialog.
-      const bool kInstallSilently = false;
+      const bool kInstallSilently = true;
       const bool kEnableOnInstall = true;
       const bool kEnableIncognitoOnInstall = false;
       extensions_service->pending_extension_manager()->AddFromSync(
