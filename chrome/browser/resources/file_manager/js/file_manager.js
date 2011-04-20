@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(rginda): Remove this and related code after zel's file scheme fix lands.
+const ENABLE_EXIF_READER = false;
+
+// TODO(rginda): Remove this when the thumbnail view is less janky.
+const ENABLE_THUMBNAIL_VIEW = false;
+
 /**
  * FileManager constructor.
  *
@@ -32,6 +38,8 @@ function FileManager(dialogDom, rootEntries, params) {
 
   this.listType_ = null;
 
+  this.exifCache_ = {};
+
   this.document_ = dialogDom.ownerDocument;
   this.dialogType_ =
     this.params_.type || FileManager.DialogType.FULL_PAGE;
@@ -57,6 +65,12 @@ function FileManager(dialogDom, rootEntries, params) {
   // TODO(rginda) Add a focus() method to the various list classes to take care
   // of this.
   // this.currentList_.list_.focus();
+
+  if (ENABLE_EXIF_READER) {
+    this.exifReader = new Worker('js/exif_reader.js');
+    this.exifReader.onmessage = this.onExifReaderMessage_.bind(this);
+    this.exifReader.postMessage({verb: 'init'});
+  }
 }
 
 FileManager.prototype = {
@@ -410,10 +424,18 @@ FileManager.prototype = {
 
     this.dialogDom_.querySelector('button.new-folder').addEventListener(
         'click', this.onNewFolderButtonClick_.bind(this));
-    this.dialogDom_.querySelector('button.detail-view').addEventListener(
-        'click', this.onDetailViewButtonClick_.bind(this));
-    this.dialogDom_.querySelector('button.thumbnail-view').addEventListener(
-        'click', this.onThumbnailViewButtonClick_.bind(this));
+
+    if (ENABLE_THUMBNAIL_VIEW) {
+      this.dialogDom_.querySelector('button.detail-view').addEventListener(
+          'click', this.onDetailViewButtonClick_.bind(this));
+      this.dialogDom_.querySelector('button.thumbnail-view').addEventListener(
+          'click', this.onThumbnailViewButtonClick_.bind(this));
+    } else {
+      this.dialogDom_.querySelector(
+          'button.detail-view').style.display = 'none';
+      this.dialogDom_.querySelector(
+          'button.thumbnail-view').style.display = 'none';
+    }
 
     this.dialogDom_.ownerDocument.defaultView.addEventListener(
         'resize', this.onResize_.bind(this));
@@ -682,7 +704,7 @@ FileManager.prototype = {
     li.className = 'thumbnail-item';
 
     var img = this.document_.createElement('img');
-    this.setIconSrc(entry, img);
+    this.getThumbnailURL(entry, function(type, url) { img.src = url });
     li.appendChild(img);
 
     var div = this.document_.createElement('div');
@@ -886,6 +908,51 @@ FileManager.prototype = {
     cacheNextFile();
   };
 
+  FileManager.prototype.onExifGiven_ = function(fileURL, metadata) {
+    var observers = this.exifCache_[fileURL];
+    if (!observers || !(observers instanceof Array)) {
+      console.error('Missing or invalid exif observers: ' + fileURL + ': ' +
+                    observers);
+      return;
+    }
+
+    for (var i = 0; i < observers.length; i++) {
+      observers[i](metadata);
+    }
+
+    this.exifCache_[fileURL] = metadata;
+  };
+
+  FileManager.prototype.onExifError_ = function(fileURL, step, error) {
+    console.warn('Exif error: ' + fileURL + ': ' + step + ': ' + error);
+    this.onExifGiven_(fileURL, {});
+  };
+
+  FileManager.prototype.onExifReaderMessage_ = function(event) {
+    var data = event.data;
+    var self = this;
+
+    function fwd(methodName, args) { self[methodName].apply(self, args) };
+
+    switch (data.verb) {
+      case 'log':
+        console.log.apply(console, ['exif:'].concat(data.arguments));
+        break;
+
+      case 'give-exif':
+        fwd('onExifGiven_', data.arguments);
+        break;
+
+      case 'give-exif-error':
+        fwd('onExifError_', data.arguments);
+        break;
+
+      default:
+        console.log('Unknown message from exif reader: ' + data.verb, data);
+        break;
+    }
+  };
+
   FileManager.prototype.onTasksFound_ = function(tasksList) {
     for (var i = 0; i < tasksList.length; i++) {
       var task = tasksList[i];
@@ -980,27 +1047,91 @@ FileManager.prototype = {
 
     var iconType = getIconType(this.selection.leadEntry);
     if (iconType == 'image') {
-      this.previewImage_.classList.add('transparent-background');
       if (fileManager.selection.totalCount > 1)
         this.previewImage_.classList.add('multiple-selected');
     }
 
-    this.setIconSrc(this.selection.leadEntry, this.previewImage_);
+    var self = this;
+    var leadEntry = this.selection.leadEntry;
 
+    this.getThumbnailURL(this.selection.leadEntry, function(iconType, url) {
+      if (self.selection.leadEntry != leadEntry) {
+        // Selection has changed since we asked, nevermind.
+        return;
+      }
+
+      if (url) {
+        if (iconType == 'image')
+          self.previewImage_.classList.add('transparent-background');
+        self.previewImage_.src = url;
+      } else {
+        self.previewImage_.src = previewArt['unknown'];
+      }
+    });
   };
 
-  FileManager.prototype.setIconSrc = function(entry, img, callback) {
+  FileManager.prototype.cacheExifMetadata_ = function(entry, callback) {
+    var url = entry.toURL();
+    var cacheValue = this.exifCache_[url];
+
+    if (!cacheValue) {
+      // This is the first time anyone's asked, go get it.
+      this.exifCache_[url] = [callback];
+      this.exifReader.postMessage({verb: 'get-exif',
+                                   arguments: [entry.toURL()]});
+      return;
+    }
+
+    if (cacheValue instanceof Array) {
+      // Something is already pending, add to the list of observers.
+      cacheValue.push(callback);
+      return;
+    }
+
+    if (cacheValue instanceof Object) {
+      // We already know the answer, let the caller know in a fresh call stack.
+      setTimeout(function() { callback(cacheValue) });
+      return;
+    }
+
+    console.error('Unexpected exif cache value:' + cacheValue);
+  };
+
+  FileManager.prototype.getThumbnailURL = function(entry, callback) {
+    if (!entry)
+      return;
+
     var iconType = getIconType(entry);
     if (iconType != 'image') {
       // Not an image, display a canned clip-art graphic.
-      img.src = previewArt[iconType];
-    } else {
-      // File is an image, fetch the thumbnail.
-
-      img.src = entry.toURL();
+      setTimeout(function() { callback(iconType, previewArt[iconType]) });
+      return;
     }
-    if (callback)
-      callback();
+
+    if (ENABLE_EXIF_READER) {
+      if (entry.name.match(/\.jpe?g$/i)) {
+        // File is a jpg image, fetch the exif thumbnail.
+        this.cacheExifMetadata_(entry, function(metadata) {
+          callback(iconType, metadata.thumbnailURL || entry.toURL());
+        });
+        return;
+      }
+
+      // File is some other kind of image, just return the url to the whole
+      // thing.
+      setTimeout(function() { callback(iconType, entry.toURL()) });
+      return;
+    }
+
+    // If the exif reader worker isn't enabled, read the entire file as a
+    // data url instead.
+    batchAsyncCall(entry, 'file', function(file) {
+      var reader = new FileReader();
+
+      reader.onerror = util.ferr('Error reading preview: ' + entry.fullPath);
+      reader.onloadend = function(e) { callback(iconType, reader.result) };
+      reader.readAsDataURL(file);
+    });
   };
 
   /**

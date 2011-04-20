@@ -23,7 +23,7 @@
 
       <if expr="pp_ifdef('file_manager_extension')">
         <include name="IDR_FILE_MANAGER_MAIN" file="file_manager/main.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_ICON16" file="file_manager/images/icon16.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_EXIF_READER" file="file_manager/js/exif_reader.js" type="BINDATA" />
       </if>
 
       <if expr="pp_ifdef('touchui')">
