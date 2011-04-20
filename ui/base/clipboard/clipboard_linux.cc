@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/size.h"
 
@@ -304,6 +305,8 @@ void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
     types->push_back(UTF8ToUTF16(kMimeTypeText));
   if (IsFormatAvailable(GetHtmlFormatType(), buffer))
     types->push_back(UTF8ToUTF16(kMimeTypeHTML));
+  if (IsFormatAvailable(GetBitmapFormatType(), buffer))
+    types->push_back(UTF8ToUTF16(kMimeTypePNG));
   *contains_filenames = false;
 }
 
@@ -377,9 +380,19 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
 }
 
 SkBitmap Clipboard::ReadImage(Buffer buffer) const {
-  // TODO(dcheng): implement this.
-  NOTIMPLEMENTED();
-  return SkBitmap();
+  ScopedGObject<GdkPixbuf>::Type pixbuf(
+      gtk_clipboard_wait_for_image(clipboard_));
+  if (!pixbuf.get())
+    return SkBitmap();
+
+  gfx::CanvasSkia canvas(gdk_pixbuf_get_width(pixbuf.get()),
+                         gdk_pixbuf_get_height(pixbuf.get()),
+                         false);
+  cairo_t* context = canvas.beginPlatformPaint();
+  gdk_cairo_set_source_pixbuf(context, pixbuf.get(), 0.0, 0.0);
+  cairo_paint(context);
+  canvas.endPlatformPaint();
+  return canvas.ExtractBitmap();
 }
 
 void Clipboard::ReadBookmark(string16* title, std::string* url) const {

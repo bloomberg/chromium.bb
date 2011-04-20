@@ -14,6 +14,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
+#include "base/shared_memory.h"
 #include "base/string_util.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/content_switches.h"
@@ -168,7 +169,15 @@ void ClipboardReadHTML(ui::Clipboard::Buffer buffer, string16* markup,
 }
 
 void ClipboardReadImage(ui::Clipboard::Buffer buffer, std::string* data) {
-  RenderThread::current()->Send(new ClipboardHostMsg_ReadImage(buffer, data));
+  base::SharedMemoryHandle image_handle;
+  uint32 image_size;
+  RenderThread::current()->Send(
+      new ClipboardHostMsg_ReadImage(buffer, &image_handle, &image_size));
+  if (base::SharedMemory::IsHandleValid(image_handle)) {
+    base::SharedMemory buffer(image_handle, true);
+    buffer.Map(image_size);
+    data->append(static_cast<char*>(buffer.memory()), image_size);
+  }
 }
 
 bool ClipboardReadData(ui::Clipboard::Buffer buffer, const string16& type,

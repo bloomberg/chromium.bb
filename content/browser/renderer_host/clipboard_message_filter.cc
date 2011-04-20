@@ -46,9 +46,7 @@ void ClipboardMessageFilter::OverrideThreadForMessage(
   if (message.type() == ClipboardHostMsg_ReadImage::ID)
     *thread = BrowserThread::FILE;
 #elif defined(USE_X11)
-  if (message.type() == ClipboardHostMsg_ReadImage::ID)
-    *thread = BrowserThread::BACKGROUND_X11;
-  else if (IPC_MESSAGE_CLASS(message) == ClipboardMsgStart)
+  if (IPC_MESSAGE_CLASS(message) == ClipboardMsgStart)
     *thread = BrowserThread::UI;
 #endif
 }
@@ -65,7 +63,7 @@ bool ClipboardMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadText, OnReadText)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadAsciiText, OnReadAsciiText)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadHTML, OnReadHTML)
-    IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadImage, OnReadImage)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ClipboardHostMsg_ReadImage, OnReadImage)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_FindPboardWriteStringAsync,
                         OnFindPboardWriteString)
@@ -144,25 +142,48 @@ void ClipboardMessageFilter::OnReadHTML(
 }
 
 void ClipboardMessageFilter::OnReadImage(
-    ui::Clipboard::Buffer buffer, std::string* data) {
+    ui::Clipboard::Buffer buffer, IPC::Message* reply_msg) {
   SkBitmap bitmap = GetClipboard()->ReadImage(buffer);
-  if (bitmap.isNull())
-    return;
 
-  std::vector<unsigned char> png_data;
-  SkAutoLockPixels lock(bitmap);
-  if (gfx::PNGCodec::EncodeWithCompressionLevel(
-          static_cast<const unsigned char*>(bitmap.getPixels()),
-          gfx::PNGCodec::FORMAT_BGRA,
-          gfx::Size(bitmap.width(), bitmap.height()),
-          bitmap.rowBytes(),
-          false,
-          std::vector<gfx::PNGCodec::Comment>(),
-          Z_BEST_SPEED,
-          &png_data)) {
-    data->assign(reinterpret_cast<char*>(vector_as_array(&png_data)),
-                 png_data.size());
+#if defined(USE_X11)
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          this, &ClipboardMessageFilter::OnReadImageReply, bitmap, reply_msg));
+#else
+  OnReadImageReply(bitmap, reply_msg);
+#endif
+}
+
+void ClipboardMessageFilter::OnReadImageReply(
+    SkBitmap bitmap, IPC::Message* reply_msg) {
+  base::SharedMemoryHandle image_handle = base::SharedMemory::NULLHandle();
+  uint32 image_size = 0;
+  std::string reply_data;
+  if (!bitmap.isNull()) {
+    std::vector<unsigned char> png_data;
+    SkAutoLockPixels lock(bitmap);
+    if (gfx::PNGCodec::EncodeWithCompressionLevel(
+            static_cast<const unsigned char*>(bitmap.getPixels()),
+            gfx::PNGCodec::FORMAT_BGRA,
+            gfx::Size(bitmap.width(), bitmap.height()),
+            bitmap.rowBytes(),
+            false,
+            std::vector<gfx::PNGCodec::Comment>(),
+            Z_BEST_SPEED,
+            &png_data)) {
+      base::SharedMemory buffer;
+      if (buffer.CreateAndMapAnonymous(png_data.size())) {
+        memcpy(buffer.memory(), vector_as_array(&png_data), png_data.size());
+        if (buffer.GiveToProcess(peer_handle(), &image_handle)) {
+          image_size = png_data.size();
+        }
+      }
+    }
   }
+  ClipboardHostMsg_ReadImage::WriteReplyParams(reply_msg, image_handle,
+                                               image_size);
+  Send(reply_msg);
 }
 
 void ClipboardMessageFilter::OnReadAvailableTypes(
