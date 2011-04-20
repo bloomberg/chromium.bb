@@ -2113,7 +2113,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [self showOrHideNoItemContainerForNode:model->GetBookmarkBarNode()];
   // If we deleted the only item on the "off the side" menu we no
   // longer need to show it.
-  [self configureOffTheSideButtonContentsAndVisibility];
+  [self reconfigureBookmarkBar];
 }
 
 // TODO(jrg): linear searching is bad.
@@ -2661,7 +2661,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     [buttons_ removeObjectAtIndex:buttonIndex];
     --displayedButtonCount_;
     [self resetAllButtonPositionsWithAnimation:YES];
-    [self reconfigureBookmarkBar];
   } else if (folderController_ &&
              [folderController_ parentButton] == offTheSideButton_) {
     // The button being removed is in the OTS (off-the-side) and the OTS
