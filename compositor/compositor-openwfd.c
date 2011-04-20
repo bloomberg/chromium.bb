@@ -159,6 +159,20 @@ init_egl(struct wfd_compositor *ec)
 }
 
 static int
+wfd_output_prepare_scanout_surface(struct wlsc_output *output_base,
+				   struct wlsc_surface *es)
+{
+	return -1;
+}
+
+static int
+wfd_output_set_cursor(struct wlsc_output *output_base,
+		      struct wl_input_device *input)
+{
+	return -1;
+}
+
+static int
 create_output_for_port(struct wfd_compositor *ec,
 		       WFDHandle port,
 		       int x, int y)
@@ -289,6 +303,9 @@ create_output_for_port(struct wfd_compositor *ec,
 
 	output->base.prepare_render = wfd_output_prepare_render;
 	output->base.present = wfd_output_present;
+	output->base.prepare_scanout_surface =
+		wfd_output_prepare_scanout_surface;
+	output->base.set_hardware_cursor = wfd_output_set_cursor;
 
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
 
@@ -533,7 +550,6 @@ wfd_compositor_create(struct wl_display *display, int connector)
 	}
 
 	ec->base.destroy = wfd_destroy;
-	ec->base.create_buffer = wlsc_shm_buffer_create;
 	ec->base.focus = 1;
 
 	glGenFramebuffers(1, &ec->base.fbo);
