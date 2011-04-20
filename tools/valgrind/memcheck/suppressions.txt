@@ -4395,6 +4395,19 @@
    fun:_Znw*
    fun:*webkit_fileapi_file_system_dir_url_request_job_unittest.cc*SetUpEv
 }
+{
+   bug_80022
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net12CertVerifier6VerifyEPNS_15X509CertificateERKSsiPNS_16CertVerifyResultEP14CallbackRunnerI6Tuple1IiEEPPv
+   fun:_ZN3net25SingleRequestCertVerifier6VerifyEPNS_15X509CertificateERKSsiPNS_16CertVerifyResultEP14CallbackRunnerI6Tuple1IiEE
+   fun:_ZN3net18SSLClientSocketNSS12DoVerifyCertEi
+   fun:_ZN3net18SSLClientSocketNSS15DoHandshakeLoopEi
+   fun:_ZN3net18SSLClientSocketNSS7ConnectEP14CallbackRunnerI6Tuple1IiEE
+   fun:_ZN3net13SSLConnectJob12DoSSLConnectEv
+   fun:_ZN3net13SSLConnectJob6DoLoopEi
+   fun:_ZN3net13SSLConnectJob12OnIOCompleteEi
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
