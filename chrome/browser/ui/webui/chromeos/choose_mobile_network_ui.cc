@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/choose_mobile_network_ui.h"
 
+#include <set>
 #include <string>
 
 #include "base/logging.h"
@@ -23,6 +24,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+namespace chromeos {
+
 namespace {
 
 // JS API callbacks names.
@@ -36,6 +39,7 @@ const char kJsApiShowNetworks[] = "mobile.ChooseNetwork.showNetworks";
 const char kNetworkIdProperty[] = "networkId";
 const char kOperatorNameProperty[] = "operatorName";
 const char kStatusProperty[] = "status";
+const char kTechnologyProperty[] = "technology";
 
 class ChooseMobileNetworkHTMLSource
     : public ChromeURLDataManager::DataSource {
@@ -60,7 +64,7 @@ class ChooseMobileNetworkHTMLSource
 
 class ChooseMobileNetworkHandler
     : public WebUIMessageHandler,
-      public base::SupportsWeakPtr<ChooseMobileNetworkHandler> {
+      public NetworkLibrary::NetworkDeviceObserver {
  public:
   ChooseMobileNetworkHandler();
   virtual ~ChooseMobileNetworkHandler();
@@ -68,10 +72,16 @@ class ChooseMobileNetworkHandler
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
+  // NetworkDeviceObserver implementation.
+  virtual void OnNetworkDeviceChanged(NetworkLibrary* cros,
+                                      const NetworkDevice* device);
+
  private:
   // Handlers for JS WebUI messages.
   void HandleCancel(const ListValue* args);
   void HandleConnect(const ListValue* args);
+
+  std::string device_path_;
 
   DISALLOW_COPY_AND_ASSIGN(ChooseMobileNetworkHandler);
 };
@@ -96,6 +106,9 @@ void ChooseMobileNetworkHTMLSource::StartDataRequest(const std::string& path,
   strings.SetString(
       "scanningMsgLine2",
       l10n_util::GetStringUTF16(IDS_NETWORK_SCANNING_THIS_MAY_TAKE_A_MINUTE));
+  strings.SetString(
+      "noMobileNetworks",
+      l10n_util::GetStringUTF16(IDS_NETWORK_NO_MOBILE_NETWORKS));
   strings.SetString("connect",
                     l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_CONNECT));
   strings.SetString("cancel", l10n_util::GetStringUTF16(IDS_CANCEL));
@@ -118,9 +131,22 @@ void ChooseMobileNetworkHTMLSource::StartDataRequest(const std::string& path,
 // ChooseMobileNetworkHandler implementation.
 
 ChooseMobileNetworkHandler::ChooseMobileNetworkHandler() {
+  if (!CrosLibrary::Get()->EnsureLoaded())
+    return;
+
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  cros->RequestCellularScan();
+  if (const NetworkDevice* cellular = cros->FindCellularDevice()) {
+    device_path_ = cellular->device_path();
+    cros->AddNetworkDeviceObserver(device_path_, this);
+  }
 }
 
 ChooseMobileNetworkHandler::~ChooseMobileNetworkHandler() {
+  if (!device_path_.empty()) {
+    NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+    cros->RemoveNetworkDeviceObserver(device_path_, this);
+  }
 }
 
 void ChooseMobileNetworkHandler::RegisterMessages() {
@@ -132,26 +158,68 @@ void ChooseMobileNetworkHandler::RegisterMessages() {
       NewCallback(this, &ChooseMobileNetworkHandler::HandleConnect));
 }
 
+void ChooseMobileNetworkHandler::OnNetworkDeviceChanged(
+    NetworkLibrary* cros,
+    const NetworkDevice* device) {
+
+  ListValue networks_list;
+  std::set<std::string> network_ids;
+  const CellularNetworkList& found_networks = device->found_cellular_networks();
+  for (CellularNetworkList::const_iterator it = found_networks.begin();
+       it != found_networks.end(); ++it) {
+    // We need to remove duplicates from the list because same network with
+    // different technologies are listed multiple times. But ModemManager
+    // Register API doesn't allow technology to be specified so just show unique
+    // network in UI.
+    if (network_ids.insert(it->network_id).second) {
+      DictionaryValue* network = new DictionaryValue();
+      network->SetString(kNetworkIdProperty, it->network_id);
+      if (!it->long_name.empty())
+        network->SetString(kOperatorNameProperty, it->long_name);
+      else if (!it->short_name.empty())
+        network->SetString(kOperatorNameProperty, it->short_name);
+      else
+        network->SetString(kOperatorNameProperty, it->network_id);
+      network->SetString(kStatusProperty, it->status);
+      network->SetString(kTechnologyProperty, it->technology);
+      networks_list.Append(network);
+    }
+  }
+  web_ui_->CallJavascriptFunction(kJsApiShowNetworks, networks_list);
+}
+
 void ChooseMobileNetworkHandler::HandleCancel(const ListValue* args) {
-  // TODO(dpolukhin): cancel scan and return to automatic mode.
+  const size_t kConnectParamCount = 0;
+  if (args->GetSize() != kConnectParamCount) {
+    NOTREACHED();
+    return;
+  }
+
+  if (!CrosLibrary::Get()->EnsureLoaded())
+    return;
+
+  // Switch to automatic mode.
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  cros->RequestCellularRegister(std::string());
 }
 
 void ChooseMobileNetworkHandler::HandleConnect(const ListValue* args) {
-  const size_t kConnectParamCount = 1;
   std::string network_id;
+  const size_t kConnectParamCount = 1;
   if (args->GetSize() != kConnectParamCount ||
       !args->GetString(0, &network_id)) {
     NOTREACHED();
     return;
   }
 
-  VLOG(1) << "Connecting to cellular network " << network_id;
-  // TODO(dpolukhin): connect to specified network.
+  if (!CrosLibrary::Get()->EnsureLoaded())
+    return;
+
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  cros->RequestCellularRegister(network_id);
 }
 
 }  // namespace
-
-namespace chromeos {
 
 ChooseMobileNetworkUI::ChooseMobileNetworkUI(TabContents* contents)
     : WebUI(contents) {
@@ -161,20 +229,6 @@ ChooseMobileNetworkUI::ChooseMobileNetworkUI(TabContents* contents)
       new ChooseMobileNetworkHTMLSource();
   // Set up the "chrome://choose-mobile-network" source.
   contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
-
-  // TODO(dpolukhin): initiate cellular network scan.
-
-/* Example code to send networks to dialog.
-  ListValue networks_list;
-  for (int i = 0; i < 5; i++) {
-    DictionaryValue* network = new DictionaryValue;
-    network->SetString(kNetworkIdProperty, base::IntToString(i));
-    network->SetString(kOperatorNameProperty, "test_" + base::IntToString(i));
-    network->SetString(kStatusProperty, "available");
-    networks_list.Append(network);
-  }
-  web_ui_->CallJavascriptFunction(kJsApiShowNetworks, networks_list);
-*/
 }
 
 }  // namespace chromeos

@@ -83,6 +83,9 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD1(EnterPin, void(const std::string&));
   MOCK_METHOD2(UnblockPin, void(const std::string&, const std::string&));
 
+  MOCK_METHOD0(RequestCellularScan, void());
+  MOCK_METHOD1(RequestCellularRegister, void(const std::string&));
+
   MOCK_METHOD0(RequestNetworkScan, void(void));
   MOCK_METHOD1(GetWifiAccessPoints, bool(WifiAccessPointVector*));
   MOCK_METHOD1(ConnectToWifiNetwork, void(WifiNetwork*));

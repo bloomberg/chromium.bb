@@ -151,6 +151,12 @@ const char* kSIMLockStatusProperty = "Cellular.SIMLockStatus";
 const char* kSIMLockTypeProperty = "LockType";
 const char* kSIMLockRetriesLeftProperty = "RetriesLeft";
 
+// Flimflam property names for Cellular.FoundNetworks.
+const char* kLongNameProperty = "long_name";
+const char* kStatusProperty = "status";
+const char* kShortNameProperty = "short_name";
+const char* kTechnologyProperty = "technology";
+
 // Flimflam SIMLock status types.
 const char* kSIMLockPin = "sim-pin";
 const char* kSIMLockPuk = "sim-puk";
@@ -177,6 +183,8 @@ const char* kFirmwareRevisionProperty = "Cellular.FirmwareRevision";
 const char* kHardwareRevisionProperty = "Cellular.HardwareRevision";
 const char* kLastDeviceUpdateProperty = "Cellular.LastDeviceUpdate";
 const char* kPRLVersionProperty = "Cellular.PRLVersion"; // (INT16)
+const char* kSelectedNetworkProperty = "Cellular.SelectedNetwork";
+const char* kFoundNetworksProperty = "Cellular.FoundNetworks";
 
 // Flimflam type options.
 const char* kTypeEthernet = "ethernet";
@@ -435,6 +443,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_ESN,
   PROPERTY_INDEX_FAVORITE,
   PROPERTY_INDEX_FIRMWARE_REVISION,
+  PROPERTY_INDEX_FOUND_NETWORKS,
   PROPERTY_INDEX_HARDWARE_REVISION,
   PROPERTY_INDEX_HOME_PROVIDER,
   PROPERTY_INDEX_HOST,
@@ -470,6 +479,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_SAVE_CREDENTIALS,
   PROPERTY_INDEX_SCANNING,
   PROPERTY_INDEX_SECURITY,
+  PROPERTY_INDEX_SELECTED_NETWORK,
   PROPERTY_INDEX_SERVICES,
   PROPERTY_INDEX_SERVICE_WATCH_LIST,
   PROPERTY_INDEX_SIGNAL_STRENGTH,
@@ -517,6 +527,7 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kEsnProperty, PROPERTY_INDEX_ESN },
   { kFavoriteProperty, PROPERTY_INDEX_FAVORITE },
   { kFirmwareRevisionProperty, PROPERTY_INDEX_FIRMWARE_REVISION },
+  { kFoundNetworksProperty, PROPERTY_INDEX_FOUND_NETWORKS },
   { kHardwareRevisionProperty, PROPERTY_INDEX_HARDWARE_REVISION },
   { kHomeProviderProperty, PROPERTY_INDEX_HOME_PROVIDER },
   { kHostProperty, PROPERTY_INDEX_HOST },
@@ -552,6 +563,7 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kSaveCredentialsProperty, PROPERTY_INDEX_SAVE_CREDENTIALS },
   { kScanningProperty, PROPERTY_INDEX_SCANNING },
   { kSecurityProperty, PROPERTY_INDEX_SECURITY },
+  { kSelectedNetworkProperty, PROPERTY_INDEX_SELECTED_NETWORK },
   { kServiceWatchListProperty, PROPERTY_INDEX_SERVICE_WATCH_LIST },
   { kServicesProperty, PROPERTY_INDEX_SERVICES },
   { kSignalStrengthProperty, PROPERTY_INDEX_SIGNAL_STRENGTH },
@@ -703,9 +715,9 @@ static SIMLockState ParseSimLockState(const std::string& state) {
   return parsed_state;
 }
 
-bool ParseSimLockStateFromDictionary(const DictionaryValue* info,
-                                     SIMLockState* out_state,
-                                     int* out_retries) {
+static bool ParseSimLockStateFromDictionary(const DictionaryValue* info,
+                                            SIMLockState* out_state,
+                                            int* out_retries) {
   std::string state_string;
   if (!info->GetString(kSIMLockTypeProperty, &state_string) ||
       !info->GetInteger(kSIMLockRetriesLeftProperty, out_retries)) {
@@ -713,6 +725,31 @@ bool ParseSimLockStateFromDictionary(const DictionaryValue* info,
     return false;
   }
   *out_state = ParseSimLockState(state_string);
+  return true;
+}
+
+static bool ParseFoundNetworksFromList(const ListValue* list,
+                                       CellularNetworkList* found_networks_) {
+  found_networks_->clear();
+  found_networks_->reserve(list->GetSize());
+  for (ListValue::const_iterator it = list->begin(); it != list->end(); ++it) {
+    if ((*it)->IsType(Value::TYPE_DICTIONARY)) {
+      found_networks_->resize(found_networks_->size() + 1);
+      DictionaryValue* dict = static_cast<const DictionaryValue*>(*it);
+      dict->GetStringWithoutPathExpansion(
+          kStatusProperty, &found_networks_->back().status);
+      dict->GetStringWithoutPathExpansion(
+          kNetworkIdProperty, &found_networks_->back().network_id);
+      dict->GetStringWithoutPathExpansion(
+          kShortNameProperty, &found_networks_->back().short_name);
+      dict->GetStringWithoutPathExpansion(
+          kLongNameProperty, &found_networks_->back().long_name);
+      dict->GetStringWithoutPathExpansion(
+          kTechnologyProperty, &found_networks_->back().technology);
+    } else {
+      return false;
+    }
+  }
   return true;
 }
 
@@ -827,6 +864,13 @@ bool NetworkDevice::ParseValue(int index, const Value* value) {
       return value->GetAsBoolean(&scanning_);
     case PROPERTY_INDEX_CARRIER:
       return value->GetAsString(&carrier_);
+    case PROPERTY_INDEX_FOUND_NETWORKS:
+      if (value->IsType(Value::TYPE_LIST)) {
+        return ParseFoundNetworksFromList(
+            static_cast<const ListValue*>(value),
+            &found_cellular_networks_);
+      }
+      break;
     case PROPERTY_INDEX_HOME_PROVIDER:
       return value->GetAsString(&home_provider_);
     case PROPERTY_INDEX_MEID:
@@ -863,6 +907,7 @@ bool NetworkDevice::ParseValue(int index, const Value* value) {
         }
         return result;
       }
+      break;
     case PROPERTY_INDEX_FIRMWARE_REVISION:
       return value->GetAsString(&firmware_revision_);
     case PROPERTY_INDEX_HARDWARE_REVISION:
@@ -871,6 +916,8 @@ bool NetworkDevice::ParseValue(int index, const Value* value) {
       return value->GetAsString(&last_update_);
     case PROPERTY_INDEX_PRL_VERSION:
       return value->GetAsInteger(&PRL_version_);
+    case PROPERTY_INDEX_SELECTED_NETWORK:
+      return value->GetAsString(&selected_cellular_network_);
     default:
       break;
   }
@@ -2317,6 +2364,37 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       }
     }
     networklib->NotifyPinOperationCompleted(pin_error);
+  }
+
+  virtual void RequestCellularScan() {
+    const NetworkDevice* cellular = FindCellularDevice();
+    if (!cellular) {
+      NOTREACHED() << "Calling RequestCellularScan method w/o cellular device.";
+      return;
+    }
+    chromeos::ProposeScan(cellular->device_path().c_str());
+  }
+
+  virtual void RequestCellularRegister(const std::string& network_id) {
+    const NetworkDevice* cellular = FindCellularDevice();
+    if (!cellular) {
+      NOTREACHED() << "Calling CellularRegister method w/o cellular device.";
+      return;
+    }
+    chromeos::RequestCellularRegister(cellular->device_path().c_str(),
+                                      network_id.c_str(),
+                                      CellularRegisterCallback,
+                                      this);
+  }
+
+  static void CellularRegisterCallback(void* object,
+                                       const char* path,
+                                       NetworkMethodErrorType error,
+                                       const char* error_message) {
+    NetworkLibraryImpl* networklib = static_cast<NetworkLibraryImpl*>(object);
+    DCHECK(networklib);
+    // TODO(dpolukhin): Notify observers about network registration status
+    // but not UI doesn't assume such notification so just ignore result.
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -4082,6 +4160,8 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual void ChangeRequirePin(bool require_pin, const std::string& pin) {}
   virtual void EnterPin(const std::string& pin) {}
   virtual void UnblockPin(const std::string& puk, const std::string& new_pin) {}
+  virtual void RequestCellularScan() {}
+  virtual void RequestCellularRegister(const std::string& network_id) {}
 
   virtual void RequestNetworkScan() {}
   virtual bool GetWifiAccessPoints(WifiAccessPointVector* result) {

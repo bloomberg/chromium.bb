@@ -13,6 +13,13 @@ cr.define('mobile', function() {
     networks_: [],
     showNetworks_: function(networks) {
       this.networks_ = networks;
+
+      if (networks.length == 0) {
+        $('scanning').hidden = true;
+        $('no-mobile-networks').hidden = false;
+        return;
+      }
+
       var container = $('choosing');
       container.innerHTML = '';
       for (var i in networks) {
@@ -22,9 +29,17 @@ cr.define('mobile', function() {
             '<label for="network' + i + '" id="label' + i + '"></label>';
         container.appendChild(elem);
         $('label' + i).textContent = networks[i].operatorName;
-        $('network' + i).addEventListener('click', function(event) {
+        if (networks[i].status == 'current') {
+          $('network' + i).checked = true;
           $('connect').disabled = false;
-        });
+        } else if (networks[i].status == 'forbidden') {
+          $('network' + i).disabled = true;
+          elem.className = 'disabled';
+        } else {
+          $('network' + i).addEventListener('click', function(event) {
+            $('connect').disabled = false;
+          });
+        }
       }
       $('scanning').hidden = true;
       $('choosing').hidden = false;

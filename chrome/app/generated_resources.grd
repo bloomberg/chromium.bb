@@ -10217,6 +10217,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NETWORK_SCANNING_THIS_MAY_TAKE_A_MINUTE" desc="Text which appears while scanning for mobile networks, right after IDS_NETWORK_SCANNING_FOR_MOBILE_NETWORKS text.">
         This may take a minute...
       </message>
+      <message name="IDS_NETWORK_NO_MOBILE_NETWORKS" desc="Text which appears when no mobile networks were found.">
+        No networks found. Please try again later.
+      </message>
 
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_SERVICE_NAME" desc="Cellular service name under network details in chrome:settings/internet.">
         Service name:

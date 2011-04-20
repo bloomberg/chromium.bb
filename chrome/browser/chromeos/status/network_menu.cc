@@ -124,6 +124,8 @@ bool NetworkMenuModel::ConnectToNetworkAt(int index,
     }
   } else if (flags & FLAG_ADD_WIFI) {
     ShowOther(TYPE_WIFI);
+  } else if (flags & FLAG_ADD_CELLULAR) {
+    ShowOtherCellular();
   } else if (flags & FLAG_ADD_VPN) {
     ShowOther(TYPE_VPN);
   } else if (flags & FLAG_VPN) {
@@ -400,6 +402,7 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
     const CellularNetwork* active_cellular = cros->cellular_network();
 
     bool separator_added = false;
+    // TODO(dpolukhin): detect this on device level.
     bool is_gsm = false;
     // List Cellular networks.
     for (size_t i = 0; i < cell_networks.size(); ++i) {
@@ -475,8 +478,7 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
         }
       }
     }
-    // TOOD(dpolukhin): remove && 0 to when code is ready.
-    if (is_gsm && 0) {
+    if (is_gsm) {
       // For GSM add mobile network scan.
       if (!separator_added && !menu_items_.empty())
         menu_items_.push_back(MenuItem());

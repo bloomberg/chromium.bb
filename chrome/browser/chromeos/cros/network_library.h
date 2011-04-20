@@ -162,6 +162,17 @@ enum EAPPhase2Auth {
   EAP_PHASE_2_AUTH_CHAP     = 5
 };
 
+// Simple wrapper for property Cellular.FoundNetworks.
+struct FoundCellularNetwork {
+  std::string status;
+  std::string network_id;
+  std::string short_name;
+  std::string long_name;
+  std::string technology;
+};
+
+typedef std::vector<FoundCellularNetwork> CellularNetworkList;
+
 // Cellular network is considered low data when less than 60 minues.
 static const int kCellularDataLowSecs = 60 * 60;
 
@@ -176,6 +187,7 @@ static const int kCellularDataVeryLowBytes = 50 * 1024 * 1024;
 
 // Contains data related to the flimflam.Device interface,
 // e.g. ethernet, wifi, cellular.
+// TODO(dpolukhin): refactor to make base class and device specific derivatives.
 class NetworkDevice {
  public:
   explicit NetworkDevice(const std::string& device_path);
@@ -201,6 +213,12 @@ class NetworkDevice {
   const std::string& last_update() const { return last_update_; }
   const unsigned int prl_version() const { return PRL_version_; }
   const std::string& home_provider() const { return home_provider_; }
+  const std::string& selected_cellular_network() const {
+    return selected_cellular_network_;
+  }
+  const CellularNetworkList& found_cellular_networks() const {
+    return found_cellular_networks_;
+  }
 
  private:
   bool ParseValue(int index, const Value* value);
@@ -229,6 +247,8 @@ class NetworkDevice {
   std::string hardware_revision_;
   std::string last_update_;
   int PRL_version_;
+  std::string selected_cellular_network_;
+  CellularNetworkList found_cellular_networks_;
 
   friend class NetworkLibraryImpl;
   DISALLOW_COPY_AND_ASSIGN(NetworkDevice);
@@ -1012,6 +1032,12 @@ class NetworkLibrary {
   // Passes |puk|, |new_pin| to unblock SIM card.
   virtual void UnblockPin(const std::string& puk,
                           const std::string& new_pin) = 0;
+
+  // Request a scan for available cellular networks.
+  virtual void RequestCellularScan() = 0;
+
+  // Request a register in cellular network with |network_id|.
+  virtual void RequestCellularRegister(const std::string& network_id) = 0;
 
   // Request a scan for new wifi networks.
   virtual void RequestNetworkScan() = 0;
