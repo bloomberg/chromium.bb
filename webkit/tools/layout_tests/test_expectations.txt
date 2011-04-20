@@ -70,11 +70,19 @@ BUGJKNOTTEN MAC : fast/forms/select-baseline.html = IMAGE PASS
 BUGJKNOTTEN MAC : fast/forms/select-empty-option-height.html = IMAGE PASS
 BUGJKNOTTEN : http/tests/local/formdata/send-form-data-with-sliced-file.html = PASS
 
-BUGDPRANKE LINUX : css2.1/t140201-c533-bgimage-00-a.html = CRASH
-BUGDPRANKE LINUX : fast/backgrounds/solid-color-context-restore.html = CRASH
-BUGDPRANKE WIN LINUX : fast/css/acid2-pixel.html = CRASH
-BUGDPRANKE LINUX : fast/frames/content-opacity-1.html = CRASH
-BUGDPRANKE LINUX : fast/frames/content-opacity-2.html = CRASH
-BUGDPRANKE WIN LINUX : fast/table/stale-grid-crash.html = CRASH
-BUGDPRANKE MAC : fast/css/background-clip-values.html = CRASH
+BUGDPRANKE DEBUG LINUX : css2.1/t140201-c533-bgimage-00-a.html = CRASH
+BUGDPRANKE DEBUG LINUX : fast/backgrounds/solid-color-context-restore.html = CRASH
+BUGDPRANKE DEBUG WIN LINUX : fast/css/acid2-pixel.html = CRASH
+BUGDPRANKE DEBUG LINUX : fast/frames/content-opacity-1.html = CRASH
+BUGDPRANKE DEBUG LINUX : fast/frames/content-opacity-2.html = CRASH
+BUGDPRANKE DEBUG WIN LINUX : fast/table/stale-grid-crash.html = CRASH
+BUGDPRANKE DEBUG MAC : fast/css/background-clip-values.html = CRASH
+
+BUGDPRANKE LINUX : fast/gradients/crash-on-zero-radius.html = IMAGE
+BUGDPRANKE LINUX : fast/gradients/generated-gradients.html = IMAGE
+BUGDPRANKE LINUX : fast/gradients/radial-centered.html = IMAGE
+BUGDPRANKE LINUX : fast/gradients/simple-gradients.html = IMAGE
+BUGDPRANKE LINUX : svg/W3C-SVG-1.1/pservers-grad-13-b.svg = IMAGE
+BUGDPRANKE LINUX : svg/custom/radial-gradient-with-outstanding-focalPoint.svg = IMAGE
+BUGDPRANKE LINUX : canvas/philip/tests/2d.gradient.radial.touch2.html = TEXT
 
