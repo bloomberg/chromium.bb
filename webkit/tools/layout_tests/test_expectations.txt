@@ -70,3 +70,11 @@ BUGJKNOTTEN MAC : fast/forms/select-baseline.html = IMAGE PASS
 BUGJKNOTTEN MAC : fast/forms/select-empty-option-height.html = IMAGE PASS
 BUGJKNOTTEN : http/tests/local/formdata/send-form-data-with-sliced-file.html = PASS
 
+BUGDPRANKE LINUX : css2.1/t140201-c533-bgimage-00-a.html = CRASH
+BUGDPRANKE LINUX : fast/backgrounds/solid-color-context-restore.html = CRASH
+BUGDPRANKE WIN LINUX : fast/css/acid2-pixel.html = CRASH
+BUGDPRANKE LINUX : fast/frames/content-opacity-1.html = CRASH
+BUGDPRANKE LINUX : fast/frames/content-opacity-2.html = CRASH
+BUGDPRANKE WIN LINUX : fast/table/stale-grid-crash.html = CRASH
+BUGDPRANKE MAC : fast/css/background-clip-values.html = CRASH
+
