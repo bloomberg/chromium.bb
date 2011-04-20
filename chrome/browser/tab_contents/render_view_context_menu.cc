@@ -58,13 +58,14 @@
 #include "net/url_request/url_request.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/favicon_size.h"
 #include "webkit/glue/webmenuitem.h"
 
 using WebKit::WebContextMenuData;
 using WebKit::WebMediaPlayerAction;
+using WebKit::WebURL;
+using WebKit::WebString;
 
 namespace {
 
@@ -1197,19 +1198,24 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
 
   switch (id) {
     case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB:
-      OpenURL(params_.link_url,
-              source_tab_contents_->delegate() &&
+      OpenURL(
+          params_.link_url,
+          params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
+          source_tab_contents_->delegate() &&
               source_tab_contents_->delegate()->IsApplication() ?
                   NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB,
-              PageTransition::LINK);
+          PageTransition::LINK);
       break;
 
     case IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
-      OpenURL(params_.link_url, NEW_WINDOW, PageTransition::LINK);
+      OpenURL(
+          params_.link_url,
+          params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
+          NEW_WINDOW, PageTransition::LINK);
       break;
 
     case IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
-      OpenURL(params_.link_url, OFF_THE_RECORD, PageTransition::LINK);
+      OpenURL(params_.link_url, GURL(), OFF_THE_RECORD, PageTransition::LINK);
       break;
 
     case IDC_CONTENT_CONTEXT_SAVEAVAS:
@@ -1243,7 +1249,10 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
 
     case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
     case IDC_CONTENT_CONTEXT_OPENAVNEWTAB:
-      OpenURL(params_.src_url, NEW_BACKGROUND_TAB, PageTransition::LINK);
+      OpenURL(
+          params_.src_url,
+          params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
+          NEW_BACKGROUND_TAB, PageTransition::LINK);
       break;
 
     case IDC_CONTENT_CONTEXT_PLAYPAUSE: {
@@ -1433,7 +1442,7 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
     case IDC_CONTENT_CONTEXT_GOTOURL: {
-      OpenURL(selection_navigation_url_, NEW_FOREGROUND_TAB,
+      OpenURL(selection_navigation_url_, GURL(), NEW_FOREGROUND_TAB,
               PageTransition::LINK);
       break;
     }
@@ -1464,7 +1473,7 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS: {
       std::string url = std::string(chrome::kChromeUISettingsURL) +
           chrome::kLanguageOptionsSubPage;
-      OpenURL(GURL(url), NEW_FOREGROUND_TAB, PageTransition::LINK);
+      OpenURL(GURL(url), GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
       break;
     }
 
@@ -1546,10 +1555,10 @@ string16 RenderViewContextMenu::PrintableSelectionText() {
 // Controller functions --------------------------------------------------------
 
 void RenderViewContextMenu::OpenURL(
-    const GURL& url,
+    const GURL& url, const GURL& referrer,
     WindowOpenDisposition disposition,
     PageTransition::Type transition) {
-  source_tab_contents_->OpenURL(url, GURL(), disposition, transition);
+  source_tab_contents_->OpenURL(url, referrer, disposition, transition);
 }
 
 void RenderViewContextMenu::CopyImageAt(int x, int y) {

@@ -113,7 +113,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate {
 
   // Opens the specified URL string in a new tab.  If |in_current_window| is
   // false, a new window is created to hold the new tab.
-  void OpenURL(const GURL& url,
+  void OpenURL(const GURL& url, const GURL& referrer,
                WindowOpenDisposition disposition,
                PageTransition::Type transition);
 

@@ -100,6 +100,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSearchableFormData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSettings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
@@ -200,6 +201,7 @@ using WebKit::WebRect;
 using WebKit::WebScriptSource;
 using WebKit::WebSearchableFormData;
 using WebKit::WebSecurityOrigin;
+using WebKit::WebSecurityPolicy;
 using WebKit::WebSettings;
 using WebKit::WebSharedWorker;
 using WebKit::WebSize;
@@ -792,8 +794,12 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
       request.setCachePolicy(WebURLRequest::ReturnCacheDataElseLoad);
 
     if (params.referrer.is_valid()) {
-      request.setHTTPHeaderField(WebString::fromUTF8("Referer"),
-                                 WebString::fromUTF8(params.referrer.spec()));
+      if (!WebSecurityPolicy::shouldHideReferrer(
+              params.url,
+              WebString::fromUTF8(params.referrer.spec()))) {
+        request.setHTTPHeaderField(WebString::fromUTF8("Referer"),
+                                   WebString::fromUTF8(params.referrer.spec()));
+      }
     }
 
     if (!params.extra_headers.empty()) {
