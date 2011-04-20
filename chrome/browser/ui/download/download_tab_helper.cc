@@ -41,6 +41,11 @@ void DownloadTabHelper::OnSavePage() {
   save_package_->GetSaveInfo();
 }
 
+void DownloadTabHelper::OnSaveURL(const GURL& url) {
+  DownloadManager* dlm = tab_contents()->profile()->GetDownloadManager();
+  dlm->DownloadUrl(url, tab_contents()->GetURL(), "", tab_contents());
+}
+
 // Used in automated testing to bypass prompting the user for file names.
 // Instead, the names and paths are hard coded rather than running them through
 // file name sanitation and extension / mime checking.
@@ -58,7 +63,7 @@ bool DownloadTabHelper::SavePage(const FilePath& main_file,
 bool DownloadTabHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(DownloadTabHelper, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SaveAs, OnSavePage)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SaveURLAs, OnSaveURL)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 

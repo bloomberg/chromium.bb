@@ -304,7 +304,7 @@ void SaveAs(PP_Instance instance_id) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return;
-  instance->delegate()->SaveAs();
+  instance->delegate()->SaveURLAs(instance->plugin_url());
 }
 
 const PPB_PDF ppb_pdf = {

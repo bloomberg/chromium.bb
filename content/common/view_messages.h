@@ -1941,8 +1941,9 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateContentRestrictions,
 // The currently displayed PDF has an unsupported feature.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_PDFHasUnsupportedFeature)
 
-// Brings up SaveAs... dialog (similar to the wrench->SaveAs...).
-IPC_MESSAGE_ROUTED0(ViewHostMsg_SaveAs)
+// Brings up SaveAs... dialog to save specified URL.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_SaveURLAs,
+                    GURL /* url */)
 
 // Notifies when default plugin updates status of the missing plugin.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_MissingPluginStatus,

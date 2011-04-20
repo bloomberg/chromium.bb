@@ -20,6 +20,10 @@ class DownloadTabHelper : public TabContentsObserver {
   // Prepare for saving the current web page to disk.
   void OnSavePage();
 
+  // Prepare for saving the URL to disk.
+  // URL may refer to the iframe on the page.
+  void OnSaveURL(const GURL& url);
+
   // Save page with the main HTML file path, the directory for saving resources,
   // and the save type: HTML only or complete web page. Returns true if the
   // saving process has been initiated successfully.

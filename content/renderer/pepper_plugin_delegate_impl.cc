@@ -1170,9 +1170,9 @@ void PepperPluginDelegateImpl::HasUnsupportedFeature() {
       render_view_->routing_id()));
 }
 
-void PepperPluginDelegateImpl::SaveAs() {
-  render_view_->Send(new ViewHostMsg_SaveAs(
-      render_view_->routing_id()));
+void PepperPluginDelegateImpl::SaveURLAs(const GURL& url) {
+  render_view_->Send(new ViewHostMsg_SaveURLAs(
+      render_view_->routing_id(), url));
 }
 
 P2PSocketDispatcher* PepperPluginDelegateImpl::GetP2PSocketDispatcher() {

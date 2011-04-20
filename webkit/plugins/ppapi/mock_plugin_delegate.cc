@@ -224,7 +224,7 @@ void MockPluginDelegate::SetContentRestriction(int restrictions) {
 void MockPluginDelegate::HasUnsupportedFeature() {
 }
 
-void MockPluginDelegate::SaveAs() {
+void MockPluginDelegate::SaveURLAs(const GURL& url) {
 }
 
 P2PSocketDispatcher* MockPluginDelegate::GetP2PSocketDispatcher() {
