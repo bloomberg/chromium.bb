@@ -173,11 +173,12 @@ class ScopedFrameBufferBinder {
 };
 
 // Temporarily changes a decoder's bound frame buffer to a resolved version of
-// the multisampled offscreen render buffer if and only if that buffer is
-// currently bound and is multisampled.
+// the multisampled offscreen render buffer if that buffer is multisampled, and,
+// if it is bound or enforce_internal_framebuffer is true.
 class ScopedResolvedFrameBufferBinder {
  public:
-  explicit ScopedResolvedFrameBufferBinder(GLES2DecoderImpl* decoder);
+  explicit ScopedResolvedFrameBufferBinder(GLES2DecoderImpl* decoder,
+                                           bool enforce_internal_framebuffer);
   ~ScopedResolvedFrameBufferBinder();
 
  private:
@@ -1527,10 +1528,12 @@ ScopedFrameBufferBinder::~ScopedFrameBufferBinder() {
 }
 
 ScopedResolvedFrameBufferBinder::ScopedResolvedFrameBufferBinder(
-    GLES2DecoderImpl* decoder) : decoder_(decoder) {
+    GLES2DecoderImpl* decoder, bool enforce_internal_framebuffer)
+    : decoder_(decoder) {
   resolve_and_bind_ = (decoder_->offscreen_target_frame_buffer_.get() &&
                        decoder_->IsOffscreenBufferMultisampled() &&
-                       !decoder_->bound_read_framebuffer_.get());
+                       (!decoder_->bound_read_framebuffer_.get() ||
+                        enforce_internal_framebuffer));
   if (!resolve_and_bind_)
     return;
 
@@ -4961,7 +4964,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
 
   CopyRealGLErrorsToWrapper();
 
-  ScopedResolvedFrameBufferBinder binder(this);
+  ScopedResolvedFrameBufferBinder binder(this, false);
 
   // Get the size of the current fbo or backbuffer.
   gfx::Size max_size = GetBoundReadFrameBufferSize();
@@ -5731,7 +5734,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
   }
 
   CopyRealGLErrorsToWrapper();
-  ScopedResolvedFrameBufferBinder binder(this);
+  ScopedResolvedFrameBufferBinder binder(this, false);
   gfx::Size size = GetBoundReadFrameBufferSize();
 
   // Clip to size to source dimensions
@@ -5815,7 +5818,7 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
     return;
   }
 
-  ScopedResolvedFrameBufferBinder binder(this);
+  ScopedResolvedFrameBufferBinder binder(this, false);
   gfx::Size size = GetBoundReadFrameBufferSize();
   GLint copyX = 0;
   GLint copyY = 0;
@@ -6337,7 +6340,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
     if (IsOffscreenBufferMultisampled()) {
       // For multisampled buffers, bind the resolved frame buffer so that
       // callbacks can call ReadPixels or CopyTexImage2D.
-      ScopedResolvedFrameBufferBinder binder(this);
+      ScopedResolvedFrameBufferBinder binder(this, true);
       if (swap_buffers_callback_.get()) {
         swap_buffers_callback_->Run();
       }
