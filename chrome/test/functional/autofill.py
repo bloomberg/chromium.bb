@@ -153,7 +153,7 @@ class AutofillTest(pyauto.PyUITest):
                 'window.domAutomationController.send("done");') % (key, value)
       self.ExecuteJavascript(script, 0, 0)
     js_code = """
-      document.getElementById("cc_submit").submit();
+      document.getElementById("testform").submit();
       window.addEventListener("unload", function() {
         window.domAutomationController.send("done");
       });
@@ -194,7 +194,7 @@ class AutofillTest(pyauto.PyUITest):
                   'window.domAutomationController.send("done");') % (key, value)
         self.ExecuteJavascript(script, 0, 0)
       js_code = """
-        document.getElementById("cc_submit").submit();
+        document.getElementById("testform").submit();
         window.addEventListener("unload", function() {
           window.domAutomationController.send("done");
         });
@@ -230,12 +230,16 @@ class AutofillTest(pyauto.PyUITest):
                 'window.domAutomationController.send("done");') % (key, value)
       self.ExecuteJavascript(script, 0, 0)
     js_code = """
-      document.getElementById("merge_dup").submit();
+      document.getElementById("testform").submit();
       window.addEventListener("unload", function() {
         window.domAutomationController.send("done");
       });
     """
     self.ExecuteJavascript(js_code, 0, 0)
+    # Wait for Autofill to aggregate profile into preferences.
+    self.WaitUntil(
+        lambda: self.GetDOMValue('document.readyState'),
+        expect_retval='complete')
     self.assertFalse(self.GetAutofillProfile()['profiles'],
                      msg='Profile with no address info was aggregated.')
 
@@ -258,12 +262,16 @@ class AutofillTest(pyauto.PyUITest):
                 'window.domAutomationController.send("done");') % (key, value)
       self.ExecuteJavascript(script, 0, 0)
     js_code = """
-      document.getElementById("merge_dup").submit();
+      document.getElementById("testform").submit();
       window.addEventListener("unload", function() {
         window.domAutomationController.send("done");
       });
     """
     self.ExecuteJavascript(js_code, 0, 0)
+    # Wait for Autofill to aggregate profile into preferences.
+    self.WaitUntil(
+        lambda: self.GetDOMValue('document.readyState'),
+        expect_retval='complete')
     self.assertFalse(self.GetAutofillProfile()['profiles'],
                      msg='Profile with invalid email was aggregated.')
 
@@ -336,7 +344,7 @@ class AutofillTest(pyauto.PyUITest):
                 'window.domAutomationController.send("done");') % (key, value)
       self.ExecuteJavascript(script, 0, 0)
     js_code = """
-      document.getElementById("cc_submit").submit();
+      document.getElementById("testform").submit();
       window.addEventListener("unload", function() {
         window.domAutomationController.send("done");
       });
@@ -384,6 +392,130 @@ class AutofillTest(pyauto.PyUITest):
     self.assertEqual(
         addrline1_field_value, profile['ADDRESS_HOME_LINE1'],
         'Unexpected value "%s" in the Address field.' % addrline1_field_value)
+
+  def testFormFillableOnReset(self):
+    """Test form is fillable from a profile after form was reset.
+
+    Steps:
+      1. Fill form using a saved profile.
+      2. Reset the form.
+      3. Fill form using a saved profile.
+    """
+    profile = {'NAME_FIRST': 'Bob',
+               'NAME_LAST': 'Smith',
+               'EMAIL_ADDRESS': 'bsmith@gmail.com',
+               'ADDRESS_HOME_LINE1': '1234 H St.',
+               'ADDRESS_HOME_CITY': 'San Jose',
+               'PHONE_HOME_WHOLE_NUMBER': '4081234567',}
+
+    self.FillAutofillProfile(profiles=[profile])
+    url = self.GetHttpURLForDataPath(
+        os.path.join('autofill', 'autofill_test_form.html'))
+    self.NavigateToURL(url)
+    # Fill form using an address profile.
+    self._SendKeyEventsToPopulateForm()
+    # Reset the form.
+    self.ExecuteJavascript('document.getElementById("testform").reset();'
+                           'window.domAutomationController.send("done");',
+                           0, 0)
+    # Fill in the form using an Autofill profile.
+    self._SendKeyEventsToPopulateForm()
+    # Verify value in fields match value in the profile dictionary.
+    form_values = {}
+    for key, value in profile.iteritems():
+      js_returning_field_value = (
+          'var field_value = document.getElementById("%s").value;'
+          'window.domAutomationController.send(field_value);'
+          ) % key
+      form_values[key] = self.ExecuteJavascript(
+          js_returning_field_value, 0, 0)
+      self.assertEqual(
+          form_values[key], value,
+          msg=('Original profile not equal to expected profile at key: "%s"\n'
+               'Expected: "%s"\nReturned: "%s"' % (
+                   key, value, form_values[key])))
+
+  def testDistinguishMiddleInitialWithinName(self):
+    """Test Autofill distinguishes a middle initial in a name."""
+    profile = {'NAME_FIRST': 'Bob',
+               'NAME_MIDDLE': 'Leo',
+               'NAME_LAST': 'Smith',
+               'EMAIL_ADDRESS': 'bsmith@gmail.com',
+               'ADDRESS_HOME_LINE1': '1234 H St.',
+               'ADDRESS_HOME_CITY': 'San Jose',
+               'PHONE_HOME_WHOLE_NUMBER': '4081234567',}
+
+    middle_initial = profile['NAME_MIDDLE'][0]
+    self.FillAutofillProfile(profiles=[profile])
+    url = self.GetHttpURLForDataPath(
+        os.path.join('autofill', 'autofill_middleinit_form.html'))
+    self.NavigateToURL(url)
+    # Fill form using an address profile.
+    self._SendKeyEventsToPopulateForm()
+    js_return_middleinit_field = (
+        'var field_value = document.getElementById("NAME_MIDDLE").value;'
+        'window.domAutomationController.send(field_value);')
+    middleinit_field_value = self.ExecuteJavascript(
+        js_return_middleinit_field, 0, 0)
+    self.assertEqual(middleinit_field_value, middle_initial,
+                     msg=('Middle initial "%s" not distinguished from "%s".' %
+                          middleinit_field_value, profile['NAME_MIDDLE']))
+
+  def testMultipleEmailFilledByOneUserGesture(self):
+    """Test forms with multiple email addresses are filled properly.
+
+    Entire form should be filled with one user gesture.
+    """
+    profile = {'NAME_FIRST': 'Bob',
+               'NAME_LAST': 'Smith',
+               'EMAIL_ADDRESS': 'bsmith@gmail.com',
+               'PHONE_HOME_WHOLE_NUMBER': '4081234567',}
+
+    self.FillAutofillProfile(profiles=[profile])
+    url = self.GetHttpURLForDataPath(
+        os.path.join('autofill', 'autofill_confirmemail_form.html'))
+    self.NavigateToURL(url)
+    # Fill form using an address profile.
+    self._SendKeyEventsToPopulateForm()
+    js_return_confirmemail_field = (
+        'var field_value = document.getElementById("EMAIL_CONFIRM").value;'
+        'window.domAutomationController.send(field_value);')
+    confirmemail_field_value = self.ExecuteJavascript(
+        js_return_confirmemail_field, 0, 0)
+    self.assertEqual(confirmemail_field_value, profile['EMAIL_ADDRESS'],
+                     msg=('Confirmation Email address "%s" not equal to Email\n'
+                          'address "%s".' % (confirmemail_field_value,
+                                             profile['EMAIL_ADDRESS'])))
+
+  def testProfileWithEmailInOtherFieldNotSaved(self):
+    """Test profile not aggregated if email found in non-email field."""
+    profile = {'NAME_FIRST': 'Bob',
+               'NAME_LAST': 'Smith',
+               'ADDRESS_HOME_LINE1': 'bsmith@gmail.com',
+               'ADDRESS_HOME_CITY': 'San Jose',
+               'ADDRESS_HOME_STATE': 'CA',
+               'ADDRESS_HOME_ZIP': '95110',
+               'COMPANY_NAME': 'Company X',
+               'PHONE_HOME_WHOLE_NUMBER': '408-123-4567',}
+
+    url = self.GetHttpURLForDataPath(
+        os.path.join('autofill', 'duplicate_profiles_test.html'))
+    self.NavigateToURL(url, 0, 0)
+    for key, value in profile.iteritems():
+      js_fill_field = (('document.getElementById("%s").value = "%s"; '
+                        'window.domAutomationController.send("done");') %
+                        (key, value))
+      self.ExecuteJavascript(js_fill_field, 0, 0);
+    self.ExecuteJavascript('document.getElementById("testform").submit();'
+                           'window.domAutomationController.send("done");',
+                           0, 0)
+    # Wait for Autofill to aggregate profile into preferences.
+    self.WaitUntil(
+        lambda: self.GetDOMValue('document.readyState'),
+        expect_retval='complete')
+    self.assertFalse(self.GetAutofillProfile()['profiles'],
+                     msg='Profile with email in a non-email field was '
+                         'aggregated.')
 
   def FormFillLatencyAfterSubmit(self):
     """Test latency time on form submit with lots of stored Autofill profiles.
@@ -449,7 +581,7 @@ class AutofillTest(pyauto.PyUITest):
       self.ExecuteJavascript(fname_field, 0, 0);
       self.ExecuteJavascript(lname_field, 0, 0);
       self.ExecuteJavascript(email_field, 0, 0);
-      self.ExecuteJavascript('document.getElementById("frmsubmit").submit();'
+      self.ExecuteJavascript('document.getElementById("testform").submit();'
                              'window.domAutomationController.send("done");',
                              0, 0)
 
@@ -471,7 +603,7 @@ class AutofillTest(pyauto.PyUITest):
         script = ('document.getElementById("%s").value = "%s"; '
                   'window.domAutomationController.send("done");') % (key, value)
         self.ExecuteJavascript(script, 0, 0)
-      self.ExecuteJavascript('document.getElementById("merge_dup").submit();'
+      self.ExecuteJavascript('document.getElementById("testform").submit();'
                              'window.domAutomationController.send("done");',
                              0, 0)
     # Verify total number of inputted profiles is greater than the final number
