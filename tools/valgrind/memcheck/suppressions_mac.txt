@@ -379,7 +379,7 @@
    fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
    fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEES3_EvPT_T0_RK6Tuple1IT1_E
    fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
    fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
@@ -579,7 +579,7 @@
    fun:_ZN12CrxInstaller15CompleteInstallEv
    fun:_Z16DispatchToMethodI12CrxInstallerMS0_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN14RunnableMethodI12CrxInstallerMS0_FvvE6Tuple0E3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
    fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
@@ -607,7 +607,7 @@
    fun:_ZN28PCMQueueOutAudioOutputStream5StartEPN17AudioOutputStream19AudioSourceCallbackE
    fun:_ZN5media21AudioOutputController6DoPlayEv
    fun:_ZN14RunnableMethodIN5media21AudioOutputControllerEMS1_FvvE6Tuple0E3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
    fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
@@ -799,7 +799,7 @@
    fun:_ZN18UtilityProcessHost12StartProcessERK8FilePath
    fun:_ZN18UtilityProcessHost22StartExtensionUnpackerERK8FilePath
    fun:_ZN14RunnableMethodI26SandboxedExtensionUnpackerMS0_FvRK8FilePathE6Tuple1IS1_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
 {
    bug_52681_b
@@ -812,7 +812,7 @@
    fun:_ZN26SandboxedExtensionUnpacker22StartProcessOnIOThreadERK8FilePath
    fun:_Z16DispatchToMethodI26SandboxedExtensionUnpackerMS0_FvRK8FilePathES1_EvPT_T0_RK6Tuple1IT1_E
    fun:_ZN14RunnableMethodI26SandboxedExtensionUnpackerMS0_FvRK8FilePathE6Tuple1IS1_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
 {
    bug_53742_a
@@ -1173,7 +1173,7 @@
    fun:_ZN14PrefValueStore18RefreshPolicyPrefsEP14CallbackRunnerI6Tuple1ISt6vectorISsSaISsEEEE
    fun:_Z16DispatchToMethodIN18TestingPrefService21TestingPrefValueStoreEM14PrefValueStoreFvP14CallbackRunnerI6Tuple1ISt6vectorISsSaISsEEEEESA_EvPT_T0_RKS4_IT1_E
    fun:_ZN14RunnableMethodIN18TestingPrefService21TestingPrefValueStoreEM14PrefValueStoreFvP14CallbackRunnerI6Tuple1ISt6vectorISsSaISsEEEEES4_ISA_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
    fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
@@ -1356,7 +1356,7 @@
    fun:_ZN13ExtensionHost20ProcessCreationQueue14ProcessOneHostEv
    fun:_Z16DispatchToMethodIN13ExtensionHost20ProcessCreationQueueEMS1_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN27ScopedRunnableMethodFactoryIN13ExtensionHost20ProcessCreationQueueEE14RunnableMethodIMS1_FvvE6Tuple0E3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
    fun:_ZN4base24MessagePumpCFRunLoopBase7RunWorkEv

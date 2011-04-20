@@ -1423,7 +1423,7 @@
    fun:_ZN3IPC7Channel4SendEPNS_7MessageE
    fun:_ZN3IPC12ChannelProxy7Context13OnSendMessageEPNS_7MessageE
    fun:_ZN3IPC8SendTask3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
    fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
@@ -1470,7 +1470,7 @@
    fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
    fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEES3_EvPT_T0_RK6Tuple1IT1_E
    fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
    fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
@@ -1495,7 +1495,7 @@
    fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
    fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEES3_EvPT_T0_RK6Tuple1IT1_E
    fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
    fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
@@ -1769,7 +1769,7 @@
    fun:_ZN12RenderWidget20CallDoDeferredUpdateEv
    fun:_Z16DispatchToMethodI12RenderWidgetMS0_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN14RunnableMethodI12RenderWidgetMS0_FvvE6Tuple0E3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
    fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
@@ -1817,7 +1817,7 @@
    fun:_ZN5media13FFmpegDemuxer14InitializeTaskEPNS_10DataSourceEP14CallbackRunnerI6Tuple0E
    fun:_Z16DispatchToMethodIN5media13FFmpegDemuxerEMS1_FvPNS0_10DataSourceEP14CallbackRunnerI6Tuple0EES3_S7_EvPT_T0_RK6Tuple2IT1_T2_E
    fun:_ZN14RunnableMethodIN5media13FFmpegDemuxerEMS1_FvPNS0_10DataSourceEP14CallbackRunnerI6Tuple0EE6Tuple2IS3_S7_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
    fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
@@ -1938,7 +1938,7 @@
    fun:_ZN19DownloadFileManager14UpdateDownloadEiP14DownloadBuffer
    fun:_Z16DispatchToMethodI19DownloadFileManagerMS0_FviP14DownloadBufferEiS2_EvPT_T0_RK6Tuple2IT1_T2_E
    fun:_ZN14RunnableMethodI19DownloadFileManagerMS0_FviP14DownloadBufferE6Tuple2IiS2_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
    fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
@@ -2455,7 +2455,7 @@
    fun:_ZN7history14HistoryBackend16GetFaviconForURLE13scoped_refptrI17CancelableRequestI14CallbackRunnerI6Tuple5IibS1_I16RefCountedMemoryEb4GURLEEEERKS7_
    fun:_Z16DispatchToMethodIN7history14HistoryBackendEMS1_Fv13scoped_refptrI17CancelableRequestI14CallbackRunnerI6Tuple5IibS2_I16RefCountedMemoryEb4GURLEEEERKS8_ESC_S8_EvPT_T0_RK6Tuple2IT1_T2_E
    fun:_ZN14RunnableMethodIN7history14HistoryBackendEMS1_Fv13scoped_refptrI17CancelableRequestI14CallbackRunnerI6Tuple5IibS2_I16RefCountedMemoryEb4GURLEEEERKS8_E6Tuple2ISC_S8_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
    fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
@@ -2601,7 +2601,7 @@
    fun:_Znw*
    ...
    fun:*InotifyReaderTask3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
    fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
@@ -2761,7 +2761,7 @@
    fun:_ZN3IPC11SyncChannel11SyncContext16DispatchMessagesEv
    fun:_ZN3IPC11SyncChannel23OnWaitableEventSignaledEPN4base13WaitableEventE
    fun:_ZN4base17AsyncCallbackTask3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
 {
    bug_57465
@@ -2776,7 +2776,7 @@
    fun:_ZN3IPC11SyncChannel11SyncContext16DispatchMessagesEv
    fun:_ZN3IPC11SyncChannel23OnWaitableEventSignaledEPN4base13WaitableEventE
    fun:_ZN4base17AsyncCallbackTask3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
 {
    bug_57539
@@ -2827,7 +2827,7 @@
    fun:_ZN8chromeos15ClockMenuButton25UpdateTextAndSetNextTimerEv
    fun:_Z16DispatchToMethodIN8chromeos15ClockMenuButtonEMS1_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN4base9BaseTimerIN8chromeos15ClockMenuButtonELb0EE9TimerTask3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
 }
 
@@ -2855,7 +2855,7 @@
    fun:_ZN85_GLOBAL__N_webkit_tools_test_shell_simple_resource_loader_bridge.cc_00000000_*12RequestProxy22NotifyReceivedResponseERKN11webkit_glue20ResourceLoaderBridge12ResponseInfoEb
    fun:_Z16DispatchToMethodIN85_GLOBAL__N_webkit_tools_test_shell_simple_resource_loader_bridge.cc_00000000_*12RequestProxyEMS1_FvRKN11webkit_glue20ResourceLoaderBridge12ResponseInfoEbES4_bEvPT_T0_RK6Tuple2IT1_T2_E
    fun:_ZN14RunnableMethodIN85_GLOBAL__N_webkit_tools_test_shell_simple_resource_loader_bridge.cc_00000000_*12RequestProxyEMS1_FvRKN11webkit_glue20ResourceLoaderBridge12ResponseInfoEbE6Tuple2IS4_bEE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
    fun:_ZN4base16MessagePumpForUI17RunWithDispatcherEPNS_11MessagePump8DelegateEPNS0_10DispatcherE
@@ -2871,7 +2871,7 @@
    fun:_ZN7WebCore22ResourceHandleInternal18didReceiveResponseEPN6WebKit12WebURLLoaderERKNS1_14WebURLResponseE
    fun:_ZN11webkit_glue16WebURLLoaderImpl7Context18OnReceivedResponseERKNS_20ResourceResponseInfoEb
    ...
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
 {
    bug_58449
@@ -2921,8 +2921,7 @@
    bug_58574
    Memcheck:Addr4
    ...
-   fun:_ZN11MessageLoop15PostTask_HelperERKN15tracked_objects8LocationEP4Taskxb
-   fun:_ZN11MessageLoop8PostTaskERKN15tracked_objects8LocationEP4Task
+   fun:_ZN11MessageLoop8PostTaskERKN15tracked_objects8LocationERKN4base8CallbackIFvvEEE
    fun:_ZN3net12CertVerifier7Request8DoVerifyEv
    fun:_Z16DispatchToMethodIN3net12CertVerifier7RequestEMS2_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN14RunnableMethodIN3net12CertVerifier7RequestEMS2_FvvE6Tuple0E3RunEv
@@ -3513,7 +3512,7 @@
    fun:_ZN3IPC11SyncChannel11SyncContext16DispatchMessagesEv
    fun:_ZN3IPC11SyncChannel23OnWaitableEventSignaledEPN4base13WaitableEventE
    fun:_ZN4base17AsyncCallbackTask3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
 }
@@ -3694,7 +3693,10 @@
    fun:_ZN8remoting14ScreenRecorder7DoStartEv
    fun:_Z16DispatchToMethodIN8remoting14ScreenRecorderEMS1_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN14RunnableMethodIN8remoting14ScreenRecorderEMS1_FvvE6Tuple0E3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN12_GLOBAL__N_118TaskClosureAdapter3RunEv
+   fun:_ZN4base8internal8Invoker1INS0_15InvokerStorage1IMN12_GLOBAL__N_118TaskClosureAdapterEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
+   fun:_ZNK4base8CallbackIFvvEE3RunEv
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
    fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE

@@ -235,25 +235,25 @@ class IOJankObserver : public base::RefCountedThreadSafe<IOJankObserver>,
     MessageLoop::current()->RemoveTaskObserver(this);
   }
 
-  virtual void WillProcessIOEvent() {
+  virtual void WillProcessIOEvent() OVERRIDE {
     if (!helper_.MessageWillBeMeasured())
       return;
     helper_.StartProcessingTimers(base::TimeDelta());
   }
 
-  virtual void DidProcessIOEvent() {
+  virtual void DidProcessIOEvent() OVERRIDE {
     helper_.EndProcessingTimers();
   }
 
-  virtual void WillProcessTask(const Task* task) {
+  virtual void WillProcessTask(base::TimeTicks time_posted) OVERRIDE {
     if (!helper_.MessageWillBeMeasured())
       return;
     base::TimeTicks now = base::TimeTicks::Now();
-    const base::TimeDelta queueing_time = now - task->tracked_birth_time();
+    const base::TimeDelta queueing_time = now - time_posted;
     helper_.StartProcessingTimers(queueing_time);
   }
 
-  virtual void DidProcessTask(const Task* task) {
+  virtual void DidProcessTask(base::TimeTicks time_posted) OVERRIDE {
     helper_.EndProcessingTimers();
   }
 
@@ -291,15 +291,15 @@ class UIJankObserver : public base::RefCountedThreadSafe<UIJankObserver>,
     MessageLoopForUI::current()->RemoveObserver(this);
   }
 
-  virtual void WillProcessTask(const Task* task) {
+  virtual void WillProcessTask(base::TimeTicks time_posted) OVERRIDE {
     if (!helper_.MessageWillBeMeasured())
       return;
     base::TimeTicks now = base::TimeTicks::Now();
-    const base::TimeDelta queueing_time = now - task->tracked_birth_time();
+    const base::TimeDelta queueing_time = now - time_posted;
     helper_.StartProcessingTimers(queueing_time);
   }
 
-  virtual void DidProcessTask(const Task* task) {
+  virtual void DidProcessTask(base::TimeTicks time_posted) OVERRIDE {
     helper_.EndProcessingTimers();
   }
 

@@ -112,12 +112,12 @@ class RendererMessageLoopObserver : public MessageLoop::TaskObserver {
             1, 3600000, 50, base::Histogram::kUmaTargetedHistogramFlag)) {}
   virtual ~RendererMessageLoopObserver() {}
 
-  virtual void WillProcessTask(const Task* task) {
+  virtual void WillProcessTask(base::TimeTicks time_posted) {
     begin_process_message_ = base::TimeTicks::Now();
   }
 
-  virtual void DidProcessTask(const Task* task) {
-    if (begin_process_message_ != base::TimeTicks())
+  virtual void DidProcessTask(base::TimeTicks time_posted) {
+    if (!begin_process_message_.is_null())
       process_times_->AddTime(base::TimeTicks::Now() - begin_process_message_);
   }
 
