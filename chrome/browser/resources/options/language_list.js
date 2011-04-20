@@ -46,6 +46,7 @@ cr.define('options', function() {
           LanguageList.getDisplayNameFromLanguageCode(languageCode);
       this.title =
           LanguageList.getNativeDisplayNameFromLanguageCode(languageCode);
+      this.draggable = true;
     },
   };
 
