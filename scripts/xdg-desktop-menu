@@ -615,6 +615,7 @@ detectDE()
       case "$DESKTOP_SESSION" in
          gnome)
            DE=gnome;
+           ;;
          LXDE)
            DE=lxde; 
            ;;
