@@ -48,12 +48,12 @@ BUGDPRANKE MAC : svg/dom/SVGScriptElement/script-set-href.svg = TEXT PASS
 BUGDPRANKE WIN : media/video-zoom.html = IMAGE
 BUGDPRANKE WIN DEBUG : svg/custom/font-platformDestroy-crash.svg = CRASH
 BUGDPRANKE WIN DEBUG : svg/custom/foreignObject-crash-on-hover.xml = CRASH
+BUGDPRANKE WIN DEBUG : svg/custom/foreign-object-skew.svg = CRASH
 
 // flakiness
 BUGDPRANKE WIN DEBUG : http/tests/navigation/forward-to-fragment-fires-onload.html = TIMEOUT PASS
 BUGDPRANKE WIN DEBUG : perf/mouse-event.html = TEXT TIMEOUT PASS
 BUGDPRANKE LINUX DEBUG : http/tests/security/contentSecurityPolicy/media-src-allowed.html = TIMEOUT PASS
-BUGDPRANKE WIN DEBUG : http/tests/navigation/forward-to-fragment-fires-onload.html = TIMEOUT PASS
 BUGDPRANKE WIN DEBUG : perf/typing-at-end-of-line.html = TEXT TIMEOUT PASS
 BUGDPRANKE MAC DEBUG : fast/notifications/notifications-display-close-events.html = TIMEOUT PASS
 BUGDPRANKE MAC DEBUG : fast/css-generated-content/table-row-group-to-inline.html = IMAGE+TEXT PASS
