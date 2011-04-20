@@ -155,7 +155,7 @@ cr.define('options', function() {
      * For each item, determines whether it's deletable.
      */
     updateDeletable: function() {
-      for (var i = 0; i < this.dataModel.length; ++i) {
+      for (var i = 0; i < this.items.length; ++i) {
         var item = this.getListItemByIndex(i);
         var languageCode = item.languageCode;
         var languageOptions = options.LanguageOptions.getInstance();
