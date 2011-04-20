@@ -12,7 +12,6 @@ Import('env')
 # Publish nexes and corresponding html to scons-out/.../staging/
 ######################################################################
 
-# TODO(polina): do not depend on examples.html here; it belongs in ../
 # TODO(polina): make nacl_js_lib.js available by default
 
 srpc_test_nexe = env.ComponentProgram(
@@ -21,7 +20,7 @@ srpc_test_nexe = env.ComponentProgram(
 env.Publish(
     'srpc_test.nexe', 'run',
     ['srpc_basic.html', 'srpc_perf.html', 'srpc_shm.html', 'srpc_plugin.html',
-     'examples.html', env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
+     env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 env.AddPrebuiltBinaryToRepository(srpc_test_nexe)
 
 
@@ -31,7 +30,7 @@ srpc_shm_nexe = env.ComponentProgram(
 env.Publish(
     'srpc_shm.nexe', 'run',
     [ 'srpc_shm.html',
-      'examples.html', env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
+      env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 env.AddPrebuiltBinaryToRepository(srpc_shm_nexe)
 
 
@@ -41,7 +40,7 @@ srpc_nrd_server_nexe = env.ComponentProgram(
 env.Publish(
     'srpc_nrd_server.nexe', 'run',
     ['srpc_sockaddr.html',
-     'examples.html', env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
+     env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 env.AddPrebuiltBinaryToRepository(srpc_nrd_server_nexe)
 
 
@@ -51,7 +50,7 @@ srpc_nrd_client_nexe = env.ComponentProgram(
 env.Publish(
     'srpc_nrd_client.nexe', 'run',
     ['srpc_nrd_xfer.html',
-     'examples.html', env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
+     env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 env.AddPrebuiltBinaryToRepository(srpc_nrd_client_nexe)
 
 
@@ -61,7 +60,7 @@ cat_nexe = env.ComponentProgram(
 env.Publish(
     'cat.nexe', 'run',
     ['srpc_url_as_nacl_desc.html', 'srpc_url_as_nacl_desc_success.html',
-     'examples.html', env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
+     env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 
 
 srpc_bidir_nexe = env.ComponentProgram(

@@ -18,3 +18,37 @@ node = env.Command(binary,
 env.NoClean(binary)
 env.Precious(binary)
 env.Alias('download_chrome', node)
+
+################################################################################
+## Support
+##   scons MODE=nacl html_examples
+## to build all examples linked from scons-out/.../staging/examples.html
+################################################################################
+
+html_examples = env.Replicate('${STAGING_DIR}', 'examples.html')
+example_nexes = [
+    # SRPC Nexe Tests
+    'srpc_hw.nexe',          # srpc_hw.html, srpc_hw_fd.html
+    'srpc_test.nexe',        # srpc_basic.html, srpc_plugin.html, srpc_perf.html
+    'srpc_shm.nexe',         # srpc_shm.html
+    'srpc_nrd_server.nexe',  # srpc_nrd_xfer.html, srpc_sockaddr.html
+    'srpc_nrd_client.nexe',  # srpc_nrd_xfer.html, srpc_plugin.html
+    'cat.nexe',              # srpc_url_as_nacl_desc.html
+    # SRPC Nexe Performance
+    'mandel_tiled.nexe',         # mandel_tiled.html
+    'autoloader_default.nexe',   # autoloader.html',
+    # PPAPI Nexe Examples
+    'ppapi_basic_object.nexe',   # basic_object.html
+    'ppapi_event_example.nexe',  # event_example.html
+    'ppapi_example_2d.nexe',     # ppapi_example_2d.html
+    'ppapi_example_audio.nexe',  # ppapi_example_audio.html
+    'ppapi_geturl.nexe',         # ppapi_geturl.html
+    'earth_c.nexe',              # earth_c.html
+    'earth_cc.nexe',             # earth_cc.html
+    # PPAPI Proxy Tests
+    'ppapi_core.nexe',           # ppapi_core.html
+    'ppapi_file_system.nexe',    # ppapi_file_system.thml
+    ]
+
+env.Depends(html_examples, [ env.Alias(nexe) for nexe in example_nexes ])
+env.Alias('html_examples', html_examples)  # scons --mode=nacl examples
