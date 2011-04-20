@@ -4395,6 +4395,16 @@
    fun:_Znw*
    fun:*webkit_fileapi_file_system_dir_url_request_job_unittest.cc*SetUpEv
 }
+{
+   bug_80018
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net23ClientSocketPoolManagerC1EPNS_6NetLogEPNS_19ClientSocketFactoryEPNS_12HostResolverEPNS_12CertVerifierEPNS_13DnsRRResolverEPNS_24DnsCertProvenanceCheckerEPNS_18SSLHostInfoFactoryEPNS_12ProxyServiceEPNS_16SSLConfigServiceE
+   fun:_ZN3net18HttpNetworkSessionC1ERKNS0_6ParamsE
+   fun:_ZN21TestURLRequestContext4InitEv
+   fun:_ZN21TestURLRequestContextC1Ev
+   fun:_ZN27TestURLRequestContextGetter20GetURLRequestContextEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
