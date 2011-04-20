@@ -179,6 +179,68 @@ drm_output_image_is_scanoutable(struct wlsc_output *output_base,
 	return fb_id != 0;
 }
 
+static int
+drm_output_set_cursor(struct wlsc_output *output_base,
+		      struct wl_input_device *input)
+{
+	struct drm_output *output = (struct drm_output *) output_base;
+	struct drm_compositor *c =
+		(struct drm_compositor *) output->base.compositor;
+	struct wlsc_input_device *eid = (struct wlsc_input_device *) input;
+	EGLint handle, stride;
+	int ret = -1;
+	pixman_region32_t cursor_region;
+
+	pixman_region32_init_rect(&cursor_region,
+				  eid->sprite->x, eid->sprite->y,
+				  eid->sprite->width, eid->sprite->height);
+
+	pixman_region32_intersect_rect(&cursor_region, &cursor_region,
+				       output->base.x, output->base.y,
+				       output->base.width, output->base.height);
+
+	if (!pixman_region32_not_empty(&cursor_region)) {
+		ret = 0;
+		goto out;
+	}
+
+	if (eid->sprite->image == EGL_NO_IMAGE_KHR)
+		goto out;
+
+	if (eid->sprite->width > 64 || eid->sprite->height > 64)
+		goto out;
+	
+	eglExportDRMImageMESA(c->base.display, eid->sprite->image,
+			      NULL, &handle, &stride);
+
+	if (stride != 64 * 4) {
+		fprintf(stderr, "info: cursor stride is != 64\n");
+		goto out;
+	}
+
+	ret = drmModeSetCursor(c->drm.fd, output->crtc_id, handle, 64, 64);
+	if (ret) {
+		fprintf(stderr, "failed to set cursor: %s\n", strerror(-ret));
+		goto out;
+	}
+
+	ret = drmModeMoveCursor(c->drm.fd, output->crtc_id,
+				eid->sprite->x - output->base.x,
+				eid->sprite->y - output->base.y);
+	if (ret) {
+		fprintf(stderr, "failed to move cursor: %s\n", strerror(-ret));
+		goto out;
+	}
+
+	printf("info: set hardware cursor\n");
+
+out:
+	pixman_region32_fini(&cursor_region);
+	if (ret)
+		drmModeSetCursor(c->drm.fd, output->crtc_id, 0, 0, 0);
+	return ret;
+}
+
 static void
 on_drm_input(int fd, uint32_t mask, void *data)
 {
@@ -353,6 +415,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->base.prepare_render = drm_output_prepare_render;
 	output->base.present = drm_output_present;
 	output->base.image_is_scanoutable = drm_output_image_is_scanoutable;
+	output->base.set_hardware_cursor = drm_output_set_cursor;
 
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
 
@@ -534,6 +597,50 @@ udev_drm_event(int fd, uint32_t mask, void *data)
 	udev_device_unref(event);
 }
 
+static EGLImageKHR
+drm_compositor_create_cursor_image(struct wlsc_compositor *ec,
+				   int32_t width, int32_t height)
+{
+	EGLint image_attribs[] = {
+		EGL_WIDTH, 0,
+		EGL_HEIGHT, 0,
+		EGL_DRM_BUFFER_FORMAT_MESA, EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
+		0, 0,
+		EGL_NONE
+	};
+	EGLint stride, name;
+	EGLImageKHR tmp_image, image;
+
+	if (width > 64 || height > 64)
+		return EGL_NO_IMAGE_KHR;
+
+	image_attribs[1] = 64;
+	image_attribs[3] = 64;
+	image_attribs[6] = EGL_DRM_BUFFER_USE_MESA;
+	image_attribs[7] = EGL_DRM_BUFFER_USE_SCANOUT_MESA;
+
+	tmp_image = eglCreateDRMImageMESA(ec->display, image_attribs);
+
+	eglExportDRMImageMESA(ec->display, tmp_image, &name, NULL, &stride);
+
+	if (stride == 64)
+		return tmp_image;
+
+	/* recreate image width stide 64 forced */
+	image_attribs[1] = width;
+	image_attribs[3] = height;
+	image_attribs[6] = EGL_DRM_BUFFER_STRIDE_MESA;
+	image_attribs[7] = 64;
+
+	image = eglCreateImageKHR(ec->display, EGL_NO_CONTEXT, EGL_DRM_BUFFER_MESA,
+				  (EGLClientBuffer)(intptr_t) name, image_attribs);
+	eglExportDRMImageMESA(ec->display, image, &name, NULL, &stride);
+
+	eglDestroyImageKHR(ec->display, tmp_image);
+
+	return image;
+}
+
 static void
 drm_destroy(struct wlsc_compositor *ec)
 {
@@ -589,7 +696,8 @@ drm_compositor_create(struct wl_display *display, int connector)
 	}
 
 	ec->base.destroy = drm_destroy;
-	ec->base.create_buffer = wlsc_shm_buffer_create;
+	ec->base.create_cursor_image = drm_compositor_create_cursor_image;
+
 	ec->base.focus = 1;
 
 	glGenFramebuffers(1, &ec->base.fbo);

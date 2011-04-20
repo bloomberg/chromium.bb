@@ -204,6 +204,13 @@ wayland_output_image_is_scanoutable(struct wlsc_output *output_base,
 }
 
 static int
+wayland_output_set_cursor(struct wlsc_output *output_base,
+			  struct wl_input_device *input)
+{
+	return -1;
+}
+
+static int
 wayland_compositor_create_output(struct wayland_compositor *c,
 				 int width, int height)
 {
@@ -254,6 +261,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	output->base.prepare_render = wayland_output_prepare_render;
 	output->base.present = wayland_output_present;
 	output->base.image_is_scanoutable = wayland_output_image_is_scanoutable;
+	output->base.set_hardware_cursor = wayland_output_set_cursor;
 
 	wl_list_insert(c->base.output_list.prev, &output->base.link);
 
@@ -488,7 +496,6 @@ wayland_compositor_create(struct wl_display *display, int width, int height)
 		return NULL;
 
 	c->base.destroy = wayland_destroy;
-	c->base.create_buffer = wlsc_shm_buffer_create;
 
 	/* Can't init base class until we have a current egl context */
 	if (wlsc_compositor_init(&c->base, display) < 0)

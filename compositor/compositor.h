@@ -57,6 +57,8 @@ struct wlsc_output {
 	int (*present)(struct wlsc_output *output);
 	int (*image_is_scanoutable)(struct wlsc_output *output,
 				    EGLImageKHR image);
+	int (*set_hardware_cursor)(struct wlsc_output *output,
+				   struct wl_input_device *input);
 };
 
 enum wlsc_pointer_type {
@@ -86,6 +88,14 @@ struct wlsc_shm {
 	struct wl_object object;
 };
 
+struct wlsc_sprite {
+	GLuint texture;
+	EGLImageKHR image;
+	struct wl_visual *visual;
+	int width;
+	int height;
+};
+
 struct wlsc_compositor {
 	struct wl_compositor compositor;
 
@@ -95,7 +105,7 @@ struct wlsc_compositor {
 	EGLConfig config;
 	GLuint fbo;
 	GLuint proj_uniform, tex_uniform;
-	struct wl_buffer **pointer_buffers;
+	struct wlsc_sprite **pointer_sprites;
 	struct wl_display *wl_display;
 
 	/* We implement the shell interface. */
@@ -122,10 +132,8 @@ struct wlsc_compositor {
 
 	void (*destroy)(struct wlsc_compositor *ec);
 	int (*authenticate)(struct wlsc_compositor *c, uint32_t id);
-	struct wl_buffer *(*create_buffer)(struct wlsc_compositor *c,
-					   int32_t width, int32_t height,
-					   int32_t stride, struct wl_visual *visual,
-					   void *data);
+	EGLImageKHR (*create_cursor_image)(struct wlsc_compositor *c,
+					   int32_t width, int32_t height);
 };
 
 #define MODIFIER_CTRL	(1 << 8)
@@ -150,7 +158,7 @@ enum wlsc_surface_map_type {
 struct wlsc_surface {
 	struct wl_surface surface;
 	struct wlsc_compositor *compositor;
-	GLuint texture;
+	GLuint texture, saved_texture;
 	int32_t x, y, width, height;
 	int32_t saved_x, saved_y;
 	struct wl_list link;
@@ -210,6 +218,9 @@ wlsc_compositor_add_binding(struct wlsc_compositor *compositor,
 void
 wlsc_binding_destroy(struct wlsc_binding *binding);
 
+struct wlsc_surface *
+wlsc_surface_create(struct wlsc_compositor *compositor,
+		    int32_t x, int32_t y, int32_t width, int32_t height);
 
 void
 wlsc_surface_assign_output(struct wlsc_surface *surface);
