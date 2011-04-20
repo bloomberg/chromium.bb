@@ -195,24 +195,3 @@ wlsc_shm_init(struct wlsc_compositor *ec)
 
 	return 0;
 }
-
-struct wl_buffer *
-wlsc_shm_buffer_create(struct wlsc_compositor *ec, int width, int height,
-		       int stride, struct wl_visual *visual,
-		       void *data)
-{
-	struct wlsc_shm_buffer *buffer;
-	void *pixels;
-
-	pixels = malloc(stride * height);
-	if (!pixels)
-		return NULL;
-
-	memcpy(pixels, data, stride * height);
-
-	buffer = wlsc_shm_buffer_init(ec, width, height,
-				      stride, visual, pixels);
-	buffer->mapped = 0;
-
-	return &buffer->buffer;
-}
