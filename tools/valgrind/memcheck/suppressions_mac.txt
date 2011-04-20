@@ -1636,4 +1636,13 @@
    fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
    fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
 }
-
+{
+   bug_80036
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN2ui12_GLOBAL__N_120LoadResourcesDataPakE8FilePath
+   fun:_ZN2ui14ResourceBundle19LoadCommonResourcesEv
+   fun:_ZN2ui14ResourceBundle18InitSharedInstanceERKSs
+   fun:_ZN15ChromeTestSuite10InitializeEv
+   fun:_ZN12_GLOBAL__N_117UnitTestTestSuite10InitializeEv
+}
