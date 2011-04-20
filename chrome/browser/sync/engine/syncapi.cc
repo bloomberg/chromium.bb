@@ -1604,20 +1604,17 @@ bool SyncManager::Init(const FilePath& database_location,
   DCHECK(post_factory);
   VLOG(1) << "SyncManager starting Init...";
   string server_string(sync_server_and_path);
-  bool signed_in = data_->Init(database_location,
-                               server_string,
-                               sync_server_port,
-                               use_ssl,
-                               post_factory,
-                               registrar,
-                               user_agent,
-                               credentials,
-                               sync_notifier,
-                               restored_key_for_bootstrapping,
-                               setup_for_test_mode);
-  if (signed_in)
-    StartConfigurationMode(NULL);
-  return signed_in;
+  return data_->Init(database_location,
+                     server_string,
+                     sync_server_port,
+                     use_ssl,
+                     post_factory,
+                     registrar,
+                     user_agent,
+                     credentials,
+                     sync_notifier,
+                     restored_key_for_bootstrapping,
+                     setup_for_test_mode);
 }
 
 void SyncManager::UpdateCredentials(const SyncCredentials& credentials) {
@@ -1756,8 +1753,14 @@ bool SyncManager::SyncInternal::Init(
 
   bool signed_in = SignIn(credentials);
 
+  if (signed_in && syncer_thread()) {
+    syncer_thread()->Start(
+        browser_sync::SyncerThread::CONFIGURATION_MODE, NULL);
+  }
+
   // Do this once the directory is opened.
   BootstrapEncryption(restored_key_for_bootstrapping);
+  MarkAndNotifyInitializationComplete();
   return signed_in;
 }
 
@@ -1864,7 +1867,6 @@ bool SyncManager::SyncInternal::OpenDirectory() {
 
   connection_manager()->set_client_id(lookup->cache_guid());
 
-  MarkAndNotifyInitializationComplete();
   dir_change_hookup_.reset(lookup->AddChangeObserver(this));
   return true;
 }
