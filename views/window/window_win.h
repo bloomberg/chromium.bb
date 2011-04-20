@@ -133,6 +133,7 @@ class WindowWin : public WidgetWin,
   virtual Window* GetWindow() OVERRIDE { return this; }
   virtual const Window* GetWindow() const OVERRIDE { return this; }
   virtual void Close() OVERRIDE;
+  virtual void SetInitialFocus() OVERRIDE;
 
   // Overridden from NativeWindow:
   virtual NativeWidget* AsNativeWidget() OVERRIDE;
@@ -182,11 +183,6 @@ class WindowWin : public WidgetWin,
     LONG ex_style;
     RECT window_rect;
   };
-
-  // Sets-up the focus manager with the view that should have focus when the
-  // window is shown the first time.  If NULL is returned, the focus goes to the
-  // button if there is one, otherwise the to the Cancel button.
-  void SetInitialFocus();
 
   // If necessary, enables all ancestors.
   void RestoreEnabledIfNecessary();

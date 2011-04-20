@@ -140,7 +140,7 @@ class WidgetGtk : public Widget,
   // Sets initial focus on a new window. On X11/Gtk, window creation
   // is asynchronous and a focus request has to be made after a window
   // gets created. This will not be called on a TYPE_CHILD widget.
-  virtual void SetInitialFocus() {}
+  virtual void SetInitialFocus();
 
   // Sets the drop target to NULL. This is invoked by DropTargetGTK when the
   // drop is done.

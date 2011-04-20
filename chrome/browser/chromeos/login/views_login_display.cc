@@ -230,7 +230,7 @@ void ViewsLoginDisplay::ShowError(int error_msg_id,
   }
 
   bubble_ = MessageBubble::Show(
-      controllers_[selected_view_index_]->controls_window(),
+      controllers_[selected_view_index_]->controls_widget(),
       bounds,
       arrow,
       ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING),

@@ -24,17 +24,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "views/background.h"
-#include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/controls/throbber.h"
-#include "views/layout/grid_layout.h"
 #include "views/painter.h"
-#include "views/screen.h"
-#include "views/widget/root_view.h"
-#include "views/widget/widget_gtk.h"
 
-using views::ColumnSet;
-using views::GridLayout;
 using views::Widget;
 using views::WidgetGtk;
 
@@ -56,61 +49,6 @@ const int kControlsHeight = 28;
 // Vertical interval between the image and the textfield.
 const int kVerticalIntervalSize = 10;
 
-// A window for controls that sets focus to the view when
-// it first got focus.
-class ControlsWindow : public WidgetGtk {
- public:
-  explicit ControlsWindow(views::View* initial_focus_view)
-      : WidgetGtk(WidgetGtk::TYPE_WINDOW),
-        initial_focus_view_(initial_focus_view) {
-  }
-
- private:
-  // WidgetGtk overrides:
-  virtual void SetInitialFocus() OVERRIDE {
-    if (initial_focus_view_)
-      initial_focus_view_->RequestFocus();
-  }
-
-  virtual void OnMap(GtkWidget* widget) OVERRIDE {
-    // For some reason, Controls window never gets first expose event,
-    // which makes WM believe that the login screen is not ready.
-    // This is a workaround to let WM show the login screen. While
-    // this may allow WM to show unpainted window, we haven't seen any
-    // issue (yet). We will not investigate this further because we're
-    // migrating to different implemention (WebUI).
-    UpdateFreezeUpdatesProperty(GTK_WINDOW(GetNativeView()),
-                                false /* remove */);
-  }
-
-  views::View* initial_focus_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(ControlsWindow);
-};
-
-// Widget that notifies window manager about clicking on itself.
-// Doesn't send anything if user is selected.
-class ClickNotifyingWidget : public views::WidgetGtk {
- public:
-  ClickNotifyingWidget(views::WidgetGtk::Type type,
-                       UserController* controller)
-      : WidgetGtk(type),
-        controller_(controller) {
-  }
-
- private:
-  gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
-    if (!controller_->IsUserSelected())
-      controller_->SelectUserRelative(0);
-
-    return views::WidgetGtk::OnButtonPress(widget, event);
-  }
-
-  UserController* controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClickNotifyingWidget);
-};
-
 void CloseWindow(views::Widget* window) {
   if (!window)
     return;
@@ -119,6 +57,32 @@ void CloseWindow(views::Widget* window) {
 }
 
 }  // namespace
+
+// WidgetDelegate implementation for the Widget used for the controls.
+class UserController::ControlsWidgetDelegate : public views::WidgetDelegate {
+ public:
+  ControlsWidgetDelegate(UserController* controller,
+                         views::View* view)
+      : controller_(controller),
+        view_(view) {
+  }
+
+  virtual views::View* GetInitiallyFocusedView() OVERRIDE {
+    return view_;
+  }
+
+  virtual void OnWidgetActivated(bool active) OVERRIDE {
+    controller_->OnWidgetActivated(active);
+  }
+
+ private:
+  UserController* controller_;
+
+  // View to give focus to on show.
+  views::View* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(ControlsWidgetDelegate);
+};
 
 using login::kBorderSize;
 using login::kUserImageSize;
@@ -141,11 +105,11 @@ UserController::UserController(Delegate* delegate, bool is_guest)
       is_owner_(false),
       show_name_tooltip_(false),
       delegate_(delegate),
-      controls_window_(NULL),
-      image_window_(NULL),
+      controls_widget_(NULL),
+      image_widget_(NULL),
       border_window_(NULL),
-      label_window_(NULL),
-      unselected_label_window_(NULL),
+      label_widget_(NULL),
+      unselected_label_widget_(NULL),
       user_view_(NULL),
       label_view_(NULL),
       unselected_label_view_(NULL),
@@ -165,11 +129,11 @@ UserController::UserController(Delegate* delegate,
       show_name_tooltip_(false),
       user_(user),
       delegate_(delegate),
-      controls_window_(NULL),
-      image_window_(NULL),
+      controls_widget_(NULL),
+      image_widget_(NULL),
       border_window_(NULL),
-      label_window_(NULL),
-      unselected_label_window_(NULL),
+      label_widget_(NULL),
+      unselected_label_widget_(NULL),
       user_view_(NULL),
       label_view_(NULL),
       unselected_label_view_(NULL),
@@ -182,11 +146,11 @@ UserController::~UserController() {
   // Reset the widget delegate of every window to NULL, so the user
   // controller will not get notified about the active window change.
   // See also crosbug.com/7400.
-  CloseWindow(controls_window_);
-  CloseWindow(image_window_);
+  CloseWindow(controls_widget_);
+  CloseWindow(image_widget_);
   CloseWindow(border_window_);
-  CloseWindow(label_window_);
-  CloseWindow(unselected_label_window_);
+  CloseWindow(label_widget_);
+  CloseWindow(unselected_label_widget_);
 }
 
 void UserController::Init(int index,
@@ -194,14 +158,13 @@ void UserController::Init(int index,
                           bool need_browse_without_signin) {
   int controls_height = 0;
   int controls_width = 0;
-  controls_window_ =
-      CreateControlsWindow(index, &controls_width, &controls_height,
-                           need_browse_without_signin);
-  image_window_ = CreateImageWindow(index);
+  SetupControlsWidget(index, &controls_width, &controls_height,
+                      need_browse_without_signin);
+  image_widget_ = CreateImageWidget(index);
   CreateBorderWindow(index, total_user_count, controls_width, controls_height);
-  label_window_ = CreateLabelWindow(index, WM_IPC_WINDOW_LOGIN_LABEL);
-  unselected_label_window_ =
-      CreateLabelWindow(index, WM_IPC_WINDOW_LOGIN_UNSELECTED_LABEL);
+  label_widget_ = CreateLabelWidget(index, WM_IPC_WINDOW_LOGIN_LABEL);
+  unselected_label_widget_ =
+      CreateLabelWidget(index, WM_IPC_WINDOW_LOGIN_UNSELECTED_LABEL);
 }
 
 void UserController::ClearAndEnableFields() {
@@ -352,30 +315,24 @@ void UserController::OnRemoveUser() {
 ////////////////////////////////////////////////////////////////////////////////
 // UserController, private:
 //
-void UserController::ConfigureLoginWindow(WidgetGtk* window,
-                                          int index,
-                                          const gfx::Rect& bounds,
-                                          chromeos::WmIpcWindowType type,
-                                          views::View* contents_view) {
-  window->MakeTransparent();
-  window->Init(NULL, bounds);
-  window->SetContentsView(contents_view);
-  window->set_widget_delegate(this);
+void UserController::ConfigureAndShow(Widget* widget,
+                                      int index,
+                                      chromeos::WmIpcWindowType type,
+                                      views::View* contents_view) {
+  widget->SetContentsView(contents_view);
+  widget->set_widget_delegate(this);
 
   std::vector<int> params;
   params.push_back(index);
   WmIpc::instance()->SetWindowType(
-      window->GetNativeView(),
+      widget->GetNativeView(),
       type,
       &params);
 
-  GdkWindow* gdk_window = window->GetNativeView()->window;
-  gdk_window_set_back_pixmap(gdk_window, NULL, false);
-
-  window->Show();
+  widget->Show();
 }
 
-WidgetGtk* UserController::CreateControlsWindow(
+void UserController::SetupControlsWidget(
     int index,
     int* width, int* height,
     bool need_browse_without_signin) {
@@ -409,16 +366,15 @@ WidgetGtk* UserController::CreateControlsWindow(
     *height = size.height();
   }
 
-  WidgetGtk* window = new ControlsWindow(control_view);
-  ConfigureLoginWindow(window,
-                       index,
-                       gfx::Rect(*width, *height),
-                       WM_IPC_WINDOW_LOGIN_CONTROLS,
-                       control_view);
-  return window;
+  controls_widget_ = CreateControlsWidget(gfx::Rect(*width, *height));
+  ConfigureAndShow(controls_widget_, index, WM_IPC_WINDOW_LOGIN_CONTROLS,
+                   control_view);
+  controls_widget_delegate_.reset(
+      new ControlsWidgetDelegate(this, control_view));
+  controls_widget_->set_widget_delegate(controls_widget_delegate_.get());
 }
 
-WidgetGtk* UserController::CreateImageWindow(int index) {
+Widget* UserController::CreateImageWidget(int index) {
   user_view_ = new UserView(this, true, !is_new_user_);
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -433,14 +389,12 @@ WidgetGtk* UserController::CreateImageWindow(int index) {
     user_view_->SetImage(user_.image(), user_.image());
   }
 
-  WidgetGtk* window = new ClickNotifyingWidget(WidgetGtk::TYPE_WINDOW, this);
-  ConfigureLoginWindow(window,
-                       index,
-                       gfx::Rect(user_view_->GetPreferredSize()),
-                       WM_IPC_WINDOW_LOGIN_IMAGE,
-                       user_view_);
+  Widget* widget =
+      CreateClickNotifyingWidget(this,
+                                 gfx::Rect(user_view_->GetPreferredSize()));
+  ConfigureAndShow(widget, index, WM_IPC_WINDOW_LOGIN_IMAGE, user_view_);
 
-  return window;
+  return widget;
 }
 
 void UserController::CreateBorderWindow(int index,
@@ -477,8 +431,7 @@ void UserController::CreateBorderWindow(int index,
   border_window_->Show();
 }
 
-WidgetGtk* UserController::CreateLabelWindow(int index,
-                                             WmIpcWindowType type) {
+Widget* UserController::CreateLabelWidget(int index, WmIpcWindowType type) {
   std::wstring text;
   if (is_guest_) {
     text = std::wstring();
@@ -521,13 +474,10 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
   }
   int height = (type == WM_IPC_WINDOW_LOGIN_LABEL) ?
       login::kSelectedLabelHeight : login::kUnselectedLabelHeight;
-  WidgetGtk* window = new ClickNotifyingWidget(WidgetGtk::TYPE_WINDOW, this);
-  ConfigureLoginWindow(window,
-                       index,
-                       gfx::Rect(0, 0, width, height),
-                       type,
-                       label);
-  return window;
+  Widget* widget = CreateClickNotifyingWidget(this,
+                                              gfx::Rect(0, 0, width, height));
+  ConfigureAndShow(widget, index, type, label);
+  return widget;
 }
 
 gfx::Font UserController::GetLabelFont() {

@@ -222,12 +222,6 @@ void WindowGtk::IsActiveChanged() {
   delegate_->OnNativeWindowActivationChanged(IsActive());
 }
 
-void WindowGtk::SetInitialFocus() {
-  View* v = GetWindow()->window_delegate()->GetInitiallyFocusedView();
-  if (v) {
-    v->RequestFocus();
-  }
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowGtk, NativeWindow implementation:

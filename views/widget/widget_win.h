@@ -401,6 +401,11 @@ class WidgetWin : public ui::WindowImpl,
   // Called when a MSAA screen reader client is detected.
   virtual void OnScreenReaderDetected();
 
+  // Sets-up the focus manager with the view that should have focus when the
+  // window is shown the first time.  If NULL is returned, the focus goes to the
+  // button if there is one, otherwise the to the Cancel button.
+  virtual void SetInitialFocus();
+
   // The TooltipManager.
   // WARNING: RootView's destructor calls into the TooltipManager. As such, this
   // must be destroyed AFTER root_view_.

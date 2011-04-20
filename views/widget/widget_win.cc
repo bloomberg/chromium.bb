@@ -413,8 +413,11 @@ void WidgetWin::CloseNow() {
 }
 
 void WidgetWin::Show() {
-  if (IsWindow())
-    ShowWindow(SW_SHOWNOACTIVATE);
+  if (!IsWindow())
+    return;
+
+  ShowWindow(SW_SHOWNOACTIVATE);
+  SetInitialFocus();
 }
 
 void WidgetWin::Hide() {
@@ -998,6 +1001,13 @@ void WidgetWin::TrackMouseEvents(DWORD mouse_tracking_flags) {
 
 void WidgetWin::OnScreenReaderDetected() {
   screen_reader_active_ = true;
+}
+
+void WidgetWin::SetInitialFocus() {
+  View* v = widget_delegate() ?
+      widget_delegate()->GetInitiallyFocusedView() : NULL;
+  if (v)
+    v->RequestFocus();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

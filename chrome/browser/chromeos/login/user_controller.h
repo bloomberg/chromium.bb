@@ -16,12 +16,10 @@
 #include "chrome/browser/chromeos/login/user_view.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
-#include "views/controls/button/button.h"
-#include "views/controls/textfield/textfield.h"
 #include "views/widget/widget_delegate.h"
 
 namespace views {
-class WidgetGtk;
+class Widget;
 }
 
 namespace chromeos {
@@ -77,9 +75,7 @@ class UserController : public views::WidgetDelegate,
   const UserManager::User& user() const { return user_; }
 
   // Get widget that contains all controls.
-  views::WidgetGtk* controls_window() {
-    return controls_window_;
-  }
+  views::Widget* controls_widget() { return controls_widget_; }
 
   // Called when user view is activated (OnUserSelected).
   void ClearAndEnableFields();
@@ -141,17 +137,19 @@ class UserController : public views::WidgetDelegate,
  private:
   FRIEND_TEST(UserControllerTest, GetNameTooltip);
 
+  class ControlsWidgetDelegate;
+
   // Performs common setup for login windows.
-  void ConfigureLoginWindow(views::WidgetGtk* window,
-                            int index,
-                            const gfx::Rect& bounds,
-                            chromeos::WmIpcWindowType type,
-                            views::View* contents_view);
-  views::WidgetGtk* CreateControlsWindow(int index,
-                                         int* width, int* height,
-                                         bool need_guest_link);
-  views::WidgetGtk* CreateImageWindow(int index);
-  views::WidgetGtk* CreateLabelWindow(int index, WmIpcWindowType type);
+  void ConfigureAndShow(views::Widget* widget,
+                        int index,
+                        chromeos::WmIpcWindowType type,
+                        views::View* contents_view);
+  void SetupControlsWidget(int index,
+                           int* width,
+                           int* height,
+                           bool need_guest_link);
+  views::Widget* CreateImageWidget(int index);
+  views::Widget* CreateLabelWidget(int index, WmIpcWindowType type);
   gfx::Font GetLabelFont();
   gfx::Font GetUnselectedLabelFont();
   void CreateBorderWindow(int index,
@@ -160,6 +158,15 @@ class UserController : public views::WidgetDelegate,
 
   // Returns tooltip text for user name.
   std::wstring GetNameTooltip() const;
+
+  // Creates the widget that holds the controls. Caller owns the returned
+  // widget.
+  static views::Widget* CreateControlsWidget(const gfx::Rect& bounds);
+
+  // Creates a Widget that selects the user any time the widget is
+  // clicked. Caller owns the returned widget.
+  static views::Widget* CreateClickNotifyingWidget(UserController* controller,
+                                                   const gfx::Rect& bounds);
 
   // User index within all the users.
   int user_index_;
@@ -186,11 +193,13 @@ class UserController : public views::WidgetDelegate,
   Delegate* delegate_;
 
   // A window is used to represent the individual chunks.
-  views::WidgetGtk* controls_window_;
-  views::WidgetGtk* image_window_;
+  views::Widget* controls_widget_;
+  views::Widget* image_widget_;
   views::Widget* border_window_;
-  views::WidgetGtk* label_window_;
-  views::WidgetGtk* unselected_label_window_;
+  views::Widget* label_widget_;
+  views::Widget* unselected_label_widget_;
+
+  scoped_ptr<ControlsWidgetDelegate> controls_widget_delegate_;
 
   // View that shows user image on image window.
   UserView* user_view_;

@@ -64,10 +64,6 @@ class WindowDelegate : public WidgetDelegate {
   // Returns the text to be displayed in the window title.
   virtual std::wstring GetWindowTitle() const;
 
-  // Returns the view that should have the focus when the dialog is opened.  If
-  // NULL no view is focused.
-  virtual View* GetInitiallyFocusedView();
-
   // Returns true if the window should show a title in the title bar.
   virtual bool ShouldShowWindowTitle() const;
 

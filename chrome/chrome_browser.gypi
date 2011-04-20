@@ -577,6 +577,7 @@
         'browser/chromeos/login/update_view.h',
         'browser/chromeos/login/user_controller.cc',
         'browser/chromeos/login/user_controller.h',
+        'browser/chromeos/login/user_controller_gtk.cc',
         'browser/chromeos/login/user_image_downloader.cc',
         'browser/chromeos/login/user_image_downloader.h',
         'browser/chromeos/login/user_image_loader.cc',

@@ -860,6 +860,20 @@ void WindowWin::Close() {
   }
 }
 
+void WindowWin::SetInitialFocus() {
+  if (!focus_on_creation_)
+    return;
+
+  View* v = GetWindow()->window_delegate()->GetInitiallyFocusedView();
+  if (v) {
+    v->RequestFocus();
+  } else {
+    // The window does not get keyboard messages unless we focus it, not sure
+    // why.
+    SetFocus(GetNativeView());
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WindowWin, NativeWindow implementation:
 
@@ -1209,20 +1223,6 @@ void WindowWin::FrameTypeChanged() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowWin, private:
-
-void WindowWin::SetInitialFocus() {
-  if (!focus_on_creation_)
-    return;
-
-  View* v = GetWindow()->window_delegate()->GetInitiallyFocusedView();
-  if (v) {
-    v->RequestFocus();
-  } else {
-    // The window does not get keyboard messages unless we focus it, not sure
-    // why.
-    SetFocus(GetNativeView());
-  }
-}
 
 void WindowWin::RestoreEnabledIfNecessary() {
   if (delegate_->IsModal() && !restored_enabled_) {

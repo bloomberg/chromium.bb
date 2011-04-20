@@ -8,12 +8,12 @@
 
 namespace views {
 
+class View;
+
 // WidgetDelegate interface
 // Handles events on Widgets in context-specific ways.
 class WidgetDelegate {
  public:
-  virtual ~WidgetDelegate() {}
-
   // Called whenever the widget is activated or deactivated.
   // TODO(beng): This should be consolidated with
   //             WindowDelegate::OnWindowActivationChanged().
@@ -28,6 +28,13 @@ class WidgetDelegate {
   // Called when the work area (the desktop area minus task bars,
   // menu bars, etc.) changes in size.
   virtual void OnWorkAreaChanged() {}
+
+  // Returns the view that should have the focus when the widget is shown.  If
+  // NULL no view is focused.
+  virtual View* GetInitiallyFocusedView() { return NULL; }
+
+ protected:
+  virtual ~WidgetDelegate() {}
 };
 
 }  // namespace views

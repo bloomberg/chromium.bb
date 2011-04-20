@@ -457,6 +457,13 @@ void WidgetGtk::IsActiveChanged() {
     widget_delegate()->OnWidgetActivated(IsActive());
 }
 
+void WidgetGtk::SetInitialFocus() {
+  View* v = widget_delegate() ?
+      widget_delegate()->GetInitiallyFocusedView() : NULL;
+  if (v)
+    v->RequestFocus();
+}
+
 void WidgetGtk::ResetDropTarget() {
   ignore_drag_leave_ = false;
   drop_target_.reset(NULL);
