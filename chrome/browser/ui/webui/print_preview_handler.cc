@@ -213,10 +213,7 @@ class PrintToPdfTask : public Task {
 FilePath* PrintPreviewHandler::last_saved_path_ = NULL;
 
 PrintPreviewHandler::PrintPreviewHandler()
-    : print_backend_(printing::PrintBackend::CreateInstance(NULL)),
-      need_to_generate_preview_(true),
-      color_(kColorDefaultValue),
-      landscape_(kLandscapeDefaultValue) {
+    : print_backend_(printing::PrintBackend::CreateInstance(NULL)) {
 }
 
 PrintPreviewHandler::~PrintPreviewHandler() {
@@ -252,17 +249,8 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   if (!settings.get())
     return;
 
-  // Handle settings that do not require print preview regeneration.
-  ProcessColorSetting(*settings);
-
-  // Handle settings that require print preview regeneration.
-  ProcessLandscapeSetting(*settings);
-
-  if (need_to_generate_preview_) {
-    RenderViewHost* rvh = initiator_tab->render_view_host();
-    rvh->Send(new PrintMsg_PrintPreview(rvh->routing_id(), *settings));
-    need_to_generate_preview_ = false;
-  }
+  RenderViewHost* rvh = initiator_tab->render_view_host();
+  rvh->Send(new PrintMsg_PrintPreview(rvh->routing_id(), *settings));
 }
 
 void PrintPreviewHandler::HandlePrint(const ListValue* args) {
@@ -334,26 +322,6 @@ void PrintPreviewHandler::SendPrinterList(
     const FundamentalValue& default_printer_index) {
   web_ui_->CallJavascriptFunction("setPrinters", printers,
                                   default_printer_index);
-}
-
-void PrintPreviewHandler::ProcessColorSetting(const DictionaryValue& settings) {
-  bool color = kColorDefaultValue;
-  settings.GetBoolean(printing::kSettingColor, &color);
-  if (color != color_) {
-    color_ = color;
-    FundamentalValue color_value(color_);
-    web_ui_->CallJavascriptFunction("setColor", color_value);
-  }
-}
-
-void PrintPreviewHandler::ProcessLandscapeSetting(
-    const DictionaryValue& settings) {
-  bool landscape = kLandscapeDefaultValue;
-  settings.GetBoolean(printing::kSettingLandscape, &landscape);
-  if (landscape != landscape_) {
-    landscape_ = landscape;
-    need_to_generate_preview_ = true;
-  }
 }
 
 void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {

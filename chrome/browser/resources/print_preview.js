@@ -4,8 +4,19 @@
 
 var localStrings = new LocalStrings();
 var hasPDFPlugin = true;
-var expectedPageCount = 0;
-var pageRangesInfo = [];
+
+// The total page count of the previewed document regardless of which pages the
+// user has selected.
+var totalPageCount = -1;
+
+// The previously selected pages by the user. It is used in
+// onPageSelectionMayHaveChanged() to make sure that a new preview is not
+// requested more often than necessary.
+var previouslySelectedPages = [];
+
+// Timer id of the page range textfield. It is used to reset the timer whenever
+// needed.
+var timerId;
 
 /**
  * Window onload handler, sets up the page and starts print preview by getting
@@ -21,17 +32,22 @@ function onLoad() {
     window.close();
   });
 
+  $('all-pages').addEventListener('click', onPageSelectionMayHaveChanged);
   $('copies').addEventListener('input', validateNumberOfCopies);
   $('copies').addEventListener('blur', handleCopiesFieldBlur);
+  $('print-pages').addEventListener('click', handleIndividualPagesCheckbox);
   $('individual-pages').addEventListener('blur', handlePageRangesFieldBlur);
-  $('landscape').onclick = onLayoutModeToggle;
-  $('portrait').onclick = onLayoutModeToggle;
-  $('color').onclick = getPreview;
-  $('bw').onclick = getPreview;
-  $('printer-list').onchange = updateControlsWithSelectedPrinterCapabilities;
+  $('individual-pages').addEventListener('focus', addTimerToPageRangeField);
+  $('individual-pages').addEventListener('input', resetPageRangeFieldTimer);
+  $('landscape').addEventListener('click', onLayoutModeToggle);
+  $('portrait').addEventListener('click', onLayoutModeToggle);
+  $('color').addEventListener('click', function() { setColor(true); });
+  $('bw').addEventListener('click', function() { setColor(false); });
+  $('printer-list').addEventListener(
+      'change', updateControlsWithSelectedPrinterCapabilities);
 
   chrome.send('getPrinters');
-};
+}
 
 /**
  * Gets the selected printer capabilities and updates the controls accordingly.
@@ -71,7 +87,7 @@ function updateWithPrinterCapabilities(settingInfo) {
   if (colorOption.checked != setColorAsDefault) {
     colorOption.checked = setColorAsDefault;
     bwOption.checked = !setColorAsDefault;
-    getPreview();
+    setColor(colorOption.checked);
   }
 }
 
@@ -118,6 +134,7 @@ function handleCopiesFieldBlur() {
  */
 function handlePageRangesFieldBlur() {
   checkAndSetPageRangesField();
+  onPageSelectionMayHaveChanged();
 }
 
 /**
@@ -160,15 +177,9 @@ function checkAndSetCopiesField() {
  *
  */
 function checkAndSetPageRangesField() {
-  var pageRanges = getPageRanges();
+  var pageRanges = getSelectedPageRanges();
   var parsedPageRanges = '';
   var individualPagesField = $('individual-pages');
-
-  if (pageRanges.length == 1 && pageRanges[0].from == 1 &&
-      pageRanges[0].to == expectedPageCount) {
-    individualPagesField.value = parsedPageRanges;
-    return;
-  }
 
   for (var i = 0; i < pageRanges.length; ++i) {
     if (pageRanges[i].from == pageRanges[i].to)
@@ -248,7 +259,7 @@ function getSettingsJSON() {
   var printToPDF = (printerName == localStrings.getString('printToPDF'));
 
   return JSON.stringify({'printerName': printerName,
-                         'pageRange': getPageRanges(),
+                         'pageRange': getSelectedPageRanges(),
                          'printAll': printAll,
                          'twoSided': isTwoSided(),
                          'copies': getCopies(),
@@ -331,8 +342,16 @@ function onPDFLoad() {
  *
  */
 function updatePrintPreview(pageCount, jobTitle) {
-  // Set the expected page count.
-  expectedPageCount = pageCount;
+  // Initialize the expected page count.
+  if (totalPageCount == -1)
+    totalPageCount = pageCount;
+
+  // Initialize the selected pages (defaults to all selected).
+  if (previouslySelectedPages.length == 0)
+    for (var i = 0; i < totalPageCount; i++)
+      previouslySelectedPages.push(i+1);
+
+  regeneratePreview = false;
 
   // Update the current tab title.
   document.title = localStrings.getStringF('printPreviewTitleFormat', jobTitle);
@@ -422,7 +441,7 @@ function updateSummary() {
     return;
   }
 
-  var pageList = getPageList();
+  var pageList = getSelectedPages();
   if (pageList.length <= 0) {
     printSummary.innerHTML =
         localStrings.getString('pageRangeInvalidTitleToolTip');
@@ -485,6 +504,15 @@ function handleTwoSidedClick(event) {
 }
 
 /**
+ * Gives focus to the individual pages textfield when 'print-pages' textbox is
+ * clicked.
+ */
+function handleIndividualPagesCheckbox() {
+  printSettingChanged();
+  $('individual-pages').focus();
+}
+
+/**
  * When the user switches printing orientation mode the page field selection is
  * reset to "all pages selected". After the change the number of pages will be
  * different and currently selected page numbers might no longer be valid.
@@ -493,6 +521,8 @@ function handleTwoSidedClick(event) {
 function onLayoutModeToggle() {
   $('individual-pages').value = '';
   $('all-pages').checked = true;
+  totalPageCount = -1;
+  previouslySelectedPages.length = 0;
   getPreview();
 }
 
@@ -502,11 +532,11 @@ function onLayoutModeToggle() {
  *
  * @return {Array}
  */
-function getPageList() {
+function getSelectedPages() {
   var pageText = $('individual-pages').value;
 
   if ($('all-pages').checked || pageText == '')
-    pageText = '1-' + expectedPageCount;
+    pageText = '1-' + totalPageCount;
 
   var pageList = [];
   var parts = pageText.split(/,/);
@@ -521,11 +551,11 @@ function getPageList() {
 
       if (from && to) {
         for (var j = from; j <= to; ++j)
-          if (j <= expectedPageCount)
+          if (j <= totalPageCount)
             pageList.push(j);
       }
     } else if (parseInt(part, 10)) {
-      if (parseInt(part, 10) <= expectedPageCount)
+      if (parseInt(part, 10) <= totalPageCount)
         pageList.push(parseInt(part, 10));
     }
   }
@@ -539,8 +569,8 @@ function getPageList() {
  * @return {Array} an array of page range objects. A page range object has
  *     fields 'from' and 'to'.
  */
-function getPageRanges() {
-  var pageList = getPageList();
+function getSelectedPageRanges() {
+  var pageList = getSelectedPages();
   var pageRanges = [];
   for (var i = 0; i < pageList.length; ++i) {
     tempFrom = pageList[i];
@@ -550,4 +580,51 @@ function getPageRanges() {
     pageRanges.push({'from': tempFrom, 'to': tempTo});
   }
   return pageRanges;
+}
+
+/**
+ * Whenever the page range textfield gains focus we add a timer to detect when
+ * the user stops typing in order to update the print preview.
+ */
+function addTimerToPageRangeField() {
+  timerId = window.setTimeout(onPageSelectionMayHaveChanged, 500);
+}
+
+/**
+ * As the user types in the page range textfield, we need to reset this timer,
+ * since the page ranges are still being edited.
+ */
+function resetPageRangeFieldTimer() {
+  clearTimeout(timerId);
+  addTimerToPageRangeField();
+}
+
+/**
+ * When the user stops typing in the page range textfield or clicks on the
+ * 'all-pages' checkbox, a new print preview is requested, only if
+ * 1) The input is valid (it can be parsed, even only partially).
+ * 2) The newly selected pages differ from the previously selected.
+ */
+function onPageSelectionMayHaveChanged() {
+  var currentlySelectedPages = getSelectedPages();
+
+  if (currentlySelectedPages.length == 0)
+    return;
+  if (areArraysEqual(previouslySelectedPages, currentlySelectedPages))
+    return;
+
+  previouslySelectedPages = currentlySelectedPages;
+  getPreview();
+}
+
+/**
+ * Returns true if the contents of the two arrays are equal.
+ */
+function areArraysEqual(array1, array2) {
+  if (array1.length != array2.length)
+    return false;
+  for (var i = 0; i < array1.length; i++)
+    if(array1[i] != array2[i])
+      return false;
+  return true;
 }

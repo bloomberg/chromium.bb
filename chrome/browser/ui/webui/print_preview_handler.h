@@ -71,15 +71,6 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // Pointer to current print system.
   scoped_refptr<printing::PrintBackend> print_backend_;
 
-  // Set to true if we need to generate a new print preview.
-  bool need_to_generate_preview_;
-
-  // Set to true if the preview should be in color.
-  bool color_;
-
-  // Set to true if the preview should be landscape.
-  bool landscape_;
-
   // The underlying dialog object.
   scoped_refptr<SelectFileDialog> select_file_dialog_;
 

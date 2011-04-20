@@ -18,11 +18,11 @@ const char kSettingCopies[] = "copies";
 // Page orientation: true for landscape, false for portrait.
 const char kSettingLandscape[] = "landscape";
 
-// Print to PDF option: true if selected, false if not.
-const char kSettingPrintToPDF[] = "printToPDF";
-
 // Printer name.
 const char kSettingPrinterName[] = "printerName";
+
+// Print to PDF option: true if selected, false if not.
+const char kSettingPrintToPDF[] = "printToPDF";
 
 // Print job duplex setting.
 const char kSettingTwoSided[] = "twoSided";
