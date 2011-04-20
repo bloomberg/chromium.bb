@@ -147,48 +147,6 @@ class NativeThemeWin : public NativeTheme {
   // single Paint() entry point.  Do not make new calls to these methods.
 
   // This method is deprecated and will be removed in the near future.
-  HRESULT PaintMenuList(HDC hdc,
-                        int part_id,
-                        int state_id,
-                        int classic_state,
-                        RECT* rect) const;
-
-  // This method is deprecated and will be removed in the near future.
-  // Paints a scrollbar arrow.  |classic_state| should have the appropriate
-  // classic part number ORed in already.
-  HRESULT PaintScrollbarArrow(HDC hdc,
-                              int state_id,
-                              int classic_state,
-                              RECT* rect) const;
-
-  // This method is deprecated and will be removed in the near future.
-  // Paints a scrollbar track section.  |align_rect| is only used in classic
-  // mode, and makes sure the checkerboard pattern in |target_rect| is aligned
-  // with one presumed to be in |align_rect|.
-  HRESULT PaintScrollbarTrack(HDC hdc,
-                              int part_id,
-                              int state_id,
-                              int classic_state,
-                              RECT* target_rect,
-                              RECT* align_rect,
-                              SkCanvas* canvas) const;
-
-  // This method is deprecated and will be removed in the near future.
-  // Paints a scrollbar thumb or gripper.
-  HRESULT PaintScrollbarThumb(HDC hdc,
-                              int part_id,
-                              int state_id,
-                              int classic_state,
-                              RECT* rect) const;
-
-  // This method is deprecated and will be removed in the near future.
-  HRESULT PaintSpinButton(HDC hdc,
-                          int part_id,
-                          int state_id,
-                          int classic_state,
-                          RECT* rect) const;
-
-  // This method is deprecated and will be removed in the near future.
   HRESULT PaintStatusGripper(HDC hdc,
                              int part_id,
                              int state_id,
@@ -207,22 +165,6 @@ class NativeThemeWin : public NativeTheme {
                          COLORREF color,
                          bool fill_content_area,
                          bool draw_edges) const;
-
-  // This method is deprecated and will be removed in the near future.
-  HRESULT PaintTrackbar(HDC hdc,
-                        int part_id,
-                        int state_id,
-                        int classic_state,
-                        RECT* rect,
-                        SkCanvas* canvas) const;
-
-  // This method is deprecated and will be removed in the near future.
-  HRESULT PaintProgressBar(HDC hdc,
-                           RECT* bar_rect,
-                           RECT* value_rect,
-                           bool determinate,
-                           double animated_seconds,
-                           SkCanvas* canvas) const;
 
  private:
   NativeThemeWin();
@@ -272,18 +214,6 @@ class NativeThemeWin : public NativeTheme {
                                   const gfx::Rect& rect,
                                   const MenuItemExtraParams& extra) const;
 
-  // Paints a scrollbar arrow.  |classic_state| should have the appropriate
-  // classic part number ORed in already.
-  HRESULT PaintScrollbarArrow(HDC hdc,
-                              Part direction,
-                              State state,
-                              const gfx::Rect& rect) const;
-
-  HRESULT PaintScrollbarThumb(HDC hdc,
-                              Part direction,
-                              State state,
-                              const gfx::Rect& rect) const;
-
   HRESULT PaintPushButton(HDC hdc,
                           Part part,
                           State state,
@@ -301,6 +231,53 @@ class NativeThemeWin : public NativeTheme {
                         State state,
                         const gfx::Rect& rect,
                         const ButtonExtraParams& extra) const;
+
+  HRESULT PaintMenuList(HDC hdc,
+                        State state,
+                        const gfx::Rect& rect,
+                        const MenuListExtraParams& extra) const;
+
+  // Paints a scrollbar arrow.  |classic_state| should have the appropriate
+  // classic part number ORed in already.
+  HRESULT PaintScrollbarArrow(HDC hdc,
+                              Part part,
+                              State state,
+                              const gfx::Rect& rect,
+                              const ScrollbarArrowExtraParams& extra) const;
+
+  HRESULT PaintScrollbarThumb(HDC hdc,
+                              Part part,
+                              State state,
+                              const gfx::Rect& rect,
+                              const ScrollbarThumbExtraParams& extra) const;
+
+  // This method is deprecated and will be removed in the near future.
+  // Paints a scrollbar track section.  |align_rect| is only used in classic
+  // mode, and makes sure the checkerboard pattern in |target_rect| is aligned
+  // with one presumed to be in |align_rect|.
+  HRESULT PaintScrollbarTrack(SkCanvas* canvas,
+                              HDC hdc,
+                              Part part,
+                              State state,
+                              const gfx::Rect& rect,
+                              const ScrollbarTrackExtraParams& extra) const;
+
+  HRESULT PaintSpinButton(HDC hdc,
+                          Part part,
+                          State state,
+                          const gfx::Rect& rect,
+                          const InnerSpinButtonExtraParams& extra) const;
+
+  HRESULT PaintTrackbar(SkCanvas* canvas,
+                        HDC hdc,
+                        Part part,
+                        State state,
+                        const gfx::Rect& rect,
+                        const TrackbarExtraParams& extra) const;
+
+  HRESULT PaintProgressBar(HDC hdc,
+                           const gfx::Rect& rect,
+                           const ProgressBarExtraParams& extra) const;
 
   // Get the windows theme name that goes with the part.
   static ThemeName GetThemeName(Part part);

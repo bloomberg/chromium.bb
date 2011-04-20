@@ -41,6 +41,8 @@ class NativeTheme {
     kScrollbarVerticalThumb,
     kScrollbarHorizontalTrack,
     kScrollbarVerticalTrack,
+    kScrollbarHorizontalGripper,
+    kScrollbarVerticalGripper,
     kCheckbox,
     kRadio,
     kPushButton,
@@ -57,6 +59,8 @@ class NativeTheme {
     kSliderThumb,
     kInnerSpinButton,
     kProgressBar,
+    kTrackbarThumb,
+    kTrackbarTrack,
     kMaxPart,
   };
 
@@ -69,15 +73,8 @@ class NativeTheme {
     kMaxState,
   };
 
-  // Each structure below hold extra information needed when painting a given
+  // Each structure below holds extra information needed when painting a given
   // part.
-
-  struct ScrollbarTrackExtraParams {
-    int track_x;
-    int track_y;
-    int track_width;
-    int track_height;
-  };
 
   struct ButtonExtraParams {
     bool checked;
@@ -88,10 +85,10 @@ class NativeTheme {
     SkColor background_color;
   };
 
-  struct TextFieldExtraParams {
-    bool is_text_area;
-    bool is_listbox;
-    SkColor background_color;
+  struct InnerSpinButtonExtraParams {
+    bool spin_up;
+    bool read_only;
+    int classic_state;  // Used on Windows when uxtheme is not available.
   };
 
   struct MenuArrowExtraParams {
@@ -112,23 +109,15 @@ class NativeTheme {
     int arrow_x;
     int arrow_y;
     SkColor background_color;
+    int classic_state;  // Used on Windows when uxtheme is not available.
   };
 
   struct MenuSeparatorExtraParams {
     bool has_gutter;
   };
 
-  struct SliderExtraParams {
-    bool vertical;
-    bool in_drag;
-  };
-
-  struct InnerSpinButtonExtraParams {
-    bool spin_up;
-    bool read_only;
-  };
-
   struct ProgressBarExtraParams {
+    double animated_seconds;
     bool determinate;
     int value_rect_x;
     int value_rect_y;
@@ -136,18 +125,53 @@ class NativeTheme {
     int value_rect_height;
   };
 
+  struct ScrollbarArrowExtraParams {
+    bool is_hovering;
+  };
+
+  struct ScrollbarTrackExtraParams {
+    bool is_upper;
+    int track_x;
+    int track_y;
+    int track_width;
+    int track_height;
+    int classic_state;  // Used on Windows when uxtheme is not available.
+  };
+
+  struct ScrollbarThumbExtraParams {
+    bool is_hovering;
+  };
+
+  struct SliderExtraParams {
+    bool vertical;
+    bool in_drag;
+  };
+
+  struct TextFieldExtraParams {
+    bool is_text_area;
+    bool is_listbox;
+    SkColor background_color;
+  };
+
+  struct TrackbarExtraParams {
+    int classic_state;  // Used on Windows when uxtheme is not available.
+  };
+
   union ExtraParams {
-    ScrollbarTrackExtraParams scrollbar_track;
     ButtonExtraParams button;
+    InnerSpinButtonExtraParams inner_spin;
     MenuArrowExtraParams menu_arrow;
     MenuCheckExtraParams menu_check;
     MenuItemExtraParams menu_item;
     MenuListExtraParams menu_list;
     MenuSeparatorExtraParams menu_separator;
+    ProgressBarExtraParams progress_bar;
+    ScrollbarArrowExtraParams scrollbar_arrow;
+    ScrollbarTrackExtraParams scrollbar_track;
+    ScrollbarThumbExtraParams scrollbar_thumb;
     SliderExtraParams slider;
     TextFieldExtraParams text_field;
-    InnerSpinButtonExtraParams inner_spin;
-    ProgressBarExtraParams progress_bar;
+    TrackbarExtraParams trackbar;
   };
 
   // Return the size of the part.
