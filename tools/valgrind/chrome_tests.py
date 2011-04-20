@@ -234,7 +234,6 @@ class ChromeTests:
   def TestRemoting(self):
     return self.SimpleTest("chrome", "remoting_unittests",
                            cmd_args=[
-                               "--ui-test-timeout=240000",
                                "--ui-test-action-timeout=120000",
                                "--ui-test-action-max-timeout=280000"])
 
@@ -273,10 +272,8 @@ class ChromeTests:
   # Valgrind timeouts are in seconds.
   UI_VALGRIND_ARGS = ["--timeout=7200", "--trace_children", "--indirect"]
   # UI test timeouts are in milliseconds.
-  UI_TEST_ARGS = ["--ui-test-timeout=240000",
-                  "--ui-test-action-timeout=120000",
+  UI_TEST_ARGS = ["--ui-test-action-timeout=120000",
                   "--ui-test-action-max-timeout=280000",
-                  "--ui-test-sleep-timeout=120000",
                   "--ui-test-terminate-timeout=120000"]
   def TestUI(self):
     return self.SimpleTest("chrome", "ui_tests",

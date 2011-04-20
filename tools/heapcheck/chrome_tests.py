@@ -303,7 +303,6 @@ class ChromeTests(object):
   def TestUI(self):
     return self.SimpleTest("chrome", "ui_tests",
                            cmd_args=[
-                            "--ui-test-timeout=120000",
                             "--ui-test-action-timeout=80000",
                             "--ui-test-action-max-timeout=180000",
                             "--ui-test-terminate-timeout=60000"])
