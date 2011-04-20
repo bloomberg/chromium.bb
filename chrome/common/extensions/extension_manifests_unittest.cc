@@ -256,7 +256,11 @@ TEST_F(ExtensionManifestTest, AppLaunchURL) {
                      errors::kInvalidLaunchLocalPath);
   LoadAndExpectError("launch_path_invalid_value.json",
                      errors::kInvalidLaunchLocalPath);
-  LoadAndExpectError("launch_url_invalid_type.json",
+  LoadAndExpectError("launch_url_invalid_type_1.json",
+                     errors::kInvalidLaunchWebURL);
+  LoadAndExpectError("launch_url_invalid_type_2.json",
+                     errors::kInvalidLaunchWebURL);
+  LoadAndExpectError("launch_url_invalid_type_3.json",
                      errors::kInvalidLaunchWebURL);
 
   scoped_refptr<Extension> extension;

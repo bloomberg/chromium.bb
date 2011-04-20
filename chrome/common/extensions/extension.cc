@@ -1278,8 +1278,10 @@ bool Extension::LoadLaunchURL(const DictionaryValue* manifest,
       return false;
     }
 
-    // Ensure the launch URL is a valid absolute URL.
-    if (!GURL(launch_url).is_valid()) {
+    // Ensure the launch URL is a valid absolute URL and web extent scheme.
+    GURL url(launch_url);
+    URLPattern pattern(kValidWebExtentSchemes);
+    if (!url.is_valid() || !pattern.SetScheme(url.scheme())) {
       *error = errors::kInvalidLaunchWebURL;
       return false;
     }
