@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2011 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 import atexit
 import os
@@ -37,7 +37,10 @@ os.close(_)
 
 def CleanupBinder(fname):
   def Cleanup():
-    os.unlink(fname)
+    try:
+      os.unlink(fname)
+    except OSError:
+      pass
   return Cleanup
 
 atexit.register(CleanupBinder(outfile))
