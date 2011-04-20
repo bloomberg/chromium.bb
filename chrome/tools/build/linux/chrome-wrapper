@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -74,19 +74,14 @@ export CHROME_DESKTOP="$DESKTOP.desktop"
 HERE="`dirname "$CHROME_WRAPPER"`"
 
 # We include some xdg utilities next to the binary, and we want to prefer them
-# over the system versions because we know they work correctly for us. But if
-# our path already exists, we leave it where it is, to allow overriding this.
-# (Once distributions have picked up the updated xdg-mime, we can go back to
-# appending $HERE rather than prepending.)
-case ":$PATH:" in
-  *:$HERE:*)
-    # $PATH already contains $HERE, leave it where it is.
-    ;;
-  *)
-    # Prepend $HERE to $PATH.
-    export PATH="$HERE:$PATH"
-    ;;
-esac
+# over the system versions when we know the system versions are very old. We
+# detect whether the system xdg utilities are sufficiently new to be likely to
+# work for us by looking for xdg-settings. If we find it, we leave $PATH alone,
+# so that the system xdg utilities (including any distro patches) will be used.
+if ! which xdg-settings &> /dev/null; then
+  # Old xdg utilities. Prepend $HERE to $PATH to use ours instead.
+  export PATH="$HERE:$PATH"
+fi
 
 # Always use our ffmpeg and other shared libs.
 export LD_LIBRARY_PATH="$HERE:$HERE/lib:$HERE/lib.target${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
