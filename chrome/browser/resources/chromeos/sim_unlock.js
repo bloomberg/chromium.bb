@@ -251,20 +251,21 @@ cr.define('mobile', function() {
     // Our dialog has different height than choose-pin step of the
     // unlock process which we're reusing.
     if (changePin) {
-      $('choose-pin-content-area').classList.remove('content-area');
+      $('choose-pin-content-area').classList.remove('choose-pin-content-area');
       $('choose-pin-content-area').classList.add('change-pin-content-area');
       var title = SimUnlock.localStrings_.getString('changePinTitle');
       $('choose-pin-title').textContent = title;
     } else {
       $('choose-pin-content-area').classList.remove('change-pin-content-area');
-      $('choose-pin-content-area').classList.add('content-area');
+      $('choose-pin-content-area').classList.add('choose-pin-content-area');
       var pinMessage = SimUnlock.localStrings_.getString('choosePinMessage');
       $('choose-pin-msg').classList.remove('error');
       $('choose-pin-msg').textContent = pinMessage;
       var title = SimUnlock.localStrings_.getString('choosePinTitle');
       $('choose-pin-title').textContent = title;
     }
-    $('old-pin').hidden = !changePin;
+    $('old-pin-label').hidden = !changePin;
+    $('old-pin-input-area').hidden = !changePin;
   };
 
   SimUnlock.newPinEntered = function(newPin, newPin2) {

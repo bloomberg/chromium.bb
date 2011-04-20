@@ -21,7 +21,7 @@ const int kDefaultHeight = 225;
 
 // Width/height for the change PIN dialog mode.
 const int kChangePinWidth = 350;
-const int kChangePinHeight = 256;
+const int kChangePinHeight = 245;
 
 // URL that includes additional mode (other than Unlock flow) that we're using
 // dialog for. Possible values:

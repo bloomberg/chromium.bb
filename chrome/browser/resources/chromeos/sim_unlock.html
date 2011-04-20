@@ -78,11 +78,12 @@ document.addEventListener('DOMContentLoaded', load);
     </div>
     <div id="choose-pin-overlay" class="dialog" hidden>
       <h1 id="choose-pin-title" i18n-content="choosePinTitle"></h1>
-      <div id="choose-pin-content-area" class="content-area">
+      <div id="choose-pin-content-area" class="choose-pin-content-area">
         <div id="choose-pin-msg" i18n-content="choosePinMessage"></div>
-        <div id="old-pin" class="input-with-label" hidden>
-          <div id="old-pin-label" i18n-content="oldPin" class="label"></div>
-          <div id="old-pin-input-area" class="choose-pin-input-area">
+        <div class="input-with-label">
+          <div id="old-pin-label" i18n-content="oldPin" class="label" hidden>
+          </div>
+          <div id="old-pin-input-area" class="choose-pin-input-area" hidden>
             <input id="old-pin-input" class="code-input" type="text"
                 maxlength="8" size="14">
           </div>

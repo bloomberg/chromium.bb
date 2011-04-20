@@ -568,8 +568,17 @@ void SimUnlockHandler::ProcessSimCardState(
       case SIM_NOT_LOCKED_ASK_PIN:
       case SIM_NOT_LOCKED_CHANGE_PIN:
         // We always start in these states when SIM is unlocked.
-        // So if we get here, that means entered PIN was incorrect.
-        error_msg = kErrorPin;
+        // So if we get here while still being UNLOCKED,
+        // that means entered PIN was incorrect.
+        if (lock_state == chromeos::SIM_UNLOCKED) {
+          error_msg = kErrorPin;
+        } else if (lock_state == chromeos::SIM_LOCKED_PUK) {
+          state_ = SIM_LOCKED_NO_PIN_TRIES_LEFT;
+        } else {
+          NOTREACHED()
+              << "Change PIN / Set lock mode with unexpected SIM lock state";
+          state_ = SIM_ABSENT_NOT_LOCKED;
+        }
         break;
       case SIM_LOCKED_PIN:
         if (lock_state == chromeos::SIM_UNLOCKED ||
@@ -602,6 +611,7 @@ void SimUnlockHandler::ProcessSimCardState(
         break;
     }
   } else {
+    VLOG(1) << "Cellular device is absent.";
     // No cellular device, should close dialog.
     state_ = SIM_ABSENT_NOT_LOCKED;
   }

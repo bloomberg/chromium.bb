@@ -13,8 +13,18 @@
 }
 
 .change-pin-content-area {
-  max-height: 156px;
+  height: 156px;
   overflow: auto;
+  padding: 10px 15px 5px 15px;
+  width: 320px;
+}
+
+.choose-pin-content-area {
+  max-height: 125px;
+  min-height: 120px;
+  overflow: auto;
+  padding: 10px 15px 5px 15px;
+  width: 320px;
 }
 
 .input-area {
@@ -69,10 +79,6 @@
 
 .input-with-label {
   display: -webkit-box;
-}
-
-#choose-pin-content-area {
-  min-height: 120px;
 }
 
 .choose-pin-input-area {
