@@ -68,3 +68,5 @@ BUGJKNOTTEN MAC : fast/forms/menulist-separator-painting.html = IMAGE PASS
 BUGJKNOTTEN MAC : fast/forms/menulist-style-color.html = IMAGE PASS
 BUGJKNOTTEN MAC : fast/forms/select-baseline.html = IMAGE PASS
 BUGJKNOTTEN MAC : fast/forms/select-empty-option-height.html = IMAGE PASS
+BUGJKNOTTEN : http/tests/local/formdata/send-form-data-with-sliced-file.html = PASS
+
