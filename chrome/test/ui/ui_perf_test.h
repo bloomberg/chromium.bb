@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,9 @@
 
 class UIPerfTest : public UITest {
  protected:
+  // Override UITestBase.
+  void SetLaunchSwitches();
+
   // Prints numerical information to stdout in a controlled format, for
   // post-processing. |measurement| is a description of the quantity being
   // measured, e.g. "vm_peak"; |modifier| is provided as a convenience and
