@@ -4355,6 +4355,25 @@
    fun:_ZN21TestURLRequestContextC1Ev
    fun:_ZN27TestURLRequestContextGetter20GetURLRequestContextEv
 }
+{
+   bug_79966
+   Memcheck:Cond
+   fun:gdk_window_new
+   fun:gtk_preserve_window_set_preserve
+   fun:_ZN20GtkNativeViewManager20GetPermanentXIDForIdEPmi
+   fun:_ZN23RenderWidgetHostViewGtk21GetCompositingSurfaceEv
+   fun:_ZN16RenderWidgetHost21GetCompositingSurfaceEv
+   fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
+   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
+   fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
+   fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
+   fun:_ZN11TabContents15NavigateToEntryERK15NavigationEntryN20NavigationController10ReloadTypeE
+   fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
+   fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
+   fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
+   fun:_ZN20NavigationController7LoadURLERK4GURLS2_j
+   fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
