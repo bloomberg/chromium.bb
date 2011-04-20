@@ -688,7 +688,7 @@ audit results and populates one of them with the additional details:
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.bookmarks</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span><span>, Type opt_param1, Type opt_param2</span>));
               </div>
 
               <div class="description">
@@ -697,9 +697,9 @@ audit results and populates one of them with the additional details:
                   A description from the json schema def of the event goes here.
                 </p>
 
-                <!-- PARAMETERS -->
+                <!-- LISTENER PARAMETERS -->
                 <div>
-                  <h4>Parameters</h4>
+                  <h4>Listener parameters</h4>
                   <dl>
                     <div>
                       <div>
@@ -707,8 +707,28 @@ audit results and populates one of them with the additional details:
                     </div>
                   </dl>
                 </div>
-              </div> <!-- /decription -->
 
+                <!-- EXTRA PARAMETERS -->
+                <div>
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4>Listener returns</h4>
+                <dl>
+                  <div>
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /description -->
             </div> <!-- /apiItem -->
 
           </div> <!-- /apiGroup -->
@@ -791,16 +811,16 @@ audit results and populates one of them with the additional details:
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">auditCategory.</span><span>onAuditStarted</span><span class="subdued">.addListener</span>(function(<span>AuditResults results</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">auditCategory.</span><span>onAuditStarted</span><span class="subdued">.addListener</span>(function(<span>AuditResults results</span>) <span class="subdued">{...}</span><span></span>));
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fired when the audit is started, if the category is enabled -- the extension is expected to begin executing audit rules.</p>
 
-                <!-- PARAMETERS -->
+                <!-- LISTENER PARAMETERS -->
                 <div>
-                  <h4>Parameters</h4>
+                  <h4>Listener parameters</h4>
                   <dl>
                     <div>
                       <div>
@@ -875,8 +895,28 @@ audit results and populates one of them with the additional details:
                     </div>
                   </dl>
                 </div>
-              </div> <!-- /decription -->
 
+                <!-- EXTRA PARAMETERS -->
+                <div style="display: none; ">
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4 style="display: none; ">Listener returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /description -->
             </div> <!-- /apiItem -->
 
           </div>

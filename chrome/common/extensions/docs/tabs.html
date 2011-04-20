@@ -5689,16 +5689,16 @@ For other examples and for help in viewing the source code, see
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.tabs.</span><span>onAttached</span><span class="subdued">.addListener</span>(function(<span>integer tabId, object attachInfo</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.tabs.</span><span>onAttached</span><span class="subdued">.addListener</span>(function(<span>integer tabId, object attachInfo</span>) <span class="subdued">{...}</span><span></span>));
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fired when a tab is attached to a window, for example because it was moved between windows.</p>
 
-                <!-- PARAMETERS -->
+                <!-- LISTENER PARAMETERS -->
                 <div>
-                  <h4>Parameters</h4>
+                  <h4>Listener parameters</h4>
                   <dl>
                     <div>
                       <div>
@@ -5980,24 +5980,44 @@ For other examples and for help in viewing the source code, see
                     </div>
                   </dl>
                 </div>
-              </div> <!-- /decription -->
 
+                <!-- EXTRA PARAMETERS -->
+                <div style="display: none; ">
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4 style="display: none; ">Listener returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /description -->
             </div><div class="apiItem">
               <a name="event-onCreated"></a>
               <h4>onCreated</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.tabs.</span><span>onCreated</span><span class="subdued">.addListener</span>(function(<span>Tab tab</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.tabs.</span><span>onCreated</span><span class="subdued">.addListener</span>(function(<span>Tab tab</span>) <span class="subdued">{...}</span><span></span>));
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fires when a tab is created. Note that the tab's URL may not be set at the time this event fires, but you can listen to onUpdated events to be notified when a URL is set.</p>
 
-                <!-- PARAMETERS -->
+                <!-- LISTENER PARAMETERS -->
                 <div>
-                  <h4>Parameters</h4>
+                  <h4>Listener parameters</h4>
                   <dl>
                     <div>
                       <div>
@@ -6070,24 +6090,44 @@ For other examples and for help in viewing the source code, see
                     </div>
                   </dl>
                 </div>
-              </div> <!-- /decription -->
 
+                <!-- EXTRA PARAMETERS -->
+                <div style="display: none; ">
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4 style="display: none; ">Listener returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /description -->
             </div><div class="apiItem">
               <a name="event-onDetached"></a>
               <h4>onDetached</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.tabs.</span><span>onDetached</span><span class="subdued">.addListener</span>(function(<span>integer tabId, object detachInfo</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.tabs.</span><span>onDetached</span><span class="subdued">.addListener</span>(function(<span>integer tabId, object detachInfo</span>) <span class="subdued">{...}</span><span></span>));
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fired when a tab is detached from a window, for example because it is being moved between windows.</p>
 
-                <!-- PARAMETERS -->
+                <!-- LISTENER PARAMETERS -->
                 <div>
-                  <h4>Parameters</h4>
+                  <h4>Listener parameters</h4>
                   <dl>
                     <div>
                       <div>
@@ -6369,24 +6409,44 @@ For other examples and for help in viewing the source code, see
                     </div>
                   </dl>
                 </div>
-              </div> <!-- /decription -->
 
+                <!-- EXTRA PARAMETERS -->
+                <div style="display: none; ">
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4 style="display: none; ">Listener returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /description -->
             </div><div class="apiItem">
               <a name="event-onMoved"></a>
               <h4>onMoved</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.tabs.</span><span>onMoved</span><span class="subdued">.addListener</span>(function(<span>integer tabId, object moveInfo</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.tabs.</span><span>onMoved</span><span class="subdued">.addListener</span>(function(<span>integer tabId, object moveInfo</span>) <span class="subdued">{...}</span><span></span>));
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fires when a tab is moved within a window. Only one move event is fired, representing the tab the user directly moved. Move events are not fired for the other tabs that must move in response. This event is not fired when a tab is moved between windows. For that, see <a href="#event-onDetached">onDetached</a>.</p>
 
-                <!-- PARAMETERS -->
+                <!-- LISTENER PARAMETERS -->
                 <div>
-                  <h4>Parameters</h4>
+                  <h4>Listener parameters</h4>
                   <dl>
                     <div>
                       <div>
@@ -6738,24 +6798,44 @@ For other examples and for help in viewing the source code, see
                     </div>
                   </dl>
                 </div>
-              </div> <!-- /decription -->
 
+                <!-- EXTRA PARAMETERS -->
+                <div style="display: none; ">
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4 style="display: none; ">Listener returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /description -->
             </div><div class="apiItem">
               <a name="event-onRemoved"></a>
               <h4>onRemoved</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.tabs.</span><span>onRemoved</span><span class="subdued">.addListener</span>(function(<span>integer tabId, object removeInfo</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.tabs.</span><span>onRemoved</span><span class="subdued">.addListener</span>(function(<span>integer tabId, object removeInfo</span>) <span class="subdued">{...}</span><span></span>));
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fires when a tab is closed.</p>
 
-                <!-- PARAMETERS -->
+                <!-- LISTENER PARAMETERS -->
                 <div>
-                  <h4>Parameters</h4>
+                  <h4>Listener parameters</h4>
                   <dl>
                     <div>
                       <div>
@@ -6965,24 +7045,44 @@ For other examples and for help in viewing the source code, see
                     </div>
                   </dl>
                 </div>
-              </div> <!-- /decription -->
 
+                <!-- EXTRA PARAMETERS -->
+                <div style="display: none; ">
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4 style="display: none; ">Listener returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /description -->
             </div><div class="apiItem">
               <a name="event-onSelectionChanged"></a>
               <h4>onSelectionChanged</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.tabs.</span><span>onSelectionChanged</span><span class="subdued">.addListener</span>(function(<span>integer tabId, object selectInfo</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.tabs.</span><span>onSelectionChanged</span><span class="subdued">.addListener</span>(function(<span>integer tabId, object selectInfo</span>) <span class="subdued">{...}</span><span></span>));
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fires when the selected tab in a window changes.</p>
 
-                <!-- PARAMETERS -->
+                <!-- LISTENER PARAMETERS -->
                 <div>
-                  <h4>Parameters</h4>
+                  <h4>Listener parameters</h4>
                   <dl>
                     <div>
                       <div>
@@ -7190,24 +7290,44 @@ For other examples and for help in viewing the source code, see
                     </div>
                   </dl>
                 </div>
-              </div> <!-- /decription -->
 
+                <!-- EXTRA PARAMETERS -->
+                <div style="display: none; ">
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4 style="display: none; ">Listener returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /description -->
             </div><div class="apiItem">
               <a name="event-onUpdated"></a>
               <h4>onUpdated</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.tabs.</span><span>onUpdated</span><span class="subdued">.addListener</span>(function(<span>integer tabId, object changeInfo, Tab tab</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.tabs.</span><span>onUpdated</span><span class="subdued">.addListener</span>(function(<span>integer tabId, object changeInfo, Tab tab</span>) <span class="subdued">{...}</span><span></span>));
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fires when a tab is updated.</p>
 
-                <!-- PARAMETERS -->
+                <!-- LISTENER PARAMETERS -->
                 <div>
-                  <h4>Parameters</h4>
+                  <h4>Listener parameters</h4>
                   <dl>
                     <div>
                       <div>
@@ -7619,8 +7739,28 @@ For other examples and for help in viewing the source code, see
                     </div>
                   </dl>
                 </div>
-              </div> <!-- /decription -->
 
+                <!-- EXTRA PARAMETERS -->
+                <div style="display: none; ">
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4 style="display: none; ">Listener returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /description -->
             </div> <!-- /apiItem -->
 
           </div> <!-- /apiGroup -->

@@ -637,16 +637,16 @@ http://src.chromium.org/viewvc/chrome/trunk/src/chrome/test/data/extensions/api_
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.processes.</span><span>onUpdated</span><span class="subdued">.addListener</span>(function(<span>object processes</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.experimental.processes.</span><span>onUpdated</span><span class="subdued">.addListener</span>(function(<span>object processes</span>) <span class="subdued">{...}</span><span></span>));
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fires each time the Task Manager updates its process statistics, providing the dictionary of updated Process objects, indexed by process ID.</p>
 
-                <!-- PARAMETERS -->
+                <!-- LISTENER PARAMETERS -->
                 <div>
-                  <h4>Parameters</h4>
+                  <h4>Listener parameters</h4>
                   <dl>
                     <div>
                       <div>
@@ -721,8 +721,28 @@ http://src.chromium.org/viewvc/chrome/trunk/src/chrome/test/data/extensions/api_
                     </div>
                   </dl>
                 </div>
-              </div> <!-- /decription -->
 
+                <!-- EXTRA PARAMETERS -->
+                <div style="display: none; ">
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4 style="display: none; ">Listener returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /description -->
             </div> <!-- /apiItem -->
 
           </div> <!-- /apiGroup -->

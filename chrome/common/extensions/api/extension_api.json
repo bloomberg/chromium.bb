@@ -3621,12 +3621,35 @@
               "timeStamp": {"type": "number", "description": "The time when the browser was about to make the request, in milliseconds since the epoch."}
             }
           }
-        ]
+        ],
+        "extraParameters": [
+          {
+            "$ref": "RequestFilter",
+            "optional": true,
+            "name": "filter",
+            "description": "A set of filters that restricts the events that will be sent to this listener."
+          },
+          {
+            "type": "array",
+            "optional": true,
+            "name": "extraInfoSpec",
+            "description": "Array of extra information that should be passed to the listener function.",
+            "items": {
+              "type": "string",
+              "enum": ["blocking"]
+            }
+          }
+        ],
+        "returns": {
+          "$ref": "BlockingResponse",
+          "description": "If \"blocking\" is specified in the \"extraInfoSpec\" parameter, the event listener should return an object of this type.",
+          "optional": true
+        }
       },
       {
         "name": "onBeforeSendHeaders",
         "type": "function",
-        "description": "Fires before sending an HTTP request, once the request headers are available.",
+        "description": "Fires before sending an HTTP request, once the request headers are available. This may occur after a TCP connection is made to the server, but before any HTTP data is sent. ",
         "parameters": [
           {
             "type": "object",
@@ -3637,7 +3660,30 @@
               "timeStamp": {"type": "number", "description": "The time when the browser was about to send headers, in milliseconds since the epoch."}
             }
           }
-        ]
+        ],
+        "extraParameters": [
+          {
+            "$ref": "RequestFilter",
+            "optional": true,
+            "name": "filter",
+            "description": "A set of filters that restricts the events that will be sent to this listener."
+          },
+          {
+            "type": "array",
+            "optional": true,
+            "name": "extraInfoSpec",
+            "description": "Array of extra information that should be passed to the listener function.",
+            "items": {
+              "type": "string",
+              "enum": ["requestLine", "requestHeaders", "blocking"]
+            }
+          }
+        ],
+        "returns": {
+          "$ref": "BlockingResponse",
+          "description": "If \"blocking\" is specified in the \"extraInfoSpec\" parameter, the event listener should return an object of this type.",
+          "optional": true
+        }
       },
       {
         "name": "onRequestSent",
@@ -3654,12 +3700,30 @@
               "timeStamp": {"type": "number", "description": "The time when the browser finished sending the request, in milliseconds since the epoch."}
             }
           }
+        ],
+        "extraParameters": [
+          {
+            "$ref": "RequestFilter",
+            "optional": true,
+            "name": "filter",
+            "description": "A set of filters that restricts the events that will be sent to this listener."
+          },
+          {
+            "type": "array",
+            "optional": true,
+            "name": "extraInfoSpec",
+            "description": "Array of extra information that should be passed to the listener function.",
+            "items": {
+              "type": "string",
+              "enum": ["requestLine", "requestHeaders"]
+            }
+          }
         ]
       },
       {
-        "name": "onHeadersReceived",
+        "name": "onResponseStarted",
         "type": "function",
-        "description": "Fires when the status line and response headers are received after a request is sent to the server.",
+        "description": "Fires when the first byte of the response body is received. For HTTP requests, this means that the status line and response headers are available.",
         "parameters": [
           {
             "type": "object",
@@ -3669,6 +3733,24 @@
               "url": {"type": "string"},
               "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
               "timeStamp": {"type": "number", "description": "The time when the status line and response headers were received, in milliseconds since the epoch."}
+            }
+          }
+        ],
+        "extraParameters": [
+          {
+            "$ref": "RequestFilter",
+            "optional": true,
+            "name": "filter",
+            "description": "A set of filters that restricts the events that will be sent to this listener."
+          },
+          {
+            "type": "array",
+            "optional": true,
+            "name": "extraInfoSpec",
+            "description": "Array of extra information that should be passed to the listener function.",
+            "items": {
+              "type": "string",
+              "enum": ["statusLine", "responseHeaders"]
             }
           }
         ]
@@ -3689,6 +3771,24 @@
               "timeStamp": {"type": "number", "description": "The time when the browser was about to make the redirect, in milliseconds since the epoch."}
             }
           }
+        ],
+        "extraParameters": [
+          {
+            "$ref": "RequestFilter",
+            "optional": true,
+            "name": "filter",
+            "description": "A set of filters that restricts the events that will be sent to this listener."
+          },
+          {
+            "type": "array",
+            "optional": true,
+            "name": "extraInfoSpec",
+            "description": "Array of extra information that should be passed to the listener function.",
+            "items": {
+              "type": "string",
+              "enum": ["statusLine", "responseHeaders", "redirectRequestLine", "redirectRequestHeaders"]
+            }
+          }
         ]
       },
       {
@@ -3704,6 +3804,24 @@
               "url": {"type": "string", "description": "The URL of the current request."},
               "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
               "timeStamp": {"type": "number", "description": "The time when the response was received completely, in milliseconds since the epoch."}
+            }
+          }
+        ],
+        "extraParameters": [
+          {
+            "$ref": "RequestFilter",
+            "optional": true,
+            "name": "filter",
+            "description": "A set of filters that restricts the events that will be sent to this listener."
+          },
+          {
+            "type": "array",
+            "optional": true,
+            "name": "extraInfoSpec",
+            "description": "Array of extra information that should be passed to the listener function.",
+            "items": {
+              "type": "string",
+              "enum": ["statusLine", "responseHeaders"]
             }
           }
         ]
@@ -3722,6 +3840,14 @@
               "error": {"type": "string", "description": "The error description."},
               "timeStamp": {"type": "number", "description": "The time when the error occurred, in milliseconds since the epoch."}
             }
+          }
+        ],
+        "extraParameters": [
+          {
+            "$ref": "RequestFilter",
+            "optional": true,
+            "name": "filter",
+            "description": "A set of filters that restricts the events that will be sent to this listener."
           }
         ]
       }

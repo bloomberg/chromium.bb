@@ -254,12 +254,14 @@ var chrome = chrome || {};
   //   chrome.webRequest.onBeforeRequest.addListener(
   //       callback, {urls: "http://*.google.com/*"});
   //   ^ callback will only be called for onBeforeRequests matching the filter.
-  chrome.WebRequestEvent = function(eventName, opt_argSchemas) {
+  chrome.WebRequestEvent =
+     function(eventName, opt_argSchemas, opt_extraArgSchemas) {
     if (typeof eventName != "string")
       throw new Error("chrome.WebRequestEvent requires an event name.");
 
     this.eventName_ = eventName;
     this.argSchemas_ = opt_argSchemas;
+    this.extraArgSchemas_ = opt_extraArgSchemas;
     this.subEvents_ = [];
     this.callbackMap_ = {};
   };
@@ -273,6 +275,8 @@ var chrome = chrome || {};
     var subEventName = GetUniqueSubEventName(this.eventName_);
     // Note: this could fail to validate, in which case we would not add the
     // subEvent listener.
+    chromeHidden.validate(Array.prototype.slice.call(arguments, 1),
+                          this.extraArgSchemas_);
     chrome.experimental.webRequest.addEventListener(
         cb, opt_filter, opt_extraInfo, this.eventName_, subEventName);
 
@@ -588,7 +592,7 @@ var chrome = chrome || {};
           if (apiDef.namespace == "experimental.webRequest") {
             // WebRequest events have a special structure.
             module[eventDef.name] = new chrome.WebRequestEvent(eventName,
-                eventDef.parameters);
+                eventDef.parameters, eventDef.extraParameters);
           } else {
             module[eventDef.name] = new chrome.Event(eventName,
                 eventDef.parameters);

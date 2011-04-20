@@ -544,6 +544,12 @@ function getSignatureString(parameters) {
   return retval.join(", ");
 }
 
+function getOptionalSignatureSubstring(parameters) {
+  if (!parameters)
+    return "";
+  return ", " + getSignatureString(parameters);
+}
+
 function sortByName(a, b) {
   if (a.name < b.name) {
     return -1;

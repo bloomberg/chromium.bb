@@ -431,7 +431,7 @@
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span jscontent="(getObjectName($scope) || getModuleName()) + '.'" class="subdued">chrome.bookmarks</span><span jscontent="name">onEvent</span><span class="subdued">.addListener</span>(function(<span jscontent="getSignatureString($this.parameters)">Type param1, Type param2</span>) <span class="subdued">{...}</span>);
+                <span jscontent="(getObjectName($scope) || getModuleName()) + '.'" class="subdued">chrome.bookmarks</span><span jscontent="name">onEvent</span><span class="subdued">.addListener</span>(function(<span jscontent="getSignatureString($this.parameters)">Type param1, Type param2</span>) <span class="subdued">{...}</span><span jscontent="getOptionalSignatureSubstring($this.extraParameters)">, Type opt_param1, Type opt_param2</span>));
               </div>
 
               <div class="description">
@@ -440,9 +440,9 @@
                   A description from the json schema def of the event goes here.
                 </p>
 
-                <!-- PARAMETERS -->
+                <!-- LISTENER PARAMETERS -->
                 <div jsdisplay="parameters && parameters.length > 0">
-                  <h4>Parameters</h4>
+                  <h4>Listener parameters</h4>
                   <dl>
                     <div jsselect="parameters">
                       <div transclude="valueTemplate">
@@ -450,8 +450,28 @@
                     </div>
                   </dl>
                 </div>
-              </div> <!-- /decription -->
 
+                <!-- EXTRA PARAMETERS -->
+                <div jsdisplay="extraParameters && extraParameters.length > 0">
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div jsselect="extraParameters">
+                      <div transclude="valueTemplate">
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4 jsdisplay="returns">Listener returns</h4>
+                <dl>
+                  <div jsselect="returns">
+                    <div transclude="valueTemplate">
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /description -->
             </div> <!-- /apiItem -->
 
           </div> <!-- /apiGroup -->

@@ -3858,16 +3858,16 @@ For other examples and for help in viewing the source code, see
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks.</span><span>onChanged</span><span class="subdued">.addListener</span>(function(<span>string id, object changeInfo</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.bookmarks.</span><span>onChanged</span><span class="subdued">.addListener</span>(function(<span>string id, object changeInfo</span>) <span class="subdued">{...}</span><span></span>));
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fired when a bookmark or folder changes.  <b>Note:</b> Currently, only title and url changes trigger this.</p>
 
-                <!-- PARAMETERS -->
+                <!-- LISTENER PARAMETERS -->
                 <div>
-                  <h4>Parameters</h4>
+                  <h4>Listener parameters</h4>
                   <dl>
                     <div>
                       <div>
@@ -4149,24 +4149,44 @@ For other examples and for help in viewing the source code, see
                     </div>
                   </dl>
                 </div>
-              </div> <!-- /decription -->
 
+                <!-- EXTRA PARAMETERS -->
+                <div style="display: none; ">
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4 style="display: none; ">Listener returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /description -->
             </div><div class="apiItem">
               <a name="event-onChildrenReordered"></a>
               <h4>onChildrenReordered</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks.</span><span>onChildrenReordered</span><span class="subdued">.addListener</span>(function(<span>string id, object reorderInfo</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.bookmarks.</span><span>onChildrenReordered</span><span class="subdued">.addListener</span>(function(<span>string id, object reorderInfo</span>) <span class="subdued">{...}</span><span></span>));
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fired when the children of a folder have changed their order due to the order being sorted in the UI.  This is not called as a result of a move().</p>
 
-                <!-- PARAMETERS -->
+                <!-- LISTENER PARAMETERS -->
                 <div>
-                  <h4>Parameters</h4>
+                  <h4>Listener parameters</h4>
                   <dl>
                     <div>
                       <div>
@@ -4389,24 +4409,44 @@ For other examples and for help in viewing the source code, see
                     </div>
                   </dl>
                 </div>
-              </div> <!-- /decription -->
 
+                <!-- EXTRA PARAMETERS -->
+                <div style="display: none; ">
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4 style="display: none; ">Listener returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /description -->
             </div><div class="apiItem">
               <a name="event-onCreated"></a>
               <h4>onCreated</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks.</span><span>onCreated</span><span class="subdued">.addListener</span>(function(<span>string id, BookmarkTreeNode bookmark</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.bookmarks.</span><span>onCreated</span><span class="subdued">.addListener</span>(function(<span>string id, BookmarkTreeNode bookmark</span>) <span class="subdued">{...}</span><span></span>));
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fired when a bookmark or folder is created.</p>
 
-                <!-- PARAMETERS -->
+                <!-- LISTENER PARAMETERS -->
                 <div>
-                  <h4>Parameters</h4>
+                  <h4>Listener parameters</h4>
                   <dl>
                     <div>
                       <div>
@@ -4551,24 +4591,44 @@ For other examples and for help in viewing the source code, see
                     </div>
                   </dl>
                 </div>
-              </div> <!-- /decription -->
 
+                <!-- EXTRA PARAMETERS -->
+                <div style="display: none; ">
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4 style="display: none; ">Listener returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /description -->
             </div><div class="apiItem">
               <a name="event-onImportBegan"></a>
               <h4>onImportBegan</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks.</span><span>onImportBegan</span><span class="subdued">.addListener</span>(function(<span></span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.bookmarks.</span><span>onImportBegan</span><span class="subdued">.addListener</span>(function(<span></span>) <span class="subdued">{...}</span><span></span>));
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fired when a bookmark import session is begun.  Expensive observers should ignore handleCreated updates until onImportEnded is fired.  Observers should still handle other notifications immediately.</p>
 
-                <!-- PARAMETERS -->
+                <!-- LISTENER PARAMETERS -->
                 <div style="display: none; ">
-                  <h4>Parameters</h4>
+                  <h4>Listener parameters</h4>
                   <dl>
                     <div>
                       <div>
@@ -4576,24 +4636,44 @@ For other examples and for help in viewing the source code, see
                     </div>
                   </dl>
                 </div>
-              </div> <!-- /decription -->
 
+                <!-- EXTRA PARAMETERS -->
+                <div style="display: none; ">
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4 style="display: none; ">Listener returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /description -->
             </div><div class="apiItem">
               <a name="event-onImportEnded"></a>
               <h4>onImportEnded</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks.</span><span>onImportEnded</span><span class="subdued">.addListener</span>(function(<span></span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.bookmarks.</span><span>onImportEnded</span><span class="subdued">.addListener</span>(function(<span></span>) <span class="subdued">{...}</span><span></span>));
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fired when a bookmark import session is ended.</p>
 
-                <!-- PARAMETERS -->
+                <!-- LISTENER PARAMETERS -->
                 <div style="display: none; ">
-                  <h4>Parameters</h4>
+                  <h4>Listener parameters</h4>
                   <dl>
                     <div>
                       <div>
@@ -4601,24 +4681,44 @@ For other examples and for help in viewing the source code, see
                     </div>
                   </dl>
                 </div>
-              </div> <!-- /decription -->
 
+                <!-- EXTRA PARAMETERS -->
+                <div style="display: none; ">
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4 style="display: none; ">Listener returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /description -->
             </div><div class="apiItem">
               <a name="event-onMoved"></a>
               <h4>onMoved</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks.</span><span>onMoved</span><span class="subdued">.addListener</span>(function(<span>string id, object moveInfo</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.bookmarks.</span><span>onMoved</span><span class="subdued">.addListener</span>(function(<span>string id, object moveInfo</span>) <span class="subdued">{...}</span><span></span>));
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fired when a bookmark or folder is moved to a different parent folder.</p>
 
-                <!-- PARAMETERS -->
+                <!-- LISTENER PARAMETERS -->
                 <div>
-                  <h4>Parameters</h4>
+                  <h4>Listener parameters</h4>
                   <dl>
                     <div>
                       <div>
@@ -5040,24 +5140,44 @@ For other examples and for help in viewing the source code, see
                     </div>
                   </dl>
                 </div>
-              </div> <!-- /decription -->
 
+                <!-- EXTRA PARAMETERS -->
+                <div style="display: none; ">
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4 style="display: none; ">Listener returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /description -->
             </div><div class="apiItem">
               <a name="event-onRemoved"></a>
               <h4>onRemoved</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks.</span><span>onRemoved</span><span class="subdued">.addListener</span>(function(<span>string id, object removeInfo</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.bookmarks.</span><span>onRemoved</span><span class="subdued">.addListener</span>(function(<span>string id, object removeInfo</span>) <span class="subdued">{...}</span><span></span>));
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fired when a bookmark or folder is removed.  When a folder is removed recursively, a single notification is fired for the folder, and none for its contents.</p>
 
-                <!-- PARAMETERS -->
+                <!-- LISTENER PARAMETERS -->
                 <div>
-                  <h4>Parameters</h4>
+                  <h4>Listener parameters</h4>
                   <dl>
                     <div>
                       <div>
@@ -5339,8 +5459,28 @@ For other examples and for help in viewing the source code, see
                     </div>
                   </dl>
                 </div>
-              </div> <!-- /decription -->
 
+                <!-- EXTRA PARAMETERS -->
+                <div style="display: none; ">
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4 style="display: none; ">Listener returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /description -->
             </div> <!-- /apiItem -->
 
           </div> <!-- /apiGroup -->
