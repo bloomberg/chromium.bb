@@ -204,7 +204,7 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
   matches = url_index_->HistoryItemsForTerms(terms);
   ASSERT_EQ(2U, matches.size());
   // The results should be in descending score order.
-  EXPECT_GT(matches[0].raw_score, matches[1].raw_score);
+  EXPECT_GE(matches[0].raw_score, matches[1].raw_score);
 
   // Search which should result in nearly perfect result.
   terms.clear();
@@ -228,7 +228,7 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
   matches = url_index_->HistoryItemsForTerms(terms);
   ASSERT_EQ(1U, matches.size());
   // The results should have a poor score.
-  EXPECT_LT(matches[0].raw_score, 200);
+  EXPECT_LT(matches[0].raw_score, 500);
   EXPECT_EQ(33, matches[0].url_info.id());
   EXPECT_EQ("http://quiteuselesssearchresultxyz.com/",
             matches[0].url_info.url().spec());  // Note: URL gets lowercased.
@@ -263,7 +263,7 @@ TEST_F(InMemoryURLIndexTest, TitleSearch) {
   url_index_.reset(new InMemoryURLIndex());
   url_index_->Init(this, "en,ja,hi,zh");
   // Signal if someone has changed the test DB.
-  EXPECT_EQ(28U, url_index_->history_info_map_.size());
+  EXPECT_EQ(25U, url_index_->history_info_map_.size());
   InMemoryURLIndex::String16Vector terms;
 
   // Ensure title is being searched.
@@ -367,6 +367,31 @@ TEST_F(InMemoryURLIndexTest, StaticFunctions) {
     EXPECT_EQ(expected_offsets[i], matches_c[i].offset);
 }
 
+TEST_F(InMemoryURLIndexTest, OffsetsAndTermMatches) {
+  // Test OffsetsFromTermMatches
+  history::TermMatches matches_a;
+  matches_a.push_back(history::TermMatch(1, 1, 2));
+  matches_a.push_back(history::TermMatch(2, 4, 3));
+  matches_a.push_back(history::TermMatch(3, 9, 1));
+  matches_a.push_back(history::TermMatch(3, 10, 1));
+  matches_a.push_back(history::TermMatch(4, 14, 5));
+  std::vector<size_t> offsets =
+      InMemoryURLIndex::OffsetsFromTermMatches(matches_a);
+  const size_t expected_offsets_a[] = {1, 4, 9, 10, 14};
+  ASSERT_EQ(offsets.size(), arraysize(expected_offsets_a));
+  for (size_t i = 0; i < offsets.size(); ++i)
+    EXPECT_EQ(expected_offsets_a[i], offsets[i]);
+
+  // Test ReplaceOffsetsInTermMatches
+  offsets[2] = string16::npos;
+  history::TermMatches matches_b =
+      InMemoryURLIndex::ReplaceOffsetsInTermMatches(matches_a, offsets);
+  const size_t expected_offsets_b[] = {1, 4, 10, 14};
+  ASSERT_EQ(arraysize(expected_offsets_b), matches_b.size());
+  for (size_t i = 0; i < matches_b.size(); ++i)
+    EXPECT_EQ(expected_offsets_b[i], matches_b[i].offset);
+}
+
 TEST_F(InMemoryURLIndexTest, TypedCharacterCaching) {
   // Verify that match results for previously typed characters are retained
   // (in the term_char_word_set_cache_) and reused, if possible, in future
@@ -416,7 +441,7 @@ TEST_F(InMemoryURLIndexTest, TypedCharacterCaching) {
 }
 
 TEST_F(InMemoryURLIndexTest, Scoring) {
-  URLRow row_a(MakeURLRow("http://abcdef", "fedcba", 20, 0, 20));
+  URLRow row_a(MakeURLRow("http://abcdef", "fedcba", 3, 30, 1));
   // Test scores based on position.
   ScoredHistoryMatch scored_a(
       InMemoryURLIndex::ScoredMatchForURL(row_a, Make1Term("abc")));
@@ -434,20 +459,20 @@ TEST_F(InMemoryURLIndexTest, Scoring) {
       InMemoryURLIndex::ScoredMatchForURL(row_a, Make2Terms("def", "abc")));
   EXPECT_GT(scored_d.raw_score, scored_e.raw_score);
   // Test scores based on visit_count.
-  URLRow row_b(MakeURLRow("http://abcdef", "fedcba", 10, 0, 20));
+  URLRow row_b(MakeURLRow("http://abcdef", "fedcba", 10, 30, 1));
   ScoredHistoryMatch scored_f(
       InMemoryURLIndex::ScoredMatchForURL(row_b, Make1Term("abc")));
-  EXPECT_GT(scored_a.raw_score, scored_f.raw_score);
+  EXPECT_GT(scored_f.raw_score, scored_a.raw_score);
   // Test scores based on last_visit.
-  URLRow row_c(MakeURLRow("http://abcdef", "fedcba", 20, 2, 20));
+  URLRow row_c(MakeURLRow("http://abcdef", "fedcba", 3, 10, 1));
   ScoredHistoryMatch scored_g(
       InMemoryURLIndex::ScoredMatchForURL(row_c, Make1Term("abc")));
-  EXPECT_GT(scored_a.raw_score, scored_g.raw_score);
+  EXPECT_GT(scored_g.raw_score, scored_a.raw_score);
   // Test scores based on typed_count.
-  URLRow row_d(MakeURLRow("http://abcdef", "fedcba", 20, 0, 10));
+  URLRow row_d(MakeURLRow("http://abcdef", "fedcba", 3, 30, 10));
   ScoredHistoryMatch scored_h(
       InMemoryURLIndex::ScoredMatchForURL(row_d, Make1Term("abc")));
-  EXPECT_GT(scored_a.raw_score, scored_h.raw_score);
+  EXPECT_GT(scored_h.raw_score, scored_a.raw_score);
 }
 
 TEST_F(InMemoryURLIndexTest, AddNewRows) {

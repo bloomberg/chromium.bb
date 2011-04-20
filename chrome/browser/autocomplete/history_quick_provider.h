@@ -46,7 +46,9 @@ class HistoryQuickProvider : public HistoryProvider {
 
   AutocompleteMatch QuickMatchToACMatch(
       const history::ScoredHistoryMatch& history_match,
-      size_t match_number);
+      size_t match_number,
+      bool prevent_inline_autocomplete,
+      int* next_dont_inline_score);
 
   // Determines the relevance for some input, given its type and which match it
   // is.  If |match_type| is NORMAL, |match_number| is a number

@@ -165,6 +165,15 @@ class InMemoryURLIndex {
   static String16Vector WordVectorFromString16(const string16& uni_string,
                                                bool break_on_space);
 
+  // Extract and return the offsets from |matches|.
+  static std::vector<size_t> OffsetsFromTermMatches(const TermMatches& matches);
+
+  // Replace the offsets in |matches| with those given in |offsets|, deleting
+  // any which are npos, and return the updated list of matches.
+  static TermMatches ReplaceOffsetsInTermMatches(
+      const TermMatches& matches,
+      const std::vector<size_t>& offsets);
+
  private:
   friend class AddHistoryMatch;
   FRIEND_TEST_ALL_PREFIXES(LimitedInMemoryURLIndexTest, Initialization);
@@ -329,11 +338,11 @@ class InMemoryURLIndex {
       const URLRow& row,
       const String16Vector& terms_vector);
 
-  // Calculates a partial raw score based on position, ordering and total
+  // Calculates a component score based on position, ordering and total
   // substring match size using metrics recorded in |matches|. |max_length|
   // is the length of the string against which the terms are being searched.
-  static int RawScoreForMatches(const TermMatches& matches,
-                                size_t max_length);
+  static int ScoreComponentForMatches(const TermMatches& matches,
+                                      size_t max_length);
 
   // Sorts and removes overlapping substring matches from |matches| and
   // returns the cleaned up matches.

@@ -49,20 +49,11 @@ typedef imui::InMemoryURLIndexCacheItem_HistoryInfoMapItem_HistoryInfoMapEntry
 
 const size_t InMemoryURLIndex::kNoCachedResultForTerm = -1;
 
-// Scoring constants.
-const float kOrderMaxValue = 50.0;
-const float kStartMaxValue = 50.0;
-const size_t kMaxSignificantStart = 20;
-const float kCompleteMaxValue = 100.0;
-const float kLastVisitMaxValue = 200.0;
-const base::TimeDelta kMaxSignificantDay = base::TimeDelta::FromDays(30);
-const float kVisitCountMaxValue = 100.0;
-const int kMaxSignificantVisits = 20;
-const float kTypedCountMaxValue = 300.0;
-const int kMaxSignificantTyped = 20;
-const float kMaxRawScore = kOrderMaxValue + kStartMaxValue + kCompleteMaxValue +
-    kLastVisitMaxValue + kVisitCountMaxValue + kTypedCountMaxValue;
-const float kMaxNormalizedRawScore = 1000.0;
+// Score ranges used to get a 'base' score for each of the scoring factors
+// (such as recency of last visit, times visited, times the URL was typed,
+// and the quality of the string match). There is a matching value range for
+// each of these scores for each factor.
+const int kScoreRank[] = { 1425, 1200, 900, 400 };
 
 ScoredHistoryMatch::ScoredHistoryMatch()
     : raw_score(0),
@@ -109,6 +100,38 @@ bool MatchOffsetLess(const TermMatch& m1, const TermMatch& m2) {
 // std::accumulate helper function to add up TermMatches' lengths.
 int AccumulateMatchLength(int total, const TermMatch& match) {
   return total + match.length;
+}
+
+// Converts a raw value for some particular scoring factor into a score
+// component for that factor.  The conversion function is piecewise linear, with
+// input values provided in |value_ranks| and resulting output scores from
+// |kScoreRank| (mathematically, f(value_rank[i]) = kScoreRank[i]).  A score
+// cannot be higher than kScoreRank[0], and drops directly to 0 if lower than
+// kScoreRank[3].
+//
+// For example, take |value| == 70 and |value_ranks| == { 100, 50, 30, 10 }.
+// Because 70 falls between ranks 0 (100) and 1 (50), the score is given by the
+// linear function:
+//   score = m * value + b, where
+//   m = (kScoreRank[0] - kScoreRank[1]) / (value_ranks[0] - value_ranks[1])
+//   b = value_ranks[1]
+// Any value higher than 100 would be scored as if it were 100, and any value
+// lower than 10 scored 0.
+int ScoreForValue(int value, const int* value_ranks) {
+  int i = 0;
+  int rank_count = arraysize(kScoreRank);
+  while ((i < rank_count) && ((value_ranks[0] < value_ranks[1]) ?
+         (value > value_ranks[i]) : (value < value_ranks[i])))
+    ++i;
+  if (i >= rank_count)
+    return 0;
+  int score = kScoreRank[i];
+  if (i > 0) {
+    score += (value - value_ranks[i]) *
+        (kScoreRank[i - 1] - kScoreRank[i]) /
+        (value_ranks[i - 1] - value_ranks[i]);
+  }
+  return score;
 }
 
 InMemoryURLIndex::InMemoryURLIndex(const FilePath& history_dir)
@@ -342,6 +365,7 @@ ScoredHistoryMatches InMemoryURLIndex::HistoryItemsForTerms(
       // substring match, inserting those which pass in order by score.
       scored_items = std::for_each(history_id_set.begin(), history_id_set.end(),
           AddHistoryMatch(*this, lower_terms)).ScoredMatches();
+
       // Select and sort only the top kMaxMatches results.
       if (scored_items.size() > AutocompleteProvider::kMaxMatches) {
         std::partial_sort(scored_items.begin(),
@@ -648,6 +672,33 @@ TermMatches InMemoryURLIndex::SortAndDeoverlap(const TermMatches& matches) {
 }
 
 // static
+std::vector<size_t> InMemoryURLIndex::OffsetsFromTermMatches(
+    const TermMatches& matches) {
+  std::vector<size_t> offsets;
+  for (TermMatches::const_iterator i = matches.begin(); i != matches.end(); ++i)
+    offsets.push_back(i->offset);
+  return offsets;
+}
+
+// static
+TermMatches InMemoryURLIndex::ReplaceOffsetsInTermMatches(
+    const TermMatches& matches,
+    const std::vector<size_t>& offsets) {
+  DCHECK_EQ(matches.size(), offsets.size());
+  TermMatches new_matches;
+  std::vector<size_t>::const_iterator offset_iter = offsets.begin();
+  for (TermMatches::const_iterator term_iter = matches.begin();
+       term_iter != matches.end(); ++term_iter, ++offset_iter) {
+    if (*offset_iter != string16::npos) {
+      TermMatch new_match(*term_iter);
+      new_match.offset = *offset_iter;
+      new_matches.push_back(new_match);
+    }
+  }
+  return new_matches;
+}
+
+// static
 ScoredHistoryMatch InMemoryURLIndex::ScoredMatchForURL(
     const URLRow& row,
     const String16Vector& terms) {
@@ -688,52 +739,61 @@ ScoredHistoryMatch InMemoryURLIndex::ScoredMatchForURL(
   // Get partial scores based on term matching. Note that the score for
   // each of the URL and title are adjusted by the fraction of the
   // terms appearing in each.
-  int url_score = RawScoreForMatches(match.url_matches, url.size()) *
+  int url_score = ScoreComponentForMatches(match.url_matches, url.size()) *
       match.url_matches.size() / terms.size();
-  int title_score = RawScoreForMatches(match.title_matches, title.size()) *
-      match.title_matches.size() / terms.size();
+  int title_score =
+      ScoreComponentForMatches(match.title_matches, title.size()) *
+      static_cast<int>(match.title_matches.size()) /
+      static_cast<int>(terms.size());
   // Arbitrarily pick the best.
   // TODO(mrossetti): It might make sense that a term which appears in both the
   // URL and the Title should boost the score a bit.
   int term_score = std::max(url_score, title_score);
+  if (term_score == 0)
+    return match;
 
-  // Factor in attributes of the URLRow.
-  // Items which have been visited recently score higher.
-  int64 delta_time = (kMaxSignificantDay -
-      std::min((base::Time::Now() - row.last_visit()),
-               kMaxSignificantDay)).ToInternalValue();
-  float last_visit_value =
-      (static_cast<float>(delta_time) /
-       static_cast<float>(kMaxSignificantDay.ToInternalValue())) *
-      kLastVisitMaxValue;
+  // Factor in recency of visit, visit count and typed count attributes of the
+  // URLRow.
+  const int kDaysAgoLevel[] = { 0, 10, 20, 30 };
+  int score = ScoreForValue((base::Time::Now() -
+      row.last_visit()).InDays(), kDaysAgoLevel);
+  const int kVisitCountLevel[] = { 30, 10, 5, 3 };
+  int visit_count_value = ScoreForValue(row.visit_count(), kVisitCountLevel);
+  const int kTypedCountLevel[] = { 10, 5, 3, 1 };
+  int typed_count_value = ScoreForValue(row.typed_count(), kTypedCountLevel);
 
-  float visit_count_value =
-      (static_cast<float>(std::min(row.visit_count(),
-       kMaxSignificantVisits))) / static_cast<float>(kMaxSignificantVisits) *
-      kVisitCountMaxValue;
+  // Determine how many of the factors comprising the final score are
+  // significant by summing the relative factors for each and subtracting how
+  // many will be 'discarded' even if they are low.
+  const int kVisitCountMultiplier = 2;
+  const int kTypedCountMultiplier = 3;
+  const int kSignificantFactors =
+      kVisitCountMultiplier +  // Visit count factor plus
+      kTypedCountMultiplier +  // typed count factor plus
+      2 -                      // one each for string match and last visit
+      2;                       // minus 2 insignificant factors.
+  // The following, in effect, discards up to |kSignificantFactors| low scoring
+  // elements which contribute little to the score but which can inordinately
+  // drag down an otherwise good score.
+  match.raw_score = std::min(kScoreRank[0], (term_score + score +
+      (visit_count_value * kVisitCountMultiplier) + (typed_count_value *
+      kTypedCountMultiplier)) / kSignificantFactors);
 
-  float typed_count_value =
-      (static_cast<float>(std::min(row.typed_count(),
-       kMaxSignificantTyped))) / static_cast<float>(kMaxSignificantTyped) *
-      kTypedCountMaxValue;
-
-  float raw_score = term_score + last_visit_value + visit_count_value +
-                    typed_count_value;
-
-  // Normalize the score.
-  match.raw_score = static_cast<int>((raw_score / kMaxRawScore) *
-                                     kMaxNormalizedRawScore);
   return match;
 }
 
-int InMemoryURLIndex::RawScoreForMatches(const TermMatches& matches,
-                                         size_t max_length) {
+int InMemoryURLIndex::ScoreComponentForMatches(const TermMatches& matches,
+                                               size_t max_length) {
   // TODO(mrossetti): This is good enough for now but must be fine-tuned.
   if (matches.empty())
     return 0;
 
-  // Search terms appearing in order score higher.
-  float order_value = 10.0;
+  // Score component for whether the input terms (if more than one) were found
+  // in the same order in the match.  Start with kOrderMaxValue points divided
+  // equally among (number of terms - 1); then discount each of those terms that
+  // is out-of-order in the match.
+  const int kOrderMaxValue = 250;
+  int order_value = kOrderMaxValue;
   if (matches.size() > 1) {
     int max_possible_out_of_order = matches.size() - 1;
     int out_of_order = 0;
@@ -741,33 +801,42 @@ int InMemoryURLIndex::RawScoreForMatches(const TermMatches& matches,
       if (matches[i - 1].term_num > matches[i].term_num)
         ++out_of_order;
     }
-    order_value =
-        (static_cast<float>(max_possible_out_of_order - out_of_order) /
-         max_possible_out_of_order) * kOrderMaxValue;
+    order_value = (max_possible_out_of_order - out_of_order) * kOrderMaxValue /
+        max_possible_out_of_order;
   }
 
-  // Search terms which appear earlier score higher.
-  // No points if the first search term does not appear in the first
-  // kMaxSignificantStart chars.
-  float start_value =
-      (static_cast<float>(kMaxSignificantStart -
-       std::min(kMaxSignificantStart, matches[0].offset))) /
-      static_cast<float>(kMaxSignificantStart) * kStartMaxValue;
+  // Score component for how early in the match string the first search term
+  // appears.  Start with kStartMaxValue points and discount by
+  // 1/kMaxSignificantStart points for each character later than the first at
+  // which the term begins. No points are earned if the start of the match
+  // occurs at or after kMaxSignificantStart.
+  const size_t kMaxSignificantStart = 20;
+  const int kStartMaxValue = 250;
+  int start_value = (kMaxSignificantStart -
+      std::min(kMaxSignificantStart, matches[0].offset)) * kStartMaxValue /
+      kMaxSignificantStart;
 
-  // Search terms which comprise a greater portion score higher.
+  // Score component for how much of the matched string the input terms cover.
+  // kCompleteMaxValue points times the fraction of the URL/page title string
+  // that was matched.
   size_t term_length_total = std::accumulate(matches.begin(), matches.end(),
                                              0, AccumulateMatchLength);
-  float complete_value =
-      (static_cast<float>(term_length_total) / static_cast<float>(max_length)) *
-      kStartMaxValue;
-  return static_cast<int>(order_value + start_value + complete_value);
+  const int kCompleteMaxValue = 500;
+  int complete_value = term_length_total * kCompleteMaxValue / max_length;
+
+  int raw_score = order_value + start_value + complete_value;
+  const int kTermScoreLevel[] = { 1000, 650, 500, 200 };
+
+  // Scale the sum of the three components above into a single score component
+  // on the same scale as that used in ScoredMatchForURL().
+  return ScoreForValue(raw_score, kTermScoreLevel);
 }
 
 InMemoryURLIndex::AddHistoryMatch::AddHistoryMatch(
     const InMemoryURLIndex& index,
     const String16Vector& lower_terms)
-    : index_(index),
-      lower_terms_(lower_terms) {
+  : index_(index),
+    lower_terms_(lower_terms) {
 }
 
 InMemoryURLIndex::AddHistoryMatch::~AddHistoryMatch() {}

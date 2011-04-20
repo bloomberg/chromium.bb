@@ -43,7 +43,7 @@ struct TestURLInfo {
   {"http://news.google.com/?ned=us&topic=n", "Google News - U.S.", 2, 2, 0},
   {"http://news.google.com/", "Google News", 1, 1, 0},
   {"http://foo.com/", "Dir", 5, 5, 0},
-  {"http://foo.com/dir/", "Dir", 2, 2, 0},
+  {"http://foo.com/dir/", "Dir", 2, 1, 10},
   {"http://foo.com/dir/another/", "Dir", 5, 1, 0},
   {"http://foo.com/dir/another/again/", "Dir", 10, 0, 0},
   {"http://foo.com/dir/another/again/myfile.html", "File", 10, 2, 0},
@@ -62,12 +62,12 @@ struct TestURLInfo {
   {"http://daysagoest.com/x/c", "DC", 1, 1, 2},
   {"http://daysagoest.com/x/d", "DD", 1, 1, 3},
   {"http://daysagoest.com/y/e", "DE", 1, 1, 4},
-  {"http://abcdefghixyzjklmnopqrstuvw.com/a", "", 1, 1, 0},
+  {"http://abcdefghixyzjklmnopqrstuvw.com/a", "", 3, 1, 0},
   {"http://spaces.com/path%20with%20spaces/foo.html", "Spaces", 2, 2, 0},
-  {"http://abcdefghijklxyzmnopqrstuvw.com/a", "", 1, 1, 0},
-  {"http://abcdefxyzghijklmnopqrstuvw.com/a", "", 1, 1, 0},
-  {"http://abcxyzdefghijklmnopqrstuvw.com/a", "", 1, 1, 0},
-  {"http://xyzabcdefghijklmnopqrstuvw.com/a", "", 1, 1, 0},
+  {"http://abcdefghijklxyzmnopqrstuvw.com/a", "", 3, 1, 0},
+  {"http://abcdefxyzghijklmnopqrstuvw.com/a", "", 3, 1, 0},
+  {"http://abcxyzdefghijklmnopqrstuvw.com/a", "", 3, 1, 0},
+  {"http://xyzabcdefghijklmnopqrstuvw.com/a", "", 3, 1, 0},
   {"http://cda.com/Dogs%20Cats%20Gorillas%20Sea%20Slugs%20and%20Mice",
    "Dogs & Cats & Mice", 1, 1, 0},
 };
@@ -220,11 +220,11 @@ TEST_F(HistoryQuickProviderTest, SimpleSingleMatch) {
 TEST_F(HistoryQuickProviderTest, MultiMatch) {
   string16 text(ASCIIToUTF16("foo"));
   std::vector<std::string> expected_urls;
-  // Scores high because of completion length.
+  // Scores high because of typed_count.
   expected_urls.push_back("http://foo.com/");
   // Scores high because of visit count.
-  expected_urls.push_back("http://foo.com/dir/another/again/");
-  // Scores high because of visit count but less match span.
+  expected_urls.push_back("http://foo.com/dir/another/");
+  // Scores high because of high visit count.
   expected_urls.push_back("http://foo.com/dir/another/again/myfile.html");
   RunTest(text, expected_urls, "http://foo.com/");
 }
@@ -278,12 +278,12 @@ TEST_F(HistoryQuickProviderTest, EncodingLimitMatch) {
   const size_t max_offset = url.size() - ((6 * 2) + 7);
   for (ACMatchClassifications::const_iterator citer = content.begin();
        citer != content.end(); ++citer)
-    EXPECT_GT(max_offset, citer->offset);
+    EXPECT_LT(citer->offset, max_offset);
   ACMatchClassifications description(ac_matches_[0].description_class);
   std::string page_title("Dogs & Cats & Mice");
-  for (ACMatchClassifications::const_iterator diter = content.begin();
-       diter != content.end(); ++diter)
-    EXPECT_GT(page_title.size(), diter->offset);
+  for (ACMatchClassifications::const_iterator diter = description.begin();
+       diter != description.end(); ++diter)
+    EXPECT_LT(diter->offset, page_title.size());
 }
 
 TEST_F(HistoryQuickProviderTest, Spans) {

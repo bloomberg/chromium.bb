@@ -4,6 +4,8 @@
 
 #include "chrome/browser/autocomplete/history_quick_provider.h"
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
@@ -94,13 +96,20 @@ void HistoryQuickProvider::DoAutocomplete() {
   if (matches.empty())
     return;
 
+  // Artificially reduce the score of high-scoring results which should not be
+  // inline autocompletd. Each such result gets the next available
+  // |next_dont_inline_score|. Upon use of next_dont_inline_score it is
+  // decremented.
+  int next_dont_inline_score = 1199;
   size_t match_num = matches.size() - 1;
   for (ScoredHistoryMatches::const_iterator match_iter = matches.begin();
        match_iter != matches.end(); ++match_iter, --match_num) {
     const ScoredHistoryMatch& history_match(*match_iter);
     if (history_match.raw_score > 0) {
       AutocompleteMatch ac_match =
-          QuickMatchToACMatch(history_match, match_num);
+          QuickMatchToACMatch(history_match, match_num,
+              autocomplete_input_.prevent_inline_autocomplete(),
+              &next_dont_inline_score);
       matches_.push_back(ac_match);
     }
   }
@@ -108,35 +117,57 @@ void HistoryQuickProvider::DoAutocomplete() {
 
 AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
     const ScoredHistoryMatch& history_match,
-    size_t match_number) {
+    size_t match_number,
+    bool prevent_inline_autocomplete,
+    int* next_dont_inline_score) {
+  DCHECK(next_dont_inline_score);
   const history::URLRow& info = history_match.url_info;
   int score = CalculateRelevance(history_match.raw_score,
                                  autocomplete_input_.type(),
                                  NORMAL, match_number);
+
+  // Discount a very high score when a) a match doesn't start at the beginning
+  // of the URL, or b) there are more than one substring matches in the URL, or
+  // c) the type of request does not allow inline autocompletion. This prevents
+  // the URL from being offered as an inline completion.
+  const int kMaxDontInlineScore = 1199;
+  if (score > kMaxDontInlineScore &&
+      (prevent_inline_autocomplete || history_match.url_matches.size() > 1 ||
+       history_match.url_matches[0].offset > 0)) {
+    score = std::min(*next_dont_inline_score, score);
+    --*next_dont_inline_score;
+  }
+
   AutocompleteMatch match(this, score, !!info.visit_count(),
                           history_match.url_matches.empty() ?
                           AutocompleteMatch::HISTORY_URL :
                           AutocompleteMatch::HISTORY_TITLE);
+
   match.destination_url = info.url();
   DCHECK(match.destination_url.is_valid());
+
+  // Format the fill_into_edit and determine its offset.
   size_t inline_autocomplete_offset =
       history_match.input_location + autocomplete_input_.text().length();
-  const net::FormatUrlTypes format_types = net::kFormatUrlOmitAll;
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(info.url(),
-          net::FormatUrl(info.url(), languages_, format_types,
-                         UnescapeRule::SPACES, NULL, NULL,
-                         &inline_autocomplete_offset));
+          net::FormatUrl(info.url(), languages_, net::kFormatUrlOmitAll,
+          UnescapeRule::SPACES, NULL, NULL, &inline_autocomplete_offset));
   if (!autocomplete_input_.prevent_inline_autocomplete())
     match.inline_autocomplete_offset = inline_autocomplete_offset;
   DCHECK((match.inline_autocomplete_offset == string16::npos) ||
          (match.inline_autocomplete_offset <= match.fill_into_edit.length()));
 
   // Format the URL autocomplete presentation.
-  match.contents = net::FormatUrl(info.url(), languages_, format_types,
-                                  UnescapeRule::SPACES, NULL, NULL, NULL);
-  match.contents_class = SpansFromTermMatch(history_match.url_matches,
-                                            match.contents.size());
+  std::vector<size_t> offsets =
+      InMemoryURLIndex::OffsetsFromTermMatches(history_match.url_matches);
+  match.contents =
+      net::FormatUrlWithOffsets(info.url(), languages_, net::kFormatUrlOmitAll,
+                                UnescapeRule::SPACES, NULL, NULL, &offsets);
+  history::TermMatches new_matches =
+      InMemoryURLIndex::ReplaceOffsetsInTermMatches(history_match.url_matches,
+                                                    offsets);
+  match.contents_class = SpansFromTermMatch(new_matches, match.contents.size());
 
   // Format the description autocomplete presentation.
   match.description = info.title();
@@ -177,7 +208,7 @@ int HistoryQuickProvider::CalculateRelevance(int raw_score,
       return 1200;
 
     default:
-      return 400 + raw_score;
+      return raw_score;
   }
 }
 
@@ -196,12 +227,6 @@ ACMatchClassifications HistoryQuickProvider::SpansFromTermMatch(
   size_t match_count = matches.size();
   for (size_t i = 0; i < match_count;) {
     size_t offset = matches[i].offset;
-    // TODO(mrossetti): Remove the following 'if' when http://crbug.com/77210
-    // has been properly fixed. This guards against trying to highlight
-    // substrings which fall off the end of the string as a result of having
-    // encoded characters in the string.
-    if (offset >= text_length)
-      return spans;
     spans.push_back(ACMatchClassification(offset,
                                           ACMatchClassification::MATCH));
     // Skip all adjacent matches.
