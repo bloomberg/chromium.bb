@@ -703,6 +703,12 @@ void RetrievePropertyOp::OnKeyOpComplete(
 }
 
 std::string RetrievePropertyOp::LookUpInPolicy(const std::string& prop) {
+  if (prop == kDeviceOwner) {
+    const em::PolicyData& data = service_->cached_policy();
+    if (data.has_username() && !data.has_request_token())
+      return data.username();
+    return "";
+  }
   em::ChromeDeviceSettingsProto pol;
   pol.ParseFromString(service_->cached_policy().policy_value());
   if (prop == kAccountsPrefAllowNewUser) {

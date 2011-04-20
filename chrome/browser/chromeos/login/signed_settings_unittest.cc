@@ -490,6 +490,12 @@ TEST_F(SignedSettingsTest, RetrieveProperty) {
   DoRetrieveProperty(fake_prop_, fake_value_, &fake_pol);
 }
 
+TEST_F(SignedSettingsTest, RetrieveOwnerProperty) {
+  em::PolicyData fake_pol = BuildPolicyData(std::vector<std::string>());
+  fake_pol.set_username(fake_email_);
+  DoRetrieveProperty(kDeviceOwner, fake_email_, &fake_pol);
+}
+
 TEST_F(SignedSettingsTest, ExplicitlyAllowNewUsers) {
   em::PolicyData fake_pol = BuildPolicyData(std::vector<std::string>());
   SetAllowNewUsers(true, &fake_pol);
