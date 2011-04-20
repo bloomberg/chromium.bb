@@ -4387,6 +4387,7 @@
    bug_80002a
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:*FileSystemURLRequestJobTest5SetUpEv
 }
 {
