@@ -39,6 +39,10 @@
   handlingSendEvent_ = handlingSendEvent;
 }
 
+- (void)clearIsHandlingSendEvent {
+  [self setHandlingSendEvent:NO];
+}
+
 - (void)sendEvent:(NSEvent*)event {
   chrome_application_mac::ScopedSendingEvent sendingEventScoper;
   for (id<CrApplicationEventHookProtocol> handler in eventHooks_.get()) {

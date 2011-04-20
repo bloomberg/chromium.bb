@@ -28,6 +28,10 @@
 }
 - (BOOL)isHandlingSendEvent;
 
+// Unconditionally clears |handlingSendEvent_|.  This should not be
+// used except in recovering from some sort of exceptional condition.
+- (void)clearIsHandlingSendEvent;
+
 // Add or remove an event hook to be called for every sendEvent:
 // that the application receives.  These handlers are called before
 // the normal [NSApplication sendEvent:] call is made.

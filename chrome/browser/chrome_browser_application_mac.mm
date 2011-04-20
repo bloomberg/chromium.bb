@@ -341,6 +341,15 @@ BOOL SwizzleNSExceptionInit() {
     reportingException = YES;
     chrome_browser_application_mac::RecordExceptionWithUma(anException);
 
+    // http://crbug.com/45928 is a bug about needing to double-close
+    // windows sometimes.  One theory is that |-isHandlingSendEvent|
+    // gets latched to always return |YES|.  Since scopers are used to
+    // manipulate that value, that should not be possible.  One way to
+    // sidestep scopers is setjmp/longjmp (see above).  The following
+    // is to "fix" this while the more fundamental concern is
+    // addressed elsewhere.
+    [self clearIsHandlingSendEvent];
+
     // Store some human-readable information in breakpad keys in case
     // there is a crash.  Since breakpad does not provide infinite
     // storage, we track two exceptions.  The first exception thrown
