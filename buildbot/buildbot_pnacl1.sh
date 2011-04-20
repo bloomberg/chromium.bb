@@ -119,7 +119,7 @@ ad-hoc-shared-lib-tests() {
   popd
 }
 
-readonly SCONS_COMMON="./scons --verbose bitcode=1 -j8 -k"
+readonly SCONS_COMMON="./scons --verbose bitcode=1 -k"
 
 single-scons-test() {
   local platform=$1
@@ -153,7 +153,7 @@ mode-trybot() {
   clobber
   install-lkgr-toolchains
   partial-sdk "arm x86-32 x86-64"
-  scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl" "smoke_tests"
+  scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j8" "smoke_tests"
   ad-hoc-shared-lib-tests
 }
 
@@ -162,9 +162,9 @@ mode-buildbot-x8632() {
   install-lkgr-toolchains
   partial-sdk "x86-32"
   # First build everything
-  scons-tests "x86-32" "--mode=opt-host,nacl" ""
+  scons-tests "x86-32" "--mode=opt-host,nacl -j8" ""
   # Then test (not all nexes which are build are also tested)
-  scons-tests "x86-32" "--mode=opt-host,nacl" "smoke_tests"
+  scons-tests "x86-32" "--mode=opt-host,nacl -j8" "smoke_tests"
   # this really tests arm and x86-32
   ad-hoc-shared-lib-tests
 }
@@ -174,9 +174,9 @@ mode-buildbot-x8664() {
   install-lkgr-toolchains
   partial-sdk "x86-64"
   # First build everything
-  scons-tests "x86-64" "--mode=opt-host,nacl" ""
+  scons-tests "x86-64" "--mode=opt-host,nacl -j8" ""
   # Then test (not all nexes which are build are also tested)
-  scons-tests "x86-64" "--mode=opt-host,nacl" "smoke_tests"
+  scons-tests "x86-64" "--mode=opt-host,nacl -j8" "smoke_tests"
 }
 
 # These names were originally botnames
@@ -201,17 +201,17 @@ mode-buildbot-arm() {
 }
 
 mode-buildbot-arm-dbg() {
-  mode-buildbot-arm "--mode=dbg-host,nacl"
+  mode-buildbot-arm "--mode=dbg-host,nacl -j8"
   archive-for-hw-bots between_builders/${NAME_ARM_DBG}/build.tgz
 }
 
 mode-buildbot-arm-opt() {
-  mode-buildbot-arm "--mode=opt-host,nacl"
+  mode-buildbot-arm "--mode=opt-host,nacl -j8"
   archive-for-hw-bots between_builders/${NAME_ARM_OPT}/build.tgz
 }
 
 mode-buildbot-arm-try() {
-  mode-buildbot-arm "--mode=opt-host,nacl"
+  mode-buildbot-arm "--mode=opt-host,nacl -j8"
   archive-for-hw-bots between_builders/${NAME_ARM_TRY}/build.tgz
 }
 
@@ -243,7 +243,7 @@ mode-buildbot-arm-hw-try() {
 mode-utman() {
   # turn verbose mode off
   set +o xtrace
-  scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl" "smoke_tests"
+  scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j8" "smoke_tests"
   ad-hoc-shared-lib-tests
 }
 ######################################################################
