@@ -506,6 +506,10 @@ class TaskManagerBrowserProcessResource : public TaskManager::Resource {
   virtual bool ReportsSqliteMemoryUsed() const OVERRIDE;
   virtual size_t SqliteMemoryUsedBytes() const OVERRIDE;
 
+  virtual bool ReportsV8MemoryStats() const OVERRIDE;
+  virtual size_t GetV8MemoryAllocated() const OVERRIDE;
+  virtual size_t GetV8MemoryUsed() const OVERRIDE;
+
  private:
   base::ProcessHandle process_;
   mutable string16 title_;

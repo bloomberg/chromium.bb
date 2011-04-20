@@ -30,6 +30,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/browser_child_process_host.h"
@@ -44,6 +45,7 @@
 #include "third_party/sqlite/sqlite3.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "v8/include/v8.h"
 
 #if defined(OS_MACOSX)
 #include "skia/ext/skia_utils_mac.h"
@@ -1553,6 +1555,28 @@ void TaskManagerBrowserProcessResource::SetSupportNetworkUsage() {
 
 bool TaskManagerBrowserProcessResource::ReportsSqliteMemoryUsed() const {
   return true;
+}
+
+// BrowserProcess uses v8 for proxy resolver in certain cases.
+bool TaskManagerBrowserProcessResource::ReportsV8MemoryStats() const {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  bool using_v8 = !command_line->HasSwitch(switches::kWinHttpProxyResolver);
+  if (using_v8 && command_line->HasSwitch(switches::kSingleProcess)) {
+    using_v8 = false;
+  }
+  return using_v8;
+}
+
+size_t TaskManagerBrowserProcessResource::GetV8MemoryAllocated() const {
+  v8::HeapStatistics stats;
+  v8::V8::GetHeapStatistics(&stats);
+  return stats.total_heap_size();
+}
+
+size_t TaskManagerBrowserProcessResource::GetV8MemoryUsed() const {
+  v8::HeapStatistics stats;
+  v8::V8::GetHeapStatistics(&stats);
+  return stats.used_heap_size();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
