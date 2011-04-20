@@ -513,12 +513,13 @@ or verify this branch is set up to track another (via the --track argument to
 
   def RunHook(self, committing, upstream_branch, tbr, may_prompt, verbose):
     """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
-    root = RunCommand(['git', 'rev-parse', '--show-cdup']).strip()
-    absroot = os.path.abspath(root or '.')
+    root = RunCommand(['git', 'rev-parse', '--show-cdup']).strip() or '.'
+    absroot = os.path.abspath(root)
 
     # We use the sha1 of HEAD as a name of this change.
     name = RunCommand(['git', 'rev-parse', 'HEAD']).strip()
-    files = scm.GIT.CaptureStatus([absroot], upstream_branch)
+    # Need to pass a relative path for msysgit.
+    files = scm.GIT.CaptureStatus([root], upstream_branch)
 
     issue = ConvertToInteger(self.GetIssue())
     patchset = ConvertToInteger(self.GetPatchset())
