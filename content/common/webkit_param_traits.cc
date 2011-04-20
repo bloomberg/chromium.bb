@@ -117,6 +117,8 @@ void ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> >::Write(
     WriteParam(m, p->http_status_text);
     WriteParam(m, p->request_headers);
     WriteParam(m, p->response_headers);
+    WriteParam(m, p->request_headers_text);
+    WriteParam(m, p->response_headers_text);
   }
 }
 
@@ -132,7 +134,9 @@ bool ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> >::Read(
       ReadParam(m, iter, &(*r)->http_status_code) &&
       ReadParam(m, iter, &(*r)->http_status_text) &&
       ReadParam(m, iter, &(*r)->request_headers) &&
-      ReadParam(m, iter, &(*r)->response_headers);
+      ReadParam(m, iter, &(*r)->response_headers) &&
+      ReadParam(m, iter, &(*r)->request_headers_text) &&
+      ReadParam(m, iter, &(*r)->response_headers_text);
 }
 
 void ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> >::Log(

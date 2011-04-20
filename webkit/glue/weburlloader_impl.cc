@@ -225,6 +225,10 @@ void PopulateURLResponse(
         info.devtools_info->http_status_text));
     load_info.setEncodedDataLength(info.encoded_data_length);
 
+    load_info.setRequestHeadersText(WebString::fromUTF8(
+        info.devtools_info->request_headers_text));
+    load_info.setResponseHeadersText(WebString::fromUTF8(
+        info.devtools_info->response_headers_text));
     const HeadersVector& request_headers = info.devtools_info->request_headers;
     for (HeadersVector::const_iterator it = request_headers.begin();
          it != request_headers.end(); ++it) {

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/debugger/devtools_netlog_observer.h"
 
+#include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/io_thread.h"
@@ -11,6 +12,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_net_log_params.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_netlog_params.h"
 #include "webkit/glue/resource_loader_bridge.h"
@@ -107,13 +109,18 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
 
   switch (type) {
     case net::NetLog::TYPE_HTTP_TRANSACTION_SEND_REQUEST_HEADERS: {
+      net::NetLogHttpRequestParameter* request_parameter =
+          static_cast<net::NetLogHttpRequestParameter*>(params);
       const net::HttpRequestHeaders &request_headers =
-          static_cast<net::NetLogHttpRequestParameter*>(params)->GetHeaders();
+          request_parameter->GetHeaders();
       for (net::HttpRequestHeaders::Iterator it(request_headers);
            it.GetNext();) {
         info->request_headers.push_back(std::make_pair(it.name(),
                                                        it.value()));
       }
+      info->request_headers_text =
+          request_parameter->GetLine() +
+          request_parameter->GetHeaders().ToString();
       break;
     }
     case net::NetLog::TYPE_HTTP_TRANSACTION_READ_RESPONSE_HEADERS: {
@@ -126,6 +133,9 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
            response_headers.EnumerateHeaderLines(&it, &name, &value); ) {
         info->response_headers.push_back(std::make_pair(name, value));
       }
+      info->response_headers_text =
+          net::HttpUtil::ConvertHeadersBackToHTTPResponse(
+              response_headers.raw_headers());
       break;
     }
     case net::NetLog::TYPE_HTTP_STREAM_REQUEST_BOUND_TO_JOB: {

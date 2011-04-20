@@ -110,6 +110,8 @@ struct ResourceDevToolsInfo : base::RefCounted<ResourceDevToolsInfo> {
   std::string http_status_text;
   HeadersVector request_headers;
   HeadersVector response_headers;
+  std::string request_headers_text;
+  std::string response_headers_text;
 };
 
 struct ResourceResponseInfo {
