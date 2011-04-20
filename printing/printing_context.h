@@ -99,6 +99,13 @@ class PrintingContext {
   }
 
  protected:
+  // Print job duplex mode values.
+  enum DuplexMode {
+    SIMPLEX,
+    LONG_EDGE,
+    SHORT_EDGE,
+  };
+
   explicit PrintingContext(const std::string& app_locale);
 
   // Reinitializes the settings for object reuse.

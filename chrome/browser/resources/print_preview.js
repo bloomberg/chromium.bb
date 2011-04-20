@@ -245,6 +245,22 @@ function isTwoSided() {
 }
 
 /**
+ * Gets the duplex mode for printing.
+ * @return {number} duplex mode.
+ */
+function getDuplexMode() {
+  // Constants values matches printing::PrintingContext::DuplexMode enum.
+  const SIMPLEX = 0;
+  const LONG_EDGE = 1;
+  const SHORT_EDGE = 2;
+
+  if (!isTwoSided())
+    return SIMPLEX;
+
+  return $('long-edge').checked ? LONG_EDGE : SHORT_EDGE;
+}
+
+/**
  * Creates a JSON string based on the values in the printer settings.
  *
  * @return {string} JSON string with print job settings.
@@ -261,7 +277,7 @@ function getSettingsJSON() {
   return JSON.stringify({'printerName': printerName,
                          'pageRange': getSelectedPageRanges(),
                          'printAll': printAll,
-                         'twoSided': isTwoSided(),
+                         'duplex': getDuplexMode(),
                          'copies': getCopies(),
                          'collate': isCollated(),
                          'landscape': isLandscape(),

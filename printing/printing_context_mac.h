@@ -65,7 +65,7 @@ class PrintingContextMac : public PrintingContext {
 
   // Sets duplex mode in PMPrintSettings.
   // Returns true if duplex mode is set.
-  bool SetDuplexModeIsTwoSided(bool two_sided);
+  bool SetDuplexModeInPrintSettings(DuplexMode mode);
 
   // Sets output color mode in PMPrintSettings.
   // Returns true if color mode is set.

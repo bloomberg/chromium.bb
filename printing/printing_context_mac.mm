@@ -96,13 +96,13 @@ PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
   std::string printer_name;
   int copies;
   bool collate;
-  bool two_sided;
+  int duplex_mode;
   bool color;
   if (!job_settings.GetBoolean(kSettingLandscape, &landscape) ||
       !job_settings.GetString(kSettingPrinterName, &printer_name) ||
       !job_settings.GetInteger(kSettingCopies, &copies) ||
       !job_settings.GetBoolean(kSettingCollate, &collate) ||
-      !job_settings.GetBoolean(kSettingTwoSided, &two_sided) ||
+      !job_settings.GetInteger(kSettingDuplexMode, &duplex_mode) ||
       !job_settings.GetBoolean(kSettingColor, &color)) {
     return OnError();
   }
@@ -119,7 +119,7 @@ PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
   if (!SetOrientationIsLandscape(landscape))
     return OnError();
 
-  if (!SetDuplexModeIsTwoSided(two_sided))
+  if (!SetDuplexModeInPrintSettings(static_cast<DuplexMode>(duplex_mode)))
     return OnError();
 
   if (!SetOutputIsColor(color))
@@ -186,8 +186,20 @@ bool PrintingContextMac::SetOrientationIsLandscape(bool landscape) {
   return true;
 }
 
-bool PrintingContextMac::SetDuplexModeIsTwoSided(bool two_sided) {
-  PMDuplexMode duplexSetting = two_sided ? kPMDuplexNoTumble : kPMDuplexNone;
+bool PrintingContextMac::SetDuplexModeInPrintSettings(DuplexMode mode) {
+  PMDuplexMode duplexSetting;
+  switch (mode) {
+    case LONG_EDGE:
+      duplexSetting = kPMDuplexNoTumble;
+      break;
+    case SHORT_EDGE:
+      duplexSetting = kPMDuplexTumble;
+      break;
+    default:
+      duplexSetting = kPMDuplexNone;
+      break;
+  }
+
   PMPrintSettings pmPrintSettings =
       static_cast<PMPrintSettings>([print_info_.get() PMPrintSettings]);
   return PMSetDuplex(pmPrintSettings, duplexSetting) == noErr;

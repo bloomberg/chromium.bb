@@ -15,6 +15,9 @@ const char kSettingColor[] = "color";
 // Number of copies.
 const char kSettingCopies[] = "copies";
 
+// Print job duplex mode.
+const char kSettingDuplexMode[] = "duplex";
+
 // Page orientation: true for landscape, false for portrait.
 const char kSettingLandscape[] = "landscape";
 
@@ -23,8 +26,5 @@ const char kSettingPrinterName[] = "printerName";
 
 // Print to PDF option: true if selected, false if not.
 const char kSettingPrintToPDF[] = "printToPDF";
-
-// Print job duplex setting.
-const char kSettingTwoSided[] = "twoSided";
 
 }  // namespace printing
