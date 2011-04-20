@@ -104,9 +104,8 @@ struct SyncEngineEvent {
     CLEAR_SERVER_DATA_FAILED,
   };
 
-  explicit SyncEngineEvent(EventCause cause) : what_happened(cause),
-                                               snapshot(NULL) {
-}
+  explicit SyncEngineEvent(EventCause cause);
+  ~SyncEngineEvent();
 
   EventCause what_happened;
 
