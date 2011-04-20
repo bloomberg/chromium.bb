@@ -97,7 +97,9 @@
       'test_basic',
       'themes',
       'sync',
-      '-sync.SyncTest.testDisableAndEnableDatatype',  # crbug.com/80020
+      # crbug.com/80020
+      '-sync.SyncTest.testDisableAndEnableDatatype',
+      '-sync.SyncTest.testRestartBrowser',
     ],
 
     'win': [
