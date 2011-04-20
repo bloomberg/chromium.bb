@@ -40,19 +40,6 @@ div.header {
   cursor: pointer;
 }
 
-.status {
-  position: absolute;
-  display: none;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 24px;
-  border-top-color: #999;
-  border-top-width: 1px;
-  padding-top: 6px;
-  padding-left: 10px;
-  background-image: -webkit-linear-gradient(#D0DAF8, #A6BAF7);
-}
 .deleteYesNoContainer {
   display: -webkit-box;
   -webkit-box-align: center;
@@ -259,6 +246,18 @@ li.filebrowserow {
   position: absolute;
 }
 
+.showalldownloads {
+  width: 100%;
+  bottom: 5px;
+  cursor: pointer;
+  color: blue;
+  font-size: 12px;
+  text-align: center;
+  text-decoration: underline;
+  position: absolute;
+  margin-left: -22px;
+}
+
 li.filebrowserow:hover {
   background: #ebeff9;
   cursor: pointer;
@@ -319,7 +318,6 @@ div.controlbutton {
 }
 
 div.controlbutton:hover {
-
   background: -webkit-linear-gradient(#FFF, #D9E0F6);
 }
 
@@ -424,12 +422,6 @@ div.cancelbutton {
   margin: 3px;
 }
 
-#newfolderbutton {
-  bottom: 3px;
-  left: 10px;
-  position: absolute;
-}
-
 div.disabled {
   color: gray;
   cursor: default;
@@ -458,61 +450,7 @@ div.container {
   position: absolute;
   width: 100%;
   left: 0;
-  bottom: 0;
-}
-
-div.containerwithopenbuttons {
-  top: 0;
-  position: absolute;
-  right: 0;
-  border: 1px solid #C2C2C2;
-  margin: 4px;
-  left: 0;
-  bottom: 30px;
-}
-
-div.containerwithsavebuttons {
-  top: 0;
-  position: absolute;
-  right: 0;
-  margin: 4px;
-  border: 1px solid #C2C2C2;
-  left: 0;
-  bottom: 60px;
-}
-
-div.fullcontainer {
-  top: 0px;
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  right: 600px;
-  overflow-y: hidden;
-  overflow-x: scroll;
-}
-
-.popout {
-  right: 10px;
-  top: 10px;
-  width: 15px;
-  text-align: center;
-  height: 10px;
-  font-size: .4em;
-  background: rgb(239, 242, 249);
-  cursor: pointer;
-  z-index: 99999;
-  padding-top: 1px;
-  border: 1px solid #999;
-  position: absolute;
-  border-radius: 5px;
-}
-
-.mediacontainer {
-  top: 0;
-  left: 0;
-  position: absolute;
-  width: 100%;
-  height: 100%;
+  bottom: 24px; /* space for Show All Downloads */
 }
 
 .menu {
@@ -605,12 +543,13 @@ function supportsPdf() {
   return 'application/pdf' in navigator.mimeTypes;
 }
 
+function getPathAndFilenameForPath(path) {
+  return path.match(/(.*)[\/\\]([^\/\\]+\.\w+)$/);
+}
+
 var currentSavedPath = '';
-var currentNode = -1;
+var currentNode = 0;
 var menus = [];
-var currentImageMenu = '';
-var inFullMode = false;
-var inSelectMode = false;
 var videoPlaybackElement = null;
 var photoPreviewElement = null;
 var numColumns = 0;
@@ -622,216 +561,51 @@ var multiSelect = false;
 var selectFolder = false;
 var inSaveMode = false;
 var currentMenu = null;
-var mainColumn = null;
 var localStrings;
 var downloadList = [];
-var advancedEnabled = false;
 var mediaPlayerEnabled = false;
-// strings
-var kPauseDownload;
-var kResumeDownload;
-  
-function load() {
-  console.log('load');
+
+function init() {
   localStrings = new LocalStrings();
-  kPauseDownload = localStrings.getString('pause');
-  kResumeDownload = localStrings.getString('resume');
 
-  mainColumn = $('main');  
   $('header').style.display = 'none';
-  if (document.documentElement.clientWidth <= 600) {
-    inFullMode = false;
-    if (chrome.dialogArguments) {
-      var args = JSON.parse(chrome.dialogArguments);
-      if (args.type == 'open') {
-        multiSelect = false;
-        selectFolder = false;
-      } else if (args.type == 'save') {
-        inSaveMode = true;
-        selectFolder = false;
-      } else if (args.type == 'open_multiple') {
-        multiSelect = true;
-        selectFolder = false;
-      } else if (args.type == 'folder') {
-        multiSelect = false;
-        selectFolder = true;
-      } else {
-        alert('got unknown type' + args.type);
+  currentSavedPath = localStrings.getString('downloadpath');
+
+  $('showalldownloads').textContent = 
+      localStrings.getString('showalldownloads');
+
+  var main = $('main');  
+  main.addEventListener('dragover', function(e) {
+    if (e.preventDefault) e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    return false;
+  }, false);
+  main.addEventListener('drop', function(e) {
+    if (e.stopPropagation) e.stopPropagation();
+    var src = e.dataTransfer.getData('Text');
+    var path = getPathAndFilenameForPath(src);
+    var dest = currentSavedPath + '/' + path[2];
+    var dirId = $('list/dir/' + currentSavedPath);
+    if (dirId) {
+      var element = $(dest);
+      if (!element) {
+        // TODO(dhg): We probably should do some checking for
+        // existance.
+        element = createNewFakeItem(path[2], dest);
       }
-      inSelectMode = true;
-      if (inSaveMode) {
-        var main = mainColumn;
-        main.className = 'containerwithsavebuttons';
-        var savemenu = document.createElement('div');
-        savemenu.className = 'savecontainer';
-
-        // The container is used for placing buttons horizontally.
-        var buttonsContainer = document.createElement('div');
-        buttonsContainer.className = 'buttonscontainer';
-        savemenu.appendChild(buttonsContainer);
-
-        var savebutton = document.createElement('button');
-        savebutton.id = 'savebutton';
-        savebutton.className = 'openbutton disabled';
-        savebutton.onclick = dialogSaveClick;
-        savebutton.textContent = localStrings.getString('save');
-        buttonsContainer.appendChild(savebutton);
-
-        var cancelbutton = document.createElement('button');
-        cancelbutton.className = 'cancelbutton';
-        cancelbutton.textContent = localStrings.getString('confirmcancel');
-        cancelbutton.onclick = dialogCancelClick;
-        buttonsContainer.appendChild(cancelbutton);
-
-        var filenameprompt = document.createElement('div');
-        filenameprompt.className = 'filenameprompt';
-        filenameprompt.textContent = localStrings.getString('filenameprompt');
-        savemenu.appendChild(filenameprompt);
-
-        var backbutton = $('back');
-        if (backbutton) {
-          backbutton.style.top = '5px';
-        }
-
-        var filename = document.createElement('input');
-        filename.className = 'filename';
-        filename.id = 'filename';
-        filename.value = args.current_file;
-        savemenu.appendChild(filename);
-        
-        document.body.appendChild(savemenu);
-        // Give focus to the save button. This has to be done after the
-        // parent node is added to document.body.
-        savebutton.focus();
-
-      } else {
-        var main = mainColumn;
-        main.className = 'containerwithopenbuttons';
-        var openmenu = document.createElement('div');
-        openmenu.className = 'opencontainer';
-        var openbutton = document.createElement('button');
-        openbutton.id = 'openbutton';
-        openbutton.className = 'openbutton disabled';
-        var cancelbutton = document.createElement('button');
-        cancelbutton.className = 'cancelbutton';
-        openmenu.appendChild(openbutton);
-        openbutton.onclick = dialogOkClick;
-        openmenu.appendChild(cancelbutton);
-        cancelbutton.onclick = dialogCancelClick;
-        openbutton.textContent = localStrings.getString('open');
-        cancelbutton.textContent = localStrings.getString('confirmcancel');
-        document.body.appendChild(openmenu);
-        var backbutton = $('back');
-        if (backbutton) {
-          backbutton.style.top = '5px';
-        }
-      }
+      dirId.appendChild(element);
+      element.scrollIntoView();
     }
-  } else {
-    var main = mainColumn;
-    main.className = 'fullcontainer';
-    var innerContainer = document.createElement('div');
-    innerContainer.className = 'container';
-    innerContainer.id = 'inner';
-    main.appendChild(innerContainer);
-    inFullMode = true;
-    $('back').style.display = 'none';
-  }
-
-  if (document.location.href.indexOf('#') != -1) {
-    var currentpathArray = document.location.href.split('#');
-    var path = currentpathArray[1];
-    if (path == 'scanningdevice') {
-      setUpForScanning();
-    } else {
-      currentNode++;
-      currentSavedPath = path;
-      getDataForPath(path);
-    }
-  } else {
-    currentNode++;
-    if (advancedEnabled) {
-      currentSavedPath = 'roots';
-      getDataForPath('roots');
-    } else {
-      currentSavedPath = localStrings.getString('downloadpath');
-      getDataForPath(currentSavedPath);
-    }
-  }
+    chrome.send('copyFile', [src, dest]);
+    return false;
+  }, false);
+  var downloadpath = localStrings.getString('downloadpath')
+  main.id = 'dir/' + downloadpath;
+  divArray.push(main);
+  document.location.hash = downloadpath;
+  var name = downloadpath.split('/').pop();
+  createNewList(name, [], main, downloadpath);
   chrome.send('getDownloads', []);
-}
-
-function isPathUnderRoot(path, includeRoot) {
-  var downloadpath = localStrings.getString('downloadpath');
-  return (!includeRoot || path !== downloadpath) 
-    && path.search(downloadpath) === 0;
-}
-
-function goBackInList() {
-  currentNode--;
-  if (isPathUnderRoot(currentSavedPath, true)) {
-    var c = currentSavedPath.split('/');
-    c.pop();
-    currentSavedPath = c.join('/');
-  } else {
-    currentSavedPath = 'roots';
-  }
-  getDataForPath(currentSavedPath);
-}
-
-function toggleFullscreen() {
-  if (videoPlaybackElement != null) {
-    if (videoPlaybackElement.className == 'fullscreenplayback') {
-      videoPlaybackElement.className = 'playbackelement';
-    } else {
-      videoPlaybackElement.className = 'fullscreenplayback';
-    }
-  }
-}
-
-var lastScrollLeft = 0;
-function animateScrollRight() {
-
-  var main = mainColumn;
-  main.scrollLeft += 20;
-  // since if its larger than a size, we know we reached the leftmost part when
-  // it stops growing, so clear it out and no more timeouts.
-  if (lastScrollLeft != main.scrollLeft) {
-    lastScrollLeft = main.scrollLeft;
-    setTimeout('animateScrollRight()', 15);
-  } else {
-    lastScrollLeft = 0;
-  }
-
-}
-
-function getCurrentContainer() {
-  if (inFullMode) {
-    var newContainer = document.createElement('div');
-    var main = $('inner');
-    numColumns++;
-    main.style.width = (numColumns * 250) + 'px';
-    newContainer.className = 'column';
-    main.appendChild(newContainer);
-    animateScrollRight();
-    return newContainer;
-  } else {
-    return mainColumn;
-  }
-}
-
-function clearList(list) {
-  if (list.hasChildNodes()) {
-    while (list.childNodes.length >= 1) {
-      list.removeChild(list.firstChild);
-    }
-  }
-}
-
-function rootsChanged() {
-  if (inFullMode) {
-    chrome.send('getRoots', []);
-  }
 }
 
 function browseFileResult(info, results) {
@@ -842,41 +616,13 @@ function browseFileResult(info, results) {
       clearList(rootsDiv);
       createNewList(lastDir, results, rootsDiv, info.path);
     } else {
-      var main = getCurrentContainer();
+      var main = $('main');  
       rootsDiv = main;
       divArray.push(main);
       createNewList(lastDir, results, main, info.path);
     }
   } else if (info.functionCall == 'getChildren') {
-    var main = getCurrentContainer();
-    main.addEventListener('dragover', function(e) {
-      if (e.preventDefault) e.preventDefault();
-      e.dataTransfer.dropEffect = 'copy';
-      return false;
-    }, false);
-    main.addEventListener('drop', function(e) {
-      if (e.stopPropagation) e.stopPropagation();
-      var src = e.dataTransfer.getData('Text');
-      var path = getPathAndFilenameForPath(src);
-      var dest = currentSavedPath + '/' + path[2];
-      var dirId = $('list/dir/' + currentSavedPath);
-      if (dirId) {
-        var element = $(dest);
-        if (!element) {
-          // TODO(dhg): We probably should do some checking for
-          // existance.
-          element = createNewFakeItem(path[2], dest, false, true);
-        }
-        dirId.appendChild(element);
-        element.scrollIntoView();
-      }
-      chrome.send('copyFile', [src, dest]);
-      return false;
-    }, false);
-    main.id = 'dir/' + info.path;
-    divArray.push(main);
-    document.location.hash = info.path;
-    createNewList(lastDir, results, main, info.path);
+    init();
   } else if (info.functionCall == 'refresh') {
     var main = $('dir/' + info.path);
     if (main) {
@@ -890,15 +636,8 @@ function browseFileResult(info, results) {
   chrome.send('getDownloads', []);
 }
 
-function moveScrollLeft() {
-  var main = mainColumn;
-  main.scrollLeft += 10;
-}
-
-function getClassForPath(path, isDirectory) {
-  if (isDirectory) {
-    return 'icon iconfolder';
-  } else if (pathIsImageFile(path)) {
+function getClassForPath(path) {
+  if (pathIsImageFile(path)) {
     return 'icon iconphoto';
   } else if (pathIsVideoFile(path)) {
     return 'icon iconmedia';
@@ -906,96 +645,6 @@ function getClassForPath(path, isDirectory) {
     return 'icon iconmusic';
   }
   return 'icon iconfile';
-}
-
-function getDataForPath(path) {
-  if (path == 'roots') {
-    chrome.send('getRoots', []);
-  } else {
-    chrome.send('getChildren', [path]);
-  }
-}
-
-function setUpForScanning() {
-  var header = $('header');
-  document.body.removeChild(header);
-  var main = mainColumn;
-  main.className = 'scanningcontainer';
-  main.textContent = localStrings.getString('scanning');
-}
-
-function dialogOkClick() {
-  if (currentlySelectedPaths.length == 0) {
-    return;
-  }
-  if (!multiSelect) {
-    chrome.send('DialogClose',
-                [JSON.stringify({'path' : currentlySelectedPaths[0]})]);
-  } else {
-    chrome.send('DialogClose',
-                [JSON.stringify({'path' : currentlySelectedPaths})]);
-  }
-}
-
-function dialogCancelClick() {
-  chrome.send('DialogClose', ['']);
-}
-
-function dialogSaveClick() {
-  var filenameInput = $('filename');
-  var filename = filenameInput.value;
-  var currentPath = currentSavedPath;
-  if (currentPath == 'roots') {
-    return;
-  }
-  currentPath += '/';
-  currentPath += filename;
-  chrome.send('validateSavePath', [currentPath]);
-
-  filenameInput.disabled = true;
-  $('savebutton').disabled = true;
-}
-
-function onValidatedSavePath(valid, savePath) {
-  var filenameInput = $('filename');
-
-  filenameInput.disabled = false;
-  $('savebutton').disabled = false;
-
-  if (valid) {
-    filenameInput.classList.remove('error');
-    chrome.send('DialogClose', [JSON.stringify({'path' : savePath})]);
-  } else {
-    filenameInput.classList.add('error');
-  }
-}
-
-function createNewFormItem(
-    initialName, isDirectory, id, blurcallback, keypresscallback) {
-  var element = document.createElement('li');
-  element.className = 'filebrowserow';
-  element.id = 'listItem' + elementIdCounter;
-  elementIdCounter++;
-
-  var link;
-  link = document.createElement('div');
-  link.className = 'rowlink';
-
-  var icon = document.createElement('div');
-  icon.className = getClassForPath('', isDirectory);
-  link.appendChild(icon);
-  var input = document.createElement('input');
-  input.className = 'name';
-  input.id = 'newfoldername';
-  input.onblur = blurcallback;
-  input.onkeypress = keypresscallback;
-
-  input.value = initialName;
-  link.appendChild(input);
-
-  element.appendChild(link);
-
-  return element;
 }
 
 function deleteFile(path) {
@@ -1033,24 +682,20 @@ function deleteFileConfirm(path) {
   window.event.stopPropagation();
 }
 
-function getDirectoryForPath(path) {
-  var index = path.lastIndexOf('/');
-  if (index == -1) {
-    return path;
-  }
-  return path.substr(path, index);
-}
-
 function pauseToggleDownload(id) {
   var element = $('downloaditem' + id);
-  if (element.textContent == kPauseDownload) {
-    element.textContent = kResumeDownload;
+  if (element.textContent == localStrings.getString('pause')) {
+    element.textContent = localStrings.getString('resume');
   } else {
-    element.textContent = kPauseDownload;
+    element.textContent = localStrings.getString('pause');
   }
   // Have to convert to a string, the system wasn't accepting ints
   chrome.send('pauseToggleDownload', ['' + id]);
 }
+
+///////////////////////////////////
+/////////// Downloads /////////////
+///////////////////////////////////
 
 function allowDownload(id, path) {
   var element = $(path);
@@ -1061,7 +706,7 @@ function allowDownload(id, path) {
       pauseDiv.removeChild(pauseDiv.firstChild);
     }
     pauseDiv.onclick = partial(pauseToggleDownload, id);
-    pauseDiv.textContent = kPauseDownload;
+    pauseDiv.textContent = localStrings.getString('pause');
   }
   chrome.send('allowDownload', ['' + id]);
 }
@@ -1070,35 +715,6 @@ function cancelDownload(id, path) {
   var element = $(path);
   element.removeAttribute('dangerous');
   chrome.send('cancelDownload', ['' + id]);
-}
-
-function getPathAndFilenameForPath(path) {
-  return path.match(/(.*)[\/\\]([^\/\\]+\.\w+)$/);
-}
-
-function newDownload(results) {
-  console.log('newDownload');
-  console.log(results);
-  for (var x = 0; x < results.length; x++) {
-    var element = $(results[x].file_path);
-    if (!element &&
-        results[x].state != 'CANCELLED' &&
-        results[x].state != 'INTERRUPTED') {
-      var extracted = getPathAndFilenameForPath(results[x].file_path);
-      var dirId = $('list/dir/' + extracted[1]);
-      if (dirId) {
-        element =
-            createNewItem(results[x].file_name, results[x].file_path, false);
-        downloadList.push(element);
-        if (dirId.firstChild) {
-          dirId.insertBefore(element, dirId.firstChild);
-        } else {
-          dirId.appendChild(element);
-        }
-        element.scrollIntoView();
-      }
-    }
-  }
 }
 
 function removeDownload(element, dirId) {
@@ -1133,8 +749,6 @@ function removeDownload(element, dirId) {
 }
 
 function downloadsList(results) {
-  console.log('downloadsList');
-  console.log(results);
   var removeDownloads = [];
   removeDownloads.pushUnique = function(element) {
   if (this.indexOf(element) === -1) {
@@ -1167,11 +781,7 @@ function downloadsList(results) {
   }
 }
 
-var debugElem;
-
 function downloadUpdated(result) {
-  console.log('downloadUpdated');
-  console.log(result);
   var element = $(result.file_path);
   var extracted = getPathAndFilenameForPath(result.file_path);
   var dirId = $('list/dir/' + extracted[1]);
@@ -1179,7 +789,7 @@ function downloadUpdated(result) {
       result.state != 'CANCELLED' &&
       result.state != 'INTERRUPTED') {
     if (dirId) {
-      element = createNewItem(result.file_name, result.file_path, false);
+      element = createNewItem(result.file_name, result.file_path);
       if (dirId.firstChild) {
         dirId.insertBefore(element, dirId.firstChild);
       } else {
@@ -1189,7 +799,6 @@ function downloadUpdated(result) {
     }
   }
   if (element) {
-    debugElem = element;
     if (result.state == 'CANCELLED' ||
         result.state == 'INTERRUPTED') {
       element.parentNode.removeChild(element);
@@ -1240,14 +849,16 @@ function downloadUpdated(result) {
         element.appendChild(pauseDiv);
       }
       var pauseDiv = $('downloaditem' + result.id);
+      var pauseStr = localStrings.getString('pause');
+      var resumeStr = localStrings.getString('resume');
       if (pauseDiv &&
           result.state == 'PAUSED' &&
-          pauseDiv.textContent != kResumeDownload) {
-        pauseDiv.textContent = kResumeDownload;
+          pauseDiv.textContent != resumeStr) {
+        pauseDiv.textContent = resumeStr;
       } else if (pauseDiv &&
                  result.state == 'IN_PROGRESS' &&
-                 pauseDiv.textContent != kPauseDownload) {
-        pauseDiv.textContent = kPauseDownload;
+                 pauseDiv.textContent != pauseStr) {
+        pauseDiv.textContent = pauseStr;
       }
       if (result.percent < 100 &&
           result.state != 'DANGEROUS') {
@@ -1266,52 +877,51 @@ function removeChildByClassName(element, className) {
   div && element.removeChild(div);
 }
 
-function removeDownloadIfDone(element, dirId) {
-  return;
-  var len = downloadList.length;
-  while (len--) {
-    if (element.title === downloadList[len].title) {
-      if (element.id !== downloadList[len].id) {
-        // Dangerous download.
-        removeDownload(downloadList[len], dirId);
-      } else {
-        removeDownload(downloadList[len]);
-      }
-      break;
+function fixTitleForItem(element, result) {
+  element.title = result.file_name;
+  // This is a bit fragile.
+  element.getElementsByTagName('span')[0].textContent = result.file_name;
+}
+
+function showAllDownloads() {
+  chrome.send('openNewFullWindow', ['chrome://downloads']);
+  dialogClose();
+}
+
+function dialogClose() {
+  chrome.send('DialogClose', ['']);
+}
+
+function toggleFullscreen() {
+  if (videoPlaybackElement != null) {
+    if (videoPlaybackElement.className == 'fullscreenplayback') {
+      videoPlaybackElement.className = 'playbackelement';
+    } else {
+      videoPlaybackElement.className = 'fullscreenplayback';
     }
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Document Functions:
-/**
- * Window onload handler, sets up the page.
- */
-
-function jumpToNode(nodeNumber) {
-  if (currentNode == nodeNumber) {
-    return;
+var lastScrollLeft = 0;
+function animateScrollRight() {
+  var main = $('main');  
+  main.scrollLeft += 20;
+  // since if its larger than a size, we know we reached the leftmost part when
+  // it stops growing, so clear it out and no more timeouts.
+  if (lastScrollLeft != main.scrollLeft) {
+    lastScrollLeft = main.scrollLeft;
+    setTimeout('animateScrollRight()', 15);
+  } else {
+    lastScrollLeft = 0;
   }
-  if (inFullMode) {
-    var main = $('inner');
-    for (var x = (nodeNumber + 1); x < divArray.length; x++) {
-      main.removeChild(divArray[x]);
-      numColumns--;
-    }
-    divArray = divArray.slice(0, nodeNumber + 1);
-  }
-  currentNode = nodeNumber;
 }
 
-function descend(path, nodeNumber) {
-  jumpToNode(nodeNumber);
-  currentNode++;
-  if (selectFolder) {
-    currentlySelectedPaths = [];
-    currentlySelectedPaths.push(path);
+function clearList(list) {
+  if (list.hasChildNodes()) {
+    while (list.childNodes.length >= 1) {
+      list.removeChild(list.firstChild);
+    }
   }
-  currentSavedPath = path;
-  getDataForPath(path);
 }
 
 function clearPreviewPane() {
@@ -1335,18 +945,7 @@ function enqueueMediaFile(path) {
 }
 
 function showImage(path) {
-  if (inFullMode) {
-    if (photoPreviewElement == null) {
-      photoPreviewElement = document.createElement('img');
-      photoPreviewElement.className = 'imagepreview';
-      photoPreviewElement.src = 'file://' + path;
-      document.body.appendChild(photoPreviewElement);
-    } else {
-      photoPreviewElement.src = 'file://' + path;
-    }
-  } else {
-    chrome.send('openNewFullWindow', ['chrome://slideshow#' + path]);
-  }
+  chrome.send('openNewFullWindow', ['chrome://slideshow#' + path]);
 }
 
 function showPath(path) {
@@ -1359,16 +958,6 @@ function clearMenus() {
     currentMenu.style.opacity = '';
     currentMenu = null;
   }
-}
-
-function uploadImage(path) {
-  var status = $('status');
-  status.style.display = 'block';
-  var extracted = getPathAndFilenameForPath(path);
-  var main = $('dir/' + extracted[1]);
-  main.style.bottom = '30px';
-  status.textContent = 'Uploading';
-  chrome.send('uploadToPicasaweb', [path]);
 }
 
 function showMenu(path) {
@@ -1384,21 +973,6 @@ function showMenu(path) {
     currentMenu.scrollIntoView();
   }
   window.event.stopPropagation();
-}
-
-function uploadComplete(result) {
-  var element = $('status');
-  if (result.status_code == 201) {
-    element.textContent = '';
-    var a = document.createElement('a');
-    a.href = result.url;
-    a.target = '_blank';
-    //TODO(altimofeev): Should really be localStrings.getString(...)
-    a.textContent = 'Uploaded';
-    element.appendChild(a);
-  } else {
-    element.textContent = 'Error';
-  }
 }
 
 function findInArray(arr, element) {
@@ -1456,27 +1030,7 @@ function setItemInfoText(element, text) {
   }
 }
 
-function getUnknownFileTypeHandler() {
-  return function() {
-    var element = event.currentTarget;
-    setItemInfoText(element,
-                    localStrings.getStringF('error_unknown_file_type',
-                    element.childNodes.item(1).textContent));
-  };
-}
-
-function getFunctionForItem(path, id, isDirectory) {
-  if (isDirectory) {
-    return function() {
-      selectItem(id, path);
-      descend(path, currentNode);
-    };
-  }
-  if (inSelectMode) {
-    return function() {
-      selectItem(id, path);
-    };
-  }
+function getFunctionForItem(path, id) {
   if (pathIsAudioFile(path)) {
     return function() {
       playMediaFile(path);
@@ -1489,7 +1043,7 @@ function getFunctionForItem(path, id, isDirectory) {
   }
   if (pathIsImageFile(path)) {
     return function() {
-      showPath(path);
+      showImage(path);
     }
   }
   if (pathIsHtmlFile(path)) {
@@ -1503,33 +1057,22 @@ function getFunctionForItem(path, id, isDirectory) {
     }
   }
 
-  return getUnknownFileTypeHandler();
+  return function() {
+    var element = event.currentTarget;
+    setItemInfoText(element,
+                    localStrings.getStringF('error_unknown_file_type',
+                    element.childNodes.item(1).textContent));
+  };
 }
 
-/**
- * Double click handler for items.
- *
- * @param {string} path The file path of the item.
- * @param {string} id The id for this item.
- * @param {boolean} isDirectory Whether this item is a directory.
- * @return {Function} The function to handle the double click.
- */
-function getDoubleClickForItem(path, id, isDirectory) {
-  if (isDirectory) {
-    return function() {};
-  }
-  if (inSelectMode) {
-    return function() {
-      selectItem(id, path);
-      dialogOkClick();
-    };
-  }
-  return function() {};
-}
+
+////////////////////////////////////////////
+//////////// List Handling /////////////////
+////////////////////////////////////////////
 
 var elementIdCounter = 0;
 
-function createNewFakeItem(title, path, isDirectory, hasspinner) {
+function createNewFakeItem(title, path) {
   var element = document.createElement('li');
 
   element.className = 'filebrowserow';
@@ -1540,7 +1083,7 @@ function createNewFakeItem(title, path, isDirectory, hasspinner) {
   link.className = 'rowlink';
 
   var icon = document.createElement('div');
-  icon.className = getClassForPath(path, isDirectory);
+  icon.className = getClassForPath(path);
   link.appendChild(icon);
 
   var span = document.createElement('span');
@@ -1552,16 +1095,14 @@ function createNewFakeItem(title, path, isDirectory, hasspinner) {
 
   // Setup Menu
   var currentPath = currentSavedPath;
-  if (hasspinner) {
-    var spinicon = document.createElement('div');
-    spinicon.align = 'right';
-    spinicon.className = 'spinicon';
-    element.appendChild(spinicon);
-  }
+  var spinicon = document.createElement('div');
+  spinicon.align = 'right';
+  spinicon.className = 'spinicon';
+  element.appendChild(spinicon);
   return element;
 }
 
-function createNewItem(title, path, isDirectory) {
+function createNewItem(title, path) {
   var element = document.createElement('li');
   element.setAttribute('draggable', 'true');
 
@@ -1572,25 +1113,19 @@ function createNewItem(title, path, isDirectory) {
 
   element.className = 'filebrowserow';
   element.title = title;
-  /*element.id = 'listItem' + elementIdCounter;*/
   element.id = path;
   elementIdCounter++;
   var link;
   link = document.createElement('div');
-  link.onclick = getFunctionForItem(path, element.id, isDirectory);
-  link.ondblclick = getDoubleClickForItem(path, element.id, isDirectory);
+  link.onclick = getFunctionForItem(path, element.id);
   link.className = 'rowlink';
 
   var icon = document.createElement('div');
-  icon.className = getClassForPath(path, isDirectory);
+  icon.className = getClassForPath(path);
   link.appendChild(icon);
 
   var span = document.createElement('span');
-  if (inSelectMode) {
-    span.className = 'name';
-  } else {
-    span.className = 'namelink';
-  }
+  span.className = 'namelink';
   span.textContent = title;
   link.appendChild(span);
 
@@ -1622,84 +1157,35 @@ function createNewItem(title, path, isDirectory) {
     element.appendChild(menuicon);
     menus[path] = menuicon;
   }
-  if (isDirectory) {
-    var rightarrow = document.createElement('span');
-    rightarrow.innerHTML = '&nbsp;&raquo;';
-    rightarrow.className = 'rightarrow';
-    link.appendChild(rightarrow);
-  }
   return element;
-}
-
-function fixTitleForItem(element, result) {
-  element.title = result.file_name;
-  // This is a bit fragile.
-  element.getElementsByTagName('span')[0].textContent = result.file_name;
-}
-
-function clearChildren(element) {
-  element.innerHTML = '';
-}
-
-function popout(path) {
-  var newPath = 'chrome://filebrowse#' + path;
-  chrome.send('openNewPopupWindow', [newPath]);
 }
 
 function createNewList(title, results, main, path) {
   downloadList = [];
-  clearChildren(main);
+  main.innerHTML = '';
 
   var mainList = document.createElement('div');
-  if (advancedEnabled) {
-    mainList.className = 'columnlistadv';
-  } else {
-    mainList.className = 'columnlist';
-  }
+  mainList.className = 'columnlist';
 
   var list = document.createElement('ul');
   list.className = 'filebrowselist';
   list.id = 'list/dir/' + path;
   document.title = title;
-  if (advancedEnabled) {
-    var header = document.createElement('div');
-    header.className = 'header';
-    var divTitle = document.createElement('div');
-    divTitle.className = 'title';
-    if (inFullMode) {
-      divTitle.style['text-align'] = 'center';
-    }
-    divTitle.innerText = title;
-    if (inFullMode && (path.length != 0)) {
-      var popOutButton = document.createElement('div');
-      popOutButton.innerHTML = '&prod;';
-      popOutButton.className = 'popout';
-      popOutButton.onclick = partial(popout, path);
-      header.appendChild(popOutButton);
-    }
-    header.appendChild(divTitle);
-    main.appendChild(header);
-  }
   main.appendChild(mainList);
   for (var x = 0; x < results.length; x++) {
-    var element = createNewItem(results[x].title,
-                                results[x].path,
-                                results[x].isDirectory);
+    var element = createNewItem(results[x].title, results[x].path);
     list.appendChild(element);
   }
   mainList.appendChild(list);
 }
 
 </script>
-<body onload='load();' onclick='clearMenus()' onselectstart='return false'
+<body onload='init();' onclick='clearMenus()' onselectstart='return false'
   i18n-values=".style.fontFamily:fontfamily">
 <div id='header' class=''>
-  <div id='back' class='backbutton controlbutton' onclick='goBackInList();return false;'>
-    <img src="shared/images/filebrowse_back.png">
-  </div>
-  <div id='currenttitle' class=''></div>
+<div id='currenttitle' class=''></div>
 </div><br>
 <div id='main' class='container'></div>
-<div id='status' class='status'></div>
+<div id='showalldownloads' class='showalldownloads' onclick='showAllDownloads()'></div>
 </body>
 </html>

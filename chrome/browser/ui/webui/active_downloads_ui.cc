@@ -121,17 +121,12 @@ class ActiveDownloadsHandler
   virtual void ModelChanged();
 
   // WebUI Callbacks.
-  void HandleGetRoots(const ListValue* args);
-  void HandleGetChildren(const ListValue* args);
-  void HandleRefreshDirectory(const ListValue* args);
   void HandleGetDownloads(const ListValue* args);
   void HandlePauseToggleDownload(const ListValue* args);
   void HandleCancelDownload(const ListValue* args);
   void HandleAllowDownload(const ListValue* args);
-  void HandleIsAdvancedEnabled(const ListValue* args);
   void HandleDeleteFile(const ListValue* args);
   void HandleCopyFile(const ListValue* value);
-  void HandleValidateSavePath(const ListValue* args);
   void OpenNewPopupWindow(const ListValue* args);
   void OpenNewFullWindow(const ListValue* args);
   void PlayMediaFile(const ListValue* args);
@@ -155,7 +150,6 @@ class ActiveDownloadsHandler
   void UpdateDownloadList();
   void ClearDownloadItems();
   void SendDownloads();
-  void SendNewDownload(DownloadItem* item);
 
   bool ValidateSaveDir(const FilePath& save_dir, bool exists) const;
   bool AccessDisabled(const FilePath& path) const;
@@ -281,6 +275,8 @@ void ActiveDownloadsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_FILEBROWSER_DELETE));
   localized_strings.SetString("enqueue",
       l10n_util::GetStringUTF16(IDS_FILEBROWSER_ENQUEUE));
+  localized_strings.SetString("showalldownloads",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_SHOW_ALL_DOWNLOADS));
   FilePath default_download_path;
   if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
                         &default_download_path)) {
@@ -343,12 +339,6 @@ void ActiveDownloadsHandler::Init() {
 }
 
 void ActiveDownloadsHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("getRoots",
-      NewCallback(this, &ActiveDownloadsHandler::HandleGetRoots));
-  web_ui_->RegisterMessageCallback("getChildren",
-      NewCallback(this, &ActiveDownloadsHandler::HandleGetChildren));
-  web_ui_->RegisterMessageCallback("refreshDirectory",
-      NewCallback(this, &ActiveDownloadsHandler::HandleRefreshDirectory));
   web_ui_->RegisterMessageCallback("getDownloads",
       NewCallback(this, &ActiveDownloadsHandler::HandleGetDownloads));
   web_ui_->RegisterMessageCallback("pauseToggleDownload",
@@ -357,14 +347,10 @@ void ActiveDownloadsHandler::RegisterMessages() {
       NewCallback(this, &ActiveDownloadsHandler::HandleCancelDownload));
   web_ui_->RegisterMessageCallback("allowDownload",
       NewCallback(this, &ActiveDownloadsHandler::HandleAllowDownload));
-  web_ui_->RegisterMessageCallback("isAdvancedEnabled",
-      NewCallback(this, &ActiveDownloadsHandler::HandleIsAdvancedEnabled));
   web_ui_->RegisterMessageCallback("deleteFile",
       NewCallback(this, &ActiveDownloadsHandler::HandleDeleteFile));
   web_ui_->RegisterMessageCallback("copyFile",
       NewCallback(this, &ActiveDownloadsHandler::HandleCopyFile));
-  web_ui_->RegisterMessageCallback("validateSavePath",
-      NewCallback(this, &ActiveDownloadsHandler::HandleValidateSavePath));
   web_ui_->RegisterMessageCallback("openNewPopupWindow",
       NewCallback(this, &ActiveDownloadsHandler::OpenNewPopupWindow));
   web_ui_->RegisterMessageCallback("openNewFullWindow",
@@ -389,28 +375,6 @@ void ActiveDownloadsHandler::FireCopyComplete(const FilePath& src,
   GetChildrenForPath(dir_path, true);
 };
 
-void ActiveDownloadsHandler::HandleGetRoots(const ListValue* args) {
-  ListValue results_value;
-  DictionaryValue info_value;
-  FilePath default_download_path;
-  if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
-                        &default_download_path)) {
-    NOTREACHED();
-  }
-
-  DictionaryValue* download_value = new DictionaryValue();
-  download_value->SetString(kPropertyPath, default_download_path.value());
-  download_value->SetString(kPropertyTitle, "File Shelf");
-  download_value->SetBoolean(kPropertyDirectory, true);
-
-  results_value.Append(download_value);
-
-  info_value.SetString("functionCall", "getRoots");
-  info_value.SetString(kPropertyPath, "");
-  web_ui_->CallJavascriptFunction("browseFileResult",
-                                  info_value, results_value);
-}
-
 void ActiveDownloadsHandler::PlayMediaFile(const ListValue* args) {
 #if defined(OS_CHROMEOS)
   FilePath file_path(UTF16ToUTF8(ExtractStringValue(args)));
@@ -430,26 +394,6 @@ void ActiveDownloadsHandler::EnqueueMediaFile(const ListValue* args) {
       &tab_contents_->controller(), NULL);
   MediaPlayer* mediaplayer = MediaPlayer::GetInstance();
   mediaplayer->EnqueueMediaFile(profile_, file_path, browser);
-#endif
-}
-
-void ActiveDownloadsHandler::HandleIsAdvancedEnabled(const ListValue* args) {
-#if defined(OS_CHROMEOS)
-  bool is_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableAdvancedFileSystem);
-  DictionaryValue info_value;
-  info_value.SetBoolean("enabled", is_enabled);
-  info_value.SetBoolean("mpEnabled", true);
-  web_ui_->CallJavascriptFunction("enabledResult", info_value);
-
-#endif
-}
-
-void ActiveDownloadsHandler::HandleRefreshDirectory(const ListValue* args) {
-#if defined(OS_CHROMEOS)
-  std::string path = UTF16ToUTF8(ExtractStringValue(args));
-  FilePath currentpath(path);
-  GetChildrenForPath(currentpath, true);
 #endif
 }
 
@@ -560,16 +504,6 @@ void ActiveDownloadsHandler::GetChildrenForPath(const FilePath& path,
   OnListDone(0);
 }
 
-void ActiveDownloadsHandler::HandleGetChildren(const ListValue* args) {
-#if defined(OS_CHROMEOS)
-  std::string path = UTF16ToUTF8(ExtractStringValue(args));
-  FilePath currentpath(path);
-  filelist_value_.reset(new ListValue());
-
-  GetChildrenForPath(currentpath, false);
-#endif
-}
-
 void ActiveDownloadsHandler::OnListFile(
     const net::DirectoryLister::DirectoryListerData& data) {
 #if defined(OS_WIN)
@@ -618,17 +552,14 @@ void ActiveDownloadsHandler::OnListDone(int error) {
 }
 
 void ActiveDownloadsHandler::ModelChanged() {
-  LOG(INFO) << "ModelChanged";
   UpdateDownloadList();
 }
 
 void ActiveDownloadsHandler::HandleGetDownloads(const ListValue* args) {
-  LOG(INFO) << "HandleGetDownloads";
   UpdateDownloadList();
 }
 
 void ActiveDownloadsHandler::UpdateDownloadList() {
-  LOG(INFO) << "UpdateDownloadList";
   ClearDownloadItems();
   DCHECK(active_download_items_.empty());
 
@@ -645,8 +576,6 @@ void ActiveDownloadsHandler::UpdateDownloadList() {
     // when the user validates the dangerous download.
     if ((item->state() == DownloadItem::IN_PROGRESS ||
          item->safety_state() == DownloadItem::DANGEROUS)) {
-      LOG(INFO) << "UpdateDownloadList " << item << ", "
-        << item->full_path().value();
       item->AddObserver(this);
       active_download_items_.push_back(item);
       AddToDownloads(item);
@@ -656,19 +585,11 @@ void ActiveDownloadsHandler::UpdateDownloadList() {
   SendDownloads();
 }
 
-void ActiveDownloadsHandler::SendNewDownload(DownloadItem* item) {
-  LOG(INFO) << "SendNewDownload " << item->full_path().value();
-  ListValue results_value;
-  results_value.Append(download_util::CreateDownloadItemValue(item, -1));
-  web_ui_->CallJavascriptFunction("newDownload", results_value);
-}
-
 void ActiveDownloadsHandler::SendDownloads() {
   ListValue results;
 
   DownloadList::iterator it = downloads_.begin();
   for (int i = 0; it != downloads_.end(); ++i, ++it) {
-    LOG(INFO) << "SendDownloads " << (*it)->full_path().value();
     results.Append(download_util::CreateDownloadItemValue(*it, i));
   }
 
@@ -676,7 +597,6 @@ void ActiveDownloadsHandler::SendDownloads() {
 }
 
 void ActiveDownloadsHandler::AddToDownloads(DownloadItem* item) {
-  LOG(INFO) << "AddToDownloads " << item->full_path().value();
   if (item && (std::find(downloads_.begin(), downloads_.end(), item) ==
       downloads_.end())) {
     downloads_.push_back(item);
@@ -787,22 +707,6 @@ void ActiveDownloadsHandler::HandleCopyFile(const ListValue* value) {
       return;
     }
   }
-#endif
-}
-
-void ActiveDownloadsHandler::HandleValidateSavePath(const ListValue* args) {
-#if defined(OS_CHROMEOS)
-  std::string string_path;
-  if (!args || !args->GetString(0, &string_path)) {
-    FireOnValidatedSavePathOnUIThread(false, FilePath());  // Invalid save path.
-    return;
-  }
-
-  FilePath save_path(string_path);
-
-  scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr(), save_path);
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(task.get(), &TaskProxy::ValidateSavePathOnFileThread));
 #endif
 }
 
