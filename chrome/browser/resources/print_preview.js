@@ -14,6 +14,11 @@ var totalPageCount = -1;
 // requested more often than necessary.
 var previouslySelectedPages = [];
 
+// The previously selected layout mode. It is used in order to prevent the
+// preview from updating when the user clicks on the already selected layout
+// mode.
+var previouslySelectedLayout = null;
+
 // Timer id of the page range textfield. It is used to reset the timer whenever
 // needed.
 var timerId;
@@ -371,14 +376,15 @@ function onPDFLoad() {
  *
  */
 function updatePrintPreview(pageCount, jobTitle) {
-  // Initialize the expected page count.
   if (totalPageCount == -1)
     totalPageCount = pageCount;
 
-  // Initialize the selected pages (defaults to all selected).
   if (previouslySelectedPages.length == 0)
     for (var i = 0; i < totalPageCount; i++)
       previouslySelectedPages.push(i+1);
+
+  if (previouslySelectedLayout == null)
+    previouslySelectedLayout = $('portrait');
 
   regeneratePreview = false;
 
@@ -549,6 +555,14 @@ function handleIndividualPagesCheckbox() {
  * Even if they are still valid the content of these pages will be different.
  */
 function onLayoutModeToggle() {
+  var currentlySelectedLayout = $('portrait').checked ? $('portrait') :
+      $('landscape');
+
+  // If the chosen layout is same as before, nothing needs to be done.
+  if (previouslySelectedLayout == currentlySelectedLayout)
+    return;
+
+  previouslySelectedLayout = currentlySelectedLayout;
   $('individual-pages').value = '';
   $('all-pages').checked = true;
   totalPageCount = -1;
