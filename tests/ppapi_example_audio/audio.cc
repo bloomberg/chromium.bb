@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <cmath>
 #include <limits>
@@ -64,6 +65,8 @@ class MyInstance : public pp::Instance {
       if (tag == "amplitude_l") amplitude_l_ = strtod(argv[i], 0);
       if (tag == "amplitude_r") amplitude_r_ = strtod(argv[i], 0);
       if (tag == "duration_msec") duration_msec_ = strtod(argv[i], 0);
+      if (tag == "basic_tests") basic_tests_ = (0 != atoi(argv[i]));
+      if (tag == "stress_tests") stress_tests_ = (0 != atoi(argv[i]));
       // ignore other tags
     }
   }
@@ -77,6 +80,8 @@ class MyInstance : public pp::Instance {
         frequency_r_(kDefaultFrequencyRight),
         amplitude_l_(1.0),
         amplitude_r_(1.0),
+        basic_tests_(false),
+        stress_tests_(false),
         duration_msec_(kDefaultDuration),
         obtained_sample_frame_count_(0),
         callback_count_(0) {}
@@ -94,6 +99,7 @@ class MyInstance : public pp::Instance {
           result = "failure: too few callbacks occurred";
         }
       }
+      // At this point, we're done.
     }
     // This Call() fails if exception is allowed to default to
     // NULL.  That is probably a bug, but it doesn't really matter
@@ -105,16 +111,11 @@ class MyInstance : public pp::Instance {
                                      pp::Var(result), &exception);
   }
 
-  virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
-    ParseArgs(argc, argn, argv);
-    obtained_sample_frame_count_ = pp::AudioConfig::RecommendSampleFrameCount(
-        kSampleFrequency, kSampleFrameCount);
+  // To enable basic tests, use basic_tests="1" in the embed tag.
+  void BasicTests() {
     // Verify obtained_sample_frame_count isn't out of range.
     CHECK(obtained_sample_frame_count_ >= PP_AUDIOMINSAMPLEFRAMECOUNT);
     CHECK(obtained_sample_frame_count_ <= PP_AUDIOMAXSAMPLEFRAMECOUNT);
-     pp::AudioConfig config =
-       pp::AudioConfig(this, kSampleFrequency, obtained_sample_frame_count_);
-    audio_ = pp::Audio(this, config, SineWaveCallback, this);
     // Do some sanity checks below; verify c & cpp interfaces agree.
     // Note: This is test code and is not normally needed for an application.
     PPB_GetInterface get_browser_interface =
@@ -127,7 +128,7 @@ class MyInstance : public pp::Instance {
         get_browser_interface(PPB_AUDIO_INTERFACE));
     CHECK(NULL != audio_config_interface);
     CHECK(NULL != audio_interface);
-    PP_Resource audio_config_resource = config.pp_resource();
+    PP_Resource audio_config_resource = config_.pp_resource();
     PP_Resource audio_resource = audio_.pp_resource();
     NaClLog(1, "example: audio config resource: %"NACL_PRId32"\n",
             audio_config_resource);
@@ -141,12 +142,44 @@ class MyInstance : public pp::Instance {
         audio_config_resource);
     CHECK(0 == audio_interface->GetCurrentConfig(audio_config_resource));
     CHECK(audio_config_interface->GetSampleRate(audio_config_resource) ==
-        config.sample_rate());
+        config_.sample_rate());
     CHECK(audio_config_interface->GetSampleFrameCount(audio_config_resource) ==
-        config.sample_frame_count());
+        config_.sample_frame_count());
     CHECK(audio_.config().pp_resource() == audio_config_resource);
+  }
 
-    // Past sanity checks above, attempt to start playback.
+  // To enable stress tests, use stress_tests="1" in the embed tag.
+  void StressTests() {
+    // Attempt to create many audio devices, then immediately shut them down.
+    // Chrome may generate some warnings on the console, but should not crash.
+    const int kNumManyAudio = 1000;
+    pp::Audio* many_audio[kNumManyAudio];
+    for (int i = 0; i < kNumManyAudio; ++i)
+      many_audio[i] = new pp::Audio(this, config_, SilenceCallback, this);
+    for (int i = 0; i < kNumManyAudio; ++i)
+      CHECK(true == many_audio[i]->StartPlayback());
+    for (int i = 0; i < kNumManyAudio; ++i)
+      delete many_audio[i];
+  }
+
+  void TestSuite() {
+    if (basic_tests_)
+      BasicTests();
+    if (stress_tests_)
+      StressTests();
+  }
+
+  virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
+    ParseArgs(argc, argn, argv);
+    obtained_sample_frame_count_ = pp::AudioConfig::RecommendSampleFrameCount(
+        kSampleFrequency, kSampleFrameCount);
+    config_ =
+       pp::AudioConfig(this, kSampleFrequency, obtained_sample_frame_count_);
+    audio_ = pp::Audio(this, config_, SineWaveCallback, this);
+
+    // Run through test suite before attempting real playback.
+    TestSuite();
+
     bool audio_start_playback = audio_.StartPlayback();
     CHECK(true == audio_start_playback);
     // Schedule a callback in 10 seconds to stop audio output
@@ -198,6 +231,13 @@ class MyInstance : public pp::Instance {
     ++instance->callback_count_;
   }
 
+  static void SilenceCallback(void* samples, uint32_t num_bytes, void* thiz) {
+    memset(samples, 0, num_bytes);
+  }
+
+  // Audio config resource. Allocated in Init(), freed on destruction.
+  pp::AudioConfig config_;
+
   // Audio resource. Allocated in Init(), freed on destruction.
   pp::Audio audio_;
 
@@ -211,6 +251,9 @@ class MyInstance : public pp::Instance {
 
   double amplitude_l_;
   double amplitude_r_;
+
+  bool basic_tests_;
+  bool stress_tests_;
 
   uint32_t duration_msec_;
   uint32_t obtained_sample_frame_count_;
