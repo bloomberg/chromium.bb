@@ -72,6 +72,10 @@
   [self configureBookmarkButtonCell];
 }
 
+- (BOOL)isFolderButtonCell {
+  return NO;
+}
+
 // Perform all normal init routines specific to the BookmarkButtonCell.
 - (void)configureBookmarkButtonCell {
   [self setButtonType:NSMomentaryPushInButton];

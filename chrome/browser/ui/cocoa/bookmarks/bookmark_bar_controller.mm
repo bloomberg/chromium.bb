@@ -615,7 +615,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 }
 
 - (IBAction)openBookmark:(id)sender {
-  BOOL isMenuItem = ([sender delegate] == folderController_);
+  BOOL isMenuItem = [[sender cell] isFolderButtonCell];
   BOOL animate = isMenuItem && [self animationEnabled];
   if (animate)
     [self doMenuFlashOnSeparateThread:sender];
