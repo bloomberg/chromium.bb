@@ -775,7 +775,7 @@ void StorePolicyOp::Execute() {
   // get protobuf contents to sign
   if (!policy_->has_policy_data())
     Fail(OPERATION_FAILED);
-  if (!policy_->has_policy_data_signature())
+  else if (!policy_->has_policy_data_signature())
     service_->StartSigningAttempt(policy_->policy_data(), this);
   else
     RequestStorePolicy();
