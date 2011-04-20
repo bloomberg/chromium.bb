@@ -18,6 +18,7 @@
 #include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppb_context_3d_dev.h"
 #include "ppapi/c/dev/ppb_context_3d_trusted_dev.h"
+#include "ppapi/c/dev/ppb_crypto_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_directory_reader_dev.h"
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"

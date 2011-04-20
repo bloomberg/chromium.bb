@@ -238,6 +238,8 @@
         '../plugins/ppapi/ppb_console_impl.h',
         '../plugins/ppapi/ppb_context_3d_impl.cc',
         '../plugins/ppapi/ppb_context_3d_impl.h',
+        '../plugins/ppapi/ppb_crypto_impl.cc',
+        '../plugins/ppapi/ppb_crypto_impl.h',
         '../plugins/ppapi/ppb_cursor_control_impl.cc',
         '../plugins/ppapi/ppb_cursor_control_impl.h',
         '../plugins/ppapi/ppb_directory_reader_impl.cc',

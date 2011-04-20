@@ -14,6 +14,7 @@
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/c/dev/ppb_char_set_dev.h"
 #include "ppapi/c/dev/ppb_context_3d_dev.h"
+#include "ppapi/c/dev/ppb_crypto_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_gles_chromium_texture_mapping_dev.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
@@ -50,6 +51,7 @@
 #include "ppapi/proxy/ppb_console_proxy.h"
 #include "ppapi/proxy/ppb_context_3d_proxy.h"
 #include "ppapi/proxy/ppb_core_proxy.h"
+#include "ppapi/proxy/ppb_crypto_proxy.h"
 #include "ppapi/proxy/ppb_cursor_control_proxy.h"
 #include "ppapi/proxy/ppb_file_chooser_proxy.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
@@ -113,6 +115,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_Console_Proxy::GetInfo());
   AddPPB(PPB_Context3D_Proxy::GetInfo());
   AddPPB(PPB_Core_Proxy::GetInfo());
+  AddPPB(PPB_Crypto_Proxy::GetInfo());
   AddPPB(PPB_CursorControl_Proxy::GetInfo());
   AddPPB(PPB_FileChooser_Proxy::GetInfo());
   AddPPB(PPB_FileRef_Proxy::GetInfo());

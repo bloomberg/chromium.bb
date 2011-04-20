@@ -17,6 +17,7 @@
 #include "ppapi/c/dev/ppb_context_3d_dev.h"
 #include "ppapi/c/dev/ppb_context_3d_trusted_dev.h"
 #include "ppapi/c/dev/ppb_console_dev.h"
+#include "ppapi/c/dev/ppb_crypto_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_directory_reader_dev.h"
 #include "ppapi/c/dev/ppb_file_io_dev.h"
@@ -70,6 +71,7 @@
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
 #include "webkit/plugins/ppapi/ppb_char_set_impl.h"
 #include "webkit/plugins/ppapi/ppb_console_impl.h"
+#include "webkit/plugins/ppapi/ppb_crypto_impl.h"
 #include "webkit/plugins/ppapi/ppb_cursor_control_impl.h"
 #include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_chooser_impl.h"
@@ -241,6 +243,8 @@ const void* GetInterface(const char* name) {
     return PPB_Console_Impl::GetInterface();
   if (strcmp(name, PPB_CORE_INTERFACE) == 0)
     return &core_interface;
+  if (strcmp(name, PPB_CRYPTO_DEV_INTERFACE) == 0)
+    return PPB_Crypto_Impl::GetInterface();
   if (strcmp(name, PPB_CURSOR_CONTROL_DEV_INTERFACE) == 0)
     return GetCursorControlInterface();
   if (strcmp(name, PPB_DIRECTORYREADER_DEV_INTERFACE) == 0)
