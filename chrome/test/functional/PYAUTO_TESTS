@@ -198,8 +198,6 @@
       # crbug.com/70694
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
-      # MakeSearchEngineDefault() automation broken
-      '-search_engines.SearchEnginesTest.testDefaultSearchEngines',
 
       # Needs internal data files.  crosbug.com/6855
       '-browser.BrowserTest.testCanLoadFlash',
