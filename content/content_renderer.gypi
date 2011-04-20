@@ -134,6 +134,8 @@
         'renderer/transport_texture_host.h',
         'renderer/transport_texture_service.cc',
         'renderer/transport_texture_service.h',
+        'renderer/v8_value_converter.cc',
+        'renderer/v8_value_converter.h',
         'renderer/video_decode_accelerator_host.cc',
         'renderer/video_decode_accelerator_host.h',
         'renderer/webgraphicscontext3d_command_buffer_impl.cc',

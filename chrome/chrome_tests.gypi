@@ -2407,6 +2407,7 @@
         '../content/renderer/render_view_browsertest_mac.mm',
         '../content/renderer/render_widget_browsertest.cc',
         '../content/renderer/render_widget_browsertest.h',
+        '../content/renderer/v8_value_converter_browsertest.cc',
       ],
       'conditions': [
         ['chromeos==0', {

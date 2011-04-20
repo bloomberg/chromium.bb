@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "content/renderer/render_view.h"
+#include "content/renderer/v8_value_converter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
 
@@ -71,14 +72,8 @@ class ChromeAppExtensionWrapper : public v8::Extension {
       "    native function GetDetailsForFrame();"
       "    this.__defineGetter__('isInstalled', GetIsInstalled);"
       "    this.install = Install;"
-      "    this.getDetails = function() {"
-      "      var json = GetDetails();"
-      "      return json == null ? null : JSON.parse(json);"
-      "    };"
-      "    this.getDetailsForFrame = function(frame) {"
-      "      var json = GetDetailsForFrame(frame);"
-      "      return json == null ? null : JSON.parse(json);"
-      "    };"
+      "    this.getDetails = GetDetails;"
+      "    this.getDetailsForFrame = GetDetailsForFrame;"
       "  };"
       "}") {
     extension_dispatcher_ = extension_dispatcher;
@@ -169,14 +164,12 @@ class ChromeAppExtensionWrapper : public v8::Extension {
     if (!extension)
       return v8::Null();
 
-    std::string manifest_json;
-    const bool kPrettyPrint = false;
     scoped_ptr<DictionaryValue> manifest_copy(
         extension->manifest_value()->DeepCopy());
     manifest_copy->SetString("id", extension->id());
-    base::JSONWriter::Write(manifest_copy.get(), kPrettyPrint, &manifest_json);
-
-    return v8::String::New(manifest_json.c_str(), manifest_json.size());
+    V8ValueConverter converter;
+    return converter.ToV8Value(manifest_copy.get(),
+                               frame->mainWorldScriptContext());
   }
 
   static ExtensionDispatcher* extension_dispatcher_;

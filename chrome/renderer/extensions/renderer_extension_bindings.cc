@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
-#include "base/values.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
@@ -245,51 +244,6 @@ class ExtensionImpl : public ExtensionBase {
   }
 };
 
-// Convert a ListValue to a vector of V8 values.
-static std::vector< v8::Handle<v8::Value> > ListValueToV8(
-    const ListValue& value) {
-  std::vector< v8::Handle<v8::Value> > v8_values;
-
-  for (size_t i = 0; i < value.GetSize(); ++i) {
-    Value* elem = NULL;
-    value.Get(i, &elem);
-    switch (elem->GetType()) {
-      case Value::TYPE_NULL:
-        v8_values.push_back(v8::Null());
-        break;
-      case Value::TYPE_BOOLEAN: {
-        bool val;
-        elem->GetAsBoolean(&val);
-        v8_values.push_back(v8::Boolean::New(val));
-        break;
-      }
-      case Value::TYPE_INTEGER: {
-        int val;
-        elem->GetAsInteger(&val);
-        v8_values.push_back(v8::Integer::New(val));
-        break;
-      }
-      case Value::TYPE_DOUBLE: {
-        double val;
-        elem->GetAsDouble(&val);
-        v8_values.push_back(v8::Number::New(val));
-        break;
-      }
-      case Value::TYPE_STRING: {
-        std::string val;
-        elem->GetAsString(&val);
-        v8_values.push_back(v8::String::New(val.c_str()));
-        break;
-      }
-      default:
-        NOTREACHED() << "Unsupported Value type.";
-        break;
-    }
-  }
-
-  return v8_values;
-}
-
 }  // namespace
 
 const char* RendererExtensionBindings::kName =
@@ -298,19 +252,4 @@ const char* RendererExtensionBindings::kName =
 v8::Extension* RendererExtensionBindings::Get() {
   static v8::Extension* extension = new ExtensionImpl();
   return extension;
-}
-
-void RendererExtensionBindings::Invoke(const std::string& extension_id,
-                                       const std::string& function_name,
-                                       const ListValue& args,
-                                       RenderView* renderview,
-                                       const GURL& event_url) {
-  v8::HandleScope handle_scope;
-  std::vector< v8::Handle<v8::Value> > argv = ListValueToV8(args);
-  EventBindings::CallFunction(extension_id,
-                              function_name,
-                              argv.size(),
-                              &argv[0],
-                              renderview,
-                              event_url);
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 #include <string>
 
 class GURL;
-class ListValue;
 class RenderView;
 
 // This class adds extension-related javascript bindings to a renderer.  It is
@@ -23,13 +22,6 @@ class RendererExtensionBindings {
 
   // Creates an instance of the extension.
   static v8::Extension* Get();
-
-  // Call the given javascript function with the specified arguments.
-  static void Invoke(const std::string& extension_id,
-                     const std::string& function_name,
-                     const ListValue& args,
-                     RenderView* renderview,
-                     const GURL& event_url);
 };
 
 #endif  // CHROME_RENDERER_EXTENSIONS_RENDERER_EXTENSION_BINDINGS_H_

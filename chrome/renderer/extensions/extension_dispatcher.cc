@@ -124,7 +124,7 @@ void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
                                           const std::string& function_name,
                                           const ListValue& args,
                                           const GURL& event_url) {
-  RendererExtensionBindings::Invoke(
+  EventBindings::CallFunction(
       extension_id, function_name, args, NULL, event_url);
 
   // Reset the idle handler each time there's any activity like event or message

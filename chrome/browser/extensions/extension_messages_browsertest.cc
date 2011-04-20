@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/test/render_view_test.h"
 #include "content/common/view_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,14 +22,14 @@ static void DispatchOnConnect(int source_port_id, const std::string& name,
   // to itself".
   args.Set(3, Value::CreateStringValue(EventBindings::kTestingExtensionId));
   args.Set(4, Value::CreateStringValue(EventBindings::kTestingExtensionId));
-  RendererExtensionBindings::Invoke(
+  EventBindings::CallFunction(
       "", ExtensionMessageService::kDispatchOnConnect, args, NULL, GURL());
 }
 
 static void DispatchOnDisconnect(int source_port_id) {
   ListValue args;
   args.Set(0, Value::CreateIntegerValue(source_port_id));
-  RendererExtensionBindings::Invoke(
+  EventBindings::CallFunction(
       "", ExtensionMessageService::kDispatchOnDisconnect, args, NULL, GURL());
 }
 
@@ -38,7 +37,7 @@ static void DispatchOnMessage(const std::string& message, int source_port_id) {
   ListValue args;
   args.Set(0, Value::CreateStringValue(message));
   args.Set(1, Value::CreateIntegerValue(source_port_id));
-  RendererExtensionBindings::Invoke(
+  EventBindings::CallFunction(
       "", ExtensionMessageService::kDispatchOnMessage, args, NULL, GURL());
 }
 
