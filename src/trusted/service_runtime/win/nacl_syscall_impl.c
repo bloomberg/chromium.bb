@@ -1,9 +1,8 @@
 /*
- * Copyright 2008  The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
-
 
 #include "native_client/src/include/portability.h"
 
@@ -217,8 +216,9 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
   int       holding_app_lock = 0;
   size_t    alloc_rounded_length;
 
-  NaClLog(3, "NaClSysMunmap(0x%08x, 0x%08x, 0x%x)\n",
-          natp, start, length);
+  NaClLog(3, "Entered NaClSysMunmap(0x%08"NACL_PRIxPTR", "
+          "0x%08"NACL_PRIxPTR", 0x%"NACL_PRIxS")\n",
+          (uintptr_t) natp, (uintptr_t) start, length);
 
   NaClSysCommonThreadSyscallEnter(natp);
 
@@ -257,7 +257,7 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
   if (NaClSysCommonAddrRangeContainsExecutablePages_mu(natp->nap,
                                                        (uintptr_t) start,
                                                        length)) {
-    NaClLog(2, "NaClSysMunmap: region contains executable pages\n");
+    NaClLog(4, "NaClSysMunmap: region contains executable pages\n");
     retval = -NACL_ABI_EINVAL;
     goto cleanup;
   }
@@ -344,8 +344,13 @@ int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
                             struct nacl_abi_timezone  *tz) {
   int32_t                 retval;
   uintptr_t               sysaddr;
+
   UNREFERENCED_PARAMETER(tz);
 
+  NaClLog(3,
+          ("Entered NaClSysGetTimeOfDay(%08"NACL_PRIxPTR
+           ", 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR")\n"),
+          (uintptr_t) natp, (uintptr_t) tv, (uintptr_t) tz);
   NaClSysCommonThreadSyscallEnter(natp);
 
   sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) tv, sizeof tv);
@@ -378,7 +383,10 @@ cleanup:
 int32_t NaClSysClock(struct NaClAppThread *natp) {
   int32_t retval;
 
-  UNREFERENCED_PARAMETER(natp);
+  NaClLog(3,
+          ("Entered NaClSysClock(%08"NACL_PRIxPTR")\n"),
+          (uintptr_t) natp);
+
   NaClSysCommonThreadSyscallEnter(natp);
   retval = clock();
   NaClSysCommonThreadSyscallLeave(natp);
@@ -394,7 +402,10 @@ int32_t NaClSysNanosleep(struct NaClAppThread     *natp,
 
   UNREFERENCED_PARAMETER(rem);
 
-  NaClLog(4, "NaClSysNanosleep(%08x)\n", (uintptr_t) req);
+  NaClLog(3,
+          ("Entered NaClSysNanosleep(0x%08"NACL_PRIxPTR
+           ", 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR"x)\n"),
+          (uintptr_t) natp, (uintptr_t) req, (uintptr_t) rem);
 
   NaClSysCommonThreadSyscallEnter(natp);
 
@@ -566,6 +577,11 @@ int32_t NaClSysSysconf(struct NaClAppThread *natp,
   int32_t         retval = -NACL_ABI_EINVAL;
   static int32_t  number_of_workers = 0;
   uintptr_t       sysaddr;
+
+  NaClLog(3,
+          ("Entered NaClSysSysconf(%08"NACL_PRIxPTR
+           "x, %d, 0x%08"NACL_PRIxPTR")\n"),
+          (uintptr_t) natp, name, (uintptr_t) result);
 
   NaClSysCommonThreadSyscallEnter(natp);
 

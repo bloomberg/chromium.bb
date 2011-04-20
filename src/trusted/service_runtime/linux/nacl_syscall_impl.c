@@ -1,7 +1,7 @@
 /*
- * Copyright 2008  The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -178,7 +178,7 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
   int       holding_app_lock = 0;
   size_t    alloc_rounded_length;
 
-  NaClLog(3, "NaClSysMunmap(0x%08"NACL_PRIxPTR", "
+  NaClLog(3, "Entered NaClSysMunmap(0x%08"NACL_PRIxPTR", "
           "0x%08"NACL_PRIxPTR", 0x%"NACL_PRIxS")\n",
           (uintptr_t) natp, (uintptr_t) start, length);
 
@@ -239,7 +239,7 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
    * zero-filled pages, which should be copy-on-write and thus
    * relatively cheap.  Do not open up an address space hole.
    */
-  NaClLog(3,
+  NaClLog(4,
           ("NaClSysMunmap: mmap(0x%08"NACL_PRIxPTR", 0x%"NACL_PRIxS","
            " 0x%x, 0x%x, -1, 0)\n"),
           sysaddr, length, PROT_NONE,
@@ -250,7 +250,7 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
                          MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED,
                          -1,
                          (off_t) 0)) {
-    NaClLog(3, "mmap to put in anonymous memory failed, errno = %d\n", errno);
+    NaClLog(4, "mmap to put in anonymous memory failed, errno = %d\n", errno);
     retval = -NaClXlateErrno(errno);
     goto cleanup;
   }
@@ -300,6 +300,11 @@ int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
   struct nacl_abi_timeval now;
 
   UNREFERENCED_PARAMETER(tz);
+
+  NaClLog(3,
+          ("Entered NaClSysGetTimeOfDay(%08"NACL_PRIxPTR
+           ", 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR")\n"),
+          (uintptr_t) natp, (uintptr_t) tv, (uintptr_t) tz);
   NaClSysCommonThreadSyscallEnter(natp);
 
   sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) tv, sizeof tv);
@@ -342,6 +347,10 @@ cleanup:
 int32_t NaClSysClock(struct NaClAppThread *natp) {
   int32_t retval;
 
+  NaClLog(3,
+          ("Entered NaClSysClock(%08"NACL_PRIxPTR")\n"),
+          (uintptr_t) natp);
+
   NaClSysCommonThreadSyscallEnter(natp);
   retval = clock();
   NaClSysCommonThreadSyscallLeave(natp);
@@ -358,7 +367,10 @@ int32_t NaClSysNanosleep(struct NaClAppThread     *natp,
   struct nacl_abi_timespec  *remptr;
   int                       retval = -NACL_ABI_EINVAL;
 
-  NaClLog(4, "NaClSysNanosleep(%08"NACL_PRIxPTR"x)\n", (uintptr_t) req);
+  NaClLog(3,
+          ("Entered NaClSysNanosleep(0x%08"NACL_PRIxPTR
+           ", 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR"x)\n"),
+          (uintptr_t) natp, (uintptr_t) req, (uintptr_t) rem);
 
   NaClSysCommonThreadSyscallEnter(natp);
 
@@ -559,6 +571,11 @@ int32_t NaClSysSysconf(struct NaClAppThread *natp,
   int32_t         retval = -NACL_ABI_EINVAL;
   static int32_t  number_of_workers = -1;
   uintptr_t       sysaddr;
+
+  NaClLog(3,
+          ("Entered NaClSysSysconf(%08"NACL_PRIxPTR
+           "x, %d, 0x%08"NACL_PRIxPTR")\n"),
+          (uintptr_t) natp, name, (uintptr_t) result);
 
   NaClSysCommonThreadSyscallEnter(natp);
 
