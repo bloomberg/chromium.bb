@@ -169,7 +169,7 @@ def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST'):
   os.chdir(os.path.dirname(filename))
 
   commit = cros_build_lib.RunCommand(['git', 'rev-parse', 'HEAD'],
-                                     redirect_stdout=True).output
+                                     redirect_stdout=True).output.rstrip()
   cros_build_lib.RunCommand(['git', 'remote', 'update'])
   cros_build_lib.RunCommand(['repo', 'start', prebuilt_branch, '.'])
   git_ssh_config_cmd = [
