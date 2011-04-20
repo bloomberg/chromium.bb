@@ -23,7 +23,8 @@ ProfileKeyedServiceFactory::~ProfileKeyedServiceFactory() {
 }
 
 ProfileKeyedService* ProfileKeyedServiceFactory::GetServiceForProfile(
-    Profile* profile) {
+    Profile* profile,
+    bool create) {
   // Possibly handle Incognito mode.
   if (profile->IsOffTheRecord()) {
     if (ServiceRedirectedInIncognito()) {
@@ -41,14 +42,18 @@ ProfileKeyedService* ProfileKeyedServiceFactory::GetServiceForProfile(
       mapping_.find(profile);
   if (it != mapping_.end()) {
     service = it->second;
-    if (service || !factory_)
+    if (service || !factory_ || !create)
       return service;
 
     // service is NULL but we have a mock factory function
     mapping_.erase(it);
     service = factory_(profile);
-  } else {
+  } else if (create) {
+    // not found but creation allowed
     service = BuildServiceInstanceFor(profile);
+  } else {
+    // not found, creation forbidden
+    return NULL;
   }
 
   Associate(profile, service);

@@ -15,7 +15,7 @@ DesktopNotificationService* DesktopNotificationServiceFactory::GetForProfile(
     Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return static_cast<DesktopNotificationService*>(
-      GetInstance()->GetServiceForProfile(profile));
+      GetInstance()->GetServiceForProfile(profile, true));
 }
 
 // static

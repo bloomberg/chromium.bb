@@ -18,7 +18,7 @@
 // static
 ThemeService* ThemeServiceFactory::GetForProfile(Profile* profile) {
   return static_cast<ThemeService*>(
-      GetInstance()->GetServiceForProfile(profile));
+      GetInstance()->GetServiceForProfile(profile, true));
 }
 
 // static

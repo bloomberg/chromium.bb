@@ -13,7 +13,7 @@
 BackgroundContentsService* BackgroundContentsServiceFactory::GetForProfile(
     Profile* profile) {
   return static_cast<BackgroundContentsService*>(
-      GetInstance()->GetServiceForProfile(profile));
+      GetInstance()->GetServiceForProfile(profile, true));
 }
 
 // static

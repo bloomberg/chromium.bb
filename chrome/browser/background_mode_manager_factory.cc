@@ -13,7 +13,7 @@
 BackgroundModeManager* BackgroundModeManagerFactory::GetForProfile(
     Profile* profile) {
   return static_cast<BackgroundModeManager*>(
-      GetInstance()->GetServiceForProfile(profile));
+      GetInstance()->GetServiceForProfile(profile, true));
 }
 
 // static

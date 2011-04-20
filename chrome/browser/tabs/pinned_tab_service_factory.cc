@@ -12,7 +12,7 @@
 PinnedTabService* PinnedTabServiceFactory::GetForProfile(
     Profile* profile) {
   return static_cast<PinnedTabService*>(
-      GetInstance()->GetServiceForProfile(profile));
+      GetInstance()->GetServiceForProfile(profile, true));
 }
 
 PinnedTabServiceFactory* PinnedTabServiceFactory::GetInstance() {

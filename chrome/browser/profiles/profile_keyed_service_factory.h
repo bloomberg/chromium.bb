@@ -53,8 +53,9 @@ class ProfileKeyedServiceFactory {
 
   // Common implementation that maps |profile| to some service object. Deals
   // with incognito profiles per subclass instructions with
-  // ServiceActiveInIncognito().
-  ProfileKeyedService* GetServiceForProfile(Profile* profile);
+  // ServiceActiveInIncognito(). If |create| is true, the service will be
+  // created using BuildServiceInstanceFor() if it doesn't already exist.
+  ProfileKeyedService* GetServiceForProfile(Profile* profile, bool create);
 
   // The main public interface for declaring dependencies between services
   // created by factories.
