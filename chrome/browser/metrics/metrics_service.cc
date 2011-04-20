@@ -157,6 +157,8 @@
 #include "chrome/browser/metrics/metrics_service.h"
 
 #include "base/base64.h"
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/md5.h"
 #include "base/metrics/histogram.h"
@@ -171,6 +173,7 @@
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/metrics_log.h"
+#include "chrome/browser/metrics/metrics_reporting_scheduler.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -184,7 +187,6 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/child_process_info.h"
 #include "content/common/notification_service.h"
-#include "libxml/xmlwriter.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
 
@@ -215,15 +217,15 @@ void MakeStoreStatusHistogram(MetricsService::LogStoreStatus status) {
 }  // namespace
 
 using base::Time;
-using base::TimeDelta;
 
 // Check to see that we're being called on only one thread.
 static bool IsSingleThreaded();
 
 static const char kMetricsType[] = "application/vnd.mozilla.metrics.bz2";
 
-// The delay, in seconds, after startup before sending the first log message.
-static const int kInitialInterlogDuration = 60;  // one minute
+// The delay, in seconds, after starting recording before doing expensive
+// initialization work.
+static const int kInitializationDelaySeconds = 30;
 
 // This specifies the amount of time to wait for all renderers to send their
 // data.
@@ -237,28 +239,6 @@ static const int kEventLimit = 2400;
 // the log to the prefs for transmission during the next chrome session if this
 // limit is exceeded.
 static const int kUploadLogAvoidRetransmitSize = 50000;
-
-// When we have logs from previous Chrome sessions to send, how long should we
-// delay (in seconds) between each log transmission.
-static const int kUnsentLogDelay = 15;  // 15 seconds
-
-// Minimum time a log typically exists before sending, in seconds.
-// This number is supplied by the server, but until we parse it out of a server
-// response, we use this duration to specify how long we should wait before
-// sending the next log.  If the channel is busy, such as when there is a
-// failure during an attempt to transmit a previous log, then a log may wait
-// (and continue to accrue new log entries) for a much greater period of time.
-static const int kMinSecondsPerLog = 30 * 60;  // Thirty minutes.
-
-// When we don't succeed at transmitting a log to a server, we progressively
-// wait longer and longer before sending the next log.  This backoff process
-// help reduce load on the server, and makes the amount of backoff vary between
-// clients so that a collision (server overload?) on retransmit is less likely.
-// The following is the constant we use to expand that inter-log duration.
-static const double kBackoff = 1.1;
-// We limit the maximum backoff to be no greater than some multiple of the
-// default kMinSecondsPerLog.  The following is that maximum ratio.
-static const int kMaxBackoff = 10;
 
 // Interval, in seconds, between state saves.
 static const int kSaveStateInterval = 5 * 60;  // five minutes
@@ -455,17 +435,19 @@ void MetricsService::DiscardOldStabilityStats(PrefService* local_state) {
 MetricsService::MetricsService()
     : recording_active_(false),
       reporting_active_(false),
-      server_permits_upload_(true),
       state_(INITIALIZED),
       current_fetch_(NULL),
       idle_since_last_transmission_(false),
       next_window_id_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(log_sender_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(state_saver_factory_(this)),
-      interlog_duration_(TimeDelta::FromSeconds(kInitialInterlogDuration)),
-      timer_pending_(false) {
+      waiting_for_asynchronus_reporting_step_(false) {
   DCHECK(IsSingleThreaded());
   InitializeMetricsState();
+
+  base::Closure callback = base::Bind(&MetricsService::StartScheduledUpload,
+                                      base::Unretained(this));
+  scheduler_.reset(new MetricsReportingScheduler(callback));
 }
 
 MetricsService::~MetricsService() {
@@ -532,7 +514,7 @@ void MetricsService::SetReporting(bool enable) {
   if (reporting_active_ != enable) {
     reporting_active_ = enable;
     if (reporting_active_)
-      StartLogTransmissionTimer();
+      StartSchedulerIfNecessary();
   }
 }
 
@@ -668,7 +650,7 @@ void MetricsService::HandleIdleSinceLastTransmission(bool in_idle) {
   // case, the log transmissions should have stopped.  Here we start them up
   // again.
   if (!in_idle && idle_since_last_transmission_)
-    StartLogTransmissionTimer();
+    StartSchedulerIfNecessary();
   idle_since_last_transmission_ = in_idle;
 }
 
@@ -682,7 +664,7 @@ void MetricsService::RecordCompletedSessionEnd() {
   RecordBooleanPrefValue(prefs::kStabilitySessionEndCompleted, true);
 }
 
-void MetricsService:: RecordBreakpadRegistration(bool success) {
+void MetricsService::RecordBreakpadRegistration(bool success) {
   if (!success)
     IncrementPrefValue(prefs::kStabilityBreakpadRegistrationFail);
   else
@@ -857,7 +839,7 @@ void MetricsService::StartRecording() {
     // thread.
     g_browser_process->file_thread()->message_loop()->PostDelayedTask(FROM_HERE,
         new InitTask(MessageLoop::current()),
-        kInitialInterlogDuration * 1000 / 2);
+        kInitializationDelaySeconds * 1000);
   }
 }
 
@@ -924,10 +906,6 @@ void MetricsService::PushPendingLogsToUnsentLists() {
 }
 
 void MetricsService::PushPendingLogTextToUnsentOngoingLogs() {
-  // If UMA response told us not to upload, there's no need to save the pending
-  // log.  It wasn't supposed to be uploaded anyway.
-  if (!server_permits_upload_)
-    return;
   if (compressed_log_.length() >
       static_cast<size_t>(kUploadLogAvoidRetransmitSize)) {
     UMA_HISTOGRAM_COUNTS("UMA.Large Accumulated Log Not Persisted",
@@ -940,37 +918,22 @@ void MetricsService::PushPendingLogTextToUnsentOngoingLogs() {
 //------------------------------------------------------------------------------
 // Transmission of logs methods
 
-void MetricsService::StartLogTransmissionTimer() {
-  // If we're not reporting, there's no point in starting a log transmission
-  // timer.
-  if (!reporting_active())
-    return;
-
-  if (!current_log_)
-    return;  // Recorder is shutdown.
-
-  // If there is already a timer running, we leave it running.
-  // If timer_pending is true because the fetch is waiting for a response,
-  // we return for now and let the response handler start the timer.
-  if (timer_pending_)
-    return;
-
-  // Before starting the timer, set timer_pending_ to true.
-  timer_pending_ = true;
-
-  // Right before the UMA transmission gets started, there's one more thing we'd
-  // like to record: the histogram of memory usage, so we spawn a task to
-  // collect the memory details and when that task is finished, it will call
-  // OnMemoryDetailCollectionDone, which will call HistogramSynchronization to
-  // collect histograms from all renderers and then we will call
-  // OnHistogramSynchronizationDone to continue processing.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      log_sender_factory_.
-          NewRunnableMethod(&MetricsService::LogTransmissionTimerDone),
-      interlog_duration_.InMilliseconds());
+void MetricsService::StartSchedulerIfNecessary() {
+  if (reporting_active() && recording_active())
+    scheduler_->Start();
 }
 
-void MetricsService::LogTransmissionTimerDone() {
+void MetricsService::StartScheduledUpload() {
+  // If reporting has been turned off, the scheduler doesn't need to run.
+  if (!reporting_active() || !recording_active()) {
+    scheduler_->Stop();
+    scheduler_->UploadCancelled();
+    return;
+  }
+
+  DCHECK(!waiting_for_asynchronus_reporting_step_);
+  waiting_for_asynchronus_reporting_step_ = true;
+
   Task* task = log_sender_factory_.
       NewRunnableMethod(&MetricsService::OnMemoryDetailCollectionDone);
 
@@ -985,11 +948,16 @@ void MetricsService::LogTransmissionTimerDone() {
 
 void MetricsService::OnMemoryDetailCollectionDone() {
   DCHECK(IsSingleThreaded());
+  // This function should only be called as the callback from an ansynchronous
+  // step.
+  DCHECK(waiting_for_asynchronus_reporting_step_);
 
-  // HistogramSynchronizer will Collect histograms from all renderers and it
-  // will call OnHistogramSynchronizationDone (if wait time elapses before it
-  // heard from all renderers, then also it will call
-  // OnHistogramSynchronizationDone).
+  // Right before the UMA transmission gets started, there's one more thing we'd
+  // like to record: the histogram of memory usage, so we spawn a task to
+  // collect the memory details and when that task is finished, it will call
+  // OnMemoryDetailCollectionDone, which will call HistogramSynchronization to
+  // collect histograms from all renderers and then we will call
+  // OnHistogramSynchronizationDone to continue processing.
 
   // Create a callback_task for OnHistogramSynchronizationDone.
   Task* callback_task = log_sender_factory_.NewRunnableMethod(
@@ -1006,53 +974,35 @@ void MetricsService::OnMemoryDetailCollectionDone() {
 void MetricsService::OnHistogramSynchronizationDone() {
   DCHECK(IsSingleThreaded());
 
-  // This function should only be called via timer, so timer_pending_
-  // should be true.
-  DCHECK(timer_pending_);
-  timer_pending_ = false;
-
+  // If somehow there is a fetch in progress, we return and hope things work
+  // out. The scheduler isn't informed since if this happens, the scheduler
+  // will get a response from the upload.
   DCHECK(!current_fetch_.get());
+  if (current_fetch_.get())
+    return;
+
+  // This function should only be called as the callback from an ansynchronous
+  // step.
+  DCHECK(waiting_for_asynchronus_reporting_step_);
+  waiting_for_asynchronus_reporting_step_ = false;
 
   // If we're getting no notifications, then the log won't have much in it, and
   // it's possible the computer is about to go to sleep, so don't upload and
-  // don't restart the transmission timer.
-  if (idle_since_last_transmission_)
-    return;
-
-  // If somehow there is a fetch in progress, we return setting timer_pending_
-  // to true and hope things work out.
-  if (current_fetch_.get()) {
-    timer_pending_ = true;
+  // stop the scheduler.
+  // Similarly, if logs should no longer be uploaded, stop here.
+  if (idle_since_last_transmission_ ||
+      !recording_active() || !reporting_active()) {
+    scheduler_->Stop();
+    scheduler_->UploadCancelled();
     return;
   }
-
-  // If uploads are forbidden by UMA response, there's no point in keeping
-  // the current_log_, and the more often we delete it, the less likely it is
-  // to expand forever.
-  if (!server_permits_upload_ && current_log_) {
-    StopRecording(NULL);
-    StartRecording();
-  }
-
-  if (!current_log_)
-    return;  // Logging was disabled.
-  if (!reporting_active())
-    return;  // Don't do work if we're not going to send anything now.
 
   MakePendingLog();
 
   // MakePendingLog should have put something in the pending log, if it didn't,
-  // we start the timer again, return and hope things work out.
+  // we skip this upload and hope things work out next time.
   if (!pending_log()) {
-    StartLogTransmissionTimer();
-    return;
-  }
-
-  // If we're not supposed to upload any UMA data because the response said so,
-  // cancel the upload at this point, but start the timer.
-  if (!ServerPermitsTransmission()) {
-    DiscardPendingLog();
-    StartLogTransmissionTimer();
+    scheduler_->UploadCancelled();
     return;
   }
 
@@ -1061,17 +1011,15 @@ void MetricsService::OnHistogramSynchronizationDone() {
   if (!current_fetch_.get()) {
     // Compression failed, and log discarded :-/.
     DiscardPendingLog();
-    StartLogTransmissionTimer();  // Maybe we'll do better next time
+    scheduler_->UploadCancelled();
     // TODO(jar): If compression failed, we should have created a tiny log and
     // compressed that, so that we can signal that we're losing logs.
     return;
   }
 
-  DCHECK(!timer_pending_);
+  DCHECK(!waiting_for_asynchronus_reporting_step_);
 
-  // The URL fetch is a like timer in that after a while we get called back
-  // so we set timer_pending_ true just as we start the url fetch.
-  timer_pending_ = true;
+  waiting_for_asynchronus_reporting_step_ = true;
   current_fetch_->Start();
 
   HandleIdleSinceLastTransmission(true);
@@ -1125,24 +1073,6 @@ void MetricsService::MakePendingLog() {
   }
 
   DCHECK(pending_log());
-}
-
-bool MetricsService::ServerPermitsTransmission() const {
-  // If the server forbids uploading, we take that to mean it forbids current
-  // logs, but we still send up the inital logs and any old logs.
-  if (server_permits_upload_)
-    return true;
-
-  switch (state_) {
-    case INITIAL_LOG_READY:
-    case SEND_OLD_INITIAL_LOGS:
-    case SENDING_OLD_LOGS:
-      return true;
-
-    case SENDING_CURRENT_LOGS:
-    default:
-      return false;
-  }
 }
 
 void MetricsService::PrepareInitialLog() {
@@ -1363,8 +1293,8 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source,
                                         int response_code,
                                         const ResponseCookies& cookies,
                                         const std::string& data) {
-  DCHECK(timer_pending_);
-  timer_pending_ = false;
+  DCHECK(waiting_for_asynchronus_reporting_step_);
+  waiting_for_asynchronus_reporting_step_ = false;
   DCHECK(current_fetch_.get());
   current_fetch_.reset(NULL);  // We're not allowed to re-use it.
 
@@ -1372,10 +1302,12 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source,
   VLOG(1) << "METRICS RESPONSE CODE: " << response_code
           << " status=" << StatusToString(status);
 
+  bool upload_succeeded = response_code == 200;
+
   // Provide boolean for error recovery (allow us to ignore response_code).
   bool discard_log = false;
 
-  if (response_code != 200 &&
+  if (!upload_succeeded &&
       (compressed_log_.length() >
           static_cast<size_t>(kUploadLogAvoidRetransmitSize))) {
     UMA_HISTOGRAM_COUNTS("UMA.Large Rejected Log was Discarded",
@@ -1387,10 +1319,10 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source,
     discard_log = true;
   }
 
-  if (response_code != 200 && !discard_log) {
+  if (!upload_succeeded && !discard_log) {
     VLOG(1) << "METRICS: transmission attempt returned a failure code: "
             << response_code << ". Verify network connectivity";
-    HandleBadResponseCode();
+    LogBadResponseCode();
   } else {  // Successful receipt (or we are discarding log).
     VLOG(1) << "METRICS RESPONSE DATA: " << data;
     switch (state_) {
@@ -1425,38 +1357,24 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source,
     if (local_state)
       local_state->ScheduleSavePersistentPrefs();
 
-    // Override usual interlog delay if there are unsent logs to transmit,
-    // otherwise reset back to default.
-    if (unsent_logs()) {
+    if (unsent_logs())
       DCHECK(state_ < SENDING_CURRENT_LOGS);
-      interlog_duration_ = TimeDelta::FromSeconds(kUnsentLogDelay);
-    } else {
-      interlog_duration_ = TimeDelta::FromSeconds(kMinSecondsPerLog);
-    }
   }
 
-  StartLogTransmissionTimer();
+  // Error 400 indicates a problem with the log, not with the server, so
+  // don't consider that a sign that the server is in trouble.
+  bool server_is_healthy = upload_succeeded || response_code == 400;
+
+  scheduler_->UploadFinished(server_is_healthy, unsent_logs());
 }
 
-void MetricsService::HandleBadResponseCode() {
+void MetricsService::LogBadResponseCode() {
   VLOG(1) << "Verify your metrics logs are formatted correctly.  Verify server "
              "is active at " << server_url_;
   if (!pending_log()) {
     VLOG(1) << "METRICS: Recorder shutdown during log transmission.";
   } else {
-    // Send progressively less frequently.
-    DCHECK(kBackoff > 1.0);
-    interlog_duration_ = TimeDelta::FromMicroseconds(
-        static_cast<int64>(kBackoff * interlog_duration_.InMicroseconds()));
-
-    if (kMaxBackoff * TimeDelta::FromSeconds(kMinSecondsPerLog) <
-        interlog_duration_) {
-      interlog_duration_ = kMaxBackoff *
-          TimeDelta::FromSeconds(kMinSecondsPerLog);
-    }
-
-    VLOG(1) << "METRICS: transmission retry being scheduled in "
-            << interlog_duration_.InSeconds() << " seconds for "
+    VLOG(1) << "METRICS: transmission retry being scheduled for "
             << compressed_log_;
   }
 }
