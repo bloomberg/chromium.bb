@@ -51,12 +51,10 @@ struct wlsc_output {
 	int repaint_needed;
 	int finished;
 
-	struct wlsc_surface *scanout_surface;
-
 	int (*prepare_render)(struct wlsc_output *output);
 	int (*present)(struct wlsc_output *output);
-	int (*image_is_scanoutable)(struct wlsc_output *output,
-				    EGLImageKHR image);
+	int (*prepare_scanout_surface)(struct wlsc_output *output,
+				       struct wlsc_surface *es);
 	int (*set_hardware_cursor)(struct wlsc_output *output,
 				   struct wl_input_device *input);
 };

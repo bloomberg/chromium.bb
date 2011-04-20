@@ -64,6 +64,8 @@ struct drm_output {
 	EGLImageKHR image[2];
 	uint32_t current;	
 
+	struct wlsc_surface *scanout_surface;
+
 	uint32_t fs_surf_fb_id;
 	uint32_t pending_fs_surf_fb_id;
 };
@@ -90,7 +92,6 @@ drm_output_present(struct wlsc_output *output_base)
 	struct drm_output *output = (struct drm_output *) output_base;
 	struct drm_compositor *c =
 		(struct drm_compositor *) output->base.compositor;
-	int ret;
 	uint32_t fb_id = 0;
 
 	if (drm_output_prepare_render(&output->base))
@@ -99,22 +100,8 @@ drm_output_present(struct wlsc_output *output_base)
 
 	output->current ^= 1;
 
-	if (output->base.scanout_surface) {
-		EGLint handle, stride;
-
-		eglExportDRMImageMESA(c->base.display,
-				      output->base.scanout_surface->image,
-				      NULL, &handle, &stride);
-
-		ret = drmModeAddFB(c->drm.fd,
-				   output->base.width, output->base.height,
-				   32, 32, stride, handle,
-				   &output->fs_surf_fb_id);
-		if (ret)
-			return -1;
-
-		printf("pageflip to fullscreen buffer: %d\n", handle);
-
+	if (output->scanout_surface != NULL) {
+		output->scanout_surface = NULL;
 		fb_id = output->fs_surf_fb_id;
 	} else {
 		fb_id = output->fb_id[output->current ^ 1];
@@ -151,8 +138,8 @@ page_flip_handler(int fd, unsigned int frame,
 }
 
 static int
-drm_output_image_is_scanoutable(struct wlsc_output *output_base,
-				EGLImageKHR image)
+drm_output_prepare_scanout_surface(struct wlsc_output *output_base,
+				   struct wlsc_surface *es)
 {
 	struct drm_output *output = (struct drm_output *) output_base;
 	struct drm_compositor *c =
@@ -161,22 +148,28 @@ drm_output_image_is_scanoutable(struct wlsc_output *output_base,
 	int ret;
 	uint32_t fb_id = 0;
 
-	eglExportDRMImageMESA(c->base.display, image,
+	if (es->width != output->base.width ||
+	    es->height != output->base.height ||
+	    es->image == EGL_NO_IMAGE_KHR)
+		return -1;
+
+	eglExportDRMImageMESA(c->base.display, es->image,
 			      NULL, &handle, &stride);
+
+	if (handle == 0)
+		return -1;
 
 	ret = drmModeAddFB(c->drm.fd,
 			   output->base.width, output->base.height,
-			   32, 32, stride, handle,
-			   &fb_id);
+			   32, 32, stride, handle, &fb_id);
+
 	if (ret)
-		return 0;
+		return -1;
 
-	/* FIXME: change interface to keep this fb_id,
-	 * to be used directly in next pageflip? */
-	if (fb_id)
-		drmModeRmFB(c->drm.fd, fb_id);
+	output->fs_surf_fb_id = fb_id;
+	output->scanout_surface = es;
 
-	return fb_id != 0;
+	return 0;
 }
 
 static int
@@ -412,9 +405,11 @@ create_output_for_connector(struct drm_compositor *ec,
 		return -1;
 	}
 
+	output->scanout_surface = NULL;
 	output->base.prepare_render = drm_output_prepare_render;
 	output->base.present = drm_output_present;
-	output->base.image_is_scanoutable = drm_output_image_is_scanoutable;
+	output->base.prepare_scanout_surface =
+		drm_output_prepare_scanout_surface;
 	output->base.set_hardware_cursor = drm_output_set_cursor;
 
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);

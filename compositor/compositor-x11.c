@@ -192,10 +192,10 @@ x11_output_present(struct wlsc_output *output_base)
 }
 
 static int
-x11_output_image_is_scanoutable(struct wlsc_output *output_base,
-				EGLImageKHR image)
+x11_output_prepare_scanout_surface(struct wlsc_output *output_base,
+				   struct wlsc_surface *es)
 {
-	return 0;
+	return -1;
 }
 
 static int
@@ -354,7 +354,8 @@ x11_compositor_create_output(struct x11_compositor *c, int width, int height)
 
 	output->base.prepare_render = x11_output_prepare_render;
 	output->base.present = x11_output_present;
-	output->base.image_is_scanoutable = x11_output_image_is_scanoutable;
+	output->base.prepare_scanout_surface =
+		x11_output_prepare_scanout_surface;
 	output->base.set_hardware_cursor = x11_output_set_cursor;
 
 	wl_list_insert(c->base.output_list.prev, &output->base.link);

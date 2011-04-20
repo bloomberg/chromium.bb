@@ -550,21 +550,6 @@ wlsc_output_finish_frame(struct wlsc_output *output, int msecs)
 	compositor->repaint_on_timeout = 1;
 }
 
-static int
-wlsc_surface_is_scanoutable(struct wlsc_surface *es,
-			    struct wlsc_output *output)
-{
-	if (es->width != output->width ||
-	    es->height != output->height ||
-	    es->image == NULL)
-		return 0;
-
-	if (!output->image_is_scanoutable(output, es->image))
-		return 0;
-
-	return 1;
-}
-
 static void
 wlsc_output_repaint(struct wlsc_output *output)
 {
@@ -597,25 +582,25 @@ wlsc_output_repaint(struct wlsc_output *output)
 		if (output->set_hardware_cursor(output, ec->input_device) < 0)
 			using_hardware_cursor = 0;
 
-	output->scanout_surface = NULL;
-
 	es = container_of(ec->surface_list.next, struct wlsc_surface, link);
 	if (es->map_type == WLSC_SURFACE_MAP_FULLSCREEN &&
 	    es->fullscreen_output == output) {
 		if (es->visual == &ec->compositor.rgb_visual &&
-		    using_hardware_cursor &&
-		    wlsc_surface_is_scanoutable(es, output)) {
-			output->scanout_surface = es;
-			/* we're drawing nothing now, draw the damages later */
-			pixman_region32_union(&ec->damage_region,
-					      &ec->damage_region,
-					      &total_damage);
-		} else {
-			if (es->width < output->width ||
-			    es->height < output->height)
-				glClear(GL_COLOR_BUFFER_BIT);
-			wlsc_surface_draw(es, output, &total_damage);
+		    using_hardware_cursor) {
+			if (output->prepare_scanout_surface(output, es) == 0) {
+				/* We're drawing nothing now,
+				 * draw the damaged regions later. */
+				pixman_region32_union(&ec->damage_region,
+						      &ec->damage_region,
+						      &total_damage);
+				return;
+			}
 		}
+
+		if (es->width < output->width ||
+		    es->height < output->height)
+			glClear(GL_COLOR_BUFFER_BIT);
+		wlsc_surface_draw(es, output, &total_damage);
 	} else {
 		wl_list_for_each(es, &ec->surface_list, link) {
 			if (es->visual != &ec->compositor.rgb_visual)
