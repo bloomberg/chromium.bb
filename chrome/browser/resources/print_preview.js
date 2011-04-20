@@ -174,12 +174,9 @@ function checkAndSetCopiesField() {
 
 /**
  * Checks the value of the page ranges text field. It parses the page ranges and
- * normalizes them. For example: '1,2,3,5,9-10' becomes '1-3, 5, 9-10'.
+ * normalizes them. For example: '1-3,2,4,8,9-10,4,4' becomes '1-4, 8-10'.
  * If it can't parse the whole string it will replace with the part it parsed.
- * For example: '1-6,9-10,sd343jf' becomes '1-6, 9-10'. If the specified page
- * range includes all pages it replaces it with the empty string (so that the
- * example text is automatically shown.
- *
+ * For example: '1-3,2,4,8,abcdef,9-10,4,4' becomes '1-4, 8-10'.
  */
 function checkAndSetPageRangesField() {
   var pageRanges = getSelectedPageRanges();
@@ -477,7 +474,7 @@ function updateSummary() {
     return;
   }
 
-  var pageList = getSelectedPages();
+  var pageList = getSelectedPagesSet();
   if (pageList.length <= 0) {
     printSummary.innerHTML =
         localStrings.getString('pageRangeInvalidTitleToolTip');
@@ -571,8 +568,10 @@ function onLayoutModeToggle() {
 }
 
 /**
- * Returns a list of all pages in the specified ranges. If the page ranges can't
- * be parsed an empty list is returned.
+ * Returns a list of all pages in the specified ranges. The pages are listed in
+ * the order they appear in the 'individual-pages' textbox and duplicates are
+ * not eliminated. If the page ranges can't be parsed an empty list is
+ * returned.
  *
  * @return {Array}
  */
@@ -614,7 +613,7 @@ function getSelectedPages() {
  *     fields 'from' and 'to'.
  */
 function getSelectedPageRanges() {
-  var pageList = getSelectedPages();
+  var pageList = getSelectedPagesSet();
   var pageRanges = [];
   for (var i = 0; i < pageList.length; ++i) {
     tempFrom = pageList[i];
@@ -624,6 +623,35 @@ function getSelectedPageRanges() {
     pageRanges.push({'from': tempFrom, 'to': tempTo});
   }
   return pageRanges;
+}
+
+/**
+ * Returns the selected pages in ascending order without any duplicates.
+ */
+function getSelectedPagesSet() {
+  var pageList = getSelectedPages();
+  pageList.sort(function(a,b) { return a - b; });
+  pageList = removeDuplicates(pageList);
+  return pageList;
+}
+
+/**
+ * Removes duplicate elements from |inArray| and returns a new  array.
+ * |inArray| is not affected. It assumes that the array is already sorted.
+ *
+ * @param {Array} inArray The array to be processed.
+ */
+function removeDuplicates(inArray) {
+  var out = [];
+
+  if(inArray.length == 0)
+    return out;
+
+  out.push(inArray[0]);
+  for (var i = 1; i < inArray.length; ++i)
+    if(inArray[i] != inArray[i - 1])
+      out.push(inArray[i]);
+  return out;
 }
 
 /**
@@ -650,7 +678,7 @@ function resetPageRangeFieldTimer() {
  * 2) The newly selected pages differ from the previously selected.
  */
 function onPageSelectionMayHaveChanged() {
-  var currentlySelectedPages = getSelectedPages();
+  var currentlySelectedPages = getSelectedPagesSet();
 
   if (currentlySelectedPages.length == 0)
     return;
