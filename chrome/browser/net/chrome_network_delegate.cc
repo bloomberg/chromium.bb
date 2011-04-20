@@ -12,6 +12,7 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
@@ -76,6 +77,13 @@ int ChromeNetworkDelegate::OnBeforeSendHeaders(
     net::HttpRequestHeaders* headers) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeSendHeaders(
       profile_id_, event_router_.get(), request_id, callback, headers);
+}
+
+void ChromeNetworkDelegate::OnRequestSent(
+    uint64 request_id,
+    const net::HostPortPair& socket_address) {
+  ExtensionWebRequestEventRouter::GetInstance()->OnRequestSent(
+      profile_id_, event_router_.get(), request_id, socket_address);
 }
 
 void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {

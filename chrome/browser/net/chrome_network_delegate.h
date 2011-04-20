@@ -45,6 +45,8 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   virtual int OnBeforeSendHeaders(uint64 request_id,
                                   net::CompletionCallback* callback,
                                   net::HttpRequestHeaders* headers);
+  virtual void OnRequestSent(uint64 request_id,
+                             const net::HostPortPair& socket_address);
   virtual void OnResponseStarted(net::URLRequest* request);
   virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
   virtual void OnURLRequestDestroyed(net::URLRequest* request);

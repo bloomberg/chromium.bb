@@ -55,8 +55,7 @@ function checkExpectations() {
     return;
   }
   // TODO(mpcomplete): allow partial ordering of events
-  chrome.test.assertEq(JSON.stringify(expectedEventData),
-      JSON.stringify(capturedEventData));
+  chrome.test.assertEq(expectedEventData, capturedEventData);
   succeedIfReady();
 }
 
@@ -164,6 +163,12 @@ runTests([
       [ "onBeforeSendHeaders",
         {
           url: URL_HTTP_SIMPLE_LOAD
+        }
+      ],
+      [ "onRequestSent",
+        {
+          url: URL_HTTP_SIMPLE_LOAD,
+          ip: "127.0.0.1"
         }
       ],
     ]);

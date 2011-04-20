@@ -298,6 +298,16 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   if (profile_id == Profile::kInvalidProfileId)
     return net::OK;
 
+  // If this is an HTTP request, keep track of it. HTTP-specific events only
+  // have the request ID, so we'll need to look up the URLRequest from that.
+  // We need to do this even if no extension subscribes to OnBeforeRequest to
+  // guarantee that |http_requests_| is populated if an extension subscribes
+  // to OnBeforeSendHeaders or OnRequestSent.
+  if (request->url().SchemeIs(chrome::kHttpScheme) ||
+      request->url().SchemeIs(chrome::kHttpsScheme)) {
+    http_requests_[request->identifier()] = request;
+  }
+
   int tab_id = -1;
   int window_id = -1;
   ResourceType::Type resource_type = ResourceType::LAST_TYPE;
@@ -308,13 +318,6 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
                            tab_id, window_id, resource_type);
   if (listeners.empty())
     return net::OK;
-
-  // If this is an HTTP request, keep track of it. HTTP-specific events only
-  // have the request ID, so we'll need to look up the URLRequest from that.
-  if (request->url().SchemeIs(chrome::kHttpScheme) ||
-      request->url().SchemeIs(chrome::kHttpsScheme)) {
-    http_requests_[request->identifier()] = request;
-  }
 
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
@@ -351,7 +354,6 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
     return net::OK;
 
   net::URLRequest* request = iter->second;
-  http_requests_.erase(iter);
 
   std::vector<const EventListener*> listeners =
       GetMatchingListeners(profile_id, keys::kOnBeforeSendHeaders, request);
@@ -363,8 +365,7 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
   dict->SetString(keys::kRequestIdKey,
                   base::Uint64ToString(request->identifier()));
   dict->SetString(keys::kUrlKey, request->url().spec());
-  dict->SetDouble(keys::kTimeStampKey,
-                  request->request_time().ToDoubleT() * 1000);
+  dict->SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
   // TODO(mpcomplete): request headers.
   args.Append(dict);
 
@@ -372,6 +373,40 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
                     args))
     return net::ERR_IO_PENDING;
   return net::OK;
+}
+
+void ExtensionWebRequestEventRouter::OnRequestSent(
+    ProfileId profile_id,
+    ExtensionEventRouterForwarder* event_router,
+    uint64 request_id,
+    const net::HostPortPair& socket_address) {
+  if (profile_id == Profile::kInvalidProfileId)
+    return;
+  base::Time time(base::Time::Now());
+
+  HttpRequestMap::iterator iter = http_requests_.find(request_id);
+  if (iter == http_requests_.end())
+    return;
+
+  net::URLRequest* request = iter->second;
+  http_requests_.erase(iter);
+
+  std::vector<const EventListener*> listeners =
+      GetMatchingListeners(profile_id, keys::kOnRequestSent, request);
+  if (listeners.empty())
+    return;
+
+  ListValue args;
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetString(keys::kRequestIdKey,
+                  base::Uint64ToString(request->identifier()));
+  dict->SetString(keys::kUrlKey, request->url().spec());
+  dict->SetString(keys::kIpKey, socket_address.host());
+  dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
+  // TODO(battre): request line and request headers.
+  args.Append(dict);
+
+  DispatchEvent(profile_id, event_router, request, NULL, listeners, args);
 }
 
 void ExtensionWebRequestEventRouter::OnURLRequestDestroyed(

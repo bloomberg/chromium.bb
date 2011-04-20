@@ -22,6 +22,7 @@ class ExtensionEventRouterForwarder;
 class GURL;
 
 namespace net {
+class HostPortPair;
 class HttpRequestHeaders;
 class URLRequest;
 }
@@ -54,6 +55,13 @@ class ExtensionWebRequestEventRouter {
                           uint64 request_id,
                           net::CompletionCallback* callback,
                           net::HttpRequestHeaders* headers);
+
+  // Dispatches the onRequestSent event. This is fired for HTTP(s) requests
+  // only.
+  void OnRequestSent(ProfileId profile_id,
+                     ExtensionEventRouterForwarder* event_router,
+                     uint64 request_id,
+                     const net::HostPortPair& socket_address);
 
   void OnURLRequestDestroyed(ProfileId profile_id, net::URLRequest* request);
 
