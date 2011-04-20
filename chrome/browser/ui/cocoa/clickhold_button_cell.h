@@ -9,12 +9,12 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/gradient_button_cell.h"
+#import "chrome/browser/ui/cocoa/image_button_cell.h"
 
 // A button cell that implements "click hold" behavior after a specified delay
 // or after dragging. If click-hold is never enabled (e.g., if
 // |-setEnableClickHold:| is never called), this behaves like a normal button.
-@interface ClickHoldButtonCell : GradientButtonCell {
+@interface ClickHoldButtonCell : ImageButtonCell {
  @private
   BOOL enableClickHold_;
   NSTimeInterval clickHoldTimeout_;

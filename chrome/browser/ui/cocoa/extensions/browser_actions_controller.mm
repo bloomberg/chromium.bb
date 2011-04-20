@@ -20,6 +20,7 @@
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
 #import "chrome/browser/ui/cocoa/extensions/chevron_menu_button.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
+#import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/pref_names.h"
@@ -28,6 +29,8 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
+#include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 NSString* const kBrowserActionVisibilityChangedNotification =
@@ -37,10 +40,6 @@ namespace {
 const CGFloat kAnimationDuration = 0.2;
 
 const CGFloat kChevronWidth = 14.0;
-
-// Image used for the overflow button.
-NSString* const kOverflowChevronsName =
-    @"browser_actions_overflow_Template.pdf";
 
 // Since the container is the maximum height of the toolbar, we have
 // to move the buttons up by this amount in order to have them look
@@ -779,9 +778,14 @@ class ExtensionServiceObserverBridge : public NotificationObserver,
     chevronMenuButton_.reset([[ChevronMenuButton alloc] init]);
     [chevronMenuButton_ setBordered:NO];
     [chevronMenuButton_ setShowsBorderOnlyWhileMouseInside:YES];
-    NSImage* chevronImage =
-        app::mac::GetCachedImageWithName(kOverflowChevronsName);
-    [chevronMenuButton_ setImage:chevronImage];
+
+    [[chevronMenuButton_ cell] setImageID:IDR_BROWSER_ACTIONS_OVERFLOW
+                           forButtonState:image_button_cell::kDefaultState];
+    [[chevronMenuButton_ cell] setImageID:IDR_BROWSER_ACTIONS_OVERFLOW_H
+                           forButtonState:image_button_cell::kHoverState];
+    [[chevronMenuButton_ cell] setImageID:IDR_BROWSER_ACTIONS_OVERFLOW_P
+                           forButtonState:image_button_cell::kPressedState];
+
     [containerView_ addSubview:chevronMenuButton_];
   }
 

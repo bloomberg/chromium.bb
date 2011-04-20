@@ -2332,6 +2332,8 @@
         'browser/ui/cocoa/hung_renderer_controller.mm',
         'browser/ui/cocoa/hyperlink_button_cell.h',
         'browser/ui/cocoa/hyperlink_button_cell.mm',
+        'browser/ui/cocoa/image_button_cell.h',
+        'browser/ui/cocoa/image_button_cell.mm',
         'browser/ui/cocoa/image_utils.h',
         'browser/ui/cocoa/image_utils.mm',
         'browser/ui/cocoa/importer/import_lock_dialog_cocoa.mm',

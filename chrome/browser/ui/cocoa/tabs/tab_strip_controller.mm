@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/constrained_window_mac.h"
+#import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
 #import "chrome/browser/ui/cocoa/profile_menu_button.h"
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util.h"
@@ -79,11 +80,6 @@ enum {
 #endif  // MAC_OS_X_VERSION_10_7
 
 namespace {
-
-// The images names used for different states of the new tab button.
-NSString* const kNewTabHoverImage = @"newtab_h.pdf";
-NSString* const kNewTabImage = @"newtab.pdf";
-NSString* const kNewTabPressedImage = @"newtab_p.pdf";
 
 // A value to indicate tab layout should use the full available width of the
 // view.
@@ -392,9 +388,12 @@ class NotificationBridge : public NotificationObserver {
 
     // Set the images from code because Cocoa fails to find them in our sub
     // bundle during tests.
-    [newTabButton_ setImage:app::mac::GetCachedImageWithName(kNewTabImage)];
-    [newTabButton_ setAlternateImage:
-        app::mac::GetCachedImageWithName(kNewTabPressedImage)];
+    [[newTabButton_ cell] setImageID:IDR_NEWTAB_BUTTON
+                    forButtonState:image_button_cell::kDefaultState];
+    [[newTabButton_ cell] setImageID:IDR_NEWTAB_BUTTON_H
+                    forButtonState:image_button_cell::kHoverState];
+    [[newTabButton_ cell] setImageID:IDR_NEWTAB_BUTTON_P
+                    forButtonState:image_button_cell::kPressedState];
     newTabButtonShowingHoverImage_ = NO;
     newTabTrackingArea_.reset(
         [[CrTrackingArea alloc] initWithRect:[newTabButton_ bounds]
@@ -1732,11 +1731,10 @@ class NotificationBridge : public NotificationObserver {
 - (void)setNewTabButtonHoverState:(BOOL)shouldShowHover {
   if (shouldShowHover && !newTabButtonShowingHoverImage_) {
     newTabButtonShowingHoverImage_ = YES;
-    [newTabButton_ setImage:
-        app::mac::GetCachedImageWithName(kNewTabHoverImage)];
+    [[newTabButton_ cell] setIsMouseInside:YES];
   } else if (!shouldShowHover && newTabButtonShowingHoverImage_) {
     newTabButtonShowingHoverImage_ = NO;
-    [newTabButton_ setImage:app::mac::GetCachedImageWithName(kNewTabImage)];
+    [[newTabButton_ cell] setIsMouseInside:NO];
   }
 }
 
