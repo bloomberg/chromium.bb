@@ -41,7 +41,72 @@
 #define PATH_LENGTH_HISTOGRAM(name, path) \
     UMA_HISTOGRAM_CUSTOM_COUNTS(name, path.value().length(), 0, 500, 100)
 
+// Record a rate (kB per second) at which extensions are unpacked.
+// Range from 1kB/s to 100mB/s.
+#define UNPACK_RATE_HISTOGRAM(name, rate) \
+    UMA_HISTOGRAM_CUSTOM_COUNTS(name, rate, 1, 100000, 100);
+
 const char SandboxedExtensionUnpacker::kExtensionHeaderMagic[] = "Cr24";
+
+namespace {
+
+void RecordSuccessfulUnpackTimeHistograms(
+    const FilePath& crx_path, const base::TimeDelta unpack_time) {
+
+  const int64 kBytesPerKb = 1024;
+  const int64 kBytesPerMb = 1024 * 1024;
+
+  UMA_HISTOGRAM_TIMES("Extensions.SandboxUnpackSuccessTime", unpack_time);
+
+  // To get a sense of how CRX size impacts unpack time, record unpack
+  // time for several increments of CRX size.
+  int64 crx_file_size;
+  if (!file_util::GetFileSize(crx_path, &crx_file_size)) {
+    UMA_HISTOGRAM_COUNTS("Extensions.SandboxUnpackSuccessCantGetCrxSize", 1);
+    return;
+  }
+
+  // Cast is safe as long as the number of bytes in the CRX is less than
+  // 2^31 * 2^10.
+  int crx_file_size_kb = static_cast<int>(crx_file_size / kBytesPerKb);
+  UMA_HISTOGRAM_COUNTS(
+      "Extensions.SandboxUnpackSuccessCrxSize", crx_file_size_kb);
+
+  // We have time in seconds and file size in bytes.  We want the rate bytes are
+  // unpacked in kB/s.
+  double file_size_kb =
+      static_cast<double>(crx_file_size) / static_cast<double>(kBytesPerKb);
+  int unpack_rate_kb_per_s =
+      static_cast<int>(file_size_kb / unpack_time.InSecondsF());
+  UNPACK_RATE_HISTOGRAM("Extensions.SandboxUnpackRate", unpack_rate_kb_per_s);
+
+  if (crx_file_size < 50.0 * kBytesPerKb) {
+    UNPACK_RATE_HISTOGRAM(
+        "Extensions.SandboxUnpackRateUnder50kB", unpack_rate_kb_per_s);
+
+  } else if (crx_file_size < 1 * kBytesPerMb) {
+    UNPACK_RATE_HISTOGRAM(
+        "Extensions.SandboxUnpackRate50kBTo1mB", unpack_rate_kb_per_s);
+
+  } else if (crx_file_size < 2 * kBytesPerMb) {
+    UNPACK_RATE_HISTOGRAM(
+        "Extensions.SandboxUnpackRate1To2mB", unpack_rate_kb_per_s);
+
+  } else if (crx_file_size < 5 * kBytesPerMb) {
+    UNPACK_RATE_HISTOGRAM(
+        "Extensions.SandboxUnpackRate2To5mB", unpack_rate_kb_per_s);
+
+  } else if (crx_file_size < 10 * kBytesPerMb) {
+    UNPACK_RATE_HISTOGRAM(
+        "Extensions.SandboxUnpackRate5To10mB", unpack_rate_kb_per_s);
+
+  } else {
+    UNPACK_RATE_HISTOGRAM(
+        "Extensions.SandboxUnpackRateOver10mB", unpack_rate_kb_per_s);
+  }
+}
+
+}  // namespace
 
 SandboxedExtensionUnpacker::SandboxedExtensionUnpacker(
     const FilePath& crx_path,
@@ -81,6 +146,8 @@ void SandboxedExtensionUnpacker::Start() {
   // We assume that we are started on the thread that the client wants us to do
   // file IO on.
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&thread_identifier_));
+
+  unpack_start_time_ = base::TimeTicks::Now();
 
   PATH_LENGTH_HISTOGRAM("Extensions.SandboxUnpackInitialCrxPathLength",
                         crx_path_);
@@ -408,12 +475,17 @@ void SandboxedExtensionUnpacker::ReportFailure(FailureReason reason,
   UMA_HISTOGRAM_COUNTS("Extensions.SandboxUnpackFailure", 1);
   UMA_HISTOGRAM_ENUMERATION("Extensions.SandboxUnpackFailureReason",
                             reason, NUM_FAILURE_REASONS);
+  UMA_HISTOGRAM_TIMES("Extensions.SandboxUnpackFailureTime",
+                      base::TimeTicks::Now() - unpack_start_time_);
 
   client_->OnUnpackFailure(error);
 }
 
 void SandboxedExtensionUnpacker::ReportSuccess() {
   UMA_HISTOGRAM_COUNTS("Extensions.SandboxUnpackSuccess", 1);
+
+  RecordSuccessfulUnpackTimeHistograms(
+      crx_path_, base::TimeTicks::Now() - unpack_start_time_);
 
   // Client takes ownership of temporary directory and extension.
   client_->OnUnpackSuccess(temp_dir_.Take(), extension_root_, extension_);

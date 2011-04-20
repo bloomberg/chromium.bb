@@ -118,7 +118,7 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
     COULD_NOT_LOCALIZE_EXTENSION,
     INVALID_MANIFEST,
 
-    //SandboxedExtensionUnpacker::OnUnpackExtensionFailed()
+    // SandboxedExtensionUnpacker::OnUnpackExtensionFailed()
     UNPACKER_CLIENT_FAILED,
 
     // SandboxedExtensionUnpacker::OnProcessCrashed()
@@ -226,6 +226,9 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
 
   // The public key that was extracted from the CRX header.
   std::string public_key_;
+
+  // Time at which unpacking started. Used to compute the time unpacking takes.
+  base::TimeTicks unpack_start_time_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_SANDBOXED_EXTENSION_UNPACKER_H_
