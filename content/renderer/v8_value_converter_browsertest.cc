@@ -82,3 +82,18 @@ TEST_F(V8ValueConverterTest, BasicRoundTrip) {
   EXPECT_NE(&original_root, new_root.get());
   EXPECT_TRUE(original_root.Equals(new_root.get()));
 }
+
+TEST_F(V8ValueConverterTest, KeysWithDots) {
+  DictionaryValue original;
+  original.SetWithoutPathExpansion("foo.bar", Value::CreateStringValue("baz"));
+
+  v8::Context::Scope context_scope(context_);
+  v8::HandleScope handle_scope;
+
+  V8ValueConverter converter;
+  scoped_ptr<Value> copy(
+      converter.FromV8Value(
+          converter.ToV8Value(&original, context_), context_));
+
+  EXPECT_TRUE(original.Equals(copy.get()));
+}

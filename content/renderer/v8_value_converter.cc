@@ -64,7 +64,7 @@ v8::Handle<v8::Value> V8ValueConverter::ToV8ValueImpl(Value* value) {
 
     default:
       NOTREACHED() << "Unexpected value type: " << value->GetType();
-      return v8::Undefined();
+      return v8::Null();
   }
 }
 
@@ -149,8 +149,8 @@ DictionaryValue* V8ValueConverter::FromV8Object(v8::Handle<v8::Object> val) {
     v8::Handle<v8::String> name(
         v8::Handle<v8::String>::Cast(property_names->Get(i)));
     v8::String::Utf8Value name_utf8(name->ToString());
-    result->Set(std::string(*name_utf8, name_utf8.length()),
-                FromV8ValueImpl(val->Get(name)));
+    result->SetWithoutPathExpansion(std::string(*name_utf8, name_utf8.length()),
+                                    FromV8ValueImpl(val->Get(name)));
   }
   return result;
 }
