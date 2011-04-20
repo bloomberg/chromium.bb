@@ -47,7 +47,12 @@ BOT_ASSIGNMENT = {
     'lucid64-pnacl2':
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-x8664',
     # Pnacl spec2k bots.
-    # TODO(robertm,bradnelson,jvoung): add these here
+    'lucid64-spec-arm':
+        'bash tests/spec2k/bot_spec.sh 1 ~/cpu2000-redhat64-ia32',
+    'lucid64-spec-x86':
+        'bash tests/spec2k/bot_spec.sh 2 ~/cpu2000-redhat64-ia32',
+    'lucid64-pnacl-translator':
+        'bash tests/spec2k/bot_spec.sh 3 ~/cpu2000-redhat64-ia32',
     # Valgrind bots.
     'karmic64-valgrind': 'bash buildbot/buildbot_valgrind.sh',
     # Coverage.
