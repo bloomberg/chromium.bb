@@ -149,7 +149,6 @@ TEST_F(SkiaUtilsMacTest, MultipleBitmapsToNSImage) {
   EXPECT_EQ(2u, [[image representations] count]);
 
   for (NSBitmapImageRep* imageRep in [image representations]) {
-    NSBitmapImageRep* imageRep = [[image representations] objectAtIndex:0];
     bool isred = [imageRep size].width == redWidth;
     if (isred) {
       EXPECT_DOUBLE_EQ(redHeight, [imageRep size].height);
