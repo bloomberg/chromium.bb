@@ -173,8 +173,10 @@ void WebApplicationCacheHostImpl::willStartMainResourceRequest(
       spawning_frame = frame;
 
     WebApplicationCacheHostImpl* spawning_host = FromFrame(spawning_frame);
-    if (spawning_host && (spawning_host != this))
+    if (spawning_host && (spawning_host != this) &&
+        (spawning_host->status_ != UNCACHED)) {
       backend_->SetSpawningHostId(host_id_, spawning_host->host_id());
+    }
   }
 }
 
