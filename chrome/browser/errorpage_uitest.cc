@@ -51,7 +51,7 @@ TEST_F(ErrorPageTest, DNSError_GoBack1) {
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
 }
 
-// Flaky on Linux, see http://crbug.com/19361
+// Flaky on Linux, see http://crbug.com/79412
 #if defined(OS_LINUX)
 #define MAYBE_DNSError_GoBack2 FLAKY_DNSError_GoBack2
 #else
@@ -80,7 +80,7 @@ TEST_F(ErrorPageTest, MAYBE_DNSError_GoBack2) {
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
 }
 
-// Flaky on Linux, see http://crbug.com/19361
+// Flaky on Linux, see http://crbug.com/79412
 #if defined(OS_LINUX)
 #define MAYBE_DNSError_GoBack2AndForward FLAKY_DNSError_GoBack2AndForward
 #else
@@ -113,7 +113,7 @@ TEST_F(ErrorPageTest, MAYBE_DNSError_GoBack2AndForward) {
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
 }
 
-// Flaky on Linux, see http://crbug.com/19361
+// Flaky on Linux, see http://crbug.com/79412
 #if defined(OS_LINUX)
 #define MAYBE_DNSError_GoBack2Forward2 FLAKY_DNSError_GoBack2Forward2
 #else
