@@ -43,10 +43,15 @@ class GtkPrinterList {
     }
   }
 
+  // Can return NULL if there's no default printer. E.g. Printer on a laptop
+  // is "home_printer", but the laptop is at work.
   GtkPrinter* default_printer() {
     return default_printer_;
   }
 
+  // Can return NULL if the printer cannot be found due to:
+  // - Printer list out of sync with printer dialog UI.
+  // - Querying for non-existant printers like 'Print to PDF'.
   GtkPrinter* GetPrinterWithName(const char* name) {
     if (!name || !*name)
       return NULL;
@@ -149,11 +154,11 @@ bool PrintDialogGtk::UpdateSettings(const DictionaryValue& settings,
 
   scoped_ptr<GtkPrinterList> printer_list(new GtkPrinterList);
   printer_ = printer_list->GetPrinterWithName(printer_name.c_str());
-  if (!printer_)
-    return false;
-  g_object_ref(printer_);
-  gtk_print_settings_set_printer(gtk_settings_,
-                                 gtk_printer_get_name(printer_));
+  if (printer_) {
+    g_object_ref(printer_);
+    gtk_print_settings_set_printer(gtk_settings_,
+                                   gtk_printer_get_name(printer_));
+  }
 
   bool landscape;
   if (!settings.GetBoolean(printing::kSettingLandscape, &landscape))
