@@ -77,6 +77,7 @@ BUGDPRANKE DEBUG LINUX : fast/frames/content-opacity-1.html = CRASH
 BUGDPRANKE DEBUG LINUX : fast/frames/content-opacity-2.html = CRASH
 BUGDPRANKE DEBUG WIN LINUX : fast/table/stale-grid-crash.html = CRASH
 BUGDPRANKE DEBUG MAC : fast/css/background-clip-values.html = CRASH
+BUGDPRANKE DEBUG MAC : fast/css/background-currentcolor.html = CRASH
 
 BUGDPRANKE LINUX : fast/gradients/crash-on-zero-radius.html = IMAGE
 BUGDPRANKE LINUX : fast/gradients/generated-gradients.html = IMAGE
@@ -85,4 +86,3 @@ BUGDPRANKE LINUX : fast/gradients/simple-gradients.html = IMAGE
 BUGDPRANKE LINUX : svg/W3C-SVG-1.1/pservers-grad-13-b.svg = IMAGE
 BUGDPRANKE LINUX : svg/custom/radial-gradient-with-outstanding-focalPoint.svg = IMAGE
 BUGDPRANKE LINUX : canvas/philip/tests/2d.gradient.radial.touch2.html = TEXT
-
