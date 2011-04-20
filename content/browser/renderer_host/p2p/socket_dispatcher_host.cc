@@ -71,6 +71,7 @@ bool P2PSocketDispatcherHost::OnMessageReceived(const IPC::Message& message,
 
 void P2PSocketDispatcherHost::OnCreateSocket(
     const IPC::Message& msg, P2PSocketType type, int socket_id,
+    const net::IPEndPoint& local_address,
     const net::IPEndPoint& remote_address) {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE, NewRunnableMethod(
@@ -108,11 +109,6 @@ void P2PSocketDispatcherHost::FinishCreateSocket(
   if (sockets_.Lookup(socket_id)) {
     LOG(ERROR) << "Received P2PHostMsg_CreateSocket for socket "
         "that already exists.";
-    return;
-  }
-
-  if (type != P2P_SOCKET_UDP) {
-    Send(new P2PMsg_OnError(routing_id, socket_id));
     return;
   }
 

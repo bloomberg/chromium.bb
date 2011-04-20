@@ -25,8 +25,11 @@ class P2PSocketDispatcherHost : public BrowserMessageFilter {
 
  private:
   // Handlers for the messages coming from the renderer.
-  void OnCreateSocket(const IPC::Message& msg, P2PSocketType type,
-                      int socket_id, const net::IPEndPoint& remote_address);
+  void OnCreateSocket(const IPC::Message& msg,
+                      P2PSocketType type,
+                      int socket_id,
+                      const net::IPEndPoint& local_address,
+                      const net::IPEndPoint& remote_address);
   void OnAcceptIncomingTcpConnection(int listen_socket_id,
                                      net::IPEndPoint remote_address,
                                      int connected_socket_id);
@@ -37,14 +40,17 @@ class P2PSocketDispatcherHost : public BrowserMessageFilter {
 
   // Helpers for OnCreateSocket().
   //
-  // TODO(sergeyu): Remove these methods. |local_address| should be a
-  // parameter in the CreateSocket() message.
-  void GetLocalAddressAndCreateSocket(
-      int routing_id, P2PSocketType type, int socket_id,
-      const net::IPEndPoint& remote_address);
-  void FinishCreateSocket(
-      int routing_id, const net::IPEndPoint& local_address, P2PSocketType type,
-      int socket_id, const net::IPEndPoint& remote_address);
+  // TODO(sergeyu): Remove these methods. Use |local_address| passed
+  // in OnCreateSocket().
+  void GetLocalAddressAndCreateSocket(int routing_id,
+                                      P2PSocketType type,
+                                      int socket_id,
+                                      const net::IPEndPoint& remote_address);
+  void FinishCreateSocket(int routing_id,
+                          const net::IPEndPoint& local_address,
+                          P2PSocketType type,
+                          int socket_id,
+                          const net::IPEndPoint& remote_address);
 
 
   IDMap<P2PSocketHost, IDMapOwnPointer> sockets_;

@@ -4,6 +4,7 @@
 
 #include "content/renderer/p2p/ipc_socket_factory.h"
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "content/renderer/p2p/socket_client.h"
@@ -22,8 +23,10 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
   IpcPacketSocket();
   virtual ~IpcPacketSocket();
 
+  // Always takes ownership of client even if initialization fails.
   bool Init(P2PSocketType type, P2PSocketClient* client,
-            const talk_base::SocketAddress& address);
+            const talk_base::SocketAddress& local_address,
+            const talk_base::SocketAddress& remote_address);
 
   // talk_base::AsyncPacketSocket interface.
   virtual talk_base::SocketAddress GetLocalAddress(bool* allocated) const;
@@ -38,11 +41,13 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
   virtual int GetError() const;
   virtual void SetError(int error);
 
-  // P2PSocketClient::Delegate
-  virtual void OnOpen(const net::IPEndPoint& address);
+  // P2PSocketClient::Delegate implementation.
+  virtual void OnOpen(const net::IPEndPoint& address) OVERRIDE;
+  virtual void OnIncomingTcpConnection(const net::IPEndPoint& address,
+                                       P2PSocketClient* client) OVERRIDE;
   virtual void OnError();
   virtual void OnDataReceived(const net::IPEndPoint& address,
-                              const std::vector<char>& data);
+                              const std::vector<char>& data) OVERRIDE;
 
  private:
   enum State {
@@ -52,6 +57,10 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
     STATE_CLOSED,
     STATE_ERROR,
   };
+
+  void InitAcceptedTcp(P2PSocketClient* client,
+                       const talk_base::SocketAddress& local_address,
+                       const talk_base::SocketAddress& remote_address);
 
   // Message loop on which this socket was created and being used.
   MessageLoop* message_loop_;
@@ -91,23 +100,45 @@ IpcPacketSocket::~IpcPacketSocket() {
 }
 
 bool IpcPacketSocket::Init(P2PSocketType type, P2PSocketClient* client,
-                           const talk_base::SocketAddress& address) {
+                           const talk_base::SocketAddress& local_address,
+                           const talk_base::SocketAddress& remote_address) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
 
   client_ = client;
-  remote_address_ = address;
+  local_address_ = local_address;
+  remote_address_ = remote_address;
   state_ = STATE_OPENING;
 
-  net::IPEndPoint address_chrome;
-  if (!jingle_glue::SocketAddressToIPEndPoint(address, &address_chrome)) {
+  net::IPEndPoint local_endpoint;
+  if (!jingle_glue::SocketAddressToIPEndPoint(local_address, &local_endpoint)) {
     return false;
   }
 
-  client_->Init(type, address_chrome, this,
+  net::IPEndPoint remote_endpoint;
+  if (!jingle_glue::SocketAddressToIPEndPoint(
+          remote_address, &remote_endpoint)) {
+    return false;
+  }
+
+  client_->Init(type, local_endpoint, remote_endpoint, this,
                 base::MessageLoopProxy::CreateForCurrentThread());
 
   return true;
+}
+
+void IpcPacketSocket::InitAcceptedTcp(
+    P2PSocketClient* client,
+    const talk_base::SocketAddress& local_address,
+    const talk_base::SocketAddress& remote_address) {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(state_, STATE_UNINITIALIZED);
+
+  client_ = client;
+  local_address_ = local_address;
+  remote_address_ = remote_address;
+  state_ = STATE_OPEN;
+  client_->set_delegate(this);
 }
 
 // talk_base::AsyncPacketSocket interface.
@@ -115,7 +146,9 @@ talk_base::SocketAddress IpcPacketSocket::GetLocalAddress(
      bool* allocated) const {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
 
-  *allocated = address_initialized_;
+  if (allocated) {
+    *allocated = address_initialized_;
+  }
   return local_address_;
 }
 
@@ -225,10 +258,28 @@ void IpcPacketSocket::OnOpen(const net::IPEndPoint& address) {
   if (!jingle_glue::IPEndPointToSocketAddress(address, &local_address_)) {
     // Always expect correct IPv4 address to be allocated.
     NOTREACHED();
+    OnError();
+    return;
   }
   SignalAddressReady(this, local_address_);
   address_initialized_ = true;
   state_ = STATE_OPEN;
+}
+
+void IpcPacketSocket::OnIncomingTcpConnection(
+    const net::IPEndPoint& address,
+    P2PSocketClient* client) {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+
+  scoped_ptr<IpcPacketSocket> socket(new IpcPacketSocket());
+
+  talk_base::SocketAddress remote_address;
+  if (!jingle_glue::IPEndPointToSocketAddress(address, &remote_address)) {
+    // Always expect correct IPv4 address to be allocated.
+    NOTREACHED();
+  }
+  socket->InitAcceptedTcp(client, local_address_, remote_address);
+  SignalNewConnection(this, socket.release());
 }
 
 void IpcPacketSocket::OnError() {
@@ -270,20 +321,27 @@ talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateUdpSocket(
   // TODO(sergeyu): Respect local_address and port limits here (need
   // to pass them over IPC channel to the browser).
   if (!socket->Init(P2P_SOCKET_UDP, socket_client,
-                    talk_base::SocketAddress())) {
+                    local_address, talk_base::SocketAddress())) {
     return NULL;
   }
-
-  // Socket increments reference count if Init() was successful.
   return socket.release();
 }
 
 talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateServerTcpSocket(
     const talk_base::SocketAddress& local_address, int min_port, int max_port,
     bool listen, bool ssl) {
-  // TODO(sergeyu): Implement this.
-  NOTIMPLEMENTED();
-  return NULL;
+  // TODO(sergeyu): Implement SSL support.
+  if (ssl)
+    return NULL;
+
+  talk_base::SocketAddress crome_address;
+  P2PSocketClient* socket_client = new P2PSocketClient(socket_dispatcher_);
+  scoped_ptr<IpcPacketSocket> socket(new IpcPacketSocket());
+  if (!socket->Init(P2P_SOCKET_TCP_SERVER, socket_client, local_address,
+                    talk_base::SocketAddress())) {
+    return NULL;
+  }
+  return socket.release();
 }
 
 talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateClientTcpSocket(
@@ -291,7 +349,15 @@ talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateClientTcpSocket(
     const talk_base::SocketAddress& remote_address,
     const talk_base::ProxyInfo& proxy_info,
     const std::string& user_agent, bool ssl) {
-  // TODO(sergeyu): Implement this;
-  NOTIMPLEMENTED();
-  return NULL;
+  // TODO(sergeyu): Implement SSL support.
+  if (ssl)
+    return NULL;
+
+  talk_base::SocketAddress crome_address;
+  P2PSocketClient* socket_client = new P2PSocketClient(socket_dispatcher_);
+  scoped_ptr<IpcPacketSocket> socket(new IpcPacketSocket());
+  if (!socket->Init(P2P_SOCKET_TCP_CLIENT, socket_client, local_address,
+                    remote_address))
+    return NULL;
+  return socket.release();
 }

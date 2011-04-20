@@ -26,8 +26,7 @@ class P2PSocketHostTcp : public P2PSocketHost {
                    int routing_id, int id);
   virtual ~P2PSocketHostTcp();
 
-  bool InitAccepted(const net::IPEndPoint& local_address,
-                    const net::IPEndPoint& remote_address,
+  bool InitAccepted(const net::IPEndPoint& remote_address,
                     net::ClientSocket* socket);
 
   // P2PSocketHost overrides.

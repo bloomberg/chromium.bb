@@ -56,6 +56,7 @@ class P2PSocketDispatcher : public RenderViewObserver {
 
   // Incoming message handlers.
   void OnSocketCreated(int socket_id, const net::IPEndPoint& address);
+  void OnIncomingTcpConnection(int socket_id, const net::IPEndPoint& address);
   void OnError(int socket_id);
   void OnDataReceived(int socket_id, const net::IPEndPoint& address,
                       const std::vector<char>& data);

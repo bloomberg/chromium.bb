@@ -31,6 +31,8 @@ class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
     virtual ~Delegate() { }
 
     virtual void OnOpen(const net::IPEndPoint& address) = 0;
+    virtual void OnIncomingTcpConnection(const net::IPEndPoint& address,
+                                         P2PSocketClient* client) = 0;
     virtual void OnError() = 0;
     virtual void OnDataReceived(const net::IPEndPoint& address,
                                 const std::vector<char>& data) = 0;
@@ -41,7 +43,9 @@ class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
   // Initialize socket of the specified |type| and connected to the
   // specified |address|. |address| matters only when |type| is set to
   // P2P_SOCKET_TCP_CLIENT.
-  void Init(P2PSocketType type, const net::IPEndPoint& address,
+  void Init(P2PSocketType type,
+            const net::IPEndPoint& local_address,
+            const net::IPEndPoint& remote_address,
             Delegate* delegate,
             scoped_refptr<base::MessageLoopProxy> delegate_loop);
 
@@ -53,6 +57,8 @@ class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
   void Close();
 
   int socket_id() const { return socket_id_; }
+
+  void set_delegate(Delegate* delegate);
 
  private:
   enum State {
@@ -72,19 +78,22 @@ class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
 
   // Message handlers that run on IPC thread.
   void OnSocketCreated(const net::IPEndPoint& address);
+  void OnIncomingTcpConnection(const net::IPEndPoint& address);
   void OnError();
   void OnDataReceived(const net::IPEndPoint& address,
                       const std::vector<char>& data);
 
   // Proxy methods that deliver messages to the delegate thread.
   void DeliverOnSocketCreated(const net::IPEndPoint& address);
+  void DeliverOnIncomingTcpConnection(
+      const net::IPEndPoint& address,
+      scoped_refptr<P2PSocketClient> new_client);
   void DeliverOnError();
   void DeliverOnDataReceived(const net::IPEndPoint& address,
                              const std::vector<char>& data);
 
   // Scheduled on the IPC thread to finish closing the connection.
   void DoClose();
-
 
   // Called by the dispatcher when it is destroyed.
   void Detach();

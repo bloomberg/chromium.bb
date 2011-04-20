@@ -128,8 +128,10 @@ P2PSocketHost* P2PSocketHostTcpServer::AcceptIncomingTcpConnection(
 
   net::ClientSocket* socket = it->second;
   accepted_sockets_.erase(it);
-  P2PSocketHostTcp* result =
-      new P2PSocketHostTcp(message_sender_, routing_id_, id);
-  result->InitAccepted(local_address_, remote_address, socket);
-  return result;
+  scoped_ptr<P2PSocketHostTcp> result(
+      new P2PSocketHostTcp(message_sender_, routing_id_, id));
+  if (!result->InitAccepted(remote_address, socket))
+    return NULL;
+
+  return result.release();
 }

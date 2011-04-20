@@ -4,18 +4,11 @@
 
 #include "content/browser/renderer_host/p2p/socket_host_tcp.h"
 
-#include "build/build_config.h"
-
-#if defined(OS_WIN)
-#include <winsock2.h>  // for htonl
-#else
-#include <arpa/inet.h>
-#endif
-
 #include "content/common/p2p_messages.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/base/sys_byteorder.h"
 #include "net/socket/tcp_client_socket.h"
 
 namespace {
@@ -43,21 +36,27 @@ P2PSocketHostTcp::~P2PSocketHostTcp() {
   }
 }
 
-bool P2PSocketHostTcp::InitAccepted(const net::IPEndPoint& local_address,
-                                    const net::IPEndPoint& remote_address,
+bool P2PSocketHostTcp::InitAccepted(const net::IPEndPoint& remote_address,
                                     net::ClientSocket* socket) {
+  DCHECK(socket);
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
-  state_ = STATE_CONNECTING;
-  OnConnected(net::OK);
+
+  remote_address_ = remote_address;
+  socket_.reset(socket);
+  state_ = STATE_OPEN;
+  DoRead();
   return state_ != STATE_ERROR;
 }
 
 bool P2PSocketHostTcp::Init(const net::IPEndPoint& local_address,
                             const net::IPEndPoint& remote_address) {
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
+
+  remote_address_ = remote_address;
   state_ = STATE_CONNECTING;
   socket_.reset(new net::TCPClientSocket(
-      net::AddressList(), NULL, net::NetLog::Source()));
+      net::AddressList(remote_address.address(), remote_address.port(), false),
+      NULL, net::NetLog::Source()));
   int result = socket_->Connect(&connect_callback_);
   if (result != net::ERR_IO_PENDING) {
     OnConnected(result);

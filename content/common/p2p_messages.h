@@ -33,9 +33,10 @@ IPC_MESSAGE_ROUTED3(P2PMsg_OnDataReceived,
 
 // P2P Socket messages sent from the renderer to the browser.
 
-IPC_MESSAGE_ROUTED3(P2PHostMsg_CreateSocket,
+IPC_MESSAGE_ROUTED4(P2PHostMsg_CreateSocket,
                     P2PSocketType /* type */,
                     int /* socket_id */,
+                    net::IPEndPoint /* local_address */,
                     net::IPEndPoint /* remote_address */)
 
 IPC_MESSAGE_ROUTED3(P2PHostMsg_AcceptIncomingTcpConnection,
