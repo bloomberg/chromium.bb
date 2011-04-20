@@ -50,7 +50,7 @@ class BaseLinuxGLContext : public GLContext {
 
 // This class is a wrapper around a GL context that renders directly to a
 // window.
-class ViewGLContext : public GLContext {
+class ViewGLContext : public BaseLinuxGLContext {
  public:
   explicit ViewGLContext(gfx::PluginWindowHandle window)
       : window_(window),
