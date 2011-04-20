@@ -73,6 +73,13 @@ class ExtensionWebRequestEventRouter {
                      uint64 request_id,
                      const net::HostPortPair& socket_address);
 
+  // Dispatches the onBeforeRedirect event. This is fired for HTTP(s) requests
+  // only.
+  void OnBeforeRedirect(ProfileId profile_id,
+                        ExtensionEventRouterForwarder* event_router,
+                        net::URLRequest* request,
+                        const GURL& new_location);
+
   void OnURLRequestDestroyed(ProfileId profile_id, net::URLRequest* request);
 
   // Called when an event listener handles a blocking event and responds.
@@ -152,6 +159,9 @@ class ExtensionWebRequestEventRouter {
   // Sets the flag that |event_type| has been signaled for |request_id|.
   // Returns the value of the flag before setting it.
   bool GetAndSetSignaled(uint64 request_id, EventTypes event_type);
+
+  // Clears the flag that |event_type| has been signaled for |request_id|.
+  void ClearSignaled(uint64 request_id, EventTypes event_type);
 
   // A map for each profile that maps an event name to a set of extensions that
   // are listening to that event.

@@ -86,6 +86,13 @@ void ChromeNetworkDelegate::OnRequestSent(
       profile_id_, event_router_.get(), request_id, socket_address);
 }
 
+void ChromeNetworkDelegate::OnBeforeRedirect(net::URLRequest* request,
+                                             const GURL& new_location) {
+  ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRedirect(
+      profile_id_, event_router_.get(), request, new_location);
+}
+
+
 void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
   ForwardProxyErrors(request, event_router_.get(), profile_id_);
 }
