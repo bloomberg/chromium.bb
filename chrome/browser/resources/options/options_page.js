@@ -437,8 +437,10 @@ cr.define('options', function() {
   OptionsPage.setState = function(data) {
     if (data && data.pageName) {
       // It's possible an overlay may be the last top-level page shown.
-      if (this.isOverlayVisible_())
+      if (this.isOverlayVisible_() &&
+          this.registeredOverlayPages[data.pageName] == undefined) {
         this.hideOverlay_();
+      }
 
       this.showPageByName(data.pageName, false);
     }
