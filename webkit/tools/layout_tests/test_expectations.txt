@@ -17,7 +17,7 @@ BUGCASEQ WIN : svg/css/group-with-shadow.svg = IMAGE
 BUGCASEQ WIN : svg/css/shadow-changes.svg = IMAGE
 BUGCASEQ WIN : svg/css/text-shadow-multiple.xhtml = IMAGE
 BUGCASEQ WIN : transitions/svg-text-shadow-transition.html = IMAGE
-BUGCASEQ : svg/css/composite-shadow-text.svg = IMAGE
+BUGCASEQ WIN : svg/css/composite-shadow-text.svg = IMAGE
 
 BUGCASEQ MAC : svg/dynamic-updates/SVGFEDiffuseLightingElement-inherit-lighting-color-css-prop.html = IMAGE
 BUGCASEQ MAC : svg/dynamic-updates/SVGFEFloodElement-inherit-flood-color.html = IMAGE
