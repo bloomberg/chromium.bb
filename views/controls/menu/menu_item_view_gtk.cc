@@ -26,14 +26,10 @@ static const SkColor kSelectedBackgroundColor = SkColorSetRGB(246, 249, 253);
 
 gfx::Size MenuItemView::CalculatePreferredSize() {
   const gfx::Font& font = MenuConfig::instance().font;
-  // TODO(sky): this is a workaround until I figure out why font.height()
-  // isn't returning the right thing. We really only want to include
-  // kFaviconSize if we're showing icons.
-  int content_height = std::max(kFaviconSize, font.GetHeight());
   return gfx::Size(
       font.GetStringWidth(title_) + label_start_ +
           item_right_margin_ + GetChildPreferredWidth(),
-      content_height + GetBottomMargin() + GetTopMargin());
+      font.GetHeight() + GetBottomMargin() + GetTopMargin());
 }
 
 void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
