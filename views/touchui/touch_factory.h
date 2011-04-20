@@ -7,7 +7,6 @@
 #pragma once
 
 #include <bitset>
-#include <set>
 #include <vector>
 
 #include "base/memory/singleton.h"
@@ -36,6 +35,10 @@ class TouchFactory {
 
   // Updates the list of devices.
   void UpdateDeviceList(Display* display);
+
+  // Checks whether an XI2 event should be processed or not (i.e. if the event
+  // originated from a device we are interested in).
+  bool ShouldProcessXI2Event(XEvent* xevent);
 
   // Setup an X Window for XInput2 events.
   void SetupXI2ForXWindow(::Window xid);
@@ -113,7 +116,7 @@ class TouchFactory {
 
   // A quick lookup table for determining if events from the pointer device
   // should be processed.
-  std::set<int> pointer_devices_;
+  std::bitset<kMaxDeviceNum> pointer_device_lookup_;
 
   // A quick lookup table for determining if a device is a touch device.
   std::bitset<kMaxDeviceNum> touch_device_lookup_;

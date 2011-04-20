@@ -119,7 +119,7 @@ TouchFactory* TouchFactory::GetInstance() {
 TouchFactory::TouchFactory()
     : is_cursor_visible_(true),
       cursor_timer_(),
-      pointer_devices_(),
+      pointer_device_lookup_(),
       touch_device_list_() {
   char nodata[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
   XColor black;
@@ -139,10 +139,18 @@ TouchFactory::TouchFactory()
   // windows created by other means (e.g. for context menus).
   SetupGtkWidgetRealizeNotifier(this);
 
-  // TODO(sad): Select on root for XI_HierarchyChanged so that floats_ and
-  // masters_ can be kept up-to-date. This is a relatively rare event, so we can
-  // put it off for a later time.
-  // Note: It is not necessary to listen for XI_DeviceChanged events.
+  // Make sure the list of devices is kept up-to-date by listening for
+  // XI_HierarchyChanged event on the root window.
+  unsigned char mask[XIMaskLen(XI_LASTEVENT)];
+  memset(mask, 0, sizeof(mask));
+
+  XISetMask(mask, XI_HierarchyChanged);
+
+  XIEventMask evmask;
+  evmask.deviceid = XIAllDevices;
+  evmask.mask_len = sizeof(mask);
+  evmask.mask = mask;
+  XISelectEvents(display, ui::GetX11RootWindow(), &evmask, 1);
 }
 
 TouchFactory::~TouchFactory() {
@@ -185,12 +193,12 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   // is possible), then the device is detected as a floating device, and a
   // floating device is not connected to a master device. So it is necessary to
   // also select on the floating devices.
-  pointer_devices_.clear();
+  pointer_device_lookup_.reset();
   XIDeviceInfo* devices = XIQueryDevice(display, XIAllDevices, &count);
   for (int i = 0; i < count; i++) {
     XIDeviceInfo* devinfo = devices + i;
     if (devinfo->use == XIFloatingSlave || devinfo->use == XIMasterPointer) {
-      pointer_devices_.insert(devinfo->deviceid);
+      pointer_device_lookup_[devinfo->deviceid] = true;
     }
   }
   XIFreeDeviceInfo(devices);
@@ -198,7 +206,27 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   SetupValuator();
 }
 
+bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
+  DCHECK_EQ(GenericEvent, xev->type);
+
+  XGenericEventCookie* cookie = &xev->xcookie;
+  if (cookie->evtype != XI_ButtonPress &&
+      cookie->evtype != XI_ButtonRelease &&
+      cookie->evtype != XI_Motion)
+    return true;
+
+  XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(cookie->data);
+  return pointer_device_lookup_[xiev->sourceid];
+}
+
 void TouchFactory::SetupXI2ForXWindow(Window window) {
+  // Setup mask for mouse events. It is possible that a device is loaded/plugged
+  // in after we have setup XInput2 on a window. In such cases, we need to
+  // either resetup XInput2 for the window, so that we get events from the new
+  // device, or we need to listen to events from all devices, and then filter
+  // the events from uninteresting devices. We do the latter because that's
+  // simpler.
+
   Display* display = ui::GetXDisplay();
 
   unsigned char mask[XIMaskLen(XI_LASTEVENT)];
@@ -208,16 +236,11 @@ void TouchFactory::SetupXI2ForXWindow(Window window) {
   XISetMask(mask, XI_ButtonRelease);
   XISetMask(mask, XI_Motion);
 
-  XIEventMask evmask[pointer_devices_.size()];
-  int count = 0;
-  for (std::set<int>::const_iterator iter = pointer_devices_.begin();
-       iter != pointer_devices_.end();
-       ++iter, ++count) {
-    evmask[count].deviceid = *iter;
-    evmask[count].mask_len = sizeof(mask);
-    evmask[count].mask = mask;
-  }
-  XISelectEvents(display, window, evmask, pointer_devices_.size());
+  XIEventMask evmask;
+  evmask.deviceid = XIAllDevices;
+  evmask.mask_len = sizeof(mask);
+  evmask.mask = mask;
+  XISelectEvents(display, window, &evmask, 1);
   XFlush(display);
 }
 

@@ -156,7 +156,15 @@ bool DispatchXEvent(XEvent* xev) {
 
 #if defined(HAVE_XINPUT2)
   if (xev->type == GenericEvent) {
+    if (!TouchFactory::GetInstance()->ShouldProcessXI2Event(xev))
+      return true;  // Consume the event.
+
     XGenericEventCookie* cookie = &xev->xcookie;
+    if (cookie->evtype == XI_HierarchyChanged) {
+      TouchFactory::GetInstance()->UpdateDeviceList(cookie->display);
+      return true;
+    }
+
     XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(cookie->data);
     xwindow = xiev->event;
   }
