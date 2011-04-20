@@ -37,6 +37,7 @@ class TestTable {
   void AddTest(nacl::string test_name, TestFunction test_function) {
     test_map_[test_name] = test_function;
   }
+  bool HasTest(nacl::string test_name);
   PP_Var RunTest(nacl::string test_name);
 
  private:
@@ -47,6 +48,11 @@ class TestTable {
   typedef std::map<nacl::string, TestFunction> TestMap;
   TestMap test_map_;
 };
+
+bool TestTable::HasTest(nacl::string test_name) {
+  TestMap::iterator it = test_map_.find(test_name);
+  return it != test_map_.end();
+}
 
 PP_Var TestTable::RunTest(nacl::string test_name) {
   TestMap::iterator it = test_map_.find(test_name);
@@ -61,6 +67,10 @@ PP_Var TestTable::RunTest(nacl::string test_name) {
 
 void RegisterScriptableTest(nacl::string test_name, TestFunction test_func) {
   TestTable::Get()->AddTest(test_name, test_func);
+}
+
+bool HasScriptableTest(nacl::string test_name) {
+  return TestTable::Get()->HasTest(test_name);
 }
 
 PP_Var RunScriptableTest(nacl::string test_name) {

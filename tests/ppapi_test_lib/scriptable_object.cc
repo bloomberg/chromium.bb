@@ -40,9 +40,12 @@ bool HasProperty(void* object, PP_Var name, PP_Var* exception) {
   return (0 == strncmp(property_name, "__moduleReady", len));
 }
 
-bool HasMethod(void* object, PP_Var /*name*/, PP_Var* /*exception*/) {
+bool HasMethod(void* object, PP_Var name_var, PP_Var* /*exception*/) {
   // Intercept all methods and let Call() handle the rest.
-  return true;
+  uint32_t len = 0;
+  const char* method_name = PPBVarDeprecated()->VarToUtf8(name_var, &len);
+  nacl::string name(method_name, len);
+  return HasScriptableTest(name);
 }
 
 PP_Var GetProperty(void* object, PP_Var name, PP_Var* exception) {
