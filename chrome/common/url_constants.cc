@@ -109,6 +109,7 @@ const char kChromeUIDownloadsHost[] = "downloads";
 const char kChromeUIExtensionIconHost[] = "extension-icon";
 const char kChromeUIExtensionsHost[] = "extensions";
 const char kChromeUIFaviconHost[] = "favicon";
+const char kChromeUITouchIconHost[] = "touch-icon";
 const char kChromeUIFlagsHost[] = "flags";
 const char kChromeUIGpuInternalsHost[] = "gpu-internals";
 const char kChromeUIHistoryHost[] = "history";

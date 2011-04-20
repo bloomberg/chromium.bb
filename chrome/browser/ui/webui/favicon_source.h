@@ -20,7 +20,14 @@ class Profile;
 // requests for favicons and the history backend that serves these.
 class FaviconSource : public ChromeURLDataManager::DataSource {
  public:
-  explicit FaviconSource(Profile* profile);
+  // Defines the type of icon the FaviconSource will provide.
+  enum IconType {
+    FAVICON,
+    TOUCH
+  };
+
+  // |type| is the type of icon this FaviconSource will provide.
+  FaviconSource(Profile* profile, IconType type);
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
@@ -48,6 +55,9 @@ class FaviconSource : public ChromeURLDataManager::DataSource {
   // Raw PNG representation of the favicon to show when the favicon
   // database doesn't have a favicon for a webpage.
   scoped_refptr<RefCountedMemory> default_favicon_;
+
+  // The history::IconTypes of icon that this FaviconSource handles.
+  const int icon_types_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconSource);
 };

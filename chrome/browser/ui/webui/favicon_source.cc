@@ -10,9 +10,13 @@
 #include "grit/app_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
-FaviconSource::FaviconSource(Profile* profile)
-    : DataSource(chrome::kChromeUIFaviconHost, MessageLoop::current()),
-      profile_(profile->GetOriginalProfile()) {
+FaviconSource::FaviconSource(Profile* profile, IconType type)
+    : DataSource(type == FAVICON ? chrome::kChromeUIFaviconHost :
+                     chrome::kChromeUITouchIconHost,
+                 MessageLoop::current()),
+      profile_(profile->GetOriginalProfile()),
+      icon_types_(type == FAVICON ? history::FAVICON :
+                      history::TOUCH_PRECOMPOSED_ICON | history::TOUCH_ICON) {
 }
 
 FaviconSource::~FaviconSource() {
@@ -31,6 +35,7 @@ void FaviconSource::StartDataRequest(const std::string& path,
     }
 
     if (path.size() > 8 && path.substr(0, 8) == "iconurl/") {
+      // TODO : Change GetFavicon to support combination of IconType.
       handle = favicon_service->GetFavicon(
           GURL(path.substr(8)),
           history::FAVICON,
@@ -39,7 +44,7 @@ void FaviconSource::StartDataRequest(const std::string& path,
     } else {
       handle = favicon_service->GetFaviconForURL(
           GURL(path),
-          history::FAVICON,
+          icon_types_,
           &cancelable_consumer_,
           NewCallback(this, &FaviconSource::OnFaviconDataAvailable));
     }

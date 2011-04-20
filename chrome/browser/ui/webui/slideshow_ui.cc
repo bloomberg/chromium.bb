@@ -151,7 +151,7 @@ WebUIMessageHandler* SlideshowHandler::Attach(WebUI* web_ui) {
   profile_ = web_ui->GetProfile();
   // Create our favicon data source.
   profile_->GetChromeURLDataManager()->AddDataSource(
-      new FaviconSource(profile_));
+      new FaviconSource(profile_, FaviconSource::FAVICON));
   return WebUIMessageHandler::Attach(web_ui);
 }
 

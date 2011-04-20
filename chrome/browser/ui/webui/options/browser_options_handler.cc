@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/options/options_managed_banner_handler.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
@@ -126,7 +127,7 @@ void BrowserOptionsHandler::Initialize() {
 
   // Create our favicon data source.
   profile->GetChromeURLDataManager()->AddDataSource(
-      new FaviconSource(profile));
+      new FaviconSource(profile, FaviconSource::FAVICON));
 
   homepage_.Init(prefs::kHomePage, profile->GetPrefs(), NULL);
   default_browser_policy_.Init(prefs::kDefaultBrowserSettingEnabled,

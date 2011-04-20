@@ -69,7 +69,8 @@ WebUIMessageHandler* MostVisitedHandler::Attach(WebUI* web_ui) {
   ThumbnailSource* thumbnail_src = new ThumbnailSource(profile);
   profile->GetChromeURLDataManager()->AddDataSource(thumbnail_src);
 
-  profile->GetChromeURLDataManager()->AddDataSource(new FaviconSource(profile));
+  profile->GetChromeURLDataManager()->AddDataSource(
+      new FaviconSource(profile, FaviconSource::FAVICON));
 
   // Get notifications when history is cleared.
   registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
