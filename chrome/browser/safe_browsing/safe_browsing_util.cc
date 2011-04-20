@@ -166,7 +166,7 @@ namespace safe_browsing_util {
 const char kMalwareList[] = "goog-malware-shavar";
 const char kPhishingList[] = "goog-phish-shavar";
 const char kBinUrlList[] = "goog-badbinurl-shavar";
-const char kBinHashList[] = "goog-badbinhash-shavar";
+const char kBinHashList[] = "goog-badbin-digestvar";
 const char kCsdWhiteList[] = "goog-csdwhite-sha256";
 
 int GetListId(const std::string& name) {
