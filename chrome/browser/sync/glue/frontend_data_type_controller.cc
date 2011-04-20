@@ -103,15 +103,46 @@ bool FrontendDataTypeController::Associate() {
   return true;
 }
 
+void FrontendDataTypeController::StartFailed(StartResult result,
+    const tracked_objects::Location& location) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CleanUpState();
+  model_associator_.reset();
+  change_processor_.reset();
+  state_ = NOT_RUNNING;
+  RecordStartFailure(result);
+
+  // We have to release the callback before we call it, since it's possible
+  // invoking the callback will trigger a call to STOP(), which will get
+  // confused by the non-NULL start_callback_.
+  scoped_ptr<StartCallback> callback(start_callback_.release());
+  callback->Run(result, location);
+}
+
+void FrontendDataTypeController::FinishStart(StartResult result,
+    const tracked_objects::Location& location) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // We have to release the callback before we call it, since it's possible
+  // invoking the callback will trigger a call to STOP(), which will get
+  // confused by the non-NULL start_callback_.
+  scoped_ptr<StartCallback> callback(start_callback_.release());
+  callback->Run(result, location);
+}
+
 void FrontendDataTypeController::Stop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // If Stop() is called while Start() is waiting for the datatype model to
   // load, abort the start.
-  if (state_ == MODEL_STARTING)
-    FinishStart(ABORTED, FROM_HERE);
+  if (state_ == MODEL_STARTING) {
+    StartFailed(ABORTED, FROM_HERE);
+    // We can just return here since we haven't performed association if we're
+    // still in MODEL_STARTING.
+    return;
+  }
   DCHECK(!start_callback_.get());
 
-  CleanupState();
+  CleanUpState();
 
   if (change_processor_ != NULL)
     sync_service_->DeactivateDataType(this, change_processor_.get());
@@ -125,7 +156,7 @@ void FrontendDataTypeController::Stop() {
   state_ = NOT_RUNNING;
 }
 
-void FrontendDataTypeController::CleanupState() {
+void FrontendDataTypeController::CleanUpState() {
   // Do nothing by default.
 }
 
@@ -148,25 +179,6 @@ void FrontendDataTypeController::OnUnrecoverableError(
   // The ProfileSyncService will invoke our Stop() method in response to this.
   RecordUnrecoverableError(from_here, message);
   sync_service_->OnUnrecoverableError(from_here, message);
-}
-
-void FrontendDataTypeController::FinishStart(StartResult result,
-    const tracked_objects::Location& location) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  start_callback_->Run(result, location);
-  start_callback_.reset();
-}
-
-void FrontendDataTypeController::StartFailed(StartResult result,
-    const tracked_objects::Location& location) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CleanupState();
-  model_associator_.reset();
-  change_processor_.reset();
-  state_ = NOT_RUNNING;
-  start_callback_->Run(result, location);
-  start_callback_.reset();
-  RecordStartFailure(result);
 }
 
 }  // namespace browser_sync

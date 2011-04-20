@@ -76,6 +76,7 @@ class ProfileSyncFactoryImplTest : public testing::Test {
     command_line_->AppendSwitch(cmd_switch);
     scoped_ptr<ProfileSyncService> pss(
         profile_sync_service_factory_->CreateProfileSyncService(""));
+    profile_sync_service_factory_->RegisterDataTypes(pss.get());
     DataTypeController::StateMap controller_states;
     pss->GetDataTypeControllerStates(&controller_states);
     EXPECT_EQ(DefaultDatatypesCount() - 1, controller_states.size());
@@ -92,6 +93,7 @@ class ProfileSyncFactoryImplTest : public testing::Test {
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSDefault) {
   scoped_ptr<ProfileSyncService> pss(
       profile_sync_service_factory_->CreateProfileSyncService(""));
+  profile_sync_service_factory_->RegisterDataTypes(pss.get());
   DataTypeController::StateMap controller_states;
   pss->GetDataTypeControllerStates(&controller_states);
   EXPECT_EQ(DefaultDatatypesCount(), controller_states.size());
