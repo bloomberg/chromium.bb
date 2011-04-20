@@ -1033,6 +1033,11 @@ class Browser : public TabHandlerDelegate,
                   const GURL& url,
                   const std::string& content_state);
 
+  // Retrieves the content restrictions for the currently selected tab.
+  // Returns 0 if no tab selected, which is equivalent to no content
+  // restrictions active.
+  int GetContentRestrictionsForSelectedTab();
+
   // Data members /////////////////////////////////////////////////////////////
 
   NotificationRegistrar registrar_;

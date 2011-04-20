@@ -3432,7 +3432,7 @@ void Browser::Observe(NotificationType type,
       if (pref_name == prefs::kUseVerticalTabs) {
         UseVerticalTabsChanged();
       } else if (pref_name == prefs::kPrintingEnabled) {
-        UpdatePrintingState(0);
+        UpdatePrintingState(GetContentRestrictionsForSelectedTab());
       } else if (pref_name == prefs::kInstantEnabled) {
         if (!InstantController::IsEnabled(profile())) {
           if (instant()) {
@@ -3744,15 +3744,7 @@ void Browser::UpdateCommandsForTabState() {
 }
 
 void Browser::UpdateCommandsForContentRestrictionState() {
-  int restrictions = 0;
-  TabContents* current_tab = GetSelectedTabContents();
-  if (current_tab) {
-    restrictions = current_tab->content_restrictions();
-    NavigationEntry* active_entry = current_tab->controller().GetActiveEntry();
-    // See comment in UpdateCommandsForTabState about why we call url().
-    if (!SavePackage::IsSavableURL(active_entry ? active_entry->url() : GURL()))
-      restrictions |= CONTENT_RESTRICTION_SAVE;
-  }
+  int restrictions = GetContentRestrictionsForSelectedTab();
 
   command_updater_.UpdateCommandEnabled(
       IDC_COPY, !(restrictions & CONTENT_RESTRICTION_COPY));
@@ -4415,4 +4407,17 @@ void Browser::ViewSource(TabContentsWrapper* contents,
     if (session_service)
       session_service->TabRestored(&view_source_contents->controller(), false);
   }
+}
+
+int Browser::GetContentRestrictionsForSelectedTab() {
+  int content_restrictions = 0;
+  TabContents* current_tab = GetSelectedTabContents();
+  if (current_tab) {
+    content_restrictions = current_tab->content_restrictions();
+    NavigationEntry* active_entry = current_tab->controller().GetActiveEntry();
+    // See comment in UpdateCommandsForTabState about why we call url().
+    if (!SavePackage::IsSavableURL(active_entry ? active_entry->url() : GURL()))
+      content_restrictions |= CONTENT_RESTRICTION_SAVE;
+  }
+  return content_restrictions;
 }
