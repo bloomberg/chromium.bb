@@ -14,9 +14,11 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
     : delegate_(delegate),
       container_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_(new ui::SlideAnimation(this))),
-      bar_target_height_(kDefaultBarTargetHeight),
       arrow_height_(0),
-      bar_height_(0) {
+      arrow_target_height_(kDefaultArrowTargetHeight),
+      arrow_half_width_(0),
+      bar_height_(0),
+      bar_target_height_(kDefaultBarTargetHeight) {
   DCHECK(delegate != NULL);
   animation_->SetTweenType(ui::Tween::LINEAR);
 }
@@ -43,8 +45,18 @@ void InfoBar::Hide(bool animate) {
   }
 }
 
+void InfoBar::SetArrowTargetHeight(int height) {
+  DCHECK_LE(height, kMaximumArrowTargetHeight);
+  // Once the closing animation starts, we ignore further requests to change the
+  // target height.
+  if ((arrow_target_height_ != height) && !animation()->IsClosing()) {
+    arrow_target_height_ = height;
+    RecalculateHeights();
+  }
+}
+
 void InfoBar::AnimationProgressed(const ui::Animation* animation) {
-  RecalculateHeight();
+  RecalculateHeights();
 }
 
 void InfoBar::RemoveInfoBar() {
@@ -55,7 +67,7 @@ void InfoBar::RemoveInfoBar() {
 void InfoBar::SetBarTargetHeight(int height) {
   if (bar_target_height_ != height) {
     bar_target_height_ = height;
-    RecalculateHeight();
+    RecalculateHeights();
   }
 }
 
@@ -66,31 +78,47 @@ int InfoBar::OffsetY(const gfx::Size& prefsize) const {
 }
 
 void InfoBar::AnimationEnded(const ui::Animation* animation) {
-  RecalculateHeight();
+  RecalculateHeights();
   MaybeDelete();
 }
 
-void InfoBar::RecalculateHeight() {
+void InfoBar::RecalculateHeights() {
   int old_arrow_height = arrow_height_;
   int old_bar_height = bar_height_;
-  // The arrow area is |arrow_size| ^ 2.  By taking the square root of the
-  // animation value, we cause a linear animation of the area, which matches the
-  // perception of the animation of the InfoBar.
-  arrow_height_ = static_cast<int>(kArrowTargetHeight *
-      sqrt(animation()->GetCurrentValue()));
-  // Add one more pixel for the stroke, if the arrow is to be visible at all.
-  // Without this, changing the arrow height from 0 to 1 would produce no
-  // visible effect, because the single pixel of stroke would paint atop the
-  // divider line above the infobar.
+
+  // Find the desired arrow height/half-width.  The arrow area is
+  // |arrow_height_| * |arrow_half_width_|.  When the bar is opening or closing,
+  // scaling each of these with the square root of the animation value causes a
+  // linear animation of the area, which matches the perception of the animation
+  // of the bar portion.
+  double scale_factor = sqrt(animation()->GetCurrentValue());
+  arrow_height_ = static_cast<int>(arrow_target_height_ * scale_factor);
+  if (animation_->is_animating()) {
+    arrow_half_width_ = static_cast<int>(std::min(arrow_target_height_,
+        kMaximumArrowTargetHalfWidth) * scale_factor);
+  } else {
+    // When the infobar is not animating (i.e. fully open), we set the
+    // half-width to be proportionally the same distance between its default and
+    // maximum values as the height is between its.
+    arrow_half_width_ = kDefaultArrowTargetHalfWidth +
+        ((kMaximumArrowTargetHalfWidth - kDefaultArrowTargetHalfWidth) *
+         ((arrow_height_ - kDefaultArrowTargetHeight) /
+          (kMaximumArrowTargetHeight - kDefaultArrowTargetHeight)));
+  }
+  // Add pixels for the stroke, if the arrow is to be visible at all.  Without
+  // this, changing the arrow height from 0 to kSeparatorLineHeight would
+  // produce no visible effect, because the stroke would paint atop the divider
+  // line above the infobar.
   if (arrow_height_)
-    ++arrow_height_;
+    arrow_height_ += kSeparatorLineHeight;
+
   bar_height_ =
       static_cast<int>(bar_target_height_ * animation()->GetCurrentValue());
 
   // Don't re-layout if nothing has changed, e.g. because the animation step was
   // not large enough to actually change the heights by at least a pixel.
   if ((old_arrow_height != arrow_height_) || (old_bar_height != bar_height_)) {
-    PlatformSpecificOnHeightRecalculated();
+    PlatformSpecificOnHeightsRecalculated();
     if (container_)
       container_->OnInfoBarHeightChanged(animation_->is_animating());
   }

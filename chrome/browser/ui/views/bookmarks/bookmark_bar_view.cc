@@ -439,8 +439,7 @@ gfx::Size BookmarkBarView::GetMinimumSize() {
 
   if (OnNewTabPage()) {
     double current_state = 1 - size_animation_->GetCurrentValue();
-    width += 2 * static_cast<int>(static_cast<double>
-        (kNewtabHorizontalPadding) * current_state);
+    width += 2 * static_cast<int>(kNewtabHorizontalPadding * current_state);
   }
 
   int sync_error_total_width = 0;
@@ -740,8 +739,7 @@ int BookmarkBarView::GetToolbarOverlap(bool return_max) const {
     return 0;
   // When on the New Tab Page with no infobar, animate the overlap between the
   // attached and detached states.
-  return static_cast<int>(static_cast<double>(kToolbarOverlap) *
-      size_animation_->GetCurrentValue());
+  return static_cast<int>(kToolbarOverlap * size_animation_->GetCurrentValue());
 }
 
 bool BookmarkBarView::is_animating() {
@@ -1639,21 +1637,23 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   int top_margin = IsDetached() ? kDetachedTopMargin : 0;
   int y = top_margin;
   int width = View::width() - kRightMargin - kLeftMargin;
-  int height = View::height() - top_margin - kBottomMargin;
+  int height = -top_margin - kBottomMargin;
   int separator_margin = kSeparatorMargin;
 
   if (OnNewTabPage()) {
     double current_state = 1 - size_animation_->GetCurrentValue();
-    x += static_cast<int>(static_cast<double>
-        (kNewtabHorizontalPadding) * current_state);
-    y += static_cast<int>(static_cast<double>
-        (kNewtabVerticalPadding) * current_state);
-    width -= static_cast<int>(static_cast<double>
-        (kNewtabHorizontalPadding) * current_state);
-    height -= static_cast<int>(static_cast<double>
-        (kNewtabVerticalPadding * 2) * current_state);
-    separator_margin -= static_cast<int>(static_cast<double>
-        (kSeparatorMargin) * current_state);
+    x += static_cast<int>(kNewtabHorizontalPadding * current_state);
+    y += static_cast<int>(kNewtabVerticalPadding * current_state);
+    width -= static_cast<int>(kNewtabHorizontalPadding * current_state);
+    height += View::height() -
+        static_cast<int>(kNewtabVerticalPadding * 2 * current_state);
+    separator_margin -= static_cast<int>(kSeparatorMargin * current_state);
+  } else {
+    // For the attached appearance, pin the content to the bottom of the bar
+    // when animating in/out, as shrinking its height instead looks weird.  This
+    // also matches how we layout infobars.
+    y += View::height() - kBarHeight;
+    height += kBarHeight;
   }
 
   gfx::Size other_bookmarked_pref =
@@ -1761,14 +1761,14 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
     x += kRightMargin;
     prefsize.set_width(x);
     if (OnNewTabPage()) {
-      x += static_cast<int>(static_cast<double>(kNewtabHorizontalPadding) *
-          (1 - size_animation_->GetCurrentValue()));
-      prefsize.set_height(kBarHeight + static_cast<int>(static_cast<double>
-                          (kNewtabBarHeight - kBarHeight) *
-                          (1 - size_animation_->GetCurrentValue())));
+      x += static_cast<int>(
+          kNewtabHorizontalPadding * (1 - size_animation_->GetCurrentValue()));
+      prefsize.set_height(kBarHeight +
+          static_cast<int>((kNewtabBarHeight - kBarHeight) *
+              (1 - size_animation_->GetCurrentValue())));
     } else {
-      prefsize.set_height(static_cast<int>(static_cast<double>(kBarHeight) *
-                          size_animation_->GetCurrentValue()));
+      prefsize.set_height(
+          static_cast<int>(kBarHeight * size_animation_->GetCurrentValue()));
     }
   }
   return prefsize;

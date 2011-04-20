@@ -23,6 +23,15 @@ class InfoBar : public ui::AnimationDelegate {
   explicit InfoBar(InfoBarDelegate* delegate);
   virtual ~InfoBar();
 
+  // Platforms must define these.
+  static const int kSeparatorLineHeight;
+  static const int kDefaultArrowTargetHeight;
+  static const int kMaximumArrowTargetHeight;
+  // The half-width (see comments on |arrow_half_width_| below) scales to its
+  // default and maximum values proportionally to how the height scales to its.
+  static const int kDefaultArrowTargetHalfWidth;
+  static const int kMaximumArrowTargetHalfWidth;
+
   InfoBarDelegate* delegate() { return delegate_; }
   void set_container(InfoBarContainer* container) { container_ = container; }
 
@@ -35,14 +44,16 @@ class InfoBar : public ui::AnimationDelegate {
   // container (triggering its deletion), and its delegate is closed.
   void Hide(bool animate);
 
+  // Changes the target height of the arrow portion of the infobar.  This has no
+  // effect once the infobar is animating closed.
+  void SetArrowTargetHeight(int height);
+
+  const ui::SlideAnimation* animation() const { return animation_.get(); }
   int arrow_height() const { return arrow_height_; }
   int total_height() const { return arrow_height_ + bar_height_; }
 
  protected:
-  // The target heights of the InfoBar arrow and bar portions, regardless of
-  // what their current heights are (due to animation).  Platforms must define
-  // these!
-  static const int kArrowTargetHeight;
+  // Platforms must define this.
   static const int kDefaultBarTargetHeight;
 
   // ui::AnimationDelegate:
@@ -62,13 +73,13 @@ class InfoBar : public ui::AnimationDelegate {
 
   const InfoBarContainer* container() const { return container_; }
   ui::SlideAnimation* animation() { return animation_.get(); }
-  const ui::SlideAnimation* animation() const { return animation_.get(); }
+  int arrow_half_width() const { return arrow_half_width_; }
   int bar_height() const { return bar_height_; }
 
   // Platforms may optionally override these if they need to do work during
   // processing of the given calls.
   virtual void PlatformSpecificHide(bool animate) {}
-  virtual void PlatformSpecificOnHeightRecalculated() {}
+  virtual void PlatformSpecificOnHeightsRecalculated() {}
 
  private:
   // ui::AnimationDelegate:
@@ -77,7 +88,7 @@ class InfoBar : public ui::AnimationDelegate {
   // Finds the new desired arrow and bar heights, and if they differ from the
   // current ones, calls PlatformSpecificOnHeightRecalculated() and informs our
   // container our height has changed.
-  void RecalculateHeight();
+  void RecalculateHeights();
 
   // Checks whether we're closed.  If so, notifies the container that it should
   // remove us (which will cause the platform-specific code to asynchronously
@@ -88,12 +99,14 @@ class InfoBar : public ui::AnimationDelegate {
   InfoBarContainer* container_;
   scoped_ptr<ui::SlideAnimation> animation_;
 
-  // The target height for the bar portion of the InfoBarView.
+  // The current and target heights of the arrow and bar portions, and half the
+  // current arrow width.  (It's easier to work in half-widths as we draw the
+  // arrow as two halves on either side of a center point.)
+  int arrow_height_;         // Includes both fill and top stroke.
+  int arrow_target_height_;
+  int arrow_half_width_;     // Includes only fill.
+  int bar_height_;           // Includes both fill and bottom separator.
   int bar_target_height_;
-
-  // The current heights of the arrow and bar portions.
-  int arrow_height_;
-  int bar_height_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBar);
 };

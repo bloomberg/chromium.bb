@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 #endif
 
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
@@ -614,17 +615,51 @@ StatusBubble* BrowserView::GetStatusBubble() {
   return status_bubble_.get();
 }
 
+namespace {
+  // Only used by ToolbarSizeChanged() below, but placed here because template
+  // arguments (to AutoReset<>) must have external linkage.
+  enum CallState { NORMAL, REENTRANT, REENTRANT_FORCE_FAST_RESIZE };
+}
+
 void BrowserView::ToolbarSizeChanged(bool is_animating) {
-  if (is_animating) {
+  // The call to InfoBarContainer::SetMaxTopArrowHeight() below can result in
+  // reentrancy; |call_state| tracks whether we're reentrant.  We can't just
+  // early-return in this case because we need to layout again so the infobar
+  // container's bounds are set correctly.
+  static CallState call_state = NORMAL;
+
+  // A reentrant call can (and should) use the fast resize path unless both it
+  // and the normal call are both non-animating.
+  bool use_fast_resize =
+      is_animating || (call_state == REENTRANT_FORCE_FAST_RESIZE);
+  if (use_fast_resize)
     contents_container_->SetFastResize(true);
-    UpdateUIForContents(browser_->GetSelectedTabContentsWrapper());
+  UpdateUIForContents(browser_->GetSelectedTabContentsWrapper());
+  if (use_fast_resize)
     contents_container_->SetFastResize(false);
-  } else {
-    UpdateUIForContents(browser_->GetSelectedTabContentsWrapper());
-    // When transitioning from animating to not animating we need to make sure
-    // the contents_container_ gets layed out. If we don't do this and the
-    // bounds haven't changed contents_container_ won't get a Layout out and
-    // we'll end up with a gray rect because the clip wasn't updated.
+
+  // Inform the InfoBarContainer that the distance to the location icon may have
+  // changed.  We have to do this after the block above so that the toolbars are
+  // laid out correctly for calculating the maximum arrow height below.
+  AutoReset<CallState> resetter(&call_state,
+      is_animating ? REENTRANT : REENTRANT_FORCE_FAST_RESIZE);
+  const LocationIconView* location_icon_view =
+      toolbar_->location_bar()->location_icon_view();
+  // The +1 in the next line creates a 1-px gap between icon and arrow tip.
+  gfx::Point icon_bottom(0, location_icon_view->GetImageBounds().bottom() -
+      LocationBarView::kIconInternalPadding + 1);
+  ConvertPointToView(location_icon_view, this, &icon_bottom);
+  gfx::Point infobar_top(0, infobar_container_->GetVerticalOverlap(NULL));
+  ConvertPointToView(infobar_container_, this, &infobar_top);
+  infobar_container_->SetMaxTopArrowHeight(infobar_top.y() - icon_bottom.y());
+
+  // When transitioning from animating to not animating we need to make sure the
+  // contents_container_ gets layed out. If we don't do this and the bounds
+  // haven't changed contents_container_ won't get a Layout out and we'll end up
+  // with a gray rect because the clip wasn't updated.  Note that a reentrant
+  // call never needs to do this, because after it returns, the normal call
+  // wrapping it will do it.
+  if ((call_state == NORMAL) && !is_animating) {
     contents_container_->InvalidateLayout();
     contents_split_->Layout();
   }
@@ -1667,8 +1702,7 @@ void BrowserView::InfoBarContainerHeightChanged(bool is_animating) {
 bool BrowserView::DrawInfoBarArrows(int* x) const {
   const LocationIconView* location_icon_view =
       toolbar_->location_bar()->location_icon_view();
-  gfx::Rect icon_bounds = location_icon_view->GetLocalBounds();
-  gfx::Point icon_center = icon_bounds.CenterPoint();
+  gfx::Point icon_center(location_icon_view->GetImageBounds().CenterPoint());
   ConvertPointToView(location_icon_view, this, &icon_center);
   *x = icon_center.x();
   return true;

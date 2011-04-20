@@ -50,17 +50,28 @@ class InfoBarContainer : public NotificationObserver {
   // |contents|, and show them all.  |contents| may be NULL.
   void ChangeTabContents(TabContents* contents);
 
-  // Return the amount by which to overlap the toolbar above, and, when
+  // Returns the amount by which to overlap the toolbar above, and, when
   // |total_height| is non-NULL, set it to the height of the InfoBarContainer
   // (including overlap).
   int GetVerticalOverlap(int* total_height);
+
+  // Called by the delegate when the distance between what the top infobar's
+  // "unspoofable" arrow would point to and the top infobar itself changes.
+  // This enables the top infobar to show a longer arrow (e.g. because of a
+  // visible bookmark bar) or shorter (e.g. due to being in a popup window) if
+  // desired.
+  //
+  // IMPORTANT: This MUST NOT result in a call back to
+  // Delegate::InfoBarContainerHeightChanged() unless it causes an actual
+  // change, lest we infinitely recurse.
+  void SetMaxTopArrowHeight(int height);
 
   // Called when a contained infobar has animated or by some other means changed
   // its height.  The container is expected to do anything necessary to respond,
   // e.g. re-layout.
   void OnInfoBarHeightChanged(bool is_animating);
 
-  // Remove the specified InfoBarDelegate from the selected TabContents. This
+  // Removes the specified InfoBarDelegate from the selected TabContents.  This
   // will notify us back and cause us to close the InfoBar.  This is called from
   // the InfoBar's close button handler.
   void RemoveDelegate(InfoBarDelegate* delegate);
@@ -106,10 +117,16 @@ class InfoBarContainer : public NotificationObserver {
                   bool animate,
                   CallbackStatus callback_status);
 
+  void UpdateInfoBarArrowTargetHeights();
+  int ArrowTargetHeightForInfoBar(size_t infobar_index) const;
+
   NotificationRegistrar registrar_;
   Delegate* delegate_;
   TabContents* tab_contents_;
   InfoBars infobars_;
+
+  // Calculated in SetMaxTopArrowHeight().
+  int top_arrow_target_height_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarContainer);
 };

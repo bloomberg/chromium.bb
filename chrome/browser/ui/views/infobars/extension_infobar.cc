@@ -43,8 +43,7 @@ ExtensionInfoBar::ExtensionInfoBar(ExtensionInfoBarDelegate* delegate)
 
   ExtensionView* extension_view = delegate->extension_host()->view();
   int height = extension_view->GetPreferredSize().height();
-  SetBarTargetHeight((height > 0) ?
-      (height + InfoBarBackground::kSeparatorLineHeight) : height);
+  SetBarTargetHeight((height > 0) ? (height + kSeparatorLineHeight) : 0);
 
   // Get notified of resize events for the ExtensionView.
   extension_view->SetContainer(this);

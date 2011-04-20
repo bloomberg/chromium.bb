@@ -25,6 +25,7 @@
 #include "views/controls/link.h"
 #include "views/focus/external_focus_tracker.h"
 #include "views/widget/widget.h"
+#include "views/window/non_client_view.h"
 
 #if defined(OS_WIN)
 #include <shellapi.h>
@@ -36,7 +37,12 @@
 #endif
 
 // static
-const int InfoBar::kArrowTargetHeight = 9;
+const int InfoBar::kSeparatorLineHeight =
+    views::NonClientFrameView::kClientEdgeThickness;
+const int InfoBar::kDefaultArrowTargetHeight = 9;
+const int InfoBar::kMaximumArrowTargetHeight = 24;
+const int InfoBar::kDefaultArrowTargetHalfWidth = kDefaultArrowTargetHeight;
+const int InfoBar::kMaximumArrowTargetHalfWidth = 14;
 const int InfoBar::kDefaultBarTargetHeight = 36;
 
 const int InfoBarView::kButtonButtonSpacing = 10;
@@ -144,39 +150,43 @@ void InfoBarView::Layout() {
   // width is changed, which affects both paths.
   stroke_path_->rewind();
   fill_path_->rewind();
-  int arrow_bottom = std::max(arrow_height() - 1, 0);
-  SkScalar arrow_bottom_scalar = SkIntToScalar(arrow_bottom);
   const InfoBarContainer::Delegate* delegate = container_delegate();
-  int arrow_x;
   if (delegate) {
     static_cast<InfoBarBackground*>(background())->set_separator_color(
         delegate->GetInfoBarSeparatorColor());
-    if (delegate->DrawInfoBarArrows(&arrow_x) && arrow_bottom) {
-      stroke_path_->moveTo(SkIntToScalar(arrow_x - arrow_bottom),
-                           arrow_bottom_scalar);
-      stroke_path_->rLineTo(arrow_bottom_scalar, -arrow_bottom_scalar);
-      stroke_path_->rLineTo(arrow_bottom_scalar, arrow_bottom_scalar);
+    int arrow_x;
+    SkScalar arrow_fill_height =
+        SkIntToScalar(std::max(arrow_height() - kSeparatorLineHeight, 0));
+    SkScalar arrow_fill_half_width = SkIntToScalar(arrow_half_width());
+    SkScalar separator_height = SkIntToScalar(kSeparatorLineHeight);
+    if (delegate->DrawInfoBarArrows(&arrow_x) && arrow_fill_height) {
+      // Skia pixel centers are at the half-values, so the arrow is horizontally
+      // centered at |arrow_x| + 0.5.  Vertically, the stroke path is the center
+      // of the separator, while the fill path is a closed path that extends up
+      // through the entire height of the separator and down to the bottom of
+      // the arrow where it joins the bar.
+      stroke_path_->moveTo(
+          SkIntToScalar(arrow_x) + SK_ScalarHalf - arrow_fill_half_width,
+          SkIntToScalar(arrow_height()) - (separator_height * SK_ScalarHalf));
+      stroke_path_->rLineTo(arrow_fill_half_width, -arrow_fill_height);
+      stroke_path_->rLineTo(arrow_fill_half_width, arrow_fill_height);
 
-      // Without extending the fill downward by a pixel, Skia doesn't seem to
-      // want to fill over the divider above the bar portion.
       *fill_path_ = *stroke_path_;
-      fill_path_->rLineTo(0.0, 1.0);
-      fill_path_->rLineTo(-arrow_bottom_scalar * 2, 0.0);
+      // Move the top of the fill path up to the top of the separator and then
+      // extend it down all the way through.
+      fill_path_->offset(0, -separator_height * SK_ScalarHalf);
+      // This 0.01 hack prevents the fill from filling more pixels on the right
+      // edge of the arrow than on the left.
+      const SkScalar epsilon = 0.01f;
+      fill_path_->rLineTo(-epsilon, 0);
+      fill_path_->rLineTo(0, separator_height);
+      fill_path_->rLineTo(epsilon - (arrow_fill_half_width * 2), 0);
       fill_path_->close();
-
-      // Fill and stroke have different opinions about how to treat paths.
-      // Because in Skia integral coordinates represent pixel boundaries,
-      // offsetting the path makes it go exactly through pixel centers; this
-      // results in lines that are exactly where we expect, instead of having
-      // odd "off by one" issues.  Were we to do this for |fill_path|, however,
-      // which tries to fill "inside" the path (using some questionable math),
-      // we'd get a fill at a very different place than we'd want.
-      stroke_path_->offset(SK_ScalarHalf, SK_ScalarHalf);
     }
   }
   if (bar_height()) {
     fill_path_->addRect(0.0, SkIntToScalar(arrow_height()),
-                        SkIntToScalar(width()), SkIntToScalar(height()));
+        SkIntToScalar(width()), SkIntToScalar(height() - kSeparatorLineHeight));
   }
 
   int start_x = kHorizontalPadding;
@@ -318,7 +328,7 @@ void InfoBarView::PlatformSpecificHide(bool animate) {
   DestroyFocusTracker(restore_focus);
 }
 
-void InfoBarView::PlatformSpecificOnHeightRecalculated() {
+void InfoBarView::PlatformSpecificOnHeightsRecalculated() {
   // Ensure that notifying our container of our size change will result in a
   // re-layout.
   InvalidateLayout();

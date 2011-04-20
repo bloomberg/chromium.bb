@@ -90,7 +90,7 @@ class InfoBarView : public InfoBar,
 
   // InfoBar:
   virtual void PlatformSpecificHide(bool animate) OVERRIDE;
-  virtual void PlatformSpecificOnHeightRecalculated() OVERRIDE;
+  virtual void PlatformSpecificOnHeightsRecalculated() OVERRIDE;
 
   // views::View:
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;

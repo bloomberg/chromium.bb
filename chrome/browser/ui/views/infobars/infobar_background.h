@@ -11,8 +11,6 @@
 
 class InfoBarBackground : public views::Background {
  public:
-  static const int kSeparatorLineHeight;
-
   explicit InfoBarBackground(InfoBarDelegate::Type infobar_type);
   virtual ~InfoBarBackground();
 

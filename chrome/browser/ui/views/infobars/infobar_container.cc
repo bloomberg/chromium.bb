@@ -9,13 +9,15 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
+#include "ui/base/animation/slide_animation.h"
 
 InfoBarContainer::Delegate::~Delegate() {
 }
 
 InfoBarContainer::InfoBarContainer(Delegate* delegate)
     : delegate_(delegate),
-      tab_contents_(NULL) {
+      tab_contents_(NULL),
+      top_arrow_target_height_(InfoBar::kDefaultArrowTargetHeight) {
 }
 
 InfoBarContainer::~InfoBarContainer() {
@@ -75,6 +77,15 @@ int InfoBarContainer::GetVerticalOverlap(int* total_height) {
   if (total_height)
     *total_height = next_infobar_y + vertical_overlap;
   return vertical_overlap;
+}
+
+void InfoBarContainer::SetMaxTopArrowHeight(int height) {
+  // Decrease the height by the arrow stroke thickness, which is the separator
+  // line height, because the infobar arrow target heights are without-stroke.
+  top_arrow_target_height_ = std::min(
+      std::max(height - InfoBar::kSeparatorLineHeight, 0),
+      InfoBar::kMaximumArrowTargetHeight);
+  UpdateInfoBarArrowTargetHeights();
 }
 
 void InfoBarContainer::OnInfoBarHeightChanged(bool is_animating) {
@@ -143,6 +154,7 @@ void InfoBarContainer::RemoveInfoBar(InfoBarDelegate* delegate,
       // We merely need hide the infobar; it will call back to RemoveInfoBar()
       // itself once it's hidden.
       infobar->Hide(use_animation);
+      UpdateInfoBarArrowTargetHeights();
       break;
     }
   }
@@ -154,10 +166,31 @@ void InfoBarContainer::AddInfoBar(InfoBar* infobar,
   DCHECK(std::find(infobars_.begin(), infobars_.end(), infobar) ==
       infobars_.end());
   infobars_.push_back(infobar);
+  UpdateInfoBarArrowTargetHeights();
   PlatformSpecificAddInfoBar(infobar);
   if (callback_status == WANT_CALLBACK)
     infobar->set_container(this);
   infobar->Show(animate);
   if (callback_status == NO_CALLBACK)
     infobar->set_container(this);
+}
+
+void InfoBarContainer::UpdateInfoBarArrowTargetHeights() {
+  for (size_t i = 0; i < infobars_.size(); ++i)
+    infobars_[i]->SetArrowTargetHeight(ArrowTargetHeightForInfoBar(i));
+}
+
+int InfoBarContainer::ArrowTargetHeightForInfoBar(size_t infobar_index) const {
+  if (infobar_index == 0)
+    return top_arrow_target_height_;
+  const ui::SlideAnimation* first_infobar_animation =
+      const_cast<const InfoBar*>(infobars_.front())->animation();
+  if ((infobar_index > 1) || first_infobar_animation->IsShowing())
+    return InfoBar::kDefaultArrowTargetHeight;
+  // When the first infobar is animating closed, we animate the second infobar's
+  // arrow target height from the default to the top target height.  Note that
+  // the animation values here are going from 1.0 -> 0.0 as the top bar closes.
+  return top_arrow_target_height_ + static_cast<int>(
+      (InfoBar::kDefaultArrowTargetHeight - top_arrow_target_height_) *
+          first_infobar_animation->GetCurrentValue());
 }

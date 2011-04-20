@@ -34,9 +34,6 @@ namespace {
 const int kTabShadowSize = 2;
 // The vertical overlap between the TabStrip and the Toolbar.
 const int kToolbarTabStripVerticalOverlap = 3;
-// An offset distance between certain toolbars and the toolbar that preceded
-// them in layout.
-const int kSeparationLineHeight = 1;
 
 }  // namespace
 
@@ -74,8 +71,9 @@ gfx::Size BrowserViewLayout::GetMinimumSize() {
   if (active_bookmark_bar_ &&
       browser()->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR)) {
     bookmark_bar_size = active_bookmark_bar_->GetMinimumSize();
-    bookmark_bar_size.Enlarge(0, -(kSeparationLineHeight +
-        active_bookmark_bar_->GetToolbarOverlap(true)));
+    bookmark_bar_size.Enlarge(0,
+        -(views::NonClientFrameView::kClientEdgeThickness +
+            active_bookmark_bar_->GetToolbarOverlap(true)));
   }
   gfx::Size contents_size(contents_split_->GetMinimumSize());
 
@@ -353,7 +351,8 @@ int BrowserViewLayout::LayoutBookmarkBar(int top) {
 
   active_bookmark_bar_->set_infobar_visible(InfobarVisible());
   int bookmark_bar_height = active_bookmark_bar_->GetPreferredSize().height();
-  y -= kSeparationLineHeight + active_bookmark_bar_->GetToolbarOverlap(false);
+  y -= views::NonClientFrameView::kClientEdgeThickness +
+      active_bookmark_bar_->GetToolbarOverlap(false);
   active_bookmark_bar_->SetVisible(true);
   active_bookmark_bar_->SetBounds(vertical_layout_rect_.x(), y,
                                   vertical_layout_rect_.width(),
@@ -501,7 +500,8 @@ int BrowserViewLayout::GetTopMarginForActiveContent() {
   }
 
   // Adjust for separator.
-  return active_bookmark_bar_->height() - kSeparationLineHeight;
+  return active_bookmark_bar_->height() -
+      views::NonClientFrameView::kClientEdgeThickness;
 }
 
 int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
