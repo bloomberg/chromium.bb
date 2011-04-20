@@ -1971,9 +1971,16 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
   // context and they're trying to navigate to a different context.
   const GURL& url = request.url();
 
+  // A content initiated navigation may have originated from a link-click,
+  // script, drag-n-drop operation, etc.
+  bool is_content_initiated =
+      NavigationState::FromDataSource(frame->provisionalDataSource())->
+          is_content_initiated();
+
   // If the browser is interested, then give it a chance to look at top level
   // navigations.
-  if (renderer_preferences_.browser_handles_top_level_requests &&
+  if (is_content_initiated &&
+      renderer_preferences_.browser_handles_top_level_requests &&
       IsNonLocalTopLevelNavigation(url, frame, type)) {
     GURL referrer(request.httpHeaderField(WebString::fromUTF8("Referer")));
     // Reset these counters as the RenderView could be reused for the next
@@ -1984,11 +1991,6 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
     return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
   }
 
-  // A content initiated navigation may have originated from a link-click,
-  // script, drag-n-drop operation, etc.
-  bool is_content_initiated =
-      NavigationState::FromDataSource(frame->provisionalDataSource())->
-          is_content_initiated();
   GURL old_url(frame->url());
 
   // Detect when we're crossing a permission-based boundary (e.g. into or out of
@@ -4171,11 +4173,9 @@ bool RenderView::IsNonLocalTopLevelNavigation(
   // Navigations initiated within Webkit are not sent out to the external host
   // in the following cases.
   // 1. The url scheme is not http/https
-  // 2. There is no opener and this is not the first url being opened by this
-  //    RenderView.
-  // 3. The origin of the url and the opener is the same in which case the
+  // 2. The origin of the url and the opener is the same in which case the
   //    opener relationship is maintained.
-  // 4. Reloads/form submits/back forward navigations
+  // 3. Reloads/form submits/back forward navigations
   if (!url.SchemeIs("http") && !url.SchemeIs("https"))
     return false;
 
@@ -4194,17 +4194,10 @@ bool RenderView::IsNonLocalTopLevelNavigation(
       // may update session state on the server.
       if (type == WebKit::WebNavigationTypeLinkClicked)
         return true;
-      // If this is the first page being loaded by this RenderView instance then
-      // it should stay here.
-      if (page_id_ == -1) {
-        return false;
-      } else {
+    } else {
+      if (url.GetOrigin() != GURL(opener->url()).GetOrigin())
         return true;
-      }
     }
-
-    if (url.GetOrigin() != GURL(opener->url()).GetOrigin())
-      return true;
   }
   return false;
 }
