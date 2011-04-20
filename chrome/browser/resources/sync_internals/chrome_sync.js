@@ -77,6 +77,8 @@ chrome.sync.onAuthError = new Event();
 chrome.sync.onUpdatedToken = new Event();
 chrome.sync.onPassphraseRequired = new Event();
 chrome.sync.onPassphraseAccepted = new Event();
+chrome.sync.onEncryptionComplete = new Event();
+chrome.sync.onMigrationNeededForTypes = new Event();
 chrome.sync.onInitializationComplete = new Event();
 chrome.sync.onPaused = new Event();
 chrome.sync.onResumed = new Event();
@@ -184,6 +186,14 @@ function onPassphraseRequired(forDecryption) {
 
 function onPassphraseAccepted(bootstrapToken) {
   chrome.sync.onPassphraseAccepted.dispatch_(bootstrapToken);
+}
+
+function onEncryptionComplete(encrypted_types) {
+  chrome.sync.onEncryptionComplete.dispatch_(encrypted_types);
+}
+
+function onMigrationNeededForTypes(model_types) {
+  chrome.sync.onMigrationNeededForTypes.dispatch_(model_types);
 }
 
 function onInitializationComplete() {

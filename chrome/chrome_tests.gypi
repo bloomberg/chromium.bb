@@ -1567,6 +1567,7 @@
         'browser/sync/glue/theme_util_unittest.cc',
         'browser/sync/glue/typed_url_model_associator_unittest.cc',
         'browser/sync/glue/ui_model_worker_unittest.cc',
+        'browser/sync/backend_migrator_unittest.cc',
         'browser/sync/profile_sync_factory_impl_unittest.cc',
         'browser/sync/profile_sync_factory_mock.cc',
         'browser/sync/profile_sync_factory_mock.h',

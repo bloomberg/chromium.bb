@@ -778,6 +778,10 @@ class SyncManager {
     // Called when a new auth token is provided by the sync server.
     virtual void OnUpdatedToken(const std::string& token) = 0;
 
+    // Called when migration is required for |types|.
+    virtual void OnMigrationNeededForTypes(
+        const syncable::ModelTypeSet& types) = 0;
+
     // Called when user interaction is required to obtain a valid passphrase.
     // If the passphrase is required to decrypt something that has
     // already been encrypted (and thus has to match the existing key),

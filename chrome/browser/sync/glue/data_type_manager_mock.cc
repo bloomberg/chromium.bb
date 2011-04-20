@@ -8,7 +8,7 @@
 namespace browser_sync {
 
 DataTypeManagerMock::DataTypeManagerMock()
-    : result_(OK, FROM_HERE) {
+    : result_(OK, FROM_HERE, syncable::ModelTypeSet()) {
 
   // By default, calling Configure will send a SYNC_CONFIGURE_START
   // and SYNC_CONFIGURE_DONE notification with a DataTypeManager::OK

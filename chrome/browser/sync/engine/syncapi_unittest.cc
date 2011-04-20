@@ -619,6 +619,7 @@ class SyncManagerObserverMock : public SyncManager::Observer {
   MOCK_METHOD1(OnPassphraseAccepted, void(const std::string&));  // NOLINT
   MOCK_METHOD0(OnStopSyncingPermanently, void());  // NOLINT
   MOCK_METHOD1(OnUpdatedToken, void(const std::string&));  // NOLINT
+  MOCK_METHOD1(OnMigrationNeededForTypes, void(const ModelTypeSet&));
   MOCK_METHOD0(OnClearServerDataFailed, void());  // NOLINT
   MOCK_METHOD0(OnClearServerDataSucceeded, void());  // NOLINT
   MOCK_METHOD1(OnEncryptionComplete, void(const ModelTypeSet&));  // NOLINT

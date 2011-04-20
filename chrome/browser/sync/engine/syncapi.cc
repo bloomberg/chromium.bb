@@ -2572,6 +2572,12 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
                       OnUpdatedToken(event.updated_token));
     return;
   }
+
+  if (event.what_happened == SyncEngineEvent::MIGRATION_NEEDED_FOR_TYPES) {
+    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                      OnMigrationNeededForTypes(event.types_to_migrate));
+    return;
+  }
 }
 
 void SyncManager::SyncInternal::SetParentJsEventRouter(

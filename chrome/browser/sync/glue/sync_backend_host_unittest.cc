@@ -39,6 +39,7 @@ class MockSyncFrontend : public SyncFrontend {
   MOCK_METHOD1(OnPassphraseRequired, void(bool));
   MOCK_METHOD0(OnPassphraseAccepted, void());
   MOCK_METHOD1(OnEncryptionComplete, void(const syncable::ModelTypeSet&));
+  MOCK_METHOD1(OnMigrationNeededForTypes, void(const syncable::ModelTypeSet&));
 };
 
 }  // namespace
@@ -118,7 +119,7 @@ TEST_F(SyncBackendHostTest, MakePendingConfigModeState) {
     EXPECT_TRUE(routing_info.empty());
     EXPECT_FALSE(state->ready_task.get());
     EXPECT_EQ(types, state->initial_types);
-    EXPECT_FALSE(state->deleted_type);
+    EXPECT_TRUE(state->deleted_type);
     EXPECT_TRUE(state->added_types.none());
   }
 

@@ -166,6 +166,28 @@ TEST_F(JsSyncManagerObserverTest, OnEncryptionComplete) {
 
   sync_manager_observer_.OnEncryptionComplete(encrypted_types);
 }
+
+TEST_F(JsSyncManagerObserverTest, OnMigrationNeededForTypes) {
+  ListValue expected_args;
+  ListValue* type_values = new ListValue();
+  syncable::ModelTypeSet types;
+
+  expected_args.Append(type_values);
+  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
+       i < syncable::MODEL_TYPE_COUNT; ++i) {
+    syncable::ModelType type = syncable::ModelTypeFromInt(i);
+    types.insert(type);
+    type_values->Append(Value::CreateStringValue(
+        syncable::ModelTypeToString(type)));
+  }
+
+  EXPECT_CALL(mock_router_,
+              RouteJsEvent("onMigrationNeededForTypes",
+                           HasArgsAsList(expected_args), NULL));
+
+  sync_manager_observer_.OnMigrationNeededForTypes(types);
+}
+
 namespace {
 
 // Makes a node of the given model type.  Returns the id of the

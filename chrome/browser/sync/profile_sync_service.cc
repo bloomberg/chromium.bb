@@ -29,6 +29,7 @@
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
+#include "chrome/browser/sync/backend_migrator.h"
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/signin_manager.h"
@@ -655,6 +656,16 @@ void ProfileSyncService::OnEncryptionComplete(
   }
 }
 
+void ProfileSyncService::OnMigrationNeededForTypes(
+    const syncable::ModelTypeSet& types) {
+  DCHECK(backend_initialized_);
+  DCHECK(data_type_manager_.get());
+
+  // Migrator must be valid, because we don't sync until it is created and this
+  // callback originates from a sync cycle.
+  migrator_->MigrateTypes(types);
+}
+
 void ProfileSyncService::ShowLoginDialog(gfx::NativeWindow parent_window) {
   if (!cros_user_.empty()) {
     // For ChromeOS, any login UI needs to be handled by the settings page.
@@ -967,6 +978,10 @@ void ProfileSyncService::ConfigureDataTypeManager() {
     registrar_.Add(this,
                    NotificationType::SYNC_CONFIGURE_DONE,
                    Source<DataTypeManager>(data_type_manager_.get()));
+
+    // We create the migrator at the same time.
+    migrator_.reset(
+        new browser_sync::BackendMigrator(this, data_type_manager_.get()));
   }
 
   syncable::ModelTypeSet types;

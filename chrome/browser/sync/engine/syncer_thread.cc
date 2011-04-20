@@ -510,8 +510,11 @@ void SyncerThread::SetSyncerStepsForPurpose(
 
 void SyncerThread::DoSyncSessionJob(const SyncSessionJob& job) {
   DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
-  if (!ShouldRunJob(job))
+  if (!ShouldRunJob(job)) {
+    LOG(WARNING) << "Dropping nudge at DoSyncSessionJob, source = "
+        << job.session->source().updates_source;
     return;
+  }
 
   if (job.purpose == SyncSessionJob::NUDGE) {
     DCHECK(pending_nudge_.get());

@@ -1973,6 +1973,8 @@
         'browser/sync/glue/typed_url_model_associator.h',
         'browser/sync/glue/ui_model_worker.cc',
         'browser/sync/glue/ui_model_worker.h',
+        'browser/sync/backend_migrator.cc',
+        'browser/sync/backend_migrator.h',
         'browser/sync/profile_sync_factory.h',
         'browser/sync/profile_sync_factory_impl.cc',
         'browser/sync/profile_sync_factory_impl.h',

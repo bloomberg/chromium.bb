@@ -39,6 +39,7 @@ class ProfileSyncFactory;
 class TabContents;
 
 namespace browser_sync {
+class BackendMigrator;
 class SessionModelAssociator;
 class JsFrontend;
 }  // namespace browser_sync
@@ -186,6 +187,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void OnPassphraseAccepted();
   virtual void OnEncryptionComplete(
       const syncable::ModelTypeSet& encrypted_types);
+  virtual void OnMigrationNeededForTypes(
+      const syncable::ModelTypeSet& types);
 
   // Called when a user enters credentials through UI.
   virtual void OnUserSubmittedAuth(const std::string& username,
@@ -332,7 +335,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // ProfileSyncServiceHarness.  Figure out a different way to expose
   // this info to that class, and remove these functions.
 
-  const browser_sync::sessions::SyncSessionSnapshot*
+  virtual const browser_sync::sessions::SyncSessionSnapshot*
       GetLastSessionSnapshot() const;
 
   // Returns whether or not the underlying sync engine has made any
@@ -623,6 +626,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // The set of encrypted types. This is updated whenever datatypes are
   // encrypted through the OnEncryptionComplete callback of SyncFrontend.
   syncable::ModelTypeSet encrypted_types_;
+
+  scoped_ptr<browser_sync::BackendMigrator> migrator_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

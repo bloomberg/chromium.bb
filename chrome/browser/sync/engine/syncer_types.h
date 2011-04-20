@@ -11,6 +11,7 @@
 
 #include "base/observer_list.h"
 #include "chrome/browser/sync/util/channel.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 
 namespace syncable {
 class BaseTransaction;
@@ -88,6 +89,9 @@ struct SyncEngineEvent {
     // New token in updated_token.
     UPDATED_TOKEN,
 
+    // A list of types to migrate is in |types_to_migrate|.
+    MIGRATION_NEEDED_FOR_TYPES,
+
     // This is sent after the Syncer (and SyncerThread) have initiated self
     // halt due to no longer being permitted to communicate with the server.
     // The listener should sever the sync / browser connections and delete sync
@@ -111,6 +115,8 @@ struct SyncEngineEvent {
 
   // Update-Client-Auth returns a new token for sync use.
   std::string updated_token;
+
+  syncable::ModelTypeSet types_to_migrate;
 };
 
 class SyncEngineEventListener {

@@ -348,7 +348,8 @@ void DataTypeManagerImpl::NotifyStart() {
 
 void DataTypeManagerImpl::NotifyDone(ConfigureResult result,
     const tracked_objects::Location& location) {
-  ConfigureResultWithErrorLocation result_with_location(result, location);
+  ConfigureResultWithErrorLocation result_with_location(result, location,
+                                                        last_requested_types_);
   NotificationService::current()->Notify(
       NotificationType::SYNC_CONFIGURE_DONE,
       Source<DataTypeManager>(this),

@@ -87,6 +87,18 @@ cr.define('chrome.sync', function() {
                 });
     });
 
+    chrome.sync.onEncryptionComplete.addListener(function (encrypted_types) {
+      self.log_('manager', 'onEncryptionComplete', {
+                  encrypted_types: encrypted_types
+                });
+    });
+
+    chrome.sync.onMigrationNeededForTypes.addListener(function (model_types) {
+      self.log_('manager', 'onMigrationNeededForTypes', {
+                  model_types: model_types
+                });
+    });
+
     chrome.sync.onInitializationComplete.addListener(function () {
       self.log_('manager', 'onInitializationComplete', {});
     });

@@ -42,16 +42,24 @@ class DataTypeManager {
                          // during startup.
   };
 
+  typedef std::set<syncable::ModelType> TypeSet;
+
   // In case of an error the location is filled with the location the
   // error originated from. In case of a success the error location value
   // is to be not used.
+  // TODO(tim): We should rename this / ConfigureResult to something more
+  // flexible like SyncConfigureDoneDetails.
   struct ConfigureResultWithErrorLocation {
     ConfigureResult result;
+    TypeSet requested_types;
     scoped_ptr<tracked_objects::Location> location;
 
     ConfigureResultWithErrorLocation();
     ConfigureResultWithErrorLocation(const ConfigureResult& result,
-        const tracked_objects::Location& location) : result(result) {
+        const tracked_objects::Location& location,
+        const TypeSet& requested_types)
+        : result(result),
+          requested_types(requested_types) {
       this->location.reset(new tracked_objects::Location(
           location.function_name(),
           location.file_name(),
@@ -61,7 +69,6 @@ class DataTypeManager {
       ~ConfigureResultWithErrorLocation();
   };
 
-  typedef std::set<syncable::ModelType> TypeSet;
 
   virtual ~DataTypeManager() {}
 

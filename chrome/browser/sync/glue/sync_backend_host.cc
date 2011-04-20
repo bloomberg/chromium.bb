@@ -359,15 +359,14 @@ SyncBackendHost::PendingConfigureDataTypesState*
         CancelableTask* ready_task,
         ModelSafeRoutingInfo* routing_info) {
   PendingConfigureDataTypesState* state = new PendingConfigureDataTypesState();
-
   for (DataTypeController::TypeMap::const_iterator it =
            data_type_controllers.begin();
        it != data_type_controllers.end(); ++it) {
     syncable::ModelType type = it->first;
-
     // If a type is not specified, remove it from the routing_info.
     if (types.count(type) == 0) {
-      state->deleted_type = (routing_info->erase(type) > 0);
+      state->deleted_type = true;
+      routing_info->erase(type);
     } else {
       // Add a newly specified data type as GROUP_PASSIVE into the
       // routing_info, if it does not already exist.
@@ -892,11 +891,14 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
         found_all_added &= snapshot->initial_sync_ended.test(*it);
     }
     if (!found_all_added) {
-      CHECK(false);
+      LOG(WARNING) << "Update didn't return updates for all types requested.";
+      // This is typically an error case and sync won't make forward progress.
+      // The exception is backend migration-during-configuration. We'll reset
+      // state below to allow for a future call to ConfigureDataTypes.
     } else {
       host_->pending_download_state_->ready_task->Run();
-      host_->pending_download_state_.reset();
     }
+    host_->pending_download_state_.reset();
   }
   host_->frontend_->OnSyncCycleCompleted();
 }
@@ -980,6 +982,12 @@ void SyncBackendHost::Core::OnUpdatedToken(const std::string& token) {
       &Core::NotifyUpdatedToken, token));
 }
 
+void SyncBackendHost::Core::OnMigrationNeededForTypes(
+    const syncable::ModelTypeSet& types) {
+  host_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &Core::HandleMigrationNeededOnFrontendLoop, types));
+}
+
 void SyncBackendHost::Core::OnClearServerDataSucceeded() {
   host_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
       &Core::HandleClearServerDataSucceededOnFrontendLoop));
@@ -1033,6 +1041,16 @@ void SyncBackendHost::Core::HandleAuthErrorEventOnFrontendLoop(
 
   host_->last_auth_error_ = new_auth_error;
   host_->frontend_->OnAuthError();
+}
+
+void SyncBackendHost::Core::HandleMigrationNeededOnFrontendLoop(
+    const syncable::ModelTypeSet& types) {
+  if (!host_ || !host_->frontend_)
+    return;
+
+  DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
+
+  host_->frontend_->OnMigrationNeededForTypes(types);
 }
 
 void SyncBackendHost::Core::RouteJsEventOnFrontendLoop(

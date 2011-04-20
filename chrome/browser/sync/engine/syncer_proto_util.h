@@ -102,6 +102,12 @@ class SyncerProtoUtil {
   static bool VerifyResponseBirthday(syncable::Directory* dir,
       const sync_pb::ClientToServerResponse* response);
 
+  // Builds and sends a SyncEngineEvent to begin migration for types (specified
+  // in notification).
+  static void HandleMigrationDoneResponse(
+      const sync_pb::ClientToServerResponse* response,
+      sessions::SyncSession* session);
+
   // Post the message using the scm, and do some processing on the returned
   // headers. Decode the server response.
   static bool PostAndProcessHeaders(browser_sync::ServerConnectionManager* scm,

@@ -13,6 +13,7 @@
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 
@@ -78,6 +79,21 @@ void LogResponseProfilingData(const ClientToServerResponse& response) {
 
 }  // namespace
 
+// static
+void SyncerProtoUtil::HandleMigrationDoneResponse(
+  const sync_pb::ClientToServerResponse* response,
+  sessions::SyncSession* session) {
+  LOG_IF(ERROR, 0 >= response->migrated_data_type_id_size())
+      << "MIGRATION_DONE but no types specified.";
+  syncable::ModelTypeSet to_migrate;
+  for (int i = 0; i < response->migrated_data_type_id_size(); i++) {
+    to_migrate.insert(syncable::GetModelTypeFromExtensionFieldNumber(
+        response->migrated_data_type_id(i)));
+  }
+  SyncEngineEvent event(SyncEngineEvent::MIGRATION_NEEDED_FOR_TYPES);
+  event.types_to_migrate = to_migrate;
+  session->context()->NotifyListeners(event);
+}
 
 // static
 bool SyncerProtoUtil::VerifyResponseBirthday(syncable::Directory* dir,
@@ -224,6 +240,9 @@ bool SyncerProtoUtil::PostClientToServerMessage(
           base::TimeDelta::FromSeconds(kSyncDelayAfterThrottled));
       return false;
     case ClientToServerResponse::TRANSIENT_ERROR:
+      return false;
+    case ClientToServerResponse::MIGRATION_DONE:
+      HandleMigrationDoneResponse(response, session);
       return false;
     case ClientToServerResponse::USER_NOT_ACTIVATED:
     case ClientToServerResponse::AUTH_INVALID:

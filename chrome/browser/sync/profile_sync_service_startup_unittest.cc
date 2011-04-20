@@ -247,7 +247,7 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFailure)) {
   DataTypeManager::ConfigureResult configure_result =
       DataTypeManager::ASSOCIATION_FAILED;
   browser_sync::DataTypeManager::ConfigureResultWithErrorLocation result(
-      configure_result, FROM_HERE);
+      configure_result, FROM_HERE, syncable::ModelTypeSet());
   EXPECT_CALL(*data_type_manager, Configure(_)).
       WillRepeatedly(DoAll(NotifyFromDataTypeManager(data_type_manager,
                          NotificationType::SYNC_CONFIGURE_START),
