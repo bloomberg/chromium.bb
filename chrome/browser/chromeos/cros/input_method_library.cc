@@ -613,6 +613,11 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   void RegisterProperties(const ImePropertyList& prop_list) {
     // |prop_list| might be empty. This means "clear all properties."
     current_ime_properties_ = prop_list;
+
+    // Update input method menu
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      PropertyListChanged(this,
+                                          current_ime_properties_));
   }
 
   // Starts the input method daemon. Unlike MaybeStopInputMethodDaemon(),
@@ -628,6 +633,11 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     for (size_t i = 0; i < prop_list.size(); ++i) {
       FindAndUpdateProperty(prop_list[i], &current_ime_properties_);
     }
+
+    // Update input method menu
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      PropertyListChanged(this,
+                                          current_ime_properties_));
   }
 
   // Launches an input method procsess specified by the given command

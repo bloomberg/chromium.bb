@@ -400,6 +400,29 @@ void InputMethodMenu::PreferenceUpdateNeeded(
   }
 }
 
+void InputMethodMenu::PropertyListChanged(
+    InputMethodLibrary* obj,
+    const ImePropertyList& current_ime_properties) {
+  // Usual order of notifications of input method change is:
+  // 1. RegisterProperties(empty)
+  // 2. RegisterProperties(list-of-new-properties)
+  // 3. GlobalInputMethodChanged
+  // However, due to the asynchronicity, we occasionally (but rarely) face to
+  // 1. RegisterProperties(empty)
+  // 2. GlobalInputMethodChanged
+  // 3. RegisterProperties(list-of-new-properties)
+  // this order. On this unusual case, we must rebuild the menu after the last
+  // RegisterProperties. For the other cases, no rebuild is needed. Actually
+  // it is better to be avoided. Otherwise users can sometimes observe the
+  // awkward clear-then-register behavior.
+  if (!current_ime_properties.empty()) {
+    InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
+    const InputMethodDescriptor& input_method = library->current_input_method();
+    size_t num_active_input_methods = library->GetNumActiveInputMethods();
+    UpdateUIFromInputMethod(input_method, num_active_input_methods);
+  }
+}
+
 void InputMethodMenu::FirstObserverIsAdded(InputMethodLibrary* obj) {
   // NOTICE: Since this function might be called from the constructor of this
   // class, it's better to avoid calling virtual functions.

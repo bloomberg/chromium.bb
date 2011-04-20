@@ -43,6 +43,11 @@ class InputMethodLibrary {
         const InputMethodDescriptor& previous_input_method,
         const InputMethodDescriptor& current_input_method) = 0;
 
+    // Called when the list of properties is changed.
+    virtual void PropertyListChanged(
+        InputMethodLibrary* obj,
+        const ImePropertyList& current_ime_properties) = 0;
+
     // Called by AddObserver() when the first observer is added.
     virtual void FirstObserverIsAdded(InputMethodLibrary* obj) = 0;
   };
