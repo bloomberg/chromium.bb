@@ -95,3 +95,8 @@ BUGDPRANKE : fast/js/excessive-comma-usage.html = FAIL CRASH TIMEOUT
 BUGDPRANKE MAC : http/tests/navigation/lockedhistory-iframe.html = TEXT
 BUGDPRANKE : fast/parser/iframe-sets-parent-to-javascript-url.html = TEXT PASS
 BUGDPRANKE : fast/repaint/moving-shadow-on-path.html = TEXT PASS
+
+BUGDPRANKE LINUX : fast/runin/nonblock-runin.html = CRASH
+BUGDPRANKE WIN: http/tests/misc/empty-file-formdata.html = TIMEOUT PASS
+BUGDPRANKE WIN: http/tests/xmlhttprequest/access-control-preflight-headers-async.html = TIMEOUT PASS
+
