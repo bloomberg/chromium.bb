@@ -32,7 +32,7 @@ int32_t StreamAsFile(PP_Instance instance,
   DebugPrintf("NaClFile::StreamAsFile: %s\n", NaClSrpcErrorString(srpc_result));
 
   if (srpc_result == NACL_SRPC_RESULT_OK)
-    return PP_ERROR_WOULDBLOCK;
+    return PP_OK_COMPLETIONPENDING;
   return PP_ERROR_FAILED;
 }
 

@@ -88,7 +88,7 @@ void PpbGraphics3DRpcServer::PPB_Surface3D_SwapBuffers(
 
   *pp_error = ppapi_proxy::PPBSurface3DInterface()->SwapBuffers(
       surface, remote_callback);
-  if (*pp_error != PP_ERROR_WOULDBLOCK)  // Async error. Callback not scheduled.
+  if (*pp_error != PP_OK_COMPLETIONPENDING)  // Async error.
     ppapi_proxy::DeleteRemoteCallbackInfo(remote_callback);
   rpc->result = NACL_SRPC_RESULT_OK;
   DebugPrintf("PPB_Surface3D_SwapBuffers: pp_error=%"NACL_PRId32"\n",

@@ -1,6 +1,6 @@
-// Copyright 2011 The Native Client Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include <string.h>
 
@@ -60,7 +60,7 @@ void PpbFileIODevRpcServer::PPB_FileIO_Dev_Open(
       remote_callback);
 
   DebugPrintf("PPB_FileIO_Dev::Open: pp_error=%"NACL_PRId32"\n", *pp_error);
-  if (*pp_error != PP_ERROR_WOULDBLOCK)  // Async error. No callback scheduled.
+  if (*pp_error != PP_OK_COMPLETIONPENDING)  // Async error.
     DeleteRemoteCallbackInfo(remote_callback);
 
   rpc->result = NACL_SRPC_RESULT_OK;
@@ -119,7 +119,7 @@ void PpbFileIODevRpcServer::PPB_FileIO_Dev_Read(
     *buffer_size = static_cast<nacl_abi_size_t>(*pp_error_or_bytes);
     memcpy(buffer, callback_buffer, *buffer_size);
     DeleteRemoteCallbackInfo(remote_callback);
-  } else if (*pp_error_or_bytes != PP_ERROR_WOULDBLOCK) {  // Async error.
+  } else if (*pp_error_or_bytes != PP_OK_COMPLETIONPENDING) {  // Async error.
     // No callback scheduled.
     *buffer_size = 0;
     DeleteRemoteCallbackInfo(remote_callback);

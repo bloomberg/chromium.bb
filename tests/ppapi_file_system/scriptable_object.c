@@ -347,7 +347,7 @@ static struct PP_Var TestOpen(struct PPB_FileSystem_Dev* ppb_file_system) {
                                    open_callback);
   ppb_core->ReleaseResource(file_system);
   EXPECT_TRUE(pp_error != PP_OK);
-  EXPECT_TRUE(pp_error != PP_ERROR_WOULDBLOCK);
+  EXPECT_TRUE(pp_error != PP_OK_COMPLETIONPENDING);
 
   /* Test local temporary and local persistant file systems */
   for (j = 1; j < kNumFileSystemTypes; ++j) {
@@ -374,7 +374,7 @@ static struct PP_Var TestOpen(struct PPB_FileSystem_Dev* ppb_file_system) {
                                      1024,  /* Dummy value */
                                      open_callback);
     ppb_core->ReleaseResource(file_system);
-    EXPECT_TRUE(pp_error == PP_ERROR_WOULDBLOCK);
+    EXPECT_TRUE(pp_error == PP_OK_COMPLETIONPENDING);
 
     /* Test fail for multiple opens */
     file_system = ppb_file_system->Create(instance,
@@ -382,7 +382,7 @@ static struct PP_Var TestOpen(struct PPB_FileSystem_Dev* ppb_file_system) {
     pp_error = ppb_file_system->Open(file_system,
                                      1024,  /* Dummy value */
                                      open_callback);
-    CHECK(pp_error == PP_ERROR_WOULDBLOCK);  /* We've previously tested this */
+    CHECK(pp_error == PP_OK_COMPLETIONPENDING);  /* Previously tested */
     pp_error = ppb_file_system->Open(file_system,
                                      1024,  /* Dummy value */
                                      open_callback);

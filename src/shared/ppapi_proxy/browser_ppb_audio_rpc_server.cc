@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -130,7 +130,7 @@ void PpbAudioRpcServer::PPB_Audio_Create(
   DebugPrintf("PPB_Audio::Create: pp_error=%"NACL_PRIu32"\n", pp_error);
   // If the Open() call failed, pass failure code and explicitly
   // invoke the completion callback, giving it a chance to release data.
-  if (pp_error != PP_ERROR_WOULDBLOCK) {
+  if (pp_error != PP_OK_COMPLETIONPENDING) {
     PP_RunCompletionCallback(&callback, pp_error);
     return;
   }

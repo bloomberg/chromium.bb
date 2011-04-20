@@ -1,6 +1,6 @@
-// Copyright 2010 The Native Client Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "native_client/tests/ppapi_geturl/url_load_request.h"
 
@@ -172,7 +172,7 @@ bool UrlLoadRequest::Load(bool as_file, std::string url) {
       request_,
       PP_MakeCompletionCallback(::OpenCallback, this));
   CHECK(pp_error != PP_OK);  // Open() never succeeds synchronously.
-  if (pp_error != PP_ERROR_WOULDBLOCK) {  // Asynch failure.
+  if (pp_error != PP_OK_COMPLETIONPENDING) {  // Asynch failure.
     return ReportFailure("PPB_URLLoader::Open: ", pp_error);
   }
   return true;
@@ -245,7 +245,7 @@ void UrlLoadRequest::ReadResponseBody() {
       PP_MakeCompletionCallback(::ReadResponseBodyCallback, this));
   if (pp_error_or_bytes >= PP_OK) {  // Synchronous read, callback ignored.
     ReadResponseBodyCallback(pp_error_or_bytes);
-  } else if (pp_error_or_bytes != PP_ERROR_WOULDBLOCK) {  // Asynch failure.
+  } else if (pp_error_or_bytes != PP_OK_COMPLETIONPENDING) {  // Asynch failure.
     ReportFailure("PPB_URLLoader::ReadResponseBody: ", pp_error_or_bytes);
   }
 }
@@ -259,7 +259,7 @@ void UrlLoadRequest::ReadFileBody() {
       PP_MakeCompletionCallback(::ReadFileBodyCallback, this));
   if (pp_error_or_bytes >= PP_OK) {  // Synchronous read, callback ignored.
     ReadFileBodyCallback(pp_error_or_bytes);
-  } else if (pp_error_or_bytes != PP_ERROR_WOULDBLOCK) {  // Asynch failure.
+  } else if (pp_error_or_bytes != PP_OK_COMPLETIONPENDING) {  // Asynch failure.
     ReportFailure("PPB_FILEIO::Read: ", pp_error_or_bytes);
   }
 }
@@ -304,7 +304,7 @@ void UrlLoadRequest::OpenCallback(int32_t pp_error) {
         PP_MakeCompletionCallback(::FinishStreamingToFileCallback, this));
     if (pp_error == PP_OK) {  // Reached EOF.
       FinishStreamingToFileCallback(pp_error);
-    } else if (pp_error != PP_ERROR_WOULDBLOCK) {  // Asynch failure.
+    } else if (pp_error != PP_OK_COMPLETIONPENDING) {  // Asynch failure.
       ReportFailure("PPB_URLLoader::FinishStreamingToFile: ", pp_error);
     }
   } else {
@@ -329,7 +329,7 @@ void UrlLoadRequest::FinishStreamingToFileCallback(int32_t pp_error) {
       PP_FILEOPENFLAG_READ,
       PP_MakeCompletionCallback(::OpenFileBodyCallback, this));
   CHECK(pp_error != PP_OK);  // Open() never succeeds synchronously.
-  if (pp_error != PP_ERROR_WOULDBLOCK)  {  // Async failure.
+  if (pp_error != PP_OK_COMPLETIONPENDING)  {  // Async failure.
     ReportFailure("PPB_FileIO::Open: ", pp_error);
   }
 }

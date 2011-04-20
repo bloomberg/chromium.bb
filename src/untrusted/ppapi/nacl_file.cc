@@ -153,9 +153,9 @@ int32_t LoadUrl(PP_Instance instance,
     // Operation completed synchronously; explicitly schedule the callback to
     // mimic asynchronous behavior. Due to this, LoadUrl() as it is now, will
     // never return PP_OK.
-    pp_error = PP_ERROR_WOULDBLOCK;
+    pp_error = PP_OK_COMPLETIONPENDING;
     ppapi_proxy::PPBCoreInterface()->CallOnMainThread(0, loaded, pp_error);
-  } else if (PP_ERROR_WOULDBLOCK != pp_error) {
+  } else if (PP_OK_COMPLETIONPENDING != pp_error) {
     entry->chain = false;
     PP_RunCompletionCallback(&loaded, pp_error);
   }

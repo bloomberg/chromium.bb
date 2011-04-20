@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -176,7 +176,7 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_Flush(
     return;  // Treat this as a generic SRPC error.
 
   *pp_error = PPBGraphics2DInterface()->Flush(graphics_2d, remote_callback);
-  if (*pp_error != PP_ERROR_WOULDBLOCK)  // Async error. Callback not scheduled.
+  if (*pp_error != PP_OK_COMPLETIONPENDING)  // Async error.
     ppapi_proxy::DeleteRemoteCallbackInfo(remote_callback);
   DebugPrintf("PPB_Graphics2D::Flush: pp_error=%"NACL_PRId32"\n", *pp_error);
   rpc->result = NACL_SRPC_RESULT_OK;

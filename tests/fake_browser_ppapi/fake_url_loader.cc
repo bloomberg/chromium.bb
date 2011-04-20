@@ -1,8 +1,6 @@
-/*
- * Copyright 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "native_client/tests/fake_browser_ppapi/fake_url_loader.h"
 
@@ -76,7 +74,7 @@ int32_t Open(PP_Resource loader_id,
   if (callback.func == NULL)
     return PP_ERROR_BADARGUMENT;
   PP_RunCompletionCallback(&callback, PP_OK);
-  return PP_ERROR_WOULDBLOCK;  // Fake successful async call.
+  return PP_OK_COMPLETIONPENDING;  // Fake successful async call.
 }
 
 int32_t FollowRedirect(PP_Resource loader_id,
@@ -165,7 +163,7 @@ int32_t FinishStreamingToFile(PP_Resource loader_id,
   if (callback.func == NULL)
     return PP_ERROR_BADARGUMENT;
   PP_RunCompletionCallback(&callback, PP_OK);
-  return PP_ERROR_WOULDBLOCK;  // Fake successful async call.
+  return PP_OK_COMPLETIONPENDING;  // Fake successful async call.
 }
 
 void Close(PP_Resource loader_id) {

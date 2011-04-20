@@ -72,7 +72,7 @@ void PpbFileSystemDevRpcServer::PPB_FileSystem_Dev_Open(
 
   DebugPrintf("PPB_FileSystem_Dev::Open: pp_error=%"NACL_PRId32"\n", *pp_error);
 
-  if (*pp_error != PP_ERROR_WOULDBLOCK)
+  if (*pp_error != PP_OK_COMPLETIONPENDING)
     DeleteRemoteCallbackInfo(remote_callback);
   rpc->result = NACL_SRPC_RESULT_OK;
 }

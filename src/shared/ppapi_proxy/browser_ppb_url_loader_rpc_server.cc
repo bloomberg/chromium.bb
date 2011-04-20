@@ -1,6 +1,6 @@
-// Copyright 2011 The Native Client Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 //
 // SRPC-abstraction wrappers around PPB_URLLoader functions.
 
@@ -75,7 +75,7 @@ void PpbURLLoaderRpcServer::PPB_URLLoader_Open(
   *pp_error = PPBURLLoaderInterface()->Open(loader, request, remote_callback);
   DebugPrintf("PPB_URLLoader::Open: pp_error=%"NACL_PRId32"\n", *pp_error);
 
-  if (*pp_error != PP_ERROR_WOULDBLOCK)  // Async error. No callback scheduled.
+  if (*pp_error != PP_OK_COMPLETIONPENDING)  // Async error.
     DeleteRemoteCallbackInfo(remote_callback);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -99,7 +99,7 @@ void PpbURLLoaderRpcServer::PPB_URLLoader_FollowRedirect(
   *pp_error = PPBURLLoaderInterface()->FollowRedirect(loader, remote_callback);
   DebugPrintf("PPB_URLLoader::FollowRedirect: pp_error=%"NACL_PRId32"\n",
               *pp_error);
-  if (*pp_error != PP_ERROR_WOULDBLOCK)  // Async error. No callback scheduled.
+  if (*pp_error != PP_OK_COMPLETIONPENDING)  // Async error.
     DeleteRemoteCallbackInfo(remote_callback);
 
   rpc->result = NACL_SRPC_RESULT_OK;
@@ -195,7 +195,7 @@ void PpbURLLoaderRpcServer::PPB_URLLoader_ReadResponseBody(
     *buffer_size = static_cast<nacl_abi_size_t>(*pp_error_or_bytes);
     memcpy(buffer, callback_buffer, *buffer_size);
     DeleteRemoteCallbackInfo(remote_callback);
-  } else if (*pp_error_or_bytes != PP_ERROR_WOULDBLOCK) {  // Async error.
+  } else if (*pp_error_or_bytes != PP_OK_COMPLETIONPENDING) {  // Async error.
     // No callback scheduled.
     *buffer_size = 0;
     DeleteRemoteCallbackInfo(remote_callback);
@@ -227,7 +227,7 @@ void PpbURLLoaderRpcServer::PPB_URLLoader_FinishStreamingToFile(
       PPBURLLoaderInterface()->FinishStreamingToFile(loader, remote_callback);
   DebugPrintf("PPB_URLLoader::FinishStreamingToFile: pp_error=%"NACL_PRId32"\n",
               *pp_error);
-  if (*pp_error != PP_ERROR_WOULDBLOCK) // Async error. No callback scheduled.
+  if (*pp_error != PP_OK_COMPLETIONPENDING)  // Async error.
     DeleteRemoteCallbackInfo(remote_callback);
   rpc->result = NACL_SRPC_RESULT_OK;
 }

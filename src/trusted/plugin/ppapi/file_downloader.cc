@@ -89,7 +89,7 @@ bool FileDownloader::Open(const nacl::string& url,
   pp::CompletionCallback onload_callback =
       callback_factory_.NewCallback(&FileDownloader::URLLoadStartNotify);
   int32_t pp_error = url_loader_.Open(url_request, onload_callback);
-  bool async_notify_ok = (pp_error == PP_ERROR_WOULDBLOCK);
+  bool async_notify_ok = (pp_error == PP_OK_COMPLETIONPENDING);
   PLUGIN_PRINTF(("FileDownloader::Open (async_notify_ok=%d)\n",
                  async_notify_ok));
   if (!async_notify_ok) {
@@ -171,7 +171,7 @@ void FileDownloader::URLLoadStartNotify(int32_t pp_error) {
   pp::CompletionCallback onload_callback =
       callback_factory_.NewCallback(&FileDownloader::URLLoadFinishNotify);
   pp_error = url_loader_.FinishStreamingToFile(onload_callback);
-  bool async_notify_ok = (pp_error == PP_ERROR_WOULDBLOCK);
+  bool async_notify_ok = (pp_error == PP_OK_COMPLETIONPENDING);
   PLUGIN_PRINTF(("FileDownloader::URLLoadStartNotify (async_notify_ok=%d)\n",
                  async_notify_ok));
   if (!async_notify_ok) {
@@ -217,7 +217,7 @@ void FileDownloader::URLLoadFinishNotify(int32_t pp_error) {
   pp::CompletionCallback onopen_callback =
       callback_factory_.NewCallback(&FileDownloader::FileOpenNotify);
   pp_error = file_reader_.Open(file, PP_FILEOPENFLAG_READ, onopen_callback);
-  bool async_notify_ok = (pp_error == PP_ERROR_WOULDBLOCK);
+  bool async_notify_ok = (pp_error == PP_OK_COMPLETIONPENDING);
   PLUGIN_PRINTF(("FileDownloader::URLLoadFinishNotify (async_notify_ok=%d)\n",
                  async_notify_ok));
   if (!async_notify_ok) {

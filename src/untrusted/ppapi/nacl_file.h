@@ -33,7 +33,7 @@ extern "C" {
  *   ...
  *   PP_CompletionCallback cb = PP_MakeCompletionCallback(Loaded, NULL);
  *   int32_t result = LoadUrl(pp_instance, "readme.txt", cb);
- *   if (result != PP_ERROR_WOULDBLOCK)
+ *   if (result != PP_OK_COMPLETIONPENDING)
  *     PP_RunCompletionCallback(&cb, result);
  *   ...
  *
@@ -43,7 +43,7 @@ extern "C" {
  *      if (fd != -1) {
  *        ...lseek(), read(), close()...
  *
- * Returns: LoadUrl(), on success, returns PP_ERROR_WOULDBLOCK to indicate
+ * Returns: LoadUrl(), on success, returns PP_OK_COMPLETIONPENDING to indicate
  * that the load is in progress.  When the load has completed, the user supplied
  * completion callback will be invoked.  If the load was successful, the result
  * value passed into the completion callback will be PP_OK, and it will then
