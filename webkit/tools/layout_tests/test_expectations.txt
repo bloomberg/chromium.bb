@@ -40,6 +40,7 @@ BUGDPRANKE WIN DEBUG : fast/forms/implicit-submission.html = TEXT PASS
 BUGDPRANKE WIN DEBUG : fast/css/text-overflow-ellipsis.html = CRASH
 BUGDPRANKE MAC DEBUG : transitions/cancel-transition.html = TEXT PASS
 BUGDPRANKE LINUX DEBUG : fast/css/getComputedStyle/getComputedStyle-relayout.html = CRASH
+BUGDPRANKE LINUX DEBUG : fast/dom/HTMLFormElement/invalid-form-field.html = CRASH
 
 BUGDPRANKE LINUX DEBUG : perf/array-nested-loop.html = TEXT TIMEOUT PASS
 BUGDPRANKE LINUX DEBUG : fast/dom/Node/mutation-blur.html = CRASH
