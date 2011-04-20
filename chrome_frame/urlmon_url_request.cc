@@ -894,6 +894,7 @@ void UrlmonUrlRequest::ReleaseBindings() {
 }
 
 net::Error UrlmonUrlRequest::HresultToNetError(HRESULT hr) {
+  const int kInvalidHostName = 0x8007007b;
   // Useful reference:
   // http://msdn.microsoft.com/en-us/library/ms775145(VS.85).aspx
 
@@ -929,9 +930,15 @@ net::Error UrlmonUrlRequest::HresultToNetError(HRESULT hr) {
       ret = net::ERR_TUNNEL_CONNECTION_FAILED;
       break;
 
+    // The following error codes can be returned while processing an invalid
+    // url. http://msdn.microsoft.com/en-us/library/bb250493(v=vs.85).aspx
     case INET_E_INVALID_URL:
     case INET_E_UNKNOWN_PROTOCOL:
     case INET_E_REDIRECT_FAILED:
+    case INET_E_SECURITY_PROBLEM:
+    case kInvalidHostName:
+    case E_INVALIDARG:
+    case E_OUTOFMEMORY:
       ret = net::ERR_INVALID_URL;
       break;
 
