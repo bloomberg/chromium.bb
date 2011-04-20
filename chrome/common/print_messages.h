@@ -213,3 +213,6 @@ IPC_MESSAGE_ROUTED0(PrintHostMsg_ScriptInitiatedPrintPreview)
 // message is already valid in the browser process.
 IPC_MESSAGE_ROUTED1(PrintHostMsg_PagesReadyForPreview,
                     PrintHostMsg_DidPreviewDocument_Params /* params */)
+
+// Tell the browser print preview failed.
+IPC_MESSAGE_ROUTED0(PrintHostMsg_PrintPreviewFailed)

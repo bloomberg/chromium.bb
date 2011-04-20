@@ -27,6 +27,8 @@ void SetLocalizedStrings(DictionaryValue* localized_strings) {
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_LOADING));
   localized_strings->SetString(std::string("noPlugin"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_NO_PLUGIN));
+  localized_strings->SetString(std::string("previewFailed"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_FAILED));
 
   localized_strings->SetString(std::string("printButton"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PRINT_BUTTON));

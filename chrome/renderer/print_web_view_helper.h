@@ -119,8 +119,14 @@ class PrintWebViewHelper : public RenderViewObserver ,
                     WebKit::WebNode* node,
                     const DictionaryValue& settings);
 
-  // Notification when printing is done - signal teardown.
-  void DidFinishPrinting(bool success);
+  enum PrintingResult {
+    OK,
+    FAIL_PRINT,
+    FAIL_PREVIEW,
+  };
+
+  // Notification when printing is done - signal teardown/free resources.
+  void DidFinishPrinting(PrintingResult result);
 
   // Print Settings -----------------------------------------------------------
 

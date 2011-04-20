@@ -93,6 +93,14 @@ void PrintPreviewMessageHandler::OnScriptInitiatedPrintPreview() {
   PrintPreviewTabController::PrintPreview(tab_contents());
 }
 
+void PrintPreviewMessageHandler::OnPrintPreviewFailed() {
+  TabContents* print_preview_tab = GetPrintPreviewTab();
+  // User might have closed it already.
+  if (!print_preview_tab)
+    return;
+  print_preview_tab->web_ui()->CallJavascriptFunction("printPreviewFailed");
+}
+
 bool PrintPreviewMessageHandler::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
@@ -103,6 +111,8 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
                         OnPrintPreviewNodeUnderContextMenu)
     IPC_MESSAGE_HANDLER(PrintHostMsg_ScriptInitiatedPrintPreview,
                         OnScriptInitiatedPrintPreview)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewFailed,
+                        OnPrintPreviewFailed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

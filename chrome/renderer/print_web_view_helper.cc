@@ -188,8 +188,7 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
   }
 
   if (!UpdatePrintSettings(job_settings)) {
-    NOTREACHED() << "Failed to update print page settings";
-    DidFinishPrinting(true);  // Release all printing resources.
+    DidFinishPrinting(FAIL_PRINT);
     return;
   }
 
@@ -243,7 +242,7 @@ void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
 void PrintWebViewHelper::OnPrintingDone(int document_cookie, bool success) {
   // Ignoring document cookie here since only one print job can be outstanding
   // per renderer and document_cookie is 0 when printing is successful.
-  DidFinishPrinting(success);
+  DidFinishPrinting(success ? OK : FAIL_PRINT);
 }
 
 void PrintWebViewHelper::OnPrintNodeUnderContextMenu() {
@@ -289,14 +288,14 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame, WebKit::WebNode* node) {
 
   // Some full screen plugins can say they don't want to print.
   if (!expected_pages_count) {
-    DidFinishPrinting(true);  // Release all printing resources.
+    DidFinishPrinting(OK);  // Release resources and fail silently.
     return;
   }
 
   // Ask the browser to show UI to retrieve the final print settings.
   if (!GetPrintSettingsFromUser(frame, expected_pages_count,
                                 use_browser_overlays)) {
-    DidFinishPrinting(true);  // Release all printing resources.
+    DidFinishPrinting(OK);  // Release resources and fail silently.
     return;
   }
 
@@ -316,8 +315,7 @@ void PrintWebViewHelper::PrintPreview(WebKit::WebFrame* frame,
   }
 
   if (!UpdatePrintSettings(settings)) {
-    NOTREACHED() << "Failed to update print page settings";
-    DidFinishPrinting(true);  // Release all printing resources.
+    DidFinishPrinting(FAIL_PREVIEW);
     return;
   }
 
@@ -325,8 +323,8 @@ void PrintWebViewHelper::PrintPreview(WebKit::WebFrame* frame,
   RenderPagesForPreview(frame, node);
 }
 
-void PrintWebViewHelper::DidFinishPrinting(bool success) {
-  if (!success) {
+void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
+  if (result == FAIL_PRINT) {
     WebView* web_view = print_web_view_;
     if (!web_view)
       web_view = render_view()->webview();
@@ -334,6 +332,8 @@ void PrintWebViewHelper::DidFinishPrinting(bool success) {
     render_view()->runModalAlertDialog(
         web_view->mainFrame(),
         l10n_util::GetStringUTF16(IDS_PRINT_SPOOL_FAILED_ERROR_TEXT));
+  } else if (result == FAIL_PREVIEW) {
+    Send(new PrintHostMsg_PrintPreviewFailed(routing_id()));
   }
 
   if (print_web_view_) {
@@ -559,6 +559,10 @@ bool PrintWebViewHelper::UpdatePrintSettings(
   PrintMsg_PrintPages_Params settings;
   Send(new PrintHostMsg_UpdatePrintSettings(routing_id(),
       print_pages_params_->params.document_cookie, job_settings, &settings));
+
+  if (!settings.params.dpi)
+    return false;
+
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
   return true;
 }

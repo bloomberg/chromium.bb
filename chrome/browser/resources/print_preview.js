@@ -324,6 +324,19 @@ function setColor(color) {
 }
 
 /**
+ * Display an error message when print preview fails.
+ * Called from PrintPreviewMessageHandler::OnPrintPreviewFailed().
+ */
+function printPreviewFailed() {
+  $('loading').classList.add('hidden');
+  $('preview-failed').classList.remove('hidden');
+
+  var pdfViewer = $('pdf-viewer');
+  if (pdfViewer)
+    $('mainview').removeChild(pdfViewer);
+}
+
+/**
  * Called when the PDF plugin loads its document.
  */
 function onPDFLoad() {
@@ -374,6 +387,8 @@ function createPDFPlugin() {
     $('print-button').disabled = false;
   }
 
+  $('preview-failed').classList.add('hidden');
+
   var pdfViewer = $('pdf-viewer');
   if (pdfViewer) {
     pdfViewer.reload();
@@ -381,14 +396,13 @@ function createPDFPlugin() {
     return;
   }
 
-  var loadingElement = $('loading');
-  loadingElement.classList.add('hidden');
-  var mainView = loadingElement.parentNode;
+  $('loading').classList.add('hidden');
 
   var pdfPlugin = document.createElement('embed');
   pdfPlugin.setAttribute('id', 'pdf-viewer');
   pdfPlugin.setAttribute('type', 'application/pdf');
   pdfPlugin.setAttribute('src', 'chrome://print/print.pdf');
+  var mainView = $('mainview');
   mainView.appendChild(pdfPlugin);
   if (!pdfPlugin.onload) {
     hasPDFPlugin = false;
