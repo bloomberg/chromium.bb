@@ -517,8 +517,7 @@ void SyncerThread::DoSyncSessionJob(const SyncSessionJob& job) {
   }
 
   if (job.purpose == SyncSessionJob::NUDGE) {
-    DCHECK(pending_nudge_.get());
-    if (pending_nudge_->session != job.session)
+    if (pending_nudge_.get() == NULL || pending_nudge_->session != job.session)
       return;  // Another nudge must have been scheduled in in the meantime.
     pending_nudge_.reset();
   }

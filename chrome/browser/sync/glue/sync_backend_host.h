@@ -377,6 +377,9 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // Posts a config request on the core thread.
     virtual void DoRequestConfig(const syncable::ModelTypeBitSet& added_types);
 
+    // Start the configuration mode.
+    virtual void DoStartConfiguration();
+
     // Set the base request context to use when making HTTP calls.
     // This method will add a reference to the context to persist it
     // on the IO thread. Must be removed from IO thread.

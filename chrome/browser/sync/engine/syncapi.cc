@@ -1282,6 +1282,12 @@ class SyncManager::SyncInternal
 
   Status GetStatus();
 
+  void RequestNudge(const tracked_objects::Location& nudge_location);
+
+  void RequestNudgeWithDataTypes(const TimeDelta& delay,
+      browser_sync::NudgeSource source, const ModelTypeBitSet& types,
+      const tracked_objects::Location& nudge_location);
+
   // See SyncManager::Shutdown for information.
   void Shutdown();
 
@@ -1667,10 +1673,7 @@ bool SyncManager::IsUsingExplicitPassphrase() {
 }
 
 void SyncManager::RequestNudge(const tracked_objects::Location& location) {
-  if (data_->syncer_thread())
-    data_->syncer_thread()->ScheduleNudge(
-        TimeDelta::FromMilliseconds(0), browser_sync::NUDGE_SOURCE_LOCAL,
-        ModelTypeBitSet(), location);
+  data_->RequestNudge(location);
 }
 
 void SyncManager::RequestClearServerData() {
@@ -1964,7 +1967,7 @@ void SyncManager::SyncInternal::SetPassphrase(
 
     // Nudge the syncer so that encrypted datatype updates that were waiting for
     // this passphrase get applied as soon as possible.
-    sync_manager_->RequestNudge(FROM_HERE);
+    RequestNudge(FROM_HERE);
   } else {
     VLOG(1) << "No pending keys, adding provided passphrase.";
     WriteNode node(&trans);
@@ -2248,7 +2251,7 @@ void SyncManager::SyncInternal::OnIPAddressChangedImpl() {
   // TODO(akalin): CheckServerReachable() can block, which may cause
   // jank if we try to shut down sync.  Fix this.
   connection_manager()->CheckServerReachable();
-  sync_manager_->RequestNudge(FROM_HERE);
+  RequestNudge(FROM_HERE);
 }
 
 // Listen to model changes, filter out ones initiated by the sync API, and
@@ -2391,11 +2394,12 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
   if (exists_unsynced_items && syncer_thread()) {
     int nudge_delay = only_preference_changes ?
         kPreferencesNudgeDelayMilliseconds : kDefaultNudgeDelayMilliseconds;
-    syncer_thread()->ScheduleNudge(
+    core_message_loop_->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &SyncInternal::RequestNudgeWithDataTypes,
         TimeDelta::FromMilliseconds(nudge_delay),
         browser_sync::NUDGE_SOURCE_LOCAL,
         model_types,
-        FROM_HERE);
+        FROM_HERE));
   }
 }
 
@@ -2469,6 +2473,22 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
 
 SyncManager::Status SyncManager::SyncInternal::GetStatus() {
   return allstatus_.status();
+}
+
+void SyncManager::SyncInternal::RequestNudge(
+    const tracked_objects::Location& location) {
+  if (syncer_thread())
+     syncer_thread()->ScheduleNudge(
+        TimeDelta::FromMilliseconds(0), browser_sync::NUDGE_SOURCE_LOCAL,
+        ModelTypeBitSet(), location);
+}
+
+void SyncManager::SyncInternal::RequestNudgeWithDataTypes(
+    const TimeDelta& delay,
+    browser_sync::NudgeSource source, const ModelTypeBitSet& types,
+    const tracked_objects::Location& nudge_location) {
+  if (syncer_thread())
+     syncer_thread()->ScheduleNudge(delay, source, types, nudge_location);
 }
 
 void SyncManager::SyncInternal::OnSyncEngineEvent(

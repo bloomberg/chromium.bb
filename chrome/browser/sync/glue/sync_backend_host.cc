@@ -437,6 +437,13 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
             pending_config_mode_state_->initial_types);
   }
 
+  // Put us in the config mode. DTM will put us in normal mode once it is done.
+  // This is to ensure we dont do a normal sync when we are doing model
+  // association.
+  core_thread_.message_loop()->PostTask(FROM_HERE,
+       NewRunnableMethod(core_.get(),
+                         &SyncBackendHost::Core::DoStartConfiguration));
+
   // If we've added types, we always want to request a nudge/config (even if
   // the initial sync is ended), in case we could not decrypt the data.
   if (pending_config_mode_state_->added_types.none()) {
@@ -773,6 +780,10 @@ void SyncBackendHost::Core::DoEncryptDataTypes(
 void SyncBackendHost::Core::DoRequestConfig(
     const syncable::ModelTypeBitSet& added_types) {
   syncapi_->RequestConfig(added_types);
+}
+
+void SyncBackendHost::Core::DoStartConfiguration() {
+  syncapi_->StartConfigurationMode(NULL);
 }
 
 UIModelWorker* SyncBackendHost::ui_worker() {
