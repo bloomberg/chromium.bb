@@ -16,40 +16,6 @@ var BASE_INSTRUCTIONS = {
   height: 112
 };
 
-var LABEL_TO_KEY_TEXT = {
-  alt: 'alt',
-  backspace: 'backspace',
-  ctrl: 'ctrl',
-  enter: 'enter',
-  esc: 'esc',
-  glyph_arrow_down: 'down',
-  glyph_arrow_left: 'left',
-  glyph_arrow_right: 'right',
-  glyph_arrow_up: 'up',
-  glyph_back: 'back',
-  glyph_backspace: 'backspace',
-  glyph_brightness_down: 'bright down',
-  glyph_brightness_up: 'bright up',
-  glyph_enter: 'enter',
-  glyph_forward: 'forward',
-  glyph_fullscreen: 'full screen',
-  glyph_ime: 'ime',
-  glyph_lock: 'lock',
-  glyph_overview: 'switch window',
-  glyph_power: 'power',
-  glyph_right: 'right',
-  glyph_reload: 'reload',
-  glyph_search: 'search',
-  glyph_shift: 'shift',
-  glyph_tab: 'tab',
-  glyph_tools: 'tools',
-  glyph_volume_down: 'vol. down',
-  glyph_volume_mute: 'mute',
-  glyph_volume_up: 'vol. up',
-  shift: 'shift',
-  tab: 'tab'
-};
-
 var MODIFIER_TO_CLASS = {
   'SHIFT': 'modifier-shift',
   'CTRL': 'modifier-ctrl',
@@ -205,17 +171,14 @@ function getKeyLabel(keyData, modifiers) {
   if (!keyData) {
     return '';
   }
-  if (keyData.label in LABEL_TO_KEY_TEXT) {
-    return LABEL_TO_KEY_TEXT[keyData.label];
+  if (keyData.label) {
+    return keyData.label;
   }
   var keyLabel = '';
   for (var j = 1; j <= 9; j++) {
     var pos =  keyData['p' + j];
     if (!pos) {
       continue;
-    }
-    if (LABEL_TO_KEY_TEXT[pos]) {
-      return LABEL_TO_KEY_TEXT[pos];
     }
     keyLabel = hex2char(pos);
     if (!keyLabel) {
@@ -255,16 +218,13 @@ function getAction(keycode, modifiers) {
  * Returns a text which displayed on a key.
  */
 function getKeyTextValue(keyData) {
-  if (LABEL_TO_KEY_TEXT[keyData.label]) {
-    return LABEL_TO_KEY_TEXT[keyData.label];
+  if (keyData.label) {
+    return keyData.label;
   }
 
   var chars = [];
   for (var j = 1; j <= 9; ++j) {
     var pos = keyData['p' + j];
-    if (LABEL_TO_KEY_TEXT[pos]) {
-      return LABEL_TO_KEY_TEXT[pos];
-    }
     if (pos && pos.length > 0) {
       chars.push(hex2char(pos));
     }
@@ -444,7 +404,7 @@ function initKeyboardOverlayId(overlayId) {
     document.body.removeChild(document.body.firstChild);
   }
   initLayout();
-  update();
+  update([]);
 }
 
 document.addEventListener('DOMContentLoaded', init);

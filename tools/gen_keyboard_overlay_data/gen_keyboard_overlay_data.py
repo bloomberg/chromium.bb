@@ -48,6 +48,34 @@ MODIFIER_ALT = 1 << 2
 KEYBOARD_GLYPH_SPREADSHEET_KEY = '0Ao3KldW9piwEdExLbGR6TmZ2RU9aUjFCMmVxWkVqVmc'
 HOTKEY_SPREADSHEET_KEY = '0AqzoqbAMLyEPdE1RQXdodk1qVkFyTWtQbUxROVM1cXc'
 
+LABEL_MAP = {
+  'glyph_arrow_down': 'down',
+  'glyph_arrow_left': 'left',
+  'glyph_arrow_right': 'right',
+  'glyph_arrow_up': 'up',
+  'glyph_back': 'back',
+  'glyph_backspace': 'backspace',
+  'glyph_brightness_down': 'bright down',
+  'glyph_brightness_up': 'bright up',
+  'glyph_enter': 'enter',
+  'glyph_forward': 'forward',
+  'glyph_fullscreen': 'full screen',
+  # Kana/Eisu key on Japanese keyboard
+  'glyph_ime': u'\u304b\u306a\u0020\u002f\u0020\u82f1\u6570',
+  'glyph_lock': 'lock',
+  'glyph_overview': 'switch window',
+  'glyph_power': 'power',
+  'glyph_right': 'right',
+  'glyph_reload': 'reload',
+  'glyph_search': 'search',
+  'glyph_shift': 'shift',
+  'glyph_tab': 'tab',
+  'glyph_tools': 'tools',
+  'glyph_volume_down': 'vol. down',
+  'glyph_volume_mute': 'mute',
+  'glyph_volume_up': 'vol. up',
+};
+
 COPYRIGHT_HEADER_TEMPLATE=(
 """// Copyright (c) %s The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -236,8 +264,8 @@ def FetchKeyboardGlyphData(client):
                'hr', 'hu', 'id', 'it', 'iw', 'ja', 'ko', 'lt', 'lv', 'nl', 'no',
                'pl', 'pt_BR', 'pt_PT', 'ro', 'ru', 'sk', 'sl', 'sr', 'sv', 'th',
                'tr', 'uk', 'vi', 'zh_CN', 'zh_TW']
-  glyph_cols = ['scancode', 'position', 'p0', 'p1', 'p2', 'p3', 'p4', 'p5',
-                'p6', 'p7', 'p8', 'p9', 'label', 'key', 'format', 'notes']
+  glyph_cols = ['scancode', 'p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7',
+                'p8', 'p9', 'label', 'format', 'notes']
   keyboard_glyph_data = FetchSpreadsheetFeeds(
       client, KEYBOARD_GLYPH_SPREADSHEET_KEY, languages, glyph_cols)
   ret = {}
@@ -250,6 +278,10 @@ def FetchKeyboardGlyphData(client):
         ret[lang]['layoutName'] = line['notes']
         continue
       del line['scancode']
+      if 'notes' in line:
+        del line['notes']
+      if 'label' in line:
+        line['label'] = LABEL_MAP.get(line['label'], line['label'])
       keys[scancode] = line
     ret[lang]['keys'] = keys
   return ret
