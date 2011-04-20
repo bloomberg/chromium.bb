@@ -1,7 +1,5 @@
 A rotating earth demo for Native Client
 
-Please see ../../common/README.txt for instructions to build and run.
-
 Image Credit:
 
 NASA Goddard Space Flight Center Image by Reto Stöckli (land surface,

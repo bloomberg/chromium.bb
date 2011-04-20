@@ -1,16 +1,11 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 // NaCl Earth demo
-//   Ray trace planet Earth
-
-// defines
-// TODO: fix/cleanup when various parts of system come online
-#define HAVE_THREADS            // enable if pthreads & semaphores are available
-// #define HAVE_SYSCONF         // enable if sysconf() is available
+// Ray trace planet Earth
 
 #include <errno.h>
 #include <math.h>
@@ -22,14 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-// STANDALONE = running without sel_ldr and nacl runtime
-#if !defined(STANDALONE)
-#include <nacl/nacl_av.h>
-#include <nacl/nacl_srpc.h>
-#endif
-#if defined(STANDALONE)
-#include "native_client/common/standalone.h"
-#endif
+
 #include "native_client/common/worker.h"
 
 // print/debug messages
@@ -41,8 +29,7 @@ static void InfoPrintf(const char *fmt, ...) {
   fflush(stderr);
 }
 
-#if 1
-static void DebugPrintf(const char *fmt, ...) {
+extern "C" void DebugPrintf(const char *fmt, ...) {
   va_list argptr;
   fprintf (stderr, "@@@ EARTH ");
 
@@ -51,9 +38,6 @@ static void DebugPrintf(const char *fmt, ...) {
   va_end (argptr);
   fflush(stderr);
 }
-#else
-static void DebugPrintf(const char *fmt, ...) {}
-#endif
 
 // global properties
 const float kPI = M_PI;
@@ -240,8 +224,7 @@ public:
   void ParallelRender();
   void SequentialRender();
   void Render();
-  void Draw();
-  bool PollEvents();
+  void Draw(uint32_t* buf);
   Planet(Surface *s, int numRegions, bool multithreading, Texture *tex);
   ~Planet();
 };
@@ -552,14 +535,12 @@ void Planet::Render() {
 
 
 // Copies sw rendered earth image to screen
-void Planet::Draw() {
-  int r;
-  r = nacl_video_update(surf_->pixels);
-  if (-1 == r) {
-    DebugPrintf("nacl_video_update() returned %d\n", errno);
-  }
-}
+void Planet::Draw(uint32_t* buf) {
+  const int num_words = g_window_width * g_window_height;
+  int i;
 
+  for (i = 0; i < num_words; i++)  buf[i] = surf_->pixels[i];
+}
 
 // pre-calculations to make inner loops faster
 // these need to be recalculated when values change
@@ -648,19 +629,6 @@ void Planet::SetPlanetSpin(float a) {
 }
 
 
-// Polls event queue
-// returns false if the user tries to quit application early
-bool Planet::PollEvents() {
-  NaClMultimediaEvent event;
-  // bare minimum event servicing
-  while (0 == nacl_video_poll_event(&event)) {
-    if (NACL_EVENT_QUIT == event.type)
-      return false;
-  }
-  return true;
-}
-
-
 // Setups and initializes planet data structures.
 // Seed planet, eye, and light
 Planet::Planet(Surface *surf, int numRegions, bool multi,
@@ -695,81 +663,15 @@ Planet::~Planet() {
   }
 }
 
-
-// Runs the earth demo and animates the image for g_num_frames
-void RunDemo(Surface *surface) {
-
-  static const char *credit[] = {
-    "\n",
-    "Image Credit:\n",
-    "\n",
-    "NASA Goddard Space Flight Center Image by Reto St�ckli (land surface,\n",
-    "shallow water, clouds). Enhancements by Robert Simmon (ocean color,\n",
-    "compositing, 3D globes, animation).\n",
-    "Data and technical support: MODIS Land Group; MODIS Science Data,\n",
-    "Support Team; MODIS Atmosphere Group; MODIS Ocean Group Additional data:\n",
-    "USGS EROS Data Center (topography); USGS Terrestrial Remote Sensing\n",
-    "Flagstaff Field Center (Antarctica); Defense Meteorological\n",
-    "Satellite Program (city lights).\n",
-    "\n",
-    NULL
-  };
-
-  Planet planet(surface, g_num_regions, g_multi_threading, &g_earth);
-
-  for (int i = 0; NULL != credit[i]; ++i)
-   InfoPrintf("%s", credit[i]);
-
-  if (planet.CreateWorkerThreads(g_num_threads)) {
-    for (int i = 0; i < g_num_frames; ++i) {
-      planet.UpdateSim();
-      planet.Render();
-      planet.Draw();
-      // TODO: do a proper checksum here which is numerically stable
-      g_frame_checksum = i;
-      DebugPrintf("Frame: %04d\r", i);
-      if (!planet.PollEvents())
-        break;
-    }
-  }
-  DebugPrintf("\nDemo complete\n");
-}
-
-
 // Initializes a window buffer.
-Surface* Initialize() {
-  int r;
-  int width;
-  int height;
-  r = nacl_multimedia_init(NACL_SUBSYSTEM_VIDEO | NACL_SUBSYSTEM_EMBED);
-  if (-1 == r) {
-    InfoPrintf("Multimedia system failed to initialize!  errno: %d\n", errno);
-    exit(-1);
-  }
-  // if this call succeeds, use width & height from embedded html
-  r = nacl_multimedia_get_embed_size(&width, &height);
-  if (0 == r) {
-    g_window_width = width;
-    g_window_height = height;
-  }
-  r = nacl_video_init(g_window_width, g_window_height);
-  if (-1 == r) {
-    InfoPrintf("Video subsystem failed to initialize!  errno; %d\n", errno);
-    exit(-1);
-  }
+static Surface* Initialize() {
   Surface *surface = new Surface(g_window_width, g_window_height);
   return surface;
 }
 
 
-// Frees a window buffer.
-void Shutdown(Surface *surface) {
-  delete surface;
-}
-
-
 // Clamps input to the max we can realistically support.
-int ClampThreads(int num) {
+static int ClampThreads(int num) {
   const int max = 128;
   if (num > max) {
     return max;
@@ -778,133 +680,113 @@ int ClampThreads(int num) {
 }
 
 
+static void PrintCredits() {
+  static const char *credit =
+    "\n"
+    "Image Credit:\n"
+    "\n"
+    "NASA Goddard Space Flight Center Image by Reto Stöckli (land surface,\n"
+    "shallow water, clouds). Enhancements by Robert Simmon (ocean color,\n"
+    "compositing, 3D globes, animation).\n"
+    "Data and technical support: MODIS Land Group; MODIS Science Data,\n"
+    "Support Team; MODIS Atmosphere Group; MODIS Ocean Group\n"
+    "Additional data:\n"
+    "USGS EROS Data Center (topography); USGS Terrestrial Remote Sensing\n"
+    "Flagstaff Field Center (Antarctica); Defense Meteorological\n"
+    "Satellite Program (city lights).\n"
+    "\n";
+  InfoPrintf(credit);
+}
+
 // If user specifies options on cmd line, parse them
 // here and update global settings as needed.
-void ParseCmdLineArgs(int argc, char **argv) {
+static void ParseCmdLineArgs(int argc, const char *argn[], const char *argv[]) {
   // look for cmd line args
+  PrintCredits();
   if (argc > 1) {
     for (int i = 1; i < argc; ++i) {
-      if (argv[i] == strstr(argv[i], "-m")) {
-#if defined(HAVE_THREADS)
-        g_multi_threading = true;
-        if (strlen(argv[i]) > 2) {
-          int numcpu = atoi(&argv[i][2]);
-          g_ask_sysconf = false;
-          g_num_threads = numcpu;
-          g_num_regions = numcpu * kRegionRatio;
-          InfoPrintf("User requested %d threads.\n", numcpu);
+      if (argn[i] == strstr(argn[i], "numthreads")) {
+        int numthreads = atoi(argv[i]);
+        if (numthreads > 1) {
+          g_multi_threading = true;
+          g_num_threads = numthreads;
+          g_num_regions = numthreads * kRegionRatio;
+          InfoPrintf("Using %d threads\n", numthreads);
+        } else {
+          InfoPrintf("Could not parse numthreads=%s.\n", argv[i]);
         }
-#else
-        InfoPrintf("This demo wasn't built with thread support!\n");
-        exit(-1);
-#endif // HAVE_THREADS
-      } else if (argv[i] == strstr(argv[i], "-w")) {
-        int w = atoi(&argv[i][2]);
-        if ((w > 0) && (w < kMaxWindow)) {
-          g_window_width = w;
+      } else if (argn[i] == strstr(argn[i], "usesysconf")) {
+        if (argv[i] == strstr(argv[i], "true")) {
+          g_multi_threading = true;
+          g_ask_sysconf = true;
+        } else if (argv[i] == strstr(argv[i], "false")) {
+          g_multi_threading = false;
+        } else {
+          InfoPrintf("Could not parse usesysconf=%s.\n", argv[i]);
         }
-      } else if (argv[i] == strstr(argv[i], "-h")) {
-        int h = atoi(&argv[i][2]);
-        if ((h > 0) && (h < kMaxWindow)) {
-          g_window_height = h;
-        }
-      } else if (argv[i] == strstr(argv[i], "-f")) {
-        int f = atoi(&argv[i][2]);
-        if ((f > 0) && (f < kMaxFrames)) {
-          g_num_frames = f;
-        }
+      } else if (argn[i] == strstr(argn[i], "xwidth")) {
+        int w = atoi(argv[i]);
+        if ((w > 0) && (w < kMaxWindow)) g_window_width = w;
+      } else if (argn[i] == strstr(argn[i], "xheight")) {
+        int h = atoi(argv[i]);
+        if ((h > 0) && (h < kMaxWindow)) g_window_height = h;
+      } else if (argn[i] == strstr(argn[i], "frames")) {
+        int f = atoi(argv[i]);
+        if ((f > 0) && (f < kMaxFrames)) g_num_frames = f;
+      } else if (argn[i] == strstr(argn[i], "id")) {
+        /* ignore id */
+      } else if (argn[i] == strstr(argn[i], "src")) {
+        /* ignore src */
+      } else if (argn[i] == strstr(argn[i], "type")) {
+        /* ignore type */
       } else {
-        InfoPrintf("Earth SDL Demo\n"
-                   "usage: -m<n>   enable multi-threading across n threads.\n"
-                   "       -w<n>   width of window.\n"
-                   "       -h<n>   height of window.\n"
-                   "       -f<n>   number of frames.\n"
-                   "       --help  show this screen.\n");
-        exit(0);
+        if (argn[i] != strstr(argn[i], "help")) {
+          InfoPrintf("unknown option %s=%s\n", argn[i], argv[i]);
+        }
+        InfoPrintf("Earth Pepper Demo\n"
+                   "usage: numthreads=\"n\"   render using n threads.\n"
+                   "       usesysconf=true  use sysconf to set thread count."
+                   "\n"
+                   "       xwidth=\"w\"       width of window.\n"
+                   "       xheight=\"h\"      height of window.\n"
+                   "       framecount=\"n\"   number of frames.\n"
+                   "       help             show this screen.\n");
       }
     }
   }
 
-  InfoPrintf("Multi-threading %s.\n", g_multi_threading ? "enabled" : "disabled");
+  InfoPrintf("Multi-threading %s.\n",
+             g_multi_threading ? "enabled" : "disabled");
 
-#if defined(HAVE_SYSCONF)
   // see if the system can tell us # cpus
   if ((g_ask_sysconf) && (g_multi_threading)) {
     int ncpu = sysconf(_SC_NPROCESSORS_ONLN);
     if (ncpu > 1) {
-      InfoPrintf("System reports having %d processors.\n", ncpu);
+      InfoPrintf("Using %d processors based on sysconf.\n", ncpu);
       g_num_threads = ncpu;
       g_num_regions = ncpu * kRegionRatio;
     }
   }
-#endif // HAVE_SYSCONF
 
   // clamp threads and regions
   g_num_threads = ClampThreads(g_num_threads);
   g_num_regions = ClampThreads(g_num_regions);
 }
 
-// We do not start the demo right away when run as a browswer module
-sem_t GlobalDemoSemaphore;
-
-#if !defined(STANDALONE)
-void NaclModuleStartDemo(NaClSrpcRpc *rpc,
-                         NaClSrpcArg** in_args,
-                         NaClSrpcArg** out_args,
-                         NaClSrpcClosure* done) {
-  DebugPrintf("Start called with %d\n", in_args[0]->u.ival);
-  g_num_frames = in_args[0]->u.ival;
-  sem_post(&GlobalDemoSemaphore);
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-}
-
-void NaclModuleFrameChecksum(NaClSrpcRpc *rpc,
-                             NaClSrpcArg** in_args,
-                             NaClSrpcArg** out_args,
-                             NaClSrpcClosure* done) {
-  DebugPrintf("checksum called: %d\n", g_frame_checksum);
-  out_args[0]->u.ival = g_frame_checksum;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-}
-
-const struct NaClSrpcHandlerDesc srpc_methods[] = {
-  NACL_AV_DECLARE_METHODS
-  { "start_demo:i:", NaclModuleStartDemo },
-  { "frame_checksum::i", NaclModuleFrameChecksum },
-  { NULL, NULL },
-};
-#endif
+Surface *g_surface = Initialize();
+Planet g_planet(g_surface, g_num_regions, g_multi_threading, &g_earth);
 
 // Parses cmd line options, initializes surface, runs the demo & shuts down.
-int main(int argc, char *argv[]) {
-#if defined(STANDALONE)
-  ParseCmdLineArgs(argc, argv);
-  Surface *surface = Initialize();
-  RunDemo(surface);
-  Shutdown(surface);
-#else
-  if (!NaClSrpcModuleInit()) {
-    return 1;
+extern "C" void Earth_Init(int argc, const char *argn[], const char *argv[]) {
+  ParseCmdLineArgs(argc, argn, argv);
+  if (!g_planet.CreateWorkerThreads(g_num_threads)) {
+    DebugPrintf("Earth_Init: thread creation failed.\n");
+    exit(-1);
   }
-  if (!NaClSrpcAcceptClientOnThread(srpc_methods)) {
-    return 1;
-  }
-  // NOTE: We current cannot distinguish whether we run in the browser or not
-  bool run_in_browser = false;
-  ParseCmdLineArgs(argc, argv);
-  sem_init(&GlobalDemoSemaphore, 0, 0);
-  sem_post(&GlobalDemoSemaphore);
-  Surface *surface = Initialize();
+}
 
-  do {
-    DebugPrintf("Waiting on semaphore\n");
-    sem_wait(&GlobalDemoSemaphore);
-    RunDemo(surface);
-  } while (run_in_browser);  // for now run only once
-  NaClSrpcModuleFini();
-#endif
-
-  return 0;
+extern "C" void Earth_Draw(uint32_t* image_data) {
+  g_planet.UpdateSim();
+  g_planet.Render();
+  g_planet.Draw(image_data);
 }
