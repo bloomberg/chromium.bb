@@ -4,7 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-""" Lexer for PPAPI IDL """
+""" Parser for PPAPI IDL """
 
 #
 # IDL Parser
@@ -36,6 +36,7 @@ PARSER_OPTIONS = {
   'build_debug': False,
   'parse_debug': False,
   'token_debug': False,
+  'test' : False,
   'output': False,
   'verbose': False
 }
@@ -62,12 +63,12 @@ ERROR_REMAP = {
 # new item or set it was reduced to.
 def DumpReduction(cls, p):
   if p[0] is None:
-    print "OBJ: %s(%d) - None" % (cls, len(p))
+    PrintInfo("OBJ: %s(%d) - None\n" % (cls, len(p)))
   else:
     out = ""
     for index in range(len(p) - 1):
       out += " >%s< " % str(p[index + 1])
-    print "OBJ: %s(%d) - %s : %s"  % (cls, len(p), str(p[0]), out)
+    PrintInfo("OBJ: %s(%d) - %s : %s\n"  % (cls, len(p), str(p[0]), out))
 
 
 # CopyToList
@@ -121,6 +122,80 @@ def PrintError(text):
 # Send a string to stderr containing a file, line number and error message
 def LogError(filename, lineno, pos, msg):
   PrintError("%s(%d) : %s\n" % (filename, lineno + 1, msg))
+
+
+#
+# IDLAttribute
+#
+# A temporary object used by the parsing process to hold and Extended Attribute
+# which will be passed as a child to a standard IDLNode.
+#
+class IDLAttribute(object):
+  def __init__(self, name, value):
+    self.cls = 'ExtAttribute'
+    self.name = name
+    self.value = value
+
+#
+# IDLNode
+#
+# A node in the AST.  The Node is composed of children, implemented as a
+# dictionary of lists of child types and a dictionary of local properties.
+# a.k.a. ExtendedAttributes.
+#
+class IDLNode(object):
+  def __init__(self, cls, name, filename, lineno, pos, children):
+    self.cls = cls
+    self.name = name
+    self.lineno = lineno
+    self.pos = pos
+    self.children = {}
+    self.properties = {}
+    if children:
+      for child in children:
+        if child.cls == 'ExtAttribute':
+          self.properties[child.name] =  child.value
+        else:
+          if child.cls in self.children:
+            self.children[child.cls].append(child)
+          else:
+            self.children[child.cls] = [child]
+
+  def __str__(self):
+    return "%s(%s)" % (self.cls, self.name)
+
+  def Dump(self, depth, comments = False, out=sys.stdout):
+    if self.cls == 'Comment' or self.cls == 'Copyright':
+      is_comment = True
+    else:
+      is_comment = False
+
+    # Skip this node if it's a comment, and we are not printing comments
+    if not comments and is_comment: return
+
+    tab = ""
+    for t in range(depth):
+      tab += '    '
+
+    if is_comment:
+      for line in self.name.split('\n'):
+        out.write("%s%s\n" % (tab, line))
+    else:
+      out.write("%s%s\n" % (tab, self))
+
+    if self.properties:
+      out.write("%s  Properties\n" % tab)
+      for p in self.properties:
+        out.write("%s    %s : %s\n" % (tab, p, self.properties[p]))
+
+    for cls in sorted(self.children.keys()):
+      # Skip comments
+      if (cls == 'Comment' or cls == 'Copyright') and not comments: continue
+
+      out.write("%s  %ss\n" % (tab, cls))
+      for c in self.children[cls]:
+        c.Dump(depth + 1, comments = comments, out=out)
+
 
 
 #
@@ -308,8 +383,7 @@ class IDLParser(IDLLexer):
   def p_ext_attr_cont(self, p):
     """ext_attr_cont : ',' ext_attr_list
                      |"""
-    if len(p) > 1:
-      p[0] = ListFromConcat(p[2], p[3])
+    if len(p) > 1: p[0] = p[2]
     if self.parse_debug: DumpReduction('ext_attribute_cont', p)
 
   def p_attr_arg_list(self, p):
@@ -490,8 +564,7 @@ class IDLParser(IDLLexer):
 
   def p_member_function(self, p):
     """member_function : modifiers typeref SYMBOL '(' param_list ')' ';'"""
-    params = self.BuildProduction('Callspec', p, 4, p[5])
-    p[0] = self.BuildProduction('Function', p, 3, ListFromConcat(p[1], params))
+    p[0] = self.BuildProduction('Function', p, 3, ListFromConcat(p[1], p[5]))
     if self.parse_debug: DumpReduction('member_function', p)
 
   def p_member_error(self, p):
@@ -571,7 +644,7 @@ class IDLParser(IDLLexer):
     self.Logger(filename, lineno, pos, msg)
 
 
-  def __init__(self, builder, logger, options = {}):
+  def __init__(self, logger, options = {}):
     global PARSER_OPTIONS
 
     IDLLexer.__init__(self, options)
@@ -585,7 +658,6 @@ class IDLParser(IDLLexer):
     self.parse_debug = PARSER_OPTIONS['parse_debug']
     self.token_debug = PARSER_OPTIONS['token_debug']
     self.verbose = PARSER_OPTIONS['verbose']
-    self.Builder = builder
     self.Logger = logger
     self.parse_errors = 0
 
@@ -620,7 +692,8 @@ class IDLParser(IDLLexer):
     pos = p.lexpos(index)
     if self.build_debug:
       PrintInfo("Building %s(%s)" % (cls, name))
-    return self.Builder(cls, name, filename, lineno, pos, childlist)
+    out = IDLNode(cls, name, filename, lineno, pos, childlist)
+    return out
 
 #
 # BuildExtAttribute
@@ -632,8 +705,8 @@ class IDLParser(IDLLexer):
   def BuildExtAttribute(self, name, value):
     if self.build_debug:
       PrintInfo("Adding ExtAttribute %s = %s" % (name, str(value)))
-    return self.Builder('ExtAttribute', '%s=%s' % (name,value),
-        self.lexobj.filename, self.last.lineno, self.last.lexpos, [])
+    out = IDLAttribute(name, value)
+    return out
 
 #
 # ParseData
@@ -670,40 +743,20 @@ class IDLParser(IDLLexer):
 
 
 
-
-class TestNode(object):
-  def __init__(self, cls, name, filename, lineno, pos, children):
-    self.cls = cls
-    self.name = name
-    if children:
-      self.childlist = children
-    else:
-      self.childlist = []
-
-  def __str__(self):
-    return "%s(%s)" % (self.cls, self.name)
-
-  def Dump(self, depth, comments = False, out=sys.stdout):
-    if not comments:
-      if self.cls == 'Comment' or self.cls == 'Copyright':
-        return
-
-    tab = ""
-    for t in range(depth):
-      tab += '  '
-
-    print >>out, "%s%s" % (tab, self)
-    for c in self.childlist:
-      c.Dump(depth + 1, out)
-
+#
+# Flatten Tree
+#
+# Flattens the tree of IDLNodes for use in testing.
+#
 def FlattenTree(node):
   add_self = False
   out = []
-  for c in node.childlist:
-    if c.cls == 'Comment':
+  for cls in node.children.keys():
+    if cls == 'Comment':
       add_self = True
     else:
-      out.extend(FlattenTree(c))
+      for c in node.children[cls]:
+        out.extend(FlattenTree(c))
 
   if add_self:
     out = [str(node)] + out
@@ -717,7 +770,7 @@ def TestLog(filename, lineno, pos, msg):
 
   err_list.append(msg)
   if PARSER_OPTIONS['verbose']:
-    sys.stdout.write("%s(%d) : %s\n" % (filename, lineno + 1, msg))
+    PrintInfo("%s(%d) : %s\n" % (filename, lineno + 1, msg))
 
 
 def Test(filename, nodes):
@@ -760,8 +813,8 @@ def Test(filename, nodes):
   for i in range(pass_cnt):
     line, comment = pass_comments[i]
     if obj_list[i] != comment:
-      print "%s(%d) Error: OBJ %s : EXPECTED %s" % (
-        filename, line, obj_list[i], comment)
+      PrintError("%s(%d) Error: OBJ %s : EXPECTED %s\n" % (
+        filename, line, obj_list[i], comment))
       errors += 1
 
   #
@@ -803,23 +856,22 @@ def Main(args):
 
   for opt, val in opts:
     PARSER_OPTIONS[opt[2:]] = True
-    print 'Set %s to True.' % opt
 
-  parser = IDLParser(TestNode, TestLog, PARSER_OPTIONS)
+  parser = IDLParser(TestLog, PARSER_OPTIONS)
 
   total_errs = 0
   for filename in filenames:
     tokens = parser.ParseFile(filename)
-    errs = Test(filename, tokens)
-    total_errs += errs
-    if errs:
-      PrintError("%s test failed with %d error(s)." % (filename, errs))
-    else:
-      PrintInfo("%s passed." % filename)
-
+    if PARSER_OPTIONS['test']:
+      errs = Test(filename, tokens)
+      total_errs += errs
+      if errs:
+        PrintError("%s test failed with %d error(s)." % (filename, errs))
+      else:
+        PrintInfo("%s passed." % filename)
     if PARSER_OPTIONS['output']:
       for token in tokens:
-         token.Dump(0)
+         token.Dump(0, False)
 
   return total_errs
 
