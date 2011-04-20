@@ -4387,13 +4387,13 @@
    bug_80002a
    Memcheck:Leak
    fun:_Znw*
-   fun:*webkit_fileapi_file_system_url_request_job_unittest.cc*SetUpEv
+   fun:*FileSystemURLRequestJobTest5SetUpEv
 }
 {
    bug_80002b
    Memcheck:Leak
    fun:_Znw*
-   fun:*webkit_fileapi_file_system_dir_url_request_job_unittest.cc*SetUpEv
+   fun:*FileSystemDirURLRequestJobTest5SetUpEv
 }
 {
    bug_80022
