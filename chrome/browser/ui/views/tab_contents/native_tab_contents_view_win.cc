@@ -225,6 +225,7 @@ void NativeTabContentsViewWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
           gfx::Size(window_pos->cx, window_pos->cy));
     }
   }
+  WidgetWin::OnWindowPosChanged(window_pos);
 }
 
 void NativeTabContentsViewWin::OnSize(UINT param, const CSize& size) {
