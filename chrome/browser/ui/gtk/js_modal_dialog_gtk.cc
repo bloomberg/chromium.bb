@@ -88,6 +88,8 @@ JSModalDialogGtk::JSModalDialogGtk(JavaScriptAppModalDialog* dialog,
   gtk_dialog_ = gtk_message_dialog_new(parent_window,
       GTK_DIALOG_MODAL, message_type, buttons, "%s",
       WideToUTF8(dialog_->message_text()).c_str());
+  g_signal_connect(gtk_dialog_, "delete-event",
+                   G_CALLBACK(gtk_widget_hide_on_delete), NULL);
   gtk_util::ApplyMessageDialogQuirks(gtk_dialog_);
   gtk_window_set_title(GTK_WINDOW(gtk_dialog_),
                        WideToUTF8(dialog_->title()).c_str());
@@ -168,7 +170,8 @@ void JSModalDialogGtk::ShowAppModalDialog() {
 
 void JSModalDialogGtk::ActivateAppModalDialog() {
   DCHECK(gtk_dialog_);
-  gtk_window_present(GTK_WINDOW(gtk_dialog_));}
+  gtk_window_present(GTK_WINDOW(gtk_dialog_));
+}
 
 void JSModalDialogGtk::CloseAppModalDialog() {
   DCHECK(gtk_dialog_);

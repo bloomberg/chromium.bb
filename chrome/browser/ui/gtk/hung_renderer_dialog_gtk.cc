@@ -76,6 +76,8 @@ void HungRendererDialogGtk::Init() {
       GTK_RESPONSE_OK,
       NULL));
   gtk_dialog_set_default_response(dialog_, GTK_RESPONSE_OK);
+  g_signal_connect(dialog_, "delete-event",
+                   G_CALLBACK(gtk_widget_hide_on_delete), NULL);
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
 
   // We have an hbox with the frozen icon on the left.  On the right,

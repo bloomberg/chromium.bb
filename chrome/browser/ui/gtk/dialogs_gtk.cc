@@ -234,6 +234,8 @@ void SelectFileDialogImpl::SelectFileImpl(
       NOTREACHED();
       return;
   }
+  g_signal_connect(dialog, "delete-event",
+                   G_CALLBACK(gtk_widget_hide_on_delete), NULL);
   dialogs_.insert(dialog);
 
   preview_ = gtk_image_new();

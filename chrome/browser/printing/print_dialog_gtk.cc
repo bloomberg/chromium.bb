@@ -195,6 +195,9 @@ void PrintDialogGtk::ShowDialog(
   GtkWindow* parent = BrowserList::GetLastActive()->window()->GetNativeHandle();
   // TODO(estade): We need a window title here.
   dialog_ = gtk_print_unix_dialog_new(NULL, parent);
+  g_signal_connect(dialog_, "delete-event",
+                   G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+
 
   // Set modal so user cannot focus the same tab and press print again.
   gtk_window_set_modal(GTK_WINDOW(dialog_), TRUE);
