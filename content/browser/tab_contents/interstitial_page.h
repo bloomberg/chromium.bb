@@ -130,7 +130,8 @@ class InterstitialPage : public NotificationObserver,
                            const ViewHostMsg_FrameNavigate_Params& params);
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id,
-                           const std::wstring& title);
+                           const string16& title,
+                           WebKit::WebTextDirection title_direction) OVERRIDE;
   virtual void DomOperationResponse(const std::string& json_string,
                                     int automation_id);
   virtual RendererPreferences GetRendererPrefs(Profile* profile) const;

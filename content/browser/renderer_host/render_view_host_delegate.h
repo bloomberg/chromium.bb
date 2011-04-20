@@ -22,6 +22,7 @@
 #include "net/base/load_states.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "webkit/glue/window_open_disposition.h"
 
 
@@ -436,7 +437,8 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   // The page's title was changed and should be updated.
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id,
-                           const std::wstring& title) {}
+                           const string16& title,
+                           WebKit::WebTextDirection title_direction) {}
 
   // The page's encoding was changed and should be updated.
   virtual void UpdateEncoding(RenderViewHost* render_view_host,

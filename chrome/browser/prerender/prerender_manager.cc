@@ -332,9 +332,13 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
   if (p != NULL)
     tc->DidNavigate(rvh, *p);
 
+  // TODO(evan): use directionality of title.
+  // http://code.google.com/p/chromium/issues/detail?id=27094
   string16 title = pc->title();
-  if (!title.empty())
-    tc->UpdateTitle(rvh, pc->page_id(), UTF16ToWideHack(title));
+  if (!title.empty()) {
+    tc->UpdateTitle(rvh, pc->page_id(), title,
+                    WebKit::WebTextDirectionLeftToRight);
+  }
 
   GURL icon_url = pc->icon_url();
   if (!icon_url.is_empty()) {

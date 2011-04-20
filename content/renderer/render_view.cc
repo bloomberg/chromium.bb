@@ -1101,14 +1101,16 @@ void RenderView::UpdateURL(WebFrame* frame) {
 }
 
 // Tell the embedding application that the title of the active page has changed
-void RenderView::UpdateTitle(WebFrame* frame, const string16& title) {
+void RenderView::UpdateTitle(WebFrame* frame, const string16& title,
+                             WebTextDirection title_direction) {
   // Ignore all but top level navigations...
   if (!frame->parent()) {
     Send(new ViewHostMsg_UpdateTitle(
         routing_id_,
         page_id_,
-        UTF16ToWideHack(title.length() > content::kMaxTitleChars ?
-            title.substr(0, content::kMaxTitleChars) : title)));
+        title.length() > content::kMaxTitleChars ?
+            title.substr(0, content::kMaxTitleChars) : title,
+        title_direction));
   }
 }
 
@@ -2452,9 +2454,7 @@ void RenderView::didCreateDocumentElement(WebFrame* frame) {
 
 void RenderView::didReceiveTitle(WebFrame* frame, const WebString& title,
                                  WebTextDirection direction) {
-  // TODO: pass direction through various APIs.
-  // http://code.google.com/p/chromium/issues/detail?id=79903
-  UpdateTitle(frame, title);
+  UpdateTitle(frame, title, direction);
 
   // Also check whether we have new encoding name.
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
@@ -2518,7 +2518,10 @@ void RenderView::didNavigateWithinPage(
 
   didCommitProvisionalLoad(frame, is_new_navigation);
 
-  UpdateTitle(frame, frame->view()->mainFrame()->dataSource()->pageTitle());
+  // TODO(evan): update this to use ->pageTitleDirection() once we pull in new
+  // WebKit.
+  UpdateTitle(frame, frame->view()->mainFrame()->dataSource()->pageTitle(),
+              WebKit::WebTextDirectionLeftToRight);
 }
 
 void RenderView::didUpdateCurrentHistoryItem(WebFrame* frame) {

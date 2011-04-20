@@ -255,12 +255,14 @@ void PrerenderContents::DidNavigate(
 
 void PrerenderContents::UpdateTitle(RenderViewHost* render_view_host,
                                     int32 page_id,
-                                    const std::wstring& title) {
-  if (title.empty()) {
+                                    const string16& title,
+                                    WebKit::WebTextDirection title_direction) {
+  if (title.empty())
     return;
-  }
 
-  title_ = WideToUTF16Hack(title);
+  // TODO(evan): use directionality of title.
+  // http://code.google.com/p/chromium/issues/detail?id=27094
+  title_ = title;
   page_id_ = page_id;
 }
 

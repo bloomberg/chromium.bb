@@ -166,6 +166,7 @@ IPC_ENUM_TRAITS(ViewMsg_StopFinding_Params::Action)
 IPC_ENUM_TRAITS(WebKit::WebContextMenuData::MediaType)
 IPC_ENUM_TRAITS(WebKit::WebMediaPlayerAction::Type)
 IPC_ENUM_TRAITS(WebKit::WebPopupType)
+IPC_ENUM_TRAITS(WebKit::WebTextDirection)
 IPC_ENUM_TRAITS(WebKit::WebTextInputType)
 IPC_ENUM_TRAITS(WebMenuItem::Type)
 IPC_ENUM_TRAITS(WindowContainerType)
@@ -1328,10 +1329,10 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_DidFinishLoad,
 
 // Changes the title for the page in the UI when the page is navigated or the
 // title changes.
-// TODO(darin): use a UTF-8 string to reduce data size
-IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateTitle,
-                    int32,
-                    std::wstring)
+IPC_MESSAGE_ROUTED3(ViewHostMsg_UpdateTitle,
+                    int32 /* page_id */,
+                    string16 /* title */,
+                    WebKit::WebTextDirection /* title direction */)
 
 // Changes the icon url for the page in the UI.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateIconURL,

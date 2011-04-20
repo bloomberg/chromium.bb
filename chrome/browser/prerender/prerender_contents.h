@@ -115,7 +115,8 @@ class PrerenderContents : public RenderViewHostDelegate,
                            const ViewHostMsg_FrameNavigate_Params& params);
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id,
-                           const std::wstring& title);
+                           const string16& title,
+                           WebKit::WebTextDirection title_direction) OVERRIDE;
   virtual WebPreferences GetWebkitPrefs();
   virtual void RunJavaScriptMessage(const std::wstring& message,
                                     const std::wstring& default_prompt,
