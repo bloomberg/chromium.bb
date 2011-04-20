@@ -74,8 +74,8 @@ class SafeBrowsingService
     SafeBrowsingCheck();
     ~SafeBrowsingCheck();
 
-    // Either |url| or |prefix| is used to lookup database.
-    scoped_ptr<GURL> url;
+    // Either |urls| or |prefix| is used to lookup database.
+    std::vector<GURL> urls;
     scoped_ptr<SBFullHash> full_hash;
 
     Client* client;
@@ -114,7 +114,7 @@ class SafeBrowsingService
                                         UrlCheckResult result) {}
 
     // Called when the result of checking a download URL is known.
-    virtual void OnDownloadUrlCheckResult(const GURL& url,
+    virtual void OnDownloadUrlCheckResult(const std::vector<GURL>& url_chain,
                                           UrlCheckResult result) {}
 
     // Called when the result of checking a download binary hash is known.
@@ -157,7 +157,7 @@ class SafeBrowsingService
 
   // Check if the prefix for |url| is in safebrowsing download add lists.
   // Result will be passed to callback in |client|.
-  bool CheckDownloadUrl(const GURL& url, Client* client);
+  bool CheckDownloadUrl(const std::vector<GURL>& url_chain, Client* client);
 
   // Check if the prefix for |full_hash| is in safebrowsing binhash add lists.
   // Result will be passed to callback in |client|.

@@ -118,8 +118,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
     : id_(-1),
       full_path_(info.path),
       path_uniquifier_(0),
-      url_(info.url),
-      original_url_(info.original_url),
+      url_chain_(info.url_chain),
       referrer_url_(info.referrer_url),
       mime_type_(info.mime_type),
       original_mime_type_(info.original_mime_type),
@@ -159,8 +158,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
     : id_(info.download_id),
       full_path_(info.path),
       path_uniquifier_(info.path_uniquifier),
-      url_(info.url),
-      original_url_(info.original_url),
+      url_chain_(info.url_chain),
       referrer_url_(info.referrer_url),
       mime_type_(info.mime_type),
       original_mime_type_(info.original_mime_type),
@@ -200,8 +198,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
     : id_(1),
       full_path_(path),
       path_uniquifier_(0),
-      url_(url),
-      original_url_(url),
+      url_chain_(1, url),
       referrer_url_(GURL()),
       mime_type_(std::string()),
       original_mime_type_(std::string()),
@@ -543,7 +540,7 @@ bool DownloadItem::MatchesQuery(const string16& query) const {
 
   DCHECK_EQ(query, l10n_util::ToLower(query));
 
-  string16 url_raw(l10n_util::ToLower(UTF8ToUTF16(url_.spec())));
+  string16 url_raw(l10n_util::ToLower(UTF8ToUTF16(url().spec())));
   if (url_raw.find(query) != string16::npos)
     return true;
 
@@ -554,7 +551,7 @@ bool DownloadItem::MatchesQuery(const string16& query) const {
   //   "/%E4%BD%A0%E5%A5%BD%E4%BD%A0%E5%A5%BD"
   PrefService* prefs = download_manager_->profile()->GetPrefs();
   std::string languages(prefs->GetString(prefs::kAcceptLanguages));
-  string16 url_formatted(l10n_util::ToLower(net::FormatUrl(url_, languages)));
+  string16 url_formatted(l10n_util::ToLower(net::FormatUrl(url(), languages)));
   if (url_formatted.find(query) != string16::npos)
     return true;
 

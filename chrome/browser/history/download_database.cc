@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,7 +97,7 @@ void DownloadDatabase::QueryDownloads(
     info.db_handle = statement.ColumnInt64(0);
 
     info.path = ColumnFilePath(statement, 1);
-    info.url = GURL(statement.ColumnString(2));
+    info.url_chain.push_back(GURL(statement.ColumnString(2)));
     info.start_time = base::Time::FromTimeT(statement.ColumnInt64(3));
     info.received_bytes = statement.ColumnInt64(4);
     info.total_bytes = statement.ColumnInt64(5);
@@ -154,7 +154,7 @@ int64 DownloadDatabase::CreateDownload(const DownloadCreateInfo& info) {
     return 0;
 
   BindFilePath(statement, info.path, 0);
-  statement.BindString(1, info.url.spec());
+  statement.BindString(1, info.url().spec());
   statement.BindInt64(2, info.start_time.ToTimeT());
   statement.BindInt64(3, info.received_bytes);
   statement.BindInt64(4, info.total_bytes);

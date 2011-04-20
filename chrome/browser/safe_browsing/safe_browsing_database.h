@@ -90,11 +90,11 @@ class SafeBrowsingDatabase {
                                  std::vector<SBFullHashResult>* full_hits,
                                  base::Time last_update) = 0;
 
-  // Returns false if |url| is not in Download database. If it returns true,
-  // |prefix_hit| should contain the prefix for |url|.
-  // This function could ONLY be accessed from creation thread.
-  virtual bool ContainsDownloadUrl(const GURL& url,
-                                   SBPrefix* prefix_hit) = 0;
+  // Returns false if none of |urls| are in Download database. If it returns
+  // true, |prefix_hits| should contain the prefixes for the URLs that were in
+  // the database.  This function could ONLY be accessed from creation thread.
+  virtual bool ContainsDownloadUrl(const std::vector<GURL>& urls,
+                                   std::vector<SBPrefix>* prefix_hits) = 0;
 
   // Returns false if |prefix| is not in Download database.
   // This function could ONLY be accessed from creation thread.
@@ -211,8 +211,8 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
                                  std::vector<SBPrefix>* prefix_hits,
                                  std::vector<SBFullHashResult>* full_hits,
                                  base::Time last_update);
-  virtual bool ContainsDownloadUrl(const GURL& url,
-                                   SBPrefix* prefix_hit);
+  virtual bool ContainsDownloadUrl(const std::vector<GURL>& urls,
+                                   std::vector<SBPrefix>* prefix_hits);
   virtual bool ContainsDownloadHashPrefix(const SBPrefix& prefix);
   virtual bool ContainsCsdWhitelistedUrl(const GURL& url);
   virtual bool UpdateStarted(std::vector<SBListChunkRanges>* lists);
@@ -269,14 +269,14 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   void UpdateBrowseStore();
   void UpdateCsdWhitelistStore();
 
-  // Helper function to compare addprefixes in download_store_ with prefix.
+  // Helper function to compare addprefixes in download_store_ with |prefixes|.
   // The |list_bit| indicates which list (download url or download hash)
   // to compare.
-  // Returns true if there is a match, |*prefix_hit| will contain the actual
-  // matching prefix.
+  // Returns true if there is a match, |*prefix_hits| will contain the actual
+  // matching prefixes.
   bool MatchDownloadAddPrefixes(int list_bit,
-                                const SBPrefix& prefix,
-                                SBPrefix* prefix_hit);
+                                const std::vector<SBPrefix>& prefixes,
+                                std::vector<SBPrefix>* prefix_hits);
 
   // Used to verify that various calls are made from the thread the
   // object was created on.

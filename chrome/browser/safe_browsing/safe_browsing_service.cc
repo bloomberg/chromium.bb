@@ -120,8 +120,7 @@ SafeBrowsingService::UnsafeResource::UnsafeResource()
 SafeBrowsingService::UnsafeResource::~UnsafeResource() {}
 
 SafeBrowsingService::SafeBrowsingCheck::SafeBrowsingCheck()
-    : url(NULL),
-      full_hash(NULL),
+    : full_hash(NULL),
       client(NULL),
       need_get_hash(false),
       result(SAFE),
@@ -133,10 +132,15 @@ SafeBrowsingService::SafeBrowsingCheck::~SafeBrowsingCheck() {}
 
 void SafeBrowsingService::Client::OnSafeBrowsingResult(
     const SafeBrowsingCheck& check) {
-  if (check.url.get()) {
+  if (!check.urls.empty()) {
+
     DCHECK(!check.full_hash.get());
-    OnBrowseUrlCheckResult(*(check.url), check.result);
-    OnDownloadUrlCheckResult(*(check.url), check.result);
+    if (!check.is_download) {
+      DCHECK_EQ(1U, check.urls.size());
+      OnBrowseUrlCheckResult(check.urls[0], check.result);
+    } else {
+      OnDownloadUrlCheckResult(check.urls, check.result);
+    }
   } else if (check.full_hash.get()) {
     OnDownloadHashCheckResult(
         safe_browsing_util::SBFullHashToString(*check.full_hash),
@@ -199,7 +203,7 @@ bool SafeBrowsingService::DownloadBinHashNeeded() const {
   return enable_download_protection_ && CanReportStats();
 }
 
-bool SafeBrowsingService::CheckDownloadUrl(const GURL& url,
+bool SafeBrowsingService::CheckDownloadUrl(const std::vector<GURL>& url_chain,
                                            Client* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!enabled_ || !enable_download_protection_)
@@ -208,7 +212,7 @@ bool SafeBrowsingService::CheckDownloadUrl(const GURL& url,
   // We need to check the database for url prefix, and later may fetch the url
   // from the safebrowsing backends. These need to be asynchronous.
   SafeBrowsingCheck* check = new SafeBrowsingCheck();
-  check->url.reset(new GURL(url));
+  check->urls = url_chain;
   StartDownloadCheck(
       check,
       client,
@@ -288,7 +292,7 @@ bool SafeBrowsingService::CheckBrowseUrl(const GURL& url,
   // Needs to be asynchronous, since we could be in the constructor of a
   // ResourceDispatcherHost event handler which can't pause there.
   SafeBrowsingCheck* check = new SafeBrowsingCheck();
-  check->url.reset(new GURL(url));
+  check->urls.push_back(url);
   check->client = client;
   check->result = SAFE;
   check->is_download = false;
@@ -597,7 +601,7 @@ void SafeBrowsingService::OnIOShutdown() {
     QueuedCheck queued = queued_checks_.front();
     if (queued.client) {
       SafeBrowsingCheck sb_check;
-      sb_check.url.reset(new GURL(queued.url));
+      sb_check.urls.push_back(queued.url);
       sb_check.client = queued.client;
       sb_check.result = SAFE;
       queued.client->OnSafeBrowsingResult(sb_check);
@@ -788,7 +792,7 @@ void SafeBrowsingService::DatabaseLoadComplete() {
     // the client).  Since we're not the client, we have to convey this result.
     if (check.client && CheckBrowseUrl(check.url, check.client)) {
       SafeBrowsingCheck sb_check;
-      sb_check.url.reset(new GURL(check.url));
+      sb_check.urls.push_back(check.url);
       sb_check.client = check.client;
       sb_check.result = SAFE;
       check.client->OnSafeBrowsingResult(sb_check);
@@ -962,10 +966,15 @@ bool SafeBrowsingService::HandleOneCheck(
 
   // Always calculate the index, for recording hits.
   int index = -1;
-  if (check->url.get() != NULL)
-    index = safe_browsing_util::GetUrlHashIndex(*(check->url), full_hashes);
-  else
+  if (!check->urls.empty()) {
+    for (size_t i = 0; i < check->urls.size(); ++i) {
+      index = safe_browsing_util::GetUrlHashIndex(check->urls[i], full_hashes);
+      if (index != -1)
+        break;
+    }
+  } else {
     index = safe_browsing_util::GetHashIndex(*(check->full_hash), full_hashes);
+  }
 
   // |client| is NULL if the request was cancelled.
   if (check->client) {
@@ -1103,9 +1112,9 @@ void SafeBrowsingService::CheckDownloadUrlOnSBThread(SafeBrowsingCheck* check) {
   DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
   DCHECK(enable_download_protection_);
 
-  SBPrefix prefix_hit;
+  std::vector<SBPrefix> prefix_hits;
 
-  if (!database_->ContainsDownloadUrl(*(check->url), &prefix_hit)) {
+  if (!database_->ContainsDownloadUrl(check->urls, &prefix_hits)) {
     // Good, we don't have hash for this url prefix.
     check->result = SAFE;
     BrowserThread::PostTask(
@@ -1118,7 +1127,7 @@ void SafeBrowsingService::CheckDownloadUrlOnSBThread(SafeBrowsingCheck* check) {
 
   check->need_get_hash = true;
   check->prefix_hits.clear();
-  check->prefix_hits.push_back(prefix_hit);
+  check->prefix_hits = prefix_hits;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &SafeBrowsingService::OnCheckDone, check));

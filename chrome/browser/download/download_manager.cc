@@ -259,7 +259,7 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
   // Create a client to verify download URL with safebrowsing.
   // It deletes itself after the callback.
   scoped_refptr<DownloadSBClient> sb_client = new DownloadSBClient(
-      info->download_id, info->url, info->original_url, info->referrer_url);
+      info->download_id, info->url_chain, info->referrer_url);
   sb_client->CheckDownloadUrl(
       info, NewCallback(this, &DownloadManager::CheckDownloadUrlDone));
 }
@@ -274,7 +274,7 @@ void DownloadManager::CheckDownloadUrlDone(DownloadCreateInfo* info,
   // Check whether this download is for an extension install or not.
   // Allow extensions to be explicitly saved.
   if (!info->prompt_user_for_save_location) {
-    if (UserScript::IsURLUserScript(info->url, info->mime_type) ||
+    if (UserScript::IsURLUserScript(info->url(), info->mime_type) ||
         info->mime_type == Extension::kMimeType) {
       info->is_extension_install = true;
     }
@@ -567,8 +567,7 @@ void DownloadManager::OnAllDataSaved(int32 download_id,
   if (!hash.empty()) {
     scoped_refptr<DownloadSBClient> sb_client =
         new DownloadSBClient(download_id,
-                             download->url(),
-                             download->original_url(),
+                             download->url_chain(),
                              download->referrer_url());
     sb_client->CheckDownloadHash(
         hash, NewCallback(this, &DownloadManager::CheckDownloadHashDone));

@@ -307,7 +307,7 @@ TEST_F(DownloadManagerTest, StartDownload) {
     DownloadCreateInfo* info = new DownloadCreateInfo;
     info->download_id = static_cast<int>(i);
     info->prompt_user_for_save_location = kStartDownloadCases[i].save_as;
-    info->url = GURL(kStartDownloadCases[i].url);
+    info->url_chain.push_back(GURL(kStartDownloadCases[i].url));
     info->mime_type = kStartDownloadCases[i].mime_type;
     download_manager_->CreateDownloadItem(info);
 

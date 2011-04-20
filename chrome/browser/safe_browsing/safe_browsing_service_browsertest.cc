@@ -51,21 +51,20 @@ class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
                                  std::vector<SBPrefix>* prefix_hits,
                                  std::vector<SBFullHashResult>* full_hits,
                                  base::Time last_update) {
+    std::vector<GURL> urls(1, url);
     return ContainsUrl(safe_browsing_util::kMalwareList,
                        safe_browsing_util::kPhishingList,
-                       url, prefix_hits, full_hits);
+                       urls, prefix_hits, full_hits);
   }
-  virtual bool ContainsDownloadUrl(const GURL& url,
-                                   SBPrefix* prefix_hit) {
+  virtual bool ContainsDownloadUrl(const std::vector<GURL>& urls,
+                                   std::vector<SBPrefix>* prefix_hits) {
     std::vector<SBFullHashResult> full_hits;
-    std::vector<SBPrefix> prefix_hits;
     bool found = ContainsUrl(safe_browsing_util::kBinUrlList,
                              safe_browsing_util::kBinHashList,
-                             url, &prefix_hits, &full_hits);
+                             urls, prefix_hits, &full_hits);
     if (!found)
       return false;
-    DCHECK_EQ(1U, prefix_hits.size());
-    *prefix_hit = prefix_hits[0];
+    DCHECK_LE(1U, prefix_hits->size());
     return true;
   }
   virtual bool ContainsDownloadHashPrefix(const SBPrefix& prefix) {
@@ -118,23 +117,31 @@ class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
 
   bool ContainsUrl(const std::string& list_name0,
                    const std::string& list_name1,
-                   const GURL& url,
+                   const std::vector<GURL>& urls,
                    std::vector<SBPrefix>* prefix_hits,
                    std::vector<SBFullHashResult>* full_hits) {
-    base::hash_map<std::string, Hits>::const_iterator
-        badurls_it = badurls_.find(url.spec());
+    bool hit = false;
+    for (size_t i = 0; i < urls.size(); ++i) {
+      const GURL& url = urls[i];
+      base::hash_map<std::string, Hits>::const_iterator
+          badurls_it = badurls_.find(url.spec());
 
-    if (badurls_it == badurls_.end())
-      return false;
+      if (badurls_it == badurls_.end())
+        continue;
 
-    if (badurls_it->second.list_name == list_name0 ||
-        badurls_it->second.list_name == list_name1) {
-      *prefix_hits = badurls_it->second.prefix_hits;
-      *full_hits = badurls_it->second.full_hits;
-      return true;
+      if (badurls_it->second.list_name == list_name0 ||
+          badurls_it->second.list_name == list_name1) {
+        prefix_hits->insert(prefix_hits->end(),
+                            badurls_it->second.prefix_hits.begin(),
+                            badurls_it->second.prefix_hits.end());
+        full_hits->insert(full_hits->end(),
+                          badurls_it->second.full_hits.begin(),
+                          badurls_it->second.full_hits.end());
+        hit = true;
+      }
+
     }
-
-    return false;
+    return hit;
   }
 
   base::hash_map<std::string, Hits> badurls_;
@@ -438,12 +445,12 @@ class TestSBClient
     return result_;
   }
 
-  void CheckDownloadUrl(const GURL& url) {
+  void CheckDownloadUrl(const std::vector<GURL>& url_chain) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(this,
                           &TestSBClient::CheckDownloadUrlOnIOThread,
-                          url));
+                          url_chain));
     ui_test_utils::RunMessageLoop();  // Will stop in OnDownloadUrlCheckResult.
   }
 
@@ -457,8 +464,8 @@ class TestSBClient
   }
 
  private:
-  void CheckDownloadUrlOnIOThread(const GURL& url) {
-    safe_browsing_service_->CheckDownloadUrl(url, this);
+  void CheckDownloadUrlOnIOThread(const std::vector<GURL>& url_chain) {
+    safe_browsing_service_->CheckDownloadUrl(url_chain, this);
   }
 
   void CheckDownloadHashOnIOThread(const std::string& full_hash) {
@@ -466,7 +473,7 @@ class TestSBClient
   }
 
   // Called when the result of checking a download URL is known.
-  void OnDownloadUrlCheckResult(const GURL& url,
+  void OnDownloadUrlCheckResult(const std::vector<GURL>& url_chain,
                                 SafeBrowsingService::UrlCheckResult result) {
     result_ = result;
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -497,9 +504,10 @@ namespace {
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrl) {
   GURL badbin_url = test_server()->GetURL(kMalwareFile);
+  std::vector<GURL> badbin_urls(1, badbin_url);
 
   scoped_refptr<TestSBClient> client(new TestSBClient);
-  client->CheckDownloadUrl(badbin_url);
+  client->CheckDownloadUrl(badbin_urls);
 
   // Since badbin_url is not in database, it is considered to be safe.
   EXPECT_EQ(SafeBrowsingService::SAFE, client->GetResult());
@@ -510,7 +518,34 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrl) {
                        chunk_id, &full_hash_result);
   SetupResponseForUrl(badbin_url, full_hash_result);
 
-  client->CheckDownloadUrl(badbin_url);
+  client->CheckDownloadUrl(badbin_urls);
+
+  // Now, the badbin_url is not safe since it is added to download database.
+  EXPECT_EQ(SafeBrowsingService::BINARY_MALWARE_URL, client->GetResult());
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrlRedirects) {
+  GURL original_url = test_server()->GetURL(kEmptyPage);
+  GURL badbin_url = test_server()->GetURL(kMalwareFile);
+  GURL final_url = test_server()->GetURL(kEmptyPage);
+  std::vector<GURL> badbin_urls;
+  badbin_urls.push_back(original_url);
+  badbin_urls.push_back(badbin_url);
+  badbin_urls.push_back(final_url);
+
+  scoped_refptr<TestSBClient> client(new TestSBClient);
+  client->CheckDownloadUrl(badbin_urls);
+
+  // Since badbin_url is not in database, it is considered to be safe.
+  EXPECT_EQ(SafeBrowsingService::SAFE, client->GetResult());
+
+  SBFullHashResult full_hash_result;
+  int chunk_id = 0;
+  GenUrlFullhashResult(badbin_url, safe_browsing_util::kBinUrlList,
+                       chunk_id, &full_hash_result);
+  SetupResponseForUrl(badbin_url, full_hash_result);
+
+  client->CheckDownloadUrl(badbin_urls);
 
   // Now, the badbin_url is not safe since it is added to download database.
   EXPECT_EQ(SafeBrowsingService::BINARY_MALWARE_URL, client->GetResult());
@@ -539,6 +574,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadHash) {
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrlTimedOut) {
   GURL badbin_url = test_server()->GetURL(kMalwareFile);
+  std::vector<GURL> badbin_urls(1, badbin_url);
 
   scoped_refptr<TestSBClient> client(new TestSBClient);
   SBFullHashResult full_hash_result;
@@ -546,7 +582,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrlTimedOut) {
   GenUrlFullhashResult(badbin_url, safe_browsing_util::kBinUrlList,
                        chunk_id, &full_hash_result);
   SetupResponseForUrl(badbin_url, full_hash_result);
-  client->CheckDownloadUrl(badbin_url);
+  client->CheckDownloadUrl(badbin_urls);
 
   // badbin_url is not safe since it is added to download database.
   EXPECT_EQ(SafeBrowsingService::BINARY_MALWARE_URL, client->GetResult());
@@ -561,7 +597,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrlTimedOut) {
   int64 default_urlcheck_timeout = DownloadUrlCheckTimeout(sb_service);
   IntroduceGetHashDelay(kOneSec);
   SetDownloadUrlCheckTimeout(sb_service, kOneMs);
-  client->CheckDownloadUrl(badbin_url);
+  client->CheckDownloadUrl(badbin_urls);
 
   // There should be a timeout and the hash would be considered as safe.
   EXPECT_EQ(SafeBrowsingService::SAFE, client->GetResult());

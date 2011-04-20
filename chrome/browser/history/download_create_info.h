@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -9,6 +9,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
@@ -37,13 +38,14 @@ struct DownloadCreateInfo {
 
   std::string DebugString() const;
 
+  // The URL from which we are downloading. This is the final URL after any
+  // redirection by the server for |url_chain|.
+  const GURL& url() const;
+
   // DownloadItem fields
   FilePath path;
-  // The URL from which we are downloading. This is the final URL after any
-  // redirection by the server for |original_url_|.
-  GURL url;
-  // The original URL before any redirection by the server for this URL.
-  GURL original_url;
+  // The chain of redirects that leading up to and including the final URL.
+  std::vector<GURL> url_chain;
   GURL referrer_url;
   FilePath suggested_path;
   // A number that should be added to the suggested path to make it unique.

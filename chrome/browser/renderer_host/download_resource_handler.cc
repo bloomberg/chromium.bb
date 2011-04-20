@@ -36,8 +36,6 @@ DownloadResourceHandler::DownloadResourceHandler(
     : download_id_(-1),
       global_id_(render_process_host_id, request_id),
       render_view_id_(render_view_id),
-      url_(url),
-      original_url_(url),
       content_length_(0),
       download_file_manager_(download_file_manager),
       request_(request),
@@ -60,7 +58,6 @@ bool DownloadResourceHandler::OnRequestRedirected(int request_id,
                                                   const GURL& url,
                                                   ResourceResponse* response,
                                                   bool* defer) {
-  url_ = url;
   return true;
 }
 
@@ -83,8 +80,7 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
 
   // Deleted in DownloadManager.
   DownloadCreateInfo* info = new DownloadCreateInfo;
-  info->url = url_;
-  info->original_url = original_url_;
+  info->url_chain = request_->url_chain();
   info->referrer_url = GURL(request_->referrer());
   info->start_time = base::Time::Now();
   info->received_bytes = 0;
@@ -259,7 +255,7 @@ std::string DownloadResourceHandler::DebugString() const {
                             " render_view_id_ = " "%d"
                             " save_info_.file_path = \"%" PRFilePath "\""
                             " }",
-                            url_.spec().c_str(),
+                            request_->url().spec().c_str(),
                             download_id_,
                             global_id_.child_id,
                             global_id_.request_id,

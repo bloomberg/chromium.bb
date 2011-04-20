@@ -36,8 +36,7 @@ class DownloadSBClient
   typedef Callback2<int32, bool>::Type HashDoneCallback;
 
   DownloadSBClient(int32 download_id,
-                   const GURL& download_url,
-                   const GURL& page_url,
+                   const std::vector<GURL>& url_chain,
                    const GURL& referrer_url);
 
   // Call safebrowsing service to verifiy the download.
@@ -50,12 +49,13 @@ class DownloadSBClient
  private:
   // Call SafeBrowsingService on IO thread to verify the download URL or
   // hash of downloaded file.
-  void CheckDownloadUrlOnIOThread(const GURL& url);
+  void CheckDownloadUrlOnIOThread(const std::vector<GURL>& url_chain);
   void CheckDownloadHashOnIOThread(const std::string& hash);
 
   // Callback interfaces for SafeBrowsingService::Client.
   virtual void OnDownloadUrlCheckResult(
-      const GURL& url, SafeBrowsingService::UrlCheckResult result);
+      const std::vector<GURL>& url_chain,
+      SafeBrowsingService::UrlCheckResult result);
   virtual void OnDownloadHashCheckResult(
       const std::string& hash, SafeBrowsingService::UrlCheckResult result);
 
@@ -98,8 +98,7 @@ class DownloadSBClient
   scoped_refptr<SafeBrowsingService> sb_service_;
 
   // These URLs are used to report malware to safe browsing service.
-  GURL download_url_;
-  GURL page_url_;
+  std::vector<GURL> url_chain_;
   GURL referrer_url_;
 
   // When a safebrowsing check starts, for stats purpose.

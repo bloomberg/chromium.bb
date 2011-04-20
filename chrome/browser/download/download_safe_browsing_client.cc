@@ -21,13 +21,11 @@
 // SafeBrowsingService::Client is changed to RefCountedThreadSafe<>.
 
 DownloadSBClient::DownloadSBClient(int32 download_id,
-                                   const GURL& download_url,
-                                   const GURL& page_url,
+                                   const std::vector<GURL>& url_chain,
                                    const GURL& referrer_url)
   : info_(NULL),
     download_id_(download_id),
-    download_url_(download_url),
-    page_url_(page_url),
+    url_chain_(url_chain),
     referrer_url_(referrer_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ResourceDispatcherHost* rdh = g_browser_process->resource_dispatcher_host();
@@ -52,7 +50,7 @@ void DownloadSBClient::CheckDownloadUrl(DownloadCreateInfo* info,
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this,
                         &DownloadSBClient::CheckDownloadUrlOnIOThread,
-                        info->url));
+                        info->url_chain));
   UpdateDownloadCheckStats(DOWNLOAD_URL_CHECKS_TOTAL);
 }
 
@@ -73,22 +71,24 @@ void DownloadSBClient::CheckDownloadHash(const std::string& hash,
   UpdateDownloadCheckStats(DOWNLOAD_HASH_CHECKS_TOTAL);
 }
 
-void DownloadSBClient::CheckDownloadUrlOnIOThread(const GURL& url) {
+void DownloadSBClient::CheckDownloadUrlOnIOThread(
+    const std::vector<GURL>& url_chain) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Will be released in OnDownloadUrlCheckResult.
   AddRef();
-  if (sb_service_.get() && !sb_service_->CheckDownloadUrl(url, this)) {
+  if (sb_service_.get() && !sb_service_->CheckDownloadUrl(url_chain, this)) {
     // Wait for SafeBrowsingService to call back OnDownloadUrlCheckResult.
     return;
   }
-  OnDownloadUrlCheckResult(url, SafeBrowsingService::SAFE);
+  OnDownloadUrlCheckResult(url_chain, SafeBrowsingService::SAFE);
 }
 
 // The callback interface for SafeBrowsingService::Client.
 // Called when the result of checking a download URL is known.
 void DownloadSBClient::OnDownloadUrlCheckResult(
-    const GURL& url, SafeBrowsingService::UrlCheckResult result) {
+    const std::vector<GURL>& url_chain,
+    SafeBrowsingService::UrlCheckResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this,
@@ -153,8 +153,8 @@ void DownloadSBClient::SafeBrowsingCheckHashDone(
 
 void DownloadSBClient::ReportMalware(
     SafeBrowsingService::UrlCheckResult result) {
-  sb_service_->ReportSafeBrowsingHit(download_url_,  // malicious_url
-                                     page_url_,
+  sb_service_->ReportSafeBrowsingHit(url_chain_.back(),  // malicious_url
+                                     url_chain_.front(), // page_url
                                      referrer_url_,
                                      true,
                                      result);

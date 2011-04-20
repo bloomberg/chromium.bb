@@ -1162,25 +1162,65 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrl) {
   database_->InsertChunks(safe_browsing_util::kBinUrlList, chunks);
   database_->UpdateFinished(true);
 
-  SBPrefix prefix_hit;
-  EXPECT_TRUE(database_->ContainsDownloadUrl(
-      GURL(std::string("http://") + kEvil1Url1), &prefix_hit));
-  EXPECT_EQ(prefix_hit, Sha256Prefix(kEvil1Url1));
+  std::vector<SBPrefix> prefix_hits;
+  std::vector<GURL> urls(1);
 
-  EXPECT_TRUE(database_->ContainsDownloadUrl(
-      GURL(std::string("http://") + kEvil1Url2), &prefix_hit));
-  EXPECT_EQ(prefix_hit, Sha256Prefix(kEvil1Url2));
+  urls[0] = GURL(std::string("http://") + kEvil1Url1);
+  EXPECT_TRUE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+  ASSERT_EQ(prefix_hits.size(), 1U);
+  EXPECT_EQ(prefix_hits[0], Sha256Prefix(kEvil1Url1));
 
-  EXPECT_TRUE(database_->ContainsDownloadUrl(
-      GURL(std::string("https://") + kEvil1Url2), &prefix_hit));
-  EXPECT_EQ(prefix_hit, Sha256Prefix(kEvil1Url2));
+  urls[0] = GURL(std::string("http://") + kEvil1Url2);
+  EXPECT_TRUE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+  ASSERT_EQ(prefix_hits.size(), 1U);
+  EXPECT_EQ(prefix_hits[0], Sha256Prefix(kEvil1Url2));
 
-  EXPECT_TRUE(database_->ContainsDownloadUrl(
-      GURL(std::string("ftp://") + kEvil1Url2), &prefix_hit));
-  EXPECT_EQ(prefix_hit, Sha256Prefix(kEvil1Url2));
+  urls[0] = GURL(std::string("https://") + kEvil1Url2);
+  EXPECT_TRUE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+  ASSERT_EQ(prefix_hits.size(), 1U);
+  EXPECT_EQ(prefix_hits[0], Sha256Prefix(kEvil1Url2));
 
-  EXPECT_FALSE(database_->ContainsDownloadUrl(GURL("http://www.randomevil.com"),
-                                              &prefix_hit));
+  urls[0] = GURL(std::string("ftp://") + kEvil1Url2);
+  EXPECT_TRUE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+  ASSERT_EQ(prefix_hits.size(), 1U);
+  EXPECT_EQ(prefix_hits[0], Sha256Prefix(kEvil1Url2));
+
+  urls[0] = GURL("http://www.randomevil.com");
+  EXPECT_FALSE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+
+  // First hit in redirect chain is malware.
+  urls.clear();
+  urls.push_back(GURL(std::string("http://") + kEvil1Url1));
+  urls.push_back(GURL("http://www.randomevil.com"));
+  EXPECT_TRUE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+  ASSERT_EQ(prefix_hits.size(), 1U);
+  EXPECT_EQ(prefix_hits[0], Sha256Prefix(kEvil1Url1));
+
+  // Middle hit in redirect chain is malware.
+  urls.clear();
+  urls.push_back(GURL("http://www.randomevil.com"));
+  urls.push_back(GURL(std::string("http://") + kEvil1Url1));
+  urls.push_back(GURL("http://www.randomevil2.com"));
+  EXPECT_TRUE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+  ASSERT_EQ(prefix_hits.size(), 1U);
+  EXPECT_EQ(prefix_hits[0], Sha256Prefix(kEvil1Url1));
+
+  // Final hit in redirect chain is malware.
+  urls.clear();
+  urls.push_back(GURL("http://www.randomevil.com"));
+  urls.push_back(GURL(std::string("http://") + kEvil1Url1));
+  EXPECT_TRUE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+  ASSERT_EQ(prefix_hits.size(), 1U);
+  EXPECT_EQ(prefix_hits[0], Sha256Prefix(kEvil1Url1));
+
+  // Multiple hits in redirect chain are in malware list.
+  urls.clear();
+  urls.push_back(GURL(std::string("http://") + kEvil1Url1));
+  urls.push_back(GURL(std::string("https://") + kEvil1Url2));
+  EXPECT_TRUE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+  ASSERT_EQ(prefix_hits.size(), 2U);
+  EXPECT_EQ(prefix_hits[0], Sha256Prefix(kEvil1Url1));
+  EXPECT_EQ(prefix_hits[1], Sha256Prefix(kEvil1Url2));
   database_.reset();
 }
 

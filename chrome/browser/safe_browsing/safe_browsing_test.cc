@@ -361,7 +361,8 @@ class SafeBrowsingServiceTestHelper
                             &SafeBrowsingServiceTestHelper::OnCheckUrlDone));
   }
   virtual void OnDownloadUrlCheckResult(
-      const GURL& url, SafeBrowsingService::UrlCheckResult result) {
+      const std::vector<GURL>& url_chain,
+      SafeBrowsingService::UrlCheckResult result) {
     // TODO(lzheng): Add test for DownloadUrl.
   }
 

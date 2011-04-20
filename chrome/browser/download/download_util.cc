@@ -251,7 +251,7 @@ void GenerateExtension(const FilePath& file_name,
 
 void GenerateFileNameFromInfo(DownloadCreateInfo* info,
                               FilePath* generated_name) {
-  GenerateFileName(GURL(info->url),
+  GenerateFileName(GURL(info->url()),
                    info->content_disposition,
                    info->referrer_charset,
                    info->mime_type,
@@ -890,7 +890,7 @@ bool IsDangerous(DownloadCreateInfo* info, Profile* profile, bool auto_open) {
     // Extensions that are not from the gallery are considered dangerous.
     ExtensionService* service = profile->GetExtensionService();
     if (!service ||
-        !service->IsDownloadFromGallery(info->url, info->referrer_url))
+        !service->IsDownloadFromGallery(info->url(), info->referrer_url))
       return true;
   }
   return false;

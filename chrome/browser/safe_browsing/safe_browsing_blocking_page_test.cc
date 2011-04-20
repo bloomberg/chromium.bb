@@ -49,7 +49,7 @@ class FakeSafeBrowsingService :  public SafeBrowsingService {
 
   void OnCheckBrowseURLDone(const GURL& gurl, Client* client) {
     SafeBrowsingService::SafeBrowsingCheck check;
-    check.url.reset(new GURL(gurl));
+    check.urls.push_back(gurl);
     check.client = client;
     check.result = badurls[gurl.spec()];
     client->OnSafeBrowsingResult(check);

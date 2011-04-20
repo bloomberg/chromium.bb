@@ -63,17 +63,21 @@ int EncodeChunkId(const int chunk, const int list_id) {
   return chunk << 1 | list_id % 2;
 }
 
-// Get the prefix for download url.
-void GetDownloadUrlPrefix(const GURL& url, SBPrefix* prefix) {
-  std::string hostname;
-  std::string path;
-  std::string query;
-  safe_browsing_util::CanonicalizeUrl(url, &hostname, &path, &query);
+// Get the prefixes matching the download |urls|.
+void GetDownloadUrlPrefixes(const std::vector<GURL>& urls,
+                            std::vector<SBPrefix>* prefixes) {
+  for (size_t i = 0; i < urls.size(); ++i) {
+    const GURL& url = urls[i];
+    std::string hostname;
+    std::string path;
+    std::string query;
+    safe_browsing_util::CanonicalizeUrl(url, &hostname, &path, &query);
 
-  SBFullHash full_hash;
-  crypto::SHA256HashString(hostname + path + query, &full_hash,
-                           sizeof(full_hash));
-  *prefix = full_hash.prefix;
+    SBFullHash full_hash;
+    crypto::SHA256HashString(hostname + path + query, &full_hash,
+                             sizeof(full_hash));
+    prefixes->push_back(full_hash.prefix);
+  }
 }
 
 // Generate the set of full hashes to check for |url|.  If
@@ -658,32 +662,39 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
 }
 
 bool SafeBrowsingDatabaseNew::MatchDownloadAddPrefixes(
-    int list_bit, const SBPrefix& prefix, SBPrefix* prefix_hit) {
+    int list_bit,
+    const std::vector<SBPrefix>& prefixes,
+    std::vector<SBPrefix>* prefix_hits) {
+  prefix_hits->clear();
+
   std::vector<SBAddPrefix> add_prefixes;
   download_store_->GetAddPrefixes(&add_prefixes);
   for (size_t i = 0; i < add_prefixes.size(); ++i) {
-    if (prefix == add_prefixes[i].prefix &&
-        GetListIdBit(add_prefixes[i].chunk_id) == list_bit) {
-      *prefix_hit = prefix;
-      return true;
+    for (size_t j = 0; j < prefixes.size(); ++j) {
+      const SBPrefix& prefix = prefixes[j];
+      if (prefix == add_prefixes[i].prefix &&
+          GetListIdBit(add_prefixes[i].chunk_id) == list_bit) {
+        prefix_hits->push_back(prefix);
+      }
     }
   }
-  return false;
+  return !prefix_hits->empty();
 }
 
-bool SafeBrowsingDatabaseNew::ContainsDownloadUrl(const GURL& url,
-                                                  SBPrefix* prefix_hit) {
+bool SafeBrowsingDatabaseNew::ContainsDownloadUrl(
+    const std::vector<GURL>& urls,
+    std::vector<SBPrefix>* prefix_hits) {
   DCHECK_EQ(creation_loop_, MessageLoop::current());
 
   // Ignore this check when download checking is not enabled.
   if (!download_store_.get())
     return false;
 
-  SBPrefix prefix;
-  GetDownloadUrlPrefix(url, &prefix);
+  std::vector<SBPrefix> prefixes;
+  GetDownloadUrlPrefixes(urls, &prefixes);
   return MatchDownloadAddPrefixes(safe_browsing_util::BINURL % 2,
-                                  prefix,
-                                  prefix_hit);
+                                  prefixes,
+                                  prefix_hits);
 }
 
 bool SafeBrowsingDatabaseNew::ContainsDownloadHashPrefix(
@@ -694,10 +705,11 @@ bool SafeBrowsingDatabaseNew::ContainsDownloadHashPrefix(
   if (!download_store_.get())
     return false;
 
-  SBPrefix prefix_hit;
+  std::vector<SBPrefix> prefixes(1, prefix);
+  std::vector<SBPrefix> prefix_hits;
   return MatchDownloadAddPrefixes(safe_browsing_util::BINHASH % 2,
-                                  prefix,
-                                  &prefix_hit);
+                                  prefixes,
+                                  &prefix_hits);
 }
 
 bool SafeBrowsingDatabaseNew::ContainsCsdWhitelistedUrl(const GURL& url) {
