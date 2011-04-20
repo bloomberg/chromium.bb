@@ -22,12 +22,30 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
+#include "ppapi/c/pp_point.h"
+#include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_size.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
 #include "ppapi/proxy/serialized_flash_menu.h"
 #include "ppapi/proxy/serialized_structs.h"
 
 #define IPC_MESSAGE_START PpapiMsgStart
+
+IPC_STRUCT_TRAITS_BEGIN(PP_Point)
+  IPC_STRUCT_TRAITS_MEMBER(x)
+  IPC_STRUCT_TRAITS_MEMBER(y)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(PP_Size)
+  IPC_STRUCT_TRAITS_MEMBER(height)
+  IPC_STRUCT_TRAITS_MEMBER(width)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(PP_Rect)
+  IPC_STRUCT_TRAITS_MEMBER(point)
+  IPC_STRUCT_TRAITS_MEMBER(size)
+IPC_STRUCT_TRAITS_END()
 
 // These are from the browser to the plugin.
 // Loads the given plugin.

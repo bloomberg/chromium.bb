@@ -67,30 +67,6 @@ struct ParamTraits<PP_ObjectProperty> {
 };
 
 template<>
-struct ParamTraits<PP_Point> {
-  typedef PP_Point param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template<>
-struct ParamTraits<PP_Rect> {
-  typedef PP_Rect param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template<>
-struct ParamTraits<PP_Size> {
-  typedef PP_Size param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template<>
 struct ParamTraits<pp::proxy::PPBFlash_DrawGlyphs_Params> {
   typedef pp::proxy::PPBFlash_DrawGlyphs_Params param_type;
   static void Write(Message* m, const param_type& p);

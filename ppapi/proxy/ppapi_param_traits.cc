@@ -122,66 +122,6 @@ bool ParamTraits<PP_ObjectProperty>::Read(const Message* m,
 void ParamTraits<PP_ObjectProperty>::Log(const param_type& p, std::string* l) {
 }
 
-// PP_Point --------------------------------------------------------------------
-
-// static
-void ParamTraits<PP_Point>::Write(Message* m, const param_type& p) {
-  m->WriteInt(p.x);
-  m->WriteInt(p.y);
-}
-
-// static
-bool ParamTraits<PP_Point>::Read(const Message* m, void** iter, param_type* r) {
-  return m->ReadInt(iter, &r->x) && m->ReadInt(iter, &r->y);
-}
-
-// static
-void ParamTraits<PP_Point>::Log(const param_type& p, std::string* l) {
-}
-
-// PP_Rect ---------------------------------------------------------------------
-
-// static
-void ParamTraits<PP_Rect>::Write(Message* m, const param_type& p) {
-  m->WriteInt(p.point.x);
-  m->WriteInt(p.point.y);
-  m->WriteInt(p.size.width);
-  m->WriteInt(p.size.height);
-}
-
-// static
-bool ParamTraits<PP_Rect>::Read(const Message* m,
-                                void** iter,
-                                param_type* r) {
-  if (!m->ReadInt(iter, &r->point.x) ||
-      !m->ReadInt(iter, &r->point.y) ||
-      !m->ReadInt(iter, &r->size.width) ||
-      !m->ReadInt(iter, &r->size.height))
-    return false;
-  return true;
-}
-
-// static
-void ParamTraits<PP_Rect>::Log(const param_type& p, std::string* l) {
-}
-
-// PP_Size ---------------------------------------------------------------------
-
-// static
-void ParamTraits<PP_Size>::Write(Message* m, const param_type& p) {
-  m->WriteInt(p.width);
-  m->WriteInt(p.height);
-}
-
-// static
-bool ParamTraits<PP_Size>::Read(const Message* m, void** iter, param_type* r) {
-  return m->ReadInt(iter, &r->width) && m->ReadInt(iter, &r->height);
-}
-
-// static
-void ParamTraits<PP_Size>::Log(const param_type& p, std::string* l) {
-}
-
 // PPBFlash_DrawGlyphs_Params --------------------------------------------------
 
 // static
