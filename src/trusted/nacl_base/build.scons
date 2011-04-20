@@ -6,6 +6,11 @@
 
 Import('env')
 
+# Do not run any of the compiles below when in built_elsewhere mode
+# because we cannot assume having a working compiler.
+if env.Bit('built_elsewhere'):
+  Return()
+
 nacl_base_lib_inputs = [
   'nacl_refcount.c',
 ]
