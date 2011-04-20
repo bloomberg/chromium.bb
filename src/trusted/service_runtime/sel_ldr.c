@@ -885,12 +885,19 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
             NACL_VTBL(NaClDesc, nexe_binary)->typeTag);
   }
 
+  /*
+   * TODO(bsy): consider doing the processing below after sending the
+   * RPC reply to increase parallelism.
+   */
+
   NaClXMutexLock(&nap->mu);
 
   if (LOAD_STATUS_UNKNOWN != nap->module_load_status) {
     NaClLog(LOG_ERROR, "Repeated LoadModule RPC?!?\n");
     suberr = LOAD_DUP_LOAD_MODULE;
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+    nap->module_load_status = suberr;
+    rpc->result = NACL_SRPC_RESULT_OK;
+    NaClXCondVarBroadcast(&nap->cv);
     goto cleanup_status_mu;
   }
 
@@ -903,7 +910,7 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
 
   if (LOAD_OK != suberr) {
     nap->module_load_status = suberr;
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+    rpc->result = NACL_SRPC_RESULT_OK;
     NaClXCondVarBroadcast(&nap->cv);
   }
 
@@ -923,17 +930,12 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
    * Finish setting up the NaCl App.
    */
   suberr = NaClAppPrepareToLaunch(nap);
-  NaClXMutexLock(&nap->mu);
-  if (LOAD_OK != suberr) {
-    nap->module_load_status = suberr;
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-    goto cleanup_mu;
-  }
 
-  nap->module_load_status = LOAD_OK;
+  NaClXMutexLock(&nap->mu);
+
+  nap->module_load_status = suberr;
   rpc->result = NACL_SRPC_RESULT_OK;
 
- cleanup_mu:
   NaClXCondVarBroadcast(&nap->cv);
   NaClXMutexUnlock(&nap->mu);
 
