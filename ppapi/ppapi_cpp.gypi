@@ -69,7 +69,6 @@
         'c/dev/ppb_scrollbar_dev.h',
         'c/dev/ppb_surface_3d_dev.h',
         'c/dev/ppb_testing_dev.h',
-        'c/dev/ppb_transport_dev.h',
         'c/dev/ppb_url_util_dev.h',
         'c/dev/ppb_video_decoder_dev.h',
         'c/dev/ppb_widget_dev.h',
@@ -107,6 +106,13 @@
         'c/trusted/ppb_broker_trusted.h',
         'c/trusted/ppb_url_loader_trusted.h',
         'c/trusted/ppp_broker.h',
+      ],
+      'conditions': [
+        ['p2p_apis==1', {
+          'sources': [
+            'c/dev/ppb_transport_dev.h',
+          ],
+        }],
       ],
     },
     {
@@ -192,8 +198,6 @@
         'cpp/dev/selection_dev.h',
         'cpp/dev/surface_3d_dev.cc',
         'cpp/dev/surface_3d_dev.h',
-        'cpp/dev/transport_dev.cc',
-        'cpp/dev/transport_dev.h',
         'cpp/dev/url_util_dev.cc',
         'cpp/dev/url_util_dev.h',
         'cpp/dev/video_decoder_dev.cc',
@@ -231,7 +235,13 @@
           'xcode_settings': {
             'WARNING_CFLAGS': ['-Wextra', '-pedantic'],
            },
-        }]
+        }],
+        ['p2p_apis==1', {
+          'sources': [
+            'cpp/dev/transport_dev.cc',
+            'cpp/dev/transport_dev.h',
+          ],
+        }],
       ],
     },
     {

@@ -237,7 +237,11 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_P2P_API_NAME,
     IDS_FLAGS_P2P_API_DESCRIPTION,
     kOsAll,
+#if defined(ENABLE_P2P_APIS)
     SINGLE_VALUE_TYPE(switches::kEnableP2PApi)
+#else
+    SINGLE_VALUE_TYPE("")
+#endif
   },
   {
     "focus-existing-tab-on-open",  // FLAGS:RECORD_UMA

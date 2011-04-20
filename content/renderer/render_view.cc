@@ -426,8 +426,10 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   audio_message_filter_ = new AudioMessageFilter(routing_id_);
   render_thread_->AddFilter(audio_message_filter_);
 
+#if defined(ENABLE_P2P_APIS)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableP2PApi))
     p2p_socket_dispatcher_ = new P2PSocketDispatcher(this);
+#endif
 
   content::GetContentClient()->renderer()->RenderViewCreated(this);
 }

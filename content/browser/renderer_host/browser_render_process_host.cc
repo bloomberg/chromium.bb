@@ -503,8 +503,10 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
           NewCallbackWithReturnValue(
               widget_helper_.get(), &RenderWidgetHelper::GetNextRoutingID)));
 
+#if defined(ENABLE_P2P_APIS)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableP2PApi))
     channel_->AddFilter(new P2PSocketDispatcherHost());
+#endif
 
   channel_->AddFilter(new TraceMessageFilter());
   channel_->AddFilter(new ResolveProxyMsgHelper(NULL));
@@ -714,7 +716,9 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableLogging,
     switches::kEnableNaCl,
     switches::kEnableOpenMax,
+#if defined(ENABLE_P2P_APIS)
     switches::kEnableP2PApi,
+#endif
     switches::kEnablePepperTesting,
     switches::kEnablePrintPreview,
     switches::kEnableRemoting,

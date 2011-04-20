@@ -142,9 +142,6 @@ const char kEnableLogging[]                 = "enable-logging";
 // assumed to be sRGB.
 const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 
-// Enable Pepper and JavaScript P2P API.
-const char kEnableP2PApi[]                  = "enable-p2papi";
-
 // Enable caching of pre-parsed JS script data.  See http://crbug.com/32407.
 const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";
 
@@ -395,6 +392,11 @@ const char kZygoteCmdPrefix[]               = "zygote-cmd-prefix";
 
 // Causes the process to run as a renderer zygote.
 const char kZygoteProcess[]                 = "zygote";
+
+#if defined(ENABLE_P2P_APIS)
+// Enable Pepper and JavaScript P2P API.
+const char kEnableP2PApi[]                  = "enable-p2papi";
+#endif
 
 #if !defined(OFFICIAL_BUILD)
 // Causes the renderer process to throw an assertion on launch.

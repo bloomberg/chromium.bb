@@ -1888,7 +1888,6 @@
         '../content/browser/in_process_webkit/webkit_thread_unittest.cc',
         '../content/browser/plugin_service_unittest.cc',
         '../content/browser/renderer_host/audio_renderer_host_unittest.cc',
-        '../content/browser/renderer_host/p2p/socket_host_udp_unittest.cc',
         '../content/browser/renderer_host/render_view_host_unittest.cc',
         '../content/browser/renderer_host/render_widget_host_unittest.cc',
         '../content/browser/renderer_host/resource_dispatcher_host_unittest.cc',
@@ -1923,7 +1922,6 @@
         '../content/renderer/audio_message_filter_unittest.cc',
         '../content/renderer/gpu_video_decoder_host_unittest.cc',
         '../content/renderer/media/audio_renderer_impl_unittest.cc',
-        '../content/renderer/p2p/p2p_transport_impl_unittest.cc',
         '../content/renderer/paint_aggregator_unittest.cc',
         '../testing/gtest_mac_unittest.mm',
         '../third_party/cld/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
@@ -1932,6 +1930,12 @@
         '../webkit/fileapi/file_system_url_request_job_unittest.cc',
       ],
       'conditions': [
+        ['p2p_apis==1', {
+          'sources': [
+            '../content/browser/renderer_host/p2p/socket_host_udp_unittest.cc',
+            '../content/renderer/p2p/p2p_transport_impl_unittest.cc',
+          ],
+        }],
         ['touchui==0', {
           'sources/': [
             ['exclude', '^browser/ui/webui/chromeos/login/'],

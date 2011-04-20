@@ -295,8 +295,6 @@ const void* GetInterface(const char* name) {
     return PPB_Proxy_Impl::GetInterface();
   if (strcmp(name, PPB_SCROLLBAR_DEV_INTERFACE) == 0)
     return PPB_Scrollbar_Impl::GetInterface();
-  if (strcmp(name, PPB_TRANSPORT_DEV_INTERFACE) == 0)
-    return PPB_Transport_Impl::GetInterface();
   if (strcmp(name, PPB_URLLOADER_INTERFACE) == 0)
     return PPB_URLLoader_Impl::GetInterface();
   if (strcmp(name, PPB_URLLOADERTRUSTED_INTERFACE) == 0)
@@ -340,6 +338,11 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_FLASH_NETCONNECTOR_INTERFACE) == 0)
     return PPB_Flash_NetConnector_Impl::GetInterface();
 #endif  // ENABLE_FLAPPER_HACKS
+
+#if defined(ENABLE_P2P_APIS)
+  if (strcmp(name, PPB_TRANSPORT_DEV_INTERFACE) == 0)
+    return PPB_Transport_Impl::GetInterface();
+#endif
 
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface

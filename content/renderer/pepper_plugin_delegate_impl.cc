@@ -1180,5 +1180,9 @@ P2PSocketDispatcher* PepperPluginDelegateImpl::GetP2PSocketDispatcher() {
 }
 
 webkit_glue::P2PTransport* PepperPluginDelegateImpl::CreateP2PTransport() {
+#if defined(ENABLE_P2P_APIS)
   return new P2PTransportImpl(render_view_->p2p_socket_dispatcher());
+#else
+  return NULL;
+#endif
 }

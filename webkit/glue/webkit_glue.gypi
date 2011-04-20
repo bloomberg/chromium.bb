@@ -285,8 +285,6 @@
         '../plugins/ppapi/ppb_scrollbar_impl.h',
         '../plugins/ppapi/ppb_surface_3d_impl.cc',
         '../plugins/ppapi/ppb_surface_3d_impl.h',
-        '../plugins/ppapi/ppb_transport_impl.cc',
-        '../plugins/ppapi/ppb_transport_impl.h',
         '../plugins/ppapi/ppb_url_loader_impl.cc',
         '../plugins/ppapi/ppb_url_loader_impl.h',
         '../plugins/ppapi/ppb_url_request_info_impl.cc',
@@ -502,6 +500,12 @@
         ['inside_chromium_build==0', {
           'dependencies': [
             '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
+          ],
+        }],
+        ['p2p_apis==1', {
+          'sources': [
+            '../plugins/ppapi/ppb_transport_impl.cc',
+            '../plugins/ppapi/ppb_transport_impl.h',
           ],
         }],
       ],

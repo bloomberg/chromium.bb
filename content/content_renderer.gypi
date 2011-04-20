@@ -64,16 +64,6 @@
         'renderer/navigation_state.h',
         'renderer/notification_provider.cc',
         'renderer/notification_provider.h',
-        'renderer/p2p/ipc_network_manager.cc',
-        'renderer/p2p/ipc_network_manager.h',
-        'renderer/p2p/ipc_socket_factory.cc',
-        'renderer/p2p/ipc_socket_factory.h',
-        'renderer/p2p/p2p_transport_impl.cc',
-        'renderer/p2p/p2p_transport_impl.h',
-        'renderer/p2p/socket_client.cc',
-        'renderer/p2p/socket_client.h',
-        'renderer/p2p/socket_dispatcher.cc',
-        'renderer/p2p/socket_dispatcher.h',
         'renderer/paint_aggregator.cc',
         'renderer/paint_aggregator.h',
         'renderer/pepper_platform_context_3d_impl.cc',
@@ -162,6 +152,20 @@
         'renderer/web_ui_bindings.h',
       ],
       'conditions': [
+        ['p2p_apis==1', {
+          'sources': [
+            'renderer/p2p/ipc_network_manager.cc',
+            'renderer/p2p/ipc_network_manager.h',
+            'renderer/p2p/ipc_socket_factory.cc',
+            'renderer/p2p/ipc_socket_factory.h',
+            'renderer/p2p/p2p_transport_impl.cc',
+            'renderer/p2p/p2p_transport_impl.h',
+            'renderer/p2p/socket_client.cc',
+            'renderer/p2p/socket_client.h',
+            'renderer/p2p/socket_dispatcher.cc',
+            'renderer/p2p/socket_dispatcher.h',
+          ],
+        }],
         ['enable_gpu==1', {
           'dependencies': [
             '../gpu/gpu.gyp:gles2_c_lib',

@@ -224,8 +224,6 @@
         'tests/test_scrollbar.cc',
         'tests/test_scrollbar.h',
         'tests/test_struct_sizes.c',
-        'tests/test_transport.cc',
-        'tests/test_transport.h',
         'tests/test_url_loader.cc',
         'tests/test_url_loader.h',
         'tests/test_url_util.cc',
@@ -257,6 +255,12 @@
           'mac_bundle': 1,
           'product_name': 'ppapi_tests',
           'product_extension': 'plugin',
+        }],
+        ['p2p_apis==1', {
+          'sources': [
+            'tests/test_transport.cc',
+            'tests/test_transport.h',
+          ],
         }],
       ],
 # TODO(dmichael):  Figure out what is wrong with the script on Windows and add
