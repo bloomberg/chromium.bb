@@ -4356,7 +4356,7 @@
    fun:_ZN27TestURLRequestContextGetter20GetURLRequestContextEv
 }
 {
-   bug_79966
+   bug_79966a
    Memcheck:Cond
    fun:gdk_window_new
    fun:gtk_preserve_window_set_preserve
@@ -4373,6 +4373,16 @@
    fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
    fun:_ZN20NavigationController7LoadURLERK4GURLS2_j
    fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
+}
+{
+   bug_79966b
+   Memcheck:Cond
+   fun:gdk_event_translate
+   fun:_gdk_events_queue
+   fun:gdk_event_dispatch
+   fun:g_main_context_dispatch
+   fun:g_main_context_iterate
+   fun:g_main_context_iteration
 }
 
 #-----------------------------------------------------------------------
