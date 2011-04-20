@@ -293,7 +293,7 @@ void ElementNameCommand::ExecuteGet(Response* const response) {
   scoped_ptr<ListValue> args(new ListValue);
   args->Append(element.ToValue());
 
-  std::string script = "return arguments[0].tagName;";
+  std::string script = "return arguments[0].tagName.toLocaleLowerCase();";
 
   Value* result = NULL;
   ErrorCode status = session_->ExecuteScript(script, args.get(), &result);
