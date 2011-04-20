@@ -22,6 +22,7 @@ class FileSystemURLRequestJobBase : public net::URLRequestJob {
   FileSystemURLRequestJobBase(
       net::URLRequest* request, FileSystemContext* file_system_context,
       scoped_refptr<base::MessageLoopProxy> file_thread_proxy);
+  virtual ~FileSystemURLRequestJobBase() {}
 
   void StartAsync();
 
