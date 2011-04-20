@@ -253,24 +253,6 @@ class PatchTest(unittest.TestCase):
     except patch.UnsupportedPatchFormat:
       pass
 
-  def testInvalidFilePatchDiffSvn(self):
-    try:
-      patch.FilePatchDiff('svn_utils_test.txt', (
-        '--- svn_utils_test.txt2\n'
-        '+++ svn_utils_test.txt\n'
-        '@@ -3,6 +3,7 @@ bb\n'
-        'ccc\n'
-        'dd\n'
-        'e\n'
-        '+FOO!\n'
-        'ff\n'
-        'ggg\n'
-        'hh\n'),
-        [])
-      self.fail()
-    except patch.UnsupportedPatchFormat:
-      pass
-
   def testValidSvn(self):
     # pylint: disable=R0201
     # Method could be a function
@@ -364,6 +346,52 @@ class PatchTest(unittest.TestCase):
     patch.FilePatchDiff('pp', GIT_COPY, [])
     patch.FilePatchDiff('foo', GIT_NEW, [])
     self.assertTrue(True)
+
+  def testOnlyHeader(self):
+    p = patch.FilePatchDiff('file_a', '--- file_a\n+++ file_a\n', [])
+    self.assertTrue(p)
+
+  def testSmallest(self):
+    p = patch.FilePatchDiff(
+        'file_a', '--- file_a\n+++ file_a\n@@ -0,0 +1 @@\n+foo\n', [])
+    self.assertTrue(p)
+
+  def testInverted(self):
+    try:
+      patch.FilePatchDiff(
+        'file_a', '+++ file_a\n--- file_a\n@@ -0,0 +1 @@\n+foo\n', [])
+      self.fail()
+    except patch.UnsupportedPatchFormat:
+      pass
+
+  def testInvertedOnlyHeader(self):
+    try:
+      patch.FilePatchDiff('file_a', '+++ file_a\n--- file_a\n', [])
+      self.fail()
+    except patch.UnsupportedPatchFormat:
+      pass
+
+  def testRenameOnlyHeader(self):
+    p = patch.FilePatchDiff('file_b', '--- file_a\n+++ file_b\n', [])
+    self.assertTrue(p)
+
+  def testGitCopy(self):
+    diff = (
+        'diff --git a/wtf b/wtf2\n'
+        'similarity index 98%\n'
+        'copy from wtf\n'
+        'copy to wtf2\n'
+        'index 79fbaf3..3560689 100755\n'
+        '--- a/wtf\n'
+        '+++ b/wtf2\n'
+        '@@ -1,4 +1,4 @@\n'
+        '-#!/usr/bin/env python\n'
+        '+#!/usr/bin/env python1.3\n'
+        ' # Copyright (c) 2010 The Chromium Authors. All rights reserved.\n'
+        ' # blah blah blah as\n'
+        ' # found in the LICENSE file.\n')
+    p = patch.FilePatchDiff('wtf2', diff, [])
+    self.assertTrue(p)
 
 
 if __name__ == '__main__':

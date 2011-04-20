@@ -246,8 +246,14 @@ class FilePatchDiff(FilePatchBase):
       match = re.match(r'^--- ([^\t]+).*$', lines.pop(0))
       if not match:
         continue
-      if match.group(1) not in (self.filename, '/dev/null'):
-        self._fail('Unexpected diff: %s.' % match.group(1))
+      # For copy and renames, it's possible that the -- line doesn't match +++,
+      # so don't check match.group(1) to match self.filename or '/dev/null', it
+      # can be anything else.
+      # TODO(maruel): Handle rename/copy explicitly.
+      # if match.group(1) not in (self.filename, '/dev/null'):
+      #  self.source_file = match.group(1)
+      if not lines:
+        self._fail('Nothing after header.')
       match = re.match(r'^\+\+\+ ([^\t]+).*$', lines.pop(0))
       if not match:
         self._fail('Unexpected diff: --- not following +++.')

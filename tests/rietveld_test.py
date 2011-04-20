@@ -21,24 +21,16 @@ import rietveld
 
 
 class RietveldTest(unittest.TestCase):
-  def setUp(self):
-    super(RietveldTest, self).setUp()
-    self._rietveld_send = rietveld.Rietveld._send
-    rietveld.Rietveld._send = None
-
-  def tearDown(self):
-    super(RietveldTest, self).setUp()
-    rietveld.Rietveld._send = self._rietveld_send
-
   def test_get_patch_empty(self):
-    rietveld.Rietveld._send = lambda x, y, payload: '{}'
     r = rietveld.Rietveld('url', 'email', 'password')
+    r._send = lambda *args, **kwargs: '{}'
     patches = r.get_patch(123, 456)
     self.assertTrue(isinstance(patches, patch.PatchSet))
     self.assertEquals([], patches.patches)
 
   def test_get_patch_no_status(self):
-    rietveld.Rietveld._send = lambda x, y, payload: (
+    r = rietveld.Rietveld('url', 'email', 'password')
+    r._send = lambda *args, **kwargs: (
         '{'
         '  "files":'
         '    {'
@@ -47,7 +39,6 @@ class RietveldTest(unittest.TestCase):
         '        }'
         '    }'
         '}')
-    r = rietveld.Rietveld('url', 'email', 'password')
     try:
       r.get_patch(123, 456)
       self.fail()
@@ -68,8 +59,8 @@ class RietveldTest(unittest.TestCase):
         '        }'
         '    }'
         '}')
-    rietveld.Rietveld._send = lambda x, y, payload: output
     r = rietveld.Rietveld('url', 'email', 'password')
+    r._send = lambda *args, **kwargs: output
     patches = r.get_patch(123, 456)
     self.assertTrue(isinstance(patches, patch.PatchSet))
     self.assertEquals(1, len(patches.patches))
