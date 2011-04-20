@@ -360,6 +360,8 @@
         'widget/native_widget_delegate.h',
         'widget/widget.cc',
         'widget/widget.h',
+        'widget/widget_delegate.cc',
+        'widget/widget_delegate.h',
         'widget/widget_gtk.cc',
         'widget/widget_gtk.h',
         'widget/widget_win.cc',

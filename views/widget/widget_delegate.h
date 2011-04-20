@@ -17,21 +17,21 @@ class WidgetDelegate {
   // Called whenever the widget is activated or deactivated.
   // TODO(beng): This should be consolidated with
   //             WindowDelegate::OnWindowActivationChanged().
-  virtual void OnWidgetActivated(bool active) {}
+  virtual void OnWidgetActivated(bool active);
 
   // Called whenever the widget's position changes.
-  virtual void OnWidgetMove() {}
+  virtual void OnWidgetMove();
 
   // Called with the display changes (color depth or resolution).
-  virtual void OnDisplayChanged() {}
+  virtual void OnDisplayChanged();
 
   // Called when the work area (the desktop area minus task bars,
   // menu bars, etc.) changes in size.
-  virtual void OnWorkAreaChanged() {}
+  virtual void OnWorkAreaChanged();
 
   // Returns the view that should have the focus when the widget is shown.  If
   // NULL no view is focused.
-  virtual View* GetInitiallyFocusedView() { return NULL; }
+  virtual View* GetInitiallyFocusedView();
 
  protected:
   virtual ~WidgetDelegate() {}
