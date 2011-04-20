@@ -2,7 +2,7 @@
   var fileSystem = null;
 
   console.log("Requesting a filesystem...");
-  requestFileSystem(window.TEMPORARY, 100, getFileSystem, errorCallback);
+  webkitRequestFileSystem(window.TEMPORARY, 100, getFileSystem, errorCallback);
 
   function getFileSystem(fs) {
     fileSystem = fs;
