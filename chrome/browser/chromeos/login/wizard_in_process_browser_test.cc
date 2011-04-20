@@ -34,7 +34,7 @@ Browser* WizardInProcessBrowserTest::CreateBrowser(Profile* profile) {
 
 void WizardInProcessBrowserTest::CleanUpOnMainThread() {
   // LoginDisplayHost owns controllers and all windows.
-  delete host_;
+  MessageLoopForUI::current()->DeleteSoon(FROM_HERE,host_);
 
   // Observers and what not are notified after the views are deleted, which
   // happens after a delay (because they are contained in a WidgetGtk which
