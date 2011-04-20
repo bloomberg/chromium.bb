@@ -891,6 +891,7 @@
                   'files': [
                     'app/theme/google_chrome/app_canary.icns',
                     'installer/mac/internal/chrome_canary_dmg_dsstore',
+                    'installer/mac/internal/chrome_canary_dmg_icon.icns',
                     'installer/mac/internal/chrome_dmg_background.png',
                     'installer/mac/internal/chrome_dmg_dsstore',
                     'installer/mac/internal/chrome_dmg_icon.icns',
