@@ -1454,7 +1454,6 @@
    fun:_Z9TrashFuncRK8FilePath
    fun:_Z18DispatchToFunctionIPFvRK8FilePathES0_EvT_RK6Tuple1IT0_E
    fun:_ZN16RunnableFunctionIPFvRK8FilePathE6Tuple1IS0_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
 }
 {
    bug_77265_a
