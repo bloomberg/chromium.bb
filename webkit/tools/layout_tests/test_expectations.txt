@@ -27,3 +27,12 @@ BUGCASEQ WIN LINUX : editing/selection/select-from-textfield-outwards.html = IMA
 BUGCASEQ WIN LINUX : fast/forms/input-text-drag-down.html = IMAGE+TEXT
 BUGCASEQ MAC : fast/canvas/image-object-in-canvas.html = IMAGE
 
+BUGDPRANKE : fast/backgrounds/background-leakage.html = IMAGE+TEXT
+BUGDPRANKE : media/video-layer-crash.html = IMAGE
+BUGDPRANKE : media/video-transformed.html = IMAGE
+BUGDPRANKE : plugins/embed-attributes-style.html = IMAGE
+BUGDPRANKE : transforms/2d/hindi-rotated.html = IMAGE
+BUGDPRANKE : fast/borders/borderRadiusDotted06.html = IMAGE
+BUGDPRANKE : fast/multicol/client-rects.html = IMAGE
+
+
