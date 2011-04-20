@@ -31,7 +31,7 @@ BUGDPRANKE : fast/backgrounds/background-leakage.html = IMAGE+TEXT
 BUGDPRANKE : media/video-layer-crash.html = IMAGE
 BUGDPRANKE : media/video-transformed.html = IMAGE
 BUGDPRANKE : plugins/embed-attributes-style.html = IMAGE
-BUGDPRANKE : transforms/2d/hindi-rotated.html = IMAGE
+BUGDPRANKE : transforms/2d/hindi-rotated.html = IMAGE IMAGE+TEXT
 BUGDPRANKE : fast/borders/borderRadiusDotted06.html = IMAGE
 BUGDPRANKE : fast/multicol/client-rects.html = IMAGE
 BUGDPRANKE : fast/text/justification-padding-mid-word.html = TEXT
@@ -41,3 +41,7 @@ BUGDPRANKE WIN DEBUG : fast/css/text-overflow-ellipsis.html = CRASH
 BUGDPRANKE MAC DEBUG : transitions/cancel-transition.html = TEXT PASS
 BUGDPRANKE LINUX DEBUG : fast/css/getComputedStyle/getComputedStyle-relayout.html = CRASH
 
+BUGDPRANKE LINUX DEBUG : perf/array-nested-loop.html = TEXT TIMEOUT PASS
+BUGDPRANKE LINUX DEBUG : fast/dom/Node/mutation-blur.html = CRASH
+BUGDPRANKE MAC : svg/dom/SVGScriptElement/script-set-href.svg = TEXT PASS
+BUGDPRANKE WIN : media/video-zoom.html = IMAGE
