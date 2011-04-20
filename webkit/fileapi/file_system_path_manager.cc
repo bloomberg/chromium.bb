@@ -54,19 +54,19 @@ FileSystemPathManager::FileSystemPathManager(
 
 FileSystemPathManager::~FileSystemPathManager() {}
 
-void FileSystemPathManager::GetFileSystemRootPath(
+void FileSystemPathManager::ValidateFileSystemRootAndGetURL(
     const GURL& origin_url, fileapi::FileSystemType type,
     bool create, GetRootPathCallback* callback_ptr) {
 
   switch (type) {
   case kFileSystemTypeTemporary:
   case kFileSystemTypePersistent:
-    sandbox_provider_->GetFileSystemRootPath(
+    sandbox_provider_->ValidateFileSystemRootAndGetURL(
         origin_url, type, create, callback_ptr);
     break;
   case kFileSystemTypeExternal:
     if (external_provider_.get()) {
-      external_provider_->GetFileSystemRootPath(
+      external_provider_->ValidateFileSystemRootAndGetURL(
           origin_url, type, create, callback_ptr);
     } else {
       callback_ptr->Run(false, FilePath(), std::string());
@@ -79,18 +79,18 @@ void FileSystemPathManager::GetFileSystemRootPath(
   }
 }
 
-FilePath FileSystemPathManager::GetFileSystemRootPathOnFileThread(
+FilePath FileSystemPathManager::ValidateFileSystemRootAndGetPathOnFileThread(
     const GURL& origin_url, FileSystemType type, const FilePath& virtual_path,
     bool create) {
   switch (type) {
   case kFileSystemTypeTemporary:
   case kFileSystemTypePersistent:
-    return sandbox_provider_->GetFileSystemRootPathOnFileThread(
+    return sandbox_provider_->ValidateFileSystemRootAndGetPathOnFileThread(
         origin_url, type, virtual_path, create);
     break;
   case kFileSystemTypeExternal:
     return external_provider_.get() ?
-        external_provider_->GetFileSystemRootPathOnFileThread(
+        external_provider_->ValidateFileSystemRootAndGetPathOnFileThread(
            origin_url, type, virtual_path, create) :
         FilePath();
   case kFileSystemTypeUnknown:

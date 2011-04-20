@@ -31,6 +31,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 
 namespace fileapi {
@@ -55,6 +56,21 @@ void FillBuffer(char* buffer, size_t len) {
   }
 }
 
+class TestSpecialStoragePolicy : public quota::SpecialStoragePolicy {
+ public:
+  virtual bool IsStorageProtected(const GURL& origin) {
+    return false;
+  }
+
+  virtual bool IsStorageUnlimited(const GURL& origin) {
+    return true;
+  }
+
+  virtual bool IsFileHandler(const std::string& extension_id) {
+    return true;
+  }
+};
+
 class FileSystemURLRequestJobTest : public testing::Test {
  protected:
   FileSystemURLRequestJobTest()
@@ -65,13 +81,21 @@ class FileSystemURLRequestJobTest : public testing::Test {
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
+    special_storage_policy_ = new TestSpecialStoragePolicy();
     // We use the main thread so that we can get the root path synchronously.
     // TODO(adamk): Run this on the FILE thread we've created as well.
-    path_manager_.reset(new FileSystemPathManager(
-        base::MessageLoopProxy::CreateForCurrentThread(),
-        temp_dir_.path(), NULL, false, false));
+    file_system_context_ =
+        new FileSystemContext(
+            base::MessageLoopProxy::CreateForCurrentThread(),
+            base::MessageLoopProxy::CreateForCurrentThread(),
+            special_storage_policy_,
+            FilePath(), false /* is_incognito */,
+            false, true,
+            new FileSystemPathManager(
+                base::MessageLoopProxy::CreateForCurrentThread(),
+                temp_dir_.path(), NULL, false, false));
 
-    path_manager_->GetFileSystemRootPath(
+    file_system_context_->path_manager()->ValidateFileSystemRootAndGetURL(
         GURL("http://remote/"), kFileSystemTypeTemporary, true,  // create
         callback_factory_.NewCallback(
             &FileSystemURLRequestJobTest::OnGetRootPath));
@@ -107,7 +131,9 @@ class FileSystemURLRequestJobTest : public testing::Test {
     request_.reset(new net::URLRequest(url, delegate_.get()));
     if (headers)
       request_->SetExtraRequestHeaders(*headers);
-    job_ = new FileSystemURLRequestJob(request_.get(), path_manager_.get(),
+    job_ = new FileSystemURLRequestJob(
+        request_.get(),
+        file_system_context_.get(),
         base::MessageLoopProxy::CreateForCurrentThread());
 
     request_->Start();
@@ -138,8 +164,8 @@ class FileSystemURLRequestJobTest : public testing::Test {
   FilePath origin_root_path_;
   scoped_ptr<net::URLRequest> request_;
   scoped_ptr<TestDelegate> delegate_;
-  scoped_ptr<FileSystemPathManager> path_manager_;
-
+  scoped_refptr<TestSpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<FileSystemContext> file_system_context_;
   MessageLoop message_loop_;
   base::ScopedCallbackFactory<FileSystemURLRequestJobTest> callback_factory_;
 

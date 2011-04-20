@@ -19,6 +19,8 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
+#include "webkit/fileapi/file_system_callback_dispatcher.h"
+#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_util.h"
 
@@ -29,27 +31,15 @@ using net::URLRequestStatus;
 namespace fileapi {
 
 FileSystemDirURLRequestJob::FileSystemDirURLRequestJob(
-    URLRequest* request, FileSystemPathManager* path_manager,
+    URLRequest* request, FileSystemContext* file_system_context,
     scoped_refptr<base::MessageLoopProxy> file_thread_proxy)
-    : URLRequestJob(request),
-      path_manager_(path_manager),
+    : FileSystemURLRequestJobBase(request, file_system_context,
+                                  file_thread_proxy),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
-      file_thread_proxy_(file_thread_proxy) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {
 }
 
 FileSystemDirURLRequestJob::~FileSystemDirURLRequestJob() {
-}
-
-void FileSystemDirURLRequestJob::Start() {
-  MessageLoop::current()->PostTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &FileSystemDirURLRequestJob::StartAsync));
-}
-
-void FileSystemDirURLRequestJob::Kill() {
-  URLRequestJob::Kill();
-  callback_factory_.RevokeAll();
 }
 
 bool FileSystemDirURLRequestJob::ReadRawData(net::IOBuffer* dest, int dest_size,
@@ -64,6 +54,25 @@ bool FileSystemDirURLRequestJob::ReadRawData(net::IOBuffer* dest, int dest_size,
   return true;
 }
 
+void FileSystemDirURLRequestJob::Start() {
+  MessageLoop::current()->PostTask(FROM_HERE,
+      method_factory_.NewRunnableMethod(
+          &FileSystemURLRequestJobBase::StartAsync));
+}
+
+void FileSystemDirURLRequestJob::Kill() {
+  URLRequestJob::Kill();
+  callback_factory_.RevokeAll();
+}
+
+void FileSystemDirURLRequestJob::DidGetLocalPath(
+    const FilePath& local_path) {
+  absolute_file_path_ = local_path;
+  base::FileUtilProxy::ReadDirectory(file_thread_proxy_, absolute_file_path_,
+      callback_factory_.NewCallback(
+          &FileSystemDirURLRequestJob::DidReadDirectory));
+}
+
 bool FileSystemDirURLRequestJob::GetMimeType(std::string* mime_type) const {
   *mime_type = "text/html";
   return true;
@@ -72,39 +81,6 @@ bool FileSystemDirURLRequestJob::GetMimeType(std::string* mime_type) const {
 bool FileSystemDirURLRequestJob::GetCharset(std::string* charset) {
   *charset = "utf-8";
   return true;
-}
-
-void FileSystemDirURLRequestJob::StartAsync() {
-  GURL origin_url;
-  FileSystemType type;
-  if (!CrackFileSystemURL(request_->url(), &origin_url, &type,
-                          &relative_dir_path_)) {
-    NotifyFailed(net::ERR_INVALID_URL);
-    return;
-  }
-
-  path_manager_->GetFileSystemRootPath(
-      origin_url, type, false,  // create
-      callback_factory_.NewCallback(
-          &FileSystemDirURLRequestJob::DidGetRootPath));
-}
-
-void FileSystemDirURLRequestJob::DidGetRootPath(bool success,
-                                                const FilePath& root_path,
-                                                const std::string& name) {
-  if (!success) {
-    NotifyFailed(net::ERR_FILE_NOT_FOUND);
-    return;
-  }
-
-  absolute_dir_path_ = root_path.Append(relative_dir_path_);
-
-  // We assume it's a directory if we've gotten here: either the path
-  // ends with '/', or FileSystemDirURLRequestJob already statted it and
-  // found it to be a directory.
-  base::FileUtilProxy::ReadDirectory(file_thread_proxy_, absolute_dir_path_,
-      callback_factory_.NewCallback(
-          &FileSystemDirURLRequestJob::DidReadDirectory));
 }
 
 void FileSystemDirURLRequestJob::DidReadDirectory(
@@ -116,10 +92,10 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
   }
 
 #if defined(OS_WIN)
-  const string16& title = relative_dir_path_.value();
+  const string16& title = relative_file_path_.value();
 #elif defined(OS_POSIX)
   const string16& title = WideToUTF16(
-      base::SysNativeMBToWide(relative_dir_path_.value()));
+      base::SysNativeMBToWide(relative_file_path_.value()));
 #endif
   data_.append(net::GetDirectoryListingHeader(ASCIIToUTF16("/") + title));
 
@@ -138,10 +114,6 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
 
   set_expected_content_size(data_.size());
   NotifyHeadersComplete();
-}
-
-void FileSystemDirURLRequestJob::NotifyFailed(int rv) {
-  NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, rv));
 }
 
 }  // namespace fileapi

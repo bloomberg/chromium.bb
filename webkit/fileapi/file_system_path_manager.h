@@ -55,15 +55,15 @@ class FileSystemPathManager {
   // Retrieves the root path for the given |origin_url| and |type|, and
   // calls the given |callback| with the root path and name.
   // If |create| is true this also creates the directory if it doesn't exist.
-  virtual void GetFileSystemRootPath(const GURL& origin_url,
-                             FileSystemType type,
-                             bool create,
-                             FileSystemPathManager::GetRootPathCallback*
-                                 callback);
+  virtual void ValidateFileSystemRootAndGetURL(
+     const GURL& origin_url,
+     FileSystemType type,
+     bool create,
+     FileSystemPathManager::GetRootPathCallback* callback);
 
   // Like GetFileSystemRootPath, but synchronous, and can be called only while
   // running on the file thread.
-  virtual FilePath GetFileSystemRootPathOnFileThread(
+  virtual FilePath ValidateFileSystemRootAndGetPathOnFileThread(
       const GURL& origin_url,
       FileSystemType type,
       const FilePath& virtual_path,

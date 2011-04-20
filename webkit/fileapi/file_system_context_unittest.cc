@@ -47,7 +47,7 @@ scoped_refptr<FileSystemContext> NewFileSystemContext(
                                base::MessageLoopProxy::CreateForCurrentThread(),
                                special_storage_policy,
                                FilePath(), false /* is_incognito */,
-                               allow_file_access, unlimited_quota);
+                               allow_file_access, unlimited_quota, NULL);
 }
 
 }  // anonymous namespace

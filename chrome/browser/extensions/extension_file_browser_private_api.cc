@@ -195,6 +195,10 @@ class LocalFileSystemCallbackDispatcher
     NOTREACHED();
   }
 
+  virtual void DidGetLocalPath(const FilePath& local_path) {
+    NOTREACHED();
+  }
+
   virtual void DidReadMetadata(const base::PlatformFileInfo& info,
                                const FilePath& unused) OVERRIDE {
     NOTREACHED();
@@ -358,7 +362,7 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
     // manifest instead of the default extension icon.
     GURL icon =
         ExtensionIconSource::GetIconURL(extension,
-                                        Extension::EXTENSION_ICON_SMALLISH,
+                                        Extension::EXTENSION_ICON_BITTY,
                                         ExtensionIconSet::MATCH_BIGGER,
                                         false);     // grayscale
     task->SetString("iconUrl", icon.spec());
@@ -393,6 +397,10 @@ class ExecuteTasksFileSystemCallbackDispatcher
 
   // fileapi::FileSystemCallbackDispatcher overrides.
   virtual void DidSucceed() OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidGetLocalPath(const FilePath& local_path) {
     NOTREACHED();
   }
 
@@ -477,11 +485,12 @@ class ExecuteTasksFileSystemCallbackDispatcher
       return false;
     }
 
-    FilePath root_path = path_manager->GetFileSystemRootPathOnFileThread(
-        file_origin_url,
-        fileapi::kFileSystemTypeExternal,
-        virtual_path,
-        false);     // create
+    FilePath root_path =
+        path_manager->ValidateFileSystemRootAndGetPathOnFileThread(
+          file_origin_url,
+          fileapi::kFileSystemTypeExternal,
+          virtual_path,
+          false);     // create
     FilePath final_file_path = root_path.Append(virtual_path);
 
     // Check if this file system entry exists first.
@@ -751,7 +760,7 @@ void FileDialogFunction::GetLocalPathsOnFileThread(const UrlList& file_urls) {
       NOTREACHED();
       continue;
     }
-    FilePath root = path_manager->GetFileSystemRootPathOnFileThread(
+    FilePath root = path_manager->ValidateFileSystemRootAndGetPathOnFileThread(
         origin_url,
         fileapi::kFileSystemTypeExternal,
         FilePath(virtual_path),

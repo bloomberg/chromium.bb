@@ -17,6 +17,7 @@
 #include "net/base/completion_callback.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
+#include "webkit/fileapi/file_system_url_request_job_base.h"
 
 class GURL;
 
@@ -25,13 +26,13 @@ class FileStream;
 }
 
 namespace fileapi {
-class FileSystemPathManager;
+class FileSystemContext;
 
 // A request job that handles reading filesystem: URLs
-class FileSystemURLRequestJob : public net::URLRequestJob {
+class FileSystemURLRequestJob : public FileSystemURLRequestJobBase {
  public:
   FileSystemURLRequestJob(
-      net::URLRequest* request, FileSystemPathManager* path_manager,
+      net::URLRequest* request, FileSystemContext* file_system_context,
       scoped_refptr<base::MessageLoopProxy> file_thread_proxy);
 
   // URLRequestJob methods:
@@ -46,35 +47,27 @@ class FileSystemURLRequestJob : public net::URLRequestJob {
   // FilterContext methods (via URLRequestJob):
   virtual bool GetMimeType(std::string* mime_type) const;
 
+ protected:
+  // FileSystemURLRequestJobBase methods.
+  virtual void DidGetLocalPath(const FilePath& local_path);
+
  private:
   virtual ~FileSystemURLRequestJob();
 
-  void StartAsync();
-  void DidGetRootPath(bool success, const FilePath& root_path,
-                      const std::string& name);
   void DidResolve(base::PlatformFileError error_code,
                   const base::PlatformFileInfo& file_info);
   void DidOpen(base::PlatformFileError error_code,
                base::PassPlatformFile file, bool created);
   void DidRead(int result);
 
-  void NotifyFailed(int rv);
-
-  FilePath relative_file_path_;
-  FilePath absolute_file_path_;
-  FileSystemPathManager* const path_manager_;
-
+  ScopedRunnableMethodFactory<FileSystemURLRequestJob> method_factory_;
+  base::ScopedCallbackFactory<FileSystemURLRequestJob> callback_factory_;
   net::CompletionCallbackImpl<FileSystemURLRequestJob> io_callback_;
   scoped_ptr<net::FileStream> stream_;
   bool is_directory_;
   scoped_ptr<net::HttpResponseInfo> response_info_;
-
-  net::HttpByteRange byte_range_;
   int64 remaining_bytes_;
-
-  ScopedRunnableMethodFactory<FileSystemURLRequestJob> method_factory_;
-  base::ScopedCallbackFactory<FileSystemURLRequestJob> callback_factory_;
-  scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
+  net::HttpByteRange byte_range_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemURLRequestJob);
 };

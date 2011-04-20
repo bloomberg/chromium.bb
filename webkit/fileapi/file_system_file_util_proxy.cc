@@ -192,6 +192,37 @@ class RelayEnsureFileExists : public MessageLoopRelay {
   bool created_;
 };
 
+
+class RelayGetLocalPath : public MessageLoopRelay {
+ public:
+  RelayGetLocalPath(
+      const fileapi::FileSystemOperationContext& context,
+      const FilePath& virtual_path,
+      fileapi::FileSystemFileUtilProxy::GetLocalPathCallback* callback)
+      : MessageLoopRelay(context),
+        callback_(callback),
+        virtual_path_(virtual_path) {
+    DCHECK(callback);
+  }
+
+ protected:
+  virtual void RunWork() {
+    set_error_code(
+        file_system_file_util()->GetLocalFilePath(
+            context(), virtual_path_, &local_path_));
+  }
+
+  virtual void RunCallback() {
+    callback_->Run(error_code(), local_path_);
+    delete callback_;
+  }
+
+ private:
+  fileapi::FileSystemFileUtilProxy::GetLocalPathCallback* callback_;
+  FilePath virtual_path_;
+  FilePath local_path_;
+};
+
 class RelayGetFileInfo : public MessageLoopRelay {
  public:
   RelayGetFileInfo(
@@ -437,8 +468,17 @@ bool FileSystemFileUtilProxy::EnsureFileExists(
       context, message_loop_proxy, file_path, callback));
 }
 
-// Retrieves the information about a file. It is invalid to pass NULL for the
-// callback.
+// static
+bool FileSystemFileUtilProxy::GetLocalPath(
+    const FileSystemOperationContext& context,
+    scoped_refptr<MessageLoopProxy> message_loop_proxy,
+    const FilePath& virtual_path,
+    GetLocalPathCallback* callback) {
+  return Start(FROM_HERE, message_loop_proxy,
+               new RelayGetLocalPath(context, virtual_path, callback));
+}
+
+// static
 bool FileSystemFileUtilProxy::GetFileInfo(
     const FileSystemOperationContext& context,
     scoped_refptr<MessageLoopProxy> message_loop_proxy,

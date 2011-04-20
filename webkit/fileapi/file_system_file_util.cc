@@ -61,6 +61,14 @@ PlatformFileError FileSystemFileUtil::EnsureFileExists(
   return error_code;
 }
 
+PlatformFileError FileSystemFileUtil::GetLocalFilePath(
+    FileSystemOperationContext* context,
+    const FilePath& virtual_path,
+    FilePath* local_path) {
+  *local_path = virtual_path;
+  return base::PLATFORM_FILE_OK;
+}
+
 PlatformFileError FileSystemFileUtil::GetFileInfo(
     FileSystemOperationContext* unused,
     const FilePath& file_path,

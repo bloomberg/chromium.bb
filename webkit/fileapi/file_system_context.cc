@@ -20,17 +20,21 @@ FileSystemContext::FileSystemContext(
     const FilePath& profile_path,
     bool is_incognito,
     bool allow_file_access,
-    bool unlimited_quota)
+    bool unlimited_quota,
+    FileSystemPathManager* path_manager)
     : file_message_loop_(file_message_loop),
       io_message_loop_(io_message_loop),
       special_storage_policy_(special_storage_policy),
       allow_file_access_from_files_(allow_file_access),
       unlimited_quota_(unlimited_quota),
-      path_manager_(new FileSystemPathManager(
-          file_message_loop, profile_path, special_storage_policy, is_incognito,
-          allow_file_access)),
+      path_manager_(path_manager),
       usage_tracker_(new FileSystemUsageTracker(
           file_message_loop, profile_path, is_incognito)) {
+  if (!path_manager) {
+    path_manager_.reset(new FileSystemPathManager(
+              file_message_loop, profile_path, special_storage_policy,
+              is_incognito, allow_file_access));
+  }
 }
 
 FileSystemContext::~FileSystemContext() {

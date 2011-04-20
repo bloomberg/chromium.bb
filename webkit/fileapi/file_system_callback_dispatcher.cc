@@ -17,4 +17,8 @@ void FileSystemCallbackDispatcher::DidOpenFile(
   NOTREACHED();
 }
 
+void FileSystemCallbackDispatcher::DidGetLocalPath(const FilePath& local_path) {
+  NOTREACHED();
+}
+
 }  // namespace fileapi

@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/stringprintf.h"
+#include "base/synchronization/lock.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
@@ -26,11 +27,12 @@ typedef struct {
   const char* web_root_path;
 } FixedExposedPaths;
 
+const char kChromeUIScheme[] = "chrome";
+
 // Top level file system elements exposed in FileAPI in ChromeOS:
 FixedExposedPaths fixed_exposed_paths[] = {
     {"/home/chronos/user/", "Downloads"},
     {"/",                   "media"},
-    {"/",                   "tmp"},
 };
 
 CrosMountPointProvider::CrosMountPointProvider(
@@ -55,43 +57,49 @@ std::string GetOriginIdentifierFromURL(
   return web_security_origin.databaseIdentifier().utf8();
 }
 
-void CrosMountPointProvider::GetFileSystemRootPath(
+bool CrosMountPointProvider::GetRootForVirtualPath(
+    const FilePath& virtual_path, FilePath* root_path) {
+  std::vector<FilePath::StringType> components;
+  virtual_path.GetComponents(&components);
+  if (components.size() < 1) {
+    return false;
+  }
+
+  base::AutoLock locker(lock_);
+  // Check if this root mount point is exposed by this provider.
+  MountPointMap::iterator iter = mount_point_map_.find(components[0]);
+  if (iter == mount_point_map_.end()) {
+    return false;
+  }
+  *root_path = iter->second;
+  return true;
+}
+
+void CrosMountPointProvider::ValidateFileSystemRootAndGetURL(
     const GURL& origin_url,
     fileapi::FileSystemType type,
     bool create,
     fileapi::FileSystemPathManager::GetRootPathCallback* callback_ptr) {
   DCHECK(type == fileapi::kFileSystemTypeExternal);
-
   std::string name(GetOriginIdentifierFromURL(origin_url));
   name += ':';
   name += fileapi::kExternalName;
-
-  FilePath root_path = FilePath(fileapi::kExternalDir);
-  callback_ptr->Run(!root_path.empty(), root_path, name);
+  FilePath root_path;
+  root_path = FilePath(fileapi::kExternalDir);
+  callback_ptr->Run(true, root_path, name);
 }
 
-// Like GetFileSystemRootPath, but synchronous, and can be called only while
-// running on the file thread.
-FilePath CrosMountPointProvider::GetFileSystemRootPathOnFileThread(
+FilePath CrosMountPointProvider::ValidateFileSystemRootAndGetPathOnFileThread(
     const GURL& origin_url,
     fileapi::FileSystemType type,
     const FilePath& virtual_path,
     bool create) {
   DCHECK(type == fileapi::kFileSystemTypeExternal);
-
-  std::vector<FilePath::StringType> components;
-  virtual_path.GetComponents(&components);
-  if (components.size() < 1) {
+  FilePath root_path;
+  if (!GetRootForVirtualPath(virtual_path, &root_path))
     return FilePath();
-  }
 
-  // Check if this root directory is exposed by this provider.
-  MountPointMap::iterator iter = mount_point_map_.find(components[0]);
-  if (iter == mount_point_map_.end()) {
-    return FilePath();
-  }
-
-  return iter->second;
+  return root_path;
 }
 
 // TODO(zelidrag): Share this code with SandboxMountPointProvider impl.
@@ -104,12 +112,29 @@ bool CrosMountPointProvider::IsAccessAllowed(const GURL& origin_url,
                                              const FilePath& virtual_path) {
   if (type != fileapi::kFileSystemTypeExternal)
     return false;
+
+  // Permit access to mount points from internal WebUI.
+  if (origin_url.SchemeIs(kChromeUIScheme))
+    return true;
+
   std::string extension_id = origin_url.host();
   // Check first to make sure this extension has fileBrowserHander permissions.
   if (!special_storage_policy_->IsFileHandler(extension_id))
     return false;
+
   return file_access_permissions_->HasAccessPermission(extension_id,
                                                        virtual_path);
+}
+
+void CrosMountPointProvider::AddMountPoint(FilePath mount_point) {
+  base::AutoLock locker(lock_);
+  mount_point_map_.insert(std::pair<std::string, FilePath>(
+      mount_point.BaseName().value(), mount_point.DirName()));
+}
+
+void CrosMountPointProvider::RemoveMountPoint(FilePath mount_point) {
+  base::AutoLock locker(lock_);
+  mount_point_map_.erase(mount_point.BaseName().value());
 }
 
 void CrosMountPointProvider::GrantFullAccessToExtension(

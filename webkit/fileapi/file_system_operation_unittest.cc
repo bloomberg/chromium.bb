@@ -4,14 +4,19 @@
 
 #include "webkit/fileapi/file_system_operation.h"
 
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
+#include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
+#include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_operation.h"
+#include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/file_system_util.h"
 
 namespace fileapi {
 
@@ -39,6 +44,8 @@ class FileSystemOperationTest : public testing::Test {
 
   FileSystemOperation* operation();
 
+  void set_local_path(const FilePath& path) { local_path_ = path; }
+  const FilePath& local_path() const { return local_path_; }
   void set_status(int status) { status_ = status; }
   int status() const { return status_; }
   void set_info(const base::PlatformFileInfo& info) { info_ = info; }
@@ -70,6 +77,7 @@ class FileSystemOperationTest : public testing::Test {
   int status_;
   base::PlatformFileInfo info_;
   FilePath path_;
+  FilePath local_path_;
   std::vector<base::FileUtilProxy::Entry> entries_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationTest);
@@ -84,6 +92,11 @@ class MockDispatcher : public FileSystemCallbackDispatcher {
   }
 
   virtual void DidSucceed() {
+    test_->set_status(kFileOperationSucceeded);
+  }
+
+  virtual void DidGetLocalPath(const FilePath& local_path) {
+    test_->set_local_path(local_path);
     test_->set_status(kFileOperationSucceeded);
   }
 
@@ -126,6 +139,7 @@ FileSystemOperation* FileSystemOperationTest::operation() {
   GURL origin_url("fake://fake.foo/");
   operation->file_system_operation_context()->set_src_origin_url(origin_url);
   operation->file_system_operation_context()->set_dest_origin_url(origin_url);
+
   return operation;
 }
 
@@ -608,6 +622,22 @@ TEST_F(FileSystemOperationTest, TestExistsAndMetadataSuccess) {
   EXPECT_EQ(kFileOperationSucceeded, status());
   EXPECT_FALSE(info().is_directory);
   EXPECT_EQ(file, path());
+}
+
+TEST_F(FileSystemOperationTest, TestGetLocalFilePathSuccess) {
+  ScopedTempDir dir;
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  operation()->GetLocalPath(URLForPath(dir.path()));
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kFileOperationSucceeded, status());
+  EXPECT_EQ(local_path().value(), dir.path().value());
+
+  FilePath file;
+  file_util::CreateTemporaryFileInDir(dir.path(), &file);
+  operation()->GetLocalPath(URLForPath(file));
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kFileOperationSucceeded, status());
+  EXPECT_EQ(local_path().value(), file.value());
 }
 
 TEST_F(FileSystemOperationTest, TestTypeMismatchErrors) {

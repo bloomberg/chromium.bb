@@ -127,12 +127,12 @@ net::URLRequestJob* FileSystemURLRequestJobFactory(net::URLRequest* request,
   if (!path.empty() && path[path.size() - 1] == '/') {
     return new fileapi::FileSystemDirURLRequestJob(
         request,
-        fs_context->path_manager(),
+        fs_context,
         SimpleResourceLoaderBridge::GetIoThread());
   }
   return new fileapi::FileSystemURLRequestJob(
       request,
-      fs_context->path_manager(),
+      fs_context,
       SimpleResourceLoaderBridge::GetIoThread());
 }
 

@@ -29,7 +29,7 @@ class FileSystemMountPointProvider {
   // Retrieves the root path for the given |origin_url| and |type|, and
   // calls the given |callback| with the root path and name.
   // If |create| is true this also creates the directory if it doesn't exist.
-  virtual void GetFileSystemRootPath(
+  virtual void ValidateFileSystemRootAndGetURL(
       const GURL& origin_url,
       FileSystemType type,
       bool create,
@@ -37,7 +37,7 @@ class FileSystemMountPointProvider {
 
   // Like GetFileSystemRootPath, but synchronous, and can be called only while
   // running on the file thread.
-  virtual FilePath GetFileSystemRootPathOnFileThread(
+  virtual FilePath ValidateFileSystemRootAndGetPathOnFileThread(
       const GURL& origin_url,
       FileSystemType type,
       const FilePath& virtual_path,
@@ -67,6 +67,10 @@ class ExternalFileSystemMountPointProvider
   // Revoke file access from extension identified with |extension_id|.
   virtual void RevokeAccessForExtension(
         const std::string& extension_id) = 0;
+  // Adds a new mount point.
+  virtual void AddMountPoint(FilePath mount_point) = 0;
+  // Remove a mount point.
+  virtual void RemoveMountPoint(FilePath mount_point)  = 0;
 };
 
 }  // namespace fileapi

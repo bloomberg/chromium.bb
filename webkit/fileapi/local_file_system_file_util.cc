@@ -44,6 +44,20 @@ PlatformFileError LocalFileSystemFileUtil::EnsureFileExists(
       context, local_path, created);
 }
 
+PlatformFileError LocalFileSystemFileUtil::GetLocalFilePath(
+    FileSystemOperationContext* context,
+    const FilePath& virtual_path,
+    FilePath* local_path) {
+  FilePath path =
+      GetLocalPath(context, context->src_origin_url(), context->src_type(),
+                   virtual_path);
+  if (path.empty())
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+
+  *local_path = path;
+  return base::PLATFORM_FILE_OK;
+}
+
 PlatformFileError LocalFileSystemFileUtil::GetFileInfo(
     FileSystemOperationContext* context,
     const FilePath& file_path,
@@ -170,7 +184,8 @@ FilePath LocalFileSystemFileUtil::GetLocalPath(
     FileSystemType type,
     const FilePath& virtual_path) {
   FilePath root = context->file_system_context()->path_manager()->
-      GetFileSystemRootPathOnFileThread(origin_url, type, virtual_path, false);
+      ValidateFileSystemRootAndGetPathOnFileThread(origin_url, type,
+          virtual_path, false);
   if (root.empty())
     return FilePath();
   return root.Append(virtual_path);

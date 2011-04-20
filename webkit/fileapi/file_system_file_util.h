@@ -13,6 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/platform_file.h"
 #include "base/tracked_objects.h"
+#include "webkit/fileapi/file_system_types.h"
 
 namespace base {
 struct PlatformFileInfo;
@@ -24,7 +25,6 @@ namespace fileapi {
 
 using base::PlatformFile;
 using base::PlatformFileError;
-
 class FileSystemOperationContext;
 
 // A large part of this implementation is taken from base::FileUtilProxy.
@@ -63,6 +63,14 @@ class FileSystemFileUtil {
   virtual PlatformFileError EnsureFileExists(
       FileSystemOperationContext* context,
       const FilePath& file_path, bool* created);
+
+  // Maps |virtual_path| given |context| into |local_path| which represents
+  // physical file location on the host OS. This may not always make sense for
+  // all subclasses.
+  virtual PlatformFileError GetLocalFilePath(
+      FileSystemOperationContext* context,
+      const FilePath& virtual_path,
+      FilePath* local_path);
 
   // Retrieves the information about a file.  It is invalid to pass NULL for the
   // callback.

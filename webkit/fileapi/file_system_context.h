@@ -37,7 +37,8 @@ class FileSystemContext
       const FilePath& profile_path,
       bool is_incognito,
       bool allow_file_access_from_files,
-      bool unlimited_quota);
+      bool unlimited_quota,
+      FileSystemPathManager* path_manager);
   ~FileSystemContext();
 
   // This method can be called on any thread.

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "base/synchronization/lock.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/quota/special_storage_policy.h"
 
@@ -29,12 +30,12 @@ class CrosMountPointProvider
   virtual bool IsAccessAllowed(const GURL& origin_url,
                                fileapi::FileSystemType type,
                                const FilePath& virtual_path) OVERRIDE;
-  virtual void GetFileSystemRootPath(
+  virtual void ValidateFileSystemRootAndGetURL(
       const GURL& origin_url,
       fileapi::FileSystemType type,
       bool create,
       fileapi::FileSystemPathManager::GetRootPathCallback* callback) OVERRIDE;
-  virtual FilePath GetFileSystemRootPathOnFileThread(
+  virtual FilePath ValidateFileSystemRootAndGetPathOnFileThread(
       const GURL& origin_url,
       fileapi::FileSystemType type,
       const FilePath& virtual_path,
@@ -47,12 +48,20 @@ class CrosMountPointProvider
       const std::string& extension_id) OVERRIDE;
   virtual void GrantFileAccessToExtension(
       const std::string& extension_id, const FilePath& virtual_path) OVERRIDE;
-  void RevokeAccessForExtension(const std::string& extension_id) OVERRIDE;
+  virtual void RevokeAccessForExtension(
+      const std::string& extension_id) OVERRIDE;
+  virtual void AddMountPoint(FilePath mount_point) OVERRIDE;
+  virtual void RemoveMountPoint(FilePath mount_point) OVERRIDE;
 
  private:
   class GetFileSystemRootPathTask;
   typedef std::map<std::string, FilePath> MountPointMap;
 
+  // Gives the real file system's |root_path| for given |virtual_path|. Returns
+  // false when |virtual_path| cannot be mapped to the real file system.
+  bool GetRootForVirtualPath(const FilePath& virtual_path, FilePath* root_path);
+
+  base::Lock lock_;  // Synchronize all access to path_map_.
   MountPointMap mount_point_map_;
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
   scoped_ptr<FileAccessPermissions> file_access_permissions_;

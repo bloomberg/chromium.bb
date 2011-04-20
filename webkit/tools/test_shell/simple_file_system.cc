@@ -64,6 +64,11 @@ class SimpleFileSystemCallbackDispatcher
     callbacks_->didSucceed();
   }
 
+  // Callback to report information for a file.
+  virtual void DidGetLocalPath(const FilePath& local_path) {
+    NOTREACHED();
+  }
+
   virtual void DidReadMetadata(const base::PlatformFileInfo& info,
       const FilePath& platform_path) {
     DCHECK(file_system_);
@@ -130,7 +135,8 @@ SimpleFileSystem::SimpleFileSystem() {
         file_system_dir_.path(),
         false /* incognito */,
         true /* allow_file_access */,
-        true /* unlimited_quota */);
+        true /* unlimited_quota */,
+        NULL);
   } else {
     LOG(WARNING) << "Failed to create a temp dir for the filesystem."
                     "FileSystem feature will be disabled.";

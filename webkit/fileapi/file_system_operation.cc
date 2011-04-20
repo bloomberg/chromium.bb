@@ -60,7 +60,7 @@ void FileSystemOperation::OpenFileSystem(
   // create an unpredictable directory name.  Without that, we could lazily
   // create the root later on the first filesystem write operation, and just
   // return GetFileSystemRootURI() here.
-  file_system_context()->path_manager()->GetFileSystemRootPath(
+  file_system_context()->path_manager()->ValidateFileSystemRootAndGetURL(
       origin_url, type, create,
       callback_factory_.NewCallback(&FileSystemOperation::DidGetRootPath));
 }
@@ -230,6 +230,27 @@ void FileSystemOperation::FileExists(const GURL& path) {
       file_system_operation_context_,
       proxy_, virtual_path, callback_factory_.NewCallback(
           &FileSystemOperation::DidFileExists));
+}
+
+void FileSystemOperation::GetLocalPath(const GURL& path) {
+#ifndef NDEBUG
+  DCHECK(kOperationNone == pending_operation_);
+  pending_operation_ = kOperationGetLocalPath;
+#endif
+
+  FilePath virtual_path;
+  GURL origin_url;
+  FileSystemType type;
+  if (!VerifyFileSystemPathForRead(path, &origin_url, &type, &virtual_path)) {
+    delete this;
+    return;
+  }
+  file_system_operation_context_.set_src_origin_url(origin_url);
+  file_system_operation_context_.set_src_type(type);
+  FileSystemFileUtilProxy::GetLocalPath(
+      file_system_operation_context_,
+      proxy_, virtual_path, callback_factory_.NewCallback(
+          &FileSystemOperation::DidGetLocalPath));
 }
 
 void FileSystemOperation::GetMetadata(const GURL& path) {
@@ -531,6 +552,16 @@ void FileSystemOperation::DidFileExists(
   delete this;
 }
 
+void FileSystemOperation::DidGetLocalPath(
+    base::PlatformFileError rv,
+    const FilePath& local_path) {
+  if (rv == base::PLATFORM_FILE_OK)
+    dispatcher_->DidGetLocalPath(local_path);
+  else
+    dispatcher_->DidFail(rv);
+  delete this;
+}
+
 void FileSystemOperation::DidGetMetadata(
     base::PlatformFileError rv,
     const base::PlatformFileInfo& file_info,
@@ -623,7 +654,7 @@ bool FileSystemOperation::VerifyFileSystemPathForRead(
   // We may want do more checks, but for now it just checks if the given
   // URL is valid.
   if (!CrackFileSystemURL(path, origin_url, type, virtual_path)) {
-    dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
+    dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_INVALID_URL);
     return false;
   }
   if (!file_system_context()->path_manager()->IsAccessAllowed(
@@ -660,7 +691,7 @@ bool FileSystemOperation::VerifyFileSystemPathForWrite(
   }
 
   if (!CrackFileSystemURL(path, origin_url, type, virtual_path)) {
-    dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
+    dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_INVALID_URL);
     return false;
   }
   if (!file_system_context()->path_manager()->IsAccessAllowed(

@@ -27,6 +27,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 
 namespace fileapi {
@@ -34,6 +35,21 @@ namespace {
 
 // We always use the TEMPORARY FileSystem in this test.
 static const char kFileSystemURLPrefix[] = "filesystem:http://remote/temporary/";
+
+class TestSpecialStoragePolicy : public quota::SpecialStoragePolicy {
+ public:
+  virtual bool IsStorageProtected(const GURL& origin) {
+    return false;
+  }
+
+  virtual bool IsStorageUnlimited(const GURL& origin) {
+    return true;
+  }
+
+  virtual bool IsFileHandler(const std::string& extension_id) {
+    return true;
+  }
+};
 
 class FileSystemDirURLRequestJobTest : public testing::Test {
  protected:
@@ -47,11 +63,19 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
 
     file_thread_proxy_ = base::MessageLoopProxy::CreateForCurrentThread();
 
-    path_manager_.reset(new FileSystemPathManager(
-        file_thread_proxy_, temp_dir_.path(),
-        NULL, false, false));
+    special_storage_policy_ = new TestSpecialStoragePolicy();
+    file_system_context_ =
+        new FileSystemContext(
+            base::MessageLoopProxy::CreateForCurrentThread(),
+            base::MessageLoopProxy::CreateForCurrentThread(),
+            special_storage_policy_,
+            FilePath(), false /* is_incognito */,
+            false, true,
+            new FileSystemPathManager(
+                    file_thread_proxy_, temp_dir_.path(),
+                    NULL, false, false));
 
-    path_manager_->GetFileSystemRootPath(
+    file_system_context_->path_manager()->ValidateFileSystemRootAndGetURL(
         GURL("http://remote/"), kFileSystemTypeTemporary, true,  // create
         callback_factory_.NewCallback(
             &FileSystemDirURLRequestJobTest::OnGetRootPath));
@@ -80,7 +104,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     delegate_->set_quit_on_redirect(true);
     request_.reset(new net::URLRequest(url, delegate_.get()));
     job_ = new FileSystemDirURLRequestJob(request_.get(),
-                                          path_manager_.get(),
+                                          file_system_context_.get(),
                                           file_thread_proxy_);
 
     request_->Start();
@@ -110,7 +134,8 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   FilePath root_path_;
   scoped_ptr<net::URLRequest> request_;
   scoped_ptr<TestDelegate> delegate_;
-  scoped_ptr<FileSystemPathManager> path_manager_;
+  scoped_refptr<TestSpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<FileSystemContext> file_system_context_;
   scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
 
   MessageLoop message_loop_;

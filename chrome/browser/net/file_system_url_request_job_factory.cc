@@ -15,19 +15,19 @@ namespace {
 
 net::URLRequestJob* FileSystemURLRequestJobFactory(net::URLRequest* request,
                                                    const std::string& scheme) {
-  fileapi::FileSystemPathManager* path_manager =
+  fileapi::FileSystemContext* file_system_context =
       static_cast<ChromeURLRequestContext*>(request->context())
-          ->file_system_context()->path_manager();
+          ->file_system_context();
   const std::string path = request->url().path();
 
   // If the path ends with a /, we know it's a directory. If the path refers
   // to a directory and gets dispatched to FileSystemURLRequestJob, that class
   // redirects back here, by adding a / to the URL.
   if (!path.empty() && path[path.size() - 1] == '/') {
-    return new fileapi::FileSystemDirURLRequestJob(request, path_manager,
+    return new fileapi::FileSystemDirURLRequestJob(request, file_system_context,
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   }
-  return new fileapi::FileSystemURLRequestJob(request, path_manager,
+  return new fileapi::FileSystemURLRequestJob(request, file_system_context,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 }
 

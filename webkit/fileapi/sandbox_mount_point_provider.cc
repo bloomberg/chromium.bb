@@ -220,7 +220,7 @@ std::vector<FilePath> SandboxMountPointProvider::GetRootDirectories() const {
   return  std::vector<FilePath>();
 }
 
-void SandboxMountPointProvider::GetFileSystemRootPath(
+void SandboxMountPointProvider::ValidateFileSystemRootAndGetURL(
     const GURL& origin_url, fileapi::FileSystemType type,
     bool create, FileSystemPathManager::GetRootPathCallback* callback_ptr) {
   scoped_ptr<FileSystemPathManager::GetRootPathCallback> callback(callback_ptr);
@@ -239,7 +239,8 @@ void SandboxMountPointProvider::GetFileSystemRootPath(
   task->Start(origin_url, origin_base_path, create);
 };
 
-FilePath SandboxMountPointProvider::GetFileSystemRootPathOnFileThread(
+FilePath
+SandboxMountPointProvider::ValidateFileSystemRootAndGetPathOnFileThread(
     const GURL& origin_url, FileSystemType type, const FilePath& unused,
     bool create) {
   FilePath origin_base_path;
