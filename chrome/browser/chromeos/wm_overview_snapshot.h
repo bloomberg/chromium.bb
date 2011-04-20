@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,32 +6,35 @@
 #define CHROME_BROWSER_CHROMEOS_WM_OVERVIEW_SNAPSHOT_H_
 #pragma once
 
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "views/controls/image_view.h"
-#include "views/view.h"
-#include "views/widget/widget_gtk.h"
+#include "base/basictypes.h"
 
 class Browser;
+class SkBitmap;
+
+namespace gfx {
+class Size;
+}
+
+namespace views {
+class ImageView;
+class Widget;
+}
 
 namespace chromeos {
 
 // WmOverviewSnapshot contains a snapshot image of the tab at the
 // given index.
-class WmOverviewSnapshot : public views::WidgetGtk {
+class WmOverviewSnapshot {
  public:
   WmOverviewSnapshot();
+  ~WmOverviewSnapshot();
+
   void Init(const gfx::Size& size, Browser* browser, int index);
 
   void SetImage(const SkBitmap& image);
 
   void UpdateIndex(Browser* browser, int index);
   int index() const { return index_; }
-
-  // Returns the size of the snapshot widget.
-  gfx::Size size() const {
-    // TODO(beng): this should not be written as an accessor...
-    return GetClientAreaScreenBounds().size();
-  }
 
   // Has the snapshot been configured? This is true after SetSnapshot
   // is invoked.
@@ -40,6 +43,8 @@ class WmOverviewSnapshot : public views::WidgetGtk {
   // This resets the configured_snapshot flag for this snapshot so it will
   // get reloaded the next time we check.
   void reload_snapshot() { configured_snapshot_ = false; }
+
+  views::Widget* widget() { return widget_; }
 
  private:
   // This control is the contents view for this widget.
@@ -50,6 +55,9 @@ class WmOverviewSnapshot : public views::WidgetGtk {
 
   // This indicates whether or not the snapshot has been configured.
   bool configured_snapshot_;
+
+  // Not owned, deletes itself when the underlying widget is destroyed.
+  views::Widget* widget_;
 
   DISALLOW_COPY_AND_ASSIGN(WmOverviewSnapshot);
 };

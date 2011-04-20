@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,10 +13,10 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/x/x11_util.h"
 #include "views/controls/image_view.h"
-#include "views/controls/label.h"
-#include "views/layout/grid_layout.h"
+#include "views/widget/widget.h"
 
 using std::vector;
+using views::Widget;
 
 #if !defined(OS_CHROMEOS)
 #error This file is only meant to be compiled for ChromeOS
@@ -27,27 +27,30 @@ namespace chromeos {
 const int WmOverviewFavicon::kIconSize = 32;
 
 WmOverviewFavicon::WmOverviewFavicon()
-    : WidgetGtk(TYPE_WINDOW),
-      favicon_view_(NULL) {
+    : favicon_view_(NULL),
+      widget_(NULL) {
+}
+
+WmOverviewFavicon::~WmOverviewFavicon() {
+  widget_->CloseNow();
 }
 
 void WmOverviewFavicon::Init(WmOverviewSnapshot* snapshot) {
-  MakeTransparent();
+  Widget::CreateParams create_params(Widget::CreateParams::TYPE_WINDOW);
+  create_params.transparent = true;
+  widget_ = Widget::CreateWidget(create_params);
+  widget_->Init(NULL, gfx::Rect(0, 0, 0, 0));
 
   favicon_view_ = new views::ImageView();
-
-  WidgetGtk::Init(NULL, gfx::Rect(0, 0, 0, 0));
-
-  SetContentsView(favicon_view_);
+  widget_->SetContentsView(favicon_view_);
 
   // Set the window type
   vector<int> params;
   params.push_back(ui::GetX11WindowFromGtkWidget(
-      GTK_WIDGET(snapshot->GetNativeView())));
-  WmIpc::instance()->SetWindowType(
-      GetNativeView(),
-      WM_IPC_WINDOW_CHROME_TAB_FAV_ICON,
-      &params);
+      GTK_WIDGET(snapshot->widget()->GetNativeView())));
+  WmIpc::instance()->SetWindowType(widget_->GetNativeView(),
+                                   WM_IPC_WINDOW_CHROME_TAB_FAV_ICON,
+                                   &params);
 }
 
 
@@ -73,7 +76,7 @@ void WmOverviewFavicon::SetFavicon(const SkBitmap& image) {
   favicon_view_->SetImage(icon);
 
   // Reset the bounds to the size of the image.
-  SetBounds(gfx::Rect(icon.width(), icon.height()));
+  widget_->SetBounds(gfx::Rect(icon.width(), icon.height()));
 }
 
 }  // namespace chromeos

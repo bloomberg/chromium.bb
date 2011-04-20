@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
+#include "base/stl_util-inl.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/chromeos/wm_overview_favicon.h"
@@ -158,16 +159,18 @@ class BrowserListener : public TabStripModelObserver {
   // Which renderer host we are working on.
   RenderWidgetHost* current_renderer_host_; // Not owned
 
-  // Widgets containing snapshot images for this browser.  Note that
-  // these are all subclasses of WidgetGtk, and they are all added to
-  // parents, so they will be deleted by the parents when they are
-  // closed.
+  // Widgets containing snapshot images for this browser.
   struct SnapshotNode {
-    WmOverviewSnapshot* snapshot;  // Not owned
-    WmOverviewTitle* title;  // Not owned
-    WmOverviewFavicon* favicon;  // Not owned
+    SnapshotNode() {}
+
+    WmOverviewSnapshot snapshot;
+    WmOverviewTitle title;
+    WmOverviewFavicon favicon;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(SnapshotNode);
   };
-  typedef std::vector<SnapshotNode> SnapshotVector;
+  typedef std::vector<SnapshotNode*> SnapshotVector;
   SnapshotVector snapshots_;
 
   // Non-zero if we are currently setting the tab from within SelectTab.
@@ -223,7 +226,7 @@ void BrowserListener::TabMoved(TabContentsWrapper* contents,
   // Need to reorder tab in the snapshots list, and reset the window
   // type atom on the affected snapshots (the one moved, and all the
   // ones after it), so that their indices are correct.
-  SnapshotNode node = snapshots_[from_index];
+  SnapshotNode* node = snapshots_[from_index];
   snapshots_.erase(snapshots_.begin() + from_index);
   snapshots_.insert(snapshots_.begin() + to_index, node);
 
@@ -236,9 +239,9 @@ void BrowserListener::TabChangedAt(
     int index,
     TabStripModelObserver::TabChangeType change_type) {
   if (change_type != TabStripModelObserver::LOADING_ONLY) {
-    snapshots_[index].title->SetTitle(contents->tab_contents()->GetTitle());
-    snapshots_[index].title->SetUrl(contents->tab_contents()->GetURL());
-    snapshots_[index].favicon->SetFavicon(
+    snapshots_[index]->title.SetTitle(contents->tab_contents()->GetTitle());
+    snapshots_[index]->title.SetUrl(contents->tab_contents()->GetURL());
+    snapshots_[index]->favicon.SetFavicon(
         contents->tab_contents()->GetFavicon());
     if (change_type != TabStripModelObserver::TITLE_NOT_LOADING)
       MarkSnapshotAsDirty(index);
@@ -246,7 +249,7 @@ void BrowserListener::TabChangedAt(
 }
 
 void BrowserListener::TabStripEmpty() {
-  snapshots_.clear();
+  STLDeleteElements(&snapshots_);
 }
 
 void BrowserListener::TabSelectedAt(TabContentsWrapper* old_contents,
@@ -260,12 +263,12 @@ void BrowserListener::TabSelectedAt(TabContentsWrapper* old_contents,
 }
 
 void BrowserListener::MarkSnapshotAsDirty(int index) {
-  snapshots_[index].snapshot->reload_snapshot();
+  snapshots_[index]->snapshot.reload_snapshot();
   controller_->UpdateSnapshots();
 }
 
 void BrowserListener::RecreateSnapshots() {
-  snapshots_.clear();
+  STLDeleteElements(&snapshots_);
 
   for (int i = 0; i < count(); ++i)
     InsertSnapshot(i);
@@ -293,9 +296,9 @@ void BrowserListener::UpdateSelectedIndex(int index) {
 int BrowserListener::ConfigureNextUnconfiguredSnapshot(int start_from) {
   for (SnapshotVector::size_type i = start_from + 1;
       i < snapshots_.size(); ++i) {
-    WmOverviewSnapshot* cell = snapshots_[i].snapshot;
-    if (!cell->configured_snapshot()) {
-      ConfigureCell(cell, i);
+    WmOverviewSnapshot& cell = snapshots_[i]->snapshot;
+    if (!cell.configured_snapshot()) {
+      ConfigureCell(&cell, i);
       return i;
     }
   }
@@ -311,13 +314,13 @@ void BrowserListener::RestoreOriginalSelectedTab() {
 
 void BrowserListener::ShowSnapshots() {
   for (SnapshotVector::size_type i = 0; i < snapshots_.size(); ++i) {
-    const SnapshotNode& node = snapshots_[i];
-    if (!node.snapshot->IsVisible())
-      node.snapshot->Show();
-    if (!snapshots_[i].title->IsVisible())
-      node.title->Show();
-    if (!snapshots_[i].favicon->IsVisible())
-      node.favicon->Show();
+    SnapshotNode* node = snapshots_[i];
+    if (!node->snapshot.widget()->IsVisible())
+      node->snapshot.widget()->Show();
+    if (!node->title.widget()->IsVisible())
+      node->title.widget()->Show();
+    if (!node->favicon.widget()->IsVisible())
+      node->favicon.widget()->Show();
   }
 }
 
@@ -369,7 +372,7 @@ void BrowserListener::OnSnapshotReady(const SkBitmap& sk_bitmap) {
     RenderWidgetHostView* view =
         GetTabContentsAt(i)->GetRenderWidgetHostView();
     if (view && view->GetRenderWidgetHost() == current_renderer_host_) {
-      snapshots_[i].snapshot->SetImage(sk_bitmap);
+      snapshots_[i]->snapshot.SetImage(sk_bitmap);
       current_renderer_host_ = NULL;
 
       // Start timer for next round of snapshot updating.
@@ -417,39 +420,34 @@ void BrowserListener::ConfigureCell(WmOverviewSnapshot* cell,
 }
 
 void BrowserListener::InsertSnapshot(int index) {
-  SnapshotNode node;
-  node.snapshot = new WmOverviewSnapshot;
+  SnapshotNode* node = new SnapshotNode;
   gfx::Size cell_size = CalculateCellSize();
-  node.snapshot->Init(cell_size, browser_, index);
+  node->snapshot.Init(cell_size, browser_, index);
 
-  node.favicon = new WmOverviewFavicon;
-  node.favicon->Init(node.snapshot);
-  node.favicon->SetFavicon(browser_->GetTabContentsAt(index)->GetFavicon());
+  node->favicon.Init(&(node->snapshot));
+  node->favicon.SetFavicon(browser_->GetTabContentsAt(index)->GetFavicon());
 
-  node.title = new WmOverviewTitle;
-  node.title->Init(gfx::Size(std::max(0, cell_size.width() -
+  node->title.Init(gfx::Size(std::max(0, cell_size.width() -
                                       WmOverviewFavicon::kIconSize -
                                       kFaviconPadding),
-                             kTitleHeight), node.snapshot);
-  node.title->SetTitle(browser_->GetTabContentsAt(index)->GetTitle());
+                             kTitleHeight), &(node->snapshot));
+  node->title.SetTitle(browser_->GetTabContentsAt(index)->GetTitle());
 
   snapshots_.insert(snapshots_.begin() + index, node);
-  node.snapshot->reload_snapshot();
+  node->snapshot.reload_snapshot();
   controller_->UpdateSnapshots();
 }
 
 // Removes the snapshot at index.
 void BrowserListener::ClearSnapshot(int index) {
-  snapshots_[index].snapshot->CloseNow();
-  snapshots_[index].title->CloseNow();
-  snapshots_[index].favicon->CloseNow();
+  scoped_ptr<SnapshotNode> node(snapshots_[index]);
   snapshots_.erase(snapshots_.begin() + index);
 }
 
 void BrowserListener::RenumberSnapshots(int start_index) {
   for (SnapshotVector::size_type i = start_index; i < snapshots_.size(); ++i) {
-    if (snapshots_[i].snapshot->index() != static_cast<int>(i))
-      snapshots_[i].snapshot->UpdateIndex(browser_, i);
+    if (snapshots_[i]->snapshot.index() != static_cast<int>(i))
+      snapshots_[i]->snapshot.UpdateIndex(browser_, i);
   }
 }
 

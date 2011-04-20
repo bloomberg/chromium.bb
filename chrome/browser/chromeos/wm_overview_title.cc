@@ -6,24 +6,23 @@
 
 #include <vector>
 
-#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/drop_shadow_label.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/chromeos/wm_overview_snapshot.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/x/x11_util.h"
 #include "views/border.h"
 #include "views/layout/grid_layout.h"
 #include "views/view.h"
+#include "views/widget/widget.h"
 
+using gfx::Font;
 using std::vector;
 using views::ColumnSet;
 using views::GridLayout;
 using views::View;
-using gfx::Font;
+using views::Widget;
 
 #if !defined(OS_CHROMEOS)
 #error This file is only meant to be compiled for ChromeOS
@@ -53,15 +52,17 @@ Font FindFontThisHigh(int pixels, Font base) {
 }  // Anonymous namespace
 
 WmOverviewTitle::WmOverviewTitle()
-  : WidgetGtk(TYPE_WINDOW),
-    title_label_(NULL),
-    url_label_(NULL) {
+  : title_label_(NULL),
+    url_label_(NULL),
+    widget_(NULL) {
+}
+
+WmOverviewTitle::~WmOverviewTitle() {
+  widget_->CloseNow();
 }
 
 void WmOverviewTitle::Init(const gfx::Size& size,
                            WmOverviewSnapshot* snapshot) {
-  MakeTransparent();
-
   title_label_ = new DropShadowLabel();
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   title_label_->SetColor(SkColorSetARGB(0xFF, 0xFF, 0xFF, 0xFF));
@@ -89,18 +90,21 @@ void WmOverviewTitle::Init(const gfx::Size& size,
   layout->StartRowWithPadding(1, title_cs_id, 0, kVerticalPadding);
   layout->AddView(url_label_);
 
-  // Realize the widget.
-  WidgetGtk::Init(NULL, gfx::Rect(size));
+  // Create and realize the widget.
+  Widget::CreateParams create_params(Widget::CreateParams::TYPE_WINDOW);
+  create_params.transparent = true;
+  widget_ = Widget::CreateWidget(create_params);
+  widget_->Init(NULL, gfx::Rect(size));
 
   // Make the view the contents view for this widget.
-  SetContentsView(view);
+  widget_->SetContentsView(view);
 
   // Set the window type
   vector<int> params;
   params.push_back(ui::GetX11WindowFromGtkWidget(
-      GTK_WIDGET(snapshot->GetNativeView())));
+      GTK_WIDGET(snapshot->widget()->GetNativeView())));
   WmIpc::instance()->SetWindowType(
-      GetNativeView(),
+      widget_->GetNativeView(),
       WM_IPC_WINDOW_CHROME_TAB_TITLE,
       &params);
 }

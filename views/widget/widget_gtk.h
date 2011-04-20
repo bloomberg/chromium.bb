@@ -55,9 +55,11 @@ class WidgetGtk : public Widget,
     TYPE_POPUP,
 
     // A top level window with no title or control buttons.
+    // NOTE: On ChromeOS TYPE_WINDOW and TYPE_DECORATED_WINDOW behave the same.
     TYPE_WINDOW,
 
     // A top level, decorated window.
+    // NOTE: On ChromeOS TYPE_WINDOW and TYPE_DECORATED_WINDOW behave the same.
     TYPE_DECORATED_WINDOW,
 
     // A child widget.
