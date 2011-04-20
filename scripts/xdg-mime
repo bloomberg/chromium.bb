@@ -426,15 +426,21 @@ fi
 
 detectDE()
 {
+    # see https://bugs.freedesktop.org/show_bug.cgi?id=34164
+    unset GREP_OPTIONS
+
     if [ x"$KDE_FULL_SESSION" = x"true" ]; then DE=kde;
     elif [ x"$GNOME_DESKTOP_SESSION_ID" != x"" ]; then DE=gnome;
     elif `dbus-send --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.GetNameOwner string:org.gnome.SessionManager > /dev/null 2>&1` ; then DE=gnome;
     elif xprop -root _DT_SAVE_MODE 2> /dev/null | grep ' = \"xfce4\"$' >/dev/null 2>&1; then DE=xfce;
+    elif xprop -root 2> /dev/null | grep -i '^xfce_desktop_window' >/dev/null 2>&1; then DE=xfce
     fi
 
     if [ x"$DE" = x"" ]; then
       # fallback to checking $DESKTOP_SESSION
       case "$DESKTOP_SESSION" in
+         gnome)
+           DE=gnome;
          LXDE)
            DE=lxde; 
            ;;
@@ -467,7 +473,6 @@ detectDE()
 
 kfmclient_fix_exit_code()
 {
-    [ x"$KDE_SESSION_VERSION" = x"4" ] && return 0;
     version=`LC_ALL=C.UTF-8 kde-config --version 2>/dev/null | grep '^KDE'`
     major=`echo $version | sed 's/KDE.*: \([0-9]\).*/\1/'`
     minor=`echo $version | sed 's/KDE.*: [0-9]*\.\([0-9]\).*/\1/'`
@@ -504,12 +509,10 @@ info_kde()
 {
     if [ x"$KDE_SESSION_VERSION" = x"4" ]; then
         DEBUG 1 "Running kmimetypefinder \"$1\""
-        KMIMETYPEFINDER=`which kmimetypefinder 2>/dev/null`
-        $KMIMETYPEFINDER "$1" 2>/dev/null | head -n 1
+        kmimetypefinder "$1" 2>/dev/null | head -n 1
     else
         DEBUG 1 "Running kfile \"$1\""
-        KFILE=`which kfile 2>/dev/null`
-        $KFILE "$1" 2> /dev/null | head -n 1 | cut -d "(" -f 2 | cut -d ")" -f 1
+        kfile "$1" 2> /dev/null | head -n 1 | cut -d "(" -f 2 | cut -d ")" -f 1
     fi
 
     if [ $? -eq 0 ]; then
@@ -689,18 +692,60 @@ make_default_generic()
 {
     # $1 is vendor-name.desktop
     # $2 is mime/type
-    # Add $2=$1 to XDG_DATA_HOME/applications/defaults.list
+    # Add $2=$1 to XDG_DATA_HOME/applications/mimeapps.list
     xdg_user_dir="$XDG_DATA_HOME"
     [ -n "$xdg_user_dir" ] || xdg_user_dir="$HOME/.local/share"
-    default_file="$xdg_user_dir/applications/defaults.list"
+    default_file="$xdg_user_dir/applications/mimeapps.list"
     DEBUG 2 "make_default_generic $1 $2"
     DEBUG 1 "Updating $default_file"
-    grep -v "$2=" $default_file > ${default_file}.new 2> /dev/null
-    if ! grep "[Default Applications]" ${default_file}.new > /dev/null; then
-       echo "[Default Applications]" >> ${default_file}.new
-    fi
-    echo $2=$1 >> ${default_file}.new
-    mv ${default_file}.new $default_file
+    awk -v mimetype="$2" -v application="$1" '
+    BEGIN {
+        prefix=mimetype "="
+        indefault=0
+        added=0
+        blanks=0
+        found=0
+    }
+    {
+        suppress=0
+        if (index($0, "[Default Applications]") == 1) {
+            indefault=1
+            found=1
+        } else if (index($0, "[") == 1) {
+            if (!added && indefault) {
+                print prefix application
+                added=1
+            }
+            indefault=0
+        } else if ($0 == "") {
+            suppress=1
+            blanks++
+        } else if (indefault && !added && index($0, prefix) == 1) {
+                $0=prefix application
+                added=1
+        }
+        if (!suppress) {
+            while (blanks > 0) {
+                print ""
+                blanks--
+            }
+            print $0
+        }
+    }
+    END {
+        if (!added) {
+            if (!found) {
+                print ""
+                print "[Default Applications]"
+            }
+            print prefix application
+        }
+        while (blanks > 0) {
+            print ""
+            blanks--
+        }
+    }
+' $default_file > ${default_file}.new && mv ${default_file}.new $default_file
 }
 
 defapp_generic()
@@ -712,7 +757,35 @@ defapp_generic()
     xdg_system_dirs="$XDG_DATA_DIRS"
     [ -n "$xdg_system_dirs" ] || xdg_system_dirs=/usr/local/share/:/usr/share/
 
-    for x in `echo "$xdg_user_dir:$xdg_system_dirs" | sed 's/:/ /g'`; do
+    for x in `echo "$xdg_user_dir" | sed 's/:/ /g'`; do
+        mimeapps_list="$x/applications/mimeapps.list"
+        if [ -f "$mimeapps_list" ] ; then
+            DEBUG 2 "Checking $mimeapps_list"
+            trader_result=`awk -v mimetype="$MIME" '
+    BEGIN {
+        prefix=mimetype "="
+        indefault=0
+        found=0
+    }
+    {
+        if (index($0, "[Default Applications]") == 1) {
+            indefault=1
+        } else if (index($0, "[") == 1) {
+            indefault=0
+        } else if (!found && indefault && index($0, prefix) == 1) {
+            print substr($0, length(prefix) +1, length)
+            found=1
+        }
+    }
+' $mimeapps_list`
+            if [ -n "$trader_result" ] ; then
+                echo $trader_result
+                exit_success
+            fi
+        fi
+    done
+
+    for x in `echo "$xdg_system_dirs" | sed 's/:/ /g'`; do
        DEBUG 2 "Checking $x/applications/defaults.list"
        trader_result=`grep "$MIME=" $x/applications/defaults.list 2> /dev/null | cut -d '=' -f 2 | cut -d ';' -f 1`
        if [ -n "$trader_result" ] ; then

@@ -1,5 +1,21 @@
 === xdg-utils 1.1.x ===
 
+2011-04-14 Rex Dieter <rdieter@fedoraproject.org>
+   * xdg-open does not detect xfce (BR25941)
+   * xdg-open's list of fallback browsers excludes seamonkey (BR33699)
+   * text BROWSER=+elinks
+   * xdg-open is sensitive to default grep options (BR34164)
+   * xdg-{open,email} should try x-www-browser (BR33095)
+   * xdg-email outputs errors with localized KDE4 (BR32924)
+   * xdg-email runs kmailservice with incorrect locale (BR33106)
+   * spurious capture of which in KMIMETYPEFINDER (BR31444)
+
+2011-04-12 Rex Dieter <rdieter@fedoraproject.org>
+   * suppress 'which gnome-default-applications-properties' output.  Thanks to Mike Mammarella.
+
+2011-04-08 Rex Dieter <rdieter@fedoraproject.org>
+   * xdg-mime: add mimeapps.list support. Thanks to Chris Coulson.
+
 2011-03-31 Rex Dieter <rdieter@fedoraproject.org>
    * Don't overwrite a /usr/share/applications/defaults.list symlink (BR35794)
    * Use D-Bus API for GNOME screensaver (BR29860)

@@ -106,12 +106,12 @@ open_kde()
     DEBUG 1 "Running kmailservice \"$1\""
     if [ x"$KDE_SESSION_VERSION" = x"4" ]; then
         KMAILSERVICE=`kde4-config --locate kmailservice --path exe 2>/dev/null`
+        $KMAILSERVICE "$1"
     else
         KMAILSERVICE=`which kmailservice 2>/dev/null`
+        # KDE3 uses locale's encoding when decoding the URI, so set it to UTF-8
+        LC_ALL=C.UTF-8 $KMAILSERVICE "$1"
     fi
-    # KDE uses locale's encoding when decoding the URI, so set it to UTF-8
-    LC_ALL=C.UTF-8 $KMAILSERVICE "$1"
-    kfmclient_fix_exit_code $?
 
     if [ $? -eq 0 ]; then
         exit_success
@@ -371,9 +371,9 @@ fi
 
 # if BROWSER variable is not set, check some well known browsers instead
 if [ x"$BROWSER" = x"" ]; then
-    BROWSER=links2:links:lynx:w3m
+    BROWSER=links2:elinks:links:lynx:w3m
     if [ -n "$DISPLAY" ]; then
-        BROWSER=firefox:mozilla:epiphany:konqueror:chromium-browser:google-chrome:$BROWSER
+        BROWSER=x-www-browser:firefox:seamonkey:mozilla:epiphany:konqueror:chromium-browser:google-chrome:$BROWSER
     fi
 fi
 

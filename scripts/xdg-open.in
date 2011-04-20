@@ -255,9 +255,9 @@ fi
 
 # if BROWSER variable is not set, check some well known browsers instead
 if [ x"$BROWSER" = x"" ]; then
-    BROWSER=links2:links:lynx:w3m
+    BROWSER=links2:elinks:links:lynx:w3m
     if [ -n "$DISPLAY" ]; then
-        BROWSER=firefox:mozilla:epiphany:konqueror:chromium-browser:google-chrome:$BROWSER
+        BROWSER=x-www-browser:firefox:seamonkey:mozilla:epiphany:konqueror:chromium-browser:google-chrome:$BROWSER
     fi
 fi
 
