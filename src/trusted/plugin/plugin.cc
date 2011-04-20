@@ -40,18 +40,20 @@
 #include "native_client/src/trusted/plugin/string_encoding.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
+namespace plugin {
+
 namespace {
 
 static int32_t stringToInt32(char* src) {
   return strtol(src, static_cast<char**>(NULL), 0);
 }
 
-bool ShmFactory(void* obj, plugin::SrpcParams* params) {
-  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
+bool ShmFactory(void* obj, SrpcParams* params) {
+  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
 
-  plugin::SharedMemory* portable_shared_memory =
-      plugin::SharedMemory::New(plugin, params->ins()[0]->u.ival);
-  plugin::ScriptableHandle* shared_memory =
+  SharedMemory* portable_shared_memory =
+      SharedMemory::New(plugin, params->ins()[0]->u.ival);
+  ScriptableHandle* shared_memory =
       plugin->browser_interface()->NewScriptableHandle(portable_shared_memory);
   if (NULL == shared_memory) {
     params->set_exception_string("out of memory");
@@ -64,8 +66,8 @@ bool ShmFactory(void* obj, plugin::SrpcParams* params) {
   return true;
 }
 
-bool DefaultSocketAddress(void* obj, plugin::SrpcParams* params) {
-  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
+bool DefaultSocketAddress(void* obj, SrpcParams* params) {
+  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
   if (NULL == plugin->socket_address()) {
     params->set_exception_string("no socket address");
     return false;
@@ -76,9 +78,9 @@ bool DefaultSocketAddress(void* obj, plugin::SrpcParams* params) {
   return true;
 }
 
-bool GetSandboxISAProperty(void* obj, plugin::SrpcParams* params) {
+bool GetSandboxISAProperty(void* obj, SrpcParams* params) {
   UNREFERENCED_PARAMETER(obj);
-  const char* isa = plugin::GetSandboxISA();
+  const char* isa = GetSandboxISA();
   PLUGIN_PRINTF(("GetSandboxISAProperty ('isa'='%s')\n", isa));
   params->outs()[0]->arrays.str = strdup(isa);
   return true;
@@ -86,15 +88,15 @@ bool GetSandboxISAProperty(void* obj, plugin::SrpcParams* params) {
 
 // A method to test the cost of invoking a method in a plugin without
 // making an RPC to the service runtime.  Used for performance evaluation.
-bool NullPluginMethod(void* obj, plugin::SrpcParams* params) {
+bool NullPluginMethod(void* obj, SrpcParams* params) {
   UNREFERENCED_PARAMETER(obj);
   params->outs()[0]->tag = NACL_SRPC_ARG_TYPE_INT;
   params->outs()[0]->u.ival = 0;
   return true;
 }
 
-bool GetModuleReadyProperty(void* obj, plugin::SrpcParams* params) {
-  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
+bool GetModuleReadyProperty(void* obj, SrpcParams* params) {
+  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
   if (plugin->socket()) {
     params->outs()[0]->u.ival = 1;
   } else {
@@ -103,14 +105,14 @@ bool GetModuleReadyProperty(void* obj, plugin::SrpcParams* params) {
   return true;
 }
 
-bool SetModuleReadyProperty(void* obj, plugin::SrpcParams* params) {
+bool SetModuleReadyProperty(void* obj, SrpcParams* params) {
   UNREFERENCED_PARAMETER(obj);
   params->set_exception_string("__moduleReady is a read-only property");
   return false;
 }
 
-bool GetNaclProperty(void* obj, plugin::SrpcParams* params) {
-  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
+bool GetNaclProperty(void* obj, SrpcParams* params) {
+  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
   const char* url = plugin->nacl_manifest_url().c_str();
   PLUGIN_PRINTF(("GetNaclProperty ('__nacl'='%s')\n", url));
   if (NACL_NO_URL != plugin->nacl_manifest_url()) {
@@ -122,14 +124,14 @@ bool GetNaclProperty(void* obj, plugin::SrpcParams* params) {
   }
 }
 
-bool SetNaclProperty(void* obj, plugin::SrpcParams* params) {
+bool SetNaclProperty(void* obj, SrpcParams* params) {
   UNREFERENCED_PARAMETER(obj);
   params->set_exception_string("__nacl is a read-only property");
   return false;
 }
 
-bool GetSrcProperty(void* obj, plugin::SrpcParams* params) {
-  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
+bool GetSrcProperty(void* obj, SrpcParams* params) {
+  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
   const char* url = plugin->nacl_module_url().c_str();
   PLUGIN_PRINTF(("GetSrcProperty ('src'='%s')\n", url));
   if (NACL_NO_URL != plugin->nacl_module_url()) {
@@ -141,48 +143,50 @@ bool GetSrcProperty(void* obj, plugin::SrpcParams* params) {
   }
 }
 
-bool SetSrcProperty(void* obj, plugin::SrpcParams* params) {
+bool SetSrcProperty(void* obj, SrpcParams* params) {
   PLUGIN_PRINTF(("SetSrcProperty ()\n"));
-  return reinterpret_cast<plugin::Plugin*>(obj)->
+  return reinterpret_cast<Plugin*>(obj)->
       SetSrcPropertyImpl(params->ins()[0]->arrays.str);
 }
 
-bool LaunchExecutableFromFd(void* obj, plugin::SrpcParams* params) {
+bool LaunchExecutableFromFd(void* obj, SrpcParams* params) {
   PLUGIN_PRINTF(("LaunchExecutableFromFd ()\n"));
-  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
+  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
   NaClDescRef(params->ins()[0]->u.hval);
   nacl::scoped_ptr<nacl::DescWrapper>
       wrapper(plugin->wrapper_factory()->MakeGeneric(params->ins()[0]->u.hval));
-  return plugin->LoadNaClModule(wrapper.get());
+#if defined(NACL_STANDALONE)
+  return plugin->LoadNaClModule(wrapper.get(), /* start_from_browser */ false);
+#else
+  return plugin->LoadNaClModule(wrapper.get(), /* start_from_browser */ true);
+#endif
 }
 
-bool GetHeightProperty(void* obj, plugin::SrpcParams* params) {
-  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
+bool GetHeightProperty(void* obj, SrpcParams* params) {
+  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
   params->outs()[0]->u.ival = plugin->height();
   return true;
 }
 
-bool SetHeightProperty(void* obj, plugin::SrpcParams* params) {
-  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
+bool SetHeightProperty(void* obj, SrpcParams* params) {
+  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
   plugin->set_height(params->ins()[0]->u.ival);
   return true;
 }
 
-bool GetWidthProperty(void* obj, plugin::SrpcParams* params) {
-  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
+bool GetWidthProperty(void* obj, SrpcParams* params) {
+  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
   params->outs()[0]->u.ival = plugin->width();
   return true;
 }
 
-bool SetWidthProperty(void* obj, plugin::SrpcParams* params) {
-  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
+bool SetWidthProperty(void* obj, SrpcParams* params) {
+  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
   plugin->set_width(params->ins()[0]->u.ival);
   return true;
 }
 
 }  // namespace
-
-namespace plugin {
 
 // TODO(mseaborn): Although this will usually not block, it will
 // block if the socket's buffer fills up.
@@ -504,63 +508,6 @@ bool Plugin::IsValidNexeOrigin(nacl::string full_url, nacl::string local_path) {
     return false;
   }
   return true;
-}
-
-bool Plugin::LoadNaClModule(nacl::string full_url, nacl::string local_path) {
-  CHECK(local_path != NACL_NO_FILE_PATH);
-  PLUGIN_PRINTF(("Plugin::LoadNaClModule (local_path='%s')\n",
-                 local_path.c_str()));
-  if (!IsValidNexeOrigin(full_url, local_path)) {
-    return false;
-  }
-  nacl::scoped_ptr<nacl::DescWrapper>
-      wrapper(wrapper_factory_->OpenHostFile(local_path.c_str(), O_RDONLY, 0));
-  return LoadNaClModule(wrapper.get(), /* start_from_browser */ false);
-}
-
-bool Plugin::LoadNaClModule(nacl::string full_url, StreamShmBuffer* buffer) {
-  PLUGIN_PRINTF(("Plugin::LoadNaClModule (buffer=%p)\n",
-                 reinterpret_cast<void*>(buffer)));
-  if (!IsValidNexeOrigin(full_url, NACL_NO_FILE_PATH)) {
-    return false;
-  }
-  int32_t size;
-  NaClDesc* shm_desc = buffer->shm(&size);
-  if (NULL == shm_desc) {
-    return false;
-  }
-  nacl::scoped_ptr<nacl::DescWrapper>
-      wrapper(wrapper_factory_->MakeGeneric(NaClDescRef(shm_desc)));
-  return LoadNaClModule(wrapper.get(), /* start_from_browser */ true);
-}
-
-bool Plugin::LoadNaClModule(nacl::string full_url, int file_desc) {
-  PLUGIN_PRINTF(("Plugin::LoadNaClModule (file_desc=%d)\n",
-                 file_desc));
-  if (!IsValidNexeOrigin(full_url, NACL_NO_FILE_PATH)) {
-    return false;
-  }
-  int32_t file_desc_ok_to_close = DUP(file_desc);
-  if (file_desc_ok_to_close == NACL_NO_FILE_DESC) {
-    return false;
-  }
-  nacl::scoped_ptr<nacl::DescWrapper>
-      wrapper(wrapper_factory_->MakeFileDesc(file_desc_ok_to_close, O_RDONLY));
-#if defined(NACL_STANDALONE)
-  return LoadNaClModule(wrapper.get(), /* start_from_browser */ false);
-#else
-  return LoadNaClModule(wrapper.get(), /* start_from_browser */ true);
-#endif
-}
-
-bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper) {
-  PLUGIN_PRINTF(("Plugin::LoadNaClModule (wrapper=%p)\n",
-                 reinterpret_cast<void*>(wrapper)));
-#if defined(NACL_STANDALONE)
-  return LoadNaClModule(wrapper, /* start_from_browser */ false);
-#else
-  return LoadNaClModule(wrapper, /* start_from_browser */ true);
-#endif
 }
 
 bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,

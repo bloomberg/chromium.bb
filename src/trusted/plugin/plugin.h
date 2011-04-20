@@ -27,7 +27,6 @@ class DescWrapperFactory;
 
 namespace plugin {
 
-class StreamShmBuffer;
 class ScriptableHandle;
 
 class Plugin : public PortableHandle {
@@ -38,13 +37,9 @@ class Plugin : public PortableHandle {
   bool IsValidNexeOrigin(nacl::string full_url, nacl::string local_path);
 
   // Load support.
-  // NaCl module can be loaded given a local file name, a shared memory buffer,
-  // or a POSIX file descriptor. The functions update nacl_module_origin() and
-  // nacl_module_url().
-  bool LoadNaClModule(nacl::string full_url, nacl::string local_path);
-  bool LoadNaClModule(nacl::string full_url, StreamShmBuffer* shm_buffer);
-  bool LoadNaClModule(nacl::string full_url, int file_desc);
-  bool LoadNaClModule(nacl::DescWrapper* wrapper);
+  // NaCl module can be loaded given a DescWrapper.
+  // Updates nacl_module_origin() and nacl_module_url().
+  bool LoadNaClModule(nacl::DescWrapper* wrapper, bool start_from_browser);
 
   // Returns the argument value for the specified key, or NULL if not found.
   // The callee retains ownership of the result.
@@ -169,9 +164,6 @@ class Plugin : public PortableHandle {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Plugin);
-
-  // Helper function that consolidates all types of nacl module loads.
-  bool LoadNaClModule(nacl::DescWrapper* wrapper, bool start_from_browser);
 
   InstanceIdentifier instance_id_;
   BrowserInterface* browser_interface_;

@@ -297,7 +297,21 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
   if (pp_error != PP_OK || file_desc == NACL_NO_FILE_DESC) {
     Failure("NaCl module load failed: could not load url.");
   } else {
-    LoadNaClModule(nexe_downloader_.url(), file_desc);
+    if (!IsValidNexeOrigin(nexe_downloader_.url(), NACL_NO_FILE_PATH)) {
+      return;
+    }
+    int32_t file_desc_ok_to_close = DUP(file_desc);
+    if (file_desc_ok_to_close == NACL_NO_FILE_DESC) {
+      return;
+    }
+    nacl::scoped_ptr<nacl::DescWrapper>
+        wrapper(wrapper_factory()->MakeFileDesc(file_desc_ok_to_close,
+                                                O_RDONLY));
+#if defined(NACL_STANDALONE)
+    LoadNaClModule(wrapper.get(), /* start_from_browser */ false);
+#else
+    LoadNaClModule(wrapper.get(), /* start_from_browser */ true);
+#endif
   }
 }
 
