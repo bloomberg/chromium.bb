@@ -28,7 +28,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_debug_init.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
-/* To enable debuggging */
+/* To enable debugging */
 // #define NACL_DEBUG_STUB 1
 
 using port::IPlatform;
@@ -71,30 +71,25 @@ enum NaClDebugStatus {
   NDS_STOPPED = 2
 };
 
-/*
- * Remove name mangling to make it easier to find, incase we want to toggle
- * internal stub debugging from an external debugger.
- */
-extern "C" {
-  uint32_t nacl_debug_allowed = 0;
-}
-
 struct NaClDebugState {
   NaClDebugState() : target_(NULL), app_(NULL),
-                     errCode_(0), status_(NDS_DISABLED) {
-    status_ = nacl_debug_allowed ? NDS_ENABLED : NDS_DISABLED;
+                     errCode_(0), status_(NDS_DISABLED) {}
 
-    /* Initialize the stub if and only if debugging is enabled. */
-    if (status_) {
-      NaClDebugStubInit();
-      target_ = new Target();
+  bool Init() {
+    NaClDebugStubInit();
+    target_ = new Target();
 
-      /* If we failed to initialize the target, turn off debugging */
-      if ((NULL == target_) || (!target_->Init())) status_ = NDS_DISABLED;
-    }
+    CHECK((NULL != target_) && (target_->Init()));
+
+    status_ = NDS_ENABLED;
+    return true;
   }
 
   ~NaClDebugState() {
+    /*
+     * TODO(mlinck): It is not safe to call this destructor, since there is an
+     * unjoinable thread potentially accessing target_.
+     */
     delete target_;
   }
 
@@ -102,26 +97,18 @@ struct NaClDebugState {
   struct NaClApp *app_;
   volatile int errCode_;
   NaClDebugStatus status_;
-  nacl::string path_;
   std::vector<const char *> arg_;
   std::vector<const char *> env_;
 };
 
-/*
- * NOTE:  We use a singleton to delay construction allowing someone
- * to enable debugging only before the first use of this object.
- */
-static NaClDebugState *NaClDebugGetState() {
-  static NaClDebugState state;
-  return &state;
-}
+static NaClDebugState *g_nacl_debug_state = NULL;
 
-void NaClDebugSetAllow(int enable) throw() {
-#ifdef NACL_DEBUG_STUB
-  nacl_debug_allowed = enable;
-#else
-  UNREFERENCED_PARAMETER(enable);
-#endif
+bool NaClDebugIsEnabled(void) throw() {
+  if (NULL != g_nacl_debug_state &&
+      NDS_ENABLED == g_nacl_debug_state->status_) {
+    return true;
+  }
+  return false;
 }
 
 void WINAPI NaClStubThread(void *ptr) {
@@ -169,21 +156,10 @@ void NaClExceptionCatcher(uint32_t id, int8_t sig, void *cookie) {
 }
 
 
-int NaClDebugIsEnabled(void) throw() {
-#ifdef NACL_DEBUG_STUB
-  try {
-    return (NDS_ENABLED == NaClDebugGetState()->status_) ? 1 : 0;
-  } DBG_CATCH_ALL
-#endif
-
-  return false;
-}
-
 void NaClDebugSetAppInfo(struct NaClApp *app) throw() {
 #ifdef NACL_DEBUG_STUB
   if (NaClDebugIsEnabled()) {
-    NaClDebugState *state = NaClDebugGetState();
-    state->app_ = app;
+    g_nacl_debug_state->app_ = app;
   }
 #else
   UNREFERENCED_PARAMETER(app);
@@ -200,10 +176,10 @@ void NaClDebugSetAppEnvironment(int argc, char const * const argv[],
        * Copy the pointer arrays.  We use ptrs instead of strings
        * since the data persits and it prevents an extra copy.
        */
-      NaClDebugGetState()->arg_.resize(argc);
-      for (a = 0; a < argc; a++) NaClDebugGetState()->arg_[a] = argv[a];
-      NaClDebugGetState()->env_.resize(envc);
-      for (a = 0; a < envc; a++) NaClDebugGetState()->env_[a] = envv[a];
+      g_nacl_debug_state->arg_.resize(argc);
+      for (a = 0; a < argc; a++) g_nacl_debug_state->arg_[a] = argv[a];
+      g_nacl_debug_state->env_.resize(envc);
+      for (a = 0; a < envc; a++) g_nacl_debug_state->env_[a] = envv[a];
     } DBG_CATCH_ALL
   }
 }
@@ -213,11 +189,10 @@ void NaClDebugThreadPrepDebugging(struct NaClAppThread *natp) throw() {
 
 #ifdef NACL_DEBUG_STUB
   if (NaClDebugIsEnabled()) {
-    NaClDebugState *state = NaClDebugGetState();
     uint32_t id = IPlatform::GetCurrentThread();
     IThread* thread = IThread::Acquire(id, true);
-    state->target_->SetMemoryBase(natp->nap->mem_start);
-    state->target_->TrackThread(thread);
+    g_nacl_debug_state->target_->SetMemoryBase(natp->nap->mem_start);
+    g_nacl_debug_state->target_->TrackThread(thread);
 
     /*
      * TODO(noelallen) We need to associate the natp with this thread
@@ -232,10 +207,9 @@ void NaClDebugThreadStopDebugging(struct NaClAppThread *natp) throw() {
 
 #ifdef NACL_DEBUG_STUB
   if (NaClDebugIsEnabled()) {
-    NaClDebugState *state = NaClDebugGetState();
     uint32_t id = IPlatform::GetCurrentThread();
     IThread* thread = IThread::Acquire(id, false);
-    state->target_->IgnoreThread(thread);
+    g_nacl_debug_state->target_->IgnoreThread(thread);
     IThread::Release(thread);
 
     /*
@@ -254,16 +228,16 @@ int NaClDebugStart(void) throw() {
     NaClThread *thread = new NaClThread;
 
     if (NULL == thread) return false;
-    NaClDebugState *state = NaClDebugGetState();
 
     /* Add a temp breakpoint. */
-    struct NaClApp* app = state->app_;
-    state->target_->AddTemporaryBreakpoint(app->initial_entry_pt +
-                                           app->mem_start);
+    struct NaClApp* app = g_nacl_debug_state->app_;
+    g_nacl_debug_state->target_->AddTemporaryBreakpoint(app->initial_entry_pt +
+                                                        app->mem_start);
 
     NaClLog(LOG_WARNING, "nacl_debug(%d) : Debugging started.\n", __LINE__);
-    IThread::SetExceptionCatch(NaClExceptionCatcher, state->target_);
-    return NaClThreadCtor(thread, NaClStubThread, state->target_,
+    IThread::SetExceptionCatch(NaClExceptionCatcher,
+                               g_nacl_debug_state->target_);
+    return NaClThreadCtor(thread, NaClStubThread, g_nacl_debug_state->target_,
                           NACL_KERN_STACK_SIZE);
   }
 #endif
@@ -272,7 +246,6 @@ int NaClDebugStart(void) throw() {
 
 void NaClDebugStop(int ErrCode) throw() {
 #ifdef NACL_DEBUG_STUB
-
   /*
    * We check if debugging is enabled since this check is the only
    * mechanism for allocating the state object.  We free the
@@ -280,8 +253,11 @@ void NaClDebugStop(int ErrCode) throw() {
    * STOPPED to prevent it from getting recreated.
    */
   if (NaClDebugIsEnabled()) {
-    NaClDebugGetState()->status_ = NDS_STOPPED;
-    NaClDebugGetState()->errCode_ = ErrCode;
+    g_nacl_debug_state->status_ = NDS_STOPPED;
+    g_nacl_debug_state->errCode_ = ErrCode;
+    try {
+      NaClDebugStubFini();
+    } DBG_CATCH_ALL
   }
 #else
   UNREFERENCED_PARAMETER(ErrCode);
@@ -296,16 +272,21 @@ static struct NaClDebugCallbacks debug_callbacks = {
 };
 #endif
 
+/*
+ * This function is implemented for the service runtime.  The service runtime
+ * declares the function so it does not need to be declared in our header.
+ */
 int NaClDebugInit(struct NaClApp *nap,
                   int argc, char const *const argv[],
                   int envc, char const *const envv[]) {
 #ifdef NACL_DEBUG_STUB
   static bool initialised = 0;
-  CHECK(!initialised);
+  CHECK(!initialised && NULL == g_nacl_debug_state);
   initialised = 1;
   nap->debug_stub_callbacks = &debug_callbacks;
   NaClDebugStubInit();
-  NaClDebugSetAllow(1);
+  g_nacl_debug_state = new NaClDebugState();
+  CHECK(g_nacl_debug_state->Init());
   NaClDebugSetAppInfo(nap);
   NaClDebugSetAppEnvironment(argc, argv, envc, envv);
   NaClDebugStart();

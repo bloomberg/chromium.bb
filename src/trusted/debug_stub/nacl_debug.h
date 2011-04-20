@@ -34,20 +34,6 @@ struct NaClApp;
 struct NaClAppThread;
 
 /*
- * Allows debugging if the feature has been enabled by compile flags.
- * The conditional compile means setting this to non-zero only signals
- * that debugging is requested, NaClDebugIsEnabled will need to be called
- * to determine if debugging is actually enabled.
- */
-void NaClDebugSetAllow(int val) NO_THROW;
-
-/*
- * Returns non-zero if debugging is allowed.  This check is done via the
- * NACL_DEBUG_ENABLE environment variable.
- */
-int NaClDebugIsEnabled(void) NO_THROW;
-
-/*
  * These functions should be called before the debug server has started
  * to prevent a debugger from attaching and failing to retrieve
  * information about the App (NEXE) that is running.  These functions are
