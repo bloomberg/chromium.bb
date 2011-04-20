@@ -11,14 +11,15 @@ You should also read <a href="hosting.html">Hosting</a> and
 
 
 <h2>Overview</h2>
-<ul><li>An extension manifest may contain an "update_url" for doing update checks.</li>
-<li>The content returned by an update check is an "update manifest" XML document listing the latest version of an extension (or set of extensions, more on that later).</li></ul>
+<ul><li>An extension manifest may contain an "update_url" field, pointing to a location for doing update checks.</li>
+<li>The content returned by an update check is an <em>update manifest</em> XML document listing the latest version of an extension.</li></ul>
 
-<p>Every few hours, the browser will check if any installed extensions have an autoupdate URL. For each one, it will make a request to that URL looking for an update manifest XML file. If the update manifest mentions a version of an extension that is more recent than what's installed, it will download and install the new version. Similar to manual updates, the new crx must be signed with the same private key as the currently installed version.</p>
+<p>Every few hours, the browser checks whether any installed extensions have an update URL. For each one, it makes a request to that URL looking for an update manifest XML file. If the update manifest mentions a version of an extension that is more recent than what's installed, the browser downloads and installs the new version. As with manual updates, the new <code>.crx</code> file must be signed with the same private key as the currently installed version.</p>
 
 
 <h2>Update URL</h2>
-<p>For those who are hosting their own extensions, you need to add the "update_url" key to your <a href="manifest.html">manifest.json</a> file like this:</p>
+<p>If you're hosting your own extension, you need to add the "update_url" field to your <a href="manifest.html"><code>manifest.json</code></a> file,
+like this:</p>
 
 <pre>{
   "name": "My extension",
@@ -29,7 +30,7 @@ You should also read <a href="hosting.html">Hosting</a> and
 </pre>
 
 <h2>Update manifest</h2>
-<p>The "update manifest" returned by the server&nbsp;should be an XML document that looks like this (parts you'll want to modify highlighted):</p>
+<p>The update manifest returned by the server should be an XML document that looks like this (highlights indicate parts you should modify):</p>
 
 <pre>
 &lt;?xml version='1.0' encoding='UTF-8'?&gt;
@@ -40,17 +41,22 @@ You should also read <a href="hosting.html">Hosting</a> and
 &lt;/gupdate&gt;
 </pre>
 
-<p>(This XML format is borrowed from that used by Omaha, Google's update infrastructure. See <a href="http://code.google.com/p/omaha/">http://code.google.com/p/omaha/</a> for more details.)</p>
+<p>This XML format is borrowed from that used by Omaha, Google's update infrastructure. See <a href="http://code.google.com/p/omaha/">http://code.google.com/p/omaha/</a> for more details.
+The extensions system uses the following attributes
+for the <strong>&lt;app></strong>
+and <strong>&lt;updatecheck></strong> elements of the update manifest:
+</p>
 
 <p><b>appid</b><br>
-The 'appid' property is the extension id, generated based on a hash of the extension's public key as described in <a href="packaging.html">Packaging</a>. You can find out the id of your extension by going to <b>chrome://extensions</b>.</p>
+The extension ID, generated based on a hash of the extension's public key,
+as described in <a href="packaging.html">Packaging</a>. You can find the ID of your extension by going to the Extensions page (<b>chrome://extensions</b>).</p>
 
 <p><b>codebase</b><br>
-The 'codebase' property is a URL to the crx file.</p>
+A URL to the extension's <code>.crx</code> file.</p>
 
 <p><b>version</b><br>
-This is used by the client to determine whether it should download the crx file at 'codebase'. It should match the version parameter in the crx file's manifest.json file.</p>
-<p>The update manifest XML file may contain information about multiple extensions by including multiple <code>&lt;app&gt;</code> tags.</p>
+Used by the client to determine whether it should download the <code>.crx</code> file specified by <code>codebase</code>. It should match the value of "version" in the <code>.crx</code> file's <code>manifest.json</code> file.</p>
+<p>The update manifest XML file may contain information about multiple extensions by including multiple &lt;app&gt; elements.</p>
 
 
 <h2>Testing</h2>
@@ -60,7 +66,7 @@ but you can force an update using the Extensions page's
 </p>
 
 <p>
-Another option is to use the --extensions-update-frequency command-line flag to set a more frequent interval in seconds. For instance, to make checks run every 45 seconds, you would run Google Chrome like this:</p>
+Another option is to use the --extensions-update-frequency command-line flag to set a more frequent interval in seconds. For example, to make checks run every 45 seconds, run Google Chrome like this:</p>
 <pre>
 chrome.exe <b>--extensions-update-frequency=45</b></pre>
 
@@ -68,35 +74,56 @@ chrome.exe <b>--extensions-update-frequency=45</b></pre>
 
 
 <h2>Advanced usage: request parameters</h2>
-<p>The basic autoupdate mechanism is designed to make the server-side work as easy as just dropping a static XML file onto any plain webserver such as apache, and updating that XML file as you release new versions of your extension(s).</p>
-<p>More advanced developers may wish to take advantage of the fact that we add on parameters to the request for the update manifest to indicate the extension id and version. Then they can use the same update_url for all of their extensions pointing to a URL running dynamic server side code instead of a static XML file.</p>
+<p>The basic autoupdate mechanism is designed to make the server-side work as easy as just dropping a static XML file onto any plain web server such as Apache, and updating that XML file as you release new versions of your extensions.</p>
+<p>More advanced developers may wish to take advantage of the fact that we add on parameters to the request for the update manifest to indicate the extension ID and version. Then they can use the same update URL for all of their extensions, pointing to a URL running dynamic server-side code instead of a static XML file.</p>
 <p>The format of the request parameters is:</p>
-<p><code>&nbsp;&nbsp;?x=&lt;extension_data&gt;</code></p>
-<p>where <code>&lt;extension_data&gt;</code> is an URL-encoded string of the format:</p>
-<p><code>&nbsp;&nbsp;id=&lt;id&gt;&amp;v=&lt;version&gt;</code></p>
+<p><code>&nbsp;&nbsp;?x=<em>&lt;extension_data&gt;</em></code></p>
+<p>Where <code><em>&lt;extension_data&gt;</em></code> is a URL-encoded string of the format:</p>
+<p><code>&nbsp;&nbsp;<em>id=&lt;id&gt;</em>&amp;v=<em>&lt;version&gt;</em></code></p>
 
-<p>So for example, say we have two extensions installed</p>
-<p>&nbsp;&nbsp;Extension 1 with id "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" and version "1.1"<br>
-&nbsp;&nbsp;Extension 2 with id "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" and version "0.4"</p>
+<p>For example, say you have two extensions,
+both of which point to the same update URL
+(<code>http://test.com/extension_updates.php</code>):
+</p>
 
-<p>and that both point at the same update_url: <code>http://test.com/extension_updates.php</code></p>
+<ul>
+<li> Extension 1
+  <ul>
+    <li> ID: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" </li>
+    <li> Version: "1.1"</li>
+  </ul>
+<li> Extension 2 
+  <ul>
+    <li> ID: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" </li>
+    <li> Version: "0.4"</li>
+  </ul>
+</ul>
 
-<p>The two requests made would be:</p>
-<code>http://test.com/extension_updates.php?x=id%3Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa%26v%3D1.1</code>
-<br>
-<code>http://test.com/extension_updates.php?x=id%3Dbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb%26v%3D0.4</code>
 
-<p><b>Note</b>: in releases before 3.0.196.x there was a bug in how request parameters were put together (<a href="http://crbug.com/17469" rel="nofollow">http://crbug.com/17469</a>).</p>
+<p>The request to update each individual extension would be:</p>
 
-<h3>Future work</h3>
-<p>While not implemented yet, we will eventually list multiple extensions in a single request for each unique update_url. For the above example, the request would end up being:</p>
+<ul>
+  <li> <code>http://test.com/extension_updates.php?x=id%3Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa%26v%3D1.1</code> </li>
+  <li> <code>http://test.com/extension_updates.php?x=id%3Dbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb%26v%3D0.4</code> </li>
+</ul>
+
+<p>
+Multiple extensions can be listed in a single request for each unique update URL.
+For the above example, if a user has both of the extensions installed,
+then the two requests are merged into a single request:</p>
 <p><code>http://test.com/extension_updates.php?x=id%3Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa%26v%3D1.1&amp;x=id%3Dbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb%26v%3D0.4</code></p>
 
-<p>If the number of installed extensions using the same update_url is large enough that a GET request URL would be too long (probably greater than 1024 characters or so), the update check will instead issue a POST with the request parameters in the POST body.</p>
+<p>If the number of installed extensions using the same update URL is large enough that a GET request URL is too long (over 2000 characters or so), the update check issues additional GET requests as necessary.</p>
 
+<p class="note">
+<b>Note:</b>
+In the future, instead of issuing multiple GET requests,
+a single POST request might be issued
+with the request parameters in the POST body.
+</p>
 
 <h2>Advanced usage: minimum browser version</h2>
-<p>As we add more APIs to the extensions system, it's possible you will want to release an updated version of an extension that will only work with newer versions of the browser. While Google Chrome itself is autoupdated, it can take a few days before the majority of the user base has updated to any given new release. To ensure that a given extension update will apply only to Google Chrome versions at or higher than a specific version, you would add the prodversionmin parameter to the <code>&lt;app&gt;</code> tag in your update manifest. For example:</p>
+<p>As we add more APIs to the extensions system, it's possible you will want to release an updated version of an extension that will work only with newer versions of the browser. While Google Chrome itself is autoupdated, it can take a few days before the majority of the user base has updated to any given new release. To ensure that a given extension update will apply only to Google Chrome versions at or higher than a specific version, you add the "prodversionmin" attribute to the &lt;app&gt; element in your update manifest. For example:</p>
 
 <pre>&lt;?xml version='1.0' encoding='UTF-8'?&gt;
 &lt;gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'&gt;

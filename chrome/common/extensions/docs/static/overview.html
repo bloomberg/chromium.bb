@@ -186,7 +186,29 @@ under the extension's top folder;
 it's the same as the relative URL.
 </p>
 
-<!-- [PENDING: Should mention/reflect/link to <a href="http://dev.chromium.org/developers/design-documents/extensions/i18n">internationalization</a> when it's ready.] -->
+<p>
+While you're working on an extension
+(before it's packaged),
+the extension ID can change.
+Specifically, the ID of an unpacked extension will change
+if you load the extension from a different directory;
+the ID will change again when you package the extension.
+If your extension's code
+needs to specify the full path to a file within the extension,
+you can use the <code>@@extension_id</code>
+<a href="i18n.html#overview-predefined">predefined message</a>
+to avoid hardcoding the ID during development.
+</p>
+
+<p>
+When you package an extension
+(typically, by uploading it with the dashboard),
+the extension gets a permanent ID,
+which remains the same even after you update the extension.
+Once the extension ID is permanent,
+you can change all occurrences of
+<code>@@extension_id</code> to use the real ID.
+</p>
 
 
 <h3>The manifest file</h3>
