@@ -12,6 +12,7 @@ const char* kBackground = "background_page";
 const char* kBrowserAction = "browser_action";
 const char* kChromeURLOverrides = "chrome_url_overrides";
 const char* kContentScripts = "content_scripts";
+const char* kContentSecurityPolicy = "content_security_policy";
 const char* kConvertedFromUserScript = "converted_from_user_script";
 const char* kCss = "css";
 const char* kCurrentLocale = "current_locale";
@@ -147,6 +148,8 @@ const char* kInvalidChromeURLOverrides =
     "Invalid value for 'chrome_url_overrides'.";
 const char* kInvalidContentScript =
     "Invalid value for 'content_scripts[*]'.";
+const char* kInvalidContentSecurityPolicy =
+    "Invalid value for 'content_security_policy'.";
 const char* kInvalidContentScriptsList =
     "Invalid value for 'content_scripts'.";
 const char* kInvalidCss =

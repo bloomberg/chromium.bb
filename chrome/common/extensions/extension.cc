@@ -2376,6 +2376,27 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
     }
   }
 
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalExtensionApis) &&
+      source.HasKey(keys::kContentSecurityPolicy)) {
+    std::string content_security_policy;
+    if (!source.GetString(keys::kContentSecurityPolicy,
+                          &content_security_policy)) {
+      *error = errors::kInvalidContentSecurityPolicy;
+      return false;
+    }
+    // We block these characters to prevent HTTP header injection when
+    // representing the content security policy as an HTTP header.
+    const char kBadCSPCharacters[] = {'\r', '\n', '\0'};
+    if (content_security_policy.find_first_of(kBadCSPCharacters, 0,
+                                              arraysize(kBadCSPCharacters)) !=
+        std::string::npos) {
+      *error = errors::kInvalidContentSecurityPolicy;
+      return false;
+    }
+    content_security_policy_ = content_security_policy;
+  }
+
   // Initialize devtools page url (optional).
   if (source.HasKey(keys::kDevToolsPage)) {
     std::string devtools_str;

@@ -58,6 +58,15 @@ FilePath ExtensionInfoMap::GetPathForExtension(const std::string& id) const {
     return FilePath();
 }
 
+std::string ExtensionInfoMap::GetContentSecurityPolicyForExtension(
+    const std::string& id) const {
+  Map::const_iterator iter = extension_info_.find(id);
+  if (iter != extension_info_.end())
+    return iter->second->content_security_policy();
+  else
+    return std::string();
+}
+
 bool ExtensionInfoMap::ExtensionHasWebExtent(const std::string& id) const {
   Map::const_iterator iter = extension_info_.find(id);
   return iter != extension_info_.end() &&

@@ -17,6 +17,7 @@ namespace extension_manifest_keys {
   extern const char* kBrowseURLs;
   extern const char* kChromeURLOverrides;
   extern const char* kContentScripts;
+  extern const char* kContentSecurityPolicy;
   extern const char* kConvertedFromUserScript;
   extern const char* kCss;
   extern const char* kCurrentLocale;
@@ -128,6 +129,7 @@ namespace extension_manifest_errors {
   extern const char* kInvalidChromeURLOverrides;
   extern const char* kInvalidContentScript;
   extern const char* kInvalidContentScriptsList;
+  extern const char* kInvalidContentSecurityPolicy;
   extern const char* kInvalidCss;
   extern const char* kInvalidCssList;
   extern const char* kInvalidDefaultLocale;

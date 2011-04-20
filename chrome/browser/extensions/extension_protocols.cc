@@ -25,6 +25,8 @@
 #include "grit/component_extension_resources_map.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_response_info.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_simple_job.h"
@@ -32,13 +34,29 @@
 
 namespace {
 
+net::HttpResponseHeaders* BuildHttpHeaders(
+    const std::string& content_security_policy) {
+  std::string raw_headers;
+  raw_headers.append("HTTP/1.1 200 OK");
+  if (!content_security_policy.empty()) {
+    raw_headers.append(1, '\0');
+    raw_headers.append("X-WebKit-CSP: ");
+    raw_headers.append(content_security_policy);
+  }
+  raw_headers.append(2, '\0');
+  return new net::HttpResponseHeaders(raw_headers);
+}
+
 class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
  public:
-  explicit URLRequestResourceBundleJob(net::URLRequest* request,
-      const FilePath& filename, int resource_id)
-          : net::URLRequestSimpleJob(request),
-            filename_(filename),
-            resource_id_(resource_id) { }
+  URLRequestResourceBundleJob(
+      net::URLRequest* request, const FilePath& filename, int resource_id,
+      const std::string& content_security_policy)
+      : net::URLRequestSimpleJob(request),
+        filename_(filename),
+        resource_id_(resource_id) {
+    response_info_.headers = BuildHttpHeaders(content_security_policy);
+  }
 
   // Overridden from URLRequestSimpleJob:
   virtual bool GetData(std::string* mime_type,
@@ -65,6 +83,10 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
     return result;
   }
 
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) {
+    *info = response_info_;
+  }
+
  private:
   virtual ~URLRequestResourceBundleJob() { }
 
@@ -73,6 +95,24 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
 
   // The resource bundle id to load.
   int resource_id_;
+
+  net::HttpResponseInfo response_info_;
+};
+
+class URLRequestExtensionJob : public net::URLRequestFileJob {
+ public:
+  URLRequestExtensionJob(net::URLRequest* request,
+                         const FilePath& filename,
+                         const std::string& content_security_policy)
+    : net::URLRequestFileJob(request, filename) {
+    response_info_.headers = BuildHttpHeaders(content_security_policy);
+  }
+
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) {
+    *info = response_info_;
+  }
+
+  net::HttpResponseInfo response_info_;
 };
 
 // Returns true if an chrome-extension:// resource should be allowed to load.
@@ -132,6 +172,9 @@ static net::URLRequestJob* CreateExtensionURLRequestJob(
     return NULL;
   }
 
+  const std::string& content_security_policy = context->extension_info_map()->
+      GetContentSecurityPolicyForExtension(extension_id);
+
   FilePath resources_path;
   if (PathService::Get(chrome::DIR_RESOURCES, &resources_path) &&
       directory_path.DirName() == resources_path) {
@@ -152,7 +195,7 @@ static net::URLRequestJob* CreateExtensionURLRequestJob(
 #endif
       if (relative_path == bm_resource_path) {
         return new URLRequestResourceBundleJob(request, relative_path,
-            kComponentExtensionResources[i].value);
+            kComponentExtensionResources[i].value, content_security_policy);
       }
     }
   }
@@ -168,7 +211,9 @@ static net::URLRequestJob* CreateExtensionURLRequestJob(
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     resource_file_path = resource.GetFilePath();
   }
-  return new net::URLRequestFileJob(request, resource_file_path);
+
+  return new URLRequestExtensionJob(request, resource_file_path,
+                                    content_security_policy);
 }
 
 // Factory registered with net::URLRequest to create URLRequestJobs for

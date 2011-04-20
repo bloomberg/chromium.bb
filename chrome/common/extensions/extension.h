@@ -616,6 +616,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   bool wants_file_access() const { return wants_file_access_; }
 
+  const std::string& content_security_policy() const {
+    return content_security_policy_;
+  }
+
   // App-related.
   bool is_app() const { return is_app_; }
   bool is_hosted_app() const { return is_app() && !web_extent().is_empty(); }
@@ -917,6 +921,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // imply access to file:/// scheme URLs (the user may not have actually
   // granted it that access).
   bool wants_file_access_;
+
+  // The Content-Security-Policy for this extension.  Extensions can use
+  // Content-Security-Policies to mitigate cross-site scripting and other
+  // vulnerabilities.
+  std::string content_security_policy_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            UpdateExtensionPreservesLocation);

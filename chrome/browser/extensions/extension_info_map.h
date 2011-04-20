@@ -40,6 +40,9 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
   // Gets the path to the directory for the specified extension.
   FilePath GetPathForExtension(const std::string& id) const;
 
+  std::string GetContentSecurityPolicyForExtension(
+      const std::string& id) const;
+
   // Returns true if the specified extension exists and has a non-empty web
   // extent.
   bool ExtensionHasWebExtent(const std::string& id) const;
