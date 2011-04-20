@@ -416,8 +416,7 @@ skia::PlatformDevice* Emf::StartPageForVectorCanvas(
 
 bool Emf::StartPage(const gfx::Size& /*page_size*/,
                     const gfx::Point& /*content_origin*/,
-                    const float& scale_factor) {
-  DCHECK_EQ(1.0f, scale_factor);  // We don't support scaling here.
+                    const float& /*scale_factor*/) {
   DCHECK(hdc_);
   if (!hdc_)
     return false;

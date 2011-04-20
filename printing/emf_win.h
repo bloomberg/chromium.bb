@@ -50,8 +50,8 @@ class Emf : public Metafile {
       const float& scale_factor);
   // Inserts a custom GDICOMMENT records indicating StartPage/EndPage calls
   // (since StartPage and EndPage do not work in a metafile DC). Only valid
-  // when hdc_ is non-NULL. |page_size| and |content_origin| are ignored.
-  // |scale_factor|  must be 1.0.
+  // when hdc_ is non-NULL. |page_size|, |content_origin|, and |scale_factor|
+  // are ignored.
   virtual bool StartPage(const gfx::Size& page_size,
                          const gfx::Point& content_origin,
                          const float& scale_factor);

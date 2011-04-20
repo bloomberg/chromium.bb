@@ -19,8 +19,10 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
+using printing::ConvertUnit;
 using printing::ConvertUnitDouble;
 using printing::kPointsPerInch;
+using printing::Metafile;
 using WebKit::WebFrame;
 
 namespace {
@@ -73,7 +75,7 @@ void PrintWebViewHelper::PrintPageInternal(
     WebFrame* frame) {
   // Generate a memory-based metafile. It will use the current screen's DPI.
   // Each metafile contains a single page.
-  scoped_ptr<printing::Metafile> metafile(new printing::NativeMetafile);
+  scoped_ptr<Metafile> metafile(new printing::NativeMetafile);
   metafile->Init();
   DCHECK(metafile->context());
   skia::PlatformDevice::InitializeDC(metafile->context());
@@ -85,7 +87,8 @@ void PrintWebViewHelper::PrintPageInternal(
                                           params.params.dpi);
 
   // Render page for printing.
-  RenderPage(params.params, &scale_factor, page_number, frame, &metafile);
+  RenderPage(params.params, &scale_factor, page_number, false, frame,
+             &metafile);
 
   // Close the device context to retrieve the compiled metafile.
   if (!metafile->FinishDocument())
@@ -129,7 +132,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
   if (!page_count)
     return;
 
-  scoped_ptr<printing::Metafile> metafile(new printing::PreviewMetafile);
+  scoped_ptr<Metafile> metafile(new printing::PreviewMetafile);
   metafile->Init();
 
   // Calculate the dpi adjustment.
@@ -139,7 +142,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
   if (params.pages.empty()) {
     for (int i = 0; i < page_count; ++i) {
       float scale_factor = shrink;
-      RenderPage(print_params, &scale_factor, i, frame, &metafile);
+      RenderPage(print_params, &scale_factor, i, true, frame, &metafile);
     }
   } else {
     for (size_t i = 0; i < params.pages.size(); ++i) {
@@ -147,7 +150,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
         break;
       float scale_factor = shrink;
       RenderPage(print_params, &scale_factor,
-          static_cast<int>(params.pages[i]), frame, &metafile);
+          static_cast<int>(params.pages[i]), true, frame, &metafile);
     }
   }
 
@@ -177,7 +180,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
 
 void PrintWebViewHelper::RenderPage(
     const PrintMsg_Print_Params& params, float* scale_factor, int page_number,
-    WebFrame* frame, scoped_ptr<printing::Metafile>* metafile) {
+    bool is_preview, WebFrame* frame, scoped_ptr<Metafile>* metafile) {
   double content_width_in_points;
   double content_height_in_points;
   double margin_top_in_points;
@@ -188,17 +191,26 @@ void PrintWebViewHelper::RenderPage(
                                 &margin_top_in_points, NULL, NULL,
                                 &margin_left_in_points);
 
-  // Since WebKit extends the page width depending on the magical scale factor
-  // we make sure the canvas covers the worst case scenario (x2.0 currently).
-  // PrintContext will then set the correct clipping region.
-  int width = static_cast<int>(content_width_in_points * params.max_shrink);
-  int height = static_cast<int>(content_height_in_points * params.max_shrink);
+  int width;
+  int height;
+  if (is_preview) {
+    int dpi = static_cast<int>(params.dpi);
+    int desired_dpi = printing::kPointsPerInch;
+    width = ConvertUnit(params.page_size.width(), dpi, desired_dpi);
+    height = ConvertUnit(params.page_size.height(), dpi, desired_dpi);
+  } else {
+    // Since WebKit extends the page width depending on the magical scale factor
+    // we make sure the canvas covers the worst case scenario (x2.0 currently).
+    // PrintContext will then set the correct clipping region.
+    width = static_cast<int>(content_width_in_points * params.max_shrink);
+    height = static_cast<int>(content_height_in_points * params.max_shrink);
+  }
 
   gfx::Size page_size(width, height);
   gfx::Point content_origin(static_cast<int>(margin_left_in_points),
                             static_cast<int>(margin_top_in_points));
   skia::PlatformDevice* device = (*metafile)->StartPageForVectorCanvas(
-      page_size, content_origin, 1.0f);
+      page_size, content_origin, frame->getPrintPageShrink(page_number));
   DCHECK(device);
   skia::VectorCanvas canvas(device);
 
@@ -217,6 +229,7 @@ void PrintWebViewHelper::RenderPage(
   if (!params.supports_alpha_blend) {
     // PreviewMetafile (PDF) supports alpha blend, so we only hit this case
     // for NativeMetafile.
+    DCHECK(!is_preview);
     skia::VectorPlatformDeviceEmf* platform_device =
         static_cast<skia::VectorPlatformDeviceEmf*>(device);
     if (platform_device->alpha_blend_used()) {
@@ -247,7 +260,7 @@ void PrintWebViewHelper::RenderPage(
       HBRUSH whiteBrush = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
       FillRect(bitmap_dc, &rect, whiteBrush);
 
-      scoped_ptr<printing::Metafile> metafile2(new printing::NativeMetafile);
+      scoped_ptr<Metafile> metafile2(new printing::NativeMetafile);
       metafile2->Init();
       HDC hdc = metafile2->context();
       DCHECK(hdc);
@@ -270,8 +283,7 @@ void PrintWebViewHelper::RenderPage(
 }
 
 bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
-    printing::Metafile* metafile,
-    base::SharedMemoryHandle* shared_mem_handle) {
+    Metafile* metafile, base::SharedMemoryHandle* shared_mem_handle) {
   uint32 buf_size = metafile->GetDataSize();
   base::SharedMemory shared_buf;
 

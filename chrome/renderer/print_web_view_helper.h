@@ -182,7 +182,7 @@ class PrintWebViewHelper : public RenderViewObserver ,
   // Platform specific helper function for rendering page(s) to |metafile|.
 #if defined(OS_WIN)
   void RenderPage(const PrintMsg_Print_Params& params, float* scale_factor,
-                  int page_number, WebKit::WebFrame* frame,
+                  int page_number, bool is_preview, WebKit::WebFrame* frame,
                   scoped_ptr<printing::Metafile>* metafile);
 #elif defined(OS_MACOSX)
   void RenderPage(const gfx::Size& page_size, const gfx::Point& content_origin,
