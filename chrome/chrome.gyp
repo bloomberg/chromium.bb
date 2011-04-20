@@ -398,6 +398,8 @@
         'browser/debugger/debugger_remote_service.h',
         'browser/debugger/devtools_client_host.cc',
         'browser/debugger/devtools_client_host.h',
+        'browser/debugger/devtools_file_util.cc',
+        'browser/debugger/devtools_file_util.h',
         'browser/debugger/devtools_http_protocol_handler.cc',
         'browser/debugger/devtools_http_protocol_handler.h',
         'browser/debugger/devtools_manager.cc',

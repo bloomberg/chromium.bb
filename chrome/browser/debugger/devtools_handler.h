@@ -23,6 +23,8 @@ class DevToolsHandler : public RenderViewHostObserver {
   void OnCloseWindow();
   void OnRequestDockWindow();
   void OnRequestUndockWindow();
+  void OnSaveAs(const std::string& file_name,
+                const std::string& content);
   void OnRuntimePropertyChanged(const std::string& name,
                                 const std::string& value);
 

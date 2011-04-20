@@ -4,8 +4,11 @@
 
 #include "chrome/browser/debugger/devtools_handler.h"
 
+#include "chrome/browser/debugger/devtools_file_util.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/common/devtools_messages.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 DevToolsHandler::DevToolsHandler(RenderViewHost* render_view_host)
     : RenderViewHostObserver(render_view_host) {
@@ -24,6 +27,8 @@ bool DevToolsHandler::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_RequestDockWindow, OnRequestDockWindow)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_RequestUndockWindow,
                         OnRequestUndockWindow)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_SaveAs,
+                        OnSaveAs)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_RuntimePropertyChanged,
                         OnRuntimePropertyChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -55,6 +60,17 @@ void DevToolsHandler::OnRequestDockWindow() {
 
 void DevToolsHandler::OnRequestUndockWindow() {
   DevToolsManager::GetInstance()->RequestUndockWindow(render_view_host());
+}
+
+void DevToolsHandler::OnSaveAs(const std::string& file_name,
+                               const std::string& content) {
+  TabContents* tab_contents = render_view_host()->delegate() ?
+      render_view_host()->delegate()->GetAsTabContents() : NULL;
+  DCHECK(tab_contents);
+  if (!tab_contents)
+    return;
+
+  DevToolsFileUtil::SaveAs(tab_contents->profile(), file_name, content);
 }
 
 void DevToolsHandler::OnRuntimePropertyChanged(const std::string& name,

@@ -47,6 +47,8 @@ class DevToolsClient : public RenderViewObserver,
   virtual void closeWindow();
   virtual void requestDockWindow();
   virtual void requestUndockWindow();
+  virtual void saveAs(const WebKit::WebString& file_name,
+                      const WebKit::WebString& content);
 
   virtual bool shouldHideScriptsPanel();
 

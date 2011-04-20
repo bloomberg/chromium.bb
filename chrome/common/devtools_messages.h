@@ -130,6 +130,11 @@ IPC_MESSAGE_ROUTED0(DevToolsHostMsg_RequestDockWindow)
 // Detaches dev tools window that is inspecting current render_view_host.
 IPC_MESSAGE_ROUTED0(DevToolsHostMsg_RequestUndockWindow)
 
+// Shows Save As dialog for content.
+IPC_MESSAGE_ROUTED2(DevToolsHostMsg_SaveAs,
+                    std::string /* file_name */,
+                    std::string /* content */)
+
 // Updates runtime features store in devtools manager in order to support
 // cross-navigation instrumentation.
 IPC_MESSAGE_ROUTED2(DevToolsHostMsg_RuntimePropertyChanged,
