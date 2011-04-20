@@ -305,6 +305,11 @@ WidgetGtk::WidgetGtk(Type type)
       should_handle_menu_key_release_(false),
       dragged_view_(NULL),
       painted_(false) {
+#if defined(TOUCH_UI) && defined(HAVE_XINPUT2)
+  // Make sure the touch factory is initialized so that it can setup XInput2 for
+  // the widget.
+  TouchFactory::GetInstance();
+#endif
   set_native_widget(this);
   static bool installed_message_loop_observer = false;
   if (!installed_message_loop_observer) {

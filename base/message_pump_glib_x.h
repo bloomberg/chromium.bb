@@ -9,7 +9,6 @@
 #include "base/message_pump_glib.h"
 
 #include <bitset>
-#include <set>
 
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -25,11 +24,6 @@ class MessagePumpGlibX : public MessagePumpForUI {
   // Indicates whether a GDK event was injected by chrome (when |true|) or if it
   // was captured and being processed by GDK (when |false|).
   bool IsDispatchingEvent(void) { return dispatching_event_; }
-
-#if defined(HAVE_XINPUT2)
-  // Setup an X Window for XInput2 events.
-  void SetupXInput2ForXWindow(Window xid);
-#endif
 
   // Overridden from MessagePumpForUI:
   virtual bool RunOnce(GMainContext* context, bool block);
@@ -47,11 +41,6 @@ class MessagePumpGlibX : public MessagePumpForUI {
 
   // The opcode used for checking events.
   int xiopcode_;
-
-  // The list of pointer devices we care about.  We maintain this list so that
-  // it is not necessary to query X for the list of devices for each
-  // GdkWindow created.
-  std::set<int> pointer_devices_;
 #endif
 
   // The event source for GDK events.

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <bitset>
+#include <set>
 #include <vector>
 
 #include "base/memory/singleton.h"
@@ -32,6 +33,12 @@ class TouchFactory {
 
   // Returns the TouchFactory singleton.
   static TouchFactory* GetInstance();
+
+  // Updates the list of devices.
+  void UpdateDeviceList(Display* display);
+
+  // Setup an X Window for XInput2 events.
+  void SetupXI2ForXWindow(::Window xid);
 
   // Keeps a list of touch devices so that it is possible to determine if a
   // pointer event is a touch-event or a mouse-event. The list is reset each
@@ -103,6 +110,10 @@ class TouchFactory {
   // on real touch devices.
 
   static const int kMaxDeviceNum = 128;
+
+  // A quick lookup table for determining if events from the pointer device
+  // should be processed.
+  std::set<int> pointer_devices_;
 
   // A quick lookup table for determining if a device is a touch device.
   std::bitset<kMaxDeviceNum> touch_device_lookup_;
