@@ -116,6 +116,7 @@ cr.define('options', function() {
     setSyncSetupCompleted_: function(completed) {
       this.syncSetupCompleted = completed;
       this.setElementVisible_($('customize-sync'), completed);
+      $('privacy-dashboard-link').hidden = !completed;
     },
 
     setAccountPicture_: function(image) {

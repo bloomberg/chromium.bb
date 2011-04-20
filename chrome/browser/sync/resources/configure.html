@@ -271,19 +271,17 @@ html[os='mac'] input[type='submit'] {
     }
   }
 
-  function showCustomizePage(chooseDataTypes) {
+  function showCustomizePage() {
     document.getElementById('confirm-sync-preferences').hidden = true;
     document.getElementById('customize-sync-preferences').hidden = false;
 
-    // If the user clicked on the 'Customize' link on the 'Sync Everything'
-    // page, he most likely intends to change the data types. Select the 'Choose
-    // data types' select option in this case.
-    if (chooseDataTypes) {
-      document.getElementById('sync-select-datatypes').selectedIndex = 1;
-      document.getElementById('chooseDataTypesBody').hidden = false;
-      setDataTypeCheckboxesEnabled(true);
-      checkAllDataTypeCheckboxes();
-    }
+    // If the user is shown the 'Customize' page, it's likely he intends to
+    // change the data types.  Select the 'Choose data types' option in this
+    // case.
+    document.getElementById('sync-select-datatypes').selectedIndex = 1;
+    document.getElementById('chooseDataTypesBody').hidden = false;
+    setDataTypeCheckboxesEnabled(true);
+    checkAllDataTypeCheckboxes();
   }
 
   function showSyncEverythingPage() {
@@ -537,7 +535,7 @@ html[os='mac'] input[type='submit'] {
     <div class="action-area">
       <div class="action-area-link-container">
         <a id="customize-link" href="#" i18n-content="customizelinklabel"
-            onclick="showCustomizePage(true);"></a>
+            onclick="showCustomizePage();"></a>
       </div> 
       <input id="okButton" type="button" i18n-values="value:syncEverything"
           onclick="sendConfiguration();">
