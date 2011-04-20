@@ -4,7 +4,10 @@
 
 #include "content/gpu/gpu_info_collector.h"
 
+#include <vector>
+
 #include "base/logging.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/sys_string_conversions.h"
@@ -18,6 +21,16 @@
 #import <IOKit/IOKitLib.h>
 
 namespace {
+
+struct VideoCardInfo {
+  UInt32 vendor_id;
+  UInt32 device_id;
+
+  VideoCardInfo(UInt32 vendor, UInt32 device) {
+    vendor_id = vendor;
+    device_id = device;
+  }
+};
 
 CFTypeRef SearchPortForProperty(io_registry_entry_t dspPort,
                                 CFStringRef propertyName) {
@@ -40,6 +53,71 @@ UInt32 IntValueOfCFData(CFDataRef data_ref) {
   return value;
 }
 
+// Scan IO registry for PCI video cards.
+// If two cards are located, assume the non-Intel card is the high-end
+// one that's going to be used by Chromium GPU process.
+// If more than two cards are located, return false.  In such rare situation,
+// video card information should be collected through identifying the currently
+// in-use card as in CollectVideoCardInfo().
+bool CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
+  DCHECK(gpu_info);
+
+  // match_dictionary will be consumed by IOServiceGetMatchingServices, no need
+  // to release it.
+  CFMutableDictionaryRef match_dictionary = IOServiceMatching("IOPCIDevice");
+  io_iterator_t entry_iterator;
+  if (IOServiceGetMatchingServices(kIOMasterPortDefault,
+                                   match_dictionary,
+                                   &entry_iterator) != kIOReturnSuccess)
+    return false;
+
+  std::vector<VideoCardInfo> video_card_list;
+  io_registry_entry_t entry;
+  while ((entry = IOIteratorNext(entry_iterator))) {
+    base::mac::ScopedCFTypeRef<CFDataRef> class_code_ref(static_cast<CFDataRef>(
+        SearchPortForProperty(entry, CFSTR("class-code"))));
+    if (!class_code_ref)
+      continue;
+    UInt32 class_code = IntValueOfCFData(class_code_ref);
+    if (class_code != 0x30000)  // DISPLAY_VGA
+      continue;
+    base::mac::ScopedCFTypeRef<CFDataRef> vendor_id_ref(static_cast<CFDataRef>(
+        SearchPortForProperty(entry, CFSTR("vendor-id"))));
+    if (!vendor_id_ref)
+      continue;
+    UInt32 vendor_id = IntValueOfCFData(vendor_id_ref);
+    base::mac::ScopedCFTypeRef<CFDataRef> device_id_ref(static_cast<CFDataRef>(
+        SearchPortForProperty(entry, CFSTR("device-id"))));
+    if (!device_id_ref)
+      continue;
+    UInt32 device_id = IntValueOfCFData(device_id_ref);
+    video_card_list.push_back(VideoCardInfo(vendor_id, device_id));
+  }
+  IOObjectRelease(entry_iterator);
+
+  const UInt32 kIntelVendorId = 0x8086;
+  size_t found = video_card_list.size();
+  switch (video_card_list.size()) {
+    case 1:
+      found = 0;
+      break;
+    case 2:
+      if (video_card_list[0].vendor_id == kIntelVendorId &&
+          video_card_list[1].vendor_id != kIntelVendorId)
+        found = 1;
+      else if (video_card_list[0].vendor_id != kIntelVendorId &&
+               video_card_list[1].vendor_id == kIntelVendorId)
+        found = 0;
+      break;
+  }
+  if (found < video_card_list.size()) {
+    gpu_info->vendor_id = video_card_list[found].vendor_id;
+    gpu_info->device_id = video_card_list[found].device_id;
+    return true;
+  }
+  return false;
+}
+
 }  // namespace anonymous
 
 namespace gpu_info_collector {
@@ -57,7 +135,7 @@ bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   bool rt = true;
-  if (!CollectVideoCardInfo(gpu_info))
+  if (!CollectPCIVideoCardInfo(gpu_info) && !CollectVideoCardInfo(gpu_info))
     rt = false;
 
   return rt;
