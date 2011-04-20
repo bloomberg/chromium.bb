@@ -1,0 +1,126 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+  width: 100%;
+}
+
+.invisible {
+  display: none;
+}
+
+/* Common */
+.header-title {
+  background-image: -webkit-linear-gradient(top, #fff,#f6f6f6);
+  border-bottom: 1px #d6d9e3 solid;
+  color: #42506c;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 8px;
+}
+
+.picasa-image {
+  padding-left: 10px;
+  padding-top: 10px;
+}
+
+.header-info {
+  padding-top: 10px;
+  padding-left: 10px;
+  padding-bottom: 20px;
+  font-size: 12px;
+}
+
+div.content {
+  padding-left: 40px;
+}
+
+.field {
+  color: #42506c;
+  font-size: 14px;
+  font-weight: bold;
+  padding-right: 15px;
+  vertical-align: top;
+}
+
+input,
+select,
+textarea {
+  width: 200px;
+}
+
+button {
+  min-width: 60px;
+}
+
+div.footer {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  width: 100%;
+  text-align: right;
+  border-top: 1px #d6d9e3 solid;
+  padding: 10px;
+}
+
+
+/* Login view */
+.login-div {
+  width: 100%;
+  height: 100%;
+}
+
+.login-failure {
+  font-size: 14px;
+}
+
+
+/* Choose album view */
+.album-div {
+  width: 100%;
+  height: 100%;
+}
+
+#files-count-span {
+  font-weight: bold;
+}
+
+.fields {
+  float: left;
+  width: 300px;
+  height: 100%;
+}
+
+textarea {
+  height: 60px;
+  resize: none;
+  overflow-y: scroll;
+}
+
+.preview-grid {
+  float: left;
+  margin-left: 10px;
+  height: 160px;
+  width: 240px;
+}
+
+.preview-item {
+  height: 79px;
+  width: 104px;
+  padding: 2px;
+  border: 1px #d6d9e3 solid;
+}
+
+.preview-item div {
+  width: 100%;
+  height: 100%;
+  display: -webkit-box;
+  -webkit-box-pack: center;
+  -webkit-box-align: center;
+}
+
+.preview-item img {
+  max-height: 75px;
+  max-width: 100px;
+}

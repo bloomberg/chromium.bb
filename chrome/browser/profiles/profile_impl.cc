@@ -475,6 +475,10 @@ void ProfileImpl::RegisterComponentExtensions() {
   component_extensions.push_back(std::make_pair(
       FILE_PATH_LITERAL("file_manager"),
       IDR_FILEMANAGER_MANIFEST));
+
+  component_extensions.push_back(std::make_pair(
+      FILE_PATH_LITERAL("picasaweb_uploader"),
+      IDR_PICASA_UPLOADER_MANIFEST));
 #endif
 
 #if defined(TOUCH_UI)

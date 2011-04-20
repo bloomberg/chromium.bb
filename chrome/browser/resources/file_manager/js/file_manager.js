@@ -954,6 +954,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onTasksFound_ = function(tasksList) {
+    this.taskButtons_.innerHTML = '';
     for (var i = 0; i < tasksList.length; i++) {
       var task = tasksList[i];
 

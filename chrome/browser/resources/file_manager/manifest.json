@@ -11,6 +11,7 @@
   "permissions": [
     "fileBrowserHandler",
     "fileBrowserPrivate",
+    "chrome://extension-icon/",
     "chrome://resources/"
   ]
 }

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Send to Picasa</title>
+  <style type="text/css">
+    .invisible { display: none; }
+    .cancel-button {
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+<div id="progress-container">
+  <div id="files-sent-div">A of B files sent.</div>
+  <div>
+    <progress id="files-sent-progress">progress</progress>
+    <span class="cancel-button">
+      <img id="cancel-normal" src="images/cancel_normal-16.png">
+      <img id="cancel-hover" src="images/cancel_hover-16.png" class="invisible">
+    </span>
+  </div>
+  <div id="time-remaining-div">Time remaining: unknown.</div>
+</div>
+<div id="completed-container" class="invisible">
+  <div style="float:left;height:100%;padding:5px;">
+    <img src="images/green_check-32.png" />
+  </div>
+  <div style="float:left;height:100%;">
+    <span id="files-completed-span">X files sent.</span>
+    <br><a id="view-album-link" href="" target="_blank">View Picasa Web Album</a>
+  </div>
+</div>
+<div id="failed-container" class="invisible">
+  <span id="failure-span">Failure. A of B files sent.</span>
+</div>
+<div id="canceled-container" class="invisible">
+  <span id="canceled-span">Canceled. X files sent.</span>
+</div>
+
+<script>
+
+/**
+ * Notification constructor.
+ *
+ * Notification object is responsible for manipulating notification dom.
+ */
+function Notification() {
+  this.progressContainer_ = document.getElementById('progress-container');
+  this.filesSentDiv_ = document.getElementById('files-sent-div');
+  this.filesSentProgress_ = document.getElementById('files-sent-progress');
+
+  this.cancelButton_ = document.querySelector('.cancel-button');
+  this.cancelButton_.addEventListener('click',
+      this.handleOnCancelClicked_.bind(this))
+  this.cancelButton_.addEventListener('mouseover',
+      this.handleOnCancelOver_.bind(this))
+  this.cancelButton_.addEventListener('mouseout',
+      this.handleOnCancelOut_.bind(this))
+  this.cancelNormal_ = document.getElementById('cancel-normal');
+  this.cancelHover_ = document.getElementById('cancel-hover');
+
+  this.timeRemainingDiv_ = document.getElementById('time-remaining-div');
+
+  this.completedContainer_ = document.getElementById('completed-container');
+  this.filesCompletedSpan_ = document.getElementById('files-completed-span');
+  this.viewAlbumLink_ = document.getElementById('view-album-link');
+
+  this.failedContainer_ = document.getElementById('failed-container');
+  this.failureSpan_ = document.getElementById('failure-span');
+
+  this.canceledContainer_ = document.getElementById('canceled-container');
+  this.canceledSpan_ = document.getElementById('canceled-span');
+
+  // Pass this to uploader object, so it will call update methods when needed.
+  chrome.extension.getBackgroundPage().bg.getUploader(window.location.hash).
+      setNotification(this);
+}
+
+Notification.prototype = {
+  /**
+   * Updates notification progress.
+   * @param {number} done Number of files uploaded.
+   * @param {number} total Total number of files to upload.
+   * @param {number} timeRemaining Estimated remaining time.
+   */
+  update: function(done, total, timeRemaining) {
+    this.filesSentDiv_.textContent = done + ' of ' + total + ' files sent.';
+    this.filesSentProgress_.max = total;
+    this.filesSentProgress_.value = done;
+
+    var timeStr = timeRemaining != null ?
+        this.timeToStr(Math.round(timeRemaining / 1000)) : 'unknown';
+    this.timeRemainingDiv_.textContent = 'Time remaining: ' + timeStr + '.';
+  },
+
+  /**
+   * Converts time to user-readable string.
+   * @param {number} time Time interval.
+   * @return {string} String representation of time.
+   */
+  timeToStr: function(time) {
+    var hours = Math.floor(time / 3600);
+    var minutes = Math.floor((time % 3600) / 60);
+    var seconds = time % 60;
+    if (hours > 0) {
+      seconds = 0;
+    }
+    var result = '';
+    if (hours > 0) {
+      result += hours + ' hours ';
+    }
+    if (minutes > 0) {
+      result += minutes + ' minutes';
+    }
+    if (seconds > 0 || time == 0) {
+      result += seconds + ' seconds';
+    }
+    return result;
+  },
+
+  /**
+   * Shows information about upload failure.
+   * @param {number} done Number of files uploaded.
+   * @param {number} total Total number of files to upload.
+   */
+  showFailed: function(done, total) {
+    this.progressContainer_.classList.add('invisible');
+    this.failedContainer_.classList.remove('invisible');
+    this.failureSpan_.textContent =
+        'Failure. ' + done + ' of ' + total + ' files sent.';
+  },
+
+  /**
+   * Shows information about upload cancelation.
+   * @param {number} done Number of files uploaded.
+   * @param {number} total Total number of files to upload.
+   */
+  showCanceled: function(done, total) {
+    this.progressContainer_.classList.add('invisible');
+    this.canceledContainer_.classList.remove('invisible');
+    this.canceledSpan_.textContent =
+        'Canceled. ' + done + ' of ' + total + ' files sent.';
+  },
+
+  /**
+   * Shows information about upload success.
+   * @param {number} done Number of files uploaded.
+   * @param {string} link Link to the picasa web album.
+   */
+  showCompleted: function(done, link) {
+    this.progressContainer_.classList.add('invisible');
+    this.completedContainer_.classList.remove('invisible');
+    this.filesCompletedSpan_.textContent = done + ' files sent.';
+    this.viewAlbumLink_.setAttribute('href', link);
+  },
+
+  /**
+   * Event handler for cancel button clicked.
+   * @param {Event} e Event.
+   */
+  handleOnCancelClicked_: function(e) {
+    chrome.extension.getBackgroundPage().bg.getUploader(window.location.hash).
+        cancel();
+  },
+
+  /**
+   * Event handler for cancel button mouseover.
+   * @param {Event} e Event.
+   */
+  handleOnCancelOver_: function(e) {
+    this.cancelNormal_.classList.add('invisible');
+    this.cancelHover_.classList.remove('invisible');
+  },
+
+  /**
+   * Event handler for cancel button mouseout.
+   * @param {Event} e Event.
+   */
+  handleOnCancelOut_: function(e) {
+    this.cancelNormal_.classList.remove('invisible');
+    this.cancelHover_.classList.add('invisible');
+  }
+};
+
+/**
+ * The single notification object.
+ * @type {Notification}
+ */
+var notification = new Notification();
+
+</script>
+
+</body>
+</html>

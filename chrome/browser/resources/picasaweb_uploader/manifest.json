@@ -1,0 +1,35 @@
+{
+  "key" : "MIGdMA0GCSqGSIb3DQEBAQUAA4GLADCBhwKBgQDwXhVzJXbc9tqR1AjQwMksRCopgDziDffza16CsGZ9Z6Jz2bB2uBBaESqXQM7rFY4TSpbFgjhHUgBbGu+fFvcL8VSeeVPk81cztLjyyQL+1TflsS/qr56xFuwGNFVLjlSyyX2IEK5efhN6ALdZcjuia6zAak7oXAByg8WoanVJKwIBIw==",
+  "name": "Send to Picasa",
+  "version": "1.0",
+  "description": "Upload photos to Picasa Web Albums",
+  "icons": {
+    "16": "images/picasa-16.png"
+  },
+  "background_page": "background.html",
+  "file_browser_handlers": [
+     {
+       "id": "upload",
+       "default_title": "Send to Picasa",
+       "file_filters": [
+         "filesystem:*.jpeg",
+         "filesystem:*.jpg",
+         "filesystem:*.png",
+         "filesystem:*.gif"
+         "filesystem:*.JPEG",
+         "filesystem:*.JPG",
+         "filesystem:*.PNG",
+         "filesystem:*.GIF"
+       ]
+     }
+   ],
+   "permissions": [
+    "tabs",
+    "contextMenus",
+    "fileBrowserHandler",
+    "notifications",
+    "chrome://resources/",
+    "http://*/*",
+    "https://*/*"
+  ]
+}

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="chrome://resources/js/cr.js"></script>
+  <script src="chrome://resources/js/cr/event_target.js"></script>
+
+  <script src="js/picasa_client.js"></script>
+</head>
+
+<body>
+
+<script>
+
+/**
+ * Uploader constructor.
+ *
+ * Uploader object is responsible for uploading a bunch of images to the same
+ * picasa album. It also manages the notification.
+ *
+ * @param {Array.<picasa.LocalFile>} files Files to upload.
+ * @param {picasa.Album} album Album to upload to.
+ * @param {picasa.Client} client Picasa client.
+ * @param {string} hash Hash value unique to this uploader (to differentiate
+ *     multiple uploaders).
+ */
+function Uploader(files, album, client, hash) {
+  this.album_ = album;
+  this.client_ = client;
+  this.files_ = files;
+
+  this.filesTotal_ = this.files_.length;
+  this.filesDone_ = 0;
+  this.hash = hash;
+
+  this.request_ = null;
+  this.failed_ = false;
+  this.canceled_ = false;
+  this.finished_ = false;
+
+  this.startDate_ = null;
+  this.timeRemaining_ = null;
+}
+
+Uploader.prototype = {
+  /**
+   * Starts the upload process.
+   */
+  start: function() {
+    this.startDate_ = new Date();
+    this.failed_ = false;
+    this.createNotification_();
+    var self = this;
+    self.uploadNextFile_();
+  },
+
+  /**
+   * Creates a webkit notification.
+   */
+  createNotification_: function() {
+    // We pass unique hash to the notification dom, so it will distinct this
+    // uploader object from others.
+    this.webkitNotification_ =
+        window.webkitNotifications.createHTMLNotification(
+            chrome.extension.getURL('notification.html' + this.hash));
+    this.webkitNotification_.onclose = this.onNotificationClose_.bind(this);
+    this.webkitNotification_.show();
+  },
+
+  /**
+   * Sets the notification object (see notification.html).
+   * This method is called from notification dom, so uploader can modify it.
+   * @param {Notification} notification The notification object.
+   */
+  setNotification: function(notification) {
+    this.notification_ = notification;
+    if (this.finished_) {
+      this.showFinished_();
+    } else {
+      this.updateNotification_();
+    }
+  },
+
+  /**
+   * Updates information in notification.
+   */
+  updateNotification_: function() {
+    this.notification_.update(this.filesDone_, this.filesTotal_,
+        this.timeRemaining_);
+  },
+
+  /**
+   * This method is called when uploading is finished (either successfully or
+   * not).
+   */
+  done_: function() {
+    this.finished_ = true;
+    // If notification was closed by user, we should create a new one.
+    if (this.webkitNotification_) {
+      this.showFinished_();
+    } else {
+      this.createNotification_();
+    }
+  },
+
+  /**
+   * Shows final information in notification.
+   */
+  showFinished_: function() {
+    if (this.failed_) {
+      this.notification_.showFailed(this.filesDone_, this.filesTotal_);
+    } else if (this.canceled_) {
+      this.notification_.showCanceled(this.filesDone_, this.filesTotal_);
+    } else {
+      this.notification_.showCompleted(this.filesDone_, this.album_.link);
+    }
+  },
+
+  /**
+   * Event handler for notification close.
+   */
+  onNotificationClose_: function() {
+    if (this.finished_) {
+      // Inform background page that we are done.
+      bg.removeUploader(this.hash);
+    } else {
+      // User closed notification "in progress". We will create a new one
+      // to show final information.
+      this.webkitNotification_ = null;
+    }
+  },
+
+  /**
+   * Uploads the next file to picasa web albums.
+   */
+  uploadNextFile_: function() {
+    if (this.files_.length == 0 || this.failed_ || this.canceled_) {
+      this.done_();
+      return;
+    }
+
+    var file = this.files_.shift();
+    this.request_ = this.client_.uploadFile(this.album_, file,
+        this.uploadFileCallback_.bind(this));
+  },
+
+  /**
+   * Event handler for file upload.
+   * @param {?string} response The response or null if failed.
+   */
+  uploadFileCallback_: function(response) {
+    if (this.failed_ || this.canceled_) {
+      return;
+    }
+    
+    this.request_ = null;
+    if (response == null) {
+      this.failed_ = true;
+    } else {
+      this.filesDone_++;
+      var elapsed = (new Date()) - this.startDate_;
+      this.timeRemaining_ = elapsed *
+          (this.filesTotal_ - this.filesDone_) / this.filesDone_;
+    }
+    this.updateNotification_();
+    this.uploadNextFile_();
+  },
+
+  /**
+   * Cancels the upload process.
+   */
+  cancel: function() {
+    this.canceled_ = true;
+    this.done_();
+    if (this.request_) {
+      this.request_.abort();
+      this.request_ = null;
+    }
+  }
+};
+
+
+/**
+ * BackgroundPage constructor.
+ *
+ * BackgroundPage object opens the upload window and passes upload requests
+ * to Uploader objects. It also holds the global picasa client object.
+ */
+function BackgroundPage() {
+  this.client = new picasa.Client();
+  this.newFiles_ = [];
+  this.uploadPageUrl_ = chrome.extension.getURL('upload.html');
+
+  this.uploaders_ = {};
+  this.lastUploaderHash_ = 0;
+  var self = this;
+  chrome.fileBrowserHandler.onExecute.addListener(
+    function(id, file_entries) {
+      console.log('picasa: got task - '+id);
+      if (id == "upload")
+        self.onFileUpload_(file_entries);
+    });
+}
+
+BackgroundPage.prototype = {
+  /**
+   * Returns a window with specified url.
+   * @param {string} url Url of a window to find.
+   * @return {DOMWindow} Window with specified url.
+   */
+  findWindow_: function(url) {
+    var views = chrome.extension.getViews();
+    for (var view, i = 0; view = views[i]; i++) {
+      if (view.location.href == url) {
+        return view;
+      }
+    }
+    return null;
+  },
+
+  /**
+   * Event handler called when user chooses "send to picasa" somewhere. 
+   * @param file
+   */
+  onSendImageRequest_: function(file) {
+    var win = this.findWindow_(this.uploadPageUrl_);
+    if (win) {
+      // If upload window already loaded, just add one more file.
+      win.uploadPage.addFile(file);
+    } else {
+      // If upload window is not yet loaded, it will ask for new files via
+      // getNewFiles method.
+      this.newFiles_.push(file);
+      chrome.windows.create({url: this.uploadPageUrl_, width: 620, height: 465});
+    }
+  },
+
+  /**
+   * "Send to picasa" event handler from filebrowser.
+   * @param {*} fileEntries Entry object array.
+   */
+  onFileUpload_: function(fileEntries) {
+    var self = this;
+    if (!fileEntries || !fileEntries)
+      return;
+    var entry = fileEntries[0];
+    entry.file(function(file) {
+      self.onSendImageRequest_(new picasa.LocalFile(file));
+    });
+  },
+
+  /**
+   * Returns new files for upload.
+   * @return {Array.<picasa.LocalFile>} New files.
+   */
+  getNewFiles: function() {
+    var result = this.newFiles_;
+    this.newFiles_ = [];
+    return result;
+  },
+
+  /**
+   * Starts the uploading process.
+   * @param {Array.<picasa.LocalFile>} files Files to upload.
+   * @param {picasa.Album} album Album to upload to.
+   */
+  uploadFiles: function(files, album) {
+    var hash = '#' + this.lastUploaderHash_++;
+    var uploader = new Uploader(files, album, this.client, hash);
+    this.uploaders_[hash] = uploader;
+    uploader.start();
+  },
+
+  /**
+   * Returns an Uploader object by hash.
+   * @param {string} hash Unique hash.
+   * @return {Uploader} Uploader object with given hash.
+   */
+  getUploader: function(hash) {
+    return this.uploaders_[hash];
+  },
+
+  /**
+   * Removes an Uploader object by hash.
+   * @param {string} hash Unique hash.
+   */
+  removeUploader: function(hash) {
+    this.uploaders_[hash] = null;
+  }
+};
+
+/**
+ * Single BackgroundPage object.
+ * @type {BackgroundPage}
+ */
+var bg = new BackgroundPage();
+
+</script>
+</body>
+</html>
