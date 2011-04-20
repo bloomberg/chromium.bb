@@ -35,3 +35,9 @@ BUGDPRANKE : transforms/2d/hindi-rotated.html = IMAGE
 BUGDPRANKE : fast/borders/borderRadiusDotted06.html = IMAGE
 BUGDPRANKE : fast/multicol/client-rects.html = IMAGE
 BUGDPRANKE : fast/text/justification-padding-mid-word.html = TEXT
+
+BUGDPRANKE WIN DEBUG : fast/forms/implicit-submission.html = TEXT PASS
+BUGDPRANKE WIN DEBUG : fast/css/text-overflow-ellipsis.html = CRASH
+BUGDPRANKE MAC DEBUG : transitions/cancel-transition.html = TEXT PASS
+BUGDPRANKE LINUX DEBUG : fast/css/getComputedStyle/getComputedStyle-relayout.html = CRASH
+
