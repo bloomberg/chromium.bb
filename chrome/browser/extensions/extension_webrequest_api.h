@@ -32,6 +32,16 @@ class URLRequest;
 // thread unless otherwise specified.
 class ExtensionWebRequestEventRouter {
  public:
+  enum EventTypes {
+    kOnBeforeRequest = 1 << 0,
+    kOnBeforeSendHeaders = 1 << 1,
+    kOnRequestSent = 1 << 2,
+    kOnBeforeRedirect = 1 << 3,
+    kOnHeadersReceived = 1 << 4,
+    kOnErrorOccurred = 1 << 5,
+    kOnCompleted = 1 << 6,
+  };
+
   struct RequestFilter;
   struct ExtraInfoSpec;
 
@@ -102,6 +112,8 @@ class ExtensionWebRequestEventRouter {
   typedef std::map<ProfileId, ListenerMapForProfile> ListenerMap;
   typedef std::map<uint64, BlockedRequest> BlockedRequestMap;
   typedef std::map<uint64, net::URLRequest*> HttpRequestMap;
+  // Map of request_id -> bit vector of EventTypes already signaled
+  typedef std::map<uint64, int> SignaledRequestMap;
 
   ExtensionWebRequestEventRouter();
   ~ExtensionWebRequestEventRouter();
@@ -137,6 +149,10 @@ class ExtensionWebRequestEventRouter {
 
   void OnRequestDeleted(net::URLRequest* request);
 
+  // Sets the flag that |event_type| has been signaled for |request_id|.
+  // Returns the value of the flag before setting it.
+  bool GetAndSetSignaled(uint64 request_id, EventTypes event_type);
+
   // A map for each profile that maps an event name to a set of extensions that
   // are listening to that event.
   ListenerMap listeners_;
@@ -148,6 +164,10 @@ class ExtensionWebRequestEventRouter {
   // A map of HTTP(s) network requests. We use this to look up the URLRequest
   // from the request ID given to us for HTTP-specific events.
   HttpRequestMap http_requests_;
+
+  // A map of request ids to a bitvector indicating which events have been
+  // signaled and should not be sent again.
+  SignaledRequestMap signaled_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebRequestEventRouter);
 };

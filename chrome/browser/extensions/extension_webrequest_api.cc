@@ -319,6 +319,9 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   if (listeners.empty())
     return net::OK;
 
+  if (GetAndSetSignaled(request->identifier(), kOnBeforeRequest))
+    return net::OK;
+
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
   dict->SetString(keys::kRequestIdKey,
@@ -355,6 +358,10 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
 
   net::URLRequest* request = iter->second;
 
+  if (GetAndSetSignaled(request->identifier(), kOnBeforeSendHeaders))
+    return net::OK;
+  // TODO(battre): clear this flag in OnBeforeRedirect.
+
   std::vector<const EventListener*> listeners =
       GetMatchingListeners(profile_id, keys::kOnBeforeSendHeaders, request);
   if (listeners.empty())
@@ -389,7 +396,10 @@ void ExtensionWebRequestEventRouter::OnRequestSent(
     return;
 
   net::URLRequest* request = iter->second;
-  http_requests_.erase(iter);
+
+  if (GetAndSetSignaled(request->identifier(), kOnRequestSent))
+    return;
+  // TODO(battre): clear this flag in OnBeforeRedirect.
 
   std::vector<const EventListener*> listeners =
       GetMatchingListeners(profile_id, keys::kOnRequestSent, request);
@@ -403,7 +413,7 @@ void ExtensionWebRequestEventRouter::OnRequestSent(
   dict->SetString(keys::kUrlKey, request->url().spec());
   dict->SetString(keys::kIpKey, socket_address.host());
   dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
-  // TODO(battre): request line and request headers.
+  // TODO(battre): support "request line" and "request headers".
   args.Append(dict);
 
   DispatchEvent(profile_id, event_router, request, NULL, listeners, args);
@@ -413,6 +423,7 @@ void ExtensionWebRequestEventRouter::OnURLRequestDestroyed(
     ProfileId profile_id, net::URLRequest* request) {
   http_requests_.erase(request->identifier());
   blocked_requests_.erase(request->identifier());
+  signaled_requests_.erase(request->identifier());
 }
 
 bool ExtensionWebRequestEventRouter::DispatchEvent(
@@ -593,6 +604,18 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(uint64 request_id,
     blocked_request.callback->Run(cancel ? net::ERR_EMPTY_RESPONSE : net::OK);
     blocked_requests_.erase(request_id);
   }
+}
+
+bool ExtensionWebRequestEventRouter::GetAndSetSignaled(uint64 request_id,
+                                                       EventTypes event_type) {
+  SignaledRequestMap::iterator iter = signaled_requests_.find(request_id);
+  if (iter == signaled_requests_.end()) {
+    signaled_requests_[request_id] = event_type;
+    return false;
+  }
+  bool was_signaled_before = (iter->second & event_type) != 0;
+  iter->second |= event_type;
+  return was_signaled_before;
 }
 
 bool WebRequestAddEventListener::RunImpl() {
