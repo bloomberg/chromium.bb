@@ -23,6 +23,10 @@ NSTimeInterval kPendingReloadTimeout = 1.35;
 
 @implementation ReloadButton
 
++ (Class)cellClass {
+  return [ImageButtonCell class];
+}
+
 - (void)dealloc {
   if (trackingArea_) {
     [self removeTrackingArea:trackingArea_];

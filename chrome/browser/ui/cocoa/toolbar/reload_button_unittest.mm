@@ -77,19 +77,15 @@ TEST_F(ReloadButtonTest, UpdateTag) {
 
   [button_ updateTag:IDC_RELOAD];
   EXPECT_EQ(IDC_RELOAD, [button_ tag]);
-  NSImage* reloadImage = [button_ image];
   NSString* const reloadToolTip = [button_ toolTip];
 
   [button_ updateTag:IDC_STOP];
   EXPECT_EQ(IDC_STOP, [button_ tag]);
-  NSImage* stopImage = [button_ image];
   NSString* const stopToolTip = [button_ toolTip];
-  EXPECT_NSNE(reloadImage, stopImage);
   EXPECT_NSNE(reloadToolTip, stopToolTip);
 
   [button_ updateTag:IDC_RELOAD];
   EXPECT_EQ(IDC_RELOAD, [button_ tag]);
-  EXPECT_NSEQ(reloadImage, [button_ image]);
   EXPECT_NSEQ(reloadToolTip, [button_ toolTip]);
 }
 
