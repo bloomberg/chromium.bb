@@ -138,11 +138,6 @@
           ],
           'conditions': [
             ['OS=="win"', {
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'DelayLoadDLLs': ['xpcom.dll', 'nspr4.dll'],
-                },
-              },
               'dependencies': [
                 # TODO(slightlyoff): Get automation targets working on OS X
                 '../chrome/chrome.gyp:automation',
@@ -274,11 +269,6 @@
               '-loleacc.lib',
             ],
           },
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'DelayLoadDLLs': ['xpcom.dll', 'nspr4.dll'],
-            },
-          },
           'dependencies': [
             '../chrome/chrome.gyp:crash_service',
             '../chrome/chrome.gyp:automation',
@@ -369,11 +359,6 @@
             'libraries': [
               '-loleacc.lib',
             ],
-          },
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'IgnoreDefaultLibraryNames': ['nspr.lib', 'nspr4.lib'],
-            },
           },
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad_handler',
@@ -596,11 +581,6 @@
             'libraries': [
               '-loleacc.lib',
             ],
-          },
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'DelayLoadDLLs': ['xpcom.dll', 'nspr4.dll'],
-            },
           },
           'dependencies': [
             '../chrome/chrome.gyp:crash_service',
