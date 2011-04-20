@@ -31,14 +31,16 @@ class PepperView : public ChromotingView,
   virtual ~PepperView();
 
   // ChromotingView implementation.
-  virtual bool Initialize();
-  virtual void TearDown();
-  virtual void Paint();
-  virtual void SetSolidFill(uint32 color);
-  virtual void UnsetSolidFill();
-  virtual void SetConnectionState(ConnectionState state);
-  virtual void UpdateLoginStatus(bool success, const std::string& info);
-  virtual void SetViewport(int x, int y, int width, int height);
+  virtual bool Initialize() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
+  virtual void Paint() OVERRIDE;
+  virtual void SetSolidFill(uint32 color) OVERRIDE;
+  virtual void UnsetSolidFill() OVERRIDE;
+  virtual void SetConnectionState(ConnectionState state) OVERRIDE;
+  virtual void UpdateLoginStatus(bool success, const std::string& info)
+      OVERRIDE;
+  virtual void SetViewport(int x, int y, int width, int height) OVERRIDE;
+  virtual gfx::Point ConvertScreenToHost(const gfx::Point& p) const OVERRIDE;
 
   // FrameConsumer implementation.
   virtual void AllocateFrame(media::VideoFrame::Format format,
@@ -53,12 +55,45 @@ class PepperView : public ChromotingView,
                                     UpdatedRects* rects,
                                     Task* done);
 
+  // Sets the size of the visible screen area that this object can render into.
+  void SetScreenSize(int width, int height);
+
+  // Sets whether the host screen is scaled to fit the visible screen area.
+  void SetScaleToFit(bool enabled);
+
  private:
   void OnPaintDone(base::Time paint_start);
+  void OnRefreshPaintDone();
   void PaintFrame(media::VideoFrame* frame, UpdatedRects* rects);
 
+  // Blits the pixels in |r| in the backing store into the corresponding
+  // rectangle in the scaled backing store. Returns that rectangle.
+  gfx::Rect UpdateScaledBackingStore(const gfx::Rect& r);
+
+  // Blanks out a rectangle in an image.
+  void BlankRect(pp::ImageData& image_data, const gfx::Rect& rect);
+
+  // Converts host co-ordinates to screen co-ordinates.
+  gfx::Point ConvertHostToScreen(const gfx::Point& p) const;
+
+  // Sets the screen scale. A value of 1.0 indicates no scaling.
+  void SetScreenScale(double screen_scale);
+
+  // Paints the entire host screen.
+  // This is called, for example, when the screen scale is changed.
+  void RefreshPaint();
+
+  // Resizes internals of this object after the host screen size has changed,
+  // or the scale applied to that screen has changed.
+  // More specifically, pepper's graphics object, the backing stores, and the
+  // scaling cache are resized and/or recalculated.
+  void ResizeInternals();
+
+  // Whether to scale the screen.
+  bool DoScaling() const;
+
   // Reference to the creating plugin instance. Needed for interacting with
-  // pepper.  Marking explciitly as const since it must be initialized at
+  // pepper.  Marking explicitly as const since it must be initialized at
   // object creation, and never change.
   ChromotingInstance* const instance_;
 
@@ -70,8 +105,28 @@ class PepperView : public ChromotingView,
   // A backing store that saves the current desktop image.
   scoped_ptr<pp::ImageData> backing_store_;
 
-  int viewport_width_;
-  int viewport_height_;
+  // A scaled copy of the backing store.
+  scoped_ptr<pp::ImageData> scaled_backing_store_;
+
+  // The factor by which to scale the host screen. A value of 1.0 indicates
+  // no scaling.
+  double screen_scale_;
+
+  // An array containing the x co-ordinate of the point on the host screen
+  // corresponding to the point (i, 0) on the client screen.
+  scoped_array<int> screen_x_to_host_x_;
+
+  // Whether to scale to fit.
+  bool scale_to_fit_;
+
+  // The size of the host screen.
+  int host_width_;
+  int host_height_;
+
+  // The size of the visible area on the client screen that can be used to
+  // display the host screen.
+  int client_width_;
+  int client_height_;
 
   bool is_static_fill_;
   uint32 static_fill_color_;

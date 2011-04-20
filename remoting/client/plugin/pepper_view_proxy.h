@@ -32,14 +32,18 @@ class PepperViewProxy : public base::RefCountedThreadSafe<PepperViewProxy>,
   virtual ~PepperViewProxy();
 
   // ChromotingView implementation.
-  virtual bool Initialize();
-  virtual void TearDown();
-  virtual void Paint();
-  virtual void SetSolidFill(uint32 color);
-  virtual void UnsetSolidFill();
-  virtual void SetConnectionState(ConnectionState state);
-  virtual void UpdateLoginStatus(bool success, const std::string& info);
-  virtual void SetViewport(int x, int y, int width, int height);
+  virtual bool Initialize() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
+  virtual void Paint() OVERRIDE;
+  virtual void SetSolidFill(uint32 color) OVERRIDE;
+  virtual void UnsetSolidFill() OVERRIDE;
+  virtual void SetConnectionState(ConnectionState state) OVERRIDE;
+  virtual void UpdateLoginStatus(bool success, const std::string& info)
+      OVERRIDE;
+  virtual void SetViewport(int x, int y, int width, int height) OVERRIDE;
+  // This method returns a value, so must run synchronously, so must be
+  // called only on the pepper thread.
+  virtual gfx::Point ConvertScreenToHost(const gfx::Point& p) const OVERRIDE;
 
   // FrameConsumer implementation.
   virtual void AllocateFrame(media::VideoFrame::Format format,
@@ -53,6 +57,8 @@ class PepperViewProxy : public base::RefCountedThreadSafe<PepperViewProxy>,
   virtual void OnPartialFrameOutput(media::VideoFrame* frame,
                                     UpdatedRects* rects,
                                     Task* done);
+
+  void SetScaleToFit(bool scale_to_fit);
 
   // Remove the reference to |instance_| and |view_| by setting the value to
   // NULL.

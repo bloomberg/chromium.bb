@@ -148,6 +148,11 @@ a.hostentry {
   float: right;
 }
 
+.scale_to_fit_toggle {
+  line-height: 0.8em;
+  float: right;
+ }
+
 .gaia_login_panel {
   -webkit-user-select: none;
   font-family: arial,sans-serif;

@@ -70,12 +70,19 @@ class ChromotingInstance : public pp::Instance {
   virtual pp::Var GetInstanceObject();
   virtual void ViewChanged(const pp::Rect& position, const pp::Rect& clip);
 
+  // pp::Instance interface.
+  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip)
+      OVERRIDE;
+
   // Convenience wrapper to get the ChromotingScriptableObject.
   ChromotingScriptableObject* GetScriptableObject();
 
   // Called by ChromotingScriptableObject to provide username and password.
   void SubmitLoginInfo(const std::string& username,
                        const std::string& password);
+
+  // Called by ChromotingScriptableObject to set scale-to-fit.
+  void SetScaleToFit(bool scale_to_fit);
 
   void LogDebugInfo(const std::string& info);
 

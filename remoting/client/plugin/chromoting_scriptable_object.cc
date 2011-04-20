@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,6 +87,7 @@ void ChromotingScriptableObject::Init() {
             &ChromotingScriptableObject::DoConnectSandboxed);
   AddMethod("disconnect", &ChromotingScriptableObject::DoDisconnect);
   AddMethod("submitLoginInfo", &ChromotingScriptableObject::DoSubmitLogin);
+  AddMethod("setScaleToFit", &ChromotingScriptableObject::DoSetScaleToFit);
   AddMethod("onIq", &ChromotingScriptableObject::DoOnIq);
 }
 
@@ -413,6 +414,23 @@ Var ChromotingScriptableObject::DoSubmitLogin(const std::vector<Var>& args,
 
   LogDebugInfo("Submitting login info to host.");
   instance_->SubmitLoginInfo(username, password);
+  return Var();
+}
+
+Var ChromotingScriptableObject::DoSetScaleToFit(const std::vector<Var>& args,
+                                                Var* exception) {
+  if (args.size() != 1) {
+    *exception = Var("Usage: setScaleToFit(scale_to_fit)");
+    return Var();
+  }
+
+  if (!args[0].is_bool()) {
+    *exception = Var("scale_to_fit must be a boolean.");
+    return Var();
+  }
+
+  LogDebugInfo("Setting scale-to-fit.");
+  instance_->SetScaleToFit(args[0].AsBool());
   return Var();
 }
 

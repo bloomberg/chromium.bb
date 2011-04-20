@@ -1,10 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "remoting/client/plugin/pepper_input_handler.h"
 
 #include "ppapi/c/pp_input_event.h"
+#include "remoting/client/chromoting_view.h"
+#include "ui/gfx/point.h"
 
 namespace remoting {
 
@@ -35,8 +37,11 @@ void PepperInputHandler::HandleCharacterEvent(
 
 void PepperInputHandler::HandleMouseMoveEvent(
     const PP_InputEvent_Mouse& event) {
-  SendMouseMoveEvent(static_cast<int>(event.x),
-                     static_cast<int>(event.y));
+  gfx::Point p(static_cast<int>(event.x), static_cast<int>(event.y));
+  // Pepper gives co-ordinates in the plugin instance's co-ordinate system,
+  // which may be different from the host desktop's co-ordinate system.
+  p = view_->ConvertScreenToHost(p);
+  SendMouseMoveEvent(p.x(), p.y());
 }
 
 void PepperInputHandler::HandleMouseButtonEvent(

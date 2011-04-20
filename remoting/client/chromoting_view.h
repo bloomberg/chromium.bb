@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "media/base/video_frame.h"
+#include "ui/gfx/point.h"
 
 class MessageLoop;
 
@@ -71,6 +72,10 @@ class ChromotingView {
   // Reposition and resize the viewport into the backing store. If the viewport
   // extends past the end of the backing store, it is filled with black.
   virtual void SetViewport(int x, int y, int width, int height) = 0;
+
+  // Converts screen co-ordinates to host co-ordinates, and clips to the host
+  // screen.
+  virtual gfx::Point ConvertScreenToHost(const gfx::Point& p) const = 0;
 
  protected:
   // Framebuffer for the decoder.

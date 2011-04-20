@@ -24,14 +24,16 @@ class X11View : public ChromotingView, public FrameConsumer {
   virtual ~X11View();
 
   // ChromotingView implementations.
-  virtual bool Initialize();
-  virtual void TearDown();
-  virtual void Paint();
-  virtual void SetSolidFill(uint32 color);
-  virtual void UnsetSolidFill();
-  virtual void SetConnectionState(ConnectionState s);
-  virtual void UpdateLoginStatus(bool success, const std::string& info);
-  virtual void SetViewport(int x, int y, int width, int height);
+  virtual bool Initialize() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
+  virtual void Paint() OVERRIDE;
+  virtual void SetSolidFill(uint32 color) OVERRIDE;
+  virtual void UnsetSolidFill() OVERRIDE;
+  virtual void SetConnectionState(ConnectionState s) OVERRIDE;
+  virtual void UpdateLoginStatus(bool success, const std::string& info)
+      OVERRIDE;
+  virtual void SetViewport(int x, int y, int width, int height) OVERRIDE;
+  virtual gfx::Point ConvertScreenToHost(const gfx::Point& p) const OVERRIDE;
 
   // FrameConsumer implementation.
   virtual void AllocateFrame(media::VideoFrame::Format format,

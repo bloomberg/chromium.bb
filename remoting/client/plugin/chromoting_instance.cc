@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -185,6 +185,15 @@ void ChromotingInstance::ViewChanged(const pp::Rect& position,
   view_->Paint();
 }
 
+void ChromotingInstance::DidChangeView(const pp::Rect& position,
+                                       const pp::Rect& clip) {
+  // This lets |view_| implement scale-to-fit. But it only specifies a
+  // sub-rectangle of the plugin window as the rectangle on which the host
+  // screen can be displayed, so |view_| has to make sure the plugin window
+  // is large.
+  view_->SetScreenSize(clip.width(), clip.height());
+}
+
 bool ChromotingInstance::HandleInputEvent(const PP_InputEvent& event) {
   DCHECK(CurrentlyOnPluginThread());
 
@@ -259,6 +268,10 @@ void ChromotingInstance::SubmitLoginInfo(const std::string& username,
   host_connection_->host_stub()->BeginSessionRequest(
       credentials,
       new DeleteTask<protocol::LocalLoginCredentials>(credentials));
+}
+
+void ChromotingInstance::SetScaleToFit(bool scale_to_fit) {
+  view_proxy_->SetScaleToFit(scale_to_fit);
 }
 
 void ChromotingInstance::LogDebugInfo(const std::string& info) {

@@ -10,6 +10,7 @@ var MAX_DEBUG_LOG_SIZE = 1000;
 // old messages.  This starts at 1 and is incremented for each new message.
 chromoting.messageId = 1;
 
+chromoting.scaleToFit = false;
 // Default to trying to sandboxed connections.
 chromoting.connectMethod = 'sandboxed';
 
@@ -143,6 +144,13 @@ function toggleDebugLog() {
     debugLog.style.display = "none";
     toggleButton.value = "Show Debug Log";
   }
+}
+
+function toggleScaleToFit() {
+  chromoting.scaleToFit = !chromoting.scaleToFit;
+  document.getElementById("scale_to_fit_toggle").value =
+      chromoting.scaleToFit ? "No scaling" : "Scale to fit";
+  chromoting.plugin.setScaleToFit(chromoting.scaleToFit);
 }
 
 function submitLogin() {

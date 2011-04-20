@@ -80,6 +80,9 @@
 //
 //   // Method for submitting login information.
 //   void submitLoginInfo(string username, string password);
+//
+//   // Method for setting scale-to-fit.
+//   void setScaleToFit(bool scale_to_fit);
 // }
 
 #ifndef REMOTING_CLIENT_PLUGIN_CHROMOTING_SCRIPTABLE_OBJECT_H_
@@ -192,6 +195,9 @@ class ChromotingScriptableObject
 
   // This method is called by JS to provide login information.
   pp::Var DoSubmitLogin(const std::vector<pp::Var>& args, pp::Var* exception);
+
+  // This method is called by JS to set scale-to-fit.
+  pp::Var DoSetScaleToFit(const std::vector<pp::Var>& args, pp::Var* exception);
 
   // This method is caleld by Javascript to provide responses to sendIq()
   // requests when establishing a sandboxed Chromoting connection.

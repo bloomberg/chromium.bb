@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -143,6 +143,10 @@ void X11View::UpdateLoginStatus(bool success, const std::string& info) {
 
 void X11View::SetViewport(int x, int y, int width, int height) {
   // TODO(garykac): Implement.
+}
+
+gfx::Point X11View::ConvertScreenToHost(const gfx::Point& p) const {
+  return p;
 }
 
 void X11View::InitPaintTarget() {
