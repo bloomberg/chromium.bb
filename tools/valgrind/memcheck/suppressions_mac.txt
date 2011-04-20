@@ -276,6 +276,13 @@
    ...
    fun:MyActivateTSMDocument
 }
+{
+   # __cxa_get_globals leaks a structure when called for the first time
+   __cxa_get_globals one-time leak
+   Memcheck:Leak
+   ...
+   fun:__cxa_get_globals
+}
 
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 {
@@ -1612,3 +1619,21 @@
    fun:_ZN16IOSurfaceSupport10InitializeEv
    fun:_ZN11TabContents14GetWebkitPrefsEv
 }
+{
+   bug_79994
+   Memcheck:Cond
+   ...
+   fun:gleUpdateState
+   fun:gleInitializeContext
+   fun:gliCreateContext
+   fun:CGLRestoreDispatchFunction
+   fun:CGLCreateContext
+   fun:-[NSOpenGLContext initWithFormat:shareContext:]
+   fun:-[AcceleratedPluginView initWithRenderWidgetHostViewMac:pluginHandle:]
+   fun:_ZN23RenderWidgetHostViewMac30AllocateFakePluginWindowHandleEbb
+   fun:_ZN27RenderWidgetHostViewMacTest24AddAcceleratedPluginViewEii
+   fun:_ZN53RenderWidgetHostViewMacTest_FocusAcceleratedView_Test8TestBodyEv
+   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
+   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
+}
+
