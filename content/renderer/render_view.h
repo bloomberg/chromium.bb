@@ -490,7 +490,8 @@ class RenderView : public RenderWidget,
   virtual void didClearWindowObject(WebKit::WebFrame* frame);
   virtual void didCreateDocumentElement(WebKit::WebFrame* frame);
   virtual void didReceiveTitle(WebKit::WebFrame* frame,
-                               const WebKit::WebString& title);
+                               const WebKit::WebString& title,
+                               WebKit::WebTextDirection direction);
   virtual void didChangeIcons(WebKit::WebFrame*);
   virtual void didFinishDocumentLoad(WebKit::WebFrame* frame);
   virtual void didHandleOnloadEvents(WebKit::WebFrame* frame);

@@ -2473,7 +2473,10 @@ void RenderView::didCreateDocumentElement(WebFrame* frame) {
                     DidCreateDocumentElement(frame));
 }
 
-void RenderView::didReceiveTitle(WebFrame* frame, const WebString& title) {
+void RenderView::didReceiveTitle(WebFrame* frame, const WebString& title,
+                                 WebTextDirection direction) {
+  // TODO: pass direction through various APIs.
+  // http://code.google.com/p/chromium/issues/detail?id=79903
   UpdateTitle(frame, title);
 
   // Also check whether we have new encoding name.
