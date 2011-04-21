@@ -310,7 +310,12 @@ class InstantTest : public InProcessBrowserTest {
 // - Test resize events.
 
 // Verify that the onchange event is dispatched upon typing in the box.
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_OnChangeEvent) {
+#else
 IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
+#endif  // OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -336,7 +341,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
             GetSearchStateAsString(preview_, true));
 }
 
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_SetSuggestionsArrayOfStrings) {
+#else
 IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsArrayOfStrings) {
+#endif  // OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -348,7 +358,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsArrayOfStrings) {
   EXPECT_STR_EQ("defgh", GetSuggestion());
 }
 
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_SetSuggestionsEmptyArray) {
+#else
 IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptyArray) {
+#endif  // OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -360,7 +375,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptyArray) {
   EXPECT_STR_EQ("", GetSuggestion());
 }
 
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_SetSuggestionsValidJson) {
+#else
 IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsValidJson) {
+#endif  // OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -374,7 +394,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsValidJson) {
   EXPECT_STR_EQ("defghij", GetSuggestion());
 }
 
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_SetSuggestionsInvalidSuggestions) {
+#else
 IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsInvalidSuggestions) {
+#endif  // OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -388,7 +413,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsInvalidSuggestions) {
   EXPECT_STR_EQ("", GetSuggestion());
 }
 
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_SetSuggestionsEmptyJson) {
+#else
 IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptyJson) {
+#endif  // OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -412,7 +442,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptySuggestions) {
   EXPECT_STR_EQ("", GetSuggestion());
 }
 
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_SetSuggestionsEmptySuggestion) {
+#else
 IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptySuggestion) {
+#endif  // OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -425,7 +460,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptySuggestion) {
 }
 
 // Verify instant preview is shown correctly for a non-search query.
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_ShowPreviewNonSearch) {
+#else
 IN_PROC_BROWSER_TEST_F(InstantTest, ShowPreviewNonSearch) {
+#endif  // OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   GURL url(test_server()->GetURL("files/instant/empty.html"));
@@ -444,7 +484,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, ShowPreviewNonSearch) {
 
 // Transition from non-search to search and make sure everything is shown
 // correctly.
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_NonSearchToSearch) {
+#else
 IN_PROC_BROWSER_TEST_F(InstantTest, NonSearchToSearch) {
+#endif  // OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   GURL url(test_server()->GetURL("files/instant/empty.html"));
@@ -601,7 +646,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest,
 }
 
 // Verifies the page was told a non-zero height.
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_ValidHeight) {
+#else
 IN_PROC_BROWSER_TEST_F(InstantTest, ValidHeight) {
+#endif  // OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -627,7 +677,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, ValidHeight) {
 
 // Verifies that if the server returns a 403 we don't show the preview and
 // query the host again.
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_HideOn403) {
+#else
 IN_PROC_BROWSER_TEST_F(InstantTest, HideOn403) {
+#endif  // OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   GURL url(test_server()->GetURL("files/instant/403.html"));
@@ -654,7 +709,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, HideOn403) {
 }
 
 // Verify that the onsubmit event is dispatched upon pressing enter.
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_OnSubmitEvent) {
+#else
 IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
+#endif  // OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -682,7 +742,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
 }
 
 // Verify that the oncancel event is dispatched upon losing focus.
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_OnCancelEvent) {
+#else
 IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
+#endif  // OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -711,7 +776,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
 }
 
 // Make sure about:crash is shown.
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_ShowAboutCrash) {
+#else
 IN_PROC_BROWSER_TEST_F(InstantTest, ShowAboutCrash) {
+#endif  // OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
 
@@ -723,7 +793,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, ShowAboutCrash) {
   // preview was never shown.
 }
 
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_InstantCompleteNever) {
+#else
 IN_PROC_BROWSER_TEST_F(InstantTest, InstantCompleteNever) {
+#endif  // OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -740,7 +815,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, InstantCompleteNever) {
   ASSERT_EQ(ASCIIToUTF16("def"), location_bar_->location_entry()->GetText());
 }
 
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_InstantCompleteDelayed) {
+#else
 IN_PROC_BROWSER_TEST_F(InstantTest, InstantCompleteDelayed) {
+#endif  // OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -758,7 +838,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, InstantCompleteDelayed) {
 }
 
 // Make sure the renderer doesn't crash if javascript is blocked.
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_DontCrashOnBlockedJS) {
+#else
 IN_PROC_BROWSER_TEST_F(InstantTest, DontCrashOnBlockedJS) {
+#endif  // OS_LINUX
   browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
   ASSERT_TRUE(test_server()->Start());
@@ -771,7 +856,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DontCrashOnBlockedJS) {
   // As long as we get the notification we're good (the renderer didn't crash).
 }
 
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_DownloadOnEnter) {
+#else
 IN_PROC_BROWSER_TEST_F(InstantTest, DownloadOnEnter) {
+#endif  // OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   // Make sure the browser window is the front most window.
@@ -811,7 +901,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DownloadOnEnter) {
 }
 
 // Makes sure window.chrome.searchbox doesn't persist when a new page is loaded.
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_DontPersistSearchbox) {
+#else
 IN_PROC_BROWSER_TEST_F(InstantTest, DontPersistSearchbox) {
+#endif  // OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));

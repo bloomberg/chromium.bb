@@ -1143,7 +1143,12 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, AltEnter) {
   AltEnterTest();
 }
 
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DISABLED_EnterToSearch) {
+#else
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, EnterToSearch) {
+#endif  // OS_LINUX
   EnterToSearchTest();
 }
 
