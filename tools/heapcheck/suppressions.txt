@@ -1425,3 +1425,8 @@
    fun:std::operator+
    fun:::LogTypeQualityMetric
 }
+{
+   bug_80151
+   Heapcheck:Leak
+   fun:QuotaFileUtilTest::Context
+}
