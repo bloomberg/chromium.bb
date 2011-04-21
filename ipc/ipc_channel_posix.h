@@ -139,8 +139,6 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   // True if we are responsible for unlinking the unix domain socket file.
   bool must_unlink_;
 
-  ScopedRunnableMethodFactory<ChannelImpl> factory_;
-
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChannelImpl);
 };
 

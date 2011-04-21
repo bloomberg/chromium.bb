@@ -308,8 +308,7 @@ Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle& channel_handle,
 #endif  // IPC_USES_READWRITE
       pipe_name_(channel_handle.name),
       listener_(listener),
-      must_unlink_(false),
-      factory_(this) {
+      must_unlink_(false) {
   if (!CreatePipe(channel_handle)) {
     // The pipe may have been closed already.
     const char *modestr = (mode_ & MODE_SERVER_FLAG) ? "server" : "client";
