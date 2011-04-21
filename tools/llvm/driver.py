@@ -284,8 +284,8 @@ INITIAL_ENV = {
   'OBJDUMP_X8664' : '${BINUTILS_BASE}objdump',
 
   'AS_ARM'        : '${BINUTILS_BASE}as',
-  'AS_X8632'      : '${BASE_NACL}/toolchain/linux_x86/bin/nacl-as',
-  'AS_X8664'      : '${BASE_NACL}/toolchain/linux_x86/bin/nacl64-as',
+  'AS_X8632'      : '${BASE_NACL}/toolchain/linux_x86_newlib/bin/nacl-as',
+  'AS_X8664'      : '${BASE_NACL}/toolchain/linux_x86_newlib/bin/nacl64-as',
 
   'AS_FLAGS_ARM'  : '-mfpu=vfp -march=armv7-a',
   'AS_FLAGS_X8632': '--32 --nacl-align 5 -n -march=pentium4 -mtune=i386',

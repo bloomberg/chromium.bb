@@ -23,7 +23,7 @@ export ac_cv_func_mmap_fixed_mapped=yes
 
 echo @@@BUILD_STEP clobber@@@
 rm -rf scons-out tools/SRC tools/BUILD tools/out tools/toolchain \
-  tools/glibc tools/glibc.tar tools/toolchain.tgz toolchain .tmp ||
+  tools/glibc tools/glibc.tar tools/toolchain.t* toolchain .tmp ||
   echo already_clean
 mkdir -p tools/toolchain/win_x86
 ln -sfn "$PWD"/cygwin/tmp tools/toolchain/win_x86
@@ -53,7 +53,11 @@ echo @@@BUILD_STEP compile_toolchain@@@
 echo @@@BUILD_STEP tar_toolchain@@@
 (
   cd tools
-  tar zScf toolchain.tgz toolchain/ && chmod a+r toolchain.tgz
+  tar Scf toolchain.tgz toolchain/
+  xz -k -9 toolchain.tar
+  bzip2 -k -9 toolchain.tar
+  gzip -9 toolchain.tar
+  chmod a+r toolchain.tar.gz toolchain.tar.bz2 toolchain.tar.xz
 )
 
 echo @@@BUILD_STEP untar_toolchain@@@

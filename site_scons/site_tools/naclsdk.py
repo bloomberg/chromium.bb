@@ -83,6 +83,8 @@ def _PlatformSubdirs(env):
     arch = env['BUILD_ARCHITECTURE']
     subarch = env['TARGET_SUBARCH']
     name = NACL_PLATFORM_DIR_MAP[platform][arch][subarch]
+    if not env.Bit('nacl_glibc'):
+      name = name + '_newlib'
   return name
 
 

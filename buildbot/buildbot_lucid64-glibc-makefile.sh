@@ -21,7 +21,7 @@ gclient runhooks --force
 
 echo @@@BUILD_STEP clobber@@@
 rm -rf scons-out tools/SRC tools/BUILD tools/out tools/toolchain \
-  tools/glibc tools/glibc.tar tools/toolchain.tgz toolchain .tmp ||
+  tools/glibc tools/glibc.tar tools/toolchain.t* toolchain .tmp ||
   echo already_clean
 
 echo @@@BUILD_STEP compile_toolchain@@@
@@ -44,8 +44,11 @@ echo @@@BUILD_STEP tar_glibc@@@
 echo @@@BUILD_STEP tar_toolchain@@@
 (
   cd tools
-  tar zScf toolchain.tgz toolchain/
-  chmod a+r toolchain.tgz
+  tar Scf toolchain.tar toolchain/
+  xz -k -9 toolchain.tar
+  bzip2 -k -9 toolchain.tar
+  gzip -9 toolchain.tar
+  chmod a+r toolchain.tar.gz toolchain.tar.bz2 toolchain.tar.xz
 )
 
 if [[ "$BUILDBOT_SLAVE_TYPE" != "Trybot" ]]; then
@@ -57,9 +60,11 @@ if [[ "$BUILDBOT_SLAVE_TYPE" != "Trybot" ]]; then
   echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r"$(tools/glibc_revision.sh)"/@@@
 
   echo @@@BUILD_STEP archive_build@@@
-  /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
-    tools/toolchain.tgz \
-    gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_linux_x86.tar.gz
+  for suffix in gz bz2 xz; do
+    /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+      tools/toolchain.tar.$suffix \
+      gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_linux_x86.tar.$suffix
+  done
   echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/@@@
 fi
 
@@ -67,7 +72,7 @@ echo @@@BUILD_STEP untar_toolchain@@@
 (
   mkdir -p .tmp
   cd .tmp
-  tar zSxf ../tools/toolchain.tgz
+  tar JSxf ../tools/toolchain.tar.xz
   mv toolchain ..
 )
 

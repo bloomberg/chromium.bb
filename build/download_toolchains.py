@@ -17,17 +17,17 @@ import sync_tgz
 
 PLATFORM_MAPPING = {
     'windows': {
-        'x86-32': ['win_x86'],
-        'x86-64': ['win_x86'],
+        'x86-32': ['win_x86_newlib'],
+        'x86-64': ['win_x86_newlib'],
     },
     'linux': {
-        'x86-32': ['linux_x86','pnacl_linux_i686','linux_arm-trusted'],
-        'x86-64': ['linux_x86','pnacl_linux_x86_64','linux_arm-trusted'],
-        'arm'   : ['linux_x86','pnacl_linux_x86_64','linux_arm-trusted'],
+        'x86-32': ['linux_x86_newlib','pnacl_linux_i686','linux_arm-trusted'],
+        'x86-64': ['linux_x86_newlib','pnacl_linux_x86_64','linux_arm-trusted'],
+        'arm'   : ['linux_x86_newlib','pnacl_linux_x86_64','linux_arm-trusted'],
     },
     'mac': {
-        'x86-32': ['mac_x86'],
-        'x86-64': ['mac_x86'],
+        'x86-32': ['mac_x86_newlib'],
+        'x86-64': ['mac_x86_newlib'],
     },
 }
 
@@ -57,7 +57,10 @@ def main():
       version = options.arm_version
     else:
       version = options.x86_version
-    url = '%s/%s/naclsdk_%s.tgz' % (options.base_url, version, flavor)
+    if flavor.endswith('_newlib'):
+      url = '%s/%s/naclsdk_%s.tgz' % (options.base_url, version, flavor[:-7])
+    else:
+      url = '%s/%s/naclsdk_%s.tgz' % (options.base_url, version, flavor)
     parent_dir = os.path.dirname(os.path.dirname(__file__))
     dst = os.path.join(parent_dir, 'toolchain', flavor)
     if version != 'latest' and download_utils.SourceIsCurrent(dst, url):

@@ -65,7 +65,7 @@ readonly GCC_VER="4.2.1"
 # NOTE: NEWLIB_INSTALL_DIR also server as a SYSROOT
 readonly NEWLIB_INSTALL_DIR="${INSTALL_ROOT}/arm-newlib"
 
-readonly NACL_TOOLCHAIN=$(pwd)/toolchain/${SCONS_BUILD_PLATFORM}_x86
+readonly NACL_TOOLCHAIN=$(pwd)/toolchain/${SCONS_BUILD_PLATFORM}_x86_newlib
 
 readonly PATCH_DIR=$(pwd)/tools/patches
 
