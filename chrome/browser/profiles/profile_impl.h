@@ -37,7 +37,7 @@ class NetPrefObserver;
 class ProfileImpl : public Profile,
                     public SpellCheckHostObserver,
                     public NotificationObserver,
-                    public PrefService::Delegate {
+                    public PrefServiceDelegate {
  public:
   virtual ~ProfileImpl();
 
