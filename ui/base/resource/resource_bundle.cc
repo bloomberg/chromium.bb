@@ -119,6 +119,11 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
 
   scoped_ptr<SkBitmap> bitmap(LoadBitmap(resources_data_, resource_id));
   if (bitmap.get()) {
+    // Check if there's a large version of the image as well.
+    scoped_ptr<SkBitmap> large_bitmap;
+    if (large_icon_resources_data_)
+      large_bitmap.reset(LoadBitmap(large_icon_resources_data_, resource_id));
+
     // The load was successful, so cache the image.
     base::AutoLock lock_scope(*lock_);
 
@@ -126,6 +131,7 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
     if (images_.count(resource_id))
       return *images_[resource_id];
 
+    // TODO(sail): Add the large bitmap to the image as well.
     gfx::Image* image = new gfx::Image(bitmap.release());
     images_[resource_id] = image;
     return *image;
@@ -190,6 +196,7 @@ void ResourceBundle::ReloadFonts() {
 ResourceBundle::ResourceBundle()
     : lock_(new base::Lock),
       resources_data_(NULL),
+      large_icon_resources_data_(NULL),
       locale_resources_data_(NULL) {
 }
 

@@ -66,6 +66,12 @@ FilePath ResourceBundle::GetResourcesFilePath() {
 }
 
 // static
+FilePath ResourceBundle::GetLargeIconResourcesFilePath() {
+  // Not supported.
+  return FilePath();
+}
+
+// static
 FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
   FilePath locale_file_path;
   PathService::Get(ui::DIR_LOCALES, &locale_file_path);
