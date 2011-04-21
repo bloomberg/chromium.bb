@@ -56,10 +56,10 @@ class BalloonHost : public RenderViewHostDelegate,
   virtual void RenderViewGone(RenderViewHost* render_view_host,
                               base::TerminationStatus status,
                               int error_code);
-  virtual void UpdateTitle(RenderViewHost* render_view_host,
-                           int32 page_id,
-                           const string16& title,
-                           WebKit::WebTextDirection title_direction) OVERRIDE {}
+  virtual void UpdateTitle(
+      RenderViewHost* render_view_host,
+      int32 page_id,
+      const base::i18n::String16WithDirection& title) OVERRIDE {}
   virtual int GetBrowserWindowID() const;
   virtual ViewType::Type GetRenderViewType() const;
   virtual RenderViewHostDelegate::View* GetViewDelegate();

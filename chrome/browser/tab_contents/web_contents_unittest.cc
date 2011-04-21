@@ -237,8 +237,10 @@ TEST_F(TabContentsTest, UpdateTitle) {
   NavigationController::LoadCommittedDetails details;
   controller().RendererDidNavigate(params, 0, &details);
 
-  contents()->UpdateTitle(rvh(), 0, ASCIIToUTF16("    Lots O' Whitespace\n"),
-                          WebKit::WebTextDirectionLeftToRight);
+  base::i18n::String16WithDirection new_title(
+      ASCIIToUTF16("    Lots O' Whitespace\n"),
+      base::i18n::LEFT_TO_RIGHT);
+  contents()->UpdateTitle(rvh(), 0, new_title);
   EXPECT_EQ(ASCIIToUTF16("Lots O' Whitespace"), contents()->GetTitle());
 }
 

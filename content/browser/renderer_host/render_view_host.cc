@@ -1008,8 +1008,12 @@ void RenderViewHost::OnMsgUpdateTitle(
     NOTREACHED() << "Renderer sent too many characters in title.";
     return;
   }
-
-  delegate_->UpdateTitle(this, page_id, title, title_direction);
+  base::i18n::TextDirection dir =
+      title_direction == WebKit::WebTextDirectionLeftToRight ?
+          base::i18n::LEFT_TO_RIGHT :
+          base::i18n::RIGHT_TO_LEFT;
+  delegate_->UpdateTitle(this, page_id,
+                         base::i18n::String16WithDirection(title, dir));
 }
 
 void RenderViewHost::OnMsgUpdateEncoding(const std::string& encoding_name) {

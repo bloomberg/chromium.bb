@@ -383,10 +383,10 @@ void InterstitialPage::DidNavigate(
   tab_->SetIsLoading(false, NULL);
 }
 
-void InterstitialPage::UpdateTitle(RenderViewHost* render_view_host,
-                                   int32 page_id,
-                                   const string16& title,
-                                   WebKit::WebTextDirection title_direction) {
+void InterstitialPage::UpdateTitle(
+    RenderViewHost* render_view_host,
+    int32 page_id,
+    const base::i18n::String16WithDirection& title) {
   DCHECK(render_view_host == render_view_host_);
   NavigationEntry* entry = tab_->controller().GetActiveEntry();
   if (!entry) {
@@ -408,8 +408,6 @@ void InterstitialPage::UpdateTitle(RenderViewHost* render_view_host,
     original_tab_title_ = UTF16ToWideHack(entry->title());
     should_revert_tab_title_ = true;
   }
-  // TODO(evan): use directionality of title.
-  // http://code.google.com/p/chromium/issues/detail?id=27094
   entry->set_title(title);
   tab_->NotifyNavigationStateChanged(TabContents::INVALIDATE_TITLE);
 }

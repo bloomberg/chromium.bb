@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prerender/prerender_contents.h"
 
+#include "base/i18n/rtl.h"
 #include "base/process_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
@@ -266,16 +267,16 @@ void PrerenderContents::DidNavigate(
   url_ = params.url;
 }
 
-void PrerenderContents::UpdateTitle(RenderViewHost* render_view_host,
-                                    int32 page_id,
-                                    const string16& title,
-                                    WebKit::WebTextDirection title_direction) {
-  if (title.empty())
+void PrerenderContents::UpdateTitle(
+    RenderViewHost* render_view_host,
+    int32 page_id,
+    const base::i18n::String16WithDirection& title) {
+  if (title.string().empty())
     return;
 
   // TODO(evan): use directionality of title.
   // http://code.google.com/p/chromium/issues/detail?id=27094
-  title_ = title;
+  title_ = title.string();
   page_id_ = page_id;
 }
 

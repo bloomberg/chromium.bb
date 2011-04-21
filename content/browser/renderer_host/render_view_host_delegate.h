@@ -22,7 +22,6 @@
 #include "net/base/load_states.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "webkit/glue/window_open_disposition.h"
 
 
@@ -56,6 +55,9 @@ class WebKeyboardEvent;
 struct WebPreferences;
 
 namespace base {
+namespace i18n {
+class String16WithDirection;
+}
 class WaitableEvent;
 }
 
@@ -437,8 +439,7 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   // The page's title was changed and should be updated.
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id,
-                           const string16& title,
-                           WebKit::WebTextDirection title_direction) {}
+                           const base::i18n::String16WithDirection& title) {}
 
   // The page's encoding was changed and should be updated.
   virtual void UpdateEncoding(RenderViewHost* render_view_host,

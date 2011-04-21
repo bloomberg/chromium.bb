@@ -1992,8 +1992,7 @@ void TabContents::UpdateState(RenderViewHost* rvh,
 
 void TabContents::UpdateTitle(RenderViewHost* rvh,
                               int32 page_id,
-                              const string16& title,
-                              WebKit::WebTextDirection title_direction) {
+                              const base::i18n::String16WithDirection& title) {
   // If we have a title, that's a pretty good indication that we've started
   // getting useful data.
   SetNotWaitingForResponse();
@@ -2003,7 +2002,7 @@ void TabContents::UpdateTitle(RenderViewHost* rvh,
                                                           page_id);
   // TODO(evan): use directionality of title.
   // http://code.google.com/p/chromium/issues/detail?id=27094
-  if (!entry || !UpdateTitleForEntry(entry, UTF16ToWide(title)))
+  if (!entry || !UpdateTitleForEntry(entry, UTF16ToWide(title.string())))
     return;
 
   // Broadcast notifications when the UI should be updated.

@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/i18n/rtl.h"
 #include "chrome/common/security_style.h"
 #include "content/common/page_transition_types.h"
 #include "content/common/page_type.h"
@@ -269,6 +270,11 @@ class NavigationEntry {
   // The caller is responsible for detecting when there is no title and
   // displaying the appropriate "Untitled" label if this is being displayed to
   // the user.
+  void set_title(const base::i18n::String16WithDirection& title) {
+    set_title(title.string());
+  }
+  // TODO(evan): remove the string16-setter once callers are updated.
+  // http://code.google.com/p/chromium/issues/detail?id=27094
   void set_title(const string16& title) {
     title_ = title;
     cached_display_title_.clear();

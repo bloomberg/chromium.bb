@@ -117,10 +117,10 @@ class PrerenderContents : public RenderViewHostDelegate,
   virtual int GetBrowserWindowID() const;
   virtual void DidNavigate(RenderViewHost* render_view_host,
                            const ViewHostMsg_FrameNavigate_Params& params);
-  virtual void UpdateTitle(RenderViewHost* render_view_host,
-                           int32 page_id,
-                           const string16& title,
-                           WebKit::WebTextDirection title_direction) OVERRIDE;
+  virtual void UpdateTitle(
+      RenderViewHost* render_view_host,
+      int32 page_id,
+      const base::i18n::String16WithDirection& title) OVERRIDE;
   virtual WebPreferences GetWebkitPrefs();
   virtual void RunJavaScriptMessage(const std::wstring& message,
                                     const std::wstring& default_prompt,
