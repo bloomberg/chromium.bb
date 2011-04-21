@@ -28,7 +28,16 @@ var IDENTIFIER_TO_CLASS = {
   '38': 'is-alt'
 };
 
+var LABEL_TO_IDENTIFIER = {
+  'search': 'E0 5B',
+  'ctrl': '1D',
+  'alt': '38',
+  'caps lock': '3A',
+  'disabled': 'DISABLED'
+}
+
 var keyboardOverlayId = 'en_US';
+var identifierMap = {};
 
 /**
  * Returns layouts data.
@@ -48,7 +57,7 @@ function getShortcutData() {
  * Returns the keyboard overlay ID.
  */
 function getKeyboardOverlayId() {
-  return keyboardOverlayId
+  return keyboardOverlayId;
 }
 
 /**
@@ -165,6 +174,13 @@ function isAscii(c) {
 }
 
 /**
+ * Returns a remapped identiifer based on the preference.
+ */
+function remapIdentifier(identifier) {
+  return identifierMap[identifier] || identifier;
+}
+
+/**
  * Returns a label of the key.
  */
 function getKeyLabel(keyData, modifiers) {
@@ -247,7 +263,7 @@ function update(modifiers) {
   var shortcutData = getShortcutData();
   var layout = getLayouts()[keyboardGlyphData.layoutName];
   for (var i = 0; i < layout.length; ++i) {
-    var identifier = layout[i][0];
+    var identifier = remapIdentifier(layout[i][0]);
     var keyData = keyboardGlyphData.keys[identifier];
     var classes = getKeyClasses(identifier, modifiers, keyData);
     var keyLabel = getKeyLabel(keyData, modifiers);
@@ -305,6 +321,14 @@ function handleKeyEvent(e){
  * Initializes the layout of the keys.
  */
 function initLayout() {
+  // Add data for the caps lock key
+  var keys = getKeyboardGlyphData().keys;
+  if (!('3A' in keys)) {
+    keys['3A'] = {label: 'caps lock', format: 'left'};
+  }
+  // Add data for the special key representing a disabled key
+  keys['DISABLED'] = {label: 'disabled', format: 'left'};
+
   var layout = getLayouts()[getKeyboardGlyphData().layoutName];
   var keyboard = document.body;
   var minX = window.innerWidth;
@@ -317,7 +341,7 @@ function initLayout() {
   var offsetY = 7;
   for (var i = 0; i < layout.length; i++) {
     var array = layout[i];
-    var identifier = array[0];
+    var identifier = remapIdentifier(array[0]);
     var x = Math.round((array[1] + offsetX) * multiplier);
     var y = Math.round((array[2] + offsetY) * multiplier);
     var w = Math.round((array[3] - keyMargin) * multiplier);
@@ -386,6 +410,25 @@ function initLayout() {
 function init() {
   document.addEventListener('keydown', handleKeyEvent);
   document.addEventListener('keyup', handleKeyEvent);
+  chrome.send('getLabelMap');
+}
+
+/**
+ * Initializes the global map for remapping identifiers of modifier keys based
+ * on the preference.
+ * Called after sending the 'getLabelMap' message.
+ */
+function initIdentifierMap(remap) {
+  for (var key in remap) {
+    var val = remap[key];
+    if ((key in LABEL_TO_IDENTIFIER) &&
+        (val in LABEL_TO_IDENTIFIER)) {
+      identifierMap[LABEL_TO_IDENTIFIER[key]] =
+          LABEL_TO_IDENTIFIER[val];
+    } else {
+      console.error('Invalid label map element: ' + key + ', ' + val);
+    }
+  }
   chrome.send('getKeyboardOverlayId');
 }
 
