@@ -4165,10 +4165,7 @@ bool RenderView::IsNonLocalTopLevelNavigation(
     // top level navigation and routed back to the host.
     WebKit::WebFrame* opener = frame->opener();
     if (!opener) {
-      // Force link click navigations to always be routed to the host as they
-      // may update session state on the server.
-      if (type == WebKit::WebNavigationTypeLinkClicked)
-        return true;
+      return true;
     } else {
       if (url.GetOrigin() != GURL(opener->url()).GetOrigin())
         return true;

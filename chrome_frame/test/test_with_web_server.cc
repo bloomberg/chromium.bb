@@ -24,6 +24,8 @@
 #include "net/http/http_util.h"
 
 using chrome_frame_test::kChromeFrameLongNavigationTimeoutInSeconds;
+using chrome_frame_test::kChromeFrameVeryLongNavigationTimeoutInSeconds;
+
 using testing::_;
 using testing::StrCaseEq;
 
@@ -1003,7 +1005,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestMultipleGet) {
 
   ASSERT_TRUE(LaunchBrowser(IE, server.FormatHttpPath(kPages[0]).c_str()));
 
-  loop_.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  loop_.RunFor(kChromeFrameVeryLongNavigationTimeoutInSeconds);
 
   const test_server::Request* request = NULL;
   server.FindRequest("/quit?OK", &request);
