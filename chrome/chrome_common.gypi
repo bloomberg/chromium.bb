@@ -106,7 +106,6 @@
         'default_plugin/default_plugin.gyp:default_plugin',
         'safe_browsing_csd_proto',
         'theme_resources',
-        'theme_resources_standard',
         '../app/app.gyp:app_base',
         '../app/app.gyp:app_resources',
         '../base/base.gyp:base',

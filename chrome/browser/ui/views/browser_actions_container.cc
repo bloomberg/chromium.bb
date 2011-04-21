@@ -29,8 +29,6 @@
 #include "content/common/notification_type.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -46,6 +44,8 @@
 #include "views/drag_utils.h"
 #include "views/metrics.h"
 #include "views/window/window.h"
+
+#include "grit/theme_resources.h"
 
 // Horizontal spacing between most items in the container, as well as after the
 // last item or chevron (if visible).

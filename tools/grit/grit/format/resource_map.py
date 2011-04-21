@@ -49,14 +49,10 @@ class HeaderTopLevel(interface.ItemFormatter):
 
 #include <stddef.h>
 
-#ifndef GRIT_RESOURCE_MAP_STRUCT_
-#define GRIT_RESOURCE_MAP_STRUCT_
 struct GritResourceMap {
   const char* const name;
   int value;
 };
-#endif // GRIT_RESOURCE_MAP_STRUCT_
-
 extern const GritResourceMap %(map_name)s[];
 extern const size_t %(map_name)sSize;
 ''' % { 'year': util.GetCurrentYear(),

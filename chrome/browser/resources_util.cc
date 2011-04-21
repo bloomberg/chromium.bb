@@ -9,7 +9,6 @@
 #include "base/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "grit/theme_resources_map.h"
-#include "grit/theme_resources_standard_map.h"
 
 namespace {
 
@@ -23,10 +22,6 @@ class ThemeMap {
   ThemeMap() {
     for (size_t i = 0; i < kThemeResourcesSize; ++i) {
       id_map_[kThemeResources[i].name] = kThemeResources[i].value;
-    }
-    for (size_t i = 0; i < kThemeResourcesStandardSize; ++i) {
-      id_map_[kThemeResourcesStandard[i].name] =
-          kThemeResourcesStandard[i].value;
     }
   }
 

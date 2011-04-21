@@ -9,7 +9,6 @@
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 
 @implementation DownloadShelfView
 
