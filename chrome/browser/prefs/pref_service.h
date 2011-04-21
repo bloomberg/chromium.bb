@@ -33,6 +33,13 @@ class PrefMemberBase;
 class ScopedUserPrefUpdateBase;
 };
 
+class PrefService;
+
+class PrefServiceDelegate {
+ public:
+  virtual void OnPrefsLoaded(PrefService* prefs, bool success) = 0;
+};
+
 class PrefService : public base::NonThreadSafe,
                     public JsonPrefStore::Delegate {
  public:
@@ -113,11 +120,6 @@ class PrefService : public base::NonThreadSafe,
     DISALLOW_COPY_AND_ASSIGN(Preference);
   };
 
-  class Delegate {
-   public:
-    virtual void OnPrefsLoaded(PrefService* prefs, bool success) = 0;
-  };
-
   // JsonPrefStore::Delegate implementaion.
   virtual void OnPrefsRead(PersistentPrefStore::PrefReadError error,
                            bool no_dir);
@@ -137,7 +139,7 @@ class PrefService : public base::NonThreadSafe,
   static PrefService* CreatePrefServiceAsync(const FilePath& pref_filename,
                                              PrefStore* extension_pref_store,
                                              Profile* profile,
-                                             Delegate* delegate);
+                                             PrefServiceDelegate* delegate);
 
   // Creates an incognito copy of the pref service that shares most pref stores
   // but uses a fresh non-persistent overlay for the user pref store and an
@@ -259,7 +261,7 @@ class PrefService : public base::NonThreadSafe,
               PrefStore* recommended_platform_prefs,
               PrefStore* recommended_cloud_prefs,
               DefaultPrefStore* default_store,
-              Delegate* delegate);
+              PrefServiceDelegate* delegate);
 
   // The PrefNotifier handles registering and notifying preference observers.
   // It is created and owned by this PrefService. Subclasses may access it for
@@ -343,7 +345,7 @@ class PrefService : public base::NonThreadSafe,
 
   // Holds delegator to be called after initialization, if async version
   // is used.
-  Delegate* delegate_;
+  PrefServiceDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefService);
 };

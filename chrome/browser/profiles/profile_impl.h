@@ -161,7 +161,7 @@ class ProfileImpl : public Profile,
   // Does final initialization. Should be called after prefs were loaded.
   void DoFinalInit();
 
-  // PrefService::Delegate implementation. Does final prefs initialization and
+  // PrefServiceDelegate implementation. Does final prefs initialization and
   // calls Init().
   virtual void OnPrefsLoaded(PrefService* prefs, bool success);
 

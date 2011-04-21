@@ -95,7 +95,7 @@ PrefService* PrefService::CreatePrefServiceAsync(
     const FilePath& pref_filename,
     PrefStore* extension_prefs,
     Profile* profile,
-    PrefService::Delegate* delegate) {
+    PrefServiceDelegate* delegate) {
   using policy::ConfigurationPolicyPrefStore;
 
 #if defined(OS_LINUX)
@@ -145,7 +145,7 @@ PrefService::PrefService(PrefStore* managed_platform_prefs,
                          PrefStore* recommended_platform_prefs,
                          PrefStore* recommended_cloud_prefs,
                          DefaultPrefStore* default_store,
-                         PrefService::Delegate* delegate)
+                         PrefServiceDelegate* delegate)
     : user_pref_store_(user_prefs),
       default_store_(default_store),
       delegate_(delegate) {
