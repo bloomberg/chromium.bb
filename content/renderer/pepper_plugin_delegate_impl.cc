@@ -1283,3 +1283,10 @@ webkit_glue::P2PTransport* PepperPluginDelegateImpl::CreateP2PTransport() {
   return NULL;
 #endif
 }
+
+double PepperPluginDelegateImpl::GetLocalTimeZoneOffset(base::Time t) {
+  double result = 0.0;
+  render_view_->Send(new PepperMsg_GetLocalTimeZoneOffset(
+      t, &result));
+  return result;
+}

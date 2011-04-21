@@ -50,3 +50,6 @@ IPC_MESSAGE_CONTROL3(PepperMsg_ConnectTcpAddress,
                      int /* request_id */,
                      PP_Flash_NetAddress /* addr */)
 
+IPC_SYNC_MESSAGE_CONTROL1_1(PepperMsg_GetLocalTimeZoneOffset,
+                            base::Time /* t */,
+                            double /* result */)

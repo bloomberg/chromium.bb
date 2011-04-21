@@ -73,20 +73,15 @@ void QuitMessageLoop(PP_Instance instance) {
   MessageLoop::current()->QuitNow();
 }
 
-double GetLocalTimeZoneOffset(PP_Time t) {
-  // Somewhat horrible: Explode it to local time and then unexplode it as if
-  // it were UTC. Also explode it to UTC and unexplode it (this avoids
-  // mismatching rounding or lack thereof). The time zone offset is their
-  // difference.
-  //
-  // TODO(brettw) this is duplicated in ppb_flash_proxy.cc, unify these!
-  base::Time cur = base::Time::FromDoubleT(t);
-  base::Time::Exploded exploded;
-  cur.LocalExplode(&exploded);
-  base::Time adj_time = base::Time::FromUTCExploded(exploded);
-  cur.UTCExplode(&exploded);
-  cur = base::Time::FromUTCExploded(exploded);
-  return (adj_time - cur).InSecondsF();
+double GetLocalTimeZoneOffset(PP_Instance pp_instance, PP_Time t) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
+  if (!instance)
+    return 0.0;
+
+  // We can't do the conversion here because on Linux, the localtime calls
+  // require filesystem access prohibited by the sandbox.
+  return instance->delegate()->GetLocalTimeZoneOffset(
+      base::Time::FromDoubleT(t));
 }
 
 const PPB_Flash ppb_flash = {

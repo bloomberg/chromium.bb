@@ -102,6 +102,7 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void SaveURLAs(const GURL& url);
   virtual P2PSocketDispatcher* GetP2PSocketDispatcher();
   virtual webkit_glue::P2PTransport* CreateP2PTransport();
+  virtual double GetLocalTimeZoneOffset(base::Time t);
 };
 
 }  // namespace ppapi

@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/process.h"
+#include "base/time.h"
 #include "content/browser/browser_message_filter.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 
@@ -63,6 +64,8 @@ class PepperMessageFilter : public BrowserMessageFilter {
                                        int request_id,
                                        PP_Flash_NetAddress addr);
 #endif  // ENABLE_FLAPPER_HACKS
+
+  void OnGetLocalTimeZoneOffset(base::Time t, double* result);
 
   const content::ResourceContext* const resource_context_;
 };

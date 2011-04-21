@@ -235,5 +235,9 @@ webkit_glue::P2PTransport* MockPluginDelegate::CreateP2PTransport() {
   return NULL;
 }
 
+double MockPluginDelegate::GetLocalTimeZoneOffset(base::Time t) {
+  return 0.0;
+}
+
 }  // namespace ppapi
 }  // namespace webkit

@@ -115,7 +115,7 @@ void RunMessageLoop(PP_Instance instance) {
   if (!dispatcher)
     return;
   IPC::SyncMessage* msg = new PpapiHostMsg_PPBFlash_RunMessageLoop(
-        INTERFACE_ID_PPB_FLASH, instance);
+      INTERFACE_ID_PPB_FLASH, instance);
   msg->EnableMessagePumping();
   dispatcher->Send(msg);
 }
@@ -125,23 +125,24 @@ void QuitMessageLoop(PP_Instance instance) {
   if (!dispatcher)
     return;
   dispatcher->Send(new PpapiHostMsg_PPBFlash_QuitMessageLoop(
-        INTERFACE_ID_PPB_FLASH, instance));
+      INTERFACE_ID_PPB_FLASH, instance));
 }
 
-double GetLocalTimeZoneOffset(PP_Time t) {
-  // Somewhat horrible: Explode it to local time and then unexplode it as if
-  // it were UTC. Also explode it to UTC and unexplode it (this avoids
-  // mismatching rounding or lack thereof). The time zone offset is their
-  // difference.
+double GetLocalTimeZoneOffset(PP_Instance instance, PP_Time t) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return 0.0;
+
+  // TODO(brettw) on Windows it should be possible to do the time calculation
+  // in-process since it doesn't need to read files on disk. This will improve
+  // performance.
   //
-  // TODO(brettw) this is duplicated in ppb_flash_impl.cc, unify these!
-  base::Time cur = base::Time::FromDoubleT(t);
-  base::Time::Exploded exploded;
-  cur.LocalExplode(&exploded);
-  base::Time adj_time = base::Time::FromUTCExploded(exploded);
-  cur.UTCExplode(&exploded);
-  cur = base::Time::FromUTCExploded(exploded);
-  return (adj_time - cur).InSecondsF();
+  // On Linux, it would be better to go directly to the browser process for
+  // this message rather than proxy it through some instance in a renderer.
+  double result = 0;
+  dispatcher->Send(new PpapiHostMsg_PPBFlash_GetLocalTimeZoneOffset(
+      INTERFACE_ID_PPB_FLASH, instance, t, &result));
+  return result;
 }
 
 const PPB_Flash flash_interface = {
@@ -258,6 +259,12 @@ void PPB_Flash_Proxy::OnMsgRunMessageLoop(PP_Instance instance) {
 
 void PPB_Flash_Proxy::OnMsgQuitMessageLoop(PP_Instance instance) {
   ppb_flash_target()->QuitMessageLoop(instance);
+}
+
+void PPB_Flash_Proxy::OnMsgGetLocalTimeZoneOffset(PP_Instance instance,
+                                                  PP_Time t,
+                                                  double* result) {
+  *result = ppb_flash_target()->GetLocalTimeZoneOffset(instance, t);
 }
 
 }  // namespace proxy

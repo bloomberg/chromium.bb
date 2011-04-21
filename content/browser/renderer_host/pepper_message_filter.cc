@@ -44,17 +44,17 @@ PepperMessageFilter::~PepperMessageFilter() {}
 
 bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
                                             bool* message_was_ok) {
-#if defined(ENABLE_FLAPPER_HACKS)
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(PepperMessageFilter, msg, *message_was_ok)
+#if defined(ENABLE_FLAPPER_HACKS)
     IPC_MESSAGE_HANDLER(PepperMsg_ConnectTcp, OnConnectTcp)
     IPC_MESSAGE_HANDLER(PepperMsg_ConnectTcpAddress, OnConnectTcpAddress)
+#endif  // ENABLE_FLAPPER_HACKS
+    IPC_MESSAGE_HANDLER(PepperMsg_GetLocalTimeZoneOffset,
+                        OnGetLocalTimeZoneOffset)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
-#else
-  return false;
-#endif  // ENABLE_FLAPPER_HACKS
 }
 
 #if defined(ENABLE_FLAPPER_HACKS)
@@ -278,3 +278,20 @@ void PepperMessageFilter::ConnectTcpAddressOnWorkerThread(
 }
 
 #endif  // ENABLE_FLAPPER_HACKS
+
+void PepperMessageFilter::OnGetLocalTimeZoneOffset(base::Time t,
+                                                   double* result) {
+  // Explode it to local time and then unexplode it as if it were UTC. Also
+  // explode it to UTC and unexplode it (this avoids mismatching rounding or
+  // lack thereof). The time zone offset is their difference.
+  //
+  // The reason for this processing being in the browser process is that on
+  // Linux, the localtime calls require filesystem access prohibited by the
+  // sandbox.
+  base::Time::Exploded exploded;
+  t.LocalExplode(&exploded);
+  base::Time adj_time = base::Time::FromUTCExploded(exploded);
+  t.UTCExplode(&exploded);
+  base::Time cur = base::Time::FromUTCExploded(exploded);
+  *result = (adj_time - cur).InSecondsF();
+}

@@ -13,7 +13,7 @@
 #include "ppapi/c/pp_time.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_FLASH_INTERFACE "PPB_Flash;9"
+#define PPB_FLASH_INTERFACE "PPB_Flash;10"
 
 struct PPB_Flash {
   // Sets or clears the rendering hint that the given plugin instance is always
@@ -54,7 +54,7 @@ struct PPB_Flash {
   void (*QuitMessageLoop)(PP_Instance instance);
 
   // Retrieves the local time zone offset from GM time for the given UTC time.
-  double (*GetLocalTimeZoneOffset)(PP_Time t);
+  double (*GetLocalTimeZoneOffset)(PP_Instance instance, PP_Time t);
 };
 
 #endif  // PPAPI_C_PRIVATE_PPB_FLASH_H_

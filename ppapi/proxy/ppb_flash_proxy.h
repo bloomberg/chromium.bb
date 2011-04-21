@@ -10,6 +10,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
+#include "ppapi/c/pp_time.h"
 #include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 
@@ -51,6 +52,8 @@ class PPB_Flash_Proxy : public InterfaceProxy {
                      int32_t* result);
   void OnMsgRunMessageLoop(PP_Instance instance);
   void OnMsgQuitMessageLoop(PP_Instance instance);
+  void OnMsgGetLocalTimeZoneOffset(PP_Instance instance, PP_Time t,
+                                   double* result);
 };
 
 }  // namespace proxy

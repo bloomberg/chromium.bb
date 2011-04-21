@@ -437,6 +437,10 @@ IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBFlash_RunMessageLoop,
                            PP_Instance /* instance */)
 IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBFlash_QuitMessageLoop,
                            PP_Instance /* instance */)
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_GetLocalTimeZoneOffset,
+                           PP_Instance /* instance */,
+                           PP_Time /* t */,
+                           double /* offset */)
 
 // PPB_Flash_Clipboard.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlashClipboard_IsFormatAvailable,

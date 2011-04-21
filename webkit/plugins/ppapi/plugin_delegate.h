@@ -13,6 +13,7 @@
 #include "base/platform_file.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
+#include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -387,6 +388,8 @@ class PluginDelegate {
 
   // Creates P2PTransport object.
   virtual webkit_glue::P2PTransport* CreateP2PTransport() = 0;
+
+  virtual double GetLocalTimeZoneOffset(base::Time t) = 0;
 };
 
 }  // namespace ppapi
