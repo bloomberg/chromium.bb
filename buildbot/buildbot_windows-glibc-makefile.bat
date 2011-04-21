@@ -17,7 +17,8 @@ bash buildbot/buildbot_windows-glibc-makefile.sh
 if errorlevel 1 exit 1
 endlocal
 
-IF "%BUILDBOT_SLAVE_TYPE%"=="Trybot" goto SkipUpload
+if "%BUILDBOT_SLAVE_TYPE%"=="" goto SkipUpload
+if "%BUILDBOT_SLAVE_TYPE%"=="Trybot" goto SkipUpload
 
 :: gsutil does not work when called from cygwin - python versions conflict.
 

@@ -48,7 +48,6 @@ if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
 echo @@@BUILD_STEP clobber@@@
 rd /s /q scons-out ^
- & rd /s /q toolchain ^
  & rd /s /q build\Debug build\Release ^
  & rd /s /q build\Debug-Win32 build\Release-Win32 ^
  & rd /s /q build\Debug-x64 build\Release-x64

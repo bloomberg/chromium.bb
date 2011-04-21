@@ -48,7 +48,7 @@ echo @@@BUILD_STEP gclient_runhooks@@@
 gclient runhooks --force
 
 echo @@@BUILD_STEP clobber@@@
-rm -rf scons-out toolchain compiler hg ../xcodebuild ../sconsbuild ../out \
+rm -rf scons-out compiler hg ../xcodebuild ../sconsbuild ../out \
     src/third_party/nacl_sdk/arm-newlib
 
 echo @@@BUILD_STEP partial_sdk${BITS}@@@
