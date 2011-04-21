@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/sandbox_policy.h"
+#include "chrome/nacl/nacl_launcher_thread.h"
 #include "chrome/nacl/nacl_main_platform_delegate.h"
-#include "chrome/nacl/nacl_thread.h"
 #include "content/common/child_process.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/main_function_params.h"
@@ -119,7 +119,7 @@ int NaClMain(const MainFunctionParams& parameters) {
   if (sandbox_test_result) {
     ChildProcess nacl_process;
     bool debug = parsed_command_line.HasSwitch(switches::kEnableNaClDebug);
-    nacl_process.set_main_thread(new NaClThread(debug));
+    nacl_process.set_main_thread(new NaClLauncherThread(debug));
     MessageLoop::current()->Run();
   } else {
     // This indirectly prevents the test-harness-success-cookie from being set,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/nacl/nacl_thread.h"
+#include "chrome/nacl/nacl_launcher_thread.h"
 
 #include <vector>
 
@@ -61,31 +61,33 @@ typedef int NaClHandle;
 #endif  // NaClHandle
 
 // This is currently necessary because we have a conflict between
-// NaCl's "struct NaClThread" and Chromium's "class NaClThread".
+// NaCl's LOG_FATAL (from platform/nacl_log.h) and Chromium's
+// LOG_FATAL (from base/logging.h).
 extern "C" int NaClMainForChromium(int handle_count, const NaClHandle* handles,
                                    int debug);
 
-NaClThread::NaClThread(bool debug) {
+NaClLauncherThread::NaClLauncherThread(bool debug) {
   debug_enabled_ = debug ? 1 : 0;
 }
 
-NaClThread::~NaClThread() {
+NaClLauncherThread::~NaClLauncherThread() {
 }
 
-NaClThread* NaClThread::current() {
-  return static_cast<NaClThread*>(ChildThread::current());
+NaClLauncherThread* NaClLauncherThread::current() {
+  return static_cast<NaClLauncherThread*>(ChildThread::current());
 }
 
-bool NaClThread::OnControlMessageReceived(const IPC::Message& msg) {
+bool NaClLauncherThread::OnControlMessageReceived(const IPC::Message& msg) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(NaClThread, msg)
+  IPC_BEGIN_MESSAGE_MAP(NaClLauncherThread, msg)
     IPC_MESSAGE_HANDLER(NaClProcessMsg_Start, OnStartSelLdr)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void NaClThread::OnStartSelLdr(std::vector<nacl::FileDescriptor> handles) {
+void NaClLauncherThread::OnStartSelLdr(
+    std::vector<nacl::FileDescriptor> handles) {
 #if defined(OS_LINUX)
   nacl::SetCreateMemoryObjectFunc(
       renderer_sandbox_support::MakeSharedMemorySegmentViaIPC);
