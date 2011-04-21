@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 // A representation of an SRPC connection.  These can be either to the
@@ -12,6 +12,7 @@
 
 #include <map>
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
 namespace plugin {
@@ -30,7 +31,7 @@ class SrpcClient {
   //  The destructor closes the connection to sel_ldr.
   ~SrpcClient();
 
-  void StartJSObjectProxy(Plugin* plugin);
+  bool StartJSObjectProxy(Plugin* plugin, nacl::string* error_string);
   //  Test whether the SRPC service has a given method.
   bool HasMethod(uintptr_t method_id);
   //  Invoke an SRPC method.

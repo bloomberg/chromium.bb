@@ -68,6 +68,16 @@ bool UrlAsNaClDesc(void* obj, plugin::SrpcParams* params) {
       url, *reinterpret_cast<pp::Var*>(ins[1]->arrays.oval));
 }
 
+bool GetLastError(void* obj, plugin::SrpcParams* params) {
+  NaClSrpcArg** outs = params->outs();
+  PLUGIN_PRINTF(("GetLastError (obj=%p)\n", obj));
+
+  PluginPpapi* plugin =
+      static_cast<PluginPpapi*>(reinterpret_cast<Plugin*>(obj));
+  outs[0]->arrays.str = strdup(plugin->last_error_string().c_str());
+  return true;
+}
+
 }  // namespace
 
 const char* const PluginPpapi::kNaClMIMEType = "application/x-nacl";
@@ -184,6 +194,9 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
     AddMethodCall(SetAsyncCallback, "__setAsyncCallback", "o", "");
   }
 
+  // Export a property to allow us to get the last error description.
+  AddPropertyGet(GetLastError, "lastError", "s");
+
   PLUGIN_PRINTF(("PluginPpapi::Init (status=%d)\n", status));
   return status;
 }
@@ -191,6 +204,7 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
 
 PluginPpapi::PluginPpapi(PP_Instance pp_instance)
     : pp::Instance(pp_instance),
+      last_error_string_(""),
       ppapi_proxy_(NULL),
       replayDidChangeView(false) {
   PLUGIN_PRINTF(("PluginPpapi::PluginPpapi (this=%p, pp_instance=%"
@@ -295,23 +309,34 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PluginPpapi::NexeFileDidOpen (file_desc=%"NACL_PRId32")\n",
                  file_desc));
   if (pp_error != PP_OK || file_desc == NACL_NO_FILE_DESC) {
-    Failure("NaCl module load failed: could not load url.");
+    if (pp_error == PP_ERROR_ABORTED) {
+      ReportLoadAbort();
+    } else {
+      ReportLoadError("could not load nexe url.");
+    }
+    return;
+  }
+  nacl::string error_string;
+  if (!IsValidNexeOrigin(nexe_downloader_.url(),
+                         NACL_NO_FILE_PATH,
+                         &error_string)) {
+    ReportLoadError(error_string);
+  }
+  int32_t file_desc_ok_to_close = DUP(file_desc);
+  if (file_desc_ok_to_close == NACL_NO_FILE_DESC) {
+    ReportLoadError("could not duplicate loaded file handle.");
+  }
+  // Inform JavaScript that progress is being made.
+  DispatchProgressEvent("progress", false, kUnknownBytes, kUnknownBytes);
+  nacl::scoped_ptr<nacl::DescWrapper>
+      wrapper(wrapper_factory()->MakeFileDesc(file_desc_ok_to_close, O_RDONLY));
+  bool was_successful = LoadNaClModule(wrapper.get(), &error_string);
+  if (was_successful) {
+    ReportLoadSuccess();
+    // Set the __moduleReady attribute to indicate ready to start.
+    set_nacl_module_ready(true);
   } else {
-    if (!IsValidNexeOrigin(nexe_downloader_.url(), NACL_NO_FILE_PATH)) {
-      return;
-    }
-    int32_t file_desc_ok_to_close = DUP(file_desc);
-    if (file_desc_ok_to_close == NACL_NO_FILE_DESC) {
-      return;
-    }
-    nacl::scoped_ptr<nacl::DescWrapper>
-        wrapper(wrapper_factory()->MakeFileDesc(file_desc_ok_to_close,
-                                                O_RDONLY));
-#if defined(NACL_STANDALONE)
-    LoadNaClModule(wrapper.get(), /* start_from_browser */ false);
-#else
-    LoadNaClModule(wrapper.get(), /* start_from_browser */ true);
-#endif
+    ReportLoadError(error_string);
   }
 }
 
@@ -325,7 +350,8 @@ bool PluginPpapi::RequestNaClModule(const nacl::string& url) {
 }
 
 
-void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
+bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
+                                        nacl::string* error_string) {
   PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (srpc_channel=%p)\n",
                  reinterpret_cast<void*>(srpc_channel)));
   // Check that the .nexe exports the PPAPI intialization method.
@@ -333,17 +359,17 @@ void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
   if (NaClSrpcServiceMethodIndex(client_service,
                                  "PPP_InitializeModule:iihs:ii") ==
       kNaClSrpcInvalidMethodIndex) {
-    Failure("NaCl module proxy failed: could not find PPP_InitializeModule()"
-            " - toolchain version mismatch?");
-    return;
+    *error_string =
+        "could not find PPP_InitializeModule() - toolchain version mismatch?";
+    return false;
   }
   ppapi_proxy_ =
       new(std::nothrow) ppapi_proxy::BrowserPpp(srpc_channel, this);
   PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (ppapi_proxy=%p)\n",
                  reinterpret_cast<void*>(ppapi_proxy_)));
   if (ppapi_proxy_ == NULL) {
-    Failure("NaCl module proxy failed: could not allocate proxy memory.");
-    return;
+    *error_string = "could not allocate proxy memory.";
+    return false;
   }
   pp::Module* module = pp::Module::Get();
   CHECK(module != NULL);  // We could not have gotten past init stage otherwise.
@@ -351,8 +377,8 @@ void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
       ppapi_proxy_->InitializeModule(module->pp_module(),
                                      module->get_browser_interface());
   if (pp_error != PP_OK) {
-    Failure("NaCl module proxy failed: could not initialize module.");
-    return;
+    *error_string = "could not initialize module.";
+    return false;
   }
   const PPP_Instance* instance_interface =
       ppapi_proxy_->ppp_instance_interface();
@@ -363,8 +389,8 @@ void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
       const_cast<const char**>(argn()),
       const_cast<const char**>(argv()));
   if (did_create == PP_FALSE) {
-    Failure("NaCl module proxy failed: could not create instance.");
-    return;
+    *error_string = "could not create instance.";
+    return false;
   }
 
   ScriptableHandlePpapi* handle =
@@ -378,6 +404,7 @@ void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
     replayDidChangeView = false;
     DidChangeView(replayDidChangeViewPosition, replayDidChangeViewClip);
   }
+  return true;
 }
 
 
@@ -402,7 +429,11 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen (file_desc=%"
                  NACL_PRId32")\n", file_desc));
   if (pp_error != PP_OK || file_desc == NACL_NO_FILE_DESC) {
-    Failure("NaCl module load failed: could not load manifest url.");
+    if (pp_error == PP_ERROR_ABORTED) {
+      ReportLoadAbort();
+    } else {
+      ReportLoadError("could not load manifest url.");
+    }
     return;
   }
   // Duplicate the file descriptor in order to create a FILE stream with it
@@ -415,14 +446,14 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
                  dup_file_desc, reinterpret_cast<void*>(json_file)));
   if (json_file == NULL) {
     CLOSE(dup_file_desc);
-    Failure("NaCl module load failed: could not open manifest file.");
+    ReportLoadError("could not open manifest file.");
     return;
   }
   nacl::scoped_array<char> json_buffer(
       new char[kNaclManifestMaxFileBytesPlusNull]);
   if (json_buffer == NULL) {
     fclose(json_file);
-    Failure("NaCl module load failed: could not allocate manifest memory.");
+    ReportLoadError("could not allocate manifest memory.");
     return;
   }
   size_t read_byte_count = fread(json_buffer.get(),
@@ -441,7 +472,7 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
                    "read_byte_count=%"NACL_PRIuS"\n",
                    read_error, file_too_large,
                    read_byte_count));
-    Failure("NaCl module load failed: could not read manifest file.");
+    ReportLoadError("could not read manifest file.");
     return;
   }
   json_buffer[read_byte_count] = '\0';  // Force null termination.
@@ -451,14 +482,18 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
     PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen (nexe_url=%s)\n",
                    nexe_url.c_str()));
     SetSrcPropertyImpl(nexe_url);
+    // Inform JavaScript that progress is being made.
+    DispatchProgressEvent("progress", false, kUnknownBytes, kUnknownBytes);
     return;
   }
-  Failure("NaCl module load failed: could not select from manifest file.");
+  ReportLoadError("could not select from manifest file.");
 }
 
 
 bool PluginPpapi::RequestNaClManifest(const nacl::string& url) {
   PLUGIN_PRINTF(("PluginPpapi::RequestNaClManifest (url='%s')\n", url.c_str()));
+  // Inform JavaScript that a load is starting.
+  DispatchProgressEvent("loadstart", false, kUnknownBytes, kUnknownBytes);
   pp::CompletionCallback open_callback =
       callback_factory_.NewCallback(&PluginPpapi::NaClManifestFileDidOpen);
   // Will always call the callback on success or failure.
@@ -602,11 +637,104 @@ bool PluginPpapi::StreamAsFile(const nacl::string& url,
 }
 
 
-bool PluginPpapi::Failure(const nacl::string& error) {
-  PLUGIN_PRINTF(("PluginPpapi::Failure (error='%s')\n", error.c_str()));
-  browser_interface()->AddToConsole(instance_id(), error);
+void PluginPpapi::ReportLoadSuccess() {
+  // Inform JavaScript that loading was successful and is complete.
+  // Note that these events will be dispatched, as will failure events, when
+  // this code is reached from __launchExecutableFromFd also.
+  // TODO(sehr,polina): Remove comment when experimental APIs are removed.
+  DispatchProgressEvent("load", false, kUnknownBytes, kUnknownBytes);
+  DispatchProgressEvent("loadend", false, kUnknownBytes, kUnknownBytes);
+  // TODO(sehr,polina): Remove eval of untrusted string below.
+  BrowserInterface* browser = browser_interface();
+  const char* onload_handler = LookupArgument("onload");
+  if (onload_handler == NULL) {
+    return;
+  }
+  browser->EvalString(instance_id(), onload_handler);
+}
+
+
+void PluginPpapi::ReportLoadError(const nacl::string& error) {
+  PLUGIN_PRINTF(("PluginPpapi::ReportLoadError (error='%s')\n",
+                 error.c_str()));
+  nacl::string prefix("NaCl module load failed: ");
+  set_last_error_string(prefix + error);
+  browser_interface()->AddToConsole(instance_id(), prefix + error);
   ShutdownProxy();
-  return false;
+  // Inform JavaScript that loading encountered an error and is complete.
+  DispatchProgressEvent("error", false, kUnknownBytes, kUnknownBytes);
+  DispatchProgressEvent("loadend", false, kUnknownBytes, kUnknownBytes);
+}
+
+
+void PluginPpapi::ReportLoadAbort() {
+  PLUGIN_PRINTF(("PluginPpapi::ReportLoadAbort\n"));
+  nacl::string error_string("NaCl module load failed: user aborted");
+  browser_interface()->AddToConsole(instance_id(), error_string);
+  ShutdownProxy();
+  // Inform JavaScript that loading was aborted and is complete.
+  DispatchProgressEvent("abort", false, kUnknownBytes, kUnknownBytes);
+  DispatchProgressEvent("loadend", false, kUnknownBytes, kUnknownBytes);
+}
+
+
+void PluginPpapi::DispatchProgressEvent(const char* event_type,
+                                        bool length_computable,
+                                        uint64_t loaded_bytes,
+                                        uint64_t total_bytes) {
+  PLUGIN_PRINTF(("PluginPpapi::DispatchEvent ("
+                 "event_type='%s', length_computable=%d, "
+                 "loaded=%"NACL_PRIu64", total=%"NACL_PRIu64")\n",
+                 event_type, length_computable, loaded_bytes, total_bytes));
+
+  static const char* kEventClosureJS =
+      "(function(target, type, lengthComputable, loadedBytes, totalBytes) {"
+      "    var progress_event = document.createEvent('ProgressEvent');"
+      "    progress_event.initProgressEvent(type, false, true,"
+      "                                     lengthComputable,"
+      "                                     loadedBytes,"
+      "                                     totalBytes);"
+      "    target.dispatchEvent(progress_event);"
+      "})";
+
+  // Create a function object by evaluating the JavaScript text.
+  // TODO(sehr, polina): We should probably cache the created function object to
+  // avoid JavaScript reparsing.
+  pp::Var window_object = GetWindowObject();
+  if (!window_object.is_object()) {
+    PLUGIN_PRINTF(("Couldn't get window object."));
+    return;
+  }
+  pp::Var exception;
+  pp::Var function_object = window_object.Call("eval",
+                                               kEventClosureJS,
+                                               &exception);
+  if (!exception.is_undefined() || !function_object.is_object()) {
+    PLUGIN_PRINTF(("Function object creation failed.\n"));
+    return;
+  }
+  // Get the target of the event to be dispatched.
+  pp::Var owner_element_object = GetOwnerElementObject();
+  if (!owner_element_object.is_object()) {
+    PLUGIN_PRINTF(("Couldn't get owner element object.\n"));
+    NACL_NOTREACHED();
+    return;
+  }
+
+  pp::Var argv[5];
+  static const uint32_t argc = NACL_ARRAY_SIZE(argv);
+  argv[0] = owner_element_object;
+  argv[1] = pp::Var(event_type);
+  argv[2] = pp::Var(length_computable);
+  argv[3] = pp::Var(static_cast<double>(loaded_bytes));
+  argv[4] = pp::Var(static_cast<double>(total_bytes));
+
+  // Dispatch the event.
+  const pp::Var default_method;
+  function_object.Call(default_method, argc, argv, &exception);
+  if (!exception.is_undefined()) {
+    PLUGIN_PRINTF(("Event dispatch failed.\n"));
+  }
 }
 
 }  // namespace plugin

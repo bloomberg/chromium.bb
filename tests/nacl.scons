@@ -38,13 +38,14 @@ example_nexes = [
     'mandel_tiled.nexe',         # mandel_tiled.html
     'autoloader_default.nexe',   # autoloader.html',
     # PPAPI Nexe Examples
-    'ppapi_basic_object.nexe',   # basic_object.html
-    'ppapi_event_example.nexe',  # event_example.html
-    'ppapi_example_2d.nexe',     # ppapi_example_2d.html
-    'ppapi_example_audio.nexe',  # ppapi_example_audio.html
-    'ppapi_geturl.nexe',         # ppapi_geturl.html
-    'earth_c.nexe',              # earth_c.html
-    'earth_cc.nexe',             # earth_cc.html
+    'ppapi_basic_object.nexe',     # basic_object.html
+    'ppapi_event_example.nexe',    # event_example.html
+    'ppapi_example_2d.nexe',       # ppapi_example_2d.html
+    'ppapi_example_audio.nexe',    # ppapi_example_audio.html
+    'ppapi_geturl.nexe',           # ppapi_geturl.html
+    'ppapi_progress_events.nexe',  # ppapi_progress_events.html
+    'earth_c.nexe',                # earth_c.html
+    'earth_cc.nexe',               # earth_cc.html
     # PPAPI Proxy Tests
     'ppapi_core.nexe',           # ppapi_core.html
     'ppapi_file_system.nexe',    # ppapi_file_system.thml

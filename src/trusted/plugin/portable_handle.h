@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/method_map.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
@@ -86,9 +87,13 @@ class PortableHandle {
   }
   // This is only virtual because although Connect() always returns a
   // ConnectedSocket, it cannot be declared as doing so, because of
-  // the PortableHandle/ScriptableHandle split.
-  virtual void StartJSObjectProxy(Plugin* plugin) {
+  // the PortableHandle/ScriptableHandle split.  It can only be validly invoked
+  // for ConnectedSocket, so it reports an error if this binding is invoked.
+  virtual bool StartJSObjectProxy(Plugin* plugin, nacl::string* error_string) {
     UNREFERENCED_PARAMETER(plugin);
+    UNREFERENCED_PARAMETER(error_string);
+    NACL_NOTREACHED();
+    return false;
   }
 
  protected:

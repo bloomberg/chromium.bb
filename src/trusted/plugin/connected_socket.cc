@@ -47,10 +47,13 @@ bool ConnectedSocket::InitParamsEx(uintptr_t method_id,
   return false;
 }
 
-void ConnectedSocket::StartJSObjectProxy(Plugin* plugin) {
+bool ConnectedSocket::StartJSObjectProxy(Plugin* plugin,
+                                         nacl::string* error_string) {
   if (srpc_client_) {
-    srpc_client_->StartJSObjectProxy(plugin);
+    return srpc_client_->StartJSObjectProxy(plugin, error_string);
   }
+  *error_string = "no connection to start proxy";
+  return false;
 }
 
 ConnectedSocket* ConnectedSocket::New(Plugin* plugin,
@@ -115,4 +118,3 @@ ConnectedSocket::~ConnectedSocket() {
 }
 
 }  // namespace plugin
-

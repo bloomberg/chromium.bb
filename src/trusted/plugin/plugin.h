@@ -34,21 +34,26 @@ class Plugin : public PortableHandle {
   void Invalidate();
 
   // Check that full_url meets the origin requirements for loading a nexe.
-  bool IsValidNexeOrigin(nacl::string full_url, nacl::string local_path);
+  bool IsValidNexeOrigin(nacl::string full_url,
+                         nacl::string local_path,
+                         nacl::string* error_string);
 
   // Load support.
   // NaCl module can be loaded given a DescWrapper.
   // Updates nacl_module_origin() and nacl_module_url().
-  bool LoadNaClModule(nacl::DescWrapper* wrapper, bool start_from_browser);
+  bool LoadNaClModule(nacl::DescWrapper* wrapper, nacl::string* error_string);
 
   // Returns the argument value for the specified key, or NULL if not found.
   // The callee retains ownership of the result.
   char* LookupArgument(const char* key);
 
-  // To indicate successful loading of a module, invoke the onload handler.
-  bool RunOnloadHandler();
-  // To indicate unsuccessful loading of a module, invoke the onfail handler.
-  bool RunOnfailHandler();
+  // Report successful loading of a module.
+  virtual void ReportLoadSuccess() = 0;
+  // Report an error that was encountered while loading a module.
+  // TODO(sehr,polina): make this an error code rather than a string.
+  virtual void ReportLoadError(const nacl::string& error) = 0;
+  // Report loading a module was aborted, typically due to user action.
+  virtual void ReportLoadAbort() = 0;
 
   // overriding virtual methods
   virtual bool InvokeEx(uintptr_t method_id,
@@ -98,20 +103,18 @@ class Plugin : public PortableHandle {
     nacl_manifest_url_ = manifest_url;
   }
 
+  // Set when connection and proxy are available.
+  bool nacl_module_ready() const { return nacl_module_ready_; }
+  void set_nacl_module_ready(bool nacl_module_ready) {
+    nacl_module_ready_ = nacl_module_ready;
+  }
+
   // Each nexe has a canonical socket address that it will respond to
   // Connect requests on.
   ScriptableHandle* socket_address() const { return socket_address_; }
   // TODO(sehr): document this.
   ScriptableHandle* socket() const { return socket_; }
 
-  // The Firefox plugin multimedia interface.
-  // Create a listener thread and initialize the nacl module.
-  virtual bool InitializeModuleMultimedia(ScriptableHandle* raw_channel,
-                                          ServiceRuntime* service_runtime) {
-    UNREFERENCED_PARAMETER(raw_channel);
-    UNREFERENCED_PARAMETER(service_runtime);
-    return true;
-  }
   // Shut down the multimedia system, destroying the listener thread.
   virtual void ShutdownMultimedia() { }
 
@@ -132,10 +135,16 @@ class Plugin : public PortableHandle {
   virtual bool RequestNaClModule(const nacl::string& url) = 0;
 
   // Start up proxied execution of the browser API.
-  virtual void StartProxiedExecution(NaClSrpcChannel* srpc_channel) = 0;
+  virtual bool StartProxiedExecution(NaClSrpcChannel* srpc_channel,
+                                     nacl::string* error_string) = 0;
 
   // Determines whether experimental APIs are usable.
   static bool ExperimentalJavaScriptApisAreEnabled();
+
+  // The size returned when a file download operation is unable to determine
+  // the size of the file to load.  W3C ProgressEvents specify that unknown
+  // sizes return 0.
+  static const uint64_t kUnknownBytes = 0;
 
  protected:
   Plugin();
@@ -184,6 +193,7 @@ class Plugin : public PortableHandle {
   nacl::string nacl_module_path_;
   nacl::string nacl_module_url_;
   nacl::string nacl_module_origin_;
+  bool nacl_module_ready_;
 
   int32_t height_;
   int32_t width_;

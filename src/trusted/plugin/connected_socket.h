@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 // Portable representation of a scriptable connected socket.
@@ -10,6 +10,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_CONNECTED_SOCKET_H_
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/desc_based_handle.h"
 #include "native_client/src/trusted/plugin/utility.h"
@@ -34,7 +35,8 @@ class ConnectedSocket : public DescBasedHandle {
   virtual bool InitParamsEx(uintptr_t method_id,
                             CallType call_type,
                             SrpcParams* params);
-  void StartJSObjectProxy(Plugin* plugin);
+  bool StartJSObjectProxy(Plugin* plugin,
+                          nacl::string* error_string);
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ConnectedSocket);

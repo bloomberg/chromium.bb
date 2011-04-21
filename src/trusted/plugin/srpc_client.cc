@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -62,10 +62,11 @@ SrpcClient::~SrpcClient() {
   PLUGIN_PRINTF(("SrpcClient::~SrpcClient (return)\n"));
 }
 
-void SrpcClient::StartJSObjectProxy(Plugin* plugin) {
-  // Start up NPAPI/PPAPI interaction if the plugin determines that the
+bool SrpcClient::StartJSObjectProxy(Plugin* plugin,
+                                    nacl::string* error_string) {
+  // Start up PPAPI interaction if the plugin determines that the
   // requisite methods are exported.
-  plugin->StartProxiedExecution(&srpc_channel_);
+  return plugin->StartProxiedExecution(&srpc_channel_, error_string);
 }
 
 void SrpcClient::GetMethods() {
@@ -107,10 +108,10 @@ void SrpcClient::GetMethods() {
 }
 
 bool SrpcClient::HasMethod(uintptr_t method_id) {
-  MethodInfo* method_info = methods_[method_id];
-  PLUGIN_PRINTF(("SrpcClient::HasMethod (this=%p, return %p)\n",
-                 static_cast<void*>(this), static_cast<void*>(method_info)));
-  return NULL != method_info;
+  bool has_method = (NULL != methods_[method_id]);
+  PLUGIN_PRINTF(("SrpcClient::HasMethod (this=%p, return %d)\n",
+                 static_cast<void*>(this), has_method));
+  return has_method;
 }
 
 bool SrpcClient::InitParams(uintptr_t method_id, SrpcParams* params) {

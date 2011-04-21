@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/trusted/plugin/service_runtime.h"
@@ -47,7 +47,8 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin)
 }
 
 bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
-                                       nacl::DescWrapper* nacl_desc) {
+                                       nacl::DescWrapper* nacl_desc,
+                                       nacl::string* error_string) {
   // TODO(sehr): this should use the new
   // SelLdrLauncher::OpenSrpcChannels interface, which should be free
   // of resource leaks.
@@ -65,7 +66,8 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
                  static_cast<void*>(default_socket_address_)));
 
   if (NULL == default_socket_address_) {
-    return Failure("sel_ldr: no valid socket address");
+    *error_string = "sel_ldr: no valid socket address";
+    return false;
   }
   // The first connect on the socket address returns the service
   // runtime command channel.  This channel is created before the NaCl
@@ -77,7 +79,8 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
   PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (raw_channel=%p)\n",
                  static_cast<void*>(raw_channel)));
   if (NULL == raw_channel) {
-    return Failure("sel_ldr: connect failed");
+    *error_string = "sel_ldr: connect failed";
+    return false;
   }
   runtime_channel_ = new(std::nothrow) SrtSocket(raw_channel,
                                                  browser_interface_);
@@ -85,7 +88,8 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
                  static_cast<void*>(runtime_channel_)));
   if (NULL == runtime_channel_) {
     raw_channel->Unref();
-    return Failure("sel_ldr: runtime channel creation failed");
+    *error_string = "sel_ldr: runtime channel creation failed";
+    return false;
   }
 
   if (nacl_desc != NULL) {
@@ -94,14 +98,16 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
     // the descriptor for nexe over.
     if (!runtime_channel_->LoadModule(nacl_desc->desc())) {
       // TODO(gregoryd): close communication channels
-      return Failure("sel_ldr: failed to send nexe");
+      *error_string = "sel_ldr: failed to send nexe";
+      return false;
     }
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
     // Establish the communication for handle passing protocol
     struct NaClDesc* desc = NaClHandlePassBrowserGetSocketAddress();
     if (!runtime_channel_->InitHandlePassing(desc,
                                              subprocess_->child_process())) {
-      return Failure("sel_ldr: failed handle passing protocol");
+      *error_string = "sel_ldr: failed handle passing protocol";
+      return false;
     }
 #endif
   }
@@ -111,35 +117,32 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
   // in libsrpc.
   int load_status;
   if (!runtime_channel_->StartModule(&load_status)) {
-    return Failure("sel_ldr: could not start nacl module");
+    *error_string = "sel_ldr: could not start nacl module";
+    return false;
   }
   PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (load_status=%d)\n",
                  load_status));
   if (LOAD_OK != load_status) {
-    nacl::string error = "loading of module failed with status " + load_status;
-    return Failure(error);
+    *error_string =
+        "sel_ldr: loading of module failed with status " + load_status;
+    return false;
   }
   return true;
 }
 
-bool ServiceRuntime::Failure(const nacl::string& error) {
-  PLUGIN_PRINTF(("ServiceRuntime::Failure (error='%s')\n", error.c_str()));
-  browser_interface_->AddToConsole(plugin()->instance_id(), error);
-  delete subprocess_;
-  subprocess_ = NULL;
-  return false;
-}
-
 bool ServiceRuntime::StartFromCommandLine(nacl::string nacl_file,
-                                          nacl::DescWrapper* nacl_file_desc) {
+                                          nacl::DescWrapper* nacl_file_desc,
+                                          nacl::string* error_string) {
   PLUGIN_PRINTF(("ServiceRuntime::StartFromCommandLine "
                  "(nacl_file='%s', nacl_file_desc='%p')\n",
                  nacl_file.c_str(), reinterpret_cast<void*>(nacl_file_desc)));
   CHECK(nacl_file != NACL_NO_FILE_PATH || nacl_file_desc != NULL);
 
-  subprocess_ = new(std::nothrow) nacl::SelLdrLauncher();
-  if (NULL == subprocess_) {
-    return Failure("sel_ldr: failed to create sel_ldr launcher");
+  nacl::scoped_ptr<nacl::SelLdrLauncher>
+      tmp_subprocess(new(std::nothrow) nacl::SelLdrLauncher());
+  if (NULL == tmp_subprocess.get()) {
+    *error_string = "sel_ldr: failed to create sel_ldr launcher";
+    return false;
   }
 
   // The arguments we want to pass to the service runtime are
@@ -157,64 +160,77 @@ bool ServiceRuntime::StartFromCommandLine(nacl::string nacl_file,
     args_for_sel_ldr.push_back("-B");
     args_for_sel_ldr.push_back(irt_library_path);
   }
-  subprocess_->InitCommandLine(nacl_file, -1, args_for_sel_ldr, args_for_nexe);
+  tmp_subprocess->InitCommandLine(nacl_file,
+                                  -1,
+                                  args_for_sel_ldr,
+                                  args_for_nexe);
 
-  nacl::Handle recv_handle = subprocess_->ExportImcFD(6);
+  nacl::Handle recv_handle = tmp_subprocess->ExportImcFD(6);
   if (recv_handle == nacl::kInvalidHandle) {
-    return Failure("sel_ldr: failed to create async receive handle");
+    *error_string = "sel_ldr: failed to create async receive handle";
+    return false;
   }
   async_receive_desc_ = plugin()->wrapper_factory()->MakeImcSock(recv_handle);
 
-  nacl::Handle send_handle = subprocess_->ExportImcFD(7);
+  nacl::Handle send_handle = tmp_subprocess->ExportImcFD(7);
   if (send_handle == nacl::kInvalidHandle) {
-    return Failure("sel_ldr: failed to create async send handle");
+    *error_string = "sel_ldr: failed to create async send handle";
+    return false;
   }
   async_send_desc_ = plugin()->wrapper_factory()->MakeImcSock(send_handle);
 
-  nacl::Handle bootstrap_socket = subprocess_->ExportImcFD(5);
+  nacl::Handle bootstrap_socket = tmp_subprocess->ExportImcFD(5);
   if (bootstrap_socket == nacl::kInvalidHandle) {
-    return Failure("sel_ldr: failed to create socket handle");
+    *error_string = "sel_ldr: failed to create socket handle";
+    return false;
   }
 
-  if (!subprocess_->LaunchFromCommandLine()) {
-    return Failure("sel_ldr: failed to launch");
+  if (!tmp_subprocess->LaunchFromCommandLine()) {
+    *error_string = "sel_ldr: failed to launch";
+    return false;
   }
 
-  if (!InitCommunication(bootstrap_socket, nacl_file_desc)) {
-    return Failure("sel_ldr: failed to initialize communication");
+  if (!InitCommunication(bootstrap_socket, nacl_file_desc, error_string)) {
+    return false;
   }
 
   PLUGIN_PRINTF(("ServiceRuntime::Start (return 1)\n"));
+  subprocess_ = tmp_subprocess.release();
   return true;
 }
 
 bool ServiceRuntime::StartFromBrowser(nacl::string nacl_url,
-                                      nacl::DescWrapper* nacl_desc) {
+                                      nacl::DescWrapper* nacl_desc,
+                                      nacl::string* error_string) {
   PLUGIN_PRINTF(("ServiceRuntime::StartFromBrowser (nacl_url=%s)\n",
                  nacl_url.c_str()));
   PLUGIN_PRINTF(("ServiceRuntime::StartFromBrowser (nacl_desc=%p)\n",
                  reinterpret_cast<void*>(nacl_desc)));
 
-  subprocess_ = new(std::nothrow) nacl::SelLdrLauncher();
-  if (NULL == subprocess_) {
-    return Failure("sel_ldr: failed to create launcher");
+  nacl::scoped_ptr<nacl::SelLdrLauncher>
+      tmp_subprocess(new(std::nothrow) nacl::SelLdrLauncher());
+  if (NULL == tmp_subprocess.get()) {
+    *error_string = "sel_ldr: failed to create launcher";
+    return false;
   }
   nacl::Handle sockets[3];
-  if (!subprocess_->StartFromBrowser(nacl_url.c_str(),
-                                     NACL_ARRAY_SIZE(sockets),
-                                     sockets)) {
-    return Failure("sel_ldr: failed to start");
+  if (!tmp_subprocess->StartFromBrowser(nacl_url.c_str(),
+                                        NACL_ARRAY_SIZE(sockets),
+                                        sockets)) {
+    *error_string = "sel_ldr: failed to start";
+    return false;
   }
 
   nacl::Handle bootstrap_socket = sockets[0];
   async_receive_desc_ = plugin()->wrapper_factory()->MakeImcSock(sockets[1]);
   async_send_desc_ = plugin()->wrapper_factory()->MakeImcSock(sockets[2]);
 
-  if (!InitCommunication(bootstrap_socket, nacl_desc)) {
-    return Failure("sel_ldr: failed to initialize communication");
+  if (!InitCommunication(bootstrap_socket, nacl_desc, error_string)) {
+    return false;
   }
 
   PLUGIN_PRINTF(("ServiceRuntime::StartFromBrowser (return 1)\n"));
+  subprocess_ = tmp_subprocess.release();
   return true;
 }
 

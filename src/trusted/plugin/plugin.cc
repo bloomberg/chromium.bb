@@ -97,7 +97,7 @@ bool NullPluginMethod(void* obj, SrpcParams* params) {
 
 bool GetModuleReadyProperty(void* obj, SrpcParams* params) {
   Plugin* plugin = reinterpret_cast<Plugin*>(obj);
-  if (plugin->socket()) {
+  if (plugin->nacl_module_ready()) {
     params->outs()[0]->u.ival = 1;
   } else {
     params->outs()[0]->u.ival = 0;
@@ -155,11 +155,14 @@ bool LaunchExecutableFromFd(void* obj, SrpcParams* params) {
   NaClDescRef(params->ins()[0]->u.hval);
   nacl::scoped_ptr<nacl::DescWrapper>
       wrapper(plugin->wrapper_factory()->MakeGeneric(params->ins()[0]->u.hval));
-#if defined(NACL_STANDALONE)
-  return plugin->LoadNaClModule(wrapper.get(), /* start_from_browser */ false);
-#else
-  return plugin->LoadNaClModule(wrapper.get(), /* start_from_browser */ true);
-#endif
+  plugin->set_nacl_module_ready(false);
+  // We intentionally do not report progress events for explicitly loaded
+  // modules as this is an experimental API that is going away.
+  nacl::string error_string;
+  bool was_successful = plugin->LoadNaClModule(wrapper.get(), &error_string);
+  // Set the __moduleReady attribute to indicate ready to start.
+  plugin->set_nacl_module_ready(was_successful);
+  return was_successful;
 }
 
 bool GetHeightProperty(void* obj, SrpcParams* params) {
@@ -413,6 +416,7 @@ Plugin::Plugin()
     socket_address_(NULL),
     socket_(NULL),
     origin_valid_(false),
+    nacl_module_ready_(false),
     height_(0),
     width_(0),
     wrapper_factory_(NULL) {
@@ -480,7 +484,9 @@ Plugin::~Plugin() {
                  static_cast<void*>(this)));
 }
 
-bool Plugin::IsValidNexeOrigin(nacl::string full_url, nacl::string local_path) {
+bool Plugin::IsValidNexeOrigin(nacl::string full_url,
+                               nacl::string local_path,
+                               nacl::string* error_string) {
   PLUGIN_PRINTF(("Plugin::IsValidNexeOrigin (full_url='%s')\n",
                  full_url.c_str()));
   CHECK(NACL_NO_URL != full_url);
@@ -501,25 +507,22 @@ bool Plugin::IsValidNexeOrigin(nacl::string full_url, nacl::string local_path) {
   // TODO(adonovan): JavaScript permits cross-origin loading, and so
   // does Chrome; why don't we?
   if (!origin_valid_ || !module_origin_valid) {
-    nacl::string message = nacl::string("NaCl module load failed: module ") +
-        nacl_module_url_ + " does not come from a whitelisted source. "
-        "See native_client/src/trusted/plugin/origin.cc for the list.";
-    browser_interface_->AddToConsole(instance_id(), message.c_str());
+    *error_string = nacl::string("module URL ") +
+        nacl_module_url_ + " uses an unsupported protocol. "
+        "Only http, https, and chrome-extension are currently supported.";
     return false;
   }
   return true;
 }
 
 bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
-                            bool start_from_browser) {
+                            nacl::string* error_string) {
   // Check ELF magic and ABI version compatibility.
-  nacl::string error_string;
   bool might_be_elf_exe =
-      browser_interface_->MightBeElfExecutable(wrapper, &error_string);
+      browser_interface_->MightBeElfExecutable(wrapper, error_string);
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (might_be_elf_exe=%d)\n",
                  might_be_elf_exe));
   if (!might_be_elf_exe) {
-    browser_interface_->AddToConsole(instance_id(), error_string);
     return false;
   }
 
@@ -533,19 +536,22 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (service_runtime=%p)\n",
                  static_cast<void*>(service_runtime_)));
   if (NULL == service_runtime_) {
-    const char* message = "NaCl module load failed: sel_ldr init failure.";
-    browser_interface_->AddToConsole(instance_id(), message);
+    *error_string = "sel_ldr init failure.";
     return false;
   }
 
   bool service_runtime_started = false;
-  if (start_from_browser) {
-    service_runtime_started =
-        service_runtime_->StartFromBrowser(NACL_NO_FILE_PATH, wrapper);
-  } else {
-    service_runtime_started =
-        service_runtime_->StartFromCommandLine(NACL_NO_FILE_PATH, wrapper);
-  }
+#if defined(NACL_STANDALONE)
+  service_runtime_started =
+      service_runtime_->StartFromCommandLine(NACL_NO_FILE_PATH,
+                                             wrapper,
+                                             error_string);
+#else
+  service_runtime_started =
+      service_runtime_->StartFromBrowser(NACL_NO_FILE_PATH,
+                                         wrapper,
+                                         error_string);
+#endif
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (service_runtime_started=%d)\n",
                  service_runtime_started));
 
@@ -554,13 +560,10 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
   // start-up might fail after default_socket_address() was already created.
   socket_address_ = service_runtime_->default_socket_address();
   if (!service_runtime_started) {
-    const char* message = "NaCl module load failed: sel_ldr start-up failure.";
-    browser_interface_->AddToConsole(instance_id(), message);
     return false;
   }
   CHECK(NULL != socket_address_);
-  if (!StartSrpcServices(&error_string)) {  // sets socket_
-    browser_interface_->AddToConsole(instance_id(), error_string);
+  if (!StartSrpcServices(error_string)) {  // sets socket_
     return false;
   }
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (socket_address=%p, socket=%p)\n",
@@ -569,23 +572,25 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
   return true;
 }
 
-bool Plugin::StartSrpcServices(nacl::string* error) {
+bool Plugin::StartSrpcServices(nacl::string* error_string) {
   UnrefScriptableHandle(&socket_);
   socket_ = socket_address_->handle()->Connect();
   if (socket_ == NULL) {
-    *error = "NaCl module load failed: SRPC connection failure.";
+    *error_string = "SRPC connection failure.";
     return false;
   }
-  socket_->handle()->StartJSObjectProxy(this);
-  // Create the listener thread and initialize the nacl module.
-  if (!InitializeModuleMultimedia(socket_, service_runtime_)) {
-    *error = "NaCl module load failed: multimedia init failure.";
-    return false;
+  if (!socket_->handle()->StartJSObjectProxy(this, error_string)) {
+    // TODO(sehr,polina): rename the below to ExperimentalSRPCApisAreEnabled.
+    if (ExperimentalJavaScriptApisAreEnabled()) {
+      // It is not an error for the proxy to fail to start if experimental
+      // APIs are enabled.  This means we have an SRPC nexe.
+      *error_string = "";
+    } else {
+      return false;
+    }
   }
   PLUGIN_PRINTF(("Plugin::Load (established socket %p)\n",
                  static_cast<void*>(socket_)));
-  // Invoke the onload handler, if any.
-  RunOnloadHandler();
   return true;
 }
 
@@ -597,24 +602,6 @@ char* Plugin::LookupArgument(const char* key) {
     }
   }
   return NULL;
-}
-
-bool Plugin::RunOnloadHandler() {
-  BrowserInterface* browser = browser_interface();
-  const char* onload_handler = LookupArgument("onload");
-  if (onload_handler == NULL) {
-    return true;
-  }
-  return browser->EvalString(instance_id(), onload_handler);
-}
-
-bool Plugin::RunOnfailHandler() {
-  BrowserInterface* browser = browser_interface();
-  const char* onfail_handler = LookupArgument("onfail");
-  if (onfail_handler == NULL) {
-    return true;
-  }
-  return browser->EvalString(instance_id(), onfail_handler);
 }
 
 }  // namespace plugin

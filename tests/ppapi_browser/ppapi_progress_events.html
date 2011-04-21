@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<!-- Copyright (c) 2011 The Native Client Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<head>
+  <title>PPAPI Runtime Feature Test</title>
+  <meta HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+  <meta HTTP-EQUIV="Expires" CONTENT="-1" />
+  <script type="text/javascript" src="nacltest.js"></script>
+  <script type="text/javascript" src="ppapi_progress_events.js"></script>
+</head>
+
+<body id="body" onload="runTests()">
+<script type="text/javascript">
+//<![CDATA[
+function enqueueTests(tester, suffix) {
+  var eventMachine = lookupEventMachine('progress_events');
+  // Test the expected number of occurrences, with some duplication.
+  tester.addTest('browser_begin_reported' + suffix, function() {
+    // There should be no 'BEGIN' event.
+    assertEqual(eventMachine.stateHistogram['BEGIN'], 0);
+  });
+  tester.addTest('browser_loadstart_reported' + suffix, function() {
+    // There should be one 'loadstart' event.
+    assertEqual(eventMachine.stateHistogram['loadstart'], 1);
+  });
+  tester.addTest('browser_key_progress_events' + suffix, function() {
+    // There should be at least one progress event when the manifest file is
+    // loaded and another when the .nexe is loaded.
+    assert(eventMachine.stateHistogram['progress'] >= 2);
+  });
+  tester.addTest('browser_no_error_reported' + suffix, function() {
+    // No 'error' events should have been dispatched.
+    assertEqual(eventMachine.stateHistogram['error'], 0);
+  });
+  tester.addTest('browser_no_abort_reported' + suffix, function() {
+    // No 'abort' events should have been dispatched.
+    assertEqual(eventMachine.stateHistogram['abort'], 0);
+  });
+  tester.addTest('browser_load_reported' + suffix, function() {
+    // There should be one 'load' event.
+    assertEqual(eventMachine.stateHistogram['load'], 1);
+  })
+  tester.addTest('browser_loadend_reported' + suffix, function() {
+    // There should be one 'loadend' event.
+    assertEqual(eventMachine.stateHistogram['loadend'], 1);
+  });
+  tester.addTest('browser_correct_end_state' + suffix, function() {
+    // Test that the progress events followed the expected sequence to
+    // completion in the 'loadend' state.
+    assertEqual(eventMachine.currentState, 'loadend');
+  });
+  tester.addTest('browser_unexpected_reported' + suffix, function() {
+    // There should be no 'UNEXPECTED' event.
+    assertEqual(eventMachine.stateHistogram['UNEXPECTED'], 0);
+  });
+}
+var tester = new Tester();
+enqueueTests(tester, '');
+function runTests() {
+  tester.waitFor($('progress_events'));
+  tester.run();
+}
+// Set all the listeners on the body.
+setListeners($('body'));
+//]]>
+</script>
+
+<embed id="progress_events"
+       class="naclModule"
+       width=0 height=0
+       nacl="ppapi_progress_events.nmf"
+       type="application/x-nacl" />
+</body>
+</html>

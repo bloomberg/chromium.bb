@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 // PPAPI-based implementation of the interface for a NaCl plugin instance.
@@ -70,10 +70,18 @@ class PluginPpapi : public pp::Instance, public Plugin {
   virtual bool RequestNaClModule(const nacl::string& url);
 
   // Support for proxied execution.
-  virtual void StartProxiedExecution(NaClSrpcChannel* srpc_channel);
+  virtual bool StartProxiedExecution(NaClSrpcChannel* srpc_channel,
+                                     nacl::string* error_string);
 
   // Getter for PPAPI proxy interface.
   ppapi_proxy::BrowserPpp* ppapi_proxy() const { return ppapi_proxy_; }
+
+  // Report successful loading of a module.
+  virtual void ReportLoadSuccess();
+  // Report an error encountered while loading a module.
+  virtual void ReportLoadError(const nacl::string& error);
+  // Report loading a module was aborted, typically due to user action.
+  virtual void ReportLoadAbort();
 
   // ----- Methods unique to PluginPpapi:
 
@@ -90,6 +98,12 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // Returns an open POSIX file descriptor retrieved by StreamAsFile()
   // or NACL_NO_FILE_DESC. The caller must take ownership of the descriptor.
   int32_t GetPOSIXFileDesc(const nacl::string& url);
+
+  // Get the text description of the last error reported by the plugin.
+  const nacl::string& last_error_string() const { return last_error_string_; }
+  void set_last_error_string(const nacl::string& error) {
+    last_error_string_ = error;
+  }
 
   // The MIME type used to instantiate this instance of the NaCl plugin.
   // Typically, the MIME type will be application/x-nacl.  However, if the NEXE
@@ -170,13 +184,21 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // Shuts down the proxy for PPAPI nexes.
   void ShutdownProxy();
 
-  // Logs the error to JS console, shuts down the proxy and returns false,
-  // so this function can be used as a return value.
-  bool Failure(const nacl::string& error);
-
   // Handles the __setAsyncCallback() method.  Spawns a thread to receive
   // IMC messages from the NaCl process and pass them on to Javascript.
   static bool SetAsyncCallback(void* obj, SrpcParams* params);
+
+  // Dispatch a JavaScript event to indicate a key step in loading.
+  // |event_type| is a character string indicating which type of progress
+  // event (loadstart, progress, error, abort, load, loadend).
+  void DispatchProgressEvent(const char* event_type,
+                             bool length_computable,
+                             uint64_t loaded_bytes,
+                             uint64_t total_bytes);
+
+  // A string containing the text description of the last error produced by
+  // this plugin.
+  nacl::string last_error_string_;
 
   // A pointer to the browser end of a proxy pattern connecting the
   // NaCl plugin to the PPAPI .nexe's PPP interface

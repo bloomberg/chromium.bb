@@ -1,0 +1,45 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# TODO(robertm): those should not be necessary once we go -std=c99
+env.FilterOut(CFLAGS=['-pedantic'])
+env.FilterOut(CCFLAGS=['-pedantic'])
+
+progress_events_sources = env.ComponentObject('ppapi_progress_events.cc'),
+
+progress_events_target = ('ppapi_progress_events_%s.nexe' %
+                          env.get('TARGET_FULLARCH'))
+env.Alias('ppapi_progress_events.nexe',
+          ['$STAGING_DIR/%s' % progress_events_target])
+progress_events_nexe = env.ComponentProgram(progress_events_target,
+                                            [progress_events_sources],
+                                            EXTRA_LIBS=['${PPAPI_LIBS}',
+                                                        'ppapi_test_lib',
+                                                        'pthread',
+                                                        'platform',
+                                                        'gio'])
+# Note that the html and a .nmf manifest is required to run this program.
+dest_copy = env.Replicate('$STAGING_DIR',
+                          ['ppapi_progress_events.html',
+                           'ppapi_progress_events.js',
+                           'ppapi_progress_events.nmf',
+                           env.File('${SCONSTRUCT_DIR}/tools/browser_tester/'
+                                    'browserdata/nacltest.js')])
+env.Depends(progress_events_target, dest_copy)
+
+node = env.PPAPIBrowserTester(
+    'ppapi_progress_events_browser_test.out',
+    url='ppapi_progress_events.html',
+    files=[progress_events_nexe,
+           env.File('ppapi_progress_events.html'),
+           env.File('ppapi_progress_events.js'),
+           env.File('ppapi_progress_events.nmf')])
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_ppapi_progress_events_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())

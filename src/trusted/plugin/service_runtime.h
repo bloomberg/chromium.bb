@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 // A class containing information regarding a socket connection to a
@@ -48,13 +48,16 @@ class ServiceRuntime {
   // 2) as a file descriptor over RPC after sel_ldr launched
   // 3) as shared memory descriptor over RPC after sel_ldr launched
   // These 3 nexe options are mutually exclusive and map to the following usage:
-  // 1) StartFromCommandLine(file_path, NULL)
-  // 2) StartFromCommandLine(NACL_NO_FILE_PATH, file_desc)
-  //    StartFromBrowser(url, file_desc)
-  // 3) StartFromBrowser(url, shm_desc)
+  // 1) StartFromCommandLine(file_path, NULL, error_string)
+  // 2) StartFromCommandLine(NACL_NO_FILE_PATH, file_desc, error_string)
+  //    StartFromBrowser(url, file_desc, error_string)
+  // 3) StartFromBrowser(url, shm_desc, error_string)
   bool StartFromCommandLine(nacl::string nacl_file,
-                            nacl::DescWrapper* nacl_file_desc);
-  bool StartFromBrowser(nacl::string nacl_url, nacl::DescWrapper* nacl_desc);
+                            nacl::DescWrapper* nacl_file_desc,
+                            nacl::string* error_string);
+  bool StartFromBrowser(nacl::string nacl_url,
+                        nacl::DescWrapper* nacl_desc,
+                        nacl::string* error_string);
 
   bool Kill();
   bool Log(int severity, nacl::string msg);
@@ -68,11 +71,9 @@ class ServiceRuntime {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
-  bool InitCommunication(nacl::Handle bootstrap_socket, nacl::DescWrapper* shm);
-
-  // Logs the error to JS console, deletes subprocess_ and returns false,
-  // so the call to this function can be used as a return value.
-  bool Failure(const nacl::string& error);
+  bool InitCommunication(nacl::Handle bootstrap_socket,
+                         nacl::DescWrapper* shm,
+                         nacl::string* error_string);
 
   ScriptableHandle* default_socket_address_;  // creates, but does not own
   Plugin* plugin_;
