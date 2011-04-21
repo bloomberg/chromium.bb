@@ -1362,6 +1362,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // Close our bookmark folder (a sub-controller) if we have one.
 - (void)closeBookmarkFolder:(id)sender {
   if (folderController_) {
+    // Make this menu key, so key status doesn't go back to the browser
+    // window when the submenu closes.
+    [[self window] makeKeyWindow];
     [self setSubFolderGrowthToRight:YES];
     [[folderController_ window] close];
     folderController_ = nil;
