@@ -108,6 +108,11 @@ class CryptohomeLibrary {
   // (cryptohome::kMinFreeSpace), performs cleanup.
   virtual bool AsyncDoAutomaticFreeDiskSpaceControl(Delegate* callback) = 0;
 
+  // Passes cryptohomed the owner user. It is used to prevent
+  // deletion of the owner in low disk space cleanup (see above).
+  virtual bool AsyncSetOwnerUser(const std::string& username,
+                                 Delegate* callback) = 0;
+
   // Wrappers of the functions for working with Tpm.
 
   // Returns whether Tpm is ready.

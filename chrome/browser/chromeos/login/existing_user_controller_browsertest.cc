@@ -134,6 +134,10 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
                 AsyncDoAutomaticFreeDiskSpaceControl(_))
         .Times(1)
         .WillOnce(Return(true));
+    EXPECT_CALL(*mock_cryptohome_library_,
+                AsyncSetOwnerUser(_, _))
+        .Times(1)
+        .WillOnce(Return(true));
     LoginUtils::Set(new MockLoginUtils(kUsername, kPassword));
 
     mock_login_display_.reset(new MockLoginDisplay());

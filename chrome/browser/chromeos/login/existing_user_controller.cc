@@ -96,11 +96,9 @@ void ExistingUserController::Init(const UserVector& users) {
   login_display_->Init(filtered_users, show_guest, show_new_user);
 
   LoginUtils::Get()->PrewarmAuthentication();
-  if (CrosLibrary::Get()->EnsureLoaded()) {
+  if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetLoginLibrary()->EmitLoginPromptReady();
-    CrosLibrary::Get()->GetCryptohomeLibrary()->
-        AsyncDoAutomaticFreeDiskSpaceControl(NULL);
-  }
+  StartAutomaticFreeDiskSpaceControl();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -471,6 +469,23 @@ void ExistingUserController::ShowError(int error_id,
   }
 
   login_display_->ShowError(error_id, num_login_attempts_, help_topic_id);
+}
+
+void ExistingUserController::StartAutomaticFreeDiskSpaceControl() {
+  bool trusted_owner_available = user_settings_->RequestTrustedOwner(
+      method_factory_.NewRunnableMethod(
+          &ExistingUserController::StartAutomaticFreeDiskSpaceControl));
+  if (!trusted_owner_available) {
+    // Value of owner email is still not verified.
+    // Another attempt will be invoked after verification completion.
+    return;
+  }
+  if (CrosLibrary::Get()->EnsureLoaded()) {
+    CryptohomeLibrary* cryptohomed = CrosLibrary::Get()->GetCryptohomeLibrary();
+    cryptohomed->AsyncSetOwnerUser(
+        UserCrosSettingsProvider::cached_owner(), NULL);
+    cryptohomed->AsyncDoAutomaticFreeDiskSpaceControl(NULL);
+  }
 }
 
 }  // namespace chromeos

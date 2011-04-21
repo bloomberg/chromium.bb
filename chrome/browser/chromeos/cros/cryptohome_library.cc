@@ -130,6 +130,13 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
         "Couldn't do automatic free disk space control.");
   }
 
+  bool AsyncSetOwnerUser(const std::string& username, Delegate* d) {
+    return CacheCallback(
+        chromeos::CryptohomeAsyncSetOwnerUser(username.c_str()),
+        d,
+        "Couldn't do set owner user in Cryptohomed.");
+  }
+
   bool TpmIsReady() {
     return chromeos::CryptohomeTpmIsReady();
   }
@@ -348,6 +355,13 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   }
 
   bool AsyncDoAutomaticFreeDiskSpaceControl(Delegate* callback) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableFunction(&DoStubCallback, callback));
+    return true;
+  }
+
+  bool AsyncSetOwnerUser(const std::string& username, Delegate* callback) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableFunction(&DoStubCallback, callback));

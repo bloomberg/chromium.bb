@@ -43,6 +43,9 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
     ON_CALL(*this, AsyncDoAutomaticFreeDiskSpaceControl(_))
         .WillByDefault(
             WithArgs<0>(Invoke(this, &MockCryptohomeLibrary::DoCallback)));
+    ON_CALL(*this, AsyncSetOwnerUser(_, _))
+        .WillByDefault(
+            WithArgs<1>(Invoke(this, &MockCryptohomeLibrary::DoCallback)));
   }
   MOCK_METHOD2(CheckKey, bool(const std::string& user_email,
                               const std::string& passhash));
@@ -71,6 +74,7 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
   MOCK_METHOD0(IsMounted, bool(void));
   MOCK_METHOD0(GetSystemSalt, CryptohomeBlob(void));
   MOCK_METHOD1(AsyncDoAutomaticFreeDiskSpaceControl, bool(Delegate* callback));
+  MOCK_METHOD2(AsyncSetOwnerUser, bool(const std::string&, Delegate* callback));
 
   MOCK_METHOD0(TpmIsReady, bool(void));
   MOCK_METHOD0(TpmIsEnabled, bool(void));
