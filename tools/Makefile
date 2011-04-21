@@ -339,6 +339,7 @@ BUILD/stamp-$(CROSSARCH)-binutils: | SRC/binutils BUILD
 	  ../../SRC/binutils/configure \
 	    --prefix=$(SDKROOT) \
 	    --target=${CROSSARCH} \
+	    --with-sysroot=$(SDKROOT)/${CROSSARCH} \
 	    --disable-werror
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) DESTDIR=$(DESTDIR) install
