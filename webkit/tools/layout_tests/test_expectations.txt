@@ -4,15 +4,3 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
-
-// seems to be failing because of a missing QT plugin?
-// Added to upstream test_expectations in r84461.
-BUGWK59068 WIN LINUX : plugins/embed-attributes-style.html = IMAGE
-
-// Added to upstream test_expectations in r84451
-BUGDPRANKE DEBUG WIN LINUX : http/tests/misc/acid2-pixel.html = CRASH
-
-// Added to upstream test_expectations in r84464
-BUGDPRANKE DEBUG WIN LINUX : inspector/debugger/live-edit.html = TEXT
-BUGDPRANKE WIN XP : transforms/2d/hindi-rotated.html = IMAGE IMAGE+TEXT
-BUGDPRANKE : inspector/console/console-object-constructor-name.html = TEXT PASS
