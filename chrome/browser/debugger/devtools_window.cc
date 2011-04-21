@@ -452,6 +452,10 @@ bool DevToolsWindow::PreHandleKeyboardEvent(
 
 void DevToolsWindow::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   if (docked_) {
+    if (event.windowsKeyCode == 0x08) {
+      // Do not navigate back in history on Windows (http://crbug.com/74156).
+      return;
+    }
     BrowserWindow* inspected_window = GetInspectedBrowserWindow();
     if (inspected_window)
       inspected_window->HandleKeyboardEvent(event);
