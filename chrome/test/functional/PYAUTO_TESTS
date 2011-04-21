@@ -36,6 +36,10 @@
       '-autofill.AutofillTest.testProfileWithEmailInOtherFieldNotSaved',
       # crbug.com/79802
       '-autofill.AutofillTest.testWhitespacesAndSeparatorCharsStrippedForValidCCNums',
+      # crbug.com/80190
+      '-autofill.AutofillTest.testDistinguishMiddleInitialWithinName',
+      '-autofill.AutofillTest.testFormFillableOnReset',
+      '-autofill.AutofillTest.testMultipleEmailFilledByOneUserGesture',
       'bookmark_bar',
       'bookmarks',
       'browser',
