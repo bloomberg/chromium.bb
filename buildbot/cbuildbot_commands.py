@@ -181,7 +181,7 @@ def SetupBoard(buildroot, board='x86-generic'):
 
 
 def Build(buildroot, emptytree, build_autotest=True, usepkg=True,
-          extra_env={}):
+          extra_env=None):
   """Wrapper around build_packages."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./build_packages']

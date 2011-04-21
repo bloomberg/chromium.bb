@@ -398,7 +398,7 @@ class TestUploadPrebuilt(unittest.TestCase):
     self.mox.StubOutWithMock(prebuilt, '_RetryRun')
     remote_path = '/dir/%s' % suffix.rstrip('/')
     full_remote_path = 'chromeos-prebuilt:%s' % remote_path
-    cmds = [['ssh', 'chromeos-prebuilt', 'mkdir', '-p',remote_path],
+    cmds = [['ssh', 'chromeos-prebuilt', 'mkdir', '-p', remote_path],
             ['rsync', '-av', '--chmod=a+r', 'fake',
              full_remote_path + '/Packages'],
             ['rsync', '-Rav', 'private.tbz2', full_remote_path + '/']]

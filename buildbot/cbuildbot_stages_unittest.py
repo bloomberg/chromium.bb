@@ -645,8 +645,8 @@ class BuildTargetStageTest(AbstractStageTest):
     self.build_config['useflags'] = None
 
     commands.Build(self.build_root, False, build_autotest=False, usepkg=False,
-        extra_env=None)
-    commands.BuildImage(self.build_root, extra_env=None)
+        extra_env={})
+    commands.BuildImage(self.build_root, extra_env={})
 
     self.mox.ReplayAll()
     self.RunStage()

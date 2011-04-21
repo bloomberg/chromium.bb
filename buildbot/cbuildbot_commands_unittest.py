@@ -175,9 +175,11 @@ class CBuildBotTest(mox.MoxTestBase):
   def testBuildClobber(self):
     """Base case where Build with emptytree is called."""
     buildroot = '/bob/'
-    cros_lib.RunCommand(mox.IgnoreArg(), cwd=mox.StrContains(buildroot),
-        enter_chroot=True,
-        extra_env=mox.ContainsKeyValue('EXTRA_BOARD_FLAGS','--emptytree'))
+    cros_lib.RunCommand(
+      mox.IgnoreArg(),
+      cwd=mox.StrContains(buildroot),
+      enter_chroot=True,
+      extra_env=mox.ContainsKeyValue('EXTRA_BOARD_FLAGS', '--emptytree'))
     self.mox.ReplayAll()
     commands.Build(buildroot, True)
     self.mox.VerifyAll()
@@ -186,9 +188,12 @@ class CBuildBotTest(mox.MoxTestBase):
     """Case where Build is called with a custom environment."""
     buildroot = '/bob/'
     extra = {'A' :'Av', 'B' : 'Bv'}
-    cros_lib.RunCommand( mox.IgnoreArg(), cwd=mox.StrContains(buildroot),
-        enter_chroot=True,extra_env=mox.And(
-        mox.ContainsKeyValue('A','Av'), mox.ContainsKeyValue('B','Bv')))
+    cros_lib.RunCommand(
+      mox.IgnoreArg(),
+      cwd=mox.StrContains(buildroot),
+      enter_chroot=True,
+      extra_env=mox.And(
+        mox.ContainsKeyValue('A', 'Av'), mox.ContainsKeyValue('B', 'Bv')))
     self.mox.ReplayAll()
     commands.Build(buildroot, True, extra_env=extra)
     self.mox.VerifyAll()

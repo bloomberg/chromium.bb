@@ -389,9 +389,9 @@ class BuildTargetStage(BuilderStage):
     BuilderStage.new_binhost = self._GetPortageEnvVar(_FULL_BINHOST)
     emptytree = (BuilderStage.old_binhost and
                  BuilderStage.old_binhost != BuilderStage.new_binhost)
-    env=None
+    env={}
     if self._build_config.get('useflags'):
-      env={'USE' : ' '.join(self._build_config['useflags'])}
+      env['USE'] = ' '.join(self._build_config['useflags'])
 
     commands.Build(
         self._build_root, emptytree, usepkg=self._build_config['usepkg'],
