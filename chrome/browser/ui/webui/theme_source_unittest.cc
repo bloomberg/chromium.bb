@@ -9,6 +9,7 @@
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // A mock ThemeSource (so we can override SendResponse to get at its data).

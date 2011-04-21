@@ -12,6 +12,7 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/animation/multi_animation.h"
 #include "ui/base/animation/slide_animation.h"

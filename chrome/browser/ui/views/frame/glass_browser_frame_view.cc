@@ -23,6 +23,7 @@
 #include "content/common/notification_service.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas_skia.h"

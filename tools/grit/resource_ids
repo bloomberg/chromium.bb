@@ -130,5 +130,12 @@
   # This file is generated during the build.
   "<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd": {
     "includes": [20500],
-  }
+  },
+  # All standard and large theme resources should have the same IDs.
+  "chrome/app/theme/theme_resources_standard.grd": {
+    "includes": [21000],
+  },
+  "chrome/app/theme/theme_resources_large.grd": {
+    "includes": [21000],
+  },
 }
