@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/hover_tab_selector.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -56,6 +57,7 @@ class BrowserTabStripController : public TabStripController,
                                      const gfx::Point& p) OVERRIDE;
   virtual void UpdateLoadingAnimations() OVERRIDE;
   virtual int HasAvailableDragActions() const OVERRIDE;
+  virtual void OnDropIndexUpdate(int index, bool drop_before) OVERRIDE;
   virtual void PerformDrop(bool drop_before,
                            int index,
                            const GURL& url) OVERRIDE;
@@ -125,6 +127,9 @@ class BrowserTabStripController : public TabStripController,
   scoped_ptr<TabContextMenuContents> context_menu_contents_;
 
   NotificationRegistrar notification_registrar_;
+
+  // Helper for performing tab selection as a result of dragging over a tab.
+  HoverTabSelector hover_tab_selector_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserTabStripController);
 };

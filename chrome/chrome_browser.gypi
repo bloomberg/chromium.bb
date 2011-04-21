@@ -2807,6 +2807,8 @@
         'browser/ui/tabs/dock_info_gtk.cc',
         'browser/ui/tabs/dock_info_mac.cc',
         'browser/ui/tabs/dock_info_win.cc',
+        'browser/ui/tabs/hover_tab_selector.cc',
+        'browser/ui/tabs/hover_tab_selector.h',
         'browser/ui/tabs/tab_menu_model.cc',
         'browser/ui/tabs/tab_menu_model.h',
         'browser/ui/title_prefix_matcher.cc',

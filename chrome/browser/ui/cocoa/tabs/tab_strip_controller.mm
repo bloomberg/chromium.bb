@@ -357,6 +357,7 @@ class NotificationBridge : public NotificationObserver {
     switchView_ = switchView;
     browser_ = browser;
     tabStripModel_ = browser_->tabstrip_model();
+    hoverTabSelector_.reset(new HoverTabSelector(tabStripModel_));
     delegate_ = delegate;
     bridge_.reset(new TabStripModelObserverBridge(tabStripModel_, self));
     tabContentsArray_.reset([[NSMutableArray alloc] init]);
@@ -639,6 +640,25 @@ class NotificationBridge : public NotificationObserver {
   return index;
 }
 
+// Given an index into |tabArray_|, return the corresponding index into
+// |tabStripModel_| or NSNotFound if the specified tab does not exist in
+// the model (if it's closing, for example).
+- (NSInteger)modelIndexFromIndex:(NSInteger)index {
+  NSInteger modelIndex = 0;
+  NSInteger arrayIndex = 0;
+  for (TabController* controller in tabArray_.get()) {
+    if (![closingControllers_ containsObject:controller]) {
+      if (arrayIndex == index)
+        return modelIndex;
+      ++modelIndex;
+    } else if (arrayIndex == index) {
+      // Tab is closing - no model index.
+      return NSNotFound;
+    }
+    ++arrayIndex;
+  }
+  return NSNotFound;
+}
 
 // Returns the index of the subview |view|. Returns -1 if not present. Takes
 // closing tabs into account such that this index will correctly match the tab
@@ -705,6 +725,10 @@ class NotificationBridge : public NotificationObserver {
 // is the TabView that is potentially going away.
 - (void)closeTab:(id)sender {
   DCHECK([sender isKindOfClass:[TabView class]]);
+
+  // Cancel any pending tab transition.
+  hoverTabSelector_->CancelTabTransition();
+
   if ([hoveredTab_ isEqual:sender]) {
     hoveredTab_ = nil;
   }
@@ -915,7 +939,7 @@ class NotificationBridge : public NotificationObserver {
       id target = animate ? [[tab view] animator] : [tab view];
       [target setFrame:tabFrame];
 
-      // Store the frame by identifier to aviod redundant calls to animator.
+      // Store the frame by identifier to avoid redundant calls to animator.
       NSValue* identifier = [NSValue valueWithPointer:[tab view]];
       [targetFrames_ setObject:[NSValue valueWithRect:tabFrame]
                         forKey:identifier];
@@ -1104,6 +1128,9 @@ class NotificationBridge : public NotificationObserver {
   DCHECK(modelIndex == TabStripModel::kNoTab ||
          tabStripModel_->ContainsIndex(modelIndex));
 
+  // Cancel any pending tab transition.
+  hoverTabSelector_->CancelTabTransition();
+
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
 
@@ -1239,6 +1266,9 @@ class NotificationBridge : public NotificationObserver {
 // Remove all knowledge about this tab and its associated controller, and remove
 // the view from the strip.
 - (void)removeTab:(TabController*)controller {
+  // Cancel any pending tab transition.
+  hoverTabSelector_->CancelTabTransition();
+
   NSUInteger index = [tabArray_ indexOfObject:controller];
 
   // Release the tab contents controller so those views get destroyed. This
@@ -1287,6 +1317,10 @@ class NotificationBridge : public NotificationObserver {
 // animation is complete in order to remove the tab from the model.
 - (void)startClosingTabWithAnimation:(TabController*)closingTab {
   DCHECK([NSThread isMainThread]);
+
+  // Cancel any pending tab transition.
+  hoverTabSelector_->CancelTabTransition();
+
   // Save off the controller into the set of animating tabs. This alerts
   // the layout method to not do anything with it and allows us to correctly
   // calculate offsets when working with indices into the model.
@@ -1324,6 +1358,9 @@ class NotificationBridge : public NotificationObserver {
                         atIndex:(NSInteger)modelIndex {
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
+
+  // Cancel any pending tab transition.
+  hoverTabSelector_->CancelTabTransition();
 
   TabController* tab = [tabArray_ objectAtIndex:index];
   if (tabStripModel_->count() > 0) {
@@ -1482,6 +1519,9 @@ class NotificationBridge : public NotificationObserver {
   NSInteger from = [self indexFromModelIndex:modelFrom];
   NSInteger to = [self indexFromModelIndex:modelTo];
 
+  // Cancel any pending tab transition.
+  hoverTabSelector_->CancelTabTransition();
+
   scoped_nsobject<TabContentsController> movedTabContentsController(
       [[tabContentsArray_ objectAtIndex:from] retain]);
   [tabContentsArray_ removeObjectAtIndex:from];
@@ -1581,6 +1621,8 @@ class NotificationBridge : public NotificationObserver {
 // current placeholder.
 - (void)moveTabFromIndex:(NSInteger)from {
   int toIndex = [self indexOfPlaceholder];
+  // Cancel any pending tab transition.
+  hoverTabSelector_->CancelTabTransition();
   tabStripModel_->MoveTabContentsAt(from, toIndex, true);
 }
 
@@ -1941,11 +1983,27 @@ class NotificationBridge : public NotificationObserver {
   [tabStripView_ setDropArrowPosition:arrowPos];
   [tabStripView_ setDropArrowShown:YES];
   [tabStripView_ setNeedsDisplay:YES];
+
+  // Perform a delayed tab transition if hovering directly over a tab.
+  if (index != -1 && disposition == CURRENT_TAB) {
+    NSInteger modelIndex = [self modelIndexFromIndex:index];
+    // Only start the transition if it has a valid model index (i.e. it's not
+    // in the middle of closing).
+    if (modelIndex != NSNotFound) {
+      hoverTabSelector_->StartTabTransition(modelIndex);
+      return;
+    }
+  }
+  // If a tab transition was not started, cancel the pending one.
+  hoverTabSelector_->CancelTabTransition();
 }
 
 // (URLDropTargetController protocol)
 - (void)hideDropURLsIndicatorInView:(NSView*)view {
   DCHECK_EQ(view, tabStripView_.get());
+
+  // Cancel any pending tab transition.
+  hoverTabSelector_->CancelTabTransition();
 
   if ([tabStripView_ dropArrowShown]) {
     [tabStripView_ setDropArrowShown:NO];

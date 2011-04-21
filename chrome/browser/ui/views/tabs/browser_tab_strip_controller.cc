@@ -129,7 +129,8 @@ BrowserTabStripController::BrowserTabStripController(Browser* browser,
                                                      TabStripModel* model)
     : model_(model),
       tabstrip_(NULL),
-      browser_(browser) {
+      browser_(browser),
+      hover_tab_selector_(model) {
   model_->AddObserver(this);
 
   notification_registrar_.Add(this,
@@ -231,6 +232,9 @@ void BrowserTabStripController::AddSelectionFromAnchorTo(int model_index) {
 }
 
 void BrowserTabStripController::CloseTab(int model_index) {
+  // Cancel any pending tab transition.
+  hover_tab_selector_.CancelTabTransition();
+
   tabstrip_->PrepareForCloseAt(model_index);
   model_->CloseTabContentsAt(model_index,
                              TabStripModel::CLOSE_USER_GESTURE |
@@ -261,6 +265,17 @@ void BrowserTabStripController::UpdateLoadingAnimations() {
 
 int BrowserTabStripController::HasAvailableDragActions() const {
   return model_->delegate()->GetDragActions();
+}
+
+void BrowserTabStripController::OnDropIndexUpdate(int index,
+                                                  bool drop_before) {
+  // Perform a delayed tab transition if hovering directly over a tab.
+  // Otherwise, cancel the pending one.
+  if (index != -1 && !drop_before) {
+    hover_tab_selector_.StartTabTransition(index);
+  } else {
+    hover_tab_selector_.CancelTabTransition();
+  }
 }
 
 void BrowserTabStripController::PerformDrop(bool drop_before,
@@ -308,6 +323,9 @@ void BrowserTabStripController::TabInsertedAt(TabContentsWrapper* contents,
   DCHECK(model_index == TabStripModel::kNoTab ||
          model_->ContainsIndex(model_index));
 
+  // Cancel any pending tab transition.
+  hover_tab_selector_.CancelTabTransition();
+
   TabRendererData data;
   SetTabRendererDataFromModel(contents->tab_contents(), model_index, &data);
   tabstrip_->AddTabAt(model_index, data);
@@ -315,6 +333,9 @@ void BrowserTabStripController::TabInsertedAt(TabContentsWrapper* contents,
 
 void BrowserTabStripController::TabDetachedAt(TabContentsWrapper* contents,
                                               int model_index) {
+  // Cancel any pending tab transition.
+  hover_tab_selector_.CancelTabTransition();
+
   tabstrip_->RemoveTabAt(model_index);
 }
 
@@ -329,6 +350,9 @@ void BrowserTabStripController::TabSelectedAt(TabContentsWrapper* old_contents,
 void BrowserTabStripController::TabMoved(TabContentsWrapper* contents,
                                          int from_model_index,
                                          int to_model_index) {
+  // Cancel any pending tab transition.
+  hover_tab_selector_.CancelTabTransition();
+
   // Update the data first as the pinned state may have changed.
   TabRendererData data;
   SetTabRendererDataFromModel(contents->tab_contents(), to_model_index, &data);

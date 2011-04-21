@@ -13,6 +13,7 @@
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
+#include "chrome/browser/ui/tabs/hover_tab_selector.h"
 #import "third_party/GTM/AppKit/GTMWindowSheetController.h"
 
 @class CrTrackingArea;
@@ -154,6 +155,9 @@ class NotificationBridge;
   // Used for monitoring the profile name pref.
   scoped_ptr<TabStripControllerInternal::NotificationBridge>
       notificationBridge_;
+
+  // Helper for performing tab selection as a result of dragging over a tab.
+  scoped_ptr<HoverTabSelector> hoverTabSelector_;
 }
 
 @property(nonatomic) CGFloat indentForControls;

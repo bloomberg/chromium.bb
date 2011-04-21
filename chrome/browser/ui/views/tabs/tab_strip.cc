@@ -53,6 +53,11 @@ static const int kSuspendAnimationsTimeMs = 200;
 static const int kTabHOffset = -16;
 static const int kTabStripAnimationVSlop = 40;
 
+// Inverse ratio of the width of a tab edge to the width of the tab. When
+// hovering over the left or right edge of a tab, the drop indicator will
+// point between tabs.
+static const int kTabEdgeRatioInverse = 4;
+
 // Size of the drop indicator.
 static int drop_indicator_width;
 static int drop_indicator_height;
@@ -777,7 +782,7 @@ void TabStrip::UpdateDropIndex(const DropTargetEvent& event) {
   for (int i = GetMiniTabCount(); i < tab_count(); ++i) {
     Tab* tab = GetTabAtTabDataIndex(i);
     const int tab_max_x = tab->x() + tab->width();
-    const int hot_width = tab->width() / 3;
+    const int hot_width = tab->width() / kTabEdgeRatioInverse;
     if (x < tab_max_x) {
       if (x < tab->x() + hot_width)
         SetDropIndex(i, true);
@@ -794,6 +799,9 @@ void TabStrip::UpdateDropIndex(const DropTargetEvent& event) {
 }
 
 void TabStrip::SetDropIndex(int tab_data_index, bool drop_before) {
+  // Let the controller know of the index update.
+  controller()->OnDropIndexUpdate(tab_data_index, drop_before);
+
   if (tab_data_index == -1) {
     if (drop_info_.get())
       drop_info_.reset(NULL);
