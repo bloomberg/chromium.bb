@@ -51,7 +51,7 @@ void TransportSecurityPersister::CompleteLoad(const std::string& state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   bool dirty = false;
-  if (!transport_security_state_->Deserialise(state, &dirty)) {
+  if (!transport_security_state_->LoadEntries(state, &dirty)) {
     LOG(ERROR) << "Failed to deserialize state: " << state;
     return;
   }
