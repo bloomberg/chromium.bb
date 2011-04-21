@@ -2652,12 +2652,14 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       // If we are deleting a button whose folder is currently open, close it!
       [self closeAllBookmarkFolders];
     }
-    NSPoint poofPoint = [oldButton screenLocationForRemoveAnimation];
-    [oldButton setDelegate:nil];
-    [oldButton removeFromSuperview];
-    if (animate && !ignoreAnimations_ && [self isVisible])
+    if (animate && !ignoreAnimations_ && [self isVisible] &&
+        [[self browserWindow] isKeyWindow]) {
+      NSPoint poofPoint = [oldButton screenLocationForRemoveAnimation];
       NSShowAnimationEffect(NSAnimationEffectDisappearingItemDefault, poofPoint,
                             NSZeroSize, nil, nil, nil);
+    }
+    [oldButton setDelegate:nil];
+    [oldButton removeFromSuperview];
     [buttons_ removeObjectAtIndex:buttonIndex];
     --displayedButtonCount_;
     [self resetAllButtonPositionsWithAnimation:YES];
