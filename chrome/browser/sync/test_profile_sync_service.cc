@@ -127,6 +127,10 @@ void SyncBackendHostForProfileSyncTest::ProcessMessage(
   }
 }
 
+void SyncBackendHostForProfileSyncTest::StartConfiguration(Callback0::Type*) {
+  SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop();
+}
+
 void SyncBackendHostForProfileSyncTest::
     SetDefaultExpectationsForWorkerCreation(ProfileMock* profile) {
   EXPECT_CALL(*profile, GetPasswordStore(testing::_)).

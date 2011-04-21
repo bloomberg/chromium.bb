@@ -168,6 +168,10 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
       const syncable::ModelTypeSet& types,
       CancelableTask* ready_task);
 
+  // Makes an asynchronous call to syncer to switch to config mode. When done
+  // syncer will call us back on FinishConfigureDataTypes.
+  virtual void StartConfiguration(Callback0::Type* callback);
+
   // Encrypts the specified datatypes and marks them as needing encryption on
   // other machines. This affects all machines synced to this account and all
   // data belonging to the specified types.
@@ -378,7 +382,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     virtual void DoRequestConfig(const syncable::ModelTypeBitSet& added_types);
 
     // Start the configuration mode.
-    virtual void DoStartConfiguration();
+    virtual void DoStartConfiguration(Callback0::Type* callback);
 
     // Set the base request context to use when making HTTP calls.
     // This method will add a reference to the context to persist it

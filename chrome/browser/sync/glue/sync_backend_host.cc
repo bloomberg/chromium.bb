@@ -402,7 +402,16 @@ void SyncBackendHost::ConfigureDataTypes(
                                    &registrar_.routing_info));
   }
 
-  FinishConfigureDataTypesOnFrontendLoop();
+  StartConfiguration(NewCallback(core_.get(),
+      &SyncBackendHost::Core::FinishConfigureDataTypes));
+}
+
+void SyncBackendHost::StartConfiguration(Callback0::Type* callback) {
+  // Put syncer in the config mode. DTM will put us in normal mode once it is.
+  // done. This is to ensure we dont do a normal sync when we are doing model
+  // association.
+  core_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
+    core_.get(),&SyncBackendHost::Core::DoStartConfiguration, callback));
 }
 
 void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
@@ -436,13 +445,6 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
         syncable::ModelTypeBitSetFromSet(
             pending_config_mode_state_->initial_types);
   }
-
-  // Put us in the config mode. DTM will put us in normal mode once it is done.
-  // This is to ensure we dont do a normal sync when we are doing model
-  // association.
-  core_thread_.message_loop()->PostTask(FROM_HERE,
-       NewRunnableMethod(core_.get(),
-                         &SyncBackendHost::Core::DoStartConfiguration));
 
   // If we've added types, we always want to request a nudge/config (even if
   // the initial sync is ended), in case we could not decrypt the data.
@@ -782,8 +784,8 @@ void SyncBackendHost::Core::DoRequestConfig(
   syncapi_->RequestConfig(added_types);
 }
 
-void SyncBackendHost::Core::DoStartConfiguration() {
-  syncapi_->StartConfigurationMode(NULL);
+void SyncBackendHost::Core::DoStartConfiguration(Callback0::Type* callback) {
+  syncapi_->StartConfigurationMode(callback);
 }
 
 UIModelWorker* SyncBackendHost::ui_worker() {

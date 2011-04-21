@@ -68,6 +68,8 @@ class SyncBackendHostForProfileSyncTest
   virtual void ProcessMessage(const std::string& name, const JsArgList& args,
                               const JsEventHandler* sender);
 
+  virtual void StartConfiguration(Callback0::Type* callback);
+
   static void SetDefaultExpectationsForWorkerCreation(ProfileMock* profile);
 
   static void SetHistoryServiceExpectations(ProfileMock* profile);
