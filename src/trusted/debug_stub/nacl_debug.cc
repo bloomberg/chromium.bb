@@ -101,6 +101,12 @@ struct NaClDebugState {
   std::vector<const char *> env_;
 };
 
+static struct NaClDebugCallbacks debug_callbacks = {
+  NaClDebugThreadPrepDebugging,
+  NaClDebugThreadStopDebugging,
+  NaClDebugStop,
+};
+
 static NaClDebugState *g_nacl_debug_state = NULL;
 
 bool NaClDebugIsEnabled(void) throw() {
@@ -112,7 +118,6 @@ bool NaClDebugIsEnabled(void) throw() {
 }
 
 void WINAPI NaClStubThread(void *ptr) {
-#ifdef NACL_DEBUG_STUB
   Target *targ = reinterpret_cast<Target*>(ptr);
   while (1) {
     ITransport* trans = NULL;
@@ -120,7 +125,7 @@ void WINAPI NaClStubThread(void *ptr) {
 
     try {
       // Wait for a connection.
-      trans = ITransport::Accept("0.0.0.0:4014");
+      trans = ITransport::Accept("127.0.0.1:4014");
       if (NULL == trans) continue;
 
       // Create a new session for this connection
@@ -136,34 +141,21 @@ void WINAPI NaClStubThread(void *ptr) {
       ITransport::Free(trans);
     }
   }
-#else
-  UNREFERENCED_PARAMETER(ptr);
-#endif
 }
 
 void NaClExceptionCatcher(uint32_t id, int8_t sig, void *cookie) {
-#ifdef NACL_DEBUG_STUB
   Target* targ = static_cast<Target*>(cookie);
 
   /* Signal the target that we caught something */
   IPlatform::LogWarning("Caught signal %d on thread %Xh.\n", sig, id);
   targ->Signal(id, sig, true);
-#else
-  UNREFERENCED_PARAMETER(id);
-  UNREFERENCED_PARAMETER(sig);
-  UNREFERENCED_PARAMETER(cookie);
-#endif
 }
 
 
 void NaClDebugSetAppInfo(struct NaClApp *app) throw() {
-#ifdef NACL_DEBUG_STUB
   if (NaClDebugIsEnabled()) {
     g_nacl_debug_state->app_ = app;
   }
-#else
-  UNREFERENCED_PARAMETER(app);
-#endif
 }
 
 
@@ -185,9 +177,6 @@ void NaClDebugSetAppEnvironment(int argc, char const * const argv[],
 }
 
 void NaClDebugThreadPrepDebugging(struct NaClAppThread *natp) throw() {
-  UNREFERENCED_PARAMETER(natp);
-
-#ifdef NACL_DEBUG_STUB
   if (NaClDebugIsEnabled()) {
     uint32_t id = IPlatform::GetCurrentThread();
     IThread* thread = IThread::Acquire(id, true);
@@ -199,13 +188,11 @@ void NaClDebugThreadPrepDebugging(struct NaClAppThread *natp) throw() {
      * so we can get to the untrusted context preserved on a syscall.
      */
   }
-#endif
 }
 
 void NaClDebugThreadStopDebugging(struct NaClAppThread *natp) throw() {
   UNREFERENCED_PARAMETER(natp);
 
-#ifdef NACL_DEBUG_STUB
   if (NaClDebugIsEnabled()) {
     uint32_t id = IPlatform::GetCurrentThread();
     IThread* thread = IThread::Acquire(id, false);
@@ -218,12 +205,9 @@ void NaClDebugThreadStopDebugging(struct NaClAppThread *natp) throw() {
      * from a different thread than the executing one.
      */
   }
-#endif
 }
 
-
 int NaClDebugStart(void) throw() {
-#ifdef NACL_DEBUG_STUB
   if (NaClDebugIsEnabled()) {
     NaClThread *thread = new NaClThread;
 
@@ -240,12 +224,10 @@ int NaClDebugStart(void) throw() {
     return NaClThreadCtor(thread, NaClStubThread, g_nacl_debug_state->target_,
                           NACL_KERN_STACK_SIZE);
   }
-#endif
   return 0;
 }
 
 void NaClDebugStop(int ErrCode) throw() {
-#ifdef NACL_DEBUG_STUB
   /*
    * We check if debugging is enabled since this check is the only
    * mechanism for allocating the state object.  We free the
@@ -259,18 +241,7 @@ void NaClDebugStop(int ErrCode) throw() {
       NaClDebugStubFini();
     } DBG_CATCH_ALL
   }
-#else
-  UNREFERENCED_PARAMETER(ErrCode);
-#endif
 }
-
-#ifdef NACL_DEBUG_STUB
-static struct NaClDebugCallbacks debug_callbacks = {
-  NaClDebugThreadPrepDebugging,
-  NaClDebugThreadStopDebugging,
-  NaClDebugStop,
-};
-#endif
 
 /*
  * This function is implemented for the service runtime.  The service runtime
@@ -279,7 +250,6 @@ static struct NaClDebugCallbacks debug_callbacks = {
 int NaClDebugInit(struct NaClApp *nap,
                   int argc, char const *const argv[],
                   int envc, char const *const envv[]) {
-#ifdef NACL_DEBUG_STUB
   static bool initialised = 0;
   CHECK(!initialised && NULL == g_nacl_debug_state);
   initialised = 1;
@@ -291,14 +261,4 @@ int NaClDebugInit(struct NaClApp *nap,
   NaClDebugSetAppEnvironment(argc, argv, envc, envv);
   NaClDebugStart();
   return 1;
-#else
-  UNREFERENCED_PARAMETER(nap);
-  UNREFERENCED_PARAMETER(argc);
-  UNREFERENCED_PARAMETER(argv);
-  UNREFERENCED_PARAMETER(envc);
-  UNREFERENCED_PARAMETER(envv);
-  NaClLog(LOG_FATAL, "NaClDebugInit: "
-          "Debug stub support is not enabled in this build\n");
-  return 0;
-#endif
 }

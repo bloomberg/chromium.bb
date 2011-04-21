@@ -30,8 +30,4 @@ node = env.CommandTest(
     command=['${PYTHON}', env.File('debug_stub_test.py'), '-v'],
     osenv=','.join(env_vars),
     extra_deps=dependencies)
-# This is disabled because currently the debug stub must be enabled by
-# uncommenting "#define NACL_DEBUG_STUB 1" lines in the source.
-# TODO(mseaborn): Find a way to enable this.
-env.AddNodeToTestSuite(node, ['large_tests'], 'run_debug_stub_test',
-                       is_broken=True)
+env.AddNodeToTestSuite(node, ['large_tests'], 'run_debug_stub_test')

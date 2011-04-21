@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifdef _WIN32
@@ -148,9 +148,9 @@ static bool StringToIPv4(const std::string &instr, uint32_t *addr,
       // Make sure the IP list isn't empty.
       if (0 == host->h_addr_list[0]) return false;
 
-      // Use the first one.
-      uint32_t *addrarray = reinterpret_cast<uint32_t*>(host->h_addr_list);
-      outaddr = addrarray[0];
+      // Use the first address in the array of address pointers.
+      uint32_t **addrarray = reinterpret_cast<uint32_t**>(host->h_addr_list);
+      outaddr = *addrarray[0];
     }
   }
 
@@ -239,7 +239,8 @@ ITransport* ITransport::Accept(const char *addr) {
     // to bind it.
     int reuse_address = 1;
     setsockopt(s_ServerSock, SOL_SOCKET, SO_REUSEADDR,
-               (char *) &reuse_address, sizeof(reuse_address));
+               reinterpret_cast<char *>(&reuse_address),
+               sizeof(reuse_address));
 
     struct sockaddr *psaddr = reinterpret_cast<struct sockaddr *>(&saddr);
     if (bind(s_ServerSock, psaddr, addrlen)) {
