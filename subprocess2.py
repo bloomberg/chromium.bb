@@ -207,7 +207,7 @@ def communicate(args, timeout=None, **kwargs):
       kwargs['stdin'] = open(os.devnull, 'r')
       stdin = None
     else:
-      assert isinstance(stdin, str)
+      assert isinstance(stdin, basestring)
       # When stdin is passed as an argument, use it as the actual input data and
       # set the Popen() parameter accordingly.
       kwargs['stdin'] = PIPE
