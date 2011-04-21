@@ -17,9 +17,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
-#include "chrome/browser/ui/gtk/info_bubble_gtk.h"
+#include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -32,7 +33,7 @@ class RecentlyUsedFoldersComboModel;
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GParamSpec GParamSpec;
 
-class BookmarkBubbleGtk : public InfoBubbleGtkDelegate,
+class BookmarkBubbleGtk : public BubbleDelegateGtk,
                           public NotificationObserver {
  public:
   // Shows the bookmark bubble, pointing at |anchor_widget|.
@@ -41,16 +42,13 @@ class BookmarkBubbleGtk : public InfoBubbleGtkDelegate,
                    const GURL& url,
                    bool newly_bookmarked);
 
-  // Implements the InfoBubbleGtkDelegate.  We are notified when the bubble
-  // is about to be closed, so we have a chance to save any state / input in
-  // our widgets before they are destroyed.
-  virtual void InfoBubbleClosing(InfoBubbleGtk* info_bubble,
-                                 bool closed_by_escape);
+  // BubbleDelegateGtk:
+  virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
 
-  // Overridden from NotificationObserver:
+  // NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
  private:
   BookmarkBubbleGtk(GtkWidget* anchor,
@@ -91,8 +89,8 @@ class BookmarkBubbleGtk : public InfoBubbleGtkDelegate,
   // The widget relative to which we are positioned.
   GtkWidget* anchor_;
 
-  // We let the InfoBubble own our content, and then we delete ourself
-  // when the widget is destroyed (when the InfoBubble is destroyed).
+  // We let the BubbleGtk own our content, and then we delete ourself
+  // when the widget is destroyed (when the BubbleGtk is destroyed).
   GtkWidget* content_;
 
   // The button that removes the bookmark.
@@ -109,7 +107,7 @@ class BookmarkBubbleGtk : public InfoBubbleGtkDelegate,
   GtkWidget* folder_combo_;
   scoped_ptr<RecentlyUsedFoldersComboModel> folder_combo_model_;
 
-  InfoBubbleGtk* bubble_;
+  BubbleGtk* bubble_;
 
   // We need to push some things on the back of the message loop, so we have
   // a factory attached to our instance to manage task lifetimes.

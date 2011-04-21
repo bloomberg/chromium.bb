@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/info_bubble_gtk.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -32,9 +31,8 @@ namespace {
 // keeps track of the currently open bubble, or NULL if none is open.
 BookmarkBubbleGtk* g_bubble = NULL;
 
-// Padding between content and edge of info bubble.
+// Padding between content and edge of bubble.
 const int kContentBorder = 7;
-
 
 }  // namespace
 
@@ -47,8 +45,8 @@ void BookmarkBubbleGtk::Show(GtkWidget* anchor,
   g_bubble = new BookmarkBubbleGtk(anchor, profile, url, newly_bookmarked);
 }
 
-void BookmarkBubbleGtk::InfoBubbleClosing(InfoBubbleGtk* info_bubble,
-                                          bool closed_by_escape) {
+void BookmarkBubbleGtk::BubbleClosing(BubbleGtk* bubble,
+                                      bool closed_by_escape) {
   if (closed_by_escape) {
     remove_bookmark_ = newly_bookmarked_;
     apply_edits_ = false;
@@ -156,18 +154,18 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
   // We want the focus to start on the entry, not on the remove button.
   gtk_container_set_focus_child(GTK_CONTAINER(content), table);
 
-  InfoBubbleGtk::ArrowLocationGtk arrow_location =
+  BubbleGtk::ArrowLocationGtk arrow_location =
       base::i18n::IsRTL() ?
-      InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT :
-      InfoBubbleGtk::ARROW_LOCATION_TOP_RIGHT;
-  bubble_ = InfoBubbleGtk::Show(anchor_,
-                                NULL,
-                                content,
-                                arrow_location,
-                                true,  // match_system_theme
-                                true,  // grab_input
-                                theme_service_,
-                                this);  // delegate
+      BubbleGtk::ARROW_LOCATION_TOP_LEFT :
+      BubbleGtk::ARROW_LOCATION_TOP_RIGHT;
+  bubble_ = BubbleGtk::Show(anchor_,
+                            NULL,
+                            content,
+                            arrow_location,
+                            true,  // match_system_theme
+                            true,  // grab_input
+                            theme_service_,
+                            this);  // delegate
   if (!bubble_) {
     NOTREACHED();
     return;
@@ -211,7 +209,7 @@ BookmarkBubbleGtk::~BookmarkBubbleGtk() {
 
 void BookmarkBubbleGtk::OnDestroy(GtkWidget* widget) {
   // We are self deleting, we have a destroy signal setup to catch when we
-  // destroyed (via the InfoBubble being destroyed), and delete ourself.
+  // destroyed (via the BubbleGtk being destroyed), and delete ourself.
   content_ = NULL;  // We are being destroyed.
   delete this;
 }
@@ -237,8 +235,8 @@ void BookmarkBubbleGtk::OnFolderChanged(GtkWidget* widget) {
 void BookmarkBubbleGtk::OnFolderPopupShown(GtkWidget* widget,
                                            GParamSpec* property) {
   // GtkComboBox grabs the keyboard and pointer when it displays its popup,
-  // which steals the grabs that InfoBubbleGtk had installed.  When the popup is
-  // hidden, we notify InfoBubbleGtk so it can try to reacquire the grabs
+  // which steals the grabs that BubbleGtk had installed.  When the popup is
+  // hidden, we notify BubbleGtk so it can try to reacquire the grabs
   // (otherwise, GTK won't activate our widgets when the user clicks in them).
   gboolean popup_shown = FALSE;
   g_object_get(G_OBJECT(folder_combo_), "popup-shown", &popup_shown, NULL);

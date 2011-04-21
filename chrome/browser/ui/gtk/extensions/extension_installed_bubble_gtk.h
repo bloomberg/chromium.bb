@@ -6,10 +6,11 @@
 #define CHROME_BROWSER_UI_GTK_EXTENSIONS_EXTENSION_INSTALLED_BUBBLE_GTK_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
-#include "chrome/browser/ui/gtk/info_bubble_gtk.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -20,22 +21,22 @@ class Extension;
 class SkBitmap;
 
 // Provides feedback to the user upon successful installation of an
-// extension. Depending on the type of extension, the InfoBubble will
+// extension. Depending on the type of extension, the BubbleGtk will
 // point to:
 //    OMNIBOX_KEYWORD-> The omnibox.
 //    BROWSER_ACTION -> The browserAction icon in the toolbar.
 //    PAGE_ACTION    -> A preview of the page action icon in the location
-//                      bar which is shown while the InfoBubble is shown.
+//                      bar which is shown while the BubbleGtk is shown.
 //    GENERIC        -> The wrench menu. This case includes page actions that
 //                      don't specify a default icon.
 //
 // ExtensionInstallBubble manages its own lifetime.
 class ExtensionInstalledBubbleGtk
-    : public InfoBubbleGtkDelegate,
+    : public BubbleDelegateGtk,
       public NotificationObserver,
       public base::RefCountedThreadSafe<ExtensionInstalledBubbleGtk> {
  public:
-  // The behavior and content of this InfoBubble comes in three varieties.
+  // The behavior and content of this BubbleGtk comes in three varieties.
   enum BubbleType {
     OMNIBOX_KEYWORD,
     BROWSER_ACTION,
@@ -62,14 +63,13 @@ class ExtensionInstalledBubbleGtk
   // Shows the bubble. Called internally via PostTask.
   void ShowInternal();
 
-  // NotificationObserver
+  // NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
-  // InfoBubbleDelegate
-  virtual void InfoBubbleClosing(InfoBubbleGtk* info_bubble,
-                                 bool closed_by_escape);
+  // BubbleDelegateGtk:
+  virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
 
   // Calls Release() internally. Called internally via PostTask.
   void Close();
@@ -87,10 +87,10 @@ class ExtensionInstalledBubbleGtk
   // toolbar is animating.
   int animation_wait_retries_;
 
-  // The 'x' that the user can press to hide the info bubble shelf.
+  // The 'x' that the user can press to hide the bubble shelf.
   scoped_ptr<CustomDrawButton> close_button_;
 
-  InfoBubbleGtk* info_bubble_;
+  BubbleGtk* bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstalledBubbleGtk);
 };

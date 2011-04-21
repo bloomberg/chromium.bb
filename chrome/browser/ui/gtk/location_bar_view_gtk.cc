@@ -1232,7 +1232,7 @@ LocationBarViewGtk::ContentSettingImageViewGtk::ContentSettingImageViewGtk(
       label_(gtk_label_new(NULL)),
       parent_(parent),
       profile_(profile),
-      info_bubble_(NULL),
+      content_setting_bubble_(NULL),
       animation_(this),
       method_factory_(this) {
   gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_.get()), 1, 1, 0, 0);
@@ -1266,8 +1266,8 @@ LocationBarViewGtk::ContentSettingImageViewGtk::~ContentSettingImageViewGtk() {
   event_box_.Destroy();
   alignment_.Destroy();
 
-  if (info_bubble_)
-    info_bubble_->Close();
+  if (content_setting_bubble_)
+    content_setting_bubble_->Close();
 }
 
 void LocationBarViewGtk::ContentSettingImageViewGtk::UpdateFromTabContents(
@@ -1373,7 +1373,7 @@ gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnButtonPressed(
       &display_host,
       NULL, NULL);
 
-  info_bubble_ = new ContentSettingBubbleGtk(
+  content_setting_bubble_ = new ContentSettingBubbleGtk(
       sender, this,
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           tab_contents, profile_, content_settings_type),
@@ -1410,10 +1410,10 @@ gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnExpose(
   return FALSE;
 }
 
-void LocationBarViewGtk::ContentSettingImageViewGtk::InfoBubbleClosing(
-    InfoBubbleGtk* info_bubble,
+void LocationBarViewGtk::ContentSettingImageViewGtk::BubbleClosing(
+    BubbleGtk* bubble,
     bool closed_by_escape) {
-  info_bubble_ = NULL;
+  content_setting_bubble_ = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

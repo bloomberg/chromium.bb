@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/gtk/info_bubble_gtk.h"
+#include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 
 #include <gdk/gdkkeysyms.h>
-#include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "chrome/browser/ui/gtk/bubble/bubble_accelerators_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/info_bubble_accelerators_gtk.h"
 #include "content/common/notification_service.h"
 #include "ui/base/gtk/gtk_windowing.h"
 #include "ui/gfx/gtk_util.h"
@@ -46,22 +44,22 @@ const GdkColor kFrameColor = GDK_COLOR_RGB(0x63, 0x63, 0x63);
 }  // namespace
 
 // static
-InfoBubbleGtk* InfoBubbleGtk::Show(GtkWidget* anchor_widget,
-                                   const gfx::Rect* rect,
-                                   GtkWidget* content,
-                                   ArrowLocationGtk arrow_location,
-                                   bool match_system_theme,
-                                   bool grab_input,
-                                   GtkThemeService* provider,
-                                   InfoBubbleGtkDelegate* delegate) {
-  InfoBubbleGtk* bubble = new InfoBubbleGtk(provider, match_system_theme);
+BubbleGtk* BubbleGtk::Show(GtkWidget* anchor_widget,
+                           const gfx::Rect* rect,
+                           GtkWidget* content,
+                           ArrowLocationGtk arrow_location,
+                           bool match_system_theme,
+                           bool grab_input,
+                           GtkThemeService* provider,
+                           BubbleDelegateGtk* delegate) {
+  BubbleGtk* bubble = new BubbleGtk(provider, match_system_theme);
   bubble->Init(anchor_widget, rect, content, arrow_location, grab_input);
   bubble->set_delegate(delegate);
   return bubble;
 }
 
-InfoBubbleGtk::InfoBubbleGtk(GtkThemeService* provider,
-                             bool match_system_theme)
+BubbleGtk::BubbleGtk(GtkThemeService* provider,
+                    bool match_system_theme)
     : delegate_(NULL),
       window_(NULL),
       theme_service_(provider),
@@ -76,23 +74,23 @@ InfoBubbleGtk::InfoBubbleGtk(GtkThemeService* provider,
       closed_by_escape_(false) {
 }
 
-InfoBubbleGtk::~InfoBubbleGtk() {
+BubbleGtk::~BubbleGtk() {
   // Notify the delegate that we're about to close.  This gives the chance
   // to save state / etc from the hosted widget before it's destroyed.
   if (delegate_)
-    delegate_->InfoBubbleClosing(this, closed_by_escape_);
+    delegate_->BubbleClosing(this, closed_by_escape_);
 
   g_object_unref(accel_group_);
   if (mask_region_)
     gdk_region_destroy(mask_region_);
 }
 
-void InfoBubbleGtk::Init(GtkWidget* anchor_widget,
-                         const gfx::Rect* rect,
-                         GtkWidget* content,
-                         ArrowLocationGtk arrow_location,
-                         bool grab_input) {
-  // If there is a current grab widget (menu, other info bubble, etc.), hide it.
+void BubbleGtk::Init(GtkWidget* anchor_widget,
+                     const gfx::Rect* rect,
+                     GtkWidget* content,
+                     ArrowLocationGtk arrow_location,
+                     bool grab_input) {
+  // If there is a current grab widget (menu, other bubble, etc.), hide it.
   GtkWidget* current_grab_widget = gtk_grab_get_current();
   if (current_grab_widget)
     gtk_widget_hide(current_grab_widget);
@@ -114,9 +112,9 @@ void InfoBubbleGtk::Init(GtkWidget* anchor_widget,
   gtk_window_set_resizable(GTK_WINDOW(window_), FALSE);
 
   // Attach all of the accelerators to the bubble.
-  InfoBubbleAcceleratorGtkList acceleratorList =
-      InfoBubbleAcceleratorsGtk::GetList();
-  for (InfoBubbleAcceleratorGtkList::const_iterator iter =
+  BubbleAcceleratorGtkList acceleratorList =
+      BubbleAcceleratorsGtk::GetList();
+  for (BubbleAcceleratorGtkList::const_iterator iter =
            acceleratorList.begin();
        iter != acceleratorList.end();
        ++iter) {
@@ -192,7 +190,7 @@ void InfoBubbleGtk::Init(GtkWidget* anchor_widget,
 // TODO(deanm): Windows draws with Skia and uses some PNG images for the
 // corners.  This is a lot more work, but they get anti-aliasing.
 // static
-std::vector<GdkPoint> InfoBubbleGtk::MakeFramePolygonPoints(
+std::vector<GdkPoint> BubbleGtk::MakeFramePolygonPoints(
     ArrowLocationGtk arrow_location,
     int width,
     int height,
@@ -249,8 +247,10 @@ std::vector<GdkPoint> InfoBubbleGtk::MakeFramePolygonPoints(
   return points;
 }
 
-InfoBubbleGtk::ArrowLocationGtk InfoBubbleGtk::GetArrowLocation(
-    ArrowLocationGtk preferred_location, int arrow_x, int width) {
+BubbleGtk::ArrowLocationGtk BubbleGtk::GetArrowLocation(
+    ArrowLocationGtk preferred_location,
+    int arrow_x,
+    int width) {
   bool wants_left = (preferred_location == ARROW_LOCATION_TOP_LEFT);
   int screen_width = gdk_screen_get_width(gdk_screen_get_default());
 
@@ -266,7 +266,7 @@ InfoBubbleGtk::ArrowLocationGtk InfoBubbleGtk::GetArrowLocation(
   return (wants_left ? ARROW_LOCATION_TOP_LEFT : ARROW_LOCATION_TOP_RIGHT);
 }
 
-bool InfoBubbleGtk::UpdateArrowLocation(bool force_move_and_reshape) {
+bool BubbleGtk::UpdateArrowLocation(bool force_move_and_reshape) {
   if (!toplevel_window_ || !anchor_widget_)
     return false;
 
@@ -293,7 +293,7 @@ bool InfoBubbleGtk::UpdateArrowLocation(bool force_move_and_reshape) {
   return false;
 }
 
-void InfoBubbleGtk::UpdateWindowShape() {
+void BubbleGtk::UpdateWindowShape() {
   if (mask_region_) {
     gdk_region_destroy(mask_region_);
     mask_region_ = NULL;
@@ -309,7 +309,7 @@ void InfoBubbleGtk::UpdateWindowShape() {
   gdk_window_shape_combine_region(window_->window, mask_region_, 0, 0);
 }
 
-void InfoBubbleGtk::MoveWindow() {
+void BubbleGtk::MoveWindow() {
   if (!toplevel_window_ || !anchor_widget_)
     return;
 
@@ -337,15 +337,15 @@ void InfoBubbleGtk::MoveWindow() {
   gtk_window_move(GTK_WINDOW(window_), screen_x, screen_y);
 }
 
-void InfoBubbleGtk::StackWindow() {
+void BubbleGtk::StackWindow() {
   // Stack our window directly above the toplevel window.
   if (toplevel_window_)
     ui::StackPopupWindow(window_, GTK_WIDGET(toplevel_window_));
 }
 
-void InfoBubbleGtk::Observe(NotificationType type,
-                            const NotificationSource& source,
-                            const NotificationDetails& details) {
+void BubbleGtk::Observe(NotificationType type,
+                        const NotificationSource& source,
+                        const NotificationDetails& details) {
   DCHECK_EQ(type.value, NotificationType::BROWSER_THEME_CHANGED);
   if (theme_service_->UseGtkTheme() && match_system_theme_) {
     gtk_widget_modify_bg(window_, GTK_STATE_NORMAL, NULL);
@@ -355,12 +355,12 @@ void InfoBubbleGtk::Observe(NotificationType type,
   }
 }
 
-void InfoBubbleGtk::HandlePointerAndKeyboardUngrabbedByContent() {
+void BubbleGtk::HandlePointerAndKeyboardUngrabbedByContent() {
   if (grab_input_)
     GrabPointerAndKeyboard();
 }
 
-void InfoBubbleGtk::Close() {
+void BubbleGtk::Close() {
   // We don't need to ungrab the pointer or keyboard here; the X server will
   // automatically do that when we destroy our window.
   DCHECK(window_);
@@ -368,7 +368,7 @@ void InfoBubbleGtk::Close() {
   // |this| has been deleted, see OnDestroy.
 }
 
-void InfoBubbleGtk::GrabPointerAndKeyboard() {
+void BubbleGtk::GrabPointerAndKeyboard() {
   // Install X pointer and keyboard grabs to make sure that we have the focus
   // and get all mouse and keyboard events until we're closed.
   GdkGrabStatus pointer_grab_status =
@@ -394,10 +394,10 @@ void InfoBubbleGtk::GrabPointerAndKeyboard() {
   }
 }
 
-gboolean InfoBubbleGtk::OnGtkAccelerator(GtkAccelGroup* group,
-                                         GObject* acceleratable,
-                                         guint keyval,
-                                         GdkModifierType modifier) {
+gboolean BubbleGtk::OnGtkAccelerator(GtkAccelGroup* group,
+                                     GObject* acceleratable,
+                                     guint keyval,
+                                     GdkModifierType modifier) {
   GdkEventKey msg;
   GdkKeymapKey* keys;
   gint n_keys;
@@ -451,7 +451,7 @@ gboolean InfoBubbleGtk::OnGtkAccelerator(GtkAccelGroup* group,
   return TRUE;
 }
 
-gboolean InfoBubbleGtk::OnExpose(GtkWidget* widget, GdkEventExpose* expose) {
+gboolean BubbleGtk::OnExpose(GtkWidget* widget, GdkEventExpose* expose) {
   GdkDrawable* drawable = GDK_DRAWABLE(window_->window);
   GdkGC* gc = gdk_gc_new(drawable);
   gdk_gc_set_rgb_fg_color(gc, &kFrameColor);
@@ -469,8 +469,8 @@ gboolean InfoBubbleGtk::OnExpose(GtkWidget* widget, GdkEventExpose* expose) {
 
 // When our size is initially allocated or changed, we need to recompute
 // and apply our shape mask region.
-void InfoBubbleGtk::OnSizeAllocate(GtkWidget* widget,
-                                   GtkAllocation* allocation) {
+void BubbleGtk::OnSizeAllocate(GtkWidget* widget,
+                               GtkAllocation* allocation) {
   if (!UpdateArrowLocation(false)) {
     UpdateWindowShape();
     if (current_arrow_location_ == ARROW_LOCATION_TOP_RIGHT)
@@ -478,8 +478,8 @@ void InfoBubbleGtk::OnSizeAllocate(GtkWidget* widget,
   }
 }
 
-gboolean InfoBubbleGtk::OnButtonPress(GtkWidget* widget,
-                                      GdkEventButton* event) {
+gboolean BubbleGtk::OnButtonPress(GtkWidget* widget,
+                                  GdkEventButton* event) {
   // If we got a click in our own window, that's okay (we need to additionally
   // check that it falls within our bounds, since we've grabbed the pointer and
   // some events that actually occurred in other windows will be reported with
@@ -504,33 +504,33 @@ gboolean InfoBubbleGtk::OnButtonPress(GtkWidget* widget,
   return FALSE;
 }
 
-gboolean InfoBubbleGtk::OnDestroy(GtkWidget* widget) {
+gboolean BubbleGtk::OnDestroy(GtkWidget* widget) {
   // We are self deleting, we have a destroy signal setup to catch when we
   // destroy the widget manually, or the window was closed via X.  This will
-  // delete the InfoBubbleGtk object.
+  // delete the BubbleGtk object.
   delete this;
   return FALSE;  // Propagate.
 }
 
-void InfoBubbleGtk::OnHide(GtkWidget* widget) {
+void BubbleGtk::OnHide(GtkWidget* widget) {
   gtk_widget_destroy(widget);
 }
 
-gboolean InfoBubbleGtk::OnToplevelConfigure(GtkWidget* widget,
-                                            GdkEventConfigure* event) {
+gboolean BubbleGtk::OnToplevelConfigure(GtkWidget* widget,
+                                        GdkEventConfigure* event) {
   if (!UpdateArrowLocation(false))
     MoveWindow();
   StackWindow();
   return FALSE;
 }
 
-gboolean InfoBubbleGtk::OnToplevelUnmap(GtkWidget* widget, GdkEvent* event) {
+gboolean BubbleGtk::OnToplevelUnmap(GtkWidget* widget, GdkEvent* event) {
   Close();
   return FALSE;
 }
 
-void InfoBubbleGtk::OnAnchorAllocate(GtkWidget* widget,
-                                     GtkAllocation* allocation) {
+void BubbleGtk::OnAnchorAllocate(GtkWidget* widget,
+                                 GtkAllocation* allocation) {
   if (!UpdateArrowLocation(false))
     MoveWindow();
 }

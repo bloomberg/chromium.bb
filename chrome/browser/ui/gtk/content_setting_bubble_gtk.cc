@@ -30,7 +30,7 @@
 
 namespace {
 
-// Padding between content and edge of info bubble.
+// Padding between content and edge of bubble.
 const int kContentBorder = 7;
 
 // The maximum width of a title entry in the content box. We elide anything
@@ -49,7 +49,7 @@ std::string BuildElidedText(const std::string& input) {
 
 ContentSettingBubbleGtk::ContentSettingBubbleGtk(
     GtkWidget* anchor,
-    InfoBubbleGtkDelegate* delegate,
+    BubbleDelegateGtk* delegate,
     ContentSettingBubbleModel* content_setting_bubble_model,
     Profile* profile,
     TabContents* tab_contents)
@@ -58,7 +58,7 @@ ContentSettingBubbleGtk::ContentSettingBubbleGtk(
       tab_contents_(tab_contents),
       delegate_(delegate),
       content_setting_bubble_model_(content_setting_bubble_model),
-      info_bubble_(NULL) {
+      bubble_(NULL) {
   registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
                  Source<TabContents>(tab_contents));
   BuildBubble();
@@ -68,13 +68,13 @@ ContentSettingBubbleGtk::~ContentSettingBubbleGtk() {
 }
 
 void ContentSettingBubbleGtk::Close() {
-  if (info_bubble_)
-    info_bubble_->Close();
+  if (bubble_)
+    bubble_->Close();
 }
 
-void ContentSettingBubbleGtk::InfoBubbleClosing(InfoBubbleGtk* info_bubble,
-                                                bool closed_by_escape) {
-  delegate_->InfoBubbleClosing(info_bubble, closed_by_escape);
+void ContentSettingBubbleGtk::BubbleClosing(BubbleGtk* bubble,
+                                            bool closed_by_escape) {
+  delegate_->BubbleClosing(bubble, closed_by_escape);
   delete this;
 }
 
@@ -252,19 +252,18 @@ void ContentSettingBubbleGtk::BuildBubble() {
   gtk_widget_grab_focus(bottom_box);
   gtk_widget_grab_focus(button);
 
-  InfoBubbleGtk::ArrowLocationGtk arrow_location =
+  BubbleGtk::ArrowLocationGtk arrow_location =
       !base::i18n::IsRTL() ?
-      InfoBubbleGtk::ARROW_LOCATION_TOP_RIGHT :
-      InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT;
-  info_bubble_ = InfoBubbleGtk::Show(
-      anchor_,
-      NULL,
-      bubble_content,
-      arrow_location,
-      true,  // match_system_theme
-      true,  // grab_input
-      theme_provider,
-      this);
+      BubbleGtk::ARROW_LOCATION_TOP_RIGHT :
+      BubbleGtk::ARROW_LOCATION_TOP_LEFT;
+  bubble_ = BubbleGtk::Show(anchor_,
+                            NULL,
+                            bubble_content,
+                            arrow_location,
+                            true,  // match_system_theme
+                            true,  // grab_input
+                            theme_provider,
+                            this);
 }
 
 void ContentSettingBubbleGtk::OnPopupIconButtonPress(

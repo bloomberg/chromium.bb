@@ -2,22 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This is the GTK implementation of InfoBubbles.  InfoBubbles are like
-// dialogs, but they point to a given element on the screen.  You should call
-// InfoBubbleGtk::Show, which will create and display a bubble.  The object is
-// self deleting, when the bubble is closed, you will be notified via
-// InfoBubbleGtkDelegate::InfoBubbleClosing().  Then the widgets and the
-// underlying object will be destroyed.  You can also close and destroy the
-// bubble by calling Close().
-
-#ifndef CHROME_BROWSER_UI_GTK_INFO_BUBBLE_GTK_H_
-#define CHROME_BROWSER_UI_GTK_INFO_BUBBLE_GTK_H_
+#ifndef CHROME_BROWSER_UI_GTK_BUBBLE_BUBBLE_GTK_H_
+#define CHROME_BROWSER_UI_GTK_BUBBLE_BUBBLE_GTK_H_
 #pragma once
 
 #include <gtk/gtk.h>
+
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -25,27 +19,34 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
+class BubbleGtk;
 class GtkThemeService;
-class InfoBubbleGtk;
+
 namespace gfx {
 class Rect;
 }
 
-class InfoBubbleGtkDelegate {
+class BubbleDelegateGtk {
  public:
-  // Called when the InfoBubble is closing and is about to be deleted.
+  // Called when the bubble is closing and is about to be deleted.
   // |closed_by_escape| is true if the close is the result of pressing escape.
-  virtual void InfoBubbleClosing(InfoBubbleGtk* info_bubble,
-                                 bool closed_by_escape) = 0;
+  virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) = 0;
 
   // NOTE: The Views interface has CloseOnEscape, except I can't find a place
   // where it ever returns false, so we always allow you to close via escape.
 
  protected:
-  virtual ~InfoBubbleGtkDelegate() {}
+  virtual ~BubbleDelegateGtk() {}
 };
 
-class InfoBubbleGtk : public NotificationObserver {
+// This is the GTK implementation of Bubbles. Bubbles are like dialogs, but they
+// point to a given element on the screen. You should call BubbleGtk::Show,
+// which will create and display a bubble. The object is self deleting, when the
+// bubble is closed, you will be notified via
+// BubbleDelegateGtk::BubbleClosing(). Then the widgets and the underlying
+// object will be destroyed. You can also close and destroy the bubble by
+// calling Close().
+class BubbleGtk : public NotificationObserver {
  public:
   // Where should the arrow be placed relative to the bubble?
   enum ArrowLocationGtk {
@@ -54,31 +55,31 @@ class InfoBubbleGtk : public NotificationObserver {
     ARROW_LOCATION_TOP_RIGHT,
   };
 
-  // Show an InfoBubble, pointing at the area |rect| (in coordinates relative to
-  // |anchor_widget|'s origin).  An info bubble will try to fit on the screen,
-  // so it can point to any edge of |rect|.  If |rect| is NULL, the widget's
-  // entire area will be used. The bubble will host the |content|
-  // widget.  Its arrow will be drawn at |arrow_location| if possible.  The
-  // |delegate| will be notified when the bubble is closed.  The bubble will
-  // perform an X grab of the pointer and keyboard, and will close itself if a
-  // click is received outside of the bubble.
-  static InfoBubbleGtk* Show(GtkWidget* anchor_widget,
-                             const gfx::Rect* rect,
-                             GtkWidget* content,
-                             ArrowLocationGtk arrow_location,
-                             bool match_system_theme,
-                             bool grab_input,
-                             GtkThemeService* provider,
-                             InfoBubbleGtkDelegate* delegate);
+  // Show a bubble, pointing at the area |rect| (in coordinates relative to
+  // |anchor_widget|'s origin). A bubble will try to fit on the screen, so it
+  // can point to any edge of |rect|. If |rect| is NULL, the widget's entire
+  // area will be used. The bubble will host the |content| widget. Its arrow
+  // will be drawn at |arrow_location| if possible. The |delegate| will be
+  // notified when the bubble is closed. The bubble will perform an X grab of
+  // the pointer and keyboard, and will close itself if a click is received
+  // outside of the bubble.
+  static BubbleGtk* Show(GtkWidget* anchor_widget,
+                         const gfx::Rect* rect,
+                         GtkWidget* content,
+                         ArrowLocationGtk arrow_location,
+                         bool match_system_theme,
+                         bool grab_input,
+                         GtkThemeService* provider,
+                         BubbleDelegateGtk* delegate);
 
   // Close the bubble if it's open.  This will delete the widgets and object,
-  // so you shouldn't hold a InfoBubbleGtk pointer after calling Close().
+  // so you shouldn't hold a BubbleGtk pointer after calling Close().
   void Close();
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // If the content contains widgets that can steal our pointer and keyboard
   // grabs (e.g. GtkComboBox), this method should be called after a widget
@@ -96,10 +97,10 @@ class InfoBubbleGtk : public NotificationObserver {
     FRAME_STROKE,
   };
 
-  explicit InfoBubbleGtk(GtkThemeService* provider, bool match_system_theme);
-  virtual ~InfoBubbleGtk();
+  explicit BubbleGtk(GtkThemeService* provider, bool match_system_theme);
+  virtual ~BubbleGtk();
 
-  // Creates the InfoBubble.
+  // Creates the Bubble.
   void Init(GtkWidget* anchor_widget,
             const gfx::Rect* rect,
             GtkWidget* content,
@@ -139,27 +140,27 @@ class InfoBubbleGtk : public NotificationObserver {
   void StackWindow();
 
   // Sets the delegate.
-  void set_delegate(InfoBubbleGtkDelegate* delegate) { delegate_ = delegate; }
+  void set_delegate(BubbleDelegateGtk* delegate) { delegate_ = delegate; }
 
   // Grab (in the X sense) the pointer and keyboard.  This is needed to make
   // sure that we have the input focus.
   void GrabPointerAndKeyboard();
 
-  CHROMEG_CALLBACK_3(InfoBubbleGtk, gboolean, OnGtkAccelerator, GtkAccelGroup*,
+  CHROMEG_CALLBACK_3(BubbleGtk, gboolean, OnGtkAccelerator, GtkAccelGroup*,
                      GObject*, guint, GdkModifierType);
 
-  CHROMEGTK_CALLBACK_1(InfoBubbleGtk, gboolean, OnExpose, GdkEventExpose*);
-  CHROMEGTK_CALLBACK_1(InfoBubbleGtk, void, OnSizeAllocate, GtkAllocation*);
-  CHROMEGTK_CALLBACK_1(InfoBubbleGtk, gboolean, OnButtonPress, GdkEventButton*);
-  CHROMEGTK_CALLBACK_0(InfoBubbleGtk, gboolean, OnDestroy);
-  CHROMEGTK_CALLBACK_0(InfoBubbleGtk, void, OnHide);
-  CHROMEGTK_CALLBACK_1(InfoBubbleGtk, gboolean, OnToplevelConfigure,
+  CHROMEGTK_CALLBACK_1(BubbleGtk, gboolean, OnExpose, GdkEventExpose*);
+  CHROMEGTK_CALLBACK_1(BubbleGtk, void, OnSizeAllocate, GtkAllocation*);
+  CHROMEGTK_CALLBACK_1(BubbleGtk, gboolean, OnButtonPress, GdkEventButton*);
+  CHROMEGTK_CALLBACK_0(BubbleGtk, gboolean, OnDestroy);
+  CHROMEGTK_CALLBACK_0(BubbleGtk, void, OnHide);
+  CHROMEGTK_CALLBACK_1(BubbleGtk, gboolean, OnToplevelConfigure,
                        GdkEventConfigure*);
-  CHROMEGTK_CALLBACK_1(InfoBubbleGtk, gboolean, OnToplevelUnmap, GdkEvent*);
-  CHROMEGTK_CALLBACK_1(InfoBubbleGtk, void, OnAnchorAllocate, GtkAllocation*);
+  CHROMEGTK_CALLBACK_1(BubbleGtk, gboolean, OnToplevelUnmap, GdkEvent*);
+  CHROMEGTK_CALLBACK_1(BubbleGtk, void, OnAnchorAllocate, GtkAllocation*);
 
   // The caller supplied delegate, can be NULL.
-  InfoBubbleGtkDelegate* delegate_;
+  BubbleDelegateGtk* delegate_;
 
   // Our GtkWindow popup window, we don't technically "own" the widget, since
   // it deletes us when it is destroyed.
@@ -209,7 +210,7 @@ class InfoBubbleGtk : public NotificationObserver {
 
   ui::GtkSignalRegistrar signals_;
 
-  DISALLOW_COPY_AND_ASSIGN(InfoBubbleGtk);
+  DISALLOW_COPY_AND_ASSIGN(BubbleGtk);
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_INFO_BUBBLE_GTK_H_
+#endif  // CHROME_BROWSER_UI_GTK_BUBBLE_BUBBLE_GTK_H_

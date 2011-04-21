@@ -4,8 +4,8 @@
 
 #include <gtk/gtk.h>
 
-#include "build/build_config.h"
-
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/google/google_util.h"
@@ -14,10 +14,10 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
+#include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/info_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/certificate_viewer.h"
@@ -34,7 +34,7 @@ class Profile;
 namespace {
 
 class PageInfoBubbleGtk : public PageInfoModel::PageInfoModelObserver,
-                          public InfoBubbleGtkDelegate,
+                          public BubbleDelegateGtk,
                           public NotificationObserver {
  public:
   PageInfoBubbleGtk(gfx::NativeWindow parent,
@@ -44,17 +44,16 @@ class PageInfoBubbleGtk : public PageInfoModel::PageInfoModelObserver,
                     bool show_history);
   virtual ~PageInfoBubbleGtk();
 
-  // PageInfoModelObserver implementation:
-  virtual void ModelChanged();
+  // PageInfoModel::PageInfoModelObserver implementation.
+  virtual void ModelChanged() OVERRIDE;
 
-  // NotificationObserver implementation:
+  // BubbleDelegateGtk implementation.
+  virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
+
+  // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
-
-  // InfoBubbleGtkDelegate implementation:
-  virtual void InfoBubbleClosing(InfoBubbleGtk* info_bubble,
-                                 bool closed_by_escape);
+                       const NotificationDetails& details) OVERRIDE;
 
  private:
   // Layouts the different sections retrieved from the model.
@@ -92,7 +91,7 @@ class PageInfoBubbleGtk : public PageInfoModel::PageInfoModelObserver,
   std::vector<GtkWidget*> labels_;
   std::vector<GtkWidget*> links_;
 
-  InfoBubbleGtk* bubble_;
+  BubbleGtk* bubble_;
 
   NotificationRegistrar registrar_;
 
@@ -122,17 +121,17 @@ PageInfoBubbleGtk::PageInfoBubbleGtk(gfx::NativeWindow parent,
 
   InitContents();
 
-  InfoBubbleGtk::ArrowLocationGtk arrow_location = base::i18n::IsRTL() ?
-      InfoBubbleGtk::ARROW_LOCATION_TOP_RIGHT :
-      InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT;
-  bubble_ = InfoBubbleGtk::Show(anchor_,
-                                NULL,  // |rect|
-                                contents_,
-                                arrow_location,
-                                true,  // |match_system_theme|
-                                true,  // |grab_input|
-                                theme_service_,
-                                this);  // |delegate|
+  BubbleGtk::ArrowLocationGtk arrow_location = base::i18n::IsRTL() ?
+      BubbleGtk::ARROW_LOCATION_TOP_RIGHT :
+      BubbleGtk::ARROW_LOCATION_TOP_LEFT;
+  bubble_ = BubbleGtk::Show(anchor_,
+                            NULL,  // |rect|
+                            contents_,
+                            arrow_location,
+                            true,  // |match_system_theme|
+                            true,  // |grab_input|
+                            theme_service_,
+                            this);  // |delegate|
   if (!bubble_) {
     NOTREACHED();
     return;
@@ -144,6 +143,11 @@ PageInfoBubbleGtk::~PageInfoBubbleGtk() {
 
 void PageInfoBubbleGtk::ModelChanged() {
   InitContents();
+}
+
+void PageInfoBubbleGtk::BubbleClosing(BubbleGtk* bubble,
+                                      bool closed_by_escape) {
+  delete this;
 }
 
 void PageInfoBubbleGtk::Observe(NotificationType type,
@@ -169,11 +173,6 @@ void PageInfoBubbleGtk::Observe(NotificationType type,
       gtk_widget_modify_fg(*it, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
     }
   }
-}
-
-void PageInfoBubbleGtk::InfoBubbleClosing(InfoBubbleGtk* info_bubble,
-                                          bool closed_by_escape) {
-  delete this;
 }
 
 void PageInfoBubbleGtk::InitContents() {

@@ -27,7 +27,7 @@ const char kSearchLabelMarkup[] = "<big><b>%s</b></big>";
 // Padding for the buttons on first run bubble.
 const int kButtonPadding = 4;
 
-// Padding between content and edge of info bubble.
+// Padding between content and edge of bubble.
 const int kContentBorder = 7;
 
 // Vertical spacing between labels.
@@ -43,13 +43,9 @@ void FirstRunBubble::Show(Profile* profile,
   new FirstRunBubble(profile, anchor, rect, bubble_type);
 }
 
-void FirstRunBubble::InfoBubbleClosing(InfoBubbleGtk* info_bubble,
-                                       bool closed_by_escape) {
+void FirstRunBubble::BubbleClosing(BubbleGtk* bubble,
+                                   bool closed_by_escape) {
   // TODO(port): Enable parent window
-}
-
-bool FirstRunBubble::CloseOnEscape() {
-  return true;
 }
 
 void FirstRunBubble::Observe(NotificationType type,
@@ -100,18 +96,18 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
 
   InitializeLabels(width_resource);
 
-  InfoBubbleGtk::ArrowLocationGtk arrow_location =
+  BubbleGtk::ArrowLocationGtk arrow_location =
       !base::i18n::IsRTL() ?
-      InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT :
-      InfoBubbleGtk::ARROW_LOCATION_TOP_RIGHT;
-  bubble_ = InfoBubbleGtk::Show(anchor_,
-                                &rect,
-                                content_,
-                                arrow_location,
-                                true,  // match_system_theme
-                                true,  // grab_input
-                                theme_service_,
-                                this);  // delegate
+      BubbleGtk::ARROW_LOCATION_TOP_LEFT :
+      BubbleGtk::ARROW_LOCATION_TOP_RIGHT;
+  bubble_ = BubbleGtk::Show(anchor_,
+                            &rect,
+                            content_,
+                            arrow_location,
+                            true,  // match_system_theme
+                            true,  // grab_input
+                            theme_service_,
+                            this);  // delegate
   if (!bubble_) {
     NOTREACHED();
     return;

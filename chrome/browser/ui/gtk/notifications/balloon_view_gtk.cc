@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/info_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/notifications/balloon_view_host_gtk.h"
 #include "chrome/browser/ui/gtk/rounded_window.h"

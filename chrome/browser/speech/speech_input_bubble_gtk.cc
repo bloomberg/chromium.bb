@@ -5,10 +5,10 @@
 #include "chrome/browser/speech/speech_input_bubble.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/info_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
@@ -29,11 +29,10 @@ const int kButtonBarHorizontalSpacing = 10;
 // Use black for text labels since the bubble has white background.
 const GdkColor kLabelTextColor = gtk_util::kGdkBlack;
 
-// Implementation of SpeechInputBubble for GTK. This shows a speech input
-// info bubble on screen.
-class SpeechInputBubbleGtk
-    : public SpeechInputBubbleBase,
-      public InfoBubbleGtkDelegate {
+// Implementation of SpeechInputBubble for GTK. This shows a speech input bubble
+// on screen.
+class SpeechInputBubbleGtk : public SpeechInputBubbleBase,
+                             public BubbleDelegateGtk {
  public:
   SpeechInputBubbleGtk(TabContents* tab_contents,
                        Delegate* delegate,
@@ -41,22 +40,21 @@ class SpeechInputBubbleGtk
   ~SpeechInputBubbleGtk();
 
  private:
-  // InfoBubbleDelegate methods.
-  virtual void InfoBubbleClosing(InfoBubbleGtk* info_bubble,
-                                 bool closed_by_escape);
+  // SpeechInputBubbleBase:
+  virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
+  virtual void UpdateLayout() OVERRIDE;
+  virtual void UpdateImage() OVERRIDE;
 
-  // SpeechInputBubble methods.
-  virtual void Show();
-  virtual void Hide();
-  virtual void UpdateLayout();
-  virtual void UpdateImage();
+  // BubbleDelegateGtk:
+  virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
 
   CHROMEGTK_CALLBACK_0(SpeechInputBubbleGtk, void, OnCancelClicked);
   CHROMEGTK_CALLBACK_0(SpeechInputBubbleGtk, void, OnTryAgainClicked);
   CHROMEGTK_CALLBACK_0(SpeechInputBubbleGtk, void, OnMicSettingsClicked);
 
   Delegate* delegate_;
-  InfoBubbleGtk* info_bubble_;
+  BubbleGtk* bubble_;
   gfx::Rect element_rect_;
   bool did_invoke_close_;
 
@@ -75,7 +73,7 @@ SpeechInputBubbleGtk::SpeechInputBubbleGtk(TabContents* tab_contents,
                                            const gfx::Rect& element_rect)
     : SpeechInputBubbleBase(tab_contents),
       delegate_(delegate),
-      info_bubble_(NULL),
+      bubble_(NULL),
       element_rect_(element_rect),
       did_invoke_close_(false),
       label_(NULL),
@@ -87,18 +85,11 @@ SpeechInputBubbleGtk::SpeechInputBubbleGtk(TabContents* tab_contents,
 }
 
 SpeechInputBubbleGtk::~SpeechInputBubbleGtk() {
-  // The |Close| call below invokes our |InfoBubbleClosing| method. Since we
-  // were destroyed by the caller we don't need to call them back, hence set
-  // this flag here.
+  // The |Close| call below invokes our |BubbleClosing| method. Since we were
+  // destroyed by the caller we don't need to call them back, hence set this
+  // flag here.
   did_invoke_close_ = true;
   Hide();
-}
-
-void SpeechInputBubbleGtk::InfoBubbleClosing(InfoBubbleGtk* info_bubble,
-                                             bool closed_by_escape) {
-  info_bubble_ = NULL;
-  if (!did_invoke_close_)
-    delegate_->InfoBubbleFocusChanged();
 }
 
 void SpeechInputBubbleGtk::OnCancelClicked(GtkWidget* widget) {
@@ -114,7 +105,7 @@ void SpeechInputBubbleGtk::OnMicSettingsClicked(GtkWidget* widget) {
 }
 
 void SpeechInputBubbleGtk::Show() {
-  if (info_bubble_)
+  if (bubble_)
     return;  // Nothing further to do since the bubble is already visible.
 
   // We use a vbox to arrange the controls (label, image, button bar) vertically
@@ -171,25 +162,25 @@ void SpeechInputBubbleGtk::Show() {
   gfx::Rect rect(
       element_rect_.x() + element_rect_.width() - kBubbleTargetOffsetX,
       element_rect_.y() + element_rect_.height(), 1, 1);
-  info_bubble_ = InfoBubbleGtk::Show(tab_contents()->GetNativeView(),
-                                     &rect,
-                                     content,
-                                     InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT,
-                                     false,  // match_system_theme
-                                     true,  // grab_input
-                                     theme_provider,
-                                     this);
+  bubble_ = BubbleGtk::Show(tab_contents()->GetNativeView(),
+                            &rect,
+                            content,
+                            BubbleGtk::ARROW_LOCATION_TOP_LEFT,
+                            false,  // match_system_theme
+                            true,  // grab_input
+                            theme_provider,
+                            this);
 
   UpdateLayout();
 }
 
 void SpeechInputBubbleGtk::Hide() {
-  if (info_bubble_)
-    info_bubble_->Close();
+  if (bubble_)
+    bubble_->Close();
 }
 
 void SpeechInputBubbleGtk::UpdateLayout() {
-  if (!info_bubble_)
+  if (!bubble_)
     return;
 
   if (display_mode() == DISPLAY_MODE_MESSAGE) {
@@ -252,12 +243,19 @@ void SpeechInputBubbleGtk::UpdateLayout() {
 
 void SpeechInputBubbleGtk::UpdateImage() {
   SkBitmap image = icon_image();
-  if (image.isNull() || !info_bubble_)
+  if (image.isNull() || !bubble_)
     return;
 
   GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&image);
   gtk_image_set_from_pixbuf(GTK_IMAGE(icon_), pixbuf);
   g_object_unref(pixbuf);
+}
+
+void SpeechInputBubbleGtk::BubbleClosing(BubbleGtk* bubble,
+                                         bool closed_by_escape) {
+  bubble_ = NULL;
+  if (!did_invoke_close_)
+    delegate_->InfoBubbleFocusChanged();
 }
 
 }  // namespace
@@ -268,4 +266,3 @@ SpeechInputBubble* SpeechInputBubble::CreateNativeBubble(
     const gfx::Rect& element_rect) {
   return new SpeechInputBubbleGtk(tab_contents, delegate, element_rect);
 }
-

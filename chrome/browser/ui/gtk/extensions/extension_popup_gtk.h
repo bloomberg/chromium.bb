@@ -6,10 +6,11 @@
 #define CHROME_BROWSER_UI_GTK_EXTENSIONS_EXTENSION_POPUP_GTK_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
+#include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
-#include "chrome/browser/ui/gtk/info_bubble_gtk.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/gfx/rect.h"
@@ -19,7 +20,7 @@ class ExtensionHost;
 class GURL;
 
 class ExtensionPopupGtk : public NotificationObserver,
-                          public InfoBubbleGtkDelegate,
+                          public BubbleDelegateGtk,
                           public ExtensionViewGtk::Container {
  public:
   ExtensionPopupGtk(Browser* browser,
@@ -36,18 +37,18 @@ class ExtensionPopupGtk : public NotificationObserver,
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
-  // InfoBubbleGtkDelegate implementation.
-  virtual void InfoBubbleClosing(InfoBubbleGtk* bubble,
-                                 bool closed_by_escape);
+  // BubbleDelegateGtk implementation.
+  virtual void BubbleClosing(BubbleGtk* bubble,
+                             bool closed_by_escape) OVERRIDE;
 
-  // ExtensionViewGtk::Container implementation
+  // ExtensionViewGtk::Container implementation.
   virtual void OnExtensionPreferredSizeChanged(ExtensionViewGtk* view,
                                                const gfx::Size& new_size);
 
   // Destroys the popup widget. This will in turn destroy us since we delete
-  // ourselves when the info bubble closes. Returns true if we successfully
+  // ourselves when the bubble closes. Returns true if we successfully
   // closed the bubble.
   bool DestroyPopup();
 
@@ -72,12 +73,12 @@ class ExtensionPopupGtk : public NotificationObserver,
 
   Browser* browser_;
 
-  InfoBubbleGtk* bubble_;
+  BubbleGtk* bubble_;
 
   // We take ownership of the popup ExtensionHost.
   scoped_ptr<ExtensionHost> host_;
 
-  // The widget for anchoring the position of the info bubble.
+  // The widget for anchoring the position of the bubble.
   GtkWidget* anchor_;
 
   NotificationRegistrar registrar_;

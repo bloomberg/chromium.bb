@@ -8,8 +8,9 @@
 
 #include <map>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/gtk/info_bubble_gtk.h"
+#include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/common/content_settings_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -23,32 +24,31 @@ class TabContents;
 // content blocking (e.g. "block images"). An icon appears in the location bar,
 // and when clicked, an instance of this class is created specialized for the
 // type of content being blocked.
-class ContentSettingBubbleGtk : public InfoBubbleGtkDelegate,
+class ContentSettingBubbleGtk : public BubbleDelegateGtk,
                                 public NotificationObserver {
  public:
    ContentSettingBubbleGtk(
        GtkWidget* anchor,
-       InfoBubbleGtkDelegate* delegate,
+       BubbleDelegateGtk* delegate,
        ContentSettingBubbleModel* content_setting_bubble_model,
        Profile* profile, TabContents* tab_contents);
   virtual ~ContentSettingBubbleGtk();
 
-  // Dismisses the infobubble.
+  // Dismisses the bubble.
   void Close();
 
  private:
   typedef std::map<GtkWidget*, int> PopupMap;
 
-  // InfoBubbleGtkDelegate:
-  virtual void InfoBubbleClosing(InfoBubbleGtk* info_bubble,
-                                 bool closed_by_escape);
+  // BubbleDelegateGtk:
+  virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
 
   // NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Builds the info bubble and all the widgets that it displays.
+  // Builds the bubble and all the widgets that it displays.
   void BuildBubble();
 
   // Widget callback methods.
@@ -73,13 +73,13 @@ class ContentSettingBubbleGtk : public InfoBubbleGtkDelegate,
   NotificationRegistrar registrar_;
 
   // Pass on delegate messages to this.
-  InfoBubbleGtkDelegate* delegate_;
+  BubbleDelegateGtk* delegate_;
 
   // Provides data for this bubble.
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model_;
 
-  // The info bubble.
-  InfoBubbleGtk* info_bubble_;
+  // The bubble.
+  BubbleGtk* bubble_;
 
   // Stored controls so we can figure out what was clicked.
   PopupMap popup_links_;

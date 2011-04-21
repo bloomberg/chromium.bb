@@ -114,18 +114,18 @@ void ExtensionPopupGtk::ShowPopup() {
   // We'll be in the upper-right corner of the window for LTR languages, so we
   // want to put the arrow at the upper-right corner of the bubble to match the
   // page and app menus.
-  InfoBubbleGtk::ArrowLocationGtk arrow_location =
+  BubbleGtk::ArrowLocationGtk arrow_location =
       !base::i18n::IsRTL() ?
-      InfoBubbleGtk::ARROW_LOCATION_TOP_RIGHT :
-      InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT;
-  bubble_ = InfoBubbleGtk::Show(anchor_,
-                                NULL,
-                                host_->view()->native_view(),
-                                arrow_location,
-                                false,  // match_system_theme
-                                !being_inspected_,  // grab_input
-                                GtkThemeService::GetFrom(browser_->profile()),
-                                this);
+      BubbleGtk::ARROW_LOCATION_TOP_RIGHT :
+      BubbleGtk::ARROW_LOCATION_TOP_LEFT;
+  bubble_ = BubbleGtk::Show(anchor_,
+                            NULL,
+                            host_->view()->native_view(),
+                            arrow_location,
+                            false,  // match_system_theme
+                            !being_inspected_,  // grab_input
+                            GtkThemeService::GetFrom(browser_->profile()),
+                            this);
 }
 
 bool ExtensionPopupGtk::DestroyPopup() {
@@ -138,8 +138,8 @@ bool ExtensionPopupGtk::DestroyPopup() {
   return true;
 }
 
-void ExtensionPopupGtk::InfoBubbleClosing(InfoBubbleGtk* bubble,
-                                          bool closed_by_escape) {
+void ExtensionPopupGtk::BubbleClosing(BubbleGtk* bubble,
+                                      bool closed_by_escape) {
   current_extension_popup_ = NULL;
   delete this;
 }
@@ -164,7 +164,7 @@ void ExtensionPopupGtk::Show(const GURL& url, Browser* browser,
     return;
 
   ExtensionHost* host = manager->CreatePopup(url, browser);
-  // This object will delete itself when the info bubble is closed.
+  // This object will delete itself when the bubble is closed.
   new ExtensionPopupGtk(browser, host, anchor, inspect);
 }
 

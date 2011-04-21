@@ -42,7 +42,7 @@ const int kTextColumnWidth = 350;
 const int kAnimationWaitRetries = 10;
 const int kAnimationWaitMS = 50;
 
-// Padding between content and edge of info bubble.
+// Padding between content and edge of bubble.
 const int kContentBorder = 7;
 
 }  // namespace
@@ -174,7 +174,7 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
   GtkThemeService* theme_provider = GtkThemeService::GetFrom(
       browser_->profile());
 
-  // Setup the InfoBubble content.
+  // Setup the BubbleGtk content.
   GtkWidget* bubble_content = gtk_hbox_new(FALSE, kHorizontalColumnSpacing);
   gtk_container_set_border_width(GTK_CONTAINER(bubble_content), kContentBorder);
 
@@ -199,7 +199,7 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
 
     // Put Icon in top of the left column.
     GtkWidget* icon_column = gtk_vbox_new(FALSE, 0);
-    // Use 3 pixel padding to get visual balance with InfoBubble border on the
+    // Use 3 pixel padding to get visual balance with BubbleGtk border on the
     // left.
     gtk_box_pack_start(GTK_BOX(bubble_content), icon_column, FALSE, FALSE,
                        kIconPadding);
@@ -258,10 +258,10 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
   gtk_box_pack_start(GTK_BOX(close_column), close_button_->widget(),
       FALSE, FALSE, 0);
 
-  InfoBubbleGtk::ArrowLocationGtk arrow_location =
+  BubbleGtk::ArrowLocationGtk arrow_location =
       !base::i18n::IsRTL() ?
-      InfoBubbleGtk::ARROW_LOCATION_TOP_RIGHT :
-      InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT;
+      BubbleGtk::ARROW_LOCATION_TOP_RIGHT :
+      BubbleGtk::ARROW_LOCATION_TOP_LEFT;
 
   gfx::Rect bounds = gtk_util::WidgetBounds(reference_widget);
   if (type_ == OMNIBOX_KEYWORD) {
@@ -270,35 +270,34 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
     // the popup on the URL bar.
     arrow_location =
         !base::i18n::IsRTL() ?
-        InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT :
-        InfoBubbleGtk::ARROW_LOCATION_TOP_RIGHT;
+        BubbleGtk::ARROW_LOCATION_TOP_LEFT :
+        BubbleGtk::ARROW_LOCATION_TOP_RIGHT;
     if (base::i18n::IsRTL())
       bounds.Offset(bounds.width(), 0);
     bounds.set_width(0);
   }
 
-  info_bubble_ = InfoBubbleGtk::Show(reference_widget,
-      &bounds,
-      bubble_content,
-      arrow_location,
-      true,  // match_system_theme
-      true,  // grab_input
-      theme_provider,
-      this);
+  bubble_ = BubbleGtk::Show(reference_widget,
+                            &bounds,
+                            bubble_content,
+                            arrow_location,
+                            true,  // match_system_theme
+                            true,  // grab_input
+                            theme_provider,
+                            this);
 }
 
 // static
 void ExtensionInstalledBubbleGtk::OnButtonClick(GtkWidget* button,
     ExtensionInstalledBubbleGtk* bubble) {
   if (button == bubble->close_button_->widget()) {
-    bubble->info_bubble_->Close();
+    bubble->bubble_->Close();
   } else {
     NOTREACHED();
   }
 }
-// InfoBubbleDelegate
-void ExtensionInstalledBubbleGtk::InfoBubbleClosing(InfoBubbleGtk* info_bubble,
-                                                    bool closed_by_escape) {
+void ExtensionInstalledBubbleGtk::BubbleClosing(BubbleGtk* bubble,
+                                                bool closed_by_escape) {
   if (extension_ && type_ == PAGE_ACTION) {
     // Turn the page action preview off.
     BrowserWindowGtk* browser_window =
@@ -310,7 +309,7 @@ void ExtensionInstalledBubbleGtk::InfoBubbleClosing(InfoBubbleGtk* info_bubble,
                                                    false);  // preview_enabled
   }
 
-  // We need to allow the info bubble to close and remove the widgets from
+  // We need to allow the bubble to close and remove the widgets from
   // the window before we call Release() because close_button_ depends
   // on all references being cleared before it is destroyed.
   MessageLoopForUI::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
@@ -319,5 +318,5 @@ void ExtensionInstalledBubbleGtk::InfoBubbleClosing(InfoBubbleGtk* info_bubble,
 
 void ExtensionInstalledBubbleGtk::Close() {
   Release();  // Balanced in ctor.
-  info_bubble_ = NULL;
+  bubble_ = NULL;
 }

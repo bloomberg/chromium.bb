@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
@@ -20,7 +21,7 @@
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/ui/gtk/info_bubble_gtk.h"
+#include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -142,7 +143,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   static const GdkColor kBackgroundColor;
 
  private:
-  class ContentSettingImageViewGtk : public InfoBubbleGtkDelegate,
+  class ContentSettingImageViewGtk : public BubbleDelegateGtk,
                                      public ui::AnimationDelegate {
    public:
     ContentSettingImageViewGtk(ContentSettingsType content_type,
@@ -174,9 +175,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
     CHROMEGTK_CALLBACK_1(ContentSettingImageViewGtk, gboolean, OnExpose,
                          GdkEventExpose*);
 
-    // InfoBubbleDelegate overrides:
-    virtual void InfoBubbleClosing(InfoBubbleGtk* info_bubble,
-                                   bool closed_by_escape);
+    // BubbleDelegateGtk overrides:
+    virtual void BubbleClosing(BubbleGtk* bubble,
+                               bool closed_by_escape) OVERRIDE;
 
     scoped_ptr<ContentSettingImageModel> content_setting_image_model_;
 
@@ -195,8 +196,8 @@ class LocationBarViewGtk : public AutocompleteEditController,
     // The currently active profile.
     Profile* profile_;
 
-    // The currently shown info bubble if any.
-    ContentSettingBubbleGtk* info_bubble_;
+    // The currently shown bubble if any.
+    ContentSettingBubbleGtk* content_setting_bubble_;
 
     // When we show explanatory text, we slide it in/out.
     ui::SlideAnimation animation_;
@@ -423,7 +424,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // The transition type to use for the navigation.
   PageTransition::Type transition_;
 
-  // Used to schedule a task for the first run info bubble.
+  // Used to schedule a task for the first run bubble.
   ScopedRunnableMethodFactory<LocationBarViewGtk> first_run_bubble_;
 
   // When true, the location bar view is read only and also is has a slightly

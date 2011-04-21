@@ -15,14 +15,15 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/ui/gtk/info_bubble_gtk.h"
+#include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
 class Profile;
 
-class FirstRunBubble : public InfoBubbleGtkDelegate,
+class FirstRunBubble : public BubbleDelegateGtk,
                        public NotificationObserver {
  public:
   // Shows the first run bubble, pointing at |rect|.
@@ -31,16 +32,13 @@ class FirstRunBubble : public InfoBubbleGtkDelegate,
                    const gfx::Rect& rect,
                    FirstRun::BubbleType bubble_type);
 
-  // Implements the InfoBubbleGtkDelegate.  We are notified when the bubble
-  // is about to be closed.
-  virtual void InfoBubbleClosing(InfoBubbleGtk* info_bubble,
-                                 bool closed_by_escape);
-  virtual bool CloseOnEscape();
+  // Overridden from BubbleDelegateGtk:
+  virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
  private:
   FirstRunBubble(Profile* profile,
@@ -72,15 +70,15 @@ class FirstRunBubble : public InfoBubbleGtkDelegate,
   // are transient for.
   GtkWidget* anchor_;
 
-  // We let the InfoBubble own our content, and then we delete ourself
-  // when the widget is destroyed (when the InfoBubble is destroyed).
+  // We let the BubbleGtk own our content, and then we delete ourself when the
+  // widget is destroyed (when the BubbleGtk is destroyed).
   GtkWidget* content_;
 
   // The various labels in the interface. We keep track of them for theme
   // changes.
   std::vector<GtkWidget*> labels_;
 
-  InfoBubbleGtk* bubble_;
+  BubbleGtk* bubble_;
 
   NotificationRegistrar registrar_;
 
