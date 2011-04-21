@@ -11,11 +11,13 @@
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
+#include "base/nix/xdg_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -324,9 +326,26 @@ void BrowserWindowGtk::Init() {
     std::string app_name = browser_->app_name();
     if (app_name != DevToolsWindow::kDevToolsApp) {
       std::string wmclassname = web_app::GetWMClassFromAppName(app_name);
-      gtk_window_set_wmclass(window_,
-                             wmclassname.c_str(),
-                             gdk_get_program_class());
+
+      scoped_ptr<base::Environment> env(base::Environment::Create());
+      if (base::nix::GetDesktopEnvironment(env.get()) ==
+          base::nix::DESKTOP_ENVIRONMENT_XFCE) {
+        // Workaround for XFCE. XFCE seems to treat the class as a user
+        // displayed title, which our app name certainly isn't. They don't have
+        // a dock or application based behaviour so do what looks good.
+        gtk_window_set_wmclass(window_,
+                               wmclassname.c_str(),
+                               gdk_get_program_class());
+      } else {
+        // Most everything else uses the wmclass_class to group windows
+        // together (docks, per application stuff, etc). Hopefully they won't
+        // display wmclassname to the user.
+        gtk_window_set_wmclass(window_,
+                               window_->wmclass_name,
+                               wmclassname.c_str());
+      }
+
+      gtk_window_set_role(window_, wmclassname.c_str());
     }
   }
 
