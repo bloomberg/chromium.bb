@@ -1102,7 +1102,7 @@ void ProfileImpl::CreatePasswordStore() {
   }
 
   if (!backend.get()) {
-    LOG(INFO) << "Using basic (unencrypted) store for password storage. "
+    LOG(WARNING) << "Using basic (unencrypted) store for password storage. "
         "See http://code.google.com/p/chromium/wiki/LinuxPasswordStorage for "
         "more information about password storage options.";
   }
