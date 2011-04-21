@@ -38,6 +38,8 @@ enum {
 
 struct wl_event_loop;
 struct wl_event_source;
+typedef int (*wl_event_source_check_func_t)(struct wl_event_source *source,
+					    void *data);
 typedef void (*wl_event_loop_fd_func_t)(int fd, uint32_t mask, void *data);
 typedef void (*wl_event_loop_timer_func_t)(void *data);
 typedef void (*wl_event_loop_signal_func_t)(int signal_number, void *data);
@@ -62,6 +64,8 @@ wl_event_loop_add_signal(struct wl_event_loop *loop,
 int wl_event_source_timer_update(struct wl_event_source *source,
 				 int ms_delay);
 int wl_event_source_remove(struct wl_event_source *source);
+void wl_event_source_check(struct wl_event_source *source,
+			   wl_event_source_check_func_t check);
 
 
 int wl_event_loop_dispatch(struct wl_event_loop *loop, int timeout);
