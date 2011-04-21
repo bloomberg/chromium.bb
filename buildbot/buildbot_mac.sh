@@ -53,9 +53,9 @@ rm -rf scons-out toolchain compiler hg ../xcodebuild ../sconsbuild ../out \
 
 echo @@@BUILD_STEP partial_sdk@@@
 if [[ $TOOLCHAIN = glibc ]]; then
-  buildbot/download_glibc_toolchain.sh mac ${BITS}
+  ./scons --verbose --mode=nacl_extra_sdk platform=x86-${BITS} --download \
+  --nacl_glibc extra_sdk_update_header extra_sdk_update
 else
-  echo @@@BUILD_STEP partial_sdk@@@
   ./scons --verbose --mode=nacl_extra_sdk platform=x86-${BITS} --download \
   extra_sdk_update_header install_libpthread extra_sdk_update
 fi

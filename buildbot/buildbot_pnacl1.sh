@@ -17,10 +17,6 @@ clobber() {
 install-lkgr-toolchains() {
   echo "@@@BUILD_STEP install_toolchains@@@"
   gclient runhooks --force
-
-  if ! [ -d toolchain/linux_x86 ]; then
-    ln -s linux_x86_newlib toolchain/linux_x86
-  fi
 }
 
 # We usually do not trust the TC to provide the latest (extra) SDK

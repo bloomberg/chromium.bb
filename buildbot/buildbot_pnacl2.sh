@@ -71,10 +71,6 @@ if [ "${CLOBBER}" == "yes" ] ; then
 
   echo @@@BUILD_STEP gclient_runhooks@@@
   gclient runhooks --force
-
-  if ! [ -d toolchain/linux_x86 ]; then
-    ln -s linux_x86_newlib toolchain/linux_x86
-  fi
 fi
 
 for platform in arm x86-32 x86-64 ; do

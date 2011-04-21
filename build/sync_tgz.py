@@ -41,7 +41,8 @@ import tarfile
 import http_download
 
 
-def SyncTgz(url, target, username=None, password=None, verbose=True):
+def SyncTgz(url, target, compress='gzip', maindir='sdk',
+            username=None, password=None, verbose=True):
   """Download a file from a remote server.
 
   Args:
@@ -64,7 +65,9 @@ def SyncTgz(url, target, username=None, password=None, verbose=True):
   if sys.platform == 'win32':
     os.makedirs(os.path.join(target, 'tmptar'))
     tarfiles = ['cyggcc_s-1.dll', 'cygiconv-2.dll', 'cygintl-8.dll',
-                'cygwin1.dll', 'gzip.exe', 'tar.exe']
+                'cyglzma-1.dll', 'cygncursesw-10.dll', 'cygreadline7.dll',
+                'cygwin1.dll', 'bash.exe', 'bzip2.exe', 'find.exe',
+                'gzip.exe', 'ln.exe', 'readlink.exe', 'tar.exe', 'xz.exe']
     for filename in tarfiles:
       http_download.HttpDownload(
         'http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/'
@@ -77,8 +80,14 @@ def SyncTgz(url, target, username=None, password=None, verbose=True):
     else:
       verbosechar = ''
     os.spawnv(os.P_WAIT, os.path.join('tmptar', 'tar.exe'),
-      ['/tmptar/tar', '--use-compress-program', '/tmptar/gzip',
+      ['/tmptar/tar', '--use-compress-program', '/tmptar/' + compress,
        '-xS' + verbosechar + 'pf', '../.tgz'])
+    os.spawnv(os.P_WAIT, os.path.join('tmptar', 'bash.exe'),
+      ['/tmptar/bash', '-c',
+       '"/tmptar/find -L ' + maindir + ' -type f -xtype l -print0 | ' +
+       'while IFS=\\"\\" read -r -d \\"\\" name; do if [[ -L \\"$name\\" ]];' +
+       'then /tmptar/ln -Tf \\"$(/tmptar/readlink -f \\"$name\\")\\" ' +
+       '\\"$name\\" ; fi ; done"'])
     os.chdir(saveddir)
     # Some antivirus software can prevent the removal - print message, but
     # don't stop.

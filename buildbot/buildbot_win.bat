@@ -55,12 +55,9 @@ rd /s /q scons-out ^
 
 echo @@@BUILD_STEP partial_sdk@@@
 if "%TOOLCHAIN%" equ "glibc" (
-  setlocal
-  call "%~dp0cygwin_env.bat"
-  set CYGWIN=nodosfilewarning %CYGWIN%
-  bash buildbot/download_glibc_toolchain.sh win %BITS%
+  call scons.bat --verbose --mode=nacl_extra_sdk platform=x86-%BITS% ^
+    --download --nacl_glibc extra_sdk_update_header extra_sdk_update
   if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
-  endlocal
 
   if %BITS% equ 32 goto SkipSync
   echo @@@BUILD_STEP partial_sdk_32@@@
