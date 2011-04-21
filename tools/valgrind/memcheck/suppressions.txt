@@ -4408,6 +4408,19 @@
    fun:_Znw*
    fun:_ZN17QuotaFileUtilTest7ContextEv
 }
+{
+   bug_80174
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base22PosixDynamicThreadPool8PostTaskEP4Task
+   fun:_ZN4base64_GLOBAL__N_base_threading_worker_pool_posix.cc_00000000_4653501C14WorkerPoolImpl8PostTaskERKN15tracked_objects8LocationEP4Taskb
+   fun:_ZN4base10WorkerPool8PostTaskERKN15tracked_objects8LocationEP4Taskb
+   fun:_ZN3net10FileStream12AsyncContext18InitiateAsyncWriteEiPKciP14CallbackRunnerI6Tuple1IiEE
+   fun:_ZN3net10FileStream5WriteEPKciP14CallbackRunnerI6Tuple1IiEE
+   fun:_ZN7fileapi18FileWriterDelegate5WriteEv
+   fun:_ZN7fileapi18FileWriterDelegate14OnDataReceivedEi
+}
+
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
 {
