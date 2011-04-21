@@ -366,14 +366,12 @@ TEST_F(ViewTest, MouseEvent) {
   TestView* v2 = new TestView();
   v2->SetBounds(100, 100, 100, 100);
 
-  scoped_ptr<Widget> window(CreateWidget());
-#if defined(OS_WIN)
-  WidgetWin* window_win = static_cast<WidgetWin*>(window.get());
-  window_win->set_delete_on_destroy(false);
-  window_win->set_window_style(WS_OVERLAPPEDWINDOW);
-  window_win->Init(NULL, gfx::Rect(50, 50, 650, 650));
-#endif
-  RootView* root = window->GetRootView();
+  scoped_ptr<Widget> widget(CreateWidget());
+  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  params.delete_on_destroy = false;
+  widget->SetCreateParams(params);
+  widget->Init(NULL, gfx::Rect(50, 50, 650, 650));
+  RootView* root = widget->GetRootView();
 
   root->AddChildView(v1);
   v1->AddChildView(v2);
@@ -417,7 +415,7 @@ TEST_F(ViewTest, MouseEvent) {
   // Make sure v1 did not receive the event
   EXPECT_EQ(v1->last_mouse_event_type_, 0);
 
-  window->CloseNow();
+  widget->CloseNow();
 }
 
 #if defined(TOUCH_UI)
@@ -1003,16 +1001,17 @@ TEST_F(ViewTest, ActivateAccelerator) {
   EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 0);
 
   // Create a window and add the view as its child.
-  WidgetWin window;
-  window.Init(NULL, gfx::Rect(0, 0, 100, 100));
-  window.set_delete_on_destroy(false);
-  window.set_window_style(WS_OVERLAPPEDWINDOW);
-  RootView* root = window.GetRootView();
+  WidgetWin widget;
+  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  params.delete_on_destroy = false;
+  widget.SetCreateParams(params);
+  widget.Init(NULL, gfx::Rect(0, 0, 100, 100));
+  RootView* root = widget.GetRootView();
   root->AddChildView(view);
 
   // Get the focus manager.
   views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeView(window.GetNativeView());
+      views::FocusManager::GetFocusManagerForNativeView(widget.GetNativeView());
   ASSERT_TRUE(focus_manager);
 
   // Hit the return key and see if it takes effect.
@@ -1055,7 +1054,7 @@ TEST_F(ViewTest, ActivateAccelerator) {
   EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 2);
   EXPECT_EQ(view->accelerator_count_map_[escape_accelerator], 2);
 
-  window.CloseNow();
+  widget.CloseNow();
 }
 #endif
 
@@ -1067,15 +1066,16 @@ TEST_F(ViewTest, HiddenViewWithAccelerator) {
   view->AddAccelerator(return_accelerator);
   EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 0);
 
-  WidgetWin window;
-  window.Init(NULL, gfx::Rect(0, 0, 100, 100));
-  window.set_delete_on_destroy(false);
-  window.set_window_style(WS_OVERLAPPEDWINDOW);
-  RootView* root = window.GetRootView();
+  WidgetWin widget;
+  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  params.delete_on_destroy = false;
+  widget.SetCreateParams(params);
+  widget.Init(NULL, gfx::Rect(0, 0, 100, 100));
+  RootView* root = widget.GetRootView();
   root->AddChildView(view);
 
   views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeView(window.GetNativeView());
+      views::FocusManager::GetFocusManagerForNativeView(widget.GetNativeView());
   ASSERT_TRUE(focus_manager);
 
   view->SetVisible(false);
@@ -1086,7 +1086,7 @@ TEST_F(ViewTest, HiddenViewWithAccelerator) {
   EXPECT_EQ(view,
             focus_manager->GetCurrentTargetForAccelerator(return_accelerator));
 
-  window.CloseNow();
+  widget.CloseNow();
 }
 #endif
 
@@ -1876,10 +1876,10 @@ TEST_F(ViewTest, OnVisibleBoundsChanged) {
   gfx::Rect viewport_bounds(0, 0, 100, 100);
 
   scoped_ptr<Widget> widget(CreateWidget());
-  WidgetWin* widget_win = static_cast<WidgetWin*>(widget.get());
-  widget_win->set_delete_on_destroy(false);
-  widget_win->set_window_style(WS_OVERLAPPEDWINDOW);
-  widget_win->Init(NULL, viewport_bounds);
+  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  params.delete_on_destroy = false;
+  widget->SetCreateParams(params);
+  widget->Init(NULL, viewport_bounds);
   widget->GetRootView()->SetBoundsRect(viewport_bounds);
 
   View* viewport = new View;

@@ -92,10 +92,6 @@ class WidgetWin : public ui::WindowImpl,
   // enabled.
   static bool IsAeroGlassEnabled();
 
-  void set_delete_on_destroy(bool delete_on_destroy) {
-    delete_on_destroy_ = delete_on_destroy;
-  }
-
   // Disable Layered Window updates by setting to false.
   void set_can_update_layered_window(bool can_update_layered_window) {
     can_update_layered_window_ = can_update_layered_window;

@@ -238,7 +238,7 @@ void WidgetWin::SetCreateParams(const CreateParams& params) {
   DCHECK(!GetNativeView());
 
   // Set non-style attributes.
-  set_delete_on_destroy(params.delete_on_destroy);
+  delete_on_destroy_ = params.delete_on_destroy;
 
   DWORD style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
   DWORD ex_style = 0;

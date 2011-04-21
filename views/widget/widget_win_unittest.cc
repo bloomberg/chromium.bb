@@ -43,11 +43,12 @@ class WidgetWinTest : public testing::Test {
 
 
 WidgetWin* WidgetWinTest::CreateWidgetWin() {
-  scoped_ptr<WidgetWin> window(new WidgetWin());
-  window->set_delete_on_destroy(false);
-  window->set_window_style(WS_OVERLAPPEDWINDOW);
-  window->Init(NULL, gfx::Rect(50, 50, 650, 650));
-  return window.release();
+  scoped_ptr<WidgetWin> widget(new WidgetWin());
+  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  params.delete_on_destroy = false;
+  widget->SetCreateParams(params);
+  widget->Init(NULL, gfx::Rect(50, 50, 650, 650));
+  return widget.release();
 }
 
 TEST_F(WidgetWinTest, ZoomWindow) {

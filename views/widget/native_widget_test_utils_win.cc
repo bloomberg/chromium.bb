@@ -16,14 +16,19 @@ NativeWidget* CreateNativeWidget() {
 
 NativeWidget* CreateNativeWidgetWithContents(View* contents_view) {
   WidgetWin* widget = new WidgetWin;
-  widget->set_delete_on_destroy(false);
+  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  params.delete_on_destroy = false;
+  widget->SetCreateParams(params);
   widget->Init(NULL, gfx::Rect(10, 10, 200, 200));
   return widget;
 }
 
 NativeWidget* CreateNativeWidgetWithParent(NativeWidget* parent) {
   WidgetWin* widget = new WidgetWin;
-  widget->set_delete_on_destroy(false);
+  Widget::CreateParams params(Widget::CreateParams::TYPE_CONTROL);
+  params.delete_on_destroy = false;
+  params.child = false; // Implicitly set to true by ctor with TYPE_CONTROL.
+  widget->SetCreateParams(params);
   widget->Init(parent ? parent->GetWidget()->GetNativeView() : NULL,
                gfx::Rect(10, 10, 200, 200));
   return widget;
