@@ -126,4 +126,25 @@ $XVFB_PREFIX \
 fi
 fi
 
+echo @@@BUILD_STEP archive irt.nexe@@@
+# Upload the integrated runtime (IRT) library so that it can be pulled
+# into the Chromium build, so that a NaCl toolchain will not be needed
+# to build a NaCl-enabled Chromium.  We strip the IRT to save space
+# and download time.
+# TODO(mseaborn): It might be better to do the stripping in Scons.
+IRT_PATH=scons-out/nacl-x86-${BITS}/staging/irt.nexe
+toolchain/linux_x86/bin/nacl-strip \
+    --strip-debug ${IRT_PATH} -o ${IRT_PATH}.stripped
+
+if [ "${BUILDBOT_BUILDERNAME}" = "lucid32-m32-n32-opt" ] ||
+   [ "${BUILDBOT_BUILDERNAME}" = "lucid64-m64-n64-opt" ]; then
+  IRT_DIR=nativeclient-archive2/irt
+  GS_PATH=${IRT_DIR}/r${BUILDBOT_GOT_REVISION}/irt-x86-${BITS}.nexe
+  /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+      ${IRT_PATH}.stripped gs://${GS_PATH}
+  echo @@@STEP_LINK@download@http://gsdview.appspot.com/${GS_PATH}
+else
+  echo @@@STEP_TEXT@not uploading on this bot@@@
+fi
+
 exit ${RETCODE}
