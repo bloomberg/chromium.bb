@@ -38,6 +38,10 @@ using bookmarks::kBookmarkBarMenuCornerRadius;
   return NO;
 }
 
+// Override of keyDown as the NSWindow default implementation beeps.
+- (void)keyDown:(NSEvent *)theEvent {
+}
+
 @end
 
 
