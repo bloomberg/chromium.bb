@@ -226,7 +226,7 @@
    plugin_unload
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN4base17LoadNativeLibraryERK8FilePath
+   fun:_ZN4base17LoadNativeLibraryERK8FilePathPSs
    fun:_ZN6webkit5npapi9PluginLib4LoadEv
    fun:_ZN6webkit5npapi9PluginLib13NP_InitializeEv
    fun:_ZN6webkit5npapi21WebPluginDelegateImpl6CreateERK8FilePathRKSsy
