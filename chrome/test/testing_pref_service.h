@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/prefs/pref_service.h"
 
+class TestingBrowserProcess;
 class TestingPrefStore;
 
 // A PrefService subclass for testing. It operates totally in memory and
@@ -73,6 +74,24 @@ class TestingPrefService : public TestingPrefServiceBase {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestingPrefService);
+};
+
+// Helper class to temporarily set up a |local_state| in the global
+// TestingBrowserProcess (for most unit tests it's NULL).
+class ScopedTestingLocalState {
+ public:
+  explicit ScopedTestingLocalState(TestingBrowserProcess* browser_process);
+  ~ScopedTestingLocalState();
+
+  TestingPrefService* Get() {
+    return &local_state_;
+  }
+
+ private:
+  TestingBrowserProcess* browser_process_;
+  TestingPrefService local_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedTestingLocalState);
 };
 
 #endif  // CHROME_TEST_TESTING_PREF_SERVICE_H_

@@ -140,7 +140,9 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual void SetIPCLoggingEnabled(bool enable) {}
 #endif
 
-  void SetPrefService(PrefService* pref_service);
+  // Set the local state for tests. Consumer is responsible for cleaning it up
+  // afterwards (using ScopedTestingLocalState, for example).
+  void SetLocalState(PrefService* local_state);
   void SetGoogleURLTracker(GoogleURLTracker* google_url_tracker);
   void SetProfileManager(ProfileManager* profile_manager);
 
@@ -151,7 +153,8 @@ class TestingBrowserProcess : public BrowserProcess {
   scoped_ptr<ui::Clipboard> clipboard_;
   std::string app_locale_;
 
-  PrefService* pref_service_;
+  // Weak pointer.
+  PrefService* local_state_;
   scoped_ptr<policy::BrowserPolicyConnector> browser_policy_connector_;
   scoped_ptr<GoogleURLTracker> google_url_tracker_;
   scoped_ptr<ProfileManager> profile_manager_;

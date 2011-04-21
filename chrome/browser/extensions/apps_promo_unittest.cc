@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/webui/shown_sections_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_pref_service.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,47 +23,30 @@ const char kPromoExpire[] = "No thanks.";
 
 } // namespace
 
-class ExtensionAppsPromo : public testing::Test {
+class ExtensionAppsPromo : public TestingBrowserProcessTest {
  public:
-  TestingPrefService* local_state() { return &local_state_; }
   TestingPrefService* prefs() { return &prefs_; }
-  AppsPromo* apps_promo() { return apps_promo_; }
+  AppsPromo* apps_promo() { return &apps_promo_; }
 
  protected:
   explicit ExtensionAppsPromo();
-  virtual ~ExtensionAppsPromo();
 
   // testing::Test
   virtual void SetUp();
-  virtual void TearDown();
 
  private:
-  TestingPrefService local_state_;
   TestingPrefService prefs_;
-  AppsPromo* apps_promo_;
+  ScopedTestingLocalState local_state_;
+  AppsPromo apps_promo_;
 };
 
-ExtensionAppsPromo::ExtensionAppsPromo() :
-    apps_promo_(new AppsPromo(&prefs_)) {
-}
-
-ExtensionAppsPromo::~ExtensionAppsPromo() {
-  delete apps_promo_;
+ExtensionAppsPromo::ExtensionAppsPromo()
+    : local_state_(testing_browser_process_.get()),
+      apps_promo_(&prefs_) {
 }
 
 void ExtensionAppsPromo::SetUp() {
-  browser::RegisterLocalState(&local_state_);
   browser::RegisterUserPrefs(&prefs_);
-
-  TestingBrowserProcess* testing_browser_process =
-      static_cast<TestingBrowserProcess*>(g_browser_process);
-  testing_browser_process->SetPrefService(&local_state_);
-}
-
-void ExtensionAppsPromo::TearDown() {
-  TestingBrowserProcess* testing_browser_process =
-      static_cast<TestingBrowserProcess*>(g_browser_process);
-  testing_browser_process->SetPrefService(NULL);
 }
 
 // TODO(dpolukhin): On Chrome OS all apps are installed via external extensions,

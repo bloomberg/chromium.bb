@@ -196,6 +196,7 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
   }
 
   NotificationObserverMock pref_observer_;
+  ScopedTestingBrowserProcess testing_browser_process_;
 
  private:
   NotificationRegistrar notification_registrar_;
@@ -785,8 +786,7 @@ TEST_F(TranslateManagerTest, ServerReportsUnsupportedLanguage) {
 // Tests that no translate infobar is shown when Chrome is in a language that
 // the translate server does not support.
 TEST_F(TranslateManagerTest, UnsupportedUILanguage) {
-  TestingBrowserProcess* browser_process =
-      static_cast<TestingBrowserProcess*>(g_browser_process);
+  TestingBrowserProcess* browser_process = testing_browser_process_.get();
   std::string original_lang = browser_process->GetApplicationLocale();
   browser_process->SetApplicationLocale("qbz");
 

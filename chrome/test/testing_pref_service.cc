@@ -5,11 +5,14 @@
 #include "chrome/test/testing_pref_service.h"
 
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/default_pref_store.h"
 #include "chrome/browser/prefs/pref_notifier.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prefs/testing_pref_store.h"
+#include "chrome/test/testing_browser_process.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 TestingPrefServiceBase::TestingPrefServiceBase(
     TestingPrefStore* managed_platform_prefs,
@@ -95,3 +98,17 @@ TestingPrefService::TestingPrefService()
 
 TestingPrefService::~TestingPrefService() {
 }
+
+ScopedTestingLocalState::ScopedTestingLocalState(
+    TestingBrowserProcess* browser_process)
+    : browser_process_(browser_process) {
+  browser::RegisterLocalState(&local_state_);
+  EXPECT_FALSE(browser_process->local_state());
+  browser_process->SetLocalState(&local_state_);
+}
+
+ScopedTestingLocalState::~ScopedTestingLocalState() {
+  EXPECT_EQ(&local_state_, browser_process_->local_state());
+  browser_process_->SetLocalState(NULL);
+}
+

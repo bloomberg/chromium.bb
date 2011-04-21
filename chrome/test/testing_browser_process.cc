@@ -16,15 +16,17 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 TestingBrowserProcess::TestingBrowserProcess()
     : shutdown_event_(new base::WaitableEvent(true, false)),
       module_ref_count_(0),
       app_locale_("en"),
-      pref_service_(NULL) {
+      local_state_(NULL) {
 }
 
 TestingBrowserProcess::~TestingBrowserProcess() {
+  EXPECT_FALSE(local_state_);
 }
 
 void TestingBrowserProcess::EndSession() {
@@ -77,7 +79,7 @@ void TestingBrowserProcess::SetProfileManager(ProfileManager* profile_manager) {
 }
 
 PrefService* TestingBrowserProcess::local_state() {
-  return pref_service_;
+  return local_state_;
 }
 
 policy::BrowserPolicyConnector*
@@ -218,8 +220,8 @@ ChromeNetLog* TestingBrowserProcess::net_log() {
   return NULL;
 }
 
-void TestingBrowserProcess::SetPrefService(PrefService* pref_service) {
-  pref_service_ = pref_service;
+void TestingBrowserProcess::SetLocalState(PrefService* local_state) {
+  local_state_ = local_state;
 }
 
 void TestingBrowserProcess::SetGoogleURLTracker(

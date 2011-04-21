@@ -74,22 +74,14 @@ TEST_F(FileSelectionDialogTest, ExpectAsynchronousListenerCall) {
   MessageLoopForUI message_loop;
   BrowserThread ui_thread(BrowserThread::UI, &message_loop);
 
-  TestingPrefService test_local_state;
-  browser::RegisterLocalState(&test_local_state);
-  static_cast<TestingBrowserProcess*>(g_browser_process)->
-      SetPrefService(&test_local_state);
+  ScopedTestingLocalState local_state_(testing_browser_process_.get());
 
-  FileSelectionUser*  file_selection_user;
+  scoped_ptr<FileSelectionUser> file_selection_user(new FileSelectionUser());
 
   // Disallow file-selection dialogs.
-  test_local_state.SetManagedPref(
+  local_state_.Get()->SetManagedPref(
       prefs::kAllowFileSelectionDialogs,
       Value::CreateBooleanValue(false));
 
-  file_selection_user = new FileSelectionUser();
   file_selection_user->StartFileSelection();
-  delete file_selection_user;
-
-  static_cast<TestingBrowserProcess*>(g_browser_process)->
-      SetPrefService(NULL);
 }

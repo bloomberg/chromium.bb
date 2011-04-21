@@ -12,7 +12,7 @@
 #include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_pref_service.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
@@ -99,7 +99,7 @@ InfoBarDelegate* CreateTestInfobar(
 
 // GoogleURLTrackerTest -------------------------------------------------------
 
-class GoogleURLTrackerTest : public testing::Test {
+class GoogleURLTrackerTest : public TestingBrowserProcessTest {
  protected:
   GoogleURLTrackerTest();
   virtual ~GoogleURLTrackerTest();
@@ -130,10 +130,10 @@ class GoogleURLTrackerTest : public testing::Test {
   scoped_ptr<TestNotificationObserver> observer_;
 
  private:
-  MessageLoop* message_loop_;
-  BrowserThread* io_thread_;
+  MessageLoop message_loop_;
+  BrowserThread io_thread_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  TestingPrefService local_state_;
+  ScopedTestingLocalState local_state_;
 
   TestURLFetcherFactory fetcher_factory_;
   NotificationRegistrar registrar_;
@@ -141,25 +141,20 @@ class GoogleURLTrackerTest : public testing::Test {
 
 GoogleURLTrackerTest::GoogleURLTrackerTest()
     : observer_(new TestNotificationObserver),
-      message_loop_(NULL),
-      io_thread_(NULL) {
+      message_loop_(MessageLoop::TYPE_IO),
+      io_thread_(BrowserThread::IO, &message_loop_),
+      local_state_(testing_browser_process_.get()) {
 }
 
 GoogleURLTrackerTest::~GoogleURLTrackerTest() {
 }
 
 void GoogleURLTrackerTest::SetUp() {
-  message_loop_ = new MessageLoop(MessageLoop::TYPE_IO);
-  io_thread_ = new BrowserThread(BrowserThread::IO, message_loop_);
   network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
-  browser::RegisterLocalState(&local_state_);
-  TestingBrowserProcess* testing_browser_process =
-      static_cast<TestingBrowserProcess*>(g_browser_process);
-  testing_browser_process->SetPrefService(&local_state_);
   GoogleURLTracker* tracker = new GoogleURLTracker;
   tracker->queue_wakeup_task_ = false;
   MessageLoop::current()->RunAllPending();
-  testing_browser_process->SetGoogleURLTracker(tracker);
+  testing_browser_process_.get()->SetGoogleURLTracker(tracker);
 
   URLFetcher::set_factory(&fetcher_factory_);
   g_browser_process->google_url_tracker()->infobar_creator_ =
@@ -168,13 +163,8 @@ void GoogleURLTrackerTest::SetUp() {
 
 void GoogleURLTrackerTest::TearDown() {
   URLFetcher::set_factory(NULL);
-  TestingBrowserProcess* testing_browser_process =
-      static_cast<TestingBrowserProcess*>(g_browser_process);
-  testing_browser_process->SetGoogleURLTracker(NULL);
-  testing_browser_process->SetPrefService(NULL);
+  testing_browser_process_.get()->SetGoogleURLTracker(NULL);
   network_change_notifier_.reset();
-  delete io_thread_;
-  delete message_loop_;
 }
 
 TestURLFetcher* GoogleURLTrackerTest::GetFetcherByID(int expected_id) {

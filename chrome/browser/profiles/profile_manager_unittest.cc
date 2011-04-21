@@ -14,7 +14,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_pref_service.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
@@ -29,31 +29,22 @@ Profile* g_created_profile;
 
 }  // namespace
 
-class ProfileManagerTest : public testing::Test {
+class ProfileManagerTest : public TestingBrowserProcessTest {
  protected:
   ProfileManagerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
-        profile_manager_(new ProfileManagerWithoutInit) {
+        profile_manager_(new ProfileManagerWithoutInit),
+        local_state_(testing_browser_process_.get()) {
   }
 
   virtual void SetUp() {
     // Create a new temporary directory, and store the path
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-
-    // Create a local_state PrefService.
-    browser::RegisterLocalState(&test_local_state_);
-    TestingBrowserProcess* testing_browser_process =
-        static_cast<TestingBrowserProcess*>(g_browser_process);
-    testing_browser_process->SetPrefService(&test_local_state_);
   }
 
   virtual void TearDown() {
     profile_manager_.reset();
-
-    TestingBrowserProcess* testing_browser_process =
-        static_cast<TestingBrowserProcess*>(g_browser_process);
-    testing_browser_process->SetPrefService(NULL);
   }
 
   class MockObserver : public ProfileManager::Observer {
@@ -73,7 +64,7 @@ class ProfileManagerTest : public testing::Test {
   // Also will test profile deletion.
   scoped_ptr<ProfileManager> profile_manager_;
 
-  TestingPrefService test_local_state_;
+  ScopedTestingLocalState local_state_;
 };
 
 TEST_F(ProfileManagerTest, GetProfile) {
