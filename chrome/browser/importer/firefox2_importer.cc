@@ -163,6 +163,7 @@ void Firefox2Importer::ImportBookmarksFile(
   string16 last_folder = first_folder_name;
   bool last_folder_on_toolbar = false;
   bool last_folder_is_empty = true;
+  bool has_subfolder = false;
   base::Time last_folder_add_date;
   std::vector<string16> path;
   size_t toolbar_folder = 0;
@@ -220,9 +221,15 @@ void Firefox2Importer::ImportBookmarksFile(
         toolbar_bookmarks.push_back(entry);
       } else {
         // Insert the item into the "Imported from Firefox" folder.
+        if (!has_subfolder && !last_folder.empty()) {
+          path.push_back(last_folder);
+          last_folder.clear();
+        }
         entry.path.assign(path.begin(), path.end());
-        if (import_to_bookmark_bar)
+        if (import_to_bookmark_bar) {
+          DCHECK(!entry.path.empty());
           entry.path.erase(entry.path.begin());
+        }
         bookmarks->push_back(entry);
       }
 
@@ -244,8 +251,11 @@ void Firefox2Importer::ImportBookmarksFile(
 
     // Bookmarks in sub-folder are encapsulated with <DL> tag.
     if (StartsWithASCII(line, "<DL>", false)) {
-      path.push_back(last_folder);
-      last_folder.clear();
+      has_subfolder = true;
+      if (last_folder.length() != 0) {
+        path.push_back(last_folder);
+        last_folder.clear();
+      }
       if (last_folder_on_toolbar && !toolbar_folder)
         toolbar_folder = path.size();
 
@@ -272,8 +282,10 @@ void Firefox2Importer::ImportBookmarksFile(
         } else {
           // Insert the folder into the "Imported from Firefox" folder.
           entry.path.assign(path.begin(), path.end());
-          if (import_to_bookmark_bar)
+          if (import_to_bookmark_bar) {
+            DCHECK(!entry.path.empty());
             entry.path.erase(entry.path.begin());
+          }
           bookmarks->push_back(entry);
         }
 
