@@ -1,0 +1,13 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+reverse_service_inputs = [
+    'reverse_socket.cc',
+    'reverse_service.cc',
+]
+
+env.DualLibrary('reverse_service', reverse_service_inputs)

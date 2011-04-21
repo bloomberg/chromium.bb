@@ -1329,7 +1329,7 @@ def SelUniversalTest(env, name, command, sel_universal_flags=None, **kwargs):
     return []
 
   if sel_universal_flags is None:
-    sel_universal_flags = []
+    sel_universal_flags = ['--rpc_load', '--rpc_services']
 
   # when run under qemu, sel_universal must sneeak in qemu to execv
   # call that spawns sel_ldr.
@@ -1734,8 +1734,10 @@ base_env.Append(
     'src/trusted/platform_qualify/build.scons',
     'src/trusted/plugin/build.scons',
     'src/trusted/python_bindings/build.scons',
+    'src/trusted/reverse_service/build.scons',
     'src/trusted/sel_universal/build.scons',
     'src/trusted/service_runtime/build.scons',
+    'src/trusted/simple_service/build.scons',
     # TODO: This file has an early out in case we are building for ARM
     #       but provides nchelper lib. Needs to be cleaned up
     'src/trusted/validator_x86/build.scons',

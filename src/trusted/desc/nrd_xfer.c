@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -161,7 +161,7 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
     /* and implicit zeros for pad bytes */
   };
 
-  NaClLog(4,
+  NaClLog(3,
           ("Entered"
            " NaClImcSendTypedMessage(0x%08"NACL_PRIxPTR", "
            "0x%08"NACL_PRIxPTR", 0x%x)\n"),

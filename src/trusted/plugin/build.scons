@@ -112,9 +112,12 @@ common_libs = [
     'imc',
     'platform',
     'platform_qual_lib',
+    'reverse_service',
     'gio',
     'sel',
+    'simple_service',
     'env_cleanser',
+    'nacl_error_code',
 ]
 
 os_libs = [ ]

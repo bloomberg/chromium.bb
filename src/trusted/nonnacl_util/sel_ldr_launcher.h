@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -17,6 +17,7 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
+#include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 
 struct NaClSrpcChannel;
 struct NaClDesc;
@@ -109,11 +110,11 @@ struct SelLdrLauncher {
   // Builds a command line out of the prepopulated args.
   void BuildCommandLine(std::vector<nacl::string>* command);
 
-  // OpenSrpcChannels essentially is a pair Ctor for the two
-  // NaClSrpcChannel objects; if it returns true (success), both were
-  // constructed; if it returns false, neither was constructed (and thus
-  // neither needs to be Dtor'd).
-  bool OpenSrpcChannels(NaClSrpcChannel* command, NaClSrpcChannel* untrusted);
+  bool SetupCommandAndLoad(NaClSrpcChannel* command,
+                           DescWrapper* nexe);
+
+  bool StartModuleAndSetupAppChannel(NaClSrpcChannel* command,
+                                     NaClSrpcChannel* out_app_chan);
 
   // Add a prefix shell program, like 'time', to run the sel_ldr in
   // This is primarily intended to provide a hook for qemu emulation
@@ -131,7 +132,14 @@ struct SelLdrLauncher {
   nacl::string application_file() const { return application_file_; }
 
   // Returns the socket address used to connect to the sel_ldr.
-  DescWrapper* socket_address() const { return socket_address_.get(); }
+  DescWrapper* socket_addr() const { return socket_addr_.get(); }
+
+  // Wraps a raw NaClDesc descriptor.  If NULL is returned, caller retains
+  // ownership of the reference.
+  DescWrapper* Wrap(NaClDesc* raw_desc);
+
+  // As above, but raw_desc is Unref'd on failure.
+  DescWrapper* WrapCleanup(NaClDesc* raw_desc);
 
   /////////////////////////////////////////////////////////////////////////////
   // Browser-based start-up (Chrome only):
@@ -146,6 +154,32 @@ struct SelLdrLauncher {
                         Handle* result_sockets);
 
  private:
+  // OpenSrpcChannels is essentially the following sequence of
+  // (lower-level) operations.
+
+  // BEGIN EQUIVALENT SEQUENCE
+
+  bool SetupBootstrapChannel();
+  bool GetLdrSocketAddress();
+  bool SetupCommandChannel(NaClSrpcChannel* command);
+
+  // LoadModule supplies, via the |command| channel, the |nexe| file
+  // for the service runtime to load.  This is needed iff
+  // InitCommandLine or StartFromComandLine were given an empty string
+  // for |application_file|.
+  bool LoadModule(NaClSrpcChannel* command, DescWrapper* nexe);
+
+  // ----
+
+  // Tell the service runtime to start the NaCl module via the
+  // |command| channel.  If |error| is non-NULL, any failures will
+  // cause the error code to be written there.
+  bool StartModule(NaClSrpcChannel* command, NaClErrorCode* error);
+
+  bool SetupApplicationChannel(NaClSrpcChannel* app_channel);
+
+  // END EQUIVALENT SEQUENCE
+
   void GetPluginDirectory(char* buffer, size_t len);
   nacl::string GetSelLdrPathName();
   void CloseHandlesAfterLaunch();
@@ -170,8 +204,11 @@ struct SelLdrLauncher {
 
   std::vector<Handle> close_after_launch_;
 
+  // lifetime of bootstrap_socket_ must be at least that of factory_
+  scoped_ptr<DescWrapperFactory> factory_;
+  scoped_ptr<DescWrapper> bootstrap_socket_;
   // The socket address returned from sel_ldr for connects.
-  scoped_ptr<DescWrapper> socket_address_;
+  scoped_ptr<DescWrapper> socket_addr_;
   scoped_ptr<SelLdrLocator> sel_ldr_locator_;
 };
 

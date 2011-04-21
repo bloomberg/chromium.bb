@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_NACL_BASE_NACL_REFCOUNT_H_
@@ -11,6 +11,13 @@
 #include "native_client/src/include/portability.h"
 
 #include "native_client/src/shared/platform/nacl_sync.h"
+
+#ifdef __cplusplus
+# include "native_client/src/include/nacl_scoped_ptr.h"
+# define NACL_IS_REFCOUNT_SUBCLASS  ; typedef char is_refcount_subclass
+#else
+# define NACL_IS_REFCOUNT_SUBCLASS
+#endif
 
 EXTERN_C_BEGIN
 
@@ -30,7 +37,7 @@ EXTERN_C_BEGIN
 struct NaClRefCountVtbl;
 
 struct NaClRefCount {
-  struct NaClRefCountVtbl const *vtbl;
+  struct NaClRefCountVtbl const *vtbl NACL_IS_REFCOUNT_SUBCLASS;
   /* private */
   struct NaClMutex              mu;
   size_t                        ref_count;
@@ -65,5 +72,149 @@ void NaClRefCountSafeUnref(struct NaClRefCount *nrcp);
 extern struct NaClRefCountVtbl const kNaClRefCountVtbl;
 
 EXTERN_C_END
+
+#ifdef __cplusplus
+
+namespace nacl {
+
+// syntactic glucose to handle transferring responsibility to release
+// uninitialized memory from a scoped_ptr_malloc to a scoped pointer
+// that handles dereferencing a refcounted object.
+
+class NaClScopedRefCountNaClDescDtor {
+ public:
+  inline void operator()(NaClRefCount* x) const {
+    NaClRefCountUnref(x);
+  }
+};
+
+// C must be a NaClRefCount subclass.  unfortunately we can only
+// enforce this by checking that the C struct contains a common
+// attribute -- the NACL_IS_REFCOUNT_SUBCLASS macro must be included
+// for every subclass that wants to use this template
+template <typename RC, typename DtorProc = NaClScopedRefCountNaClDescDtor>
+class scoped_ptr_refcount {
+ public:
+  // standard ctor
+  scoped_ptr_refcount(nacl::scoped_ptr_malloc<RC>* p, int ctor_fn_result)
+      : ptr_(NULL) {
+    enum { must_be_subclass = sizeof(typename RC::is_refcount_subclass) };
+
+    if (ctor_fn_result) {
+      // we are now responsible for calling the unref, which, if the
+      // refcount drops to zero, will handle the free.
+      ptr_ = p->release();
+    }
+  }
+
+  // copy ctor
+  scoped_ptr_refcount(scoped_ptr_refcount const& other) {
+    ptr_ = NaClRefCountRef(other.ptr_);
+  }
+
+  // assign
+  scoped_ptr_refcount& operator=(scoped_ptr_refcount const& other) {
+    if (NULL != ptr_) {
+      deref_(reinterpret_cast<NaClRefCount*>(ptr_));
+    }
+    ptr_ = NaClRefCountRef(other.ptr_);
+    return *this;
+  }
+
+  ~scoped_ptr_refcount() {
+    if (NULL != ptr_) {
+      deref_(reinterpret_cast<NaClRefCount*>(ptr_));
+    }
+  }
+
+  bool constructed() { return NULL != ptr_; }
+
+  void reset(nacl::scoped_ptr_malloc<RC>* p = NULL, int ctor_fn_result = 0) {
+    if (NULL != ptr_) {
+      deref_(reinterpret_cast<NaClRefCount*>(ptr_));
+      ptr_ = NULL;
+    }
+    if (0 != ctor_fn_result) {
+      ptr_ = p->release();
+    }
+  }
+
+  // Accessors
+  RC& operator*() const {
+    return *ptr_;
+  }
+
+  RC* operator->() const {
+    return ptr_;
+  }
+
+  RC* get() const { return ptr_; }
+
+  /*
+   * ptr eq, so same pointer, and not equality testing on contents.
+   */
+  bool operator==(nacl::scoped_ptr_malloc<RC> const& p) const {
+    return ptr_ == p.get();
+  }
+  bool operator==(RC const* p) const { return ptr_ == p; }
+
+  bool operator!=(nacl::scoped_ptr_malloc<RC> const& p) const {
+    return ptr_ != p.get();
+  }
+  bool operator!=(RC const* p) const { return ptr_ != p; }
+
+  void swap(scoped_ptr_refcount& p2) {
+    RC* tmp = ptr_;
+    ptr_ = p2.ptr_;
+    p2.ptr_ = tmp;
+  }
+
+  RC* release() {
+    RC* tmp = ptr_;
+    ptr_ = NULL;
+    return tmp;
+  }
+
+ private:
+  RC* ptr_;
+
+  static DtorProc const deref_;
+};
+
+template<typename RC, typename DP>
+DP const scoped_ptr_refcount<RC, DP>::deref_ = DP();
+
+template<typename RC, typename DP>
+void swap(scoped_ptr_refcount<RC, DP>& a, scoped_ptr_refcount<RC, DP>& b) {
+  a.swap(b);
+}
+
+template<typename RC, typename DP> inline
+bool operator==(nacl::scoped_ptr_malloc<RC> const& a,
+                scoped_ptr_refcount<RC, DP> const& b) {
+  return a.get() == b.get();
+}
+
+template<class RC, typename DP> inline
+bool operator==(RC const* a,
+                scoped_ptr_refcount<RC, DP> const& b) {
+  return a == b.get();
+}
+
+template<typename RC, typename DP> inline
+bool operator!=(nacl::scoped_ptr_malloc<RC>const & a,
+                scoped_ptr_refcount<RC, DP> const& b) {
+  return a.get() != b.get();
+}
+
+template<typename RC, typename DP> inline
+bool operator!=(RC* a,
+                scoped_ptr_refcount<RC, DP> const& b) {
+  return a != b.get();
+}
+
+}  // namespace
+
+#endif
 
 #endif

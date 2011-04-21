@@ -16,20 +16,25 @@
 #include <vector>
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
+#include "native_client/src/trusted/reverse_service/reverse_service.h"
 #include "native_client/src/trusted/sel_universal/pepper_handler.h"
 #include "native_client/src/trusted/sel_universal/replay_handler.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
+
 #if defined(NACL_SEL_UNIVERSAL_INCLUDE_SDL)
 // NOTE: we need to include this so that it can "hijack" main
 #include <SDL/SDL.h>
 #include "native_client/src/trusted/sel_universal/multimedia_handler.h"
 #endif
+
+#include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 
 using std::ifstream;
 using std::map;
@@ -38,13 +43,28 @@ using std::vector;
 using nacl::DescWrapper;
 
 static const char* kUsage =
-  "Usage:\n"
-  "\n"
-  "sel_universal <sel_ldr_arg>* [-- <nexe> <nexe_arg>*]\n"
-  "\n"
-  "Exactly one nacl_file argument is required.\n"
-  "After startup the user is prompted for interactive commands.\n"
-  "For sample commands have a look at: tests/srpc/srpc_basic_test.stdin\n";
+    "Usage:\n"
+    "\n"
+    "sel_universal <sel_universal_arg> <sel_ldr_arg>* [-- <nexe> <nexe_arg>*]\n"
+    "\n"
+    "Exactly one nexe argument is required.\n"
+    "After startup the user is prompted for interactive commands.\n"
+    "For sample commands have a look at: tests/srpc/srpc_basic_test.stdin\n"
+    "\n"
+    "sel_universal arguments are:\n"
+    "\n"
+    "  --help\n"
+#if NACL_SEL_UNIVERSAL_INCLUDE_SDL
+    "  --event_record <file>\n"
+    "  --event_replay <file>\n"
+#endif
+    "  --debug\n"
+    "  --abort_on_error\n"
+    "  --silence_nexe\n"
+    "  --command_prefix <prefix>\n"
+    "  --command_file <file>\n"
+    "  --rpc_load\n"
+    "  --rpc_services\n";
 
 // NOTE: this used to be stack allocated inside main which cause
 // problems on ARM (probably a tool chain bug).
@@ -58,8 +78,10 @@ static vector<string> initial_commands;
 static bool abort_on_error = false;
 static bool silence_nexe = false;
 static string command_prefix = "";
+static bool rpc_load = false;
+static bool rpc_services = false;
 
-// When given argc and argv this function (a) extracts the nacl_file argument,
+// When given argc and argv this function (a) extracts the nexe argument,
 // (b) populates sel_ldr_argv with sel_ldr arguments, and (c) populates
 // app_argv with nexe module args. Also see kUsage above for details.
 // It will call exit with codes 0 (help message) and 1 (incorrect args).
@@ -72,11 +94,11 @@ static nacl::string ProcessArguments(int argc,
     exit(0);
   }
 
-  // Extract '-f nacl_file' from args and transfer the rest to sel_ldr_argv
+  // Extract sel_universal arguments and transfer the rest to sel_ldr_argv
   nacl::string app_name;
   for (int i = 1; i < argc; i++) {
     const string flag(argv[i]);
-    // Check if the argument has the form -f nacl_file
+    // Check if the argument has the form -f nexe
     if (flag == "--help") {
       printf("%s", kUsage);
       exit(0);
@@ -130,9 +152,13 @@ static nacl::string ProcessArguments(int argc,
       const string val = string(argv[i + 2]);
       i += 2;
       initial_vars[tag] = val;
+    } else if (flag == "--rpc_load") {
+      rpc_load = true;
+    } else if (flag == "--rpc_services") {
+      rpc_services = true;
     } else if (flag == "--") {
-      // Done processing sel_ldr args. If no '-f nacl_file' was given earlier,
-      // the first argument after '--' is the nacl_file.
+      // Done processing sel_ldr args. If no '-f nexe' was given earlier,
+      // the first argument after '--' is the nexe.
       i++;
       if (app_name == "" && i < argc) {
         app_name = argv[i++];
@@ -181,23 +207,76 @@ int raii_main(int argc, char* argv[]) {
   }
   // Start sel_ldr with the given application and arguments.
   nacl::SelLdrLauncher launcher;
+  nacl::DescWrapperFactory factory;  // DescWrapper "namespace"
+
   if (command_prefix != "") {
     launcher.SetCommandPrefix(command_prefix);
   }
 
-  if (!launcher.StartFromCommandLine(app_name, 5, sel_ldr_argv, app_argv)) {
+  if (!launcher.StartFromCommandLine(rpc_load ? NACL_NO_FILE_PATH : app_name,
+                                     5, sel_ldr_argv, app_argv)) {
     NaClLog(LOG_FATAL, "sel_universal: Failed to launch sel_ldr\n");
   }
 
-  // Open the communication channels to the service runtime.
-  if (!launcher.OpenSrpcChannels(&command_channel, &channel)) {
-    NaClLog(LOG_ERROR, "sel_universal: Open channel failed\n");
+  DescWrapper *host_file = NULL;
+
+  if (rpc_load) {
+    host_file = factory.OpenHostFile(app_name.c_str(),
+                                     O_RDONLY, 0);
+    if (NULL == host_file) {
+      NaClLog(LOG_ERROR, "Could not open %s\n", app_name.c_str());
+      exit(1);
+    }
+  }
+
+  if (!launcher.SetupCommandAndLoad(&command_channel, host_file)) {
+    NaClLog(LOG_ERROR, "sel_universal: set up command and load failed\n");
+    exit(1);
+  }
+
+  delete host_file;
+
+  nacl::scoped_ptr<nacl::ReverseService> rev_svc;
+
+  if (rpc_services) {
+    NaClLog(1, "Launching reverse RPC services\n");
+
+    NaClSrpcResultCodes rpc_result;
+    NaClDesc* h;
+    rpc_result = NaClSrpcInvokeBySignature(&command_channel,
+                                           "reverse_setup::h",
+                                           &h);
+    if (NACL_SRPC_RESULT_OK != rpc_result) {
+      NaClLog(LOG_ERROR, "sel_universal: reverse setup failed\n");
+      exit(1);
+    }
+    nacl::scoped_ptr<nacl::DescWrapper> conn_cap(launcher.WrapCleanup(h));
+    if (conn_cap.get() == NULL) {
+      NaClLog(LOG_ERROR, "sel_universal: reverse desc wrap failed\n");
+      exit(1);
+    }
+
+    rev_svc.reset(new nacl::ReverseService(conn_cap.get()));
+    if (rev_svc.get() == NULL) {
+      NaClLog(LOG_ERROR, "sel_universal: reverse service ctor failed\n");
+      exit(1);
+    }
+    conn_cap.release();
+    if (!rev_svc->Start(reinterpret_cast<void*>(NULL))) {
+      NaClLog(LOG_ERROR, "sel_universal: reverse service start failed\n");
+      exit(1);
+    }
+  }
+
+  if (!launcher.StartModuleAndSetupAppChannel(&command_channel, &channel)) {
+    NaClLog(LOG_ERROR,
+            "sel_universal: start module and set up app channel failed\n");
     exit(1);
   }
 
   NaClCommandLoop loop(channel.client,
                        &channel,
-                       launcher.socket_address()->desc());
+                       launcher.socket_addr()->desc());
 
   //
   // Pepper sample commands

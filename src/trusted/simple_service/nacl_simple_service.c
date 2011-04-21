@@ -1,10 +1,10 @@
 /*
- * Copyright 2011 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
-#include "native_client/src/trusted/service_runtime/nacl_simple_service.h"
+#include "native_client/src/trusted/simple_service/nacl_simple_service.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
@@ -22,7 +22,11 @@
 
 int NaClSimpleServiceConnectionCtor(struct NaClSimpleServiceConnection  *self,
                                     struct NaClSimpleService            *server,
-                                    struct NaClDesc                     *conn) {
+                                    struct NaClDesc                     *conn,
+                                    void                                *data) {
+  NaClLog(4,
+          "NaClSimpleServiceConnectionCtor: this 0x%"NACL_PRIxPTR"\n",
+          (uintptr_t) self);
   if (!NaClRefCountCtor((struct NaClRefCount *) self)) {
     return 0;
   }
@@ -30,7 +34,7 @@ int NaClSimpleServiceConnectionCtor(struct NaClSimpleServiceConnection  *self,
       (struct NaClRefCount *) server);
   self->connected_socket = (struct NaClDesc *) NaClRefCountRef(
       (struct NaClRefCount *) conn);
-  self->thread_spawned = 0;
+  self->instance_data = data;
   self->base.vtbl = (struct NaClRefCountVtbl const *)
       &kNaClSimpleServiceConnectionVtbl;
   return 1;
@@ -42,9 +46,6 @@ void NaClSimpleServiceConnectionDtor(struct NaClRefCount *vself) {
 
   NaClRefCountUnref((struct NaClRefCount *) self->server);
   NaClRefCountUnref((struct NaClRefCount *) self->connected_socket);
-  if (self->thread_spawned) {
-    NaClThreadDtor(&self->thr);
-  }
   NACL_VTBL(NaClRefCount, self) = (struct NaClRefCountVtbl const *)
       &kNaClRefCountVtbl;
   (*NACL_VTBL(NaClRefCount, self)->Dtor)(vself);
@@ -60,7 +61,7 @@ int NaClSimpleServiceConnectionServerLoop(
           (uintptr_t) self->connected_socket);
   retval = NaClSrpcServerLoop(self->connected_socket,
                               self->server->handlers,
-                              self->server->instance_data);
+                              self->instance_data);
   NaClLog(4,
           "NaClSimpleServiceConnectionServerLoop: NaClSrpcServerLoop exited,"
           " value %d\n", retval);
@@ -93,22 +94,29 @@ static void WINAPI RpcHandlerBase(void *thread_state) {
   NaClLog(4, "Entered RpcHandlerBase, invoking RpcHandler virtual fn\n");
   (*NACL_VTBL(NaClSimpleService, conn->server)->RpcHandler)(conn->server,
                                                             conn);
-  NaClRefCountUnref((struct NaClRefCount *) conn);
+  NaClThreadDtor(&conn->thread);
   NaClLog(4, "Leaving RpcHandlerBase\n");
+  /*
+   * The unref of conn may Dtor the currently running thread.  This is
+   * okay, since this only removes the ability to use the thread
+   * handle (in Windows) but does not otherwise affect the thread.  We
+   * don't log afterwards, just in case the logging code (is later
+   * modified to) use thread info.
+   */
+  NaClRefCountUnref((struct NaClRefCount *) conn);
 }
 
 int NaClSimpleServiceCtorIntern(
     struct NaClSimpleService          *self,
-    struct NaClSrpcHandlerDesc const  *srpc_handlers,
-    void                              *instance_data) {
-  NaClLog(4, "Entered NaClSimpleServiceCtorIntern\n");
+    struct NaClSrpcHandlerDesc const  *srpc_handlers) {
+  NaClLog(4,
+          "NaClSimpleServiceCtorIntern, this 0x%"NACL_PRIxPTR"\n",
+          (uintptr_t) self);
   if (!NaClRefCountCtor((struct NaClRefCount *) self)) {
     NaClLog(4, "NaClSimpleServiceCtorIntern: NaClRefCountCtor failed\n");
     return 0;
   }
   self->handlers = srpc_handlers;
-  self->instance_data = instance_data;
-  self->acceptor_spawned = 0;
   self->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClSimpleServiceVtbl;
   NaClLog(4, "Leaving NaClSimpleServiceCtorIntern\n");
   return 1;
@@ -116,12 +124,15 @@ int NaClSimpleServiceCtorIntern(
 
 int NaClSimpleServiceCtor(
     struct NaClSimpleService          *self,
-    struct NaClSrpcHandlerDesc const  *srpc_handlers,
-    void                              *instance_data) {
+    struct NaClSrpcHandlerDesc const  *srpc_handlers) {
+  NaClLog(4,
+          "NaClSimpleServiceCtor: this 0x%"NACL_PRIxPTR"\n",
+          (uintptr_t) self);
+
   if (0 != NaClCommonDescMakeBoundSock(self->bound_and_cap)) {
     return 0;
   }
-  if (!NaClSimpleServiceCtorIntern(self, srpc_handlers, instance_data)) {
+  if (!NaClSimpleServiceCtorIntern(self, srpc_handlers)) {
     NaClDescUnref(self->bound_and_cap[0]);
     NaClDescUnref(self->bound_and_cap[1]);
     return 0;
@@ -132,10 +143,12 @@ int NaClSimpleServiceCtor(
 int NaClSimpleServiceWithSocketCtor(
     struct NaClSimpleService          *self,
     struct NaClSrpcHandlerDesc const  *srpc_handlers,
-    void                              *instance_data,
     struct NaClDesc                   *service_port,
     struct NaClDesc                   *sock_addr) {
-  if (!NaClSimpleServiceCtorIntern(self, srpc_handlers, instance_data)) {
+  NaClLog(4,
+          "NaClSimpleServiceWithSocketCtor: this 0x%"NACL_PRIxPTR"\n",
+          (uintptr_t) self);
+  if (!NaClSimpleServiceCtorIntern(self, srpc_handlers)) {
     return 0;
   }
   self->bound_and_cap[0] = NaClDescRef(service_port);
@@ -150,17 +163,14 @@ void NaClSimpleServiceDtor(struct NaClRefCount *vself) {
   NaClRefCountSafeUnref((struct NaClRefCount *) self->bound_and_cap[0]);
   NaClRefCountSafeUnref((struct NaClRefCount *) self->bound_and_cap[1]);
 
-  if (self->acceptor_spawned) {
-    NaClThreadDtor(&self->acceptor);
-  }
-
   self->base.vtbl = &kNaClRefCountVtbl;
   (*NACL_VTBL(NaClRefCount, self)->Dtor)(vself);
 }
 
-int NaClSimpleServiceConnectionFactory(
+int NaClSimpleServiceConnectionFactoryWithInstanceData(
     struct NaClSimpleService            *self,
     struct NaClDesc                     *conn,
+    void                                *instance_data,
     struct NaClSimpleServiceConnection  **out) {
   struct NaClSimpleServiceConnection  *server_conn;
   int                                 status;
@@ -180,7 +190,10 @@ int NaClSimpleServiceConnectionFactory(
   NaClLog(4,
           "NaClSimpleServiceConnectionFactory: out 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) out);
-  if (!NaClSimpleServiceConnectionCtor(server_conn, self, conn)) {
+  if (!NaClSimpleServiceConnectionCtor(server_conn,
+                                       self,
+                                       conn,
+                                       instance_data)) {
     free(server_conn);
     status = -NACL_ABI_EIO;
     goto abort;
@@ -193,6 +206,14 @@ int NaClSimpleServiceConnectionFactory(
  abort:
   NaClLog(4, "Leaving NaClSimpleServiceConnectionFactory: status %d\n", status);
   return status;
+}
+
+int NaClSimpleServiceConnectionFactory(
+    struct NaClSimpleService            *self,
+    struct NaClDesc                     *conn,
+    struct NaClSimpleServiceConnection  **out) {
+  return NaClSimpleServiceConnectionFactoryWithInstanceData(
+      self, conn, self, out);
 }
 
 int NaClSimpleServiceAcceptConnection(
@@ -259,9 +280,8 @@ int NaClSimpleServiceAcceptAndSpawnHandler(
   }
   NaClLog(4, "conn is 0x%"NACL_PRIxPTR"\n", (uintptr_t) conn);
   NaClLog(4, "NaClSimpleServiceAcceptAndSpawnHandler: spawning thread\n");
-  conn->thread_spawned = 1;
   /* ownership of |conn| reference is passed to the thread */
-  if (!NaClThreadCtor(&conn->thr,
+  if (!NaClThreadCtor(&conn->thread,
                       RpcHandlerBase,
                       conn,
                       NACL_KERN_STACK_SIZE)) {
@@ -277,7 +297,7 @@ abort:
   NaClLog(4,
           "Leaving NaClSimpleServiceAcceptAndSpawnHandler, status %d\n",
           status);
-  return 0;
+  return status;
 }
 
 
@@ -304,6 +324,8 @@ static void WINAPI AcceptThread(void *thread_state) {
     NaClLog(4, "AcceptThread: accepted, looping to next thread\n");
     continue;
   }
+  NaClThreadDtor(&server->acceptor);
+  NaClRefCountUnref(&server->base);
   NaClLog(4, "Leaving AcceptThread\n");
 }
 
@@ -311,12 +333,12 @@ int NaClSimpleServiceStartServiceThread(struct NaClSimpleService *server) {
   NaClLog(4, "NaClSimpleServiceStartServiceThread: spawning thread\n");
   if (NaClThreadCtor(&server->acceptor,
                      AcceptThread,
-                     server,
+                     NaClRefCountRef(&server->base),
                      NACL_KERN_STACK_SIZE)) {
-    server->acceptor_spawned = 1;
     NaClLog(4, "NaClSimpleServiceStartServiceThread: success\n");
     return 1;
   }
   NaClLog(4, "NaClSimpleServiceStartServiceThread: failed\n");
+  NaClRefCountUnref(&server->base);  /* undo ref in Ctor call arglist */
   return 0;
 }

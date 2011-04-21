@@ -1,7 +1,7 @@
 /*
- * Copyright 2011 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <string.h>
@@ -10,11 +10,12 @@
 #include "native_client/src/include/portability_string.h"
 
 #include "native_client/src/trusted/service_runtime/name_service/name_service.h"
-#include "native_client/src/trusted/service_runtime/nacl_simple_service.h"
-#include "native_client/src/trusted/service_runtime/nacl_simple_ltd_service.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_name_service.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+
+#include "native_client/src/trusted/simple_service/nacl_simple_service.h"
+#include "native_client/src/trusted/simple_service/nacl_simple_ltd_service.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
@@ -55,8 +56,7 @@ int NaClNameServiceCtor(struct NaClNameService *self) {
   NaClLog(4, "Entered NaClNameServiceCtor\n");
   if (!NaClSimpleLtdServiceCtor(&self->base,
                                 kNaClNameServiceHandlers,
-                                NACL_NAME_SERVICE_CONNECTION_MAX,
-                                self)) {
+                                NACL_NAME_SERVICE_CONNECTION_MAX)) {
     NaClLog(4, "NaClSimpleLtdServiceCtor failed\n");
     goto done;
   }

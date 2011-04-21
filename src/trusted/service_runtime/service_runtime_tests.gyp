@@ -63,6 +63,7 @@
             'service_runtime.gyp:sel64',
             '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
             '<(DEPTH)/native_client/src/third_party_mod/gtest/gtest.gyp:gtest64',
+            '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service64',
           ],
         },
         # TODO(gregoryd): The tests below should be moved into platform directory.
@@ -73,6 +74,7 @@
           'dependencies': [
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
             'service_runtime.gyp:sel64',
+            '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service64',
           ],
           'variables': {
             'win_target': 'x64'
@@ -110,6 +112,7 @@
         'service_runtime.gyp:sel',
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
         '<(DEPTH)/native_client/src/third_party_mod/gtest/gtest.gyp:gtest',
+        '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service',
       ],
     },
     # TODO(gregoryd): The tests below should be moved into platform directory.
@@ -120,6 +123,7 @@
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         'service_runtime.gyp:sel',
+        '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service',
       ],
       'sources': [
         'mmap_test.c',

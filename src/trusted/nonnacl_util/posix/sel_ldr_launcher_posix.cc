@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -65,11 +65,6 @@ Handle SelLdrLauncher::ExportImcFD(int dest_fd) {
 const size_t kMaxExecArgs = 64;
 
 bool SelLdrLauncher::LaunchFromCommandLine() {
-  // Uncomment to turn on the sandbox, or set this in your environment
-  // TODO(neha):  Turn this on by default.
-  //
-  // setenv("NACL_ENABLE_OUTER_SANDBOX");
-
   if (channel_number_ != -1) {
     channel_ = ExportImcFD(channel_number_);
   }

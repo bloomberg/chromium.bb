@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdio.h>
@@ -43,7 +43,7 @@ char *gProgram = NULL;
 uint64_t gNumBytes;
 
 struct NaClDescFake {
-  struct NaClDesc base;
+  struct NaClDesc base NACL_IS_REFCOUNT_SUBCLASS;
   uint64_t bytes_written;
 };
 

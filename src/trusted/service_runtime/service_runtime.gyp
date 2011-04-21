@@ -43,8 +43,6 @@
           'nacl_desc_effector_ldr.c',
           'nacl_globals.c',
           'nacl_memory_object.c',
-          'nacl_simple_ltd_service.c',
-          'nacl_simple_service.c',
           'nacl_signal_common.c',
           'nacl_stack_safety.c',
           'nacl_sync_queue.c',
@@ -183,6 +181,7 @@
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
         '<(DEPTH)/native_client/src/trusted/gdb_rsp/gdb_rsp.gyp:gdb_rsp',
         '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc',
+        '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service',
       ],
       'conditions': [
         ['target_arch=="arm"', {
@@ -244,6 +243,7 @@
       'type': 'executable',
       'dependencies': [
         'sel',
+        '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc',
         '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
@@ -335,6 +335,7 @@
           },
           'dependencies': [
             'sel64',
+            '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service64',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
             '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc64',
             '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib64',

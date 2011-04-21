@@ -9,11 +9,12 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 
-int NaClRefCountCtor(struct NaClRefCount *nrcp) {
-  nrcp->ref_count = 1;
-  nrcp->vtbl = (struct NaClRefCountVtbl *) NULL;
-  if (NaClMutexCtor(&nrcp->mu)) {
-    nrcp->vtbl = &kNaClRefCountVtbl;
+int NaClRefCountCtor(struct NaClRefCount *self) {
+  NaClLog(4, "NaClRefCountCtor(0x%08"NACL_PRIxPTR").\n", (uintptr_t) self);
+  self->ref_count = 1;
+  self->vtbl = (struct NaClRefCountVtbl *) NULL;
+  if (NaClMutexCtor(&self->mu)) {
+    self->vtbl = &kNaClRefCountVtbl;
     return 1;
   }
   return 0;

@@ -1,10 +1,10 @@
 /*
- * Copyright 2011 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_SIMPLE_SERVICE_LTD_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_SIMPLE_SERVICE_LTD_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_SIMPLE_SERVICE_NACL_SIMPLE_SERVICE_LTD_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_SIMPLE_SERVICE_NACL_SIMPLE_SERVICE_LTD_H_
 
 /*
  * Subclass of NaClSimpleService, with a limited number of
@@ -17,12 +17,12 @@
 
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/nacl_base/nacl_refcount.h"
-#include "native_client/src/trusted/service_runtime/nacl_simple_service.h"
+#include "native_client/src/trusted/simple_service/nacl_simple_service.h"
 
 EXTERN_C_BEGIN
 
 struct NaClSimpleLtdService {
-  struct NaClSimpleService  base;
+  struct NaClSimpleService  base NACL_IS_REFCOUNT_SUBCLASS;
   struct NaClMutex          mu;
   struct NaClCondVar        cv;
   size_t                    max_clients;
@@ -31,8 +31,7 @@ struct NaClSimpleLtdService {
 
 int NaClSimpleLtdServiceCtor(struct NaClSimpleLtdService        *self,
                              struct NaClSrpcHandlerDesc const   *srpc_handlers,
-                             int                                max_cli,
-                             void                               *instance_data);
+                             int                                max_cli);
 
 /*
  * Wait until num_client < max_client, then drop locks and accept as

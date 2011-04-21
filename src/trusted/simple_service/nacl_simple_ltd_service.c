@@ -1,10 +1,10 @@
 /*
- * Copyright 2011 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
-#include "native_client/src/trusted/service_runtime/nacl_simple_ltd_service.h"
+#include "native_client/src/trusted/simple_service/nacl_simple_ltd_service.h"
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -15,12 +15,10 @@
 
 int NaClSimpleLtdServiceCtor(struct NaClSimpleLtdService      *self,
                              struct NaClSrpcHandlerDesc const *srpc_handlers,
-                             int                              max_cli,
-                             void                             *instance_data) {
+                             int                              max_cli) {
   NaClLog(4, "Entered NaClSimpleLtdServiceCtor\n");
   if (!NaClSimpleServiceCtor((struct NaClSimpleService *) self,
-                             srpc_handlers,
-                             instance_data)) {
+                             srpc_handlers)) {
     NaClLog(4, "NaClSimpleServiceCtor failed\n");
     goto base_ctor_fail;
   }

@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -35,7 +35,7 @@ struct NaClMessageHeader;
 struct nacl_abi_stat;
 
 struct NaClDescImcShm {
-  struct NaClDesc           base;
+  struct NaClDesc           base NACL_IS_REFCOUNT_SUBCLASS;
   NaClHandle                h;
   nacl_off64_t              size;
   /* note nacl_off64_t so struct stat incompatible */

@@ -22,6 +22,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/service_runtime/env_cleanser.h"
+#include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 
 using std::vector;
 
@@ -31,15 +32,19 @@ namespace nacl {
 SelLdrLauncher::SelLdrLauncher()
   : child_process_(kInvalidHandle),
     channel_(kInvalidHandle),
+    channel_number_(-1),
     command_prefix_(""),
-    socket_address_(NULL),
+    bootstrap_socket_(NULL),
+    socket_addr_(NULL),
     sel_ldr_locator_(new PluginSelLdrLocator()) {
 }
 
 SelLdrLauncher::SelLdrLauncher(SelLdrLocator* sel_ldr_locator)
   : child_process_(kInvalidHandle),
     channel_(kInvalidHandle),
-    socket_address_(NULL),
+    channel_number_(-1),
+    bootstrap_socket_(NULL),
+    socket_addr_(NULL),
     sel_ldr_locator_(sel_ldr_locator) {
   CHECK(sel_ldr_locator != NULL);
 }
@@ -78,62 +83,143 @@ static DescWrapper* GetSockAddr(DescWrapper* desc) {
   return descs[0];
 }
 
+bool SelLdrLauncher::LoadModule(NaClSrpcChannel* command, DescWrapper* nexe) {
 
-bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
-                                      NaClSrpcChannel* untrusted) {
-  DescWrapperFactory factory;
-  socket_address_.reset(factory.MakeImcSock(channel_));
-  if (socket_address_ == NULL) {
+  NaClLog(4, "Entered SelLdrLauncher::LoadModule\n");
+  NaClSrpcResultCodes rpc_result = NaClSrpcInvokeBySignature(command,
+                                                             "load_module:hs:",
+                                                             nexe->desc(),
+                                                             "place holder");
+  NaClLog(4, "SelLdrLauncher::LoadModule rpc result %d\n", (int) rpc_result);
+  return NACL_SRPC_RESULT_OK == rpc_result;
+}
+
+bool SelLdrLauncher::StartModule(NaClSrpcChannel* command,
+                                 NaClErrorCode* code) {
+  // Start untrusted code module
+  NaClLog(4, "Entered SelLdrLauncher::StartModule\n");
+  int start_result;
+  NaClSrpcResultCodes rpc_result = NaClSrpcInvokeBySignature(command,
+                                                             "start_module::i",
+                                                             &start_result);
+  NaClLog(4, "SelLdrLauncher::StartModule rpc result %d\n", (int) rpc_result);
+  if (NACL_SRPC_RESULT_OK != rpc_result) {
+    NaClSrpcDtor(command);
+    *code = LOAD_INTERNAL;
+    NaClLog(4, "Leaving SelLdrLauncher::StartModule, FAILED\n");
     return false;
   }
 
-  // channel_desc now has ownership of channel_, so we get rid of our
-  // "reference" to it.
+  *code = (NaClErrorCode) start_result;
+  NaClLog(4, "Leaving SelLdrLauncher::StartModule, success\n");
+  return true;
+}
+
+
+bool SelLdrLauncher::SetupBootstrapChannel() {
+  // channel_ is initialized in LaunchFromCommandLine if
+  // channel_number_ is not -1, and both InitCommandLine and
+  // StartFromCommandLine require imc_fd to be supplied which is used
+  // to initialize channel_number_, so channel_ should never be
+  // invalid.
+
+  CHECK(factory_ == NULL);
+  factory_.reset(new DescWrapperFactory);
+
+  CHECK(channel_ != kInvalidHandle);
+  bootstrap_socket_.reset(factory_->MakeImcSock(channel_));
+  if (bootstrap_socket_ == NULL) {
+    NaClLog(4, ("Leaving SelLdrLauncher::SetupBootstrapChannel"
+                " SetupBootstrapChannel failed\n"));
+    return false;
+  }
+
+  // bootstrap_socket_ now has ownership of channel_, so we get rid of
+  // our "reference" to it.
   channel_ = kInvalidHandle;
+  return true;
+}
 
+bool SelLdrLauncher::GetLdrSocketAddress() {
   // Get the socket address from the descriptor.
-  scoped_ptr<DescWrapper> sock_addr(GetSockAddr(socket_address_.get()));
-  if (sock_addr == NULL) {
-    NaClLog(4, "SelLdrLauncher::OpenSrpcChannels: GetSockAddr failed\n");
+  socket_addr_.reset(GetSockAddr(bootstrap_socket_.get()));
+  if (socket_addr_ == NULL) {
+    NaClLog(4, "SelLdrLauncher::GetLdrSocketAddress: GetSockAddr failed\n");
     return false;
   }
+  return true;
+}
 
+bool SelLdrLauncher::SetupCommandChannel(NaClSrpcChannel* command) {
   // The first connection goes to the trusted command channel.
-  scoped_ptr<DescWrapper> command_desc(sock_addr->Connect());
+  scoped_ptr<DescWrapper> command_desc(socket_addr_->Connect());
   if (command_desc == NULL) {
-    NaClLog(4, "SelLdrLauncher::OpenSrpcChannels: Connect failed\n");
+    NaClLog(4, "SelLdrLauncher::SetupCommandChannel: Connect failed\n");
     return false;
   }
   // Start the SRPC client to communicate with the trusted command channel.
   // SRPC client takes an additional reference to command_desc.
   if (!NaClSrpcClientCtor(command, command_desc->desc())) {
+    NaClLog(4, "SelLdrLauncher::SetupCommandChannel: command ctor failed\n");
     return false;
   }
+  return true;
+}
 
-  // Start untrusted code module
-  int start_result;
-  if (NACL_SRPC_RESULT_OK !=
-      NaClSrpcInvokeBySignature(command, "start_module::i", &start_result)) {
-    NaClSrpcDtor(command);
-    return false;
-  }
-
+bool SelLdrLauncher::SetupApplicationChannel(NaClSrpcChannel* app_channel) {
   // The second connection goes to the service itself.
-  scoped_ptr<DescWrapper> untrusted_desc(sock_addr->Connect());
-  if (untrusted_desc ==  NULL) {
-    NaClSrpcDtor(command);
+  scoped_ptr<DescWrapper> untrusted_desc(socket_addr_->Connect());
+  if (untrusted_desc == NULL) {
     return false;
   }
   // Start the SRPC client to communicate with the untrusted service
   // SRPC client takes an additional reference to untrusted_desc.
-  if (!NaClSrpcClientCtor(untrusted, untrusted_desc->desc())) {
-    NaClSrpcDtor(command);
+  if (!NaClSrpcClientCtor(app_channel, untrusted_desc->desc())) {
+    NaClLog(4,
+            "SelLdrLauncher::SetupApplicationChannel: untrusted ctor failed\n");
+    return false;
+  }
+  return true;
+}
+
+bool SelLdrLauncher::SetupCommandAndLoad(NaClSrpcChannel* command,
+                                         DescWrapper* nexe) {
+  if (!SetupBootstrapChannel()) {
+    return false;
+  }
+  if (!GetLdrSocketAddress()) {
+    return false;
+  }
+  if (!SetupCommandChannel(command)) {
+    return false;
+  }
+  if (NULL != nexe) {
+    if (!LoadModule(command, nexe)) {
+      NaClSrpcDtor(command);
+      return false;
+    }
+  }
+  return true;
+}
+
+bool
+SelLdrLauncher::StartModuleAndSetupAppChannel(NaClSrpcChannel* command,
+                                              NaClSrpcChannel* out_app_chan) {
+  NaClErrorCode code;
+  if (!StartModule(command, &code)) {
+    NaClLog(4,
+            ("SelLdrLauncher::StartModuleAndSetupAppChannel: start module"
+             " failed %d (%s) \n"),
+            (int) code,
+            NaClErrorString(code));
+    return false;
+  }
+  if (!SetupApplicationChannel(out_app_chan)) {
     return false;
   }
 
   return true;
 }
-
 
 #ifdef NACL_STANDALONE
 extern "C" char **environ;
@@ -219,6 +305,16 @@ void SelLdrLauncher::CloseHandlesAfterLaunch() {
     Close(close_after_launch_[i]);
   }
   close_after_launch_.clear();
+}
+
+DescWrapper* SelLdrLauncher::Wrap(NaClDesc* raw_desc) {
+  CHECK(factory_ != NULL);
+  return factory_->MakeGeneric(raw_desc);
+}
+
+DescWrapper* SelLdrLauncher::WrapCleanup(NaClDesc* raw_desc) {
+  CHECK(factory_ != NULL);
+  return factory_->MakeGenericCleanup(raw_desc);
 }
 
 }  // namespace nacl

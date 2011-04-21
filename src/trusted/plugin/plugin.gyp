@@ -1,4 +1,5 @@
-# Copyright (c) 2009 The Native Client Authors. All rights reserved.
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -71,6 +72,8 @@
             '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util',
             '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
             '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc',
+            '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service',
+            '<(DEPTH)/native_client/src/trusted/reverse_service/reverse_service.gyp:reverse_service',
           ],
 # TODO(noelallen) We will need to put this back in with a new .def file once we need to export symbols
 # to support the plugin as a sandboxed DLL.
@@ -112,6 +115,8 @@
             '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util',
             '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
             '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc',
+            '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service',
+            '<(DEPTH)/native_client/src/trusted/reverse_service/reverse_service.gyp:reverse_service',
           ],
           'conditions': [
             ['OS=="mac"', {

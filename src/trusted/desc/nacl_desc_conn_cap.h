@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -28,13 +28,13 @@ struct NaClDescXferState;
  */
 
 struct NaClDescConnCap {
-  struct NaClDesc           base;
+  struct NaClDesc           base NACL_IS_REFCOUNT_SUBCLASS;
   struct NaClSocketAddress  cap;
 };
 
 struct NaClDescConnCapFd {
-  struct NaClDesc base;
-  NaClHandle connect_fd;
+  struct NaClDesc base NACL_IS_REFCOUNT_SUBCLASS;
+  NaClHandle      connect_fd;
 };
 
 int NaClDescConnCapInternalize(struct NaClDesc          **baseptr,

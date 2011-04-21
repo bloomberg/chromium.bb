@@ -1,8 +1,7 @@
-
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -24,7 +23,9 @@ EXTERN_C_BEGIN
  * This class is a singleton used to enable passing a designated "invalid"
  * descriptor via RPCs for error conditions.
  */
-struct NaClDescInvalid;
+struct NaClDescInvalid {
+  struct NaClDesc base NACL_IS_REFCOUNT_SUBCLASS;
+};
 
 int NaClDescInvalidInternalize(struct NaClDesc          **baseptr,
                                struct NaClDescXferState *xfer) NACL_WUR;

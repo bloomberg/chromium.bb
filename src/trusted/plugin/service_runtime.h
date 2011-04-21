@@ -13,7 +13,9 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/trusted/reverse_service/reverse_service.h"
 #include "native_client/src/trusted/plugin/utility.h"
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 
 namespace nacl {
 class DescWrapper;
@@ -79,6 +81,7 @@ class ServiceRuntime {
   Plugin* plugin_;
   BrowserInterface* browser_interface_;
   SrtSocket* runtime_channel_;
+  nacl::ReverseService* reverse_service_;
   nacl::SelLdrLauncher* subprocess_;
 
   // We need two IMC sockets rather than one because IMC sockets are

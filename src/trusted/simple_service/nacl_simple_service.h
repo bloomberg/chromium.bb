@@ -1,11 +1,11 @@
 /*
- * Copyright 2011 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_SIMPLE_SERVICE_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_SIMPLE_SERVICE_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_SIMPLE_SERVICE_NACL_SIMPLE_SERVICE_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_SIMPLE_SERVICE_NACL_SIMPLE_SERVICE_H_
 
 #include "native_client/src/include/nacl_base.h"
 
@@ -17,7 +17,7 @@ EXTERN_C_BEGIN
 struct NaClSimpleServiceConnection;  /* fwd */
 
 struct NaClSimpleService {
-  struct NaClRefCount               base;
+  struct NaClRefCount               base NACL_IS_REFCOUNT_SUBCLASS;
   struct NaClDesc                   *bound_and_cap[2];
   /*
    * Ctor allocates bound socket and connection capability.  Dtor
@@ -27,13 +27,7 @@ struct NaClSimpleService {
    */
 
   struct NaClSrpcHandlerDesc const  *handlers;
-  /*
-   * no deallocator, assumed to be static data, though subclass could
-   * free it in the Dtor.
-   */
-  void                              *instance_data;
 
-  int                               acceptor_spawned;
   struct NaClThread                 acceptor;
 };
 
@@ -60,6 +54,13 @@ struct NaClSimpleServiceVtbl {
    * mandatory.  Generally, if the standard
    * NaClSimpleServiceConnectionCtor is used, then this is
    * automatically taken care of.
+   *
+   * The base class virtual function invokes the auxilliary function
+   * NaClSimpleServiceConnectionFactoryWithInstanceData with self as
+   * instance_data, which simply passes the instance_data argument to
+   * the NaClSimleServiceConnectionCtor.  Subclasses that need more
+   * complex per-connection instance data will probably wish to use
+   * that auxilliary function directly.
    */
   int                     (*ConnectionFactory)(
       struct NaClSimpleService           *self,
@@ -102,38 +103,47 @@ struct NaClSimpleServiceVtbl {
 };
 
 struct NaClSimpleServiceConnection {
-  struct NaClRefCount         base;
+  struct NaClRefCount         base NACL_IS_REFCOUNT_SUBCLASS;
 
   /* holds refs */
   struct NaClSimpleService    *server;
   struct NaClDesc             *connected_socket;
 
-  int                         thread_spawned;
-  struct NaClThread           thr;
+  void                        *instance_data;
+
+  struct NaClThread           thread;
   /* other data is application specific, in subclasses only */
 };
 
 int NaClSimpleServiceConnectionCtor(struct NaClSimpleServiceConnection  *self,
                                     struct NaClSimpleService            *server,
-                                    struct NaClDesc                     *conn);
+                                    struct NaClDesc                     *conn,
+                                    void                                *data);
 
+/*
+ * This Dtor should only be called after the thread has exited.
+ */
 void NaClSimpleServiceConnectionDtor(struct NaClRefCount *vself);
 
 int NaClSimpleServiceConnectionServerLoop(
     struct NaClSimpleServiceConnection *self);
 
 int NaClSimpleServiceCtor(struct NaClSimpleService          *self,
-                          struct NaClSrpcHandlerDesc const  *srpc_handlers,
-                          void                              *instance_data);
+                          struct NaClSrpcHandlerDesc const  *srpc_handlers);
 
 int NaClSimpleServiceWithSocketCtor(
     struct NaClSimpleService          *self,
     struct NaClSrpcHandlerDesc const  *srpc_handlers,
-    void                              *instance_data,
     struct NaClDesc                   *service_port,
     struct NaClDesc                   *sock_addr);
 
 void NaClSimpleServiceDtor(struct NaClRefCount *vself);
+
+int NaClSimpleServiceConnectionFactoryWithInstanceData(
+    struct NaClSimpleService            *self,
+    struct NaClDesc                     *conn,
+    void                                *instance_data,
+    struct NaClSimpleServiceConnection  **out);
 
 int NaClSimpleServiceConnectionFactory(
     struct NaClSimpleService            *self,

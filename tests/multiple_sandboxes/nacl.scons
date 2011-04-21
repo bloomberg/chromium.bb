@@ -25,6 +25,7 @@ DEBUG_LIBS = ['debug_stub_init', 'gdb_rsp', 'debug_stub']
 runner = trusted_env.ComponentProgram(
     'multidomain_test_host', ['multidomain_test_host.c'],
     EXTRA_LIBS=['sel',
+                'simple_service',
                 'gio_wrapped_desc',
                 'nonnacl_srpc',
                 'nrd_xfer',

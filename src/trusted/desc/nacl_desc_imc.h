@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -38,12 +38,12 @@ struct NaClMessageHeader;
  * the base class to the appropriate subclass behavior.
  */
 struct NaClDescImcConnectedDesc {
-  struct NaClDesc           base;
+  struct NaClDesc           base NACL_IS_REFCOUNT_SUBCLASS;
   NaClHandle                h;
 };
 
 struct NaClDescImcDesc {
-  struct NaClDescImcConnectedDesc base;
+  struct NaClDescImcConnectedDesc base NACL_IS_REFCOUNT_SUBCLASS;
   /*
    * race prevention.
    */
@@ -52,7 +52,7 @@ struct NaClDescImcDesc {
 };
 
 struct NaClDescXferableDataDesc {
-  struct NaClDescImcConnectedDesc base;
+  struct NaClDescImcConnectedDesc base NACL_IS_REFCOUNT_SUBCLASS;
 };
 
 int NaClDescXferableDataDescInternalize(struct NaClDesc **baseptr,

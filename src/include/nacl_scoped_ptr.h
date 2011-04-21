@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -380,6 +380,10 @@ template<class C, class FP> inline
 bool operator!=(C* p, const scoped_ptr_malloc<C, FP>& b) {
   return p != b.get();
 }
+
+// See src/trusted/nacl_refcount.h for scoped_ptr_refcount which is
+// intended for use with scoped_ptr_malloc.
+
 
 }  // namespace
 

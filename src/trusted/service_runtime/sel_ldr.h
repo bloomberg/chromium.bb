@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -35,6 +35,8 @@
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
+
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 
 #include "native_client/src/trusted/service_runtime/dyn_array.h"
 #include "native_client/src/trusted/service_runtime/nacl_config_dangerous.h"
@@ -74,6 +76,7 @@ struct NaClAppThread;
 struct NaClDesc;  /* see native_client/src/trusted/desc/nacl_desc_base.h */
 struct NaClDynamicRegion;
 struct NaClSecureService;
+struct NaClSecureReverseService;
 
 struct NaClDebugCallbacks {
   void (*thread_create_hook)(struct NaClAppThread *natp);
@@ -192,7 +195,10 @@ struct NaClApp {
   struct NaClMutex          mu;
   struct NaClCondVar        cv;
 
-  struct NaClSecureService  *secure_service;
+  struct NaClSecureService        *secure_service;
+  struct NaClSecureReverseClient  *reverse_client;
+  int                             reverse_channel_initialized;
+  NaClSrpcChannel                 reverse_channel;
 
   NaClErrorCode             module_load_status;
   int                       module_may_start;

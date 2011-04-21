@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -16,6 +16,10 @@
 #include "native_client/src/trusted/plugin/srpc_client.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
+#if NACL_WINDOWS && !defined(NACL_STANDALONE)
+# define ENABLE_HANDLE_PASSING
+#endif
+
 namespace {
 
 // Not really constants.  Do not modify.  Use only after at least
@@ -23,7 +27,13 @@ namespace {
 uintptr_t kStartModuleIdent;
 uintptr_t kLogIdent;
 uintptr_t kLoadModule;
+uintptr_t kReverseChannel;
+#if ENABLE_HANDLE_PASSING
 uintptr_t kInitHandlePassing;
+/*
+ * should cause linkage error if used when not enabled
+ */
+#endif
 
 // NB: InitializeIdentifiers is not thread-safe.
 void InitializeIdentifiers(plugin::BrowserInterface* browser_interface) {
@@ -35,8 +45,12 @@ void InitializeIdentifiers(plugin::BrowserInterface* browser_interface) {
     kLogIdent = browser_interface->StringToIdentifier("log");
     kLoadModule =
         browser_interface->StringToIdentifier("load_module");
+    kReverseChannel =
+        browser_interface->StringToIdentifier("reverse_setup");
+#if ENABLE_HANDLE_PASSING
     kInitHandlePassing =
         browser_interface->StringToIdentifier("init_handle_passing");
+#endif
     initialized = true;
   }
 }
@@ -53,6 +67,30 @@ SrtSocket::SrtSocket(ScriptableHandle* s, BrowserInterface* browser_interface)
 
 SrtSocket::~SrtSocket() {
   connected_socket_->Unref();
+}
+
+bool SrtSocket::ReverseSetup(NaClSrpcImcDescType *out_conn) {
+  if (!(connected_socket()->HasMethod(kReverseChannel, METHOD_CALL))) {
+    PLUGIN_PRINTF(("SrtSocket::ReverseSetup"
+                   " (no reverse_setup method found)\n"));
+    return false;
+  }
+  SrpcParams params;
+  bool success = connected_socket()->InitParams(kReverseChannel,
+                                                METHOD_CALL,
+                                                &params);
+  if (!success) {
+    return false;
+  }
+  bool rpc_result = connected_socket()->Invoke(kReverseChannel,
+                                               METHOD_CALL,
+                                               &params);
+  if (rpc_result) {
+    if (NACL_SRPC_ARG_TYPE_HANDLE == params.outs()[0]->tag) {
+      *out_conn = params.outs()[0]->u.hval;
+    }
+  }
+  return rpc_result;
 }
 
 bool SrtSocket::LoadModule(NaClSrpcImcDescType desc) {
@@ -79,7 +117,7 @@ bool SrtSocket::LoadModule(NaClSrpcImcDescType desc) {
                                                &params);
   return rpc_result;
 }
-#if NACL_WINDOWS && !defined(NACL_STANDALONE)
+#if ENABLE_HANDLE_PASSING
 bool SrtSocket::InitHandlePassing(NaClDesc* desc,
                                   nacl::Handle sel_ldr_handle) {
   if (!(connected_socket()->HasMethod(kInitHandlePassing, METHOD_CALL))) {

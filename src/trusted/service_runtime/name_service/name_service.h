@@ -1,7 +1,7 @@
 /*
- * Copyright 2011 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NAME_SERVICE_NAME_SERVICE_H_
@@ -12,11 +12,11 @@
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 
-#include "native_client/src/trusted/service_runtime/nacl_simple_service.h"
-#include "native_client/src/trusted/service_runtime/nacl_simple_ltd_service.h"
-
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_name_service.h"
 /* get NACL_NAME_SERVICE_CONNECTION_MAX */
+
+#include "native_client/src/trusted/simple_service/nacl_simple_service.h"
+#include "native_client/src/trusted/simple_service/nacl_simple_ltd_service.h"
 
 EXTERN_C_BEGIN
 
@@ -38,7 +38,7 @@ EXTERN_C_BEGIN
 struct NaClNameServiceEntry;  /* fwd */
 
 struct NaClNameService {
-  struct NaClSimpleLtdService base;
+  struct NaClSimpleLtdService base NACL_IS_REFCOUNT_SUBCLASS;
 
   struct NaClMutex            mu;
   /*

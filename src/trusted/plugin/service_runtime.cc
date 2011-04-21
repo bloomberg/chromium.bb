@@ -41,6 +41,7 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin)
       plugin_(plugin),
       browser_interface_(plugin->browser_interface()),
       runtime_channel_(NULL),
+      reverse_service_(NULL),
       subprocess_(NULL),
       async_receive_desc_(NULL),
       async_send_desc_(NULL) {
@@ -89,6 +90,32 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
   if (NULL == runtime_channel_) {
     raw_channel->Unref();
     *error_string = "sel_ldr: runtime channel creation failed";
+    return false;
+  }
+
+  // Hook up the reverse service channel.  We are the IMC client, but
+  // provide SRPC service.
+
+  //  Get connection capability to service runtime where the IMC
+  //  server/SRPC client is waiting for a rendezvous.
+  NaClDesc* out_conn_cap;
+  PLUGIN_PRINTF(("ServiceRuntime: invoking reverse setup\n"));
+  if (!runtime_channel_->ReverseSetup(&out_conn_cap)) {
+    *error_string = "sel_ldr: reverse service channel setup failure";
+    return false;
+  }
+  PLUGIN_PRINTF(("ServiceRuntime: got 0x%"NACL_PRIxPTR"\n",
+                 (uintptr_t) out_conn_cap));
+  nacl::DescWrapper* conn_cap = plugin_->wrapper_factory()->MakeGenericCleanup(
+      out_conn_cap);
+  if (conn_cap == NULL) {
+    *error_string = "ServiceRuntime: wrapper allocation failure";
+    return false;
+  }
+  out_conn_cap = NULL;  // ownership passed
+  reverse_service_ = new nacl::ReverseService(conn_cap);
+  if (!reverse_service_->Start(reinterpret_cast<void*>(reverse_service_))) {
+    *error_string = "ServiceRuntime: starting reverse services failed";
     return false;
   }
 
@@ -253,6 +280,13 @@ void ServiceRuntime::Shutdown() {
 
   delete runtime_channel_;
   runtime_channel_ = NULL;
+
+  // subprocess_ killed, but threads waiting on messages from the
+  // service runtime may not have noticed yet.  however, the low-level
+  // NaClSimpleRevService code takes care to refcount the data objects
+  // that it needs, so this is (or should be) safe.
+  delete reverse_service_;
+  reverse_service_ = NULL;
 }
 
 ServiceRuntime::~ServiceRuntime() {
@@ -262,6 +296,7 @@ ServiceRuntime::~ServiceRuntime() {
   // We do this just in case Terminate() was not called.
   delete subprocess_;
   delete runtime_channel_;
+  delete reverse_service_;
 
   // TODO(sehr,mseaborn): use scoped_ptr for management of DescWrappers.
   delete async_receive_desc_;
