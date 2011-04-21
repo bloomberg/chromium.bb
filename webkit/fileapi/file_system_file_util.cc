@@ -242,12 +242,12 @@ FileSystemFileUtil::PerformCommonCheckAndPreparationForMoveAndCopy(
   bool src_is_directory = DirectoryExists(context, src_file_path);
   bool dest_is_directory = DirectoryExists(context, dest_file_path);
   if (src_is_directory && !dest_is_directory)
-    return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
 
   // |src_file_path| exists and is a file.
   // |dest_file_path| exists and is a directory.
   if (!src_is_directory && dest_is_directory)
-    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
 
   // It is an error to copy/move an entry into the same path.
   if (src_file_path.value() == dest_file_path.value())

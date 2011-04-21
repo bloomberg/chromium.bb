@@ -175,7 +175,7 @@ TEST_F(FileSystemOperationTest, TestMoveFailureSrcDirExistsDestFile) {
 
   operation()->Move(URLForPath(src_dir.path()), URLForPath(dest_file));
   MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY, status());
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, status());
 }
 
 TEST_F(FileSystemOperationTest, TestMoveFailureSrcFileExistsDestNonEmptyDir) {
@@ -205,7 +205,7 @@ TEST_F(FileSystemOperationTest, TestMoveFailureSrcFileExistsDestDir) {
 
   operation()->Move(URLForPath(src_file), URLForPath(dest_dir.path()));
   MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_FILE, status());
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, status());
 }
 
 TEST_F(FileSystemOperationTest, TestMoveFailureDestParentDoesntExist) {
@@ -339,7 +339,7 @@ TEST_F(FileSystemOperationTest, TestCopyFailureSrcDirExistsDestFile) {
 
   operation()->Copy(URLForPath(src_dir.path()), URLForPath(dest_file));
   MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY, status());
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, status());
 }
 
 TEST_F(FileSystemOperationTest, TestCopyFailureSrcFileExistsDestNonEmptyDir) {
@@ -369,7 +369,7 @@ TEST_F(FileSystemOperationTest, TestCopyFailureSrcFileExistsDestDir) {
 
   operation()->Copy(URLForPath(src_file), URLForPath(dest_dir.path()));
   MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_FILE, status());
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, status());
 }
 
 TEST_F(FileSystemOperationTest, TestCopyFailureDestParentDoesntExist) {
