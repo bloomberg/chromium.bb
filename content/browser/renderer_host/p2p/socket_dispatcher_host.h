@@ -31,6 +31,7 @@ class P2PSocketDispatcherHost : public BrowserMessageFilter {
   P2PSocketHost* LookupSocket(int32 routing_id, int socket_id);
 
   // Handlers for the messages coming from the renderer.
+  void OnGetNetworkList(const IPC::Message& msg);
   void OnCreateSocket(const IPC::Message& msg,
                       P2PSocketType type,
                       int socket_id,
@@ -45,19 +46,8 @@ class P2PSocketDispatcherHost : public BrowserMessageFilter {
               const std::vector<char>& data);
   void OnDestroySocket(const IPC::Message& msg, int socket_id);
 
-  // Helpers for OnCreateSocket().
-  //
-  // TODO(sergeyu): Remove these methods. Use |local_address| passed
-  // in OnCreateSocket().
-  void GetLocalAddressAndCreateSocket(int32 routing_id,
-                                      P2PSocketType type,
-                                      int socket_id,
-                                      const net::IPEndPoint& remote_address);
-  void FinishCreateSocket(int32 routing_id,
-                          const net::IPEndPoint& local_address,
-                          P2PSocketType type,
-                          int socket_id,
-                          const net::IPEndPoint& remote_address);
+  void DoGetNetworkList(int routing_id);
+  void SendNetworkList(int routing_id, const net::NetworkInterfaceList& list);
 
   SocketsMap sockets_;
 
