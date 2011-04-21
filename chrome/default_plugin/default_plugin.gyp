@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -12,6 +12,7 @@
       'type': '<(library)',
       'dependencies': [
         ':default_plugin_resources',
+        '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/net/net.gyp:net_resources',
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',

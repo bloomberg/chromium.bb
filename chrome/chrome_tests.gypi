@@ -45,6 +45,7 @@
       'export_dependent_settings': [
         'renderer',
         'app/policy/cloud_policy_codegen.gyp:policy',
+        '../base/base.gyp:test_support_base',
       ],
       'include_dirs': [
         '..',

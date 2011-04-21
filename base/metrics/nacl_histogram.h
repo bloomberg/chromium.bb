@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,8 @@
 #define BASE_METRICS_NACL_HISTOGRAM_H_
 #pragma once
 
+#include "base/base_api.h"
+
 enum NaClHistogramValue {
   FIRST_TAB_NACL_BASELINE,   // First tab created - a baseline for NaCl starts.
   NEW_TAB_NACL_BASELINE,     // New tab created -- a baseline for NaCl starts.
@@ -23,7 +25,7 @@ enum NaClHistogramValue {
 
 // To log histogram data about NaCl.Startups, call this macro with
 // a NaClHistogramValue passed in as |histogram_value|
-void UmaNaclHistogramEnumeration(NaClHistogramValue histogram_value);
+BASE_API void UmaNaclHistogramEnumeration(NaClHistogramValue histogram_value);
 
 #endif  // BASE_METRICS_NACL_HISTOGRAM_H_
 

@@ -111,6 +111,7 @@
         '../app/app.gyp:app_resources',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
+        '../base/base.gyp:base_static',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../content/content.gyp:content_common',
         '../ipc/ipc.gyp:ipc',
@@ -135,6 +136,7 @@
         'common/automation_messages_internal.h',
         'common/badge_util.cc',
         'common/badge_util.h',
+        'common/bzip2_error_handler.cc',
         'common/chrome_content_client.cc',
         'common/chrome_content_client.h',
         'common/chrome_content_plugin_client.cc',
@@ -337,6 +339,7 @@
       ],
       'export_dependent_settings': [
         '../app/app.gyp:app_base',
+        '../base/base.gyp:base',
       ],
     },
     {

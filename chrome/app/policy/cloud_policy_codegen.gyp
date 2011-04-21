@@ -164,6 +164,7 @@
         'cloud_policy_code_generate',
         'cloud_policy_proto_compile',
         'cloud_policy_backend_header_compile',
+        '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/third_party/protobuf/protobuf.gyp:protobuf_lite',
       ],
     },

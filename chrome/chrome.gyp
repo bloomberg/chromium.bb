@@ -381,6 +381,7 @@
       'dependencies': [
         'chrome_resources',
         'chrome_strings',
+        '../base/base.gyp:base',
         '../net/net.gyp:http_server',
         'theme_resources',
         'theme_resources_standard',

@@ -8,6 +8,9 @@
 
 #include "content/browser/browser_thread.h"
 
+// userenv.dll is required for RegisterGPNotification().
+#pragma comment(lib, "userenv.lib")
+
 namespace policy {
 
 ConfigurationPolicyLoaderWin::ConfigurationPolicyLoaderWin(
