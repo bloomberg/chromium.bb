@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "media/base/callback.h"
 #include "remoting/host/capturer.h"
 #include "remoting/proto/event.pb.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -45,29 +46,31 @@ EventExecutorWin::EventExecutorWin(MessageLoopForUI* message_loop,
 }
 
 void EventExecutorWin::InjectKeyEvent(const KeyEvent* event, Task* done) {
+  media::AutoTaskRunner done_runner(done);
+
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
         FROM_HERE,
         NewRunnableMethod(this, &EventExecutorWin::InjectKeyEvent,
-                          event, done));
+                          event, done_runner.release()));
     return;
   }
+
   HandleKey(event);
-  done->Run();
-  delete done;
 }
 
 void EventExecutorWin::InjectMouseEvent(const MouseEvent* event, Task* done) {
+  media::AutoTaskRunner done_runner(done);
+
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
         FROM_HERE,
         NewRunnableMethod(this, &EventExecutorWin::InjectMouseEvent,
-                          event, done));
+                          event, done_runner.release()));
     return;
   }
+
   HandleMouse(event);
-  done->Run();
-  delete done;
 }
 
 void EventExecutorWin::HandleKey(const KeyEvent* event) {
@@ -176,4 +179,3 @@ EventExecutor* EventExecutor::Create(MessageLoopForUI* message_loop,
 }  // namespace remoting
 
 DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::EventExecutorWin);
-

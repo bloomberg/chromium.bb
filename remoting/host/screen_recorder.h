@@ -113,7 +113,6 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
 
   void DoStart();
   void DoStop(Task* done_task);
-  void DoCompleteStop(Task* done_task);
 
   void DoSetMaxRate(double max_rate);
 

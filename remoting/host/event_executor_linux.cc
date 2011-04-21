@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/task.h"
+#include "media/base/callback.h"
 #include "remoting/proto/internal.pb.h"
 
 namespace remoting {
@@ -277,13 +278,16 @@ bool EventExecutorLinux::Init() {
 }
 
 void EventExecutorLinux::InjectKeyEvent(const KeyEvent* event, Task* done) {
+  media::AutoTaskRunner done_runner(done);
+
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
         FROM_HERE,
         NewRunnableMethod(this, &EventExecutorLinux::InjectKeyEvent,
-                          event, done));
+                          event, done_runner.release()));
     return;
   }
+
   // TODO(ajwong): This will only work for QWERTY keyboards.
   int keysym = ChromotocolKeycodeToX11Keysym(event->keycode());
 
@@ -304,20 +308,20 @@ void EventExecutorLinux::InjectKeyEvent(const KeyEvent* event, Task* done) {
           << " sending keysym: " << keysym
           << " to keycode: " << keycode;
   XTestFakeKeyEvent(display_, keycode, event->pressed(), CurrentTime);
-
-  done->Run();
-  delete done;
 }
 
 void EventExecutorLinux::InjectMouseEvent(const MouseEvent* event,
                                           Task* done) {
+  media::AutoTaskRunner done_runner(done);
+
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
         FROM_HERE,
         NewRunnableMethod(this, &EventExecutorLinux::InjectMouseEvent,
-                          event, done));
+                          event, done_runner.release()));
     return;
   }
+
   if (event->has_x() && event->has_y()) {
     if (event->x() < 0 || event->y() < 0 ||
         event->x() > width_ || event->y() > height_) {
@@ -352,9 +356,6 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent* event,
   if (event->has_wheel_offset_x() && event->has_wheel_offset_y()) {
     NOTIMPLEMENTED() << "No scroll wheel support yet.";
   }
-
-  done->Run();
-  delete done;
 }
 
 }  // namespace
@@ -367,4 +368,3 @@ EventExecutor* EventExecutor::Create(MessageLoopForUI* message_loop,
 }  // namespace remoting
 
 DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::EventExecutorLinux);
-

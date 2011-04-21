@@ -11,6 +11,7 @@
 #include "base/stl_util-inl.h"
 #include "base/task.h"
 #include "base/time.h"
+#include "media/base/callback.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/tracer.h"
 #include "remoting/proto/control.pb.h"
@@ -136,34 +137,24 @@ void ScreenRecorder::DoStart() {
 void ScreenRecorder::DoStop(Task* done_task) {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
+  media::AutoTaskRunner done_runner(done_task);
+
   // We might have not started when we receive a stop command, simply run the
   // task and then return.
-  if (!is_recording_) {
-    DoCompleteStop(done_task);
+  if (!is_recording_)
     return;
-  }
 
   capture_timer_.Stop();
   is_recording_ = false;
 
   DCHECK_GE(recordings_, 0);
   if (recordings_) {
-     network_loop_->PostTask(
+    network_loop_->PostTask(
         FROM_HERE,
         NewTracedMethod(this,
-                        &ScreenRecorder::DoStopOnNetworkThread, done_task));
+                        &ScreenRecorder::DoStopOnNetworkThread,
+                        done_runner.release()));
     return;
-  }
-
-  DoCompleteStop(done_task);
-}
-
-void ScreenRecorder::DoCompleteStop(Task* done_task) {
-  DCHECK_EQ(capture_loop_, MessageLoop::current());
-
-  if (done_task) {
-    done_task->Run();
-    delete done_task;
   }
 }
 
@@ -371,9 +362,8 @@ void ScreenRecorder::DoStopOnEncodeThread(Task* done_task) {
   // When this method is being executed there are no more tasks on encode thread
   // for this object. We can then post a task to capture thread to finish the
   // stop sequence.
-  capture_loop_->PostTask(
-      FROM_HERE,
-      NewTracedMethod(this, &ScreenRecorder::DoCompleteStop, done_task));
+  if (done_task)
+    capture_loop_->PostTask(FROM_HERE, done_task);
 }
 
 void ScreenRecorder::EncodedDataAvailableCallback(VideoPacket* packet) {

@@ -12,6 +12,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/message_loop.h"
 #include "base/task.h"
+#include "media/base/callback.h"
 #include "remoting/host/capturer.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/message_decoder.h"
@@ -214,6 +215,8 @@ const int kUsVkeyToKeysym[256] = {
 };
 
 void EventExecutorMac::InjectKeyEvent(const KeyEvent* event, Task* done) {
+  media::AutoTaskRunner done_runner(done);
+
   int key_code = event->keycode();
   if (key_code >= 0 && key_code < 256) {
     int key_sym = kUsVkeyToKeysym[key_code];
@@ -245,11 +248,11 @@ void EventExecutorMac::InjectKeyEvent(const KeyEvent* event, Task* done) {
       CGEventPost(kCGSessionEventTap, kbd_event);
     }
   }
-  done->Run();
-  delete done;
 }
 
 void EventExecutorMac::InjectMouseEvent(const MouseEvent* event, Task* done) {
+  media::AutoTaskRunner done_runner(done);
+
   if (event->has_x() && event->has_y()) {
     // TODO(wez): Checking the validity of the MouseEvent should be done in core
     // cross-platform code, not here!
@@ -301,9 +304,6 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent* event, Task* done) {
     // CGEventCreateScrollWheelEvent() to inject scroll events.
     NOTIMPLEMENTED() << "No scroll wheel support yet.";
   }
-
-  done->Run();
-  delete done;
 }
 
 }  // namespace
