@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -474,6 +474,11 @@ class Memcheck(ValgrindTool):
 
     if self._options.track_origins:
       ret += ["--track-origins=yes"]
+
+    # TODO(glider): this is a temporary workaround for http://crbug.com/51716
+    # Let's see whether it helps.
+    if common.IsMac():
+      ret += ["--smc-check=all"]
 
     return ret
 
