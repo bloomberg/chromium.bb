@@ -154,7 +154,7 @@ void NaClTlsFini() {
   int errnum = pthread_key_delete(nacl_thread_info_key);
   if (0 != errnum) {
     NaClLog(LOG_FATAL,
-            "NaClTlsInit: pthread_key_delete failed for thred info key, %d\n",
+            "NaClTlsInit: pthread_key_delete failed for thread info key, %d\n",
             errnum);
   }
   NaClThreadIdxFini();
