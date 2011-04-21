@@ -8,6 +8,7 @@
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 
 #define kToolbarTopOffset 12
 #define kToolbarMaxHeight 100
