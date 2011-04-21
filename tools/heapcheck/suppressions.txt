@@ -1430,3 +1430,12 @@
    Heapcheck:Leak
    fun:QuotaFileUtilTest::Context
 }
+{
+   bug_80196
+   Heapcheck:Leak
+   fun:CallbackRunner* NewCallback
+   fun:browser_sync::SyncBackendHost::ConfigureDataTypes
+   fun:browser_sync::SyncBackendHostForProfileSyncTest::ConfigureDataTypes
+   fun:browser_sync::DataTypeManagerImpl::Restart
+   fun:browser_sync::DataTypeManagerImpl::Configure
+}
