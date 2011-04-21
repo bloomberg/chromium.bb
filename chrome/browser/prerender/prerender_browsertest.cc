@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <deque>
+
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
@@ -20,8 +22,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#include <deque>
 
 // Prerender tests work as follows:
 //
@@ -660,6 +660,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5VideoJs) {
   PrerenderTestURL("files/prerender/prerender_html5_video_script.html",
                    FINAL_STATUS_HTML5_MEDIA,
                    1);
+}
+
+// Checks that scripts can retrieve the correct window size while prerendering.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowSize) {
+  PrerenderTestURL("files/prerender/prerender_size.html",
+                   FINAL_STATUS_USED,
+                   1);
+  NavigateToDestURL();
 }
 
 }  // namespace prerender

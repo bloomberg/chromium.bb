@@ -134,9 +134,11 @@ void PrerenderManager::SetPrerenderContentsFactory(
   prerender_contents_factory_.reset(prerender_contents_factory);
 }
 
-bool PrerenderManager::AddPreload(const GURL& url,
-                                  const std::vector<GURL>& alias_urls,
-                                  const GURL& referrer) {
+bool PrerenderManager::AddPreload(
+    const std::pair<int, int>& child_route_id_pair,
+    const GURL& url,
+    const std::vector<GURL>& alias_urls,
+    const GURL& referrer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DeleteOldEntries();
   if (FindEntry(url))
@@ -177,6 +179,20 @@ bool PrerenderManager::AddPreload(const GURL& url,
     return false;
   }
 
+  RenderViewHost* source_render_view_host = NULL;
+  // This test should fail only during unit tests.
+  if (child_route_id_pair.first != -1) {
+    source_render_view_host =
+        RenderViewHost::FromID(child_route_id_pair.first,
+                               child_route_id_pair.second);
+    // Don't prerender page if parent RenderViewHost no longer exists, or it has
+    // no view.  The latter should only happen when the RenderView has closed.
+    if (!source_render_view_host || !source_render_view_host->view()) {
+      RecordFinalStatus(FINAL_STATUS_SOURCE_RENDER_VIEW_CLOSED);
+      return false;
+    }
+  }
+
   // TODO(cbentzel): Move invalid checks here instead of PrerenderContents?
   PrerenderContentsData data(CreatePrerenderContents(url, all_alias_urls,
                                                      referrer),
@@ -187,7 +203,7 @@ bool PrerenderManager::AddPreload(const GURL& url,
     data.contents_->set_final_status(FINAL_STATUS_CONTROL_GROUP);
   } else {
     last_prerender_start_time_ = GetCurrentTimeTicks();
-    data.contents_->StartPrerendering();
+    data.contents_->StartPrerendering(source_render_view_host);
   }
   while (prerender_list_.size() > max_elements_) {
     data = prerender_list_.front();
@@ -200,7 +216,7 @@ bool PrerenderManager::AddPreload(const GURL& url,
 }
 
 void PrerenderManager::AddPendingPreload(
-    const std::pair<int,int>& child_route_id_pair,
+    const std::pair<int, int>& child_route_id_pair,
     const GURL& url,
     const std::vector<GURL>& alias_urls,
     const GURL& referrer) {
@@ -317,7 +333,7 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
     for (std::vector<PendingContentsData>::iterator content_it =
             pending_it->second.begin();
          content_it != pending_it->second.end(); ++content_it) {
-      AddPreload(content_it->url_, content_it->alias_urls_,
+      AddPreload(pending_it->first, content_it->url_, content_it->alias_urls_,
                  content_it->referrer_);
     }
     pending_prerender_list_.erase(pending_it);

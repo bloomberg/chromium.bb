@@ -99,7 +99,9 @@ PrerenderResourceHandler::PrerenderResourceHandler(
     PrerenderCallback* callback)
     : next_handler_(next_handler),
       prerender_callback_(callback),
-      request_(request) {
+      request_(request),
+      child_id_(-1),
+      route_id_(-1) {
   DCHECK(next_handler);
   DCHECK(callback);
 }
@@ -208,7 +210,8 @@ void PrerenderResourceHandler::StartPrerender(
     prerender_manager_->AddPendingPreload(child_route_id_pair,
                                           url, alias_urls, referrer);
   } else {
-    prerender_manager_->AddPreload(url, alias_urls, referrer);
+    prerender_manager_->AddPreload(child_route_id_pair, url, alias_urls,
+                                   referrer);
   }
 }
 

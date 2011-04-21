@@ -53,11 +53,16 @@ class PrerenderManager : public base::RefCountedThreadSafe<PrerenderManager> {
   // Owned by a Profile object for the lifetime of the profile.
   explicit PrerenderManager(Profile* profile);
 
-  // Preloads the URL supplied.  alias_urls indicates URLs that redirect
-  // to the same URL to be preloaded. Returns true if the URL was added,
-  // false if it was not.
-  bool AddPreload(const GURL& url, const std::vector<GURL>& alias_urls,
-                  const GURL& referrer);
+  // Preloads |url| if valid.  |alias_urls| indicates URLs that redirect
+  // to the same URL to be preloaded.  |child_route_id_pair| identifies the
+  // RenderViewHost that the prerender request came from and is used to
+  // set the initial window size of the RenderViewHost used for prerendering.
+  // Returns true if the URL was added, false if it was not.
+  bool AddPreload(
+      const std::pair<int, int>& child_route_id_pair,
+      const GURL& url,
+      const std::vector<GURL>& alias_urls,
+      const GURL& referrer);
 
   void AddPendingPreload(const std::pair<int, int>& child_route_id_pair,
                          const GURL& url,

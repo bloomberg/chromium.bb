@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_vector.h"
 #include "base/time.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -19,15 +20,6 @@ class DummyPrerenderContents : public PrerenderContents {
  public:
   DummyPrerenderContents(PrerenderManager* prerender_manager,
                          const GURL& url,
-                         FinalStatus expected_final_status)
-      : PrerenderContents(prerender_manager, NULL, url,
-                          std::vector<GURL>(), GURL()),
-        has_started_(false),
-        expected_final_status_(expected_final_status) {
-  }
-
-  DummyPrerenderContents(PrerenderManager* prerender_manager,
-                         const GURL& url,
                          const std::vector<GURL> alias_urls,
                          FinalStatus expected_final_status)
       : PrerenderContents(prerender_manager, NULL, url, alias_urls, GURL()),
@@ -39,7 +31,8 @@ class DummyPrerenderContents : public PrerenderContents {
     EXPECT_EQ(expected_final_status_, final_status());
   }
 
-  virtual void StartPrerendering() OVERRIDE {
+  virtual void StartPrerendering(
+      const RenderViewHost* source_render_view_host) OVERRIDE {
     has_started_ = true;
   }
 
@@ -54,6 +47,8 @@ class DummyPrerenderContents : public PrerenderContents {
   }
 
   bool has_started() const { return has_started_; }
+
+  FinalStatus expected_final_status() const { return expected_final_status_; }
 
  private:
   bool has_started_;
@@ -78,13 +73,31 @@ class TestPrerenderManager : public PrerenderManager {
     time_ticks_ += delta;
   }
 
-  void SetNextPrerenderContents(PrerenderContents* pc) {
-    next_pc_.reset(pc);
+  DummyPrerenderContents* CreateNextPrerenderContents(
+      const GURL& url,
+      FinalStatus expected_final_status) {
+    DummyPrerenderContents* pc =
+        new DummyPrerenderContents(this, url, std::vector<GURL>(),
+                                   expected_final_status);
+    SetNextPrerenderContents(pc);
+    return pc;
+  }
+
+  DummyPrerenderContents* CreateNextPrerenderContents(
+      const GURL& url,
+      const std::vector<GURL> alias_urls,
+      FinalStatus expected_final_status) {
+    DummyPrerenderContents* pc =
+        new DummyPrerenderContents(this, url, alias_urls,
+                                   expected_final_status);
+    SetNextPrerenderContents(pc);
+    return pc;
   }
 
   // Shorthand to add a simple preload with no aliases.
   bool AddSimplePreload(const GURL& url) {
-    return AddPreload(url, std::vector<GURL>(), GURL());
+    return AddPreload(std::pair<int, int>(-1, -1), url, std::vector<GURL>(),
+                      GURL());
   }
 
   bool IsPendingEntry(const GURL& url) {
@@ -92,6 +105,12 @@ class TestPrerenderManager : public PrerenderManager {
   }
 
   void set_rate_limit_enabled(bool enabled) { rate_limit_enabled_ = true; }
+
+  // Shorthand to add a simple preload with aliases.
+  bool AddSimplePreloadWithAliases(const GURL& url,
+                                   const std::vector<GURL>& alias_urls) {
+    return AddPreload(std::pair<int, int>(-1, -1), url, alias_urls, GURL());
+  }
 
   PrerenderContents* next_pc() { return next_pc_.get(); }
 
@@ -101,9 +120,24 @@ class TestPrerenderManager : public PrerenderManager {
       next_pc()->set_final_status(
           FINAL_STATUS_MANAGER_SHUTDOWN);
     }
+    // Set the final status for all PrerenderContents with an expected final
+    // status of FINAL_STATUS_USED.  These values are normally set when the
+    // prerendered RVH is swapped into a tab, which doesn't happen in these
+    // unit tests.
+    for (ScopedVector<PrerenderContents>::iterator it = used_pcs_.begin();
+         it != used_pcs_.end(); ++it) {
+      (*it)->set_final_status(FINAL_STATUS_USED);
+    }
   }
 
  private:
+  void SetNextPrerenderContents(DummyPrerenderContents* pc) {
+    DCHECK(!next_pc_.get());
+    next_pc_.reset(pc);
+    if (pc->expected_final_status() == FINAL_STATUS_USED)
+      used_pcs_.push_back(pc);
+  }
+
   virtual base::Time GetCurrentTime() const OVERRIDE {
     return time_;
   }
@@ -123,6 +157,9 @@ class TestPrerenderManager : public PrerenderManager {
   base::Time time_;
   base::TimeTicks time_ticks_;
   scoped_ptr<PrerenderContents> next_pc_;
+  // PrerenderContents with an |expected_final_status| of FINAL_STATUS_USED,
+  // tracked so they will be automatically deleted.
+  ScopedVector<PrerenderContents> used_pcs_;
 };
 
 class RestorePrerenderMode {
@@ -160,15 +197,12 @@ TEST_F(PrerenderManagerTest, EmptyTest) {
 TEST_F(PrerenderManagerTest, FoundTest) {
   GURL url("http://www.google.com/");
   DummyPrerenderContents* pc =
-      new DummyPrerenderContents(prerender_manager_.get(),
-                                 url,
-                                 FINAL_STATUS_USED);
-  prerender_manager_->SetNextPrerenderContents(pc);
+      prerender_manager_->CreateNextPrerenderContents(
+          url,
+          FINAL_STATUS_USED);
   EXPECT_TRUE(prerender_manager_->AddSimplePreload(url));
   EXPECT_TRUE(pc->has_started());
   ASSERT_EQ(pc, prerender_manager_->GetEntry(url));
-  pc->set_final_status(FINAL_STATUS_USED);
-  delete pc;
 }
 
 // Make sure that if queue a request, and a second prerender request for the
@@ -176,34 +210,33 @@ TEST_F(PrerenderManagerTest, FoundTest) {
 TEST_F(PrerenderManagerTest, DropSecondRequestTest) {
   GURL url("http://www.google.com/");
   DummyPrerenderContents* pc =
-      new DummyPrerenderContents(prerender_manager_.get(), url,
-                                 FINAL_STATUS_USED);
+      prerender_manager_->CreateNextPrerenderContents(
+          url,
+          FINAL_STATUS_USED);
   DummyPrerenderContents* null = NULL;
-  prerender_manager_->SetNextPrerenderContents(pc);
   EXPECT_TRUE(prerender_manager_->AddSimplePreload(url));
   EXPECT_EQ(null, prerender_manager_->next_pc());
   EXPECT_TRUE(pc->has_started());
+
   DummyPrerenderContents* pc1 =
-      new DummyPrerenderContents(
-          prerender_manager_.get(), url,
+      prerender_manager_->CreateNextPrerenderContents(
+          url,
           FINAL_STATUS_MANAGER_SHUTDOWN);
-  prerender_manager_->SetNextPrerenderContents(pc1);
   EXPECT_FALSE(prerender_manager_->AddSimplePreload(url));
   EXPECT_EQ(pc1, prerender_manager_->next_pc());
   EXPECT_FALSE(pc1->has_started());
+
   ASSERT_EQ(pc, prerender_manager_->GetEntry(url));
-  pc->set_final_status(FINAL_STATUS_USED);
-  delete pc;
 }
 
 // Ensure that we expire a prerendered page after the max. permitted time.
 TEST_F(PrerenderManagerTest, ExpireTest) {
   GURL url("http://www.google.com/");
   DummyPrerenderContents* pc =
-      new DummyPrerenderContents(prerender_manager_.get(), url,
-                                 FINAL_STATUS_TIMED_OUT);
+      prerender_manager_->CreateNextPrerenderContents(
+          url,
+          FINAL_STATUS_TIMED_OUT);
   DummyPrerenderContents* null = NULL;
-  prerender_manager_->SetNextPrerenderContents(pc);
   EXPECT_TRUE(prerender_manager_->AddSimplePreload(url));
   EXPECT_EQ(null, prerender_manager_->next_pc());
   EXPECT_TRUE(pc->has_started());
@@ -217,25 +250,25 @@ TEST_F(PrerenderManagerTest, ExpireTest) {
 TEST_F(PrerenderManagerTest, DropOldestRequestTest) {
   GURL url("http://www.google.com/");
   DummyPrerenderContents* pc =
-      new DummyPrerenderContents(prerender_manager_.get(), url,
-                                 FINAL_STATUS_EVICTED);
+      prerender_manager_->CreateNextPrerenderContents(
+          url,
+          FINAL_STATUS_EVICTED);
   DummyPrerenderContents* null = NULL;
-  prerender_manager_->SetNextPrerenderContents(pc);
   EXPECT_TRUE(prerender_manager_->AddSimplePreload(url));
   EXPECT_EQ(null, prerender_manager_->next_pc());
   EXPECT_TRUE(pc->has_started());
+
   GURL url1("http://news.google.com/");
   DummyPrerenderContents* pc1 =
-      new DummyPrerenderContents(prerender_manager_.get(), url1,
-                                 FINAL_STATUS_USED);
-  prerender_manager_->SetNextPrerenderContents(pc1);
+      prerender_manager_->CreateNextPrerenderContents(
+          url1,
+          FINAL_STATUS_USED);
   EXPECT_TRUE(prerender_manager_->AddSimplePreload(url1));
   EXPECT_EQ(null, prerender_manager_->next_pc());
   EXPECT_TRUE(pc1->has_started());
+
   ASSERT_EQ(null, prerender_manager_->GetEntry(url));
   ASSERT_EQ(pc1, prerender_manager_->GetEntry(url1));
-  pc1->set_final_status(FINAL_STATUS_USED);
-  delete pc1;
 }
 
 // Two element prerender test.  Ensure that the LRU operates correctly if we
@@ -244,36 +277,35 @@ TEST_F(PrerenderManagerTest, TwoElementPrerenderTest) {
   prerender_manager_->set_max_elements(2);
   GURL url("http://www.google.com/");
   DummyPrerenderContents* pc =
-      new DummyPrerenderContents(prerender_manager_.get(), url,
-                                 FINAL_STATUS_EVICTED);
+      prerender_manager_->CreateNextPrerenderContents(
+          url,
+          FINAL_STATUS_EVICTED);
   DummyPrerenderContents* null = NULL;
-  prerender_manager_->SetNextPrerenderContents(pc);
   EXPECT_TRUE(prerender_manager_->AddSimplePreload(url));
   EXPECT_EQ(null, prerender_manager_->next_pc());
   EXPECT_TRUE(pc->has_started());
+
   GURL url1("http://news.google.com/");
   DummyPrerenderContents* pc1 =
-      new DummyPrerenderContents(prerender_manager_.get(),  url1,
-                                 FINAL_STATUS_USED);
-  prerender_manager_->SetNextPrerenderContents(pc1);
+      prerender_manager_->CreateNextPrerenderContents(
+          url1,
+          FINAL_STATUS_USED);
   EXPECT_TRUE(prerender_manager_->AddSimplePreload(url1));
   EXPECT_EQ(null, prerender_manager_->next_pc());
   EXPECT_TRUE(pc1->has_started());
+
   GURL url2("http://images.google.com/");
   DummyPrerenderContents* pc2 =
-      new DummyPrerenderContents(prerender_manager_.get(), url2,
-                                 FINAL_STATUS_USED);
-  prerender_manager_->SetNextPrerenderContents(pc2);
+      prerender_manager_->CreateNextPrerenderContents(
+          url2,
+          FINAL_STATUS_USED);
   EXPECT_TRUE(prerender_manager_->AddSimplePreload(url2));
   EXPECT_EQ(null, prerender_manager_->next_pc());
   EXPECT_TRUE(pc2->has_started());
+
   ASSERT_EQ(null, prerender_manager_->GetEntry(url));
   ASSERT_EQ(pc1, prerender_manager_->GetEntry(url1));
   ASSERT_EQ(pc2, prerender_manager_->GetEntry(url2));
-  pc1->set_final_status(FINAL_STATUS_USED);
-  delete pc1;
-  pc2->set_final_status(FINAL_STATUS_USED);
-  delete pc2;
 }
 
 TEST_F(PrerenderManagerTest, AliasURLTest) {
@@ -284,41 +316,41 @@ TEST_F(PrerenderManagerTest, AliasURLTest) {
   std::vector<GURL> alias_urls;
   alias_urls.push_back(alias_url1);
   alias_urls.push_back(alias_url2);
-  DummyPrerenderContents* pc =
-      new DummyPrerenderContents(prerender_manager_.get(), url, alias_urls,
-                                 FINAL_STATUS_USED);
+
   // Test that all of the aliases work, but nont_an_alias_url does not.
-  prerender_manager_->SetNextPrerenderContents(pc);
-  EXPECT_TRUE(prerender_manager_->AddPreload(url, alias_urls, GURL()));
+  DummyPrerenderContents* pc =
+      prerender_manager_->CreateNextPrerenderContents(
+          url, alias_urls, FINAL_STATUS_USED);
+  EXPECT_TRUE(prerender_manager_->AddSimplePreloadWithAliases(url, alias_urls));
   ASSERT_EQ(NULL, prerender_manager_->GetEntry(not_an_alias_url));
   ASSERT_EQ(pc, prerender_manager_->GetEntry(alias_url1));
-  prerender_manager_->SetNextPrerenderContents(pc);
-  EXPECT_TRUE(prerender_manager_->AddPreload(url, alias_urls, GURL()));
+  pc = prerender_manager_->CreateNextPrerenderContents(
+          url, alias_urls, FINAL_STATUS_USED);
+  EXPECT_TRUE(prerender_manager_->AddSimplePreloadWithAliases(url, alias_urls));
   ASSERT_EQ(pc, prerender_manager_->GetEntry(alias_url2));
-  prerender_manager_->SetNextPrerenderContents(pc);
-  EXPECT_TRUE(prerender_manager_->AddPreload(url, alias_urls, GURL()));
+  pc = prerender_manager_->CreateNextPrerenderContents(
+          url, alias_urls, FINAL_STATUS_USED);
+  EXPECT_TRUE(prerender_manager_->AddSimplePreloadWithAliases(url, alias_urls));
   ASSERT_EQ(pc, prerender_manager_->GetEntry(url));
 
   // Test that alias URLs can not be added.
-  prerender_manager_->SetNextPrerenderContents(pc);
-  EXPECT_TRUE(prerender_manager_->AddPreload(url, alias_urls, GURL()));
+  pc = prerender_manager_->CreateNextPrerenderContents(
+          url, alias_urls, FINAL_STATUS_USED);
+  EXPECT_TRUE(prerender_manager_->AddSimplePreloadWithAliases(url, alias_urls));
   EXPECT_FALSE(prerender_manager_->AddSimplePreload(url));
   EXPECT_FALSE(prerender_manager_->AddSimplePreload(alias_url1));
   EXPECT_FALSE(prerender_manager_->AddSimplePreload(alias_url2));
   ASSERT_EQ(pc, prerender_manager_->GetEntry(url));
-
-  pc->set_final_status(FINAL_STATUS_USED);
-  delete pc;
 }
 
 // Ensure that we ignore prerender requests within the rate limit.
 TEST_F(PrerenderManagerTest, RateLimitInWindowTest) {
   GURL url("http://www.google.com/");
   DummyPrerenderContents* pc =
-      new DummyPrerenderContents(prerender_manager_.get(), url,
-                                 FINAL_STATUS_MANAGER_SHUTDOWN);
+      prerender_manager_->CreateNextPrerenderContents(
+          url,
+          FINAL_STATUS_MANAGER_SHUTDOWN);
   DummyPrerenderContents* null = NULL;
-  prerender_manager_->SetNextPrerenderContents(pc);
   EXPECT_TRUE(prerender_manager_->AddSimplePreload(url));
   EXPECT_EQ(null, prerender_manager_->next_pc());
   EXPECT_TRUE(pc->has_started());
@@ -327,10 +359,9 @@ TEST_F(PrerenderManagerTest, RateLimitInWindowTest) {
   prerender_manager_->AdvanceTimeTicks(base::TimeDelta::FromMilliseconds(1));
 
   GURL url1("http://news.google.com/");
-  DummyPrerenderContents* rate_limit_pc =
-      new DummyPrerenderContents(prerender_manager_.get(), url1,
-                                 FINAL_STATUS_MANAGER_SHUTDOWN);
-  prerender_manager_->SetNextPrerenderContents(rate_limit_pc);
+  prerender_manager_->CreateNextPrerenderContents(
+      url,
+      FINAL_STATUS_MANAGER_SHUTDOWN);
   EXPECT_FALSE(prerender_manager_->AddSimplePreload(url1));
   prerender_manager_->set_rate_limit_enabled(false);
 }
@@ -339,10 +370,10 @@ TEST_F(PrerenderManagerTest, RateLimitInWindowTest) {
 TEST_F(PrerenderManagerTest, RateLimitOutsideWindowTest) {
   GURL url("http://www.google.com/");
   DummyPrerenderContents* pc =
-      new DummyPrerenderContents(prerender_manager_.get(), url,
-                                 FINAL_STATUS_EVICTED);
+      prerender_manager_->CreateNextPrerenderContents(
+          url,
+          FINAL_STATUS_EVICTED);
   DummyPrerenderContents* null = NULL;
-  prerender_manager_->SetNextPrerenderContents(pc);
   EXPECT_TRUE(prerender_manager_->AddSimplePreload(url));
   EXPECT_EQ(null, prerender_manager_->next_pc());
   EXPECT_TRUE(pc->has_started());
@@ -352,9 +383,9 @@ TEST_F(PrerenderManagerTest, RateLimitOutsideWindowTest) {
 
   GURL url1("http://news.google.com/");
   DummyPrerenderContents* rate_limit_pc =
-      new DummyPrerenderContents(prerender_manager_.get(), url1,
-                                 FINAL_STATUS_MANAGER_SHUTDOWN);
-  prerender_manager_->SetNextPrerenderContents(rate_limit_pc);
+      prerender_manager_->CreateNextPrerenderContents(
+          url1,
+          FINAL_STATUS_MANAGER_SHUTDOWN);
   EXPECT_TRUE(prerender_manager_->AddSimplePreload(url1));
   EXPECT_EQ(null, prerender_manager_->next_pc());
   EXPECT_TRUE(rate_limit_pc->has_started());
@@ -364,10 +395,9 @@ TEST_F(PrerenderManagerTest, RateLimitOutsideWindowTest) {
 TEST_F(PrerenderManagerTest, PendingPreloadTest) {
   GURL url("http://www.google.com/");
   DummyPrerenderContents* pc =
-      new DummyPrerenderContents(prerender_manager_.get(),
-                                 url,
-                                 FINAL_STATUS_USED);
-  prerender_manager_->SetNextPrerenderContents(pc);
+      prerender_manager_->CreateNextPrerenderContents(
+          url,
+          FINAL_STATUS_USED);
   EXPECT_TRUE(prerender_manager_->AddSimplePreload(url));
 
   int child_id;
@@ -385,18 +415,14 @@ TEST_F(PrerenderManagerTest, PendingPreloadTest) {
   EXPECT_TRUE(prerender_manager_->IsPendingEntry(pending_url));
   EXPECT_TRUE(pc->has_started());
   ASSERT_EQ(pc, prerender_manager_->GetEntry(url));
-  pc->set_final_status(FINAL_STATUS_USED);
-
-  delete pc;
 }
 
 TEST_F(PrerenderManagerTest, PendingPreloadSkippedTest) {
   GURL url("http://www.google.com/");
   DummyPrerenderContents* pc =
-      new DummyPrerenderContents(prerender_manager_.get(),
-                                 url,
-                                 FINAL_STATUS_TIMED_OUT);
-  prerender_manager_->SetNextPrerenderContents(pc);
+      prerender_manager_->CreateNextPrerenderContents(
+          url,
+          FINAL_STATUS_TIMED_OUT);
 
   int child_id;
   int route_id;
@@ -444,12 +470,23 @@ TEST_F(PrerenderManagerTest, ControlGroup) {
       PrerenderManager::PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP);
   GURL url("http://www.google.com/");
   DummyPrerenderContents* pc =
-      new DummyPrerenderContents(prerender_manager_.get(),
-                                 url,
-                                 FINAL_STATUS_CONTROL_GROUP);
-  prerender_manager_->SetNextPrerenderContents(pc);
+      prerender_manager_->CreateNextPrerenderContents(
+          url,
+          FINAL_STATUS_CONTROL_GROUP);
   EXPECT_TRUE(prerender_manager_->AddSimplePreload(url));
   EXPECT_FALSE(pc->has_started());
+}
+
+// Tests that prerendering is cancelled when the source render view does not
+// exist.  On failure, the DCHECK in CreatePrerenderContents() above should be
+// triggered.
+TEST_F(PrerenderManagerTest, SourceRenderViewClosed) {
+  GURL url("http://www.google.com/");
+  prerender_manager_->CreateNextPrerenderContents(
+      url,
+      FINAL_STATUS_MANAGER_SHUTDOWN);
+  EXPECT_FALSE(prerender_manager_->AddPreload(
+      std::pair<int, int>(100, 100), url, std::vector<GURL>(), GURL()));
 }
 
 }  // namespace prerender

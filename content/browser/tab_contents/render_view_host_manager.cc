@@ -691,15 +691,21 @@ void RenderViewHostManager::SwapInRenderViewHost(RenderViewHost* rvh) {
   // Swap in the new view and make it active.
   render_view_host_ = rvh;
   render_view_host_->set_delegate(render_view_delegate_);
+  // Remove old RenderWidgetHostView with mocked out methods so it can be
+  // replaced with a new one that's a child of |delegate_|'s view.
+  scoped_ptr<RenderWidgetHostView> old_view(render_view_host_->view());
+  render_view_host_->set_view(NULL);
   delegate_->CreateViewAndSetSizeForRVH(render_view_host_);
   render_view_host_->ActivateDeferredPluginHandles();
   // If the view is gone, then this RenderViewHost died while it was hidden.
   // We ignored the RenderViewGone call at the time, so we should send it now
   // to make sure the sad tab shows up, etc.
   if (render_view_host_->view()) {
-    // TODO(tburkard,cbentzel): Figure out why this hack is needed and/or
-    // if it can be removed.  On Windows, prerendering will not work without
-    // doing a Hide before the Show.
+    // The Hide() is needed to sync the state of |render_view_host_|, which is
+    // hidden, with the newly created view, which does not know the
+    // RenderViewHost is hidden.
+    // TODO(tburkard,cbentzel): Figure out if this hack can be removed
+    //                          (http://crbug.com/79891).
     render_view_host_->view()->Hide();
     render_view_host_->view()->Show();
   }

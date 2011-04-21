@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_render_widget_host_view.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/login/login_prompt.h"
@@ -87,9 +88,12 @@ PrerenderContents::Factory* PrerenderContents::CreateFactory() {
   return new PrerenderContentsFactoryImpl();
 }
 
-void PrerenderContents::StartPrerendering() {
+void PrerenderContents::StartPrerendering(
+    const RenderViewHost* source_render_view_host) {
   DCHECK(profile_ != NULL);
   DCHECK(!prerendering_has_started_);
+  DCHECK(source_render_view_host != NULL);
+  DCHECK(source_render_view_host->view() != NULL);
   prerendering_has_started_ = true;
   SiteInstance* site_instance = SiteInstance::CreateSiteInstance(profile_);
   render_view_host_ = new RenderViewHost(site_instance, this, MSG_ROUTING_NONE,
@@ -106,9 +110,12 @@ void PrerenderContents::StartPrerendering() {
   // Create the RenderView, so it can receive messages.
   render_view_host_->CreateRenderView(string16());
 
-  // Hide the RVH, so that we will run at a lower CPU priority.
-  // Once the RVH is being swapped into a tab, we will Restore it again.
-  render_view_host_->WasHidden();
+  // Give the RVH a PrerenderRenderWidgetHostView, both so its size can be set
+  // and so that the prerender can be cancelled under certain circumstances.
+  PrerenderRenderWidgetHostView* view =
+      new PrerenderRenderWidgetHostView(render_view_host_, this);
+  view->Init(source_render_view_host->view());
+
 
   // Register this with the ResourceDispatcherHost as a prerender
   // RenderViewHost. This must be done before the Navigate message to catch all
