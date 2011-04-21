@@ -311,6 +311,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kMultiProfiles)
   },
+  {
+    "enable-history-quick-provider",
+    IDS_FLAGS_ENABLE_HISTORY_QUICK_PROVIDER,
+    IDS_FLAGS_ENABLE_HISTORY_QUICK_PROVIDER_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableHistoryQuickProvider)
+  },
 };
 
 const Experiment* experiments = kExperiments;
