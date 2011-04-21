@@ -2256,6 +2256,7 @@ nacl_env.Append(
     'tests/dup/nacl.scons',
     'tests/dynamic_code_loading/nacl.scons',
     'tests/dynamic_linking/nacl.scons',
+    'tests/earth/nacl.scons',
     'tests/egyptian_cotton/nacl.scons',
     'tests/environment_variables/nacl.scons',
     'tests/fake_browser/nacl.scons',

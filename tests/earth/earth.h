@@ -6,6 +6,7 @@
 #ifndef NATIVE_CLIENT_TESTS_EARTH_EARTH_H_
 #define NATIVE_CLIENT_TESTS_EARTH_EARTH_H_
 
+#include <stdint.h>
 #include <string.h>
 
 /* NaCl Earth demo */

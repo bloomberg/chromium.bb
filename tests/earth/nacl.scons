@@ -1,12 +1,13 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
 earthlib = env.ComponentLibrary('earthlib', ['earth.cc'])
 
+# build, C then C++
 cobj=['pepper_c.c']
 cnexe = env.ComponentProgram('earth_c.nexe', cobj,
                             EXTRA_LIBS=['earthlib',
@@ -18,14 +19,6 @@ node = env.DemoSelLdrNacl('demo_earth_c', cnexe, args=[])
 # Note: Make this available from top level
 Alias('demo_earth_c', node)
 
-
-node = env.CommandValidatorTestNacl(
-    'earth_test_val_c.out',
-    image=[env.File('earth_c.nexe')],
-    )
-env.AddNodeToTestSuite(node, ['validator_tests', 'small_tests'], 'run_earth_c')
-
-# C++
 ccobj=['pepper_cc.cc']
 ccnexe = env.ComponentProgram('earth_cc.nexe', ccobj,
                             EXTRA_LIBS=['earthlib',
@@ -38,17 +31,28 @@ node = env.DemoSelLdrNacl('demo_earth_cc', ccnexe, args=[])
 # Note: Make this available from top level
 Alias('demo_earth_cc', node)
 
-node = env.CommandValidatorTestNacl(
+
+# Validator tests, C then C++, but not for glibc
+# TODO(bradchen): enable these tests when ncval works with glibc DSOs
+if not env.Bit('nacl_glibc'):
+  node = env.CommandValidatorTestNacl(
+    'earth_test_val_c.out',
+    image=[env.File('earth_c.nexe')],
+    )
+  env.AddNodeToTestSuite(node, ['validator_tests', 'small_tests'],
+                         'run_earth_c')
+  node = env.CommandValidatorTestNacl(
     'earth_test_val_cc.out',
     image=[env.File('earth_cc.nexe')],
     )
-env.AddNodeToTestSuite(node, ['validator_tests', 'small_tests'], 'run_earth_cc')
+  env.AddNodeToTestSuite(node, ['validator_tests', 'small_tests'],
+                         'run_earth_cc')
 
 # TODO(robertm): enable arm support ASAP
 if env.Bit('target_arm'):
   Return()
 
-# C
+# browser tests, C then C++
 
 node = env.PPAPIBrowserTester(
     'earth_browser_test_c.out',
@@ -59,8 +63,6 @@ node = env.PPAPIBrowserTester(
     )
 
 env.AddNodeToTestSuite(node, ['chrome_browser_tests'], 'earth_browser_test_c')
-
-# C++
 
 node = env.PPAPIBrowserTester(
     'earth_browser_test_cc.out',
