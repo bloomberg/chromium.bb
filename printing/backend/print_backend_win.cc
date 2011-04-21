@@ -56,7 +56,7 @@ bool PrintBackendWin::EnumeratePrinters(PrinterList* printer_list) {
                           NULL, 0, &bytes_needed, &count_returned);
   if (!bytes_needed)
     return false;
-  scoped_ptr<BYTE> printer_info_buffer(new BYTE[bytes_needed]);
+  scoped_array<BYTE> printer_info_buffer(new BYTE[bytes_needed]);
   ret = EnumPrinters(PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS, NULL, 2,
                      printer_info_buffer.get(), bytes_needed, &bytes_needed,
                      &count_returned);

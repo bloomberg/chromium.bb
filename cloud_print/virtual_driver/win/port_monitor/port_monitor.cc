@@ -154,7 +154,7 @@ bool GetJobTitle(HANDLE printer_handle,
     LOG(ERROR) << "Unable to get bytes needed for job info.";
     return false;
   }
-  scoped_ptr<BYTE> buffer(new BYTE[bytes_needed]);
+  scoped_array<BYTE> buffer(new BYTE[bytes_needed]);
   if (!GetJob(printer_handle,
               job_id,
               1,

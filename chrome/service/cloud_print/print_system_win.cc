@@ -209,7 +209,7 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
     bool ret = false;
     GetPrinter(printer_, 2, NULL, 0, &bytes_needed);
     if (0 != bytes_needed) {
-      scoped_ptr<BYTE> printer_info_buffer(new BYTE[bytes_needed]);
+      scoped_array<BYTE> printer_info_buffer(new BYTE[bytes_needed]);
       if (GetPrinter(printer_, 2, printer_info_buffer.get(),
                      bytes_needed, &bytes_needed)) {
         PRINTER_INFO_2* printer_info_win =

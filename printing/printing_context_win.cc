@@ -220,9 +220,8 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
                               &count_returned);
     if (ret && count_returned) {  // have printers
       // Open the first successfully found printer.
-      for (DWORD count = 0; count < count_returned; count++) {
-        PRINTER_INFO_2* info_2;
-        info_2 = reinterpret_cast<PRINTER_INFO_2*>(
+      for (DWORD count = 0; count < count_returned; ++count) {
+        PRINTER_INFO_2* info_2 = reinterpret_cast<PRINTER_INFO_2*>(
             printer_info_buffer.get() + count * sizeof(PRINTER_INFO_2));
         std::wstring printer_name = info_2->pPrinterName;
         if (info_2->pDevMode == NULL || printer_name.length() == 0)
@@ -230,12 +229,10 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
         if (!AllocateContext(printer_name, info_2->pDevMode, &context_))
           break;
         if (InitializeSettings(*info_2->pDevMode, printer_name,
-                               NULL, 0, false))
+                               NULL, 0, false)) {
           break;
-        if (context_) {
-          ::DeleteDC(context_);
-          context_ = NULL;
         }
+        ReleaseContext();
       }
       if (context_)
         return OK;
