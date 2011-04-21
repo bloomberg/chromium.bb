@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <errno.h>
@@ -35,10 +35,6 @@ int __NaClBrk(void  *end_data_segment) {
   if (ret == old_break) return -1;
   __nacl_break = ret;
   return 0;
-}
-
-void *sysbrk(void* new_break) {
-  return NACL_SYSCALL(sysbrk)(new_break);
 }
 
 void  *sbrk(intptr_t increment) {

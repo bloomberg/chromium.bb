@@ -30,6 +30,7 @@ sources_for_standard_interfaces = [
     'nanosleep.c',
     'open.c',
     'read.c',
+    'sbrk.c',
     'sched_yield.c',
     'stacktrace.c',
     'stat.c',
@@ -70,11 +71,7 @@ sources_for_nacl_extensions = [
     'null.c',
     'srpc_init.c',
     'srpc_wait.c',
-    # sbrk.c provides the non-standard sysbrk(), which tests/sysbasic
-    # depends on.  However, it also provides the standard(ish) sbrk().
-    # TODO(mseaborn): Possibly split this up so that an
-    # sbrk()-providing file is not on this list.
-    'sbrk.c',
+    'sysbrk.c',
     ]
 
 if env.Bit('nacl_glibc'):
