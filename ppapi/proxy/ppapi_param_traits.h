@@ -139,6 +139,14 @@ struct ParamTraits< std::vector<pp::proxy::SerializedVar> > {
 };
 
 template<>
+struct ParamTraits< std::vector<pp::proxy::PPBFileRef_CreateInfo> > {
+  typedef std::vector<pp::proxy::PPBFileRef_CreateInfo> param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template<>
 struct ParamTraits<pp::proxy::SerializedFlashMenu> {
   typedef pp::proxy::SerializedFlashMenu param_type;
   static void Write(Message* m, const param_type& p);

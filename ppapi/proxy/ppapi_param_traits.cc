@@ -16,6 +16,63 @@
 
 namespace IPC {
 
+namespace {
+
+// Deserializes a vector from IPC. This special version must be used instead
+// of the default IPC version when the vector contains a SerializedVar, either
+// directly or indirectly (i.e. a vector of objects that have a SerializedVar
+// inside them).
+//
+// The default vector deserializer does resize and then we deserialize into
+// those allocated slots. However, the implementation of vector (at least in
+// GCC's implementation), creates a new empty object using the default
+// constructor, and then sets the rest of the items to that empty one using the
+// copy constructor.
+//
+// Since we allocate the inner class when you call the default constructor and
+// transfer the inner class when you do operator=, the entire vector will end
+// up referring to the same inner class. Deserializing into this will just end
+// up overwriting the same item over and over, since all the SerializedVars
+// will refer to the same thing.
+//
+// The solution is to make a new object for each deserialized item, and then
+// add it to the vector one at a time.
+template<typename T>
+bool ReadVectorWithoutCopy(const Message* m,
+                           void** iter,
+                           std::vector<T>* output) {
+  // This part is just a copy of the the default ParamTraits vector Read().
+  int size;
+  // ReadLength() checks for < 0 itself.
+  if (!m->ReadLength(iter, &size))
+    return false;
+  // Resizing beforehand is not safe, see BUG 1006367 for details.
+  if (INT_MAX / sizeof(T) <= static_cast<size_t>(size))
+    return false;
+
+  output->reserve(size);
+  for (int i = 0; i < size; i++) {
+    T cur;
+    if (!ReadParam(m, iter, &cur))
+      return false;
+    output->push_back(cur);
+  }
+  return true;
+}
+
+// This serializes the vector of items to the IPC message in exactly the same
+// way as the "regular" IPC vector serializer does. But having the code here
+// saves us from having to copy this code into all ParamTraits that use the
+// ReadVectorWithoutCopy function for deserializing.
+template<typename T>
+void WriteVectorWithoutCopy(Message* m, const std::vector<T>& p) {
+  WriteParam(m, static_cast<int>(p.size()));
+  for (size_t i = 0; i < p.size(); i++)
+    WriteParam(m, p[i]);
+}
+
+}  // namespace
+
 // PP_Bool ---------------------------------------------------------------------
 
 // static
@@ -397,9 +454,7 @@ void ParamTraits<pp::proxy::SerializedVar>::Log(const param_type& p,
 void ParamTraits< std::vector<pp::proxy::SerializedVar> >::Write(
     Message* m,
     const param_type& p) {
-  WriteParam(m, static_cast<int>(p.size()));
-  for (size_t i = 0; i < p.size(); i++)
-    WriteParam(m, p[i]);
+  WriteVectorWithoutCopy(m, p);
 }
 
 // static
@@ -407,42 +462,33 @@ bool ParamTraits< std::vector<pp::proxy::SerializedVar> >::Read(
     const Message* m,
     void** iter,
     param_type* r) {
-  // This part is just a copy of the the default ParamTraits vector Read().
-  int size;
-  // ReadLength() checks for < 0 itself.
-  if (!m->ReadLength(iter, &size))
-    return false;
-  // Resizing beforehand is not safe, see BUG 1006367 for details.
-  if (INT_MAX / sizeof(pp::proxy::SerializedVar) <= static_cast<size_t>(size))
-    return false;
-
-  // The default vector deserializer does resize here and then we deserialize
-  // into those allocated slots. However, the implementation of vector (at
-  // least in GCC's implementation), creates a new empty object using the
-  // default constructor, and then sets the rest of the items to that empty
-  // one using the copy constructor.
-  //
-  // Since we allocate the inner class when you call the default constructor
-  // and transfer the inner class when you do operator=, the entire vector
-  // will end up referring to the same inner class. Deserializing into this
-  // will just end up overwriting the same item over and over, since all the
-  // SerializedVars will refer to the same thing.
-  //
-  // The solution is to make a new SerializedVar for each deserialized item,
-  // and then add it to the vector one at a time. Our copies are efficient so
-  // this is no big deal.
-  r->reserve(size);
-  for (int i = 0; i < size; i++) {
-    pp::proxy::SerializedVar var;
-    if (!ReadParam(m, iter, &var))
-      return false;
-    r->push_back(var);
-  }
-  return true;
+  return ReadVectorWithoutCopy(m, iter, r);
 }
 
 // static
 void ParamTraits< std::vector<pp::proxy::SerializedVar> >::Log(
+    const param_type& p,
+    std::string* l) {
+}
+
+// std::vector<PPBFileRef_CreateInfo> ------------------------------------------
+
+void ParamTraits< std::vector<pp::proxy::PPBFileRef_CreateInfo> >::Write(
+    Message* m,
+    const param_type& p) {
+  WriteVectorWithoutCopy(m, p);
+}
+
+// static
+bool ParamTraits< std::vector<pp::proxy::PPBFileRef_CreateInfo> >::Read(
+    const Message* m,
+    void** iter,
+    param_type* r) {
+  return ReadVectorWithoutCopy(m, iter, r);
+}
+
+// static
+void ParamTraits< std::vector<pp::proxy::PPBFileRef_CreateInfo> >::Log(
     const param_type& p,
     std::string* l) {
 }
