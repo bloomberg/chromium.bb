@@ -350,6 +350,4 @@ class PrefService : public base::NonThreadSafe,
   DISALLOW_COPY_AND_ASSIGN(PrefService);
 };
 
-typedef PrefService::Delegate PrefServiceDelegate;
-
 #endif  // CHROME_BROWSER_PREFS_PREF_SERVICE_H_
