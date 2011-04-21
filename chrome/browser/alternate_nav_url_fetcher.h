@@ -58,7 +58,7 @@ class AlternateNavURLFetcher : public NotificationObserver,
                                   const std::string& data);
 
   // LinkInfoBarDelegate
-  virtual SkBitmap* GetIcon() const;
+  virtual gfx::Image* GetIcon() const;
   virtual Type GetInfoBarType() const;
   virtual string16 GetMessageTextWithOffset(size_t* link_offset) const;
   virtual string16 GetLinkText() const;

@@ -31,7 +31,7 @@ class MockLinkInfoBarDelegate : public LinkInfoBarDelegate {
  private:
   // LinkInfoBarDelegate:
   virtual void InfoBarClosed() OVERRIDE;
-  virtual SkBitmap* GetIcon() const OVERRIDE;
+  virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual string16 GetMessageTextWithOffset(size_t* link_offset) const OVERRIDE;
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;

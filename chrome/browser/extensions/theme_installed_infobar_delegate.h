@@ -38,7 +38,7 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
  private:
   // ConfirmInfoBarDelegate:
   virtual void InfoBarClosed();
-  virtual SkBitmap* GetIcon() const;
+  virtual gfx::Image* GetIcon() const;
   virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();
   virtual string16 GetMessageText() const;
   virtual int GetButtons() const;

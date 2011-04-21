@@ -18,7 +18,7 @@ class CollectedCookiesInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   // ConfirmInfoBarDelegate overrides.
-  virtual SkBitmap* GetIcon() const;
+  virtual gfx::Image* GetIcon() const;
   virtual Type GetInfoBarType() const;
   virtual string16 GetMessageText() const;
   virtual int GetButtons() const;

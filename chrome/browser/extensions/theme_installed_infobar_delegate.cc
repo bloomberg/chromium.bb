@@ -67,10 +67,11 @@ void ThemeInstalledInfoBarDelegate::InfoBarClosed() {
   delete this;
 }
 
-SkBitmap* ThemeInstalledInfoBarDelegate::GetIcon() const {
+gfx::Image* ThemeInstalledInfoBarDelegate::GetIcon() const {
   // TODO(aa): Reply with the theme's icon, but this requires reading it
   // asynchronously from disk.
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_INFOBAR_THEME);
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_INFOBAR_THEME);
 }
 
 ThemeInstalledInfoBarDelegate*

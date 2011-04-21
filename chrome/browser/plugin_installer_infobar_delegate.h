@@ -20,7 +20,7 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~PluginInstallerInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual SkBitmap* GetIcon() const;
+  virtual gfx::Image* GetIcon() const;
   virtual PluginInstallerInfoBarDelegate* AsPluginInstallerInfoBarDelegate();
   virtual string16 GetMessageText() const;
   virtual int GetButtons() const;

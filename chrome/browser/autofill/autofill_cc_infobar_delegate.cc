@@ -57,8 +57,8 @@ void AutofillCCInfoBarDelegate::InfoBarDismissed() {
   LogUserAction(AutofillMetrics::CREDIT_CARD_INFOBAR_DENIED);
 }
 
-SkBitmap* AutofillCCInfoBarDelegate::GetIcon() const {
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+gfx::Image* AutofillCCInfoBarDelegate::GetIcon() const {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INFOBAR_AUTOFILL);
 }
 

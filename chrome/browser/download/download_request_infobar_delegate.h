@@ -31,7 +31,7 @@ class DownloadRequestInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   virtual void InfoBarClosed();
-  virtual SkBitmap* GetIcon() const;
+  virtual gfx::Image* GetIcon() const;
   virtual string16 GetMessageText() const;
   virtual string16 GetButtonLabel(InfoBarButton button) const;
   virtual bool Accept();

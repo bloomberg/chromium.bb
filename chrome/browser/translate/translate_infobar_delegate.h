@@ -162,7 +162,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   virtual InfoBar* CreateInfoBar();
   virtual void InfoBarDismissed();
   virtual void InfoBarClosed();
-  virtual SkBitmap* GetIcon() const;
+  virtual gfx::Image* GetIcon() const;
   virtual InfoBarDelegate::Type GetInfoBarType() const;
   virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
 

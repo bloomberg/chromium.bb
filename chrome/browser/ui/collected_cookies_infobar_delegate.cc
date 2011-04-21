@@ -17,8 +17,9 @@ CollectedCookiesInfoBarDelegate::CollectedCookiesInfoBarDelegate(
       tab_contents_(tab_contents) {
 }
 
-SkBitmap* CollectedCookiesInfoBarDelegate::GetIcon() const {
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_INFOBAR_COOKIE);
+gfx::Image* CollectedCookiesInfoBarDelegate::GetIcon() const {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_INFOBAR_COOKIE);
 }
 
 InfoBarDelegate::Type CollectedCookiesInfoBarDelegate::GetInfoBarType() const {

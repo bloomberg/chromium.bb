@@ -42,7 +42,7 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate
   virtual void InfoBarClosed();
-  virtual SkBitmap* GetIcon() const;
+  virtual gfx::Image* GetIcon() const;
   virtual Type GetInfoBarType() const;
   virtual string16 GetMessageText() const;
   virtual string16 GetButtonLabel(InfoBarButton button) const;
@@ -76,8 +76,8 @@ void SavePasswordInfoBarDelegate::InfoBarClosed() {
   delete this;
 }
 
-SkBitmap* SavePasswordInfoBarDelegate::GetIcon() const {
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+gfx::Image* SavePasswordInfoBarDelegate::GetIcon() const {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INFOBAR_SAVE_PASSWORD);
 }
 

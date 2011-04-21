@@ -28,7 +28,7 @@ void MockConfirmInfoBarDelegate::InfoBarClosed() {
   closed_ = true;
 }
 
-SkBitmap* MockConfirmInfoBarDelegate::GetIcon() const {
+gfx::Image* MockConfirmInfoBarDelegate::GetIcon() const {
   icon_accessed_ = true;
   return NULL;
 }

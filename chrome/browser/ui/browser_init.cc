@@ -144,7 +144,7 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool ShouldExpire(
       const NavigationController::LoadCommittedDetails& details) const OVERRIDE;
   virtual void InfoBarClosed() OVERRIDE;
-  virtual SkBitmap* GetIcon() const OVERRIDE;
+  virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool NeedElevation(InfoBarButton button) const OVERRIDE;
@@ -194,8 +194,8 @@ void DefaultBrowserInfoBarDelegate::InfoBarClosed() {
   delete this;
 }
 
-SkBitmap* DefaultBrowserInfoBarDelegate::GetIcon() const {
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+gfx::Image* DefaultBrowserInfoBarDelegate::GetIcon() const {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
      IDR_PRODUCT_ICON_32);
 }
 
@@ -305,7 +305,7 @@ class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   virtual void InfoBarClosed() OVERRIDE;
-  virtual SkBitmap* GetIcon() const OVERRIDE;
+  virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
@@ -330,8 +330,8 @@ void SessionCrashedInfoBarDelegate::InfoBarClosed() {
   delete this;
 }
 
-SkBitmap* SessionCrashedInfoBarDelegate::GetIcon() const {
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+gfx::Image* SessionCrashedInfoBarDelegate::GetIcon() const {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INFOBAR_RESTORE_SESSION);
 }
 

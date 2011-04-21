@@ -39,7 +39,7 @@ class AutofillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
       const NavigationController::LoadCommittedDetails& details) const;
   virtual void InfoBarClosed();
   virtual void InfoBarDismissed();
-  virtual SkBitmap* GetIcon() const;
+  virtual gfx::Image* GetIcon() const;
   virtual Type GetInfoBarType() const;
   virtual string16 GetMessageText() const;
   virtual string16 GetButtonLabel(InfoBarButton button) const;

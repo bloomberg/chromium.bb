@@ -10,7 +10,7 @@
 
 SimpleAlertInfoBarDelegate::SimpleAlertInfoBarDelegate(
     TabContents* contents,
-    SkBitmap* icon,
+    gfx::Image* icon,
     const string16& message,
     bool auto_expire)
     : ConfirmInfoBarDelegate(contents),
@@ -31,7 +31,7 @@ void SimpleAlertInfoBarDelegate::InfoBarClosed() {
   delete this;
 }
 
-SkBitmap* SimpleAlertInfoBarDelegate::GetIcon() const {
+gfx::Image* SimpleAlertInfoBarDelegate::GetIcon() const {
   return icon_;
 }
 

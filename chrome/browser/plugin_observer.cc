@@ -49,7 +49,7 @@ class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   // ConfirmInfoBarDelegate:
-  virtual SkBitmap* GetIcon() const;
+  virtual gfx::Image* GetIcon() const;
   virtual string16 GetLinkText();
 
   DISALLOW_COPY_AND_ASSIGN(PluginInfoBarDelegate);
@@ -80,8 +80,8 @@ bool PluginInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   return false;
 }
 
-SkBitmap* PluginInfoBarDelegate::GetIcon() const {
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+gfx::Image* PluginInfoBarDelegate::GetIcon() const {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INFOBAR_PLUGIN_INSTALL);
 }
 
@@ -351,10 +351,10 @@ void PluginObserver::OnCrashedPlugin(const FilePath& plugin_path) {
       plugin_name.erase(plugin_name.length() - kPluginExtension.length());
 #endif  // OS_MACOSX
   }
-  SkBitmap* crash_icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+  gfx::Image* icon = &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INFOBAR_PLUGIN_CRASHED);
   tab_contents()->AddInfoBar(new SimpleAlertInfoBarDelegate(tab_contents(),
-      crash_icon,
+      icon,
       l10n_util::GetStringFUTF16(IDS_PLUGIN_CRASHED_PROMPT, plugin_name),
       true));
 }

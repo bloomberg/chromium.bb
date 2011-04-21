@@ -363,8 +363,8 @@ void TranslateInfoBarDelegate::InfoBarClosed() {
   delete this;
 }
 
-SkBitmap* TranslateInfoBarDelegate::GetIcon() const {
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+gfx::Image* TranslateInfoBarDelegate::GetIcon() const {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INFOBAR_TRANSLATE);
 }
 

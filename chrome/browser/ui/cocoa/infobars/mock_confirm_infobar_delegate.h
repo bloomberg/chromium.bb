@@ -32,7 +32,7 @@ class MockConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
   // ConfirmInfoBarDelegate:
   virtual void InfoBarClosed() OVERRIDE;
-  virtual SkBitmap* GetIcon() const OVERRIDE;
+  virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;

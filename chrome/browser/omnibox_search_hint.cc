@@ -59,7 +59,7 @@ class HintInfoBar : public ConfirmInfoBarDelegate {
       const NavigationController::LoadCommittedDetails& details) const;
   virtual void InfoBarDismissed();
   virtual void InfoBarClosed();
-  virtual SkBitmap* GetIcon() const;
+  virtual gfx::Image* GetIcon() const;
   virtual Type GetInfoBarType() const;
   virtual string16 GetMessageText() const;
   virtual int GetButtons() const;
@@ -115,8 +115,8 @@ void HintInfoBar::InfoBarClosed() {
   delete this;
 }
 
-SkBitmap* HintInfoBar::GetIcon() const {
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+gfx::Image* HintInfoBar::GetIcon() const {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
      IDR_INFOBAR_QUESTION_MARK);
 }
 

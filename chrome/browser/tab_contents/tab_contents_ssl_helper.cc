@@ -24,9 +24,9 @@
 
 namespace {
 
-SkBitmap* GetCertIcon() {
+gfx::Image* GetCertIcon() {
   // TODO(davidben): use a more appropriate icon.
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INFOBAR_SAVE_PASSWORD);
 }
 
@@ -43,7 +43,7 @@ class SSLCertAddedInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   virtual void InfoBarClosed();
-  virtual SkBitmap* GetIcon() const;
+  virtual gfx::Image* GetIcon() const;
   virtual Type GetInfoBarType() const;
   virtual string16 GetMessageText() const;
   virtual int GetButtons() const;
@@ -70,7 +70,7 @@ void SSLCertAddedInfoBarDelegate::InfoBarClosed() {
   delete this;
 }
 
-SkBitmap* SSLCertAddedInfoBarDelegate::GetIcon() const {
+gfx::Image* SSLCertAddedInfoBarDelegate::GetIcon() const {
   return GetCertIcon();
 }
 

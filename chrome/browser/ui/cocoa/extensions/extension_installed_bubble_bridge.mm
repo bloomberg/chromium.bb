@@ -17,12 +17,13 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image.h"
 
 // When an extension is installed on Mac with neither browser action nor
 // page action icons, show an infobar instead of a popup bubble.
 static void ShowGenericExtensionInstalledInfoBar(
     const Extension* new_extension,
-    SkBitmap icon,
+    const SkBitmap& icon,
     Profile* profile) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser)
@@ -40,7 +41,7 @@ static void ShowGenericExtensionInstalledInfoBar(
       UTF8ToUTF16(" ") +
       l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_INFO_MAC);
   InfoBarDelegate* delegate = new SimpleAlertInfoBarDelegate(tab_contents,
-      new SkBitmap(icon), msg, true);
+      new gfx::Image(new SkBitmap(icon)), msg, true);
   tab_contents->AddInfoBar(delegate);
 }
 

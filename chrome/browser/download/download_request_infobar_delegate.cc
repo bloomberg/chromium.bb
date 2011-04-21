@@ -26,8 +26,8 @@ void DownloadRequestInfoBarDelegate::InfoBarClosed() {
   delete this;
 }
 
-SkBitmap* DownloadRequestInfoBarDelegate::GetIcon() const {
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+gfx::Image* DownloadRequestInfoBarDelegate::GetIcon() const {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INFOBAR_MULTIPLE_DOWNLOADS);
 }
 

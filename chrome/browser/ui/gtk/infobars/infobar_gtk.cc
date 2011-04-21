@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/gtk/infobars/infobar_container_gtk.h"
 #include "content/common/notification_service.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image.h"
 
 extern const int InfoBar::kInfoBarHeight = 37;
 
@@ -61,11 +62,9 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
   gtk_widget_set_size_request(bg_box_, -1, kInfoBarHeight);
 
   // Add the icon on the left, if any.
-  SkBitmap* icon = delegate->GetIcon();
+  gfx::Image* icon = delegate->GetIcon();
   if (icon) {
-    GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(icon);
-    GtkWidget* image = gtk_image_new_from_pixbuf(pixbuf);
-    g_object_unref(pixbuf);
+    GtkWidget* image = gtk_image_new_from_pixbuf(*icon);
 
     // All icons should be 26x26, but some are larger with transparent padding
     // pixels around the edges. (And some are smaller). Thus we hardcode the

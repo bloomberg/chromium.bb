@@ -102,7 +102,7 @@ class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   virtual void InfoBarClosed();
-  virtual SkBitmap* GetIcon() const;
+  virtual gfx::Image* GetIcon() const;
   virtual Type GetInfoBarType() const;
   virtual string16 GetMessageText() const;
   virtual string16 GetButtonLabel(InfoBarButton button) const;
@@ -165,8 +165,8 @@ void NotificationPermissionInfoBarDelegate::InfoBarClosed() {
   delete this;
 }
 
-SkBitmap* NotificationPermissionInfoBarDelegate::GetIcon() const {
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+gfx::Image* NotificationPermissionInfoBarDelegate::GetIcon() const {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
      IDR_PRODUCT_ICON_32);
 }
 

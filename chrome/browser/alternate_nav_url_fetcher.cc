@@ -98,8 +98,8 @@ void AlternateNavURLFetcher::OnURLFetchComplete(
   ShowInfobarIfPossible();
 }
 
-SkBitmap* AlternateNavURLFetcher::GetIcon() const {
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+gfx::Image* AlternateNavURLFetcher::GetIcon() const {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INFOBAR_ALT_NAV_URL);
 }
 

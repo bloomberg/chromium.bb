@@ -21,8 +21,8 @@ PluginInstallerInfoBarDelegate::PluginInstallerInfoBarDelegate(
 PluginInstallerInfoBarDelegate::~PluginInstallerInfoBarDelegate() {
 }
 
-SkBitmap* PluginInstallerInfoBarDelegate::GetIcon() const {
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+gfx::Image* PluginInstallerInfoBarDelegate::GetIcon() const {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INFOBAR_PLUGIN_INSTALL);
 }
 

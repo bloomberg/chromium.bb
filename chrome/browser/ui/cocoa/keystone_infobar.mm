@@ -49,7 +49,7 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool ShouldExpire(
       const NavigationController::LoadCommittedDetails& details) const;
   virtual void InfoBarClosed();
-  virtual SkBitmap* GetIcon() const;
+  virtual gfx::Image* GetIcon() const;
   virtual string16 GetMessageText() const;
   virtual string16 GetButtonLabel(InfoBarButton button) const;
   virtual bool Accept();
@@ -92,8 +92,8 @@ void KeystonePromotionInfoBarDelegate::InfoBarClosed() {
   delete this;
 }
 
-SkBitmap* KeystonePromotionInfoBarDelegate::GetIcon() const {
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+gfx::Image* KeystonePromotionInfoBarDelegate::GetIcon() const {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_PRODUCT_ICON_32);
 }
 

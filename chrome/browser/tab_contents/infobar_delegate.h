@@ -16,9 +16,12 @@ class ExtensionInfoBarDelegate;
 class InfoBar;
 class LinkInfoBarDelegate;
 class PluginInstallerInfoBarDelegate;
-class SkBitmap;
 class ThemeInstalledInfoBarDelegate;
 class TranslateInfoBarDelegate;
+
+namespace gfx {
+class Image;
+}
 
 // An interface implemented by objects wishing to control an InfoBar.
 // Implementing this interface is not sufficient to use an InfoBar, since it
@@ -78,9 +81,9 @@ class InfoBarDelegate {
   // at this point.
   virtual void InfoBarClosed();
 
-  // Return the icon to be shown for this InfoBar. If the returned bitmap is
+  // Return the icon to be shown for this InfoBar. If the returned Image is
   // NULL, no icon is shown.
-  virtual SkBitmap* GetIcon() const;
+  virtual gfx::Image* GetIcon() const;
 
   // Returns the type of the infobar.  The type determines the appearance (such
   // as background color) of the infobar.

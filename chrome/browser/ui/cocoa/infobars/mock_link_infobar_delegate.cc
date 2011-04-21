@@ -27,7 +27,7 @@ void MockLinkInfoBarDelegate::InfoBarClosed() {
   closed_ = true;
 }
 
-SkBitmap* MockLinkInfoBarDelegate::GetIcon() const {
+gfx::Image* MockLinkInfoBarDelegate::GetIcon() const {
   icon_accessed_ = true;
   return NULL;
 }

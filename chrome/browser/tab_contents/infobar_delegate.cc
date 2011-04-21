@@ -32,7 +32,7 @@ void InfoBarDelegate::InfoBarDismissed() {
 void InfoBarDelegate::InfoBarClosed() {
 }
 
-SkBitmap* InfoBarDelegate::GetIcon() const {
+gfx::Image* InfoBarDelegate::GetIcon() const {
   return NULL;
 }
 

@@ -17,7 +17,7 @@ class TabContents;
 class SimpleAlertInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   SimpleAlertInfoBarDelegate(TabContents* contents,
-                             SkBitmap* icon,  // May be NULL.
+                             gfx::Image* icon,  // May be NULL.
                              const string16& message,
                              bool auto_expire);
 
@@ -28,11 +28,11 @@ class SimpleAlertInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool ShouldExpire(
       const NavigationController::LoadCommittedDetails& details) const OVERRIDE;
   virtual void InfoBarClosed() OVERRIDE;
-  virtual SkBitmap* GetIcon() const OVERRIDE;
+  virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
 
-  SkBitmap* icon_;
+  gfx::Image* icon_;
   string16 message_;
   bool auto_expire_;  // Should it expire automatically on navigation?
 

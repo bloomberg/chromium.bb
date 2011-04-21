@@ -126,7 +126,7 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   virtual void InfoBarClosed();
-  virtual SkBitmap* GetIcon() const;
+  virtual gfx::Image* GetIcon() const;
   virtual Type GetInfoBarType() const;
   virtual string16 GetMessageText() const;
   virtual string16 GetButtonLabel(InfoBarButton button) const;
@@ -173,8 +173,8 @@ void GeolocationConfirmInfoBarDelegate::InfoBarClosed() {
   delete this;
 }
 
-SkBitmap* GeolocationConfirmInfoBarDelegate::GetIcon() const {
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+gfx::Image* GeolocationConfirmInfoBarDelegate::GetIcon() const {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_GEOLOCATION_INFOBAR_ICON);
 }
 
