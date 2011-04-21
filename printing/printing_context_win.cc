@@ -19,6 +19,63 @@
 
 using base::Time;
 
+namespace {
+
+// Retrieves the printer's PRINTER_INFO_* structure.
+// Output |level| can be 9 (user-default), 8 (admin-default), or 2
+// (printer-default).
+// |devmode| is a pointer points to the start of DEVMODE structure in
+// |buffer|.
+bool GetPrinterInfo(HANDLE printer,
+                    const std::wstring &device_name,
+                    int* level,
+                    scoped_array<uint8>* buffer,
+                    DEVMODE** dev_mode) {
+  DCHECK(buffer);
+
+  // A PRINTER_INFO_9 structure specifying the per-user default printer
+  // settings.
+  printing::PrintingContextWin::GetPrinterHelper(printer, 9, buffer);
+  if (buffer->get()) {
+    PRINTER_INFO_9* info_9 = reinterpret_cast<PRINTER_INFO_9*>(buffer->get());
+    if (info_9->pDevMode != NULL) {
+      *level = 9;
+      *dev_mode = info_9->pDevMode;
+      return true;
+    }
+    buffer->reset();
+  }
+
+  // A PRINTER_INFO_8 structure specifying the global default printer settings.
+  printing::PrintingContextWin::GetPrinterHelper(printer, 8, buffer);
+  if (buffer->get()) {
+    PRINTER_INFO_8* info_8 = reinterpret_cast<PRINTER_INFO_8*>(buffer->get());
+    if (info_8->pDevMode != NULL) {
+      *level = 8;
+      *dev_mode = info_8->pDevMode;
+      return true;
+    }
+    buffer->reset();
+  }
+
+  // A PRINTER_INFO_2 structure specifying the driver's default printer
+  // settings.
+  printing::PrintingContextWin::GetPrinterHelper(printer, 2, buffer);
+  if (buffer->get()) {
+    PRINTER_INFO_2* info_2 = reinterpret_cast<PRINTER_INFO_2*>(buffer->get());
+    if (info_2->pDevMode != NULL) {
+      *level = 2;
+      *dev_mode = info_2->pDevMode;
+      return true;
+    }
+    buffer->reset();
+  }
+
+  return false;
+}
+
+}  // anonymous namespace
+
 namespace printing {
 
 class PrintingContextWin::CallbackHandler : public IPrintDialogCallback,
@@ -244,20 +301,70 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
 }
 
 PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
-    const DictionaryValue& job_settings, const PageRanges& ranges) {
+    const DictionaryValue& job_settings,
+    const PageRanges& ranges) {
   DCHECK(!in_print_job_);
 
-  bool landscape;
-  if (!job_settings.GetBoolean(kSettingLandscape, &landscape))
+  bool is_landscape, is_collate, is_color;
+  string16 printer_name;
+  int copies, duplex_mode;
+  if (!job_settings.GetBoolean(kSettingLandscape, &is_landscape) ||
+      !job_settings.GetString(kSettingPrinterName, &printer_name) ||
+      !job_settings.GetInteger(kSettingCopies, &copies) ||
+      !job_settings.GetBoolean(kSettingCollate, &is_collate) ||
+      !job_settings.GetInteger(kSettingDuplexMode, &duplex_mode) ||
+      !job_settings.GetBoolean(kSettingColor, &is_color)) {
     return OnError();
+  }
 
-  settings_.SetOrientation(landscape);
+  // Underlying |settings_| do not have these attributes, so we need to
+  // operate on printer directly, which involves reloading settings.
+  // Therefore, reset the settings anyway.
+  ResetSettings();
 
-  // TODO(kmadhusu): Update other print settings such as number of copies,
-  // collate, duplex printing, job title, etc.,
+  HANDLE printer;
+  if (!OpenPrinter(const_cast<wchar_t*>(printer_name.c_str()),
+                   &printer, NULL)) {
+    return OnError();
+  }
 
-  settings_.ranges = ranges;
+  scoped_array<uint8> buffer;
+  int level;
+  DEVMODE* dev_mode = NULL;
+  if (!GetPrinterInfo(printer, printer_name, &level, &buffer, &dev_mode) ||
+      dev_mode == NULL) {
+    ClosePrinter(printer);
+    return OnError();
+  }
 
+  dev_mode->dmColor = is_color ? DMCOLOR_COLOR : DMCOLOR_MONOCHROME;
+  dev_mode->dmCopies = std::max(copies, 1);
+  if (dev_mode->dmCopies > 1)  // do not change collate unless multiple copies
+    dev_mode->dmCollate = is_collate ? DMCOLLATE_TRUE : DMCOLLATE_FALSE;
+  switch (duplex_mode) {
+    case LONG_EDGE:
+      dev_mode->dmDuplex = DMDUP_VERTICAL;
+      break;
+    case SHORT_EDGE:
+      dev_mode->dmDuplex = DMDUP_HORIZONTAL;
+      break;
+    default:  // simplex
+      dev_mode->dmDuplex = DMDUP_SIMPLEX;
+      break;
+  }
+  dev_mode->dmOrientation = is_landscape ? DMORIENT_LANDSCAPE :
+                                           DMORIENT_PORTRAIT;
+
+  // Set printer then refresh printer settings.
+  if (!SetPrinter(printer, level, buffer.get(), 0) ||
+      !AllocateContext(printer_name, dev_mode, &context_)) {
+    ClosePrinter(printer);
+    return OnError();
+  }
+  PrintSettingsInitializerWin::InitPrintSettings(context_, *dev_mode,
+                                                 ranges, printer_name,
+                                                 false, &settings_);
+  ClosePrinter(printer);
   return OK;
 }
 
@@ -457,51 +564,15 @@ bool PrintingContextWin::GetPrinterSettings(HANDLE printer,
                                             const std::wstring& device_name) {
   DCHECK(!in_print_job_);
   scoped_array<uint8> buffer;
+  int level = 0;
+  DEVMODE* dev_mode = NULL;
 
-  // A PRINTER_INFO_9 structure specifying the per-user default printer
-  // settings.
-  GetPrinterHelper(printer, 9, &buffer);
-  if (buffer.get()) {
-    PRINTER_INFO_9* info_9 = reinterpret_cast<PRINTER_INFO_9*>(buffer.get());
-    if (info_9->pDevMode != NULL) {
-      if (!AllocateContext(device_name, info_9->pDevMode, &context_)) {
-        ResetSettings();
-        return false;
-      }
-      return InitializeSettings(*info_9->pDevMode, device_name, NULL, 0, false);
-    }
-    buffer.reset();
+  if (GetPrinterInfo(printer, device_name, &level, &buffer, &dev_mode) &&
+      AllocateContext(device_name, dev_mode, &context_)) {
+    return InitializeSettings(*dev_mode, device_name, NULL, 0, false);
   }
 
-  // A PRINTER_INFO_8 structure specifying the global default printer settings.
-  GetPrinterHelper(printer, 8, &buffer);
-  if (buffer.get()) {
-    PRINTER_INFO_8* info_8 = reinterpret_cast<PRINTER_INFO_8*>(buffer.get());
-    if (info_8->pDevMode != NULL) {
-      if (!AllocateContext(device_name, info_8->pDevMode, &context_)) {
-        ResetSettings();
-        return false;
-      }
-      return InitializeSettings(*info_8->pDevMode, device_name, NULL, 0, false);
-    }
-    buffer.reset();
-  }
-
-  // A PRINTER_INFO_2 structure specifying the driver's default printer
-  // settings.
-  GetPrinterHelper(printer, 2, &buffer);
-  if (buffer.get()) {
-    PRINTER_INFO_2* info_2 = reinterpret_cast<PRINTER_INFO_2*>(buffer.get());
-    if (info_2->pDevMode != NULL) {
-      if (!AllocateContext(device_name, info_2->pDevMode, &context_)) {
-        ResetSettings();
-        return false;
-      }
-      return InitializeSettings(*info_2->pDevMode, device_name, NULL, 0, false);
-    }
-    buffer.reset();
-  }
-  // Failed to retrieve the printer settings.
+  buffer.reset();
   ResetSettings();
   return false;
 }
