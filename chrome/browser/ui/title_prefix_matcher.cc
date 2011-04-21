@@ -16,7 +16,7 @@ const size_t kPreviouslySeenIndex = 0xFFFFFFFF;
 }
 
 // static
-const int TitlePrefixMatcher::kCommonCharsToShow = 4;
+const int TitlePrefixMatcher::kCommonCharsToShow = 2;
 const size_t TitlePrefixMatcher::kMinElidingLength =
     TitlePrefixMatcher::kCommonCharsToShow + 3;
 
