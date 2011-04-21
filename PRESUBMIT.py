@@ -105,7 +105,7 @@ def GetPreferredTrySlaves():
 #     'nacl-win32_glibc_opt',  # TODO(khim): re-enable when stable
       'nacl-win64_newlib_dbg',
       'nacl-win64_newlib_opt',
-#     'nacl-win64_glibc_opt',  # TODO(khim): re-enable when stable
+      'nacl-win64_glibc_opt',
       'nacl-arm_opt',
       'nacl-modular-toolchain-32',
       'nacl-modular-toolchain-64',
