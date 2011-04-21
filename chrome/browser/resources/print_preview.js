@@ -61,6 +61,18 @@ function onLoad() {
 }
 
 /**
+ * Disables the controls which need the initiator tab to generate preview
+ * data. This function is called when the initiator tab is closed.
+ */
+function disablePreviewControls() {
+  var controlIDs = ['landscape', 'portrait', 'all-pages', 'print-pages',
+                    'individual-pages'];
+  var controlCount = controlIDs.length;
+  for (var i = 0; i < controlCount; i++)
+    setControlAndLabelDisabled($(controlIDs[i]), true);
+}
+
+/**
  * Gets the selected printer capabilities and updates the controls accordingly.
  */
 function updateControlsWithSelectedPrinterCapabilities() {
@@ -110,6 +122,9 @@ function updateWithPrinterCapabilities(settingInfo) {
 function setControlAndLabelDisabled(controlElm, disable) {
   controlElm.disabled = disable;
   var label = $(controlElm.getAttribute('label'));
+  if (label == undefined)
+    return;
+
   if (disable)
     label.classList.add('disabled-label-text');
   else

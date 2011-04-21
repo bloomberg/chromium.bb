@@ -24,6 +24,10 @@ class PrintPreviewUI : public WebUI {
   void PreviewDataIsAvailable(int expected_pages_count,
                               const string16& job_title);
 
+  // Notify the Web UI that initiator tab is closed, so we can disable all
+  // the controls that needs initiator tab for generating the preview data.
+  void DisablePrintPreviewSettings();
+
  private:
   scoped_refptr<PrintPreviewUIHTMLSource> html_source_;
 

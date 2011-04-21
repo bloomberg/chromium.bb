@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
@@ -139,6 +140,11 @@ void PrintPreviewTabController::Observe(NotificationType type,
     // Erase the map entry.
     preview_tab_map_.erase(source_tab);
   } else {
+    // Initiator tab is closed. Disable the controls in preview tab.
+    PrintPreviewUI* print_preview_ui =
+        static_cast<PrintPreviewUI*>(preview_tab->web_ui());
+    print_preview_ui->DisablePrintPreviewSettings();
+
     // |source_tab| is an initiator tab, update the map entry.
     preview_tab_map_[preview_tab] = NULL;
   }

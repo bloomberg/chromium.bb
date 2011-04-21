@@ -29,6 +29,10 @@ PrintPreviewUIHTMLSource* PrintPreviewUI::html_source() {
   return html_source_.get();
 }
 
+void PrintPreviewUI::DisablePrintPreviewSettings() {
+  CallJavascriptFunction("disablePreviewControls");
+}
+
 void PrintPreviewUI::PreviewDataIsAvailable(int expected_pages_count,
                                             const string16& job_title) {
   FundamentalValue pages_count(expected_pages_count);
