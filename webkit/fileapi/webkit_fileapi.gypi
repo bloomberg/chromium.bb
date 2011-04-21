@@ -48,6 +48,8 @@
         'local_file_system_file_util.h',
         'sandbox_mount_point_provider.cc',
         'sandbox_mount_point_provider.h',
+        'quota_file_util.cc',
+        'quota_file_util.h',
         'webfilewriter_base.cc',
         'webfilewriter_base.h',
       ],

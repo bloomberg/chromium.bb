@@ -61,6 +61,12 @@ class FileSystemOperationContext {
     dest_type_ = dest_type;
   }
 
+  void set_allowed_bytes_growth(const int64& allowed_bytes_growth) {
+    allowed_bytes_growth_ = allowed_bytes_growth;
+  }
+
+  int64 allowed_bytes_growth() const { return allowed_bytes_growth_; }
+
  private:
   // This file_system_file_util_ is not "owned" by FileSystemOperationContext.
   // It is supposed to be a pointer to a singleton.
@@ -71,6 +77,7 @@ class FileSystemOperationContext {
   GURL dest_origin_url_;
   FileSystemType src_type_;  // Also used for any single-path operation.
   FileSystemType dest_type_;
+  int64 allowed_bytes_growth_;
 };
 
 }  // namespace fileapi

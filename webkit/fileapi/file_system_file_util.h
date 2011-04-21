@@ -93,6 +93,13 @@ class FileSystemFileUtil {
       bool exclusive,
       bool recursive);
 
+  // Copies or moves a single file.
+  virtual PlatformFileError CopyOrMoveFile(
+      FileSystemOperationContext* context,
+      const FilePath& src_file_path,
+      const FilePath& dest_file_path,
+      bool copy);
+
   // TODO(dmikurube): Make this method non-virtual if it's possible.
   // It conflicts with LocalFileSystemFileUtil for now.
   //
@@ -175,22 +182,16 @@ class FileSystemFileUtil {
       FileSystemOperationContext* unused,
       const FilePath& file_path);
 
-  // Copies or moves a single file.
-  virtual PlatformFileError CopyOrMoveFile(
+  // Performs recursive copy or move by calling CopyOrMoveFile for individual
+  // files. Operations for recursive traversal are encapsulated in this method.
+  // It assumes src_file_path and dest_file_path have passed
+  // PerformCommonCheckAndPreparationForMoveAndCopy().
+  // This method is non-virtual, not to be overridden.
+  PlatformFileError CopyOrMoveDirectory(
       FileSystemOperationContext* context,
       const FilePath& src_file_path,
       const FilePath& dest_file_path,
       bool copy);
-
-  // Performs recursive copy by calling CopyOrMoveFile for individual files.
-  // Operations for recursive traversal are encapsulated in this method.
-  // It assumes src_file_path and dest_file_path have passed
-  // PerformCommonCheckAndPreparationForMoveAndCopy().
-  // This method is non-virtual, not to be overridden.
-  PlatformFileError CopyDirectory(
-      FileSystemOperationContext* context,
-      const FilePath& src_file_path,
-      const FilePath& dest_file_path);
 
   // Returns a pointer to a new instance of AbstractFileEnumerator which is
   // implemented for each FileUtil subclass. The instance needs to be freed

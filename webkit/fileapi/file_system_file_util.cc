@@ -142,9 +142,11 @@ PlatformFileError FileSystemFileUtil::Copy(
     return error_code;
 
   if (file_util::DirectoryExists(src_file_path))
-    return CopyDirectory(context, src_file_path, dest_file_path);
+    return CopyOrMoveDirectory(context, src_file_path, dest_file_path,
+                               true /* copy */);
   else
-    return CopyOrMoveFile(context, src_file_path, dest_file_path, true);
+    return CopyOrMoveFile(context, src_file_path, dest_file_path,
+                          true /* copy */);
 }
 
 PlatformFileError FileSystemFileUtil::Move(
@@ -158,15 +160,13 @@ PlatformFileError FileSystemFileUtil::Move(
   if (error_code != base::PLATFORM_FILE_OK)
     return error_code;
 
-  // TODO(dmikurube): ReplaceFile if in the same filesystem.
+  // TODO(dmikurube): ReplaceFile if in the same domain and filesystem type.
   if (file_util::DirectoryExists(src_file_path)) {
-    PlatformFileError error =
-        CopyDirectory(context, src_file_path, dest_file_path);
-    if (error != base::PLATFORM_FILE_OK)
-      return error;
-    return Delete(context, src_file_path, true);
+    return CopyOrMoveDirectory(context, src_file_path, dest_file_path,
+                               false /* copy */);
   } else
-    return CopyOrMoveFile(context, src_file_path, dest_file_path, false);
+    return CopyOrMoveFile(context, src_file_path, dest_file_path,
+                          false /* copy */);
 }
 
 PlatformFileError FileSystemFileUtil::Delete(
@@ -285,10 +285,11 @@ PlatformFileError FileSystemFileUtil::CopyOrMoveFile(
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
-PlatformFileError FileSystemFileUtil::CopyDirectory(
+PlatformFileError FileSystemFileUtil::CopyOrMoveDirectory(
       FileSystemOperationContext* context,
       const FilePath& src_file_path,
-      const FilePath& dest_file_path) {
+      const FilePath& dest_file_path,
+      bool copy) {
   // Re-check PerformCommonCheckAndPreparationForMoveAndCopy() by DCHECK.
   DCHECK(DirectoryExists(context, src_file_path));
   DCHECK(DirectoryExists(context, dest_file_path.DirName()));
@@ -317,10 +318,16 @@ PlatformFileError FileSystemFileUtil::CopyDirectory(
     } else {
       // CopyOrMoveFile here is the virtual overridden member function.
       PlatformFileError error = CopyOrMoveFile(
-          context, src_file_path_each, dest_file_path_each, true);
+          context, src_file_path_each, dest_file_path_each, copy);
       if (error != base::PLATFORM_FILE_OK)
         return error;
     }
+  }
+
+  if (!copy) {
+    PlatformFileError error = Delete(context, src_file_path, true);
+    if (error != base::PLATFORM_FILE_OK)
+      return error;
   }
   return base::PLATFORM_FILE_OK;
 }

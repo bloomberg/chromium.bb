@@ -1924,6 +1924,7 @@
         '../webkit/fileapi/file_system_dir_url_request_job_unittest.cc',
         '../webkit/fileapi/file_system_operation_write_unittest.cc',
         '../webkit/fileapi/file_system_url_request_job_unittest.cc',
+        '../webkit/fileapi/file_writer_delegate_unittest.cc',
       ],
       'conditions': [
         ['p2p_apis==1', {

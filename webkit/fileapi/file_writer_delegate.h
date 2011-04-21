@@ -7,7 +7,9 @@
 
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/task.h"
 #include "base/time.h"
@@ -22,12 +24,13 @@ class FileSystemOperation;
 
 class FileWriterDelegate : public net::URLRequest::Delegate {
  public:
-  FileWriterDelegate(
-      FileSystemOperation* write_operation,
-      int64 offset);
+  FileWriterDelegate(FileSystemOperation* write_operation, int64 offset);
   virtual ~FileWriterDelegate();
 
-  void Start(base::PlatformFile file, net::URLRequest* request);
+  void Start(base::PlatformFile file,
+             net::URLRequest* request,
+             int64 allowed_bytes_growth,
+             scoped_refptr<base::MessageLoopProxy> proxy);
   base::PlatformFile file() {
     return file_;
   }
@@ -44,6 +47,9 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
   virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
 
  private:
+  void OnGetFileInfoForWrite(
+      base::PlatformFileError error,
+      const base::PlatformFileInfo& file_info);
   void Read();
   void OnDataReceived(int bytes_read);
   void Write();
@@ -53,16 +59,21 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
 
   FileSystemOperation* file_system_operation_;
   base::PlatformFile file_;
+  base::PlatformFileInfo file_info_;
   int64 offset_;
   base::Time last_progress_event_time_;
   int bytes_read_backlog_;
   int bytes_written_;
   int bytes_read_;
+  int64 total_bytes_written_;
+  int64 allowed_bytes_growth_;
+  int64 allowed_bytes_to_write_;
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
   scoped_ptr<net::FileStream> file_stream_;
   net::URLRequest* request_;
   net::CompletionCallbackImpl<FileWriterDelegate> io_callback_;
   ScopedRunnableMethodFactory<FileWriterDelegate> method_factory_;
+  base::ScopedCallbackFactory<FileWriterDelegate> callback_factory_;
 };
 
 }  // namespace fileapi

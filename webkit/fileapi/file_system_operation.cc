@@ -16,6 +16,7 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/file_writer_delegate.h"
 #include "webkit/fileapi/local_file_system_file_util.h"
+#include "webkit/fileapi/quota_file_util.h"
 
 namespace fileapi {
 
@@ -34,6 +35,9 @@ FileSystemOperation::FileSystemOperation(
 #ifndef NDEBUG
   pending_operation_ = kOperationNone;
 #endif
+  // TODO(dmikurube): Read and set available bytes from the Quota Manager.
+  file_system_operation_context_.set_allowed_bytes_growth(
+      QuotaFileUtil::kNoLimit);
 }
 
 FileSystemOperation::~FileSystemOperation() {
@@ -624,7 +628,8 @@ void FileSystemOperation::OnFileOpenedForWrite(
     delete this;
     return;
   }
-  file_writer_delegate_->Start(file.ReleaseValue(), blob_request_.get());
+  file_writer_delegate_->Start(file.ReleaseValue(), blob_request_.get(),
+      file_system_operation_context_.allowed_bytes_growth(), proxy_);
 }
 
 bool FileSystemOperation::VerifyFileSystemPathForRead(
