@@ -45,7 +45,7 @@ body {
 }
 
 #prevbutton > div {
-  background: url('chrome://resources/images/mediaplayer_prev.png');
+  background: url('shared/images/mediaplayer_prev.png');
   background-repeat: no-repeat;
   background-position: 4px 8px;
   width: 100%;
@@ -75,7 +75,7 @@ body {
 }
 
 #nextbutton > div {
-  background: url('chrome://resources/images/mediaplayer_next.png');
+  background: url('shared/images/mediaplayer_next.png');
   background-repeat: no-repeat;
   background-position: 4px 8px;
   width: 100%;
@@ -99,8 +99,8 @@ button:hover {
 }
 
 </style>
-<script src="chrome://resources/js/local_strings.js"></script>
-<script src="chrome://resources/js/media_common.js"></script>
+<script src="shared/js/local_strings.js"></script>
+<script src="shared/js/media_common.js"></script>
 <script>
 
 document.addEventListener('DOMContentLoaded', load);
@@ -119,7 +119,7 @@ function $(o) {
 var currentPicture = null;
 var prevPicture = null;
 var currentFileOffset = 0;
-var filelist = [];
+var filelist;
 var moveRight = false;
 var lastimg = null;
 
@@ -146,7 +146,7 @@ function loadedPicture() {
    }, 10);
 }
 
-function transitionTo(fileEntry, fromTheRight) {
+function transitionTo(path, fromTheRight) {
   if (currentPicture) {
     if (prevPicture) {
       $('main').removeChild(prevPicture);
@@ -166,18 +166,20 @@ function transitionTo(fileEntry, fromTheRight) {
   lastimg = image;
   image.onload = loadedPicture;
   image.onerror = loadedPicture;
-  image.src = 'filesystem:' +
-              chrome.extension.getURL('/external/' + fileEntry.fullPath);
+  document.location.hash = path;
+  image.src = 'file://' + path;
   currentPicture.appendChild(image);
   moveRight = fromTheRight;
 }
 
-function browseFileResult() {
-  filelist = chrome.extension.getBackgroundPage().getLastFileEntries() || [];
-  currentFileOffset = 0;
-  if (filelist.length > 0) {
-    transitionTo(filelist[currentFileOffset], true);
+function browseFileResult(info, results) {
+  filelist = results;
+  if (info.currentOffset) {
+    currentFileOffset = info.currentOffset;
+  } else {
+    currentFileOffset = 0;
   }
+  transitionTo(filelist[currentFileOffset].path, true);
 }
 
 function keyPressed(e) {
@@ -185,14 +187,14 @@ function keyPressed(e) {
   if (e.keyCode == 37) {
     if (currentFileOffset > 0) {
       currentFileOffset--;
-      transitionTo(filelist[currentFileOffset], false);
+      transitionTo(filelist[currentFileOffset].path, false);
     }
   }
   // Right Pressed
   if (e.keyCode == 39) {
     if (currentFileOffset < (filelist.length - 1)) {
       currentFileOffset++;
-      transitionTo(filelist[currentFileOffset], true);
+      transitionTo(filelist[currentFileOffset].path, true);
     }
   }
 }
@@ -200,25 +202,34 @@ function keyPressed(e) {
 function load() {
   localStrings = new LocalStrings();
 
-  browseFileResult();
+  document.onkeydown = keyPressed;
+  if (document.location.href.indexOf('#') != -1) {
+    var currentpathArray = document.location.href.split('#');
+    var path = currentpathArray[1];
+    chrome.send('getChildren', [path]);
+  }
 }
 
 function prevButtonClick() {
   if (currentFileOffset > 0) {
     currentFileOffset--;
-    transitionTo(filelist[currentFileOffset], false);
+    transitionTo(filelist[currentFileOffset].path, false);
   }
 }
 
 function nextButtonClick() {
   if (currentFileOffset < (filelist.length - 1)) {
     currentFileOffset++;
-    transitionTo(filelist[currentFileOffset], true);
+    transitionTo(filelist[currentFileOffset].path, true);
   }
 }
 
+function toggleFullscreen() {
+  chrome.send('toggleFullscreen', ['']);
+}
+
 </script>
-<body onkeydown="keyPressed(event)">
+<body>
 <div id="main"></div>
 <div id="glow"></div>
 <div id="playercontrols">
