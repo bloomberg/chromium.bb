@@ -94,6 +94,8 @@ void ChromeNetworkDelegate::OnBeforeRedirect(net::URLRequest* request,
 
 
 void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
+  ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
+      profile_id_, event_router_.get(), request);
   ForwardProxyErrors(request, event_router_.get(), profile_id_);
 }
 

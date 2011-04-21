@@ -23,6 +23,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "googleurl/src/gurl.h"
 
@@ -37,8 +38,8 @@ static const char* const kWebRequestEvents[] = {
   keys::kOnBeforeSendHeaders,
   keys::kOnCompleted,
   keys::kOnErrorOccurred,
-  keys::kOnHeadersReceived,
-  keys::kOnRequestSent
+  keys::kOnRequestSent,
+  keys::kOnResponseStarted
 };
 
 static const char* kResourceTypeStrings[] = {
@@ -451,6 +452,42 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
   dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
   // TODO(battre): support "statusLine", "responseHeaders",
   //     "redirectRequestLine" and "redirectRequestHeaders".
+  args.Append(dict);
+
+  DispatchEvent(profile_id, event_router, request, NULL, listeners, args);
+}
+
+void ExtensionWebRequestEventRouter::OnResponseStarted(
+    ProfileId profile_id,
+    ExtensionEventRouterForwarder* event_router,
+    net::URLRequest* request) {
+  if (profile_id == Profile::kInvalidProfileId)
+    return;
+
+  // OnResponseStarted is even triggered, when the request was cancelled.
+  if (request->status().status() != net::URLRequestStatus::SUCCESS)
+    return;
+
+  base::Time time(base::Time::Now());
+
+  std::vector<const EventListener*> listeners =
+      GetMatchingListeners(profile_id, keys::kOnResponseStarted, request);
+  if (listeners.empty())
+    return;
+
+  // UrlRequestFileJobs do not send headers, so we simulate their behavior.
+  int response_code = 200;
+  if (request->response_headers())
+    response_code = request->response_headers()->response_code();
+
+  ListValue args;
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetString(keys::kRequestIdKey,
+                  base::Uint64ToString(request->identifier()));
+  dict->SetString(keys::kUrlKey, request->url().spec());
+  dict->SetInteger(keys::kStatusCodeKey, response_code);
+  dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
+  // TODO(battre): support "statusLine", "responseHeaders".
   args.Append(dict);
 
   DispatchEvent(profile_id, event_router, request, NULL, listeners, args);

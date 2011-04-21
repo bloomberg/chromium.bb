@@ -23,7 +23,7 @@ const char kOnBeforeSendHeaders[] =
     "experimental.webRequest.onBeforeSendHeaders";
 const char kOnCompleted[] = "experimental.webRequest.onCompleted";
 const char kOnErrorOccurred[] = "experimental.webRequest.onErrorOccurred";
-const char kOnHeadersReceived[] = "experimental.webRequest.onHeadersReceived";
+const char kOnResponseStarted[] = "experimental.webRequest.onResponseStarted";
 const char kOnRequestSent[] = "experimental.webRequest.onRequestSent";
 
 const char kInvalidRedirectUrl[] = "redirectUrl '*' is not a valid URL.";

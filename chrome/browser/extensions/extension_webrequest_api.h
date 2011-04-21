@@ -37,7 +37,7 @@ class ExtensionWebRequestEventRouter {
     kOnBeforeSendHeaders = 1 << 1,
     kOnRequestSent = 1 << 2,
     kOnBeforeRedirect = 1 << 3,
-    kOnHeadersReceived = 1 << 4,
+    kOnResponseStarted = 1 << 4,
     kOnErrorOccurred = 1 << 5,
     kOnCompleted = 1 << 6,
   };
@@ -79,6 +79,12 @@ class ExtensionWebRequestEventRouter {
                         ExtensionEventRouterForwarder* event_router,
                         net::URLRequest* request,
                         const GURL& new_location);
+
+  // Dispatches on onResponseStarted event indicating that the first bytes of
+  // the response have arrived.
+  void OnResponseStarted(ProfileId profile_id,
+                         ExtensionEventRouterForwarder* event_router,
+                         net::URLRequest* request);
 
   void OnURLRequestDestroyed(ProfileId profile_id, net::URLRequest* request);
 
