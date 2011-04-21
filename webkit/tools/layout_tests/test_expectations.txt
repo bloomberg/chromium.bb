@@ -4,3 +4,6 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
+
+// Crash fixed by WebKit 84468, remove upon rolling.
+BUGTONYG : DEBUG WIN LINUX fast/backgrounds/solid-color-context-restore.html = IMAGE+TEXT
