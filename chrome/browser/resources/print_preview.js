@@ -38,12 +38,17 @@ function onLoad() {
   });
 
   $('all-pages').addEventListener('click', onPageSelectionMayHaveChanged);
-  $('copies').addEventListener('input', validateNumberOfCopies);
+  $('copies').addEventListener('input', copiesFieldChanged);
   $('copies').addEventListener('blur', handleCopiesFieldBlur);
   $('print-pages').addEventListener('click', handleIndividualPagesCheckbox);
   $('individual-pages').addEventListener('blur', handlePageRangesFieldBlur);
   $('individual-pages').addEventListener('focus', addTimerToPageRangeField);
-  $('individual-pages').addEventListener('input', resetPageRangeFieldTimer);
+  $('individual-pages').addEventListener('input', function() {
+    resetPageRangeFieldTimer();
+    updateSummary();
+  });
+
+  $('two-sided').addEventListener('click', handleTwoSidedClick)
   $('landscape').addEventListener('click', onLayoutModeToggle);
   $('portrait').addEventListener('click', onLayoutModeToggle);
   $('color').addEventListener('click', function() { setColor(true); });
@@ -111,27 +116,11 @@ function setControlAndLabelDisabled(controlElm, disable) {
 }
 
 /**
- * Parses the copies field text for validation and updates the state of print
- * button and collate checkbox. If the specified value is invalid, displays an
- * invalid warning icon on the text box and sets the error message as the title
- * message of text box.
- */
-function validateNumberOfCopies() {
-  var copiesField = $('copies');
-  var message = '';
-  if (!isNumberOfCopiesValid())
-    message = localStrings.getString('invalidNumberOfCopiesTitleToolTip');
-  copiesField.setCustomValidity(message);
-  copiesField.title = message;
-  updatePrintButtonState();
-}
-
-/**
  * Handles copies field blur event.
  */
 function handleCopiesFieldBlur() {
   checkAndSetCopiesField();
-  printSettingChanged();
+  copiesFieldChanged();
 }
 
 /**
@@ -443,18 +432,17 @@ function createPDFPlugin() {
  * button.
  */
 function updatePrintButtonState() {
-  $('print-button').disabled = (!($('all-pages').checked ||
-                                  $('individual-pages').checkValidity()) ||
-                                !$('copies').checkValidity());
+  $('print-button').disabled = !isNumberOfCopiesValid();
 }
 
 window.addEventListener('DOMContentLoaded', onLoad);
 
 /**
- * Listener function that executes whenever any of the available settings
- * is changed.
+ * Listener function that executes whenever a change occurs in the 'copies'
+ * field.
  */
-function printSettingChanged() {
+function copiesFieldChanged() {
+  updatePrintButtonState();
   $('collate-option').hidden = getCopies() <= 1;
   updateSummary();
 }
@@ -531,9 +519,9 @@ function updateSummary() {
 /**
  * Handles a click event on the two-sided option.
  */
-function handleTwoSidedClick(event) {
+function handleTwoSidedClick() {
   handleZippyClickEl($('binding'));
-  printSettingChanged(event);
+  updateSummary();
 }
 
 /**
@@ -541,7 +529,7 @@ function handleTwoSidedClick(event) {
  * clicked.
  */
 function handleIndividualPagesCheckbox() {
-  printSettingChanged();
+  onPageSelectionMayHaveChanged();
   $('individual-pages').focus();
 }
 

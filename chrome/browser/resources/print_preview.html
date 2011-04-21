@@ -35,8 +35,7 @@
           <h3 i18n-content="pagesLabel"></h3>
           <div class="options-block">
             <div>
-              <input name="pages" checked type="radio"
-                  onclick="printSettingChanged()" id="all-pages">
+              <input name="pages" checked type="radio" id="all-pages">
               <label for="all-pages" i18n-content="optionAllPages"></label>
             </div>
             <div>
@@ -45,15 +44,14 @@
                 <input id="individual-pages" type="text"
                     class="medium with-hint"
                     i18n-values="placeholder:examplePageRangeText"
-                    name="individual-pages" oninput="printSettingChanged()">
+                    name="individual-pages">
               </label>
             </div>
           </div>
         </div>
         <div class="left-label">
           <div class="options-block">
-            <input name="two-sided" type="checkbox" id="two-sided"
-                onclick="handleTwoSidedClick(event)">
+            <input name="two-sided" type="checkbox" id="two-sided">
               <label for="two-sided" i18n-content="optionTwoSided"></label>
           </div>
         </div>
@@ -63,14 +61,12 @@
               <h3 i18n-content="bindingLabel"></h3>
               <div class="options-block">
                 <div>
-                  <input type="radio" name="binding" checked id="long-edge"
-                      onclick="printSettingChanged()">
+                  <input type="radio" name="binding" checked id="long-edge">
                   <label for="long-edge"
                       i18n-content="optionLongEdgeBinding"></label>
                 </div>
                 <div>
-                  <input type="radio" name="binding" id="short-edge"
-                      onclick="printSettingChanged()">
+                  <input type="radio" name="binding" id="short-edge">
                   <label for="short-edge"
                       i18n-content="optionShortEdgeBinding"></label>
                 </div>
@@ -81,8 +77,7 @@
         <div class="left-label">
           <h3 i18n-content="copiesLabel"></h3>
           <div class="options-block">
-            <input type="text" name="copies" id="copies" value="1" class="small"
-                oninput="printSettingChanged()">
+            <input type="text" name="copies" id="copies" value="1" class="small">
             <span id="collate-option" hidden>
               <input name="collate" type="checkbox" id="collate">
               <label for="collate" i18n-content="optionCollate"></label>
@@ -94,13 +89,11 @@
           <h3 i18n-content="layoutLabel"></h3>
           <div class="options-block">
             <div>
-              <input type="radio" name="layout" checked id="portrait"
-                  onclick="printSettingChanged()">
+              <input type="radio" name="layout" checked id="portrait">
               <label for="portrait" i18n-content="optionPortrait"></label>
             </div>
             <div>
-              <input type="radio" name="layout" id="landscape"
-                  onclick="printSettingChanged()">
+              <input type="radio" name="layout" id="landscape">
               <label for="landscape" i18n-content="optionLandscape"></label>
             </div>
           </div>
