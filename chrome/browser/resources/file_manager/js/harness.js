@@ -20,9 +20,9 @@ var harness = {
       self.filesystem = filesystem;
     };
 
-    window.requestFileSystem(window.PERSISTENT, 16 * 1024 * 1024,
-                             onFilesystem,
-                             util.flog('Error initializing filesystem'));
+    window.webkitRequestFileSystem(window.PERSISTENT, 16 * 1024 * 1024,
+                                   onFilesystem,
+                                   util.flog('Error initializing filesystem'));
 
     var paramstr = decodeURIComponent(document.location.search.substr(1));
     this.params = paramstr ? JSON.parse(paramstr) : {};

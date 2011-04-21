@@ -459,9 +459,9 @@ FileManager.prototype = {
     if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILE ||
         this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FOLDER ||
         this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
-      this.selectionModel_ = new cr.ui.table.TableSingleSelectionModel();
+      this.selectionModelClass_ = cr.ui.table.TableSingleSelectionModel;
     } else {
-      this.selectionModel_ = new cr.ui.table.TableSelectionModel();
+      this.selectionModelClass_ = cr.ui.table.TableSelectionModel;
     }
 
     this.initTable_();
@@ -506,7 +506,7 @@ FileManager.prototype = {
     this.grid_ = this.dialogDom_.querySelector('.thumbnail-grid');
     cr.ui.Grid.decorate(this.grid_);
     this.grid_.dataModel = this.dataModel_;
-    this.grid_.selectionModel = this.selectionModel_;
+    this.grid_.selectionModel = new this.selectionModelClass_();
 
     var self = this;
     this.grid_.itemConstructor = function(entry) {
@@ -541,7 +541,7 @@ FileManager.prototype = {
     cr.ui.Table.decorate(this.table_);
 
     this.table_.dataModel = this.dataModel_;
-    this.table_.selectionModel = this.selectionModel_;
+    this.table_.selectionModel = new this.selectionModelClass_();
     this.table_.columnModel = new cr.ui.table.TableColumnModel(columns);
 
     this.table_.addEventListener(
@@ -639,7 +639,7 @@ FileManager.prototype = {
     dialogTitle = this.params_.title || defaultTitle;
     this.dialogDom_.querySelector('.dialog-title').textContent = dialogTitle;
 
-    ary = defaultFolder.match(/^\/home\/[^\/]+\/Downloads(\/.*)?$/);
+    ary = defaultFolder.match(/^\/home\/[^\/]+\/user\/Downloads(\/.*)?$/);
     if (ary) {
         // Chrome will probably suggest the full path to Downloads, but
         // we're working with 'virtual paths', so we have to translate.
@@ -1117,22 +1117,11 @@ FileManager.prototype = {
         });
         return;
       }
-
-      // File is some other kind of image, just return the url to the whole
-      // thing.
-      setTimeout(function() { callback(iconType, entry.toURL()) });
-      return;
     }
 
-    // If the exif reader worker isn't enabled, read the entire file as a
-    // data url instead.
-    batchAsyncCall(entry, 'file', function(file) {
-      var reader = new FileReader();
-
-      reader.onerror = util.ferr('Error reading preview: ' + entry.fullPath);
-      reader.onloadend = function(e) { callback(iconType, reader.result) };
-      reader.readAsDataURL(file);
-    });
+    // File is some other kind of image, just return the url to the whole
+    // thing.
+    setTimeout(function() { callback(iconType, entry.toURL()) });
   };
 
   /**

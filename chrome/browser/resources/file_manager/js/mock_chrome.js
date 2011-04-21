@@ -15,9 +15,9 @@ chrome.fileBrowserPrivate = {
    * --unlimited-quota-for-files in order for this to work.
    */
   requestLocalFileSystem: function(callback) {
-    window.requestFileSystem(window.PERSISTENT, 16 * 1024 * 1024,
-                             callback,
-                             util.ferr('Error requesting filesystem'));
+    window.webkitRequestFileSystem(window.PERSISTENT, 16 * 1024 * 1024,
+                                   callback,
+                                   util.ferr('Error requesting filesystem'));
   },
 
   /**

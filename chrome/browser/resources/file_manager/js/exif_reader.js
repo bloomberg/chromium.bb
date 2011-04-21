@@ -38,9 +38,9 @@ var exif = {
     var steps =
     [ // Step one, turn the url into an entry.
       function getEntry() {
-        resolveLocalFileSystemURL(fileURL,
-                                  function(entry) { nextStep(entry) },
-                                  onError);
+        webkitResolveLocalFileSystemURL(fileURL,
+                                        function(entry) { nextStep(entry) },
+                                        onError);
       },
 
       // Step two, turn the entry into a file.
