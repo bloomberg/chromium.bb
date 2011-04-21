@@ -137,7 +137,7 @@ std::string FileManagerUtil::GetDialogTypeAsString(
   std::string type_str;
   switch (dialog_type) {
     case SelectFileDialog::SELECT_NONE:
-      type_str = "none";
+      type_str = "full-page";
       break;
 
     case SelectFileDialog::SELECT_FOLDER:
