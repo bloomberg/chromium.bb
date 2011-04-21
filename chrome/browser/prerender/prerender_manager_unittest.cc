@@ -125,6 +125,16 @@ class TestPrerenderManager : public PrerenderManager {
   scoped_ptr<PrerenderContents> next_pc_;
 };
 
+class RestorePrerenderMode {
+ public:
+  RestorePrerenderMode() : prev_mode_(PrerenderManager::GetMode()) {
+  }
+
+  ~RestorePrerenderMode() { PrerenderManager::SetMode(prev_mode_); }
+ private:
+  PrerenderManager::PrerenderManagerMode prev_mode_;
+};
+
 }  // namespace
 
 class PrerenderManagerTest : public testing::Test {
@@ -424,6 +434,22 @@ TEST_F(PrerenderManagerTest, ExtractURLInQueryStringTest) {
       GURL("http://www.google.com/?url=http://validURLSareGREAT.com"),
       &result));
   ASSERT_EQ(GURL("http://validURLSareGREAT.com").spec(), result.spec());
+}
+
+// Tests that a PrerenderManager created for a browser session in the control
+// group will not be able to override FINAL_STATUS_CONTROL_GROUP.
+TEST_F(PrerenderManagerTest, ControlGroup) {
+  RestorePrerenderMode restore_prerender_mode;
+  PrerenderManager::SetMode(
+      PrerenderManager::PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP);
+  GURL url("http://www.google.com/");
+  DummyPrerenderContents* pc =
+      new DummyPrerenderContents(prerender_manager_.get(),
+                                 url,
+                                 FINAL_STATUS_CONTROL_GROUP);
+  prerender_manager_->SetNextPrerenderContents(pc);
+  EXPECT_TRUE(prerender_manager_->AddSimplePreload(url));
+  EXPECT_FALSE(pc->has_started());
 }
 
 }  // namespace prerender

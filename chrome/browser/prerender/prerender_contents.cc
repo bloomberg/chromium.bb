@@ -182,7 +182,13 @@ bool PrerenderContents::GetRouteId(int* route_id) const {
 
 void PrerenderContents::set_final_status(FinalStatus final_status) {
   DCHECK(final_status >= FINAL_STATUS_USED && final_status < FINAL_STATUS_MAX);
-  DCHECK_EQ(FINAL_STATUS_MAX, final_status_);
+  DCHECK(final_status_ == FINAL_STATUS_MAX ||
+         final_status_ == FINAL_STATUS_CONTROL_GROUP);
+
+  // Don't override final_status_ if it's FINAL_STATUS_CONTROL_GROUP,
+  // otherwise data will be collected in the Prerender.FinalStatus histogram.
+  if (final_status_ == FINAL_STATUS_CONTROL_GROUP)
+    return;
 
   final_status_ = final_status;
 }
