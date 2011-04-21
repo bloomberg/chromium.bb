@@ -45,7 +45,8 @@ function onLoad() {
   $('individual-pages').addEventListener('focus', addTimerToPageRangeField);
   $('individual-pages').addEventListener('input', function() {
     resetPageRangeFieldTimer();
-    updateSummary();
+    updatePrintButtonState();
+    updatePrintSummary();
   });
 
   $('two-sided').addEventListener('click', handleTwoSidedClick)
@@ -128,6 +129,7 @@ function handleCopiesFieldBlur() {
  */
 function handlePageRangesFieldBlur() {
   checkAndSetPageRangesField();
+  updatePrintButtonState();
   onPageSelectionMayHaveChanged();
 }
 
@@ -158,7 +160,7 @@ function checkAndSetCopiesField() {
   if (isNaN(copies))
     copies = 1;
   copiesField.value = copies;
-  updateSummary();
+  updatePrintSummary();
 }
 
 /**
@@ -181,7 +183,7 @@ function checkAndSetPageRangesField() {
       parsedPageRanges += ', ';
   }
   individualPagesField.value = parsedPageRanges;
-  updateSummary();
+  updatePrintSummary();
 }
 
 /**
@@ -286,7 +288,7 @@ function printFile() {
 /**
  * Asks the browser to generate a preview PDF based on current print settings.
  */
-function getPreview() {
+function requestPrintPreview() {
   chrome.send('getPreview', [getSettingsJSON()]);
 }
 
@@ -315,7 +317,7 @@ function setPrinters(printers, defaultPrinterIndex) {
   updateControlsWithSelectedPrinterCapabilities();
 
   // Once the printer list is populated, generate the initial preview.
-  getPreview();
+  requestPrintPreview();
 }
 
 /**
@@ -379,7 +381,7 @@ function updatePrintPreview(pageCount, jobTitle) {
 
   createPDFPlugin();
 
-  updateSummary();
+  updatePrintSummary();
 }
 
 /**
@@ -424,15 +426,13 @@ function createPDFPlugin() {
 
 /**
  * Updates the state of print button depending on the user selection.
- *
- * If the user has selected 'All' pages option, enables the print button.
- * If the user has selected a page range, depending on the validity of page
- * range text enables/disables the print button.
- * Depending on the validity of 'copies' value, enables/disables the print
- * button.
+ * The button is enabled only when the following conditions are true.
+ * 1) The selected page ranges are valid.
+ * 2) The number of copies is valid.
  */
 function updatePrintButtonState() {
-  $('print-button').disabled = !isNumberOfCopiesValid();
+  $('print-button').disabled = (!isNumberOfCopiesValid() ||
+                                getSelectedPagesSet().length == 0);
 }
 
 window.addEventListener('DOMContentLoaded', onLoad);
@@ -444,19 +444,18 @@ window.addEventListener('DOMContentLoaded', onLoad);
 function copiesFieldChanged() {
   updatePrintButtonState();
   $('collate-option').hidden = getCopies() <= 1;
-  updateSummary();
+  updatePrintSummary();
 }
 
 /**
  * Updates the print summary based on the currently selected user options.
  *
  */
-function updateSummary() {
+function updatePrintSummary() {
   var copies = getCopies();
-  var printButton = $('print-button');
   var printSummary = $('print-summary');
 
-  if (isNaN($('copies').value)) {
+  if (!isNumberOfCopiesValid()) {
     printSummary.innerHTML =
         localStrings.getString('invalidNumberOfCopiesTitleToolTip');
     return;
@@ -466,7 +465,6 @@ function updateSummary() {
   if (pageList.length <= 0) {
     printSummary.innerHTML =
         localStrings.getString('pageRangeInvalidTitleToolTip');
-    printButton.disabled = true;
     return;
   }
 
@@ -478,8 +476,6 @@ function updateSummary() {
   var equalSign = '';
   var numOfSheets = '';
   var sheetsLabel = '';
-
-  printButton.disabled = false;
 
   if (pageList.length > 1)
     pagesLabel = localStrings.getString('printPreviewPageLabelPlural');
@@ -521,7 +517,7 @@ function updateSummary() {
  */
 function handleTwoSidedClick() {
   handleZippyClickEl($('binding'));
-  updateSummary();
+  updatePrintSummary();
 }
 
 /**
@@ -552,7 +548,7 @@ function onLayoutModeToggle() {
   $('all-pages').checked = true;
   totalPageCount = -1;
   previouslySelectedPages.length = 0;
-  getPreview();
+  requestPrintPreview();
 }
 
 /**
@@ -674,7 +670,7 @@ function onPageSelectionMayHaveChanged() {
     return;
 
   previouslySelectedPages = currentlySelectedPages;
-  getPreview();
+  requestPrintPreview();
 }
 
 /**
