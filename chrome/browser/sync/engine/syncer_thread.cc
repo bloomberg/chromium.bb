@@ -409,6 +409,8 @@ void GetModelSafeParamsForTypes(const ModelTypeBitSet& types,
   registrar->GetModelSafeRoutingInfo(&r_tmp);
   registrar->GetWorkers(&w_tmp);
 
+  bool passive_group_added = false;
+
   typedef std::vector<ModelSafeWorker*>::const_iterator iter;
   for (size_t i = syncable::FIRST_REAL_MODEL_TYPE; i < types.size(); ++i) {
     if (!types.test(i))
@@ -418,18 +420,28 @@ void GetModelSafeParamsForTypes(const ModelTypeBitSet& types,
     (*routes)[t] = r_tmp[t];
     iter it = std::find_if(w_tmp.begin(), w_tmp.end(),
                            ModelSafeWorkerGroupIs(r_tmp[t]));
+    if (it != w_tmp.end()) {
+      iter it2 = std::find_if(workers->begin(), workers->end(),
+                              ModelSafeWorkerGroupIs(r_tmp[t]));
+      if (it2 == workers->end())
+        workers->push_back(*it);
+
+      if (r_tmp[t] == GROUP_PASSIVE)
+        passive_group_added = true;
+    } else {
+        NOTREACHED();
+    }
+  }
+
+  // Always add group passive.
+  if (passive_group_added == false) {
+    iter it = std::find_if(w_tmp.begin(), w_tmp.end(),
+                           ModelSafeWorkerGroupIs(GROUP_PASSIVE));
     if (it != w_tmp.end())
       workers->push_back(*it);
     else
       NOTREACHED();
   }
-
-  iter it = std::find_if(w_tmp.begin(), w_tmp.end(),
-                         ModelSafeWorkerGroupIs(GROUP_PASSIVE));
-  if (it != w_tmp.end())
-    workers->push_back(*it);
-  else
-    NOTREACHED();
 }
 
 void SyncerThread::ScheduleConfig(const ModelTypeBitSet& types) {
