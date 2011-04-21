@@ -54,14 +54,15 @@ class AutofillTest(pyauto.PyUITest):
   def testFillProfileCrazyCharacters(self):
     """Test filling profiles with unicode strings and crazy characters."""
     # Adding autofill profiles.
-    file_path = os.path.join(self.DataDir(), 'autofill', 'crazy_autofill.txt')
+    file_path = os.path.join(self.DataDir(), 'autofill', 'functional',
+                             'crazy_autofill.txt')
     profiles = self.EvalDataFrom(file_path)
     self.FillAutofillProfile(profiles=profiles)
 
     self.assertEqual(profiles, self.GetAutofillProfile()['profiles'])
 
     # Adding credit cards.
-    file_path = os.path.join(self.DataDir(), 'autofill',
+    file_path = os.path.join(self.DataDir(), 'autofill', 'functional',
                              'crazy_creditcards.txt')
     test_data = self.EvalDataFrom(file_path)
     credit_cards_input = test_data['input']
@@ -146,7 +147,7 @@ class AutofillTest(pyauto.PyUITest):
     self.assertFalse(self._LuhnCreditCardNumberValidator(cc_number),
                      msg='This test requires an invalid credit card number.')
     url = self.GetHttpURLForDataPath(
-        os.path.join('autofill', 'autofill_creditcard_form.html'))
+        os.path.join('autofill', 'functional', 'autofill_creditcard_form.html'))
     self.NavigateToURL(url)
     for key, value in invalid_cc_info.iteritems():
       script = ('document.getElementById("%s").value = "%s"; '
@@ -183,7 +184,7 @@ class AutofillTest(pyauto.PyUITest):
                          'CREDIT_CARD_EXP_4_DIGIT_YEAR': '2013'}]
 
     url = self.GetHttpURLForDataPath(
-        os.path.join('autofill', 'autofill_creditcard_form.html'))
+        os.path.join('autofill', 'functional', 'autofill_creditcard_form.html'))
     for cc_info in credit_card_info:
       self.NavigateToURL(url)
       for key, value in cc_info.iteritems():
@@ -223,7 +224,7 @@ class AutofillTest(pyauto.PyUITest):
                'COMPANY_NAME': 'Company X',
                'PHONE_HOME_WHOLE_NUMBER': '650-123-4567',}
     url = self.GetHttpURLForDataPath(
-        os.path.join('autofill', 'duplicate_profiles_test.html'))
+        os.path.join('autofill', 'functional', 'duplicate_profiles_test.html'))
     self.NavigateToURL(url)
     for key, value in profile.iteritems():
       script = ('document.getElementById("%s").value = "%s"; '
@@ -255,7 +256,7 @@ class AutofillTest(pyauto.PyUITest):
                'COMPANY_NAME': 'Company X',
                'PHONE_HOME_WHOLE_NUMBER': '408-123-4567',}
     url = self.GetHttpURLForDataPath(
-        os.path.join('autofill', 'duplicate_profiles_test.html'))
+        os.path.join('autofill', 'functional', 'duplicate_profiles_test.html'))
     self.NavigateToURL(url)
     for key, value in profile.iteritems():
       script = ('document.getElementById("%s").value = "%s"; '
@@ -298,15 +299,16 @@ class AutofillTest(pyauto.PyUITest):
     field, invoke the autofill popup list, select the first profile within the
     list, and commit to the profile to populate the form.
     """
-    profile_path = os.path.join(self.DataDir(), 'autofill',
+    profile_path = os.path.join(self.DataDir(), 'autofill', 'functional',
                                 'phone_pinput_autofill.txt')
-    profile_expected_path = os.path.join(self.DataDir(), 'autofill',
-                                         'phone_pexpected_autofill.txt')
+    profile_expected_path = os.path.join(
+        self.DataDir(), 'autofill', 'functional',
+        'phone_pexpected_autofill.txt')
     profiles = self.EvalDataFrom(profile_path)
     profiles_expected = self.EvalDataFrom(profile_expected_path)
     self.FillAutofillProfile(profiles=profiles)
     url = self.GetHttpURLForDataPath(
-        os.path.join('autofill', 'form_phones.html'))
+        os.path.join('autofill', 'functional', 'form_phones.html'))
     for profile_expected in profiles_expected:
       self.NavigateToURL(url)
       self._SendKeyEventsToPopulateForm()
@@ -337,7 +339,7 @@ class AutofillTest(pyauto.PyUITest):
                         'CREDIT_CARD_EXP_4_DIGIT_YEAR': '2014'}
 
     url = self.GetHttpURLForDataPath(
-        os.path.join('autofill', 'cc_autocomplete_off_test.html'))
+        os.path.join('autofill', 'functional', 'cc_autocomplete_off_test.html'))
     self.NavigateToURL(url)
     for key, value in credit_card_info.iteritems():
       script = ('document.getElementById("%s").value = "%s"; '
@@ -372,7 +374,7 @@ class AutofillTest(pyauto.PyUITest):
 
     self.FillAutofillProfile(profiles=[profile])
     url = self.GetHttpURLForDataPath(
-        os.path.join('autofill', 'read_only_field_test.html'))
+        os.path.join('autofill', 'functional', 'read_only_field_test.html'))
     self.NavigateToURL(url)
     self._SendKeyEventsToPopulateForm()
     js_return_readonly_field = (
@@ -410,7 +412,7 @@ class AutofillTest(pyauto.PyUITest):
 
     self.FillAutofillProfile(profiles=[profile])
     url = self.GetHttpURLForDataPath(
-        os.path.join('autofill', 'autofill_test_form.html'))
+        os.path.join('autofill', 'functional', 'autofill_test_form.html'))
     self.NavigateToURL(url)
     # Fill form using an address profile.
     self._SendKeyEventsToPopulateForm()
@@ -448,7 +450,7 @@ class AutofillTest(pyauto.PyUITest):
     middle_initial = profile['NAME_MIDDLE'][0]
     self.FillAutofillProfile(profiles=[profile])
     url = self.GetHttpURLForDataPath(
-        os.path.join('autofill', 'autofill_middleinit_form.html'))
+        os.path.join('autofill', 'functional', 'autofill_middleinit_form.html'))
     self.NavigateToURL(url)
     # Fill form using an address profile.
     self._SendKeyEventsToPopulateForm()
@@ -459,7 +461,7 @@ class AutofillTest(pyauto.PyUITest):
         js_return_middleinit_field, 0, 0)
     self.assertEqual(middleinit_field_value, middle_initial,
                      msg=('Middle initial "%s" not distinguished from "%s".' %
-                          middleinit_field_value, profile['NAME_MIDDLE']))
+                          (middleinit_field_value, profile['NAME_MIDDLE'])))
 
   def testMultipleEmailFilledByOneUserGesture(self):
     """Test forms with multiple email addresses are filled properly.
@@ -473,7 +475,8 @@ class AutofillTest(pyauto.PyUITest):
 
     self.FillAutofillProfile(profiles=[profile])
     url = self.GetHttpURLForDataPath(
-        os.path.join('autofill', 'autofill_confirmemail_form.html'))
+        os.path.join('autofill', 'functional',
+                     'autofill_confirmemail_form.html'))
     self.NavigateToURL(url)
     # Fill form using an address profile.
     self._SendKeyEventsToPopulateForm()
@@ -499,7 +502,7 @@ class AutofillTest(pyauto.PyUITest):
                'PHONE_HOME_WHOLE_NUMBER': '408-123-4567',}
 
     url = self.GetHttpURLForDataPath(
-        os.path.join('autofill', 'duplicate_profiles_test.html'))
+        os.path.join('autofill', 'functional', 'duplicate_profiles_test.html'))
     self.NavigateToURL(url, 0, 0)
     for key, value in profile.iteritems():
       js_fill_field = (('document.getElementById("%s").value = "%s"; '
@@ -535,7 +538,8 @@ class AutofillTest(pyauto.PyUITest):
     """
     # HTML file needs to be run from a http:// url.
     url = self.GetHttpURLForDataPath(
-        os.path.join('autofill', 'latency_after_submit_test.html'))
+        os.path.join('autofill', 'functional',
+                     'latency_after_submit_test.html'))
     # Run the generator script to generate the dictionary list needed for the
     # profiles.
     gen = autofill_dataset_generator.DatasetGenerator(
@@ -559,7 +563,7 @@ class AutofillTest(pyauto.PyUITest):
     # the results a few days later by visiting the same url.
     url = 'http://www.corp.google.com/~dyu/autofill/crowdsourcing-test.html'
     # Adding crowdsourcing Autofill profile.
-    file_path = os.path.join(self.DataDir(), 'autofill',
+    file_path = os.path.join(self.DataDir(), 'autofill', 'functional',
                              'crowdsource_autofill.txt')
     profiles = self.EvalDataFrom(file_path)
     self.FillAutofillProfile(profiles=profiles)
@@ -589,11 +593,11 @@ class AutofillTest(pyauto.PyUITest):
     """Test Autofill ability to merge duplicate profiles and throw away junk."""
     # HTML file needs to be run from a http:// url.
     url = self.GetHttpURLForDataPath(
-        os.path.join('autofill', 'duplicate_profiles_test.html'))
+        os.path.join('autofill', 'functional', 'duplicate_profiles_test.html'))
     # Run the parser script to generate the dictionary list needed for the
     # profiles.
     c = autofill_dataset_converter.DatasetConverter(
-        os.path.join(self.DataDir(), 'autofill', 'dataset.txt'),
+        os.path.join(self.DataDir(), 'autofill', 'functional', 'dataset.txt'),
         logging_level=logging.INFO)  # Set verbosity to INFO, WARNING, ERROR.
     list_of_dict = c.Convert()
 
@@ -611,7 +615,7 @@ class AutofillTest(pyauto.PyUITest):
     self.assertTrue(
         len(list_of_dict) > len(self.GetAutofillProfile()['profiles']))
     # Write profile dictionary to a file.
-    merged_profile = os.path.join(self.DataDir(), 'autofill',
+    merged_profile = os.path.join(self.DataDir(), 'autofill', 'functional',
                                   'merged-profiles.txt')
     profile_dict = self.GetAutofillProfile()['profiles']
     output = open(merged_profile, 'wb')
