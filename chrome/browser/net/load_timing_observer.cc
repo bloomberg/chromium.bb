@@ -180,15 +180,22 @@ void LoadTimingObserver::OnAddURLRequestEntry(
           http_stream_job_to_record_.find(http_stream_job_id);
       if (it == http_stream_job_to_record_.end())
         return;
-      timing.connect_start = TimeTicksToOffset(it->second.connect_start,
-                                               record);
-      timing.connect_end = TimeTicksToOffset(it->second.connect_end, record);
-      timing.dns_start = TimeTicksToOffset(it->second.dns_start, record);
-      timing.dns_end = TimeTicksToOffset(it->second.dns_end, record);
+      if (!it->second.connect_start.is_null()) {
+        timing.connect_start = TimeTicksToOffset(it->second.connect_start,
+                                                 record);
+      }
+      if (!it->second.connect_end.is_null())
+        timing.connect_end = TimeTicksToOffset(it->second.connect_end, record);
+      if (!it->second.dns_start.is_null())
+        timing.dns_start = TimeTicksToOffset(it->second.dns_start, record);
+      if (!it->second.dns_end.is_null())
+        timing.dns_end = TimeTicksToOffset(it->second.dns_end, record);
+      if (!it->second.ssl_start.is_null())
+        timing.ssl_start = TimeTicksToOffset(it->second.ssl_start, record);
+      if (!it->second.ssl_end.is_null())
+        timing.ssl_end = TimeTicksToOffset(it->second.ssl_end, record);
       record->socket_reused = it->second.socket_reused;
       record->socket_log_id = it->second.socket_log_id;
-      timing.ssl_start = TimeTicksToOffset(it->second.ssl_start, record);
-      timing.ssl_end = TimeTicksToOffset(it->second.ssl_end, record);
       break;
     }
     case net::NetLog::TYPE_HTTP_TRANSACTION_SEND_REQUEST:
