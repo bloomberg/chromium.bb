@@ -430,7 +430,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptyJson) {
   EXPECT_STR_EQ("", GetSuggestion());
 }
 
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_SetSuggestionsEmptySuggestions) {
+#else
 IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptySuggestions) {
+#endif  // OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
