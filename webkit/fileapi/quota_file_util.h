@@ -18,7 +18,7 @@ class QuotaFileUtil : public FileSystemFileUtil {
 
   static const int64 kNoLimit;
 
-  base::PlatformFileError CopyOrMoveFile(
+  virtual base::PlatformFileError CopyOrMoveFile(
     FileSystemOperationContext* fs_context,
     const FilePath& src_file_path,
     const FilePath& dest_file_path,
@@ -26,7 +26,7 @@ class QuotaFileUtil : public FileSystemFileUtil {
 
   // TODO(dmikurube): Charge some amount of quota for directories.
 
-  base::PlatformFileError Truncate(
+  virtual base::PlatformFileError Truncate(
       FileSystemOperationContext* fs_context,
       const FilePath& path,
       int64 length);
