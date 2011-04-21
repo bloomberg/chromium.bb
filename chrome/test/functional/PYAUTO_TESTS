@@ -230,6 +230,9 @@
       '-prefs.PrefsTest.testSessionRestoreURLs',
       '-prefs.PrefsTest.testSessionRestore',
 
+      # crosbug.com/14256
+      '-ntp.NTPTest.testLaunchAppFullScreen',
+
       # Exclusions that have not been narrowed to other categories yet.
       # crosbug.com/12653
       '-autofill',
