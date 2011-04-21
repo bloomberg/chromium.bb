@@ -21,6 +21,7 @@
 #include "webkit/plugins/ppapi/ppb_flash_menu_impl.h"
 
 class FilePath;
+class PepperPluginDelegateImpl;
 class RenderView;
 
 namespace gfx {
@@ -71,7 +72,8 @@ class BrokerDispatcherWrapper {
 class PpapiBrokerImpl : public webkit::ppapi::PluginDelegate::PpapiBroker,
                         public base::RefCountedThreadSafe<PpapiBrokerImpl>{
  public:
-  explicit PpapiBrokerImpl(webkit::ppapi::PluginModule* plugin_module);
+  PpapiBrokerImpl(webkit::ppapi::PluginModule* plugin_module,
+                  PepperPluginDelegateImpl* delegate_);
 
   // PpapiBroker implementation.
   virtual void Connect(webkit::ppapi::PPB_Broker_Impl* client);
@@ -104,9 +106,10 @@ class PpapiBrokerImpl : public webkit::ppapi::PluginDelegate::PpapiBroker,
   // Always set and cleared at the same time as the module's pointer to this.
   webkit::ppapi::PluginModule* plugin_module_;
 
+  base::WeakPtr<PepperPluginDelegateImpl> delegate_;
+
   DISALLOW_COPY_AND_ASSIGN(PpapiBrokerImpl);
 };
-
 
 class PepperPluginDelegateImpl
     : public webkit::ppapi::PluginDelegate,
@@ -150,6 +153,9 @@ class PepperPluginDelegateImpl
   void OnPpapiBrokerChannelCreated(int request_id,
                                    base::ProcessHandle broker_process_handle,
                                    const IPC::ChannelHandle& handle);
+
+  // Removes broker from pending_connect_broker_ if present. Returns true if so.
+  bool StopWaitingForPpapiBrokerConnection(PpapiBrokerImpl* broker);
 
   // Notification that the render view has been focused or defocused. This
   // notifies all of the plugins.
@@ -290,8 +296,8 @@ class PepperPluginDelegateImpl
   IDMap<scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl>,
         IDMapOwnPointer> pending_context_menus_;
 
-  IDMap<scoped_refptr<PpapiBrokerImpl>, IDMapOwnPointer>
-      pending_connect_broker_;
+  typedef IDMap<scoped_refptr<PpapiBrokerImpl>, IDMapOwnPointer> BrokerMap;
+  BrokerMap pending_connect_broker_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPluginDelegateImpl);
 };
