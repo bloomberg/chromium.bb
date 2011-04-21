@@ -32,6 +32,10 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/css/tree.css.js" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_THROBBER"
                file="shared/images/throbber.svg" type="BINDATA" />
+      <include name="IDR_SHARED_IMAGES_MEDIAPLAYER_PREV"
+               file="shared/images/mediaplayer_prev.png" type="BINDATA" />
+      <include name="IDR_SHARED_IMAGES_MEDIAPLAYER_NEXT"
+               file="shared/images/mediaplayer_next.png" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR"
                file="shared/js/cr.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_COMMAND_LINE"
@@ -106,6 +110,8 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/js/i18n_template.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_LOCAL_STRINGS"
                file="shared/js/local_strings.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_MEDIA_COMMON"
+               file="shared/js/media_common.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_PARSE_HTML_SUBSET"
                file="shared/js/parse_html_subset.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_UTIL"
