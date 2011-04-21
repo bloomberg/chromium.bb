@@ -697,23 +697,22 @@ void SyncerThread::HandleConsecutiveContinuationError(
   if (IsBackingOff()) {
     DCHECK(wait_interval_->timer.IsRunning() || old_job.is_canary_job);
   }
-  SyncSession* old = old_job.session.get();
-  SyncSession* s(new SyncSession(session_context_.get(), this,
-      old->source(), old->routing_info(), old->workers()));
+
   TimeDelta length = delay_provider_->GetDelay(
       IsBackingOff() ? wait_interval_->length : TimeDelta::FromSeconds(1));
 
   VLOG(1) << "SyncerThread(" << this << ")"
           << " In handle continuation error. Old job purpose is "
-          << old_job.purpose;
-  VLOG(1) << "SyncerThread(" << this << ")"
-    << " In Handle continuation error. The time delta(ms) is: "
+          << old_job.purpose << " . The time delta(ms) is "
           << length.InMilliseconds();
 
   // This will reset the had_nudge variable as well.
   wait_interval_.reset(new WaitInterval(WaitInterval::EXPONENTIAL_BACKOFF,
                                         length));
   if (old_job.purpose == SyncSessionJob::CONFIGURATION) {
+    SyncSession* old = old_job.session.get();
+    SyncSession* s(new SyncSession(session_context_.get(), this,
+        old->source(), old->routing_info(), old->workers()));
     SyncSessionJob job(old_job.purpose, TimeTicks::Now() + length,
                         make_linked_ptr(s), false, FROM_HERE);
     wait_interval_->pending_configure_job.reset(new SyncSessionJob(job));
