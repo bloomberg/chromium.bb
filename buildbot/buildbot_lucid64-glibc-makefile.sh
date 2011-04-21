@@ -41,6 +41,15 @@ echo @@@BUILD_STEP tar_glibc@@@
   chmod a+r ../glibc.tgz
 )
 
+if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
+  echo @@@BUILD_STEP archive_glibc@@@
+  wget http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r"$(tools/glibc_revision.sh)"/glibc_x86.tar.gz -O /dev/null ||
+  /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+    tools/glibc.tgz \
+    gs://nativeclient-archive2/between_builders/x86_glibc/r"$(tools/glibc_revision.sh)"/glibc_x86.tar.gz
+  echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r"$(tools/glibc_revision.sh)"/@@@
+fi
+
 echo @@@BUILD_STEP tar_toolchain@@@
 (
   cd tools
@@ -51,14 +60,7 @@ echo @@@BUILD_STEP tar_toolchain@@@
   chmod a+r toolchain.tar.gz toolchain.tar.bz2 toolchain.tar.xz
 )
 
-if [[ "$BUILDBOT_SLAVE_TYPE" != "Trybot" ]]; then
-  echo @@@BUILD_STEP archive_glibc@@@
-  wget http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r"$(tools/glibc_revision.sh)"/glibc_x86.tar.gz -O /dev/null ||
-  /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
-    tools/glibc.tgz \
-    gs://nativeclient-archive2/between_builders/x86_glibc/r"$(tools/glibc_revision.sh)"/glibc_x86.tar.gz
-  echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r"$(tools/glibc_revision.sh)"/@@@
-
+if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
   echo @@@BUILD_STEP archive_build@@@
   for suffix in gz bz2 xz; do
     /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \

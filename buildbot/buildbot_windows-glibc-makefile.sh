@@ -53,7 +53,7 @@ echo @@@BUILD_STEP compile_toolchain@@@
 echo @@@BUILD_STEP tar_toolchain@@@
 (
   cd tools
-  tar Scf toolchain.tgz toolchain/
+  tar Scf toolchain.tar toolchain/
   xz -k -9 toolchain.tar
   bzip2 -k -9 toolchain.tar
   gzip -9 toolchain.tar
@@ -64,7 +64,7 @@ echo @@@BUILD_STEP untar_toolchain@@@
 (
   mkdir -p .tmp
   cd .tmp
-  tar zSxf ../tools/toolchain.tgz
+  tar JSxf ../tools/toolchain.tar.xz
   find -L toolchain -type f -xtype l -print0 |
   while IFS="" read -r -d "" name ; do
     # Find gives us some files twice because there are symlinks.  Second time
