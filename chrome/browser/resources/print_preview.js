@@ -456,15 +456,13 @@ function updatePrintSummary() {
   var printSummary = $('print-summary');
 
   if (!isNumberOfCopiesValid()) {
-    printSummary.innerHTML =
-        localStrings.getString('invalidNumberOfCopiesTitleToolTip');
+    printSummary.innerHTML = localStrings.getString('invalidNumberOfCopies');
     return;
   }
 
   var pageList = getSelectedPagesSet();
   if (pageList.length <= 0) {
-    printSummary.innerHTML =
-        localStrings.getString('pageRangeInvalidTitleToolTip');
+    printSummary.innerHTML = localStrings.getString('invalidPageRange');
     return;
   }
 

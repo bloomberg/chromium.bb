@@ -41,8 +41,8 @@ void SetLocalizedStrings(DictionaryValue* localized_strings) {
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_COPIES_LABEL));
   localized_strings->SetString(std::string("examplePageRangeText"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_EXAMPLE_PAGE_RANGE_TEXT));
-  localized_strings->SetString(std::string("invalidNumberOfCopiesTitleToolTip"),
-      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_INVALID_COPIES_TOOL_TIP));
+  localized_strings->SetString(std::string("invalidNumberOfCopies"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_INVALID_NUMBER_OF_COPIES));
   localized_strings->SetString(std::string("layoutLabel"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_LAYOUT_LABEL));
   localized_strings->SetString(std::string("optionAllPages"),
@@ -71,8 +71,8 @@ void SetLocalizedStrings(DictionaryValue* localized_strings) {
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PAGE_RANGE_TEXT));
   localized_strings->SetString(std::string("pageRangeRadio"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PAGE_RANGE_RADIO));
-  localized_strings->SetString(std::string("pageRangeInvalidTitleToolTip"),
-      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PAGE_RANGE_INVALID_TOOL_TIP));
+  localized_strings->SetString(std::string("invalidPageRange"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_INVALID_PAGE_RANGE));
   localized_strings->SetString(std::string("printToPDF"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PRINT_TO_PDF));
   localized_strings->SetString(std::string("printPreviewTitleFormat"),
