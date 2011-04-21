@@ -641,7 +641,8 @@ void ProfileSyncService::OnPassphraseAccepted() {
   // Reset "passphrase_required" flag before configuring the DataTypeManager
   // since we know we no longer require the passphrase.
   observed_passphrase_required_ = false;
-  data_type_manager_->Configure(types);
+  if (data_type_manager_.get())
+    data_type_manager_->Configure(types);
 
   NotifyObservers();
 
