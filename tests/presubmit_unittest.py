@@ -1374,43 +1374,27 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(results2[0].__class__, error_type)
 
   def ContentTest(self, check, content1, content2, error_type):
-    """Runs a test of a content-checking rule.
-
-      Args:
-        check: the check to run.
-        content1: content which is expected to pass the check.
-        content2: content which is expected to fail the check.
-        error_type: the type of the error expected for content2.
-    """
     change1 = presubmit.Change(
         'foo1', 'foo1\n', self.fake_root_dir, None, 0, 0, None)
     input_api1 = self.MockInputApi(change1, False)
     affected_file = self.mox.CreateMock(presubmit.SvnAffectedFile)
-    input_api1.AffectedFiles(mox.IgnoreArg()).AndReturn([affected_file])
-    affected_file.NewContents().AndReturn([
-        'ahoy',
-        'yo' + content1,
-        'hay',
-        'yer',
-        'ya'])
-
+    affected_file.LocalPath().AndReturn('foo.cc')
+    # Format is (file, line number, line content)
+    output1 = [
+      (affected_file, 42, 'yo, ' + content1),
+      (affected_file, 43, 'yer'),
+      (affected_file, 23, 'ya'),
+    ]
+    input_api1.RightHandSideLines(mox.IgnoreArg()).AndReturn(output1)
     change2 = presubmit.Change(
         'foo2', 'foo2\n', self.fake_root_dir, None, 0, 0, None)
     input_api2 = self.MockInputApi(change2, False)
-
-    input_api2.AffectedFiles(mox.IgnoreArg()).AndReturn([affected_file])
-    affected_file.NewContents().AndReturn([
-        'ahoy',
-        'yo' + content2,
-        'hay',
-        'yer',
-        'ya'])
-    affected_file.ChangedContents().AndReturn([
-        (42, 'yo, ' + content2),
-        (43, 'yer'),
-        (23, 'ya')])
-    affected_file.LocalPath().AndReturn('foo.cc')
-
+    output2 = [
+      (affected_file, 42, 'yo, ' + content2),
+      (affected_file, 43, 'yer'),
+      (affected_file, 23, 'ya'),
+    ]
+    input_api2.RightHandSideLines(mox.IgnoreArg()).AndReturn(output2)
     self.mox.ReplayAll()
 
     results1 = check(input_api1, presubmit.OutputApi, None)
@@ -1581,20 +1565,20 @@ class CannedChecksUnittest(PresubmitTestsBase):
     # Only this one will trigger.
     affected_file4 = self.mox.CreateMock(presubmit.SvnAffectedFile)
     affected_file4.LocalPath().AndReturn('makefile.foo')
-    affected_file1.NewContents().AndReturn(['yo, '])
-    affected_file4.NewContents().AndReturn(['ye\t'])
-    affected_file4.ChangedContents().AndReturn([(46, 'ye\t')])
     affected_file4.LocalPath().AndReturn('makefile.foo')
-    affected_files = (affected_file1, affected_file2,
-                      affected_file3, affected_file4)
-
+    output1 = [
+      (affected_file1, 42, 'yo, '),
+      (affected_file2, 43, 'yer\t'),
+      (affected_file3, 45, 'yr\t'),
+      (affected_file4, 46, 'ye\t'),
+    ]
     def test(source_filter):
-      for x in affected_files:
-        if source_filter(x):
-          yield x
+      for i in output1:
+        if source_filter(i[0]):
+          yield i
     # Override the mock of these functions.
     input_api1.FilterSourceFile = lambda x: x
-    input_api1.AffectedFiles = test
+    input_api1.RightHandSideLines = test
     self.mox.ReplayAll()
 
     results1 = presubmit_canned_checks.CheckChangeHasNoTabs(input_api1,
