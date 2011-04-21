@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -218,6 +218,24 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
             pm.SafeBrowsingHitUrl(
                 malicious_url, page_url, referrer_url,
                 false, SafeBrowsingService::URL_PHISHING).spec());
+
+  EXPECT_EQ("http://info.prefix.com/foo/report?client=unittest&appver=1.0&"
+            "pver=2.2&additional_query&evts=binurlhit&"
+            "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
+            "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
+            "url.com%2F&evtb=0",
+            pm.SafeBrowsingHitUrl(
+                malicious_url, page_url, referrer_url,
+                false, SafeBrowsingService::BINARY_MALWARE_URL).spec());
+
+  EXPECT_EQ("http://info.prefix.com/foo/report?client=unittest&appver=1.0&"
+            "pver=2.2&additional_query&evts=binhashhit&"
+            "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
+            "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
+            "url.com%2F&evtb=0",
+            pm.SafeBrowsingHitUrl(
+                malicious_url, page_url, referrer_url,
+                false, SafeBrowsingService::BINARY_MALWARE_HASH).spec());
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestMalwareDetailsUrl) {
