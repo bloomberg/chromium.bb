@@ -4,8 +4,11 @@
 
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
 
+#include "chrome/browser/sync/engine/model_safe_worker.h"
+
 #include "base/values.h"
 
+using browser_sync::ModelSafeRoutingInfo;
 namespace syncable {
 
 ModelTypePayloadMap ModelTypePayloadMapFromBitSet(
@@ -55,6 +58,23 @@ void CoalescePayloads(ModelTypePayloadMap* original,
       // payload if the new one is non-empty.
       (*original)[i->first] = i->second;
     }
+  }
+}
+
+void PurgeStalePayload(ModelTypePayloadMap* original,
+                       const ModelSafeRoutingInfo& routing_info) {
+  std::vector<ModelTypePayloadMap::iterator> iterators_to_delete;
+  for (ModelTypePayloadMap::iterator i = original->begin();
+       i != original->end(); ++i) {
+    if (routing_info.end() == routing_info.find(i->first)) {
+      iterators_to_delete.push_back(i);
+    }
+  }
+
+  for (std::vector<ModelTypePayloadMap::iterator>::iterator
+       it = iterators_to_delete.begin(); it != iterators_to_delete.end();
+       ++it) {
+    original->erase(*it);
   }
 }
 

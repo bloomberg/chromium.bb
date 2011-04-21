@@ -45,6 +45,9 @@ DictionaryValue* ModelTypePayloadMapToValue(
 void CoalescePayloads(ModelTypePayloadMap* original,
                       const ModelTypePayloadMap& update);
 
+void PurgeStalePayload(ModelTypePayloadMap* original,
+                       const browser_sync::ModelSafeRoutingInfo& routing_info);
+
 }  // namespace syncable
 
 #endif  // CHROME_BROWSER_SYNC_SYNCABLE_MODEL_TYPE_PAYLOAD_MAP_H_

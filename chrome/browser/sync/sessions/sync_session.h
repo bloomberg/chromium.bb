@@ -101,6 +101,12 @@ class SyncSession {
   // sessions.
   void Coalesce(const SyncSession& session);
 
+  // Compares the routing_info_, workers and payload map with the passed in
+  // session. Purges types from the above 3 which are not in session. Useful
+  // to update the sync session when the user has disabled some types from
+  // syncing.
+  void RebaseRoutingInfoWithLatest(SyncSession* session);
+
   // Should be called any time |this| is being re-used in a new call to
   // SyncShare (e.g., HasMoreToSync returned true).
   void ResetTransientState();

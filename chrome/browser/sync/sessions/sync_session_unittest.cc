@@ -301,6 +301,117 @@ TEST_F(SyncSessionTest, Coalesce) {
   EXPECT_EQ(routes_two, one.routing_info());
 }
 
+TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestRemoveOneType) {
+  std::vector<ModelSafeWorker*> workers_one, workers_two;
+  ModelSafeRoutingInfo routes_one, routes_two;
+  syncable::ModelTypePayloadMap one_type =
+      syncable::ModelTypePayloadMapFromBitSet(
+          ParamsMeaningJustOneEnabledType(),
+          std::string());
+  syncable::ModelTypePayloadMap all_types =
+      syncable::ModelTypePayloadMapFromBitSet(
+          ParamsMeaningAllEnabledTypes(),
+          std::string());
+  SyncSourceInfo source_one(sync_pb::GetUpdatesCallerInfo::PERIODIC, one_type);
+  SyncSourceInfo source_two(sync_pb::GetUpdatesCallerInfo::LOCAL, all_types);
+
+  scoped_refptr<MockDBModelWorker> db_worker(new MockDBModelWorker());
+  scoped_refptr<MockUIModelWorker> ui_worker(new MockUIModelWorker());
+  workers_one.push_back(db_worker);
+  workers_two.push_back(db_worker);
+  workers_two.push_back(ui_worker);
+  routes_one[syncable::AUTOFILL] = GROUP_DB;
+  routes_two[syncable::AUTOFILL] = GROUP_UI;
+  routes_two[syncable::BOOKMARKS] = GROUP_UI;
+  SyncSession one(context_.get(), this, source_one, routes_one, workers_one);
+  SyncSession two(context_.get(), this, source_two, routes_two, workers_two);
+
+  two.RebaseRoutingInfoWithLatest(&one);
+
+  // Make sure the source has not been touched.
+  EXPECT_EQ(two.source().updates_source,
+      sync_pb::GetUpdatesCallerInfo::LOCAL);
+
+  // Make sure the payload is reduced to one.
+  EXPECT_EQ(one_type, two.source().types);
+
+  // Make sure the workers are udpated.
+  std::vector<ModelSafeWorker*>::const_iterator it_db =
+      std::find(two.workers().begin(), two.workers().end(), db_worker);
+  std::vector<ModelSafeWorker*>::const_iterator it_ui =
+      std::find(two.workers().begin(), two.workers().end(), ui_worker);
+  EXPECT_NE(it_db, two.workers().end());
+  EXPECT_EQ(it_ui, two.workers().end());
+  EXPECT_EQ(two.workers().size(), 1U);
+
+  // Make sure the model safe routing info is reduced to one type.
+  ModelSafeRoutingInfo::const_iterator it =
+      two.routing_info().find(syncable::AUTOFILL);
+  EXPECT_NE(it, two.routing_info().end());
+  EXPECT_EQ(it->second, GROUP_DB);
+  EXPECT_EQ(two.routing_info().size(), 1U);
+}
+
+TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestWithSameType) {
+  std::vector<ModelSafeWorker*> workers_first, workers_second;
+  ModelSafeRoutingInfo routes_first, routes_second;
+  syncable::ModelTypePayloadMap all_types =
+      syncable::ModelTypePayloadMapFromBitSet(
+          ParamsMeaningAllEnabledTypes(),
+          std::string());
+  SyncSourceInfo source_first(sync_pb::GetUpdatesCallerInfo::PERIODIC,
+      all_types);
+  SyncSourceInfo source_second(sync_pb::GetUpdatesCallerInfo::LOCAL,
+      all_types);
+
+  scoped_refptr<MockDBModelWorker> db_worker(new MockDBModelWorker());
+  scoped_refptr<MockUIModelWorker> ui_worker(new MockUIModelWorker());
+  workers_first.push_back(db_worker);
+  workers_first.push_back(ui_worker);
+  workers_second.push_back(db_worker);
+  workers_second.push_back(ui_worker);
+  routes_first[syncable::AUTOFILL] = GROUP_DB;
+  routes_first[syncable::BOOKMARKS] = GROUP_UI;
+  routes_second[syncable::AUTOFILL] = GROUP_DB;
+  routes_second[syncable::BOOKMARKS] = GROUP_UI;
+  SyncSession first(context_.get(), this, source_first, routes_first,
+      workers_first);
+  SyncSession second(context_.get(), this, source_second, routes_second,
+      workers_second);
+
+  second.RebaseRoutingInfoWithLatest(&first);
+
+  // Make sure the source has not been touched.
+  EXPECT_EQ(second.source().updates_source,
+      sync_pb::GetUpdatesCallerInfo::LOCAL);
+
+  // Make sure our payload is still the same.
+  EXPECT_EQ(all_types, second.source().types);
+
+  // Make sure the workers are still the same.
+  std::vector<ModelSafeWorker*>::const_iterator it_db =
+      std::find(second.workers().begin(), second.workers().end(), db_worker);
+  std::vector<ModelSafeWorker*>::const_iterator it_ui =
+      std::find(second.workers().begin(), second.workers().end(), ui_worker);
+  EXPECT_NE(it_db, second.workers().end());
+  EXPECT_NE(it_ui, second.workers().end());
+  EXPECT_EQ(second.workers().size(), 2U);
+
+  // Make sure the model safe routing info is reduced to first type.
+  ModelSafeRoutingInfo::const_iterator it1 =
+      second.routing_info().find(syncable::AUTOFILL);
+  ModelSafeRoutingInfo::const_iterator it2 =
+      second.routing_info().find(syncable::BOOKMARKS);
+
+  EXPECT_NE(it1, second.routing_info().end());
+  EXPECT_EQ(it1->second, GROUP_DB);
+
+  EXPECT_NE(it2, second.routing_info().end());
+  EXPECT_EQ(it2->second, GROUP_UI);
+  EXPECT_EQ(second.routing_info().size(), 2U);
+}
+
+
 TEST_F(SyncSessionTest, MakeTypePayloadMapFromBitSet) {
   syncable::ModelTypeBitSet types;
   std::string payload = "test";
