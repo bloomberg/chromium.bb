@@ -154,8 +154,8 @@ class NewUserView : public ThrobberHostView,
   views::View* splitter_down1_;
   views::View* splitter_down2_;
   views::NativeButton* sign_in_button_;
-  views::Link* create_account_link_;
   views::Link* guest_link_;
+  views::Link* create_account_link_;
   views::MenuButton* languages_menubutton_;
 
   views::Accelerator accel_focus_pass_;

@@ -113,8 +113,8 @@ NewUserView::NewUserView(Delegate* delegate,
       splitter_down1_(NULL),
       splitter_down2_(NULL),
       sign_in_button_(NULL),
-      create_account_link_(NULL),
       guest_link_(NULL),
+      create_account_link_(NULL),
       languages_menubutton_(NULL),
       accel_focus_pass_(ui::VKEY_P, false, false, true),
       accel_focus_user_(ui::VKEY_U, false, false, true),
@@ -179,11 +179,11 @@ void NewUserView::Init() {
   RecreatePeculiarControls();
 
   AddChildView(sign_in_button_);
-  if (need_create_account_) {
-    InitLink(&create_account_link_);
-  }
   if (need_guest_link_) {
     InitLink(&guest_link_);
+  }
+  if (need_create_account_) {
+    InitLink(&create_account_link_);
   }
   AddChildView(languages_menubutton_);
 
@@ -301,15 +301,15 @@ void NewUserView::UpdateLocalizedStringsAndFonts() {
       l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD));
   sign_in_button_->SetLabel(UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_LOGIN_BUTTON)));
-  if (need_create_account_) {
-    create_account_link_->SetFont(base_font);
-    create_account_link_->SetText(
-        UTF16ToWide(l10n_util::GetStringUTF16(IDS_CREATE_ACCOUNT_BUTTON)));
-  }
   if (need_guest_link_) {
     guest_link_->SetFont(base_font);
     guest_link_->SetText(UTF16ToWide(
         l10n_util::GetStringUTF16(IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON)));
+  }
+  if (need_create_account_) {
+    create_account_link_->SetFont(base_font);
+    create_account_link_->SetText(
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_CREATE_ACCOUNT_BUTTON)));
   }
   delegate_->ClearErrors();
   languages_menubutton_->SetText(
@@ -545,11 +545,11 @@ void NewUserView::EnableInputControls(bool enabled) {
   username_field_->SetEnabled(enabled);
   password_field_->SetEnabled(enabled);
   sign_in_button_->SetEnabled(enabled);
-  if (need_create_account_) {
-    create_account_link_->SetEnabled(enabled);
-  }
   if (need_guest_link_) {
     guest_link_->SetEnabled(enabled);
+  }
+  if (need_create_account_) {
+    create_account_link_->SetEnabled(enabled);
   }
 }
 
