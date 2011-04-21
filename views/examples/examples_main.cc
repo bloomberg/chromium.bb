@@ -31,10 +31,6 @@
 #include "views/layout/grid_layout.h"
 #include "views/window/window.h"
 
-#if defined(OS_LINUX)
-// Slider is not yet ported to Windows.
-#include "views/examples/slider_example.h"
-#endif
 #if defined(OS_WIN)
 // TableView is not yet ported to Linux.
 #include "views/examples/table_example.h"
@@ -155,12 +151,6 @@ void ExamplesMain::Run() {
   examples::WidgetExample widget_example(this);
   tabbed_pane->AddTab(widget_example.GetExampleTitle(),
                       widget_example.GetExampleView());
-
-#if defined(OS_LINUX)
-  examples::SliderExample slider_example(this);
-  tabbed_pane->AddTab(slider_example.GetExampleTitle(),
-                      slider_example.GetExampleView());
-#endif
 
   examples::MenuExample menu_example(this);
   tabbed_pane->AddTab(menu_example.GetExampleTitle(),

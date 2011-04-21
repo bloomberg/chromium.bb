@@ -206,11 +206,6 @@
         'controls/separator.h',
         'controls/single_split_view.cc',
         'controls/single_split_view.h',
-        'controls/slider/native_slider_gtk.cc',
-        'controls/slider/native_slider_gtk.h',
-        'controls/slider/native_slider_wrapper.h',
-        'controls/slider/slider.cc',
-        'controls/slider/slider.h',
         'controls/tabbed_pane/native_tabbed_pane_gtk.cc',
         'controls/tabbed_pane/native_tabbed_pane_gtk.h',
         'controls/tabbed_pane/native_tabbed_pane_win.cc',
@@ -463,11 +458,6 @@
           ],
         }],
         ['OS=="win"', {
-          'sources!': [
-            'controls/slider/slider.cc',
-            'controls/slider/slider.h',
-            'controls/slider/native_slider_wrapper.h',
-          ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
           ],
@@ -591,8 +581,6 @@
         'examples/scroll_view_example.h',
         'examples/single_split_view_example.cc',
         'examples/single_split_view_example.h',
-        'examples/slider_example.cc',
-        'examples/slider_example.h',
         'examples/tabbed_pane_example.cc',
         'examples/tabbed_pane_example.h',
         'examples/table2_example.cc',
