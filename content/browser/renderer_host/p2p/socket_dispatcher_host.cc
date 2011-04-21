@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 
+#include "base/stl_util-inl.h"
 #include "content/browser/renderer_host/p2p/socket_host.h"
 #include "content/common/p2p_messages.h"
 
@@ -45,10 +46,8 @@ void P2PSocketDispatcherHost::OnChannelClosing() {
   BrowserMessageFilter::OnChannelClosing();
 
   // Since the IPC channel is gone, close pending connections.
-  for (IDMap<P2PSocketHost, IDMapOwnPointer>::iterator i(&sockets_);
-       !i.IsAtEnd(); i.Advance()) {
-    sockets_.Remove(i.GetCurrentKey());
-  }
+  STLDeleteContainerPairSecondPointers(sockets_.begin(), sockets_.end());
+  sockets_.clear();
 }
 
 void P2PSocketDispatcherHost::OnDestruct() const {
@@ -69,6 +68,16 @@ bool P2PSocketDispatcherHost::OnMessageReceived(const IPC::Message& message,
   return handled;
 }
 
+P2PSocketHost* P2PSocketDispatcherHost::LookupSocket(
+    int32 routing_id, int socket_id) {
+  SocketsMap::iterator it = sockets_.find(
+      ExtendedSocketId(routing_id, socket_id));
+  if (it == sockets_.end())
+    return NULL;
+  else
+    return it->second;
+}
+
 void P2PSocketDispatcherHost::OnCreateSocket(
     const IPC::Message& msg, P2PSocketType type, int socket_id,
     const net::IPEndPoint& local_address,
@@ -80,7 +89,7 @@ void P2PSocketDispatcherHost::OnCreateSocket(
 }
 
 void P2PSocketDispatcherHost::GetLocalAddressAndCreateSocket(
-    int routing_id, P2PSocketType type, int socket_id,
+    int32 routing_id, P2PSocketType type, int socket_id,
     const net::IPEndPoint& remote_address) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
@@ -102,11 +111,11 @@ void P2PSocketDispatcherHost::GetLocalAddressAndCreateSocket(
 }
 
 void P2PSocketDispatcherHost::FinishCreateSocket(
-    int routing_id, const net::IPEndPoint& local_address, P2PSocketType type,
+    int32 routing_id, const net::IPEndPoint& local_address, P2PSocketType type,
     int socket_id, const net::IPEndPoint& remote_address) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (sockets_.Lookup(socket_id)) {
+  if (LookupSocket(routing_id, socket_id)) {
     LOG(ERROR) << "Received P2PHostMsg_CreateSocket for socket "
         "that already exists.";
     return;
@@ -121,14 +130,15 @@ void P2PSocketDispatcherHost::FinishCreateSocket(
   }
 
   if (socket->Init(local_address, remote_address)) {
-    sockets_.AddWithID(socket.release(), socket_id);
+    sockets_.insert(std::pair<ExtendedSocketId, P2PSocketHost*>(
+        ExtendedSocketId(routing_id, socket_id), socket.release()));
   }
 }
 
 void P2PSocketDispatcherHost::OnAcceptIncomingTcpConnection(
-    int listen_socket_id, net::IPEndPoint remote_address,
-    int connected_socket_id) {
-  P2PSocketHost* socket = sockets_.Lookup(listen_socket_id);
+    const IPC::Message& msg, int listen_socket_id,
+    net::IPEndPoint remote_address, int connected_socket_id) {
+  P2PSocketHost* socket = LookupSocket(msg.routing_id(), listen_socket_id);
   if (!socket) {
     LOG(ERROR) << "Received P2PHostMsg_AcceptIncomingTcpConnection "
         "for invalid socket_id.";
@@ -137,14 +147,16 @@ void P2PSocketDispatcherHost::OnAcceptIncomingTcpConnection(
   P2PSocketHost* accepted_connection =
       socket->AcceptIncomingTcpConnection(remote_address, connected_socket_id);
   if (accepted_connection) {
-    sockets_.AddWithID(accepted_connection, connected_socket_id);
+    sockets_.insert(std::pair<ExtendedSocketId, P2PSocketHost*>(
+        ExtendedSocketId(msg.routing_id(), connected_socket_id),
+        accepted_connection));
   }
 }
 
 void P2PSocketDispatcherHost::OnSend(const IPC::Message& msg, int socket_id,
                                      const net::IPEndPoint& socket_address,
                                      const std::vector<char>& data) {
-  P2PSocketHost* socket = sockets_.Lookup(socket_id);
+  P2PSocketHost* socket = LookupSocket(msg.routing_id(), socket_id);
   if (!socket) {
     LOG(ERROR) << "Received P2PHostMsg_Send for invalid socket_id.";
     return;
@@ -154,5 +166,5 @@ void P2PSocketDispatcherHost::OnSend(const IPC::Message& msg, int socket_id,
 
 void P2PSocketDispatcherHost::OnDestroySocket(const IPC::Message& msg,
                                               int socket_id) {
-  sockets_.Remove(socket_id);
+  sockets_.erase(ExtendedSocketId(msg.routing_id(), socket_id));
 }
