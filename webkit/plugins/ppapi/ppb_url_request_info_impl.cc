@@ -202,7 +202,8 @@ PPB_URLRequestInfo_Impl::PPB_URLRequestInfo_Impl(PluginInstance* instance)
       record_upload_progress_(false),
       has_custom_referrer_url_(false),
       allow_cross_origin_requests_(false),
-      allow_credentials_(false) {
+      allow_credentials_(false),
+      has_custom_content_transfer_encoding_(false) {
 }
 
 PPB_URLRequestInfo_Impl::~PPB_URLRequestInfo_Impl() {
@@ -223,6 +224,10 @@ bool PPB_URLRequestInfo_Impl::SetUndefinedProperty(
     case PP_URLREQUESTPROPERTY_CUSTOMREFERRERURL:
       has_custom_referrer_url_ = false;
       custom_referrer_url_ = std::string();
+      return true;
+    case PP_URLREQUESTPROPERTY_CUSTOMCONTENTTRANSFERENCODING:
+      has_custom_content_transfer_encoding_ = false;
+      custom_content_transfer_encoding_ = std::string();
       return true;
     default:
       return false;
@@ -273,6 +278,10 @@ bool PPB_URLRequestInfo_Impl::SetStringProperty(PP_URLRequestProperty property,
     case PP_URLREQUESTPROPERTY_CUSTOMREFERRERURL:
       has_custom_referrer_url_ = true;
       custom_referrer_url_ = value;
+      return true;
+    case PP_URLREQUESTPROPERTY_CUSTOMCONTENTTRANSFERENCODING:
+      has_custom_content_transfer_encoding_ = true;
+      custom_content_transfer_encoding_ = value;
       return true;
     default:
       return false;
@@ -350,11 +359,19 @@ WebURLRequest PPB_URLRequestInfo_Impl::ToWebURLRequest(WebFrame* frame) const {
     frame->setReferrerForRequest(web_request, WebURL());  // Use default.
   }
 
+  if (has_custom_content_transfer_encoding_) {
+    if (!custom_content_transfer_encoding_.empty()) {
+      web_request.addHTTPHeaderField(
+          WebString::fromUTF8("Content-Transfer-Encoding"),
+          WebString::fromUTF8(custom_content_transfer_encoding_));
+    }
+  }
+
   return web_request;
 }
 
 bool PPB_URLRequestInfo_Impl::RequiresUniversalAccess() const {
-  return has_custom_referrer_url_;
+  return has_custom_referrer_url_ || has_custom_content_transfer_encoding_;
 }
 
 }  // namespace ppapi

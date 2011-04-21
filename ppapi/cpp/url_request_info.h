@@ -54,15 +54,21 @@ class URLRequestInfo : public Resource {
   bool SetRecordUploadProgress(bool enable) {
     return SetProperty(PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS, enable);
   }
-  // To use the default referrer, set url_string to an Undefined Var.
-  bool SetCustomReferrerURL(const Var& url_string) {
-    return SetProperty(PP_URLREQUESTPROPERTY_CUSTOMREFERRERURL, url_string);
+  // To use the default referrer, set url to an Undefined Var.
+  bool SetCustomReferrerURL(const Var& url) {
+    return SetProperty(PP_URLREQUESTPROPERTY_CUSTOMREFERRERURL, url);
   }
   bool SetAllowCrossOriginRequests(bool enable) {
     return SetProperty(PP_URLREQUESTPROPERTY_ALLOWCROSSORIGINREQUESTS, enable);
   }
   bool SetAllowCredentials(bool enable) {
     return SetProperty(PP_URLREQUESTPROPERTY_ALLOWCREDENTIALS, enable);
+  }
+  // To use the default content transfer encoding, set content_transfer_encoding
+  // to an Undefined Var.
+  bool SetCustomContentTransferEncoding(const Var& content_transfer_encoding) {
+    return SetProperty(PP_URLREQUESTPROPERTY_CUSTOMCONTENTTRANSFERENCODING,
+                       content_transfer_encoding);
   }
 };
 

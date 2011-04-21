@@ -84,6 +84,11 @@ class PPB_URLRequestInfo_Impl : public Resource {
   bool allow_cross_origin_requests_;
   bool allow_credentials_;
 
+  // Similar to the custom referrer (above), but for custom content transfer
+  // encoding.
+  bool has_custom_content_transfer_encoding_;
+  std::string custom_content_transfer_encoding_;
+
   DISALLOW_COPY_AND_ASSIGN(PPB_URLRequestInfo_Impl);
 };
 

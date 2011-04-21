@@ -78,30 +78,46 @@ typedef enum {
    */
   PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS,
 
-  // Set to a String to set a custom referrer (if empty, the referrer header
-  // will be omitted), or to an Undefined Var to use the default referrer. Only
-  // loaders with universal access (only available on trusted implementations)
-  // will accept URLRequestInfo objects which try to set a custom referrer; if
-  // given to a loader without universal access, PP_ERROR_BADARGUMENT will
-  // result.
-  //
-  // Undefined/String (default = Undefined)
+  /**
+   * This corresponds to a string (PP_VARTYPE_STRING) or may be undefined
+   * (PP_VARTYPE_UNDEFINED; default).
+   * Set it to a string to set a custom referrer (if empty, the referrer header
+   * will be omitted), or to undefined to use the default referrer. Only loaders
+   * with universal access (only available on trusted implementations) will
+   * accept URLRequestInfo objects that try to set a custom referrer; if given
+   * to a loader without universal access, PP_ERROR_BADARGUMENT will result.
+   */
   PP_URLREQUESTPROPERTY_CUSTOMREFERRERURL,
 
-  // Whether cross-origin requests are allowed. Cross-origin requests are made
-  // using the CORS (Cross-Origin Resource Sharing) algorithm to check whether
-  // the request should be allowed. For the complete CORS algorithm, see:
-  // http://www.w3.org/TR/access-control
-  //
-  // Boolean (default = PP_FALSE).
+  /**
+   * This corresponds to a PP_Bool (PP_VARTYPE_BOOL; default=PP_FALSE).
+   * Whether cross-origin requests are allowed. Cross-origin requests are made
+   * using the CORS (Cross-Origin Resource Sharing) algorithm to check whether
+   * the request should be allowed. For the complete CORS algorithm, refer to
+   * the <a href="http://www.w3.org/TR/access-control">Cross-Origin Resource
+   * Sharing</a> documentation.
+   */
   PP_URLREQUESTPROPERTY_ALLOWCROSSORIGINREQUESTS,
 
-  // Whether HTTP credentials are sent with cross-origin requests. If false,
-  // no credentials are sent with the request and cookies are ignored in the
-  // response. If the request is not cross-origin, this property is ignored.
-  //
-  // Boolean (default = PP_FALSE).
-  PP_URLREQUESTPROPERTY_ALLOWCREDENTIALS
+  /**
+   * This corresponds to a PP_Bool (PP_VARTYPE_BOOL; default=PP_FALSE).
+   * Whether HTTP credentials are sent with cross-origin requests. If false,
+   * no credentials are sent with the request and cookies are ignored in the
+   * response. If the request is not cross-origin, this property is ignored.
+   */
+  PP_URLREQUESTPROPERTY_ALLOWCREDENTIALS,
+
+  /**
+   * This corresponds to a string (PP_VARTYPE_STRING) or may be undefined
+   * (PP_VARTYPE_UNDEFINED; default).
+   * Set it to a string to set a custom content-transfer-encoding header (if
+   * empty, that header will be omitted), or to undefined to use the default (if
+   * any). Only loaders with universal access (only available on trusted
+   * implementations) will accept URLRequestInfo objects that try to set a
+   * custom content transfer encoding; if given to a loader without universal
+   * access, PP_ERROR_BADARGUMENT will result.
+   */
+  PP_URLREQUESTPROPERTY_CUSTOMCONTENTTRANSFERENCODING
 } PP_URLRequestProperty;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_URLRequestProperty, 4);
 /**
