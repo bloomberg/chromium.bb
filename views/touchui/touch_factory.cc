@@ -185,10 +185,12 @@ void TouchFactory::UpdateDeviceList(Display* display) {
 
   // Instead of asking X for the list of devices all the time, let's maintain a
   // list of pointer devices we care about.
-  // It is not necessary to select for slave devices. XInput2 provides enough
-  // information to the event callback to decide which slave device triggered
-  // the event, thus decide whether the 'pointer event' is a 'mouse event' or a
-  // 'touch event'.
+  // It should not be necessary to select for slave devices. XInput2 provides
+  // enough information to the event callback to decide which slave device
+  // triggered the event, thus decide whether the 'pointer event' is a
+  // 'mouse event' or a 'touch event'.
+  // However, on some desktops, some events from a master pointer are
+  // not delivered to the client. So we select for slave devices instead.
   // If the touch device has 'GrabDevice' set and 'SendCoreEvents' unset (which
   // is possible), then the device is detected as a floating device, and a
   // floating device is not connected to a master device. So it is necessary to
@@ -197,7 +199,7 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   XIDeviceInfo* devices = XIQueryDevice(display, XIAllDevices, &count);
   for (int i = 0; i < count; i++) {
     XIDeviceInfo* devinfo = devices + i;
-    if (devinfo->use == XIFloatingSlave || devinfo->use == XIMasterPointer) {
+    if (devinfo->use == XIFloatingSlave || devinfo->use == XISlavePointer) {
       pointer_device_lookup_[devinfo->deviceid] = true;
     }
   }
