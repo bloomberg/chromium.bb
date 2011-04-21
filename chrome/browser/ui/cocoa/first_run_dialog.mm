@@ -133,6 +133,12 @@ void ShowFirstRun(Profile* profile) {
   FirstRun::SetShowWelcomePagePref();
 }
 
+// True when the stats checkbox should be checked by default. This is only
+// the case when the canary is running.
+bool StatsCheckboxDefault() {
+  return platform_util::GetVersionStringModifier().compare("canary") == 0;
+}
+
 }  // namespace
 
 namespace first_run {
@@ -160,10 +166,10 @@ void ShowFirstRunDialog(Profile* profile,
   NSString* nibpath =
       [base::mac::MainAppBundle() pathForResource:@"FirstRunDialog"
                                           ofType:@"nib"];
-  self = [super initWithWindowNibPath:nibpath owner:self];
-  if (self != nil) {
-    // Bound to the dialog checkbox, default to true.
-    makeDefaultBrowser_ = YES;
+  if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
+    // Bound to the dialog checkboxes.
+    makeDefaultBrowser_ = platform_util::CanSetAsDefaultBrowser();
+    statsEnabled_ = StatsCheckboxDefault();
   }
   return self;
 }
@@ -190,7 +196,6 @@ void ShowFirstRunDialog(Profile* profile,
 
   if (!platform_util::CanSetAsDefaultBrowser()) {
     [setAsDefaultCheckbox_ setHidden:YES];
-    makeDefaultBrowser_ = NO;
   }
 
   // Only support the sizing the window once.
