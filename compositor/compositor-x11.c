@@ -48,6 +48,7 @@ struct x11_compositor {
 	xcb_connection_t	*conn;
 	xcb_screen_t		*screen;
 	xcb_cursor_t		 null_cursor;
+	xcb_generic_event_t     *next_event;
 	struct wl_array		 keys;
 	struct wl_event_source	*xcb_source;
 	struct {
@@ -376,6 +377,20 @@ x11_compositor_find_output(struct x11_compositor *c, xcb_window_t window)
 	return NULL;
 }
 
+static int
+x11_compositor_next_event(struct x11_compositor *c,
+			  xcb_generic_event_t **event)
+{
+	if (c->next_event) {
+		*event = c->next_event;
+		c->next_event = NULL;
+	} else {
+		*event = xcb_poll_for_event (c->conn);
+	}
+
+	return *event != NULL;
+}
+
 static void
 x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 {
@@ -394,7 +409,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	int i, set;
 
 	prev = NULL;
-	while (event = xcb_poll_for_event (c->conn), event != NULL) {
+	while (x11_compositor_next_event(c, &event)) {
 		switch (prev ? prev->response_type & ~0x80 : 0x80) {
 		case XCB_KEY_RELEASE:
 			key_release = (xcb_key_press_event_t *) prev;
@@ -420,15 +435,6 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			}
 
 		case XCB_FOCUS_IN:
-			/* FIXME: There's a bug somewhere in xcb (I
-			 * think) where we don't get all the events in
-			 * the input buffer when calling
-			 * xcb_poll_for_event().  What happens is we
-			 * alt-tab to the compositor window, and get
-			 * the focus_in(mode=while_grabbed), but not
-			 * the following focus_in(mode=ungrab) which
-			 * is the one we care about. */
-
 			/* assert event is keymap_notify */
 			focus_in = (xcb_focus_in_event_t *) prev;
 			keymap_notify = (xcb_keymap_notify_event_t *) event;
@@ -457,7 +463,6 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 		}
 
 		switch (event->response_type & ~0x80) {
-
 		case XCB_KEY_PRESS:
 			key_press = (xcb_key_press_event_t *) event;
 			notify_key(c->base.input_device,
@@ -561,6 +566,18 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	}
 }
 
+static int
+x11_compositor_check_source(struct wl_event_source *source, void *data)
+{
+	struct x11_compositor *c = data;
+
+	/* Really? xcb doesn't have a "get queue length" function that
+	 * doesn't pop an event? */
+	c->next_event = xcb_poll_for_queued_event(c->conn);
+
+	return c->next_event != NULL;
+}
+
 #define F(field) offsetof(struct x11_compositor, field)
 
 static void
@@ -630,15 +647,14 @@ x11_compositor_create(struct wl_display *display, int width, int height)
 	memset(c, 0, sizeof *c);
 
 	c->dpy = XOpenDisplay(NULL);
-
 	if (c->dpy == NULL)
 		return NULL;
 
 	c->conn = XGetXCBConnection(c->dpy);
-
 	if (xcb_connection_has_error(c->conn))
 		return NULL;
 
+	c->next_event = NULL;	
 	s = xcb_setup_roots_iterator(xcb_get_setup(c->conn));
 	c->screen = s.data;
 	wl_array_init(&c->keys);
@@ -667,6 +683,7 @@ x11_compositor_create(struct wl_display *display, int width, int height)
 		wl_event_loop_add_fd(loop, xcb_get_file_descriptor(c->conn),
 				     WL_EVENT_READABLE,
 				     x11_compositor_handle_event, c);
+	wl_event_source_check(c->xcb_source, x11_compositor_check_source);
 
 	return &c->base;
 }
