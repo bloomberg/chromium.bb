@@ -90,7 +90,7 @@ def StampMatches(stampfile, expected):
     f = open(stampfile, 'r')
     stamp = f.read()
     f.close()
-    return stamp == expected
+    return stamp == expected or stamp.startswith('manual')
   except IOError:
     return False
 
