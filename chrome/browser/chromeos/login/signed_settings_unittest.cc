@@ -132,6 +132,7 @@ class SignedSettingsTest : public ::testing::Test {
     em::ChromeDeviceSettingsProto pol;
     em::GuestModeEnabledProto* allow = pol.mutable_guest_mode_enabled();
     allow->set_guest_mode_enabled(false);
+    pol.mutable_device_proxy_settings()->set_proxy_mode("direct");
 
     if (!whitelist.empty()) {
       em::UserWhitelistProto* whitelist_proto = pol.mutable_user_whitelist();

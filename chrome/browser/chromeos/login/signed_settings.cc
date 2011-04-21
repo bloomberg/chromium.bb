@@ -627,8 +627,8 @@ void StorePropertyOp::SetInPolicy(const std::string& prop,
 
   } else if (prop == kSettingProxyEverywhere) {
     // TODO(cmasone): NOTIMPLEMENTED() once http://crosbug.com/13052 is fixed.
-    em::DeviceProxySettingsProto* proxy = pol.mutable_device_proxy_settings();
-    DCHECK(proxy->ParseFromString(value));
+    bool success = pol.mutable_device_proxy_settings()->ParseFromString(value);
+    DCHECK(success);
 
   } else {
     NOTREACHED();
@@ -709,6 +709,7 @@ std::string RetrievePropertyOp::LookUpInPolicy(const std::string& prop) {
       return data.username();
     return "";
   }
+  VLOG(2) << "Looking up " << prop;
   em::ChromeDeviceSettingsProto pol;
   pol.ParseFromString(service_->cached_policy().policy_value());
   if (prop == kAccountsPrefAllowNewUser) {
