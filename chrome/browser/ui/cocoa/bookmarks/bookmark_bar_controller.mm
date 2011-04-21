@@ -2653,7 +2653,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       [self closeAllBookmarkFolders];
     }
     if (animate && !ignoreAnimations_ && [self isVisible] &&
-        [[self browserWindow] isKeyWindow]) {
+        [[self browserWindow] isMainWindow]) {
       NSPoint poofPoint = [oldButton screenLocationForRemoveAnimation];
       NSShowAnimationEffect(NSAnimationEffectDisappearingItemDefault, poofPoint,
                             NSZeroSize, nil, nil, nil);
