@@ -1217,8 +1217,8 @@ enum {
   browser_->tabstrip_model()->DetachTabContentsAt(index);
 }
 
-- (NSView*)selectedTabView {
-  return [tabStripController_ selectedTabView];
+- (NSView*)activeTabView {
+  return [tabStripController_ activeTabView];
 }
 
 - (void)setIsLoading:(BOOL)isLoading force:(BOOL)force {
@@ -1231,7 +1231,7 @@ enum {
 }
 
 - (void)focusTabContents {
-  [[self window] makeFirstResponder:[tabStripController_ selectedTabView]];
+  [[self window] makeFirstResponder:[tabStripController_ activeTabView]];
 }
 
 - (void)layoutTabs {
@@ -1297,7 +1297,7 @@ enum {
   tabRect.size.height = [TabStripController defaultTabHeight];
 
   // And make sure we use the correct frame in the new view.
-  [[controller tabStripController] setFrameOfSelectedTab:tabRect];
+  [[controller tabStripController] setFrameOfActiveTab:tabRect];
   return controller;
 }
 
@@ -1412,7 +1412,7 @@ enum {
   return !browser_->tabstrip_model()->empty();
 }
 
-- (NSString*)selectedTabTitle {
+- (NSString*)activeTabTitle {
   TabContents* contents = browser_->GetSelectedTabContents();
   return base::SysUTF16ToNSString(contents->GetTitle());
 }
@@ -1469,7 +1469,7 @@ enum {
 }
 
 // TabStripControllerDelegate protocol.
-- (void)onSelectTabWithContents:(TabContents*)contents {
+- (void)onActivateTabWithContents:(TabContents*)contents {
   // Update various elements that are interested in knowing the current
   // TabContents.
 
@@ -1502,7 +1502,8 @@ enum {
   [self updateBookmarkBarVisibilityWithAnimation:NO];
 }
 
-- (void)onSelectedTabChange:(TabStripModelObserver::TabChangeType)change {
+- (void)onTabChanged:(TabStripModelObserver::TabChangeType)change
+        withContents:(TabContents*)contents {
   // Update titles if this is the currently selected tab and if it isn't just
   // the loading state which changed.
   if (change != TabStripModelObserver::LOADING_ONLY)

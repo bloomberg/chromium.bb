@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/memory/scoped_nsobject.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
@@ -57,6 +58,14 @@
 - (BOOL)isCommandEnabled:(TabStripModel::ContextMenuCommand)command
            forController:(TabController*)controller {
   return NO;
+}
+- (ui::SimpleMenuModel*)contextMenuModelForController:(TabController*)controller
+    menuDelegate:(ui::SimpleMenuModel::Delegate*)delegate {
+  ui::SimpleMenuModel* model = new ui::SimpleMenuModel(delegate);
+  model->AddItem(1, ASCIIToUTF16("Hello World"));
+  model->AddItem(2, ASCIIToUTF16("Allays"));
+  model->AddItem(3, ASCIIToUTF16("Chromium"));
+  return model;
 }
 @end
 
@@ -263,6 +272,10 @@ TEST_F(TabControllerTest, ShouldShowIcon) {
 TEST_F(TabControllerTest, Menu) {
   NSWindow* window = test_window();
   scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  scoped_nsobject<TabControllerTestTarget> target(
+      [[TabControllerTestTarget alloc] init]);
+  [controller setTarget:target];
+
   [[window contentView] addSubview:[controller view]];
   int cap = [controller iconCapacity];
   EXPECT_GT(cap, 0);
@@ -270,7 +283,7 @@ TEST_F(TabControllerTest, Menu) {
   // Asking the view for its menu should yield a valid menu.
   NSMenu* menu = [[controller view] menu];
   EXPECT_TRUE(menu);
-  EXPECT_GT([menu numberOfItems], 0);
+  EXPECT_EQ(3, [menu numberOfItems]);
 }
 
 // Tests that the title field is correctly positioned and sized when the

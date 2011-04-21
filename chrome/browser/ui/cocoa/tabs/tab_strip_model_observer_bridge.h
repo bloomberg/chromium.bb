@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,10 +64,10 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
                        atIndex:(NSInteger)index;
 - (void)tabDetachedWithContents:(TabContentsWrapper*)contents
                         atIndex:(NSInteger)index;
-- (void)selectTabWithContents:(TabContentsWrapper*)newContents
-             previousContents:(TabContentsWrapper*)oldContents
-                      atIndex:(NSInteger)index
-                  userGesture:(bool)wasUserGesture;
+- (void)activateTabWithContents:(TabContentsWrapper*)newContents
+               previousContents:(TabContentsWrapper*)oldContents
+                        atIndex:(NSInteger)index
+                    userGesture:(bool)wasUserGesture;
 - (void)tabMovedWithContents:(TabContentsWrapper*)contents
                     fromIndex:(NSInteger)from
                       toIndex:(NSInteger)to;

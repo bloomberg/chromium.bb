@@ -26,6 +26,7 @@
 #include "chrome/browser/sidebar/sidebar_container.h"
 #include "chrome/browser/sidebar/sidebar_manager.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -44,6 +45,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/title_prefix_matcher.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/navigation_controller.h"
@@ -471,10 +473,10 @@ class NotificationBridge : public NotificationObserver {
       if (selection == currentContents) {
         // Must manually force a selection since the model won't send
         // selection messages in this scenario.
-        [self selectTabWithContents:currentContents
-                   previousContents:NULL
-                            atIndex:i
-                        userGesture:NO];
+        [self activateTabWithContents:currentContents
+                     previousContents:NULL
+                              atIndex:i
+                          userGesture:NO];
       }
     }
     // Don't lay out the tabs until after the controller has been fully
@@ -553,7 +555,7 @@ class NotificationBridge : public NotificationObserver {
   }
 
   // New content is in place, delegate should adjust itself accordingly.
-  [delegate_ onSelectTabWithContents:[controller tabContents]];
+  [delegate_ onActivateTabWithContents:[controller tabContents]];
 
   // It also restores content autoresizing properties.
   [controller ensureContentsVisible];
@@ -624,7 +626,7 @@ class NotificationBridge : public NotificationObserver {
 // |index|, this returns |index| + 2. If there are no closing tabs, this will
 // return |index|.
 - (NSInteger)indexFromModelIndex:(NSInteger)index {
-  DCHECK(index >= 0);
+  DCHECK_GE(index, 0);
   if (index < 0)
     return index;
 
@@ -718,8 +720,18 @@ class NotificationBridge : public NotificationObserver {
 - (void)selectTab:(id)sender {
   DCHECK([sender isKindOfClass:[NSView class]]);
   int index = [self modelIndexForTabView:sender];
-  if (tabStripModel_->ContainsIndex(index))
-    tabStripModel_->ActivateTabAt(index, true);
+  NSUInteger modifiers = [[NSApp currentEvent] modifierFlags];
+  if (tabStripModel_->ContainsIndex(index)) {
+    if (modifiers & NSCommandKeyMask && modifiers & NSShiftKeyMask) {
+      tabStripModel_->AddSelectionFromAnchorTo(index);
+    } else if (modifiers & NSShiftKeyMask) {
+      tabStripModel_->ExtendSelectionTo(index);
+    } else if (modifiers & NSCommandKeyMask) {
+      tabStripModel_->ToggleSelectionAt(index);
+    } else if (!tabStripModel_->IsTabSelected(index)) {
+      tabStripModel_->ActivateTabAt(index, true);
+    }
+  }
 }
 
 // Called when the user closes a tab. Asks the model to close the tab. |sender|
@@ -794,6 +806,13 @@ class NotificationBridge : public NotificationObserver {
   if (!tabStripModel_->ContainsIndex(index))
     return NO;
   return tabStripModel_->IsContextMenuCommandEnabled(index, command) ? YES : NO;
+}
+
+// Returns a context menu model for a given controller. Caller owns the result.
+- (ui::SimpleMenuModel*)contextMenuModelForController:(TabController*)controller
+    menuDelegate:(ui::SimpleMenuModel::Delegate*)delegate {
+  int index = [self modelIndexForTabView:[controller view]];
+  return new TabMenuModel(delegate, tabStripModel_, index);
 }
 
 - (void)insertPlaceholderForTab:(TabView*)tab
@@ -1187,12 +1206,12 @@ class NotificationBridge : public NotificationObserver {
 
 // Called when a notification is received from the model to select a particular
 // tab. Swaps in the toolbar and content area associated with |newContents|.
-- (void)selectTabWithContents:(TabContentsWrapper*)newContents
-             previousContents:(TabContentsWrapper*)oldContents
-                      atIndex:(NSInteger)modelIndex
-                  userGesture:(bool)wasUserGesture {
+- (void)activateTabWithContents:(TabContentsWrapper*)newContents
+               previousContents:(TabContentsWrapper*)oldContents
+                        atIndex:(NSInteger)modelIndex
+                    userGesture:(bool)wasUserGesture {
   // Take closing tabs into account.
-  NSInteger index = [self indexFromModelIndex:modelIndex];
+  NSInteger activeIndex = [self indexFromModelIndex:modelIndex];
 
   if (oldContents && oldContents != newContents) {
     int oldModelIndex =
@@ -1207,17 +1226,26 @@ class NotificationBridge : public NotificationObserver {
     }
   }
 
-  // De-select all other tabs and select the new tab.
+  // First get the vector of indices, which is allays sorted in ascending order.
+  TabStripSelectionModel::SelectedIndices selection(
+      tabStripModel_->selection_model().selected_indices());
+  // Iterate through all of the tabs, selecting each as necessary.
+  TabStripSelectionModel::SelectedIndices::iterator iter = selection.begin();
   int i = 0;
   for (TabController* current in tabArray_.get()) {
-    [current setSelected:(i == index) ? YES : NO];
+    BOOL selected = iter != selection.end() &&
+        [self indexFromModelIndex:*iter] == i;
+    [current setSelected:selected];
+    [current setActive:i == activeIndex];
+    if (selected)
+      ++iter;
     ++i;
   }
 
   // Tell the new tab contents it is about to become the selected tab. Here it
   // can do things like make sure the toolbar is up to date.
   TabContentsController* newController =
-      [tabContentsArray_ objectAtIndex:index];
+      [tabContentsArray_ objectAtIndex:activeIndex];
   [newController willBecomeSelectedTab];
 
   // Relayout for new tabs and to let the selected tab grow to be larger in
@@ -1488,7 +1516,7 @@ class NotificationBridge : public NotificationObserver {
   NSInteger index = [self indexFromModelIndex:modelIndex];
 
   if (modelIndex == tabStripModel_->active_index())
-    [delegate_ onSelectedTabChange:change];
+    [delegate_ onTabChanged:change withContents:contents->tab_contents()];
 
   if (change == TabStripModelObserver::TITLE_NOT_LOADING) {
     // TODO(sky): make this work.
@@ -1567,19 +1595,19 @@ class NotificationBridge : public NotificationObserver {
   [self updateCommonTitlePrefix];
 }
 
-- (void)setFrameOfSelectedTab:(NSRect)frame {
-  NSView* view = [self selectedTabView];
+- (void)setFrameOfActiveTab:(NSRect)frame {
+  NSView* view = [self activeTabView];
   NSValue* identifier = [NSValue valueWithPointer:view];
   [targetFrames_ setObject:[NSValue valueWithRect:frame]
                     forKey:identifier];
   [view setFrame:frame];
 }
 
-- (NSView*)selectedTabView {
-  int selectedIndex = tabStripModel_->active_index();
+- (NSView*)activeTabView {
+  int activeIndex = tabStripModel_->active_index();
   // Take closing tabs into account. They can't ever be selected.
-  selectedIndex = [self indexFromModelIndex:selectedIndex];
-  return [self viewAtIndex:selectedIndex];
+  activeIndex = [self indexFromModelIndex:activeIndex];
+  return [self viewAtIndex:activeIndex];
 }
 
 // Find the model index based on the x coordinate of the placeholder. If there
@@ -1806,19 +1834,19 @@ class NotificationBridge : public NotificationObserver {
   // ones.
   NSMutableArray* subviews = [NSMutableArray arrayWithArray:permanentSubviews_];
 
-  NSView* selectedTabView = nil;
+  NSView* activeTabView = nil;
   // Go through tabs in reverse order, since |subviews| is bottom-to-top.
   for (TabController* tab in [tabArray_ reverseObjectEnumerator]) {
     NSView* tabView = [tab view];
-    if ([tab selected]) {
-      DCHECK(!selectedTabView);
-      selectedTabView = tabView;
+    if ([tab active]) {
+      DCHECK(!activeTabView);
+      activeTabView = tabView;
     } else {
       [subviews addObject:tabView];
     }
   }
-  if (selectedTabView) {
-    [subviews addObject:selectedTabView];
+  if (activeTabView) {
+    [subviews addObject:activeTabView];
   }
   [tabStripView_ setSubviews:subviews];
   [self setTabTrackingAreasEnabled:mouseInside_];

@@ -141,7 +141,7 @@ void TestingAutomationProvider::GetWindowTitle(int handle, string16* text) {
   if ([[window delegate] isKindOfClass:[TabWindowController class]]) {
     TabWindowController* delegate =
         reinterpret_cast<TabWindowController*>([window delegate]);
-    title = [delegate selectedTabTitle];
+    title = [delegate activeTabTitle];
   } else {
     title = [window title];
   }

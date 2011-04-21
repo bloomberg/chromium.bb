@@ -259,11 +259,6 @@ const CGFloat kRapidCloseDist = 2.5;
     }
   }
 
-  // Fire the action to select the tab.
-  if ([[controller_ target] respondsToSelector:[controller_ action]])
-    [[controller_ target] performSelector:[controller_ action]
-                               withObject:self];
-
   [self resetDragControllers];
 
   // Resolve overlay back to original window.
@@ -547,7 +542,7 @@ const CGFloat kRapidCloseDist = 2.5;
 
     // Compute where placeholder should go and insert it into the
     // destination tab strip.
-    TabView* draggedTabView = (TabView*)[draggedController_ selectedTabView];
+    TabView* draggedTabView = (TabView*)[draggedController_ activeTabView];
     NSRect tabFrame = [draggedTabView frame];
     tabFrame.origin = [dragWindow_ convertBaseToScreen:tabFrame.origin];
     tabFrame.origin = [[targetController_ window]
@@ -574,6 +569,11 @@ const CGFloat kRapidCloseDist = 2.5;
   // The drag/click is done. If the user dragged the mouse, finalize the drag
   // and clean up.
 
+  // Fire the action to select the tab.
+  if ([[controller_ target] respondsToSelector:[controller_ action]])
+    [[controller_ target] performSelector:[controller_ action]
+                               withObject:self];
+
   // Special-case this to keep the logic below simpler.
   if (moveWindowOnDrag_)
     return;
@@ -597,13 +597,13 @@ const CGFloat kRapidCloseDist = 2.5;
       // Move tab to new location.
       DCHECK([sourceController_ numberOfTabs]);
       TabWindowController* dropController = sourceController_;
-      [dropController moveTabView:[dropController selectedTabView]
+      [dropController moveTabView:[dropController activeTabView]
                    fromController:nil];
     }
   } else if (targetController_) {
     // Move between windows. If |targetController_| is nil, we're not dropping
     // into any existing window.
-    NSView* draggedTabView = [draggedController_ selectedTabView];
+    NSView* draggedTabView = [draggedController_ activeTabView];
     [targetController_ moveTabView:draggedTabView
                     fromController:draggedController_];
     // Force redraw to avoid flashes of old content before returning to event
@@ -776,7 +776,7 @@ const CGFloat kRapidCloseDist = 2.5;
 
   // Mimic the tab strip's bottom border, which consists of a dark border
   // and light highlight.
-  if (!selected) {
+  if (![controller_ active]) {
     [path addClip];
     NSRect borderRect = rect;
     borderRect.origin.y = lineWidth;

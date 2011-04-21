@@ -60,7 +60,7 @@ void TabMenuModel::Build(bool is_pinned) {
 }
 
 void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
-  bool effects_multiple_tabs =
+  bool affects_multiple_tabs =
       (tab_strip->IsTabSelected(index) &&
        tab_strip->selection_model().selected_indices().size() > 1);
   AddItemWithStringId(TabStripModel::CommandNewTab, IDS_TAB_CXMENU_NEWTAB);
@@ -69,7 +69,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
   AddItemWithStringId(TabStripModel::CommandDuplicate,
                       IDS_TAB_CXMENU_DUPLICATE);
   bool will_pin = tab_strip->WillContextMenuPin(index);
-  if (effects_multiple_tabs) {
+  if (affects_multiple_tabs) {
     AddItemWithStringId(
         TabStripModel::CommandTogglePinned,
         will_pin ? IDS_TAB_CXMENU_PIN_TABS : IDS_TAB_CXMENU_UNPIN_TABS);
@@ -79,7 +79,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
         will_pin ? IDS_TAB_CXMENU_PIN_TAB : IDS_TAB_CXMENU_UNPIN_TAB);
   }
   AddSeparator();
-  if (effects_multiple_tabs) {
+  if (affects_multiple_tabs) {
     AddItemWithStringId(TabStripModel::CommandCloseTab,
                         IDS_TAB_CXMENU_CLOSETABS);
   } else {

@@ -98,15 +98,15 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   [super dealloc];
 }
 
-// The internals of |-setSelected:| but doesn't check if we're already set
-// to |selected|. Pass the selection change to the subviews that need it and
-// mark ourselves as needing a redraw.
+// The internals of |-setSelected:| and |-setActive:| but doesn't set the
+// backing variables. This updates the drawing state and marks self as needing
+// a re-draw.
 - (void)internalSetSelected:(BOOL)selected {
-  selected_ = selected;
   TabView* tabView = static_cast<TabView*>([self view]);
   DCHECK([tabView isKindOfClass:[TabView class]]);
   [tabView setState:selected];
-  [tabView cancelAlert];
+  if ([self active])
+    [tabView cancelAlert];
   [self updateVisibility];
   [self updateTitleColor];
 }
@@ -135,8 +135,9 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 - (NSMenu*)menu {
   contextMenuDelegate_.reset(
       new TabControllerInternal::MenuDelegate(target_, self));
-  contextMenuModel_.reset(new TabMenuModel(contextMenuDelegate_.get(),
-                                           [self pinned]));
+  contextMenuModel_.reset(
+      [target_ contextMenuModelForController:self
+                                menuDelegate:contextMenuDelegate_.get()]);
   contextMenuController_.reset(
       [[MenuController alloc] initWithModel:contextMenuModel_.get()
                      useWithPopUpButtonCell:NO]);
@@ -160,13 +161,26 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   [super setTitle:title];
 }
 
+- (void)setActive:(BOOL)active {
+  if (active != active_) {
+    active_ = active;
+    [self internalSetSelected:[self selected]];
+  }
+}
+
+- (BOOL)active {
+  return active_;
+}
+
 - (void)setSelected:(BOOL)selected {
-  if (selected_ != selected)
-    [self internalSetSelected:selected];
+  if (selected_ != selected) {
+    selected_ = selected;
+    [self internalSetSelected:[self selected]];
+  }
 }
 
 - (BOOL)selected {
-  return selected_;
+  return selected_ || active_;
 }
 
 - (void)setIconView:(NSView*)iconView {

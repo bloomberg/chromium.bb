@@ -49,13 +49,14 @@ class MenuDelegate;
   BOOL app_;
   BOOL mini_;
   BOOL pinned_;
+  BOOL active_;
   BOOL selected_;
   GURL url_;
   TabLoadingState loadingState_;
   CGFloat iconTitleXOffset_;  // between left edges of icon and title
   id<TabControllerTarget> target_;  // weak, where actions are sent
   SEL action_;  // selector sent when tab is selected by clicking
-  scoped_ptr<TabMenuModel> contextMenuModel_;
+  scoped_ptr<ui::SimpleMenuModel> contextMenuModel_;
   scoped_ptr<TabControllerInternal::MenuDelegate> contextMenuDelegate_;
   scoped_nsobject<MenuController> contextMenuController_;
 }
@@ -66,6 +67,10 @@ class MenuDelegate;
 @property(assign, nonatomic) BOOL app;
 @property(assign, nonatomic) BOOL mini;
 @property(assign, nonatomic) BOOL pinned;
+// Note that |-selected| will return YES if the controller is |-active|, too.
+// |-setSelected:| affects the selection, while |-setActive:| affects the key
+// status/focus of the content.
+@property(assign, nonatomic) BOOL active;
 @property(assign, nonatomic) BOOL selected;
 @property(assign, nonatomic) id target;
 @property(assign, nonatomic) GURL url;
