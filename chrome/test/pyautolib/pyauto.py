@@ -2791,8 +2791,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     result = self._GetResultFromJSONRequest(cmd_dict, windex=-1, timeout=50000)
     return result.get('error_string')
 
-  def ConnectToHiddenWifiNetwork(self, ssid, security,
-                                 password='', identity='', certpath=''):
+  def ConnectToHiddenWifiNetwork(self, ssid, security, password=''):
     """Connect to a wifi network by its service path.
 
     Blocks until connection succeeds or fails.
@@ -2802,8 +2801,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       security: The network's security type. One of: 'SECURITY_NONE',
                 'SECURITY_WEP', 'SECURITY_WPA', 'SECURITY_RSN', 'SECURITY_8021X'
       password: Passphrase for connecting to the wifi network.
-      identity: Identity for 802.11x networks.
-      certpath: Certificate path for 802.11x networks.
 
     Returns:
       An error string if an error occured.
@@ -2819,8 +2816,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'ssid': ssid,
         'security': security,
         'password': password,
-        'identity': identity,
-        'certpath': certpath,
     }
     result = self._GetResultFromJSONRequest(cmd_dict, windex=-1, timeout=50000)
     return result.get('error_string')

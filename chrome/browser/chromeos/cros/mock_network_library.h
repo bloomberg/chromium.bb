@@ -90,11 +90,19 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD1(GetWifiAccessPoints, bool(WifiAccessPointVector*));
   MOCK_METHOD1(ConnectToWifiNetwork, void(WifiNetwork*));
   MOCK_METHOD1(ConnectToWifiNetwork, void(const std::string&));
-  MOCK_METHOD5(ConnectToWifiNetwork, void(ConnectionSecurity security,
-                                          const std::string&,
-                                          const std::string&,
-                                          const std::string&,
+  MOCK_METHOD3(ConnectToWifiNetwork, void(const std::string&,
+                                          ConnectionSecurity security,
                                           const std::string&));
+  MOCK_METHOD10(ConnectToWifiNetwork8021x, void(const std::string&,
+                                                EAPMethod,
+                                                EAPPhase2Auth,
+                                                const std::string&,
+                                                bool,
+                                                const std::string&,
+                                                const std::string&,
+                                                const std::string&,
+                                                const std::string&,
+                                                bool));
   MOCK_METHOD1(ConnectToCellularNetwork, void(CellularNetwork*));
   MOCK_METHOD1(ConnectToVirtualNetwork, void(VirtualNetwork*));
   MOCK_METHOD5(ConnectToVirtualNetworkPSK, void(const std::string&,

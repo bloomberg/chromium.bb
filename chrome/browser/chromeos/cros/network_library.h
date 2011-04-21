@@ -1058,13 +1058,23 @@ class NetworkLibrary {
   // Same as above but searches for an existing network by name.
   virtual void ConnectToWifiNetwork(const std::string& service_path) = 0;
 
-  // Connect to the specified network with security, ssid, passphrase, identity,
-  // and (optionally) certpath.
-  virtual void ConnectToWifiNetwork(ConnectionSecurity security,
-                                    const std::string& ssid,
-                                    const std::string& passphrase,
-                                    const std::string& identity,
-                                    const std::string& certpath) = 0;
+  // Connect to a hidden network with given SSID, security, and passphrase.
+  virtual void ConnectToWifiNetwork(const std::string& ssid,
+                                    ConnectionSecurity security,
+                                    const std::string& passphrase) = 0;
+
+  // Connect to a hidden 802.1X network.
+  virtual void ConnectToWifiNetwork8021x(
+      const std::string& ssid,
+      EAPMethod method,
+      EAPPhase2Auth auth,
+      const std::string& server_ca_cert_nss_nickname,
+      bool use_system_cas,
+      const std::string& client_cert_pkcs11_id,
+      const std::string& identity,
+      const std::string& anonymous_identity,
+      const std::string& passphrase,
+      bool save_credentials) = 0;
 
   // Connect to the specified cellular network.
   virtual void ConnectToCellularNetwork(CellularNetwork* network) = 0;

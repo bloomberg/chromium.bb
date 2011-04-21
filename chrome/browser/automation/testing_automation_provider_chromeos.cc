@@ -427,12 +427,10 @@ void TestingAutomationProvider::ConnectToHiddenWifiNetwork(
     return;
   }
 
-  std::string ssid, security, password, identity, certpath;
+  std::string ssid, security, password;
   if (!args->GetString("ssid", &ssid) ||
       !args->GetString("security", &security) ||
-      !args->GetString("password", &password) ||
-      !args->GetString("identity", &identity) ||
-      !args->GetString("certpath", &certpath)) {
+      !args->GetString("password", &password)) {
     AutomationJSONReply(this, reply_message)
         .SendError("Invalid or missing args.");
     return;
@@ -458,8 +456,7 @@ void TestingAutomationProvider::ConnectToHiddenWifiNetwork(
   // Set up an observer (it will delete itself).
   new SSIDConnectObserver(this, reply_message, ssid);
 
-  network_library->ConnectToWifiNetwork(connection_security, ssid, password,
-                                        identity, certpath);
+  network_library->ConnectToWifiNetwork(ssid, connection_security, password);
 }
 
 void TestingAutomationProvider::DisconnectFromWifiNetwork(

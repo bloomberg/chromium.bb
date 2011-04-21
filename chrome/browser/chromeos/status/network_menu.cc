@@ -263,7 +263,6 @@ void NetworkMenuModel::ShowTabbedNetworkSettings(const Network* network) const {
 // Meanwhile, if MenuUI::IsEnabled() is true, always show the settings UI,
 // otherwise show NetworkConfigView only to get passwords when not connected.
 void NetworkMenuModel::ShowNetworkConfigView(NetworkConfigView* view) const {
-  view->set_browser_mode(owner_->IsBrowserMode());
   views::Window* window = browser::CreateViewsWindow(
       owner_->GetNativeWindow(), gfx::Rect(), view);
   window->SetIsAlwaysOnTop(true);

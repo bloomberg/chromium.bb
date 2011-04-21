@@ -7,9 +7,12 @@
 #pragma once
 
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
+#include "views/controls/button/button.h"  // views::ButtonListener
 #include "views/window/dialog_delegate.h"
 
 namespace views {
+class NativeButton;
 class View;
 class Window;
 }
@@ -20,7 +23,8 @@ class ChildNetworkConfigView;
 
 // A dialog box for showing a password textfield.
 class NetworkConfigView : public views::View,
-                          public views::DialogDelegate {
+                          public views::DialogDelegate,
+                          public views::ButtonListener {
  public:
   class Delegate {
    public:
@@ -45,27 +49,24 @@ class NetworkConfigView : public views::View,
 
   // views::DialogDelegate methods.
   virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const;
+      MessageBoxFlags::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(
-      MessageBoxFlags::DialogButton button) const;
-  virtual bool Cancel();
-  virtual bool Accept();
+      MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual views::View* GetExtraView() OVERRIDE;
 
   // views::WindowDelegate method.
-  virtual bool IsModal() const { return true; }
-  virtual views::View* GetContentsView() { return this; }
+  virtual bool IsModal() const OVERRIDE { return true; }
+  virtual views::View* GetContentsView() OVERRIDE { return this; }
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
 
   // views::View overrides.
-  virtual std::wstring GetWindowTitle() const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
-  // Getter/setter for browser mode.
-  void set_browser_mode(bool value) {
-    browser_mode_ = value;
-  }
-  bool is_browser_mode() const {
-    return browser_mode_;
-  }
+  // views::ButtonListener overrides.
+  virtual void ButtonPressed(
+      views::Button* sender, const views::Event& event) OVERRIDE;
 
   void set_delegate(Delegate* delegate) {
     delegate_ = delegate;
@@ -80,14 +81,21 @@ class NetworkConfigView : public views::View,
                                     views::View* child);
 
  private:
-  // True when opening in browser, otherwise in OOBE/login mode.
-  bool browser_mode_;
+  // Creates an "Advanced" button in the lower-left corner of the dialog.
+  void CreateAdvancedButton();
+
+  // Resets the underlying view to show advanced options.
+  void ShowAdvancedView();
 
   // There's always only one child view, which will get deleted when
   // NetworkConfigView gets cleaned up.
   ChildNetworkConfigView* child_config_view_;
 
   Delegate* delegate_;
+
+  // Button in lower-left corner, may be null or hidden.
+  views::NativeButton* advanced_button_;
+  views::View* advanced_button_container_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigView);
 };
@@ -96,6 +104,13 @@ class NetworkConfigView : public views::View,
 // methods, which are called by NetworkConfigView.
 class ChildNetworkConfigView : public views::View {
  public:
+  explicit ChildNetworkConfigView(NetworkConfigView* parent, Network* network)
+      : service_path_(network->service_path()),
+        parent_(parent) {}
+  explicit ChildNetworkConfigView(NetworkConfigView* parent)
+      : parent_(parent) {}
+  virtual ~ChildNetworkConfigView() {}
+
   // Called to get title for parent NetworkConfigView dialog box.
   virtual string16 GetTitle() = 0;
 
@@ -117,13 +132,6 @@ class ChildNetworkConfigView : public views::View {
   static const int kPassphraseWidth;
 
  protected:
-  explicit ChildNetworkConfigView(NetworkConfigView* parent, Network* network)
-      : service_path_(network->service_path()),
-        parent_(parent) {}
-  explicit ChildNetworkConfigView(NetworkConfigView* parent)
-      : parent_(parent) {}
-  virtual ~ChildNetworkConfigView() {}
-
   std::string service_path_;
   NetworkConfigView* parent_;
 

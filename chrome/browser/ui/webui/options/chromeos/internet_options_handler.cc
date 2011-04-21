@@ -800,7 +800,7 @@ void InternetOptionsHandler::LoginToOtherCallback(const ListValue* args) {
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
 
-  cros->ConnectToWifiNetwork(sec, ssid, password, std::string(), std::string());
+  cros->ConnectToWifiNetwork(ssid, sec, password);
 }
 
 void InternetOptionsHandler::CreateModalPopup(views::WindowDelegate* view) {

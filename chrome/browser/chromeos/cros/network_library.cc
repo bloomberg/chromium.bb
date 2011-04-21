@@ -2528,22 +2528,52 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   // Use this to connect to an unlisted wifi network.
   // This needs to request information about the named service.
   // The connection attempt will occur in the callback.
-  virtual void ConnectToWifiNetwork(ConnectionSecurity security,
-                                    const std::string& ssid,
-                                    const std::string& passphrase,
-                                    const std::string& identity,
-                                    const std::string& certpath) {
+  virtual void ConnectToWifiNetwork(const std::string& ssid,
+                                    ConnectionSecurity security,
+                                    const std::string& passphrase) {
+    DCHECK(security != SECURITY_8021X);
     if (!EnsureCrosLoaded())
       return;
     // Store the connection data to be used by the callback.
+    connect_data_.security = security;
     connect_data_.service_name = ssid;
     connect_data_.passphrase = passphrase;
-    connect_data_.identity = identity;
-    connect_data_.cert_path = certpath;
     // Asynchronously request service properties and call
     // WifiServiceUpdateAndConnect.
     RequestHiddenWifiNetwork(ssid.c_str(),
                              SecurityToString(security),
+                             WifiServiceUpdateAndConnect,
+                             this);
+  }
+
+  // As above, but for 802.1X EAP networks.
+  virtual void ConnectToWifiNetwork8021x(
+      const std::string& ssid,
+      EAPMethod eap_method,
+      EAPPhase2Auth eap_auth,
+      const std::string& eap_server_ca_cert_nss_nickname,
+      bool eap_use_system_cas,
+      const std::string& eap_client_cert_pkcs11_id,
+      const std::string& eap_identity,
+      const std::string& eap_anonymous_identity,
+      const std::string& passphrase,
+      bool save_credentials) {
+    if (!EnsureCrosLoaded())
+      return;
+    connect_data_.security = SECURITY_8021X;
+    connect_data_.service_name = ssid;
+    connect_data_.eap_method = eap_method;
+    connect_data_.eap_auth = eap_auth;
+    connect_data_.eap_server_ca_cert_nss_nickname =
+        eap_server_ca_cert_nss_nickname;
+    connect_data_.eap_use_system_cas = eap_use_system_cas;
+    connect_data_.eap_client_cert_pkcs11_id = eap_client_cert_pkcs11_id;
+    connect_data_.eap_identity = eap_identity;
+    connect_data_.eap_anonymous_identity = eap_anonymous_identity;
+    connect_data_.passphrase = passphrase;
+    connect_data_.save_credentials = save_credentials;
+    RequestHiddenWifiNetwork(ssid.c_str(),
+                             SecurityToString(SECURITY_8021X),
                              WifiServiceUpdateAndConnect,
                              this);
   }
@@ -2573,10 +2603,21 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       return;
     }
     wifi->set_added(true);
-    wifi->SetIdentity(data.identity);
-    wifi->SetPassphrase(data.passphrase);
-    if (!data.cert_path.empty())
-      wifi->SetCertPath(data.cert_path);
+    if (data.security == SECURITY_8021X) {
+      // Enterprise 802.1X EAP network.
+      wifi->SetEAPMethod(data.eap_method);
+      wifi->SetEAPPhase2Auth(data.eap_auth);
+      wifi->SetEAPServerCaCertNssNickname(data.eap_server_ca_cert_nss_nickname);
+      wifi->SetEAPUseSystemCAs(data.eap_use_system_cas);
+      wifi->SetEAPClientCertPkcs11Id(data.eap_client_cert_pkcs11_id);
+      wifi->SetEAPIdentity(data.eap_identity);
+      wifi->SetEAPAnonymousIdentity(data.eap_anonymous_identity);
+      wifi->SetEAPPassphrase(data.passphrase);
+      wifi->SetSaveCredentials(data.save_credentials);
+    } else {
+      // Ordinary, non-802.1X network.
+      wifi->SetPassphrase(data.passphrase);
+    }
 
     ConnectToWifiNetwork(wifi);
   }
@@ -2613,7 +2654,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     connect_data_.service_name = service_name;
     connect_data_.psk_key = psk;
     connect_data_.server_hostname = server;
-    connect_data_.identity = username;
+    connect_data_.psk_username = username;
     connect_data_.passphrase = user_passphrase;
     RequestVirtualNetwork(service_name.c_str(),
                           server.c_str(),
@@ -2656,7 +2697,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     vpn->SetUserCert("");
     vpn->SetUserCertKey("");
     vpn->SetPSKPassphrase(data.psk_key);
-    vpn->SetUsername(data.identity);
+    vpn->SetUsername(data.psk_username);
     vpn->SetUserPassphrase(data.passphrase);
 
     CallConnectToNetwork(vpn);
@@ -4047,11 +4088,19 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   // Temporary connection data for async connect calls.
   struct ConnectData {
-    std::string service_name;
+    ConnectionSecurity security;
+    std::string service_name;  // For example, SSID.
     std::string passphrase;
-    std::string identity;
-    std::string cert_path;
+    EAPMethod eap_method;
+    EAPPhase2Auth eap_auth;
+    std::string eap_server_ca_cert_nss_nickname;
+    bool eap_use_system_cas;
+    std::string eap_client_cert_pkcs11_id;
+    std::string eap_identity;
+    std::string eap_anonymous_identity;
+    bool save_credentials;
     std::string psk_key;
+    std::string psk_username;
     std::string server_hostname;
   };
   ConnectData connect_data_;
@@ -4170,11 +4219,20 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
 
   virtual void ConnectToWifiNetwork(WifiNetwork* network) {}
   virtual void ConnectToWifiNetwork(const std::string& service_path) {}
-  virtual void ConnectToWifiNetwork(ConnectionSecurity security,
-                                    const std::string& ssid,
-                                    const std::string& passphrase,
-                                    const std::string& identity,
-                                    const std::string& certpath) {}
+  virtual void ConnectToWifiNetwork(const std::string& ssid,
+                                    ConnectionSecurity security,
+                                    const std::string& passphrase) {}
+  virtual void ConnectToWifiNetwork8021x(
+      const std::string& ssid,
+      EAPMethod method,
+      EAPPhase2Auth auth,
+      const std::string& server_ca_cert_nss_nickname,
+      bool use_system_cas,
+      const std::string& client_cert_pkcs11_id,
+      const std::string& identity,
+      const std::string& anonymous_identity,
+      const std::string& passphrase,
+      bool save_credentials) {}
   virtual void ConnectToCellularNetwork(CellularNetwork* network) {}
   virtual void ConnectToVirtualNetwork(VirtualNetwork* network) {}
   virtual void ConnectToVirtualNetworkPSK(

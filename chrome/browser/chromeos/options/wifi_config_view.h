@@ -8,22 +8,19 @@
 
 #include <string>
 
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
-#include "chrome/browser/ui/shell_dialogs.h"
 #include "ui/base/models/combobox_model.h"
 #include "views/controls/button/button.h"
-#include "views/controls/button/image_button.h"
-#include "views/controls/button/native_button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/view.h"
 
 namespace views {
 class Checkbox;
+class ImageButton;
 class Label;
 }
 class FilePath;
@@ -42,7 +39,7 @@ class WifiConfigView : public ChildNetworkConfigView,
   // pointer to a WifiNetwork in NetworkLibrary.
   WifiConfigView(NetworkConfigView* parent, WifiNetwork* wifi);
   // Wifi login dialog for "Joining other network..."
-  explicit WifiConfigView(NetworkConfigView* parent);
+  WifiConfigView(NetworkConfigView* parent, bool show_8021x);
   virtual ~WifiConfigView();
 
   // views::TextfieldController:
@@ -65,29 +62,36 @@ class WifiConfigView : public ChildNetworkConfigView,
   virtual void Cancel() OVERRIDE;
   virtual void InitFocus() OVERRIDE;
 
-  // Get the typed in ssid.
-  std::string GetSSID() const;
+ private:
+  // Initializes UI.  If |show_8021x| includes 802.1x config options.
+  void Init(WifiNetwork* wifi, bool show_8021x);
+
+  // Get the typed in SSID.
+  std::string GetSsid() const;
 
   // Get the typed in passphrase.
   std::string GetPassphrase() const;
 
- private:
-  // Initializes UI.
-  void Init(WifiNetwork* wifi);
+  // Get various 802.1X EAP values from the widgets.
+  EAPMethod GetEapMethod() const;
+  EAPPhase2Auth GetEapPhase2Auth() const;
+  std::string GetEapServerCaCertNssNickname() const;
+  bool GetEapUseSystemCas() const;
+  std::string GetEapClientCertPkcs11Id() const;
+  std::string GetEapIdentity() const;
+  std::string GetEapAnonymousIdentity() const;
+  bool GetSaveCredentials() const;
 
   // Updates state of the Login button.
   void UpdateDialogButtons();
 
   // Enable/Disable EAP fields as appropriate based on selected EAP method.
-  void RefreshEAPFields();
+  void RefreshEapFields();
 
   // Updates the error text label.
   void UpdateErrorLabel();
 
   scoped_ptr<WifiConfigModel> wifi_config_model_;
-
-  // Whether or not it is an 802.1x network.
-  bool is_8021x_;
 
   views::Textfield* ssid_textfield_;
   views::Combobox* eap_method_combobox_;

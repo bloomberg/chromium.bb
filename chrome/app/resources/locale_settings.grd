@@ -301,6 +301,11 @@
         4
       </message>
 
+      <!-- The height of the advanced Join Wi-Fi network dialog box in lines. -->
+      <message name="IDS_JOIN_WIFI_NETWORK_DIALOG_ADVANCED_MINIMUM_HEIGHT_LINES" use_name_for_id="true">
+        27
+      </message>
+      
       <!-- The width and height of the Page Info dialog box in characters and lines -->
       <!-- (See above). -->
       <message name="IDS_PAGEINFO_DIALOG_WIDTH_CHARS" use_name_for_id="true">
