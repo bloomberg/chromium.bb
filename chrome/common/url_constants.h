@@ -72,7 +72,6 @@ extern const char kChromeUIActivationMessage[];
 extern const char kChromeUIActiveDownloadsURL[];
 extern const char kChromeUIChooseMobileNetworkURL[];
 extern const char kChromeUICollectedCookiesURL[];
-extern const char kChromeUIFileBrowseURL[];
 extern const char kChromeUIHttpAuthURL[];
 extern const char kChromeUIImageBurnerURL[];
 extern const char kChromeUIKeyboardOverlayURL[];
