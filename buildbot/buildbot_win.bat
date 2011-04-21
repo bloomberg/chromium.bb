@@ -4,6 +4,7 @@
 
 echo on
 
+setlocal
 set MODE=%1
 set BITS=%2
 set TOOLCHAIN=%3
@@ -60,9 +61,11 @@ if "%TOOLCHAIN%" equ "glibc" (
 
   if %BITS% equ 32 goto SkipSync
   echo @@@BUILD_STEP partial_sdk_32@@@
+  setlocal
   call vcvarsall.bat x86 && call scons.bat --verbose --mode=nacl_extra_sdk -j 8 ^
     %GLIBCOPTS% platform=x86-32 extra_sdk_update_header extra_sdk_update
   if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+  endlocal
 ) else (
   call scons.bat --verbose --mode=nacl_extra_sdk platform=x86-%BITS% ^
     --download extra_sdk_update_header install_libpthread extra_sdk_update
@@ -70,15 +73,19 @@ if "%TOOLCHAIN%" equ "glibc" (
 
   if %BITS% equ 32 goto SkipSync
   echo @@@BUILD_STEP partial_sdk_32@@@
+  setlocal
   call vcvarsall.bat x86 && call scons.bat --verbose --mode=nacl_extra_sdk -j 8 ^
     platform=x86-32 extra_sdk_update_header install_libpthread extra_sdk_update
   if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+  endlocal
 )
 :SkipSync
 
 echo @@@BUILD_STEP gyp_compile@@@
+setlocal
 call vcvarsall.bat x86 && call devenv.com build\all.sln /build %GYPMODE%
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+endlocal
 
 echo @@@BUILD_STEP gyp_tests@@@
 python_slave.exe trusted_test.py --config %GYPMODE%
@@ -86,68 +93,84 @@ if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
 echo on
 echo @@@BUILD_STEP scons_compile@@@
+setlocal
 call vcvarsall.bat %VCBITS% && call scons.bat -j 8 ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
  %GLIBCOPTS% -k --verbose --mode=%MODE%-win,nacl,doc platform=x86-%BITS%
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+endlocal
 
 if "%TOOLCHAIN%" equ "glibc" goto NoNeedForPlugin
 echo @@@BUILD_STEP plugin_compile@@@
+setlocal
 call vcvarsall.bat x86 && call scons.bat -j 8 ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
  %GLIBCOPTS% -k --verbose --mode=%MODE%-win,nacl,doc platform=x86-32 plugin
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+endlocal
 :NoNeedForPlugin
 
 echo @@@BUILD_STEP small_tests@@@
+setlocal
 call vcvarsall.bat %VCBITS% && call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
  %GLIBCOPTS% -k --verbose --mode=%MODE%-win,nacl,doc small_tests ^
  platform=x86-%BITS%
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
+endlocal
 
 if "%TOOLCHAIN%" equ "glibc" goto SkipNonGlibsTests
 echo @@@BUILD_STEP medium_tests@@@
+setlocal
 call vcvarsall.bat %VCBITS% && call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
  %GLIBCOPTS% -k --verbose --mode=%MODE%-win,nacl,doc medium_tests ^
  platform=x86-%BITS%
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
+endlocal
 
 echo @@@BUILD_STEP large_tests@@@
+setlocal
 call vcvarsall.bat %VCBITS% && call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
  %GLIBCOPTS% -k --verbose --mode=%MODE%-win,nacl,doc large_tests ^
  platform=x86-%BITS%
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
+endlocal
 
 if "%INSIDE_TOOLCHAIN%" neq "" goto SkipArchive
 
 echo @@@BUILD_STEP chrome_browser_tests@@@
+setlocal
 call vcvarsall.bat %VCBITS% && call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
  %GLIBCOPTS% -k --verbose --mode=%MODE%-win,nacl,doc ^
  SILENT=1 platform=x86-%BITS% ^
  chrome_browser_tests
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
+endlocal
 
 # TODO(mseaborn): Drop support for non-IRT builds so that this is the
 # default.  See http://code.google.com/p/nativeclient/issues/detail?id=1691
 echo @@@BUILD_STEP chrome_browser_tests using IRT@@@
+setlocal
 call vcvarsall.bat %VCBITS% && call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
  %GLIBCOPTS% -k --verbose --mode=%MODE%-win,nacl,doc ^
  SILENT=1 platform=x86-%BITS% ^
  chrome_browser_tests irt=1
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
+endlocal
 
 echo @@@BUILD_STEP pyauto_tests@@@
+setlocal
 call vcvarsall.bat %VCBITS% && call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
  %GLIBCOPTS% -k --verbose --mode=%MODE%-win,nacl,doc ^
  SILENT=1 platform=x86-%BITS% ^
  pyauto_tests
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
+endlocal
 
 if %BUILDBOT_BUILDERNAME% equ vista64-m64-n64-dbg goto ArchiveIt
 if %BUILDBOT_BUILDERNAME% equ vista64-m64-n64-opt goto ArchiveIt
