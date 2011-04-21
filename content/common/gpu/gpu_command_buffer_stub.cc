@@ -259,8 +259,8 @@ void GpuCommandBufferStub::OnInitialize(
                       &gpu::GpuScheduler::ProcessCommands));
       scheduler_->SetSwapBuffersCallback(
           NewCallback(this, &GpuCommandBufferStub::OnSwapBuffers));
-      scheduler_->SetLatchCallback(
-          base::Bind(&GpuChannel::OnLatchCallback, channel_, route_id_));
+      scheduler_->SetLatchCallback(base::Bind(
+          &GpuChannel::OnLatchCallback, base::Unretained(channel_), route_id_));
       if (watchdog_)
         scheduler_->SetCommandProcessedCallback(
             NewCallback(this, &GpuCommandBufferStub::OnCommandProcessed));
