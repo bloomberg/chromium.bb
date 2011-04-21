@@ -173,6 +173,9 @@ void gtk_preserve_window_set_preserve(GtkPreserveWindow* window,
     attributes.visual = gtk_widget_get_visual(widget);
     attributes.colormap = gtk_widget_get_colormap(widget);
 
+    attributes.event_mask = gtk_widget_get_events(widget);
+    attributes.event_mask |= GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK;
+
     attributes_mask = GDK_WA_VISUAL | GDK_WA_COLORMAP;
     widget->window = gdk_window_new(
         gdk_get_default_root_window(), &attributes, attributes_mask);
