@@ -32,10 +32,15 @@ set OLD_TEMP=%TEMP%
 set TEMP=%BUILD_DRIVE%:\temp
 set TMP=%TEMP%
 mkdir %TEMP%
+:: Safety check.
+if "%OLD_TEMP%" equ "" goto SkipClean
 :: Cleaning old temp directory to clear up all the nearly full bots out there.
-rmdir /s /q %OLD_TEMP%\*
+del /S /Q "%OLD_TEMP%\*"
+for /D %%I in ("%OLD_TEMP%\*") do rmdir /S /Q %%I
 :: Cleaning new temp directory so we don't overflow in the future.
-rmdir /s /q %TEMP%\*
+del /S /Q "%TEMP%\*"
+for /D %%I in ("%TEMP%\*") do rmdir /S /Q %%I
+:SkipClean
 
 echo @@@BUILD_STEP gclient_runhooks@@@
 cmd /c gclient runhooks
