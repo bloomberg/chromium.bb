@@ -1069,15 +1069,15 @@ void ProfileImpl::CreatePasswordStore() {
     desktop_env = base::nix::DESKTOP_ENVIRONMENT_KDE4;
   } else if (store_type == "gnome") {
     desktop_env = base::nix::DESKTOP_ENVIRONMENT_GNOME;
-  } else if (store_type == "detect") {
+  } else if (store_type == "basic") {
+    desktop_env = base::nix::DESKTOP_ENVIRONMENT_OTHER;
+  } else {
     // Detect the store to use automatically.
     scoped_ptr<base::Environment> env(base::Environment::Create());
     desktop_env = base::nix::GetDesktopEnvironment(env.get());
     const char* name = base::nix::GetDesktopEnvironmentName(desktop_env);
     VLOG(1) << "Password storage detected desktop environment: "
             << (name ? name : "(unknown)");
-  } else {
-    desktop_env = base::nix::DESKTOP_ENVIRONMENT_OTHER;
   }
 
   scoped_ptr<PasswordStoreX::NativeBackend> backend;
@@ -1100,8 +1100,7 @@ void ProfileImpl::CreatePasswordStore() {
       backend.reset();
 #endif  // defined(USE_GNOME_KEYRING)
   }
-  // TODO(atwilson): Change default store back to "detect" and change this
-  // back to a warning when http://crbug.com/72499 is fixed.
+
   if (!backend.get()) {
     LOG(INFO) << "Using basic (unencrypted) store for password storage. "
         "See http://code.google.com/p/chromium/wiki/LinuxPasswordStorage for "
