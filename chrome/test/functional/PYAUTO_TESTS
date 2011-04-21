@@ -187,6 +187,8 @@
       '-bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
       # you cannot resize browser window on chromeos
       '-browser.BrowserTest.testWindowResize',
+      # Flaky: crosbug.com/14394
+      '-browsing_data.BrowsingDataTest.testClearHistoryAndDownloads',
       # no codesign verification on chromeos
       '-codesign',
       # crbug.com/64664
@@ -241,14 +243,9 @@
       # crosbug.com/12653
       '-autofill',
       '-bookmark_bar',
-      '-bookmarks.BookmarksTest.testBookmarksPersistence',
-      '-browser.BrowserTest.testKillAndReloadSharedProcess',
-      '-browser.BrowserTest.testPopupSharesProcess',
-      '-browsing_data.BrowsingDataTest.testClearHistoryAndDownloads',
       '-content.ContentTest.testHttpsPage',
       '-cookies.CookiesTest.testAllowCookiesForASessionUsingExceptions',
       '-cookies.CookiesTest.testAllowCookiesUsingExceptions',
-      '-cookies.CookiesTest.testBlockCookiesUsingExceptions',
       '-cookies.CookiesTest.testCookiesFile',
       '-crash_reporter',
       '-history.HistoryTest.testFtpHistory',
