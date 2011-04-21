@@ -106,6 +106,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleTabPng) {
                                   "test_png.html")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleTabRace) {
+  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
+                                  "test_race.html")) << message_;
+}
+
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsOnUpdated) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("tabs/on_updated")) << message_;

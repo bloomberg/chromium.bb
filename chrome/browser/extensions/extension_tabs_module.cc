@@ -1132,7 +1132,7 @@ bool CaptureVisibleTabFunction::RunImpl() {
   render_view_host->CaptureSnapshot();
   registrar_.Add(this,
                  NotificationType::TAB_SNAPSHOT_TAKEN,
-                 NotificationService::AllSources());
+                 Source<RenderViewHost>(render_view_host));
   AddRef();  // Balanced in CaptureVisibleTabFunction::Observe().
 
   return true;
