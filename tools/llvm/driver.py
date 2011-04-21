@@ -571,6 +571,7 @@ def ClearStandardLibs():
 def PrepareFlags():
   if env.getbool('PIC'):
     env.append('LLC_FLAGS_COMMON', '-relocation-model=pic')
+    env.append('LLC_FLAGS_ARM', '-arm-elf-force-pic')
     env.append('BCLD_FINISH_ARGS', '-plugin-opt=PIC')
 
   if env.getbool('USE_EMULATOR'):
@@ -2182,4 +2183,6 @@ def X8632TLSHack(asm_file):
 ######################################################################
 
 if __name__ == "__main__":
+  # uncomment to force noisy output
+  # sys.argv = [sys.argv[0], '--pnacl-driver-verbose'] + sys.argv[1:]
   NiceExit(main(sys.argv))
