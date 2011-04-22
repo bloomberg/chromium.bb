@@ -165,6 +165,11 @@
   visibility: visible;
 }
 
+.thumbnail-shield {
+  -webkit-mask-box-image: -webkit-linear-gradient(
+      rgba(0, 0, 0, 0), rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, .9));
+}
+
 .thumbnail-wrapper {
   border: 3px solid transparent;
   border-radius: 5px;

@@ -127,7 +127,5 @@ body {
 }
 
 .thumbnail-shield {
-  background-image:
-      -webkit-linear-gradient(transparent, transparent 50%,
-                              $2); /* COLOR_NTP_BACKGROUND */
+  background-color: $2; /* COLOR_NTP_BACKGROUND */
 }
