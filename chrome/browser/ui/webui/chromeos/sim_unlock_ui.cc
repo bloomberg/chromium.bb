@@ -211,6 +211,9 @@ class SimUnlockHandler : public WebUIMessageHandler,
   TabContents* tab_contents_;
   SimUnlockState state_;
 
+  // Path of the Cellular device that we monitor property updates from.
+  std::string cellular_device_path_;
+
   // Type of the dialog: generic unlock/change pin/change PinRequire.
   SimDialogDelegate::SimDialogMode dialog_mode_;
 
@@ -307,17 +310,17 @@ SimUnlockHandler::SimUnlockHandler()
   const chromeos::NetworkDevice* cellular = GetCellularDevice();
   // One could just call us directly via chrome://sim-unlock.
   if (cellular) {
+    cellular_device_path_ = cellular->device_path();
     CrosLibrary::Get()->GetNetworkLibrary()->AddNetworkDeviceObserver(
-        cellular->device_path(), this);
+        cellular_device_path_, this);
     CrosLibrary::Get()->GetNetworkLibrary()->AddPinOperationObserver(this);
   }
 }
 
 SimUnlockHandler::~SimUnlockHandler() {
-  const chromeos::NetworkDevice* cellular = GetCellularDevice();
-  if (cellular) {
+  if (!cellular_device_path_.empty()) {
     CrosLibrary::Get()->GetNetworkLibrary()->RemoveNetworkDeviceObserver(
-        cellular->device_path(), this);
+        cellular_device_path_, this);
     CrosLibrary::Get()->GetNetworkLibrary()->RemovePinOperationObserver(this);
   }
 }

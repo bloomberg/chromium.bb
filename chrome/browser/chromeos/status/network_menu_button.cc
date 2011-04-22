@@ -43,8 +43,10 @@ NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
   network_library->AddNetworkManagerObserver(this);
   network_library->AddCellularDataPlanObserver(this);
   const NetworkDevice* cellular = network_library->FindCellularDevice();
-  if (cellular)
-    network_library->AddNetworkDeviceObserver(cellular->device_path(), this);
+  if (cellular) {
+    cellular_device_path_ = cellular->device_path();
+    network_library->AddNetworkDeviceObserver(cellular_device_path_, this);
+  }
 }
 
 NetworkMenuButton::~NetworkMenuButton() {
@@ -52,9 +54,8 @@ NetworkMenuButton::~NetworkMenuButton() {
   netlib->RemoveNetworkManagerObserver(this);
   netlib->RemoveObserverForAllNetworks(this);
   netlib->RemoveCellularDataPlanObserver(this);
-  const NetworkDevice* cellular = netlib->FindCellularDevice();
-  if (cellular)
-    netlib->RemoveNetworkDeviceObserver(cellular->device_path(), this);
+  if (!cellular_device_path_.empty())
+    netlib->RemoveNetworkDeviceObserver(cellular_device_path_, this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -95,6 +96,7 @@ void NetworkMenuButton::OnNetworkChanged(NetworkLibrary* cros,
   // in CrosMock::SetNetworkLibraryStatusAreaExpectations().
   SetNetworkIcon(cros, network);
   RefreshNetworkObserver(cros);
+  RefreshNetworkDeviceObserver(cros);
   SchedulePaint();
   UpdateMenu();
 }
@@ -249,6 +251,21 @@ void NetworkMenuButton::RefreshNetworkObserver(NetworkLibrary* cros) {
       cros->AddNetworkObserver(new_network, this);
     }
     active_network_ = new_network;
+  }
+}
+
+void NetworkMenuButton::RefreshNetworkDeviceObserver(NetworkLibrary* cros) {
+  const NetworkDevice* cellular = cros->FindCellularDevice();
+  std::string new_cellular_device_path = cellular ?
+      cellular->device_path() : std::string();
+  if (cellular_device_path_ != new_cellular_device_path) {
+    if (!cellular_device_path_.empty()) {
+      cros->RemoveNetworkDeviceObserver(cellular_device_path_, this);
+    }
+    if (!new_cellular_device_path.empty()) {
+      cros->AddNetworkDeviceObserver(new_cellular_device_path, this);
+    }
+    cellular_device_path_ = new_cellular_device_path;
   }
 }
 

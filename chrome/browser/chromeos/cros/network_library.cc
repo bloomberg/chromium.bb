@@ -3563,7 +3563,19 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     // Delete any old devices that no longer exist.
     for (NetworkDeviceMap::iterator iter = old_device_map.begin();
          iter != old_device_map.end(); ++iter) {
+      DeleteDeviceFromDeviceObserversMap(iter->first);
+      // Delete device.
       delete iter->second;
+    }
+  }
+
+  void DeleteDeviceFromDeviceObserversMap(const std::string& device_path) {
+    // Delete all device observers associated with this device.
+    NetworkDeviceObserverMap::iterator map_iter =
+        network_device_observers_.find(device_path);
+    if (map_iter != network_device_observers_.end()) {
+      delete map_iter->second;
+      network_device_observers_.erase(map_iter);
     }
   }
 
@@ -3577,6 +3589,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     VLOG(2) << " Deleting device: " << device_path;
     NetworkDevice* device = found->second;
     device_map_.erase(found);
+    DeleteDeviceFromDeviceObserversMap(device_path);
     delete device;
   }
 

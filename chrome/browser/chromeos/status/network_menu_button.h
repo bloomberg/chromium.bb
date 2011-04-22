@@ -93,12 +93,20 @@ class NetworkMenuButton : public StatusAreaButton,
   // Set the network icon based on the status of the |network|
   void SetNetworkIcon(NetworkLibrary* cros, const Network* network);
 
+  // Called when the list of devices has possibly changed. This will remove
+  // old network device observers and add a network observers
+  // for the new devices.
+  void RefreshNetworkDeviceObserver(NetworkLibrary* cros);
+
   // Called when the active network has possibly changed. This will remove
   // old network observer and add a network observer for the active network.
   void RefreshNetworkObserver(NetworkLibrary* cros);
 
   // The status area host,
   StatusAreaHost* host_;
+
+  // Path of the Cellular device that we monitor property updates from.
+  std::string cellular_device_path_;
 
   // The icon showing the network strength.
   const SkBitmap* icon_;
