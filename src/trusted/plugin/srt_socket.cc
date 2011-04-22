@@ -16,10 +16,6 @@
 #include "native_client/src/trusted/plugin/srpc_client.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
-#if NACL_WINDOWS && !defined(NACL_STANDALONE)
-# define ENABLE_HANDLE_PASSING
-#endif
-
 namespace {
 
 // Not really constants.  Do not modify.  Use only after at least
@@ -28,12 +24,7 @@ uintptr_t kStartModuleIdent;
 uintptr_t kLogIdent;
 uintptr_t kLoadModule;
 uintptr_t kReverseChannel;
-#if ENABLE_HANDLE_PASSING
 uintptr_t kInitHandlePassing;
-/*
- * should cause linkage error if used when not enabled
- */
-#endif
 
 // NB: InitializeIdentifiers is not thread-safe.
 void InitializeIdentifiers(plugin::BrowserInterface* browser_interface) {
@@ -47,10 +38,8 @@ void InitializeIdentifiers(plugin::BrowserInterface* browser_interface) {
         browser_interface->StringToIdentifier("load_module");
     kReverseChannel =
         browser_interface->StringToIdentifier("reverse_setup");
-#if ENABLE_HANDLE_PASSING
     kInitHandlePassing =
         browser_interface->StringToIdentifier("init_handle_passing");
-#endif
     initialized = true;
   }
 }
@@ -117,7 +106,7 @@ bool SrtSocket::LoadModule(NaClSrpcImcDescType desc) {
                                                &params);
   return rpc_result;
 }
-#if ENABLE_HANDLE_PASSING
+#if NACL_WINDOWS && !defined(NACL_STANDALONE)
 bool SrtSocket::InitHandlePassing(NaClDesc* desc,
                                   nacl::Handle sel_ldr_handle) {
   if (!(connected_socket()->HasMethod(kInitHandlePassing, METHOD_CALL))) {
