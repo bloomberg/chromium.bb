@@ -6,7 +6,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image.h"
-#include "ui/gfx/image_unittest.h"
+#include "ui/gfx/image_unittest_util.h"
 
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>
@@ -30,7 +30,7 @@ class ImageTest : public testing::Test {
 namespace gt = gfx::test;
 
 TEST_F(ImageTest, SkiaToSkia) {
-  gfx::Image image(gt::CreateBitmap());
+  gfx::Image image(gt::CreateBitmap(25, 25));
   const SkBitmap* bitmap = static_cast<const SkBitmap*>(image);
   EXPECT_TRUE(bitmap);
   EXPECT_FALSE(bitmap->isNull());
@@ -48,7 +48,7 @@ TEST_F(ImageTest, SkiaToSkia) {
 }
 
 TEST_F(ImageTest, SkiaToSkiaRef) {
-  gfx::Image image(gt::CreateBitmap());
+  gfx::Image image(gt::CreateBitmap(25, 25));
 
   const SkBitmap& bitmap = static_cast<const SkBitmap&>(image);
   EXPECT_FALSE(bitmap.isNull());
@@ -64,7 +64,7 @@ TEST_F(ImageTest, SkiaToSkiaRef) {
 }
 
 TEST_F(ImageTest, SkiaToPlatform) {
-  gfx::Image image(gt::CreateBitmap());
+  gfx::Image image(gt::CreateBitmap(25, 25));
   const size_t kRepCount = kUsesSkiaNatively ? 1U : 2U;
 
   EXPECT_TRUE(image.HasRepresentation(gfx::Image::kSkBitmapRep));
@@ -127,7 +127,7 @@ TEST_F(ImageTest, CheckSkiaColor) {
 TEST_F(ImageTest, SwapRepresentations) {
   const size_t kRepCount = kUsesSkiaNatively ? 1U : 2U;
 
-  gfx::Image image1(gt::CreateBitmap());
+  gfx::Image image1(gt::CreateBitmap(25, 25));
   const SkBitmap* bitmap1 = image1;
   EXPECT_EQ(1U, image1.RepresentationCount());
 
@@ -148,7 +148,7 @@ TEST_F(ImageTest, SwapRepresentations) {
 TEST_F(ImageTest, Copy) {
   const size_t kRepCount = kUsesSkiaNatively ? 1U : 2U;
 
-  gfx::Image image1(gt::CreateBitmap());
+  gfx::Image image1(gt::CreateBitmap(25, 25));
   gfx::Image image2(image1);
 
   EXPECT_EQ(1U, image1.RepresentationCount());
@@ -169,6 +169,41 @@ TEST_F(ImageTest, Assign) {
   EXPECT_EQ(1U, image2.RepresentationCount());
   EXPECT_EQ(static_cast<const SkBitmap*>(image1),
             static_cast<const SkBitmap*>(image2));
+}
+
+TEST_F(ImageTest, MultiResolutionSkBitmap) {
+  const int width1 = 10;
+  const int height1 = 12;
+  const int width2 = 20;
+  const int height2 = 24;
+
+  std::vector<const SkBitmap*> bitmaps;
+  bitmaps.push_back(gt::CreateBitmap(width1, height1));
+  bitmaps.push_back(gt::CreateBitmap(width2, height2));
+  gfx::Image image(bitmaps);
+
+  EXPECT_EQ(1u, image.RepresentationCount());
+  EXPECT_EQ(2u, image.GetNumberOfSkBitmaps());
+
+  const SkBitmap* bitmap1 = image.GetSkBitmapAtIndex(0);
+  EXPECT_TRUE(bitmap1);
+  const SkBitmap* bitmap2 = image.GetSkBitmapAtIndex(1);
+  EXPECT_TRUE(bitmap2);
+
+  if (bitmap1->width() == width1) {
+    EXPECT_EQ(bitmap1->height(), height1);
+    EXPECT_EQ(bitmap2->width(), width2);
+    EXPECT_EQ(bitmap2->height(), height2);
+  } else {
+    EXPECT_EQ(bitmap1->width(), width2);
+    EXPECT_EQ(bitmap1->height(), height2);
+    EXPECT_EQ(bitmap2->width(), width1);
+    EXPECT_EQ(bitmap2->height(), height1);
+  }
+
+  // Sanity check.
+  EXPECT_EQ(1u, image.RepresentationCount());
+  EXPECT_EQ(2u, image.GetNumberOfSkBitmaps());
 }
 
 // Integration tests with UI toolkit frameworks require linking against the

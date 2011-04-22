@@ -131,8 +131,11 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
     if (images_.count(resource_id))
       return *images_[resource_id];
 
-    // TODO(sail): Add the large bitmap to the image as well.
-    gfx::Image* image = new gfx::Image(bitmap.release());
+    std::vector<const SkBitmap*> bitmaps;
+    bitmaps.push_back(bitmap.release());
+    if (large_bitmap.get())
+      bitmaps.push_back(large_bitmap.release());
+    gfx::Image* image = new gfx::Image(bitmaps);
     images_[resource_id] = image;
     return *image;
   }

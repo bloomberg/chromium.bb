@@ -18,6 +18,7 @@
 #pragma once
 
 #include <map>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
@@ -29,6 +30,7 @@ class SkBitmap;
 
 namespace {
 class ImageTest;
+class ImageMacTest;
 }
 
 namespace gfx {
@@ -51,11 +53,18 @@ class Image {
   // Creates a new image with the default representation. The object will take
   // ownership of the image.
   explicit Image(const SkBitmap* bitmap);
+
+  // To create an Image that supports multiple resolutions pass a vector
+  // of bitmaps, one for each resolution.
+  explicit Image(const std::vector<const SkBitmap*>& bitmaps);
+
 #if defined(OS_LINUX)
   // Does not increase |pixbuf|'s reference count; expects to take ownership.
   explicit Image(GdkPixbuf* pixbuf);
 #elif defined(OS_MACOSX)
   // Does not retain |image|; expects to take ownership.
+  // A single NSImage object can contain multiple bitmaps so there's no reason
+  // to pass a vector of these.
   explicit Image(NSImage* image);
 #endif
 
@@ -77,6 +86,16 @@ class Image {
 #elif defined(OS_MACOSX)
   operator NSImage*();
 #endif
+
+  // Gets the number of bitmaps in this image. This may cause a conversion
+  // to a bitmap representation. Note, this function and GetSkBitmapAtIndex()
+  // are primarily meant to be used by the theme provider.
+  size_t GetNumberOfSkBitmaps();
+
+  // Gets the bitmap at the given index. This may cause a conversion
+  // to a bitmap representation. Note, the internal ordering of bitmaps is not
+  // guaranteed.
+  const SkBitmap* GetSkBitmapAtIndex(size_t index);
 
   // Inspects the representations map to see if the given type exists.
   bool HasRepresentation(RepresentationType type);
@@ -103,6 +122,7 @@ class Image {
   scoped_refptr<internal::ImageStorage> storage_;
 
   friend class ::ImageTest;
+  friend class ::ImageMacTest;
 };
 
 }  // namespace gfx
