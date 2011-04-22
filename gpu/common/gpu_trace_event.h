@@ -42,6 +42,25 @@
 #define GPU_TRACE_EVENT_H_
 #pragma once
 
+#if defined(__native_client__)
+
+// Native Client needs to avoid pulling in base/ headers,
+// so stub out the tracing code at compile time.
+#define GPU_TRACE_EVENT0(x0, x1) { }
+#define GPU_TRACE_EVENT1(x0, x1, x2, x3) { }
+#define GPU_TRACE_EVENT2(x0, x1, x2, x3, x4, x5) { }
+#define GPU_TRACE_EVENT_INSTANT0(x0, x1) { }
+#define GPU_TRACE_EVENT_INSTANT1(x0, x1, x2, x3) { }
+#define GPU_TRACE_EVENT_INSTANT2(x0, x1, x2, x3, x4, x5) { }
+#define GPU_TRACE_BEGIN0(x0, x1) { }
+#define GPU_TRACE_BEGIN1(x0, x1, x2, x3) { }
+#define GPU_TRACE_BEGIN2(x0, x1, x2, x3, x4, x5) { }
+#define GPU_TRACE_END0(x0, x1) { }
+#define GPU_TRACE_END1(x0, x1, x2, x3) { }
+#define GPU_TRACE_END2(x0, x1, x2, x3, x4, x5) { }
+
+#else
+
 #include "build/build_config.h"
 
 #include <string>
@@ -300,5 +319,5 @@ class TraceEndOnScopeClose {
 }  // namespace internal
 
 }  // namespace gpu
-
+#endif  // __native_client__
 #endif  // GPU_TRACE_EVENT_H_
