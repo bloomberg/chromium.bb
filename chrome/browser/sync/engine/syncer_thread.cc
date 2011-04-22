@@ -523,8 +523,7 @@ void SyncerThread::SetSyncerStepsForPurpose(
 void SyncerThread::DoSyncSessionJob(const SyncSessionJob& job) {
   DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
   if (!ShouldRunJob(job)) {
-    LOG(WARNING) << "Not executing job at DoSyncSessionJob, purpose = "
-        << job.purpose << " source = "
+    LOG(WARNING) << "Dropping nudge at DoSyncSessionJob, source = "
         << job.session->source().updates_source;
     return;
   }
@@ -533,12 +532,6 @@ void SyncerThread::DoSyncSessionJob(const SyncSessionJob& job) {
     if (pending_nudge_.get() == NULL || pending_nudge_->session != job.session)
       return;  // Another nudge must have been scheduled in in the meantime.
     pending_nudge_.reset();
-
-    // Create the session with the latest model safe table and use it to purge
-    // and update any disabled or modified entries in the job.
-    scoped_ptr<SyncSession> session(CreateSyncSession(job.session->source()));
-
-    job.session->RebaseRoutingInfoWithLatest(session.get());
   }
   VLOG(1) << "SyncerThread(" << this << ")" << " DoSyncSessionJob. job purpose "
           << job.purpose;

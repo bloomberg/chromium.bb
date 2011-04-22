@@ -51,33 +51,6 @@ void SyncSession::Coalesce(const SyncSession& session) {
   }
 }
 
-void SyncSession::RebaseRoutingInfoWithLatest(SyncSession* session) {
-  ModelSafeRoutingInfo temp_routing_info;
-
-  // Take the intersecion and also set the routing info(it->second) from the
-  // passed in session.
-  for (ModelSafeRoutingInfo::const_iterator it =
-       session->routing_info_.begin(); it != session->routing_info_.end();
-       ++it) {
-    if (routing_info_.find(it->first) != routing_info_.end()) {
-      temp_routing_info[it->first] = it->second;
-    }
-  }
-
-  // Now swap it.
-  routing_info_.swap(temp_routing_info);
-
-  // Now update the payload map.
-  PurgeStalePayload(&source_.types, session->routing_info_);
-
-  // Now update the workers.
-  std::vector<ModelSafeWorker*> temp;
-  std::set_intersection(workers_.begin(), workers_.end(),
-                 session->workers_.begin(), session->workers_.end(),
-                 std::back_inserter(temp));
-  workers_.swap(temp);
-}
-
 void SyncSession::ResetTransientState() {
   status_controller_.reset(new StatusController(routing_info_));
 }
