@@ -213,6 +213,7 @@ void CrxInstaller::ConvertWebAppOnFileThread(
 
 bool CrxInstaller::AllowInstall(const Extension* extension,
                                 std::string* error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(error);
 
   // Make sure the expected id matches.
@@ -349,13 +350,15 @@ void CrxInstaller::ConfirmInstall() {
       ->IsExtensionBlacklisted(extension_->id())) {
     VLOG(1) << "This extension: " << extension_->id()
             << " is blacklisted. Install failed.";
-    ReportFailureFromUIThread("This extension is blacklisted.");
+    ReportFailureFromUIThread(
+        l10n_util::GetStringUTF8(IDS_EXTENSION_CANT_INSTALL_BLACKLISTED));
     return;
   }
 
   if (!frontend_weak_->extension_prefs()->IsExtensionAllowedByPolicy(
       extension_->id())) {
-    ReportFailureFromUIThread("This extension is blacklisted by admin policy.");
+    ReportFailureFromUIThread(
+        l10n_util::GetStringUTF8(IDS_EXTENSION_CANT_INSTALL_POLICY_BLACKLIST));
     return;
   }
 
@@ -437,7 +440,8 @@ void CrxInstaller::CompleteInstall() {
     scoped_ptr<Version> current_version(
         Version::GetVersionFromString(current_version_));
     if (current_version->CompareTo(*(extension_->version())) > 0) {
-      ReportFailureFromFileThread("Attempted to downgrade extension.");
+      ReportFailureFromFileThread(
+          l10n_util::GetStringUTF8(IDS_EXTENSION_CANT_DOWNGRADE_VERSION));
       return;
     }
   }

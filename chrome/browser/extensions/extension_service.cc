@@ -176,18 +176,6 @@ class ExtensionServiceBackend
 
   virtual ~ExtensionServiceBackend();
 
-  // Finish installing the extension in |crx_path| after it has been unpacked to
-  // |unpacked_path|.  If |expected_id| is not empty, it's verified against the
-  // extension's manifest before installation. If |silent| is true, there will
-  // be no install confirmation dialog. |from_gallery| indicates whether the
-  // crx was installed from our gallery, which results in different UI.
-  //
-  // Note: We take ownership of |extension|.
-  void OnExtensionUnpacked(const FilePath& crx_path,
-                           const FilePath& unpacked_path,
-                           const Extension* extension,
-                           const std::string expected_id);
-
   // Notify the frontend that there was an error loading an extension.
   void ReportExtensionLoadError(const FilePath& extension_path,
                                 const std::string& error);
