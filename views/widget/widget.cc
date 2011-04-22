@@ -320,6 +320,10 @@ void Widget::OnNativeWidgetPaint(gfx::Canvas* canvas) {
   RefreshCompositeTree();
 }
 
+bool Widget::OnKeyEvent(const KeyEvent& event) {
+  return GetRootView()->OnKeyEvent(event);
+}
+
 bool Widget::OnMouseEvent(const MouseEvent& event) {
   switch (event.type()) {
     case ui::ET_MOUSE_PRESSED:

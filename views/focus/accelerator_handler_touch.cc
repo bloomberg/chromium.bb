@@ -179,14 +179,7 @@ bool DispatchXEvent(XEvent* xev) {
       case KeyRelease: {
         Event::FromNativeEvent2 from_native;
         KeyEvent keyev(xev, from_native);
-        InputMethod* ime = widget->GetInputMethod();
-        // Always dispatch key events to the input method first, to make sure
-        // that the input method's hotkeys work all time.
-        if (ime) {
-          ime->DispatchKeyEvent(keyev);
-          return true;
-        }
-        return root->ProcessKeyEvent(keyev);
+        return widget->OnKeyEvent(keyev);
       }
 
       case ButtonPress:
