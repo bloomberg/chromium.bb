@@ -2461,6 +2461,11 @@
             # TODO(alekseys): port sidebar to linux/mac.
             'browser/sidebar/sidebar_browsertest.cc',
           ],
+          'sources!': [
+            # TODO(aa): This test fails on the windows shared library build.
+            # crbug.com/80320
+            '../content/renderer/v8_value_converter_browsertest.cc',
+          ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
           ],
