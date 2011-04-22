@@ -120,7 +120,7 @@ cr.define('options', function() {
      */
     set suggestions(suggestions) {
       this.dataModel = new ArrayDataModel(suggestions);
-      this.hidden = suggestions.length == 0;
+      this.hidden = !this.targetInput_ || suggestions.length == 0;
     },
 
     /**
@@ -188,9 +188,14 @@ cr.define('options', function() {
       var handled = false;
       switch (event.keyIdentifier) {
         case 'U+001B':  // Esc
-        case 'Enter':
           this.suggestions = [];
           handled = true;
+          break;
+        case 'Enter':
+          var hadSelection = this.selectedItem != null;
+          this.suggestions = [];
+          // Only count the event as handled if a selection is being commited.
+          handled = hadSelection;
           break;
         case 'Up':
         case 'Down':

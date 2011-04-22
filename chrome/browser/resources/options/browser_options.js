@@ -96,6 +96,12 @@ cr.define('options', function() {
       homepageField.addEventListener('blur', function(event) {
         self.autocompleteList_.detach();
       });
+      homepageField.addEventListener('keydown', function(event) {
+        // Remove focus when the user hits enter since people expect feedback
+        // indicating that they are done editing.
+        if (event.keyIdentifier == 'Enter')
+          homepageField.blur();
+      });
 
       // Ensure that changes are committed when closing the page.
       window.addEventListener('unload', function() {
