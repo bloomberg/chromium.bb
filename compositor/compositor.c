@@ -296,7 +296,7 @@ wlsc_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 	if (buffer->attach) {
 		buffer->attach(buffer, surface);
 	} else {
-		es->image = eglCreateImageKHR(ec->display, ec->context,
+		es->image = eglCreateImageKHR(ec->display, NULL,
 					      EGL_WAYLAND_BUFFER_WL,
 					      buffer, NULL);
 
