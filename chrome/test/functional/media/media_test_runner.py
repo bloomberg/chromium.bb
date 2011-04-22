@@ -54,8 +54,8 @@ def main():
   DEFAULT_SUITE_NAME = 'MEDIA_TESTS'
   # This script is used to run the PYAUTO suite.
   pyauto_functional_script_name = os.path.join(os.path.dirname(__file__),
-                                               'pyauto_functional.py')
-
+                                               'pyauto_media.py')
+  # This defines default file name for CSV file.
   default_input_filename = os.path.join(os.pardir, 'data', 'media', 'csv',
                                         'media_list_data.csv')
   parser = OptionParser()

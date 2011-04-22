@@ -20,9 +20,7 @@ Ref: http://code.google.com/p/psutil/wiki/Documentation
 import os
 import time
 
-import pyauto_functional  # Must be imported before pyauto.
-import pyauto
-
+import pyauto_media
 from media_test_base import MediaTestBase
 from media_test_env_names import MediaTestEnvNames
 from ui_perf_test_measure_thread import UIPerfTestMeasureThread
@@ -128,4 +126,4 @@ class MediaPerformanceTest(MediaTestBase):
 
 
 if __name__ == '__main__':
-  pyauto_functional.Main()
+  pyauto_media.Main()

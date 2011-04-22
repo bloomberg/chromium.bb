@@ -10,9 +10,7 @@ This class contains all common code needed for event testing. Most of the
 methods should be overridden by the subclass.
 """
 
-import pyauto_functional  # Must be imported before pyauto.
-import pyauto
-
+import pyauto_media
 from media_test_base import MediaTestBase
 
 
@@ -87,7 +85,3 @@ class MediaEventTestBase(MediaTestBase):
   def GetPlayerHTMLFileName(self):
     """A method to get the player HTML file name."""
     return 'media_event.html'
-
-
-if __name__ == '__main__':
-  pyauto_functional.Main()

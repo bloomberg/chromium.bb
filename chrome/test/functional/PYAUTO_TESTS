@@ -298,10 +298,10 @@
   # HTML5 media performance tests.
   'MEDIA_TESTS': {
     'linux': [
-      'media_playbacktime',
-      'media_perf',
-      'media_fps',
-      'media_event_simple_test',
+      'media.media_playbacktime',
+      'media.media_perf',
+      'media.media_fps',
+      'media.media_event_simple_test',
     ],
   },
 }

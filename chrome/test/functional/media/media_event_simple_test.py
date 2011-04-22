@@ -14,9 +14,7 @@ media_perf_runner.py is used for generating these variables
 (PyAuto does not support direct parameters).
 """
 
-import pyauto_functional  # Must be imported before pyauto.
-import pyauto
-
+import pyauto_media
 from media_event_test_base import MediaEventTestBase
 
 
@@ -29,4 +27,4 @@ class MediaEventSimpleTest(MediaEventTestBase):
 
 
 if __name__ == '__main__':
-  pyauto_functional.Main()
+  pyauto_media.Main()

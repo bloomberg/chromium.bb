@@ -16,7 +16,7 @@ media_test_runner.py is used for generating these variables
 import os
 import time
 
-import pyauto_functional  # Must be imported before pyauto.
+import pyauto_media
 import pyauto
 
 from media_test_env_names import MediaTestEnvNames
@@ -182,4 +182,4 @@ class MediaTestBase(pyauto.PyUITest):
 
 
 if __name__ == '__main__':
-  pyauto_functional.Main()
+  pyauto_media.Main()
