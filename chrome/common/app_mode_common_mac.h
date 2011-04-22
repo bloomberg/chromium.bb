@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,9 +13,9 @@
 
 namespace app_mode {
 
-// The ID under which app mode preferences will be recorded
-// ("org.chromium.Chromium" or "com.google.Chrome").
-extern const CFStringRef kAppPrefsID;
+// The key under which the browser's bundle ID will be stored in the
+// app mode launcher bundle's Info.plist.
+extern const CFStringRef kBrowserBundleIDKey;
 
 // The key under which to record the path to the (user-visible) application
 // bundle; this key is recorded under the ID given by |kAppPrefsID|.

@@ -31,6 +31,13 @@ void LowLevelShutdown();
 // |user_data_dir| parameter. If no policy is set the parameter is not changed.
 void CheckUserDataDirPolicy(FilePath* user_data_dir);
 
+#if defined(OS_MACOSX)
+// Sets the base bundle ID to the proper value based on the running
+// application. The base bundle ID is the outer browser application's bundle
+// ID even when running in a non-browser (helper) process.
+void SetUpBaseBundleID();
+#endif
+
 }  // namespace chrome_main
 
 #endif  // CHROME_APP_CHROME_MAIN_H_

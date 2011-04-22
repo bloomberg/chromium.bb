@@ -11,8 +11,10 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/policy/policy_path_parser.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "policy/policy_constants.h"
 
 namespace chrome_main {
@@ -30,6 +32,11 @@ void CheckUserDataDirPolicy(FilePath* user_data_dir) {
         policy::path_parser::ExpandPathVariables(string_value);
     *user_data_dir = FilePath(string_value);
   }
+}
+
+void SetUpBaseBundleID() {
+  NSBundle* base_bundle = chrome::OuterAppBundle();
+  base::mac::SetBaseBundleID([[base_bundle bundleIdentifier] UTF8String]);
 }
 
 }  // namespace chrome_main

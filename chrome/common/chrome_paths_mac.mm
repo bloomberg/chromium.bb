@@ -21,7 +21,7 @@ namespace {
 
 const FilePath* g_override_versioned_directory = NULL;
 
-NSBundle* OuterAppBundle() {
+NSBundle* OuterAppBundleInternal() {
   if (!base::mac::AmIBundled()) {
     // If unbundled (as in a test), there's no app bundle.
     return nil;
@@ -53,7 +53,7 @@ const char* ProductDirNameInternal() {
   // should not be accessed from non-browser processes, but those processes do
   // attempt to get the profile directory, so direct them to look in the outer
   // browser .app's Info.plist for the CrProductDirName key.
-  NSBundle* bundle = OuterAppBundle();
+  NSBundle* bundle = chrome::OuterAppBundle();
   NSString* product_dir_name_ns =
       [bundle objectForInfoDictionaryKey:@"CrProductDirName"];
   const char* product_dir_name = [product_dir_name_ns fileSystemRepresentation];
@@ -181,6 +181,12 @@ FilePath GetFrameworkBundlePath() {
 
 bool GetLocalLibraryDirectory(FilePath* result) {
   return base::mac::GetLocalDirectory(NSLibraryDirectory, result);
+}
+
+NSBundle* OuterAppBundle() {
+  // Cache this. Foundation leaks it anyway.
+  static NSBundle* bundle = [OuterAppBundleInternal() retain];
+  return bundle;
 }
 
 }  // namespace chrome

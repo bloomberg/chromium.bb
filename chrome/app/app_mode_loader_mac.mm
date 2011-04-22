@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,12 +60,21 @@ int main(int argc, char** argv) {
   // needed.
   NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
+  // Get the current main bundle, i.e., that of the app loader that's running.
+  NSBundle* app_bundle = [NSBundle mainBundle];
+  CHECK_MSG(app_bundle, "couldn't get loader bundle");
+
+  // Get the bundle ID of the browser that created this app bundle.
+  NSString* cr_bundle_id = [app_bundle
+      objectForInfoDictionaryKey:(NSString*)app_mode::kBrowserBundleIDKey];
+  CHECK_MSG(cr_bundle_id, "couldn't get browser bundle ID");
+
   // Get the browser bundle path.
   // TODO(viettrungluu): more fun
   NSString* cr_bundle_path =
       [(NSString*)CFPreferencesCopyAppValue(
           app_mode::kLastRunAppBundlePathPrefsKey,
-          app_mode::kAppPrefsID) autorelease];
+          (CFStringRef)cr_bundle_id) autorelease];
   CHECK_MSG(cr_bundle_path, "couldn't get browser bundle path");
 
   // Get the browser bundle.
@@ -91,9 +100,6 @@ int main(int argc, char** argv) {
   // And copy it, since |cr_versioned_path| will go away with the pool.
   info.chrome_versioned_path = NSStringToFSCString(cr_versioned_path);
 
-  // Get the current main bundle, i.e., that of the app loader that's running.
-  NSBundle* app_bundle = [NSBundle mainBundle];
-  CHECK_MSG(app_bundle, "couldn't get loader bundle");
   // Optional, so okay if it's NULL.
   info.app_mode_bundle_path = NSStringToFSCString([app_bundle bundlePath]);
 

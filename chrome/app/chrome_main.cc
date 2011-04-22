@@ -527,6 +527,10 @@ int ChromeMain(int argc, char** argv) {
   chromeos::BootTimesLoader::Get()->SaveChromeMainStats();
 #endif
 
+#if defined(OS_MACOSX)
+  chrome_main::SetUpBaseBundleID();
+#endif
+
   CommandLine::Init(argc, argv);
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 

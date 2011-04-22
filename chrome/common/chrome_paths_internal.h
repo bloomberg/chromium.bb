@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,14 @@
 #pragma once
 
 #include "build/build_config.h"
+
+#if defined(OS_MACOSX)
+#if defined(__OBJC__)
+@class NSBundle;
+#else
+class NSBundle;
+#endif
+#endif
 
 class FilePath;
 
@@ -67,6 +75,10 @@ FilePath GetFrameworkBundlePath();
 
 // Get the local library directory.
 bool GetLocalLibraryDirectory(FilePath* result);
+
+// Returns the NSBundle for the outer browser application, even when running
+// inside the helper. In unbundled applications, such as tests, returns nil.
+NSBundle* OuterAppBundle();
 
 #endif  // OS_MACOSX
 

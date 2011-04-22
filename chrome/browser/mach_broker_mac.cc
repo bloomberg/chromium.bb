@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/mach_ipc_mac.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -227,18 +228,10 @@ void MachBroker::Observe(NotificationType type,
 
 // static
 std::string MachBroker::GetMachPortName() {
-  static const char kFormatString[] =
-#if defined(GOOGLE_CHROME_BUILD)
-      "com.google.Chrome"
-#else
-      "org.chromium.Chromium"
-#endif
-      ".rohitfork.%d";
-
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  const bool is_child = command_line.HasSwitch(switches::kProcessType);
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const bool is_child = command_line->HasSwitch(switches::kProcessType);
 
   // In non-browser (child) processes, use the parent's pid.
   const pid_t pid = is_child ? getppid() : getpid();
-  return StringPrintf(kFormatString, pid);
+  return StringPrintf("%s.rohitfork.%d", base::mac::BaseBundleID(), pid);
 }

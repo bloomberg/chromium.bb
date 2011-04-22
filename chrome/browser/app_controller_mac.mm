@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
@@ -109,6 +110,12 @@ Browser* ActivateOrCreateBrowser(Profile* profile) {
   return CreateBrowser(profile);
 }
 
+CFStringRef BaseBundleID_CFString() {
+  NSString* base_bundle_id =
+      [NSString stringWithUTF8String:base::mac::BaseBundleID()];
+  return base::mac::NSToCFCast(base_bundle_id);
+}
+
 // This task synchronizes preferences (under "org.chromium.Chromium" or
 // "com.google.Chrome"), in particular, writes them out to disk.
 class PrefsSyncTask : public Task {
@@ -116,7 +123,7 @@ class PrefsSyncTask : public Task {
   PrefsSyncTask() {}
   virtual ~PrefsSyncTask() {}
   virtual void Run() {
-    if (!CFPreferencesAppSynchronize(app_mode::kAppPrefsID))
+    if (!CFPreferencesAppSynchronize(BaseBundleID_CFString()))
       LOG(WARNING) << "Error recording application bundle path.";
   }
 };
@@ -133,7 +140,7 @@ void RecordLastRunAppBundlePath() {
       chrome::GetVersionedDirectory().DirName().DirName().DirName();
   CFPreferencesSetAppValue(app_mode::kLastRunAppBundlePathPrefsKey,
                            base::SysUTF8ToCFStringRef(appBundlePath.value()),
-                           app_mode::kAppPrefsID);
+                           BaseBundleID_CFString());
 
   // Sync after a delay avoid I/O contention on startup; 1500 ms is plenty.
   BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE,
