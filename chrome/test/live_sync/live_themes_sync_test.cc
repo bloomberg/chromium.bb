@@ -52,19 +52,8 @@ bool LiveThemesSyncTest::UsingDefaultTheme(Profile* profile) const {
   return GetThemeService(profile)->UsingDefaultTheme();
 }
 
-// TODO(akalin): Move this logic into ThemeService.
 bool LiveThemesSyncTest::UsingNativeTheme(Profile* profile) const {
-#if defined(TOOLKIT_USES_GTK)
-  const bool kHasDistinctNativeTheme = true;
-#else
-  const bool kHasDistinctNativeTheme = false;
-#endif
-
-  if (!kHasDistinctNativeTheme) {
-    return UsingDefaultTheme(profile);
-  }
-
-  return !UsingCustomTheme(profile) && !UsingDefaultTheme(profile);
+  return GetThemeService(profile)->UsingNativeTheme();
 }
 
 bool LiveThemesSyncTest::ThemeIsPendingInstall(

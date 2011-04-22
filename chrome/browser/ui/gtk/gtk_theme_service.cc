@@ -352,8 +352,12 @@ void GtkThemeService::SetNativeTheme() {
   NotifyThemeChanged();
 }
 
-bool GtkThemeService::UsingDefaultTheme() {
+bool GtkThemeService::UsingDefaultTheme() const {
   return !use_gtk_ && ThemeService::UsingDefaultTheme();
+}
+
+bool GtkThemeService::UsingNativeTheme() const {
+  return use_gtk_;
 }
 
 void GtkThemeService::Observe(NotificationType type,
@@ -390,7 +394,7 @@ GtkWidget* GtkThemeService::CreateToolbarSeparator() {
 }
 
 bool GtkThemeService::UseGtkTheme() const {
-  return use_gtk_;
+  return UsingNativeTheme();
 }
 
 GdkColor GtkThemeService::GetGdkColor(int id) const {

@@ -172,7 +172,11 @@ class ThemeService : public base::NonThreadSafe,
 
   // Whether we're using the chrome default theme. Virtual so linux can check
   // if we're using the GTK theme.
-  virtual bool UsingDefaultTheme();
+  virtual bool UsingDefaultTheme() const;
+
+  // Whether we're using the native theme (which may or may not be the
+  // same as the default theme).
+  virtual bool UsingNativeTheme() const;
 
   // Gets the id of the last installed theme. (The theme may have been further
   // locally customized.)

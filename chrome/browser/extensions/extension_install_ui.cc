@@ -17,6 +17,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -33,11 +34,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/extensions/gtk_theme_installed_infobar_delegate.h"
-#include "chrome/browser/ui/gtk/gtk_theme_service.h"
-#endif
 
 // static
 const int ExtensionInstallUI::kTitleIds[NUM_PROMPT_TYPES] = {
@@ -92,7 +88,7 @@ void ShowAppInstalledAnimation(Browser* browser, const std::string& app_id) {
 ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
     : profile_(profile),
       ui_loop_(MessageLoop::current()),
-      previous_use_system_theme_(false),
+      previous_using_native_theme_(false),
       extension_(NULL),
       delegate_(NULL),
       prompt_type_(NUM_PROMPT_TYPES),
@@ -103,14 +99,8 @@ ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
         ThemeServiceFactory::GetThemeForProfile(profile_);
     if (previous_theme)
       previous_theme_id_ = previous_theme->id();
-#if defined(TOOLKIT_GTK)
-    // On Linux, we also need to take the user's system settings into account
-    // to undo theme installation.
-    previous_use_system_theme_ =
-        GtkThemeService::GetFrom(profile_)->UseGtkTheme();
-#else
-    DCHECK(!previous_use_system_theme_);
-#endif
+    previous_using_native_theme_ =
+        ThemeServiceFactory::GetForProfile(profile_)->UsingNativeTheme();
   }
 }
 
@@ -149,7 +139,7 @@ void ExtensionInstallUI::OnInstallSuccess(const Extension* extension,
   SetIcon(icon);
 
   if (extension->is_theme()) {
-    ShowThemeInfoBar(previous_theme_id_, previous_use_system_theme_,
+    ShowThemeInfoBar(previous_theme_id_, previous_using_native_theme_,
                      extension, profile_);
     return;
   }
@@ -216,7 +206,7 @@ void ExtensionInstallUI::OnImageLoaded(
 }
 
 void ExtensionInstallUI::ShowThemeInfoBar(const std::string& previous_theme_id,
-                                          bool previous_use_system_theme,
+                                          bool previous_using_native_theme,
                                           const Extension* new_theme,
                                           Profile* profile) {
   if (!new_theme->is_theme())
@@ -252,7 +242,7 @@ void ExtensionInstallUI::ShowThemeInfoBar(const std::string& previous_theme_id,
 
   // Then either replace that old one or add a new one.
   InfoBarDelegate* new_delegate = GetNewThemeInstalledInfoBarDelegate(
-      tab_contents, new_theme, previous_theme_id, previous_use_system_theme);
+      tab_contents, new_theme, previous_theme_id, previous_using_native_theme);
 
   if (old_delegate)
     tab_contents->ReplaceInfoBar(old_delegate, new_delegate);
@@ -275,12 +265,8 @@ InfoBarDelegate* ExtensionInstallUI::GetNewThemeInstalledInfoBarDelegate(
     TabContents* tab_contents,
     const Extension* new_theme,
     const std::string& previous_theme_id,
-    bool previous_use_system_theme) {
-#if defined(TOOLKIT_GTK)
-  return new GtkThemeInstalledInfoBarDelegate(tab_contents, new_theme,
-      previous_theme_id, previous_use_system_theme);
-#else
+    bool previous_using_native_theme) {
   return new ThemeInstalledInfoBarDelegate(tab_contents, new_theme,
-                                           previous_theme_id);
-#endif
+                                           previous_theme_id,
+                                           previous_using_native_theme);
 }

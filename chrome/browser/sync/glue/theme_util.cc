@@ -10,9 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_updater.h"
-#if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/ui/gtk/gtk_theme_service.h"
-#endif
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -27,17 +24,10 @@ const char kCurrentThemeClientTag[] = "current_theme";
 
 namespace {
 
+// TODO(akalin): Remove this.
 bool IsSystemThemeDistinctFromDefaultTheme() {
 #if defined(TOOLKIT_USES_GTK)
   return true;
-#else
-  return false;
-#endif
-}
-
-bool UseSystemTheme(Profile* profile) {
-#if defined(TOOLKIT_USES_GTK)
-  return GtkThemeService::GetFrom(profile)->UseGtkTheme();
 #else
   return false;
 #endif
@@ -131,7 +121,7 @@ bool UpdateThemeSpecificsOrSetCurrentThemeIfNecessary(
     Profile* profile, sync_pb::ThemeSpecifics* theme_specifics) {
   if (!theme_specifics->use_custom_theme() &&
       (ThemeServiceFactory::GetThemeForProfile(profile) ||
-       (UseSystemTheme(profile) &&
+       (ThemeServiceFactory::GetForProfile(profile)->UsingNativeTheme() &&
         IsSystemThemeDistinctFromDefaultTheme()))) {
     GetThemeSpecificsFromCurrentTheme(profile, theme_specifics);
     return true;
@@ -153,7 +143,7 @@ void GetThemeSpecificsFromCurrentTheme(
   GetThemeSpecificsFromCurrentThemeHelper(
       current_theme,
       IsSystemThemeDistinctFromDefaultTheme(),
-      UseSystemTheme(profile),
+      ThemeServiceFactory::GetForProfile(profile)->UsingNativeTheme(),
       theme_specifics);
 }
 
@@ -167,8 +157,6 @@ void GetThemeSpecificsFromCurrentThemeHelper(
   if (is_system_theme_distinct_from_default_theme) {
     theme_specifics->set_use_system_theme_by_default(
         use_system_theme_by_default);
-  } else {
-    DCHECK(!use_system_theme_by_default);
   }
   if (use_custom_theme) {
     DCHECK(current_theme);

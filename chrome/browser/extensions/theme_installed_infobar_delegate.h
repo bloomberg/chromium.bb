@@ -21,7 +21,8 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
  public:
   ThemeInstalledInfoBarDelegate(TabContents* tab_contents,
                                 const Extension* new_theme,
-                                const std::string& previous_theme_id);
+                                const std::string& previous_theme_id,
+                                bool previous_using_native_theme);
 
   // Returns true if the given theme is the same as the one associated with this
   // info bar.
@@ -60,6 +61,7 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
 
   // Used to undo theme install.
   std::string previous_theme_id_;
+  bool previous_using_native_theme_;
 
   // Tab to which this info bar is associated.
   TabContents* tab_contents_;

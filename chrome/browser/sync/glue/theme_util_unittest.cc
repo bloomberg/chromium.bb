@@ -20,6 +20,7 @@ namespace browser_sync {
 
 namespace {
 
+using ::testing::AnyNumber;
 using ::testing::Return;
 
 class ThemeUtilTest : public testing::Test {
@@ -222,6 +223,7 @@ TEST_F(ThemeUtilTest, SetCurrentThemeIfNecessaryDefaultThemeNotNecessary) {
 
   EXPECT_CALL(*mock_theme_service, GetThemeID()).WillRepeatedly(Return(
       ThemeService::kDefaultThemeID));
+  EXPECT_CALL(*mock_theme_service, UseDefaultTheme()).Times(AnyNumber());
 
   // TODO(akalin): Mock out call to GetPrefs() under TOOLKIT_USES_GTK.
 

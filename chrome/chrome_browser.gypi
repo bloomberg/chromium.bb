@@ -1028,8 +1028,6 @@
         'browser/extensions/file_manager_util.cc',
         'browser/extensions/file_reader.cc',
         'browser/extensions/file_reader.h',
-        'browser/extensions/gtk_theme_installed_infobar_delegate.cc',
-        'browser/extensions/gtk_theme_installed_infobar_delegate.h',
         'browser/extensions/image_loading_tracker.cc',
         'browser/extensions/image_loading_tracker.h',
         'browser/extensions/key_identifier_conversion_views.cc',

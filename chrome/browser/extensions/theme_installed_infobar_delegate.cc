@@ -22,13 +22,15 @@
 ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
     TabContents* tab_contents,
     const Extension* new_theme,
-    const std::string& previous_theme_id)
+    const std::string& previous_theme_id,
+    bool previous_using_native_theme)
     : ConfirmInfoBarDelegate(tab_contents),
       profile_(tab_contents->profile()),
       theme_service_(ThemeServiceFactory::GetForProfile(profile_)),
       name_(new_theme->name()),
       theme_id_(new_theme->id()),
       previous_theme_id_(previous_theme_id),
+      previous_using_native_theme_(previous_using_native_theme),
       tab_contents_(tab_contents) {
   theme_service_->OnInfobarDisplayed();
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
@@ -59,7 +61,11 @@ bool ThemeInstalledInfoBarDelegate::Cancel() {
     }
   }
 
-  theme_service_->UseDefaultTheme();
+  if (previous_using_native_theme_) {
+    theme_service_->SetNativeTheme();
+  } else {
+    theme_service_->UseDefaultTheme();
+  }
   return true;
 }
 

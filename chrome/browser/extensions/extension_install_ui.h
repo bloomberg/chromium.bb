@@ -79,7 +79,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   // should be empty if the previous theme was the system/default
   // theme.
   static void ShowThemeInfoBar(
-      const std::string& previous_theme_id, bool previous_use_system_theme,
+      const std::string& previous_theme_id, bool previous_using_native_theme,
       const Extension* new_theme, Profile* profile);
 
   // Sets the icon that will be used in any UI. If |icon| is NULL, or contains
@@ -97,14 +97,14 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
       TabContents* tab_contents,
       const Extension* new_theme,
       const std::string& previous_theme_id,
-      bool previous_use_system_theme);
+      bool previous_using_native_theme);
 
   Profile* profile_;
   MessageLoop* ui_loop_;
 
   // Used to undo theme installation.
   std::string previous_theme_id_;
-  bool previous_use_system_theme_;
+  bool previous_using_native_theme_;
 
   // The extensions installation icon.
   SkBitmap icon_;

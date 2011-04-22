@@ -346,10 +346,14 @@ void ThemeService::SetNativeTheme() {
   UseDefaultTheme();
 }
 
-bool ThemeService::UsingDefaultTheme() {
+bool ThemeService::UsingDefaultTheme() const {
   std::string id = GetThemeID();
   return id == ThemeService::kDefaultThemeID ||
       id == kDefaultThemeGalleryID;
+}
+
+bool ThemeService::UsingNativeTheme() const {
+  return UsingDefaultTheme();
 }
 
 std::string ThemeService::GetThemeID() const {
