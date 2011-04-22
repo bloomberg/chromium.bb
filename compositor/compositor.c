@@ -123,6 +123,50 @@ wlsc_matrix_transform(struct wlsc_matrix *matrix, struct wlsc_vector *v)
 	*v = t;
 }
 
+void
+wlsc_tweener_init(struct wlsc_tweener *tweener,
+		  double k, double current, double target)
+{
+	tweener->k = k;
+	tweener->current = current;
+	tweener->previous = current;
+	tweener->target = target;
+}
+
+void
+wlsc_tweener_update(struct wlsc_tweener *tweener, uint32_t msec)
+{
+	double force, current, step;
+
+	step = (msec - tweener->timestamp) / 100.0;
+	tweener->timestamp = msec;
+
+	current = tweener->current;
+	force = tweener->k * (tweener->target - current) / 10.0 +
+		(tweener->previous - current);
+
+	tweener->current =
+		current + (current - tweener->previous) + force * step * step;
+	tweener->previous = current;
+
+	if (tweener->current >= 1.0) {
+		tweener->current = 1.0;
+		tweener->previous = 1.0;
+	}
+
+	if (tweener->current <= 0.0) {
+		tweener->current = 0.0;
+		tweener->previous = 0.0;
+	}
+}
+
+int
+wlsc_tweener_done(struct wlsc_tweener *tweener)
+{
+	return fabs(tweener->previous - tweener->target) < 0.0002 &&
+		fabs(tweener->current - tweener->target) < 0.0002;
+}
+
 struct wlsc_surface *
 wlsc_surface_create(struct wlsc_compositor *compositor,
 		    int32_t x, int32_t y, int32_t width, int32_t height)
@@ -569,6 +613,7 @@ wlsc_output_finish_frame(struct wlsc_output *output, int msecs)
 {
 	struct wlsc_compositor *compositor = output->compositor;
 	struct wlsc_surface *es;
+	struct wlsc_animation *animation, *next;
 
 	wl_list_for_each(es, &compositor->surface_list, link) {
 		if (es->output == output) {
@@ -581,6 +626,10 @@ wlsc_output_finish_frame(struct wlsc_output *output, int msecs)
 
 	wl_event_source_timer_update(compositor->timer_source, 5);
 	compositor->repaint_on_timeout = 1;
+
+	wl_list_for_each_safe(animation, next,
+			      &compositor->animation_list, link)
+		animation->frame(animation, output, msecs);
 }
 
 void
@@ -595,6 +644,49 @@ wlsc_output_damage(struct wlsc_output *output)
 	wlsc_compositor_schedule_repaint(compositor);
 }
 
+static void
+fade_frame(struct wlsc_animation *animation,
+	   struct wlsc_output *output, uint32_t msecs)
+{
+	struct wlsc_compositor *compositor =
+		container_of(animation,
+			     struct wlsc_compositor, fade.animation);
+
+	wlsc_tweener_update(&compositor->fade.tweener, msecs);
+	if (wlsc_tweener_done(&compositor->fade.tweener)) {
+		if (compositor->fade.tweener.current > 0.999)
+			compositor->state = WLSC_COMPOSITOR_SLEEPING;
+		compositor->fade.tweener.current =
+			compositor->fade.tweener.target;
+		wl_list_remove(&animation->link);
+		wl_list_init(&animation->link);
+	}
+
+	wlsc_output_damage(output);
+}
+
+static void
+fade_output(struct wlsc_output *output,
+	    GLfloat tint, pixman_region32_t *region)
+{
+	struct wlsc_compositor *compositor = output->compositor;
+	struct wlsc_surface surface;
+	GLfloat color[4] = { 0.0, 0.0, 0.0, tint };
+
+	surface.compositor = compositor;
+	surface.x = output->x;
+	surface.y = output->y;
+	surface.width = output->width;
+	surface.height = output->height;
+	surface.visual = &compositor->compositor.premultiplied_argb_visual;
+	surface.texture = GL_NONE;
+	glUseProgram(compositor->solid_shader.program);
+	glUniformMatrix4fv(compositor->solid_shader.proj_uniform,
+			   1, GL_FALSE, output->matrix.d);
+	glUniform4fv(compositor->solid_shader.color_uniform, 1, color);
+	wlsc_surface_draw(&surface, output, region);
+}
+ 
 static void
 wlsc_output_repaint(struct wlsc_output *output)
 {
@@ -633,6 +725,8 @@ wlsc_output_repaint(struct wlsc_output *output)
 	if (ec->focus)
 		if (output->set_hardware_cursor(output, ec->input_device) < 0)
 			using_hardware_cursor = 0;
+	if (ec->fade.tweener.current > 0.001)
+		using_hardware_cursor = 0;
 
 	es = container_of(ec->surface_list.next, struct wlsc_surface, link);
 	if (es->map_type == WLSC_SURFACE_MAP_FULLSCREEN &&
@@ -698,6 +792,9 @@ wlsc_output_repaint(struct wlsc_output *output)
 				wlsc_surface_draw(eid->sprite, output,
 						  &total_damage);
 		}
+
+	if (ec->fade.tweener.current > 0.001)
+		fade_output(output, ec->fade.tweener.current, &total_damage);
 }
 
 static int
@@ -746,6 +843,25 @@ wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor)
 
 	wl_event_source_timer_update(compositor->timer_source, 1);
 	compositor->repaint_on_timeout = 1;
+}
+
+void
+wlsc_compositor_fade(struct wlsc_compositor *compositor, float tint)
+{
+	int done;
+
+	done = wlsc_tweener_done(&compositor->fade.tweener);
+	compositor->fade.tweener.target = tint;
+	if (wlsc_tweener_done(&compositor->fade.tweener))
+		return;
+
+	if (done)
+		compositor->fade.tweener.timestamp = get_time();
+
+	wlsc_compositor_damage_all(compositor);
+	if (wl_list_empty(&compositor->fade.animation.link))
+		wl_list_insert(compositor->animation_list.prev,
+			       &compositor->fade.animation.link);
 }
 
 static void
@@ -1070,10 +1186,8 @@ wlsc_compositor_wake(struct wlsc_compositor *compositor)
 	if (compositor->idle_inhibit)
 		return;
 
-	if (compositor->state == WLSC_COMPOSITOR_SLEEPING) {
-		compositor->state = WLSC_COMPOSITOR_ACTIVE;
-		wlsc_compositor_damage_all(compositor);
-	}
+	wlsc_compositor_fade(compositor, 0.0);
+	compositor->state = WLSC_COMPOSITOR_ACTIVE;
 
 	wl_event_source_timer_update(compositor->idle_source,
 				     option_idle_time * 1000);
@@ -1101,8 +1215,7 @@ idle_handler(void *data)
 	if (compositor->idle_inhibit)
 		return 1;
 
-	wlsc_compositor_damage_all(compositor);
-	compositor->state = WLSC_COMPOSITOR_SLEEPING;
+	wlsc_compositor_fade(compositor, 1.0);
 
 	return 1;
 }
@@ -1519,6 +1632,15 @@ static const char texture_fragment_shader[] =
 	"   gl_FragColor = texture2D(tex, v_texcoord)\n;"
 	"}\n";
 
+static const char solid_fragment_shader[] =
+	"precision mediump float;\n"
+	"varying vec2 v_texcoord;\n"
+	"uniform vec4 color;\n"
+	"void main()\n"
+	"{\n"
+	"   gl_FragColor = color\n;"
+	"}\n";
+
 static int
 compile_shader(GLenum type, const char *source)
 {
@@ -1567,6 +1689,37 @@ wlsc_shader_init(struct wlsc_shader *shader,
 
 	shader->proj_uniform = glGetUniformLocation(shader->program, "proj");
 	shader->tex_uniform = glGetUniformLocation(shader->program, "tex");
+
+	return 0;
+}
+
+static int
+init_solid_shader(struct wlsc_shader *shader,
+		  GLuint vertex_shader, const char *fragment_source)
+{
+	GLint status;
+	char msg[512];
+
+	shader->vertex_shader = vertex_shader;
+	shader->fragment_shader =
+		compile_shader(GL_FRAGMENT_SHADER, fragment_source);
+
+	shader->program = glCreateProgram();
+	glAttachShader(shader->program, shader->vertex_shader);
+	glAttachShader(shader->program, shader->fragment_shader);
+	glBindAttribLocation(shader->program, 0, "position");
+	glBindAttribLocation(shader->program, 1, "texcoord");
+
+	glLinkProgram(shader->program);
+	glGetProgramiv(shader->program, GL_LINK_STATUS, &status);
+	if (!status) {
+		glGetProgramInfoLog(shader->program, sizeof msg, NULL, msg);
+ 		fprintf(stderr, "link info: %s\n", msg);
+		return -1;
+ 	}
+ 
+	shader->proj_uniform = glGetUniformLocation(shader->program, "proj");
+	shader->color_uniform = glGetUniformLocation(shader->program, "color");
 
 	return 0;
 }
@@ -1703,6 +1856,10 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	wl_list_init(&ec->input_device_list);
 	wl_list_init(&ec->output_list);
 	wl_list_init(&ec->binding_list);
+	wl_list_init(&ec->animation_list);
+	wlsc_tweener_init(&ec->fade.tweener, 0.8, 0.0, 0.0);
+	ec->fade.animation.frame = fade_frame;
+	wl_list_init(&ec->fade.animation.link);
 
 	wlsc_shell_init(ec);
 	wlsc_switcher_init(ec);
@@ -1726,6 +1883,10 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 
 	if (wlsc_shader_init(&ec->texture_shader,
 			     vertex_shader, texture_fragment_shader) < 0)
+		return -1;
+	if (init_solid_shader(&ec->solid_shader,
+			      ec->texture_shader.vertex_shader,
+			      solid_fragment_shader) < 0)
 		return -1;
 
 	loop = wl_display_get_event_loop(ec->wl_display);

@@ -98,6 +98,20 @@ struct wlsc_shader {
 	GLuint color_uniform;
 };
 
+struct wlsc_animation {
+	void (*frame)(struct wlsc_animation *animation,
+		      struct wlsc_output *output, uint32_t msecs);
+	struct wl_list link;
+};
+
+struct wlsc_tweener {
+	double k;
+	double current;
+	double target;
+	double previous;
+	uint32_t timestamp;
+};
+
 enum {
 	WLSC_COMPOSITOR_ACTIVE,
 	WLSC_COMPOSITOR_SLEEPING
@@ -128,6 +142,11 @@ struct wlsc_compositor {
 	struct wl_list input_device_list;
 	struct wl_list surface_list;
 	struct wl_list binding_list;
+	struct wl_list animation_list;
+	struct {
+		struct wlsc_tweener tweener;
+		struct wlsc_animation animation;
+	} fade;
 
 	uint32_t state;
 	struct wl_event_source *idle_source;
@@ -189,6 +208,14 @@ struct wlsc_surface {
 };
 
 void
+wlsc_tweener_init(struct wlsc_tweener *tweener,
+		  double k, double current, double target);
+void
+wlsc_tweener_update(struct wlsc_tweener *tweener, uint32_t msec);
+int
+wlsc_tweener_done(struct wlsc_tweener *tweener);
+
+void
 wlsc_surface_update_matrix(struct wlsc_surface *es);
 
 void
@@ -222,6 +249,8 @@ void
 wlsc_output_damage(struct wlsc_output *output);
 void
 wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor);
+void
+wlsc_compositor_fade(struct wlsc_compositor *compositor, float tint);
 void
 wlsc_compositor_damage_all(struct wlsc_compositor *compositor);
 void
