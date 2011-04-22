@@ -46,6 +46,11 @@ class NetworkMessageObserver : public NetworkLibrary::NetworkManagerObserver,
   virtual void OnConnectionInitiated(NetworkLibrary* obj,
                                      const Network* network);
 
+  // Saves the current cellular and plan information.
+  // |plan| can be NULL. In that case, we set it to unknown.
+  void SaveLastCellularInfo(const CellularNetwork* cellular,
+                            const CellularDataPlan* plan);
+
   typedef std::map<std::string, ConnectionState> NetworkStateMap;
 
   // Network state by service path.
@@ -57,6 +62,8 @@ class NetworkMessageObserver : public NetworkLibrary::NetworkManagerObserver,
   std::string cellular_data_plan_unique_id_;
   // Last cellular data plan type.
   CellularDataPlanType cellular_data_plan_type_;
+  // Last cellular data left.
+  CellularNetwork::DataLeft cellular_data_left_;
 
   // Notification for connection errors
   SystemNotification notification_connection_error_;

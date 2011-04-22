@@ -253,15 +253,14 @@ void NetworkMessageObserver::OnCellularDataPlanChanged(NetworkLibrary* cros) {
 
   // If no plans available, check to see if we need a new plan.
   if (!plans || plans->empty()) {
-    // If previously, we had a low data notification, we know that a plan was
-    // near expiring. In that case, because the plan has disappeared, we assume
-    // that it expired.
-    // Note: even if a user dismissed the notification, it's still visible.
-    if (notification_low_data_.visible()) {
+    // If previously, we had low data, we know that a plan was near expiring.
+    // In that case, because the plan disappeared, we assume that it expired.
+    if (cellular_data_left_ == CellularNetwork::DATA_LOW) {
       ShowNoDataNotification(cellular_data_plan_type_);
     } else if (cellular->needs_new_plan()) {
       ShowNeedsPlanNotification(cellular);
     }
+    SaveLastCellularInfo(cellular, NULL);
     return;
   }
 
@@ -273,6 +272,7 @@ void NetworkMessageObserver::OnCellularDataPlanChanged(NetworkLibrary* cros) {
   // For example, if there is another data plan available when this runs out.
   for (++iter; iter != plans->end(); ++iter) {
     if (IsApplicableBackupPlan(current_plan, *iter)) {
+      SaveLastCellularInfo(cellular, current_plan);
       return;
     }
   }
@@ -289,18 +289,34 @@ void NetworkMessageObserver::OnCellularDataPlanChanged(NetworkLibrary* cros) {
   if (cellular->data_left() == CellularNetwork::DATA_NONE) {
     ShowNoDataNotification(current_plan->plan_type);
   } else if (cellular->data_left() == CellularNetwork::DATA_VERY_LOW) {
-    ShowLowDataNotification(current_plan);
+    // Only show low data notification if we transition to very low data
+    // and we are on the same plan. This is so that users don't get a
+    // notification whenever they connect to a low data 3g network.
+    if (!new_plan && (cellular_data_left_ != CellularNetwork::DATA_VERY_LOW))
+      ShowLowDataNotification(current_plan);
   }
 
-  cellular_service_path_ = cellular->service_path();
-  cellular_data_plan_unique_id_ = current_plan->GetUniqueIdentifier();
-  cellular_data_plan_type_ = current_plan->plan_type;
+  SaveLastCellularInfo(cellular, current_plan);
 }
 
 void NetworkMessageObserver::OnConnectionInitiated(NetworkLibrary* cros,
                                                    const Network* network) {
   // If user initiated any network connection, we hide the error notification.
   notification_connection_error_.Hide();
+}
+
+void NetworkMessageObserver::SaveLastCellularInfo(
+    const CellularNetwork* cellular, const CellularDataPlan* plan) {
+  DCHECK(cellular);
+  cellular_service_path_ = cellular->service_path();
+  cellular_data_left_ = cellular->data_left();
+  if (plan) {
+    cellular_data_plan_unique_id_ = plan->GetUniqueIdentifier();
+    cellular_data_plan_type_ = plan->plan_type;
+  } else {
+    cellular_data_plan_unique_id_ = std::string();
+    cellular_data_plan_type_ = CELLULAR_DATA_PLAN_UNKNOWN;
+  }
 }
 
 }  // namespace chromeos
