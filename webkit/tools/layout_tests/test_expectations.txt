@@ -4,21 +4,3 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
-
-// Needed until we can roll to WK 84651
-BUGCR8630 WIN LINUX DEBUG : fast/backgrounds/solid-color-context-restore.html = FAIL
-BUGCR80301 MAC : fast/canvas/canvas-largedraws.html = TIMEOUT
-// Needed until we can roll to WK 84657
-BUGROLANDSTEINER MAC LEOPARD : svg/dynamic-updates/SVGFEDropShadowElement-dom-dx-attr.html = IMAGE
-BUGROLANDSTEINER MAC LEOPARD : svg/dynamic-updates/SVGFEDropShadowElement-dom-dy-attr.html = IMAGE
-BUGROLANDSTEINER MAC LEOPARD : svg/dynamic-updates/SVGFEDropShadowElement-dom-in-attr.html = IMAGE
-BUGROLANDSTEINER MAC LEOPARD : svg/dynamic-updates/SVGFEDropShadowElement-dom-shadow-color-attr.html = IMAGE
-BUGROLANDSTEINER MAC LEOPARD : svg/dynamic-updates/SVGFEDropShadowElement-dom-shadow-opacity-attr.html = IMAGE
-BUGROLANDSTEINER MAC LEOPARD : svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html = IMAGE
-BUGROLANDSTEINER MAC LEOPARD : svg/dynamic-updates/SVGFEDropShadowElement-svgdom-dx-prop.html = IMAGE
-BUGROLANDSTEINER MAC LEOPARD : svg/dynamic-updates/SVGFEDropShadowElement-svgdom-dy-prop.html = IMAGE
-BUGROLANDSTEINER MAC LEOPARD : svg/dynamic-updates/SVGFEDropShadowElement-svgdom-in-prop.html = IMAGE
-BUGROLANDSTEINER MAC LEOPARD : svg/dynamic-updates/SVGFEDropShadowElement-svgdom-shadow-color-prop.html = IMAGE
-BUGROLANDSTEINER MAC LEOPARD : svg/dynamic-updates/SVGFEDropShadowElement-svgdom-shadow-opacity-prop.html = IMAGE
-BUGROLANDSTEINER MAC LEOPARD : svg/dynamic-updates/SVGFEDropShadowElement-svgdom-stdDeviation-prop.html = IMAGE
-BUGROLANDSTEINER MAC LEOPARD : svg/filters/feDropShadow.svg = IMAGE
