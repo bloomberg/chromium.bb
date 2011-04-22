@@ -16,6 +16,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/memory_debug.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -395,9 +396,9 @@ void TestShell::TestFinished() {
 }
 
 - (void)run:(id)ignore {
-  NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+  base::mac::ScopedNSAutoreleasePool scoped_pool;
 
-  // check for debugger, just bail if so. We don't want the timeouts hitting
+  // Check for debugger, just bail if so. We don't want the timeouts hitting
   // when we're trying to track down an issue.
   if (base::debug::BeingDebugged())
     return;
@@ -422,8 +423,6 @@ void TestShell::TestFinished() {
     fflush(stdout);
     abort();
   }
-
-  [pool release];
 }
 
 @end

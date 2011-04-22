@@ -7,6 +7,7 @@
 #import <AppKit/AppKit.h>
 
 #include "base/logging.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/common/print_messages.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
@@ -109,9 +110,10 @@ void PrintWebViewHelper::RenderPage(
   // printPage can create autoreleased references to |context|. PDF contexts
   // don't write all their data until they are destroyed, so we need to make
   // certain that there are no lingering references.
-  NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-  frame->printPage(page_number, metafile->context());
-  [pool release];
+  {
+    base::mac::ScopedNSAutoreleasePool pool;
+    frame->printPage(page_number, metafile->context());
+  }
 
   // Done printing. Close the device context to retrieve the compiled metafile.
   metafile->FinishPage();

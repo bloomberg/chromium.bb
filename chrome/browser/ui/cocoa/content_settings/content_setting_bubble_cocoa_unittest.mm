@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/debug/debugger.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
@@ -37,15 +38,13 @@ class ContentSettingBubbleControllerTest
   virtual ~ContentSettingBubbleControllerTest();
 
  private:
-  NSAutoreleasePool* pool_;
+  base::mac::ScopedNSAutoreleasePool pool_;
 };
 
-ContentSettingBubbleControllerTest::ContentSettingBubbleControllerTest()
-    : pool_([[NSAutoreleasePool alloc] init]) {
+ContentSettingBubbleControllerTest::ContentSettingBubbleControllerTest() {
 }
 
 ContentSettingBubbleControllerTest::~ContentSettingBubbleControllerTest() {
-  [pool_ drain];
 }
 
 // Check that the bubble doesn't crash or leak for any settings type
@@ -82,5 +81,3 @@ TEST_F(ContentSettingBubbleControllerTest, Init) {
 }
 
 }  // namespace
-
-
