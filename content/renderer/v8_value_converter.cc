@@ -11,22 +11,27 @@
 #include "base/values.h"
 #include "v8/include/v8.h"
 
-V8ValueConverter::V8ValueConverter() {
+V8ValueConverter::V8ValueConverter()
+    : allow_undefined_(false),
+      allow_date_(false),
+      allow_regexp_(false) {
 }
 
 v8::Handle<v8::Value> V8ValueConverter::ToV8Value(
-    Value* value, v8::Handle<v8::Context> context) {
+    Value* value, v8::Handle<v8::Context> context) const {
   v8::Context::Scope context_scope(context);
-  return ToV8ValueImpl(value);
+  v8::HandleScope handle_scope;
+  return handle_scope.Close(ToV8ValueImpl(value));
 }
 
 Value* V8ValueConverter::FromV8Value(v8::Handle<v8::Value> val,
-                                     v8::Handle<v8::Context> context) {
+                                     v8::Handle<v8::Context> context) const {
   v8::Context::Scope context_scope(context);
+  v8::HandleScope handle_scope;
   return FromV8ValueImpl(val);
 }
 
-v8::Handle<v8::Value> V8ValueConverter::ToV8ValueImpl(Value* value) {
+v8::Handle<v8::Value> V8ValueConverter::ToV8ValueImpl(Value* value) const {
   CHECK(value);
   switch (value->GetType()) {
     case Value::TYPE_NULL:
@@ -63,39 +68,56 @@ v8::Handle<v8::Value> V8ValueConverter::ToV8ValueImpl(Value* value) {
       return ToV8Object(static_cast<DictionaryValue*>(value));
 
     default:
-      NOTREACHED() << "Unexpected value type: " << value->GetType();
+      LOG(ERROR) << "Unexpected value type: " << value->GetType();
       return v8::Null();
   }
 }
 
-v8::Handle<v8::Value> V8ValueConverter::ToV8Array(ListValue* val) {
+v8::Handle<v8::Value> V8ValueConverter::ToV8Array(ListValue* val) const {
   v8::Handle<v8::Array> result(v8::Array::New(val->GetSize()));
 
   for (size_t i = 0; i < val->GetSize(); ++i) {
     Value* child = NULL;
     CHECK(val->Get(i, &child));
-    result->Set(static_cast<uint32>(i), ToV8ValueImpl(child));
+
+    v8::Handle<v8::Value> child_v8 = ToV8ValueImpl(child);
+    CHECK(!child_v8.IsEmpty());
+
+    v8::TryCatch try_catch;
+    result->Set(static_cast<uint32>(i), child_v8);
+    if (try_catch.HasCaught())
+      LOG(ERROR) << "Setter for index " << i << " threw an exception.";
   }
 
   return result;
 }
 
-v8::Handle<v8::Value> V8ValueConverter::ToV8Object(DictionaryValue* val) {
+v8::Handle<v8::Value> V8ValueConverter::ToV8Object(DictionaryValue* val) const {
   v8::Handle<v8::Object> result(v8::Object::New());
 
   for (DictionaryValue::key_iterator iter = val->begin_keys();
        iter != val->end_keys(); ++iter) {
     Value* child = NULL;
     CHECK(val->GetWithoutPathExpansion(*iter, &child));
+
     const std::string& key = *iter;
-    result->Set(v8::String::New(key.c_str(), key.length()),
-                ToV8ValueImpl(child));
+    v8::Handle<v8::Value> child_v8 = ToV8ValueImpl(child);
+    CHECK(!child_v8.IsEmpty());
+
+    v8::TryCatch try_catch;
+    result->Set(v8::String::New(key.c_str(), key.length()), child_v8);
+    if (try_catch.HasCaught()) {
+      LOG(ERROR) << "Setter for property " << key.c_str() << " threw an "
+                 << "exception.";
+    }
   }
 
   return result;
 }
 
-Value* V8ValueConverter::FromV8ValueImpl(v8::Handle<v8::Value> val) {
+Value* V8ValueConverter::FromV8ValueImpl(v8::Handle<v8::Value> val) const {
+  CHECK(!val.IsEmpty());
+
   if (val->IsNull())
     return Value::CreateNullValue();
 
@@ -113,6 +135,9 @@ Value* V8ValueConverter::FromV8ValueImpl(v8::Handle<v8::Value> val) {
     return Value::CreateStringValue(std::string(*utf8, utf8.length()));
   }
 
+  if (allow_undefined_ && val->IsUndefined())
+    return Value::CreateNullValue();
+
   if (allow_date_ && val->IsDate()) {
     v8::Date* date = v8::Date::Cast(*val);
     return Value::CreateDoubleValue(date->NumberValue() / 1000.0);
@@ -125,32 +150,65 @@ Value* V8ValueConverter::FromV8ValueImpl(v8::Handle<v8::Value> val) {
 
   // v8::Value doesn't have a ToArray() method for some reason.
   if (val->IsArray())
-    return FromV8Array(v8::Handle<v8::Array>::Cast(val));
+    return FromV8Array(val.As<v8::Array>());
 
   if (val->IsObject())
     return FromV8Object(val->ToObject());
 
-  NOTREACHED() << "Unexpected v8::Value type.";
+  LOG(ERROR) << "Unexpected v8 value type encountered.";
   return Value::CreateNullValue();
 }
 
-ListValue* V8ValueConverter::FromV8Array(v8::Handle<v8::Array> val) {
+ListValue* V8ValueConverter::FromV8Array(v8::Handle<v8::Array> val) const {
   ListValue* result = new ListValue();
   for (uint32 i = 0; i < val->Length(); ++i) {
-    result->Append(FromV8ValueImpl(val->Get(i)));
+    v8::TryCatch try_catch;
+    v8::Handle<v8::Value> child_v8 = val->Get(i);
+    if (try_catch.HasCaught()) {
+      LOG(ERROR) << "Getter for index " << i << " threw an exception.";
+      child_v8 = v8::Null();
+    }
+
+    // TODO(aa): It would be nice to support getters, but we need
+    // http://code.google.com/p/v8/issues/detail?id=1342 to do it properly.
+    if (!val->HasRealIndexedProperty(i))
+      continue;
+
+    Value* child = FromV8ValueImpl(child_v8);
+    CHECK(child);
+
+    result->Append(child);
   }
   return result;
 }
 
-DictionaryValue* V8ValueConverter::FromV8Object(v8::Handle<v8::Object> val) {
+DictionaryValue* V8ValueConverter::FromV8Object(
+    v8::Handle<v8::Object> val) const {
   DictionaryValue* result = new DictionaryValue();
   v8::Handle<v8::Array> property_names(val->GetPropertyNames());
   for (uint32 i = 0; i < property_names->Length(); ++i) {
-    v8::Handle<v8::String> name(
-        v8::Handle<v8::String>::Cast(property_names->Get(i)));
+    v8::Handle<v8::String> name(property_names->Get(i).As<v8::String>());
+
+    // TODO(aa): It would be nice to support getters, but we need
+    // http://code.google.com/p/v8/issues/detail?id=1342 to do it properly.
+    if (!val->HasRealNamedProperty(name))
+      continue;
+
     v8::String::Utf8Value name_utf8(name->ToString());
+
+    v8::TryCatch try_catch;
+    v8::Handle<v8::Value> child_v8 = val->Get(name);
+    if (try_catch.HasCaught()) {
+      LOG(ERROR) << "Getter for property " << *name_utf8
+                 << " threw an exception.";
+      child_v8 = v8::Null();
+    }
+
+    Value* child = FromV8ValueImpl(child_v8);
+    CHECK(child);
+
     result->SetWithoutPathExpansion(std::string(*name_utf8, name_utf8.length()),
-                                    FromV8ValueImpl(val->Get(name)));
+                                    child);
   }
   return result;
 }
