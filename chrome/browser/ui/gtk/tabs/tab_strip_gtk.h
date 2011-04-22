@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/gtk/tabs/tab_gtk.h"
 #include "chrome/browser/ui/gtk/tabstrip_origin_provider.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
+#include "chrome/browser/ui/tabs/hover_tab_selector.h"
 #include "content/common/notification_observer.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/rect.h"
@@ -459,6 +460,9 @@ class TabStripGtk : public TabStripModelObserver,
 
   // True if the tabstrip has already been added as a MessageLoop observer.
   bool added_as_message_loop_observer_;
+
+  // Helper for performing tab selection as a result of dragging over a tab.
+  HoverTabSelector hover_tab_selector_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStripGtk);
 };

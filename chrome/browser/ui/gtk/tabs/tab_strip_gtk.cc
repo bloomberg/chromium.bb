@@ -61,8 +61,10 @@ const int kHorizontalMoveThreshold = 16;  // pixels
 // tabs.
 const int kTabHOffset = -16;
 
-// A linux specific menu item for toggling window decorations.
-const int kShowWindowDecorationsCommand = 200;
+// Inverse ratio of the width of a tab edge to the width of the tab. When
+// hovering over the left or right edge of a tab, the drop indicator will
+// point between tabs.
+const int kTabEdgeRatioInverse = 4;
 
 // Size of the drop indicator.
 static int drop_indicator_width;
@@ -700,7 +702,8 @@ TabStripGtk::TabStripGtk(TabStripModel* model, BrowserWindowGtk* window)
       window_(window),
       theme_service_(GtkThemeService::GetFrom(model->profile())),
       resize_layout_factory_(this),
-      added_as_message_loop_observer_(false) {
+      added_as_message_loop_observer_(false),
+      hover_tab_selector_(model) {
   theme_service_->InitThemesFor(this);
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
@@ -1577,7 +1580,7 @@ void TabStripGtk::UpdateDropIndex(GdkDragContext* context, gint x, gint y) {
     TabGtk* tab = GetTabAt(i);
     gfx::Rect bounds = tab->GetNonMirroredBounds(tabstrip_.get());
     const int tab_max_x = bounds.x() + bounds.width();
-    const int hot_width = bounds.width() / 3;
+    const int hot_width = bounds.width() / kTabEdgeRatioInverse;
     if (x < tab_max_x) {
       if (x < bounds.x() + hot_width)
         SetDropIndex(i, true);
@@ -1596,6 +1599,13 @@ void TabStripGtk::UpdateDropIndex(GdkDragContext* context, gint x, gint y) {
 void TabStripGtk::SetDropIndex(int index, bool drop_before) {
   bool is_beneath;
   gfx::Rect drop_bounds = GetDropBounds(index, drop_before, &is_beneath);
+
+  // Perform a delayed tab transition if hovering directly over a tab;
+  // otherwise, cancel the pending one.
+  if (index != -1 && !drop_before)
+    hover_tab_selector_.StartTabTransition(index);
+  else
+    hover_tab_selector_.CancelTabTransition();
 
   if (!drop_info_.get()) {
     drop_info_.reset(new DropInfo(index, drop_before, !is_beneath));
@@ -1630,6 +1640,9 @@ bool TabStripGtk::CompleteDrop(guchar* data, bool is_plain_text) {
 
   // Destroy the drop indicator.
   drop_info_.reset();
+
+  // Cancel any pending tab transition.
+  hover_tab_selector_.CancelTabTransition();
 
   GURL url;
   if (is_plain_text) {
@@ -1969,7 +1982,11 @@ gboolean TabStripGtk::OnDragDrop(GtkWidget* widget, GdkDragContext* context,
 gboolean TabStripGtk::OnDragLeave(GtkWidget* widget, GdkDragContext* context,
                                   guint time) {
   // Destroy the drop indicator.
-  drop_info_->DestroyContainer();
+  drop_info_.reset();
+
+  // Cancel any pending tab transition.
+  hover_tab_selector_.CancelTabTransition();
+
   return FALSE;
 }
 
