@@ -25,9 +25,15 @@ env_vars = [
     ]
 dependencies = [sel_ldr, test_prog]
 
+# TODO(mlinck) Fix the test to correctly kill sel_ldr, and check if the
+# port is already busy.  This appears to be related to Hardy which is
+# why we are only turning this off on the coverage bots.
+# See:
+# http://code.google.com/p/nativeclient/issues/detail?id=1724
 node = env.CommandTest(
     'debug_stub_test.out',
     command=['${PYTHON}', env.File('debug_stub_test.py'), '-v'],
     osenv=','.join(env_vars),
     extra_deps=dependencies)
-env.AddNodeToTestSuite(node, ['large_tests'], 'run_debug_stub_test')
+env.AddNodeToTestSuite(node, ['large_tests'], 'run_debug_stub_test',
+                       is_broken=env.Bit('coverage_enabled'))
