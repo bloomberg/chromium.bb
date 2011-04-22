@@ -198,7 +198,8 @@ class NativeInputTest(unittest.TestCase):
     self.assertTrue(driver.capabilities["chrome"].has_key("nativeEvents"))
     self.assertTrue(driver.capabilities["chrome"]["nativeEvents"])
 
-  def testSendKeysNative(self):
+  # Flaky on windows. See crbug.com/80295.
+  def DISABLED_testSendKeysNative(self):
     driver = WebDriver(self._launcher.GetURL(), self._capabilities)
     driver.get(self._launcher.GetURL() + '/test_page.html')
     # Find the text input.
@@ -208,7 +209,7 @@ class NativeInputTest(unittest.TestCase):
     #TODO(timothe): change to .text when beta 4 wrappers are out.
     self.assertEqual(q.value, "tokyo")
 
-  #@unittest.skip("Need to run this on a machine with an IME installed.")
+  # Needs to run on a machine with an IME installed.
   def DISABLED_testSendKeysNativeProcessedByIME(self):
     driver = WebDriver(self._launcher.GetURL(), self.capabilities)
     driver.get(self._launcher.GetURL() + '/test_page.html')
