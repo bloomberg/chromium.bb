@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,8 +102,8 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
                                PasswordFormList* forms);
 
   // Convenience function to read a GURL from a Pickle. Assumes the URL has
-  // been written as a std::string.
-  static void ReadGURL(const Pickle& pickle, void** iter, GURL* url);
+  // been written as a std::string. Returns true on success.
+  static bool ReadGURL(const Pickle& pickle, void** iter, GURL* url);
 
   // In case the fields in the pickle ever change, version them so we can try to
   // read old pickles. (Note: do not eat old pickles past the expiration date.)

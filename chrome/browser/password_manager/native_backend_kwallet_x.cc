@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -413,7 +413,7 @@ bool NativeBackendKWallet::SetLoginsList(const PasswordFormList& forms,
                       G_TYPE_INVALID);
     CheckError();
     if (ret != 0)
-      LOG(ERROR) << "Bad return code " << ret << " from kwallet removeEntry";
+      LOG(ERROR) << "Bad return code " << ret << " from KWallet removeEntry";
     return ret == 0;
   }
 
@@ -440,7 +440,7 @@ bool NativeBackendKWallet::SetLoginsList(const PasswordFormList& forms,
 
   CheckError();
   if (ret != 0)
-    LOG(ERROR) << "Bad return code " << ret << " from kwallet writeEntry";
+    LOG(ERROR) << "Bad return code " << ret << " from KWallet writeEntry";
   return ret == 0;
 }
 
@@ -485,7 +485,7 @@ bool NativeBackendKWallet::CheckSerializedValue(const GArray* byte_array,
       reinterpret_cast<const Pickle::Header*>(byte_array->data);
   if (byte_array->len < sizeof(*header) ||
       header->payload_size > byte_array->len - sizeof(*header)) {
-    LOG(WARNING) << "Invalid KWallet entry detected! (realm: " << realm << ")";
+    LOG(WARNING) << "Invalid KWallet entry detected (realm: " << realm << ")";
     return false;
   }
   return true;
@@ -508,38 +508,45 @@ void NativeBackendKWallet::DeserializeValue(const string& signon_realm,
 
   forms->reserve(forms->size() + count);
   for (size_t i = 0; i < count; ++i) {
-    PasswordForm* form = new PasswordForm();
+    scoped_ptr<PasswordForm> form(new PasswordForm());
     form->signon_realm.assign(signon_realm);
 
     int scheme = 0;
-    pickle.ReadInt(&iter, &scheme);
-    form->scheme = static_cast<PasswordForm::Scheme>(scheme);
-    ReadGURL(pickle, &iter, &form->origin);
-    ReadGURL(pickle, &iter, &form->action);
-    pickle.ReadString16(&iter, &form->username_element);
-    pickle.ReadString16(&iter, &form->username_value);
-    pickle.ReadString16(&iter, &form->password_element);
-    pickle.ReadString16(&iter, &form->password_value);
-    pickle.ReadString16(&iter, &form->submit_element);
-    pickle.ReadBool(&iter, &form->ssl_valid);
-    pickle.ReadBool(&iter, &form->preferred);
-    pickle.ReadBool(&iter, &form->blacklisted_by_user);
     int64 date_created = 0;
-    pickle.ReadInt64(&iter, &date_created);
+    // Note that these will be read back in the order listed due to
+    // short-circuit evaluation. This is important.
+    if (!pickle.ReadInt(&iter, &scheme) ||
+        !ReadGURL(pickle, &iter, &form->origin) ||
+        !ReadGURL(pickle, &iter, &form->action) ||
+        !pickle.ReadString16(&iter, &form->username_element) ||
+        !pickle.ReadString16(&iter, &form->username_value) ||
+        !pickle.ReadString16(&iter, &form->password_element) ||
+        !pickle.ReadString16(&iter, &form->password_value) ||
+        !pickle.ReadString16(&iter, &form->submit_element) ||
+        !pickle.ReadBool(&iter, &form->ssl_valid) ||
+        !pickle.ReadBool(&iter, &form->preferred) ||
+        !pickle.ReadBool(&iter, &form->blacklisted_by_user) ||
+        !pickle.ReadInt64(&iter, &date_created)) {
+      LOG(ERROR) << "Failed to deserialize KWallet entry "
+                 << "(realm: " << signon_realm << ")";
+      break;
+    }
+    form->scheme = static_cast<PasswordForm::Scheme>(scheme);
     form->date_created = base::Time::FromTimeT(date_created);
-    forms->push_back(form);
+    forms->push_back(form.release());
   }
 }
 
-void NativeBackendKWallet::ReadGURL(const Pickle& pickle, void** iter,
+bool NativeBackendKWallet::ReadGURL(const Pickle& pickle, void** iter,
                                     GURL* url) {
   string url_string;
   if (!pickle.ReadString(iter, &url_string)) {
-    LOG(ERROR) << "Failed to read url string";
+    LOG(ERROR) << "Failed to deserialize URL";
     *url = GURL();
-    return;
+    return false;
   }
   *url = GURL(url_string);
+  return true;
 }
 
 bool NativeBackendKWallet::CheckError() {
