@@ -31,6 +31,8 @@ class MockTransportChannel : public cricket::TransportChannel {
  public:
   MockTransportChannel()
       : cricket::TransportChannel("", "") {
+    set_writable(true);
+    set_readable(true);
   }
 
   MOCK_METHOD2(SendPacket, int(const char *data, size_t len));

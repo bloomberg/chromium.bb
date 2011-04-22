@@ -12,11 +12,8 @@
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 #include "third_party/libjingle/source/talk/p2p/base/session.h"
 
-namespace cricket {
-class PseudoTcpChannel;
-}  // namespace cricket
-
 namespace jingle_glue {
+class PseudoTcpAdapter;
 class StreamSocketAdapter;
 class TransportChannelSocketAdapter;
 }  // namespace jingle_glue
@@ -100,10 +97,10 @@ class JingleSession : public protocol::Session,
   bool HasSession(cricket::Session* cricket_session);
   cricket::Session* ReleaseSession();
 
-  // Helper method to create and initialize SSL socket using the adapter
-  // provided. The resultant SSL socket is written to |ssl_socket|.
-  // Return true if successful.
-  bool EstablishSSLConnection(net::ClientSocket* adapter,
+  // Helper method to create and initialize PseudoTCP + SSL socket on
+  // top of the provided |channel|. The resultant SSL socket is
+  // written to |ssl_socket|. Return true if successful.
+  bool EstablishSSLConnection(net::Socket* channel,
                               scoped_ptr<SocketWrapper>* ssl_socket);
 
   // Used for Session.SignalState sigslot.
@@ -116,6 +113,8 @@ class JingleSession : public protocol::Session,
   void OnInitiate();
   void OnAccept();
   void OnTerminate();
+
+  void OnConnect(int result);
 
   // Called by SSL socket to notify connect event.
   void OnSSLConnect(int result);
@@ -152,20 +151,16 @@ class JingleSession : public protocol::Session,
   // These data members are only set on the receiving side.
   scoped_ptr<const CandidateSessionConfig> candidate_config_;
 
-  // A channel is the the base channel created by libjingle.
-  // A channel adapter is used to convert a jingle channel to net::Socket and
-  // then there is a SocketWrapper created over net::Socket.
-  // SSL socket uses SocketWrapper to provide SSL functionality.
-  cricket::PseudoTcpChannel* control_channel_;
-  scoped_ptr<jingle_glue::StreamSocketAdapter> control_channel_adapter_;
+  // |control_channel_| holds a channel until SSL socket is
+  // created. After that |control_ssl_socket_| owns the channel. The
+  // same is the case fo |event_channel_| and |video_channel_|.
+  scoped_ptr<jingle_glue::TransportChannelSocketAdapter> control_channel_;
   scoped_ptr<SocketWrapper> control_ssl_socket_;
 
-  cricket::PseudoTcpChannel* event_channel_;
-  scoped_ptr<jingle_glue::StreamSocketAdapter> event_channel_adapter_;
+  scoped_ptr<jingle_glue::TransportChannelSocketAdapter> event_channel_;
   scoped_ptr<SocketWrapper> event_ssl_socket_;
 
-  cricket::PseudoTcpChannel* video_channel_;
-  scoped_ptr<jingle_glue::StreamSocketAdapter> video_channel_adapter_;
+  scoped_ptr<jingle_glue::TransportChannelSocketAdapter> video_channel_;
   scoped_ptr<SocketWrapper> video_ssl_socket_;
 
   // Count the number of SSL connections esblished.
@@ -178,7 +173,8 @@ class JingleSession : public protocol::Session,
   scoped_ptr<jingle_glue::TransportChannelSocketAdapter> video_rtcp_channel_;
 
   // Callback called by the SSL layer.
-  scoped_ptr<net::CompletionCallback> connect_callback_;
+  net::CompletionCallbackImpl<JingleSession> connect_callback_;
+  net::CompletionCallbackImpl<JingleSession> ssl_connect_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleSession);
 };

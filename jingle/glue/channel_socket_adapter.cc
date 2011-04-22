@@ -64,16 +64,23 @@ int TransportChannelSocketAdapter::Write(
     return closed_error_code_;
   }
 
-  int result = channel_->SendPacket(buffer->data(), buffer_size);
-  if (result < 0) {
-    result = net::MapSystemError(channel_->GetError());
-    if (result == net::ERR_IO_PENDING) {
-      write_pending_ = true;
-      write_callback_ = callback;
-      write_buffer_ = buffer;
-      write_buffer_size_ = buffer_size;
-    }
+  int result;
+  if (channel_->writable()) {
+    result = channel_->SendPacket(buffer->data(), buffer_size);
+    if (result < 0)
+      result = net::MapSystemError(channel_->GetError());
+  } else {
+    // Channel is not writable yet.
+    result = net::ERR_IO_PENDING;
   }
+
+  if (result == net::ERR_IO_PENDING) {
+    write_pending_ = true;
+    write_callback_ = callback;
+    write_buffer_ = buffer;
+    write_buffer_size_ = buffer_size;
+  }
+
   return result;
 }
 

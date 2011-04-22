@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "crypto/rsa_private_key.h"
 #include "jingle/glue/channel_socket_adapter.h"
+#include "jingle/glue/pseudotcp_adapter.h"
 #include "jingle/glue/stream_socket_adapter.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/cert_verifier.h"
@@ -23,11 +24,8 @@
 #include "remoting/protocol/socket_wrapper.h"
 #include "third_party/libjingle/source/talk/base/thread.h"
 #include "third_party/libjingle/source/talk/p2p/base/session.h"
-#include "third_party/libjingle/source/talk/session/tunnel/pseudotcpchannel.h"
 
 using cricket::BaseSession;
-using cricket::PseudoTcp;
-using cricket::PseudoTcpChannel;
 
 namespace remoting {
 
@@ -41,12 +39,6 @@ const char kEventChannelName[] = "event";
 const char kVideoChannelName[] = "video";
 const char kVideoRtpChannelName[] = "videortp";
 const char kVideoRtcpChannelName[] = "videortcp";
-
-// Settings to apply to PseudoTcp channels for Control, Input and Video.
-// Disable Nagle's algorithm, to reduce latency for small messages.
-// Reduce the ACK Delay to 10ms, to balance throughput/latency with overhead.
-const int kEnableNoDelay = true;
-const int kDelayedAckTimeoutMs = 10;
 
 // Helper method to create a SSL client socket.
 net::SSLClientSocket* CreateSSLClientSocket(
@@ -96,11 +88,11 @@ JingleSession::JingleSession(
       closed_(false),
       closing_(false),
       cricket_session_(NULL),
-      event_channel_(NULL),
-      video_channel_(NULL),
       ssl_connections_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(connect_callback_(
-          NewCallback(this, &JingleSession::OnSSLConnect))) {
+          this, &JingleSession::OnConnect)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(ssl_connect_callback_(
+          this, &JingleSession::OnSSLConnect)) {
   // TODO(hclam): Need a better way to clone a key.
   if (key) {
     std::vector<uint8> key_bytes;
@@ -132,38 +124,20 @@ void JingleSession::CloseInternal(int result, bool failed) {
   if (!closed_ && !closing_) {
     closing_ = true;
 
+    if (control_channel_.get())
+      control_channel_->Close(result);
     if (control_ssl_socket_.get())
       control_ssl_socket_->Disconnect();
 
-    if (control_channel_adapter_.get())
-      control_channel_adapter_->Close(result);
-
-    if (control_channel_) {
-      control_channel_->OnSessionTerminate(cricket_session_);
-      control_channel_ = NULL;
-    }
-
+    if (event_channel_.get())
+      event_channel_->Close(result);
     if (event_ssl_socket_.get())
       event_ssl_socket_->Disconnect();
 
-    if (event_channel_adapter_.get())
-      event_channel_adapter_->Close(result);
-
-    if (event_channel_) {
-      event_channel_->OnSessionTerminate(cricket_session_);
-      event_channel_ = NULL;
-    }
-
+    if (video_channel_.get())
+      video_channel_->Close(result);
     if (video_ssl_socket_.get())
       video_ssl_socket_->Disconnect();
-
-    if (video_channel_adapter_.get())
-      video_channel_adapter_->Close(result);
-
-    if (video_channel_) {
-      video_channel_->OnSessionTerminate(cricket_session_);
-      video_channel_ = NULL;
-    }
 
     if (video_rtp_channel_.get())
       video_rtp_channel_->Close(result);
@@ -370,32 +344,17 @@ void JingleSession::OnInitiate() {
       cricket_session_->CreateChannel(content_name, kVideoRtcpChannelName)));
 
   // Create control channel.
-  control_channel_ = new PseudoTcpChannel(
-      jingle_session_manager_->jingle_thread(), cricket_session_);
-  control_channel_->Connect(content_name, kControlChannelName);
-  control_channel_->SetOption(PseudoTcp::OPT_NODELAY, kEnableNoDelay);
-  control_channel_->SetOption(PseudoTcp::OPT_ACKDELAY, kDelayedAckTimeoutMs);
-  control_channel_adapter_.reset(new jingle_glue::StreamSocketAdapter(
-      control_channel_->GetStream()));
+  control_channel_.reset(new jingle_glue::TransportChannelSocketAdapter(
+      cricket_session_->CreateChannel(content_name, kControlChannelName)));
 
   // Create event channel.
-  event_channel_ = new PseudoTcpChannel(
-      jingle_session_manager_->jingle_thread(), cricket_session_);
-  event_channel_->Connect(content_name, kEventChannelName);
-  event_channel_->SetOption(PseudoTcp::OPT_NODELAY, kEnableNoDelay);
-  event_channel_->SetOption(PseudoTcp::OPT_ACKDELAY, kDelayedAckTimeoutMs);
-  event_channel_adapter_.reset(new jingle_glue::StreamSocketAdapter(
-      event_channel_->GetStream()));
+  event_channel_.reset(new jingle_glue::TransportChannelSocketAdapter(
+      cricket_session_->CreateChannel(content_name, kEventChannelName)));
 
   // Create video channel.
   // TODO(sergeyu): Remove video channel when we are ready to switch to RTP.
-  video_channel_ = new PseudoTcpChannel(
-      jingle_session_manager_->jingle_thread(), cricket_session_);
-  video_channel_->Connect(content_name, kVideoChannelName);
-  video_channel_->SetOption(PseudoTcp::OPT_NODELAY, kEnableNoDelay);
-  video_channel_->SetOption(PseudoTcp::OPT_ACKDELAY, kDelayedAckTimeoutMs);
-  video_channel_adapter_.reset(new jingle_glue::StreamSocketAdapter(
-      video_channel_->GetStream()));
+  video_channel_.reset(new jingle_glue::TransportChannelSocketAdapter(
+      cricket_session_->CreateChannel(content_name, kVideoChannelName)));
 
   if (!cricket_session_->initiator())
     jingle_session_manager_->AcceptConnection(this, cricket_session_);
@@ -407,15 +366,18 @@ void JingleSession::OnInitiate() {
 }
 
 bool JingleSession::EstablishSSLConnection(
-    net::ClientSocket* adapter, scoped_ptr<SocketWrapper>* ssl_socket) {
+    net::Socket* channel, scoped_ptr<SocketWrapper>* ssl_socket) {
+  jingle_glue::PseudoTcpAdapter* pseudotcp =
+      new jingle_glue::PseudoTcpAdapter(channel);
+  pseudotcp->Connect(&connect_callback_);
+
   if (cricket_session_->initiator()) {
     // Create client SSL socket.
-    net::SSLClientSocket* socket = CreateSSLClientSocket(adapter,
-                                                         server_cert_,
-                                                         cert_verifier_.get());
+    net::SSLClientSocket* socket = CreateSSLClientSocket(
+        pseudotcp, server_cert_, cert_verifier_.get());
     ssl_socket->reset(new SocketWrapper(socket));
 
-    int ret = socket->Connect(connect_callback_.get());
+    int ret = socket->Connect(&ssl_connect_callback_);
     if (ret == net::ERR_IO_PENDING) {
       return true;
     } else if (ret != net::OK) {
@@ -427,10 +389,10 @@ bool JingleSession::EstablishSSLConnection(
     // Create server SSL socket.
     net::SSLConfig ssl_config;
     net::SSLServerSocket* socket = net::CreateSSLServerSocket(
-        adapter, server_cert_, key_.get(), ssl_config);
+        pseudotcp, server_cert_, key_.get(), ssl_config);
     ssl_socket->reset(new SocketWrapper(socket));
 
-    int ret = socket->Accept(connect_callback_.get());
+    int ret = socket->Accept(&ssl_connect_callback_);
     if (ret == net::ERR_IO_PENDING) {
       return true;
     } else if (ret != net::OK) {
@@ -440,7 +402,7 @@ bool JingleSession::EstablishSSLConnection(
     }
   }
   // Reach here if net::OK is received.
-  connect_callback_->Run(net::OK);
+  ssl_connect_callback_.Run(net::OK);
   return true;
 }
 
@@ -473,14 +435,14 @@ void JingleSession::OnAccept() {
     set_config(config);
   }
 
-  bool ret = EstablishSSLConnection(control_channel_adapter_.release(),
+  bool ret = EstablishSSLConnection(control_channel_.release(),
                                     &control_ssl_socket_);
   if (ret) {
-    ret = EstablishSSLConnection(event_channel_adapter_.release(),
+    ret = EstablishSSLConnection(event_channel_.release(),
                                  &event_ssl_socket_);
   }
   if (ret) {
-    ret = EstablishSSLConnection(video_channel_adapter_.release(),
+    ret = EstablishSSLConnection(video_channel_.release(),
                                  &video_ssl_socket_);
   }
 
@@ -492,6 +454,13 @@ void JingleSession::OnAccept() {
 
 void JingleSession::OnTerminate() {
   CloseInternal(net::ERR_CONNECTION_ABORTED, false);
+}
+
+void JingleSession::OnConnect(int result) {
+  if (result != net::OK) {
+    LOG(ERROR) << "PseudoTCP connection failed: " << result;
+    CloseInternal(result, true);
+  }
 }
 
 void JingleSession::OnSSLConnect(int result) {
