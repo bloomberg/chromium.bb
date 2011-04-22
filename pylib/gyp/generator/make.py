@@ -1259,6 +1259,13 @@ def RunSystemTests():
            'LINK_flags': link_flags }
 
 
+def CalculateVariables(default_variables, params):
+  """Calculate additional variables for use in the build (called by gyp)."""
+  cc_target = os.environ.get('CC.target', os.environ.get('CC', 'cc'))
+  default_variables['LINKER_SUPPORTS_ICF'] = \
+      gyp.system_test.TestLinkerSupportsICF(cc_command=cc_target)
+
+
 def GenerateOutput(target_list, target_dicts, data, params):
   options = params['options']
   generator_flags = params.get('generator_flags', {})
