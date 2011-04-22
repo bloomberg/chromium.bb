@@ -2764,8 +2764,6 @@
         'browser/ui/omnibox/location_bar.h',
         'browser/ui/omnibox/location_bar_util.cc',
         'browser/ui/omnibox/location_bar_util.h',
-        'browser/ui/options/options_page_base.cc',
-        'browser/ui/options/options_page_base.h',
         'browser/ui/options/options_util.cc',
         'browser/ui/options/options_util.h',
         'browser/ui/options/options_window.h',
