@@ -4414,7 +4414,25 @@
    fun:_ZN7fileapi18FileWriterDelegate5WriteEv
    fun:_ZN7fileapi18FileWriterDelegate14OnDataReceivedEi
 }
-
+{
+   bug_80282
+   Memcheck:Addr1
+   ...
+   fun:gtk_window_set_wmclass
+   fun:_ZN16BrowserWindowGtk4InitEv
+   fun:_ZN13BrowserWindow19CreateBrowserWindowEP7Browser
+   fun:_ZN7Browser19CreateBrowserWindowEv
+   fun:_ZN7Browser17InitBrowserWindowEv
+   fun:_ZN7Browser12CreateForAppERKSsRKN3gfx4SizeEP7Profileb
+   fun:_ZN7Browser21OpenApplicationWindowEP7ProfilePK9ExtensionN14extension_misc15LaunchContainerERK4GURLPPS_
+   fun:_ZN7Browser21OpenAppShortcutWindowEP7ProfileRK4GURLb
+   fun:_ZN11BrowserInit17LaunchWithProfile21OpenApplicationWindowEP7Profile
+   fun:_ZN11BrowserInit17LaunchWithProfile6LaunchEP7ProfileRKSt6vectorI4GURLSaIS4_EEb
+   fun:_ZN11BrowserInit13LaunchBrowserERK11CommandLineP7ProfileRK8FilePathbPi
+   fun:_ZN11BrowserInit18ProcessCmdLineImplERK11CommandLineRK8FilePathbP7ProfilePiPS_
+   fun:_ZN11BrowserInit5StartERK11CommandLineRK8FilePathP7ProfilePi
+   fun:_Z11BrowserMainRK18MainFunctionParams
+}
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
 {
