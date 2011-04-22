@@ -86,19 +86,16 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
                  NotificationType::SYNC_DATA_TYPES_UPDATED,
                  Source<Profile>(profile));
 
-  // By default, dev & chromium users will go to the development servers.
-  // Dev servers have more features than standard sync servers.
-  // Chrome stable and beta builds will go to the standard sync servers.
+  // By default, dev, canary, and undbranded Chromium users will go to the
+  // development servers. Development servers have more features than standard
+  // sync servers. Users with officially-branded Chrome stable and beta builds
+  // will go to the standard sync servers.
 #if defined(GOOGLE_CHROME_BUILD)
-  // GetVersionStringModifier hits the registry. See http://crbug.com/70380.
+  // GetInstallationChannel hits the registry on Windows. See
+  // http://crbug.com/70380.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
-  // For stable, this is "". For dev, this is "dev". For beta, this is "beta".
-  // For daily, this is "canary build".
-  // For Linux Chromium builds, this could be anything depending on the
-  // distribution, so always direct those users to dev server urls.
-  // If this is an official build, it will always be one of the above.
-  std::string channel = platform_util::GetVersionStringModifier();
-  if (channel.empty() || channel == "beta") {
+  std::string channel = platform_util::GetInstallationChannel();
+  if (channel == "stable" || channel == "beta") {
     sync_service_url_ = GURL(kSyncServerUrl);
   }
 #endif
