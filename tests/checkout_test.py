@@ -233,6 +233,15 @@ class BaseTest(fake_repos.FakeReposTestBase):
   def _log(self):
     raise NotImplementedError()
 
+  def _test_process(self, co):
+    """Makes sure the process lambda is called correctly."""
+    co.prepare()
+    ps = self.get_patches()
+    results = []
+    co.apply_patch(ps, [lambda *args: results.append(args)])
+    expected = [(co, p) for p in ps.patches]
+    self.assertEquals(expected, results)
+
 
 class SvnBaseTest(BaseTest):
   def setUp(self):
@@ -377,6 +386,13 @@ class SvnCheckout(SvnBaseTest):
         cwd=co.project_path)
     self.assertEquals('LF\n', out)
 
+  def testProcess(self):
+    co = checkout.SvnCheckout(
+        self.root_dir, self.name,
+        None, None,
+        self.svn_url)
+    self._test_process(co)
+
 
 class GitSvnCheckout(SvnBaseTest):
   name = 'foo.git'
@@ -442,6 +458,13 @@ class GitSvnCheckout(SvnBaseTest):
     co.apply_patch(
         [patch.FilePatchDiff('svn_utils_test.txt', NAKED_PATCH, svn_props)])
 
+  def testProcess(self):
+    co = checkout.SvnCheckout(
+        self.root_dir, self.name,
+        None, None,
+        self.svn_url)
+    self._test_process(co)
+
 
 class RawCheckout(SvnBaseTest):
   def setUp(self):
@@ -501,6 +524,13 @@ class RawCheckout(SvnBaseTest):
         'Hunk #1 FAILED at 3.\n'
         '1 out of 1 hunk FAILED -- saving rejects to file '
         'svn_utils_test.txt.rej\n')
+
+  def testProcess(self):
+    co = checkout.SvnCheckout(
+        self.root_dir, self.name,
+        None, None,
+        self.svn_url)
+    self._test_process(co)
 
 
 if __name__ == '__main__':

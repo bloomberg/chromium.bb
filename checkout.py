@@ -80,11 +80,16 @@ class CheckoutBase(object):
     """
     raise NotImplementedError()
 
-  def apply_patch(self, patches):
+  def apply_patch(self, patches, post_processor=None):
     """Applies a patch and returns the list of modified files.
 
     This function should throw patch.UnsupportedPatchFormat or
     PatchApplicationFailed when relevant.
+
+    Args:
+      patches: patch.PatchSet object.
+      post_processor: list of lambda(checkout, patches) to call on each of the
+                      modified files.
     """
     raise NotImplementedError()
 
@@ -102,7 +107,9 @@ class RawCheckout(CheckoutBase):
     """Stubbed out."""
     pass
 
-  def apply_patch(self, patches):
+  def apply_patch(self, patches, post_processor=None):
+    """Ignores svn properties."""
+    post_processor = post_processor or []
     for p in patches:
       try:
         stdout = ''
@@ -122,7 +129,8 @@ class RawCheckout(CheckoutBase):
                 ['patch', '-p%s' % p.patchlevel],
                 stdin=p.get(),
                 cwd=self.project_path)
-          # Ignore p.svn_properties.
+        for post in post_processor:
+          post(self, p)
       except OSError, e:
         raise PatchApplicationFailed(p.filename, '%s%s' % (stdout, e))
       except subprocess.CalledProcessError, e:
@@ -223,7 +231,6 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
     assert self.svn_url
 
   def prepare(self):
-    """Creates the initial checkouts for the repo."""
     # Will checkout if the directory is not present.
     if not os.path.isdir(self.project_path):
       logging.info('Checking out %s in %s' %
@@ -234,8 +241,8 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
       self._last_seen_revision = revision
     return revision
 
-  def apply_patch(self, patches):
-    """Applies a patch."""
+  def apply_patch(self, patches, post_processor=None):
+    post_processor = post_processor or []
     for p in patches:
       try:
         stdout = ''
@@ -274,6 +281,8 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
             if fnmatch.fnmatch(p.filename, prop):
               stdout += self._check_output_svn(
                   ['propset'] + value.split('=', 1) + [p.filename])
+        for post in post_processor:
+          post(self, p)
       except OSError, e:
         raise PatchApplicationFailed(p.filename, '%s%s' % (stdout, e))
       except subprocess.CalledProcessError, e:
@@ -352,13 +361,19 @@ class GitCheckoutBase(CheckoutBase):
     if self.working_branch in branches:
       self._call_git(['branch', '-D', self.working_branch])
 
-  def apply_patch(self, patches):
-    """Applies a patch on 'working_branch' and switch to it."""
+  def apply_patch(self, patches, post_processor=None):
+    """Applies a patch on 'working_branch' and switch to it.
+
+    Also commits the changes on the local branch.
+
+    Ignores svn properties and raise an exception on unexpected ones.
+    """
+    post_processor = post_processor or []
     # It this throws, the checkout is corrupted. Maybe worth deleting it and
     # trying again?
     self._check_call_git(
         ['checkout', '-b', self.working_branch,
-          '%s/%s' % (self.remote, self.remote_branch)])
+          '%s/%s' % (self.remote, self.remote_branch), '--quiet'])
     for p in patches:
       try:
         stdout = ''
@@ -387,6 +402,8 @@ class GitCheckoutBase(CheckoutBase):
                   p.filename,
                   'Cannot apply svn property %s to file %s.' % (
                         prop[0], p.filename))
+        for post in post_processor:
+          post(self, p)
       except OSError, e:
         raise PatchApplicationFailed(p.filename, '%s%s' % (stdout, e))
       except subprocess.CalledProcessError, e:
@@ -492,6 +509,7 @@ class GitSvnCheckoutBase(GitCheckoutBase, SvnMixIn):
     kwargs = {}
     if self.commit_pwd:
       kwargs['stdin'] = self.commit_pwd + '\n'
+      kwargs['stderr'] = subprocess2.STDOUT
     self._check_call_git_svn(
         ['dcommit', '--rmdir', '--find-copies-harder',
           '--username', self.commit_user],
@@ -547,8 +565,9 @@ class GitSvnPremadeCheckout(GitSvnCheckoutBase):
       assert self.remote == 'origin'
       # self.project_path doesn't exist yet.
       self._check_call_git(
-          ['clone', self.git_url, self.project_name],
-          cwd=self.root_dir)
+          ['clone', self.git_url, self.project_name, '--quiet'],
+          cwd=self.root_dir,
+          stderr=subprocess2.STDOUT)
     try:
       configured_svn_url = self._check_output_git(
           ['config', 'svn-remote.svn.url']).strip()
@@ -591,8 +610,10 @@ class GitSvnCheckout(GitSvnCheckoutBase):
           ['clone',
            '--prefix', self.remote + '/',
            '-T', self.trunk,
-           self.svn_url, self.project_path],
-          cwd=self.root_dir)
+           self.svn_url, self.project_path,
+           '--quiet'],
+          cwd=self.root_dir,
+          stderr=subprocess2.STDOUT)
     super(GitSvnCheckout, self).prepare()
     return self._get_revision()
 
@@ -608,8 +629,8 @@ class ReadOnlyCheckout(object):
   def get_settings(self, key):
     return self.checkout.get_settings(key)
 
-  def apply_patch(self, patches):
-    return self.checkout.apply_patch(patches)
+  def apply_patch(self, patches, post_processor=None):
+    return self.checkout.apply_patch(patches, post_processor)
 
   def commit(self, message, user):  # pylint: disable=R0201
     logging.info('Would have committed for %s with message: %s' % (

@@ -273,6 +273,8 @@ class PatchSet(object):
 
   def __init__(self, patches):
     self.patches = patches
+    for p in self.patches:
+      assert isinstance(p, FilePatchBase)
 
   def set_relpath(self, relpath):
     """Used to offset the patch into a subdirectory."""
