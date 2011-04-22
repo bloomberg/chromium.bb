@@ -20,6 +20,7 @@
 #include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/task.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
