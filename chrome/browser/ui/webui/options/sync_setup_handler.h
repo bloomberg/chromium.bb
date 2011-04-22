@@ -22,17 +22,17 @@ class SyncSetupHandler : public OptionsPageUIHandler,
   virtual void RegisterMessages();
 
   // SyncSetupFlowHandler implementation.
-  void ShowGaiaLogin(const DictionaryValue& args);
-  void ShowGaiaSuccessAndClose();
-  void ShowGaiaSuccessAndSettingUp();
-  void ShowConfigure(const DictionaryValue& args);
-  void ShowPassphraseEntry(const DictionaryValue& args);
-  void ShowFirstPassphrase(const DictionaryValue& args);
-  void ShowSettingUp();
-  void ShowSetupDone(const std::wstring& user);
-  void ShowFirstTimeDone(const std::wstring& user);
+  virtual void ShowGaiaLogin(const DictionaryValue& args);
+  virtual void ShowGaiaSuccessAndClose();
+  virtual void ShowGaiaSuccessAndSettingUp();
+  virtual void ShowConfigure(const DictionaryValue& args);
+  virtual void ShowPassphraseEntry(const DictionaryValue& args);
+  virtual void ShowFirstPassphrase(const DictionaryValue& args);
+  virtual void ShowSettingUp();
+  virtual void ShowSetupDone(const std::wstring& user);
+  virtual void ShowFirstTimeDone(const std::wstring& user);
 
-  void SetFlow(SyncSetupFlow* flow) {
+  virtual void SetFlow(SyncSetupFlow* flow) {
     flow_ = flow;
   }
 
