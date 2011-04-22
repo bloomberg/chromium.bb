@@ -14,7 +14,7 @@ class BlockedContentTabHelperDelegate {
  public:
   // If |source| is constrained, returns the tab containing it.  Otherwise
   // returns |source|.
-  virtual TabContentsWrapper* GetConstrainingContents(
+  virtual TabContentsWrapper* GetConstrainingContentsWrapper(
       TabContentsWrapper* source) = 0;
 
  protected:

@@ -2922,8 +2922,9 @@ void Browser::AddNewContents(TabContents* source,
             switches::kDisablePopupBlocking)) {
       // Unrequested popups from normal pages are constrained unless they're in
       // the whitelist.  The popup owner will handle checking this.
-      GetConstrainingContents(source_wrapper)->blocked_content_tab_helper()->
-          AddPopup(new_wrapper, initial_pos, user_gesture);
+      GetConstrainingContentsWrapper(source_wrapper)->
+          blocked_content_tab_helper()->
+              AddPopup(new_wrapper, initial_pos, user_gesture);
       return;
     }
 
@@ -3235,7 +3236,7 @@ void Browser::OnStartDownload(DownloadItem* download, TabContents* tab) {
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
   if (tab->controller().IsInitialNavigation() &&
-      GetConstrainingContents(wrapper) == wrapper && tab_count() > 1) {
+      GetConstrainingContentsWrapper(wrapper) == wrapper && tab_count() > 1) {
     CloseContents(tab);
   }
 }
@@ -3370,7 +3371,7 @@ void Browser::ConfirmAddSearchProvider(const TemplateURL* template_url,
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, BlockedContentTabHelperDelegate implementation:
 
-TabContentsWrapper* Browser::GetConstrainingContents(
+TabContentsWrapper* Browser::GetConstrainingContentsWrapper(
   TabContentsWrapper* source) {
   return source;
 }

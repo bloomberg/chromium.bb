@@ -836,7 +836,7 @@ class Browser : public TabHandlerDelegate,
                                         Profile* profile) OVERRIDE;
 
   // Overridden from BlockedContentTabHelperDelegate:
-  virtual TabContentsWrapper* GetConstrainingContents(
+  virtual TabContentsWrapper* GetConstrainingContentsWrapper(
       TabContentsWrapper* source) OVERRIDE;
 
   // Overridden from SelectFileDialog::Listener:

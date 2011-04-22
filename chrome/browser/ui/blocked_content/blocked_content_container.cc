@@ -168,7 +168,7 @@ TabContents* BlockedContentContainer::GetConstrainingContents(
   return owner_->tab_contents();
 }
 
-TabContentsWrapper* BlockedContentContainer::GetConstrainingContents(
+TabContentsWrapper* BlockedContentContainer::GetConstrainingContentsWrapper(
     TabContentsWrapper* source) {
   return owner_;
 }

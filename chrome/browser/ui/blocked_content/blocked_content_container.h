@@ -52,7 +52,7 @@ class BlockedContentContainer : public BlockedContentTabHelperDelegate,
 
   // Overridden from BlockedContentTabHelperDelegate, TabContentsDelegate:
   virtual TabContents* GetConstrainingContents(TabContents* source) OVERRIDE;
-  virtual TabContentsWrapper* GetConstrainingContents(
+  virtual TabContentsWrapper* GetConstrainingContentsWrapper(
       TabContentsWrapper* source) OVERRIDE;
 
   // Overridden from TabContentsDelegate:
