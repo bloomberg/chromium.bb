@@ -2242,6 +2242,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   browser_handler_map["GetSyncInfo"] = &TestingAutomationProvider::GetSyncInfo;
   browser_handler_map["AwaitSyncCycleCompletion"] =
       &TestingAutomationProvider::AwaitSyncCycleCompletion;
+  browser_handler_map["AwaitSyncRestart"] =
+      &TestingAutomationProvider::AwaitSyncRestart;
   browser_handler_map["EnableSyncForDatatypes"] =
       &TestingAutomationProvider::EnableSyncForDatatypes;
   browser_handler_map["DisableSyncForDatatypes"] =
@@ -4141,14 +4143,22 @@ void TestingAutomationProvider::AwaitSyncCycleCompletion(
     reply.SendError("Not signed in to sync");
     return;
   }
-  // Ensure that the profile sync service is initialized before waiting for sync
-  // to complete. In cases where the browser is restarted with sync enabled,
-  // the sync service may take a while to get reinitialized.
+  // Ensure that the profile sync service and sync backend host are initialized
+  // before waiting for sync cycle completion. In cases where the browser is
+  // restarted with sync enabled, these operations may still be in flight.
   if (!browser->profile()->GetProfileSyncService()) {
-    reply.SendError("ProfileSyncService not initialized.");
+    reply.SendError("ProfileSyncService initialization failed.");
     return;
   }
-  sync_waiter_->AwaitSyncCycleCompletion("Waiting for sync cycle");
+  if (!sync_waiter_->service()->sync_initialized() &&
+      !sync_waiter_->AwaitBackendInitialized()) {
+    reply.SendError("Sync backend host initialization failed.");
+    return;
+  }
+  if (!sync_waiter_->AwaitSyncCycleCompletion("Waiting for sync cycle")) {
+    reply.SendError("Sync cycle did not complete.");
+    return;
+  }
   ProfileSyncService::Status status = sync_waiter_->GetStatus();
   if (status.summary == ProfileSyncService::Status::READY) {
     scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
@@ -4156,6 +4166,42 @@ void TestingAutomationProvider::AwaitSyncCycleCompletion(
     reply.SendSuccess(return_value.get());
   } else {
     std::string error_msg = "Wait for sync cycle was unsuccessful. "
+                            "Sync status: ";
+    error_msg.append(
+        ProfileSyncService::BuildSyncStatusSummaryText(status.summary));
+    reply.SendError(error_msg);
+  }
+}
+
+// Sample json output: { "success": true }
+void TestingAutomationProvider::AwaitSyncRestart(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  if (sync_waiter_.get() == NULL) {
+    sync_waiter_.reset(
+        ProfileSyncServiceHarness::CreateAndAttach(browser->profile()));
+  }
+  if (!sync_waiter_->IsSyncAlreadySetup()) {
+    reply.SendError("Not signed in to sync");
+    return;
+  }
+  if (!browser->profile()->GetProfileSyncService()) {
+    reply.SendError("ProfileSyncService initialization failed.");
+    return;
+  }
+  if (!sync_waiter_->AwaitSyncRestart()) {
+    reply.SendError("Sync did not successfully restart.");
+    return;
+  }
+  ProfileSyncService::Status status = sync_waiter_->GetStatus();
+  if (status.summary == ProfileSyncService::Status::READY) {
+    scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+    return_value->SetBoolean("success", true);
+    reply.SendSuccess(return_value.get());
+  } else {
+    std::string error_msg = "Wait for sync restart was unsuccessful. "
                             "Sync status: ";
     error_msg.append(
         ProfileSyncService::BuildSyncStatusSummaryText(status.summary));

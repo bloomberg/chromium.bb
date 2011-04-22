@@ -60,6 +60,15 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged();
 
+  // Blocks the caller until the sync backend host associated with this harness
+  // has been initialized.  Returns true if the wait was successful.
+  bool AwaitBackendInitialized();
+
+  // Blocks the caller until the datatype manager is configured and sync has
+  // been initialized (for example, after a browser restart).  Returns true if
+  // the wait was successful.
+  bool AwaitSyncRestart();
+
   // Blocks the caller until this harness has completed a single sync cycle
   // since the previous one.  Returns true if a sync cycle has completed.
   bool AwaitSyncCycleCompletion(const std::string& reason);
@@ -157,6 +166,11 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
 
     // The sync client anticipates encryption of new datatypes.
     WAITING_FOR_ENCRYPTION,
+
+    // The sync client is waiting for the datatype manager to be configured and
+    // for sync to be fully initialized. Used after a browser restart, where a
+    // full sync cycle is not expected to occur.
+    WAITING_FOR_SYNC_CONFIGURATION,
 
     // The sync client cannot reach the server.
     SERVER_UNREACHABLE,

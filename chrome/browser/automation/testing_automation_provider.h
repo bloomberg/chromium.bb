@@ -660,6 +660,12 @@ class TestingAutomationProvider : public AutomationProvider,
                                 DictionaryValue* args,
                                 IPC::Message* reply_message);
 
+  // Waits for sync to reinitialize (for example, after a browser restart).
+  // Uses the JSON interface for input/output.
+  void AwaitSyncRestart(Browser* browser,
+                        DictionaryValue* args,
+                        IPC::Message* reply_message);
+
   // Enables sync for one or more sync datatypes.
   // Uses the JSON interface for input/output.
   void EnableSyncForDatatypes(Browser* browser,

@@ -49,7 +49,7 @@ class SyncTest(pyauto.PyUITest):
     self.assertTrue(self.GetSyncInfo()['summary'] == 'READY')
     self.assertTrue(self.GetSyncInfo()['last synced'] == 'Just now')
     self.RestartBrowser(clear_profile=False)
-    self.assertTrue(self.AwaitSyncCycleCompletion())
+    self.assertTrue(self.AwaitSyncRestart())
     self.assertTrue(self.GetSyncInfo()['summary'] == 'READY')
     self.assertTrue(self.GetSyncInfo()['last synced'] == 'Just now')
     self.assertTrue(self.GetSyncInfo()['updates received'] == 0)

@@ -1994,6 +1994,22 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict)['success']
 
+  def AwaitSyncRestart(self):
+    """Waits for sync to reinitialize itself. Typically used when the browser
+       is restarted and a full sync cycle is not expected to occur. Must be
+       previously signed in to sync before calling this method.
+
+    Returns:
+      True, on success.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'AwaitSyncRestart',
+    }
+    return self._GetResultFromJSONRequest(cmd_dict)['success']
+
   def EnableSyncForDatatypes(self, datatypes):
     """Enables sync for a given list of sync datatypes. Must be signed in to
        sync before calling this method.

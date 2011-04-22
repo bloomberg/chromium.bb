@@ -151,9 +151,7 @@ bool ProfileSyncServiceHarness::SetupSync(
   service_->signin()->StartSignIn(username_, password_, "", "");
 
   // Wait for the OnBackendInitialized() callback.
-  wait_state_ = WAITING_FOR_ON_BACKEND_INITIALIZED;
-  if (!AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
-      "Waiting for OnBackendInitialized().")) {
+  if (!AwaitBackendInitialized()) {
     LOG(ERROR) << "OnBackendInitialized() not seen after "
                << kLiveSyncOperationTimeoutMs / 1000
                << " seconds.";
@@ -240,10 +238,8 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
     }
     case WAITING_FOR_PASSPHRASE_ACCEPTED: {
       LogClientInfo("WAITING_FOR_PASSPHRASE_ACCEPTED");
-      // TODO(atwilson): After ProfileSyncService::OnPassphraseAccepted() is
-      // fixed, add an extra check to make sure that the value of
-      // service()->observed_passphrase_required() is false.
-      if (service()->ShouldPushChanges()) {
+      if (service()->ShouldPushChanges() &&
+          !service()->observed_passphrase_required()) {
         // The passphrase has been accepted, and sync has been restarted.
         SignalStateCompleteWithNextState(FULLY_SYNCED);
       }
@@ -253,6 +249,14 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
       LogClientInfo("WAITING_FOR_ENCRYPTION");
       if (IsTypeEncrypted(waiting_for_encryption_type_)) {
         // Encryption is complete for the type we are waiting on.
+        SignalStateCompleteWithNextState(FULLY_SYNCED);
+      }
+      break;
+    }
+    case WAITING_FOR_SYNC_CONFIGURATION: {
+      LogClientInfo("WAITING_FOR_SYNC_CONFIGURATION");
+      if (service()->ShouldPushChanges()) {
+        // The Datatype manager is configured and sync is fully initialized.
         SignalStateCompleteWithNextState(FULLY_SYNCED);
       }
       break;
@@ -306,6 +310,39 @@ bool ProfileSyncServiceHarness::AwaitPassphraseAccepted() {
   wait_state_ = WAITING_FOR_PASSPHRASE_ACCEPTED;
   return AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
                                       "Waiting for passphrase accepted.");
+}
+
+bool ProfileSyncServiceHarness::AwaitBackendInitialized() {
+  LogClientInfo("AwaitBackendInitialized");
+  if (service()->sync_initialized()) {
+    // The sync backend host has already been initialized; don't wait.
+    return true;
+  }
+
+  wait_state_ = WAITING_FOR_ON_BACKEND_INITIALIZED;
+  return AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
+                                      "Waiting for OnBackendInitialized().");
+}
+
+bool ProfileSyncServiceHarness::AwaitSyncRestart() {
+  LogClientInfo("AwaitSyncRestart");
+  if (service()->ShouldPushChanges()) {
+    // Sync has already been restarted; don't wait.
+    return true;
+  }
+
+  // Wait for the sync backend to be initialized.
+  if (!AwaitBackendInitialized()) {
+    LOG(ERROR) << "OnBackendInitialized() not seen after "
+               << kLiveSyncOperationTimeoutMs / 1000
+               << " seconds.";
+    return false;
+  }
+
+  // Wait for sync configuration to complete.
+  wait_state_ = WAITING_FOR_SYNC_CONFIGURATION;
+  return AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
+                                      "Waiting for sync configuration.");
 }
 
 bool ProfileSyncServiceHarness::AwaitSyncCycleCompletion(

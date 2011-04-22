@@ -100,12 +100,9 @@
       'special_tabs',
       # crbug.com/67851
       '-special_tabs.SpecialTabsTest.testAboutDNSTab',
+      'sync',
       'test_basic',
       'themes',
-      'sync',
-      # crbug.com/80020
-      '-sync.SyncTest.testDisableAndEnableDatatype',
-      '-sync.SyncTest.testRestartBrowser',
     ],
 
     'win': [
@@ -154,9 +151,6 @@
       '-search_engines.SearchEnginesTest.testDiscoverSearchEngine',
       # Keychain popups make sync tests difficult on Mac.  crbug.com/49378
       '-sync',
-      # crbug.com/78863
-      '-sync.SyncTest.testDisableAndEnableDatatype',
-      '-sync.SyncTest.testSignInToSync',
     ],
 
     'linux': [  # linux != chromeos
@@ -169,6 +163,8 @@
       # crbug.com/70694
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
+      # Gnome / kwallet popups on linux break sync tests.  crbug.com/80329
+      '-sync',
     ],
 
     # ChromeOS is linux, but note that this section does not include the
