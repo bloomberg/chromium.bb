@@ -341,7 +341,7 @@ void BrowserWindowGtk::Init() {
         // together (docks, per application stuff, etc). Hopefully they won't
         // display wmclassname to the user.
         gtk_window_set_wmclass(window_,
-                               window_->wmclass_name,
+                               g_get_prgname(),
                                wmclassname.c_str());
       }
 
