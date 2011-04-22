@@ -22,13 +22,6 @@
  *
  * cssmapplePriv.h -- Private CSSM features specific to Apple's Implementation
  */
-
-/* Though this is a private header, it is the recommended means by Apple for
- * configuring OCSP options, as the required structures that are documented
- * as part of their public API, at:
- * http://developer.apple.com/documentation/Security/Reference/SecAppleTrustPolicyModuleSpec/Apple_Trust_Policy_Module_Functional_Specification.pdf
- * See also http://lists.apple.com/archives/apple-cdsa/2008/Aug/msg00008.html
- */
  
 #ifndef _CSSMAPPLE_PRIV_H_
 #define _CSSMAPPLE_PRIV_H_  1
