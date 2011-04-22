@@ -26,7 +26,7 @@ class QuotaFileUtilTest : public testing::Test {
   }
 
  protected:
-  FileSystemOperationContext* Context() {
+  FileSystemOperationContext* NewContext() {
     return new FileSystemOperationContext(NULL, QuotaFileUtil::GetInstance());
   }
 
@@ -43,14 +43,18 @@ class QuotaFileUtilTest : public testing::Test {
     int file_flags = base::PLATFORM_FILE_CREATE |
         base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_ASYNC;
 
-    return FileUtil()->CreateOrOpen(Context(),
+    scoped_ptr<FileSystemOperationContext> context(NewContext());
+    return FileUtil()->CreateOrOpen(
+        context.get(),
         data_dir_.path().AppendASCII(file_name),
         file_flags, file_handle, created);
   }
 
   base::PlatformFileError EnsureFileExists(const char* file_name,
       bool* created) {
-    return FileUtil()->EnsureFileExists(Context(),
+    scoped_ptr<FileSystemOperationContext> context(NewContext());
+    return FileUtil()->EnsureFileExists(
+        context.get(),
         data_dir_.path().AppendASCII(file_name), created);
   }
 
@@ -70,7 +74,9 @@ TEST_F(QuotaFileUtilTest, CreateAndClose) {
   ASSERT_TRUE(created);
 
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            FileUtil()->Close(Context(), file_handle));
+            FileUtil()->Close(
+                scoped_ptr<FileSystemOperationContext>(NewContext()).get(),
+                file_handle));
 }
 
 TEST_F(QuotaFileUtilTest, EnsureFileExists) {
@@ -89,26 +95,26 @@ TEST_F(QuotaFileUtilTest, Truncate) {
   ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(file_name, &created));
   ASSERT_TRUE(created);
 
-  FileSystemOperationContext *truncate_context;
+  scoped_ptr<FileSystemOperationContext> truncate_context;
 
-  truncate_context = Context();
+  truncate_context.reset(NewContext());
   truncate_context->set_allowed_bytes_growth(1020);
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Truncate(truncate_context,
+            QuotaFileUtil::GetInstance()->Truncate(truncate_context.get(),
                                                    Path(file_name),
                                                    1020));
 
-  truncate_context = Context();
+  truncate_context.reset(NewContext());
   truncate_context->set_allowed_bytes_growth(0);
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Truncate(truncate_context,
+            QuotaFileUtil::GetInstance()->Truncate(truncate_context.get(),
                                                    Path(file_name),
                                                    0));
 
-  truncate_context = Context();
+  truncate_context.reset(NewContext());
   truncate_context->set_allowed_bytes_growth(1020);
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
-            QuotaFileUtil::GetInstance()->Truncate(truncate_context,
+            QuotaFileUtil::GetInstance()->Truncate(truncate_context.get(),
                                                    Path(file_name),
                                                    1021));
 }
@@ -123,40 +129,40 @@ TEST_F(QuotaFileUtilTest, CopyFile) {
   ASSERT_TRUE(created);
   ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(obstacle_file, &created));
   ASSERT_TRUE(created);
-  FileSystemOperationContext *context;
+  scoped_ptr<FileSystemOperationContext> context;
 
-  context = Context();
+  context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Truncate(context,
+            QuotaFileUtil::GetInstance()->Truncate(context.get(),
                                                    Path(from_file),
                                                    1020));
 
-  context = Context();
+  context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Truncate(context,
+            QuotaFileUtil::GetInstance()->Truncate(context.get(),
                                                    Path(obstacle_file),
                                                    1));
 
-  context = Context();
+  context.reset(NewContext());
   context->set_allowed_bytes_growth(1020);
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Copy(context,
+            QuotaFileUtil::GetInstance()->Copy(context.get(),
                                                Path(from_file),
                                                Path(to_file1)));
 
-  context = Context();
+  context.reset(NewContext());
   context->set_allowed_bytes_growth(1019);
   ASSERT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
-            QuotaFileUtil::GetInstance()->Copy(context,
+            QuotaFileUtil::GetInstance()->Copy(context.get(),
                                                Path(from_file),
                                                Path(to_file2)));
 
-  context = Context();
+  context.reset(NewContext());
   context->set_allowed_bytes_growth(1019);
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Copy(context,
+            QuotaFileUtil::GetInstance()->Copy(context.get(),
                                                Path(from_file),
                                                Path(obstacle_file)));
 }
@@ -167,34 +173,34 @@ TEST_F(QuotaFileUtilTest, CopyDirectory) {
   const char *to_dir1 = "todir1";
   const char *to_dir2 = "todir2";
   bool created;
-  FileSystemOperationContext *context;
+  scoped_ptr<FileSystemOperationContext> context;
 
-  context = Context();
+  context.reset(NewContext());
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->CreateDirectory(context,
+            QuotaFileUtil::GetInstance()->CreateDirectory(context.get(),
                                                           Path(from_dir),
                                                           false, false));
   ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(from_file, &created));
   ASSERT_TRUE(created);
 
-  context = Context();
+  context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Truncate(context,
+            QuotaFileUtil::GetInstance()->Truncate(context.get(),
                                                    Path(from_file),
                                                    1020));
 
-  context = Context();
+  context.reset(NewContext());
   context->set_allowed_bytes_growth(1020);
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Copy(context,
+            QuotaFileUtil::GetInstance()->Copy(context.get(),
                                                Path(from_dir),
                                                Path(to_dir1)));
 
-  context = Context();
+  context.reset(NewContext());
   context->set_allowed_bytes_growth(1019);
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
-            QuotaFileUtil::GetInstance()->Copy(context,
+            QuotaFileUtil::GetInstance()->Copy(context.get(),
                                                Path(from_dir),
                                                Path(to_dir2)));
 }
@@ -206,19 +212,19 @@ TEST_F(QuotaFileUtilTest, MoveFile) {
   bool created;
   ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(from_file, &created));
   ASSERT_TRUE(created);
-  FileSystemOperationContext *context;
+  scoped_ptr<FileSystemOperationContext> context;
 
-  context = Context();
+  context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Truncate(context,
+            QuotaFileUtil::GetInstance()->Truncate(context.get(),
                                                    Path(from_file),
                                                    1020));
 
-  context = Context();
+  context.reset(NewContext());
   context->set_allowed_bytes_growth(0);
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Move(context,
+            QuotaFileUtil::GetInstance()->Move(context.get(),
                                                Path(from_file),
                                                Path(to_file)));
 
@@ -227,24 +233,24 @@ TEST_F(QuotaFileUtilTest, MoveFile) {
   ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(obstacle_file, &created));
   ASSERT_TRUE(created);
 
-  context = Context();
+  context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Truncate(context,
+            QuotaFileUtil::GetInstance()->Truncate(context.get(),
                                                    Path(from_file),
                                                    1020));
 
-  context = Context();
+  context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Truncate(context,
+            QuotaFileUtil::GetInstance()->Truncate(context.get(),
                                                    Path(obstacle_file),
                                                    1));
 
-  context = Context();
+  context.reset(NewContext());
   context->set_allowed_bytes_growth(0);
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Move(context,
+            QuotaFileUtil::GetInstance()->Move(context.get(),
                                                Path(from_file),
                                                Path(obstacle_file)));
 }
@@ -255,49 +261,49 @@ TEST_F(QuotaFileUtilTest, MoveDirectory) {
   const char *to_dir1 = "todir1";
   const char *to_dir2 = "todir2";
   bool created;
-  FileSystemOperationContext *context;
+  scoped_ptr<FileSystemOperationContext> context;
 
-  context = Context();
+  context.reset(NewContext());
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->CreateDirectory(context,
+            QuotaFileUtil::GetInstance()->CreateDirectory(context.get(),
                                                           Path(from_dir),
                                                           false, false));
   ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(from_file, &created));
   ASSERT_TRUE(created);
 
-  context = Context();
+  context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Truncate(context,
+            QuotaFileUtil::GetInstance()->Truncate(context.get(),
                                                    Path(from_file),
                                                    1020));
 
-  context = Context();
+  context.reset(NewContext());
   context->set_allowed_bytes_growth(1020);
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Move(context,
+            QuotaFileUtil::GetInstance()->Move(context.get(),
                                                Path(from_dir),
                                                Path(to_dir1)));
 
-  context = Context();
+  context.reset(NewContext());
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->CreateDirectory(context,
+            QuotaFileUtil::GetInstance()->CreateDirectory(context.get(),
                                                           Path(from_dir),
                                                           false, false));
   ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(from_file, &created));
   ASSERT_TRUE(created);
 
-  context = Context();
+  context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Truncate(context,
+            QuotaFileUtil::GetInstance()->Truncate(context.get(),
                                                    Path(from_file),
                                                    1020));
 
-  context = Context();
+  context.reset(NewContext());
   context->set_allowed_bytes_growth(1019);
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Move(context,
+            QuotaFileUtil::GetInstance()->Move(context.get(),
                                                Path(from_dir),
                                                Path(to_dir2)));
 }

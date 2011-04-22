@@ -1431,11 +1431,6 @@
    fun:::LogTypeQualityMetric
 }
 {
-   bug_80151
-   Heapcheck:Leak
-   fun:QuotaFileUtilTest::Context
-}
-{
    bug_80196
    Heapcheck:Leak
    fun:CallbackRunner* NewCallback
