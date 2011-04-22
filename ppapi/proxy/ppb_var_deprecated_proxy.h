@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/task.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
 
@@ -92,6 +93,9 @@ class PPB_Var_Deprecated_Proxy : public InterfaceProxy {
 
   // Call in the host for messages that can be reentered.
   void SetAllowPluginReentrancy();
+
+  void DoReleaseObject(int64 object_id);
+  ScopedRunnableMethodFactory<PPB_Var_Deprecated_Proxy> task_factory_;
 };
 
 }  // namespace proxy

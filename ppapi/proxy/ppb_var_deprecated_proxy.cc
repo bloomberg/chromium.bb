@@ -7,6 +7,8 @@
 #include <stdlib.h>  // For malloc
 
 #include "base/logging.h"
+#include "base/message_loop.h"
+#include "base/task.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_core.h"
@@ -296,7 +298,8 @@ InterfaceProxy* CreateVarDeprecatedProxy(Dispatcher* dispatcher,
 PPB_Var_Deprecated_Proxy::PPB_Var_Deprecated_Proxy(
     Dispatcher* dispatcher,
     const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
+    : InterfaceProxy(dispatcher, target_interface),
+      task_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PPB_Var_Deprecated_Proxy::~PPB_Var_Deprecated_Proxy() {
@@ -361,10 +364,27 @@ void PPB_Var_Deprecated_Proxy::OnMsgAddRefObject(int64 object_id,
 }
 
 void PPB_Var_Deprecated_Proxy::OnMsgReleaseObject(int64 object_id) {
-  PP_Var var;
-  var.type = PP_VARTYPE_OBJECT;
-  var.value.as_id = object_id;
-  ppb_var_target()->Release(var);
+  // Ok, so this is super subtle.
+  // When the browser side sends a sync IPC message that returns a var, and the
+  // plugin wants to give ownership of that var to the browser, dropping all
+  // references, it may call ReleaseObject right after returning the result.
+  // However, the IPC system doesn't enforce strict ordering of messages in that
+  // case, where a message that is set to unblock (e.g. a sync message, or in
+  // our case all messages coming from the plugin) that is sent *after* the
+  // result may be dispatched on the browser side *before* the sync send
+  // returned (see ipc_sync_channel.cc). In this case, that means it could
+  // release the object before it is AddRef'ed on the browser side.
+  // To work around this, we post a task here, that will not execute before
+  // control goes back to the main message loop, that will ensure the sync send
+  // has returned and the browser side can take its reference before we Release.
+  // Note: if the instance is gone by the time the task is executed, then it
+  // will Release the objects itself and this Release will be a NOOP (aside of a
+  // spurious warning).
+  // TODO(piman): See if we can fix the IPC code to enforce strict ordering, and
+  // then remove this.
+  MessageLoop::current()->PostNonNestableTask(FROM_HERE,
+      task_factory_.NewRunnableMethod(
+          &PPB_Var_Deprecated_Proxy::DoReleaseObject, object_id));
 }
 
 void PPB_Var_Deprecated_Proxy::OnMsgHasProperty(
@@ -490,6 +510,13 @@ void PPB_Var_Deprecated_Proxy::SetAllowPluginReentrancy() {
     NOTREACHED();
   else
     static_cast<HostDispatcher*>(dispatcher())->set_allow_plugin_reentrancy();
+}
+
+void PPB_Var_Deprecated_Proxy::DoReleaseObject(int64 object_id) {
+  PP_Var var;
+  var.type = PP_VARTYPE_OBJECT;
+  var.value.as_id = object_id;
+  ppb_var_target()->Release(var);
 }
 
 }  // namespace proxy
