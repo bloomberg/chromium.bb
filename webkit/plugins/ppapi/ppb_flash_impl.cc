@@ -78,6 +78,14 @@ double GetLocalTimeZoneOffset(PP_Instance pp_instance, PP_Time t) {
   if (!instance)
     return 0.0;
 
+  // Evil hack. The time code handles exact "0" values as special, and produces
+  // a "null" Time object. This will represent some date hundreds of years ago
+  // and will give us funny results at 1970 (there are some tests where this
+  // comes up, but it shouldn't happen in real life). To work around this
+  // special handling, we just need to give it some nonzero value.
+  if (t == 0.0)
+    t = 0.0000000001;
+
   // We can't do the conversion here because on Linux, the localtime calls
   // require filesystem access prohibited by the sandbox.
   return instance->delegate()->GetLocalTimeZoneOffset(
