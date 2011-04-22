@@ -1269,11 +1269,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 }
 
 - (int)indexOfButton:(BookmarkButton*)button {
-  int btnCount = [self buttonCount];
-  for (int i = 0 ; i < btnCount ; ++i)
-    if ([buttons_ objectAtIndex:i] == button)
-      return i;
-  return -1;
+  int index = [buttons_ indexOfObject:button];
+  return (index == NSNotFound) ? -1 : index;
 }
 
 - (BookmarkButton*)buttonAtIndex:(int)which {
@@ -1895,8 +1892,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   NSInteger buttonCount = [buttons_ count];
   if (buttonCount) {
     BookmarkButton* subButton = [folderController_ parentButton];
-    for (NSInteger i = buttonIndex; i < buttonCount; ++i) {
-      BookmarkButton* aButton = [buttons_ objectAtIndex:i];
+    for (NSButton* aButton in buttons_.get()) {
       // If this button is showing its menu then we need to move the menu, too.
       if (aButton == subButton)
         [folderController_ offsetFolderMenuWindow:NSMakeSize(0.0,
