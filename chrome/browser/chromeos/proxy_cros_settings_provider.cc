@@ -287,6 +287,8 @@ net::ProxyServer ProxyCrosSettingsProvider::CreateProxyServerFromHost(
     port = proxy.server.host_port_pair().port();
   if (host.length() == 0 && port == 0)
     return net::ProxyServer();
+  if (port == 0)
+    port = net::ProxyServer::GetDefaultPortForScheme(scheme);
   net::HostPortPair host_port_pair(host, port);
   return net::ProxyServer(scheme, host_port_pair);
 }
