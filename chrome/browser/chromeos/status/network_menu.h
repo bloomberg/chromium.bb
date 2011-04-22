@@ -13,6 +13,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/native_widget_types.h"
+#include "views/controls/menu/menu_delegate.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
 namespace gfx {
@@ -20,142 +21,12 @@ class Canvas;
 }
 
 namespace views {
-class Menu2;
+class MenuItemView;
 }
 
 namespace chromeos {
 
-class NetworkMenu;
-
-class NetworkMenuModel : public ui::MenuModel {
- public:
-  struct NetworkInfo {
-    NetworkInfo() :
-        need_passphrase(false), remembered(true), auto_connect(true) {}
-    // "ethernet" | "wifi" | "cellular" | "other".
-    std::string network_type;
-    // "connected" | "connecting" | "disconnected" | "error".
-    std::string status;
-    // status message or error message, empty if unknown status.
-    std::string message;
-    // IP address (if network is active, empty otherwise)
-    std::string ip_address;
-    // Remembered passphrase.
-    std::string passphrase;
-    // true if the network requires a passphrase.
-    bool need_passphrase;
-    // true if the network is currently remembered.
-    bool remembered;
-    // true if the network is auto connect (meaningful for Wifi only).
-    bool auto_connect;
-  };
-
-  explicit NetworkMenuModel(NetworkMenu* owner) : owner_(owner) {}
-  virtual ~NetworkMenuModel() {}
-
-  // Connect or reconnect to the network at |index|.
-  // If remember >= 0, set the favorite state of the network.
-  // Returns true if a connect occurred (e.g. menu should be closed).
-  bool ConnectToNetworkAt(int index,
-                          const std::string& passphrase,
-                          const std::string& ssid,
-                          int remember) const;
-
-  // Called by NetworkMenu::RunMenu to initialize list of menu items.
-  virtual void InitMenuItems(bool is_browser_mode,
-                             bool should_open_button_options) {}
-
-  // ui::MenuModel implementation.
-  virtual bool HasIcons() const  { return true; }
-  virtual int GetItemCount() const;
-  virtual ui::MenuModel::ItemType GetTypeAt(int index) const;
-  virtual int GetCommandIdAt(int index) const { return index; }
-  virtual string16 GetLabelAt(int index) const;
-  virtual bool IsItemDynamicAt(int index) const { return true; }
-  virtual const gfx::Font* GetLabelFontAt(int index) const;
-  virtual bool GetAcceleratorAt(int index,
-      ui::Accelerator* accelerator) const { return false; }
-  virtual bool IsItemCheckedAt(int index) const;
-  virtual int GetGroupIdAt(int index) const { return 0; }
-  virtual bool GetIconAt(int index, SkBitmap* icon);
-  virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const {
-    return NULL;
-  }
-  virtual bool IsEnabledAt(int index) const;
-  virtual ui::MenuModel* GetSubmenuModelAt(int index) const;
-  virtual void HighlightChangedTo(int index) {}
-  virtual void ActivatedAt(int index);
-  virtual void MenuWillShow() {}
-  virtual void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) {}
-
- protected:
-  enum MenuItemFlags {
-    FLAG_DISABLED          = 1 << 0,
-    FLAG_TOGGLE_ETHERNET   = 1 << 1,
-    FLAG_TOGGLE_WIFI       = 1 << 2,
-    FLAG_TOGGLE_CELLULAR   = 1 << 3,
-    FLAG_TOGGLE_OFFLINE    = 1 << 4,
-    FLAG_ASSOCIATED        = 1 << 5,
-    FLAG_ETHERNET          = 1 << 6,
-    FLAG_WIFI              = 1 << 7,
-    FLAG_CELLULAR          = 1 << 8,
-    FLAG_PRIVATE_NETWORKS  = 1 << 9,
-    FLAG_OPTIONS           = 1 << 10,
-    FLAG_ADD_WIFI          = 1 << 11,
-    FLAG_ADD_CELLULAR      = 1 << 12,
-    FLAG_VPN               = 1 << 13,
-    FLAG_ADD_VPN           = 1 << 14,
-    FLAG_DISCONNECT_VPN    = 1 << 15,
-  };
-
-  struct MenuItem {
-    MenuItem()
-        : type(ui::MenuModel::TYPE_SEPARATOR),
-          sub_menu_model(NULL),
-          flags(0) {}
-    MenuItem(ui::MenuModel::ItemType type, string16 label, SkBitmap icon,
-             const std::string& service_path, int flags)
-        : type(type),
-          label(label),
-          icon(icon),
-          service_path(service_path),
-          sub_menu_model(NULL),
-          flags(flags) {}
-    MenuItem(ui::MenuModel::ItemType type, string16 label, SkBitmap icon,
-             NetworkMenuModel* sub_menu_model, int flags)
-        : type(type),
-          label(label),
-          icon(icon),
-          sub_menu_model(sub_menu_model),
-          flags(flags) {}
-
-    ui::MenuModel::ItemType type;
-    string16 label;
-    SkBitmap icon;
-    std::string service_path;
-    NetworkMenuModel* sub_menu_model;  // Weak.
-    int flags;
-  };
-  typedef std::vector<MenuItem> MenuItemVector;
-
-  // Our menu items.
-  MenuItemVector menu_items_;
-
-  NetworkMenu* owner_;  // Weak pointer to NetworkMenu that owns this MenuModel.
-
- private:
-  // Shows network details in Web UI options window.
-  void ShowTabbedNetworkSettings(const Network* network) const;
-
-  // Show a NetworkConfigView modal dialog instance.
-  void ShowNetworkConfigView(NetworkConfigView* view) const;
-
-  void ActivateCellular(const CellularNetwork* cellular) const;
-  void ShowOther(ConnectionType type) const;
-  void ShowOtherCellular() const;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkMenuModel);
-};
+class NetworkMenuModel;
 
 // Menu for network menu button in the status area/welcome screen.
 // This class will populating the menu with the list of networks.
@@ -253,6 +124,7 @@ class NetworkMenu : public views::ViewMenuDelegate {
                                  const SkBitmap* bottom_left_badge);
 
  protected:
+  virtual views::MenuButton* GetMenuButton() = 0;
   virtual gfx::NativeWindow GetNativeWindow() const = 0;
   virtual void OpenButtonOptions() = 0;
   virtual bool ShouldOpenButtonOptions() const = 0;
@@ -289,7 +161,7 @@ class NetworkMenu : public views::ViewMenuDelegate {
   static SkBitmap kAnimatingImagesBlack[];
 
   // The network menu.
-  scoped_ptr<views::Menu2> network_menu_;
+  scoped_ptr<views::MenuItemView> network_menu_;
 
   scoped_ptr<NetworkMenuModel> main_menu_model_;
 

@@ -18,7 +18,7 @@ using gfx::NativeTheme;
 namespace views {
 
 gfx::Size MenuItemView::CalculatePreferredSize() {
-  const gfx::Font& font = MenuConfig::instance().font;
+  const gfx::Font& font = GetFont();
   return gfx::Size(
       font.GetStringWidth(title_) + label_start_ + item_right_margin_ +
           GetChildPreferredWidth(),
@@ -82,7 +82,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   SkColor fg_color = gfx::NativeThemeWin::instance()->GetThemeColorWithDefault(
       gfx::NativeThemeWin::MENU, MENU_POPUPITEM, state, TMT_TEXTCOLOR,
       default_sys_color);
-  const gfx::Font& font = MenuConfig::instance().font;
+  const gfx::Font& font = GetFont();
   int accel_width = parent_menu_item_->GetSubmenu()->max_accelerator_width();
   int width = this->width() - item_right_margin_ - label_start_ - accel_width;
   gfx::Rect text_bounds(label_start_, top_margin, width, font.GetHeight());
