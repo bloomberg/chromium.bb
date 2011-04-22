@@ -12,6 +12,7 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -111,7 +112,7 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
     scoped_refptr<ChromeBlobStorageContext> blob_storage_context;
     scoped_refptr<fileapi::FileSystemContext> file_system_context;
     scoped_refptr<ExtensionInfoMap> extension_info_map;
-    scoped_refptr<prerender::PrerenderManager> prerender_manager;
+    base::WeakPtr<prerender::PrerenderManager> prerender_manager;
     scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry;
     // We need to initialize the ProxyConfigService from the UI thread
     // because on linux it relies on initializing things through gconf,

@@ -24,6 +24,7 @@
 #include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -58,7 +59,7 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
         NewRunnableMethod(this,
             &ChromeCookieMonsterDelegate::OnCookieChangedAsyncHelper,
             cookie,
-            removed,
+           removed,
             cause));
   }
 
@@ -178,7 +179,10 @@ void ProfileIOData::InitializeProfileParams(Profile* profile) {
   params->blob_storage_context = profile->GetBlobStorageContext();
   params->file_system_context = profile->GetFileSystemContext();
   params->extension_info_map = profile->GetExtensionInfoMap();
-  params->prerender_manager = profile->GetPrerenderManager();
+  prerender::PrerenderManager* prerender_manager =
+      profile->GetPrerenderManager();
+  if (prerender_manager)
+    params->prerender_manager = prerender_manager->AsWeakPtr();
   params->protocol_handler_registry = profile->GetProtocolHandlerRegistry();
 
   params->proxy_config_service.reset(

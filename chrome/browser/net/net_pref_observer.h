@@ -23,8 +23,9 @@ class PrerenderManager;
 // Must be used only on the UI thread.
 class NetPrefObserver : public NotificationObserver {
  public:
-  // |prefs| must outlive this NetPrefObserver. A reference is
-  // held to |prerender_manager| if it is non-NULL.
+  // |prefs| must be non-NULL and |*prefs| must outlive this.
+  // |prerender_manager| may be NULL. If not, |*prerender_manager| must
+  // outlive this.
   NetPrefObserver(PrefService* prefs,
                   prerender::PrerenderManager* prerender_manager);
   ~NetPrefObserver();
@@ -43,7 +44,7 @@ class NetPrefObserver : public NotificationObserver {
   BooleanPrefMember network_prediction_enabled_;
   BooleanPrefMember spdy_disabled_;
   BooleanPrefMember http_throttling_enabled_;
-  scoped_refptr<prerender::PrerenderManager> prerender_manager_;
+  prerender::PrerenderManager* prerender_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(NetPrefObserver);
 };

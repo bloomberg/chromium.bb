@@ -1553,8 +1553,8 @@ PrefProxyConfigTracker* ProfileImpl::GetProxyConfigTracker() {
 
 prerender::PrerenderManager* ProfileImpl::GetPrerenderManager() {
   if (!prerender::PrerenderManager::IsPrerenderingPossible())
-    return NULL;
-  if (!prerender_manager_)
-    prerender_manager_ = new prerender::PrerenderManager(this);
-  return prerender_manager_;
+    return base::WeakPtr<prerender::PrerenderManager>();
+  if (!prerender_manager_.get())
+    prerender_manager_.reset(new prerender::PrerenderManager(this));
+  return prerender_manager_.get();
 }

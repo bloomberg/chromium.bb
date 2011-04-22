@@ -10,12 +10,12 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/chrome_blob_storage_context.h"
@@ -33,6 +33,9 @@ class DnsCertProvenanceChecker;
 class NetworkDelegate;
 }
 class PrefService;
+namespace prerender {
+class PrerenderManager;
+}
 class Profile;
 class ProfileIOData;
 
@@ -85,8 +88,8 @@ class ChromeURLRequestContext : public net::URLRequestContext {
     return extension_info_map_;
   }
 
-  prerender::PrerenderManager* prerender_manager() {
-    return prerender_manager_.get();
+  base::WeakPtr<prerender::PrerenderManager> prerender_manager() const {
+    return prerender_manager_;
   }
 
   ChromeURLDataManagerBackend* GetChromeURLDataManagerBackend();
@@ -117,7 +120,8 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   void set_extension_info_map(ExtensionInfoMap* map) {
     extension_info_map_ = map;
   }
-  void set_prerender_manager(prerender::PrerenderManager* prerender_manager) {
+  void set_prerender_manager(
+      const base::WeakPtr<prerender::PrerenderManager>& prerender_manager) {
     prerender_manager_ = prerender_manager;
   }
 
@@ -147,7 +151,7 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   // TODO(aa): This should use chrome/common/extensions/extension_set.h.
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
-  scoped_refptr<prerender::PrerenderManager> prerender_manager_;
+  base::WeakPtr<prerender::PrerenderManager> prerender_manager_;
   scoped_ptr<ChromeURLDataManagerBackend> chrome_url_data_manager_backend_;
 
   bool is_incognito_;

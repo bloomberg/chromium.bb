@@ -399,7 +399,7 @@ class TestingProfile : public Profile {
 
   scoped_ptr<ChromeURLDataManager> chrome_url_data_manager_;
 
-  scoped_refptr<prerender::PrerenderManager> prerender_manager_;
+  scoped_ptr<prerender::PrerenderManager> prerender_manager_;
 
   // We keep a weak pointer to the dependency manager we want to notify on our
   // death. Defaults to the Singleton implementation but overridable for

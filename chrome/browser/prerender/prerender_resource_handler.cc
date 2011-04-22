@@ -56,7 +56,7 @@ PrerenderResourceHandler* PrerenderResourceHandler::MaybeCreate(
     bool is_from_prerender,
     int child_id,
     int route_id) {
-  if (!context || !context->prerender_manager())
+  if (!context)
     return NULL;
   if (!(request.load_flags() & net::LOAD_PREFETCH))
     return NULL;
@@ -76,7 +76,7 @@ PrerenderResourceHandler* PrerenderResourceHandler::MaybeCreate(
 PrerenderResourceHandler::PrerenderResourceHandler(
     const net::URLRequest& request,
     ResourceHandler* next_handler,
-    PrerenderManager* prerender_manager,
+    const base::WeakPtr<PrerenderManager>& prerender_manager,
     bool make_pending,
     int child_id,
     int route_id)
@@ -90,7 +90,6 @@ PrerenderResourceHandler::PrerenderResourceHandler(
       route_id_(route_id),
       make_pending_(make_pending) {
   DCHECK(next_handler);
-  DCHECK(prerender_manager);
 }
 
 PrerenderResourceHandler::PrerenderResourceHandler(
@@ -204,14 +203,17 @@ void PrerenderResourceHandler::StartPrerender(
     const GURL& referrer,
     bool make_pending) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!prerender_manager_->is_enabled())
+  // The PrerenderManager may have been destroyed. Only do prerendering
+  // if it is still alive and is enabled.
+  PrerenderManager* prerender_manager = prerender_manager_.get();
+  if (!prerender_manager || !prerender_manager->is_enabled())
     return;
   if (make_pending) {
-    prerender_manager_->AddPendingPreload(child_route_id_pair,
-                                          url, alias_urls, referrer);
+    prerender_manager->AddPendingPreload(child_route_id_pair,
+                                         url, alias_urls, referrer);
   } else {
-    prerender_manager_->AddPreload(child_route_id_pair, url, alias_urls,
-                                   referrer);
+    prerender_manager->AddPreload(child_route_id_pair, url, alias_urls,
+                                  referrer);
   }
 }
 

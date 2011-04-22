@@ -76,10 +76,13 @@ class PrerenderResourceHandler : public ResourceHandler {
                     const GURL&,
                     bool>::Type PrerenderCallback;
 
-  PrerenderResourceHandler(const net::URLRequest& request,
-                           ResourceHandler* next_handler,
-                           PrerenderManager* prerender_manager,
-                           bool make_pending, int child_id, int route_id);
+  PrerenderResourceHandler(
+      const net::URLRequest& request,
+      ResourceHandler* next_handler,
+      const base::WeakPtr<PrerenderManager>& prerender_manager,
+      bool make_pending,
+      int child_id,
+      int route_id);
 
   // This constructor is only used from unit tests.
   PrerenderResourceHandler(const net::URLRequest& request,
@@ -104,7 +107,7 @@ class PrerenderResourceHandler : public ResourceHandler {
   std::vector<GURL> alias_urls_;
   GURL url_;
   scoped_refptr<ResourceHandler> next_handler_;
-  scoped_refptr<PrerenderManager> prerender_manager_;
+  base::WeakPtr<PrerenderManager> prerender_manager_;
   scoped_ptr<PrerenderCallback> prerender_callback_;
 
   // Used to obtain the referrer, but only after any redirections occur, as they

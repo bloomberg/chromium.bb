@@ -138,6 +138,10 @@ PrerenderManager::PrerenderManager(Profile* profile)
       prerender_contents_factory_(PrerenderContents::CreateFactory()),
       last_prerender_start_time_(GetCurrentTimeTicks() -
           base::TimeDelta::FromMilliseconds(kMinTimeBetweenPrerendersMs)) {
+  // There are some assumptions that the PrerenderManager is on the UI thread.
+  // Any other checks simply make sure that the PrerenderManager is accessed on
+  // the same thread that it was created on.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 PrerenderManager::~PrerenderManager() {
@@ -151,6 +155,7 @@ PrerenderManager::~PrerenderManager() {
 
 void PrerenderManager::SetPrerenderContentsFactory(
     PrerenderContents::Factory* prerender_contents_factory) {
+  DCHECK(CalledOnValidThread());
   prerender_contents_factory_.reset(prerender_contents_factory);
 }
 
@@ -159,7 +164,7 @@ bool PrerenderManager::AddPreload(
     const GURL& url,
     const std::vector<GURL>& alias_urls,
     const GURL& referrer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   DeleteOldEntries();
   if (FindEntry(url))
     return false;
@@ -240,6 +245,7 @@ void PrerenderManager::AddPendingPreload(
     const GURL& url,
     const std::vector<GURL>& alias_urls,
     const GURL& referrer) {
+  DCHECK(CalledOnValidThread());
   // Check if this is coming from a valid prerender rvh.
   bool is_valid_prerender = false;
   for (std::list<PrerenderContentsData>::iterator it = prerender_list_.begin();
@@ -282,6 +288,7 @@ void PrerenderManager::AddPendingPreload(
 }
 
 void PrerenderManager::DeleteOldEntries() {
+  DCHECK(CalledOnValidThread());
   while (!prerender_list_.empty()) {
     PrerenderContentsData data = prerender_list_.front();
     if (IsPrerenderElementFresh(data.start_time_))
@@ -295,6 +302,7 @@ void PrerenderManager::DeleteOldEntries() {
 }
 
 PrerenderContents* PrerenderManager::GetEntry(const GURL& url) {
+  DCHECK(CalledOnValidThread());
   DeleteOldEntries();
   for (std::list<PrerenderContentsData>::iterator it = prerender_list_.begin();
        it != prerender_list_.end();
@@ -310,7 +318,7 @@ PrerenderContents* PrerenderManager::GetEntry(const GURL& url) {
 }
 
 bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   scoped_ptr<PrerenderContents> pc(GetEntry(url));
   if (pc.get() == NULL)
     return false;
@@ -391,7 +399,7 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
 }
 
 void PrerenderManager::RemoveEntry(PrerenderContents* entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   for (std::list<PrerenderContentsData>::iterator it = prerender_list_.begin();
        it != prerender_list_.end();
        ++it) {
@@ -413,6 +421,7 @@ base::TimeTicks PrerenderManager::GetCurrentTimeTicks() const {
 }
 
 bool PrerenderManager::IsPrerenderElementFresh(const base::Time start) const {
+  DCHECK(CalledOnValidThread());
   base::Time now = GetCurrentTime();
   return (now - start < max_prerender_age_);
 }
@@ -421,6 +430,7 @@ PrerenderContents* PrerenderManager::CreatePrerenderContents(
     const GURL& url,
     const std::vector<GURL>& alias_urls,
     const GURL& referrer) {
+  DCHECK(CalledOnValidThread());
   return prerender_contents_factory_->CreatePrerenderContents(
       this, profile_, url, alias_urls, referrer);
 }
@@ -440,6 +450,7 @@ PrerenderContents* PrerenderManager::CreatePrerenderContents(
 void PrerenderManager::RecordPerceivedPageLoadTime(
     base::TimeDelta perceived_page_load_time,
     TabContents* tab_contents) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   bool within_window = WithinWindow();
   PrerenderManager* prerender_manager =
       tab_contents->profile()->GetPrerenderManager();
@@ -463,6 +474,7 @@ void PrerenderManager::RecordPerceivedPageLoadTime(
 }
 
 void PrerenderManager::RecordTimeUntilUsed(base::TimeDelta time_until_used) {
+  DCHECK(CalledOnValidThread());
   UMA_HISTOGRAM_CUSTOM_TIMES(
       "Prerender.TimeUntilUsed",
       time_until_used,
@@ -471,17 +483,38 @@ void PrerenderManager::RecordTimeUntilUsed(base::TimeDelta time_until_used) {
       50);
 }
 
+base::TimeDelta PrerenderManager::max_prerender_age() const {
+  DCHECK(CalledOnValidThread());
+  return max_prerender_age_;
+}
+
+void PrerenderManager::set_max_prerender_age(base::TimeDelta max_age) {
+  DCHECK(CalledOnValidThread());
+  max_prerender_age_ = max_age;
+}
+
+unsigned int PrerenderManager::max_elements() const {
+  DCHECK(CalledOnValidThread());
+  return max_elements_;
+}
+
+void PrerenderManager::set_max_elements(unsigned int max_elements) {
+  DCHECK(CalledOnValidThread());
+  max_elements_ = max_elements;
+}
+
 bool PrerenderManager::is_enabled() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   return enabled_;
 }
 
 void PrerenderManager::set_enabled(bool enabled) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   enabled_ = enabled;
 }
 
 PrerenderContents* PrerenderManager::FindEntry(const GURL& url) {
+  DCHECK(CalledOnValidThread());
   for (std::list<PrerenderContentsData>::iterator it = prerender_list_.begin();
        it != prerender_list_.end();
        ++it) {
@@ -494,6 +527,7 @@ PrerenderContents* PrerenderManager::FindEntry(const GURL& url) {
 
 PrerenderManager::PendingContentsData*
     PrerenderManager::FindPendingEntry(const GURL& url) {
+  DCHECK(CalledOnValidThread());
   for (PendingPrerenderList::iterator map_it = pending_prerender_list_.begin();
        map_it != pending_prerender_list_.end();
        ++map_it) {
@@ -537,6 +571,7 @@ void PrerenderManager::RecordPrefetchTagObservedOnUIThread() {
 }
 
 void PrerenderManager::RemovePendingPreload(PrerenderContents* entry) {
+  DCHECK(CalledOnValidThread());
   int child_id;
   int route_id;
   bool has_child_id = entry->GetChildId(&child_id);
@@ -561,7 +596,7 @@ bool PrerenderManager::WithinWindow() {
 }
 
 bool PrerenderManager::DoesRateLimitAllowPrerender() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   base::TimeDelta elapsed_time =
       GetCurrentTimeTicks() - last_prerender_start_time_;
   UMA_HISTOGRAM_TIMES("Prerender.TimeBetweenPrerenderRequests",
@@ -573,6 +608,7 @@ bool PrerenderManager::DoesRateLimitAllowPrerender() const {
 }
 
 void PrerenderManager::StartSchedulingPeriodicCleanups() {
+  DCHECK(CalledOnValidThread());
   if (repeating_timer_.IsRunning())
     return;
   repeating_timer_.Start(
@@ -582,10 +618,12 @@ void PrerenderManager::StartSchedulingPeriodicCleanups() {
 }
 
 void PrerenderManager::StopSchedulingPeriodicCleanups() {
+  DCHECK(CalledOnValidThread());
   repeating_timer_.Stop();
 }
 
 void PrerenderManager::PeriodicCleanup() {
+  DCHECK(CalledOnValidThread());
   DeleteOldEntries();
   // Grab a copy of the current PrerenderContents pointers, so that we
   // will not interfere with potential deletions of the list.
@@ -604,23 +642,28 @@ void PrerenderManager::PeriodicCleanup() {
 }
 
 void PrerenderManager::MarkTabContentsAsPrerendered(TabContents* tc) {
+  DCHECK(CalledOnValidThread());
   prerendered_tc_set_.insert(tc);
 }
 
 void PrerenderManager::MarkTabContentsAsWouldBePrerendered(TabContents* tc) {
+  DCHECK(CalledOnValidThread());
   would_be_prerendered_tc_set_.insert(tc);
 }
 
 void PrerenderManager::MarkTabContentsAsNotPrerendered(TabContents* tc) {
+  DCHECK(CalledOnValidThread());
   prerendered_tc_set_.erase(tc);
   would_be_prerendered_tc_set_.erase(tc);
 }
 
 bool PrerenderManager::IsTabContentsPrerendered(TabContents* tc) const {
+  DCHECK(CalledOnValidThread());
   return prerendered_tc_set_.count(tc) > 0;
 }
 
 bool PrerenderManager::WouldTabContentsBePrerendered(TabContents* tc) const {
+  DCHECK(CalledOnValidThread());
   return would_be_prerendered_tc_set_.count(tc) > 0;
 }
 

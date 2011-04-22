@@ -11,8 +11,9 @@
 #include <vector>
 
 #include "base/hash_tables.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/prerender/prerender_contents.h"
@@ -38,7 +39,8 @@ namespace prerender {
 
 // PrerenderManager is responsible for initiating and keeping prerendered
 // views of webpages.
-class PrerenderManager : public base::RefCountedThreadSafe<PrerenderManager> {
+class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
+                         public base::NonThreadSafe {
  public:
   // PrerenderManagerMode is used in a UMA_HISTOGRAM, so please do not
   // add in the middle.
@@ -52,6 +54,8 @@ class PrerenderManager : public base::RefCountedThreadSafe<PrerenderManager> {
 
   // Owned by a Profile object for the lifetime of the profile.
   explicit PrerenderManager(Profile* profile);
+
+  virtual ~PrerenderManager();
 
   // Preloads |url| if valid.  |alias_urls| indicates URLs that redirect
   // to the same URL to be preloaded.  |child_route_id_pair| identifies the
@@ -97,10 +101,10 @@ class PrerenderManager : public base::RefCountedThreadSafe<PrerenderManager> {
   // navigates to it. This must be called on the UI thread.
   void RecordTimeUntilUsed(base::TimeDelta time_until_used);
 
-  base::TimeDelta max_prerender_age() const { return max_prerender_age_; }
-  void set_max_prerender_age(base::TimeDelta td) { max_prerender_age_ = td; }
-  unsigned int max_elements() const { return max_elements_; }
-  void set_max_elements(unsigned int num) { max_elements_ = num; }
+  base::TimeDelta max_prerender_age() const;
+  void set_max_prerender_age(base::TimeDelta max_age);
+  unsigned int max_elements() const;
+  void set_max_elements(unsigned int num);
 
   // Returns whether prerendering is currently enabled for this manager.
   // Must be called on the UI thread.
@@ -137,8 +141,6 @@ class PrerenderManager : public base::RefCountedThreadSafe<PrerenderManager> {
 
  protected:
   struct PendingContentsData;
-
-  virtual ~PrerenderManager();
 
   void SetPrerenderContentsFactory(
       PrerenderContents::Factory* prerender_contents_factory);
