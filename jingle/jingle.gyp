@@ -14,6 +14,8 @@
       'sources': [
         'glue/channel_socket_adapter.cc',
         'glue/channel_socket_adapter.h',
+        'glue/pseudotcp_adapter.cc',
+        'glue/pseudotcp_adapter.h',
         'glue/stream_socket_adapter.cc',
         'glue/stream_socket_adapter.h',
         'glue/thread_wrapper.cc',
@@ -24,9 +26,11 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../third_party/libjingle/libjingle.gyp:libjingle',
+        '../third_party/libjingle/libjingle.gyp:libjingle_p2p',
       ],
       'export_dependent_settings': [
         '../third_party/libjingle/libjingle.gyp:libjingle',
+        '../third_party/libjingle/libjingle.gyp:libjingle_p2p',
       ],
     },
     # A library for sending and receiving peer-issued notifications.
@@ -149,6 +153,7 @@
         'glue/channel_socket_adapter_unittest.cc',
         'glue/jingle_glue_mock_objects.cc',
         'glue/jingle_glue_mock_objects.h',
+        'glue/pseudotcp_adapter_unittest.cc',
         'glue/stream_socket_adapter_unittest.cc',
         'glue/thread_wrapper_unittest.cc',
         'notifier/base/chrome_async_socket_unittest.cc',
