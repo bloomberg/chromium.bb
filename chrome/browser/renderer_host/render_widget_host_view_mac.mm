@@ -32,7 +32,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/common/edit_command.h"
-#include "content/common/gpu_messages.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/view_messages.h"

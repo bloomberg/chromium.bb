@@ -89,7 +89,7 @@
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/common/child_process_info.h"
 #include "content/common/child_process_messages.h"
-#include "content/common/gpu_messages.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "content/common/notification_service.h"
 #include "content/common/process_watcher.h"
 #include "content/common/resource_messages.h"

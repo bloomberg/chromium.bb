@@ -8,8 +8,8 @@
 
 #include "base/threading/non_thread_safe.h"
 #include "content/browser/browser_child_process_host.h"
-#include "content/common/gpu_feature_flags.h"
-#include "content/common/gpu_process_launch_causes.h"
+#include "content/common/gpu/gpu_feature_flags.h"
+#include "content/common/gpu/gpu_process_launch_causes.h"
 
 namespace IPC {
 class Message;

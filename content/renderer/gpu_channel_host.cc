@@ -5,7 +5,7 @@
 #include "content/renderer/gpu_channel_host.h"
 
 #include "content/common/child_process.h"
-#include "content/common/gpu_messages.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "content/renderer/command_buffer_proxy.h"
 #include "content/renderer/gpu_video_service_host.h"
 #include "content/renderer/render_thread.h"

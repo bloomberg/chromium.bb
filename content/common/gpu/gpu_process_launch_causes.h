@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_PROCESS_LAUNCH_CAUSES_H_
-#define CONTENT_COMMON_GPU_PROCESS_LAUNCH_CAUSES_H_
+#ifndef CONTENT_COMMON_GPU_GPU_PROCESS_LAUNCH_CAUSES_H_
+#define CONTENT_COMMON_GPU_GPU_PROCESS_LAUNCH_CAUSES_H_
 #pragma once
 
 namespace content {
 
+// If you change this enum you also need to update
+// tools/histograms/histograms.xml.
 enum CauseForGpuLaunch {
   CAUSE_FOR_GPU_LAUNCH_ABOUT_GPUCRASH,
   CAUSE_FOR_GPU_LAUNCH_ABOUT_GPUHANG,
@@ -21,4 +23,4 @@ enum CauseForGpuLaunch {
 }  // namespace content
 
 
-#endif  // CONTENT_COMMON_GPU_PROCESS_LAUNCH_CAUSES_H_
+#endif  // CONTENT_COMMON_GPU_GPU_PROCESS_LAUNCH_CAUSES_H_

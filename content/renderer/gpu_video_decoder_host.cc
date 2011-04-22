@@ -4,7 +4,7 @@
 
 #include "content/renderer/gpu_video_decoder_host.h"
 
-#include "content/common/gpu_messages.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "content/common/message_router.h"
 #include "media/base/pipeline.h"
 #include "media/video/video_decode_context.h"

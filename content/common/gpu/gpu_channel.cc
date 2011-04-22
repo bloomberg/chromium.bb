@@ -14,8 +14,8 @@
 #include "content/common/child_process.h"
 #include "content/common/content_client.h"
 #include "content/common/content_switches.h"
-#include "content/common/gpu_messages.h"
 #include "content/common/gpu/gpu_channel_manager.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_video_service.h"
 #include "content/common/gpu/transport_texture.h"
  

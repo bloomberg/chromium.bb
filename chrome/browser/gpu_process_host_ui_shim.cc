@@ -19,7 +19,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/content_switches.h"
-#include "content/common/gpu_messages.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "gpu/common/gpu_trace_event.h"
 #include "ui/gfx/gl/gl_context.h"
 

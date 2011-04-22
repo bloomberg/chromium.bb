@@ -13,7 +13,7 @@
 #if !defined(OS_MACOSX)
 
 #include "base/message_loop.h"
-#include "content/common/gpu_messages.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "content/renderer/renderer_gl_context.h"
 #include "content/renderer/transport_texture_service.h"
 

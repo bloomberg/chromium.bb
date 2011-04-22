@@ -20,7 +20,7 @@
 #include "content/common/file_system_messages.h"
 #include "content/common/file_utilities_messages.h"
 #include "content/common/geolocation_messages.h"
-#include "content/common/gpu_messages.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "content/common/indexed_db_messages.h"
 #include "content/common/mime_registry_messages.h"
 #include "content/common/p2p_messages.h"

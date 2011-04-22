@@ -17,7 +17,7 @@
 #include "build/build_config.h"
 #include "content/common/child_thread.h"
 #include "content/common/css_colors.h"
-#include "content/common/gpu_process_launch_causes.h"
+#include "content/common/gpu/gpu_process_launch_causes.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/gfx/native_widget_types.h"
 

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "content/browser/browser_message_filter.h"
-#include "content/common/gpu_process_launch_causes.h"
+#include "content/common/gpu/gpu_process_launch_causes.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GpuProcessHost;

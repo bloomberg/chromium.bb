@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/shared_memory.h"
-#include "content/common/gpu_messages.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "media/video/picture.h"

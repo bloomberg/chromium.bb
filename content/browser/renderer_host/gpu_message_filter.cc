@@ -12,7 +12,7 @@
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/gpu_process_host.h"
-#include "content/common/gpu_messages.h"
+#include "content/common/gpu/gpu_messages.h"
 
 GpuMessageFilter::GpuMessageFilter(int render_process_id)
     : gpu_host_id_(0),

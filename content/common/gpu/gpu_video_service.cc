@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "content/common/gpu/gpu_channel.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_video_decoder.h"
 #include "content/common/gpu/gpu_video_service.h"
-#include "content/common/gpu_messages.h"
 
 struct GpuVideoService::GpuVideoDecoderInfo {
   scoped_refptr<GpuVideoDecoder> decoder;

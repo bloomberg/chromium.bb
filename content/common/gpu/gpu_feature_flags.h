@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_FEATURE_FLAGS_H_
-#define CONTENT_COMMON_GPU_FEATURE_FLAGS_H_
+#ifndef CONTENT_COMMON_GPU_GPU_FEATURE_FLAGS_H_
+#define CONTENT_COMMON_GPU_GPU_FEATURE_FLAGS_H_
 #pragma once
 
 // Provides flags indicating which gpu features are blacklisted for the system
@@ -64,4 +64,4 @@ class GpuFeatureFlags {
   uint32 flags_;
 };
 
-#endif  // CONTENT_COMMON_GPU_FEATURE_FLAGS_H_
+#endif  // CONTENT_COMMON_GPU_GPU_FEATURE_FLAGS_H_

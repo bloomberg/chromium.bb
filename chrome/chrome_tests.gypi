@@ -1902,7 +1902,7 @@
         '../content/browser/tab_contents/render_view_host_manager_unittest.cc',
         '../content/browser/webui/web_ui_unittest.cc',
         '../content/common/font_descriptor_mac_unittest.mm',
-        '../content/common/gpu_feature_flags_unittest.cc',
+        '../content/common/gpu/gpu_feature_flags_unittest.cc',
         '../content/common/gpu/gpu_info_unittest.cc',
         '../content/common/gpu/gpu_video_decoder_unittest.cc',
         '../content/common/mru_cache_unittest.cc',
@@ -3346,7 +3346,6 @@
         '..',
       ],
       'sources': [
-        '<(DEPTH)/content/common/gpu_messages.h',
         '<(DEPTH)/content/gpu/gpu_video_decode_accelerator.cc',
         '<(DEPTH)/content/gpu/gpu_video_decode_accelerator.h',
         '<(DEPTH)/content/gpu/gpu_video_decode_accelerator_tester.cc',

@@ -22,9 +22,9 @@
 #include "base/process.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/gpu/gpu_channel_manager.h"
+#include "content/common/gpu/gpu_feature_flags.h"
 #include "content/common/gpu/gpu_info.h"
-#include "content/common/gpu_feature_flags.h"
-#include "content/common/gpu_process_launch_causes.h"
+#include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/message_router.h"
 #include "ui/gfx/native_widget_types.h"
 
