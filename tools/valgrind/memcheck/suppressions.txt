@@ -4333,6 +4333,32 @@
    fun:_ZN42MalwareDetailsTest_HTTPCacheNoEntries_Test8TestBodyEv
 }
 {
+   bug_79865c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net23ClientSocketPoolManagerC1EPNS_6NetLogEPNS_19ClientSocketFactoryEPNS_12HostResolverEPNS_12CertVerifierEPNS_13DnsRRResolverEPNS_24DnsCertProvenanceCheckerEPNS_18SSLHostInfoFactoryEPNS_12ProxyServiceEPNS_16SSLConfigServiceE
+   fun:_ZN3net18HttpNetworkSessionC1ERKNS0_6ParamsE
+   fun:_ZN21TestURLRequestContext4InitEv
+   fun:_ZN21TestURLRequestContextC1Ev
+   fun:_ZN27TestURLRequestContextGetter20GetURLRequestContextEv
+   fun:_ZN33MalwareDetailsTest_HTTPCache_Test8TestBodyEv
+}
+{
+   bug_79865d
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN3net15SpdySessionPoolC2EPNS_12HostResolverEPNS_16SSLConfigServiceE
+   fun:_ZN3net15SpdySessionPoolC1EPNS_12HostResolverEPNS_16SSLConfigServiceE
+   fun:_ZN3net18HttpNetworkSessionC2ERKNS0_6ParamsE
+   fun:_ZN3net18HttpNetworkSessionC1ERKNS0_6ParamsE
+   fun:_ZN21TestURLRequestContext4InitEv
+   fun:_ZN21TestURLRequestContextC2Ev
+   fun:_ZN21TestURLRequestContextC1Ev
+   fun:_ZN27TestURLRequestContextGetter20GetURLRequestContextEv
+   fun:_ZN33MalwareDetailsTest_HTTPCache_Test8TestBodyEv
+}
+{
    bug_79933
    Memcheck:Leak
    fun:_Znw*
