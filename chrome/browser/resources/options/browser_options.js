@@ -102,6 +102,11 @@ cr.define('options', function() {
         if (event.keyIdentifier == 'Enter')
           homepageField.blur();
       });
+      // Text fields may change widths when the window changes size, so make
+      // sure the suggestion list stays in sync.
+      window.addEventListener('resize', function() {
+        self.autocompleteList_.syncWidthToInput();
+      });
 
       // Ensure that changes are committed when closing the page.
       window.addEventListener('unload', function() {

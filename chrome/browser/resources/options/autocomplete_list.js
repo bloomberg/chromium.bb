@@ -169,6 +169,16 @@ cr.define('options', function() {
     },
 
     /**
+     * Makes sure that the suggestion list matches the width of the input it is.
+     * attached to. Should be called any time the input is resized.
+     */
+    syncWidthToInput: function() {
+      var input = this.targetInput_
+      if (input)
+        this.style.width = input.getBoundingClientRect().width + 'px';
+    },
+
+    /**
      * The text field the autocomplete popup is currently attached to, if any.
      * @return {HTMLElement}
      */
