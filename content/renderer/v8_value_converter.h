@@ -14,9 +14,16 @@ class DictionaryValue;
 // Converts between v8::Value (JavaScript values in the v8 heap) and Chrome's
 // values (from base/values.h). Lists and dictionaries are converted
 // recursively.
+//
+// Only the JSON types (null, boolean, string, number, array, and object) are
+// supported by default. Additional types can be allowed with e.g.
+// set_allow_date(), set_allow_regexp().
 class V8ValueConverter {
  public:
   V8ValueConverter();
+
+  bool allow_undefined() const { return allow_undefined_; }
+  void set_allow_undefined(bool val) { allow_undefined_ = val; }
 
   bool allow_date() const { return allow_date_; }
   void set_allow_date(bool val) { allow_date_ = val; }
@@ -24,27 +31,29 @@ class V8ValueConverter {
   bool allow_regexp() const { return allow_regexp_; }
   void set_allow_regexp(bool val) { allow_regexp_ = val; }
 
-  // Converts Value to v8::Value. Only the JSON types (null, boolean, string,
-  // number, array, and object) are supported. Other types DCHECK and are
-  // replaced with null.
+  // Converts Value to v8::Value. Unsupported types are replaced with null.
+  // If an array or object throws while setting a value, that property or item
+  // is skipped, leaving a hole in the case of arrays.
   v8::Handle<v8::Value> ToV8Value(Value* value,
-                                  v8::Handle<v8::Context> context);
+                                  v8::Handle<v8::Context> context) const;
 
-  // Converts v8::Value to Value. Only the JSON types (null, boolean, string,
-  // number, array, and object) are supported by default, but additional types
-  // can be supported with setters. If a number fits in int32, we will convert
-  // to Value::TYPE_INTEGER instead of Value::TYPE_DOUBLE.
+  // Converts v8::Value to Value. Unsupported types are replaced with null.
+  // If an array or object throws while getting a value, that property or item
+  // is replaced with null.
   Value* FromV8Value(v8::Handle<v8::Value> value,
-                     v8::Handle<v8::Context> context);
+                     v8::Handle<v8::Context> context) const;
 
  private:
-  v8::Handle<v8::Value> ToV8ValueImpl(Value* value);
-  v8::Handle<v8::Value> ToV8Array(ListValue* list);
-  v8::Handle<v8::Value> ToV8Object(DictionaryValue* dictionary);
+  v8::Handle<v8::Value> ToV8ValueImpl(Value* value) const;
+  v8::Handle<v8::Value> ToV8Array(ListValue* list) const;
+  v8::Handle<v8::Value> ToV8Object(DictionaryValue* dictionary) const;
 
-  Value* FromV8ValueImpl(v8::Handle<v8::Value> value);
-  ListValue* FromV8Array(v8::Handle<v8::Array> array);
-  DictionaryValue* FromV8Object(v8::Handle<v8::Object> object);
+  Value* FromV8ValueImpl(v8::Handle<v8::Value> value) const;
+  ListValue* FromV8Array(v8::Handle<v8::Array> array) const;
+  DictionaryValue* FromV8Object(v8::Handle<v8::Object> object) const;
+
+  // If true, we will convert undefined JavaScript values to null.
+  bool allow_undefined_;
 
   // If true, we will convert Date JavaScript objects to doubles.
   bool allow_date_;
