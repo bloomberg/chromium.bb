@@ -669,7 +669,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 		}
 }
 
-static void
+static int
 repaint(void *data)
 {
 	struct wlsc_compositor *ec = data;
@@ -695,6 +695,8 @@ repaint(void *data)
 		ec->repaint_on_timeout = 0;
 	else
 		wl_event_source_timer_update(ec->timer_source, 1);
+
+	return 1;
 }
 
 void
@@ -1636,11 +1638,13 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	return 0;
 }
 
-static void on_term_signal(int signal_number, void *data)
+static int on_term_signal(int signal_number, void *data)
 {
 	struct wlsc_compositor *ec = data;
 
 	wl_display_terminate(ec->wl_display);
+
+	return 1;
 }
 
 int main(int argc, char *argv[])

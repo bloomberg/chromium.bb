@@ -42,7 +42,8 @@ struct evdev_input_device {
 	int min_x, max_x, min_y, max_y;
 };
 
-static void evdev_input_device_data(int fd, uint32_t mask, void *data)
+static int
+evdev_input_device_data(int fd, uint32_t mask, void *data)
 {
 	struct wlsc_compositor *ec;
 	struct evdev_input_device *device = data;
@@ -58,7 +59,7 @@ static void evdev_input_device_data(int fd, uint32_t mask, void *data)
 	ec = (struct wlsc_compositor *)
 		device->master->base.input_device.compositor;
 	if (!ec->focus)
-		return;
+		return 1;
 
 	dx = 0;
 	dy = 0;
@@ -69,7 +70,7 @@ static void evdev_input_device_data(int fd, uint32_t mask, void *data)
 	len = read(fd, &ev, sizeof ev);
 	if (len < 0 || len % sizeof e[0] != 0) {
 		/* FIXME: handle error... reopen device? */;
-		return;
+		return 1;
 	}
 
 	e = ev;
@@ -149,6 +150,8 @@ static void evdev_input_device_data(int fd, uint32_t mask, void *data)
 			      time, x + dx, y + dy);
 	if (absolute_event)
 		notify_motion(&device->master->base.input_device, time, x, y);
+
+	return 1;
 }
 
 #define TEST_BIT(b, i) (b[(i) / 32] & (1 << (i & 31)))

@@ -43,7 +43,7 @@ struct tty {
 	struct wl_event_source *leave_vt_source;
 };
 
-static void on_enter_vt(int signal_number, void *data)
+static int on_enter_vt(int signal_number, void *data)
 {
 	struct tty *tty = data;
 	int ret;
@@ -54,9 +54,12 @@ static void on_enter_vt(int signal_number, void *data)
 	ret = ioctl(tty->fd, KDSETMODE, KD_GRAPHICS);
 	if (ret)
 		fprintf(stderr, "failed to set KD_GRAPHICS mode on console: %m\n");
+
+	return 1;
 }
 
-static void on_leave_vt(int signal_number, void *data)
+static int
+on_leave_vt(int signal_number, void *data)
 {
 	struct tty *tty = data;
 	int ret;
@@ -66,9 +69,11 @@ static void on_leave_vt(int signal_number, void *data)
 	if (ret)
 		fprintf(stderr,
 			"failed to set KD_TEXT mode on console: %m\n");
+
+	return 1;
 }
 
-static void
+static int
 on_tty_input(int fd, uint32_t mask, void *data)
 {
 	struct tty *tty = data;
@@ -76,6 +81,8 @@ on_tty_input(int fd, uint32_t mask, void *data)
 	/* Ignore input to tty.  We get keyboard events from evdev
 	 */
 	tcflush(tty->fd, TCIFLUSH);
+
+	return 1;
 }
 
 struct tty *

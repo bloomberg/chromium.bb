@@ -234,7 +234,7 @@ out:
 	return ret;
 }
 
-static void
+static int
 on_drm_input(int fd, uint32_t mask, void *data)
 {
 	drmEventContext evctx;
@@ -243,6 +243,8 @@ on_drm_input(int fd, uint32_t mask, void *data)
 	evctx.version = DRM_EVENT_CONTEXT_VERSION;
 	evctx.page_flip_handler = page_flip_handler;
 	drmHandleEvent(fd, &evctx);
+
+	return 1;
 }
 
 static int
@@ -578,7 +580,7 @@ udev_event_is_hotplug(struct udev_device *device)
 	return strcmp(udev_list_entry_get_value(hotplug_entry), "1") == 0;
 }
 
-static void
+static int
 udev_drm_event(int fd, uint32_t mask, void *data)
 {
 	struct drm_compositor *ec = data;
@@ -590,6 +592,8 @@ udev_drm_event(int fd, uint32_t mask, void *data)
 		update_outputs(ec);
 
 	udev_device_unref(event);
+
+	return 1;
 }
 
 static EGLImageKHR
