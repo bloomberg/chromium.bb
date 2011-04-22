@@ -42,6 +42,7 @@
 static const char *option_socket_name = NULL;
 static const char *option_background = "background.jpg";
 static const char *option_geometry = "1024x640";
+static int option_idle_time = 5;
 static int option_connector = 0;
 
 static const GOptionEntry option_entries[] = {
@@ -53,6 +54,8 @@ static const GOptionEntry option_entries[] = {
 	  &option_geometry, "Geometry" },
 	{ "socket", 's', 0, G_OPTION_ARG_STRING,
 	  &option_socket_name, "Socket Name" },
+	{ "idle-time", 'i', 0, G_OPTION_ARG_INT,
+	  &option_idle_time, "Screensaver idle time" },
 	{ NULL }
 };
 
@@ -553,6 +556,15 @@ wlsc_surface_update_matrix(struct wlsc_surface *es)
 }
 
 void
+wlsc_compositor_damage_all(struct wlsc_compositor *compositor)
+{
+	struct wlsc_output *output;
+
+	wl_list_for_each(output, &compositor->output_list, link)
+		wlsc_output_damage(output);
+}
+
+void
 wlsc_output_finish_frame(struct wlsc_output *output, int msecs)
 {
 	struct wlsc_compositor *compositor = output->compositor;
@@ -569,6 +581,18 @@ wlsc_output_finish_frame(struct wlsc_output *output, int msecs)
 
 	wl_event_source_timer_update(compositor->timer_source, 5);
 	compositor->repaint_on_timeout = 1;
+}
+
+void
+wlsc_output_damage(struct wlsc_output *output)
+{
+	struct wlsc_compositor *compositor = output->compositor;
+
+	pixman_region32_union_rect(&compositor->damage_region,
+				   &compositor->damage_region,
+				   output->x, output->y,
+				   output->width, output->height);
+	wlsc_compositor_schedule_repaint(compositor);
 }
 
 static void
@@ -598,6 +622,11 @@ wlsc_output_repaint(struct wlsc_output *output)
 	pixman_region32_union(&total_damage, &new_damage,
 			      &output->previous_damage_region);
 	pixman_region32_copy(&output->previous_damage_region, &new_damage);
+
+	if (ec->state == WLSC_COMPOSITOR_SLEEPING) {
+		glClear(GL_COLOR_BUFFER_BIT);
+		return;
+	}
 
 	if (ec->focus)
 		if (output->set_hardware_cursor(output, ec->input_device) < 0)
@@ -703,6 +732,9 @@ void
 wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor)
 {
 	struct wlsc_output *output;
+
+	if (compositor->state == WLSC_COMPOSITOR_SLEEPING)
+		return;
 
 	wl_list_for_each(output, &compositor->output_list, link)
 		output->repaint_needed = 1;
@@ -1031,6 +1063,49 @@ static const struct wl_grab_interface motion_grab_interface = {
 };
 
 void
+wlsc_compositor_wake(struct wlsc_compositor *compositor)
+{
+	if (compositor->idle_inhibit)
+		return;
+
+	if (compositor->state == WLSC_COMPOSITOR_SLEEPING) {
+		compositor->state = WLSC_COMPOSITOR_ACTIVE;
+		wlsc_compositor_damage_all(compositor);
+	}
+
+	wl_event_source_timer_update(compositor->idle_source,
+				     option_idle_time * 1000);
+}
+
+static void
+wlsc_compositor_idle_inhibit(struct wlsc_compositor *compositor)
+{
+	wlsc_compositor_wake(compositor);
+	compositor->idle_inhibit++;
+}
+
+static void
+wlsc_compositor_idle_release(struct wlsc_compositor *compositor)
+{
+	compositor->idle_inhibit--;
+	wlsc_compositor_wake(compositor);
+}
+
+static int
+idle_handler(void *data)
+{
+	struct wlsc_compositor *compositor = data;
+
+	if (compositor->idle_inhibit)
+		return 1;
+
+	wlsc_compositor_damage_all(compositor);
+	compositor->state = WLSC_COMPOSITOR_SLEEPING;
+
+	return 1;
+}
+
+void
 notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 {
 	struct wlsc_surface *es;
@@ -1042,6 +1117,8 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 	int32_t sx, sy;
 	int x_valid = 0, y_valid = 0;
 	int min_x = INT_MAX, min_y = INT_MAX, max_x = INT_MIN, max_y = INT_MIN;
+
+	wlsc_compositor_wake(ec);
 
 	wl_list_for_each(output, &ec->output_list, link) {
 		if (output->x <= x && x <= output->x + output->width)
@@ -1136,6 +1213,11 @@ notify_button(struct wl_input_device *device,
 	struct wlsc_surface *surface =
 		(struct wlsc_surface *) device->pointer_focus;
 
+	if (state)
+		wlsc_compositor_idle_inhibit(compositor);
+	else
+		wlsc_compositor_idle_release(compositor);
+
 	if (state && surface && device->grab == NULL) {
 		wlsc_surface_activate(surface, wd, time);
 		wl_input_device_start_grab(device,
@@ -1166,7 +1248,8 @@ terminate_binding(struct wl_input_device *device, uint32_t time,
 {
 	struct wlsc_compositor *compositor = data;
 
-	wl_display_terminate(compositor->wl_display);
+	if (state)
+		wl_display_terminate(compositor->wl_display);
 }
 
 struct wlsc_binding *
@@ -1240,9 +1323,14 @@ notify_key(struct wl_input_device *device,
 	uint32_t *k, *end;
 	struct wlsc_binding *b;
 
+	if (state)
+		wlsc_compositor_idle_inhibit(compositor);
+	else
+		wlsc_compositor_idle_release(compositor);
+
 	wl_list_for_each(b, &compositor->binding_list, link) {
 		if (b->key == key &&
-		    b->modifier == wd->modifier_state && state) {
+		    b->modifier == wd->modifier_state) {
 			b->handler(&wd->input_device,
 				   time, key, 0, state, b->data);
 			break;
@@ -1323,12 +1411,17 @@ notify_keyboard_focus(struct wl_input_device *device,
 		wd->modifier_state = 0;
 		end = device->keys.data + device->keys.size;
 		for (k = device->keys.data; k < end; k++) {
+			wlsc_compositor_idle_inhibit(compositor);
 			update_modifier_state(wd, *k, 1);
 		}
 
 		wl_input_device_set_keyboard_focus(&wd->input_device,
 						   &es->surface, time);
 	} else {
+		end = device->keys.data + device->keys.size;
+		for (k = device->keys.data; k < end; k++)
+			wlsc_compositor_idle_release(compositor);
+
 		wd->modifier_state = 0;
 		wl_input_device_set_keyboard_focus(&wd->input_device,
 						   NULL, time);
@@ -1631,6 +1724,9 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 		return -1;
 
 	loop = wl_display_get_event_loop(ec->wl_display);
+	ec->idle_source = wl_event_loop_add_timer(loop, idle_handler, ec);
+	wl_event_source_timer_update(ec->idle_source, option_idle_time * 1000);
+
 	ec->timer_source = wl_event_loop_add_timer(loop, repaint, ec);
 	pixman_region32_init(&ec->damage_region);
 	wlsc_compositor_schedule_repaint(ec);

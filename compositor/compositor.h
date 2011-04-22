@@ -90,6 +90,11 @@ struct wlsc_sprite {
 	int height;
 };
 
+enum {
+	WLSC_COMPOSITOR_ACTIVE,
+	WLSC_COMPOSITOR_SLEEPING
+};
+
 struct wlsc_compositor {
 	struct wl_compositor compositor;
 
@@ -113,6 +118,10 @@ struct wlsc_compositor {
 	struct wl_list input_device_list;
 	struct wl_list surface_list;
 	struct wl_list binding_list;
+
+	uint32_t state;
+	struct wl_event_source *idle_source;
+	uint32_t idle_inhibit;
 
 	/* Repaint state. */
 	struct wl_event_source *timer_source;
@@ -200,7 +209,15 @@ notify_keyboard_focus(struct wl_input_device *device,
 void
 wlsc_output_finish_frame(struct wlsc_output *output, int msecs);
 void
+wlsc_output_damage(struct wlsc_output *output);
+void
 wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor);
+void
+wlsc_compositor_damage_all(struct wlsc_compositor *compositor);
+void
+wlsc_compositor_unlock(struct wlsc_compositor *compositor);
+void
+wlsc_compositor_wake(struct wlsc_compositor *compositor);
 
 struct wlsc_binding;
 typedef void (*wlsc_binding_handler_t)(struct wl_input_device *device,
