@@ -7,6 +7,7 @@
     # TODO(ncbray): reenable
     # http://code.google.com/p/nativeclient/issues/detail?id=1643
     'nacl_strict_warnings': 0,
+    'p2p_apis%': 1,
   },
   'includes': [
     '../../../build/common.gypi',

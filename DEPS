@@ -3,7 +3,7 @@ vars = {
   "arm_toolchain_version": "4980",
   "x86_toolchain_version": "4980",
 
-  "chrome_rev": "81576",
+  "chrome_rev": "82620",
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "gtest_rev": "364",
   "gyp_rev": "906",
@@ -24,6 +24,8 @@ deps = {
     Var("chromium_trunk") + "/src/chrome/test/pyautolib@" + Var("chrome_rev"),
   "gpu/command_buffer":
     Var("chromium_trunk") + "/src/gpu/command_buffer@" + Var("chrome_rev"),
+  "gpu/common":
+    Var("chromium_trunk") + "/src/gpu/common@" + Var("chrome_rev"),
   "gpu/demos":
     Var("chromium_trunk") + "/src/gpu/demos@" + Var("chrome_rev"),
   "gpu/GLES2":

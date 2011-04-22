@@ -39,8 +39,10 @@ node = env.PPAPIBrowserTester(
     )
 env.Depends(node, dest_copy)
 
+# TODO(nfullagar): nexe's are stalling out when polling __module_ready
+broken = True
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_chrome_extension_test',
                        is_flaky=True, # Don't subject Chrome to our problems.
-                       is_broken=env.PPAPIBrowserTesterIsBroken())
+                       is_broken=broken or env.PPAPIBrowserTesterIsBroken())

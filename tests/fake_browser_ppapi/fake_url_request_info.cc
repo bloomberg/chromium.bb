@@ -1,7 +1,7 @@
 /*
- * Copyright 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/tests/fake_browser_ppapi/fake_url_request_info.h"
@@ -64,6 +64,9 @@ PP_Bool SetProperty(PP_Resource request_id,
       case PP_URLREQUESTPROPERTY_HEADERS:
         NACL_NOTREACHED();
         return PP_FALSE;
+      case PP_URLREQUESTPROPERTY_ALLOWCREDENTIALS:
+      case PP_URLREQUESTPROPERTY_ALLOWCROSSORIGINREQUESTS:
+      case PP_URLREQUESTPROPERTY_CUSTOMCONTENTTRANSFERENCODING:
       case PP_URLREQUESTPROPERTY_CUSTOMREFERRERURL:
       case PP_URLREQUESTPROPERTY_FOLLOWREDIRECTS:
       case PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS:
@@ -86,6 +89,9 @@ PP_Bool SetProperty(PP_Resource request_id,
       case PP_URLREQUESTPROPERTY_HEADERS:
         request->set_headers(str);
         return PP_TRUE;
+      case PP_URLREQUESTPROPERTY_ALLOWCREDENTIALS:
+      case PP_URLREQUESTPROPERTY_ALLOWCROSSORIGINREQUESTS:
+      case PP_URLREQUESTPROPERTY_CUSTOMCONTENTTRANSFERENCODING:
       case PP_URLREQUESTPROPERTY_CUSTOMREFERRERURL:
       case PP_URLREQUESTPROPERTY_FOLLOWREDIRECTS:
       case PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS:
