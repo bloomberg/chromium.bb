@@ -173,6 +173,7 @@ class CloudPrintHtmlDialogDelegate : public HtmlDialogUIDelegate {
   CloudPrintFlowHandler* flow_handler_;
   bool modal_;
   mutable bool owns_flow_handler_;
+  FilePath path_to_file_;
 
   // The parameters needed to display a modal HTML dialog.
   HtmlDialogUI::HtmlDialogParams params_;
@@ -184,6 +185,8 @@ void CreateDialogImpl(const FilePath& path_to_file,
                       const string16& print_job_title,
                       const std::string& file_type,
                       bool modal);
+
+void Delete(const FilePath& path_to_file);
 
 }  // namespace internal_cloud_print_helpers
 

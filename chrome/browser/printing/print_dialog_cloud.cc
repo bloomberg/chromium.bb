@@ -413,7 +413,8 @@ CloudPrintHtmlDialogDelegate::CloudPrintHtmlDialogDelegate(
                                               print_job_title,
                                               file_type)),
       modal_(modal),
-      owns_flow_handler_(true) {
+      owns_flow_handler_(true),
+      path_to_file_(path_to_file) {
   Init(width, height, json_arguments);
 }
 
@@ -489,6 +490,14 @@ void CloudPrintHtmlDialogDelegate::OnDialogClosed(
     const std::string& json_retval) {
   // Get the final dialog size and store it.
   flow_handler_->StoreDialogClientSize();
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kCloudPrintDeleteFile)) {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+        NewRunnableFunction(&internal_cloud_print_helpers::Delete,
+                            path_to_file_));
+  }
+
   // If we're modal we can show the dialog with no browser.
   // End the keep-alive so that Chrome can exit.
   if (!modal_)
@@ -556,6 +565,11 @@ void CreateDialogImpl(const FilePath& path_to_file,
   } else {
     browser::ShowHtmlDialog(NULL, profile, dialog_delegate);
   }
+}
+
+// Provides a runnable function to delete a file.
+void Delete(const FilePath& file_path) {
+  file_util::Delete(file_path, false);
 }
 
 }  // namespace internal_cloud_print_helpers

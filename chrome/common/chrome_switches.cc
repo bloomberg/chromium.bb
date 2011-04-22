@@ -107,21 +107,25 @@ const char kChromeFrame[]                   = "chrome-frame";
 // this version cannot be loaded, Chrome will exit.
 const char kChromeVersion[]                 = "chrome-version";
 
-// The unique id to be used for this cloud print proxy instance.
-const char kCloudPrintProxyId[]             = "cloud-print-proxy-id";
+// Used with kCloudPrintFile.  Tells Chrome to delete the file when
+// finished displaying the print dialog.
+const char kCloudPrintDeleteFile[]          = "cloud-print-delete-file";
 
 // Tells chrome to display the cloud print dialog and upload the
 // specified file for printing.
 const char kCloudPrintFile[]                = "cloud-print-file";
 
-// Used with kCloudPrintFile to specify a title for the resulting print
-// job.
-const char kCloudPrintJobTitle[]            = "cloud-print-job-title";
-
 // Specifies the mime type to be used when uploading data from the
 // file referenced by cloud-print-file.
 // Defaults to "application/pdf" if unspecified.
 const char kCloudPrintFileType[]            = "cloud-print-file-type";
+
+// Used with kCloudPrintFile to specify a title for the resulting print
+// job.
+const char kCloudPrintJobTitle[]            = "cloud-print-job-title";
+
+// The unique id to be used for this cloud print proxy instance.
+const char kCloudPrintProxyId[]             = "cloud-print-proxy-id";
 
 // The URL of the cloud print service to use, overrides any value
 // stored in preferences, and the default.  Only used if the cloud

@@ -28,6 +28,10 @@ namespace switches {
 // in order to avoid dependency problems.
 // TODO(abodenha@chromium.org) Reunify them in some sensible manner.
 
+// Used with kCloudPrintFile.  Tells Chrome to delete the file when
+// finished displaying the print dialog.
+const char kCloudPrintDeleteFile[]          = "cloud-print-delete-file";
+
 // Tells chrome to display the cloud print dialog and upload the
 // specified file for printing.
 const char kCloudPrintFile[]                = "cloud-print-file";
@@ -191,11 +195,8 @@ void HandlePortUi(HWND hwnd, const string16& caption) {
 // Launches the Cloud Print dialog in Chrome.
 // xps_path references a file to print.
 // job_title is the title to be used for the resulting print job.
-// process_handle is set to the handle of the resulting process.
 bool LaunchPrintDialog(const string16& xps_path,
-                       const string16& job_title,
-                       base::ProcessHandle* process_handle) {
-  DCHECK(process_handle != NULL);
+                       const string16& job_title) {
   HANDLE token = NULL;
   if (!OpenThreadToken(GetCurrentThread(),
                       TOKEN_QUERY|TOKEN_DUPLICATE|TOKEN_ASSIGN_PRIMARY,
@@ -227,10 +228,11 @@ bool LaunchPrintDialog(const string16& xps_path,
                                   kXpsMimeType);
   command_line.AppendSwitchNative(switches::kCloudPrintJobTitle,
                                   job_title);
+  command_line.AppendSwitch(switches::kCloudPrintDeleteFile);
   base::LaunchAppAsUser(primary_token_scoped,
                         command_line.command_line_string(),
                         false,
-                        process_handle);
+                        NULL);
   return true;
 }
 
@@ -452,7 +454,6 @@ BOOL WINAPI Monitor2ReadPort(HANDLE, BYTE*, DWORD, DWORD* read_bytes) {
 
 BOOL WINAPI Monitor2EndDocPort(HANDLE port_handle) {
   LOG(INFO) << "Monitor2EndDocPort";
-  HANDLE process_handle = NULL;
   if (!ValidateCurrentUser()) {
     // TODO(abodenha@chromium.org) Abort the print job.
     return FALSE;
@@ -473,16 +474,7 @@ BOOL WINAPI Monitor2EndDocPort(HANDLE port_handle) {
                   &job_title);
     }
     LaunchPrintDialog(port_data->file_path->value().c_str(),
-                      job_title,
-                      &process_handle);
-
-    // Wait for the print dialog process to exit and then delete the file.
-    // TODO(abodenha@chromium.org) Consider launching a thread to handle the
-    // deletion.
-    if (process_handle != NULL) {
-      WaitForSingleObject(process_handle, INFINITE);
-    }
-    file_util::Delete(*(port_data->file_path), false);
+                      job_title);
   }
   if (port_data->printer_handle != NULL) {
     // Tell the spooler that the job is complete.

@@ -47,6 +47,7 @@ extern const char kBrowserCrashTest[];
 extern const char kCheckForUpdateIntervalSec[];
 extern const char kChromeFrame[];
 extern const char kChromeVersion[];
+extern const char kCloudPrintDeleteFile[];
 extern const char kCloudPrintFile[];
 extern const char kCloudPrintJobTitle[];
 extern const char kCloudPrintFileType[];
