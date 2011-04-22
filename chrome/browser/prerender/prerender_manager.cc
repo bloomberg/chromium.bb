@@ -26,6 +26,26 @@
 
 namespace prerender {
 
+namespace {
+
+// Default maximum permitted elements to prerender.
+const unsigned int kDefaultMaxPrerenderElements = 1;
+
+// Default maximum age a prerendered element may have, in seconds.
+const int kDefaultMaxPrerenderAgeSeconds = 30;
+
+// Time window for which we will record windowed PLT's from the last
+// observed link rel=prefetch tag.
+const int kWindowDurationSeconds = 30;
+
+// Time interval at which periodic cleanups are performed.
+const int kPeriodicCleanupIntervalMs = 1000;
+
+// Time interval before a new prerender is allowed.
+const int kMinTimeBetweenPrerendersMs = 500;
+
+}  // namespace
+
 // static
 int PrerenderManager::prerenders_per_session_count_ = 0;
 

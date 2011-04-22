@@ -212,22 +212,6 @@ class PrerenderManager : public base::RefCountedThreadSafe<PrerenderManager> {
       PendingPrerenderList;
   PendingPrerenderList pending_prerender_list_;
 
-  // Default maximum permitted elements to prerender.
-  static const unsigned int kDefaultMaxPrerenderElements = 1;
-
-  // Default maximum age a prerendered element may have, in seconds.
-  static const int kDefaultMaxPrerenderAgeSeconds = 20;
-
-  // Time window for which we will record windowed PLT's from the last
-  // observed link rel=prefetch tag.
-  static const int kWindowDurationSeconds = 30;
-
-  // Time interval at which periodic cleanups are performed.
-  static const int kPeriodicCleanupIntervalMs = 1000;
-
-  // Time interval before a new prerender is allowed.
-  static const int kMinTimeBetweenPrerendersMs = 500;
-
   scoped_ptr<PrerenderContents::Factory> prerender_contents_factory_;
 
   static PrerenderManagerMode mode_;
