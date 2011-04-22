@@ -272,7 +272,7 @@ class WidgetGtk : public Widget,
   CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnButtonRelease, GdkEventButton*);
   CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnFocusIn, GdkEventFocus*);
   CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnFocusOut, GdkEventFocus*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnKeyEvent, GdkEventKey*);
+  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnEventKey, GdkEventKey*);
   CHROMEGTK_CALLBACK_4(WidgetGtk, gboolean, OnQueryTooltip,
                        gint, gint, gboolean, GtkTooltip*);
   CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnScroll, GdkEventScroll*);

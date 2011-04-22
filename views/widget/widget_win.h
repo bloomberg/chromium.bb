@@ -419,10 +419,6 @@ class WidgetWin : public ui::WindowImpl,
   // first ancestor that is a Window.
   static Window* GetWindowImpl(HWND hwnd);
 
-  // Returns the RootView that contains the focused view, or NULL if there is no
-  // focused view.
-  RootView* GetFocusedViewRootView();
-
   // Called after the WM_ACTIVATE message has been processed by the default
   // windows procedure.
   static void PostProcessActivateMessage(WidgetWin* widget,
