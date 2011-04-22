@@ -91,7 +91,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
   // GetVersionStringModifier hits the registry. See http://crbug.com/70380.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   // For stable, this is "". For dev, this is "dev". For beta, this is "beta".
-  // For daily, this is "canary build".
+  // For daily, this is "canary".
   // For Linux Chromium builds, this could be anything depending on the
   // distribution, so always direct those users to dev server urls.
   // If this is an official build, it will always be one of the above.
