@@ -370,6 +370,9 @@ BrowserThemePack* BrowserThemePack::BuildFromExtension(
 scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
     FilePath path, const std::string& expected_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Allow IO on UI thread due to deep-seated theme design issues.
+  // (see http://crbug.com/80206)
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   scoped_refptr<BrowserThemePack> pack(new BrowserThemePack);
   pack->data_pack_.reset(new ui::DataPack);
 
