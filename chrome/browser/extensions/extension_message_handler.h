@@ -12,9 +12,8 @@ class Profile;
 struct ExtensionHostMsg_DomMessage_Params;
 
 // Filters and dispatches extension-related IPC messages that arrive from
-// renderer/extension processes.  This object is created for renderers and also
-// ExtensionHost/BackgroundContents.  Contrast this with ExtensionTabHelper,
-// which is only created for TabContents.
+// renderers. There is one of these objects for each RenderViewHost in Chrome.
+// Contrast this with ExtensionTabHelper, which is only created for TabContents.
 class ExtensionMessageHandler : public RenderViewHostObserver {
  public:
   // |sender| is guaranteed to outlive this object.
