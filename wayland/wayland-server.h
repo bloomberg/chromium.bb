@@ -146,10 +146,6 @@ struct wl_surface {
 	struct wl_list destroy_listener_list;
 };
 
-struct wl_shell {
-	struct wl_object object;
-};
-
 struct wl_grab;
 struct wl_grab_interface {
 	void (*motion)(struct wl_grab *grab,
