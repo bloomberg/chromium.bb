@@ -47,8 +47,18 @@ class FormManagerTest : public RenderViewTest {
                     const std::vector<string16>& labels,
                     const std::vector<string16>& names,
                     const std::vector<string16>& values) {
+    std::vector<string16> control_types(labels.size(), ASCIIToUTF16("text"));
+    ExpectLabelsAndTypes(html, labels, names, values, control_types);
+  }
+
+  void ExpectLabelsAndTypes(const char* html,
+                           const std::vector<string16>& labels,
+                           const std::vector<string16>& names,
+                           const std::vector<string16>& values,
+                           const std::vector<string16>& control_types) {
     ASSERT_EQ(labels.size(), names.size());
     ASSERT_EQ(labels.size(), values.size());
+    ASSERT_EQ(labels.size(), control_types.size());
 
     LoadHTML(html);
 
@@ -71,11 +81,13 @@ class FormManagerTest : public RenderViewTest {
     const std::vector<FormField>& fields = form.fields;
     ASSERT_EQ(labels.size(), fields.size());
     for (size_t i = 0; i < labels.size(); ++i) {
+      int max_length = control_types[i] == ASCIIToUTF16("text") ?
+                       WebInputElement::defaultMaxLength() : 0;
       FormField expected = FormField(labels[i],
                                      names[i],
                                      values[i],
-                                     ASCIIToUTF16("text"),
-                                     WebInputElement::defaultMaxLength(),
+                                     control_types[i],
+                                     max_length,
                                      false);
       EXPECT_TRUE(fields[i].StrictlyEqualsHack(expected))
           << "Expected \"" << expected << "\", got \"" << fields[i] << "\"";
@@ -1259,6 +1271,88 @@ TEST_F(FormManagerTest, LabelsInferredFromTableEmptyTDs) {
       "</TABLE>"
       "</FORM>",
       labels, names, values);
+}
+
+// <script> and <option> tags are excluded when the labels are inferred.
+// Also <!-- comment --> is excluded.
+TEST_F(FormManagerTest, LabelsInferredFromTableWithScriptOptionTagAndComment) {
+  std::vector<string16> labels, names, values, control_types;
+
+  labels.push_back(ASCIIToUTF16("*First Name"));
+  names.push_back(ASCIIToUTF16("firstname"));
+  values.push_back(ASCIIToUTF16("John"));
+  control_types.push_back(ASCIIToUTF16("text"));
+
+  labels.push_back(ASCIIToUTF16("*Last Name"));
+  names.push_back(ASCIIToUTF16("lastname"));
+  values.push_back(ASCIIToUTF16("Smith"));
+  control_types.push_back(ASCIIToUTF16("text"));
+
+  labels.push_back(ASCIIToUTF16("*Country"));
+  names.push_back(ASCIIToUTF16("country"));
+  values.push_back(ASCIIToUTF16("US"));
+  control_types.push_back(ASCIIToUTF16("select-one"));
+
+  labels.push_back(ASCIIToUTF16("*Email"));
+  names.push_back(ASCIIToUTF16("email"));
+  values.push_back(ASCIIToUTF16("john@example.com"));
+  control_types.push_back(ASCIIToUTF16("text"));
+
+  ExpectLabelsAndTypes(
+      "<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+      "<TABLE>"
+      "  <TR>"
+      "    <TD>"
+      "      <SPAN>*</SPAN>"
+      "      <B>First Name</B>"
+      "    </TD>"
+      "    <TD>"
+      "      <SCRIPT> <!-- function test() { alert('ignored as label'); } -->"
+      "      </SCRIPT>"
+      "      <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
+      "    </TD>"
+      "  </TR>"
+      "  <TR>"
+      "    <TD>"
+      "      <SPAN>*</SPAN>"
+      "      <B>Last Name</B>"
+      "    </TD>"
+      "    <TD>"
+      "      <INPUT type=\"text\" id=\"lastname\" value=\"Smith\"/>"
+      "    </TD>"
+      "  </TR>"
+      "  <TR>"
+      "    <TD>"
+      "      <SPAN>*</SPAN>"
+      "      <B>Country</B>"
+      "    </TD>"
+      "    <TD>"
+      "      <SELECT id=\"country\">"
+      "        <OPTION VALUE=\"US\">The value should be ignored as label."
+      "        </OPTION>"
+      "        <OPTION VALUE=\"JP\">JAPAN</OPTION>"
+      "      </SELECT>"
+      "    </TD>"
+      "  </TR>"
+      "  <TR>"
+      "    <TD>"
+      "      <SPAN>*</SPAN>"
+      "      <B>Email</B>"
+      "    </TD>"
+      "    <TD>"
+      "      <!-- This comment should be ignored as inferred label.-->"
+      "      <INPUT type=\"text\" id=\"email\" value=\"john@example.com\"/>"
+      "    </TD>"
+      "  </TR>"
+      "  <TR>"
+      "    <TD></TD>"
+      "    <TD>"
+      "      <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+      "    </TD>"
+      "  </TR>"
+      "</TABLE>"
+      "</FORM>",
+      labels, names, values, control_types);
 }
 
 TEST_F(FormManagerTest, LabelsInferredFromTableLabels) {

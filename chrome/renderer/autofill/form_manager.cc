@@ -73,6 +73,10 @@ bool IsOptionElement(const WebElement& element) {
   return element.hasTagName("option");
 }
 
+bool IsScriptElement(const WebElement& element) {
+  return element.hasTagName("script");
+}
+
 bool IsAutofillableElement(const WebFormControlElement& element) {
   const WebInputElement* input_element = toWebInputElement(&element);
   return IsTextInput(input_element) || IsSelectElement(element);
@@ -84,6 +88,19 @@ string16 FindChildTextInner(const WebNode& node, int depth) {
   string16 element_text;
   if (depth <= 0 || node.isNull())
     return element_text;
+
+  if (node.nodeType() != WebNode::ElementNode &&
+      node.nodeType() != WebNode::TextNode)
+    return element_text;
+
+  // If |node| is WebElement and that has <option> or <script>, ignore the text.
+  // Because this function is only used to infer label and those tags should be
+  // excluded.
+  if (node.isElementNode()) {
+    const WebElement element = node.toConst<WebElement>();
+    if (IsOptionElement(element) || IsScriptElement(element))
+      return element_text;
+  }
 
   string16 node_text = node.nodeValue();
   TrimWhitespace(node_text, TRIM_ALL, &node_text);
