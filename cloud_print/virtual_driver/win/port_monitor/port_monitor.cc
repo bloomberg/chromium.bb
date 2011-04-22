@@ -273,7 +273,16 @@ bool GetChromeExePath(FilePath* chrome_path) {
 
   // Chrome doesn't appear to be installed per user.
   // Now check %programfiles(x86)%\google\chrome\application
-  PathService::Get(base::DIR_PROGRAM_FILESX86, &path);
+  // TODO(abodenha@chromium.org) Extend PathService::Get to be able to
+  // return the X86 program files path.  At a minimum, use SHGetKnownFolderPath
+  // instead.
+  wchar_t system_buffer[MAX_PATH] = L"";
+  SHGetFolderPath(NULL,
+                  CSIDL_PROGRAM_FILESX86,
+                  NULL,
+                  SHGFP_TYPE_CURRENT,
+                  system_buffer);
+  path = FilePath(system_buffer);
   path = path.Append(kChromeExePath);
   if (file_util::PathExists(path)) {
     *chrome_path = FilePath(path.value());
