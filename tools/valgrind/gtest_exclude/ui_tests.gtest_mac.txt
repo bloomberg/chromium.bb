@@ -173,9 +173,6 @@ ErrorPageTest.Page404_GoBack
 # > connect /var/tmp/ChromeTestingInterface: Connection refused
 NamedInterfaceTest.BasicNamedInterface
 
-# Fails a Check most of the time, see http://crbug.com/74473
-UILayoutTest.MediaUILayoutTest
-
 # Fails to start the browser, see http://crbug.com/75249
 AutomationProxyTest.AcceleratorNewTab
 HistoryTester.VerifyHistoryLength2
