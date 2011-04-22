@@ -198,6 +198,8 @@
       '-find_in_page.FindMatchTests.testSearchInPDF',
       # Importer tests are invalid on chromeos since chrome is the only browser
       '-imports',
+      # Flaky: crosbug.com/14439
+      '-instant.InstantSettingsTest.testEnableDisableInstant',
       # crbug.com/70694
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
@@ -251,7 +253,6 @@
       '-history.HistoryTest.testFtpHistory',
       '-history.HistoryTest.testHttpsHistory',
       '-https.HTTPSTest.testSSLPageBasic',
-      '-instant',
       '-notifications',
       '-omnibox.OmniboxTest.testContentHistory',
       '-omnibox.OmniboxTest.testDifferentTypesOfResults',
