@@ -535,6 +535,7 @@ void BrowserTitlebar::UpdateCustomFrame(bool use_custom_frame) {
       gtk_widget_hide(titlebar_right_buttons_vbox_);
   }
   UpdateTitlebarAlignment();
+  UpdateMaximizeRestoreVisibility();
 }
 
 void BrowserTitlebar::UpdateTitleAndIcon() {
