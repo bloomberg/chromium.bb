@@ -53,24 +53,16 @@ class SyncerThread2Test : public testing::Test {
   };
 
   virtual void SetUp() {
-    syncdb_.SetUp();
-    syncer_ = new MockSyncer();
-    delay_ = NULL;
-    registrar_.reset(MockModelSafeWorkerRegistrar::PassiveBookmarks());
-    connection_.reset(new MockConnectionManager(syncdb_.manager(), "Test"));
-    connection_->SetServerReachable();
-    context_ = new SyncSessionContext(connection_.get(), syncdb_.manager(),
-        registrar_.get(), std::vector<SyncEngineEventListener*>());
-    context_->set_notifications_enabled(true);
-    context_->set_account_name("Test");
-    syncer_thread_.reset(new SyncerThread(context_, syncer_));
-  }
+    syncable::ModelTypeBitSet model_types;
+    model_types[syncable::BOOKMARKS] = true;
+    model_types[syncable::AUTOFILL] = true;
+    model_types[syncable::THEMES] = true;
 
-  virtual void SetUpWithTypes(syncable::ModelTypeBitSet types) {
     syncdb_.SetUp();
     syncer_ = new MockSyncer();
     delay_ = NULL;
-    registrar_.reset(MockModelSafeWorkerRegistrar::PassiveForTypes(types));
+    registrar_.reset(MockModelSafeWorkerRegistrar::PassiveForTypes(
+        model_types));
     connection_.reset(new MockConnectionManager(syncdb_.manager(), "Test"));
     connection_->SetServerReachable();
     context_ = new SyncSessionContext(connection_.get(), syncdb_.manager(),
@@ -297,7 +289,6 @@ TEST_F(SyncerThread2Test, MultipleConfigWithBackingOff) {
   syncable::ModelTypeBitSet model_types1, model_types2;
   model_types1[syncable::BOOKMARKS] = true;
   model_types2[syncable::AUTOFILL] = true;
-  SetUpWithTypes(model_types1 | model_types2);
   base::WaitableEvent done(false, false);
   base::WaitableEvent done1(false, false);
   base::WaitableEvent* dummy = NULL;

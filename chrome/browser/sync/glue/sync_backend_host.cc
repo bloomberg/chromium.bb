@@ -427,6 +427,8 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
   // complete, the configure_state_.ready_task_ is run via an
   // OnInitializationComplete notification.
 
+  VLOG(1) << "Syncer in config mode. SBH executing"
+          << "FinishConfigureDataTypesOnFrontendLoop";
   if (pending_config_mode_state_->deleted_type) {
     core_thread_.message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(core_.get(),
