@@ -128,9 +128,14 @@
     </div>
   </div>
   <div id="mainview">
-      <p id="loading" i18n-content="loading"></p>
       <p id="no-plugin" class="hidden" i18n-values=".innerHTML:noPlugin"></p>
       <p id="preview-failed" class="hidden" i18n-content="previewFailed"></p>
+      <div id="dancing-dots" class="invisible">
+        <div id="dancing-dots-text">
+          <span i18n-content="loading"></span>
+          <span><span>.</span><span>.</span><span>.</span></span>
+        </div>
+      </div>
   </div>
 </body>
 </html>

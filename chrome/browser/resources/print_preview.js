@@ -307,6 +307,7 @@ function printFile() {
  * Asks the browser to generate a preview PDF based on current print settings.
  */
 function requestPrintPreview() {
+  $('dancing-dots').classList.remove('invisible');
   chrome.send('getPreview', [getSettingsJSON()]);
 }
 
@@ -359,7 +360,6 @@ function setColor(color) {
  * Called from PrintPreviewMessageHandler::OnPrintPreviewFailed().
  */
 function printPreviewFailed() {
-  $('loading').classList.add('hidden');
   $('preview-failed').classList.remove('hidden');
 
   var pdfViewer = $('pdf-viewer');
@@ -375,6 +375,8 @@ function onPDFLoad() {
     $('pdf-viewer').fitToWidth();
   else
     $('pdf-viewer').fitToHeight();
+
+  $('dancing-dots').classList.add('invisible');
 }
 
 /**
@@ -427,8 +429,6 @@ function createPDFPlugin() {
     pdfViewer.grayscale(!isColor());
     return;
   }
-
-  $('loading').classList.add('hidden');
 
   var pdfPlugin = document.createElement('embed');
   pdfPlugin.setAttribute('id', 'pdf-viewer');
