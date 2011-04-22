@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/content_setting_bubble_model.h"
-#include "chrome/browser/content_setting_image_model.h"
+#include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
+#include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -128,7 +128,7 @@ void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event) {
   if (!HitTest(event.location()))
     return;
 
-  TabContents* tab_contents = parent_->GetTabContentsWrapper()->tab_contents();
+  TabContentsWrapper* tab_contents = parent_->GetTabContentsWrapper();
   if (!tab_contents)
     return;
 
@@ -146,7 +146,7 @@ void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event) {
       new ContentSettingBubbleContents(
           ContentSettingBubbleModel::CreateContentSettingBubbleModel(
               tab_contents, profile_, content_settings_type),
-          profile_, tab_contents);
+          profile_, tab_contents->tab_contents());
   bubble_ = Bubble::Show(GetWidget(), screen_bounds, BubbleBorder::TOP_RIGHT,
                          bubble_contents, this);
   bubble_contents->set_bubble(bubble_);

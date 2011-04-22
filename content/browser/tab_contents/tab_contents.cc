@@ -6,7 +6,6 @@
 
 #include <cmath>
 
-#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
@@ -14,7 +13,6 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/blocked_content_container.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/character_encoding.h"
@@ -239,8 +237,6 @@ TabContents::TabContents(Profile* profile,
       upload_size_(0),
       upload_position_(0),
       received_page_title_(false),
-      blocked_contents_(NULL),
-      all_contents_blocked_(false),
       displayed_insecure_content_(false),
       capturing_contents_(false),
       is_being_destroyed_(false),
@@ -330,10 +326,6 @@ TabContents::~TabContents() {
   // some of these to close.  CloseWindows is async, so it might get called
   // twice before it runs.
   CloseConstrainedWindows();
-
-  // Close all blocked contents.
-  if (blocked_contents_)
-    blocked_contents_->Destroy();
 
   // Notify any observer that have a reference on this tab contents.
   NotificationService::current()->Notify(
@@ -811,41 +803,15 @@ void TabContents::BlockTabContent(bool blocked) {
     delegate_->SetTabContentBlocked(this, blocked);
 }
 
-
-void TabContents::AddOrBlockNewContents(TabContents* new_contents,
-                                        WindowOpenDisposition disposition,
-                                        const gfx::Rect& initial_pos,
-                                        bool user_gesture) {
-  if (all_contents_blocked_) {
-    if (!blocked_contents_)
-      blocked_contents_ = new BlockedContentContainer(this);
-    blocked_contents_->AddTabContents(
-        new_contents, disposition, initial_pos, user_gesture);
-    return;
-  }
-
+void TabContents::AddNewContents(TabContents* new_contents,
+                                 WindowOpenDisposition disposition,
+                                 const gfx::Rect& initial_pos,
+                                 bool user_gesture) {
   if (!delegate_)
     return;
 
-  if ((disposition == NEW_POPUP) && !user_gesture &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisablePopupBlocking)) {
-    // Unrequested popups from normal pages are constrained unless they're in
-    // the whitelist.  The popup owner will handle checking this.
-    delegate_->GetConstrainingContents(this)->AddPopup(
-        new_contents, initial_pos, user_gesture);
-  } else {
-    AddNewContents(new_contents, disposition, initial_pos, user_gesture);
-  }
-
-  // TODO(pkasting): Why is this necessary?
-  PopupNotificationVisibilityChanged(blocked_contents_ != NULL);
-}
-
-void TabContents::PopupNotificationVisibilityChanged(bool visible) {
-  if (is_being_destroyed_)
-    return;
-  content_settings_delegate_->SetPopupsBlocked(visible);
+  delegate_->AddNewContents(this, new_contents, disposition, initial_pos,
+                            user_gesture);
 }
 
 gfx::NativeView TabContents::GetContentNativeView() const {
@@ -1031,13 +997,6 @@ void TabContents::WillClose(ConstrainedWindow* window) {
   }
 }
 
-void TabContents::WillCloseBlockedContentContainer(
-    BlockedContentContainer* container) {
-  DCHECK(blocked_contents_ == container);
-  blocked_contents_ = NULL;
-  PopupNotificationVisibilityChanged(false);
-}
-
 void TabContents::EmailPageLocation() {
   std::string title = EscapeQueryParamValue(UTF16ToUTF8(GetTitle()), false);
   std::string page_url = EscapeQueryParamValue(GetURL().spec(), false);
@@ -1065,19 +1024,6 @@ void TabContents::ResetOverrideEncoding() {
 
 void TabContents::WindowMoveOrResizeStarted() {
   render_view_host()->WindowMoveOrResizeStarted();
-}
-
-void TabContents::SetAllContentsBlocked(bool value) {
-  if (all_contents_blocked_ == value)
-    return;
-
-  all_contents_blocked_ = value;
-  if (!all_contents_blocked_ && blocked_contents_) {
-    std::vector<TabContents*> blocked;
-    blocked_contents_->GetBlockedContents(&blocked);
-    for (size_t i = 0; i < blocked.size(); ++i)
-      blocked_contents_->LaunchForContents(blocked[i]);
-  }
 }
 
 void TabContents::LogNewTabTime(const std::string& event_name) {
@@ -1400,52 +1346,6 @@ void TabContents::SetIsLoading(bool is_loading,
       det);
 }
 
-void TabContents::AddNewContents(TabContents* new_contents,
-                                 WindowOpenDisposition disposition,
-                                 const gfx::Rect& initial_pos,
-                                 bool user_gesture) {
-    new_contents->DisassociateFromPopupCount();
-    delegate_->AddNewContents(this, new_contents, disposition, initial_pos,
-                              user_gesture);
-    NotificationService::current()->Notify(
-        NotificationType::TAB_ADDED,
-        Source<TabContentsDelegate>(delegate_),
-        Details<TabContents>(this));
-}
-
-void TabContents::AddPopup(TabContents* new_contents,
-                           const gfx::Rect& initial_pos,
-                           bool user_gesture) {
-  // A page can't spawn popups (or do anything else, either) until its load
-  // commits, so when we reach here, the popup was spawned by the
-  // NavigationController's last committed entry, not the active entry.  For
-  // example, if a page opens a popup in an onunload() handler, then the active
-  // entry is the page to be loaded as we navigate away from the unloading
-  // page.  For this reason, we can't use GetURL() to get the opener URL,
-  // because it returns the active entry.
-  NavigationEntry* entry = controller_.GetLastCommittedEntry();
-  GURL creator = entry ? entry->virtual_url() : GURL::EmptyGURL();
-
-  if (creator.is_valid() &&
-      profile()->GetHostContentSettingsMap()->GetContentSetting(
-          creator, CONTENT_SETTINGS_TYPE_POPUPS, "") == CONTENT_SETTING_ALLOW) {
-    AddNewContents(new_contents, NEW_POPUP, initial_pos, user_gesture);
-  } else {
-    if (!blocked_contents_)
-      blocked_contents_ = new BlockedContentContainer(this);
-    // Call blocked_contents_->AddTabContents with user_gesture == true
-    // so that the contents will not get blocked again.
-    // TODO(stevenjb): Remove user_gesture parameter from
-    // BlockedContentContainer::AddTabContents()?
-    blocked_contents_->AddTabContents(new_contents,
-                                      NEW_POPUP,
-                                      initial_pos,
-                                      true);  // user gesture
-    content_settings_delegate_->OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS,
-                                                 std::string());
-  }
-}
-
 void TabContents::ExpireInfoBars(
     const NavigationController::LoadCommittedDetails& details) {
   // Only hide InfoBars when the user has done something that makes the main
@@ -1549,12 +1449,6 @@ void TabContents::DidNavigateMainFramePostCommit(
   // Clear all page actions, blocked content notifications and browser actions
   // for this tab, unless this is an in-page navigation.
   if (!details.is_in_page) {
-    // Close blocked popups.
-    if (blocked_contents_) {
-      blocked_contents_->Destroy();
-      blocked_contents_ = NULL;
-    }
-
     // Clear "blocked" flags.
     content_settings_delegate_->ClearBlockedContentSettingsExceptForCookies();
     content_settings_delegate_->GeolocationDidNavigate(details);

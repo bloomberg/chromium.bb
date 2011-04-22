@@ -130,7 +130,7 @@ class InstantController : public InstantLoaderDelegate {
 
   // Does cleanup after the preview contents has been added to the tabstrip.
   // Invoke this if you explicitly invoke ReleasePreviewContents.
-  void CompleteRelease(TabContents* tab);
+  void CompleteRelease(TabContentsWrapper* tab);
 
   // TabContents the match is being shown for.
   TabContentsWrapper* tab_contents() const { return tab_contents_; }

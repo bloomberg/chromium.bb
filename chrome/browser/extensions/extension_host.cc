@@ -629,7 +629,7 @@ void ExtensionHost::ShowCreatedWindow(int route_id,
   TabContents* associated_contents = associated_tab_contents();
   if (associated_contents &&
       associated_contents->profile() == contents->profile()) {
-    associated_contents->AddOrBlockNewContents(
+    associated_contents->AddNewContents(
         contents, disposition, initial_pos, user_gesture);
     return;
   }

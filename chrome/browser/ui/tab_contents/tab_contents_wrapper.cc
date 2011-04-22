@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
+#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
@@ -59,6 +60,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   autocomplete_history_manager_.reset(new AutocompleteHistoryManager(contents));
   autofill_manager_.reset(new AutofillManager(contents));
   automation_tab_helper_.reset(new AutomationTabHelper(contents));
+  blocked_content_tab_helper_.reset(new BlockedContentTabHelper(this));
   download_tab_helper_.reset(new DownloadTabHelper(contents));
   extension_tab_helper_.reset(new ExtensionTabHelper(this));
   find_tab_helper_.reset(new FindTabHelper(contents));

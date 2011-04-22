@@ -72,6 +72,7 @@
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/tabs/tab_finder.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -2892,10 +2893,42 @@ void Browser::AddNewContents(TabContents* source,
                              WindowOpenDisposition disposition,
                              const gfx::Rect& initial_pos,
                              bool user_gesture) {
-  // No code for this yet
+  // No code for this yet.
   DCHECK(disposition != SAVE_TO_DISK);
   // Can't create a new contents for the current tab - invalid case.
   DCHECK(disposition != CURRENT_TAB);
+
+  TabContentsWrapper* source_wrapper = NULL;
+  BlockedContentTabHelper* source_blocked_content = NULL;
+  TabContentsWrapper* new_wrapper = new TabContentsWrapper(new_contents);
+  if (source) {
+    source_wrapper = TabContentsWrapper::GetCurrentWrapperForContents(source);
+    source_blocked_content = source_wrapper->blocked_content_tab_helper();
+  }
+
+  if (source_wrapper) {
+    // Handle blocking of all contents.
+    if (source_blocked_content->all_contents_blocked()) {
+      source_blocked_content->AddTabContents(new_wrapper,
+                                             disposition,
+                                             initial_pos,
+                                             user_gesture);
+      return;
+    }
+
+    // Handle blocking of popups.
+    if ((disposition == NEW_POPUP) && !user_gesture &&
+        !CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisablePopupBlocking)) {
+      // Unrequested popups from normal pages are constrained unless they're in
+      // the whitelist.  The popup owner will handle checking this.
+      GetConstrainingContents(source_wrapper)->blocked_content_tab_helper()->
+          AddPopup(new_wrapper, initial_pos, user_gesture);
+      return;
+    }
+
+    new_contents->DisassociateFromPopupCount();
+  }
 
   // TODO(beng): This belongs behind the platform-specific View interface.
   //             That's why it's there. http://crbug.com/78853
@@ -2915,11 +2948,11 @@ void Browser::AddNewContents(TabContents* source,
   }
 #endif
 
-  TabContentsWrapper* wrapper = new TabContentsWrapper(new_contents);
-  browser::NavigateParams params(this, wrapper);
+  browser::NavigateParams params(this, new_wrapper);
   params.source_contents =
-      tabstrip_model()->GetTabContentsAt(
-          tabstrip_model()->GetWrapperIndex(source));
+      source ? tabstrip_model()->GetTabContentsAt(
+                   tabstrip_model()->GetWrapperIndex(source))
+             : NULL;
   params.disposition = disposition;
   params.window_bounds = initial_pos;
   // If we create a popup or panel from a non user-gesture, don't activate
@@ -2929,6 +2962,13 @@ void Browser::AddNewContents(TabContents* source,
   else
     params.window_action = browser::NavigateParams::SHOW_WINDOW;
   browser::Navigate(&params);
+
+  if (source) {
+    NotificationService::current()->Notify(
+      NotificationType::TAB_ADDED,
+      Source<TabContentsDelegate>(source->delegate()),
+      Details<TabContents>(source));
+  }
 }
 
 void Browser::ActivateContents(TabContents* contents) {
@@ -3191,9 +3231,11 @@ void Browser::OnStartDownload(DownloadItem* download, TabContents* tab) {
   }
 #endif
 
-  // If the download occurs in a new tab, close it
+  // If the download occurs in a new tab, close it.
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab);
   if (tab->controller().IsInitialNavigation() &&
-      GetConstrainingContents(tab) == tab && tab_count() > 1) {
+      GetConstrainingContents(wrapper) == wrapper && tab_count() > 1) {
     CloseContents(tab);
   }
 }
@@ -3323,6 +3365,14 @@ void Browser::ConfirmSetDefaultSearchProvider(
 void Browser::ConfirmAddSearchProvider(const TemplateURL* template_url,
                                        Profile* profile) {
   window()->ConfirmAddSearchProvider(template_url, profile);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Browser, BlockedContentTabHelperDelegate implementation:
+
+TabContentsWrapper* Browser::GetConstrainingContents(
+  TabContentsWrapper* source) {
+  return source;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4188,8 +4238,12 @@ Browser* Browser::GetOrCreateTabbedBrowser(Profile* profile) {
 }
 
 void Browser::SetAsDelegate(TabContentsWrapper* tab, Browser* delegate) {
+  // TabContents...
   tab->tab_contents()->set_delegate(delegate);
   tab->set_delegate(delegate);
+
+  // ...and all the helpers.
+  tab->blocked_content_tab_helper()->set_delegate(delegate);
   tab->search_engine_tab_helper()->set_delegate(delegate);
 }
 
@@ -4322,7 +4376,7 @@ bool Browser::OpenInstant(WindowOpenDisposition disposition) {
         -1,
         instant()->last_transition_type(),
         TabStripModel::ADD_ACTIVE);
-    instant()->CompleteRelease(preview_contents->tab_contents());
+    instant()->CompleteRelease(preview_contents);
     return true;
   }
   // The omnibox currently doesn't use other dispositions, so we don't attempt

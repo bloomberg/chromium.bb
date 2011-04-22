@@ -55,7 +55,6 @@ namespace safe_browsing {
 class ClientSideDetectionHost;
 }
 
-class BlockedContentContainer;
 class WebUI;
 class DownloadItem;
 class Extension;
@@ -348,15 +347,10 @@ class TabContents : public PageNavigator,
       ConstrainedWindowDelegate* delegate);
 
   // Adds a new tab or window with the given already-created contents.
-  // If disposition is NEW_POPUP and user_gesture is false, contents may
-  // be blocked.
-  void AddOrBlockNewContents(TabContents* new_contents,
-                             WindowOpenDisposition disposition,
-                             const gfx::Rect& initial_pos,
-                             bool user_gesture);
-
-  // Called when the blocked popup notification is shown or hidden.
-  virtual void PopupNotificationVisibilityChanged(bool visible);
+  void AddNewContents(TabContents* new_contents,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_pos,
+                      bool user_gesture);
 
   // Returns the number of constrained windows in this tab.  Used by tests.
   size_t constrained_window_count() { return child_windows_.size(); }
@@ -441,9 +435,6 @@ class TabContents : public PageNavigator,
   // Called when a ConstrainedWindow we own is about to be closed.
   void WillClose(ConstrainedWindow* window);
 
-  // Called when a BlockedContentContainer we own is about to be closed.
-  void WillCloseBlockedContentContainer(BlockedContentContainer* container);
-
   // Interstitials -------------------------------------------------------------
 
   // Various other systems need to know about our interstitials.
@@ -504,16 +495,6 @@ class TabContents : public PageNavigator,
   void ResetOverrideEncoding();
 
   void WindowMoveOrResizeStarted();
-
-  // Sets whether all TabContents added by way of |AddNewContents| should be
-  // blocked. Transitioning from all blocked to not all blocked results in
-  // reevaluating any blocked TabContents, which may result in unblocking some
-  // of the blocked TabContents.
-  void SetAllContentsBlocked(bool value);
-
-  BlockedContentContainer* blocked_content_container() const {
-    return blocked_contents_;
-  }
 
   RendererPreferences* GetMutableRendererPrefs() {
     return &renderer_preferences_;
@@ -611,6 +592,9 @@ class TabContents : public PageNavigator,
   // Query the WebUIFactory for the TypeID for the current URL.
   WebUI::TypeID GetWebUITypeForCurrentState();
 
+  // From RenderViewHostDelegate.
+  virtual RenderViewHostDelegate::ContentSettings* GetContentSettingsDelegate();
+
  protected:
   friend class TabContentsObserver;
   friend class TabContentsObserver::Registrar;
@@ -622,7 +606,7 @@ class TabContents : public PageNavigator,
   void AddObserver(TabContentsObserver* observer);
   void RemoveObserver(TabContentsObserver* observer);
 
-  // from RenderViewHostDelegate.
+  // From RenderViewHostDelegate.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
  private:
@@ -693,18 +677,6 @@ class TabContents : public PageNavigator,
   // (but can be null if not applicable). Can be overridden.
   void SetIsLoading(bool is_loading,
                     LoadNotificationDetails* details);
-
-  // Adds a new tab or window with the given already-created contents.
-  // Called from AddOrBlockNewContents or AddPopup.
-  void AddNewContents(TabContents* new_contents,
-                      WindowOpenDisposition disposition,
-                      const gfx::Rect& initial_pos,
-                      bool user_gesture);
-
-  // Adds the incoming |new_contents| to the |blocked_contents_| container.
-  void AddPopup(TabContents* new_contents,
-                const gfx::Rect& initial_pos,
-                bool user_gesture);
 
   // Called by derived classes to indicate that we're no longer waiting for a
   // response. This won't actually update the throbber, but it will get picked
@@ -797,7 +769,6 @@ class TabContents : public PageNavigator,
   virtual RenderViewHostDelegate::View* GetViewDelegate();
   virtual RenderViewHostDelegate::RendererManagement*
       GetRendererManagementDelegate();
-  virtual RenderViewHostDelegate::ContentSettings* GetContentSettingsDelegate();
   virtual RenderViewHostDelegate::SSL* GetSSLDelegate();
   virtual AutomationResourceRoutingDelegate*
       GetAutomationResourceRoutingDelegate();
@@ -1007,12 +978,6 @@ class TabContents : public PageNavigator,
 
   // Character encoding.
   std::string encoding_;
-
-  // Object that holds any blocked TabContents spawned from this TabContents.
-  BlockedContentContainer* blocked_contents_;
-
-  // Should we block all child TabContents this attempts to spawn.
-  bool all_contents_blocked_;
 
   // True if this is a secure page which displayed insecure content.
   bool displayed_insecure_content_;

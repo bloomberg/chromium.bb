@@ -27,6 +27,7 @@ class PrintPreviewMessageHandler;
 class AutocompleteHistoryManager;
 class AutofillManager;
 class AutomationTabHelper;
+class BlockedContentTabHelper;
 class DownloadTabHelper;
 class Extension;
 class ExtensionTabHelper;
@@ -106,6 +107,10 @@ class TabContentsWrapper : public NotificationObserver,
     return automation_tab_helper_.get();
   }
 
+  BlockedContentTabHelper* blocked_content_tab_helper() {
+    return blocked_content_tab_helper_.get();
+  }
+
   DownloadTabHelper* download_tab_helper() {
     return download_tab_helper_.get();
   }
@@ -182,6 +187,7 @@ class TabContentsWrapper : public NotificationObserver,
   scoped_ptr<AutocompleteHistoryManager> autocomplete_history_manager_;
   scoped_ptr<AutofillManager> autofill_manager_;
   scoped_ptr<AutomationTabHelper> automation_tab_helper_;
+  scoped_ptr<BlockedContentTabHelper> blocked_content_tab_helper_;
   scoped_ptr<DownloadTabHelper> download_tab_helper_;
   scoped_ptr<ExtensionTabHelper> extension_tab_helper_;
   scoped_ptr<FindTabHelper> find_tab_helper_;

@@ -68,7 +68,7 @@ void TabContentsView::ShowCreatedWindow(int route_id,
                                         bool user_gesture) {
   TabContents* contents = delegate_view_helper_.GetCreatedWindow(route_id);
   if (contents) {
-    tab_contents()->AddOrBlockNewContents(
+    tab_contents()->AddNewContents(
         contents, disposition, initial_pos, user_gesture);
   }
 }

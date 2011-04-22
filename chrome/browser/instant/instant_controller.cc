@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -260,7 +261,7 @@ void InstantController::CommitCurrentPreview(InstantCommitType type) {
   tab->controller().CopyStateFromAndPrune(
       &tab_contents_->controller(), showing_instant);
   delegate_->CommitInstant(tab);
-  CompleteRelease(tab->tab_contents());
+  CompleteRelease(tab);
 }
 
 void InstantController::SetCommitOnMouseUp() {
@@ -382,8 +383,8 @@ TabContentsWrapper* InstantController::ReleasePreviewContents(
   return tab;
 }
 
-void InstantController::CompleteRelease(TabContents* tab) {
-  tab->SetAllContentsBlocked(false);
+void InstantController::CompleteRelease(TabContentsWrapper* tab) {
+  tab->blocked_content_tab_helper()->SetAllContentsBlocked(false);
 }
 
 TabContentsWrapper* InstantController::GetPreviewContents() {

@@ -19,6 +19,7 @@
 #include "chrome/browser/instant/instant_loader_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
@@ -974,7 +975,7 @@ void InstantLoader::CreatePreviewContents(TabContentsWrapper* tab_contents) {
       new TabContents(
           tab_contents->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   preview_contents_.reset(new TabContentsWrapper(new_contents));
-  new_contents->SetAllContentsBlocked(true);
+  preview_contents_->blocked_content_tab_helper()->SetAllContentsBlocked(true);
   // Propagate the max page id. That way if we end up merging the two
   // NavigationControllers (which happens if we commit) none of the page ids
   // will overlap.

@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/blocked_content_container.h"
+#include "chrome/browser/ui/blocked_content/blocked_content_container.h"
 
+#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/gfx/rect.h"
 
@@ -11,7 +13,7 @@
 const size_t BlockedContentContainer::kImpossibleNumberOfPopups = 30;
 
 struct BlockedContentContainer::BlockedContent {
-  BlockedContent(TabContents* tab_contents,
+  BlockedContent(TabContentsWrapper* tab_contents,
                  WindowOpenDisposition disposition,
                  const gfx::Rect& bounds,
                  bool user_gesture)
@@ -21,19 +23,21 @@ struct BlockedContentContainer::BlockedContent {
         user_gesture(user_gesture) {
   }
 
-  TabContents* tab_contents;
+  TabContentsWrapper* tab_contents;
   WindowOpenDisposition disposition;
   gfx::Rect bounds;
   bool user_gesture;
 };
 
-BlockedContentContainer::BlockedContentContainer(TabContents* owner)
+BlockedContentContainer::BlockedContentContainer(TabContentsWrapper* owner)
     : owner_(owner) {
 }
 
-BlockedContentContainer::~BlockedContentContainer() {}
+BlockedContentContainer::~BlockedContentContainer() {
+  Clear();
+}
 
-void BlockedContentContainer::AddTabContents(TabContents* tab_contents,
+void BlockedContentContainer::AddTabContents(TabContentsWrapper* tab_contents,
                                              WindowOpenDisposition disposition,
                                              const gfx::Rect& bounds,
                                              bool user_gesture) {
@@ -46,15 +50,17 @@ void BlockedContentContainer::AddTabContents(TabContents* tab_contents,
 
   blocked_contents_.push_back(
       BlockedContent(tab_contents, disposition, bounds, user_gesture));
-  tab_contents->set_delegate(this);
-  // Since the new tab_contents will not be showed, call WasHidden to change
+  // TODO(avi): remove once TabContentsDelegate::GetConstrainingContents goes
+  // away.
+  tab_contents->tab_contents()->set_delegate(this);
+  tab_contents->blocked_content_tab_helper()->set_delegate(this);
+  // Since the new tab_contents will not be shown, call WasHidden to change
   // its status on both RenderViewHost and RenderView.
-  tab_contents->WasHidden();
-  if (blocked_contents_.size() == 1)
-    owner_->PopupNotificationVisibilityChanged(true);
+  tab_contents->tab_contents()->WasHidden();
 }
 
-void BlockedContentContainer::LaunchForContents(TabContents* tab_contents) {
+void BlockedContentContainer::LaunchForContents(
+    TabContentsWrapper* tab_contents) {
   // Open the popup.
   for (BlockedContents::iterator i(blocked_contents_.begin());
        i != blocked_contents_.end(); ++i) {
@@ -64,19 +70,20 @@ void BlockedContentContainer::LaunchForContents(TabContents* tab_contents) {
       BlockedContent content(*i);
       blocked_contents_.erase(i);
       i = blocked_contents_.end();
-      tab_contents->set_delegate(NULL);
+      // TODO(avi): remove once TabContentsDelegate::GetConstrainingContents
+      // goes away.
+      tab_contents->tab_contents()->set_delegate(NULL);
+      tab_contents->blocked_content_tab_helper()->set_delegate(NULL);
       // We needn't call WasRestored to change its status because the
       // TabContents::AddNewContents will do it.
-      owner_->AddOrBlockNewContents(tab_contents,
-                                    content.disposition,
-                                    content.bounds,
-                                    content.user_gesture);
+      owner_->tab_contents()->AddNewContents(
+          tab_contents->tab_contents(),
+          content.disposition,
+          content.bounds,
+          content.user_gesture);
       break;
     }
   }
-
-  if (blocked_contents_.empty())
-    Destroy();
 }
 
 size_t BlockedContentContainer::GetBlockedContentsCount() const {
@@ -84,23 +91,24 @@ size_t BlockedContentContainer::GetBlockedContentsCount() const {
 }
 
 void BlockedContentContainer::GetBlockedContents(
-    std::vector<TabContents*>* blocked_contents) const {
+    std::vector<TabContentsWrapper*>* blocked_contents) const {
   DCHECK(blocked_contents);
   for (BlockedContents::const_iterator i(blocked_contents_.begin());
        i != blocked_contents_.end(); ++i)
     blocked_contents->push_back(i->tab_contents);
 }
 
-void BlockedContentContainer::Destroy() {
+void BlockedContentContainer::Clear() {
   for (BlockedContents::iterator i(blocked_contents_.begin());
        i != blocked_contents_.end(); ++i) {
-    TabContents* tab_contents = i->tab_contents;
-    tab_contents->set_delegate(NULL);
+    TabContentsWrapper* tab_contents = i->tab_contents;
+    // TODO(avi): remove once TabContentsDelegate::GetConstrainingContents goes
+    // away.
+    tab_contents->tab_contents()->set_delegate(NULL);
+    tab_contents->blocked_content_tab_helper()->set_delegate(NULL);
     delete tab_contents;
   }
   blocked_contents_.clear();
-  owner_->WillCloseBlockedContentContainer(this);
-  delete this;
 }
 
 // Overridden from TabContentsDelegate:
@@ -109,7 +117,7 @@ void BlockedContentContainer::OpenURLFromTab(TabContents* source,
                                              const GURL& referrer,
                                              WindowOpenDisposition disposition,
                                              PageTransition::Type transition) {
-  owner_->OpenURL(url, referrer, disposition, transition);
+  owner_->tab_contents()->OpenURL(url, referrer, disposition, transition);
 }
 
 void BlockedContentContainer::AddNewContents(TabContents* source,
@@ -117,16 +125,19 @@ void BlockedContentContainer::AddNewContents(TabContents* source,
                                              WindowOpenDisposition disposition,
                                              const gfx::Rect& initial_position,
                                              bool user_gesture) {
-  owner_->AddOrBlockNewContents(
+  owner_->tab_contents()->AddNewContents(
       new_contents, disposition, initial_position, user_gesture);
 }
 
 void BlockedContentContainer::CloseContents(TabContents* source) {
   for (BlockedContents::iterator i(blocked_contents_.begin());
        i != blocked_contents_.end(); ++i) {
-    TabContents* tab_contents = i->tab_contents;
-    if (tab_contents == source) {
-      tab_contents->set_delegate(NULL);
+    TabContentsWrapper* tab_contents = i->tab_contents;
+    if (tab_contents->tab_contents() == source) {
+      // TODO(avi): remove once TabContentsDelegate::GetConstrainingContents
+      // goes away.
+      tab_contents->tab_contents()->set_delegate(NULL);
+      tab_contents->blocked_content_tab_helper()->set_delegate(NULL);
       blocked_contents_.erase(i);
       delete tab_contents;
       break;
@@ -138,7 +149,7 @@ void BlockedContentContainer::MoveContents(TabContents* source,
                                            const gfx::Rect& new_bounds) {
   for (BlockedContents::iterator i(blocked_contents_.begin());
        i != blocked_contents_.end(); ++i) {
-    if (i->tab_contents == source) {
+    if (i->tab_contents->tab_contents() == source) {
       i->bounds = new_bounds;
       break;
     }
@@ -154,5 +165,10 @@ bool BlockedContentContainer::IsPopup(const TabContents* source) const {
 
 TabContents* BlockedContentContainer::GetConstrainingContents(
     TabContents* source) {
+  return owner_->tab_contents();
+}
+
+TabContentsWrapper* BlockedContentContainer::GetConstrainingContents(
+    TabContentsWrapper* source) {
   return owner_;
 }

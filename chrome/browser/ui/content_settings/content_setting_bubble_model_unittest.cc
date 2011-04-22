@@ -1,22 +1,21 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#include "chrome/browser/content_setting_bubble_model.h"
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
+#include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class ContentSettingBubbleModelTest : public RenderViewHostTestHarness {
+class ContentSettingBubbleModelTest : public TabContentsWrapperTestHarness {
  protected:
   ContentSettingBubbleModelTest()
       : ui_thread_(BrowserThread::UI, MessageLoop::current()) {
@@ -27,7 +26,8 @@ class ContentSettingBubbleModelTest : public RenderViewHostTestHarness {
                               bool expect_reload_hint) {
     scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
         ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-           contents(), profile_.get(), CONTENT_SETTINGS_TYPE_GEOLOCATION));
+            contents_wrapper(), profile_.get(),
+            CONTENT_SETTINGS_TYPE_GEOLOCATION));
     const ContentSettingBubbleModel::BubbleContent& bubble_content =
         content_setting_bubble_model->bubble_content();
     EXPECT_TRUE(bubble_content.title.empty());
@@ -51,7 +51,7 @@ TEST_F(ContentSettingBubbleModelTest, ImageRadios) {
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-         contents(), profile_.get(), CONTENT_SETTINGS_TYPE_IMAGES));
+         contents_wrapper(), profile_.get(), CONTENT_SETTINGS_TYPE_IMAGES));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_FALSE(bubble_content.title.empty());
@@ -69,7 +69,7 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-         contents(), profile_.get(), CONTENT_SETTINGS_TYPE_COOKIES));
+         contents_wrapper(), profile_.get(), CONTENT_SETTINGS_TYPE_COOKIES));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_FALSE(bubble_content.title.empty());
@@ -87,7 +87,7 @@ TEST_F(ContentSettingBubbleModelTest, Plugins) {
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-         contents(), profile_.get(), CONTENT_SETTINGS_TYPE_PLUGINS));
+         contents_wrapper(), profile_.get(), CONTENT_SETTINGS_TYPE_PLUGINS));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_FALSE(bubble_content.title.empty());
@@ -125,7 +125,7 @@ TEST_F(ContentSettingBubbleModelTest, MultiplePlugins) {
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-         contents(), profile_.get(), CONTENT_SETTINGS_TYPE_PLUGINS));
+          contents_wrapper(), profile_.get(), CONTENT_SETTINGS_TYPE_PLUGINS));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_EQ(2U, bubble_content.radio_group.radio_items.size());
@@ -191,7 +191,7 @@ TEST_F(ContentSettingBubbleModelTest, FileURL) {
   NavigateAndCommit(GURL(file_url));
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-         contents(), profile_.get(), CONTENT_SETTINGS_TYPE_IMAGES));
+          contents_wrapper(), profile_.get(), CONTENT_SETTINGS_TYPE_IMAGES));
   std::string title =
       content_setting_bubble_model->bubble_content().radio_group.radio_items[0];
   ASSERT_NE(std::string::npos, title.find(file_url));

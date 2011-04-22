@@ -20,8 +20,6 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/content_setting_bubble_model.h"
-#include "chrome/browser/content_setting_image_model.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -32,6 +30,8 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
+#include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/gtk/cairo_cached_surface.h"
@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/gtk/rounded_window.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -1359,14 +1360,14 @@ void LocationBarViewGtk::ContentSettingImageViewGtk::AnimationCanceled(
 
 gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnButtonPressed(
     GtkWidget* sender, GdkEvent* event) {
-  TabContents* tab_contents = parent_->GetTabContents();
+  TabContentsWrapper* tab_contents = parent_->GetTabContentsWrapper();
   if (!tab_contents)
     return TRUE;
   const ContentSettingsType content_settings_type =
       content_setting_image_model_->get_content_settings_type();
   if (content_settings_type == CONTENT_SETTINGS_TYPE_PRERENDER)
     return TRUE;
-  GURL url = tab_contents->GetURL();
+  GURL url = tab_contents->tab_contents()->GetURL();
   std::wstring display_host;
   net::AppendFormattedHost(url,
       UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
@@ -1377,7 +1378,7 @@ gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnButtonPressed(
       sender, this,
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           tab_contents, profile_, content_settings_type),
-      profile_, tab_contents);
+      profile_, tab_contents->tab_contents());
   return TRUE;
 }
 

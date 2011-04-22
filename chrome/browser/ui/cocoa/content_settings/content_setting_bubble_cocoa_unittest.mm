@@ -8,17 +8,21 @@
 
 #include "base/debug/debugger.h"
 #include "base/memory/scoped_nsobject.h"
-#include "chrome/browser/content_setting_bubble_model.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/common/content_settings_types.h"
+#include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
 class DummyContentSettingBubbleModel : public ContentSettingBubbleModel {
  public:
-  DummyContentSettingBubbleModel(ContentSettingsType content_type)
-      : ContentSettingBubbleModel(NULL, NULL, content_type) {
+  DummyContentSettingBubbleModel(TabContentsWrapper* tab_contents,
+                                 Profile* profile,
+                                 ContentSettingsType content_type)
+      : ContentSettingBubbleModel(tab_contents, profile, content_type) {
     RadioGroup radio_group;
     radio_group.default_item = 0;
     radio_group.radio_items.resize(2);
@@ -26,8 +30,23 @@ class DummyContentSettingBubbleModel : public ContentSettingBubbleModel {
   }
 };
 
-class ContentSettingBubbleControllerTest : public CocoaTest {
+class ContentSettingBubbleControllerTest
+    : public TabContentsWrapperTestHarness {
+ public:
+  ContentSettingBubbleControllerTest();
+  virtual ~ContentSettingBubbleControllerTest();
+
+ private:
+  NSAutoreleasePool* pool_;
 };
+
+ContentSettingBubbleControllerTest::ContentSettingBubbleControllerTest()
+    : pool_([[NSAutoreleasePool alloc] init]) {
+}
+
+ContentSettingBubbleControllerTest::~ContentSettingBubbleControllerTest() {
+  [pool_ drain];
+}
 
 // Check that the bubble doesn't crash or leak for any settings type
 TEST_F(ContentSettingBubbleControllerTest, Init) {
@@ -51,7 +70,9 @@ TEST_F(ContentSettingBubbleControllerTest, Init) {
       [parent.get() orderBack:nil];
 
     ContentSettingBubbleController* controller = [ContentSettingBubbleController
-        showForModel:new DummyContentSettingBubbleModel(settingsType)
+        showForModel:new DummyContentSettingBubbleModel(contents_wrapper(),
+                                                        profile(),
+                                                        settingsType)
         parentWindow:parent
          anchoredAt:NSMakePoint(50, 20)];
     EXPECT_TRUE(controller != nil);

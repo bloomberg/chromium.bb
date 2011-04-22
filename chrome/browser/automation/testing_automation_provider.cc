@@ -37,7 +37,6 @@
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/automation/automation_window_tracker.h"
 #include "chrome/browser/automation/ui_controls.h"
-#include "chrome/browser/blocked_content_container.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_storage.h"
 #include "chrome/browser/browser_process.h"
@@ -72,6 +71,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
+#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
@@ -2009,17 +2009,13 @@ void TestingAutomationProvider::GetBlockedPopupCount(int handle, int* count) {
   *count = -1;  // -1 is the error code
   if (tab_tracker_->ContainsHandle(handle)) {
       NavigationController* nav_controller = tab_tracker_->GetResource(handle);
-      TabContents* tab_contents = nav_controller->tab_contents();
+      TabContentsWrapper* tab_contents =
+          TabContentsWrapper::GetCurrentWrapperForContents(
+              nav_controller->tab_contents());
       if (tab_contents) {
-        BlockedContentContainer* container =
-            tab_contents->blocked_content_container();
-        if (container) {
-          *count = static_cast<int>(container->GetBlockedContentsCount());
-        } else {
-          // If we don't have a container, we don't have any blocked popups to
-          // contain!
-          *count = 0;
-        }
+        BlockedContentTabHelper* blocked_content =
+            tab_contents->blocked_content_tab_helper();
+        *count = static_cast<int>(blocked_content->GetBlockedContentsCount());
       }
   }
 }
@@ -3544,35 +3540,37 @@ void TestingAutomationProvider::ClearBrowsingData(
 
 namespace {
 
-  // Get the TabContents from a dictionary of arguments.
-  TabContents* GetTabContentsFromDict(const Browser* browser,
-                                      const DictionaryValue* args,
-                                      std::string* error_message) {
-    int tab_index;
-    if (!args->GetInteger("tab_index", &tab_index)) {
-      *error_message = "Must include tab_index.";
-      return NULL;
-    }
-
-    TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
-    if (!tab_contents) {
-      *error_message = StringPrintf("No tab at index %d.", tab_index);
-      return NULL;
-    }
-    return tab_contents;
-  }
-
-  // Get the TranslateInfoBarDelegate from TabContents.
-  TranslateInfoBarDelegate* GetTranslateInfoBarDelegate(
-      TabContents* tab_contents) {
-    for (size_t i = 0; i < tab_contents->infobar_count(); i++) {
-      InfoBarDelegate* infobar = tab_contents->GetInfoBarDelegateAt(i);
-      if (infobar->AsTranslateInfoBarDelegate())
-        return infobar->AsTranslateInfoBarDelegate();
-    }
-    // No translate infobar.
+// Get the TabContentsWrapper from a dictionary of arguments.
+TabContentsWrapper* GetTabContentsWrapperFromDict(const Browser* browser,
+                                                  const DictionaryValue* args,
+                                                  std::string* error_message) {
+  int tab_index;
+  if (!args->GetInteger("tab_index", &tab_index)) {
+    *error_message = "Must include tab_index.";
     return NULL;
   }
+
+  TabContentsWrapper* tab_contents =
+      browser->GetTabContentsWrapperAt(tab_index);
+  if (!tab_contents) {
+    *error_message = StringPrintf("No tab at index %d.", tab_index);
+    return NULL;
+  }
+  return tab_contents;
+}
+
+// Get the TranslateInfoBarDelegate from TabContents.
+TranslateInfoBarDelegate* GetTranslateInfoBarDelegate(
+    TabContents* tab_contents) {
+  for (size_t i = 0; i < tab_contents->infobar_count(); i++) {
+    InfoBarDelegate* infobar = tab_contents->GetInfoBarDelegateAt(i);
+    if (infobar->AsTranslateInfoBarDelegate())
+      return infobar->AsTranslateInfoBarDelegate();
+  }
+  // No translate infobar.
+  return NULL;
+}
+
 }  // namespace
 
 void TestingAutomationProvider::FindInPage(
@@ -3580,8 +3578,8 @@ void TestingAutomationProvider::FindInPage(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   std::string error_message;
-  TabContents* tab_contents = GetTabContentsFromDict(browser, args,
-                                                     &error_message);
+  TabContentsWrapper* tab_contents =
+      GetTabContentsWrapperFromDict(browser, args, &error_message);
   if (!tab_contents) {
     AutomationJSONReply(this, reply_message).SendError(error_message);
     return;
@@ -3610,7 +3608,7 @@ void TestingAutomationProvider::FindInPage(
         SendError("Must include find_next boolean.");
     return;
   }
-  SendFindRequest(tab_contents,
+  SendFindRequest(tab_contents->tab_contents(),
                   true,
                   search_string,
                   forward,
@@ -3626,13 +3624,14 @@ void TestingAutomationProvider::GetTranslateInfo(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   std::string error_message;
-  TabContents* tab_contents = GetTabContentsFromDict(browser, args,
-                                                     &error_message);
-  if (!tab_contents) {
+  TabContentsWrapper* tab_contents_wrapper =
+      GetTabContentsWrapperFromDict(browser, args, &error_message);
+  if (!tab_contents_wrapper) {
     AutomationJSONReply(this, reply_message).SendError(error_message);
     return;
   }
 
+  TabContents* tab_contents = tab_contents_wrapper->tab_contents();
   // Get the translate bar if there is one and pass it to the observer.
   // The observer will check for null and populate the information accordingly.
   TranslateInfoBarDelegate* translate_bar =
@@ -3661,13 +3660,14 @@ void TestingAutomationProvider::SelectTranslateOption(
     IPC::Message* reply_message) {
   std::string option;
   std::string error_message;
-  TabContents* tab_contents = GetTabContentsFromDict(browser, args,
-                                                     &error_message);
-  if (!tab_contents) {
+  TabContentsWrapper* tab_contents_wrapper =
+      GetTabContentsWrapperFromDict(browser, args, &error_message);
+  if (!tab_contents_wrapper) {
     AutomationJSONReply(this, reply_message).SendError(error_message);
     return;
   }
 
+  TabContents* tab_contents = tab_contents_wrapper->tab_contents();
   TranslateInfoBarDelegate* translate_bar =
       GetTranslateInfoBarDelegate(tab_contents);
   if (!translate_bar) {
@@ -3781,26 +3781,24 @@ void TestingAutomationProvider::GetBlockedPopupsInfo(
     IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
   std::string error_message;
-  TabContents* tab_contents = GetTabContentsFromDict(
+  TabContentsWrapper* tab_contents = GetTabContentsWrapperFromDict(
       browser, args, &error_message);
   if (!tab_contents) {
     reply.SendError(error_message);
     return;
   }
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  BlockedContentContainer* popup_container =
-      tab_contents->blocked_content_container();
+  BlockedContentTabHelper* blocked_content =
+      tab_contents->blocked_content_tab_helper();
   ListValue* blocked_popups_list = new ListValue;
-  if (popup_container) {
-    std::vector<TabContents*> blocked_contents;
-    popup_container->GetBlockedContents(&blocked_contents);
-    for (std::vector<TabContents*>::const_iterator it =
-             blocked_contents.begin(); it != blocked_contents.end(); ++it) {
-      DictionaryValue* item = new DictionaryValue;
-      item->SetString("url", (*it)->GetURL().spec());
-      item->SetString("title", (*it)->GetTitle());
-      blocked_popups_list->Append(item);
-    }
+  std::vector<TabContentsWrapper*> blocked_contents;
+  blocked_content->GetBlockedContents(&blocked_contents);
+  for (std::vector<TabContentsWrapper*>::const_iterator it =
+           blocked_contents.begin(); it != blocked_contents.end(); ++it) {
+    DictionaryValue* item = new DictionaryValue;
+    item->SetString("url", (*it)->tab_contents()->GetURL().spec());
+    item->SetString("title", (*it)->tab_contents()->GetTitle());
+    blocked_popups_list->Append(item);
   }
   return_value->Set("blocked_popups", blocked_popups_list);
   reply.SendSuccess(return_value.get());
@@ -3813,7 +3811,7 @@ void TestingAutomationProvider::UnblockAndLaunchBlockedPopup(
     IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
   std::string error_message;
-  TabContents* tab_contents = GetTabContentsFromDict(
+  TabContentsWrapper* tab_contents = GetTabContentsWrapperFromDict(
       browser, args, &error_message);
   if (!tab_contents) {
     reply.SendError(error_message);
@@ -3825,16 +3823,15 @@ void TestingAutomationProvider::UnblockAndLaunchBlockedPopup(
     return;
   }
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  BlockedContentContainer* content_container =
-      tab_contents->blocked_content_container();
-  if (!content_container ||
-      popup_index >= (int)content_container->GetBlockedContentsCount()) {
+  BlockedContentTabHelper* blocked_content =
+      tab_contents->blocked_content_tab_helper();
+  if (popup_index >= (int)blocked_content->GetBlockedContentsCount()) {
     reply.SendError(StringPrintf("No popup at index %d", popup_index));
     return;
   }
-  std::vector<TabContents*> blocked_contents;
-  content_container->GetBlockedContents(&blocked_contents);
-  content_container->LaunchForContents(blocked_contents[popup_index]);
+  std::vector<TabContentsWrapper*> blocked_contents;
+  blocked_content->GetBlockedContents(&blocked_contents);
+  blocked_content->LaunchForContents(blocked_contents[popup_index]);
   reply.SendSuccess(NULL);
 }
 

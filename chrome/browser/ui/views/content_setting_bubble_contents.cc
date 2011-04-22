@@ -9,11 +9,10 @@
 #endif
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/blocked_content_container.h"
-#include "chrome/browser/content_setting_bubble_model.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/bubble/bubble.h"
 #include "content/browser/tab_contents/tab_contents.h"

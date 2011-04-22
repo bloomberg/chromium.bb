@@ -17,7 +17,7 @@ struct ViewHostMsg_FrameNavigate_Params;
 class TabContentsObserver : public IPC::Channel::Listener,
                             public IPC::Message::Sender {
  public:
-  // Use this as a member variable in a class that uses the emptry constructor
+  // Use this as a member variable in a class that uses the empty constructor
   // version of this interface.
   class Registrar {
    public:

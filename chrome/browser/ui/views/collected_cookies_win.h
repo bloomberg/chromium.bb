@@ -30,7 +30,8 @@ class NativeButton;
 //
 // CollectedCookiesWin is a dialog that displays the allowed and blocked
 // cookies of the current tab contents. To display the dialog, invoke
-// ShowCollectedCookiesDialog() on the delegate of the tab contents.
+// ShowCollectedCookiesDialog() on the delegate of the tab contents wrapper's
+// content settings tab helper.
 class CollectedCookiesWin : public ConstrainedDialogDelegate,
                             public NotificationObserver,
                             public views::ButtonListener,

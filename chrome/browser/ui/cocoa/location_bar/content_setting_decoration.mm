@@ -9,13 +9,14 @@
 #include "base/command_line.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/content_setting_bubble_model.h"
-#include "chrome/browser/content_setting_image_model.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
+#include "chrome/browser/ui/content_settings/content_setting_image_model.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -248,8 +249,8 @@ bool ContentSettingDecoration::AcceptsMousePress() {
 
 bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
   // Get host. This should be shared on linux/win/osx medium-term.
-  TabContents* tabContents =
-      BrowserList::GetLastActive()->GetSelectedTabContents();
+  TabContentsWrapper* tabContents =
+      BrowserList::GetLastActive()->GetSelectedTabContentsWrapper();
   if (!tabContents)
     return true;
 
@@ -259,7 +260,7 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
   if (content_settings_type == CONTENT_SETTINGS_TYPE_PRERENDER)
     return true;
 
-  GURL url = tabContents->GetURL();
+  GURL url = tabContents->tab_contents()->GetURL();
   std::wstring displayHost;
   net::AppendFormattedHost(
       url,
@@ -281,8 +282,8 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           tabContents, profile_, content_settings_type);
   [ContentSettingBubbleController showForModel:model
-                                   parentWindow:[field window]
-                                     anchoredAt:anchor];
+                                  parentWindow:[field window]
+                                    anchoredAt:anchor];
   return true;
 }
 

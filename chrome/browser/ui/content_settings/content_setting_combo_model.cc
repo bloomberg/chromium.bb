@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/content_setting_combo_model.h"
+#include "chrome/browser/ui/content_settings/content_setting_combo_model.h"
 
 #include "base/command_line.h"
 #include "base/string16.h"
@@ -76,4 +76,3 @@ int ContentSettingComboModel::IndexForSetting(ContentSetting setting) {
   NOTREACHED();
   return 0;
 }
-

@@ -22,7 +22,8 @@ class CookiesTreeModel;
 
 // CollectedCookiesGtk is a dialog that displays the allowed and blocked
 // cookies of the current tab contents.  To display the dialog, invoke
-// ShowCollectedCookiesDialog() on the delegate of the tab contents.
+// ShowCollectedCookiesDialog() on the delegate of the tab contents wrapper's
+// content settings tab helper.
 
 class CollectedCookiesGtk : public ConstrainedDialogDelegate,
                                    gtk_tree::TreeAdapter::Delegate,

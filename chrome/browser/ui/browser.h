@@ -27,6 +27,7 @@
 #include "chrome/browser/tabs/tab_handler.h"
 #include "chrome/browser/tabs/tab_strip_model_delegate.h"  // TODO(beng): remove
 #include "chrome/browser/tabs/tab_strip_model_observer.h"  // TODO(beng): remove
+#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 #include "chrome/browser/ui/shell_dialogs.h"
@@ -62,6 +63,7 @@ class Browser : public TabHandlerDelegate,
                 public TabContentsDelegate,
                 public TabContentsWrapperDelegate,
                 public SearchEngineTabHelperDelegate,
+                public BlockedContentTabHelperDelegate,
                 public PageNavigator,
                 public CommandUpdater::CommandUpdaterDelegate,
                 public NotificationObserver,
@@ -832,6 +834,10 @@ class Browser : public TabHandlerDelegate,
       TemplateURLModel* template_url_model) OVERRIDE;
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                         Profile* profile) OVERRIDE;
+
+  // Overridden from BlockedContentTabHelperDelegate:
+  virtual TabContentsWrapper* GetConstrainingContents(
+      TabContentsWrapper* source) OVERRIDE;
 
   // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path, int index, void* params);

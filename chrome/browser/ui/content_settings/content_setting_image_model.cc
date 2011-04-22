@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/content_setting_image_model.h"
+#include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 
 #include "base/command_line.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"

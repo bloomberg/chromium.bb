@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CONTENT_SETTING_BUBBLE_MODEL_H_
-#define CHROME_BROWSER_CONTENT_SETTING_BUBBLE_MODEL_H_
+#ifndef CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_BUBBLE_MODEL_H_
+#define CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_BUBBLE_MODEL_H_
 #pragma once
 
 #include <set>
@@ -18,7 +18,7 @@
 
 class Profile;
 class SkBitmap;
-class TabContents;
+class TabContentsWrapper;
 
 // This model provides data for ContentSettingBubble, and also controls
 // the action triggered when the allow / block radio buttons are triggered.
@@ -27,7 +27,7 @@ class ContentSettingBubbleModel : public NotificationObserver {
   virtual ~ContentSettingBubbleModel();
 
   static ContentSettingBubbleModel* CreateContentSettingBubbleModel(
-      TabContents* tab_contents,
+      TabContentsWrapper* tab_contents,
       Profile* profile,
       ContentSettingsType content_type);
 
@@ -36,7 +36,7 @@ class ContentSettingBubbleModel : public NotificationObserver {
   struct PopupItem {
     SkBitmap bitmap;
     std::string title;
-    TabContents* tab_contents;
+    TabContentsWrapper* tab_contents;
   };
   typedef std::vector<PopupItem> PopupItems;
 
@@ -89,10 +89,10 @@ class ContentSettingBubbleModel : public NotificationObserver {
   virtual void OnManageLinkClicked() {}
 
  protected:
-  ContentSettingBubbleModel(TabContents* tab_contents, Profile* profile,
+  ContentSettingBubbleModel(TabContentsWrapper* tab_contents, Profile* profile,
       ContentSettingsType content_type);
 
-  TabContents* tab_contents() const { return tab_contents_; }
+  TabContentsWrapper* tab_contents() const { return tab_contents_; }
   Profile* profile() const { return profile_; }
 
   void set_title(const std::string& title) { bubble_content_.title = title; }
@@ -117,7 +117,7 @@ class ContentSettingBubbleModel : public NotificationObserver {
   void AddBlockedResource(const std::string& resource_identifier);
 
  private:
-  TabContents* tab_contents_;
+  TabContentsWrapper* tab_contents_;
   Profile* profile_;
   ContentSettingsType content_type_;
   BubbleContent bubble_content_;
@@ -125,4 +125,4 @@ class ContentSettingBubbleModel : public NotificationObserver {
   NotificationRegistrar registrar_;
 };
 
-#endif  // CHROME_BROWSER_CONTENT_SETTING_BUBBLE_MODEL_H_
+#endif  // CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_BUBBLE_MODEL_H_
