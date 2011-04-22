@@ -103,7 +103,7 @@ bool Nigori::InitByDerivation(const std::string& hostname,
       kDerivedKeySizeInBits));
   DCHECK(mac_key_.get());
 
-  return true;
+  return user_key_.get() && encryption_key_.get() && mac_key_.get();
 }
 
 bool Nigori::InitByImport(const std::string& user_key,
