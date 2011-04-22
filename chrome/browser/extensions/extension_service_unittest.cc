@@ -3266,6 +3266,7 @@ class ExtensionsReadyRecorder : public NotificationObserver {
 // Also tests that we always fire EXTENSIONS_READY, no matter whether we are
 // enabled or not.
 TEST(ExtensionServiceTestSimple, Enabledness) {
+  ExtensionErrorReporter::Init(false);  // no noisy errors
   ExtensionsReadyRecorder recorder;
   scoped_ptr<TestingProfile> profile(new TestingProfile());
   MessageLoop loop;
@@ -3567,6 +3568,8 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
 class ExtensionSourcePriorityTest : public ExtensionServiceTest {
  public:
   void SetUp() {
+    ExtensionServiceTest::SetUp();
+
     // All tests use a single extension.  Put the id and path in member vars
     // that all methods can read.
     crx_id_ = kGoodId;
@@ -3642,16 +3645,10 @@ class ExtensionSourcePriorityTest : public ExtensionServiceTest {
   FilePath crx_path_;
 };
 
-#if defined(OS_CHROMEOS)
-// TODO(skerner): crbug/79755
-#define MAYBE_PendingExternalFileOverSync DISABLED_PendingExternalFileOverSync
-#else
-#define MAYBE_PendingExternalFileOverSync PendingExternalFileOverSync
-#endif
 // Test that a pending request for installation of an external CRX from
 // an update URL overrides a pending request to install the same extension
 // from sync.
-TEST_F(ExtensionSourcePriorityTest, MAYBE_PendingExternalFileOverSync) {
+TEST_F(ExtensionSourcePriorityTest, PendingExternalFileOverSync) {
   InitializeEmptyExtensionService();
 
   ASSERT_FALSE(IsCrxInstalled());
@@ -3676,15 +3673,9 @@ TEST_F(ExtensionSourcePriorityTest, MAYBE_PendingExternalFileOverSync) {
   ASSERT_TRUE(IsCrxInstalled());
 }
 
-#if defined(OS_CHROMEOS)
-// TODO(skerner): crbug/79755
-#define MAYBE_PendingExternalUrlOverSync DISABLED_PendingExternalUrlOverSync
-#else
-#define MAYBE_PendingExternalUrlOverSync PendingExternalUrlOverSync
-#endif
 // Test that an install of an external CRX from an update overrides
 // an install of the same extension from sync.
-TEST_F(ExtensionSourcePriorityTest, MAYBE_PendingExternalUrlOverSync) {
+TEST_F(ExtensionSourcePriorityTest, PendingExternalUrlOverSync) {
   InitializeEmptyExtensionService();
   ASSERT_FALSE(IsCrxInstalled());
 
@@ -3704,15 +3695,9 @@ TEST_F(ExtensionSourcePriorityTest, MAYBE_PendingExternalUrlOverSync) {
   ASSERT_FALSE(IsCrxInstalled());
 }
 
-#if defined(OS_CHROMEOS)
-// TODO(skerner): crbug/79755
-#define MAYBE_PendingExternalFileOverDefaultApp DISABLED_PendingExternalFileOverDefaultApp
-#else
-#define MAYBE_PendingExternalFileOverDefaultApp PendingExternalFileOverDefaultApp
-#endif
 // Test that an install of an external CRX overrides a request for a default
 // app.
-TEST_F(ExtensionSourcePriorityTest, MAYBE_PendingExternalFileOverDefaultApp) {
+TEST_F(ExtensionSourcePriorityTest, PendingExternalFileOverDefaultApp) {
   InitializeEmptyExtensionService();
   ASSERT_FALSE(IsCrxInstalled());
 
@@ -3732,15 +3717,9 @@ TEST_F(ExtensionSourcePriorityTest, MAYBE_PendingExternalFileOverDefaultApp) {
   ASSERT_TRUE(IsCrxInstalled());
 }
 
-#if defined(OS_CHROMEOS)
-// TODO(skerner): crbug/79755
-#define MAYBE_InstallExternalBlocksSyncRequest DISABLED_InstallExternalBlocksSyncRequest
-#else
-#define MAYBE_InstallExternalBlocksSyncRequest InstallExternalBlocksSyncRequest
-#endif
 // Test that an external install request stops sync from installing
 // the same extension.
-TEST_F(ExtensionSourcePriorityTest, MAYBE_InstallExternalBlocksSyncRequest) {
+TEST_F(ExtensionSourcePriorityTest, InstallExternalBlocksSyncRequest) {
   InitializeEmptyExtensionService();
   ASSERT_FALSE(IsCrxInstalled());
 
