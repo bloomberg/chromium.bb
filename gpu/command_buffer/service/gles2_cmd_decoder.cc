@@ -5588,6 +5588,7 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
 
 error::Error GLES2DecoderImpl::HandleTexImage2D(
     uint32 immediate_data_size, const gles2::TexImage2D& c) {
+  GPU_TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleTexImage2D");
   tex_image_2d_failed_ = true;
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
@@ -5901,6 +5902,7 @@ void GLES2DecoderImpl::DoTexSubImage2D(
 
 error::Error GLES2DecoderImpl::HandleTexSubImage2D(
     uint32 immediate_data_size, const gles2::TexSubImage2D& c) {
+  GPU_TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleTexSubImage2D");
   GLboolean internal = static_cast<GLboolean>(c.internal);
   if (internal == GL_TRUE && tex_image_2d_failed_)
     return error::kNoError;
@@ -6324,6 +6326,7 @@ error::Error GLES2DecoderImpl::HandleShaderBinary(
 
 error::Error GLES2DecoderImpl::HandleSwapBuffers(
     uint32 immediate_data_size, const gles2::SwapBuffers& c) {
+  GPU_TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleSwapBuffers");
   // If offscreen then don't actually SwapBuffers to the display. Just copy
   // the rendered frame to another frame buffer.
   if (offscreen_target_frame_buffer_.get()) {
@@ -6369,6 +6372,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
       return error::kNoError;
     }
   } else {
+    GPU_TRACE_EVENT0("gpu", "GLContext::SwapBuffers");
     if (!context_->SwapBuffers()) {
       LOG(ERROR) << "Context lost because SwapBuffers failed.";
       return error::kLostContext;
