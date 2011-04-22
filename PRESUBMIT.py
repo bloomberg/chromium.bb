@@ -98,17 +98,6 @@ def CheckChangeOnUpload(input_api, output_api):
 
 def CheckChangeOnCommit(input_api, output_api):
   results = []
-  if not input_api.json:
-    results.append(output_api.PresubmitNotifyResult(
-        'You don\'t have json nor simplejson installed.\n'
-        '  This is a warning that you will need to upgrade your python '
-        'installation.\n'
-        '  This is no big deal but you\'ll eventually need to '
-        'upgrade.\n'
-        '  How? Easy! You can do it right now and shut me off! Just:\n'
-        '    del depot_tools\\python.bat\n'
-        '    gclient\n'
-        '  Thanks for your patience.'))
   results.extend(_CommonChecks(input_api, output_api))
   # TODO(thestig) temporarily disabled, doesn't work in third_party/
   #results.extend(input_api.canned_checks.CheckSvnModifiedDirectories(
@@ -122,20 +111,6 @@ def CheckChangeOnCommit(input_api, output_api):
       output_api, 'http://codereview.chromium.org', ('win', 'linux', 'mac'),
       'tryserver@chromium.org'))
 
-  # These builders are just too slow.
-  IGNORED_BUILDERS = [
-    'Chromium XP',
-    'Chromium Mac',
-    'Chromium Arm (dbg)',
-    'Chromium Linux',
-    'Chromium Linux x64',
-  ]
-  results.extend(input_api.canned_checks.CheckBuildbotPendingBuilds(
-      input_api,
-      output_api,
-      'http://build.chromium.org/p/chromium/json/builders?filter=1',
-      6,
-      IGNORED_BUILDERS))
   results.extend(input_api.canned_checks.CheckChangeHasBugField(
       input_api, output_api))
   results.extend(input_api.canned_checks.CheckChangeHasTestField(
