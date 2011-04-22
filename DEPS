@@ -1,7 +1,7 @@
 vars = {
   # These two should be updated to the same revision whenever possible.
-  "arm_toolchain_version": "4965",
-  "x86_toolchain_version": "4965",
+  "arm_toolchain_version": "4980",
+  "x86_toolchain_version": "4980",
 
   "chrome_rev": "81576",
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
