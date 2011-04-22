@@ -95,14 +95,14 @@ class MockCommandBufferEngine : public CommandBufferEngine {
 
   template <typename T>
   T GetSharedMemoryAs(uint32 offset) {
-    DCHECK(offset < kBufferSize);
+    DCHECK_LT(offset, kBufferSize);
     return reinterpret_cast<T>(&buffer_[offset]);
   }
 
   int32 GetSharedMemoryOffset(const void* memory) {
     ptrdiff_t offset = reinterpret_cast<const int8*>(memory) - &buffer_[0];
     DCHECK_GE(offset, 0);
-    DCHECK(static_cast<size_t>(offset) < kBufferSize);
+    DCHECK_LT(static_cast<size_t>(offset), kBufferSize);
     return static_cast<int32>(offset);
   }
 
