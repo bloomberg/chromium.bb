@@ -32,9 +32,7 @@ class SyncSetupHandler : public OptionsPageUIHandler,
   virtual void ShowSetupDone(const std::wstring& user);
   virtual void ShowFirstTimeDone(const std::wstring& user);
 
-  virtual void SetFlow(SyncSetupFlow* flow) {
-    flow_ = flow;
-  }
+  virtual void SetFlow(SyncSetupFlow* flow);
 
  private:
   // Callbacks from the page.

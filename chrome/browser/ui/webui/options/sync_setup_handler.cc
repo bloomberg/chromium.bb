@@ -351,6 +351,10 @@ void SyncSetupHandler::ShowFirstTimeDone(const std::wstring& user) {
   NOTREACHED();
 }
 
+void SyncSetupHandler::SetFlow(SyncSetupFlow* flow) {
+  flow_ = flow;
+}
+
 void SyncSetupHandler::OnDidShowPage(const ListValue* args) {
   DCHECK(web_ui_);
 
