@@ -1655,3 +1655,18 @@
    fun:_decodeObjectBinary
    fun:_decodeObject
 }
+{
+   bug_80239
+   Memcheck:Addr4
+   ...
+   fun:CGLCreateContext
+   fun:-[NSOpenGLContext initWithFormat:shareContext:]
+   fun:-[AcceleratedPluginView initWithRenderWidgetHostViewMac:pluginHandle:]
+   fun:_ZN23RenderWidgetHostViewMac30AllocateFakePluginWindowHandleEbb
+   fun:_ZN23RenderWidgetHostViewMac21GetCompositingSurfaceEv
+   fun:_ZN16RenderWidgetHost21GetCompositingSurfaceEv
+   fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
+   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
+   fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
+   fun:_ZN21RenderViewHostManager23CreatePendingRenderViewERK15NavigationEntryP12SiteInstance
+}
