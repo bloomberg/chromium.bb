@@ -90,6 +90,14 @@ struct wlsc_sprite {
 	int height;
 };
 
+struct wlsc_shader {
+	GLuint program;
+	GLuint vertex_shader, fragment_shader;
+	GLuint proj_uniform;
+	GLuint tex_uniform;
+	GLuint color_uniform;
+};
+
 enum {
 	WLSC_COMPOSITOR_ACTIVE,
 	WLSC_COMPOSITOR_SLEEPING
@@ -106,6 +114,8 @@ struct wlsc_compositor {
 	GLuint fbo;
 	GLuint proj_uniform, tex_uniform;
 	struct wlsc_sprite **pointer_sprites;
+	struct wlsc_shader texture_shader;
+	struct wlsc_shader solid_shader;
 	struct wl_display *wl_display;
 
 	/* We implement the shell interface. */

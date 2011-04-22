@@ -608,8 +608,10 @@ wlsc_output_repaint(struct wlsc_output *output)
 
 	glViewport(0, 0, output->width, output->height);
 
-	glUniformMatrix4fv(ec->proj_uniform, 1, GL_FALSE, output->matrix.d);
-	glUniform1i(ec->tex_uniform, 0);
+	glUseProgram(ec->texture_shader.program);
+	glUniformMatrix4fv(ec->texture_shader.proj_uniform,
+			   1, GL_FALSE, output->matrix.d);
+	glUniform1i(ec->texture_shader.tex_uniform, 0);
 
 	pixman_region32_init(&new_damage);
 	pixman_region32_init(&total_damage);
@@ -1508,7 +1510,7 @@ static const char vertex_shader[] =
 	"   v_texcoord = texcoord;\n"
 	"}\n";
 
-static const char fragment_shader[] =
+static const char texture_fragment_shader[] =
 	"precision mediump float;\n"
 	"varying vec2 v_texcoord;\n"
 	"uniform sampler2D tex;\n"
@@ -1518,52 +1520,53 @@ static const char fragment_shader[] =
 	"}\n";
 
 static int
-init_shaders(struct wlsc_compositor *ec)
+compile_shader(GLenum type, const char *source)
 {
-	GLuint v, f, program;
-	const char *p;
+	GLuint s;
 	char msg[512];
 	GLint status;
 
-	p = vertex_shader;
-	v = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(v, 1, &p, NULL);
-	glCompileShader(v);
-	glGetShaderiv(v, GL_COMPILE_STATUS, &status);
+	s = glCreateShader(type);
+	glShaderSource(s, 1, &source, NULL);
+	glCompileShader(s);
+	glGetShaderiv(s, GL_COMPILE_STATUS, &status);
 	if (!status) {
-		glGetShaderInfoLog(v, sizeof msg, NULL, msg);
-		fprintf(stderr, "vertex shader info: %s\n", msg);
-		return -1;
+		glGetShaderInfoLog(s, sizeof msg, NULL, msg);
+		fprintf(stderr, "shader info: %s\n", msg);
+		return GL_NONE;
 	}
 
-	p = fragment_shader;
-	f = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(f, 1, &p, NULL);
-	glCompileShader(f);
-	glGetShaderiv(f, GL_COMPILE_STATUS, &status);
-	if (!status) {
-		glGetShaderInfoLog(f, sizeof msg, NULL, msg);
-		fprintf(stderr, "fragment shader info: %s\n", msg);
-		return -1;
-	}
+	return s;
+}
 
-	program = glCreateProgram();
-	glAttachShader(program, v);
-	glAttachShader(program, f);
-	glBindAttribLocation(program, 0, "position");
-	glBindAttribLocation(program, 1, "texcoord");
+static int
+wlsc_shader_init(struct wlsc_shader *shader,
+		 const char *vertex_source, const char *fragment_source)
+{
+	char msg[512];
+	GLint status;
 
-	glLinkProgram(program);
-	glGetProgramiv(program, GL_LINK_STATUS, &status);
+	shader->vertex_shader =
+		compile_shader(GL_VERTEX_SHADER, vertex_source);
+	shader->fragment_shader =
+		compile_shader(GL_FRAGMENT_SHADER, fragment_source);
+
+	shader->program = glCreateProgram();
+	glAttachShader(shader->program, shader->vertex_shader);
+	glAttachShader(shader->program, shader->fragment_shader);
+	glBindAttribLocation(shader->program, 0, "position");
+	glBindAttribLocation(shader->program, 1, "texcoord");
+
+	glLinkProgram(shader->program);
+	glGetProgramiv(shader->program, GL_LINK_STATUS, &status);
 	if (!status) {
-		glGetProgramInfoLog(program, sizeof msg, NULL, msg);
+		glGetProgramInfoLog(shader->program, sizeof msg, NULL, msg);
 		fprintf(stderr, "link info: %s\n", msg);
 		return -1;
 	}
 
-	glUseProgram(program);
-	ec->proj_uniform = glGetUniformLocation(program, "proj");
-	ec->tex_uniform = glGetUniformLocation(program, "tex");
+	shader->proj_uniform = glGetUniformLocation(shader->program, "proj");
+	shader->tex_uniform = glGetUniformLocation(shader->program, "tex");
 
 	return 0;
 }
@@ -1720,7 +1723,9 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	}
 
 	glActiveTexture(GL_TEXTURE0);
-	if (init_shaders(ec) < 0)
+
+	if (wlsc_shader_init(&ec->texture_shader,
+			     vertex_shader, texture_fragment_shader) < 0)
 		return -1;
 
 	loop = wl_display_get_event_loop(ec->wl_display);
