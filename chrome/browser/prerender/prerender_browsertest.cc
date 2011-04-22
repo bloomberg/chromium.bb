@@ -542,7 +542,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPopup) {
 
 
 // Checks that renderers using excessive memory will be terminated.
-// Disabled, http://crbug.com/77870.
+// Disabled, http://crbug.com/80324.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        DISABLED_PrerenderExcessiveMemory) {
   PrerenderTestURL("files/prerender/prerender_excessive_memory.html",
@@ -551,7 +551,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 }
 
 // Checks that we don't prerender in an infinite loop.
-// Disabled, http://crbug.com/77870.
+// Disabled, http://crbug.com/77323.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderInfiniteLoop) {
   const char* const kHtmlFileA = "prerender_infinite_a.html";
   const char* const kHtmlFileB = "prerender_infinite_b.html";
@@ -576,6 +576,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderInfiniteLoop) {
 
 // Checks that we don't prerender in an infinite loop and multiple links are
 // handled correctly.
+// Flaky, http://crbug.com/77323.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        FLAKY_PrerenderInfiniteLoopMultiple) {
   const char* const kHtmlFileA =
