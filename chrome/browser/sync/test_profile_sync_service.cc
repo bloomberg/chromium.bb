@@ -127,7 +127,9 @@ void SyncBackendHostForProfileSyncTest::ProcessMessage(
   }
 }
 
-void SyncBackendHostForProfileSyncTest::StartConfiguration(Callback0::Type*) {
+void SyncBackendHostForProfileSyncTest::StartConfiguration(
+    Callback0::Type* callback) {
+  scoped_ptr<Callback0::Type> scoped_callback(callback);
   SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop();
 }
 
