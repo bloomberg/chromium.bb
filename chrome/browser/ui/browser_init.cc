@@ -94,7 +94,6 @@
 #include "chrome/browser/chromeos/sms_observer.h"
 #include "chrome/browser/chromeos/update_observer.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
-#include "chrome/browser/chromeos/wm_overview_controller.h"
 #include "chrome/browser/ui/webui/mediaplayer_ui.h"
 #endif
 
@@ -564,9 +563,6 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
   // Create the WmMessageListener so that it can listen for messages regardless
   // of what window has focus.
   chromeos::WmMessageListener::GetInstance();
-
-  // Create the WmOverviewController so it can register with the listener.
-  chromeos::WmOverviewController::GetInstance();
 
   // Install the GView request interceptor that will redirect requests
   // of compatible documents (PDF, etc) to the GView document viewer.
