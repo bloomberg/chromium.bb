@@ -36,7 +36,11 @@ echo @@@BUILD_STEP compile_toolchain@@@
 
 echo @@@BUILD_STEP tar_glibc@@@
 (
-  cd tools/glibc
+  cd tools
+  cp --archive --sparse=always glibc glibc_sparse
+  rm -rf glibc
+  mv glibc_sparse glibc
+  cd glibc
   tar zScf ../glibc.tgz ./*
   chmod a+r ../glibc.tgz
 )
@@ -53,6 +57,9 @@ fi
 echo @@@BUILD_STEP tar_toolchain@@@
 (
   cd tools
+  cp --archive --sparse=always toolchain toolchain_sparse
+  rm -rf toolchain
+  mv toolchain_sparse toolchain
   tar Scf toolchain.tar toolchain/
   xz -k -9 toolchain.tar
   bzip2 -k -9 toolchain.tar
