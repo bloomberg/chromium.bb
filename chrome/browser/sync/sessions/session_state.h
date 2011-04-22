@@ -59,6 +59,7 @@ struct SyncSourceInfo {
 // Data pertaining to the status of an active Syncer object.
 struct SyncerStatus {
   SyncerStatus();
+  ~SyncerStatus();
 
   // Caller takes ownership of the returned dictionary.
   DictionaryValue* ToValue() const;

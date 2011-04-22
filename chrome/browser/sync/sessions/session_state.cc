@@ -52,6 +52,9 @@ SyncerStatus::SyncerStatus()
       num_tombstone_updates_downloaded_total(0) {
 }
 
+SyncerStatus::~SyncerStatus() {
+}
+
 DictionaryValue* SyncerStatus::ToValue() const {
   DictionaryValue* value = new DictionaryValue();
   value->SetBoolean("invalidStore", invalid_store);
