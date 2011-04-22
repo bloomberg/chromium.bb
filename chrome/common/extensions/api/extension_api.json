@@ -4691,6 +4691,50 @@
           "title": {"type": "string", "description": "Task title."},
           "iconUrl": {"type": "string", "description": "Task icon url (from chrome://extension-icon/...)"}
         }
+      },
+      {
+        "id": "VolumeInfo",
+        "type": "object",
+        "description": "Mounted disk volume information.",
+        "properties": {
+          "mountPath": {
+            "type": "string",
+            "description": "Disk volume mount point path. The value corresponds to its Entry.fullPath in File API."
+          },
+          "label": {
+            "type": "string",
+            "description": "Volume label."
+          },
+          "deviceType": {
+            "type": "string",
+            "enum": ["flash", "hdd", "optical", "undefined"],
+            "description": "Device type."
+          },
+          "readOnly": {
+            "type": "boolean",
+            "description": "Flag that specifies if volume is mounted in read-only mode."
+          },
+          "totalSizeKB": {
+            "type": "integer",
+            "description": "Total disk volume size in KBs"
+          }
+        }
+      },
+      {
+        "id": "MountEvent",
+        "type": "object",
+        "description": "Payload data for disk mount / unmount event.",
+        "properties": {
+          "eventType": {
+            "type": "string",
+            "enum": ["added", "removed"],
+            "description": "Event type that tells listeners which disk volume even was raised."
+          },
+          "volumeInfo": {
+            "$ref": "VolumeInfo",
+            "description":"Volume information that this mount event applies to."
+          }
+        }
       }
     ],
     "functions": [
@@ -4839,9 +4883,9 @@
         "description": "Fired when disk mount/unmount event is detected.",
         "parameters": [
           {
-            "type": "string",
+            "$ref": "MountEvent",
             "name": "fullPath",
-            "description": "Path of the filesystem directory entry that changed."
+            "description": "Mount event information."
           }
         ]
       }

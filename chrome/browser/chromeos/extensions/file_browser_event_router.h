@@ -59,7 +59,7 @@ class ExtensionFileBrowserEventRouter
   NotificationMap::iterator FindNotificationForPath(const std::string& path);
 
   // Sends filesystem changed extension message to all renderers.
-  void DispatchEvent(const std::string& web_path);
+  void DispatchEvent(const chromeos::MountLibrary::Disk* disk, bool added);
 
   void RemoveBrowserFromVector(const std::string& path);
 

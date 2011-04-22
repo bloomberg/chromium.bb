@@ -19,6 +19,34 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+const char kDiskAddedEventType[] = "added";
+const char kDiskRemovedEventType[] = "removed";
+
+const char* DeviceTypeToString(chromeos::DeviceType type) {
+  switch (type) {
+    case chromeos::FLASH:
+      return "flash";
+    case chromeos::HDD:
+      return "hdd";
+    case chromeos::OPTICAL:
+      return "optical";
+    default:
+      break;
+  }
+  return "undefined";
+}
+
+DictionaryValue* DiskToDictionaryValue(
+    const chromeos::MountLibrary::Disk* disk) {
+  DictionaryValue* result = new DictionaryValue();
+  result->SetString("mountPath", disk->mount_path());
+  result->SetString("label", disk->device_label());
+  result->SetString("deviceType", DeviceTypeToString(disk->device_type()));
+  result->SetInteger("totalSizeKB", disk->total_size() / 1024);
+  result->SetBoolean("readOnly", disk->is_read_only());
+  return result;
+}
+
 ExtensionFileBrowserEventRouter::ExtensionFileBrowserEventRouter()
     : profile_(NULL) {
 }
@@ -28,7 +56,7 @@ ExtensionFileBrowserEventRouter::~ExtensionFileBrowserEventRouter() {
 
 void ExtensionFileBrowserEventRouter::ObserveFileSystemEvents(
     Profile* profile) {
-  if (profile_)
+  if (!profile)
     return;
   profile_ = profile;
   if (chromeos::UserManager::Get()->user_is_logged_in()) {
@@ -79,14 +107,20 @@ void ExtensionFileBrowserEventRouter::DeviceChanged(
 }
 
 void ExtensionFileBrowserEventRouter::DispatchEvent(
-    const std::string& web_path) {
+    const chromeos::MountLibrary::Disk* disk, bool added) {
   if (!profile_) {
     NOTREACHED();
     return;
   }
 
   ListValue args;
-  args.Append(Value::CreateStringValue(web_path));
+  DictionaryValue* mount_info = new DictionaryValue();
+  args.Append(mount_info);
+  mount_info->SetString("eventType",
+                        added ? kDiskAddedEventType : kDiskRemovedEventType);
+  DictionaryValue* disk_info = DiskToDictionaryValue(disk);
+  mount_info->Set("diskInfo", disk_info);
+
   std::string args_json;
   base::JSONWriter::Write(&args, false /* pretty_print */, &args_json);
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
@@ -130,7 +164,7 @@ void ExtensionFileBrowserEventRouter::OnDiskRemoved(
   // we might need to clean up mount directory on FILE thread here as well.
   lib->UnmountPath(disk->device_path().c_str());
 
-  DispatchEvent(iter->second);
+  DispatchEvent(disk, false);
   mounted_devices_.erase(iter);
 }
 
@@ -144,7 +178,7 @@ void ExtensionFileBrowserEventRouter::OnDiskChanged(
       mounted_devices_.insert(
           std::pair<std::string, std::string>(disk->device_path(),
                                               disk->mount_path()));
-      DispatchEvent(disk->mount_path());
+      DispatchEvent(disk, true);
       HideDeviceNotification(disk->system_path());
       FileManagerUtil::ShowFullTabUrl(profile_, FilePath(disk->mount_path()));
     }

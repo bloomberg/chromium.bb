@@ -954,6 +954,8 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onTasksFound_ = function(tasksList) {
+    console.log("FileManager.prototype.onTasksFound_");
+    console.log(tasksList);
     this.taskButtons_.innerHTML = '';
     for (var i = 0; i < tasksList.length; i++) {
       var task = tasksList[i];
@@ -1268,8 +1270,9 @@ FileManager.prototype = {
    *
    * @param {string} path The path that has been mounted or unmounted.
    */
-  FileManager.prototype.onDiskChanged_ = function(path) {
-    this.changeDirectory(path);
+  FileManager.prototype.onDiskChanged_ = function(event) {
+    // TODO(rginda): Please check and wire handling of other data passed here.
+    this.changeDirectory(event.volumeInfo.mountPath);
   };
 
   /**
