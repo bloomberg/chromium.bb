@@ -113,7 +113,7 @@ wl_client_post_event(struct wl_client *client, struct wl_object *sender,
 	wl_closure_destroy(closure);
 }
 
-static void
+static int
 wl_client_connection_data(int fd, uint32_t mask, void *data)
 {
 	struct wl_client *client = data;
@@ -133,7 +133,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 	len = wl_connection_data(connection, cmask);
 	if (len < 0) {
 		wl_client_destroy(client);
-		return;
+		return 1;
 	}
 
 	while (len >= sizeof p) {
@@ -185,6 +185,8 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 
 		wl_closure_destroy(closure);
 	}
+
+	return 1;
 }
 
 static int
@@ -654,7 +656,7 @@ wl_display_run(struct wl_display *display)
 		wl_event_loop_dispatch(display->loop, -1);
 }
 
-static void
+static int
 socket_data(int fd, uint32_t mask, void *data)
 {
 	struct wl_display *display = data;
@@ -669,6 +671,8 @@ socket_data(int fd, uint32_t mask, void *data)
 		fprintf(stderr, "failed to accept\n");
 
 	wl_client_create(display, client_fd);
+
+	return 1;
 }
 
 static int
