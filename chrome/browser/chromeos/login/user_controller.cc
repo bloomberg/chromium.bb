@@ -26,6 +26,7 @@
 #include "views/background.h"
 #include "views/controls/label.h"
 #include "views/controls/throbber.h"
+#include "views/focus/focus_manager.h"
 #include "views/painter.h"
 
 using views::Widget;
@@ -168,14 +169,21 @@ void UserController::Init(int index,
 }
 
 void UserController::ClearAndEnableFields() {
-  user_input_->ClearAndFocusControls();
   user_input_->EnableInputControls(true);
+  user_input_->ClearAndFocusControls();
   StopThrobber();
 }
 
 void UserController::ClearAndEnablePassword() {
-  user_input_->ClearAndFocusPassword();
+  // Somehow focus manager thinks that textfield is still focused but the
+  // textfield doesn't know that. So we clear focus for focus manager so it
+  // sets focus on the textfield again.
+  // TODO(avayvod): Fix the actual issue.
+  views::FocusManager* focus_manager = controls_window_->GetFocusManager();
+  if (focus_manager)
+    focus_manager->ClearFocus();
   user_input_->EnableInputControls(true);
+  user_input_->ClearAndFocusPassword();
   StopThrobber();
 }
 
