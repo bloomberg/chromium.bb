@@ -286,7 +286,7 @@ void WebKitClientImpl::traceEventBegin(const char* name, void* id,
                                        const char* extra) {
   TRACE_EVENT_BEGIN(name, id, extra);
   GPU_TRACE_EVENT_BEGIN2("webkit", name,
-                         "id", id,
+                         "id", StringPrintf("%p", id).c_str(),
                          "extra", extra ? extra : "");
 }
 

@@ -376,8 +376,7 @@ bool RendererGLContext::Initialize(bool onscreen,
                                    const int32* attrib_list,
                                    const GURL& active_url) {
   DCHECK(size.width() >= 0 && size.height() >= 0);
-  GPU_TRACE_EVENT2("gpu", "RendererGLContext::Initialize",
-                   "on_screen", onscreen, "num_pixels", size.GetArea());
+  GPU_TRACE_EVENT0("gpu", "RendererGLContext::Initialize");
 
   if (channel_->state() != GpuChannelHost::kConnected)
     return false;

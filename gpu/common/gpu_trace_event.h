@@ -72,7 +72,6 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "base/callback.h"
-#include "base/string_util.h"
 #include <vector>
 
 
@@ -200,116 +199,6 @@ enum TraceEventPhase {
   GPU_TRACE_EVENT_PHASE_INSTANT
 };
 
-// Simple union of values. This is much lighter weight than base::Value, which
-// requires dynamic allocation and a vtable. To keep the trace runtime overhead
-// low, we want constant size storage here.
-class TraceValue {
- public:
-  enum Type {
-    TRACE_TYPE_UNDEFINED,
-    TRACE_TYPE_BOOL,
-    TRACE_TYPE_UINT,
-    TRACE_TYPE_INT,
-    TRACE_TYPE_DOUBLE,
-    TRACE_TYPE_POINTER,
-    TRACE_TYPE_STRING
-  };
-
-  TraceValue() : type_(TRACE_TYPE_UNDEFINED) {
-    value_.as_uint = 0ull;
-  }
-  TraceValue(bool rhs) : type_(TRACE_TYPE_BOOL) {
-    value_.as_uint = 0ull; // zero all bits
-    value_.as_bool = rhs;
-  }
-  TraceValue(uint64 rhs) : type_(TRACE_TYPE_UINT) {
-    value_.as_uint = rhs;
-  }
-  TraceValue(uint32 rhs) : type_(TRACE_TYPE_UINT) {
-    value_.as_uint = rhs;
-  }
-  TraceValue(uint16 rhs) : type_(TRACE_TYPE_UINT) {
-    value_.as_uint = rhs;
-  }
-  TraceValue(uint8 rhs) : type_(TRACE_TYPE_UINT) {
-    value_.as_uint = rhs;
-  }
-  TraceValue(int64 rhs) : type_(TRACE_TYPE_INT) {
-    value_.as_int = rhs;
-  }
-  TraceValue(int32 rhs) : type_(TRACE_TYPE_INT) {
-    value_.as_int = rhs;
-  }
-  TraceValue(int16 rhs) : type_(TRACE_TYPE_INT) {
-    value_.as_int = rhs;
-  }
-  TraceValue(int8 rhs) : type_(TRACE_TYPE_INT) {
-    value_.as_int = rhs;
-  }
-  TraceValue(double rhs) : type_(TRACE_TYPE_DOUBLE) {
-    value_.as_double = rhs;
-  }
-  TraceValue(const void* rhs) : type_(TRACE_TYPE_POINTER) {
-    value_.as_uint = 0ull; // zero all bits
-    value_.as_pointer = rhs;
-  }
-  explicit TraceValue(const char* rhs) : type_(TRACE_TYPE_STRING) {
-    value_.as_uint = 0ull; // zero all bits
-    value_.as_string = base::strdup(rhs);
-  }
-  TraceValue(const TraceValue& rhs) : type_(TRACE_TYPE_UNDEFINED) {
-    operator=(rhs);
-  }
-  ~TraceValue() {
-    Destroy();
-  }
-
-  TraceValue& operator=(const TraceValue& rhs);
-  bool operator==(const TraceValue& rhs) const;
-  bool operator!=(const TraceValue& rhs) const {
-    return !operator==(rhs);
-  }
-
-  void Destroy();
-
-  void AppendAsJSON(std::string* out) const;
-
-  Type type() const {
-    return type_;
-  }
-  uint64 as_uint() const {
-    return value_.as_uint;
-  }
-  bool as_bool() const {
-    return value_.as_bool;
-  }
-  int64 as_int() const {
-    return value_.as_int;
-  }
-  double as_double() const {
-    return value_.as_double;
-  }
-  const void* as_pointer() const {
-    return value_.as_pointer;
-  }
-  const char* as_string() const {
-    return value_.as_string;
-  }
-
- private:
-  union Value {
-    bool as_bool;
-    uint64 as_uint;
-    int64 as_int;
-    double as_double;
-    const void* as_pointer;
-    char* as_string;
-  };
-
-  Type type_;
-  Value value_;
-};
-
 // Output records are "Events" and can be obtained via the
 // OutputCallback whenever the logging system decides to flush. This
 // can happen at any time, on any thread, or you can programatically
@@ -331,7 +220,7 @@ struct TraceEvent {
   TraceCategory* category;
   const char* name;
   const char* argNames[TRACE_MAX_NUM_ARGS];
-  TraceValue argValues[TRACE_MAX_NUM_ARGS];
+  std::string argValues[TRACE_MAX_NUM_ARGS];
 };
 
 
@@ -373,8 +262,8 @@ class TraceLog {
       const char* file, int line,
       TraceCategory* category,
       const char* name,
-      const char* arg1name, TraceValue arg1val,
-      const char* arg2name, TraceValue arg2val);
+      const char* arg1name, const char* arg1val,
+      const char* arg2name, const char* arg2val);
 
  private:
   // This allows constructor and destructor to be private and usable only
