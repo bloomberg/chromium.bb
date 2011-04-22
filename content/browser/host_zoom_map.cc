@@ -188,21 +188,6 @@ void HostZoomMap::SetTemporaryZoomLevel(int render_process_id,
                                          NotificationService::NoDetails());
 }
 
-void HostZoomMap::ResetToDefaults() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!profile_)
-    return;
-
-  {
-    base::AutoLock auto_lock(lock_);
-    host_zoom_levels_.clear();
-  }
-
-  updating_preferences_ = true;
-  profile_->GetPrefs()->ClearPref(prefs::kPerHostZoomLevels);
-  updating_preferences_ = false;
-}
-
 void HostZoomMap::Shutdown() {
   if (!profile_)
     return;

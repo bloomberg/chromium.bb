@@ -46,7 +46,6 @@ class DownloadPrefs {
   // Disables auto-open based on file extension.
   void DisableAutoOpenBasedOnExtension(const FilePath& file_name);
 
-  void ResetToDefaults();
   void ResetAutoOpen();
 
  private:

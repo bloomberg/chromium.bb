@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,15 +8,8 @@
 
 #include "base/basictypes.h"
 
-class Profile;
-
 class OptionsUtil {
  public:
-  // TODO(kmadhusu): Remove "ResetToDefaults" function after platform-specific
-  // dialogs are removed.
-  // Resets all prefs to their default values.
-  static void ResetToDefaults(Profile* profile);
-
   // Try to make the the crash stats consent and the metrics upload
   // permission match |enabled|, returns the actual enabled setting.
   static bool ResolveMetricsReportingEnabled(bool enabled);

@@ -92,21 +92,6 @@ TEST_F(HostZoomMapTest, SetZoomLevel) {
   EXPECT_FALSE(dict->HasKey(host_));
 }
 
-TEST_F(HostZoomMapTest, ResetToDefaults) {
-  scoped_refptr<HostZoomMap> map(new HostZoomMap(&profile_));
-  map->SetZoomLevel(url_, kZoomLevel);
-
-  PrefChangeRegistrar registrar;
-  registrar.Init(prefs_);
-  registrar.Add(prefs::kPerHostZoomLevels, &pref_observer_);
-  SetPrefObserverExpectation();
-  map->ResetToDefaults();
-  EXPECT_EQ(0, map->GetZoomLevel(url_));
-  DictionaryValue empty;
-  EXPECT_TRUE(
-      Value::Equals(&empty, prefs_->GetDictionary(prefs::kPerHostZoomLevels)));
-}
-
 TEST_F(HostZoomMapTest, ReloadOnPrefChange) {
   scoped_refptr<HostZoomMap> map(new HostZoomMap(&profile_));
   map->SetZoomLevel(url_, kZoomLevel);

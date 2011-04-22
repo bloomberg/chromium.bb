@@ -117,11 +117,6 @@ void DownloadPrefs::DisableAutoOpenBasedOnExtension(const FilePath& file_name) {
   SaveAutoOpenState();
 }
 
-void DownloadPrefs::ResetToDefaults() {
-  // TODO(phajdan.jr): Should we reset rest of prefs here?
-  ResetAutoOpen();
-}
-
 void DownloadPrefs::ResetAutoOpen() {
   auto_open_.clear();
   SaveAutoOpenState();

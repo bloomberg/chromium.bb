@@ -68,11 +68,6 @@ class HostZoomMap :
                              int render_view_id,
                              double level);
 
-  // Resets all zoom levels.
-  //
-  // This should only be called on the UI thread.
-  void ResetToDefaults();
-
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
