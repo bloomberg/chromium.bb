@@ -61,6 +61,11 @@ BOT_ASSIGNMENT = {
     'hardy64-m64-n64-coverage': 'bash buildbot/buildbot_coverage_linux.sh 64',
     'hardy64-marm-narm-coverage': 'bash buildbot/buildbot_coverage_arm.sh',
     'xp-m32-n32-coverage': 'buildbot\\buildbot_coverage_win.bat',
+    # PPAPI Integration.
+    'lucid64-m32-n32-opt-ppapi':
+        'bash buildbot/buildbot_linux.sh opt 32 newlib',
+    'lucid64-m64-n64-dbg-ppapi':
+        'bash buildbot/buildbot_linux.sh dbg 64 newlib',
 
     ######################################################################
     # Trybots.
