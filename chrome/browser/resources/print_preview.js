@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 var localStrings = new LocalStrings();
-var hasPDFPlugin = true;
+
+// Whether or not the PDF plugin supports all the capabilities needed for
+// print preview.
+var hasCompatiblePDFPlugin = true;
 
 // The total page count of the previewed document regardless of which pages the
 // user has selected.
@@ -341,10 +344,14 @@ function setPrinters(printers, defaultPrinterIndex) {
  * @param {boolean} color is true if the PDF plugin should display in color.
  */
 function setColor(color) {
-  if (!hasPDFPlugin) {
+  if (!hasCompatiblePDFPlugin) {
     return;
   }
-  $('pdf-viewer').grayscale(!color);
+  var pdfViewer = $('pdf-viewer');
+  if (!pdfViewer) {
+    return;
+  }
+  pdfViewer.grayscale(!color);
 }
 
 /**
@@ -403,7 +410,7 @@ function updatePrintPreview(pageCount, jobTitle) {
  * Create the PDF plugin or reload the existing one.
  */
 function createPDFPlugin() {
-  if (!hasPDFPlugin) {
+  if (!hasCompatiblePDFPlugin) {
     return;
   }
 
@@ -429,14 +436,23 @@ function createPDFPlugin() {
   pdfPlugin.setAttribute('src', 'chrome://print/print.pdf');
   var mainView = $('mainview');
   mainView.appendChild(pdfPlugin);
+
+  // Check to see if the PDF plugin is our PDF plugin. (or compatible)
   if (!pdfPlugin.onload) {
-    hasPDFPlugin = false;
+    hasCompatiblePDFPlugin = false;
     mainView.removeChild(pdfPlugin);
     $('no-plugin').classList.remove('hidden');
     return;
   }
-  pdfPlugin.grayscale(true);
   pdfPlugin.onload('onPDFLoad()');
+
+  // Older version of the PDF plugin may not have this method.
+  // TODO(thestig) Eventually remove this.
+  if (pdfPlugin.removePrintButton) {
+    pdfPlugin.removePrintButton();
+  }
+
+  pdfPlugin.grayscale(true);
 }
 
 /**
