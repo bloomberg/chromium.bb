@@ -327,14 +327,19 @@ wl_event_loop_add_signal(struct wl_event_loop *loop,
 struct wl_event_source_idle {
 	struct wl_event_source base;
 	wl_event_loop_idle_func_t func;
-	void *data;
 };
 
 static int
 wl_event_source_idle_dispatch(struct wl_event_source *source,
 			      struct epoll_event *ep)
 {
-	assert(0);
+	struct wl_event_source_idle *idle_source =
+		(struct wl_event_source_idle *) source;
+
+	idle_source->func(idle_source->base.data);
+	wl_event_source_remove(&idle_source->base);
+
+	return 1;
 }
 
 static int
@@ -371,6 +376,7 @@ wl_event_loop_add_idle(struct wl_event_loop *loop,
 	source->func = func;
 	source->base.data = data;
 	wl_list_insert(loop->idle_list.prev, &source->base.link);
+	wl_event_source_check(&source->base);
 
 	return &source->base;
 }
@@ -439,7 +445,6 @@ wl_event_loop_dispatch(struct wl_event_loop *loop, int timeout)
 {
 	struct epoll_event ep[32];
 	struct wl_event_source *source;
-	struct wl_event_source_idle *idle;
 	int i, count, n;
 
 	count = epoll_wait(loop->epoll_fd, ep, ARRAY_LENGTH(ep), timeout);
@@ -453,14 +458,6 @@ wl_event_loop_dispatch(struct wl_event_loop *loop, int timeout)
 
 	while (n > 0)
 		n = post_dispatch_check(loop);
-
-	while (!wl_list_empty(&loop->idle_list)) {
-		idle = container_of(loop->idle_list.next,
-				    struct wl_event_source_idle, base.link);
-		wl_list_remove(&idle->base.link);
-		idle->func(idle->data);
-		free(idle);
-	}
 		
 	return 0;
 }
