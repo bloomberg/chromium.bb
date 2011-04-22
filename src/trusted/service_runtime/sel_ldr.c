@@ -1424,7 +1424,7 @@ int NaClSecureServiceAcceptAndSpawnHandler(struct NaClSimpleService *vself) {
             "Secure channel AcceptAndSpawnHandler returned %d\n",
             rv);
   }
-  NaClThreadExit();
+  NaClThreadExit(0);
   /*
    * NOTREACHED The port is now to be used by untrusted code: all
    * subsequent connections are handled there.

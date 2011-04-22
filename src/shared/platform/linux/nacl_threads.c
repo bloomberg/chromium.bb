@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -123,8 +123,8 @@ void NaClThreadJoin(struct NaClThread *ntp) {
   pthread_join(ntp->tid, NULL);
 }
 
-void NaClThreadExit(void) {
-  pthread_exit((void *) 0);
+void NaClThreadExit(int exit_code) {
+  pthread_exit((void *) (uintptr_t) exit_code);
 }
 
 void NaClThreadKill(struct NaClThread *target) {

@@ -109,7 +109,17 @@ void NaClSysCommonThreadSuicide(struct NaClAppThread  *natp) {
   NaClLog(3, " freeing thread object\n");
   NaClAppThreadDtor(natp);
   NaClLog(3, " NaClThreadExit\n");
-  NaClThreadExit();  /* should not return */
+
+  /*
+   * There appears to be a race on Windows where the process can sometimes
+   * return a thread exit status instead of the process exit status when
+   * they occur near simultaneously on two seperate threads.  Since this is
+   * non-deterministic, we always exit a thread with the current value of the
+   * process exit status to mitigate the possibility of exiting with an
+   * incorrect value.  See BUG= nacl1715
+   */
+  NaClThreadExit(nap->exit_status);
+  /* should not return */
   NaClLog(LOG_ERROR, "INCONCEIVABLE!\n");
   NaClAbort();
   /* NOTREACHED */

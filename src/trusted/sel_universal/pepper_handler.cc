@@ -65,7 +65,7 @@ void WINAPI PepperHandlerThread(void* desc_void) {
   NaClLog(1, "pepper secondary service started %p\n", desc_void);
   NaClSrpcServerLoop(desc->desc(), srpc_methods, NULL);
   NaClLog(1, "pepper secondary service stopped\n");
-  NaClThreadExit();
+  NaClThreadExit(0);
 }
 
 }  // end namespace

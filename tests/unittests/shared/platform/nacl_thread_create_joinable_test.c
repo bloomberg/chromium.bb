@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdio.h>
@@ -29,7 +29,7 @@ void WINAPI myThread(void* arg) {
     fprintf(stderr, "myThread: %d expected, but %d received\n", TEST_NUM, num);
     exit(EXIT_FAILURE);
   }
-  NaClThreadExit();
+  NaClThreadExit(0);
 }
 
 int main(int argc, char* argv[]) {

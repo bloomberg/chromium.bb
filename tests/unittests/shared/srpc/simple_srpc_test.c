@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifdef __native_client__
@@ -61,7 +61,7 @@ void WINAPI serviceThread(void* arg) {
 #else
   NaClDescUnref(desc);
 #endif
-  NaClThreadExit();
+  NaClThreadExit(0);
 }
 
 int main(int argc, char* argv[]) {
