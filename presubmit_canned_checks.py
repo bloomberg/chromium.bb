@@ -67,14 +67,12 @@ def CheckChangeHasDescription(input_api, output_api):
 
 def CheckDoNotSubmitInFiles(input_api, output_api):
   """Checks that the user didn't add 'DO NOT ' + 'SUBMIT' to any files."""
-  # We want to check every text file, not just source files.
-  file_filter = lambda x : x
   keyword = 'DO NOT ' + 'SUBMIT'
-  errors = _FindNewViolationsOfRule(lambda line : keyword not in line,
-                                    input_api, file_filter)
-  text = '\n'.join('Found %s in %s' % (keyword, loc) for loc in errors)
-  if text:
-    return [output_api.PresubmitError(text)]
+  # We want to check every text files, not just source files.
+  for f, line_num, line in input_api.RightHandSideLines(lambda x: x):
+    if keyword in line:
+      text = 'Found ' + keyword + ' in %s, line %s' % (f.LocalPath(), line_num)
+      return [output_api.PresubmitError(text)]
   return []
 
 
@@ -215,41 +213,6 @@ def CheckChangeHasNoCrAndHasOnlyOneEol(input_api, output_api,
   return outputs
 
 
-def _ReportErrorFileAndLine(filename, line_num, line):
-  """Default error formatter for _FindNewViolationsOfRule."""
-  return '%s, line %s' % (filename, line_num)
-
-
-def _FindNewViolationsOfRule(callable_rule, input_api, source_file_filter=None,
-                             error_formatter=_ReportErrorFileAndLine):
-  """Find all newly introduced violations of a per-line rule (a callable).
-
-  Arguments:
-    callable_rule: a callable taking a line of input and returning True
-      if the rule is satisfied and False if there was a problem.
-    input_api: object to enumerate the affected files.
-    source_file_filter: a filter to be passed to the input api.
-    error_formatter: a callable taking (filename, line_number, line) and
-      returning a formatted error string.
-
-  Returns:
-    A list of the newly-introduced violations reported by the rule.
-  """
-  errors = []
-  for f in input_api.AffectedFiles(source_file_filter, include_deletes=False):
-    # For speed, we do two passes, checking first the full file.  Shelling out
-    # to the SCM to determine the changed region can be quite expensive on
-    # Win32.  Assuming that most files will be kept problem-free, we can
-    # skip the SCM operations most of the time.
-    for line in f.NewContents():
-      if not callable_rule(line):
-        # Violation found in full text; re-run on just the changed contents.
-        for line_num, line in f.ChangedContents():
-          if not callable_rule(line):
-            errors.append(error_formatter(f.LocalPath(), line_num, line))
-  return errors
-
-
 def CheckChangeHasNoTabs(input_api, output_api, source_file_filter=None):
   """Checks that there are no tab characters in any of the text files to be
   submitted.
@@ -262,10 +225,10 @@ def CheckChangeHasNoTabs(input_api, output_api, source_file_filter=None):
     return (not input_api.os_path.basename(affected_file.LocalPath()) in
                 ('Makefile', 'makefile') and
             source_file_filter(affected_file))
-
-  tabs = _FindNewViolationsOfRule(lambda line : '\t' not in line,
-                                  input_api, filter_more)
-
+  tabs = []
+  for f, line_num, line in input_api.RightHandSideLines(filter_more):
+    if '\t' in line:
+      tabs.append('%s, line %s' % (f.LocalPath(), line_num))
   if tabs:
     return [output_api.PresubmitPromptWarning('Found a tab character in:',
                                               long_text='\n'.join(tabs))]
@@ -276,19 +239,21 @@ def CheckChangeTodoHasOwner(input_api, output_api, source_file_filter=None):
   """Checks that the user didn't add TODO(name) without an owner."""
 
   unowned_todo = input_api.re.compile('TO' + 'DO[^(]')
-  errors = _FindNewViolationsOfRule(lambda x : not unowned_todo.search(x),
-                                    input_api, source_file_filter)
-  errors = ['Found TO' + 'DO with no owner in ' + x for x in errors]
-  if errors:
-    return [output_api.PresubmitPromptWarning('\n'.join(errors))]
+  for f, line_num, line in input_api.RightHandSideLines(source_file_filter):
+    if unowned_todo.search(line):
+      text = ('Found TO' + 'DO with no owner in %s, line %s' %
+              (f.LocalPath(), line_num))
+      return [output_api.PresubmitPromptWarning(text)]
   return []
 
 
 def CheckChangeHasNoStrayWhitespace(input_api, output_api,
                                     source_file_filter=None):
   """Checks that there is no stray whitespace at source lines end."""
-  errors = _FindNewViolationsOfRule(lambda line : line.rstrip() == line,
-                                    input_api, source_file_filter)
+  errors = []
+  for f, line_num, line in input_api.RightHandSideLines(source_file_filter):
+    if line.rstrip() != line:
+      errors.append('%s, line %s' % (f.LocalPath(), line_num))
   if errors:
     return [output_api.PresubmitPromptWarning(
         'Found line ending with white spaces in:',
@@ -300,23 +265,28 @@ def CheckLongLines(input_api, output_api, maxlen=80, source_file_filter=None):
   """Checks that there aren't any lines longer than maxlen characters in any of
   the text files to be submitted.
   """
-  def no_long_lines(line):
+  bad = []
+  for f, line_num, line in input_api.RightHandSideLines(source_file_filter):
     # Allow lines with http://, https:// and #define/#pragma/#include/#if/#endif
     # to exceed the maxlen rule.
-    return (len(line) <= maxlen or
-            any((url in line) for url in ('http://', 'https://')) or
-            line.startswith(('#define', '#include', '#import', '#pragma',
-                             '#if', '#endif')))
+    if (len(line) > maxlen and
+        not 'http://' in line and
+        not 'https://' in line and
+        not line.startswith('#define') and
+        not line.startswith('#include') and
+        not line.startswith('#import') and
+        not line.startswith('#pragma') and
+        not line.startswith('#if') and
+        not line.startswith('#endif')):
+      bad.append(
+          '%s, line %s, %s chars' %
+          (f.LocalPath(), line_num, len(line)))
+      if len(bad) == 5:  # Just show the first 5 errors.
+        break
 
-  def format_error(filename, line_num, line):
-    return '%s, line %s, %s chars' % (filename, line_num, len(line))
-
-  errors = _FindNewViolationsOfRule(no_long_lines, input_api,
-                                    source_file_filter,
-                                    error_formatter=format_error)
-  if errors:
+  if bad:
     msg = 'Found lines longer than %s characters (first 5 shown).' % maxlen
-    return [output_api.PresubmitPromptWarning(msg, items=errors[:5])]
+    return [output_api.PresubmitPromptWarning(msg, items=bad)]
   else:
     return []
 
@@ -910,45 +880,24 @@ def PanProjectChecks(input_api, output_api,
   text_files = lambda x: input_api.FilterSourceFile(x, black_list=black_list,
                                                     white_list=white_list)
 
-
-  snapshot_memory = []
-  def snapshot(msg):
-    """Measures & prints performance warning if a rule is running slow."""
-    dt2 = input_api.time.clock()
-    if snapshot_memory:
-      delta_ms = int(1000*(dt2 - snapshot_memory[0]))
-      if delta_ms > 500:
-        print "  %s took a long time: %dms" % (snapshot_memory[1], delta_ms)
-    snapshot_memory[:] = (dt2, msg)
-
   if owners_check:
-    snapshot("checking owners")
     results.extend(input_api.canned_checks.CheckOwners(
         input_api, output_api, source_file_filter=sources))
 
-  snapshot("checking long lines")
   results.extend(input_api.canned_checks.CheckLongLines(
       input_api, output_api, source_file_filter=sources))
-  snapshot( "checking tabs")
   results.extend(input_api.canned_checks.CheckChangeHasNoTabs(
       input_api, output_api, source_file_filter=sources))
-  snapshot( "checking stray whitespace")
   results.extend(input_api.canned_checks.CheckChangeHasNoStrayWhitespace(
       input_api, output_api, source_file_filter=sources))
-  snapshot("checking eol style")
   results.extend(input_api.canned_checks.CheckChangeSvnEolStyle(
       input_api, output_api, source_file_filter=text_files))
-  snapshot("checking svn mime types")
   results.extend(input_api.canned_checks.CheckSvnForCommonMimeTypes(
       input_api, output_api))
-  snapshot("checking license")
   results.extend(input_api.canned_checks.CheckLicense(
       input_api, output_api, license_header, source_file_filter=sources))
-  snapshot("checking nsobjects")
   results.extend(_CheckConstNSObject(
       input_api, output_api, source_file_filter=sources))
-  snapshot("checking singletons")
   results.extend(_CheckSingletonInHeaders(
       input_api, output_api, source_file_filter=sources))
-  snapshot("done")
   return results
