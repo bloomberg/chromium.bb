@@ -41,8 +41,7 @@ class NativeWidgetDelegate {
   // tree if necessary when accelerated painting is enabled.
   virtual void OnNativeWidgetPaint(gfx::Canvas* canvas) = 0;
 
-  // Mouse and key event handlers.
-  virtual bool OnKeyEvent(const KeyEvent& event) = 0;
+  // MouseEvent handlers.
   virtual bool OnMouseEvent(const MouseEvent& event) = 0;
   virtual void OnMouseCaptureLost() = 0;
 };

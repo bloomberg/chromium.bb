@@ -61,8 +61,8 @@ class RootView : public View,
 
   // Process a key event. Send the event to the focused view and up the focus
   // path, and finally to the default keyboard handler, until someone consumes
-  // it. Returns whether anyone consumed the event.
-  bool OnKeyEvent(const KeyEvent& event);
+  // it.  Returns whether anyone consumed the event.
+  bool ProcessKeyEvent(const KeyEvent& event);
 
 #if defined(TOUCH_UI) && defined(UNIT_TEST)
   // For unit testing purposes, we use this method to set a mock
