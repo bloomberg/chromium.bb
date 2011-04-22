@@ -1,0 +1,65 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+# A way to build the nexe as a trusted plugin to validate directly
+# against Chrome on Linux and OS X using
+# --register-pepper-plugins="/path/to/libppapi_graphics_2d.so;application/x-nacl"
+# http://localhost:5103/scons-out/nacl-x86-../staging/ppapi_graphics_2d.html
+
+Import('env')
+
+plugin_env = env.Clone()
+
+sources = ['ppapi_graphics_2d.cc',
+           'scriptable_object.c']
+
+libs = ['imc',
+        'gio',
+        'pthread' ]
+if plugin_env['TARGET_FULLARCH'] == 'x86-64':
+  libs.append('platform_shared')
+else:
+  libs.append('platform')
+
+trusted_plugin = None
+if not plugin_env.Bit('mac'):  # linux, windows, arm
+  plugin_env['COMPONENT_STATIC'] = False;  # Build a .so or .dll, not a .a or .lib
+  trusted_plugin = plugin_env.ComponentLibrary('ppapi_graphics_2d',
+                                               sources,
+                                               EXTRA_LIBS=libs,
+                                               no_import_lib=True)
+else:  # os x
+  plugin_env.Append(
+      FRAMEWORKS=['Cocoa'],
+      LINKFLAGS=['-bundle', '-framework', 'Foundation'],
+      )
+  plugin_env['tools'] = 'target_platform_mac'
+  REZ = '/Developer/Tools/Rez'
+  plugin_env.Command(target='ppapi_graphics_2d.rsrc',
+                     source='ppapi_graphics_2d.r',
+                     action=[Action(REZ + ' -o ${TARGET} ${SOURCE} -useDF')])
+  ppapi_graphics_2d = plugin_env.ComponentProgram('ppapi_graphics_2d',
+                                                  sources,
+                                                  EXTRA_LIBS=libs,
+                                                  no_import_lib=True)
+  bundle_name = '${STAGING_DIR}/ppapi_graphics_2d.bundle'
+  plugin_env.Alias('ppapi_graphics_2d.bundle', [bundle_name])
+  plugin_env.Bundle(bundle_name,
+                    BUNDLE_EXE=ppapi_graphics_2d,
+                    BUNDLE_PKGINFO_FILENAME=0,
+                    BUNDLE_RESOURCES='ppapi_graphics_2d.rsrc',
+                    BUNDLE_INFO_PLIST='Info.plist')
+  plugin_env.AddPluginPrerequisite([bundle_name])
+  trusted_plugin = bundle_name
+
+# Note that the html is required to run this program.
+nacltest_js = '${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js'
+dest_copy = plugin_env.Replicate('$STAGING_DIR',
+                                 ['ppapi_graphics_2d.html',
+                                  'ppapi_graphics_2d.nmf',
+                                  env.File(nacltest_js)]
+                                )
+plugin_env.Depends(trusted_plugin, dest_copy)
+

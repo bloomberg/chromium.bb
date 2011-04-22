@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2011 Google Inc.  All rights reserved. -->
+  <head>
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+    <META HTTP-EQUIV="Expires" CONTENT="-1" />
+    <script type="text/javascript" src="nacltest.js"></script>
+    <script type="application/x-javascript">
+      //<![CDATA[
+function setupTests(tester, plugin) {
+    tester.addTest('PPB_Graphics2D::Create', function() {
+      assert(plugin.testCreate());
+    });
+    tester.addTest('PPB_Graphics2D::IsGraphics2D', function() {
+      assert(plugin.testIsGraphics2D());
+    });
+    tester.addTest('PPB_Graphics2D::Describe', function() {
+      assert(plugin.testDescribe());
+    });
+    tester.addTest('PPB_Graphics2D::PaintImageData', function() {
+      assert(plugin.testPaintImageData());
+    });
+    tester.addTest('PPB_Graphics2D::Scroll', function() {
+      assert(plugin.testScroll());
+    });
+    tester.addTest('PPB_Graphics2D::ReplaceContents', function() {
+      assert(plugin.testReplaceContents());
+    });
+    // TODO(ncbray) async test harness
+    tester.addTest('PPB_Graphics2D::Flush', function() {
+      assert(plugin.testFlush());
+      var got_callback = false;
+
+      // Deliberately global - this called from nexe.
+      FlushCallback = function() {
+        tester.log('Flush callback!');
+        got_callback = true;
+      }
+
+      function wait() {
+        if (!got_callback) {
+          halt_and_callback(1, wait);
+        } else {
+          tester.log('Done waiting.');
+        }
+      }
+
+      wait();
+    });
+}
+      //]]>
+    </script>
+    <title>PPAPI PPB_Graphics2D Test</title>
+  </head>
+  <body>
+    <h1>PPAPI PPB_Graphics2D Test</h1>
+
+    <embed type="application/x-nacl" id="test_nexe"
+           name="nacl_module"
+           nacl="ppapi_graphics_2d.nmf"
+           width="0" height="0" />
+
+    <script type="text/javascript">
+      //<![CDATA[
+      var tester = new Tester();
+      setupTests(tester, $('test_nexe'));
+      tester.waitFor($('test_nexe'));
+      tester.run();
+      //]]>
+    </script>
+  </body>
+</html>

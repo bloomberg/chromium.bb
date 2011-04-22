@@ -1,0 +1,51 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+# This is a C PPAPI
+#
+# ppapi_graphics_2d.html - test driver that loads the nexe and scripts it
+# ppapi_graphics_2d.nmf - manifest file for servier platform specific nexe binary.
+#
+# ppapi_graphics_2d.cc - implementation of PPP interface and PPP_Instance
+# scriptable_object.c - implementation of the scripting interface
+
+Import('env')
+
+env.Prepend(CPPDEFINES=['XP_UNIX'])
+
+nexe = 'ppapi_graphics_2d_%s.nexe' % env.get('TARGET_FULLARCH')
+
+env.Alias('ppapi_graphics_2d.nexe', ['$STAGING_DIR/%s' % nexe])
+
+ppapi_graphics_2d_nexe = env.ComponentProgram(nexe,
+                                              ['ppapi_graphics_2d.cc',
+                                               'scriptable_object.c'],
+                                              EXTRA_LIBS=['ppruntime',
+                                                          'imc',
+                                                          'platform',
+                                                          'gio',
+                                                          'pthread',
+                                                          'm',
+                                                          'srpc'])
+
+# Note that the html is required to run this program.
+dest_copy = env.Replicate('$STAGING_DIR',
+                          ['ppapi_graphics_2d.html',
+                           'ppapi_graphics_2d.nmf',
+                           env.File('${SCONSTRUCT_DIR}/tools/browser_tester/'
+                                    'browserdata/nacltest.js')]
+                          )
+env.Depends(nexe, dest_copy)
+
+node = env.PPAPIBrowserTester('ppapi_graphics_2d_browser_test.out',
+                              url='ppapi_graphics_2d.html',
+                              files=[ppapi_graphics_2d_nexe,
+                                     env.File('ppapi_graphics_2d.nmf'),
+                                     env.File('ppapi_graphics_2d.html')])
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_ppapi_graphics_2d_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())
