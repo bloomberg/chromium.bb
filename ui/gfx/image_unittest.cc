@@ -25,10 +25,6 @@ const bool kUsesSkiaNatively = false;
 #endif
 
 class ImageTest : public testing::Test {
- public:
-  size_t GetRepCount(const gfx::Image& image) {
-    return image.representations_.size();
-  }
 };
 
 namespace gt = gfx::test;
@@ -38,13 +34,13 @@ TEST_F(ImageTest, SkiaToSkia) {
   const SkBitmap* bitmap = static_cast<const SkBitmap*>(image);
   EXPECT_TRUE(bitmap);
   EXPECT_FALSE(bitmap->isNull());
-  EXPECT_EQ(1U, GetRepCount(image));
+  EXPECT_EQ(1U, image.RepresentationCount());
 
   // Make sure double conversion doesn't happen.
   bitmap = static_cast<const SkBitmap*>(image);
   EXPECT_TRUE(bitmap);
   EXPECT_FALSE(bitmap->isNull());
-  EXPECT_EQ(1U, GetRepCount(image));
+  EXPECT_EQ(1U, image.RepresentationCount());
 
   EXPECT_TRUE(image.HasRepresentation(gfx::Image::kSkBitmapRep));
   if (!kUsesSkiaNatively)
@@ -56,11 +52,11 @@ TEST_F(ImageTest, SkiaToSkiaRef) {
 
   const SkBitmap& bitmap = static_cast<const SkBitmap&>(image);
   EXPECT_FALSE(bitmap.isNull());
-  EXPECT_EQ(1U, GetRepCount(image));
+  EXPECT_EQ(1U, image.RepresentationCount());
 
   const SkBitmap* bitmap1 = static_cast<const SkBitmap*>(image);
   EXPECT_FALSE(bitmap1->isNull());
-  EXPECT_EQ(1U, GetRepCount(image));
+  EXPECT_EQ(1U, image.RepresentationCount());
 
   EXPECT_TRUE(image.HasRepresentation(gfx::Image::kSkBitmapRep));
   if (!kUsesSkiaNatively)
@@ -76,11 +72,11 @@ TEST_F(ImageTest, SkiaToPlatform) {
     EXPECT_FALSE(image.HasRepresentation(gt::GetPlatformRepresentationType()));
 
   EXPECT_TRUE(static_cast<gt::PlatformImage>(image));
-  EXPECT_EQ(kRepCount, GetRepCount(image));
+  EXPECT_EQ(kRepCount, image.RepresentationCount());
 
   const SkBitmap& bitmap = static_cast<const SkBitmap&>(image);
   EXPECT_FALSE(bitmap.isNull());
-  EXPECT_EQ(kRepCount, GetRepCount(image));
+  EXPECT_EQ(kRepCount, image.RepresentationCount());
 
   EXPECT_TRUE(image.HasRepresentation(gfx::Image::kSkBitmapRep));
   EXPECT_TRUE(image.HasRepresentation(gt::GetPlatformRepresentationType()));
@@ -97,10 +93,10 @@ TEST_F(ImageTest, PlatformToSkia) {
   const SkBitmap* bitmap = static_cast<const SkBitmap*>(image);
   EXPECT_TRUE(bitmap);
   EXPECT_FALSE(bitmap->isNull());
-  EXPECT_EQ(kRepCount, GetRepCount(image));
+  EXPECT_EQ(kRepCount, image.RepresentationCount());
 
   EXPECT_TRUE(static_cast<gt::PlatformImage>(image));
-  EXPECT_EQ(kRepCount, GetRepCount(image));
+  EXPECT_EQ(kRepCount, image.RepresentationCount());
 
   EXPECT_TRUE(image.HasRepresentation(gfx::Image::kSkBitmapRep));
 }
@@ -108,11 +104,11 @@ TEST_F(ImageTest, PlatformToSkia) {
 TEST_F(ImageTest, PlatformToPlatform) {
   gfx::Image image(gt::CreatePlatformImage());
   EXPECT_TRUE(static_cast<gt::PlatformImage>(image));
-  EXPECT_EQ(1U, GetRepCount(image));
+  EXPECT_EQ(1U, image.RepresentationCount());
 
   // Make sure double conversion doesn't happen.
   EXPECT_TRUE(static_cast<gt::PlatformImage>(image));
-  EXPECT_EQ(1U, GetRepCount(image));
+  EXPECT_EQ(1U, image.RepresentationCount());
 
   EXPECT_TRUE(image.HasRepresentation(gt::GetPlatformRepresentationType()));
   if (!kUsesSkiaNatively)
@@ -133,20 +129,46 @@ TEST_F(ImageTest, SwapRepresentations) {
 
   gfx::Image image1(gt::CreateBitmap());
   const SkBitmap* bitmap1 = image1;
-  EXPECT_EQ(1U, GetRepCount(image1));
+  EXPECT_EQ(1U, image1.RepresentationCount());
 
   gfx::Image image2(gt::CreatePlatformImage());
   const SkBitmap* bitmap2 = image2;
   gt::PlatformImage platform_image = static_cast<gt::PlatformImage>(image2);
-  EXPECT_EQ(kRepCount, GetRepCount(image2));
+  EXPECT_EQ(kRepCount, image2.RepresentationCount());
 
   image1.SwapRepresentations(&image2);
 
   EXPECT_EQ(bitmap2, static_cast<const SkBitmap*>(image1));
   EXPECT_EQ(platform_image, static_cast<gt::PlatformImage>(image1));
   EXPECT_EQ(bitmap1, static_cast<const SkBitmap*>(image2));
-  EXPECT_EQ(kRepCount, GetRepCount(image1));
-  EXPECT_EQ(1U, GetRepCount(image2));
+  EXPECT_EQ(kRepCount, image1.RepresentationCount());
+  EXPECT_EQ(1U, image2.RepresentationCount());
+}
+
+TEST_F(ImageTest, Copy) {
+  const size_t kRepCount = kUsesSkiaNatively ? 1U : 2U;
+
+  gfx::Image image1(gt::CreateBitmap());
+  gfx::Image image2(image1);
+
+  EXPECT_EQ(1U, image1.RepresentationCount());
+  EXPECT_EQ(1U, image2.RepresentationCount());
+  EXPECT_EQ(static_cast<const SkBitmap*>(image1),
+            static_cast<const SkBitmap*>(image2));
+
+  EXPECT_TRUE(static_cast<gt::PlatformImage>(image2));
+  EXPECT_EQ(kRepCount, image2.RepresentationCount());
+  EXPECT_EQ(kRepCount, image1.RepresentationCount());
+}
+
+TEST_F(ImageTest, Assign) {
+  gfx::Image image1(gt::CreatePlatformImage());
+  gfx::Image image2 = image1;
+
+  EXPECT_EQ(1U, image1.RepresentationCount());
+  EXPECT_EQ(1U, image2.RepresentationCount());
+  EXPECT_EQ(static_cast<const SkBitmap*>(image1),
+            static_cast<const SkBitmap*>(image2));
 }
 
 // Integration tests with UI toolkit frameworks require linking against the

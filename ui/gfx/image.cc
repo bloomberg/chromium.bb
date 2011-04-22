@@ -150,35 +150,74 @@ class NSImageRep : public ImageRep {
 };
 #endif
 
+// The Storage class acts similarly to the pixels in a SkBitmap: the Image
+// class holds a refptr instance of Storage, which in turn holds all the
+// ImageReps. This way, the Image can be cheaply copied.
+class ImageStorage : public base::RefCounted<ImageStorage> {
+ public:
+  ImageStorage(gfx::Image::RepresentationType default_type)
+      : default_representation_type_(default_type) {
+  }
+
+  gfx::Image::RepresentationType default_representation_type() {
+    return default_representation_type_;
+  }
+  gfx::Image::RepresentationMap& representations() { return representations_; }
+
+ private:
+  ~ImageStorage() {
+    for (gfx::Image::RepresentationMap::iterator it = representations_.begin();
+         it != representations_.end();
+         ++it) {
+      delete it->second;
+    }
+    representations_.clear();
+  }
+
+  // The type of image that was passed to the constructor. This key will always
+  // exist in the |representations_| map.
+  gfx::Image::RepresentationType default_representation_type_;
+
+  // All the representations of an Image. Size will always be at least one, with
+  // more for any converted representations.
+  gfx::Image::RepresentationMap representations_;
+
+  friend class base::RefCounted<ImageStorage>;
+};
+
 }  // namespace internal
 
 Image::Image(const SkBitmap* bitmap)
-    : default_representation_(Image::kSkBitmapRep) {
+    : storage_(new internal::ImageStorage(Image::kSkBitmapRep)) {
   internal::SkBitmapRep* rep = new internal::SkBitmapRep(bitmap);
   AddRepresentation(rep);
 }
 
 #if defined(OS_LINUX)
 Image::Image(GdkPixbuf* pixbuf)
-    : default_representation_(Image::kGdkPixbufRep) {
+    : storage_(new internal::ImageStorage(Image::kGdkPixbufRep)) {
   internal::GdkPixbufRep* rep = new internal::GdkPixbufRep(pixbuf);
   AddRepresentation(rep);
 }
 #endif
 
 #if defined(OS_MACOSX)
-Image::Image(NSImage* image) : default_representation_(Image::kNSImageRep) {
+Image::Image(NSImage* image)
+    : storage_(new internal::ImageStorage(Image::kNSImageRep)) {
   internal::NSImageRep* rep = new internal::NSImageRep(image);
   AddRepresentation(rep);
 }
 #endif
 
+Image::Image(const Image& other) : storage_(other.storage_) {
+}
+
+Image& Image::operator=(const Image& other) {
+  storage_ = other.storage_;
+  return *this;
+}
+
 Image::~Image() {
-  for (RepresentationMap::iterator it = representations_.begin();
-       it != representations_.end(); ++it) {
-    delete it->second;
-  }
-  representations_.clear();
 }
 
 Image::operator const SkBitmap*() {
@@ -205,30 +244,34 @@ Image::operator NSImage*() {
 #endif
 
 bool Image::HasRepresentation(RepresentationType type) {
-  return representations_.count(type) != 0;
+  return storage_->representations().count(type) != 0;
+}
+
+size_t Image::RepresentationCount() {
+  return storage_->representations().size();
 }
 
 void Image::SwapRepresentations(gfx::Image* other) {
-  representations_.swap(other->representations_);
-  std::swap(default_representation_, other->default_representation_);
+  storage_.swap(other->storage_);
 }
 
 internal::ImageRep* Image::DefaultRepresentation() {
+  RepresentationMap& representations = storage_->representations();
   RepresentationMap::iterator it =
-      representations_.find(default_representation_);
-  DCHECK(it != representations_.end());
+      representations.find(storage_->default_representation_type());
+  DCHECK(it != representations.end());
   return it->second;
 }
 
 internal::ImageRep* Image::GetRepresentation(RepresentationType rep_type) {
   // If the requested rep is the default, return it.
   internal::ImageRep* default_rep = DefaultRepresentation();
-  if (rep_type == default_representation_)
+  if (rep_type == storage_->default_representation_type())
     return default_rep;
 
   // Check to see if the representation already exists.
-  RepresentationMap::iterator it = representations_.find(rep_type);
-  if (it != representations_.end())
+  RepresentationMap::iterator it = storage_->representations().find(rep_type);
+  if (it != storage_->representations().end())
     return it->second;
 
   // At this point, the requested rep does not exist, so it must be converted
@@ -238,13 +281,13 @@ internal::ImageRep* Image::GetRepresentation(RepresentationType rep_type) {
   if (rep_type == Image::kSkBitmapRep) {
     internal::SkBitmapRep* rep = NULL;
 #if defined(OS_LINUX)
-    if (default_representation_ == Image::kGdkPixbufRep) {
+    if (storage_->default_representation_type() == Image::kGdkPixbufRep) {
       internal::GdkPixbufRep* pixbuf_rep = default_rep->AsGdkPixbufRep();
       rep = new internal::SkBitmapRep(
           internal::GdkPixbufToSkBitmap(pixbuf_rep->pixbuf()));
     }
 #elif defined(OS_MACOSX)
-    if (default_representation_ == Image::kNSImageRep) {
+    if (storage_->default_representation_type() == Image::kNSImageRep) {
       internal::NSImageRep* nsimage_rep = default_rep->AsNSImageRep();
       rep = new internal::SkBitmapRep(
           internal::NSImageToSkBitmap(nsimage_rep->image()));
@@ -281,7 +324,7 @@ internal::ImageRep* Image::GetRepresentation(RepresentationType rep_type) {
 }
 
 void Image::AddRepresentation(internal::ImageRep* rep) {
-  representations_.insert(std::make_pair(rep->type(), rep));
+  storage_->representations().insert(std::make_pair(rep->type(), rep));
 }
 
 }  // namespace gfx

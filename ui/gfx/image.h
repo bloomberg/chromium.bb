@@ -8,7 +8,10 @@
 // internally to prevent double-conversion.
 //
 // The lifetime of both the initial representation and any converted ones are
-// tied to the lifetime of the Image object itself.
+// tied to the lifetime of the Image's internal storage. To allow Images to be
+// cheaply passed around by value, the actual image data is stored in a ref-
+// counted member. When all Images referencing this storage are deleted, the
+// actual representations are deleted, too.
 
 #ifndef UI_GFX_IMAGE_H_
 #define UI_GFX_IMAGE_H_
@@ -18,6 +21,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "ui/gfx/native_widget_types.h"  // Forward-declares GdkPixbuf and NSImage.
 
@@ -31,6 +35,7 @@ namespace gfx {
 
 namespace internal {
 class ImageRep;
+class ImageStorage;
 }
 
 class Image {
@@ -40,6 +45,8 @@ class Image {
     kNSImageRep,
     kSkBitmapRep,
   };
+
+  typedef std::map<RepresentationType, internal::ImageRep*> RepresentationMap;
 
   // Creates a new image with the default representation. The object will take
   // ownership of the image.
@@ -52,7 +59,14 @@ class Image {
   explicit Image(NSImage* image);
 #endif
 
-  // Deletes the image and all of its cached representations.
+  // Initializes a new Image by AddRef()ing |other|'s internal storage.
+  Image(const Image& other);
+
+  // Copies a reference to |other|'s storage.
+  Image& operator=(const Image& other);
+
+  // Deletes the image and, if the only owner of the storage, all of its cached
+  // representations.
   ~Image();
 
   // Conversion handlers.
@@ -67,12 +81,13 @@ class Image {
   // Inspects the representations map to see if the given type exists.
   bool HasRepresentation(RepresentationType type);
 
+  // Returns the number of representations.
+  size_t RepresentationCount();
+
   // Swaps this image's internal representations with |other|.
   void SwapRepresentations(gfx::Image* other);
 
  private:
-  typedef std::map<RepresentationType, internal::ImageRep*> RepresentationMap;
-
   // Returns the ImageRep for the default representation.
   internal::ImageRep* DefaultRepresentation();
 
@@ -83,16 +98,11 @@ class Image {
   // Stores a representation into the map.
   void AddRepresentation(internal::ImageRep* rep);
 
-  // The type of image that was passed to the constructor. This key will always
-  // exist in the |representations_| map.
-  RepresentationType default_representation_;
-
-  // All the representations of an Image. Size will always be at least one, with
-  // more for any converted representations.
-  RepresentationMap representations_;
+  // Internal class that holds all the representations. This allows the Image to
+  // be cheaply copied.
+  scoped_refptr<internal::ImageStorage> storage_;
 
   friend class ::ImageTest;
-  DISALLOW_COPY_AND_ASSIGN(Image);
 };
 
 }  // namespace gfx
