@@ -48,7 +48,6 @@ struct x11_compositor {
 	xcb_connection_t	*conn;
 	xcb_screen_t		*screen;
 	xcb_cursor_t		 null_cursor;
-	xcb_generic_event_t     *next_event;
 	struct wl_array		 keys;
 	struct wl_event_source	*xcb_source;
 	struct {
@@ -379,19 +378,18 @@ x11_compositor_find_output(struct x11_compositor *c, xcb_window_t window)
 
 static int
 x11_compositor_next_event(struct x11_compositor *c,
-			  xcb_generic_event_t **event)
+			  xcb_generic_event_t **event, uint32_t mask)
 {
-	if (c->next_event) {
-		*event = c->next_event;
-		c->next_event = NULL;
+	if (mask & WL_EVENT_READABLE) {
+		*event = xcb_poll_for_event(c->conn);
 	} else {
-		*event = xcb_poll_for_event (c->conn);
+		*event = xcb_poll_for_queued_event(c->conn);
 	}
 
 	return *event != NULL;
 }
 
-static void
+static int
 x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 {
 	struct x11_compositor *c = data;
@@ -409,7 +407,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	int i, set;
 
 	prev = NULL;
-	while (x11_compositor_next_event(c, &event)) {
+	while (x11_compositor_next_event(c, &event, mask)) {
 		switch (prev ? prev->response_type & ~0x80 : 0x80) {
 		case XCB_KEY_RELEASE:
 			key_release = (xcb_key_press_event_t *) prev;
@@ -564,18 +562,8 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	default:
 		break;
 	}
-}
 
-static int
-x11_compositor_check_source(struct wl_event_source *source, void *data)
-{
-	struct x11_compositor *c = data;
-
-	/* Really? xcb doesn't have a "get queue length" function that
-	 * doesn't pop an event? */
-	c->next_event = xcb_poll_for_queued_event(c->conn);
-
-	return c->next_event != NULL;
+	return event != NULL;
 }
 
 #define F(field) offsetof(struct x11_compositor, field)
@@ -656,7 +644,6 @@ x11_compositor_create(struct wl_display *display, int width, int height)
 	if (xcb_connection_has_error(c->conn))
 		return NULL;
 
-	c->next_event = NULL;	
 	s = xcb_setup_roots_iterator(xcb_get_setup(c->conn));
 	c->screen = s.data;
 	wl_array_init(&c->keys);
@@ -685,7 +672,7 @@ x11_compositor_create(struct wl_display *display, int width, int height)
 		wl_event_loop_add_fd(loop, xcb_get_file_descriptor(c->conn),
 				     WL_EVENT_READABLE,
 				     x11_compositor_handle_event, c);
-	wl_event_source_check(c->xcb_source, x11_compositor_check_source);
+	wl_event_source_check(c->xcb_source);
 
 	return &c->base;
 }
