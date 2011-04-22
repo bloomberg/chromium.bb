@@ -1137,7 +1137,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
   CheckDownload(browser(), file, file);
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCancelled) {
+// http://crbug.com/80327
+#if defined(OS_CHROMEOS)
+#define MAYBE_DownloadCancelled FLAKY_DownloadCancelled
+#else
+#define MAYBE_DownloadCancelled DownloadCancelled
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadCancelled) {
   ASSERT_TRUE(InitialSetup(false));
   EXPECT_EQ(1, browser()->tab_count());
 
