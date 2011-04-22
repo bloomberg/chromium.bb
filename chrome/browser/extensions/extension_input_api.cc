@@ -8,12 +8,17 @@
 
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/key_identifier_conversion_views.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/common/native_web_keyboard_event.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "views/events/event.h"
 #include "views/ime/input_method.h"
+#include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
 namespace {
@@ -51,7 +56,7 @@ void InputFunction::Run() {
   SendResponse(RunImpl());
 }
 
-views::Widget* SendKeyboardEventInputFunction::GetTopLevelWidget() {
+views::RootView* SendKeyboardEventInputFunction::GetRootView() {
   Browser* browser = GetCurrentBrowser();
   if (!browser)
     return NULL;
@@ -62,7 +67,10 @@ views::Widget* SendKeyboardEventInputFunction::GetTopLevelWidget() {
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(
       window->GetNativeHandle());
-  return browser_view ? browser_view->GetWidget() : NULL;
+  if (!browser_view)
+    return NULL;
+
+  return browser_view->GetRootView();
 }
 
 bool SendKeyboardEventInputFunction::RunImpl() {
@@ -88,28 +96,36 @@ bool SendKeyboardEventInputFunction::RunImpl() {
     return false;
   }
 
-  bool flag = false;
   int flags = prototype_event.flags();
-  flags |= (args->GetBoolean(kAlt, &flag) && flag) ? ui::EF_ALT_DOWN : 0;
-  flags |= (args->GetBoolean(kCtrl, &flag) && flag) ? ui::EF_CONTROL_DOWN : 0;
-  flags |= (args->GetBoolean(kShift, &flag) && flag) ? ui::EF_SHIFT_DOWN : 0;
-  if (args->GetBoolean(kMeta, &flag) && flag) {
+  bool alt = false;
+  if (args->GetBoolean(kAlt, &alt))
+    flags |= alt ? ui::EF_ALT_DOWN : 0;
+  bool ctrl = false;
+  if (args->GetBoolean(kCtrl, &ctrl))
+    flags |= ctrl ? ui::EF_CONTROL_DOWN : 0;
+  bool shift = false;
+  if (args->GetBoolean(kShift, &shift))
+    flags |= shift ? ui::EF_SHIFT_DOWN : 0;
+  bool meta = false;
+  if (args->GetBoolean(kMeta, &meta)) {
     // Views does not have a Meta event flag, so return an error for now.
-    error_ = kUnsupportedModifier;
-    return false;
+    if (meta) {
+      error_ = kUnsupportedModifier;
+      return false;
+    }
   }
 
-  views::Widget* widget = GetTopLevelWidget();
-  if (!widget) {
+  views::RootView* root_view = GetRootView();
+  if (!root_view) {
     error_ = kNoValidRecipientError;
     return false;
   }
 
   views::KeyEvent event(type, prototype_event.key_code(), flags);
-  views::InputMethod* ime = widget->GetInputMethod();
+  views::InputMethod* ime = root_view->GetWidget()->GetInputMethod();
   if (ime) {
     ime->DispatchKeyEvent(event);
-  } else if (!widget->OnKeyEvent(event)) {
+  } else if (!root_view->ProcessKeyEvent(event)) {
     error_ = kKeyEventUnprocessedError;
     return false;
   }

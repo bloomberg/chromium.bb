@@ -291,7 +291,6 @@ class Widget : public internal::NativeWidgetDelegate,
   virtual void OnSizeChanged(const gfx::Size& new_size) OVERRIDE;
   virtual bool HasFocusManager() const OVERRIDE;
   virtual void OnNativeWidgetPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual bool OnKeyEvent(const KeyEvent& event) OVERRIDE;
   virtual bool OnMouseEvent(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
 

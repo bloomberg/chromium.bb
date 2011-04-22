@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "chrome/browser/extensions/extension_function.h"
 
 namespace views {
-class Widget;
+  class RootView;
 }  // namespace views
 
 // Base class for input APIs.
@@ -30,7 +30,7 @@ class SendKeyboardEventInputFunction : public InputFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.sendKeyboardEvent");
 
  private:
-  views::Widget* GetTopLevelWidget();
+  views::RootView* GetRootView();
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INPUT_API_H_
