@@ -35,8 +35,9 @@ untrusted_only = [
     'accept.c',
     'accept_threaded.c']
 
-env.ComponentLibrary('libsrpc',
-                     trusted_untrusted_shared + untrusted_only)
+env.NaClSdkLibrary('libsrpc',
+                   trusted_untrusted_shared + untrusted_only,
+                   LIBS=['nacl', 'pthread'])
 
 
 env.AddLibraryToSdk(['libsrpc'])

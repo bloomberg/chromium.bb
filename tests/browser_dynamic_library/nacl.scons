@@ -20,6 +20,12 @@ libraries = (
     'libgcc_s.so.1',
     'libpthread.so.0',
     'libstdc++.so.6',
+    'libppruntime.so',
+    'libimc.so',
+    'libplatform.so',
+    'libsrpc.so',
+    'libgio.so',
+    'libnacl.so',
     )
 file_mapping = []
 for library_name in libraries:

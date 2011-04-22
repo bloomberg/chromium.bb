@@ -619,10 +619,6 @@ scons-libs-glibc: glibc-adhoc-files
 	    MODE=nacl_extra_sdk --nacl_glibc \
 	    extra_sdk_update_header extra_sdk_update \
 	    targetplatform=x86-$(LIB_BITS) --verbose )
-	# Remove the fake libnacl.so to let libnacl.a be used to run tests.
-	if [ -f $(ARCH_DEST)/lib/libnacl.a ]; then \
-	  rm -f $(ARCH_DEST)/lib/libnacl.so; \
-	fi
 
 NCVAL_STUBOUT=$(abspath $(BUILD_EXTRA_SDK)/opt-$(PLATFORM)-x86-$(LIB_BITS)/staging/ncval_stubout)
 .PHONY: stubout

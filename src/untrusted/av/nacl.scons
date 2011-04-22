@@ -6,7 +6,7 @@
 
 Import('env')
 
-env.ComponentLibrary('libav', ['nacl_av.c'])
+env.NaClSdkLibrary('libav', ['nacl_av.c'], LIBS=['nacl', 'srpc'])
 
 env.AddLibraryToSdk(['libav'])
 env.AddHeaderToSdk(['nacl_av.h'])

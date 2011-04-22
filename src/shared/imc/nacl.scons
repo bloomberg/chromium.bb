@@ -6,9 +6,10 @@
 
 Import('env')
 
-env.ComponentLibrary('imc', ['nacl_imc_common.cc',
-                             'nacl_imc_c.cc',
-                             'nacl/nacl_imc.cc'])
+env.NaClSdkLibrary('imc', ['nacl_imc_common.cc',
+                           'nacl_imc_c.cc',
+                           'nacl/nacl_imc.cc'],
+                          LIBS=['nacl'])
 
 env.AddLibraryToSdk(['imc'])
 env.AddHeaderToSdk(['nacl_imc.h', 'nacl_imc_c.h'])

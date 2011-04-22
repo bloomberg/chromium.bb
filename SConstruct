@@ -204,6 +204,11 @@ def SetUpArgumentBits(env):
       'For nacl-newlib, the default is 1 (static linking). '
       'For nacl-glibc, the default is 0 (dynamic linking).')
 
+  BitFromArgument(env, 'nacl_disable_shared', default=not env.Bit('nacl_glibc'),
+    desc='Do not build shared versions of libraries. '
+      'For nacl-newlib, the default is 1 (static libraries only). '
+      'For nacl-glibc, the default is 0 (both static and shared libraries).')
+
   # Defaults on when --verbose is specified.
   # --verbose sets 'brief_comstr' to False, so this looks a little strange
   BitFromArgument(env, 'target_stats', default=not GetOption('brief_comstr'),
@@ -2458,6 +2463,16 @@ if nacl_env.Bit('host_windows'):
   # NOTE: This is needed because Windows builds are case-insensitive.
   # Without this we use nacl-as, which doesn't handle include directives, etc.
   nacl_env.Replace(ASCOM = '${CCCOM}')
+
+
+def NaClSdkLibrary(env, lib_name, *args, **kwargs):
+  env.ComponentLibrary(lib_name, *args, **kwargs)
+  if not env.Bit('nacl_disable_shared'):
+    env_shared = env.Clone(COMPONENT_STATIC=False)
+    env_shared.ComponentLibrary(lib_name, *args, **kwargs)
+
+nacl_extra_sdk_env.AddMethod(NaClSdkLibrary)
+
 
 # ---------------------------------------------------------------------
 # Special environment for untrusted test binaries that use raw syscalls
