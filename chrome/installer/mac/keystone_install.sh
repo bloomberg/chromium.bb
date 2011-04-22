@@ -391,6 +391,7 @@ main() {
 
   readonly PRODUCT_NAME="Google Chrome"
   readonly APP_DIR="${PRODUCT_NAME}.app"
+  readonly ALTERNATE_APP_DIR="${PRODUCT_NAME} Canary.app"
   readonly FRAMEWORK_NAME="${PRODUCT_NAME} Framework"
   readonly FRAMEWORK_DIR="${FRAMEWORK_NAME}.framework"
   readonly PATCH_DIR=".patch"
@@ -497,12 +498,26 @@ main() {
     update_app="${update_dmg_mount_point}/${APP_DIR}"
     note "update_app = ${update_app}"
 
-    # Make sure that there's something to copy from, and that it's an absolute
-    # path.
-    if [[ "${update_app:0:1}" != "/" ]] ||
-       ! [[ -d "${update_app}" ]]; then
-      err "update_app must be an absolute path to a directory"
+    # Make sure that it's an absolute path.
+    if [[ "${update_app:0:1}" != "/" ]]; then
+      err "update_app must be an absolute path"
       exit 2
+    fi
+
+    # Make sure there's something to copy from.
+    if ! [[ -d "${update_app}" ]]; then
+      update_app="${update_dmg_mount_point}/${ALTERNATE_APP_DIR}"
+      note "update_app = ${update_app}"
+
+      if [[ "${update_app:0:1}" != "/" ]]; then
+        err "update_app (alternate) must be an absolute path"
+        exit 2
+      fi
+
+      if ! [[ -d "${update_app}" ]]; then
+        err "update_app must be a directory"
+        exit 2
+      fi
     fi
 
     # Get some information about the update.
