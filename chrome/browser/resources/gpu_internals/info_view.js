@@ -85,7 +85,8 @@ cr.define('gpu', function() {
       };
 
       // GPU info, basic
-      var diagnostics = this.querySelector('.diagnostics');
+      var diagnosticsDiv = this.querySelector('.diagnostics');
+      var diagnosticsLoadingDiv = this.querySelector('.diagnostics-loading');
       var featureStatusList = this.querySelector('.feature-status-list');
       var problemsDiv = this.querySelector('.problems-div');
       var problemsList = this.querySelector('.problems-list');
@@ -143,14 +144,22 @@ cr.define('gpu', function() {
           this.setTable_('basic-info', []);
 
         if (gpuInfo.diagnostics) {
-          diagnostics.hidden = false;
+          diagnosticsDiv.hidden = false;
+          diagnosticsLoadingDiv.hidden = true;
+          $('diagnostics-table').hidden = false;
           this.setTable_('diagnostics-table', gpuInfo.diagnostics);
+          this.querySelector('diagnostics-status').hidden = true;
+        } else if (gpuInfo.diagnostics === null) {
+          // gpu_internals.cc sets diagnostics to null when it is being loaded
+          diagnosticsDiv.hidden = false;
+          diagnosticsLoadingDiv.hidden = false;
+          $('diagnostics-table').hidden = true;
         } else {
-          diagnostics.hidden = true;
+          diagnosticsDiv.hidden = true;
         }
       } else {
         this.setText_('basic-info', '... loading ...');
-        diagnostics.hidden = true;
+        diagnosticsDiv.hidden = true;
         featureStatusList.textContent = '';
         problemsDiv.hidden = true;
       }

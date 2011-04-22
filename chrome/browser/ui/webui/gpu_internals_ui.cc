@@ -548,7 +548,11 @@ DictionaryValue* GpuInfoToDict(const GPUInfo& gpu_info) {
   info->Set("basic_info", basic_info);
 
 #if defined(OS_WIN)
-  ListValue* dx_info = DxDiagNodeToList(gpu_info.dx_diagnostics);
+  Value* dx_info;
+  if (gpu_info.dx_diagnostics.children.size())
+    dx_info = DxDiagNodeToList(gpu_info.dx_diagnostics);
+  else
+    dx_info = Value::CreateNullValue();
   info->Set("diagnostics", dx_info);
 #endif
 

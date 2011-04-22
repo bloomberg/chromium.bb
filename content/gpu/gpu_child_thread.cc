@@ -115,6 +115,8 @@ bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
 }
 
 void GpuChildThread::OnInitialize() {
+  logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
+
   // Load the GL implementation and locate the bindings before starting the GPU
   // watchdog because this can take a lot of time and the GPU watchdog might
   // terminate the GPU process.
