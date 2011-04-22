@@ -1,6 +1,6 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// Copyright 2010 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can
+// be found in the LICENSE file.
 
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_graphics_2d.h"
 
@@ -49,13 +49,10 @@ PP_Resource Create(PP_Instance instance,
           &resource);
   DebugPrintf("PPB_Graphics2D::Create: %s\n", NaClSrpcErrorString(srpc_result));
   if (srpc_result == NACL_SRPC_RESULT_OK) {
-    scoped_refptr<PluginGraphics2D> graphics_2d =
-        PluginResource::AdoptAs<PluginGraphics2D>(resource);
-    if (graphics_2d.get()) {
-      return resource;
-    }
+    return resource;
+  } else {
+    return kInvalidResourceId;
   }
-  return kInvalidResourceId;
 }
 
 PP_Bool IsGraphics2D(PP_Resource resource) {
