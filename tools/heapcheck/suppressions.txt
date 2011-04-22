@@ -1405,12 +1405,17 @@
    fun:browser_sync::SyncerThread::DoSyncSessionJob
 }
 {
-   bug_79651
+   bug_79651_a
    Heapcheck:Leak
    ...
-   fun:SingleLoginAttempt
-   fun:notifier::Login::StartConnection
    fun:sync_notifier::InvalidationNotifier::UpdateCredentials
+   fun:sync_notifier::::InvalidationNotifierTest_Basic_Test::TestBody
+}
+{
+   bug_79651_b
+   Heapcheck:Leak
+   ...
+   fun:basic_string
    fun:sync_notifier::::InvalidationNotifierTest_Basic_Test::TestBody
 }
 {
