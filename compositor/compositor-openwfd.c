@@ -454,7 +454,7 @@ handle_port_state_change(struct wfd_compositor *ec)
 	return 0;
 }
 
-static void
+static int
 on_wfd_event(int fd, uint32_t mask, void *data)
 {
 	struct wfd_compositor *c = data;
@@ -482,7 +482,7 @@ on_wfd_event(int fd, uint32_t mask, void *data)
 		}
 
 		if (output == NULL)
-			return;
+			return 1;
 
 		wlsc_output_finish_frame(&output->base,
 					 c->start_time + bind_time);
@@ -491,8 +491,10 @@ on_wfd_event(int fd, uint32_t mask, void *data)
 		handle_port_state_change(c);
 		break;
 	default:
-		return;
+		return 1;
 	}
+
+	return 1;
 }
 
 static void
