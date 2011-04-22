@@ -212,6 +212,7 @@ class StatusController {
   void increment_num_successful_bookmark_commits();
   void increment_num_updates_downloaded_by(int value);
   void increment_num_tombstone_updates_downloaded_by(int value);
+  void set_types_needing_local_migration(const syncable::ModelTypeSet& types);
   void set_unsynced_handles(const std::vector<int64>& unsynced_handles);
 
   void set_commit_set(const OrderedCommitSet& commit_set);

@@ -282,8 +282,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     virtual void OnPassphraseAccepted(const std::string& bootstrap_token);
     virtual void OnStopSyncingPermanently();
     virtual void OnUpdatedToken(const std::string& token);
-    virtual void OnMigrationNeededForTypes(
-        const syncable::ModelTypeSet& types);
     virtual void OnClearServerDataFailed();
     virtual void OnClearServerDataSucceeded();
     virtual void OnEncryptionComplete(
@@ -482,10 +480,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // Called to handle success/failure of clearing server data
     void HandleClearServerDataSucceededOnFrontendLoop();
     void HandleClearServerDataFailedOnFrontendLoop();
-
-    // Called to handle a migration for |types|.
-    void HandleMigrationNeededOnFrontendLoop(
-        const syncable::ModelTypeSet& types);
 
     // Called from Core::OnInitializationComplete to handle updating
     // frontend thread components.

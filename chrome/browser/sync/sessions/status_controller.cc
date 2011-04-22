@@ -51,6 +51,11 @@ void StatusController::increment_num_updates_downloaded_by(int value) {
   shared_.syncer_status.mutate()->num_updates_downloaded_total += value;
 }
 
+void StatusController::set_types_needing_local_migration(
+    const syncable::ModelTypeSet& types) {
+  shared_.syncer_status.mutate()->types_needing_local_migration = types;
+}
+
 void StatusController::increment_num_tombstone_updates_downloaded_by(
     int value) {
   shared_.syncer_status.mutate()->num_tombstone_updates_downloaded_total +=

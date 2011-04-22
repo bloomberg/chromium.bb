@@ -893,6 +893,11 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
 
   host_->last_snapshot_.reset(snapshot);
 
+  const syncable::ModelTypeSet& to_migrate =
+      snapshot->syncer_status.types_needing_local_migration;
+  if (!to_migrate.empty())
+    host_->frontend_->OnMigrationNeededForTypes(to_migrate);
+
   // If we are waiting for a configuration change, check here to see
   // if this sync cycle has initialized all of the types we've been
   // waiting for.
@@ -906,10 +911,7 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
         found_all_added &= snapshot->initial_sync_ended.test(*it);
     }
     if (!found_all_added) {
-      LOG(WARNING) << "Update didn't return updates for all types requested.";
-      // This is typically an error case and sync won't make forward progress.
-      // The exception is backend migration-during-configuration. We'll reset
-      // state below to allow for a future call to ConfigureDataTypes.
+      NOTREACHED() << "Update didn't return updates for all types requested.";
     } else {
       host_->pending_download_state_->ready_task->Run();
     }
@@ -997,12 +999,6 @@ void SyncBackendHost::Core::OnUpdatedToken(const std::string& token) {
       &Core::NotifyUpdatedToken, token));
 }
 
-void SyncBackendHost::Core::OnMigrationNeededForTypes(
-    const syncable::ModelTypeSet& types) {
-  host_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &Core::HandleMigrationNeededOnFrontendLoop, types));
-}
-
 void SyncBackendHost::Core::OnClearServerDataSucceeded() {
   host_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
       &Core::HandleClearServerDataSucceededOnFrontendLoop));
@@ -1056,16 +1052,6 @@ void SyncBackendHost::Core::HandleAuthErrorEventOnFrontendLoop(
 
   host_->last_auth_error_ = new_auth_error;
   host_->frontend_->OnAuthError();
-}
-
-void SyncBackendHost::Core::HandleMigrationNeededOnFrontendLoop(
-    const syncable::ModelTypeSet& types) {
-  if (!host_ || !host_->frontend_)
-    return;
-
-  DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
-
-  host_->frontend_->OnMigrationNeededForTypes(types);
 }
 
 void SyncBackendHost::Core::RouteJsEventOnFrontendLoop(

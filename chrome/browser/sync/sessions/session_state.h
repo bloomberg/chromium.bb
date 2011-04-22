@@ -75,6 +75,10 @@ struct SyncerStatus {
   // Download event counters.
   int num_updates_downloaded_total;
   int num_tombstone_updates_downloaded_total;
+
+  // If the syncer encountered a MIGRATION_DONE code, these are the types that
+  // the client must now "migrate", by purging and re-downloading all updates.
+  syncable::ModelTypeSet types_needing_local_migration;
 };
 
 // Counters for various errors that can occur repeatedly during a sync session.

@@ -110,7 +110,6 @@ void AllStatus::OnSyncEngineEvent(const SyncEngineEvent& event) {
     case SyncEngineEvent::UPDATED_TOKEN:
     case SyncEngineEvent::CLEAR_SERVER_DATA_FAILED:
     case SyncEngineEvent::CLEAR_SERVER_DATA_SUCCEEDED:
-    case SyncEngineEvent::MIGRATION_NEEDED_FOR_TYPES:
        break;
     default:
       LOG(ERROR) << "Unrecognized Syncer Event: " << event.what_happened;

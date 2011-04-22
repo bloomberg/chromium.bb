@@ -90,9 +90,7 @@ void SyncerProtoUtil::HandleMigrationDoneResponse(
     to_migrate.insert(syncable::GetModelTypeFromExtensionFieldNumber(
         response->migrated_data_type_id(i)));
   }
-  SyncEngineEvent event(SyncEngineEvent::MIGRATION_NEEDED_FOR_TYPES);
-  event.types_to_migrate = to_migrate;
-  session->context()->NotifyListeners(event);
+  session->status_controller()->set_types_needing_local_migration(to_migrate);
 }
 
 // static

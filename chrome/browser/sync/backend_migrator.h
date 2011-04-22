@@ -27,7 +27,6 @@ class BackendMigrator : public NotificationObserver,
     WAITING_TO_START,   // Waiting for previous configuration to finish.
     DISABLING_TYPES,    // Exit criteria: SYNC_CONFIGURE_DONE for enabled
                         // types _excluding_ |to_migrate_|.
-    STARTED_MIGRATING = DISABLING_TYPES,
     WAITING_FOR_PURGE,  // Exit criteria: SyncCycleEnded for enabled types
                         // excluding |to_migrate|
     REENABLING_TYPES,   // Exit criteria: SYNC_CONFIGURE_DONE for enabled

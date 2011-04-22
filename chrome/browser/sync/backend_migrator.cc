@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/string_number_conversions.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/sessions/session_state.h"
@@ -46,7 +47,7 @@ void BackendMigrator::MigrateTypes(const syncable::ModelTypeSet& types) {
     to_migrate_ = temp;
   }
 
-  if (state_ >= STARTED_MIGRATING) {
+  if (HasStartedMigrating()) {
     VLOG(1) << "BackendMigrator::MigrateTypes: STARTED_MIGRATING early-out.";
     restart_migration_ = true;
     return;
@@ -159,6 +160,11 @@ void BackendMigrator::Observe(NotificationType type,
   } else if (state_ == REENABLING_TYPES) {
     // We're done!
     state_ = IDLE;
+
+    std::stringstream ss;
+    std::copy(to_migrate_.begin(), to_migrate_.end(),
+              std::ostream_iterator<syncable::ModelType>(ss, ","));
+    VLOG(1) << "BackendMigrator: Migration complete for: " << ss.str();
     to_migrate_.clear();
   }
 }
