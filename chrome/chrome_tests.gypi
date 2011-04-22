@@ -191,8 +191,6 @@
         '../content/browser/tab_contents/test_tab_contents.h',
         '../content/common/notification_observer_mock.cc',
         '../content/common/notification_observer_mock.h',
-        '../ui/gfx/image_unittest_util.h',
-        '../ui/gfx/image_unittest_util.cc',
       ],
       'conditions': [
         ['OS=="linux"', {
