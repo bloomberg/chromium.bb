@@ -9,12 +9,18 @@
 #include <string>
 #include <vector>
 
-#include "base/time.h"
+#include "base/basictypes.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-
-using browser_sync::sessions::SyncSessionSnapshot;
+#include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 
 class Profile;
+
+namespace browser_sync {
+  namespace sessions {
+    struct SyncSessionSnapshot;
+  }
+}
 
 // An instance of this class is basically our notion of a "sync client" for
 // automation purposes. It harnesses the ProfileSyncService member of the
@@ -112,7 +118,8 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   void DisableSyncForAllDatatypes();
 
   // Returns a snapshot of the current sync session.
-  const SyncSessionSnapshot* GetLastSessionSnapshot() const;
+  const browser_sync::sessions::SyncSessionSnapshot*
+      GetLastSessionSnapshot() const;
 
   // Encrypt the datatype |type|. This method will block while the sync backend
   // host performs the encryption or a timeout is reached. Returns false if

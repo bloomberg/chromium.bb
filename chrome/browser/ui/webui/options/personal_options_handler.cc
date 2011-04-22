@@ -97,9 +97,6 @@ void PersonalOptionsHandler::GetLocalizedValues(
         l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_BUTTON_LABEL));
   }
 
-  localized_strings->SetString("privacyDashboardLink",
-      l10n_util::GetStringUTF16(IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL));
-
   localized_strings->SetString("passwords",
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_GROUP_NAME));
   localized_strings->SetString("passwordsAskToSave",

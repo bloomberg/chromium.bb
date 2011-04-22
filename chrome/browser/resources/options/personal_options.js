@@ -94,7 +94,7 @@ cr.define('options', function() {
       }
     },
 
-    showStopSyncingOverlay_: function(event) {
+    showStopSyncingOverlay_: function() {
       AlertOverlay.show(localStrings.getString('stop_syncing_title'),
                         localStrings.getString('stop_syncing_explanation'),
                         localStrings.getString('stop_syncing_confirm'),

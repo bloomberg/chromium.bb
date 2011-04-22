@@ -25,6 +25,7 @@ var Preferences = options.Preferences;
 var ProxyOptions = options.ProxyOptions;
 var SearchEngineManager = options.SearchEngineManager;
 var SearchPage = options.SearchPage;
+var SyncSetupOverlay = options.SyncSetupOverlay;
 
 /**
  * DOMContentLoaded handler, sets up the page.
@@ -138,6 +139,8 @@ function load() {
                               PersonalOptions.getInstance());
   OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance(),
                               BrowserOptions.getInstance());
+  OptionsPage.registerOverlay(SyncSetupOverlay.getInstance(),
+                              PersonalOptions.getInstance());
 
   if (cr.isChromeOS) {
     OptionsPage.register(AccountsOptions.getInstance());

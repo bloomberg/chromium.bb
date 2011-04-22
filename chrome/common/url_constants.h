@@ -180,6 +180,7 @@ extern const char kLanguageOptionsSubPage[];
 extern const char kPersonalOptionsSubPage[];
 extern const char kPasswordManagerSubPage[];
 extern const char kSearchEnginesSubPage[];
+extern const char kSyncSetupSubPage[];
 #if defined(OS_CHROMEOS)
 extern const char kInternetOptionsSubPage[];
 extern const char kSystemOptionsSubPage[];

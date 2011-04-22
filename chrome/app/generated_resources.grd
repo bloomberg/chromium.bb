@@ -8626,6 +8626,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_FIRST_PASSPHRASE_TITLE" desc="Title for dialog setting up first passphrase.">
         Sync your passwords
       </message>
+      <message name="IDS_SYNC_PASSPHRASE_ENCRYPTION_MESSAGE" desc="Message explaining that passwords are encrypted.">
+        For added security, <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> will encrypt your passwords.
+      </message>
       <message name="IDS_SYNC_FIRST_PASSPHRASE_MESSAGE" desc="Message for setting up first passphrase.">
         <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> can now sync your passwords; your data will be encrypted with your Google Account password or a passphrase of your choosing.
       </message>
@@ -8729,6 +8732,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Customize Sync dialog, tab labels -->
+      <message name="IDS_SYNC_SETUP_CONFIGURE_TITLE" desc="The title of the Customize page of the sync setup dialog.">
+        Customize Sync Preferences
+      </message>
       <message name="IDS_SYNC_DATA_TYPES_TAB_NAME" desc="The title of the Data Types tab in the customize sync dialog.">
         Data Types
       </message>
@@ -8863,7 +8869,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> sync makes it easy to share your data (such as bookmarks and preferences) between your computers.
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> synchronizes your data by storing it online with Google when you sign in with your Google Account.
       </message>
-      <message name="IDS_SYNC_LOGIN_SIGNIN" desc="The title of the sync setup dialog.">
+      <message name="IDS_SYNC_SETUP_TITLE" desc="The title of the Sync Setup overlay.">
         Sign in with your Google Account
       </message>
       <message name="IDS_SYNC_LOGIN_SIGNIN_PREFIX" desc="The first part of the sentence that is displayed after the login info">

@@ -4,32 +4,31 @@
 
 #include "chrome/browser/sync/profile_sync_service.h"
 
+#include <stddef.h>
 #include <map>
+#include <ostream>
 #include <set>
+#include <utility>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
+#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/stl_util-inl.h"
-#include "base/stringprintf.h"
 #include "base/string16.h"
+#include "base/stringprintf.h"
 #include "base/task.h"
-#include "base/threading/thread_restrictions.h"
-#include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_signin.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/net/gaia/token_service.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/glue/autofill_profile_data_type_controller.h"
+#include "chrome/browser/sync/backend_migrator.h"
+#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
-#include "chrome/browser/sync/backend_migrator.h"
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/signin_manager.h"
@@ -43,10 +42,9 @@
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
-#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "net/base/cookie_monster.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/native_widget_types.h"
 
 using browser_sync::ChangeProcessor;
 using browser_sync::DataTypeController;
@@ -690,7 +688,6 @@ void ProfileSyncService::ShowLoginDialog(gfx::NativeWindow parent_window) {
     auth_error_time_ = base::TimeTicks();  // Reset auth_error_time_ to null.
   }
 
-  wizard_.SetParent(parent_window);
   wizard_.Step(SyncSetupWizard::GAIA_LOGIN);
 
   NotifyObservers();
@@ -721,7 +718,6 @@ void ProfileSyncService::ShowConfigure(
     wizard_.Focus();
     return;
   }
-  wizard_.SetParent(parent_window);
 
   if (sync_everything)
     wizard_.Step(SyncSetupWizard::SYNC_EVERYTHING);
@@ -735,7 +731,7 @@ void ProfileSyncService::PromptForExistingPassphrase(
     wizard_.Focus();
     return;
   }
-  wizard_.SetParent(parent_window);
+
   wizard_.Step(SyncSetupWizard::ENTER_PASSPHRASE);
 }
 
@@ -816,7 +812,7 @@ void ProfileSyncService::OnUserSubmittedAuth(
   if (!signin_.get()) {
     // In ChromeOS we sign in during login, so we do not instantiate signin_.
     // If this function gets called, we need to re-authenticate (e.g. for
-    // two factor signin), so instantiante signin_ here.
+    // two factor signin), so instantiate signin_ here.
     signin_.reset(new SigninManager());
     signin_->Initialize(profile_);
   }
@@ -848,6 +844,7 @@ void ProfileSyncService::OnUserChoseDatatypes(bool sync_everything,
     NOTREACHED();
     return;
   }
+
   profile_->GetPrefs()->SetBoolean(prefs::kKeepEverythingSynced,
       sync_everything);
 
@@ -862,7 +859,6 @@ void ProfileSyncService::OnUserCancelledDialog() {
     expect_sync_configuration_aborted_ = true;
     DisableForUser();
   }
-  wizard_.SetParent(NULL);
 
   // Though an auth could still be in progress, once the dialog is closed we
   // don't want the UI to stay stuck in the "waiting for authentication" state

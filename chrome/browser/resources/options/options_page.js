@@ -205,7 +205,8 @@ cr.define('options', function() {
     if ((!rootPage || !rootPage.sticky) && overlay.parentPage)
       this.showPageByName(overlay.parentPage.name, false);
 
-    this.registeredOverlayPages[overlayName].visible = true;
+    overlay.visible = true;
+    if (overlay.didShowPage) overlay.didShowPage();
     return true;
   };
 
@@ -241,6 +242,7 @@ cr.define('options', function() {
       return;
 
     overlay.visible = false;
+    if (overlay.didClosePage) overlay.didClosePage();
     this.updateHistoryState_();
   };
 

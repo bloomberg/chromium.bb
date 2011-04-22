@@ -18,7 +18,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/native_widget_types.h"
 
-class FlowHandler;
+class SyncSetupFlowHandler;
 class SyncSetupFlowContainer;
 
 // A structure which contains all the configuration information for sync.
@@ -36,8 +36,9 @@ struct SyncConfiguration {
 
 // The state machine used by SyncSetupWizard, exposed in its own header
 // to facilitate testing of SyncSetupWizard.  This class is used to open and
-// run the html dialog and deletes itself when the dialog closes.
-class SyncSetupFlow : public HtmlDialogUIDelegate {
+// run the sync setup overlay in tabbed options and deletes itself when the
+// overlay closes.
+class SyncSetupFlow {
  public:
   virtual ~SyncSetupFlow();
 
@@ -47,8 +48,7 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   static SyncSetupFlow* Run(ProfileSyncService* service,
                             SyncSetupFlowContainer* container,
                             SyncSetupWizard::State start,
-                            SyncSetupWizard::State end,
-                            gfx::NativeWindow parent_window);
+                            SyncSetupWizard::State end);
 
   // Fills |args| with "user" and "error" arguments by querying |service|.
   static void GetArgsForGaiaLogin(
@@ -66,42 +66,14 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
       bool tried_setting_explicit_passphrase,
       DictionaryValue* args);
 
+  void AttachSyncSetupHandler(SyncSetupFlowHandler* handler);
+
   // Triggers a state machine transition to advance_state.
   void Advance(SyncSetupWizard::State advance_state);
 
   // Focuses the dialog.  This is useful in cases where the dialog has been
   // obscured by a browser window.
   void Focus();
-
-  // HtmlDialogUIDelegate implementation.
-  // Get the HTML file path for the content to load in the dialog.
-  virtual GURL GetDialogContentURL() const;
-
-  // HtmlDialogUIDelegate implementation.
-  virtual void GetWebUIMessageHandlers(
-      std::vector<WebUIMessageHandler*>* handlers) const;
-
-  // HtmlDialogUIDelegate implementation.
-  // Get the size of the dialog.
-  virtual void GetDialogSize(gfx::Size* size) const;
-
-  // HtmlDialogUIDelegate implementation.
-  // Gets the JSON string input to use when opening the dialog.
-  virtual std::string GetDialogArgs() const;
-
-  // HtmlDialogUIDelegate implementation.
-  // A callback to notify the delegate that the dialog closed.
-  virtual void OnDialogClosed(const std::string& json_retval);
-
-  // HtmlDialogUIDelegate implementation.
-  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog) {}
-
-  // HtmlDialogUIDelegate implementation.
-  virtual std::wstring GetDialogTitle() const;
-
-  // HtmlDialogUIDelegate implementation.
-  virtual bool IsDialogModal() const;
-  virtual bool ShouldShowDialogTitle() const;
 
   void OnUserSubmittedAuth(const std::string& username,
                            const std::string& password,
@@ -119,10 +91,13 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
 
   // The 'first passphrase' screen is for users migrating from a build
   // without passwords, who are prompted to make a passphrase choice.
+  // TODO(jhawkins): This is no longer used; remove this method.
   void OnFirstPassphraseEntry(const std::string& option,
                               const std::string& passphrase);
 
   void OnGoToDashboard();
+
+  void OnDialogClosed(const std::string& json_retval);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, InitialStepLogin);
@@ -141,13 +116,16 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   // Use static Run method to get an instance.
   SyncSetupFlow(SyncSetupWizard::State start_state,
                 SyncSetupWizard::State end_state,
-                const std::string& args, SyncSetupFlowContainer* container,
+                const std::string& args,
+                SyncSetupFlowContainer* container,
                 ProfileSyncService* service);
 
   // Returns true if |this| should transition its state machine to |state|
   // based on |current_state_|, or false if that would be nonsense or is
   // a no-op.
   bool ShouldAdvance(SyncSetupWizard::State state);
+
+  void ActivateState(SyncSetupWizard::State state);
 
   SyncSetupFlowContainer* container_;  // Our container.  Don't own this.
   std::string dialog_start_args_;  // The args to pass to the initial page.
@@ -158,17 +136,11 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   // Time that the GAIA_LOGIN step was received.
   base::TimeTicks login_start_time_;
 
-  // The handler needed for the entire flow.
-  FlowHandler* flow_handler_;
-  mutable bool owns_flow_handler_;
+  // The handler needed for the entire flow. Weak reference.
+  SyncSetupFlowHandler* flow_handler_;
 
-  // We need this to propagate back all user settings changes.
+  // We need this to propagate back all user settings changes. Weak reference.
   ProfileSyncService* service_;
-
-  // Currently used only on OS X
-  // TODO(akalin): Add the necessary support to the other OSes and use
-  // this for them.
-  gfx::NativeWindow html_dialog_window_;
 
   // Set to true if we've tried creating/setting an explicit passphrase, so we
   // can appropriately reflect this in the UI.
@@ -194,47 +166,6 @@ class SyncSetupFlowContainer {
   SyncSetupFlow* flow_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupFlowContainer);
-};
-
-// The FlowHandler connects the state machine to the dialog backing HTML and
-// JS namespace by implementing WebUIMessageHandler and being invoked by the
-// SyncSetupFlow.  Exposed here to facilitate testing.
-class FlowHandler : public WebUIMessageHandler {
- public:
-  FlowHandler()  {}
-  virtual ~FlowHandler() {}
-
-  // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
-
-  // Callbacks from the page.
-  void HandleSubmitAuth(const ListValue* args);
-  void HandleConfigure(const ListValue* args);
-  void HandlePassphraseEntry(const ListValue* args);
-  void HandlePassphraseCancel(const ListValue* args);
-  void HandleFirstPassphrase(const ListValue* args);
-  void HandleGoToDashboard(const ListValue* args);
-
-  // These functions control which part of the HTML is visible.
-  void ShowGaiaLogin(const DictionaryValue& args);
-  void ShowGaiaSuccessAndClose();
-  void ShowGaiaSuccessAndSettingUp();
-  void ShowConfigure(const DictionaryValue& args);
-  void ShowPassphraseEntry(const DictionaryValue& args);
-  void ShowFirstPassphrase(const DictionaryValue& args);
-  void ShowSettingUp();
-  void ShowSetupDone(const std::wstring& user);
-  void ShowFirstTimeDone(const std::wstring& user);
-
-  void set_flow(SyncSetupFlow* flow) {
-    flow_ = flow;
-  }
-
- private:
-  void ExecuteJavascriptInIFrame(const std::wstring& iframe_xpath,
-                                 const std::wstring& js);
-  SyncSetupFlow* flow_;
-  DISALLOW_COPY_AND_ASSIGN(FlowHandler);
 };
 
 #endif  // CHROME_BROWSER_SYNC_SYNC_SETUP_FLOW_H_

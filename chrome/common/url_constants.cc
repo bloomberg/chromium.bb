@@ -187,6 +187,7 @@ const char kLanguageOptionsSubPage[] = "languages";
 const char kPersonalOptionsSubPage[] =  "personal";
 const char kPasswordManagerSubPage[] =  "passwords";
 const char kSearchEnginesSubPage[] = "searchEngines";
+const char kSyncSetupSubPage[] = "syncSetup";
 #if defined(OS_CHROMEOS)
 const char kInternetOptionsSubPage[] = "internet";
 const char kSystemOptionsSubPage[] = "system";

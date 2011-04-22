@@ -7,9 +7,10 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "ui/gfx/native_widget_types.h"
 
+class SyncSetupFlow;
 class SyncSetupFlowContainer;
+class SyncSetupFlowHandler;
 
 class ProfileSyncService;
 
@@ -71,7 +72,7 @@ class SyncSetupWizard {
   // not visible.
   void Focus();
 
-  void SetParent(gfx::NativeWindow parent_window);
+  SyncSetupFlow* AttachSyncSetupHandler(SyncSetupFlowHandler* handler);
 
  private:
   // If we just need to pop open an individual dialog, say to collect
@@ -87,7 +88,7 @@ class SyncSetupWizard {
 
   SyncSetupFlowContainer* flow_container_;
 
-  gfx::NativeWindow parent_window_;
+  SyncSetupFlowHandler* flow_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupWizard);
 };

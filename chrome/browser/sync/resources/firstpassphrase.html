@@ -146,51 +146,6 @@ html[os='mac'] input[type='submit'] {
 </script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily" onload="setupDialog();">
-<form id="form" onSubmit="sendValuesAndClose(); return false;">
-  <div class="sync-header" id="title" i18n-content="title"></div>
-  <div class="sync-instructions" id="instructions"
-       i18n-content="instructions"></div>
-  <div>
-    <input name="option" type="radio" value="google"
-           id="google-option" onchange="onRadioChange();">
-      <label for="google-option" i18n-content="googleOption"></label>
-    </input>
-  </div>
-  <div>
-    <input name="option" type="radio" value="explicit"
-           id="explicit-option" onchange="onRadioChange();">
-    <div id="learn-more-link">
-      <a i18n-values="href:encryptionhelpurl" target="_blank"
-         i18n-content="learnmore"></a>
-    </div>
-    <label for="explicit-option" i18n-content="explicitOption"></label>
-    </input>
-  </div>
 
-  <div class="sync-section" id="section-explicit">
-    <div i18n-content="sectionExplicitMessage"></div>
-    <div>
-      <div i18n-content="passphraseLabel" id="passphraseLabel"></div>
-      <input id="passphrase" name="passphrase" label="passphraseLabel"
-             type="password"/>
-    </div>
-    <div>
-      <div i18n-content="confirmLabel" id="confirmPassphraseLabel">
-      </div>
-      <input id="confirmpassphrase" name="confirmpassphrase" type="password"
-             label="confirmPassphraseLabel" />
-    </div>
-    <div class="error" style="display:none"
-         id="emptyerror" i18n-content="emptyErrorMessage"></div>
-    <div class="error" style="display:none"
-         id="mismatcherror" i18n-content="mismatchErrorMessage"></div>
-  </div>
-
-  <div class="sync-footer">
-    <input id="okButton" type="submit" i18n-values="value:syncpasswords" />
-    <input id="noThanksButton" type="submit" i18n-values="value:nothanks"
-           onclick="optOutOfPasswordsAndClose(); return false;"/>
-  </div>
-</form>
 </body>
 </html>

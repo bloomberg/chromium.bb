@@ -13,36 +13,47 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
+#include "base/task.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "base/tracked.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
-#include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/js_event_handler_list.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
-#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
+#include "chrome/browser/sync/syncable/autofill_migration.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "content/common/notification_type.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/native_widget_types.h"
 
 class NotificationDetails;
 class NotificationSource;
-class NotificationType;
 class Profile;
 class ProfileSyncFactory;
-class TabContents;
+class SigninManager;
 
 namespace browser_sync {
 class BackendMigrator;
-class SessionModelAssociator;
+class ChangeProcessor;
+class DataTypeManager;
 class JsFrontend;
-}  // namespace browser_sync
+class SessionModelAssociator;
+namespace sessions { struct SyncSessionSnapshot; }
+}
+
+namespace sync_api {
+class BaseTransaction;
+struct SyncCredentials;
+struct UserShare;
+}
 
 // ProfileSyncService is the layer between browser subsystems like bookmarks,
 // and the sync backend.  Each subsystem is logically thought of as being
@@ -229,6 +240,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     return wizard_.IsVisible();
   }
   virtual void ShowLoginDialog(gfx::NativeWindow parent_window);
+  SyncSetupWizard& get_wizard() { return wizard_; }
 
   // This method handles clicks on "sync error" UI, showing the appropriate
   // dialog for the error condition (relogin / enter passphrase).

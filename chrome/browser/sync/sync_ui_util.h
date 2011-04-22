@@ -32,8 +32,6 @@ enum MessageType {
 // TODO(akalin): audit the use of ProfileSyncService* service below,
 // and use const ProfileSyncService& service where possible.
 
-string16 GetLoginMessageForEncryption();
-
 // Create status and link labels for the current status labels and link text
 // by querying |service|.
 MessageType GetStatusLabels(ProfileSyncService* service,

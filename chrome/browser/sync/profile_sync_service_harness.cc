@@ -4,17 +4,23 @@
 
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 
+#include <stddef.h>
 #include <algorithm>
+#include <iterator>
+#include <ostream>
+#include <set>
 #include <vector>
 
+#include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "chrome/browser/net/gaia/token_service.h"
+#include "base/task.h"
+#include "base/tracked.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/sessions/session_state.h"
-#include "chrome/common/net/gaia/gaia_constants.h"
-#include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "content/common/notification_source.h"
+#include "chrome/browser/sync/signin_manager.h"
+
+using browser_sync::sessions::SyncSessionSnapshot;
 
 // The amount of time for which we wait for a live sync operation to complete.
 static const int kLiveSyncOperationTimeoutMs = 45000;

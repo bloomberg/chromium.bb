@@ -218,20 +218,6 @@ MessageType GetStatusInfoForNewTabPage(ProfileSyncService* service,
 
 }  // namespace
 
-// Returns an HTML chunk for a login prompt related to encryption.
-string16 GetLoginMessageForEncryption() {
-  std::vector<std::string> subst;
-  const base::StringPiece html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_SYNC_ENCRYPTION_LOGIN_HTML));
-  subst.push_back(l10n_util::GetStringUTF8(IDS_SYNC_PLEASE_SIGN_IN));
-  subst.push_back(
-      l10n_util::GetStringFUTF8(IDS_SYNC_LOGIN_FOR_ENCRYPTION,
-                                l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-
-  return UTF8ToUTF16(ReplaceStringPlaceholders(html, subst, NULL));
-}
-
 MessageType GetStatusLabels(ProfileSyncService* service,
                             string16* status_label,
                             string16* link_label) {

@@ -315,7 +315,6 @@ void GaiaAuthFetcher::StartGetUserInfo(const std::string& lsid,
 GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
     const std::string& data,
     const net::URLRequestStatus& status) {
-
   if (!status.is_success()) {
     if (status.status() == net::URLRequestStatus::CANCELED) {
       return GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
@@ -367,7 +366,6 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
 void GaiaAuthFetcher::OnClientLoginFetched(const std::string& data,
                                            const net::URLRequestStatus& status,
                                            int response_code) {
-
   if (status.is_success() && response_code == RC_REQUEST_OK) {
     VLOG(1) << "ClientLogin successful!";
     std::string sid;
