@@ -1626,8 +1626,6 @@
    fun:_ZN2ui12_GLOBAL__N_120LoadResourcesDataPakE8FilePath
    fun:_ZN2ui14ResourceBundle19LoadCommonResourcesEv
    fun:_ZN2ui14ResourceBundle18InitSharedInstanceERKSs
-   fun:_ZN15ChromeTestSuite10InitializeEv
-   fun:_ZN12_GLOBAL__N_117UnitTestTestSuite10InitializeEv
 }
 {
    bug_80050
