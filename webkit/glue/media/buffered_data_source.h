@@ -61,11 +61,6 @@ class BufferedDataSource : public WebDataSource {
   virtual BufferedResourceLoader* CreateResourceLoader(
       int64 first_byte_position, int64 last_byte_position);
 
-  // Gets the number of milliseconds to declare a request timeout since
-  // the request was made. This method is made virtual so as to inject a
-  // different number for testing purpose.
-  virtual base::TimeDelta GetTimeoutMilliseconds();
-
  private:
   // Posted to perform initialization on render thread and start resource
   // loading.
@@ -81,11 +76,6 @@ class BufferedDataSource : public WebDataSource {
 
   // Restart resource loading on render thread.
   void RestartLoadingTask();
-
-  // This task monitors the current active read request. If the current read
-  // request has timed out, this task will destroy the current loader and
-  // creates a new one to accommodate the read request.
-  void WatchDogTask();
 
   // This task uses the current playback rate with the previous playback rate
   // to determine whether we are going from pause to play and play to pause,
@@ -171,8 +161,6 @@ class BufferedDataSource : public WebDataSource {
   int64 read_position_;
   int read_size_;
   uint8* read_buffer_;
-  base::Time read_submitted_time_;
-  int read_attempts_;
 
   // This buffer is intermediate, we use it for BufferedResourceLoader to write
   // to. And when read in BufferedResourceLoader is done, we copy data from
@@ -212,12 +200,6 @@ class BufferedDataSource : public WebDataSource {
   // This variable holds the value of the preload attribute for the video
   // element.
   media::Preload preload_;
-
-  // This timer is to run the WatchDogTask repeatedly. We use a timer instead
-  // of doing PostDelayedTask() reduce the extra reference held by the message
-  // loop. The RepeatingTimer does PostDelayedTask() internally, by using it
-  // the message loop doesn't hold a reference for the watch dog task.
-  base::RepeatingTimer<BufferedDataSource> watch_dog_timer_;
 
   // Keeps track of whether we used a Range header in the initialization
   // request.

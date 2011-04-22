@@ -13,16 +13,6 @@ using WebKit::WebFrame;
 
 namespace webkit_glue {
 
-// Defines how long we should wait for more data before we declare a connection
-// timeout and start a new request.
-// TODO(hclam): Set it to 5s, calibrate this value later.
-static const int kTimeoutMilliseconds = 5000;
-
-// Defines how many times we should try to read from a buffered resource loader
-// before we declare a read error. After each failure of read from a buffered
-// resource loader, a new one is created to be read.
-static const int kReadTrials = 3;
-
 // BufferedDataSource has an intermediate buffer, this value governs the initial
 // size of that buffer. It is set to 32KB because this is a typical read size
 // of FFmpeg.
@@ -57,7 +47,6 @@ BufferedDataSource::BufferedDataSource(
       read_position_(0),
       read_size_(0),
       read_buffer_(NULL),
-      read_attempts_(0),
       intermediate_read_buffer_(new uint8[kInitialReadBufferSize]),
       intermediate_read_buffer_size_(kInitialReadBufferSize),
       render_loop_(render_loop),
@@ -82,13 +71,6 @@ BufferedResourceLoader* BufferedDataSource::CreateResourceLoader(
   return new BufferedResourceLoader(url_,
                                     first_byte_position,
                                     last_byte_position);
-}
-
-// This method simply returns kTimeoutMilliseconds. The purpose of this
-// method is to be overidded so as to provide a different timeout value
-// for testing purpose.
-base::TimeDelta BufferedDataSource::GetTimeoutMilliseconds() {
-  return base::TimeDelta::FromMilliseconds(kTimeoutMilliseconds);
 }
 
 void BufferedDataSource::set_host(media::FilterHost* host) {
@@ -220,14 +202,6 @@ void BufferedDataSource::InitializeTask() {
   if (stopped_on_render_loop_ || !initialize_callback_.get())
     return;
 
-  // Kick starts the watch dog task that will handle connection timeout.
-  // We run the watch dog 2 times faster the actual timeout so as to catch
-  // the timeout more accurately.
-  watch_dog_timer_.Start(
-      GetTimeoutMilliseconds() / 2,
-      this,
-      &BufferedDataSource::WatchDogTask);
-
   if (url_.SchemeIs(kHttpScheme) || url_.SchemeIs(kHttpsScheme)) {
     // Do an unbounded range request starting at the beginning.  If the server
     // responds with 200 instead of 206 we'll fall back into a streaming mode.
@@ -266,8 +240,6 @@ void BufferedDataSource::ReadTask(
   read_position_ = position;
   read_size_ = read_size;
   read_buffer_ = buffer;
-  read_submitted_time_ = base::Time::Now();
-  read_attempts_ = 0;
 
   // Call to read internal to perform the actual read.
   ReadInternal();
@@ -290,9 +262,6 @@ void BufferedDataSource::CleanupTask() {
       DoneRead_Locked(net::ERR_FAILED);
   }
 
-  // Stop the watch dog.
-  watch_dog_timer_.Stop();
-
   // We just need to stop the loader, so it stops activity.
   if (loader_.get())
     loader_->Stop();
@@ -301,8 +270,6 @@ void BufferedDataSource::CleanupTask() {
   read_position_ = 0;
   read_size_ = 0;
   read_buffer_ = 0;
-  read_submitted_time_ = base::Time();
-  read_attempts_ = 0;
 }
 
 void BufferedDataSource::RestartLoadingTask() {
@@ -317,43 +284,6 @@ void BufferedDataSource::RestartLoadingTask() {
       return;
   }
 
-  loader_ = CreateResourceLoader(read_position_, kPositionNotSpecified);
-  BufferedResourceLoader::DeferStrategy strategy = ChooseDeferStrategy();
-  loader_->UpdateDeferStrategy(strategy);
-  loader_->Start(
-      NewCallback(this, &BufferedDataSource::PartialReadStartCallback),
-      NewCallback(this, &BufferedDataSource::NetworkEventCallback),
-      frame_);
-}
-
-void BufferedDataSource::WatchDogTask() {
-  DCHECK(MessageLoop::current() == render_loop_);
-  if (stopped_on_render_loop_)
-    return;
-
-  // We only care if there is an active read request.
-  {
-    base::AutoLock auto_lock(lock_);
-    if (!read_callback_.get())
-      return;
-  }
-
-  DCHECK(loader_.get());
-  base::TimeDelta delta = base::Time::Now() - read_submitted_time_;
-  if (delta < GetTimeoutMilliseconds())
-    return;
-
-  // TODO(hclam): Maybe raise an error here. But if an error is reported
-  // the whole pipeline may get destroyed...
-  if (read_attempts_ >= kReadTrials)
-    return;
-
-  ++read_attempts_;
-  read_submitted_time_ = base::Time::Now();
-
-  // Stops the current loader and creates a new resource loader and
-  // retry the request.
-  loader_->Stop();
   loader_ = CreateResourceLoader(read_position_, kPositionNotSpecified);
   BufferedResourceLoader::DeferStrategy strategy = ChooseDeferStrategy();
   loader_->UpdateDeferStrategy(strategy);
