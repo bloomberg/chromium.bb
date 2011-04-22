@@ -22,8 +22,8 @@ void SimulateGPUCrash(Browser* browser) {
   LOG(ERROR) << "SimulateGPUCrash, before NavigateToURLWithDisposition";
   ui_test_utils::NavigateToURLWithDisposition(browser,
       GURL(chrome::kAboutGpuCrashURL), NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  browser->CloseTab();
+      ui_test_utils::BROWSER_TEST_NONE);
+  browser->SelectPreviousTab();
   LOG(ERROR) << "SimulateGPUCrash, after CloseTab";
 }
 
@@ -32,6 +32,7 @@ void SimulateGPUCrash(Browser* browser) {
 class GPUCrashTest : public InProcessBrowserTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) {
+    EnableDOMAutomation();
     InProcessBrowserTest::SetUpCommandLine(command_line);
 
     // OverrideGLImplementation and kDisableAcceleratedCompositing for
@@ -46,21 +47,35 @@ class GPUCrashTest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
 #endif
   }
+  virtual void SetUpInProcessBrowserTestFixture() {
+    FilePath test_dir;
+    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
+    gpu_test_dir_ = test_dir.AppendASCII("gpu");
+  }
+  FilePath gpu_test_dir_;
 };
 
-IN_PROC_BROWSER_TEST_F(GPUCrashTest, Reload) {
-  FilePath test_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
-  FilePath gpu_test_dir_;
-  gpu_test_dir_ = test_dir.AppendASCII("gpu");
+
+IN_PROC_BROWSER_TEST_F(GPUCrashTest, Kill) {
+  ui_test_utils::DOMMessageQueue message_queue;
 
   ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(
-      gpu_test_dir_.AppendASCII("webgl.html")));
-
+      gpu_test_dir_.AppendASCII("webgl.html?query=kill")));
   SimulateGPUCrash(browser());
 
-  browser()->Reload(CURRENT_TAB);
-  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
-  EXPECT_EQ(ASCIIToUTF16("SUCCESS"),
-            browser()->GetSelectedTabContents()->GetTitle().substr(0, 7));
+  std::string m;
+  ASSERT_TRUE(message_queue.WaitForMessage(&m));
+  EXPECT_EQ("\"SUCCESS\"", m);
+}
+
+
+IN_PROC_BROWSER_TEST_F(GPUCrashTest, WebkitLoseContext) {
+  ui_test_utils::DOMMessageQueue message_queue;
+
+  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(
+      gpu_test_dir_.AppendASCII("webgl.html?query=WEBKIT_lose_context")));
+
+  std::string m;
+  ASSERT_TRUE(message_queue.WaitForMessage(&m));
+  EXPECT_EQ("\"SUCCESS\"", m);
 }
