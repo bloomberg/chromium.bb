@@ -76,6 +76,8 @@
         'gl_interface.h',
         'gl_surface.cc',
         'gl_surface.h',
+        'gl_surface_osmesa.cc',
+        'gl_surface_osmesa.h',
         'gl_switches.cc',
         'gl_switches.h',
         '<(gl_binding_output_dir)/gl_bindings_autogen_gl.cc',
