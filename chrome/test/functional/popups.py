@@ -48,7 +48,10 @@ class PopupsTest(pyauto.PyUITest):
     # Verify that popup window was created
     self.assertEqual(2, self.GetBrowserWindowCount(),
                      msg='Popup could not be launched');
-    self.assertEqual('Popup Success!', self.GetActiveTabTitle(1))
+    # Wait until popup title is read correctly.
+    self.assertTrue(self.WaitUntil(lambda:
+        self.GetActiveTabTitle(1), expect_retval='Popup Success!'),
+        msg='Popup title is wrong.')
 
   def testPopupBlockerInIncognito(self):
     """Verify popup blocking is enabled in incognito windows."""
