@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdio.h>
@@ -12,9 +12,9 @@
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/win/lock_impl.h"
 
-static const char *kMutexCreateFailed =
+static const char kMutexCreateFailed[] =
                      "Unrecoverable failure on CreateMutex.\n";
-static const char *kMutexLockFailed =
+static const char kMutexLockFailed[] =
                      "Unrecoverable failure locking a Mutex.\n";
 
 NaCl::LockImpl::LockImpl() {
