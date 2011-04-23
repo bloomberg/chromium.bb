@@ -32,7 +32,7 @@ class Error(Exception):
 class CheckCallError(OSError, Error):
   """CheckCall() returned non-0."""
   def __init__(self, command, cwd, returncode, stdout, stderr=None):
-    OSError.__init__(self, command, cwd, returncode, stdout, stderr)
+    OSError.__init__(self, command, cwd, returncode)
     Error.__init__(self, command)
     self.command = command
     self.cwd = cwd
