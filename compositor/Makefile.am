@@ -49,9 +49,22 @@ udevrulesddir = $(sysconfdir)/udev/rules.d
 dist_udevrulesd_DATA =				\
 	70-wayland.rules
 
+meego_tablet_shell_la_LTLIBRARIES = meego-tablet-shell.la
+meego_tablet_shell_la_LDFLAGS = -module -avoid-version
+meego_tablet_shell_ladir = @libdir@/wayland
+meego_tablet_shell_la_LIBADD = $(COMPOSITOR_LIBS)
+
+meego_tablet_shell_la_SOURCES =			\
+	meego-tablet-shell.c			\
+	meego-tablet-shell.h			\
+	meego-tablet-protocol.c			\
+	meego-tablet-server-protocol.h
+
 BUILT_SOURCES =					\
 	screenshooter-server-protocol.h		\
-	screenshooter-protocol.c
+	screenshooter-protocol.c		\
+	meego-tablet-protocol.c			\
+	meego-tablet-server-protocol.h
 
 CLEANFILES = $(BUILT_SOURCES)
 
