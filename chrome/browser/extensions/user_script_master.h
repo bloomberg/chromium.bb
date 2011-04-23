@@ -20,6 +20,7 @@ class StringPiece;
 }
 
 class Profile;
+class RenderProcessHost;
 
 // Manages a segment of shared memory that contains the user scripts the user
 // has installed.  Lives on the UI thread.
@@ -128,6 +129,10 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // Sends the renderer process a new set of user scripts.
+  void SendUpdate(RenderProcessHost* process,
+                  base::SharedMemory* shared_memory);
 
   // Manages our notification registrations.
   NotificationRegistrar registrar_;

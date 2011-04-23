@@ -18,8 +18,10 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/notification_service.h"
 #include "net/base/net_util.h"
 
@@ -303,6 +305,8 @@ UserScriptMaster::UserScriptMaster(const FilePath& script_dir, Profile* profile)
                  Source<Profile>(profile_));
   registrar_.Add(this, NotificationType::EXTENSION_USER_SCRIPTS_UPDATED,
                  Source<Profile>(profile_));
+  registrar_.Add(this, NotificationType::RENDERER_PROCESS_CREATED,
+                 NotificationService::AllSources());
 }
 
 UserScriptMaster::~UserScriptMaster() {
@@ -324,6 +328,11 @@ void UserScriptMaster::NewScriptsAvailable(base::SharedMemory* handle) {
     script_reloader_ = NULL;
     // We've got scripts ready to go.
     shared_memory_.swap(handle_deleter);
+
+    for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+         !i.IsAtEnd(); i.Advance()) {
+      SendUpdate(i.GetCurrentValue(), handle);
+    }
 
     NotificationService::current()->Notify(
         NotificationType::USER_SCRIPTS_UPDATED,
@@ -387,7 +396,12 @@ void UserScriptMaster::Observe(NotificationType type,
       StartScan();
       break;
     }
-
+    case NotificationType::RENDERER_PROCESS_CREATED: {
+      RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+      if (ScriptsReady())
+        SendUpdate(process, GetSharedMemory());
+      break;
+    }
     default:
       DCHECK(false);
   }
@@ -398,4 +412,20 @@ void UserScriptMaster::StartScan() {
     script_reloader_ = new ScriptReloader(this);
 
   script_reloader_->StartScan(user_script_dir_, lone_scripts_);
+}
+
+void UserScriptMaster::SendUpdate(RenderProcessHost* process,
+                                  base::SharedMemory* shared_memory) {
+  // If the process is being started asynchronously, early return.  We'll end up
+  // calling InitUserScripts when it's created which will call this again.
+  base::ProcessHandle handle = process->GetHandle();
+  if (!handle)
+    return;
+
+  base::SharedMemoryHandle handle_for_process;
+  if (!shared_memory->ShareToProcess(handle, &handle_for_process))
+    return;  // This can legitimately fail if the renderer asserts at startup.
+
+  if (base::SharedMemory::IsHandleValid(handle_for_process))
+    process->Send(new ExtensionMsg_UpdateUserScripts(handle_for_process));
 }

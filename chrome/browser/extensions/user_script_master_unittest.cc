@@ -40,10 +40,13 @@ class UserScriptMasterTest : public testing::Test,
     // thread look like one.
     file_thread_.reset(new BrowserThread(
         BrowserThread::FILE, MessageLoop::current()));
+    ui_thread_.reset(new BrowserThread(
+        BrowserThread::UI, MessageLoop::current()));
   }
 
   virtual void TearDown() {
     file_thread_.reset();
+    ui_thread_.reset();
   }
 
   virtual void Observe(NotificationType type,
@@ -65,6 +68,7 @@ class UserScriptMasterTest : public testing::Test,
   MessageLoop message_loop_;
 
   scoped_ptr<BrowserThread> file_thread_;
+  scoped_ptr<BrowserThread> ui_thread_;
 
   // Updated to the script shared memory when we get notified.
   base::SharedMemory* shared_memory_;

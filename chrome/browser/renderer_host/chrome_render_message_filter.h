@@ -64,7 +64,6 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
                                   int receiver_port_id,
                                   int tab_id, const std::string& extension_id,
                                   const std::string& channel_name);
-
   void OnGetExtensionMessageBundle(const std::string& extension_id,
                                    IPC::Message* reply_msg);
   void OnGetExtensionMessageBundleOnFileThread(
@@ -72,6 +71,11 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
       const std::string& extension_id,
       const std::string& default_locale,
       IPC::Message* reply_msg);
+  void OnExtensionAddListener(const std::string& extension_id,
+                              const std::string& event_name);
+  void OnExtensionRemoveListener(const std::string& extension_id,
+                                 const std::string& event_name);
+  void OnExtensionCloseChannel(int port_id);
 #if defined(USE_TCMALLOC)
   void OnRendererTcmalloc(base::ProcessId pid, const std::string& output);
 #endif

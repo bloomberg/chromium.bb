@@ -27,28 +27,20 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_event_router.h"
-#include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "chrome/browser/extensions/extension_message_service.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/gpu_data_manager.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/spellcheck_host.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_icon_set.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -286,12 +278,6 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   widget_helper_ = new RenderWidgetHelper();
 
-  registrar_.Add(this, NotificationType::USER_SCRIPTS_UPDATED,
-                 Source<Profile>(profile->GetOriginalProfile()));
-  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
-                 Source<Profile>(profile->GetOriginalProfile()));
-  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
-                 Source<Profile>(profile->GetOriginalProfile()));
   registrar_.Add(this, NotificationType::SPELLCHECK_HOST_REINITIALIZED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::SPELLCHECK_WORD_ADDED,
@@ -815,61 +801,6 @@ void BrowserRenderProcessHost::InitVisitedLinks() {
   SendVisitedLinkTable(visitedlink_master->shared_memory());
 }
 
-void BrowserRenderProcessHost::InitUserScripts() {
-  UserScriptMaster* user_script_master = profile()->GetUserScriptMaster();
-
-  // Incognito profiles won't have user scripts.
-  if (!user_script_master)
-    return;
-
-  if (!user_script_master->ScriptsReady()) {
-    // No scripts ready.  :(
-    return;
-  }
-
-  // Update the renderer process with the current scripts.
-  SendUserScriptsUpdate(user_script_master->GetSharedMemory());
-}
-
-void BrowserRenderProcessHost::InitExtensions() {
-  // Valid extension function names, used to setup bindings in renderer.
-  std::vector<std::string> function_names;
-  ExtensionFunctionDispatcher::GetAllFunctionNames(&function_names);
-  Send(new ExtensionMsg_SetFunctionNames(function_names));
-
-  // Scripting whitelist. This is modified by tests and must be communicated to
-  // renderers.
-  Send(new ExtensionMsg_SetScriptingWhitelist(
-      *Extension::GetScriptingWhitelist()));
-
-  // Loaded extensions.
-  ExtensionService* service = profile()->GetExtensionService();
-  if (service) {
-    for (size_t i = 0; i < service->extensions()->size(); ++i) {
-      Send(new ExtensionMsg_Loaded(
-          ExtensionMsg_Loaded_Params(service->extensions()->at(i))));
-    }
-  }
-}
-
-void BrowserRenderProcessHost::SendUserScriptsUpdate(
-    base::SharedMemory *shared_memory) {
-  // Process is being started asynchronously.  We'll end up calling
-  // InitUserScripts when it's created which will call this again.
-  if (child_process_.get() && child_process_->IsStarting())
-    return;
-
-  base::SharedMemoryHandle handle_for_process;
-  if (!shared_memory->ShareToProcess(GetHandle(), &handle_for_process)) {
-    // This can legitimately fail if the renderer asserts at startup.
-    return;
-  }
-
-  if (base::SharedMemory::IsHandleValid(handle_for_process)) {
-    Send(new ExtensionMsg_UpdateUserScripts(handle_for_process));
-  }
-}
-
 bool BrowserRenderProcessHost::FastShutdownIfPossible() {
   if (run_renderer_in_process())
     return false;  // Single process mode can't do fast shutdown.
@@ -1006,12 +937,7 @@ bool BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_UpdatedCacheStats,
                           OnUpdatedCacheStats)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SuddenTerminationChanged,
-                          SuddenTerminationChanged);
-      IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddListener, OnExtensionAddListener)
-      IPC_MESSAGE_HANDLER(ExtensionHostMsg_RemoveListener,
-                          OnExtensionRemoveListener)
-      IPC_MESSAGE_HANDLER(ExtensionHostMsg_CloseChannel,
-                          OnExtensionCloseChannel)
+                          SuddenTerminationChanged)
       IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
                           OnUserMetricsRecordAction)
       IPC_MESSAGE_HANDLER(SpellCheckHostMsg_RequestDictionary,
@@ -1139,24 +1065,6 @@ void BrowserRenderProcessHost::Observe(NotificationType type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
   switch (type.value) {
-    case NotificationType::USER_SCRIPTS_UPDATED: {
-      base::SharedMemory* shared_memory =
-          Details<base::SharedMemory>(details).ptr();
-      if (shared_memory) {
-        SendUserScriptsUpdate(shared_memory);
-      }
-      break;
-    }
-    case NotificationType::EXTENSION_LOADED: {
-      Send(new ExtensionMsg_Loaded(
-          ExtensionMsg_Loaded_Params(Details<const Extension>(details).ptr())));
-      break;
-    }
-    case NotificationType::EXTENSION_UNLOADED: {
-      Send(new ExtensionMsg_Unloaded(
-          Details<UnloadedExtensionInfo>(details).ptr()->extension->id()));
-      break;
-    }
     case NotificationType::SPELLCHECK_HOST_REINITIALIZED: {
       InitSpellChecker();
       break;
@@ -1187,8 +1095,6 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
   Send(new ViewMsg_SetIsIncognitoProcess(profile()->IsOffTheRecord()));
 
   InitVisitedLinks();
-  InitUserScripts();
-  InitExtensions();
 
   // We don't want to initialize the spellchecker unless SpellCheckHost has been
   // created. In InitSpellChecker(), we know if GetSpellCheckHost() is NULL
@@ -1210,30 +1116,6 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
   NotificationService::current()->Notify(
       NotificationType::RENDERER_PROCESS_CREATED,
       Source<RenderProcessHost>(this), NotificationService::NoDetails());
-}
-
-void BrowserRenderProcessHost::OnExtensionAddListener(
-    const std::string& extension_id,
-    const std::string& event_name) {
-  if (profile()->GetExtensionEventRouter()) {
-    profile()->GetExtensionEventRouter()->AddEventListener(
-        event_name, this, extension_id);
-  }
-}
-
-void BrowserRenderProcessHost::OnExtensionRemoveListener(
-    const std::string& extension_id,
-    const std::string& event_name) {
-  if (profile()->GetExtensionEventRouter()) {
-    profile()->GetExtensionEventRouter()->RemoveEventListener(
-        event_name, this, extension_id);
-  }
-}
-
-void BrowserRenderProcessHost::OnExtensionCloseChannel(int port_id) {
-  if (profile()->GetExtensionMessageService()) {
-    profile()->GetExtensionMessageService()->CloseChannel(port_id);
-  }
 }
 
 void BrowserRenderProcessHost::OnUserMetricsRecordAction(

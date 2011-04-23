@@ -7,6 +7,7 @@
 #include "base/file_path.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
@@ -20,6 +21,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 
 #if defined(USE_TCMALLOC)
@@ -57,6 +59,10 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToTab, OnOpenChannelToTab)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ExtensionHostMsg_GetMessageBundle,
                                     OnGetExtensionMessageBundle)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddListener, OnExtensionAddListener)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_RemoveListener,
+                        OnExtensionRemoveListener)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_CloseChannel, OnExtensionCloseChannel)
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
 #endif
@@ -75,12 +81,18 @@ void ChromeRenderMessageFilter::OnDestruct() const {
 
 void ChromeRenderMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
-  if (message.type() == ViewHostMsg_ResourceTypeStats::ID ||
+  switch (message.type()) {
+    case ViewHostMsg_ResourceTypeStats::ID:
 #if defined(USE_TCMALLOC)
-      message.type() == ViewHostMsg_RendererTcmalloc::ID ||
+    case ViewHostMsg_RendererTcmalloc::ID:
 #endif
-      message.type() == ViewHostMsg_ResourceTypeStats::ID) {
-    *thread = BrowserThread::UI;
+    case ExtensionHostMsg_AddListener::ID:
+    case ExtensionHostMsg_RemoveListener::ID:
+    case ExtensionHostMsg_CloseChannel::ID:
+      *thread = BrowserThread::UI;
+      break;
+    default:
+      break;
   }
 }
 
@@ -226,6 +238,34 @@ void ChromeRenderMessageFilter::OnGetExtensionMessageBundleOnFileThread(
       reply_msg, dictionary_map);
   Send(reply_msg);
 }
+
+void ChromeRenderMessageFilter::OnExtensionAddListener(
+    const std::string& extension_id,
+    const std::string& event_name) {
+  RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
+  if (!profile_->GetExtensionEventRouter() || !process)
+    return;
+
+  profile_->GetExtensionEventRouter()->AddEventListener(
+      event_name, process, extension_id);
+}
+
+void ChromeRenderMessageFilter::OnExtensionRemoveListener(
+    const std::string& extension_id,
+    const std::string& event_name) {
+  RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
+  if (!profile_->GetExtensionEventRouter() || !process)
+    return;
+
+  profile_->GetExtensionEventRouter()->RemoveEventListener(
+      event_name, process, extension_id);
+}
+
+void ChromeRenderMessageFilter::OnExtensionCloseChannel(int port_id) {
+  if (profile_->GetExtensionMessageService())
+    profile_->GetExtensionMessageService()->CloseChannel(port_id);
+}
+
 
 #if defined(USE_TCMALLOC)
 void ChromeRenderMessageFilter::OnRendererTcmalloc(base::ProcessId pid,

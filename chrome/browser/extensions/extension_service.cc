@@ -62,12 +62,14 @@
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service.h"
+#include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/json_value_serializer.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
@@ -435,6 +437,8 @@ ExtensionService::ExtensionService(Profile* profile,
   }
 
   registrar_.Add(this, NotificationType::EXTENSION_PROCESS_TERMINATED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::RENDERER_PROCESS_CREATED,
                  NotificationService::AllSources());
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(prefs::kExtensionInstallAllowList, this);
@@ -1087,6 +1091,12 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
       Source<Profile>(profile_),
       Details<const Extension>(extension));
 
+  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    i.GetCurrentValue()->Send(
+        new ExtensionMsg_Loaded(ExtensionMsg_Loaded_Params(extension)));
+  }
+
   bool plugins_changed = false;
   for (size_t i = 0; i < extension->plugins().size(); ++i) {
     const Extension::PluginInfo& plugin = extension->plugins()[i];
@@ -1120,6 +1130,11 @@ void ExtensionService::NotifyExtensionUnloaded(
       NotificationType::EXTENSION_UNLOADED,
       Source<Profile>(profile_),
       Details<UnloadedExtensionInfo>(&details));
+
+  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    i.GetCurrentValue()->Send(new ExtensionMsg_Unloaded(extension->id()));
+  }
 
   if (profile_) {
     profile_->UnregisterExtensionWithRequestContexts(extension);
@@ -2028,7 +2043,25 @@ void ExtensionService::Observe(NotificationType type,
               UnloadedExtensionInfo::DISABLE));
       break;
     }
+    case NotificationType::RENDERER_PROCESS_CREATED: {
+      RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+      // Valid extension function names, used to setup bindings in renderer.
+      std::vector<std::string> function_names;
+      ExtensionFunctionDispatcher::GetAllFunctionNames(&function_names);
+      process->Send(new ExtensionMsg_SetFunctionNames(function_names));
 
+      // Scripting whitelist. This is modified by tests and must be communicated
+      // to renderers.
+      process->Send(new ExtensionMsg_SetScriptingWhitelist(
+          *Extension::GetScriptingWhitelist()));
+
+      // Loaded extensions.
+      for (size_t i = 0; i < extensions_.size(); ++i) {
+        process->Send(new ExtensionMsg_Loaded(
+            ExtensionMsg_Loaded_Params(extensions_[i])));
+      }
+      break;
+    }
     case NotificationType::PREF_CHANGED: {
       std::string* pref_name = Details<std::string>(details).ptr();
       if (*pref_name == prefs::kExtensionInstallAllowList ||
