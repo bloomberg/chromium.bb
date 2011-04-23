@@ -44,6 +44,8 @@ const char kSetColorAsDefault[] = "setColorAsDefault";
 
 #if defined(OS_POSIX) && !defined(OS_CHROMEOS)
 const char kColorDevice[] = "ColorDevice";
+#elif defined(OS_WIN)
+const char kPskColor[] = "psk:Color";
 #endif
 
 TabContents* GetInitiatorTab(TabContents* preview_tab) {
@@ -153,7 +155,14 @@ class PrintSystemTaskProxy
       ppdClose(ppd);
     }
     file_util::Delete(ppd_file_path, false);
-  #elif defined(OS_WIN) || defined(OS_CHROMEOS)
+  #elif defined(OS_WIN)
+    // According to XPS 1.0 spec, only color printers have psk:Color.
+    // Therefore we don't need to parse the whole XML file, we just need to
+    // search the string.  The spec can be found at:
+    // http://msdn.microsoft.com/en-us/windows/hardware/gg463431.
+    supports_color = (printer_info.printer_capabilities.find(kPskColor) !=
+                      std::string::npos);
+  #elif defined(OS_CHROMEOS)
     NOTIMPLEMENTED();
   #endif
 
