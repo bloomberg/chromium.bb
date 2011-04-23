@@ -91,6 +91,11 @@ class ExtensionWebRequestEventRouter {
                    ExtensionEventRouterForwarder* event_router,
                    net::URLRequest* request);
 
+  // Dispatches an onErrorOccurred event.
+  void OnErrorOccurred(ProfileId profile_id,
+                      ExtensionEventRouterForwarder* event_router,
+                      net::URLRequest* request);
+
   void OnURLRequestDestroyed(ProfileId profile_id, net::URLRequest* request);
 
   // Called when an event listener handles a blocking event and responds.

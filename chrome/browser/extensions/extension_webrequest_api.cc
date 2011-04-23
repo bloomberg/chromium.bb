@@ -529,6 +529,40 @@ void ExtensionWebRequestEventRouter::OnCompleted(
   DispatchEvent(profile_id, event_router, request, NULL, listeners, args);
 }
 
+void ExtensionWebRequestEventRouter::OnErrorOccurred(
+    ProfileId profile_id,
+    ExtensionEventRouterForwarder* event_router,
+    net::URLRequest* request) {
+  if (profile_id == Profile::kInvalidProfileId)
+      return;
+
+  DCHECK(request->status().status() == net::URLRequestStatus::FAILED);
+
+  DCHECK(!GetAndSetSignaled(request->identifier(), kOnErrorOccurred));
+
+  base::Time time(base::Time::Now());
+
+  std::vector<const EventListener*> listeners =
+      GetMatchingListeners(profile_id, keys::kOnErrorOccurred, request);
+  if (listeners.empty())
+    return;
+
+  // TODO(mpcomplete): Convert network error status to string, see discussion
+  // in http://codereview.chromium.org/6881104/.
+  std::string my_error = "";
+
+  ListValue args;
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetString(keys::kRequestIdKey,
+                  base::Uint64ToString(request->identifier()));
+  dict->SetString(keys::kUrlKey, request->url().spec());
+  dict->SetString(keys::kErrorKey, my_error);
+  dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
+  args.Append(dict);
+
+  DispatchEvent(profile_id, event_router, request, NULL, listeners, args);
+}
+
 void ExtensionWebRequestEventRouter::OnURLRequestDestroyed(
     ProfileId profile_id, net::URLRequest* request) {
   http_requests_.erase(request->identifier());
@@ -711,6 +745,9 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(uint64 request_id,
       CHECK(new_url.is_valid());
       *blocked_request.new_url = new_url;
     }
+    // This signals a failed request to subscribers of onErrorOccurred in case
+    // a request is cancelled because net::ERR_EMPTY_RESPONSE cannot be
+    // distinguished from a regular failure.
     blocked_request.callback->Run(cancel ? net::ERR_EMPTY_RESPONSE : net::OK);
     blocked_requests_.erase(request_id);
   }

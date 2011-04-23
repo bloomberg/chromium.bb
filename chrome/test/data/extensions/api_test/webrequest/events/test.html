@@ -404,7 +404,15 @@ runTests([
             url: getURL("complexLoad/a.html")
           },
           retval: {cancel: true}
-        }
+        },
+        // Cancelling is considered an error.
+        { label: "onErrorOccurred",
+          event: "onErrorOccurred",
+          details: {
+            url: getURL("complexLoad/a.html"),
+            error: ""
+          }
+        },
       ],
       [],  // event order
       {},  // filter
@@ -534,6 +542,32 @@ runTests([
       chrome.tabs.remove(newTab.id);
       navigateAndWait(getURL("complexLoad/a.html"));
     });
+  },
+
+  // Navigates to a non-existing page.
+  function nonExistingLoad() {
+    expect(
+      [  // events
+        { label: "onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            method: "GET",
+            tabId: tabId,
+            type: "main_frame",
+            url: getURL("does_not_exist.html")
+          }
+        },
+        { label: "onErrorOccurred",
+          event: "onErrorOccurred",
+          details: {
+            url: getURL("does_not_exist.html"),
+            error: ""
+          }
+        },
+      ],
+      [  // event order
+        ["onBeforeRequest", "onErrorOccurred"] ]);
+    navigateAndWait(getURL("does_not_exist.html"));
   },
 ]);
 </script>

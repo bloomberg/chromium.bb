@@ -109,6 +109,9 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request) {
       ExtensionWebRequestEventRouter::GetInstance()->OnCompleted(
           profile_id_, event_router_.get(), request);
     }
+  } else if (request->status().status() == net::URLRequestStatus::FAILED) {
+    ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
+            profile_id_, event_router_.get(), request);
   }
   ForwardProxyErrors(request, event_router_.get(), profile_id_);
 }
