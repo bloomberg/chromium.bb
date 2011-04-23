@@ -225,79 +225,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   SCOPED_TRACE("after reloading");
   CheckExtensionConsistency(size_before);
 
-  // The infobar should automatically hide after the extension is successfully
+  // The balloon should automatically hide after the extension is successfully
   // reloaded.
-  ASSERT_EQ(0U, CountBalloons());
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
-                       ReloadIndependentlyTwoInfoBars) {
-  const size_t size_before = GetExtensionService()->extensions()->size();
-  LoadTestExtension();
-
-  // Open a new window so that there will be an info bar in each.
-  Browser* browser2 = CreateBrowser(browser()->profile());
-
-  CrashExtension(size_before);
-  ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
-
-  TabContents* current_tab = browser()->GetSelectedTabContents();
-  ASSERT_TRUE(current_tab);
-  ASSERT_EQ(1U, CountBalloons());
-
-  TabContents* current_tab2 = browser2->GetSelectedTabContents();
-  ASSERT_TRUE(current_tab2);
-  ASSERT_EQ(1U, CountBalloons());
-
-  ReloadExtension(first_extension_id_);
-
-  SCOPED_TRACE("after reloading");
-  CheckExtensionConsistency(size_before);
-
-  // Both infobars should automatically hide after the extension is successfully
-  // reloaded.
-  ASSERT_EQ(0U, CountBalloons());
-  ASSERT_EQ(0U, CountBalloons());
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
-                       ReloadIndependentlyTwoInfoBarsSameBrowser) {
-  const size_t size_before = GetExtensionService()->extensions()->size();
-  LoadTestExtension();
-
-  // Open a new window so that there will be an info bar in each.
-  Browser* browser2 = CreateBrowser(browser()->profile());
-
-  CrashExtension(size_before);
-  ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
-
-  TabContents* current_tab = browser()->GetSelectedTabContents();
-  ASSERT_TRUE(current_tab);
-  ASSERT_EQ(1U, CountBalloons());
-
-  TabContents* current_tab2 = browser2->GetSelectedTabContents();
-  ASSERT_TRUE(current_tab2);
-  ASSERT_EQ(1U, CountBalloons());
-
-  // Move second window into first browser so there will be multiple tabs
-  // with the info bar for the same extension in one browser.
-  TabContentsWrapper* contents =
-      browser2->tabstrip_model()->DetachTabContentsAt(0);
-  browser()->tabstrip_model()->AppendTabContents(contents, true);
-  current_tab2 = browser()->GetSelectedTabContents();
-  ASSERT_EQ(1U, CountBalloons());
-  ASSERT_NE(current_tab2, current_tab);
-
-  ReloadExtension(first_extension_id_);
-
-  SCOPED_TRACE("after reloading");
-  CheckExtensionConsistency(size_before);
-
-  // Both infobars should automatically hide after the extension is successfully
-  // reloaded.
-  ASSERT_EQ(0U, CountBalloons());
-  browser()->SelectPreviousTab();
-  ASSERT_EQ(current_tab, browser()->GetSelectedTabContents());
   ASSERT_EQ(0U, CountBalloons());
 }
 
@@ -437,10 +366,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
     SCOPED_TRACE("first: reload");
     TabContents* current_tab = browser()->GetSelectedTabContents();
     ASSERT_TRUE(current_tab);
-    // At the beginning we should have one infobar displayed for each extension.
+    // At the beginning we should have one balloon displayed for each extension.
     ASSERT_EQ(2U, CountBalloons());
     ReloadExtension(first_extension_id_);
-    // One of the infobars should hide after the extension is reloaded.
+    // One of the balloons should hide after the extension is reloaded.
     ASSERT_EQ(1U, CountBalloons());
     CheckExtensionConsistency(size_before);
   }
