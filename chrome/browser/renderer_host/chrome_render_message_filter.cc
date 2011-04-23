@@ -243,7 +243,7 @@ void ChromeRenderMessageFilter::OnExtensionAddListener(
     const std::string& extension_id,
     const std::string& event_name) {
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
-  if (!profile_->GetExtensionEventRouter() || !process)
+  if (!process || !profile_->GetExtensionEventRouter())
     return;
 
   profile_->GetExtensionEventRouter()->AddEventListener(
@@ -254,7 +254,7 @@ void ChromeRenderMessageFilter::OnExtensionRemoveListener(
     const std::string& extension_id,
     const std::string& event_name) {
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
-  if (!profile_->GetExtensionEventRouter() || !process)
+  if (!process || !profile_->GetExtensionEventRouter())
     return;
 
   profile_->GetExtensionEventRouter()->RemoveEventListener(
@@ -262,6 +262,9 @@ void ChromeRenderMessageFilter::OnExtensionRemoveListener(
 }
 
 void ChromeRenderMessageFilter::OnExtensionCloseChannel(int port_id) {
+  if (!RenderProcessHost::FromID(render_process_id_))
+    return;  // To guard against crash in browser_tests shutdown.
+
   if (profile_->GetExtensionMessageService())
     profile_->GetExtensionMessageService()->CloseChannel(port_id);
 }
