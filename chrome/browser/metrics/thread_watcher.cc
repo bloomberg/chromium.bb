@@ -25,10 +25,13 @@ ThreadWatcher::ThreadWatcher(const BrowserThread::ID& thread_id,
       sleep_time_(sleep_time),
       unresponsive_time_(unresponsive_time),
       ping_time_(base::TimeTicks::Now()),
+      pong_time_(ping_time_),
       ping_sequence_number_(0),
       active_(false),
       ping_count_(kPingCount),
-      histogram_(NULL),
+      response_time_histogram_(NULL),
+      unresponsive_time_histogram_(NULL),
+      unresponsive_count_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   Initialize();
 }
@@ -131,9 +134,14 @@ void ThreadWatcher::PostPingMessage() {
 
 void ThreadWatcher::OnPongMessage(uint64 ping_sequence_number) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
+
   // Record watched thread's response time.
-  base::TimeDelta response_time = base::TimeTicks::Now() - ping_time_;
-  histogram_->AddTime(response_time);
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeDelta response_time = now - ping_time_;
+  response_time_histogram_->AddTime(response_time);
+
+  // Save the current time when we have got pong message.
+  pong_time_ = now;
 
   // Check if there are any extra pings in flight.
   DCHECK_EQ(ping_sequence_number_, ping_sequence_number);
@@ -163,15 +171,39 @@ bool ThreadWatcher::OnCheckResponsiveness(uint64 ping_sequence_number) {
   // If the latest ping_sequence_number_ is not same as the ping_sequence_number
   // that is passed in, then we can assume OnPongMessage was called.
   // OnPongMessage increments ping_sequence_number_.
-  return ping_sequence_number_ != ping_sequence_number;
+  if (ping_sequence_number_ != ping_sequence_number) {
+    // Reset unresponsive_count_ to zero because we got a response from the
+    // watched thread.
+    GotGoodResponse();
+    return true;
+  }
+  // Record that we got no response from watched thread.
+  GotNoResponse();
+
+  // Post a task to check the responsiveness of watched thread.
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      method_factory_.NewRunnableMethod(
+          &ThreadWatcher::OnCheckResponsiveness, ping_sequence_number_),
+      unresponsive_time_.InMilliseconds());
+  return false;
 }
 
 void ThreadWatcher::Initialize() {
   ThreadWatcherList::Register(this);
-  const std::string histogram_name =
+
+  const std::string response_time_histogram_name =
       "ThreadWatcher.ResponseTime." + thread_name_;
-  histogram_ = base::Histogram::FactoryTimeGet(
-      histogram_name,
+  response_time_histogram_ = base::Histogram::FactoryTimeGet(
+      response_time_histogram_name,
+      base::TimeDelta::FromMilliseconds(1),
+      base::TimeDelta::FromSeconds(100), 50,
+      base::Histogram::kUmaTargetedHistogramFlag);
+
+  const std::string unresponsive_time_histogram_name =
+      "ThreadWatcher.Unresponsive." + thread_name_;
+  unresponsive_time_histogram_ = base::Histogram::FactoryTimeGet(
+      unresponsive_time_histogram_name,
       base::TimeDelta::FromMilliseconds(1),
       base::TimeDelta::FromSeconds(100), 50,
       base::Histogram::kUmaTargetedHistogramFlag);
@@ -185,10 +217,30 @@ void ThreadWatcher::OnPingMessage(const BrowserThread::ID& thread_id,
   WatchDogThread::PostTask(FROM_HERE, callback_task);
 }
 
+void ThreadWatcher::GotGoodResponse() {
+  DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
+  unresponsive_count_ = 0;
+}
+
+void ThreadWatcher::GotNoResponse() {
+  DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
+  ++unresponsive_count_;
+  // If watched thread is the only unresponsive thread and all other threads are
+  // responding then record total unresponsive_time since last pong message.
+  if (ThreadWatcherList::GetNumberOfUnresponsiveThreads() == 1) {
+    base::TimeDelta unresponse_time = base::TimeTicks::Now() - pong_time_;
+    unresponsive_time_histogram_->AddTime(unresponse_time);
+  }
+}
+
 // ThreadWatcherList methods and members.
 //
 // static
 ThreadWatcherList* ThreadWatcherList::global_ = NULL;
+// static
+const int ThreadWatcherList::kSleepSeconds = 2;
+// static
+const int ThreadWatcherList::kUnresponsiveSeconds = 4;
 
 ThreadWatcherList::ThreadWatcherList()
     : last_wakeup_time_(base::TimeTicks::Now()) {
@@ -227,12 +279,14 @@ void ThreadWatcherList::StartWatchingAll() {
     WatchDogThread::PostDelayedTask(
         FROM_HERE,
         NewRunnableFunction(&ThreadWatcherList::StartWatchingAll),
-        base::TimeDelta::FromSeconds(5).InMilliseconds());
+        base::TimeDelta::FromSeconds(kSleepSeconds).InMilliseconds());
     return;
   }
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
-  const base::TimeDelta kSleepTime = base::TimeDelta::FromSeconds(5);
-  const base::TimeDelta kUnresponsiveTime = base::TimeDelta::FromSeconds(10);
+  const base::TimeDelta kSleepTime =
+      base::TimeDelta::FromSeconds(kSleepSeconds);
+  const base::TimeDelta kUnresponsiveTime =
+      base::TimeDelta::FromSeconds(kUnresponsiveSeconds);
   if (BrowserThread::IsMessageLoopValid(BrowserThread::UI)) {
     ThreadWatcher::StartWatching(BrowserThread::UI, "UI", kSleepTime,
                                  kUnresponsiveTime);
@@ -281,6 +335,23 @@ void ThreadWatcherList::RemoveNotifications() {
     return;
   base::AutoLock auto_lock(global_->lock_);
   global_->registrar_.RemoveAll();
+}
+
+// static
+int ThreadWatcherList::GetNumberOfUnresponsiveThreads() {
+  DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
+  int no_of_unresponding_threads = 0;
+  if (!global_)
+    return no_of_unresponding_threads;
+
+  base::AutoLock auto_lock(global_->lock_);
+  for (RegistrationList::iterator it = global_->registered_.begin();
+       global_->registered_.end() != it;
+       ++it) {
+    if (it->second->unresponsive_count_ > 0)
+      ++no_of_unresponding_threads;
+  }
+  return no_of_unresponding_threads;
 }
 
 void ThreadWatcherList::DeleteAll() {

@@ -149,6 +149,14 @@ class ThreadWatcher {
   static void OnPingMessage(const BrowserThread::ID& thread_id,
                             Task* callback_task);
 
+  // This method resets unresponsive_count_ to zero because watched thread is
+  // responding to the ping message with a pong message.
+  void GotGoodResponse();
+
+  // This method records watched thread is not responding to the ping message.
+  // It increments unresponsive_count_ by 1.
+  void GotNoResponse();
+
   // This is the number of ping messages to be sent when the user is idle.
   // ping_count_ will be initialized to kPingCount whenever user becomes active.
   static const int kPingCount;
@@ -171,6 +179,9 @@ class ThreadWatcher {
   // This is the last time when ping message was sent.
   base::TimeTicks ping_time_;
 
+  // This is the last time when we got pong message.
+  base::TimeTicks pong_time_;
+
   // This is the sequence number of the next ping for which there is no pong. If
   // the instance is sleeping, then it will be the sequence number for the next
   // ping.
@@ -186,7 +197,19 @@ class ThreadWatcher {
   int ping_count_;
 
   // Histogram that keeps track of response times for the watched thread.
-  base::Histogram* histogram_;
+  base::Histogram* response_time_histogram_;
+
+  // Histogram that keeps track of unresponsive time since the last pong message
+  // when we got no response (GotNoResponse) from the watched thread. We record
+  // this when the watched thread is the only unresponsive thread and all other
+  // threads are responsive.
+  base::Histogram* unresponsive_time_histogram_;
+
+  // This counter tracks the unresponsiveness of watched thread. If this value
+  // is zero then watched thread has responded with a pong message. This is
+  // incremented by 1 when we got no response (GotNoResponse) from the watched
+  // thread.
+  int unresponsive_count_;
 
   // We use this factory to create callback tasks for ThreadWatcher object. We
   // use this during ping-pong messaging between WatchDog thread and watched
@@ -231,6 +254,10 @@ class ThreadWatcherList : public NotificationObserver {
   // This method is accessible on UI thread.
   static void RemoveNotifications();
 
+  // This method returns number of watched threads that haven't responded with a
+  // pong message (number of threads with unresponsive_count_ greater than 0).
+  static int GetNumberOfUnresponsiveThreads();
+
  private:
   // Allow tests to access our innards for testing purposes.
   FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, Registration);
@@ -261,6 +288,13 @@ class ThreadWatcherList : public NotificationObserver {
   ThreadWatcher* PreLockedFind(const BrowserThread::ID& thread_id);
 
   static ThreadWatcherList* global_;  // The singleton of this class.
+
+  // This is the wait time between ping messages.
+  static const int kSleepSeconds;
+
+  // This is the wait time after ping message is sent, to check if we have
+  // received pong message or not.
+  static const int kUnresponsiveSeconds;
 
   // Lock for access to registered_.
   base::Lock lock_;
