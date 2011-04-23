@@ -26,6 +26,7 @@ env.Alias('download_chrome', node)
 ################################################################################
 
 html_examples = env.Replicate('${STAGING_DIR}', 'examples.html')
+env.Default(html_examples)
 example_nexes = [
     # SRPC Nexe Tests
     'srpc_hw.nexe',          # srpc_hw.html, srpc_hw_fd.html
