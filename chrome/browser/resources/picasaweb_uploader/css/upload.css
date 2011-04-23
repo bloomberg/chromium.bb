@@ -110,6 +110,8 @@ textarea {
   width: 104px;
   padding: 2px;
   border: 1px #d6d9e3 solid;
+  margin: 2px;
+  border-radius: 0px;
 }
 
 .preview-item div {

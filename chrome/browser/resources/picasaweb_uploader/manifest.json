@@ -15,7 +15,7 @@
          "filesystem:*.jpeg",
          "filesystem:*.jpg",
          "filesystem:*.png",
-         "filesystem:*.gif"
+         "filesystem:*.gif",
          "filesystem:*.JPEG",
          "filesystem:*.JPG",
          "filesystem:*.PNG",

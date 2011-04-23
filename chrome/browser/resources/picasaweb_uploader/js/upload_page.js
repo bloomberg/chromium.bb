@@ -83,25 +83,12 @@ function UploadPage() {
   this.previewGrid_.itemConstructor = PreviewItem;
   this.previewGrid_.dataModel = this.files_;
   this.previewGrid_.selectionModel = new cr.ui.ListSingleSelectionModel();
-  this.previewGrid_.addEventListener('change',
-      this.handleOnSelectionChange_.bind(this));
 
   this.uploadButton_ = document.querySelector('.upload-button');
   this.uploadButton_.addEventListener('click',
       this.handleOnUploadClicked_.bind(this));
   document.querySelector('.logout-button').addEventListener('click',
       this.handleOnLogoutClicked_.bind(this));
-
-  /* For testing only */
-  this.addFileInput_ = document.getElementById('add-file-input');
-  this.addFileInput_.addEventListener('change',
-      this.handleOnAddFileChanged_.bind(this));
-  this.addButton_ = document.getElementById('add-button');
-  this.addButton_.addEventListener('click',
-      this.handleOnAddClicked_.bind(this));
-  this.removeButton_ = document.getElementById('remove-button');
-  this.removeButton_.addEventListener('click',
-      this.handleOnRemoveClicked_.bind(this));
 
   // Login page is shown first.
   this.showLogin_();
@@ -114,11 +101,13 @@ function UploadPage() {
 
 UploadPage.prototype = {
   /**
-   * Adds one more file to upload.
-   * @param {picasa.LocalFile} file The file to add.
+   * Adds more files to upload.
+   * @param {Array.<picasa.LocalFile>} files The files to add.
    */
-  addFile: function(file) {
-    this.files_.push(file);
+  addFiles: function(files) {
+    for (var i = 0; i < files.length; i++) {
+      this.files_.push(files[i]);
+    }
   },
 
   /**
@@ -126,9 +115,7 @@ UploadPage.prototype = {
    */
   loadFilesFromBackgroundPage_: function() {
     var newFiles = chrome.extension.getBackgroundPage().bg.getNewFiles();
-    for (var file, i = 0; file = newFiles[i]; i++) {
-      this.addFile(file);
-    }
+    this.addFiles(newFiles);
   },
 
   /**
@@ -185,32 +172,6 @@ UploadPage.prototype = {
     this.loginDiv_.classList.add('invisible');
     this.albumDiv_.classList.remove('invisible');
     this.showFilesCount_();
-  },
-
-  /**
-   * Event handler for selection in grid change.
-   * For testing only (supports "remove" button).
-   * @param {Event} e Event.
-   */
-  handleOnSelectionChange_: function(e) {
-    var index = this.previewGrid_.selectionModel.selectedIndex;
-    this.setEnabled_(this.removeButton_, index >= 0);
-  },
-
-  /**
-   * Event handler for remove button clicked. For testing only.
-   * @param {Event} e Event.
-   */
-  handleOnRemoveClicked_: function(e) {
-    var index = this.previewGrid_.selectionModel.selectedIndex;
-    if (index >= 0) {
-      this.files_.splice(index, 1);
-      if (index < this.files_.length) {
-        this.previewGrid_.selectionModel.selectedIndex = index;
-      } else if (this.files_.length > 0) {
-        this.previewGrid_.selectionModel.selectedIndex = this.files_.length - 1;
-      }
-    }
   },
 
   /**
@@ -298,27 +259,6 @@ UploadPage.prototype = {
   },
 
   /**
-   * Event handler for add button clicked.
-   * For testing only.
-   * @param {Event} e Event.
-   */
-  handleOnAddClicked_: function(e) {
-    cr.dispatchSimpleEvent(this.addFileInput_, 'click');
-  },
-
-  /**
-   * Event handler for file picker finished.
-   * For testing only.
-   * @param {Event} e Event.
-   */
-  handleOnAddFileChanged_: function(e) {
-    var fileList = this.addFileInput_.files;
-    for (var file, i = 0; file = fileList[i]; i++) {
-      this.addFile(new picasa.LocalFile(file));
-    }
-  },
-
-  /**
    * Event handler for upload button clicked.
    * @param {Event} e Event.
    */
@@ -343,13 +283,9 @@ UploadPage.prototype = {
       return;
     }
 
-    // TODO(dgozman): remove after testing.
     var files = [];
     for (var i = 0; i < this.files_.length; i++) {
-      var file = this.files_.item(i);
-      if (file.file_) {
-        files.push(file);
-      }
+      files.push(this.files_.item(i));
     }
 
     chrome.extension.getBackgroundPage().bg.uploadFiles(files, album);

@@ -86,18 +86,6 @@ const Experiment kExperiments[] = {
 #endif
   },
   {
-    kAdvancedFileSystemExperimentName,
-    IDS_FLAGS_ADVANCED_FS_NAME,
-    IDS_FLAGS_ADVANCED_FS_DESCRIPTION,
-    kOsCrOS,
-#if defined(OS_CHROMEOS)
-    // The switch exists only on Chrome OS.
-    SINGLE_VALUE_TYPE(switches::kEnableAdvancedFileSystem)
-#else
-    SINGLE_VALUE_TYPE("")
-#endif
-  },
-  {
     "vertical-tabs",  // FLAGS:RECORD_UMA
     IDS_FLAGS_SIDE_TABS_NAME,
     IDS_FLAGS_SIDE_TABS_DESCRIPTION,

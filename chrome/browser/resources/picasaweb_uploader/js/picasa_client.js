@@ -4,18 +4,6 @@
 
 picasa = {}
 
-/* Remove URLFile after testing. */
-picasa.URLFile = function(url, caption) {
-  this.url_ = url;
-  this.caption = url;
-};
-picasa.URLFile.prototype = {
-  showInImage: function(img) {
-    img.setAttribute('src', this.url_);
-  }
-};
-
-
 /**
  * LocalFile constructor.
  *

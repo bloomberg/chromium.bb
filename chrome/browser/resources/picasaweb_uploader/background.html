@@ -189,15 +189,16 @@ function BackgroundPage() {
   this.client = new picasa.Client();
   this.newFiles_ = [];
   this.uploadPageUrl_ = chrome.extension.getURL('upload.html');
-
   this.uploaders_ = {};
   this.lastUploaderHash_ = 0;
+
   var self = this;
   chrome.fileBrowserHandler.onExecute.addListener(
     function(id, file_entries) {
-      console.log('picasa: got task - '+id);
-      if (id == "upload")
+      console.log('picasa: got task - ' + id);
+      if (id == 'upload') {
         self.onFileUpload_(file_entries);
+      }
     });
 }
 
@@ -219,17 +220,17 @@ BackgroundPage.prototype = {
 
   /**
    * Event handler called when user chooses "send to picasa" somewhere. 
-   * @param file
+   * @param {Array.<picasa.LocalFile>} files Files to upload.
    */
-  onSendImageRequest_: function(file) {
+  onSendImageRequest_: function(files) {
     var win = this.findWindow_(this.uploadPageUrl_);
     if (win) {
       // If upload window already loaded, just add one more file.
-      win.uploadPage.addFile(file);
+      win.uploadPage.addFiles(files);
     } else {
       // If upload window is not yet loaded, it will ask for new files via
       // getNewFiles method.
-      this.newFiles_.push(file);
+      this.newFiles_ = this.newFiles_.concat(files);
       chrome.windows.create({url: this.uploadPageUrl_, width: 620, height: 465});
     }
   },
@@ -239,13 +240,31 @@ BackgroundPage.prototype = {
    * @param {*} fileEntries Entry object array.
    */
   onFileUpload_: function(fileEntries) {
-    var self = this;
-    if (!fileEntries || !fileEntries)
+    if (!fileEntries) {
       return;
-    var entry = fileEntries[0];
-    entry.file(function(file) {
-      self.onSendImageRequest_(new picasa.LocalFile(file));
-    });
+    }
+
+    var self = this;
+    var files = [];
+    var remaining = fileEntries.length;
+    console.log('got files: ' + remaining);
+    for (var i = 0; i < fileEntries.length; i++) {
+      var entry = fileEntries[i];
+      entry.file(function(file) {
+        files.push(new picasa.LocalFile(file));
+        remaining--;
+        if (remaining == 0 && files.length > 0) {
+          self.onSendImageRequest_(files);
+        }
+      });
+    }
+
+    // If not all the entries were resolved, send request for resolved ones.
+    setTimeout(function() {
+      if (remaining > 0 && files.length > 0) {
+        self.onSendImageRequest_(files);
+      }
+    }, 1000);
   },
 
   /**

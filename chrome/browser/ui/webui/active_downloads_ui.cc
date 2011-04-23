@@ -823,16 +823,12 @@ Browser* ActiveDownloadsUI::GetPopupForPath(const std::string& path,
                                        Profile* profile) {
   std::string current_path = path;
   if (current_path.empty()) {
-    bool is_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableAdvancedFileSystem);
-    if (!is_enabled) {
-      FilePath default_download_path;
-      if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
-                            &default_download_path)) {
-        NOTREACHED();
-      }
-      current_path = default_download_path.value();
+    FilePath default_download_path;
+    if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
+                          &default_download_path)) {
+      NOTREACHED();
     }
+    current_path = default_download_path.value();
   }
 
   for (BrowserList::const_iterator it = BrowserList::begin();

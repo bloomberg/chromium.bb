@@ -472,13 +472,20 @@ void ProfileImpl::RegisterComponentExtensions() {
       IDR_BOOKMARKS_MANIFEST));
 
 #if defined(FILE_MANAGER_EXTENSION)
-  component_extensions.push_back(std::make_pair(
-      FILE_PATH_LITERAL("file_manager"),
-      IDR_FILEMANAGER_MANIFEST));
+#if defined(OS_CHROMEOS)
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSkipChromeOSComponents)) {
+#endif
+    component_extensions.push_back(std::make_pair(
+        FILE_PATH_LITERAL("file_manager"),
+        IDR_FILEMANAGER_MANIFEST));
 
-  component_extensions.push_back(std::make_pair(
-      FILE_PATH_LITERAL("picasaweb_uploader"),
-      IDR_PICASA_UPLOADER_MANIFEST));
+    component_extensions.push_back(std::make_pair(
+        FILE_PATH_LITERAL("picasaweb_uploader"),
+        IDR_PICASA_UPLOADER_MANIFEST));
+#if defined(OS_CHROMEOS)
+   }
+#endif
 #endif
 
 #if defined(TOUCH_UI)
@@ -488,21 +495,24 @@ void ProfileImpl::RegisterComponentExtensions() {
 #endif
 
 #if defined(OS_CHROMEOS)
-  component_extensions.push_back(std::make_pair(
-      FILE_PATH_LITERAL("/usr/share/chromeos-assets/mobile"),
-      IDR_MOBILE_MANIFEST));
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSkipChromeOSComponents)) {
+    component_extensions.push_back(std::make_pair(
+        FILE_PATH_LITERAL("/usr/share/chromeos-assets/mobile"),
+        IDR_MOBILE_MANIFEST));
 
 #if defined(OFFICIAL_BUILD)
-  if (browser_defaults::enable_help_app) {
-    component_extensions.push_back(std::make_pair(
-        FILE_PATH_LITERAL("/usr/share/chromeos-assets/helpapp"),
-        IDR_HELP_MANIFEST));
-  }
+    if (browser_defaults::enable_help_app) {
+      component_extensions.push_back(std::make_pair(
+          FILE_PATH_LITERAL("/usr/share/chromeos-assets/helpapp"),
+          IDR_HELP_MANIFEST));
+    }
 
-  component_extensions.push_back(std::make_pair(
-      FILE_PATH_LITERAL("/usr/share/chromeos-assets/getstarted"),
-      IDR_GETSTARTED_MANIFEST));
+    component_extensions.push_back(std::make_pair(
+        FILE_PATH_LITERAL("/usr/share/chromeos-assets/getstarted"),
+        IDR_GETSTARTED_MANIFEST));
 #endif
+  }
 #endif
 
   // Web Store.

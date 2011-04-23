@@ -292,7 +292,7 @@ extern const char kGuestSession[];
 extern const char kStubCros[];
 extern const char kScreenSaverUrl[];
 extern const char kCompressSystemFeedback[];
-extern const char kEnableAdvancedFileSystem[];
+extern const char kSkipChromeOSComponents[];
 #endif
 
 #if defined(OS_LINUX)
