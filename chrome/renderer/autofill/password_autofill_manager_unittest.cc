@@ -203,7 +203,7 @@ TEST_F(PasswordAutofillManagerTest, InitialAutocomplete) {
   CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);
 }
 
-// Tests that having a non-empty username precludes the autocomplete.
+// Tests that we correctly fill forms having an empty 'action' attribute.
 TEST_F(PasswordAutofillManagerTest, InitialAutocompleteForEmptyAction) {
   const char kEmptyActionFormHTML[] =
       "<FORM name='LoginTestForm'>"
@@ -251,7 +251,7 @@ TEST_F(PasswordAutofillManagerTest, NoInitialAutocompleteForReadOnly) {
   CheckTextFieldsState(kAliceUsername, true, "", false);
 }
 
-// Tests that having a non-empty username precludes the autocomplete.
+// Tests that having a non-matching username precludes the autocomplete.
 TEST_F(PasswordAutofillManagerTest, NoInitialAutocompleteForFilledField) {
   username_element_.setValue(WebString::fromUTF8("bogus"));
 
@@ -261,6 +261,18 @@ TEST_F(PasswordAutofillManagerTest, NoInitialAutocompleteForFilledField) {
 
   // Neither field should be autocompleted.
   CheckTextFieldsState("bogus", false, "", false);
+}
+
+// Tests that having a matching username does not preclude the autocomplete.
+TEST_F(PasswordAutofillManagerTest, InitialAutocompleteForMatchingFilledField) {
+  username_element_.setValue(WebString::fromUTF8(kAliceUsername));
+
+  // Simulate the browser sending back the login info, it triggers the
+  // autocomplete.
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // The username and password should have been autocompleted.
+  CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);
 }
 
 // Tests that editing the password clears the autocompleted password field.

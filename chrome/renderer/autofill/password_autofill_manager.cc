@@ -158,15 +158,15 @@ void FillForm(FormElements* fe, const webkit_glue::FormData& data) {
   for (FormInputElementMap::iterator it = fe->input_elements.begin();
        it != fe->input_elements.end(); ++it) {
     WebKit::WebInputElement element = it->second;
-    // Don't fill a form that has pre-filled values.
-    if (!element.value().isEmpty())
+    // Don't fill a form that has pre-filled values distinct from the ones we
+    // want to fill with.
+    if (!element.value().isEmpty() && element.value() != data_map[it->first])
       return;
   }
 
   for (FormInputElementMap::iterator it = fe->input_elements.begin();
        it != fe->input_elements.end(); ++it) {
     WebKit::WebInputElement element = it->second;
-    DCHECK(element.value().isEmpty());
     if (!IsElementEditable(element))
       continue;  // Don't fill uneditable fields.
 
