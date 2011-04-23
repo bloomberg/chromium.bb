@@ -253,7 +253,9 @@ static PageList GeneratePageList(
     page_info.id = controller.session_id().id();
     page_info.attached = client_host != NULL;
     page_info.url = entry->url().spec();
-    page_info.title = UTF16ToUTF8(entry->title());
+    // TODO(evan): use directionality of title?
+    // http://code.google.com/p/chromium/issues/detail?id=27094
+    page_info.title = UTF16ToUTF8(entry->title().string());
     page_info.favicon_url = entry->favicon().url().spec();
     page_list.push_back(page_info);
   }

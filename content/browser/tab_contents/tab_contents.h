@@ -745,7 +745,8 @@ class TabContents : public PageNavigator,
   // This is used as the backend for state updates, which include a new title,
   // or the dedicated set title message. It returns true if the new title is
   // different and was therefore updated.
-  bool UpdateTitleForEntry(NavigationEntry* entry, const std::wstring& title);
+  bool UpdateTitleForEntry(NavigationEntry* entry,
+                           const base::i18n::String16WithDirection& title);
 
   // Causes the TabContents to navigate in the right renderer to |entry|, which
   // must be already part of the entries in the navigation controller.

@@ -4427,7 +4427,7 @@ void Browser::ViewSource(TabContentsWrapper* contents,
       webkit_glue::RemoveScrollOffsetFromHistoryState(content_state));
 
   // Do not restore title, derive it from the url.
-  active_entry->set_title(string16());
+  active_entry->set_title(base::i18n::String16WithDirection());
 
   // Now show view-source entry.
   if (CanSupportWindowFeature(FEATURE_TABSTRIP)) {

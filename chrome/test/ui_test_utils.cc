@@ -399,7 +399,9 @@ bool GetCurrentTabTitle(const Browser* browser, string16* title) {
   NavigationEntry* last_entry = tab_contents->controller().GetActiveEntry();
   if (!last_entry)
     return false;
-  title->assign(last_entry->GetTitleForDisplay(""));
+  // TODO(evan): use directionality of title.
+  // http://code.google.com/p/chromium/issues/detail?id=27094
+  title->assign(last_entry->GetTitleForDisplay("").string());
   return true;
 }
 

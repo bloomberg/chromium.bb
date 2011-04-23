@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -158,7 +158,10 @@ SessionCommand* BaseSessionService::CreateUpdateTabNavigationCommand(
   WriteStringToPickle(pickle, &bytes_written, max_state_size,
                       entry.virtual_url().spec());
 
-  WriteString16ToPickle(pickle, &bytes_written, max_state_size, entry.title());
+  // TODO(evan): use directionality of title.
+  // http://code.google.com/p/chromium/issues/detail?id=27094
+  WriteString16ToPickle(pickle, &bytes_written, max_state_size,
+                        entry.title().string());
 
   if (entry.has_post_data()) {
     // Remove the form data, it may contain sensitive information.

@@ -270,7 +270,7 @@ void InterstitialPage::Hide() {
   // Let's revert to the original title if necessary.
   NavigationEntry* entry = tab_->controller().GetActiveEntry();
   if (!new_navigation_ && should_revert_tab_title_) {
-    entry->set_title(WideToUTF16Hack(original_tab_title_));
+    entry->set_title(original_tab_title_);
     tab_->NotifyNavigationStateChanged(TabContents::INVALIDATE_TITLE);
   }
   delete this;
@@ -405,7 +405,7 @@ void InterstitialPage::UpdateTitle(
   // If this interstitial is shown on an existing navigation entry, we'll need
   // to remember its title so we can revert to it when hidden.
   if (!new_navigation_ && !should_revert_tab_title_) {
-    original_tab_title_ = UTF16ToWideHack(entry->title());
+    original_tab_title_ = entry->title();
     should_revert_tab_title_ = true;
   }
   entry->set_title(title);

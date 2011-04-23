@@ -1025,7 +1025,9 @@ void TestingAutomationProvider::GetTabTitle(int handle,
     NavigationController* tab = tab_tracker_->GetResource(handle);
     NavigationEntry* entry = tab->GetActiveEntry();
     if (entry != NULL) {
-      *title = UTF16ToWideHack(entry->GetTitleForDisplay(""));
+      // TODO(evan): use directionality of title.
+      // http://code.google.com/p/chromium/issues/detail?id=27094
+      *title = UTF16ToWideHack(entry->GetTitleForDisplay("").string());
     } else {
       *title = std::wstring();
     }

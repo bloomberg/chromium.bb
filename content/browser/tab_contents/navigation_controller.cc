@@ -242,7 +242,7 @@ NavigationEntry* NavigationController::CreateNavigationEntry(
       -1,
       loaded_url,
       referrer,
-      string16(),
+      base::i18n::String16WithDirection(),
       transition);
   entry->set_virtual_url(url);
   entry->set_user_typed_url(url);

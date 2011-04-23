@@ -184,7 +184,7 @@ class NavigationEntry {
                   int page_id,
                   const GURL& url,
                   const GURL& referrer,
-                  const string16& title,
+                  const base::i18n::String16WithDirection& title,
                   PageTransition::Type transition_type);
   ~NavigationEntry();
 
@@ -227,7 +227,7 @@ class NavigationEntry {
   // the user.
   void set_url(const GURL& url) {
     url_ = url;
-    cached_display_title_.clear();
+    cached_display_title_ = base::i18n::String16WithDirection();
   }
   const GURL& url() const {
     return url_;
@@ -250,7 +250,7 @@ class NavigationEntry {
   // if there is no overridden display URL, it will return the actual one.
   void set_virtual_url(const GURL& url) {
     virtual_url_ = (url == url_) ? GURL() : url;
-    cached_display_title_.clear();
+    cached_display_title_ = base::i18n::String16WithDirection();
   }
   bool has_virtual_url() const {
     return !virtual_url_.is_empty();
@@ -271,15 +271,10 @@ class NavigationEntry {
   // displaying the appropriate "Untitled" label if this is being displayed to
   // the user.
   void set_title(const base::i18n::String16WithDirection& title) {
-    set_title(title.string());
-  }
-  // TODO(evan): remove the string16-setter once callers are updated.
-  // http://code.google.com/p/chromium/issues/detail?id=27094
-  void set_title(const string16& title) {
     title_ = title;
-    cached_display_title_.clear();
+    cached_display_title_ = base::i18n::String16WithDirection();
   }
-  const string16& title() const {
+  const base::i18n::String16WithDirection& title() const {
     return title_;
   }
 
@@ -330,7 +325,8 @@ class NavigationEntry {
   // the page if it is available or the URL. |languages| is the list of
   // accpeted languages (e.g., prefs::kAcceptLanguages) or empty if proper
   // URL formatting isn't needed (e.g., unit tests).
-  const string16& GetTitleForDisplay(const std::string& languages);
+  const base::i18n::String16WithDirection& GetTitleForDisplay(
+      const std::string& languages);
 
   // Returns true if the current tab is in view source mode. This will be false
   // if there is no navigation.
@@ -413,7 +409,7 @@ class NavigationEntry {
   GURL referrer_;
   GURL virtual_url_;
   bool update_virtual_url_with_url_;
-  string16 title_;
+  base::i18n::String16WithDirection title_;
   FaviconStatus favicon_;
   std::string content_state_;
   int32 page_id_;
@@ -427,7 +423,7 @@ class NavigationEntry {
   // us from having to do URL formatting on the URL evey time the title is
   // displayed. When the URL, virtual URL, or title is set, this should be
   // cleared to force a refresh.
-  string16 cached_display_title_;
+  base::i18n::String16WithDirection cached_display_title_;
 
   // Copy and assignment is explicitly allowed for this class.
 };

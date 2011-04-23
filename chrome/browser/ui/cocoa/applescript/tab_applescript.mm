@@ -125,9 +125,10 @@
     return nil;
 
   std::wstring title;
-  if (entry != NULL) {
-    title = UTF16ToWideHack(entry->title());
-  }
+  // TODO(evan): use directionality of title.
+  // http://code.google.com/p/chromium/issues/detail?id=27094
+  if (entry != NULL)
+    title = UTF16ToWideHack(entry->title().string());
 
   return base::SysWideToNSString(title);
 }

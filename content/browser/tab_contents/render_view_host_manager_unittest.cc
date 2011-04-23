@@ -176,7 +176,8 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   // 1) The first navigation. --------------------------
   GURL url1("http://www.google.com/");
   NavigationEntry entry1(NULL /* instance */, -1 /* page_id */, url1,
-                         GURL() /* referrer */, string16() /* title */,
+                         GURL() /* referrer */,
+                         base::i18n::String16WithDirection() /* title */,
                          PageTransition::TYPED);
   host = manager.Navigate(entry1);
 
@@ -195,7 +196,8 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   // 2) Navigate to next site. -------------------------
   GURL url2("http://www.google.com/foo");
   NavigationEntry entry2(NULL /* instance */, -1 /* page_id */, url2,
-                         url1 /* referrer */, string16() /* title */,
+                         url1 /* referrer */,
+                         base::i18n::String16WithDirection() /* title */,
                          PageTransition::LINK);
   host = manager.Navigate(entry2);
 
@@ -212,7 +214,8 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   // 3) Cross-site navigate to next site. --------------
   GURL url3("http://webkit.org/");
   NavigationEntry entry3(NULL /* instance */, -1 /* page_id */, url3,
-                         url2 /* referrer */, string16() /* title */,
+                         url2 /* referrer */,
+                         base::i18n::String16WithDirection() /* title */,
                          PageTransition::LINK);
   host = manager.Navigate(entry3);
 
@@ -247,7 +250,8 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
 
   GURL url(chrome::kChromeUINewTabURL);
   NavigationEntry entry(NULL /* instance */, -1 /* page_id */, url,
-                        GURL() /* referrer */, string16() /* title */,
+                        GURL() /* referrer */,
+                        base::i18n::String16WithDirection() /* title */,
                         PageTransition::TYPED);
   RenderViewHost* host = manager.Navigate(entry);
 
@@ -285,7 +289,8 @@ TEST_F(RenderViewHostManagerTest, NonWebUIChromeURLs) {
   // NTP is a Web UI page.
   GURL ntp_url(chrome::kChromeUINewTabURL);
   NavigationEntry ntp_entry(NULL /* instance */, -1 /* page_id */, ntp_url,
-                            GURL() /* referrer */, string16() /* title */,
+                            GURL() /* referrer */,
+                            base::i18n::String16WithDirection() /* title */,
                             PageTransition::TYPED);
 
   // about: URLs are not Web UI pages.
@@ -295,7 +300,8 @@ TEST_F(RenderViewHostManagerTest, NonWebUIChromeURLs) {
   BrowserURLHandler::RewriteURLIfNecessary(
       &about_url, profile_.get(), &reverse_on_redirect);
   NavigationEntry about_entry(NULL /* instance */, -1 /* page_id */, about_url,
-                              GURL() /* referrer */, string16() /* title */,
+                              GURL() /* referrer */,
+                              base::i18n::String16WithDirection() /* title */,
                               PageTransition::TYPED);
 
   EXPECT_TRUE(ShouldSwapProcesses(&manager, &ntp_entry, &about_entry));

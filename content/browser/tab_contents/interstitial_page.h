@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -227,7 +228,7 @@ class InterstitialPage : public NotificationObserver,
 
   // The original title of the tab that should be reverted to when the
   // interstitial is hidden.
-  std::wstring original_tab_title_;
+  base::i18n::String16WithDirection original_tab_title_;
 
   // Our RenderViewHostViewDelegate, necessary for accelerators to work.
   scoped_ptr<InterstitialPageRVHViewDelegate> rvh_view_delegate_;
