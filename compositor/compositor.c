@@ -32,6 +32,7 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <math.h>
 #include <linux/input.h>
+#include <dlfcn.h>
 
 #include "wayland-server.h"
 #include "compositor.h"
@@ -42,6 +43,7 @@
 static const char *option_socket_name = NULL;
 static const char *option_background = "background.jpg";
 static const char *option_geometry = "1024x640";
+static const char *option_shell = NULL;
 static int option_idle_time = 5;
 static int option_connector = 0;
 
@@ -56,6 +58,8 @@ static const GOptionEntry option_entries[] = {
 	  &option_socket_name, "Socket Name" },
 	{ "idle-time", 'i', 0, G_OPTION_ARG_INT,
 	  &option_idle_time, "Screensaver idle time" },
+	{ "shell", 'i', 0, G_OPTION_ARG_STRING,
+	  &option_shell, "Shell module" },
 	{ NULL }
 };
 
@@ -123,7 +127,7 @@ wlsc_matrix_transform(struct wlsc_matrix *matrix, struct wlsc_vector *v)
 	*v = t;
 }
 
-void
+WL_EXPORT void
 wlsc_tweener_init(struct wlsc_tweener *tweener,
 		  double k, double current, double target)
 {
@@ -133,7 +137,7 @@ wlsc_tweener_init(struct wlsc_tweener *tweener,
 	tweener->target = target;
 }
 
-void
+WL_EXPORT void
 wlsc_tweener_update(struct wlsc_tweener *tweener, uint32_t msec)
 {
 	double force, current, step;
@@ -160,14 +164,14 @@ wlsc_tweener_update(struct wlsc_tweener *tweener, uint32_t msec)
 	}
 }
 
-int
+WL_EXPORT int
 wlsc_tweener_done(struct wlsc_tweener *tweener)
 {
 	return fabs(tweener->previous - tweener->target) < 0.0002 &&
 		fabs(tweener->current - tweener->target) < 0.0002;
 }
 
-struct wlsc_surface *
+WL_EXPORT struct wlsc_surface *
 wlsc_surface_create(struct wlsc_compositor *compositor,
 		    int32_t x, int32_t y, int32_t width, int32_t height)
 {
@@ -209,7 +213,7 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 	return surface;
 }
 
-void
+WL_EXPORT void
 wlsc_surface_damage_rectangle(struct wlsc_surface *surface,
 			      int32_t x, int32_t y,
 			      int32_t width, int32_t height)
@@ -223,15 +227,15 @@ wlsc_surface_damage_rectangle(struct wlsc_surface *surface,
 	wlsc_compositor_schedule_repaint(compositor);
 }
 
-void
+WL_EXPORT void
 wlsc_surface_damage(struct wlsc_surface *surface)
 {
 	wlsc_surface_damage_rectangle(surface, 0, 0,
 				      surface->width, surface->height);
 }
 
-uint32_t
-get_time(void)
+WL_EXPORT uint32_t
+wlsc_compositor_get_time(void)
 {
 	struct timeval tv;
 
@@ -263,7 +267,7 @@ destroy_surface(struct wl_resource *resource, struct wl_client *client)
 
 	wl_list_remove(&surface->buffer_link);
 
-	time = get_time();
+	time = wlsc_compositor_get_time();
 	wl_list_for_each_safe(l, next,
 			      &surface->surface.destroy_listener_list, link)
 		l->func(l, &surface->surface, time);
@@ -586,7 +590,7 @@ wlsc_surface_raise(struct wlsc_surface *surface)
 	wl_list_insert(&compositor->surface_list, &surface->link);
 }
 
-void
+WL_EXPORT void
 wlsc_surface_update_matrix(struct wlsc_surface *es)
 {
 	wlsc_matrix_init(&es->matrix);
@@ -599,7 +603,7 @@ wlsc_surface_update_matrix(struct wlsc_surface *es)
 			  1.0 / es->width, 1.0 / es->height, 1);
 }
 
-void
+WL_EXPORT void
 wlsc_compositor_damage_all(struct wlsc_compositor *compositor)
 {
 	struct wlsc_output *output;
@@ -608,7 +612,7 @@ wlsc_compositor_damage_all(struct wlsc_compositor *compositor)
 		wlsc_output_damage(output);
 }
 
-void
+WL_EXPORT void
 wlsc_output_finish_frame(struct wlsc_output *output, int msecs)
 {
 	struct wlsc_compositor *compositor = output->compositor;
@@ -632,7 +636,7 @@ wlsc_output_finish_frame(struct wlsc_output *output, int msecs)
 		animation->frame(animation, output, msecs);
 }
 
-void
+WL_EXPORT void
 wlsc_output_damage(struct wlsc_output *output)
 {
 	struct wlsc_compositor *compositor = output->compositor;
@@ -654,8 +658,10 @@ fade_frame(struct wlsc_animation *animation,
 
 	wlsc_tweener_update(&compositor->fade.tweener, msecs);
 	if (wlsc_tweener_done(&compositor->fade.tweener)) {
-		if (compositor->fade.tweener.current > 0.999)
+		if (compositor->fade.tweener.current > 0.999) {
 			compositor->state = WLSC_COMPOSITOR_SLEEPING;
+			compositor->shell->lock(compositor->shell);
+		}
 		compositor->fade.tweener.current =
 			compositor->fade.tweener.target;
 		wl_list_remove(&animation->link);
@@ -717,11 +723,6 @@ wlsc_output_repaint(struct wlsc_output *output)
 			      &output->previous_damage_region);
 	pixman_region32_copy(&output->previous_damage_region, &new_damage);
 
-	if (ec->state == WLSC_COMPOSITOR_SLEEPING) {
-		glClear(GL_COLOR_BUFFER_BIT);
-		return;
-	}
-
 	if (ec->focus)
 		if (output->set_hardware_cursor(output, ec->input_device) < 0)
 			using_hardware_cursor = 0;
@@ -729,8 +730,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 		using_hardware_cursor = 0;
 
 	es = container_of(ec->surface_list.next, struct wlsc_surface, link);
-	if (es->map_type == WLSC_SURFACE_MAP_FULLSCREEN &&
-	    es->fullscreen_output == output) {
+	if (es->fullscreen_output == output) {
 		if (es->visual == &ec->compositor.rgb_visual &&
 		    using_hardware_cursor) {
 			if (output->prepare_scanout_surface(output, es) == 0) {
@@ -827,7 +827,7 @@ repaint(void *data)
 	return 1;
 }
 
-void
+WL_EXPORT void
 wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor)
 {
 	struct wlsc_output *output;
@@ -845,7 +845,7 @@ wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor)
 	compositor->repaint_on_timeout = 1;
 }
 
-void
+WL_EXPORT void
 wlsc_compositor_fade(struct wlsc_compositor *compositor, float tint)
 {
 	int done;
@@ -856,7 +856,8 @@ wlsc_compositor_fade(struct wlsc_compositor *compositor, float tint)
 		return;
 
 	if (done)
-		compositor->fade.tweener.timestamp = get_time();
+		compositor->fade.tweener.timestamp =
+			wlsc_compositor_get_time();
 
 	wlsc_compositor_damage_all(compositor);
 	if (wl_list_empty(&compositor->fade.animation.link))
@@ -871,7 +872,7 @@ surface_destroy(struct wl_client *client,
 	wl_resource_destroy(&surface->resource, client);
 }
 
-void
+WL_EXPORT void
 wlsc_surface_assign_output(struct wlsc_surface *es)
 {
 	struct wlsc_compositor *ec = es->compositor;
@@ -920,6 +921,8 @@ surface_attach(struct wl_client *client,
 	if (x != 0 || y != 0)
 		wlsc_surface_assign_output(es);
 	wlsc_surface_update_matrix(es);
+
+	es->compositor->shell->attach(es->compositor->shell, es);
 }
 
 static void
@@ -1180,7 +1183,7 @@ static const struct wl_grab_interface motion_grab_interface = {
 	motion_grab_end
 };
 
-void
+WL_EXPORT void
 wlsc_compositor_wake(struct wlsc_compositor *compositor)
 {
 	if (compositor->idle_inhibit)
@@ -1294,7 +1297,7 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 	wlsc_surface_damage(wd->sprite);
 }
 
-void
+WL_EXPORT void
 wlsc_surface_activate(struct wlsc_surface *surface,
 		      struct wlsc_input_device *device, uint32_t time)
 {
@@ -1367,7 +1370,7 @@ terminate_binding(struct wl_input_device *device, uint32_t time,
 		wl_display_terminate(compositor->wl_display);
 }
 
-struct wlsc_binding *
+WL_EXPORT struct wlsc_binding *
 wlsc_compositor_add_binding(struct wlsc_compositor *compositor,
 			    uint32_t key, uint32_t button, uint32_t modifier,
 			    wlsc_binding_handler_t handler, void *data)
@@ -1388,7 +1391,7 @@ wlsc_compositor_add_binding(struct wlsc_compositor *compositor,
 	return binding;
 }
 
-void
+WL_EXPORT void
 wlsc_binding_destroy(struct wlsc_binding *binding)
 {
 	wl_list_remove(&binding->link);
@@ -1861,9 +1864,6 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	ec->fade.animation.frame = fade_frame;
 	wl_list_init(&ec->fade.animation.link);
 
-	wlsc_shell_init(ec);
-	wlsc_switcher_init(ec);
-
 	wlsc_compositor_add_binding(ec, KEY_BACKSPACE, 0,
 				    MODIFIER_CTRL | MODIFIER_ALT,
 				    terminate_binding, ec);
@@ -1917,6 +1917,8 @@ int main(int argc, char *argv[])
 	GError *error = NULL;
 	GOptionContext *context;
 	int width, height;
+	void *shell_module;
+	int (*shell_init)(struct wlsc_compositor *ec);
 
 	g_type_init(); /* GdkPixbuf needs this, it seems. */
 
@@ -1935,6 +1937,21 @@ int main(int argc, char *argv[])
 	display = wl_display_create();
 
 	ec = NULL;
+
+	shell_init = desktop_shell_init;
+	if (option_shell) {
+		shell_module = dlopen(option_shell, RTLD_LAZY);
+		if (!shell_module) {
+			fprintf(stderr, "failed to load shell module: %m\n");
+			exit(EXIT_FAILURE);
+		}
+		shell_init = dlsym(shell_module, "shell_init");
+		if (!shell_init) {
+			fprintf(stderr,
+				"failed to lookup shell init function: %m\n");
+			exit(EXIT_FAILURE);
+		}
+	}
 
 #if BUILD_WAYLAND_COMPOSITOR
 	if (getenv("WAYLAND_DISPLAY"))
@@ -1960,6 +1977,9 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "failed to create compositor\n");
 		exit(EXIT_FAILURE);
 	}
+
+	if (shell_init(ec) < 0)
+		exit(EXIT_FAILURE);
 
 	if (wl_display_add_socket(display, option_socket_name)) {
 		fprintf(stderr, "failed to add socket: %m\n");

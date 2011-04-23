@@ -112,6 +112,11 @@ struct wlsc_tweener {
 	uint32_t timestamp;
 };
 
+struct wlsc_shell {
+	void (*lock)(struct wlsc_shell *shell);
+	void (*attach)(struct wlsc_shell *shell, struct wlsc_surface *surface);
+};
+
 enum {
 	WLSC_COMPOSITOR_ACTIVE,
 	WLSC_COMPOSITOR_SLEEPING
@@ -132,8 +137,7 @@ struct wlsc_compositor {
 	struct wlsc_shader solid_shader;
 	struct wl_display *wl_display;
 
-	/* We implement the shell interface. */
-	struct wl_shell shell;
+	struct wlsc_shell *shell;
 
 	/* There can be more than one, but not right now... */
 	struct wl_input_device *input_device;
@@ -296,7 +300,7 @@ wlsc_selection_set_focus(struct wl_selection *selection,
 			 struct wl_surface *surface, uint32_t time);
 
 uint32_t
-get_time(void);
+wlsc_compositor_get_time(void);
 
 int
 wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display);
@@ -313,7 +317,7 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 		       struct wlsc_compositor *ec);
 
 int
-wlsc_shell_init(struct wlsc_compositor *ec);
+desktop_shell_init(struct wlsc_compositor *ec);
 
 void
 wlsc_switcher_init(struct wlsc_compositor *compositor);

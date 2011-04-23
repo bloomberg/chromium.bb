@@ -15,7 +15,15 @@ AM_SILENT_RULES([yes])
 AC_PROG_CC
 AC_PROG_RANLIB
 
+# Initialize libtool
+LT_PREREQ([2.2])
+LT_INIT
+
 PKG_PROG_PKG_CONFIG()
+
+AC_CHECK_FUNC([dlopen], [],
+              AC_CHECK_LIB([dl], [dlopen], DLOPEN_LIBS="-ldl"))
+AC_SUBST(DLOPEN_LIBS)
 
 PKG_CHECK_MODULES(COMPOSITOR,
 		  [wayland-server wayland-client wayland-egl egl >= 7.10 glesv2 gdk-pixbuf-2.0 libudev >= 136 libdrm >= 2.4.23] pixman-1 x11 x11-xcb)

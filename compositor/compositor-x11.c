@@ -448,7 +448,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 
 			output = x11_compositor_find_output(c, focus_in->event);
 			notify_keyboard_focus(c->base.input_device,
-					      get_time(),
+					      wlsc_compositor_get_time(),
 					      &output->base, &c->keys);
 
 			free(prev);
@@ -540,7 +540,8 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			if (focus_in->mode == XCB_NOTIFY_MODE_WHILE_GRABBED)
 				break;
 			notify_keyboard_focus(c->base.input_device,
-					      get_time(), NULL, NULL);
+					      wlsc_compositor_get_time(),
+					      NULL, NULL);
 			break;
 
 		default:

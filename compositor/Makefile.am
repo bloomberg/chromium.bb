@@ -8,8 +8,10 @@ AM_CPPFLAGS =					\
 
 AM_CFLAGS = $(GCC_CFLAGS)
 
+compositor_LDFLAGS = -export-dynamic
 compositor_LDADD =				\
-	$(COMPOSITOR_LIBS)
+	$(COMPOSITOR_LIBS)			\
+	$(DLOPEN_LIBS)
 
 if ENABLE_DRM_COMPOSITOR
 drm_compositor_sources = compositor-drm.c tty.c evdev.c

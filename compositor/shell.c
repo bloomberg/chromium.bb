@@ -28,6 +28,11 @@
 #include "wayland-server.h"
 #include "compositor.h"
 
+struct wl_shell {
+	struct wl_object object;
+	struct wlsc_shell shell;
+};
+
 struct wlsc_move_grab {
 	struct wl_grab grab;
 	struct wlsc_surface *surface;
@@ -110,6 +115,7 @@ struct wlsc_resize_grab {
 	uint32_t edges;
 	int32_t dx, dy, width, height;
 	struct wlsc_surface *surface;
+	struct wl_shell *shell;
 };
 
 static void
@@ -118,8 +124,6 @@ resize_grab_motion(struct wl_grab *grab,
 {
 	struct wlsc_resize_grab *resize = (struct wlsc_resize_grab *) grab;
 	struct wl_input_device *device = grab->input_device;
-	struct wlsc_compositor *ec =
-		(struct wlsc_compositor *) device->compositor;
 	struct wl_surface *surface = &resize->surface->surface;
 	int32_t width, height;
 
@@ -139,7 +143,7 @@ resize_grab_motion(struct wl_grab *grab,
 		height = resize->height;
 	}
 
-	wl_client_post_event(surface->client, &ec->shell.object,
+	wl_client_post_event(surface->client, &resize->shell->object,
 			     WL_SHELL_CONFIGURE, time, resize->edges,
 			     surface, width, height);
 }
@@ -195,6 +199,7 @@ shell_resize(struct wl_client *client, struct wl_shell *shell,
 	resize->width = es->width;
 	resize->height = es->height;
 	resize->surface = es;
+	resize->shell = shell;
 
 	if (edges == 0 || edges > 15 ||
 	    (edges & 3) == 3 || (edges & 12) == 12)
@@ -243,7 +248,8 @@ destroy_drag(struct wl_resource *resource, struct wl_client *client)
 
 	wl_list_remove(&drag->drag_focus_listener.link);
 	if (drag->grab.input_device)
-		wl_input_device_end_grab(drag->grab.input_device, get_time());
+		wl_input_device_end_grab(drag->grab.input_device,
+					 wlsc_compositor_get_time());
 
 	free(drag);
 }
@@ -614,7 +620,8 @@ destroy_selection(struct wl_resource *resource, struct wl_client *client)
 
 	if (wd && wd->selection == selection) {
 		wd->selection = NULL;
-		wlsc_selection_set_focus(selection, NULL, get_time());
+		wlsc_selection_set_focus(selection, NULL,
+					 wlsc_compositor_get_time());
 	}
 
 	wl_list_remove(&selection->selection_focus_listener.link);
@@ -667,23 +674,21 @@ static void
 move_binding(struct wl_input_device *device, uint32_t time,
 	     uint32_t key, uint32_t button, uint32_t state, void *data)
 {
-	struct wlsc_compositor *compositor = data;
+	struct wl_shell *shell = data;
 	struct wlsc_surface *surface =
 		(struct wlsc_surface *) device->pointer_focus;
 
 	if (surface == NULL)
 		return;
 
-	shell_move(NULL,
-		   (struct wl_shell *) &compositor->shell,
-		   &surface->surface, device, time);
+	shell_move(NULL, shell, &surface->surface, device, time);
 }
 
 static void
 resize_binding(struct wl_input_device *device, uint32_t time,
 	       uint32_t key, uint32_t button, uint32_t state, void *data)
 {
-	struct wlsc_compositor *compositor = data;
+	struct wl_shell *shell = data;
 	struct wlsc_surface *surface =
 		(struct wlsc_surface *) device->pointer_focus;
 	uint32_t edges = 0;
@@ -709,15 +714,30 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 	else
 		edges |= WL_SHELL_RESIZE_BOTTOM;
 
-	shell_resize(NULL,
-		     (struct wl_shell *) &compositor->shell,
-		     &surface->surface, device, time, edges);
+	shell_resize(NULL, shell, &surface->surface, device, time, edges);
+}
+
+static void
+lock(struct wlsc_shell *shell)
+{
+}
+
+static void
+attach(struct wlsc_shell *shell, struct wlsc_surface *surface)
+{
 }
 
 int
-wlsc_shell_init(struct wlsc_compositor *ec)
+desktop_shell_init(struct wlsc_compositor *ec)
 {
-	struct wl_shell *shell = &ec->shell;
+	struct wl_shell *shell;
+
+	shell = malloc(sizeof *shell);
+	if (shell == NULL)
+		return -1;
+
+	shell->shell.lock = lock;
+	shell->shell.attach = attach;
 
 	shell->object.interface = &wl_shell_interface;
 	shell->object.implementation = (void (**)(void)) &shell_interface;
@@ -726,9 +746,11 @@ wlsc_shell_init(struct wlsc_compositor *ec)
 		return -1;
 
 	wlsc_compositor_add_binding(ec, 0, BTN_LEFT, MODIFIER_SUPER,
-				    move_binding, ec);
+				    move_binding, shell);
 	wlsc_compositor_add_binding(ec, 0, BTN_MIDDLE, MODIFIER_SUPER,
-				    resize_binding, ec);
+				    resize_binding, shell);
+
+	ec->shell = &shell->shell;
 
 	return 0;
 }
