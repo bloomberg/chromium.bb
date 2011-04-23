@@ -2286,7 +2286,11 @@ nacl_env.Append(
     'tests/math/nacl.scons',
     'tests/memcheck_test/nacl.scons',
     'tests/mmap/nacl.scons',
-    'tests/multiarch/nacl.scons',
+    # multiarch is disabled for now, as it doesn't test what it purports to.
+    # It was already disabled on Windows, irt, and ARM, and referred to the
+    # now obsolete prebuilt infrastructure.
+    # TODO(sehr): reenable multiarch or move to something similar.
+    #'tests/multiarch/nacl.scons',
     'tests/multiple_sandboxes/nacl.scons',
     'tests/nacl.scons',
     'tests/nacl_log/nacl.scons',
