@@ -307,6 +307,7 @@ function printFile() {
  * Asks the browser to generate a preview PDF based on current print settings.
  */
 function requestPrintPreview() {
+  $('dancing-dots').classList.remove('hidden');
   $('dancing-dots').classList.remove('invisible');
   chrome.send('getPreview', [getSettingsJSON()]);
 }
@@ -360,6 +361,7 @@ function setColor(color) {
  * Called from PrintPreviewMessageHandler::OnPrintPreviewFailed().
  */
 function printPreviewFailed() {
+  $('dancing-dots').classList.add('hidden');
   $('preview-failed').classList.remove('hidden');
 
   var pdfViewer = $('pdf-viewer');
@@ -441,6 +443,7 @@ function createPDFPlugin() {
   if (!pdfPlugin.onload) {
     hasCompatiblePDFPlugin = false;
     mainView.removeChild(pdfPlugin);
+    $('dancing-dots').classList.add('hidden');
     $('no-plugin').classList.remove('hidden');
     return;
   }
