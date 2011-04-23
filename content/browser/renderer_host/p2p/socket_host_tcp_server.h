@@ -21,7 +21,7 @@ class ClientSocket;
 class P2PSocketHostTcpServer : public P2PSocketHost {
  public:
   P2PSocketHostTcpServer(IPC::Message::Sender* message_sender,
-                         int routing_id, int id);
+                   int routing_id, int id);
   virtual ~P2PSocketHostTcpServer();
 
   // P2PSocketHost overrides.
@@ -33,8 +33,6 @@ class P2PSocketHostTcpServer : public P2PSocketHost {
       const net::IPEndPoint& remote_address, int id) OVERRIDE;
 
  private:
-  friend class P2PSocketHostTcpServerTest;
-
   typedef std::map<net::IPEndPoint, net::ClientSocket*> AcceptedSocketsMap;
 
   void OnError();
@@ -45,7 +43,7 @@ class P2PSocketHostTcpServer : public P2PSocketHost {
   // Callback for Accept().
   void OnAccepted(int result);
 
-  scoped_ptr<net::ServerSocket> socket_;
+  scoped_ptr<net::TCPServerSocket> socket_;
   net::IPEndPoint local_address_;
 
   scoped_ptr<net::ClientSocket> accept_socket_;

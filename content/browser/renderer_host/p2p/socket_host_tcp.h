@@ -38,9 +38,6 @@ class P2PSocketHostTcp : public P2PSocketHost {
       const net::IPEndPoint& remote_address, int id) OVERRIDE;
 
  private:
-  friend class P2PSocketHostTcpTest;
-  friend class P2PSocketHostTcpServerTest;
-
   void OnError();
 
   void DoRead();

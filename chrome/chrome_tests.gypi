@@ -1934,9 +1934,6 @@
       'conditions': [
         ['p2p_apis==1', {
           'sources': [
-            '../content/browser/renderer_host/p2p/socket_host_test_utils.h',
-            '../content/browser/renderer_host/p2p/socket_host_tcp_unittest.cc',
-            '../content/browser/renderer_host/p2p/socket_host_tcp_server_unittest.cc',
             '../content/browser/renderer_host/p2p/socket_host_udp_unittest.cc',
             '../content/renderer/p2p/p2p_transport_impl_unittest.cc',
           ],
