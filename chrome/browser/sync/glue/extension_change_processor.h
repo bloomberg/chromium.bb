@@ -61,7 +61,6 @@ class ExtensionChangeProcessor : public ChangeProcessor,
   // Non-NULL iff |running()| is true.
   Profile* profile_;
   ExtensionServiceInterface* extension_service_;
-  sync_api::UserShare* user_share_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionChangeProcessor);
 };

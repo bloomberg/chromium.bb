@@ -3431,11 +3431,110 @@ TEST_F(ExtensionServiceTest, ComponentExtensions) {
 
 namespace {
 
-bool AlwaysInstall(const Extension& extension) {
+bool AllExtensions(const Extension& extension) {
   return true;
 }
 
+bool NoExtensions(const Extension& extension) {
+  return false;
+}
+
+bool ExtensionsOnly(const Extension& extension) {
+  return extension.GetType() == Extension::TYPE_EXTENSION;
+}
+
+bool ThemesOnly(const Extension& extension) {
+  return extension.is_theme();
+}
+
+bool GoodOnly(const Extension& extension) {
+  return extension.id() == good_crx;
+}
+
 }  // namespace
+
+TEST_F(ExtensionServiceTest, GetSyncData) {
+  InitializeEmptyExtensionService();
+  InstallCrx(data_dir_.AppendASCII("good.crx"), true);
+
+  ExtensionSyncData data;
+  EXPECT_TRUE(service_->GetSyncData(good_crx, &AllExtensions, &data));
+  const Extension* extension = service_->GetExtensionById(good_crx, true);
+  ASSERT_TRUE(extension);
+  EXPECT_EQ(extension->id(), data.id);
+  EXPECT_FALSE(data.uninstalled);
+  EXPECT_EQ(service_->IsExtensionEnabled(good_crx), data.enabled);
+  EXPECT_EQ(service_->IsIncognitoEnabled(good_crx), data.incognito_enabled);
+  EXPECT_TRUE(data.version.Equals(*extension->version()));
+  EXPECT_EQ(extension->update_url(), data.update_url);
+  EXPECT_EQ(extension->name(), data.name);
+}
+
+TEST_F(ExtensionServiceTest, GetSyncDataFilter) {
+  InitializeEmptyExtensionService();
+  InstallCrx(data_dir_.AppendASCII("good.crx"), true);
+  ExtensionSyncData data;
+  EXPECT_FALSE(service_->GetSyncData(good_crx, &ThemesOnly, &data));
+}
+
+TEST_F(ExtensionServiceTest, GetSyncDataNotPresent) {
+  InitializeEmptyExtensionService();
+  ExtensionSyncData data;
+  EXPECT_FALSE(service_->GetSyncData(good_crx, &AllExtensions, &data));
+}
+
+TEST_F(ExtensionServiceTest, GetSyncDataUserSettings) {
+  InitializeEmptyExtensionService();
+  InstallCrx(data_dir_.AppendASCII("good.crx"), true);
+
+  {
+    ExtensionSyncData data;
+    EXPECT_TRUE(service_->GetSyncData(good_crx, &AllExtensions, &data));
+    EXPECT_TRUE(data.enabled);
+    EXPECT_FALSE(data.incognito_enabled);
+  }
+
+  service_->DisableExtension(good_crx);
+  {
+    ExtensionSyncData data;
+    EXPECT_TRUE(service_->GetSyncData(good_crx, &AllExtensions, &data));
+    EXPECT_FALSE(data.enabled);
+    EXPECT_FALSE(data.incognito_enabled);
+  }
+
+  service_->SetIsIncognitoEnabled(good_crx, true);
+  {
+    ExtensionSyncData data;
+    EXPECT_TRUE(service_->GetSyncData(good_crx, &AllExtensions, &data));
+    EXPECT_FALSE(data.enabled);
+    EXPECT_TRUE(data.incognito_enabled);
+  }
+
+  service_->EnableExtension(good_crx);
+  {
+    ExtensionSyncData data;
+    EXPECT_TRUE(service_->GetSyncData(good_crx, &AllExtensions, &data));
+    EXPECT_TRUE(data.enabled);
+    EXPECT_TRUE(data.incognito_enabled);
+  }
+}
+
+TEST_F(ExtensionServiceTest, GetSyncDataList) {
+  InitializeEmptyExtensionService();
+  InstallCrx(data_dir_.AppendASCII("good.crx"), true);
+  InstallCrx(data_dir_.AppendASCII("page_action.crx"), true);
+  InstallCrx(data_dir_.AppendASCII("theme.crx"), true);
+  InstallCrx(data_dir_.AppendASCII("theme2.crx"), true);
+
+  service_->DisableExtension(page_action);
+  service_->DisableExtension(theme2_crx);
+
+  EXPECT_EQ(4u, service_->GetSyncDataList(&AllExtensions).size());
+  EXPECT_EQ(0u, service_->GetSyncDataList(&NoExtensions).size());
+  EXPECT_EQ(2u, service_->GetSyncDataList(&ExtensionsOnly).size());
+  EXPECT_EQ(2u, service_->GetSyncDataList(&ThemesOnly).size());
+  EXPECT_EQ(1u, service_->GetSyncDataList(&GoodOnly).size());
+}
 
 TEST_F(ExtensionServiceTest, ProcessSyncDataUninstall) {
   InitializeEmptyExtensionService();
@@ -3445,7 +3544,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataUninstall) {
   extension_sync_data.uninstalled = true;
 
   // Should do nothing.
-  service_->ProcessSyncData(extension_sync_data, &AlwaysInstall);
+  service_->ProcessSyncData(extension_sync_data, &AllExtensions);
 
   // Install the extension.
   FilePath extension_path = data_dir_.AppendASCII("good.crx");
@@ -3453,11 +3552,11 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataUninstall) {
   EXPECT_TRUE(service_->GetExtensionById(good_crx, true));
 
   // Should uninstall the extension.
-  service_->ProcessSyncData(extension_sync_data, &AlwaysInstall);
+  service_->ProcessSyncData(extension_sync_data, &AllExtensions);
   EXPECT_FALSE(service_->GetExtensionById(good_crx, true));
 
   // Should again do nothing.
-  service_->ProcessSyncData(extension_sync_data, &AlwaysInstall);
+  service_->ProcessSyncData(extension_sync_data, &AllExtensions);
 }
 
 
@@ -3475,19 +3574,19 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
       *(service_->GetExtensionById(good_crx, true)->version());
 
   extension_sync_data.enabled = false;
-  service_->ProcessSyncData(extension_sync_data, &AlwaysInstall);
+  service_->ProcessSyncData(extension_sync_data, &AllExtensions);
   EXPECT_FALSE(service_->IsExtensionEnabled(good_crx));
   EXPECT_FALSE(service_->IsIncognitoEnabled(good_crx));
 
   extension_sync_data.enabled = true;
   extension_sync_data.incognito_enabled = true;
-  service_->ProcessSyncData(extension_sync_data, &AlwaysInstall);
+  service_->ProcessSyncData(extension_sync_data, &AllExtensions);
   EXPECT_TRUE(service_->IsExtensionEnabled(good_crx));
   EXPECT_TRUE(service_->IsIncognitoEnabled(good_crx));
 
   extension_sync_data.enabled = false;
   extension_sync_data.incognito_enabled = true;
-  service_->ProcessSyncData(extension_sync_data, &AlwaysInstall);
+  service_->ProcessSyncData(extension_sync_data, &AllExtensions);
   EXPECT_FALSE(service_->IsExtensionEnabled(good_crx));
   EXPECT_TRUE(service_->IsIncognitoEnabled(good_crx));
 
@@ -3510,7 +3609,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataVersionCheck) {
       *(service_->GetExtensionById(good_crx, true)->version());
 
   // Should do nothing if extension version == sync version.
-  service_->ProcessSyncData(extension_sync_data, &AlwaysInstall);
+  service_->ProcessSyncData(extension_sync_data, &AllExtensions);
   EXPECT_FALSE(service_->updater()->WillCheckSoon());
 
   // Should do nothing if extension version > sync version (but see
@@ -3518,7 +3617,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataVersionCheck) {
   {
     scoped_ptr<Version> version(Version::GetVersionFromString("0.0.0.0"));
     extension_sync_data.version = *version;
-    service_->ProcessSyncData(extension_sync_data, &AlwaysInstall);
+    service_->ProcessSyncData(extension_sync_data, &AllExtensions);
     EXPECT_FALSE(service_->updater()->WillCheckSoon());
   }
 
@@ -3526,7 +3625,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataVersionCheck) {
   {
     scoped_ptr<Version> version(Version::GetVersionFromString("9.9.9.9"));
     extension_sync_data.version = *version;
-    service_->ProcessSyncData(extension_sync_data, &AlwaysInstall);
+    service_->ProcessSyncData(extension_sync_data, &AllExtensions);
     EXPECT_TRUE(service_->updater()->WillCheckSoon());
   }
 
@@ -3545,7 +3644,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
     extension_sync_data.version = *version;
   }
 
-  service_->ProcessSyncData(extension_sync_data, &AlwaysInstall);
+  service_->ProcessSyncData(extension_sync_data, &AllExtensions);
   EXPECT_TRUE(service_->updater()->WillCheckSoon());
 
   PendingExtensionInfo info;

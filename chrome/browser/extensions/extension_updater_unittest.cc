@@ -4,6 +4,7 @@
 
 #include <map>
 
+#include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util-inl.h"
@@ -15,8 +16,9 @@
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_updater.h"
-#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
+#include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -48,95 +50,16 @@ const ManifestFetchData::PingData kNeverPingedData(
 }  // namespace
 
 // Base class for further specialized test classes.
-class MockService : public ExtensionServiceInterface {
+class MockService : public TestExtensionService {
  public:
   MockService()
       : pending_extension_manager_(ALLOW_THIS_IN_INITIALIZER_LIST(*this)) {}
   virtual ~MockService() {}
 
-  virtual const ExtensionList* extensions() const {
-    ADD_FAILURE();
-    return NULL;
-  }
-
-  virtual const ExtensionList* disabled_extensions() const {
-    ADD_FAILURE();
-    return NULL;
-  }
-
-  virtual void UpdateExtension(const std::string& id,
-                               const FilePath& path,
-                               const GURL& download_url) {
-    FAIL();
-  }
-
-  virtual const Extension* GetExtensionById(const std::string& id,
-                                            bool include_disabled) const {
-    ADD_FAILURE();
-    return NULL;
-  }
-
-  virtual bool UninstallExtension(const std::string& extension_id,
-                                  bool external_uninstall,
-                                  std::string* error) {
-    ADD_FAILURE();
-    return false;
-  }
-
-  virtual bool IsExtensionEnabled(const std::string& extension_id) const {
-    ADD_FAILURE();
-    return false;
-  }
-
-  virtual bool IsExternalExtensionUninstalled(
-      const std::string& extension_id) const {
-    ADD_FAILURE();
-    return false;
-  }
-
-  virtual void EnableExtension(const std::string& extension_id) {
-    FAIL();
-  }
-
-  virtual void DisableExtension(const std::string& extension_id) {
-    FAIL();
-  }
-
-
-  virtual void UpdateExtensionBlacklist(
-      const std::vector<std::string>& blacklist) {
-    FAIL();
-  }
-
-  virtual void CheckAdminBlacklist() {
-    FAIL();
-  }
-
-  virtual bool IsIncognitoEnabled(const std::string& id) const {
-    ADD_FAILURE();
-    return false;
-  }
-
-  virtual void SetIsIncognitoEnabled(const std::string& id,
-                                     bool enabled) {
-    FAIL();
-  }
-
-  virtual void CheckForUpdatesSoon() {
-    FAIL();
-  }
-
-  virtual PendingExtensionManager* pending_extension_manager() {
+  virtual PendingExtensionManager* pending_extension_manager() OVERRIDE {
     ADD_FAILURE() << "Subclass should override this if it will "
                   << "be accessed by a test.";
     return &pending_extension_manager_;
-  }
-
-  virtual void ProcessSyncData(
-      const ExtensionSyncData& extension_sync_data,
-      PendingExtensionInfo::ShouldAllowInstallPredicate
-          should_allow_install) {
-    FAIL();
   }
 
   Profile* profile() { return &profile_; }
@@ -228,8 +151,8 @@ class ServiceForManifestTests : public MockService {
 
   virtual ~ServiceForManifestTests() {}
 
-  virtual const Extension* GetExtensionById(const std::string& id,
-                                            bool include_disabled) const {
+  virtual const Extension* GetExtensionById(
+      const std::string& id, bool include_disabled) const OVERRIDE {
     for (ExtensionList::const_iterator iter = extensions_.begin();
         iter != extensions_.end(); ++iter) {
       if ((*iter)->id() == id) {
@@ -239,9 +162,11 @@ class ServiceForManifestTests : public MockService {
     return NULL;
   }
 
-  virtual const ExtensionList* extensions() const { return &extensions_; }
+  virtual const ExtensionList* extensions() const OVERRIDE {
+    return &extensions_;
+  }
 
-  virtual PendingExtensionManager* pending_extension_manager() {
+  virtual PendingExtensionManager* pending_extension_manager() OVERRIDE {
     return &pending_extension_manager_;
   }
 
@@ -263,11 +188,12 @@ class ServiceForDownloadTests : public MockService {
     download_url_ = download_url;
   }
 
-  virtual PendingExtensionManager* pending_extension_manager() {
+  virtual PendingExtensionManager* pending_extension_manager() OVERRIDE {
     return &pending_extension_manager_;
   }
 
-  virtual const Extension* GetExtensionById(const std::string& id, bool) const {
+  virtual const Extension* GetExtensionById(
+      const std::string& id, bool) const OVERRIDE {
     last_inquired_extension_id_ = id;
     return NULL;
   }
@@ -298,7 +224,7 @@ class ServiceForBlacklistTests : public MockService {
        processed_blacklist_(false) {
   }
   virtual void UpdateExtensionBlacklist(
-    const std::vector<std::string>& blacklist) {
+    const std::vector<std::string>& blacklist) OVERRIDE {
     processed_blacklist_ = true;
     return;
   }

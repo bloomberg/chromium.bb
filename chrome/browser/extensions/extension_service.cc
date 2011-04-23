@@ -1241,9 +1241,59 @@ void ExtensionService::CheckForUpdatesSoon() {
   }
 }
 
+ExtensionSyncData ExtensionService::GetSyncDataHelper(
+    const Extension& extension) const {
+  const std::string& id = extension.id();
+  ExtensionSyncData data;
+  data.id = id;
+  data.uninstalled = false;
+  data.enabled = IsExtensionEnabled(id);
+  data.incognito_enabled = IsIncognitoEnabled(id);
+  data.version = *extension.version();
+  data.update_url = extension.update_url();
+  data.name = extension.name();
+  return data;
+}
+
+bool ExtensionService::GetSyncData(
+    const std::string& id,
+    ExtensionFilter filter,
+    ExtensionSyncData* extension_sync_data) const {
+  DCHECK(Extension::IdIsValid(id));
+  // TODO(akalin): Figure out what to do with terminated extensions.
+  const Extension* extension = GetExtensionById(id, true);
+  if (!extension || !(*filter)(*extension)) {
+    return false;
+  }
+  *extension_sync_data = GetSyncDataHelper(*extension);
+  return true;
+}
+
+void ExtensionService::GetSyncDataListHelper(
+    const ExtensionList& extensions,
+    ExtensionFilter filter,
+    std::vector<ExtensionSyncData>* sync_data_list) const {
+  for (ExtensionList::const_iterator it = extensions.begin();
+       it != extensions.end(); ++it) {
+    const Extension& extension = **it;
+    if ((*filter)(extension)) {
+      sync_data_list->push_back(GetSyncDataHelper(extension));
+    }
+  }
+}
+
+std::vector<ExtensionSyncData> ExtensionService::GetSyncDataList(
+    ExtensionFilter filter) const {
+  std::vector<ExtensionSyncData> sync_data_list;
+  GetSyncDataListHelper(extensions_, filter, &sync_data_list);
+  GetSyncDataListHelper(disabled_extensions_, filter, &sync_data_list);
+  // TODO(akalin): Figure out what to do with terminated extensions.
+  return sync_data_list;
+}
+
 void ExtensionService::ProcessSyncData(
     const ExtensionSyncData& extension_sync_data,
-    PendingExtensionInfo::ShouldAllowInstallPredicate should_allow) {
+    ExtensionFilter filter) {
   const std::string& id = extension_sync_data.id;
 
   // Handle uninstalls first.
@@ -1291,7 +1341,7 @@ void ExtensionService::ProcessSyncData(
   pending_extension_manager()->AddFromSync(
       id,
       extension_sync_data.update_url,
-      should_allow,
+      filter,
       true,  // install_silently
       extension_sync_data.enabled,
       extension_sync_data.incognito_enabled);

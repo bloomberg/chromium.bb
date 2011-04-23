@@ -8,13 +8,11 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/extension_sync.h"
 #include "chrome/browser/sync/glue/extension_util.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/browser_thread.h"
@@ -29,8 +27,7 @@ ExtensionChangeProcessor::ExtensionChangeProcessor(
     : ChangeProcessor(error_handler),
       traits_(traits),
       profile_(NULL),
-      extension_service_(NULL),
-      user_share_(NULL) {
+      extension_service_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(error_handler);
 }
@@ -49,9 +46,7 @@ void ExtensionChangeProcessor::Observe(NotificationType type,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(running());
   DCHECK(profile_);
-  if ((type != NotificationType::EXTENSION_INSTALLED) &&
-      (type != NotificationType::EXTENSION_UNINSTALLED) &&
-      (type != NotificationType::EXTENSION_LOADED) &&
+  if ((type != NotificationType::EXTENSION_LOADED) &&
       (type != NotificationType::EXTENSION_UPDATE_DISABLED) &&
       (type != NotificationType::EXTENSION_UNLOADED)) {
     LOG(DFATAL) << "Received unexpected notification of type "
@@ -59,36 +54,36 @@ void ExtensionChangeProcessor::Observe(NotificationType type,
     return;
   }
 
+  // Filter out unhandled extensions first.
   DCHECK_EQ(Source<Profile>(source).ptr(), profile_);
-  if (type == NotificationType::EXTENSION_UNINSTALLED) {
-    const UninstalledExtensionInfo* uninstalled_extension_info =
-        Details<UninstalledExtensionInfo>(details).ptr();
-    CHECK(uninstalled_extension_info);
-    if (traits_.should_handle_extension_uninstall(
-            *uninstalled_extension_info)) {
-      const std::string& id = uninstalled_extension_info->extension_id;
+  const Extension& extension =
+      (type == NotificationType::EXTENSION_UNLOADED) ?
+      *Details<UnloadedExtensionInfo>(details)->extension :
+      *Details<const Extension>(details).ptr();
+  if (!traits_.is_valid_and_syncable(extension)) {
+    return;
+  }
+
+  const std::string& id = extension.id();
+
+  // Then handle extension uninstalls.
+  if (type == NotificationType::EXTENSION_UNLOADED) {
+    const UnloadedExtensionInfo& info =
+        *Details<UnloadedExtensionInfo>(details).ptr();
+    if (info.reason == UnloadedExtensionInfo::UNINSTALL) {
       VLOG(1) << "Removing server data for uninstalled extension " << id
-              << " of type " << uninstalled_extension_info->extension_type;
-      RemoveServerData(traits_, id, user_share_);
-    }
-  } else {
-    const Extension* extension = NULL;
-    if (type == NotificationType::EXTENSION_UNLOADED) {
-      extension = Details<UnloadedExtensionInfo>(details)->extension;
-    } else {
-      extension = Details<const Extension>(details).ptr();
-    }
-    CHECK(extension);
-    VLOG(1) << "Updating server data for extension " << extension->id()
-            << " (notification type = " << type.value << ")";
-    if (!traits_.is_valid_and_syncable(*extension)) {
+              << " of type " << info.extension->GetType();
+      RemoveServerData(traits_, id, share_handle());
       return;
     }
-    std::string error;
-    if (!UpdateServerData(traits_, *extension, *extension_service_,
-                          user_share_, &error)) {
-      error_handler()->OnUnrecoverableError(FROM_HERE, error);
-    }
+  }
+
+  VLOG(1) << "Updating server data for extension " << id
+          << " (notification type = " << type.value << ")";
+  std::string error;
+  if (!UpdateServerData(traits_, id, *extension_service_,
+                        share_handle(), &error)) {
+    error_handler()->OnUnrecoverableError(FROM_HERE, error);
   }
 }
 
@@ -131,7 +126,7 @@ void ExtensionChangeProcessor::ApplyChangesFromSyncModel(
       }
     }
     ExtensionSyncData sync_data;
-    if (!GetExtensionSyncData(specifics, &sync_data)) {
+    if (!SpecificsToSyncData(specifics, &sync_data)) {
       // TODO(akalin): Should probably recover or drop.
       std::string error =
           std::string("Invalid server specifics: ") +
@@ -152,10 +147,8 @@ void ExtensionChangeProcessor::StartImpl(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   profile_ = profile;
   extension_service_ = profile_->GetExtensionService();
-  user_share_ = profile_->GetProfileSyncService()->GetUserShare();
   DCHECK(profile_);
   DCHECK(extension_service_);
-  DCHECK(user_share_);
   StartObserving();
 }
 
@@ -164,18 +157,11 @@ void ExtensionChangeProcessor::StopImpl() {
   StopObserving();
   profile_ = NULL;
   extension_service_ = NULL;
-  user_share_ = NULL;
 }
 
 void ExtensionChangeProcessor::StartObserving() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
-  notification_registrar_.Add(
-      this, NotificationType::EXTENSION_INSTALLED,
-      Source<Profile>(profile_));
-  notification_registrar_.Add(
-      this, NotificationType::EXTENSION_UNINSTALLED,
-      Source<Profile>(profile_));
 
   notification_registrar_.Add(
       this, NotificationType::EXTENSION_LOADED,

@@ -12,10 +12,8 @@
 #include <string>
 
 class Extension;
-class ExtensionPrefs;
 class ExtensionServiceInterface;
 struct ExtensionSyncData;
-struct UninstalledExtensionInfo;
 
 namespace sync_pb {
 class ExtensionSpecifics;
@@ -78,13 +76,6 @@ bool AreExtensionSpecificsNonUserPropertiesEqual(
     const sync_pb::ExtensionSpecifics& a,
     const sync_pb::ExtensionSpecifics& b);
 
-// Fills |specifics| with information taken from |extension|, which
-// must be a syncable extension.  |specifics| will be valid after this
-// function is called.
-void GetExtensionSpecifics(const Extension& extension,
-                           const ExtensionServiceInterface& extension_service,
-                           sync_pb::ExtensionSpecifics* specifics);
-
 // Merge |specifics| into |merged_specifics|.  Both must be valid and
 // have the same ID.  The merge policy is currently to copy the
 // non-user properties of |specifics| into |merged_specifics| (and the
@@ -97,9 +88,14 @@ void MergeExtensionSpecifics(
 
 // Fills |sync_data| with the data from |specifics|.  Returns true iff
 // succesful.
-bool GetExtensionSyncData(
+bool SpecificsToSyncData(
     const sync_pb::ExtensionSpecifics& specifics,
     ExtensionSyncData* sync_data);
+
+// Fills |specifics| with the data from |sync_data|.
+void SyncDataToSpecifics(
+    const ExtensionSyncData& sync_data,
+    sync_pb::ExtensionSpecifics* specifics);
 
 }  // namespace browser_sync
 

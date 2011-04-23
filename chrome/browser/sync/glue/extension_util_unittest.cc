@@ -6,7 +6,7 @@
 
 #include "base/file_path.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/mock_extension_service.h"
+#include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -16,10 +16,6 @@
 namespace browser_sync {
 
 namespace {
-
-using ::testing::_;
-using ::testing::Return;
-using ::testing::StrictMock;
 
 #if defined(OS_WIN)
 const FilePath::CharType kExtensionFilePath[] = FILE_PATH_LITERAL("c:\\foo");
@@ -381,48 +377,6 @@ TEST_F(ExtensionUtilTest, AreExtensionSpecificsNonUserPropertiesEqual) {
   EXPECT_TRUE(AreExtensionSpecificsNonUserPropertiesEqual(a, b));
 }
 
-scoped_refptr<Extension> MakeSyncableExtension(
-    const std::string& version_string,
-    const std::string& update_url_spec,
-    const std::string& name,
-    const FilePath& extension_path) {
-  DictionaryValue source;
-  source.SetString(extension_manifest_keys::kVersion, version_string);
-  source.SetString(extension_manifest_keys::kUpdateURL, update_url_spec);
-  source.SetString(extension_manifest_keys::kName, name);
-  std::string error;
-  scoped_refptr<Extension> extension = Extension::Create(
-      extension_path, Extension::INTERNAL, source,
-      Extension::STRICT_ERROR_CHECKS, &error);
-  EXPECT_TRUE(extension);
-  EXPECT_EQ("", error);
-  return extension;
-}
-
-TEST_F(ExtensionUtilTest, GetExtensionSpecifics) {
-  FilePath file_path(kExtensionFilePath);
-  StrictMock<MockExtensionService> mock_extension_service;
-  EXPECT_CALL(mock_extension_service, IsExtensionEnabled(_))
-      .WillOnce(Return(true));
-  EXPECT_CALL(mock_extension_service, IsIncognitoEnabled(_))
-      .WillOnce(Return(false));
-
-  scoped_refptr<Extension> extension(
-      MakeSyncableExtension(
-          kValidVersion, kValidUpdateUrl1, kName, file_path));
-  sync_pb::ExtensionSpecifics specifics;
-  GetExtensionSpecifics(*extension, mock_extension_service, &specifics);
-  EXPECT_EQ(extension->id(), specifics.id());
-  EXPECT_EQ(extension->VersionString(), kValidVersion);
-  EXPECT_EQ(extension->update_url().spec(), kValidUpdateUrl1);
-  EXPECT_TRUE(specifics.enabled());
-  EXPECT_FALSE(specifics.incognito_enabled());
-  EXPECT_EQ(kName, specifics.name());
-}
-
-// TODO(akalin): Make ExtensionService/ExtensionUpdater testable
-// enough to be able to write a unittest for SetExtensionProperties().
-
 TEST_F(ExtensionUtilTest, MergeExtensionSpecificsWithUserProperties) {
   sync_pb::ExtensionSpecifics merged_specifics;
   merged_specifics.set_id(kValidId);
@@ -481,6 +435,47 @@ TEST_F(ExtensionUtilTest, MergeExtensionSpecificsWithUserProperties) {
     MergeExtensionSpecifics(specifics, true, &result);
     EXPECT_TRUE(AreExtensionSpecificsEqual(result, specifics));
   }
+}
+
+TEST_F(ExtensionUtilTest, SpecificsToSyncData) {
+  sync_pb::ExtensionSpecifics specifics;
+  specifics.set_id(kValidId);
+  specifics.set_update_url(kValidUpdateUrl2);
+  specifics.set_enabled(false);
+  specifics.set_incognito_enabled(true);
+  specifics.set_version(kVersion1);
+  specifics.set_name(kName);
+
+  ExtensionSyncData sync_data;
+  EXPECT_TRUE(SpecificsToSyncData(specifics, &sync_data));
+  EXPECT_EQ(specifics.id(), sync_data.id);
+  EXPECT_EQ(specifics.version(), sync_data.version.GetString());
+  EXPECT_EQ(specifics.update_url(), sync_data.update_url.spec());
+  EXPECT_EQ(specifics.enabled(), sync_data.enabled);
+  EXPECT_EQ(specifics.incognito_enabled(), sync_data.incognito_enabled);
+  EXPECT_EQ(specifics.name(), sync_data.name);
+}
+
+TEST_F(ExtensionUtilTest, SyncDataToSpecifics) {
+  ExtensionSyncData sync_data;
+  sync_data.id = kValidId;
+  sync_data.update_url = GURL(kValidUpdateUrl2);
+  sync_data.enabled = true;
+  sync_data.incognito_enabled = false;
+  {
+    scoped_ptr<Version> version(Version::GetVersionFromString(kVersion1));
+    sync_data.version = *version;
+  }
+  sync_data.name = kName;
+
+  sync_pb::ExtensionSpecifics specifics;
+  SyncDataToSpecifics(sync_data, &specifics);
+  EXPECT_EQ(sync_data.id, specifics.id());
+  EXPECT_EQ(sync_data.update_url.spec(), specifics.update_url());
+  EXPECT_EQ(sync_data.enabled, specifics.enabled());
+  EXPECT_EQ(sync_data.incognito_enabled, specifics.incognito_enabled());
+  EXPECT_EQ(sync_data.version.GetString(), specifics.version());
+  EXPECT_EQ(sync_data.name, specifics.name());
 }
 
 }  // namespace

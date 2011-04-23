@@ -8,9 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util-inl.h"
 #include "base/version.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
@@ -142,22 +140,6 @@ bool AreExtensionSpecificsNonUserPropertiesEqual(
       a_non_user_properties, b_non_user_properties);
 }
 
-void GetExtensionSpecifics(const Extension& extension,
-                           const ExtensionServiceInterface& extension_service,
-                           sync_pb::ExtensionSpecifics* specifics) {
-  DCHECK(IsExtensionValid(extension));
-  const std::string& id = extension.id();
-  bool enabled = extension_service.IsExtensionEnabled(id);
-  bool incognito_enabled = extension_service.IsIncognitoEnabled(id);
-  specifics->set_id(id);
-  specifics->set_version(extension.VersionString());
-  specifics->set_update_url(extension.update_url().spec());
-  specifics->set_enabled(enabled);
-  specifics->set_incognito_enabled(incognito_enabled);
-  specifics->set_name(extension.name());
-  DcheckIsExtensionSpecificsValid(*specifics);
-}
-
 void MergeExtensionSpecifics(
     const sync_pb::ExtensionSpecifics& specifics,
     bool merge_user_properties,
@@ -182,7 +164,7 @@ void MergeExtensionSpecifics(
   }
 }
 
-bool GetExtensionSyncData(
+bool SpecificsToSyncData(
     const sync_pb::ExtensionSpecifics& specifics,
     ExtensionSyncData* sync_data) {
   if (!Extension::IdIsValid(specifics.id())) {
@@ -206,7 +188,21 @@ bool GetExtensionSyncData(
   sync_data->version = *version;
   sync_data->enabled = specifics.enabled();
   sync_data->incognito_enabled = specifics.incognito_enabled();
+  sync_data->name = specifics.name();
   return true;
+}
+
+void SyncDataToSpecifics(
+    const ExtensionSyncData& sync_data,
+    sync_pb::ExtensionSpecifics* specifics) {
+  DCHECK(Extension::IdIsValid(sync_data.id));
+  DCHECK(!sync_data.uninstalled);
+  specifics->set_id(sync_data.id);
+  specifics->set_update_url(sync_data.update_url.spec());
+  specifics->set_version(sync_data.version.GetString());
+  specifics->set_enabled(sync_data.enabled);
+  specifics->set_incognito_enabled(sync_data.incognito_enabled);
+  specifics->set_name(sync_data.name);
 }
 
 }  // namespace browser_sync

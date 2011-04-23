@@ -960,6 +960,10 @@ struct ExtensionInfo {
 
 // Struct used for the details of the EXTENSION_UNINSTALLED
 // notification.
+//
+// TODO(akalin): Now that sync doesn't need to listen to
+// EXTENSION_UNINSTALLED, everything but |extension_id| can be
+// removed.
 struct UninstalledExtensionInfo {
   explicit UninstalledExtensionInfo(const Extension& extension);
   ~UninstalledExtensionInfo();

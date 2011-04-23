@@ -12,7 +12,6 @@
 #include <map>
 #include <string>
 
-class Extension;
 class ExtensionServiceInterface;
 class Profile;
 class ProfileSyncService;
@@ -47,7 +46,7 @@ bool RootNodeHasChildren(const char* tag,
 // extensions to be synced.  Returns true iff this was successful; if
 // unsuccessful, the contents of |extension_data_map| are undefined.
 bool SlurpExtensionData(const ExtensionSyncTraits& traits,
-                        const ExtensionServiceInterface& extensions_service,
+                        const ExtensionServiceInterface& extension_service,
                         sync_api::UserShare* user_share,
                         ExtensionDataMap* extension_data_map);
 
@@ -59,15 +58,15 @@ bool SlurpExtensionData(const ExtensionSyncTraits& traits,
 // function is returned is that the updates were successfully started.
 bool FlushExtensionData(const ExtensionSyncTraits& traits,
                         const ExtensionDataMap& extension_data_map,
-                        ExtensionServiceInterface* extensions_service,
+                        ExtensionServiceInterface* extension_service,
                         sync_api::UserShare* user_share);
 
 // Updates the server data for the given extension.  Returns true iff
 // this was successful; if unsuccessful, an error string is put into
 // |error|.
 bool UpdateServerData(const ExtensionSyncTraits& traits,
-                      const Extension& extension,
-                      const ExtensionServiceInterface& extensions_service,
+                      const std::string& id,
+                      const ExtensionServiceInterface& extension_service,
                       sync_api::UserShare* user_share,
                       std::string* error);
 

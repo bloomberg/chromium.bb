@@ -29,6 +29,9 @@ struct ExtensionSyncData {
   // version of the currenty-installed extension matches |version|).
   Version version;
   GURL update_url;
+
+  // Used only for debugging.
+  std::string name;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SYNC_DATA_H_

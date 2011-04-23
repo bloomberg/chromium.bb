@@ -61,57 +61,25 @@ ExtensionData* SetOrCreateExtensionData(
   return extension_data;
 }
 
-// Reads the client data for each extension in |extensions| to be
-// synced and updates |extension_data_map|.  Puts all unsynced
-// extensions in |unsynced_extensions|.
-void ReadClientDataFromExtensionList(
-    const ExtensionList& extensions,
-    IsValidAndSyncablePredicate is_valid_and_syncable,
-    const ExtensionServiceInterface& extensions_service,
-    std::set<std::string>* unsynced_extensions,
-    ExtensionDataMap* extension_data_map) {
-  for (ExtensionList::const_iterator it = extensions.begin();
-       it != extensions.end(); ++it) {
-    CHECK(*it);
-    const Extension& extension = **it;
-    if (is_valid_and_syncable(extension)) {
-      sync_pb::ExtensionSpecifics client_specifics;
-      GetExtensionSpecifics(extension, extensions_service,
-                            &client_specifics);
-      DcheckIsExtensionSpecificsValid(client_specifics);
-      const ExtensionData& extension_data =
-          *SetOrCreateExtensionData(
-              extension_data_map, ExtensionData::CLIENT,
-              true, client_specifics);
-      DcheckIsExtensionSpecificsValid(extension_data.merged_data());
-      // Assumes this is called before any server data is read.
-      DCHECK(extension_data.NeedsUpdate(ExtensionData::SERVER));
-      DCHECK(!extension_data.NeedsUpdate(ExtensionData::CLIENT));
-    } else {
-      unsynced_extensions->insert(extension.id());
-    }
-  }
-}
-
-// Simply calls ReadClientDataFromExtensionList() on the list of
-// enabled and disabled extensions from |extensions_service|.
+// Fills in |extension_data_map| with data from
+// extension_service.GetSyncDataList().
 void SlurpClientData(
     IsValidAndSyncablePredicate is_valid_and_syncable,
-    const ExtensionServiceInterface& extensions_service,
-    std::set<std::string>* unsynced_extensions,
+    const ExtensionServiceInterface& extension_service,
     ExtensionDataMap* extension_data_map) {
-  const ExtensionList* extensions = extensions_service.extensions();
-  CHECK(extensions);
-  ReadClientDataFromExtensionList(
-      *extensions, is_valid_and_syncable, extensions_service,
-      unsynced_extensions, extension_data_map);
-
-  const ExtensionList* disabled_extensions =
-      extensions_service.disabled_extensions();
-  CHECK(disabled_extensions);
-  ReadClientDataFromExtensionList(
-      *disabled_extensions, is_valid_and_syncable, extensions_service,
-      unsynced_extensions, extension_data_map);
+  std::vector<ExtensionSyncData> sync_data_list =
+      extension_service.GetSyncDataList(is_valid_and_syncable);
+  for (std::vector<ExtensionSyncData>::const_iterator it =
+           sync_data_list.begin();
+       it != sync_data_list.end(); ++it) {
+    sync_pb::ExtensionSpecifics client_specifics;
+    SyncDataToSpecifics(*it, &client_specifics);
+    const ExtensionData& extension_data =
+        *SetOrCreateExtensionData(
+            extension_data_map, ExtensionData::CLIENT,
+            true, client_specifics);
+    DcheckIsExtensionSpecificsValid(extension_data.merged_data());
+  }
 }
 
 // Gets the boilerplate error message for not being able to find a
@@ -131,7 +99,6 @@ std::string GetRootNodeDoesNotExistError(const char* root_node_tag) {
 bool SlurpServerData(
     const char* root_node_tag,
     const ExtensionSpecificsGetter extension_specifics_getter,
-    const std::set<std::string>& unsynced_extensions,
     sync_api::UserShare* user_share,
     ExtensionDataMap* extension_data_map) {
   sync_api::WriteTransaction trans(user_share);
@@ -154,19 +121,12 @@ bool SlurpServerData(
       LOG(ERROR) << "Invalid extensions specifics for id " << id;
       return false;
     }
-    // Don't process server data for extensions we know are
-    // unsyncable.  This doesn't catch everything, as if we don't
-    // have the extension already installed we can't check, but we
-    // also check at extension install time.
-    if (unsynced_extensions.find(server_data.id()) ==
-        unsynced_extensions.end()) {
-      // Pass in false for merge_user_properties so client user
-      // settings always take precedence.
-      const ExtensionData& extension_data =
-          *SetOrCreateExtensionData(
-              extension_data_map, ExtensionData::SERVER, false, server_data);
-      DcheckIsExtensionSpecificsValid(extension_data.merged_data());
-    }
+    // Pass in false for merge_user_properties so client user
+    // settings always take precedence.
+    const ExtensionData& extension_data =
+        *SetOrCreateExtensionData(
+            extension_data_map, ExtensionData::SERVER, false, server_data);
+    DcheckIsExtensionSpecificsValid(extension_data.merged_data());
     id = sync_node.GetSuccessorId();
   }
   return true;
@@ -175,20 +135,17 @@ bool SlurpServerData(
 }  // namespace
 
 bool SlurpExtensionData(const ExtensionSyncTraits& traits,
-                        const ExtensionServiceInterface& extensions_service,
+                        const ExtensionServiceInterface& extension_service,
                         sync_api::UserShare* user_share,
                         ExtensionDataMap* extension_data_map) {
-  std::set<std::string> unsynced_extensions;
-
-  // Read client-side data first so server data takes precedence, and
-  // also so we have an idea of which extensions are unsyncable.
+  // Read client-side data first so server data takes precedence.
   SlurpClientData(
-      traits.is_valid_and_syncable, extensions_service,
-      &unsynced_extensions, extension_data_map);
+      traits.is_valid_and_syncable, extension_service,
+      extension_data_map);
 
   if (!SlurpServerData(
           traits.root_node_tag, traits.extension_specifics_getter,
-          unsynced_extensions, user_share, extension_data_map)) {
+          user_share, extension_data_map)) {
     return false;
   }
   return true;
@@ -239,7 +196,7 @@ bool UpdateServer(
 
 bool FlushExtensionData(const ExtensionSyncTraits& traits,
                         const ExtensionDataMap& extension_data_map,
-                        ExtensionServiceInterface* extensions_service,
+                        ExtensionServiceInterface* extension_service,
                         sync_api::UserShare* user_share) {
   sync_api::WriteTransaction trans(user_share);
   sync_api::ReadNode root(&trans);
@@ -262,34 +219,33 @@ bool FlushExtensionData(const ExtensionSyncTraits& traits,
     }
     DCHECK(!extension_data.NeedsUpdate(ExtensionData::SERVER));
     ExtensionSyncData sync_data;
-    if (!GetExtensionSyncData(extension_data.merged_data(), &sync_data)) {
+    if (!SpecificsToSyncData(extension_data.merged_data(), &sync_data)) {
       // TODO(akalin): Should probably recover or drop.
       NOTREACHED();
       return false;
     }
-    extensions_service->ProcessSyncData(sync_data,
-                                        traits.is_valid_and_syncable);
+    extension_service->ProcessSyncData(sync_data,
+                                       traits.is_valid_and_syncable);
   }
   return true;
 }
 
 bool UpdateServerData(const ExtensionSyncTraits& traits,
-                      const Extension& extension,
-                      const ExtensionServiceInterface& extensions_service,
+                      const std::string& id,
+                      const ExtensionServiceInterface& extension_service,
                       sync_api::UserShare* user_share,
                       std::string* error) {
-  const std::string& id = extension.id();
-  if (!traits.is_valid_and_syncable(extension)) {
+  ExtensionSyncData data;
+  if (!extension_service.GetSyncData(
+          id, traits.is_valid_and_syncable, &data)) {
     *error =
         std::string("UpdateServerData() called for invalid or "
                     "unsyncable extension ") + id;
     LOG(DFATAL) << *error;
     return false;
   }
-
   sync_pb::ExtensionSpecifics client_data;
-  GetExtensionSpecifics(extension, extensions_service,
-                        &client_data);
+  SyncDataToSpecifics(data, &client_data);
   DcheckIsExtensionSpecificsValid(client_data);
   ExtensionData extension_data =
       ExtensionData::FromData(ExtensionData::CLIENT, client_data);
