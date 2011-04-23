@@ -38,6 +38,7 @@ endif
 compositor_SOURCES =				\
 	compositor.c				\
 	compositor.h				\
+	image-loader.c				\
 	shell.c					\
 	switcher.c				\
 	screenshooter.c				\

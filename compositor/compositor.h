@@ -357,6 +357,7 @@ void
 screenshooter_create(struct wlsc_compositor *ec);
 
 uint32_t *
-wlsc_load_image(const char *filename, int width, int height);
+wlsc_load_image(const char *filename,
+		int32_t *width_arg, int32_t *height_arg, uint32_t *stride_arg);
 
 #endif

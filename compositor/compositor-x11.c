@@ -240,12 +240,13 @@ struct wm_normal_hints {
 #define WM_NORMAL_HINTS_MAX_SIZE	32
 
 static void
-x11_output_set_icon(struct x11_compositor *c, struct x11_output *output,
-		    const char *filename, int width, int height)
+x11_output_set_icon(struct x11_compositor *c,
+		    struct x11_output *output, const char *filename)
 {
-	uint32_t *icon, *pixels;
+	uint32_t *icon, *pixels, stride;
+	int32_t width, height;
 
-	pixels = wlsc_load_image(filename, width, height);
+	pixels = wlsc_load_image(filename, &width, &height, &stride);
 	if (!pixels)
 		return;
 	icon = malloc(width * height * 4 + 8);
@@ -332,8 +333,7 @@ x11_compositor_create_output(struct x11_compositor *c, int width, int height)
 			    c->atom.wm_class, c->atom.string, 8,
 			    sizeof class, class);
 
-	x11_output_set_icon(c, output,
-			    DATADIR "/wayland/wayland.png", 128, 128);
+	x11_output_set_icon(c, output, DATADIR "/wayland/wayland.png");
 
 	xcb_map_window(c->conn, output->window);
 

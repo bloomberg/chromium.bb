@@ -260,73 +260,6 @@ destroy_surface(struct wl_resource *resource, struct wl_client *client)
 	free(surface);
 }
 
-uint32_t *
-wlsc_load_image(const char *filename, int width, int height)
-{
-	GdkPixbuf *pixbuf;
-	GError *error = NULL;
-	int stride, i, n_channels;
-	unsigned char *pixels, *end, *argb_pixels, *s, *d;
-
-	pixbuf = gdk_pixbuf_new_from_file_at_scale(filename,
-						   width, height,
-						   FALSE, &error);
-	if (error != NULL) {
-		fprintf(stderr, "failed to load image: %s\n", error->message);
-		g_error_free(error);
-		return NULL;
-	}
-
-	stride = gdk_pixbuf_get_rowstride(pixbuf);
-	pixels = gdk_pixbuf_get_pixels(pixbuf);
-	n_channels = gdk_pixbuf_get_n_channels(pixbuf);
-
-	argb_pixels = malloc (height * width * 4);
-	if (argb_pixels == NULL) {
-		g_object_unref(pixbuf);
-		return NULL;
-	}
-
-	if (n_channels == 4) {
-		for (i = 0; i < height; i++) {
-			s = pixels + i * stride;
-			end = s + width * 4;
-			d = argb_pixels + i * width * 4;
-			while (s < end) {
-				unsigned int t;
-
-#define MULT(_d,c,a,t) \
-	do { t = c * a + 0x7f; _d = ((t >> 8) + t) >> 8; } while (0)
-				
-				MULT(d[0], s[2], s[3], t);
-				MULT(d[1], s[1], s[3], t);
-				MULT(d[2], s[0], s[3], t);
-				d[3] = s[3];
-				s += 4;
-				d += 4;
-			}
-		}
-	} else if (n_channels == 3) {
-		for (i = 0; i < height; i++) {
-			s = pixels + i * stride;
-			end = s + width * 3;
-			d = argb_pixels + i * width * 4;
-			while (s < end) {
-				d[0] = s[2];
-				d[1] = s[1];
-				d[2] = s[0];
-				d[3] = 0xff;
-				s += 3;
-				d += 4;
-			}
-		}
-	}
-
-	g_object_unref(pixbuf);
-
-	return (uint32_t *) argb_pixels;
-}
-
 static void
 wlsc_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 {
@@ -393,14 +326,15 @@ enum sprite_usage {
 
 static struct wlsc_sprite *
 create_sprite_from_png(struct wlsc_compositor *ec,
-		       const char *filename, int width, int height,
-		       uint32_t usage)
+		       const char *filename, uint32_t usage)
 {
 	uint32_t *pixels;
 	struct wlsc_sprite *sprite;
+	int32_t width, height;
+	uint32_t stride;
 
-	pixels = wlsc_load_image(filename, width, height);
-	if(pixels == NULL)
+	pixels = wlsc_load_image(filename, &width, &height, &stride);
+	if (pixels == NULL)
 		return NULL;
 
 	sprite = malloc(sizeof *sprite);
@@ -459,7 +393,6 @@ static void
 create_pointer_images(struct wlsc_compositor *ec)
 {
 	int i, count;
-	const int width = 32, height = 32;
 
 	count = ARRAY_LENGTH(pointer_images);
 	ec->pointer_sprites = malloc(count * sizeof *ec->pointer_sprites);
@@ -467,7 +400,6 @@ create_pointer_images(struct wlsc_compositor *ec)
 		ec->pointer_sprites[i] =
 			create_sprite_from_png(ec,
 					       pointer_images[i].filename,
-					       width, height,
 					       SPRITE_USE_CURSOR);
 	}
 }
@@ -484,8 +416,7 @@ background_create(struct wlsc_output *output, const char *filename)
 	if (background == NULL)
 		return NULL;
 
-	sprite = create_sprite_from_png(output->compositor, filename,
-					output->width, output->height, 0);
+	sprite = create_sprite_from_png(output->compositor, filename, 0);
 	if (sprite == NULL) {
 		free(background);
 		return NULL;
