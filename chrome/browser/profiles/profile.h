@@ -333,13 +333,14 @@ class Profile {
   // happen on the UI thread.
   virtual net::URLRequestContextGetter* GetRequestContext() = 0;
 
-  // Returns the request context appropriate for the given app. If installed_app
-  // is null or installed_app->is_storage_isolated() returns false, this is
-  // equivalent to calling GetRequestContext().
+  // Returns the request context appropriate for the given renderer. If the
+  // renderer process doesn't have an assosicated installed app, or if the
+  // installed app's is_storage_isolated() returns false, this is equivalent to
+  // calling GetRequestContext().
   // TODO(creis): After isolated app storage is no longer an experimental
   // feature, consider making this the default contract for GetRequestContext.
-  virtual net::URLRequestContextGetter* GetRequestContextForPossibleApp(
-      const Extension* installed_app) = 0;
+  virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
+      int renderer_child_id) = 0;
 
   // Returns the request context for media resources asociated with this
   // profile.

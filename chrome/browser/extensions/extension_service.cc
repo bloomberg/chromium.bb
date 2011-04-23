@@ -377,6 +377,19 @@ bool ExtensionService::IsInstalledApp(const GURL& url) {
   return !!GetInstalledApp(url);
 }
 
+void ExtensionService::SetInstalledAppForRenderer(int renderer_child_id,
+                                                  const Extension* app) {
+  installed_app_hosts_[renderer_child_id] = app;
+}
+
+const Extension* ExtensionService::GetInstalledAppForRenderer(
+    int renderer_child_id) {
+  InstalledAppMap::iterator i = installed_app_hosts_.find(renderer_child_id);
+  if (i == installed_app_hosts_.end())
+    return NULL;
+  return i->second;
+}
+
 // static
 // This function is used to implement the command-line switch
 // --uninstall-extension.  The LOG statements within this function are used to
@@ -439,6 +452,8 @@ ExtensionService::ExtensionService(Profile* profile,
   registrar_.Add(this, NotificationType::EXTENSION_PROCESS_TERMINATED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::RENDERER_PROCESS_CREATED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllSources());
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(prefs::kExtensionInstallAllowList, this);
@@ -2060,6 +2075,11 @@ void ExtensionService::Observe(NotificationType type,
         process->Send(new ExtensionMsg_Loaded(
             ExtensionMsg_Loaded_Params(extensions_[i])));
       }
+      break;
+    }
+    case NotificationType::RENDERER_PROCESS_TERMINATED: {
+      RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+      installed_app_hosts_.erase(process->id());
       break;
     }
     case NotificationType::PREF_CHANGED: {

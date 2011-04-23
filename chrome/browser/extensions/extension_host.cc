@@ -135,9 +135,8 @@ ExtensionHost::ExtensionHost(const Extension* extension,
                                          NULL);
   render_view_host_->set_is_extension_process(true);
   if (extension->is_app()) {
-    BrowserRenderProcessHost* process = static_cast<BrowserRenderProcessHost*>(
-        render_view_host_->process());
-    process->set_installed_app(extension);
+    profile()->GetExtensionService()->SetInstalledAppForRenderer(
+        render_view_host_->process()->id(), extension);
   }
   render_view_host_->AllowBindings(BindingsPolicy::EXTENSION);
   if (enable_dom_automation_)

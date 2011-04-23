@@ -53,12 +53,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   explicit BrowserRenderProcessHost(Profile* profile);
   ~BrowserRenderProcessHost();
 
-  // Whether this process is associated with an installed app.
-  const Extension* installed_app() const { return installed_app_; }
-  void set_installed_app(const Extension* installed_app) {
-    installed_app_ = installed_app;
-  }
-
   // RenderProcessHost implementation (public portion).
   virtual bool Init(bool is_accessibility_enabled, bool is_extensions_process);
   virtual int GetNextRoutingID();
@@ -189,9 +183,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // True iff this process is being used as an extension process. Not valid
   // when running in single-process mode.
   bool extension_process_;
-
-  // The Extension for the hosted or packaged app if any, NULL otherwise.
-  scoped_refptr<const Extension> installed_app_;
 
   // Used to launch and terminate the process without blocking the UI thread.
   scoped_ptr<ChildProcessLauncher> child_process_;

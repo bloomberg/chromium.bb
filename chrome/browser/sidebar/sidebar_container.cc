@@ -35,9 +35,11 @@ SidebarContainer::SidebarContainer(TabContents* tab,
   sidebar_contents_->render_view_host()->set_is_extension_process(true);
   const Extension* extension = GetExtension();
   if (extension && extension->is_app()) {
-    BrowserRenderProcessHost* process = static_cast<BrowserRenderProcessHost*>(
-        sidebar_contents_->render_view_host()->process());
-    process->set_installed_app(extension);
+    ExtensionService* service = tab->profile()->GetExtensionService();
+    if (service) {
+      service->SetInstalledAppForRenderer(
+          sidebar_contents_->render_view_host()->process()->id(), extension);
+    }
   }
   sidebar_contents_->render_view_host()->AllowBindings(
       BindingsPolicy::EXTENSION);

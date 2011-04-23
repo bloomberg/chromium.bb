@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -406,13 +407,15 @@ class OffTheRecordProfileImpl : public Profile,
     return io_data_.GetMainRequestContextGetter();
   }
 
-  virtual net::URLRequestContextGetter* GetRequestContextForPossibleApp(
-      const Extension* installed_app) {
+  virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
+      int renderer_child_id) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableExperimentalAppManifests) &&
-        installed_app != NULL &&
-        installed_app->is_storage_isolated())
-      return GetRequestContextForIsolatedApp(installed_app->id());
+        switches::kEnableExperimentalAppManifests)) {
+      const Extension* installed_app = GetExtensionService()->
+          GetInstalledAppForRenderer(renderer_child_id);
+      if (installed_app != NULL && installed_app->is_storage_isolated())
+        return GetRequestContextForIsolatedApp(installed_app->id());
+    }
 
     return GetRequestContext();
   }

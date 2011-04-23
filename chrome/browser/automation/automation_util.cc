@@ -11,12 +11,13 @@
 #include "base/values.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_provider_json.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/browser_render_process_host.h"
+#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "net/base/cookie_monster.h"
@@ -105,19 +106,21 @@ TabContents* GetTabContentsAt(int browser_index, int tab_index) {
   return browser->GetTabContentsAt(tab_index);
 }
 
+net::URLRequestContextGetter* GetRequestContext(TabContents* contents) {
+  // Since we may be on the UI thread don't call GetURLRequestContext().
+  // Get the request context specific to the current TabContents and app.
+  return contents->profile()->GetRequestContextForRenderProcess(
+      contents->render_view_host()->process()->id());
+}
+
 void GetCookies(const GURL& url,
                 TabContents* contents,
                 int* value_size,
                 std::string* value) {
   *value_size = -1;
   if (url.is_valid() && contents) {
-    // Since we may be on the UI thread don't call GetURLRequestContext().
-    // Get the request context specific to the current TabContents and app.
-    const Extension* installed_app = static_cast<BrowserRenderProcessHost*>(
-        contents->render_view_host()->process())->installed_app();
     scoped_refptr<net::URLRequestContextGetter> context_getter =
-        contents->profile()->GetRequestContextForPossibleApp(installed_app);
-
+        GetRequestContext(contents);
     base::WaitableEvent event(true /* manual reset */,
                               false /* not initially signaled */);
     CHECK(BrowserThread::PostTask(
@@ -137,13 +140,8 @@ void SetCookie(const GURL& url,
   *response_value = -1;
 
   if (url.is_valid() && contents) {
-    // Since we may be on the UI thread don't call GetURLRequestContext().
-    // Get the request context specific to the current TabContents and app.
-    const Extension* installed_app = static_cast<BrowserRenderProcessHost*>(
-        contents->render_view_host()->process())->installed_app();
     scoped_refptr<net::URLRequestContextGetter> context_getter =
-        contents->profile()->GetRequestContextForPossibleApp(installed_app);
-
+        GetRequestContext(contents);
     base::WaitableEvent event(true /* manual reset */,
                               false /* not initially signaled */);
     bool success = false;
@@ -164,13 +162,8 @@ void DeleteCookie(const GURL& url,
                   bool* success) {
   *success = false;
   if (url.is_valid() && contents) {
-    // Since we may be on the UI thread don't call GetURLRequestContext().
-    // Get the request context specific to the current TabContents and app.
-    const Extension* installed_app = static_cast<BrowserRenderProcessHost*>(
-        contents->render_view_host()->process())->installed_app();
     scoped_refptr<net::URLRequestContextGetter> context_getter =
-        contents->profile()->GetRequestContextForPossibleApp(installed_app);
-
+        GetRequestContext(contents);
     base::WaitableEvent event(true /* manual reset */,
                               false /* not initially signaled */);
     CHECK(BrowserThread::PostTask(

@@ -156,6 +156,13 @@ class ExtensionService
   // Returns whether the URL is from either a hosted or packaged app.
   bool IsInstalledApp(const GURL& url);
 
+  // Associates a renderer process with the given installed app.
+  void SetInstalledAppForRenderer(int renderer_child_id, const Extension* app);
+
+  // If the renderer is hosting an installed app, returns it, otherwise returns
+  // NULL.
+  const Extension* GetInstalledAppForRenderer(int renderer_child_id);
+
   // Attempts to uninstall an extension from a given ExtensionService. Returns
   // true iff the target extension exists.
   static bool UninstallExtensionHelper(ExtensionService* extensions_service,
@@ -577,6 +584,11 @@ class ExtensionService
 
   // The map of extension IDs to their runtime data.
   ExtensionRuntimeDataMap extension_runtime_data_;
+
+  // Holds a map between renderer process IDs that are associated with an
+  // installed app and their app.
+  typedef std::map<int, scoped_refptr<const Extension> > InstalledAppMap;
+  InstalledAppMap installed_app_hosts_;
 
   // The full path to the directory where extensions are installed.
   FilePath install_directory_;

@@ -553,10 +553,14 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContext() {
   return request_context_.get();
 }
 
-net::URLRequestContextGetter* TestingProfile::GetRequestContextForPossibleApp(
-    const Extension* installed_app) {
-  if (installed_app != NULL && installed_app->is_storage_isolated())
-    return GetRequestContextForIsolatedApp(installed_app->id());
+net::URLRequestContextGetter* TestingProfile::GetRequestContextForRenderProcess(
+    int renderer_child_id) {
+  if (extension_service_.get()) {
+    const Extension* installed_app = extension_service_->
+        GetInstalledAppForRenderer(renderer_child_id);
+    if (installed_app != NULL && installed_app->is_storage_isolated())
+      return GetRequestContextForIsolatedApp(installed_app->id());
+  }
 
   return GetRequestContext();
 }

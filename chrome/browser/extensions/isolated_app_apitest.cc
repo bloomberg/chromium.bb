@@ -6,6 +6,7 @@
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
@@ -29,8 +30,13 @@ class IsolatedAppApiTest : public ExtensionApiTest {
   }
 
   const Extension* GetInstalledApp(TabContents* contents) {
-    return static_cast<BrowserRenderProcessHost*>(
-        contents->render_view_host()->process())->installed_app();
+    const Extension* installed_app = NULL;
+    ExtensionService* service = contents->profile()->GetExtensionService();
+    if (service) {
+      installed_app = service->GetInstalledAppForRenderer(
+          contents->render_view_host()->process()->id());
+    }
+    return installed_app;
   }
 };
 

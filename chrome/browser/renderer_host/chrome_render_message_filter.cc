@@ -195,7 +195,7 @@ void ChromeRenderMessageFilter::OpenChannelToTabOnUIThread(
 void ChromeRenderMessageFilter::OnGetExtensionMessageBundle(
     const std::string& extension_id, IPC::Message* reply_msg) {
   ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
-    request_context_->GetURLRequestContext());
+      request_context_->GetURLRequestContext());
 
   FilePath extension_path =
       context->extension_info_map()->GetPathForExtension(extension_id);

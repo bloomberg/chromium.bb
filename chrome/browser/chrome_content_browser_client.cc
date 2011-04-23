@@ -37,8 +37,10 @@ void ChromeContentBrowserClient::PreCreateRenderView(
     render_view_host->set_is_extension_process(is_extension_process);
 
     const Extension* installed_app = service->GetInstalledApp(url);
-    static_cast<BrowserRenderProcessHost*>(render_view_host->process())->
-        set_installed_app(installed_app);
+    if (installed_app) {
+      service->SetInstalledAppForRenderer(
+          render_view_host->process()->id(), installed_app);
+    }
   }
 }
 
@@ -47,8 +49,7 @@ void ChromeContentBrowserClient::BrowserRenderProcessHostCreated(
   host->channel()->AddFilter(new ChromeRenderMessageFilter(
       host->id(),
       host->profile(),
-      host->profile()->GetRequestContextForPossibleApp(
-          host->installed_app())));
+      host->profile()->GetRequestContextForRenderProcess(host->id())));
   host->channel()->AddFilter(new PrintingMessageFilter());
   host->channel()->AddFilter(
       new SearchProviderInstallStateMessageFilter(host->id(), host->profile()));

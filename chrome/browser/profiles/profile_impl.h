@@ -81,8 +81,8 @@ class ProfileImpl : public Profile,
   virtual fileapi::FileSystemContext* GetFileSystemContext();
   virtual bool HasCreatedDownloadManager() const;
   virtual net::URLRequestContextGetter* GetRequestContext();
-  virtual net::URLRequestContextGetter* GetRequestContextForPossibleApp(
-      const Extension* installed_app);
+  virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
+      int renderer_child_id);
   virtual net::URLRequestContextGetter* GetRequestContextForMedia();
   virtual net::URLRequestContextGetter* GetRequestContextForExtensions();
   virtual net::URLRequestContextGetter* GetRequestContextForIsolatedApp(

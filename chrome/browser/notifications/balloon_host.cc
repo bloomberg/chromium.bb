@@ -206,8 +206,10 @@ void BalloonHost::Init() {
     const Extension* installed_app =
         GetProfile()->GetExtensionService()->GetInstalledApp(
             balloon_->notification().content_url());
-    static_cast<BrowserRenderProcessHost*>(rvh->process())->set_installed_app(
-        installed_app);
+    if (installed_app) {
+      GetProfile()->GetExtensionService()->SetInstalledAppForRenderer(
+          rvh->process()->id(), installed_app);
+    }
   } else if (enable_web_ui_) {
     rvh->AllowBindings(BindingsPolicy::WEB_UI);
   }

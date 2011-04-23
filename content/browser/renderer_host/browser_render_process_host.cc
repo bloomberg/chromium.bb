@@ -240,9 +240,9 @@ class RendererURLRequestContextSelector
     : public ResourceMessageFilter::URLRequestContextSelector {
  public:
   RendererURLRequestContextSelector(Profile* profile,
-                                    const Extension* installed_app)
-      : request_context_(profile->GetRequestContextForPossibleApp(
-                             installed_app)),
+                                    int render_child_id)
+      : request_context_(profile->GetRequestContextForRenderProcess(
+                             render_child_id)),
         media_request_context_(profile->GetRequestContextForMedia()) {
   }
 
@@ -431,18 +431,18 @@ bool BrowserRenderProcessHost::Init(
 
 void BrowserRenderProcessHost::CreateMessageFilters() {
   scoped_refptr<RenderMessageFilter> render_message_filter(
-      new RenderMessageFilter(id(),
-                              PluginService::GetInstance(),
-                              profile(),
-                              profile()->GetRequestContextForPossibleApp(
-                                  installed_app_),
-                              widget_helper_));
+      new RenderMessageFilter(
+          id(),
+          PluginService::GetInstance(),
+          profile(),
+          profile()->GetRequestContextForRenderProcess(id()),
+          widget_helper_));
   channel_->AddFilter(render_message_filter);
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
       id(), ChildProcessInfo::RENDER_PROCESS,
       &profile()->GetResourceContext(),
-      new RendererURLRequestContextSelector(profile(), installed_app_),
+      new RendererURLRequestContextSelector(profile(), id()),
       g_browser_process->resource_dispatcher_host());
 
   channel_->AddFilter(resource_message_filter);
@@ -478,7 +478,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
 
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
       new SocketStreamDispatcherHost(
-          new RendererURLRequestContextSelector(profile(), installed_app_));
+          new RendererURLRequestContextSelector(profile(), id()));
   channel_->AddFilter(socket_stream_dispatcher_host);
 
   channel_->AddFilter(
