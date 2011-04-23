@@ -687,8 +687,14 @@ fade_output(struct wlsc_output *output,
 	surface.y = output->y;
 	surface.width = output->width;
 	surface.height = output->height;
-	surface.visual = &compositor->compositor.premultiplied_argb_visual;
 	surface.texture = GL_NONE;
+
+	if (tint <= 1.0)
+		surface.visual =
+			&compositor->compositor.premultiplied_argb_visual;
+	else
+		surface.visual = &compositor->compositor.rgb_visual;
+
 	glUseProgram(compositor->solid_shader.program);
 	glUniformMatrix4fv(compositor->solid_shader.proj_uniform,
 			   1, GL_FALSE, output->matrix.d);
@@ -767,8 +773,9 @@ wlsc_output_repaint(struct wlsc_output *output)
 			wlsc_surface_draw(output->background,
 					  output, &total_damage);
 		else
-			glClear(GL_COLOR_BUFFER_BIT);
+			fade_output(output, 1.0, &total_damage);
 
+		glUseProgram(ec->texture_shader.program);
 		wl_list_for_each_reverse(es, &ec->surface_list, link) {
 			if (ec->overlay == es)
 				continue;
