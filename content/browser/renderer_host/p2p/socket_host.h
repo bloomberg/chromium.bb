@@ -31,6 +31,8 @@ class P2PSocketHost {
       const net::IPEndPoint& remote_address, int id) = 0;
 
  protected:
+  friend class P2PSocketHostTcpTest;
+
   enum StunMessageType {
     STUN_BINDING_REQUEST = 0x0001,
     STUN_BINDING_RESPONSE = 0x0101,
