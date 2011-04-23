@@ -872,7 +872,7 @@ gboolean DownloadItemGtk::OnProgressAreaExpose(GtkWidget* widget,
           complete_animation_.GetCurrentValue(),
           download_util::SMALL);
     }
-  } else if (!get_download()->IsCancelled()) {
+  } else if (get_download()->IsInProgress()) {
     download_util::PaintDownloadProgress(&canvas,
         widget->allocation.x, widget->allocation.y,
         progress_angle_,
