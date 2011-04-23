@@ -121,7 +121,7 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
     mock_login_library_ = new MockLoginLibrary();
     EXPECT_CALL(*mock_login_library_, EmitLoginPromptReady())
         .Times(1);
-    EXPECT_CALL(*mock_login_library_, RequestRetrieveProperty(_, _, _))
+    EXPECT_CALL(*mock_login_library_, RequestRetrievePolicy(_, _))
         .Times(AnyNumber());
     cros_mock_->test_api()->SetLoginLibrary(mock_login_library_, true);
 
