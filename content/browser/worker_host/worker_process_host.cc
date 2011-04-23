@@ -509,16 +509,14 @@ void WorkerProcessHost::DocumentDetached(WorkerMessageFilter* filter,
 WorkerProcessHost::WorkerInstance::WorkerInstance(
     const GURL& url,
     bool shared,
-    bool incognito,
     const string16& name,
     int worker_route_id,
     int parent_process_id,
     int parent_appcache_host_id,
     int64 main_resource_appcache_id,
-    const content::ResourceContext& resource_context)
+    const content::ResourceContext* resource_context)
     : url_(url),
       shared_(shared),
-      incognito_(incognito),
       closed_(false),
       name_(name),
       worker_route_id_(worker_route_id),
@@ -526,18 +524,17 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(
       parent_appcache_host_id_(parent_appcache_host_id),
       main_resource_appcache_id_(main_resource_appcache_id),
       worker_document_set_(new WorkerDocumentSet()),
-      resource_context_(&resource_context) {
+      resource_context_(resource_context) {
   DCHECK(resource_context_);
 }
 
 WorkerProcessHost::WorkerInstance::WorkerInstance(
     const GURL& url,
     bool shared,
-    bool incognito,
-    const string16& name)
+    const string16& name,
+    const content::ResourceContext* resource_context)
     : url_(url),
       shared_(shared),
-      incognito_(incognito),
       closed_(false),
       name_(name),
       worker_route_id_(MSG_ROUTING_NONE),
@@ -545,7 +542,8 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(
       parent_appcache_host_id_(0),
       main_resource_appcache_id_(0),
       worker_document_set_(new WorkerDocumentSet()),
-      resource_context_(NULL) {
+      resource_context_(resource_context) {
+  DCHECK(resource_context_);
 }
 
 WorkerProcessHost::WorkerInstance::~WorkerInstance() {
@@ -557,14 +555,15 @@ WorkerProcessHost::WorkerInstance::~WorkerInstance() {
 // -or-
 // b) the names are both empty, and the urls are equal
 bool WorkerProcessHost::WorkerInstance::Matches(
-    const GURL& match_url, const string16& match_name,
-    bool incognito) const {
+    const GURL& match_url,
+    const string16& match_name,
+    const content::ResourceContext* resource_context) const {
   // Only match open shared workers.
   if (!shared_ || closed_)
     return false;
 
-  // Incognito workers don't match non-incognito workers.
-  if (incognito_ != incognito)
+  // Have to match the same ResourceContext.
+  if (resource_context_ != resource_context)
     return false;
 
   if (url_.GetOrigin() != match_url.GetOrigin())

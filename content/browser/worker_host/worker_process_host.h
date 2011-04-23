@@ -37,18 +37,17 @@ class WorkerProcessHost : public BrowserChildProcessHost {
    public:
     WorkerInstance(const GURL& url,
                    bool shared,
-                   bool incognito,
                    const string16& name,
                    int worker_route_id,
                    int parent_process_id,
                    int parent_appcache_host_id,
                    int64 main_resource_appcache_id,
-                   const content::ResourceContext& resource_context);
+                   const content::ResourceContext* resource_context);
     // Used for pending instances. Rest of the parameters are ignored.
     WorkerInstance(const GURL& url,
                    bool shared,
-                   bool incognito,
-                   const string16& name);
+                   const string16& name,
+                   const content::ResourceContext* resource_context);
     ~WorkerInstance();
 
     // Unique identifier for a worker client.
@@ -71,7 +70,9 @@ class WorkerProcessHost : public BrowserChildProcessHost {
     // (per the comparison algorithm in the WebWorkers spec). This API only
     // applies to shared workers.
     bool Matches(
-        const GURL& url, const string16& name, bool incognito) const;
+        const GURL& url,
+        const string16& name,
+        const content::ResourceContext* resource_context) const;
 
     // Shares the passed instance's WorkerDocumentSet with this instance. This
     // instance's current WorkerDocumentSet is dereferenced (and freed if this
@@ -82,7 +83,6 @@ class WorkerProcessHost : public BrowserChildProcessHost {
 
     // Accessors
     bool shared() const { return shared_; }
-    bool incognito() const { return incognito_; }
     bool closed() const { return closed_; }
     void set_closed(bool closed) { closed_ = closed; }
     const GURL& url() const { return url_; }
@@ -96,15 +96,14 @@ class WorkerProcessHost : public BrowserChildProcessHost {
     WorkerDocumentSet* worker_document_set() const {
       return worker_document_set_;
     }
-    const content::ResourceContext& resource_context() const {
-      return *resource_context_;
+    const content::ResourceContext* resource_context() const {
+      return resource_context_;
     }
 
    private:
     // Set of all filters (clients) associated with this worker.
     GURL url_;
     bool shared_;
-    bool incognito_;
     bool closed_;
     string16 name_;
     int worker_route_id_;
