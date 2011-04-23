@@ -803,7 +803,7 @@
    # Intentional crash test
    intentional_RendererCrashTest
    Memcheck:Addr4
-   fun:_Z33HandleRendererErrorTestParametersRK11CommandLine
+   fun:_Z*33HandleRendererErrorTestParametersRK11CommandLine
    fun:_Z12RendererMainRK18MainFunctionParams
 }
 {
@@ -828,25 +828,6 @@
    fun:_ZN16ExtensionService17LoadAllExtensionsEv
    fun:_ZN16ExtensionService4InitEv
    fun:_ZN11ProfileImpl14InitExtensionsEv
-}
-{
-   bug_39963_b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN19RenderMessageFilterC1EP22ResourceDispatcherHostiP13PluginServicePN8printing15PrintJobManagerEP7ProfileP18RenderWidgetHelper
-   fun:_ZN24BrowserRenderProcessHost20CreateMessageFiltersEv
-   fun:_ZN24BrowserRenderProcessHost4InitEbb
-   fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
-   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
-   fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
-   fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
-   ...
-   fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
-   fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
-   fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
-   fun:_ZN20NavigationController7LoadURLERK4GURLS2_j
-   fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
 }
 {
    # Intentionally leaking NSS to prevent shutdown crashes
@@ -3761,7 +3742,7 @@
    fun:_ZN5media12PipelineImpl14InitializeTaskEv
 }
 {
-   bug_73299_a
+   bug_73299
    Memcheck:Leak
    fun:_Znw*
    ...
@@ -3770,20 +3751,11 @@
    fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
    fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
    fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
+   ...
    fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
-   fun:_ZN11TabContents15NavigateToEntryERK15NavigationEntryN20NavigationController10ReloadTypeE
+   ...
    fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
    fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
-   fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
-   fun:_ZN20NavigationController7LoadURLERK4GURLS2_j
-   fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
-   fun:_ZN11BrowserInit17LaunchWithProfile17OpenTabsInBrowserEP7BrowserbRKSt6vectorINS0_3TabESaIS4_EE
-   fun:_ZN11BrowserInit17LaunchWithProfile17OpenURLsInBrowserEP7BrowserbRKSt6vectorI4GURLSaIS4_EE
-   fun:_ZN11BrowserInit17LaunchWithProfile17ProcessLaunchURLsEbRKSt6vectorI4GURLSaIS2_EE
-   fun:_ZN11BrowserInit17LaunchWithProfile6LaunchEP7ProfileRKSt6vectorI4GURLSaIS4_EEb
-   fun:_ZN11BrowserInit13LaunchBrowserERK11CommandLineP7ProfileRK8FilePathbPi
-   fun:_ZN11BrowserInit18ProcessCmdLineImplERK11CommandLineRK8FilePathbP7ProfilePiPS_
-   fun:_ZN11BrowserInit5StartERK11CommandLineRK8FilePathP7ProfilePi
 }
 {
    bug_73358
@@ -4394,14 +4366,11 @@
    fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
    fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
    fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
+   ...
    fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
    fun:_ZN11TabContents15NavigateToEntryERK15NavigationEntryN20NavigationController10ReloadTypeE
    fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
    fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
-   fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
-   fun:_ZN20NavigationController7LoadURLERK4GURLS2_j
-   fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
-   fun:_ZN11BrowserInit17LaunchWithProfile17OpenTabsInBrowserEP7BrowserbRKSt6vectorINS0_3TabESaIS4_EE
 }
 {
    bug_80150
@@ -4432,6 +4401,16 @@
    fun:_ZN7fileapi21FileSystemPathManagerC2E13scoped_refptrIN4base16MessageLoopProxyEERK8FilePathS1_IN5quota20SpecialStoragePolicyEEbb
    fun:_ZN7fileapi21FileSystemPathManagerC1E13scoped_refptrIN4base16MessageLoopProxyEERK8FilePathS1_IN5quota20SpecialStoragePolicyEEbb
    fun:_ZN7fileapi12_GLOBAL__N_130FileSystemDirURLRequestJobTest5SetUpEv
+}
+{
+   bug_80378
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   ...
+   fun:gtk_window_group_list_windows
+   fun:_ZN8gtk_util*AppModal*
 }
 
 #-----------------------------------------------------------------------
