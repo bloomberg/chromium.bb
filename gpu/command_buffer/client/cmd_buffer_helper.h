@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,6 +81,11 @@ class CommandBufferHelper {
   // Parameters:
   //   the value of the token to wait for.
   void WaitForToken(int32 token);
+
+  // Inserts a yield command, signaling the scheduler that this is a good point
+  // to update the state and schedule other command buffers. This is
+  // particularly useful after inserting a token that will be waited on.
+  void YieldScheduler();
 
   // Waits for a certain amount of space to be available. Returns address
   // of space.

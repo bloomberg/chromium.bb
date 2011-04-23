@@ -112,6 +112,11 @@ void CommandBufferHelper::WaitForToken(int32 token) {
   }
 }
 
+void CommandBufferHelper::YieldScheduler() {
+  cmd::YieldScheduler& cmd = GetCmdSpace<cmd::YieldScheduler>();
+  cmd.Init();
+}
+
 // Waits for available entries, basically waiting until get >= put + count + 1.
 // It actually waits for contiguous entries, so it may need to wrap the buffer
 // around, adding a jump. Thus this function may change the value of put_. The

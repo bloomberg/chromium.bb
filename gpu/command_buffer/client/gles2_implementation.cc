@@ -691,6 +691,7 @@ void GLES2Implementation::SwapBuffers() {
   }
   helper_->SwapBuffers();
   swap_buffers_tokens_.push(helper_->InsertToken());
+  helper_->YieldScheduler();
   Flush();
 }
 

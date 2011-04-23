@@ -146,16 +146,17 @@ void GpuScheduler::ProcessCommands() {
 
   error::Error error = error::kNoError;
   int commands_processed = 0;
-  while (commands_processed < commands_per_update_ && !parser_->IsEmpty()) {
+  while (commands_processed < commands_per_update_ &&
+         !parser_->IsEmpty()) {
     error = parser_->ProcessCommand();
-    if (error == error::kWaiting) {
-      break;
-    }
 
-    if (error::IsError(error)) {
+    if (error == error::kWaiting || error == error::kYield) {
+      break;
+    } else if (error::IsError(error)) {
       command_buffer_->SetParseError(error);
       return;
     }
+
     ++commands_processed;
     if (command_processed_callback_.get()) {
       command_processed_callback_->Run();
