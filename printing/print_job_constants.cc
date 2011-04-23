@@ -21,6 +21,15 @@ const char kSettingDuplexMode[] = "duplex";
 // Page orientation: true for landscape, false for portrait.
 const char kSettingLandscape[] = "landscape";
 
+// A page range.
+const char kSettingPageRange[] = "pageRange";
+
+// The first page of a page range. (1-based)
+const char kSettingPageRangeFrom[] = "from";
+
+// The last page of a page range. (1-based)
+const char kSettingPageRangeTo[] = "to";
+
 // Printer name.
 const char kSettingPrinterName[] = "printerName";
 

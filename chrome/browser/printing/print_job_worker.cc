@@ -10,6 +10,7 @@
 #include "chrome/browser/printing/print_job.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
+#include "printing/print_job_constants.h"
 #include "printing/printed_document.h"
 #include "printing/printed_page.h"
 
@@ -112,19 +113,23 @@ void PrintJobWorker::UpdatePrintSettings(
   // Create new PageRanges based on |new_settings|.
   PageRanges new_ranges;
   ListValue* page_range_array;
-  if (new_settings->GetList("pageRange", &page_range_array)) {
+  if (new_settings->GetList(kSettingPageRange, &page_range_array)) {
     for (size_t index = 0; index < page_range_array->GetSize(); ++index) {
       DictionaryValue* dict;
-      if (page_range_array->GetDictionary(index, &dict)) {
-        PageRange range;
-        if (dict->GetInteger("from", &range.from) &&
-            dict->GetInteger("to", &range.to)) {
-          // Page numbers are 0-based.
-          range.from--;
-          range.to--;
-          new_ranges.push_back(range);
-        }
+      if (!page_range_array->GetDictionary(index, &dict))
+        continue;
+
+      PageRange range;
+      if (!dict->GetInteger(kSettingPageRangeFrom, &range.from) ||
+          !dict->GetInteger(kSettingPageRangeTo, &range.to)) {
+        continue;
       }
+
+      // Page numbers are 1-based in the dictionary.
+      // Page numbers are 0-based for the printing context.
+      range.from--;
+      range.to--;
+      new_ranges.push_back(range);
     }
   }
   PrintingContext::Result result =

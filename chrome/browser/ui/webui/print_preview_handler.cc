@@ -289,6 +289,9 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
 
     SelectFile(default_filename);
   } else {
+    // The PDF being printed contains only the pages that the user selected,
+    // so ignore the page range and print all pages.
+    settings->Remove(printing::kSettingPageRange, NULL);
     RenderViewHost* rvh = web_ui_->GetRenderViewHost();
     rvh->Send(new PrintMsg_PrintForPrintPreview(rvh->routing_id(), *settings));
   }
@@ -358,10 +361,10 @@ void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
 void PrintPreviewHandler::FileSelected(const FilePath& path,
                                        int index, void* params) {
   PrintPreviewUIHTMLSource::PrintPreviewData data;
-  PrintPreviewUI* pp_ui = reinterpret_cast<PrintPreviewUI*>(web_ui_);
-  pp_ui->html_source()->GetPrintPreviewData(&data);
-  DCHECK(data.first != NULL);
-  DCHECK(data.second > 0);
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+  print_preview_ui->html_source()->GetPrintPreviewData(&data);
+  DCHECK(data.first);
+  DCHECK_GT(data.second, 0U);
 
   printing::PreviewMetafile* metafile = new printing::PreviewMetafile;
   metafile->InitFromData(data.first->memory(), data.second);

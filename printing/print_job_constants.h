@@ -12,6 +12,9 @@ extern const char kSettingColor[];
 extern const char kSettingCopies[];
 extern const char kSettingDuplexMode[];
 extern const char kSettingLandscape[];
+extern const char kSettingPageRange[];
+extern const char kSettingPageRangeFrom[];
+extern const char kSettingPageRangeTo[];
 extern const char kSettingPrinterName[];
 extern const char kSettingPrintToPDF[];
 
